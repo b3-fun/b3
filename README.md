@@ -1,6 +1,6 @@
 # B3 Monorepo 🚀
 
-This monorepo contains all B3's applications, services, and shared packages. Built with pnpm workspaces for optimal development experience.
+This monorepo contains all B3's applications, and shared packages. Built with pnpm workspaces for optimal development experience.
 
 ## 📦 Repository Structure
 
@@ -17,14 +17,6 @@ This monorepo contains all B3's applications, services, and shared packages. Bui
     - Memory Game (default)
     - Battle Mode
   - Switch modes via `VITE_APP_TYPE` environment variable
-
-### Services (`/services`)
-
-- **Cloudflare Workers**
-  - `partner-session-keys`: Manages synchronization of:
-    - Ecosystem wallet metadata
-    - Session key management
-    - Cross-platform state persistence
 
 ### Packages (`/packages`)
 
@@ -44,11 +36,6 @@ This monorepo contains all B3's applications, services, and shared packages. Bui
 # Install dependencies
 pnpm install
 
-# Install and login to wrangler
-npm i -g wrangler
-wrangler login
-```
-
 ### Development
 
 ```bash
@@ -61,11 +48,6 @@ pnpm --filter <workspace-name> dev
 # Examples:
 pnpm --filter global-accounts dev # use name from specific workspaces package.json
 pnpm --filter global-accounts-demo dev:battle  # For battle game mode
-
-# to run b3-api
-cp ./doppler.yaml.template ./doppler.yaml
-pnpm run env
-pnpm --filter b3-api dev
 ```
 
 ### Available Scripts
@@ -76,7 +58,6 @@ Each workspace may have its own specific scripts. Common ones include:
 - `build`: Build for production
 - `lint`: Run linting
 - `preview`: Preview production build
-- `publish-clean`: Publish b3-api (use: `pnpm --filter b3-api publish-clean`)
 
 ## 🛠️ Technology Stack
 
@@ -84,7 +65,6 @@ Each workspace may have its own specific scripts. Common ones include:
 - Build Tool: Vite
 - Framework: React
 - Type Safety: TypeScript
-- Cloud: Cloudflare Workers
 
 ## 📝 License
 
