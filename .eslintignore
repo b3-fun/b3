@@ -1,0 +1,9 @@
+# Ignore all files in the root directory
+/*
+# But don't ignore directories (so ESLint can still check files in packages/apps)
+!/packages/
+!/apps/
+!/services/
+
+# Also ignore node_modules everywhere
+**/node_modules/

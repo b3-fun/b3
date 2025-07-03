@@ -1,0 +1,354 @@
+import {
+  GetQuoteResponse,
+  Nft,
+  OnrampVendor,
+  OrderType,
+  Token,
+  Tournament,
+  useAnyspendCreateOnrampOrder,
+  useGeoOnrampOptions
+} from "@b3dotfun/sdk/anyspend";
+import { Button } from "@b3dotfun/sdk/global-account/react";
+import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
+import { motion } from "framer-motion";
+import invariant from "invariant";
+import { ChevronLeft, ChevronRight, Landmark, Loader2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+
+interface PanelOnrampPaymentProps {
+  srcAmountOnRamp: string;
+  recipientName?: string;
+  recipientAddress?: string;
+  isMainnet: boolean;
+  isBuyMode: boolean;
+  destinationTokenChainId?: number;
+  destinationTokenAddress?: string;
+  selectedDstChainId: number;
+  selectedDstToken: Token;
+  anyspendQuote: GetQuoteResponse | undefined;
+  globalAddress?: string;
+  onOrderCreated: (orderId: string) => void;
+  onBack: () => void;
+  orderType: OrderType;
+  nft?: Nft & { price: string };
+  tournament?: Tournament & { contractAddress: string; entryPriceOrFundAmount: string };
+  payload?: any;
+  recipientEnsName?: string;
+  recipientImageUrl?: string;
+}
+
+export function PanelOnrampPayment({
+  srcAmountOnRamp,
+  // recipientName,
+  recipientAddress,
+  isMainnet,
+  isBuyMode,
+  destinationTokenChainId,
+  destinationTokenAddress,
+  selectedDstChainId,
+  selectedDstToken,
+  anyspendQuote,
+  globalAddress,
+  onOrderCreated,
+  onBack,
+  orderType,
+  nft,
+  tournament,
+  payload,
+  recipientEnsName,
+  recipientImageUrl
+}: PanelOnrampPaymentProps) {
+  // Use a stable amount for geo onramp options to prevent unnecessary refetches
+  const [stableAmountForGeo, setStableAmountForGeo] = useState(srcAmountOnRamp);
+  const hasInitialized = useRef(false);
+
+  // Only update the stable amount on first render or when explicitly needed
+  useEffect(() => {
+    if (!hasInitialized.current && srcAmountOnRamp) {
+      setStableAmountForGeo(srcAmountOnRamp);
+      hasInitialized.current = true;
+    }
+  }, [srcAmountOnRamp]);
+
+  const {
+    geoData,
+    coinbaseOnrampOptions,
+    coinbaseAvailablePaymentMethods,
+    isStripeOnrampSupported,
+    isStripeWeb2Supported,
+    isLoading: isLoadingGeoOnramp
+  } = useGeoOnrampOptions(isMainnet, stableAmountForGeo);
+
+  const { createOrder, isCreatingOrder } = useAnyspendCreateOnrampOrder({
+    onSuccess: data => {
+      const orderId = data.data.id;
+      onOrderCreated(orderId);
+    },
+    onError: error => {
+      console.error(error);
+      toast.error("Failed to create order: " + error.message);
+    }
+  });
+
+  const handlePaymentMethodClick = async (vendor: OnrampVendor, paymentMethod?: string) => {
+    try {
+      if (!recipientAddress) {
+        toast.error("Please select a recipient");
+        return;
+      }
+
+      if (!srcAmountOnRamp || parseFloat(srcAmountOnRamp) <= 0) {
+        toast.error("Please enter a valid amount");
+        return;
+      }
+
+      if (vendor === OnrampVendor.Coinbase && !coinbaseOnrampOptions) {
+        toast.error("Onramp options not available");
+        return;
+      }
+
+      if (vendor === OnrampVendor.Stripe && !isStripeOnrampSupported) {
+        toast.error("Stripe onramp not available");
+        return;
+      }
+
+      if (vendor === OnrampVendor.StripeWeb2 && !isStripeWeb2Supported) {
+        toast.error("Stripe credit card not available");
+        return;
+      }
+
+      if (!anyspendQuote) {
+        toast.error("Failed to get quote");
+        return;
+      }
+
+      const getDstToken = (): Token => {
+        if (isBuyMode) {
+          invariant(destinationTokenAddress, "destinationTokenAddress is required");
+          return {
+            ...selectedDstToken,
+            chainId: destinationTokenChainId || selectedDstChainId,
+            address: destinationTokenAddress
+          };
+        }
+        return selectedDstToken;
+      };
+
+      createOrder({
+        isMainnet,
+        recipientAddress,
+        orderType,
+        dstChain: getDstToken().chainId,
+        dstToken: getDstToken(),
+        srcFiatAmount: srcAmountOnRamp,
+        onramp: {
+          vendor: vendor,
+          paymentMethod: paymentMethod || "",
+          country: geoData?.country || "US",
+          ipAddress: geoData?.ip,
+          redirectUrl:
+            window.location.origin === "https://basement.fun" ? "https://basement.fun/deposit" : window.location.origin
+        },
+        expectedDstAmount: anyspendQuote?.data?.currencyOut?.amount?.toString() || "0",
+        creatorAddress: globalAddress,
+        nft,
+        tournament,
+        payload
+      });
+    } catch (err: any) {
+      console.error(err);
+      toast.error("Failed to create order: " + err.message);
+    }
+  };
+
+  return (
+    <div className="mx-auto flex w-full max-w-[460px] flex-col gap-6">
+      {/* Order Summary Section */}
+      <>
+        <h2 className="-mb-3 text-lg font-semibold">Order summary</h2>
+        <div className="bg-b3-react-background border-b3-react-border flex flex-col gap-3 rounded-lg border p-4">
+          {/* Recipient Section */}
+          {recipientAddress && (
+            <motion.div
+              initial={false}
+              animate={{
+                opacity: 1,
+                y: 0,
+                filter: "blur(0px)"
+              }}
+              transition={{ duration: 0.3, delay: 0.2, ease: "easeInOut" }}
+              className="flex items-center justify-between"
+            >
+              <p className="text-b3-react-foreground/60">
+                {orderType === OrderType.Swap
+                  ? "Recipient"
+                  : orderType === OrderType.MintNFT
+                    ? "Receive NFT at"
+                    : orderType === OrderType.JoinTournament
+                      ? "Join for"
+                      : "Recipient"}
+              </p>
+              <div className="flex items-center gap-2">
+                {recipientImageUrl && (
+                  <img
+                    src={recipientImageUrl}
+                    alt={recipientImageUrl}
+                    className="bg-b3-react-foreground size-7 rounded-full object-cover opacity-100"
+                  />
+                )}
+                <div className="flex flex-col items-end gap-1">
+                  {recipientEnsName && <span className="text-b3-react-foreground/80">@{recipientEnsName}</span>}
+                  <span className="text-b3-react-foreground/80">{centerTruncate(recipientAddress)}</span>
+                </div>
+              </div>
+            </motion.div>
+          )}
+          <div className="border-b3-react-border border-t pt-3">
+            <div className="flex items-center justify-between">
+              <p className="text-b3-react-foreground font-semibold">Amount</p>
+              <p
+                className="text-b3-react-foreground hover:text-b3-react-foreground/80 cursor-pointer text-xl font-semibold transition-colors"
+                onClick={onBack}
+              >
+                ${parseFloat(srcAmountOnRamp).toFixed(2)}
+              </p>
+            </div>
+          </div>
+        </div>
+      </>
+
+      {isCreatingOrder ? (
+        <div className="bg-b3-react-background border-b3-react-border flex items-center justify-center gap-3 rounded-lg border p-6">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span className="text-as-primary/70">Creating onramp order...</span>
+        </div>
+      ) : isLoadingGeoOnramp ? (
+        <div className="bg-b3-react-background border-b3-react-border flex items-center justify-center gap-3 rounded-lg border p-6">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span className="text-as-primary/70">Loading payment options...</span>
+        </div>
+      ) : (
+        <>
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Payment method</h2>
+            <div className="flex items-center gap-1">
+              {coinbaseAvailablePaymentMethods.length > 0 &&
+                (() => {
+                  const hasCard = coinbaseAvailablePaymentMethods.some(m => m.id === "CARD");
+                  const hasApplePay = coinbaseAvailablePaymentMethods.some(m => m.id === "APPLE_PAY");
+                  const hasBankAccount = coinbaseAvailablePaymentMethods.some(m => m.id === "ACH_BANK_ACCOUNT");
+
+                  return (
+                    <>
+                      {hasCard && (
+                        <>
+                          <img
+                            src="https://github.com/marcovoliveira/react-svg-credit-card-payment-icons/raw/main/src/icons/flat-rounded/visa.svg"
+                            alt="Visa"
+                            className="h-5"
+                          />
+                          <img
+                            src="https://github.com/marcovoliveira/react-svg-credit-card-payment-icons/raw/main/src/icons/flat-rounded/mastercard.svg"
+                            alt="Mastercard"
+                            className="h-5"
+                          />
+                          <img
+                            src="https://github.com/marcovoliveira/react-svg-credit-card-payment-icons/raw/main/src/icons/flat-rounded/amex.svg"
+                            alt="Amex"
+                            className="h-5"
+                          />
+                          <img
+                            src="https://github.com/marcovoliveira/react-svg-credit-card-payment-icons/raw/main/src/icons/flat-rounded/discover.svg"
+                            alt="Discover"
+                            className="h-5"
+                          />
+                        </>
+                      )}
+                      {hasApplePay && (
+                        <img
+                          src="https://github.com/Kimmax/react-payment-icons/raw/main/assets/card-icons/card_apple-pay.svg"
+                          alt="Apple Pay"
+                          className="h-5"
+                        />
+                      )}
+                      {hasBankAccount && <Landmark className="h-5 w-5" />}
+                    </>
+                  );
+                })()}
+            </div>
+          </div>
+          <div className="flex flex-col gap-3">
+            {/* Coinbase Option - Show if payment methods available */}
+            {coinbaseAvailablePaymentMethods.length > 0 &&
+              (() => {
+                const method = coinbaseAvailablePaymentMethods[0];
+
+                return (
+                  <button
+                    onClick={() => handlePaymentMethodClick(OnrampVendor.Coinbase, method.id)}
+                    disabled={isCreatingOrder}
+                    className="bg-b3-react-background border-b3-react-border hover:border-as-brand disabled:hover:border-b3-react-border group flex w-full items-center justify-between gap-4 rounded-xl border p-5 transition-all duration-200 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50">
+                        <img src="https://cdn.b3.fun/coinbase-wordmark-blue.svg" alt="Coinbase" className="h-6" />
+                      </div>
+                      <div className="flex flex-col items-start text-left">
+                        <h4 className="text-b3-react-foreground text-lg font-semibold">Coinbase Pay</h4>
+                        <p className="text-b3-react-foreground/60 text-sm">
+                          {method.id === "CARD" && "Debit card, bank account, or Coinbase Account"}
+                          {method.id === "FIAT_WALLET" && "Pay with your Coinbase account balance"}
+                          {method.id === "APPLE_PAY" && "Quick payment with Apple Pay"}
+                          {method.id === "ACH_BANK_ACCOUNT" && "Direct bank account transfer"}
+                        </p>
+                        <div className="mt-1 flex items-center gap-1">
+                          <span className="text-xs font-medium text-green-600">Free</span>
+                        </div>
+                      </div>
+                    </div>
+                    <ChevronRight className="text-b3-react-foreground/40 group-hover:text-b3-react-foreground/60 h-5 w-5 transition-colors" />
+                  </button>
+                );
+              })()}
+
+            {/* Stripe Option - Show if supported */}
+            {isStripeWeb2Supported && (
+              <button
+                onClick={() => handlePaymentMethodClick(OnrampVendor.StripeWeb2)}
+                className="bg-b3-react-background border-b3-react-border hover:border-as-brand group flex w-full items-center justify-between gap-4 rounded-xl border p-5 transition-all duration-200 hover:shadow-md"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-50">
+                    <img
+                      src="https://raw.githubusercontent.com/stripe/stripe.github.io/455f506a628dc3f6c505e3001db45a64e29e9fc3/images/stripe-logo.svg"
+                      alt="Stripe"
+                      className="h-5"
+                    />
+                  </div>
+                  <div className="flex flex-col items-start text-left">
+                    <h4 className="text-b3-react-foreground text-lg font-semibold">Stripe</h4>
+                    <p className="text-b3-react-foreground/60 text-sm">Credit or debit card payment</p>
+                    <div className="mt-1 flex items-center gap-1">
+                      <span className="text-xs font-medium text-orange-600">Fee Applied</span>
+                    </div>
+                  </div>
+                </div>
+                <ChevronRight className="text-b3-react-foreground/40 group-hover:text-b3-react-foreground/60 h-5 w-5 transition-colors" />
+              </button>
+            )}
+
+            <Button
+              variant="link"
+              onClick={onBack}
+              className="text-b3-react-foreground/70 hover:text-b3-react-foreground/90 mt-2 w-full"
+            >
+              <ChevronLeft className="mr-2 h-4 w-4" />
+              Back
+            </Button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}

@@ -1,0 +1,222 @@
+name: Publish SDK Package
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/sdk/**"
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: "Release type"
+        required: true
+        default: "latest"
+        type: choice
+        options:
+          - "latest"
+          - "alpha"
+
+env:
+  NODE_OPTIONS: --max_old_space_size=8192
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup-environment
+
+      - name: Setup Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Determine release type
+        id: release-type
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "type=alpha" >> $GITHUB_OUTPUT
+          else
+            echo "type=${{ github.event.inputs.release_type }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Calculate next alpha version
+        id: version
+        if: steps.release-type.outputs.type == 'alpha'
+        run: |
+          cd packages/sdk
+
+          # Extract the current version from package.json and strip alpha tags
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "Current version in package.json: $CURRENT_VERSION"
+
+          # Strip alpha tags to get base semver
+          BASE_VERSION=$(echo "$CURRENT_VERSION" | sed 's/-alpha\.[0-9]*$//')
+          echo "Base semver version: $BASE_VERSION"
+
+          # Get the latest alpha version from npm for this base semver
+          LATEST_ALPHA=$(pnpm view @b3dotfun/sdk@alpha version 2>/dev/null || echo "")
+          echo "Latest alpha version from npm: $LATEST_ALPHA"
+
+          # Function to increment alpha version
+          increment_alpha() {
+            local version=$1
+            if [[ $version =~ ^(.+)-alpha\.([0-9]+)$ ]]; then
+              # It's already an alpha version, increment the alpha number
+              local base_version="${BASH_REMATCH[1]}"
+              local alpha_num="${BASH_REMATCH[2]}"
+              local new_alpha_num=$((alpha_num + 1))
+              echo "${base_version}-alpha.${new_alpha_num}"
+            else
+              # It's a regular version, make it alpha.0
+              echo "${version}-alpha.0"
+            fi
+          }
+
+          # Determine the next alpha version
+          if [ -z "$LATEST_ALPHA" ]; then
+            # No alpha version exists, create first alpha from base version
+            NEXT_VERSION="${BASE_VERSION}-alpha.0"
+          else
+            # Check if the latest alpha matches our base version
+            LATEST_BASE=$(echo "$LATEST_ALPHA" | sed 's/-alpha\.[0-9]*$//')
+            if [ "$BASE_VERSION" = "$LATEST_BASE" ]; then
+              # Same base version, increment the alpha
+              NEXT_VERSION=$(increment_alpha "$LATEST_ALPHA")
+            else
+              # Different base version, start new alpha series
+              NEXT_VERSION="${BASE_VERSION}-alpha.0"
+            fi
+          fi
+
+          echo "Next alpha version: $NEXT_VERSION"
+          echo "next_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Build SDK package
+        run: |
+          cd packages/sdk
+          pnpm build
+
+      - name: Run tests
+        run: |
+          cd packages/sdk
+          pnpm typecheck
+
+      - name: Setup npm authentication
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+
+      - name: Publish to alpha channel
+        id: publish-alpha
+        if: steps.release-type.outputs.type == 'alpha'
+        run: |
+          cd packages/sdk
+
+          NEXT_VERSION="${{ steps.version.outputs.next_version }}"
+          echo "Setting version to: $NEXT_VERSION"
+          # Set the specific alpha version directly
+          pnpm version "$NEXT_VERSION" --no-git-tag-version
+          echo "new_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
+          # Publish to alpha channel
+          pnpm publish --tag alpha --no-git-checks
+
+      - name: Tag alpha release
+        if: steps.release-type.outputs.type == 'alpha'
+        run: |
+          NEW_VERSION="${{ steps.publish-alpha.outputs.new_version }}"
+
+          # Create and push git tag
+          git tag "$NEW_VERSION" -m "Release $NEW_VERSION"
+          git push origin "$NEW_VERSION"
+
+          echo "✅ Tagged repository with $NEW_VERSION"
+
+      - name: Publish to latest channel
+        id: publish-latest
+        if: steps.release-type.outputs.type == 'latest'
+        run: |
+          cd packages/sdk
+
+          # Get current version
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "Publishing current version to latest: $CURRENT_VERSION"
+          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+
+          # Publish to latest channel
+          pnpm publish --tag latest --no-git-checks
+
+      - name: Tag latest release
+        if: steps.release-type.outputs.type == 'latest'
+        run: |
+          CURRENT_VERSION="${{ steps.publish-latest.outputs.current_version }}"
+
+          # Create and push git tag if it doesn't exist
+          if ! git rev-parse "$CURRENT_VERSION" >/dev/null 2>&1; then
+            git tag "$CURRENT_VERSION" -m "Release $CURRENT_VERSION"
+            git push origin "$CURRENT_VERSION"
+            echo "✅ Created new tag: $CURRENT_VERSION"
+          else
+            echo "ℹ️ Tag $CURRENT_VERSION already exists"
+          fi
+
+      - name: Create GitHub Release
+        if: steps.release-type.outputs.type == 'latest'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.publish-latest.outputs.current_version }}
+          release_name: Release ${{ steps.publish-latest.outputs.current_version }}
+          body: |
+            ## 🚀 SDK Release ${{ steps.publish-latest.outputs.current_version }}
+
+            This release includes the latest changes from the main branch.
+
+            ### 📦 Package
+            - [@b3dotfun/sdk](https://www.npmjs.com/package/@b3dotfun/sdk)
+
+            ### 📥 Installation
+            ```bash
+            pnpm add @b3dotfun/sdk@${{ steps.publish-latest.outputs.current_version }}
+            ```
+
+            ### 🔗 Links
+            - [NPM Package](https://www.npmjs.com/package/@b3dotfun/sdk)
+            - [Changelog](https://github.com/${{ github.repository }}/compare/main...v${{ steps.publish-latest.outputs.current_version }})
+          draft: false
+          prerelease: false
+
+      - name: Summary
+        run: |
+          cd packages/sdk
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          RELEASE_TYPE="${{ steps.release-type.outputs.type }}"
+
+          echo "## 🚀 Package Published!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Package:** [@b3dotfun/sdk](https://www.npmjs.com/package/@b3dotfun/sdk)" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** \`$CURRENT_VERSION\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Channel:** \`$RELEASE_TYPE\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Git Tag:** \`$CURRENT_VERSION\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "$RELEASE_TYPE" = "alpha" ]; then
+            echo "**Install:** \`pnpm add @b3dotfun/sdk@alpha\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "**Install:** \`pnpm add @b3dotfun/sdk@$CURRENT_VERSION\`" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🏷️ Repository Tagged" >> $GITHUB_STEP_SUMMARY
+          echo "The repository has been tagged with version \`$CURRENT_VERSION\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Note:** Version changes are not committed back to the repository to avoid infinite loops." >> $GITHUB_STEP_SUMMARY

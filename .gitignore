@@ -1,0 +1,20 @@
+# Dependencies
+node_modules
+
+# IDE
+.idea
+
+# MacOS
+.DS_Store
+
+# Local files
+*.local
+*.local.*
+
+# Build outputs
+dist
+.next
+tsconfig.tsbuildinfo
+.tsbuildinfo
+
+doppler.yaml

@@ -1,0 +1,483 @@
+[
+  {
+    "_id": "66b38063fae0f6d8266798ce",
+    "id": 8333,
+    "name": "B3",
+    "rpcUrls": {
+      "default": {
+        "http": "https://mainnet-rpc.b3.fun",
+        "ws": "wss://mainnet-rpc.b3.fun/ws"
+      },
+      "backups": []
+    },
+    "icon": {
+      "url": "https://cdn.b3.fun/b3-logo-white-circle.svg",
+      "width": 32,
+      "height": 32,
+      "format": "svg"
+    },
+    "blockExplorers": {
+      "default": "https://explorer.b3.fun/",
+      "explorerTitle": "B3 Explorer"
+    },
+    "nativeCurrency": {
+      "name": "Ether",
+      "symbol": "ETH",
+      "decimals": 18
+    },
+    "testnet": false,
+    "testnetConfigID": "66b380b0fae0f6d8266798d0",
+    "badge": "https://cdn.b3.fun/b3_logo.svg",
+    "color": "#3368ef",
+    "enabledFeatures": ["explorer.all", "basement.all"]
+  },
+  {
+    "_id": "66b380b0fae0f6d8266798d0",
+    "id": 1993,
+    "name": "B3 Sepolia",
+    "rpcUrls": {
+      "default": {
+        "http": "https://sepolia.b3.fun",
+        "ws": "wss://sepolia.b3.fun/ws"
+      },
+      "backups": []
+    },
+    "icon": {
+      "url": "https://cdn.b3.fun/b3-logo-white-circle.svg",
+      "width": 32,
+      "height": 32,
+      "format": "svg"
+    },
+    "blockExplorers": {
+      "default": "https://sepolia-explorer.b3.fun",
+      "explorerTitle": "B3 Sepolia Explorer"
+    },
+    "nativeCurrency": {
+      "name": "Ether",
+      "symbol": "ETH",
+      "decimals": 18
+    },
+    "testnet": true,
+    "badge": "https://cdn.b3.fun/b3_logo.svg",
+    "color": "#3368ef"
+  },
+  {
+    "_id": "66f2044afe5a3ac32a1de9ff",
+    "id": 8453,
+    "name": "Base Mainnet",
+    "rpcUrls": {
+      "default": {
+        "http": "https://base-rpc.publicnode.com",
+        "ws": "wss://mainnet.base.org/ws"
+      },
+      "backups": []
+    },
+    "icon": {
+      "url": "https://cdn.b3.fun/base-chain.svg",
+      "width": 32,
+      "height": 32,
+      "format": "svg"
+    },
+    "blockExplorers": {
+      "default": "https://base.blockscout.com",
+      "explorerTitle": "Base Explorer"
+    },
+    "nativeCurrency": {
+      "name": "Ether",
+      "symbol": "ETH",
+      "decimals": 18
+    },
+    "testnet": false,
+    "badge": "https://cdn.b3.fun/base-badge.svg",
+    "color": "#004ae7"
+  },
+  {
+    "_id": "66f3221afe5a3ac32a1dea00",
+    "id": 84532,
+    "name": "Base Sepolia",
+    "rpcUrls": {
+      "default": {
+        "http": "https://sepolia.base.org",
+        "ws": "wss://sepolia.base.org"
+      },
+      "backups": []
+    },
+    "icon": {
+      "url": "https://cdn.b3.fun/base-chain.svg",
+      "width": 32,
+      "height": 32,
+      "format": "svg"
+    },
+    "blockExplorers": {
+      "default": "https://sepolia-explorer.base.org",
+      "explorerTitle": "Base Sepolia"
+    },
+    "nativeCurrency": {
+      "name": "Ether",
+      "symbol": "ETH",
+      "decimals": 18
+    },
+    "testnet": false,
+    "badge": "https://cdn.b3.fun/base-badge.svg",
+    "color": "#004ae7"
+  },
+  {
+    "_id": "6706b240d442b7a2f8cb9efa",
+    "id": 1,
+    "name": "Ethereum",
+    "rpcUrls": {
+      "default": {
+        "http": "https://cloudflare-eth.com",
+        "ws": "wss://late-dimensional-yard.b3-mainnet.quiknode.pro/461dbdbd44158cd7a7a764a58ffb01a67eef77f2"
+      },
+      "backups": []
+    },
+    "icon": {
+      "url": "https://cdn.b3.fun/eth-chain.svg",
+      "width": 32,
+      "height": 32,
+      "format": "svg"
+    },
+    "blockExplorers": {
+      "default": "https://etherscan.io",
+      "explorerTitle": "Etherscan"
+    },
+    "nativeCurrency": {
+      "name": "Ether",
+      "symbol": "ETH",
+      "decimals": 18
+    },
+    "testnet": true,
+    "badge": "https://cdn.b3.fun/eth-badge.svg",
+    "color": "#B38DF0"
+  },
+  {
+    "_id": "671945d9d442b7a2f8cb9efe",
+    "id": 11155111,
+    "name": "Ethereum Sepolia",
+    "rpcUrls": {
+      "default": {
+        "http": "https://rpc2.sepolia.org"
+      },
+      "backups": []
+    },
+    "icon": {
+      "url": "https://cdn.b3.fun/eth-chain.svg",
+      "width": 32,
+      "height": 32,
+      "format": "svg"
+    },
+    "blockExplorers": {
+      "default": "https://sepolia.etherscan.io",
+      "explorerTitle": "Etherscan"
+    },
+    "nativeCurrency": {
+      "name": "Ether",
+      "symbol": "ETH",
+      "decimals": 18
+    },
+    "testnet": true,
+    "badge": "https://cdn.b3.fun/eth-badge.svg",
+    "color": "#B38DF0"
+  },
+  {
+    "_id": "679a4a91703428bb5bb2f1ba",
+    "id": 43114,
+    "name": "Avalanche",
+    "rpcUrls": {
+      "default": {
+        "http": "https://api.avax.network/ext/bc/C/rpc",
+        "ws": "wss://avalanche-c-chain-rpc.publicnode.com"
+      },
+      "backups": []
+    },
+    "icon": {
+      "url": "https://cdn.b3.fun/avalanche-chain.svg",
+      "width": 32,
+      "height": 32,
+      "format": "svg"
+    },
+    "blockExplorers": {
+      "default": "https://snowtrace.io",
+      "explorerTitle": "SnowTrace"
+    },
+    "nativeCurrency": {
+      "name": "Avalanche",
+      "symbol": "AVAX",
+      "decimals": 18
+    },
+    "testnet": false,
+    "badge": "https://cdn.b3.fun/avalanche-badge.svg",
+    "color": "#c33738"
+  },
+  {
+    "_id": "679be46ca0f78fd619f6954b",
+    "id": 63157,
+    "name": "Geist",
+    "rpcUrls": {
+      "default": {
+        "http": "https://geist-mainnet.g.alchemy.com/public",
+        "ws": "wss://geist-c-chain-rpc.publicnode.com"
+      },
+      "backups": []
+    },
+    "icon": {
+      "url": "https://cdn.b3.fun/geist-logo.svg",
+      "width": 32,
+      "height": 32,
+      "format": "svg"
+    },
+    "blockExplorers": {
+      "default": "https://geist-mainnet.explorer.alchemy.com",
+      "explorerTitle": "Blockscout"
+    },
+    "nativeCurrency": {
+      "name": "Aavegotchi GHST Token",
+      "symbol": "GHST",
+      "decimals": 18
+    },
+    "testnet": false,
+    "badge": "https://cdn.b3.fun/geist-logo.svg",
+    "color": "#808080"
+  },
+  {
+    "_id": "679be960a0f78fd619f6954d",
+    "id": 42161,
+    "name": "Arbitrum One",
+    "rpcUrls": {
+      "default": {
+        "http": "https://proportionate-twilight-patina.arbitrum-mainnet.quiknode.pro/60e4825626515233a0f566f5915601af6043127b",
+        "ws": "wss://proportionate-twilight-patina.arbitrum-mainnet.quiknode.pro/60e4825626515233a0f566f5915601af6043127b"
+      },
+      "backups": []
+    },
+    "icon": {
+      "url": "https://cdn.b3.fun/arbitrum-chain.svg",
+      "width": 32,
+      "height": 32,
+      "format": "svg"
+    },
+    "blockExplorers": {
+      "default": "https://arbiscan.io",
+      "explorerTitle": "Arbiscan"
+    },
+    "nativeCurrency": {
+      "name": "Ether",
+      "symbol": "ETH",
+      "decimals": 18
+    },
+    "testnet": false,
+    "badge": "https://cdn.b3.fun/arbitrum-badge.svg",
+    "color": "#4a5c7e"
+  },
+  {
+    "_id": "679be9eba0f78fd619f6954f",
+    "id": 2020,
+    "name": "Ronin",
+    "rpcUrls": {
+      "default": {
+        "http": "https://api.roninchain.com/rpc",
+        "ws": "wss://api.roninchain.com/ws"
+      },
+      "backups": []
+    },
+    "icon": {
+      "url": "https://cdn.b3.fun/ronin-logo.svg",
+      "width": 32,
+      "height": 32,
+      "format": "svg"
+    },
+    "blockExplorers": {
+      "default": "https://app.roninchain.com",
+      "explorerTitle": "Ronin Explorer"
+    },
+    "nativeCurrency": {
+      "name": "RON",
+      "symbol": "RON",
+      "decimals": 18
+    },
+    "testnet": false,
+    "badge": "https://cdn.b3.fun/ronin-logo.svg",
+    "color": "#004de5"
+  },
+  {
+    "_id": "679beabca0f78fd619f69551",
+    "id": 101,
+    "name": "Solana",
+    "rpcUrls": {
+      "default": {
+        "http": "https://dry-sparkling-daylight.solana-mainnet.quiknode.pro/de3b2418b1e1c340eb00666cd69f25bbc7b49af5",
+        "ws": "wss://dry-sparkling-daylight.solana-mainnet.quiknode.pro/de3b2418b1e1c340eb00666cd69f25bbc7b49af5"
+      },
+      "backups": []
+    },
+    "icon": {
+      "url": "https://cdn.b3.fun/solana-logo.png",
+      "width": 32,
+      "height": 32,
+      "format": "svg"
+    },
+    "blockExplorers": {
+      "default": "https://solscan.io",
+      "explorerTitle": "Sol Scan"
+    },
+    "nativeCurrency": {
+      "name": "SOL",
+      "symbol": "SOL",
+      "decimals": 18
+    },
+    "testnet": false,
+    "badge": "https://cdn.b3.fun/solana-logo.png",
+    "color": "#9945FF"
+  },
+  {
+    "_id": "67a452dda0f78fd619f69558",
+    "id": 49321,
+    "name": "Gunz Testnet",
+    "rpcUrls": {
+      "default": {
+        "http": "https://rpc.gunz.dev/ext/bc/ryk9vkvNuKtewME2PeCgybo9sdWXGmCkBrrx4VPuZPdVdAak8/rpc",
+        "ws": "wss://dry-sparkling-daylight.gunz-mainnet.quiknode.pro/de3b2418b1e1c340eb00666cd69f25bbc7b49af5"
+      },
+      "backups": []
+    },
+    "icon": {
+      "url": "https://cdn.b3.fun/gunz-logo.svg?1",
+      "width": 32,
+      "height": 32,
+      "format": "svg"
+    },
+    "blockExplorers": {
+      "default": "https://49321.testnet.routescan.io",
+      "explorerTitle": "Gunz Exporer - Testnet"
+    },
+    "nativeCurrency": {
+      "name": "GUN",
+      "symbol": "GUN",
+      "decimals": 18
+    },
+    "testnet": true,
+    "badge": "https://cdn.b3.fun/gunz-logo.svg",
+    "color": "#c8edfa"
+  },
+  {
+    "_id": "67aede9db3ba503f51eeaff7",
+    "id": -239,
+    "name": "The Open Network",
+    "rpcUrls": {
+      "default": {
+        "http": "https://long-lively-silence.ton-mainnet.quiknode.pro/f1406525f51271675fc9ec96fb00086884ab272e",
+        "ws": "wss://dry-sparkling-daylight.ton-mainnet.quiknode.pro/de3b2418b1e1c340eb00666cd69f25bbc7b49af5"
+      },
+      "backups": []
+    },
+    "icon": {
+      "url": "https://cdn.b3.fun/ton-logo.svg",
+      "width": 32,
+      "height": 32,
+      "format": "svg"
+    },
+    "blockExplorers": {
+      "default": "https://tonscan.org/",
+      "explorerTitle": "Tonscan"
+    },
+    "nativeCurrency": {
+      "name": "TON",
+      "symbol": "TON",
+      "decimals": 18
+    },
+    "testnet": false,
+    "badge": "https://cdn.b3.fun/ton-logo.svg",
+    "color": "#0088cc"
+  },
+  {
+    "_id": "67b7895fb3ba503f51eeaffc",
+    "id": 10,
+    "name": "OP Mainnet",
+    "rpcUrls": {
+      "default": {
+        "http": "https://mainnet.optimism.io",
+        "ws": "wss://black-cosmopolitan-hexagon.optimism.quiknode.pro/18382925841f9d09f9e76eef954bf189aa234523"
+      },
+      "backups": []
+    },
+    "icon": {
+      "url": "https://cdn.b3.fun/optimism-chain.svg",
+      "width": 32,
+      "height": 32,
+      "format": "png"
+    },
+    "blockExplorers": {
+      "default": "https://optimistic.etherscan.io",
+      "explorerTitle": "Optimism Explorer"
+    },
+    "nativeCurrency": {
+      "name": "Ether",
+      "symbol": "ETH",
+      "decimals": 18
+    },
+    "testnet": false,
+    "badge": "https://cdn.b3.fun/optimism-badge.svg",
+    "color": "#d6031b"
+  },
+  {
+    "_id": "67bcbdb782f62aa6dc1efa60",
+    "id": 137,
+    "name": "Polygon",
+    "rpcUrls": {
+      "default": {
+        "http": "https://polygon-rpc.com",
+        "ws": "wss://polygon-bor-rpc.publicnode.com"
+      },
+      "backups": []
+    },
+    "icon": {
+      "url": "https://cdn.b3.fun/polygon-chain.svg",
+      "width": 32,
+      "height": 32,
+      "format": "svg"
+    },
+    "blockExplorers": {
+      "default": "https://polygonscan.com",
+      "explorerTitle": "PolygonScan"
+    },
+    "nativeCurrency": {
+      "name": "POL",
+      "symbol": "POL",
+      "decimals": 18
+    },
+    "testnet": false,
+    "badge": "https://cdn.b3.fun/polygon-badge.svg",
+    "color": "#7540cf"
+  },
+  {
+    "_id": "6837258b25c59b8e08f806bf",
+    "id": 56,
+    "name": "BNB Chain",
+    "rpcUrls": {
+      "default": {
+        "http": "https://bsc-rpc.publicnode.com",
+        "ws": "wss://bsc-rpc.publicnode.com"
+      },
+      "backups": []
+    },
+    "icon": {
+      "url": "https://avatars.githubusercontent.com/u/45615063?s=280&v=4",
+      "width": 280,
+      "height": 280,
+      "format": "png"
+    },
+    "blockExplorers": {
+      "default": "https://bscscan.com",
+      "explorerTitle": "Bscscan"
+    },
+    "nativeCurrency": {
+      "name": "BNB",
+      "symbol": "BNB",
+      "decimals": 18
+    },
+    "testnet": false,
+    "badge": "https://avatars.githubusercontent.com/u/45615063?s=280&v=4",
+    "color": "#F3BA2F"
+  }
+]

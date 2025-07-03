@@ -1,0 +1,51 @@
+name: Auto Merge PR
+
+on:
+  pull_request:
+    types: [opened, synchronize, edited, ready_for_review]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  enable-auto-merge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Debug GITHUB_TOKEN
+        run: |
+          if [ -z "${{ secrets.GITHUB_TOKEN }}" ]; then
+            echo "GITHUB_TOKEN is NOT set!"
+            exit 1
+          else
+            echo "GITHUB_TOKEN is set."
+          fi
+
+      - name: Fetch PR Body and Debug Output
+        id: fetch_pr_body
+        run: |
+          PR_BODY=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}" | jq -r '.body')
+
+          echo "==== PR BODY DEBUG START ===="
+          echo "$PR_BODY"
+          echo "==== PR BODY DEBUG END ===="
+
+          if [[ "$PR_BODY" =~ "automerge=true" ]]; then
+            echo "AUTO_MERGE=true" >> $GITHUB_ENV
+          else
+            echo "AUTO_MERGE=false" >> $GITHUB_ENV
+          fi
+
+      - name: Debug AUTO_MERGE Value
+        run: echo "AUTO_MERGE is set to $AUTO_MERGE"
+
+      - name: Enable auto-merge using GraphQL API
+        if: ${{ env.AUTO_MERGE == 'true' }}
+        run: |
+          curl -X POST -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+               -H "Content-Type: application/json" \
+               -d '{
+                 "query": "mutation { enablePullRequestAutoMerge(input: {pullRequestId: \"${{ github.event.pull_request.node_id }}\", mergeMethod: MERGE }) { clientMutationId } }"
+               }' https://api.github.com/graphql

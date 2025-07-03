@@ -1,0 +1,279 @@
+/* B3 Fonts */
+/* See https://docs.b3.fun/brand-kit for more information */
+
+@font-face {
+  font-family: "Pack";
+  src: url("https://cdn.b3.fun/fonts/pack.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Neue Montreal Bold";
+  src:
+    url("https://cdn.b3.fun/fonts/ppneuemontreal-bold-webfont.woff2") format("woff2"),
+    url("https://cdn.b3.fun/fonts/ppneuemontreal-bold-webfont.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Neue Montreal Regular";
+  src:
+    url("https://cdn.b3.fun/fonts/ppneuemontreal-regular-webfont.woff2") format("woff2"),
+    url("https://cdn.b3.fun/fonts/ppneuemontreal-regular-webfont.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Neue Montreal Book";
+  src:
+    url("https://cdn.b3.fun/fonts/ppneuemontreal-book-webfont.woff2") format("woff2"),
+    url("https://cdn.b3.fun/fonts/ppneuemontreal-book-webfont.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Neue Montreal Medium";
+  src:
+    url("https://cdn.b3.fun/fonts/ppneuemontreal-medium-webfont.woff2") format("woff2"),
+    url("https://cdn.b3.fun/fonts/ppneuemontreal-medium-webfont.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Neue Montreal Semibold";
+  src:
+    url("https://cdn.b3.fun/fonts/ppneuemontreal-semibold-webfont.woff2") format("woff2"),
+    url("https://cdn.b3.fun/fonts/ppneuemontreal-semibold-webfont.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Calibre Bold";
+  src:
+    url("https://cdn.b3.fun/fonts/calibre2-bold-webfont.woff2") format("woff2"),
+    url("https://cdn.b3.fun/fonts/calibre2-bold-webfont.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Calibre Heavy";
+  src:
+    url("https://cdn.b3.fun/fonts/calibre2-heavy-webfont.woff2") format("woff2"),
+    url("https://cdn.b3.fun/fonts/calibre2-heavy-webfont.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Calibre Regular";
+  src:
+    url("https://cdn.b3.fun/fonts/calibre2-regular-webfont.woff2") format("woff2"),
+    url("https://cdn.b3.fun/fonts/calibre2-regular-webfont.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.b3-root {
+  /* Light theme variables */
+  --b3-react-background: 0 0% 100%; /* white background */
+  --b3-react-foreground: 0 0% 10%; /* nearly black text */
+  --b3-react-card: 0 0% 98%; /* very light gray for cards */
+  --b3-react-card-foreground: 0 0% 15%; /* dark text on cards */
+  --b3-react-subtle: 0 0% 96%; /* subtle background (gray-50 equivalent) */
+  --b3-react-secondary-foreground: 0 0% 30%; /* secondary text color (neutral-700 equivalent) */
+  --b3-react-primary: 210 80% 45%; /* blue (splash of color) */
+  --b3-react-primary-foreground: 0 0% 100%; /* white text on blue */
+  --b3-react-muted-foreground: 0 0% 50%; /* medium gray for muted text */
+  --b3-react-border: 0 0% 90%; /* light gray borders */
+  --b3-react-muted: 256 16% 23%;
+  --b3-react-popover: 260 13% 9%;
+  --b3-react-ring: 256 16% 23%;
+
+  /* Anyspend, we get this from apps/anyspend-web/app/globals.css */
+  --as-primary: 204 9% 11%;
+  --as-on-surface-1: 0 0% 99%;
+  --as-on-surface-2: 0 0% 94%;
+  --as-on-surface-3: 210 9% 91%;
+  --as-stroke: 0 0% 94%;
+  --as-n-8: 0 0% 96%;
+  --as-brand: 215 90% 48%;
+  --as-light-brand: 215 90% 70%;
+  --as-yellow: 32 96% 64%;
+  --as-secondary: 212 6% 46%;
+  --as-red: 14 88% 52%;
+  --as-on-surface-disabled: 0 0% 78%;
+  --as-on-disabled: 0 0% 44%;
+
+  /* Override relay colors */
+  --relay-colors-focus-color: hsl(215, 90%, 48%) !important;
+}
+
+html[data-theme="dark"] .b3-root,
+.b3-root[data-theme="dark"] {
+  /* Dark theme variables */
+  --b3-react-background: 0 0% 10%;
+  --b3-react-foreground: 0 0% 90%;
+  --b3-react-card: 0 0% 15%;
+  --b3-react-card-foreground: 0 0% 90%;
+  --b3-react-subtle: 0 0% 18%; /* subtle background for dark mode */
+  --b3-react-secondary-foreground: 0 0% 70%; /* secondary text color for dark mode */
+  --b3-react-primary: 210 80% 45%;
+  --b3-react-primary-foreground: 0 0% 100%;
+  --b3-react-muted-foreground: 0 0% 50%;
+  --b3-react-border: 0 0% 25%; /* darker border for dark mode */
+  --b3-react-muted: 256 16% 23%;
+  --b3-react-popover: 260 13% 9%;
+  --b3-react-ring: 256 16% 23%;
+
+  /* Anyspend, we get this from apps/anyspend-web/app/globals.css, convert to hsl */
+  --as-primary: 0 0% 99%;
+  --as-on-surface-1: 204 9% 11%;
+  --as-on-surface-2: 213 10% 17%;
+  --as-on-surface-3: 203 8% 21%;
+  --as-stroke: 213 10% 17%;
+  --as-n-8: 210 11% 7%;
+  --as-brand: 215 90% 48%;
+  --as-light-brand: 215 90% 70%;
+  --as-yellow: 32 96% 64%;
+  --as-secondary: 212 6% 46%;
+  --as-red: 14 88% 52%;
+  --as-on-surface-disabled: 0 0% 78%;
+  --as-on-disabled: 0 0% 44%;
+
+  /* Override relay colors */
+  --relay-colors-focus-color: hsl(215, 90%, 48%) !important;
+
+  /* Uncomment color variables below to see what user see on bsmnt */
+  /* --as-brand: 263 90% 63%;
+    --as-light-brand: 255 10% 16%;
+    --border: 256 16% 23%; */
+}
+
+/* src/tailwind.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom component styles */
+.b3-modal {
+  @apply bg-b3-react-background text-b3-react-foreground rounded-2xl border;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  outline: none;
+}
+
+.b3-modal-freestyle {
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.b3-modal-back-button:hover {
+  @apply border-none !text-black;
+}
+
+.b3-modal-back-button:focus {
+  outline: none;
+}
+
+.b3-modal-back-button {
+  @apply text-b3-react-muted-foreground border-none;
+}
+
+.bg-b3-react-card {
+  /* Apply the background color using the custom property */
+  background-color: var(--b3-react-card);
+  @apply rounded-lg border p-4;
+  border: 1px solid var(--border);
+}
+
+.b3-text-primary {
+  @apply text-b3-react-primary;
+}
+
+.b3-text-muted {
+  @apply text-b3-react-muted-foreground;
+}
+
+.b3-button-primary {
+  @apply bg-b3-react-primary text-b3-react-primary-foreground hover:bg-b3-react-primary/90 rounded-xl;
+}
+
+.b3-address-tag {
+  @apply bg-b3-react-background rounded-md border px-3 py-2 font-mono text-sm;
+}
+
+.b3-permission-item {
+  @apply bg-b3-react-card rounded-xl border p-4;
+}
+
+/**
+Dark version
+**/
+
+/*
+  Changes to TW Connect Modal
+*/
+
+/*
+  Hide title text and image. Currently the "header" props in ConnectEmbed do nothing
+*/
+.b3-modal .css-1r76jxl {
+  @apply bg-b3-react-background;
+}
+.b3-modal .css-1m9ejup,
+.b3-modal .css-1cv2836,
+.b3-modal .css-1d4s0we img[width="24"] {
+  display: none !important;
+}
+
+.b3-modal .css-1r76jxl {
+  border: none;
+}
+
+/* END TW Connect Modal */
+
+/* Divider */
+.divider {
+  height: 2px;
+  display: block;
+  background: hsl(var(--b3-react-background));
+}
+
+.divider:after {
+  content: "";
+  display: block;
+  height: 1px;
+  background: radial-gradient(circle, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.1) 80%, rgba(0, 0, 0, 0) 100%);
+}
+
+.font-sf-rounded {
+  letter-spacing: 0.05rem;
+}
+
+.label-style {
+  @apply font-sf-rounded font-semibold uppercase;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.text-nano {
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  font-family: "SFCompact", sans-serif;
+}

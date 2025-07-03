@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "./dist/cjs",
+    "module": "commonjs",
+    "paths": {
+      "@b3dotfun/sdk": ["./src"],
+      "@b3dotfun/sdk/*": ["./src/*"]
+    },
+    "esModuleInterop": true,
+    "declaration": true,
+    "isolatedModules": false
+  }
+}

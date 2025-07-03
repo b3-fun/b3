@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "esnext",
+    "rootDir": "src",
+    "outDir": "./dist/esm",
+    "paths": {
+      "@b3dotfun/sdk": ["./src"],
+      "@b3dotfun/sdk/*": ["./src/*"]
+    }
+  }
+}

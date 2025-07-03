@@ -1,0 +1,90 @@
+/* Import B3 fonts first */
+@import url("https://cdn.b3.fun/fonts.css");
+
+/* Then Tailwind directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply antialiased;
+  }
+  
+  body {
+    @apply font-neue-montreal bg-white text-b3-grey m-0 p-0;
+  }
+
+  h1 {
+    @apply font-calibre-bold;
+  }
+
+  h2 {
+    @apply font-calibre-bold;
+  }
+
+  h3 {
+    @apply font-neue-montreal-medium;
+  }
+
+  p {
+    @apply font-neue-montreal;
+  }
+}
+
+@layer components {
+  .container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+}
+
+.b3-sign-in-button button {
+  @apply font-neue-montreal-bold;
+}
+
+
+
+/* B3 Modal Text Color Overrides - properly escaped */
+.b3-modal .text-white {
+  color: black !important;
+}
+
+.b3-modal .text-white\/10 {
+  color: rgba(0, 0, 0, 0.1) !important;
+}
+
+.b3-modal .text-white\/20 {
+  color: rgba(0, 0, 0, 0.2) !important;
+}
+
+.b3-modal .text-white\/30 {
+  color: rgba(0, 0, 0, 0.3) !important;
+}
+
+.b3-modal .text-white\/40 {
+  color: rgba(0, 0, 0, 0.4) !important;
+}
+
+.b3-modal .text-white\/50 {
+  color: rgba(0, 0, 0, 0.5) !important;
+}
+
+.b3-modal .text-white\/60 {
+  color: rgba(0, 0, 0, 0.6) !important;
+}
+
+.b3-modal .text-white\/70 {
+  color: rgba(0, 0, 0, 0.7) !important;
+}
+
+.b3-modal .text-white\/80 {
+  color: rgba(0, 0, 0, 0.8) !important;
+}
+
+.b3-modal .text-white\/90 {
+  color: rgba(0, 0, 0, 0.9) !important;
+}
+
+.b3-modal.transak-modal {
+  background: #343d4b;
+}

@@ -1,0 +1,158 @@
+@import '@b3dotfun/sdk/index.css';
+
+.bg {
+  position: fixed;
+  width: 100%;
+  content: '';
+  height: 100%;
+  left:0;
+  top:0;
+  z-index: 0;
+  background: url('/images/weapons-space-bg.png') no-repeat center center/cover !important;
+}
+.bg:before {
+  position: absolute;
+  content: '';
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.90);
+  z-index: 1;
+}
+
+.bg-2 {
+  background: url('/images/nft_battle_2.png') no-repeat center center/cover !important;
+}
+.bg-2:before {
+  background: rgba(0, 0, 0,.85);
+}
+
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+/* B3 Modal Text Color Overrides - properly escaped */
+.b3-modal .text-white {
+  color: black !important;
+}
+
+.b3-modal .text-white\/10 {
+  color: rgba(0, 0, 0, 0.1) !important;
+}
+
+.b3-modal .text-white\/20 {
+  color: rgba(0, 0, 0, 0.2) !important;
+}
+
+.b3-modal .text-white\/30 {
+  color: rgba(0, 0, 0, 0.3) !important;
+}
+
+.b3-modal .text-white\/40 {
+  color: rgba(0, 0, 0, 0.4) !important;
+}
+
+.b3-modal .text-white\/50 {
+  color: rgba(0, 0, 0, 0.5) !important;
+}
+
+.b3-modal .text-white\/60 {
+  color: rgba(0, 0, 0, 0.6) !important;
+}
+
+.b3-modal .text-white\/70 {
+  color: rgba(0, 0, 0, 0.7) !important;
+}
+
+.b3-modal .text-white\/80 {
+  color: rgba(0, 0, 0, 0.8) !important;
+}
+
+.b3-modal .text-white\/90 {
+  color: rgba(0, 0, 0, 0.9) !important;
+}
+
+/* For any hover states */
+.b3-modal .hover\:text-white:hover {
+  color: black !important;
+}
+
+.b3-modal .hover\:text-white\/10:hover {
+  color: rgba(0, 0, 0, 0.1) !important;
+}
+
+.b3-modal .hover\:text-white\/20:hover {
+  color: rgba(0, 0, 0, 0.2) !important;
+}
+
+.b3-modal .hover\:text-white\/30:hover {
+  color: rgba(0, 0, 0, 0.3) !important;
+}
+
+.b3-modal .hover\:text-white\/40:hover {
+  color: rgba(0, 0, 0, 0.4) !important;
+}
+
+.b3-modal .hover\:text-white\/50:hover {
+  color: rgba(0, 0, 0, 0.5) !important;
+}
+
+.b3-modal .hover\:text-white\/60:hover {
+  color: rgba(0, 0, 0, 0.6) !important;
+}
+
+.b3-modal .hover\:text-white\/70:hover {
+  color: rgba(0, 0, 0, 0.7) !important;
+}
+
+.b3-modal .hover\:text-white\/80:hover {
+  color: rgba(0, 0, 0, 0.8) !important;
+}
+
+.b3-modal .hover\:text-white\/90:hover {
+  color: rgba(0, 0, 0, 0.9) !important;
+}
+
+.b3-modal.transak-modal {
+  background: #343d4b;
+}

@@ -1,0 +1,10 @@
+{
+  "files": [],
+  "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }],
+  "compilerOptions": {
+    "paths": {
+      "@b3dotfun/sdk": ["../../packages/sdk/src"],
+      "@b3dotfun/sdk/*": ["../../packages/sdk/src/*"]
+    }
+  }
+}

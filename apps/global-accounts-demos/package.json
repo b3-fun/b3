@@ -1,0 +1,39 @@
+{
+  "name": "global-accounts-demo",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "copy:memory": "cp -f index.memory.html index.html",
+    "copy:battle": "cp -f index.battle.html index.html",
+    "dev": "pnpm copy:memory && vite",
+    "dev:battle": "pnpm copy:battle && VITE_APP_TYPE=battle vite",
+    "build": "pnpm copy:memory && vite build",
+    "build:battle": "pnpm copy:battle && VITE_APP_TYPE=battle vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@b3dotfun/sdk": "workspace:*",
+    "@tanstack/react-query": "5.55.0",
+    "framer-motion": "^12.6.2",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "styled-components": "^6.1.15",
+    "thirdweb": "5.93.16"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "@typescript-eslint/eslint-plugin": "^7.0.2",
+    "@typescript-eslint/parser": "^7.0.2",
+    "@types/react": "19.1.0",
+    "@types/react-dom": "19.1.1",
+    "@vitejs/plugin-react": "^4.2.1",
+    "eslint": "^8.56.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "typescript": "^5.2.2",
+    "vite": "^5.1.4",
+    "vite-plugin-node-polyfills": "^0.23.0"
+  }
+}
