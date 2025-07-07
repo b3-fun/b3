@@ -1,7 +1,7 @@
 import bsmntApp from "@b3dotfun/sdk/global-account/bsmnt";
 import { B3_AUTH_COOKIE_NAME } from "@b3dotfun/sdk/shared/constants";
 import Cookies from "js-cookie";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 
 export const useB3EnsName = () => {
   const registerEns = useCallback(
@@ -38,8 +38,11 @@ export const useB3EnsName = () => {
     return data as { name: string };
   }, []);
 
-  return {
-    registerEns,
-    getEns
-  };
+  return useMemo(
+    () => ({
+      registerEns,
+      getEns
+    }),
+    [registerEns, getEns]
+  );
 };
