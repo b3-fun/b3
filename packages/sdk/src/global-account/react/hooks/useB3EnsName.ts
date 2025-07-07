@@ -1,6 +1,7 @@
 import bsmntApp from "@b3dotfun/sdk/global-account/bsmnt";
 import { B3_AUTH_COOKIE_NAME } from "@b3dotfun/sdk/shared/constants";
 import Cookies from "js-cookie";
+
 import { useCallback, useMemo } from "react";
 
 export const useB3EnsName = () => {
