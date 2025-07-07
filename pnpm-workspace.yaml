@@ -2,3 +2,4 @@ packages:
   # Wildcard patterns
   - "packages/*"
   - "apps/*"
+  - "!apps/*anyspend-local*"
