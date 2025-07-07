@@ -51,6 +51,6 @@ invariant(b3MainnetThirdWeb, "B3 mainnet chain not found in supported chains TW"
 export const b3TestnetThirdWeb: ThirdwebChain = supportedChainsTW.find(chain => chain.id === 1993)!;
 invariant(b3TestnetThirdWeb, "B3 testnet chain not found in supported chains TW");
 
-export const b3Mainnet = supportedChains.find(chain => chain.id === 8333);
-export const b3Testnet = supportedChains.find(chain => chain.id === 1993);
-export const baseMainnet = supportedChains.find(chain => chain.id === 8453);
+export const b3Mainnet = supportedChains.find(chain => chain.id === 8333)!;
+export const b3Testnet = supportedChains.find(chain => chain.id === 1993)!;
+export const baseMainnet = supportedChains.find(chain => chain.id === 8453)!;
