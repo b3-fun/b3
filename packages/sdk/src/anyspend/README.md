@@ -25,9 +25,8 @@ AnySpend handles the complexity of cross-chain operations, gas management, and p
 
 ### Prerequisites
 
-- Node.js v18.0.0+
+- Node.js v20.15.0+
 - React 18/19
-- B3 Global Accounts integration (for authentication)
 
 ### Installation
 
@@ -40,16 +39,11 @@ pnpm add @b3dotfun/sdk
 ### Basic Setup
 
 ```tsx
-import { B3Provider } from "@b3dotfun/sdk/global-account/react";
 import { AnySpendProvider } from "@b3dotfun/sdk/anyspend/react";
 import "@b3dotfun/sdk/index.css";
 
 function App() {
-  return (
-    <B3Provider environment="production" theme="light">
-      <AnySpendProvider>{/* Your app components */}</AnySpendProvider>
-    </B3Provider>
-  );
+  return <AnySpendProvider>{/* Your app components */}</AnySpendProvider>;
 }
 ```
 
@@ -85,31 +79,6 @@ function NFTMinting() {
       }}
     />
   );
-}
-```
-
-## 🔐 Authentication
-
-AnySpend requires B3 Global Accounts for user authentication. Users must be signed in before they can create orders.
-
-```tsx
-import { SignInWithB3, useB3 } from "@b3dotfun/sdk/global-account/react";
-
-function AuthenticatedAnySpend() {
-  const { account, isAuthenticated } = useB3();
-
-  if (!isAuthenticated) {
-    return (
-      <SignInWithB3
-        chain={{ id: 8333, name: "B3" /* ... */ }}
-        partnerId="your-partner-id"
-        sessionKeyAddress="0x..."
-        onLoginSuccess={account => console.log("Authenticated!", account)}
-      />
-    );
-  }
-
-  return <AnySpendNFTButton nftContract={nftContract} recipientAddress={account.address} />;
 }
 ```
 
@@ -338,9 +307,6 @@ const order = await anyspendService.createOrder({
 ```bash
 # Optional: Custom AnySpend API endpoints
 NEXT_PUBLIC_ANYSPEND_BASE_URL=https://your-custom-anyspend-api.com
-
-# Required for B3 Global Accounts
-NEXT_PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID=your-partner-id
 ```
 
 ### Network Configuration
@@ -484,13 +450,12 @@ enum OrderStatus {
 
 ### Common Error Codes
 
-| Error Code                | Description                       | Recovery Strategy                    |
-| ------------------------- | --------------------------------- | ------------------------------------ |
-| `SLIPPAGE`                | Price movement exceeded tolerance | Retry with higher slippage tolerance |
-| `INSUFFICIENT_BALANCE`    | User doesn't have enough tokens   | Request user to add funds            |
-| `NETWORK_ERROR`           | RPC or network issues             | Retry after a delay                  |
-| `QUOTE_EXPIRED`           | Price quote is no longer valid    | Get a fresh quote                    |
-| `AUTHENTICATION_REQUIRED` | User not signed in                | Prompt user to authenticate          |
+| Error Code             | Description                       | Recovery Strategy                    |
+| ---------------------- | --------------------------------- | ------------------------------------ |
+| `SLIPPAGE`             | Price movement exceeded tolerance | Retry with higher slippage tolerance |
+| `INSUFFICIENT_BALANCE` | User doesn't have enough tokens   | Request user to add funds            |
+| `NETWORK_ERROR`        | RPC or network issues             | Retry after a delay                  |
+| `QUOTE_EXPIRED`        | Price quote is no longer valid    | Get a fresh quote                    |
 
 ### Error Handling Best Practices
 
@@ -607,18 +572,6 @@ Check that:
 Orders will auto-refund after 30 minutes if no deposit is detected.
 ```
 
-**Q: "Authentication required" error**
-
-```
-A: User needs to sign in with B3 Global Accounts first:
-
-<SignInWithB3
-  chain={{ id: 8333, name: "B3" }}
-  partnerId="your-partner-id"
-  sessionKeyAddress="0x..."
-/>
-```
-
 **Q: React Native build issues**
 
 ```
@@ -649,8 +602,8 @@ const quote = await anyspendService.getQuote(true, quoteRequest);
 ### Support Channels
 
 - **Documentation**: [https://docs.b3.fun](https://docs.b3.fun)
-- **GitHub Issues**: [https://github.com/b3-fun](https://github.com/b3-fun)
-- **Discord**: [https://discord.gg/b3fun](https://discord.gg/b3fun)
+- **GitHub Issues**: [https://github.com/b3-fun/b3/issues](https://github.com/b3-fun/b3/issues)
+- **Discord**: [https://discord.gg/b3dotfun](https://discord.gg/b3dotfun)
 
 ## 🤝 Contributing
 
@@ -668,8 +621,8 @@ We welcome contributions! Here's how to get started:
 
 ```bash
 # Clone the repo
-git clone https://github.com/b3-fun/b3-monorepo.git
-cd b3-monorepo
+git clone https://github.com/b3-fun/b3.git
+cd b3
 
 # Install dependencies
 pnpm install
@@ -679,16 +632,4 @@ pnpm dev
 
 # Build the SDK
 pnpm sdk:build
-
-# Test in example apps
-cd apps/login-minimal-example
-pnpm dev
 ```
-
-## 📄 License
-
-This project is licensed under the MIT License. See the [LICENSE](../../../LICENSE) file for details.
-
----
-
-**Ready to get started?** Check out our [Quick Start Guide](https://docs.b3.fun/anyspend/quickstart) or explore the [example applications](../../../apps/) in this repository.
