@@ -25,7 +25,7 @@ AnySpend handles the complexity of cross-chain operations, gas management, and p
 
 ### Prerequisites
 
-- Node.js v18.0.0+
+- Node.js v20.15.0+
 - React 18/19
 
 ### Installation
