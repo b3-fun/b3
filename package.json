@@ -8,6 +8,7 @@
     "dev": "pnpm --parallel run dev",
     "build-all": "pnpm sdk:build && pnpm global-accounts:build && pnpm global-accounts-demos:build && pnpm login-minimal-example:build",
     "chain-networks": "ts-node scripts/fetch-chain-networks.ts",
+    "coingecko-chains": "ts-node scripts/fetch-coingecko-chains.ts",
     "sdk:dev:css": "pnpm --filter @b3dotfun/sdk run dev:css",
     "sdk:build": "pnpm --filter @b3dotfun/sdk run build",
     "global-accounts:build": "pnpm --filter global-accounts run build",
