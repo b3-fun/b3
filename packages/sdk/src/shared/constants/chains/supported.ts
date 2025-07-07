@@ -1,6 +1,7 @@
 import type { ChainNetworks } from "@b3dotfun/sdk/global-account/types/chain-networks";
 import { toThirdwebChain, toViemChain } from "@b3dotfun/sdk/shared/utils/chain-transformers";
-import { invariant } from "@b3dotfun/sdk/shared/utils/invariant";
+import invariant from "invariant";
+
 import type { Chain as ThirdwebChain } from "thirdweb";
 // Import the JSON directly
 // @ts-ignore
@@ -43,8 +44,6 @@ export const coingeckoChains = coingeckoChainsJSON as Record<
 export function getCoingeckoChainInfo(chainId: number) {
   return coingeckoChains[chainId];
 }
-
-
 
 export const b3MainnetThirdWeb: ThirdwebChain = supportedChainsTW.find(chain => chain.id === 8333)!;
 invariant(b3MainnetThirdWeb, "B3 mainnet chain not found in supported chains TW");
