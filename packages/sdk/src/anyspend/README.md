@@ -668,7 +668,7 @@ We welcome contributions! Here's how to get started:
 
 ```bash
 # Clone the repo
-git clone https://github.com/b3-fun/b3-monorepo.git
+git clone https://github.com/b3-fun/b3.git
 cd b3-monorepo
 
 # Install dependencies
@@ -684,11 +684,3 @@ pnpm sdk:build
 cd apps/login-minimal-example
 pnpm dev
 ```
-
-## 📄 License
-
-This project is licensed under the MIT License. See the [LICENSE](../../../LICENSE) file for details.
-
----
-
-**Ready to get started?** Check out our [Quick Start Guide](https://docs.b3.fun/anyspend/quickstart) or explore the [example applications](../../../apps/) in this repository.
