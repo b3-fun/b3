@@ -174,7 +174,7 @@
     "build": "pnpm clean && pnpm lint && pnpm build:types && pnpm build:cjs && pnpm build:esm && pnpm build:css",
     "build:types": "tsc -p tsconfig.cjs.json --emitDeclarationOnly --declarationDir dist/types",
     "build:cjs": "tsc -p tsconfig.cjs.json --outDir dist/cjs --module commonjs && tsc-alias -p tsconfig.cjs.json --outDir dist/cjs && mkdir -p dist/cjs/generated && cp src/generated/chain-networks.json dist/cjs/generated/",
-    "build:esm": "tsc -p tsconfig.esm.json --outDir dist/esm --module esnext  && tsc-alias -p tsconfig.esm.json --outDir dist/esm && mkdir -p dist/esm/generated && cp src/generated/chain-networks.json dist/esm/generated/",
+    "build:esm": "tsc -p tsconfig.esm.json --outDir dist/esm --module esnext  && tsc-alias -p tsconfig.esm.json --outDir dist/esm && mkdir -p dist/esm/generated && cp src/generated/chain-networks.json dist/esm/generated/ && node scripts/fix-esm-imports.js",
     "build:css": "postcss src/styles/index.css -o dist/styles/index.css",
     "dev:cjs": "tsc-watch -p tsconfig.cjs.json --onSuccess \"tsc-alias -p tsconfig.cjs.json --outDir dist/cjs\"",
     "dev:esm": "tsc-watch -p tsconfig.esm.json --onSuccess \"tsc-alias -p tsconfig.esm.json --outDir dist/esm\"",

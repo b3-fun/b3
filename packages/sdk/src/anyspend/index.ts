@@ -22,5 +22,3 @@ export * from "./constants";
 // Abis
 export * from "./abis/abi-usdc-base";
 export * from "./abis/erc20-staking";
-
-console.log(`Test CICD`);
