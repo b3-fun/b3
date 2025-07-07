@@ -25,6 +25,7 @@ interface WebviewOnrampPaymentProps {
   srcAmountOnRamp: string;
   recipientAddress?: string;
   destinationToken: Token;
+  partnerId?: string;
   anyspendQuote: GetQuoteResponse | undefined;
   onPaymentSuccess: (orderId: string) => void;
   userId?: string;
@@ -115,7 +116,8 @@ export function WebviewOnrampPayment({
   destinationToken,
   anyspendQuote,
   onPaymentSuccess,
-  userId
+  userId,
+  partnerId
 }: WebviewOnrampPaymentProps) {
   const [stableAmountForGeo, setStableAmountForGeo] = useState(srcAmountOnRamp);
   const hasInitialized = useRef(false);
@@ -189,7 +191,8 @@ export function WebviewOnrampPayment({
               ipAddress: geoData.ip,
               redirectUrl: `${window.location.origin}${userId ? `?userId=${userId}` : ""}`
             },
-            expectedDstAmount: anyspendQuote.data?.currencyOut?.amount?.toString() || "0"
+            expectedDstAmount: anyspendQuote.data?.currencyOut?.amount?.toString() || "0",
+            partnerId
           });
         } catch (err: any) {
           console.error(err);
@@ -207,7 +210,8 @@ export function WebviewOnrampPayment({
     geoData,
     createOrder,
     destinationToken,
-    userId
+    userId,
+    partnerId
   ]);
 
   // Check if all required data is loaded
