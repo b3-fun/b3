@@ -300,21 +300,12 @@ const order = await anyspendService.createOrder({
 });
 ```
 
-## 🔧 Environment Configuration
-
-### Environment Variables
-
-```bash
-# Optional: Custom AnySpend API endpoints
-NEXT_PUBLIC_ANYSPEND_BASE_URL=https://your-custom-anyspend-api.com
-```
-
 ### Network Configuration
 
 AnySpend automatically configures API endpoints based on the `isMainnet` parameter:
 
-- **Mainnet**: `https://anyspend-mainnet.up.railway.app`
-- **Testnet**: `https://anyspend-testnet.up.railway.app`
+- **Mainnet**: `https://mainnet.anyspend.com`
+- **Testnet**: `http://testnet.anyspend.com`
 
 ## 💼 Common Use Cases
 
