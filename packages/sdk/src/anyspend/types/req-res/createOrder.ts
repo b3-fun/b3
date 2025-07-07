@@ -13,6 +13,7 @@ const zBaseCreateOrderBody = z.object({
   srcTokenAddress: z.string(),
   dstTokenAddress: z.string(),
   srcAmount: z.string(),
+  partnerId: z.string().optional(),
   onramp: zOnrampMetadata.optional(),
   creatorAddress: z.string().optional()
 });

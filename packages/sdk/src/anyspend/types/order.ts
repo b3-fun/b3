@@ -57,6 +57,7 @@ export const zBaseOrder = z.object({
   expiredAt: z.number(),
   onrampMetadata: zOnrampMetadata.nullable(),
   creatorAddress: z.string().nullable(),
+  partnerId: z.string().nullable(),
 
   oneClickBuyUrl: z.string().nullable(),
   stripePaymentIntentId: z.string().nullable(),

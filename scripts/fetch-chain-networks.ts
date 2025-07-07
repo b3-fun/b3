@@ -51,15 +51,20 @@ async function fetchChainNetworks() {
       }))
     );
 
-    // Create the output directory if it doesn't exist
-    const outputDir = path.join(__dirname, "..", "generated");
-    await fs.mkdir(outputDir, { recursive: true });
-
-    // Write the filtered chain networks data to a JSON file
-    const outputPath = path.join(outputDir, `chain-networks.json`);
+    // Write the filtered chain networks data to the SDK's generated directory
+    const outputPath = path.join(
+      __dirname,
+      "..",
+      "packages",
+      "sdk",
+      "src",
+      "shared",
+      "generated",
+      "chain-networks.json"
+    );
     await fs.writeFile(outputPath, JSON.stringify(filteredChains, null, 2));
 
-    console.log(`✅ Filtered chain networks data saved to ${outputPath}`);
+    console.log(`✅ Chain networks data saved to ${outputPath}`);
   } catch (error) {
     console.error("Error fetching chain networks:", error);
     process.exit(1);
