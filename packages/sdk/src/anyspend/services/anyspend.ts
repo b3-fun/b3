@@ -65,7 +65,8 @@ export const anyspendService = {
     payload,
     onramp,
     metadata,
-    creatorAddress
+    creatorAddress,
+    partnerId
   }: {
     isMainnet: boolean;
     recipientAddress: string;
@@ -79,6 +80,7 @@ export const anyspendService = {
     onramp?: OnrampOptions;
     metadata: Record<string, any>;
     creatorAddress?: string;
+    partnerId?: string;
   }) => {
     const response = await fetch(`${isMainnet ? ANYSPEND_MAINNET_BASE_URL : ANYSPEND_TESTNET_BASE_URL}/orders`, {
       method: "POST",
@@ -96,7 +98,8 @@ export const anyspendService = {
         payload,
         onramp,
         metadata,
-        creatorAddress
+        creatorAddress,
+        partnerId
       })
     });
     const data = await response.json();

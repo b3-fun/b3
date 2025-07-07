@@ -1,11 +1,11 @@
+import { USDC_BASE } from "@b3dotfun/sdk/anyspend/constants";
 import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
 import { Nft, OnrampVendor, OrderType, Token, Tournament } from "@b3dotfun/sdk/anyspend/types";
-import { normalizeAddress, buildMetadata, buildPayload } from "@b3dotfun/sdk/anyspend/utils";
+import { buildMetadata, buildPayload, normalizeAddress } from "@b3dotfun/sdk/anyspend/utils";
 import { useMutation } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { parseUnits } from "viem";
 import { base } from "viem/chains";
-import { USDC_BASE } from "@b3dotfun/sdk/anyspend/constants";
 
 export type OnrampOptions = {
   vendor: OnrampVendor;
@@ -23,6 +23,7 @@ export type CreateOnrampOrderParams = {
   dstToken: Token;
   srcFiatAmount: string;
   onramp: OnrampOptions;
+  partnerId?: string;
   expectedDstAmount: string;
   creatorAddress?: string;
   nft?: Nft & { price: string };
@@ -54,7 +55,8 @@ export function useAnyspendCreateOnrampOrder({ onSuccess, onError }: UseAnyspend
         expectedDstAmount,
         nft,
         tournament,
-        payload
+        payload,
+        partnerId
       } = params;
 
       try {
@@ -102,7 +104,8 @@ export function useAnyspendCreateOnrampOrder({ onSuccess, onError }: UseAnyspend
             tournament,
             payload
           }),
-          creatorAddress: creatorAddress ? normalizeAddress(creatorAddress) : undefined
+          creatorAddress: creatorAddress ? normalizeAddress(creatorAddress) : undefined,
+          partnerId
         });
       } catch (error: any) {
         // If the error has a response with message and statusCode, throw that

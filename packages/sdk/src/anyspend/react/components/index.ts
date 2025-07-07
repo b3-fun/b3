@@ -15,4 +15,5 @@ export { OrderStatus } from "./common/OrderStatus";
 export { OrderToken } from "./common/OrderToken";
 export { OrderTokenAmount } from "./common/OrderTokenAmount";
 export { TokenBalance } from "./common/TokenBalance";
+export { WebviewOnrampOrderStatus } from "./webview/WebviewOnrampOrderStatus";
 export { WebviewOnrampPayment } from "./webview/WebviewOnrampPayment";

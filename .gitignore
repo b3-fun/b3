@@ -18,3 +18,4 @@ tsconfig.tsbuildinfo
 .tsbuildinfo
 
 doppler.yaml
+apps/anyspend-local/

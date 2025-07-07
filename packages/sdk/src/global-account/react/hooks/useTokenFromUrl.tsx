@@ -16,7 +16,6 @@ interface UseTokenFromUrlOptions {
    */
   prefix: string;
 }
-
 interface TokenInfo {
   data: {
     attributes: {
@@ -99,6 +98,31 @@ export function useTokenFromUrl({ defaultToken, prefix }: UseTokenFromUrlOptions
     decimals: tokenInfo.data.attributes.decimals,
     metadata: {
       logoURI: tokenInfo.data.attributes.image_url
+    }
+  };
+}
+
+export function useTokenFromAddress({ address, chainId }: { address: string; chainId: number }): Token | undefined {
+  const { data: tokenInfo, isError } = useQuery({
+    queryKey: ["tokenInfo", address, chainId],
+    queryFn: () => fetchTokenInfo(getCoingeckoChainInfo(chainId).coingecko_id, address),
+    enabled: Boolean(address),
+    staleTime: Infinity,
+    gcTime: Infinity
+  });
+
+  if (isError || !tokenInfo) {
+    return undefined;
+  }
+
+  return {
+    address,
+    chainId,
+    name: tokenInfo?.data.attributes.name || "",
+    symbol: tokenInfo?.data.attributes.symbol || "",
+    decimals: tokenInfo?.data.attributes.decimals || 18,
+    metadata: {
+      logoURI: tokenInfo?.data.attributes.image_url
     }
   };
 }

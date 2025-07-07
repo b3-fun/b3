@@ -173,7 +173,7 @@ export function AnySpend({
         name: srcTokenMetadata.name || selectedSrcToken.name,
         metadata: {
           ...selectedSrcToken.metadata,
-          logoURI: srcTokenMetadata.logoURI || selectedSrcToken.metadata?.logoURI
+          logoURI: srcTokenMetadata?.logoURI || selectedSrcToken.metadata.logoURI
         }
       };
 
@@ -199,7 +199,7 @@ export function AnySpend({
         name: dstTokenMetadata.name || selectedDstToken.name,
         metadata: {
           ...selectedDstToken.metadata,
-          logoURI: dstTokenMetadata.logoURI || selectedDstToken.metadata?.logoURI
+          logoURI: dstTokenMetadata?.logoURI || selectedDstToken.metadata.logoURI
         }
       };
 
