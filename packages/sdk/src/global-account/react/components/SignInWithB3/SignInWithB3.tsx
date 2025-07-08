@@ -54,7 +54,7 @@ export function SignInWithB3(props: SignInWithB3Props) {
           {props.withLogo !== false && (
             <img src="https://cdn.b3.fun/b3_logo_white.svg" alt="B3 Logo" className="h-5 w-5" />
           )}
-          {props.loggedInButtonText || "Manage Account 4"}
+          {props.loggedInButtonText || "Manage Account"}
         </Button>
       </StyleRoot>
     );
