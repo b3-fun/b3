@@ -11,7 +11,6 @@ import { cn, truncateAddress } from "@b3dotfun/sdk/shared/utils";
 import { Menu, MenuButton, MenuItems, Transition } from "@headlessui/react";
 import { ReactNode, useEffect } from "react";
 import { useConnectedWallets, useSetActiveWallet, useWalletInfo } from "thirdweb/react";
-import { b3 } from "viem/chains";
 
 type UserProps = {
   className?: string;
@@ -95,20 +94,11 @@ export function User(props: SignInWithB3Props) {
       </div>
     ) : (
       <SignInWithB3
-        chain={{
-          ...b3,
-          rpc: "https://mainnet-rpc.b3.fun",
-          blockExplorers: [{ name: "B3 Explorer", url: "https://explorer.b3.fun/" }],
-          testnet: undefined
-        }}
-        partnerId={String(process.env.NEXT_PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID)}
         closeAfterLogin={true}
         onLoginSuccess={async globalAccount => {
           console.log("User authenticated with Global Account!", globalAccount);
         }}
-        strategies={["com.coinbase.wallet", "io.metamask"]}
-        sessionKeyAddress={undefined}
-        loginWithSiwe
+        {...props}
       />
     );
   }
