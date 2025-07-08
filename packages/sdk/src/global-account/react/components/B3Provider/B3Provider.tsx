@@ -9,9 +9,9 @@ import { Account, Wallet } from "thirdweb/wallets";
 import { createConfig, http, WagmiProvider } from "wagmi";
 import { RelayKitProviderWrapper } from "../RelayKitProviderWrapper";
 import { StyleRoot } from "../StyleRoot";
+import { B3Context, B3ContextType } from "./types";
 
 import "@reservoir0x/relay-kit-ui/styles.css";
-import { B3Context, B3ContextType } from "./types";
 
 /**
  * Default permissions configuration for B3 provider
@@ -60,10 +60,7 @@ export function B3Provider({
             automaticallySetFirstEoa={!!automaticallySetFirstEoa}
           >
             <RelayKitProviderWrapper isMainnet={isMainnetAnySpend}>
-              {children}
-              {/* eslint-disable-next-line tailwindcss/no-custom-classname */}
-              <StyleRoot id="b3-root" />
-              {/* For the modal https://github.com/b3-fun/b3-mono/blob/main/packages/react/src/components/ui/dialog.tsx#L46 */}
+              <StyleRoot id="b3-root">{children}</StyleRoot>
               <Toaster theme={theme} />
             </RelayKitProviderWrapper>
           </InnerProvider>

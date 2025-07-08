@@ -258,8 +258,8 @@
     "vaul": "^1.1.2",
     "viem": "2.27.2",
     "wagmi": "2.14.15",
-    "zustand": "4.5.6",
-    "zod": "3.25.51"
+    "zod": "3.25.51",
+    "zustand": "4.5.6"
   },
   "devDependencies": {
     "@feathersjs/authentication-client": "5.0.33",

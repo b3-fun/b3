@@ -1,6 +1,7 @@
 import {
   SignInWithB3,
   SignInWithB3ModalProps,
+  StyleRoot,
   useAccountWallet,
   useAuthentication,
   useIsMobile
@@ -66,7 +67,7 @@ export function User(props: SignInWithB3Props) {
   if (isMobile) {
     return globalAddress ? (
       <div className="w-full">
-        <div className="bg-theme-on-surface-2 flex w-full items-center justify-between rounded-xl p-3">
+        <div className="bg-b3-react-background flex w-full items-center justify-between rounded-xl p-3">
           <div className="flex items-center">
             <img
               src={isActiveEOAWallet ? eoaWalletIcon : smartWalletIcon}
@@ -129,14 +130,14 @@ export function User(props: SignInWithB3Props) {
             leaveTo="scale-95 opacity-0"
           >
             <MenuItems
-              className="border-theme-stroke bg-theme-surface-pure shadow-depth-1 absolute -right-4 top-full mt-2 w-96 rounded-2xl border p-3 lg:right-0"
+              className="border-b3-react-subtle bg-b3-react-background shadow-depth-1 absolute -right-4 top-full mt-2 w-96 rounded-2xl border p-3 lg:right-0"
               modal={false}
             >
               {connectedEOAWallet ? (
                 <div
                   className={cn(
                     "mb-2 flex cursor-pointer items-center justify-between rounded-xl p-3",
-                    isActiveEOAWallet ? "bg-theme-n-8" : "bg-theme-surface-pure hover:bg-theme-on-surface-2"
+                    isActiveEOAWallet ? "bg-theme-n-8" : "bg-b3-react-background hover:bg-theme-on-surface-2"
                   )}
                   onClick={() => handleSetActiveAccount(connectedEOAWallet?.id)}
                 >
@@ -159,7 +160,7 @@ export function User(props: SignInWithB3Props) {
                   <div
                     className={cn(
                       "mb-2 flex cursor-pointer items-center justify-between rounded-xl p-3",
-                      isActiveSmartWallet ? "bg-theme-n-8" : "bg-theme-surface-pure hover:bg-theme-on-surface-2"
+                      isActiveSmartWallet ? "bg-theme-n-8" : "bg-b3-react-background hover:bg-theme-on-surface-2"
                     )}
                     onClick={() => handleSetActiveAccount(connectedSmartWallet?.id)}
                   >

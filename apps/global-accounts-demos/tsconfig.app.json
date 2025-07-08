@@ -20,7 +20,13 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+
+    /* Path mapping for SDK development */
+    "paths": {
+      "@b3dotfun/sdk": ["../../packages/sdk/src"],
+      "@b3dotfun/sdk/*": ["../../packages/sdk/src/*"]
+    }
   },
   "include": ["src"]
 }
