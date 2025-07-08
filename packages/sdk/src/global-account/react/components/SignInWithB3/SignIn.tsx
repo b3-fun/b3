@@ -1,7 +1,6 @@
 import {
   SignInWithB3,
   SignInWithB3ModalProps,
-  StyleRoot,
   useAccountWallet,
   useAuthentication,
   useIsMobile
