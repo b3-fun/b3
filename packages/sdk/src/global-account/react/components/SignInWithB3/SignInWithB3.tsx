@@ -1,5 +1,10 @@
-import { useAuthentication } from "@b3dotfun/sdk/global-account/react";
-import { Button, StyleRoot, SignInWithB3ModalProps, useModalStore } from "@b3dotfun/sdk/global-account/react";
+import {
+  Button,
+  SignInWithB3ModalProps,
+  StyleRoot,
+  useAuthentication,
+  useModalStore
+} from "@b3dotfun/sdk/global-account/react";
 import { ReactNode, useEffect } from "react";
 import { useActiveAccount } from "thirdweb/react";
 
@@ -49,7 +54,7 @@ export function SignInWithB3(props: SignInWithB3Props) {
           {props.withLogo !== false && (
             <img src="https://cdn.b3.fun/b3_logo_white.svg" alt="B3 Logo" className="h-5 w-5" />
           )}
-          {props.loggedInButtonText || "Manage Account"}
+          {props.loggedInButtonText || "Manage Account 4"}
         </Button>
       </StyleRoot>
     );
