@@ -11,8 +11,11 @@
     "coingecko-chains": "ts-node scripts/fetch-coingecko-chains.ts",
     "sdk:dev:css": "pnpm --filter @b3dotfun/sdk run dev:css",
     "sdk:build": "pnpm --filter @b3dotfun/sdk run build",
+    "global-accounts:dev": "pnpm --filter global-accounts run dev",
     "global-accounts:build": "pnpm --filter global-accounts run build",
+    "global-accounts-demos:dev": "pnpm --filter global-accounts-demos run dev",
     "global-accounts-demos:build": "pnpm --filter global-accounts-demos run build",
+    "login-minimal-example:dev": "pnpm --filter login-minimal-example run dev",
     "login-minimal-example:build": "pnpm --filter login-minimal-example run build"
   },
   "engines": {
