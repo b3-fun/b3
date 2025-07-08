@@ -508,7 +508,7 @@ export function AnySpendCustom({
   const orderDetailsView = (
     <div
       className={cn(
-        "mx-auto flex w-full flex-col items-center gap-4 p-5",
+        "mx-auto flex max-h-[90dvh] w-full flex-col items-center gap-4 overflow-y-auto p-5",
         mode === "modal" && "bg-b3-react-background"
       )}
     >
