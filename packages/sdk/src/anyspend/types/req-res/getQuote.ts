@@ -1,9 +1,10 @@
 import { QuoteDetails } from "@reservoir0x/relay-sdk";
 import { z } from "zod";
 
+import { zCustomPayload } from "../custom";
+import { NftType } from "../nft";
 import { OrderType } from "../order";
 import { TradeType } from "../relay";
-import { zCustomPayload } from "../custom";
 
 const zGetQuoteBody = z.object({
   srcChain: z.number(),
@@ -21,6 +22,8 @@ const zGetQuoteForSwapOrderBody = zGetQuoteBody.extend({
 const zGetQuoteForMintNftOrderBody = zGetQuoteBody.extend({
   type: z.literal(OrderType.MintNFT),
   contractAddress: z.string(),
+  tokenId: z.number().nullable(),
+  contractType: z.nativeEnum(NftType),
   price: z.string()
 });
 
