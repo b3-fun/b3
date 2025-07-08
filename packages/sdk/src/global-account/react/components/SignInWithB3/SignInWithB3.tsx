@@ -7,8 +7,9 @@ import {
 } from "@b3dotfun/sdk/global-account/react";
 import { ReactNode, useEffect } from "react";
 import { useActiveAccount } from "thirdweb/react";
+import { ManageAccountButton } from "../custom/ManageAccountButton";
 
-type SignInWithB3Props = Omit<SignInWithB3ModalProps, "type" | "showBackButton"> & {
+export type SignInWithB3Props = Omit<SignInWithB3ModalProps, "type" | "showBackButton"> & {
   buttonText?: string | ReactNode;
   loggedInButtonText?: string | ReactNode;
   loadingButtonText?: string | ReactNode;
@@ -35,29 +36,8 @@ export function SignInWithB3(props: SignInWithB3Props) {
     setB3ModalOpen(true);
   };
 
-  const handleClickManageAccount = () => {
-    setB3ModalContentType({
-      ...props,
-      type: "manageAccount"
-    });
-    setB3ModalOpen(true);
-  };
-
   if (isAuthenticated) {
-    return (
-      <StyleRoot>
-        <Button
-          onClick={handleClickManageAccount}
-          style={{ backgroundColor: "#3368ef" }}
-          className="flex items-center gap-2 text-white"
-        >
-          {props.withLogo !== false && (
-            <img src="https://cdn.b3.fun/b3_logo_white.svg" alt="B3 Logo" className="h-5 w-5" />
-          )}
-          {props.loggedInButtonText || "Manage Account"}
-        </Button>
-      </StyleRoot>
-    );
+    return <ManageAccountButton props={props} />;
   }
 
   if (isAuthenticating) {
