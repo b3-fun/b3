@@ -17,26 +17,27 @@ import {
   useAnyspendTokenList,
   useGeoOnrampOptions
 } from "@b3dotfun/sdk/anyspend";
-import { useB3, StyleRoot } from "@b3dotfun/sdk/global-account/react";
 import {
   Badge,
   Button,
   ShinyButton,
   Skeleton,
+  StyleRoot,
   Tabs,
   TabsContent,
   TabsList,
   TabTrigger,
+  TextShimmer,
+  TransitionPanel,
   useAccountWallet,
+  useB3,
   useBsmntProfile,
   useHasMounted,
-  useRouter,
-  useTokenBalancesByChain,
   useModalStore,
-  useSearchParamsSSR
+  useRouter,
+  useSearchParamsSSR,
+  useTokenBalancesByChain
 } from "@b3dotfun/sdk/global-account/react";
-import { TextShimmer } from "@b3dotfun/sdk/global-account/react";
-import { TransitionPanel } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils";
 import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
@@ -626,7 +627,7 @@ export function AnySpendCustom({
       <Tabs
         value={activeTab}
         onValueChange={value => setActiveTab(value as "crypto" | "fiat")}
-        className="bg-b3-react-background w-full p-5"
+        className="bg-b3-react-background max-h-[60dvh] w-full overflow-y-auto p-5"
       >
         {/* Only show tabs when geo onramp has been properly initialized */}
         {isOnrampSupported || activeTab === "fiat" ? (
