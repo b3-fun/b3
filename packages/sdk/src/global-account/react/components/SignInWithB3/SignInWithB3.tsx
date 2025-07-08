@@ -1,9 +1,17 @@
-import { useAuthentication } from "@b3dotfun/sdk/global-account/react";
-import { Button, StyleRoot, SignInWithB3ModalProps, useModalStore } from "@b3dotfun/sdk/global-account/react";
+import {
+  Button,
+  SignInWithB3ModalProps,
+  StyleRoot,
+  useAuthentication,
+  useIsMobile,
+  useModalStore
+} from "@b3dotfun/sdk/global-account/react";
 import { ReactNode, useEffect } from "react";
 import { useActiveAccount } from "thirdweb/react";
+import { ManageAccountButton } from "../custom/ManageAccountButton";
+import { Loading } from "../ui/Loading";
 
-type SignInWithB3Props = Omit<SignInWithB3ModalProps, "type" | "showBackButton"> & {
+export type SignInWithB3Props = Omit<SignInWithB3ModalProps, "type" | "showBackButton"> & {
   buttonText?: string | ReactNode;
   loggedInButtonText?: string | ReactNode;
   loadingButtonText?: string | ReactNode;
@@ -14,6 +22,7 @@ export function SignInWithB3(props: SignInWithB3Props) {
   const { setB3ModalOpen, setB3ModalContentType, setEcoSystemAccountAddress } = useModalStore();
   const account = useActiveAccount();
   const { isAuthenticating, isAuthenticated } = useAuthentication(props.partnerId, props.loginWithSiwe);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (account) {
@@ -30,29 +39,8 @@ export function SignInWithB3(props: SignInWithB3Props) {
     setB3ModalOpen(true);
   };
 
-  const handleClickManageAccount = () => {
-    setB3ModalContentType({
-      ...props,
-      type: "manageAccount"
-    });
-    setB3ModalOpen(true);
-  };
-
   if (isAuthenticated) {
-    return (
-      <StyleRoot>
-        <Button
-          onClick={handleClickManageAccount}
-          style={{ backgroundColor: "#3368ef" }}
-          className="flex items-center gap-2 text-white"
-        >
-          {props.withLogo !== false && (
-            <img src="https://cdn.b3.fun/b3_logo_white.svg" alt="B3 Logo" className="h-5 w-5" />
-          )}
-          {props.loggedInButtonText || "Manage Account"}
-        </Button>
-      </StyleRoot>
-    );
+    return <ManageAccountButton {...props} />;
   }
 
   if (isAuthenticating) {
@@ -62,7 +50,7 @@ export function SignInWithB3(props: SignInWithB3Props) {
           {props.withLogo !== false && (
             <img src="https://cdn.b3.fun/b3_logo_white.svg" alt="B3 Logo" className="h-5 w-5" />
           )}
-          {props.loadingButtonText || "Signing in..."}
+          {props.loadingButtonText || (isMobile ? <Loading size="sm" /> : "Signing in…")}
         </Button>
       </StyleRoot>
     );
@@ -73,7 +61,7 @@ export function SignInWithB3(props: SignInWithB3Props) {
       <Button
         onClick={handleClick}
         style={{ backgroundColor: "#3368ef" }}
-        className="flex items-center gap-2 font-medium text-white"
+        className="b3-sign-in-button flex items-center gap-2 font-medium text-white"
       >
         {props.buttonText ? (
           props.buttonText

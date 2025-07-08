@@ -1,3 +1,5 @@
+const path = require("path");
+
 module.exports = {
   parser: "@typescript-eslint/parser",
   parserOptions: {
@@ -15,26 +17,13 @@ module.exports = {
   },
   overrides: [
     {
-      files: ["src/**/*"],
-      rules: {
-        "no-restricted-imports": [
-          "error",
-          {
-            patterns: [
-              {
-                group: ["b3-shared", "b3-shared/*"],
-                message: "Please do not import from b3-shared directly in the react package."
-              }
-            ]
-          }
-        ]
-      }
+      files: ["src/**/*"]
     }
   ],
   settings: {
     tailwindcss: {
-      config: "./packages/react/tailwind.config.js",
-      callees: ["cn"],
+      config: path.resolve(__dirname, "./tailwind.config.js"),
+      callees: ["cn", "clsx"],
       removeDuplicates: true
     }
   }

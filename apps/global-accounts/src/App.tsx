@@ -1,13 +1,15 @@
-import { B3Provider, B3DynamicModal } from "@b3dotfun/sdk/global-account/react";
+import { B3DynamicModal, B3Provider } from "@b3dotfun/sdk/global-account/react";
+import SignIn from "@b3dotfun/sdk/global-account/react/components/SignInWithB3/SignIn";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
 import { CodeExample } from "./components/CodeExample";
 import { Features } from "./components/Features";
 import { Hero } from "./components/Hero";
 import { NFTMintingExample } from "./components/NFTMintingExample";
-import { RequestPermissionsExample } from "./components/RequestPermissionsExample";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { PasswordGate } from "./components/PasswordGate";
+import { RequestPermissionsExample } from "./components/RequestPermissionsExample";
+import { b3Chain } from "./constants/b3Chain";
 import { Debug } from "./pages/Debug";
 import type { Wallet } from "./utils/wallet";
 import { generateWallet } from "./utils/wallet";
@@ -75,7 +77,7 @@ function App() {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    Documentation
+                    Docs
                   </a>
                   <a
                     href="https://github.com/b3-fun"
@@ -85,6 +87,21 @@ function App() {
                   >
                     GitHub
                   </a>
+                  <div>
+                    <SignIn
+                      chain={b3Chain}
+                      partnerId={String(process.env.PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID)}
+                      // closeAfterLogin={true}
+                      onLoginSuccess={async (globalAccount: any) => {
+                        console.log("User authenticated with Global Account!", globalAccount);
+                      }}
+                      onError={async (error: Error) => {
+                        console.error("Error signing in:", error);
+                      }}
+                      sessionKeyAddress={wallet?.address as `0x${string}`}
+                      loginWithSiwe
+                    />
+                  </div>
                 </div>
               </nav>
             </header>

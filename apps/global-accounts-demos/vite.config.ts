@@ -1,5 +1,6 @@
 import { viteCommonjs } from "@originjs/vite-plugin-commonjs";
 import react from "@vitejs/plugin-react";
+import path from "path";
 import { defineConfig } from "vite";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 
@@ -67,6 +68,12 @@ export default defineConfig(({ command }) => {
     optimizeDeps: {
       include: [],
       exclude: []
+    },
+    resolve: {
+      alias: {
+        "@b3dotfun/sdk/index.css": path.resolve(__dirname, "../../packages/sdk/dist/styles/index.css"),
+        "@b3dotfun/sdk": path.resolve(__dirname, "../../packages/sdk/src")
+      }
     }
   };
 });
