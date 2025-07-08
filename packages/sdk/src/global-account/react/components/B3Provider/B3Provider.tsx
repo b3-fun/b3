@@ -60,8 +60,8 @@ export function B3Provider({
             automaticallySetFirstEoa={!!automaticallySetFirstEoa}
           >
             <RelayKitProviderWrapper isMainnet={isMainnetAnySpend}>
-              <StyleRoot id="b3-root">{children}</StyleRoot>
-              {/* For the modal https://github.com/b3-fun/b3/blob/main/packages/sdk/src/global-account/react/components/ui/dialog.tsx#L46 */}
+              <StyleRoot id="b3-root" />
+              {children}
               <Toaster theme={theme} />
             </RelayKitProviderWrapper>
           </InnerProvider>
