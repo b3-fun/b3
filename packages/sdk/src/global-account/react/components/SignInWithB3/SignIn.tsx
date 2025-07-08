@@ -63,52 +63,9 @@ export function User(props: SignInWithB3Props) {
     }
   }, [connectedEOAWallet, isActiveEOAWallet, setActiveWallet]);
 
-  // Mobile version - simplified display when in mobile menu
-  if (isMobile) {
-    return globalAddress ? (
-      <StyleRoot id="b3-root">
-        <div className="w-full">
-          <div className="bg-b3-react-background flex w-full items-center justify-between rounded-xl p-3">
-            <div className="flex items-center">
-              <img
-                src={isActiveEOAWallet ? eoaWalletIcon : smartWalletIcon}
-                alt={isActiveEOAWallet ? connectedEOAWallet?.id : connectedSmartWallet?.id}
-                className="bg-theme-primary h-10 w-10 rounded-full object-cover opacity-100"
-              />
-              <div className="ml-3">
-                <div className="text-theme-primary text-lg font-medium">
-                  {ensName ? ensName : truncateAddress(globalAddress)}
-                </div>
-                <div className="text-theme-secondary text-sm">
-                  {isActiveEOAWallet ? walletInfo?.name || "External wallet" : "Smart wallet"}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <button
-            className="bg-theme-on-surface-2 hover:bg-theme-on-surface-2/70 mt-4 flex w-full items-center justify-between rounded-xl p-3 transition-colors"
-            onClick={onDisconnect}
-          >
-            <span className="text-theme-secondary">Disconnect</span>
-            <Icon className="fill-theme-secondary h-5 w-5" name="logout" />
-          </button>
-        </div>
-      </StyleRoot>
-    ) : (
-      <SignInWithB3
-        closeAfterLogin={true}
-        onLoginSuccess={async globalAccount => {
-          console.log("User authenticated with Global Account!", globalAccount);
-        }}
-        {...props}
-      />
-    );
-  }
-
   // Desktop version - original dropdown menu
   return (
-    <StyleRoot id="b3-root">
+    <StyleRoot>
       <Menu className={`relative flex items-center ${className || ""}`} as="div">
         {globalAddress ? (
           <>
@@ -133,14 +90,16 @@ export function User(props: SignInWithB3Props) {
               leaveTo="scale-95 opacity-0"
             >
               <MenuItems
-                className="border-b3-react-subtle bg-b3-react-background shadow-depth-1 absolute -right-4 top-full mt-2 w-96 rounded-2xl border p-3 lg:right-0"
+                className="b3-root shadow-depth-1 absolute -right-4 top-full w-96 rounded-2xl border lg:right-0"
                 modal={false}
+                // TODO: Figure out why setting anchor on mobile causes z-index issues where it appears under elements
+                anchor={isMobile ? "top start" : undefined}
               >
                 {connectedEOAWallet ? (
                   <div
                     className={cn(
-                      "mb-2 flex cursor-pointer items-center justify-between rounded-xl p-3",
-                      isActiveEOAWallet ? "bg-theme-n-8" : "bg-b3-react-background hover:bg-theme-on-surface-2"
+                      "border-b3-react-subtle bg-b3-react-background flex cursor-pointer items-center justify-between rounded-xl p-3",
+                      "bg-b3-react-background hover:bg-theme-on-surface-2"
                     )}
                     onClick={() => handleSetActiveAccount(connectedEOAWallet?.id)}
                   >
@@ -150,7 +109,7 @@ export function User(props: SignInWithB3Props) {
                         src={eoaWalletIcon}
                         alt={connectedEOAWallet?.id}
                       />
-                      <div className="pl-4.5 grow">
+                      <div className="ml-4 grow">
                         {ensName && <div className="text-title-1s">{ensName}</div>}
                         <div className="text-title-1s">{truncateAddress(globalAddress)}</div>
                         <div className="text-body-1m text-theme-secondary">{walletInfo?.name}</div>
@@ -184,7 +143,7 @@ export function User(props: SignInWithB3Props) {
                   )
                 )}
 
-                <button className="mb-2 w-full space-y-1" onClick={onDisconnect}>
+                {/* <button className="mb-2 w-full space-y-1" onClick={onDisconnect}>
                   <div className="hover:bg-theme-on-surface-2 group flex h-12 items-center rounded-xl px-4 transition-colors">
                     <Icon
                       className="fill-theme-secondary group-hover:fill-theme-primary mr-4 shrink-0 transition-colors"
@@ -194,7 +153,7 @@ export function User(props: SignInWithB3Props) {
                       Disconnect
                     </div>
                   </div>
-                </button>
+                </button> */}
               </MenuItems>
             </Transition>
           </>

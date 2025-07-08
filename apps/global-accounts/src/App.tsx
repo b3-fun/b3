@@ -68,6 +68,25 @@ function App() {
                   </Link>
                 </div>
                 <div className="flex items-center gap-8">
+                  <Link to="/debug" className="text-b3-grey hover:text-b3-blue font-neue-montreal transition-colors">
+                    Debug
+                  </Link>
+                  <a
+                    href="https://docs.b3.fun"
+                    className="text-b3-grey hover:text-b3-blue font-neue-montreal transition-colors"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Docs
+                  </a>
+                  <a
+                    href="https://github.com/b3-fun"
+                    className="text-b3-grey hover:text-b3-blue font-neue-montreal transition-colors"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    GitHub
+                  </a>
                   <SignIn
                     chain={b3Chain}
                     partnerId={String(process.env.PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID)}
@@ -81,25 +100,6 @@ function App() {
                     sessionKeyAddress={wallet?.address as `0x${string}`}
                     loginWithSiwe
                   />
-                  <Link to="/debug" className="text-b3-grey hover:text-b3-blue font-neue-montreal transition-colors">
-                    Debug
-                  </Link>
-                  <a
-                    href="https://docs.b3.fun"
-                    className="text-b3-grey hover:text-b3-blue font-neue-montreal transition-colors"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Documentation
-                  </a>
-                  <a
-                    href="https://github.com/b3-fun"
-                    className="text-b3-grey hover:text-b3-blue font-neue-montreal transition-colors"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    GitHub
-                  </a>
                 </div>
               </nav>
             </header>
