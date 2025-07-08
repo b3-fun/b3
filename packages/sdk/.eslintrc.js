@@ -1,18 +1,19 @@
+const path = require("path");
+
 module.exports = {
   parser: "@typescript-eslint/parser",
   parserOptions: {
     ecmaVersion: "latest",
     sourceType: "module"
   },
-  plugins: ["react-hooks", "tailwindcss"],
+  plugins: ["react-hooks"],
   root: true,
   extends: ["plugin:tailwindcss/recommended"],
   rules: {
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "warn",
     "tailwindcss/classnames-order": "off",
-    "tailwindcss/enforces-shorthand": "off",
-    "tailwindcss/no-custom-classname": "off"
+    "tailwindcss/enforces-shorthand": "off"
   },
   overrides: [
     {
@@ -21,10 +22,9 @@ module.exports = {
   ],
   settings: {
     tailwindcss: {
-      config: "./tailwind.config.js",
+      config: path.resolve(__dirname, "./tailwind.config.js"),
       callees: ["cn", "clsx"],
-      removeDuplicates: true,
-      cssFiles: ["./src/styles/index.css"]
+      removeDuplicates: true
     }
   }
 };
