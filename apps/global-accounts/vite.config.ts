@@ -38,7 +38,7 @@ export default defineConfig(({ command }) => {
       allowedHosts: ["global-accounts-production.up.railway.app", "global.b3.fun"]
     },
     optimizeDeps: {
-      include: [],
+      include: ["@b3dotfun/sdk"],
       exclude: []
     },
     // Note: This fixes https://linear.app/npclabs/issue/B3-2102/fix-global-accounts-local-dev
