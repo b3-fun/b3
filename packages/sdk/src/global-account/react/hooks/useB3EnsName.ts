@@ -1,35 +1,29 @@
-import bsmntApp from "@b3dotfun/sdk/global-account/bsmnt";
-import { B3_AUTH_COOKIE_NAME } from "@b3dotfun/sdk/shared/constants";
-import Cookies from "js-cookie";
-
-import { useCallback, useMemo } from "react";
+import { ENS_GATEWAY_URL } from "@b3dotfun/sdk/shared/constants";
+import { useMemo } from "react";
 
 export const useB3EnsName = () => {
-  const registerEns = useCallback(
-    async (username: string, message: string, hash: string) => {
-      if (!bsmntApp.authentication.authenticated) {
-        await bsmntApp.authentication.authenticate({
-          strategy: "b3-jwt",
-          accessToken: Cookies.get(B3_AUTH_COOKIE_NAME) || ""
-        });
-      }
+  const registerEns = async (name: `${string}.b3.fun`, address: string, hash: string): Promise<Response> => {
+    const message = `Register ${name}`;
+    const response = await fetch(ENS_GATEWAY_URL + "set", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        name: name,
+        owner: address.toLowerCase(),
+        addresses: { "60": address.toLowerCase() },
+        signature: {
+          message: message,
+          hash: hash
+        }
+      })
+    });
+    return response;
+  };
 
-      const response = await bsmntApp.service("profiles").registerUsername(
-        {
-          username,
-          message,
-          hash
-        },
-        {}
-      );
-
-      return response;
-    },
-    [bsmntApp.authentication.authenticated]
-  );
-
-  const getEns = useCallback(async (address: string) => {
-    const response = await fetch(`https://ens-gateway.b3.fun/address/${address}`);
+  const getEns = async (address: string) => {
+    const response = await fetch(`${ENS_GATEWAY_URL}address/${address}`);
 
     if (!response.ok) {
       throw new Error(`Failed to fetch ENS name: ${response.statusText}`);
@@ -37,13 +31,13 @@ export const useB3EnsName = () => {
 
     const data = await response.json();
     return data as { name: string };
-  }, []);
+  };
 
   return useMemo(
     () => ({
       registerEns,
       getEns
     }),
-    [registerEns, getEns]
+    []
   );
 };
