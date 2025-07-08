@@ -28,6 +28,8 @@ export type Nft = z.infer<typeof zNft>;
 
 export const zMintNftPayload = z.object({
   contractAddress: z.string(),
+  tokenId: z.number(),
+  contractType: z.nativeEnum(NftType),
   nftPrice: z.string()
 });
 
