@@ -9,6 +9,7 @@ import { Hero } from "./components/Hero";
 import { NFTMintingExample } from "./components/NFTMintingExample";
 import { PasswordGate } from "./components/PasswordGate";
 import { RequestPermissionsExample } from "./components/RequestPermissionsExample";
+import { b3Chain } from "./constants/b3Chain";
 import { Debug } from "./pages/Debug";
 import type { Wallet } from "./utils/wallet";
 import { generateWallet } from "./utils/wallet";
@@ -67,7 +68,19 @@ function App() {
                   </Link>
                 </div>
                 <div className="flex items-center gap-8">
-                  <SignIn />
+                  <SignIn
+                    chain={b3Chain}
+                    partnerId={String(process.env.PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID)}
+                    // closeAfterLogin={true}
+                    onLoginSuccess={async (globalAccount: any) => {
+                      console.log("User authenticated with Global Account!", globalAccount);
+                    }}
+                    onError={async (error: Error) => {
+                      console.error("Error signing in:", error);
+                    }}
+                    sessionKeyAddress={wallet?.address as `0x${string}`}
+                    loginWithSiwe
+                  />
                   <Link to="/debug" className="text-b3-grey hover:text-b3-blue font-neue-montreal transition-colors">
                     Debug
                   </Link>
