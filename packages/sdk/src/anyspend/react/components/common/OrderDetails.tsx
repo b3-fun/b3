@@ -23,17 +23,17 @@ import {
   zTournament
 } from "@b3dotfun/sdk/anyspend";
 import {
-  CopyToClipboard,
   Badge,
+  Button,
+  CopyToClipboard,
   ShinyButton,
   Skeleton,
   TextLoop,
   TextShimmer,
-  Button,
   useAccountWallet,
   useChainSwitchWithAction,
-  useOnchainName,
-  useModalStore
+  useModalStore,
+  useOnchainName
 } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils";
 import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
@@ -334,7 +334,7 @@ export const OrderDetails = memo(function OrderDetails({
 
   // When waitingForDeposit is true, we show a message to the user to wait for the deposit to be processed.
   const setWaitingForDeposit = useCallback(() => {
-    const params = new URLSearchParams(searchParams);
+    const params = new URLSearchParams(searchParams.toString());
     params.set("waitingForDeposit", "true");
     router.push(`?${params}`);
   }, [router, searchParams]);
