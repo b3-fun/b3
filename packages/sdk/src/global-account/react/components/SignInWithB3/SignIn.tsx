@@ -26,7 +26,7 @@ type SignInWithB3Props = Omit<SignInWithB3ModalProps, "type" | "showBackButton">
 } & UserProps;
 
 export function User(props: SignInWithB3Props) {
-  const { className, theme = "light" } = props;
+  const { className } = props;
   const {
     wallet,
     address: globalAddress,
@@ -66,33 +66,35 @@ export function User(props: SignInWithB3Props) {
   // Mobile version - simplified display when in mobile menu
   if (isMobile) {
     return globalAddress ? (
-      <div className="w-full">
-        <div className="bg-b3-react-background flex w-full items-center justify-between rounded-xl p-3">
-          <div className="flex items-center">
-            <img
-              src={isActiveEOAWallet ? eoaWalletIcon : smartWalletIcon}
-              alt={isActiveEOAWallet ? connectedEOAWallet?.id : connectedSmartWallet?.id}
-              className="bg-theme-primary h-10 w-10 rounded-full object-cover opacity-100"
-            />
-            <div className="ml-3">
-              <div className="text-theme-primary text-lg font-medium">
-                {ensName ? ensName : truncateAddress(globalAddress)}
-              </div>
-              <div className="text-theme-secondary text-sm">
-                {isActiveEOAWallet ? walletInfo?.name || "External wallet" : "Smart wallet"}
+      <StyleRoot id="b3-root">
+        <div className="w-full">
+          <div className="bg-b3-react-background flex w-full items-center justify-between rounded-xl p-3">
+            <div className="flex items-center">
+              <img
+                src={isActiveEOAWallet ? eoaWalletIcon : smartWalletIcon}
+                alt={isActiveEOAWallet ? connectedEOAWallet?.id : connectedSmartWallet?.id}
+                className="bg-theme-primary h-10 w-10 rounded-full object-cover opacity-100"
+              />
+              <div className="ml-3">
+                <div className="text-theme-primary text-lg font-medium">
+                  {ensName ? ensName : truncateAddress(globalAddress)}
+                </div>
+                <div className="text-theme-secondary text-sm">
+                  {isActiveEOAWallet ? walletInfo?.name || "External wallet" : "Smart wallet"}
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <button
-          className="bg-theme-on-surface-2 hover:bg-theme-on-surface-2/70 mt-4 flex w-full items-center justify-between rounded-xl p-3 transition-colors"
-          onClick={onDisconnect}
-        >
-          <span className="text-theme-secondary">Disconnect</span>
-          <Icon className="fill-theme-secondary h-5 w-5" name="logout" />
-        </button>
-      </div>
+          <button
+            className="bg-theme-on-surface-2 hover:bg-theme-on-surface-2/70 mt-4 flex w-full items-center justify-between rounded-xl p-3 transition-colors"
+            onClick={onDisconnect}
+          >
+            <span className="text-theme-secondary">Disconnect</span>
+            <Icon className="fill-theme-secondary h-5 w-5" name="logout" />
+          </button>
+        </div>
+      </StyleRoot>
     ) : (
       <SignInWithB3
         closeAfterLogin={true}
@@ -106,7 +108,7 @@ export function User(props: SignInWithB3Props) {
 
   // Desktop version - original dropdown menu
   return (
-    <StyleRoot id="b3-root" data-theme={theme}>
+    <StyleRoot id="b3-root">
       <Menu className={`relative flex items-center ${className || ""}`} as="div">
         {globalAddress ? (
           <>
