@@ -1,4 +1,4 @@
-import { Nft, OrderType, Token, Tournament } from "@b3dotfun/sdk/anyspend/types";
+import { Nft, NftType, OrderType, Token, Tournament } from "@b3dotfun/sdk/anyspend/types";
 import { normalizeAddress } from "@b3dotfun/sdk/anyspend/utils";
 
 export type OrderParams = {
@@ -20,10 +20,22 @@ export const buildPayload = (orderType: OrderType, params: OrderParams) => {
         actualDstAmount: null
       };
     case OrderType.MintNFT:
-      return {
-        contractAddress: nft ? normalizeAddress(nft.contractAddress) : "",
-        nftPrice: nft?.price || ""
-      };
+      if (nft?.type === NftType.ERC1155) {
+        return {
+          contractAddress: normalizeAddress(nft.contractAddress),
+          nftPrice: nft?.price || "",
+          tokenId: nft?.tokenId!,
+          contractType: nft?.type
+        };
+      } else if (nft?.type === NftType.ERC721) {
+        return {
+          contractAddress: normalizeAddress(nft.contractAddress),
+          nftPrice: nft?.price || "",
+          contractType: nft?.type
+        };
+      } else {
+        throw new Error(`Invalid nft payload: ${JSON.stringify(nft)}`);
+      }
     case OrderType.JoinTournament:
       return {
         contractAddress: tournament?.contractAddress,

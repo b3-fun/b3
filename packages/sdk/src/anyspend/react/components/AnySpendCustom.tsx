@@ -1,8 +1,13 @@
 import {
+  AnySpendMetadata,
+  CreateOrderParams,
   eqci,
   getDefaultToken,
   GetQuoteRequest,
   GetQuoteResponse,
+  isCustomTxMetadata,
+  isNftMetadata,
+  isTournamentMetadata,
   NftType,
   OnrampVendor,
   OrderStatus,
@@ -17,26 +22,27 @@ import {
   useAnyspendTokenList,
   useGeoOnrampOptions
 } from "@b3dotfun/sdk/anyspend";
-import { useB3, StyleRoot } from "@b3dotfun/sdk/global-account/react";
 import {
   Badge,
   Button,
   ShinyButton,
   Skeleton,
+  StyleRoot,
   Tabs,
   TabsContent,
   TabsList,
   TabTrigger,
+  TextShimmer,
+  TransitionPanel,
   useAccountWallet,
+  useB3,
   useBsmntProfile,
   useHasMounted,
-  useRouter,
-  useTokenBalancesByChain,
   useModalStore,
-  useSearchParamsSSR
+  useRouter,
+  useSearchParamsSSR,
+  useTokenBalancesByChain
 } from "@b3dotfun/sdk/global-account/react";
-import { TextShimmer } from "@b3dotfun/sdk/global-account/react";
-import { TransitionPanel } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils";
 import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
@@ -68,6 +74,8 @@ function generateGetRelayQuoteRequest({
   dstToken,
   dstAmount,
   contractAddress,
+  tokenId,
+  contractType,
   encodedData,
   spenderAddress
 }: {
@@ -78,6 +86,8 @@ function generateGetRelayQuoteRequest({
   dstToken: Token;
   dstAmount: string;
   contractAddress: string;
+  tokenId?: number | null;
+  contractType?: NftType;
   encodedData: string;
   spenderAddress?: string;
 }): GetQuoteRequest {
@@ -90,7 +100,9 @@ function generateGetRelayQuoteRequest({
         dstChain: dstChainId,
         dstTokenAddress: dstToken.address,
         price: dstAmount,
-        contractAddress: contractAddress
+        contractAddress: contractAddress,
+        tokenId: tokenId!,
+        contractType: contractType!
       };
     }
     case OrderType.JoinTournament: {
@@ -164,7 +176,7 @@ export function AnySpendCustom({
   dstAmount: string;
   contractAddress: string;
   encodedData: string;
-  metadata: any;
+  metadata: AnySpendMetadata;
   header: ({
     anyspendPrice,
     isLoadingAnyspendPrice
@@ -274,6 +286,8 @@ export function AnySpendCustom({
     dstToken: dstToken,
     dstAmount: dstAmount,
     contractAddress: contractAddress,
+    tokenId: isNftMetadata(metadata) ? metadata.nftContract.tokenId : undefined,
+    contractType: isNftMetadata(metadata) ? metadata.nftContract.type : undefined,
     encodedData: encodedData,
     spenderAddress: spenderAddress
   });
@@ -372,23 +386,37 @@ export function AnySpendCustom({
         srcAmount: srcAmount.toString(),
         recipientAddress,
         creatorAddress: currentWallet?.wallet?.address,
-        nft: {
-          ...metadata.nftContract,
-          type: NftType.ERC721
-        },
-        tournament: {
-          ...metadata.tournament,
-          contractAddress: contractAddress,
-          entryPriceOrFundAmount: dstAmount
-        },
+        nft: isNftMetadata(metadata)
+          ? metadata.nftContract.type === NftType.ERC1155
+            ? {
+                type: NftType.ERC1155,
+                contractAddress: metadata.nftContract.contractAddress,
+                tokenId: metadata.nftContract.tokenId!,
+                imageUrl: metadata.nftContract.imageUrl,
+                nftPrice: dstAmount
+              }
+            : {
+                type: NftType.ERC721,
+                contractAddress: metadata.nftContract.contractAddress,
+                contractType: metadata.nftContract.type,
+                nftPrice: dstAmount
+              }
+          : undefined,
+        tournament: isTournamentMetadata(metadata)
+          ? {
+              ...metadata.tournament,
+              contractAddress: contractAddress,
+              entryPriceOrFundAmount: dstAmount
+            }
+          : undefined,
         payload: {
           amount: dstAmount,
           data: encodedData,
           spenderAddress: spenderAddress,
           to: contractAddress,
-          action: metadata.action
+          action: isCustomTxMetadata(metadata) ? metadata.action : undefined
         }
-      };
+      } as CreateOrderParams;
 
       if (onramp) {
         invariant(srcToken.address === USDC_BASE.address, "Selected src token is not USDC");
@@ -749,14 +777,30 @@ export function AnySpendCustom({
               onOrderCreated={(orderId: string) => setOrderId(orderId)}
               onBack={() => setActiveTab("crypto")}
               orderType={orderType}
-              nft={metadata.nftContract ? { ...metadata.nftContract, price: dstAmount } : undefined}
-              tournament={
-                metadata.tournament
-                  ? { ...metadata.tournament, contractAddress: contractAddress, entryPriceOrFundAmount: dstAmount }
+              nft={
+                isNftMetadata(metadata)
+                  ? metadata.nftContract.type === NftType.ERC1155
+                    ? {
+                        type: NftType.ERC1155,
+                        contractAddress: metadata.nftContract.contractAddress,
+                        tokenId: metadata.nftContract.tokenId!,
+                        imageUrl: metadata.nftContract.imageUrl,
+                        name: metadata.nftContract.name,
+                        description: metadata.nftContract.description,
+                        price: dstAmount
+                      }
+                    : {
+                        type: NftType.ERC721,
+                        contractAddress: metadata.nftContract.contractAddress,
+                        name: metadata.nftContract.name,
+                        description: metadata.nftContract.description,
+                        imageUrl: metadata.nftContract.imageUrl,
+                        price: dstAmount
+                      }
                   : undefined
               }
               payload={
-                metadata.action
+                isCustomTxMetadata(metadata)
                   ? {
                       ...metadata,
                       amount: dstAmount,

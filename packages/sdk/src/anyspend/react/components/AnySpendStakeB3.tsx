@@ -1,17 +1,14 @@
 import { ABI_ERC20_STAKING, B3_TOKEN, OrderType } from "@b3dotfun/sdk/anyspend";
-import { EthIcon } from "./icons/EthIcon";
-import { SolIcon } from "./icons/SolIcon";
-import { UsdcIcon } from "./icons/USDCIcon";
 import {
   Button,
   GlareCardRounded,
   Input,
+  StyleRoot,
   TextLoop,
+  useChainSwitchWithAction,
   useHasMounted,
   useModalStore,
-  useChainSwitchWithAction,
-  useTokenBalance,
-  StyleRoot
+  useTokenBalance
 } from "@b3dotfun/sdk/global-account/react";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { motion } from "framer-motion";
@@ -23,6 +20,9 @@ import { createPublicClient, encodeFunctionData, erc20Abi, http } from "viem";
 import { base } from "viem/chains";
 import { useAccount, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 import { AnySpendCustom } from "./AnySpendCustom";
+import { EthIcon } from "./icons/EthIcon";
+import { SolIcon } from "./icons/SolIcon";
+import { UsdcIcon } from "./icons/USDCIcon";
 
 const basePublicClient = createPublicClient({
   chain: base,
@@ -483,6 +483,7 @@ export function AnySpendStakeB3({
       contractAddress={ERC20Staking}
       encodedData={encodedData}
       metadata={{
+        type: OrderType.Custom,
         action: "stake B3"
       }}
       header={header}

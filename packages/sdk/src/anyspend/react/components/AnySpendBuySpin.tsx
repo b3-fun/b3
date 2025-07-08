@@ -1,19 +1,16 @@
 import { B3_TOKEN, OrderType } from "@b3dotfun/sdk/anyspend";
-import { baseMainnet } from "@b3dotfun/sdk/shared/constants/chains/supported";
-import { EthIcon } from "./icons/EthIcon";
-import { SolIcon } from "./icons/SolIcon";
-import { UsdcIcon } from "./icons/USDCIcon";
-import { StyleRoot } from "@b3dotfun/sdk/global-account/react";
 import {
   Button,
   GlareCardRounded,
   Input,
+  StyleRoot,
   TextLoop,
   useChainSwitchWithAction,
   useHasMounted,
-  useTokenBalance,
-  useModalStore
+  useModalStore,
+  useTokenBalance
 } from "@b3dotfun/sdk/global-account/react";
+import { baseMainnet } from "@b3dotfun/sdk/shared/constants/chains/supported";
 import { motion } from "framer-motion";
 import invariant from "invariant";
 import { ArrowRight, Loader2 } from "lucide-react";
@@ -22,6 +19,9 @@ import { toast } from "sonner";
 import { createPublicClient, encodeFunctionData, erc20Abi, formatUnits, http } from "viem";
 import { useAccount, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 import { AnySpendCustom } from "./AnySpendCustom";
+import { EthIcon } from "./icons/EthIcon";
+import { SolIcon } from "./icons/SolIcon";
+import { UsdcIcon } from "./icons/USDCIcon";
 
 const SPIN_WHEEL_ABI = [
   {
@@ -668,6 +668,7 @@ export function AnySpendBuySpin({
       spenderAddress={paymentConfig.entryModule}
       encodedData={encodedData}
       metadata={{
+        type: OrderType.Custom,
         action: `buy ${userSpinQuantity} spin${userSpinQuantity !== "1" ? "s" : ""}`
       }}
       header={header}

@@ -3,6 +3,7 @@ export * from "./req-res";
 export * from "./chain";
 export * from "./custom";
 export * from "./globalWallet";
+export * from "./metadata";
 export * from "./nft";
 export * from "./onramp";
 export * from "./order";

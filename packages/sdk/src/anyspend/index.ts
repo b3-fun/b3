@@ -6,6 +6,7 @@ export * from "./react/providers/AnyspendProvider";
 
 // Types
 export * from "./types";
+export * from "./types/metadata";
 
 // Utils
 export * from "./utils/address";

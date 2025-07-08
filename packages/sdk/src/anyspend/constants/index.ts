@@ -1,4 +1,4 @@
-import { NftContract, Token } from "@b3dotfun/sdk/anyspend/types";
+import { NftContract, NftType, Token } from "@b3dotfun/sdk/anyspend/types";
 import { base } from "viem/chains";
 
 export const ANYSPEND_MAINNET_BASE_URL = process.env.NEXT_PUBLIC_ANYSPEND_BASE_URL || "https://mainnet.anyspend.com";
@@ -45,7 +45,8 @@ export const NFT_CONTRACTS: NftContract[] = [
       "https://storage.googleapis.com/nftimagebucket/base/tokens/0x80f0e6644723abb03aa8867d21e32bd854b2a2d9/preview/TVRjME1EUTRORFl4T0E9PV8zNjcy.jpg",
     name: "Downhill Ski",
     description: "Downhill Ski",
-    tokenId: null
+    tokenId: null,
+    type: NftType.ERC721
   },
   {
     chainId: base.id,
@@ -57,7 +58,8 @@ export const NFT_CONTRACTS: NftContract[] = [
     name: "Eclipse Venom",
     description:
       "The Eclipse Venom's crystalline blade channels imprisoned astral toxins through swirling currents of violet and teal light, synchronizing with its wielder's heartbeat for strikes that bypass conventional armor. Wounds from this otherworldly weapon resist healing as victims describe being consumed from within by liquid darkness, their final moments filled with visions of infinite cosmic depths.",
-    tokenId: null
+    tokenId: null,
+    type: NftType.ERC721
   }
 ];
 

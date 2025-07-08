@@ -100,7 +100,10 @@ export function AnySpendTournament(props: AnySpendTournamentProps) {
       dstAmount={dstAmount}
       contractAddress={tournamentContractAddress}
       encodedData="0x"
-      metadata={{ tournament: tournamentMetadata }}
+      metadata={{
+        type: action === "join" ? OrderType.JoinTournament : OrderType.FundTournament,
+        tournament: tournamentMetadata
+      }}
       header={header}
       onSuccess={onSuccess}
       showRecipient={action === "join"}
