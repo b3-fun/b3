@@ -1,78 +1,97 @@
 "use client";
 
-import { B3_TOKEN } from "@b3dotfun/sdk/anyspend";
-import { useAccountWallet, useModalStore } from "@b3dotfun/sdk/global-account/react";
+import { B3_TOKEN, NftType, USDC_BASE } from "@b3dotfun/sdk/anyspend";
+import { useModalStore } from "@b3dotfun/sdk/global-account/react";
+import { base } from "viem/chains";
 
 export default function Home() {
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
-  const { address } = useAccountWallet();
+
+  const handleMint = async () => {
+
+    // Generate random token ID between 0 and 6
+    const randomTokenId = Math.floor(Math.random() * 7);
+
+    setB3ModalOpen(true);
+    setB3ModalContentType({
+      type: "anySpendNft",
+      nftContract: {
+        chainId: base.id,
+        contractAddress: "0xe04074c294d0Db90F0ffBC60fa61b48672C91965",
+        price: "1990000", // 1.99 USDC (6 decimals)
+        priceFormatted: "1.99",
+        currency: USDC_BASE,
+        imageUrl: "https://cdn.b3.fun/b3kemon-card.png",
+        name: "Mystery B3kemon",
+        description: "Summon a mysterious B3kemon creature!",
+        tokenId: randomTokenId,
+        type: NftType.ERC1155
+      },
+      recipientAddress: "0xD32b34E2E55c7005b6506370857bdE4cFD057fC4"
+    });
+  };
 
   return (
     <div className="min-h-screen bg-[#FAFAFA]">
-      <div className="container mx-auto px-4 py-16">
-        <div className="mx-auto max-w-3xl">
+      <div className="container mx-auto px-6 py-16">
+        <div className="mx-auto max-w-6xl">
           <h1 className="mb-4 text-center text-3xl font-bold text-gray-800">AnySpend Demo</h1>
           <p className="mb-12 text-center text-gray-500">Experience seamless crypto transactions</p>
 
-          <div className="space-y-4">
-            <div className="overflow-hidden rounded-lg border border-gray-100 bg-white p-6 shadow-sm transition-all hover:border-gray-200 hover:shadow-md">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900">Swap Tokens</h3>
-                  <p className="mt-1 text-sm text-gray-500">Swap between any supported tokens instantly</p>
-                </div>
-                <button
-                  onClick={() => {
-                    setB3ModalOpen(true);
-                    setB3ModalContentType({ type: "anySpend" });
-                  }}
-                  className="rounded-lg bg-blue-50 px-4 py-2 text-sm font-medium text-blue-600 transition-colors hover:bg-blue-100"
-                >
-                  Swap Now →
-                </button>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <button
+              onClick={() => {
+                setB3ModalOpen(true);
+                setB3ModalContentType({ type: "anySpend" });
+              }}
+              className="group flex h-40 flex-col justify-between overflow-hidden rounded-lg border border-gray-100 bg-white p-6 text-left shadow-sm transition-all hover:border-blue-100 hover:shadow-md"
+            >
+              <div>
+                <h3 className="text-lg font-medium text-gray-900">Swap Tokens</h3>
+                <p className="mt-1 text-sm text-gray-500">Swap between any supported tokens instantly</p>
               </div>
-            </div>
+            </button>
 
-            <div className="overflow-hidden rounded-lg border border-gray-100 bg-white p-6 shadow-sm transition-all hover:border-gray-200 hover:shadow-md">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900">Buy with Fiat</h3>
-                  <p className="mt-1 text-sm text-gray-500">Purchase crypto directly with your credit card</p>
-                </div>
-                <button
-                  onClick={() => {
-                    setB3ModalOpen(true);
-                    setB3ModalContentType({ type: "anySpend", defaultActiveTab: "fiat" });
-                  }}
-                  className="rounded-lg bg-purple-50 px-4 py-2 text-sm font-medium text-purple-600 transition-colors hover:bg-purple-100"
-                >
-                  Buy Now →
-                </button>
+            <button
+              onClick={() => {
+                setB3ModalOpen(true);
+                setB3ModalContentType({ type: "anySpend", defaultActiveTab: "fiat" });
+              }}
+              className="group flex h-40 flex-col justify-between overflow-hidden rounded-lg border border-gray-100 bg-white p-6 text-left shadow-sm transition-all hover:border-purple-100 hover:shadow-md"
+            >
+              <div>
+                <h3 className="text-lg font-medium text-gray-900">Buy with Fiat</h3>
+                <p className="mt-1 text-sm text-gray-500">Purchase crypto directly with your credit card</p>
               </div>
-            </div>
+            </button>
 
-            <div className="overflow-hidden rounded-lg border border-gray-100 bg-white p-6 shadow-sm transition-all hover:border-gray-200 hover:shadow-md">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900">Get B3 Token</h3>
-                  <p className="mt-1 text-sm text-gray-500">Purchase B3 tokens directly through AnySpend</p>
-                </div>
-                <button
-                  onClick={() => {
-                    setB3ModalOpen(true);
-                    setB3ModalContentType({
-                      type: "anySpend",
-                      destinationTokenAddress: B3_TOKEN.address,
-                      destinationTokenChainId: B3_TOKEN.chainId
-                    });
-                  }}
-                  className="rounded-lg bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-600 transition-colors hover:bg-indigo-100"
-                >
-                  Get B3 →
-                </button>
+            <button
+              onClick={handleMint}
+              className="group flex h-40 flex-col justify-between overflow-hidden rounded-lg border border-gray-100 bg-white p-6 text-left shadow-sm transition-all hover:border-green-100 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <div>
+                <h3 className="text-lg font-medium text-gray-900">Mint B3kemon</h3>
+                <p className="mt-1 text-sm text-gray-500">Mint your own mysterious B3kemon NFT</p>
               </div>
-            </div>
+            </button>
+
+            <button
+              onClick={() => {
+                setB3ModalOpen(true);
+                setB3ModalContentType({
+                  type: "anySpend",
+                  destinationTokenAddress: B3_TOKEN.address,
+                  destinationTokenChainId: B3_TOKEN.chainId
+                });
+              }}
+              className="group flex h-40 flex-col justify-between overflow-hidden rounded-lg border border-gray-100 bg-white p-6 text-left shadow-sm transition-all hover:border-indigo-100 hover:shadow-md"
+            >
+              <div>
+                <h3 className="text-lg font-medium text-gray-900">Get B3 Token</h3>
+                <p className="mt-1 text-sm text-gray-500">Purchase B3 tokens directly through AnySpend</p>
+              </div>
+            </button>
           </div>
         </div>
       </div>
