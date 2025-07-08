@@ -11,6 +11,13 @@
   ],
   "exports": {
     "./index.css": "./dist/styles/index.css",
+    ".": {
+      "default": {
+        "types": "./dist/types/index.d.ts",
+        "import": "./dist/esm/index.js",
+        "require": "./dist/cjs/index.js"
+      }
+    },
     "./anyspend": {
       "types": "./dist/types/anyspend/index.d.ts",
       "import": "./dist/esm/anyspend/index.js",
