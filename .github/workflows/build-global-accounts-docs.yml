@@ -5,10 +5,12 @@ on:
     branches: [main]
     paths:
       - "apps/global-accounts/**"
+      - "packages/sdk/**"
   pull_request:
     branches: [main]
     paths:
       - "apps/global-accounts/**"
+      - "packages/sdk/**"
   workflow_dispatch:
 env:
   NODE_OPTIONS: --max_old_space_size=8192
