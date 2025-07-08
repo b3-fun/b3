@@ -865,7 +865,7 @@ export const OrderDetails = memo(function OrderDetails({
                         BigInt(order.srcAmount),
                         order.srcTokenAddress === RELAY_ETH_ADDRESS ? "ETH" : order.srcTokenAddress
                       )}
-                      size={200}
+                      className="max-w-[200px]"
                     />
                     <div className="mt-3 flex items-center justify-center gap-2 text-sm">
                       <span className="label-style text-as-brand/70 text-sm">Scan with</span>
