@@ -9,7 +9,6 @@ export default function Home() {
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
 
   const handleMint = async () => {
-
     // Generate random token ID between 0 and 6
     const randomTokenId = Math.floor(Math.random() * 7);
 
