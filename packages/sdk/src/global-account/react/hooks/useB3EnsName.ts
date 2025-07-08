@@ -2,7 +2,7 @@ import { ENS_GATEWAY_URL } from "@b3dotfun/sdk/shared/constants";
 import { useMemo } from "react";
 
 export const useB3EnsName = () => {
-  const registerEns = async (name: `${string}.b3.fun`, address: string, hash: string) : Promise<Response> => {
+  const registerEns = async (name: `${string}.b3.fun`, address: string, hash: string): Promise<Response> => {
     const message = `Register ${name}`;
     const response = await fetch(ENS_GATEWAY_URL + "set", {
       method: "POST",
