@@ -89,6 +89,18 @@
         "require": "./dist/cjs/global-account/react/index.js"
       }
     },
+    "./global-account/react/components/*": {
+      "react-native": {
+        "types": "./dist/types/global-account/react/components/*.native.d.ts",
+        "import": "./dist/esm/global-account/react/components/*.native.js",
+        "require": "./dist/cjs/global-account/react/components/*.native.js"
+      },
+      "default": {
+        "types": "./dist/types/global-account/react/components/*.d.ts",
+        "import": "./dist/esm/global-account/react/components/*.js",
+        "require": "./dist/cjs/global-account/react/components/*.js"
+      }
+    },
     "./global-account/types": {
       "types": "./dist/types/global-account/types.d.ts",
       "import": "./dist/esm/global-account/types.js",
