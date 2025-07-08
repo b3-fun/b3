@@ -14,7 +14,7 @@ export default function Home() {
         <div className="mx-auto max-w-3xl">
           <h1 className="mb-4 text-center text-3xl font-bold text-gray-800">AnySpend Demo</h1>
           <p className="mb-12 text-center text-gray-500">Experience seamless crypto transactions</p>
-          
+
           <div className="space-y-4">
             <div className="overflow-hidden rounded-lg border border-gray-100 bg-white p-6 shadow-sm transition-all hover:border-gray-200 hover:shadow-md">
               <div className="flex items-center justify-between">
