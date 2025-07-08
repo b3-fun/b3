@@ -4,6 +4,7 @@ import {
   StyleRoot,
   useAccountWallet,
   useAuthentication,
+  useB3,
   useIsMobile
 } from "@b3dotfun/sdk/global-account/react";
 import Icon from "@b3dotfun/sdk/global-account/react/components/custom/Icon";
@@ -12,6 +13,7 @@ import { cn, truncateAddress } from "@b3dotfun/sdk/shared/utils";
 import { Menu, MenuButton, MenuItems, Transition } from "@headlessui/react";
 import { ReactNode, useEffect } from "react";
 import { useConnectedWallets, useSetActiveWallet, useWalletInfo } from "thirdweb/react";
+import { ManageAccountButton } from "../custom/ManageAccountButton";
 
 type UserProps = {
   className?: string;
@@ -27,6 +29,7 @@ type SignInWithB3Props = Omit<SignInWithB3ModalProps, "type" | "showBackButton">
 
 export function User(props: SignInWithB3Props) {
   const { className } = props;
+  const { automaticallySetFirstEoa } = useB3();
   const {
     wallet,
     address: globalAddress,
@@ -39,6 +42,8 @@ export function User(props: SignInWithB3Props) {
     eoaWalletIcon
   } = useAccountWallet();
 
+  console.log("@@isActiveSmartWallet", isActiveSmartWallet);
+
   const isMobile = useIsMobile();
   const { logout } = useAuthentication(String(process.env.NEXT_PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID));
   const onDisconnect = async () => {
@@ -47,21 +52,28 @@ export function User(props: SignInWithB3Props) {
 
   const connectedWallets = useConnectedWallets();
 
-  const { data: walletInfo } = useWalletInfo(connectedEOAWallet?.id);
+  const { data: walletInfo } = useWalletInfo(isActiveSmartWallet ? connectedSmartWallet?.id : connectedEOAWallet?.id);
 
   const setActiveWallet = useSetActiveWallet();
 
   const handleSetActiveAccount = (selectedWalletId: string | undefined) => {
-    if (!selectedWalletId || !connectedWallets || !connectedEOAWallet || !connectedSmartWallet) return;
+    if (
+      !selectedWalletId ||
+      !connectedWallets ||
+      !connectedEOAWallet ||
+      !connectedSmartWallet ||
+      !automaticallySetFirstEoa
+    )
+      return;
     setActiveWallet(selectedWalletId === ecosystemWalletId ? connectedSmartWallet : connectedEOAWallet);
   };
 
   // Automatically set EOA wallet as active when available
   useEffect(() => {
-    if (connectedEOAWallet) {
+    if (connectedEOAWallet && automaticallySetFirstEoa) {
       setActiveWallet(connectedEOAWallet);
     }
-  }, [connectedEOAWallet, isActiveEOAWallet, setActiveWallet]);
+  }, [connectedEOAWallet, isActiveEOAWallet, setActiveWallet, automaticallySetFirstEoa]);
 
   // Desktop version - original dropdown menu
   return (
@@ -90,7 +102,7 @@ export function User(props: SignInWithB3Props) {
               leaveTo="scale-95 opacity-0"
             >
               <MenuItems
-                className="b3-root shadow-depth-1 absolute -right-4 top-full w-96 rounded-2xl border lg:right-0"
+                className="b3-root shadow-depth-1 absolute -right-4 top-full min-w-64 rounded-2xl border lg:right-0"
                 modal={false}
                 // TODO: Figure out why setting anchor on mobile causes z-index issues where it appears under elements
                 anchor={isMobile ? "top start" : undefined}
@@ -143,7 +155,11 @@ export function User(props: SignInWithB3Props) {
                   )
                 )}
 
-                {/* <button className="mb-2 w-full space-y-1" onClick={onDisconnect}>
+                <div className="ml-3">
+                  <ManageAccountButton props={props} />
+                </div>
+
+                <button className="mb-2 w-full space-y-1" onClick={onDisconnect}>
                   <div className="hover:bg-theme-on-surface-2 group flex h-12 items-center rounded-xl px-4 transition-colors">
                     <Icon
                       className="fill-theme-secondary group-hover:fill-theme-primary mr-4 shrink-0 transition-colors"
@@ -153,7 +169,7 @@ export function User(props: SignInWithB3Props) {
                       Disconnect
                     </div>
                   </div>
-                </button> */}
+                </button>
               </MenuItems>
             </Transition>
           </>
