@@ -1,13 +1,14 @@
-import { B3Provider, B3DynamicModal } from "@b3dotfun/sdk/global-account/react";
+import { B3DynamicModal, B3Provider } from "@b3dotfun/sdk/global-account/react";
+import SignIn from "@b3dotfun/sdk/global-account/react/components/SignInWithB3/SignIn";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
 import { CodeExample } from "./components/CodeExample";
 import { Features } from "./components/Features";
 import { Hero } from "./components/Hero";
 import { NFTMintingExample } from "./components/NFTMintingExample";
-import { RequestPermissionsExample } from "./components/RequestPermissionsExample";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { PasswordGate } from "./components/PasswordGate";
+import { RequestPermissionsExample } from "./components/RequestPermissionsExample";
 import { Debug } from "./pages/Debug";
 import type { Wallet } from "./utils/wallet";
 import { generateWallet } from "./utils/wallet";
@@ -66,6 +67,7 @@ function App() {
                   </Link>
                 </div>
                 <div className="flex items-center gap-8">
+                  <SignIn />
                   <Link to="/debug" className="text-b3-grey hover:text-b3-blue font-neue-montreal transition-colors">
                     Debug
                   </Link>
