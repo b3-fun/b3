@@ -131,6 +131,8 @@ export interface AnySpendNftProps extends BaseModalProps {
   nftContract: NftContract;
   /** Recipient address to receive the NFT */
   recipientAddress?: string;
+  /** Callback function called when the NFT is successfully transferred */
+  onSuccess?: () => void;
 }
 
 /**
