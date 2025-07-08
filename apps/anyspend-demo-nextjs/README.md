@@ -1,36 +1,83 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AnySpend Demo (Next.js)
+
+This is a demo application showcasing the integration of AnySpend using Next.js 14 and React.
+
+## Features
+
+- Token Swapping: Swap between any supported tokens
+- Fiat Onramp: Buy crypto directly with credit card
+- B3 Token Purchase: Direct purchase of B3 tokens
+- Server Components: Leverages Next.js 14 server components
+- Optimized Performance: Built with the App Router
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+
+- pnpm
+
+### Installation
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+# Install dependencies
+pnpm install
+
+# Start development server
 pnpm dev
-# or
-bun dev
+
+# Build for production
+pnpm build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Environment Variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Create a `.env.local` file with:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```env
+NEXT_PUBLIC_THIRDWEB_CLIENT_ID=eb17a5ec4314526d42fc567821aeb9a6
+NEXT_PUBLIC_THIRDWEB_ECOSYSTEM_ID=ecosystem.b3dotfun
+```
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+  ├── app/            # Next.js 14 app directory
+  │   ├── layout.tsx  # Root layout (server)
+  │   ├── page.tsx    # Home page (client)
+  │   └── globals.css # Global styles
+  └── components/     # Shared components
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Tech Stack
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Next.js 14
+- React
+- TypeScript
+- Tailwind CSS
+- @b3dotfun/sdk
+- @tanstack/react-query
 
-## Deploy on Vercel
+## Development
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The project uses Next.js 14 with the App Router. Key commands:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `pnpm dev` - Start development server
+- `pnpm build` - Build for production
+- `pnpm start` - Start production server
+- `pnpm lint` - Run ESLint
+
+## Architecture
+
+- Uses Next.js 14 App Router
+- Proper separation of server and client components
+- Client-side state management with React Query
+- Styled with Tailwind CSS
+- Integration with B3Provider and AnyspendProvider
+
+## Notes
+
+- Configured for optimal server-side rendering
+- Uses client boundaries for SDK integration
+- Follows Next.js best practices for performance
