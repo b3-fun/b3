@@ -392,6 +392,8 @@ export function AnySpendCustom({
                 type: NftType.ERC1155,
                 contractAddress: metadata.nftContract.contractAddress,
                 tokenId: metadata.nftContract.tokenId!,
+                name: metadata.nftContract.name,
+                description: metadata.nftContract.description,
                 imageUrl: metadata.nftContract.imageUrl,
                 nftPrice: dstAmount
               }
@@ -399,7 +401,10 @@ export function AnySpendCustom({
                 type: NftType.ERC721,
                 contractAddress: metadata.nftContract.contractAddress,
                 contractType: metadata.nftContract.type,
-                nftPrice: dstAmount
+                nftPrice: dstAmount,
+                name: metadata.nftContract.name,
+                description: metadata.nftContract.description,
+                imageUrl: metadata.nftContract.imageUrl
               }
           : undefined,
         tournament: isTournamentMetadata(metadata)
