@@ -74,6 +74,8 @@ function generateGetRelayQuoteRequest({
   dstToken,
   dstAmount,
   contractAddress,
+  tokenId,
+  contractType,
   encodedData,
   spenderAddress
 }: {
@@ -84,6 +86,8 @@ function generateGetRelayQuoteRequest({
   dstToken: Token;
   dstAmount: string;
   contractAddress: string;
+  tokenId?: number | null;
+  contractType?: NftType;
   encodedData: string;
   spenderAddress?: string;
 }): GetQuoteRequest {
@@ -96,7 +100,9 @@ function generateGetRelayQuoteRequest({
         dstChain: dstChainId,
         dstTokenAddress: dstToken.address,
         price: dstAmount,
-        contractAddress: contractAddress
+        contractAddress: contractAddress,
+        tokenId: tokenId!,
+        contractType: contractType!
       };
     }
     case OrderType.JoinTournament: {
@@ -280,6 +286,8 @@ export function AnySpendCustom({
     dstToken: dstToken,
     dstAmount: dstAmount,
     contractAddress: contractAddress,
+    tokenId: isNftMetadata(metadata) ? metadata.nftContract.tokenId : undefined,
+    contractType: isNftMetadata(metadata) ? metadata.nftContract.type : undefined,
     encodedData: encodedData,
     spenderAddress: spenderAddress
   });
