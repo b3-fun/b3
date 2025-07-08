@@ -49,4 +49,5 @@ export interface NftContract {
   name: string;
   description: string;
   tokenId: number | null;
+  type: NftType;
 }

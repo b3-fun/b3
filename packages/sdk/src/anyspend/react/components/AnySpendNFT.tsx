@@ -1,5 +1,4 @@
 import { ALL_CHAINS, getChainName, getExplorerAddressUrl, GetQuoteResponse, OrderType } from "@b3dotfun/sdk/anyspend";
-import { DEFAULT_NFT_CONTRACT } from "@b3dotfun/sdk/anyspend/constants";
 import { NftContract } from "@b3dotfun/sdk/anyspend/types";
 import { GlareCard, Popover, PopoverContent, PopoverTrigger } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils";
@@ -16,13 +15,15 @@ export function AnySpendNFT({
   loadOrder,
   mode = "modal",
   recipientAddress,
-  nftContract = DEFAULT_NFT_CONTRACT
+  nftContract,
+  onSuccess
 }: {
   isMainnet?: boolean;
   loadOrder?: string;
   mode?: "modal" | "page";
   recipientAddress?: string;
-  nftContract?: NftContract;
+  nftContract: NftContract;
+  onSuccess?: (txHash?: string) => void;
 }) {
   const header = ({
     anyspendPrice,
@@ -78,8 +79,12 @@ export function AnySpendNFT({
       dstAmount={nftContract.price}
       contractAddress={nftContract.contractAddress}
       encodedData="0x"
-      metadata={{ nftContract }}
+      metadata={{
+        type: OrderType.MintNFT,
+        nftContract: nftContract
+      }}
       header={header}
+      onSuccess={onSuccess}
     />
   );
 }
