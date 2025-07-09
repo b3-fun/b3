@@ -6,9 +6,10 @@ import {
   useChainSwitchWithAction,
   useHasMounted,
   useModalStore,
+  useTokenData,
 } from "@b3dotfun/sdk/global-account/react";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { createPublicClient, decodeEventLog, http, parseEther } from "viem";
 import { useAccount, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
@@ -38,6 +39,28 @@ export function AnyspendSignatureMint({
   const { address } = useAccount();
   const { writeContractAsync } = useWriteContract();
   const { switchChainAndExecute } = useChainSwitchWithAction();
+
+  // Get token data
+  const { data: tokenData, isError: isTokenError } = useTokenData(
+    signatureData.collection.chainId,
+    signatureData.collection.signatureRequestBody.currency
+  );
+
+  // Convert token data to AnySpend Token type
+  const dstToken = useMemo(() => {
+    if (!tokenData) return null;
+    
+    return {
+      address: tokenData.address,
+      chainId: signatureData.collection.chainId,
+      name: tokenData.name,
+      symbol: tokenData.symbol,
+      decimals: tokenData.decimals,
+      metadata: {
+        logoURI: tokenData.logoURI,
+      },
+    };
+  }, [tokenData, signatureData.collection.chainId]);
 
   // State for direct minting flow
   const [isMinting, setIsMinting] = useState(false);
@@ -263,6 +286,19 @@ export function AnyspendSignatureMint({
     const encodedData = signatureData.signature;
     const price = parseEther(signatureData.payload.price.toString());
 
+    // If we don't have token data, show error state
+    if (!dstToken || isTokenError) {
+      return (
+        <StyleRoot>
+          <div className="bg-b3-react-background flex w-full flex-col items-center p-8">
+            <p className="text-as-red text-center text-sm">
+              Failed to fetch payment token information for {signatureData.collection.signatureRequestBody.currency} on chain {signatureData.collection.chainId}. Please try again.
+            </p>
+          </div>
+        </StyleRoot>
+      );
+    }
+
     return (
       <AnySpendCustom
         isMainnet={isMainnet}
@@ -271,13 +307,13 @@ export function AnyspendSignatureMint({
         recipientAddress={signatureData.payload.to}
         orderType={OrderType.Custom}
         dstChainId={signatureData.collection.chainId}
-        dstToken={B3_TOKEN} // This should be the currency token from signature data
+        dstToken={dstToken}
         dstAmount={price.toString()}
         contractAddress={signatureData.collection.address}
         encodedData={encodedData}
         metadata={{
           type: OrderType.Custom,
-          action: "mint NFT",
+          action: "Signature Mint",
         }}
         header={header}
         onSuccess={onSuccess}
