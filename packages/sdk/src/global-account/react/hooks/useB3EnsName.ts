@@ -33,10 +33,28 @@ export const useB3EnsName = () => {
     return data as { name: string };
   };
 
+  const lookupEnsName = async (name: `${string}.b3.fun`) => {
+    const response = await fetch(`${ENS_GATEWAY_URL}get/${name}`);
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch ENS lookup: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data as {
+      name: string;
+      owner: `0x${string}`;
+      addresses: Record<string, `0x${string}`>;
+      createdAt: number;
+      updatedAt: number;
+    };
+  };
+
   return useMemo(
     () => ({
       registerEns,
       getEns,
+      lookupEnsName,
     }),
     [],
   );
