@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
 import { Dialog, DialogContent, Input, ShinyButton } from "@b3dotfun/sdk/global-account/react";
+import { useEffect, useState } from "react";
 
 export function EnterRecipientModal({
   isOpenPasteRecipientAddress,
