@@ -488,50 +488,51 @@ export function AnySpendCustom({
     }
   };
 
-  const recipientSection = showRecipient && isAuthenticated && recipientAddress ? (
-    <motion.div
-      initial={false}
-      animate={{
-        opacity: hasMounted ? 1 : 0,
-        y: hasMounted ? 0 : 20,
-        filter: hasMounted ? "blur(0px)" : "blur(10px)",
-      }}
-      transition={{ duration: 0.3, delay: 0.2, ease: "easeInOut" }}
-      className="flex w-full items-center justify-between gap-4"
-    >
-      <div className="text-b3-react-foreground">
-        {orderType === OrderType.Swap
-          ? "Recipient"
-          : orderType === OrderType.MintNFT
-            ? "Receive NFT at"
-            : orderType === OrderType.JoinTournament
-              ? "Join for"
-              : "Recipient"}
-      </div>
-      <div>
-        <Button
-          variant="outline"
-          className="w-full justify-between border-none p-0"
-          onClick={() => setIsRecipientModalOpen(true)}
-        >
-          <div className="flex items-center gap-2">
-            {recipientImageUrl && (
-              <img
-                src={recipientImageUrl}
-                alt={recipientImageUrl}
-                className="bg-b3-react-foreground size-7 rounded-full object-cover opacity-100"
-              />
-            )}
-            <div className="flex flex-col items-start gap-1">
-              {recipientEnsName && <span>@{recipientEnsName}</span>}
-              <span>{centerTruncate(recipientAddress)}</span>
+  const recipientSection =
+    showRecipient && isAuthenticated && recipientAddress ? (
+      <motion.div
+        initial={false}
+        animate={{
+          opacity: hasMounted ? 1 : 0,
+          y: hasMounted ? 0 : 20,
+          filter: hasMounted ? "blur(0px)" : "blur(10px)",
+        }}
+        transition={{ duration: 0.3, delay: 0.2, ease: "easeInOut" }}
+        className="flex w-full items-center justify-between gap-4"
+      >
+        <div className="text-b3-react-foreground">
+          {orderType === OrderType.Swap
+            ? "Recipient"
+            : orderType === OrderType.MintNFT
+              ? "Receive NFT at"
+              : orderType === OrderType.JoinTournament
+                ? "Join for"
+                : "Recipient"}
+        </div>
+        <div>
+          <Button
+            variant="outline"
+            className="w-full justify-between border-none p-0"
+            onClick={() => setIsRecipientModalOpen(true)}
+          >
+            <div className="flex items-center gap-2">
+              {recipientImageUrl && (
+                <img
+                  src={recipientImageUrl}
+                  alt={recipientImageUrl}
+                  className="bg-b3-react-foreground size-7 rounded-full object-cover opacity-100"
+                />
+              )}
+              <div className="flex flex-col items-start gap-1">
+                {recipientEnsName && <span>@{recipientEnsName}</span>}
+                <span>{centerTruncate(recipientAddress)}</span>
+              </div>
             </div>
-          </div>
-          <ChevronRightCircle className="ml-2 size-4 shrink-0 opacity-50" />
-        </Button>
-      </div>
-    </motion.div>
-  ) : null;
+            <ChevronRightCircle className="ml-2 size-4 shrink-0 opacity-50" />
+          </Button>
+        </div>
+      </motion.div>
+    ) : null;
 
   const historyView = (
     <div
