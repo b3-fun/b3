@@ -315,7 +315,11 @@ export function AnySpendBuySpin({
       }
 
       // Check maximum entries per user (0 means no limit)
-      if (paymentConfig && paymentConfig.maxEntriesPerUser > 0n && BigInt(numValue) > paymentConfig.maxEntriesPerUser) {
+      if (
+        paymentConfig &&
+        paymentConfig.maxEntriesPerUser > BigInt(0) &&
+        BigInt(numValue) > paymentConfig.maxEntriesPerUser
+      ) {
         setIsQuantityValid(false);
         setUserSpinQuantity("");
         setValidationError(`Maximum ${paymentConfig.maxEntriesPerUser.toString()} spins allowed`);
@@ -465,7 +469,7 @@ export function AnySpendBuySpin({
   // Render quantity input prompt
   if (showAmountPrompt) {
     const pricePerEntry = formatUnits(paymentConfig.pricePerEntry, 18);
-    const remainingEntries = wheelInfo ? wheelInfo.totalPrizesAvailable_ - wheelInfo.prizesRequestedCount_ : 0n;
+    const remainingEntries = wheelInfo ? wheelInfo.totalPrizesAvailable_ - wheelInfo.prizesRequestedCount_ : BigInt(0);
     const wheelStatus = wheelInfo ? getWheelStatus(wheelInfo) : null;
     const isSoldOut = wheelStatus === "sold_out";
     const isActive = wheelStatus === "active";
