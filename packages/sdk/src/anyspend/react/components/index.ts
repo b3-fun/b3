@@ -8,6 +8,7 @@ export { AnySpendStakeB3 } from "./AnySpendStakeB3";
 export { AnySpendTournament } from "./AnySpendTournament";
 
 // Common Components
+export { ChainTokenIcon } from "./common/ChainTokenIcon";
 export { OrderDetails } from "./common/OrderDetails";
 export { OrderHistory } from "./common/OrderHistory";
 export { OrderHistoryItem } from "./common/OrderHistoryItem";
