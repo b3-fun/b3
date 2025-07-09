@@ -8,6 +8,7 @@ import {
   isCustomTxMetadata,
   isNftMetadata,
   isTournamentMetadata,
+  Nft,
   NftType,
   OnrampVendor,
   OrderStatus,
@@ -388,24 +389,24 @@ export function AnySpendCustom({
         creatorAddress: currentWallet?.wallet?.address,
         nft: isNftMetadata(metadata)
           ? metadata.nftContract.type === NftType.ERC1155
-            ? {
+            ? ({
                 type: NftType.ERC1155,
                 contractAddress: metadata.nftContract.contractAddress,
                 tokenId: metadata.nftContract.tokenId!,
                 name: metadata.nftContract.name,
                 description: metadata.nftContract.description,
                 imageUrl: metadata.nftContract.imageUrl,
-                nftPrice: dstAmount
-              }
-            : {
+                price: dstAmount
+              } as Nft)
+            : ({
                 type: NftType.ERC721,
                 contractAddress: metadata.nftContract.contractAddress,
                 contractType: metadata.nftContract.type,
-                nftPrice: dstAmount,
+                price: dstAmount,
                 name: metadata.nftContract.name,
                 description: metadata.nftContract.description,
                 imageUrl: metadata.nftContract.imageUrl
-              }
+              } as Nft)
           : undefined,
         tournament: isTournamentMetadata(metadata)
           ? {
@@ -414,13 +415,16 @@ export function AnySpendCustom({
               entryPriceOrFundAmount: dstAmount
             }
           : undefined,
-        payload: {
-          amount: dstAmount,
-          data: encodedData,
-          spenderAddress: spenderAddress,
-          to: contractAddress,
-          action: isCustomTxMetadata(metadata) ? metadata.action : undefined
-        }
+        // only populate payload for custom tx
+        payload: isCustomTxMetadata(metadata)
+          ? {
+              amount: dstAmount,
+              data: encodedData,
+              spenderAddress: spenderAddress,
+              to: contractAddress,
+              action: metadata.action
+            }
+          : undefined
       } as CreateOrderParams;
 
       if (onramp) {

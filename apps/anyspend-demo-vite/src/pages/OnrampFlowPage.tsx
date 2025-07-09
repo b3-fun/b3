@@ -47,7 +47,6 @@ export default function OnrampFlowPage() {
 
   // Handle order creation
   const handlePaymentSuccess = (orderId: string) => {
-    console.log("Order created:", orderId);
     // Use window.location.href for a full page reload
     window.location.href = `${window.location.origin}/onramp/status?orderId=${orderId}`;
   };
