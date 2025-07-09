@@ -3,6 +3,7 @@
 import { B3_TOKEN, NftType, USDC_BASE } from "@b3dotfun/sdk/anyspend";
 import { useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { base } from "viem/chains";
+import { SignInButton } from "./components/SignInButton";
 
 export default function Home() {
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
@@ -27,12 +28,12 @@ export default function Home() {
         tokenId: randomTokenId,
         type: NftType.ERC1155,
       },
-      recipientAddress: "0xD32b34E2E55c7005b6506370857bdE4cFD057fC4",
     });
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA]">
+    <div className="relative min-h-screen bg-[#FAFAFA]">
+      <SignInButton />
       <div className="container mx-auto px-6 py-16">
         <div className="mx-auto max-w-6xl">
           <h1 className="mb-4 text-center text-3xl font-bold text-gray-800">AnySpend Demo</h1>

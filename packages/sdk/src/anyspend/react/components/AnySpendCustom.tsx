@@ -43,6 +43,9 @@ import {
   useRouter,
   useSearchParamsSSR,
   useTokenBalancesByChain,
+  Dialog,
+  DialogContent,
+  Input,
 } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils";
 import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
@@ -203,15 +206,17 @@ export function AnySpendCustom({
   // Get current user's wallet
   const currentWallet = useAccountWallet();
 
-  const recipientPropsProfile = useBsmntProfile({ address: recipientAddressProps });
+  // Add state for recipient modal
+  const [isRecipientModalOpen, setIsRecipientModalOpen] = useState(false);
 
-  const recipientAddress = recipientAddressProps || currentWallet.address;
-  const recipientEnsName = recipientAddressProps
-    ? recipientPropsProfile.data?.username?.replaceAll(".b3.fun", "")
-    : currentWallet.ensName;
-  const recipientImageUrl = recipientAddressProps
-    ? recipientPropsProfile.data?.avatar
-    : currentWallet.wallet.meta?.icon;
+  // Add state for custom recipient
+  const [customRecipientAddress, setCustomRecipientAddress] = useState<string | undefined>(recipientAddressProps);
+
+  // Update recipient logic to use custom recipient
+  const recipientAddress = customRecipientAddress || currentWallet.address;
+  const recipientPropsProfile = useBsmntProfile({ address: recipientAddress });
+  const recipientEnsName = recipientPropsProfile.data?.username?.replaceAll(".b3.fun", "");
+  const recipientImageUrl = recipientPropsProfile.data?.avatar || currentWallet.wallet.meta?.icon;
 
   const [orderId, setOrderId] = useState<string | undefined>(loadOrder);
 
@@ -505,7 +510,11 @@ export function AnySpendCustom({
                 : "Recipient"}
         </div>
         <div>
-          <Button variant="outline" className="w-full justify-between border-none p-0">
+          <Button
+            variant="outline"
+            className="w-full justify-between border-none p-0"
+            onClick={() => setIsRecipientModalOpen(true)}
+          >
             <div className="flex items-center gap-2">
               {recipientImageUrl && (
                 <img
@@ -864,6 +873,32 @@ export function AnySpendCustom({
           </div>,
         ]}
       </TransitionPanel>
+
+      {/* Add EnterRecipientModal */}
+      <Dialog open={isRecipientModalOpen} onOpenChange={setIsRecipientModalOpen}>
+        <DialogContent className="w-[420px] max-w-[calc(100vw-32px)] rounded-2xl p-3.5">
+          <div className="flex flex-col gap-3">
+            <div className="text-as-primary font-semibold">To address</div>
+            <Input
+              value={customRecipientAddress || ""}
+              onChange={e => setCustomRecipientAddress(e.target.value)}
+              placeholder="Enter address"
+              className="h-12 rounded-lg"
+              spellCheck={false}
+            />
+            <ShinyButton
+              accentColor={"hsl(var(--as-brand))"}
+              textColor="text-white"
+              className="w-full rounded-lg"
+              onClick={() => {
+                setIsRecipientModalOpen(false);
+              }}
+            >
+              Save
+            </ShinyButton>
+          </div>
+        </DialogContent>
+      </Dialog>
     </StyleRoot>
   );
 }
