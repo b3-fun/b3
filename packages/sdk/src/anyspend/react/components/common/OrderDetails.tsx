@@ -36,6 +36,7 @@ import {
   useModalStore,
   useOnchainName,
 } from "@b3dotfun/sdk/global-account/react";
+import { useRouter, useSearchParams } from "@b3dotfun/sdk/shared/react/hooks";
 import { cn } from "@b3dotfun/sdk/shared/utils";
 import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
@@ -53,7 +54,6 @@ import {
   RefreshCcw,
   SquareArrowOutUpRight,
 } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import TimeAgo from "react-timeago";
@@ -340,6 +340,29 @@ export const OrderDetails = memo(function OrderDetails({
     router.push(`?${params}`);
   }, [router, searchParams]);
 
+  // Clean up URL parameters before closing modal or navigating back
+  const cleanupUrlParams = useCallback(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("waitingForDeposit");
+    params.delete("orderId");
+
+    // Only update URL if params were actually removed
+    if (params.toString() !== searchParams.toString()) {
+      router.push(`?${params}`);
+    }
+  }, [router, searchParams]);
+
+  // Helper functions that clean up URL params before executing actions
+  const handleCloseModal = useCallback(() => {
+    cleanupUrlParams();
+    setB3ModalOpen(false);
+  }, [cleanupUrlParams, setB3ModalOpen]);
+
+  const handleBack = useCallback(() => {
+    cleanupUrlParams();
+    onBack?.();
+  }, [cleanupUrlParams, onBack]);
+
   useEffect(() => {
     if (txSuccess) {
       toast.success("Transaction successful! We are processing your order.", { duration: 10000 });
@@ -446,7 +469,7 @@ export const OrderDetails = memo(function OrderDetails({
         )}
         <button
           className="bg-as-on-surface-2 text-as-secondary flex w-full items-center justify-center gap-2 rounded-lg p-2"
-          onClick={mode === "page" ? onBack : () => setB3ModalOpen(false)}
+          onClick={mode === "page" ? handleBack : handleCloseModal}
         >
           {mode === "page" ? (
             <>
@@ -539,7 +562,7 @@ export const OrderDetails = memo(function OrderDetails({
             textColor="text-white"
             className="flex w-full items-center gap-2"
             disabled={txLoading || isSwitchingOrExecuting}
-            onClick={() => setB3ModalOpen(false)}
+            onClick={handleCloseModal}
           >
             <span className="pl-4">Continue to Tournament</span>
             <ChevronRight className="h-4 w-4" />
@@ -549,7 +572,7 @@ export const OrderDetails = memo(function OrderDetails({
         {order.status === OrderStatus.Executed && (
           <button
             className="bg-as-on-surface-2 text-as-secondary flex w-full items-center justify-center gap-2 rounded-lg p-2"
-            onClick={mode === "page" ? onBack : () => setB3ModalOpen(false)}
+            onClick={mode === "page" ? handleBack : handleCloseModal}
           >
             {mode === "page" ? (
               <>
@@ -667,7 +690,7 @@ export const OrderDetails = memo(function OrderDetails({
             textColor="text-white"
             className="flex w-full items-center gap-2"
             disabled={txLoading || isSwitchingOrExecuting}
-            onClick={() => setB3ModalOpen(false)}
+            onClick={handleCloseModal}
           >
             <span className="pl-4">Continue to Tournament</span>
             <ChevronRight className="h-4 w-4" />
@@ -677,7 +700,7 @@ export const OrderDetails = memo(function OrderDetails({
         {order.status === OrderStatus.Executed && (
           <button
             className="bg-as-on-surface-2 text-as-secondary flex w-full items-center justify-center gap-2 rounded-lg p-2"
-            onClick={mode === "page" ? onBack : () => setB3ModalOpen(false)}
+            onClick={mode === "page" ? handleBack : handleCloseModal}
           >
             {mode === "page" ? (
               <>
@@ -1075,7 +1098,7 @@ export const OrderDetails = memo(function OrderDetails({
 
       <button
         className="bg-as-on-surface-2 text-as-secondary flex w-full items-center justify-center gap-2 rounded-lg p-2"
-        onClick={onBack}
+        onClick={handleBack}
       >
         Cancel and start over <RefreshCcw className="ml-2 h-4 w-4" />
       </button>

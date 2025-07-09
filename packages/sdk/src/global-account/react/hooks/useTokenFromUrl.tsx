@@ -2,8 +2,8 @@
 
 import { Token } from "@b3dotfun/sdk/anyspend";
 import { getCoingeckoChainInfo } from "@b3dotfun/sdk/shared/constants/chains/supported";
+import { useSearchParams } from "@b3dotfun/sdk/shared/react/hooks";
 import { useQuery } from "@tanstack/react-query";
-import { useSearchParams } from "next/navigation";
 
 interface UseTokenFromUrlOptions {
   /**
@@ -56,8 +56,8 @@ export function useTokenFromUrl({ defaultToken, prefix }: UseTokenFromUrlOptions
   const searchParams = useSearchParams();
 
   // Get parameters from URL
-  const currencyParam = searchParams?.get(`${prefix}Currency`);
-  const chainIdParam = searchParams?.get(`${prefix}ChainId`);
+  const currencyParam = searchParams.get(`${prefix}Currency`);
+  const chainIdParam = searchParams.get(`${prefix}ChainId`);
 
   // Determine if we should fetch token info
   const shouldFetchToken = Boolean(
