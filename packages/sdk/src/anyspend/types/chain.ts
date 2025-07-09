@@ -3,7 +3,7 @@ import { Token } from "./token";
 
 export enum ChainType {
   EVM = "evm",
-  SOLANA = "solana"
+  SOLANA = "solana",
 }
 
 export interface IBaseChain {

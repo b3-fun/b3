@@ -7,7 +7,7 @@ async function fetchChainNetworks() {
 
   if (!featureFilter) {
     console.warn(
-      "⚠️  No feature filter provided. Including all chains. Usage: yarn chain-networks <feature> ex. basement"
+      "⚠️  No feature filter provided. Including all chains. Usage: yarn chain-networks <feature> ex. basement",
     );
   }
 
@@ -47,8 +47,8 @@ async function fetchChainNetworks() {
       filteredChains.map((chain: any) => ({
         id: chain.id,
         name: chain.name,
-        enabledFeatures: chain.enabledFeatures
-      }))
+        enabledFeatures: chain.enabledFeatures,
+      })),
     );
 
     // Write the filtered chain networks data to the SDK's generated directory
@@ -60,7 +60,7 @@ async function fetchChainNetworks() {
       "src",
       "shared",
       "generated",
-      "chain-networks.json"
+      "chain-networks.json",
     );
     await fs.writeFile(outputPath, JSON.stringify(filteredChains, null, 2));
 

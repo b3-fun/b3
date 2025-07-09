@@ -16,7 +16,7 @@ export function AnySpendNFT({
   mode = "modal",
   recipientAddress,
   nftContract,
-  onSuccess
+  onSuccess,
 }: {
   isMainnet?: boolean;
   loadOrder?: string;
@@ -27,7 +27,7 @@ export function AnySpendNFT({
 }) {
   const header = ({
     anyspendPrice,
-    isLoadingAnyspendPrice
+    isLoadingAnyspendPrice,
   }: {
     anyspendPrice: GetQuoteResponse | undefined;
     isLoadingAnyspendPrice: boolean;
@@ -52,7 +52,7 @@ export function AnySpendNFT({
               <AnimatePresence mode="wait">
                 <div
                   className={cn("text-as-primary group flex items-center text-3xl font-semibold transition-all", {
-                    "opacity-0": isLoadingAnyspendPrice
+                    "opacity-0": isLoadingAnyspendPrice,
                   })}
                 >
                   {formatDisplayNumber(anyspendPrice?.data?.currencyIn?.amountUsd, { style: "currency" })}
@@ -81,7 +81,7 @@ export function AnySpendNFT({
       encodedData="0x"
       metadata={{
         type: OrderType.MintNFT,
-        nftContract: nftContract
+        nftContract: nftContract,
       }}
       header={header}
       onSuccess={onSuccess}

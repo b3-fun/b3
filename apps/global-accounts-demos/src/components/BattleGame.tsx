@@ -154,8 +154,8 @@ function tokenToWeapon(token: Token): Weapon {
       strength: Math.floor(Math.random() * 50) + 50, // temporary random stats
       defense: Math.floor(Math.random() * 50) + 50,
       speed: Math.floor(Math.random() * 50) + 50,
-      magic: Math.floor(Math.random() * 50) + 50
-    }
+      magic: Math.floor(Math.random() * 50) + 50,
+    },
   };
 }
 
@@ -166,7 +166,7 @@ export function BattleGame() {
   const { data: tokensResponse } = useTokensFromAddress({
     ownerAddress: ecoSystemAccount.address,
     chain: 8333,
-    limit: 50
+    limit: 50,
   });
 
   const [selectedWeapon, setSelectedWeapon] = useState<Weapon | null>(null);
@@ -275,7 +275,7 @@ export function BattleGame() {
                 transition={{
                   duration: 0.3, // Faster entry
                   type: "spring",
-                  stiffness: 300
+                  stiffness: 300,
                 }}
               >
                 {renderWeaponCard(selectedWeapon)}
@@ -284,12 +284,12 @@ export function BattleGame() {
               <VersusText
                 initial={{ scale: 0 }}
                 animate={{
-                  scale: [1, 1.2, 1]
+                  scale: [1, 1.2, 1],
                 }}
                 transition={{
                   duration: 1,
                   repeat: Infinity,
-                  ease: "easeInOut"
+                  ease: "easeInOut",
                 }}
               >
                 VS
@@ -301,7 +301,7 @@ export function BattleGame() {
                 transition={{
                   duration: 0.3, // Faster entry
                   type: "spring",
-                  stiffness: 300
+                  stiffness: 300,
                 }}
               >
                 {renderWeaponCard(opponentWeapon)}
@@ -345,7 +345,7 @@ export function BattleGame() {
                 borderRadius: "10px",
                 color: "white",
                 cursor: "pointer",
-                marginTop: "20px"
+                marginTop: "20px",
               }}
             >
               Battle Again

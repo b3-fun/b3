@@ -43,7 +43,7 @@ export function OrderHistoryItem({ order, onSelectOrder, mode }: OrderHistoryIte
       key={`anyspend-${order.id}`}
       className={cn(
         "bg-as-light-brand/20 rounded-lg border p-4",
-        onSelectOrder && "hover:bg-as-light-brand/30 hover:border-as-brand cursor-pointer transition-colors"
+        onSelectOrder && "hover:bg-as-light-brand/30 hover:border-as-brand cursor-pointer transition-colors",
       )}
       onClick={() => onSelectOrder?.(order.id)}
     >
@@ -53,7 +53,7 @@ export function OrderHistoryItem({ order, onSelectOrder, mode }: OrderHistoryIte
             "px-3 py-1 text-xs",
             orderDisplayStatus === "processing" && "bg-yellow-500/10 text-yellow-500",
             orderDisplayStatus === "success" && "bg-green-500/10 text-green-500",
-            orderDisplayStatus === "failure" && "bg-red-500/10 text-red-500"
+            orderDisplayStatus === "failure" && "bg-red-500/10 text-red-500",
           )}
         >
           {orderStatusText}
@@ -160,7 +160,7 @@ export function OrderHistoryItem({ order, onSelectOrder, mode }: OrderHistoryIte
                         : expectedDstAmount
                           ? BigInt(expectedDstAmount)
                           : BigInt(0),
-                      dstToken.decimals
+                      dstToken.decimals,
                     )}{" "}
                     {dstToken.symbol}
                   </div>

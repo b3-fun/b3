@@ -31,15 +31,15 @@ const b3Chain = defineChain({
   nativeCurrency: {
     name: "ETH",
     symbol: "ETH",
-    decimals: 18
-  }
+    decimals: 18,
+  },
 });
 
 // Add interactive test component
 function InteractiveDemo({ wallet }: { wallet: Wallet }) {
   const { account: b3Account } = useB3();
   const [approvedTargets, setApprovedTargets] = useState(
-    "0xa8e42121e318e3D3BeD7f5969AF6D360045317DD,0x06012c8cf97BEaD5deAe237070F9587f8E7A266d"
+    "0xa8e42121e318e3D3BeD7f5969AF6D360045317DD,0x06012c8cf97BEaD5deAe237070F9587f8E7A266d",
   );
   const [startDate, setStartDate] = useState(new Date().toISOString().split("T")[0]);
   const [endDate, setEndDate] = useState(() => {
@@ -64,7 +64,7 @@ function InteractiveDemo({ wallet }: { wallet: Wallet }) {
   const handleSuccess = () => {
     setRequestResult({
       success: true,
-      message: "Permissions successfully requested!"
+      message: "Permissions successfully requested!",
     });
     setTimeout(() => setRequestResult(null), 5000);
   };
@@ -72,7 +72,7 @@ function InteractiveDemo({ wallet }: { wallet: Wallet }) {
   const handleError = async (error: Error) => {
     setRequestResult({
       success: false,
-      message: `Error: ${error.message}`
+      message: `Error: ${error.message}`,
     });
     setTimeout(() => setRequestResult(null), 5000);
   };
@@ -127,7 +127,7 @@ function InteractiveDemo({ wallet }: { wallet: Wallet }) {
               approvedTargets: getTargetsArray(),
               startDate: new Date(startDate),
               endDate: new Date(endDate),
-              nativeTokenLimitPerTransaction: 0
+              nativeTokenLimitPerTransaction: 0,
             }}
             onSuccess={handleSuccess}
             onError={handleError}

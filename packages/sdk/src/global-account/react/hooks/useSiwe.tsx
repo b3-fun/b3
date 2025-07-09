@@ -9,13 +9,13 @@ export function useSiwe() {
 
     // generate challenge
     const challenge = await app.service("global-accounts-challenge").create({
-      address: account.address
+      address: account.address,
     });
     debug("@@useAuthenticate:challenge", challenge);
 
     // sign challenge
     const signature = await account.signMessage({
-      message: challenge.message
+      message: challenge.message,
     });
 
     debug("@@useAuthenticate:signature", signature);
@@ -26,7 +26,7 @@ export function useSiwe() {
       message: challenge.message,
       signature,
       serverSignature: challenge.serverSignature,
-      nonce: challenge.nonce
+      nonce: challenge.nonce,
     });
     debug("@@useAuthenticate:response", response);
 
@@ -34,6 +34,6 @@ export function useSiwe() {
   }, []);
 
   return {
-    authenticate
+    authenticate,
   };
 }

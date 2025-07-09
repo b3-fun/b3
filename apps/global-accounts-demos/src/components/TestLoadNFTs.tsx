@@ -7,7 +7,7 @@ export function TestLoadNFTs() {
   const { data: response } = useTokensFromAddress({
     ownerAddress: ecoSystemAccount.address,
     chain: 8333,
-    limit: 50
+    limit: 50,
   });
   console.log("useTokensFromAddress response", response);
 

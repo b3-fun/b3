@@ -25,7 +25,7 @@ export const supportedChainsTW: ThirdwebChain[] = [
       const networkData = chainNetworks.find(n => n.id === chain.id);
       return networkData ? toThirdwebChain(networkData) : undefined;
     })
-    .filter((chain): chain is NonNullable<typeof chain> => chain !== undefined)
+    .filter((chain): chain is NonNullable<typeof chain> => chain !== undefined),
 ];
 
 // Original format from chain-networks.json

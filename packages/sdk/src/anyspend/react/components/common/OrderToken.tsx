@@ -18,7 +18,7 @@ export function OrderToken({
   token,
   setToken,
   requiredAmount,
-  tokenSelectClassName
+  tokenSelectClassName,
 }: {
   context: "from" | "to";
   address: string | undefined;
@@ -36,7 +36,7 @@ export function OrderToken({
   const { nativeTokens, fungibleTokens } = useTokenBalancesByChain({
     address: wallet?.address || "",
     chainsIds: [chainId],
-    enabled: !!wallet?.address && !!chainName
+    enabled: !!wallet?.address && !!chainName,
   });
 
   const { formattedBalance, hasEnoughBalance } = useMemo(() => {
@@ -61,7 +61,7 @@ export function OrderToken({
 
     return {
       formattedBalance,
-      hasEnoughBalance
+      hasEnoughBalance,
     };
   }, [chainId, fungibleTokens, nativeTokens, requiredAmount, token, wallet?.address]);
 
@@ -86,7 +86,7 @@ export function OrderToken({
           decimals: token.decimals,
           metadata: { logoURI: token.logoURI },
           name: token.name,
-          symbol: token.symbol
+          symbol: token.symbol,
         });
       }}
       supportedWalletVMs={["evm", "svm"]}
@@ -97,7 +97,7 @@ export function OrderToken({
           role="combobox"
           className={cn(
             "bg-b3-react-background border-as-stroke flex h-auto w-fit shrink-0 items-center justify-center gap-2 rounded-xl border-2 px-2 py-1 pr-2 text-center",
-            tokenSelectClassName
+            tokenSelectClassName,
           )}
         >
           {token.metadata.logoURI ? (

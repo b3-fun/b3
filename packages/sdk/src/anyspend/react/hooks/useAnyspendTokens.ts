@@ -6,19 +6,19 @@ export function useAnyspendTokenList(isMainnet: boolean, chainId: number, query:
   const {
     data = [],
     isLoading,
-    refetch
+    refetch,
   } = useQuery({
     queryKey: ["getAnyspendTokenList", chainId, query],
     queryFn: () => anyspendService.getTokenList(isMainnet, chainId, query),
-    enabled: true
+    enabled: true,
   });
 
   return useMemo(
     () => ({
       data,
       isLoading,
-      refetch
+      refetch,
     }),
-    [data, isLoading, refetch]
+    [data, isLoading, refetch],
   );
 }

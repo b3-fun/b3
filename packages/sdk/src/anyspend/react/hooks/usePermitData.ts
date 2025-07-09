@@ -21,11 +21,11 @@ const EIP5267_ABI = [
       { name: "version", type: "string" },
       { name: "chainId", type: "uint256" },
       { name: "verifyingContract", type: "address" },
-      { name: "salt", type: "bytes32" }
+      { name: "salt", type: "bytes32" },
     ],
     stateMutability: "view",
-    type: "function"
-  }
+    type: "function",
+  },
 ] as const;
 
 export async function getPermitData(p: GetPermitDataParams) {
@@ -34,7 +34,7 @@ export async function getPermitData(p: GetPermitDataParams) {
   if (!isEvmChain(p.chainId) || isNativeToken(p.tokenAddress) || !p.ownerAddress) {
     return {
       canPermit: false,
-      data: null
+      data: null,
     };
   }
 
@@ -44,12 +44,12 @@ export async function getPermitData(p: GetPermitDataParams) {
     address: p.tokenAddress,
     abi: ABI_USDC_BASE,
     functionName: "balanceOf",
-    args: [p.ownerAddress]
+    args: [p.ownerAddress],
   });
   if (balance < p.amount) {
     return {
       canPermit: false,
-      data: null
+      data: null,
     };
   }
 
@@ -62,7 +62,7 @@ export async function getPermitData(p: GetPermitDataParams) {
     const domainData = await publicClient.readContract({
       address: p.tokenAddress,
       abi: EIP5267_ABI,
-      functionName: "eip712Domain"
+      functionName: "eip712Domain",
     });
 
     console.log("Found EIP-5267 eip712Domain function");
@@ -81,7 +81,7 @@ export async function getPermitData(p: GetPermitDataParams) {
     name = await publicClient.readContract({
       address: p.tokenAddress,
       abi: ABI_USDC_BASE,
-      functionName: "name"
+      functionName: "name",
     });
 
     // Try to get version from contract
@@ -89,7 +89,7 @@ export async function getPermitData(p: GetPermitDataParams) {
       version = await publicClient.readContract({
         address: p.tokenAddress,
         abi: ABI_USDC_BASE,
-        functionName: "version"
+        functionName: "version",
       });
     } catch (error) {
       console.log(`Function "version" not found, using default version "1" (standard for EIP-2612)`);
@@ -101,7 +101,7 @@ export async function getPermitData(p: GetPermitDataParams) {
     .readContract({
       address: p.tokenAddress,
       abi: ABI_USDC_BASE,
-      functionName: "PERMIT_TYPEHASH"
+      functionName: "PERMIT_TYPEHASH",
     })
     .catch(() => {
       console.log("PERMIT_TYPEHASH not directly accessible, using standard EIP-2612 value");
@@ -112,7 +112,7 @@ export async function getPermitData(p: GetPermitDataParams) {
   const contractDomainSeparator = await publicClient.readContract({
     address: p.tokenAddress,
     abi: ABI_USDC_BASE,
-    functionName: "DOMAIN_SEPARATOR"
+    functionName: "DOMAIN_SEPARATOR",
   });
 
   console.log("Contract name:", name);
@@ -125,7 +125,7 @@ export async function getPermitData(p: GetPermitDataParams) {
     name,
     version,
     chainId: p.chainId,
-    verifyingContract: p.tokenAddress
+    verifyingContract: p.tokenAddress,
   };
 
   // EIP-2612 Permit type definition
@@ -135,7 +135,7 @@ export async function getPermitData(p: GetPermitDataParams) {
     { name: "spender", type: "address" },
     { name: "value", type: "uint256" },
     { name: "nonce", type: "uint256" },
-    { name: "deadline", type: "uint256" }
+    { name: "deadline", type: "uint256" },
   ];
 
   const multicall3 = getMulticall3Address(p.chainId);
@@ -144,7 +144,7 @@ export async function getPermitData(p: GetPermitDataParams) {
     address: p.tokenAddress,
     abi: ABI_USDC_BASE,
     functionName: "nonces",
-    args: [p.ownerAddress]
+    args: [p.ownerAddress],
   });
 
   const deadlineInSeconds = BigInt(Math.floor(Date.now() / 1000) + 60 * 60); // 60 minutes
@@ -155,7 +155,7 @@ export async function getPermitData(p: GetPermitDataParams) {
     spender: multicall3 as Address,
     value: p.amount,
     nonce,
-    deadline: deadlineInSeconds
+    deadline: deadlineInSeconds,
   };
 
   return {
@@ -163,21 +163,21 @@ export async function getPermitData(p: GetPermitDataParams) {
     data: {
       domain,
       types: { Permit: PermitType },
-      messageToSign
-    }
+      messageToSign,
+    },
   };
 }
 
 export function usePermitData(p: GetPermitDataParams) {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["usePermitData", p.chainId, p.tokenAddress],
-    queryFn: () => getPermitData(p)
+    queryFn: () => getPermitData(p),
   });
 
   return {
     permitData: data,
     isCheckingPermit: isLoading,
     checkPermitError: error,
-    recheckPermit: refetch
+    recheckPermit: refetch,
   };
 }

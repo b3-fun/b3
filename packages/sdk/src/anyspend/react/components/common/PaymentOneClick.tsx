@@ -17,12 +17,12 @@ export default function PaymentOneClick({ order }: PaymentOneClickProps) {
   const howItWorksSteps = [
     {
       number: 1,
-      description: `Click the link above to pay with ${paymentDescription}`
+      description: `Click the link above to pay with ${paymentDescription}`,
     },
     {
       number: 2,
-      description: `After payment, you'll be redirected back here, where we continue to execute the order.`
-    }
+      description: `After payment, you'll be redirected back here, where we continue to execute the order.`,
+    },
   ];
 
   return (

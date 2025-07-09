@@ -16,7 +16,7 @@ export const ShinyButton = ({
   disabled,
   textColor = "",
   textClassName = "",
-  type = "button"
+  type = "button",
 }: {
   text?: string;
   accentColor?: string;
@@ -32,7 +32,7 @@ export const ShinyButton = ({
 }) => {
   const { ref, inView } = useInView({
     triggerOnce: false,
-    threshold: 0.1
+    threshold: 0.1,
   });
 
   const computedTextColor =
@@ -51,10 +51,10 @@ export const ShinyButton = ({
         disabled
           ? "grayscale-20 cursor-not-allowed opacity-60"
           : "hover:border-black/30 hover:shadow-[0_0_20px_rgb(0,0,0,20%)]",
-        animatedPulse && inView && "animated-pulse"
+        animatedPulse && inView && "animated-pulse",
       )}
       style={{
-        backgroundColor: disabled ? "#94A3B8" : accentColor
+        backgroundColor: disabled ? "#94A3B8" : accentColor,
       }}
       onClick={!disabled ? onClick : undefined}
       onClickCapture={onClickCapture}
@@ -66,7 +66,7 @@ export const ShinyButton = ({
       <span
         className={cn(
           "font-sf-rounded relative block h-full w-full text-lg font-semibold tracking-wide",
-          computedTextColor
+          computedTextColor,
         )}
       >
         <div className={cn("flex items-center justify-center gap-2", textClassName)}>

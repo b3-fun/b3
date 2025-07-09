@@ -18,7 +18,7 @@ export function TextLoop({
   interval = 2,
   transition = { duration: 0.3 },
   variants,
-  onIndexChange
+  onIndexChange,
 }: TextLoopProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const items = Children.toArray(children);
@@ -39,7 +39,7 @@ export function TextLoop({
   const motionVariants: Variants = {
     initial: { y: 20, opacity: 0 },
     animate: { y: 0, opacity: 1 },
-    exit: { y: -20, opacity: 0 }
+    exit: { y: -20, opacity: 0 },
   };
 
   return (

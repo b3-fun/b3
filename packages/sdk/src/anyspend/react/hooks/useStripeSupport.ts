@@ -6,7 +6,7 @@ export function useStripeSupport(isMainnet: boolean, ipAddress: string, usdAmoun
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["useStripeSupport", isMainnet, ipAddress, usdAmount],
     queryFn: () => anyspendService.checkStripeSupport(isMainnet, ipAddress, usdAmount),
-    enabled: !!ipAddress
+    enabled: !!ipAddress,
   });
 
   return useMemo(
@@ -15,8 +15,8 @@ export function useStripeSupport(isMainnet: boolean, ipAddress: string, usdAmoun
       isStripeWeb2Supported: data?.stripeWeb2 || false,
       isLoadingStripeSupport: isLoading,
       stripeSupportError: error,
-      refetchStripeSupport: refetch
+      refetchStripeSupport: refetch,
     }),
-    [data, isLoading, error, refetch]
+    [data, isLoading, error, refetch],
   );
 }

@@ -13,11 +13,11 @@ export default defineConfig({
       NEXT_PUBLIC_DEVMODE_SHARED_SECRET: "k1c4Ep6agmoejiBinKE70B6bzb8vSdm8",
       NEXT_PUBLIC_TRANSAK_API_KEY: "d1f4e8be-cacb-4cfa-b2cd-c591084b5ef6",
       NEXT_PUBLIC_THIRDWEB_ECOSYSTEM_ID: "ecosystem.b3dotfun",
-      NEXT_PUBLIC_THIRDWEB_PARTNER_ID: "ceba2f84-45ff-4717-b3e9-0acf0d062abd"
-    }
+      NEXT_PUBLIC_THIRDWEB_PARTNER_ID: "ceba2f84-45ff-4717-b3e9-0acf0d062abd",
+    },
   },
   preview: {
-    allowedHosts: ["global-accounts-production.up.railway.app", "global.b3.fun"]
+    allowedHosts: ["global-accounts-production.up.railway.app", "global.b3.fun"],
   },
   optimizeDeps: {
     include: [
@@ -32,14 +32,14 @@ export default defineConfig({
       "@walletconnect/core",
       "@walletconnect/sign-client",
       "debug",
-      "hash.js"
+      "hash.js",
     ],
-    exclude: ["@b3dotfun/sdk", "thirdweb/react", "@radix-ui/react-slot"]
+    exclude: ["@b3dotfun/sdk", "thirdweb/react", "@radix-ui/react-slot"],
   },
   resolve: {
     alias: {
       "@b3dotfun/sdk/index.css": path.resolve(__dirname, "../../packages/sdk/dist/styles/index.css"),
-      "@b3dotfun/sdk": path.resolve(__dirname, "../../packages/sdk/src")
-    }
-  }
+      "@b3dotfun/sdk": path.resolve(__dirname, "../../packages/sdk/src"),
+    },
+  },
 });

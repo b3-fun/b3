@@ -15,7 +15,7 @@ const DEFAULT_PERMISSIONS = {
   approvedTargets: ["0xa8e42121e318e3D3BeD7f5969AF6D360045317DD"], // Example contract
   nativeTokenLimitPerTransaction: 0.1, // in ETH
   startDate: new Date(),
-  endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365) // 1 year from now
+  endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365), // 1 year from now
 };
 
 // Create queryClient instance
@@ -29,7 +29,7 @@ export function B3Provider({
   theme = "light",
   children,
   accountOverride,
-  environment
+  environment,
 }: {
   isMainnetAnySpend?: boolean;
   theme: "light" | "dark";
@@ -58,7 +58,7 @@ export function InnerProvider({
   accountOverride,
   environment,
   defaultPermissions = DEFAULT_PERMISSIONS,
-  theme = "light"
+  theme = "light",
 }: {
   children: React.ReactNode;
   accountOverride?: Account;
@@ -91,7 +91,7 @@ export function InnerProvider({
         ready: !!effectiveAccount,
         environment,
         defaultPermissions,
-        theme
+        theme,
       }}
     >
       {children}

@@ -19,8 +19,8 @@ export const B3_TOKEN: Token = {
   name: "B3",
   symbol: "B3",
   metadata: {
-    logoURI: "https://s2.coinmarketcap.com/static/img/coins/64x64/35690.png"
-  }
+    logoURI: "https://s2.coinmarketcap.com/static/img/coins/64x64/35690.png",
+  },
 };
 
 export const USDC_BASE: Token = {
@@ -30,8 +30,8 @@ export const USDC_BASE: Token = {
   name: "USD Coin",
   decimals: 6,
   metadata: {
-    logoURI: "https://polygonscan.com/token/images/usdc_32.png"
-  }
+    logoURI: "https://polygonscan.com/token/images/usdc_32.png",
+  },
 };
 
 export const NFT_CONTRACTS: NftContract[] = [
@@ -46,7 +46,7 @@ export const NFT_CONTRACTS: NftContract[] = [
     name: "Downhill Ski",
     description: "Downhill Ski",
     tokenId: null,
-    type: NftType.ERC721
+    type: NftType.ERC721,
   },
   {
     chainId: base.id,
@@ -59,15 +59,15 @@ export const NFT_CONTRACTS: NftContract[] = [
     description:
       "The Eclipse Venom's crystalline blade channels imprisoned astral toxins through swirling currents of violet and teal light, synchronizing with its wielder's heartbeat for strikes that bypass conventional armor. Wounds from this otherworldly weapon resist healing as victims describe being consumed from within by liquid darkness, their final moments filled with visions of infinite cosmic depths.",
     tokenId: null,
-    type: NftType.ERC721
-  }
+    type: NftType.ERC721,
+  },
 ];
 
 export const DEFAULT_NFT_CONTRACT = NFT_CONTRACTS[1];
 
 export const STRIPE_CONFIG = {
   publishableKey:
-    "pk_live_51QkrBwJnoDg53PsPq7QYOxSLfnXvtCVeD9UuyZ6c136i42XtYC2Z2bl1W5xbDg6AaoGyq63ErCc0yv3C2KBX29CG002AE862CP"
+    "pk_live_51QkrBwJnoDg53PsPq7QYOxSLfnXvtCVeD9UuyZ6c136i42XtYC2Z2bl1W5xbDg6AaoGyq63ErCc0yv3C2KBX29CG002AE862CP",
 } as const;
 
 export const PAYMENT_METHOD_ICONS = {
@@ -78,11 +78,11 @@ export const PAYMENT_METHOD_ICONS = {
   applePay: "https://github.com/Kimmax/react-payment-icons/raw/main/assets/card-icons/card_apple-pay.svg",
   googlePay: "https://github.com/Kimmax/react-payment-icons/raw/main/assets/card-icons/card_google-pay.svg",
   stripe:
-    "https://raw.githubusercontent.com/stripe/stripe.github.io/455f506a628dc3f6c505e3001db45a64e29e9fc3/images/stripe-logo.svg"
+    "https://raw.githubusercontent.com/stripe/stripe.github.io/455f506a628dc3f6c505e3001db45a64e29e9fc3/images/stripe-logo.svg",
 } as const;
 
 export const VENDOR_DISPLAY_NAMES = {
   coinbase: "Coinbase",
   stripe: "Stripe",
-  unknown: "Unknown Vendor"
+  unknown: "Unknown Vendor",
 } as const;

@@ -28,7 +28,7 @@ export function MintButton({
   className,
   children = "Mint",
   onSuccess,
-  onError
+  onError,
 }: MintButtonProps) {
   const ecoSystemWallet = useActiveAccount();
   console.log("@@ecoSystemWallet", ecoSystemWallet);
@@ -38,7 +38,7 @@ export function MintButton({
     quantity,
     chain,
     to,
-    tokenId
+    tokenId,
   });
 
   const smartAccountWithSignerOverride = ecoSystemWallet?.address !== to;
@@ -50,13 +50,13 @@ export function MintButton({
           chain,
           sponsorGas: true,
           overrides: {
-            accountAddress: ecoSystemWallet?.address
-          }
+            accountAddress: ecoSystemWallet?.address,
+          },
         });
 
         const smartAccountWithSigner = await wallet.connect({
           client,
-          personalAccount: account
+          personalAccount: account,
         });
 
         const tx = await claim(smartAccountWithSigner);

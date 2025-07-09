@@ -5,7 +5,7 @@ export function EnterRecipientModal({
   isOpenPasteRecipientAddress,
   setIsOpenPasteRecipientAddress,
   recipientAddress,
-  setRecipientAddress
+  setRecipientAddress,
 }: {
   isOpenPasteRecipientAddress: boolean;
   setIsOpenPasteRecipientAddress: (isOpen: boolean) => void;

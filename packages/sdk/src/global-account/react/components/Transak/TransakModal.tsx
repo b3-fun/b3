@@ -31,7 +31,7 @@ export function TransakModal() {
       exchangeScreenTitle: "Buy ETH on B3",
       isFeeCalculationHidden: true,
       cryptoCurrencyCode: "ETH",
-      network: "b3"
+      network: "b3",
     };
   }, [environment]);
 
@@ -53,7 +53,7 @@ export function TransakModal() {
       defaultCryptoAmount,
       disableWalletAddressForm: !!destinationWalletAddress || !!account?.address, // Only disable the form if we have an address
       fiatAmount: fiatAmount,
-      countryCode: countryCode
+      countryCode: countryCode,
     };
 
     const transak = new Transak(config);
@@ -105,7 +105,7 @@ export function TransakModal() {
     onSuccess,
     fiatAmount,
     transakConfig,
-    countryCode
+    countryCode,
   ]);
 
   return (
@@ -123,7 +123,7 @@ export function TransakModal() {
           width: "100%",
           height: "650px",
           borderRadius: "25px",
-          overflow: "hidden"
+          overflow: "hidden",
         }}
       />
     </>

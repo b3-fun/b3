@@ -4,7 +4,7 @@ import "@b3dotfun/sdk/shared/thirdweb/initiateClient";
 import type * as SimpleHashTypes from "@b3dotfun/sdk/global-account/types/simplehash.types";
 import type {
   GetV1NftsResponse,
-  GetV1NftsTransfersByContractAddressResponse
+  GetV1NftsTransfersByContractAddressResponse,
 } from "@b3dotfun/sdk/shared/thirdweb/generated/types.gen";
 import { simpleHashChainToChainName as getSimpleHashChainName } from "@b3dotfun/sdk/shared/utils/simplehash";
 
@@ -58,7 +58,7 @@ export function transformNFTResponse(insightsData: GetV1NftsResponse["data"]): S
             quantity: 1,
             quantity_string: "1",
             first_acquired_date: new Date().toISOString(),
-            last_acquired_date: new Date().toISOString()
+            last_acquired_date: new Date().toISOString(),
           })) || [],
         previews: {
           image_small_url: nft.image_url || "",
@@ -66,14 +66,14 @@ export function transformNFTResponse(insightsData: GetV1NftsResponse["data"]): S
           image_large_url: nft.image_url || "",
           image_opengraph_url: nft.image_url || "",
           blurhash: "",
-          predominant_color: ""
+          predominant_color: "",
         },
         image_properties: {
           width: 0,
           height: 0,
           size: 0,
           mime_type: "",
-          exif_orientation: null
+          exif_orientation: null,
         },
         video_properties: null,
         audio_properties: null,
@@ -86,7 +86,7 @@ export function transformNFTResponse(insightsData: GetV1NftsResponse["data"]): S
           deployed_by: "",
           deployed_via_contract: "",
           owned_by: "",
-          has_multiple_collections: false
+          has_multiple_collections: false,
         },
         collection: {
           collection_id: contractAddress ? `${nft.chain_id}-${contractAddress}` : "",
@@ -96,7 +96,7 @@ export function transformNFTResponse(insightsData: GetV1NftsResponse["data"]): S
           image_properties: {
             width: 0,
             height: 0,
-            mime_type: ""
+            mime_type: "",
           },
           banner_image_url: nft.collection?.banner_image_url || null,
           category: null,
@@ -118,7 +118,7 @@ export function transformNFTResponse(insightsData: GetV1NftsResponse["data"]): S
           total_quantity: 0,
           chains: [nft.contract?.chain_id?.toString() || ""],
           top_contracts: [nft.contract_address],
-          collection_royalties: []
+          collection_royalties: [],
         },
         last_sale: null,
         primary_sale: null,
@@ -129,12 +129,12 @@ export function transformNFTResponse(insightsData: GetV1NftsResponse["data"]): S
           timestamp: new Date().toISOString(),
           block_number: 0,
           transaction: "",
-          transaction_initiator: ""
+          transaction_initiator: "",
         },
         rarity: {
           rank: null,
           score: null,
-          unique_attributes: null
+          unique_attributes: null,
         },
         royalty: [],
         extra_metadata: {
@@ -146,10 +146,10 @@ export function transformNFTResponse(insightsData: GetV1NftsResponse["data"]): S
           properties: nft.extra_metadata?.properties || {},
           image_original_url: nft.image_url || "",
           animation_original_url: nft.animation_url || null,
-          metadata_original_url: nft.external_url || ""
-        }
+          metadata_original_url: nft.external_url || "",
+        },
       };
-    })
+    }),
   };
 }
 
@@ -158,7 +158,7 @@ export function transformCollectionResponse(
   nftData: GetV1NftsResponse["data"][0],
   chainId: number,
   chain: string,
-  contractAddress: string
+  contractAddress: string,
 ): SimpleHashTypes.SimpleHashNFTResponse {
   const collectionData: SimpleHashTypes.NFTCollection = {
     collection_id: `${chainId}-${contractAddress}`,
@@ -168,7 +168,7 @@ export function transformCollectionResponse(
     image_properties: {
       width: 0,
       height: 0,
-      mime_type: ""
+      mime_type: "",
     },
     banner_image_url: nftData.collection?.banner_image_url || null,
     category: null,
@@ -205,21 +205,21 @@ export function transformCollectionResponse(
         deployed_via_contract: "",
         deployment_date: new Date().toISOString(),
         owned_by: "",
-        has_multiple_collections: false
-      }
-    ]
+        has_multiple_collections: false,
+      },
+    ],
   };
 
   return {
     next_cursor: null,
     next: null,
     previous: null,
-    collections: [collectionData]
+    collections: [collectionData],
   };
 }
 
 export function transformTransferResponse(
-  response: GetV1NftsTransfersByContractAddressResponse
+  response: GetV1NftsTransfersByContractAddressResponse,
 ): SimpleHashTypes.NFTTransfer[] {
   if (!response.data) return [];
 
@@ -261,7 +261,7 @@ export function transformTransferResponse(
             image_large_url: transfer.nft_metadata.image_url || "",
             image_opengraph_url: transfer.nft_metadata.image_url || "",
             blurhash: "",
-            predominant_color: transfer.nft_metadata.background_color || ""
+            predominant_color: transfer.nft_metadata.background_color || "",
           },
           image_url: transfer.nft_metadata.image_url || "",
           image_properties: {
@@ -269,7 +269,7 @@ export function transformTransferResponse(
             height: 0,
             size: 0,
             mime_type: "",
-            exif_orientation: null
+            exif_orientation: null,
           },
           video_url: transfer.nft_metadata.video_url || null,
           video_properties: null,
@@ -291,8 +291,8 @@ export function transformTransferResponse(
               quantity: 1,
               quantity_string: "1",
               first_acquired_date: transfer.block_timestamp,
-              last_acquired_date: transfer.block_timestamp
-            }
+              last_acquired_date: transfer.block_timestamp,
+            },
           ],
           extra_metadata: {
             attributes: (transfer.nft_metadata.extra_metadata?.attributes || []) as {
@@ -303,7 +303,7 @@ export function transformTransferResponse(
             properties: transfer.nft_metadata.extra_metadata?.properties || {},
             image_original_url: transfer.nft_metadata.image_url || "",
             animation_original_url: transfer.nft_metadata.video_url || null,
-            metadata_original_url: transfer.nft_metadata.external_url || ""
+            metadata_original_url: transfer.nft_metadata.external_url || "",
           },
           collection: {
             collection_id: transfer.contract_address,
@@ -313,7 +313,7 @@ export function transformTransferResponse(
             image_properties: {
               width: 0,
               height: 0,
-              mime_type: ""
+              mime_type: "",
             },
             banner_image_url: transfer.nft_metadata.collection?.banner_image_url || null,
             featured_image_url: transfer.nft_metadata.collection?.featured_image_url || null,
@@ -375,7 +375,7 @@ export function transformTransferResponse(
             total_owners: 0,
             total_nfts: 0,
             chains: [],
-            top_contracts: []
+            top_contracts: [],
           },
           contract: {
             type: transfer.nft_metadata.contract?.type || "erc721",
@@ -384,7 +384,7 @@ export function transformTransferResponse(
             deployed_by: transfer.contract_address,
             deployed_via_contract: transfer.contract_address,
             owned_by: transfer.to_address,
-            has_multiple_collections: false
+            has_multiple_collections: false,
           },
           last_sale: null,
           primary_sale: null,
@@ -395,15 +395,15 @@ export function transformTransferResponse(
             timestamp: transfer.block_timestamp,
             block_number: parseInt(transfer.block_number),
             transaction: transfer.transaction_hash,
-            transaction_initiator: transfer.from_address
+            transaction_initiator: transfer.from_address,
           },
           rarity: {
             rank: null,
             score: null,
-            unique_attributes: null
+            unique_attributes: null,
           },
-          royalty: []
+          royalty: [],
         }
-      : undefined
+      : undefined,
   }));
 }

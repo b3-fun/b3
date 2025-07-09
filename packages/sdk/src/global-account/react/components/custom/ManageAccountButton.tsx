@@ -9,7 +9,7 @@ export function ManageAccountButton(props: SignInWithB3Props & { className?: str
   const handleClickManageAccount = () => {
     setB3ModalContentType({
       ...props,
-      type: "manageAccount"
+      type: "manageAccount",
     });
     setB3ModalOpen(true);
   };

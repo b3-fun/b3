@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "AnySpend Demo",
-  description: "Demo application for AnySpend integration"
+  description: "Demo application for AnySpend integration",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

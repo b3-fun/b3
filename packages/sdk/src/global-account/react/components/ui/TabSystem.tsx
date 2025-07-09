@@ -138,7 +138,7 @@ export function TabsTransitionWrapper({ children }: { children: ReactNode }) {
     child =>
       React.isValidElement(child) &&
       "value" in (child.props as any) &&
-      (child.props as any).value === context.selectedTab
+      (child.props as any).value === context.selectedTab,
   );
 
   return (
@@ -149,7 +149,7 @@ export function TabsTransitionWrapper({ children }: { children: ReactNode }) {
       variants={{
         enter: { opacity: 0, filter: "blur(10px)", x: 20 },
         center: { opacity: 1, filter: "blur(0px)", x: 0 },
-        exit: { opacity: 0, filter: "blur(10px)", x: -20 }
+        exit: { opacity: 0, filter: "blur(10px)", x: -20 },
       }}
     >
       {childrenArray}

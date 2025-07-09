@@ -7,7 +7,7 @@ export const useB3EnsName = () => {
     const response = await fetch(ENS_GATEWAY_URL + "set", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         name: name,
@@ -15,9 +15,9 @@ export const useB3EnsName = () => {
         addresses: { "60": address.toLowerCase() },
         signature: {
           message: message,
-          hash: hash
-        }
-      })
+          hash: hash,
+        },
+      }),
     });
     return response;
   };
@@ -36,8 +36,8 @@ export const useB3EnsName = () => {
   return useMemo(
     () => ({
       registerEns,
-      getEns
+      getEns,
     }),
-    []
+    [],
   );
 };

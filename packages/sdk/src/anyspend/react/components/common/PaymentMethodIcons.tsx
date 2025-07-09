@@ -6,7 +6,7 @@ export default function PaymentMethodIcons() {
     { name: "Mastercard", src: PAYMENT_METHOD_ICONS.mastercard },
     { name: "Amex", src: PAYMENT_METHOD_ICONS.amex },
     { name: "Apple Pay", src: PAYMENT_METHOD_ICONS.applePay },
-    { name: "Google Pay", src: PAYMENT_METHOD_ICONS.googlePay }
+    { name: "Google Pay", src: PAYMENT_METHOD_ICONS.googlePay },
   ];
 
   return (

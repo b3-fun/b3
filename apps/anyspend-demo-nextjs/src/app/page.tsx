@@ -25,9 +25,9 @@ export default function Home() {
         name: "Mystery B3kemon",
         description: "Summon a mysterious B3kemon creature!",
         tokenId: randomTokenId,
-        type: NftType.ERC1155
+        type: NftType.ERC1155,
       },
-      recipientAddress: "0xD32b34E2E55c7005b6506370857bdE4cFD057fC4"
+      recipientAddress: "0xD32b34E2E55c7005b6506370857bdE4cFD057fC4",
     });
   };
 
@@ -81,7 +81,7 @@ export default function Home() {
                 setB3ModalContentType({
                   type: "anySpend",
                   destinationTokenAddress: B3_TOKEN.address,
-                  destinationTokenChainId: B3_TOKEN.chainId
+                  destinationTokenChainId: B3_TOKEN.chainId,
                 });
               }}
               className="group flex h-40 flex-col justify-between overflow-hidden rounded-lg border border-gray-100 bg-white p-6 text-left shadow-sm transition-all hover:border-indigo-100 hover:shadow-md"

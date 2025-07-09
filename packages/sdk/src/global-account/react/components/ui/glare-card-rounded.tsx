@@ -10,16 +10,16 @@ export const GlareCardRounded = ({ children, className }: { children: React.Reac
   const state = useRef({
     glare: {
       x: 50,
-      y: 50
+      y: 50,
     },
     background: {
       x: 50,
-      y: 50
+      y: 50,
     },
     rotate: {
       x: 0,
-      y: 0
-    }
+      y: 0,
+    },
   });
   const containerStyle = {
     "--m-x": "50%",
@@ -35,7 +35,7 @@ export const GlareCardRounded = ({ children, className }: { children: React.Reac
     "--easing": "ease",
     "--transition": "var(--duration) var(--easing)",
     transition:
-      "transform var(--duration) var(--easing), opacity var(--duration) var(--easing), background var(--duration) var(--easing)"
+      "transform var(--duration) var(--easing), opacity var(--duration) var(--easing), background var(--duration) var(--easing)",
   } as any;
 
   const backgroundStyle = {
@@ -48,7 +48,7 @@ export const GlareCardRounded = ({ children, className }: { children: React.Reac
       "repeating-linear-gradient( 128deg,#0e152e 0%,hsl(180,10%,60%) 3.8%,hsl(180,10%,60%) 4.5%,hsl(180,10%,60%) 5.2%,#0e152e 10%,#0e152e 12% ) var(--bg-x) var(--bg-y)/300% no-repeat",
     "--shade":
       "radial-gradient( farthest-corner circle at var(--m-x) var(--m-y),rgba(255,255,255,0.1) 12%,rgba(255,255,255,0.15) 20%,rgba(255,255,255,0.25) 120% ) var(--bg-x) var(--bg-y)/300% no-repeat",
-    backgroundBlendMode: "hue, hue, hue, overlay"
+    backgroundBlendMode: "hue, hue, hue, overlay",
   };
 
   const updateStyles = () => {
@@ -71,7 +71,7 @@ export const GlareCardRounded = ({ children, className }: { children: React.Reac
       const initialPercentage = { x: 75, y: 75 }; // Example coordinates for initial animation
       const initialDelta = {
         x: initialPercentage.x - 50,
-        y: initialPercentage.y - 50
+        y: initialPercentage.y - 50,
       };
       const rotateFactor = 0.4;
 
@@ -109,7 +109,7 @@ export const GlareCardRounded = ({ children, className }: { children: React.Reac
   return (
     <div
       style={{
-        ...containerStyle
+        ...containerStyle,
       }}
       className="relative isolate h-auto w-full will-change-transform [contain:layout_style] [perspective:600px]"
       ref={refElement}
@@ -118,15 +118,15 @@ export const GlareCardRounded = ({ children, className }: { children: React.Reac
         const rect = event.currentTarget.getBoundingClientRect();
         const position = {
           x: event.clientX - rect.left,
-          y: event.clientY - rect.top
+          y: event.clientY - rect.top,
         };
         const percentage = {
           x: (100 / rect.width) * position.x,
-          y: (100 / rect.height) * position.y
+          y: (100 / rect.height) * position.y,
         };
         const delta = {
           x: percentage.x - 50,
-          y: percentage.y - 50
+          y: percentage.y - 50,
         };
 
         const { background, rotate, glare } = state.current;
@@ -169,7 +169,7 @@ export const GlareCardRounded = ({ children, className }: { children: React.Reac
         <div
           className="grid h-full w-full opacity-[var(--opacity)] mix-blend-soft-light [grid-area:1/1] [background:radial-gradient(farthest-corner_circle_at_var(--m-x)_var(--m-y),_rgba(255,255,255,0.8)_10%,_rgba(255,255,255,0.65)_20%,_rgba(255,255,255,0)_90%)] [clip-path:inset(0_0_1px_0_round_var(--radius))]"
           style={{
-            transition: "opacity var(--duration) var(--easing), background var(--duration) var(--easing)"
+            transition: "opacity var(--duration) var(--easing), background var(--duration) var(--easing)",
           }}
         />
         <div

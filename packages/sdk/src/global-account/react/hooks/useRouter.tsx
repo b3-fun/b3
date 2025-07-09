@@ -33,7 +33,7 @@ export function useRouter(): UseRouterReturn {
       push: () => {},
       replace: () => {},
       back: () => {},
-      forward: () => {}
+      forward: () => {},
     };
   }
 
@@ -41,7 +41,7 @@ export function useRouter(): UseRouterReturn {
   const [routerState, setRouterState] = useState<RouterState>(() => ({
     pathname: window.location.pathname,
     search: window.location.search,
-    hash: window.location.hash
+    hash: window.location.hash,
   }));
 
   // Update state when location changes
@@ -50,7 +50,7 @@ export function useRouter(): UseRouterReturn {
       setRouterState({
         pathname: window.location.pathname,
         search: window.location.search,
-        hash: window.location.hash
+        hash: window.location.hash,
       });
     };
 
@@ -69,7 +69,7 @@ export function useRouter(): UseRouterReturn {
     setRouterState({
       pathname: window.location.pathname,
       search: window.location.search,
-      hash: window.location.hash
+      hash: window.location.hash,
     });
   }, []);
 
@@ -79,7 +79,7 @@ export function useRouter(): UseRouterReturn {
     setRouterState({
       pathname: window.location.pathname,
       search: window.location.search,
-      hash: window.location.hash
+      hash: window.location.hash,
     });
   }, []);
 
@@ -96,7 +96,7 @@ export function useRouter(): UseRouterReturn {
     push,
     replace,
     back,
-    forward
+    forward,
   };
 }
 

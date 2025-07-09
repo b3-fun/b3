@@ -7,7 +7,7 @@ export const zDepositTransaction = z.object({
   from: z.string().nullable(),
   txHash: z.string(),
   amount: z.string(),
-  createdAt: z.number()
+  createdAt: z.number(),
 });
 export type DepositTransaction = z.infer<typeof zDepositTransaction>;
 
@@ -16,7 +16,7 @@ export const zRelayTransaction = z.object({
   chain: z.number(),
   txHash: z.string(),
   status: zRelayStatus,
-  createdAt: z.number()
+  createdAt: z.number(),
 });
 export type RelayTransaction = z.infer<typeof zRelayTransaction>;
 
@@ -24,7 +24,7 @@ export const zExecuteTransaction = z.object({
   orderId: z.string(),
   chain: z.number(),
   txHash: z.string(),
-  createdAt: z.number()
+  createdAt: z.number(),
 });
 export type ExecuteTransaction = z.infer<typeof zExecuteTransaction>;
 
@@ -34,6 +34,6 @@ export const zRefundTransaction = z.object({
   txHash: z.string(),
   amount: z.string(),
   status: z.enum(["success", "failure"]),
-  createdAt: z.number()
+  createdAt: z.number(),
 });
 export type RefundTransaction = z.infer<typeof zRefundTransaction>;

@@ -27,7 +27,7 @@ const DialogOverlay: React.ForwardRefExoticComponent<DialogOverlayProps & React.
         "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
         "data-[state=closed]:backdrop-blur-none data-[state=open]:backdrop-blur-[20px]",
         "transition-all duration-300",
-        className
+        className,
       )}
       {...props}
     />
@@ -57,7 +57,7 @@ const DialogContent: React.ForwardRefExoticComponent<DialogContentProps & React.
               "data-[state=closed]:rotate-x-10 data-[state=open]:rotate-x-0",
               "[perspective:1200px] [transform-style:preserve-3d] sm:rounded-xl",
               "ease-spring transition-all",
-              className
+              className,
             )}
             {...props}
           >
@@ -66,7 +66,7 @@ const DialogContent: React.ForwardRefExoticComponent<DialogContentProps & React.
               <DialogPrimitive.Close
                 className={cn(
                   "data-[state=open]:bg-accent data-[state=open]:text-b3-react-muted-foreground absolute right-4 top-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none dark:data-[state=open]:bg-gray-800 dark:data-[state=open]:text-gray-400",
-                  closeBtnClassName
+                  closeBtnClassName,
                 )}
               >
                 <X className="h-5 w-5" />
@@ -76,7 +76,7 @@ const DialogContent: React.ForwardRefExoticComponent<DialogContentProps & React.
           </DialogPrimitive.Content>
         </DialogPortal>
       );
-    }
+    },
   );
 DialogContent.displayName = DialogPrimitive.Content.displayName;
 
@@ -127,5 +127,5 @@ export {
   DialogOverlay,
   DialogPortal,
   DialogTitle,
-  DialogTrigger
+  DialogTrigger,
 };

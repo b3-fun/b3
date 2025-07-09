@@ -14,5 +14,5 @@ export type {
   ModalContentType,
   RequestPermissionsModalProps,
   SignInWithB3ModalProps,
-  TransakProps
+  TransakProps,
 } from "./useModalStore";

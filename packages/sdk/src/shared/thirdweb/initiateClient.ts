@@ -4,7 +4,7 @@ import { client } from "./generated/client.gen";
 (function () {
   // Set BASE URL
   client.setConfig({
-    baseUrl: "https://insight.thirdweb.com"
+    baseUrl: "https://insight.thirdweb.com",
   });
 
   // Interceptors for issues described here https://npc-labs.slack.com/archives/C070E6HNG85/p1742446793549779?thread_ts=1741637902.666019&cid=C070E6HNG85
@@ -24,7 +24,7 @@ import { client } from "./generated/client.gen";
 
     return new Request(newUrl, {
       ...request,
-      headers
+      headers,
     });
   });
 })();

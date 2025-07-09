@@ -47,7 +47,7 @@ export const useAuthStore = create<AuthState>(set => ({
       accessToken: params.accessToken,
       chain: params.chain,
       onSuccess: params.onSuccess,
-      onError: params.onError
+      onError: params.onError,
     }),
   reset: () =>
     set({
@@ -59,6 +59,6 @@ export const useAuthStore = create<AuthState>(set => ({
       isAuthenticating: false,
       isAuthenticated: false,
       onSuccess: undefined,
-      onError: undefined
-    })
+      onError: undefined,
+    }),
 }));

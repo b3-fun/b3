@@ -20,12 +20,12 @@ const DEFAULT_PERMISSIONS = {
   approvedTargets: ["0xa8e42121e318e3D3BeD7f5969AF6D360045317DD"], // Example contract
   nativeTokenLimitPerTransaction: 0.1, // in ETH
   startDate: new Date(),
-  endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365) // 1 year from now
+  endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365), // 1 year from now
 };
 
 export const wagmiConfig = createConfig({
   chains: [supportedChains[0], ...supportedChains.slice(1)],
-  transports: Object.fromEntries(supportedChains.map(chain => [chain.id, http()])) as any
+  transports: Object.fromEntries(supportedChains.map(chain => [chain.id, http()])) as any,
 });
 
 // Create queryClient instance
@@ -40,7 +40,7 @@ export function B3Provider({
   children,
   accountOverride,
   environment,
-  automaticallySetFirstEoa
+  automaticallySetFirstEoa,
 }: {
   isMainnetAnySpend?: boolean;
   theme: "light" | "dark";
@@ -81,7 +81,7 @@ export function InnerProvider({
   environment,
   defaultPermissions = DEFAULT_PERMISSIONS,
   automaticallySetFirstEoa,
-  theme = "light"
+  theme = "light",
 }: {
   children: React.ReactNode;
   accountOverride?: Account;
@@ -142,7 +142,7 @@ export function InnerProvider({
         automaticallySetFirstEoa,
         environment,
         defaultPermissions,
-        theme
+        theme,
       }}
     >
       {children}

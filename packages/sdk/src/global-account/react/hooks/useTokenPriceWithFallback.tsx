@@ -17,32 +17,32 @@ export function useTokenPriceWithFallback({
   symbol,
   chainId = 8453, // Default to Base
   vsCurrency = "usd",
-  refreshInterval = 30000
+  refreshInterval = 30000,
 }: UseTokenPriceWithFallbackProps) {
   // Try to get the exchange rate using the symbol if provided
   const {
     rate: exchangeRate,
     isLoading: isExchangeRateLoading,
-    error: exchangeRateError
+    error: exchangeRateError,
   } = useExchangeRate({
     baseCurrency: symbol || "",
     quoteCurrency: vsCurrency,
-    refreshInterval
+    refreshInterval,
   });
 
   // Only call useTokenPrice if exchange rate is not available
   const {
     price: tokenPrice,
     isLoading: isTokenPriceLoading,
-    error: tokenPriceError
+    error: tokenPriceError,
   } = useTokenPrice({
     contractAddress,
     chainId,
     vsCurrency,
     refreshInterval,
     queryOptions: {
-      enabled: !isExchangeRateLoading && !exchangeRate && !exchangeRateError
-    }
+      enabled: !isExchangeRateLoading && !exchangeRate && !exchangeRateError,
+    },
   });
 
   // Determine which price to use
@@ -53,6 +53,6 @@ export function useTokenPriceWithFallback({
   return {
     price,
     isLoading,
-    error
+    error,
   };
 }

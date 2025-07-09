@@ -43,7 +43,7 @@ export function useAnyspendCreateOrder({ onSuccess, onError }: UseAnyspendCreate
         srcToken,
         dstToken,
         srcAmount,
-        creatorAddress
+        creatorAddress,
       } = params;
 
       try {
@@ -63,7 +63,7 @@ export function useAnyspendCreateOrder({ onSuccess, onError }: UseAnyspendCreate
             expectedDstAmount: params.expectedDstAmount,
             nft: params.nft,
             tournament: params.tournament,
-            payload: params.payload
+            payload: params.payload,
           }),
           metadata: buildMetadata(orderType, {
             orderType,
@@ -72,9 +72,9 @@ export function useAnyspendCreateOrder({ onSuccess, onError }: UseAnyspendCreate
             expectedDstAmount: params.expectedDstAmount,
             nft: params.nft,
             tournament: params.tournament,
-            payload: params.payload
+            payload: params.payload,
           }),
-          creatorAddress: creatorAddress ? normalizeAddress(creatorAddress) : undefined
+          creatorAddress: creatorAddress ? normalizeAddress(creatorAddress) : undefined,
         });
       } catch (error: any) {
         // If the error has a response with message and statusCode, throw that
@@ -90,14 +90,14 @@ export function useAnyspendCreateOrder({ onSuccess, onError }: UseAnyspendCreate
     },
     onError: (error: Error) => {
       onError?.(error);
-    }
+    },
   });
 
   return useMemo(
     () => ({
       createOrder,
-      isCreatingOrder: isPending
+      isCreatingOrder: isPending,
     }),
-    [createOrder, isPending]
+    [createOrder, isPending],
   );
 }

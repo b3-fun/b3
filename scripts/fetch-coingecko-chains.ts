@@ -29,7 +29,7 @@ async function fetchCoinGeckoChains() {
     const chainsWithIdentifiers = chains.filter(chain => chain.chain_identifier !== null);
 
     console.log(
-      `✅ Found ${chainsWithIdentifiers.length} chains with identifiers out of ${chains.length} total chains`
+      `✅ Found ${chainsWithIdentifiers.length} chains with identifiers out of ${chains.length} total chains`,
     );
 
     // Create a mapping of chain IDs to their identifiers
@@ -38,11 +38,11 @@ async function fetchCoinGeckoChains() {
         acc[chain.chain_identifier!] = {
           coingecko_id: chain.id,
           name: chain.name,
-          native_coin_id: chain.native_coin_id
+          native_coin_id: chain.native_coin_id,
         };
         return acc;
       },
-      {} as Record<number, { coingecko_id: string; name: string; native_coin_id: string }>
+      {} as Record<number, { coingecko_id: string; name: string; native_coin_id: string }>,
     );
 
     // Ensure the output directory exists

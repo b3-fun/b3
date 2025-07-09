@@ -27,9 +27,9 @@ export function useTokenData(chainId?: number, address?: string) {
             method: "POST",
             headers: {
               "X-Service-Method": "findByAddress",
-              "Content-Type": "application/json"
+              "Content-Type": "application/json",
             },
-            body: JSON.stringify({ chainId, address: normalizedAddress })
+            body: JSON.stringify({ chainId, address: normalizedAddress }),
           });
 
           if (response.ok) {
@@ -51,6 +51,6 @@ export function useTokenData(chainId?: number, address?: string) {
     enabled: Boolean(chainId) && Boolean(address) && address?.trim() !== "",
     refetchOnWindowFocus: false,
     refetchOnMount: false,
-    refetchOnReconnect: false
+    refetchOnReconnect: false,
   });
 }

@@ -308,7 +308,7 @@ export const useModalStore = create<ModalState>(set => ({
       const newHistory = state.contentType ? [...state.history, state.contentType] : state.history;
       return {
         contentType: content,
-        history: newHistory
+        history: newHistory,
       };
     }),
   navigateBack: () =>
@@ -320,10 +320,10 @@ export const useModalStore = create<ModalState>(set => ({
       const previousModal = newHistory.pop();
       return {
         contentType: previousModal || null,
-        history: newHistory
+        history: newHistory,
       };
     }),
   clearHistory: () => set({ history: [] }),
   ecoSystemAccountAddress: undefined,
-  setEcoSystemAccountAddress: (address: Address) => set({ ecoSystemAccountAddress: address })
+  setEcoSystemAccountAddress: (address: Address) => set({ ecoSystemAccountAddress: address }),
 }));

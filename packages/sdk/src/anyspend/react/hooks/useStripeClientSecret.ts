@@ -5,7 +5,7 @@ import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
 export function useStripeClientSecret(isMainnet: boolean, paymentIntentId: string) {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["stripeClientSecret", isMainnet, paymentIntentId],
-    queryFn: () => anyspendService.getStripeClientSecret(isMainnet, paymentIntentId)
+    queryFn: () => anyspendService.getStripeClientSecret(isMainnet, paymentIntentId),
   });
 
   return useMemo(
@@ -13,8 +13,8 @@ export function useStripeClientSecret(isMainnet: boolean, paymentIntentId: strin
       clientSecret: data || null,
       isLoadingStripeClientSecret: isLoading,
       stripeClientSecretError: error,
-      refetchStripeClientSecret: refetch
+      refetchStripeClientSecret: refetch,
     }),
-    [data, isLoading, error, refetch]
+    [data, isLoading, error, refetch],
   );
 }

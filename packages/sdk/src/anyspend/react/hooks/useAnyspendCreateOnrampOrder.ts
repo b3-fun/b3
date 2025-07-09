@@ -46,7 +46,7 @@ export function useAnyspendCreateOnrampOrder({ onSuccess, onError }: UseAnyspend
         nft,
         tournament,
         payload,
-        partnerId
+        partnerId,
       } = params;
 
       try {
@@ -82,7 +82,7 @@ export function useAnyspendCreateOnrampOrder({ onSuccess, onError }: UseAnyspend
             expectedDstAmount,
             nft,
             tournament,
-            payload
+            payload,
           }),
           onramp,
           metadata: buildMetadata(orderType, {
@@ -92,10 +92,10 @@ export function useAnyspendCreateOnrampOrder({ onSuccess, onError }: UseAnyspend
             expectedDstAmount,
             nft,
             tournament,
-            payload
+            payload,
           }),
           creatorAddress: creatorAddress ? normalizeAddress(creatorAddress) : undefined,
-          partnerId
+          partnerId,
         });
       } catch (error: any) {
         // If the error has a response with message and statusCode, throw that
@@ -111,14 +111,14 @@ export function useAnyspendCreateOnrampOrder({ onSuccess, onError }: UseAnyspend
     },
     onError: (error: Error) => {
       onError?.(error);
-    }
+    },
   });
 
   return useMemo(
     () => ({
       createOrder,
-      isCreatingOrder: isPending
+      isCreatingOrder: isPending,
     }),
-    [createOrder, isPending]
+    [createOrder, isPending],
   );
 }

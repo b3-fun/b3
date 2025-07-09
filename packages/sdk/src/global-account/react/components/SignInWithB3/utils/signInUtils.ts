@@ -25,7 +25,7 @@ export const allowedStrategies = [
 
   // Custom strategies
   // TODO: Audit we don't use "privy" directly anymore
-  ...customStrategies
+  ...customStrategies,
 ] as const;
 
 export type AllowedStrategy = (typeof allowedStrategies)[number];
@@ -62,7 +62,7 @@ export const strategyIcons: Record<string, string> = {
   x: "https://cdn.b3.fun/x.svg?1",
   discord: "https://cdn.b3.fun/discord.svg",
   apple: "https://cdn.b3.fun/apple.svg",
-  guest: "https://cdn.b3.fun/incognito.svg"
+  guest: "https://cdn.b3.fun/incognito.svg",
   // Add more strategies as needed
 };
 // Test it

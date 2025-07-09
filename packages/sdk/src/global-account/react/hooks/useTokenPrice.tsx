@@ -27,9 +27,9 @@ async function fetchTokenPrice(contractAddress: string, chainId: number, vsCurre
     {
       headers: {
         accept: "application/json",
-        "x-cg-pro-api-key": process.env.COINGECKO_API_KEY as string
-      }
-    }
+        "x-cg-pro-api-key": process.env.COINGECKO_API_KEY as string,
+      },
+    },
   );
 
   if (!response.ok) {
@@ -57,13 +57,13 @@ export function useTokenPrice({
   chainId = 8453, // Default to Base
   vsCurrency = "usd",
   refreshInterval = 30000,
-  queryOptions = {}
+  queryOptions = {},
 }: UseTokenPriceProps) {
   const {
     data: price = 0,
     isLoading,
     error,
-    refetch
+    refetch,
   } = useQuery({
     queryKey: ["tokenPrice", contractAddress, chainId, vsCurrency],
     queryFn: () => fetchTokenPrice(contractAddress, chainId, vsCurrency),
@@ -71,14 +71,14 @@ export function useTokenPrice({
     staleTime: refreshInterval / 2, // Consider data stale after half the refresh interval
     retry: 3,
     retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
-    ...queryOptions
+    ...queryOptions,
   });
 
   return {
     price,
     isLoading,
     error,
-    refetch
+    refetch,
   };
 }
 

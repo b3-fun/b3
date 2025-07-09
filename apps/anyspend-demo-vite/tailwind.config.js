@@ -5,7 +5,7 @@ export default {
     extend: {
       colors: {
         "b3-blue": "#3368ef",
-        "b3-grey": "#1E1E1E"
+        "b3-grey": "#1E1E1E",
       },
       fontFamily: {
         "neue-montreal-bold": ['"Neue Montreal Bold"', "sans-serif"],
@@ -16,9 +16,9 @@ export default {
         "calibre-bold": ['"Calibre Bold"', "sans-serif"],
         "calibre-heavy": ['"Calibre Heavy"', "sans-serif"],
         calibre: ['"Calibre Regular"', "sans-serif"],
-        pack: ["Pack", "sans-serif"]
-      }
-    }
+        pack: ["Pack", "sans-serif"],
+      },
+    },
   },
-  plugins: []
+  plugins: [],
 };

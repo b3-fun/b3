@@ -102,7 +102,7 @@ const INSIGHTS_BASE_URL = "https://insight.thirdweb.com/v1";
 
 export async function getTokenBalances(
   ownerAddress: string,
-  options: TokenBalancesOptions = {}
+  options: TokenBalancesOptions = {},
 ): Promise<TokenBalancesResponse> {
   const { chainIds, tokenType, limit = 100, continuation, metadata = true, page = 0, includeSpam = false } = options;
 
@@ -148,8 +148,8 @@ export async function getTokenBalances(
   const response = await fetch(url, {
     headers: {
       ...(client.clientId ? { "x-client-id": client.clientId } : {}),
-      ...(client.secretKey ? { "x-secret-key": client.secretKey } : {})
-    }
+      ...(client.secretKey ? { "x-secret-key": client.secretKey } : {}),
+    },
   });
 
   if (!response.ok) {
@@ -162,7 +162,7 @@ export async function getTokenBalances(
 // Function to get ERC20 token balances
 export async function getERC20Balances(
   ownerAddress: string,
-  options: Omit<TokenBalancesOptions, "tokenType"> = {}
+  options: Omit<TokenBalancesOptions, "tokenType"> = {},
 ): Promise<TokenBalancesResponse> {
   return getTokenBalances(ownerAddress, { ...options, tokenType: "erc20" });
 }
@@ -170,20 +170,20 @@ export async function getERC20Balances(
 // Function to get NFT balances (ERC721 and ERC1155)
 export async function getNFTBalances(
   ownerAddress: string,
-  options: Omit<TokenBalancesOptions, "tokenType"> = {}
+  options: Omit<TokenBalancesOptions, "tokenType"> = {},
 ): Promise<TokenBalancesResponse> {
   const erc721Response = await getTokenBalances(ownerAddress, {
     ...options,
-    tokenType: "erc721"
+    tokenType: "erc721",
   });
   const erc1155Response = await getTokenBalances(ownerAddress, {
     ...options,
-    tokenType: "erc1155"
+    tokenType: "erc1155",
   });
 
   return {
     data: [...erc721Response.data, ...erc1155Response.data],
-    continuation: erc1155Response.continuation
+    continuation: erc1155Response.continuation,
   };
 }
 
@@ -197,7 +197,7 @@ export async function getNFTBalances(
 export async function getNFTsByContract(
   chainId: number,
   contractAddress: string,
-  options: NFTsByContractOptions = {}
+  options: NFTsByContractOptions = {},
 ): Promise<NFTsByContractResponse> {
   const { limit = 20, page = 0 } = options;
 
@@ -223,8 +223,8 @@ export async function getNFTsByContract(
     headers: {
       ...(client.clientId ? { "x-client-id": client.clientId } : {}),
       ...(client.secretKey ? { "x-secret-key": client.secretKey } : {}),
-      "x-chain-id": chainId.toString()
-    }
+      "x-chain-id": chainId.toString(),
+    },
   });
 
   if (!response.ok) {
@@ -239,7 +239,7 @@ export async function getNFTsByContract(
 export async function getFungibleAssetByContract(
   chainId: number,
   contractAddress: string,
-  options: FungibleAssetByContractOptions = {}
+  options: FungibleAssetByContractOptions = {},
 ): Promise<TokenData> {
   const { limit = 20, page = 0, fungibleId = 0 } = options;
 
@@ -265,8 +265,8 @@ export async function getFungibleAssetByContract(
     headers: {
       ...(client.clientId ? { "x-client-id": client.clientId } : {}),
       ...(client.secretKey ? { "x-secret-key": client.secretKey } : {}),
-      "x-chain-id": chainId.toString()
-    }
+      "x-chain-id": chainId.toString(),
+    },
   });
 
   if (!response.ok) {
@@ -301,15 +301,15 @@ export async function getNativeTokenBalance(address: string, chainId: number): P
       nativeCurrency: {
         name: chainInfo?.nativeCurrency?.name || "Native Currency",
         symbol: chainInfo?.nativeCurrency?.symbol || "ETH",
-        decimals: chainInfo?.nativeCurrency?.decimals || 18
-      }
+        decimals: chainInfo?.nativeCurrency?.decimals || 18,
+      },
     });
 
     // Get native token balance
     const balance = await getWalletBalance({
       address,
       client,
-      chain
+      chain,
     });
 
     // Format to match TokenData structure
@@ -324,12 +324,12 @@ export async function getNativeTokenBalance(address: string, chainId: number): P
       metadata: {
         logoURI:
           chainInfo?.icon?.url ||
-          "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png"
+          "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png",
       },
       // Add native token info in extra_metadata
       extra_metadata: {
-        is_native: true
-      }
+        is_native: true,
+      },
     };
   } catch (error) {
     console.error(`Error fetching native balance for chain ${chainId}:`, error);

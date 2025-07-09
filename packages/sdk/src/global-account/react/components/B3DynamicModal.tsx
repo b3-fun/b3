@@ -4,7 +4,7 @@ import {
   AnySpendNFT,
   AnySpendStakeB3,
   AnySpendTournament,
-  OrderHistory
+  OrderHistory,
 } from "@b3dotfun/sdk/anyspend/react";
 import { useIsMobile, useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
@@ -34,7 +34,7 @@ export function B3DynamicModal() {
       "anySpendStakeB3",
       "anySpendBuySpin",
       "anySpendOrderHistory",
-      "signInWithB3"
+      "signInWithB3",
     ].find(type => contentType?.type === type)
   ) {
     contentClass += " max-h-[90dvh] overflow-y-auto no-scrollbar w-full";
@@ -42,7 +42,7 @@ export function B3DynamicModal() {
 
   if (
     ["anySpendNft", "anySpendJoinTournament", "anySpendFundTournament", "anySpendStakeB3", "anySpendBuySpin"].find(
-      type => contentType?.type === type
+      type => contentType?.type === type,
     )
   ) {
     // Due to the dynamic of (Pay with crypto),(Pay with fiat), we want the height fixed to 90dvh but still scrollable.

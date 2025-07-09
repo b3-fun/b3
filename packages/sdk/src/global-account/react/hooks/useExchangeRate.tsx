@@ -22,21 +22,21 @@ export function useExchangeRate({ baseCurrency, quoteCurrency, refreshInterval =
     data: rate = 0,
     isLoading,
     error,
-    refetch
+    refetch,
   } = useQuery({
     queryKey: ["exchangeRate", baseCurrency, quoteCurrency],
     queryFn: () => fetchExchangeRate(baseCurrency, quoteCurrency),
     refetchInterval: refreshInterval,
     staleTime: refreshInterval / 2, // Consider data stale after half the refresh interval
     retry: 3,
-    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000)
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
   return {
     rate,
     isLoading,
     error,
-    refetch
+    refetch,
   };
 }
 

@@ -8,7 +8,7 @@ import {
   useChainSwitchWithAction,
   useHasMounted,
   useModalStore,
-  useTokenBalance
+  useTokenBalance,
 } from "@b3dotfun/sdk/global-account/react";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { motion } from "framer-motion";
@@ -26,7 +26,7 @@ import { UsdcIcon } from "./icons/USDCIcon";
 
 const basePublicClient = createPublicClient({
   chain: base,
-  transport: http()
+  transport: http(),
 });
 
 const ERC20Staking = "0xbf04200be3cbf371467a539706393c81c470f523";
@@ -36,7 +36,7 @@ function generateEncodedDataForStakingB3(amount: string, beneficiary: string): s
   const encodedData = encodeFunctionData({
     abi: ABI_ERC20_STAKING,
     functionName: "stake",
-    args: [BigInt(amount), beneficiary]
+    args: [BigInt(amount), beneficiary],
   });
   return encodedData;
 }
@@ -47,7 +47,7 @@ export function AnySpendStakeB3({
   mode = "modal",
   recipientAddress,
   stakeAmount,
-  onSuccess
+  onSuccess,
 }: {
   isMainnet?: boolean;
   loadOrder?: string;
@@ -63,9 +63,9 @@ export function AnySpendStakeB3({
   const {
     formattedBalance: b3Balance,
     isLoading: isBalanceLoading,
-    rawBalance: b3RawBalance
+    rawBalance: b3RawBalance,
   } = useTokenBalance({
-    token: B3_TOKEN
+    token: B3_TOKEN,
   });
 
   // Wagmi hooks for direct staking
@@ -82,8 +82,8 @@ export function AnySpendStakeB3({
   const { isLoading: isTxPending, isSuccess: isTxSuccess } = useWaitForTransactionReceipt({
     hash: stakingTxHash as `0x${string}`,
     query: {
-      structuralSharing: false // Disable to avoid BigInt serialization issues
-    }
+      structuralSharing: false, // Disable to avoid BigInt serialization issues
+    },
   });
 
   // Show success modal when transaction is confirmed
@@ -197,7 +197,7 @@ export function AnySpendStakeB3({
           address: B3_TOKEN.address as `0x${string}`,
           abi: erc20Abi,
           functionName: "allowance",
-          args: [address, ERC20Staking as `0x${string}`]
+          args: [address, ERC20Staking as `0x${string}`],
         });
 
         // If allowance is insufficient, request approval
@@ -208,7 +208,7 @@ export function AnySpendStakeB3({
             address: B3_TOKEN.address as `0x${string}`,
             abi: erc20Abi,
             functionName: "approve",
-            args: [ERC20Staking as `0x${string}`, BigInt(userStakeAmount)]
+            args: [ERC20Staking as `0x${string}`, BigInt(userStakeAmount)],
           });
 
           toast.info("Approval confirmed. Proceeding with stake...");
@@ -220,7 +220,7 @@ export function AnySpendStakeB3({
           address: ERC20Staking as `0x${string}`,
           abi: ABI_ERC20_STAKING,
           functionName: "stake",
-          args: [BigInt(userStakeAmount), recipientAddress as `0x${string}`]
+          args: [BigInt(userStakeAmount), recipientAddress as `0x${string}`],
         });
 
         setStakingTxHash(stakeHash);
@@ -285,7 +285,7 @@ export function AnySpendStakeB3({
               animate={{
                 opacity: hasMounted ? 1 : 0,
                 y: hasMounted ? 0 : 20,
-                filter: hasMounted ? "blur(0px)" : "blur(10px)"
+                filter: hasMounted ? "blur(0px)" : "blur(10px)",
               }}
               transition={{ duration: 0.3, delay: 0, ease: "easeInOut" }}
               className="relative mx-auto size-48"
@@ -297,7 +297,7 @@ export function AnySpendStakeB3({
               animate={{
                 opacity: hasMounted ? 1 : 0,
                 y: hasMounted ? 0 : 20,
-                filter: hasMounted ? "blur(0px)" : "blur(10px)"
+                filter: hasMounted ? "blur(0px)" : "blur(10px)",
               }}
               transition={{ duration: 0.3, delay: 0.1, ease: "easeInOut" }}
             >
@@ -315,7 +315,7 @@ export function AnySpendStakeB3({
             animate={{
               opacity: hasMounted ? 1 : 0,
               y: hasMounted ? 0 : 20,
-              filter: hasMounted ? "blur(0px)" : "blur(10px)"
+              filter: hasMounted ? "blur(0px)" : "blur(10px)",
             }}
             transition={{ duration: 0.3, delay: 0.2, ease: "easeInOut" }}
             className="bg-b3-react-background w-full p-6"
@@ -397,7 +397,7 @@ export function AnySpendStakeB3({
               animate={{
                 opacity: hasMounted ? 1 : 0,
                 y: hasMounted ? 0 : 20,
-                filter: hasMounted ? "blur(0px)" : "blur(10px)"
+                filter: hasMounted ? "blur(0px)" : "blur(10px)",
               }}
               transition={{ duration: 0.3, delay: 0, ease: "easeInOut" }}
               className="relative mx-auto mb-4 size-[120px]"
@@ -422,7 +422,7 @@ export function AnySpendStakeB3({
               animate={{
                 opacity: hasMounted ? 1 : 0,
                 y: hasMounted ? 0 : 20,
-                filter: hasMounted ? "blur(0px)" : "blur(10px)"
+                filter: hasMounted ? "blur(0px)" : "blur(10px)",
               }}
               transition={{ duration: 0.3, delay: 0.1, ease: "easeInOut" }}
             >
@@ -437,7 +437,7 @@ export function AnySpendStakeB3({
             animate={{
               opacity: hasMounted ? 1 : 0,
               y: hasMounted ? 0 : 20,
-              filter: hasMounted ? "blur(0px)" : "blur(10px)"
+              filter: hasMounted ? "blur(0px)" : "blur(10px)",
             }}
             transition={{ duration: 0.3, delay: 0.2, ease: "easeInOut" }}
             className="bg-b3-react-background w-full p-6"
@@ -484,7 +484,7 @@ export function AnySpendStakeB3({
       encodedData={encodedData}
       metadata={{
         type: OrderType.Custom,
-        action: "stake B3"
+        action: "stake B3",
       }}
       header={header}
       onSuccess={onSuccess}

@@ -4,7 +4,7 @@ import {
   useGetAllTWSigners,
   useSiwe,
   SignInWithB3ModalProps,
-  useModalStore
+  useModalStore,
 } from "@b3dotfun/sdk/global-account/react";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { useCallback, useEffect, useState } from "react";
@@ -32,7 +32,7 @@ export function SignInWithB3Flow({
   closeAfterLogin = false,
   loginWithSiwe = false,
   source = "signInWithB3Button",
-  signersEnabled = false
+  signersEnabled = false,
 }: SignInWithB3ModalProps) {
   const { setUser, automaticallySetFirstEoa } = useB3();
   const [step, setStep] = useState<"login" | "permissions" | null>(source === "requestPermissions" ? null : "login");
@@ -45,13 +45,13 @@ export function SignInWithB3Flow({
   const {
     data: signers,
     refetch: refetchSigners,
-    isFetching: isFetchingSigners
+    isFetching: isFetchingSigners,
   } = useGetAllTWSigners({
     chain,
     accountAddress: account?.address,
     queryOptions: {
-      enabled: signersEnabled
-    }
+      enabled: signersEnabled,
+    },
   });
   const { authenticate } = useSiwe();
   const [authenticatingWithB3, setAuthenticatingWithB3] = useState(false);
@@ -88,7 +88,7 @@ export function SignInWithB3Flow({
     debug("@@SignInWithB3Flow:useEffect", {
       loginComplete,
       isFetchingSigners,
-      source
+      source,
     });
 
     if (loginComplete && !isFetchingSigners) {
@@ -103,7 +103,7 @@ export function SignInWithB3Flow({
           setB3ModalContentType({
             type: "manageAccount",
             chain,
-            partnerId
+            partnerId,
           });
         }
       } else if (source !== "requestPermissions") {
@@ -121,7 +121,7 @@ export function SignInWithB3Flow({
       setB3ModalContentType({
         type: "manageAccount",
         chain,
-        partnerId
+        partnerId,
       });
     }
   }, [
@@ -136,7 +136,7 @@ export function SignInWithB3Flow({
     chain,
     onSessionKeySuccess,
     setB3ModalOpen,
-    signersEnabled
+    signersEnabled,
   ]);
 
   debug("render", {
@@ -145,7 +145,7 @@ export function SignInWithB3Flow({
     account,
     signers,
     refetchCount,
-    refetchError
+    refetchError,
   });
 
   // Keep this effect for handling closeAfterLogin when adding new session keys
@@ -168,7 +168,7 @@ export function SignInWithB3Flow({
       partnerId,
       closeAfterLogin,
       loginWithSiwe,
-      source: "requestPermissions"
+      source: "requestPermissions",
     });
   }, [
     chain,
@@ -180,7 +180,7 @@ export function SignInWithB3Flow({
     partnerId,
     sessionKeyAddress,
     setB3ModalContentType,
-    strategies
+    strategies,
   ]);
 
   const handleLoginSuccess = useCallback(
@@ -196,7 +196,7 @@ export function SignInWithB3Flow({
       setLoginComplete(true);
       setAuthenticatingWithB3(false);
     },
-    [authenticate, loginWithSiwe, onLoginSuccess, setUser]
+    [authenticate, loginWithSiwe, onLoginSuccess, setUser],
   );
 
   useEffect(() => {
@@ -206,7 +206,7 @@ export function SignInWithB3Flow({
         chain,
         sessionKeyAddress,
         onSuccess: onSessionKeySuccessEnhanced,
-        onError
+        onError,
       });
     }
   }, [chain, onError, onSessionKeySuccessEnhanced, sessionKeyAddress, setB3ModalContentType, step]);

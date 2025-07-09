@@ -14,7 +14,7 @@ export function AnySpendNFTButton({ nftContract = DEFAULT_NFT_CONTRACT, recipien
     setB3ModalContentType({
       type: "anySpendNft",
       nftContract,
-      recipientAddress
+      recipientAddress,
     });
     setB3ModalOpen(true);
   };

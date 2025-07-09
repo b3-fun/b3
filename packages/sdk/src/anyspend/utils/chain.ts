@@ -10,7 +10,7 @@ import {
   parseEther,
   PublicClient,
   Transport,
-  WalletClient
+  WalletClient,
 } from "viem";
 import {
   arbitrum,
@@ -23,7 +23,7 @@ import {
   mainnet,
   optimism,
   polygon,
-  sepolia
+  sepolia,
 } from "viem/chains";
 import { RELAY_SOLANA_MAINNET_CHAIN_ID } from "@b3dotfun/sdk/anyspend/constants";
 import { getAvaxToken, getBnbToken, getEthToken, getPolToken, getSolanaToken } from "./token";
@@ -52,11 +52,11 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     nativeToken: getEthToken(mainnet.id),
     viem: getCustomEvmChain(
       mainnet,
-      "https://quick-chaotic-film.quiknode.pro/39a7aae6a7078f9f36c435e6f34c071c641cf863/"
+      "https://quick-chaotic-film.quiknode.pro/39a7aae6a7078f9f36c435e6f34c071c641cf863/",
     ),
     pollingInterval: 4000, // 4 seconds for Ethereum mainnet
     zapperEnum: "ETHEREUM_MAINNET",
-    coingeckoName: "eth"
+    coingeckoName: "eth",
   },
   [arbitrum.id]: {
     id: arbitrum.id,
@@ -69,11 +69,11 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     nativeToken: getEthToken(arbitrum.id),
     viem: getCustomEvmChain(
       arbitrum,
-      "https://proportionate-twilight-patina.arbitrum-mainnet.quiknode.pro/60e4825626515233a0f566f5915601af6043127b/"
+      "https://proportionate-twilight-patina.arbitrum-mainnet.quiknode.pro/60e4825626515233a0f566f5915601af6043127b/",
     ),
     pollingInterval: 500, // 500ms for Arbitrum's fast blocks
     zapperEnum: "ARBITRUM_MAINNET",
-    coingeckoName: "arbitrum"
+    coingeckoName: "arbitrum",
   },
   [base.id]: {
     id: base.id,
@@ -86,11 +86,11 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     nativeToken: getEthToken(base.id),
     viem: getCustomEvmChain(
       base,
-      "https://sly-indulgent-bird.base-mainnet.quiknode.pro/4e31fab6845eb29a2764723a43896999fe962e48/"
+      "https://sly-indulgent-bird.base-mainnet.quiknode.pro/4e31fab6845eb29a2764723a43896999fe962e48/",
     ),
     pollingInterval: 1000, // 1 second for Base
     zapperEnum: "BASE_MAINNET",
-    coingeckoName: "base"
+    coingeckoName: "base",
   },
   [optimism.id]: {
     id: optimism.id,
@@ -103,11 +103,11 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     nativeToken: getEthToken(optimism.id),
     viem: getCustomEvmChain(
       optimism,
-      "https://black-cosmopolitan-hexagon.optimism.quiknode.pro/18382925841f9d09f9e76eef954bf189aa234523/"
+      "https://black-cosmopolitan-hexagon.optimism.quiknode.pro/18382925841f9d09f9e76eef954bf189aa234523/",
     ),
     pollingInterval: 1000, // 1 second for Optimism
     zapperEnum: "OPTIMISM_MAINNET",
-    coingeckoName: "optimism"
+    coingeckoName: "optimism",
   },
   [polygon.id]: {
     id: polygon.id,
@@ -120,11 +120,11 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     nativeToken: getPolToken(),
     viem: getCustomEvmChain(
       polygon,
-      "https://purple-young-field.matic.quiknode.pro/ca54f365c1a4c7f970223eb8087e0fc579feba12/"
+      "https://purple-young-field.matic.quiknode.pro/ca54f365c1a4c7f970223eb8087e0fc579feba12/",
     ),
     pollingInterval: 1000, // 1 second for Polygon
     zapperEnum: "POLYGON_MAINNET",
-    coingeckoName: "polygon"
+    coingeckoName: "polygon",
   },
   [avalanche.id]: {
     id: avalanche.id,
@@ -137,11 +137,11 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     nativeToken: getAvaxToken(),
     viem: getCustomEvmChain(
       avalanche,
-      "https://burned-billowing-pond.avalanche-mainnet.quiknode.pro/24289978a524a18ef42e568e04fe8cad8c7b6720/ext/bc/C/rpc/"
+      "https://burned-billowing-pond.avalanche-mainnet.quiknode.pro/24289978a524a18ef42e568e04fe8cad8c7b6720/ext/bc/C/rpc/",
     ),
     pollingInterval: 1000, // 1 second for Avalanche
     zapperEnum: "AVALANCHE_MAINNET",
-    coingeckoName: "avalanche"
+    coingeckoName: "avalanche",
   },
   [bsc.id]: {
     id: bsc.id,
@@ -155,7 +155,7 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     viem: getCustomEvmChain(bsc, "https://bsc-rpc.publicnode.com"),
     pollingInterval: 1000, // 1 second for BSC
     zapperEnum: "BSC_MAINNET",
-    coingeckoName: "bsc"
+    coingeckoName: "bsc",
   },
   [b3.id]: {
     id: b3.id,
@@ -168,12 +168,12 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     nativeToken: getEthToken(b3.id),
     viem: getCustomEvmChain(
       b3,
-      "https://late-dimensional-yard.b3-mainnet.quiknode.pro/461dbdbd44158cd7a7a764a58ffb01a67eef77f2/"
+      "https://late-dimensional-yard.b3-mainnet.quiknode.pro/461dbdbd44158cd7a7a764a58ffb01a67eef77f2/",
     ),
     pollingInterval: 1000, // 1 second for B3
     zapperEnum: "B3_MAINNET",
-    coingeckoName: "b3"
-  }
+    coingeckoName: "b3",
+  },
 };
 
 export const EVM_TESTNET: Record<number, IEVMChain> = {
@@ -187,7 +187,7 @@ export const EVM_TESTNET: Record<number, IEVMChain> = {
     defaultToken: getEthToken(sepolia.id),
     nativeToken: getEthToken(sepolia.id),
     viem: sepolia,
-    pollingInterval: 1000 // 1 second for Sepolia
+    pollingInterval: 1000, // 1 second for Sepolia
   },
   [baseSepolia.id]: {
     id: baseSepolia.id,
@@ -199,7 +199,7 @@ export const EVM_TESTNET: Record<number, IEVMChain> = {
     defaultToken: getEthToken(baseSepolia.id),
     nativeToken: getEthToken(baseSepolia.id),
     viem: baseSepolia,
-    pollingInterval: 1000 // 1 second for Base Sepolia
+    pollingInterval: 1000, // 1 second for Base Sepolia
   },
   [b3Sepolia.id]: {
     id: b3Sepolia.id,
@@ -211,8 +211,8 @@ export const EVM_TESTNET: Record<number, IEVMChain> = {
     defaultToken: getEthToken(b3Sepolia.id),
     nativeToken: getEthToken(b3Sepolia.id),
     viem: b3Sepolia,
-    pollingInterval: 1000 // 1 second for B3 Sepolia
-  }
+    pollingInterval: 1000, // 1 second for B3 Sepolia
+  },
   // [b4testnet.id]: {
   //   id: b4testnet.id,
   //   logoUrl: "https://cdn.b3.fun/b4-logo.png",
@@ -231,7 +231,7 @@ export const SOLANA_MAINNET: ISolanaChain = {
   nativeRequired: BigInt(10000000), // 0.01 SOL
   canDepositNative: true,
   defaultToken: getSolanaToken(),
-  nativeToken: getSolanaToken()
+  nativeToken: getSolanaToken(),
 };
 
 export const EVM_CHAINS: Record<number, IEVMChain> = { ...EVM_MAINNET, ...EVM_TESTNET };
@@ -260,7 +260,7 @@ export function chainIdToPublicClient(chainId: number): PublicClient {
   return createPublicClient({
     chain: EVM_CHAINS[chainId].viem,
     transport: http(),
-    pollingInterval: EVM_CHAINS[chainId].pollingInterval
+    pollingInterval: EVM_CHAINS[chainId].pollingInterval,
   });
 }
 
@@ -271,7 +271,7 @@ export function chainIdToWalletClient(chainId: number, account?: Account): Walle
     chain: EVM_CHAINS[chainId].viem,
     transport: http(),
     account,
-    pollingInterval: EVM_CHAINS[chainId].pollingInterval
+    pollingInterval: EVM_CHAINS[chainId].pollingInterval,
   });
 }
 

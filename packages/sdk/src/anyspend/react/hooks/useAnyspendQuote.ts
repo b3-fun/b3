@@ -39,11 +39,11 @@ export function useAnyspendQuote(isMainnet: boolean, req: GetQuoteRequest) {
                 ? req.price
                 : req.type === OrderType.FundTournament
                   ? req.fundAmount
-                  : req.payload.amount
-        ) !== BigInt(0)
+                  : req.payload.amount,
+        ) !== BigInt(0),
     ),
     refetchInterval: 10000,
-    retry: false
+    retry: false,
   });
 
   return useMemo(
@@ -51,8 +51,8 @@ export function useAnyspendQuote(isMainnet: boolean, req: GetQuoteRequest) {
       anyspendQuote: data,
       isLoadingAnyspendQuote: isLoading,
       getAnyspendQuoteError: error,
-      refetchAnyspendQuote: refetch
+      refetchAnyspendQuote: refetch,
     }),
-    [data, error, isLoading, refetch]
+    [data, error, isLoading, refetch],
   );
 }

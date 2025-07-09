@@ -11,14 +11,14 @@ const abi = [
     name: "balanceOf",
     outputs: [{ name: "", type: "uint256" }],
     stateMutability: "view",
-    type: "function"
-  }
+    type: "function",
+  },
 ] as const;
 
 // Create a public client for Base
 const client = createPublicClient({
   chain: base,
-  transport: http()
+  transport: http(),
 });
 
 async function fetchB3Balances(addresses: string[]): Promise<{
@@ -38,15 +38,15 @@ async function fetchB3Balances(addresses: string[]): Promise<{
           address: B3_TOKEN.address,
           abi,
           functionName: "balanceOf",
-          args: [address as `0x${string}`]
+          args: [address as `0x${string}`],
         });
 
         return {
           address,
           balance,
-          formatted: formatUnits(balance, B3_TOKEN.decimals)
+          formatted: formatUnits(balance, B3_TOKEN.decimals),
         };
-      })
+      }),
     );
 
     // Calculate total
@@ -55,7 +55,7 @@ async function fetchB3Balances(addresses: string[]): Promise<{
     return {
       totalBalance,
       formattedTotal: formatNumber(Number(formatUnits(totalBalance, B3_TOKEN.decimals))),
-      breakdown: balances
+      breakdown: balances,
     };
   } catch (error) {
     console.error("Error fetching B3 balances:", error);
@@ -68,7 +68,7 @@ export function useB3BalanceFromAddresses(
   options?: {
     enabled?: boolean;
     refetchInterval?: number;
-  }
+  },
 ) {
   // Normalize addresses to array
   const normalizedAddresses = Array.isArray(addresses)
@@ -84,7 +84,7 @@ export function useB3BalanceFromAddresses(
     queryFn: () => fetchB3Balances(normalizedAddresses),
     enabled: (options?.enabled ?? true) && normalizedAddresses.length > 0,
     refetchInterval: options?.refetchInterval ?? 30000, // Default 30s refresh
-    staleTime: 10000 // Consider data stale after 10s
+    staleTime: 10000, // Consider data stale after 10s
   });
 }
 

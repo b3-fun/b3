@@ -4,7 +4,7 @@ import * as TabsPrimitive from "@radix-ui/react-tabs";
 export const Tabs = ({
   defaultValue,
   onValueChange,
-  children
+  children,
 }: {
   defaultValue: string;
   onValueChange?: (value: string) => void;
@@ -20,7 +20,7 @@ export function TabsList({ className, ...props }: React.ComponentProps<typeof Ta
     <TabsPrimitive.List
       className={cn(
         "border-b3-react-border bg-b3-react-background inline-flex h-12 w-full items-center justify-center rounded-lg border",
-        className
+        className,
       )}
       {...props}
     />
@@ -36,7 +36,7 @@ export function TabTrigger({ className, ...props }: React.ComponentProps<typeof 
         "data-[state=active]:bg-b3-react-subtle data-[state=active]:text-b3-react-primary data-[state=active]:font-bold",
         "border-b3-react-border hover:text-b3-react-foreground data-[state=inactive]:border-b3-react-border data-[state=inactive]:text-b3-react-muted-foreground",
         "flex-1 border-r",
-        className
+        className,
       )}
       {...props}
     />
@@ -48,7 +48,7 @@ export function TabsContent({ className, ...props }: React.ComponentProps<typeof
     <TabsPrimitive.Content
       className={cn(
         "ring-offset-b3-react-background focus-visible:ring-b3-react-ring mt-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
-        className
+        className,
       )}
       {...props}
     />

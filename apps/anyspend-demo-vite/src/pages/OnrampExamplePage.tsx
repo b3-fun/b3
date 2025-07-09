@@ -17,7 +17,7 @@ export default function OnrampExamplePage() {
       toChainId: chainId,
       recipient: recipientAddress,
       userId,
-      ...(partnerId && { partnerId })
+      ...(partnerId && { partnerId }),
     });
 
     return `${window.location.origin}/onramp?${params.toString()}`;
@@ -31,8 +31,8 @@ export default function OnrampExamplePage() {
         toChainId: chainId,
         recipient: recipientAddress,
         userId,
-        ...(partnerId && { partnerId })
-      }).toString()}`
+        ...(partnerId && { partnerId }),
+      }).toString()}`,
     );
   };
 

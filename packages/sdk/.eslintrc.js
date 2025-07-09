@@ -4,7 +4,7 @@ module.exports = {
   parser: "@typescript-eslint/parser",
   parserOptions: {
     ecmaVersion: "latest",
-    sourceType: "module"
+    sourceType: "module",
   },
   plugins: ["react-hooks"],
   root: true,
@@ -13,18 +13,18 @@ module.exports = {
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "warn",
     "tailwindcss/classnames-order": "off",
-    "tailwindcss/enforces-shorthand": "off"
+    "tailwindcss/enforces-shorthand": "off",
   },
   overrides: [
     {
-      files: ["src/**/*"]
-    }
+      files: ["src/**/*"],
+    },
   ],
   settings: {
     tailwindcss: {
       config: path.resolve(__dirname, "./tailwind.config.js"),
       callees: ["cn", "clsx"],
-      removeDuplicates: true
-    }
-  }
+      removeDuplicates: true,
+    },
+  },
 };

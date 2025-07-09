@@ -21,7 +21,7 @@ import {
   useAnyspendOrderAndTransactions,
   useAnyspendQuote,
   useAnyspendTokenList,
-  useGeoOnrampOptions
+  useGeoOnrampOptions,
 } from "@b3dotfun/sdk/anyspend";
 import {
   Badge,
@@ -42,7 +42,7 @@ import {
   useModalStore,
   useRouter,
   useSearchParamsSSR,
-  useTokenBalancesByChain
+  useTokenBalancesByChain,
 } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils";
 import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
@@ -64,7 +64,7 @@ enum PanelView {
   CONFIRM_ORDER,
   HISTORY,
   ORDER_DETAILS,
-  LOADING
+  LOADING,
 }
 
 function generateGetRelayQuoteRequest({
@@ -78,7 +78,7 @@ function generateGetRelayQuoteRequest({
   tokenId,
   contractType,
   encodedData,
-  spenderAddress
+  spenderAddress,
 }: {
   orderType: OrderType;
   srcChainId: number;
@@ -103,7 +103,7 @@ function generateGetRelayQuoteRequest({
         price: dstAmount,
         contractAddress: contractAddress,
         tokenId: tokenId!,
-        contractType: contractType!
+        contractType: contractType!,
       };
     }
     case OrderType.JoinTournament: {
@@ -114,7 +114,7 @@ function generateGetRelayQuoteRequest({
         dstChain: dstChainId,
         dstTokenAddress: dstToken.address,
         price: dstAmount,
-        contractAddress: contractAddress
+        contractAddress: contractAddress,
       };
     }
     case OrderType.FundTournament: {
@@ -125,7 +125,7 @@ function generateGetRelayQuoteRequest({
         dstChain: dstChainId,
         dstTokenAddress: dstToken.address,
         fundAmount: dstAmount,
-        contractAddress: contractAddress
+        contractAddress: contractAddress,
       };
     }
     case OrderType.Custom: {
@@ -139,8 +139,8 @@ function generateGetRelayQuoteRequest({
           amount: dstAmount,
           data: encodedData,
           to: contractAddress,
-          spenderAddress: spenderAddress
-        }
+          spenderAddress: spenderAddress,
+        },
       };
     }
     default: {
@@ -164,7 +164,7 @@ export function AnySpendCustom({
   metadata,
   header,
   onSuccess,
-  showRecipient = true
+  showRecipient = true,
 }: {
   isMainnet?: boolean;
   loadOrder?: string;
@@ -180,7 +180,7 @@ export function AnySpendCustom({
   metadata: AnySpendMetadata;
   header: ({
     anyspendPrice,
-    isLoadingAnyspendPrice
+    isLoadingAnyspendPrice,
   }: {
     anyspendPrice: GetQuoteResponse | undefined;
     isLoadingAnyspendPrice: boolean;
@@ -196,7 +196,7 @@ export function AnySpendCustom({
   const router = useRouter();
 
   const [activePanel, setActivePanel] = useState<PanelView>(
-    loadOrder ? PanelView.ORDER_DETAILS : PanelView.CONFIRM_ORDER
+    loadOrder ? PanelView.ORDER_DETAILS : PanelView.CONFIRM_ORDER,
   );
   const [activeTab, setActiveTab] = useState<"crypto" | "fiat">("crypto");
 
@@ -225,7 +225,7 @@ export function AnySpendCustom({
   const { nativeTokens, fungibleTokens } = useTokenBalancesByChain({
     address: currentWallet?.wallet?.address || "",
     chainsIds: [srcChainId],
-    enabled: !!currentWallet?.wallet?.address && !!chainName
+    enabled: !!currentWallet?.wallet?.address && !!chainName,
   });
 
   // Find a token with a balance, prioritizing tokens the user already owns
@@ -290,14 +290,14 @@ export function AnySpendCustom({
     tokenId: isNftMetadata(metadata) ? metadata.nftContract.tokenId : undefined,
     contractType: isNftMetadata(metadata) ? metadata.nftContract.type : undefined,
     encodedData: encodedData,
-    spenderAddress: spenderAddress
+    spenderAddress: spenderAddress,
   });
   const { anyspendQuote, isLoadingAnyspendQuote } = useAnyspendQuote(isMainnet, getRelayQuoteRequest);
 
   // Get geo data and onramp options (after quote is available)
   const { geoData, isOnrampSupported } = useGeoOnrampOptions(
     isMainnet,
-    anyspendQuote?.data?.currencyIn?.amountUsd || "0"
+    anyspendQuote?.data?.currencyIn?.amountUsd || "0",
   );
 
   const { orderAndTransactions: oat } = useAnyspendOrderAndTransactions(isMainnet, orderId);
@@ -354,7 +354,7 @@ export function AnySpendCustom({
     onError: error => {
       console.error(error);
       toast.error("Failed to create order: " + error.message);
-    }
+    },
   });
 
   const { createOrder: createOnrampOrder, isCreatingOrder: isCreatingOnrampOrder } = useAnyspendCreateOnrampOrder({
@@ -364,14 +364,14 @@ export function AnySpendCustom({
     onError: error => {
       console.error(error);
       toast.error("Failed to create order: " + error.message);
-    }
+    },
   });
 
   const isCreatingOrder = isCreatingRegularOrder || isCreatingOnrampOrder;
 
   const handleCreateOrder = async (
     recipientAddress: string,
-    onramp?: { paymentMethod: string; vendor: OnrampVendor }
+    onramp?: { paymentMethod: string; vendor: OnrampVendor },
   ) => {
     try {
       invariant(anyspendQuote, "Relay price is not found");
@@ -396,7 +396,7 @@ export function AnySpendCustom({
                 name: metadata.nftContract.name,
                 description: metadata.nftContract.description,
                 imageUrl: metadata.nftContract.imageUrl,
-                price: dstAmount
+                price: dstAmount,
               } as Nft)
             : ({
                 type: NftType.ERC721,
@@ -405,14 +405,14 @@ export function AnySpendCustom({
                 price: dstAmount,
                 name: metadata.nftContract.name,
                 description: metadata.nftContract.description,
-                imageUrl: metadata.nftContract.imageUrl
+                imageUrl: metadata.nftContract.imageUrl,
               } as Nft)
           : undefined,
         tournament: isTournamentMetadata(metadata)
           ? {
               ...metadata.tournament,
               contractAddress: contractAddress,
-              entryPriceOrFundAmount: dstAmount
+              entryPriceOrFundAmount: dstAmount,
             }
           : undefined,
         // only populate payload for custom tx
@@ -422,9 +422,9 @@ export function AnySpendCustom({
               data: encodedData,
               spenderAddress: spenderAddress,
               to: contractAddress,
-              action: metadata.action
+              action: metadata.action,
             }
-          : undefined
+          : undefined,
       } as CreateOrderParams;
 
       if (onramp) {
@@ -441,9 +441,9 @@ export function AnySpendCustom({
             redirectUrl:
               window.location.origin === "https://basement.fun"
                 ? "https://basement.fun/deposit"
-                : window.location.origin
+                : window.location.origin,
           },
-          expectedDstAmount: anyspendQuote?.data?.currencyOut?.amount?.toString() || "0"
+          expectedDstAmount: anyspendQuote?.data?.currencyOut?.amount?.toString() || "0",
         });
       } else {
         void createRegularOrder(createOrderParams);
@@ -463,11 +463,11 @@ export function AnySpendCustom({
           ...b3,
           rpc: "https://mainnet-rpc.b3.fun",
           blockExplorers: [{ name: "B3 Explorer", url: "https://explorer.b3.fun/" }],
-          testnet: undefined
+          testnet: undefined,
         },
         partnerId: String(process.env.NEXT_PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID),
         type: "signInWithB3",
-        showBackButton: false
+        showBackButton: false,
       });
       setB3ModalOpen(true);
       return;
@@ -490,7 +490,7 @@ export function AnySpendCustom({
         animate={{
           opacity: hasMounted ? 1 : 0,
           y: hasMounted ? 0 : 20,
-          filter: hasMounted ? "blur(0px)" : "blur(10px)"
+          filter: hasMounted ? "blur(0px)" : "blur(10px)",
         }}
         transition={{ duration: 0.3, delay: 0.2, ease: "easeInOut" }}
         className="flex w-full items-center justify-between gap-4"
@@ -529,7 +529,7 @@ export function AnySpendCustom({
     <div
       className={cn(
         "mx-auto flex w-full max-w-2xl flex-col items-center p-5",
-        mode === "modal" && "bg-b3-react-background"
+        mode === "modal" && "bg-b3-react-background",
       )}
     >
       <OrderHistory
@@ -546,7 +546,7 @@ export function AnySpendCustom({
     <div
       className={cn(
         "mx-auto flex max-h-[90dvh] w-full flex-col items-center gap-4 overflow-y-auto p-5",
-        mode === "modal" && "bg-b3-react-background"
+        mode === "modal" && "bg-b3-react-background",
       )}
     >
       {oat && (
@@ -579,7 +579,7 @@ export function AnySpendCustom({
     <div
       className={cn(
         "mx-auto flex w-full flex-col items-center gap-4 p-5",
-        mode === "modal" && "bg-b3-react-background"
+        mode === "modal" && "bg-b3-react-background",
       )}
     >
       {/* Status Badge */}
@@ -686,7 +686,7 @@ export function AnySpendCustom({
                 animate={{
                   opacity: hasMounted ? 1 : 0,
                   y: hasMounted ? 0 : 20,
-                  filter: hasMounted ? "blur(0px)" : "blur(10px)"
+                  filter: hasMounted ? "blur(0px)" : "blur(10px)",
                 }}
                 transition={{ duration: 0.3, delay: 0, ease: "easeInOut" }}
                 className="relative flex w-full items-center justify-between"
@@ -711,7 +711,7 @@ export function AnySpendCustom({
                 animate={{
                   opacity: hasMounted ? 1 : 0,
                   y: hasMounted ? 0 : 20,
-                  filter: hasMounted ? "blur(0px)" : "blur(10px)"
+                  filter: hasMounted ? "blur(0px)" : "blur(10px)",
                 }}
                 transition={{ duration: 0.3, delay: 0.1, ease: "easeInOut" }}
                 className="relative flex w-full items-center justify-between"
@@ -732,7 +732,7 @@ export function AnySpendCustom({
                 animate={{
                   opacity: hasMounted ? 1 : 0,
                   y: hasMounted ? 0 : 20,
-                  filter: hasMounted ? "blur(0px)" : "blur(10px)"
+                  filter: hasMounted ? "blur(0px)" : "blur(10px)",
                 }}
                 transition={{ duration: 0.3, delay: 0.3, ease: "easeInOut" }}
                 className="flex w-full flex-col gap-2"
@@ -796,7 +796,7 @@ export function AnySpendCustom({
                         imageUrl: metadata.nftContract.imageUrl,
                         name: metadata.nftContract.name,
                         description: metadata.nftContract.description,
-                        price: dstAmount
+                        price: dstAmount,
                       }
                     : {
                         type: NftType.ERC721,
@@ -804,7 +804,7 @@ export function AnySpendCustom({
                         name: metadata.nftContract.name,
                         description: metadata.nftContract.description,
                         imageUrl: metadata.nftContract.imageUrl,
-                        price: dstAmount
+                        price: dstAmount,
                       }
                   : undefined
               }
@@ -815,7 +815,7 @@ export function AnySpendCustom({
                       amount: dstAmount,
                       data: encodedData,
                       to: contractAddress,
-                      spenderAddress: spenderAddress
+                      spenderAddress: spenderAddress,
                     }
                   : undefined
               }
@@ -845,7 +845,7 @@ export function AnySpendCustom({
         variants={{
           enter: { x: 300, opacity: 0 },
           center: { x: 0, opacity: 1 },
-          exit: { x: -300, opacity: 0 }
+          exit: { x: -300, opacity: 0 },
         }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
@@ -861,7 +861,7 @@ export function AnySpendCustom({
           </div>,
           <div key="loading-view" className="w-full">
             {loadingView}
-          </div>
+          </div>,
         ]}
       </TransitionPanel>
     </StyleRoot>

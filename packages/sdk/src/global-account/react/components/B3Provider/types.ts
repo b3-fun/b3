@@ -36,5 +36,5 @@ export const B3Context = createContext<B3ContextType>({
   initialized: false,
   ready: false,
   environment: "development",
-  theme: "light"
+  theme: "light",
 });
