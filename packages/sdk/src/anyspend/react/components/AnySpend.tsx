@@ -2,6 +2,7 @@
 
 import {
   getDefaultToken,
+  OnrampVendor,
   OrderType,
   Token,
   TradeType,
@@ -402,7 +403,8 @@ export function AnySpend({
           dstTokenAddress: isBuyMode ? destinationTokenAddress : selectedDstToken.address,
           type: OrderType.Swap,
           tradeType: TradeType.EXACT_INPUT,
-          amount: srcAmountOnrampInWei
+          amount: srcAmountOnrampInWei,
+          onrampVendor: OnrampVendor.StripeWeb2 // TODO: don't commit this
         }
   );
 

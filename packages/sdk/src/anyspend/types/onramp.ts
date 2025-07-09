@@ -11,5 +11,6 @@ export const zOnrampMetadata = z.object({
   vendor: z.nativeEnum(OnrampVendor),
   paymentMethod: z.string(),
   ipAddress: z.string().ip("Invalid IP address").optional(),
-  redirectUrl: z.string()
+  redirectUrl: z.string(),
+  stripeAmountInCents: z.number().optional()
 });
