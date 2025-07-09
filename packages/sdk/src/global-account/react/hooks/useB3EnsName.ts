@@ -41,20 +41,20 @@ export const useB3EnsName = () => {
     }
 
     const data = await response.json();
-    return data as { 
-      name: string,
-      owner: `0x${string}`,
-      addresses: Record<string, `0x${string}`>,
-      createdAt: number,
-      updatedAt: number,
+    return data as {
+      name: string;
+      owner: `0x${string}`;
+      addresses: Record<string, `0x${string}`>;
+      createdAt: number;
+      updatedAt: number;
     };
-  }
+  };
 
   return useMemo(
     () => ({
       registerEns,
       getEns,
-      lookupEnsName
+      lookupEnsName,
     }),
     [],
   );
