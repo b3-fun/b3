@@ -12,6 +12,7 @@ import {
   getPaymentUrl,
   getStatusDisplay,
   isNativeToken,
+  OnrampVendor,
   Order,
   OrderStatus,
   OrderType,
@@ -413,7 +414,11 @@ export const OrderDetails = memo(function OrderDetails({
             ? depositTxs.map(dTx => (
                 <TransactionDetails
                   key={dTx.txHash}
-                  title={`Received ${formatTokenAmount(BigInt(dTx.amount), srcToken.decimals)} ${srcToken.symbol}`}
+                  title={
+                    order.onrampMetadata?.vendor === OnrampVendor.StripeWeb2
+                      ? `Received payment`
+                      : `Received ${formatTokenAmount(BigInt(dTx.amount), srcToken.decimals)} ${srcToken.symbol}`
+                  }
                   chainId={order.srcChain}
                   tx={dTx}
                   isProcessing={false}
@@ -471,7 +476,11 @@ export const OrderDetails = memo(function OrderDetails({
             ? depositTxs.map(dTxs => (
                 <TransactionDetails
                   key={dTxs.txHash}
-                  title={`Received ${formatTokenAmount(BigInt(dTxs.amount), srcToken.decimals)} ${srcToken.symbol}`}
+                  title={
+                    order.onrampMetadata?.vendor === OnrampVendor.StripeWeb2
+                      ? `Received payment`
+                      : `Received ${formatTokenAmount(BigInt(dTxs.amount), srcToken.decimals)} ${srcToken.symbol}`
+                  }
                   chainId={order.srcChain}
                   tx={dTxs}
                   isProcessing={false}
@@ -571,7 +580,11 @@ export const OrderDetails = memo(function OrderDetails({
             ? depositTxs.map(dTxs => (
                 <TransactionDetails
                   key={dTxs.txHash}
-                  title={`Received ${formatTokenAmount(BigInt(dTxs.amount), srcToken.decimals)} ${srcToken.symbol}`}
+                  title={
+                    order.onrampMetadata?.vendor === OnrampVendor.StripeWeb2
+                      ? `Received payment`
+                      : `Received ${formatTokenAmount(BigInt(dTxs.amount), srcToken.decimals)} ${srcToken.symbol}`
+                  }
                   chainId={order.srcChain}
                   tx={dTxs}
                   isProcessing={false}
@@ -696,7 +709,11 @@ export const OrderDetails = memo(function OrderDetails({
           {(depositTxs || []).map((dTxs, index) => (
             <TransactionDetails
               key={dTxs.txHash}
-              title={`Received ${formatTokenAmount(BigInt(dTxs.amount), srcToken.decimals)} ${srcToken.symbol}`}
+              title={
+                order.onrampMetadata?.vendor === OnrampVendor.StripeWeb2
+                  ? `Received payment`
+                  : `Received ${formatTokenAmount(BigInt(dTxs.amount), srcToken.decimals)} ${srcToken.symbol}`
+              }
               chainId={order.srcChain}
               tx={dTxs}
               isProcessing={index < (depositTxs || []).length - 1 ? false : !depositEnoughAmount}
@@ -730,7 +747,11 @@ export const OrderDetails = memo(function OrderDetails({
             />
           ) : (
             <TransactionDetails
-              title={`Waiting for deposit ${formattedDepositDeficit} ${srcToken.symbol}`}
+              title={
+                order.onrampMetadata?.vendor === OnrampVendor.StripeWeb2
+                  ? `Waiting for payment`
+                  : `Waiting for deposit ${formattedDepositDeficit} ${srcToken.symbol}`
+              }
               chainId={order.srcChain}
               tx={null}
               isProcessing={true}
