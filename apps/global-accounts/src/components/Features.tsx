@@ -5,23 +5,23 @@ const features = [
   {
     icon: <Wallet className="text-b3-blue h-8 w-8" />,
     title: "Seamless Authentication",
-    description: "Let users sign in with email, social accounts, or existing wallets - all powered by Global Accounts."
+    description: "Let users sign in with email, social accounts, or existing wallets - all powered by Global Accounts.",
   },
   {
     icon: <ArrowRightLeft className="text-b3-blue h-8 w-8" />,
     title: "Built-in Onramp",
-    description: "Users can buy crypto directly through their Global Account with our integrated fiat onramp."
+    description: "Users can buy crypto directly through their Global Account with our integrated fiat onramp.",
   },
   {
     icon: <Coins className="text-b3-blue h-8 w-8" />,
     title: "Universal Identity",
-    description: "One Global Account works everywhere - users can access any B3-powered app instantly."
+    description: "One Global Account works everywhere - users can access any B3-powered app instantly.",
   },
   {
     icon: <Zap className="text-b3-blue h-8 w-8" />,
     title: "Gasless Experience",
-    description: "Global Accounts handle gas fees behind the scenes for a truly seamless user experience."
-  }
+    description: "Global Accounts handle gas fees behind the scenes for a truly seamless user experience.",
+  },
 ];
 
 export function Features() {

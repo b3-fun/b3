@@ -20,7 +20,7 @@ import {
   RelayTransaction,
   zNft,
   zToken,
-  zTournament
+  zTournament,
 } from "@b3dotfun/sdk/anyspend";
 import {
   Badge,
@@ -33,7 +33,7 @@ import {
   useAccountWallet,
   useChainSwitchWithAction,
   useModalStore,
-  useOnchainName
+  useOnchainName,
 } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils";
 import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
@@ -50,7 +50,7 @@ import {
   Home,
   Loader2,
   RefreshCcw,
-  SquareArrowOutUpRight
+  SquareArrowOutUpRight,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
@@ -81,7 +81,7 @@ function getOrderSuccessText({
   formattedActualDstAmount,
   dstToken,
   recipientName,
-  centerTruncate
+  centerTruncate,
 }: {
   order: Order;
   tournament?: any;
@@ -207,7 +207,7 @@ export const OrderDetails = memo(function OrderDetails({
   relayTx,
   executeTx,
   refundTxs,
-  onBack
+  onBack,
 }: OrderDetailsProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -308,7 +308,7 @@ export const OrderDetails = memo(function OrderDetails({
           account: signer,
           chain: EVM_CHAINS[order.srcChain].viem,
           to: order.globalAddress as `0x${string}`,
-          value: BigInt(order.srcAmount)
+          value: BigInt(order.srcAmount),
         });
         setTxHash(hash);
       } else {
@@ -318,12 +318,12 @@ export const OrderDetails = memo(function OrderDetails({
           address: order.srcTokenAddress as `0x${string}`,
           abi: erc20Abi,
           functionName: "transfer",
-          args: [order.globalAddress as Address, BigInt(order.srcAmount)]
+          args: [order.globalAddress as Address, BigInt(order.srcAmount)],
         });
         setTxHash(hash);
       }
     },
-    [order]
+    [order],
   );
 
   // Main payment handler that triggers chain switch and payment
@@ -517,7 +517,7 @@ export const OrderDetails = memo(function OrderDetails({
                 formattedActualDstAmount: formattedActualDstAmount,
                 dstToken,
                 recipientName,
-                centerTruncate
+                centerTruncate,
               })}
               <ExternalLink className="ml-2 h-4 w-4" />
             </a>
@@ -641,7 +641,7 @@ export const OrderDetails = memo(function OrderDetails({
                 formattedActualDstAmount,
                 dstToken,
                 recipientName,
-                centerTruncate
+                centerTruncate,
               })}
               <ExternalLink className="ml-2 h-4 w-4" />
             </a>
@@ -863,7 +863,7 @@ export const OrderDetails = memo(function OrderDetails({
                       value={getPaymentUrl(
                         order.globalAddress,
                         BigInt(order.srcAmount),
-                        order.srcTokenAddress === RELAY_ETH_ADDRESS ? "ETH" : order.srcTokenAddress
+                        order.srcTokenAddress === RELAY_ETH_ADDRESS ? "ETH" : order.srcTokenAddress,
                       )}
                       className="max-w-[200px]"
                     />
@@ -932,7 +932,7 @@ export const OrderDetails = memo(function OrderDetails({
                       .share({
                         title: "Complete Deposit",
                         text: "Complete your deposit on BSMNT.fun",
-                        url: permalink
+                        url: permalink,
                       })
                       .catch(error => console.log("Error sharing:", error));
                   } else {
@@ -1006,7 +1006,7 @@ export const OrderDetails = memo(function OrderDetails({
                     className={cn(
                       "h-3",
                       order.dstChain !== b3.id && "w-3 rounded-full",
-                      order.dstChain === b3.id && "h-4"
+                      order.dstChain === b3.id && "h-4",
                     )}
                   />
                 </div>
@@ -1069,7 +1069,7 @@ function TransactionDetails({
   chainId,
   tx,
   isProcessing,
-  delay
+  delay,
 }: {
   title: string;
   chainId: number;
@@ -1097,7 +1097,7 @@ function TransactionDetails({
               transition={{ duration: 0.5, ease: "easeOut", delay }}
               className="bg-as-brand/70 absolute z-10 m-2 flex h-6 w-6 items-center justify-center rounded-full border border-white/30 shadow-lg shadow-purple-500/30 backdrop-blur-sm"
               style={{
-                boxShadow: "0 0 15px 5px rgba(138, 43, 226, 0.2)"
+                boxShadow: "0 0 15px 5px rgba(138, 43, 226, 0.2)",
               }}
             >
               <CheckIcon className="text-as-primary h-3 w-3" />

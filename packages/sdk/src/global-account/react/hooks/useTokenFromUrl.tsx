@@ -33,12 +33,12 @@ async function fetchTokenInfo(network: string, address: string): Promise<TokenIn
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-Service-Method": "getCoinGeckoTokenInfo"
+      "X-Service-Method": "getCoinGeckoTokenInfo",
     },
     body: JSON.stringify({
       network,
-      address
-    })
+      address,
+    }),
   });
 
   if (!response.ok) {
@@ -61,7 +61,7 @@ export function useTokenFromUrl({ defaultToken, prefix }: UseTokenFromUrlOptions
 
   // Determine if we should fetch token info
   const shouldFetchToken = Boolean(
-    currencyParam && chainIdParam && currencyParam.toLowerCase() !== defaultToken.address.toLowerCase()
+    currencyParam && chainIdParam && currencyParam.toLowerCase() !== defaultToken.address.toLowerCase(),
   );
 
   // Determine network based on chainId
@@ -72,7 +72,7 @@ export function useTokenFromUrl({ defaultToken, prefix }: UseTokenFromUrlOptions
     queryFn: () => fetchTokenInfo(network, currencyParam!),
     enabled: shouldFetchToken,
     staleTime: Infinity,
-    gcTime: Infinity
+    gcTime: Infinity,
   });
 
   // Return default token if no params or same as default
@@ -85,7 +85,7 @@ export function useTokenFromUrl({ defaultToken, prefix }: UseTokenFromUrlOptions
     return {
       ...defaultToken,
       address: currencyParam!,
-      chainId: Number(chainIdParam)
+      chainId: Number(chainIdParam),
     };
   }
 
@@ -97,8 +97,8 @@ export function useTokenFromUrl({ defaultToken, prefix }: UseTokenFromUrlOptions
     symbol: tokenInfo.data.attributes.symbol,
     decimals: tokenInfo.data.attributes.decimals,
     metadata: {
-      logoURI: tokenInfo.data.attributes.image_url
-    }
+      logoURI: tokenInfo.data.attributes.image_url,
+    },
   };
 }
 
@@ -108,7 +108,7 @@ export function useTokenFromAddress({ address, chainId }: { address: string; cha
     queryFn: () => fetchTokenInfo(getCoingeckoChainInfo(chainId).coingecko_id, address),
     enabled: Boolean(address),
     staleTime: Infinity,
-    gcTime: Infinity
+    gcTime: Infinity,
   });
 
   if (isError || !tokenInfo) {
@@ -122,7 +122,7 @@ export function useTokenFromAddress({ address, chainId }: { address: string; cha
     symbol: tokenInfo?.data.attributes.symbol || "",
     decimals: tokenInfo?.data.attributes.decimals || 18,
     metadata: {
-      logoURI: tokenInfo?.data.attributes.image_url
-    }
+      logoURI: tokenInfo?.data.attributes.image_url,
+    },
   };
 }

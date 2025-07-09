@@ -11,14 +11,14 @@ export function useAddTWSessionKey({
   onSuccess,
   onError,
   refetchSigners,
-  chain
+  chain,
 }: {
   chain?: Chain;
   onSuccess: (
     transactionResult: { transactionHash: Hex } & {
       client: ThirdwebClient;
       chain: Chain;
-    }
+    },
   ) => void;
   onError: (error: Error) => void;
   refetchSigners: () => Promise<any>;
@@ -34,7 +34,7 @@ export function useAddTWSessionKey({
     approvedTargets,
     nativeTokenLimitPerTransaction,
     permissionStartTimestamp,
-    permissionEndTimestamp
+    permissionEndTimestamp,
   }: {
     sessionKeyAddress: Address;
     approvedTargets: Address[];
@@ -49,14 +49,14 @@ export function useAddTWSessionKey({
       approvedTargets,
       nativeTokenLimitPerTransaction,
       permissionStartTimestamp,
-      permissionEndTimestamp
+      permissionEndTimestamp,
     });
     try {
       const transaction = addSessionKey({
         contract: {
           client,
           chain,
-          address: account.address as `0x${string}`
+          address: account.address as `0x${string}`,
         },
         account,
         sessionKeyAddress,
@@ -64,8 +64,8 @@ export function useAddTWSessionKey({
           approvedTargets,
           nativeTokenLimitPerTransaction,
           permissionStartTimestamp,
-          permissionEndTimestamp
-        }
+          permissionEndTimestamp,
+        },
       });
 
       debug("@@ecosystem:newSessionKey:transaction:", transaction);

@@ -21,7 +21,7 @@ export function useAnyspendOrderAndTransactions(isMainnet: boolean, orderId: str
     structuralSharing: (oldData, newData) => {
       if (isEqual(oldData, newData)) return oldData;
       return newData;
-    }
+    },
   });
 
   return useMemo(
@@ -29,8 +29,8 @@ export function useAnyspendOrderAndTransactions(isMainnet: boolean, orderId: str
       orderAndTransactions: data,
       isLoadingOrderAndTransactions: isLoading,
       getOrderAndTransactionsError: error,
-      refetchOrderAndTransactions: refetch
+      refetchOrderAndTransactions: refetch,
     }),
-    [data, error, isLoading, refetch]
+    [data, error, isLoading, refetch],
   );
 }

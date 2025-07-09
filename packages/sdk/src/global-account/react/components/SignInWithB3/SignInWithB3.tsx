@@ -4,7 +4,7 @@ import {
   StyleRoot,
   useAuthentication,
   useIsMobile,
-  useModalStore
+  useModalStore,
 } from "@b3dotfun/sdk/global-account/react";
 import { ReactNode, useEffect } from "react";
 import { useActiveAccount } from "thirdweb/react";
@@ -34,7 +34,7 @@ export function SignInWithB3(props: SignInWithB3Props) {
     setB3ModalContentType({
       ...props,
       type: "signInWithB3",
-      showBackButton: false
+      showBackButton: false,
     });
     setB3ModalOpen(true);
   };

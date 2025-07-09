@@ -72,8 +72,8 @@ export function useAccountWallet(): {
         ...account,
         ensName,
         meta: {
-          icon: avatarUrl || (isActiveSmartWallet ? smartWalletIcon : walletImage) || ""
-        }
+          icon: avatarUrl || (isActiveSmartWallet ? smartWalletIcon : walletImage) || "",
+        },
       },
 
       address: account?.address,
@@ -86,7 +86,7 @@ export function useAccountWallet(): {
       isActiveEOAWallet: isActiveEOAWallet,
 
       smartWalletIcon: smartWalletIcon,
-      eoaWalletIcon: walletImage
+      eoaWalletIcon: walletImage,
     }),
     [
       account,
@@ -97,8 +97,8 @@ export function useAccountWallet(): {
       isActiveEOAWallet,
       isActiveSmartWallet,
       smartWalletIcon,
-      walletImage
-    ]
+      walletImage,
+    ],
   );
 
   // useEffect(() => {

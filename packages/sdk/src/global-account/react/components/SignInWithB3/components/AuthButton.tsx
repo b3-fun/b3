@@ -4,7 +4,7 @@ import { strategyIcons } from "../utils/signInUtils";
 export function AuthButton({
   strategy,
   onClick,
-  isLoading
+  isLoading,
 }: {
   strategy: string;
   onClick: () => void;

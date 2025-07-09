@@ -40,7 +40,7 @@ export function AnySpendTournament(props: AnySpendTournamentProps) {
     tournamentChainId,
     tournamentContractAddress,
     tournamentMetadata,
-    onSuccess
+    onSuccess,
   } = props;
 
   const dstToken = action === "join" ? props.tournamentEntryToken : props.tournamentFundToken;
@@ -48,7 +48,7 @@ export function AnySpendTournament(props: AnySpendTournamentProps) {
 
   const header = ({
     anyspendPrice,
-    isLoadingAnyspendPrice
+    isLoadingAnyspendPrice,
   }: {
     anyspendPrice: GetQuoteResponse | undefined;
     isLoadingAnyspendPrice: boolean;
@@ -72,7 +72,7 @@ export function AnySpendTournament(props: AnySpendTournamentProps) {
               <AnimatePresence mode="wait">
                 <div
                   className={cn("text-as-primary group flex items-center text-2xl font-semibold transition-all", {
-                    "opacity-0": isLoadingAnyspendPrice
+                    "opacity-0": isLoadingAnyspendPrice,
                   })}
                 >
                   {formatDisplayNumber(anyspendPrice?.data?.currencyIn?.amountUsd, { style: "currency" })} (
@@ -102,7 +102,7 @@ export function AnySpendTournament(props: AnySpendTournamentProps) {
       encodedData="0x"
       metadata={{
         type: action === "join" ? OrderType.JoinTournament : OrderType.FundTournament,
-        tournament: tournamentMetadata
+        tournament: tournamentMetadata,
       }}
       header={header}
       onSuccess={onSuccess}

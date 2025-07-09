@@ -26,7 +26,7 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
   const { connect } = useConnect(partnerId, b3MainnetThirdWeb);
 
   const wallet = ecosystemWallet(ecosystemWalletId, {
-    partnerId: partnerId
+    partnerId: partnerId,
   });
 
   const { isLoading: useAutoConnectLoading } = useAutoConnect({
@@ -64,7 +64,7 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
         setIsAuthenticated(false);
         setUser();
       }
-    }
+    },
   });
 
   // Ensure isAuthenticating stays true until we're fully ready
@@ -121,6 +121,6 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
     isReady,
     wallet,
     preAuthenticate,
-    connect
+    connect,
   };
 }

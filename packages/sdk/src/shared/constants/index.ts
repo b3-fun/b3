@@ -12,7 +12,7 @@ export const tokenIcons = {
   USDC: "https://cdn.b3.fun/usd-coin.svg",
   USDT: "https://cdn.b3.fun/usdt.svg",
   DAI: "https://cdn.b3.fun/dai.svg",
-  B3: b3CoinIcon
+  B3: b3CoinIcon,
   // Add more asset icons as needed
 };
 

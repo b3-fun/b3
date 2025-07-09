@@ -30,7 +30,7 @@ export enum OrderStatus {
   Refunded = "refunded",
 
   // Failed order
-  Failure = "failure"
+  Failure = "failure",
 }
 
 export enum OrderType {
@@ -38,7 +38,7 @@ export enum OrderType {
   MintNFT = "mint_nft",
   JoinTournament = "join_tournament",
   FundTournament = "fund_tournament",
-  Custom = "custom"
+  Custom = "custom",
 }
 
 export const zBaseOrder = z.object({
@@ -62,34 +62,34 @@ export const zBaseOrder = z.object({
   oneClickBuyUrl: z.string().nullable(),
   stripePaymentIntentId: z.string().nullable(),
 
-  permit: zPermit.nullable()
+  permit: zPermit.nullable(),
 });
 
 export const zOrder = z.discriminatedUnion("type", [
   zBaseOrder.extend({
     type: z.literal(OrderType.Swap),
     payload: zSwapPayload,
-    metadata: zSwapMetadata
+    metadata: zSwapMetadata,
   }),
   zBaseOrder.extend({
     type: z.literal(OrderType.MintNFT),
     payload: zMintNftPayload,
-    metadata: zMintNftMetadata
+    metadata: zMintNftMetadata,
   }),
   zBaseOrder.extend({
     type: z.literal(OrderType.JoinTournament),
     payload: zJoinTournamentPayload,
-    metadata: zTournamentMetadata
+    metadata: zTournamentMetadata,
   }),
   zBaseOrder.extend({
     type: z.literal(OrderType.FundTournament),
     payload: zFundTournamentPayload,
-    metadata: zTournamentMetadata
+    metadata: zTournamentMetadata,
   }),
   zBaseOrder.extend({
     type: z.literal(OrderType.Custom),
     payload: zCustomPayload,
-    metadata: zCustomMetadata
-  })
+    metadata: zCustomMetadata,
+  }),
 ]);
 export type Order = z.infer<typeof zOrder>;

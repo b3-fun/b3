@@ -22,8 +22,8 @@ export const weapons: Weapon[] = [
       strength: 70,
       defense: 65,
       speed: 75,
-      magic: 40
-    }
+      magic: 40,
+    },
   },
   {
     id: 1,
@@ -35,8 +35,8 @@ export const weapons: Weapon[] = [
       strength: 90,
       defense: 85,
       speed: 80,
-      magic: 75
-    }
+      magic: 75,
+    },
   },
   {
     id: 2,
@@ -48,8 +48,8 @@ export const weapons: Weapon[] = [
       strength: 45,
       defense: 60,
       speed: 95,
-      magic: 70
-    }
+      magic: 70,
+    },
   },
   {
     id: 3,
@@ -61,8 +61,8 @@ export const weapons: Weapon[] = [
       strength: 85,
       defense: 40,
       speed: 90,
-      magic: 55
-    }
+      magic: 55,
+    },
   },
   {
     id: 4,
@@ -74,8 +74,8 @@ export const weapons: Weapon[] = [
       strength: 75,
       defense: 70,
       speed: 65,
-      magic: 90
-    }
+      magic: 90,
+    },
   },
   {
     id: 5,
@@ -87,8 +87,8 @@ export const weapons: Weapon[] = [
       strength: 95,
       defense: 80,
       speed: 50,
-      magic: 65
-    }
+      magic: 65,
+    },
   },
   {
     id: 6,
@@ -100,8 +100,8 @@ export const weapons: Weapon[] = [
       strength: 80,
       defense: 45,
       speed: 85,
-      magic: 70
-    }
+      magic: 70,
+    },
   },
   {
     id: 7,
@@ -113,8 +113,8 @@ export const weapons: Weapon[] = [
       strength: 50,
       defense: 55,
       speed: 60,
-      magic: 30
-    }
+      magic: 30,
+    },
   },
   {
     id: 8,
@@ -126,7 +126,7 @@ export const weapons: Weapon[] = [
       strength: 100,
       defense: 30,
       speed: 70,
-      magic: 85
-    }
-  }
+      magic: 85,
+    },
+  },
 ];

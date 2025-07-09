@@ -17,7 +17,7 @@ const images = [
   "/weapons/5.webp",
   "/weapons/6.webp",
   "/weapons/7.webp",
-  "/weapons/8.webp"
+  "/weapons/8.webp",
 ];
 
 type GameState = "initial" | "countdown" | "showing" | "guessing" | "complete";
@@ -247,7 +247,7 @@ const TransactionLink = styled.a`
 
 export function Game({
   signerAccount,
-  sessionKeyAddress
+  sessionKeyAddress,
 }: {
   signerAccount: Account;
   sessionKeyAddress: `0x${string}`;
@@ -349,7 +349,7 @@ export function Game({
                       delay: (WORD_DELAY_TIME * 2) / 1000,
                       duration: 0.5,
                       type: "spring",
-                      stiffness: 200
+                      stiffness: 200,
                     }}
                   >
                     GO!
@@ -374,7 +374,7 @@ export function Game({
                         animate={{
                           opacity: 1,
                           scale: [1, 1.1, 1],
-                          transition: { repeat: Infinity, duration: 2 }
+                          transition: { repeat: Infinity, duration: 2 },
                         }}
                         exit={{ opacity: 0 }}
                       />

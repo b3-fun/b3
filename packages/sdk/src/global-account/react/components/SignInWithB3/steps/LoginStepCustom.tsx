@@ -8,7 +8,7 @@ import {
   useAuthStore,
   AllowedStrategy,
   getConnectOptionsFromStrategy,
-  isWalletType
+  isWalletType,
 } from "@b3dotfun/sdk/global-account/react";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { useState } from "react";
@@ -33,7 +33,7 @@ export function LoginStepCustom({
   chain,
   strategies,
   maxInitialWallets = 2,
-  automaticallySetFirstEoa
+  automaticallySetFirstEoa,
 }: LoginStepCustomProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [showAllWallets, setShowAllWallets] = useState(false);
@@ -63,7 +63,7 @@ export function LoginStepCustom({
         connectResult = await connectTW(async () => {
           const wallet = createWallet(options.wallet?.id as WalletId);
           await wallet.connect({
-            client
+            client,
           });
 
           return wallet;

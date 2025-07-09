@@ -40,7 +40,7 @@ export function Debug() {
       setDebugInfo({
         userEmail: user?.email,
         walletAddress: account?.address,
-        profiles: profiles.data
+        profiles: profiles.data,
       });
     };
     updateDebugInfo();
@@ -54,7 +54,7 @@ export function Debug() {
 
       await unlinkProfile({
         client,
-        profileToUnlink: profile
+        profileToUnlink: profile,
       });
 
       // The profiles query will automatically update
@@ -72,7 +72,7 @@ export function Debug() {
         client,
         strategy: "wallet",
         wallet: createWallet("io.metamask"),
-        chain: b3MainnetThirdWeb
+        chain: b3MainnetThirdWeb,
       });
       setLinkStatus("Wallet linked successfully!");
     } catch (error) {
@@ -86,7 +86,7 @@ export function Debug() {
       setLinkStatus("Linking guest...");
       await linkProfile({
         client,
-        strategy: "guest"
+        strategy: "guest",
       });
       setLinkStatus("Guest linked successfully!");
     } catch (error) {
@@ -102,7 +102,7 @@ export function Debug() {
         client,
         strategy: "wallet",
         wallet: createWallet("com.coinbase.wallet"),
-        chain: b3MainnetThirdWeb
+        chain: b3MainnetThirdWeb,
       });
       setLinkStatus("Coinbase linked successfully!");
     } catch (error) {

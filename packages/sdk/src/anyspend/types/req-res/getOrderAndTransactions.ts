@@ -4,8 +4,8 @@ import { zDepositTransaction, zExecuteTransaction, zRefundTransaction, zRelayTra
 
 export const zGetOrderAndTransactionsRequest = z.object({
   params: z.object({
-    orderId: z.string()
-  })
+    orderId: z.string(),
+  }),
 });
 
 export const zGetOrderAndTxsResponse = z.object({
@@ -16,8 +16,8 @@ export const zGetOrderAndTxsResponse = z.object({
     depositTxs: z.array(zDepositTransaction).nullable(),
     relayTx: zRelayTransaction.nullable(),
     executeTx: zExecuteTransaction.nullable(),
-    refundTxs: z.array(zRefundTransaction).nullable()
+    refundTxs: z.array(zRefundTransaction).nullable(),
   }),
-  statusCode: z.number()
+  statusCode: z.number(),
 });
 export type GetOrderAndTxsResponse = z.infer<typeof zGetOrderAndTxsResponse>;

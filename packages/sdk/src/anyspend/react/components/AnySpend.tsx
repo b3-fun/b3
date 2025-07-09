@@ -9,7 +9,7 @@ import {
   USDC_BASE,
   useAnyspendCreateOrder,
   useAnyspendOrderAndTransactions,
-  useAnyspendQuote
+  useAnyspendQuote,
 } from "@b3dotfun/sdk/anyspend";
 import {
   Button,
@@ -21,7 +21,7 @@ import {
   useRouter,
   useSearchParamsSSR,
   useTokenData,
-  useTokenFromUrl
+  useTokenFromUrl,
 } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
@@ -54,7 +54,7 @@ export enum PanelView {
   HISTORY,
   ORDER_DETAILS,
   LOADING,
-  FIAT_PAYMENT
+  FIAT_PAYMENT,
 }
 
 const ANYSPEND_RECIPIENTS_KEY = "anyspend_recipients";
@@ -67,7 +67,7 @@ export function AnySpend({
   defaultActiveTab = "crypto",
   loadOrder,
   hideTransactionHistoryButton,
-  recipientAddress: recipientAddressFromProps
+  recipientAddress: recipientAddressFromProps,
 }: {
   destinationTokenAddress?: string;
   destinationTokenChainId?: number;
@@ -107,7 +107,7 @@ export function AnySpend({
   const [orderId, setOrderId] = useState<string | undefined>(loadOrder);
   const { orderAndTransactions: oat, getOrderAndTransactionsError } = useAnyspendOrderAndTransactions(
     isMainnet,
-    orderId
+    orderId,
   );
   !!getOrderAndTransactionsError && console.log("getOrderAndTransactionsError", getOrderAndTransactionsError);
 
@@ -127,7 +127,7 @@ export function AnySpend({
   const defaultSrcToken = getDefaultToken(selectedSrcChainId);
   const srcTokenFromUrl = useTokenFromUrl({
     defaultToken: defaultSrcToken,
-    prefix: "from"
+    prefix: "from",
   });
   const [selectedSrcToken, setSelectedSrcToken] = useState<Token>(srcTokenFromUrl);
   const { data: srcTokenMetadata } = useTokenData(selectedSrcToken?.chainId, selectedSrcToken?.address);
@@ -145,12 +145,12 @@ export function AnySpend({
         address: destinationTokenAddress,
         name: "",
         decimals: 18,
-        metadata: {}
+        metadata: {},
       }
     : getDefaultToken(selectedDstChainId);
   const dstTokenFromUrl = useTokenFromUrl({
     defaultToken: defaultDstToken,
-    prefix: "to"
+    prefix: "to",
   });
   const [selectedDstToken, setSelectedDstToken] = useState<Token>(isBuyMode ? defaultDstToken : dstTokenFromUrl);
   const { data: dstTokenMetadata } = useTokenData(selectedDstToken?.chainId, selectedDstToken?.address);
@@ -174,8 +174,8 @@ export function AnySpend({
         name: srcTokenMetadata.name || selectedSrcToken.name,
         metadata: {
           ...selectedSrcToken.metadata,
-          logoURI: srcTokenMetadata?.logoURI || selectedSrcToken.metadata.logoURI
-        }
+          logoURI: srcTokenMetadata?.logoURI || selectedSrcToken.metadata.logoURI,
+        },
       };
 
       setSelectedSrcToken(enhancedToken);
@@ -200,8 +200,8 @@ export function AnySpend({
         name: dstTokenMetadata.name || selectedDstToken.name,
         metadata: {
           ...selectedDstToken.metadata,
-          logoURI: dstTokenMetadata?.logoURI || selectedDstToken.metadata.logoURI
-        }
+          logoURI: dstTokenMetadata?.logoURI || selectedDstToken.metadata.logoURI,
+        },
       };
 
       setSelectedDstToken(enhancedToken);
@@ -274,7 +274,7 @@ export function AnySpend({
       fromAmount: activeTab === "crypto" ? srcAmount : undefined,
       toChainId: selectedDstChainId.toString(),
       toCurrency: selectedDstToken.address,
-      toAmount: dstAmount
+      toAmount: dstAmount,
     };
 
     // Compare with last update to prevent unnecessary URL changes
@@ -332,7 +332,7 @@ export function AnySpend({
     selectedDstToken.address,
     dstAmount,
     router,
-    srcAmountOnRamp
+    srcAmountOnRamp,
   ]);
 
   // Update URL when relevant state changes - but only after initial render
@@ -347,7 +347,7 @@ export function AnySpend({
     selectedSrcToken.address,
     selectedDstChainId,
     selectedDstToken.address,
-    updateSwapParamsInURL
+    updateSwapParamsInURL,
   ]);
 
   // Use our hook for ENS resolution
@@ -394,7 +394,7 @@ export function AnySpend({
           dstTokenAddress: isBuyMode ? destinationTokenAddress : selectedDstToken.address,
           type: OrderType.Swap,
           tradeType: isSrcInputDirty ? TradeType.EXACT_INPUT : TradeType.EXPECTED_OUTPUT,
-          amount: activeInputAmountInWei
+          amount: activeInputAmountInWei,
         }
       : {
           srcChain: base.id,
@@ -403,8 +403,8 @@ export function AnySpend({
           dstTokenAddress: isBuyMode ? destinationTokenAddress : selectedDstToken.address,
           type: OrderType.Swap,
           tradeType: TradeType.EXACT_INPUT,
-          amount: srcAmountOnrampInWei
-        }
+          amount: srcAmountOnrampInWei,
+        },
   );
 
   // Replace the old ENS lookup with our new hooks
@@ -602,7 +602,7 @@ export function AnySpend({
     onError: error => {
       console.error(error);
       toast.error("Failed to create order: " + error.message);
-    }
+    },
   });
 
   // Determine button state and text
@@ -622,7 +622,7 @@ export function AnySpend({
     anyspendQuote,
     activeTab,
     isBuyMode,
-    selectedDstToken.symbol
+    selectedDstToken.symbol,
   ]);
 
   // Handle main button click
@@ -657,7 +657,7 @@ export function AnySpend({
           : selectedDstToken,
         srcAmount: srcAmountBigInt.toString(),
         expectedDstAmount: anyspendQuote?.data?.currencyOut?.amount || "0",
-        creatorAddress: globalAddress
+        creatorAddress: globalAddress,
       });
     } catch (err: any) {
       console.error(err);
@@ -736,7 +736,7 @@ export function AnySpend({
 
     return {
       percentage: Math.abs(percentageValue).toFixed(2),
-      isNegative: percentageValue < 0
+      isNegative: percentageValue < 0,
     };
   };
 
@@ -801,14 +801,14 @@ export function AnySpend({
           className={cn(
             "bg-as-brand absolute bottom-0 left-0 top-0 z-0 rounded-xl transition-transform duration-100",
             "h-full w-1/2",
-            activeTab === "fiat" ? "translate-x-full" : "translate-x-0"
+            activeTab === "fiat" ? "translate-x-full" : "translate-x-0",
           )}
           style={{ willChange: "transform" }}
         />
         <button
           className={cn(
             "relative z-10 h-full w-full rounded-xl px-6 text-sm font-medium transition-colors duration-100",
-            activeTab === "crypto" ? "text-white" : "text-as-primary/70 hover:bg-as-on-surface-2 bg-transparent"
+            activeTab === "crypto" ? "text-white" : "text-as-primary/70 hover:bg-as-on-surface-2 bg-transparent",
           )}
           onClick={() => setActiveTab("crypto")}
         >
@@ -817,7 +817,7 @@ export function AnySpend({
         <button
           className={cn(
             "relative z-10 h-full w-full rounded-xl px-6 text-sm font-medium transition-colors duration-100",
-            activeTab === "fiat" ? "text-white" : "text-as-primary/70 hover:bg-as-on-surface-2 bg-transparent"
+            activeTab === "fiat" ? "text-white" : "text-as-primary/70 hover:bg-as-on-surface-2 bg-transparent",
           )}
           onClick={() => setActiveTab("fiat")}
         >
@@ -877,7 +877,7 @@ export function AnySpend({
           variant="ghost"
           className={cn(
             "bg-as-n-8 border-as-stroke absolute left-1/2 top-1/2 z-10 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-2xl border-2 sm:h-8 sm:w-8 sm:rounded-xl",
-            (activeTab === "fiat" || isBuyMode) && "top-[calc(50%+56px)] cursor-default"
+            (activeTab === "fiat" || isBuyMode) && "top-[calc(50%+56px)] cursor-default",
           )}
           onClick={() => {
             if (activeTab === "fiat" || isBuyMode) {
@@ -923,7 +923,7 @@ export function AnySpend({
                   "text-as-primary/50 flex h-7 items-center gap-1 rounded-lg px-2",
                   globalAddress && recipientAddress === globalAddress
                     ? "bg-as-on-surface-2 hover:bg-as-on-surface-3"
-                    : "bg-as-yellow/70 hover:bg-as-yellow text-as-primary"
+                    : "bg-as-yellow/70 hover:bg-as-yellow text-as-primary",
                 )}
                 onClick={() => setIsOpenPasteRecipientAddressModal(true)}
               >
@@ -987,7 +987,7 @@ export function AnySpend({
               (() => {
                 const { percentage, isNegative } = calculatePriceImpact(
                   anyspendQuote.data.currencyIn.amountUsd,
-                  anyspendQuote.data.currencyOut.amountUsd
+                  anyspendQuote.data.currencyOut.amountUsd,
                 );
 
                 // Parse the percentage as a number for comparison
@@ -1052,7 +1052,7 @@ export function AnySpend({
           onClick={onMainButtonClick}
           className={cn(
             "relative w-full",
-            btnInfo.error ? "!bg-as-red" : btnInfo.disable ? "!bg-as-on-surface-2" : "!bg-as-brand"
+            btnInfo.error ? "!bg-as-red" : btnInfo.disable ? "!bg-as-on-surface-2" : "!bg-as-brand",
           )}
           textClassName={cn(btnInfo.error ? "text-white" : btnInfo.disable ? "text-as-secondary" : "text-white")}
         >
@@ -1120,12 +1120,12 @@ export function AnySpend({
                 : activePanel
           }
           className={cn("w-full", {
-            "mt-0": mode === "modal"
+            "mt-0": mode === "modal",
           })}
           variants={{
             enter: { x: 300, opacity: 0 },
             center: { x: 0, opacity: 1 },
-            exit: { x: -300, opacity: 0 }
+            exit: { x: -300, opacity: 0 },
           }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
@@ -1134,7 +1134,7 @@ export function AnySpend({
             <div key="history-view">{historyView}</div>,
             <div key="order-details-view">{orderDetailsView}</div>,
             <div key="loading-view">{OrderDetailsLoadingView}</div>,
-            <div key="fiat-payment-view">{onrampPaymentView}</div>
+            <div key="fiat-payment-view">{onrampPaymentView}</div>,
           ]}
         </TransitionPanel>
         <EnterRecipientModal

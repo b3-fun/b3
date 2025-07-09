@@ -11,12 +11,12 @@ export function Loading({ className, size = "md", variant = "white" }: LoadingPr
   const sizeClass = {
     sm: "h-6 w-6",
     md: "h-8 w-8",
-    lg: "h-12 w-12"
+    lg: "h-12 w-12",
   }[size];
 
   const variantClass = {
     primary: "text-b3-react-primary",
-    white: "text-white opacity-50"
+    white: "text-white opacity-50",
   }[variant];
 
   return (

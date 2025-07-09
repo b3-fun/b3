@@ -25,7 +25,7 @@ export function OrderTokenAmount({
   className,
   innerClassName,
   amountClassName,
-  tokenSelectClassName
+  tokenSelectClassName,
 }: {
   disabled?: boolean;
   inputValue: string;
@@ -76,7 +76,7 @@ export function OrderTokenAmount({
       decimals: newToken.decimals,
       metadata: { logoURI: newToken.logoURI },
       name: newToken.name,
-      symbol: newToken.symbol
+      symbol: newToken.symbol,
     });
 
     // If this is the source token, reset the amount immediately
@@ -109,7 +109,7 @@ export function OrderTokenAmount({
             spellCheck="false"
             className={cn(
               "placeholder:text-as-primary/70 disabled:text-as-primary/70 text-as-primary w-full bg-transparent text-4xl font-semibold leading-[42px] outline-none sm:text-[30px]",
-              amountClassName
+              amountClassName,
             )}
             pattern="^[0-9]*[.,]?[0-9]*$"
             disabled={disabled}
@@ -141,7 +141,7 @@ export function OrderTokenAmount({
                 role="combobox"
                 className={cn(
                   "bg-b3-react-background border-as-stroke flex h-auto w-fit shrink-0 items-center justify-center gap-2 rounded-xl border-2 px-2 py-1 pr-2 text-center",
-                  tokenSelectClassName
+                  tokenSelectClassName,
                 )}
               >
                 {token.metadata.logoURI ? (

@@ -68,7 +68,7 @@ export function useTokensFromAddress({
   chain,
   limit = 50,
   page = 0,
-  metadata = true
+  metadata = true,
 }: UseTokensFromAddressProps) {
   return useQuery({
     queryKey: ["useTokensFromAddress", ownerAddress, chain, limit, page, metadata],
@@ -113,6 +113,6 @@ export function useTokensFromAddress({
       const data = await response.json();
       return data as TokensResponse;
     },
-    enabled: Boolean(ownerAddress)
+    enabled: Boolean(ownerAddress),
   });
 }

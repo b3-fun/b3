@@ -6,7 +6,7 @@ import {
   Token,
   Tournament,
   useAnyspendCreateOnrampOrder,
-  useGeoOnrampOptions
+  useGeoOnrampOptions,
 } from "@b3dotfun/sdk/anyspend";
 import { Button } from "@b3dotfun/sdk/global-account/react";
 import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
@@ -57,7 +57,7 @@ export function PanelOnrampPayment({
   tournament,
   payload,
   recipientEnsName,
-  recipientImageUrl
+  recipientImageUrl,
 }: PanelOnrampPaymentProps) {
   // Use a stable amount for geo onramp options to prevent unnecessary refetches
   const [stableAmountForGeo, setStableAmountForGeo] = useState(srcAmountOnRamp);
@@ -77,7 +77,7 @@ export function PanelOnrampPayment({
     coinbaseAvailablePaymentMethods,
     isStripeOnrampSupported,
     isStripeWeb2Supported,
-    isLoading: isLoadingGeoOnramp
+    isLoading: isLoadingGeoOnramp,
   } = useGeoOnrampOptions(isMainnet, stableAmountForGeo);
 
   const { createOrder, isCreatingOrder } = useAnyspendCreateOnrampOrder({
@@ -88,7 +88,7 @@ export function PanelOnrampPayment({
     onError: error => {
       console.error(error);
       toast.error("Failed to create order: " + error.message);
-    }
+    },
   });
 
   const handlePaymentMethodClick = async (vendor: OnrampVendor, paymentMethod?: string) => {
@@ -129,7 +129,7 @@ export function PanelOnrampPayment({
           return {
             ...selectedDstToken,
             chainId: destinationTokenChainId || selectedDstChainId,
-            address: destinationTokenAddress
+            address: destinationTokenAddress,
           };
         }
         return selectedDstToken;
@@ -148,13 +148,13 @@ export function PanelOnrampPayment({
           country: geoData?.country || "US",
           ipAddress: geoData?.ip,
           redirectUrl:
-            window.location.origin === "https://basement.fun" ? "https://basement.fun/deposit" : window.location.origin
+            window.location.origin === "https://basement.fun" ? "https://basement.fun/deposit" : window.location.origin,
         },
         expectedDstAmount: anyspendQuote?.data?.currencyOut?.amount?.toString() || "0",
         creatorAddress: globalAddress,
         nft,
         tournament,
-        payload
+        payload,
       });
     } catch (err: any) {
       console.error(err);
@@ -175,7 +175,7 @@ export function PanelOnrampPayment({
               animate={{
                 opacity: 1,
                 y: 0,
-                filter: "blur(0px)"
+                filter: "blur(0px)",
               }}
               transition={{ duration: 0.3, delay: 0.2, ease: "easeInOut" }}
               className="flex items-center justify-between"

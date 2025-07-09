@@ -27,7 +27,7 @@ export function useClaim({ contractAddress, quantity = 1, chain, to, tokenId }: 
         const contract = getContract({
           client,
           chain,
-          address: contractAddress
+          address: contractAddress,
         });
 
         // If tokenId is provided, use ERC1155 claim
@@ -37,17 +37,17 @@ export function useClaim({ contractAddress, quantity = 1, chain, to, tokenId }: 
                 contract,
                 to,
                 quantity: BigInt(quantity),
-                tokenId: BigInt(tokenId)
+                tokenId: BigInt(tokenId),
               })
             : claimTo721({
                 contract,
                 to,
-                quantity: BigInt(quantity)
+                quantity: BigInt(quantity),
               });
 
         const tx = await sendTransaction({
           transaction,
-          account
+          account,
         });
 
         return tx.transactionHash;
@@ -55,7 +55,7 @@ export function useClaim({ contractAddress, quantity = 1, chain, to, tokenId }: 
         setIsMinting(false);
       }
     },
-    [contractAddress, quantity, chain, to, tokenId]
+    [contractAddress, quantity, chain, to, tokenId],
   );
 
   return { claim, isMinting };

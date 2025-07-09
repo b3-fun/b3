@@ -7,8 +7,8 @@ async function fetchAccountAssets(address: string) {
     fetchSimpleHashData(`/v0/nfts/owners`, {
       chains: "b3,b3-sepolia,base",
       wallet_addresses: address,
-      count: true
-    })
+      count: true,
+    }),
     // we are not using the tokenResponse anywhere in the app, let's not call it, if we don't need it
     // getERC20Balances(address, {
     //   chainIds: [8333, 1993, 8453, 84532],
@@ -18,7 +18,7 @@ async function fetchAccountAssets(address: string) {
   ]);
 
   return {
-    nftResponse
+    nftResponse,
     //tokenResponse,
   };
 }
@@ -29,6 +29,6 @@ export function useAccountAssets(address?: string) {
     queryFn: () => fetchAccountAssets(address!),
     enabled: Boolean(address),
     staleTime: 30 * 1000, // Consider data fresh for 30 seconds
-    gcTime: 5 * 60 * 1000 // Keep unused data in cache for 5 minutes
+    gcTime: 5 * 60 * 1000, // Keep unused data in cache for 5 minutes
   });
 }

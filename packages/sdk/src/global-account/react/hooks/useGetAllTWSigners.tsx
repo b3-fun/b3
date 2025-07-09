@@ -74,8 +74,8 @@ export function useGetAllTWSigners({ chain, accountAddress, queryOptions }: UseG
         contract: {
           client,
           chain,
-          address: accountAddress as `0x${string}`
-        }
+          address: accountAddress as `0x${string}`,
+        },
       });
 
       // Wait half a second for the sync, this is a hack
@@ -89,9 +89,9 @@ export function useGetAllTWSigners({ chain, accountAddress, queryOptions }: UseG
           {
             method: "GET",
             headers: {
-              "Content-Type": "application/json"
-            }
-          }
+              "Content-Type": "application/json",
+            },
+          },
         );
 
         if (response.ok) {
@@ -101,7 +101,7 @@ export function useGetAllTWSigners({ chain, accountAddress, queryOptions }: UseG
               acc[key.sessionKey] = key;
               return acc;
             },
-            {} as Record<string, SessionKeyData>
+            {} as Record<string, SessionKeyData>,
           );
         }
       } catch (error) {
@@ -123,9 +123,9 @@ export function useGetAllTWSigners({ chain, accountAddress, queryOptions }: UseG
           metadata,
           partner: {
             id: metadata?.partnerId || signer.signer,
-            name: metadata?.partnerInfo?.name || ""
+            name: metadata?.partnerInfo?.name || "",
           },
-          createdAt: metadata ? new Date(metadata.timestamp).toISOString() : ""
+          createdAt: metadata ? new Date(metadata.timestamp).toISOString() : "",
         };
       });
       return result;
@@ -134,6 +134,6 @@ export function useGetAllTWSigners({ chain, accountAddress, queryOptions }: UseG
     refetchOnMount: true,
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
-    staleTime: 0 // Consider data stale immediately
+    staleTime: 0, // Consider data stale immediately
   });
 }

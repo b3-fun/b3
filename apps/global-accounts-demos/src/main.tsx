@@ -12,5 +12,5 @@ document.title = process.env.VITE_APP_TYPE === "battle" ? "NFT Battle" : "Memory
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <AppComponent />
-  </StrictMode>
+  </StrictMode>,
 );

@@ -33,7 +33,7 @@ interface UseTokenBalancesByChainProps {
 export function useTokenBalancesByChain({
   address,
   chainsIds,
-  enabled = true
+  enabled = true,
 }: UseTokenBalancesByChainProps): TokenBalancesByChain {
   // Normalize chains to array
   const chainIds = Array.isArray(chainsIds) ? chainsIds : [chainsIds];
@@ -41,7 +41,7 @@ export function useTokenBalancesByChain({
   const {
     data: combinedData,
     isLoading,
-    error
+    error,
   } = useQuery({
     queryKey: ["tokenBalancesByChain", address, chainIds.join(",")],
     queryFn: async () => {
@@ -54,23 +54,23 @@ export function useTokenBalancesByChain({
               const walletBalance = await getWalletBalance({
                 address,
                 client,
-                chain: viemToThirdwebChain(getChainById(chainId)!)
+                chain: viemToThirdwebChain(getChainById(chainId)!),
               });
 
               return {
                 chainId,
-                ...walletBalance
+                ...walletBalance,
               };
-            })
+            }),
           ),
           getERC20Balances(address, {
-            chainIds
-          })
+            chainIds,
+          }),
         ]);
 
         return {
           nativeTokens,
-          fungibleTokens: fungibleResponse.data
+          fungibleTokens: fungibleResponse.data,
         };
       } catch (err) {
         console.error("Error fetching token balances:", err);
@@ -81,13 +81,13 @@ export function useTokenBalancesByChain({
     staleTime: 30000, // Consider data fresh for 30 seconds
     gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
     retry: 2, // Limit retries on failure
-    structuralSharing: false
+    structuralSharing: false,
   });
 
   return {
     nativeTokens: combinedData?.nativeTokens ?? [],
     fungibleTokens: combinedData?.fungibleTokens ?? [],
     isLoading,
-    error: error as Error | null
+    error: error as Error | null,
   };
 }

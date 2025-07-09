@@ -16,7 +16,7 @@ module.exports = {
       // => @media (max-width: 1023px) { ... }
       md: { max: "767px" },
       // => @media (max-width: 767px) { ... }
-      sm: { max: "480px" }
+      sm: { max: "480px" },
       // => @media (max-width: 480px) { ... }
     },
     extend: {
@@ -29,7 +29,7 @@ module.exports = {
         "calibre-bold": ['"Calibre Bold"', "sans-serif"],
         "calibre-heavy": ['"Calibre Heavy"', "sans-serif"],
         calibre: ['"Calibre Regular"', "sans-serif"],
-        pack: ["Pack", "sans-serif"]
+        pack: ["Pack", "sans-serif"],
       },
       colors: {
         "b3-react-background": "hsl(var(--b3-react-background))",
@@ -59,18 +59,18 @@ module.exports = {
         "as-secondary": "hsl(var(--as-secondary))",
         "as-red": "hsl(var(--as-red))",
         "as-on-surface-disabled": "hsl(var(--as-on-surface-disabled))",
-        "as-on-disabled": "hsl(var(--as-on-disabled))"
+        "as-on-disabled": "hsl(var(--as-on-disabled))",
       },
       keyframes: {
         "pulse-fade": {
           "0%, 100%": { opacity: "1" },
-          "50%": { opacity: "0.5" }
-        }
+          "50%": { opacity: "0.5" },
+        },
       },
       animation: {
-        "pulse-fade": "pulse-fade 1.5s ease-in-out infinite"
-      }
-    }
+        "pulse-fade": "pulse-fade 1.5s ease-in-out infinite",
+      },
+    },
   },
-  plugins: []
+  plugins: [],
 };

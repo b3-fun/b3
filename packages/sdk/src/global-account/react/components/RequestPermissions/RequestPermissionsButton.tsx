@@ -16,7 +16,7 @@ export function RequestPermissionsButton({
   onSuccess,
   onError,
   permissions,
-  closeOnSuccess = true
+  closeOnSuccess = true,
 }: RequestPermissionsButtonProps) {
   const { setB3ModalOpen, setB3ModalContentType } = useModalStore();
 
@@ -32,7 +32,7 @@ export function RequestPermissionsButton({
         }
       },
       onError,
-      permissions
+      permissions,
     });
     setB3ModalOpen(true);
   };

@@ -30,7 +30,7 @@ export const fetchBalances = async (address: string, testnet?: boolean): Promise
 
     const balancePromises = assets.map(async asset => {
       const balanceResponse = await fetch(
-        `${getSprinterBaseUrl(testnet)}/accounts/${address}/assets/fungible/${asset.symbol}`
+        `${getSprinterBaseUrl(testnet)}/accounts/${address}/assets/fungible/${asset.symbol}`,
       );
       const balanceData = await balanceResponse.json();
 
@@ -43,7 +43,7 @@ export const fetchBalances = async (address: string, testnet?: boolean): Promise
         symbol: asset.symbol,
         name: asset.name,
         totalBalance: totalBalance.toString(),
-        chainBalances
+        chainBalances,
       };
     });
 
@@ -71,9 +71,9 @@ export const fetchBalances = async (address: string, testnet?: boolean): Promise
             {
               chainId: data.chainId,
               balance: data.balance,
-              tokenDecimals: data.tokenDecimals
-            }
-          ]
+              tokenDecimals: data.tokenDecimals,
+            },
+          ],
         };
       } catch (error) {
         console.error("Error fetching native asset balance:", error);

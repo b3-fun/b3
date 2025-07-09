@@ -4,7 +4,7 @@ import {
   B3Provider,
   RequestPermissionsButton,
   SignInWithB3,
-  useB3
+  useB3,
 } from "@b3dotfun/sdk/global-account/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -25,21 +25,21 @@ const b3Chain = {
   nativeCurrency: {
     name: "Ether",
     symbol: "ETH",
-    decimals: 18
+    decimals: 18,
   },
   rpc: "https://mainnet-rpc.b3.fun",
   icon: {
     url: "https://cdn.b3.fun/b3-logo-white-circle.svg",
     width: 32,
     height: 32,
-    format: "svg"
+    format: "svg",
   },
   blockExplorers: [
     {
       name: "B3 Explorer",
-      url: "https://explorer.b3.fun/"
-    }
-  ]
+      url: "https://explorer.b3.fun/",
+    },
+  ],
 };
 
 declare global {
@@ -133,11 +133,11 @@ const InnerComponent = ({ account }: { account: string }) => {
                       "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d",
                       "0xa8e42121e318e3D3BeD7f5969AF6D360045317DD",
                       "0x9c275ff1634519E9B5449ec79cd939B5F900564d",
-                      "0x8a19BA9A95F17D193bD751B80eF8B89b88E2856C"
+                      "0x8a19BA9A95F17D193bD751B80eF8B89b88E2856C",
                     ],
                     startDate: new Date(),
                     endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
-                    nativeTokenLimitPerTransaction: 0.0001
+                    nativeTokenLimitPerTransaction: 0.0001,
                   }}
                 />
 

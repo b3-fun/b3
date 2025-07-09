@@ -8,20 +8,20 @@ import { Background } from "./ui/Background";
 const features = [
   {
     icon: <UserCircle className="h-6 w-6" />,
-    text: "Email, Social & Wallet Login"
+    text: "Email, Social & Wallet Login",
   },
   {
     icon: <CreditCard className="h-6 w-6" />,
-    text: "Built-in Fiat Onramp"
+    text: "Built-in Fiat Onramp",
   },
   {
     icon: <Shield className="h-6 w-6" />,
-    text: "Gasless Transactions"
+    text: "Gasless Transactions",
   },
   {
     icon: <WalletIcon className="h-6 w-6" />,
-    text: "Smart Account Infrastructure"
-  }
+    text: "Smart Account Infrastructure",
+  },
 ];
 
 export function Hero({ wallet }: { wallet: Wallet }) {

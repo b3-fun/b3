@@ -26,21 +26,21 @@ export default defineConfig(({ command: _command }) => {
     NEXT_PUBLIC_THIRDWEB_CLIENT_ID: "f393c7eb287696dc4db76d980cc68328",
     NEXT_PUBLIC_DEVMODE_SHARED_SECRET: "k1c4Ep6agmoejiBinKE70B6bzb8vSdm8",
     NEXT_PUBLIC_TRANSAK_API_KEY: "d1f4e8be-cacb-4cfa-b2cd-c591084b5ef6",
-    NEXT_PUBLIC_THIRDWEB_ECOSYSTEM_ID: "ecosystem.b3-open-gaming"
+    NEXT_PUBLIC_THIRDWEB_ECOSYSTEM_ID: "ecosystem.b3-open-gaming",
   };
   // }
 
   return {
     plugins: [react(), nodePolyfills(), viteCommonjs()],
     define: {
-      "process.env": env
+      "process.env": env,
     },
     preview: {
-      allowedHosts: ["global-accounts-production.up.railway.app", "global.b3.fun"]
+      allowedHosts: ["global-accounts-production.up.railway.app", "global.b3.fun"],
     },
     optimizeDeps: {
       include: ["@b3dotfun/sdk"],
-      exclude: []
+      exclude: [],
     },
     // Note: This fixes https://linear.app/npclabs/issue/B3-2102/fix-global-accounts-local-dev
     resolve: {
@@ -50,8 +50,8 @@ export default defineConfig(({ command: _command }) => {
         "ajv/dist/runtime/validation_error": "ajv",
         "ajv/dist/runtime/uri": "ajv",
         "ajv/dist/runtime/ucs2length": "ajv",
-        "ajv/dist/runtime/equal": "ajv"
-      }
-    }
+        "ajv/dist/runtime/equal": "ajv",
+      },
+    },
   };
 });

@@ -82,7 +82,7 @@ const Warning = styled.div`
 `;
 
 export function LocalWallet({
-  onGenerate
+  onGenerate,
 }: {
   onGenerate: (wallet: { account: Account; address: `0x${string}`; privateKey: `0x${string}` }) => void;
 }) {

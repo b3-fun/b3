@@ -13,7 +13,7 @@ export async function fetchBsmntProfile(username?: string, address?: string) {
       response = await fetch(`${baseUrl}/profiles/?username=${queryUsername}`);
     } else if (address) {
       response = await fetch(
-        `${baseUrl}/profiles/?linkedAccounts[$elemMatch][normalizedAddress]=${String(address).toLowerCase() || ""}`
+        `${baseUrl}/profiles/?linkedAccounts[$elemMatch][normalizedAddress]=${String(address).toLowerCase() || ""}`,
       );
     }
 

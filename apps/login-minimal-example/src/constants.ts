@@ -12,8 +12,8 @@ export const NFT_CONTRACTS: NftContract[] = [
       "https://storage.googleapis.com/nftimagebucket/base/tokens/0x80f0e6644723abb03aa8867d21e32bd854b2a2d9/preview/TVRjME1EUTRORFl4T0E9PV8zNjcy.jpg",
     name: "Downhill Ski",
     description: "Downhill Ski",
-    tokenId: null
-  }
+    tokenId: null,
+  },
 ];
 
 export const DEFAULT_NFT_CONTRACT = NFT_CONTRACTS[0];

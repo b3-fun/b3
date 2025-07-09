@@ -27,7 +27,7 @@ export function useGetGeo() {
   const {
     data: geoData,
     isLoading: loading,
-    error
+    error,
   } = useQuery({ queryKey: ["useGetGeo"], queryFn: fetchGeoData, retry: 3 });
 
   if (error) {

@@ -17,7 +17,7 @@ export const buildPayload = (orderType: OrderType, params: OrderParams) => {
     case OrderType.Swap:
       return {
         expectedDstAmount,
-        actualDstAmount: null
+        actualDstAmount: null,
       };
     case OrderType.MintNFT:
       if (nft?.type === NftType.ERC1155) {
@@ -25,13 +25,13 @@ export const buildPayload = (orderType: OrderType, params: OrderParams) => {
           contractAddress: normalizeAddress(nft.contractAddress),
           nftPrice: nft?.price || "",
           tokenId: nft?.tokenId!,
-          contractType: nft?.type
+          contractType: nft?.type,
         };
       } else if (nft?.type === NftType.ERC721) {
         return {
           contractAddress: normalizeAddress(nft.contractAddress),
           nftPrice: nft?.price || "",
-          contractType: nft?.type
+          contractType: nft?.type,
         };
       } else {
         throw new Error(`Invalid nft payload: ${JSON.stringify(nft)}`);
@@ -39,12 +39,12 @@ export const buildPayload = (orderType: OrderType, params: OrderParams) => {
     case OrderType.JoinTournament:
       return {
         contractAddress: tournament?.contractAddress,
-        entryPrice: tournament?.entryPriceOrFundAmount
+        entryPrice: tournament?.entryPriceOrFundAmount,
       };
     case OrderType.FundTournament:
       return {
         contractAddress: tournament?.contractAddress,
-        fundAmount: tournament?.entryPriceOrFundAmount
+        fundAmount: tournament?.entryPriceOrFundAmount,
       };
     case OrderType.Custom:
       return { ...payload };
@@ -57,7 +57,7 @@ export const buildMetadata = (orderType: OrderType, params: OrderParams) => {
   const { srcToken, dstToken, nft, tournament, payload } = params;
   const baseMetadata = {
     srcToken,
-    dstToken
+    dstToken,
   };
   switch (orderType) {
     case OrderType.Swap:

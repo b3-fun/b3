@@ -35,12 +35,12 @@ export type DataType<T extends keyof ServiceTypes, M extends ServiceMethods<T>> 
 
 export function useQueryBSMNT<
   T extends keyof ServiceTypes, // Service name (key of ServiceTypes)
-  M extends ServiceMethods<T> // Method name within the service
+  M extends ServiceMethods<T>, // Method name within the service
 >(
   service: T, // Service as string
   method: M, // Method as string
   params: ParamsType<T, M>, // Params type inferred dynamically
-  fetchInitially = true
+  fetchInitially = true,
 ) {
   // Use DataType to infer the type of data and unwrap the Promise
   const [data, setData] = useState<DataType<T, M> | null>(null);

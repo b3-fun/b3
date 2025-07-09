@@ -4,7 +4,7 @@ import {
   getV1Nfts,
   getV1NftsByContractAddress,
   getV1NftsByContractAddressByTokenId,
-  getV1NftsTransfersByContractAddress
+  getV1NftsTransfersByContractAddress,
 } from "@b3dotfun/sdk/shared/thirdweb/generated/sdk.gen";
 import { transformCollectionResponse, transformNFTResponse, transformTransferResponse } from "./insights";
 export * from "@b3dotfun/sdk/global-account/types/simplehash.types";
@@ -67,7 +67,7 @@ const isServer = typeof window === "undefined";
 export async function fetchSimpleHashData<T extends SimpleHashRoute>(
   route: T,
   params: Record<string, any> = {},
-  fetchOptions?: RequestInit
+  fetchOptions?: RequestInit,
 ): Promise<RouteReturnType<T>> {
   /**
    * SimpleHash API to ThirdWeb Insights migration
@@ -84,13 +84,13 @@ export async function fetchSimpleHashData<T extends SimpleHashRoute>(
       query: {
         chain: params.chains?.split(",").map((chain: string) => simpleHashChainToChainId(chain)),
         owner_address: params.wallet_addresses,
-        limit: params.limit || 50
+        limit: params.limit || 50,
       },
       headers: {
         "x-secret-key": THIRDWEB_SECRET_KEY,
         "x-client-id": THIRDWEB_CLIENT_ID,
-        "x-bundle-id": CLIENT_APP_BUNDLE_ID
-      }
+        "x-bundle-id": CLIENT_APP_BUNDLE_ID,
+      },
     };
 
     const response = await getV1Nfts(options);
@@ -123,11 +123,11 @@ export async function fetchSimpleHashData<T extends SimpleHashRoute>(
     try {
       const options = {
         path: {
-          contract_address: contractAddress
+          contract_address: contractAddress,
         },
         query: {
-          chain: [chainId]
-        }
+          chain: [chainId],
+        },
       };
 
       const thirdwebResponse = await getV1NftsByContractAddress(options);
@@ -139,7 +139,7 @@ export async function fetchSimpleHashData<T extends SimpleHashRoute>(
         thirdwebResponse.data.data[0],
         chainId,
         chain,
-        contractAddress
+        contractAddress,
       );
 
       return transformedResponse as RouteReturnType<T>;
@@ -163,7 +163,7 @@ export async function fetchSimpleHashData<T extends SimpleHashRoute>(
     try {
       const options = {
         path: {
-          contract_address: contractAddress
+          contract_address: contractAddress,
         },
         query: {
           chain: [chainId],
@@ -171,8 +171,8 @@ export async function fetchSimpleHashData<T extends SimpleHashRoute>(
           metadata: params.include_nft_details === "1" ? ("true" as const) : ("false" as const),
           sort_by: "block_timestamp",
           sort_order: params.order_by?.includes("desc") ? "desc" : "asc",
-          page: params.page ? parseInt(params.page) : undefined
-        }
+          page: params.page ? parseInt(params.page) : undefined,
+        },
       };
 
       const response = await getV1NftsTransfersByContractAddress(options);
@@ -181,7 +181,7 @@ export async function fetchSimpleHashData<T extends SimpleHashRoute>(
       }
 
       return {
-        transfers: transformTransferResponse(response.data)
+        transfers: transformTransferResponse(response.data),
       } as RouteReturnType<T>;
     } catch (error) {
       console.error("Failed to fetch transfer data:", error);
@@ -204,13 +204,13 @@ export async function fetchSimpleHashData<T extends SimpleHashRoute>(
       const options = {
         path: {
           contract_address: contractAddress,
-          token_id: tokenId
+          token_id: tokenId,
         },
         query: {
           chain: [chainId],
           include_owners: "true" as const,
-          resolve_metadata_links: "true" as const
-        }
+          resolve_metadata_links: "true" as const,
+        },
       };
 
       const response = await getV1NftsByContractAddressByTokenId(options);
@@ -222,8 +222,8 @@ export async function fetchSimpleHashData<T extends SimpleHashRoute>(
         {
           ...response.data.data[0],
           // Needed, because Thirdweb doesn't return the token_id in the response
-          token_id: tokenId
-        }
+          token_id: tokenId,
+        },
       ]);
 
       if (!transformedResponse.nfts?.[0]) {
@@ -245,7 +245,7 @@ export async function fetchSimpleHashData<T extends SimpleHashRoute>(
   let options: RequestInit;
 
   const cleanParams = Object.fromEntries(
-    Object.entries(params).filter(([_, value]) => value !== undefined && value !== null)
+    Object.entries(params).filter(([_, value]) => value !== undefined && value !== null),
   );
 
   if ((isServer || process.env.NEXT_PUBLIC_SERVICE === "backend") && process.env.SIMPLEHASH_API_KEY) {
@@ -257,8 +257,8 @@ export async function fetchSimpleHashData<T extends SimpleHashRoute>(
       method: "GET",
       headers: {
         accept: "application/json",
-        "X-API-KEY": process.env.SIMPLEHASH_API_KEY
-      }
+        "X-API-KEY": process.env.SIMPLEHASH_API_KEY,
+      },
     };
   } else {
     // Client-side request - use proxy
@@ -279,8 +279,8 @@ export async function fetchSimpleHashData<T extends SimpleHashRoute>(
     options = {
       method: "GET",
       headers: {
-        accept: "application/json"
-      }
+        accept: "application/json",
+      },
     };
   }
 
@@ -310,12 +310,12 @@ export async function fetchSimpleHashData<T extends SimpleHashRoute>(
 
 export async function fetchFungibleAssets(
   fungibleIds: string[],
-  includePrices: boolean = true
+  includePrices: boolean = true,
 ): Promise<SimpleHashTypes.FungibleAsset | SimpleHashTypes.FungibleAsset[]> {
   const route = "/v0/fungibles/assets";
   const params = {
     fungible_ids: fungibleIds.join(","),
-    include_prices: includePrices ? "1" : "0"
+    include_prices: includePrices ? "1" : "0",
   };
 
   const response = await fetchSimpleHashData(route, params);
@@ -329,7 +329,7 @@ export async function fetchFungibleAssets(
 
 export async function fetchNativeTokenBalances(
   chains: string[],
-  walletAddresses: string[]
+  walletAddresses: string[],
 ): Promise<SimpleHashTypes.NativeTokenBalance[]> {
   // Input validation
   if (!chains?.length || !walletAddresses?.length) {
@@ -343,7 +343,7 @@ export async function fetchNativeTokenBalances(
   const route = "/v0/native_tokens/balances";
   const params = {
     chains: chains.join(","),
-    wallet_addresses: walletAddresses.join(",")
+    wallet_addresses: walletAddresses.join(","),
   };
 
   try {
@@ -358,7 +358,7 @@ export async function fetchNativeTokenBalances(
     console.error("Failed to fetch native token balances:", {
       error,
       chains,
-      walletAddresses
+      walletAddresses,
     });
 
     // Rethrow with more context

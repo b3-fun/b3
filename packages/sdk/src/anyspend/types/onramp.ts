@@ -3,7 +3,7 @@ import { z } from "zod";
 export enum OnrampVendor {
   Coinbase = "coinbase",
   Stripe = "stripe",
-  StripeWeb2 = "stripe-web2"
+  StripeWeb2 = "stripe-web2",
 }
 
 export const zOnrampMetadata = z.object({
@@ -12,5 +12,5 @@ export const zOnrampMetadata = z.object({
   paymentMethod: z.string(),
   ipAddress: z.string().ip("Invalid IP address").optional(),
   redirectUrl: z.string(),
-  stripeAmountInCents: z.number().optional()
+  stripeAmountInCents: z.number().optional(),
 });

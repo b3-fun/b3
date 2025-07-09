@@ -6,7 +6,7 @@ export function B3({
   closeAfterLogin,
   onLoginSuccess,
   sessionKeyAddress,
-  onSessionKeySuccess
+  onSessionKeySuccess,
 }: {
   closeAfterLogin?: boolean;
   onSessionKeySuccess?: () => void;
@@ -17,7 +17,7 @@ export function B3({
     <>
       <SignInWithB3
         provider={{
-          strategy: "google"
+          strategy: "google",
         }}
         chain={b3Chain}
         partnerId={String(process.env.PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID)}

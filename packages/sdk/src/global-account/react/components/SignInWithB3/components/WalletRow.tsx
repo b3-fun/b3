@@ -5,7 +5,7 @@ import { Button } from "../../custom/Button";
 export function WalletRow({
   walletId,
   onClick,
-  isLoading
+  isLoading,
 }: {
   walletId: WalletId;
   onClick: () => void;

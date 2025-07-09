@@ -11,8 +11,8 @@ export const zGetTokenListResponse = z.object({
       name: z.string(),
       decimals: z.number(),
       metadata: z.object({
-        logoURI: z.string().optional()
-      })
-    })
-  )
+        logoURI: z.string().optional(),
+      }),
+    }),
+  ),
 });

@@ -11,7 +11,7 @@ module.exports = {
         }
         return prefixedSelector;
       },
-      exclude: [/^\.b3-root/, /^:root/]
+      exclude: [/^\.b3-root/, /^:root/],
     },
     tailwindcss: {},
     autoprefixer: {},
@@ -19,9 +19,9 @@ module.exports = {
       preset: [
         "default",
         {
-          discardComments: { removeAll: true }
-        }
-      ]
-    }
-  }
+          discardComments: { removeAll: true },
+        },
+      ],
+    },
+  },
 };

@@ -33,11 +33,11 @@ export function useURLParams() {
       url.search = params.toString();
       window.history.pushState({}, "", url.toString());
     },
-    [searchParams]
+    [searchParams],
   );
 
   return {
     searchParams,
-    updateURLParams
+    updateURLParams,
   };
 }

@@ -8,7 +8,7 @@ import {
   Token,
   useAnyspendCreateOnrampOrder,
   useGeoOnrampOptions,
-  useStripeClientSecret
+  useStripeClientSecret,
 } from "@b3dotfun/sdk/anyspend";
 import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
 import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
@@ -51,7 +51,7 @@ function StripePaymentForm({ order, onPaymentSuccess }: { order: Order; onPaymen
     try {
       const { error: submitError } = await stripe.confirmPayment({
         elements,
-        redirect: "if_required"
+        redirect: "if_required",
       });
 
       if (submitError) {
@@ -74,9 +74,9 @@ function StripePaymentForm({ order, onPaymentSuccess }: { order: Order; onPaymen
     defaultValues: {
       billingDetails: {
         name: "",
-        email: ""
-      }
-    }
+        email: "",
+      },
+    },
   };
 
   return (
@@ -117,7 +117,7 @@ export function WebviewOnrampPayment({
   anyspendQuote,
   onPaymentSuccess,
   userId,
-  partnerId
+  partnerId,
 }: WebviewOnrampPaymentProps) {
   const [stableAmountForGeo, setStableAmountForGeo] = useState(srcAmountOnRamp);
   const hasInitialized = useRef(false);
@@ -135,7 +135,7 @@ export function WebviewOnrampPayment({
   const {
     geoData,
     isStripeWeb2Supported,
-    isLoading: isLoadingGeoOnramp
+    isLoading: isLoadingGeoOnramp,
   } = useGeoOnrampOptions(true, stableAmountForGeo);
 
   const { createOrder, isCreatingOrder } = useAnyspendCreateOnrampOrder({
@@ -146,12 +146,12 @@ export function WebviewOnrampPayment({
     onError: error => {
       console.error(error);
       toast.error("Failed to create order: " + error.message);
-    }
+    },
   });
 
   const { clientSecret, isLoadingStripeClientSecret } = useStripeClientSecret(
     true,
-    createdOrder?.stripePaymentIntentId || ""
+    createdOrder?.stripePaymentIntentId || "",
   );
 
   // Create order when component mounts and all required data is available
@@ -173,7 +173,7 @@ export function WebviewOnrampPayment({
             return {
               ...destinationToken,
               chainId: destinationToken.chainId,
-              address: destinationToken.address
+              address: destinationToken.address,
             };
           };
 
@@ -189,10 +189,10 @@ export function WebviewOnrampPayment({
               paymentMethod: "",
               country: geoData.country || "US",
               ipAddress: geoData.ip,
-              redirectUrl: `${window.location.origin}${userId ? `?userId=${userId}` : ""}`
+              redirectUrl: `${window.location.origin}${userId ? `?userId=${userId}` : ""}`,
             },
             expectedDstAmount: anyspendQuote.data?.currencyOut?.amount?.toString() || "0",
-            partnerId
+            partnerId,
           });
         } catch (err: any) {
           console.error(err);
@@ -211,7 +211,7 @@ export function WebviewOnrampPayment({
     createOrder,
     destinationToken,
     userId,
-    partnerId
+    partnerId,
   ]);
 
   // Check if all required data is loaded
@@ -256,7 +256,7 @@ export function WebviewOnrampPayment({
                   <span className="font-medium">
                     {anyspendQuote?.data?.currencyOut?.amount
                       ? Number(
-                          formatUnits(BigInt(anyspendQuote.data.currencyOut.amount), destinationToken.decimals)
+                          formatUnits(BigInt(anyspendQuote.data.currencyOut.amount), destinationToken.decimals),
                         ).toFixed(4)
                       : "0"}{" "}
                     {destinationToken.symbol}
@@ -297,9 +297,9 @@ export function WebviewOnrampPayment({
               variables: {
                 colorPrimary: "#2563eb",
                 colorBackground: "#ffffff",
-                borderRadius: "12px"
-              }
-            }
+                borderRadius: "12px",
+              },
+            },
           }}
         >
           <StripePaymentForm order={createdOrder} onPaymentSuccess={onPaymentSuccess} />
@@ -334,7 +334,7 @@ export function WebviewOnrampPayment({
                 <span className="font-medium">
                   {anyspendQuote?.data?.currencyOut?.amount
                     ? Number(
-                        formatUnits(BigInt(anyspendQuote.data.currencyOut.amount), destinationToken.decimals)
+                        formatUnits(BigInt(anyspendQuote.data.currencyOut.amount), destinationToken.decimals),
                       ).toFixed(4)
                     : "0"}{" "}
                   {destinationToken.symbol}

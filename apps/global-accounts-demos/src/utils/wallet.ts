@@ -20,13 +20,13 @@ export async function generateWallet(): Promise<{
   // Use viem to properly generate the account
   const account = privateKeyToAccount({
     client,
-    privateKey
+    privateKey,
   });
 
   console.log("generateWallet:account", account);
   return {
     address: account.address as `0x${string}`,
     privateKey,
-    account
+    account,
   };
 }

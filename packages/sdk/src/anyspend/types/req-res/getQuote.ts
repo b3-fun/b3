@@ -12,13 +12,13 @@ const zGetQuoteBody = z.object({
   dstChain: z.number(),
   srcTokenAddress: z.string(),
   dstTokenAddress: z.string(),
-  onrampVendor: z.nativeEnum(OnrampVendor).optional()
+  onrampVendor: z.nativeEnum(OnrampVendor).optional(),
 });
 
 const zGetQuoteForSwapOrderBody = zGetQuoteBody.extend({
   type: z.literal(OrderType.Swap),
   tradeType: z.nativeEnum(TradeType),
-  amount: z.string()
+  amount: z.string(),
 });
 
 const zGetQuoteForMintNftOrderBody = zGetQuoteBody.extend({
@@ -26,24 +26,24 @@ const zGetQuoteForMintNftOrderBody = zGetQuoteBody.extend({
   contractAddress: z.string(),
   tokenId: z.number().nullable(),
   contractType: z.nativeEnum(NftType),
-  price: z.string()
+  price: z.string(),
 });
 
 const zGetQuoteForJoinTournamentOrderBody = zGetQuoteBody.extend({
   type: z.literal(OrderType.JoinTournament),
   contractAddress: z.string(),
-  price: z.string()
+  price: z.string(),
 });
 
 const zGetQuoteForFundTournamentOrderBody = zGetQuoteBody.extend({
   type: z.literal(OrderType.FundTournament),
   contractAddress: z.string(),
-  fundAmount: z.string()
+  fundAmount: z.string(),
 });
 
 const zGetQuoteForCustomOrderBody = zGetQuoteBody.extend({
   type: z.literal(OrderType.Custom),
-  payload: zCustomPayload
+  payload: zCustomPayload,
 });
 
 export const zGetQuoteRequest = z.object({
@@ -52,8 +52,8 @@ export const zGetQuoteRequest = z.object({
     zGetQuoteForMintNftOrderBody,
     zGetQuoteForJoinTournamentOrderBody,
     zGetQuoteForFundTournamentOrderBody,
-    zGetQuoteForCustomOrderBody
-  ])
+    zGetQuoteForCustomOrderBody,
+  ]),
 });
 export type GetQuoteRequest = z.infer<typeof zGetQuoteRequest.shape.body>;
 

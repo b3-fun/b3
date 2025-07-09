@@ -9,6 +9,6 @@ export const useBsmntProfile = ({ address }: UseProfileOptions) => {
   return useQuery({
     queryKey: ["useBsmntProfile", address],
     queryFn: () => fetchBsmntProfile(undefined, address),
-    enabled: !!address
+    enabled: !!address,
   });
 };

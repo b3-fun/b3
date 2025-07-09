@@ -16,7 +16,7 @@ export function useOnchainName(address: string | undefined) {
         return null;
       }
     },
-    enabled: !!address
+    enabled: !!address,
   });
 
   const { data: b3Name, isLoading: isLoadingB3 } = useQuery({
@@ -30,7 +30,7 @@ export function useOnchainName(address: string | undefined) {
         return null;
       }
     },
-    enabled: !!address
+    enabled: !!address,
   });
 
   const { data: ensName, isLoading: isLoadingEns } = useQuery({
@@ -48,14 +48,14 @@ export function useOnchainName(address: string | undefined) {
         return null;
       }
     },
-    enabled: !!address
+    enabled: !!address,
   });
 
   return {
     name: bsmntName || b3Name || ensName || null,
     isLoading: isLoadingBsmnt || isLoadingB3 || isLoadingEns,
     b3Name,
-    ensName
+    ensName,
   };
 }
 
@@ -81,14 +81,14 @@ export function useOnchainNames(addresses: string[]) {
         return null;
       }
     },
-    enabled: !!address
+    enabled: !!address,
   }));
 
   const results = useQueries({ queries });
 
   return {
     names: results.map(result => result.data),
-    isLoading: results.some(result => result.isLoading)
+    isLoading: results.some(result => result.isLoading),
   };
 }
 
@@ -138,7 +138,7 @@ export function useResolveOnchainName(name: string | undefined) {
           // Fall back to B3 name resolution
           try {
             const b3Response = await getEnsName(
-              name.replace("@", "").replace(".b3.fun", "").replace(".b3", "") + ".b3.fun"
+              name.replace("@", "").replace(".b3.fun", "").replace(".b3", "") + ".b3.fun",
             );
             const b3Data = await b3Response.json();
             return b3Data?.addresses?.["60"] || null;
@@ -151,12 +151,12 @@ export function useResolveOnchainName(name: string | undefined) {
         return null;
       }
     },
-    enabled: !!name
+    enabled: !!name,
   });
 
   return {
     address,
-    isLoading
+    isLoading,
   };
 }
 
@@ -187,12 +187,12 @@ export function useOnchainPFP(name: string | undefined) {
         return null;
       }
     },
-    enabled: !!name
+    enabled: !!name,
   });
 
   return {
     pfp,
     isLoading,
-    address
+    address,
   };
 }

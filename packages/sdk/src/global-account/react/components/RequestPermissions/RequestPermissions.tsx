@@ -3,7 +3,7 @@ import {
   useB3,
   useAddTWSessionKey,
   useGetAllTWSigners,
-  RequestPermissionsModalProps
+  RequestPermissionsModalProps,
 } from "@b3dotfun/sdk/global-account/react";
 import { PermissionItem } from "@b3dotfun/sdk/global-account/react";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
@@ -26,19 +26,19 @@ export function RequestPermissions({
   onError,
   chain,
   sessionKeyAddress,
-  permissions
+  permissions,
 }: RequestPermissionsModalProps) {
   const [isApproving, setIsApproving] = useState(false);
   const account = useActiveAccount();
   const { defaultPermissions } = useB3();
   const DEFAULT_PERMISSIONS = useMemo(
     () => permissions ?? (defaultPermissions as PermissionsConfig),
-    [defaultPermissions, permissions]
+    [defaultPermissions, permissions],
   );
 
   const { refetch: refetchSigners } = useGetAllTWSigners({
     chain,
-    accountAddress: account?.address
+    accountAddress: account?.address,
   });
   const { newSessionKey } = useAddTWSessionKey({
     onSuccess: transactionResult => {
@@ -52,7 +52,7 @@ export function RequestPermissions({
     refetchSigners: () => {
       return refetchSigners();
     },
-    chain
+    chain,
   });
 
   const handleApprove = useCallback(async () => {
@@ -68,7 +68,7 @@ export function RequestPermissions({
         approvedTargets: DEFAULT_PERMISSIONS.approvedTargets as Address[],
         nativeTokenLimitPerTransaction: DEFAULT_PERMISSIONS.nativeTokenLimitPerTransaction,
         permissionStartTimestamp: DEFAULT_PERMISSIONS.startDate,
-        permissionEndTimestamp: DEFAULT_PERMISSIONS.endDate
+        permissionEndTimestamp: DEFAULT_PERMISSIONS.endDate,
       });
     } catch (error) {
       console.error("@@error:", error);
@@ -81,7 +81,7 @@ export function RequestPermissions({
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat("en-US", {
       dateStyle: "medium",
-      timeStyle: "short"
+      timeStyle: "short",
     }).format(date);
   };
   return (

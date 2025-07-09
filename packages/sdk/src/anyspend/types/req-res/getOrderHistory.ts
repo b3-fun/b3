@@ -5,5 +5,5 @@ export const zGetOrderHistoryResponse = z.object({
   success: z.boolean(),
   message: z.string(),
   data: z.array(zOrder),
-  statusCode: z.number()
+  statusCode: z.number(),
 });

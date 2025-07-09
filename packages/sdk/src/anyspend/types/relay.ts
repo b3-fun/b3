@@ -9,5 +9,5 @@ export type RelayStepStatus = z.infer<typeof zRelayStepStatus>;
 export enum TradeType {
   EXACT_INPUT = "EXACT_INPUT",
   EXPECTED_OUTPUT = "EXPECTED_OUTPUT",
-  EXACT_OUTPUT = "EXACT_OUTPUT"
+  EXACT_OUTPUT = "EXACT_OUTPUT",
 }

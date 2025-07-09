@@ -20,12 +20,12 @@ export function RelayKitProviderWrapper({ isMainnet, children }: { isMainnet: bo
         source: "anyspend",
         duneConfig: {
           apiKey: "OkvN2bWlBPwXkvtmnTeYMQR1hYZBGDJt",
-          apiBaseUrl: "https://api.dune.com"
+          apiBaseUrl: "https://api.dune.com",
         },
         chains: relayChains,
         privateChainIds: undefined,
         appName: "AnySpend",
-        useGasFeeEstimations: true
+        useGasFeeEstimations: true,
       }}
     >
       <>{children}</>

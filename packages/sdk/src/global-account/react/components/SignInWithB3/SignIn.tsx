@@ -5,7 +5,7 @@ import {
   useAccountWallet,
   useAuthentication,
   useB3,
-  useIsMobile
+  useIsMobile,
 } from "@b3dotfun/sdk/global-account/react";
 import Icon from "@b3dotfun/sdk/global-account/react/components/custom/Icon";
 import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
@@ -39,7 +39,7 @@ export function SignIn(props: SignInWithB3Props) {
     isActiveSmartWallet,
     isActiveEOAWallet,
     smartWalletIcon,
-    eoaWalletIcon
+    eoaWalletIcon,
   } = useAccountWallet();
 
   const isMobile = useIsMobile();
@@ -110,7 +110,7 @@ export function SignIn(props: SignInWithB3Props) {
                     <div
                       className={cn(
                         "border-b3-react-subtle bg-b3-react-background flex cursor-pointer items-center justify-between rounded-xl p-3",
-                        "hover:bg-theme-on-surface-2"
+                        "hover:bg-theme-on-surface-2",
                       )}
                       onClick={() => handleSetActiveAccount(connectedEOAWallet?.id)}
                     >
@@ -133,7 +133,7 @@ export function SignIn(props: SignInWithB3Props) {
                       <div
                         className={cn(
                           "mb-2 flex cursor-pointer items-center justify-between rounded-xl p-3",
-                          isActiveSmartWallet ? "bg-theme-n-8" : "bg-b3-react-background hover:bg-theme-on-surface-2"
+                          isActiveSmartWallet ? "bg-theme-n-8" : "bg-b3-react-background hover:bg-theme-on-surface-2",
                         )}
                         onClick={() => handleSetActiveAccount(connectedSmartWallet?.id)}
                       >

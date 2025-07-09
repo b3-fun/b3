@@ -14,14 +14,14 @@ const exampleNFT = {
     name: "B3",
     symbol: "B3",
     metadata: {
-      logoURI: "https://s2.coinmarketcap.com/static/img/coins/64x64/35690.png"
-    }
+      logoURI: "https://s2.coinmarketcap.com/static/img/coins/64x64/35690.png",
+    },
   },
   imageUrl:
     "https://storage.googleapis.com/nftimagebucket/base/tokens/0x80f0e6644723abb03aa8867d21e32bd854b2a2d9/preview/TVRjME1EUTRORFl4T0E9PV8zNjcy.jpg",
   name: "Downhill Ski",
   description: "Downhill Ski",
-  tokenId: null
+  tokenId: null,
 };
 
 export function NFTMintingExample() {

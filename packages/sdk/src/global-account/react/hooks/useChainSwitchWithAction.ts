@@ -57,9 +57,9 @@ export function useChainSwitchWithAction() {
             nativeCurrency: {
               name: nativeCurrency.name,
               symbol: nativeCurrency.symbol,
-              decimals: nativeCurrency.decimals
-            }
-          }
+              decimals: nativeCurrency.decimals,
+            },
+          },
         });
         await run(() => action(walletClient));
       } catch (e: any) {
@@ -72,7 +72,7 @@ export function useChainSwitchWithAction() {
         }
       }
     },
-    [walletClient, run, switchChainAsync]
+    [walletClient, run, switchChainAsync],
   );
 
   return { switchChainAndExecute, isSwitchingOrExecuting };

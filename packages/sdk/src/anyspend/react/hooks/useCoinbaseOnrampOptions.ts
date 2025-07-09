@@ -6,7 +6,7 @@ export function useCoinbaseOnrampOptions(isMainnet: boolean, country?: string) {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["getCoinbaseOnrampOptions", isMainnet, country],
     queryFn: () => anyspendService.getCoinbaseOnrampOptions(isMainnet, country!),
-    enabled: Boolean(country)
+    enabled: Boolean(country),
   });
 
   return useMemo(
@@ -14,8 +14,8 @@ export function useCoinbaseOnrampOptions(isMainnet: boolean, country?: string) {
       coinbaseOnrampOptions: data,
       isLoadingCoinbaseOnrampOptions: isLoading,
       coinbaseOnrampOptionsError: error,
-      refetchCoinbaseOnrampOptions: refetch
+      refetchCoinbaseOnrampOptions: refetch,
     }),
-    [data, isLoading, error, refetch]
+    [data, isLoading, error, refetch],
   );
 }

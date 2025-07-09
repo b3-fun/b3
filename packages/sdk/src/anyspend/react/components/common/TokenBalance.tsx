@@ -5,7 +5,7 @@ import { formatUnits } from "viem";
 export function TokenBalance({
   token,
   walletAddress,
-  onChangeInput
+  onChangeInput,
 }: {
   token: Token;
   walletAddress: string | undefined;
@@ -13,7 +13,7 @@ export function TokenBalance({
 }) {
   const { rawBalance, formattedBalance, isLoading } = useTokenBalance({
     token,
-    address: walletAddress
+    address: walletAddress,
   });
 
   const handlePercentageClick = (percentage: number) => {

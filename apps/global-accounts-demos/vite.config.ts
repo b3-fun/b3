@@ -17,12 +17,12 @@ const appConfigs: Record<
 > = {
   default: {
     title: "Memory Game",
-    favicon: "fav.ico"
+    favicon: "fav.ico",
   },
   battle: {
     title: "NFT Battle",
-    favicon: "fav2.ico"
-  }
+    favicon: "fav2.ico",
+  },
 };
 
 const appType = (process.env.VITE_APP_TYPE || "default") as AppType;
@@ -41,7 +41,7 @@ export default defineConfig(({ command }) => {
       VITE_APP_TITLE: appConfigs[appType].title,
       VITE_APP_FAVICON: appConfigs[appType].favicon,
       NEXT_PUBLIC_THIRDWEB_ECOSYSTEM_ID: "ecosystem.b3dotfun",
-      PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID: "ceba2f84-45ff-4717-b3e9-0acf0d062abd" // Local dev
+      PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID: "ceba2f84-45ff-4717-b3e9-0acf0d062abd", // Local dev
     };
   } else {
     env = {
@@ -53,27 +53,27 @@ export default defineConfig(({ command }) => {
       VITE_APP_TITLE: appConfigs[appType].title,
       VITE_APP_FAVICON: appConfigs[appType].favicon,
       NEXT_PUBLIC_THIRDWEB_ECOSYSTEM_ID: "ecosystem.b3-open-gaming",
-      PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID: "dbcd5e9b-564e-4ba0-91a0-becf0edabb61"
+      PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID: "dbcd5e9b-564e-4ba0-91a0-becf0edabb61",
     };
   }
 
   return {
     plugins: [react(), nodePolyfills(), viteCommonjs()],
     define: {
-      "process.env": env
+      "process.env": env,
     },
     preview: {
-      allowedHosts: ["memory-game-production-ea41.up.railway.app", "battle-nft-production.up.railway.app"]
+      allowedHosts: ["memory-game-production-ea41.up.railway.app", "battle-nft-production.up.railway.app"],
     },
     optimizeDeps: {
       include: [],
-      exclude: []
+      exclude: [],
     },
     resolve: {
       alias: {
         "@b3dotfun/sdk/index.css": path.resolve(__dirname, "../../packages/sdk/dist/styles/index.css"),
-        "@b3dotfun/sdk": path.resolve(__dirname, "../../packages/sdk/src")
-      }
-    }
+        "@b3dotfun/sdk": path.resolve(__dirname, "../../packages/sdk/src"),
+      },
+    },
   };
 });

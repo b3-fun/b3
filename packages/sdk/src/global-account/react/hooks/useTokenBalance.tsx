@@ -28,7 +28,7 @@ export function useTokenBalance({ token, address }: UseTokenBalanceProps): Token
     data: tokenBalance,
     isLoading,
     isFetching,
-    refetch
+    refetch,
   } = useQuery({
     queryKey: ["tokenBalance", effectiveAddress, token.chainId, token.address],
     queryFn: async (): Promise<{ formatted: string; raw: bigint | null }> => {
@@ -40,7 +40,7 @@ export function useTokenBalance({ token, address }: UseTokenBalanceProps): Token
           const rawBalance = nativeToken.balance;
           return {
             formatted: formatTokenAmount(BigInt(rawBalance), Number(nativeToken.decimals || 18)),
-            raw: BigInt(rawBalance)
+            raw: BigInt(rawBalance),
           };
         }
         return { formatted: "0", raw: null };
@@ -48,13 +48,13 @@ export function useTokenBalance({ token, address }: UseTokenBalanceProps): Token
 
       const response = await getERC20Balances(effectiveAddress, {
         chainIds: [token.chainId],
-        includeSpam: false
+        includeSpam: false,
       });
       const tokenBalance = response.data?.find(t => t.token_address === token.address);
       if (tokenBalance?.balance) {
         return {
           formatted: formatTokenAmount(BigInt(tokenBalance.balance), Number(tokenBalance.decimals || 18)),
-          raw: BigInt(tokenBalance.balance)
+          raw: BigInt(tokenBalance.balance),
         };
       }
       return { formatted: "0", raw: null };
@@ -63,7 +63,7 @@ export function useTokenBalance({ token, address }: UseTokenBalanceProps): Token
     staleTime: 30000,
     gcTime: 5 * 60 * 1000,
     retry: 2,
-    structuralSharing: false
+    structuralSharing: false,
   });
 
   // Force a refetch when the wallet or token changes
@@ -79,6 +79,6 @@ export function useTokenBalance({ token, address }: UseTokenBalanceProps): Token
   return {
     rawBalance: tokenBalance?.raw || BigInt(0),
     formattedBalance: tokenBalance?.formatted || "0",
-    isLoading: isActuallyLoading
+    isLoading: isActuallyLoading,
   };
 }

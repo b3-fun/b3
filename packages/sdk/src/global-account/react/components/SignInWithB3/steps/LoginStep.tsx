@@ -32,10 +32,10 @@ export function LoginStepContainer({ children, partnerId }: LoginStepContainerPr
     {
       query: {
         partnerId,
-        $limit: 1
-      }
+        $limit: 1,
+      },
     },
-    !!partnerId
+    !!partnerId,
   );
 
   const partnerLogo = partner?.data?.[0]?.loginCustomization?.logoUrl;
@@ -55,7 +55,7 @@ export function LoginStepContainer({ children, partnerId }: LoginStepContainerPr
 
 export function LoginStep({ onSuccess, onError, partnerId, chain }: LoginStepProps) {
   const wallet = ecosystemWallet(ecosystemWalletId, {
-    partnerId: partnerId
+    partnerId: partnerId,
   });
 
   const { theme } = useB3();
@@ -74,20 +74,20 @@ export function LoginStep({ onSuccess, onError, partnerId, chain }: LoginStepPro
           theme === "light"
             ? lightTheme({
                 colors: {
-                  modalBg: "hsl(var(--b3-react-background))"
-                }
+                  modalBg: "hsl(var(--b3-react-background))",
+                },
               })
             : darkTheme({
                 colors: {
-                  modalBg: "hsl(var(--b3-react-background))"
-                }
+                  modalBg: "hsl(var(--b3-react-background))",
+                },
               })
         }
         autoConnect
         style={{
           width: "100%",
           height: "100%",
-          border: 0
+          border: 0,
         }}
         // TODO: Integrate with SIWE in useSIWE
         // auth={{
@@ -108,7 +108,7 @@ export function LoginStep({ onSuccess, onError, partnerId, chain }: LoginStepPro
         // }}
         header={{
           title: "Sign in with B3",
-          titleIcon: "https://cdn.b3.fun/b3_logo.svg"
+          titleIcon: "https://cdn.b3.fun/b3_logo.svg",
         }}
         onConnect={async wallet => {
           try {

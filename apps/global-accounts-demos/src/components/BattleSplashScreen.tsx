@@ -171,7 +171,7 @@ export function BattleSplashScreen({ onStart }: BattleSplashScreenProps) {
   const { data: tokensResponse, isLoading: isLoadingTokens } = useTokensFromAddress({
     ownerAddress: ecoSystemAccount.address,
     chain: 8333,
-    limit: 50
+    limit: 50,
   });
 
   const hasWeapons = tokensResponse?.data && tokensResponse.data.length > 0;
@@ -227,31 +227,31 @@ export function BattleSplashScreen({ onStart }: BattleSplashScreenProps) {
           <LoadingRing
             animate={{
               rotate: 360,
-              scale: [1, 1.1, 1]
+              scale: [1, 1.1, 1],
             }}
             transition={{
               rotate: {
                 duration: 2,
                 repeat: Infinity,
-                ease: "linear"
+                ease: "linear",
               },
               scale: {
                 duration: 1,
                 repeat: Infinity,
-                repeatType: "reverse"
-              }
+                repeatType: "reverse",
+              },
             }}
           />
           <LoadingText
             initial={{ opacity: 0 }}
             animate={{
               opacity: [0.5, 1, 0.5],
-              scale: [1, 1.05, 1]
+              scale: [1, 1.05, 1],
             }}
             transition={{
               repeat: Infinity,
               duration: 2,
-              ease: "easeInOut"
+              ease: "easeInOut",
             }}
           >
             Searching for weapons in your arsenal...
@@ -263,12 +263,12 @@ export function BattleSplashScreen({ onStart }: BattleSplashScreenProps) {
             <WarningText
               animate={{
                 x: [0, -10, 10, -10, 0],
-                rotate: [-5, 5, -5, 5, -5]
+                rotate: [-5, 5, -5, 5, -5],
               }}
               transition={{
                 duration: 0.5,
                 repeat: Infinity,
-                repeatDelay: 3
+                repeatDelay: 3,
               }}
             >
               NO WEAPONS FOUND!
@@ -281,7 +281,7 @@ export function BattleSplashScreen({ onStart }: BattleSplashScreenProps) {
             rel="noopener noreferrer"
             whileHover={{
               scale: 1.1,
-              boxShadow: "0 0 30px rgba(68, 255, 68, 0.8)"
+              boxShadow: "0 0 30px rgba(68, 255, 68, 0.8)",
             }}
             whileTap={{ scale: 0.95 }}
             onClick={() => {
@@ -305,7 +305,7 @@ export function BattleSplashScreen({ onStart }: BattleSplashScreenProps) {
             color: "white",
             cursor: "pointer",
             zIndex: 2,
-            fontWeight: "bold"
+            fontWeight: "bold",
           }}
         >
           Start Battle

@@ -7,7 +7,7 @@ import { PaymentOptions } from "./PaymentOptions";
 
 export function PanelOnramp({
   srcAmountOnRamp,
-  setSrcAmountOnRamp
+  setSrcAmountOnRamp,
 }: {
   srcAmountOnRamp: string;
   setSrcAmountOnRamp: (amount: string) => void;
@@ -47,7 +47,7 @@ export function PanelOnramp({
         {parseFloat(srcAmountOnRamp) >
         (coinbaseOnrampOptions?.paymentCurrencies?.[0]?.limits?.find(l => l.id === "ACH_BANK_ACCOUNT")?.max
           ? parseFloat(
-              coinbaseOnrampOptions.paymentCurrencies[0].limits.find(l => l.id === "ACH_BANK_ACCOUNT")?.max || "25000"
+              coinbaseOnrampOptions.paymentCurrencies[0].limits.find(l => l.id === "ACH_BANK_ACCOUNT")?.max || "25000",
             )
           : 25000) ? (
           <p className="label-style -mb-3 mt-3 text-xs text-red-400 dark:bg-transparent">
@@ -72,7 +72,7 @@ export function PanelOnramp({
             className="placeholder:text-b3-react-foreground/60 h-auto min-w-[70px] border-0 bg-transparent py-6 text-center text-4xl font-semibold focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-transparent"
             style={{
               width: `${Math.max(50, srcAmountOnRamp.length * 34)}px`,
-              minWidth: srcAmountOnRamp ? `auto` : "105px"
+              minWidth: srcAmountOnRamp ? `auto` : "105px",
             }}
           />
 

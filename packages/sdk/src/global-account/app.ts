@@ -29,9 +29,9 @@ const app = createClient(socketio(socket), {
     },
     removeItem: (key: string) => {
       Cookies.remove(key);
-    }
+    },
   },
-  storageKey: B3_AUTH_COOKIE_NAME
+  storageKey: B3_AUTH_COOKIE_NAME,
 });
 
 export const authenticate = async (accessToken: string, identityToken: string, params?: Record<string, any>) => {
@@ -47,11 +47,11 @@ export const authenticate = async (accessToken: string, identityToken: string, p
     const response = await app.authenticate(
       {
         strategy: "jwt",
-        accessToken: fullToken
+        accessToken: fullToken,
       },
       {
-        query: params || {}
-      }
+        query: params || {},
+      },
     );
     return response;
   } catch (error) {

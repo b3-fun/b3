@@ -36,7 +36,7 @@ export const CHAIN_PLATFORM_MAP = {
   // Gnosis Chain
   100: "xdai",
   // Moonbeam
-  1284: "moonbeam"
+  1284: "moonbeam",
 } as const;
 
 export type ChainId = keyof typeof CHAIN_PLATFORM_MAP;

@@ -51,7 +51,7 @@ export {
   CommandItem,
   CommandList,
   CommandSeparator,
-  CommandShortcut
+  CommandShortcut,
 } from "./ui/command";
 export {
   Dialog,
@@ -63,7 +63,7 @@ export {
   DialogOverlay,
   DialogPortal,
   DialogTitle,
-  DialogTrigger
+  DialogTrigger,
 } from "./ui/dialog";
 export {
   Drawer,
@@ -75,7 +75,7 @@ export {
   DrawerOverlay,
   DrawerPortal,
   DrawerTitle,
-  DrawerTrigger
+  DrawerTrigger,
 } from "./ui/drawer";
 export { GlareCard } from "./ui/glare-card";
 export { GlareCardRounded } from "./ui/glare-card-rounded";
@@ -89,7 +89,7 @@ export {
   TabsContent as TabsContentPrimitive,
   TabsList as TabsListPrimitive,
   Tabs as TabsPrimitive,
-  TabTrigger as TabTriggerPrimitive
+  TabTrigger as TabTriggerPrimitive,
 } from "./ui/Tabs";
 export { Tabs, TabsContent, TabsList, TabsTransitionWrapper, TabTrigger } from "./ui/TabSystem";
 export { TextLoop } from "./ui/text-loop";

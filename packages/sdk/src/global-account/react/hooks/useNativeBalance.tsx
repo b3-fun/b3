@@ -15,7 +15,7 @@ async function fetchNativeBalance(address: string, chainIds: string) {
   if (!address) throw new Error("Address is required");
 
   const response = await fetch(
-    `https://api.sprinter.buildwithsygma.com/accounts/${address}/assets/native?whitelistedChains=${chainIds}`
+    `https://api.sprinter.buildwithsygma.com/accounts/${address}/assets/native?whitelistedChains=${chainIds}`,
   );
 
   if (!response.ok) {
@@ -36,8 +36,8 @@ async function fetchNativeBalance(address: string, chainIds: string) {
     breakdown: data.data.map(item => ({
       chainId: item.chainId,
       balance: BigInt(item.balance),
-      formatted: formatNumber(Number(formatUnits(BigInt(item.balance), item.tokenDecimals)))
-    }))
+      formatted: formatNumber(Number(formatUnits(BigInt(item.balance), item.tokenDecimals))),
+    })),
   };
 }
 
@@ -47,7 +47,7 @@ export function useNativeBalance(address?: string, chainIds = "8333") {
     queryFn: () => fetchNativeBalance(address!, chainIds),
     enabled: Boolean(address),
     staleTime: 30 * 1000, // Consider data fresh for 30 seconds
-    gcTime: 5 * 60 * 1000 // Keep unused data in cache for 5 minutes
+    gcTime: 5 * 60 * 1000, // Keep unused data in cache for 5 minutes
   });
 }
 
@@ -69,11 +69,11 @@ export function useNativeBalanceFromRPC(address: string, chainId: number) {
       try {
         const publicClient = createPublicClient({
           chain: chainId === 8333 ? b3Mainnet : b3Testnet,
-          transport: http()
+          transport: http(),
         });
 
         const balance = await publicClient.getBalance({
-          address: address as `0x${string}`
+          address: address as `0x${string}`,
         });
 
         return parseFloat(formatEther(balance));
@@ -83,7 +83,7 @@ export function useNativeBalanceFromRPC(address: string, chainId: number) {
         return 0;
       }
     },
-    enabled: Boolean(address)
+    enabled: Boolean(address),
   });
 
   return { balance, isLoading };

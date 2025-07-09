@@ -22,7 +22,7 @@ const PopoverContent = React.forwardRef<
         sideOffset={sideOffset}
         className={cn(
           "bg-b3-react-popover text-as-primary z-50 rounded-md border p-4 shadow-md outline-none",
-          className
+          className,
         )}
         {...props}
       />

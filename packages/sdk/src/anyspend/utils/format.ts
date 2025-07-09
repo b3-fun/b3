@@ -5,12 +5,12 @@ export const getStatusDisplay = (order: Order): { text: string; status: "process
     case OrderStatus.ScanningDepositTransaction:
       return {
         text: order.onrampMetadata ? "Awaiting Payment" : "Awaiting Deposit",
-        status: "processing"
+        status: "processing",
       };
     case OrderStatus.WaitingStripePayment:
       return {
         text: "Awaiting Payment",
-        status: "processing"
+        status: "processing",
       };
 
     case OrderStatus.ObtainToken:

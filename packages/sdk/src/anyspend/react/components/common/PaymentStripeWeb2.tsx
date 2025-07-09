@@ -22,7 +22,7 @@ export default function PaymentStripeWeb2({ isMainnet, order, onPaymentSuccess }
 
   const { clientSecret, isLoadingStripeClientSecret, stripeClientSecretError } = useStripeClientSecret(
     isMainnet,
-    order.stripePaymentIntentId!
+    order.stripePaymentIntentId!,
   );
 
   if (isLoadingStripeClientSecret) {
@@ -38,7 +38,7 @@ export default function PaymentStripeWeb2({ isMainnet, order, onPaymentSuccess }
       stripe={stripePromise}
       options={{
         clientSecret: clientSecret || undefined,
-        appearance: { theme: theme === "light" ? "stripe" : "night" }
+        appearance: { theme: theme === "light" ? "stripe" : "night" },
       }}
     >
       <StripePaymentForm order={order} clientSecret={clientSecret} onPaymentSuccess={onPaymentSuccess} />
@@ -80,7 +80,7 @@ function StripeErrorState({ error }: { error: string }) {
 function StripePaymentForm({
   order,
   clientSecret,
-  onPaymentSuccess
+  onPaymentSuccess,
 }: {
   order: Order;
   clientSecret: string | null;
@@ -135,7 +135,7 @@ function StripePaymentForm({
       console.log("@@stripe-web2-payment:confirming-payment:", JSON.stringify({ orderId: order.id }, null, 2));
       const { error, paymentIntent } = await stripe.confirmPayment({
         elements,
-        redirect: "if_required"
+        redirect: "if_required",
       });
 
       if (error) {
@@ -144,7 +144,7 @@ function StripePaymentForm({
       } else if (paymentIntent && paymentIntent.status === "succeeded") {
         console.log(
           "@@stripe-web2-payment:success:",
-          JSON.stringify({ orderId: order.id, paymentIntentId: paymentIntent.id }, null, 2)
+          JSON.stringify({ orderId: order.id, paymentIntentId: paymentIntent.id }, null, 2),
         );
         // Payment succeeded without redirect - handle success in the modal
         setMessage(null);
@@ -174,31 +174,31 @@ function StripePaymentForm({
     defaultValues: {
       billingDetails: {
         name: "",
-        email: ""
-      }
+        email: "",
+      },
     },
     fields: {
-      billingDetails: "auto" as const
+      billingDetails: "auto" as const,
     },
     wallets: {
       applePay: "auto" as const,
-      googlePay: "auto" as const
-    }
+      googlePay: "auto" as const,
+    },
   };
 
   const howItWorksSteps = [
     {
       number: 1,
-      description: "Enter your payment details securely using Stripe's encrypted form"
+      description: "Enter your payment details securely using Stripe's encrypted form",
     },
     {
       number: 2,
-      description: "Your payment is processed instantly and securely through our payment partner"
+      description: "Your payment is processed instantly and securely through our payment partner",
     },
     {
       number: 3,
-      description: "After payment confirmation, your order will be processed and completed automatically"
-    }
+      description: "After payment confirmation, your order will be processed and completed automatically",
+    },
   ];
 
   return (

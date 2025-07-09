@@ -5,6 +5,6 @@ export const zPermit = z.object({
   deadline: z.number(),
   v: z.number(),
   r: z.string(),
-  s: z.string()
+  s: z.string(),
 });
 export type Permit = z.infer<typeof zPermit>;

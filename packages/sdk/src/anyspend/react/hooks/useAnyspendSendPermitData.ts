@@ -10,7 +10,7 @@ export function useAnyspendSendPermitData({ onSuccess, onError }: UseAnyspendCre
         const response = await anyspendService.sendPermitData({
           isMainnet,
           orderId,
-          permitData
+          permitData,
         });
         if (response.statusCode !== 200) throw response;
         return response;
@@ -28,11 +28,11 @@ export function useAnyspendSendPermitData({ onSuccess, onError }: UseAnyspendCre
     },
     onError: (error: Error) => {
       onError?.(error);
-    }
+    },
   });
 
   return {
     sendPermitData,
-    isSendingPermitData: isPending
+    isSendingPermitData: isPending,
   };
 }

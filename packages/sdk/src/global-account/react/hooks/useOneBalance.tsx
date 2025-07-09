@@ -33,7 +33,7 @@ export const useOneBalance = (bypassCache = false) => {
     queryFn: () => fetchBalances(address!, sprinterTestnet),
     enabled: !!address,
     staleTime: 1000 * 60 * 1, // 1 minute
-    gcTime: 1000 * 60 * 5 // 5 minutes (renamed from cacheTime in v5)
+    gcTime: 1000 * 60 * 5, // 5 minutes (renamed from cacheTime in v5)
   });
 
   useEffect(() => {
@@ -90,6 +90,6 @@ export const useOneBalance = (bypassCache = false) => {
     aggregatedBalances: data || [],
     aggregatedTokenBalances,
     loading: isLoading,
-    refetch
+    refetch,
   };
 };

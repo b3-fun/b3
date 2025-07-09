@@ -2,7 +2,7 @@ import {
   Loading,
   useAuthentication,
   useHandleConnectWithPrivy,
-  useAuthStore
+  useAuthStore,
 } from "@b3dotfun/sdk/global-account/react";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { useEffect } from "react";
@@ -26,7 +26,7 @@ export function SignInWithB3Privy({ onSuccess, onError, partnerId, chain }: Sign
 
   debug("@@SignInWithB3Privy", {
     isLoading,
-    fullToken
+    fullToken,
   });
 
   useEffect(() => {

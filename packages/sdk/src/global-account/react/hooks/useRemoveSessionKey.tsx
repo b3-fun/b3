@@ -12,14 +12,14 @@ export function useRemoveSessionKey({
   onSuccess,
   onError,
   refetchSigners,
-  chain
+  chain,
 }: {
   chain?: Chain;
   onSuccess: (
     transactionResult: { transactionHash: Hex } & {
       client: ThirdwebClient;
       chain: Chain;
-    }
+    },
   ) => void;
   onError: (error: Error) => void;
   refetchSigners: () => Promise<any>;
@@ -42,10 +42,10 @@ export function useRemoveSessionKey({
           contract: {
             client,
             chain,
-            address: account.address as `0x${string}`
+            address: account.address as `0x${string}`,
           },
           account,
-          sessionKeyAddress: signer.signer as `0x${string}`
+          sessionKeyAddress: signer.signer as `0x${string}`,
         });
 
         debug("@@ecosystem:removeSessionKey:transaction:", transaction);
@@ -62,7 +62,7 @@ export function useRemoveSessionKey({
         setIsRemovingSessionKey(false);
       }
     },
-    [account, chain, onSuccess, onError, refetchSigners]
+    [account, chain, onSuccess, onError, refetchSigners],
   );
 
   return { removeSessionKey: removeSessionKeyHandler, isRemovingSessionKey };

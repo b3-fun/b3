@@ -38,11 +38,11 @@ export function formatTokenAmount(
   amountInWei: bigint,
   decimals: number,
   significantFigures = 6,
-  showSubscripts = true
+  showSubscripts = true,
 ): string {
   return formatDisplayNumber(formatUnits(amountInWei.toString(), decimals), {
     significantDigits: significantFigures,
-    showSubscripts: showSubscripts
+    showSubscripts: showSubscripts,
   });
 }
 
@@ -56,7 +56,7 @@ const subscriptMap: { [key: string]: string } = {
   "6": "₆",
   "7": "₇",
   "8": "₈",
-  "9": "₉"
+  "9": "₉",
 };
 
 export const formatDisplayNumber = (
@@ -67,7 +67,7 @@ export const formatDisplayNumber = (
     fractionDigits?: number;
     fallback?: string;
     showSubscripts?: boolean;
-  }
+  },
 ): string => {
   const { style = "decimal", fallback = "--", showSubscripts = true } = options || {};
 
@@ -115,7 +115,7 @@ export const formatDisplayNumber = (
     minimumFractionDigits: fractionDigits ? 0 : undefined,
     maximumFractionDigits: fractionDigits,
     minimumSignificantDigits: significantDigits ? 1 : undefined,
-    maximumSignificantDigits: significantDigits
+    maximumSignificantDigits: significantDigits,
   });
 
   return formatter.format(v);

@@ -51,11 +51,11 @@ export const AnimatedLottie: React.FC<AnimatedLottieProps> = React.memo(
                 console.error("Failed to play animation:", error);
               }
             },
-            delay ? delay * 1000 : 0
+            delay ? delay * 1000 : 0,
           );
         }
       },
-      [autoplay, delay]
+      [autoplay, delay],
     );
 
     const handleMouseEnter = useCallback(() => {
@@ -73,9 +73,9 @@ export const AnimatedLottie: React.FC<AnimatedLottieProps> = React.memo(
 
     const animateProps = useMemo(
       () => ({
-        scale: animateBounce ? [1, 0.95, 1.05, 1] : 1
+        scale: animateBounce ? [1, 0.95, 1.05, 1] : 1,
       }),
-      [animateBounce]
+      [animateBounce],
     );
 
     return (
@@ -98,7 +98,7 @@ export const AnimatedLottie: React.FC<AnimatedLottieProps> = React.memo(
         />
       </motion.div>
     );
-  }
+  },
 );
 
 AnimatedLottie.displayName = "AnimatedLottie";

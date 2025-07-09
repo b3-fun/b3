@@ -54,13 +54,13 @@ export function useBestTransactionPath({
   amount,
   token,
   address,
-  transactionType: _transactionType = "send"
+  transactionType: _transactionType = "send",
 }: UseBestTransactionPathProps): TransactionPathResult {
   const account = useAccountWallet();
   const effectiveAddress = address || account?.address;
 
   const isSupportedSprinterToken = supportedSprinterTokenSymbols.includes(
-    token.symbol.toUpperCase() as (typeof supportedSprinterTokenSymbols)[number]
+    token.symbol.toUpperCase() as (typeof supportedSprinterTokenSymbols)[number],
   );
 
   // Get balances across all chains
@@ -69,7 +69,7 @@ export function useBestTransactionPath({
   // Get the token balance using our new hook
   const { rawBalance, isLoading: tokenBalanceLoading } = useTokenBalance({
     token,
-    address: effectiveAddress
+    address: effectiveAddress,
   });
 
   // Check if amount is available natively on destination chain
@@ -104,7 +104,7 @@ export function useBestTransactionPath({
     isSupportedSprinterToken,
     oneBalanceLoading,
     aggregatedBalances,
-    rawBalance
+    rawBalance,
   ]);
 
   const totalCrossChainBalance = useMemo(() => {
@@ -132,14 +132,14 @@ export function useBestTransactionPath({
         options.push({
           chainId: chainBalance.chainId,
           balance: balanceBi,
-          formattedBalance: formatUnits(balanceBi, chainBalance.tokenDecimals)
+          formattedBalance: formatUnits(balanceBi, chainBalance.tokenDecimals),
         });
       }
     }
 
     return {
       hasSprinterPath: options.length > 0,
-      sprinterOptions: options
+      sprinterOptions: options,
     };
   }, [isSupportedSprinterToken, oneBalanceLoading, aggregatedBalances, token.symbol, token.chainId, amount]);
 
@@ -155,7 +155,7 @@ export function useBestTransactionPath({
         hasSprinterPath,
         availableBalance,
         totalCrossChainBalance,
-        sprinterOptions
+        sprinterOptions,
       };
     }
 
@@ -167,7 +167,7 @@ export function useBestTransactionPath({
         hasSprinterPath: true,
         availableBalance,
         totalCrossChainBalance,
-        sprinterOptions
+        sprinterOptions,
       };
     }
 
@@ -178,7 +178,7 @@ export function useBestTransactionPath({
       hasSprinterPath: false,
       availableBalance,
       totalCrossChainBalance,
-      sprinterOptions: []
+      sprinterOptions: [],
     };
   }, [
     token.address,
@@ -187,7 +187,7 @@ export function useBestTransactionPath({
     hasNativeBalance,
     hasSprinterPath,
     totalCrossChainBalance,
-    sprinterOptions
+    sprinterOptions,
   ]);
 
   // Combine all loading states
@@ -195,6 +195,6 @@ export function useBestTransactionPath({
 
   return {
     ...path,
-    loading
+    loading,
   };
 }

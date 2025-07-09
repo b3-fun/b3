@@ -4,8 +4,8 @@ export function getEnsName(name: string): Promise<Response> {
   return fetch(url + `get/${name}`, {
     method: "GET",
     headers: {
-      "Content-Type": "application/json"
-    }
+      "Content-Type": "application/json",
+    },
   });
 }
 
@@ -18,8 +18,8 @@ export async function getB3NameByAddress(address: string): Promise<B3NameRespons
     const response = await fetch(url + `address/${address}`, {
       method: "GET",
       headers: {
-        "Content-Type": "application/json"
-      }
+        "Content-Type": "application/json",
+      },
     });
     return response.json();
   } catch (error) {

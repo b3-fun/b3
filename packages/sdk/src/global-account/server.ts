@@ -12,12 +12,12 @@ export const authenticateWithRest = async (token: string) => {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({
       strategy: "jwt",
-      accessToken: token
-    })
+      accessToken: token,
+    }),
   });
   return response;
 };

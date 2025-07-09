@@ -42,8 +42,8 @@ export function useHandleConnectWithPrivy(partnerId: string, chain?: Chain, onSu
       strategy: "auth_endpoint",
       payload: JSON.stringify({
         strategy: "basement",
-        accessToken: fullToken
-      })
+        accessToken: fullToken,
+      }),
     });
 
     debug("@@useHandleConnectWithPrivy:connect:return", wallet);

@@ -4,7 +4,7 @@ import {
   WalletPhantom,
   WalletRabby,
   WalletRainbow,
-  WalletWalletConnect
+  WalletWalletConnect,
 } from "@web3icons/react";
 import { Wallet } from "lucide-react";
 

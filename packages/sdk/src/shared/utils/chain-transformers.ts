@@ -11,20 +11,20 @@ export function toViemChain(network: ChainNetworks): Chain {
     rpcUrls: {
       default: {
         http: [network.rpcUrls.default.http],
-        webSocket: network.rpcUrls.default.ws ? [network.rpcUrls.default.ws] : undefined
-      }
+        webSocket: network.rpcUrls.default.ws ? [network.rpcUrls.default.ws] : undefined,
+      },
     },
     blockExplorers: {
       default: {
         name: network.blockExplorers.explorerTitle,
-        url: network.blockExplorers.default
-      }
+        url: network.blockExplorers.default,
+      },
     },
     contracts: network.contracts,
     testnet: network.testnet,
     sourceId: network.sourceId,
     formatters: network.formatters,
-    fees: network.fees
+    fees: network.fees,
   };
 }
 
@@ -38,14 +38,14 @@ export function toThirdwebChain(network: ChainNetworks): ThirdwebChain {
       url: network.icon.url,
       width: network.icon.width,
       height: network.icon.height,
-      format: network.icon.format
+      format: network.icon.format,
     },
     blockExplorers: [
       {
         name: network.blockExplorers.explorerTitle,
-        url: network.blockExplorers.default
-      }
+        url: network.blockExplorers.default,
+      },
     ],
-    testnet: network.testnet ? true : undefined
+    testnet: network.testnet ? true : undefined,
   });
 }

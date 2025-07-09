@@ -39,7 +39,7 @@ export function useGeoOnrampOptions(isMainnet: boolean, srcFiatAmount: string) {
       isLoadingStripeSupport,
       geoError,
       coinbaseOnrampOptionsError,
-      stripeSupportError
+      stripeSupportError,
     }),
     [
       geoData,
@@ -52,7 +52,7 @@ export function useGeoOnrampOptions(isMainnet: boolean, srcFiatAmount: string) {
       isLoadingStripeSupport,
       geoError,
       coinbaseOnrampOptionsError,
-      stripeSupportError
-    ]
+      stripeSupportError,
+    ],
   );
 }

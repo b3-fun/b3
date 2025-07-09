@@ -14,8 +14,8 @@ export function getSolanaToken(): Token {
     name: "Solana",
     decimals: 9,
     metadata: {
-      logoURI: "https://assets.relay.link/icons/square/792703809/light.png"
-    }
+      logoURI: "https://assets.relay.link/icons/square/792703809/light.png",
+    },
   };
 }
 
@@ -27,8 +27,8 @@ export function getEthToken(chainId: number): Token {
     name: "Ethereum",
     decimals: 18,
     metadata: {
-      logoURI: "https://assets.relay.link/icons/square/1/light.png"
-    }
+      logoURI: "https://assets.relay.link/icons/square/1/light.png",
+    },
   };
 }
 
@@ -40,8 +40,8 @@ export function getPolToken(): Token {
     name: "Polygon",
     decimals: 18,
     metadata: {
-      logoURI: "https://s2.coinmarketcap.com/static/img/coins/64x64/28321.png"
-    }
+      logoURI: "https://s2.coinmarketcap.com/static/img/coins/64x64/28321.png",
+    },
   };
 }
 
@@ -53,8 +53,8 @@ export function getBnbToken(): Token {
     name: "BNB",
     decimals: 18,
     metadata: {
-      logoURI: "https://s2.coinmarketcap.com/static/img/coins/64x64/1839.png"
-    }
+      logoURI: "https://s2.coinmarketcap.com/static/img/coins/64x64/1839.png",
+    },
   };
 }
 
@@ -66,7 +66,7 @@ export function getAvaxToken(): Token {
     name: "AVAX",
     decimals: 18,
     metadata: {
-      logoURI: "https://s2.coinmarketcap.com/static/img/coins/64x64/5805.png"
-    }
+      logoURI: "https://s2.coinmarketcap.com/static/img/coins/64x64/5805.png",
+    },
   };
 }

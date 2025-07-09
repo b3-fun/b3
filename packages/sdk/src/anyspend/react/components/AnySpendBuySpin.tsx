@@ -8,7 +8,7 @@ import {
   useChainSwitchWithAction,
   useHasMounted,
   useModalStore,
-  useTokenBalance
+  useTokenBalance,
 } from "@b3dotfun/sdk/global-account/react";
 import { baseMainnet } from "@b3dotfun/sdk/shared/constants/chains/supported";
 import { motion } from "framer-motion";
@@ -31,27 +31,27 @@ const SPIN_WHEEL_ABI = [
       { internalType: "address", name: "paymentToken", type: "address" },
       { internalType: "uint256", name: "pricePerEntry", type: "uint256" },
       { internalType: "uint256", name: "maxEntriesPerUser", type: "uint256" },
-      { internalType: "address", name: "paymentRecipient", type: "address" }
+      { internalType: "address", name: "paymentRecipient", type: "address" },
     ],
     stateMutability: "view",
-    type: "function"
+    type: "function",
   },
   {
     inputs: [],
     name: "entryModule",
     outputs: [{ internalType: "contract IEntryModuleV2", name: "", type: "address" }],
     stateMutability: "view",
-    type: "function"
+    type: "function",
   },
   {
     inputs: [
       { internalType: "address", name: "user", type: "address" },
-      { internalType: "uint256", name: "quantity", type: "uint256" }
+      { internalType: "uint256", name: "quantity", type: "uint256" },
     ],
     name: "buyEntriesAndSpin",
     outputs: [],
     stateMutability: "payable",
-    type: "function"
+    type: "function",
   },
   {
     inputs: [],
@@ -62,11 +62,11 @@ const SPIN_WHEEL_ABI = [
       { internalType: "uint256", name: "endTime_", type: "uint256" },
       { internalType: "uint256", name: "totalPrizesAvailable_", type: "uint256" },
       { internalType: "uint256", name: "prizesRequestedCount_", type: "uint256" },
-      { internalType: "enum SpinWheelV2.WheelState", name: "state_", type: "uint8" }
+      { internalType: "enum SpinWheelV2.WheelState", name: "state_", type: "uint8" },
     ],
     stateMutability: "view",
-    type: "function"
-  }
+    type: "function",
+  },
 ] as const;
 
 interface PaymentConfig {
@@ -113,14 +113,14 @@ function generateEncodedDataForBuyEntriesAndSpin(user: string, quantity: string)
   const encodedData = encodeFunctionData({
     abi: SPIN_WHEEL_ABI,
     functionName: "buyEntriesAndSpin",
-    args: [user as `0x${string}`, BigInt(quantity)]
+    args: [user as `0x${string}`, BigInt(quantity)],
   });
   return encodedData;
 }
 
 const basePublicClient = createPublicClient({
   chain: baseMainnet,
-  transport: http()
+  transport: http(),
 });
 
 export function AnySpendBuySpin({
@@ -131,7 +131,7 @@ export function AnySpendBuySpin({
   chainId,
   recipientAddress,
   prefillQuantity,
-  onSuccess
+  onSuccess,
 }: {
   isMainnet?: boolean;
   loadOrder?: string;
@@ -155,9 +155,9 @@ export function AnySpendBuySpin({
   const {
     formattedBalance: b3Balance,
     isLoading: isBalanceLoading,
-    rawBalance: b3RawBalance
+    rawBalance: b3RawBalance,
   } = useTokenBalance({
-    token: B3_TOKEN
+    token: B3_TOKEN,
   });
 
   // Wagmi hooks
@@ -172,12 +172,12 @@ export function AnySpendBuySpin({
     isLoading: isTxPending,
     isSuccess: isTxSuccess,
     isError: isTxError,
-    error: txError
+    error: txError,
   } = useWaitForTransactionReceipt({
     hash: buyingTxHash as `0x${string}`,
     query: {
-      structuralSharing: false
-    }
+      structuralSharing: false,
+    },
   });
 
   // Handle transaction status
@@ -232,25 +232,25 @@ export function AnySpendBuySpin({
         basePublicClient.readContract({
           address: spinwheelContractAddress as `0x${string}`,
           abi: SPIN_WHEEL_ABI,
-          functionName: "getPaymentConfig"
+          functionName: "getPaymentConfig",
         }),
         basePublicClient.readContract({
           address: spinwheelContractAddress as `0x${string}`,
           abi: SPIN_WHEEL_ABI,
-          functionName: "entryModule"
+          functionName: "entryModule",
         }),
         basePublicClient.readContract({
           address: spinwheelContractAddress as `0x${string}`,
           abi: SPIN_WHEEL_ABI,
-          functionName: "getWheelInfo"
-        })
+          functionName: "getWheelInfo",
+        }),
       ]);
 
       const paymentConfig: PaymentConfig = {
         pricePerEntry: config[1],
         maxEntriesPerUser: config[2],
         paymentRecipient: config[3],
-        entryModule: entryModuleAddress
+        entryModule: entryModuleAddress,
       };
 
       const wheelInfoData: WheelInfo = {
@@ -259,7 +259,7 @@ export function AnySpendBuySpin({
         endTime_: wheelInfo[2],
         totalPrizesAvailable_: wheelInfo[3],
         prizesRequestedCount_: wheelInfo[4],
-        state_: wheelInfo[5]
+        state_: wheelInfo[5],
       };
 
       setPaymentConfig(paymentConfig);
@@ -327,7 +327,7 @@ export function AnySpendBuySpin({
         setIsQuantityValid(false);
         setUserSpinQuantity("");
         setValidationError(
-          `Only ${(wheelInfo.totalPrizesAvailable_ - wheelInfo.prizesRequestedCount_).toString()} spins remaining`
+          `Only ${(wheelInfo.totalPrizesAvailable_ - wheelInfo.prizesRequestedCount_).toString()} spins remaining`,
         );
         return;
       }
@@ -354,7 +354,7 @@ export function AnySpendBuySpin({
           address: B3_TOKEN.address as `0x${string}`,
           abi: erc20Abi,
           functionName: "allowance",
-          args: [address, paymentConfig.entryModule as `0x${string}`]
+          args: [address, paymentConfig.entryModule as `0x${string}`],
         });
 
         // If allowance is insufficient, request approval
@@ -365,7 +365,7 @@ export function AnySpendBuySpin({
             address: B3_TOKEN.address as `0x${string}`,
             abi: erc20Abi,
             functionName: "approve",
-            args: [paymentConfig.entryModule as `0x${string}`, totalCost]
+            args: [paymentConfig.entryModule as `0x${string}`, totalCost],
           });
 
           toast.info("Approval confirmed. Proceeding with spin purchase...");
@@ -377,7 +377,7 @@ export function AnySpendBuySpin({
           address: spinwheelContractAddress as `0x${string}`,
           abi: SPIN_WHEEL_ABI,
           functionName: "buyEntriesAndSpin",
-          args: [address, BigInt(userSpinQuantity)]
+          args: [address, BigInt(userSpinQuantity)],
         });
 
         setBuyingTxHash(buyHash);
@@ -481,17 +481,17 @@ export function AnySpendBuySpin({
         case "not_started":
           return {
             title: "Spin Wheel Not Started",
-            message: `Starts at ${formatDate(wheelInfo.startTime_)}`
+            message: `Starts at ${formatDate(wheelInfo.startTime_)}`,
           };
         case "ended":
           return {
             title: "Spin Wheel Ended",
-            message: `Ended at ${formatDate(wheelInfo.endTime_)}`
+            message: `Ended at ${formatDate(wheelInfo.endTime_)}`,
           };
         case "sold_out":
           return {
             title: "All Spins Have Been Claimed",
-            message: "Stay tuned for the next spin wheel event!"
+            message: "Stay tuned for the next spin wheel event!",
           };
         default:
           return null;
@@ -509,7 +509,7 @@ export function AnySpendBuySpin({
               animate={{
                 opacity: hasMounted ? 1 : 0,
                 y: hasMounted ? 0 : 20,
-                filter: hasMounted ? "blur(0px)" : "blur(10px)"
+                filter: hasMounted ? "blur(0px)" : "blur(10px)",
               }}
               transition={{ duration: 0.3, delay: 0, ease: "easeInOut" }}
               className={`flex justify-center ${isActive ? "mb-4" : ""}`}
@@ -529,7 +529,7 @@ export function AnySpendBuySpin({
               animate={{
                 opacity: hasMounted ? 1 : 0,
                 y: hasMounted ? 0 : 20,
-                filter: hasMounted ? "blur(0px)" : "blur(10px)"
+                filter: hasMounted ? "blur(0px)" : "blur(10px)",
               }}
               transition={{ duration: 0.3, delay: 0.1, ease: "easeInOut" }}
               className="text-center"
@@ -569,7 +569,7 @@ export function AnySpendBuySpin({
             animate={{
               opacity: hasMounted ? 1 : 0,
               y: hasMounted ? 0 : 20,
-              filter: hasMounted ? "blur(0px)" : "blur(10px)"
+              filter: hasMounted ? "blur(0px)" : "blur(10px)",
             }}
             transition={{ duration: 0.3, delay: 0.2, ease: "easeInOut" }}
             className="bg-b3-react-background w-full p-6"
@@ -669,7 +669,7 @@ export function AnySpendBuySpin({
       encodedData={encodedData}
       metadata={{
         type: OrderType.Custom,
-        action: `buy ${userSpinQuantity} spin${userSpinQuantity !== "1" ? "s" : ""}`
+        action: `buy ${userSpinQuantity} spin${userSpinQuantity !== "1" ? "s" : ""}`,
       }}
       header={header}
       onSuccess={txHash => onSuccess?.(txHash)}

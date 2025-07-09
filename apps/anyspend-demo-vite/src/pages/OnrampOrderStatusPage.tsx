@@ -8,7 +8,7 @@ export default function OnrampOrderStatusPage() {
 
   const { orderAndTransactions: oat, getOrderAndTransactionsError } = useAnyspendOrderAndTransactions(
     true, // isMainnet
-    orderId || undefined
+    orderId || undefined,
   );
 
   if (getOrderAndTransactionsError) {

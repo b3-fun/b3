@@ -28,10 +28,10 @@ export default function OnrampFlowPage() {
       name: tokenMetadata?.name || "",
       decimals: tokenMetadata?.decimals || 18,
       metadata: {
-        logoURI: tokenMetadata?.logoURI
-      }
+        logoURI: tokenMetadata?.logoURI,
+      },
     }),
-    [tokenMetadata, destinationTokenChainId, destinationTokenAddress]
+    [tokenMetadata, destinationTokenChainId, destinationTokenAddress],
   ) as Token;
 
   // Get quote for the transaction
@@ -42,7 +42,7 @@ export default function OnrampFlowPage() {
     dstChain: chainId,
     dstTokenAddress: destinationTokenAddress,
     amount: parseUnits(amount || "0", USDC_BASE.decimals).toString(),
-    tradeType: TradeType.EXACT_INPUT
+    tradeType: TradeType.EXACT_INPUT,
   });
 
   // Handle order creation

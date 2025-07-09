@@ -12,7 +12,7 @@ import {
   TabsPrimitive,
   TabsContentPrimitive,
   TabsListPrimitive,
-  TabTriggerPrimitive
+  TabTriggerPrimitive,
 } from "@b3dotfun/sdk/global-account/react";
 import { formatAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { formatNumber } from "@b3dotfun/sdk/shared/utils/formatNumber";
@@ -42,7 +42,7 @@ export function ManageAccount({
   onSwap: _onSwap,
   onDeposit: _onDeposit,
   chain,
-  partnerId
+  partnerId,
 }: ManageAccountProps) {
   const [activeTab, setActiveTab] = useState("balance");
   const [revokingSignerId, setRevokingSignerId] = useState<string | null>(null);
@@ -52,7 +52,7 @@ export function ManageAccount({
   const { data: nativeBalance } = useNativeBalance(account?.address);
   const { data: signers, refetch: refetchSigners } = useGetAllTWSigners({
     chain,
-    accountAddress: account?.address
+    accountAddress: account?.address,
   });
   const { setB3ModalOpen, setB3ModalContentType } = useModalStore();
   const { logout } = useAuthentication(partnerId);
@@ -70,7 +70,7 @@ export function ManageAccount({
       console.error("Error revoking access:", error);
       setRevokingSignerId(null);
     },
-    refetchSigners: () => refetchSigners()
+    refetchSigners: () => refetchSigners(),
   });
 
   const handleRevoke = async (signer: TWSignerWithMetadata) => {
@@ -126,7 +126,7 @@ export function ManageAccount({
             setB3ModalContentType({
               type: "anySpend",
               defaultActiveTab: "fiat",
-              showBackButton: true
+              showBackButton: true,
             });
           }}
         >
@@ -139,7 +139,7 @@ export function ManageAccount({
             setB3ModalOpen(true);
             setB3ModalContentType({
               type: "anySpend",
-              showBackButton: true
+              showBackButton: true,
             });
           }}
         >

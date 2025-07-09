@@ -1,7 +1,7 @@
 export function ChainTokenIcon({
   chainUrl,
   tokenUrl,
-  className = ""
+  className = "",
 }: {
   chainUrl: string;
   tokenUrl: string;

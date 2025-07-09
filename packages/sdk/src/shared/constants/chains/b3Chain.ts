@@ -17,11 +17,11 @@ export const viemToThirdwebChain = (chain: Chain): ThirdwebChain => {
       ? [
           {
             name: chain.blockExplorers.default.name,
-            url: chain.blockExplorers.default.url
-          }
+            url: chain.blockExplorers.default.url,
+          },
         ]
       : undefined,
-    testnet: chain.testnet ? true : undefined
+    testnet: chain.testnet ? true : undefined,
   });
 };
 
@@ -32,27 +32,27 @@ export const b3Testnet: Chain = defineChain({
   rpcUrls: {
     default: {
       http: ["https://sepolia.b3.fun"],
-      ws: ["wss://sepolia.b3.fun/ws"]
-    }
+      ws: ["wss://sepolia.b3.fun/ws"],
+    },
   },
   icon: {
     url: "https://cdn.b3.fun/b3_logo.svg",
     width: 32,
     height: 32,
-    format: "svg"
+    format: "svg",
   },
   blockExplorers: {
     default: {
       name: "B3 Explorer",
-      url: "https://sepolia-explorer.b3.fun"
-    }
+      url: "https://sepolia-explorer.b3.fun",
+    },
   },
   nativeCurrency: {
     name: "Ether",
     symbol: "ETH",
-    decimals: 18
+    decimals: 18,
   },
-  testnet: true
+  testnet: true,
 });
 
 export const b3Mainnet = defineChain({
@@ -62,26 +62,26 @@ export const b3Mainnet = defineChain({
   rpcUrls: {
     default: {
       http: ["https://mainnet-rpc.b3.fun"],
-      ws: ["wss://mainnet-rpc.b3.fun/ws"]
-    }
+      ws: ["wss://mainnet-rpc.b3.fun/ws"],
+    },
   },
   icon: {
     url: "https://cdn.b3.fun/b3_logo.svg",
     width: 32,
     height: 32,
-    format: "svg"
+    format: "svg",
   },
   blockExplorers: {
     default: {
       name: "B3 Explorer",
-      url: "https://explorer.b3.fun"
-    }
+      url: "https://explorer.b3.fun",
+    },
   },
   nativeCurrency: {
     name: "Ether",
     symbol: "ETH",
-    decimals: 18
-  }
+    decimals: 18,
+  },
 });
 
 export const getViemChainConfig = (config: ChainNetworks) =>
@@ -92,18 +92,18 @@ export const getViemChainConfig = (config: ChainNetworks) =>
     rpcUrls: {
       default: {
         http: [config.rpcUrls.default.http],
-        ws: [config.rpcUrls.default.ws]
-      }
+        ws: [config.rpcUrls.default.ws],
+      },
     },
     icon: config.icon,
     blockExplorers: {
       default: {
         name: config.blockExplorers.explorerTitle,
-        url: config.blockExplorers.default
-      }
+        url: config.blockExplorers.default,
+      },
     },
     nativeCurrency: config.nativeCurrency,
-    testnet: config.testnet ? true : undefined
+    testnet: config.testnet ? true : undefined,
   });
 
 export const thirdwebB3Testnet: ThirdwebChain = defineThirdwebChain({
@@ -114,20 +114,20 @@ export const thirdwebB3Testnet: ThirdwebChain = defineThirdwebChain({
     url: "https://cdn.b3.fun/b3_logo.svg",
     width: 32,
     height: 32,
-    format: "svg"
+    format: "svg",
   },
   blockExplorers: [
     {
       name: "B3 Explorer",
-      url: "https://sepolia-explorer.b3.fun"
-    }
+      url: "https://sepolia-explorer.b3.fun",
+    },
   ],
   nativeCurrency: {
     name: "Ether",
     symbol: "ETH",
-    decimals: 18
+    decimals: 18,
   },
-  testnet: true
+  testnet: true,
 });
 
 export const thirdwebB3Mainnet: ThirdwebChain = defineThirdwebChain({
@@ -138,19 +138,19 @@ export const thirdwebB3Mainnet: ThirdwebChain = defineThirdwebChain({
     url: "https://cdn.b3.fun/b3_logo.svg",
     width: 32,
     height: 32,
-    format: "svg"
+    format: "svg",
   },
   blockExplorers: [
     {
       name: "B3 Explorer",
-      url: "https://explorer.b3.fun"
-    }
+      url: "https://explorer.b3.fun",
+    },
   ],
   nativeCurrency: {
     name: "Ether",
     symbol: "ETH",
-    decimals: 18
-  }
+    decimals: 18,
+  },
 });
 
 export const getThirdwebChainConfig = (config: ChainNetworks): ThirdwebChain =>
@@ -162,11 +162,11 @@ export const getThirdwebChainConfig = (config: ChainNetworks): ThirdwebChain =>
     blockExplorers: [
       {
         name: config.blockExplorers.explorerTitle,
-        url: config.blockExplorers.default
-      }
+        url: config.blockExplorers.default,
+      },
     ],
     nativeCurrency: config.nativeCurrency,
-    testnet: config.testnet ? true : undefined
+    testnet: config.testnet ? true : undefined,
   });
 
 export const b3Chain = process.env.NEXT_PUBLIC_B3_CHAINID === "8333" ? b3Mainnet : b3Testnet;

@@ -31,19 +31,19 @@ export function useConnect(partnerId: string, chain?: Chain) {
         debug("@@useConnect:strategyOptions", {
           partnerId,
           strategyOptions,
-          clientId: THIRDWEB_CLIENT_ID
+          clientId: THIRDWEB_CLIENT_ID,
         });
 
         // Create a wallet for "Allowlist" ecosystems restricted to partners
         const wallet = ecosystemWallet(ecosystemWalletId, {
-          partnerId: partnerId
+          partnerId: partnerId,
         });
 
         const connect = await wallet.connect({
           client,
           chain,
           // This is the payload that is sent to the auth endpoint
-          ...strategyOptions
+          ...strategyOptions,
         });
 
         debug("@@useConnect:connect:", connect);
@@ -53,7 +53,7 @@ export function useConnect(partnerId: string, chain?: Chain) {
         return wallet;
       });
     },
-    [chain, connect, partnerId]
+    [chain, connect, partnerId],
   );
 
   return { connect: connectTw, isLoading };
