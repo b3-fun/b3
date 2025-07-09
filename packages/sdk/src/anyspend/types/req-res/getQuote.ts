@@ -5,12 +5,14 @@ import { zCustomPayload } from "../custom";
 import { NftType } from "../nft";
 import { OrderType } from "../order";
 import { TradeType } from "../relay";
+import { OnrampVendor } from "../onramp";
 
 const zGetQuoteBody = z.object({
   srcChain: z.number(),
   dstChain: z.number(),
   srcTokenAddress: z.string(),
-  dstTokenAddress: z.string()
+  dstTokenAddress: z.string(),
+  onrampVendor: z.nativeEnum(OnrampVendor).optional()
 });
 
 const zGetQuoteForSwapOrderBody = zGetQuoteBody.extend({

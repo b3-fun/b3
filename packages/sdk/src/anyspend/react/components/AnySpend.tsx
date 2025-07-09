@@ -2,6 +2,7 @@
 
 import {
   getDefaultToken,
+  OnrampVendor,
   OrderType,
   Token,
   TradeType,
