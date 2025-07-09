@@ -1,11 +1,12 @@
 import { USDC_BASE } from "@b3dotfun/sdk/anyspend/constants";
 import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
-import { Nft, OnrampVendor, OrderType, Token, Tournament } from "@b3dotfun/sdk/anyspend/types";
+import { OnrampVendor } from "@b3dotfun/sdk/anyspend/types";
 import { buildMetadata, buildPayload, normalizeAddress } from "@b3dotfun/sdk/anyspend/utils";
 import { useMutation } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { parseUnits } from "viem";
 import { base } from "viem/chains";
+import { CreateOrderParams } from "./useAnyspendCreateOrder";
 
 export type OnrampOptions = {
   vendor: OnrampVendor;
@@ -15,20 +16,9 @@ export type OnrampOptions = {
   ipAddress?: string; // Required for Stripe
 };
 
-export type CreateOnrampOrderParams = {
-  isMainnet: boolean;
-  recipientAddress: string;
-  orderType: OrderType;
-  dstChain: number;
-  dstToken: Token;
+export type CreateOnrampOrderParams = Omit<CreateOrderParams, "srcChain" | "srcToken" | "srcAmount"> & {
   srcFiatAmount: string;
   onramp: OnrampOptions;
-  partnerId?: string;
-  expectedDstAmount: string;
-  creatorAddress?: string;
-  nft?: Nft & { price: string };
-  tournament?: Tournament & { contractAddress: string; entryPriceOrFundAmount: string };
-  payload?: any;
 };
 
 export type UseAnyspendCreateOnrampOrderProps = {

@@ -1,6 +1,6 @@
 import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
 import { Nft, OrderType, Token, Tournament } from "@b3dotfun/sdk/anyspend/types";
-import { normalizeAddress, buildMetadata, buildPayload } from "@b3dotfun/sdk/anyspend/utils";
+import { buildMetadata, buildPayload, normalizeAddress } from "@b3dotfun/sdk/anyspend/utils";
 import { useMutation } from "@tanstack/react-query";
 import { useMemo } from "react";
 
@@ -18,6 +18,7 @@ export type CreateOrderParams = {
   tournament?: Tournament & { contractAddress: string; entryPriceOrFundAmount: string };
   creatorAddress?: string;
   payload?: any;
+  partnerId?: string;
 };
 
 export type UseAnyspendCreateOrderProps = {
