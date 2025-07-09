@@ -3,7 +3,7 @@ import { useMemo } from "react";
 
 export const useB3EnsName = () => {
   const registerEns = async (name: `${string}.b3.fun`, address: string, hash: string): Promise<Response> => {
-    const message = `Register ${name}`;
+    const message = `Register "${name}"`;
     const response = await fetch(ENS_GATEWAY_URL + "set", {
       method: "POST",
       headers: {
