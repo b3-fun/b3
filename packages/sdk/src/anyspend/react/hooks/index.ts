@@ -9,5 +9,6 @@ export * from "./useCoinbaseOnrampOptions";
 export * from "./useGeoOnrampOptions";
 export * from "./useGetGeo";
 export * from "./usePermitData";
+export * from "./useSigMint";
 export * from "./useStripeClientSecret";
 export * from "./useStripeSupport";
