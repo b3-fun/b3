@@ -545,7 +545,7 @@ export function AnySpendCustom({
   const orderDetailsView = (
     <div
       className={cn(
-        "mx-auto flex w-full flex-col items-center gap-4 p-5",
+        "mx-auto flex max-h-[90dvh] w-full flex-col items-center gap-4 overflow-y-auto p-5",
         mode === "modal" && "bg-b3-react-background"
       )}
     >
@@ -663,7 +663,7 @@ export function AnySpendCustom({
       <Tabs
         value={activeTab}
         onValueChange={value => setActiveTab(value as "crypto" | "fiat")}
-        className="bg-b3-react-background w-full p-5"
+        className="bg-b3-react-background max-h-[60dvh] w-full overflow-y-auto p-5"
       >
         {/* Only show tabs when geo onramp has been properly initialized */}
         {isOnrampSupported || activeTab === "fiat" ? (
