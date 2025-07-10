@@ -19,7 +19,6 @@ export function SignatureMint() {
   const chainIdRef = useRef(8333); // Default to Base
 
   const { setB3ModalOpen, setB3ModalContentType } = useModalStore();
-  console.log("@@signature-mint-form:modalStore", { setB3ModalOpen, setB3ModalContentType });
 
   // Initialize hooks with empty initial values
   const eligibilityHook = useIsMintEligible({
@@ -44,12 +43,6 @@ export function SignatureMint() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("@@signature-mint-form:submit", {
-      contractAddress: contractAddressRef.current,
-      chainId: chainIdRef.current,
-      prompt: promptRef.current,
-      walletAddress: wallet?.address,
-    });
 
     if (!wallet?.address) {
       toast.error("Please connect your wallet first");
@@ -64,14 +57,12 @@ export function SignatureMint() {
       setIsLoading(true);
 
       // Check eligibility
-      console.log("@@signature-mint-form:checking-eligibility");
       const eligibilityResponse = await eligibilityHook.runQuery({
         contractAddress: contractAddressRef.current,
         chainId: chainIdRef.current,
         recipientAddress: wallet.address,
         quantity: "1",
       });
-      console.log("@@signature-mint-form:eligibility", eligibilityResponse);
 
       if (!eligibilityResponse?.eligible) {
         toast.error("You are not eligible to mint from this collection");
@@ -79,12 +70,10 @@ export function SignatureMint() {
       }
 
       // Get collection data
-      console.log("@@signature-mint-form:fetching-collection");
       const collectionData = await collectionHook.runQuery({
         address: contractAddressRef.current,
         chainId: chainIdRef.current,
       });
-      console.log("@@signature-mint-form:collection", collectionData);
 
       if (!collectionData) {
         toast.error("Failed to fetch collection data");
@@ -92,7 +81,6 @@ export function SignatureMint() {
       }
 
       // Get signature data
-      console.log("@@signature-mint-form:generating-signature");
       const signatureData = await signatureHook.runQuery({
         recipientAddress: wallet.address,
         contractAddress: contractAddressRef.current,
@@ -100,7 +88,6 @@ export function SignatureMint() {
         quantity: "1",
         prompt: promptRef.current,
       });
-      console.log("@@signature-mint-form:signature", signatureData);
 
       if (!signatureData) {
         toast.error("Failed to generate signature data");
@@ -109,7 +96,8 @@ export function SignatureMint() {
 
       // Prepare modal data
       const modalData = {
-        type: "anySpendSignatureMint",
+        type: "anySpendSignatureMint" as const,
+        mode: "modal",
         signatureData: {
           signature: signatureData.signature,
           payload: signatureData.payload,
@@ -134,13 +122,9 @@ export function SignatureMint() {
         },
       };
 
-      console.log("@@signature-mint-form:opening-modal", modalData);
-
       // Open modal with signature data
       setB3ModalOpen(true);
-      console.log("@@signature-mint-form:modal-opened");
       setB3ModalContentType(modalData);
-      console.log("@@signature-mint-form:modal-content-set");
     } catch (error) {
       console.error("@@signature-mint-form:error", error);
       toast.error("Failed to setup minting. Please try again.");

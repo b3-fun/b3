@@ -38,7 +38,6 @@ function generateEncodedDataForSignatureMint(signatureData: GenerateSigMintRespo
     functionName: "mintWithSignature",
     args: [mintRequest, signature as `0x${string}`],
   });
-  console.log("@@signature-mint:encodedData", encodedData);
 
   return encodedData;
 }
