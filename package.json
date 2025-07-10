@@ -1,8 +1,7 @@
 {
   "name": "b3",
-  "description": "",
+  "description": "Monorepo for the B3 SDK, a comprehensive TypeScript SDK for the B3 ecosystem, including applications and demos.",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "prettier:check": "npx prettier \"**/*.{ts,tsx,js,jsx,mjs,cjs,json}\" --check",
     "prettier:write": "npx prettier \"**/*.{ts,tsx,js,jsx,mjs,cjs,json}\" --write",
     "dev": "pnpm --parallel run dev",
@@ -11,15 +10,15 @@
     "coingecko-chains": "ts-node scripts/fetch-coingecko-chains.ts",
     "sdk:dev:css": "pnpm --filter @b3dotfun/sdk run dev:css",
     "sdk:build": "pnpm --filter @b3dotfun/sdk run build",
-    "global-accounts:dev": "pnpm --filter global-accounts run dev",
+    "global-accounts:dev": "pnpm --parallel --filter @b3dotfun/sdk --filter global-accounts run dev",
     "global-accounts:build": "pnpm --filter global-accounts run build",
-    "global-accounts-demos:dev": "pnpm --filter global-accounts-demos run dev",
+    "global-accounts-demos:dev": "pnpm --parallel --filter @b3dotfun/sdk --filter global-accounts-demos run dev",
     "global-accounts-demos:build": "pnpm --filter global-accounts-demos run build",
-    "login-minimal-example:dev": "pnpm --filter login-minimal-example run dev",
+    "login-minimal-example:dev": "pnpm --parallel --filter @b3dotfun/sdk --filter login-minimal-example run dev",
     "login-minimal-example:build": "pnpm --filter login-minimal-example run build",
-    "anyspend-demo-nextjs:dev": "pnpm --filter anyspend-demo-nextjs run dev",
+    "anyspend-demo-nextjs:dev": "pnpm --parallel --filter @b3dotfun/sdk --filter anyspend-demo-nextjs run dev",
     "anyspend-demo-nextjs:build": "pnpm --filter anyspend-demo-nextjs run build",
-    "anyspend-demo-vite:dev": "pnpm --filter anyspend-demo-vite run dev",
+    "anyspend-demo-vite:dev": "pnpm --parallel --filter @b3dotfun/sdk --filter anyspend-demo-vite run dev",
     "anyspend-demo-vite:build": "pnpm --filter anyspend-demo-vite run build"
   },
   "engines": {
@@ -39,7 +38,7 @@
       "react-dom": "19.1.0"
     }
   },
-  "packageManager": "pnpm@10.12.4+sha512.5ea8b0deed94ed68691c9bad4c955492705c5eeb8a87ef86bc62c74a26b037b08ff9570f108b2e4dbd1dd1a9186fea925e527f141c648e85af45631074680184",
+  "packageManager": "pnpm@10.13.1+sha512.37ebf1a5c7a30d5fabe0c5df44ee8da4c965ca0c5af3dbab28c3a1681b70a256218d05c81c9c0dcf767ef6b8551eb5b960042b9ed4300c59242336377e01cfad",
   "dependencies": {
     "@tanstack/react-query": "5.55.0"
   }
