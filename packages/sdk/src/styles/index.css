@@ -94,8 +94,9 @@
   --b3-react-muted-foreground: 0 0% 50%; /* medium gray for muted text */
   --b3-react-border: 0 0% 90%; /* light gray borders */
   --b3-react-muted: 256 16% 23%;
-  --b3-react-popover: 260 13% 9%;
   --b3-react-ring: 256 16% 23%;
+  --b3-react-popover: 210 40% 98%; /* Very light blue-gray */
+  --b3-react-popover-foreground: 222 84% 5%; /* Dark blue-gray */
 
   /* Anyspend, we get this from apps/anyspend-web/app/globals.css */
   --as-primary: 204 9% 11%;
@@ -132,6 +133,8 @@ html[data-theme="dark"] .b3-root,
   --b3-react-muted: 256 16% 23%;
   --b3-react-popover: 260 13% 9%;
   --b3-react-ring: 256 16% 23%;
+  --b3-react-popover: 260, 13%, 9%;
+  --b3-react-popover-foreground: 215 40.54% 91.12%;
 
   /* Anyspend, we get this from apps/anyspend-web/app/globals.css, convert to hsl */
   --as-primary: 0 0% 99%;

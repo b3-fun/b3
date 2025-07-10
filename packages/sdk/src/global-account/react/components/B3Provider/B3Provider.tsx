@@ -1,3 +1,4 @@
+import { TooltipProvider } from "@b3dotfun/sdk/global-account/react";
 import { User } from "@b3dotfun/sdk/global-account/types/b3-api.types";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { supportedChains } from "@b3dotfun/sdk/shared/constants/chains/supported";
@@ -53,19 +54,21 @@ export function B3Provider({
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
         <ThirdwebProvider>
-          <InnerProvider
-            accountOverride={accountOverride}
-            environment={environment}
-            theme={theme}
-            automaticallySetFirstEoa={!!automaticallySetFirstEoa}
-          >
-            <RelayKitProviderWrapper isMainnet={isMainnetAnySpend}>
-              {children}
-              {/* For the modal https://github.com/b3-fun/b3/blob/main/packages/sdk/src/global-account/react/components/ui/dialog.tsx#L46 */}
-              <StyleRoot id="b3-root" />
-              <Toaster theme={theme} />
-            </RelayKitProviderWrapper>
-          </InnerProvider>
+          <TooltipProvider>
+            <InnerProvider
+              accountOverride={accountOverride}
+              environment={environment}
+              theme={theme}
+              automaticallySetFirstEoa={!!automaticallySetFirstEoa}
+            >
+              <RelayKitProviderWrapper isMainnet={isMainnetAnySpend}>
+                {children}
+                {/* For the modal https://github.com/b3-fun/b3/blob/main/packages/sdk/src/global-account/react/components/ui/dialog.tsx#L46 */}
+                <StyleRoot id="b3-root" />
+                <Toaster theme={theme} />
+              </RelayKitProviderWrapper>
+            </InnerProvider>
+          </TooltipProvider>
         </ThirdwebProvider>
       </QueryClientProvider>
     </WagmiProvider>

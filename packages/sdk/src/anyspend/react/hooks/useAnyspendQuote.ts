@@ -21,7 +21,7 @@ import { useMemo } from "react";
  */
 export function useAnyspendQuote(isMainnet: boolean, req: GetQuoteRequest) {
   const { data, isLoading, refetch, error } = useQuery({
-    queryKey: ["useAnyspendQuote", isMainnet, req],
+    queryKey: ["useAnyspendQuote", isMainnet, JSON.stringify(req)],
     queryFn: () => {
       return anyspendService.getQuote(isMainnet, req);
     },
