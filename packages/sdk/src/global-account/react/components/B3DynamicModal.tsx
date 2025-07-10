@@ -4,6 +4,7 @@ import {
   AnySpendNFT,
   AnySpendStakeB3,
   AnySpendTournament,
+  AnyspendSignatureMint,
   OrderHistory,
 } from "@b3dotfun/sdk/anyspend/react";
 import { useIsMobile, useModalStore } from "@b3dotfun/sdk/global-account/react";
@@ -35,15 +36,21 @@ export function B3DynamicModal() {
       "anySpendBuySpin",
       "anySpendOrderHistory",
       "signInWithB3",
+      "anySpendSignatureMint",
     ].find(type => contentType?.type === type)
   ) {
     contentClass += " max-h-[90dvh] overflow-y-auto no-scrollbar w-full";
   }
 
   if (
-    ["anySpendNft", "anySpendJoinTournament", "anySpendFundTournament", "anySpendStakeB3", "anySpendBuySpin"].find(
-      type => contentType?.type === type,
-    )
+    [
+      "anySpendNft",
+      "anySpendJoinTournament",
+      "anySpendFundTournament",
+      "anySpendStakeB3",
+      "anySpendBuySpin",
+      "anySpendSignatureMint",
+    ].find(type => contentType?.type === type)
   ) {
     // Due to the dynamic of (Pay with crypto),(Pay with fiat), we want the height fixed to 90dvh but still scrollable.
     // NOTE: Just leave it here in case we want the fixed height
@@ -85,6 +92,8 @@ export function B3DynamicModal() {
         return <AnySpendStakeB3 {...contentType} mode="modal" />;
       case "anySpendBuySpin":
         return <AnySpendBuySpin {...contentType} mode="modal" />;
+      case "anySpendSignatureMint":
+        return <AnyspendSignatureMint {...contentType} mode="modal" />;
       // Add other modal types here
       default:
         return null;

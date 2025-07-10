@@ -1,5 +1,6 @@
 import { Token, Tournament } from "@b3dotfun/sdk/anyspend";
 import { NftContract } from "@b3dotfun/sdk/anyspend/types";
+import { GenerateSigMintResponse } from "@b3dotfun/sdk/anyspend/types/signature-mint";
 import { AllowedStrategy } from "@b3dotfun/sdk/global-account/react";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { Address, Chain } from "thirdweb";
@@ -252,6 +253,21 @@ export interface AnySpendBuySpinProps extends BaseModalProps {
 }
 
 /**
+ * Props for the AnySpend Signature Mint modal
+ * Handles signature-based NFT minting
+ */
+export interface AnySpendSignatureMintProps extends BaseModalProps {
+  /** Modal type identifier */
+  type: "anySpendSignatureMint";
+  /** Signature data required for minting */
+  signatureData: GenerateSigMintResponse;
+  /** Optional image URL for NFT preview */
+  imageUrl?: string;
+  /** Callback function called when minting is successful */
+  onSuccess?: () => void;
+}
+
+/**
  * Union type of all possible modal content types
  */
 export type ModalContentType =
@@ -266,7 +282,8 @@ export type ModalContentType =
   | TransakProps
   | AnySpendOrderHistoryProps
   | AnySpendStakeB3Props
-  | AnySpendBuySpinProps;
+  | AnySpendBuySpinProps
+  | AnySpendSignatureMintProps;
 // Add other modal types here like: | OtherModalProps | AnotherModalProps
 
 /**

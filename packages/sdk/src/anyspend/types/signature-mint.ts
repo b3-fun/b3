@@ -1,8 +1,8 @@
 export interface SigMintPayloadMetadata {
-  name: string;
-  description: string;
-  image: string;
-  attributes: Array<Record<string, unknown>>;
+  name?: string;
+  description?: string;
+  image?: string;
+  attributes?: Array<Record<string, unknown>>;
 }
 
 export interface SigMintPayload {
@@ -22,29 +22,24 @@ export interface SigMintPayload {
 }
 
 export interface SigMintCollection {
-  _id: string;
   title: string;
   chainId: number;
-  description: string;
-  status: "ACTIVE" | "INACTIVE";
-  engineWallet: string;
-  signatureRequestBody: {
-    metadata: SigMintPayloadMetadata;
-    price: string;
-    currency: string;
-    primarySaleRecipient: string;
-    royaltyRecipient: string;
-    royaltyBps: number;
-    validityStartTimestamp: number;
-    validityEndTimestamp: number;
-    clonePrice: string;
+  description?: string;
+  signatureRequestBody?: {
+    metadata?: SigMintPayloadMetadata;
+    price?: string;
+    currency?: string;
+    primarySaleRecipient?: string;
+    royaltyRecipient?: string;
+    royaltyBps?: number;
+    validityStartTimestamp?: number;
+    validityEndTimestamp?: number;
+    clonePrice?: string;
   };
-  maxSupply: number;
-  isFreeMint: boolean;
-  conditions: Array<unknown>;
-  address: string;
-  createdAt: string;
-  updatedAt: string;
+  maxSupply?: number;
+  isFreeMint?: boolean;
+  conditions?: Array<unknown>;
+  address?: string;
 }
 
 export interface GenerateSigMintParams {

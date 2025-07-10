@@ -2,12 +2,15 @@
 
 import { B3_TOKEN, NftType, USDC_BASE } from "@b3dotfun/sdk/anyspend";
 import { useModalStore } from "@b3dotfun/sdk/global-account/react";
+import { useState } from "react";
 import { base } from "viem/chains";
 import { SignInButton } from "./components/SignInButton";
+import { SignatureMintModal } from "./components/SignatureMintModal";
 
 export default function Home() {
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
+  const [isSignatureMintOpen, setIsSignatureMintOpen] = useState(false);
 
   const handleMint = async () => {
     // Generate random token ID between 0 and 6
@@ -34,6 +37,7 @@ export default function Home() {
   return (
     <div className="relative min-h-screen bg-[#FAFAFA]">
       <SignInButton />
+      <SignatureMintModal isOpen={isSignatureMintOpen} onClose={() => setIsSignatureMintOpen(false)} />
       <div className="container mx-auto px-6 py-16">
         <div className="mx-auto max-w-6xl">
           <h1 className="mb-4 text-center text-3xl font-bold text-gray-800">AnySpend Demo</h1>
@@ -90,6 +94,16 @@ export default function Home() {
               <div>
                 <h3 className="text-lg font-medium text-gray-900">Get B3 Token</h3>
                 <p className="mt-1 text-sm text-gray-500">Purchase B3 tokens directly through AnySpend</p>
+              </div>
+            </button>
+
+            <button
+              onClick={() => setIsSignatureMintOpen(true)}
+              className="group flex h-40 flex-col justify-between overflow-hidden rounded-lg border border-gray-100 bg-white p-6 text-left shadow-sm transition-all hover:border-yellow-100 hover:shadow-md"
+            >
+              <div>
+                <h3 className="text-lg font-medium text-gray-900">Signature Mint</h3>
+                <p className="mt-1 text-sm text-gray-500">Mint NFTs using signature-based minting</p>
               </div>
             </button>
           </div>
