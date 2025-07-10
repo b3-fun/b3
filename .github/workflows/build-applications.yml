@@ -9,7 +9,7 @@ on:
 env:
   NODE_OPTIONS: --max_old_space_size=8192
 jobs:
-  build:
+  build-applications:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
