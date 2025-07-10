@@ -7,6 +7,9 @@ export * from "./react/providers/AnyspendProvider";
 // Types
 export * from "./types";
 export * from "./types/metadata";
+export * from "./types/relay";
+export * from "./types/signature-mint";
+export * from "./types/token";
 
 // Utils
 export * from "./utils/address";
