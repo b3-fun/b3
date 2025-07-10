@@ -1,13 +1,5 @@
-import {
-  GetQuoteResponse,
-  Nft,
-  OnrampVendor,
-  OrderType,
-  Token,
-  Tournament,
-  useAnyspendCreateOnrampOrder,
-  useGeoOnrampOptions,
-} from "@b3dotfun/sdk/anyspend";
+import { GetQuoteResponse, Nft, OnrampVendor, OrderType, Token, Tournament } from "@b3dotfun/sdk/anyspend";
+import { useAnyspendCreateOnrampOrder, useGeoOnrampOptions } from "@b3dotfun/sdk/anyspend/react";
 import { Button } from "@b3dotfun/sdk/global-account/react";
 import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
 import { motion } from "framer-motion";

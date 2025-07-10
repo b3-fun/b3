@@ -1,15 +1,11 @@
 "use client";
 
+import { getDefaultToken, OrderType, Token, TradeType, USDC_BASE } from "@b3dotfun/sdk/anyspend";
 import {
-  getDefaultToken,
-  OrderType,
-  Token,
-  TradeType,
-  USDC_BASE,
   useAnyspendCreateOrder,
   useAnyspendOrderAndTransactions,
   useAnyspendQuote,
-} from "@b3dotfun/sdk/anyspend";
+} from "@b3dotfun/sdk/anyspend/react";
 import {
   Button,
   ShinyButton,
