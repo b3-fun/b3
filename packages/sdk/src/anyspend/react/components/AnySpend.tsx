@@ -2,7 +2,6 @@
 
 import {
   getDefaultToken,
-  OnrampVendor,
   OrderType,
   Token,
   TradeType,
@@ -32,7 +31,7 @@ import { ArrowDown, ChevronRightCircle, ChevronsUpDown, CircleAlert, ClipboardIc
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { parseUnits } from "viem";
-import { b3Sepolia, base, mainnet, sepolia } from "viem/chains";
+import { b3, b3Sepolia, base, mainnet, sepolia } from "viem/chains";
 import { OrderDetails, OrderDetailsLoadingView } from "./common/OrderDetails";
 import { OrderHistory } from "./common/OrderHistory";
 import { OrderStatus } from "./common/OrderStatus";
@@ -40,6 +39,7 @@ import { OrderTokenAmount } from "./common/OrderTokenAmount";
 import { PanelOnramp } from "./common/PanelOnramp";
 import { PanelOnrampPayment } from "./common/PanelOnrampPayment";
 import { TokenBalance } from "./common/TokenBalance";
+import { Warning } from "./common/Warning";
 import { EnterRecipientModal } from "./modals/EnterRecipientModal";
 
 export interface RecipientOption {
@@ -824,6 +824,14 @@ export function AnySpend({
           Fiat
         </button>
       </div>
+
+      {/* {selectedSrcChainId === base.id || selectedDstChainId === base.id || activeTab === "fiat" ? (
+        <>
+          <Warning text="Base is experiencing temporary issues. Please check back later." />
+
+          <div className="h-1" />
+        </>
+      ) : null} */}
 
       <div className="relative flex max-w-[calc(100vw-32px)] flex-col gap-2">
         {/* Send section */}

@@ -110,7 +110,7 @@ export function B3DynamicModal() {
       <ModalContent className={contentClass} hideCloseButton={hideCloseButton}>
         <ModalTitle className="sr-only hidden">{contentType?.type || "Modal"}</ModalTitle>
         <ModalDescription className="sr-only hidden">{contentType?.type || "Modal Body"}</ModalDescription>
-        <div className="overflow-hidden">
+        <div className="overflow-auto">
           {history.length > 0 && contentType?.showBackButton && (
             <button
               onClick={navigateBack}

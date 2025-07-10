@@ -166,7 +166,7 @@ html[data-theme="dark"] .b3-root,
 .b3-modal {
   @apply bg-b3-react-background text-b3-react-foreground rounded-2xl border;
   border: 1px solid var(--border);
-  overflow: hidden;
+  overflow: auto;
   outline: none;
 }
 

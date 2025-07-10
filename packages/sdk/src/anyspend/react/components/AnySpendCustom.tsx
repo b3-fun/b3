@@ -62,6 +62,7 @@ import { OrderHistory } from "./common/OrderHistory";
 import { OrderStatus as OrderStatusDisplay } from "./common/OrderStatus";
 import { OrderToken } from "./common/OrderToken";
 import { PanelOnrampPayment } from "./common/PanelOnrampPayment";
+import { Warning } from "./common/Warning";
 
 enum PanelView {
   CONFIRM_ORDER,
@@ -685,6 +686,15 @@ export function AnySpendCustom({
             </TabTrigger>
           </TabsList>
         ) : null}
+
+        {/* Warning */}
+        {/* {srcChainId === base.id || dstChainId === base.id || activeTab === "fiat" ? (
+          <>
+            <Warning text="Base is experiencing temporary issues. Please check back later." />
+
+            <div className="h-1" />
+          </>
+        ) : null} */}
 
         {/* Crypto tab */}
         <TabsContent value="crypto">
