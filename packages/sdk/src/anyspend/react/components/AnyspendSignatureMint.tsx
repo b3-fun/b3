@@ -53,7 +53,7 @@ export function AnyspendSignatureMint({
   mode?: "modal" | "page";
   signatureData: GenerateSigMintResponse;
   imageUrl?: string;
-  onSuccess?: () => void;
+  onSuccess?: (txHash?: string) => void;
 }) {
   const hasMounted = useHasMounted();
 

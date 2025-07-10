@@ -264,7 +264,7 @@ export interface AnySpendSignatureMintProps extends BaseModalProps {
   /** Optional image URL for NFT preview */
   imageUrl?: string;
   /** Callback function called when minting is successful */
-  onSuccess?: () => void;
+  onSuccess?: (txHash?: string) => void;
 }
 
 /**
