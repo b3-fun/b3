@@ -37,6 +37,9 @@ import {
   TabsList,
   TabTrigger,
   TextShimmer,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
   TransitionPanel,
   useAccountWallet,
   useB3,
@@ -62,7 +65,6 @@ import { OrderHistory } from "./common/OrderHistory";
 import { OrderStatus as OrderStatusDisplay } from "./common/OrderStatus";
 import { OrderToken } from "./common/OrderToken";
 import { PanelOnrampPayment } from "./common/PanelOnrampPayment";
-import { Warning } from "./common/Warning";
 
 enum PanelView {
   CONFIRM_ORDER,
@@ -285,19 +287,32 @@ export function AnySpendCustom({
 
   const { account: isAuthenticated } = useB3();
 
-  const getRelayQuoteRequest = generateGetRelayQuoteRequest({
-    orderType: orderType,
-    srcChainId: srcChainId,
-    srcToken: srcToken,
-    dstChainId: dstChainId,
-    dstToken: dstToken,
-    dstAmount: dstAmount,
-    contractAddress: contractAddress,
-    tokenId: isNftMetadata(metadata) ? metadata.nftContract.tokenId : undefined,
-    contractType: isNftMetadata(metadata) ? metadata.nftContract.type : undefined,
-    encodedData: encodedData,
-    spenderAddress: spenderAddress,
-  });
+  const getRelayQuoteRequest = useMemo(() => {
+    return generateGetRelayQuoteRequest({
+      orderType: orderType,
+      srcChainId: srcChainId,
+      srcToken: srcToken,
+      dstChainId: dstChainId,
+      dstToken: dstToken,
+      dstAmount: dstAmount,
+      contractAddress: contractAddress,
+      tokenId: isNftMetadata(metadata) ? metadata.nftContract.tokenId : undefined,
+      contractType: isNftMetadata(metadata) ? metadata.nftContract.type : undefined,
+      encodedData: encodedData,
+      spenderAddress: spenderAddress,
+    });
+  }, [
+    contractAddress,
+    dstAmount,
+    dstChainId,
+    dstToken,
+    encodedData,
+    metadata,
+    orderType,
+    spenderAddress,
+    srcChainId,
+    srcToken,
+  ]);
   const { anyspendQuote, isLoadingAnyspendQuote } = useAnyspendQuote(isMainnet, getRelayQuoteRequest);
 
   // Get geo data and onramp options (after quote is available)
@@ -675,17 +690,27 @@ export function AnySpendCustom({
         onValueChange={value => setActiveTab(value as "crypto" | "fiat")}
         className="bg-b3-react-background max-h-[60dvh] w-full overflow-y-auto p-5"
       >
-        {/* Only show tabs when geo onramp has been properly initialized */}
-        {isOnrampSupported || activeTab === "fiat" ? (
-          <TabsList hideGradient className="justify-center">
-            <TabTrigger value="crypto">
-              <span className="text-as-primary w-[140px]">Pay with crypto</span>
-            </TabTrigger>
+        <TabsList hideGradient className="justify-center">
+          <TabTrigger value="crypto">
+            <span className="text-as-primary w-[140px]">Pay with crypto</span>
+          </TabTrigger>
+          {isOnrampSupported ? (
             <TabTrigger value="fiat">
               <span className="text-as-primary w-[140px]">Pay with fiat</span>
             </TabTrigger>
-          </TabsList>
-        ) : null}
+          ) : (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <TabTrigger value="fiat" disabled>
+                  <span className="text-as-primary w-[140px]">Pay with fiat</span>
+                </TabTrigger>
+              </TooltipTrigger>
+              <TooltipContent>
+                <span className="text-as-primary w-[140px]">Fiat payments are not supported for this amount</span>
+              </TooltipContent>
+            </Tooltip>
+          )}
+        </TabsList>
 
         {/* Warning */}
         {/* {srcChainId === base.id || dstChainId === base.id || activeTab === "fiat" ? (

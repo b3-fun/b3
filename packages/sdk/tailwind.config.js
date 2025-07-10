@@ -45,6 +45,8 @@ module.exports = {
         "b3-react-muted": "hsl(var(--b3-react-muted))",
         "b3-react-popover": "hsl(var(--b3-react-popover))",
         "b3-react-ring": "hsl(var(--b3-react-ring))",
+        "b3-react-popover": "hsl(var(--b3-react-popover))",
+        "b3-react-popover-foreground": "hsl(var(--b3-react-popover-foreground))",
 
         // Anyspend, we get this from apps/anyspend-web/tailwind.config.ts
         "as-primary": "hsl(var(--as-primary))",
@@ -72,5 +74,5 @@ module.exports = {
       },
     },
   },
-  plugins: [],
+  plugins: [require("tailwindcss-animate")],
 };

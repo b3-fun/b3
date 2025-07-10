@@ -1,5 +1,6 @@
 "use client";
 
+import { TooltipProvider } from "@b3dotfun/sdk/global-account/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactNode, useState } from "react";
 
@@ -41,5 +42,9 @@ const defaultQueryClientConfig = {
 export const AnyspendProvider = function AnyspendProvider({ children }: AnyspendProviderProps) {
   const [queryClient] = useState(() => new QueryClient(defaultQueryClientConfig));
 
-  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>{children}</TooltipProvider>
+    </QueryClientProvider>
+  );
 };
