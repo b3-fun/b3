@@ -1,6 +1,5 @@
 import {
   AnySpendMetadata,
-  CreateOrderParams,
   eqci,
   getDefaultToken,
   GetQuoteRequest,
@@ -16,13 +15,16 @@ import {
   RELAY_ETH_ADDRESS,
   Token,
   USDC_BASE,
+} from "@b3dotfun/sdk/anyspend";
+import {
+  CreateOrderParams,
   useAnyspendCreateOnrampOrder,
   useAnyspendCreateOrder,
   useAnyspendOrderAndTransactions,
   useAnyspendQuote,
   useAnyspendTokenList,
   useGeoOnrampOptions,
-} from "@b3dotfun/sdk/anyspend";
+} from "@b3dotfun/sdk/anyspend/react";
 import {
   Badge,
   Button,

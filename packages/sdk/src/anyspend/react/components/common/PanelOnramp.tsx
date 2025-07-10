@@ -1,4 +1,4 @@
-import { useCoinbaseOnrampOptions } from "@b3dotfun/sdk/anyspend";
+import { useCoinbaseOnrampOptions } from "@b3dotfun/sdk/anyspend/react";
 import { Input, useGetGeo } from "@b3dotfun/sdk/global-account/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRef } from "react";

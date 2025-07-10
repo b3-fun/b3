@@ -6,10 +6,8 @@ import {
   OrderType,
   STRIPE_CONFIG,
   Token,
-  useAnyspendCreateOnrampOrder,
-  useGeoOnrampOptions,
-  useStripeClientSecret,
 } from "@b3dotfun/sdk/anyspend";
+import { useAnyspendCreateOnrampOrder, useGeoOnrampOptions, useStripeClientSecret } from "@b3dotfun/sdk/anyspend/react";
 import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
 import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";

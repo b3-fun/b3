@@ -1,4 +1,5 @@
-import { Order, USDC_BASE, useStripeClientSecret } from "@b3dotfun/sdk/anyspend";
+import { Order, USDC_BASE } from "@b3dotfun/sdk/anyspend";
+import { useStripeClientSecret } from "@b3dotfun/sdk/anyspend/react";
 import { STRIPE_CONFIG } from "@b3dotfun/sdk/anyspend/constants";
 import { ShinyButton, useB3 } from "@b3dotfun/sdk/global-account/react";
 import { formatStripeAmount } from "@b3dotfun/sdk/shared/utils/payment.utils";

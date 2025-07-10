@@ -1,4 +1,4 @@
-import { useAnyspendOrderAndTransactions } from "@b3dotfun/sdk/anyspend";
+import { useAnyspendOrderAndTransactions } from "@b3dotfun/sdk/anyspend/react";
 import { WebviewOnrampOrderStatus } from "@b3dotfun/sdk/anyspend/react";
 import { useSearchParams } from "react-router-dom";
 
