@@ -26,6 +26,9 @@ import {
 import {
   Badge,
   Button,
+  Dialog,
+  DialogContent,
+  Input,
   ShinyButton,
   Skeleton,
   StyleRoot,
@@ -43,9 +46,6 @@ import {
   useRouter,
   useSearchParamsSSR,
   useTokenBalancesByChain,
-  Dialog,
-  DialogContent,
-  Input,
 } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils";
 import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
