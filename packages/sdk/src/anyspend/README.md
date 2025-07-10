@@ -1,5 +1,17 @@
 # AnySpend SDK Documentation
 
+The fastest way to accept crypto payments and onboard users with zero friction
+
+AnySpend gives you everything you need to add instant crypto onramps and checkout to your product. Let your users onramp from fiat instantly and pay using any token on any chain, all in one seamless experience.
+
+🚀 Instant Onramp: Users can fund their wallet directly from fiat and start spending in your app right away
+💸 Pay Anyway: Accept payments in any token across any chain with no bridges, swapping, or network switching required
+🧩 One SDK, Any Flow: Easily add crypto payments and onramps to any business model or checkout flow
+👛 Unified Wallet View: Users see and spend their balances from all chains in one place
+AnySpend makes it simple to reach more users, increase conversions, and future proof your business with modern crypto payments.
+
+See the Quickstart below or visit anyspend.com for a live demo
+
 AnySpend is a powerful cross-chain protocol that enables seamless token swaps, NFT minting, tournament participation, and custom smart contract interactions across multiple blockchain networks. Built for developers who want to provide their users with a frictionless Web3 experience.
 
 ## 📦 Overview
