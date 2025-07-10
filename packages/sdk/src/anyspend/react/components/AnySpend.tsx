@@ -120,7 +120,7 @@ export function AnySpend({
   const initialSrcChainId = parseInt(searchParams.get("fromChainId") || "0") || (isMainnet ? mainnet.id : sepolia.id);
   const initialDstChainId =
     parseInt(searchParams.get("toChainId") || "0") ||
-    (isBuyMode ? destinationTokenChainId : isMainnet ? b3.id : b3Sepolia.id);
+    (isBuyMode ? destinationTokenChainId : isMainnet ? base.id : b3Sepolia.id);
 
   // State for source chain/token selection
   const [selectedSrcChainId, setSelectedSrcChainId] = useState<number>(initialSrcChainId);
