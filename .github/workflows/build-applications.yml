@@ -1,0 +1,22 @@
+name: Build Applications
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+env:
+  NODE_OPTIONS: --max_old_space_size=8192
+jobs:
+  build-applications:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup-environment
+
+      - name: Build sdk and all applications
+        run: pnpm build-all
