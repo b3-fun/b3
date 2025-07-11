@@ -233,23 +233,6 @@ export const OrderDetails = memo(function OrderDetails({
 
   const { switchChainAndExecute, isSwitchingOrExecuting } = useChainSwitchWithAction();
 
-  // const { permitData, isCheckingPermit } = usePermitData({
-  //   chainId: order.srcChain,
-  //   tokenAddress: order.srcTokenAddress as Hex,
-  //   ownerAddress: account?.address && isAddress(account.address) ? getAddress(account.address) : undefined,
-  //   amount: BigInt(order.srcAmount)
-  // });
-
-  // const { sendPermitData } = useAnyspendSendPermitData({
-  //   onSuccess: _data => {
-  //     toast.info("Sent permit data successfully");
-  //   },
-  //   onError: error => {
-  //     console.error(error);
-  //     toast.error("Failed to send permit data: " + error.message);
-  //   }
-  // });
-
   const { colorMode } = useColorMode();
 
   const roundedUpSrcAmount = useMemo(() => {
@@ -271,35 +254,6 @@ export const OrderDetails = memo(function OrderDetails({
       }
 
       console.log("Processing transaction on chain:", currentWalletClient.chain.id);
-
-      // Process transaction
-      // if (permitData?.data && account.address) {
-      //   const signature = await currentWalletClient.signTypedData({
-      //     domain: permitData.data.domain,
-      //     types: permitData.data.types,
-      //     primaryType: "Permit",
-      //     message: permitData.data.messageToSign
-      //   });
-
-      //   // Split signature into v, r, s components
-      //   const r = signature.slice(0, 66);
-      //   const s = "0x" + signature.slice(66, 130);
-      //   const v = parseInt(signature.slice(130, 132), 16);
-
-      //   sendPermitData({
-      //     isMainnet: true,
-      //     orderId: order.id,
-      //     permitData: {
-      //       deadline: Number(permitData.data.messageToSign.deadline),
-      //       ownerAddress: account.address,
-      //       r,
-      //       s,
-      //       v
-      //     }
-      //   });
-
-      //   return;
-      // }
 
       const signer = currentWalletClient.account!;
 

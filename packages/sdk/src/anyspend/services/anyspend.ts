@@ -4,7 +4,6 @@ import {
   GetOrderAndTxsResponse,
   GetQuoteRequest,
   GetQuoteResponse,
-  SendPermitDataRequestBody,
   Token,
   zGetCoinbaseOnrampOptionsResponse,
   zGetOrderAndTxsResponse,
@@ -165,23 +164,6 @@ export const anyspendService = {
     const data = await response.json();
     invariant(response.status === 200, "Failed to check Stripe support");
     return data.data;
-  },
-
-  sendPermitData: async ({ isMainnet, orderId, permitData }: SendPermitDataRequestBody & { isMainnet: boolean }) => {
-    const response = await fetch(
-      `${isMainnet ? ANYSPEND_MAINNET_BASE_URL : ANYSPEND_TESTNET_BASE_URL}/orders/send-permit`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          orderId,
-          permitData,
-        }),
-      },
-    );
-    return response.json();
   },
 
   getStripeClientSecret: async (isMainnet: boolean, paymentIntentId: string): Promise<string | null> => {

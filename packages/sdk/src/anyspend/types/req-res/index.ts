@@ -5,4 +5,3 @@ export * from "./getOrderByCreator";
 export * from "./getOrderHistory";
 export * from "./getQuote";
 export * from "./getTokenList";
-export * from "./sendPermitData";

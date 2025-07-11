@@ -13,11 +13,6 @@ export const getStatusDisplay = (order: Order): { text: string; status: "process
         status: "processing",
       };
 
-    case OrderStatus.ObtainToken:
-      return { text: "Obtaining Token", status: "processing" };
-    case OrderStatus.ObtainFailed:
-      return { text: "Obtain Token Failed", status: "failure" };
-
     case OrderStatus.Expired:
       return { text: "Order Expired", status: "failure" };
 
