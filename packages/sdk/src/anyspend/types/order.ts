@@ -1,19 +1,14 @@
 import { z } from "zod";
 import { zOnrampMetadata } from "./onramp";
-import { zPermit } from "./permit";
 import { zMintNftMetadata, zMintNftPayload } from "./nft";
 import { zSwapMetadata, zSwapPayload } from "./swap";
 import { zFundTournamentPayload, zJoinTournamentPayload, zTournamentMetadata } from "./tournament";
 import { zCustomMetadata, zCustomPayload } from "./custom";
 
 export enum OrderStatus {
-  // Prepare steps: For non-permit orders
+  // Prepare steps
   ScanningDepositTransaction = "scanning_deposit_transaction",
   WaitingStripePayment = "waiting_stripe_payment",
-
-  // Prepare steps: For permit orders
-  ObtainToken = "obtain_token",
-  ObtainFailed = "obtain_failed",
 
   //
   Expired = "expired",
@@ -61,8 +56,6 @@ export const zBaseOrder = z.object({
 
   oneClickBuyUrl: z.string().nullable(),
   stripePaymentIntentId: z.string().nullable(),
-
-  permit: zPermit.nullable(),
 });
 
 export const zOrder = z.discriminatedUnion("type", [

@@ -15,7 +15,6 @@ export function WebviewOnrampOrderStatus({ order }: WebviewOnrampOrderStatusProp
     order.status === OrderStatus.WaitingStripePayment ||
     order.status === OrderStatus.ScanningDepositTransaction ||
     order.status === OrderStatus.SendingTokenFromVault ||
-    order.status === OrderStatus.ObtainToken ||
     order.status === OrderStatus.Relay;
   const isExecuted = order.status === OrderStatus.Executed;
   const isFailed = order.status === OrderStatus.Failure;

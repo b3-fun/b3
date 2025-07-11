@@ -7,7 +7,6 @@ export * from "./metadata";
 export * from "./nft";
 export * from "./onramp";
 export * from "./order";
-export * from "./permit";
 export * from "./relay";
 export * from "./swap";
 export * from "./token";
