@@ -1,5 +1,3 @@
-
-
 export interface BondKitBuyForParams {
   recipientAddress: string;
   contractAddress: string;
