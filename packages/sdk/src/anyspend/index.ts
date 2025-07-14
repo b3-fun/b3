@@ -2,7 +2,7 @@
 export * from "./types";
 export * from "./types/metadata";
 export * from "./types/relay";
-export * from "./types/signature-mint";
+export * from "./types/signatureMint";
 export * from "./types/token";
 
 // Utils
@@ -18,5 +18,5 @@ export * from "./utils/token";
 export * from "./constants";
 
 // Abis
-export * from "./abis/abi-usdc-base";
-export * from "./abis/erc20-staking";
+export * from "./abis/abiUsdcBase";
+export * from "./abis/erc20Staking";

@@ -1,6 +1,6 @@
 import { Token, Tournament } from "@b3dotfun/sdk/anyspend";
 import { NftContract } from "@b3dotfun/sdk/anyspend/types";
-import { GenerateSigMintResponse } from "@b3dotfun/sdk/anyspend/types/signature-mint";
+import { GenerateSigMintResponse } from "@b3dotfun/sdk/anyspend/types/signatureMint";
 import { AllowedStrategy } from "@b3dotfun/sdk/global-account/react";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { Address, Chain } from "thirdweb";

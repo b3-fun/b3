@@ -3,8 +3,8 @@ import { StyleRoot, useHasMounted, useTokenData } from "@b3dotfun/sdk/global-acc
 import invariant from "@b3dotfun/sdk/shared/utils/debug";
 import { useMemo } from "react";
 import { encodeFunctionData, parseEther } from "viem";
-import { ABI_SIGNATURE_MINTING } from "../../abis/signature-minting";
-import { GenerateSigMintResponse } from "../../types/signature-mint";
+import { ABI_SIGNATURE_MINTING } from "../../abis/signatureMinting";
+import { GenerateSigMintResponse } from "../../types/signatureMint";
 import { AnySpendCustom } from "./AnySpendCustom";
 
 // Helper function to determine if URL is a video

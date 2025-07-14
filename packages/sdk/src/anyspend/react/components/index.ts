@@ -3,7 +3,7 @@ export { AnySpend } from "./AnySpend";
 export { AnySpendBuySpin } from "./AnySpendBuySpin";
 export { AnySpendCustom } from "./AnySpendCustom";
 export { AnySpendNFT } from "./AnySpendNFT";
-export { AnySpendNFTButton } from "./AnySpendNFTButton";
+export { AnySpendNFTButton } from "./common/AnySpendNFTButton";
 export { AnyspendSignatureMint } from "./AnyspendSignatureMint";
 export { AnySpendStakeB3 } from "./AnySpendStakeB3";
 export { AnySpendTournament } from "./AnySpendTournament";
