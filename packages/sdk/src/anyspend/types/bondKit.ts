@@ -1,4 +1,4 @@
-export interface BondKitBuyForParams {
+export interface bondKitBuyForParams {
   recipientAddress: string;
   contractAddress: string;
   chainId: number;

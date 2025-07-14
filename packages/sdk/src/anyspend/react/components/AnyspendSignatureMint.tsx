@@ -58,7 +58,7 @@ export function AnyspendSignatureMint({
   const hasMounted = useHasMounted();
 
   // Get token data
-  const { data: tokenData, isError: isTokenError } = useTokenData(
+  const { data: tokenData, isError: isTokenError, isLoading } = useTokenData(
     signatureData.collection.chainId,
     signatureData.collection.signatureRequestBody?.currency,
   );
@@ -106,7 +106,18 @@ export function AnyspendSignatureMint({
     </>
   );
 
-  // If we don't have token data, show error state
+  // Show loading state while fetching token data
+  if (isLoading) {
+    return (
+      <StyleRoot>
+        <div className="b3-root b3-modal bg-b3-react-background flex w-full flex-col items-center p-8">
+          <p className="text-as-primary/70 text-center text-sm">Loading payment token information...</p>
+        </div>
+      </StyleRoot>
+    );
+  }
+
+  // If we don't have token data after loading, show error state
   if (!dstToken || isTokenError) {
     return (
       <StyleRoot>

@@ -1,28 +1,72 @@
 import { OrderType } from "@b3dotfun/sdk/anyspend";
-import { StyleRoot, useHasMounted, useTokenData } from "@b3dotfun/sdk/global-account/react";
-import { useMemo } from "react";
-import { encodeFunctionData } from "viem";
-import { ABI_BONDKIT_BUY_FOR } from "../../abis/bondKit";
-import { BondKitBuyForParams } from "../../types/bondKit";
+import {
+  Button,
+  GlareCardRounded,
+  Input,
+  StyleRoot,
+  useHasMounted,
+  useTokenData,
+} from "@b3dotfun/sdk/global-account/react";
+import { AnySpendBondKitProps } from "@b3dotfun/sdk/global-account/react/stores/useModalStore";
+import { baseMainnet } from "@b3dotfun/sdk/shared/constants/chains/supported";
+import { motion } from "framer-motion";
+import { useEffect, useMemo, useState } from "react";
+import { createPublicClient, encodeFunctionData, http, parseEther } from "viem";
+import { ABI_bondKit } from "../../abis/bondKit";
 import { AnySpendCustom } from "./AnySpendCustom";
 
-export function AnyspendBondkit({
-  loadOrder,
+export function AnySpendBondKit({
   mode = "modal",
   recipientAddress,
   contractAddress,
-  chainId,
-  minTokensOut,
-  ethAmount,
+  minTokensOut = "0",
   imageUrl,
-  tokenName = "BondKit Token",
   onSuccess,
-}: BondKitBuyForParams) {
+}: AnySpendBondKitProps) {
   const hasMounted = useHasMounted();
+  const [showAmountPrompt, setShowAmountPrompt] = useState(true);
+  const [ethAmount, setEthAmount] = useState("");
+  const [isAmountValid, setIsAmountValid] = useState(false);
+  const [validationError, setValidationError] = useState("");
+  const [tokenName, setTokenName] = useState<string>("");
+
+  // Create a public client for reading contract data
+  const basePublicClient = createPublicClient({
+    chain: baseMainnet,
+    transport: http(),
+  });
+
+  // Fetch token name from contract
+  useEffect(() => {
+    async function fetchTokenName() {
+      try {
+        const [name, symbol] = await Promise.all([
+          basePublicClient.readContract({
+            address: contractAddress as `0x${string}`,
+            abi: ABI_bondKit,
+            functionName: "name",
+          }),
+          basePublicClient.readContract({
+            address: contractAddress as `0x${string}`,
+            abi: ABI_bondKit,
+            functionName: "symbol",
+          }),
+        ]);
+        setTokenName(`${name} (${symbol})`);
+      } catch (error) {
+        console.error("Error fetching token name:", error);
+        setTokenName("BondKit Token");
+      }
+    }
+
+    if (contractAddress) {
+      fetchTokenName();
+    }
+  }, [contractAddress, basePublicClient]);
 
   // Get native token data for the chain
-  const { data: tokenData, isError: isTokenError } = useTokenData(
-    chainId,
+  const { data: tokenData, isError: isTokenError, isLoading } = useTokenData(
+    baseMainnet.id,
     "0x0000000000000000000000000000000000000000",
   );
 
@@ -32,7 +76,7 @@ export function AnyspendBondkit({
 
     return {
       address: tokenData.address,
-      chainId: chainId,
+      chainId: baseMainnet.id,
       name: tokenData.name,
       symbol: tokenData.symbol,
       decimals: tokenData.decimals,
@@ -40,41 +84,188 @@ export function AnyspendBondkit({
         logoURI: tokenData.logoURI,
       },
     };
-  }, [tokenData, chainId]);
+  }, [tokenData]);
+
+  const validateAndSetAmount = (value: string) => {
+    // Allow empty input
+    if (value === "") {
+      setEthAmount("");
+      setIsAmountValid(false);
+      setValidationError("");
+      return;
+    }
+
+    // Only allow numbers and one decimal point
+    if (!/^\d*\.?\d*$/.test(value)) {
+      return;
+    }
+
+    // Prevent multiple decimal points
+    if ((value.match(/\./g) || []).length > 1) {
+      return;
+    }
+
+    setEthAmount(value);
+
+    try {
+      const parsedAmount = parseEther(value);
+      if (parsedAmount <= 0n) {
+        setIsAmountValid(false);
+        setValidationError("Amount must be greater than 0");
+        return;
+      }
+
+      setIsAmountValid(true);
+      setValidationError("");
+    } catch (error) {
+      setIsAmountValid(false);
+      setValidationError("Please enter a valid amount");
+    }
+  };
 
   const header = () => (
     <>
-      <div className="relative mx-auto size-32">
-        <img
-          alt="token preview"
-          className="size-full rounded-lg object-cover"
-          src={imageUrl || "https://cdn.b3.fun/nft-placeholder.png"}
-        />
-      </div>
-      <div className="mt-[-60px] w-full rounded-t-lg bg-white">
-        <div className="h-[60px] w-full" />
+      {imageUrl && (
+        <div className="relative mx-auto size-32">
+          <div className="absolute inset-0 scale-95 rounded-[50%] bg-gradient-to-br from-blue-500/20 to-purple-600/20 blur-xl"></div>
+          <GlareCardRounded className="overflow-hidden rounded-full border-none bg-gradient-to-br from-blue-500/10 to-purple-600/10 backdrop-blur-sm">
+            <img alt="token preview" className="size-full rounded-lg object-cover" src={imageUrl} />
+            <div className="absolute inset-0 rounded-[50%] border border-white/20"></div>
+          </GlareCardRounded>
+        </div>
+      )}
+      <div
+        className={`from-b3-react-background to-as-on-surface-1 ${imageUrl ? "mt-[-60px]" : ""} w-full rounded-t-lg bg-gradient-to-t`}
+      >
+        {imageUrl && <div className="h-[60px] w-full" />}
         <div className="mb-1 flex w-full flex-col items-center gap-2 p-5">
           <span className="font-sf-rounded text-2xl font-semibold">{tokenName}</span>
+          <p className="text-as-primary/70 text-sm">Pay with ETH • Get {tokenName}</p>
         </div>
       </div>
     </>
   );
 
-  // If we don't have token data, show error state
+  // Show loading state while fetching token data
+  if (isLoading) {
+    return (
+      <StyleRoot>
+        <div className="b3-root b3-modal bg-b3-react-background flex w-full flex-col items-center p-8">
+          <p className="text-as-primary/70 text-center text-sm">Loading payment information...</p>
+        </div>
+      </StyleRoot>
+    );
+  }
+
+  // If we don't have token data after loading, show error state
   if (!dstToken || isTokenError) {
     return (
       <StyleRoot>
         <div className="b3-root b3-modal bg-b3-react-background flex w-full flex-col items-center p-8">
           <p className="text-as-red text-center text-sm">
-            Failed to fetch native token information for chain {chainId}. Please try again.
+            Failed to fetch native token information for chain {baseMainnet.id}. Please try again.
           </p>
         </div>
       </StyleRoot>
     );
   }
 
+  if (showAmountPrompt) {
+    return (
+      <StyleRoot>
+        <div className="bg-b3-react-background flex w-full flex-col items-center">
+          <div className="w-full px-4 pb-2 pt-4">
+            <motion.div
+              initial={false}
+              animate={{
+                opacity: hasMounted ? 1 : 0,
+                y: hasMounted ? 0 : 20,
+                filter: hasMounted ? "blur(0px)" : "blur(10px)",
+              }}
+              transition={{ duration: 0.3, delay: 0, ease: "easeInOut" }}
+              className="mb-4 flex justify-center"
+            >
+              {imageUrl && (
+                <div className="relative size-16">
+                  <div className="absolute inset-0 scale-95 rounded-[50%] bg-gradient-to-br from-blue-500/20 to-purple-600/20 blur-xl"></div>
+                  <GlareCardRounded className="overflow-hidden rounded-full border-none bg-gradient-to-br from-blue-500/10 to-purple-600/10 backdrop-blur-sm">
+                    <img alt="token preview" className="size-full rounded-lg object-cover" src={imageUrl} />
+                    <div className="absolute inset-0 rounded-[50%] border border-white/20"></div>
+                  </GlareCardRounded>
+                </div>
+              )}
+            </motion.div>
+            <motion.div
+              initial={false}
+              animate={{
+                opacity: hasMounted ? 1 : 0,
+                y: hasMounted ? 0 : 20,
+                filter: hasMounted ? "blur(0px)" : "blur(10px)",
+              }}
+              transition={{ duration: 0.3, delay: 0.1, ease: "easeInOut" }}
+              className="text-center"
+            >
+              <h2 className="font-sf-rounded text-as-primary mb-4 text-2xl font-bold">Buy {tokenName}</h2>
+            </motion.div>
+          </div>
+
+          <motion.div
+            initial={false}
+            animate={{
+              opacity: hasMounted ? 1 : 0,
+              y: hasMounted ? 0 : 20,
+              filter: hasMounted ? "blur(0px)" : "blur(10px)",
+            }}
+            transition={{ duration: 0.3, delay: 0.2, ease: "easeInOut" }}
+            className="bg-b3-react-background w-full p-6"
+          >
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <p className="text-as-primary/70 text-sm font-medium">Amount in ETH</p>
+              </div>
+
+              <div className="relative">
+                <Input
+                  type="text"
+                  inputMode="decimal"
+                  placeholder="0.1"
+                  value={ethAmount}
+                  onChange={e => validateAndSetAmount(e.target.value)}
+                  className={`h-14 px-4 text-lg ${!isAmountValid && ethAmount ? "border-as-red" : "border-b3-react-border"}`}
+                />
+              </div>
+
+              {!isAmountValid && ethAmount && <p className="text-as-red text-sm">{validationError}</p>}
+
+              <div className="bg-as-on-surface-2/30 rounded-lg border border-white/10 p-4 backdrop-blur-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-as-primary/70 text-sm font-medium">Total Cost:</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-as-primary text-lg font-bold">{ethAmount || "0"} ETH</span>
+                  </div>
+                </div>
+              </div>
+
+              <Button
+                onClick={() => {
+                  if (isAmountValid && ethAmount) {
+                    setShowAmountPrompt(false);
+                  }
+                }}
+                disabled={!isAmountValid || !ethAmount}
+                className="bg-as-brand hover:bg-as-brand/90 text-as-primary mt-4 h-14 w-full rounded-xl text-lg font-medium"
+              >
+                Continue
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+      </StyleRoot>
+    );
+  }
+
   const encodedData = encodeFunctionData({
-    abi: [ABI_BONDKIT_BUY_FOR],
+    abi: ABI_bondKit,
     functionName: "buyFor",
     args: [recipientAddress as `0x${string}`, BigInt(minTokensOut)],
   });
@@ -82,13 +273,12 @@ export function AnyspendBondkit({
   return (
     <AnySpendCustom
       isMainnet={true}
-      loadOrder={loadOrder}
       mode={mode}
       recipientAddress={recipientAddress}
       orderType={OrderType.Custom}
-      dstChainId={chainId}
+      dstChainId={baseMainnet.id}
       dstToken={dstToken}
-      dstAmount={ethAmount} // Set the ETH amount to be sent with the transaction
+      dstAmount={parseEther(ethAmount).toString()}
       contractAddress={contractAddress}
       encodedData={encodedData}
       metadata={{
