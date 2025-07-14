@@ -762,7 +762,9 @@ export function AnySpendCustom({
                 transition={{ duration: 0.3, delay: 0.1, ease: "easeInOut" }}
                 className="relative flex w-full items-center justify-between"
               >
-                <span className="font-medium">Price</span>
+                <span className="font-medium">
+                  Total <span className="text-sm text-gray-500">(with fee)</span>
+                </span>
                 <h2 className={cn("text-as-primary text-2xl font-semibold")}>
                   {formattedSrcAmount || "--"} {srcToken.symbol}
                 </h2>

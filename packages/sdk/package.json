@@ -211,6 +211,7 @@
     "lint:fix": "eslint 'src/**/*.{ts,tsx}' --fix"
   },
   "dependencies": {
+    "@b3dotfun/bondkit": "^0.1.17",
     "@amplitude/analytics-browser": "2.14.0",
     "@b3dotfun/b3-api": "0.0.26",
     "@b3dotfun/basement-api": "0.0.11",

@@ -111,7 +111,6 @@ export function SignatureMint() {
         imageUrl: "https://cdn.b3.fun/spawn-video.mp4",
         showBackButton: true,
         onSuccess: (txHash?: string) => {
-          console.log("@@signature-mint-form:onSuccess", txHash);
           toast.success(`Successfully minted! ${txHash}`);
           // Reset form
           promptRef.current = "";
