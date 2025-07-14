@@ -11,9 +11,29 @@ import { AnySpendBondKitProps } from "@b3dotfun/sdk/global-account/react/stores/
 import { baseMainnet } from "@b3dotfun/sdk/shared/constants/chains/supported";
 import { motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
-import { createPublicClient, encodeFunctionData, http, parseEther } from "viem";
+import { createPublicClient, encodeFunctionData, http, parseEther, formatEther } from "viem";
 import { ABI_bondKit } from "../../abis/bondKit";
 import { AnySpendCustom } from "./AnySpendCustom";
+import { BondkitToken } from "@b3dotfun/bondkit";
+
+// Debounce utility function
+function debounce<T extends (...args: any[]) => any>(
+  func: T,
+  wait: number
+): (...args: Parameters<T>) => void {
+  let timeout: NodeJS.Timeout;
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
+}
+
+// Format number with commas
+function formatNumberWithCommas(x: string): string {
+  const parts = x.split(".");
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return parts.join(".");
+}
 
 export function AnySpendBondKit({
   mode = "modal",
@@ -29,6 +49,22 @@ export function AnySpendBondKit({
   const [isAmountValid, setIsAmountValid] = useState(false);
   const [validationError, setValidationError] = useState("");
   const [tokenName, setTokenName] = useState<string>("");
+  const [tokenSymbol, setTokenSymbol] = useState<string>("");
+  const [quote, setQuote] = useState<string | null>(null);
+  const [isLoadingQuote, setIsLoadingQuote] = useState(false);
+
+  // Create BondKit client
+  const bondkitTokenClient = useMemo(() => {
+    if (!contractAddress) return null;
+    try {
+      const client = new BondkitToken(contractAddress as `0x${string}`);
+      client.connect();
+      return client;
+    } catch (error) {
+      console.error("Error creating bondkit client", error);
+      return null;
+    }
+  }, [contractAddress]);
 
   // Create a public client for reading contract data
   const basePublicClient = createPublicClient({
@@ -52,10 +88,12 @@ export function AnySpendBondKit({
             functionName: "symbol",
           }),
         ]);
-        setTokenName(`${name} (${symbol})`);
+        setTokenName(name);
+        setTokenSymbol(symbol);
       } catch (error) {
         console.error("Error fetching token name:", error);
         setTokenName("BondKit Token");
+        setTokenSymbol("BOND");
       }
     }
 
@@ -86,12 +124,36 @@ export function AnySpendBondKit({
     };
   }, [tokenData]);
 
+  // Debounced quote fetching
+  const debouncedGetQuote = useMemo(
+    () =>
+      debounce(async (val: string) => {
+        if (!val || Number(val) <= 0 || !bondkitTokenClient) {
+          setQuote(null);
+          return;
+        }
+        try {
+          setIsLoadingQuote(true);
+          const parsedAmount = parseEther(val);
+          const buyQuote = await bondkitTokenClient.getAmountOfTokensToBuy(parsedAmount);
+          setQuote(buyQuote ? formatEther(buyQuote) : null);
+        } catch (error) {
+          console.error("Error getting buy quote:", error);
+          setQuote(null);
+        } finally {
+          setIsLoadingQuote(false);
+        }
+      }, 500),
+    [bondkitTokenClient]
+  );
+
   const validateAndSetAmount = (value: string) => {
     // Allow empty input
     if (value === "") {
       setEthAmount("");
       setIsAmountValid(false);
       setValidationError("");
+      setQuote(null);
       return;
     }
 
@@ -117,6 +179,7 @@ export function AnySpendBondKit({
 
       setIsAmountValid(true);
       setValidationError("");
+      debouncedGetQuote(value);
     } catch (error) {
       setIsAmountValid(false);
       setValidationError("Please enter a valid amount");
@@ -124,26 +187,23 @@ export function AnySpendBondKit({
   };
 
   const header = () => (
-    <>
-      {imageUrl && (
-        <div className="relative mx-auto size-32">
-          <div className="absolute inset-0 scale-95 rounded-[50%] bg-gradient-to-br from-blue-500/20 to-purple-600/20 blur-xl"></div>
-          <GlareCardRounded className="overflow-hidden rounded-full border-none bg-gradient-to-br from-blue-500/10 to-purple-600/10 backdrop-blur-sm">
-            <img alt="token preview" className="size-full rounded-lg object-cover" src={imageUrl} />
-            <div className="absolute inset-0 rounded-[50%] border border-white/20"></div>
-          </GlareCardRounded>
-        </div>
-      )}
-      <div
-        className={`from-b3-react-background to-as-on-surface-1 ${imageUrl ? "mt-[-60px]" : ""} w-full rounded-t-lg bg-gradient-to-t`}
-      >
-        {imageUrl && <div className="h-[60px] w-full" />}
-        <div className="mb-1 flex w-full flex-col items-center gap-2 p-5">
-          <span className="font-sf-rounded text-2xl font-semibold">{tokenName}</span>
-          <p className="text-as-primary/70 text-sm">Pay with ETH • Get {tokenName}</p>
+    <div className="w-full px-6 py-4">
+      <div className="flex w-full flex-col items-center space-y-6">
+        <h2 className="text-[28px] font-bold">
+          {tokenName} ({tokenSymbol})
+        </h2>
+        <div className="flex w-full flex-col items-center space-y-2">
+          <span className="text-[28px] font-bold">
+            {ethAmount} ETH
+          </span>
+          {quote && (
+            <span className="text-lg">
+              ≈ {formatNumberWithCommas(parseFloat(quote).toFixed(4))} {tokenSymbol}
+            </span>
+          )}
         </div>
       </div>
-    </>
+    </div>
   );
 
   // Show loading state while fetching token data
@@ -244,6 +304,16 @@ export function AnySpendBondKit({
                     <span className="text-as-primary text-lg font-bold">{ethAmount || "0"} ETH</span>
                   </div>
                 </div>
+                {isLoadingQuote ? (
+                  <div className="mt-2 text-center">
+                    <span className="text-as-primary/70 text-sm">Calculating tokens...</span>
+                  </div>
+                ) : quote ? (
+                  <div className="mt-2 flex items-center justify-between">
+                    <span className="text-as-primary/70 text-sm font-medium">You'll receive:</span>
+                    <span className="text-as-primary text-sm font-medium">≈ {formatNumberWithCommas(parseFloat(quote).toFixed(4))} {tokenSymbol}</span>
+                  </div>
+                ) : null}
               </div>
 
               <Button
@@ -252,7 +322,7 @@ export function AnySpendBondKit({
                     setShowAmountPrompt(false);
                   }
                 }}
-                disabled={!isAmountValid || !ethAmount}
+                disabled={!isAmountValid || !ethAmount || isLoadingQuote}
                 className="bg-as-brand hover:bg-as-brand/90 text-as-primary mt-4 h-14 w-full rounded-xl text-lg font-medium"
               >
                 Continue
