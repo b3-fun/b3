@@ -44,7 +44,6 @@ import {
   TooltipTrigger,
   TransitionPanel,
   useAccountWallet,
-  useB3,
   useBsmntProfile,
   useHasMounted,
   useModalStore,
@@ -61,7 +60,7 @@ import invariant from "invariant";
 import { ChevronRightCircle, Loader2 } from "lucide-react";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { b3, base, baseSepolia } from "viem/chains";
+import { base, baseSepolia } from "viem/chains";
 import { OrderDetails } from "./common/OrderDetails";
 import { OrderHistory } from "./common/OrderHistory";
 import { OrderStatus as OrderStatusDisplay } from "./common/OrderStatus";
@@ -287,7 +286,7 @@ export function AnySpendCustom({
     }
   }, [srcChainId, tokenList, getTokenWithBalance, nativeTokens, fungibleTokens, dirtySelectSrcToken, dstToken.address]);
 
-  const { account: isAuthenticated } = useB3();
+  // const { account: isAuthenticated } = useB3();
 
   const getRelayQuoteRequest = useMemo(() => {
     return generateGetRelayQuoteRequest({
@@ -479,22 +478,22 @@ export function AnySpendCustom({
   };
 
   const handleConfirmOrder = async (onramp?: { paymentMethod: string; vendor: OnrampVendor }) => {
-    if (!isAuthenticated) {
-      // Copied from https://github.com/b3-fun/b3-mono/blob/main/apps/anyspend-web/components/User/index.tsx#L85
-      setB3ModalContentType({
-        chain: {
-          ...b3,
-          rpc: "https://mainnet-rpc.b3.fun",
-          blockExplorers: [{ name: "B3 Explorer", url: "https://explorer.b3.fun/" }],
-          testnet: undefined,
-        },
-        partnerId: String(process.env.NEXT_PUBLIC_THIRDWEB_PARTNER_ID),
-        type: "signInWithB3",
-        showBackButton: false,
-      });
-      setB3ModalOpen(true);
-      return;
-    }
+    // if (!isAuthenticated) {
+    //   // Copied from https://github.com/b3-fun/b3-mono/blob/main/apps/anyspend-web/components/User/index.tsx#L85
+    //   setB3ModalContentType({
+    //     chain: {
+    //       ...b3,
+    //       rpc: "https://mainnet-rpc.b3.fun",
+    //       blockExplorers: [{ name: "B3 Explorer", url: "https://explorer.b3.fun/" }],
+    //       testnet: undefined,
+    //     },
+    //     partnerId: String(process.env.NEXT_PUBLIC_THIRDWEB_PARTNER_ID),
+    //     type: "signInWithB3",
+    //     showBackButton: false,
+    //   });
+    //   setB3ModalOpen(true);
+    //   return;
+    // }
 
     if (recipientAddress) {
       try {
@@ -507,7 +506,7 @@ export function AnySpendCustom({
   };
 
   const recipientSection =
-    showRecipient && isAuthenticated && recipientAddress ? (
+    showRecipient && recipientAddress ? (
       <motion.div
         initial={false}
         animate={{
@@ -792,9 +791,7 @@ export function AnySpendCustom({
                   onClick={() => handleConfirmOrder()}
                   className="relative w-full"
                 >
-                  {!isAuthenticated ? (
-                    "Sign in with B3"
-                  ) : isCreatingOrder ? (
+                  {isCreatingOrder ? (
                     <div className="flex items-center gap-2">
                       <Loader2 className="size-4 animate-spin" />
                       <span>Creating order...</span>
