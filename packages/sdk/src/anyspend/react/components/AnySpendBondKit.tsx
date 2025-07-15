@@ -38,12 +38,13 @@ export function AnySpendBondKit({
   contractAddress,
   minTokensOut = "0",
   imageUrl,
+  ethAmount: initialEthAmount,
   onSuccess,
 }: AnySpendBondKitProps) {
   const hasMounted = useHasMounted();
-  const [showAmountPrompt, setShowAmountPrompt] = useState(true);
-  const [ethAmount, setEthAmount] = useState("");
-  const [isAmountValid, setIsAmountValid] = useState(false);
+  const [showAmountPrompt, setShowAmountPrompt] = useState(!initialEthAmount);
+  const [ethAmount, setEthAmount] = useState(initialEthAmount || "");
+  const [isAmountValid, setIsAmountValid] = useState(!!initialEthAmount);
   const [validationError, setValidationError] = useState("");
   const [tokenName, setTokenName] = useState<string>("");
   const [tokenSymbol, setTokenSymbol] = useState<string>("");
@@ -105,6 +106,13 @@ export function AnySpendBondKit({
     isError: isTokenError,
     isLoading,
   } = useTokenData(baseMainnet.id, "0x0000000000000000000000000000000000000000");
+
+  // Fetch initial quote if ethAmount is provided
+  useEffect(() => {
+    if (initialEthAmount && bondkitTokenClient) {
+      debouncedGetQuote(initialEthAmount);
+    }
+  }, [initialEthAmount, bondkitTokenClient, debouncedGetQuote]);
 
   // Convert token data to AnySpend Token type
   const dstToken = useMemo(() => {
