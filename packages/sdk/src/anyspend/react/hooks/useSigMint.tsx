@@ -1,5 +1,5 @@
 import { useQueryB3 } from "@b3dotfun/sdk/global-account/react/hooks/useQueryB3";
-import { FindByAddressParams, GenerateSigMintParams, IsMintEligibleParams } from "../../types/signature-mint";
+import { FindByAddressParams, GenerateSigMintParams, IsMintEligibleParams } from "../../types/signatureMint";
 
 /**
  * Hook to generate signature for minting

@@ -1,6 +1,6 @@
 import { Token, Tournament } from "@b3dotfun/sdk/anyspend";
 import { NftContract } from "@b3dotfun/sdk/anyspend/types";
-import { GenerateSigMintResponse } from "@b3dotfun/sdk/anyspend/types/signature-mint";
+import { GenerateSigMintResponse } from "@b3dotfun/sdk/anyspend/types/signatureMint";
 import { AllowedStrategy } from "@b3dotfun/sdk/global-account/react";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { Address, Chain } from "thirdweb";
@@ -268,6 +268,29 @@ export interface AnySpendSignatureMintProps extends BaseModalProps {
 }
 
 /**
+ * Props for the AnySpend bondKit modal
+ * Handles bondKit token purchases
+ */
+export interface AnySpendBondKitProps extends BaseModalProps {
+  /** Mode of the modal */
+  mode?: "modal" | "page";
+  /** Modal type identifier */
+  type: "anySpendBondKit";
+  /** Recipient address to receive the tokens */
+  recipientAddress: string;
+  /** bondKit contract address */
+  contractAddress: string;
+  /** Minimum tokens to receive */
+  minTokensOut?: string;
+  /** Optional image URL for token preview */
+  imageUrl?: string;
+  /** Token name to display */
+  tokenName?: string;
+  /** Callback function called when purchase is successful */
+  onSuccess?: (txHash?: string) => void;
+}
+
+/**
  * Union type of all possible modal content types
  */
 export type ModalContentType =
@@ -283,7 +306,8 @@ export type ModalContentType =
   | AnySpendOrderHistoryProps
   | AnySpendStakeB3Props
   | AnySpendBuySpinProps
-  | AnySpendSignatureMintProps;
+  | AnySpendSignatureMintProps
+  | AnySpendBondKitProps;
 // Add other modal types here like: | OtherModalProps | AnotherModalProps
 
 /**

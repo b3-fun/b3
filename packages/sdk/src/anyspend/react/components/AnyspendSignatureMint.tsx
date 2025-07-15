@@ -3,8 +3,8 @@ import { StyleRoot, useHasMounted, useTokenData } from "@b3dotfun/sdk/global-acc
 import invariant from "@b3dotfun/sdk/shared/utils/debug";
 import { useMemo } from "react";
 import { encodeFunctionData, parseEther } from "viem";
-import { ABI_SIGNATURE_MINTING } from "../../abis/signature-minting";
-import { GenerateSigMintResponse } from "../../types/signature-mint";
+import { ABI_SIGNATURE_MINTING } from "../../abis/signatureMinting";
+import { GenerateSigMintResponse } from "../../types/signatureMint";
 import { AnySpendCustom } from "./AnySpendCustom";
 
 // Helper function to determine if URL is a video
@@ -58,10 +58,11 @@ export function AnyspendSignatureMint({
   const hasMounted = useHasMounted();
 
   // Get token data
-  const { data: tokenData, isError: isTokenError } = useTokenData(
-    signatureData.collection.chainId,
-    signatureData.collection.signatureRequestBody?.currency,
-  );
+  const {
+    data: tokenData,
+    isError: isTokenError,
+    isLoading,
+  } = useTokenData(signatureData.collection.chainId, signatureData.collection.signatureRequestBody?.currency);
 
   // Convert token data to AnySpend Token type
   const dstToken = useMemo(() => {
@@ -106,7 +107,18 @@ export function AnyspendSignatureMint({
     </>
   );
 
-  // If we don't have token data, show error state
+  // Show loading state while fetching token data
+  if (isLoading) {
+    return (
+      <StyleRoot>
+        <div className="b3-root b3-modal bg-b3-react-background flex w-full flex-col items-center p-8">
+          <p className="text-as-primary/70 text-center text-sm">Loading payment token information...</p>
+        </div>
+      </StyleRoot>
+    );
+  }
+
+  // If we don't have token data after loading, show error state
   if (!dstToken || isTokenError) {
     return (
       <StyleRoot>

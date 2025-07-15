@@ -106,6 +106,23 @@ export default function Home() {
                 <p className="mt-1 text-sm text-gray-500">Mint NFTs using signature-based minting</p>
               </div>
             </button>
+            <button
+              onClick={() => {
+                setB3ModalOpen(true);
+                setB3ModalContentType({
+                  type: "anySpendBondKit",
+                  recipientAddress: "0x0000000000000000000000000000000000000000",
+                  contractAddress: "0x01ef4b21bb06fa40fe08e112a472b8925bb271d1",
+                  minTokensOut: "0",
+                });
+              }}
+              className="group flex h-40 flex-col justify-between overflow-hidden rounded-lg border border-gray-100 bg-white p-6 text-left shadow-sm transition-all hover:border-blue-100 hover:shadow-md"
+            >
+              <div>
+                <h3 className="text-lg font-medium text-gray-900">BondKit</h3>
+                <p className="mt-1 text-sm text-gray-500">Buy BondKit tokens with ETH</p>
+              </div>
+            </button>
           </div>
         </div>
       </div>
