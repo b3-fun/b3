@@ -1,4 +1,5 @@
 import { SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
+
 import { b3Chain } from "../constants/b3Chain";
 import type { Wallet } from "../utils/wallet";
 

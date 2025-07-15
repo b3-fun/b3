@@ -1,6 +1,7 @@
 import { useB3 } from "@b3dotfun/sdk/global-account/react";
 import { motion } from "framer-motion";
 import { CreditCard, Shield, UserCircle, Wallet as WalletIcon } from "lucide-react";
+
 import type { Wallet } from "../utils/wallet";
 import { SignIn } from "./SignIn";
 import { Background } from "./ui/Background";

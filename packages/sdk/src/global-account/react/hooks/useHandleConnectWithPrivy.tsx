@@ -4,6 +4,7 @@ import { useIdentityToken, usePrivy } from "@privy-io/react-auth";
 import { useCallback, useRef, useState } from "react";
 import { Chain } from "thirdweb";
 import { Account } from "thirdweb/wallets";
+
 const debug = debugB3React("@@b3:useHandleConnectWithPrivy");
 
 /**

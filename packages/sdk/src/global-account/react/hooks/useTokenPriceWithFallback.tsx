@@ -1,6 +1,7 @@
 "use client";
 
 import { type ChainId } from "@b3dotfun/sdk/shared/constants/chains/chainPlatformMap";
+
 import { useExchangeRate } from "./useExchangeRate";
 import { useTokenPrice } from "./useTokenPrice";
 

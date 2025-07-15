@@ -1,6 +1,6 @@
 "use client";
 
-import { getDefaultToken, OrderType, Token, TradeType, USDC_BASE } from "@b3dotfun/sdk/anyspend";
+import { OrderType, Token, TradeType, USDC_BASE, getDefaultToken } from "@b3dotfun/sdk/anyspend";
 import {
   useAnyspendCreateOrder,
   useAnyspendOrderAndTransactions,
@@ -28,6 +28,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { parseUnits } from "viem";
 import { b3Sepolia, base, mainnet, sepolia } from "viem/chains";
+
 import { OrderDetails, OrderDetailsLoadingView } from "./common/OrderDetails";
 import { OrderHistory } from "./common/OrderHistory";
 import { OrderStatus } from "./common/OrderStatus";

@@ -1,5 +1,5 @@
 import app from "@b3dotfun/sdk/global-account/app";
-import { useB3, useAuthStore } from "@b3dotfun/sdk/global-account/react";
+import { useAuthStore, useB3 } from "@b3dotfun/sdk/global-account/react";
 import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { b3MainnetThirdWeb } from "@b3dotfun/sdk/shared/constants/chains/supported";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
@@ -8,6 +8,7 @@ import { useEffect } from "react";
 import { useActiveWallet, useAutoConnect, useConnectedWallets, useDisconnect } from "thirdweb/react";
 import { ecosystemWallet } from "thirdweb/wallets";
 import { preAuthenticate } from "thirdweb/wallets/in-app";
+
 import { useConnect } from "./useConnect";
 import { useSiwe } from "./useSiwe";
 

@@ -1,12 +1,12 @@
 "use client";
 
+import * as React from "react";
+import { cn } from "@b3dotfun/sdk/shared/utils";
 import { type DialogProps } from "@radix-ui/react-dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Command as CommandPrimitive } from "cmdk";
 import { Search } from "lucide-react";
-import * as React from "react";
 
-import { cn } from "@b3dotfun/sdk/shared/utils";
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Dialog, DialogContent, DialogTitle } from "./dialog";
 
 const Command = React.forwardRef<

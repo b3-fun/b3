@@ -3,6 +3,7 @@ import { AuthenticationClient } from "@feathersjs/authentication-client";
 import socketio from "@feathersjs/socketio-client";
 import Cookies from "js-cookie";
 import io from "socket.io-client";
+
 import { B3_AUTH_COOKIE_NAME } from "../shared/constants";
 
 const B3_API_URL =

@@ -2,6 +2,7 @@ import { GetQuoteResponse, OrderType, Token, Tournament } from "@b3dotfun/sdk/an
 import { cn } from "@b3dotfun/sdk/shared/utils";
 import { formatDisplayNumber, formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { AnimatePresence } from "framer-motion";
+
 import { AnySpendCustom } from "./AnySpendCustom";
 
 type AnySpendTournamentProps =

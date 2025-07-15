@@ -8,6 +8,7 @@ import { simpleHashChainToChainName } from "@b3dotfun/sdk/shared/utils/simplehas
 import { TokenSelector } from "@reservoir0x/relay-kit-ui";
 import { CheckCircle2, ChevronsUpDown } from "lucide-react";
 import { useMemo } from "react";
+
 import { ChainTokenIcon } from "./ChainTokenIcon";
 
 export function OrderToken({

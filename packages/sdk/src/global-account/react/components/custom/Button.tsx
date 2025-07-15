@@ -1,6 +1,6 @@
+import * as React from "react";
 import { cn } from "@b3dotfun/sdk/shared/utils";
 import { cva } from "class-variance-authority";
-import * as React from "react";
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-b3-react-ring disabled:pointer-events-none disabled:opacity-50",

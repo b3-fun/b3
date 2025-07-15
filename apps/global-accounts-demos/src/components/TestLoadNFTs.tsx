@@ -1,4 +1,4 @@
-import { useTokensFromAddress, useModalStore } from "@b3dotfun/sdk/global-account/react";
+import { useModalStore, useTokensFromAddress } from "@b3dotfun/sdk/global-account/react";
 
 export function TestLoadNFTs() {
   const store = useModalStore();

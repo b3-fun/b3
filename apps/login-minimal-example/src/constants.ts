@@ -1,4 +1,5 @@
 import { B3_TOKEN } from "@b3dotfun/sdk/anyspend";
+
 import { NftContract } from "./types";
 
 export const NFT_CONTRACTS: NftContract[] = [

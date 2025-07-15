@@ -1,4 +1,5 @@
 "use client";
+
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { AnimatePresence, MotionProps, Transition, Variant, motion } from "framer-motion";
 

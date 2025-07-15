@@ -1,9 +1,10 @@
+import { useB3 } from "@b3dotfun/sdk/global-account/react";
+import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import styled from "styled-components";
-import { motion } from "framer-motion";
-import { generateWallet } from "../utils/wallet";
 import { Account } from "thirdweb/wallets";
-import { useB3 } from "@b3dotfun/sdk/global-account/react";
+
+import { generateWallet } from "../utils/wallet";
 
 const Container = styled.div`
   background: #2a2a2a;

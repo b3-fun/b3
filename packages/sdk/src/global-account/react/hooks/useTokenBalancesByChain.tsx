@@ -1,11 +1,10 @@
 "use client";
 
-import { getERC20Balances, TokenData } from "@b3dotfun/sdk/shared/utils/thirdweb-insights";
-import { useQuery } from "@tanstack/react-query";
-
 import { viemToThirdwebChain } from "@b3dotfun/sdk/shared/constants/chains/b3Chain";
 import { getChainById } from "@b3dotfun/sdk/shared/utils/chains";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
+import { TokenData, getERC20Balances } from "@b3dotfun/sdk/shared/utils/thirdweb-insights";
+import { useQuery } from "@tanstack/react-query";
 import { getWalletBalance } from "thirdweb/wallets";
 
 type GetWalletBalanceResult = {

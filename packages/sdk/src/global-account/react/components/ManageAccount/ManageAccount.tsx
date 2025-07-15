@@ -2,17 +2,17 @@ import {
   Button,
   CopyToClipboard,
   TWSignerWithMetadata,
+  TabTriggerPrimitive,
+  TabsContentPrimitive,
+  TabsListPrimitive,
+  TabsPrimitive,
   useAccountAssets,
   useAuthentication,
   useB3BalanceFromAddresses,
   useGetAllTWSigners,
+  useModalStore,
   useNativeBalance,
   useRemoveSessionKey,
-  useModalStore,
-  TabsPrimitive,
-  TabsContentPrimitive,
-  TabsListPrimitive,
-  TabTriggerPrimitive,
 } from "@b3dotfun/sdk/global-account/react";
 import { formatAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { formatNumber } from "@b3dotfun/sdk/shared/utils/formatNumber";
@@ -21,6 +21,7 @@ import { useState } from "react";
 import { Chain } from "thirdweb";
 import { useActiveAccount } from "thirdweb/react";
 import { formatUnits } from "viem";
+
 import { AccountAssets } from "../AccountAssets/AccountAssets";
 
 interface ManageAccountProps {

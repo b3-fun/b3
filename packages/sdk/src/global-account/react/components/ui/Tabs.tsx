@@ -1,5 +1,5 @@
-import { cn } from "@b3dotfun/sdk/shared/utils";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
+import { cn } from "@b3dotfun/sdk/shared/utils";
 
 export const Tabs = ({
   defaultValue,

@@ -1,15 +1,16 @@
 import {
-  useB3,
   Loading,
-  useGetAllTWSigners,
-  useSiwe,
   SignInWithB3ModalProps,
+  useB3,
+  useGetAllTWSigners,
   useModalStore,
+  useSiwe,
 } from "@b3dotfun/sdk/global-account/react";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { useCallback, useEffect, useState } from "react";
 import { useActiveAccount } from "thirdweb/react";
 import { Account } from "thirdweb/wallets";
+
 import { SignInWithB3Privy } from "./SignInWithB3Privy";
 import { LoginStep, LoginStepContainer } from "./steps/LoginStep";
 import { LoginStepCustom } from "./steps/LoginStepCustom";

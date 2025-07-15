@@ -1,7 +1,6 @@
 // We intentionally disable the hooks rules here because we need to conditionally return early for SSR.
 // This is safe in this context because the hook is only used in environments where window is defined.
 /* eslint-disable react-hooks/rules-of-hooks */
-
 import { useCallback, useEffect, useState } from "react";
 
 interface RouterState {

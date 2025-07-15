@@ -1,4 +1,5 @@
 import { Chain } from "viem";
+
 import { Token } from "./token";
 
 export enum ChainType {

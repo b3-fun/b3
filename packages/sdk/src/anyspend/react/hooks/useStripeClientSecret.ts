@@ -1,6 +1,6 @@
+import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
 
 export function useStripeClientSecret(isMainnet: boolean, paymentIntentId: string) {
   const { data, isLoading, error, refetch } = useQuery({

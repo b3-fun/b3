@@ -1,6 +1,7 @@
 "use client";
+
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
-import { AnimatePresence, motion, Transition, Variants } from "framer-motion";
+import { AnimatePresence, Transition, Variants, motion } from "framer-motion";
 import { Children, useEffect, useState } from "react";
 
 type TextLoopProps = {

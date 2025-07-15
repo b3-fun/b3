@@ -3,6 +3,7 @@ import { Input, useGetGeo } from "@b3dotfun/sdk/global-account/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRef } from "react";
 import { toast } from "sonner";
+
 import { PaymentOptions } from "./PaymentOptions";
 
 export function PanelOnramp({

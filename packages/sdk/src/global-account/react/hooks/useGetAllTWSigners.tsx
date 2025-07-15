@@ -1,6 +1,6 @@
 import { Signer } from "@b3dotfun/sdk/global-account/types";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
-import { useQuery, UseQueryOptions } from "@tanstack/react-query";
+import { UseQueryOptions, useQuery } from "@tanstack/react-query";
 import createDebug from "debug";
 import { Chain } from "thirdweb";
 import { getAllActiveSigners } from "thirdweb/extensions/erc4337";

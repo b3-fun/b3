@@ -3,9 +3,9 @@ import { z } from "zod";
 
 import { zCustomPayload } from "../custom";
 import { NftType } from "../nft";
+import { OnrampVendor } from "../onramp";
 import { OrderType } from "../order";
 import { TradeType } from "../relay";
-import { OnrampVendor } from "../onramp";
 
 const zGetQuoteBody = z.object({
   srcChain: z.number(),

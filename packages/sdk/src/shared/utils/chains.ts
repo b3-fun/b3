@@ -1,5 +1,5 @@
 import { supportedChains } from "@b3dotfun/sdk/shared/constants/chains/supported";
-import { b3, Chain } from "viem/chains";
+import { Chain, b3 } from "viem/chains";
 
 const baseChainBaseUrl = "https://basescan.org";
 

@@ -2,7 +2,6 @@
 
 import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area";
 import * as React from "react";
-
 import { cn } from "@b3dotfun/sdk/shared/utils";
 
 const ScrollArea = React.forwardRef<

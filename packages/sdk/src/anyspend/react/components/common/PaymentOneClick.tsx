@@ -2,6 +2,7 @@ import { Order } from "@b3dotfun/sdk/anyspend";
 import { ShinyButton } from "@b3dotfun/sdk/global-account/react";
 import { getPaymentMethodDescription, getVendorDisplayName } from "@b3dotfun/sdk/shared/utils/payment.utils";
 import { ChevronRight } from "lucide-react";
+
 import HowItWorks from "./HowItWorks";
 
 interface PaymentOneClickProps {

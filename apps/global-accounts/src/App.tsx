@@ -3,6 +3,7 @@ import SignIn from "@b3dotfun/sdk/global-account/react/components/SignInWithB3/S
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
+
 import { CodeExample } from "./components/CodeExample";
 import { Features } from "./components/Features";
 import { Hero } from "./components/Hero";

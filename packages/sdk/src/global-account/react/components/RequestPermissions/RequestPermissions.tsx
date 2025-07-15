@@ -1,9 +1,9 @@
 import {
   Button,
-  useB3,
-  useAddTWSessionKey,
-  useGetAllTWSigners,
   RequestPermissionsModalProps,
+  useAddTWSessionKey,
+  useB3,
+  useGetAllTWSigners,
 } from "@b3dotfun/sdk/global-account/react";
 import { PermissionItem } from "@b3dotfun/sdk/global-account/react";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";

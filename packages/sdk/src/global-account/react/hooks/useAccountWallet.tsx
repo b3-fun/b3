@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { getLastAuthProvider, useActiveWallet, useConnectedWallets, useWalletImage } from "thirdweb/react";
 import { Account, Wallet } from "thirdweb/wallets";
 import { socialIcons } from "thirdweb/wallets/in-app";
+
 import { useBsmntProfile } from "./useBsmntProfile";
 
 function useLastAuthProvider(): string | null {

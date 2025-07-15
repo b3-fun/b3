@@ -2,7 +2,6 @@
 
 import * as PopoverPrimitive from "@radix-ui/react-popover";
 import * as React from "react";
-
 import { StyleRoot } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils";
 

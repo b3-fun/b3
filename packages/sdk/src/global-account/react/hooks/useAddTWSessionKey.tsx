@@ -1,6 +1,6 @@
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import createDebug from "debug";
-import { Chain, Hex, sendTransaction, ThirdwebClient } from "thirdweb";
+import { Chain, Hex, ThirdwebClient, sendTransaction } from "thirdweb";
 import { addSessionKey } from "thirdweb/extensions/erc4337";
 import { useActiveAccount } from "thirdweb/react";
 import { Address } from "viem";

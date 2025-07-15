@@ -1,20 +1,20 @@
 import {
-  Button,
-  AuthButton,
-  WalletRow,
-  useAuthentication,
-  useConnect,
-  LoginStepContainer,
-  useAuthStore,
   AllowedStrategy,
+  AuthButton,
+  Button,
+  LoginStepContainer,
+  WalletRow,
   getConnectOptionsFromStrategy,
   isWalletType,
+  useAuthStore,
+  useAuthentication,
+  useConnect,
 } from "@b3dotfun/sdk/global-account/react";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { useState } from "react";
 import { Chain } from "thirdweb";
 import { useConnect as useConnectTW } from "thirdweb/react";
-import { Account, createWallet, Wallet, WalletId } from "thirdweb/wallets";
+import { Account, Wallet, WalletId, createWallet } from "thirdweb/wallets";
 
 interface LoginStepCustomProps {
   automaticallySetFirstEoa: boolean;

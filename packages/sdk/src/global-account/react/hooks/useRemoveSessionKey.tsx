@@ -2,7 +2,7 @@ import { ActiveSigners } from "@b3dotfun/sdk/global-account/types";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import createDebug from "debug";
 import { useCallback, useState } from "react";
-import { Chain, Hex, sendTransaction, ThirdwebClient } from "thirdweb";
+import { Chain, Hex, ThirdwebClient, sendTransaction } from "thirdweb";
 import { removeSessionKey } from "thirdweb/extensions/erc4337";
 import { useActiveAccount } from "thirdweb/react";
 

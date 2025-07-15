@@ -1,13 +1,13 @@
 "use client";
 
-import { ChevronsUpDown } from "lucide-react";
-import { useEffect, useRef } from "react";
-import { NumericFormat } from "react-number-format";
-
 import { ALL_CHAINS, RELAY_SOLANA_MAINNET_CHAIN_ID, Token } from "@b3dotfun/sdk/anyspend";
 import { Button } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils";
 import { TokenSelector } from "@reservoir0x/relay-kit-ui";
+import { ChevronsUpDown } from "lucide-react";
+import { useEffect, useRef } from "react";
+import { NumericFormat } from "react-number-format";
+
 import { ChainTokenIcon } from "./ChainTokenIcon";
 
 export function OrderTokenAmount({

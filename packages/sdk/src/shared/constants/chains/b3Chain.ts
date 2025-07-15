@@ -1,6 +1,6 @@
-import { defineChain as defineThirdwebChain, Chain as ThirdwebChain } from "thirdweb";
-import { Chain, defineChain } from "viem";
 import { ChainNetworks } from "@b3dotfun/sdk/global-account/types/chain-networks";
+import { Chain as ThirdwebChain, defineChain as defineThirdwebChain } from "thirdweb";
+import { Chain, defineChain } from "viem";
 
 export const nullAddress = "0x0000000000000000000000000000000000000000";
 

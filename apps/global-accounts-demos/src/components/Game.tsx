@@ -1,11 +1,12 @@
+import { MintButton } from "@b3dotfun/sdk/global-account/react";
+import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import styled from "styled-components";
-import { motion, AnimatePresence } from "framer-motion";
-import { B3 } from "../B3";
-import { MintButton } from "@b3dotfun/sdk/global-account/react";
-import { b3Chain } from "../b3Chain";
-import { Account } from "thirdweb/wallets";
 import { useActiveAccount } from "thirdweb/react";
+import { Account } from "thirdweb/wallets";
+
+import { B3 } from "../B3";
+import { b3Chain } from "../b3Chain";
 import { SplashScreen } from "./SplashScreen";
 
 const images = [

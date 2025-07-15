@@ -1,5 +1,4 @@
 import * as React from "react";
-
 import { cn } from "@b3dotfun/sdk/shared/utils";
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {}

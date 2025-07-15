@@ -3,6 +3,7 @@ import { formatNumber } from "@b3dotfun/sdk/shared/utils/formatNumber";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { createPublicClient, formatEther, formatUnits, http } from "viem";
+
 interface NativeBalanceResponse {
   data: Array<{
     tokenDecimals: number;

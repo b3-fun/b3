@@ -1,5 +1,6 @@
 import { privateKeyToAccount } from "thirdweb/wallets";
 import { Account } from "thirdweb/wallets";
+
 import { client } from "../thirdweb";
 
 export async function generateWallet(): Promise<{

@@ -1,12 +1,13 @@
 import { Order, USDC_BASE } from "@b3dotfun/sdk/anyspend";
-import { useStripeClientSecret } from "@b3dotfun/sdk/anyspend/react";
 import { STRIPE_CONFIG } from "@b3dotfun/sdk/anyspend/constants";
+import { useStripeClientSecret } from "@b3dotfun/sdk/anyspend/react";
 import { ShinyButton, useB3 } from "@b3dotfun/sdk/global-account/react";
 import { formatStripeAmount } from "@b3dotfun/sdk/shared/utils/payment.utils";
 import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import { HelpCircle, Info, X } from "lucide-react";
 import { useEffect, useState } from "react";
+
 import HowItWorks from "./HowItWorks";
 import PaymentMethodIcons from "./PaymentMethodIcons";
 

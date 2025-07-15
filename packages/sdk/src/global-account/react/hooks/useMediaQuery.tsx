@@ -2,6 +2,7 @@
 
 //https://usehooks-ts.com/react-hook/use-media-query
 import { useState } from "react";
+
 import { useIsomorphicLayoutEffect } from "./useIsomorphicLayoutEffect";
 
 type UseMediaQueryOptions = {

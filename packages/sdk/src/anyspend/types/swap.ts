@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import { zToken } from "./token";
 
 export const zSwapPayload = z.object({

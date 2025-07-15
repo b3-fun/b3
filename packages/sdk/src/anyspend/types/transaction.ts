@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import { zRelayStatus } from "./relay";
 
 export const zDepositTransaction = z.object({

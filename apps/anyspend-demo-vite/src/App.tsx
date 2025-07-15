@@ -1,14 +1,14 @@
 import { AnyspendProvider } from "@b3dotfun/sdk/anyspend/react";
+// Import SDK styles
+import { B3DynamicModal, B3Provider } from "@b3dotfun/sdk/global-account/react";
+import "@b3dotfun/sdk/index.css";
 import { useColorMode } from "@chakra-ui/react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+
 import HomePage from "./pages/HomePage";
 import OnrampExamplePage from "./pages/OnrampExamplePage";
 import OnrampFlowPage from "./pages/OnrampFlowPage";
 import OnrampOrderStatusPage from "./pages/OnrampOrderStatusPage";
-
-// Import SDK styles
-import { B3DynamicModal, B3Provider } from "@b3dotfun/sdk/global-account/react";
-import "@b3dotfun/sdk/index.css";
 
 function App() {
   return (

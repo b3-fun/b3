@@ -1,7 +1,7 @@
 "use client";
 
-import { getPlatformId, type ChainId } from "@b3dotfun/sdk/shared/constants/chains/chainPlatformMap";
-import { useQuery, type UseQueryOptions } from "@tanstack/react-query";
+import { type ChainId, getPlatformId } from "@b3dotfun/sdk/shared/constants/chains/chainPlatformMap";
+import { type UseQueryOptions, useQuery } from "@tanstack/react-query";
 
 interface UseTokenPriceProps {
   contractAddress: string;

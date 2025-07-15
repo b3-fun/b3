@@ -1,10 +1,11 @@
-import { ecosystemWalletId, THIRDWEB_CLIENT_ID } from "@b3dotfun/sdk/shared/constants";
+import { THIRDWEB_CLIENT_ID, ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { useCallback, useState } from "react";
 import { Chain } from "thirdweb";
 import { useConnect as useConnectTW } from "thirdweb/react";
-import { ecosystemWallet, SingleStepAuthArgsType } from "thirdweb/wallets";
+import { SingleStepAuthArgsType, ecosystemWallet } from "thirdweb/wallets";
+
 const debug = debugB3React("useConnect");
 
 /**

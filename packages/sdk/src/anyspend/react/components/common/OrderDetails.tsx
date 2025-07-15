@@ -2,23 +2,23 @@
 
 import {
   ALL_CHAINS,
-  capitalizeFirstLetter,
   DepositTransaction,
   EVM_CHAINS,
   ExecuteTransaction,
+  OnrampVendor,
+  Order,
+  OrderStatus,
+  OrderType,
+  RELAY_ETH_ADDRESS,
+  RefundTransaction,
+  RelayTransaction,
+  capitalizeFirstLetter,
   getChainName,
   getErrorDisplay,
   getExplorerTxUrl,
   getPaymentUrl,
   getStatusDisplay,
   isNativeToken,
-  OnrampVendor,
-  Order,
-  OrderStatus,
-  OrderType,
-  RefundTransaction,
-  RELAY_ETH_ADDRESS,
-  RelayTransaction,
   zNft,
   zToken,
   zTournament,
@@ -59,9 +59,10 @@ import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import TimeAgo from "react-timeago";
 import { toast } from "sonner";
 import { Address } from "thirdweb";
-import { erc20Abi, WalletClient } from "viem";
+import { WalletClient, erc20Abi } from "viem";
 import { b3 } from "viem/chains";
 import { useWaitForTransactionReceipt, useWalletClient } from "wagmi";
+
 import PaymentVendorUI from "./PaymentVendorUI";
 
 interface OrderDetailsProps {

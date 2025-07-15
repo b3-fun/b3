@@ -1,6 +1,6 @@
 import { DEFAULT_NFT_CONTRACT } from "@b3dotfun/sdk/anyspend/constants";
-import { Button, useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { NftContract } from "@b3dotfun/sdk/anyspend/types";
+import { Button, useModalStore } from "@b3dotfun/sdk/global-account/react";
 
 type AnySpendNFTButtonProps = {
   nftContract?: NftContract;

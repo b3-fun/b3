@@ -1,11 +1,10 @@
 // Find a better way to initiate this
-import "@b3dotfun/sdk/shared/thirdweb/initiateClient";
-
 import type * as SimpleHashTypes from "@b3dotfun/sdk/global-account/types/simplehash.types";
 import type {
   GetV1NftsResponse,
   GetV1NftsTransfersByContractAddressResponse,
 } from "@b3dotfun/sdk/shared/thirdweb/generated/types.gen";
+import "@b3dotfun/sdk/shared/thirdweb/initiateClient";
 import { simpleHashChainToChainName as getSimpleHashChainName } from "@b3dotfun/sdk/shared/utils/simplehash";
 
 export const simpleHashChainToChainName = (chain: number) => {

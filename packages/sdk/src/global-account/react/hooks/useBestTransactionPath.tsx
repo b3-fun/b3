@@ -1,6 +1,6 @@
 "use client";
 
-import { isNativeToken, Token } from "@b3dotfun/sdk/anyspend";
+import { Token, isNativeToken } from "@b3dotfun/sdk/anyspend";
 import { useAccountWallet, useOneBalance, useTokenBalance } from "@b3dotfun/sdk/global-account/react";
 import { useMemo } from "react";
 import { formatUnits } from "viem";

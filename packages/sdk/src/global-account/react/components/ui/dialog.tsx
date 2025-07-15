@@ -1,10 +1,9 @@
 "use client";
 
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { X } from "lucide-react";
 import * as React from "react";
-
 import { cn } from "@b3dotfun/sdk/shared/utils";
+import { X } from "lucide-react";
 
 const Dialog: typeof DialogPrimitive.Root = DialogPrimitive.Root;
 

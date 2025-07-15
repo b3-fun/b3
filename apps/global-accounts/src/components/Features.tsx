@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Wallet, ArrowRightLeft, Coins, Zap } from "lucide-react";
+import { ArrowRightLeft, Coins, Wallet, Zap } from "lucide-react";
 
 const features = [
   {

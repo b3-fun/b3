@@ -1,9 +1,10 @@
-import { useB3, MintButton } from "@b3dotfun/sdk/global-account/react";
+import { MintButton, useB3 } from "@b3dotfun/sdk/global-account/react";
 import { b3MainnetThirdWeb } from "@b3dotfun/sdk/shared/constants/chains/supported";
 import { Bug, UnlinkIcon, User, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useActiveAccount, useConnectedWallets, useLinkProfile, useProfiles, useUnlinkProfile } from "thirdweb/react";
-import { createWallet, type Profile } from "thirdweb/wallets";
+import { type Profile, createWallet } from "thirdweb/wallets";
+
 import { MintSuccessModal } from "../components/MintSuccessModal";
 import { Background } from "../components/ui/Background";
 import { client } from "../utils/thirdweb";

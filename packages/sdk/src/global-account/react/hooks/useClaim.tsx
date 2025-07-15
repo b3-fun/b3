@@ -1,8 +1,8 @@
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { useCallback, useState } from "react";
 import { Chain, getContract, sendTransaction } from "thirdweb";
-import { claimTo as claimTo1155 } from "thirdweb/extensions/erc1155";
 import { claimTo as claimTo721 } from "thirdweb/extensions/erc721";
+import { claimTo as claimTo1155 } from "thirdweb/extensions/erc1155";
 import { Account } from "thirdweb/wallets";
 
 interface UseClaimProps {

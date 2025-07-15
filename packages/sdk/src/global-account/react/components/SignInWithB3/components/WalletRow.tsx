@@ -1,5 +1,6 @@
 import { WalletIcon, WalletName, WalletProvider } from "thirdweb/react";
 import { WalletId } from "thirdweb/wallets";
+
 import { Button } from "../../custom/Button";
 
 export function WalletRow({

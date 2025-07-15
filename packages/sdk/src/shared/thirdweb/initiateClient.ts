@@ -1,4 +1,5 @@
 import { CLIENT_APP_BUNDLE_ID, THIRDWEB_CLIENT_ID, THIRDWEB_SECRET_KEY } from "@b3dotfun/sdk/shared/constants";
+
 import { client } from "./generated/client.gen";
 
 (function () {

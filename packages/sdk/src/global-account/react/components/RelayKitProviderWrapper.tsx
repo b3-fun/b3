@@ -1,5 +1,5 @@
 import { RelayKitProvider } from "@reservoir0x/relay-kit-ui";
-import { fetchChainConfigs, MAINNET_RELAY_API, RelayChain, TESTNET_RELAY_API } from "@reservoir0x/relay-sdk";
+import { MAINNET_RELAY_API, RelayChain, TESTNET_RELAY_API, fetchChainConfigs } from "@reservoir0x/relay-sdk";
 import { useEffect, useState } from "react";
 
 export function RelayKitProviderWrapper({ isMainnet, children }: { isMainnet: boolean; children: React.ReactNode }) {

@@ -1,5 +1,6 @@
 import { SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
 import { Account } from "thirdweb/wallets";
+
 import { b3Chain } from "./b3Chain";
 
 export function B3({

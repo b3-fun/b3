@@ -13,6 +13,7 @@ import { cn, truncateAddress } from "@b3dotfun/sdk/shared/utils";
 import { Menu, MenuButton, MenuItems, Transition } from "@headlessui/react";
 import { ReactNode, useEffect } from "react";
 import { useConnectedWallets, useSetActiveWallet, useWalletInfo } from "thirdweb/react";
+
 import { ManageAccountButton } from "../custom/ManageAccountButton";
 
 type SignInProps = {

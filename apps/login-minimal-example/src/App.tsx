@@ -9,6 +9,7 @@ import {
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Account } from "thirdweb/wallets";
+
 import { NFT_CONTRACTS } from "./constants";
 
 export const queryClient = new QueryClient();

@@ -1,4 +1,4 @@
-import { getChainName, Order, OrderStatus, OrderType } from "@b3dotfun/sdk/anyspend";
+import { Order, OrderStatus, OrderType, getChainName } from "@b3dotfun/sdk/anyspend";
 import { Badge, useTokenData } from "@b3dotfun/sdk/global-account/react";
 import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
 import { CheckIcon, Copy, ExternalLink, Loader2 } from "lucide-react";

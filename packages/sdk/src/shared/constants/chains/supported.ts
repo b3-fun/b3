@@ -1,8 +1,8 @@
 import type { ChainNetworks } from "@b3dotfun/sdk/global-account/types/chain-networks";
 import { toThirdwebChain, toViemChain } from "@b3dotfun/sdk/shared/utils/chain-transformers";
 import invariant from "invariant";
-
 import type { Chain as ThirdwebChain } from "thirdweb";
+
 // Import the JSON directly
 // @ts-ignore
 import chainNetworksJSON from "../../generated/chain-networks.json" with { type: "json" };

@@ -1,5 +1,5 @@
 import { Chain } from "thirdweb";
-import { createWallet, SingleStepAuthArgsType, Wallet } from "thirdweb/wallets";
+import { SingleStepAuthArgsType, Wallet, createWallet } from "thirdweb/wallets";
 
 type WalletType = Wallet["id"];
 type StrategyType = SingleStepAuthArgsType["strategy"];

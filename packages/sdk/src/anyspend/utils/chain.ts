@@ -1,16 +1,17 @@
+import { RELAY_SOLANA_MAINNET_CHAIN_ID } from "@b3dotfun/sdk/anyspend/constants";
 import { ChainType, IBaseChain, IEVMChain, ISolanaChain, Token } from "@b3dotfun/sdk/anyspend/types";
 import invariant from "invariant";
 import {
   Account,
   Chain,
+  PublicClient,
+  Transport,
+  WalletClient,
   createPublicClient,
   createWalletClient,
   defineChain,
   http,
   parseEther,
-  PublicClient,
-  Transport,
-  WalletClient,
 } from "viem";
 import {
   arbitrum,
@@ -25,7 +26,7 @@ import {
   polygon,
   sepolia,
 } from "viem/chains";
-import { RELAY_SOLANA_MAINNET_CHAIN_ID } from "@b3dotfun/sdk/anyspend/constants";
+
 import { getAvaxToken, getBnbToken, getEthToken, getPolToken, getSolanaToken } from "./token";
 
 function getCustomEvmChain(chain: Chain, rpcUrl: string): Chain {

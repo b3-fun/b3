@@ -1,5 +1,6 @@
 import { Button, StyleRoot, useAuthentication, useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils";
+
 import { SignInWithB3Props } from "../SignInWithB3/SignInWithB3";
 
 export function ManageAccountButton(props: SignInWithB3Props & { className?: string }) {

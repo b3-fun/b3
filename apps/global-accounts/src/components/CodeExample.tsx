@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
+import tsx from "react-syntax-highlighter/dist/cjs/languages/prism/tsx";
 import SyntaxHighlighter from "react-syntax-highlighter/dist/cjs/prism-light";
 import { oneDark } from "react-syntax-highlighter/dist/cjs/styles/prism";
-import tsx from "react-syntax-highlighter/dist/cjs/languages/prism/tsx";
 
 // Register the language
 SyntaxHighlighter.registerLanguage("tsx", tsx);

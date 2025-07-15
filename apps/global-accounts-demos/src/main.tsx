@@ -1,8 +1,9 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import "./index.css";
+
 import MemoryApp from "./App.tsx";
 import BattleApp from "./BattleApp.tsx";
+import "./index.css";
 
 const AppComponent = process.env.VITE_APP_TYPE === "battle" ? BattleApp : MemoryApp;
 

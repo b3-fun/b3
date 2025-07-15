@@ -1,5 +1,6 @@
 import { defineChain } from "thirdweb";
 import { getWalletBalance } from "thirdweb/wallets";
+
 import { supportedChainNetworks } from "../constants/chains/supported";
 import { client } from "./thirdweb";
 

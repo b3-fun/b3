@@ -1,8 +1,8 @@
-import { Account } from "thirdweb/wallets";
 import { User } from "@b3dotfun/sdk/global-account/types/b3-api.types";
-import { Wallet } from "thirdweb/wallets";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { createContext } from "react";
+import { Account } from "thirdweb/wallets";
+import { Wallet } from "thirdweb/wallets";
 
 /**
  * Context type for B3Provider

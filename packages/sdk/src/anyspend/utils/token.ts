@@ -1,6 +1,6 @@
+import { RELAY_ETH_ADDRESS, RELAY_SOLANA_MAINNET_CHAIN_ID, RELAY_SOL_ADDRESS } from "@b3dotfun/sdk/anyspend/constants";
 import { Token } from "@b3dotfun/sdk/anyspend/types";
 import { avalanche, bsc, polygon } from "viem/chains";
-import { RELAY_ETH_ADDRESS, RELAY_SOL_ADDRESS, RELAY_SOLANA_MAINNET_CHAIN_ID } from "@b3dotfun/sdk/anyspend/constants";
 
 export function isNativeToken(address: string): boolean {
   return address.toLowerCase() === RELAY_ETH_ADDRESS || address.toLowerCase() === RELAY_SOL_ADDRESS;

@@ -1,4 +1,5 @@
 import { Account, privateKeyToAccount } from "thirdweb/wallets";
+
 import { client } from "./thirdweb";
 
 export interface Wallet {

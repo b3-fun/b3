@@ -1,9 +1,10 @@
-import { useAuthentication, useQueryB3, useAuthStore, useB3 } from "@b3dotfun/sdk/global-account/react";
+import { useAuthStore, useAuthentication, useB3, useQueryB3 } from "@b3dotfun/sdk/global-account/react";
 import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { Chain } from "thirdweb";
 import { ConnectEmbed, darkTheme, lightTheme } from "thirdweb/react";
-import { Account, ecosystemWallet, SingleStepAuthArgsType } from "thirdweb/wallets";
+import { Account, SingleStepAuthArgsType, ecosystemWallet } from "thirdweb/wallets";
+
 /**
  * Props for the LoginStep component
  */

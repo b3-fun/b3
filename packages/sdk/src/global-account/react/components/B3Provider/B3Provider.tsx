@@ -2,17 +2,17 @@ import { TooltipProvider } from "@b3dotfun/sdk/global-account/react";
 import { User } from "@b3dotfun/sdk/global-account/types/b3-api.types";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { supportedChains } from "@b3dotfun/sdk/shared/constants/chains/supported";
+import "@reservoir0x/relay-kit-ui/styles.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Toaster } from "sonner";
 import { ThirdwebProvider, useActiveAccount, useConnectedWallets, useSetActiveWallet } from "thirdweb/react";
 import { Account, Wallet } from "thirdweb/wallets";
-import { createConfig, http, WagmiProvider } from "wagmi";
+import { WagmiProvider, createConfig, http } from "wagmi";
+
 import { RelayKitProviderWrapper } from "../RelayKitProviderWrapper";
 import { StyleRoot } from "../StyleRoot";
 import { B3Context, B3ContextType } from "./types";
-
-import "@reservoir0x/relay-kit-ui/styles.css";
 
 /**
  * Default permissions configuration for B3 provider

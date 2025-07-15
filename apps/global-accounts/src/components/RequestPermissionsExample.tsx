@@ -1,3 +1,15 @@
+import { useB3 } from "@b3dotfun/sdk/global-account/react";
+import { RequestPermissionsButton } from "@b3dotfun/sdk/global-account/react";
+import { motion } from "framer-motion";
+import { useState } from "react";
+import tsx from "react-syntax-highlighter/dist/cjs/languages/prism/tsx";
+import SyntaxHighlighter from "react-syntax-highlighter/dist/cjs/prism-light";
+import { oneDark } from "react-syntax-highlighter/dist/cjs/styles/prism";
+import { defineChain } from "thirdweb";
+
+// Import the wallet generator function
+import type { Wallet } from "../utils/wallet";
+
 // Add window.ethereum type declaration at the top of the file
 declare global {
   interface Window {
@@ -8,17 +20,6 @@ declare global {
     };
   }
 }
-
-import { useB3 } from "@b3dotfun/sdk/global-account/react";
-import { motion } from "framer-motion";
-import { useState } from "react";
-import tsx from "react-syntax-highlighter/dist/cjs/languages/prism/tsx";
-import SyntaxHighlighter from "react-syntax-highlighter/dist/cjs/prism-light";
-import { oneDark } from "react-syntax-highlighter/dist/cjs/styles/prism";
-import { RequestPermissionsButton } from "@b3dotfun/sdk/global-account/react";
-import { defineChain } from "thirdweb";
-// Import the wallet generator function
-import type { Wallet } from "../utils/wallet";
 
 // Register the language
 SyntaxHighlighter.registerLanguage("tsx", tsx);

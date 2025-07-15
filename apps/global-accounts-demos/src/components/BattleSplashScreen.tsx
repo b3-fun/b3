@@ -1,8 +1,9 @@
-import styled from "styled-components";
-import { motion } from "framer-motion";
-import { B3 } from "../B3";
 import { useModalStore, useTokensFromAddress } from "@b3dotfun/sdk/global-account/react";
-import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import styled from "styled-components";
+
+import { B3 } from "../B3";
 
 const SplashContainer = styled(motion.div)`
   position: fixed;

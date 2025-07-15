@@ -1,8 +1,8 @@
 import {
   Loading,
+  useAuthStore,
   useAuthentication,
   useHandleConnectWithPrivy,
-  useAuthStore,
 } from "@b3dotfun/sdk/global-account/react";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { useEffect } from "react";

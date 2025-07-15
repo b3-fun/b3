@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import { Token, zToken } from "./token";
 
 export enum NftType {

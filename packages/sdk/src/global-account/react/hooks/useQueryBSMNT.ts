@@ -1,8 +1,8 @@
 import { ServiceTypes } from "@b3dotfun/basement-api";
-import { useCallback, useEffect, useState } from "react";
 // https://feathersjs.com/guides/cli/client#usage
 import app from "@b3dotfun/sdk/global-account/bsmnt";
 import { Paginated } from "@feathersjs/feathers";
+import { useCallback, useEffect, useState } from "react";
 
 // Extract the callable methods from a service
 export type ServiceMethods<T extends keyof ServiceTypes> = {

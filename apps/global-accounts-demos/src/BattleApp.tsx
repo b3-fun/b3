@@ -1,6 +1,7 @@
 import { B3DynamicModal } from "@b3dotfun/sdk/global-account/react";
 import { useState } from "react";
 import { Account } from "thirdweb/wallets";
+
 import "./App.css";
 import { B3 } from "./B3";
 import { BattleGame } from "./components/BattleGame";

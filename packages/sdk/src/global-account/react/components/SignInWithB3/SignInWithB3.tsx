@@ -8,6 +8,7 @@ import {
 } from "@b3dotfun/sdk/global-account/react";
 import { ReactNode, useEffect } from "react";
 import { useActiveAccount } from "thirdweb/react";
+
 import { ManageAccountButton } from "../custom/ManageAccountButton";
 import { Loading } from "../ui/Loading";
 
