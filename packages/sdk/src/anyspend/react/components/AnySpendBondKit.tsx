@@ -107,13 +107,6 @@ export function AnySpendBondKit({
     isLoading,
   } = useTokenData(baseMainnet.id, "0x0000000000000000000000000000000000000000");
 
-  // Fetch initial quote if ethAmount is provided
-  useEffect(() => {
-    if (initialEthAmount && bondkitTokenClient) {
-      debouncedGetQuote(initialEthAmount);
-    }
-  }, [initialEthAmount, bondkitTokenClient, debouncedGetQuote]);
-
   // Convert token data to AnySpend Token type
   const dstToken = useMemo(() => {
     if (!tokenData) return null;
@@ -152,6 +145,12 @@ export function AnySpendBondKit({
       }, 500),
     [bondkitTokenClient],
   );
+  // Fetch initial quote if ethAmount is provided
+  useEffect(() => {
+    if (initialEthAmount && bondkitTokenClient) {
+      debouncedGetQuote(initialEthAmount);
+    }
+  }, [initialEthAmount, bondkitTokenClient, debouncedGetQuote]);
 
   const validateAndSetAmount = (value: string) => {
     // Allow empty input
