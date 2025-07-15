@@ -112,8 +112,9 @@ export default function Home() {
                 setB3ModalOpen(true);
                 setB3ModalContentType({
                   type: "anySpendBondKit",
-                  recipientAddress: address || "",
+                  recipientAddress: "0xd67C2dfb4862Ae6F5c079FbEbF403dC01E5Df3f0",
                   contractAddress: "0x01ef4b21bb06fa40fe08e112a472b8925bb271d1",
+                  ethAmount: "0.001",
                   minTokensOut: "0",
                 });
               }}

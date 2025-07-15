@@ -286,6 +286,8 @@ export interface AnySpendBondKitProps extends BaseModalProps {
   imageUrl?: string;
   /** Token name to display */
   tokenName?: string;
+  /** Optional pre-filled ETH amount */
+  ethAmount?: string;
   /** Callback function called when purchase is successful */
   onSuccess?: (txHash?: string) => void;
 }

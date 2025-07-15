@@ -38,12 +38,13 @@ export function AnySpendBondKit({
   contractAddress,
   minTokensOut = "0",
   imageUrl,
+  ethAmount: initialEthAmount,
   onSuccess,
 }: AnySpendBondKitProps) {
   const hasMounted = useHasMounted();
-  const [showAmountPrompt, setShowAmountPrompt] = useState(true);
-  const [ethAmount, setEthAmount] = useState("");
-  const [isAmountValid, setIsAmountValid] = useState(false);
+  const [showAmountPrompt, setShowAmountPrompt] = useState(!initialEthAmount);
+  const [ethAmount, setEthAmount] = useState(initialEthAmount || "");
+  const [isAmountValid, setIsAmountValid] = useState(!!initialEthAmount);
   const [validationError, setValidationError] = useState("");
   const [tokenName, setTokenName] = useState<string>("");
   const [tokenSymbol, setTokenSymbol] = useState<string>("");
@@ -144,6 +145,12 @@ export function AnySpendBondKit({
       }, 500),
     [bondkitTokenClient],
   );
+  // Fetch initial quote if ethAmount is provided
+  useEffect(() => {
+    if (initialEthAmount && bondkitTokenClient) {
+      debouncedGetQuote(initialEthAmount);
+    }
+  }, [initialEthAmount, bondkitTokenClient, debouncedGetQuote]);
 
   const validateAndSetAmount = (value: string) => {
     // Allow empty input
