@@ -1,8 +1,30 @@
 import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
 import { GetOrderAndTxsResponse } from "@b3dotfun/sdk/anyspend/types";
 import { useQuery } from "@tanstack/react-query";
-import isEqual from "lodash/isEqual.js";
 import { useCallback, useMemo } from "react";
+
+// Custom deep equality function that handles BigInt
+function customDeepEqual(oldData: any, newData: any): boolean {
+  // Handle BigInt comparison
+  if (typeof oldData === "bigint" && typeof newData === "bigint") {
+    return oldData === newData;
+  }
+
+  // Handle arrays
+  if (Array.isArray(oldData) && Array.isArray(newData)) {
+    return oldData.length === newData.length && oldData.every((item, index) => customDeepEqual(item, newData[index]));
+  }
+
+  // Handle objects
+  if (oldData && newData && typeof oldData === "object" && typeof newData === "object") {
+    const keys1 = Object.keys(oldData);
+    const keys2 = Object.keys(newData);
+    return keys1.length === keys2.length && keys1.every(key => customDeepEqual(oldData[key], newData[key]));
+  }
+
+  // Handle primitive values
+  return oldData === newData;
+}
 
 // Hook to fetch and auto-refresh order status and transaction details
 export function useAnyspendOrderAndTransactions(isMainnet: boolean, orderId: string | undefined) {
@@ -13,13 +35,13 @@ export function useAnyspendOrderAndTransactions(isMainnet: boolean, orderId: str
 
   const { data, isLoading, refetch, error } = useQuery<GetOrderAndTxsResponse>({
     queryKey: ["getAnyspendOrderAndTransactions", orderId],
-    queryFn: () => anyspendService.getOrderAndTransactions(isMainnet, orderId),
-    enabled: Boolean(orderId),
+    queryFn: () => anyspendService.getOrderAndTransactions(isMainnet, orderId!),
+    enabled: !!orderId,
     refetchInterval: 3000,
     staleTime: 1000,
     select: selectFn,
     structuralSharing: (oldData, newData) => {
-      if (isEqual(oldData, newData)) return oldData;
+      if (customDeepEqual(oldData, newData)) return oldData;
       return newData;
     },
   });
