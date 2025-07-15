@@ -8,16 +8,19 @@ export const zGetOrderAndTransactionsRequest = z.object({
   }),
 });
 
+export const zGetOrderAndTxsResponseData = z.object({
+  order: zOrder,
+  depositTxs: z.array(zDepositTransaction).nullable(),
+  relayTx: zRelayTransaction.nullable(),
+  executeTx: zExecuteTransaction.nullable(),
+  refundTxs: z.array(zRefundTransaction).nullable(),
+});
+export type GetOrderAndTxsResponseData = z.infer<typeof zGetOrderAndTxsResponseData>;
+
 export const zGetOrderAndTxsResponse = z.object({
   success: z.boolean(),
   message: z.string(),
-  data: z.object({
-    order: zOrder,
-    depositTxs: z.array(zDepositTransaction).nullable(),
-    relayTx: zRelayTransaction.nullable(),
-    executeTx: zExecuteTransaction.nullable(),
-    refundTxs: z.array(zRefundTransaction).nullable(),
-  }),
+  data: zGetOrderAndTxsResponseData,
   statusCode: z.number(),
 });
 export type GetOrderAndTxsResponse = z.infer<typeof zGetOrderAndTxsResponse>;
