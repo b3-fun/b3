@@ -344,7 +344,7 @@ export function AnySpendBondKit({
     functionName: "buyFor",
     args: [recipientAddress as `0x${string}`, BigInt(minTokensOut)],
   });
-  
+
   // Ensure ETH amount is valid before proceeding
   const ethValue = parseEther(ethAmount);
   if (ethValue <= 0n) {
