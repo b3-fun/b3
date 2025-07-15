@@ -172,23 +172,6 @@ export function AnySpendBondKit({
     }
 
     setEthAmount(value);
-
-    try {
-      const parsedAmount = parseEther(value);
-      if (parsedAmount <= 0n) {
-        setIsAmountValid(false);
-        setValidationError("Amount must be greater than 0");
-        return;
-      }
-
-      setIsAmountValid(true);
-      setValidationError("");
-      debouncedGetQuote(value);
-    } catch (error) {
-      console.error("Error validating amount:", error);
-      setIsAmountValid(false);
-      setValidationError("Please enter a valid amount");
-    }
   };
 
   const header = () => (
