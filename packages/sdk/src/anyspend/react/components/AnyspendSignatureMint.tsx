@@ -135,7 +135,6 @@ export function AnyspendSignatureMint({
   const encodedData = generateEncodedDataForSignatureMint(signatureData);
   const price = parseEther(signatureData.payload.price?.toString() || "0");
 
-  console.log("price", price.toString());
   return (
     <AnySpendCustom
       isMainnet={true}

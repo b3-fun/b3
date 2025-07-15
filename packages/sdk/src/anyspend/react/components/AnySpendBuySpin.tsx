@@ -89,8 +89,6 @@ type WheelStatus = "not_started" | "active" | "ended" | "sold_out";
 
 function getWheelStatus(wheelInfo: WheelInfo): WheelStatus {
   const now = BigInt(Math.floor(Date.now() / 1000));
-  console.log("@@anyspend-buy-spin:now:", now);
-  console.log("@@anyspend-buy-spin:wheelInfo:", wheelInfo);
 
   if (now < wheelInfo.startTime_) {
     return "not_started";
@@ -109,7 +107,6 @@ function getWheelStatus(wheelInfo: WheelInfo): WheelStatus {
 
 function generateEncodedDataForBuyEntriesAndSpin(user: string, quantity: string): string {
   invariant(BigInt(quantity) > 0, "Quantity must be greater than zero");
-  console.log("@@anyspend-buy-spin:encoded-data:", { user, quantity });
   const encodedData = encodeFunctionData({
     abi: SPIN_WHEEL_ABI,
     functionName: "buyEntriesAndSpin",
@@ -225,8 +222,6 @@ export function AnySpendBuySpin({
     try {
       setIsLoadingConfig(true);
       setConfigError("");
-
-      console.log("@@anyspend-buy-spin:fetch-config:", { spinwheelContractAddress, chainId });
 
       const [config, entryModuleAddress, wheelInfo] = await Promise.all([
         basePublicClient.readContract({

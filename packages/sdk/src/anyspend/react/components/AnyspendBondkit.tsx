@@ -165,6 +165,12 @@ export function AnySpendBondKit({
       return;
     }
 
+    // Prevent more than 18 decimal places (ETH precision)
+    const parts = value.split(".");
+    if (parts[1] && parts[1].length > 18) {
+      return;
+    }
+
     setEthAmount(value);
 
     try {
@@ -179,6 +185,7 @@ export function AnySpendBondKit({
       setValidationError("");
       debouncedGetQuote(value);
     } catch (error) {
+      console.error("Error validating amount:", error);
       setIsAmountValid(false);
       setValidationError("Please enter a valid amount");
     }
@@ -337,7 +344,13 @@ export function AnySpendBondKit({
     functionName: "buyFor",
     args: [recipientAddress as `0x${string}`, BigInt(minTokensOut)],
   });
-  console.log("parseEther(ethAmount).toString()}", parseEther(ethAmount).toString());
+  
+  // Ensure ETH amount is valid before proceeding
+  const ethValue = parseEther(ethAmount);
+  if (ethValue <= 0n) {
+    console.error("Invalid ETH amount for buyFor:", ethAmount);
+    return null;
+  }
 
   return (
     <AnySpendCustom
@@ -347,7 +360,7 @@ export function AnySpendBondKit({
       orderType={OrderType.Custom}
       dstChainId={baseMainnet.id}
       dstToken={dstToken}
-      dstAmount={parseEther(ethAmount).toString()}
+      dstAmount={ethValue.toString()}
       contractAddress={contractAddress}
       encodedData={encodedData}
       metadata={{
