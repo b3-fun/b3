@@ -328,13 +328,6 @@ export function AnySpendBondKit({
     args: [recipientAddress as `0x${string}`, BigInt(minTokensOut)],
   });
 
-  // Ensure ETH amount is valid before proceeding
-  const ethValue = parseEther(ethAmount);
-  if (ethValue <= 0n) {
-    console.error("Invalid ETH amount for buyFor:", ethAmount);
-    return null;
-  }
-
   return (
     <AnySpendCustom
       isMainnet={true}
@@ -343,7 +336,7 @@ export function AnySpendBondKit({
       orderType={OrderType.Custom}
       dstChainId={baseMainnet.id}
       dstToken={dstToken}
-      dstAmount={ethValue.toString()}
+      dstAmount={parseEther(ethAmount).toString()}
       contractAddress={contractAddress}
       encodedData={encodedData}
       metadata={{
