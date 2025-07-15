@@ -1,7 +1,7 @@
 "use client";
 
-import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { TransitionPanel } from "@b3dotfun/sdk/global-account/react";
+import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { AnimatePresence, motion } from "framer-motion";
 import React, { ReactNode, createContext, useContext } from "react";
 
@@ -67,39 +67,42 @@ interface TabTriggerProps {
   disabled?: boolean;
 }
 
-export function TabTrigger({ value, children, icon, disabled = false }: TabTriggerProps) {
-  const context = useContext(TabsContext);
-  if (!context) throw new Error("TabTrigger must be used within Tabs");
+export const TabTrigger = React.forwardRef<HTMLButtonElement, TabTriggerProps>(
+  ({ value, children, icon, disabled = false }, ref) => {
+    const context = useContext(TabsContext);
+    if (!context) throw new Error("TabTrigger must be used within Tabs");
 
-  const { selectedTab, onTabChange } = context;
-  const isSelected = selectedTab === value;
+    const { selectedTab, onTabChange } = context;
+    const isSelected = selectedTab === value;
 
-  return (
-    <button
-      role="tab"
-      aria-selected={isSelected}
-      aria-controls={`panel-${value}`}
-      id={`tab-${value}`}
-      onClick={() => onTabChange(value)}
-      className={`relative rounded-full px-4 py-2 text-sm text-white transition-all duration-200 hover:text-white focus:outline-none`}
-      disabled={disabled}
-    >
-      <span
-        className={`${isSelected ? "opacity-100" : "opacity-50"} relative z-10 flex items-center gap-2 font-semibold uppercase`}
+    return (
+      <button
+        ref={ref}
+        role="tab"
+        aria-selected={isSelected}
+        aria-controls={`panel-${value}`}
+        id={`tab-${value}`}
+        onClick={() => onTabChange(value)}
+        className={`relative rounded-full px-4 py-2 text-sm text-white transition-all duration-200 hover:text-white focus:outline-none`}
+        disabled={disabled}
       >
-        {children}
-        {icon}
-      </span>
-      {isSelected && (
-        <motion.span
-          layoutId="activeTab"
-          transition={{ type: "spring", duration: 0.4 }}
-          className="from-as-light-brand to-as-brand/10 border-as-brand/30 absolute inset-0 z-0 rounded-full border border-t-white/15 bg-gradient-to-b shadow-lg"
-        />
-      )}
-    </button>
-  );
-}
+        <span
+          className={`${isSelected ? "opacity-100" : "opacity-50"} relative z-10 flex items-center gap-2 font-semibold uppercase`}
+        >
+          {children}
+          {icon}
+        </span>
+        {isSelected && (
+          <motion.span
+            layoutId="activeTab"
+            transition={{ type: "spring", duration: 0.4 }}
+            className="from-as-light-brand to-as-brand/10 border-as-brand/30 absolute inset-0 z-0 rounded-full border border-t-white/15 bg-gradient-to-b shadow-lg"
+          />
+        )}
+      </button>
+    );
+  },
+);
 
 interface TabsContentProps {
   value: string;

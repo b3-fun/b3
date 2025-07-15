@@ -155,8 +155,10 @@ export function AnySpendBondKit({
       return;
     }
 
-    // Only allow numbers and one decimal point
-    if (!/^\d*\.?\d*$/.test(value)) {
+    // Only allow valid number format (no leading zeros unless decimal)
+    if (!/^(0|[1-9]\d*)?\.?\d*$/.test(value)) {
+      setIsAmountValid(false);
+      setValidationError("Please enter a valid number");
       return;
     }
 
@@ -171,14 +173,33 @@ export function AnySpendBondKit({
       return;
     }
 
-    setEthAmount(value);
+    // Clean the input - remove leading zeros if not decimal
+    const cleanedValue = value.startsWith("0") && !value.startsWith("0.") ? value.replace(/^0+/, "0") : value;
+    setEthAmount(cleanedValue);
+
+    try {
+      const parsedAmount = parseEther(cleanedValue);
+      if (parsedAmount <= BigInt(0)) {
+        setIsAmountValid(false);
+        setValidationError("Amount must be greater than 0");
+        return;
+      }
+
+      setIsAmountValid(true);
+      setValidationError("");
+      debouncedGetQuote(cleanedValue);
+    } catch (error) {
+      console.error("Error validating amount:", error);
+      setIsAmountValid(false);
+      setValidationError("Please enter a valid amount");
+    }
   };
 
   const header = () => (
     <div className="w-full px-6 py-4">
       <div className="flex w-full flex-col items-center space-y-6">
         <h2 className="text-[28px] font-bold">
-          {tokenName} ({tokenSymbol})
+          Buy {tokenName} ({tokenSymbol})
         </h2>
         <div className="flex w-full flex-col items-center space-y-2">
           <span className="text-[28px] font-bold">{ethAmount} ETH</span>
@@ -267,7 +288,7 @@ export function AnySpendBondKit({
           >
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <p className="text-as-primary/70 text-sm font-medium">Amount in ETH</p>
+                <p className="text-as-primary/70 text-sm font-medium">ETH Amount</p>
               </div>
 
               <div className="relative">

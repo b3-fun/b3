@@ -1,7 +1,7 @@
 "use client";
 
 import { B3_TOKEN, NftType, USDC_BASE } from "@b3dotfun/sdk/anyspend";
-import { useModalStore } from "@b3dotfun/sdk/global-account/react";
+import { useAccountWallet, useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { useState } from "react";
 import { base } from "viem/chains";
 import { SignInButton } from "./components/SignInButton";
@@ -11,6 +11,7 @@ export default function Home() {
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
   const [isSignatureMintOpen, setIsSignatureMintOpen] = useState(false);
+  const { address } = useAccountWallet();
 
   const handleMint = async () => {
     // Generate random token ID between 0 and 6
@@ -111,7 +112,7 @@ export default function Home() {
                 setB3ModalOpen(true);
                 setB3ModalContentType({
                   type: "anySpendBondKit",
-                  recipientAddress: "0x0000000000000000000000000000000000000000",
+                  recipientAddress: address || "",
                   contractAddress: "0x01ef4b21bb06fa40fe08e112a472b8925bb271d1",
                   minTokensOut: "0",
                 });
