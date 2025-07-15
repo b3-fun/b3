@@ -1,5 +1,4 @@
 // import { RelayKitProviderWrapper } from "./RelayKitProviderWrapper";
-
 import { User } from "@b3dotfun/sdk/global-account/types/b3-api.types";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
