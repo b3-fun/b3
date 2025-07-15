@@ -38,7 +38,7 @@ export function B3DynamicModal() {
       "anySpendOrderHistory",
       "signInWithB3",
       "anySpendSignatureMint",
-      "AnySpendBondKit",
+      "anySpendBondKit",
     ].find(type => contentType?.type === type)
   ) {
     contentClass += " max-h-[90dvh] overflow-y-auto no-scrollbar w-full";
@@ -52,7 +52,7 @@ export function B3DynamicModal() {
       "anySpendStakeB3",
       "anySpendBuySpin",
       "anySpendSignatureMint",
-      "AnySpendBondKit",
+      "anySpendBondKit",
     ].find(type => contentType?.type === type)
   ) {
     // Due to the dynamic of (Pay with crypto),(Pay with fiat), we want the height fixed to 90dvh but still scrollable.
