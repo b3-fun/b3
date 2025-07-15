@@ -58,10 +58,11 @@ export function AnyspendSignatureMint({
   const hasMounted = useHasMounted();
 
   // Get token data
-  const { data: tokenData, isError: isTokenError, isLoading } = useTokenData(
-    signatureData.collection.chainId,
-    signatureData.collection.signatureRequestBody?.currency,
-  );
+  const {
+    data: tokenData,
+    isError: isTokenError,
+    isLoading,
+  } = useTokenData(signatureData.collection.chainId, signatureData.collection.signatureRequestBody?.currency);
 
   // Convert token data to AnySpend Token type
   const dstToken = useMemo(() => {
@@ -134,6 +135,7 @@ export function AnyspendSignatureMint({
   const encodedData = generateEncodedDataForSignatureMint(signatureData);
   const price = parseEther(signatureData.payload.price?.toString() || "0");
 
+  console.log("price", price.toString());
   return (
     <AnySpendCustom
       isMainnet={true}

@@ -1,3 +1,4 @@
+import { BondkitToken } from "@b3dotfun/bondkit";
 import { OrderType } from "@b3dotfun/sdk/anyspend";
 import {
   Button,
@@ -11,16 +12,12 @@ import { AnySpendBondKitProps } from "@b3dotfun/sdk/global-account/react/stores/
 import { baseMainnet } from "@b3dotfun/sdk/shared/constants/chains/supported";
 import { motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
-import { createPublicClient, encodeFunctionData, http, parseEther, formatEther } from "viem";
+import { createPublicClient, encodeFunctionData, formatEther, http, parseEther } from "viem";
 import { ABI_bondKit } from "../../abis/bondKit";
 import { AnySpendCustom } from "./AnySpendCustom";
-import { BondkitToken } from "@b3dotfun/bondkit";
 
 // Debounce utility function
-function debounce<T extends (...args: any[]) => any>(
-  func: T,
-  wait: number
-): (...args: Parameters<T>) => void {
+function debounce<T extends (...args: any[]) => any>(func: T, wait: number): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout;
   return (...args: Parameters<T>) => {
     clearTimeout(timeout);
@@ -103,10 +100,11 @@ export function AnySpendBondKit({
   }, [contractAddress, basePublicClient]);
 
   // Get native token data for the chain
-  const { data: tokenData, isError: isTokenError, isLoading } = useTokenData(
-    baseMainnet.id,
-    "0x0000000000000000000000000000000000000000",
-  );
+  const {
+    data: tokenData,
+    isError: isTokenError,
+    isLoading,
+  } = useTokenData(baseMainnet.id, "0x0000000000000000000000000000000000000000");
 
   // Convert token data to AnySpend Token type
   const dstToken = useMemo(() => {
@@ -144,7 +142,7 @@ export function AnySpendBondKit({
           setIsLoadingQuote(false);
         }
       }, 500),
-    [bondkitTokenClient]
+    [bondkitTokenClient],
   );
 
   const validateAndSetAmount = (value: string) => {
@@ -193,9 +191,7 @@ export function AnySpendBondKit({
           {tokenName} ({tokenSymbol})
         </h2>
         <div className="flex w-full flex-col items-center space-y-2">
-          <span className="text-[28px] font-bold">
-            {ethAmount} ETH
-          </span>
+          <span className="text-[28px] font-bold">{ethAmount} ETH</span>
           {quote && (
             <span className="text-lg">
               ≈ {formatNumberWithCommas(parseFloat(quote).toFixed(4))} {tokenSymbol}
@@ -311,7 +307,9 @@ export function AnySpendBondKit({
                 ) : quote ? (
                   <div className="mt-2 flex items-center justify-between">
                     <span className="text-as-primary/70 text-sm font-medium">You'll receive:</span>
-                    <span className="text-as-primary text-sm font-medium">≈ {formatNumberWithCommas(parseFloat(quote).toFixed(4))} {tokenSymbol}</span>
+                    <span className="text-as-primary text-sm font-medium">
+                      ≈ {formatNumberWithCommas(parseFloat(quote).toFixed(4))} {tokenSymbol}
+                    </span>
                   </div>
                 ) : null}
               </div>
@@ -339,6 +337,7 @@ export function AnySpendBondKit({
     functionName: "buyFor",
     args: [recipientAddress as `0x${string}`, BigInt(minTokensOut)],
   });
+  console.log("parseEther(ethAmount).toString()}", parseEther(ethAmount).toString());
 
   return (
     <AnySpendCustom

@@ -2,8 +2,7 @@ import { AnySpendBondKit } from "@b3dotfun/sdk/anyspend/react/components";
 import { useAccountWallet } from "@b3dotfun/sdk/global-account/react";
 import { useState } from "react";
 
-const bondKit_CONTRACT = "0x01ef4b21bb06fa40fe08e112a472b8925bb271d1";
-const BASE_CHAIN_ID = 8453;
+const BondkitContract = "0x01ef4b21bb06fa40fe08e112a472b8925bb271d1";
 
 export function bondKitDemo() {
   const { address } = useAccountWallet();
@@ -32,7 +31,7 @@ export function bondKitDemo() {
         <AnySpendBondKit
           type="anySpendBondKit"
           recipientAddress={address}
-          contractAddress={bondKit_CONTRACT}
+          contractAddress={BondkitContract}
           tokenName="Demo bondKit Token"
           mode="modal"
           onSuccess={hash => setTxHash(hash)}
@@ -45,7 +44,7 @@ export function bondKitDemo() {
         <AnySpendBondKit
           type="anySpendBondKit"
           recipientAddress={address}
-          contractAddress={bondKit_CONTRACT}
+          contractAddress={BondkitContract}
           tokenName="Demo bondKit Token"
           mode="modal"
           onSuccess={hash => setTxHash(hash)}
