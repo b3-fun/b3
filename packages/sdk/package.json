@@ -284,6 +284,7 @@
     "eslint-plugin-react-hooks": "4.6.2",
     "eslint-plugin-tailwindcss": "3.18.0",
     "framer-motion": "12.6.3",
+    "openapi-typescript": "7.4.2",
     "postcss": "8.5.3",
     "postcss-cli": "11.0.1",
     "postcss-prefix-selector": "^2.1.1",
