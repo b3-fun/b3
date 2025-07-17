@@ -1,3 +1,6 @@
+// Types
+export * from "./types/api";
+
 // Utils
 export * from "./utils/address";
 export * from "./utils/chain";
