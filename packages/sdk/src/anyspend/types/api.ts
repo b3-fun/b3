@@ -79,31 +79,6 @@ export interface paths {
       };
     };
   };
-  "/health-check": {
-    /**
-     * Health check
-     * @description Returns the health status of the AnySpend service
-     */
-    get: {
-      responses: {
-        /** @description Service is healthy */
-        200: {
-          content: {
-            "application/json": {
-              /** @example true */
-              success: boolean;
-              /** @example Service is healthy */
-              message: string;
-              /** @example null */
-              data?: Record<string, never> | null;
-              /** @example 200 */
-              statusCode: number;
-            };
-          };
-        };
-      };
-    };
-  };
   "/onramp/coinbase/options": {
     /**
      * Get Coinbase onramp options
@@ -1606,6 +1581,11 @@ export interface components {
        */
       createdAt: number;
     };
+    /**
+     * @description Relay transaction status
+     * @enum {string}
+     */
+    RelayStatus: "pending" | "success" | "failure" | "refund" | "delayed" | "waiting";
     /** @description Cross-chain relay transaction */
     RelayTx: {
       /**
@@ -1624,12 +1604,8 @@ export interface components {
        * @example 0x9df917e14bb089f74763d1d2662761d75c97a5a068b8a9e411c3d384c9c40d19
        */
       txHash: string;
-      /**
-       * @description Relay transaction status
-       * @example success
-       * @enum {string}
-       */
-      status: "pending" | "success" | "failure" | "refund" | "delayed" | "waiting";
+      /** @example success */
+      status: components["schemas"]["RelayStatus"];
       /**
        * @description Relay timestamp
        * @example 1752505817654
