@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AnySpend Demo JS</title>
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>AnySpend Swap Demo</h1>
+      <p>Get quotes for ETH to USDC swaps on Base using the AnySpend API</p>
+
+      <form id="quoteForm" class="quote-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="srcChain">Source Chain ID:</label>
+            <input type="number" id="srcChain" name="srcChain" value="8453" readonly />
+            <small>Base</small>
+          </div>
+
+          <div class="form-group">
+            <label for="dstChain">Destination Chain ID:</label>
+            <input type="number" id="dstChain" name="dstChain" value="8453" readonly />
+            <small>Base</small>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="srcTokenAddress">Source Token Address:</label>
+          <input
+            type="text"
+            id="srcTokenAddress"
+            name="srcTokenAddress"
+            value="0x0000000000000000000000000000000000000000"
+            readonly
+          />
+          <small>ETH on Base (Native Token)</small>
+        </div>
+
+        <div class="form-group">
+          <label for="dstTokenAddress">Destination Token Address:</label>
+          <input
+            type="text"
+            id="dstTokenAddress"
+            name="dstTokenAddress"
+            value="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+            readonly
+          />
+          <small>USDC on Base</small>
+        </div>
+
+        <div class="form-group">
+          <label for="recipientAddress">Recipient Address:</label>
+          <input
+            type="text"
+            id="recipientAddress"
+            name="recipientAddress"
+            required
+            value="0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1"
+            placeholder="0x..."
+          />
+          <small>Address that will receive the USDC</small>
+        </div>
+
+        <div class="form-group">
+          <label for="srcAmount">Source Amount (ETH):</label>
+          <input
+            type="number"
+            id="srcAmount"
+            name="srcAmount"
+            required
+            value="0.00001"
+            step="0.00001"
+            min="0.00001"
+            max="1000"
+          />
+          <small>Amount in ETH on Base (will be converted to wei)</small>
+        </div>
+
+        <button type="submit" id="getQuoteBtn" class="get-quote-btn">Get Quote</button>
+      </form>
+
+      <div id="loading" class="loading hidden"></div>
+      <div id="error" class="error hidden"></div>
+      <div id="result" class="result hidden"></div>
+    </div>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>
