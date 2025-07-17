@@ -1,6 +1,6 @@
 "use client";
 
-import { B3_TOKEN, NftType, USDC_BASE } from "@b3dotfun/sdk/anyspend";
+import { B3_TOKEN, USDC_BASE } from "@b3dotfun/sdk/anyspend";
 import { useAccountWallet, useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { useState } from "react";
 import { base } from "viem/chains";
@@ -11,7 +11,6 @@ export default function Home() {
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
   const [isSignatureMintOpen, setIsSignatureMintOpen] = useState(false);
-  const { address } = useAccountWallet();
 
   const handleMint = async () => {
     // Generate random token ID between 0 and 6
@@ -30,7 +29,7 @@ export default function Home() {
         name: "Mystery B3kemon",
         description: "Summon a mysterious B3kemon creature!",
         tokenId: randomTokenId,
-        type: NftType.ERC1155,
+        type: "erc1155",
       },
     });
   };

@@ -63,7 +63,7 @@ export function useAccountWallet(): {
       : "https://gradvatar.com/0x0000000000000000000000000000000000000000"; // show smart wallet of eoa wallet is gradvatar
 
   const { data: profileData } = useBsmntProfile({ address: account?.address });
-  const ensName = profileData?.username?.replaceAll(".b3.fun", "");
+  const ensName = profileData?.username?.replace(/\.b3\.fun/g, "");
   const avatarUrl = profileData?.avatar;
 
   const res = useMemo(

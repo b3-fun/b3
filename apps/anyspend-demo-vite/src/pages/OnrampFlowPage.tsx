@@ -1,4 +1,5 @@
-import { OrderType, Token, TradeType, USDC_BASE } from "@b3dotfun/sdk/anyspend";
+import { USDC_BASE } from "@b3dotfun/sdk/anyspend";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { useAnyspendQuote, WebviewOnrampPayment } from "@b3dotfun/sdk/anyspend/react";
 import { useSearchParamsSSR, useTokenData } from "@b3dotfun/sdk/global-account/react";
 import { useMemo } from "react";
@@ -32,17 +33,17 @@ export default function OnrampFlowPage() {
       },
     }),
     [tokenMetadata, destinationTokenChainId, destinationTokenAddress],
-  ) as Token;
+  ) as components["schemas"]["Token"];
 
   // Get quote for the transaction
   const { anyspendQuote } = useAnyspendQuote(true, {
-    type: OrderType.Swap,
+    type: "swap",
     srcChain: 8453, // Base chain ID
     srcTokenAddress: USDC_BASE.address,
     dstChain: chainId,
     dstTokenAddress: destinationTokenAddress,
     amount: parseUnits(amount || "0", USDC_BASE.decimals).toString(),
-    tradeType: TradeType.EXACT_INPUT,
+    tradeType: "EXACT_INPUT",
   });
 
   // Handle order creation

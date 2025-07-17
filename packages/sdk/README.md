@@ -412,7 +412,6 @@ The SDK components support custom styling through CSS classes and CSS-in-JS solu
 All modules provide full TypeScript support with comprehensive type definitions:
 
 ```typescript
-import type { Token } from "@b3dotfun/sdk/anyspend/types";
 import type { GlobalAccount } from "@b3dotfun/sdk/global-account/types";
 ```
 

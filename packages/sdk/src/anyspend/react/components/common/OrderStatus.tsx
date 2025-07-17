@@ -1,10 +1,11 @@
-import { Order, OrderStatus as OrderStatusEnum, getStatusDisplay } from "@b3dotfun/sdk/anyspend";
+import { getStatusDisplay } from "@b3dotfun/sdk/anyspend";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { Badge, TextShimmer } from "@b3dotfun/sdk/global-account/react";
 import { Check, Loader2 } from "lucide-react";
 import { memo } from "react";
 
-export const OrderStatus = memo(function OrderStatus({ order }: { order: Order }) {
-  const isComplete = order.status === OrderStatusEnum.Executed;
+export const OrderStatus = memo(function OrderStatus({ order }: { order: components["schemas"]["Order"] }) {
+  const isComplete = order.status === "executed";
   const { text, status: displayStatus } = getStatusDisplay(order);
 
   return (

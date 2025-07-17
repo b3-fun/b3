@@ -11,7 +11,7 @@ export function useCoinbaseOnrampOptions(isMainnet: boolean, country?: string) {
 
   return useMemo(
     () => ({
-      coinbaseOnrampOptions: data,
+      coinbaseOnrampOptions: data?.data,
       isLoadingCoinbaseOnrampOptions: isLoading,
       coinbaseOnrampOptionsError: error,
       refetchCoinbaseOnrampOptions: refetch,

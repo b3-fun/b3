@@ -1,6 +1,6 @@
 "use client";
 
-import { ALL_CHAINS, RELAY_ETH_ADDRESS, RELAY_SOLANA_MAINNET_CHAIN_ID, Token } from "@b3dotfun/sdk/anyspend";
+import { ALL_CHAINS, RELAY_ETH_ADDRESS, RELAY_SOLANA_MAINNET_CHAIN_ID } from "@b3dotfun/sdk/anyspend";
 import { Button, useAccountWallet, useTokenBalancesByChain } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
@@ -9,6 +9,7 @@ import { TokenSelector } from "@reservoir0x/relay-kit-ui";
 import { CheckCircle2, ChevronsUpDown } from "lucide-react";
 import { useMemo } from "react";
 import { ChainTokenIcon } from "./ChainTokenIcon";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
 
 export function OrderToken({
   context,
@@ -22,8 +23,8 @@ export function OrderToken({
 }: {
   context: "from" | "to";
   address: string | undefined;
-  token: Token;
-  setToken: (token: Token) => void;
+  token: components["schemas"]["Token"];
+  setToken: (token: components["schemas"]["Token"]) => void;
   chainId: number;
   setChainId: (chainId: number) => void;
   requiredAmount: bigint | undefined;

@@ -1,4 +1,4 @@
-import { B3_TOKEN, NftType, USDC_BASE } from "@b3dotfun/sdk/anyspend";
+import { B3_TOKEN, USDC_BASE } from "@b3dotfun/sdk/anyspend";
 import { useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { base } from "viem/chains";
 
@@ -23,7 +23,7 @@ export default function HomePage() {
         name: "Mystery B3kemon",
         description: "Summon a mysterious B3kemon creature!",
         tokenId: randomTokenId,
-        type: NftType.ERC1155,
+        type: "erc1155",
       },
       recipientAddress: "0xD32b34E2E55c7005b6506370857bdE4cFD057fC4",
     });

@@ -4,10 +4,10 @@ The fastest way to accept crypto payments and onboard users with zero friction
 
 AnySpend gives you everything you need to add instant crypto onramps and checkout to your product. Let your users onramp from fiat instantly and pay using any token on any chain, all in one seamless experience.
 
-- 🚀 **Instant Onramp:** Users can fund their wallet directly from fiat and start spending in your app right away  
-- 💸 **Pay Anyway:** Accept payments in any token across any chain with no bridges, swapping, or network switching required  
-- 🧩 **One SDK, Any Flow:** Easily add crypto payments and onramps to any business model or checkout flow  
-- 👛 **Unified Wallet View:** Users see and spend their balances from all chains in one place  
+- 🚀 **Instant Onramp:** Users can fund their wallet directly from fiat and start spending in your app right away
+- 💸 **Pay Anyway:** Accept payments in any token across any chain with no bridges, swapping, or network switching required
+- 🧩 **One SDK, Any Flow:** Easily add crypto payments and onramps to any business model or checkout flow
+- 👛 **Unified Wallet View:** Users see and spend their balances from all chains in one place
 
 AnySpend makes it simple to reach more users, increase conversions, and future proof your business with modern crypto payments.
 
@@ -76,11 +76,11 @@ function NFTMinting() {
       address: "0x0000000000000000000000000000000000000000", // ETH
       name: "Ether",
       symbol: "ETH",
-      decimals: 18
+      decimals: 18,
     },
     name: "Cool NFT",
     description: "A really cool NFT",
-    imageUrl: "https://example.com/nft.png"
+    imageUrl: "https://example.com/nft.png",
   };
 
   return (
@@ -144,7 +144,7 @@ A simple button component for NFT minting.
     },
     name: "My NFT",
     description: "NFT description",
-    imageUrl: "https://example.com/image.png"
+    imageUrl: "https://example.com/image.png",
   }}
   recipientAddress="0x..."
   isMainnet={true}
@@ -157,7 +157,7 @@ For custom smart contract interactions.
 
 ```tsx
 <AnySpendCustom
-  orderType={OrderType.Custom}
+  orderType={"custom"}
   dstChainId={8333}
   dstToken={
     {
@@ -187,7 +187,7 @@ For custom smart contract interactions.
 Get pricing information for a potential order.
 
 ```tsx
-import { useAnyspendQuote, OrderType, TradeType } from "@b3dotfun/sdk/anyspend";
+import { useAnyspendQuote } from "@b3dotfun/sdk/anyspend";
 
 const { anyspendQuote, isLoadingAnyspendQuote, getAnyspendQuoteError } = useAnyspendQuote(
   true, // isMainnet
@@ -196,10 +196,10 @@ const { anyspendQuote, isLoadingAnyspendQuote, getAnyspendQuoteError } = useAnys
     dstChain: 8333, // B3
     srcTokenAddress: "0x...", // USDC
     dstTokenAddress: "0x...", // Target token
-    type: OrderType.Swap,
-    tradeType: TradeType.EXACT_INPUT,
-    amount: "1000000" // 1 USDC (6 decimals)
-  }
+    type: "swap",
+    tradeType: "EXACT_INPUT",
+    amount: "1000000", // 1 USDC (6 decimals)
+  },
 );
 ```
 
@@ -208,7 +208,7 @@ const { anyspendQuote, isLoadingAnyspendQuote, getAnyspendQuoteError } = useAnys
 Create a new AnySpend order.
 
 ```tsx
-import { useAnyspendCreateOrder, OrderType } from "@b3dotfun/sdk/anyspend";
+import { useAnyspendCreateOrder } from "@b3dotfun/sdk/anyspend";
 
 const { createOrder, isCreatingOrder } = useAnyspendCreateOrder({
   onSuccess: data => {
@@ -216,14 +216,14 @@ const { createOrder, isCreatingOrder } = useAnyspendCreateOrder({
   },
   onError: error => {
     console.error("Order creation failed:", error.message);
-  }
+  },
 });
 
 // Create order
 createOrder({
   isMainnet: true,
   recipientAddress: "0x...",
-  orderType: OrderType.Swap,
+  orderType: "swap",
   srcChain: 1,
   dstChain: 8333,
   srcToken: {
@@ -234,7 +234,7 @@ createOrder({
   },
   srcAmount: "1000000",
   expectedDstAmount: "500000000000000000",
-  creatorAddress: "0x..."
+  creatorAddress: "0x...",
 });
 ```
 
@@ -247,7 +247,7 @@ import { useAnyspendOrderAndTransactions } from "@b3dotfun/sdk/anyspend";
 
 const { orderAndTransactions, getOrderAndTransactionsError } = useAnyspendOrderAndTransactions(
   true, // isMainnet
-  "order-id-here"
+  "order-id-here",
 );
 
 if (orderAndTransactions) {
@@ -269,7 +269,7 @@ const { orderHistory, isLoadingOrderHistory } = useAnyspendOrderHistory(
   true, // isMainnet
   "0x...", // creatorAddress
   50, // limit
-  0 // offset
+  0, // offset
 );
 ```
 
@@ -288,7 +288,7 @@ const quote = await anyspendService.getQuote(true, {
   dstTokenAddress: "0x...",
   type: "swap",
   tradeType: "exactInput",
-  amount: "1000000"
+  amount: "1000000",
 });
 
 // Get token list
@@ -309,7 +309,7 @@ const order = await anyspendService.createOrder({
   },
   metadata: {
     /* order metadata */
-  }
+  },
 });
 ```
 
@@ -368,12 +368,12 @@ function NFTCard({ nft }) {
 ### 3. Custom Contract Interaction - Staking Example
 
 ```tsx
-import { AnySpendCustom, OrderType } from "@b3dotfun/sdk/anyspend/react";
+import { AnySpendCustom } from "@b3dotfun/sdk/anyspend/react";
 
 function StakingInterface({ stakingContract }) {
   return (
     <AnySpendCustom
-      orderType={OrderType.Custom}
+      orderType={"custom"}
       dstChainId={stakingContract.chainId}
       dstToken={stakingContract.stakingToken}
       dstAmount={stakingContract.stakeAmount}
@@ -384,8 +384,8 @@ function StakingInterface({ stakingContract }) {
         staking: {
           contractAddress: stakingContract.contractAddress,
           amount: stakingContract.stakeAmount,
-          duration: stakingContract.duration
-        }
+          duration: stakingContract.duration,
+        },
       }}
       header={({ anyspendPrice }) => (
         <div className="staking-header">
@@ -448,7 +448,7 @@ enum OrderStatus {
   Expired = "expired",
   Refunding = "refunding",
   Refunded = "refunded",
-  Failure = "failure"
+  Failure = "failure",
 }
 ```
 
@@ -484,7 +484,7 @@ const { createOrder, isCreatingOrder } = useAnyspendCreateOrder({
 
     // Optional: Send to error tracking service
     // errorTracking.captureException(error);
-  }
+  },
 });
 ```
 
@@ -502,15 +502,15 @@ function OrderTracker({ orderId }) {
 
   const getStatusMessage = (status: OrderStatus) => {
     switch (status) {
-      case OrderStatus.ScanningDepositTransaction:
+      case "scanning_deposit_transactions":
         return "Waiting for payment confirmation...";
-      case OrderStatus.Relay:
+      case "relay":
         return "Processing your transaction...";
-      case OrderStatus.Executed:
+      case "executed":
         return "Transaction completed successfully!";
-      case OrderStatus.Failure:
+      case "failure":
         return "Transaction failed. You will be refunded automatically.";
-      case OrderStatus.Refunded:
+      case "refunded":
         return "Refund processed successfully.";
       default:
         return "Processing...";

@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
 import { weapons, Weapon } from "../data/weapons";
 import { useTokensFromAddress, useModalStore } from "@b3dotfun/sdk/global-account/react";
-import { Token } from "../../../../packages/sdk/dist/types/global-account/react/hooks/useTokensFromAddress";
+import { Token } from "@b3dotfun/sdk/global-account/react/hooks/useTokensFromAddress";
 
 const BattleContainer = styled.div`
   max-width: 1200px;

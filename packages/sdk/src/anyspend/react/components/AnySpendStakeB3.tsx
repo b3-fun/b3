@@ -1,4 +1,4 @@
-import { ABI_ERC20_STAKING, B3_TOKEN, OrderType } from "@b3dotfun/sdk/anyspend";
+import { ABI_ERC20_STAKING, B3_TOKEN } from "@b3dotfun/sdk/anyspend";
 import {
   Button,
   GlareCardRounded,
@@ -476,14 +476,14 @@ export function AnySpendStakeB3({
       loadOrder={loadOrder}
       mode={mode}
       recipientAddress={recipientAddress}
-      orderType={OrderType.Custom}
+      orderType={"custom"}
       dstChainId={base.id}
       dstToken={B3_TOKEN}
       dstAmount={userStakeAmount}
       contractAddress={ERC20Staking}
       encodedData={encodedData}
       metadata={{
-        type: OrderType.Custom,
+        type: "custom",
         action: "stake B3",
       }}
       header={header}
