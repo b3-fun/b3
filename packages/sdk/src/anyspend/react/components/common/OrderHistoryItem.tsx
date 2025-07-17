@@ -1,36 +1,35 @@
-import { ALL_CHAINS, getChainName, getStatusDisplay, Order, OrderType } from "@b3dotfun/sdk/anyspend";
+import { ALL_CHAINS, getChainName, getStatusDisplay } from "@b3dotfun/sdk/anyspend";
 import { Badge, Button, useIsMobile } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { ArrowRight, ChevronDown } from "lucide-react";
 import TimeAgo from "react-timeago";
 import { b3 } from "viem/chains";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
 
 interface OrderHistoryItemProps {
-  order: Order;
+  order: components["schemas"]["Order"];
   onSelectOrder?: (orderId: string) => void;
   mode: "modal" | "page";
 }
 
 export function OrderHistoryItem({ order, onSelectOrder, mode }: OrderHistoryItemProps) {
-  const nft = order.type === OrderType.MintNFT ? order.metadata.nft : undefined;
+  const nft = order.type === "mint_nft" ? order.metadata.nft : undefined;
   const tournament =
-    order.type === OrderType.JoinTournament || order.type === OrderType.FundTournament
-      ? order.metadata.tournament
-      : undefined;
+    order.type === "join_tournament" || order.type === "fund_tournament" ? order.metadata.tournament : undefined;
   const dstToken = order.metadata.dstToken;
   const actualDstAmount =
-    order.type === OrderType.MintNFT ||
-    order.type === OrderType.JoinTournament ||
-    order.type === OrderType.FundTournament ||
-    order.type === OrderType.Custom
+    order.type === "mint_nft" ||
+    order.type === "join_tournament" ||
+    order.type === "fund_tournament" ||
+    order.type === "custom"
       ? undefined
       : order.payload.actualDstAmount;
   const expectedDstAmount =
-    order.type === OrderType.MintNFT ||
-    order.type === OrderType.JoinTournament ||
-    order.type === OrderType.FundTournament ||
-    order.type === OrderType.Custom
+    order.type === "mint_nft" ||
+    order.type === "join_tournament" ||
+    order.type === "fund_tournament" ||
+    order.type === "custom"
       ? undefined
       : order.payload.expectedDstAmount;
 

@@ -1,14 +1,15 @@
 "use client";
 
-import { isNativeToken, Token } from "@b3dotfun/sdk/anyspend";
+import { isNativeToken } from "@b3dotfun/sdk/anyspend";
 import { useB3, useAccountWallet } from "@b3dotfun/sdk/global-account/react";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { getERC20Balances, getNativeTokenBalance } from "@b3dotfun/sdk/shared/utils/thirdweb-insights";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
 
 interface UseTokenBalanceProps {
-  token: Token;
+  token: components["schemas"]["Token"];
   address?: string;
 }
 

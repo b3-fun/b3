@@ -1,13 +1,7 @@
-import {
-  getChainName,
-  GetQuoteResponse,
-  OnrampVendor,
-  Order,
-  OrderType,
-  STRIPE_CONFIG,
-  Token,
-} from "@b3dotfun/sdk/anyspend";
+import { getChainName, STRIPE_CONFIG } from "@b3dotfun/sdk/anyspend";
 import { useAnyspendCreateOnrampOrder, useGeoOnrampOptions, useStripeClientSecret } from "@b3dotfun/sdk/anyspend/react";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
+import { GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
 import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
 import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
@@ -22,7 +16,7 @@ const stripePromise = loadStripe(STRIPE_CONFIG.publishableKey);
 interface WebviewOnrampPaymentProps {
   srcAmountOnRamp: string;
   recipientAddress?: string;
-  destinationToken: Token;
+  destinationToken: components["schemas"]["Token"];
   partnerId?: string;
   anyspendQuote: GetQuoteResponse | undefined;
   onPaymentSuccess: (orderId: string) => void;
@@ -30,7 +24,13 @@ interface WebviewOnrampPaymentProps {
 }
 
 // Stripe Payment Form Component
-function StripePaymentForm({ order, onPaymentSuccess }: { order: Order; onPaymentSuccess: (orderId: string) => void }) {
+function StripePaymentForm({
+  order,
+  onPaymentSuccess,
+}: {
+  order: components["schemas"]["Order"];
+  onPaymentSuccess: (orderId: string) => void;
+}) {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -119,7 +119,7 @@ export function WebviewOnrampPayment({
 }: WebviewOnrampPaymentProps) {
   const [stableAmountForGeo, setStableAmountForGeo] = useState(srcAmountOnRamp);
   const hasInitialized = useRef(false);
-  const [createdOrder, setCreatedOrder] = useState<Order | null>(null);
+  const [createdOrder, setCreatedOrder] = useState<components["schemas"]["Order"] | null>(null);
   const orderCreationAttempted = useRef(false);
 
   // Only update the stable amount on first render or when explicitly needed
@@ -138,7 +138,6 @@ export function WebviewOnrampPayment({
 
   const { createOrder, isCreatingOrder } = useAnyspendCreateOnrampOrder({
     onSuccess: data => {
-      const orderId = data.data.id;
       setCreatedOrder(data.data);
     },
     onError: error => {
@@ -167,7 +166,7 @@ export function WebviewOnrampPayment({
         orderCreationAttempted.current = true;
 
         try {
-          const getDstToken = (): Token => {
+          const getDstToken = (): components["schemas"]["Token"] => {
             return {
               ...destinationToken,
               chainId: destinationToken.chainId,
@@ -178,12 +177,12 @@ export function WebviewOnrampPayment({
           createOrder({
             isMainnet: true,
             recipientAddress,
-            orderType: OrderType.Swap,
+            orderType: "swap",
             dstChain: getDstToken().chainId,
             dstToken: getDstToken(),
             srcFiatAmount: srcAmountOnRamp,
             onramp: {
-              vendor: OnrampVendor.StripeWeb2,
+              vendor: "stripe-web2",
               paymentMethod: "",
               country: geoData.country || "US",
               ipAddress: geoData.ip,

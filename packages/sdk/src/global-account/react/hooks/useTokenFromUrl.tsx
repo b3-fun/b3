@@ -1,15 +1,15 @@
 "use client";
 
-import { Token } from "@b3dotfun/sdk/anyspend";
 import { getCoingeckoChainInfo } from "@b3dotfun/sdk/shared/constants/chains/supported";
 import { useSearchParams } from "@b3dotfun/sdk/shared/react/hooks";
 import { useQuery } from "@tanstack/react-query";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
 
 interface UseTokenFromUrlOptions {
   /**
    * Default token to use when URL params are not available
    */
-  defaultToken: Token;
+  defaultToken: components["schemas"]["Token"];
 
   /**
    * The URL parameter prefix to look for (e.g., "from" or "to")
@@ -52,7 +52,7 @@ async function fetchTokenInfo(network: string, address: string): Promise<TokenIn
  * Hook to parse token data from URL parameters and fetch additional token info.
  * Looks for parameters: [prefix]Currency
  */
-export function useTokenFromUrl({ defaultToken, prefix }: UseTokenFromUrlOptions): Token {
+export function useTokenFromUrl({ defaultToken, prefix }: UseTokenFromUrlOptions): components["schemas"]["Token"] {
   const searchParams = useSearchParams();
 
   // Get parameters from URL
@@ -102,7 +102,13 @@ export function useTokenFromUrl({ defaultToken, prefix }: UseTokenFromUrlOptions
   };
 }
 
-export function useTokenFromAddress({ address, chainId }: { address: string; chainId: number }): Token | undefined {
+export function useTokenFromAddress({
+  address,
+  chainId,
+}: {
+  address: string;
+  chainId: number;
+}): components["schemas"]["Token"] | undefined {
   const { data: tokenInfo, isError } = useQuery({
     queryKey: ["tokenInfo", address, chainId],
     queryFn: () => fetchTokenInfo(getCoingeckoChainInfo(chainId).coingecko_id, address),

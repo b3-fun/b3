@@ -1,5 +1,4 @@
-import { ALL_CHAINS, getChainName, getExplorerAddressUrl, GetQuoteResponse, OrderType } from "@b3dotfun/sdk/anyspend";
-import { NftContract } from "@b3dotfun/sdk/anyspend/types";
+import { ALL_CHAINS, getChainName, getExplorerAddressUrl } from "@b3dotfun/sdk/anyspend";
 import { GlareCard, Popover, PopoverContent, PopoverTrigger } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils";
 import { getIpfsUrl } from "@b3dotfun/sdk/shared/utils/ipfs";
@@ -9,6 +8,8 @@ import { MoreVertical } from "lucide-react";
 import { useState } from "react";
 import { b3 } from "viem/chains";
 import { AnySpendCustom } from "./AnySpendCustom";
+import { GetQuoteResponse } from "../../types/api_req_res";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
 
 export function AnySpendNFT({
   isMainnet = true,
@@ -22,7 +23,7 @@ export function AnySpendNFT({
   loadOrder?: string;
   mode?: "modal" | "page";
   recipientAddress?: string;
-  nftContract: NftContract;
+  nftContract: components["schemas"]["NftContract"];
   onSuccess?: (txHash?: string) => void;
 }) {
   const header = ({
@@ -73,14 +74,14 @@ export function AnySpendNFT({
       loadOrder={loadOrder}
       mode={mode}
       recipientAddress={recipientAddress}
-      orderType={OrderType.MintNFT}
+      orderType={"mint_nft"}
       dstChainId={nftContract.chainId}
       dstToken={nftContract.currency}
       dstAmount={nftContract.price}
       contractAddress={nftContract.contractAddress}
       encodedData="0x"
       metadata={{
-        type: OrderType.MintNFT,
+        type: "mint_nft",
         nftContract: nftContract,
       }}
       header={header}
@@ -89,7 +90,7 @@ export function AnySpendNFT({
   );
 }
 
-function DropdownMenu({ nftContract }: { nftContract: NftContract }) {
+function DropdownMenu({ nftContract }: { nftContract: components["schemas"]["NftContract"] }) {
   const [open, setOpen] = useState(false);
   const chain = ALL_CHAINS[nftContract.chainId];
   const nftUrl = getExplorerAddressUrl(nftContract.chainId, nftContract.contractAddress);

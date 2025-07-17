@@ -1,31 +1,32 @@
-import { getChainName, Order, OrderStatus, OrderType } from "@b3dotfun/sdk/anyspend";
+import { getChainName } from "@b3dotfun/sdk/anyspend";
 import { Badge, useTokenData } from "@b3dotfun/sdk/global-account/react";
 import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
 import { CheckIcon, Copy, ExternalLink, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { formatUnits } from "viem";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
 
 interface WebviewOnrampOrderStatusProps {
-  order: Order;
+  order: components["schemas"]["Order"];
 }
 
 export function WebviewOnrampOrderStatus({ order }: WebviewOnrampOrderStatusProps) {
   console.log(order.status);
   const isPending =
-    order.status === OrderStatus.WaitingStripePayment ||
-    order.status === OrderStatus.ScanningDepositTransaction ||
-    order.status === OrderStatus.SendingTokenFromVault ||
-    order.status === OrderStatus.Relay;
-  const isExecuted = order.status === OrderStatus.Executed;
-  const isFailed = order.status === OrderStatus.Failure;
-  const isRefunded = order.status === OrderStatus.Refunded;
+    order.status === "waiting_stripe_payment" ||
+    order.status === "scanning_deposit_transaction" ||
+    order.status === "sending_token_from_vault" ||
+    order.status === "relay";
+  const isExecuted = order.status === "executed";
+  const isFailed = order.status === "failure";
+  const isRefunded = order.status === "refunded";
 
   // Get token metadata
   const { data: tokenMetadata } = useTokenData(order.metadata.dstToken.chainId, order.metadata.dstToken.address);
 
   // Only show expected amount for swap orders
   const expectedAmount =
-    order.type === OrderType.Swap
+    order.type === "swap"
       ? Number(formatUnits(BigInt(order.payload.expectedDstAmount), order.metadata.dstToken.decimals)).toFixed(2)
       : null;
 
@@ -68,7 +69,7 @@ export function WebviewOnrampOrderStatus({ order }: WebviewOnrampOrderStatusProp
             </div>
 
             {/* Receiving Amount - Only show for swap orders */}
-            {order.type === OrderType.Swap && expectedAmount && (
+            {order.type === "swap" && expectedAmount && (
               <div className="flex items-center justify-between py-3">
                 <span className="text-gray-600">Est Token Amount</span>
                 <div className="flex items-center gap-2">

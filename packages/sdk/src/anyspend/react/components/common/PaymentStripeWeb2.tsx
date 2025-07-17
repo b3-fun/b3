@@ -1,4 +1,4 @@
-import { Order, USDC_BASE } from "@b3dotfun/sdk/anyspend";
+import { USDC_BASE } from "@b3dotfun/sdk/anyspend";
 import { useStripeClientSecret } from "@b3dotfun/sdk/anyspend/react";
 import { STRIPE_CONFIG } from "@b3dotfun/sdk/anyspend/constants";
 import { ShinyButton, useB3 } from "@b3dotfun/sdk/global-account/react";
@@ -9,12 +9,13 @@ import { HelpCircle, Info, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import HowItWorks from "./HowItWorks";
 import PaymentMethodIcons from "./PaymentMethodIcons";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
 
 const stripePromise = loadStripe(STRIPE_CONFIG.publishableKey);
 
 interface PaymentStripeWeb2Props {
   isMainnet: boolean;
-  order: Order;
+  order: components["schemas"]["Order"];
   onPaymentSuccess?: (paymentIntent: any) => void;
 }
 
@@ -83,7 +84,7 @@ function StripePaymentForm({
   clientSecret,
   onPaymentSuccess,
 }: {
-  order: Order;
+  order: components["schemas"]["Order"];
   clientSecret: string | null;
   onPaymentSuccess?: (paymentIntent: any) => void;
 }) {

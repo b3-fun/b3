@@ -1,4 +1,3 @@
-import { ChainType, IBaseChain, IEVMChain, ISolanaChain, Token } from "@b3dotfun/sdk/anyspend/types";
 import invariant from "invariant";
 import {
   Account,
@@ -27,6 +26,8 @@ import {
 } from "viem/chains";
 import { RELAY_SOLANA_MAINNET_CHAIN_ID } from "@b3dotfun/sdk/anyspend/constants";
 import { getAvaxToken, getBnbToken, getEthToken, getPolToken, getSolanaToken } from "./token";
+import { ChainType, IBaseChain, IEVMChain, ISolanaChain } from "../types/chain";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
 
 function getCustomEvmChain(chain: Chain, rpcUrl: string): Chain {
   return defineChain({ ...chain, rpcUrls: { default: { http: [rpcUrl] } } });
@@ -293,7 +294,7 @@ export function isTestnet(chainId: number): boolean {
   return EVM_TESTNET[chainId] !== undefined;
 }
 
-export function getDefaultToken(chainId: number): Token {
+export function getDefaultToken(chainId: number): components["schemas"]["Token"] {
   invariant(ALL_CHAINS[chainId], `Chain ${chainId} is not supported`);
   return ALL_CHAINS[chainId].defaultToken;
 }
@@ -335,7 +336,7 @@ export function getMulticall3Address(chainId: number): string {
   return multicall3.address;
 }
 
-export function getNativeToken(chainId: number): Token {
+export function getNativeToken(chainId: number): components["schemas"]["Token"] {
   invariant(ALL_CHAINS[chainId], `Chain ${chainId} undefined`);
   return ALL_CHAINS[chainId].nativeToken;
 }

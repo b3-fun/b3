@@ -4,9 +4,6 @@ export * from "./react/hooks";
 // Providers
 export * from "./react/providers/AnyspendProvider";
 
-// Types
-export * from "./types";
-
 // Utils
 export * from "./utils/address";
 export * from "./utils/chain";

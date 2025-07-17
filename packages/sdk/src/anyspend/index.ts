@@ -1,10 +1,3 @@
-// Types
-export * from "./types";
-export * from "./types/metadata";
-export * from "./types/relay";
-export * from "./types/signatureMint";
-export * from "./types/token";
-
 // Utils
 export * from "./utils/address";
 export * from "./utils/chain";

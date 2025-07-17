@@ -1,4 +1,4 @@
-import { Token } from "@b3dotfun/sdk/anyspend";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { useTokenBalance } from "@b3dotfun/sdk/global-account/react";
 import { formatUnits } from "viem";
 
@@ -7,7 +7,7 @@ export function TokenBalance({
   walletAddress,
   onChangeInput,
 }: {
-  token: Token;
+  token: components["schemas"]["Token"];
   walletAddress: string | undefined;
   onChangeInput: (value: string) => void;
 }) {

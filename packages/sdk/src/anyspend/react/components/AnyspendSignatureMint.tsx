@@ -1,4 +1,3 @@
-import { OrderType } from "@b3dotfun/sdk/anyspend";
 import { StyleRoot, useHasMounted, useTokenData } from "@b3dotfun/sdk/global-account/react";
 import invariant from "@b3dotfun/sdk/shared/utils/debug";
 import { useMemo } from "react";
@@ -141,14 +140,14 @@ export function AnyspendSignatureMint({
       loadOrder={loadOrder}
       mode={mode}
       recipientAddress={signatureData.payload.to}
-      orderType={OrderType.Custom}
+      orderType={"custom"}
       dstChainId={signatureData.collection.chainId}
       dstToken={dstToken}
       dstAmount={price.toString()}
       contractAddress={signatureData.collection.address!}
       encodedData={encodedData}
       metadata={{
-        type: OrderType.Custom,
+        type: "custom",
         action: "Signature Mint",
       }}
       header={header}

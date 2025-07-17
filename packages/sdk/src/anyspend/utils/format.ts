@@ -1,46 +1,48 @@
-import { Order, OrderStatus, OrderType } from "@b3dotfun/sdk/anyspend/types";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
 
-export const getStatusDisplay = (order: Order): { text: string; status: "processing" | "success" | "failure" } => {
+export const getStatusDisplay = (
+  order: components["schemas"]["Order"],
+): { text: string; status: "processing" | "success" | "failure" } => {
   switch (order.status) {
-    case OrderStatus.ScanningDepositTransaction:
+    case "scanning_deposit_transaction":
       return {
         text: order.onrampMetadata ? "Awaiting Payment" : "Awaiting Deposit",
         status: "processing",
       };
-    case OrderStatus.WaitingStripePayment:
+    case "waiting_stripe_payment":
       return {
         text: "Awaiting Payment",
         status: "processing",
       };
 
-    case OrderStatus.Expired:
+    case "expired":
       return { text: "Order Expired", status: "failure" };
 
-    case OrderStatus.SendingTokenFromVault:
+    case "sending_token_from_vault":
       return { text: "Sending Token", status: "processing" };
 
-    case OrderStatus.Relay:
+    case "relay":
       return { text: "Executing Order", status: "processing" };
-    case OrderStatus.Executed: {
+    case "executed": {
       const text =
-        order.type === OrderType.Swap
+        order.type === "swap"
           ? "Swap Complete"
-          : order.type === OrderType.MintNFT
+          : order.type === "mint_nft"
             ? "NFT Minted"
-            : order.type === OrderType.JoinTournament
+            : order.type === "join_tournament"
               ? "Tournament Joined"
-              : order.type === OrderType.FundTournament
+              : order.type === "fund_tournament"
                 ? "Tournament Funded"
                 : "Order Complete";
       return { text, status: "success" };
     }
 
-    case OrderStatus.Refunding:
+    case "refunding":
       return { text: "Order Refunding", status: "processing" };
-    case OrderStatus.Refunded:
+    case "refunded":
       return { text: "Order Refunded", status: "failure" };
 
-    case OrderStatus.Failure:
+    case "failure":
       return { text: "Order Failure", status: "failure" };
 
     default:

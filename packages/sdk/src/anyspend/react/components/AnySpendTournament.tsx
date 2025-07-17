@@ -1,8 +1,9 @@
-import { GetQuoteResponse, OrderType, Token, Tournament } from "@b3dotfun/sdk/anyspend";
 import { cn } from "@b3dotfun/sdk/shared/utils";
 import { formatDisplayNumber, formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { AnimatePresence } from "framer-motion";
 import { AnySpendCustom } from "./AnySpendCustom";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
+import { GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
 
 type AnySpendTournamentProps =
   | {
@@ -13,8 +14,8 @@ type AnySpendTournamentProps =
       loadOrder?: string;
       tournamentChainId: number;
       tournamentContractAddress: string;
-      tournamentMetadata: Tournament;
-      tournamentEntryToken: Token;
+      tournamentMetadata: components["schemas"]["Tournament"];
+      tournamentEntryToken: components["schemas"]["Token"];
       tournamentEntryFee: string;
       onSuccess?: () => void;
     }
@@ -25,8 +26,8 @@ type AnySpendTournamentProps =
       loadOrder?: string;
       tournamentChainId: number;
       tournamentContractAddress: string;
-      tournamentMetadata: Tournament;
-      tournamentFundToken: Token;
+      tournamentMetadata: components["schemas"]["Tournament"];
+      tournamentFundToken: components["schemas"]["Token"];
       tournamentFundAmount: string;
       onSuccess?: () => void;
     };
@@ -94,14 +95,14 @@ export function AnySpendTournament(props: AnySpendTournamentProps) {
       loadOrder={loadOrder}
       mode={mode}
       recipientAddress={action === "join" ? props.joinFor : undefined}
-      orderType={action === "join" ? OrderType.JoinTournament : OrderType.FundTournament}
+      orderType={action === "join" ? "join_tournament" : "fund_tournament"}
       dstChainId={tournamentChainId}
       dstToken={dstToken}
       dstAmount={dstAmount}
       contractAddress={tournamentContractAddress}
       encodedData="0x"
       metadata={{
-        type: action === "join" ? OrderType.JoinTournament : OrderType.FundTournament,
+        type: action === "join" ? "join_tournament" : "fund_tournament",
         tournament: tournamentMetadata,
       }}
       header={header}

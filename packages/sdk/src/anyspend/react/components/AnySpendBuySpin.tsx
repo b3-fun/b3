@@ -1,4 +1,4 @@
-import { B3_TOKEN, OrderType } from "@b3dotfun/sdk/anyspend";
+import { B3_TOKEN } from "@b3dotfun/sdk/anyspend";
 import {
   Button,
   GlareCardRounded,
@@ -659,7 +659,7 @@ export function AnySpendBuySpin({
       loadOrder={loadOrder}
       mode={mode}
       recipientAddress={recipientAddress}
-      orderType={OrderType.Custom}
+      orderType={"custom"}
       dstChainId={chainId}
       dstToken={B3_TOKEN}
       dstAmount={totalCost.toString()}
@@ -667,7 +667,7 @@ export function AnySpendBuySpin({
       spenderAddress={paymentConfig.entryModule}
       encodedData={encodedData}
       metadata={{
-        type: OrderType.Custom,
+        type: "custom",
         action: `buy ${userSpinQuantity} spin${userSpinQuantity !== "1" ? "s" : ""}`,
       }}
       header={header}

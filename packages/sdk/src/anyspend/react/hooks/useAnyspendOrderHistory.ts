@@ -1,5 +1,6 @@
 import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
 import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 
 export function useAnyspendOrderHistory(
   isMainnet: boolean,
@@ -20,10 +21,13 @@ export function useAnyspendOrderHistory(
     },
   });
 
-  return {
-    orderHistory: rawData,
-    isLoadingOrderHistory: isLoading,
-    getOrderHistoryError: error,
-    refetchOrderHistory: refetch,
-  };
+  return useMemo(
+    () => ({
+      orderHistory: rawData,
+      isLoadingOrderHistory: isLoading,
+      getOrderHistoryError: error,
+      refetchOrderHistory: refetch,
+    }),
+    [error, isLoading, rawData, refetch],
+  );
 }

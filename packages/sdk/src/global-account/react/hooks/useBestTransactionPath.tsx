@@ -1,9 +1,10 @@
 "use client";
 
-import { isNativeToken, Token } from "@b3dotfun/sdk/anyspend";
+import { isNativeToken } from "@b3dotfun/sdk/anyspend";
 import { useAccountWallet, useOneBalance, useTokenBalance } from "@b3dotfun/sdk/global-account/react";
 import { useMemo } from "react";
 import { formatUnits } from "viem";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
 
 export type TransactionType = "send" | "swap" | "bridge";
 
@@ -30,7 +31,7 @@ export interface TransactionPathResult extends TransactionPath {
 
 interface UseBestTransactionPathProps {
   amount: bigint;
-  token: Token;
+  token: components["schemas"]["Token"];
   address?: string;
   transactionType?: TransactionType;
 }

@@ -1,5 +1,5 @@
-import { NftContract, NftType, Token } from "@b3dotfun/sdk/anyspend/types";
 import { base } from "viem/chains";
+import { components } from "../types/api";
 
 export const ANYSPEND_MAINNET_BASE_URL = process.env.NEXT_PUBLIC_ANYSPEND_BASE_URL || "https://mainnet.anyspend.com";
 export const ANYSPEND_TESTNET_BASE_URL = process.env.NEXT_PUBLIC_ANYSPEND_BASE_URL || "https://testnet.anyspend.com";
@@ -12,7 +12,7 @@ export const RELAY_SOLANA_MAINNET_CHAIN_ID = 792703809;
 export const SOLANA_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL";
 export const SOLANA_TOKEN_2022_PROGRAM_ID = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb";
 
-export const B3_TOKEN: Token = {
+export const B3_TOKEN: components["schemas"]["Token"] = {
   chainId: 8453,
   address: "0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3",
   decimals: 18,
@@ -23,7 +23,7 @@ export const B3_TOKEN: Token = {
   },
 };
 
-export const USDC_BASE: Token = {
+export const USDC_BASE: components["schemas"]["Token"] = {
   symbol: "USDC",
   chainId: base.id,
   address: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
@@ -34,7 +34,7 @@ export const USDC_BASE: Token = {
   },
 };
 
-export const NFT_CONTRACTS: NftContract[] = [
+export const NFT_CONTRACTS: components["schemas"]["NftContract"][] = [
   {
     chainId: base.id,
     contractAddress: "0x9c275ff1634519E9B5449ec79cd939B5F900564d",
@@ -45,8 +45,8 @@ export const NFT_CONTRACTS: NftContract[] = [
       "https://storage.googleapis.com/nftimagebucket/base/tokens/0x80f0e6644723abb03aa8867d21e32bd854b2a2d9/preview/TVRjME1EUTRORFl4T0E9PV8zNjcy.jpg",
     name: "Downhill Ski",
     description: "Downhill Ski",
-    tokenId: null,
-    type: NftType.ERC721,
+    tokenId: 0,
+    type: "erc721",
   },
   {
     chainId: base.id,
@@ -59,7 +59,7 @@ export const NFT_CONTRACTS: NftContract[] = [
     description:
       "The Eclipse Venom's crystalline blade channels imprisoned astral toxins through swirling currents of violet and teal light, synchronizing with its wielder's heartbeat for strikes that bypass conventional armor. Wounds from this otherworldly weapon resist healing as victims describe being consumed from within by liquid darkness, their final moments filled with visions of infinite cosmic depths.",
     tokenId: null,
-    type: NftType.ERC721,
+    type: "erc721",
   },
 ];
 
