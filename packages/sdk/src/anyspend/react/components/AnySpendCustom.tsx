@@ -1,5 +1,5 @@
 import { eqci, getDefaultToken } from "@b3dotfun/sdk/anyspend";
-import { GetQuoteRequest, GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
+import { RELAY_ETH_ADDRESS, USDC_BASE } from "@b3dotfun/sdk/anyspend/constants";
 import {
   CreateOrderParams,
   useAnyspendCreateOnrampOrder,
@@ -9,6 +9,8 @@ import {
   useAnyspendTokenList,
   useGeoOnrampOptions,
 } from "@b3dotfun/sdk/anyspend/react";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
+import { GetQuoteRequest, GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
 import {
   Badge,
   Button,
@@ -30,7 +32,6 @@ import {
   useAccountWallet,
   useBsmntProfile,
   useHasMounted,
-  useModalStore,
   useRouter,
   useSearchParamsSSR,
   useTokenBalancesByChain,
@@ -50,8 +51,6 @@ import { OrderHistory } from "./common/OrderHistory";
 import { OrderStatus as OrderStatusDisplay } from "./common/OrderStatus";
 import { OrderToken } from "./common/OrderToken";
 import { PanelOnrampPayment } from "./common/PanelOnrampPayment";
-import { components } from "@b3dotfun/sdk/anyspend/types/api";
-import { RELAY_ETH_ADDRESS, USDC_BASE } from "@b3dotfun/sdk/anyspend/constants";
 
 enum PanelView {
   CONFIRM_ORDER,
@@ -181,8 +180,6 @@ export function AnySpendCustom({
   onSuccess?: (txHash?: string) => void;
   showRecipient?: boolean;
 }) {
-  const { setB3ModalOpen, setB3ModalContentType } = useModalStore();
-
   const hasMounted = useHasMounted();
 
   const searchParams = useSearchParamsSSR();
@@ -205,7 +202,7 @@ export function AnySpendCustom({
   // Update recipient logic to use custom recipient
   const recipientAddress = customRecipientAddress || currentWallet.address;
   const recipientPropsProfile = useBsmntProfile({ address: recipientAddress });
-  const recipientEnsName = recipientPropsProfile.data?.username?.replaceAll(".b3.fun", "");
+  const recipientEnsName = recipientPropsProfile.data?.username?.replace(/\.b3\.fun/g, "");
   const recipientImageUrl = recipientPropsProfile.data?.avatar || currentWallet.wallet.meta?.icon;
 
   const [orderId, setOrderId] = useState<string | undefined>(loadOrder);

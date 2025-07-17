@@ -187,7 +187,7 @@ For custom smart contract interactions.
 Get pricing information for a potential order.
 
 ```tsx
-import { useAnyspendQuote, OrderType, TradeType } from "@b3dotfun/sdk/anyspend";
+import { useAnyspendQuote } from "@b3dotfun/sdk/anyspend";
 
 const { anyspendQuote, isLoadingAnyspendQuote, getAnyspendQuoteError } = useAnyspendQuote(
   true, // isMainnet
@@ -208,7 +208,7 @@ const { anyspendQuote, isLoadingAnyspendQuote, getAnyspendQuoteError } = useAnys
 Create a new AnySpend order.
 
 ```tsx
-import { useAnyspendCreateOrder, OrderType } from "@b3dotfun/sdk/anyspend";
+import { useAnyspendCreateOrder } from "@b3dotfun/sdk/anyspend";
 
 const { createOrder, isCreatingOrder } = useAnyspendCreateOrder({
   onSuccess: data => {
@@ -368,7 +368,7 @@ function NFTCard({ nft }) {
 ### 3. Custom Contract Interaction - Staking Example
 
 ```tsx
-import { AnySpendCustom, OrderType } from "@b3dotfun/sdk/anyspend/react";
+import { AnySpendCustom } from "@b3dotfun/sdk/anyspend/react";
 
 function StakingInterface({ stakingContract }) {
   return (

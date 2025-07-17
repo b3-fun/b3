@@ -7,7 +7,9 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@b3dotfun/sdk": ["../../packages/sdk/src"],
+      "@b3dotfun/sdk/*": ["../../packages/sdk/src/*"]
     },
 
     /* Bundler mode */

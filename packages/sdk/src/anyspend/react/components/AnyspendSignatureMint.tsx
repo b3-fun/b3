@@ -1,4 +1,4 @@
-import { StyleRoot, useHasMounted, useTokenData } from "@b3dotfun/sdk/global-account/react";
+import { StyleRoot, useTokenData } from "@b3dotfun/sdk/global-account/react";
 import invariant from "@b3dotfun/sdk/shared/utils/debug";
 import { useMemo } from "react";
 import { encodeFunctionData, parseEther } from "viem";
@@ -54,8 +54,6 @@ export function AnyspendSignatureMint({
   imageUrl?: string;
   onSuccess?: (txHash?: string) => void;
 }) {
-  const hasMounted = useHasMounted();
-
   // Get token data
   const {
     data: tokenData,

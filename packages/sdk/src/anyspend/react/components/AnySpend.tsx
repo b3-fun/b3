@@ -379,9 +379,9 @@ export function AnySpend({
 
   // Get anyspend price
   const activeInputAmountInWei = isSrcInputDirty
-    ? parseUnits(srcAmount.replaceAll(",", ""), selectedSrcToken.decimals).toString()
-    : parseUnits(dstAmount.replaceAll(",", ""), selectedDstToken.decimals).toString();
-  const srcAmountOnrampInWei = parseUnits(srcAmountOnRamp.replaceAll(",", ""), USDC_BASE.decimals).toString();
+    ? parseUnits(srcAmount.replace(/,/g, ""), selectedSrcToken.decimals).toString()
+    : parseUnits(dstAmount.replace(/,/g, ""), selectedDstToken.decimals).toString();
+  const srcAmountOnrampInWei = parseUnits(srcAmountOnRamp.replace(/,/g, ""), USDC_BASE.decimals).toString();
   const { anyspendQuote, isLoadingAnyspendQuote, getAnyspendQuoteError } = useAnyspendQuote(
     isMainnet,
     activeTab === "crypto"
@@ -478,7 +478,7 @@ export function AnySpend({
   // const handleCreateOrder = async (recipientAddress: string) => {
   //   try {
   //     invariant(anyspendPrice, "Relay price is not found");
-  //     const srcAmountBigInt = parseUnits(srcAmount.replaceAll(",", ""), selectedSrcToken.decimals);
+  //     const srcAmountBigInt = parseUnits(srcAmount.replace(/,/g, ""), selectedSrcToken.decimals);
 
   //     createOrder({
   //       isMainnet,
@@ -641,7 +641,7 @@ export function AnySpend({
         return;
       }
 
-      const srcAmountBigInt = parseUnits(srcAmount.replaceAll(",", ""), selectedSrcToken.decimals);
+      const srcAmountBigInt = parseUnits(srcAmount.replace(/,/g, ""), selectedSrcToken.decimals);
 
       createOrder({
         isMainnet,
