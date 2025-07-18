@@ -1,15 +1,26 @@
-import { ALL_CHAINS, getChainName, getExplorerAddressUrl } from "@b3dotfun/sdk/anyspend";
+import { ALL_CHAINS, chainIdToPublicClient, getChainName, getExplorerAddressUrl } from "@b3dotfun/sdk/anyspend";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { GlareCard, Popover, PopoverContent, PopoverTrigger } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils";
 import { getIpfsUrl } from "@b3dotfun/sdk/shared/utils/ipfs";
 import { formatDisplayNumber, formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { AnimatePresence } from "framer-motion";
 import { MoreVertical } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { b3 } from "viem/chains";
-import { AnySpendCustom } from "./AnySpendCustom";
 import { GetQuoteResponse } from "../../types/api_req_res";
-import { components } from "@b3dotfun/sdk/anyspend/types/api";
+import { AnySpendCustom } from "./AnySpendCustom";
+
+// ABI for contractURI function
+const CONTRACT_URI_ABI = [
+  {
+    inputs: [],
+    name: "contractURI",
+    outputs: [{ internalType: "string", name: "", type: "string" }],
+    stateMutability: "view",
+    type: "function",
+  },
+] as const;
 
 export function AnySpendNFT({
   isMainnet = true,
@@ -26,6 +37,50 @@ export function AnySpendNFT({
   nftContract: components["schemas"]["NftContract"];
   onSuccess?: (txHash?: string) => void;
 }) {
+  const [fallbackImageUrl, setFallbackImageUrl] = useState<string | null>(null);
+  const [isLoadingFallback, setIsLoadingFallback] = useState(false);
+
+  // Fetch contract metadata when imageUrl is empty
+  useEffect(() => {
+    async function fetchContractMetadata() {
+      if (nftContract.imageUrl || isLoadingFallback) return;
+
+      try {
+        setIsLoadingFallback(true);
+
+        // Use the chainIdToPublicClient utility function
+        const publicClient = chainIdToPublicClient(nftContract.chainId);
+
+        // Call contractURI function
+        const contractURI = await publicClient.readContract({
+          address: nftContract.contractAddress as `0x${string}`,
+          abi: CONTRACT_URI_ABI,
+          functionName: "contractURI",
+        });
+
+        if (contractURI) {
+          // Fetch the metadata from IPFS
+          const metadataUrl = getIpfsUrl(contractURI);
+          const response = await fetch(metadataUrl);
+          const metadata = await response.json();
+
+          if (metadata.image) {
+            setFallbackImageUrl(getIpfsUrl(metadata.image));
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching contract metadata:", error);
+      } finally {
+        setIsLoadingFallback(false);
+      }
+    }
+
+    fetchContractMetadata();
+  }, [nftContract.contractAddress, nftContract.chainId, nftContract.imageUrl, isLoadingFallback]);
+
+  // Determine which image URL to use
+  const imageUrl = nftContract.imageUrl || fallbackImageUrl;
+
   const header = ({
     anyspendPrice,
     isLoadingAnyspendPrice,
@@ -37,7 +92,7 @@ export function AnySpendNFT({
       <div className="relative size-[200px]">
         <div className="absolute inset-0 scale-95 bg-black/30 blur-md"></div>
         <GlareCard className="overflow-hidden">
-          <img src={getIpfsUrl(nftContract.imageUrl)} alt={nftContract.name} className="size-full object-cover" />
+          {imageUrl && <img src={getIpfsUrl(imageUrl)} alt={nftContract.name} className="size-full object-cover" />}
           <div className="absolute inset-0 rounded-xl border border-white/10"></div>
         </GlareCard>
 
