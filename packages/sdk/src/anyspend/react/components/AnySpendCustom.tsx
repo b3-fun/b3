@@ -363,7 +363,6 @@ export function AnySpendCustom({
 
   useEffect(() => {
     if (oat?.data?.order.status === OrderStatus.Executed) {
-      console.log("Calling onSuccess");
       const txHash = oat?.data?.executeTx?.txHash;
       onSuccess?.(txHash);
     }
@@ -505,33 +504,34 @@ export function AnySpendCustom({
     }
   };
 
-  const recipientSection =
-    showRecipient && recipientAddress ? (
-      <motion.div
-        initial={false}
-        animate={{
-          opacity: hasMounted ? 1 : 0,
-          y: hasMounted ? 0 : 20,
-          filter: hasMounted ? "blur(0px)" : "blur(10px)",
-        }}
-        transition={{ duration: 0.3, delay: 0.2, ease: "easeInOut" }}
-        className="flex w-full items-center justify-between gap-4"
-      >
-        <div className="text-b3-react-foreground">
-          {orderType === OrderType.Swap
-            ? "Recipient"
-            : orderType === OrderType.MintNFT
-              ? "Receive NFT at"
-              : orderType === OrderType.JoinTournament
-                ? "Join for"
-                : "Recipient"}
-        </div>
-        <div>
-          <Button
-            variant="outline"
-            className="w-full justify-between border-none p-0"
-            onClick={() => setIsRecipientModalOpen(true)}
-          >
+  const recipientSection = showRecipient ? (
+    <motion.div
+      initial={false}
+      key={recipientAddress}
+      animate={{
+        opacity: hasMounted ? 1 : 0,
+        y: hasMounted ? 0 : 20,
+        filter: hasMounted ? "blur(0px)" : "blur(10px)",
+      }}
+      transition={{ duration: 0.3, delay: 0.2, ease: "easeInOut" }}
+      className="flex w-full items-center justify-between gap-4"
+    >
+      <div className="text-b3-react-foreground">
+        {orderType === OrderType.Swap
+          ? "Recipient"
+          : orderType === OrderType.MintNFT
+            ? "Receive NFT at"
+            : orderType === OrderType.JoinTournament
+              ? "Join for"
+              : "Recipient"}
+      </div>
+      <div>
+        <Button
+          variant="outline"
+          className="w-full justify-between border-none p-0"
+          onClick={() => setIsRecipientModalOpen(true)}
+        >
+          {recipientAddress ? (
             <div className="flex items-center gap-2">
               {recipientImageUrl && (
                 <img
@@ -545,11 +545,16 @@ export function AnySpendCustom({
                 <span>{centerTruncate(recipientAddress)}</span>
               </div>
             </div>
-            <ChevronRightCircle className="ml-2 size-4 shrink-0 opacity-50" />
-          </Button>
-        </div>
-      </motion.div>
-    ) : null;
+          ) : (
+            <div className="text-b3-react-foreground/60 flex items-center gap-2">
+              <span>Select address</span>
+            </div>
+          )}
+          <ChevronRightCircle className="ml-2 size-4 shrink-0 opacity-50" />
+        </Button>
+      </div>
+    </motion.div>
+  ) : null;
 
   const historyView = (
     <div
@@ -787,7 +792,7 @@ export function AnySpendCustom({
                 <ShinyButton
                   accentColor={"hsl(var(--as-brand))"}
                   textColor="text-white"
-                  disabled={isCreatingOrder || isLoadingAnyspendQuote || !anyspendQuote}
+                  disabled={isCreatingOrder || isLoadingAnyspendQuote || !anyspendQuote || !recipientAddress}
                   onClick={() => handleConfirmOrder()}
                   className="relative w-full"
                 >
@@ -801,13 +806,15 @@ export function AnySpendCustom({
                       <Loader2 className="size-4 animate-spin" />
                       <span>Loading quote...</span>
                     </div>
-                  ) : anyspendQuote ? (
+                  ) : anyspendQuote && recipientAddress ? (
                     <>
                       <span>Checkout</span>
                       <ChevronRightCircle className="absolute right-0 top-1/2 size-6 -translate-y-1/2 opacity-70" />
                     </>
-                  ) : (
+                  ) : recipientAddress ? (
                     "No quote found"
+                  ) : (
+                    "Please select a recipient"
                   )}
                 </ShinyButton>
               </motion.div>
