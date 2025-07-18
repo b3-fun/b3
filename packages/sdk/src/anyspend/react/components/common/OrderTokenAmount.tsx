@@ -132,7 +132,6 @@ export function OrderTokenAmount({
             multiWalletSupportEnabled={true}
             onAnalyticEvent={undefined}
             popularChainIds={[1, 8453, RELAY_SOLANA_MAINNET_CHAIN_ID]}
-            restrictedToken={undefined}
             setToken={handleTokenSelect}
             supportedWalletVMs={["evm", "svm"]}
             token={undefined}
