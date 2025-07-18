@@ -1,5 +1,5 @@
 import { Chain } from "viem";
-import { Token } from "./token";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
 
 export enum ChainType {
   EVM = "evm",
@@ -13,8 +13,8 @@ export interface IBaseChain {
   logoUrl: string;
   nativeRequired: bigint;
   canDepositNative: boolean;
-  defaultToken: Token;
-  nativeToken: Token;
+  defaultToken: components["schemas"]["Token"];
+  nativeToken: components["schemas"]["Token"];
 }
 
 export interface IEVMChain extends IBaseChain {

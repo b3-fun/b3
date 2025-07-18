@@ -1,24 +1,24 @@
-import { OnrampVendor } from "@b3dotfun/sdk/anyspend";
 import { VENDOR_DISPLAY_NAMES } from "@b3dotfun/sdk/anyspend/constants";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
 
-export function getVendorDisplayName(vendor?: OnrampVendor): string {
+export function getVendorDisplayName(vendor?: components["schemas"]["OnrampMetadata"]["vendor"]): string {
   switch (vendor) {
-    case OnrampVendor.Coinbase:
+    case "coinbase":
       return VENDOR_DISPLAY_NAMES.coinbase;
-    case OnrampVendor.Stripe:
-    case OnrampVendor.StripeWeb2:
+    case "stripe":
+    case "stripe-web2":
       return VENDOR_DISPLAY_NAMES.stripe;
     default:
       return VENDOR_DISPLAY_NAMES.unknown;
   }
 }
 
-export function getPaymentMethodDescription(vendor?: OnrampVendor): string {
+export function getPaymentMethodDescription(vendor?: components["schemas"]["OnrampMetadata"]["vendor"]): string {
   switch (vendor) {
-    case OnrampVendor.Stripe:
-    case OnrampVendor.StripeWeb2:
+    case "stripe":
+    case "stripe-web2":
       return "card, Apple Pay, Google Pay, and more";
-    case OnrampVendor.Coinbase:
+    case "coinbase":
       return "debit card, or using your Coinbase account";
     default:
       return "supported payment method";

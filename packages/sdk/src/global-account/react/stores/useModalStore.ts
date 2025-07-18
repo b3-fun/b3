@@ -1,6 +1,5 @@
-import { Token, Tournament } from "@b3dotfun/sdk/anyspend";
-import { NftContract } from "@b3dotfun/sdk/anyspend/types";
 import { GenerateSigMintResponse } from "@b3dotfun/sdk/anyspend/types/signatureMint";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { AllowedStrategy } from "@b3dotfun/sdk/global-account/react";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { Address, Chain } from "thirdweb";
@@ -129,7 +128,7 @@ export interface AnySpendNftProps extends BaseModalProps {
   /** Modal type identifier */
   type: "anySpendNft";
   /** NFT contract information */
-  nftContract: NftContract;
+  nftContract: components["schemas"]["NftContract"];
   /** Recipient address to receive the NFT */
   recipientAddress?: string;
   /** Callback function called when the NFT is successfully transferred */
@@ -149,9 +148,9 @@ export interface AnySpendJoinTournamentProps extends BaseModalProps {
   /** Tournament contract address */
   tournamentContractAddress: string;
   /** Tournament metadata */
-  tournamentMetadata: Tournament;
+  tournamentMetadata: components["schemas"]["Tournament"];
   /** Tournament entry token */
-  tournamentEntryToken: Token;
+  tournamentEntryToken: components["schemas"]["Token"];
   /** Tournament entry fee */
   tournamentEntryFee: string;
   /** Callback function called when the tournament is successfully joined */
@@ -169,9 +168,9 @@ export interface AnySpendFundTournamentProps extends BaseModalProps {
   /** Tournament contract address */
   tournamentContractAddress: string;
   /** Tournament metadata */
-  tournamentMetadata: Tournament;
+  tournamentMetadata: components["schemas"]["Tournament"];
   /** Tournament fund token */
-  tournamentFundToken: Token;
+  tournamentFundToken: components["schemas"]["Token"];
   /** Tournament fund amount */
   tournamentFundAmount: string;
   /** Callback function called when the tournament is successfully joined */

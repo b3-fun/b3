@@ -1,21 +1,21 @@
 import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
-import { Nft, OrderType, Token, Tournament } from "@b3dotfun/sdk/anyspend/types";
 import { buildMetadata, buildPayload, normalizeAddress } from "@b3dotfun/sdk/anyspend/utils";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { useMutation } from "@tanstack/react-query";
 import { useMemo } from "react";
 
 export type CreateOrderParams = {
   isMainnet: boolean;
   recipientAddress: string;
-  orderType: OrderType;
+  orderType: components["schemas"]["Order"]["type"];
   srcChain: number;
   dstChain: number;
-  srcToken: Token;
-  dstToken: Token;
+  srcToken: components["schemas"]["Token"];
+  dstToken: components["schemas"]["Token"];
   srcAmount: string;
   expectedDstAmount?: string;
-  nft?: Nft & { price: string };
-  tournament?: Tournament & { contractAddress: string; entryPriceOrFundAmount: string };
+  nft?: components["schemas"]["NFT"] & { price: string };
+  tournament?: components["schemas"]["Tournament"] & { contractAddress: string; entryPriceOrFundAmount: string };
   creatorAddress?: string;
   payload?: any;
   partnerId?: string;

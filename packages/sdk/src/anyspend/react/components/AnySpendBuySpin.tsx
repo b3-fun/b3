@@ -1,4 +1,4 @@
-import { B3_TOKEN, OrderType } from "@b3dotfun/sdk/anyspend";
+import { B3_TOKEN } from "@b3dotfun/sdk/anyspend";
 import {
   Button,
   GlareCardRounded,
@@ -201,7 +201,6 @@ export function AnySpendBuySpin({
   const [validationError, setValidationError] = useState<string>("");
   const [displayQuantity, setDisplayQuantity] = useState<string>("");
   const [debouncedQuantity, setDebouncedQuantity] = useState<string>("");
-  const [debouncedUserSpinQuantity, setDebouncedUserSpinQuantity] = useState<string>("");
 
   useEffect(() => {
     if (prefillQuantity && wheelInfo) {
@@ -266,7 +265,7 @@ export function AnySpendBuySpin({
     } finally {
       setIsLoadingConfig(false);
     }
-  }, [spinwheelContractAddress, chainId]);
+  }, [spinwheelContractAddress]);
 
   // Fetch config on mount and when dependencies change
   useEffect(() => {
@@ -277,7 +276,6 @@ export function AnySpendBuySpin({
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedQuantity(displayQuantity);
-      setDebouncedUserSpinQuantity(userSpinQuantity);
     }, 500);
 
     return () => clearTimeout(timer);
@@ -466,7 +464,6 @@ export function AnySpendBuySpin({
     const pricePerEntry = formatUnits(paymentConfig.pricePerEntry, 18);
     const remainingEntries = wheelInfo ? wheelInfo.totalPrizesAvailable_ - wheelInfo.prizesRequestedCount_ : BigInt(0);
     const wheelStatus = wheelInfo ? getWheelStatus(wheelInfo) : null;
-    const isSoldOut = wheelStatus === "sold_out";
     const isActive = wheelStatus === "active";
 
     const getStatusMessage = () => {
@@ -659,7 +656,7 @@ export function AnySpendBuySpin({
       loadOrder={loadOrder}
       mode={mode}
       recipientAddress={recipientAddress}
-      orderType={OrderType.Custom}
+      orderType={"custom"}
       dstChainId={chainId}
       dstToken={B3_TOKEN}
       dstAmount={totalCost.toString()}
@@ -667,7 +664,7 @@ export function AnySpendBuySpin({
       spenderAddress={paymentConfig.entryModule}
       encodedData={encodedData}
       metadata={{
-        type: OrderType.Custom,
+        type: "custom",
         action: `buy ${userSpinQuantity} spin${userSpinQuantity !== "1" ? "s" : ""}`,
       }}
       header={header}

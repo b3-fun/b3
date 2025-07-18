@@ -1,12 +1,12 @@
-import { Token } from "@b3dotfun/sdk/anyspend/types";
 import { avalanche, bsc, polygon } from "viem/chains";
 import { RELAY_ETH_ADDRESS, RELAY_SOL_ADDRESS, RELAY_SOLANA_MAINNET_CHAIN_ID } from "@b3dotfun/sdk/anyspend/constants";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
 
 export function isNativeToken(address: string): boolean {
   return address.toLowerCase() === RELAY_ETH_ADDRESS || address.toLowerCase() === RELAY_SOL_ADDRESS;
 }
 
-export function getSolanaToken(): Token {
+export function getSolanaToken(): components["schemas"]["Token"] {
   return {
     chainId: RELAY_SOLANA_MAINNET_CHAIN_ID,
     address: RELAY_SOL_ADDRESS,
@@ -19,7 +19,7 @@ export function getSolanaToken(): Token {
   };
 }
 
-export function getEthToken(chainId: number): Token {
+export function getEthToken(chainId: number): components["schemas"]["Token"] {
   return {
     chainId: chainId,
     address: RELAY_ETH_ADDRESS,
@@ -32,7 +32,7 @@ export function getEthToken(chainId: number): Token {
   };
 }
 
-export function getPolToken(): Token {
+export function getPolToken(): components["schemas"]["Token"] {
   return {
     chainId: polygon.id,
     address: RELAY_ETH_ADDRESS,
@@ -45,7 +45,7 @@ export function getPolToken(): Token {
   };
 }
 
-export function getBnbToken(): Token {
+export function getBnbToken(): components["schemas"]["Token"] {
   return {
     chainId: bsc.id,
     address: RELAY_ETH_ADDRESS,
@@ -58,7 +58,7 @@ export function getBnbToken(): Token {
   };
 }
 
-export function getAvaxToken(): Token {
+export function getAvaxToken(): components["schemas"]["Token"] {
   return {
     chainId: avalanche.id,
     address: RELAY_ETH_ADDRESS,

@@ -1,5 +1,4 @@
 import { BondkitToken } from "@b3dotfun/bondkit";
-import { OrderType } from "@b3dotfun/sdk/anyspend";
 import {
   Button,
   GlareCardRounded,
@@ -361,14 +360,14 @@ export function AnySpendBondKit({
       isMainnet={true}
       mode={mode}
       recipientAddress={recipientAddress}
-      orderType={OrderType.Custom}
+      orderType={"custom"}
       dstChainId={baseMainnet.id}
       dstToken={dstToken}
       dstAmount={parseEther(ethAmount).toString()}
       contractAddress={contractAddress}
       encodedData={encodedData}
       metadata={{
-        type: OrderType.Custom,
+        type: "custom",
         action: "BondKit Buy",
       }}
       header={header}

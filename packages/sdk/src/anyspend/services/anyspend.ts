@@ -1,36 +1,47 @@
 import { ANYSPEND_MAINNET_BASE_URL, ANYSPEND_TESTNET_BASE_URL } from "@b3dotfun/sdk/anyspend/constants";
 import { OnrampOptions } from "@b3dotfun/sdk/anyspend/react";
-import {
-  GetOrderAndTxsResponse,
-  GetQuoteRequest,
-  GetQuoteResponse,
-  Token,
-  zGetCoinbaseOnrampOptionsResponse,
-  zGetOrderAndTxsResponse,
-  zGetOrderHistoryResponse,
-  zGetTokenListResponse,
-} from "@b3dotfun/sdk/anyspend/types";
 import { getNativeToken, isNativeToken } from "@b3dotfun/sdk/anyspend/utils";
 import invariant from "invariant";
+import {
+  CreateOrderResponse,
+  GetCoinbaseOnrampOptionsResponse,
+  GetOrderAndTxsResponse,
+  GetOrderHistoryResponse,
+  GetQuoteRequest,
+  GetQuoteResponse,
+  GetStripeClientSecret,
+  GetStripeSupportedResponse,
+  GetTokenListResponse,
+} from "../types/api_req_res";
+import { components } from "../types/api";
 
 // Service functions
 export const anyspendService = {
-  getTokenList: async (isMainnet: boolean, chainId: number, query: string): Promise<Token[]> => {
+  getTokenList: async (
+    isMainnet: boolean,
+    chainId: number,
+    query: string,
+  ): Promise<components["schemas"]["Token"][]> => {
     const response = await fetch(
       `${isMainnet ? ANYSPEND_MAINNET_BASE_URL : ANYSPEND_TESTNET_BASE_URL}/chains/${chainId}/tokens?limit=100&term=${query}`,
     );
-    const data = await response.json();
+    const body: GetTokenListResponse = await response.json();
     invariant(response.status === 200, `Failed to fetch token list for chain ${chainId}`);
-    const parsedData = zGetTokenListResponse.parse(data);
-    return parsedData.data;
+    return body.data;
   },
 
-  getToken: async (isMainnet: boolean, chainId: number, tokenAddress: string): Promise<Token> => {
+  getToken: async (
+    isMainnet: boolean,
+    chainId: number,
+    tokenAddress: string,
+  ): Promise<components["schemas"]["Token"]> => {
     if (isNativeToken(tokenAddress)) {
       return getNativeToken(chainId);
     }
     const tokenList = await anyspendService.getTokenList(isMainnet, chainId, tokenAddress);
-    const token = tokenList.find((t: Token) => t.address.toLowerCase() === tokenAddress.toLowerCase());
+    const token = tokenList.find(
+      (t: components["schemas"]["Token"]) => t.address.toLowerCase() === tokenAddress.toLowerCase(),
+    );
     if (!token) {
       throw new Error(`Token ${tokenAddress} not found on chain ${chainId}`);
     }
@@ -46,9 +57,9 @@ export const anyspendService = {
       },
       body: JSON.stringify(req),
     });
-    const data = await response.json();
+    const data: GetQuoteResponse = await response.json();
     if (response.status !== 200) throw new Error(data.message);
-    return data as GetQuoteResponse;
+    return data;
   },
 
   // Order related
@@ -101,8 +112,8 @@ export const anyspendService = {
         partnerId,
       }),
     });
-    const data = await response.json();
-    invariant(data.statusCode === 200, data.message);
+    const data: CreateOrderResponse = await response.json();
+    invariant(response.status === 200, data.message);
     return data;
   },
 
@@ -110,9 +121,7 @@ export const anyspendService = {
     const response = await fetch(
       `${isMainnet ? ANYSPEND_MAINNET_BASE_URL : ANYSPEND_TESTNET_BASE_URL}/orders/${orderId}`,
     );
-    const responseData = await response.json();
-    const data = zGetOrderAndTxsResponse.parse(responseData);
-
+    const data: GetOrderAndTxsResponse = await response.json();
     return data;
   },
 
@@ -121,7 +130,7 @@ export const anyspendService = {
     creatorAddress: string | undefined,
     limit: number = 100,
     offset: number = 0,
-  ) => {
+  ): Promise<GetOrderHistoryResponse> => {
     const params = new URLSearchParams({
       limit: limit.toString(),
       offset: offset.toString(),
@@ -132,21 +141,19 @@ export const anyspendService = {
     const response = await fetch(
       `${isMainnet ? ANYSPEND_MAINNET_BASE_URL : ANYSPEND_TESTNET_BASE_URL}/orders?${params.toString()}`,
     );
-    const responseData = await response.json();
-    const data = zGetOrderHistoryResponse.parse(responseData);
+    const data: GetOrderHistoryResponse = await response.json();
     return data;
   },
 
-  getCoinbaseOnrampOptions: async (isMainnet: boolean, country: string) => {
+  getCoinbaseOnrampOptions: async (isMainnet: boolean, country: string): Promise<GetCoinbaseOnrampOptionsResponse> => {
     const params = new URLSearchParams({
       country,
     });
     const response = await fetch(
       `${isMainnet ? ANYSPEND_MAINNET_BASE_URL : ANYSPEND_TESTNET_BASE_URL}/onramp/coinbase/options?${params.toString()}`,
     );
-    const data = await response.json();
-    const parsedData = zGetCoinbaseOnrampOptionsResponse.parse(data.data);
-    return parsedData;
+    const data: GetCoinbaseOnrampOptionsResponse = await response.json();
+    return data;
   },
 
   checkStripeSupport: async (
@@ -161,7 +168,7 @@ export const anyspendService = {
     const response = await fetch(
       `${isMainnet ? ANYSPEND_MAINNET_BASE_URL : ANYSPEND_TESTNET_BASE_URL}/onramp/stripe/supported?${params.toString()}`,
     );
-    const data = await response.json();
+    const data: GetStripeSupportedResponse = await response.json();
     invariant(response.status === 200, "Failed to check Stripe support");
     return data.data;
   },
@@ -170,7 +177,8 @@ export const anyspendService = {
     const response = await fetch(
       `${isMainnet ? ANYSPEND_MAINNET_BASE_URL : ANYSPEND_TESTNET_BASE_URL}/stripe/clientSecret?paymentIntentId=${paymentIntentId}`,
     );
-    const data = await response.json();
+    const data: GetStripeClientSecret = await response.json();
+    invariant(response.status === 200, "Failed to get Stripe client secret");
     return data.data;
   },
 };

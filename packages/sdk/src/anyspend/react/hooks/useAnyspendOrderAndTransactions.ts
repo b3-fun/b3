@@ -1,7 +1,7 @@
 import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
-import { GetOrderAndTxsResponse } from "@b3dotfun/sdk/anyspend/types";
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
+import { GetOrderAndTxsResponse } from "../../types/api_req_res";
 
 // Custom deep equality function that handles BigInt
 function customDeepEqual(oldData: any, newData: any): boolean {

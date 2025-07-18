@@ -5,7 +5,7 @@ export * from "./react/hooks";
 export * from "./react/providers/AnyspendProvider";
 
 // Types
-export * from "./types";
+export * from "./types/api";
 
 // Utils
 export * from "./utils/address";

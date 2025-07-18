@@ -1,21 +1,5 @@
-import {
-  AnySpendMetadata,
-  eqci,
-  getDefaultToken,
-  GetQuoteRequest,
-  GetQuoteResponse,
-  isCustomTxMetadata,
-  isNftMetadata,
-  isTournamentMetadata,
-  Nft,
-  NftType,
-  OnrampVendor,
-  OrderStatus,
-  OrderType,
-  RELAY_ETH_ADDRESS,
-  Token,
-  USDC_BASE,
-} from "@b3dotfun/sdk/anyspend";
+import { eqci, getDefaultToken } from "@b3dotfun/sdk/anyspend";
+import { RELAY_ETH_ADDRESS, USDC_BASE } from "@b3dotfun/sdk/anyspend/constants";
 import {
   CreateOrderParams,
   useAnyspendCreateOnrampOrder,
@@ -25,6 +9,8 @@ import {
   useAnyspendTokenList,
   useGeoOnrampOptions,
 } from "@b3dotfun/sdk/anyspend/react";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
+import { GetQuoteRequest, GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
 import {
   Badge,
   Button,
@@ -46,7 +32,6 @@ import {
   useAccountWallet,
   useBsmntProfile,
   useHasMounted,
-  useModalStore,
   useRouter,
   useSearchParamsSSR,
   useTokenBalancesByChain,
@@ -87,22 +72,22 @@ function generateGetRelayQuoteRequest({
   encodedData,
   spenderAddress,
 }: {
-  orderType: OrderType;
+  orderType: components["schemas"]["Order"]["type"];
   srcChainId: number;
-  srcToken: Token;
+  srcToken: components["schemas"]["Token"];
   dstChainId: number;
-  dstToken: Token;
+  dstToken: components["schemas"]["Token"];
   dstAmount: string;
   contractAddress: string;
   tokenId?: number | null;
-  contractType?: NftType;
+  contractType?: components["schemas"]["NftContract"]["type"];
   encodedData: string;
   spenderAddress?: string;
 }): GetQuoteRequest {
   switch (orderType) {
-    case OrderType.MintNFT: {
+    case "mint_nft": {
       return {
-        type: OrderType.MintNFT,
+        type: "mint_nft",
         srcChain: srcChainId,
         srcTokenAddress: srcToken.address,
         dstChain: dstChainId,
@@ -113,9 +98,9 @@ function generateGetRelayQuoteRequest({
         contractType: contractType!,
       };
     }
-    case OrderType.JoinTournament: {
+    case "join_tournament": {
       return {
-        type: OrderType.JoinTournament,
+        type: "join_tournament",
         srcChain: srcChainId,
         srcTokenAddress: srcToken.address,
         dstChain: dstChainId,
@@ -124,9 +109,9 @@ function generateGetRelayQuoteRequest({
         contractAddress: contractAddress,
       };
     }
-    case OrderType.FundTournament: {
+    case "fund_tournament": {
       return {
-        type: OrderType.FundTournament,
+        type: "fund_tournament",
         srcChain: srcChainId,
         srcTokenAddress: srcToken.address,
         dstChain: dstChainId,
@@ -135,9 +120,9 @@ function generateGetRelayQuoteRequest({
         contractAddress: contractAddress,
       };
     }
-    case OrderType.Custom: {
+    case "custom": {
       return {
-        type: OrderType.Custom,
+        type: "custom",
         srcChain: srcChainId,
         srcTokenAddress: srcToken.address,
         dstChain: dstChainId,
@@ -178,13 +163,13 @@ export function AnySpendCustom({
   mode?: "modal" | "page";
   recipientAddress?: string;
   spenderAddress?: string;
-  orderType: OrderType;
+  orderType: components["schemas"]["Order"]["type"];
   dstChainId: number;
-  dstToken: Token;
+  dstToken: components["schemas"]["Token"];
   dstAmount: string;
   contractAddress: string;
   encodedData: string;
-  metadata: AnySpendMetadata;
+  metadata: any;
   header: ({
     anyspendPrice,
     isLoadingAnyspendPrice,
@@ -195,8 +180,6 @@ export function AnySpendCustom({
   onSuccess?: (txHash?: string) => void;
   showRecipient?: boolean;
 }) {
-  const { setB3ModalOpen, setB3ModalContentType } = useModalStore();
-
   const hasMounted = useHasMounted();
 
   const searchParams = useSearchParamsSSR();
@@ -219,7 +202,7 @@ export function AnySpendCustom({
   // Update recipient logic to use custom recipient
   const recipientAddress = customRecipientAddress || currentWallet.address;
   const recipientPropsProfile = useBsmntProfile({ address: recipientAddress });
-  const recipientEnsName = recipientPropsProfile.data?.username?.replaceAll(".b3.fun", "");
+  const recipientEnsName = recipientPropsProfile.data?.username?.replace(/\.b3\.fun/g, "");
   const recipientImageUrl = recipientPropsProfile.data?.avatar || currentWallet.wallet.meta?.icon;
 
   const [orderId, setOrderId] = useState<string | undefined>(loadOrder);
@@ -273,7 +256,7 @@ export function AnySpendCustom({
   }, [currentWallet?.wallet?.address, nativeTokens, fungibleTokens, tokenList, srcChainId]);
 
   // Set the selected token with preference for tokens user owns
-  const [srcToken, setSrcToken] = useState<Token>(getDefaultToken(srcChainId));
+  const [srcToken, setSrcToken] = useState<components["schemas"]["Token"]>(getDefaultToken(srcChainId));
   const [dirtySelectSrcToken, setDirtySelectSrcToken] = useState(false);
 
   // Update token when chain changes or token balances are loaded
@@ -297,8 +280,8 @@ export function AnySpendCustom({
       dstToken: dstToken,
       dstAmount: dstAmount,
       contractAddress: contractAddress,
-      tokenId: isNftMetadata(metadata) ? metadata.nftContract.tokenId : undefined,
-      contractType: isNftMetadata(metadata) ? metadata.nftContract.type : undefined,
+      tokenId: metadata.type === "mint_nft" ? metadata.nftContract.tokenId : undefined,
+      contractType: metadata.type === "mint_nft" ? metadata.nftContract.type : undefined,
       encodedData: encodedData,
       spenderAddress: spenderAddress,
     });
@@ -362,7 +345,8 @@ export function AnySpendCustom({
   }, [anyspendQuote?.data]);
 
   useEffect(() => {
-    if (oat?.data?.order.status === OrderStatus.Executed) {
+    if (oat?.data?.order.status === "executed") {
+      console.log("Calling onSuccess");
       const txHash = oat?.data?.executeTx?.txHash;
       onSuccess?.(txHash);
     }
@@ -392,7 +376,7 @@ export function AnySpendCustom({
 
   const handleCreateOrder = async (
     recipientAddress: string,
-    onramp?: { paymentMethod: string; vendor: OnrampVendor },
+    onramp?: { paymentMethod: string; vendor: components["schemas"]["OnrampMetadata"]["vendor"] },
   ) => {
     try {
       invariant(anyspendQuote, "Relay price is not found");
@@ -408,44 +392,47 @@ export function AnySpendCustom({
         srcAmount: srcAmount.toString(),
         recipientAddress,
         creatorAddress: currentWallet?.wallet?.address,
-        nft: isNftMetadata(metadata)
-          ? metadata.nftContract.type === NftType.ERC1155
-            ? ({
-                type: NftType.ERC1155,
-                contractAddress: metadata.nftContract.contractAddress,
-                tokenId: metadata.nftContract.tokenId!,
-                name: metadata.nftContract.name,
-                description: metadata.nftContract.description,
-                imageUrl: metadata.nftContract.imageUrl,
-                price: dstAmount,
-              } as Nft)
-            : ({
-                type: NftType.ERC721,
-                contractAddress: metadata.nftContract.contractAddress,
-                contractType: metadata.nftContract.type,
-                price: dstAmount,
-                name: metadata.nftContract.name,
-                description: metadata.nftContract.description,
-                imageUrl: metadata.nftContract.imageUrl,
-              } as Nft)
-          : undefined,
-        tournament: isTournamentMetadata(metadata)
-          ? {
-              ...metadata.tournament,
-              contractAddress: contractAddress,
-              entryPriceOrFundAmount: dstAmount,
-            }
-          : undefined,
+        nft:
+          metadata.type === "mint_nft"
+            ? metadata.nftContract.type === "erc1155"
+              ? {
+                  type: "erc1155",
+                  contractAddress: metadata.nftContract.contractAddress,
+                  tokenId: metadata.nftContract.tokenId!,
+                  name: metadata.nftContract.name,
+                  description: metadata.nftContract.description,
+                  imageUrl: metadata.nftContract.imageUrl,
+                  price: dstAmount,
+                }
+              : {
+                  type: "erc721",
+                  contractAddress: metadata.nftContract.contractAddress,
+                  contractType: metadata.nftContract.type,
+                  price: dstAmount,
+                  name: metadata.nftContract.name,
+                  description: metadata.nftContract.description,
+                  imageUrl: metadata.nftContract.imageUrl,
+                }
+            : undefined,
+        tournament:
+          metadata.type === "join_tournament" || metadata.type === "fund_tournament"
+            ? {
+                ...metadata.tournament,
+                contractAddress: contractAddress,
+                entryPriceOrFundAmount: dstAmount,
+              }
+            : undefined,
         // only populate payload for custom tx
-        payload: isCustomTxMetadata(metadata)
-          ? {
-              amount: dstAmount,
-              data: encodedData,
-              spenderAddress: spenderAddress,
-              to: contractAddress,
-              action: metadata.action,
-            }
-          : undefined,
+        payload:
+          metadata.type === "custom"
+            ? {
+                amount: dstAmount,
+                data: encodedData,
+                spenderAddress: spenderAddress,
+                to: contractAddress,
+                action: metadata.action,
+              }
+            : undefined,
       } as CreateOrderParams;
 
       if (onramp) {
@@ -476,7 +463,10 @@ export function AnySpendCustom({
     }
   };
 
-  const handleConfirmOrder = async (onramp?: { paymentMethod: string; vendor: OnrampVendor }) => {
+  const handleConfirmOrder = async (onramp?: {
+    paymentMethod: string;
+    vendor: components["schemas"]["OnrampMetadata"]["vendor"];
+  }) => {
     // if (!isAuthenticated) {
     //   // Copied from https://github.com/b3-fun/b3-mono/blob/main/apps/anyspend-web/components/User/index.tsx#L85
     //   setB3ModalContentType({
@@ -517,11 +507,11 @@ export function AnySpendCustom({
       className="flex w-full items-center justify-between gap-4"
     >
       <div className="text-b3-react-foreground">
-        {orderType === OrderType.Swap
+        {orderType === "swap"
           ? "Recipient"
-          : orderType === OrderType.MintNFT
+          : orderType === "mint_nft"
             ? "Receive NFT at"
-            : orderType === OrderType.JoinTournament
+            : orderType === "join_tournament"
               ? "Join for"
               : "Recipient"}
       </div>
@@ -839,10 +829,10 @@ export function AnySpendCustom({
               onBack={() => setActiveTab("crypto")}
               orderType={orderType}
               nft={
-                isNftMetadata(metadata)
-                  ? metadata.nftContract.type === NftType.ERC1155
+                metadata.type === "mint_nft"
+                  ? metadata.nftContract.type === "erc1155"
                     ? {
-                        type: NftType.ERC1155,
+                        type: "erc1155",
                         contractAddress: metadata.nftContract.contractAddress,
                         tokenId: metadata.nftContract.tokenId!,
                         imageUrl: metadata.nftContract.imageUrl,
@@ -851,7 +841,7 @@ export function AnySpendCustom({
                         price: dstAmount,
                       }
                     : {
-                        type: NftType.ERC721,
+                        type: "erc721",
                         contractAddress: metadata.nftContract.contractAddress,
                         name: metadata.nftContract.name,
                         description: metadata.nftContract.description,
@@ -861,7 +851,7 @@ export function AnySpendCustom({
                   : undefined
               }
               payload={
-                isCustomTxMetadata(metadata)
+                metadata.type === "custom"
                   ? {
                       ...metadata,
                       amount: dstAmount,

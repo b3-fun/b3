@@ -1,15 +1,15 @@
 import { USDC_BASE } from "@b3dotfun/sdk/anyspend/constants";
 import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
-import { OnrampVendor } from "@b3dotfun/sdk/anyspend/types";
 import { buildMetadata, buildPayload, normalizeAddress } from "@b3dotfun/sdk/anyspend/utils";
 import { useMutation } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { parseUnits } from "viem";
 import { base } from "viem/chains";
 import { CreateOrderParams } from "./useAnyspendCreateOrder";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
 
 export type OnrampOptions = {
-  vendor: OnrampVendor;
+  vendor: components["schemas"]["OnrampMetadata"]["vendor"];
   paymentMethod: string;
   country: string;
   redirectUrl: string;

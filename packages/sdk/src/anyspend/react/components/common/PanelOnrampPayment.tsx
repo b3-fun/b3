@@ -1,4 +1,3 @@
-import { GetQuoteResponse, Nft, OnrampVendor, OrderType, Token, Tournament } from "@b3dotfun/sdk/anyspend";
 import { useAnyspendCreateOnrampOrder, useGeoOnrampOptions } from "@b3dotfun/sdk/anyspend/react";
 import { Button } from "@b3dotfun/sdk/global-account/react";
 import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
@@ -7,6 +6,8 @@ import invariant from "invariant";
 import { ChevronLeft, ChevronRight, Landmark, Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
+import { GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
 
 interface PanelOnrampPaymentProps {
   srcAmountOnRamp: string;
@@ -17,14 +18,14 @@ interface PanelOnrampPaymentProps {
   destinationTokenChainId?: number;
   destinationTokenAddress?: string;
   selectedDstChainId: number;
-  selectedDstToken: Token;
+  selectedDstToken: components["schemas"]["Token"];
   anyspendQuote: GetQuoteResponse | undefined;
   globalAddress?: string;
   onOrderCreated: (orderId: string) => void;
   onBack: () => void;
-  orderType: OrderType;
-  nft?: Nft & { price: string };
-  tournament?: Tournament & { contractAddress: string; entryPriceOrFundAmount: string };
+  orderType: components["schemas"]["Order"]["type"];
+  nft?: components["schemas"]["NFT"] & { price: string };
+  tournament?: components["schemas"]["Tournament"] & { contractAddress: string; entryPriceOrFundAmount: string };
   payload?: any;
   recipientEnsName?: string;
   recipientImageUrl?: string;
@@ -83,7 +84,10 @@ export function PanelOnrampPayment({
     },
   });
 
-  const handlePaymentMethodClick = async (vendor: OnrampVendor, paymentMethod?: string) => {
+  const handlePaymentMethodClick = async (
+    vendor: components["schemas"]["OnrampMetadata"]["vendor"],
+    paymentMethod?: string,
+  ) => {
     try {
       if (!recipientAddress) {
         toast.error("Please select a recipient");
@@ -95,17 +99,17 @@ export function PanelOnrampPayment({
         return;
       }
 
-      if (vendor === OnrampVendor.Coinbase && !coinbaseOnrampOptions) {
+      if (vendor === "coinbase" && !coinbaseOnrampOptions) {
         toast.error("Onramp options not available");
         return;
       }
 
-      if (vendor === OnrampVendor.Stripe && !isStripeOnrampSupported) {
+      if (vendor === "stripe" && !isStripeOnrampSupported) {
         toast.error("Stripe onramp not available");
         return;
       }
 
-      if (vendor === OnrampVendor.StripeWeb2 && !isStripeWeb2Supported) {
+      if (vendor === "stripe-web2" && !isStripeWeb2Supported) {
         toast.error("Stripe credit card not available");
         return;
       }
@@ -115,7 +119,7 @@ export function PanelOnrampPayment({
         return;
       }
 
-      const getDstToken = (): Token => {
+      const getDstToken = (): components["schemas"]["Token"] => {
         if (isBuyMode) {
           invariant(destinationTokenAddress, "destinationTokenAddress is required");
           return {
@@ -173,11 +177,11 @@ export function PanelOnrampPayment({
               className="flex items-center justify-between"
             >
               <p className="text-b3-react-foreground/60">
-                {orderType === OrderType.Swap
+                {orderType === "swap"
                   ? "Recipient"
-                  : orderType === OrderType.MintNFT
+                  : orderType === "mint_nft"
                     ? "Receive NFT at"
-                    : orderType === OrderType.JoinTournament
+                    : orderType === "join_tournament"
                       ? "Join for"
                       : "Recipient"}
               </p>
@@ -278,7 +282,7 @@ export function PanelOnrampPayment({
 
                 return (
                   <button
-                    onClick={() => handlePaymentMethodClick(OnrampVendor.Coinbase, method.id)}
+                    onClick={() => handlePaymentMethodClick("coinbase", method.id)}
                     disabled={isCreatingOrder}
                     className="bg-b3-react-background border-b3-react-border hover:border-as-brand disabled:hover:border-b3-react-border group flex w-full items-center justify-between gap-4 rounded-xl border p-5 transition-all duration-200 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
                   >
@@ -307,7 +311,7 @@ export function PanelOnrampPayment({
             {/* Stripe Option - Show if supported */}
             {isStripeWeb2Supported && (
               <button
-                onClick={() => handlePaymentMethodClick(OnrampVendor.StripeWeb2)}
+                onClick={() => handlePaymentMethodClick("stripe-web2")}
                 className="bg-b3-react-background border-b3-react-border hover:border-as-brand group flex w-full items-center justify-between gap-4 rounded-xl border p-5 transition-all duration-200 hover:shadow-md"
               >
                 <div className="flex items-center gap-4">

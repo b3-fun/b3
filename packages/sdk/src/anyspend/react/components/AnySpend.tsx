@@ -1,6 +1,6 @@
 "use client";
 
-import { getDefaultToken, OrderType, Token, TradeType, USDC_BASE } from "@b3dotfun/sdk/anyspend";
+import { getDefaultToken, USDC_BASE } from "@b3dotfun/sdk/anyspend";
 import {
   useAnyspendCreateOrder,
   useAnyspendOrderAndTransactions,
@@ -28,6 +28,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { parseUnits } from "viem";
 import { b3Sepolia, base, mainnet, sepolia } from "viem/chains";
+import { components } from "../../types/api";
 import { OrderDetails, OrderDetailsLoadingView } from "./common/OrderDetails";
 import { OrderHistory } from "./common/OrderHistory";
 import { OrderStatus } from "./common/OrderStatus";
@@ -124,7 +125,7 @@ export function AnySpend({
     defaultToken: defaultSrcToken,
     prefix: "from",
   });
-  const [selectedSrcToken, setSelectedSrcToken] = useState<Token>(srcTokenFromUrl);
+  const [selectedSrcToken, setSelectedSrcToken] = useState<components["schemas"]["Token"]>(srcTokenFromUrl);
   const { data: srcTokenMetadata } = useTokenData(selectedSrcToken?.chainId, selectedSrcToken?.address);
   const [srcAmount, setSrcAmount] = useState<string>(searchParams.get("fromAmount") || "0.01");
 
@@ -147,7 +148,9 @@ export function AnySpend({
     defaultToken: defaultDstToken,
     prefix: "to",
   });
-  const [selectedDstToken, setSelectedDstToken] = useState<Token>(isBuyMode ? defaultDstToken : dstTokenFromUrl);
+  const [selectedDstToken, setSelectedDstToken] = useState<components["schemas"]["Token"]>(
+    isBuyMode ? defaultDstToken : dstTokenFromUrl,
+  );
   const { data: dstTokenMetadata } = useTokenData(selectedDstToken?.chainId, selectedDstToken?.address);
   const [dstAmount, setDstAmount] = useState<string>(searchParams.get("toAmount") || "");
 
@@ -376,9 +379,9 @@ export function AnySpend({
 
   // Get anyspend price
   const activeInputAmountInWei = isSrcInputDirty
-    ? parseUnits(srcAmount.replaceAll(",", ""), selectedSrcToken.decimals).toString()
-    : parseUnits(dstAmount.replaceAll(",", ""), selectedDstToken.decimals).toString();
-  const srcAmountOnrampInWei = parseUnits(srcAmountOnRamp.replaceAll(",", ""), USDC_BASE.decimals).toString();
+    ? parseUnits(srcAmount.replace(/,/g, ""), selectedSrcToken.decimals).toString()
+    : parseUnits(dstAmount.replace(/,/g, ""), selectedDstToken.decimals).toString();
+  const srcAmountOnrampInWei = parseUnits(srcAmountOnRamp.replace(/,/g, ""), USDC_BASE.decimals).toString();
   const { anyspendQuote, isLoadingAnyspendQuote, getAnyspendQuoteError } = useAnyspendQuote(
     isMainnet,
     activeTab === "crypto"
@@ -387,8 +390,8 @@ export function AnySpend({
           dstChain: isBuyMode ? destinationTokenChainId : selectedDstChainId,
           srcTokenAddress: selectedSrcToken.address,
           dstTokenAddress: isBuyMode ? destinationTokenAddress : selectedDstToken.address,
-          type: OrderType.Swap,
-          tradeType: isSrcInputDirty ? TradeType.EXACT_INPUT : TradeType.EXPECTED_OUTPUT,
+          type: "swap",
+          tradeType: isSrcInputDirty ? "EXACT_INPUT" : "EXPECTED_OUTPUT",
           amount: activeInputAmountInWei,
         }
       : {
@@ -396,8 +399,8 @@ export function AnySpend({
           dstChain: isBuyMode ? destinationTokenChainId : selectedDstChainId,
           srcTokenAddress: USDC_BASE.address,
           dstTokenAddress: isBuyMode ? destinationTokenAddress : selectedDstToken.address,
-          type: OrderType.Swap,
-          tradeType: TradeType.EXACT_INPUT,
+          type: "swap",
+          tradeType: "EXACT_INPUT",
           amount: srcAmountOnrampInWei,
         },
   );
@@ -475,12 +478,12 @@ export function AnySpend({
   // const handleCreateOrder = async (recipientAddress: string) => {
   //   try {
   //     invariant(anyspendPrice, "Relay price is not found");
-  //     const srcAmountBigInt = parseUnits(srcAmount.replaceAll(",", ""), selectedSrcToken.decimals);
+  //     const srcAmountBigInt = parseUnits(srcAmount.replace(/,/g, ""), selectedSrcToken.decimals);
 
   //     createOrder({
   //       isMainnet,
   //       recipientAddress,
-  //       orderType: OrderType.Swap,
+  //       orderType: "swap",
   //       srcChain: selectedSrcChainId,
   //       dstChain: selectedDstChainId,
   //       srcToken: selectedSrcToken,
@@ -638,12 +641,12 @@ export function AnySpend({
         return;
       }
 
-      const srcAmountBigInt = parseUnits(srcAmount.replaceAll(",", ""), selectedSrcToken.decimals);
+      const srcAmountBigInt = parseUnits(srcAmount.replace(/,/g, ""), selectedSrcToken.decimals);
 
       createOrder({
         isMainnet,
         recipientAddress,
-        orderType: OrderType.Swap,
+        orderType: "swap",
         srcChain: selectedSrcChainId,
         dstChain: isBuyMode ? destinationTokenChainId : selectedDstChainId,
         srcToken: selectedSrcToken,
@@ -1091,7 +1094,7 @@ export function AnySpend({
       destinationTokenAddress={destinationTokenAddress}
       selectedDstChainId={selectedDstChainId}
       selectedDstToken={selectedDstToken}
-      orderType={OrderType.Swap}
+      orderType={"swap"}
       anyspendQuote={anyspendQuote}
       globalAddress={globalAddress}
       onOrderCreated={orderId => {

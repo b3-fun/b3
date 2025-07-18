@@ -1,0 +1,18 @@
+{
+  "name": "anyspend-demo-js",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@b3dotfun/sdk": "workspace:*"
+  },
+  "devDependencies": {
+    "vite": "^5.1.4",
+    "vite-plugin-node-polyfills": "^0.23.0"
+  }
+}

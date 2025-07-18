@@ -11,7 +11,7 @@ export function useOnchainName(address: string | undefined) {
       if (!address) return null;
       try {
         const response = await fetchBsmntProfile(undefined, address);
-        return response?.username?.replaceAll(".b3.fun", "") || null;
+        return response?.username?.replace(/\.b3\.fun/g, "") || null;
       } catch (error) {
         return null;
       }
@@ -25,7 +25,7 @@ export function useOnchainName(address: string | undefined) {
       if (!address) return null;
       try {
         const response = await getB3NameByAddress(address);
-        return response?.name?.replaceAll(".b3.fun", "") || null;
+        return response?.name?.replace(/\.b3\.fun/g, "") || null;
       } catch (error) {
         return null;
       }

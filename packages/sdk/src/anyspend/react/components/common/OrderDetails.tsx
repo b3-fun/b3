@@ -3,26 +3,16 @@
 import {
   ALL_CHAINS,
   capitalizeFirstLetter,
-  DepositTransaction,
   EVM_CHAINS,
-  ExecuteTransaction,
   getChainName,
   getErrorDisplay,
   getExplorerTxUrl,
   getPaymentUrl,
   getStatusDisplay,
   isNativeToken,
-  OnrampVendor,
-  Order,
-  OrderStatus,
-  OrderType,
-  RefundTransaction,
   RELAY_ETH_ADDRESS,
-  RelayTransaction,
-  zNft,
-  zToken,
-  zTournament,
 } from "@b3dotfun/sdk/anyspend";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import {
   Badge,
   Button,
@@ -67,11 +57,11 @@ import PaymentVendorUI from "./PaymentVendorUI";
 interface OrderDetailsProps {
   isMainnet: boolean;
   mode?: "modal" | "page";
-  order: Order;
-  depositTxs: DepositTransaction[] | null;
-  relayTx: RelayTransaction | null;
-  executeTx: ExecuteTransaction | null;
-  refundTxs: RefundTransaction[] | null;
+  order: components["schemas"]["Order"];
+  depositTxs: components["schemas"]["DepositTx"][] | null;
+  relayTx: components["schemas"]["RelayTx"] | null;
+  executeTx: components["schemas"]["ExecuteTx"] | null;
+  refundTxs: components["schemas"]["RefundTx"][] | null;
   onBack?: () => void;
 }
 
@@ -84,7 +74,7 @@ function getOrderSuccessText({
   recipientName,
   centerTruncate,
 }: {
-  order: Order;
+  order: components["schemas"]["Order"];
   tournament?: any;
   formattedActualDstAmount?: string;
   dstToken: any;
@@ -95,19 +85,19 @@ function getOrderSuccessText({
 
   let actionText = "";
   switch (order.type) {
-    case OrderType.Swap:
+    case "swap":
       actionText = `sent ${formattedActualDstAmount || "--"} ${dstToken.symbol}`;
       return `Successfully ${actionText} to ${recipient}`;
-    case OrderType.MintNFT:
+    case "mint_nft":
       actionText = `minted ${order.metadata.nft.name}`;
       return `Successfully ${actionText} to ${recipient}`;
-    case OrderType.JoinTournament:
+    case "join_tournament":
       actionText = `joined ${tournament?.name}`;
       return `Successfully ${actionText} for ${recipient}`;
-    case OrderType.FundTournament:
+    case "fund_tournament":
       actionText = `funded ${tournament?.name}`;
       return `Successfully ${actionText}`;
-    case OrderType.Custom:
+    case "custom":
       actionText = order.metadata.action || `executed contract`;
       return `Successfully ${actionText}`;
     default:
@@ -215,13 +205,11 @@ export const OrderDetails = memo(function OrderDetails({
 
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
 
-  const srcToken = zToken.parse(order.metadata.srcToken);
-  const dstToken = zToken.parse(order.metadata.dstToken);
-  const nft = order.type === OrderType.MintNFT ? zNft.parse(order.metadata.nft) : undefined;
+  const srcToken = order.metadata.srcToken;
+  const dstToken = order.metadata.dstToken;
+  const nft = order.type === "mint_nft" ? order.metadata.nft : undefined;
   const tournament =
-    order.type === OrderType.JoinTournament || order.type === OrderType.FundTournament
-      ? zTournament.parse(order.metadata.tournament)
-      : undefined;
+    order.type === "join_tournament" || order.type === "fund_tournament" ? order.metadata.tournament : undefined;
 
   const { name: recipientName } = useOnchainName(order.recipientAddress);
   const account = useAccountWallet();
@@ -332,19 +320,19 @@ export const OrderDetails = memo(function OrderDetails({
   }
 
   const expectedDstAmount =
-    order.type === OrderType.MintNFT ||
-    order.type === OrderType.JoinTournament ||
-    order.type === OrderType.FundTournament ||
-    order.type === OrderType.Custom
+    order.type === "mint_nft" ||
+    order.type === "join_tournament" ||
+    order.type === "fund_tournament" ||
+    order.type === "custom"
       ? "0"
       : order.payload.expectedDstAmount.toString();
   const formattedExpectedDstAmount = formatTokenAmount(BigInt(expectedDstAmount), dstToken.decimals);
 
   const actualDstAmount =
-    order.type === OrderType.MintNFT ||
-    order.type === OrderType.JoinTournament ||
-    order.type === OrderType.FundTournament ||
-    order.type === OrderType.Custom
+    order.type === "mint_nft" ||
+    order.type === "join_tournament" ||
+    order.type === "fund_tournament" ||
+    order.type === "custom"
       ? undefined
       : order.payload.actualDstAmount;
   const formattedActualDstAmount = actualDstAmount
@@ -392,7 +380,7 @@ export const OrderDetails = memo(function OrderDetails({
                 <TransactionDetails
                   key={dTx.txHash}
                   title={
-                    order.onrampMetadata?.vendor === OnrampVendor.StripeWeb2
+                    order.onrampMetadata?.vendor === "stripe-web2"
                       ? `Received payment`
                       : `Received ${formatTokenAmount(BigInt(dTx.amount), srcToken.decimals)} ${srcToken.symbol}`
                   }
@@ -454,7 +442,7 @@ export const OrderDetails = memo(function OrderDetails({
                 <TransactionDetails
                   key={dTxs.txHash}
                   title={
-                    order.onrampMetadata?.vendor === OnrampVendor.StripeWeb2
+                    order.onrampMetadata?.vendor === "stripe-web2"
                       ? `Received payment`
                       : `Received ${formatTokenAmount(BigInt(dTxs.amount), srcToken.decimals)} ${srcToken.symbol}`
                   }
@@ -473,13 +461,13 @@ export const OrderDetails = memo(function OrderDetails({
           />
           <TransactionDetails
             title={
-              order.type === OrderType.Swap
+              order.type === "swap"
                 ? "Processed Swap"
-                : order.type === OrderType.MintNFT
+                : order.type === "mint_nft"
                   ? "Minted NFT"
-                  : order.type === OrderType.JoinTournament
+                  : order.type === "join_tournament"
                     ? "Joined Tournament"
-                    : order.type === OrderType.FundTournament
+                    : order.type === "fund_tournament"
                       ? "Funded Tournament"
                       : "Processed Order"
             }
@@ -510,7 +498,7 @@ export const OrderDetails = memo(function OrderDetails({
           </Button>
         </div>
 
-        {order.type === OrderType.JoinTournament && order.status === OrderStatus.Executed && (
+        {order.type === "join_tournament" && order.status === "executed" && (
           <ShinyButton
             accentColor={"hsl(var(--as-brand))"}
             textColor="text-white"
@@ -523,7 +511,7 @@ export const OrderDetails = memo(function OrderDetails({
           </ShinyButton>
         )}
 
-        {order.status === OrderStatus.Executed && (
+        {order.status === "executed" && (
           <button
             className="bg-as-on-surface-2 text-as-secondary flex w-full items-center justify-center gap-2 rounded-lg p-2"
             onClick={mode === "page" ? handleBack : handleCloseModal}
@@ -558,7 +546,7 @@ export const OrderDetails = memo(function OrderDetails({
                 <TransactionDetails
                   key={dTxs.txHash}
                   title={
-                    order.onrampMetadata?.vendor === OnrampVendor.StripeWeb2
+                    order.onrampMetadata?.vendor === "stripe-web2"
                       ? `Received payment`
                       : `Received ${formatTokenAmount(BigInt(dTxs.amount), srcToken.decimals)} ${srcToken.symbol}`
                   }
@@ -572,13 +560,13 @@ export const OrderDetails = memo(function OrderDetails({
           {order.srcChain === order.dstChain ? (
             <TransactionDetails
               title={
-                order.type === OrderType.Swap
+                order.type === "swap"
                   ? "Processed Swap"
-                  : order.type === OrderType.MintNFT
+                  : order.type === "mint_nft"
                     ? "Minted NFT"
-                    : order.type === OrderType.JoinTournament
+                    : order.type === "join_tournament"
                       ? "Joined Tournament"
-                      : order.type === OrderType.FundTournament
+                      : order.type === "fund_tournament"
                         ? "Funded Tournament"
                         : "Processed Transaction"
               }
@@ -598,13 +586,13 @@ export const OrderDetails = memo(function OrderDetails({
               />
               <TransactionDetails
                 title={
-                  order.type === OrderType.Swap
+                  order.type === "swap"
                     ? "Processing Swap"
-                    : order.type === OrderType.MintNFT
+                    : order.type === "mint_nft"
                       ? "Minting NFT"
-                      : order.type === OrderType.JoinTournament
+                      : order.type === "join_tournament"
                         ? "Joining Tournament"
-                        : order.type === OrderType.FundTournament
+                        : order.type === "fund_tournament"
                           ? "Funding Tournament"
                           : "Processing Bridge"
                 }
@@ -638,7 +626,7 @@ export const OrderDetails = memo(function OrderDetails({
           </Button>
         </div>
 
-        {order.type === OrderType.JoinTournament && order.status === OrderStatus.Executed && (
+        {order.type === "join_tournament" && order.status === "executed" && (
           <ShinyButton
             accentColor={"hsl(var(--as-brand))"}
             textColor="text-white"
@@ -651,7 +639,7 @@ export const OrderDetails = memo(function OrderDetails({
           </ShinyButton>
         )}
 
-        {order.status === OrderStatus.Executed && (
+        {order.status === "executed" && (
           <button
             className="bg-as-on-surface-2 text-as-secondary flex w-full items-center justify-center gap-2 rounded-lg p-2"
             onClick={mode === "page" ? handleBack : handleCloseModal}
@@ -687,7 +675,7 @@ export const OrderDetails = memo(function OrderDetails({
             <TransactionDetails
               key={dTxs.txHash}
               title={
-                order.onrampMetadata?.vendor === OnrampVendor.StripeWeb2
+                order.onrampMetadata?.vendor === "stripe-web2"
                   ? `Received payment`
                   : `Received ${formatTokenAmount(BigInt(dTxs.amount), srcToken.decimals)} ${srcToken.symbol}`
               }
@@ -707,13 +695,13 @@ export const OrderDetails = memo(function OrderDetails({
           ) : depositEnoughAmount ? (
             <TransactionDetails
               title={
-                order.type === OrderType.Swap
+                order.type === "swap"
                   ? "Processing Swap"
-                  : order.type === OrderType.MintNFT
+                  : order.type === "mint_nft"
                     ? "Minting NFT"
-                    : order.type === OrderType.JoinTournament
+                    : order.type === "join_tournament"
                       ? "Joining Tournament"
-                      : order.type === OrderType.FundTournament
+                      : order.type === "fund_tournament"
                         ? "Funding Tournament"
                         : "Processing Transaction"
               }
@@ -725,7 +713,7 @@ export const OrderDetails = memo(function OrderDetails({
           ) : (
             <TransactionDetails
               title={
-                order.onrampMetadata?.vendor === OnrampVendor.StripeWeb2
+                order.onrampMetadata?.vendor === "stripe-web2"
                   ? `Waiting for payment`
                   : `Waiting for deposit ${formattedDepositDeficit} ${srcToken.symbol}`
               }
@@ -950,7 +938,7 @@ export const OrderDetails = memo(function OrderDetails({
         <div className="text-as-primary">
           {depositEnoughAmount ? (
             "Received"
-          ) : order.status === OrderStatus.Expired ? (
+          ) : order.status === "expired" ? (
             "Expired"
           ) : (
             <TimeAgo date={new Date(order.expiredAt)} live={true} />
@@ -968,13 +956,13 @@ export const OrderDetails = memo(function OrderDetails({
           <div className="flex w-full flex-col items-center gap-3 whitespace-nowrap py-2 text-sm">
             <div className="flex w-full items-center justify-between gap-2">
               <div className="text-as-primary/30">
-                {order.type === OrderType.Swap || order.type === OrderType.MintNFT
+                {order.type === "swap" || order.type === "mint_nft"
                   ? "Expected to receive"
-                  : order.type === OrderType.JoinTournament
+                  : order.type === "join_tournament"
                     ? "Join tournament"
-                    : order.type === OrderType.FundTournament
+                    : order.type === "fund_tournament"
                       ? "Fund tournament"
-                      : order.type === OrderType.Custom
+                      : order.type === "custom"
                         ? order.metadata.action
                           ? capitalizeFirstLetter(order.metadata.action)
                           : "Contract execution"
@@ -982,14 +970,14 @@ export const OrderDetails = memo(function OrderDetails({
               </div>
 
               <div className="flex items-end gap-2">
-                {order.type === OrderType.Swap ? (
+                {order.type === "swap" ? (
                   `~${formattedExpectedDstAmount} ${dstToken.symbol}`
-                ) : order.type === OrderType.MintNFT ? (
+                ) : order.type === "mint_nft" ? (
                   <div className="flex items-center gap-2">
                     <img src={nft?.imageUrl} alt={nft?.name || "NFT"} className="h-5 w-5" />
                     <div>{nft?.name || "NFT"}</div>
                   </div>
-                ) : order.type === OrderType.JoinTournament || order.type === OrderType.FundTournament ? (
+                ) : order.type === "join_tournament" || order.type === "fund_tournament" ? (
                   <div className="flex items-center gap-2">
                     <img src={tournament?.imageUrl} alt={tournament?.name || "Tournament"} className="h-5 w-5" />
                     <div>{tournament?.name || "Tournament"}</div>
@@ -1071,7 +1059,7 @@ function TransactionDetails({
 }: {
   title: string;
   chainId: number;
-  tx: DepositTransaction | RelayTransaction | ExecuteTransaction | null;
+  tx: components["schemas"]["DepositTx"] | components["schemas"]["RelayTx"] | components["schemas"]["ExecuteTx"] | null;
   isProcessing: boolean;
   delay?: number;
 }) {

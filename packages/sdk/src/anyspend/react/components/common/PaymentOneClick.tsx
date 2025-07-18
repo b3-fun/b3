@@ -1,11 +1,11 @@
-import { Order } from "@b3dotfun/sdk/anyspend";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { ShinyButton } from "@b3dotfun/sdk/global-account/react";
 import { getPaymentMethodDescription, getVendorDisplayName } from "@b3dotfun/sdk/shared/utils/payment.utils";
 import { ChevronRight } from "lucide-react";
 import HowItWorks from "./HowItWorks";
 
 interface PaymentOneClickProps {
-  order: Order;
+  order: components["schemas"]["Order"];
   dstTokenSymbol: string;
 }
 

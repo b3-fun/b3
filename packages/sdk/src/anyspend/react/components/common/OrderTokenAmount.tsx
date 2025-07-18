@@ -4,11 +4,12 @@ import { ChevronsUpDown } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { NumericFormat } from "react-number-format";
 
-import { ALL_CHAINS, RELAY_SOLANA_MAINNET_CHAIN_ID, Token } from "@b3dotfun/sdk/anyspend";
+import { ALL_CHAINS, RELAY_SOLANA_MAINNET_CHAIN_ID } from "@b3dotfun/sdk/anyspend";
 import { Button } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils";
 import { TokenSelector } from "@reservoir0x/relay-kit-ui";
 import { ChainTokenIcon } from "./ChainTokenIcon";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
 
 export function OrderTokenAmount({
   disabled,
@@ -32,8 +33,8 @@ export function OrderTokenAmount({
   onChangeInput: (value: string) => void;
   context: "from" | "to";
   address: string | undefined;
-  token: Token;
-  setToken: (token: Token) => void;
+  token: components["schemas"]["Token"];
+  setToken: (token: components["schemas"]["Token"]) => void;
   chainId: number;
   setChainId: (chainId: number) => void;
   hideTokenSelect?: boolean;
