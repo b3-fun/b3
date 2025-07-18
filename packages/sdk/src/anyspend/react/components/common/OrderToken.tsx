@@ -78,7 +78,6 @@ export function OrderToken({
       multiWalletSupportEnabled={true}
       onAnalyticEvent={undefined}
       popularChainIds={[1, 8453, RELAY_SOLANA_MAINNET_CHAIN_ID]}
-      restrictedToken={undefined}
       setToken={token => {
         setChainId(token.chainId);
         setToken({
