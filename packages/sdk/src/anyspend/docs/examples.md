@@ -2,6 +2,26 @@
 
 Real-world implementation examples for common AnySpend integration patterns.
 
+## Table of Contents
+
+- [🔄 Cross-Chain Token Swaps](#-cross-chain-token-swaps)
+  - [Basic Swap Interface](#basic-swap-interface)
+  - [Advanced Swap with Quote Preview](#advanced-swap-with-quote-preview)
+- [🖼️ NFT Marketplace Integration](#️-nft-marketplace-integration)
+  - [Simple NFT Purchase](#simple-nft-purchase)
+  - [NFT Marketplace with Bulk Purchase](#nft-marketplace-with-bulk-purchase)
+- [🎮 Gaming & DeFi Applications](#-gaming--defi-applications)
+  - [Staking Interface](#staking-interface)
+  - [Gaming Spin Wheel](#gaming-spin-wheel)
+  - [Tournament Entry](#tournament-entry)
+- [💰 Fiat-to-Crypto Onramp](#-fiat-to-crypto-onramp)
+  - [Simple Onboarding Flow](#simple-onboarding-flow)
+  - [Multi-Step Onboarding](#multi-step-onboarding)
+- [🛒 E-commerce Integration](#-e-commerce-integration)
+  - [Crypto Checkout](#crypto-checkout)
+- [🎯 Advanced Patterns](#-advanced-patterns)
+  - [Multi-Chain Portfolio Rebalancing](#multi-chain-portfolio-rebalancing)
+
 ## 🔄 Cross-Chain Token Swaps
 
 ### Basic Swap Interface
