@@ -992,7 +992,11 @@ export const OrderDetails = memo(function OrderDetails({
                         </>
                       ) : (
                         <>
-                          <span className="pl-4 text-lg md:text-sm">Pay from Connected Wallet</span>
+                          <span className="pl-4 text-lg md:text-sm">
+                            {order.srcChain === RELAY_SOLANA_MAINNET_CHAIN_ID && phantomWalletAddress
+                              ? "Pay from Phantom Wallet"
+                              : "Pay from Connected Wallet"}
+                          </span>
                           <ChevronRight className="h-4 w-4" />
                         </>
                       )}
