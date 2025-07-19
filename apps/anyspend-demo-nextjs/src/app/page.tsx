@@ -1,7 +1,7 @@
 "use client";
 
 import { B3_TOKEN, USDC_BASE } from "@b3dotfun/sdk/anyspend";
-import { useAccountWallet, useModalStore } from "@b3dotfun/sdk/global-account/react";
+import { useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { useState } from "react";
 import { base } from "viem/chains";
 import { SignInButton } from "./components/SignInButton";
@@ -25,11 +25,11 @@ export default function Home() {
         price: "1990000", // 1.99 USDC (6 decimals)
         priceFormatted: "1.99",
         currency: USDC_BASE,
-        imageUrl: "https://cdn.b3.fun/b3kemon-card.png",
         name: "Mystery B3kemon",
         description: "Summon a mysterious B3kemon creature!",
         tokenId: randomTokenId,
         type: "erc1155",
+        imageUrl: null,
       },
     });
   };
