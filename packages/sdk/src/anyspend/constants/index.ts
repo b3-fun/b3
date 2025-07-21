@@ -34,6 +34,17 @@ export const USDC_BASE: components["schemas"]["Token"] = {
   },
 };
 
+export const ETH_BASE: components["schemas"]["Token"] = {
+  symbol: "ETH",
+  chainId: base.id,
+  address: "0x0000000000000000000000000000000000000000",
+  name: "Ethereum",
+  decimals: 18,
+  metadata: {
+    logoURI: "https://polygonscan.com/token/images/eth_32.png",
+  },
+};
+
 export const NFT_CONTRACTS: components["schemas"]["NftContract"][] = [
   {
     chainId: base.id,

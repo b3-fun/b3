@@ -1698,7 +1698,7 @@ export interface components {
        * @description NFT image URL
        * @example https://example.com/nft.png
        */
-      imageUrl: string;
+      imageUrl: string | null;
       /**
        * @description NFT name
        * @example Cool NFT Collection
