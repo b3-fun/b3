@@ -11,6 +11,7 @@ import {
   getStatusDisplay,
   isNativeToken,
   RELAY_ETH_ADDRESS,
+  RELAY_SOLANA_MAINNET_CHAIN_ID,
 } from "@b3dotfun/sdk/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import {
@@ -278,7 +279,11 @@ export const OrderDetails = memo(function OrderDetails({
   // Main payment handler that triggers chain switch and payment
   const handlePayment = async () => {
     console.log("Initiating payment process. Target chain:", order.srcChain, "Current chain:", walletClient?.chain?.id);
-    await switchChainAndExecute(order.srcChain, handlePaymentProcess);
+    if (order.srcChain === RELAY_SOLANA_MAINNET_CHAIN_ID) {
+      await initiatePhantomTransfer(order.srcAmount, order.srcTokenAddress, order.globalAddress);
+    } else {
+      await switchChainAndExecute(order.srcChain, handlePaymentProcess);
+    }
   };
 
   // When waitingForDeposit is true, we show a message to the user to wait for the deposit to be processed.
@@ -320,6 +325,18 @@ export const OrderDetails = memo(function OrderDetails({
   }, [setWaitingForDeposit, txSuccess]);
 
   const [showOrderDetails, setShowOrderDetails] = useState(false);
+
+  const isPhantomMobile = useMemo(() => navigator.userAgent.includes("Phantom"), []);
+  const isPhantomBrowser = useMemo(() => (window as any).phantom?.solana?.isPhantom, []);
+
+  // Get connected Phantom wallet address if available
+  const phantomWalletAddress = useMemo(() => {
+    const phantom = (window as any).phantom?.solana;
+    if (phantom?.isConnected && phantom?.publicKey) {
+      return phantom.publicKey.toString();
+    }
+    return null;
+  }, []);
 
   if (!srcToken || !dstToken) {
     return <div>Loading...</div>;
@@ -366,10 +383,6 @@ export const OrderDetails = memo(function OrderDetails({
 
   const initiatePhantomTransfer = async (amountLamports: string, tokenAddress: string, recipientAddress: string) => {
     try {
-      // Step 1: Check if Phantom is available
-      const isPhantomMobile = navigator.userAgent.includes("Phantom");
-      const isPhantomBrowser = (window as any).phantom?.solana?.isPhantom;
-
       if (!isPhantomBrowser && !isPhantomMobile) {
         toast.error("Phantom wallet not installed. Please install Phantom wallet to continue.");
         return;
@@ -514,22 +527,6 @@ export const OrderDetails = memo(function OrderDetails({
       const { blockhash } = await connection.getLatestBlockhash("confirmed");
       transaction.recentBlockhash = blockhash;
       transaction.feePayer = fromPubkey;
-
-      // Optional: Simulate transaction to catch issues early
-      try {
-        const simulation = await connection.simulateTransaction(transaction, {
-          sigVerify: false,
-          replaceRecentBlockhash: true,
-        });
-        if (simulation.value.err) {
-          console.error("Transaction simulation failed:", simulation.value.err);
-          toast.error("Transaction simulation failed. Please check your balance and try again.");
-          return;
-        }
-        console.log("Transaction simulation successful. Compute units used:", simulation.value.unitsConsumed);
-      } catch (simError) {
-        console.warn("Transaction simulation failed, proceeding anyway:", simError);
-      }
 
       // Step 6: Sign and send transaction with priority fees
       const signedTransaction = await phantom.signAndSendTransaction(transaction);
@@ -978,7 +975,7 @@ export const OrderDetails = memo(function OrderDetails({
                 </div>
               </CopyToClipboard>
 
-              {account?.address && !showQRCode ? (
+              {(account?.address || phantomWalletAddress) && !showQRCode ? (
                 <div className="mb-4 mt-8 flex w-full flex-col items-center gap-4">
                   <div className="relative flex w-full flex-col items-center gap-2">
                     <ShinyButton
@@ -995,13 +992,20 @@ export const OrderDetails = memo(function OrderDetails({
                         </>
                       ) : (
                         <>
-                          <span className="pl-4 text-lg md:text-sm">Pay from Connected Wallet</span>
+                          <span className="pl-4 text-lg md:text-sm">
+                            {order.srcChain === RELAY_SOLANA_MAINNET_CHAIN_ID && phantomWalletAddress
+                              ? "Pay from Phantom Wallet"
+                              : "Pay from Connected Wallet"}
+                          </span>
                           <ChevronRight className="h-4 w-4" />
                         </>
                       )}
                     </ShinyButton>
                     <span className="label-style text-as-primary/50 text-xs">
-                      Connected to: {centerTruncate(account?.address || "", 6)}
+                      Connected to:{" "}
+                      {order.srcChain === RELAY_SOLANA_MAINNET_CHAIN_ID && phantomWalletAddress
+                        ? centerTruncate(phantomWalletAddress, 6)
+                        : centerTruncate(account?.address || "", 6)}
                     </span>
                   </div>
 
