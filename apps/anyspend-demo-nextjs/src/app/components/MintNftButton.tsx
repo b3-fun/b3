@@ -1,7 +1,7 @@
 import { useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { base } from "viem/chains";
 
-export function MintB3kemonButton() {
+export function MintNftButton() {
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
 
