@@ -915,7 +915,7 @@ export const getV1NftsByContractAddress = <ThrowOnError extends boolean = false>
                 type: 'apiKey'
             }
         ],
-        url: 'https://insight.thirdweb.com/v1/nfts/{contract_address}',
+        url: '/v1/nfts/{contract_address}',
         ...options
     });
 };
