@@ -56,10 +56,7 @@ const defaultQueryClientConfig = {
  * }
  * ```
  */
-export const AnyspendProvider = function AnyspendProvider({
-  children,
-  fingerprint,
-}: AnyspendProviderProps) {
+export const AnyspendProvider = function AnyspendProvider({ children, fingerprint }: AnyspendProviderProps) {
   const [queryClient] = useState(() => new QueryClient(defaultQueryClientConfig));
 
   // If no fingerprint config is provided, skip the FingerprintJS provider
