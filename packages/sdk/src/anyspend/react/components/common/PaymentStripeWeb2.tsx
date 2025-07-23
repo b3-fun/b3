@@ -1,15 +1,15 @@
 import { USDC_BASE } from "@b3dotfun/sdk/anyspend";
-import { useStripeClientSecret } from "@b3dotfun/sdk/anyspend/react";
 import { STRIPE_CONFIG } from "@b3dotfun/sdk/anyspend/constants";
+import { useStripeClientSecret } from "@b3dotfun/sdk/anyspend/react";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { ShinyButton, useB3 } from "@b3dotfun/sdk/global-account/react";
 import { formatStripeAmount } from "@b3dotfun/sdk/shared/utils/payment.utils";
-import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
-import { loadStripe } from "@stripe/stripe-js";
+import { AddressElement, Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
+import { loadStripe, StripePaymentElementOptions } from "@stripe/stripe-js";
 import { HelpCircle, Info, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import HowItWorks from "./HowItWorks";
 import PaymentMethodIcons from "./PaymentMethodIcons";
-import { components } from "@b3dotfun/sdk/anyspend/types/api";
 
 const stripePromise = loadStripe(STRIPE_CONFIG.publishableKey);
 
@@ -171,14 +171,8 @@ function StripePaymentForm({
     return <StripeLoadingState />;
   }
 
-  const stripeElementOptions = {
+  const stripeElementOptions: StripePaymentElementOptions = {
     layout: "tabs" as const,
-    defaultValues: {
-      billingDetails: {
-        name: "",
-        email: "",
-      },
-    },
     fields: {
       billingDetails: "auto" as const,
     },
@@ -282,7 +276,25 @@ function StripePaymentForm({
         {/* Simplified Payment Form */}
         <div className="bg-as-on-surface-1 w-full rounded-2xl p-6">
           <div className="text-as-primary mb-4 text-lg font-semibold">Payment Details</div>
-          <PaymentElement options={stripeElementOptions} />
+          <AddressElement
+            options={{
+              mode: "billing",
+              fields: {
+                phone: "always",
+              },
+              // More granular control
+              display: {
+                name: "full", // or 'split' for first/last name separately
+              },
+              // Validation
+              validation: {
+                phone: {
+                  required: "auto", // or 'always', 'never'
+                },
+              },
+            }}
+          />
+          <PaymentElement />
         </div>
 
         {/* Error Message */}

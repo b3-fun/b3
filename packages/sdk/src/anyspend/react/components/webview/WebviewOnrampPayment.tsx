@@ -3,7 +3,7 @@ import { useAnyspendCreateOnrampOrder, useGeoOnrampOptions, useStripeClientSecre
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
 import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
-import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
+import { Elements, PaymentElement, useElements, useStripe, AddressElement } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
