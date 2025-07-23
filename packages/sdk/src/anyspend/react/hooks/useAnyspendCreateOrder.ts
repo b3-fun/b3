@@ -1,6 +1,7 @@
 import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
-import { buildMetadata, buildPayload, normalizeAddress } from "@b3dotfun/sdk/anyspend/utils";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
+import { buildMetadata, buildPayload, normalizeAddress } from "@b3dotfun/sdk/anyspend/utils";
+import { useVisitorData } from "@fingerprintjs/fingerprintjs-pro-react";
 import { useMutation } from "@tanstack/react-query";
 import { useMemo } from "react";
 
@@ -32,6 +33,9 @@ export type UseAnyspendCreateOrderProps = {
  * For onramp orders, use useAnyspendCreateOnrampOrder instead.
  */
 export function useAnyspendCreateOrder({ onSuccess, onError }: UseAnyspendCreateOrderProps = {}) {
+  // Get fingerprint data
+  const { data: visitorData } = useVisitorData({ extendedResult: true }, { immediate: true });
+
   const { mutate: createOrder, isPending } = useMutation({
     mutationFn: async (params: CreateOrderParams) => {
       const {
@@ -63,7 +67,10 @@ export function useAnyspendCreateOrder({ onSuccess, onError }: UseAnyspendCreate
             expectedDstAmount: params.expectedDstAmount,
             nft: params.nft,
             tournament: params.tournament,
-            payload: params.payload,
+            payload: {
+              ...params.payload,
+              fingerprintId: visitorData?.visitorId, // Include fingerprint ID automatically
+            },
           }),
           metadata: buildMetadata(orderType, {
             orderType,
@@ -72,7 +79,10 @@ export function useAnyspendCreateOrder({ onSuccess, onError }: UseAnyspendCreate
             expectedDstAmount: params.expectedDstAmount,
             nft: params.nft,
             tournament: params.tournament,
-            payload: params.payload,
+            payload: {
+              ...params.payload,
+              fingerprintId: visitorData?.visitorId, // Include fingerprint ID automatically
+            },
           }),
           creatorAddress: creatorAddress ? normalizeAddress(creatorAddress) : undefined,
         });
