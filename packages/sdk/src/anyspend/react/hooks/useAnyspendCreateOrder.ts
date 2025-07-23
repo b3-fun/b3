@@ -35,6 +35,7 @@ export type UseAnyspendCreateOrderProps = {
 export function useAnyspendCreateOrder({ onSuccess, onError }: UseAnyspendCreateOrderProps = {}) {
   // Get fingerprint data
   const { data: visitorData } = useVisitorData({ extendedResult: true }, { immediate: true });
+  console.log("visitorData", visitorData);
 
   const { mutate: createOrder, isPending } = useMutation({
     mutationFn: async (params: CreateOrderParams) => {

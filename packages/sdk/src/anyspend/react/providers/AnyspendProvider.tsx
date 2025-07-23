@@ -5,11 +5,15 @@ import { FingerprintJSPro, FpjsProvider } from "@fingerprintjs/fingerprintjs-pro
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactNode, useState } from "react";
 
+interface FingerprintConfig {
+  apiKey: string;
+  endpoint?: string;
+  scriptUrlPattern?: string;
+}
+
 interface AnyspendProviderProps {
   children: ReactNode;
-  fingerprintApiKey?: string;
-  fingerprintEndpoint?: string;
-  fingerprintScriptUrlPattern?: string;
+  fingerprint?: FingerprintConfig;
 }
 
 const defaultQueryClientConfig = {
@@ -38,10 +42,13 @@ const defaultQueryClientConfig = {
  * function App() {
  *   return (
  *     <AnyspendProvider
- *       fingerprintApiKey={process.env.NEXT_PUBLIC_FINGERPRINT_API_KEY}
- *       // Optional: Custom endpoint and script URL pattern
- *       fingerprintEndpoint="https://anyspend.com/vgLZDEEXL1BY56Wn/4d6axAdvhDmOUJkz"
- *       fingerprintScriptUrlPattern="https://anyspend.com/vgLZDEEXL1BY56Wn/br6Lx2MEGkgEHGiA"
+ *       // Optional: Only include if you want to enable fingerprinting
+ *       fingerprint={{
+ *         apiKey: process.env.NEXT_PUBLIC_FINGERPRINT_API_KEY,
+ *         // Optional: Custom endpoint and script URL pattern for proxy integration
+ *         endpoint: "https://anyspend.com/vgLZDEEXL1BY56Wn/4d6axAdvhDmOUJkz",
+ *         scriptUrlPattern: "https://anyspend.com/vgLZDEEXL1BY56Wn/br6Lx2MEGkgEHGiA"
+ *       }}
  *     >
  *       <YourApp />
  *     </AnyspendProvider>
@@ -51,14 +58,12 @@ const defaultQueryClientConfig = {
  */
 export const AnyspendProvider = function AnyspendProvider({
   children,
-  fingerprintApiKey,
-  fingerprintEndpoint,
-  fingerprintScriptUrlPattern,
+  fingerprint,
 }: AnyspendProviderProps) {
   const [queryClient] = useState(() => new QueryClient(defaultQueryClientConfig));
 
-  // If no fingerprint API key is provided, skip the FingerprintJS provider
-  if (!fingerprintApiKey) {
+  // If no fingerprint config is provided, skip the FingerprintJS provider
+  if (!fingerprint) {
     return (
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>{children}</TooltipProvider>
@@ -70,10 +75,10 @@ export const AnyspendProvider = function AnyspendProvider({
     <QueryClientProvider client={queryClient}>
       <FpjsProvider
         loadOptions={{
-          apiKey: fingerprintApiKey,
-          endpoint: fingerprintEndpoint ? [fingerprintEndpoint, FingerprintJSPro.defaultEndpoint] : undefined,
-          scriptUrlPattern: fingerprintScriptUrlPattern
-            ? [fingerprintScriptUrlPattern, FingerprintJSPro.defaultScriptUrlPattern]
+          apiKey: fingerprint.apiKey,
+          endpoint: fingerprint.endpoint ? [fingerprint.endpoint, FingerprintJSPro.defaultEndpoint] : undefined,
+          scriptUrlPattern: fingerprint.scriptUrlPattern
+            ? [fingerprint.scriptUrlPattern, FingerprintJSPro.defaultScriptUrlPattern]
             : undefined,
         }}
       >
