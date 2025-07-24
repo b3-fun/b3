@@ -41,7 +41,7 @@ export function B3DynamicModal() {
       "anySpendBondKit",
     ].find(type => contentType?.type === type)
   ) {
-    contentClass += " max-h-[90dvh] overflow-y-auto no-scrollbar w-full";
+    contentClass += " max-h-[90dvh] no-scrollbar w-full";
   }
 
   if (
