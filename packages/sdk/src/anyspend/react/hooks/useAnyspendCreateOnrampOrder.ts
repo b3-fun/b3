@@ -1,12 +1,21 @@
 import { USDC_BASE } from "@b3dotfun/sdk/anyspend/constants";
 import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { buildMetadata, buildPayload, normalizeAddress } from "@b3dotfun/sdk/anyspend/utils";
 import { useMutation } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { parseUnits } from "viem";
 import { base } from "viem/chains";
 import { CreateOrderParams } from "./useAnyspendCreateOrder";
-import { components } from "@b3dotfun/sdk/anyspend/types/api";
+
+// Conditional import for FingerprintJS
+let useVisitorData: any = null;
+try {
+  const fingerprintModule = require("@fingerprintjs/fingerprintjs-pro-react");
+  useVisitorData = fingerprintModule.useVisitorData;
+} catch (error) {
+  // FingerprintJS not available, will work without it
+}
 
 export type OnrampOptions = {
   vendor: components["schemas"]["OnrampMetadata"]["vendor"];
@@ -29,8 +38,22 @@ export type UseAnyspendCreateOnrampOrderProps = {
 /**
  * Hook for creating onramp orders in the Anyspend protocol
  * Specifically handles orders that involve fiat-to-crypto onramp functionality
+ *
+ * Automatically includes fingerprint data if FingerprintJS is available and configured.
  */
 export function useAnyspendCreateOnrampOrder({ onSuccess, onError }: UseAnyspendCreateOnrampOrderProps = {}) {
+  // Get fingerprint data if available
+  let visitorData = null;
+  try {
+    if (useVisitorData) {
+      const result = useVisitorData({ extendedResult: true }, { immediate: true });
+      visitorData = result?.data;
+    }
+  } catch (error) {
+    // FingerprintJS not configured or not available, continue without it
+    console.debug("FingerprintJS not available for onramp order tracking");
+  }
+
   const { mutate: createOrder, isPending } = useMutation({
     mutationFn: async (params: CreateOnrampOrderParams) => {
       const {
@@ -82,7 +105,10 @@ export function useAnyspendCreateOnrampOrder({ onSuccess, onError }: UseAnyspend
             expectedDstAmount,
             nft,
             tournament,
-            payload,
+            payload: {
+              ...payload,
+              ...(visitorData?.visitorId && { fingerprintId: visitorData.visitorId }), // Include fingerprint ID if available
+            },
           }),
           onramp,
           metadata: buildMetadata(orderType, {
@@ -92,7 +118,10 @@ export function useAnyspendCreateOnrampOrder({ onSuccess, onError }: UseAnyspend
             expectedDstAmount,
             nft,
             tournament,
-            payload,
+            payload: {
+              ...payload,
+              ...(visitorData?.visitorId && { fingerprintId: visitorData.visitorId }), // Include fingerprint ID if available
+            },
           }),
           creatorAddress: creatorAddress ? normalizeAddress(creatorAddress) : undefined,
           partnerId,

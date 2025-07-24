@@ -10,6 +10,7 @@ import { Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { formatUnits } from "viem";
+import { AnySpendFingerprintWrapper, getFingerprintConfig } from "../AnySpendFingerprintWrapper";
 
 const stripePromise = loadStripe(STRIPE_CONFIG.publishableKey);
 
@@ -23,92 +24,17 @@ interface WebviewOnrampPaymentProps {
   userId?: string;
 }
 
-// Stripe Payment Form Component
-function StripePaymentForm({
-  order,
-  onPaymentSuccess,
-}: {
-  order: components["schemas"]["Order"];
-  onPaymentSuccess: (orderId: string) => void;
-}) {
-  const stripe = useStripe();
-  const elements = useElements();
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!stripe || !elements) {
-      return;
-    }
-
-    setIsProcessing(true);
-    setError(null);
-
-    try {
-      const { error: submitError } = await stripe.confirmPayment({
-        elements,
-        redirect: "if_required",
-      });
-
-      if (submitError) {
-        setError(submitError.message || "An error occurred");
-        console.error("Payment error:", submitError);
-      } else {
-        console.log("Payment successful");
-        onPaymentSuccess(order.id);
-      }
-    } catch (err: any) {
-      setError(err.message || "An error occurred");
-      console.error("Payment error:", err);
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  const stripeElementOptions = {
-    layout: "tabs" as const,
-    defaultValues: {
-      billingDetails: {
-        name: "",
-        email: "",
-      },
-    },
-  };
+export function WebviewOnrampPayment(props: WebviewOnrampPaymentProps) {
+  const fingerprintConfig = getFingerprintConfig();
 
   return (
-    <form onSubmit={handleSubmit} className="w-full">
-      <div className="overflow-hidden rounded-xl bg-white">
-        <div className="px-6 py-4">
-          <h2 className="mb-4 text-lg font-semibold">Payment Details</h2>
-          <PaymentElement options={stripeElementOptions} />
-
-          {error && (
-            <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">{error}</div>
-          )}
-
-          <button
-            type="submit"
-            disabled={!stripe || isProcessing}
-            className="mt-6 w-full rounded-xl bg-blue-600 px-4 py-3 font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {isProcessing ? (
-              <div className="flex items-center justify-center gap-2">
-                <Loader2 className="h-5 w-5 animate-spin" />
-                <span>Processing...</span>
-              </div>
-            ) : (
-              <span>Complete Payment</span>
-            )}
-          </button>
-        </div>
-      </div>
-    </form>
+    <AnySpendFingerprintWrapper fingerprint={fingerprintConfig}>
+      <WebviewOnrampPaymentInner {...props} />
+    </AnySpendFingerprintWrapper>
   );
 }
 
-export function WebviewOnrampPayment({
+function WebviewOnrampPaymentInner({
   srcAmountOnRamp,
   recipientAddress,
   destinationToken,
@@ -362,5 +288,90 @@ export function WebviewOnrampPayment({
         </div>
       </div>
     </motion.div>
+  );
+}
+
+// Stripe Payment Form Component
+function StripePaymentForm({
+  order,
+  onPaymentSuccess,
+}: {
+  order: components["schemas"]["Order"];
+  onPaymentSuccess: (orderId: string) => void;
+}) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!stripe || !elements) {
+      return;
+    }
+
+    setIsProcessing(true);
+    setError(null);
+
+    try {
+      const { error: submitError } = await stripe.confirmPayment({
+        elements,
+        redirect: "if_required",
+      });
+
+      if (submitError) {
+        setError(submitError.message || "An error occurred");
+        console.error("Payment error:", submitError);
+      } else {
+        console.log("Payment successful");
+        onPaymentSuccess(order.id);
+      }
+    } catch (err: any) {
+      setError(err.message || "An error occurred");
+      console.error("Payment error:", err);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const stripeElementOptions = {
+    layout: "tabs" as const,
+    defaultValues: {
+      billingDetails: {
+        name: "",
+        email: "",
+      },
+    },
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="w-full">
+      <div className="overflow-hidden rounded-xl bg-white">
+        <div className="px-6 py-4">
+          <h2 className="mb-4 text-lg font-semibold">Payment Details</h2>
+          <PaymentElement options={stripeElementOptions} />
+
+          {error && (
+            <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">{error}</div>
+          )}
+
+          <button
+            type="submit"
+            disabled={!stripe || isProcessing}
+            className="mt-6 w-full rounded-xl bg-blue-600 px-4 py-3 font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isProcessing ? (
+              <div className="flex items-center justify-center gap-2">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                <span>Processing...</span>
+              </div>
+            ) : (
+              <span>Complete Payment</span>
+            )}
+          </button>
+        </div>
+      </div>
+    </form>
   );
 }

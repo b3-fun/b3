@@ -1,4 +1,6 @@
 import { useAnyspendCreateOnrampOrder, useGeoOnrampOptions } from "@b3dotfun/sdk/anyspend/react";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
+import { GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
 import { Button } from "@b3dotfun/sdk/global-account/react";
 import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
 import { motion } from "framer-motion";
@@ -6,8 +8,7 @@ import invariant from "invariant";
 import { ChevronLeft, ChevronRight, Landmark, Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { components } from "@b3dotfun/sdk/anyspend/types/api";
-import { GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
+import { AnySpendFingerprintWrapper, getFingerprintConfig } from "../AnySpendFingerprintWrapper";
 
 interface PanelOnrampPaymentProps {
   srcAmountOnRamp: string;
@@ -31,7 +32,17 @@ interface PanelOnrampPaymentProps {
   recipientImageUrl?: string;
 }
 
-export function PanelOnrampPayment({
+export function PanelOnrampPayment(props: PanelOnrampPaymentProps) {
+  const fingerprintConfig = getFingerprintConfig();
+
+  return (
+    <AnySpendFingerprintWrapper fingerprint={fingerprintConfig}>
+      <PanelOnrampPaymentInner {...props} />
+    </AnySpendFingerprintWrapper>
+  );
+}
+
+function PanelOnrampPaymentInner({
   srcAmountOnRamp,
   // recipientName,
   recipientAddress,
