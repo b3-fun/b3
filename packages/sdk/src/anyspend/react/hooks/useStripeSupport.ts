@@ -3,11 +3,17 @@ import { VisitorData } from "@b3dotfun/sdk/anyspend/types/fingerprint";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
-export function useStripeSupport(isMainnet: boolean, ipAddress: string, usdAmount?: string, visitorData?: VisitorData) {
+export function useStripeSupport(
+  isMainnet: boolean,
+  ipAddress: string,
+  usdAmount?: string,
+  visitorData?: VisitorData,
+  isLoadingVisitorData?: boolean,
+) {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["useStripeSupport", isMainnet, ipAddress, usdAmount, visitorData?.requestId, visitorData?.visitorId],
     queryFn: () => anyspendService.checkStripeSupport(isMainnet, ipAddress, usdAmount, visitorData),
-    enabled: !!ipAddress,
+    enabled: !!ipAddress && !isLoadingVisitorData,
   });
 
   return useMemo(
