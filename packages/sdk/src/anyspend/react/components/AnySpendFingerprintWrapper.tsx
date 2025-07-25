@@ -39,10 +39,7 @@ export function AnySpendFingerprintWrapper({ children, fingerprint }: AnySpendFi
 
 // Helper function to get fingerprint config from environment or context
 export function getFingerprintConfig(): FingerprintConfig | undefined {
-  const apiKey =
-    typeof window !== "undefined"
-      ? (window as any).NEXT_PUBLIC_FINGERPRINT_API_KEY || process.env.NEXT_PUBLIC_FINGERPRINT_API_KEY
-      : process.env.NEXT_PUBLIC_FINGERPRINT_API_KEY;
+  const apiKey = process.env.NEXT_PUBLIC_FINGERPRINT_API_KEY;
 
   if (!apiKey) {
     return undefined;
@@ -50,13 +47,7 @@ export function getFingerprintConfig(): FingerprintConfig | undefined {
 
   return {
     apiKey,
-    endpoint:
-      typeof window !== "undefined"
-        ? (window as any).NEXT_PUBLIC_FINGERPRINT_ENDPOINT || process.env.NEXT_PUBLIC_FINGERPRINT_ENDPOINT
-        : process.env.NEXT_PUBLIC_FINGERPRINT_ENDPOINT,
-    scriptUrlPattern:
-      typeof window !== "undefined"
-        ? (window as any).NEXT_PUBLIC_FINGERPRINT_SCRIPT_URL || process.env.NEXT_PUBLIC_FINGERPRINT_SCRIPT_URL
-        : process.env.NEXT_PUBLIC_FINGERPRINT_SCRIPT_URL,
+    endpoint: process.env.NEXT_PUBLIC_FINGERPRINT_ENDPOINT,
+    scriptUrlPattern: process.env.NEXT_PUBLIC_FINGERPRINT_SCRIPT_URL,
   };
 }
