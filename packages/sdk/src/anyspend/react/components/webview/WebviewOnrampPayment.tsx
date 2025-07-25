@@ -26,7 +26,6 @@ interface WebviewOnrampPaymentProps {
 
 export function WebviewOnrampPayment(props: WebviewOnrampPaymentProps) {
   const fingerprintConfig = getFingerprintConfig();
-
   return (
     <AnySpendFingerprintWrapper fingerprint={fingerprintConfig}>
       <WebviewOnrampPaymentInner {...props} />

@@ -42,27 +42,28 @@ export function PanelOnrampPayment(props: PanelOnrampPaymentProps) {
   );
 }
 
-function PanelOnrampPaymentInner({
-  srcAmountOnRamp,
-  // recipientName,
-  recipientAddress,
-  isMainnet,
-  isBuyMode,
-  destinationTokenChainId,
-  destinationTokenAddress,
-  selectedDstChainId,
-  selectedDstToken,
-  anyspendQuote,
-  globalAddress,
-  onOrderCreated,
-  onBack,
-  orderType,
-  nft,
-  tournament,
-  payload,
-  recipientEnsName,
-  recipientImageUrl,
-}: PanelOnrampPaymentProps) {
+function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
+  const {
+    srcAmountOnRamp,
+    recipientAddress,
+    isMainnet,
+    isBuyMode,
+    destinationTokenChainId,
+    destinationTokenAddress,
+    selectedDstChainId,
+    selectedDstToken,
+    anyspendQuote,
+    globalAddress,
+    onOrderCreated,
+    onBack,
+    orderType,
+    nft,
+    tournament,
+    payload,
+    recipientEnsName,
+    recipientImageUrl,
+  } = props;
+
   // Use a stable amount for geo onramp options to prevent unnecessary refetches
   const [stableAmountForGeo, setStableAmountForGeo] = useState(srcAmountOnRamp);
   const hasInitialized = useRef(false);
@@ -83,6 +84,8 @@ function PanelOnrampPaymentInner({
     isStripeWeb2Supported,
     isLoading: isLoadingGeoOnramp,
   } = useGeoOnrampOptions(isMainnet, stableAmountForGeo);
+
+  const isLoading = isLoadingGeoOnramp;
 
   const { createOrder, isCreatingOrder } = useAnyspendCreateOnrampOrder({
     onSuccess: data => {
@@ -230,7 +233,7 @@ function PanelOnrampPaymentInner({
           <Loader2 className="h-4 w-4 animate-spin" />
           <span className="text-as-primary/70">Creating onramp order...</span>
         </div>
-      ) : isLoadingGeoOnramp ? (
+      ) : isLoading ? (
         <div className="bg-b3-react-background border-b3-react-border flex items-center justify-center gap-3 rounded-lg border p-6">
           <Loader2 className="h-4 w-4 animate-spin" />
           <span className="text-as-primary/70">Loading payment options...</span>

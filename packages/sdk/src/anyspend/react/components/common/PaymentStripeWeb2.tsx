@@ -8,6 +8,7 @@ import { AddressElement, Elements, PaymentElement, useElements, useStripe } from
 import { loadStripe, PaymentIntentResult, StripePaymentElementOptions } from "@stripe/stripe-js";
 import { HelpCircle, Info, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { AnySpendFingerprintWrapper, getFingerprintConfig } from "../AnySpendFingerprintWrapper";
 import HowItWorks from "./HowItWorks";
 import PaymentMethodIcons from "./PaymentMethodIcons";
 
@@ -21,6 +22,7 @@ interface PaymentStripeWeb2Props {
 
 export default function PaymentStripeWeb2({ isMainnet, order, onPaymentSuccess }: PaymentStripeWeb2Props) {
   const { theme } = useB3();
+  const fingerprintConfig = getFingerprintConfig();
 
   const { clientSecret, isLoadingStripeClientSecret, stripeClientSecretError } = useStripeClientSecret(
     isMainnet,
@@ -36,15 +38,17 @@ export default function PaymentStripeWeb2({ isMainnet, order, onPaymentSuccess }
   }
 
   return (
-    <Elements
-      stripe={stripePromise}
-      options={{
-        clientSecret: clientSecret || undefined,
-        appearance: { theme: theme === "light" ? "stripe" : "night" },
-      }}
-    >
-      <StripePaymentForm order={order} clientSecret={clientSecret} onPaymentSuccess={onPaymentSuccess} />
-    </Elements>
+    <AnySpendFingerprintWrapper fingerprint={fingerprintConfig}>
+      <Elements
+        stripe={stripePromise}
+        options={{
+          clientSecret: clientSecret || undefined,
+          appearance: { theme: theme === "light" ? "stripe" : "night" },
+        }}
+      >
+        <StripePaymentForm order={order} clientSecret={clientSecret} onPaymentSuccess={onPaymentSuccess} />
+      </Elements>
+    </AnySpendFingerprintWrapper>
   );
 }
 
@@ -102,7 +106,6 @@ function StripePaymentForm({
   useEffect(() => {
     if (stripe && elements) {
       setStripeReady(true);
-      console.log("@@stripe-web2-payment:initialized:", JSON.stringify({ orderId: order.id }, null, 2));
     }
   }, [stripe, elements, order.id]);
 
@@ -127,7 +130,6 @@ function StripePaymentForm({
   // Handle payment element changes
   const handlePaymentElementChange = (event: any) => {
     // Show address element only for card payments
-    console.log("@@stripe-web2-payment:payment-element-change:", JSON.stringify(event, null, 2));
     setShowAddressElement(event.value.type === "card");
   };
 
@@ -143,8 +145,6 @@ function StripePaymentForm({
     setMessage(null);
 
     try {
-      console.log("@@stripe-web2-payment:confirming-payment:", JSON.stringify({ orderId: order.id }, null, 2));
-
       const result = (await stripe.confirmPayment({
         elements,
         confirmParams: {
@@ -190,9 +190,6 @@ function StripePaymentForm({
     const url = new URL(window.location.href);
     const fromStripe = url.searchParams.get("fromStripe");
     const paymentIntent = url.searchParams.get("payment_intent");
-
-    console.log("@@stripe-web2-payment:fromStripe:", fromStripe);
-    console.log("@@stripe-web2-payment:paymentIntent:", paymentIntent);
 
     if (fromStripe && paymentIntent) {
       // Close the modal as we're returning from 3DS

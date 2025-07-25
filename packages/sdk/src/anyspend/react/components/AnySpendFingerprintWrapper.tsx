@@ -19,14 +19,21 @@ interface AnySpendFingerprintWrapperProps {
 export function AnySpendFingerprintWrapper({ children, fingerprint }: AnySpendFingerprintWrapperProps) {
   // If no fingerprint config is provided, render children without fingerprinting
   if (!fingerprint?.apiKey) {
+    console.warn("No Fingerprint API key provided. Fingerprinting will be disabled.");
     return <>{children}</>;
   }
+
+  // Ensure endpoint has https:// prefix
+  const endpoint =
+    fingerprint.endpoint && !fingerprint.endpoint.startsWith("http")
+      ? `https://${fingerprint.endpoint}`
+      : fingerprint.endpoint;
 
   return (
     <FpjsProvider
       loadOptions={{
         apiKey: fingerprint.apiKey,
-        endpoint: fingerprint.endpoint ? [fingerprint.endpoint, FingerprintJSPro.defaultEndpoint] : undefined,
+        endpoint: endpoint ? [endpoint, FingerprintJSPro.defaultEndpoint] : undefined,
         scriptUrlPattern: fingerprint.scriptUrlPattern
           ? [fingerprint.scriptUrlPattern, FingerprintJSPro.defaultScriptUrlPattern]
           : undefined,
@@ -37,7 +44,7 @@ export function AnySpendFingerprintWrapper({ children, fingerprint }: AnySpendFi
   );
 }
 
-// Helper function to get fingerprint config from environment or context
+// Helper function to get fingerprint config from environment variables
 export function getFingerprintConfig(): FingerprintConfig | undefined {
   const apiKey = process.env.NEXT_PUBLIC_FINGERPRINT_API_KEY;
 

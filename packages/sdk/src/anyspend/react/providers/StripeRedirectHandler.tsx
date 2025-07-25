@@ -20,10 +20,6 @@ export function StripeRedirectHandler() {
     const paymentIntent = url.searchParams.get("payment_intent");
     const orderId = url.searchParams.get("orderId");
 
-    console.log("@@stripe-web2-payment:fromStripe:", fromStripe);
-    console.log("@@stripe-web2-payment:paymentIntent:", paymentIntent);
-    console.log("@@stripe-web2-payment:orderId:", orderId);
-
     if (fromStripe && paymentIntent && orderId) {
       // Re-open the modal with the order details
       setB3ModalOpen(true);

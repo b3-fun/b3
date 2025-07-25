@@ -34,9 +34,6 @@ export type UseAnyspendCreateOrderProps = {
  */
 export function useAnyspendCreateOrder({ onSuccess, onError }: UseAnyspendCreateOrderProps = {}) {
   // Get fingerprint data
-  const { data: visitorData } = useVisitorData({ extendedResult: true }, { immediate: true });
-  console.log("visitorData", visitorData);
-
   const { mutate: createOrder, isPending } = useMutation({
     mutationFn: async (params: CreateOrderParams) => {
       const {
@@ -52,6 +49,7 @@ export function useAnyspendCreateOrder({ onSuccess, onError }: UseAnyspendCreate
       } = params;
 
       try {
+        const { data: visitorData } = useVisitorData({ extendedResult: true }, { immediate: true });
         return await anyspendService.createOrder({
           isMainnet,
           recipientAddress: normalizeAddress(recipientAddress),
@@ -70,7 +68,6 @@ export function useAnyspendCreateOrder({ onSuccess, onError }: UseAnyspendCreate
             tournament: params.tournament,
             payload: {
               ...params.payload,
-              fingerprintId: visitorData?.visitorId, // Include fingerprint ID automatically
             },
           }),
           metadata: buildMetadata(orderType, {
@@ -82,10 +79,10 @@ export function useAnyspendCreateOrder({ onSuccess, onError }: UseAnyspendCreate
             tournament: params.tournament,
             payload: {
               ...params.payload,
-              fingerprintId: visitorData?.visitorId, // Include fingerprint ID automatically
             },
           }),
           creatorAddress: creatorAddress ? normalizeAddress(creatorAddress) : undefined,
+          visitorData,
         });
       } catch (error: any) {
         // If the error has a response with message and statusCode, throw that
