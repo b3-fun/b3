@@ -1,5 +1,6 @@
 import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
+import { VisitorData } from "@b3dotfun/sdk/anyspend/types/fingerprint";
 import { buildMetadata, buildPayload, normalizeAddress } from "@b3dotfun/sdk/anyspend/utils";
 import { useVisitorData } from "@fingerprintjs/fingerprintjs-pro-react";
 import { useMutation } from "@tanstack/react-query";
@@ -34,6 +35,11 @@ export type UseAnyspendCreateOrderProps = {
  */
 export function useAnyspendCreateOrder({ onSuccess, onError }: UseAnyspendCreateOrderProps = {}) {
   // Get fingerprint data
+  const { data: fpData } = useVisitorData({ extendedResult: true }, { immediate: true });
+  const visitorData: VisitorData | undefined = fpData && {
+    requestId: fpData.requestId,
+    visitorId: fpData.visitorId,
+  };
   const { mutate: createOrder, isPending } = useMutation({
     mutationFn: async (params: CreateOrderParams) => {
       const {
@@ -49,7 +55,6 @@ export function useAnyspendCreateOrder({ onSuccess, onError }: UseAnyspendCreate
       } = params;
 
       try {
-        const { data: visitorData } = useVisitorData({ extendedResult: true }, { immediate: true });
         return await anyspendService.createOrder({
           isMainnet,
           recipientAddress: normalizeAddress(recipientAddress),
