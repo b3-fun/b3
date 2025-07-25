@@ -1,7 +1,7 @@
 import { base } from "viem/chains";
 import { components } from "../types/api";
 
-export const ANYSPEND_MAINNET_BASE_URL = process.env.NEXT_PUBLIC_ANYSPEND_BASE_URL || "https://mainnet.anyspend.com";
+export const ANYSPEND_MAINNET_BASE_URL = "http://localhost:8080";
 export const ANYSPEND_TESTNET_BASE_URL = process.env.NEXT_PUBLIC_ANYSPEND_BASE_URL || "https://testnet.anyspend.com";
 
 export const RELAY_ETH_ADDRESS = "0x0000000000000000000000000000000000000000";

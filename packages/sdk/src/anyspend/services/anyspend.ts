@@ -2,6 +2,7 @@ import { ANYSPEND_MAINNET_BASE_URL, ANYSPEND_TESTNET_BASE_URL } from "@b3dotfun/
 import { OnrampOptions } from "@b3dotfun/sdk/anyspend/react";
 import { getNativeToken, isNativeToken } from "@b3dotfun/sdk/anyspend/utils";
 import invariant from "invariant";
+import { components } from "../types/api";
 import {
   CreateOrderResponse,
   GetCoinbaseOnrampOptionsResponse,
@@ -13,7 +14,7 @@ import {
   GetStripeSupportedResponse,
   GetTokenListResponse,
 } from "../types/api_req_res";
-import { components } from "../types/api";
+import { VisitorData } from "../types/fingerprint";
 
 // Service functions
 export const anyspendService = {
@@ -77,6 +78,7 @@ export const anyspendService = {
     metadata,
     creatorAddress,
     partnerId,
+    visitorData,
   }: {
     isMainnet: boolean;
     recipientAddress: string;
@@ -91,11 +93,14 @@ export const anyspendService = {
     metadata: Record<string, any>;
     creatorAddress?: string;
     partnerId?: string;
+    visitorData?: VisitorData;
   }) => {
     const response = await fetch(`${isMainnet ? ANYSPEND_MAINNET_BASE_URL : ANYSPEND_TESTNET_BASE_URL}/orders`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        ...(visitorData?.requestId && { "X-Fingerprint-Request-Id": visitorData.requestId }),
+        ...(visitorData?.visitorId && { "X-Fingerprint-Visitor-Id": visitorData.visitorId }),
       },
       body: JSON.stringify({
         recipientAddress,
@@ -145,9 +150,16 @@ export const anyspendService = {
     return data;
   },
 
-  getCoinbaseOnrampOptions: async (isMainnet: boolean, country: string): Promise<GetCoinbaseOnrampOptionsResponse> => {
+  getCoinbaseOnrampOptions: async (
+    isMainnet: boolean,
+    country: string,
+    visitorData?: VisitorData,
+  ): Promise<GetCoinbaseOnrampOptionsResponse> => {
     const params = new URLSearchParams({
       country,
+      // include fingerprintId and requestId in the query params
+      ...(visitorData?.requestId && { requestId: visitorData.requestId }),
+      ...(visitorData?.visitorId && { fingerprintId: visitorData.visitorId }),
     });
     const response = await fetch(
       `${isMainnet ? ANYSPEND_MAINNET_BASE_URL : ANYSPEND_TESTNET_BASE_URL}/onramp/coinbase/options?${params.toString()}`,
@@ -160,6 +172,7 @@ export const anyspendService = {
     isMainnet: boolean,
     ipAddress: string,
     usdAmount?: string,
+    visitorData?: VisitorData,
   ): Promise<{ stripeOnramp: boolean; stripeWeb2: boolean }> => {
     const params = new URLSearchParams({
       ipAddress,
@@ -167,6 +180,12 @@ export const anyspendService = {
     });
     const response = await fetch(
       `${isMainnet ? ANYSPEND_MAINNET_BASE_URL : ANYSPEND_TESTNET_BASE_URL}/onramp/stripe/supported?${params.toString()}`,
+      {
+        headers: {
+          ...(visitorData?.requestId && { "X-Fingerprint-Request-Id": visitorData.requestId }),
+          ...(visitorData?.visitorId && { "X-Fingerprint-Visitor-Id": visitorData.visitorId }),
+        },
+      },
     );
     const data: GetStripeSupportedResponse = await response.json();
     invariant(response.status === 200, "Failed to check Stripe support");
