@@ -3,7 +3,7 @@ import { useAnyspendCreateOnrampOrder, useGeoOnrampOptions, useStripeClientSecre
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
 import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
-import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
+import { AddressElement, Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
@@ -35,6 +35,7 @@ function StripePaymentForm({
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showAddressElement, setShowAddressElement] = useState<boolean>(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,13 +68,21 @@ function StripePaymentForm({
     }
   };
 
+  // Handle payment element changes
+  const handlePaymentElementChange = (event: any) => {
+    // Show address element only for card payments
+    console.log("@@stripe-web2-payment:payment-element-change:", JSON.stringify(event, null, 2));
+    setShowAddressElement(event.value.type === "card");
+  };
+
   const stripeElementOptions = {
     layout: "tabs" as const,
-    defaultValues: {
-      billingDetails: {
-        name: "",
-        email: "",
-      },
+    fields: {
+      billingDetails: "auto" as const,
+    },
+    wallets: {
+      applePay: "auto" as const,
+      googlePay: "auto" as const,
     },
   };
 
@@ -82,7 +91,30 @@ function StripePaymentForm({
       <div className="overflow-hidden rounded-xl bg-white">
         <div className="px-6 py-4">
           <h2 className="mb-4 text-lg font-semibold">Payment Details</h2>
-          <PaymentElement options={stripeElementOptions} />
+          <PaymentElement options={stripeElementOptions} onChange={handlePaymentElementChange} />
+
+          {showAddressElement && (
+            <div className="mt-4">
+              <AddressElement
+                options={{
+                  mode: "billing",
+                  fields: {
+                    phone: "always",
+                  },
+                  // More granular control
+                  display: {
+                    name: "split", // or 'split' for first/last name separately
+                  },
+                  // Validation
+                  validation: {
+                    phone: {
+                      required: "auto", // or 'always', 'never'
+                    },
+                  },
+                }}
+              />
+            </div>
+          )}
 
           {error && (
             <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">{error}</div>
