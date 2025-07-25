@@ -317,7 +317,7 @@ function StripePaymentForm({
           {showAddressElement && (
             <AddressElement
               options={{
-                mode: "shipping",
+                mode: "billing",
                 fields: {
                   phone: "always",
                 },
