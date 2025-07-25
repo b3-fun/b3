@@ -3,6 +3,7 @@
 import { TooltipProvider } from "@b3dotfun/sdk/global-account/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactNode, useState } from "react";
+import { StripeRedirectHandler } from "./StripeRedirectHandler";
 
 interface AnyspendProviderProps {
   children: ReactNode;
@@ -27,6 +28,7 @@ const defaultQueryClientConfig = {
  * - Optimized for performance with React.memo
  * - Safe to use at the application root
  * - Configures sensible defaults for query caching
+ * - Handles Stripe payment redirects and modal state
  *
  * @example
  * ```tsx
@@ -44,7 +46,10 @@ export const AnyspendProvider = function AnyspendProvider({ children }: Anyspend
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>{children}</TooltipProvider>
+      <TooltipProvider>
+        <StripeRedirectHandler />
+        {children}
+      </TooltipProvider>
     </QueryClientProvider>
   );
 };

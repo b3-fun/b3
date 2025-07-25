@@ -1,6 +1,6 @@
 {
   "name": "@b3dotfun/sdk",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "source": "src/index.ts",
   "main": "./dist/cjs/index.js",
   "react-native": "./dist/cjs/index.native.js",
@@ -212,7 +212,7 @@
   },
   "dependencies": {
     "@amplitude/analytics-browser": "2.14.0",
-    "@b3dotfun/b3-api": "0.0.26",
+    "@b3dotfun/b3-api": "0.0.27",
     "@b3dotfun/basement-api": "0.0.11",
     "@b3dotfun/bondkit": "^0.1.17",
     "@chakra-ui/react": "2.10.7",

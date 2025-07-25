@@ -3,7 +3,7 @@ import { useAnyspendCreateOnrampOrder, useGeoOnrampOptions, useStripeClientSecre
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
 import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
-import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
+import { AddressElement, Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
@@ -31,6 +31,123 @@ export function WebviewOnrampPayment(props: WebviewOnrampPaymentProps) {
     <AnySpendFingerprintWrapper fingerprint={fingerprintConfig}>
       <WebviewOnrampPaymentInner {...props} />
     </AnySpendFingerprintWrapper>
+  );
+}
+
+// Stripe Payment Form Component
+function StripePaymentForm({
+  order,
+  onPaymentSuccess,
+}: {
+  order: components["schemas"]["Order"];
+  onPaymentSuccess: (orderId: string) => void;
+}) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showAddressElement, setShowAddressElement] = useState<boolean>(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!stripe || !elements) {
+      return;
+    }
+
+    setIsProcessing(true);
+    setError(null);
+
+    try {
+      const { error: submitError } = await stripe.confirmPayment({
+        elements,
+        redirect: "if_required",
+      });
+
+      if (submitError) {
+        setError(submitError.message || "An error occurred");
+        console.error("Payment error:", submitError);
+      } else {
+        console.log("Payment successful");
+        onPaymentSuccess(order.id);
+      }
+    } catch (err: any) {
+      setError(err.message || "An error occurred");
+      console.error("Payment error:", err);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Handle payment element changes
+  const handlePaymentElementChange = (event: any) => {
+    // Show address element only for card payments
+    console.log("@@stripe-web2-payment:payment-element-change:", JSON.stringify(event, null, 2));
+    setShowAddressElement(event.value.type === "card");
+  };
+
+  const stripeElementOptions = {
+    layout: "tabs" as const,
+    fields: {
+      billingDetails: "auto" as const,
+    },
+    wallets: {
+      applePay: "auto" as const,
+      googlePay: "auto" as const,
+    },
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="w-full">
+      <div className="overflow-hidden rounded-xl bg-white">
+        <div className="px-6 py-4">
+          <h2 className="mb-4 text-lg font-semibold">Payment Details</h2>
+          <PaymentElement options={stripeElementOptions} onChange={handlePaymentElementChange} />
+
+          {showAddressElement && (
+            <div className="mt-4">
+              <AddressElement
+                options={{
+                  mode: "billing",
+                  fields: {
+                    phone: "always",
+                  },
+                  // More granular control
+                  display: {
+                    name: "split", // or 'split' for first/last name separately
+                  },
+                  // Validation
+                  validation: {
+                    phone: {
+                      required: "auto", // or 'always', 'never'
+                    },
+                  },
+                }}
+              />
+            </div>
+          )}
+
+          {error && (
+            <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">{error}</div>
+          )}
+
+          <button
+            type="submit"
+            disabled={!stripe || isProcessing}
+            className="mt-6 w-full rounded-xl bg-blue-600 px-4 py-3 font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isProcessing ? (
+              <div className="flex items-center justify-center gap-2">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                <span>Processing...</span>
+              </div>
+            ) : (
+              <span>Complete Payment</span>
+            )}
+          </button>
+        </div>
+      </div>
+    </form>
   );
 }
 
@@ -288,90 +405,5 @@ function WebviewOnrampPaymentInner({
         </div>
       </div>
     </motion.div>
-  );
-}
-
-// Stripe Payment Form Component
-function StripePaymentForm({
-  order,
-  onPaymentSuccess,
-}: {
-  order: components["schemas"]["Order"];
-  onPaymentSuccess: (orderId: string) => void;
-}) {
-  const stripe = useStripe();
-  const elements = useElements();
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!stripe || !elements) {
-      return;
-    }
-
-    setIsProcessing(true);
-    setError(null);
-
-    try {
-      const { error: submitError } = await stripe.confirmPayment({
-        elements,
-        redirect: "if_required",
-      });
-
-      if (submitError) {
-        setError(submitError.message || "An error occurred");
-        console.error("Payment error:", submitError);
-      } else {
-        console.log("Payment successful");
-        onPaymentSuccess(order.id);
-      }
-    } catch (err: any) {
-      setError(err.message || "An error occurred");
-      console.error("Payment error:", err);
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  const stripeElementOptions = {
-    layout: "tabs" as const,
-    defaultValues: {
-      billingDetails: {
-        name: "",
-        email: "",
-      },
-    },
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="w-full">
-      <div className="overflow-hidden rounded-xl bg-white">
-        <div className="px-6 py-4">
-          <h2 className="mb-4 text-lg font-semibold">Payment Details</h2>
-          <PaymentElement options={stripeElementOptions} />
-
-          {error && (
-            <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">{error}</div>
-          )}
-
-          <button
-            type="submit"
-            disabled={!stripe || isProcessing}
-            className="mt-6 w-full rounded-xl bg-blue-600 px-4 py-3 font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {isProcessing ? (
-              <div className="flex items-center justify-center gap-2">
-                <Loader2 className="h-5 w-5 animate-spin" />
-                <span>Processing...</span>
-              </div>
-            ) : (
-              <span>Complete Payment</span>
-            )}
-          </button>
-        </div>
-      </div>
-    </form>
   );
 }
