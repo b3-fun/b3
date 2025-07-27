@@ -20,6 +20,13 @@ export { useMediaQuery } from "./useMediaQuery";
 export { useNativeBalance, useNativeBalanceFromRPC } from "./useNativeBalance";
 export { useOnchainName } from "./useOnchainName";
 export { useOneBalance } from "./useOneBalance";
+export {
+  useProfile,
+  useProfilePreference,
+  type Profile,
+  type CombinedProfile,
+  type PreferenceRequestBody,
+} from "./useProfile";
 export { useQueryB3 } from "./useQueryB3";
 export { useQueryBSMNT } from "./useQueryBSMNT";
 export { useRemoveSessionKey } from "./useRemoveSessionKey";
