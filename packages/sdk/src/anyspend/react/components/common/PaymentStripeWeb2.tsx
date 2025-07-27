@@ -1,15 +1,15 @@
 import { USDC_BASE } from "@b3dotfun/sdk/anyspend";
-import { useStripeClientSecret } from "@b3dotfun/sdk/anyspend/react";
 import { STRIPE_CONFIG } from "@b3dotfun/sdk/anyspend/constants";
-import { ShinyButton, useB3 } from "@b3dotfun/sdk/global-account/react";
+import { useStripeClientSecret } from "@b3dotfun/sdk/anyspend/react";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
+import { ShinyButton, useB3, useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { formatStripeAmount } from "@b3dotfun/sdk/shared/utils/payment.utils";
-import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
-import { loadStripe } from "@stripe/stripe-js";
+import { AddressElement, Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
+import { loadStripe, PaymentIntentResult, StripePaymentElementOptions } from "@stripe/stripe-js";
 import { HelpCircle, Info, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import HowItWorks from "./HowItWorks";
 import PaymentMethodIcons from "./PaymentMethodIcons";
-import { components } from "@b3dotfun/sdk/anyspend/types/api";
 
 const stripePromise = loadStripe(STRIPE_CONFIG.publishableKey);
 
@@ -90,12 +90,14 @@ function StripePaymentForm({
 }) {
   const stripe = useStripe();
   const elements = useElements();
+  const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
 
   const [loading, setLoading] = useState<boolean>(false);
   const [message, setMessage] = useState<string | null>(null);
   const [amount, setAmount] = useState<string | null>(null);
   const [stripeReady, setStripeReady] = useState<boolean>(false);
   const [showHowItWorks, setShowHowItWorks] = useState<boolean>(false);
+  const [showAddressElement, setShowAddressElement] = useState<boolean>(false);
 
   useEffect(() => {
     if (stripe && elements) {
@@ -122,6 +124,13 @@ function StripePaymentForm({
     fetchPaymentIntent();
   }, [clientSecret, stripe]);
 
+  // Handle payment element changes
+  const handlePaymentElementChange = (event: any) => {
+    // Show address element only for card payments
+    console.log("@@stripe-web2-payment:payment-element-change:", JSON.stringify(event, null, 2));
+    setShowAddressElement(event.value.type === "card");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -135,30 +144,38 @@ function StripePaymentForm({
 
     try {
       console.log("@@stripe-web2-payment:confirming-payment:", JSON.stringify({ orderId: order.id }, null, 2));
-      const { error, paymentIntent } = await stripe.confirmPayment({
+
+      const result = (await stripe.confirmPayment({
         elements,
-        redirect: "if_required",
-      });
+        confirmParams: {
+          return_url: `${window.location.origin}/?orderId=${order.id}&waitingForDeposit=true&fromStripe=true`,
+        },
+      })) as PaymentIntentResult;
 
-      if (error) {
-        console.error("@@stripe-web2-payment:error:", JSON.stringify(error, null, 2));
-        setMessage(error.message || "An unexpected error occurred.");
-      } else if (paymentIntent && paymentIntent.status === "succeeded") {
-        console.log(
-          "@@stripe-web2-payment:success:",
-          JSON.stringify({ orderId: order.id, paymentIntentId: paymentIntent.id }, null, 2),
-        );
-        // Payment succeeded without redirect - handle success in the modal
-        setMessage(null);
-
-        // Add waitingForDeposit=true to query params
-        const currentUrl = new URL(window.location.href);
-        currentUrl.searchParams.set("waitingForDeposit", "true");
-        window.history.replaceState(null, "", currentUrl.toString());
-
-        // Call the success callback if provided
-        onPaymentSuccess?.(paymentIntent);
+      if (result.error) {
+        // This point will only be reached if there is an immediate error.
+        // Otherwise, the customer will be redirected to the `return_url`.
+        console.error("@@stripe-web2-payment:error:", JSON.stringify(result.error, null, 2));
+        setMessage(result.error.message || "An unexpected error occurred.");
+        return;
       }
+
+      // At this point TypeScript knows result.paymentIntent exists and error is undefined
+      console.log(
+        "@@stripe-web2-payment:success:",
+        JSON.stringify({ orderId: order.id, paymentIntentId: result.paymentIntent.id }, null, 2),
+      );
+
+      // Payment succeeded without redirect - handle success in the modal
+      setMessage(null);
+
+      // Add waitingForDeposit=true to query params
+      const currentUrl = new URL(window.location.href);
+      currentUrl.searchParams.set("waitingForDeposit", "true");
+      window.history.replaceState(null, "", currentUrl.toString());
+
+      // Call the success callback if provided
+      onPaymentSuccess?.(result.paymentIntent);
     } catch (error) {
       console.error("@@stripe-web2-payment:confirmation-error:", JSON.stringify(error, null, 2));
       setMessage("Payment failed. Please try again.");
@@ -167,18 +184,32 @@ function StripePaymentForm({
     }
   };
 
+  // Handle 3DS redirect
+  useEffect(() => {
+    // Check if we're returning from Stripe
+    const url = new URL(window.location.href);
+    const fromStripe = url.searchParams.get("fromStripe");
+    const paymentIntent = url.searchParams.get("payment_intent");
+
+    console.log("@@stripe-web2-payment:fromStripe:", fromStripe);
+    console.log("@@stripe-web2-payment:paymentIntent:", paymentIntent);
+
+    if (fromStripe && paymentIntent) {
+      // Close the modal as we're returning from 3DS
+      setB3ModalOpen(true);
+
+      // Clean up URL params
+      url.searchParams.delete("fromStripe");
+      window.history.replaceState({}, "", url.toString());
+    }
+  }, [setB3ModalOpen]);
+
   if (!stripeReady) {
     return <StripeLoadingState />;
   }
 
-  const stripeElementOptions = {
+  const stripeElementOptions: StripePaymentElementOptions = {
     layout: "tabs" as const,
-    defaultValues: {
-      billingDetails: {
-        name: "",
-        email: "",
-      },
-    },
     fields: {
       billingDetails: "auto" as const,
     },
@@ -282,7 +313,27 @@ function StripePaymentForm({
         {/* Simplified Payment Form */}
         <div className="bg-as-on-surface-1 w-full rounded-2xl p-6">
           <div className="text-as-primary mb-4 text-lg font-semibold">Payment Details</div>
-          <PaymentElement options={stripeElementOptions} />
+          <PaymentElement onChange={handlePaymentElementChange} options={stripeElementOptions} />
+          {showAddressElement && (
+            <AddressElement
+              options={{
+                mode: "billing",
+                fields: {
+                  phone: "always",
+                },
+                // More granular control
+                display: {
+                  name: "split", // or 'split' for first/last name separately
+                },
+                // Validation
+                validation: {
+                  phone: {
+                    required: "auto", // or 'always', 'never'
+                  },
+                },
+              }}
+            />
+          )}
         </div>
 
         {/* Error Message */}

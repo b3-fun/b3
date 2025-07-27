@@ -41,7 +41,7 @@ export function B3DynamicModal() {
       "anySpendBondKit",
     ].find(type => contentType?.type === type)
   ) {
-    contentClass += " max-h-[90dvh] overflow-y-auto no-scrollbar w-full";
+    contentClass += " w-full";
   }
 
   if (
@@ -115,7 +115,7 @@ export function B3DynamicModal() {
       <ModalContent className={contentClass} hideCloseButton={hideCloseButton}>
         <ModalTitle className="sr-only hidden">{contentType?.type || "Modal"}</ModalTitle>
         <ModalDescription className="sr-only hidden">{contentType?.type || "Modal Body"}</ModalDescription>
-        <div className="overflow-auto">
+        <div className="no-scrollbar max-h-[90dvh] overflow-auto sm:max-h-[80dvh]">
           {history.length > 0 && contentType?.showBackButton && (
             <button
               onClick={navigateBack}

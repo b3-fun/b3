@@ -101,10 +101,5 @@ export function useAccountWallet(): {
     ],
   );
 
-  useEffect(() => {
-    console.log(`account`, account);
-    console.log(`useAccountWallet`, res);
-  }, [account, res]);
-
   return res;
 }

@@ -1,15 +1,34 @@
-import { ALL_CHAINS, getChainName, getExplorerAddressUrl } from "@b3dotfun/sdk/anyspend";
+import { ALL_CHAINS, chainIdToPublicClient, getChainName, getExplorerAddressUrl } from "@b3dotfun/sdk/anyspend";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { GlareCard, Popover, PopoverContent, PopoverTrigger } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils";
 import { getIpfsUrl } from "@b3dotfun/sdk/shared/utils/ipfs";
+
 import { formatDisplayNumber, formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { AnimatePresence } from "framer-motion";
 import { MoreVertical } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { b3 } from "viem/chains";
-import { AnySpendCustom } from "./AnySpendCustom";
 import { GetQuoteResponse } from "../../types/api_req_res";
-import { components } from "@b3dotfun/sdk/anyspend/types/api";
+import { AnySpendCustom } from "./AnySpendCustom";
+
+// ABI for contractURI and uri functions
+const CONTRACT_URI_ABI = [
+  {
+    inputs: [],
+    name: "contractURI",
+    outputs: [{ internalType: "string", name: "", type: "string" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "_tokenId", type: "uint256" }],
+    name: "uri",
+    outputs: [{ internalType: "string", name: "", type: "string" }],
+    stateMutability: "view",
+    type: "function",
+  },
+] as const;
 
 export function AnySpendNFT({
   isMainnet = true,
@@ -26,6 +45,65 @@ export function AnySpendNFT({
   nftContract: components["schemas"]["NftContract"];
   onSuccess?: (txHash?: string) => void;
 }) {
+  const [imageUrlWithFallback, setFallbackImageUrl] = useState<string | null>(nftContract.imageUrl);
+  const [isLoadingFallback, setIsLoadingFallback] = useState(false);
+
+  // Fetch contract metadata when imageUrl is empty
+  useEffect(() => {
+    async function fetchContractMetadata() {
+      // fetch image Uri if not provided
+      if (nftContract.imageUrl || isLoadingFallback) {
+        return;
+      }
+
+      try {
+        setIsLoadingFallback(true);
+
+        // Use the chainIdToPublicClient utility function
+        const publicClient = chainIdToPublicClient(nftContract.chainId);
+
+        let metadataURI: string;
+
+        // Use uri function if tokenId is available, otherwise use contractURI
+        if (nftContract.tokenId !== null && nftContract.tokenId !== undefined) {
+          console.log("Using uri function with tokenId:", nftContract.tokenId);
+          metadataURI = await publicClient.readContract({
+            address: nftContract.contractAddress as `0x${string}`,
+            abi: CONTRACT_URI_ABI,
+            functionName: "uri",
+            args: [BigInt(nftContract.tokenId)],
+          });
+        } else {
+          console.log("Using contractURI function");
+          metadataURI = await publicClient.readContract({
+            address: nftContract.contractAddress as `0x${string}`,
+            abi: CONTRACT_URI_ABI,
+            functionName: "contractURI",
+          });
+        }
+
+        if (metadataURI) {
+          // Fetch the metadata from IPFS
+          const metadataUrl = getIpfsUrl(metadataURI);
+          const response = await fetch(metadataUrl);
+          const metadata = await response.json();
+
+          if (metadata.image) {
+            const fallbackUrl = getIpfsUrl(metadata.image);
+            setFallbackImageUrl(fallbackUrl);
+            console.log("fallbackImageUrl", fallbackUrl);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching contract metadata:", error);
+      } finally {
+        setIsLoadingFallback(false);
+      }
+    }
+
+    fetchContractMetadata();
+  }, [nftContract.contractAddress, nftContract.chainId, nftContract.imageUrl, nftContract.tokenId]);
+
   const header = ({
     anyspendPrice,
     isLoadingAnyspendPrice,
@@ -37,7 +115,9 @@ export function AnySpendNFT({
       <div className="relative size-[200px]">
         <div className="absolute inset-0 scale-95 bg-black/30 blur-md"></div>
         <GlareCard className="overflow-hidden">
-          <img src={getIpfsUrl(nftContract.imageUrl)} alt={nftContract.name} className="size-full object-cover" />
+          {imageUrlWithFallback && (
+            <img src={imageUrlWithFallback} alt={nftContract.name} className="size-full object-cover" />
+          )}
           <div className="absolute inset-0 rounded-xl border border-white/10"></div>
         </GlareCard>
 
