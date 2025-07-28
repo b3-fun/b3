@@ -28,6 +28,15 @@ export interface PreferenceRequestBody {
   timestamp: number;
 }
 
+// TypeScript interface for display name request body
+export interface DisplayNameRequestBody {
+  key: string;
+  displayName: string;
+  signature: string;
+  signer: string;
+  timestamp: number;
+}
+
 const PROFILES_API_URL = "https://profiles.b3.fun";
 
 async function fetchProfile({
@@ -85,6 +94,34 @@ async function setProfilePreference({
   return response.json();
 }
 
+async function setDisplayName({
+  key,
+  displayName,
+  signature,
+  signer,
+  timestamp,
+}: DisplayNameRequestBody): Promise<{ success: boolean }> {
+  const response = await fetch(`${PROFILES_API_URL}/display-name`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      key,
+      displayName,
+      signature,
+      signer,
+      timestamp,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to set display name: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
 export function useProfile(
   {
     address,
@@ -136,6 +173,71 @@ export function useProfilePreference() {
   };
 
   return { setPreference };
+}
+
+export function useDisplayName() {
+  const setName = async (
+    key: string,
+    displayName: string,
+    signerAddress: string,
+    signMessage: (message: string) => Promise<string>,
+  ) => {
+    const timestamp = Math.floor(Date.now() / 1000);
+    const message = `SetDisplayName:${key}:${displayName}:${timestamp}`;
+
+    try {
+      const signature = await signMessage(message);
+
+      return setDisplayName({
+        key,
+        displayName,
+        signature,
+        signer: signerAddress,
+        timestamp,
+      });
+    } catch (error) {
+      throw new Error(`Failed to set display name: ${error}`);
+    }
+  };
+
+  return { setName };
+}
+
+export function useProfileSettings() {
+  const { setPreference } = useProfilePreference();
+  const { setName } = useDisplayName();
+
+  const updateSettings = async (
+    key: string,
+    signerAddress: string,
+    signMessage: (message: string) => Promise<string>,
+    settings: {
+      preferredType?: string;
+      displayName?: string;
+    },
+  ) => {
+    const results: { preference?: any; displayName?: any } = {};
+
+    try {
+      if (settings.preferredType) {
+        results.preference = await setPreference(key, settings.preferredType, signerAddress, signMessage);
+      }
+
+      if (settings.displayName) {
+        results.displayName = await setName(key, settings.displayName, signerAddress, signMessage);
+      }
+
+      return results;
+    } catch (error) {
+      throw new Error(`Failed to update profile settings: ${error}`);
+    }
+  };
+
+  return {
+    setPreference,
+    setDisplayName: setName,
+    updateSettings,
+  };
 }
 
 export default useProfile;
