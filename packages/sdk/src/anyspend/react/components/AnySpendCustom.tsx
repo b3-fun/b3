@@ -30,8 +30,8 @@ import {
   TooltipTrigger,
   TransitionPanel,
   useAccountWallet,
-  useBsmntProfile,
   useHasMounted,
+  useProfile,
   useRouter,
   useSearchParamsSSR,
   useTokenBalancesByChain,
@@ -201,8 +201,8 @@ export function AnySpendCustom({
 
   // Update recipient logic to use custom recipient
   const recipientAddress = customRecipientAddress || currentWallet.address;
-  const recipientPropsProfile = useBsmntProfile({ address: recipientAddress });
-  const recipientEnsName = recipientPropsProfile.data?.username?.replace(/\.b3\.fun/g, "");
+  const recipientPropsProfile = useProfile({ address: recipientAddress });
+  const recipientEnsName = recipientPropsProfile.data?.name?.replace(/\.b3\.fun/g, "");
   const recipientImageUrl = recipientPropsProfile.data?.avatar || currentWallet.wallet.meta?.icon;
 
   const [orderId, setOrderId] = useState<string | undefined>(loadOrder);

@@ -429,8 +429,8 @@ importers:
         specifier: 2.14.0
         version: 2.14.0
       '@b3dotfun/b3-api':
-        specifier: 0.0.27
-        version: 0.0.27(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(bufferutil@4.0.9)(encoding@0.1.13)(h3@1.15.1)(next@15.3.3(@babel/core@7.26.10)(@opentelemetry/api@1.8.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react-native@0.79.2(@babel/core@7.26.10)(@types/react@19.1.0)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)(typescript@5.8.2)(utf-8-validate@5.0.10)(ws@7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.51)
+        specifier: 0.0.28
+        version: 0.0.28(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(bufferutil@4.0.9)(encoding@0.1.13)(h3@1.15.1)(next@15.3.3(@babel/core@7.26.10)(@opentelemetry/api@1.8.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react-native@0.79.2(@babel/core@7.26.10)(@types/react@19.1.0)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)(typescript@5.8.2)(utf-8-validate@5.0.10)(ws@7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.51)
       '@b3dotfun/basement-api':
         specifier: 0.0.11
         version: 0.0.11(bufferutil@4.0.9)(encoding@0.1.13)(express@4.21.2)(graphql@16.10.0)(h3@1.15.1)(koa@3.0.0)(next@15.3.3(@babel/core@7.26.10)(@opentelemetry/api@1.8.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(typescript@5.8.2)(utf-8-validate@5.0.10)(ws@7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.51)
@@ -905,8 +905,8 @@ packages:
     resolution: {integrity: sha512-DIIotRnefVL6DiaHtO6/21DhJ4JZnnIwdNbpwiAhdt/AVbttcE4yw925gsjur0OGv5BTYXQXU3YnANBYnZjuQA==}
     engines: {node: '>=18.0.0'}
 
-  '@b3dotfun/b3-api@0.0.27':
-    resolution: {integrity: sha512-0dXX6BWmhTChDKLwcqqYYoFSc8OiYq0QcDWoLNWpRV/8Qv6mX2msAXgTRVY48PWcy1YEAIGAnDHmdG3g2PBRLg==}
+  '@b3dotfun/b3-api@0.0.28':
+    resolution: {integrity: sha512-T9lOFqPRlAspsiFFLkH4bct3KdfrftP7MxFg9iLnF0623BoOr2exNzV0dx5YXoECLqRJA/T5pFAaQQspR7oMzQ==}
     engines: {node: '>= 20.15.0'}
 
   '@b3dotfun/basement-api@0.0.11':
@@ -1811,8 +1811,8 @@ packages:
   '@fingerprintjs/fingerprintjs-pro-spa@1.3.2':
     resolution: {integrity: sha512-s1YGsx1XQLmjU+av4UrUHNxyzwPHyZRB0GXJQFOJK8ZHCYc2SNukxnJmZA++bNBa8twU3wW+QgSJhA4Prjnd0g==}
 
-  '@fingerprintjs/fingerprintjs-pro@3.11.12':
-    resolution: {integrity: sha512-cIM6dOadYhLDI0GOm4ZFNfw+fsOkZx+HKPJckL9h/UDHpXUAOce7BCGd6mpz/2+P5rx0uZx2jHgcPxFWGou77w==}
+  '@fingerprintjs/fingerprintjs-pro@3.11.13':
+    resolution: {integrity: sha512-BkSZUN/6xObrc1iyc3OeGiDZKDBeCwfZ94781PhWutkTNDpqrLdJynf54pjg9EAAqWdtoSjPZ9sYITYddpAjiA==}
 
   '@floating-ui/core@1.6.9':
     resolution: {integrity: sha512-uMXCuQ3BItDUbAMhIXw7UPXRfAlOAvZzdK9BWpE60MCn+Svt3aLn9jsPTi/WNGlRUu2uI0v5S7JiIUsbsvh3fw==}
@@ -12383,7 +12383,7 @@ snapshots:
       '@smithy/types': 4.3.1
       tslib: 2.8.1
 
-  '@b3dotfun/b3-api@0.0.27(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(bufferutil@4.0.9)(encoding@0.1.13)(h3@1.15.1)(next@15.3.3(@babel/core@7.26.10)(@opentelemetry/api@1.8.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react-native@0.79.2(@babel/core@7.26.10)(@types/react@19.1.0)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)(typescript@5.8.2)(utf-8-validate@5.0.10)(ws@7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.51)':
+  '@b3dotfun/b3-api@0.0.28(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(bufferutil@4.0.9)(encoding@0.1.13)(h3@1.15.1)(next@15.3.3(@babel/core@7.26.10)(@opentelemetry/api@1.8.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react-native@0.79.2(@babel/core@7.26.10)(@types/react@19.1.0)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)(typescript@5.8.2)(utf-8-validate@5.0.10)(ws@7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.51)':
     dependencies:
       '@apollo/client': 3.13.6(@types/react@19.1.0)(graphql@16.10.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@feathersjs/adapter-commons': 5.0.34
@@ -13691,10 +13691,10 @@ snapshots:
 
   '@fingerprintjs/fingerprintjs-pro-spa@1.3.2':
     dependencies:
-      '@fingerprintjs/fingerprintjs-pro': 3.11.12
+      '@fingerprintjs/fingerprintjs-pro': 3.11.13
       tslib: 2.8.1
 
-  '@fingerprintjs/fingerprintjs-pro@3.11.12':
+  '@fingerprintjs/fingerprintjs-pro@3.11.13':
     dependencies:
       tslib: 2.8.1
 
