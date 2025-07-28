@@ -1,13 +1,14 @@
 "use client";
 
-import { SignInWithB3, useAccountWallet, useModalStore, useOnchainName } from "@b3dotfun/sdk/global-account/react";
+import { SignInWithB3, useAccountWallet, useModalStore, useProfile } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { b3 } from "viem/chains";
 
 export function SignInButton() {
   const { address, wallet } = useAccountWallet();
-  const { name: ensName } = useOnchainName(address);
+  const profile = useProfile({ address });
+  const ensName = profile.data?.name?.replace(/\.b3\.fun/g, "");
   const { setB3ModalOpen, setB3ModalContentType } = useModalStore();
 
   const b3Config = {

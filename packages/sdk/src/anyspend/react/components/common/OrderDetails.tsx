@@ -25,7 +25,7 @@ import {
   useAccountWallet,
   useChainSwitchWithAction,
   useModalStore,
-  useOnchainName,
+  useProfile,
 } from "@b3dotfun/sdk/global-account/react";
 import { useRouter, useSearchParams } from "@b3dotfun/sdk/shared/react/hooks";
 import { cn } from "@b3dotfun/sdk/shared/utils";
@@ -218,7 +218,9 @@ export const OrderDetails = memo(function OrderDetails({
   const tournament =
     order.type === "join_tournament" || order.type === "fund_tournament" ? order.metadata.tournament : undefined;
 
-  const { name: recipientName } = useOnchainName(order.recipientAddress);
+  const profile = useProfile({ address: order.recipientAddress });
+  const recipientName = profile.data?.name?.replace(/\.b3\.fun/g, "");
+
   const account = useAccountWallet();
 
   const { data: walletClient } = useWalletClient();
