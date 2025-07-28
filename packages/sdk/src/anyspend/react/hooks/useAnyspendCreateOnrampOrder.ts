@@ -1,12 +1,15 @@
 import { USDC_BASE } from "@b3dotfun/sdk/anyspend/constants";
 import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
+import { VisitorData } from "@b3dotfun/sdk/anyspend/types/fingerprint";
 import { buildMetadata, buildPayload, normalizeAddress } from "@b3dotfun/sdk/anyspend/utils";
+import { useVisitorData } from "@fingerprintjs/fingerprintjs-pro-react";
 import { useMutation } from "@tanstack/react-query";
 import { useMemo } from "react";
+
 import { parseUnits } from "viem";
 import { base } from "viem/chains";
 import { CreateOrderParams } from "./useAnyspendCreateOrder";
-import { components } from "@b3dotfun/sdk/anyspend/types/api";
 
 export type OnrampOptions = {
   vendor: components["schemas"]["OnrampMetadata"]["vendor"];
@@ -31,6 +34,13 @@ export type UseAnyspendCreateOnrampOrderProps = {
  * Specifically handles orders that involve fiat-to-crypto onramp functionality
  */
 export function useAnyspendCreateOnrampOrder({ onSuccess, onError }: UseAnyspendCreateOnrampOrderProps = {}) {
+  // Get fingerprint data
+  const { data: fpData } = useVisitorData({ extendedResult: true }, { immediate: true });
+  const visitorData: VisitorData | undefined = fpData && {
+    requestId: fpData.requestId,
+    visitorId: fpData.visitorId,
+  };
+
   const { mutate: createOrder, isPending } = useMutation({
     mutationFn: async (params: CreateOnrampOrderParams) => {
       const {
@@ -82,7 +92,9 @@ export function useAnyspendCreateOnrampOrder({ onSuccess, onError }: UseAnyspend
             expectedDstAmount,
             nft,
             tournament,
-            payload,
+            payload: {
+              ...payload,
+            },
           }),
           onramp,
           metadata: buildMetadata(orderType, {
@@ -92,10 +104,13 @@ export function useAnyspendCreateOnrampOrder({ onSuccess, onError }: UseAnyspend
             expectedDstAmount,
             nft,
             tournament,
-            payload,
+            payload: {
+              ...payload,
+            },
           }),
           creatorAddress: creatorAddress ? normalizeAddress(creatorAddress) : undefined,
           partnerId,
+          visitorData,
         });
       } catch (error: any) {
         // If the error has a response with message and statusCode, throw that

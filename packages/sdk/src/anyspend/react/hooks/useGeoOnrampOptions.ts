@@ -1,16 +1,27 @@
+import { useVisitorData } from "@fingerprintjs/fingerprintjs-pro-react";
 import { useMemo } from "react";
-
+import { VisitorData } from "../../types/fingerprint";
 import { useCoinbaseOnrampOptions } from "./useCoinbaseOnrampOptions";
 import { useGetGeo } from "./useGetGeo";
 import { useStripeSupport } from "./useStripeSupport";
 
 export function useGeoOnrampOptions(isMainnet: boolean, srcFiatAmount: string) {
+  // Get fingerprint data
+  const { data: fpData, isLoading: isLoadingVisitorData } = useVisitorData(
+    { extendedResult: true },
+    { immediate: true },
+  );
+  const visitorData: VisitorData | undefined = fpData && {
+    requestId: fpData.requestId,
+    visitorId: fpData.visitorId,
+  };
+
   // Use existing hooks
   const { geoData, loading: isLoadingGeo, error: geoError } = useGetGeo();
   const { coinbaseOnrampOptions, isLoadingCoinbaseOnrampOptions, coinbaseOnrampOptionsError } =
-    useCoinbaseOnrampOptions(isMainnet, geoData?.country);
+    useCoinbaseOnrampOptions(isMainnet, geoData?.country, visitorData);
   const { isStripeOnrampSupported, isStripeWeb2Supported, isLoadingStripeSupport, stripeSupportError } =
-    useStripeSupport(isMainnet, geoData?.ip || "", srcFiatAmount);
+    useStripeSupport(isMainnet, geoData?.ip || "", srcFiatAmount, visitorData);
 
   // Calculate available payment methods based on the amount
   const coinbaseAvailablePaymentMethods = useMemo(() => {
@@ -33,7 +44,7 @@ export function useGeoOnrampOptions(isMainnet: boolean, srcFiatAmount: string) {
       isStripeOnrampSupported,
       isStripeWeb2Supported,
       isOnrampSupported: coinbaseAvailablePaymentMethods.length > 0 || isStripeOnrampSupported || isStripeWeb2Supported,
-      isLoading: isLoadingGeo || isLoadingCoinbaseOnrampOptions || isLoadingStripeSupport,
+      isLoading: isLoadingGeo || isLoadingCoinbaseOnrampOptions || isLoadingStripeSupport || isLoadingVisitorData,
       isLoadingGeo,
       isLoadingCoinbaseOnrampOptions,
       isLoadingStripeSupport,

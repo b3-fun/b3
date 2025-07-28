@@ -1,6 +1,8 @@
 import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
-import { buildMetadata, buildPayload, normalizeAddress } from "@b3dotfun/sdk/anyspend/utils";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
+import { VisitorData } from "@b3dotfun/sdk/anyspend/types/fingerprint";
+import { buildMetadata, buildPayload, normalizeAddress } from "@b3dotfun/sdk/anyspend/utils";
+import { useVisitorData } from "@fingerprintjs/fingerprintjs-pro-react";
 import { useMutation } from "@tanstack/react-query";
 import { useMemo } from "react";
 
@@ -32,6 +34,12 @@ export type UseAnyspendCreateOrderProps = {
  * For onramp orders, use useAnyspendCreateOnrampOrder instead.
  */
 export function useAnyspendCreateOrder({ onSuccess, onError }: UseAnyspendCreateOrderProps = {}) {
+  // Get fingerprint data
+  const { data: fpData } = useVisitorData({ extendedResult: true }, { immediate: true });
+  const visitorData: VisitorData | undefined = fpData && {
+    requestId: fpData.requestId,
+    visitorId: fpData.visitorId,
+  };
   const { mutate: createOrder, isPending } = useMutation({
     mutationFn: async (params: CreateOrderParams) => {
       const {
@@ -63,7 +71,9 @@ export function useAnyspendCreateOrder({ onSuccess, onError }: UseAnyspendCreate
             expectedDstAmount: params.expectedDstAmount,
             nft: params.nft,
             tournament: params.tournament,
-            payload: params.payload,
+            payload: {
+              ...params.payload,
+            },
           }),
           metadata: buildMetadata(orderType, {
             orderType,
@@ -72,9 +82,12 @@ export function useAnyspendCreateOrder({ onSuccess, onError }: UseAnyspendCreate
             expectedDstAmount: params.expectedDstAmount,
             nft: params.nft,
             tournament: params.tournament,
-            payload: params.payload,
+            payload: {
+              ...params.payload,
+            },
           }),
           creatorAddress: creatorAddress ? normalizeAddress(creatorAddress) : undefined,
+          visitorData,
         });
       } catch (error: any) {
         // If the error has a response with message and statusCode, throw that

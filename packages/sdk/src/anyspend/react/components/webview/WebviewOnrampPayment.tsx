@@ -10,6 +10,7 @@ import { Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { formatUnits } from "viem";
+import { AnySpendFingerprintWrapper, getFingerprintConfig } from "../AnySpendFingerprintWrapper";
 
 const stripePromise = loadStripe(STRIPE_CONFIG.publishableKey);
 
@@ -21,6 +22,15 @@ interface WebviewOnrampPaymentProps {
   anyspendQuote: GetQuoteResponse | undefined;
   onPaymentSuccess: (orderId: string) => void;
   userId?: string;
+}
+
+export function WebviewOnrampPayment(props: WebviewOnrampPaymentProps) {
+  const fingerprintConfig = getFingerprintConfig();
+  return (
+    <AnySpendFingerprintWrapper fingerprint={fingerprintConfig}>
+      <WebviewOnrampPaymentInner {...props} />
+    </AnySpendFingerprintWrapper>
+  );
 }
 
 // Stripe Payment Form Component
@@ -140,7 +150,7 @@ function StripePaymentForm({
   );
 }
 
-export function WebviewOnrampPayment({
+function WebviewOnrampPaymentInner({
   srcAmountOnRamp,
   recipientAddress,
   destinationToken,
