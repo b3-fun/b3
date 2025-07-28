@@ -1,0 +1,143 @@
+name: Publish SDK Latest
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to publish (e.g., 0.0.12)"
+        required: true
+        type: string
+
+env:
+  NODE_OPTIONS: --max_old_space_size=8192
+
+jobs:
+  publish-latest:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - name: Generate GitHub App Token
+        id: generate_token
+        uses: tibdex/github-app-token@v1
+        with:
+          app_id: ${{ secrets.APP_ID }}
+          private_key: ${{ secrets.PRIVATE_KEY }}
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ steps.generate_token.outputs.token }}
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup-environment
+
+      - name: Setup Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Build SDK package
+        run: |
+          cd packages/sdk
+          pnpm build
+
+      - name: Run tests
+        run: |
+          cd packages/sdk
+          pnpm typecheck
+
+      - name: Update version
+        run: |
+          cd packages/sdk
+
+          # Update package.json with the specified version
+          NEW_VERSION="${{ github.event.inputs.version }}"
+          echo "Updating package.json version to: $NEW_VERSION"
+
+          # Update version using pnpm
+          pnpm version "$NEW_VERSION" --no-git-tag-version
+
+          # Commit and push the version change back to the repository
+          git add package.json
+          git commit -m "Release version $NEW_VERSION"
+          git push origin main
+
+          echo "✅ Updated package.json to version $NEW_VERSION and committed to repository"
+
+      - name: Setup npm authentication
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+
+      - name: Publish to latest channel
+        id: publish-latest
+        run: |
+          cd packages/sdk
+
+          # Get current version
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "Publishing version to latest: $CURRENT_VERSION"
+          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+
+          # Publish to latest channel
+          pnpm publish --tag latest --no-git-checks
+
+      - name: Tag latest release
+        run: |
+          CURRENT_VERSION="${{ steps.publish-latest.outputs.current_version }}"
+
+          # Create and push git tag if it doesn't exist
+          if ! git rev-parse "$CURRENT_VERSION" >/dev/null 2>&1; then
+            git tag "$CURRENT_VERSION" -m "Release $CURRENT_VERSION"
+            git push origin "$CURRENT_VERSION"
+            echo "✅ Created new tag: $CURRENT_VERSION"
+          else
+            echo "ℹ️ Tag $CURRENT_VERSION already exists"
+          fi
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.publish-latest.outputs.current_version }}
+          release_name: Release ${{ steps.publish-latest.outputs.current_version }}
+          body: |
+            ## 🚀 SDK Release ${{ steps.publish-latest.outputs.current_version }}
+
+            This release includes the latest changes from the main branch.
+
+            ### 📦 Package
+            - [@b3dotfun/sdk](https://www.npmjs.com/package/@b3dotfun/sdk)
+
+            ### 📥 Installation
+            ```bash
+            pnpm add @b3dotfun/sdk@${{ steps.publish-latest.outputs.current_version }}
+            ```
+
+            ### 🔗 Links
+            - [NPM Package](https://www.npmjs.com/package/@b3dotfun/sdk)
+            - [Changelog](https://github.com/${{ github.repository }}/compare/main...v${{ steps.publish-latest.outputs.current_version }})
+          draft: false
+          prerelease: false
+
+      - name: Summary
+        run: |
+          cd packages/sdk
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+
+          echo "## 🚀 Latest Package Published!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Package:** [@b3dotfun/sdk](https://www.npmjs.com/package/@b3dotfun/sdk)" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** \`$CURRENT_VERSION\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Channel:** \`latest\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Git Tag:** \`$CURRENT_VERSION\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Install:** \`pnpm add @b3dotfun/sdk@$CURRENT_VERSION\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🏷️ Repository Updated" >> $GITHUB_STEP_SUMMARY
+          echo "The repository has been updated with version \`$CURRENT_VERSION\` and tagged." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🤖 **Powered by GitHub App** - Secure authentication with minimal permissions" >> $GITHUB_STEP_SUMMARY
