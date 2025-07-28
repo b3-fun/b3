@@ -1,10 +1,9 @@
-import { useB3 } from "@b3dotfun/sdk/global-account/react";
+import { useB3, useProfile } from "@b3dotfun/sdk/global-account/react";
 import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { useEffect, useMemo, useState } from "react";
 import { getLastAuthProvider, useActiveWallet, useConnectedWallets, useWalletImage } from "thirdweb/react";
 import { Account, Wallet } from "thirdweb/wallets";
 import { socialIcons } from "thirdweb/wallets/in-app";
-import { useBsmntProfile } from "./useBsmntProfile";
 
 function useLastAuthProvider(): string | null {
   const [lastAuthProvider, setLastAuthProvider] = useState<string | null>(null);
@@ -62,8 +61,8 @@ export function useAccountWallet(): {
       ? socialIcons[lastAuthProvider as keyof typeof socialIcons]
       : "https://gradvatar.com/0x0000000000000000000000000000000000000000"; // show smart wallet of eoa wallet is gradvatar
 
-  const { data: profileData } = useBsmntProfile({ address: account?.address });
-  const ensName = profileData?.username?.replace(/\.b3\.fun/g, "");
+  const { data: profileData } = useProfile({ address: account?.address });
+  const ensName = profileData?.displayName?.replace(/\.b3\.fun/g, "");
   const avatarUrl = profileData?.avatar;
 
   const res = useMemo(
