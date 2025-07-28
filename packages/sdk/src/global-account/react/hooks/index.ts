@@ -5,7 +5,6 @@ export { useAuthentication } from "./useAuthentication";
 export { useB3BalanceFromAddresses } from "./useB3BalanceFromAddresses";
 export { useB3EnsName } from "./useB3EnsName";
 export { useBestTransactionPath } from "./useBestTransactionPath";
-export { useBsmntProfile } from "./useBsmntProfile";
 export { useChainSwitchWithAction } from "./useChainSwitchWithAction";
 export { useClaim } from "./useClaim";
 export { useConnect } from "./useConnect";
@@ -18,7 +17,6 @@ export { useIsMobile } from "./useIsMobile";
 export { useIsomorphicLayoutEffect } from "./useIsomorphicLayoutEffect";
 export { useMediaQuery } from "./useMediaQuery";
 export { useNativeBalance, useNativeBalanceFromRPC } from "./useNativeBalance";
-export { useOnchainName } from "./useOnchainName";
 export { useOneBalance } from "./useOneBalance";
 export {
   useProfile,

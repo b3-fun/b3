@@ -1,26 +1,16 @@
-name: Publish SDK Package
+name: Publish SDK Alpha
 
 on:
   push:
     branches: [main]
     paths:
       - "packages/sdk/**"
-  workflow_dispatch:
-    inputs:
-      release_type:
-        description: "Release type"
-        required: true
-        default: "latest"
-        type: choice
-        options:
-          - "latest"
-          - "alpha"
 
 env:
   NODE_OPTIONS: --max_old_space_size=8192
 
 jobs:
-  publish:
+  publish-alpha:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -40,18 +30,8 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Determine release type
-        id: release-type
-        run: |
-          if [ "${{ github.event_name }}" = "push" ]; then
-            echo "type=alpha" >> $GITHUB_OUTPUT
-          else
-            echo "type=${{ github.event.inputs.release_type }}" >> $GITHUB_OUTPUT
-          fi
-
       - name: Calculate next alpha version
         id: version
-        if: steps.release-type.outputs.type == 'alpha'
         run: |
           cd packages/sdk
 
@@ -117,7 +97,6 @@ jobs:
 
       - name: Publish to alpha channel
         id: publish-alpha
-        if: steps.release-type.outputs.type == 'alpha'
         run: |
           cd packages/sdk
 
@@ -130,7 +109,6 @@ jobs:
           pnpm publish --tag alpha --no-git-checks
 
       - name: Tag alpha release
-        if: steps.release-type.outputs.type == 'alpha'
         run: |
           NEW_VERSION="${{ steps.publish-alpha.outputs.new_version }}"
 
@@ -140,83 +118,21 @@ jobs:
 
           echo "✅ Tagged repository with $NEW_VERSION"
 
-      - name: Publish to latest channel
-        id: publish-latest
-        if: steps.release-type.outputs.type == 'latest'
-        run: |
-          cd packages/sdk
-
-          # Get current version
-          CURRENT_VERSION=$(node -p "require('./package.json').version")
-          echo "Publishing current version to latest: $CURRENT_VERSION"
-          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
-
-          # Publish to latest channel
-          pnpm publish --tag latest --no-git-checks
-
-      - name: Tag latest release
-        if: steps.release-type.outputs.type == 'latest'
-        run: |
-          CURRENT_VERSION="${{ steps.publish-latest.outputs.current_version }}"
-
-          # Create and push git tag if it doesn't exist
-          if ! git rev-parse "$CURRENT_VERSION" >/dev/null 2>&1; then
-            git tag "$CURRENT_VERSION" -m "Release $CURRENT_VERSION"
-            git push origin "$CURRENT_VERSION"
-            echo "✅ Created new tag: $CURRENT_VERSION"
-          else
-            echo "ℹ️ Tag $CURRENT_VERSION already exists"
-          fi
-
-      - name: Create GitHub Release
-        if: steps.release-type.outputs.type == 'latest'
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.publish-latest.outputs.current_version }}
-          release_name: Release ${{ steps.publish-latest.outputs.current_version }}
-          body: |
-            ## 🚀 SDK Release ${{ steps.publish-latest.outputs.current_version }}
-
-            This release includes the latest changes from the main branch.
-
-            ### 📦 Package
-            - [@b3dotfun/sdk](https://www.npmjs.com/package/@b3dotfun/sdk)
-
-            ### 📥 Installation
-            ```bash
-            pnpm add @b3dotfun/sdk@${{ steps.publish-latest.outputs.current_version }}
-            ```
-
-            ### 🔗 Links
-            - [NPM Package](https://www.npmjs.com/package/@b3dotfun/sdk)
-            - [Changelog](https://github.com/${{ github.repository }}/compare/main...v${{ steps.publish-latest.outputs.current_version }})
-          draft: false
-          prerelease: false
-
       - name: Summary
         run: |
           cd packages/sdk
-          CURRENT_VERSION=$(node -p "require('./package.json').version")
-          RELEASE_TYPE="${{ steps.release-type.outputs.type }}"
+          CURRENT_VERSION="${{ steps.publish-alpha.outputs.new_version }}"
 
-          echo "## 🚀 Package Published!" >> $GITHUB_STEP_SUMMARY
+          echo "## 🚀 Alpha Package Published!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Package:** [@b3dotfun/sdk](https://www.npmjs.com/package/@b3dotfun/sdk)" >> $GITHUB_STEP_SUMMARY
           echo "**Version:** \`$CURRENT_VERSION\`" >> $GITHUB_STEP_SUMMARY
-          echo "**Channel:** \`$RELEASE_TYPE\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Channel:** \`alpha\`" >> $GITHUB_STEP_SUMMARY
           echo "**Git Tag:** \`$CURRENT_VERSION\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-
-          if [ "$RELEASE_TYPE" = "alpha" ]; then
-            echo "**Install:** \`pnpm add @b3dotfun/sdk@alpha\`" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "**Install:** \`pnpm add @b3dotfun/sdk@$CURRENT_VERSION\`" >> $GITHUB_STEP_SUMMARY
-          fi
-
+          echo "**Install:** \`pnpm add @b3dotfun/sdk@alpha\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 🏷️ Repository Tagged" >> $GITHUB_STEP_SUMMARY
           echo "The repository has been tagged with version \`$CURRENT_VERSION\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Note:** Version changes are not committed back to the repository to avoid infinite loops." >> $GITHUB_STEP_SUMMARY
+          echo "**Note:** Alpha versions are not committed back to avoid infinite loops." >> $GITHUB_STEP_SUMMARY

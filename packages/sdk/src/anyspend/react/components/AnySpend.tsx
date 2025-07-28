@@ -12,7 +12,7 @@ import {
   StyleRoot,
   TransitionPanel,
   useAccountWallet,
-  useOnchainName,
+  useProfile,
   useRouter,
   useSearchParamsSSR,
   useTokenData,
@@ -405,12 +405,8 @@ export function AnySpend({
         },
   );
 
-  // Replace the old ENS lookup with our new hooks
-  const { name: recipientName } = useOnchainName(recipientAddress);
-  // const { name: walletName } = useOnchainName(globalAddress);
-
-  // Batch lookup for custom recipients
-  // const { names: customRecipientNames } = useOnchainNames(customRecipients.map(r => r.address));
+  const recipientProfile = useProfile({ address: recipientAddress });
+  const recipientName = recipientProfile.data?.name?.replace(/\.b3\.fun/g, "");
 
   // Load custom recipients from local storage on mount
   useEffect(() => {
