@@ -7,14 +7,10 @@ on:
       - "packages/sdk/**"
   workflow_dispatch:
     inputs:
-      release_type:
-        description: "Release type"
+      version:
+        description: "Version to publish (e.g., 0.0.12)"
         required: true
-        default: "latest"
-        type: choice
-        options:
-          - "latest"
-          - "alpha"
+        type: string
 
 env:
   NODE_OPTIONS: --max_old_space_size=8192
@@ -46,7 +42,7 @@ jobs:
           if [ "${{ github.event_name }}" = "push" ]; then
             echo "type=alpha" >> $GITHUB_OUTPUT
           else
-            echo "type=${{ github.event.inputs.release_type }}" >> $GITHUB_OUTPUT
+            echo "type=latest" >> $GITHUB_OUTPUT
           fi
 
       - name: Calculate next alpha version
@@ -139,6 +135,25 @@ jobs:
           git push origin "$NEW_VERSION"
 
           echo "✅ Tagged repository with $NEW_VERSION"
+
+      - name: Update version for manual release
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          cd packages/sdk
+
+          # Update package.json with the specified version
+          NEW_VERSION="${{ github.event.inputs.version }}"
+          echo "Updating package.json version to: $NEW_VERSION"
+
+          # Update version using pnpm (works fine when in package directory)
+          pnpm version "$NEW_VERSION" --no-git-tag-version
+
+          # Commit and push the version change back to the repository
+          git add package.json
+          git commit -m "Release version $NEW_VERSION"
+          git push origin main
+
+          echo "✅ Updated package.json to version $NEW_VERSION and committed to repository"
 
       - name: Publish to latest channel
         id: publish-latest
