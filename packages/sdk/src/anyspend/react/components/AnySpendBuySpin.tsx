@@ -11,9 +11,9 @@ import {
   useTokenBalance,
 } from "@b3dotfun/sdk/global-account/react";
 import { baseMainnet } from "@b3dotfun/sdk/shared/constants/chains/supported";
-import { motion } from "framer-motion";
 import invariant from "invariant";
 import { ArrowRight, Loader2 } from "lucide-react";
+import { motion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { createPublicClient, encodeFunctionData, erc20Abi, formatUnits, http } from "viem";
