@@ -58,7 +58,6 @@ export function useTokenBalancesByChain({
               });
 
               return {
-                chainId,
                 ...walletBalance,
               };
             }),
