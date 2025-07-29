@@ -23,7 +23,7 @@ import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { formatDisplayNumber, formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { motion } from "framer-motion";
 import invariant from "invariant";
-import { ArrowDown, ChevronRightCircle, ChevronsUpDown, CircleAlert, ClipboardIcon, HistoryIcon } from "lucide-react";
+import { ArrowDown, ChevronRightCircle, ChevronsUpDown, CircleAlert, HistoryIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { parseUnits } from "viem";
@@ -606,18 +606,8 @@ export function AnySpend({
     if (!recipientAddress) return { text: "Select recipient", disable: false, error: false };
     if (isCreatingOrder) return { text: "Creating order...", disable: true, error: false };
     if (!anyspendQuote || !anyspendQuote.success) return { text: "Get rate error", disable: true, error: true };
-    if (activeTab === "fiat") return { text: "Continue to payment", disable: false, error: false };
-    return { text: isBuyMode ? `Buy ${selectedDstToken.symbol}` : "Swap", disable: false, error: false };
-  }, [
-    activeInputAmountInWei,
-    isLoadingAnyspendQuote,
-    recipientAddress,
-    isCreatingOrder,
-    anyspendQuote,
-    activeTab,
-    isBuyMode,
-    selectedDstToken.symbol,
-  ]);
+    return { text: "Continue to payment", disable: false, error: false };
+  }, [activeInputAmountInWei, isLoadingAnyspendQuote, recipientAddress, isCreatingOrder, anyspendQuote]);
 
   // Handle main button click
   const onMainButtonClick = async () => {
@@ -770,7 +760,11 @@ export function AnySpend({
   );
 
   const mainView = (
-    <div className={"mx-auto flex w-[460px] max-w-full flex-col items-center gap-2"}>
+    <div
+      className={
+        "bg-as-surface-primary border-as-border-secondary mx-auto flex w-[460px] max-w-full flex-col items-center gap-2 rounded-2xl border p-4 shadow-xl"
+      }
+    >
       {/* Token Header - Show when in buy mode */}
       {isBuyMode && (
         <div className="mb-4 flex flex-col items-center gap-3 text-center">
@@ -790,33 +784,35 @@ export function AnySpend({
       )}
 
       {/* Tab section */}
-      <div className="bg-as-on-surface-1 relative mx-auto mb-4 grid h-10 w-fit min-w-[180px] grid-cols-2 rounded-xl">
-        <div
-          className={cn(
-            "bg-as-brand absolute bottom-0 left-0 top-0 z-0 rounded-xl transition-transform duration-100",
-            "h-full w-1/2",
-            activeTab === "fiat" ? "translate-x-full" : "translate-x-0",
-          )}
-          style={{ willChange: "transform" }}
-        />
-        <button
-          className={cn(
-            "relative z-10 h-full w-full rounded-xl px-6 text-sm font-medium transition-colors duration-100",
-            activeTab === "crypto" ? "text-white" : "text-as-primary/70 hover:bg-as-on-surface-2 bg-transparent",
-          )}
-          onClick={() => setActiveTab("crypto")}
-        >
-          Crypto
-        </button>
-        <button
-          className={cn(
-            "relative z-10 h-full w-full rounded-xl px-6 text-sm font-medium transition-colors duration-100",
-            activeTab === "fiat" ? "text-white" : "text-as-primary/70 hover:bg-as-on-surface-2 bg-transparent",
-          )}
-          onClick={() => setActiveTab("fiat")}
-        >
-          Fiat
-        </button>
+      <div className="w-full">
+        <div className="bg-as-on-surface-1 relative mb-4 inline-grid h-10 grid-cols-2 rounded-xl">
+          <div
+            className={cn(
+              "bg-as-brand absolute bottom-0 left-0 top-0 z-0 rounded-xl transition-transform duration-100",
+              "h-full w-1/2",
+              activeTab === "fiat" ? "translate-x-full" : "translate-x-0",
+            )}
+            style={{ willChange: "transform" }}
+          />
+          <button
+            className={cn(
+              "relative z-10 h-full w-full rounded-xl px-3 text-sm font-medium transition-colors duration-100",
+              activeTab === "crypto" ? "text-white" : "text-as-primary/70 hover:bg-as-on-surface-2 bg-transparent",
+            )}
+            onClick={() => setActiveTab("crypto")}
+          >
+            Swap
+          </button>
+          <button
+            className={cn(
+              "relative z-10 h-full w-full rounded-xl px-3 text-sm font-medium transition-colors duration-100",
+              activeTab === "fiat" ? "text-white" : "text-as-primary/70 hover:bg-as-on-surface-2 bg-transparent",
+            )}
+            onClick={() => setActiveTab("fiat")}
+          >
+            Buy
+          </button>
+        </div>
       </div>
 
       {/* {selectedSrcChainId === base.id || selectedDstChainId === base.id || activeTab === "fiat" ? (
@@ -834,18 +830,14 @@ export function AnySpend({
             initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
             animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             transition={{ duration: 0.3, delay: 0, ease: "easeInOut" }}
-            className="bg-as-on-surface-1 relative flex w-full flex-col gap-2 rounded-2xl p-4 sm:p-6"
+            className="bg-as-surface-secondary border-as-border-secondary relative flex w-full flex-col gap-2 rounded-2xl border p-4 sm:p-6"
           >
             <div className="flex items-center justify-between">
-              <div className="text-as-primary/50 flex h-7 items-center text-sm">Send</div>
-              <TokenBalance
-                token={selectedSrcToken}
-                walletAddress={globalAddress}
-                onChangeInput={value => {
-                  setIsSrcInputDirty(true);
-                  setSrcAmount(value);
-                }}
-              />
+              <div className="text-as-primary/50 flex h-7 items-center text-sm">Pay</div>
+              <div className="text-as-primary/50 flex h-7 items-center gap-1 text-sm">
+                Transfer crypto
+                <ChevronRightCircle className="h-4 w-4" />
+              </div>
             </div>
             <OrderTokenAmount
               address={globalAddress}
@@ -860,8 +852,18 @@ export function AnySpend({
               token={selectedSrcToken}
               setToken={setSelectedSrcToken}
             />
-            <div className="text-as-primary/50 flex h-5 items-center text-sm">
-              {formatDisplayNumber(anyspendQuote?.data?.currencyIn?.amountUsd, { style: "currency", fallback: "" })}
+            <div className="flex items-center justify-between">
+              <div className="text-as-primary/50 flex h-5 items-center text-sm">
+                {formatDisplayNumber(anyspendQuote?.data?.currencyIn?.amountUsd, { style: "currency", fallback: "" })}
+              </div>
+              <TokenBalance
+                token={selectedSrcToken}
+                walletAddress={globalAddress}
+                onChangeInput={value => {
+                  setIsSrcInputDirty(true);
+                  setSrcAmount(value);
+                }}
+              />
             </div>
           </motion.div>
         ) : (
@@ -878,7 +880,7 @@ export function AnySpend({
         <Button
           variant="ghost"
           className={cn(
-            "bg-as-n-8 border-as-stroke absolute left-1/2 top-1/2 z-10 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-2xl border-2 sm:h-8 sm:w-8 sm:rounded-xl",
+            "border-as-stroke bg-as-surface-primary absolute left-1/2 top-1/2 z-10 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-xl border-2 sm:h-8 sm:w-8 sm:rounded-xl",
             (activeTab === "fiat" || isBuyMode) && "top-[calc(50%+56px)] cursor-default",
           )}
           onClick={() => {
@@ -915,32 +917,28 @@ export function AnySpend({
           initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
           transition={{ duration: 0.3, delay: 0.1, ease: "easeInOut" }}
-          className="bg-as-on-surface-1 relative flex w-full flex-col gap-2 rounded-2xl p-4 sm:p-6"
+          className="bg-as-surface-secondary border-as-border-secondary relative flex w-full flex-col gap-2 rounded-2xl border p-4 sm:p-6"
         >
           <div className="flex w-full items-center justify-between">
             <div className="text-as-primary/50 flex h-7 items-center text-sm">Receive</div>
             {recipientAddress ? (
               <button
-                className={cn(
-                  "text-as-primary/50 flex h-7 items-center gap-1 rounded-lg px-2",
-                  globalAddress && recipientAddress === globalAddress
-                    ? "bg-as-on-surface-2 hover:bg-as-on-surface-3"
-                    : "bg-as-yellow/70 hover:bg-as-yellow text-as-primary",
-                )}
+                className={cn("text-as-primary/70 flex h-7 items-center gap-2 rounded-lg px-2")}
                 onClick={() => setIsOpenPasteRecipientAddressModal(true)}
               >
                 {globalAddress && recipientAddress === globalAddress && globalWallet?.meta?.icon ? (
                   <img
                     src={globalWallet?.meta?.icon}
                     alt="Current wallet"
-                    className="bg-as-primary h-4 w-4 rounded-full"
+                    className="bg-as-primary h-6 w-6 rounded-full"
                   />
                 ) : (
-                  <ClipboardIcon className="h-4 w-4" />
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-orange-500 text-xs text-white">
+                    🦊
+                  </div>
                 )}
-
                 <div className="text-sm">{recipientName ? recipientName : shortenAddress(recipientAddress)}</div>
-                <ChevronsUpDown className="h-3 w-3" />
+                <ChevronRightCircle className="h-4 w-4" />
               </button>
             ) : (
               <button
