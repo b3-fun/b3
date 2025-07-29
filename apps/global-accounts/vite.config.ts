@@ -47,10 +47,6 @@ export default defineConfig(({ command: _command }) => {
       alias: {
         "@b3dotfun/sdk/index.css": path.resolve(__dirname, "../../packages/sdk/dist/styles/index.css"),
         "@b3dotfun/sdk": path.resolve(__dirname, "../../packages/sdk/src"),
-        "ajv/dist/runtime/validation_error": "ajv",
-        "ajv/dist/runtime/uri": "ajv",
-        "ajv/dist/runtime/ucs2length": "ajv",
-        "ajv/dist/runtime/equal": "ajv",
       },
     },
   };
