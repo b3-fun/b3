@@ -1,6 +1,6 @@
 {
   "name": "@b3dotfun/sdk",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "source": "src/index.ts",
   "main": "./dist/cjs/index.js",
   "react-native": "./dist/cjs/index.native.js",
@@ -257,7 +257,7 @@
     "sonner": "1.7.4",
     "stripe": "18.2.1",
     "tailwind-merge": "2.6.0",
-    "thirdweb": "5.93.16",
+    "thirdweb": "5.105.20",
     "typescript": "5.8.2",
     "vaul": "^1.1.2",
     "viem": "2.27.2",
@@ -313,7 +313,7 @@
     "react": "^18.0.0 || ^19.0.0",
     "react-dom": "^18.0.0 || ^19.0.0",
     "react-native-mmkv": "^3.2.0",
-    "thirdweb": "5.93.16",
+    "thirdweb": "5.105.20",
     "three": "0.175.0"
   },
   "peerDependenciesMeta": {
