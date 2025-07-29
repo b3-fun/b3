@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 
 export function StaggeredFadeLoader({ className = "bg-white/50", size = 4 }: { className?: string; size?: number }) {
   const circleVariants = {

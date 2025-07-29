@@ -11,9 +11,9 @@ import {
   useTokenBalance,
 } from "@b3dotfun/sdk/global-account/react";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
-import { motion } from "framer-motion";
 import invariant from "invariant";
 import { ArrowRight, Loader2 } from "lucide-react";
+import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { createPublicClient, encodeFunctionData, erc20Abi, http } from "viem";

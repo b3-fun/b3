@@ -1,6 +1,6 @@
 import { getChainName, getNativeToken } from "@b3dotfun/sdk/anyspend";
 import { supportedChains } from "@b3dotfun/sdk/shared/constants/chains/supported";
-import { invariant } from "framer-motion";
+import { invariant } from "motion/react";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { WalletClient } from "viem";

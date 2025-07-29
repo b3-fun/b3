@@ -2,7 +2,7 @@
 
 import { TransitionPanel } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "motion/react";
 import React, { ReactNode, createContext, useContext } from "react";
 
 interface TabsContextType {

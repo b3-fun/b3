@@ -1,6 +1,6 @@
 "use client";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
-import { AnimatePresence, MotionProps, Transition, Variant, motion } from "framer-motion";
+import { AnimatePresence, MotionProps, Transition, Variant, motion } from "motion/react";
 
 type TransitionPanelProps = {
   children: React.ReactNode[];

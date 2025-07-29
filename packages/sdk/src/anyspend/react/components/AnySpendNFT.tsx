@@ -5,8 +5,8 @@ import { cn } from "@b3dotfun/sdk/shared/utils";
 import { getIpfsUrl } from "@b3dotfun/sdk/shared/utils/ipfs";
 
 import { formatDisplayNumber, formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
-import { AnimatePresence } from "framer-motion";
 import { MoreVertical } from "lucide-react";
+import { AnimatePresence } from "motion/react";
 import { useEffect, useState } from "react";
 import { b3 } from "viem/chains";
 import { GetQuoteResponse } from "../../types/api_req_res";
