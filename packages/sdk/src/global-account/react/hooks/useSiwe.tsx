@@ -4,8 +4,7 @@ import { useCallback } from "react";
 import { Account } from "thirdweb/wallets";
 
 export function useSiwe() {
-  const authenticate = useCallback(async (account: Account) => {
-    if (!account || !account.signMessage) throw new Error("Account not found");
+    async (account: Account, partnerId: string) => {
 
     // generate challenge
     const challenge = await app.service("global-accounts-challenge").create({
