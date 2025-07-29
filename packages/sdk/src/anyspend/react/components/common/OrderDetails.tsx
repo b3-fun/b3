@@ -48,7 +48,6 @@ import {
   ExternalLink,
   Home,
   Loader2,
-  RefreshCcw,
   SquareArrowOutUpRight,
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
@@ -59,6 +58,8 @@ import { Address } from "thirdweb";
 import { erc20Abi, WalletClient } from "viem";
 import { b3 } from "viem/chains";
 import { useWaitForTransactionReceipt, useWalletClient } from "wagmi";
+import { PaymentMethod } from "../AnySpend";
+import ConnectWalletPayment from "./ConnectWalletPayment";
 import PaymentVendorUI from "./PaymentVendorUI";
 
 interface OrderDetailsProps {
@@ -69,6 +70,7 @@ interface OrderDetailsProps {
   relayTx: components["schemas"]["RelayTx"] | null;
   executeTx: components["schemas"]["ExecuteTx"] | null;
   refundTxs: components["schemas"]["RefundTx"][] | null;
+  paymentMethod?: PaymentMethod; // Now optional since we read from URL
   onBack?: () => void;
 }
 
@@ -205,12 +207,21 @@ export const OrderDetails = memo(function OrderDetails({
   relayTx,
   executeTx,
   refundTxs,
+  paymentMethod = PaymentMethod.NONE,
   onBack,
 }: OrderDetailsProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
+  // Read payment method from URL parameters
+  const paymentMethodFromUrl = searchParams.get("paymentMethod") as PaymentMethod | null;
+  const effectivePaymentMethod = paymentMethodFromUrl || paymentMethod || PaymentMethod.NONE;
+
+  // Debug logging to verify payment method detection
+  console.log("OrderDetails - Payment method from URL:", paymentMethodFromUrl);
+  console.log("OrderDetails - Effective payment method:", effectivePaymentMethod);
+
+  const setB3ModalOpen = useModalStore((state: any) => state.setB3ModalOpen);
 
   const srcToken = order.metadata.srcToken;
   const dstToken = order.metadata.dstToken;
@@ -300,6 +311,7 @@ export const OrderDetails = memo(function OrderDetails({
     const params = new URLSearchParams(searchParams.toString());
     params.delete("waitingForDeposit");
     params.delete("orderId");
+    params.delete("paymentMethod");
 
     // Only update URL if params were actually removed
     if (params.toString() !== searchParams.toString()) {
@@ -933,6 +945,15 @@ export const OrderDetails = memo(function OrderDetails({
         <>
           {order.onrampMetadata ? (
             <PaymentVendorUI isMainnet={isMainnet} order={order} dstTokenSymbol={dstToken.symbol} />
+          ) : effectivePaymentMethod === PaymentMethod.CONNECT_WALLET ? (
+            <ConnectWalletPayment
+              order={order}
+              onPayment={handlePayment}
+              onCancel={handleBack}
+              txLoading={txLoading}
+              isSwitchingOrExecuting={isSwitchingOrExecuting}
+              phantomWalletAddress={phantomWalletAddress}
+            />
           ) : (
             <div className="relative flex w-full flex-1 flex-col">
               <div className={"flex flex-col gap-1"}>
@@ -979,59 +1000,63 @@ export const OrderDetails = memo(function OrderDetails({
 
               {(account?.address || phantomWalletAddress) && !showQRCode ? (
                 <div className="mb-4 mt-8 flex w-full flex-col items-center gap-4">
-                  <div className="relative flex w-full flex-col items-center gap-2">
-                    <ShinyButton
-                      accentColor={"hsl(var(--as-brand))"}
-                      textColor="text-white"
-                      className="flex w-5/6 items-center gap-2 sm:px-0"
-                      disabled={txLoading || isSwitchingOrExecuting}
-                      onClick={handlePayment}
-                    >
-                      {txLoading ? (
-                        <>
-                          Transaction Pending
-                          <Loader2 className="ml-2 h-5 w-5 animate-spin" />
-                        </>
-                      ) : (
-                        <>
-                          <span className="pl-4 text-lg md:text-sm">
-                            {order.srcChain === RELAY_SOLANA_MAINNET_CHAIN_ID && phantomWalletAddress
-                              ? "Pay from Phantom Wallet"
-                              : "Pay from Connected Wallet"}
-                          </span>
-                          <ChevronRight className="h-4 w-4" />
-                        </>
-                      )}
-                    </ShinyButton>
-                    <span className="label-style text-as-primary/50 text-xs">
-                      Connected to:{" "}
-                      {order.srcChain === RELAY_SOLANA_MAINNET_CHAIN_ID && phantomWalletAddress
-                        ? centerTruncate(phantomWalletAddress, 6)
-                        : centerTruncate(account?.address || "", 6)}
-                    </span>
-                  </div>
-
-                  <div className="flex w-full flex-col items-center gap-2">
-                    <ShinyButton
-                      accentColor={colorMode === "dark" ? "#ffffff" : "#000000"}
-                      className="flex w-5/6 items-center gap-2 sm:px-0"
-                      onClick={() => setShowQRCode(true)}
-                    >
-                      <span className="pl-4 text-lg md:text-sm">Pay from a different wallet</span>
-                      <ChevronRight className="h-4 w-4" />
-                    </ShinyButton>
-
-                    <div className="flex items-center gap-2">
-                      <WalletMetamask className="h-5 w-5" variant="branded" />
-                      <WalletCoinbase className="h-5 w-5" variant="branded" />
-                      <WalletPhantom className="h-5 w-5" variant="branded" />
-                      <WalletTrust className="h-5 w-5" variant="branded" />
-                      <WalletWalletConnect className="h-5 w-5" variant="branded" />
-                      <span className="label-style text-as-primary/30 text-xs">& more</span>
+                  {/* Transfer Crypto Payment Method or default - Show both options */}
+                  <>
+                    <div className="relative flex w-full flex-col items-center gap-2">
+                      <ShinyButton
+                        accentColor={"hsl(var(--as-brand))"}
+                        textColor="text-white"
+                        className="flex w-5/6 items-center gap-2 sm:px-0"
+                        disabled={txLoading || isSwitchingOrExecuting}
+                        onClick={handlePayment}
+                      >
+                        {txLoading ? (
+                          <>
+                            Transaction Pending
+                            <Loader2 className="ml-2 h-5 w-5 animate-spin" />
+                          </>
+                        ) : (
+                          <>
+                            <span className="pl-4 text-lg md:text-sm">
+                              {order.srcChain === RELAY_SOLANA_MAINNET_CHAIN_ID && phantomWalletAddress
+                                ? "Pay from Phantom Wallet"
+                                : "Pay from Connected Wallet"}
+                            </span>
+                            <ChevronRight className="h-4 w-4" />
+                          </>
+                        )}
+                      </ShinyButton>
+                      <span className="label-style text-as-primary/50 text-xs">
+                        Connected to:{" "}
+                        {order.srcChain === RELAY_SOLANA_MAINNET_CHAIN_ID && phantomWalletAddress
+                          ? centerTruncate(phantomWalletAddress, 6)
+                          : centerTruncate(account?.address || "", 6)}
+                      </span>
                     </div>
-                  </div>
+
+                    <div className="flex w-full flex-col items-center gap-2">
+                      <ShinyButton
+                        accentColor={colorMode === "dark" ? "#ffffff" : "#000000"}
+                        className="flex w-5/6 items-center gap-2 sm:px-0"
+                        onClick={() => setShowQRCode(true)}
+                      >
+                        <span className="pl-4 text-lg md:text-sm">Pay from a different wallet</span>
+                        <ChevronRight className="h-4 w-4" />
+                      </ShinyButton>
+
+                      <div className="flex items-center gap-2">
+                        <WalletMetamask className="h-5 w-5" variant="branded" />
+                        <WalletCoinbase className="h-5 w-5" variant="branded" />
+                        <WalletPhantom className="h-5 w-5" variant="branded" />
+                        <WalletTrust className="h-5 w-5" variant="branded" />
+                        <WalletWalletConnect className="h-5 w-5" variant="branded" />
+                        <span className="label-style text-as-primary/30 text-xs">& more</span>
+                      </div>
+                    </div>
+                  </>
                 </div>
-              ) : (
+              ) : effectivePaymentMethod === PaymentMethod.TRANSFER_CRYPTO || !account?.address ? (
+                // Transfer Crypto Payment Method or no wallet connected - Show QR code directly
                 <motion.div
                   initial={{ opacity: 0, filter: "blur(10px)" }}
                   animate={{ opacity: 1, filter: "blur(0px)" }}
@@ -1054,80 +1079,79 @@ export const OrderDetails = memo(function OrderDetails({
                         <WalletCoinbase className="h-5 w-5" variant="branded" />
                         <WalletPhantom className="h-5 w-5" variant="branded" />
                         <WalletTrust className="h-5 w-5" variant="branded" />
-                        <WalletWalletConnect className="h-5 w-5" variant="branded" />
                       </TextLoop>
                     </div>
                   </div>
-
-                  <div className="flex flex-col gap-2">
-                    {account && (
-                      <Button variant="ghost" className="text-as-primary w-full" onClick={handlePayment}>
-                        Send Transaction <ChevronRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    )}
-                    {EVM_CHAINS[order.srcChain] ? (
-                      <Button variant="outline" className="w-full" onClick={handlePayment}>
-                        Open Metamask
-                        <WalletMetamask className="ml-2 h-5 w-5" variant="branded" />
-                      </Button>
-                    ) : null}
-                    <a href={handleCoinbaseRedirect()}>
-                      <Button variant="outline" className="w-full">
-                        Open Coinbase
-                        <WalletCoinbase className="ml-2 h-5 w-5" variant="branded" />
-                      </Button>
-                    </a>
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={() =>
-                        initiatePhantomTransfer(order.srcAmount, order.srcTokenAddress, order.globalAddress)
-                      }
-                    >
-                      Open Phantom
-                      <WalletPhantom className="ml-2 h-5 w-5" variant="branded" />
-                    </Button>
+                </motion.div>
+              ) : (
+                // Default case - existing QR code flow
+                <motion.div
+                  initial={{ opacity: 0, filter: "blur(10px)" }}
+                  animate={{ opacity: 1, filter: "blur(0px)" }}
+                  transition={{ duration: 0.5, ease: "easeInOut" }}
+                  className="flex w-full items-center justify-evenly gap-4"
+                >
+                  <div className="mt-8 flex flex-col items-center rounded-lg bg-white p-6 pb-3">
+                    <QRCodeSVG
+                      value={getPaymentUrl(
+                        order.globalAddress,
+                        BigInt(order.srcAmount),
+                        order.srcTokenAddress === RELAY_ETH_ADDRESS ? "ETH" : order.srcTokenAddress,
+                      )}
+                      className="max-w-[200px]"
+                    />
+                    <div className="mt-3 flex items-center justify-center gap-2 text-sm">
+                      <span className="label-style text-as-brand/70 text-sm">Scan with</span>
+                      <TextLoop interval={3}>
+                        <WalletMetamask className="h-5 w-5" variant="branded" />
+                        <WalletCoinbase className="h-5 w-5" variant="branded" />
+                        <WalletPhantom className="h-5 w-5" variant="branded" />
+                        <WalletTrust className="h-5 w-5" variant="branded" />
+                      </TextLoop>
+                    </div>
                   </div>
                 </motion.div>
               )}
             </div>
           )}
 
-          <div className="bg-as-light-brand/30 w-full rounded-lg p-4 sm:p-2 sm:px-4">
-            <p className="text-as-secondary mb-3 text-sm">Continue on another device?</p>
-            <div className="flex items-center gap-4">
-              <CopyToClipboard
-                text={permalink}
-                onCopy={() => {
-                  toast.success("Copied to clipboard");
-                }}
-              >
-                <Button variant="outline" className="w-full">
-                  Copy Link
-                  <Copy className="ml-2 h-3 w-3" />
+          {effectivePaymentMethod !== PaymentMethod.CONNECT_WALLET && (
+            <div className="bg-as-light-brand/30 w-full rounded-lg p-4 sm:p-2 sm:px-4">
+              <p className="text-as-secondary mb-3 text-sm">Continue on another device?</p>
+              <div className="flex items-center gap-4">
+                <CopyToClipboard
+                  text={permalink}
+                  onCopy={() => {
+                    toast.success("Copied to clipboard");
+                  }}
+                >
+                  <Button variant="outline" className="w-full">
+                    Copy Link
+                    <Copy className="ml-2 h-3 w-3" />
+                  </Button>
+                </CopyToClipboard>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => {
+                    if (navigator.share) {
+                      navigator
+                        .share({
+                          title: "Complete Deposit",
+                          text: "Complete your deposit on BSMNT.fun",
+                          url: permalink,
+                        })
+                        .catch(error => console.log("Error sharing:", error));
+                    } else {
+                      toast.error("Web Share API is not supported on this browser");
+                    }
+                  }}
+                >
+                  Send Link <SquareArrowOutUpRight className="ml-2 h-3 w-3" />
                 </Button>
-              </CopyToClipboard>
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => {
-                  if (navigator.share) {
-                    navigator
-                      .share({
-                        title: "Complete Deposit",
-                        text: "Complete your deposit on BSMNT.fun",
-                        url: permalink,
-                      })
-                      .catch(error => console.log("Error sharing:", error));
-                  } else {
-                    toast.error("Web Share API is not supported on this browser");
-                  }
-                }}
-              >
-                Send Link <SquareArrowOutUpRight className="ml-2 h-3 w-3" />
-              </Button>
+              </div>
             </div>
-          </div>
+          )}
         </>
       )}
 
@@ -1236,12 +1260,12 @@ export const OrderDetails = memo(function OrderDetails({
         </div>
       )}
 
-      <button
+      {/* <button
         className="bg-as-on-surface-2 text-as-secondary flex w-full items-center justify-center gap-2 rounded-lg p-2"
         onClick={handleBack}
       >
         Cancel and start over <RefreshCcw className="ml-2 h-4 w-4" />
-      </button>
+      </button> */}
 
       {/* <DelayedSupportMessage /> */}
     </>

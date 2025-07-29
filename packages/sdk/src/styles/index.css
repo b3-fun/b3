@@ -117,6 +117,7 @@
   --as-on-surface-disabled: 0 0% 78%;
   --as-on-disabled: 0 0% 44%;
   --as-shadow-lg: 220 29% 5%;
+  --as-quaternary: 240 6% 65%;
 
   /* Override relay colors */
   --relay-colors-focus-color: hsl(215, 90%, 48%) !important;
@@ -146,7 +147,6 @@ html[data-theme="dark"] .b3-root,
   --as-on-surface-1: 204 9% 11%;
   --as-on-surface-2: 213 10% 17%;
   --as-on-surface-3: 203 8% 21%;
-  --as-card: 213 10% 17%;
   --as-border-secondary: 228 6% 16%;
   --as-stroke: 213 10% 17%;
   --as-n-8: 210 11% 7%;
@@ -157,6 +157,7 @@ html[data-theme="dark"] .b3-root,
   --as-red: 14 88% 52%;
   --as-on-surface-disabled: 0 0% 78%;
   --as-on-disabled: 0 0% 44%;
+  --as-quaternary: 240 6% 65%;
 
   /* Override relay colors */
   --relay-colors-focus-color: hsl(215, 90%, 48%) !important;

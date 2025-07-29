@@ -66,6 +66,7 @@ module.exports = {
         "as-red": "hsl(var(--as-red))",
         "as-on-surface-disabled": "hsl(var(--as-on-surface-disabled))",
         "as-on-disabled": "hsl(var(--as-on-disabled))",
+        "as-quaternary": "hsl(var(--as-quaternary))",
       },
       keyframes: {
         "pulse-fade": {
