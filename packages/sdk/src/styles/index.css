@@ -100,6 +100,7 @@
 
   /* Anyspend, we get this from apps/anyspend-web/app/globals.css */
   --as-primary: 204 9% 11%;
+  --as-content-primary: 240 6% 10%;
   --as-surface-primary: 0 0% 100%;
   --as-surface-secondary: 0 0% 98%;
   --as-on-surface-1: 0 0% 99%;
@@ -114,10 +115,16 @@
   --as-yellow: 32 96% 64%;
   --as-secondary: 212 6% 46%;
   --as-red: 14 88% 52%;
+  --as-error-secondary: 4 95% 94%;
+  --as-content-icon-error: 4 74% 49%;
   --as-on-surface-disabled: 0 0% 78%;
   --as-on-disabled: 0 0% 44%;
   --as-shadow-lg: 220 29% 5%;
   --as-quaternary: 240 6% 65%;
+  --as-tertiarry: 235 6% 34%;
+  --as-success-secondary: 89 85% 89%;
+  --as-content-icon-success: 95 85% 35%;
+  --as-content-disabled: 220 6% 47%;
 
   /* Override relay colors */
   --relay-colors-focus-color: hsl(215, 90%, 48%) !important;
@@ -142,6 +149,7 @@ html[data-theme="dark"] .b3-root,
   --b3-react-popover: 260, 13%, 9%;
   --b3-react-popover-foreground: 215 40.54% 91.12%;
   --as-primary: 0 0% 99%;
+  --as-content-primary: 0 0% 98%;
   --as-surface-primary: 240 7% 8%;
   --as-surface-secondary: 240 6% 10%;
   --as-on-surface-1: 204 9% 11%;
@@ -155,9 +163,15 @@ html[data-theme="dark"] .b3-root,
   --as-yellow: 32 96% 64%;
   --as-secondary: 212 6% 46%;
   --as-red: 14 88% 52%;
+  --as-error-secondary: 4 74% 49%;
+  --as-content-icon-error: 4 95% 94%;
   --as-on-surface-disabled: 0 0% 78%;
   --as-on-disabled: 0 0% 44%;
   --as-quaternary: 240 6% 65%;
+  --as-tertiarry: 240 6% 65%;
+  --as-success-secondary: 95 85% 35%;
+  --as-content-icon-success: 89 85% 89%;
+  --as-content-disabled: 220 6% 47%;
 
   /* Override relay colors */
   --relay-colors-focus-color: hsl(215, 90%, 48%) !important;
@@ -253,16 +267,9 @@ Dark version
 
 /* Divider */
 .divider {
-  height: 2px;
-  display: block;
-  background: hsl(var(--b3-react-background));
-}
-
-.divider:after {
-  content: "";
-  display: block;
   height: 1px;
-  background: radial-gradient(circle, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.1) 80%, rgba(0, 0, 0, 0) 100%);
+  display: block;
+  background: hsl(var(--as-border-secondary));
 }
 
 .font-sf-rounded {

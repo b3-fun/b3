@@ -1,7 +1,7 @@
 import { getStatusDisplay } from "@b3dotfun/sdk/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
-import { Badge, TextShimmer } from "@b3dotfun/sdk/global-account/react";
-import { Check, Loader2 } from "lucide-react";
+import { Badge } from "@b3dotfun/sdk/global-account/react";
+import { Check, X } from "lucide-react";
 import { memo } from "react";
 
 export const OrderStatus = memo(function OrderStatus({ order }: { order: components["schemas"]["Order"] }) {
@@ -19,21 +19,16 @@ export const OrderStatus = memo(function OrderStatus({ order }: { order: compone
           <span className="font-medium">{text}</span>
         </Badge>
       ) : displayStatus === "failure" ? (
-        <Badge variant="destructive" className="border-red-400/50 bg-red-400/20 px-4 py-1 text-base">
-          <div className="font-sf-rounded text-base font-semibold text-red-400/50">{text}</div>
-        </Badge>
-      ) : (
-        <Badge
-          variant="default"
-          className="border-as-stroke/20 bg-as-primary/10 flex items-center gap-3 px-4 py-1 text-base transition-colors"
-        >
-          {displayStatus === "processing" && <Loader2 className="text-as-primary h-4 w-4 animate-spin" />}
-
-          <TextShimmer duration={1} className="font-sf-rounded text-base font-semibold">
-            {text}
-          </TextShimmer>
-        </Badge>
-      )}
+        <div className="flex flex-col items-center">
+          <div className="bg-as-error-secondary flex h-10 w-10 items-center justify-center rounded-full text-base">
+            <X className="text-as-content-icon-error h-5 w-5" />
+          </div>
+          <div className="font-sf-rounded text-as-content-primary mt-4 text-lg font-semibold">{text}</div>
+          <div className="text-as-tertiarry text-center" style={{ whiteSpace: "normal" }}>
+            This order is no longer valid because the order expired.
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 });

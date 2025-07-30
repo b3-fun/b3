@@ -830,17 +830,13 @@ export function AnySpend({
             />
           </>
         )}
-        {mode === "page" && <div className="h-12" />}
+        {/* {mode === "page" && <div className="h-12" />} */}
       </div>
     </div>
   );
 
   const mainView = (
-    <div
-      className={
-        "bg-as-surface-primary border-as-border-secondary mx-auto flex w-[460px] max-w-full flex-col items-center gap-2 rounded-2xl border p-4 shadow-xl"
-      }
-    >
+    <div className={"mx-auto flex w-[460px] max-w-full flex-col items-center gap-2"}>
       {/* Token Header - Show when in buy mode */}
       {isBuyMode && (
         <div className="mb-4 flex flex-col items-center gap-3 text-center">
@@ -1210,7 +1206,7 @@ export function AnySpend({
 
   const recipientSelectionView = (
     <div className="mx-auto w-[460px] max-w-full">
-      <div className="bg-as-surface-primary border-as-border-secondary flex flex-col gap-6 rounded-2xl border p-6 shadow-xl">
+      <div className="flex flex-col gap-6">
         {/* Header */}
         <div className="flex justify-around">
           <button
@@ -1277,11 +1273,11 @@ export function AnySpend({
 
   const cryptoPaymentMethodView = (
     <div className="mx-auto w-[460px] max-w-full">
-      <div className="bg-as-surface-primary border-as-border-secondary relative flex flex-col gap-10 rounded-2xl border p-6 shadow-xl">
+      <div className={cn("relative flex flex-col gap-10")}>
         {/* Header */}
         <button
           onClick={() => setActivePanel(PanelView.MAIN)}
-          className="text-as-quaternary hover:text-as-primary absolute left-6 flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
+          className="text-as-quaternary hover:text-as-primary absolute flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
         >
           <ChevronLeft className="h-6 w-6" />
         </button>
@@ -1330,7 +1326,12 @@ export function AnySpend({
   // Add tabs to the main component when no order is loaded
   return (
     <StyleRoot>
-      <div className={cn("mx-auto max-w-[calc(100vw-32px)]")}>
+      <div
+        className={cn(
+          "mx-auto w-full max-w-[460px]",
+          mode === "page" && "bg-as-surface-primary border-as-border-secondary rounded-2xl border p-6 shadow-xl",
+        )}
+      >
         <TransitionPanel
           activeIndex={
             orderId
@@ -1341,7 +1342,7 @@ export function AnySpend({
                 ? PanelView.MAIN
                 : activePanel
           }
-          className={cn("w-full", {
+          className={cn("overflow-hidden", {
             "mt-0": mode === "modal",
           })}
           variants={{

@@ -1,15 +1,12 @@
 "use client";
 
-import { ALL_CHAINS, getChainName, RELAY_SOLANA_MAINNET_CHAIN_ID } from "@b3dotfun/sdk/anyspend";
+import { RELAY_SOLANA_MAINNET_CHAIN_ID } from "@b3dotfun/sdk/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { ShinyButton, useAccountWallet, useProfile } from "@b3dotfun/sdk/global-account/react";
-import { cn } from "@b3dotfun/sdk/shared/utils";
-import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { motion } from "framer-motion";
-import { CheckIcon, ChevronRight, Loader2, Minus, RefreshCcw } from "lucide-react";
+import { CheckIcon, ChevronRight, Loader2 } from "lucide-react";
 import { useMemo } from "react";
-import { b3 } from "viem/chains";
 
 interface ConnectWalletPaymentProps {
   order: components["schemas"]["Order"];
@@ -132,13 +129,13 @@ export default function ConnectWalletPayment({
   return (
     <div className="flex w-full flex-col items-center gap-6">
       {/* Step Progress Indicator */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-1.5">
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="bg-as-brand/20 border-as-brand flex h-12 w-12 items-center justify-center rounded-full border-2"
+          className="bg-as-success-secondary flex h-10 w-10 items-center justify-center rounded-full"
         >
-          <CheckIcon className="text-as-brand h-6 w-6" />
+          <CheckIcon className="text-as-content-icon-success h-6 w-6" />
         </motion.div>
 
         <div className="border-as-primary/30 h-px w-8 border-t border-dotted"></div>
@@ -147,9 +144,10 @@ export default function ConnectWalletPayment({
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="bg-as-brand flex h-12 w-12 items-center justify-center rounded-full"
+          className="border-as-border-secondary relative flex h-10 w-10 items-center justify-center rounded-full border-[3px]"
         >
-          <Loader2 className="h-6 w-6 animate-spin text-white" />
+          <div className="border-t-as-primary absolute -inset-0.5 animate-spin rounded-full border-[3px] border-transparent" />
+          <span className="text-as-primary font-semibold">2</span>
         </motion.div>
 
         <div className="border-as-primary/30 h-px w-8 border-t border-dotted"></div>
@@ -158,9 +156,9 @@ export default function ConnectWalletPayment({
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className="bg-as-primary/10 border-as-primary/30 flex h-12 w-12 items-center justify-center rounded-full border-2"
+          className="border-as-border-secondary flex h-10 w-10 items-center justify-center rounded-full border-[3px]"
         >
-          <span className="text-as-primary/50 text-lg font-semibold">3</span>
+          <span className="text-as-content-disabled font-semibold">3</span>
         </motion.div>
       </div>
 
@@ -169,54 +167,6 @@ export default function ConnectWalletPayment({
         <h2 className="text-as-primary text-xl font-semibold">Step 2 in progress...</h2>
         <p className="text-as-primary/50 mt-1 text-sm">Step 2 description...</p>
       </div>
-
-      {/* Order Details Card */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="bg-as-on-surface border-as-primary/10 w-full rounded-xl border p-6"
-      >
-        {/* Recipient */}
-        <div className="flex items-center justify-between py-3">
-          <span className="text-as-primary/70 text-sm">Recipient</span>
-          <div className="flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-orange-500">
-              <span className="text-xs text-white">🦊</span>
-            </div>
-            <span className="text-as-primary text-sm font-medium">
-              {recipientName ? `${recipientName}` : `Wallet`} ({centerTruncate(order.recipientAddress, 4)})
-            </span>
-          </div>
-        </div>
-
-        <div className="border-as-primary/10 my-2 border-t"></div>
-
-        {/* Expected to Receive */}
-        <div className="flex items-center justify-between py-3">
-          <span className="text-as-primary/70 text-sm">Expected to receive</span>
-          <div className="flex items-center gap-2">
-            <span className="text-as-primary text-sm font-medium">
-              {order.type === "swap" ? `${formattedExpectedDstAmount} ${dstToken.symbol}` : "NFT"}
-            </span>
-            <span className="text-as-primary/50 text-xs">on {getChainName(order.dstChain)}</span>
-            <img
-              src={ALL_CHAINS[order.dstChain].logoUrl}
-              alt={getChainName(order.dstChain)}
-              className={cn("h-4 w-4 rounded-full", order.dstChain === b3.id && "h-4 rounded-none")}
-            />
-            <Minus className="text-as-brand h-4 w-4" />
-          </div>
-        </div>
-
-        <div className="border-as-primary/10 my-2 border-t"></div>
-
-        {/* Status */}
-        <div className="flex items-center justify-between py-3">
-          <span className="text-as-primary/70 text-sm">Status</span>
-          <span className="text-as-primary text-sm font-medium">Processing</span>
-        </div>
-      </motion.div>
 
       {/* Payment Button */}
       <motion.div
@@ -239,7 +189,7 @@ export default function ConnectWalletPayment({
             </>
           ) : (
             <>
-              <span className="pl-4 text-lg md:text-sm">
+              <span className="whitespace-nowrap pl-4 text-lg md:text-sm">
                 {order.srcChain === RELAY_SOLANA_MAINNET_CHAIN_ID && phantomWalletAddress
                   ? "Pay from Phantom Wallet"
                   : "Pay from Connected Wallet"}
@@ -248,25 +198,13 @@ export default function ConnectWalletPayment({
             </>
           )}
         </ShinyButton>
-        <span className="label-style text-as-primary/50 text-xs">
+        {/* <span className="label-style text-as-primary/50 text-xs">
           Connected to:{" "}
           {order.srcChain === RELAY_SOLANA_MAINNET_CHAIN_ID && phantomWalletAddress
             ? centerTruncate(phantomWalletAddress, 6)
             : centerTruncate(account?.address || "", 6)}
-        </span>
+        </span> */}
       </motion.div>
-
-      {/* Cancel Button */}
-      <motion.button
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.7 }}
-        className="bg-as-on-surface-2 text-as-secondary flex w-full items-center justify-center gap-2 rounded-lg p-3"
-        onClick={onCancel}
-      >
-        <RefreshCcw className="h-4 w-4" />
-        Cancel and start over
-      </motion.button>
     </div>
   );
 }

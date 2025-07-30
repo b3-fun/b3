@@ -48,6 +48,7 @@ import {
   ExternalLink,
   Home,
   Loader2,
+  RefreshCcw,
   SquareArrowOutUpRight,
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
@@ -338,7 +339,7 @@ export const OrderDetails = memo(function OrderDetails({
     }
   }, [setWaitingForDeposit, txSuccess]);
 
-  const [showOrderDetails, setShowOrderDetails] = useState(false);
+  const [showOrderDetails, setShowOrderDetails] = useState(true);
 
   const isPhantomMobile = useMemo(() => navigator.userAgent.includes("Phantom"), []);
   const isPhantomBrowser = useMemo(() => (window as any).phantom?.solana?.isPhantom, []);
@@ -931,16 +932,6 @@ export const OrderDetails = memo(function OrderDetails({
 
   return (
     <>
-      {statusDisplay === "failure" && (
-        <div className="flex w-full flex-col items-center gap-3 whitespace-nowrap pb-2 text-sm">
-          <div className="bg-as-light-brand/20 flex w-full flex-col gap-4 rounded-lg p-8">
-            <div className="text-as-primary" style={{ whiteSpace: "normal" }}>
-              This order is no longer valid because the order expired.
-            </div>
-          </div>
-        </div>
-      )}
-
       {statusDisplay === "processing" && (
         <>
           {order.onrampMetadata ? (
@@ -1168,104 +1159,102 @@ export const OrderDetails = memo(function OrderDetails({
         </div>
       </div>
 
-      {showOrderDetails ? (
-        <motion.div
-          className="w-full"
-          initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          transition={{ duration: 0.3, delay: 0, ease: "easeInOut" }}
-        >
-          <div className="flex w-full flex-col items-center gap-3 whitespace-nowrap py-2 text-sm">
-            <div className="flex w-full items-center justify-between gap-2">
-              <div className="text-as-primary/30">
-                {order.type === "swap" || order.type === "mint_nft"
-                  ? "Expected to receive"
-                  : order.type === "join_tournament"
-                    ? "Join tournament"
-                    : order.type === "fund_tournament"
-                      ? "Fund tournament"
-                      : order.type === "custom"
-                        ? order.metadata.action
-                          ? capitalizeFirstLetter(order.metadata.action)
-                          : "Contract execution"
-                        : ""}
-              </div>
-
-              <div className="flex items-end gap-2">
-                {order.type === "swap" ? (
-                  `~${formattedExpectedDstAmount} ${dstToken.symbol}`
-                ) : order.type === "mint_nft" ? (
-                  <div className="flex items-center gap-2">
-                    <img src={nft?.imageUrl} alt={nft?.name || "NFT"} className="h-5 w-5" />
-                    <div>{nft?.name || "NFT"}</div>
-                  </div>
-                ) : order.type === "join_tournament" || order.type === "fund_tournament" ? (
-                  <div className="flex items-center gap-2">
-                    <img src={tournament?.imageUrl} alt={tournament?.name || "Tournament"} className="h-5 w-5" />
-                    <div>{tournament?.name || "Tournament"}</div>
-                  </div>
-                ) : null}
-
-                <div className="text-as-primary/50 flex items-center gap-2">
-                  <span>on {order.dstChain !== b3.id && getChainName(order.dstChain)}</span>
-                  <img
-                    src={ALL_CHAINS[order.dstChain].logoUrl}
-                    alt={getChainName(order.dstChain)}
-                    className={cn(
-                      "h-3",
-                      order.dstChain !== b3.id && "w-3 rounded-full",
-                      order.dstChain === b3.id && "h-4",
-                    )}
-                  />
+      <div className="bg-as-surface-secondary border-as-border-secondary rounded-xl border px-4 py-2">
+        {showOrderDetails ? (
+          <motion.div
+            className="w-full"
+            initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{ duration: 0.3, delay: 0, ease: "easeInOut" }}
+          >
+            <div className="flex w-full flex-col items-center gap-3 whitespace-nowrap py-2 text-sm">
+              <div className="flex w-full justify-between gap-4">
+                <div className="text-as-tertiarry">Recipient</div>
+                <div className="flex flex-col items-end gap-1">
+                  {recipientName && <div className="text-as-primary font-semibold">{recipientName}</div>}
+                  <CopyToClipboard
+                    text={order.recipientAddress}
+                    onCopy={() => {
+                      toast.success("Copied recipient address to clipboard");
+                    }}
+                  >
+                    <div className="text-as-primary flex items-center gap-2">
+                      {centerTruncate(order.recipientAddress, 10)}
+                      <Copy className="text-as-primary/50 hover:text-as-primary h-4 w-4 cursor-pointer transition-all duration-200" />
+                    </div>
+                  </CopyToClipboard>
                 </div>
               </div>
-            </div>
+              <div className="divider w-full" />
 
-            <div className="divider w-full" />
+              <div className="flex w-full items-center justify-between gap-2">
+                <div className="text-as-tertiarry">
+                  {order.type === "swap" || order.type === "mint_nft"
+                    ? "Expected to receive"
+                    : order.type === "join_tournament"
+                      ? "Join tournament"
+                      : order.type === "fund_tournament"
+                        ? "Fund tournament"
+                        : order.type === "custom"
+                          ? order.metadata.action
+                            ? capitalizeFirstLetter(order.metadata.action)
+                            : "Contract execution"
+                          : ""}
+                </div>
 
-            <div className="flex w-full justify-between gap-4">
-              <div className="text-as-primary/30">Order ID</div>
-              <div className="text-as-primary overflow-hidden text-ellipsis whitespace-nowrap">{order.id}</div>
-            </div>
+                <div className="flex items-end gap-2">
+                  {order.type === "swap" ? (
+                    `~${formattedExpectedDstAmount} ${dstToken.symbol}`
+                  ) : order.type === "mint_nft" ? (
+                    <div className="flex items-center gap-2">
+                      <img src={nft?.imageUrl} alt={nft?.name || "NFT"} className="h-5 w-5" />
+                      <div>{nft?.name || "NFT"}</div>
+                    </div>
+                  ) : order.type === "join_tournament" || order.type === "fund_tournament" ? (
+                    <div className="flex items-center gap-2">
+                      <img src={tournament?.imageUrl} alt={tournament?.name || "Tournament"} className="h-5 w-5" />
+                      <div>{tournament?.name || "Tournament"}</div>
+                    </div>
+                  ) : null}
 
-            <div className="divider w-full" />
-
-            <div className="flex w-full justify-between gap-4">
-              <div className="text-as-primary/30">Recipient</div>
-              <div className="flex flex-col items-end gap-1">
-                {recipientName && <div className="text-as-primary font-semibold">{recipientName}</div>}
-                <CopyToClipboard
-                  text={order.recipientAddress}
-                  onCopy={() => {
-                    toast.success("Copied recipient address to clipboard");
-                  }}
-                >
-                  <div className="text-as-primary flex items-center gap-2">
-                    {centerTruncate(order.recipientAddress, 10)}
-                    <Copy className="text-as-primary/50 hover:text-as-primary h-4 w-4 cursor-pointer transition-all duration-200" />
+                  <div className="text-as-primary/50 flex items-center gap-2">
+                    <span>on {order.dstChain !== b3.id && getChainName(order.dstChain)}</span>
+                    <img
+                      src={ALL_CHAINS[order.dstChain].logoUrl}
+                      alt={getChainName(order.dstChain)}
+                      className={cn(
+                        "h-3",
+                        order.dstChain !== b3.id && "w-3 rounded-full",
+                        order.dstChain === b3.id && "h-4",
+                      )}
+                    />
                   </div>
-                </CopyToClipboard>
+                </div>
+              </div>
+
+              <div className="divider w-full" />
+
+              <div className="flex w-full justify-between gap-4">
+                <div className="text-as-tertiarry">Order ID</div>
+                <div className="text-as-primary overflow-hidden text-ellipsis whitespace-nowrap">{order.id}</div>
               </div>
             </div>
+          </motion.div>
+        ) : (
+          <div className="flex w-full items-center">
+            <div className="divider w-full" />
+            <button className="whitespace-nowrap text-sm" onClick={() => setShowOrderDetails(true)}>
+              Order Details
+            </button>
+            <ChevronDown className="text-as-primary mx-1 h-4 min-h-4 w-4 min-w-4" />
+            <div className="divider w-full" />
           </div>
-        </motion.div>
-      ) : (
-        <div className="flex w-full items-center">
-          <div className="divider w-full" />
-          <button className="whitespace-nowrap text-sm" onClick={() => setShowOrderDetails(true)}>
-            Order Details
-          </button>
-          <ChevronDown className="text-as-primary mx-1 h-4 min-h-4 w-4 min-w-4" />
-          <div className="divider w-full" />
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* <button
-        className="bg-as-on-surface-2 text-as-secondary flex w-full items-center justify-center gap-2 rounded-lg p-2"
-        onClick={handleBack}
-      >
-        Cancel and start over <RefreshCcw className="ml-2 h-4 w-4" />
-      </button> */}
+      <button className="flex w-full items-center justify-center gap-2" onClick={handleBack}>
+        <RefreshCcw className="ml-2 h-4 w-4" /> Cancel and start over
+      </button>
 
       {/* <DelayedSupportMessage /> */}
     </>

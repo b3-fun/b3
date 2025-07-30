@@ -50,6 +50,7 @@ module.exports = {
 
         // Anyspend, we get this from apps/anyspend-web/tailwind.config.ts
         "as-primary": "hsl(var(--as-primary))",
+        "as-content-primary": "hsl(var(--as-text-primary))",
         "as-surface-primary": "hsl(var(--as-surface-primary))",
         "as-surface-secondary": "hsl(var(--as-surface-secondary))",
         "as-border-secondary": "hsl(var(--as-border-secondary))",
@@ -64,9 +65,15 @@ module.exports = {
         "as-yellow": "hsl(var(--as-yellow))",
         "as-secondary": "hsl(var(--as-secondary))",
         "as-red": "hsl(var(--as-red))",
+        "as-error-secondary": "hsl(var(--as-error-secondary))",
+        "as-content-icon-error": "hsl(var(--as-content-icon-error))",
         "as-on-surface-disabled": "hsl(var(--as-on-surface-disabled))",
         "as-on-disabled": "hsl(var(--as-on-disabled))",
         "as-quaternary": "hsl(var(--as-quaternary))",
+        "as-tertiarry": "hsl(var(--as-tertiarry))",
+        "as-success-secondary": "hsl(var(--as-success-secondary))",
+        "as-content-icon-success": "hsl(var(--as-content-icon-success))",
+        "as-content-disabled": "hsl(var(--as-content-disabled))",
       },
       keyframes: {
         "pulse-fade": {
