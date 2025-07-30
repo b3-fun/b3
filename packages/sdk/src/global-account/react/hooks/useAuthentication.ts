@@ -54,7 +54,7 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
         } catch (error) {
           // If re-authentication fails, try fresh authentication
           debug("Re-authentication failed, attempting fresh authentication");
-          const userAuth = await authenticate(account);
+          const userAuth = await authenticate(account, partnerId);
           setUser(userAuth.user);
           setIsAuthenticated(true);
           debug("Fresh authentication successful", { userAuth });
