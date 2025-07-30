@@ -3,7 +3,7 @@ import { User } from "@b3dotfun/sdk/global-account/types/b3-api.types";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { supportedChains } from "@b3dotfun/sdk/shared/constants/chains/supported";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Toaster } from "sonner";
 import { ThirdwebProvider, useActiveAccount, useConnectedWallets, useSetActiveWallet } from "thirdweb/react";
 import { Account, Wallet } from "thirdweb/wallets";
@@ -108,28 +108,30 @@ export function InnerProvider({
     setManuallySetAccount(account);
   };
 
-  const setWallet = (wallet: Wallet) => {
-    setManuallySelectedWallet(wallet);
-    const account = wallet.getAccount();
-    setManuallySetAccount(account);
-    console.log("@@gio:setWallet", wallet.id, account?.address);
-    setActiveWallet(wallet);
-  };
+  const setWallet = useCallback(
+    (wallet: Wallet) => {
+      setManuallySelectedWallet(wallet);
+      const account = wallet.getAccount();
+      setManuallySetAccount(account);
+      console.log("@@gio:setWallet", wallet.id, account?.address);
+      setActiveWallet(wallet);
+    },
+    [setManuallySelectedWallet, setManuallySetAccount, setActiveWallet],
+  );
 
-  const setFirstEoa = () => {
+  const setFirstEoa = useCallback(() => {
     const firstEoa = wallets.find(wallet => ["com.coinbase.wallet", "io.metamask"].includes(wallet.id));
     if (firstEoa) {
       setWallet(firstEoa);
     }
-  };
+  }, [setWallet, wallets]);
 
   useEffect(() => {
     if (automaticallySetFirstEoa) {
       console.log("@@gio:wallets", wallets);
       setFirstEoa();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [automaticallySetFirstEoa, wallets]);
+  }, [automaticallySetFirstEoa, setFirstEoa, wallets]);
 
   return (
     <B3Context.Provider

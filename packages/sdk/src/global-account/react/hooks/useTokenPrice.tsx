@@ -20,7 +20,7 @@ interface TokenPriceResponse {
   };
 }
 
-async function fetchTokenPrice(contractAddress: string, chainId: number, vsCurrency: string = "usd") {
+async function fetchTokenPrice(contractAddress: string, chainId: number, vsCurrency = "usd") {
   const platformId = getPlatformId(chainId as ChainId);
   const response = await fetch(
     `https://pro-api.coingecko.com/api/v3/simple/token_price/${platformId}?contract_addresses=${contractAddress}&vs_currencies=${vsCurrency}`,

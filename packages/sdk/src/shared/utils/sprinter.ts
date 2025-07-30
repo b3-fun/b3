@@ -6,7 +6,7 @@
 //   currentSprinterTestnet = state.sprinterTestnet;
 // });
 
-let currentSprinterTestnet = false;
+const currentSprinterTestnet = false;
 
 export const getSprinterBaseUrl = (test?: boolean) => {
   const isTestnet = test || currentSprinterTestnet;
