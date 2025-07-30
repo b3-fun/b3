@@ -108,13 +108,16 @@ export function InnerProvider({
     setManuallySetAccount(account);
   };
 
-  const setWallet = useCallback((wallet: Wallet) => {
-    setManuallySelectedWallet(wallet);
-    const account = wallet.getAccount();
-    setManuallySetAccount(account);
-    console.log("@@gio:setWallet", wallet.id, account?.address);
-    setActiveWallet(wallet);
-  }, [setManuallySelectedWallet, setManuallySetAccount, setActiveWallet]);
+  const setWallet = useCallback(
+    (wallet: Wallet) => {
+      setManuallySelectedWallet(wallet);
+      const account = wallet.getAccount();
+      setManuallySetAccount(account);
+      console.log("@@gio:setWallet", wallet.id, account?.address);
+      setActiveWallet(wallet);
+    },
+    [setManuallySelectedWallet, setManuallySetAccount, setActiveWallet],
+  );
 
   const setFirstEoa = useCallback(() => {
     const firstEoa = wallets.find(wallet => ["com.coinbase.wallet", "io.metamask"].includes(wallet.id));
