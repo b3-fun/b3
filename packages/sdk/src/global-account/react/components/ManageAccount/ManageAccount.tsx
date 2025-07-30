@@ -152,7 +152,7 @@ export function ManageAccount({
 
   const AssetsContent = () => (
     <div className="bg-b3-react-card border-b3-react-border rounded-lg border p-4">
-      <AccountAssets nfts={assets?.nftResponse!} isLoading={isLoading} />
+      {assets?.nftResponse && <AccountAssets nfts={assets.nftResponse} isLoading={isLoading} />}
     </div>
   );
 

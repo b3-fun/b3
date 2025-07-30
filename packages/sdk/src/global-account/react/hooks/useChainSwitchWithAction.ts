@@ -1,6 +1,6 @@
 import { getChainName, getNativeToken } from "@b3dotfun/sdk/anyspend";
 import { supportedChains } from "@b3dotfun/sdk/shared/constants/chains/supported";
-import { invariant } from "motion/react";
+import invariant from "invariant";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { WalletClient } from "viem";
@@ -46,14 +46,15 @@ export function useChainSwitchWithAction() {
       }
 
       try {
-        invariant(!!targetChain.blockExplorers?.default.url, "Block explorer URL is required");
+        const blockExplorerUrl = targetChain.blockExplorers?.default.url;
+        invariant(blockExplorerUrl, "Block explorer URL is required");
         const nativeCurrency = getNativeToken(targetChainId);
         await switchChainAsync({
           chainId: targetChainId,
           addEthereumChainParameter: {
             chainName: targetChain.name,
             rpcUrls: [targetChain.rpcUrls.default.http[0]],
-            blockExplorerUrls: [targetChain.blockExplorers?.default.url!],
+            blockExplorerUrls: [blockExplorerUrl],
             nativeCurrency: {
               name: nativeCurrency.name,
               symbol: nativeCurrency.symbol,

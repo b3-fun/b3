@@ -4,8 +4,10 @@ import invariant from "invariant";
 
 import type { Chain as ThirdwebChain } from "thirdweb";
 // Import the JSON directly
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import chainNetworksJSON from "../../generated/chain-networks.json" with { type: "json" };
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import coingeckoChainsJSON from "../../generated/coingecko-chains.json" with { type: "json" };
 
@@ -45,17 +47,22 @@ export function getCoingeckoChainInfo(chainId: number) {
   return coingeckoChains[chainId];
 }
 
-export const b3MainnetThirdWeb: ThirdwebChain = supportedChainsTW.find(chain => chain.id === 8333)!;
-invariant(b3MainnetThirdWeb, "B3 mainnet chain not found in supported chains TW");
+const _b3MainnetThirdWeb: ThirdwebChain | undefined = supportedChainsTW.find(chain => chain.id === 8333);
+invariant(_b3MainnetThirdWeb, "B3 mainnet chain not found in supported chains TW");
+export const b3MainnetThirdWeb = _b3MainnetThirdWeb;
 
-export const b3TestnetThirdWeb: ThirdwebChain = supportedChainsTW.find(chain => chain.id === 1993)!;
-invariant(b3TestnetThirdWeb, "B3 testnet chain not found in supported chains TW");
+const _b3TestnetThirdWeb: ThirdwebChain | undefined = supportedChainsTW.find(chain => chain.id === 1993);
+invariant(_b3TestnetThirdWeb, "B3 testnet chain not found in supported chains TW");
+export const b3TestnetThirdWeb = _b3TestnetThirdWeb;
 
-export const b3Mainnet = supportedChains.find(chain => chain.id === 8333)!;
-invariant(b3Mainnet, "B3 mainnet chain not found in supported chains");
+const _b3Mainnet = supportedChains.find(chain => chain.id === 8333);
+invariant(_b3Mainnet, "B3 mainnet chain not found in supported chains");
+export const b3Mainnet = _b3Mainnet;
 
-export const b3Testnet = supportedChains.find(chain => chain.id === 1993)!;
-invariant(b3Testnet, "B3 testnet chain not found in supported chains");
+const _b3Testnet = supportedChains.find(chain => chain.id === 1993);
+invariant(_b3Testnet, "B3 testnet chain not found in supported chains");
+export const b3Testnet = _b3Testnet;
 
-export const baseMainnet = supportedChains.find(chain => chain.id === 8453)!;
-invariant(baseMainnet, "Base mainnet chain not found in supported chains");
+const _baseMainnet = supportedChains.find(chain => chain.id === 8453);
+invariant(_baseMainnet, "Base mainnet chain not found in supported chains");
+export const baseMainnet = _baseMainnet;

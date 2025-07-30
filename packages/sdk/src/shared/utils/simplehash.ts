@@ -310,7 +310,7 @@ export async function fetchSimpleHashData<T extends SimpleHashRoute>(
 
 export async function fetchFungibleAssets(
   fungibleIds: string[],
-  includePrices: boolean = true,
+  includePrices = true,
 ): Promise<SimpleHashTypes.FungibleAsset | SimpleHashTypes.FungibleAsset[]> {
   const route = "/v0/fungibles/assets";
   const params = {

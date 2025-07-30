@@ -1,6 +1,6 @@
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { createContext, useContext, useMemo, useState } from "react";
+import { useState } from "react";
 import { ThirdwebProvider, useActiveAccount } from "thirdweb/react";
 import { Account } from "thirdweb/wallets";
 // import { RelayKitProviderWrapper } from "./RelayKitProviderWrapper";

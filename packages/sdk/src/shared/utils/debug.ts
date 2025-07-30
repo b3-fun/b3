@@ -5,7 +5,7 @@ createDebug.formatters.h = v => {
 };
 
 export const debug = createDebug("@@b3dotfun/sdk");
-let debugMakers: Record<string, any> = {};
+const debugMakers: Record<string, any> = {};
 
 export const debugB3React = (name: string) => {
   if (!debugMakers[name]) {

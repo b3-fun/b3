@@ -7,7 +7,7 @@ export function isString(value: unknown): value is string {
   return typeof value === "string" || value instanceof String;
 }
 
-export function formatNumber(amount: number | string, decimals: number = 3, useAbbreviations: boolean = false): string {
+export function formatNumber(amount: number | string, decimals = 3, useAbbreviations = false): string {
   if (isString(amount)) {
     amount = parseFloat(amount);
     if (isNaN(amount)) {
