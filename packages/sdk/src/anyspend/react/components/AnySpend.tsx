@@ -28,7 +28,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { parseUnits } from "viem";
 import { b3Sepolia, base, mainnet, sepolia } from "viem/chains";
+import { useAccount } from "wagmi";
 import { components } from "../../types/api";
+import { CryptoPaymentMethod, PaymentMethod } from "./common/CryptoPaymentMethod";
 import { OrderDetails, OrderDetailsLoadingView } from "./common/OrderDetails";
 import { OrderHistory } from "./common/OrderHistory";
 import { OrderStatus } from "./common/OrderStatus";
@@ -54,13 +56,6 @@ export enum PanelView {
   CRYPTO_PAYMENT_METHOD,
 }
 
-// Add enum for payment methods
-export enum PaymentMethod {
-  NONE = "none",
-  CONNECT_WALLET = "connect_wallet",
-  TRANSFER_CRYPTO = "transfer_crypto",
-}
-
 const ANYSPEND_RECIPIENTS_KEY = "anyspend_recipients";
 
 export function AnySpend({
@@ -84,6 +79,9 @@ export function AnySpend({
 }) {
   const searchParams = useSearchParamsSSR();
   const router = useRouter();
+
+  // Get wagmi account state for wallet connection
+  const wagmiAccount = useAccount();
 
   // Determine if we're in "buy mode" based on whether destination token props are provided
   const isBuyMode = !!(destinationTokenAddress && destinationTokenChainId);
@@ -918,7 +916,16 @@ export function AnySpend({
               >
                 {selectedPaymentMethod === PaymentMethod.CONNECT_WALLET ? (
                   <>
-                    Connect wallet
+                    {globalAddress || wagmiAccount.address ? (
+                      <>
+                        {globalWallet?.meta?.icon && (
+                          <img src={globalWallet.meta.icon} alt="Connected Wallet" className="h-4 w-4 rounded-full" />
+                        )}
+                        <span>{shortenAddress(globalAddress || wagmiAccount.address || "")}</span>
+                      </>
+                    ) : (
+                      "Connect wallet"
+                    )}
                     <ChevronRightCircle className="h-4 w-4" />
                   </>
                 ) : selectedPaymentMethod === PaymentMethod.TRANSFER_CRYPTO ? (
@@ -1272,55 +1279,18 @@ export function AnySpend({
   );
 
   const cryptoPaymentMethodView = (
-    <div className="mx-auto w-[460px] max-w-full">
-      <div className={cn("relative flex flex-col gap-10")}>
-        {/* Header */}
-        <button
-          onClick={() => setActivePanel(PanelView.MAIN)}
-          className="text-as-quaternary hover:text-as-primary absolute flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
-        >
-          <ChevronLeft className="h-6 w-6" />
-        </button>
-        <div className="flex items-center justify-around gap-4">
-          <div className="flex-1 text-center">
-            <h2 className="text-as-primary text-lg font-semibold">Choose payment method</h2>
-          </div>
-        </div>
-
-        {/* Payment Methods */}
-        <div className="flex flex-col gap-3">
-          {/* Connect Wallet Option */}
-          <button
-            onClick={() => {
-              setSelectedPaymentMethod(PaymentMethod.CONNECT_WALLET);
-              setActivePanel(PanelView.MAIN);
-            }}
-            disabled={isCreatingOrder}
-            className="bg-as-surface-primary border-as-border-secondary hover:border-as-secondary/80 group flex w-full items-center justify-between gap-4 rounded-xl border px-4 py-3.5 transition-all duration-200 hover:shadow-md"
-          >
-            <div className="flex flex-col items-start text-left">
-              <h4 className="text-as-primary font-semibold">Connect wallet</h4>
-            </div>
-            <ChevronRightCircle className="text-as-primary/40 group-hover:text-as-primary/60 h-5 w-5 transition-colors" />
-          </button>
-
-          {/* Transfer Crypto Option */}
-          <button
-            onClick={() => {
-              setSelectedPaymentMethod(PaymentMethod.TRANSFER_CRYPTO);
-              setActivePanel(PanelView.MAIN);
-            }}
-            disabled={isCreatingOrder}
-            className="bg-as-surface-primary border-as-border-secondary hover:border-as-secondary/80 group flex w-full items-center justify-between gap-4 rounded-xl border px-4 py-3.5 transition-all duration-200 hover:shadow-md"
-          >
-            <div className="flex flex-col items-start text-left">
-              <h4 className="text-as-primary font-semibold">Transfer crypto</h4>
-            </div>
-            <ChevronRightCircle className="text-as-primary/40 group-hover:text-as-primary/60 h-5 w-5 transition-colors" />
-          </button>
-        </div>
-      </div>
-    </div>
+    <CryptoPaymentMethod
+      globalAddress={globalAddress}
+      globalWallet={globalWallet}
+      selectedPaymentMethod={selectedPaymentMethod}
+      setSelectedPaymentMethod={setSelectedPaymentMethod}
+      isCreatingOrder={isCreatingOrder}
+      onBack={() => setActivePanel(PanelView.MAIN)}
+      onSelectPaymentMethod={(method: PaymentMethod) => {
+        setSelectedPaymentMethod(method);
+        setActivePanel(PanelView.MAIN);
+      }}
+    />
   );
 
   // Add tabs to the main component when no order is loaded

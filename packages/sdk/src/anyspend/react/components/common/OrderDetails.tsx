@@ -59,8 +59,8 @@ import { Address } from "thirdweb";
 import { erc20Abi, WalletClient } from "viem";
 import { b3 } from "viem/chains";
 import { useWaitForTransactionReceipt, useWalletClient } from "wagmi";
-import { PaymentMethod } from "../AnySpend";
 import ConnectWalletPayment from "./ConnectWalletPayment";
+import { PaymentMethod } from "./CryptoPaymentMethod";
 import PaymentVendorUI from "./PaymentVendorUI";
 
 interface OrderDetailsProps {
