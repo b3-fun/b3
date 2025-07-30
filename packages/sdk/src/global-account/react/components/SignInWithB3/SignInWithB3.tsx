@@ -3,11 +3,11 @@ import {
   SignInWithB3ModalProps,
   StyleRoot,
   useAuthentication,
+  useB3,
   useIsMobile,
   useModalStore,
 } from "@b3dotfun/sdk/global-account/react";
 import { ReactNode, useEffect } from "react";
-import { useActiveAccount } from "thirdweb/react";
 import { ManageAccountButton } from "../custom/ManageAccountButton";
 import { Loading } from "../ui/Loading";
 
@@ -20,7 +20,7 @@ export type SignInWithB3Props = Omit<SignInWithB3ModalProps, "type" | "showBackB
 
 export function SignInWithB3(props: SignInWithB3Props) {
   const { setB3ModalOpen, setB3ModalContentType, setEcoSystemAccountAddress } = useModalStore();
-  const account = useActiveAccount();
+  const { account } = useB3();
   const { isAuthenticating, isAuthenticated } = useAuthentication(props.partnerId, props.loginWithSiwe);
   const isMobile = useIsMobile();
 

@@ -24,7 +24,7 @@ export const buildPayload = (orderType: components["schemas"]["Order"]["type"], 
         return {
           contractAddress: normalizeAddress(nft.contractAddress),
           nftPrice: nft?.price || "",
-          tokenId: nft?.tokenId!,
+          tokenId: nft.tokenId,
           contractType: nft?.type,
         };
       } else if (nft?.type === "erc721") {

@@ -11,9 +11,9 @@ import {
   useTokenBalance,
 } from "@b3dotfun/sdk/global-account/react";
 import { baseMainnet } from "@b3dotfun/sdk/shared/constants/chains/supported";
-import { motion } from "framer-motion";
 import invariant from "invariant";
 import { ArrowRight, Loader2 } from "lucide-react";
+import { motion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { createPublicClient, encodeFunctionData, erc20Abi, formatUnits, http } from "viem";
@@ -202,13 +202,74 @@ export function AnySpendBuySpin({
   const [displayQuantity, setDisplayQuantity] = useState<string>("");
   const [debouncedQuantity, setDebouncedQuantity] = useState<string>("");
 
+  const validateAndSetQuantity = useCallback(
+    (value: string) => {
+      // Only allow positive integers
+      const isValidFormat = /^\d+$/.test(value) || value === "";
+
+      if (!isValidFormat && value !== "") {
+        return;
+      }
+
+      setDisplayQuantity(value);
+
+      try {
+        if (value === "") {
+          setUserSpinQuantity("");
+          setIsQuantityValid(false);
+          setValidationError("");
+          return;
+        }
+
+        const numValue = parseInt(value);
+        if (isNaN(numValue) || numValue <= 0) {
+          setIsQuantityValid(false);
+          setUserSpinQuantity("");
+          setValidationError("Please enter a valid positive number");
+          return;
+        }
+
+        // Check maximum entries per user (0 means no limit)
+        if (
+          paymentConfig &&
+          paymentConfig.maxEntriesPerUser > BigInt(0) &&
+          BigInt(numValue) > paymentConfig.maxEntriesPerUser
+        ) {
+          setIsQuantityValid(false);
+          setUserSpinQuantity("");
+          setValidationError(`Maximum ${paymentConfig.maxEntriesPerUser.toString()} spins allowed`);
+          return;
+        }
+
+        // Check if quantity exceeds remaining entries
+        if (wheelInfo && BigInt(numValue) > wheelInfo.totalPrizesAvailable_ - wheelInfo.prizesRequestedCount_) {
+          setIsQuantityValid(false);
+          setUserSpinQuantity("");
+          setValidationError(
+            `Only ${(wheelInfo.totalPrizesAvailable_ - wheelInfo.prizesRequestedCount_).toString()} spins remaining`,
+          );
+          return;
+        }
+
+        setUserSpinQuantity(value);
+        setIsQuantityValid(true);
+        setValidationError("");
+      } catch (error) {
+        setIsQuantityValid(false);
+        setUserSpinQuantity("");
+        setValidationError("Please enter a valid quantity");
+      }
+    },
+    [paymentConfig, wheelInfo],
+  );
+
   useEffect(() => {
     if (prefillQuantity && wheelInfo) {
       const remainingSpins = wheelInfo.totalPrizesAvailable_ - wheelInfo.prizesRequestedCount_;
       const adjustedQuantity = BigInt(prefillQuantity) > remainingSpins ? remainingSpins.toString() : prefillQuantity;
       validateAndSetQuantity(adjustedQuantity);
     }
-  }, [prefillQuantity, wheelInfo]);
+  }, [prefillQuantity, validateAndSetQuantity, wheelInfo]);
 
   // Calculate total cost
   const totalCost =
@@ -280,64 +341,6 @@ export function AnySpendBuySpin({
 
     return () => clearTimeout(timer);
   }, [displayQuantity, userSpinQuantity]);
-
-  const validateAndSetQuantity = (value: string) => {
-    // Only allow positive integers
-    const isValidFormat = /^\d+$/.test(value) || value === "";
-
-    if (!isValidFormat && value !== "") {
-      return;
-    }
-
-    setDisplayQuantity(value);
-
-    try {
-      if (value === "") {
-        setUserSpinQuantity("");
-        setIsQuantityValid(false);
-        setValidationError("");
-        return;
-      }
-
-      const numValue = parseInt(value);
-      if (isNaN(numValue) || numValue <= 0) {
-        setIsQuantityValid(false);
-        setUserSpinQuantity("");
-        setValidationError("Please enter a valid positive number");
-        return;
-      }
-
-      // Check maximum entries per user (0 means no limit)
-      if (
-        paymentConfig &&
-        paymentConfig.maxEntriesPerUser > BigInt(0) &&
-        BigInt(numValue) > paymentConfig.maxEntriesPerUser
-      ) {
-        setIsQuantityValid(false);
-        setUserSpinQuantity("");
-        setValidationError(`Maximum ${paymentConfig.maxEntriesPerUser.toString()} spins allowed`);
-        return;
-      }
-
-      // Check if quantity exceeds remaining entries
-      if (wheelInfo && BigInt(numValue) > wheelInfo.totalPrizesAvailable_ - wheelInfo.prizesRequestedCount_) {
-        setIsQuantityValid(false);
-        setUserSpinQuantity("");
-        setValidationError(
-          `Only ${(wheelInfo.totalPrizesAvailable_ - wheelInfo.prizesRequestedCount_).toString()} spins remaining`,
-        );
-        return;
-      }
-
-      setUserSpinQuantity(value);
-      setIsQuantityValid(true);
-      setValidationError("");
-    } catch (error) {
-      setIsQuantityValid(false);
-      setUserSpinQuantity("");
-      setValidationError("Please enter a valid quantity");
-    }
-  };
 
   const handleDirectBuying = async () => {
     if (!address || !basePublicClient || !userSpinQuantity || !paymentConfig) return;

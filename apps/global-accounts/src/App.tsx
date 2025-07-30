@@ -1,6 +1,6 @@
 import { B3DynamicModal, B3Provider } from "@b3dotfun/sdk/global-account/react";
 import SignIn from "@b3dotfun/sdk/global-account/react/components/SignInWithB3/SignIn";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
 import { CodeExample } from "./components/CodeExample";
@@ -11,10 +11,9 @@ import { PasswordGate } from "./components/PasswordGate";
 import { RequestPermissionsExample } from "./components/RequestPermissionsExample";
 import { b3Chain } from "./constants/b3Chain";
 import { Debug } from "./pages/Debug";
+import { queryClient } from "./utils/queryClient";
 import type { Wallet } from "./utils/wallet";
 import { generateWallet } from "./utils/wallet";
-
-export const queryClient = new QueryClient();
 
 function MainContent({ wallet }: { wallet: Wallet }) {
   return (

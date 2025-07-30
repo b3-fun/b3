@@ -39,7 +39,6 @@ import {
 } from "@solana/spl-token";
 import { ComputeBudgetProgram, Connection, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { WalletCoinbase, WalletMetamask, WalletPhantom, WalletTrust, WalletWalletConnect } from "@web3icons/react";
-import { motion } from "framer-motion";
 import {
   CheckIcon,
   ChevronDown,
@@ -51,6 +50,7 @@ import {
   RefreshCcw,
   SquareArrowOutUpRight,
 } from "lucide-react";
+import { motion } from "motion/react";
 import { QRCodeSVG } from "qrcode.react";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import TimeAgo from "react-timeago";

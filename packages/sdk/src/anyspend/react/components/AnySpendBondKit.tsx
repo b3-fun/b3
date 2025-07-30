@@ -9,7 +9,7 @@ import {
 } from "@b3dotfun/sdk/global-account/react";
 import { AnySpendBondKitProps } from "@b3dotfun/sdk/global-account/react/stores/useModalStore";
 import { baseMainnet } from "@b3dotfun/sdk/shared/constants/chains/supported";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 import { createPublicClient, encodeFunctionData, formatEther, http, parseEther } from "viem";
 import { ABI_bondKit } from "../../abis/bondKit";

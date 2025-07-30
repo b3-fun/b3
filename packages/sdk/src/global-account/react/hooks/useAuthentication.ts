@@ -1,5 +1,5 @@
 import app from "@b3dotfun/sdk/global-account/app";
-import { useB3, useAuthStore } from "@b3dotfun/sdk/global-account/react";
+import { useAuthStore, useB3 } from "@b3dotfun/sdk/global-account/react";
 import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { b3MainnetThirdWeb } from "@b3dotfun/sdk/shared/constants/chains/supported";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
@@ -54,7 +54,7 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
         } catch (error) {
           // If re-authentication fails, try fresh authentication
           debug("Re-authentication failed, attempting fresh authentication");
-          const userAuth = await authenticate(account);
+          const userAuth = await authenticate(account, partnerId);
           setUser(userAuth.user);
           setIsAuthenticated(true);
           debug("Fresh authentication successful", { userAuth });
@@ -102,6 +102,7 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
     if (typeof localStorage !== "undefined") {
       localStorage.removeItem("thirdweb:connected-wallet-ids");
       localStorage.removeItem("wagmi.store");
+      localStorage.removeItem("lastAuthProvider");
     }
 
     app.logout();

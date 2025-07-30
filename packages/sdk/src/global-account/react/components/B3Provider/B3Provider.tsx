@@ -1,11 +1,17 @@
-import { TooltipProvider } from "@b3dotfun/sdk/global-account/react";
+import { TooltipProvider, useAuthStore } from "@b3dotfun/sdk/global-account/react";
 import { User } from "@b3dotfun/sdk/global-account/types/b3-api.types";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { supportedChains } from "@b3dotfun/sdk/shared/constants/chains/supported";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Toaster } from "sonner";
-import { ThirdwebProvider, useActiveAccount, useConnectedWallets, useSetActiveWallet } from "thirdweb/react";
+import {
+  getLastAuthProvider,
+  ThirdwebProvider,
+  useActiveAccount,
+  useConnectedWallets,
+  useSetActiveWallet,
+} from "thirdweb/react";
 import { Account, Wallet } from "thirdweb/wallets";
 import { createConfig, http, WagmiProvider } from "wagmi";
 import { RelayKitProviderWrapper } from "../RelayKitProviderWrapper";
@@ -94,48 +100,55 @@ export function InnerProvider({
   theme: "light" | "dark";
 }) {
   const activeAccount = useActiveAccount();
-  const [manuallySetAccount, setManuallySetAccount] = useState<Account | undefined>(undefined);
   const [manuallySelectedWallet, setManuallySelectedWallet] = useState<Wallet | undefined>(undefined);
   const wallets = useConnectedWallets();
   const setActiveWallet = useSetActiveWallet();
+  const isAuthenticated = useAuthStore(state => state.isAuthenticated);
 
   const [user, setUser] = useState<User | undefined>(undefined);
 
   // Use given accountOverride or activeAccount from thirdweb
-  const effectiveAccount = accountOverride || manuallySetAccount || activeAccount;
+  const effectiveAccount = isAuthenticated ? accountOverride || activeAccount : undefined;
 
-  const setAccount = (account: Account) => {
-    setManuallySetAccount(account);
-  };
-
-  const setWallet = (wallet: Wallet) => {
-    setManuallySelectedWallet(wallet);
-    const account = wallet.getAccount();
-    setManuallySetAccount(account);
-    console.log("@@gio:setWallet", wallet.id, account?.address);
-    setActiveWallet(wallet);
-  };
-
-  const setFirstEoa = () => {
-    const firstEoa = wallets.find(wallet => ["com.coinbase.wallet", "io.metamask"].includes(wallet.id));
-    if (firstEoa) {
-      setWallet(firstEoa);
-    }
-  };
+  const setWallet = useCallback(
+    (wallet: Wallet) => {
+      setManuallySelectedWallet(wallet);
+      const account = wallet.getAccount();
+      console.log("@@gio:setWallet", wallet.id, account?.address);
+      setActiveWallet(wallet);
+    },
+    [setManuallySelectedWallet, setActiveWallet],
+  );
 
   useEffect(() => {
-    if (automaticallySetFirstEoa) {
-      console.log("@@gio:wallets", wallets);
-      setFirstEoa();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [automaticallySetFirstEoa, wallets]);
+    const autoSelectFirstEOAWallet = async () => {
+      // Only proceed if auto-selection is enabled and user is authenticated
+      if (!automaticallySetFirstEoa || !isAuthenticated) {
+        return;
+      }
+
+      // Find the first EOA wallet (excluding ecosystem wallets)
+      const isEOAWallet = (wallet: Wallet) => !wallet.id.startsWith("ecosystem.");
+      const firstEOAWallet = wallets.find(isEOAWallet);
+
+      if (firstEOAWallet) {
+        // Only auto-select if the last auth was via wallet or no previous auth provider
+        const lastAuthProvider = await getLastAuthProvider();
+        const shouldAutoSelect = lastAuthProvider === null || lastAuthProvider === "wallet";
+
+        if (shouldAutoSelect) {
+          setWallet(firstEOAWallet);
+        }
+      }
+    };
+
+    autoSelectFirstEOAWallet();
+  }, [automaticallySetFirstEoa, isAuthenticated, setWallet, wallets]);
 
   return (
     <B3Context.Provider
       value={{
         account: effectiveAccount,
-        setAccount,
         setWallet,
         wallet: manuallySelectedWallet,
         user,

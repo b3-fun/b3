@@ -1,10 +1,10 @@
 import {
-  useB3,
   Loading,
-  useGetAllTWSigners,
-  useSiwe,
   SignInWithB3ModalProps,
+  useB3,
+  useGetAllTWSigners,
   useModalStore,
+  useSiwe,
 } from "@b3dotfun/sdk/global-account/react";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { useCallback, useEffect, useState } from "react";
@@ -188,7 +188,7 @@ export function SignInWithB3Flow({
       debug("Authenticating with B3 via SIWE");
       if (loginWithSiwe) {
         setAuthenticatingWithB3(true);
-        const userAuth = await authenticate(account);
+        const userAuth = await authenticate(account, partnerId);
         setUser(userAuth.user);
       }
       debug("handleLoginSuccess:account", account);
@@ -196,7 +196,7 @@ export function SignInWithB3Flow({
       setLoginComplete(true);
       setAuthenticatingWithB3(false);
     },
-    [authenticate, loginWithSiwe, onLoginSuccess, setUser],
+    [authenticate, loginWithSiwe, onLoginSuccess, setUser, partnerId],
   );
 
   useEffect(() => {

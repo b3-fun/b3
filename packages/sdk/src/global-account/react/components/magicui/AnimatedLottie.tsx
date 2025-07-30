@@ -1,7 +1,7 @@
 "use client";
 
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 interface AnimatedLottieProps {

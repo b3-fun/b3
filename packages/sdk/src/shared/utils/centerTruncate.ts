@@ -1,4 +1,4 @@
-export default function centerTruncate(str: string, x: number = 6, y: number = 4): string {
+export default function centerTruncate(str: string, x = 6, y = 4): string {
   if (!str) return "";
 
   if (x + y >= str?.length) {

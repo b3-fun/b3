@@ -5,8 +5,8 @@ import { useMemo } from "react";
 export function useAnyspendOrderHistory(
   isMainnet: boolean,
   creatorAddress: string | undefined,
-  limit: number = 100,
-  offset: number = 0,
+  limit = 100,
+  offset = 0,
 ) {
   const {
     data: rawData = [],
