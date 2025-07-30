@@ -67,15 +67,10 @@ export function InnerProvider({
   theme: "light" | "dark";
 }) {
   const activeAccount = useActiveAccount();
-  const [manuallySetAccount, setManuallySetAccount] = useState<Account | undefined>(undefined);
   const [user, setUser] = useState<User | undefined>(undefined);
 
   // Use given accountOverride or activeAccount from thirdweb
-  const effectiveAccount = accountOverride || manuallySetAccount || activeAccount;
-
-  const setAccount = (account: Account) => {
-    setManuallySetAccount(account);
-  };
+  const effectiveAccount = accountOverride || activeAccount;
 
   return (
     <B3Context.Provider
@@ -84,7 +79,6 @@ export function InnerProvider({
         automaticallySetFirstEoa: false,
         setWallet: () => {},
         wallet: undefined,
-        setAccount,
         user,
         setUser,
         initialized: true,

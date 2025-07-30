@@ -102,6 +102,7 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
     if (typeof localStorage !== "undefined") {
       localStorage.removeItem("thirdweb:connected-wallet-ids");
       localStorage.removeItem("wagmi.store");
+      localStorage.removeItem("lastAuthProvider");
     }
 
     app.logout();
