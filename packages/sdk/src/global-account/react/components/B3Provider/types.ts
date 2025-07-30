@@ -11,7 +11,6 @@ export interface B3ContextType {
   account?: Account;
   automaticallySetFirstEoa: boolean;
   user?: User;
-  setAccount: (account: Account) => void;
   setWallet: (wallet: Wallet) => void;
   wallet?: Wallet;
   setUser: (user?: User) => void;
@@ -29,7 +28,6 @@ export const B3Context = createContext<B3ContextType>({
   account: undefined,
   automaticallySetFirstEoa: false,
   user: undefined,
-  setAccount: () => {},
   setWallet: () => {},
   wallet: undefined,
   setUser: () => {},
