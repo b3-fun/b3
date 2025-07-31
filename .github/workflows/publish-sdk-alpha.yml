@@ -11,7 +11,7 @@ env:
 
 jobs:
   publish-alpha:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-m
     permissions:
       contents: write
       packages: write

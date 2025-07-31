@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   enable-auto-merge:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-m
     steps:
       - name: Debug GITHUB_TOKEN
         run: |
