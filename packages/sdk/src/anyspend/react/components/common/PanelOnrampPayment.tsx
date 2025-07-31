@@ -6,7 +6,6 @@ import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
 import invariant from "invariant";
 import { ChevronLeft, ChevronRight, Landmark, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
-import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "../AnySpendFingerprintWrapper";
 
@@ -64,26 +63,14 @@ function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
     recipientImageUrl,
   } = props;
 
-  // Use a stable amount for geo onramp options to prevent unnecessary refetches
-  const [stableAmountForGeo, setStableAmountForGeo] = useState(srcAmountOnRamp);
-  const hasInitialized = useRef(false);
-
-  // Only update the stable amount on first render or when explicitly needed
-  useEffect(() => {
-    if (!hasInitialized.current && srcAmountOnRamp) {
-      setStableAmountForGeo(srcAmountOnRamp);
-      hasInitialized.current = true;
-    }
-  }, [srcAmountOnRamp]);
-
   const {
     geoData,
     coinbaseOnrampOptions,
     coinbaseAvailablePaymentMethods,
     isStripeOnrampSupported,
-    isStripeWeb2Supported,
+    stripeWeb2Support,
     isLoading: isLoadingGeoOnramp,
-  } = useGeoOnrampOptions(isMainnet, stableAmountForGeo);
+  } = useGeoOnrampOptions(isMainnet, srcAmountOnRamp);
 
   const isLoading = isLoadingGeoOnramp;
 
@@ -123,7 +110,7 @@ function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
         return;
       }
 
-      if (vendor === "stripe-web2" && !isStripeWeb2Supported) {
+      if (vendor === "stripe-web2" && !stripeWeb2Support.isSupport) {
         toast.error("Stripe credit card not available");
         return;
       }
@@ -323,7 +310,7 @@ function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
               })()}
 
             {/* Stripe Option - Show if supported */}
-            {isStripeWeb2Supported && (
+            {stripeWeb2Support.isSupport && (
               <button
                 onClick={() => handlePaymentMethodClick("stripe-web2")}
                 className="bg-b3-react-background border-b3-react-border hover:border-as-brand group flex w-full items-center justify-between gap-4 rounded-xl border p-5 transition-all duration-200 hover:shadow-md"

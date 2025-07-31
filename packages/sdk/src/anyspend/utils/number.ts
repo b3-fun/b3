@@ -91,3 +91,21 @@ export function roundUpUSDCBaseAmountToNearest(value: string): string {
   const res = srcAmountBig.plus(divisor.minus(remainder)).toString();
   return res;
 }
+
+/**
+ * Round up a USD amount to the nearest multiple of 0.01 USD
+ * @param value - The USD amount to round up
+ * @returns The rounded USD amount
+ * For example, roundUpUsdAmountToNearest("2.663988") = "2.67"
+ */
+export function roundUpUsdAmountToNearest(value: string): string {
+  const divisor = new Big(0.01); // Round to nearest 0.01 USD
+  const srcAmountBig = new Big(value);
+  const remainder = srcAmountBig.mod(divisor);
+  // If remainder is already 0 (exactly divisible by 0.01), return the original amount
+  if (remainder.eq(0)) {
+    return value;
+  }
+  const res = srcAmountBig.plus(divisor.minus(remainder)).toString();
+  return res;
+}

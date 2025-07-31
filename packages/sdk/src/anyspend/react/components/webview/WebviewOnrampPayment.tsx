@@ -159,24 +159,10 @@ function WebviewOnrampPaymentInner({
   userId,
   partnerId,
 }: WebviewOnrampPaymentProps) {
-  const [stableAmountForGeo, setStableAmountForGeo] = useState(srcAmountOnRamp);
-  const hasInitialized = useRef(false);
   const [createdOrder, setCreatedOrder] = useState<components["schemas"]["Order"] | null>(null);
   const orderCreationAttempted = useRef(false);
 
-  // Only update the stable amount on first render or when explicitly needed
-  useEffect(() => {
-    if (!hasInitialized.current && srcAmountOnRamp) {
-      setStableAmountForGeo(srcAmountOnRamp);
-      hasInitialized.current = true;
-    }
-  }, [srcAmountOnRamp]);
-
-  const {
-    geoData,
-    isStripeWeb2Supported,
-    isLoading: isLoadingGeoOnramp,
-  } = useGeoOnrampOptions(true, stableAmountForGeo);
+  const { geoData, stripeWeb2Support, isLoading: isLoadingGeoOnramp } = useGeoOnrampOptions(true, srcAmountOnRamp);
 
   const { createOrder, isCreatingOrder } = useAnyspendCreateOnrampOrder({
     onSuccess: data => {
@@ -201,7 +187,7 @@ function WebviewOnrampPaymentInner({
         recipientAddress &&
         srcAmountOnRamp &&
         parseFloat(srcAmountOnRamp) > 0 &&
-        isStripeWeb2Supported &&
+        stripeWeb2Support.isSupport &&
         anyspendQuote &&
         geoData
       ) {
@@ -244,13 +230,13 @@ function WebviewOnrampPaymentInner({
   }, [
     recipientAddress,
     srcAmountOnRamp,
-    isStripeWeb2Supported,
     anyspendQuote,
     geoData,
     createOrder,
     destinationToken,
     userId,
     partnerId,
+    stripeWeb2Support.isSupport,
   ]);
 
   // Check if all required data is loaded
