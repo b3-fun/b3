@@ -267,11 +267,8 @@ export interface paths {
                  * @example true
                  */
                 stripeOnramp: boolean;
-                /**
-                 * @description Whether Stripe Web2 onramp is supported for this location/amount
-                 * @example false
-                 */
-                stripeWeb2: boolean;
+                /** @description Stripe Web2 support details */
+                stripeWeb2: components["schemas"]["StripeWeb2Support"];
               };
               /** @example 200 */
               statusCode: number;
@@ -1671,6 +1668,36 @@ export interface components {
        */
       createdAt: number;
     };
+    StripeWeb2Support:
+      | {
+          /**
+           * @example false
+           * @constant
+           */
+          isSupport: false;
+        }
+      | {
+          /**
+           * @example true
+           * @constant
+           */
+          isSupport: true;
+          /**
+           * @description Total payment amount formatted in USD
+           * @example 10.00
+           */
+          formattedTotalUsd: string;
+          /**
+           * @description Onramp amount formatted in USD
+           * @example 9.50
+           */
+          formattedOnrampUsd: string;
+          /**
+           * @description Stripe fee formatted in USD
+           * @example 0.50
+           */
+          formattedFeeUsd: string;
+        };
     /** @description NFT contract details */
     NftContract: {
       /**
@@ -1698,7 +1725,7 @@ export interface components {
        * @description NFT image URL
        * @example https://example.com/nft.png
        */
-      imageUrl: string | null;
+      imageUrl: string;
       /**
        * @description NFT name
        * @example Cool NFT Collection

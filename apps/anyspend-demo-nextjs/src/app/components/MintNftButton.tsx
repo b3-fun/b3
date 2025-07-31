@@ -1,3 +1,4 @@
+import { components } from "@b3dotfun/sdk/anyspend";
 import { useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { base } from "viem/chains";
 
@@ -19,7 +20,7 @@ export function MintNftButton() {
     // Generate random token ID between 0 and 6
     const randomTokenId = Math.floor(Math.random() * 7);
 
-    const nftContract = {
+    const nftContract: components["schemas"]["NftContract"] = {
       chainId: base.id,
       contractAddress: "0xe04074c294d0Db90F0ffBC60fa61b48672C91965",
       price: "1990000", // 1.99 USDC (6 decimals)
@@ -28,8 +29,8 @@ export function MintNftButton() {
       name: "Mystery B3kemon",
       description: "Summon a mysterious B3kemon creature!",
       tokenId: randomTokenId,
-      type: "erc1155" as const,
-      imageUrl: null,
+      type: "erc1155",
+      imageUrl: "",
     };
 
     setB3ModalOpen(true);

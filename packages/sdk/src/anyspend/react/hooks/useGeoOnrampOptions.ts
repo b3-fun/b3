@@ -20,8 +20,12 @@ export function useGeoOnrampOptions(isMainnet: boolean, srcFiatAmount: string) {
   const { geoData, loading: isLoadingGeo, error: geoError } = useGetGeo();
   const { coinbaseOnrampOptions, isLoadingCoinbaseOnrampOptions, coinbaseOnrampOptionsError } =
     useCoinbaseOnrampOptions(isMainnet, geoData?.country, visitorData);
-  const { isStripeOnrampSupported, isStripeWeb2Supported, isLoadingStripeSupport, stripeSupportError } =
-    useStripeSupport(isMainnet, geoData?.ip || "", srcFiatAmount, visitorData);
+  const { isStripeOnrampSupported, stripeWeb2Support, isLoadingStripeSupport, stripeSupportError } = useStripeSupport(
+    isMainnet,
+    geoData?.ip || "",
+    srcFiatAmount,
+    visitorData,
+  );
 
   // Calculate available payment methods based on the amount
   const coinbaseAvailablePaymentMethods = useMemo(() => {
@@ -42,8 +46,8 @@ export function useGeoOnrampOptions(isMainnet: boolean, srcFiatAmount: string) {
       coinbaseOnrampOptions,
       coinbaseAvailablePaymentMethods,
       isStripeOnrampSupported,
-      isStripeWeb2Supported,
-      isOnrampSupported: coinbaseAvailablePaymentMethods.length > 0 || isStripeOnrampSupported || isStripeWeb2Supported,
+      stripeWeb2Support,
+      isOnrampSupported: coinbaseAvailablePaymentMethods.length > 0 || isStripeOnrampSupported || stripeWeb2Support,
       isLoading: isLoadingGeo || isLoadingCoinbaseOnrampOptions || isLoadingStripeSupport || isLoadingVisitorData,
       isLoadingGeo,
       isLoadingCoinbaseOnrampOptions,
@@ -57,10 +61,11 @@ export function useGeoOnrampOptions(isMainnet: boolean, srcFiatAmount: string) {
       coinbaseOnrampOptions,
       coinbaseAvailablePaymentMethods,
       isStripeOnrampSupported,
-      isStripeWeb2Supported,
+      stripeWeb2Support,
       isLoadingGeo,
       isLoadingCoinbaseOnrampOptions,
       isLoadingStripeSupport,
+      isLoadingVisitorData,
       geoError,
       coinbaseOnrampOptionsError,
       stripeSupportError,

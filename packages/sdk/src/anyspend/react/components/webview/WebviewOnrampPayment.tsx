@@ -172,11 +172,7 @@ function WebviewOnrampPaymentInner({
     }
   }, [srcAmountOnRamp]);
 
-  const {
-    geoData,
-    isStripeWeb2Supported,
-    isLoading: isLoadingGeoOnramp,
-  } = useGeoOnrampOptions(true, stableAmountForGeo);
+  const { geoData, stripeWeb2Support, isLoading: isLoadingGeoOnramp } = useGeoOnrampOptions(true, stableAmountForGeo);
 
   const { createOrder, isCreatingOrder } = useAnyspendCreateOnrampOrder({
     onSuccess: data => {
@@ -201,7 +197,7 @@ function WebviewOnrampPaymentInner({
         recipientAddress &&
         srcAmountOnRamp &&
         parseFloat(srcAmountOnRamp) > 0 &&
-        isStripeWeb2Supported &&
+        stripeWeb2Support.isSupport &&
         anyspendQuote &&
         geoData
       ) {
@@ -244,13 +240,13 @@ function WebviewOnrampPaymentInner({
   }, [
     recipientAddress,
     srcAmountOnRamp,
-    isStripeWeb2Supported,
     anyspendQuote,
     geoData,
     createOrder,
     destinationToken,
     userId,
     partnerId,
+    stripeWeb2Support.isSupport,
   ]);
 
   // Check if all required data is loaded
