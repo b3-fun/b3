@@ -38,7 +38,7 @@ import {
 } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils";
 import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
-import { formatUnits } from "@b3dotfun/sdk/shared/utils/number";
+import { formatTokenAmount, formatUnits } from "@b3dotfun/sdk/shared/utils/number";
 import { simpleHashChainToChainName } from "@b3dotfun/sdk/shared/utils/simplehash";
 import invariant from "invariant";
 import { ChevronRightCircle, Loader2 } from "lucide-react";
@@ -274,8 +274,8 @@ export function AnySpendCustom({
   const getRelayQuoteRequest = useMemo(() => {
     return generateGetRelayQuoteRequest({
       orderType: orderType,
-      srcChainId: srcChainId,
-      srcToken: srcToken,
+      srcChainId: activeTab === "fiat" ? base.id : srcChainId,
+      srcToken: activeTab === "fiat" ? USDC_BASE : srcToken,
       dstChainId: dstChainId,
       dstToken: dstToken,
       dstAmount: dstAmount,
@@ -286,12 +286,15 @@ export function AnySpendCustom({
       spenderAddress: spenderAddress,
     });
   }, [
+    activeTab,
     contractAddress,
     dstAmount,
     dstChainId,
     dstToken,
     encodedData,
-    metadata,
+    metadata.nftContract.tokenId,
+    metadata.nftContract.type,
+    metadata.type,
     orderType,
     spenderAddress,
     srcChainId,
@@ -310,37 +313,31 @@ export function AnySpendCustom({
     router.push(`${window.location.pathname}?${params.toString()}`);
   };
 
-  const [srcAmount, setSrcAmount] = useState<bigint | null>(null);
-  const formattedSrcAmount = srcAmount ? formatUnits(srcAmount.toString(), srcToken.decimals) : null;
+  // Update dependent amount when relay price changes
+  const srcAmount = useMemo(() => {
+    if (
+      !anyspendQuote?.data ||
+      !anyspendQuote?.data?.currencyIn?.amount ||
+      !anyspendQuote?.data?.currencyIn?.currency?.decimals
+    )
+      return null;
+
+    const amount = anyspendQuote.data.currencyIn.amount;
+    if (activeTab === "fiat") {
+      const roundUpAmount = roundUpUSDCBaseAmountToNearest(amount);
+      return BigInt(roundUpAmount);
+    } else {
+      return BigInt(amount);
+    }
+  }, [activeTab, anyspendQuote?.data]);
+  const formattedSrcAmount = srcAmount ? formatTokenAmount(srcAmount, srcToken.decimals, 6, false) : null;
+  const srcFiatAmount = useMemo(
+    () => (activeTab === "fiat" && srcAmount ? formatUnits(srcAmount.toString(), USDC_BASE.decimals) : "0"),
+    [activeTab, srcAmount],
+  );
 
   // Get geo data and onramp options (after quote is available)
-  const { geoData, isOnrampSupported } = useGeoOnrampOptions(isMainnet, formattedSrcAmount || "0");
-
-  // Update the selected src token to USDC and chain to base when the active tab is fiat,
-  // also force not to update srcToken by setting dirtySelectSrcToken to true.
-  useEffect(() => {
-    if (activeTab === "fiat") {
-      setSrcChainId(base.id);
-      setSrcToken(USDC_BASE);
-      setDirtySelectSrcToken(true);
-    }
-  }, [activeTab]);
-
-  // Update dependent amount when relay price changes
-  useEffect(() => {
-    if (
-      anyspendQuote?.data &&
-      anyspendQuote.data.currencyIn?.amount &&
-      anyspendQuote.data.currencyIn?.currency?.decimals
-    ) {
-      // Use toPrecision instead of toSignificant
-      const amount = anyspendQuote.data.currencyIn.amount;
-      const roundUpAmount = roundUpUSDCBaseAmountToNearest(amount);
-      setSrcAmount(BigInt(roundUpAmount));
-    } else {
-      setSrcAmount(null);
-    }
-  }, [anyspendQuote?.data]);
+  const { geoData, isOnrampSupported } = useGeoOnrampOptions(isMainnet, srcFiatAmount);
 
   useEffect(() => {
     if (oat?.data?.order.status === "executed") {
@@ -383,9 +380,9 @@ export function AnySpendCustom({
       const createOrderParams = {
         isMainnet: isMainnet,
         orderType: orderType,
-        srcChain: srcChainId,
+        srcChain: activeTab === "fiat" ? base.id : srcChainId,
         dstChain: dstChainId,
-        srcToken: srcToken,
+        srcToken: activeTab === "fiat" ? USDC_BASE : srcToken,
         dstToken: dstToken,
         srcAmount: srcAmount.toString(),
         recipientAddress,
@@ -438,7 +435,7 @@ export function AnySpendCustom({
         invariant(srcChainId === base.id, "Selected src chain is not base");
         void createOnrampOrder({
           ...createOrderParams,
-          srcFiatAmount: formattedSrcAmount || "0",
+          srcFiatAmount: srcFiatAmount,
           onramp: {
             vendor: onramp.vendor,
             paymentMethod: onramp.paymentMethod,

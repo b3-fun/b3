@@ -63,8 +63,6 @@ function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
     recipientImageUrl,
   } = props;
 
-  console.log(`PanelOnrampPaymentInner:srcAmountOnRamp`, srcAmountOnRamp);
-
   const {
     geoData,
     coinbaseOnrampOptions,
