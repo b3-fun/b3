@@ -8,6 +8,12 @@ export const OrderStatus = memo(function OrderStatus({ order }: { order: compone
   const isComplete = order.status === "executed";
   const { text, status: displayStatus } = getStatusDisplay(order);
 
+  console.log("displayStatus", displayStatus);
+
+  if (!isComplete && displayStatus !== "failure") {
+    return null;
+  }
+
   return (
     <div className="flex items-center justify-center gap-2">
       {isComplete ? (
@@ -18,7 +24,7 @@ export const OrderStatus = memo(function OrderStatus({ order }: { order: compone
           <Check className="h-6 w-6 text-green-500" />
           <span className="font-medium">{text}</span>
         </Badge>
-      ) : displayStatus === "failure" ? (
+      ) : (
         <div className="flex flex-col items-center">
           <div className="bg-as-error-secondary flex h-10 w-10 items-center justify-center rounded-full text-base">
             <X className="text-as-content-icon-error h-5 w-5" />
@@ -28,7 +34,7 @@ export const OrderStatus = memo(function OrderStatus({ order }: { order: compone
             This order is no longer valid because the order expired.
           </div>
         </div>
-      ) : null}
+      )}
     </div>
   );
 });

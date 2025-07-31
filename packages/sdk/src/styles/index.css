@@ -101,12 +101,14 @@
   /* Anyspend, we get this from apps/anyspend-web/app/globals.css */
   --as-primary: 204 9% 11%;
   --as-content-primary: 240 6% 10%;
+  --as-content-secondary: 240 5% 26%;
   --as-surface-primary: 0 0% 100%;
   --as-surface-secondary: 0 0% 98%;
   --as-on-surface-1: 0 0% 99%;
   --as-on-surface-2: 0 0% 94%;
   --as-on-surface-3: 210 9% 91%;
   --as-on-surface-4: 240 6% 90%;
+  --as-border-primary: 240 6% 83%;
   --as-border-secondary: 240 6% 90%;
   --as-stroke: 0 0% 94%;
   --as-n-8: 0 0% 96%;
@@ -150,11 +152,13 @@ html[data-theme="dark"] .b3-root,
   --b3-react-popover-foreground: 215 40.54% 91.12%;
   --as-primary: 0 0% 99%;
   --as-content-primary: 0 0% 98%;
+  --as-content-secondary: 240 6% 83%;
   --as-surface-primary: 240 7% 8%;
   --as-surface-secondary: 240 6% 10%;
   --as-on-surface-1: 204 9% 11%;
   --as-on-surface-2: 213 10% 17%;
   --as-on-surface-3: 203 8% 21%;
+  --as-border-primary: 240 5% 26%;
   --as-border-secondary: 228 6% 16%;
   --as-stroke: 213 10% 17%;
   --as-n-8: 210 11% 7%;

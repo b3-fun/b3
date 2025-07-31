@@ -209,10 +209,6 @@ export const OrderDetails = memo(function OrderDetails({
   const paymentMethodFromUrl = searchParams.get("paymentMethod") as PaymentMethod | null;
   const effectivePaymentMethod = paymentMethodFromUrl || paymentMethod || PaymentMethod.NONE;
 
-  // Debug logging to verify payment method detection
-  console.log("OrderDetails - Payment method from URL:", paymentMethodFromUrl);
-  console.log("OrderDetails - Effective payment method:", effectivePaymentMethod);
-
   const setB3ModalOpen = useModalStore((state: any) => state.setB3ModalOpen);
 
   const srcToken = order.metadata.srcToken;

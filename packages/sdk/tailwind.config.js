@@ -51,8 +51,10 @@ module.exports = {
         // Anyspend, we get this from apps/anyspend-web/tailwind.config.ts
         "as-primary": "hsl(var(--as-primary))",
         "as-content-primary": "hsl(var(--as-text-primary))",
+        "as-content-secondary": "hsl(var(--as-content-secondary))",
         "as-surface-primary": "hsl(var(--as-surface-primary))",
         "as-surface-secondary": "hsl(var(--as-surface-secondary))",
+        "as-border-primary": "hsl(var(--as-border-primary))",
         "as-border-secondary": "hsl(var(--as-border-secondary))",
         "as-on-surface-1": "hsl(var(--as-on-surface-1))",
         "as-on-surface-2": "hsl(var(--as-on-surface-2))",

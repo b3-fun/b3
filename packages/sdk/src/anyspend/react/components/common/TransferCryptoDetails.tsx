@@ -2,11 +2,11 @@
 
 import { ALL_CHAINS, getChainName, getPaymentUrl, RELAY_ETH_ADDRESS } from "@b3dotfun/sdk/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
-import { Badge, CopyToClipboard, ShinyButton, TextLoop } from "@b3dotfun/sdk/global-account/react";
+import { CopyToClipboard, ShinyButton, TextLoop } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { WalletCoinbase, WalletMetamask, WalletPhantom, WalletTrust } from "@web3icons/react";
-import { ArrowLeft, Copy } from "lucide-react";
+import { ChevronLeft, Copy } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { memo, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -37,21 +37,40 @@ export const TransferCryptoDetails = memo(function TransferCryptoDetails({
   onBack,
   recipientName,
 }: TransferCryptoDetailsProps) {
-  const [timeLeft, setTimeLeft] = useState(15 * 60); // 15 minutes in seconds
+  const [timeLeft, setTimeLeft] = useState(0);
 
   useEffect(() => {
+    const calculateTimeLeft = () => {
+      if (!order.expiredAt) return 0;
+      const now = Date.now();
+      const expiredAt = new Date(order.expiredAt).getTime();
+      const diff = Math.max(0, Math.floor((expiredAt - now) / 1000));
+      return diff;
+    };
+
+    // Set initial time
+    setTimeLeft(calculateTimeLeft());
+
     const timer = setInterval(() => {
-      setTimeLeft(prev => (prev > 0 ? prev - 1 : 0));
+      setTimeLeft(calculateTimeLeft());
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [order.expiredAt]);
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
+
+  const totalTime = useMemo(() => {
+    if (!order.expiredAt) return 15 * 60; // fallback to 15 minutes
+    const now = Date.now();
+    const expiredAt = new Date(order.expiredAt).getTime();
+    const createdAt = order.createdAt ? new Date(order.createdAt).getTime() : now;
+    return Math.max(0, Math.floor((expiredAt - createdAt) / 1000));
+  }, [order.expiredAt, order.createdAt]);
 
   const roundedUpSrcAmount = useMemo(() => {
     // Display the full transfer amount without rounding since users need to see the exact value they're transferring.
@@ -79,103 +98,104 @@ export const TransferCryptoDetails = memo(function TransferCryptoDetails({
   };
 
   return (
-    <div className="flex w-full flex-col gap-6 p-4">
+    <div className="flex w-full flex-col gap-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <button
           onClick={onBack}
           className="text-as-primary/60 hover:text-as-primary flex h-10 w-10 items-center justify-center rounded-full transition-colors"
         >
-          <ArrowLeft className="h-5 w-5" />
+          <ChevronLeft size={24} className="text-as-quaternary" />
         </button>
 
-        <h2 className="text-as-primary text-xl font-semibold">Transfer crypto</h2>
+        <h2 className="text-as-primary text-lg font-semibold">Transfer crypto</h2>
 
         {/* Countdown Timer */}
-        <div className="relative flex h-16 w-16 items-center justify-center">
-          <svg className="h-16 w-16 -rotate-90" viewBox="0 0 64 64">
+        <div className="relative flex h-11 w-11 items-center justify-center">
+          <svg className="h-11 w-11 -rotate-90" viewBox="0 0 44 44">
             <circle
-              cx="32"
-              cy="32"
-              r="28"
+              cx="22"
+              cy="22"
+              r="18"
               stroke="currentColor"
-              strokeWidth="2"
+              strokeWidth="3"
               fill="none"
               className="text-gray-200"
             />
             <circle
-              cx="32"
-              cy="32"
-              r="28"
+              cx="22"
+              cy="22"
+              r="18"
               stroke="currentColor"
-              strokeWidth="2"
+              strokeWidth="3"
               fill="none"
               strokeLinecap="round"
               className="text-blue-500"
-              strokeDasharray={`${2 * Math.PI * 28}`}
-              strokeDashoffset={`${2 * Math.PI * 28 * (1 - timeLeft / (15 * 60))}`}
+              strokeDasharray={`${2 * Math.PI * 18}`}
+              strokeDashoffset={`${2 * Math.PI * 18 * (1 - timeLeft / totalTime)}`}
               style={{
                 transition: "stroke-dashoffset 1s linear",
               }}
             />
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-as-primary text-sm font-semibold">{formatTime(timeLeft)}</span>
+            <span className="text-as-primary text-[10px] font-semibold">{formatTime(timeLeft)}</span>
           </div>
         </div>
       </div>
 
       {/* Main Content Cards */}
       <div className="flex w-full flex-col gap-4">
-        {/* Amount and Chain Card */}
-        <div className="bg-b3-react-background border-b3-react-border rounded-xl border p-4 shadow-sm">
-          <div className="flex items-center justify-between gap-4">
-            {/* Amount Section */}
-            <div className="flex flex-col gap-1">
-              <span className="text-as-primary/60 text-sm">Amount</span>
+        {/* Amount Card */}
+        <div className="flex items-center gap-4">
+          <div className="w-full">
+            <span className="text-as-content-secondary text-sm font-medium">Amount</span>
+            <div className="border-as-border-primary rounded-lg border p-2 shadow-sm">
               <CopyToClipboard
                 text={roundedUpSrcAmount || ""}
                 onCopy={() => {
                   toast.success("Amount copied to clipboard");
                 }}
               >
-                <div className="flex cursor-pointer items-center gap-2">
-                  <strong className="text-as-primary text-lg font-semibold">
+                <div className="flex cursor-pointer items-center justify-between gap-2">
+                  <strong className="text-as-primary font-semibold">
                     {roundedUpSrcAmount} {srcToken.symbol}
                   </strong>
                   <Copy className="text-as-primary/50 hover:text-as-primary h-4 w-4 transition-all duration-200" />
                 </div>
               </CopyToClipboard>
             </div>
+          </div>
 
-            {/* Chain Section */}
-            <div className="flex flex-col items-end gap-1">
-              <span className="text-as-primary/60 text-sm">Chain</span>
-              <Badge variant="outline" className="flex h-8 items-center gap-2 px-3 py-1 text-sm">
+          {/* Chain Card */}
+          <div className="w-full">
+            <span className="text-as-content-secondary text-sm font-medium">Chain</span>
+            <div className="border-as-border-primary rounded-lg border p-2 shadow-sm">
+              <div className="flex items-center gap-2">
                 <img
                   src={ALL_CHAINS[order.srcChain].logoUrl}
                   alt={getChainName(order.srcChain)}
-                  className={cn("h-5 rounded-full", order.srcChain === b3.id && "h-4 rounded-none")}
+                  className={cn("h-6 rounded-full", order.srcChain === b3.id && "h-5 rounded-none")}
                 />
-                {getChainName(order.srcChain)}
-              </Badge>
+                <span className="text-as-primary text-sm font-semibold">{getChainName(order.srcChain)}</span>
+              </div>
             </div>
           </div>
         </div>
 
         {/* QR Code and Deposit Address Card */}
-        <div className="bg-b3-react-background border-b3-react-border rounded-xl border p-6 shadow-sm">
-          <div className="flex flex-col gap-6">
-            {/* QR Code Section */}
+        <div className="border-b3-react-border bg-as-surface-secondary grid h-[220px] grid-cols-2 overflow-hidden rounded-xl border">
+          {/* QR Code Section */}
+          <div className="border-as-border-primary h-full w-full border-r">
             <div className="flex justify-center">
-              <div className="flex flex-col items-center rounded-lg bg-white p-6">
+              <div className="bg-as-surface-secondary flex flex-col items-center rounded-lg p-6">
                 <QRCodeSVG
                   value={getPaymentUrl(
                     order.globalAddress,
                     BigInt(order.srcAmount),
                     order.srcTokenAddress === RELAY_ETH_ADDRESS ? "ETH" : order.srcTokenAddress,
                   )}
-                  className="h-48 w-48"
+                  className="bg-as-surface-secondary max-h-48 max-w-48"
                 />
                 <div className="mt-3 flex items-center justify-center gap-2 text-sm">
                   <span className="text-as-brand/70 text-sm font-medium">SCAN WITH</span>
@@ -188,18 +208,20 @@ export const TransferCryptoDetails = memo(function TransferCryptoDetails({
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Deposit Address Section */}
-            <div className="flex flex-col gap-2">
-              <span className="text-as-primary/60 text-sm">Deposit address:</span>
-              <div
-                className="bg-b3-react-background border-b3-react-border hover:border-as-brand group flex cursor-pointer items-center justify-between gap-4 rounded-lg border p-3 px-4 shadow-sm transition-all duration-200"
-                onClick={handleCopyAddress}
-              >
-                <div className="text-as-primary overflow-hidden text-ellipsis whitespace-nowrap font-mono text-sm">
-                  {order.globalAddress}
-                </div>
-                <Copy className="group-hover:text-as-brand text-as-primary/50 h-5 w-5 cursor-pointer transition-all duration-200" />
+          {/* Deposit Address Section */}
+          <div className="flex h-full w-full flex-col gap-2 p-6">
+            <span className="text-as-content-secondary text-sm font-medium">Deposit address:</span>
+            <div
+              className="flex h-full cursor-pointer flex-col items-stretch justify-between gap-4"
+              onClick={handleCopyAddress}
+            >
+              <div className="text-as-primary break-all font-mono text-sm font-semibold leading-relaxed">
+                {order.globalAddress}
+              </div>
+              <div className="place-self-end">
+                <Copy className="group-hover:text-as-brand text-as-tertiarry h-4 w-4 cursor-pointer transition-all duration-200" />
               </div>
             </div>
           </div>
