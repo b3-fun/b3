@@ -7,6 +7,10 @@ import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { motion } from "framer-motion";
 import { CheckIcon, ChevronRight, Loader2 } from "lucide-react";
 import { useMemo } from "react";
+import { OrderDetailsCollapsible } from "./OrderDetailsCollapsible";
+
+type Tournament = components["schemas"]["Tournament"];
+type NFT = components["schemas"]["NFT"];
 
 interface ConnectWalletPaymentProps {
   order: components["schemas"]["Order"];
@@ -15,6 +19,8 @@ interface ConnectWalletPaymentProps {
   txLoading: boolean;
   isSwitchingOrExecuting: boolean;
   phantomWalletAddress?: string | null;
+  tournament?: Tournament;
+  nft?: NFT;
 }
 
 function roundTokenAmount(amount: string | undefined): string | undefined {
@@ -97,6 +103,8 @@ export default function ConnectWalletPayment({
   txLoading,
   isSwitchingOrExecuting,
   phantomWalletAddress,
+  tournament,
+  nft,
 }: ConnectWalletPaymentProps) {
   const account = useAccountWallet();
   const profile = useProfile({ address: order.recipientAddress });
@@ -198,12 +206,17 @@ export default function ConnectWalletPayment({
             </>
           )}
         </ShinyButton>
-        {/* <span className="label-style text-as-primary/50 text-xs">
-          Connected to:{" "}
-          {order.srcChain === RELAY_SOLANA_MAINNET_CHAIN_ID && phantomWalletAddress
-            ? centerTruncate(phantomWalletAddress, 6)
-            : centerTruncate(account?.address || "", 6)}
-        </span> */}
+
+        <div className="mt-4">
+          <OrderDetailsCollapsible
+            order={order}
+            dstToken={dstToken}
+            tournament={tournament}
+            nft={nft}
+            recipientName={recipientName}
+            formattedExpectedDstAmount={formattedExpectedDstAmount}
+          />
+        </div>
       </motion.div>
     </div>
   );
