@@ -81,7 +81,7 @@ function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
     coinbaseOnrampOptions,
     coinbaseAvailablePaymentMethods,
     isStripeOnrampSupported,
-    isStripeWeb2Supported,
+    stripeWeb2Support,
     isLoading: isLoadingGeoOnramp,
   } = useGeoOnrampOptions(isMainnet, stableAmountForGeo);
 
@@ -123,7 +123,7 @@ function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
         return;
       }
 
-      if (vendor === "stripe-web2" && !isStripeWeb2Supported) {
+      if (vendor === "stripe-web2" && !stripeWeb2Support.isSupport) {
         toast.error("Stripe credit card not available");
         return;
       }
@@ -323,7 +323,7 @@ function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
               })()}
 
             {/* Stripe Option - Show if supported */}
-            {isStripeWeb2Supported && (
+            {stripeWeb2Support.isSupport && (
               <button
                 onClick={() => handlePaymentMethodClick("stripe-web2")}
                 className="bg-b3-react-background border-b3-react-border hover:border-as-brand group flex w-full items-center justify-between gap-4 rounded-xl border p-5 transition-all duration-200 hover:shadow-md"

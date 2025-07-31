@@ -19,7 +19,7 @@ export function useStripeSupport(
   return useMemo(
     () => ({
       isStripeOnrampSupported: data?.stripeOnramp || false,
-      isStripeWeb2Supported: data?.stripeWeb2 || false,
+      stripeWeb2Support: data?.stripeWeb2 || { isSupport: false },
       isLoadingStripeSupport: isLoading,
       stripeSupportError: error,
       refetchStripeSupport: refetch,

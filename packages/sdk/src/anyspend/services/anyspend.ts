@@ -173,7 +173,7 @@ export const anyspendService = {
     ipAddress: string,
     usdAmount?: string,
     visitorData?: VisitorData,
-  ): Promise<{ stripeOnramp: boolean; stripeWeb2: boolean }> => {
+  ): Promise<{ stripeOnramp: boolean; stripeWeb2: components["schemas"]["StripeWeb2Support"] }> => {
     const params = new URLSearchParams({
       ipAddress,
       usdAmount: usdAmount || "",
