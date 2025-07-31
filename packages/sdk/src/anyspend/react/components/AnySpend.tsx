@@ -855,7 +855,7 @@ export function AnySpend({
 
       {/* Tab section */}
       <div className="w-full">
-        <div className="bg-as-on-surface-1 relative mb-4 inline-grid h-10 grid-cols-2 rounded-xl">
+        <div className="bg-as-surface-secondary relative mb-4 grid h-10 grid-cols-2 rounded-xl">
           <div
             className={cn(
               "bg-as-brand absolute bottom-0 left-0 top-0 z-0 rounded-xl transition-transform duration-100",
@@ -874,7 +874,7 @@ export function AnySpend({
               setSelectedPaymentMethod(PaymentMethod.NONE); // Reset payment method when switching to crypto
             }}
           >
-            Swap
+            Pay with crypto
           </button>
           <button
             className={cn(
@@ -886,7 +886,7 @@ export function AnySpend({
               setSelectedPaymentMethod(PaymentMethod.NONE); // Reset payment method when switching to fiat
             }}
           >
-            Buy
+            Pay with Fiat
           </button>
         </div>
       </div>
