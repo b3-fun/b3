@@ -81,11 +81,6 @@ jobs:
           echo "Next alpha version: $NEXT_VERSION"
           echo "next_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
 
-      - name: Build SDK package
-        run: |
-          cd packages/sdk
-          pnpm build
-
       - name: Run tests
         run: |
           cd packages/sdk
