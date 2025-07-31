@@ -1,4 +1,4 @@
-import { eqci, getDefaultToken, roundUpUsdAmountToNearest } from "@b3dotfun/sdk/anyspend";
+import { eqci, getDefaultToken, roundUpUSDCBaseAmountToNearest } from "@b3dotfun/sdk/anyspend";
 import { RELAY_ETH_ADDRESS, USDC_BASE } from "@b3dotfun/sdk/anyspend/constants";
 import {
   CreateOrderParams,
@@ -38,7 +38,7 @@ import {
 } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils";
 import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
-import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
+import { formatUnits } from "@b3dotfun/sdk/shared/utils/number";
 import { simpleHashChainToChainName } from "@b3dotfun/sdk/shared/utils/simplehash";
 import invariant from "invariant";
 import { ChevronRightCircle, Loader2 } from "lucide-react";
@@ -299,12 +299,6 @@ export function AnySpendCustom({
   ]);
   const { anyspendQuote, isLoadingAnyspendQuote } = useAnyspendQuote(isMainnet, getRelayQuoteRequest);
 
-  // Get geo data and onramp options (after quote is available)
-  const { geoData, isOnrampSupported } = useGeoOnrampOptions(
-    isMainnet,
-    anyspendQuote?.data?.currencyIn?.amountUsd || "0",
-  );
-
   const { orderAndTransactions: oat } = useAnyspendOrderAndTransactions(isMainnet, orderId);
 
   const onSelectOrder = (selectedOrderId: string) => {
@@ -317,7 +311,10 @@ export function AnySpendCustom({
   };
 
   const [srcAmount, setSrcAmount] = useState<bigint | null>(null);
-  const formattedSrcAmount = srcAmount ? formatTokenAmount(srcAmount, srcToken.decimals, 6, false) : null;
+  const formattedSrcAmount = srcAmount ? formatUnits(srcAmount.toString(), srcToken.decimals) : null;
+
+  // Get geo data and onramp options (after quote is available)
+  const { geoData, isOnrampSupported } = useGeoOnrampOptions(isMainnet, formattedSrcAmount || "0");
 
   // Update the selected src token to USDC and chain to base when the active tab is fiat,
   // also force not to update srcToken by setting dirtySelectSrcToken to true.
@@ -338,7 +335,8 @@ export function AnySpendCustom({
     ) {
       // Use toPrecision instead of toSignificant
       const amount = anyspendQuote.data.currencyIn.amount;
-      setSrcAmount(BigInt(amount));
+      const roundUpAmount = roundUpUSDCBaseAmountToNearest(amount);
+      setSrcAmount(BigInt(roundUpAmount));
     } else {
       setSrcAmount(null);
     }
@@ -440,7 +438,7 @@ export function AnySpendCustom({
         invariant(srcChainId === base.id, "Selected src chain is not base");
         void createOnrampOrder({
           ...createOrderParams,
-          srcFiatAmount: anyspendQuote?.data?.currencyIn?.amountUsd || "0",
+          srcFiatAmount: formattedSrcAmount || "0",
           onramp: {
             vendor: onramp.vendor,
             paymentMethod: onramp.paymentMethod,
@@ -816,7 +814,7 @@ export function AnySpendCustom({
         <TabsContent value="fiat">
           <div className="mt-6 flex w-full flex-col gap-6">
             <PanelOnrampPayment
-              srcAmountOnRamp={roundUpUsdAmountToNearest(anyspendQuote?.data?.currencyIn?.amountUsd || "0")}
+              srcAmountOnRamp={srcAmount ? formatUnits(srcAmount.toString(), USDC_BASE.decimals) : "0"}
               recipientName={recipientEnsName}
               recipientAddress={recipientAddress}
               isMainnet={isMainnet}
