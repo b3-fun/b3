@@ -1,4 +1,4 @@
-import { eqci, getDefaultToken } from "@b3dotfun/sdk/anyspend";
+import { eqci, getDefaultToken, roundUpUsdAmountToNearest } from "@b3dotfun/sdk/anyspend";
 import { RELAY_ETH_ADDRESS, USDC_BASE } from "@b3dotfun/sdk/anyspend/constants";
 import {
   CreateOrderParams,
@@ -816,7 +816,7 @@ export function AnySpendCustom({
         <TabsContent value="fiat">
           <div className="mt-6 flex w-full flex-col gap-6">
             <PanelOnrampPayment
-              srcAmountOnRamp={anyspendQuote?.data?.currencyIn?.amountUsd || "0"}
+              srcAmountOnRamp={roundUpUsdAmountToNearest(anyspendQuote?.data?.currencyIn?.amountUsd || "0")}
               recipientName={recipientEnsName}
               recipientAddress={recipientAddress}
               isMainnet={isMainnet}
