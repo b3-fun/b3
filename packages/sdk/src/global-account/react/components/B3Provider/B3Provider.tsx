@@ -48,6 +48,7 @@ export function B3Provider({
   accountOverride,
   environment,
   automaticallySetFirstEoa,
+  toaster
 }: {
   isMainnetAnySpend?: boolean;
   theme: "light" | "dark";
@@ -55,6 +56,10 @@ export function B3Provider({
   accountOverride?: Account;
   environment: B3ContextType["environment"];
   automaticallySetFirstEoa?: boolean;
+  toaster?: {
+    position?: "top-center" | "top-right" | "bottom-center" | "bottom-right";
+    style?: React.CSSProperties;
+  };
 }) {
   return (
     <WagmiProvider config={wagmiConfig}>
@@ -71,7 +76,7 @@ export function B3Provider({
                 {children}
                 {/* For the modal https://github.com/b3-fun/b3/blob/main/packages/sdk/src/global-account/react/components/ui/dialog.tsx#L46 */}
                 <StyleRoot id="b3-root" />
-                <Toaster theme={theme} />
+                <Toaster theme={theme} position={toaster?.position} style={toaster?.style} />
               </RelayKitProviderWrapper>
             </InnerProvider>
           </TooltipProvider>
