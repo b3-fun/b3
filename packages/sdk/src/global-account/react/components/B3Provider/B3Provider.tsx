@@ -48,7 +48,7 @@ export function B3Provider({
   accountOverride,
   environment,
   automaticallySetFirstEoa,
-  toaster
+  toaster,
 }: {
   isMainnetAnySpend?: boolean;
   theme: "light" | "dark";
