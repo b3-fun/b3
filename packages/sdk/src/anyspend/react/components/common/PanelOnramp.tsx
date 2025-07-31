@@ -1,20 +1,44 @@
 import { useCoinbaseOnrampOptions } from "@b3dotfun/sdk/anyspend/react";
-import { Input, useGetGeo } from "@b3dotfun/sdk/global-account/react";
-import { AnimatePresence, motion } from "motion/react";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
+import { ALL_CHAINS } from "@b3dotfun/sdk/anyspend/utils/chain";
+import { Input, useGetGeo, useProfile } from "@b3dotfun/sdk/global-account/react";
+import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
+import { ChevronRight, Wallet } from "lucide-react";
 import { useRef } from "react";
 import { toast } from "sonner";
-import { PaymentOptions } from "./PaymentOptions";
+import { FiatPaymentMethod } from "./FiatPaymentMethod";
+import { OrderTokenAmountFiat } from "./OrderTokenAmountFiat";
 
 export function PanelOnramp({
   srcAmountOnRamp,
   setSrcAmountOnRamp,
+  selectedPaymentMethod,
+  setActivePanel,
+  _recipientAddress,
+  destinationToken,
+  destinationChainId,
+  destinationAmount,
+  onDestinationTokenChange,
+  onDestinationChainChange,
 }: {
   srcAmountOnRamp: string;
   setSrcAmountOnRamp: (amount: string) => void;
+  selectedPaymentMethod?: FiatPaymentMethod;
+  setActivePanel: (panel: number) => void;
+  _recipientAddress?: string;
+  destinationToken?: components["schemas"]["Token"];
+  destinationChainId?: number;
+  destinationAmount?: string;
+  onDestinationTokenChange?: (token: components["schemas"]["Token"]) => void;
+  onDestinationChainChange?: (chainId: number) => void;
 }) {
   // Get geo data for onramp availability
   const { geoData } = useGetGeo();
   const { coinbaseOnrampOptions } = useCoinbaseOnrampOptions(true, geoData?.country || "US");
+
+  // Get recipient profile for displaying name
+  const recipientProfile = useProfile({ address: _recipientAddress });
+  const recipientName = recipientProfile.data?.name?.replace(/\.b3\.fun/g, "");
 
   const amountInputRef = useRef<HTMLInputElement>(null);
 
@@ -37,70 +61,149 @@ export function PanelOnramp({
     setSrcAmountOnRamp(value);
   };
 
+  // Calculate B3 tokens based on amount (mock calculation for now)
+  const calculateB3Tokens = (amount: string) => {
+    const numAmount = parseFloat(amount) || 0;
+    return (numAmount * 331.446).toFixed(2); // Mock exchange rate
+  };
+
   return (
-    <div className="bg-as-on-surface-1 relative flex w-full flex-col gap-4 rounded-2xl p-4 pb-6">
-      <div className="flex h-7 w-full items-center justify-between">
-        <span className="text-as-primary/50 flex items-center text-sm">Buy</span>
-        <PaymentOptions />
-      </div>
-      <div className="hover:bg-as-brand/30 hover:border-as-brand border-as-stroke relative flex w-full flex-col items-center justify-center rounded-lg border transition-all duration-200">
-        {parseFloat(srcAmountOnRamp) >
-        (coinbaseOnrampOptions?.paymentCurrencies?.[0]?.limits?.find(l => l.id === "ACH_BANK_ACCOUNT")?.max
-          ? parseFloat(
-              coinbaseOnrampOptions.paymentCurrencies[0].limits.find(l => l.id === "ACH_BANK_ACCOUNT")?.max || "25000",
-            )
-          : 25000) ? (
-          <p className="label-style -mb-3 mt-3 text-xs text-red-400 dark:bg-transparent">
-            Maximum amount is $
-            {coinbaseOnrampOptions?.paymentCurrencies?.[0]?.limits?.find(l => l.id === "ACH_BANK_ACCOUNT")?.max ||
-              "25,000"}
-          </p>
-        ) : (
-          <p className="label-style text-b3-react-foreground/60 -mb-3 mt-3 text-xs dark:bg-transparent">
-            Buy amount in USD
-          </p>
-        )}
-
-        <div className="relative inline-flex items-center dark:bg-transparent">
-          <span className="text-b3-react-foreground/60 -ms-3 -mt-2 text-2xl font-semibold dark:bg-transparent">$</span>
-          <Input
-            ref={amountInputRef}
-            type="text"
-            value={srcAmountOnRamp}
-            onChange={handleAmountChange}
-            placeholder="0.00"
-            className="placeholder:text-b3-react-foreground/60 h-auto min-w-[70px] border-0 bg-transparent py-6 text-center text-4xl font-semibold focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-transparent"
-            style={{
-              width: `${Math.max(50, srcAmountOnRamp.length * 34)}px`,
-              minWidth: srcAmountOnRamp ? `auto` : "105px",
-            }}
-          />
-
-          <AnimatePresence mode="wait">
-            <motion.div
-              animate={{ opacity: !srcAmountOnRamp || parseFloat(srcAmountOnRamp) <= 0 ? 1 : 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.5, ease: "easeInOut" }}
-              className="border-b3-react-foreground/10 absolute bottom-3 left-1 h-1 w-[90%] rounded-full border-t-2 border-dashed bg-transparent"
-            />
-          </AnimatePresence>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-4 gap-4">
-        {["5", "10", "25", "100"].map(value => (
+    <div className="bg-as-surface-primary flex w-full flex-col">
+      {/* Pay Section */}
+      <div className="border-as-border-secondary bg-as-surface-secondary relative flex w-full flex-col rounded-2xl border p-4">
+        <div className="flex h-7 w-full items-center justify-between">
+          <span className="text-as-tertiarry flex items-center text-sm font-bold">Pay</span>
           <button
-            key={value}
-            onClick={() => handleQuickAmount(value)}
-            className={`rounded-lg border px-4 py-3 ${
-              srcAmountOnRamp === value
-                ? "border-as-brand bg-as-brand/30"
-                : "border-as-stroke hover:border-as-brand hover:bg-as-brand/30"
-            } transition-all duration-200`}
+            className="text-as-tertiarry flex h-7 items-center gap-1 text-sm"
+            onClick={() => setActivePanel(7)} // PanelView.FIAT_PAYMENT_METHOD
           >
-            ${value}
+            {selectedPaymentMethod === FiatPaymentMethod.COINBASE_PAY ? (
+              <>
+                <div className="flex items-center gap-2">
+                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600">
+                    <span className="text-xs font-bold text-white">C</span>
+                  </div>
+                  Coinbase Pay
+                </div>
+                <ChevronRight className="h-4 w-4" />
+              </>
+            ) : selectedPaymentMethod === FiatPaymentMethod.STRIPE ? (
+              <>
+                Stripe
+                <ChevronRight className="h-4 w-4" />
+              </>
+            ) : (
+              <>
+                Select payment method
+                <ChevronRight className="h-4 w-4" />
+              </>
+            )}
           </button>
-        ))}
+        </div>
+
+        {/* Amount Input */}
+        <div className="flex items-center justify-center pb-2 pt-8">
+          <div className="flex gap-1">
+            <span className="text-as-tertiarry text-2xl font-bold">$</span>
+            <Input
+              ref={amountInputRef}
+              type="text"
+              value={srcAmountOnRamp}
+              onChange={handleAmountChange}
+              placeholder="5"
+              className="h-auto min-w-[70px] border-0 bg-transparent p-0 px-3 pt-1 text-4xl font-bold text-gray-900 placeholder:text-gray-400 focus-visible:ring-0 focus-visible:ring-offset-0"
+              style={{
+                width: `${Math.max(50, (srcAmountOnRamp || "5").length * 50)}px`,
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Quick Amount Buttons */}
+        <div className="mx-auto mb-6 inline-grid grid-cols-4 gap-2">
+          {["5", "10", "25", "100"].map(value => (
+            <button
+              key={value}
+              onClick={() => handleQuickAmount(value)}
+              className={`h-7 w-14 rounded-lg border border-gray-200 text-sm font-medium transition-all duration-200 hover:border-gray-300 ${
+                srcAmountOnRamp === value ? "border-gray-300 bg-gray-100" : "bg-white hover:bg-gray-50"
+              }`}
+            >
+              ${value}
+            </button>
+          ))}
+        </div>
+
+        {/* Token Display */}
+        {destinationToken && destinationChainId && (
+          <OrderTokenAmountFiat
+            address={_recipientAddress}
+            context="to"
+            inputValue={destinationAmount || calculateB3Tokens(srcAmountOnRamp)}
+            onChangeInput={() => {}} // Read-only in this context
+            chainId={destinationChainId}
+            setChainId={onDestinationChainChange || (() => {})}
+            token={destinationToken}
+            setToken={onDestinationTokenChange || (() => {})}
+            hideTokenSelect={false}
+            canEditAmount={false}
+            showAsReceiveAmount={true}
+          />
+        )}
+      </div>
+
+      {/* Recipient Section */}
+      <div className="border-as-border-secondary bg-as-surface-secondary mt-4 flex w-full flex-col gap-3 rounded-xl border p-4">
+        <div className="flex w-full items-center justify-between gap-2">
+          <span className="text-as-tertiarry flex items-center text-sm">Recipient</span>
+          {_recipientAddress ? (
+            <button
+              className="text-as-tertiarry flex h-7 items-center gap-1 text-sm transition-colors hover:text-blue-700"
+              onClick={() => setActivePanel(5)} // Recipient selection panel
+            >
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-orange-500 text-xs text-white">
+                🦊
+              </div>
+              <span className="text-sm">{recipientName || shortenAddress(_recipientAddress)}</span>
+              <ChevronRight size={16} />
+            </button>
+          ) : (
+            <button
+              className="text-as-tertiarry flex h-7 items-center gap-1 text-sm transition-colors hover:text-blue-700"
+              onClick={() => setActivePanel(5)} // Recipient selection panel
+            >
+              <Wallet className="text-as-brand" size={16} />
+              Select recipient
+              <ChevronRight size={16} />
+            </button>
+          )}
+        </div>
+
+        <div className="divider w-full" />
+
+        <div className="flex items-center justify-between">
+          <span className="text-as-tertiarry text-sm">Expected to receive</span>
+          <div className="flex items-center gap-2">
+            <span className="text-base font-semibold text-gray-900">
+              {calculateB3Tokens(srcAmountOnRamp)} {destinationToken?.symbol || "B3"}
+            </span>
+            <span className="text-as-tertiarry text-sm">
+              on {destinationChainId ? ALL_CHAINS[destinationChainId]?.name : "Base"}
+            </span>
+            {destinationToken && destinationChainId && destinationToken.metadata?.logoURI && (
+              <img src={ALL_CHAINS[destinationChainId]?.logoUrl} alt="Chain" className="h-4 w-4 rounded-full" />
+            )}
+          </div>
+        </div>
+
+        <div className="divider w-full" />
+
+        <div className="">
+          <div className="flex items-center justify-between">
+            <span className="text-as-tertiarry text-sm">Total (included $0.02 fee)</span>
+            <span className="text-base font-semibold text-gray-900">${(parseFloat(srcAmountOnRamp) || 5) + 0.02}</span>
+          </div>
+        </div>
       </div>
     </div>
   );

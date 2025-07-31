@@ -31,6 +31,7 @@ import { b3Sepolia, base, mainnet, sepolia } from "viem/chains";
 import { useAccount } from "wagmi";
 import { components } from "../../types/api";
 import { CryptoPaymentMethod, PaymentMethod } from "./common/CryptoPaymentMethod";
+import { FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaymentMethod";
 import { OrderDetails, OrderDetailsLoadingView } from "./common/OrderDetails";
 import { OrderHistory } from "./common/OrderHistory";
 import { OrderStatus } from "./common/OrderStatus";
@@ -54,6 +55,7 @@ export enum PanelView {
   FIAT_PAYMENT,
   RECIPIENT_SELECTION,
   CRYPTO_PAYMENT_METHOD,
+  FIAT_PAYMENT_METHOD,
 }
 
 const ANYSPEND_RECIPIENTS_KEY = "anyspend_recipients";
@@ -117,6 +119,8 @@ export function AnySpend({
   const [customRecipients, setCustomRecipients] = useState<RecipientOption[]>([]);
   // Add state for selected payment method
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>(PaymentMethod.NONE);
+  // Add state for selected fiat payment method
+  const [selectedFiatPaymentMethod, setSelectedFiatPaymentMethod] = useState<FiatPaymentMethod>(FiatPaymentMethod.NONE);
   // const [newRecipientAddress, setNewRecipientAddress] = useState("");
   // const recipientInputRef = useRef<HTMLInputElement>(null);
 
@@ -872,6 +876,7 @@ export function AnySpend({
             onClick={() => {
               setActiveTab("crypto");
               setSelectedPaymentMethod(PaymentMethod.NONE); // Reset payment method when switching to crypto
+              setSelectedFiatPaymentMethod(FiatPaymentMethod.NONE); // Reset fiat payment method when switching to crypto
             }}
           >
             Pay with crypto
@@ -883,7 +888,8 @@ export function AnySpend({
             )}
             onClick={() => {
               setActiveTab("fiat");
-              setSelectedPaymentMethod(PaymentMethod.NONE); // Reset payment method when switching to fiat
+              setSelectedPaymentMethod(PaymentMethod.NONE); // Reset crypto payment method when switching to fiat
+              setSelectedFiatPaymentMethod(FiatPaymentMethod.NONE); // Reset fiat payment method when switching to fiat
             }}
           >
             Pay with Fiat
@@ -899,7 +905,7 @@ export function AnySpend({
         </>
       ) : null} */}
 
-      <div className="relative flex max-w-[calc(100vw-32px)] flex-col gap-2">
+      <div className="relative flex w-full max-w-[calc(100vw-32px)] flex-col gap-2">
         {/* Send section */}
         {activeTab === "crypto" ? (
           <motion.div
@@ -974,7 +980,18 @@ export function AnySpend({
             animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             transition={{ duration: 0.3, delay: 0, ease: "easeInOut" }}
           >
-            <PanelOnramp srcAmountOnRamp={srcAmountOnRamp} setSrcAmountOnRamp={setSrcAmountOnRamp} />
+            <PanelOnramp
+              srcAmountOnRamp={srcAmountOnRamp}
+              setSrcAmountOnRamp={setSrcAmountOnRamp}
+              selectedPaymentMethod={selectedFiatPaymentMethod}
+              setActivePanel={setActivePanel}
+              _recipientAddress={recipientAddress}
+              destinationToken={selectedDstToken}
+              destinationChainId={selectedDstChainId}
+              destinationAmount={dstAmount}
+              onDestinationTokenChange={setSelectedDstToken}
+              onDestinationChainChange={setSelectedDstChainId}
+            />
           </motion.div>
         )}
 
@@ -983,7 +1000,8 @@ export function AnySpend({
           variant="ghost"
           className={cn(
             "border-as-stroke bg-as-surface-primary absolute left-1/2 top-1/2 z-10 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-xl border-2 sm:h-8 sm:w-8 sm:rounded-xl",
-            (activeTab === "fiat" || isBuyMode) && "top-[calc(50%+56px)] cursor-default",
+            isBuyMode && "top-[calc(50%+56px)] cursor-default",
+            activeTab === "fiat" && "hidden",
           )}
           onClick={() => {
             if (activeTab === "fiat" || isBuyMode) {
@@ -1014,102 +1032,104 @@ export function AnySpend({
           </div>
         </Button>
 
-        {/* Receive section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          transition={{ duration: 0.3, delay: 0.1, ease: "easeInOut" }}
-          className="bg-as-surface-secondary border-as-border-secondary relative flex w-full flex-col gap-2 rounded-2xl border p-4 sm:p-6"
-        >
-          <div className="flex w-full items-center justify-between">
-            <div className="text-as-primary/50 flex h-7 items-center text-sm">Receive</div>
-            {recipientAddress ? (
-              <button
-                className={cn("text-as-primary/70 flex h-7 items-center gap-2 rounded-lg px-2")}
-                onClick={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
-              >
-                {globalAddress && recipientAddress === globalAddress && globalWallet?.meta?.icon ? (
-                  <img
-                    src={globalWallet?.meta?.icon}
-                    alt="Current wallet"
-                    className="bg-as-primary h-6 w-6 rounded-full"
-                  />
-                ) : (
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-orange-500 text-xs text-white">
-                    🦊
-                  </div>
-                )}
-                <div className="text-sm">{recipientName ? recipientName : shortenAddress(recipientAddress)}</div>
-                <ChevronRightCircle className="h-4 w-4" />
-              </button>
-            ) : (
-              <button
-                className="text-as-primary/70 flex items-center gap-1 rounded-lg"
-                onClick={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
-              >
-                <div className="text-sm font-medium">Select recipient</div>
-                <ChevronsUpDown className="h-3 w-3" />
-              </button>
-            )}
-          </div>
-          {isBuyMode ? (
-            // Fixed destination token display in buy mode
-            <div className="flex items-center justify-between">
-              <div className="text-as-primary text-2xl font-bold">{dstAmount || "0"}</div>
-              <div className="bg-as-brand/10 border-as-brand/30 flex items-center gap-3 rounded-xl border px-4 py-3">
-                {selectedDstToken.metadata?.logoURI && (
-                  <img
-                    src={selectedDstToken.metadata.logoURI}
-                    alt={selectedDstToken.symbol}
-                    className="h-8 w-8 rounded-full"
-                  />
-                )}
-                <span className="text-as-brand text-lg font-bold">{selectedDstToken.symbol}</span>
-              </div>
+        {/* Receive section - Hidden when fiat tab is active */}
+        {activeTab !== "fiat" && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{ duration: 0.3, delay: 0.1, ease: "easeInOut" }}
+            className="bg-as-surface-secondary border-as-border-secondary relative flex w-full flex-col gap-2 rounded-2xl border p-4 sm:p-6"
+          >
+            <div className="flex w-full items-center justify-between">
+              <div className="text-as-primary/50 flex h-7 items-center text-sm">Receive</div>
+              {recipientAddress ? (
+                <button
+                  className={cn("text-as-primary/70 flex h-7 items-center gap-2 rounded-lg px-2")}
+                  onClick={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
+                >
+                  {globalAddress && recipientAddress === globalAddress && globalWallet?.meta?.icon ? (
+                    <img
+                      src={globalWallet?.meta?.icon}
+                      alt="Current wallet"
+                      className="bg-as-primary h-6 w-6 rounded-full"
+                    />
+                  ) : (
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-orange-500 text-xs text-white">
+                      🦊
+                    </div>
+                  )}
+                  <div className="text-sm">{recipientName ? recipientName : shortenAddress(recipientAddress)}</div>
+                  <ChevronRightCircle className="h-4 w-4" />
+                </button>
+              ) : (
+                <button
+                  className="text-as-primary/70 flex items-center gap-1 rounded-lg"
+                  onClick={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
+                >
+                  <div className="text-sm font-medium">Select recipient</div>
+                  <ChevronsUpDown className="h-3 w-3" />
+                </button>
+              )}
             </div>
-          ) : (
-            <OrderTokenAmount
-              address={recipientAddress}
-              context="to"
-              inputValue={dstAmount}
-              onChangeInput={value => {
-                setIsSrcInputDirty(false);
-                setDstAmount(value);
-              }}
-              chainId={selectedDstChainId}
-              setChainId={setSelectedDstChainId}
-              token={selectedDstToken}
-              setToken={setSelectedDstToken}
-            />
-          )}
-          <div className="text-as-primary/50 flex h-5 items-center text-sm">
-            {formatDisplayNumber(anyspendQuote?.data?.currencyOut?.amountUsd, { style: "currency", fallback: "" })}
-            {anyspendQuote?.data?.currencyIn?.amountUsd &&
-              anyspendQuote?.data?.currencyOut?.amountUsd &&
-              (() => {
-                const { percentage, isNegative } = calculatePriceImpact(
-                  anyspendQuote.data.currencyIn.amountUsd,
-                  anyspendQuote.data.currencyOut.amountUsd,
-                );
+            {isBuyMode ? (
+              // Fixed destination token display in buy mode
+              <div className="flex items-center justify-between">
+                <div className="text-as-primary text-2xl font-bold">{dstAmount || "0"}</div>
+                <div className="bg-as-brand/10 border-as-brand/30 flex items-center gap-3 rounded-xl border px-4 py-3">
+                  {selectedDstToken.metadata?.logoURI && (
+                    <img
+                      src={selectedDstToken.metadata.logoURI}
+                      alt={selectedDstToken.symbol}
+                      className="h-8 w-8 rounded-full"
+                    />
+                  )}
+                  <span className="text-as-brand text-lg font-bold">{selectedDstToken.symbol}</span>
+                </div>
+              </div>
+            ) : (
+              <OrderTokenAmount
+                address={recipientAddress}
+                context="to"
+                inputValue={dstAmount}
+                onChangeInput={value => {
+                  setIsSrcInputDirty(false);
+                  setDstAmount(value);
+                }}
+                chainId={selectedDstChainId}
+                setChainId={setSelectedDstChainId}
+                token={selectedDstToken}
+                setToken={setSelectedDstToken}
+              />
+            )}
+            <div className="text-as-primary/50 flex h-5 items-center text-sm">
+              {formatDisplayNumber(anyspendQuote?.data?.currencyOut?.amountUsd, { style: "currency", fallback: "" })}
+              {anyspendQuote?.data?.currencyIn?.amountUsd &&
+                anyspendQuote?.data?.currencyOut?.amountUsd &&
+                (() => {
+                  const { percentage, isNegative } = calculatePriceImpact(
+                    anyspendQuote.data.currencyIn.amountUsd,
+                    anyspendQuote.data.currencyOut.amountUsd,
+                  );
 
-                // Parse the percentage as a number for comparison
-                const percentageNum = parseFloat(percentage);
+                  // Parse the percentage as a number for comparison
+                  const percentageNum = parseFloat(percentage);
 
-                // Don't show if less than 1%
-                if (percentageNum < 1) {
-                  return null;
-                }
+                  // Don't show if less than 1%
+                  if (percentageNum < 1) {
+                    return null;
+                  }
 
-                // Using inline style to ensure color displays
-                return (
-                  <span className="ml-2" style={{ color: percentageNum >= 10 ? "red" : "#FFD700" }}>
-                    ({isNegative ? "-" : ""}
-                    {percentage}%)
-                  </span>
-                );
-              })()}
-          </div>
-        </motion.div>
+                  // Using inline style to ensure color displays
+                  return (
+                    <span className="ml-2" style={{ color: percentageNum >= 10 ? "red" : "#FFD700" }}>
+                      ({isNegative ? "-" : ""}
+                      {percentage}%)
+                    </span>
+                  );
+                })()}
+            </div>
+          </motion.div>
+        )}
       </div>
 
       {/* Order details section */}
@@ -1293,6 +1313,18 @@ export function AnySpend({
     />
   );
 
+  const fiatPaymentMethodView = (
+    <FiatPaymentMethodComponent
+      selectedPaymentMethod={selectedFiatPaymentMethod}
+      setSelectedPaymentMethod={setSelectedFiatPaymentMethod}
+      onBack={() => setActivePanel(PanelView.MAIN)}
+      onSelectPaymentMethod={(method: FiatPaymentMethod) => {
+        setSelectedFiatPaymentMethod(method);
+        setActivePanel(PanelView.MAIN);
+      }}
+    />
+  );
+
   // Add tabs to the main component when no order is loaded
   return (
     <StyleRoot>
@@ -1330,6 +1362,7 @@ export function AnySpend({
             <div key="fiat-payment-view">{onrampPaymentView}</div>,
             <div key="recipient-selection-view">{recipientSelectionView}</div>,
             <div key="crypto-payment-method-view">{cryptoPaymentMethodView}</div>,
+            <div key="fiat-payment-method-view">{fiatPaymentMethodView}</div>,
           ]}
         </TransitionPanel>
       </div>
