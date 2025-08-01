@@ -31,8 +31,8 @@ export function FiatPaymentMethodComponent({
   const getFeeFromApi = (paymentMethod: FiatPaymentMethod): string | null => {
     switch (paymentMethod) {
       case FiatPaymentMethod.COINBASE_PAY:
-        // Coinbase doesn't provide fee info in API, use hardcoded $0.02
-        return "0.02";
+        // Coinbase doesn't provide fee info in API, return null
+        return null;
       case FiatPaymentMethod.STRIPE:
         // Get fee from Stripe API response
         if (stripeWeb2Support && "formattedFeeUsd" in stripeWeb2Support) {
