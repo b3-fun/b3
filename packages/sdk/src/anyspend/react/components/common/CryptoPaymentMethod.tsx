@@ -6,7 +6,7 @@ import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { ChevronLeft, ChevronRightCircle, Wallet, X } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
-import { useSetActiveWallet, useWalletInfo } from "thirdweb/react";
+import { useSetActiveWallet } from "thirdweb/react";
 import { useAccount, useConnect, useDisconnect } from "wagmi";
 
 export enum PaymentMethod {
@@ -38,19 +38,10 @@ export function CryptoPaymentMethod({
 }: CryptoPaymentMethodProps) {
   const { connect, connectors, isPending: isConnecting, error: connectError } = useConnect();
   const wagmiAccount = useAccount();
-  const {
-    address: globalAddress,
-    ensName,
-    connectedEOAWallet,
-    isActiveEOAWallet,
-    eoaWalletIcon,
-    smartWalletIcon,
-    wallet: globalWallet,
-  } = useAccountWallet();
+  const { address: globalAddress, connectedEOAWallet, isActiveEOAWallet, wallet: globalWallet } = useAccountWallet();
   const { disconnect } = useDisconnect();
   const previousAddress = useRef<string | undefined>(globalAddress);
 
-  const { data: walletInfo } = useWalletInfo(connectedEOAWallet?.id);
   const setActiveWallet = useSetActiveWallet();
 
   // Automatically set EOA wallet as active when available
