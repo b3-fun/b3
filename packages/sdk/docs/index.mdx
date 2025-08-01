@@ -1,97 +1,206 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "B3 SDK"
+description: "Build the future of onchain gaming with the comprehensive B3 development toolkit"
 ---
 
-## Setting up
+import { links, branding, networks, contact, examples } from "/snippets/variables.mdx";
 
-Get your documentation site up and running in minutes.
-
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
+<Card title="Quick Start Guide" icon="rocket" href="/quickstart" horizontal>
+  Get up and running with B3 SDK in under 5 minutes
 </Card>
 
-## Make it yours
+## About B3
 
-Design a docs site that looks great and empowers your users.
+**The Open Gaming Superchain**
 
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
-  </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
-  </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
-  </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
-  </Card>
-</Columns>
+B3 is a fun-first gaming ecosystem built on Base, designed to bring the next generation of gamers and game creators onchain. Created by a team of Base/Coinbase alumni and OG Ethereum contributors, B3 envisions a future where onchain is the new online.
 
-## Create beautiful pages
+<Info>
+  B3 operates as an L3 that settles on Base, providing dedicated blockspace specifically for gaming with lightning-fast
+  transactions and sub-cent fees.
+</Info>
 
-Everything you need to create world-class documentation.
+## Core SDK Features
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+The B3 SDK provides everything you need to build exceptional onchain gaming experiences:
 
-## Need inspiration?
+<CardGroup cols={2}>
+  <Card title="AnySpend" icon="credit-card" href="/anyspend/introduction">
+    Cross-chain payments and crypto onboarding. Let users pay with any token on any chain.
+  </Card>
+  <Card title="Global Accounts" icon="users" href="/global-account/introduction">
+    Seamless authentication and user management across the B3 ecosystem.
+  </Card>
+</CardGroup>
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+## What You Can Build
+
+<Tabs>
+<Tab title="Gaming Platforms">
+  ```tsx
+  import { AnySpendStakeB3, B3Provider } from "@b3dotfun/sdk";
+
+function GameLauncher() {
+return (
+
+<B3Provider environment="production">
+  <AnySpendStakeB3 onSuccess={txHash => unlockGameFeature(txHash)} recipientAddress={playerAddress} />
+</B3Provider>
+); }
+
+````
+</Tab>
+
+<Tab title="NFT Marketplaces">
+```tsx
+import { AnySpendNFTButton } from "@b3dotfun/sdk/anyspend/react";
+
+function NFTCard() {
+  return (
+    <AnySpendNFTButton
+      nftContract={{
+        chainId: {networks.b3.mainnet.chainId},
+        contractAddress: "{examples.nftContract.contractAddress}",
+        price: "{examples.nftContract.price}",
+        currency: { symbol: "ETH", decimals: 18 }
+      }}
+      recipientAddress={userAddress}
+      onSuccess={(txHash) => showSuccess(txHash)}
+    />
+  );
+}
+````
+
+</Tab>
+
+<Tab title="DeFi Applications">
+  ```tsx
+  import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
+
+function CrossChainDeFi() {
+return (
+
+<AnySpend mode="page" recipientAddress={userAddress} onSuccess={txHash => updatePortfolio(txHash)} />
+); }
+
+````
+</Tab>
+
+<Tab title="Tournament Systems">
+```tsx
+import { AnySpendTournament } from "@b3dotfun/sdk/anyspend/react";
+
+function TournamentEntry() {
+  return (
+    <AnySpendTournament
+      tournamentId="tournament-123"
+      entryFee="1000000000000000000"
+      onSuccess={(txHash) => joinTournament(txHash)}
+    />
+  );
+}
+````
+
+</Tab>
+</Tabs>
+
+## Why Choose B3?
+
+<AccordionGroup>
+<Accordion title="🚀 Fast and Cheap">
+  B3 delivers lightning-fast transactions with sub-cent fees through dedicated blockspace for gaming, built as an L3 that settles on Base.
+</Accordion>
+
+<Accordion title="🔗 Settled on Base">
+  Base is a secure, low-cost, builder-friendly L2 incubated by Coinbase. B3 leverages Base as a settlement layer,
+  contributing to the Base ecosystem while extending its capabilities.
+</Accordion>
+
+<Accordion title="📈 Scalable">
+  Launch web2-scale games with B3's rollup engine that horizontally scales by sharding at the application layer,
+  orchestrating dedicated sidecars for computationally heavy operations.
+</Accordion>
+
+<Accordion title="🌐 Open Gaming Ecosystem">
+  No walled gardens here. Anyone can deploy and build on B3, supported by most major blockchain platforms and frameworks.
+</Accordion>
+</AccordionGroup>
+
+## Get Started
+
+<Steps>
+<Step title="Install the SDK">
+  ```bash
+  npm install {branding.packageName}
+  ```
+</Step>
+
+<Step title="Import styles and providers">
+  ```tsx import "{branding.packageName}/index.css"; import {(AnyspendProvider, B3Provider)} from "{branding.packageName}
+  "; ```
+</Step>
+
+<Step title="Build your first feature">
+  Start with our pre-built components or use headless services for custom implementations.
+  
+  <CardGroup cols={2}>
+    <Card title="Component Library" icon="puzzle-piece" href="/components">
+      Pre-built React components for common use cases
+    </Card>
+    <Card title="Headless Services" icon="code" href="/services">
+      TypeScript services for custom implementations
+    </Card>
+  </CardGroup>
+</Step>
+</Steps>
+
+## Platform Support
+
+| Feature               | React Web | React Native | Node.js |
+| --------------------- | --------- | ------------ | ------- |
+| **AnySpend**          | ✅        | 🚧           | ✅      |
+| **Global Accounts**   | ✅        | ✅           | ✅      |
+| **Headless Services** | ✅        | ✅           | ✅      |
+
+## Supported Networks
+
+<CardGroup cols={3}>
+  <Card title="Ethereum" icon="ethereum">
+    Mainnet & Sepolia testnet
+  </Card>
+  <Card title="Base" icon="circle">
+    Mainnet & Sepolia testnet
+  </Card>
+  <Card title="B3" icon="gamepad-2">
+    Mainnet & Testnet
+  </Card>
+</CardGroup>
+
+<Note>
+  More networks are being added regularly. Check our [network status page]({links.b3NetworkStatus}) for the latest
+  updates.
+</Note>
+
+## Community & Resources
+
+<CardGroup cols={2}>
+  <Card title="Live Demo" icon="play" href={links.anyspendDemo}>
+    Try AnySpend in action with real transactions
+  </Card>
+  <Card title="Discord Community" icon="discord" href={links.discord}>
+    Join our developer community for support and discussions
+  </Card>
+  <Card title="GitHub Repository" icon="github" href={links.github}>
+    Contribute to the project and report issues
+  </Card>
+  <Card title="B3 Ecosystem" icon="globe" href={links.b3Docs}>
+    Explore the broader B3 gaming ecosystem
+  </Card>
+</CardGroup>
+
+---
+
+<Check>
+  **Ready to revolutionize gaming with onchain experiences?** Start with our [Quick Start Guide](/quickstart) and begin
+  building the future of gaming today.
+</Check>

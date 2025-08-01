@@ -1,0 +1,74 @@
+import { links, contact } from "/snippets/variables.mdx";
+
+export const SupportLinks = () => (
+  <div>
+    <h3>Need Help?</h3>
+    <ul>
+      <li>
+        📚 <a href={links.b3Docs}>B3 Documentation</a>
+      </li>
+      <li>
+        💬 <a href={links.discord}>Join our Discord</a>
+      </li>
+      <li>
+        🐛 <a href={links.githubIssues}>Report Issues on GitHub</a>
+      </li>
+      <li>
+        📧 Email us at <a href={`mailto:${contact.support}`}>{contact.support}</a>
+      </li>
+    </ul>
+  </div>
+);
+
+export const CommunityResources = () => (
+  <div>
+    <h3>Community & Resources</h3>
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+      <div>
+        <h4>🎮 Try It Live</h4>
+        <p>
+          <a href={links.anyspendDemo}>AnySpend Demo</a> - Try our SDK in action
+        </p>
+      </div>
+      <div>
+        <h4>💬 Get Support</h4>
+        <p>
+          <a href={links.discord}>Discord Community</a> - Join the conversation
+        </p>
+      </div>
+      <div>
+        <h4>🔧 Contribute</h4>
+        <p>
+          <a href={links.github}>GitHub Repository</a> - Contribute to the project
+        </p>
+      </div>
+      <div>
+        <h4>🌐 Ecosystem</h4>
+        <p>
+          <a href={links.b3Docs}>B3 Docs</a> - Explore the broader ecosystem
+        </p>
+      </div>
+    </div>
+  </div>
+);
+
+export const ContactInfo = ({ type = "general" }) => {
+  const email =
+    type === "support"
+      ? contact.support
+      : type === "partnerships"
+        ? contact.partnerships
+        : type === "developer"
+          ? contact.developer
+          : contact.support;
+
+  return (
+    <div>
+      <p>
+        📧 <a href={`mailto:${email}`}>{email}</a>
+      </p>
+    </div>
+  );
+};
+
+;

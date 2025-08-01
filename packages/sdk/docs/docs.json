@@ -1,20 +1,20 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "B3 SDK",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#007AFF",
+    "light": "#4DA6FF",
+    "dark": "#0056CC"
   },
   "favicon": "/favicon.svg",
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "SDK Guides",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Getting Started",
             "pages": [
               "index",
               "quickstart",
@@ -22,47 +22,86 @@
             ]
           },
           {
-            "group": "Customization",
+            "group": "AnySpend",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "anyspend/introduction",
+              "anyspend/installation",
+              "anyspend/components",
+              "anyspend/hooks",
+              "anyspend/examples",
+              "anyspend/error-handling"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Global Accounts",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
+              "global-account/introduction",
+              "global-account/authentication",
+              "global-account/permissions",
+              "global-account/hooks",
+              "global-account/examples"
             ]
           },
           {
-            "group": "AI tools",
+            "group": "Shared Utilities",
             "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "shared/chains",
+              "shared/utils",
+              "shared/thirdweb"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "API Reference",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "AnySpend API",
             "pages": [
-              "api-reference/introduction"
+              "api-reference/anyspend/overview",
+              "api-reference/anyspend/quotes",
+              "api-reference/anyspend/orders",
+              "api-reference/anyspend/tokens",
+              "api-reference/anyspend/onramp"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Global Accounts API",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api-reference/global-account/authentication",
+              "api-reference/global-account/profiles",
+              "api-reference/global-account/permissions",
+              "api-reference/global-account/sessions"
+            ]
+          },
+          {
+            "group": "Webhooks",
+            "pages": [
+              "api-reference/webhooks/overview",
+              "api-reference/webhooks/order-status",
+              "api-reference/webhooks/transaction-complete"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Examples",
+        "groups": [
+          {
+            "group": "Integration Examples",
+            "pages": [
+              "examples/gaming-platform",
+              "examples/nft-marketplace",
+              "examples/defi-application",
+              "examples/tournament-system"
+            ]
+          },
+          {
+            "group": "Framework Guides",
+            "pages": [
+              "examples/nextjs",
+              "examples/react-native",
+              "examples/vanilla-js"
             ]
           }
         ]
@@ -71,38 +110,42 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
+          "anchor": "B3 Ecosystem",
+          "href": "https://docs.b3.fun",
+          "icon": "globe"
         },
         {
-          "anchor": "Community",
-          "href": "https://mintlify.com/community",
-          "icon": "slack"
+          "anchor": "Discord",
+          "href": "https://discord.gg/b3dotfun",
+          "icon": "discord"
         },
         {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
+          "anchor": "GitHub",
+          "href": "https://github.com/b3-fun/b3",
+          "icon": "github"
         }
       ]
     }
   },
   "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
+    "light": "https://cdn.b3.fun/b3_logo.svg",
+    "dark": "https://cdn.b3.fun/b3_logo.svg"
   },
   "navbar": {
     "links": [
       {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "label": "Live Demo",
+        "href": "https://anyspend.com"
+      },
+      {
+        "label": "B3 Mainnet",
+        "href": "https://docs.b3.fun"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "label": "Get Started",
+      "href": "/quickstart"
     }
   },
   "contextual": {
@@ -119,9 +162,9 @@
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "x": "https://x.com/b3dotfun",
+      "github": "https://github.com/b3-fun/b3",
+      "discord": "https://discord.gg/b3dotfun"
     }
   }
 }

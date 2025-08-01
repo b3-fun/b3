@@ -1,0 +1,81 @@
+import { branding, examples, networks } from "/snippets/variables.mdx";
+
+export const InstallationExample = () => (
+  <div>
+    ```bash npm install {branding.packageName}
+    ```
+  </div>
+);
+
+export const BasicImportsExample = () => (
+  <div>
+    ```tsx import "{branding.packageName}/index.css"; import {{ AnyspendProvider, B3Provider }} from "
+    {branding.packageName}"; ```
+  </div>
+);
+
+export const NFTButtonExample = () => (
+  <div>
+    ```tsx
+    import {{ AnySpendNFTButton }} from "{branding.packageName}/anyspend/react";
+
+    function NFTCard() {{
+      return (
+        <AnySpendNFTButton
+          nftContract={{{{
+            chainId: {networks.b3.mainnet.chainId},
+            contractAddress: "{examples.nftContract.contractAddress}",
+            price: "{examples.nftContract.price}",
+            currency: {{ symbol: "ETH", decimals: 18 }}
+          }}}}
+          recipientAddress={{userAddress}}
+          onSuccess={{(txHash) => showSuccess(txHash)}}
+        />
+      );
+    }}
+    ```
+
+  </div>
+);
+
+export const BasicAnySpendExample = () => (
+  <div>
+    ```tsx
+    import {{ AnySpend }} from "{branding.packageName}/anyspend/react";
+
+    function CrossChainSwap() {{
+      return (
+        <AnySpend
+          mode="page"
+          recipientAddress={{userAddress}}
+          onSuccess={{(txHash) => updatePortfolio(txHash)}}
+        />
+      );
+    }}
+    ```
+
+  </div>
+);
+
+export const AuthenticationExample = () => (
+  <div>
+    ```tsx
+    import {{ B3Provider, SignInWithB3 }} from "{branding.packageName}/global-account/react";
+
+    function App() {{
+      return (
+        <B3Provider environment="production">
+          <SignInWithB3
+            provider={{{{ strategy: "google" }}}}
+            partnerId="your-partner-id"
+            onLoginSuccess={{(globalAccount) => {{
+              console.log("Authenticated:", globalAccount);
+            }}}}
+          />
+        </B3Provider>
+      );
+    }}
+    ```
+
+  </div>
+);
