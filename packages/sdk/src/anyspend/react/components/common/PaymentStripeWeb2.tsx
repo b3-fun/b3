@@ -337,24 +337,24 @@ function StripePaymentForm({
 }
 
 // Add tooltip component
-function Tooltip({ children, content }: { children: React.ReactNode; content: string }) {
-  const [isVisible, setIsVisible] = useState(false);
+// function Tooltip({ children, content }: { children: React.ReactNode; content: string }) {
+//   const [isVisible, setIsVisible] = useState(false);
 
-  return (
-    <div className="relative inline-block">
-      <div onMouseEnter={() => setIsVisible(true)} onMouseLeave={() => setIsVisible(false)} className="cursor-help">
-        {children}
-      </div>
-      {isVisible && (
-        <div className="absolute bottom-full left-1/2 z-50 mb-2 w-80 -translate-x-1/2">
-          <div className="bg-as-on-surface-1 border-as-stroke text-as-primary rounded-lg border p-3 text-sm shadow-lg">
-            <div className="whitespace-pre-line">{content}</div>
-            <div className="absolute left-1/2 top-full -translate-x-1/2">
-              <div className="border-t-as-on-surface-1 border-l-4 border-r-4 border-t-4 border-transparent"></div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+//   return (
+//     <div className="relative inline-block">
+//       <div onMouseEnter={() => setIsVisible(true)} onMouseLeave={() => setIsVisible(false)} className="cursor-help">
+//         {children}
+//       </div>
+//       {isVisible && (
+//         <div className="absolute bottom-full left-1/2 z-50 mb-2 w-80 -translate-x-1/2">
+//           <div className="bg-as-on-surface-1 border-as-stroke text-as-primary rounded-lg border p-3 text-sm shadow-lg">
+//             <div className="whitespace-pre-line">{content}</div>
+//             <div className="absolute left-1/2 top-full -translate-x-1/2">
+//               <div className="border-t-as-on-surface-1 border-l-4 border-r-4 border-t-4 border-transparent"></div>
+//             </div>
+//           </div>
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
