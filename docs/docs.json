@@ -133,7 +133,7 @@
     "primary": {
       "type": "button",
       "label": "Get Started",
-      "href": "/quickstart"
+      "href": "https://docs.b3.fun/quickstart"
     }
   },
   "contextual": {
