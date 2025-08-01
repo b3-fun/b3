@@ -1,0 +1,255 @@
+---
+title: "Constitution"
+description: "Decision-making framework for the B3 DAO governance"
+---
+
+# The Constitution of the B3 DAO
+
+Decision-making framework for the B3 DAO governance
+
+<div style={{ textAlign: "center", margin: "2rem 0", fontWeight: "bold", letterSpacing: "2px" }}>
+  ✦ WHAT IS BP? ✦ ASK QUESTIONS ✦ GET ANSWERS ✦
+</div>
+
+This document lays out the Constitution of the B3 DAO (the "**Constitution**").
+
+Some of the rules and procedures of this Constitution will be enforced directly by smart contracts on a blockchain, and some will not. Actions taken under this Constitution may be on-chain or off-chain actions. On-chain actions are those that are actuated directly by the governance smart contracts of the DAO as transactions on a blockchain. Off-chain actions are those that are actuated by other means.
+
+This Constitution also includes some "recommended guidelines" which are non-binding but strongly recommended as good governance practice.
+
+This Constitution describes the procedures by which it may be amended and lays out the governance framework of the B3 DAO and the Player1 Foundation.
+
+## Definitions
+
+<AccordionGroup>
+<Accordion title="B3IP">
+A proposal put forth by a Tokenholder to a vote in accordance with the B3IP Process.
+</Accordion>
+
+<Accordion title="B3IP Process">
+The rules and procedures of submitting and voting on B3IPs as described in this Constitution, in particular "Section 2: DAO Proposals and Voting Procedures", as may be amended from time to time pursuant to a B3IP.
+</Accordion>
+
+<Accordion title="B3 DAO">
+The decentralized community of individuals that own a Token, as evidenced by the Base or B3 chains.
+</Accordion>
+
+<Accordion title="DAO Treasury">
+Player1 Foundation property held in a governance smart contract on Base governed directly by the Tokenholders and the Security Council via onchain voting mechanisms, as entrusted by the Player1 Foundation.
+</Accordion>
+
+<Accordion title="Token">
+The governing token of the B3 DAO, known as $B3, as represented on the Base or B3 chains.
+</Accordion>
+
+<Accordion title="Tokenholder">
+Any holder of a Token.
+</Accordion>
+
+<Accordion title="Votable Tokens">
+All Tokens in existence (i.e. 100,000,000,000 $B3 tokens).
+</Accordion>
+</AccordionGroup>
+
+## Section 1: Chain "administration"
+
+This Constitution describes the decision-making framework for the B3 DAO governance.
+
+The B3 Protocol has two sets of chain "administrators" who have the power to take administrative actions that change the B3 core protocol and code and/or alter any of its core parameters. With the $B3 token generation event and subsequent creation of the B3 DAO having occurred, Player1 Foundation has entrusted "administrator" privileges on B3 to both the Tokenholders and the Security Council of the B3 Protocol. In the event that a B3IP may violate any applicable law or this Constitution (as determined by the Player1 Foundation), the Player1 Foundation may notify the Security Council of its obligation to prevent such B3IP from going into effect.
+
+The "administrator" will also have the power to upgrade certain associated Layer 2 contracts. The "administrator" will control affordances on the chain such as updating the contract implementation of any of B3's core protocol contracts, and adjusting system parameters via, e.g., setter methods in the B3 Administrator precompile.
+
+## Section 2: DAO Proposals and Voting Procedures
+
+The following process governs the rules and procedures by which the B3 DAO may propose, vote on and implement B3IPs. No B3IP may be in violation of applicable laws, in particular sanctions-related regulations.
+
+### B3IP Process Phases
+
+<Steps>
+<Step title="Phase 1: Temperature Check / Discussion Period (1 week) (Optional but Recommended)">
+The B3IP is suggested on the public forum and discussed/debated for 1 week. The B3IP should be accompanied by a poll or other method as determined pursuant to the governance process. This Phase 1 should last for a period of 1 week to allow sufficient discussion and feedback. In the event that a B3IP skips this phase, as a matter of good governance practice, it is recommended that voters consider voting to reject it.
+</Step>
+
+<Step title="Phase 2: Formal B3IP and call for voting (3 days)">
+The B3IP is submitted via governance contracts on Base, with a user interface available on Agora. The B3IP proposer is required to have an address that is delegated at least **30,000,000 Votable Tokens**.
+
+After 3 days, a voter distribution snapshot will be taken and the voting period will begin; this gives interested parties time to discuss the B3IP and gather votes before the voter distribution snapshot is taken.
+
+Each B3IP must be labeled as Constitutional or Non-Constitutional.
+</Step>
+
+<Step title="Phase 3: DAO votes on B3IP, on Base (14 days)">
+During this Phase 3, the B3 DAO will be able to vote directly on-chain through Base. A successful vote requires:
+
+**Constitutional B3IPs:**
+- Proposals pass if they reach **5%** of all Votable Tokens voting "yes" (approval quorum) 
+- At least **55%** of votes cast are "yes" votes (approval threshold)
+
+**Non-Constitutional B3IPs:**
+- Proposals pass if they reach **3%** of all Votable Tokens voting "yes" (approval quorum)
+- At least **50%** of votes cast are "yes" votes (approval threshold)
+</Step>
+
+<Step title="Phase 4: L2 Waiting Period (3 days)">
+After a B3IP has passed in Phase 3, there will be a 3 day waiting period before the B3IP may be executed. This delay is intended to provide all Tokenholders the opportunity to exit the protocol if they are not happy with a governance outcome but were not previously aware of the vote or otherwise inadvertently missed during the prior phases.
+</Step>
+
+<Step title="Phase 5: Initiate and Finalize an L3-to-L2 Message (at least 1 challenge period of the rollup protocol)">
+Except in the case of a Non-Constitutional B3IP involving the DAO Treasury (which lives on Base), after the 3 day waiting period in Phase 4 has passed, a cross-chain governor message is sent to B3 from Base, after which a B3-to-Base message is sent indicating that the B3IP was passed. The rationale behind the cross-chain message from Base to B3 is that while voting occurs on Base, the Constitutional B3IP is effectuated on B3. When this message is finalized on Base, anyone can redeem it to complete this step and initiate the next step. This step ensures that the completion of the B3 waiting period will be recognized on Base after any withdrawals initiated during or soon after the voting period have been recognized on Base.
+</Step>
+
+<Step title="Phase 6: L2 Waiting Period (7 days)">
+Following the completion of Phase 5, there will be an additional 7 day waiting period. This ensures that users who initiated withdrawals or other B3-to-Base messages have time to execute them on Base before the B3IP takes effect.
+</Step>
+
+<Step title="Phase 7: Implementation">
+The B3IP is fully executed and implemented. This may happen on B3 or via a transaction sent from B3 to Base. In the case of a Non-Constitutional B3IP involving the DAO Treasury, execution and implementation will occur directly on Base.
+</Step>
+</Steps>
+
+<Note>
+This B3IP process as specified will typically require **37 days** from the beginning of the temperature check in Phase 1 until a B3IP is finally executed in Phase 7 for a Constitutional B3IP, or **27 days** for a Non-Constitutional B3IP. A B3IP may optionally specify further delay before its implementation.
+</Note>
+
+### B3IP Types
+
+<Tabs>
+<Tab title="Constitutional B3IP">
+**A Constitutional B3IP** is one that relates to:
+
+- **Process**: Modifies the text or procedures of this Constitution
+- **Software update**: Installs or modifies software on B3
+- **Core**: Takes any action that requires "administrator" permission on B3
+</Tab>
+
+<Tab title="Non-Constitutional B3IP">
+**A Non-Constitutional B3IP** is one that is not considered a "Constitutional B3IP" including:
+
+- **Funding**: Requests funds/grants or otherwise proposes how to spend or allocate funds from the DAO Treasury. There are four types of Funding B3IPs:
+  - **Ecosystem Development**: A B3IP allocating DAO Treasury funds to support game developers, community initiatives or marketing campaigns to drive adoption of the B3 Protocol
+  - **Grant Programs**: A B3IP designing and approving funding mechanisms for developers or other contributors building on the B3 Protocol
+  - **Game Publishing and Promotions**: A B3IP determining games to onboard onto the B3 Protocol publisher stack or promote on platforms
+  - **Strategic Partnerships**: A B3IP approving collaborations with external organizations to expand the reach and utility of the B3 Protocol
+
+- **Informational**: Provides general guidelines or information to the community but does not otherwise propose a new feature or update
+</Tab>
+</Tabs>
+
+### Recommended Guidelines
+
+<AccordionGroup>
+<Accordion title="Voting Guidelines">
+- DAO members should vote against any B3IP that is incorrectly labeled.
+</Accordion>
+
+<Accordion title="B3IP Content Requirements">
+A B3IP should include:
+
+- **Abstract**: Two or three sentences that summarize the B3IP
+- **Motivation**: A statement on why the B3 DAO should implement the B3IP
+- **Rationale**: An explanation of how the B3IP aligns with the B3 DAO's mission and values
+- **Key Terms (optional)**: Definitions of any terms within the proposal that are unique to the proposal, new to the B3 DAO, and/or industry-specific
+- **Specifications**: A detailed breakdown of the platforms and technologies that will be used
+- **Risks and Security**: A detailed breakdown of the potential security, technical, legal, reputational and other applicable risks
+- **Steps to Implement**: The steps to implement the B3IP, including associated costs, manpower, and other resources for each step where applicable. For the avoidance of doubt, any B3IPs involving transactions with third parties (such as grants) will need to ensure that applicable legal documentation and procedures are also included
+- **Timeline**: Relevant timing details, including but not limited to start date, milestones, and completion dates
+- **Overall Cost**: The total cost to implement the B3IP
+- The B3IP author can add additional fields to any template if necessary to fully communicate the intentions, specifics and implications of the B3IP
+</Accordion>
+
+<Accordion title="Resubmitted B3IPs">
+Resubmitted B3IPs should also include:
+
+- A link to the original B3IP
+- Reasons such original B3IP was not approved
+- Changes that have been made and why it should now be approved
+- Any additional fields to any template if necessary to fully communicate the changes made and the intentions, specifics and implications of such resubmitted B3IP
+</Accordion>
+</AccordionGroup>
+
+## Section 3: The Security Council
+
+The Security Council is a committee of **5 members who are signers of a multi-sig wallet**, which has powers to perform certain Emergency Actions and Non-Emergency Actions, as delegated to it by Player1 Foundation, and is responsible for upholding this B3 DAO Constitution. Through the submission, approval and implementation of a Constitutional B3IP, the B3 DAO is able to modify the Security Council's powers or to eliminate the Security Council entirely.
+
+Equivalent "copies" of the Security Council multi-sig contracts exist, one on Base and another on B3.
+
+### Emergency Actions
+
+<Card title="Emergency Actions" icon="alert-triangle">
+The Security Council has the power to execute any software upgrade or perform other required actions with no delay in order to respond to a security emergency, should one arise (such actions, "**Emergency Actions**"). Performing any Emergency Action requires a **4-of-5 approval** from the Security Council. The Security Council must not use its power to perform Emergency Actions except in a true security emergency, such as a critical vulnerability that could significantly compromise the integrity, confidentiality, or availability of B3.
+
+After performing any Emergency Action, the Security Council must issue a full transparency report (at an appropriate time after the security emergency has passed) to explain what was done and why such Emergency Action was justified.
+
+The B3 DAO is able to curtail or eliminate the Security Council's power to perform Emergency Actions via approval and implementation of a Constitutional B3IP.
+</Card>
+
+### Non-Emergency Actions
+
+<Card title="Non-Emergency Actions" icon="settings">
+The Security Council may also approve and implement routine software upgrades, routine maintenance and other parameter adjustments in a non-emergency setting (such actions, "**Non-Emergency Actions**"), which require a **3-of-5** approval in order to take effect. Any Non-Emergency Action, after approval by the Security Council, will bypass Phases 1 to 3 of the B3IP process and instead directly go through Phases 4 to 7 of the B3IP process (as applicable), to provide a delay before any Non-Emergency Action is deployed. The Security Council may optionally specify additional delays before deployment.
+
+The B3 DAO is able to curtail or eliminate the Security Council's power to perform Non-Emergency Actions via approval and implementation of a Constitutional B3IP.
+</Card>
+
+## Section 4: Security Council Elections
+
+The Security Council has **5 members**, who are divided into two Cohorts of 2 to 3 members, who serve **18-month terms**. The 'Second Cohort' will serve a **24-month term** given the staggered elections but all future Cohorts going forward will serve 18-month terms.
+
+The initial Security Council Cohorts were determined by randomly splitting the 5 members into two cohorts – 2 members in the 'First Cohort' and 3 members in the 'Second Cohort'. The members of the initial Security Council Cohorts are detailed in a transparency report here.
+
+<Info>
+The first Security Council election process is scheduled to begin on the **15th of June 2026** or the earliest possible date. This first election replaces the 'First Cohort'. The next election replaces the 'Second Cohort' and so forth.
+</Info>
+
+The date chosen for the first election will form the basis for all future elections.
+
+All Security Council members are expected to serve their term until the election is complete and the new Security Council members are installed.
+
+### Election Timeline
+
+The following timeline governs an election that starts at time T:
+
+<Steps>
+<Step title="Contender submission (T until T+7 days)">
+Any DAO member may declare their candidacy for the Security Council, provided that a current Security Council member in one cohort may not be a candidate for a seat in the other cohort.
+</Step>
+
+<Step title="Nominee selection (T+7 until T+14 days)">
+Each DAO member or delegate may vote for their declared contender. Each token may be cast for one contender. To the extent that there are more than six contenders, each eligible contender must be supported by pledged votes representing at least **0.2%** of all Votable Tokens.
+</Step>
+
+<Step title="Compliance process (T+14 until T+28 days)">
+All candidates will cooperate with Player1 Foundation and complete the compliance process. Player1 Foundation is responsible for removing any candidates that fail the compliance process. In the event that fewer than 2 or 3 (as applicable) candidates are supported by pledged votes representing at least 0.2% of all Votable Tokens, the current Security Council members whose seats are up for election may become candidates (as randomly selected out of their Cohort) until there are 2 or 3 (as applicable) candidates.
+</Step>
+
+<Step title="Member election (T+28 until T+49 days)">
+Each DAO member or delegate may vote for any declared candidate. Each token may be cast for one candidate.
+</Step>
+
+<Step title="Installation (T+49 days)">
+The process for replacing the cohort of Security Council members with the 2 or 3 (as applicable) candidates who received the most votes will be activated. It may take several days until the new Security Council members are installed.
+</Step>
+</Steps>
+
+Player1 Foundation is allocated 14 days for the Compliance process and it should be executed between the Nominee selection and Member election. Player1 Foundation has flexibility to update its compliance policy for every new election. Furthermore, Player1 Foundation maintains the right to issue new procedures and guidelines for off-chain components of the Security Council election. All efforts should be made by Player1 Foundation to ensure an orderly, fair, and transparent election.
+
+### Best Practices and Guidelines
+
+<Warning>
+As a matter of best practice for maintaining an independent Security Council, no single organization should be overly represented in the Security Council. In particular, there should not be more than 1 candidate associated with a single entity or group of entities being elected to the Security Council, thereby ensuring that there will be no single entity or group of entities able to control or even veto a Security Council vote.
+
+Furthermore, no candidate with conflicts of interest that would prevent them from acting in the best interests of the B3 DAO, B3 Protocol and/or Player1 Foundation should be elected to the Security Council. Potential conflicts of interest could be, but are not limited to, affiliations with direct B3 competitors, proven histories of exploiting projects and others.
+</Warning>
+
+The DAO may approve and implement a Constitutional B3IP to change the rules governing future Security Council elections, but the B3IP process may not be used to intervene in an ongoing election.
+
+Security Council members may only be removed prior to the end of their terms if at least **3 of the Security Council members** vote in favor of removal.
+
+The seats of Security Council members who have been removed prior to the end of their respective terms shall remain unfilled until the next election that such seats are up for appointment, unless otherwise replaced prior to such next election by a vote of at least 3 of the Security Council members, in which case such seat shall be up for appointment at the next such election. The Security Council may not re-appoint a removed member and they can only be re-elected via the election voting system.
+
+---
+
+<div style={{ textAlign: "center", margin: "2rem 0", fontSize: "0.9rem", opacity: 0.7 }}>
+  © 2025 Player1 Foundation<br/>
+  Discover B3 - the Based L3
+</div>

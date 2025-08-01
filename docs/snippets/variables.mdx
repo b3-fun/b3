@@ -1,79 +1,58 @@
 export const links = {
-  // B3 Ecosystem
   b3Docs: "https://docs.b3.fun",
   b3NetworkStatus: "https://docs.b3.fun/network-status",
   b3Mainnet: "https://docs.b3.fun/mainnet",
   b3Bridge: "https://docs.b3.fun/bridge",
   b3Testnet: "https://docs.b3.fun/testnet",
-
-// AnySpend
-anyspendDemo: "https://anyspend.com",
-anyspendAPI: "https://api.anyspend.com",
-
-// Social & Community
-discord: "https://discord.gg/b3dotfun",
-github: "https://github.com/b3-fun/b3",
-githubIssues: "https://github.com/b3-fun/b3/issues",
-twitter: "https://x.com/b3dotfun",
-
-// Developer Resources
-baseDocs: "https://docs.base.org",
-thirdwebDocs: "https://portal.thirdweb.com",
-
-// Package
-npmPackage: "https://www.npmjs.com/package/@b3dotfun/sdk",
+  anyspendDemo: "https://anyspend.com",
+  anyspendAPI: "https://api.anyspend.com",
+  discord: "https://discord.gg/b3dotfun",
+  github: "https://github.com/b3-fun/b3",
+  githubIssues: "https://github.com/b3-fun/b3/issues",
+  twitter: "https://x.com/b3dotfun",
+  baseDocs: "https://docs.base.org",
+  thirdwebDocs: "https://portal.thirdweb.com",
+  npmPackage: "https://www.npmjs.com/package/@b3dotfun/sdk"
 };
 
 export const branding = {
   name: "B3 SDK",
   tagline: "Build the future of onchain gaming",
   description: "The comprehensive B3 development toolkit for building exceptional onchain gaming experiences",
-
-// Network Information
-b3ChainId: 8333,
-b3TestnetChainId: 1993,
-baseChainId: 8453,
-baseSepoliaChainId: 84532,
-
-// Package Information
-packageName: "@b3dotfun/sdk",
-currentVersion: "latest",
-
-// Brand Colors
-colors: {
-primaryBlue: "#007AFF",
-grey: "#6B7280",
-white: "#FFFFFF",
-black: "#000000"
-},
-
-// Brand Assets
-assets: {
-fontsCSS: "https://cdn.b3.fun/fonts.css",
-logoBlueLight: "/logo/light.svg",
-logoBlueDark: "/logo/dark.svg",
-logoWhite: "/logo/white.svg",
-logoBlack: "/logo/black.svg"
-},
-
-// Typography
-fonts: {
-primary: '"Neue Montreal Medium", sans-serif',
-secondary: '"Calibre Bold", sans-serif',
-available: [
-"Neue Montreal Bold",
-"Neue Montreal Regular",
-"Neue Montreal Book",
-"Neue Montreal Medium",
-"Neue Montreal Semibold",
-"Calibre Bold",
-"Calibre Heavy",
-"Pack"
-]
-},
-
-// Brand Values
-values: ["COMMUNITY DRIVEN", "FUN", "ECOSYSTEM ALIGNED"]
+  b3ChainId: 8333,
+  b3TestnetChainId: 1993,
+  baseChainId: 8453,
+  baseSepoliaChainId: 84532,
+  packageName: "@b3dotfun/sdk",
+  currentVersion: "latest",
+  colors: {
+    primaryBlue: "#007AFF",
+    grey: "#6B7280",
+    white: "#FFFFFF",
+    black: "#000000"
+  },
+  assets: {
+    fontsCSS: "https://cdn.b3.fun/fonts.css",
+    logoBlueLight: "/logo/light.svg",
+    logoBlueDark: "/logo/dark.svg",
+    logoWhite: "/logo/white.svg",
+    logoBlack: "/logo/black.svg"
+  },
+  fonts: {
+    primary: '"Neue Montreal Medium", sans-serif',
+    secondary: '"Calibre Bold", sans-serif',
+    available: [
+      "Neue Montreal Bold",
+      "Neue Montreal Regular", 
+      "Neue Montreal Book",
+      "Neue Montreal Medium",
+      "Neue Montreal Semibold",
+      "Calibre Bold",
+      "Calibre Heavy",
+      "Pack"
+    ]
+  },
+  values: ["COMMUNITY DRIVEN", "FUN", "ECOSYSTEM ALIGNED"]
 };
 
 export const networks = {
@@ -83,14 +62,14 @@ export const networks = {
       chainId: 1,
       name: "Ethereum Mainnet",
       rpc: "https://ethereum.publicnode.com",
-      explorer: "https://etherscan.io",
+      explorer: "https://etherscan.io"
     },
     sepolia: {
       chainId: 11155111,
-      name: "Sepolia Testnet",
+      name: "Sepolia Testnet", 
       rpc: "https://sepolia.infura.io/v3/",
-      explorer: "https://sepolia.etherscan.io",
-    },
+      explorer: "https://sepolia.etherscan.io"
+    }
   },
   base: {
     name: "Base",
@@ -98,14 +77,14 @@ export const networks = {
       chainId: 8453,
       name: "Base Mainnet",
       rpc: "https://mainnet.base.org",
-      explorer: "https://basescan.org",
+      explorer: "https://basescan.org"
     },
     sepolia: {
       chainId: 84532,
       name: "Base Sepolia",
       rpc: "https://sepolia.base.org",
-      explorer: "https://sepolia.basescan.org",
-    },
+      explorer: "https://sepolia.basescan.org"
+    }
   },
   b3: {
     name: "B3",
@@ -114,44 +93,41 @@ export const networks = {
       name: "B3 Mainnet",
       rpc: "https://mainnet-rpc.b3.fun",
       rpcWs: "wss://mainnet-rpc.b3.fun",
-      explorer: "https://explorer.b3.fun",
+      explorer: "https://explorer.b3.fun"
     },
     testnet: {
       chainId: 1993,
       name: "B3 Testnet",
       rpc: "https://testnet-rpc.b3.fun",
       rpcWs: "wss://testnet-rpc.b3.fun",
-      explorer: "https://testnet-explorer.b3.fun",
-    },
-  },
+      explorer: "https://testnet-explorer.b3.fun"
+    }
+  }
 };
 
 export const contact = {
   support: "support@b3.fun",
   partnerships: "partnerships@b3.fun",
-  developer: "developers@b3.fun",
+  developer: "developers@b3.fun"
 };
 
 export const examples = {
   nftContract: {
     chainId: 8333,
     contractAddress: "0x9c275ff1634519E9B5449ec79cd939B5F900564d",
-    price: "500000000000000000", // 0.5 ETH in wei
+    price: "500000000000000000",
     priceFormatted: "0.5",
     currency: {
       chainId: 8333,
       address: "0x0000000000000000000000000000000000000000",
       name: "Ether",
       symbol: "ETH",
-      decimals: 18,
-    },
+      decimals: 18
+    }
   },
-
-sampleAddresses: {
-user: "0x742d35Cc6E2486D1c9Ff4f56E6B5e1E4AF2F1234",
-contract: "0x9c275ff1634519E9B5449ec79cd939B5F900564d",
-token: "0xA0b86a33E6c51c7C36c654d6C9e7b8F5d4a8b5c5",
-},
+  sampleAddresses: {
+    user: "0x742d35Cc6E2486D1c9Ff4f56E6B5e1E4AF2F1234",
+    contract: "0x9c275ff1634519E9B5449ec79cd939B5F900564d",
+    token: "0xA0b86a33E6c51c7C36c654d6C9e7b8F5d4a8b5c5"
+  }
 };
-
-;

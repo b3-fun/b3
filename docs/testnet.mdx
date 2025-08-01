@@ -1,0 +1,206 @@
+
+# B3 Testnet (Sepolia)
+
+<div style={{ marginBottom: '16px' }}>
+  <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '4px 12px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold' }}>TESTNET</span>
+</div>
+
+Connecting to the B3 Testnet is easy!
+
+## Chain Information
+
+<CardGroup cols={2}>
+  <Card title="Chain ID">
+    ```text
+    {networks.b3.testnet.chainId}
+    ```
+    <Note>
+    Fun fact: 1993 is the year "Doom" was released, which revolutionized the first-person shooter genre.
+    </Note>
+  </Card>
+  
+  <Card title="Native Token">
+    **Ether (ETH)**
+    
+    The same token used on Ethereum mainnet, but for testing purposes only.
+  </Card>
+</CardGroup>
+
+### Network Endpoints
+
+<Tabs>
+<Tab title="HTTP RPC">
+  ```text RPC Endpoint
+  {networks.b3.testnet.rpc}
+  ```
+  
+  Use this endpoint for standard HTTP requests to the B3 testnet.
+</Tab>
+
+<Tab title="WebSocket RPC">
+  ```text WebSocket Endpoint  
+  {networks.b3.testnet.rpcWs}
+  ```
+  
+  Use this endpoint for real-time WebSocket connections to the B3 testnet.
+</Tab>
+</Tabs>
+
+### Block Explorer
+
+<Card title="B3 Testnet Explorer" icon="search" href="{networks.b3.testnet.explorer}" cta="View Explorer" horizontal>
+  Explore transactions, blocks, and contracts on the B3 testnet
+</Card>
+
+## Quick Links
+
+<CardGroup cols={3}>
+  <Card title="Testnet Bridge" icon="arrow-right-left" href="https://testnet-bridge.b3.fun" cta="Bridge Assets">
+    Bridge assets to B3 testnet for testing
+  </Card>
+  
+  <Card title="Faucet" icon="droplets" href="https://testnet-faucet.b3.fun" cta="Get Test ETH">
+    Get free testnet ETH for development and testing
+  </Card>
+  
+  <Card title="Developer Tools" icon="wrench" href="/ecosystem-tools" cta="Explore Tools">
+    Discover tools and infrastructure for building on B3
+  </Card>
+</CardGroup>
+
+## Adding B3 Testnet to Your Wallet
+
+<Steps>
+<Step title="Open Wallet Settings">
+  Open your wallet (MetaMask, Coinbase Wallet, etc.) and navigate to network settings.
+</Step>
+
+<Step title="Add Custom Network">
+  Click "Add Network" or "Add Custom Network" depending on your wallet.
+</Step>
+
+<Step title="Enter Network Details">
+  Fill in the following information:
+  
+  - **Network Name**: B3 Testnet
+  - **Chain ID**: {networks.b3.testnet.chainId}
+  - **RPC URL**: {networks.b3.testnet.rpc}
+  - **Currency Symbol**: ETH
+  - **Block Explorer URL**: {networks.b3.testnet.explorer}
+</Step>
+
+<Step title="Save and Switch">
+  Save the network configuration and switch to B3 Testnet.
+  
+  <Check>
+  You're now connected to B3 Testnet! You can start testing your applications.
+  </Check>
+</Step>
+</Steps>
+
+## Why Use Testnets?
+
+Testnets provide a safe, controlled, and efficient environment for testing and experimentation. Test networks, or testnets, serve as essential tools for you to test your smart contracts before deploying them to the mainnet, minimizing the risk of failures or vulnerabilities in live applications.
+
+### Key Benefits
+
+<CardGroup cols={2}>
+  <Card title="Risk-Free Testing" icon="shield-check">
+    Test your smart contracts and applications without risking real funds or affecting live users.
+  </Card>
+  
+  <Card title="Realistic Environment" icon="globe">
+    Simulate mainnet conditions including network latency, gas fees, and transaction throughput.
+  </Card>
+  
+  <Card title="Cost-Effective Development" icon="dollar-sign">
+    Use free testnet tokens instead of expensive mainnet ETH for development and testing.
+  </Card>
+  
+  <Card title="Learning Platform" icon="graduation-cap">
+    Perfect environment for developers to learn and experiment with blockchain development.
+  </Card>
+</CardGroup>
+
+By simulating the mainnet environment, testnets offer a realistic representation of real-world conditions, complete with network latency, gas fees, and other factors that impact the performance of smart contracts. This accurate representation enables you to identify potential issues, optimize your applications, and ensure the best possible user experience for your end-users.
+
+Moreover, testnets allow you to familiarize yourself with the B3 ecosystem and gain valuable hands-on experience, making them indispensable tools for both seasoned developers and newcomers to the world of blockchain development.
+
+## Development Workflow
+
+<Steps>
+<Step title="Get Testnet ETH">
+  Use the [testnet faucet](https://testnet-faucet.b3.fun) to get free ETH for testing.
+</Step>
+
+<Step title="Deploy and Test">
+  Deploy your smart contracts to the testnet and thoroughly test all functionality.
+</Step>
+
+<Step title="Debug and Optimize">
+  Use the block explorer and development tools to debug issues and optimize performance.
+</Step>
+
+<Step title="Deploy to Mainnet">
+  Once testing is complete, deploy your production-ready contracts to B3 mainnet.
+  
+  <Warning>
+  Always test thoroughly on testnet before deploying to mainnet with real funds.
+  </Warning>
+</Step>
+</Steps>
+
+## Testnet vs Mainnet
+
+<AccordionGroup>
+<Accordion title="Network Configuration">
+  **Testnet**:
+  - Chain ID: {networks.b3.testnet.chainId}
+  - RPC: {networks.b3.testnet.rpc}
+  - Explorer: {networks.b3.testnet.explorer}
+  
+  **Mainnet**:
+  - Chain ID: {networks.b3.mainnet.chainId}
+  - RPC: {networks.b3.mainnet.rpc}
+  - Explorer: {networks.b3.mainnet.explorer}
+</Accordion>
+
+<Accordion title="Token Value">
+  **Testnet**: ETH has no real-world value - used only for testing
+  
+  **Mainnet**: ETH has real-world value and costs money to acquire
+</Accordion>
+
+<Accordion title="Use Cases">
+  **Testnet**: Development, testing, learning, experimentation
+  
+  **Mainnet**: Production applications, real users, actual transactions
+</Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Get Started Building" icon="rocket" href="/quickstart">
+    Follow our quickstart guide to start building on B3
+  </Card>
+  
+  <Card title="Unity Development" icon="gamepad-2" href="/unity-guide">
+    Learn how to integrate Unity games with B3
+  </Card>
+  
+  <Card title="Construct Development" icon="puzzle-piece" href="/construct-guide">
+    Build Construct games on the B3 platform
+  </Card>
+  
+  <Card title="Bridge to Mainnet" icon="bridge" href="/bridge">
+    When ready, learn how to bridge assets to B3 mainnet
+  </Card>
+</CardGroup>
+
+---
+
+<div style={{ textAlign: "center", margin: "2rem 0", fontSize: "0.9rem", opacity: 0.7 }}>
+  © 2025 Player1 Foundation<br/>
+  Discover B3 - the Based L3
+</div>

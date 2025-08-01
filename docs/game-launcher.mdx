@@ -1,0 +1,264 @@
+---
+title: "Game Launcher"
+description: "Launch games natively inside the BSMNT (basement.fun) platform and build addicting onchain experiences without having to worry about the crypto components"
+---
+
+# Game Launcher
+
+Launch games natively inside the BSMNT (basement.fun) platform and build addicting onchain experiences without having to worry about the crypto components.
+
+## How It Works
+
+<Steps>
+<Step title="Load" icon="download">
+  Your game loads inside BSMNT launcher. We pass a JWT with the auth token to your game.
+  
+  ```text Example URL
+  https://yourgame.com?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+  ```
+</Step>
+
+<Step title="Auth" icon="key">
+  You can load the player's profile by decoding the JWT, or by using our API. We'll take care of wallet connections, verification & onboarding.
+  
+  ```json Player Profile
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "address": "0x1234567890abcdef1234567890abcdef12345678",
+    "username": "CryptoGamer42",
+    "avatar": "https://avatars.b3.fun/avatar.png",
+    "gameId": "game-123456-abcdef",
+    "license": "550e8400-e29b-41d4-a716-446655440000",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  }
+  ```
+</Step>
+
+<Step title="Trigger" icon="zap">
+  Let the user play your game. When something happens, you can trigger an action via our Zapier-style rules engine, or directly via API.
+  
+  ```bash Trigger API Example
+  curl --location 'https://api.basement.fun/launcher/' \
+  --header 'X-Service-Method: triggerRulesEngine' \
+  --data '{
+      "launcherJwt": "{{ jwt }}",
+      "trigger": "achievementUnlocked",
+      "nonce": "d1312e"
+  }'
+  ```
+</Step>
+</Steps>
+
+<CardGroup cols={2}>
+  <Card title="Register as Developer" icon="user-plus" href="https://basement.fun/developer/signup" cta="Sign Up">
+    Get started building games with BSMNT launcher
+  </Card>
+  
+  <Card title="Launcher Playground" icon="play" href="https://basement.fun/playground" cta="Try Now">
+    Test the launcher integration in a sandbox environment
+  </Card>
+</CardGroup>
+
+## What can you do with BSMNT launcher?
+
+The real power of the game launcher is in the crypto UX abstraction. Your game can securely send onchain events through a simple REST API, executable client side.
+
+### Available Now
+
+<CardGroup cols={2}>
+  <Card title="Save state to IPFS" icon="database">
+    Store player state on decentralized storage options like IPFS.
+  </Card>
+  
+  <Card title="Buy NFTs & Mint" icon="palette">
+    Let users mint NFTs upon achievements or on certain game events.
+  </Card>
+  
+  <Card title="Onchain Leaderboards" icon="trophy">
+    Bring player rankings onchain, host contests & tournaments.
+  </Card>
+  
+  <Card title="Issue Tokens & NFTs" icon="coins">
+    Send ERC20s and ERC721 & 1155 NFTs based on game actions.
+  </Card>
+  
+  <Card title="Pay with Tokens" icon="credit-card">
+    Prompt users to send or transfer tokens to pay for in-game actions or assets.
+  </Card>
+</CardGroup>
+
+### Coming Soon
+
+<CardGroup cols={2}>
+  <Card title="Swap & Trade" icon="arrow-right-left">
+    Users can use assets from other chains to swap for your tokens.
+    <div style={{ marginTop: '8px' }}>
+      <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>COMING SOON</span>
+    </div>
+  </Card>
+  
+  <Card title="Credit Card Onramp" icon="credit-card">
+    Direct fiat to crypto onramp for seamless user experience.
+    <div style={{ marginTop: '8px' }}>
+      <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>COMING SOON</span>
+    </div>
+  </Card>
+  
+  <Card title="Collect Reviews" icon="star">
+    Built-in review and rating system for games.
+    <div style={{ marginTop: '8px' }}>
+      <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>COMING SOON</span>
+    </div>
+  </Card>
+  
+  <Card title="Share your Game" icon="share">
+    Social sharing and viral mechanics.
+    <div style={{ marginTop: '8px' }}>
+      <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>COMING SOON</span>
+    </div>
+  </Card>
+  
+  <Card title="Record Gameplay" icon="video">
+    Automatic gameplay recording and sharing.
+    <div style={{ marginTop: '8px' }}>
+      <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>COMING SOON</span>
+    </div>
+  </Card>
+  
+  <Card title="List NFTs" icon="grid-3x3">
+    Marketplace integration for trading game assets.
+    <div style={{ marginTop: '8px' }}>
+      <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>COMING SOON</span>
+    </div>
+  </Card>
+</CardGroup>
+
+<Note>
+And more actions coming - the future looks bright!
+</Note>
+
+## Getting Started
+
+We'd love to have your game on basement.fun! It's simple, free, and easy to start integrating.
+
+<Tabs>
+<Tab title="Game Developers">
+  <CardGroup cols={1}>
+    <Card title="Register as a Developer" icon="user-plus" href="https://basement.fun/developer/signup" cta="Register Now" horizontal>
+      Sign up to start integrating your game with BSMNT launcher
+    </Card>
+  </CardGroup>
+  
+  <div style={{ marginTop: '16px' }}>
+    <strong>Already registered?</strong>
+  </div>
+  
+  <CardGroup cols={2}>
+    <Card title="Game Launcher Playground" icon="play" href="https://basement.fun/playground">
+      Test your integration in a sandbox environment
+    </Card>
+    
+    <Card title="BSMNT API Docs" icon="book" href="https://docs.basement.fun/api">
+      Complete API documentation and examples
+    </Card>
+  </CardGroup>
+</Tab>
+
+<Tab title="Players">
+  <Card title="See BSMNT Launcher in Action" icon="gamepad-2" href="https://basement.fun/games" cta="Play Games" horizontal>
+    No vaporware here - play Games on BSMNT today!
+  </Card>
+  
+  <Note>
+  No vaporware - play today!
+  </Note>
+</Tab>
+</Tabs>
+
+## What is Basement.fun?
+
+Basement is the place to discover & play onchain games. Aside from being a discovery platform for finding great onchain games, Basement offers a way for game developers to build seamless, native, and embedded experiences within Basement.
+
+Your game is loaded inside our game launcher, where users connect to Basement, and their player context is passed down to your game.
+
+From there, you can leverage any of our generic helper functions (such as saving state & scores) + trigger any number of built-in crypto UX (without you having to integrate anything onchain in your game).
+
+## Access Player Data
+
+The game launcher uses a JWT (JSON Web Token) to securely encode a verified & authenticated player context, which is sent to your game.
+
+The payload is read from the GET parameters, so any hosted web game can easily access & decode it using any number of JWT libraries (or using our launcher APIs).
+
+### Basic Player Data Includes:
+
+<AccordionGroup>
+<Accordion title="Username and ENS">
+  Username (and compatible .b3.fun ENS resolvable address)
+</Accordion>
+
+<Accordion title="3D Avatar">
+  3D Avatar (.GLB model powered by ReadyPlayerMe)
+</Accordion>
+
+<Accordion title="Wallet Address">
+  Verified wallet address for onchain interactions
+</Accordion>
+
+<Accordion title="Additional Data">
+  Game-specific player data, session information, and more - see our Launcher API Docs
+</Accordion>
+</AccordionGroup>
+
+<Tip>
+You can optionally store any arbitrary game-specific player data using our player state APIs.
+</Tip>
+
+<Card title="Explore Launcher APIs" icon="code" href="https://docs.basement.fun/api" cta="View Docs" horizontal>
+  Complete documentation for player data access and game integration
+</Card>
+
+## Built-in UX Abstraction
+
+Our minimal game launcher experience means that the focus stays on your game.
+
+A number of customizations are available on the game launcher, so that BSMNT can provide an almost invisible experience, handling all of the core crypto UX challenges for you.
+
+### Helpful APIs Available:
+
+- **Store & retrieve scores & leaderboards** - Persistent game state management
+- **Send notifications** - Alert players about game events
+- **Log and stream game activity** - Analytics and player behavior tracking  
+- **Store player state and game sessions** - Save game progress automatically
+- **And more coming!** - New features added regularly
+
+<Card title="Explore Launcher APIs" icon="api" href="https://docs.basement.fun/api" cta="View Documentation" horizontal>
+  Complete API reference for all available launcher features
+</Card>
+
+## Architecture Overview
+
+<Frame caption="Game Launcher Integration Flow">
+  <div style={{ 
+    padding: '20px', 
+    backgroundColor: '#f8fafc', 
+    border: '1px solid #e2e8f0', 
+    borderRadius: '8px',
+    textAlign: 'center',
+    fontFamily: 'monospace'
+  }}>
+    <div style={{ marginBottom: '10px', color: '#64748b' }}>Connected: 0x..123</div>
+    <div style={{ marginBottom: '10px', backgroundColor: '#007AFF', color: 'white', padding: '8px', borderRadius: '4px' }}>
+      www.yourgame.com
+    </div>
+    <div style={{ fontSize: '14px', color: '#475569' }}>
+      Your game loads inside BSMNT launcher
+    </div>
+  </div>
+</Frame>
+
+---
+
+<div style={{ textAlign: "center", margin: "2rem 0", fontSize: "0.9rem", opacity: 0.7 }}>
+  © 2025 Player1 Foundation<br/>
+  Discover B3 - the Based L3
+</div>

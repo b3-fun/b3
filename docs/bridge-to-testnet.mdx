@@ -1,0 +1,176 @@
+
+# Bridge to B3 Testnet
+
+Easily bridge from Base Sepolia (Base Testnet) to B3 Sepolia (B3 Testnet) by following the steps below!
+
+<Note>
+This bridge is specifically for testnet purposes. Use free testnet ETH to test your applications before deploying to mainnet.
+</Note>
+
+## How to Bridge
+
+<Steps>
+<Step title="Visit the Testnet Bridge">
+  Go to [testnet.bridge.b3.fun](https://testnet.bridge.b3.fun) to access the official testnet bridge interface.
+</Step>
+
+<Step title="Connect your Wallet">
+  Connect your wallet (MetaMask, Coinbase Wallet, etc.) to the bridge interface.
+  
+  <Tip>
+  Make sure your wallet is connected to either Base Sepolia or B3 Testnet depending on which direction you want to bridge.
+  </Tip>
+</Step>
+
+<Step title="Choose Bridge Direction">
+  Select whether you want to:
+  - **Deposit**: Bring funds from Base Sepolia → B3 Testnet
+  - **Withdraw**: Bridge back from B3 Testnet → Base Sepolia
+  
+  Click either the **Deposit** or **Withdraw** tabs accordingly.
+</Step>
+
+<Step title="Enter Amount">
+  Enter the amount of ETH you want to bridge.
+  
+  <Card title="Need Base Sepolia ETH?" icon="droplets" href="https://sepoliafaucet.com" cta="Get Testnet ETH" horizontal>
+    If you need Base Sepolia ETH, use a Base Sepolia faucet to get free testnet tokens
+  </Card>
+</Step>
+
+<Step title="Confirm Transaction">
+  Click "Deposit" (or "Withdraw") and confirm the transaction prompt that appears in your wallet.
+  
+  <Warning>
+  Double-check that you're on the correct testnet and using testnet ETH, not mainnet funds.
+  </Warning>
+</Step>
+
+<Step title="Wait for Completion">
+  Wait a few minutes for the bridge process to complete. You can check the status in your "History" tab.
+  
+  <Check>
+  Your testnet ETH will appear in your wallet on the destination network within a few minutes.
+  </Check>
+</Step>
+</Steps>
+
+## Network Information
+
+<CardGroup cols={2}>
+  <Card title="Base Sepolia Testnet">
+    **Chain ID**: {networks.base.sepolia.chainId}  
+    **RPC**: {networks.base.sepolia.rpc}  
+    **Explorer**: {networks.base.sepolia.explorer}
+  </Card>
+  
+  <Card title="B3 Sepolia Testnet">
+    **Chain ID**: {networks.b3.testnet.chainId}  
+    **RPC**: {networks.b3.testnet.rpc}  
+    **Explorer**: {networks.b3.testnet.explorer}
+  </Card>
+</CardGroup>
+
+## Testnet Resources
+
+<CardGroup cols={3}>
+  <Card title="Testnet Bridge" icon="arrow-right-left" href="https://testnet.bridge.b3.fun" cta="Bridge Now">
+    Official bridge for moving assets between Base Sepolia and B3 Testnet
+  </Card>
+  
+  <Card title="B3 Testnet Faucet" icon="droplets" href="https://testnet-faucet.b3.fun" cta="Get Test ETH">
+    Get free B3 testnet ETH for development and testing
+  </Card>
+  
+  <Card title="Developer Tools" icon="wrench" href="/ecosystem-tools" cta="Explore Tools">
+    Discover tools and infrastructure for building on B3
+  </Card>
+</CardGroup>
+
+## Additional Faucets
+
+If you need testnet ETH for development, here are some reliable faucet options:
+
+<AccordionGroup>
+<Accordion title="Base Sepolia Faucets">
+  - [Coinbase Base Faucet](https://coinbase.com/faucets/base-ethereum-sepolia-faucet) - Official Coinbase faucet
+  - [Alchemy Base Sepolia Faucet](https://sepoliafaucet.com) - Reliable faucet for Base Sepolia ETH
+  - [QuickNode Base Faucet](https://faucet.quicknode.com/base/sepolia) - Multiple testnet support
+</Accordion>
+
+<Accordion title="B3 Testnet Faucet">
+  - [B3 Testnet Faucet](https://testnet-faucet.b3.fun) - Official B3 testnet faucet
+  - Get free B3 testnet ETH directly without bridging
+</Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+<Accordion title="Bridge transaction stuck">
+  - Check the transaction status on the block explorer
+  - Verify you're connected to the correct testnet
+  - Try increasing gas fees if the transaction is pending
+  - Contact support if the bridge has been pending for over 30 minutes
+</Accordion>
+
+<Accordion title="Wallet not connecting">
+  - Ensure your wallet supports the testnet networks
+  - Try refreshing the page and reconnecting
+  - Check that you're on the correct network in your wallet
+  - Clear your browser cache if issues persist
+</Accordion>
+
+<Accordion title="Insufficient funds for gas">
+  - Make sure you have enough ETH to pay for gas fees
+  - Use a faucet to get more testnet ETH
+  - Try bridging a smaller amount to conserve gas
+</Accordion>
+</AccordionGroup>
+
+## Development Workflow
+
+<Steps>
+<Step title="Get Base Sepolia ETH">
+  Use a Base Sepolia faucet to get free testnet ETH.
+</Step>
+
+<Step title="Bridge to B3 Testnet">
+  Use the testnet bridge to move ETH from Base Sepolia to B3 Testnet.
+</Step>
+
+<Step title="Deploy and Test">
+  Deploy your contracts and test your applications on B3 Testnet.
+</Step>
+
+<Step title="Ready for Mainnet">
+  When testing is complete, deploy to B3 Mainnet using the [mainnet bridge](/bridge).
+</Step>
+</Steps>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="B3 Testnet Guide" icon="flask" href="/testnet">
+    Learn more about the B3 testnet environment and configuration
+  </Card>
+  
+  <Card title="Development Setup" icon="code" href="/quickstart">
+    Get started building and testing on B3
+  </Card>
+  
+  <Card title="Unity Integration" icon="gamepad-2" href="/unity-guide">
+    Integrate Unity games with B3 testnet for testing
+  </Card>
+  
+  <Card title="Bridge to Mainnet" icon="bridge" href="/bridge">
+    When ready, learn how to bridge to B3 mainnet
+  </Card>
+</CardGroup>
+
+---
+
+<div style={{ textAlign: "center", margin: "2rem 0", fontSize: "0.9rem", opacity: 0.7 }}>
+  © 2025 Player1 Foundation<br/>
+  Discover B3 - the Based L3
+</div>

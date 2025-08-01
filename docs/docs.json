@@ -11,22 +11,73 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "SDK Guides",
+        "tab": "Protocol",
+        "groups": [
+          {
+            "group": "Network",
+            "pages": ["network-setup", "bridge", "testnet", "bridge-to-testnet"]
+          },
+          {
+            "group": "Build on B3",
+            "pages": ["ecosystem-tools", "game-launcher", "unity-guide", "construct-guide", "development"]
+          },
+          {
+            "group": "Governance",
+            "pages": [
+              "protocol/whitepaper",
+              "protocol/constitution",
+              "protocol/bylaws",
+              "protocol/governance-platforms"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Basement",
         "groups": [
           {
             "group": "Getting Started",
-            "pages": ["index", "quickstart", "network-setup", "brand-kit", "development"]
+            "pages": ["basement-introduction", "game-launcher", "bsmnt-brand-kit"]
           },
           {
-            "group": "AnySpend",
+            "group": "Game Development",
+            "pages": ["unity-guide", "construct-guide"]
+          }
+        ]
+      },
+      {
+        "tab": "AnySpend",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": ["anyspend/introduction", "anyspend/installation"]
+          },
+          {
+            "group": "Components & Hooks",
+            "pages": ["anyspend/components", "anyspend/hooks", "anyspend/examples"]
+          },
+          {
+            "group": "Advanced",
+            "pages": ["anyspend/error-handling"]
+          },
+          {
+            "group": "API Reference",
             "pages": [
-              "anyspend/introduction",
-              "anyspend/installation",
-              "anyspend/components",
-              "anyspend/hooks",
-              "anyspend/examples",
-              "anyspend/error-handling"
+              "api-reference/anyspend/overview",
+              "api-reference/anyspend/quotes",
+              "api-reference/anyspend/orders",
+              "api-reference/anyspend/tokens",
+              "api-reference/anyspend/onramp"
             ]
+          }
+        ]
+      },
+      {
+        "tab": "B3 SDK",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": ["index", "quickstart", "brand-kit"]
           },
           {
             "group": "Global Accounts",
@@ -41,24 +92,9 @@
           {
             "group": "Shared Utilities",
             "pages": ["shared/chains", "shared/utils", "shared/thirdweb"]
-          }
-        ]
-      },
-      {
-        "tab": "API Reference",
-        "groups": [
-          {
-            "group": "AnySpend API",
-            "pages": [
-              "api-reference/anyspend/overview",
-              "api-reference/anyspend/quotes",
-              "api-reference/anyspend/orders",
-              "api-reference/anyspend/tokens",
-              "api-reference/anyspend/onramp"
-            ]
           },
           {
-            "group": "Global Accounts API",
+            "group": "API Reference",
             "pages": [
               "api-reference/global-account/authentication",
               "api-reference/global-account/profiles",
@@ -73,24 +109,18 @@
               "api-reference/webhooks/order-status",
               "api-reference/webhooks/transaction-complete"
             ]
-          }
-        ]
-      },
-      {
-        "tab": "Examples",
-        "groups": [
+          },
           {
-            "group": "Integration Examples",
+            "group": "Examples",
             "pages": [
               "examples/gaming-platform",
               "examples/nft-marketplace",
               "examples/defi-application",
-              "examples/tournament-system"
+              "examples/tournament-system",
+              "examples/nextjs",
+              "examples/react-native",
+              "examples/vanilla-js"
             ]
-          },
-          {
-            "group": "Framework Guides",
-            "pages": ["examples/nextjs", "examples/react-native", "examples/vanilla-js"]
           }
         ]
       }
@@ -122,12 +152,13 @@
   "navbar": {
     "links": [
       {
-        "label": "Live Demo",
-        "href": "https://anyspend.com"
+        "label": "Explorer",
+        "href": "https://explorer.b3.fun/"
       },
+
       {
-        "label": "B3 Mainnet",
-        "href": "https://docs.b3.fun"
+        "label": "Network Status",
+        "href": "https://status.b3.fun/"
       }
     ],
     "primary": {

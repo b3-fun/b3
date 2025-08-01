@@ -1,0 +1,250 @@
+---
+title: "Getting Started with Basement.fun in Construct"
+description: "This tutorial will guide you through integrating your Construct game with the Basement.fun platform using web APIs"
+---
+
+# Getting Started with Basement.fun in Construct
+
+This tutorial will guide you through integrating your Construct game with the Basement.fun platform using web APIs.
+
+You can use either events in Construct or JavaScript to interact with the B3 API endpoints.
+
+## Events
+
+Construct has a great GUI that enables developers to create games with minimal to no code. The following docs will review how to connect your game to Basement.fun using Construct's event sheet.
+
+### Key Components
+
+You will need to add a few objects to your project to enable your Construct game to interact with the Basement.fun platform.
+
+<Note>
+To add objects to your project go to the **Layout View**, right-click in the layout, select **Insert New Object**, and then choose the object you want to insert into your project. After adding the object, it will be available in your event sheet.
+</Note>
+
+<CardGroup cols={1}>
+  <Card title="Browser Object" icon="globe">
+    The Browser object enables you to write to the console. It's not necessary, but it will come in handy when verifying data and debugging your code.
+  </Card>
+  
+  <Card title="AJAX Object" icon="arrow-right-left">
+    The AJAX object enables your game to interact with B3 APIs.
+    
+    - **POST requests** require you to create separate actions for each header parameter and one post to URL action for all the body parameters
+    - **GET requests** require you to combine all the parameters and values you need into a single URL to send the request to the API
+    - The **API responses** can be referenced using `AJAX.LastData`
+  </Card>
+  
+  <Card title="JSON Object" icon="braces">
+    The JSON object enables your game to handle JSON responses. You will need to parse the JSON strings to make use of the response data.
+  </Card>
+</CardGroup>
+
+## Sample Event
+
+This sample event will cover the POST Set Scores request detailed in the BSMNT API Specs.
+
+### Sample Request
+
+<Steps>
+<Step title="Create Function">
+  Right-click anywhere on the event sheet, create a function, and name it **SetScore**.
+</Step>
+
+<Step title="Set Service Method Header">
+  Click add action, select **AJAX**, select **Set request header**.
+  - **Header field**: `X-Service-Method`
+  - **Value field**: `setUserScore`
+</Step>
+
+<Step title="Set Authorization Header">
+  Add another AJAX action and select **Set request header** again.
+  - **Header field**: `Authorization`
+  - **Value field**: `Bearer <game secret>`
+  
+  <Warning>
+  Replace `<game secret>` with your actual game secret token.
+  </Warning>
+</Step>
+
+<Step title="Configure POST Request">
+  Add another AJAX action but this time, select **Post to URL**. Enter the following:
+  - **Tag**: `setUserScore`
+  - **URL**: `https://api.basement.fun/launcher`
+  - **Data**: `{"launcherJwt": "string", "nonce": "string", "score": 0}`
+  - **Method**: `POST`
+  
+  <Tip>
+  This is a sample request - be sure to replace your values with variables that are set by events in your game.
+  </Tip>
+</Step>
+</Steps>
+
+### Sample Response
+
+The sample response will look something like this:
+
+```json API Response
+{
+    "success": true | false,
+    "error"?: "error string",
+    "newScore"?: {
+        "_id": "unique id",
+        "nonce": "nonce",
+        "updatedAt": 23151264, // unix timestamp
+        "score": 100.235,
+        "gameId": "game uuid",
+        "normalizedAddress": "user lowercase address"
+    }
+}
+```
+
+## Retrieving Data
+
+In Construct, let's retrieve the nonce from the response, so we can use it to retrieve the score at a later time.
+
+<Steps>
+<Step title="Create Global Variable">
+  Right-click anywhere on the event sheet and add a global variable named **Nonce**.
+</Step>
+
+<Step title="Add Trigger Event">
+  Add an event that is triggered by your game. 
+  
+  **Example**: To capture the user's score when they crash their bike into another bike, add an **on collision with another object** condition to the biker and set the object to biker.
+</Step>
+
+<Step title="Call SetScore Function">
+  Add the action, select **functions**, and select **SetScore**.
+</Step>
+
+<Step title="Parse JSON Response">
+  Add a **JSON** action, select **parse**, and enter `AJAX.LastData` in the JSON string field. 
+  
+  <Note>
+  This will grab the response from our SetScore request.
+  </Note>
+</Step>
+
+<Step title="Extract Nonce Value">
+  Add a **system** action, select **set value**, choose the **Nonce** variable, and enter `JSON.Get("newScore.nonce")`.
+  
+  <Check>
+  Now your Nonce variable is set to the nonce returned by the API response!
+  </Check>
+</Step>
+</Steps>
+
+## Complete Integration
+
+Following the same steps, you can create events for each API endpoint by reviewing all the parameters and responses.
+
+### Available API Endpoints
+
+<AccordionGroup>
+<Accordion title="Set User Score">
+  Update or set a user's score for leaderboards.
+  
+  **Endpoint**: `POST /launcher`  
+  **Headers**: `X-Service-Method: setUserScore`
+  
+  ```json
+  {
+    "launcherJwt": "string",
+    "nonce": "string", 
+    "score": 0
+  }
+  ```
+</Accordion>
+
+<Accordion title="Get User Score">
+  Retrieve a user's current score.
+  
+  **Endpoint**: `GET /launcher`  
+  **Headers**: `X-Service-Method: getUserScore`
+</Accordion>
+
+<Accordion title="Trigger Rules Engine">
+  Trigger onchain actions based on game events.
+  
+  **Endpoint**: `POST /launcher`  
+  **Headers**: `X-Service-Method: triggerRulesEngine`
+  
+  ```json
+  {
+    "launcherJwt": "string",
+    "trigger": "string",
+    "nonce": "string"
+  }
+  ```
+</Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Error Handling" icon="shield-alert">
+    Always check the `success` field in API responses and handle errors gracefully.
+  </Card>
+  
+  <Card title="Variable Management" icon="variable">
+    Use Construct's global variables to store important data like JWT tokens and user scores.
+  </Card>
+  
+  <Card title="Debug Console" icon="bug">
+    Use the Browser object to log important information to the console during development.
+  </Card>
+  
+  <Card title="API Rate Limits" icon="clock">
+    Be mindful of API rate limits and avoid making too many requests in quick succession.
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="BSMNT API Documentation" icon="book" href="https://docs.basement.fun/api">
+    Complete API reference for all available endpoints
+  </Card>
+  
+  <Card title="Game Launcher Guide" icon="rocket" href="/game-launcher">
+    Learn how to integrate with the BSMNT game launcher
+  </Card>
+  
+  <Card title="Construct Documentation" icon="external-link" href="https://construct.net/make-games/manuals">
+    Official Construct 3 documentation and tutorials
+  </Card>
+  
+  <Card title="Example Projects" icon="folder" href="https://github.com/b3-fun/construct-examples">
+    Sample Construct projects using B3 integration
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+<Accordion title="AJAX requests not working">
+  - Ensure you've added the AJAX object to your project
+  - Check that all required headers are set correctly
+  - Verify your game secret is valid
+  - Make sure the API endpoint URL is correct
+</Accordion>
+
+<Accordion title="JSON parsing errors">
+  - Confirm the JSON object is added to your project
+  - Check that `AJAX.LastData` contains valid JSON
+  - Use the Browser object to log the raw response for debugging
+</Accordion>
+
+<Accordion title="Authentication issues">
+  - Verify your launcher JWT token is valid
+  - Check that the Authorization header is properly formatted
+  - Ensure your game secret hasn't expired
+</Accordion>
+</AccordionGroup>
+
+---
+
+<div style={{ textAlign: "center", margin: "2rem 0", fontSize: "0.9rem", opacity: 0.7 }}>
+  © 2025 Player1 Foundation<br/>
+  Discover B3 - the Based L3
+</div>

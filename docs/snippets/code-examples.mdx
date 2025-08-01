@@ -1,81 +1,98 @@
-import { branding, examples, networks } from "/snippets/variables.mdx";
+# Code Examples
 
-export const InstallationExample = () => (
-  <div>
-    ```bash npm install {branding.packageName}
-    ```
-  </div>
-);
+## Installation
 
-export const BasicImportsExample = () => (
-  <div>
-    ```tsx import "{branding.packageName}/index.css"; import {{ AnyspendProvider, B3Provider }} from "
-    {branding.packageName}"; ```
-  </div>
-);
+```bash title="Install B3 SDK" icon="download"
+npm install @b3dotfun/sdk
+```
 
-export const NFTButtonExample = () => (
-  <div>
-    ```tsx
-    import {{ AnySpendNFTButton }} from "{branding.packageName}/anyspend/react";
+## Basic Setup
 
-    function NFTCard() {{
-      return (
-        <AnySpendNFTButton
-          nftContract={{{{
-            chainId: {networks.b3.mainnet.chainId},
-            contractAddress: "{examples.nftContract.contractAddress}",
-            price: "{examples.nftContract.price}",
-            currency: {{ symbol: "ETH", decimals: 18 }}
-          }}}}
-          recipientAddress={{userAddress}}
-          onSuccess={{(txHash) => showSuccess(txHash)}}
-        />
-      );
-    }}
-    ```
+```tsx title="Import SDK Components" icon="react"
+import "@b3dotfun/sdk/index.css";
+import { AnyspendProvider, B3Provider } from "@b3dotfun/sdk";
+```
 
-  </div>
-);
+## NFT Purchase Component
 
-export const BasicAnySpendExample = () => (
-  <div>
-    ```tsx
-    import {{ AnySpend }} from "{branding.packageName}/anyspend/react";
+```tsx title="NFT Button Example" icon="shopping-cart" lines
+import { AnySpendNFTButton } from "@b3dotfun/sdk/anyspend/react";
 
-    function CrossChainSwap() {{
-      return (
-        <AnySpend
-          mode="page"
-          recipientAddress={{userAddress}}
-          onSuccess={{(txHash) => updatePortfolio(txHash)}}
-        />
-      );
-    }}
-    ```
+function NFTCard() {
+  return (
+    <AnySpendNFTButton
+      nftContract={{
+        chainId: 8333,
+        contractAddress: "0x9c275ff1634519E9B5449ec79cd939B5F900564d",
+        price: "500000000000000000",
+        currency: { symbol: "ETH", decimals: 18 }
+      }}
+      recipientAddress={userAddress}
+      onSuccess={(txHash) => showSuccess(txHash)}
+    />
+  );
+}
+```
 
-  </div>
-);
+## Cross-Chain Swap
 
-export const AuthenticationExample = () => (
-  <div>
-    ```tsx
-    import {{ B3Provider, SignInWithB3 }} from "{branding.packageName}/global-account/react";
+```tsx title="AnySpend Page Mode" icon="arrows-rotate" highlight={6-8}
+import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
 
-    function App() {{
-      return (
-        <B3Provider environment="production">
-          <SignInWithB3
-            provider={{{{ strategy: "google" }}}}
-            partnerId="your-partner-id"
-            onLoginSuccess={{(globalAccount) => {{
-              console.log("Authenticated:", globalAccount);
-            }}}}
-          />
-        </B3Provider>
-      );
-    }}
-    ```
+function CrossChainSwap() {
+  return (
+    <AnySpend
+      mode="page"
+      recipientAddress={userAddress}
+      onSuccess={(txHash) => updatePortfolio(txHash)}
+    />
+  );
+}
+```
 
-  </div>
-);
+## Authentication
+
+```tsx title="B3 Authentication Setup" icon="user-shield" expandable
+import { B3Provider, SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
+
+function App() {
+  return (
+    <B3Provider environment="production">
+      <SignInWithB3
+        provider={{ strategy: "google" }}
+        partnerId="your-partner-id"
+        onLoginSuccess={(globalAccount) => {
+          console.log("Authenticated:", globalAccount);
+        }}
+      />
+    </B3Provider>
+  );
+}
+```
+
+## Wallet Connection
+
+```tsx title="Connect Wallet to B3" icon="wallet" focus={8-12}
+import { useConnect } from "@b3dotfun/sdk";
+
+function WalletButton() {
+  const { connect, isConnecting } = useConnect();
+
+  const handleConnect = async () => {
+    try {
+      await connect({
+        chainId: 8333,
+        rpcUrl: "https://mainnet-rpc.b3.fun"
+      });
+    } catch (error) {
+      console.error("Connection failed:", error);
+    }
+  };
+
+  return (
+    <button onClick={handleConnect} disabled={isConnecting}>
+      {isConnecting ? "Connecting..." : "Connect to B3"}
+    </button>
+  );
+}
+```

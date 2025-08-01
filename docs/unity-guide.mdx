@@ -1,0 +1,167 @@
+---
+title: "B3 Unity SDK"
+description: "Integrate your Unity games into basement with the B3 Unity SDK, which lets you easily access all of the launcher functionalities from within Unity as simple functions"
+---
+
+# B3 Unity SDK
+
+Integrate your Unity games into basement with the B3 Unity SDK, which lets you easily access all of the launcher functionalities from within Unity as simple functions.
+
+## Features
+
+The B3 Unity SDK provides comprehensive integration capabilities for Unity developers:
+
+<CardGroup cols={1}>
+  <Card title="Session Management" icon="user-check">
+    The SDK automatically and seamlessly handles user authentication.
+  </Card>
+  
+  <Card title="APIs as Functions" icon="code">
+    Use all of the launcher APIs easily with support for both callback based AND async/await based calls.
+  </Card>
+  
+  <Card title="Webhooks for WebGL" icon="webhook">
+    Handles launcher client webhooks, and parses and propagates them to your own C# Code.
+  </Card>
+</CardGroup>
+
+## Installation and Usage
+
+<Steps>
+<Step title="Download the SDK">
+  Head over to the GitHub repository and download the latest release.
+  
+  <Card title="Get the Unity SDK" icon="download" href="https://github.com/b3-fun/b3-unity-sdk" cta="Download from GitHub" horizontal>
+    Access the official B3 Unity SDK repository with installation instructions
+  </Card>
+</Step>
+
+<Step title="Install to Unity Project">
+  Follow the setup guide instructions on GitHub to install the SDK to your Unity Project.
+  
+  <Note>
+  The GitHub repository contains detailed installation instructions and setup requirements.
+  </Note>
+</Step>
+
+<Step title="Initialize the SDK">
+  After installing the SDK and following the setup guide, you'll be able to easily call all the APIs as functions.
+  
+  <Check>
+  Your Unity project is now ready to integrate with the B3 launcher!
+  </Check>
+</Step>
+</Steps>
+
+## Code Examples
+
+### Trigger Rules Engine
+
+Here's an example of how to trigger the rules engine from within your Unity game:
+
+```csharp Unity C# Example
+B3LauncherClient.TriggerRulesEngine(new B3LauncherClient.TriggerRulesEngineBody
+{
+    launcherJwt = B3Instance.Instance.SessionJWT ?? jwtInput.text,
+    trigger = "open-tip-modal",
+    otherWallet = otherWalletInput.text,
+}, null);
+```
+
+### Session Management
+
+The SDK automatically handles user sessions:
+
+```csharp Session Example
+// Access the current session JWT
+string sessionToken = B3Instance.Instance.SessionJWT;
+
+// Check if user is authenticated
+if (B3Instance.Instance.IsAuthenticated)
+{
+    // User is logged in and ready to interact with B3 services
+    Debug.Log("User authenticated successfully");
+}
+```
+
+## API Integration
+
+The Unity SDK provides seamless access to all B3 launcher APIs:
+
+<AccordionGroup>
+<Accordion title="Callback-based Calls">
+  Traditional callback pattern for handling API responses:
+  
+  ```csharp
+  B3LauncherClient.SomeAPICall(requestData, (response) => {
+      // Handle response
+      Debug.Log("API call completed");
+  });
+  ```
+</Accordion>
+
+<Accordion title="Async/Await Calls">
+  Modern async/await pattern for cleaner code:
+  
+  ```csharp
+  public async void CallAPI()
+  {
+      var response = await B3LauncherClient.SomeAPICallAsync(requestData);
+      // Handle response
+      Debug.Log("API call completed");
+  }
+  ```
+</Accordion>
+
+<Accordion title="WebGL Webhooks">
+  Handle launcher events in WebGL builds:
+  
+  ```csharp
+  // Register webhook handlers
+  B3Instance.Instance.OnWebhookReceived += HandleWebhook;
+  
+  private void HandleWebhook(WebhookData data)
+  {
+      // Process incoming webhook data
+      Debug.Log($"Received webhook: {data.type}");
+  }
+  ```
+</Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Game Launcher Guide" icon="rocket" href="/game-launcher">
+    Learn how to integrate with the BSMNT game launcher
+  </Card>
+  
+  <Card title="BSMNT API Docs" icon="book" href="https://docs.basement.fun/api">
+    Complete API documentation for all available endpoints
+  </Card>
+  
+  <Card title="Unity Documentation" icon="external-link" href="https://docs.unity3d.com/">
+    Official Unity documentation and resources
+  </Card>
+  
+  <Card title="Example Projects" icon="folder" href="https://github.com/b3-fun/unity-examples">
+    Sample Unity projects using the B3 SDK
+  </Card>
+</CardGroup>
+
+## Support
+
+<Info>
+For technical support, bug reports, or feature requests, please visit the GitHub repository or reach out to our developer community.
+</Info>
+
+<Card title="Get Unity SDK Support" icon="help-circle" href="https://github.com/b3-fun/b3-unity-sdk/issues" cta="GitHub Issues" horizontal>
+  Report issues or get help from the developer community
+</Card>
+
+---
+
+<div style={{ textAlign: "center", margin: "2rem 0", fontSize: "0.9rem", opacity: 0.7 }}>
+  © 2025 Player1 Foundation<br/>
+  Discover B3 - the Based L3
+</div>
