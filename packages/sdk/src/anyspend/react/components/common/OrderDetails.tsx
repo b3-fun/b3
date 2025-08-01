@@ -1068,6 +1068,7 @@ export const OrderDetails = memo(function OrderDetails({
                         order.globalAddress,
                         BigInt(order.srcAmount),
                         order.srcTokenAddress === RELAY_ETH_ADDRESS ? "ETH" : order.srcTokenAddress,
+                        order.srcChain,
                       )}
                       className="max-w-[200px]"
                     />
