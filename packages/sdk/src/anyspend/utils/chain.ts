@@ -1,3 +1,5 @@
+import { RELAY_SOLANA_MAINNET_CHAIN_ID } from "@b3dotfun/sdk/anyspend/constants";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import invariant from "invariant";
 import {
   Account,
@@ -24,10 +26,8 @@ import {
   polygon,
   sepolia,
 } from "viem/chains";
-import { RELAY_SOLANA_MAINNET_CHAIN_ID } from "@b3dotfun/sdk/anyspend/constants";
-import { getAvaxToken, getBnbToken, getEthToken, getPolToken, getSolanaToken } from "./token";
 import { ChainType, IBaseChain, IEVMChain, ISolanaChain } from "../types/chain";
-import { components } from "@b3dotfun/sdk/anyspend/types/api";
+import { getAvaxToken, getBnbToken, getEthToken, getPolToken, getSolanaToken } from "./token";
 
 function getCustomEvmChain(chain: Chain, rpcUrl: string): Chain {
   return defineChain({ ...chain, rpcUrls: { default: { http: [rpcUrl] } } });
@@ -304,11 +304,56 @@ export function getChainName(chainId: number): string {
   return EVM_CHAINS[chainId] ? EVM_CHAINS[chainId].viem.name : "Solana";
 }
 
-export function getPaymentUrl(address: string, amount: bigint, currency: string) {
-  if (currency === "ETH") {
-    return `ethereum:${address}?value=${amount.toString()}`;
+export function getPaymentUrl(address: string, amount: bigint, currency: string, chainId: number) {
+  // Get chain type to determine URL format
+  const chainType = getChainType(chainId);
+  const chain = ALL_CHAINS[chainId];
+  invariant(chain, `Chain ${chainId} is not supported`);
+
+  switch (chainType) {
+    case ChainType.EVM: {
+      // For EVM chains, follow EIP-681 format
+      // Format: ethereum:[address]@[chainId]?value=[amount]&symbol=[symbol]
+      const params = new URLSearchParams();
+
+      // Add value for native token transfers
+      if (currency === chain.nativeToken.symbol) {
+        params.append("value", amount.toString());
+      }
+
+      // Add chain ID for non-Ethereum chains
+      const chainParam = chainId !== mainnet.id ? `@${chainId}` : "";
+
+      // Add token info for non-native token transfers
+      if (currency !== chain.nativeToken.symbol) {
+        params.append("symbol", currency);
+      }
+
+      const queryString = params.toString();
+      return `ethereum:${address}${chainParam}${queryString ? `?${queryString}` : ""}`;
+    }
+
+    case ChainType.SOLANA: {
+      // Solana URL format: solana:${address}?amount=${amount}&spl-token=${tokenAddress}
+      const params = new URLSearchParams();
+
+      // Add amount for native SOL transfers
+      if (currency === "SOL") {
+        params.append("amount", amount.toString());
+      }
+
+      // Add SPL token info for token transfers
+      if (currency !== "SOL") {
+        params.append("spl-token", currency); // currency here should be token address
+      }
+
+      return `solana:${address}?${params.toString()}`;
+    }
+
+    default:
+      // Fallback to just the address if chain type is unknown
+      return address;
   }
-  return `ethereum:${address}`;
 }
 
 export function getExplorerTxUrl(chainId: number, txHash: string) {
