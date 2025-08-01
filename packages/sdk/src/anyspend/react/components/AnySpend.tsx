@@ -2,9 +2,11 @@
 
 import { getDefaultToken, USDC_BASE } from "@b3dotfun/sdk/anyspend";
 import {
+  useAnyspendCreateOnrampOrder,
   useAnyspendCreateOrder,
   useAnyspendOrderAndTransactions,
   useAnyspendQuote,
+  useGeoOnrampOptions,
 } from "@b3dotfun/sdk/anyspend/react";
 import {
   Button,
@@ -30,6 +32,7 @@ import { parseUnits } from "viem";
 import { b3Sepolia, base, mainnet, sepolia } from "viem/chains";
 import { useAccount } from "wagmi";
 import { components } from "../../types/api";
+import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
 import { CryptoPaymentMethod, PaymentMethod } from "./common/CryptoPaymentMethod";
 import { FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaymentMethod";
 import { OrderDetails, OrderDetailsLoadingView } from "./common/OrderDetails";
@@ -60,7 +63,26 @@ export enum PanelView {
 
 const ANYSPEND_RECIPIENTS_KEY = "anyspend_recipients";
 
-export function AnySpend({
+export function AnySpend(props: {
+  destinationTokenAddress?: string;
+  destinationTokenChainId?: number;
+  isMainnet?: boolean;
+  mode?: "page" | "modal";
+  defaultActiveTab?: "crypto" | "fiat";
+  loadOrder?: string;
+  hideTransactionHistoryButton?: boolean;
+  recipientAddress?: string;
+}) {
+  const fingerprintConfig = getFingerprintConfig();
+
+  return (
+    <AnySpendFingerprintWrapper fingerprint={fingerprintConfig}>
+      <AnySpendInner {...props} />
+    </AnySpendFingerprintWrapper>
+  );
+}
+
+function AnySpendInner({
   destinationTokenAddress,
   destinationTokenChainId,
   isMainnet = true,
@@ -621,13 +643,39 @@ export function AnySpend({
     },
   });
 
+  // Add onramp order creation hook
+  const { createOrder: createOnrampOrder, isCreatingOrder: isCreatingOnrampOrder } = useAnyspendCreateOnrampOrder({
+    onSuccess: data => {
+      const orderId = data.data.id;
+      setOrderId(orderId);
+      setActivePanel(PanelView.ORDER_DETAILS);
+
+      // Add orderId and payment method to URL for persistence
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("orderId", orderId);
+      params.set("paymentMethod", "fiat");
+      router.push(`${window.location.pathname}?${params.toString()}`);
+    },
+    onError: error => {
+      console.error(error);
+      toast.error("Failed to create order: " + error.message);
+    },
+  });
+
+  // Get geo-based onramp options for fiat payments
+  const { geoData, coinbaseAvailablePaymentMethods, isStripeOnrampSupported, stripeWeb2Support } = useGeoOnrampOptions(
+    isMainnet,
+    srcAmountOnRamp,
+  );
+
   // Determine button state and text
   const btnInfo: { text: string; disable: boolean; error: boolean } = useMemo(() => {
     if (activeInputAmountInWei === "0") return { text: "Enter an amount", disable: true, error: false };
     if (isLoadingAnyspendQuote) return { text: "Loading...", disable: true, error: false };
     if (!recipientAddress) return { text: "Select recipient", disable: false, error: false };
-    if (isCreatingOrder) return { text: "Creating order...", disable: true, error: false };
+    if (isCreatingOrder || isCreatingOnrampOrder) return { text: "Creating order...", disable: true, error: false };
     if (!anyspendQuote || !anyspendQuote.success) return { text: "Get rate error", disable: true, error: true };
+
     if (activeTab === "crypto") {
       // If no payment method selected, show "Choose payment method"
       if (selectedPaymentMethod === PaymentMethod.NONE) {
@@ -641,15 +689,27 @@ export function AnySpend({
         return { text: "Continue to payment", disable: false, error: false };
       }
     }
+
+    if (activeTab === "fiat") {
+      // If no fiat payment method selected, show "Select payment method"
+      if (selectedFiatPaymentMethod === FiatPaymentMethod.NONE) {
+        return { text: "Select payment method", disable: false, error: false };
+      }
+      // If payment method is selected, show "Buy"
+      return { text: "Buy", disable: false, error: false };
+    }
+
     return { text: "Buy", disable: false, error: false };
   }, [
     activeInputAmountInWei,
     isLoadingAnyspendQuote,
     recipientAddress,
     isCreatingOrder,
+    isCreatingOnrampOrder,
     anyspendQuote,
     activeTab,
     selectedPaymentMethod,
+    selectedFiatPaymentMethod,
   ]);
 
   // Handle main button click
@@ -666,7 +726,13 @@ export function AnySpend({
       invariant(recipientAddress, "Recipient address is not found");
 
       if (activeTab === "fiat") {
-        setActivePanel(PanelView.FIAT_PAYMENT);
+        // If no fiat payment method selected, show payment method selection
+        if (selectedFiatPaymentMethod === FiatPaymentMethod.NONE) {
+          setActivePanel(PanelView.FIAT_PAYMENT_METHOD);
+          return;
+        }
+        // If payment method is selected, create order directly
+        await handleFiatOrder(selectedFiatPaymentMethod);
         return;
       }
 
@@ -728,6 +794,76 @@ export function AnySpend({
           : selectedDstToken,
         srcAmount: srcAmountBigInt.toString(),
         expectedDstAmount: anyspendQuote?.data?.currencyOut?.amount || "0",
+        creatorAddress: globalAddress,
+      });
+    } catch (err: any) {
+      console.error(err);
+      toast.error("Failed to create order: " + err.message);
+    }
+  };
+
+  // Handle fiat onramp order creation
+  const handleFiatOrder = async (paymentMethod: FiatPaymentMethod) => {
+    try {
+      invariant(anyspendQuote, "Relay price is not found");
+      invariant(recipientAddress, "Recipient address is not found");
+
+      if (!srcAmountOnRamp || parseFloat(srcAmountOnRamp) <= 0) {
+        toast.error("Please enter a valid amount");
+        return;
+      }
+
+      // Determine vendor and payment method string based on selected payment method
+      let vendor: components["schemas"]["OnrampMetadata"]["vendor"];
+      let paymentMethodString = "";
+
+      if (paymentMethod === FiatPaymentMethod.COINBASE_PAY) {
+        if (coinbaseAvailablePaymentMethods.length === 0) {
+          toast.error("Coinbase Pay not available");
+          return;
+        }
+        vendor = "coinbase";
+        paymentMethodString = coinbaseAvailablePaymentMethods[0]?.id || ""; // Use first available payment method ID
+      } else if (paymentMethod === FiatPaymentMethod.STRIPE) {
+        if (!isStripeOnrampSupported && (!stripeWeb2Support || !stripeWeb2Support.isSupport)) {
+          toast.error("Stripe not available");
+          return;
+        }
+        vendor = stripeWeb2Support && stripeWeb2Support.isSupport ? "stripe-web2" : "stripe";
+        paymentMethodString = "";
+      } else {
+        toast.error("Please select a payment method");
+        return;
+      }
+
+      const getDstToken = (): components["schemas"]["Token"] => {
+        if (isBuyMode) {
+          invariant(destinationTokenAddress, "destinationTokenAddress is required");
+          return {
+            ...selectedDstToken,
+            chainId: destinationTokenChainId || selectedDstChainId,
+            address: destinationTokenAddress,
+          };
+        }
+        return selectedDstToken;
+      };
+
+      createOnrampOrder({
+        isMainnet,
+        recipientAddress,
+        orderType: "swap",
+        dstChain: getDstToken().chainId,
+        dstToken: getDstToken(),
+        srcFiatAmount: srcAmountOnRamp,
+        onramp: {
+          vendor: vendor,
+          paymentMethod: paymentMethodString,
+          country: geoData?.country || "US",
+          ipAddress: geoData?.ip,
+          redirectUrl:
+            window.location.origin === "https://basement.fun" ? "https://basement.fun/deposit" : window.location.origin,
+        },
+        expectedDstAmount: anyspendQuote?.data?.currencyOut?.amount?.toString() || "0",
         creatorAddress: globalAddress,
       });
     } catch (err: any) {
@@ -1320,8 +1456,10 @@ export function AnySpend({
       onBack={() => setActivePanel(PanelView.MAIN)}
       onSelectPaymentMethod={(method: FiatPaymentMethod) => {
         setSelectedFiatPaymentMethod(method);
-        setActivePanel(PanelView.MAIN);
+        setActivePanel(PanelView.MAIN); // Go back to main panel to show updated pricing
       }}
+      srcAmountOnRamp={srcAmountOnRamp}
+      isMainnet={isMainnet}
     />
   );
 

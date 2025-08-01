@@ -14,18 +14,22 @@ export const OrderStatus = memo(function OrderStatus({ order }: { order: compone
   const paymentSteps: Step[] = [
     {
       id: 1,
-      title: "Awaiting Payment",
+      title: text,
       description: description,
     },
     {
       id: 2,
-      title: "Payment Complete",
+      title: text,
       description: description,
     },
   ];
 
   if (order.status === "waiting_stripe_payment") {
     return <StepProgress steps={paymentSteps} currentStepIndex={0} />;
+  }
+
+  if (order.status === "relay") {
+    return <StepProgress steps={paymentSteps} currentStepIndex={1} />;
   }
 
   if (!isComplete && displayStatus !== "failure") {

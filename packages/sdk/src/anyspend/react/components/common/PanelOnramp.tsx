@@ -1,4 +1,4 @@
-import { useCoinbaseOnrampOptions } from "@b3dotfun/sdk/anyspend/react";
+import { useCoinbaseOnrampOptions, useGeoOnrampOptions } from "@b3dotfun/sdk/anyspend/react";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { ALL_CHAINS } from "@b3dotfun/sdk/anyspend/utils/chain";
 import { Input, useGetGeo, useProfile } from "@b3dotfun/sdk/global-account/react";
@@ -32,6 +32,45 @@ export function PanelOnramp({
   onDestinationTokenChange?: (token: components["schemas"]["Token"]) => void;
   onDestinationChainChange?: (chainId: number) => void;
 }) {
+  // Get geo-based onramp options to access fee information
+  const { stripeWeb2Support } = useGeoOnrampOptions(true, srcAmountOnRamp);
+
+  // Helper function to get fees from API data
+  const getFeeFromApi = (paymentMethod: FiatPaymentMethod): number | null => {
+    switch (paymentMethod) {
+      case FiatPaymentMethod.COINBASE_PAY:
+        // Coinbase doesn't provide fee info in API, return 0
+        return 0;
+      case FiatPaymentMethod.STRIPE:
+        // Get fee from Stripe API response
+        if (stripeWeb2Support && "formattedFeeUsd" in stripeWeb2Support) {
+          return parseFloat(stripeWeb2Support.formattedFeeUsd) || 0;
+        }
+        return null;
+      default:
+        return null; // No fee when no payment method selected
+    }
+  };
+
+  // Helper function to get total amount from API (for Stripe) or calculate it (for others)
+  const getTotalAmount = (paymentMethod: FiatPaymentMethod): number => {
+    const baseAmount = parseFloat(srcAmountOnRamp) || 5;
+    const fee = getFeeFromApi(paymentMethod);
+
+    if (paymentMethod === FiatPaymentMethod.STRIPE && stripeWeb2Support && "formattedTotalUsd" in stripeWeb2Support) {
+      // Use the total from Stripe API if available
+      return parseFloat(stripeWeb2Support.formattedTotalUsd) || baseAmount;
+    }
+
+    // For Coinbase or when fee is available, calculate manually
+    if (fee !== null) {
+      return baseAmount + fee;
+    }
+
+    // No fee available, return base amount
+    return baseAmount;
+  };
+
   // Get geo data for onramp availability
   const { geoData } = useGetGeo();
   const { coinbaseOnrampOptions } = useCoinbaseOnrampOptions(true, geoData?.country || "US");
@@ -83,7 +122,12 @@ export function PanelOnramp({
               </>
             ) : selectedPaymentMethod === FiatPaymentMethod.STRIPE ? (
               <>
-                Stripe
+                <div className="flex items-center gap-2">
+                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600">
+                    <span className="text-xs font-bold text-white">S</span>
+                  </div>
+                  Stripe
+                </div>
                 <ChevronRight className="h-4 w-4" />
               </>
             ) : (
@@ -193,8 +237,21 @@ export function PanelOnramp({
 
         <div className="">
           <div className="flex items-center justify-between">
-            <span className="text-as-tertiarry text-sm">Total (included $0.02 fee)</span>
-            <span className="text-as-primary font-semibold">${(parseFloat(srcAmountOnRamp) || 5) + 0.02}</span>
+            {(() => {
+              const currentPaymentMethod = selectedPaymentMethod || FiatPaymentMethod.NONE;
+              const fee = getFeeFromApi(currentPaymentMethod);
+
+              return (
+                <>
+                  <span className="text-as-tertiarry text-sm">
+                    {fee !== null ? `Total (included $${fee.toFixed(2)} fee)` : "Total"}
+                  </span>
+                  <span className="text-as-primary font-semibold">
+                    ${getTotalAmount(currentPaymentMethod).toFixed(2)}
+                  </span>
+                </>
+              );
+            })()}
           </div>
         </div>
       </div>
