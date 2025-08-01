@@ -180,7 +180,6 @@ export function AnySpendCustom({
   onSuccess?: (txHash?: string) => void;
   showRecipient?: boolean;
 }) {
-  console.log("metadata", metadata);
   const hasMounted = useHasMounted();
 
   const searchParams = useSearchParamsSSR();
