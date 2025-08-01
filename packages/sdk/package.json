@@ -212,7 +212,7 @@
   },
   "dependencies": {
     "@amplitude/analytics-browser": "2.14.0",
-    "@b3dotfun/b3-api": "0.0.28",
+    "@b3dotfun/b3-api": "0.0.30",
     "@b3dotfun/basement-api": "0.0.11",
     "@b3dotfun/bondkit": "^0.1.17",
     "@chakra-ui/react": "2.10.7",
