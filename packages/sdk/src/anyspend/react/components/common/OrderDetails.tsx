@@ -2,7 +2,6 @@
 
 import {
   ALL_CHAINS,
-  capitalizeFirstLetter,
   EVM_CHAINS,
   getChainName,
   getErrorDisplay,
@@ -39,17 +38,7 @@ import {
 } from "@solana/spl-token";
 import { ComputeBudgetProgram, Connection, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { WalletCoinbase, WalletMetamask, WalletPhantom, WalletTrust, WalletWalletConnect } from "@web3icons/react";
-import {
-  CheckIcon,
-  ChevronDown,
-  ChevronRight,
-  Copy,
-  ExternalLink,
-  Home,
-  Loader2,
-  RefreshCcw,
-  SquareArrowOutUpRight,
-} from "lucide-react";
+import { CheckIcon, ChevronRight, Copy, ExternalLink, Home, Loader2, RefreshCcw } from "lucide-react";
 import { motion } from "motion/react";
 import { QRCodeSVG } from "qrcode.react";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
@@ -59,7 +48,11 @@ import { Address } from "thirdweb";
 import { erc20Abi, WalletClient } from "viem";
 import { b3 } from "viem/chains";
 import { useWaitForTransactionReceipt, useWalletClient } from "wagmi";
+import ConnectWalletPayment from "./ConnectWalletPayment";
+import { PaymentMethod } from "./CryptoPaymentMethod";
+import { OrderDetailsCollapsible } from "./OrderDetailsCollapsible";
 import PaymentVendorUI from "./PaymentVendorUI";
+import { TransferCryptoDetails } from "./TransferCryptoDetails";
 
 interface OrderDetailsProps {
   isMainnet: boolean;
@@ -69,6 +62,7 @@ interface OrderDetailsProps {
   relayTx: components["schemas"]["RelayTx"] | null;
   executeTx: components["schemas"]["ExecuteTx"] | null;
   refundTxs: components["schemas"]["RefundTx"][] | null;
+  paymentMethod?: PaymentMethod; // Now optional since we read from URL
   onBack?: () => void;
 }
 
@@ -205,12 +199,17 @@ export const OrderDetails = memo(function OrderDetails({
   relayTx,
   executeTx,
   refundTxs,
+  paymentMethod = PaymentMethod.NONE,
   onBack,
 }: OrderDetailsProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
+  // Read payment method from URL parameters
+  const paymentMethodFromUrl = searchParams.get("paymentMethod") as PaymentMethod | null;
+  const effectivePaymentMethod = paymentMethodFromUrl || paymentMethod || PaymentMethod.NONE;
+
+  const setB3ModalOpen = useModalStore((state: any) => state.setB3ModalOpen);
 
   const srcToken = order.metadata.srcToken;
   const dstToken = order.metadata.dstToken;
@@ -252,7 +251,11 @@ export const OrderDetails = memo(function OrderDetails({
 
       console.log("Processing transaction on chain:", currentWalletClient.chain.id);
 
-      const signer = currentWalletClient.account!;
+      const signer = currentWalletClient.account;
+      if (!signer) {
+        toast.error("No account connected");
+        return;
+      }
 
       // Send transaction
       if (isNativeToken(order.srcTokenAddress)) {
@@ -300,6 +303,7 @@ export const OrderDetails = memo(function OrderDetails({
     const params = new URLSearchParams(searchParams.toString());
     params.delete("waitingForDeposit");
     params.delete("orderId");
+    params.delete("paymentMethod");
 
     // Only update URL if params were actually removed
     if (params.toString() !== searchParams.toString()) {
@@ -325,8 +329,6 @@ export const OrderDetails = memo(function OrderDetails({
       setTxHash(undefined);
     }
   }, [setWaitingForDeposit, txSuccess]);
-
-  const [showOrderDetails, setShowOrderDetails] = useState(false);
 
   const isPhantomMobile = useMemo(() => navigator.userAgent.includes("Phantom"), []);
   const isPhantomBrowser = useMemo(() => (window as any).phantom?.solana?.isPhantom, []);
@@ -372,16 +374,6 @@ export const OrderDetails = memo(function OrderDetails({
   const formattedDepositDeficit = formatTokenAmount(BigInt(depositDeficit), srcToken.decimals);
 
   const { text: statusText, status: statusDisplay } = getStatusDisplay(order);
-
-  const permalink =
-    window.location.origin === "https://basement.fun"
-      ? window.location.origin + "/deposit/" + order.id
-      : window.location.origin + "?orderId=" + order.id;
-
-  const handleCoinbaseRedirect = () => {
-    const coinbaseUrl = `https://go.cb-w.com/dapp?cb_url=${encodeURIComponent(permalink)}`;
-    return coinbaseUrl;
-  };
 
   const initiatePhantomTransfer = async (amountLamports: string, tokenAddress: string, recipientAddress: string) => {
     try {
@@ -597,7 +589,7 @@ export const OrderDetails = memo(function OrderDetails({
           </div>
         )}
         <button
-          className="bg-as-on-surface-2 text-as-secondary flex w-full items-center justify-center gap-2 rounded-lg p-2"
+          className="bg-as-brand flex w-full items-center justify-center gap-2 rounded-lg p-2 font-semibold text-white"
           onClick={mode === "page" ? handleBack : handleCloseModal}
         >
           {mode === "page" ? (
@@ -700,7 +692,7 @@ export const OrderDetails = memo(function OrderDetails({
 
         {order.status === "executed" && (
           <button
-            className="bg-as-on-surface-2 text-as-secondary flex w-full items-center justify-center gap-2 rounded-lg p-2"
+            className="bg-as-brand flex w-full items-center justify-center gap-2 rounded-lg p-2 font-semibold text-white"
             onClick={mode === "page" ? handleBack : handleCloseModal}
           >
             {mode === "page" ? (
@@ -719,6 +711,14 @@ export const OrderDetails = memo(function OrderDetails({
   if (relayTx && relayTx.status === "success") {
     return (
       <>
+        <OrderDetailsCollapsible
+          order={order}
+          dstToken={dstToken}
+          tournament={tournament}
+          nft={nft}
+          recipientName={recipientName}
+          formattedExpectedDstAmount={formattedExpectedDstAmount}
+        />
         <div className="relative mt-4 flex w-full flex-col gap-4">
           <div className="bg-b3-react-background absolute bottom-2 left-4 top-2 z-[5] w-2">
             <motion.div
@@ -828,7 +828,7 @@ export const OrderDetails = memo(function OrderDetails({
 
         {order.status === "executed" && (
           <button
-            className="bg-as-on-surface-2 text-as-secondary flex w-full items-center justify-center gap-2 rounded-lg p-2"
+            className="bg-as-brand flex w-full items-center justify-center gap-2 rounded-lg p-2 font-semibold text-white"
             onClick={mode === "page" ? handleBack : handleCloseModal}
           >
             {mode === "page" ? (
@@ -849,6 +849,14 @@ export const OrderDetails = memo(function OrderDetails({
   if (depositTxs?.length || waitingForDeposit) {
     return (
       <>
+        <OrderDetailsCollapsible
+          order={order}
+          dstToken={dstToken}
+          tournament={tournament}
+          nft={nft}
+          recipientName={recipientName}
+          formattedExpectedDstAmount={formattedExpectedDstAmount}
+        />
         <div className="relative mt-4 flex w-full flex-col gap-6">
           <div className="bg-b3-react-background absolute bottom-2 left-4 top-2 z-[5] w-2">
             <motion.div
@@ -919,20 +927,32 @@ export const OrderDetails = memo(function OrderDetails({
 
   return (
     <>
-      {statusDisplay === "failure" && (
-        <div className="flex w-full flex-col items-center gap-3 whitespace-nowrap pb-2 text-sm">
-          <div className="bg-as-light-brand/20 flex w-full flex-col gap-4 rounded-lg p-8">
-            <div className="text-as-primary" style={{ whiteSpace: "normal" }}>
-              This order is no longer valid because the order expired.
-            </div>
-          </div>
-        </div>
-      )}
-
       {statusDisplay === "processing" && (
         <>
           {order.onrampMetadata ? (
             <PaymentVendorUI isMainnet={isMainnet} order={order} dstTokenSymbol={dstToken.symbol} />
+          ) : effectivePaymentMethod === PaymentMethod.CONNECT_WALLET ? (
+            <ConnectWalletPayment
+              order={order}
+              onPayment={handlePayment}
+              onCancel={handleBack}
+              txLoading={txLoading}
+              isSwitchingOrExecuting={isSwitchingOrExecuting}
+              phantomWalletAddress={phantomWalletAddress}
+              tournament={tournament}
+              nft={nft}
+            />
+          ) : effectivePaymentMethod === PaymentMethod.TRANSFER_CRYPTO ? (
+            // Transfer Crypto Payment Method - Show new card-based UI
+            <TransferCryptoDetails
+              order={order}
+              recipientName={recipientName}
+              srcToken={srcToken}
+              dstToken={dstToken}
+              tournament={tournament}
+              nft={nft}
+              onBack={handleBack}
+            />
           ) : (
             <div className="relative flex w-full flex-1 flex-col">
               <div className={"flex flex-col gap-1"}>
@@ -979,59 +999,63 @@ export const OrderDetails = memo(function OrderDetails({
 
               {(account?.address || phantomWalletAddress) && !showQRCode ? (
                 <div className="mb-4 mt-8 flex w-full flex-col items-center gap-4">
-                  <div className="relative flex w-full flex-col items-center gap-2">
-                    <ShinyButton
-                      accentColor={"hsl(var(--as-brand))"}
-                      textColor="text-white"
-                      className="flex w-5/6 items-center gap-2 sm:px-0"
-                      disabled={txLoading || isSwitchingOrExecuting}
-                      onClick={handlePayment}
-                    >
-                      {txLoading ? (
-                        <>
-                          Transaction Pending
-                          <Loader2 className="ml-2 h-5 w-5 animate-spin" />
-                        </>
-                      ) : (
-                        <>
-                          <span className="pl-4 text-lg md:text-sm">
-                            {order.srcChain === RELAY_SOLANA_MAINNET_CHAIN_ID && phantomWalletAddress
-                              ? "Pay from Phantom Wallet"
-                              : "Pay from Connected Wallet"}
-                          </span>
-                          <ChevronRight className="h-4 w-4" />
-                        </>
-                      )}
-                    </ShinyButton>
-                    <span className="label-style text-as-primary/50 text-xs">
-                      Connected to:{" "}
-                      {order.srcChain === RELAY_SOLANA_MAINNET_CHAIN_ID && phantomWalletAddress
-                        ? centerTruncate(phantomWalletAddress, 6)
-                        : centerTruncate(account?.address || "", 6)}
-                    </span>
-                  </div>
-
-                  <div className="flex w-full flex-col items-center gap-2">
-                    <ShinyButton
-                      accentColor={colorMode === "dark" ? "#ffffff" : "#000000"}
-                      className="flex w-5/6 items-center gap-2 sm:px-0"
-                      onClick={() => setShowQRCode(true)}
-                    >
-                      <span className="pl-4 text-lg md:text-sm">Pay from a different wallet</span>
-                      <ChevronRight className="h-4 w-4" />
-                    </ShinyButton>
-
-                    <div className="flex items-center gap-2">
-                      <WalletMetamask className="h-5 w-5" variant="branded" />
-                      <WalletCoinbase className="h-5 w-5" variant="branded" />
-                      <WalletPhantom className="h-5 w-5" variant="branded" />
-                      <WalletTrust className="h-5 w-5" variant="branded" />
-                      <WalletWalletConnect className="h-5 w-5" variant="branded" />
-                      <span className="label-style text-as-primary/30 text-xs">& more</span>
+                  {/* Default - Show both options */}
+                  <>
+                    <div className="relative flex w-full flex-col items-center gap-2">
+                      <ShinyButton
+                        accentColor={"hsl(var(--as-brand))"}
+                        textColor="text-white"
+                        className="flex w-5/6 items-center gap-2 sm:px-0"
+                        disabled={txLoading || isSwitchingOrExecuting}
+                        onClick={handlePayment}
+                      >
+                        {txLoading ? (
+                          <>
+                            Transaction Pending
+                            <Loader2 className="ml-2 h-5 w-5 animate-spin" />
+                          </>
+                        ) : (
+                          <>
+                            <span className="pl-4 text-lg md:text-sm">
+                              {order.srcChain === RELAY_SOLANA_MAINNET_CHAIN_ID && phantomWalletAddress
+                                ? "Pay from Phantom Wallet"
+                                : "Pay from Connected Wallet"}
+                            </span>
+                            <ChevronRight className="h-4 w-4" />
+                          </>
+                        )}
+                      </ShinyButton>
+                      <span className="label-style text-as-primary/50 text-xs">
+                        Connected to:{" "}
+                        {order.srcChain === RELAY_SOLANA_MAINNET_CHAIN_ID && phantomWalletAddress
+                          ? centerTruncate(phantomWalletAddress, 6)
+                          : centerTruncate(account?.address || "", 6)}
+                      </span>
                     </div>
-                  </div>
+
+                    <div className="flex w-full flex-col items-center gap-2">
+                      <ShinyButton
+                        accentColor={colorMode === "dark" ? "#ffffff" : "#000000"}
+                        className="flex w-5/6 items-center gap-2 sm:px-0"
+                        onClick={() => setShowQRCode(true)}
+                      >
+                        <span className="pl-4 text-lg md:text-sm">Pay from a different wallet</span>
+                        <ChevronRight className="h-4 w-4" />
+                      </ShinyButton>
+
+                      <div className="flex items-center gap-2">
+                        <WalletMetamask className="h-5 w-5" variant="branded" />
+                        <WalletCoinbase className="h-5 w-5" variant="branded" />
+                        <WalletPhantom className="h-5 w-5" variant="branded" />
+                        <WalletTrust className="h-5 w-5" variant="branded" />
+                        <WalletWalletConnect className="h-5 w-5" variant="branded" />
+                        <span className="label-style text-as-primary/30 text-xs">& more</span>
+                      </div>
+                    </div>
+                  </>
                 </div>
               ) : (
+                // Default case - existing QR code flow
                 <motion.div
                   initial={{ opacity: 0, filter: "blur(10px)" }}
                   animate={{ opacity: 1, filter: "blur(0px)" }}
@@ -1054,80 +1078,13 @@ export const OrderDetails = memo(function OrderDetails({
                         <WalletCoinbase className="h-5 w-5" variant="branded" />
                         <WalletPhantom className="h-5 w-5" variant="branded" />
                         <WalletTrust className="h-5 w-5" variant="branded" />
-                        <WalletWalletConnect className="h-5 w-5" variant="branded" />
                       </TextLoop>
                     </div>
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    {account && (
-                      <Button variant="ghost" className="text-as-primary w-full" onClick={handlePayment}>
-                        Send Transaction <ChevronRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    )}
-                    {EVM_CHAINS[order.srcChain] ? (
-                      <Button variant="outline" className="w-full" onClick={handlePayment}>
-                        Open Metamask
-                        <WalletMetamask className="ml-2 h-5 w-5" variant="branded" />
-                      </Button>
-                    ) : null}
-                    <a href={handleCoinbaseRedirect()}>
-                      <Button variant="outline" className="w-full">
-                        Open Coinbase
-                        <WalletCoinbase className="ml-2 h-5 w-5" variant="branded" />
-                      </Button>
-                    </a>
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={() =>
-                        initiatePhantomTransfer(order.srcAmount, order.srcTokenAddress, order.globalAddress)
-                      }
-                    >
-                      Open Phantom
-                      <WalletPhantom className="ml-2 h-5 w-5" variant="branded" />
-                    </Button>
                   </div>
                 </motion.div>
               )}
             </div>
           )}
-
-          <div className="bg-as-light-brand/30 w-full rounded-lg p-4 sm:p-2 sm:px-4">
-            <p className="text-as-secondary mb-3 text-sm">Continue on another device?</p>
-            <div className="flex items-center gap-4">
-              <CopyToClipboard
-                text={permalink}
-                onCopy={() => {
-                  toast.success("Copied to clipboard");
-                }}
-              >
-                <Button variant="outline" className="w-full">
-                  Copy Link
-                  <Copy className="ml-2 h-3 w-3" />
-                </Button>
-              </CopyToClipboard>
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => {
-                  if (navigator.share) {
-                    navigator
-                      .share({
-                        title: "Complete Deposit",
-                        text: "Complete your deposit on BSMNT.fun",
-                        url: permalink,
-                      })
-                      .catch(error => console.log("Error sharing:", error));
-                  } else {
-                    toast.error("Web Share API is not supported on this browser");
-                  }
-                }}
-              >
-                Send Link <SquareArrowOutUpRight className="ml-2 h-3 w-3" />
-              </Button>
-            </div>
-          </div>
         </>
       )}
 
@@ -1144,103 +1101,19 @@ export const OrderDetails = memo(function OrderDetails({
         </div>
       </div>
 
-      {showOrderDetails ? (
-        <motion.div
-          className="w-full"
-          initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          transition={{ duration: 0.3, delay: 0, ease: "easeInOut" }}
-        >
-          <div className="flex w-full flex-col items-center gap-3 whitespace-nowrap py-2 text-sm">
-            <div className="flex w-full items-center justify-between gap-2">
-              <div className="text-as-primary/30">
-                {order.type === "swap" || order.type === "mint_nft"
-                  ? "Expected to receive"
-                  : order.type === "join_tournament"
-                    ? "Join tournament"
-                    : order.type === "fund_tournament"
-                      ? "Fund tournament"
-                      : order.type === "custom"
-                        ? order.metadata.action
-                          ? capitalizeFirstLetter(order.metadata.action)
-                          : "Contract execution"
-                        : ""}
-              </div>
-
-              <div className="flex items-end gap-2">
-                {order.type === "swap" ? (
-                  `~${formattedExpectedDstAmount} ${dstToken.symbol}`
-                ) : order.type === "mint_nft" ? (
-                  <div className="flex items-center gap-2">
-                    <img src={nft?.imageUrl} alt={nft?.name || "NFT"} className="h-5 w-5" />
-                    <div>{nft?.name || "NFT"}</div>
-                  </div>
-                ) : order.type === "join_tournament" || order.type === "fund_tournament" ? (
-                  <div className="flex items-center gap-2">
-                    <img src={tournament?.imageUrl} alt={tournament?.name || "Tournament"} className="h-5 w-5" />
-                    <div>{tournament?.name || "Tournament"}</div>
-                  </div>
-                ) : null}
-
-                <div className="text-as-primary/50 flex items-center gap-2">
-                  <span>on {order.dstChain !== b3.id && getChainName(order.dstChain)}</span>
-                  <img
-                    src={ALL_CHAINS[order.dstChain].logoUrl}
-                    alt={getChainName(order.dstChain)}
-                    className={cn(
-                      "h-3",
-                      order.dstChain !== b3.id && "w-3 rounded-full",
-                      order.dstChain === b3.id && "h-4",
-                    )}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="divider w-full" />
-
-            <div className="flex w-full justify-between gap-4">
-              <div className="text-as-primary/30">Order ID</div>
-              <div className="text-as-primary overflow-hidden text-ellipsis whitespace-nowrap">{order.id}</div>
-            </div>
-
-            <div className="divider w-full" />
-
-            <div className="flex w-full justify-between gap-4">
-              <div className="text-as-primary/30">Recipient</div>
-              <div className="flex flex-col items-end gap-1">
-                {recipientName && <div className="text-as-primary font-semibold">{recipientName}</div>}
-                <CopyToClipboard
-                  text={order.recipientAddress}
-                  onCopy={() => {
-                    toast.success("Copied recipient address to clipboard");
-                  }}
-                >
-                  <div className="text-as-primary flex items-center gap-2">
-                    {centerTruncate(order.recipientAddress, 10)}
-                    <Copy className="text-as-primary/50 hover:text-as-primary h-4 w-4 cursor-pointer transition-all duration-200" />
-                  </div>
-                </CopyToClipboard>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      ) : (
-        <div className="flex w-full items-center">
-          <div className="divider w-full" />
-          <button className="whitespace-nowrap text-sm" onClick={() => setShowOrderDetails(true)}>
-            Order Details
-          </button>
-          <ChevronDown className="text-as-primary mx-1 h-4 min-h-4 w-4 min-w-4" />
-          <div className="divider w-full" />
-        </div>
+      {statusDisplay !== "processing" && (
+        <OrderDetailsCollapsible
+          order={order}
+          dstToken={dstToken}
+          tournament={tournament}
+          nft={nft}
+          recipientName={recipientName}
+          formattedExpectedDstAmount={formattedExpectedDstAmount}
+        />
       )}
 
-      <button
-        className="bg-as-on-surface-2 text-as-secondary flex w-full items-center justify-center gap-2 rounded-lg p-2"
-        onClick={handleBack}
-      >
-        Cancel and start over <RefreshCcw className="ml-2 h-4 w-4" />
+      <button className="flex w-full items-center justify-center gap-2" onClick={handleBack}>
+        <RefreshCcw className="ml-2 h-4 w-4" /> Cancel and start over
       </button>
 
       {/* <DelayedSupportMessage /> */}

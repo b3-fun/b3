@@ -1,38 +1,61 @@
 import { getStatusDisplay } from "@b3dotfun/sdk/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
-import { Badge, TextShimmer } from "@b3dotfun/sdk/global-account/react";
-import { Check, Loader2 } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { memo } from "react";
+import { Step, StepProgress } from "./StepProgress";
 
 export const OrderStatus = memo(function OrderStatus({ order }: { order: components["schemas"]["Order"] }) {
   const isComplete = order.status === "executed";
-  const { text, status: displayStatus } = getStatusDisplay(order);
+  const { text, status: displayStatus, description } = getStatusDisplay(order);
+
+  console.log("OrderStatus", displayStatus);
+  console.log("OrderStatus", order);
+
+  const paymentSteps: Step[] = [
+    {
+      id: 1,
+      title: text,
+      description: description,
+    },
+    {
+      id: 2,
+      title: text,
+      description: description,
+    },
+  ];
+
+  if (order.status === "waiting_stripe_payment") {
+    return <StepProgress steps={paymentSteps} currentStepIndex={0} />;
+  }
+
+  if (order.status === "relay") {
+    return <StepProgress steps={paymentSteps} currentStepIndex={1} />;
+  }
+
+  if (!isComplete && displayStatus !== "failure") {
+    return null;
+  }
 
   return (
     <div className="flex items-center justify-center gap-2">
       {isComplete ? (
-        <Badge
-          variant="outline"
-          className="flex items-center gap-3 border-green-500/50 bg-green-500/20 px-4 py-1 text-base transition-colors"
-        >
-          <Check className="h-6 w-6 text-green-500" />
-          <span className="font-medium">{text}</span>
-        </Badge>
-      ) : displayStatus === "failure" ? (
-        <Badge variant="destructive" className="border-red-400/50 bg-red-400/20 px-4 py-1 text-base">
-          <div className="font-sf-rounded text-base font-semibold text-red-400/50">{text}</div>
-        </Badge>
+        <div className="flex flex-col items-center">
+          <div className={`bg-as-success-secondary relative flex h-10 w-10 items-center justify-center rounded-full`}>
+            <Check className="text-as-content-icon-success h-6 w-6" />
+          </div>
+          <h2 className="text-as-primary mt-4 text-xl font-semibold">{text}</h2>
+          <div className="text-as-tertiarry mt-1 text-center">{description}</div>
+        </div>
       ) : (
-        <Badge
-          variant="default"
-          className="border-as-stroke/20 bg-as-primary/10 flex items-center gap-3 px-4 py-1 text-base transition-colors"
-        >
-          {displayStatus === "processing" && <Loader2 className="text-as-primary h-4 w-4 animate-spin" />}
-
-          <TextShimmer duration={1} className="font-sf-rounded text-base font-semibold">
-            {text}
-          </TextShimmer>
-        </Badge>
+        <div className="flex flex-col items-center">
+          <div className="bg-as-error-secondary flex h-10 w-10 items-center justify-center rounded-full text-base">
+            <X className="text-as-content-icon-error h-5 w-5" />
+          </div>
+          <div className="font-sf-rounded text-as-content-primary mt-4 text-lg font-semibold">{text}</div>
+          <div className="text-as-tertiarry text-center" style={{ whiteSpace: "normal" }}>
+            {description}
+          </div>
+        </div>
       )}
     </div>
   );

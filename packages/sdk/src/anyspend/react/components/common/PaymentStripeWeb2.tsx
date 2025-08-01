@@ -1,12 +1,12 @@
-import { USDC_BASE } from "@b3dotfun/sdk/anyspend";
 import { STRIPE_CONFIG } from "@b3dotfun/sdk/anyspend/constants";
-import { useStripeClientSecret } from "@b3dotfun/sdk/anyspend/react";
+import { OrderDetailsCollapsible, useStripeClientSecret } from "@b3dotfun/sdk/anyspend/react";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
-import { ShinyButton, useB3, useModalStore } from "@b3dotfun/sdk/global-account/react";
+import { ShinyButton, useB3, useModalStore, useProfile } from "@b3dotfun/sdk/global-account/react";
+import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { formatStripeAmount } from "@b3dotfun/sdk/shared/utils/payment.utils";
 import { AddressElement, Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import { loadStripe, PaymentIntentResult, StripePaymentElementOptions } from "@stripe/stripe-js";
-import { HelpCircle, Info, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "../AnySpendFingerprintWrapper";
 import HowItWorks from "./HowItWorks";
@@ -201,6 +201,9 @@ function StripePaymentForm({
     }
   }, [setB3ModalOpen]);
 
+  const profile = useProfile({ address: order.recipientAddress });
+  const recipientName = profile.data?.name?.replace(/\.b3\.fun/g, "");
+
   if (!stripeReady) {
     return <StripeLoadingState />;
   }
@@ -232,83 +235,23 @@ function StripePaymentForm({
   ];
 
   return (
-    <div className="relative my-8 flex w-full flex-1 flex-col items-center justify-center">
+    <div className="relative mt-1 flex w-full flex-1 flex-col items-center justify-center">
       <form onSubmit={handleSubmit} className="w-full space-y-6">
-        {/* Combined Header with Security and Amount */}
-        <div className="bg-as-on-surface-1 w-full rounded-2xl p-6">
-          {/* Security Badge */}
-          <div className="mb-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="bg-as-brand/20 flex h-8 w-8 shrink-0 items-center justify-center rounded-full">
-                <svg className="text-as-brand h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                  />
-                </svg>
-              </div>
-              <div>
-                <div className="text-as-primary text-sm font-medium">Secured by Stripe</div>
-                <div className="text-as-primary/50 text-xs">End-to-end encrypted payment</div>
-              </div>
-            </div>
-
-            {/* How it works button */}
-            <button
-              type="button"
-              onClick={() => setShowHowItWorks(true)}
-              className="text-as-primary/60 hover:text-as-primary flex items-center gap-1 text-xs transition-colors"
-            >
-              <HelpCircle className="h-4 w-4" />
-              <span>How it works</span>
-            </button>
-          </div>
-
-          {/* Amount Display */}
-          {amount && (
-            <div className="border-as-stroke border-t pt-4">
-              <div className="text-as-primary/50 mb-3 text-sm">Payment Breakdown</div>
-
-              {/* Calculate fee breakdown */}
-              {(() => {
-                const originalAmount = Number(order.srcAmount) / 10 ** USDC_BASE.decimals;
-                const finalAmount = Number(amount);
-                const calculatedFee = finalAmount - originalAmount;
-
-                return (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-as-primary/60">Amount</span>
-                      <span className="text-as-primary">${originalAmount.toFixed(2)}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-1">
-                        <span className="text-as-primary/60">Processing fee</span>
-                        <Tooltip
-                          content={`Credit card companies charge a processing fee of 5.4% + $0.30 for all transactions.\n\nThis fee covers secure payment processing and fraud protection.`}
-                        >
-                          <Info className="text-as-primary/40 hover:text-as-primary/60 h-3 w-3 transition-colors" />
-                        </Tooltip>
-                      </div>
-                      <span className="text-as-primary">${calculatedFee.toFixed(2)}</span>
-                    </div>
-                    <div className="border-as-stroke border-t pt-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-as-primary font-semibold">Total Amount</span>
-                        <span className="text-as-primary text-2xl font-bold">${finalAmount.toFixed(2)} USD</span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })()}
-            </div>
-          )}
-        </div>
+        <OrderDetailsCollapsible
+          order={order}
+          dstToken={order.metadata.dstToken}
+          tournament={
+            order.type === "join_tournament" || order.type === "fund_tournament" ? order.metadata.tournament : undefined
+          }
+          nft={order.type === "mint_nft" ? order.metadata.nft : undefined}
+          recipientName={recipientName}
+          formattedExpectedDstAmount={formatTokenAmount(BigInt(order.srcAmount), order.metadata.dstToken.decimals)}
+          showTotal={true}
+          totalAmount={amount ? `$${Number(amount).toFixed(2)}` : undefined}
+        />
 
         {/* Simplified Payment Form */}
-        <div className="bg-as-on-surface-1 w-full rounded-2xl p-6">
+        <div className="w-full">
           <div className="text-as-primary mb-4 text-lg font-semibold">Payment Details</div>
           <PaymentElement onChange={handlePaymentElementChange} options={stripeElementOptions} />
           {showAddressElement && (
@@ -394,24 +337,24 @@ function StripePaymentForm({
 }
 
 // Add tooltip component
-function Tooltip({ children, content }: { children: React.ReactNode; content: string }) {
-  const [isVisible, setIsVisible] = useState(false);
+// function Tooltip({ children, content }: { children: React.ReactNode; content: string }) {
+//   const [isVisible, setIsVisible] = useState(false);
 
-  return (
-    <div className="relative inline-block">
-      <div onMouseEnter={() => setIsVisible(true)} onMouseLeave={() => setIsVisible(false)} className="cursor-help">
-        {children}
-      </div>
-      {isVisible && (
-        <div className="absolute bottom-full left-1/2 z-50 mb-2 w-80 -translate-x-1/2">
-          <div className="bg-as-on-surface-1 border-as-stroke text-as-primary rounded-lg border p-3 text-sm shadow-lg">
-            <div className="whitespace-pre-line">{content}</div>
-            <div className="absolute left-1/2 top-full -translate-x-1/2">
-              <div className="border-t-as-on-surface-1 border-l-4 border-r-4 border-t-4 border-transparent"></div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+//   return (
+//     <div className="relative inline-block">
+//       <div onMouseEnter={() => setIsVisible(true)} onMouseLeave={() => setIsVisible(false)} className="cursor-help">
+//         {children}
+//       </div>
+//       {isVisible && (
+//         <div className="absolute bottom-full left-1/2 z-50 mb-2 w-80 -translate-x-1/2">
+//           <div className="bg-as-on-surface-1 border-as-stroke text-as-primary rounded-lg border p-3 text-sm shadow-lg">
+//             <div className="whitespace-pre-line">{content}</div>
+//             <div className="absolute left-1/2 top-full -translate-x-1/2">
+//               <div className="border-t-as-on-surface-1 border-l-4 border-r-4 border-t-4 border-transparent"></div>
+//             </div>
+//           </div>
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
