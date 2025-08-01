@@ -98,7 +98,7 @@ import { AnyspendProvider } from "@b3dotfun/sdk/anyspend/react";
 
 function App() {
   return (
-    <AnyspendProvider isMainnet={true}>
+    <AnyspendProvider>
       <YourAnySpendComponents />
     </AnyspendProvider>
   );

@@ -14,7 +14,6 @@ import {
 } from "thirdweb/react";
 import { Account, Wallet } from "thirdweb/wallets";
 import { createConfig, http, WagmiProvider } from "wagmi";
-import { RelayKitProviderWrapper } from "../RelayKitProviderWrapper";
 import { StyleRoot } from "../StyleRoot";
 import { B3Context, B3ContextType } from "./types";
 
@@ -42,14 +41,12 @@ const queryClient = new QueryClient();
  * Main B3Provider component
  */
 export function B3Provider({
-  isMainnetAnySpend = true,
   theme = "light",
   children,
   accountOverride,
   environment,
   automaticallySetFirstEoa,
 }: {
-  isMainnetAnySpend?: boolean;
   theme: "light" | "dark";
   children: React.ReactNode;
   accountOverride?: Account;
@@ -67,12 +64,10 @@ export function B3Provider({
               theme={theme}
               automaticallySetFirstEoa={!!automaticallySetFirstEoa}
             >
-              <RelayKitProviderWrapper isMainnet={isMainnetAnySpend}>
-                {children}
-                {/* For the modal https://github.com/b3-fun/b3/blob/main/packages/sdk/src/global-account/react/components/ui/dialog.tsx#L46 */}
-                <StyleRoot id="b3-root" />
-                <Toaster theme={theme} />
-              </RelayKitProviderWrapper>
+              {children}
+              {/* For the modal https://github.com/b3-fun/b3/blob/main/packages/sdk/src/global-account/react/components/ui/dialog.tsx#L46 */}
+              <StyleRoot id="b3-root" />
+              <Toaster theme={theme} />
             </InnerProvider>
           </TooltipProvider>
         </ThirdwebProvider>

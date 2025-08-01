@@ -1,3 +1,5 @@
+import React from "react";
+
 // Add window.ethereum type declaration at the top of the file
 declare global {
   interface Window {

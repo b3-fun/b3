@@ -7,7 +7,7 @@ import "@b3dotfun/sdk/index.css";
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   return (
-    <B3Provider isMainnetAnySpend={true} environment="production" theme="light" automaticallySetFirstEoa={true}>
+    <B3Provider environment="production" theme="light" automaticallySetFirstEoa={true}>
       <AnyspendProvider>
         <B3DynamicModal />
         <StyleRoot>
