@@ -1,0 +1,553 @@
+---
+title: "Brand Kit"
+description: "Brand guidelines and assets for building applications that align with B3's visual identity"
+---
+
+import { links, branding, contact } from "/snippets/variables.mdx";
+
+# B3 Brand Kit
+
+Follow these guidelines to use our brand correctly when contributing to the B3 ecosystem and building applications that align with our visual identity.
+
+<div style={{ textAlign: "center", margin: "2rem 0", fontWeight: "bold", letterSpacing: "2px" }}>
+  ✦ {branding.values[0]} ✦ {branding.values[1]} ✦ {branding.values[2]} ✦
+</div>
+
+## Brand Overview
+
+B3 is **community-driven**, **fun**, and **ecosystem-aligned**. Our brand reflects the playful yet professional nature of onchain gaming while maintaining accessibility for developers and gamers alike.
+
+<CardGroup cols={2}>
+  <Card title="Brand Philosophy" icon="heart">
+    Keep things light, friendly, and engaging. B3 is about having fun through gaming and onchain experiences.
+  </Card>
+  <Card title="Design Approach" icon="paintbrush">
+    Don't limit yourself to common brand colors. B3 invites expressive, vibrant color palettes that capture the gaming
+    spirit.
+  </Card>
+</CardGroup>
+
+## Logo Usage
+
+### Primary Logo Variations
+
+<Tabs>
+<Tab title="Blue Logo">
+  **Primary logo for light backgrounds**
+  
+  <Frame>
+    <img src={branding.assets.logoBlueLight} alt="B3 Blue Logo" style={{ maxWidth: '200px' }} />
+  </Frame>
+  
+  **Usage:**
+  - Primary brand representation
+  - Light backgrounds and interfaces
+  - Web applications and documentation
+  
+  **Downloads:**
+  - [SVG Format]({branding.assets.logoBlueLight})
+  - PNG Format (available on request)
+</Tab>
+
+<Tab title="White Logo">
+  **For dark backgrounds and overlays**
+  <div style={{ backgroundColor: "#000", padding: "2rem", borderRadius: "8px", textAlign: "center" }}>
+    <img src={branding.assets.logoWhite || "/logo/white.svg"} alt="B3 White Logo" style={{ maxWidth: "200px" }} />
+  </div>
+  **Usage:** - Dark backgrounds and themes - Video overlays and presentations - High contrast applications
+  **Downloads:** - SVG Format - PNG Format (available on request)
+</Tab>
+
+<Tab title="Black Logo">
+  **Monochrome version for special use cases**
+  
+  <Frame>
+    <img src={branding.assets.logoBlack || "/logo/black.svg"} alt="B3 Black Logo" style={{ maxWidth: '200px' }} />
+  </Frame>
+  
+  **Usage:**
+  - Print materials
+  - Monochrome applications
+  - Minimalist designs
+  
+  **Downloads:**
+  - SVG Format
+  - PNG Format (available on request)
+</Tab>
+</Tabs>
+
+### Logo Implementation
+
+<CodeGroup>
+```tsx React Component
+import { branding } from '/path/to/snippets/variables';
+
+function B3Logo({ variant = 'blue', size = 120 }) {
+const logoSrc = variant === 'blue' ? branding.assets.logoBlueLight
+: variant === 'white' ? branding.assets.logoWhite
+: branding.assets.logoBlack;
+
+return (
+<img
+src={logoSrc}
+alt="B3 Logo"
+width={size}
+height={size \* 0.4} // Maintain aspect ratio
+/>
+);
+}
+
+````
+
+```html HTML
+<!-- Blue Logo -->
+<img src="{branding.assets.logoBlueLight}" alt="B3 Logo" />
+
+<!-- White Logo (for dark backgrounds) -->
+<img src="/logo/white.svg" alt="B3 Logo" />
+
+<!-- Black Logo -->
+<img src="/logo/black.svg" alt="B3 Logo" />
+````
+
+```css CSS Background
+.b3-logo {
+  background-image: url("{branding.assets.logoBlueLight}");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+```
+
+</CodeGroup>
+
+## Brand Colors
+
+Our color palette balances professional appeal with gaming energy. Feel free to be creative with vibrant, fun color combinations!
+
+<div
+  style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+    gap: "1rem",
+    margin: "2rem 0",
+  }}
+>
+  <div style={{ textAlign: "center" }}>
+    <div
+      style={{
+        backgroundColor: branding.colors.primaryBlue,
+        height: "80px",
+        borderRadius: "8px",
+        border: "1px solid #e5e7eb",
+      }}
+    ></div>
+    <h4>Primary Blue</h4>
+    <code>{branding.colors.primaryBlue}</code>
+  </div>
+
+  <div style={{ textAlign: "center" }}>
+    <div
+      style={{
+        backgroundColor: branding.colors.grey,
+        height: "80px",
+        borderRadius: "8px",
+        border: "1px solid #e5e7eb",
+      }}
+    ></div>
+    <h4>Grey</h4>
+    <code>{branding.colors.grey}</code>
+  </div>
+
+  <div style={{ textAlign: "center" }}>
+    <div
+      style={{
+        backgroundColor: branding.colors.white,
+        height: "80px",
+        borderRadius: "8px",
+        border: "2px solid #e5e7eb",
+      }}
+    ></div>
+    <h4>White</h4>
+    <code>{branding.colors.white}</code>
+  </div>
+</div>
+
+### Color Implementation
+
+<CodeGroup>
+```css CSS Variables
+:root {
+  --b3-primary: {branding.colors.primaryBlue};
+  --b3-grey: {branding.colors.grey};
+  --b3-white: {branding.colors.white};
+}
+
+.primary-button {
+background-color: var(--b3-primary);
+color: var(--b3-white);
+}
+
+````
+
+```tsx Tailwind Config
+// tailwind.config.js
+module.exports = {
+  theme: {
+    extend: {
+      colors: {
+        'b3-blue': '{branding.colors.primaryBlue}',
+        'b3-grey': '{branding.colors.grey}',
+        'b3-white': '{branding.colors.white}'
+      }
+    }
+  }
+}
+````
+
+```json Design Tokens
+{
+  "color": {
+    "primary": {
+      "value": "{branding.colors.primaryBlue}",
+      "type": "color"
+    },
+    "neutral": {
+      "value": "{branding.colors.grey}",
+      "type": "color"
+    }
+  }
+}
+```
+
+</CodeGroup>
+
+## Typography
+
+B3 uses custom typography to create a modern, gaming-focused aesthetic. Import our font package to maintain brand consistency.
+
+### Font Import Methods
+
+<Tabs>
+<Tab title="CSS Import">
+  ```css
+  @import url("{branding.assets.fontsCSS}");
+  
+  body {
+    font-family: {branding.fonts.primary};
+  }
+  
+  .heading {
+    font-family: {branding.fonts.secondary};
+  }
+  ```
+</Tab>
+
+<Tab title="HTML Link">
+  ```html
+  <link href="{branding.assets.fontsCSS}" rel="stylesheet">
+  
+  <style>
+    body { font-family: {branding.fonts.primary}; }
+  </style>
+  ```
+</Tab>
+
+<Tab title="React/Next.js">
+  ```tsx
+  // pages/_document.tsx or app/layout.tsx
+  import Head from 'next/head';
+  
+  export default function Document() {
+    return (
+      <Html>
+        <Head>
+          <link href="{branding.assets.fontsCSS}" rel="stylesheet" />
+        </Head>
+        <body style={{ fontFamily: '{branding.fonts.primary}' }}>
+          {/* Your app */}
+        </body>
+      </Html>
+    );
+  }
+  ```
+</Tab>
+</Tabs>
+
+### Available Font Families
+
+<AccordionGroup>
+<Accordion title="Neue Montreal Family">
+  **Primary font family for B3 applications**
+  
+  <ul>
+    {branding.fonts.available.filter(font => font.includes('Neue Montreal')).map(font => (
+      <li key={font} style={{ fontFamily: `"${font}", sans-serif`, fontSize: '18px', margin: '0.5rem 0' }}>
+        {font} - The quick brown fox jumps over the lazy dog
+      </li>
+    ))}
+  </ul>
+  
+  **Usage:** Body text, UI elements, general content
+</Accordion>
+
+<Accordion title="Calibre Family">
+  **Secondary font for headings and emphasis**
+  <ul>
+    {branding.fonts.available
+      .filter(font => font.includes("Calibre"))
+      .map(font => (
+        <li key={font} style={{ fontFamily: `"${font}", sans-serif`, fontSize: "18px", margin: "0.5rem 0" }}>
+          {font} - Gaming is the future of onchain
+        </li>
+      ))}
+  </ul>
+  **Usage:** Headlines, section titles, call-to-action buttons
+</Accordion>
+
+<Accordion title="Pack">
+  **Decorative font for special elements**
+  
+  <div style={{ fontFamily: '"Pack", sans-serif', fontSize: '24px', margin: '1rem 0' }}>
+    Pack Font - B3 GAMING ECOSYSTEM
+  </div>
+  
+  **Usage:** Logos, gaming-themed headers, decorative elements
+</Accordion>
+</AccordionGroup>
+
+## Brand Guidelines
+
+<Steps>
+<Step title="Let it breathe">
+  **Maintain adequate spacing around the B3 logo**
+  
+  - Minimum clear space: 0.5x the logo height on all sides
+  - Don't place text or other elements too close to the logo
+  - Ensure the logo remains legible at all sizes
+  
+  <Tip>
+  The logo should never appear smaller than 24px in height for digital applications
+  </Tip>
+</Step>
+
+<Step title="Make it fun">
+  **Keep the brand experience light, friendly, and engaging** - Use vibrant colors when appropriate - Include playful
+  animations and micro-interactions - Write in a conversational, approachable tone - Embrace the gaming culture and
+  community spirit
+</Step>
+
+<Step title="Stay consistent">
+  **Use brand elements consistently across all touchpoints**
+  
+  - Stick to the approved color palette and fonts
+  - Follow logo usage guidelines
+  - Maintain the same tone and visual style
+  - Reference this brand kit for all brand decisions
+</Step>
+</Steps>
+
+## Fun Assets & Extensions
+
+### Special Assets
+
+<CardGroup cols={2}>
+  <Card title="The Cursor" icon="cursor-click">
+    Custom gaming cursor for interactive elements **Available formats:** - PNG (Standard resolution) - PNG @ 2x (High
+    resolution)
+  </Card>
+
+  <Card title="Blue Texture" icon="texture">
+    Background texture for gaming aesthetics **Format:** JPG **Usage:** Backgrounds, overlays, design elements
+  </Card>
+
+  <Card title="The Grid" icon="grid-3x3">
+    Geometric grid pattern for layouts **Available formats:** - SVG (Vector) - PNG (Raster)
+  </Card>
+
+  <Card title="Motion Assets" icon="play">
+    Logo animations for dynamic presentations **Available formats:** - MP4 (16:9 and 1:1 ratios) - After Effects
+    projects
+  </Card>
+</CardGroup>
+
+### Implementation Examples
+
+<CodeGroup>
+```css Gaming Cursor
+.gaming-interface {
+  cursor: url('/assets/b3-cursor.png'), pointer;
+}
+
+.interactive-element:hover {
+cursor: url('/assets/b3-cursor-2x.png'), pointer;
+}
+
+````
+
+```tsx React Animation
+import { motion } from 'framer-motion';
+
+function AnimatedLogo() {
+  return (
+    <motion.img
+      src={branding.assets.logoBlueLight}
+      alt="B3 Logo"
+      initial={{ scale: 0.8, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      whileHover={{ scale: 1.05 }}
+    />
+  );
+}
+````
+
+```css Blue Texture Background
+.gaming-section {
+  background-image: url("/assets/blue-texture.jpg");
+  background-size: cover;
+  background-position: center;
+  background-blend-mode: multiply;
+}
+```
+
+</CodeGroup>
+
+## Motion & Animation
+
+<Info>
+  Animations are welcomed when representing B3 - after all, movement is fun! We recommend Framer Motion for React
+  applications, but use whatever animation library works best for your stack.
+</Info>
+
+### Animation Principles
+
+<AccordionGroup>
+<Accordion title="Playful & Smooth">
+  - Use ease-out transitions for natural feel
+  - Add subtle bounce effects for gaming appeal
+  - Keep animations under 500ms for responsiveness
+</Accordion>
+
+<Accordion title="Gaming-Inspired">
+  - Include hover effects on interactive elements - Use scale transforms for button interactions - Add loading
+  animations that feel game-like
+</Accordion>
+
+<Accordion title="Performance-First">
+  - Use CSS transforms over position changes
+  - Prefer opacity changes over visibility
+  - Test animations on various device capabilities
+</Accordion>
+</AccordionGroup>
+
+### Logo Animation Assets
+
+<Tabs>
+<Tab title="16:9 Format">
+  **Perfect for presentations and wide layouts**
+  
+  - **MP4 Video:** High-quality animated logo
+  - **After Effects Project:** Customizable source file
+  - **Duration:** 3 seconds with loop options
+</Tab>
+
+<Tab title="1:1 Format">
+  **Ideal for social media and square layouts**
+  
+  - **MP4 Video:** Square format animated logo
+  - **After Effects Project:** Editable source
+  - **Usage:** Profile pictures, app icons, social posts
+</Tab>
+</Tabs>
+
+## Building with B3 Brand
+
+### Quick Start Template
+
+```tsx
+import { branding } from "/snippets/variables";
+
+function B3ThemedApp() {
+  return (
+    <div
+      style={{
+        fontFamily: branding.fonts.primary,
+        backgroundColor: branding.colors.white,
+        color: branding.colors.black,
+      }}
+    >
+      <header
+        style={{
+          backgroundColor: branding.colors.primaryBlue,
+          color: branding.colors.white,
+          padding: "1rem",
+        }}
+      >
+        <img src={branding.assets.logoWhite} alt="B3" height="40" />
+        <h1 style={{ fontFamily: branding.fonts.secondary }}>Gaming DApp</h1>
+      </header>
+
+      <main style={{ padding: "2rem" }}>
+        <h2>Welcome to the B3 Ecosystem</h2>
+        <p>Build the future of onchain gaming!</p>
+      </main>
+    </div>
+  );
+}
+```
+
+### Brand Checklist
+
+<Steps>
+<Step title="Visual Identity">
+  - [ ] Using approved B3 logo variations
+  - [ ] Following color palette guidelines  
+  - [ ] Implementing B3 typography
+  - [ ] Maintaining proper logo spacing
+</Step>
+
+<Step title="User Experience">
+  - [ ] Keeping interface fun and engaging - [ ] Using gaming-appropriate language - [ ] Including smooth animations - [
+  ] Maintaining accessibility standards
+</Step>
+
+<Step title="Technical Implementation">
+  - [ ] Optimizing assets for web performance
+  - [ ] Supporting dark/light theme variations
+  - [ ] Testing across different devices
+  - [ ] Following responsive design principles
+</Step>
+</Steps>
+
+## Contribute to B3 Brand
+
+<CardGroup cols={2}>
+  <Card title="Submit Brand Assets" icon="upload" href={`mailto:${contact.partnerships}?subject=B3 Brand Contribution`}>
+    Created something cool for the B3 community? Share your brand extensions and creative work.
+  </Card>
+
+  <Card title="Brand Feedback" icon="comment-dots" href={links.discord}>
+    Join our Discord to discuss brand guidelines, share implementations, and get feedback.
+  </Card>
+
+  <Card title="Developer Showcase" icon="star" href={links.github + "/discussions"}>
+    Show off your B3-branded applications and tools in our GitHub discussions.
+  </Card>
+
+  <Card title="Brand Partnership" icon="handshake" href={`mailto:${contact.partnerships}`}>
+    Interested in deeper brand collaboration? Reach out to explore partnership opportunities.
+  </Card>
+</CardGroup>
+
+<Check>
+  **Ready to build with B3 branding?** Download the assets you need and start creating gaming experiences that align
+  with our visual identity. Remember to keep it fun, community-driven, and ecosystem-aligned! 🎮
+</Check>
+
+---
+
+<Note>
+  **Missing an asset or have questions?** Reach out to our team at [partnerships@b3.fun](
+  {`mailto:${contact.partnerships}`}) or join our [Discord community]({links.discord}) for brand support.
+</Note>

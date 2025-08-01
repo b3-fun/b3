@@ -15,7 +15,7 @@
         "groups": [
           {
             "group": "Getting Started",
-            "pages": ["index", "quickstart", "development"]
+            "pages": ["index", "quickstart", "network-setup", "brand-kit", "development"]
           },
           {
             "group": "AnySpend",

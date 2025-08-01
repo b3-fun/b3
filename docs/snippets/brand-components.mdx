@@ -1,0 +1,278 @@
+import { branding } from "/snippets/variables.mdx";
+
+export const B3ColorPalette = () => (
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+      gap: "1rem",
+      margin: "2rem 0",
+    }}
+  >
+    <div style={{ textAlign: "center" }}>
+      <div
+        style={{
+          backgroundColor: branding.colors.primaryBlue,
+          height: "80px",
+          borderRadius: "8px",
+          border: "1px solid #e5e7eb",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "white",
+          fontWeight: "bold",
+        }}
+      >
+        Primary
+      </div>
+      <h4 style={{ margin: "0.5rem 0" }}>Primary Blue</h4>
+      <code style={{ fontSize: "0.875rem" }}>{branding.colors.primaryBlue}</code>
+    </div>
+
+    <div style={{ textAlign: "center" }}>
+      <div
+        style={{
+          backgroundColor: branding.colors.grey,
+          height: "80px",
+          borderRadius: "8px",
+          border: "1px solid #e5e7eb",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "white",
+          fontWeight: "bold",
+        }}
+      >
+        Grey
+      </div>
+      <h4 style={{ margin: "0.5rem 0" }}>Grey</h4>
+      <code style={{ fontSize: "0.875rem" }}>{branding.colors.grey}</code>
+    </div>
+
+    <div style={{ textAlign: "center" }}>
+      <div
+        style={{
+          backgroundColor: branding.colors.white,
+          height: "80px",
+          borderRadius: "8px",
+          border: "2px solid #e5e7eb",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "black",
+          fontWeight: "bold",
+        }}
+      >
+        White
+      </div>
+      <h4 style={{ margin: "0.5rem 0" }}>White</h4>
+      <code style={{ fontSize: "0.875rem" }}>{branding.colors.white}</code>
+    </div>
+  </div>
+);
+
+export const B3FontShowcase = () => (
+  <div style={{ margin: "2rem 0" }}>
+    <div style={{ marginBottom: "2rem" }}>
+      <h3>Neue Montreal Family</h3>
+      {branding.fonts.available
+        .filter(font => font.includes("Neue Montreal"))
+        .map(font => (
+          <div
+            key={font}
+            style={{
+              fontFamily: `"${font}", sans-serif`,
+              fontSize: "18px",
+              margin: "1rem 0",
+              padding: "0.5rem",
+              border: "1px solid #e5e7eb",
+              borderRadius: "4px",
+            }}
+          >
+            <strong>{font}:</strong> The quick brown fox jumps over the lazy dog
+          </div>
+        ))}
+    </div>
+
+    <div style={{ marginBottom: "2rem" }}>
+      <h3>Calibre Family</h3>
+      {branding.fonts.available
+        .filter(font => font.includes("Calibre"))
+        .map(font => (
+          <div
+            key={font}
+            style={{
+              fontFamily: `"${font}", sans-serif`,
+              fontSize: "18px",
+              margin: "1rem 0",
+              padding: "0.5rem",
+              border: "1px solid #e5e7eb",
+              borderRadius: "4px",
+            }}
+          >
+            <strong>{font}:</strong> Gaming is the future of onchain experiences
+          </div>
+        ))}
+    </div>
+  </div>
+);
+
+export const B3BrandValues = () => (
+  <div
+    style={{
+      textAlign: "center",
+      margin: "2rem 0",
+      padding: "2rem",
+      backgroundColor: "#f8fafc",
+      borderRadius: "8px",
+      fontWeight: "bold",
+      letterSpacing: "2px",
+      fontSize: "1.1rem",
+    }}
+  >
+    ✦ {branding.values.join(" ✦ ")} ✦
+  </div>
+);
+
+export const LogoShowcase = ({ variant = "blue", size = 120 }) => {
+  const logoSrc =
+    variant === "blue"
+      ? branding.assets.logoBlueLight
+      : variant === "white"
+        ? branding.assets.logoWhite
+        : branding.assets.logoBlack;
+
+  const containerStyle =
+    variant === "white"
+      ? { backgroundColor: "#000", padding: "2rem", borderRadius: "8px", textAlign: "center" }
+      : { padding: "2rem", borderRadius: "8px", textAlign: "center", border: "1px solid #e5e7eb" };
+
+  return (
+    <div style={containerStyle}>
+      <img
+        src={logoSrc || branding.assets.logoBlueLight}
+        alt="B3 Logo"
+        style={{ maxWidth: `${size}px`, height: "auto" }}
+      />
+    </div>
+  );
+};
+
+export const QuickBrandGuide = () => (
+  <div
+    style={{
+      padding: "1.5rem",
+      backgroundColor: "#f0f9ff",
+      borderRadius: "8px",
+      border: "1px solid #0ea5e9",
+      margin: "1rem 0",
+    }}
+  >
+    <h4 style={{ margin: "0 0 1rem 0", color: "#0369a1" }}>Quick Brand Implementation</h4>
+    <ul style={{ margin: 0, paddingLeft: "1.5rem" }}>
+      <li>
+        <strong>Colors:</strong> Use {branding.colors.primaryBlue} as primary, with vibrant accents
+      </li>
+      <li>
+        <strong>Typography:</strong> Import {branding.assets.fontsCSS}
+      </li>
+      <li>
+        <strong>Logo:</strong> Maintain 0.5x height clear space on all sides
+      </li>
+      <li>
+        <strong>Tone:</strong> Keep it fun, community-driven, and gaming-focused
+      </li>
+    </ul>
+  </div>
+);
+
+export const BrandCodeExample = ({ language = "css" }) => {
+  const examples = {
+    css: `/* B3 Brand Implementation */
+@import url("${branding.assets.fontsCSS}");
+
+:root {
+--b3-primary: ${branding.colors.primaryBlue};
+--b3-grey: ${branding.colors.grey};
+--b3-white: ${branding.colors.white};
+}
+
+body {
+font-family: ${branding.fonts.primary};
+}
+
+.b3-button {
+background-color: var(--b3-primary);
+color: var(--b3-white);
+font-family: ${branding.fonts.secondary};
+border-radius: 8px;
+padding: 0.75rem 1.5rem;
+border: none;
+cursor: pointer;
+transition: transform 0.2s ease;
+}
+
+.b3-button:hover {
+transform: scale(1.05);
+}`,
+
+    react: `import { branding } from '/snippets/variables';
+
+function B3Button({ children, onClick }) {
+return (
+<button
+onClick={onClick}
+style={{
+        backgroundColor: branding.colors.primaryBlue,
+        color: branding.colors.white,
+        fontFamily: branding.fonts.secondary,
+        borderRadius: '8px',
+        padding: '0.75rem 1.5rem',
+        border: 'none',
+        cursor: 'pointer',
+        transition: 'transform 0.2s ease'
+      }}
+onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
+onMouseLeave={(e) => e.target.style.transform = 'scale(1)'} >
+{children}
+</button>
+);
+}`,
+
+    tailwind: `// tailwind.config.js
+
+module.exports = {
+theme: {
+extend: {
+colors: {
+'b3-blue': '${branding.colors.primaryBlue}',
+        'b3-grey': '${branding.colors.grey}',
+},
+fontFamily: {
+'b3-primary': ['Neue Montreal Medium', 'sans-serif'],
+'b3-secondary': ['Calibre Bold', 'sans-serif'],
+}
+}
+}
+}
+
+<!-- Usage -->
+
+<button class="bg-b3-blue font-b3-secondary rounded-lg px-6 py-3 text-white transition-transform hover:scale-105">
+  Game On!
+</button>
+` }; return (
+<pre
+  style={{
+    backgroundColor: "#1e293b",
+    color: "#f1f5f9",
+    padding: "1rem",
+    borderRadius: "8px",
+    overflow: "auto",
+    fontSize: "0.875rem",
+    lineHeight: "1.5",
+  }}
+>
+  <code>{examples[language] || examples.css}</code>
+</pre>
+); };

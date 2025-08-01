@@ -7,6 +7,7 @@ A comprehensive monorepo containing B3's blockchain infrastructure, applications
 ### Applications (`/apps`)
 
 - **global-accounts**
+
   - Documentation and demo site for B3 Global Accounts
   - Interactive examples of B3's authentication features
   - Showcases SignIn, permission management, and NFT minting
@@ -14,6 +15,7 @@ A comprehensive monorepo containing B3's blockchain infrastructure, applications
   - **Tech Stack**: React + TypeScript + Vite + Tailwind CSS
 
 - **global-accounts-demos**
+
   - Interactive gaming applications with blockchain integration
   - **Two Game Modes**:
     - **Memory Game** (default): NFT-based memory matching game
@@ -106,16 +108,19 @@ pnpm login-minimal-example:build
 ### Global Accounts Demos
 
 **Memory Game Mode** (default):
+
 - NFT-based memory matching game
 - Claim NFTs upon successful completion
 - Integrates with B3 Global Accounts for seamless authentication
 
 **NFT Battle Mode**:
+
 - Battle using NFTs from your collection as weapons
 - Real-time battle mechanics with scoring system
 - Showcases NFT utility in gaming applications
 
 Switch between modes:
+
 ```bash
 # Development
 pnpm --filter global-accounts-demo dev:battle
@@ -144,10 +149,10 @@ function App() {
   return (
     <B3Provider environment="production" theme="light">
       <SignInWithB3
-        chain={{ id: 8333, name: "B3", /* ... */ }}
+        chain={{ id: 8333, name: "B3" /* ... */ }}
         partnerId="your-partner-id"
         sessionKeyAddress="0x..."
-        onLoginSuccess={(account) => console.log("Authenticated!", account)}
+        onLoginSuccess={account => console.log("Authenticated!", account)}
       />
     </B3Provider>
   );
@@ -168,18 +173,14 @@ function NFTMinting() {
     // ...
   };
 
-  return (
-    <AnySpendNFTButton
-      nftContract={nftContract}
-      recipientAddress="0x..."
-    />
-  );
+  return <AnySpendNFTButton nftContract={nftContract} recipientAddress="0x..." />;
 }
 ```
 
 ## 🔧 Development Scripts
 
 ### Root Level
+
 - `pnpm dev` - Run all workspaces in development mode
 - `pnpm build-all` - Build all applications and SDK
 - `pnpm sdk:build` - Build the SDK package
@@ -187,7 +188,9 @@ function NFTMinting() {
 - `pnpm prettier:write` - Format code
 
 ### Workspace Level
+
 Each workspace includes:
+
 - `dev` - Start development server
 - `build` - Build for production
 - `lint` - Run ESLint
@@ -195,12 +198,12 @@ Each workspace includes:
 
 ## 🌐 Platform Support
 
-| Feature | React Web | React Native |
-|---------|-----------|--------------|
-| Global Accounts | ✅ | ✅ |
-| AnySpend | ✅ | ❌ |
-| Gaming Demos | ✅ | ❌ |
-| SDK Services | ✅ | ✅ |
+| Feature         | React Web | React Native |
+| --------------- | --------- | ------------ |
+| Global Accounts | ✅        | ✅           |
+| AnySpend        | ✅        | ❌           |
+| Gaming Demos    | ✅        | ❌           |
+| SDK Services    | ✅        | ✅           |
 
 ## 🔗 Important Links
 

@@ -18,3 +18,5 @@ tsconfig.tsbuildinfo
 .tsbuildinfo
 
 doppler.yaml
+
+.cursor

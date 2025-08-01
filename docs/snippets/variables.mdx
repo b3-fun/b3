@@ -38,23 +38,91 @@ baseSepoliaChainId: 84532,
 // Package Information
 packageName: "@b3dotfun/sdk",
 currentVersion: "latest",
+
+// Brand Colors
+colors: {
+primaryBlue: "#007AFF",
+grey: "#6B7280",
+white: "#FFFFFF",
+black: "#000000"
+},
+
+// Brand Assets
+assets: {
+fontsCSS: "https://cdn.b3.fun/fonts.css",
+logoBlueLight: "/logo/light.svg",
+logoBlueDark: "/logo/dark.svg",
+logoWhite: "/logo/white.svg",
+logoBlack: "/logo/black.svg"
+},
+
+// Typography
+fonts: {
+primary: '"Neue Montreal Medium", sans-serif',
+secondary: '"Calibre Bold", sans-serif',
+available: [
+"Neue Montreal Bold",
+"Neue Montreal Regular",
+"Neue Montreal Book",
+"Neue Montreal Medium",
+"Neue Montreal Semibold",
+"Calibre Bold",
+"Calibre Heavy",
+"Pack"
+]
+},
+
+// Brand Values
+values: ["COMMUNITY DRIVEN", "FUN", "ECOSYSTEM ALIGNED"]
 };
 
 export const networks = {
   ethereum: {
     name: "Ethereum",
-    mainnet: { chainId: 1, name: "Ethereum Mainnet" },
-    sepolia: { chainId: 11155111, name: "Sepolia Testnet" },
+    mainnet: {
+      chainId: 1,
+      name: "Ethereum Mainnet",
+      rpc: "https://ethereum.publicnode.com",
+      explorer: "https://etherscan.io",
+    },
+    sepolia: {
+      chainId: 11155111,
+      name: "Sepolia Testnet",
+      rpc: "https://sepolia.infura.io/v3/",
+      explorer: "https://sepolia.etherscan.io",
+    },
   },
   base: {
     name: "Base",
-    mainnet: { chainId: 8453, name: "Base Mainnet" },
-    sepolia: { chainId: 84532, name: "Base Sepolia" },
+    mainnet: {
+      chainId: 8453,
+      name: "Base Mainnet",
+      rpc: "https://mainnet.base.org",
+      explorer: "https://basescan.org",
+    },
+    sepolia: {
+      chainId: 84532,
+      name: "Base Sepolia",
+      rpc: "https://sepolia.base.org",
+      explorer: "https://sepolia.basescan.org",
+    },
   },
   b3: {
     name: "B3",
-    mainnet: { chainId: 8333, name: "B3 Mainnet" },
-    testnet: { chainId: 1993, name: "B3 Testnet" },
+    mainnet: {
+      chainId: 8333,
+      name: "B3 Mainnet",
+      rpc: "https://mainnet-rpc.b3.fun",
+      rpcWs: "wss://mainnet-rpc.b3.fun",
+      explorer: "https://explorer.b3.fun",
+    },
+    testnet: {
+      chainId: 1993,
+      name: "B3 Testnet",
+      rpc: "https://testnet-rpc.b3.fun",
+      rpcWs: "wss://testnet-rpc.b3.fun",
+      explorer: "https://testnet-explorer.b3.fun",
+    },
   },
 };
 
