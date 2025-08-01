@@ -1,9 +1,8 @@
 // Core Components
 export { B3DynamicModal } from "./B3DynamicModal";
 export { B3Provider, InnerProvider } from "./B3Provider/B3Provider";
-export { useB3 } from "./B3Provider/useB3";
 export { B3Context, type B3ContextType } from "./B3Provider/types";
-export { RelayKitProviderWrapper } from "./RelayKitProviderWrapper";
+export { useB3 } from "./B3Provider/useB3";
 export { StyleRoot } from "./StyleRoot";
 
 // SignInWithB3 Components

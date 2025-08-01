@@ -32,7 +32,7 @@ function App() {
 function B3ProviderWrapper({ children }: { children: React.ReactNode }) {
   const { colorMode } = useColorMode();
   return (
-    <B3Provider isMainnetAnySpend={true} environment="production" theme={colorMode} automaticallySetFirstEoa={true}>
+    <B3Provider environment="production" theme={colorMode} automaticallySetFirstEoa={true}>
       <B3DynamicModal />
       {children}
     </B3Provider>

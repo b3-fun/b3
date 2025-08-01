@@ -3,7 +3,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 import { ThirdwebProvider, useActiveAccount } from "thirdweb/react";
 import { Account } from "thirdweb/wallets";
-// import { RelayKitProviderWrapper } from "./RelayKitProviderWrapper";
 
 import { User } from "@b3dotfun/sdk/global-account/types/b3-api.types";
 import { B3Context, B3ContextType } from "./types";
