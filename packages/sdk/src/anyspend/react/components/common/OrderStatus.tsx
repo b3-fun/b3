@@ -1,14 +1,32 @@
 import { getStatusDisplay } from "@b3dotfun/sdk/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
-import { Badge } from "@b3dotfun/sdk/global-account/react";
 import { Check, X } from "lucide-react";
 import { memo } from "react";
+import { Step, StepProgress } from "./StepProgress";
 
 export const OrderStatus = memo(function OrderStatus({ order }: { order: components["schemas"]["Order"] }) {
   const isComplete = order.status === "executed";
-  const { text, status: displayStatus } = getStatusDisplay(order);
+  const { text, status: displayStatus, description } = getStatusDisplay(order);
 
-  console.log("displayStatus", displayStatus);
+  console.log("OrderStatus", displayStatus);
+  console.log("OrderStatus", order);
+
+  const paymentSteps: Step[] = [
+    {
+      id: 1,
+      title: "Awaiting Payment",
+      description: description,
+    },
+    {
+      id: 2,
+      title: "Payment Complete",
+      description: description,
+    },
+  ];
+
+  if (order.status === "waiting_stripe_payment") {
+    return <StepProgress steps={paymentSteps} currentStepIndex={0} />;
+  }
 
   if (!isComplete && displayStatus !== "failure") {
     return null;
@@ -17,13 +35,13 @@ export const OrderStatus = memo(function OrderStatus({ order }: { order: compone
   return (
     <div className="flex items-center justify-center gap-2">
       {isComplete ? (
-        <Badge
-          variant="outline"
-          className="flex items-center gap-3 border-green-500/50 bg-green-500/20 px-4 py-1 text-base transition-colors"
-        >
-          <Check className="h-6 w-6 text-green-500" />
-          <span className="font-medium">{text}</span>
-        </Badge>
+        <div className="flex flex-col items-center">
+          <div className={`bg-as-success-secondary relative flex h-10 w-10 items-center justify-center rounded-full`}>
+            <Check className="text-as-content-icon-success h-6 w-6" />
+          </div>
+          <h2 className="text-as-primary mt-4 text-xl font-semibold">{text}</h2>
+          <div className="text-as-tertiarry mt-1 text-center">{description}</div>
+        </div>
       ) : (
         <div className="flex flex-col items-center">
           <div className="bg-as-error-secondary flex h-10 w-10 items-center justify-center rounded-full text-base">
@@ -31,7 +49,7 @@ export const OrderStatus = memo(function OrderStatus({ order }: { order: compone
           </div>
           <div className="font-sf-rounded text-as-content-primary mt-4 text-lg font-semibold">{text}</div>
           <div className="text-as-tertiarry text-center" style={{ whiteSpace: "normal" }}>
-            This order is no longer valid because the order expired.
+            {description}
           </div>
         </div>
       )}

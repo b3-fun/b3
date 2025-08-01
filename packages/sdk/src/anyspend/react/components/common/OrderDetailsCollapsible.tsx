@@ -25,6 +25,8 @@ interface OrderDetailsCollapsibleProps {
   recipientName?: string;
   formattedExpectedDstAmount?: string;
   className?: string;
+  showTotal?: boolean;
+  totalAmount?: string;
 }
 
 export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
@@ -35,6 +37,8 @@ export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
   recipientName,
   formattedExpectedDstAmount,
   className,
+  showTotal = false,
+  totalAmount,
 }: OrderDetailsCollapsibleProps) {
   const [showOrderDetails, setShowOrderDetails] = useState(true);
 
@@ -128,10 +132,12 @@ export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
 
             <div className="divider w-full" />
 
-            {/* Order ID Section */}
+            {/* Order ID / Total Section */}
             <div className="flex w-full justify-between gap-4">
-              <div className="text-as-tertiarry">Order ID</div>
-              <div className="text-as-primary overflow-hidden text-ellipsis whitespace-nowrap">{order.id}</div>
+              <div className="text-as-tertiarry">{showTotal ? "Total (included fee)" : "Order ID"}</div>
+              <div className="text-as-primary overflow-hidden text-ellipsis whitespace-nowrap">
+                {showTotal && totalAmount ? totalAmount : order.id}
+              </div>
             </div>
           </div>
         </motion.div>

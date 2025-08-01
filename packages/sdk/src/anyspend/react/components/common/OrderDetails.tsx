@@ -589,7 +589,7 @@ export const OrderDetails = memo(function OrderDetails({
           </div>
         )}
         <button
-          className="bg-as-on-surface-2 text-as-secondary flex w-full items-center justify-center gap-2 rounded-lg p-2"
+          className="bg-as-brand flex w-full items-center justify-center gap-2 rounded-lg p-2 font-semibold text-white"
           onClick={mode === "page" ? handleBack : handleCloseModal}
         >
           {mode === "page" ? (
@@ -692,7 +692,7 @@ export const OrderDetails = memo(function OrderDetails({
 
         {order.status === "executed" && (
           <button
-            className="bg-as-on-surface-2 text-as-secondary flex w-full items-center justify-center gap-2 rounded-lg p-2"
+            className="bg-as-brand flex w-full items-center justify-center gap-2 rounded-lg p-2 font-semibold text-white"
             onClick={mode === "page" ? handleBack : handleCloseModal}
           >
             {mode === "page" ? (
@@ -711,6 +711,14 @@ export const OrderDetails = memo(function OrderDetails({
   if (relayTx && relayTx.status === "success") {
     return (
       <>
+        <OrderDetailsCollapsible
+          order={order}
+          dstToken={dstToken}
+          tournament={tournament}
+          nft={nft}
+          recipientName={recipientName}
+          formattedExpectedDstAmount={formattedExpectedDstAmount}
+        />
         <div className="relative mt-4 flex w-full flex-col gap-4">
           <div className="bg-b3-react-background absolute bottom-2 left-4 top-2 z-[5] w-2">
             <motion.div
@@ -820,7 +828,7 @@ export const OrderDetails = memo(function OrderDetails({
 
         {order.status === "executed" && (
           <button
-            className="bg-as-on-surface-2 text-as-secondary flex w-full items-center justify-center gap-2 rounded-lg p-2"
+            className="bg-as-brand flex w-full items-center justify-center gap-2 rounded-lg p-2 font-semibold text-white"
             onClick={mode === "page" ? handleBack : handleCloseModal}
           >
             {mode === "page" ? (
@@ -841,6 +849,14 @@ export const OrderDetails = memo(function OrderDetails({
   if (depositTxs?.length || waitingForDeposit) {
     return (
       <>
+        <OrderDetailsCollapsible
+          order={order}
+          dstToken={dstToken}
+          tournament={tournament}
+          nft={nft}
+          recipientName={recipientName}
+          formattedExpectedDstAmount={formattedExpectedDstAmount}
+        />
         <div className="relative mt-4 flex w-full flex-col gap-6">
           <div className="bg-b3-react-background absolute bottom-2 left-4 top-2 z-[5] w-2">
             <motion.div

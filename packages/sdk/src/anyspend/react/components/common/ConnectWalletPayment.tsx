@@ -5,9 +5,10 @@ import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { ShinyButton, useAccountWallet, useProfile } from "@b3dotfun/sdk/global-account/react";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { motion } from "framer-motion";
-import { CheckIcon, ChevronRight, Loader2 } from "lucide-react";
+import { ChevronRight, Loader2 } from "lucide-react";
 import { useMemo } from "react";
 import { OrderDetailsCollapsible } from "./OrderDetailsCollapsible";
+import { Step, StepProgress } from "./StepProgress";
 
 type Tournament = components["schemas"]["Tournament"];
 type NFT = components["schemas"]["NFT"];
@@ -130,51 +131,34 @@ export default function ConnectWalletPayment({
     return roundTokenAmount(formattedSrcAmount);
   }, [order.srcAmount, srcToken]);
 
+  const steps: Step[] = useMemo(
+    () => [
+      {
+        id: 1,
+        title: "Connect Wallet",
+        description: "Connect your wallet to continue",
+      },
+      {
+        id: 2,
+        title: "Awaiting Payment",
+        description: "Send your payment to the address below",
+      },
+      {
+        id: 3,
+        title: "Complete Payment",
+        description: "Finalize your transaction",
+      },
+    ],
+    [],
+  );
+
   if (!srcToken || !dstToken) {
     return <div>Loading...</div>;
   }
 
   return (
     <div className="flex w-full flex-col items-center gap-6">
-      {/* Step Progress Indicator */}
-      <div className="flex items-center gap-1.5">
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="bg-as-success-secondary flex h-10 w-10 items-center justify-center rounded-full"
-        >
-          <CheckIcon className="text-as-content-icon-success h-6 w-6" />
-        </motion.div>
-
-        <div className="border-as-primary/30 h-px w-8 border-t border-dotted"></div>
-
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="border-as-border-secondary relative flex h-10 w-10 items-center justify-center rounded-full border-[3px]"
-        >
-          <div className="border-t-as-primary absolute -inset-0.5 animate-spin rounded-full border-[3px] border-transparent" />
-          <span className="text-as-primary font-semibold">2</span>
-        </motion.div>
-
-        <div className="border-as-primary/30 h-px w-8 border-t border-dotted"></div>
-
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="border-as-border-secondary flex h-10 w-10 items-center justify-center rounded-full border-[3px]"
-        >
-          <span className="text-as-content-disabled font-semibold">3</span>
-        </motion.div>
-      </div>
-
-      {/* Step Description */}
-      <div className="text-center">
-        <h2 className="text-as-primary text-xl font-semibold">Step 2 in progress...</h2>
-        <p className="text-as-primary/50 mt-1 text-sm">Step 2 description...</p>
-      </div>
+      <StepProgress steps={steps} currentStepIndex={1} />
 
       {/* Payment Button */}
       <motion.div
