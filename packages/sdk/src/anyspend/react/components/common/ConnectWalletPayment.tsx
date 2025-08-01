@@ -2,7 +2,7 @@
 
 import { RELAY_SOLANA_MAINNET_CHAIN_ID } from "@b3dotfun/sdk/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
-import { ShinyButton, useAccountWallet, useProfile } from "@b3dotfun/sdk/global-account/react";
+import { ShinyButton, useProfile } from "@b3dotfun/sdk/global-account/react";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { motion } from "framer-motion";
 import { ChevronRight, Loader2 } from "lucide-react";
@@ -24,90 +24,15 @@ interface ConnectWalletPaymentProps {
   nft?: NFT;
 }
 
-function roundTokenAmount(amount: string | undefined): string | undefined {
-  if (!amount) {
-    return undefined;
-  }
-
-  // Split the number into whole and decimal parts
-  const parts = amount.split(".");
-  if (parts.length === 1) {
-    // No decimal part
-    return amount;
-  }
-
-  const wholePart = parts[0];
-  const decimalPart = parts[1];
-
-  // Check if decimal has 6 or fewer significant digits
-  if (decimalPart.length <= 6) {
-    return amount;
-  }
-
-  // Find the position of the first non-zero digit in the decimal part
-  let firstNonZeroPos = 0;
-  while (firstNonZeroPos < decimalPart.length && decimalPart[firstNonZeroPos] === "0") {
-    firstNonZeroPos++;
-  }
-
-  // Calculate how many significant digits we have after the first non-zero
-  const significantDigitsAfterFirstNonZero = decimalPart.length - firstNonZeroPos;
-
-  // If we have 6 or fewer significant digits, return as is
-  if (significantDigitsAfterFirstNonZero <= 6) {
-    return amount;
-  }
-
-  // We need to round to 6 significant digits after the first non-zero
-  // Keep all leading zeros plus 6 significant digits
-  const keepLength = firstNonZeroPos + 6;
-
-  // Always round up if there are more digits
-  const shouldRoundUp = decimalPart.length > keepLength;
-
-  // Create array of digits we're keeping (to handle carry)
-  const digits = decimalPart.substring(0, keepLength).split("");
-
-  // Apply rounding (always round up)
-  if (shouldRoundUp) {
-    // Start from the last position and carry as needed
-    let i = digits.length - 1;
-    let carry = 1;
-
-    while (i >= 0 && carry > 0) {
-      const digit = parseInt(digits[i], 10) + carry;
-      if (digit === 10) {
-        digits[i] = "0";
-        carry = 1;
-      } else {
-        digits[i] = digit.toString();
-        carry = 0;
-      }
-      i--;
-    }
-
-    // Handle carry into the whole part if needed
-    if (carry > 0) {
-      return `${(parseInt(wholePart, 10) + 1).toString()}.${digits.join("")}`;
-    }
-  }
-
-  // Join the parts back together
-  const roundedDecimalPart = digits.join("");
-  return `${wholePart}.${roundedDecimalPart}`;
-}
-
 export default function ConnectWalletPayment({
   order,
   onPayment,
-  onCancel,
   txLoading,
   isSwitchingOrExecuting,
   phantomWalletAddress,
   tournament,
   nft,
 }: ConnectWalletPaymentProps) {
-  const account = useAccountWallet();
   const profile = useProfile({ address: order.recipientAddress });
   const recipientName = profile.data?.name?.replace(/\.b3\.fun/g, "");
 
@@ -122,14 +47,6 @@ export default function ConnectWalletPayment({
       ? "0"
       : order.payload.expectedDstAmount.toString();
   const formattedExpectedDstAmount = formatTokenAmount(BigInt(expectedDstAmount), dstToken.decimals);
-
-  const roundedUpSrcAmount = useMemo(() => {
-    const formattedSrcAmount = srcToken
-      ? formatTokenAmount(BigInt(order.srcAmount), srcToken.decimals, 21, false)
-      : undefined;
-
-    return roundTokenAmount(formattedSrcAmount);
-  }, [order.srcAmount, srcToken]);
 
   const steps: Step[] = useMemo(
     () => [
