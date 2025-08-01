@@ -15,11 +15,7 @@
         "groups": [
           {
             "group": "Getting Started",
-            "pages": [
-              "index",
-              "quickstart",
-              "development"
-            ]
+            "pages": ["index", "quickstart", "development"]
           },
           {
             "group": "AnySpend",
@@ -44,11 +40,7 @@
           },
           {
             "group": "Shared Utilities",
-            "pages": [
-              "shared/chains",
-              "shared/utils",
-              "shared/thirdweb"
-            ]
+            "pages": ["shared/chains", "shared/utils", "shared/thirdweb"]
           }
         ]
       },
@@ -98,11 +90,7 @@
           },
           {
             "group": "Framework Guides",
-            "pages": [
-              "examples/nextjs",
-              "examples/react-native",
-              "examples/vanilla-js"
-            ]
+            "pages": ["examples/nextjs", "examples/react-native", "examples/vanilla-js"]
           }
         ]
       }
@@ -149,16 +137,7 @@
     }
   },
   "contextual": {
-    "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
+    "options": ["copy", "view", "chatgpt", "claude", "perplexity", "mcp", "cursor", "vscode"]
   },
   "footer": {
     "socials": {

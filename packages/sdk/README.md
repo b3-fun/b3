@@ -12,6 +12,7 @@ The SDK is organized into focused modules:
 - **`others/`** - Additional features and utilities
 
 Each module contains:
+
 - `react/` - React components and hooks
 - `services/` - Headless TypeScript services
 - `types/` - TypeScript definitions
@@ -20,11 +21,11 @@ Each module contains:
 
 ## Platform Support
 
-| Feature                | React Web | React Native |
-| ---------------------- | --------- | ------------ |
-| AnySpend               | ✅        | ❌           |
-| Global Accounts        | ✅        | ✅           |
-| Headless Services      | ✅        | ✅           |
+| Feature           | React Web | React Native |
+| ----------------- | --------- | ------------ |
+| AnySpend          | ✅        | ❌           |
+| Global Accounts   | ✅        | ✅           |
+| Headless Services | ✅        | ✅           |
 
 ## Installation
 
@@ -54,12 +55,7 @@ AnySpend enables cross-chain swaps, NFT minting, and other blockchain operations
 import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
 
 function CrossChainSwapPage() {
-  return (
-    <AnySpend
-      isMainnet={true}
-      mode="page"
-    />
-  );
+  return <AnySpend isMainnet={true} mode="page" />;
 }
 ```
 
@@ -78,16 +74,11 @@ function NFTMinting() {
     price: "1000000000000000000", // 1 ETH in wei
     currency: {
       symbol: "ETH",
-      decimals: 18
-    }
+      decimals: 18,
+    },
   };
 
-  return (
-    <AnySpendNFTButton
-      nftContract={nftContract}
-      recipientAddress="0x..."
-    />
-  );
+  return <AnySpendNFTButton nftContract={nftContract} recipientAddress="0x..." />;
 }
 ```
 
@@ -115,15 +106,15 @@ import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
 // Get available tokens for a chain
 const tokens = await anyspendService.getTokenList(
   true, // isMainnet
-  1,    // chainId (Ethereum)
-  "usdc" // search query
+  1, // chainId (Ethereum)
+  "usdc", // search query
 );
 
 // Get specific token details
 const token = await anyspendService.getToken(
   true, // isMainnet
-  1,    // chainId
-  "0xA0b86a33E6c51c7C36c654d6C9e7b8F5d4a8b5c5" // token address
+  1, // chainId
+  "0xA0b86a33E6c51c7C36c654d6C9e7b8F5d4a8b5c5", // token address
 );
 ```
 
@@ -141,7 +132,7 @@ const quoteRequest: GetQuoteRequest = {
   dstTokenAddress: "0x...",
   srcAmount: "1000000", // 1 USDC
   recipientAddress: "0x...",
-  type: "swap"
+  type: "swap",
 };
 
 const quote = await anyspendService.getQuote(true, quoteRequest);
@@ -157,7 +148,7 @@ const order = await anyspendService.createOrder({
   dstTokenAddress: "0x...",
   srcAmount: "1000000",
   payload: {},
-  metadata: {}
+  metadata: {},
 });
 ```
 
@@ -169,7 +160,7 @@ import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
 // Get order details and transactions
 const orderDetails = await anyspendService.getOrderAndTransactions(
   true, // isMainnet
-  "order-id"
+  "order-id",
 );
 
 // Get order history for an address
@@ -177,7 +168,7 @@ const history = await anyspendService.getOrderHistory(
   true, // isMainnet
   "0x...", // creator address
   50, // limit
-  0   // offset
+  0, // offset
 );
 ```
 
@@ -214,7 +205,7 @@ function App() {
       <SignInWithB3
         provider={{ strategy: "google" }}
         partnerId="your-partner-id"
-        onLoginSuccess={(globalAccount) => {
+        onLoginSuccess={globalAccount => {
           console.log("Authenticated:", globalAccount);
         }}
       />
@@ -232,7 +223,7 @@ const b3Chain = {
   id: 8333,
   name: "B3",
   nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
-  rpc: "https://mainnet-rpc.b3.fun"
+  rpc: "https://mainnet-rpc.b3.fun",
 };
 
 function SessionKeyAuth() {
@@ -243,7 +234,7 @@ function SessionKeyAuth() {
         chain={b3Chain}
         partnerId="your-partner-id"
         sessionKeyAddress="0x..." // MetaMask address
-        onLoginSuccess={(globalAccount) => {
+        onLoginSuccess={globalAccount => {
           console.log("Session key authenticated:", globalAccount);
         }}
       />
@@ -266,10 +257,10 @@ function PermissionsExample() {
         approvedTargets: ["0x..."], // Contract addresses
         startDate: new Date(),
         endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
-        nativeTokenLimitPerTransaction: 0.0001
+        nativeTokenLimitPerTransaction: 0.0001,
       }}
       onSuccess={() => console.log("Permissions granted")}
-      onError={(error) => console.error("Permission error:", error)}
+      onError={error => console.error("Permission error:", error)}
     />
   );
 }
@@ -283,15 +274,7 @@ import { useB3 } from "@b3dotfun/sdk/global-account/react";
 function AccountStatus() {
   const { account, isAuthenticated } = useB3();
 
-  return (
-    <div>
-      {isAuthenticated ? (
-        <p>Welcome, {account?.displayName}!</p>
-      ) : (
-        <p>Please sign in</p>
-      )}
-    </div>
-  );
+  return <div>{isAuthenticated ? <p>Welcome, {account?.displayName}!</p> : <p>Please sign in</p>}</div>;
 }
 ```
 
@@ -303,11 +286,9 @@ function AccountStatus() {
 import { authenticate, resetSocket } from "@b3dotfun/sdk/global-account/app";
 
 // Authenticate with B3 Global Account
-const authResult = await authenticate(
-  "access-token",
-  "identity-token",
-  { /* additional params */ }
-);
+const authResult = await authenticate("access-token", "identity-token", {
+  /* additional params */
+});
 
 if (authResult) {
   console.log("Authentication successful:", authResult);
@@ -325,10 +306,7 @@ resetSocket();
 import { authenticate as bsmntAuthenticate } from "@b3dotfun/sdk/global-account/bsmnt";
 
 // Authenticate with Basement services
-const bsmntAuth = await bsmntAuthenticate(
-  "access-token",
-  "identity-token"
-);
+const bsmntAuth = await bsmntAuthenticate("access-token", "identity-token");
 ```
 
 ### React Native Support
@@ -372,7 +350,7 @@ import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 
 // Tailwind class name utility
 const classes = cn("base-class", "conditional-class", {
-  "active": isActive
+  active: isActive,
 });
 ```
 
