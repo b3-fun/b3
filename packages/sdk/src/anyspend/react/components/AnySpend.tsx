@@ -411,6 +411,30 @@ function AnySpendInner({
     setRecipientAddress(recipientAddressFromProps || globalAddress);
   }, [recipientAddressFromProps, globalAddress]);
 
+  // Get geo-based onramp options for fiat payments
+  const { geoData, coinbaseAvailablePaymentMethods, isStripeOnrampSupported, stripeWeb2Support } = useGeoOnrampOptions(
+    isMainnet,
+    srcAmountOnRamp,
+  );
+
+  // Helper function to map payment method to onramp vendor
+  const getOnrampVendor = (paymentMethod: FiatPaymentMethod): "coinbase" | "stripe" | "stripe-web2" | undefined => {
+    switch (paymentMethod) {
+      case FiatPaymentMethod.COINBASE_PAY:
+        return "coinbase";
+      case FiatPaymentMethod.STRIPE:
+        // Determine if it's stripe onramp or stripe-web2 based on support
+        if (isStripeOnrampSupported) {
+          return "stripe";
+        } else if (stripeWeb2Support?.isSupport) {
+          return "stripe-web2";
+        }
+        return undefined;
+      default:
+        return undefined;
+    }
+  };
+
   // Get anyspend price
   const activeInputAmountInWei = isSrcInputDirty
     ? parseUnits(srcAmount.replace(/,/g, ""), selectedSrcToken.decimals).toString()
@@ -436,6 +460,7 @@ function AnySpendInner({
           type: "swap",
           tradeType: "EXACT_INPUT",
           amount: srcAmountOnrampInWei,
+          onrampVendor: getOnrampVendor(selectedFiatPaymentMethod),
         },
   );
 
@@ -661,12 +686,6 @@ function AnySpendInner({
       toast.error("Failed to create order: " + error.message);
     },
   });
-
-  // Get geo-based onramp options for fiat payments
-  const { geoData, coinbaseAvailablePaymentMethods, isStripeOnrampSupported, stripeWeb2Support } = useGeoOnrampOptions(
-    isMainnet,
-    srcAmountOnRamp,
-  );
 
   // Determine button state and text
   const btnInfo: { text: string; disable: boolean; error: boolean } = useMemo(() => {
