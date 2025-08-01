@@ -134,7 +134,27 @@ export function OrderTokenAmountFiat({
             </div>
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-600">≈</span>
-              <span className="text-lg font-semibold text-gray-900">{formatAmount(inputValue)}</span>
+              <NumericFormat
+                key={`input-${token.address}-${chainId}`}
+                decimalSeparator="."
+                allowedDecimalSeparators={[","]}
+                thousandSeparator
+                inputMode="decimal"
+                autoComplete="off"
+                autoCorrect="off"
+                type="text"
+                placeholder="0.00"
+                minLength={1}
+                maxLength={20}
+                spellCheck="false"
+                className="w-[100px]"
+                pattern="^[0-9]*[.,]?[0-9]*$"
+                disabled={disabled}
+                value={inputValue}
+                allowNegative={false}
+                aria-disabled
+                readOnly
+              />
               <ChevronsUpDown className="h-4 w-4 cursor-pointer text-gray-400" />
             </div>
           </div>

@@ -61,12 +61,6 @@ export function PanelOnramp({
     setSrcAmountOnRamp(value);
   };
 
-  // Calculate B3 tokens based on amount (mock calculation for now)
-  const calculateB3Tokens = (amount: string) => {
-    const numAmount = parseFloat(amount) || 0;
-    return (numAmount * 331.446).toFixed(2); // Mock exchange rate
-  };
-
   return (
     <div className="bg-as-surface-primary flex w-full flex-col">
       {/* Pay Section */}
@@ -139,7 +133,7 @@ export function PanelOnramp({
           <OrderTokenAmountFiat
             address={_recipientAddress}
             context="to"
-            inputValue={destinationAmount || calculateB3Tokens(srcAmountOnRamp)}
+            inputValue={destinationAmount || "0"}
             onChangeInput={() => {}} // Read-only in this context
             chainId={destinationChainId}
             setChainId={onDestinationChainChange || (() => {})}
@@ -185,7 +179,7 @@ export function PanelOnramp({
           <span className="text-as-tertiarry text-sm">Expected to receive</span>
           <div className="flex items-center gap-2">
             <span className="text-base font-semibold text-gray-900">
-              {calculateB3Tokens(srcAmountOnRamp)} {destinationToken?.symbol || "B3"}
+              {destinationAmount || "0"} {destinationToken?.symbol || "B3"}
             </span>
             <span className="text-as-tertiarry text-sm">
               on {destinationChainId ? ALL_CHAINS[destinationChainId]?.name : "Base"}
