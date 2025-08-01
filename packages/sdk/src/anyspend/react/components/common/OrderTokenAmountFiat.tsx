@@ -91,17 +91,61 @@ export function OrderTokenAmountFiat({
     });
   };
 
-  const ref = useRef<HTMLDivElement>(null);
-
   if (showAsReceiveAmount) {
     // Design-matched token display for receive amounts (like in PanelOnramp)
-    return (
+    return !hideTokenSelect ? (
+      <TokenSelector
+        address={address}
+        chainIdsFilter={Object.values(ALL_CHAINS).map(chain => chain.id)}
+        context={context}
+        fromChainWalletVMSupported={true}
+        isValidAddress={true}
+        key={`selector-${context}-${token.address}-${chainId}`}
+        lockedChainIds={Object.values(ALL_CHAINS).map(chain => chain.id)}
+        multiWalletSupportEnabled={true}
+        onAnalyticEvent={undefined}
+        popularChainIds={[1, 8453, RELAY_SOLANA_MAINNET_CHAIN_ID]}
+        setToken={handleTokenSelect}
+        supportedWalletVMs={["evm", "svm"]}
+        token={undefined}
+        trigger={
+          <div
+            className={cn(
+              "border-as-border-secondary bg-as-surface-primary flex cursor-pointer items-center justify-between rounded-xl border px-3 py-2",
+              className,
+            )}
+          >
+            <div className="flex items-center gap-3">
+              {token.metadata?.logoURI ? (
+                <ChainTokenIcon
+                  chainUrl={ALL_CHAINS[chainId]?.logoUrl}
+                  tokenUrl={token.metadata.logoURI}
+                  className="h-10 w-10"
+                />
+              ) : (
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600">
+                  <span className="font-bold text-white">{token.symbol?.substring(0, 2) || "??"}</span>
+                </div>
+              )}
+              <div>
+                <div className="text-base font-semibold text-gray-900">{token.symbol}</div>
+                <div className="text-sm text-gray-600">{ALL_CHAINS[chainId]?.name || "Unknown"}</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">≈</span>
+              <span className="text-lg font-semibold text-gray-900">{formatAmount(inputValue)}</span>
+              <ChevronsUpDown className="h-4 w-4 cursor-pointer text-gray-400" />
+            </div>
+          </div>
+        }
+      />
+    ) : (
       <div
         className={cn(
           "border-as-border-secondary bg-as-surface-primary flex items-center justify-between rounded-xl border px-3 py-2",
           className,
         )}
-        ref={ref}
       >
         <div className="flex items-center gap-3">
           {token.metadata?.logoURI ? (
@@ -123,24 +167,6 @@ export function OrderTokenAmountFiat({
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-600">≈</span>
           <span className="text-lg font-semibold text-gray-900">{formatAmount(inputValue)}</span>
-          {!hideTokenSelect && (
-            <TokenSelector
-              address={address}
-              chainIdsFilter={Object.values(ALL_CHAINS).map(chain => chain.id)}
-              context={context}
-              fromChainWalletVMSupported={true}
-              isValidAddress={true}
-              key={`selector-${context}-${token.address}-${chainId}`}
-              lockedChainIds={Object.values(ALL_CHAINS).map(chain => chain.id)}
-              multiWalletSupportEnabled={true}
-              onAnalyticEvent={undefined}
-              popularChainIds={[1, 8453, RELAY_SOLANA_MAINNET_CHAIN_ID]}
-              setToken={handleTokenSelect}
-              supportedWalletVMs={["evm", "svm"]}
-              token={undefined}
-              trigger={<ChevronsUpDown className="h-4 w-4 cursor-pointer text-gray-400" />}
-            />
-          )}
         </div>
       </div>
     );
