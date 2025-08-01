@@ -1,4 +1,5 @@
 // Core Components
+export { RelayKitProviderWrapper } from "./B3Provider/RelayKitProviderWrapper";
 export { B3DynamicModal } from "./B3DynamicModal";
 export { B3Provider, InnerProvider } from "./B3Provider/B3Provider";
 export { B3Context, type B3ContextType } from "./B3Provider/types";

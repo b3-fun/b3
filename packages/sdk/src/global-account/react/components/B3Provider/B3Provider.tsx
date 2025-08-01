@@ -1,4 +1,4 @@
-import { TooltipProvider, useAuthStore } from "@b3dotfun/sdk/global-account/react";
+import { RelayKitProviderWrapper, TooltipProvider, useAuthStore } from "@b3dotfun/sdk/global-account/react";
 import { User } from "@b3dotfun/sdk/global-account/types/b3-api.types";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { supportedChains } from "@b3dotfun/sdk/shared/constants/chains/supported";
@@ -41,17 +41,21 @@ const queryClient = new QueryClient();
  * Main B3Provider component
  */
 export function B3Provider({
+  isMainnetAnySpend = true,
   theme = "light",
   children,
   accountOverride,
   environment,
   automaticallySetFirstEoa,
+  simDuneApiKey,
 }: {
+  isMainnetAnySpend?: boolean;
   theme: "light" | "dark";
   children: React.ReactNode;
   accountOverride?: Account;
   environment: B3ContextType["environment"];
   automaticallySetFirstEoa?: boolean;
+  simDuneApiKey?: string;
 }) {
   return (
     <WagmiProvider config={wagmiConfig}>
@@ -64,10 +68,12 @@ export function B3Provider({
               theme={theme}
               automaticallySetFirstEoa={!!automaticallySetFirstEoa}
             >
-              {children}
-              {/* For the modal https://github.com/b3-fun/b3/blob/main/packages/sdk/src/global-account/react/components/ui/dialog.tsx#L46 */}
-              <StyleRoot id="b3-root" />
-              <Toaster theme={theme} />
+              <RelayKitProviderWrapper isMainnet={isMainnetAnySpend} simDuneApiKey={simDuneApiKey}>
+                {children}
+                {/* For the modal https://github.com/b3-fun/b3/blob/main/packages/sdk/src/global-account/react/components/ui/dialog.tsx#L46 */}
+                <StyleRoot id="b3-root" />
+                <Toaster theme={theme} />
+              </RelayKitProviderWrapper>
             </InnerProvider>
           </TooltipProvider>
         </ThirdwebProvider>

@@ -24,6 +24,7 @@ const queryClient = new QueryClient();
  * Main B3Provider component
  */
 export function B3Provider({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   isMainnetAnySpend = true,
   theme = "light",
   children,
