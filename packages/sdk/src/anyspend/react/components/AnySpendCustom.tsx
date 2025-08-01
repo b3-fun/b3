@@ -180,6 +180,7 @@ export function AnySpendCustom({
   onSuccess?: (txHash?: string) => void;
   showRecipient?: boolean;
 }) {
+  console.log("metadata", metadata);
   const hasMounted = useHasMounted();
 
   const searchParams = useSearchParamsSSR();
@@ -292,9 +293,9 @@ export function AnySpendCustom({
     dstChainId,
     dstToken,
     encodedData,
-    metadata.nftContract.tokenId,
-    metadata.nftContract.type,
-    metadata.type,
+    metadata?.nftContract?.tokenId,
+    metadata?.nftContract?.type,
+    metadata?.type,
     orderType,
     spenderAddress,
     srcChainId,
