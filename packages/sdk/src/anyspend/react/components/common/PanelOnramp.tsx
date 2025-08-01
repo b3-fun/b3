@@ -105,9 +105,9 @@ export function PanelOnramp({
               value={srcAmountOnRamp}
               onChange={handleAmountChange}
               placeholder="5"
-              className="h-auto min-w-[70px] border-0 bg-transparent p-0 px-3 pt-1 text-4xl font-bold text-gray-900 placeholder:text-gray-400 focus-visible:ring-0 focus-visible:ring-offset-0"
+              className="text-as-primary placeholder:text-as-primary/50 h-auto min-w-[70px] border-0 bg-transparent p-0 px-3 pt-1 text-4xl font-bold focus-visible:ring-0 focus-visible:ring-offset-0"
               style={{
-                width: `${Math.max(50, (srcAmountOnRamp || "5").length * 50)}px`,
+                width: `${Math.max(50, srcAmountOnRamp.length * 34)}px`,
               }}
             />
           </div>
@@ -119,8 +119,10 @@ export function PanelOnramp({
             <button
               key={value}
               onClick={() => handleQuickAmount(value)}
-              className={`h-7 w-14 rounded-lg border border-gray-200 text-sm font-medium transition-all duration-200 hover:border-gray-300 ${
-                srcAmountOnRamp === value ? "border-gray-300 bg-gray-100" : "bg-white hover:bg-gray-50"
+              className={`bg-as-surface-secondary border-as-border-secondary hover:border-as-border-secondary h-7 w-14 rounded-lg border text-sm font-medium transition-all duration-200 ${
+                srcAmountOnRamp === value
+                  ? "border-as-border-secondary bg-as-surface-secondary"
+                  : "bg-as-surface-secondary hover:bg-as-surface-secondary"
               }`}
             >
               ${value}
@@ -139,9 +141,6 @@ export function PanelOnramp({
             setChainId={onDestinationChainChange || (() => {})}
             token={destinationToken}
             setToken={onDestinationTokenChange || (() => {})}
-            hideTokenSelect={false}
-            canEditAmount={false}
-            showAsReceiveAmount={true}
           />
         )}
       </div>
@@ -178,11 +177,11 @@ export function PanelOnramp({
         <div className="flex items-center justify-between">
           <span className="text-as-tertiarry text-sm">Expected to receive</span>
           <div className="flex items-center gap-2">
-            <span className="text-base font-semibold text-gray-900">
-              {destinationAmount || "0"} {destinationToken?.symbol || "B3"}
+            <span className="text-as-primary font-semibold">
+              {destinationAmount || "0"} {destinationToken?.symbol || ""}
             </span>
             <span className="text-as-tertiarry text-sm">
-              on {destinationChainId ? ALL_CHAINS[destinationChainId]?.name : "Base"}
+              on {destinationChainId ? ALL_CHAINS[destinationChainId]?.name : ""}
             </span>
             {destinationToken && destinationChainId && destinationToken.metadata?.logoURI && (
               <img src={ALL_CHAINS[destinationChainId]?.logoUrl} alt="Chain" className="h-4 w-4 rounded-full" />
@@ -195,7 +194,7 @@ export function PanelOnramp({
         <div className="">
           <div className="flex items-center justify-between">
             <span className="text-as-tertiarry text-sm">Total (included $0.02 fee)</span>
-            <span className="text-base font-semibold text-gray-900">${(parseFloat(srcAmountOnRamp) || 5) + 0.02}</span>
+            <span className="text-as-primary font-semibold">${(parseFloat(srcAmountOnRamp) || 5) + 0.02}</span>
           </div>
         </div>
       </div>
