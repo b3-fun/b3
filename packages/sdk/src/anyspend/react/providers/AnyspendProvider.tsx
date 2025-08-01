@@ -4,11 +4,9 @@ import { TooltipProvider } from "@b3dotfun/sdk/global-account/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactNode, useState } from "react";
 import { StripeRedirectHandler } from "./StripeRedirectHandler";
-import { RelayKitProviderWrapper } from "./RelayKitProviderWrapper";
 
 interface AnyspendProviderProps {
   children: ReactNode;
-  simDuneApiKey?: string;
 }
 
 const defaultQueryClientConfig = {
@@ -43,17 +41,15 @@ const defaultQueryClientConfig = {
  * }
  * ```
  */
-export const AnyspendProvider = function AnyspendProvider({ children, simDuneApiKey }: AnyspendProviderProps) {
+export const AnyspendProvider = function AnyspendProvider({ children }: AnyspendProviderProps) {
   const [queryClient] = useState(() => new QueryClient(defaultQueryClientConfig));
 
   return (
     <QueryClientProvider client={queryClient}>
-      <RelayKitProviderWrapper isMainnet={true} simDuneApiKey={simDuneApiKey}>
-        <TooltipProvider>
-          <StripeRedirectHandler />
-          {children}
-        </TooltipProvider>
-      </RelayKitProviderWrapper>
+      <TooltipProvider>
+        <StripeRedirectHandler />
+        {children}
+      </TooltipProvider>
     </QueryClientProvider>
   );
 };
