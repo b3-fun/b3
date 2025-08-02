@@ -16,7 +16,6 @@ export type OnrampOptions = {
   paymentMethod: string;
   country: string;
   redirectUrl: string;
-  ipAddress?: string; // Required for Stripe
 };
 
 export type CreateOnrampOrderParams = Omit<CreateOrderParams, "srcChain" | "srcToken" | "srcAmount"> & {
@@ -60,11 +59,6 @@ export function useAnyspendCreateOnrampOrder({ onSuccess, onError }: UseAnyspend
       } = params;
 
       try {
-        // Validate Stripe onramp options
-        if (onramp.vendor === "stripe" && !onramp.ipAddress) {
-          throw new Error("IP address is required for Stripe onramp");
-        }
-
         // Validate required onramp fields
         if (!onramp.vendor || !onramp.country) {
           throw new Error("Missing required onramp fields: vendor, country");

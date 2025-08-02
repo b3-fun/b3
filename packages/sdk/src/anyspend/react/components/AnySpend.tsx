@@ -878,7 +878,6 @@ function AnySpendInner({
           vendor: vendor,
           paymentMethod: paymentMethodString,
           country: geoData?.country || "US",
-          ipAddress: geoData?.ip,
           redirectUrl:
             window.location.origin === "https://basement.fun" ? "https://basement.fun/deposit" : window.location.origin,
         },

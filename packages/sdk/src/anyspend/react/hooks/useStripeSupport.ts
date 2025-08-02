@@ -5,15 +5,14 @@ import { useMemo } from "react";
 
 export function useStripeSupport(
   isMainnet: boolean,
-  ipAddress: string,
   usdAmount?: string,
   visitorData?: VisitorData,
   isLoadingVisitorData?: boolean,
 ) {
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["useStripeSupport", isMainnet, ipAddress, usdAmount, visitorData?.requestId, visitorData?.visitorId],
-    queryFn: () => anyspendService.checkStripeSupport(isMainnet, ipAddress, usdAmount, visitorData),
-    enabled: !!ipAddress && !isLoadingVisitorData,
+    queryKey: ["useStripeSupport", isMainnet, usdAmount, visitorData?.requestId, visitorData?.visitorId],
+    queryFn: () => anyspendService.checkStripeSupport(isMainnet, usdAmount, visitorData),
+    enabled: !isLoadingVisitorData,
   });
 
   return useMemo(
