@@ -11,8 +11,13 @@
   "navigation": {
     "tabs": [
       {
+        "icon": "circle-nodes",
         "tab": "Protocol",
         "groups": [
+          {
+            "group": "About B3",
+            "pages": ["index", "quickstart", "protocol/scaling"]
+          },
           {
             "group": "Network",
             "pages": ["protocol/network-setup", "protocol/bridge", "protocol/testnet", "protocol/bridge-to-testnet"]
@@ -33,6 +38,7 @@
         ]
       },
       {
+        "icon": "globe",
         "tab": "Ecosystem",
         "groups": [
           {
@@ -47,16 +53,19 @@
             }
           },
           {
-            "group": "Development Tools",
-            "pages": ["ecosystem/gaming-sdks", "ecosystem/node-providers", "ecosystem/nft-infrastructure"]
+            "group": "Ecosystem Tools",
+            "pages": [
+              "ecosystem/onchain-sdks",
+              "ecosystem/node-providers",
+              "ecosystem/nft-infrastructure",
+              "ecosystem/infrastructure",
+              "ecosystem/governance",
+              "ecosystem/data-analytics"
+            ]
           },
           {
             "group": "User Experience",
             "pages": ["ecosystem/wallets", "ecosystem/bridges"]
-          },
-          {
-            "group": "Infrastructure & Analytics",
-            "pages": ["ecosystem/infrastructure", "ecosystem/data-analytics", "ecosystem/governance"]
           }
         ]
       },
@@ -76,7 +85,7 @@
       },
       {
         "icon": "/images/anyspend-logo-white.svg",
-        "tab": "AnySpend Docs",
+        "tab": "AnySpend SDK",
         "groups": [
           {
             "group": "Getting Started",
@@ -120,6 +129,15 @@
         ]
       },
       {
+        "tab": "B3AR",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": ["b3ar/introduction"]
+          }
+        ]
+      },
+      {
         "icon": "code",
         "tab": "B3 SDK",
         "groups": [
@@ -155,11 +173,6 @@
           "anchor": "Discord",
           "href": "https://discord.gg/b3dotfun",
           "icon": "discord"
-        },
-        {
-          "anchor": "GitHub",
-          "href": "https://github.com/b3-fun/b3",
-          "icon": "github"
         }
       ]
     }
