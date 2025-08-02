@@ -170,12 +170,10 @@ export const anyspendService = {
 
   checkStripeSupport: async (
     isMainnet: boolean,
-    ipAddress: string,
     usdAmount?: string,
     visitorData?: VisitorData,
   ): Promise<{ stripeOnramp: boolean; stripeWeb2: components["schemas"]["StripeWeb2Support"] }> => {
     const params = new URLSearchParams({
-      ipAddress,
       usdAmount: usdAmount || "",
     });
     const response = await fetch(

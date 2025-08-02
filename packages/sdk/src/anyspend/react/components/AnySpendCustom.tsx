@@ -440,7 +440,6 @@ export function AnySpendCustom({
             vendor: onramp.vendor,
             paymentMethod: onramp.paymentMethod,
             country: geoData?.country || "US",
-            ipAddress: geoData?.ip,
             redirectUrl:
               window.location.origin === "https://basement.fun"
                 ? "https://basement.fun/deposit"

@@ -239,12 +239,7 @@ export interface paths {
      */
     get: {
       parameters: {
-        query: {
-          /**
-           * @description IP address to check location-based support
-           * @example 192.168.1.1
-           */
-          ipAddress: string;
+        query?: {
           /**
            * @description Optional USD amount for transaction limit checks
            * @example 100.00
@@ -910,11 +905,6 @@ export interface components {
        */
       paymentMethod?: string;
       /**
-       * @description User's IP address
-       * @example 96.225.86.216
-       */
-      ipAddress?: string;
-      /**
        * @description Redirect URL after payment
        * @example https://www.anyspend.com
        */
@@ -942,11 +932,6 @@ export interface components {
        * @example SG
        */
       country?: string;
-      /**
-       * @description User's IP address
-       * @example 149.88.23.87
-       */
-      ipAddress?: string;
       /**
        * @description URL to redirect after payment
        * @example https://www.anyspend.com
