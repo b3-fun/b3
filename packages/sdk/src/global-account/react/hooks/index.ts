@@ -21,9 +21,9 @@ export { useOneBalance } from "./useOneBalance";
 export {
   useProfile,
   useProfilePreference,
-  type Profile,
   type CombinedProfile,
   type PreferenceRequestBody,
+  type Profile,
 } from "./useProfile";
 export { useQueryB3 } from "./useQueryB3";
 export { useQueryBSMNT } from "./useQueryBSMNT";
@@ -31,6 +31,7 @@ export { useRemoveSessionKey } from "./useRemoveSessionKey";
 export { useRouter } from "./useRouter";
 export { useSearchParamsSSR } from "./useSearchParamsSSR";
 export { useSiwe } from "./useSiwe";
+export { useChainSwitchWithActionTW } from "./useSwitchChainWithActionTW";
 export { useTokenBalance } from "./useTokenBalance";
 export { useTokenBalancesByChain } from "./useTokenBalancesByChain";
 export { useTokenData } from "./useTokenData";
