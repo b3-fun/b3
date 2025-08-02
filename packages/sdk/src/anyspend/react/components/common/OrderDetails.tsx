@@ -22,7 +22,7 @@ import {
   TextLoop,
   TextShimmer,
   useAccountWallet,
-  useChainSwitchWithActionTW,
+  useChainSwitchWithAction,
   useModalStore,
   useProfile,
 } from "@b3dotfun/sdk/global-account/react";
@@ -227,7 +227,7 @@ export const OrderDetails = memo(function OrderDetails({
   const [showQRCode, setShowQRCode] = useState(false);
   const { isLoading: txLoading, isSuccess: txSuccess } = useWaitForTransactionReceipt({ hash: txHash });
 
-  const { switchChainAndExecute, isSwitchingOrExecuting } = useChainSwitchWithActionTW();
+  const { switchChainAndExecute, isSwitchingOrExecuting } = useChainSwitchWithAction();
 
   const { colorMode } = useColorMode();
 

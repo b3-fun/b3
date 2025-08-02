@@ -31,7 +31,6 @@ export { useRemoveSessionKey } from "./useRemoveSessionKey";
 export { useRouter } from "./useRouter";
 export { useSearchParamsSSR } from "./useSearchParamsSSR";
 export { useSiwe } from "./useSiwe";
-export { useChainSwitchWithActionTW } from "./useSwitchChainWithActionTW";
 export { useTokenBalance } from "./useTokenBalance";
 export { useTokenBalancesByChain } from "./useTokenBalancesByChain";
 export { useTokenData } from "./useTokenData";
