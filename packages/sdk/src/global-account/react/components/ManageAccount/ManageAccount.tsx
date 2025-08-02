@@ -1,22 +1,20 @@
 import {
   Button,
   CopyToClipboard,
+  TabsContentPrimitive,
+  TabsListPrimitive,
+  TabsPrimitive,
+  TabTriggerPrimitive,
   TWSignerWithMetadata,
   useAccountAssets,
   useAuthentication,
   useB3BalanceFromAddresses,
   useGetAllTWSigners,
+  useModalStore,
   useNativeBalance,
   useRemoveSessionKey,
-  useModalStore,
-  TabsPrimitive,
-  TabsContentPrimitive,
-  TabsListPrimitive,
-  TabTriggerPrimitive,
 } from "@b3dotfun/sdk/global-account/react";
-import { formatAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { formatNumber } from "@b3dotfun/sdk/shared/utils/formatNumber";
-import { ArrowRightLeft } from "lucide-react";
 import { useState } from "react";
 import { Chain } from "thirdweb";
 import { useActiveAccount } from "thirdweb/react";
@@ -87,40 +85,29 @@ export function ManageAccount({
   };
 
   const BalanceContent = () => (
-    <div className="flex h-full flex-col items-center justify-between gap-8">
-      <div className="w-full">
-        <div className="border-b3-react-border bg-b3-react-subtle flex flex-col rounded-lg border p-4">
-          <div className="mb-4 flex items-center gap-3">
-            <img src="https://cdn.b3.fun/b3_logo.svg" alt="B3" className="h-6 w-6" />
-            <h2 className="font-neue-montreal-bold text-b3-react-primary text-lg">Global Account</h2>
-          </div>
-          <div className="flex flex-col gap-2">
-            <p className="text-b3-react-secondary-foreground text-sm">Your universal account for all B3-powered apps</p>
-            <div className="flex items-center gap-2">
-              <span className="text-b3-react-muted-foreground font-mono text-sm">
-                {centerTruncate(account?.address || "", 6)}
-              </span>
-              <CopyToClipboard text={account?.address || ""} />
-            </div>
+    <div className="flex flex-col gap-6">
+      {/* Profile Section */}
+      <div className="flex items-center gap-3">
+        <img
+          src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
+          alt="Profile"
+          className="h-12 w-12 rounded-full"
+        />
+        <div>
+          <h2 className="text-base font-semibold text-gray-900 dark:text-white">Sean Geng</h2>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-500">@seangeng</span>
+            <span className="text-sm text-gray-500">{centerTruncate(account?.address || "", 6)}</span>
+            <CopyToClipboard text={account?.address || ""} />
           </div>
         </div>
       </div>
 
-      <div className="border-b3-react-border bg-b3-react-subtle w-full rounded-lg border p-4">
-        <div className="flex items-center gap-4">
-          <img src="https://cdn.b3.fun/b3-coin-3d.png" alt="B3" className="h-10 w-10" />
-          <span className="font-neue-montreal-bold text-2xl">{b3Balance?.formattedTotal || "--"} B3</span>
-        </div>
-        <div className="border-b3-react-border my-4 border-t" />
-        <div className="flex items-center gap-4">
-          <img src="https://cdn.b3.fun/ethereum.svg" alt="ETH" className="h-10 w-10" />
-          <span className="font-neue-montreal-bold text-2xl">{nativeBalance?.formattedTotal || "--"} ETH</span>
-        </div>
-      </div>
-
-      <div className="flex w-full gap-4">
+      {/* Quick Actions */}
+      <div className="grid grid-cols-2 gap-3">
         <Button
-          className="font-neue-montreal-medium flex-1"
+          variant="outline"
+          className="w-full bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700"
           onClick={() => {
             setB3ModalOpen(true);
             setB3ModalContentType({
@@ -130,11 +117,12 @@ export function ManageAccount({
             });
           }}
         >
+          <span className="mr-2">💰</span>
           Deposit
         </Button>
         <Button
-          variant="default"
-          className="font-neue-montreal-medium flex-1"
+          variant="outline"
+          className="w-full bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700"
           onClick={() => {
             setB3ModalOpen(true);
             setB3ModalContentType({
@@ -143,103 +131,170 @@ export function ManageAccount({
             });
           }}
         >
-          <ArrowRightLeft className="mr-2 h-4 w-4" />
+          <span className="mr-2">🔄</span>
           Swap
         </Button>
+      </div>
+
+      {/* Balance Section */}
+      <div className="space-y-4">
+        <h3 className="text-sm font-medium text-gray-900 dark:text-white">Balance</h3>
+
+        {/* B3 Balance */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img src="https://cdn.b3.fun/b3-coin-3d.png" alt="B3" className="h-8 w-8" />
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-medium">B3</span>
+                <span className="text-sm text-gray-500">{b3Balance?.formattedTotal || "0.00"} B3</span>
+              </div>
+              <div className="text-sm">
+                <span className="text-gray-900 dark:text-white">$1,000</span>
+                <span className="ml-2 text-green-500">+0.27%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ETH Balance */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img src="https://cdn.b3.fun/ethereum.svg" alt="ETH" className="h-8 w-8" />
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-medium">Ethereum</span>
+                <span className="text-sm text-gray-500">{nativeBalance?.formattedTotal || "0.00"} ETH</span>
+              </div>
+              <div className="text-sm">
+                <span className="text-gray-900 dark:text-white">$1,500</span>
+                <span className="ml-2 text-red-500">-2.45%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Global Account Info */}
+      <div className="flex items-center justify-between rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+        <div className="flex items-center gap-3">
+          <img src="https://cdn.b3.fun/b3_logo.svg" alt="B3" className="h-6 w-6" />
+          <div>
+            <h3 className="font-medium text-gray-900 dark:text-white">Global Account</h3>
+            <p className="text-sm text-gray-500">Your universal account for all B3-powered apps</p>
+          </div>
+        </div>
+        <button className="text-gray-400 hover:text-gray-600">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M7 17L17 7M17 7H7M17 7V17"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
       </div>
     </div>
   );
 
   const AssetsContent = () => (
-    <div className="bg-b3-react-card border-b3-react-border rounded-lg border p-4">
-      {assets?.nftResponse && <AccountAssets nfts={assets.nftResponse} isLoading={isLoading} />}
+    <div className="grid grid-cols-3 gap-4">
+      {assets?.nftResponse ? (
+        <AccountAssets nfts={assets.nftResponse} isLoading={isLoading} />
+      ) : (
+        <div className="col-span-3 py-12 text-center text-gray-500">No NFTs found</div>
+      )}
     </div>
   );
 
   const AppsContent = () => (
-    <div className="bg-b3-react-card border-b3-react-border rounded-lg border p-4">
+    <div className="space-y-4">
       {signers?.map((signer: TWSignerWithMetadata) => (
-        <div
-          key={signer.id}
-          className="border-b3-react-border flex items-center justify-between border-b py-4 last:border-b-0"
-        >
-          <div className="flex items-center gap-4">
-            <div className="bg-b3-react-muted flex h-8 w-8 items-center justify-center rounded-full">
-              <span className="text-b3-react-muted-foreground text-xs">App</span>
-            </div>
-            <div className="flex flex-col">
-              <span className="font-neue-montreal-bold mb-2 text-base">{signer.partner.name}</span>
-              <div className="text-b3-react-muted-foreground flex flex-col gap-1.5">
-                <span className="text-b3-react-muted-foreground font-mono text-xs">
-                  Added: {new Date(signer.createdAt).toLocaleDateString()}
-                </span>
-                <span className="text-b3-react-muted-foreground font-mono text-xs">
-                  Expires: {new Date(Number(signer.endTimestamp) * 1000).toLocaleDateString()}
-                </span>
-                <span className="text-b3-react-muted-foreground font-mono text-xs">
-                  Max spend: {formatNumber(Number(formatUnits(signer.nativeTokenLimitPerTransaction, 18)))} ETH
-                </span>
-                <span className="text-b3-react-muted-foreground font-mono text-xs">
-                  Approved Contracts: {signer.approvedTargets.map(formatAddress).join(", ")}
-                </span>
+        <div key={signer.id} className="rounded-xl border border-gray-200 p-4 dark:border-gray-800">
+          <div className="flex items-start justify-between">
+            <div className="flex items-start gap-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
+                <span className="text-xs font-medium text-gray-600 dark:text-gray-400">App</span>
+              </div>
+              <div>
+                <h3 className="font-medium text-gray-900 dark:text-white">{signer.partner.name}</h3>
+                <div className="mt-2 space-y-1">
+                  <p className="text-xs text-gray-500">Added {new Date(signer.createdAt).toLocaleDateString()}</p>
+                  <p className="text-xs text-gray-500">
+                    Expires {new Date(Number(signer.endTimestamp) * 1000).toLocaleDateString()}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Max spend: {formatNumber(Number(formatUnits(signer.nativeTokenLimitPerTransaction, 18)))} ETH
+                  </p>
+                </div>
               </div>
             </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-red-200 text-red-500 hover:border-red-300 hover:text-red-600"
+              onClick={() => handleRevoke(signer)}
+              disabled={revokingSignerId === signer.id}
+            >
+              {revokingSignerId === signer.id ? "Revoking..." : "Revoke"}
+            </Button>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 border-0 bg-red-500/80 px-4 text-xs font-medium text-white hover:bg-red-600/90"
-            onClick={() => handleRevoke(signer)}
-            disabled={revokingSignerId === signer.id}
-          >
-            {revokingSignerId === signer.id ? "Revoking..." : "Revoke"}
-          </Button>
         </div>
       ))}
 
-      {!signers?.length && <div className="text-b3-react-muted-foreground py-8 text-center">No connected apps</div>}
+      {!signers?.length && <div className="py-12 text-center text-gray-500">No connected apps</div>}
     </div>
   );
 
   return (
-    <div className="flex flex-col gap-4 p-4">
+    <div className="flex flex-col rounded-xl bg-white dark:bg-gray-900">
       <div className="flex-1">
         <TabsPrimitive defaultValue={activeTab} onValueChange={setActiveTab}>
-          <TabsListPrimitive className="mb-4 w-full">
-            <TabTriggerPrimitive value="balance" className="font-neue-montreal-bold text-base">
-              Balance
+          <TabsListPrimitive className="flex w-full rounded-t-xl bg-gray-100 p-1 dark:bg-gray-800">
+            <TabTriggerPrimitive
+              value="balance"
+              className="flex-1 rounded-lg px-4 py-2 text-sm font-medium text-gray-600 transition-colors data-[state=active]:bg-white data-[state=active]:text-gray-900 dark:text-gray-400 dark:data-[state=active]:bg-gray-900 dark:data-[state=active]:text-white"
+            >
+              Overview
             </TabTriggerPrimitive>
-            <TabTriggerPrimitive value="assets" className="font-neue-montreal-bold text-base">
-              NFTs
+            <TabTriggerPrimitive
+              value="assets"
+              className="flex-1 rounded-lg px-4 py-2 text-sm font-medium text-gray-600 transition-colors data-[state=active]:bg-white data-[state=active]:text-gray-900 dark:text-gray-400 dark:data-[state=active]:bg-gray-900 dark:data-[state=active]:text-white"
+            >
+              Mints
             </TabTriggerPrimitive>
-            <TabTriggerPrimitive value="apps" className="font-neue-montreal-bold text-base">
+            <TabTriggerPrimitive
+              value="apps"
+              className="flex-1 rounded-lg px-4 py-2 text-sm font-medium text-gray-600 transition-colors data-[state=active]:bg-white data-[state=active]:text-gray-900 dark:text-gray-400 dark:data-[state=active]:bg-gray-900 dark:data-[state=active]:text-white"
+            >
               Apps
             </TabTriggerPrimitive>
           </TabsListPrimitive>
 
-          <TabsContentPrimitive value="balance">
+          <TabsContentPrimitive value="balance" className="p-4">
             <BalanceContent />
           </TabsContentPrimitive>
 
-          <TabsContentPrimitive value="assets">
+          <TabsContentPrimitive value="assets" className="p-4">
             <AssetsContent />
           </TabsContentPrimitive>
 
-          <TabsContentPrimitive value="apps">
+          <TabsContentPrimitive value="apps" className="p-4">
             <AppsContent />
           </TabsContentPrimitive>
         </TabsPrimitive>
       </div>
 
-      <div className="flex flex-col gap-2">
-        <div className="border-b3-react-border border-t" />
+      <div className="border-t border-gray-200 p-6 dark:border-gray-800">
         <Button
           variant="outline"
-          size="sm"
-          className="font-neue-montreal-medium text-b3-react-muted-foreground hover:text-b3-react-foreground"
+          size="lg"
+          className="w-full justify-center border-gray-200 text-gray-600 hover:text-gray-900 dark:border-gray-800 dark:text-gray-400 dark:hover:text-white"
           onClick={onLogoutEnhanced}
         >
-          {logoutLoading ? "Logging out..." : "Logout"}
+          {logoutLoading ? "Logging out..." : "Disconnect from apps"}
         </Button>
       </div>
     </div>
