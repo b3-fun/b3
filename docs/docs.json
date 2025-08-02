@@ -43,14 +43,11 @@
         "groups": [
           {
             "group": "Overview",
-            "pages": ["ecosystem/introduction"]
+            "pages": ["ecosystem/introduction", "protocol/network-setup"]
           },
           {
-            "group": "Data API",
-            "openapi": {
-              "source": "https://data-api.b3.fun/swagger.json",
-              "directory": "api-reference"
-            }
+            "group": "Resources",
+            "pages": ["data/api-reference/introduction", "sdk/introduction"]
           },
           {
             "group": "Ecosystem Tools",
@@ -66,6 +63,13 @@
           {
             "group": "User Experience",
             "pages": ["ecosystem/wallets", "ecosystem/bridges"]
+          },
+          {
+            "group": "Data API",
+            "openapi": {
+              "source": "https://data-api.b3.fun/swagger.json?fresh=1",
+              "directory": "data/api-reference"
+            }
           }
         ]
       },

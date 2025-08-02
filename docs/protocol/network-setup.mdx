@@ -1,27 +1,48 @@
+---
+title: "Connect to B3"
+description: "B3 is fully EVM-compatible network of chains.  Easily connect to B3 with your wallet."
+---
 
-# Using B3 with Your Wallet
-
-B3 is fully EVM-compatible, making it easy to connect with any Ethereum wallet including MetaMask, Coinbase Wallet, Rainbow, and more.
-
-## One-Click Network Addition
-
-Add B3 networks directly to your wallet with these interactive buttons:
-
+## Using B3 with Your Wallet
+It's easy to connect with any Ethereum wallet including MetaMask, Coinbase Wallet, Rainbow, and more.
 
 <Tip>
   These buttons work with MetaMask and other Web3 wallets. They'll automatically add the network configuration or switch to B3 if it's already added.
 </Tip>
 
-<Card title="Add B3 Instantly" icon="plus" href="https://chainlist.org/chain/8333" horizontal>
-  Use Chainlist to add B3 to your wallet with one click
+<Card title="Add B3 Mainnet" icon="plus" href="https://explorer.b3.fun/add-b3-chain" horizontal>
+  Using B3 Explorer <span className="bg-primary text-white px-2 py-1 rounded-md text-xs ml-2">Recommended</span>
+</Card>
+<Card title="Add with Chainlist" icon="plus" href="https://chainlist.org/chain/8333" horizontal>
+  Use Chainlist to add B3 to your wallet
 </Card>
 
-## Quick Network Addition
+<br />
 
 <Tabs>
-<Tab title="Chainlist (Recommended)">
+<Tab title="Using B3 Explorer (Recommended)">
   The fastest way to add B3 to your wallet:
+  <Steps>
+  <Step title="Visit B3 Explorer">
+    Go to [explorer.b3.fun](https://explorer.b3.fun/add-b3-chain) and click "Add B3 Chain"
+  </Step>
+  
+  <Step title="Connect Wallet">
+    Connect your wallet (MetaMask, Coinbase Wallet, etc.)
+  </Step>
+  
+  <Step title="Add Network">
+    Click "Add to Wallet" for B3 Mainnet
+    
+    <Check>
+    B3 will be automatically added to your wallet with the correct configuration
+    </Check>
+  </Step>
+  </Steps>
+</Tab>
 
+<Tab title="Using Chainlist">
+  The fastest way to add B3 to your wallet:
   <Steps>
   <Step title="Visit Chainlist">
     Go to [chainlist.org](https://chainlist.org/chain/8333) and search for "B3"
@@ -41,54 +62,11 @@ Add B3 networks directly to your wallet with these interactive buttons:
   </Steps>
 </Tab>
 
-<Tab title="Manual Configuration">
+<Tab title="Manually">
   If you prefer to add B3 manually, use the network details below:
-
-  <AccordionGroup>
-  <Accordion title="B3 Mainnet Configuration">
-    <ParamField path="Network Name" type="string">
-      B3 Mainnet
-    </ParamField>
-    
-    <ParamField path="Chain ID" type="number">
-      8333
-    </ParamField>
-    
-    <ParamField path="RPC URL" type="string">
-      https://mainnet-rpc.b3.fun
-    </ParamField>
-    
-    <ParamField path="Explorer URL" type="string">
-      https://explorer.b3.fun
-    </ParamField>
-    
-    <ParamField path="Native Token" type="object">
-      Symbol: ETH, Decimals: 18
-    </ParamField>
-  </Accordion>
   
-  <Accordion title="B3 Testnet Configuration">
-    <ParamField path="Network Name" type="string">
-      B3 Testnet
-    </ParamField>
-    
-    <ParamField path="Chain ID" type="number">
-      1993
-    </ParamField>
-    
-    <ParamField path="RPC URL" type="string">
-      https://testnet-rpc.b3.fun
-    </ParamField>
-    
-    <ParamField path="Explorer URL" type="string">
-      https://testnet-explorer.b3.fun
-    </ParamField>
-    
-    <ParamField path="Native Token" type="object">
-      Symbol: ETH, Decimals: 18
-    </ParamField>
-  </Accordion>
-  </AccordionGroup>
+  <Note>Network Details: [B3 Mainnet configuration](#b3-mainnet-configuration)</Note>
+  <Note>Network Details: [B3 Testnet configuration](#b3-testnet-configuration)</Note>
 </Tab>
 </Tabs>
 
@@ -106,14 +84,9 @@ Add B3 networks directly to your wallet with these interactive buttons:
 <Step title="Add Network Manually">Click "Add a network manually" at the bottom</Step>
 
 <Step title="Enter B3 Details">
-  Fill in the B3 network information:
-  ```
-  Network name: B3 Mainnet
-  New RPC URL: https://mainnet-rpc.b3.fun
-  Chain ID: 8333
-  Currency symbol: ETH
-  Block explorer URL: https://explorer.b3.fun
-  ```
+  Fill in the B3 network information 
+  
+  <Note>See the complete [B3 Mainnet configuration](#b3-mainnet-configuration)</Note>
 </Step>
 
 <Step title="Save and Switch">
@@ -138,20 +111,7 @@ Add B3 networks directly to your wallet with these interactive buttons:
 
 <Step title="Configure B3 Network">
   In the **Add custom network** dialog, enter the B3 mainnet information:
-  <CodeGroup>
-    ```text
-    Network Name: B3 Mainnet
-    ```
-    ```text
-    Chain ID: 8333
-    ```
-    ```text
-    RPC URL: https://mainnet-rpc.b3.fun
-    ```
-    ```text
-    Block Explorer: https://explorer.b3.fun
-    ```
-  </CodeGroup>
+  <Note>See the complete [B3 Mainnet configuration](#b3-mainnet-configuration) for copyable values</Note>
 </Step>
 
 <Step title="Save Configuration">
@@ -172,52 +132,78 @@ Add B3 networks directly to your wallet with these interactive buttons:
 
 <Step title="Access Settings">Tap the profile icon and go to Settings → Networks</Step>
 
-<Step title="Add Custom Network">Tap "Add Custom Network" and enter B3 details</Step>
+<Step title="Add Custom Network">
+  Tap "Add Custom Network" and enter B3 details
+  <Note>See the complete [B3 Mainnet configuration](#b3-mainnet-configuration) for copyable values</Note>
+</Step>
 
 <Step title="Connect to B3">
   Save the configuration and switch to B3 Mainnet
 </Step>
 </Steps>
 
-## Network Information Reference
+## B3 Mainnet Configuration
+<Card title="B3 Mainnet" icon="globe" id="b3-mainnet-config">
+    Complete configuration details for B3 Mainnet:
 
-<CardGroup cols={2}>
-  <Card title="B3 Mainnet" icon="globe">
-    **Chain ID:** 8333
-    **RPC:** https://mainnet-rpc.b3.fun
-    **Explorer:** https://explorer.b3.fun
-    **Native Token:** ETH
+    **Network Name:**
+    ```
+    B3 Mainnet
+    ```
+
+    **Chain ID:**
+    ```
+    8333
+    ```
+
+    **RPC URL:**
+    ```
+    https://mainnet-rpc.b3.fun
+    ```
+
+    **Explorer URL:**
+    ```
+    https://explorer.b3.fun
+    ```
+
+    **Native Token:**
+    ```
+    Symbol: ETH
+    Decimals: 18
+    ```
   </Card>
 
-  <Card title="B3 Testnet" icon="flask">
-    **Chain ID:** 1993
-    **RPC:** https://testnet-rpc.b3.fun
-    **Explorer:** https://testnet-explorer.b3.fun
-    **Native Token:** ETH
+## B3 Testnet Configuration
+<Card title="B3 Testnet" icon="flask" id="b3-testnet-config">
+    Complete configuration details for B3 Testnet:
+
+    **Network Name:**
+    ```
+    B3 Testnet
+    ```
+
+    **Chain ID:**
+    ```
+    1993
+    ```
+
+    **RPC URL:**
+    ```
+    https://testnet-rpc.b3.fun
+    ```
+
+    **Explorer URL:**
+    ```
+    https://testnet-explorer.b3.fun
+    ```
+
+    **Native Token:**
+    ```
+    Symbol: ETH
+    Decimals: 18
+    ```
   </Card>
-</CardGroup>
 
-## Essential B3 Tools
-
-Once you've connected to B3, you can start using the ecosystem:
-
-<CardGroup cols={2}>
-  <Card title="Bridge to B3" icon="bridge" href="https://docs.b3.fun/bridge">
-    Transfer assets from Ethereum and Base to B3
-  </Card>
-
-<Card title="B3 Explorer" icon="magnifying-glass" href="https://explorer.b3.fun">
-  View transactions, contracts, and network activity
-</Card>
-
-<Card title="Ecosystem Tools" icon="wrench" href="https://docs.b3.fun/ecosystem-tools">
-  Discover dApps, games, and tools built on B3
-</Card>
-
-  <Card title="Developer Dashboard" icon="code" href="https://docs.b3.fun/developer-dashboard">
-    Access developer tools and analytics
-  </Card>
-</CardGroup>
 
 ## Troubleshooting
 
@@ -245,54 +231,12 @@ Once you've connected to B3, you can start using the ecosystem:
 </Accordion>
 </AccordionGroup>
 
-## SDK Integration
-
-Once your wallet is connected to B3, you can integrate it with the B3 SDK:
-
-```tsx
-import { '@b3dotfun/sdk/global-account/react' } from "@b3dotfun/sdk";
-
-function WalletConnection() {
-  const [account, setAccount] = useState(null);
-
-  const connectWallet = async () => {
-    if (window.ethereum) {
-      // Check if already connected to B3
-      const chainId = await window.ethereum.request({
-        method: 'eth_chainId'
-      });
-
-      if (chainId !== '0x2085') {
-        // Switch to B3 network
-        await window.ethereum.request({
-          method: 'wallet_switchEthereumChain',
-          params: [{ chainId: '0x2085' }],
-        });
-      }
-
-      // Connect wallet
-      const accounts = await window.ethereum.request({
-        method: 'eth_requestAccounts'
-      });
-
-      setAccount(accounts[0]);
-    }
-  };
-
-  return (
-    <button onClick={connectWallet}>
-      {account ? `Connected: ${account.slice(0, 6)}...` : 'Connect Wallet'}
-    </button>
-  );
-}
-```
+---
 
 <Warning>
   Always verify that users are connected to the correct B3 network before executing transactions. The Chain ID for B3
   Mainnet is 8333.
 </Warning>
-
----
 
 <Check>
   **Ready to start building on B3?** Your wallet is now configured! Check out our [SDK documentation](/quickstart) to
