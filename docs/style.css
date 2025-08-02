@@ -1,0 +1,24 @@
+/* Make navbar images take full space and hide text */
+.nav-tabs .nav-tabs-item img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain;
+  max-width: none !important;
+  background-color: transparent !important;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: auto;
+  padding: 0;
+  border: none;
+  max-height: 28px;
+}
+.nav-tabs-item:has(img) {
+  color: transparent !important;
+}
+
+.nav-tabs a[href="/anyspend/introduction"] img {
+  max-height: 18px;
+}
