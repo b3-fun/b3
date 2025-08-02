@@ -9,10 +9,14 @@ interface AuthState {
   chain?: Chain;
   isAuthenticating: boolean;
   isAuthenticated: boolean;
+  isConnecting: boolean;
+  isConnected: boolean;
   onSuccess?: (account: any) => void;
   onError?: (error: Error) => void;
   setB3ModalOpen: (isOpen: boolean) => void;
   setStep: (step: "login" | "permissions") => void;
+  setIsConnecting: (isConnecting: boolean) => void;
+  setIsConnected: (isConnected: boolean) => void;
   setIsAuthenticating: (isAuthenticating: boolean) => void;
   setIsAuthenticated: (isAuthenticated: boolean) => void;
   startAuth: (params: {
@@ -33,10 +37,14 @@ export const useAuthStore = create<AuthState>(set => ({
   chain: undefined,
   isAuthenticating: false,
   isAuthenticated: false,
+  isConnecting: false,
+  isConnected: false,
   onSuccess: undefined,
   onError: undefined,
   setB3ModalOpen: isOpen => set({ isOpen }),
   setStep: step => set({ step }),
+  setIsConnecting: isConnecting => set({ isConnecting }),
+  setIsConnected: isConnected => set({ isConnected }),
   setIsAuthenticating: isAuthenticating => set({ isAuthenticating }),
   setIsAuthenticated: isAuthenticated => set({ isAuthenticated }),
   startAuth: params =>

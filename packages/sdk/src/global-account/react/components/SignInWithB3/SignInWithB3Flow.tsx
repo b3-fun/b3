@@ -1,6 +1,7 @@
 import {
   Loading,
   SignInWithB3ModalProps,
+  useAuthStore,
   useB3,
   useGetAllTWSigners,
   useModalStore,
@@ -37,9 +38,12 @@ export function SignInWithB3Flow({
   const { setUser, automaticallySetFirstEoa } = useB3();
   const [step, setStep] = useState<"login" | "permissions" | null>(source === "requestPermissions" ? null : "login");
   const [sessionKeyAdded, setSessionKeyAdded] = useState(source === "requestPermissions" ? true : false);
-  const { setB3ModalContentType, setB3ModalOpen } = useModalStore();
+  const { setB3ModalContentType, setB3ModalOpen, isOpen } = useModalStore();
   const account = useActiveAccount();
-  const [loginComplete, setLoginComplete] = useState(source === "requestPermissions" ? true : false);
+  const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
+  const isAuthenticating = useAuthStore(state => state.isAuthenticating);
+  const isConnected = useAuthStore(state => state.isConnected);
+  const setIsConnected = useAuthStore(state => state.setIsConnected);
   const [refetchCount, setRefetchCount] = useState(0);
   const [refetchError, setRefetchError] = useState<string | null>(null);
   const {
@@ -54,7 +58,6 @@ export function SignInWithB3Flow({
     },
   });
   const { authenticate } = useSiwe();
-  const [authenticatingWithB3, setAuthenticatingWithB3] = useState(false);
   const [refetchQueued, setRefetchQueued] = useState(false);
 
   // Enhanced refetchSigners function that tracks number of attempts
@@ -86,12 +89,15 @@ export function SignInWithB3Flow({
   // Handle post-login flow after signers are loaded
   useEffect(() => {
     debug("@@SignInWithB3Flow:useEffect", {
-      loginComplete,
+      isConnected,
+      isAuthenticating,
       isFetchingSigners,
+      closeAfterLogin,
+      isOpen,
       source,
     });
 
-    if (loginComplete && !isFetchingSigners) {
+    if (isConnected) {
       // Check if we already have a signer for this partner
       const hasExistingSigner = signers?.some(signer => signer.partner.id === partnerId);
       if (hasExistingSigner) {
@@ -128,7 +134,6 @@ export function SignInWithB3Flow({
     signers,
     isFetchingSigners,
     partnerId,
-    loginComplete,
     handleRefetchSigners,
     source,
     closeAfterLogin,
@@ -137,6 +142,9 @@ export function SignInWithB3Flow({
     onSessionKeySuccess,
     setB3ModalOpen,
     signersEnabled,
+    isConnected,
+    isAuthenticating,
+    isOpen,
   ]);
 
   debug("render", {
@@ -186,17 +194,17 @@ export function SignInWithB3Flow({
   const handleLoginSuccess = useCallback(
     async (account: Account) => {
       debug("Authenticating with B3 via SIWE");
+      setIsConnected(true);
       if (loginWithSiwe) {
-        setAuthenticatingWithB3(true);
+        setIsAuthenticating(true);
         const userAuth = await authenticate(account, partnerId);
         setUser(userAuth.user);
       }
       debug("handleLoginSuccess:account", account);
       onLoginSuccess?.(account);
-      setLoginComplete(true);
-      setAuthenticatingWithB3(false);
+      setIsAuthenticating(false);
     },
-    [authenticate, loginWithSiwe, onLoginSuccess, setUser, partnerId],
+    [loginWithSiwe, onLoginSuccess, setIsAuthenticating, authenticate, partnerId, setUser, setIsConnected],
   );
 
   useEffect(() => {
@@ -220,7 +228,7 @@ export function SignInWithB3Flow({
     );
   }
 
-  if (authenticatingWithB3 || (isFetchingSigners && step === "login") || source === "requestPermissions") {
+  if (isAuthenticating || (isFetchingSigners && step === "login") || source === "requestPermissions") {
     return (
       <LoginStepContainer partnerId={partnerId}>
         <div className="mt-8 flex items-center justify-center">

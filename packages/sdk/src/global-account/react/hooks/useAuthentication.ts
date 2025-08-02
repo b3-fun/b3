@@ -23,6 +23,10 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
   const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
   const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
+  const setIsConnecting = useAuthStore(state => state.setIsConnecting);
+  const setIsConnected = useAuthStore(state => state.setIsConnected);
+  const isConnecting = useAuthStore(state => state.isConnecting);
+  const isConnected = useAuthStore(state => state.isConnected);
   const { connect } = useConnect(partnerId, b3MainnetThirdWeb);
 
   const wallet = ecosystemWallet(ecosystemWalletId, {
@@ -34,6 +38,7 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
     wallets: [wallet],
     onConnect: async wallet => {
       try {
+        setIsConnected(true);
         if (!loginWithSiwe) {
           debug("Skipping SIWE login", { loginWithSiwe });
           setIsAuthenticated(true);
@@ -72,17 +77,20 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
   useEffect(() => {
     if (useAutoConnectLoading) {
       setIsAuthenticating(true);
+      setIsConnecting(true);
     } else if (!isAuthenticated) {
       // Only set isAuthenticating to false if we're not authenticated
       // This prevents the flicker state where both isAuthenticating and isAuthenticated are false
       const timeout = setTimeout(() => {
         setIsAuthenticating(false);
+        setIsConnecting(false);
       }, 100); // Add a small delay to prevent quick flickers
       return () => clearTimeout(timeout);
     } else {
       setIsAuthenticating(false);
+      setIsConnecting(false);
     }
-  }, [useAutoConnectLoading, isAuthenticated, setIsAuthenticating]);
+  }, [useAutoConnectLoading, isAuthenticated, setIsAuthenticating, setIsConnecting, setIsConnected]);
 
   const logout = async (callback?: () => void) => {
     if (activeWallet) {
@@ -110,6 +118,8 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
     debug("@@logout:loggedOut");
 
     setIsAuthenticated(false);
+    console.log("@@logout:setIsConnected:false");
+    setIsConnected(false);
     setUser();
     callback?.();
   };
@@ -121,6 +131,8 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
     isAuthenticating: useAutoConnectLoading || isAuthenticating,
     isAuthenticated,
     isReady,
+    isConnecting,
+    isConnected,
     wallet,
     preAuthenticate,
     connect,
