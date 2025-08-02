@@ -21,9 +21,9 @@ export { useOneBalance } from "./useOneBalance";
 export {
   useProfile,
   useProfilePreference,
-  type Profile,
   type CombinedProfile,
   type PreferenceRequestBody,
+  type Profile,
 } from "./useProfile";
 export { useQueryB3 } from "./useQueryB3";
 export { useQueryBSMNT } from "./useQueryBSMNT";
