@@ -30,14 +30,42 @@ async function fetchNativeBalance(address: string, chainIds: string) {
     return acc + Number(balance);
   }, 0);
 
+  // TODO: Revive me once CoinGecko supports B3
+  // let usdBalances: Record<
+  //   number,
+  //   {
+  //     balance: number;
+  //     formatted: string;
+  //   }
+  // > = {};
+
+  // for (const item of data.data) {
+  //   console.log("@@item", item);
+  //   const usdPrice = await fetchTokenPrice("0x0000000000000000000000000000000000000000", item.chainId, "usd");
+  //   const balance = Number(formatUnits(BigInt(item.balance), item.tokenDecimals));
+  //   usdBalances[item.chainId] = {
+  //     balance: balance * usdPrice,
+  //     formatted: formatNumber(balance * usdPrice),
+  //   };
+  // }
+
+  // const totalUsd = Object.values(usdBalances).reduce((acc, curr) => acc + curr.balance, 0);
+
   return {
     total,
     formattedTotal: formatNumber(total),
-    breakdown: data.data.map(item => ({
-      chainId: item.chainId,
-      balance: BigInt(item.balance),
-      formatted: formatNumber(Number(formatUnits(BigInt(item.balance), item.tokenDecimals))),
-    })),
+    // totalUsd,
+    // formattedTotalUsd: formatNumber(totalUsd),
+    breakdown: data.data.map(item => {
+      // const usdBalance = usdBalances[item.chainId]?.balance || 0;
+      return {
+        chainId: item.chainId,
+        balance: BigInt(item.balance),
+        formatted: formatNumber(Number(formatUnits(BigInt(item.balance), item.tokenDecimals))),
+        // balanceUsd: usdBalance,
+        // balanceUsdFormatted: formatNumber(usdBalance),
+      };
+    }),
   };
 }
 

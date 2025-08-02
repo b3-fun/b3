@@ -63,8 +63,6 @@ export function ManageAccount({
   const { logout } = useAuthentication(partnerId);
   const [logoutLoading, setLogoutLoading] = useState(false);
 
-  console.log("@@assets", assets);
-
   const { removeSessionKey } = useRemoveSessionKey({
     chain,
     onSuccess: tx => {
@@ -163,8 +161,9 @@ export function ManageAccount({
                 <span className="text-sm text-gray-500">{b3Balance?.formattedTotal || "0.00"} B3</span>
               </div>
               <div className="text-sm">
-                <span className="text-gray-900 dark:text-white">$1,000</span>
-                <span className="ml-2 text-green-500">+0.27%</span>
+                <span className="text-gray-900 dark:text-white">${b3Balance?.balanceUsdFormatted}</span>
+                {/* TODO: Add price change */}
+                {/* <span className="ml-2 text-green-500">+0.27%</span> */}
               </div>
             </div>
           </div>
@@ -180,8 +179,10 @@ export function ManageAccount({
                 <span className="text-sm text-gray-500">{nativeBalance?.formattedTotal || "0.00"} ETH</span>
               </div>
               <div className="text-sm">
-                <span className="text-gray-900 dark:text-white">$1,500</span>
-                <span className="ml-2 text-red-500">-2.45%</span>
+                {/* TODO: Revive me once CoinGecko supports B3 */}
+                {/* <span className="text-gray-900 dark:text-white">${nativeBalance?.formattedTotalUsd}</span> */}
+                {/* TODO: Add price change */}
+                {/* <span className="ml-2 text-red-500">-2.45%</span> */}
               </div>
             </div>
           </div>

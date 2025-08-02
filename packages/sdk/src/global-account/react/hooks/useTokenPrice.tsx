@@ -20,14 +20,15 @@ interface TokenPriceResponse {
   };
 }
 
-async function fetchTokenPrice(contractAddress: string, chainId: number, vsCurrency = "usd") {
+export async function fetchTokenPrice(contractAddress: string, chainId: number, vsCurrency = "usd") {
   const platformId = getPlatformId(chainId as ChainId);
   const response = await fetch(
     `https://pro-api.coingecko.com/api/v3/simple/token_price/${platformId}?contract_addresses=${contractAddress}&vs_currencies=${vsCurrency}`,
     {
       headers: {
         accept: "application/json",
-        "x-cg-pro-api-key": process.env.COINGECKO_API_KEY as string,
+        // TODO: REMOVE ME BEFORE DEPLOYING!!!!
+        "x-cg-pro-api-key": (process.env.COINGECKO_API_KEY as string) || "CG-uxk7S5HQNSxDPgYFg9tjcT2j",
       },
     },
   );

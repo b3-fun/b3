@@ -3,6 +3,7 @@ import { formatNumber } from "@b3dotfun/sdk/shared/utils/formatNumber";
 import { useQuery } from "@tanstack/react-query";
 import { createPublicClient, formatUnits, http } from "viem";
 import { base } from "viem/chains";
+import { fetchTokenPrice } from "./useTokenPrice";
 
 // ABI for just balanceOf
 const abi = [
@@ -28,7 +29,11 @@ async function fetchB3Balances(addresses: string[]): Promise<{
     address: string;
     balance: bigint;
     formatted: string;
+    balanceUsd: number;
+    balanceUsdFormatted: string;
   }[];
+  balanceUsd: number;
+  balanceUsdFormatted: string;
 }> {
   try {
     // Fetch all balances in parallel
@@ -40,22 +45,29 @@ async function fetchB3Balances(addresses: string[]): Promise<{
           functionName: "balanceOf",
           args: [address as `0x${string}`],
         });
+        const usdPrice = await fetchTokenPrice(B3_TOKEN.address, B3_TOKEN.chainId, "usd");
+        const balanceUsd = Number(formatUnits(balance, B3_TOKEN.decimals)) * usdPrice;
 
         return {
           address,
           balance,
           formatted: formatUnits(balance, B3_TOKEN.decimals),
+          balanceUsd,
+          balanceUsdFormatted: formatNumber(balanceUsd),
         };
       }),
     );
 
     // Calculate total
     const totalBalance = balances.reduce((sum, { balance }) => sum + balance, BigInt(0));
+    const totalBalanceUsd = balances.reduce((sum, { balanceUsd }) => sum + balanceUsd, 0);
 
     return {
       totalBalance,
       formattedTotal: formatNumber(Number(formatUnits(totalBalance, B3_TOKEN.decimals))),
       breakdown: balances,
+      balanceUsd: totalBalanceUsd,
+      balanceUsdFormatted: formatNumber(totalBalanceUsd),
     };
   } catch (error) {
     console.error("Error fetching B3 balances:", error);
