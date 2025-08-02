@@ -22,13 +22,12 @@ interface TokenPriceResponse {
 
 export async function fetchTokenPrice(contractAddress: string, chainId: number, vsCurrency = "usd") {
   const platformId = getPlatformId(chainId as ChainId);
+
   const response = await fetch(
-    `https://pro-api.coingecko.com/api/v3/simple/token_price/${platformId}?contract_addresses=${contractAddress}&vs_currencies=${vsCurrency}`,
+    `https://coingecko-api.sean-430.workers.dev?localkey=${process.env.NEXT_PUBLIC_DEVMODE_SHARED_SECRET}&url=https://pro-api.coingecko.com/api/v3/simple/token_price/${platformId}?contract_addresses=${contractAddress}&vs_currencies=${vsCurrency}`,
     {
       headers: {
         accept: "application/json",
-        // TODO: REMOVE ME BEFORE DEPLOYING!!!!
-        "x-cg-pro-api-key": (process.env.COINGECKO_API_KEY as string) || "CG-uxk7S5HQNSxDPgYFg9tjcT2j",
       },
     },
   );
