@@ -48,7 +48,7 @@
           {
             "group": "Data API",
             "openapi": {
-              "source": "https://raw.githubusercontent.com/blockscout/blockscout-api-v2-swagger/main/swagger.yaml",
+              "source": "https://data-api.b3.fun/swagger.json",
               "directory": "api-reference"
             }
           },
