@@ -71,7 +71,7 @@ export function useChainSwitchWithActionTW() {
 
           const transaction = prepareTransaction({
             to: params.to,
-            value: params.value || 0n,
+            value: params.value,
             data: params.data,
             chain: thirdwebChain as any,
             client,

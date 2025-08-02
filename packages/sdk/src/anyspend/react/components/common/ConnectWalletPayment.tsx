@@ -7,7 +7,6 @@ import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { motion } from "framer-motion";
 import { ChevronRight, Loader2 } from "lucide-react";
 import { useMemo } from "react";
-import { useActiveWallet } from "thirdweb/react";
 import { OrderDetailsCollapsible } from "./OrderDetailsCollapsible";
 import { Step, StepProgress } from "./StepProgress";
 
@@ -69,9 +68,6 @@ export default function ConnectWalletPayment({
     ],
     [],
   );
-
-  const activeWallet = useActiveWallet();
-  console.log("activeWallet", activeWallet);
 
   if (!srcToken || !dstToken) {
     return <div>Loading...</div>;
