@@ -24,13 +24,21 @@ import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { formatDisplayNumber, formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import invariant from "invariant";
-import { ArrowDown, ChevronLeft, ChevronRightCircle, ChevronsUpDown, CircleAlert, HistoryIcon } from "lucide-react";
+import {
+  ArrowDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronRightCircle,
+  ChevronsUpDown,
+  CircleAlert,
+  HistoryIcon,
+} from "lucide-react";
 import { motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { useConnectedWallets } from "thirdweb/react";
 import { parseUnits } from "viem";
 import { b3Sepolia, base, mainnet, sepolia } from "viem/chains";
-import { useAccount } from "wagmi";
 import { components } from "../../types/api";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
 import { CryptoPaymentMethod, PaymentMethod } from "./common/CryptoPaymentMethod";
@@ -105,7 +113,7 @@ function AnySpendInner({
   const router = useRouter();
 
   // Get wagmi account state for wallet connection
-  const wagmiAccount = useAccount();
+  const connectedWallets = useConnectedWallets();
 
   // Determine if we're in "buy mode" based on whether destination token props are provided
   const isBuyMode = !!(destinationTokenAddress && destinationTokenChainId);
@@ -463,6 +471,10 @@ function AnySpendInner({
           onrampVendor: getOnrampVendor(selectedFiatPaymentMethod),
         },
   );
+
+  const connectedAddress = globalAddress || connectedWallets?.[0]?.getAccount()?.address;
+  const connectedProfile = useProfile({ address: connectedAddress });
+  const connectedName = connectedProfile.data?.name?.replace(/\.b3\.fun/g, "");
 
   const recipientProfile = useProfile({ address: recipientAddress });
   const recipientName = recipientProfile.data?.name?.replace(/\.b3\.fun/g, "");
@@ -1071,32 +1083,38 @@ function AnySpendInner({
             <div className="flex items-center justify-between">
               <div className="text-as-primary/50 flex h-7 items-center text-sm">Pay</div>
               <button
-                className="text-as-primary/50 hover:text-as-primary/70 flex h-7 items-center gap-1 text-sm transition-colors"
+                className="text-as-tertiarry flex h-7 items-center gap-2 text-sm transition-colors"
                 onClick={() => setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD)}
               >
                 {selectedPaymentMethod === PaymentMethod.CONNECT_WALLET ? (
                   <>
-                    {globalAddress || wagmiAccount.address ? (
+                    {connectedAddress ? (
                       <>
                         {globalWallet?.meta?.icon && (
-                          <img src={globalWallet.meta.icon} alt="Connected Wallet" className="h-4 w-4 rounded-full" />
+                          <img
+                            src={globalWallet.meta.icon}
+                            alt="Connected Wallet"
+                            className="bg-as-primary h-6 w-6 rounded-full"
+                          />
                         )}
-                        <span>{shortenAddress(globalAddress || wagmiAccount.address || "")}</span>
+                        <span className="text-as-tertiarry">
+                          {connectedName || shortenAddress(connectedAddress || "")}
+                        </span>
                       </>
                     ) : (
                       "Connect wallet"
                     )}
-                    <ChevronRightCircle className="h-4 w-4" />
+                    <ChevronRight className="h-4 w-4" />
                   </>
                 ) : selectedPaymentMethod === PaymentMethod.TRANSFER_CRYPTO ? (
                   <>
                     Transfer crypto
-                    <ChevronRightCircle className="h-4 w-4" />
+                    <ChevronRight className="h-4 w-4" />
                   </>
                 ) : (
                   <>
                     Select payment method
-                    <ChevronRightCircle className="h-4 w-4" />
+                    <ChevronRight className="h-4 w-4" />
                   </>
                 )}
               </button>
@@ -1198,7 +1216,7 @@ function AnySpendInner({
               <div className="text-as-primary/50 flex h-7 items-center text-sm">Receive</div>
               {recipientAddress ? (
                 <button
-                  className={cn("text-as-primary/70 flex h-7 items-center gap-2 rounded-lg px-2")}
+                  className={cn("text-as-tertiarry flex h-7 items-center gap-2 rounded-lg")}
                   onClick={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
                 >
                   {globalAddress && recipientAddress === globalAddress && globalWallet?.meta?.icon ? (
@@ -1213,7 +1231,7 @@ function AnySpendInner({
                     </div>
                   )}
                   <div className="text-sm">{recipientName ? recipientName : shortenAddress(recipientAddress)}</div>
-                  <ChevronRightCircle className="h-4 w-4" />
+                  <ChevronRight className="h-4 w-4" />
                 </button>
               ) : (
                 <button
@@ -1487,7 +1505,8 @@ function AnySpendInner({
       <div
         className={cn(
           "mx-auto w-full max-w-[460px]",
-          mode === "page" && "bg-as-surface-primary border-as-border-secondary rounded-2xl border p-6 shadow-xl",
+          mode === "page" &&
+            "bg-as-surface-primary border-as-border-secondary overflow-hidden rounded-2xl border shadow-xl",
         )}
       >
         <TransitionPanel
@@ -1500,7 +1519,7 @@ function AnySpendInner({
                 ? PanelView.MAIN
                 : activePanel
           }
-          className={cn("overflow-hidden", {
+          className={cn("rounded-2xl", {
             "mt-0": mode === "modal",
           })}
           variants={{
@@ -1511,14 +1530,30 @@ function AnySpendInner({
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
           {[
-            <div key="main-view">{mainView}</div>,
-            <div key="history-view">{historyView}</div>,
-            <div key="order-details-view">{orderDetailsView}</div>,
-            <div key="loading-view">{OrderDetailsLoadingView}</div>,
-            <div key="fiat-payment-view">{onrampPaymentView}</div>,
-            <div key="recipient-selection-view">{recipientSelectionView}</div>,
-            <div key="crypto-payment-method-view">{cryptoPaymentMethodView}</div>,
-            <div key="fiat-payment-method-view">{fiatPaymentMethodView}</div>,
+            <div key="main-view" className={cn(mode === "page" && "p-6")}>
+              {mainView}
+            </div>,
+            <div key="history-view" className={cn(mode === "page" && "p-6")}>
+              {historyView}
+            </div>,
+            <div key="order-details-view" className={cn(mode === "page" && "p-6")}>
+              {orderDetailsView}
+            </div>,
+            <div key="loading-view" className={cn(mode === "page" && "p-6")}>
+              {OrderDetailsLoadingView}
+            </div>,
+            <div key="fiat-payment-view" className={cn(mode === "page" && "p-6")}>
+              {onrampPaymentView}
+            </div>,
+            <div key="recipient-selection-view" className={cn(mode === "page" && "p-6")}>
+              {recipientSelectionView}
+            </div>,
+            <div key="crypto-payment-method-view" className={cn(mode === "page" && "p-6")}>
+              {cryptoPaymentMethodView}
+            </div>,
+            <div key="fiat-payment-method-view" className={cn(mode === "page" && "p-6")}>
+              {fiatPaymentMethodView}
+            </div>,
           ]}
         </TransitionPanel>
       </div>
