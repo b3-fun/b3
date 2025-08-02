@@ -9,6 +9,7 @@ import {
   OrderHistory,
 } from "@b3dotfun/sdk/anyspend/react";
 import { useIsMobile, useModalStore } from "@b3dotfun/sdk/global-account/react";
+import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { useB3 } from "./B3Provider/useB3";
 import { ManageAccount } from "./ManageAccount/ManageAccount";
@@ -112,17 +113,41 @@ export function B3DynamicModal() {
 
   return (
     <ModalComponent open={isOpen} onOpenChange={setB3ModalOpen}>
-      <ModalContent className={contentClass} hideCloseButton={hideCloseButton}>
+      <ModalContent
+        className={cn(
+          contentClass,
+          "rounded-2xl bg-white shadow-xl dark:bg-gray-900",
+          "border border-gray-200 dark:border-gray-800",
+          "mx-auto w-full max-w-md",
+          "sm:max-w-lg",
+        )}
+        hideCloseButton={hideCloseButton}
+      >
         <ModalTitle className="sr-only hidden">{contentType?.type || "Modal"}</ModalTitle>
         <ModalDescription className="sr-only hidden">{contentType?.type || "Modal Body"}</ModalDescription>
         <div className="no-scrollbar max-h-[90dvh] overflow-auto sm:max-h-[80dvh]">
           {history.length > 0 && contentType?.showBackButton && (
             <button
               onClick={navigateBack}
-              className="b3-modal-back-button mb-4 flex items-center gap-2 transition-colors hover:text-white"
+              className="flex items-center gap-2 px-6 py-4 text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
             >
-              <span>←</span>
-              <span className="text-sm">Back</span>
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M15.8337 10H4.16699"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M10.0003 15.8334L4.16699 10L10.0003 4.16669"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span className="text-sm font-medium">Back</span>
             </button>
           )}
           {renderContent()}
