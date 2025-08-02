@@ -22,7 +22,6 @@ export function useGeoOnrampOptions(isMainnet: boolean, srcFiatAmount: string) {
     useCoinbaseOnrampOptions(isMainnet, geoData?.country, visitorData);
   const { isStripeOnrampSupported, stripeWeb2Support, isLoadingStripeSupport, stripeSupportError } = useStripeSupport(
     isMainnet,
-    geoData?.ip || "",
     srcFiatAmount,
     visitorData,
   );
