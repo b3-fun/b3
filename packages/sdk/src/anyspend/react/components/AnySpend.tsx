@@ -1089,7 +1089,7 @@ function AnySpendInner({
               >
                 {selectedPaymentMethod === PaymentMethod.CONNECT_WALLET ? (
                   <>
-                    {globalAddress || connectedWallets?.[0]?.getAccount()?.address ? (
+                    {connectedAddress ? (
                       <>
                         {globalWallet?.meta?.icon && (
                           <img
