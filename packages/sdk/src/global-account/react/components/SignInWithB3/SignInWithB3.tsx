@@ -39,7 +39,6 @@ export function SignInWithB3(props: SignInWithB3Props) {
     setB3ModalOpen(true);
   };
 
-  console.log("@@isConnected", isConnected);
   if (isConnected) {
     return <ManageAccountButton {...props} />;
   }

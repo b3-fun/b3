@@ -118,7 +118,6 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
     debug("@@logout:loggedOut");
 
     setIsAuthenticated(false);
-    console.log("@@logout:setIsConnected:false");
     setIsConnected(false);
     setUser();
     callback?.();
