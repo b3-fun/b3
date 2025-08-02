@@ -1,13 +1,16 @@
----
-title: "Network Setup"
-description: "Connect to B3 mainnet and testnet with any EVM-compatible wallet"
----
-
-import { links, branding, networks, examples } from "/snippets/variables.mdx";
 
 # Using B3 with Your Wallet
 
 B3 is fully EVM-compatible, making it easy to connect with any Ethereum wallet including MetaMask, Coinbase Wallet, Rainbow, and more.
+
+## One-Click Network Addition
+
+Add B3 networks directly to your wallet with these interactive buttons:
+
+
+<Tip>
+  These buttons work with MetaMask and other Web3 wallets. They'll automatically add the network configuration or switch to B3 if it's already added.
+</Tip>
 
 <Card title="Add B3 Instantly" icon="plus" href="https://chainlist.org/chain/8333" horizontal>
   Use Chainlist to add B3 to your wallet with one click
@@ -48,15 +51,15 @@ B3 is fully EVM-compatible, making it easy to connect with any Ethereum wallet i
     </ParamField>
     
     <ParamField path="Chain ID" type="number">
-      {networks.b3.mainnet.chainId}
+      8333
     </ParamField>
     
     <ParamField path="RPC URL" type="string">
-      {networks.b3.mainnet.rpc}
+      https://mainnet-rpc.b3.fun
     </ParamField>
     
     <ParamField path="Explorer URL" type="string">
-      {networks.b3.mainnet.explorer}
+      https://explorer.b3.fun
     </ParamField>
     
     <ParamField path="Native Token" type="object">
@@ -70,15 +73,15 @@ B3 is fully EVM-compatible, making it easy to connect with any Ethereum wallet i
     </ParamField>
     
     <ParamField path="Chain ID" type="number">
-      {networks.b3.testnet.chainId}
+      1993
     </ParamField>
     
     <ParamField path="RPC URL" type="string">
-      {networks.b3.testnet.rpc}
+      https://testnet-rpc.b3.fun
     </ParamField>
     
     <ParamField path="Explorer URL" type="string">
-      {networks.b3.testnet.explorer}
+      https://testnet-explorer.b3.fun
     </ParamField>
     
     <ParamField path="Native Token" type="object">
@@ -106,10 +109,10 @@ B3 is fully EVM-compatible, making it easy to connect with any Ethereum wallet i
   Fill in the B3 network information:
   ```
   Network name: B3 Mainnet
-  New RPC URL: {networks.b3.mainnet.rpc}
-  Chain ID: {networks.b3.mainnet.chainId}
+  New RPC URL: https://mainnet-rpc.b3.fun
+  Chain ID: 8333
   Currency symbol: ETH
-  Block explorer URL: {networks.b3.mainnet.explorer}
+  Block explorer URL: https://explorer.b3.fun
   ```
 </Step>
 
@@ -140,13 +143,13 @@ B3 is fully EVM-compatible, making it easy to connect with any Ethereum wallet i
     Network Name: B3 Mainnet
     ```
     ```text
-    Chain ID: {networks.b3.mainnet.chainId}
+    Chain ID: 8333
     ```
     ```text
-    RPC URL: {networks.b3.mainnet.rpc}
+    RPC URL: https://mainnet-rpc.b3.fun
     ```
     ```text
-    Block Explorer: {networks.b3.mainnet.explorer}
+    Block Explorer: https://explorer.b3.fun
     ```
   </CodeGroup>
 </Step>
@@ -180,16 +183,16 @@ B3 is fully EVM-compatible, making it easy to connect with any Ethereum wallet i
 
 <CardGroup cols={2}>
   <Card title="B3 Mainnet" icon="globe">
-    **Chain ID:** {networks.b3.mainnet.chainId}
-    **RPC:** {networks.b3.mainnet.rpc}
-    **Explorer:** {networks.b3.mainnet.explorer}
+    **Chain ID:** 8333
+    **RPC:** https://mainnet-rpc.b3.fun
+    **Explorer:** https://explorer.b3.fun
     **Native Token:** ETH
   </Card>
 
   <Card title="B3 Testnet" icon="flask">
-    **Chain ID:** {networks.b3.testnet.chainId}
-    **RPC:** {networks.b3.testnet.rpc}
-    **Explorer:** {networks.b3.testnet.explorer}
+    **Chain ID:** 1993
+    **RPC:** https://testnet-rpc.b3.fun
+    **Explorer:** https://testnet-explorer.b3.fun
     **Native Token:** ETH
   </Card>
 </CardGroup>
@@ -199,7 +202,7 @@ B3 is fully EVM-compatible, making it easy to connect with any Ethereum wallet i
 Once you've connected to B3, you can start using the ecosystem:
 
 <CardGroup cols={2}>
-  <Card title="Bridge to B3" icon="bridge" href={links.b3Bridge}>
+  <Card title="Bridge to B3" icon="bridge" href="https://docs.b3.fun/bridge">
     Transfer assets from Ethereum and Base to B3
   </Card>
 
@@ -207,11 +210,11 @@ Once you've connected to B3, you can start using the ecosystem:
   View transactions, contracts, and network activity
 </Card>
 
-<Card title="Ecosystem Tools" icon="wrench" href={links.b3Docs + "/ecosystem-tools"}>
+<Card title="Ecosystem Tools" icon="wrench" href="https://docs.b3.fun/ecosystem-tools">
   Discover dApps, games, and tools built on B3
 </Card>
 
-  <Card title="Developer Dashboard" icon="code" href={links.b3Docs + "/developer-dashboard"}>
+  <Card title="Developer Dashboard" icon="code" href="https://docs.b3.fun/developer-dashboard">
     Access developer tools and analytics
   </Card>
 </CardGroup>
@@ -220,7 +223,7 @@ Once you've connected to B3, you can start using the ecosystem:
 
 <AccordionGroup>
 <Accordion title="Network not appearing in wallet">
-  - Double-check the Chain ID ({networks.b3.mainnet.chainId} for mainnet)
+  - Double-check the Chain ID (8333 for mainnet)
   - Ensure the RPC URL is correct: `https://mainnet-rpc.b3.fun`
   - Try refreshing your wallet or restarting the browser
 </Accordion>
@@ -232,7 +235,7 @@ Once you've connected to B3, you can start using the ecosystem:
 
 <Accordion title="Slow transaction speeds">
   - B3 typically processes transactions in 1-2 seconds - If experiencing delays, check the [B3 network status](
-  {links.b3NetworkStatus}) - Consider adjusting gas price if needed
+  https://docs.b3.fun/network-status) - Consider adjusting gas price if needed
 </Accordion>
 
 <Accordion title="Can't see my tokens">
@@ -247,7 +250,7 @@ Once you've connected to B3, you can start using the ecosystem:
 Once your wallet is connected to B3, you can integrate it with the B3 SDK:
 
 ```tsx
-import { {branding.packageName}/global-account/react } from "{branding.packageName}";
+import { '@b3dotfun/sdk/global-account/react' } from "@b3dotfun/sdk";
 
 function WalletConnection() {
   const [account, setAccount] = useState(null);
@@ -259,11 +262,11 @@ function WalletConnection() {
         method: 'eth_chainId'
       });
 
-      if (chainId !== '0x{networks.b3.mainnet.chainId.toString(16)}') {
+      if (chainId !== '0x2085') {
         // Switch to B3 network
         await window.ethereum.request({
           method: 'wallet_switchEthereumChain',
-          params: [{ chainId: '0x{networks.b3.mainnet.chainId.toString(16)}' }],
+          params: [{ chainId: '0x2085' }],
         });
       }
 
@@ -286,7 +289,7 @@ function WalletConnection() {
 
 <Warning>
   Always verify that users are connected to the correct B3 network before executing transactions. The Chain ID for B3
-  Mainnet is {networks.b3.mainnet.chainId}.
+  Mainnet is 8333.
 </Warning>
 
 ---

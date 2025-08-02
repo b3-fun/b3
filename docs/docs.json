@@ -7,7 +7,7 @@
     "light": "#4DA6FF",
     "dark": "#0056CC"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "/favicon.png",
   "navigation": {
     "tabs": [
       {
@@ -15,11 +15,11 @@
         "groups": [
           {
             "group": "Network",
-            "pages": ["network-setup", "bridge", "testnet", "bridge-to-testnet"]
+            "pages": ["protocol/network-setup", "protocol/bridge", "protocol/testnet", "protocol/bridge-to-testnet"]
           },
           {
             "group": "Build on B3",
-            "pages": ["ecosystem-tools", "brand-kit"]
+            "pages": ["protocol/ecosystem-tools", "protocol/brand-kit"]
           },
           {
             "group": "Governance",
@@ -41,7 +41,7 @@
           },
           {
             "group": "Game Development",
-            "pages": ["unity-guide", "construct-guide"]
+            "pages": ["basement/unity-guide", "basement/construct-guide"]
           }
         ]
       },

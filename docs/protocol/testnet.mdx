@@ -1,9 +1,10 @@
+---
+title: "Testnet"
+description: "Connect to B3 testnet with any EVM-compatible wallet"
+---
+
 
 # B3 Testnet (Sepolia)
-
-<div style={{ marginBottom: '16px' }}>
-  <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '4px 12px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold' }}>TESTNET</span>
-</div>
 
 Connecting to the B3 Testnet is easy!
 
@@ -12,7 +13,7 @@ Connecting to the B3 Testnet is easy!
 <CardGroup cols={2}>
   <Card title="Chain ID">
     ```text
-    {networks.b3.testnet.chainId}
+    1993
     ```
     <Note>
     Fun fact: 1993 is the year "Doom" was released, which revolutionized the first-person shooter genre.
@@ -31,7 +32,7 @@ Connecting to the B3 Testnet is easy!
 <Tabs>
 <Tab title="HTTP RPC">
   ```text RPC Endpoint
-  {networks.b3.testnet.rpc}
+  https://testnet-rpc.b3.fun
   ```
   
   Use this endpoint for standard HTTP requests to the B3 testnet.
@@ -39,7 +40,7 @@ Connecting to the B3 Testnet is easy!
 
 <Tab title="WebSocket RPC">
   ```text WebSocket Endpoint  
-  {networks.b3.testnet.rpcWs}
+  wss://testnet-rpc.b3.fun
   ```
   
   Use this endpoint for real-time WebSocket connections to the B3 testnet.
@@ -48,7 +49,7 @@ Connecting to the B3 Testnet is easy!
 
 ### Block Explorer
 
-<Card title="B3 Testnet Explorer" icon="search" href="{networks.b3.testnet.explorer}" cta="View Explorer" horizontal>
+<Card title="B3 Testnet Explorer" icon="search" href="https://testnet-explorer.b3.fun" cta="View Explorer" horizontal>
   Explore transactions, blocks, and contracts on the B3 testnet
 </Card>
 
@@ -59,7 +60,7 @@ Connecting to the B3 Testnet is easy!
     Bridge assets to B3 testnet for testing
   </Card>
   
-  <Card title="Faucet" icon="droplets" href="https://testnet-faucet.b3.fun" cta="Get Test ETH">
+  <Card title="Faucet" icon="droplets" href="https://faucet.b3.fun" cta="Get Test ETH">
     Get free testnet ETH for development and testing
   </Card>
   
@@ -83,10 +84,10 @@ Connecting to the B3 Testnet is easy!
   Fill in the following information:
   
   - **Network Name**: B3 Testnet
-  - **Chain ID**: {networks.b3.testnet.chainId}
-  - **RPC URL**: {networks.b3.testnet.rpc}
+  - **Chain ID**: 1993
+  - **RPC URL**: https://testnet-rpc.b3.fun
   - **Currency Symbol**: ETH
-  - **Block Explorer URL**: {networks.b3.testnet.explorer}
+  - **Block Explorer URL**: https://explorer.b3.fun
 </Step>
 
 <Step title="Save and Switch">
@@ -155,14 +156,14 @@ Moreover, testnets allow you to familiarize yourself with the B3 ecosystem and g
 <AccordionGroup>
 <Accordion title="Network Configuration">
   **Testnet**:
-  - Chain ID: {networks.b3.testnet.chainId}
-  - RPC: {networks.b3.testnet.rpc}
-  - Explorer: {networks.b3.testnet.explorer}
+  - Chain ID: 1993
+  - RPC: https://testnet-rpc.b3.fun
+  - Explorer: https://testnet-explorer.b3.fun
   
   **Mainnet**:
-  - Chain ID: {networks.b3.mainnet.chainId}
-  - RPC: {networks.b3.mainnet.rpc}
-  - Explorer: {networks.b3.mainnet.explorer}
+  - Chain ID: 8333
+  - RPC: https://mainnet-rpc.b3.fun
+  - Explorer: https://explorer.b3.fun
 </Accordion>
 
 <Accordion title="Token Value">
