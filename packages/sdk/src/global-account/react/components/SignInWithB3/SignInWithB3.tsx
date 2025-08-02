@@ -21,7 +21,7 @@ export type SignInWithB3Props = Omit<SignInWithB3ModalProps, "type" | "showBackB
 export function SignInWithB3(props: SignInWithB3Props) {
   const { setB3ModalOpen, setB3ModalContentType, setEcoSystemAccountAddress } = useModalStore();
   const { account } = useB3();
-  const { isAuthenticating, isAuthenticated } = useAuthentication(props.partnerId, props.loginWithSiwe);
+  const { isAuthenticating, isConnected } = useAuthentication(props.partnerId, props.loginWithSiwe);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -39,7 +39,7 @@ export function SignInWithB3(props: SignInWithB3Props) {
     setB3ModalOpen(true);
   };
 
-  if (isAuthenticated) {
+  if (isConnected) {
     return <ManageAccountButton {...props} />;
   }
 

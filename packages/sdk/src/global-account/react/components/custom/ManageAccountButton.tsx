@@ -4,7 +4,7 @@ import { SignInWithB3Props } from "../SignInWithB3/SignInWithB3";
 
 export function ManageAccountButton(props: SignInWithB3Props & { className?: string }) {
   const { setB3ModalOpen, setB3ModalContentType } = useModalStore();
-  const { isAuthenticated } = useAuthentication(props.partnerId, props.loginWithSiwe);
+  const { isConnected } = useAuthentication(props.partnerId, props.loginWithSiwe);
 
   const handleClickManageAccount = () => {
     setB3ModalContentType({
@@ -14,7 +14,7 @@ export function ManageAccountButton(props: SignInWithB3Props & { className?: str
     setB3ModalOpen(true);
   };
 
-  if (!isAuthenticated) return null;
+  if (!isConnected) return null;
 
   return (
     <StyleRoot>

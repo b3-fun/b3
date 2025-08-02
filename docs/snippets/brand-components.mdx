@@ -1,4 +1,4 @@
-import { branding } from "/snippets/variables.mdx";
+
 
 export const B3ColorPalette = () => (
   <div
@@ -12,7 +12,7 @@ export const B3ColorPalette = () => (
     <div style={{ textAlign: "center" }}>
       <div
         style={{
-          backgroundColor: branding.colors.primaryBlue,
+          backgroundColor: "#007AFF",
           height: "80px",
           borderRadius: "8px",
           border: "1px solid #e5e7eb",
@@ -26,13 +26,13 @@ export const B3ColorPalette = () => (
         Primary
       </div>
       <h4 style={{ margin: "0.5rem 0" }}>Primary Blue</h4>
-      <code style={{ fontSize: "0.875rem" }}>{branding.colors.primaryBlue}</code>
+      <code style={{ fontSize: "0.875rem" }}>{"#007AFF"}</code>
     </div>
 
     <div style={{ textAlign: "center" }}>
       <div
         style={{
-          backgroundColor: branding.colors.grey,
+          backgroundColor: "#6B7280",
           height: "80px",
           borderRadius: "8px",
           border: "1px solid #e5e7eb",
@@ -46,13 +46,13 @@ export const B3ColorPalette = () => (
         Grey
       </div>
       <h4 style={{ margin: "0.5rem 0" }}>Grey</h4>
-      <code style={{ fontSize: "0.875rem" }}>{branding.colors.grey}</code>
+      <code style={{ fontSize: "0.875rem" }}>{"#6B7280"}</code>
     </div>
 
     <div style={{ textAlign: "center" }}>
       <div
         style={{
-          backgroundColor: branding.colors.white,
+          backgroundColor: "#FFFFFF",
           height: "80px",
           borderRadius: "8px",
           border: "2px solid #e5e7eb",
@@ -66,7 +66,7 @@ export const B3ColorPalette = () => (
         White
       </div>
       <h4 style={{ margin: "0.5rem 0" }}>White</h4>
-      <code style={{ fontSize: "0.875rem" }}>{branding.colors.white}</code>
+      <code style={{ fontSize: "0.875rem" }}>{"#FFFFFF"}</code>
     </div>
   </div>
 );
@@ -75,9 +75,13 @@ export const B3FontShowcase = () => (
   <div style={{ margin: "2rem 0" }}>
     <div style={{ marginBottom: "2rem" }}>
       <h3>Neue Montreal Family</h3>
-      {branding.fonts.available
-        .filter(font => font.includes("Neue Montreal"))
-        .map(font => (
+      {[
+        "Neue Montreal Bold",
+        "Neue Montreal Regular",
+        "Neue Montreal Book",
+        "Neue Montreal Medium",
+        "Neue Montreal Semibold"
+      ].map(font => (
           <div
             key={font}
             style={{
@@ -96,9 +100,10 @@ export const B3FontShowcase = () => (
 
     <div style={{ marginBottom: "2rem" }}>
       <h3>Calibre Family</h3>
-      {branding.fonts.available
-        .filter(font => font.includes("Calibre"))
-        .map(font => (
+      {[
+        "Calibre Bold",
+        "Calibre Heavy"
+      ].map(font => (
           <div
             key={font}
             style={{
@@ -130,17 +135,17 @@ export const B3BrandValues = () => (
       fontSize: "1.1rem",
     }}
   >
-    ✦ {branding.values.join(" ✦ ")} ✦
+    ✦ COMMUNITY DRIVEN ✦ FUN ✦ ECOSYSTEM ALIGNED ✦
   </div>
 );
 
 export const LogoShowcase = ({ variant = "blue", size = 120 }) => {
   const logoSrc =
     variant === "blue"
-      ? branding.assets.logoBlueLight
+      ? "/logo/light.svg"
       : variant === "white"
-        ? branding.assets.logoWhite
-        : branding.assets.logoBlack;
+        ? "/logo/white.svg"
+        : "/logo/black.svg";
 
   const containerStyle =
     variant === "white"
@@ -150,7 +155,7 @@ export const LogoShowcase = ({ variant = "blue", size = 120 }) => {
   return (
     <div style={containerStyle}>
       <img
-        src={logoSrc || branding.assets.logoBlueLight}
+        src={logoSrc || "/logo/light.svg"}
         alt="B3 Logo"
         style={{ maxWidth: `${size}px`, height: "auto" }}
       />
@@ -171,10 +176,10 @@ export const QuickBrandGuide = () => (
     <h4 style={{ margin: "0 0 1rem 0", color: "#0369a1" }}>Quick Brand Implementation</h4>
     <ul style={{ margin: 0, paddingLeft: "1.5rem" }}>
       <li>
-        <strong>Colors:</strong> Use {branding.colors.primaryBlue} as primary, with vibrant accents
+        <strong>Colors:</strong> Use {"#007AFF"} as primary, with vibrant accents
       </li>
       <li>
-        <strong>Typography:</strong> Import {branding.assets.fontsCSS}
+        <strong>Typography:</strong> Import {"https://cdn.b3.fun/fonts.css"}
       </li>
       <li>
         <strong>Logo:</strong> Maintain 0.5x height clear space on all sides
@@ -189,22 +194,22 @@ export const QuickBrandGuide = () => (
 export const BrandCodeExample = ({ language = "css" }) => {
   const examples = {
     css: `/* B3 Brand Implementation */
-@import url("${branding.assets.fontsCSS}");
+@import url("${"https://cdn.b3.fun/fonts.css"}");
 
 :root {
---b3-primary: ${branding.colors.primaryBlue};
---b3-grey: ${branding.colors.grey};
---b3-white: ${branding.colors.white};
+--b3-primary: ${"#007AFF"};
+--b3-grey: ${"#6B7280"};
+--b3-white: ${"#FFFFFF"};
 }
 
 body {
-font-family: ${branding.fonts.primary};
+font-family: ${"\"Neue Montreal Medium\", sans-serif"};
 }
 
 .b3-button {
 background-color: var(--b3-primary);
 color: var(--b3-white);
-font-family: ${branding.fonts.secondary};
+font-family: ${"\"Calibre Bold\", sans-serif"};
 border-radius: 8px;
 padding: 0.75rem 1.5rem;
 border: none;
@@ -223,9 +228,9 @@ return (
 <button
 onClick={onClick}
 style={{
-        backgroundColor: branding.colors.primaryBlue,
-        color: branding.colors.white,
-        fontFamily: branding.fonts.secondary,
+        backgroundColor: "#007AFF",
+        color: "#FFFFFF",
+        fontFamily: "\"Calibre Bold\", sans-serif",
         borderRadius: '8px',
         padding: '0.75rem 1.5rem',
         border: 'none',
@@ -245,8 +250,8 @@ module.exports = {
 theme: {
 extend: {
 colors: {
-'b3-blue': '${branding.colors.primaryBlue}',
-        'b3-grey': '${branding.colors.grey}',
+'b3-blue': '${"#007AFF"}',
+        'b3-grey': '${"#6B7280"}',
 },
 fontFamily: {
 'b3-primary': ['Neue Montreal Medium', 'sans-serif'],

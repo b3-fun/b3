@@ -1,0 +1,396 @@
+---
+title: "Components"
+description: "React components for seamless crypto payments, NFT purchases, and custom smart contract interactions"
+---
+
+## Core Components
+
+### `<AnySpend>`
+
+The primary interface component for token-to-token exchanges and fiat onramps.
+
+```tsx title="Basic Usage" icon="react"
+import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
+
+<AnySpend
+  isMainnet={true}
+  mode="modal"
+  defaultActiveTab="crypto"
+  destinationTokenAddress="0x..."
+  destinationTokenChainId={8333}
+  recipientAddress="0x..."
+  hideTransactionHistoryButton={false}
+  onSuccess={(txHash) => console.log("Swap completed", txHash)}
+/>
+```
+
+#### Props
+
+<ParamField path="isMainnet" type="boolean" default="true">
+  Use mainnet or testnet environment
+</ParamField>
+
+<ParamField path="mode" type="'modal' | 'page'" default="'modal'">
+  Display as modal overlay or full page
+</ParamField>
+
+<ParamField path="defaultActiveTab" type="'crypto' | 'fiat'" default="'crypto'">
+  Initial payment method tab
+</ParamField>
+
+<ParamField path="destinationTokenAddress" type="string">
+  Target token address for buy mode
+</ParamField>
+
+<ParamField path="destinationTokenChainId" type="number">
+  Chain ID of destination token
+</ParamField>
+
+<ParamField path="recipientAddress" type="string">
+  Recipient wallet address
+</ParamField>
+
+<ParamField path="hideTransactionHistoryButton" type="boolean" default="false">
+  Hide transaction history access
+</ParamField>
+
+<ParamField path="loadOrder" type="string">
+  Load specific order by ID
+</ParamField>
+
+<ParamField path="onSuccess" type="(txHash?: string) => void">
+  Success callback with transaction hash
+</ParamField>
+
+#### Usage Examples
+
+<Tabs>
+<Tab title="Basic Token Swap">
+```tsx
+<AnySpend
+  mode="page"
+  recipientAddress={userWalletAddress}
+  onSuccess={(txHash) => {
+    toast.success(`Swap completed! TX: ${txHash}`);
+  }}
+/>
+```
+</Tab>
+
+<Tab title="Fiat-to-Crypto Onramp">
+```tsx
+<AnySpend
+  defaultActiveTab="fiat"
+  destinationTokenAddress="0xA0b86a33E6Fb6Dd9a9B3d8B5FEb2b3C8e7D9Ff1E"
+  destinationTokenChainId={8333}
+  recipientAddress={userWalletAddress}
+/>
+```
+</Tab>
+</Tabs>
+
+---
+
+### `<AnySpendNFTButton>`
+
+A streamlined button component for NFT purchases with built-in payment handling.
+
+```tsx title="NFT Purchase Button" icon="shopping-cart"
+import { AnySpendNFTButton } from "@b3dotfun/sdk/anyspend/react";
+
+<AnySpendNFTButton
+  nftContract={nftContractDetails}
+  recipientAddress="0x..."
+  isMainnet={true}
+  onSuccess={(txHash) => console.log("NFT minted:", txHash)}
+/>
+```
+
+#### Props
+
+<ParamField path="nftContract" type="NFTContract" required>
+  NFT contract configuration object
+</ParamField>
+
+<ParamField path="recipientAddress" type="string" required>
+  Wallet address to receive the NFT
+</ParamField>
+
+<ParamField path="isMainnet" type="boolean">
+  Environment selection (mainnet or testnet)
+</ParamField>
+
+<ParamField path="onSuccess" type="(txHash?: string) => void">
+  Success callback with transaction hash
+</ParamField>
+
+#### NFTContract Interface
+
+```typescript title="Type Definition" icon="code"
+interface NFTContract {
+  chainId: number;                    // Blockchain network ID
+  contractAddress: string;            // NFT contract address
+  price: string;                      // Price in wei
+  priceFormatted: string;             // Human-readable price
+  currency: {
+    chainId: number;
+    address: string;                  // Token contract (0x0 for native ETH)
+    name: string;
+    symbol: string;
+    decimals: number;
+  };
+  name: string;                       // NFT collection name
+  description: string;                // NFT description
+  imageUrl: string;                   // Preview image URL
+}
+```
+
+#### Usage Example
+
+```tsx title="Complete NFT Integration" icon="image" lines
+const coolNFT = {
+  chainId: 8333,
+  contractAddress: "0x9c275ff1634519E9B5449ec79cd939B5F900564d",
+  price: "500000000000000000", // 0.5 ETH
+  priceFormatted: "0.5",
+  currency: {
+    chainId: 8333,
+    address: "0x0000000000000000000000000000000000000000",
+    name: "Ether",
+    symbol: "ETH",
+    decimals: 18,
+  },
+  name: "Cool Art Collection",
+  description: "Unique digital artwork",
+  imageUrl: "https://example.com/nft-preview.png",
+};
+
+<AnySpendNFTButton
+  nftContract={coolNFT}
+  recipientAddress={userAddress}
+  onSuccess={(txHash) => {
+    // Update UI to show NFT ownership
+    refreshUserNFTs();
+  }}
+/>
+```
+
+---
+
+### `<AnySpendCustom>`
+
+The most flexible component for custom smart contract interactions, including gaming, staking, and DeFi operations.
+
+```tsx title="Custom Contract Interaction" icon="code"
+import { AnySpendCustom } from "@b3dotfun/sdk/anyspend/react";
+
+<AnySpendCustom
+  orderType="custom"
+  dstChainId={8333}
+  dstToken={tokenDetails}
+  dstAmount="1000000000000000000"
+  contractAddress="0x..."
+  encodedData="0x..."
+  spenderAddress="0x..."
+  metadata={customMetadata}
+  header={CustomHeaderComponent}
+  onSuccess={(txHash) => console.log("Custom action completed", txHash)}
+/>
+```
+
+#### Props
+
+<ParamField path="orderType" type="'custom'" required>
+  Order type identifier
+</ParamField>
+
+<ParamField path="dstChainId" type="number" required>
+  Target blockchain network
+</ParamField>
+
+<ParamField path="dstToken" type="Token" required>
+  Token being used for payment
+</ParamField>
+
+<ParamField path="dstAmount" type="string" required>
+  Amount in wei/smallest unit
+</ParamField>
+
+<ParamField path="contractAddress" type="string" required>
+  Target smart contract address
+</ParamField>
+
+<ParamField path="encodedData" type="string" required>
+  Encoded function call data
+</ParamField>
+
+<ParamField path="spenderAddress" type="string">
+  Optional token spender address
+</ParamField>
+
+<ParamField path="metadata" type="object">
+  Custom metadata for tracking
+</ParamField>
+
+<ParamField path="header" type="React.ComponentType">
+  Custom header component
+</ParamField>
+
+<ParamField path="onSuccess" type="(txHash?: string) => void">
+  Success callback with transaction hash
+</ParamField>
+
+#### Usage Example - Staking
+
+```tsx title="Staking Integration" icon="coins" lines
+// Encode staking function call
+const stakeAmount = "1000000000000000000"; // 1 token
+const stakingCalldata = encodeFunctionData({
+  abi: stakingABI,
+  functionName: "stake",
+  args: [stakeAmount, 30] // 30 days
+});
+
+<AnySpendCustom
+  orderType="custom"
+  dstChainId={8333}
+  dstToken={stakingToken}
+  dstAmount={stakeAmount}
+  contractAddress="0xStakingContract..."
+  encodedData={stakingCalldata}
+  metadata={{
+    action: "stake",
+    duration: 30,
+    expectedRewards: "5.2%"
+  }}
+  header={({ anyspendPrice, isLoadingAnyspendPrice }) => (
+    <div className="staking-header">
+      <h2>Stake Tokens</h2>
+      <p>Duration: 30 days</p>
+      <p>Expected APY: 5.2%</p>
+      {!isLoadingAnyspendPrice && (
+        <p>Total Cost: ${anyspendPrice?.usdPrice}</p>
+      )}
+    </div>
+  )}
+/>
+```
+
+## Specialized Components
+
+### `<AnySpendNFT>`
+
+Enhanced NFT component with additional marketplace features.
+
+```tsx title="Enhanced NFT Component" icon="store"
+<AnySpendNFT
+  nftContract={nftDetails}
+  recipientAddress="0x..."
+  showMetadata={true}
+  showPriceHistory={true}
+/>
+```
+
+### `<AnySpendStakeB3>`
+
+Pre-configured component for B3 token staking.
+
+```tsx title="B3 Staking" icon="coins"
+<AnySpendStakeB3
+  stakeAmount="1000000000000000000"
+  stakingDuration={30}
+  recipientAddress="0x..."
+/>
+```
+
+### `<AnySpendBuySpin>`
+
+Gaming-specific component for purchasing spin wheels or lottery tickets.
+
+```tsx title="Gaming Spin Wheel" icon="gamepad"
+<AnySpendBuySpin
+  gameContract="0x..."
+  spinPrice="100000000000000000"
+  recipientAddress="0x..."
+/>
+```
+
+### `<AnySpendTournament>`
+
+Tournament entry payment component.
+
+```tsx title="Tournament Entry" icon="trophy"
+<AnySpendTournament
+  tournamentId="tournament-123"
+  entryFee="500000000000000000"
+  recipientAddress="0x..."
+/>
+```
+
+## Component Styling
+
+All components come with default styling that can be customized using CSS variables:
+
+```css title="Custom Styling" icon="palette"
+/* Override default styles */
+.anyspend-modal {
+  --anyspend-primary: #6366f1;
+  --anyspend-secondary: #f3f4f6;
+  --anyspend-border-radius: 12px;
+}
+```
+
+## Platform Support
+
+<table>
+  <thead>
+    <tr>
+      <th>Component</th>
+      <th>React Web</th>
+      <th>React Native</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>`AnySpend`</td>
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>`AnySpendNFTButton`</td>
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>`AnySpendCustom`</td>
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>`AnySpendNFT`</td>
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>Fiat onramp features</td>
+      <td>✅</td>
+      <td>❌</td>
+    </tr>
+  </tbody>
+</table>
+
+## Next Steps
+
+<CardGroup cols={3}>
+<Card title="Learn about Hooks" icon="link" href="/anyspend/hooks">
+  Discover React hooks for custom payment flows
+</Card>
+
+<Card title="See Examples" icon="code" href="/anyspend/examples">
+  Browse real-world implementation examples
+</Card>
+
+<Card title="Error Handling" icon="shield-exclamation" href="/anyspend/error-handling">
+  Learn how to handle errors gracefully
+</Card>
+</CardGroup>

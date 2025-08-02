@@ -1,13 +1,13 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "B3 SDK",
+  "name": "B3 Docs",
   "colors": {
     "primary": "#007AFF",
     "light": "#4DA6FF",
     "dark": "#0056CC"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "/favicon.png",
   "navigation": {
     "tabs": [
       {
@@ -15,11 +15,11 @@
         "groups": [
           {
             "group": "Network",
-            "pages": ["network-setup", "bridge", "testnet", "bridge-to-testnet"]
+            "pages": ["protocol/network-setup", "protocol/bridge", "protocol/testnet", "protocol/bridge-to-testnet"]
           },
           {
             "group": "Build on B3",
-            "pages": ["ecosystem-tools", "game-launcher", "unity-guide", "construct-guide", "development"]
+            "pages": ["protocol/brand-kit"]
           },
           {
             "group": "Governance",
@@ -33,46 +33,94 @@
         ]
       },
       {
-        "tab": "Basement",
+        "tab": "Ecosystem",
         "groups": [
           {
-            "group": "Getting Started",
-            "pages": ["basement-introduction", "game-launcher", "bsmnt-brand-kit"]
+            "group": "Overview",
+            "pages": ["ecosystem/introduction"]
           },
           {
-            "group": "Game Development",
-            "pages": ["unity-guide", "construct-guide"]
+            "group": "Data API",
+            "openapi": {
+              "source": "https://raw.githubusercontent.com/blockscout/blockscout-api-v2-swagger/main/swagger.yaml",
+              "directory": "api-reference"
+            }
+          },
+          {
+            "group": "Development Tools",
+            "pages": ["ecosystem/gaming-sdks", "ecosystem/node-providers", "ecosystem/nft-infrastructure"]
+          },
+          {
+            "group": "User Experience",
+            "pages": ["ecosystem/wallets", "ecosystem/bridges"]
+          },
+          {
+            "group": "Infrastructure & Analytics",
+            "pages": ["ecosystem/infrastructure", "ecosystem/data-analytics", "ecosystem/governance"]
           }
         ]
       },
       {
-        "tab": "AnySpend",
+        "icon": "/images/basement-logo-purple.svg",
+        "tab": "Basement",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": ["basement/introduction", "basement/game-launcher", "basement/brand-kit"]
+          },
+          {
+            "group": "Game Development",
+            "pages": ["basement/unity-guide", "basement/construct-guide"]
+          }
+        ]
+      },
+      {
+        "icon": "/images/anyspend-logo-white.svg",
+        "tab": "AnySpend Docs",
         "groups": [
           {
             "group": "Getting Started",
             "pages": ["anyspend/introduction", "anyspend/installation"]
           },
           {
-            "group": "Components & Hooks",
+            "group": "React",
             "pages": ["anyspend/components", "anyspend/hooks", "anyspend/examples"]
           },
           {
             "group": "Advanced",
             "pages": ["anyspend/error-handling"]
-          },
-          {
-            "group": "API Reference",
-            "pages": [
-              "api-reference/anyspend/overview",
-              "api-reference/anyspend/quotes",
-              "api-reference/anyspend/orders",
-              "api-reference/anyspend/tokens",
-              "api-reference/anyspend/onramp"
-            ]
           }
         ]
       },
       {
+        "tab": "CreateKit",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": ["createkit/introduction"]
+          }
+        ]
+      },
+      {
+        "tab": "BondKit",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": ["bondkit/introduction"]
+          }
+        ]
+      },
+      {
+        "tab": "ArenaKit",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": ["arenakit/introduction"]
+          }
+        ]
+      },
+      {
+        "icon": "code",
         "tab": "B3 SDK",
         "groups": [
           {
@@ -92,35 +140,6 @@
           {
             "group": "Shared Utilities",
             "pages": ["shared/chains", "shared/utils", "shared/thirdweb"]
-          },
-          {
-            "group": "API Reference",
-            "pages": [
-              "api-reference/global-account/authentication",
-              "api-reference/global-account/profiles",
-              "api-reference/global-account/permissions",
-              "api-reference/global-account/sessions"
-            ]
-          },
-          {
-            "group": "Webhooks",
-            "pages": [
-              "api-reference/webhooks/overview",
-              "api-reference/webhooks/order-status",
-              "api-reference/webhooks/transaction-complete"
-            ]
-          },
-          {
-            "group": "Examples",
-            "pages": [
-              "examples/gaming-platform",
-              "examples/nft-marketplace",
-              "examples/defi-application",
-              "examples/tournament-system",
-              "examples/nextjs",
-              "examples/react-native",
-              "examples/vanilla-js"
-            ]
           }
         ]
       }
@@ -128,8 +147,8 @@
     "global": {
       "anchors": [
         {
-          "anchor": "B3 Ecosystem",
-          "href": "https://docs.b3.fun",
+          "anchor": "Discover B3",
+          "href": "https://b3.fun",
           "icon": "globe"
         },
         {
@@ -152,19 +171,21 @@
   "navbar": {
     "links": [
       {
+        "icon": "magnifying-glass",
         "label": "Explorer",
         "href": "https://explorer.b3.fun/"
       },
 
       {
+        "icon": "chart-line",
         "label": "Network Status",
         "href": "https://status.b3.fun/"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Get Started",
-      "href": "https://docs.b3.fun/quickstart"
+      "label": "Build on B3",
+      "href": "https://b3builders.typeform.com/bsmntdevelopers"
     }
   },
   "contextual": {

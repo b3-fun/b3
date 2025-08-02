@@ -10,7 +10,6 @@
     "coingecko-chains": "ts-node scripts/fetch-coingecko-chains.ts",
     "sdk:dev:css": "pnpm --filter @b3dotfun/sdk run dev:css",
     "sdk:build": "pnpm --filter @b3dotfun/sdk run build",
-    "generate-api-types": "tsx scripts/generate-api-types.ts",
     "global-accounts:dev": "pnpm --parallel --filter @b3dotfun/sdk --filter global-accounts run dev",
     "global-accounts:build": "pnpm --filter global-accounts run build",
     "global-accounts-demo:dev": "pnpm --parallel --filter @b3dotfun/sdk --filter global-accounts-demo run dev",

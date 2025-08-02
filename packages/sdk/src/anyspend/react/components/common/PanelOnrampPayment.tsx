@@ -143,7 +143,6 @@ function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
           vendor: vendor,
           paymentMethod: paymentMethod || "",
           country: geoData?.country || "US",
-          ipAddress: geoData?.ip,
           redirectUrl:
             window.location.origin === "https://basement.fun" ? "https://basement.fun/deposit" : window.location.origin,
         },

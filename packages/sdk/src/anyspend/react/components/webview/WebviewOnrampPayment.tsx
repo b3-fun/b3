@@ -213,7 +213,6 @@ function WebviewOnrampPaymentInner({
               vendor: "stripe-web2",
               paymentMethod: "",
               country: geoData.country || "US",
-              ipAddress: geoData.ip,
               redirectUrl: `${window.location.origin}${userId ? `?userId=${userId}` : ""}`,
             },
             expectedDstAmount: anyspendQuote.data?.currencyOut?.amount?.toString() || "0",

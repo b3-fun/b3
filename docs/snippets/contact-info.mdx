@@ -1,20 +1,19 @@
-import { links, contact } from "/snippets/variables.mdx";
 
 export const SupportLinks = () => (
   <div>
     <h3>Need Help?</h3>
     <ul>
       <li>
-        📚 <a href={links.b3Docs}>B3 Documentation</a>
+        📚 <a href="https://docs.b3.fun">B3 Documentation</a>
       </li>
       <li>
-        💬 <a href={links.discord}>Join our Discord</a>
+        💬 <a href="https://discord.gg/b3dotfun">Join our Discord</a>
       </li>
       <li>
-        🐛 <a href={links.githubIssues}>Report Issues on GitHub</a>
+        🐛 <a href="https://github.com/b3-fun/b3/issues">Report Issues on GitHub</a>
       </li>
       <li>
-        📧 Email us at <a href={`mailto:${contact.support}`}>{contact.support}</a>
+        📧 Email us at <a href="mailto:support@b3.fun">support@b3.fun</a>
       </li>
     </ul>
   </div>
@@ -27,25 +26,25 @@ export const CommunityResources = () => (
       <div>
         <h4>🎮 Try It Live</h4>
         <p>
-          <a href={links.anyspendDemo}>AnySpend Demo</a> - Try our SDK in action
+          <a href="https://anyspend.com">AnySpend Demo</a> - Try our SDK in action
         </p>
       </div>
       <div>
         <h4>💬 Get Support</h4>
         <p>
-          <a href={links.discord}>Discord Community</a> - Join the conversation
+          <a href="https://discord.gg/b3dotfun">Discord Community</a> - Join the conversation
         </p>
       </div>
       <div>
         <h4>🔧 Contribute</h4>
         <p>
-          <a href={links.github}>GitHub Repository</a> - Contribute to the project
+          <a href="https://github.com/b3-fun/b3">GitHub Repository</a> - Contribute to the project
         </p>
       </div>
       <div>
         <h4>🌐 Ecosystem</h4>
         <p>
-          <a href={links.b3Docs}>B3 Docs</a> - Explore the broader ecosystem
+          <a href="https://docs.b3.fun">B3 Docs</a> - Explore the broader ecosystem
         </p>
       </div>
     </div>
@@ -55,12 +54,12 @@ export const CommunityResources = () => (
 export const ContactInfo = ({ type = "general" }) => {
   const email =
     type === "support"
-      ? contact.support
+      ? "support@b3.fun"
       : type === "partnerships"
-        ? contact.partnerships
+        ? "partnerships@b3.fun"
         : type === "developer"
-          ? contact.developer
-          : contact.support;
+          ? "developers@b3.fun"
+          : "support@b3.fun";
 
 return (
 

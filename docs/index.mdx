@@ -3,7 +3,7 @@ title: "B3 SDK"
 description: "Build the future of onchain gaming with the comprehensive B3 development toolkit"
 ---
 
-import { links, branding, networks, contact, examples } from "/snippets/variables.mdx";
+
 
 <Card title="Quick Start Guide" icon="rocket" href="/quickstart" horizontal>
   Get up and running with B3 SDK in under 5 minutes
@@ -59,9 +59,9 @@ function NFTCard() {
   return (
     <AnySpendNFTButton
       nftContract={{
-        chainId: {networks.b3.mainnet.chainId},
-        contractAddress: "{examples.nftContract.contractAddress}",
-        price: "{examples.nftContract.price}",
+        chainId: 8333,
+        contractAddress: "0x9c275ff1634519E9B5449ec79cd939B5F900564d",
+        price: "500000000000000000",
         currency: { symbol: "ETH", decimals: 18 }
       }}
       recipientAddress={userAddress}
@@ -131,14 +131,14 @@ function TournamentEntry() {
 <Steps>
 <Step title="Install the SDK">
   ```bash
-  npm install {branding.packageName}
+  npm install @b3dotfun/sdk
   ```
 </Step>
 
 <Step title="Import styles and providers">
   ```tsx
-  import "{branding.packageName}/index.css";
-  import { AnyspendProvider, B3Provider } from "{branding.packageName}";
+  import "@b3dotfun/sdk/index.css";
+  import { AnyspendProvider, B3Provider } from "@b3dotfun/sdk";
   ```
 </Step>
 
@@ -179,23 +179,23 @@ function TournamentEntry() {
 </CardGroup>
 
 <Note>
-  More networks are being added regularly. Check our [network status page]({links.b3NetworkStatus}) for the latest
+  More networks are being added regularly. Check our [network status page](https://docs.b3.fun/network-status) for the latest
   updates.
 </Note>
 
 ## Community & Resources
 
 <CardGroup cols={2}>
-  <Card title="Live Demo" icon="play" href={links.anyspendDemo}>
+  <Card title="Live Demo" icon="play" href="https://anyspend.com">
     Try AnySpend in action with real transactions
   </Card>
-  <Card title="Discord Community" icon="discord" href={links.discord}>
+  <Card title="Discord Community" icon="discord" href="https://discord.gg/b3dotfun">
     Join our developer community for support and discussions
   </Card>
-  <Card title="GitHub Repository" icon="github" href={links.github}>
+  <Card title="GitHub Repository" icon="github" href="https://github.com/b3-fun/b3">
     Contribute to the project and report issues
   </Card>
-  <Card title="B3 Ecosystem" icon="globe" href={links.b3Docs}>
+  <Card title="B3 Ecosystem" icon="globe" href="https://docs.b3.fun">
     Explore the broader B3 gaming ecosystem
   </Card>
 </CardGroup>

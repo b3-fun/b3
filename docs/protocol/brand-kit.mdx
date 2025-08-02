@@ -1,16 +1,10 @@
----
-title: "Brand Kit"
-description: "Brand guidelines and assets for building applications that align with B3's visual identity"
----
-
-import { links, branding, contact } from "/snippets/variables.mdx";
 
 # B3 Brand Kit
 
 Follow these guidelines to use our brand correctly when contributing to the B3 ecosystem and building applications that align with our visual identity.
 
 <div style={{ textAlign: "center", margin: "2rem 0", fontWeight: "bold", letterSpacing: "2px" }}>
-  ✦ {branding.values[0]} ✦ {branding.values[1]} ✦ {branding.values[2]} ✦
+  ✦ COMMUNITY DRIVEN ✦ FUN ✦ ECOSYSTEM ALIGNED ✦
 </div>
 
 ## Brand Overview
@@ -36,7 +30,7 @@ B3 is **community-driven**, **fun**, and **ecosystem-aligned**. Our brand reflec
   **Primary logo for light backgrounds**
   
   <Frame>
-    <img src={branding.assets.logoBlueLight} alt="B3 Blue Logo" style={{ maxWidth: '200px' }} />
+    <img src="/logo/light.svg" alt="B3 Blue Logo" style={{ maxWidth: '200px' }} />
   </Frame>
   
   **Usage:**
@@ -45,14 +39,14 @@ B3 is **community-driven**, **fun**, and **ecosystem-aligned**. Our brand reflec
   - Web applications and documentation
   
   **Downloads:**
-  - [SVG Format]({branding.assets.logoBlueLight})
+  - [SVG Format](/logo/light.svg)
   - PNG Format (available on request)
 </Tab>
 
 <Tab title="White Logo">
   **For dark backgrounds and overlays**
   <div style={{ backgroundColor: "#000", padding: "2rem", borderRadius: "8px", textAlign: "center" }}>
-    <img src={branding.assets.logoWhite || "/logo/white.svg"} alt="B3 White Logo" style={{ maxWidth: "200px" }} />
+    <img src="/logo/white.svg" alt="B3 White Logo" style={{ maxWidth: "200px" }} />
   </div>
   **Usage:** - Dark backgrounds and themes - Video overlays and presentations - High contrast applications
   **Downloads:** - SVG Format - PNG Format (available on request)
@@ -62,7 +56,7 @@ B3 is **community-driven**, **fun**, and **ecosystem-aligned**. Our brand reflec
   **Monochrome version for special use cases**
   
   <Frame>
-    <img src={branding.assets.logoBlack || "/logo/black.svg"} alt="B3 Black Logo" style={{ maxWidth: '200px' }} />
+    <img src="/logo/black.svg" alt="B3 Black Logo" style={{ maxWidth: '200px' }} />
   </Frame>
   
   **Usage:**
@@ -80,19 +74,17 @@ B3 is **community-driven**, **fun**, and **ecosystem-aligned**. Our brand reflec
 
 <CodeGroup>
 ```tsx React Component
-import { branding } from '/path/to/snippets/variables';
-
 function B3Logo({ variant = 'blue', size = 120 }) {
-const logoSrc = variant === 'blue' ? branding.assets.logoBlueLight
-: variant === 'white' ? branding.assets.logoWhite
-: branding.assets.logoBlack;
+const logoSrc = variant === 'blue' ? '/logo/light.svg'
+: variant === 'white' ? '/logo/white.svg'
+: '/logo/black.svg';
 
 return (
 <img
 src={logoSrc}
 alt="B3 Logo"
 width={size}
-height={size \* 0.4} // Maintain aspect ratio
+height={size * 0.4} // Maintain aspect ratio
 />
 );
 }
@@ -101,7 +93,7 @@ height={size \* 0.4} // Maintain aspect ratio
 
 ```html HTML
 <!-- Blue Logo -->
-<img src="{branding.assets.logoBlueLight}" alt="B3 Logo" />
+<img src="/logo/light.svg" alt="B3 Logo" />
 
 <!-- White Logo (for dark backgrounds) -->
 <img src="/logo/white.svg" alt="B3 Logo" />
@@ -112,7 +104,7 @@ height={size \* 0.4} // Maintain aspect ratio
 
 ```css CSS Background
 .b3-logo {
-  background-image: url("{branding.assets.logoBlueLight}");
+  background-image: url("/logo/light.svg");
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
@@ -136,40 +128,40 @@ Our color palette balances professional appeal with gaming energy. Feel free to 
   <div style={{ textAlign: "center" }}>
     <div
       style={{
-        backgroundColor: branding.colors.primaryBlue,
+        backgroundColor: "#007AFF",
         height: "80px",
         borderRadius: "8px",
         border: "1px solid #e5e7eb",
       }}
     ></div>
     <h4>Primary Blue</h4>
-    <code>{branding.colors.primaryBlue}</code>
+    <code>{"#007AFF"}</code>
   </div>
 
   <div style={{ textAlign: "center" }}>
     <div
       style={{
-        backgroundColor: branding.colors.grey,
+        backgroundColor: "#6B7280",
         height: "80px",
         borderRadius: "8px",
         border: "1px solid #e5e7eb",
       }}
     ></div>
     <h4>Grey</h4>
-    <code>{branding.colors.grey}</code>
+    <code>{"#6B7280"}</code>
   </div>
 
   <div style={{ textAlign: "center" }}>
     <div
       style={{
-        backgroundColor: branding.colors.white,
+        backgroundColor: "#FFFFFF",
         height: "80px",
         borderRadius: "8px",
         border: "2px solid #e5e7eb",
       }}
     ></div>
     <h4>White</h4>
-    <code>{branding.colors.white}</code>
+    <code>{"#FFFFFF"}</code>
   </div>
 </div>
 
@@ -178,9 +170,9 @@ Our color palette balances professional appeal with gaming energy. Feel free to 
 <CodeGroup>
 ```css CSS Variables
 :root {
-  --b3-primary: {branding.colors.primaryBlue};
-  --b3-grey: {branding.colors.grey};
-  --b3-white: {branding.colors.white};
+  --b3-primary: {"#007AFF"};
+  --b3-grey: {"#6B7280"};
+  --b3-white: {"#FFFFFF"};
 }
 
 .primary-button {
@@ -196,9 +188,9 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'b3-blue': '{branding.colors.primaryBlue}',
-        'b3-grey': '{branding.colors.grey}',
-        'b3-white': '{branding.colors.white}'
+        'b3-blue': '{"#007AFF"}',
+        'b3-grey': '{"#6B7280"}',
+        'b3-white': '{"#FFFFFF"}'
       }
     }
   }
@@ -209,11 +201,11 @@ module.exports = {
 {
   "color": {
     "primary": {
-      "value": "{branding.colors.primaryBlue}",
+      "value": "{"#007AFF"}",
       "type": "color"
     },
     "neutral": {
-      "value": "{branding.colors.grey}",
+      "value": "{"#6B7280"}",
       "type": "color"
     }
   }
@@ -231,24 +223,24 @@ B3 uses custom typography to create a modern, gaming-focused aesthetic. Import o
 <Tabs>
 <Tab title="CSS Import">
   ```css
-  @import url("{branding.assets.fontsCSS}");
+  @import url("{"https://cdn.b3.fun/fonts.css"}");
   
   body {
-    font-family: {branding.fonts.primary};
+    font-family: {"\"Neue Montreal Medium\", sans-serif"};
   }
   
   .heading {
-    font-family: {branding.fonts.secondary};
+    font-family: {"\"Calibre Bold\", sans-serif"};
   }
   ```
 </Tab>
 
 <Tab title="HTML Link">
   ```html
-  <link href="{branding.assets.fontsCSS}" rel="stylesheet">
+  <link href="{"https://cdn.b3.fun/fonts.css"}" rel="stylesheet">
   
   <style>
-    body { font-family: {branding.fonts.primary}; }
+    body { font-family: {"\"Neue Montreal Medium\", sans-serif"}; }
   </style>
   ```
 </Tab>
@@ -262,9 +254,9 @@ B3 uses custom typography to create a modern, gaming-focused aesthetic. Import o
     return (
       <Html>
         <Head>
-          <link href="{branding.assets.fontsCSS}" rel="stylesheet" />
+          <link href="{"https://cdn.b3.fun/fonts.css"}" rel="stylesheet" />
         </Head>
-        <body style={{ fontFamily: '{branding.fonts.primary}' }}>
+        <body style={{ fontFamily: '{"\"Neue Montreal Medium\", sans-serif"}' }}>
           {/* Your app */}
         </body>
       </Html>
@@ -281,11 +273,21 @@ B3 uses custom typography to create a modern, gaming-focused aesthetic. Import o
   **Primary font family for B3 applications**
   
   <ul>
-    {branding.fonts.available.filter(font => font.includes('Neue Montreal')).map(font => (
-      <li key={font} style={{ fontFamily: `"${font}", sans-serif`, fontSize: '18px', margin: '0.5rem 0' }}>
-        {font} - The quick brown fox jumps over the lazy dog
-      </li>
-    ))}
+    <li style={{ fontFamily: '"Neue Montreal Bold", sans-serif', fontSize: '18px', margin: '0.5rem 0' }}>
+      Neue Montreal Bold - The quick brown fox jumps over the lazy dog
+    </li>
+    <li style={{ fontFamily: '"Neue Montreal Regular", sans-serif', fontSize: '18px', margin: '0.5rem 0' }}>
+      Neue Montreal Regular - The quick brown fox jumps over the lazy dog
+    </li>
+    <li style={{ fontFamily: '"Neue Montreal Book", sans-serif', fontSize: '18px', margin: '0.5rem 0' }}>
+      Neue Montreal Book - The quick brown fox jumps over the lazy dog
+    </li>
+    <li style={{ fontFamily: '"Neue Montreal Medium", sans-serif', fontSize: '18px', margin: '0.5rem 0' }}>
+      Neue Montreal Medium - The quick brown fox jumps over the lazy dog
+    </li>
+    <li style={{ fontFamily: '"Neue Montreal Semibold", sans-serif', fontSize: '18px', margin: '0.5rem 0' }}>
+      Neue Montreal Semibold - The quick brown fox jumps over the lazy dog
+    </li>
   </ul>
   
   **Usage:** Body text, UI elements, general content
@@ -294,13 +296,12 @@ B3 uses custom typography to create a modern, gaming-focused aesthetic. Import o
 <Accordion title="Calibre Family">
   **Secondary font for headings and emphasis**
   <ul>
-    {branding.fonts.available
-      .filter(font => font.includes("Calibre"))
-      .map(font => (
-        <li key={font} style={{ fontFamily: `"${font}", sans-serif`, fontSize: "18px", margin: "0.5rem 0" }}>
-          {font} - Gaming is the future of onchain
-        </li>
-      ))}
+    <li style={{ fontFamily: '"Calibre Bold", sans-serif', fontSize: '18px', margin: '0.5rem 0' }}>
+      Calibre Bold - Gaming is the future of onchain
+    </li>
+    <li style={{ fontFamily: '"Calibre Heavy", sans-serif', fontSize: '18px', margin: '0.5rem 0' }}>
+      Calibre Heavy - Gaming is the future of onchain
+    </li>
   </ul>
   **Usage:** Headlines, section titles, call-to-action buttons
 </Accordion>
@@ -391,7 +392,7 @@ import { motion } from 'framer-motion';
 function AnimatedLogo() {
   return (
     <motion.img
-      src={branding.assets.logoBlueLight}
+      src={"/logo/light.svg"}
       alt="B3 Logo"
       initial={{ scale: 0.8, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
@@ -472,20 +473,20 @@ function B3ThemedApp() {
   return (
     <div
       style={{
-        fontFamily: branding.fonts.primary,
-        backgroundColor: branding.colors.white,
-        color: branding.colors.black,
+        fontFamily: "\"Neue Montreal Medium\", sans-serif",
+        backgroundColor: "#FFFFFF",
+        color: "#000000",
       }}
     >
       <header
         style={{
-          backgroundColor: branding.colors.primaryBlue,
-          color: branding.colors.white,
+          backgroundColor: "#007AFF",
+          color: "#FFFFFF",
           padding: "1rem",
         }}
       >
-        <img src={branding.assets.logoWhite} alt="B3" height="40" />
-        <h1 style={{ fontFamily: branding.fonts.secondary }}>Gaming DApp</h1>
+        <img src={"/logo/white.svg"} alt="B3" height="40" />
+        <h1 style={{ fontFamily: "\"Calibre Bold\", sans-serif" }}>Gaming DApp</h1>
       </header>
 
       <main style={{ padding: "2rem" }}>
@@ -523,19 +524,19 @@ function B3ThemedApp() {
 ## Contribute to B3 Brand
 
 <CardGroup cols={2}>
-  <Card title="Submit Brand Assets" icon="upload" href={`mailto:${contact.partnerships}?subject=B3 Brand Contribution`}>
+  <Card title="Submit Brand Assets" icon="upload" href="mailto:partnerships@b3.fun?subject=B3 Brand Contribution">
     Created something cool for the B3 community? Share your brand extensions and creative work.
   </Card>
 
-  <Card title="Brand Feedback" icon="comment-dots" href={links.discord}>
+  <Card title="Brand Feedback" icon="comment-dots" href={"https://discord.gg/b3dotfun"}>
     Join our Discord to discuss brand guidelines, share implementations, and get feedback.
   </Card>
 
-  <Card title="Developer Showcase" icon="star" href={links.github + "/discussions"}>
+  <Card title="Developer Showcase" icon="star" href={"https://github.com/b3-fun/b3" + "/discussions"}>
     Show off your B3-branded applications and tools in our GitHub discussions.
   </Card>
 
-  <Card title="Brand Partnership" icon="handshake" href={`mailto:${contact.partnerships}`}>
+  <Card title="Brand Partnership" icon="handshake" href="mailto:partnerships@b3.fun">
     Interested in deeper brand collaboration? Reach out to explore partnership opportunities.
   </Card>
 </CardGroup>
@@ -549,5 +550,5 @@ function B3ThemedApp() {
 
 <Note>
   **Missing an asset or have questions?** Reach out to our team at [partnerships@b3.fun](
-  {`mailto:${contact.partnerships}`}) or join our [Discord community]({links.discord}) for brand support.
+  mailto:partnerships@b3.fun) or join our [Discord community](https://discord.gg/b3dotfun) for brand support.
 </Note>

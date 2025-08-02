@@ -16,7 +16,7 @@ export function Loading({ className, size = "md", variant = "white" }: LoadingPr
 
   const variantClass = {
     primary: "text-b3-react-primary",
-    white: "text-white opacity-50",
+    white: "opacity-50",
   }[variant];
 
   return (
