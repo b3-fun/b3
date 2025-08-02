@@ -3,6 +3,7 @@ import { formatNumber } from "@b3dotfun/sdk/shared/utils/formatNumber";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { createPublicClient, formatEther, formatUnits, http } from "viem";
+import { fetchNativeTokenPriceUsd } from "./useTokenPrice";
 interface NativeBalanceResponse {
   data: Array<{
     tokenDecimals: number;
@@ -31,39 +32,43 @@ async function fetchNativeBalance(address: string, chainIds: string) {
   }, 0);
 
   // TODO: Revive me once CoinGecko supports B3
-  // let usdBalances: Record<
-  //   number,
-  //   {
-  //     balance: number;
-  //     formatted: string;
-  //   }
-  // > = {};
+  let usdBalances: Record<
+    number,
+    {
+      balance: number;
+      formatted: string;
+    }
+  > = {};
 
-  // for (const item of data.data) {
-  //   console.log("@@item", item);
-  //   const usdPrice = await fetchTokenPrice("0x0000000000000000000000000000000000000000", item.chainId, "usd");
-  //   const balance = Number(formatUnits(BigInt(item.balance), item.tokenDecimals));
-  //   usdBalances[item.chainId] = {
-  //     balance: balance * usdPrice,
-  //     formatted: formatNumber(balance * usdPrice),
-  //   };
-  // }
+  try {
+    for (const item of data.data) {
+      // Use chain ID once since native token ETH is the same across all chains
+      const usdPrice = await fetchNativeTokenPriceUsd("0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", "eth");
 
-  // const totalUsd = Object.values(usdBalances).reduce((acc, curr) => acc + curr.balance, 0);
+      usdBalances[item.chainId] = {
+        balance: total * usdPrice,
+        formatted: formatNumber(total * usdPrice),
+      };
+    }
+  } catch (error) {
+    console.error("@@useNativeBalance:error in price calculation", error);
+  }
+
+  const totalUsd = Object.values(usdBalances).reduce((acc, curr) => acc + curr.balance, 0);
 
   return {
     total,
     formattedTotal: formatNumber(total),
-    // totalUsd,
-    // formattedTotalUsd: formatNumber(totalUsd),
+    totalUsd,
+    formattedTotalUsd: formatNumber(totalUsd),
     breakdown: data.data.map(item => {
-      // const usdBalance = usdBalances[item.chainId]?.balance || 0;
+      const usdBalance = usdBalances[item.chainId]?.balance || 0;
       return {
         chainId: item.chainId,
         balance: BigInt(item.balance),
         formatted: formatNumber(Number(formatUnits(BigInt(item.balance), item.tokenDecimals))),
-        // balanceUsd: usdBalance,
-        // balanceUsdFormatted: formatNumber(usdBalance),
+        balanceUsd: usdBalance,
+        balanceUsdFormatted: formatNumber(usdBalance),
       };
     }),
   };

@@ -20,6 +20,53 @@ interface TokenPriceResponse {
   };
 }
 
+interface NativeTokenPriceResponse {
+  data: {
+    id: string;
+    type: string;
+    attributes: {
+      token_prices: {
+        [address: string]: string;
+      };
+    };
+  };
+}
+
+export async function fetchNativeTokenPriceUsd(contractAddress: string, network: string) {
+  const response = await fetch(
+    `https://coingecko-api.sean-430.workers.dev?localkey=${process.env.NEXT_PUBLIC_DEVMODE_SHARED_SECRET}&url=https://pro-api.coingecko.com/api/v3/onchain/simple/networks/${network}/token_price/${contractAddress}`,
+    {
+      headers: {
+        accept: "application/json",
+      },
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch native token price: ${response.status} ${response.statusText}`);
+  }
+
+  const data: NativeTokenPriceResponse = await response.json();
+
+  // Find the price using case-insensitive address comparison
+  const prices = data.data?.attributes?.token_prices || {};
+  const price = Object.entries(prices).find(
+    ([address]) => address.toLowerCase() === contractAddress.toLowerCase(),
+  )?.[1];
+
+  if (!price) {
+    throw new Error(`No price data found for native token: ${contractAddress}`);
+  }
+
+  // Convert string price to number
+  const numericPrice = Number(price);
+  if (isNaN(numericPrice)) {
+    throw new Error(`Invalid price data for native token: ${contractAddress}`);
+  }
+
+  return numericPrice;
+}
+
 export async function fetchTokenPrice(contractAddress: string, chainId: number, vsCurrency = "usd") {
   const platformId = getPlatformId(chainId as ChainId);
 

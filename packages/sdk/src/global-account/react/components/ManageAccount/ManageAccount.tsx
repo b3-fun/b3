@@ -179,8 +179,7 @@ export function ManageAccount({
                 <span className="text-sm text-gray-500">{nativeBalance?.formattedTotal || "0.00"} ETH</span>
               </div>
               <div className="text-sm">
-                {/* TODO: Revive me once CoinGecko supports B3 */}
-                {/* <span className="text-gray-900 dark:text-white">${nativeBalance?.formattedTotalUsd}</span> */}
+                <span className="text-gray-900 dark:text-white">${nativeBalance?.formattedTotalUsd}</span>
                 {/* TODO: Add price change */}
                 {/* <span className="ml-2 text-red-500">-2.45%</span> */}
               </div>
