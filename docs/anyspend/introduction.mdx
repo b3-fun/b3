@@ -1,0 +1,142 @@
+---
+title: "AnySpend Introduction"
+description: "Cross-chain crypto payments made simple - swap tokens, buy NFTs, and integrate fiat onramps"
+---
+
+# AnySpend
+
+Cross-chain crypto payments made simple - swap tokens, buy NFTs, and integrate fiat onramps with a few lines of code.
+
+## What is AnySpend?
+
+AnySpend is B3's comprehensive payment infrastructure that enables seamless crypto transactions across multiple blockchains. Whether you're building a DeFi application, NFT marketplace, or gaming platform, AnySpend provides the components and APIs you need to accept payments in any token.
+
+## Key Features
+
+<CardGroup cols={2}>
+<Card title="Cross-Chain Swaps" icon="exchange-alt">
+  Enable users to swap tokens between different blockchains with automatic routing and best price discovery
+</Card>
+
+<Card title="NFT Payments" icon="image">
+  One-click NFT purchase buttons that accept any token as payment, with automatic conversion
+</Card>
+
+<Card title="Fiat Onramps" icon="credit-card">
+  Integrated credit card payments through Stripe and Coinbase for seamless fiat-to-crypto conversion
+</Card>
+
+<Card title="Custom Integrations" icon="code">
+  Flexible components for staking, gaming, and any custom smart contract interaction
+</Card>
+</CardGroup>
+
+## How It Works
+
+<Steps>
+<Step title="User Initiates Payment">
+User clicks a payment button or interacts with your interface, choosing their preferred token
+</Step>
+
+<Step title="AnySpend Quotes">
+Our routing engine finds the best path to convert their token to the required destination token
+</Step>
+
+<Step title="Cross-Chain Execution">
+If needed, tokens are bridged across chains using secure, battle-tested infrastructure
+</Step>
+
+<Step title="Final Delivery">
+Tokens arrive at the destination address, triggering your success callbacks
+</Step>
+</Steps>
+
+## Supported Chains
+
+<Tabs>
+<Tab title="Mainnet">
+- **Ethereum** (ETH)
+- **Base** (ETH)
+- **B3** (ETH)
+- **Arbitrum** (ETH)
+- **Optimism** (ETH)
+</Tab>
+
+<Tab title="Testnet">
+- **Ethereum Sepolia**
+- **Base Sepolia**
+- **B3 Sepolia**
+</Tab>
+</Tabs>
+
+## Use Cases
+
+<AccordionGroup>
+<Accordion title="DeFi Applications">
+Enable token swaps, provide liquidity, and facilitate yield farming across multiple chains with automatic routing and competitive rates.
+</Accordion>
+
+<Accordion title="NFT Marketplaces">
+Allow users to buy NFTs with any token they own, removing barriers and increasing conversion rates by supporting their preferred payment methods.
+</Accordion>
+
+<Accordion title="Gaming Platforms">
+Accept payments for in-game assets, tournament entries, and premium features using any cryptocurrency or fiat payment methods.
+</Accordion>
+
+<Accordion title="E-commerce">
+Integrate crypto payments into traditional e-commerce platforms with automatic fiat conversion and settlement.
+</Accordion>
+
+<Accordion title="Subscription Services">
+Accept recurring payments in crypto with automatic conversion to your preferred settlement currency.
+</Accordion>
+</AccordionGroup>
+
+## Quick Start
+
+Get started with AnySpend in just a few steps:
+
+```tsx
+import { AnySpendProvider, AnySpendNFTButton } from "@b3dotfun/sdk/anyspend/react";
+import "@b3dotfun/sdk/index.css";
+
+function App() {
+  return (
+    <AnySpendProvider>
+      <AnySpendNFTButton
+        nftContract={{
+          chainId: 8333,
+          contractAddress: "0x9c275ff1634519E9B5449ec79cd939B5F900564d",
+          price: "500000000000000000",
+          currency: { symbol: "ETH", decimals: 18 }
+        }}
+        recipientAddress="0x..."
+        onSuccess={(txHash) => console.log("Purchase completed!", txHash)}
+      />
+    </AnySpendProvider>
+  );
+}
+```
+
+## What's Next?
+
+<CardGroup cols={3}>
+<Card title="Installation" icon="download" href="/anyspend/installation">
+  Set up AnySpend in your project with npm, yarn, or pnpm
+</Card>
+
+<Card title="Components" icon="puzzle-piece" href="/anyspend/components">
+  Explore pre-built components for common payment scenarios
+</Card>
+
+<Card title="Examples" icon="code" href="/anyspend/examples">
+  See real-world implementation examples and best practices
+</Card>
+</CardGroup>
+
+## Getting Help
+
+- **Discord**: Join our [Discord community](https://discord.gg/b3dotfun) for support
+- **Documentation**: Comprehensive guides and API references
+- **Examples**: Ready-to-use code samples and integrations

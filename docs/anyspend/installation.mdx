@@ -1,0 +1,173 @@
+---
+title: "Installation & Setup"
+description: "Get started with AnySpend - installation, basic setup, and verification"
+---
+
+## Prerequisites
+
+<CardGroup cols={3}>
+<Card title="Node.js" icon="node-js">
+  v20.15.0 or higher
+</Card>
+
+<Card title="React" icon="react">
+  Version 18 or 19
+</Card>
+
+<Card title="TypeScript" icon="code">
+  Recommended for better DX
+</Card>
+</CardGroup>
+
+## Installation
+
+Choose your preferred package manager:
+
+<Tabs>
+<Tab title="npm">
+```bash
+npm install @b3dotfun/sdk
+```
+</Tab>
+
+<Tab title="yarn">
+```bash
+yarn add @b3dotfun/sdk
+```
+</Tab>
+
+<Tab title="pnpm">
+```bash
+pnpm add @b3dotfun/sdk
+```
+</Tab>
+</Tabs>
+
+## Basic Setup
+
+### 1. Provider Setup
+
+Wrap your app with the `AnySpendProvider` to enable AnySpend functionality:
+
+```tsx title="App.tsx" icon="react"
+import { AnySpendProvider } from "@b3dotfun/sdk/anyspend/react";
+import "@b3dotfun/sdk/index.css";
+
+function App() {
+  return (
+    <AnySpendProvider>
+      {/* Your app components */}
+    </AnySpendProvider>
+  );
+}
+
+export default App;
+```
+
+### 2. Environment Configuration
+
+AnySpend automatically configures API endpoints based on the `isMainnet` parameter:
+
+<Tabs>
+<Tab title="Mainnet">
+**Endpoint**: `https://mainnet.anyspend.com`
+
+Use this for production applications with real transactions.
+</Tab>
+
+<Tab title="Testnet">
+**Endpoint**: `http://testnet.anyspend.com`
+
+Use this for development and testing with test tokens.
+</Tab>
+</Tabs>
+
+### 3. TypeScript Configuration (Optional but Recommended)
+
+<Note>
+If you're using TypeScript, ensure your `tsconfig.json` includes these settings for optimal compatibility:
+</Note>
+
+```json title="tsconfig.json" icon="settings"
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true
+  }
+}
+```
+
+## Verification
+
+Create a simple test component to verify your setup works correctly:
+
+```tsx title="TestComponent.tsx" icon="test-tube" lines
+import { AnySpendNFTButton } from "@b3dotfun/sdk/anyspend/react";
+
+function TestComponent() {
+  const testNFT = {
+    chainId: 8333,
+    contractAddress: "0x9c275ff1634519E9B5449ec79cd939B5F900564d",
+    price: "500000000000000000",
+    priceFormatted: "0.5",
+    currency: {
+      chainId: 8333,
+      address: "0x0000000000000000000000000000000000000000",
+      name: "Ether",
+      symbol: "ETH",
+      decimals: 18,
+    },
+    name: "Test NFT",
+    description: "Testing AnySpend integration",
+    imageUrl: "https://via.placeholder.com/300",
+  };
+
+  return (
+    <AnySpendNFTButton
+      nftContract={testNFT}
+      recipientAddress="0x742d35Cc6634C0532925a3b8D07d77d9F05C4d57"
+      isMainnet={false} // Use testnet for testing
+      onSuccess={(txHash) => {
+        console.log("Test successful!", txHash);
+      }}
+    />
+  );
+}
+```
+
+<Warning>
+Always use `isMainnet={false}` during development to avoid accidental mainnet transactions with real funds.
+</Warning>
+
+## Next Steps
+
+<CardGroup cols={3}>
+<Card title="Explore Components" icon="puzzle-piece" href="/anyspend/components">
+  Learn about available components for different payment scenarios
+</Card>
+
+<Card title="Learn about Hooks" icon="link" href="/anyspend/hooks">
+  Discover React hooks for building custom payment flows
+</Card>
+
+<Card title="See Examples" icon="code" href="/anyspend/examples">
+  Browse real-world implementation examples
+</Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+<Accordion title="Import Errors">
+Make sure you've installed the SDK correctly and imported the CSS file. The SDK requires React 18+ and may have compatibility issues with older versions.
+</Accordion>
+
+<Accordion title="Provider Not Found">
+Ensure the `AnySpendProvider` wraps all components that use AnySpend functionality. The provider should be placed high in your component tree, typically in your main App component.
+</Accordion>
+
+<Accordion title="TypeScript Errors">
+If you're seeing TypeScript errors, verify your `tsconfig.json` includes the recommended settings above. You may also need to install React type definitions: `npm install @types/react @types/react-dom`.
+</Accordion>
+</AccordionGroup>

@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "B3 SDK",
+  "name": "B3 Docs",
   "colors": {
     "primary": "#007AFF",
     "light": "#4DA6FF",
@@ -19,7 +19,7 @@
           },
           {
             "group": "Build on B3",
-            "pages": ["ecosystem-tools", "game-launcher", "unity-guide", "construct-guide", "development"]
+            "pages": ["ecosystem-tools", "brand-kit"]
           },
           {
             "group": "Governance",
@@ -37,7 +37,7 @@
         "groups": [
           {
             "group": "Getting Started",
-            "pages": ["basement-introduction", "game-launcher", "bsmnt-brand-kit"]
+            "pages": ["basement/introduction", "basement/game-launcher", "basement/brand-kit"]
           },
           {
             "group": "Game Development",
@@ -53,22 +53,12 @@
             "pages": ["anyspend/introduction", "anyspend/installation"]
           },
           {
-            "group": "Components & Hooks",
+            "group": "React",
             "pages": ["anyspend/components", "anyspend/hooks", "anyspend/examples"]
           },
           {
             "group": "Advanced",
             "pages": ["anyspend/error-handling"]
-          },
-          {
-            "group": "API Reference",
-            "pages": [
-              "api-reference/anyspend/overview",
-              "api-reference/anyspend/quotes",
-              "api-reference/anyspend/orders",
-              "api-reference/anyspend/tokens",
-              "api-reference/anyspend/onramp"
-            ]
           }
         ]
       },
@@ -128,8 +118,8 @@
     "global": {
       "anchors": [
         {
-          "anchor": "B3 Ecosystem",
-          "href": "https://docs.b3.fun",
+          "anchor": "Discover B3",
+          "href": "https://b3.fun",
           "icon": "globe"
         },
         {
@@ -152,19 +142,21 @@
   "navbar": {
     "links": [
       {
+        "icon": "magnifying-glass",
         "label": "Explorer",
         "href": "https://explorer.b3.fun/"
       },
 
       {
+        "icon": "chart-line",
         "label": "Network Status",
         "href": "https://status.b3.fun/"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Get Started",
-      "href": "https://docs.b3.fun/quickstart"
+      "label": "Build on B3",
+      "href": "https://b3builders.typeform.com/bsmntdevelopers"
     }
   },
   "contextual": {
