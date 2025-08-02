@@ -94,22 +94,25 @@ export function ManageAccount({
   const BalanceContent = () => (
     <div className="flex flex-col gap-6">
       {/* Profile Section */}
-      <div className="flex items-center gap-3">
-        <img
-          src={profile?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${account?.address}`}
-          alt="Profile"
-          className="h-12 w-12 rounded-full bg-black"
-        />
-        <div>
-          <h2 className="text-base font-semibold text-gray-900 dark:text-white">
-            {profile?.displayName || profile?.name || "Unnamed User"}
-          </h2>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">
-              {profile?.name ? `@${profile.name}` : centerTruncate(account?.address || "", 6)}
-            </span>
-            <CopyToClipboard text={account?.address || ""} />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <img
+            src={profile?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${account?.address}`}
+            alt="Profile"
+            className="h-12 w-12 rounded-full bg-black"
+          />
+          <div>
+            <h2 className="text-base font-semibold text-gray-900 dark:text-white">
+              {profile?.displayName || profile?.name || "Unnamed User"}
+            </h2>
+            <span className="text-sm text-gray-500">{profile?.name ? `@${profile.name}` : ""}</span>
           </div>
+        </div>
+        <div className="flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1.5 dark:bg-gray-800">
+          <span className="font-mono text-sm text-gray-600 dark:text-gray-400">
+            {centerTruncate(eoaAddress || account?.address || "", 4)}
+          </span>
+          <CopyToClipboard text={eoaAddress || account?.address || ""} />
         </div>
       </div>
 
