@@ -12,6 +12,7 @@ import {
   useGetAllTWSigners,
   useModalStore,
   useNativeBalance,
+  useProfile,
   useRemoveSessionKey,
 } from "@b3dotfun/sdk/global-account/react";
 import { formatNumber } from "@b3dotfun/sdk/shared/utils/formatNumber";
@@ -19,6 +20,7 @@ import { useState } from "react";
 import { Chain } from "thirdweb";
 import { useActiveAccount } from "thirdweb/react";
 import { formatUnits } from "viem";
+import useFirstEOA from "../../hooks/useFirstEOA";
 import { AccountAssets } from "../AccountAssets/AccountAssets";
 
 interface ManageAccountProps {
@@ -48,6 +50,11 @@ export function ManageAccount({
   const { data: assets, isLoading } = useAccountAssets(account?.address);
   const { data: b3Balance } = useB3BalanceFromAddresses(account?.address);
   const { data: nativeBalance } = useNativeBalance(account?.address);
+  const { address: eoaAddress } = useFirstEOA();
+  const { data: profile } = useProfile({
+    address: eoaAddress || account?.address,
+    fresh: true,
+  });
   const { data: signers, refetch: refetchSigners } = useGetAllTWSigners({
     chain,
     accountAddress: account?.address,
@@ -89,15 +96,18 @@ export function ManageAccount({
       {/* Profile Section */}
       <div className="flex items-center gap-3">
         <img
-          src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
+          src={profile?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${account?.address}`}
           alt="Profile"
-          className="h-12 w-12 rounded-full"
+          className="h-12 w-12 rounded-full bg-black"
         />
         <div>
-          <h2 className="text-base font-semibold text-gray-900 dark:text-white">Sean Geng</h2>
+          <h2 className="text-base font-semibold text-gray-900 dark:text-white">
+            {profile?.displayName || profile?.name || "Unnamed User"}
+          </h2>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">@seangeng</span>
-            <span className="text-sm text-gray-500">{centerTruncate(account?.address || "", 6)}</span>
+            <span className="text-sm text-gray-500">
+              {profile?.name ? `@${profile.name}` : centerTruncate(account?.address || "", 6)}
+            </span>
             <CopyToClipboard text={account?.address || ""} />
           </div>
         </div>
@@ -184,7 +194,13 @@ export function ManageAccount({
             <p className="text-sm text-gray-500">Your universal account for all B3-powered apps</p>
           </div>
         </div>
-        <button className="text-gray-400 hover:text-gray-600">
+        <button
+          className="text-gray-400 hover:text-gray-600"
+          onClick={() => {
+            // You can add profile edit functionality here
+            alert("Profile settings coming soon");
+          }}
+        >
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
               d="M7 17L17 7M17 7H7M17 7V17"
