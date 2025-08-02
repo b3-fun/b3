@@ -71,7 +71,7 @@
       },
       {
         "icon": "/images/basement-logo-purple.svg",
-        "tab": "Basement",
+        "tab": "BSMNT.fun",
         "groups": [
           {
             "group": "Getting Started",
@@ -94,6 +94,13 @@
           {
             "group": "React",
             "pages": ["anyspend/components", "anyspend/hooks", "anyspend/examples"]
+          },
+          {
+            "group": "REST API",
+            "openapi": {
+              "source": "https://mainnet.anyspend.com/openapi.json",
+              "directory": "anyspend/api-reference"
+            }
           },
           {
             "group": "Advanced",
