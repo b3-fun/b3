@@ -1,0 +1,723 @@
+---
+title: "Whitelist Management"
+description: "Implement exclusive minting with Merkle tree-based whitelists in CreateKit"
+---
+
+## Overview
+
+CreateKit supports sophisticated whitelist management using Merkle trees for gas-efficient verification. This allows you to create exclusive minting experiences for specific addresses while maintaining scalability and security.
+
+## Whitelist Basics
+
+### How Whitelists Work
+
+1. **Off-chain Generation**: Create a Merkle tree from whitelisted addresses
+2. **On-chain Storage**: Store only the Merkle root in the smart contract
+3. **Proof Verification**: Users provide a Merkle proof when minting
+4. **Gas Efficiency**: Verification costs are constant regardless of whitelist size
+
+<CardGroup cols={2}>
+  <Card title="Scalable" icon="arrows-split-up-and-left">
+    Support thousands of addresses with minimal gas costs
+  </Card>
+  <Card title="Secure" icon="shield">
+    Cryptographically guaranteed address verification
+  </Card>
+  <Card title="Flexible" icon="settings">
+    Easy to generate and update whitelist configurations
+  </Card>
+  <Card title="Transparent" icon="eye">
+    Verifiable on-chain without revealing the full list
+  </Card>
+</CardGroup>
+
+## Setting Up Whitelists
+
+### Basic Whitelist Creation
+
+```typescript title="Create Whitelist"
+import { WhitelistManager } from '@b3dotfun/basemint'
+
+// Define whitelisted addresses
+const whitelistedAddresses = [
+  { address: "0x1234567890123456789012345678901234567890" },
+  { address: "0x2345678901234567890123456789012345678901" },
+  { address: "0x3456789012345678901234567890123456789012" },
+  { address: "0x4567890123456789012345678901234567890123" },
+  { address: "0x5678901234567890123456789012345678901234" }
+]
+
+// Create whitelist manager
+const whitelist = new WhitelistManager(whitelistedAddresses)
+
+// Get Merkle root for contract deployment
+const merkleRoot = whitelist.getRoot()
+console.log(`Merkle root: ${merkleRoot}`)
+
+// Verify the whitelist is constructed correctly
+console.log(`Whitelist contains ${whitelistedAddresses.length} addresses`)
+```
+
+### Advanced Whitelist Configuration
+
+```typescript title="Whitelist with Metadata"
+// Whitelist entries can include additional metadata
+const advancedWhitelist = [
+  { 
+    address: "0x1234567890123456789012345678901234567890",
+    allocation: 5, // Max 5 tokens for this address
+    tier: "gold"
+  },
+  { 
+    address: "0x2345678901234567890123456789012345678901",
+    allocation: 3,
+    tier: "silver"
+  },
+  { 
+    address: "0x3456789012345678901234567890123456789012",
+    allocation: 1,
+    tier: "bronze"
+  }
+]
+
+// Create whitelist (only addresses are used for Merkle tree)
+const whitelist = new WhitelistManager(
+  advancedWhitelist.map(entry => ({ address: entry.address }))
+)
+
+// Store metadata separately for application logic
+const allocationMap = new Map(
+  advancedWhitelist.map(entry => [entry.address, entry.allocation])
+)
+```
+
+## Collection Integration
+
+### Whitelist-Enabled Collection
+
+```typescript title="Whitelist Collection Setup"
+import { CollectionManager } from '@b3dotfun/basemint'
+
+// Create collection with whitelist enabled
+const whitelistCollection = {
+  name: "Exclusive Collection",
+  symbol: "EXCL",
+  creator: account.address,
+  gameOwner: account.address,
+  
+  // Whitelist configuration
+  isWhitelistEnabled: true,
+  whitelistMerkleRoot: merkleRoot,
+  
+  // Collection settings
+  maxSupply: 1000n,
+  mintPrice: parseEther("0.01"),
+  maxPerWallet: 3n,
+  
+  // Optional: Combine with time-based access
+  startTime: BigInt(Math.floor(Date.now() / 1000) + 3600), // Whitelist starts in 1 hour
+  endTime: BigInt(Math.floor(Date.now() / 1000) + 86400 * 7), // Ends in 7 days
+}
+
+// Generate signatures and deploy
+const creatorSignature = await collectionManager.generateCreatorSignature(
+  walletClient,
+  whitelistCollection
+)
+
+const predictedAddress = collectionManager.predictCollectionAddress(
+  whitelistCollection,
+  creatorSignature
+)
+
+console.log(`Whitelist collection will deploy at: ${predictedAddress}`)
+```
+
+### Hybrid Access Models
+
+```typescript title="Phased Access"
+// Create collections with different access phases
+const phasedCollection = {
+  name: "Phased Access Collection",
+  symbol: "PAC",
+  creator: account.address,
+  gameOwner: account.address,
+  
+  // Phase 1: Whitelist only (first 24 hours)
+  isWhitelistEnabled: true,
+  whitelistMerkleRoot: merkleRoot,
+  startTime: BigInt(Math.floor(Date.now() / 1000)),
+  
+  // Note: For phase 2 (public access), you'll need additional logic
+  // to disable whitelist checking after a certain time
+}
+
+// In your application, implement phase logic
+async function checkMintingPhase(collection: any): Promise<'whitelist' | 'public' | 'ended'> {
+  const now = BigInt(Math.floor(Date.now() / 1000))
+  const startTime = await collection.startTime()
+  const endTime = await collection.endTime()
+  
+  const whitelistPhaseEnd = startTime + 86400n // 24 hours
+  
+  if (now < startTime) {
+    throw new Error("Minting hasn't started yet")
+  } else if (now < whitelistPhaseEnd) {
+    return 'whitelist'
+  } else if (now < endTime) {
+    return 'public'
+  } else {
+    return 'ended'
+  }
+}
+```
+
+## Whitelist Verification
+
+### Generating Proofs
+
+```typescript title="Generate Merkle Proofs"
+// Generate proof for a specific address
+function generateProofForAddress(whitelist: WhitelistManager, address: string): string[] {
+  try {
+    const proof = whitelist.getProof(address)
+    console.log(`Generated proof for ${address}:`, proof)
+    return proof
+  } catch (error) {
+    console.error(`Failed to generate proof for ${address}:`, error)
+    throw new Error(`Address ${address} not in whitelist`)
+  }
+}
+
+// Verify proof locally (optional check)
+function verifyWhitelistProof(
+  whitelist: WhitelistManager, 
+  address: string, 
+  proof: string[]
+): boolean {
+  const isValid = whitelist.verify(address, proof)
+  console.log(`Proof verification for ${address}: ${isValid ? '✅ Valid' : '❌ Invalid'}`)
+  return isValid
+}
+
+// Example usage
+const userAddress = "0x1234567890123456789012345678901234567890"
+const proof = generateProofForAddress(whitelist, userAddress)
+const isValid = verifyWhitelistProof(whitelist, userAddress, proof)
+```
+
+### Batch Proof Generation
+
+```typescript title="Batch Proof Generation"
+// Generate proofs for multiple addresses
+function generateBatchProofs(
+  whitelist: WhitelistManager, 
+  addresses: string[]
+): Map<string, string[]> {
+  const proofMap = new Map<string, string[]>()
+  
+  for (const address of addresses) {
+    try {
+      const proof = whitelist.getProof(address)
+      proofMap.set(address, proof)
+      console.log(`✅ Generated proof for ${address}`)
+    } catch (error) {
+      console.error(`❌ Failed to generate proof for ${address}:`, error)
+    }
+  }
+  
+  return proofMap
+}
+
+// Generate proofs for all whitelisted addresses
+const allAddresses = whitelistedAddresses.map(entry => entry.address)
+const allProofs = generateBatchProofs(whitelist, allAddresses)
+
+// Save proofs to a file or database for frontend use
+const proofData = {
+  merkleRoot,
+  proofs: Object.fromEntries(allProofs)
+}
+
+// Example: Save to JSON file
+import { writeFileSync } from 'fs'
+writeFileSync('whitelist-proofs.json', JSON.stringify(proofData, null, 2))
+```
+
+## Minting with Whitelists
+
+### Basic Whitelist Minting
+
+```typescript title="Whitelist Mint"
+async function mintWithWhitelist(
+  collection: any,
+  walletClient: any,
+  whitelist: WhitelistManager,
+  quantity: bigint = 1n
+) {
+  const userAddress = walletClient.account.address
+  
+  try {
+    // Generate proof for the user
+    const proof = whitelist.getProof(userAddress)
+    
+    // Verify proof locally (optional)
+    const isValid = whitelist.verify(userAddress, proof)
+    if (!isValid) {
+      throw new Error("Invalid whitelist proof")
+    }
+    
+    // Get mint price
+    const mintPrice = await collection.mintPrice()
+    const totalPrice = mintPrice * quantity
+    
+    // Mint with whitelist proof
+    const tx = await collection.mint(
+      walletClient,
+      quantity,
+      undefined, // metadata URI
+      totalPrice,
+      proof // Whitelist proof
+    )
+    
+    console.log(`✅ Whitelist mint successful: ${tx}`)
+    return tx
+    
+  } catch (error: any) {
+    if (error.message.includes('Invalid merkle proof')) {
+      console.error('❌ Address not in whitelist or invalid proof')
+    } else {
+      console.error('❌ Whitelist mint failed:', error)
+    }
+    throw error
+  }
+}
+
+// Usage
+await mintWithWhitelist(collection, walletClient, whitelist, 2n)
+```
+
+### Advanced Whitelist Minting
+
+```typescript title="Advanced Whitelist Logic"
+async function advancedWhitelistMint(
+  collection: any,
+  walletClient: any,
+  whitelist: WhitelistManager,
+  allocationMap: Map<string, number>,
+  quantity: bigint
+) {
+  const userAddress = walletClient.account.address
+  
+  // Check user's allocation
+  const maxAllocation = allocationMap.get(userAddress) || 0
+  if (maxAllocation === 0) {
+    throw new Error("Address not in whitelist")
+  }
+  
+  // Check current balance against allocation
+  const currentBalance = await collection.balanceOf(userAddress)
+  const newBalance = currentBalance + quantity
+  
+  if (newBalance > BigInt(maxAllocation)) {
+    throw new Error(`Would exceed allocation. Max: ${maxAllocation}, Current: ${currentBalance}`)
+  }
+  
+  // Generate proof and mint
+  const proof = whitelist.getProof(userAddress)
+  const mintPrice = await collection.mintPrice()
+  
+  const tx = await collection.mint(
+    walletClient,
+    quantity,
+    undefined,
+    mintPrice * quantity,
+    proof
+  )
+  
+  console.log(`✅ Advanced whitelist mint successful: ${tx}`)
+  return tx
+}
+```
+
+## Frontend Integration
+
+### React Hook for Whitelist Status
+
+```typescript title="useWhitelistStatus Hook"
+import { useState, useEffect } from 'react'
+import { useAccount } from 'wagmi'
+
+interface WhitelistStatus {
+  isWhitelisted: boolean
+  proof: string[] | null
+  allocation: number
+  loading: boolean
+  error: string | null
+}
+
+export function useWhitelistStatus(
+  whitelist: WhitelistManager,
+  allocationMap?: Map<string, number>
+): WhitelistStatus {
+  const { address } = useAccount()
+  const [status, setStatus] = useState<WhitelistStatus>({
+    isWhitelisted: false,
+    proof: null,
+    allocation: 0,
+    loading: true,
+    error: null
+  })
+  
+  useEffect(() => {
+    async function checkWhitelistStatus() {
+      if (!address) {
+        setStatus({
+          isWhitelisted: false,
+          proof: null,
+          allocation: 0,
+          loading: false,
+          error: null
+        })
+        return
+      }
+      
+      try {
+        setStatus(prev => ({ ...prev, loading: true, error: null }))
+        
+        // Generate proof
+        const proof = whitelist.getProof(address)
+        const isValid = whitelist.verify(address, proof)
+        const allocation = allocationMap?.get(address) || 0
+        
+        setStatus({
+          isWhitelisted: isValid,
+          proof: isValid ? proof : null,
+          allocation,
+          loading: false,
+          error: null
+        })
+        
+      } catch (error: any) {
+        setStatus({
+          isWhitelisted: false,
+          proof: null,
+          allocation: 0,
+          loading: false,
+          error: error.message
+        })
+      }
+    }
+    
+    checkWhitelistStatus()
+  }, [address, whitelist, allocationMap])
+  
+  return status
+}
+```
+
+### Whitelist Status Component
+
+```tsx title="WhitelistStatus Component"
+import React from 'react'
+import { useWhitelistStatus } from './useWhitelistStatus'
+
+interface WhitelistStatusProps {
+  whitelist: WhitelistManager
+  allocationMap?: Map<string, number>
+}
+
+export function WhitelistStatus({ whitelist, allocationMap }: WhitelistStatusProps) {
+  const { isWhitelisted, allocation, loading, error } = useWhitelistStatus(
+    whitelist, 
+    allocationMap
+  )
+  
+  if (loading) {
+    return <div className="animate-pulse">Checking whitelist status...</div>
+  }
+  
+  if (error) {
+    return <div className="text-red-500">Error: {error}</div>
+  }
+  
+  return (
+    <div className={`p-4 rounded-lg ${isWhitelisted ? 'bg-green-100' : 'bg-gray-100'}`}>
+      {isWhitelisted ? (
+        <div className="text-green-800">
+          <h3 className="font-bold">✅ Whitelisted</h3>
+          <p>You can mint up to {allocation} tokens</p>
+        </div>
+      ) : (
+        <div className="text-gray-800">
+          <h3 className="font-bold">❌ Not Whitelisted</h3>
+          <p>Your address is not eligible for whitelist minting</p>
+        </div>
+      )}
+    </div>
+  )
+}
+```
+
+## Multiple Whitelists
+
+### Tiered Whitelist System
+
+```typescript title="Tiered Whitelists"
+// Create different tiers with different benefits
+const goldTierAddresses = [
+  { address: "0x1111..." },
+  { address: "0x2222..." }
+]
+
+const silverTierAddresses = [
+  { address: "0x3333..." },
+  { address: "0x4444..." }
+]
+
+const bronzeTierAddresses = [
+  { address: "0x5555..." },
+  { address: "0x6666..." }
+]
+
+// Create separate whitelists for each tier
+const goldWhitelist = new WhitelistManager(goldTierAddresses)
+const silverWhitelist = new WhitelistManager(silverTierAddresses)
+const bronzeWhitelist = new WhitelistManager(bronzeTierAddresses)
+
+// For smart contract, you might combine all tiers
+const allTierAddresses = [
+  ...goldTierAddresses,
+  ...silverTierAddresses,
+  ...bronzeTierAddresses
+]
+
+const combinedWhitelist = new WhitelistManager(allTierAddresses)
+
+// Application logic for tier benefits
+const tierBenefits = {
+  gold: { maxMint: 10, discount: 0.2 },
+  silver: { maxMint: 5, discount: 0.1 },
+  bronze: { maxMint: 2, discount: 0.05 }
+}
+
+function getTierForAddress(address: string): 'gold' | 'silver' | 'bronze' | null {
+  if (goldTierAddresses.some(entry => entry.address === address)) return 'gold'
+  if (silverTierAddresses.some(entry => entry.address === address)) return 'silver'  
+  if (bronzeTierAddresses.some(entry => entry.address === address)) return 'bronze'
+  return null
+}
+```
+
+### Time-Based Tier Access
+
+```typescript title="Phased Tier Access"
+async function getActiveTierForTime(timestamp: number): Promise<'gold' | 'silver' | 'bronze' | 'public' | null> {
+  const phaseStartTime = 1640995200 // Example timestamp
+  const hoursSinceStart = (timestamp - phaseStartTime) / 3600
+  
+  if (hoursSinceStart < 0) return null // Not started
+  if (hoursSinceStart < 1) return 'gold' // First hour: gold tier only
+  if (hoursSinceStart < 4) return 'silver' // Next 3 hours: gold + silver
+  if (hoursSinceStart < 24) return 'bronze' // Next 20 hours: all tiers
+  return 'public' // After 24 hours: public access
+}
+
+async function mintWithTierAccess(
+  collection: any,
+  walletClient: any,
+  address: string,
+  quantity: bigint
+) {
+  const now = Math.floor(Date.now() / 1000)
+  const activeTier = await getActiveTierForTime(now)
+  const userTier = getTierForAddress(address)
+  
+  // Check if user can mint in current phase
+  if (activeTier === 'public') {
+    // Public minting - no whitelist needed
+    await collection.mint(walletClient, quantity, undefined, mintPrice * quantity, [])
+  } else if (userTier && shouldTierHaveAccess(userTier, activeTier)) {
+    // Whitelist minting with tier access
+    const proof = combinedWhitelist.getProof(address)
+    await collection.mint(walletClient, quantity, undefined, mintPrice * quantity, proof)
+  } else {
+    throw new Error(`Access denied. Current phase: ${activeTier}, User tier: ${userTier}`)
+  }
+}
+
+function shouldTierHaveAccess(userTier: string, activeTier: string): boolean {
+  const tierHierarchy = { gold: 3, silver: 2, bronze: 1 }
+  return tierHierarchy[userTier] >= tierHierarchy[activeTier]
+}
+```
+
+## Whitelist Utilities
+
+### Whitelist Analysis
+
+```typescript title="Whitelist Analytics"
+class WhitelistAnalytics {
+  private whitelist: WhitelistManager
+  private addresses: { address: string }[]
+  
+  constructor(whitelist: WhitelistManager, addresses: { address: string }[]) {
+    this.whitelist = whitelist
+    this.addresses = addresses
+  }
+  
+  getWhitelistSize(): number {
+    return this.addresses.length
+  }
+  
+  getMerkleTreeDepth(): number {
+    return Math.ceil(Math.log2(this.addresses.length))
+  }
+  
+  getProofSize(address: string): number {
+    try {
+      const proof = this.whitelist.getProof(address)
+      return proof.length
+    } catch {
+      return 0
+    }
+  }
+  
+  getAverageProofSize(): number {
+    const proofSizes = this.addresses.map(entry => this.getProofSize(entry.address))
+    return proofSizes.reduce((a, b) => a + b, 0) / proofSizes.length
+  }
+  
+  estimateGasCost(): { verificationGas: number; totalGasPerMint: number } {
+    const avgProofSize = this.getAverageProofSize()
+    const verificationGas = 21000 + (avgProofSize * 3000) // Rough estimate
+    const totalGasPerMint = verificationGas + 50000 // Add base mint cost
+    
+    return { verificationGas, totalGasPerMint }
+  }
+  
+  generateReport(): any {
+    const gasCosts = this.estimateGasCost()
+    
+    return {
+      size: this.getWhitelistSize(),
+      merkleTreeDepth: this.getMerkleTreeDepth(),
+      averageProofSize: this.getAverageProofSize(),
+      estimatedGasCosts: gasCosts,
+      merkleRoot: this.whitelist.getRoot()
+    }
+  }
+}
+
+// Usage
+const analytics = new WhitelistAnalytics(whitelist, whitelistedAddresses)
+const report = analytics.generateReport()
+console.log("Whitelist Report:", report)
+```
+
+### Whitelist Validation
+
+```typescript title="Whitelist Validation"
+function validateWhitelistAddresses(addresses: { address: string }[]): {
+  valid: { address: string }[]
+  invalid: { address: string; reason: string }[]
+} {
+  const valid: { address: string }[] = []
+  const invalid: { address: string; reason: string }[] = []
+  
+  for (const entry of addresses) {
+    if (!entry.address) {
+      invalid.push({ address: entry.address, reason: "Missing address" })
+      continue
+    }
+    
+    if (!entry.address.startsWith('0x')) {
+      invalid.push({ address: entry.address, reason: "Missing 0x prefix" })
+      continue
+    }
+    
+    if (entry.address.length !== 42) {
+      invalid.push({ address: entry.address, reason: "Invalid length" })
+      continue
+    }
+    
+    if (!/^0x[a-fA-F0-9]{40}$/.test(entry.address)) {
+      invalid.push({ address: entry.address, reason: "Invalid hex characters" })
+      continue
+    }
+    
+    valid.push(entry)
+  }
+  
+  return { valid, invalid }
+}
+
+// Check for duplicates
+function removeDuplicateAddresses(addresses: { address: string }[]): { address: string }[] {
+  const seen = new Set<string>()
+  const unique: { address: string }[] = []
+  
+  for (const entry of addresses) {
+    const normalizedAddress = entry.address.toLowerCase()
+    if (!seen.has(normalizedAddress)) {
+      seen.add(normalizedAddress)
+      unique.push({ address: entry.address })
+    }
+  }
+  
+  return unique
+}
+```
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Security" icon="shield">
+    - Validate all addresses before creating whitelist
+    - Use checksummed addresses when possible
+    - Store Merkle proofs securely
+    - Verify proofs client-side before transactions
+  </Card>
+  <Card title="Gas Efficiency" icon="bolt">
+    - Consider whitelist size vs. gas costs
+    - Optimize Merkle tree construction
+    - Batch operations when possible
+    - Pre-generate proofs for better UX
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Invalid Merkle proof error">
+    - Verify the address is exactly as stored in the whitelist
+    - Check that the Merkle root matches between contract and client
+    - Ensure proof generation uses the same whitelist data
+    - Verify address case sensitivity
+  </Accordion>
+
+  <Accordion title="Proof generation fails">
+    - Confirm the address exists in the whitelist
+    - Check for duplicate addresses in whitelist
+    - Validate address format (0x prefix, 42 characters)
+    - Ensure WhitelistManager is properly initialized
+  </Accordion>
+
+  <Accordion title="Whitelist not working as expected">
+    - Verify collection has isWhitelistEnabled set to true
+    - Check that whitelistMerkleRoot is set correctly
+    - Ensure minting phase allows whitelist access
+    - Test with known whitelisted addresses first
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Storage Service" icon="database" href="/createkit/storage">
+    Learn how to store and manage whitelist data with BaseMint storage
+  </Card>
+  <Card title="Examples" icon="code" href="/createkit/examples">
+    See complete whitelist implementation examples
+  </Card>
+</CardGroup>

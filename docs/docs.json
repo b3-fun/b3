@@ -7,7 +7,7 @@
     "light": "#4DA6FF",
     "dark": "#0056CC"
   },
-  "favicon": "/favicon.png",
+  "favicon": "/baseball-cap-favicon.png",
   "navigation": {
     "tabs": [
       {
@@ -47,7 +47,7 @@
           },
           {
             "group": "Resources",
-            "pages": ["data/api-reference/introduction", "sdk/introduction"]
+            "pages": ["data/api-reference/introduction", "sdk/introduction", "basement/unity-guide"]
           },
           {
             "group": "Ecosystem Tools",
@@ -113,11 +113,24 @@
         ]
       },
       {
+        "icon": "palette",
         "tab": "CreateKit",
         "groups": [
           {
             "group": "Getting Started",
-            "pages": ["createkit/introduction"]
+            "pages": ["createkit/introduction", "createkit/installation", "createkit/quickstart"]
+          },
+          {
+            "group": "Core Features",
+            "pages": ["createkit/collections", "createkit/minting", "createkit/rewards"]
+          },
+          {
+            "group": "Advanced",
+            "pages": ["createkit/whitelist", "createkit/storage", "createkit/error-handling"]
+          },
+          {
+            "group": "Resources",
+            "pages": ["createkit/examples"]
           }
         ]
       },

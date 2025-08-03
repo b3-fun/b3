@@ -1,0 +1,398 @@
+---
+title: "Quick Start"
+description: "Create your first NFT collection with CreateKit in just a few minutes"
+---
+
+## Overview
+
+This guide will walk you through creating your first NFT collection using CreateKit. You'll learn how to:
+
+- Create collection metadata and signatures
+- Deploy a collection
+- Mint your first NFT
+- Track rewards
+
+<Note>
+This quickstart uses B3 Testnet. Make sure you have testnet funds for gas fees.
+</Note>
+
+## Step 1: Basic Setup
+
+First, let's set up the basic infrastructure:
+
+```typescript title="quickstart.ts"
+import { 
+  CollectionManager, 
+  RewardTracker,
+  BaseMintStorage,
+  b3Testnet 
+} from '@b3dotfun/basemint'
+import { createPublicClient, createWalletClient, http } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+
+// Initialize clients
+const publicClient = createPublicClient({
+  chain: b3Testnet,
+  transport: http()
+})
+
+const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`)
+const walletClient = createWalletClient({
+  chain: b3Testnet,
+  transport: http(),
+  account
+})
+
+// Initialize CreateKit services
+const collectionManager = new CollectionManager(publicClient)
+const rewardTracker = new RewardTracker(publicClient)
+const storage = new BaseMintStorage({
+  baseUrl: 'https://api.basemint.fun'
+})
+```
+
+## Step 2: Create Collection Metadata
+
+Define your collection parameters:
+
+```typescript title="Create Collection"
+const collectionMetadata = {
+  // Required parameters
+  name: "My First Collection",
+  symbol: "MFC",
+  creator: account.address,
+  gameOwner: account.address, // Can be different address
+  
+  // Optional parameters
+  maxSupply: 1000n,
+  mintPrice: 0n, // Free mint
+  maxPerWallet: 10n,
+  description: "My first NFT collection on B3",
+  image: "https://example.com/collection-image.png",
+  
+  // Timing
+  startTime: 0n, // Start immediately
+  endTime: BigInt(Math.floor(Date.now() / 1000) + 86400 * 30), // 30 days
+  
+  // Token standard
+  tokenStandard: "ERC721" as const,
+  chainId: 1993 // B3 Testnet
+}
+```
+
+## Step 3: Generate Signatures
+
+Create the required signatures for deployment:
+
+```typescript title="Generate Signatures"
+// Generate creator signature
+const creatorSignature = await collectionManager.generateCreatorSignature(
+  walletClient,
+  collectionMetadata
+)
+
+// Predict collection address
+const predictedAddress = collectionManager.predictCollectionAddress(
+  collectionMetadata,
+  creatorSignature
+)
+
+console.log(`📍 Predicted collection address: ${predictedAddress}`)
+```
+
+## Step 4: Submit to Storage
+
+Store your collection metadata off-chain:
+
+```typescript title="Submit to Storage"
+try {
+  await storage.submitCollection(collectionMetadata, creatorSignature)
+  console.log("✅ Collection metadata stored successfully")
+} catch (error) {
+  console.error("❌ Failed to store collection:", error)
+}
+```
+
+## Step 5: Deploy and Mint
+
+Now comes the exciting part - deploying your collection and minting the first NFT:
+
+```typescript title="Deploy and Mint"
+// Generate deployer signature
+const deployerSignature = await collectionManager.generateDeployerSignature(
+  walletClient,
+  predictedAddress
+)
+
+// Create collection instance
+const collection = collectionManager.createCollection(
+  predictedAddress,
+  collectionMetadata.tokenStandard
+)
+
+// Deploy and mint first NFT in one transaction
+const mintTx = await collection.mint(
+  walletClient,
+  1n, // quantity
+  undefined, // metadata URI (will use baseURI)
+  0n, // mint price
+  [], // whitelist proof (empty for public mint)
+  creatorSignature,
+  deployerSignature
+)
+
+console.log(`🎉 Collection deployed and first NFT minted!`)
+console.log(`📋 Transaction hash: ${mintTx}`)
+```
+
+## Step 6: Verify Deployment
+
+Let's verify that everything worked correctly:
+
+```typescript title="Verify Deployment"
+// Check if collection is deployed
+const isDeployed = await collection.isDeployed()
+console.log(`🏭 Collection deployed: ${isDeployed}`)
+
+// Get collection info
+const info = await collection.getCollectionInfo()
+console.log("📊 Collection Info:", {
+  name: info.name,
+  symbol: info.symbol,
+  totalSupply: info.totalSupply.toString(),
+  maxSupply: info.maxSupply.toString()
+})
+
+// Check token ownership
+const balance = await collection.balanceOf(account.address)
+console.log(`💰 Your token balance: ${balance.toString()}`)
+```
+
+## Step 7: Track Rewards
+
+Check the rewards generated from your mint:
+
+```typescript title="Track Rewards"
+// Get escrow contract for rewards
+const escrowAddress = collectionManager.getEscrowAddress()
+
+// Track rewards for this collection
+const collectionRewards = await rewardTracker.getCollectionRewards(
+  escrowAddress,
+  predictedAddress
+)
+
+console.log("💎 Collection Rewards:", {
+  totalRewards: collectionRewards.totalRewards.toString(),
+  unclaimedRewards: collectionRewards.unclaimedRewards.toString(),
+  totalMints: collectionRewards.totalMints.toString()
+})
+
+// Get individual recipient rewards
+const creatorRewards = await rewardTracker.getRecipientRewards(
+  escrowAddress,
+  predictedAddress,
+  "CREATOR",
+  account.address
+)
+
+console.log(`🎨 Creator rewards: ${creatorRewards.toString()}`)
+```
+
+## Complete Example
+
+Here's the complete quickstart script:
+
+<Accordion title="Complete quickstart.ts">
+```typescript
+import { 
+  CollectionManager, 
+  RewardTracker,
+  BaseMintStorage,
+  b3Testnet 
+} from '@b3dotfun/basemint'
+import { createPublicClient, createWalletClient, http } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+
+async function quickstart() {
+  // Initialize clients
+  const publicClient = createPublicClient({
+    chain: b3Testnet,
+    transport: http()
+  })
+
+  const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`)
+  const walletClient = createWalletClient({
+    chain: b3Testnet,
+    transport: http(),
+    account
+  })
+
+  // Initialize CreateKit services
+  const collectionManager = new CollectionManager(publicClient)
+  const rewardTracker = new RewardTracker(publicClient)
+  const storage = new BaseMintStorage({
+    baseUrl: 'https://api.basemint.fun'
+  })
+
+  // Step 1: Create collection metadata
+  const collectionMetadata = {
+    name: "My First Collection",
+    symbol: "MFC",
+    creator: account.address,
+    gameOwner: account.address,
+    maxSupply: 1000n,
+    mintPrice: 0n,
+    maxPerWallet: 10n,
+    description: "My first NFT collection on B3",
+    image: "https://example.com/collection-image.png",
+    startTime: 0n,
+    endTime: BigInt(Math.floor(Date.now() / 1000) + 86400 * 30),
+    tokenStandard: "ERC721" as const,
+    chainId: 1993
+  }
+
+  // Step 2: Generate signatures
+  const creatorSignature = await collectionManager.generateCreatorSignature(
+    walletClient,
+    collectionMetadata
+  )
+
+  const predictedAddress = collectionManager.predictCollectionAddress(
+    collectionMetadata,
+    creatorSignature
+  )
+
+  console.log(`📍 Predicted collection address: ${predictedAddress}`)
+
+  // Step 3: Submit to storage
+  try {
+    await storage.submitCollection(collectionMetadata, creatorSignature)
+    console.log("✅ Collection metadata stored successfully")
+  } catch (error) {
+    console.error("❌ Failed to store collection:", error)
+    return
+  }
+
+  // Step 4: Deploy and mint
+  const deployerSignature = await collectionManager.generateDeployerSignature(
+    walletClient,
+    predictedAddress
+  )
+
+  const collection = collectionManager.createCollection(
+    predictedAddress,
+    collectionMetadata.tokenStandard
+  )
+
+  const mintTx = await collection.mint(
+    walletClient,
+    1n,
+    undefined,
+    0n,
+    [],
+    creatorSignature,
+    deployerSignature
+  )
+
+  console.log(`🎉 Collection deployed and first NFT minted!`)
+  console.log(`📋 Transaction hash: ${mintTx}`)
+
+  // Step 5: Verify deployment
+  const isDeployed = await collection.isDeployed()
+  console.log(`🏭 Collection deployed: ${isDeployed}`)
+
+  // Step 6: Track rewards
+  const escrowAddress = collectionManager.getEscrowAddress()
+  const collectionRewards = await rewardTracker.getCollectionRewards(
+    escrowAddress,
+    predictedAddress
+  )
+
+  console.log("💎 Collection Rewards:", {
+    totalRewards: collectionRewards.totalRewards.toString(),
+    unclaimedRewards: collectionRewards.unclaimedRewards.toString(),
+    totalMints: collectionRewards.totalMints.toString()
+  })
+}
+
+// Run the quickstart
+quickstart().catch(console.error)
+```
+</Accordion>
+
+## Run the Example
+
+Save the complete example as `quickstart.ts` and run it:
+
+<CodeGroup>
+```bash npm
+npx tsx quickstart.ts
+```
+
+```bash yarn
+yarn tsx quickstart.ts
+```
+
+```bash pnpm
+pnpm tsx quickstart.ts
+```
+</CodeGroup>
+
+## Expected Output
+
+When you run the quickstart script, you should see output similar to:
+
+```
+📍 Predicted collection address: 0x1234567890abcdef...
+✅ Collection metadata stored successfully
+🎉 Collection deployed and first NFT minted!
+📋 Transaction hash: 0xabcdef1234567890...
+🏭 Collection deployed: true
+💎 Collection Rewards: {
+  totalRewards: "1000000000000000000",
+  unclaimedRewards: "1000000000000000000", 
+  totalMints: "1"
+}
+```
+
+## What's Next?
+
+Congratulations! You've successfully created your first NFT collection with CreateKit. Here are some next steps to explore:
+
+<CardGroup cols={2}>
+  <Card title="Collection Management" icon="folder" href="/createkit/collections">
+    Learn advanced collection configuration options
+  </Card>
+  <Card title="Minting Features" icon="coins" href="/createkit/minting">
+    Explore different minting scenarios and options
+  </Card>
+  <Card title="Whitelist Setup" icon="list" href="/createkit/whitelist">
+    Implement whitelist-based minting
+  </Card>
+  <Card title="Reward Management" icon="gift" href="/createkit/rewards">
+    Deep dive into the reward distribution system
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Transaction failed">
+    - Ensure you have sufficient testnet funds
+    - Check that all signatures are valid
+    - Verify collection parameters are within limits
+  </Accordion>
+
+  <Accordion title="Storage submission failed">
+    - Check your internet connection
+    - Verify the collection metadata format
+    - Ensure the creator signature is valid
+  </Accordion>
+
+  <Accordion title="Collection already exists">
+    - The predicted address is already taken
+    - Try changing collection parameters slightly
+    - Use a different creator or gameOwner address
+  </Accordion>
+</AccordionGroup>

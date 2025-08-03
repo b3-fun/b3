@@ -1,0 +1,789 @@
+---
+title: "Storage Service"
+description: "Manage collection metadata and assets with the BaseMint storage service"
+---
+
+## Overview
+
+The BaseMint Storage Service provides a reliable, scalable solution for storing and managing NFT collection metadata. It offers deterministic addressing, CDN-backed delivery, and seamless integration with the CreateKit ecosystem.
+
+## Storage Architecture
+
+### How Storage Works
+
+<Steps>
+  <Step title="Metadata Submission">
+    Collection metadata and creator signatures are submitted to the storage service
+  </Step>
+  <Step title="Validation & Storage">
+    The service validates signatures and stores metadata with a deterministic address
+  </Step>
+  <Step title="CDN Distribution">
+    Metadata is distributed via CDN for fast, global access
+  </Step>
+  <Step title="Marketplace Integration">
+    Collections are discoverable via predicted addresses before deployment
+  </Step>
+</Steps>
+
+### Key Features
+
+<CardGroup cols={2}>
+  <Card title="Deterministic Addressing" icon="link">
+    Collections have predictable addresses for marketplace integration
+  </Card>
+  <Card title="Signature Validation" icon="shield-check">
+    Cryptographic verification of collection authenticity
+  </Card>
+  <Card title="CDN Delivery" icon="globe">
+    Fast, reliable metadata delivery worldwide
+  </Card>
+  <Card title="Referrer System" icon="users">
+    Track and manage collections by integration partners
+  </Card>
+</CardGroup>
+
+## Storage Service Setup
+
+### Basic Configuration
+
+```typescript title="Initialize Storage Service"
+import { BaseMintStorage } from '@b3dotfun/basemint'
+
+// Initialize storage service
+const storage = new BaseMintStorage({
+  baseUrl: 'https://api.basemint.fun', // Production URL
+  // For testnet development:
+  // baseUrl: 'https://testnet-api.basemint.fun'
+})
+
+// Test connection
+try {
+  const health = await storage.healthCheck()
+  console.log('✅ Storage service connected:', health)
+} catch (error) {
+  console.error('❌ Storage service unavailable:', error)
+}
+```
+
+### Environment Configuration
+
+```typescript title="Environment-based Setup"
+// Environment-specific configuration
+const getStorageConfig = (environment: 'development' | 'staging' | 'production') => {
+  const configs = {
+    development: {
+      baseUrl: 'https://testnet-api.basemint.fun',
+      chainId: 1993 // B3 Testnet
+    },
+    staging: {
+      baseUrl: 'https://staging-api.basemint.fun',
+      chainId: 1993
+    },
+    production: {
+      baseUrl: 'https://api.basemint.fun',
+      chainId: 8333 // B3 Mainnet
+    }
+  }
+  
+  return configs[environment]
+}
+
+const config = getStorageConfig(process.env.NODE_ENV as any || 'development')
+const storage = new BaseMintStorage(config)
+```
+
+## Submitting Collections
+
+### Basic Collection Submission
+
+```typescript title="Submit Collection"
+async function submitCollection(
+  collectionMetadata: any,
+  creatorSignature: string,
+  referrerId?: string
+) {
+  try {
+    const response = await storage.submitCollection(
+      collectionMetadata,
+      creatorSignature,
+      referrerId // Optional: track collections by referrer
+    )
+    
+    console.log('✅ Collection submitted successfully')
+    console.log('Collection ID:', response.collectionId)
+    console.log('Predicted address:', response.predictedAddress)
+    console.log('Metadata URI:', response.metadataUri)
+    
+    return response
+    
+  } catch (error: any) {
+    if (error.message.includes('Invalid signature')) {
+      console.error('❌ Creator signature verification failed')
+    } else if (error.message.includes('Collection exists')) {
+      console.error('❌ Collection with this address already exists')
+    } else if (error.message.includes('Referrer not found')) {
+      console.error('❌ Invalid referrer ID')
+    } else {
+      console.error('❌ Submission failed:', error.message)
+    }
+    throw error
+  }
+}
+
+// Example usage
+const response = await submitCollection(
+  collectionMetadata,
+  creatorSignature,
+  "my-game-platform" // Your referrer ID
+)
+```
+
+### Batch Collection Submission
+
+```typescript title="Batch Submission"
+async function submitMultipleCollections(
+  collections: Array<{
+    metadata: any
+    signature: string
+    referrerId?: string
+  }>
+) {
+  const results = []
+  
+  for (const collection of collections) {
+    try {
+      const response = await storage.submitCollection(
+        collection.metadata,
+        collection.signature,
+        collection.referrerId
+      )
+      
+      results.push({
+        success: true,
+        collectionName: collection.metadata.name,
+        response
+      })
+      
+      console.log(`✅ Submitted: ${collection.metadata.name}`)
+      
+    } catch (error) {
+      results.push({
+        success: false,
+        collectionName: collection.metadata.name,
+        error: error.message
+      })
+      
+      console.error(`❌ Failed: ${collection.metadata.name}`, error)
+    }
+  }
+  
+  return results
+}
+```
+
+## Querying Collections
+
+### Basic Queries
+
+```typescript title="Query Collections"
+// Query all collections
+const allCollections = await storage.queryCollections()
+console.log(`Found ${allCollections.collections.length} collections`)
+
+// Query with pagination
+const paginatedResults = await storage.queryCollections({
+  limit: 20,
+  offset: 0
+})
+
+// Query by referrer
+const gameCollections = await storage.queryCollections({
+  referrer: "my-game-platform"
+})
+
+// Query by creator
+const creatorCollections = await storage.queryCollections({
+  creator: "0x1234567890123456789012345678901234567890"
+})
+```
+
+### Advanced Filtering
+
+```typescript title="Advanced Queries"
+// Complex query with multiple filters
+const advancedQuery = await storage.queryCollections({
+  referrer: "my-game-platform",
+  creator: "0x1234567890123456789012345678901234567890",
+  tokenStandard: "ERC721",
+  chainId: 1993,
+  limit: 50,
+  offset: 0,
+  sortBy: "createdAt",
+  sortOrder: "desc"
+})
+
+console.log("Advanced query results:", {
+  total: advancedQuery.total,
+  count: advancedQuery.collections.length,
+  hasMore: advancedQuery.hasMore
+})
+
+// Filter by deployment status
+const undeployedCollections = advancedQuery.collections.filter(
+  collection => !collection.isDeployed
+)
+
+const deployedCollections = advancedQuery.collections.filter(
+  collection => collection.isDeployed
+)
+
+console.log(`Undeployed: ${undeployedCollections.length}`)
+console.log(`Deployed: ${deployedCollections.length}`)
+```
+
+### Search Functionality
+
+```typescript title="Search Collections"
+// Search by name or symbol
+const searchResults = await storage.searchCollections({
+  query: "fantasy",
+  limit: 10
+})
+
+// Search with filters
+const filteredSearch = await storage.searchCollections({
+  query: "game",
+  referrer: "my-game-platform",
+  tokenStandard: "ERC1155"
+})
+
+console.log("Search results:", searchResults.collections.map(c => ({
+  name: c.name,
+  symbol: c.symbol,
+  description: c.description
+})))
+```
+
+## Referrer Management
+
+### Registering as a Referrer
+
+```typescript title="Referrer Registration"
+// Register your platform as a referrer
+async function registerAsReferrer(referrerId: string, metadata?: any) {
+  try {
+    await storage.registerReferrer(referrerId, metadata)
+    console.log(`✅ Registered as referrer: ${referrerId}`)
+  } catch (error: any) {
+    if (error.message.includes('already exists')) {
+      console.log(`ℹ️ Referrer ${referrerId} already registered`)
+    } else {
+      console.error('❌ Registration failed:', error)
+      throw error
+    }
+  }
+}
+
+// Register with metadata
+await registerAsReferrer("my-game-platform", {
+  name: "My Game Platform",
+  website: "https://mygame.com",
+  contact: "dev@mygame.com",
+  description: "A gaming platform for NFT collections"
+})
+```
+
+### Managing Referrer Collections
+
+```typescript title="Referrer Collection Management"
+// Get all collections for your platform
+async function getReferrerDashboard(referrerId: string) {
+  const collections = await storage.queryCollections({
+    referrer: referrerId
+  })
+  
+  const stats = {
+    total: collections.total,
+    deployed: collections.collections.filter(c => c.isDeployed).length,
+    undeployed: collections.collections.filter(c => !c.isDeployed).length,
+    erc721: collections.collections.filter(c => c.tokenStandard === 'ERC721').length,
+    erc1155: collections.collections.filter(c => c.tokenStandard === 'ERC1155').length
+  }
+  
+  console.log("Referrer dashboard:", stats)
+  
+  return {
+    collections: collections.collections,
+    stats
+  }
+}
+
+const dashboard = await getReferrerDashboard("my-game-platform")
+```
+
+## Collection Management
+
+### Retrieving Collection Data
+
+```typescript title="Get Collection Details"
+// Get collection by address
+async function getCollectionDetails(address: string) {
+  try {
+    const collection = await storage.getCollection(address)
+    
+    console.log("Collection details:", {
+      name: collection.name,
+      symbol: collection.symbol,
+      creator: collection.creator,
+      gameOwner: collection.gameOwner,
+      isDeployed: collection.isDeployed,
+      createdAt: collection.createdAt,
+      metadataUri: collection.metadataUri
+    })
+    
+    return collection
+    
+  } catch (error: any) {
+    if (error.message.includes('not found')) {
+      console.error('❌ Collection not found')
+    } else {
+      console.error('❌ Error retrieving collection:', error)
+    }
+    throw error
+  }
+}
+
+// Get multiple collections by addresses
+async function getMultipleCollections(addresses: string[]) {
+  const collections = await Promise.allSettled(
+    addresses.map(address => storage.getCollection(address))
+  )
+  
+  const successful = collections
+    .filter((result): result is PromiseFulfilledResult<any> => result.status === 'fulfilled')
+    .map(result => result.value)
+    
+  const failed = collections
+    .filter((result): result is PromiseRejectedResult => result.status === 'rejected')
+    .map(result => result.reason)
+  
+  console.log(`✅ Retrieved ${successful.length} collections`)
+  console.log(`❌ Failed to retrieve ${failed.length} collections`)
+  
+  return { successful, failed }
+}
+```
+
+### Updating Collections
+
+<Warning>
+Collection updates are limited to specific fields and may require additional authentication.
+</Warning>
+
+```typescript title="Update Collection"
+// Update collection metadata (limited fields)
+async function updateCollectionMetadata(
+  address: string,
+  updates: {
+    description?: string
+    image?: string
+    external_url?: string
+    animation_url?: string
+  }
+) {
+  try {
+    const updatedCollection = await storage.updateCollection(address, updates)
+    console.log('✅ Collection updated successfully')
+    return updatedCollection
+  } catch (error: any) {
+    if (error.message.includes('not authorized')) {
+      console.error('❌ Not authorized to update this collection')
+    } else if (error.message.includes('immutable field')) {
+      console.error('❌ Attempted to update immutable field')
+    } else {
+      console.error('❌ Update failed:', error)
+    }
+    throw error
+  }
+}
+```
+
+### Deleting Collections
+
+```typescript title="Delete Collections"
+// Delete a single collection (only undeployed)
+async function deleteCollection(address: string) {
+  try {
+    await storage.deleteCollection(address)
+    console.log(`✅ Collection ${address} deleted`)
+  } catch (error: any) {
+    if (error.message.includes('deployed')) {
+      console.error('❌ Cannot delete deployed collection')
+    } else if (error.message.includes('not found')) {
+      console.error('❌ Collection not found')
+    } else {
+      console.error('❌ Deletion failed:', error)
+    }
+    throw error
+  }
+}
+
+// Bulk delete collections (referrers only)
+async function bulkDeleteCollections(
+  identifiers: string[], // UUIDs or addresses
+  referrerId: string
+) {
+  try {
+    const result = await storage.bulkDeleteCollections(identifiers, referrerId)
+    
+    console.log(`✅ Deleted ${result.deleted.length} collections`)
+    console.log(`❌ Failed to delete ${result.failed.length} collections`)
+    
+    return result
+  } catch (error) {
+    console.error('❌ Bulk deletion failed:', error)
+    throw error
+  }
+}
+```
+
+## Metadata Management
+
+### Custom Metadata URIs
+
+```typescript title="Metadata URI Handling"
+// Generate metadata URI for a collection
+function generateMetadataUri(collectionId: string, baseUrl: string): string {
+  return `${baseUrl}/metadata/${collectionId}`
+}
+
+// Get metadata directly
+async function getCollectionMetadata(collectionId: string) {
+  try {
+    const metadataUri = generateMetadataUri(collectionId, storage.baseUrl)
+    const response = await fetch(metadataUri)
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+    }
+    
+    const metadata = await response.json()
+    return metadata
+  } catch (error) {
+    console.error('❌ Failed to fetch metadata:', error)
+    throw error
+  }
+}
+
+// Validate metadata format
+function validateMetadata(metadata: any): { isValid: boolean; errors: string[] } {
+  const errors: string[] = []
+  
+  if (!metadata.name) errors.push('Missing name')
+  if (!metadata.description) errors.push('Missing description')
+  if (!metadata.image) errors.push('Missing image')
+  
+  // Check OpenSea compatibility
+  if (metadata.attributes && !Array.isArray(metadata.attributes)) {
+    errors.push('Attributes must be an array')
+  }
+  
+  return {
+    isValid: errors.length === 0,
+    errors
+  }
+}
+```
+
+### Asset Management
+
+```typescript title="Asset Upload and Management"
+// Upload assets to storage service (if supported)
+async function uploadAsset(
+  file: File | Buffer,
+  filename: string,
+  contentType: string
+): Promise<string> {
+  try {
+    // This depends on your storage service implementation
+    const formData = new FormData()
+    formData.append('file', file, filename)
+    formData.append('contentType', contentType)
+    
+    const response = await fetch(`${storage.baseUrl}/upload`, {
+      method: 'POST',
+      body: formData
+    })
+    
+    if (!response.ok) {
+      throw new Error(`Upload failed: ${response.statusText}`)
+    }
+    
+    const result = await response.json()
+    return result.url
+    
+  } catch (error) {
+    console.error('❌ Asset upload failed:', error)
+    throw error
+  }
+}
+
+// Optimize images for NFT standards
+function getOptimizedImageUrl(
+  originalUrl: string,
+  size: 'thumbnail' | 'medium' | 'large' = 'medium'
+): string {
+  const sizeMap = {
+    thumbnail: '200x200',
+    medium: '640x640',
+    large: '1200x1200'
+  }
+  
+  // Example CDN URL transformation
+  return `${originalUrl}?size=${sizeMap[size]}&format=webp&quality=85`
+}
+```
+
+## Error Handling
+
+### Comprehensive Error Handling
+
+```typescript title="Error Handling Patterns"
+class StorageError extends Error {
+  constructor(
+    message: string,
+    public code: string,
+    public statusCode?: number
+  ) {
+    super(message)
+    this.name = 'StorageError'
+  }
+}
+
+async function robustStorageOperation<T>(
+  operation: () => Promise<T>,
+  retries: number = 3,
+  delayMs: number = 1000
+): Promise<T> {
+  let lastError: Error
+  
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      return await operation()
+    } catch (error: any) {
+      lastError = error
+      
+      // Don't retry certain errors
+      if (error.message.includes('Invalid signature') ||
+          error.message.includes('Collection exists')) {
+        throw error
+      }
+      
+      console.warn(`Attempt ${attempt} failed:`, error.message)
+      
+      if (attempt < retries) {
+        await new Promise(resolve => setTimeout(resolve, delayMs * attempt))
+      }
+    }
+  }
+  
+  throw new StorageError(
+    `Operation failed after ${retries} attempts: ${lastError.message}`,
+    'MAX_RETRIES_EXCEEDED'
+  )
+}
+
+// Usage
+const result = await robustStorageOperation(async () => {
+  return await storage.submitCollection(metadata, signature)
+})
+```
+
+### Service Health Monitoring
+
+```typescript title="Health Monitoring"
+class StorageHealthMonitor {
+  private storage: BaseMintStorage
+  private healthStatus: 'healthy' | 'degraded' | 'unhealthy' = 'healthy'
+  private lastCheck: Date = new Date()
+  
+  constructor(storage: BaseMintStorage) {
+    this.storage = storage
+  }
+  
+  async checkHealth(): Promise<{ status: string; latency: number; timestamp: Date }> {
+    const startTime = Date.now()
+    
+    try {
+      await this.storage.healthCheck()
+      const latency = Date.now() - startTime
+      
+      this.healthStatus = latency < 2000 ? 'healthy' : 'degraded'
+      this.lastCheck = new Date()
+      
+      return {
+        status: this.healthStatus,
+        latency,
+        timestamp: this.lastCheck
+      }
+    } catch (error) {
+      this.healthStatus = 'unhealthy'
+      this.lastCheck = new Date()
+      
+      throw new StorageError(
+        'Storage service health check failed',
+        'HEALTH_CHECK_FAILED'
+      )
+    }
+  }
+  
+  getStatus(): { status: string; lastCheck: Date } {
+    return {
+      status: this.healthStatus,
+      lastCheck: this.lastCheck
+    }
+  }
+  
+  async waitForHealthy(timeoutMs: number = 30000): Promise<void> {
+    const startTime = Date.now()
+    
+    while (Date.now() - startTime < timeoutMs) {
+      try {
+        await this.checkHealth()
+        if (this.healthStatus === 'healthy') return
+      } catch {
+        // Continue waiting
+      }
+      
+      await new Promise(resolve => setTimeout(resolve, 1000))
+    }
+    
+    throw new StorageError(
+      'Storage service did not become healthy within timeout',
+      'HEALTH_TIMEOUT'
+    )
+  }
+}
+
+// Usage
+const healthMonitor = new StorageHealthMonitor(storage)
+await healthMonitor.waitForHealthy()
+console.log('✅ Storage service is healthy')
+```
+
+## Best Practices
+
+### Performance Optimization
+
+<CardGroup cols={2}>
+  <Card title="Caching" icon="bolt">
+    - Cache frequently accessed collection data
+    - Use ETags for conditional requests
+    - Implement client-side caching strategies
+    - Consider Redis for server-side caching
+  </Card>
+  <Card title="Batch Operations" icon="layer-group">
+    - Group multiple operations when possible
+    - Use bulk endpoints for efficiency
+    - Implement proper queue management
+    - Handle rate limiting gracefully
+  </Card>
+</CardGroup>
+
+### Security Considerations
+
+```typescript title="Security Best Practices"
+// Validate signatures before submission
+function validateSignatureLocally(
+  collectionMetadata: any,
+  signature: string,
+  expectedSigner: string
+): boolean {
+  // Implement local signature validation
+  // This provides an additional security layer
+  try {
+    const recoveredAddress = recoverSignerFromMetadata(collectionMetadata, signature)
+    return recoveredAddress.toLowerCase() === expectedSigner.toLowerCase()
+  } catch {
+    return false
+  }
+}
+
+// Sanitize metadata before submission
+function sanitizeMetadata(metadata: any): any {
+  return {
+    ...metadata,
+    // Remove potentially dangerous fields
+    name: sanitizeString(metadata.name),
+    description: sanitizeString(metadata.description),
+    // Validate URLs
+    image: validateImageUrl(metadata.image),
+    external_url: validateUrl(metadata.external_url)
+  }
+}
+
+function sanitizeString(input: string): string {
+  return input?.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') || ''
+}
+```
+
+## Integration Examples
+
+### React Integration
+
+```tsx title="React Storage Hook"
+import { useState, useEffect } from 'react'
+
+interface UseStorageResult {
+  collections: any[]
+  loading: boolean
+  error: string | null
+  refetch: () => Promise<void>
+}
+
+export function useStorageCollections(
+  storage: BaseMintStorage,
+  filters?: any
+): UseStorageResult {
+  const [collections, setCollections] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  
+  const fetchCollections = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      const result = await storage.queryCollections(filters)
+      setCollections(result.collections)
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+  
+  useEffect(() => {
+    fetchCollections()
+  }, [storage, JSON.stringify(filters)])
+  
+  return {
+    collections,
+    loading,
+    error,
+    refetch: fetchCollections
+  }
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Examples" icon="code" href="/createkit/examples">
+    See complete implementation examples using the storage service
+  </Card>
+  <Card title="Error Handling" icon="bug" href="/createkit/error-handling">
+    Learn comprehensive error handling patterns
+  </Card>
+</CardGroup>

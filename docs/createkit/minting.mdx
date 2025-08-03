@@ -1,0 +1,577 @@
+---
+title: "Minting"
+description: "Complete guide to token minting with CreateKit including deployment, regular minting, and advanced features"
+---
+
+## Overview
+
+Minting is the process of creating new NFT tokens within your collection. CreateKit provides a unique two-phase minting system that optimizes for gas efficiency and user experience.
+
+## Minting Phases
+
+### Phase 1: Deployment & First Mint
+
+The first mint operation is special - it deploys the collection contract and mints the first token in a single transaction:
+
+```typescript title="Deploy and First Mint"
+import { CollectionManager } from '@b3dotfun/basemint'
+
+const collectionManager = new CollectionManager(publicClient)
+
+// Assume we have collection metadata and creator signature
+const predictedAddress = collectionManager.predictCollectionAddress(
+  collectionMetadata,
+  creatorSignature
+)
+
+// Generate deployer signature
+const deployerSignature = await collectionManager.generateDeployerSignature(
+  walletClient,
+  predictedAddress
+)
+
+// Create collection instance
+const collection = collectionManager.createCollection(
+  predictedAddress,
+  collectionMetadata.tokenStandard
+)
+
+// Deploy and mint first NFT
+const mintTx = await collection.mint(
+  walletClient,
+  1n, // quantity
+  undefined, // metadata URI (uses baseURI)
+  collectionMetadata.mintPrice || 0n,
+  [], // whitelist proof (empty for public)
+  creatorSignature, // Required for first mint
+  deployerSignature // Required for first mint
+)
+
+console.log(`🚀 Collection deployed and first token minted: ${mintTx}`)
+```
+
+### Phase 2: Regular Minting
+
+After deployment, subsequent mints are simpler and only require the standard parameters:
+
+```typescript title="Regular Minting"
+// For subsequent mints (after deployment)
+const regularMintTx = await collection.mint(
+  walletClient,
+  1n, // quantity
+  undefined, // metadata URI
+  collectionMetadata.mintPrice || 0n,
+  [] // whitelist proof
+  // No signatures needed for regular mints
+)
+
+console.log(`✨ Token minted: ${regularMintTx}`)
+```
+
+## Token Standards
+
+CreateKit supports both ERC721 and ERC1155 standards with different minting behaviors:
+
+<Tabs>
+<Tab title="ERC721 Minting">
+```typescript title="ERC721 Unique Tokens"
+// ERC721 - Each token is unique
+const erc721Collection = collectionManager.createCollection(
+  predictedAddress,
+  "ERC721"
+)
+
+// ERC721 always mints quantity of 1
+await erc721Collection.mint(
+  walletClient,
+  1n, // Always 1 for ERC721
+  "https://example.com/metadata/1.json", // Unique metadata for this token
+  parseEther("0.01"),
+  []
+)
+
+// Each mint creates a new unique token ID
+// Token IDs increment: 1, 2, 3, etc.
+```
+</Tab>
+
+<Tab title="ERC1155 Minting">
+```typescript title="ERC1155 Semi-Fungible Tokens"
+// ERC1155 - Can mint multiple of same or different tokens
+const erc1155Collection = collectionManager.createCollection(
+  predictedAddress,
+  "ERC1155"
+)
+
+// Can mint multiple tokens of the same type
+await erc1155Collection.mint(
+  walletClient,
+  10n, // Mint 10 tokens
+  "https://example.com/metadata/sword.json", // Metadata for "sword" tokens
+  parseEther("0.005"),
+  []
+)
+
+// Can mint different token types by changing metadata URI
+await erc1155Collection.mint(
+  walletClient,
+  5n,
+  "https://example.com/metadata/shield.json", // Different token type
+  parseEther("0.01"),
+  []
+)
+```
+</Tab>
+</Tabs>
+
+## Pricing and Payment
+
+### Fixed Pricing
+
+```typescript title="Fixed Price Minting"
+import { parseEther } from 'viem'
+
+const fixedPriceCollection = {
+  name: "Fixed Price Collection",
+  symbol: "FPC",
+  creator: account.address,
+  gameOwner: account.address,
+  mintPrice: parseEther("0.01"), // 0.01 ETH per token
+  maxPerWallet: 5n
+}
+
+// Mint with fixed price
+await collection.mint(
+  walletClient,
+  2n, // quantity
+  undefined,
+  parseEther("0.02"), // 2 * 0.01 ETH
+  []
+)
+```
+
+### Free Minting
+
+```typescript title="Free Minting"
+const freeCollection = {
+  name: "Free Collection",
+  symbol: "FREE",
+  creator: account.address,
+  gameOwner: account.address,
+  mintPrice: 0n, // Free minting
+  maxPerWallet: 10n
+}
+
+// Mint for free (only gas costs)
+await collection.mint(
+  walletClient,
+  1n,
+  undefined,
+  0n, // No payment required
+  []
+)
+```
+
+### Dynamic Pricing
+
+```typescript title="Dynamic Pricing Logic"
+// Custom pricing logic in your application
+function calculateMintPrice(totalSupply: bigint, basePrice: bigint): bigint {
+  // Price increases with supply
+  const priceMultiplier = totalSupply / 1000n + 1n
+  return basePrice * priceMultiplier
+}
+
+// Get current supply and calculate price
+const currentSupply = await collection.totalSupply()
+const dynamicPrice = calculateMintPrice(currentSupply, parseEther("0.001"))
+
+await collection.mint(
+  walletClient,
+  1n,
+  undefined,
+  dynamicPrice,
+  []
+)
+```
+
+## Whitelist Minting
+
+CreateKit supports Merkle tree-based whitelisting for exclusive minting:
+
+### Setting Up Whitelist
+
+```typescript title="Whitelist Setup"
+import { WhitelistManager } from '@b3dotfun/basemint'
+
+// Create whitelist with addresses
+const whitelist = new WhitelistManager([
+  { address: "0x1234567890123456789012345678901234567890" },
+  { address: "0x2345678901234567890123456789012345678901" },
+  { address: "0x3456789012345678901234567890123456789012" }
+])
+
+// Get merkle root for collection deployment
+const merkleRoot = whitelist.getRoot()
+
+const whitelistCollection = {
+  name: "Whitelist Collection",
+  symbol: "WLC",
+  creator: account.address,
+  gameOwner: account.address,
+  isWhitelistEnabled: true,
+  whitelistMerkleRoot: merkleRoot,
+  mintPrice: parseEther("0.005")
+}
+```
+
+### Whitelist Minting
+
+```typescript title="Minting with Whitelist Proof"
+// Get proof for the minting address
+const userAddress = account.address
+const proof = whitelist.getProof(userAddress)
+
+// Verify user is in whitelist (optional check)
+const isWhitelisted = whitelist.verify(userAddress, proof)
+if (!isWhitelisted) {
+  throw new Error("Address not in whitelist")
+}
+
+// Mint with whitelist proof
+await collection.mint(
+  walletClient,
+  1n,
+  undefined,
+  parseEther("0.005"),
+  proof // Provide whitelist proof
+)
+```
+
+## Minting Limits and Controls
+
+### Per-Wallet Limits
+
+```typescript title="Wallet Limits"
+// Set maximum tokens per wallet
+const limitedCollection = {
+  name: "Limited Collection",
+  symbol: "LTD",
+  creator: account.address,
+  gameOwner: account.address,
+  maxPerWallet: 3n, // Maximum 3 tokens per wallet
+  maxSupply: 1000n
+}
+
+// Check current balance before minting
+const currentBalance = await collection.balanceOf(account.address)
+const maxPerWallet = await collection.maxPerWallet()
+
+if (currentBalance >= maxPerWallet) {
+  throw new Error("Wallet limit exceeded")
+}
+
+await collection.mint(walletClient, 1n, undefined, 0n, [])
+```
+
+### Time-Based Controls
+
+```typescript title="Time Controls"
+const timedCollection = {
+  name: "Timed Release",
+  symbol: "TIME",
+  creator: account.address,
+  gameOwner: account.address,
+  startTime: BigInt(Math.floor(Date.now() / 1000) + 3600), // Start in 1 hour
+  endTime: BigInt(Math.floor(Date.now() / 1000) + 86400), // End in 24 hours
+}
+
+// Check if minting is currently active
+const currentTime = BigInt(Math.floor(Date.now() / 1000))
+const startTime = await collection.startTime()
+const endTime = await collection.endTime()
+
+const isMintingActive = currentTime >= startTime && currentTime <= endTime
+
+if (!isMintingActive) {
+  throw new Error("Minting not currently active")
+}
+```
+
+## Metadata Handling
+
+### Automatic Metadata
+
+CreateKit can automatically generate metadata based on collection settings:
+
+```typescript title="Auto-Generated Metadata"
+// Using baseURI for automatic metadata
+const autoMetadataCollection = {
+  name: "Auto Metadata Collection",
+  symbol: "AMC",
+  creator: account.address,
+  gameOwner: account.address,
+  // baseURI will be generated automatically by BaseMint CDN
+}
+
+// Mint with automatic metadata (pass undefined for URI)
+await collection.mint(
+  walletClient,
+  1n,
+  undefined, // Uses baseURI + tokenId
+  0n,
+  []
+)
+
+// Metadata will be available at: {baseURI}/{tokenId}
+```
+
+### Custom Metadata
+
+```typescript title="Custom Metadata URIs"
+// Provide specific metadata URI for each token
+const customMetadataURIs = [
+  "https://myapi.com/metadata/special-sword.json",
+  "https://myapi.com/metadata/rare-shield.json",
+  "https://myapi.com/metadata/epic-helmet.json"
+]
+
+for (const metadataURI of customMetadataURIs) {
+  await collection.mint(
+    walletClient,
+    1n,
+    metadataURI, // Custom metadata for this token
+    parseEther("0.01"),
+    []
+  )
+}
+```
+
+## Batch Minting
+
+For ERC1155 collections, you can efficiently mint multiple tokens:
+
+```typescript title="Batch Minting"
+// Single transaction, multiple tokens
+await erc1155Collection.mint(
+  walletClient,
+  10n, // Mint 10 tokens of the same type
+  "https://example.com/metadata/resource.json",
+  parseEther("0.001") * 10n, // Total price for all tokens
+  []
+)
+
+// For different token types, use separate transactions
+const tokenTypes = [
+  { uri: "https://example.com/wood.json", quantity: 5n },
+  { uri: "https://example.com/stone.json", quantity: 3n },
+  { uri: "https://example.com/gold.json", quantity: 1n }
+]
+
+for (const tokenType of tokenTypes) {
+  await erc1155Collection.mint(
+    walletClient,
+    tokenType.quantity,
+    tokenType.uri,
+    calculatePrice(tokenType.quantity),
+    []
+  )
+}
+```
+
+## Error Handling
+
+```typescript title="Comprehensive Error Handling"
+async function safeMint(
+  collection: any,
+  walletClient: any,
+  quantity: bigint,
+  metadataURI: string | undefined,
+  mintPrice: bigint,
+  proof: string[]
+) {
+  try {
+    // Pre-mint validations
+    const isDeployed = await collection.isDeployed()
+    if (!isDeployed) {
+      throw new Error("Collection not deployed yet")
+    }
+
+    const currentSupply = await collection.totalSupply()
+    const maxSupply = await collection.maxSupply()
+    if (currentSupply + quantity > maxSupply) {
+      throw new Error("Would exceed max supply")
+    }
+
+    const userBalance = await collection.balanceOf(walletClient.account.address)
+    const maxPerWallet = await collection.maxPerWallet()
+    if (userBalance + quantity > maxPerWallet) {
+      throw new Error("Would exceed wallet limit")
+    }
+
+    // Check payment amount
+    const requiredPayment = await collection.mintPrice() * quantity
+    if (mintPrice < requiredPayment) {
+      throw new Error("Insufficient payment")
+    }
+
+    // Attempt mint
+    const tx = await collection.mint(
+      walletClient,
+      quantity,
+      metadataURI,
+      mintPrice,
+      proof
+    )
+
+    console.log(`✅ Mint successful: ${tx}`)
+    return tx
+
+  } catch (error: any) {
+    if (error.message.includes('Invalid merkle proof')) {
+      console.error('❌ Address not in whitelist')
+    } else if (error.message.includes('Insufficient payment')) {
+      console.error('❌ Incorrect mint price')
+    } else if (error.message.includes('Max per wallet exceeded')) {
+      console.error('❌ Wallet limit reached')
+    } else {
+      console.error('❌ Mint failed:', error.message)
+    }
+    throw error
+  }
+}
+```
+
+## Gas Optimization
+
+### Efficient Minting Patterns
+
+```typescript title="Gas-Efficient Minting"
+// For ERC1155: Mint multiple tokens in one transaction
+await erc1155Collection.mint(
+  walletClient,
+  10n, // More gas-efficient than 10 separate transactions
+  metadataURI,
+  totalPrice,
+  proof
+)
+
+// For ERC721: Consider batch operations at the application level
+const mintPromises = []
+for (let i = 0; i < 5; i++) {
+  mintPromises.push(
+    collection.mint(walletClient, 1n, undefined, mintPrice, proof)
+  )
+}
+
+// Execute mints concurrently (be careful with nonce management)
+const results = await Promise.all(mintPromises)
+```
+
+### Gas Price Management
+
+```typescript title="Gas Price Optimization"
+import { createWalletClient, http } from 'viem'
+
+// Custom gas configuration
+const optimizedWalletClient = createWalletClient({
+  chain: b3Testnet,
+  transport: http(),
+  account,
+  // Gas configuration
+  gasPrice: parseGwei('20'), // Custom gas price
+})
+
+// Or use dynamic gas pricing
+const gasPrice = await publicClient.getGasPrice()
+const adjustedGasPrice = gasPrice * 110n / 100n // 10% above current price
+
+await collection.mint(
+  optimizedWalletClient,
+  1n,
+  undefined,
+  mintPrice,
+  proof,
+  {
+    gasPrice: adjustedGasPrice
+  }
+)
+```
+
+## Monitoring and Analytics
+
+### Mint Event Tracking
+
+```typescript title="Event Monitoring"
+import { getCollectionMintEvents } from '@b3dotfun/basemint'
+
+// Track mint events
+const fromBlock = await publicClient.getBlockNumber() - 1000n
+const toBlock = await publicClient.getBlockNumber()
+
+const mintEvents = await getCollectionMintEvents(
+  publicClient,
+  collection.address,
+  "ERC721",
+  fromBlock,
+  toBlock
+)
+
+console.log("Recent mints:", mintEvents.map(event => ({
+  minter: event.args.minter,
+  tokenId: event.args.tokenId?.toString(),
+  quantity: event.args.quantity?.toString(),
+  blockNumber: event.blockNumber
+})))
+```
+
+### Real-time Monitoring
+
+```typescript title="Real-time Mint Monitoring"
+// Watch for new mint events
+const unwatch = publicClient.watchContractEvent({
+  address: collection.address,
+  abi: collection.abi,
+  eventName: 'Transfer', // or 'TransferSingle' for ERC1155
+  onLogs: (logs) => {
+    logs.forEach(log => {
+      console.log('New mint detected:', {
+        from: log.args.from,
+        to: log.args.to,
+        tokenId: log.args.tokenId?.toString()
+      })
+    })
+  }
+})
+
+// Stop watching when done
+// unwatch()
+```
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="User Experience" icon="user">
+    - Provide clear feedback during minting process
+    - Show estimated gas costs upfront
+    - Implement proper loading states
+    - Handle errors gracefully with user-friendly messages
+  </Card>
+  <Card title="Smart Contract Interaction" icon="code">
+    - Always validate parameters before transactions
+    - Implement proper error handling
+    - Use appropriate gas limits and prices
+    - Test thoroughly on testnet
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Rewards System" icon="gift" href="/createkit/rewards">
+    Learn how minting generates rewards for participants
+  </Card>
+  <Card title="Examples" icon="lightbulb" href="/createkit/examples">
+    See complete minting implementation examples
+  </Card>
+</CardGroup>
