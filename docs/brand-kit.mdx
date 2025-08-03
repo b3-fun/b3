@@ -1,0 +1,548 @@
+---
+title: "Brand Kit"
+description: "B3 brand guidelines, assets, and design resources for developers and partners"
+---
+
+## Brand Overview
+
+The B3 brand represents innovation, connectivity, and the future of blockchain technology. Our visual identity reflects the seamless integration of multiple blockchain networks into a unified ecosystem.
+
+## Logo Usage
+
+### Primary Logo
+
+Use the primary B3 logo whenever possible for maximum brand recognition.
+
+```html
+<!-- SVG Logo -->
+<img src="https://cdn.b3.fun/b3_logo.svg" alt="B3" width="120" height="40" />
+
+<!-- PNG Logo (for non-SVG environments) -->
+<img src="https://cdn.b3.fun/b3_logo.png" alt="B3" width="120" height="40" />
+```
+
+### Logo Variations
+
+<CardGroup cols={2}>
+
+<Card title="Light Background" icon="sun">
+  Use the standard logo on light backgrounds for optimal contrast.
+</Card>
+
+<Card title="Dark Background" icon="moon">
+  Use the white/light version on dark backgrounds for visibility.
+</Card>
+
+<Card title="Monochrome" icon="circle">
+  Single-color version available for specific use cases.
+</Card>
+
+<Card title="Icon Only" icon="square">
+  Simplified icon version for small spaces and favicons.
+</Card>
+
+</CardGroup>
+
+### Logo Don'ts
+
+❌ Don't stretch or distort the logo
+❌ Don't change the colors
+❌ Don't add effects or shadows
+❌ Don't place on busy backgrounds
+❌ Don't use outdated versions
+
+## Color Palette
+
+### Primary Colors
+
+```css
+/* B3 Blue - Primary Brand Color */
+--b3-primary: #007AFF;
+--b3-primary-light: #4DA6FF;
+--b3-primary-dark: #0056CC;
+
+/* Secondary Colors */
+--b3-secondary: #5856D6;
+--b3-accent: #FF9500;
+--b3-success: #34C759;
+--b3-warning: #FF9500;
+--b3-error: #FF3B30;
+```
+
+### Neutral Colors
+
+```css
+/* Neutral Palette */
+--b3-black: #000000;
+--b3-gray-900: #1D1D1F;
+--b3-gray-800: #2C2C2E;
+--b3-gray-700: #3A3A3C;
+--b3-gray-600: #48484A;
+--b3-gray-500: #636366;
+--b3-gray-400: #8E8E93;
+--b3-gray-300: #C7C7CC;
+--b3-gray-200: #D1D1D6;
+--b3-gray-100: #F2F2F7;
+--b3-white: #FFFFFF;
+```
+
+### Usage Guidelines
+
+<CardGroup cols={3}>
+
+<Card title="Primary Blue" icon="paintbrush">
+  Use for primary actions, links, and brand elements. Maintains accessibility contrast ratios.
+</Card>
+
+<Card title="Secondary Purple" icon="palette">
+  Use for secondary actions, highlights, and complementary elements.
+</Card>
+
+<Card title="Accent Orange" icon="sun">
+  Use sparingly for important calls-to-action and notifications.
+</Card>
+
+</CardGroup>
+
+## Typography
+
+### Font Stack
+
+```css
+/* Primary Font - System Fonts */
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 
+             'Helvetica Neue', Arial, sans-serif;
+
+/* Monospace Font - For Code */
+font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', 
+             Consolas, 'Courier New', monospace;
+```
+
+### Type Scale
+
+```css
+/* Heading Styles */
+.heading-xl { font-size: 3rem; font-weight: 700; line-height: 1.2; }
+.heading-lg { font-size: 2.25rem; font-weight: 600; line-height: 1.3; }
+.heading-md { font-size: 1.875rem; font-weight: 600; line-height: 1.4; }
+.heading-sm { font-size: 1.5rem; font-weight: 600; line-height: 1.4; }
+.heading-xs { font-size: 1.25rem; font-weight: 600; line-height: 1.5; }
+
+/* Body Text */
+.body-lg { font-size: 1.125rem; font-weight: 400; line-height: 1.6; }
+.body-md { font-size: 1rem; font-weight: 400; line-height: 1.6; }
+.body-sm { font-size: 0.875rem; font-weight: 400; line-height: 1.5; }
+.body-xs { font-size: 0.75rem; font-weight: 400; line-height: 1.4; }
+
+/* Code Text */
+.code { font-family: monospace; font-size: 0.875rem; }
+```
+
+## Component Styles
+
+### Buttons
+
+```css
+/* Primary Button */
+.btn-primary {
+  background: #007AFF;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background: #0056CC;
+  transform: translateY(-1px);
+}
+
+/* Secondary Button */
+.btn-secondary {
+  background: transparent;
+  color: #007AFF;
+  border: 2px solid #007AFF;
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: #007AFF;
+  color: white;
+}
+```
+
+### Cards
+
+```css
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: 1px solid #E5E5E7;
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+```
+
+### Inputs
+
+```css
+.input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #E5E5E7;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #007AFF;
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+```
+
+## SDK Component Styling
+
+### B3 Provider Styling
+
+```css
+/* B3 Authentication Components */
+.b3-auth-container {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: linear-gradient(135deg, #007AFF 0%, #4DA6FF 100%);
+  border-radius: 16px;
+  color: white;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.b3-sign-in-button {
+  width: 100%;
+  padding: 14px 20px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.b3-sign-in-button:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-2px);
+}
+```
+
+### AnySpend Component Styling
+
+```css
+.anyspend-container {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid #F0F0F0;
+}
+
+.anyspend-swap-card {
+  background: #F8F9FF;
+  border: 2px solid #E6E9FF;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 16px 0;
+}
+
+.anyspend-button {
+  background: linear-gradient(135deg, #007AFF 0%, #5856D6 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 16px 32px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 14px rgba(0, 122, 255, 0.3);
+}
+
+.anyspend-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 122, 255, 0.4);
+}
+```
+
+## Icon Library
+
+### B3 Icons
+
+```typescript
+// Icon components available in the SDK
+import { 
+  B3Icon,
+  EthereumIcon,
+  PolygonIcon,
+  ArbitrumIcon,
+  SwapIcon,
+  WalletIcon,
+  ChainIcon 
+} from "@b3dotfun/sdk/shared/components/icons";
+
+// Usage
+function IconExample() {
+  return (
+    <div className="icon-showcase">
+      <B3Icon size={24} color="#007AFF" />
+      <EthereumIcon size={24} />
+      <SwapIcon size={20} className="text-blue-500" />
+    </div>
+  );
+}
+```
+
+### Icon Guidelines
+
+<CardGroup cols={2}>
+
+<Card title="Size Standards" icon="ruler">
+  Use consistent icon sizes: 16px, 20px, 24px, 32px, 48px
+</Card>
+
+<Card title="Color Usage" icon="palette">
+  Match icons to text color or use brand colors for emphasis
+</Card>
+
+<Card title="Accessibility" icon="eye">
+  Provide alt text and ensure sufficient contrast ratios
+</Card>
+
+<Card title="Consistency" icon="check">
+  Use icons from the same family for visual harmony
+</Card>
+
+</CardGroup>
+
+## Animation Guidelines
+
+### Micro-interactions
+
+```css
+/* Hover Animations */
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Loading Animations */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+/* Fade Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+```
+
+### Loading States
+
+```css
+.loading-skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+```
+
+## Asset Downloads
+
+### Logo Assets
+
+<CardGroup cols={2}>
+
+<Card title="SVG Logos" icon="code">
+  Vector format for web and print use. Scalable without quality loss.
+</Card>
+
+<Card title="PNG Logos" icon="image">
+  Raster format in multiple sizes (32px, 64px, 128px, 256px, 512px).
+</Card>
+
+<Card title="Favicon Package" icon="globe">
+  Complete favicon package with all required sizes and formats.
+</Card>
+
+<Card title="Social Media Kit" icon="share">
+  Optimized assets for Twitter, Discord, LinkedIn, and other platforms.
+</Card>
+
+</CardGroup>
+
+### Brand Assets
+
+```typescript
+// Brand asset URLs
+const brandAssets = {
+  logo: {
+    svg: "https://cdn.b3.fun/brand/logo.svg",
+    png: "https://cdn.b3.fun/brand/logo.png",
+    light: "https://cdn.b3.fun/brand/logo-light.svg",
+    dark: "https://cdn.b3.fun/brand/logo-dark.svg",
+  },
+  icons: {
+    favicon: "https://cdn.b3.fun/brand/favicon.ico",
+    apple: "https://cdn.b3.fun/brand/apple-touch-icon.png",
+    android: "https://cdn.b3.fun/brand/android-chrome-192x192.png",
+  },
+  social: {
+    twitter: "https://cdn.b3.fun/brand/twitter-banner.png",
+    discord: "https://cdn.b3.fun/brand/discord-banner.png",
+    og: "https://cdn.b3.fun/brand/og-image.png",
+  }
+};
+```
+
+## Usage Examples
+
+### Website Header
+
+```tsx
+function Header() {
+  return (
+    <header className="bg-white border-b border-gray-200">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          <div className="flex items-center">
+            <img 
+              src="https://cdn.b3.fun/b3_logo.svg" 
+              alt="B3" 
+              width="120" 
+              height="40"
+              className="h-8 w-auto"
+            />
+          </div>
+          
+          <nav className="flex space-x-8">
+            <a href="/docs" className="text-gray-600 hover:text-blue-600">
+              Docs
+            </a>
+            <a href="/ecosystem" className="text-gray-600 hover:text-blue-600">
+              Ecosystem
+            </a>
+          </nav>
+        </div>
+      </div>
+    </header>
+  );
+}
+```
+
+### Application Footer
+
+```tsx
+function Footer() {
+  return (
+    <footer className="bg-gray-900 text-white">
+      <div className="max-w-7xl mx-auto px-4 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div>
+            <img 
+              src="https://cdn.b3.fun/brand/logo-light.svg" 
+              alt="B3" 
+              width="120" 
+              height="40"
+              className="h-8 w-auto mb-4"
+            />
+            <p className="text-gray-400">
+              Building the future of blockchain connectivity
+            </p>
+          </div>
+          
+          {/* Additional footer content */}
+        </div>
+      </div>
+    </footer>
+  );
+}
+```
+
+## Brand Voice
+
+### Tone and Messaging
+
+- **Innovative**: Leading-edge technology and forward-thinking solutions
+- **Accessible**: Complex blockchain technology made simple
+- **Reliable**: Trustworthy infrastructure for developers and users
+- **Community-focused**: Building together for the ecosystem
+
+### Writing Guidelines
+
+<CardGroup cols={2}>
+
+<Card title="Clear & Concise" icon="message">
+  Use simple language that anyone can understand
+</Card>
+
+<Card title="Technical Accuracy" icon="check-circle">
+  Ensure all technical information is precise and up-to-date
+</Card>
+
+<Card title="Positive Tone" icon="smile">
+  Focus on possibilities and solutions rather than problems
+</Card>
+
+<Card title="Inclusive Language" icon="users">
+  Welcome developers of all skill levels and backgrounds
+</Card>
+
+</CardGroup>
+
+For additional brand assets or questions about brand usage, contact our team at [brand@b3.fun](mailto:brand@b3.fun).
+
+## Next Steps
+
+<CardGroup cols={2}>
+
+<Card title="SDK Documentation" icon="code" href="/quickstart">
+  Start building with the B3 SDK using our brand components
+</Card>
+
+<Card title="Ecosystem Resources" icon="globe" href="/ecosystem/introduction">
+  Explore the complete B3 ecosystem and tools
+</Card>
+
+</CardGroup>

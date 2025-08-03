@@ -1,0 +1,1151 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "B3 Basement API",
+    "description": "Welcome to the Basement.fun documentation! This guide will help you integrate your game with our platform using B3's API. By following these steps, you'll discover how to effortlessly connect your game and unlock a range of exciting features and functionalities.\n\nSee more documentation at [https://docs.b3.fun](https://docs.b3.fun)\n\n## **Authorization**\n\nTo call the APIs, there are two steps of authorization. The launcherJwt (A JSON-Web-Token that links to the specific user's session with the game (passed in the request body), and the client secret (passed as Authorization header)\n\n##### Obtaining a Launcher JWT For:\n\n1. Embedded games in launcher, or external web games: the launcher loads the link of the game with an additional query parameter which contains the token. Easy.\ni.e if the game's target is `example.com` the launcher will load `example.com/?token=`.\n\n2. External non-web games (Telegram, desktop, etc.): to get a JWT and maintain the session, you must manually create a session and call the heartbeat API to keep it alive.\n\n1. Call CreateUnverifiedChannel to create a new session for the user.\n2. Get the \"signRequest\" value from the response and have your user sign it with their wallet.\n3. Call VerifyUnverifiedChannel with the user's sign hash to verify their presence. Get the launcherJwt from its response and use for all other API calls.\n4. Keep the session alive by calling RenewChannelHeartbeat at least once every 3 minutes. Capture authentication errors from the APIs and repeat from a if the JWT has expired.\n\n## Session Management (Important for external games)\n\nIn order for B3 to accurately measure user metrics of the game, and to provide the APIs via valid sessions that use JWT for authorization, we require the user context to continuously keep the session alive using the heartbeat APIs.\n\n- For embedded games: We manually maintain the session, no required integration on the game's side.\n- For external WEB games: When your game is opened in a new window, we pass the session JWT as an additional query parameter. You can either use it to manually call the heartbeat API every 3 minutes, OR, simply use our already made script which does this all automatically for you.\n- Simply add the following HTML code to all the html pages of your game: `<script src=\"https://cdn.basement.fun/heartbeat-script.js\" type=\"text/javascript\"></script>`\n- For external non-web games (i.e Telegram), follow the instructions of \"Obtaining a Launcher JWT For: [external non-web games]\"\n\n## Payload Verification - Anti client-side request forgery\n\nBy default, requests going to the backend from your client-side game, will appear in the devtools window of the browser. Devtools lets users easily edit and resend requests, which means that anyone with a basic technical knowledge could edit outgoing requests, and increase their scores, or otherwise modify their data.\n\nTo ensure that is not possible, we offer a feature flag for games, \"launcherSignatureVerification\" (can be turned on in dashboard), which adds an additional layer of authentication with each request.\n\n**How to sign requests using launcher signature verification:**\n\n1. Take your game's secret, hash it using MD5, and store it in the game.\n2. For each request to the basement API, construct and include the following headers:\n1. \"X-Request-Nonce\": a random string, identifier for the specific request. (we recommend up to 32 randomly selected characters)\n2. \"X-Request-Signature\": this is the MD5 hash of the nonce prepended to the md5 of the game's secret ( = MD5(nonce + MD5(gameSecret))\n\nWith this enabled, each request signature is unique, and validated to ensure the it is useable only once. Now if a user attempts to modify a request and resend it with the same signature, they will be flagged as potential cheater, and the request will fail.",
+    "version": "1.0.0",
+    "contact": {
+      "url": "https://docs.b3.fun"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.basement.fun",
+      "description": "Production server"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/launcher/": {
+      "post": {
+        "summary": "Launcher Operations",
+        "description": "Generic launcher endpoint that handles multiple operations based on X-Service-Method header",
+        "parameters": [
+          {
+            "name": "X-Service-Method",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "channelStatus",
+                "sendNotification",
+                "sendCustomActivity",
+                "getStates",
+                "setState",
+                "trackGameSessions",
+                "getUserScores",
+                "setUserScore",
+                "createUnverifiedChannel",
+                "verifyUnverifiedChannel",
+                "channelHeartbeat",
+                "triggerRulesEngine",
+                "createMessageChannel",
+                "getMessageChannels",
+                "getChannelMessages",
+                "sendChannelMessage",
+                "editChannelMessage",
+                "unsendChannelMessage"
+              ]
+            },
+            "description": "The specific method to call"
+          },
+          {
+            "name": "X-Request-Nonce",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Random string identifier for request (for signature verification)"
+          },
+          {
+            "name": "X-Request-Signature",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "MD5 hash for request verification"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/ChannelStatusRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/SendNotificationRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/SendCustomActivityRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/GetStatesRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/SetStateRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/TrackGameSessionsRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/GetUserScoresRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/SetUserScoreRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CreateUnverifiedChannelRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/VerifyUnverifiedChannelRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RenewChannelHeartbeatRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/TriggerRulesEngineRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CreateMessageChannelRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/GetMessageChannelsRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/GetChannelMessagesRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/SendChannelMessageRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/EditChannelMessageRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/UnsendChannelMessageRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ChannelStatusResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/SuccessResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CustomActivityResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/GetStatesResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/SetStateResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/GetUserScoresResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/SetUserScoreResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CreateUnverifiedChannelResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/VerifyUnverifiedChannelResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/MessageChannelResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/GetMessageChannelsResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/GetChannelMessagesResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/MessageResponse"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/activities": {
+      "get": {
+        "summary": "Get User Activities",
+        "description": "Retrieves user activities that were previously set using the SendCustomActivity function. It's particularly useful for tracking and displaying in-game events, achievements, or custom leaderboards.",
+        "parameters": [
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          },
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "walletAddress",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "gameId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["on-chain", "off-chain"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetActivitiesResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/scores": {
+      "post": {
+        "summary": "Get Game Leaderboard",
+        "description": "Retrieves data from the game leaderboard, providing you with information on player rankings and scores. It helps you monitor and display competitive standings within the game.",
+        "parameters": [
+          {
+            "name": "X-Service-Method",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["getGameScoresLeaderboard"]
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetLeaderboardRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetLeaderboardResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/launcher": {
+      "post": {
+        "summary": "Get User Leaderboard Position",
+        "description": "Retrieves data from the game leaderboard via wallet address, providing you with information on player rankings and scores.",
+        "parameters": [
+          {
+            "name": "X-Service-Method",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["getUsersPositionInGameScoreLeaderboard"]
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetUserLeaderboardPositionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetUserLeaderboardPositionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "ChannelStatusRequest": {
+        "type": "object",
+        "required": ["launcherJwt"],
+        "properties": {
+          "launcherJwt": {
+            "type": "string",
+            "description": "JWT token for authentication"
+          }
+        }
+      },
+      "ChannelStatusResponse": {
+        "type": "object",
+        "properties": {
+          "exists": {
+            "type": "boolean"
+          },
+          "present": {
+            "type": "boolean"
+          },
+          "wallet": {
+            "type": "string"
+          },
+          "openedAt": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "SendNotificationRequest": {
+        "type": "object",
+        "required": ["launcherJwt", "message", "type"],
+        "properties": {
+          "launcherJwt": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["success", "error"]
+          }
+        }
+      },
+      "SendCustomActivityRequest": {
+        "type": "object",
+        "required": ["launcherJwt", "label", "eventId"],
+        "properties": {
+          "launcherJwt": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string",
+            "description": "Activity label, can include {username} and {wallet} placeholders"
+          },
+          "eventId": {
+            "type": "string",
+            "description": "Event identifier for grouping"
+          }
+        }
+      },
+      "CustomActivityResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "activity": {
+            "type": "object",
+            "properties": {
+              "_id": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "normalizedAddress": {
+                "type": "string"
+              },
+              "timestamp": {
+                "type": "integer",
+                "format": "int64"
+              },
+              "eventId": {
+                "type": "string"
+              },
+              "gameId": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "GetStatesRequest": {
+        "type": "object",
+        "required": ["launcherJwt"],
+        "properties": {
+          "launcherJwt": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 20
+          },
+          "skip": {
+            "type": "integer",
+            "default": 0
+          },
+          "label": {
+            "type": "string"
+          }
+        }
+      },
+      "GetStatesResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "states": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StateObject"
+            }
+          }
+        }
+      },
+      "SetStateRequest": {
+        "type": "object",
+        "required": ["launcherJwt", "state", "label"],
+        "properties": {
+          "launcherJwt": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string",
+            "description": "JSON string containing state data"
+          },
+          "label": {
+            "type": "string"
+          }
+        }
+      },
+      "SetStateResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "newState": {
+            "$ref": "#/components/schemas/StateObject"
+          }
+        }
+      },
+      "StateObject": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "gameId": {
+            "type": "string"
+          },
+          "ipfsHash": {
+            "type": "string"
+          },
+          "normalizedAddress": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "state": {
+            "type": "object"
+          }
+        }
+      },
+      "TrackGameSessionsRequest": {
+        "type": "object",
+        "required": ["launcherJwt", "sessionId", "state"],
+        "properties": {
+          "launcherJwt": {
+            "type": "string"
+          },
+          "sessionId": {
+            "type": "string",
+            "description": "UUID string that uniquely identifies the play session"
+          },
+          "state": {
+            "type": "string",
+            "description": "JSON string containing structured game state data (max size 1MB)"
+          },
+          "endTime": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Timestamp in milliseconds marking the end of the session"
+          }
+        }
+      },
+      "GetUserScoresRequest": {
+        "type": "object",
+        "required": ["launcherJwt"],
+        "properties": {
+          "launcherJwt": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 50
+          },
+          "skip": {
+            "type": "integer",
+            "default": 0
+          },
+          "nonce": {
+            "type": "string",
+            "description": "Optional nonce to query specific entry"
+          }
+        }
+      },
+      "GetUserScoresResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "scores": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScoreObject"
+            }
+          }
+        }
+      },
+      "SetUserScoreRequest": {
+        "type": "object",
+        "required": ["launcherJwt", "score"],
+        "properties": {
+          "launcherJwt": {
+            "type": "string"
+          },
+          "nonce": {
+            "type": "string",
+            "description": "Random ID that can be used to query the score later"
+          },
+          "score": {
+            "type": "integer"
+          }
+        }
+      },
+      "SetUserScoreResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "newScore": {
+            "$ref": "#/components/schemas/FullScoreObject"
+          }
+        }
+      },
+      "ScoreObject": {
+        "type": "object",
+        "properties": {
+          "score": {
+            "type": "integer"
+          },
+          "nonce": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "FullScoreObject": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "nonce": {
+            "type": "string"
+          },
+          "gameId": {
+            "type": "string"
+          },
+          "normalizedAddress": {
+            "type": "string"
+          },
+          "score": {
+            "type": "integer"
+          },
+          "updatedAt": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "CreateUnverifiedChannelRequest": {
+        "type": "object",
+        "required": ["wallet"],
+        "properties": {
+          "wallet": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateUnverifiedChannelResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "signRequest": {
+            "type": "string"
+          },
+          "channelId": {
+            "type": "string"
+          }
+        }
+      },
+      "VerifyUnverifiedChannelRequest": {
+        "type": "object",
+        "required": ["channelId", "signature"],
+        "properties": {
+          "channelId": {
+            "type": "string"
+          },
+          "signature": {
+            "type": "string"
+          },
+          "chainId": {
+            "type": "integer",
+            "description": "Optional, only required for non-standard wallet addresses"
+          }
+        }
+      },
+      "VerifyUnverifiedChannelResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "launcherJwt": {
+            "type": "string"
+          }
+        }
+      },
+      "RenewChannelHeartbeatRequest": {
+        "type": "object",
+        "required": ["launcherJwt"],
+        "properties": {
+          "launcherJwt": {
+            "type": "string"
+          }
+        }
+      },
+      "TriggerRulesEngineRequest": {
+        "type": "object",
+        "required": ["launcherJwt", "trigger"],
+        "properties": {
+          "launcherJwt": {
+            "type": "string"
+          },
+          "trigger": {
+            "type": "string"
+          },
+          "nonce": {
+            "type": "string"
+          },
+          "value": {
+            "type": "integer"
+          }
+        }
+      },
+      "CreateMessageChannelRequest": {
+        "type": "object",
+        "required": ["launcherJwt", "otherParticipants"],
+        "properties": {
+          "launcherJwt": {
+            "type": "string"
+          },
+          "otherParticipants": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "GetMessageChannelsRequest": {
+        "type": "object",
+        "required": ["launcherJwt"],
+        "properties": {
+          "launcherJwt": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 20
+          },
+          "skip": {
+            "type": "integer",
+            "default": 0
+          }
+        }
+      },
+      "GetChannelMessagesRequest": {
+        "type": "object",
+        "required": ["launcherJwt", "channelId"],
+        "properties": {
+          "launcherJwt": {
+            "type": "string"
+          },
+          "channelId": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 30
+          },
+          "skip": {
+            "type": "integer",
+            "default": 0
+          }
+        }
+      },
+      "SendChannelMessageRequest": {
+        "type": "object",
+        "required": ["launcherJwt", "channelId", "content"],
+        "properties": {
+          "launcherJwt": {
+            "type": "string"
+          },
+          "channelId": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          }
+        }
+      },
+      "EditChannelMessageRequest": {
+        "type": "object",
+        "required": ["launcherJwt", "messageId", "newContent"],
+        "properties": {
+          "launcherJwt": {
+            "type": "string"
+          },
+          "messageId": {
+            "type": "string"
+          },
+          "newContent": {
+            "type": "string"
+          }
+        }
+      },
+      "UnsendChannelMessageRequest": {
+        "type": "object",
+        "required": ["launcherJwt", "messageId"],
+        "properties": {
+          "launcherJwt": {
+            "type": "string"
+          },
+          "messageId": {
+            "type": "string"
+          }
+        }
+      },
+      "MessageChannelResponse": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "chatPicture": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "updatedAt": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "participants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Participant"
+            }
+          },
+          "gameId": {
+            "type": "string"
+          }
+        }
+      },
+      "GetMessageChannelsResponse": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "skip": {
+            "type": "integer"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MessageChannelResponse"
+            }
+          }
+        }
+      },
+      "GetChannelMessagesResponse": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "skip": {
+            "type": "integer"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MessageResponse"
+            }
+          }
+        }
+      },
+      "MessageResponse": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "channelId": {
+            "type": "string"
+          },
+          "senderId": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "updatedAt": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "Participant": {
+        "type": "object",
+        "properties": {
+          "wallet": {
+            "type": "string"
+          },
+          "userGroup": {
+            "type": "integer"
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "GetActivitiesResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "pageNumber": {
+                "type": "integer"
+              },
+              "pageSize": {
+                "type": "integer"
+              },
+              "data": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ActivityItem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "ActivityItem": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["on-chain", "off-chain"]
+          },
+          "eventId": {
+            "type": "string"
+          },
+          "gameId": {
+            "type": "string"
+          },
+          "gameName": {
+            "type": "string"
+          },
+          "gameSlug": {
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserInfo"
+          },
+          "displayText": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "UserInfo": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          }
+        }
+      },
+      "GetLeaderboardRequest": {
+        "type": "object",
+        "required": ["gameId"],
+        "properties": {
+          "gameId": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 50
+          },
+          "skip": {
+            "type": "integer",
+            "default": 0
+          }
+        }
+      },
+      "GetLeaderboardResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "leaderboard": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LeaderboardEntry"
+            }
+          }
+        }
+      },
+      "LeaderboardEntry": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "nonce": {
+            "type": "string"
+          },
+          "gameId": {
+            "type": "string"
+          },
+          "normalizedAddress": {
+            "type": "string"
+          },
+          "score": {
+            "type": "integer"
+          },
+          "updatedAt": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "username": {
+            "type": "string"
+          },
+          "avatar": {
+            "type": "string"
+          }
+        }
+      },
+      "GetUserLeaderboardPositionRequest": {
+        "type": "object",
+        "required": ["gameId", "wallet"],
+        "properties": {
+          "gameId": {
+            "type": "string"
+          },
+          "wallet": {
+            "type": "string"
+          }
+        }
+      },
+      "GetUserLeaderboardPositionResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "position": {
+            "type": "integer"
+          }
+        }
+      },
+      "SuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "code": {
+            "type": "integer"
+          },
+          "className": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean"
+              },
+              "error": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

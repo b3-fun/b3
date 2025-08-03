@@ -16,7 +16,7 @@
         "groups": [
           {
             "group": "About B3",
-            "pages": ["index", "quickstart", "protocol/scaling"]
+            "pages": ["index", "quickstart", "protocol/scaling", "protocol/liquidity"]
           },
           {
             "group": "Network",
@@ -84,6 +84,13 @@
           {
             "group": "Game Development",
             "pages": ["basement/unity-guide", "basement/construct-guide"]
+          },
+          {
+            "group": "API Reference",
+            "openapi": {
+              "source": "/basement/basement-swagger.json",
+              "directory": "basement/api-reference"
+            }
           }
         ]
       },
@@ -192,6 +199,11 @@
           "anchor": "Discover B3",
           "href": "https://b3.fun",
           "icon": "globe"
+        },
+        {
+          "anchor": "Explore Apps",
+          "href": "https://explore.b3.fun/apps",
+          "icon": "window"
         },
         {
           "anchor": "Discord",

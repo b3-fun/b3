@@ -1,0 +1,485 @@
+---
+title: "React Hooks"
+description: "Complete reference for B3 Global Accounts React hooks"
+---
+
+## Authentication Hooks
+
+### useB3
+
+The primary hook for accessing Global Account authentication state and actions.
+
+```tsx
+import { useB3 } from "@b3dotfun/sdk/global-account/react";
+
+function AuthComponent() {
+  const { 
+    account,           // Current global account
+    isAuthenticated,   // Authentication status
+    isLoading,         // Loading state
+    signOut,           // Sign out function
+    refreshAccount     // Refresh account data
+  } = useB3();
+
+  return (
+    <div>
+      {isLoading && <p>Loading...</p>}
+      
+      {isAuthenticated ? (
+        <div>
+          <h3>Welcome, {account?.displayName}!</h3>
+          <p>Account ID: {account?.id}</p>
+          <p>Email: {account?.email}</p>
+          <button onClick={signOut}>Sign Out</button>
+        </div>
+      ) : (
+        <p>Please sign in to continue</p>
+      )}
+    </div>
+  );
+}
+```
+
+#### Return Values
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `account` | `GlobalAccount \| null` | Current authenticated account |
+| `isAuthenticated` | `boolean` | Whether user is authenticated |
+| `isLoading` | `boolean` | Whether authentication check is in progress |
+| `signOut` | `() => Promise<void>` | Function to sign out current user |
+| `refreshAccount` | `() => Promise<void>` | Function to refresh account data |
+
+### useAccountWallet
+
+Access wallet information for the authenticated account.
+
+```tsx
+import { useAccountWallet } from "@b3dotfun/sdk/global-account/react";
+
+function WalletComponent() {
+  const { 
+    wallet,       // Wallet information
+    isConnected,  // Connection status
+    connect,      // Connect wallet function
+    disconnect    // Disconnect wallet function
+  } = useAccountWallet();
+
+  return (
+    <div>
+      {isConnected ? (
+        <div>
+          <p>Address: {wallet?.address}</p>
+          <p>Chain: {wallet?.chainId}</p>
+          <p>Balance: {wallet?.balance} ETH</p>
+          <button onClick={disconnect}>Disconnect</button>
+        </div>
+      ) : (
+        <button onClick={connect}>Connect Wallet</button>
+      )}
+    </div>
+  );
+}
+```
+
+## Permission Hooks
+
+### usePermissions
+
+Manage and check session key permissions.
+
+```tsx
+import { usePermissions } from "@b3dotfun/sdk/global-account/react";
+
+function PermissionsComponent() {
+  const { 
+    permissions,      // Current permissions
+    hasPermissions,   // Whether user has active permissions
+    isExpired,        // Whether permissions are expired
+    checkPermission   // Check specific permission
+  } = usePermissions();
+
+  const canInteractWithContract = checkPermission("0x...");
+
+  return (
+    <div>
+      <h3>Permission Status</h3>
+      
+      {hasPermissions ? (
+        <div>
+          <p>✅ Active Permissions</p>
+          <p>Expires: {permissions?.endDate.toLocaleDateString()}</p>
+          <p>Contracts: {permissions?.approvedTargets.length}</p>
+          
+          {isExpired && <p>⚠️ Permissions expired</p>}
+          
+          <div>
+            <p>Can interact with contract: {canInteractWithContract ? '✅' : '❌'}</p>
+          </div>
+        </div>
+      ) : (
+        <p>No active permissions</p>
+      )}
+    </div>
+  );
+}
+```
+
+### useRequestPermissions
+
+Request new permissions for session keys.
+
+```tsx
+import { useRequestPermissions } from "@b3dotfun/sdk/global-account/react";
+
+function RequestPermissionsComponent() {
+  const { 
+    requestPermissions, 
+    isLoading, 
+    error,
+    reset 
+  } = useRequestPermissions();
+
+  const handleRequest = async () => {
+    try {
+      const result = await requestPermissions({
+        chain: { id: 8333, name: "B3" },
+        sessionKeyAddress: "0x...",
+        permissions: {
+          approvedTargets: ["0x..."],
+          startDate: new Date(),
+          endDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
+          nativeTokenLimitPerTransaction: 0.01,
+        },
+      });
+
+      if (result.success) {
+        console.log("Permissions granted!");
+      }
+    } catch (err) {
+      console.error("Permission request failed:", err);
+    }
+  };
+
+  return (
+    <div>
+      <button 
+        onClick={handleRequest}
+        disabled={isLoading}
+      >
+        {isLoading ? "Requesting..." : "Request Permissions"}
+      </button>
+      
+      {error && (
+        <div className="error">
+          Error: {error.message}
+          <button onClick={reset}>Retry</button>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+### useRevokePermissions
+
+Revoke existing permissions.
+
+```tsx
+import { useRevokePermissions } from "@b3dotfun/sdk/global-account/react";
+
+function RevokePermissionsComponent() {
+  const { revokePermissions, isLoading, error } = useRevokePermissions();
+
+  const handleRevoke = async () => {
+    try {
+      await revokePermissions({
+        sessionKeyAddress: "0x...",
+        chain: { id: 8333, name: "B3" },
+      });
+      console.log("Permissions revoked successfully");
+    } catch (err) {
+      console.error("Failed to revoke permissions:", err);
+    }
+  };
+
+  return (
+    <button 
+      onClick={handleRevoke}
+      disabled={isLoading}
+    >
+      {isLoading ? "Revoking..." : "Revoke Permissions"}
+    </button>
+  );
+}
+```
+
+## Asset Management Hooks
+
+### useAccountAssets
+
+Retrieve and manage user's digital assets.
+
+```tsx
+import { useAccountAssets } from "@b3dotfun/sdk/global-account/react";
+
+function AssetsComponent() {
+  const { 
+    assets,        // User's assets
+    isLoading,     // Loading state
+    error,         // Error state
+    refreshAssets  // Refresh assets function
+  } = useAccountAssets();
+
+  if (isLoading) return <div>Loading assets...</div>;
+  if (error) return <div>Error loading assets: {error.message}</div>;
+
+  return (
+    <div>
+      <h3>Your Assets</h3>
+      <button onClick={refreshAssets}>Refresh</button>
+      
+      {assets?.map((asset) => (
+        <div key={asset.id} className="asset-item">
+          <img src={asset.imageUrl} alt={asset.name} />
+          <h4>{asset.name}</h4>
+          <p>{asset.description}</p>
+          <p>Value: {asset.value} {asset.currency}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+## Modal Management Hooks
+
+### useModal
+
+Control B3 modals programmatically.
+
+```tsx
+import { useModal } from "@b3dotfun/sdk/global-account/react";
+
+function ModalControlComponent() {
+  const { 
+    openModal, 
+    closeModal, 
+    isModalOpen,
+    currentModal 
+  } = useModal();
+
+  const handleOpenAuth = () => {
+    openModal('authentication', {
+      provider: { strategy: 'google' },
+      partnerId: 'your-partner-id'
+    });
+  };
+
+  const handleOpenPermissions = () => {
+    openModal('permissions', {
+      sessionKeyAddress: '0x...',
+      permissions: {
+        approvedTargets: ['0x...'],
+        nativeTokenLimitPerTransaction: 0.01
+      }
+    });
+  };
+
+  return (
+    <div>
+      <p>Current modal: {currentModal || 'None'}</p>
+      <p>Modal open: {isModalOpen ? 'Yes' : 'No'}</p>
+      
+      <button onClick={handleOpenAuth}>Open Auth Modal</button>
+      <button onClick={handleOpenPermissions}>Open Permissions Modal</button>
+      <button onClick={closeModal}>Close Modal</button>
+    </div>
+  );
+}
+```
+
+## Navigation Hooks
+
+### useNavigation
+
+Handle navigation within B3 applications.
+
+```tsx
+import { useNavigation } from "@b3dotfun/sdk/global-account/react";
+
+function NavigationComponent() {
+  const { 
+    navigate, 
+    canGoBack, 
+    goBack,
+    currentPath 
+  } = useNavigation();
+
+  return (
+    <div>
+      <p>Current path: {currentPath}</p>
+      
+      <button onClick={() => navigate('/dashboard')}>
+        Go to Dashboard
+      </button>
+      
+      <button onClick={() => navigate('/profile')}>
+        Go to Profile
+      </button>
+      
+      {canGoBack && (
+        <button onClick={goBack}>
+          Go Back
+        </button>
+      )}
+    </div>
+  );
+}
+```
+
+## Configuration Hooks
+
+### useB3Config
+
+Access B3 configuration and environment settings.
+
+```tsx
+import { useB3Config } from "@b3dotfun/sdk/global-account/react";
+
+function ConfigComponent() {
+  const { 
+    environment,     // 'production' | 'development'
+    apiUrl,          // Current API URL
+    partnerId,       // Your partner ID
+    features,        // Available features
+    updateConfig     // Update configuration
+  } = useB3Config();
+
+  return (
+    <div>
+      <h3>B3 Configuration</h3>
+      <p>Environment: {environment}</p>
+      <p>API URL: {apiUrl}</p>
+      <p>Partner ID: {partnerId}</p>
+      
+      <h4>Available Features:</h4>
+      <ul>
+        {features.map(feature => (
+          <li key={feature}>{feature}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+```
+
+## Hook Composition
+
+### Custom Hook Example
+
+Combine multiple hooks for complex functionality:
+
+```tsx
+import { useB3, usePermissions, useAccountWallet } from "@b3dotfun/sdk/global-account/react";
+
+function useGameAuth() {
+  const { account, isAuthenticated } = useB3();
+  const { hasPermissions, isExpired } = usePermissions();
+  const { wallet, isConnected } = useAccountWallet();
+
+  const isGameReady = isAuthenticated && hasPermissions && !isExpired && isConnected;
+  
+  const gameAuthStatus = {
+    account: !!account,
+    permissions: hasPermissions && !isExpired,
+    wallet: isConnected,
+    ready: isGameReady
+  };
+
+  return {
+    account,
+    wallet,
+    isGameReady,
+    gameAuthStatus
+  };
+}
+
+// Usage
+function GameComponent() {
+  const { isGameReady, gameAuthStatus } = useGameAuth();
+
+  if (!isGameReady) {
+    return (
+      <div>
+        <h3>Setup Required</h3>
+        <ul>
+          <li>Account: {gameAuthStatus.account ? '✅' : '❌'}</li>
+          <li>Permissions: {gameAuthStatus.permissions ? '✅' : '❌'}</li>
+          <li>Wallet: {gameAuthStatus.wallet ? '✅' : '❌'}</li>
+        </ul>
+      </div>
+    );
+  }
+
+  return <div>🎮 Game Ready!</div>;
+}
+```
+
+## TypeScript Support
+
+All hooks include full TypeScript support:
+
+```typescript
+import type { 
+  GlobalAccount, 
+  Permissions, 
+  WalletInfo 
+} from "@b3dotfun/sdk/global-account/types";
+
+// Hook return types are fully typed
+const { account }: { account: GlobalAccount | null } = useB3();
+const { permissions }: { permissions: Permissions | null } = usePermissions();
+const { wallet }: { wallet: WalletInfo | null } = useAccountWallet();
+```
+
+## Error Handling
+
+Best practices for handling errors with hooks:
+
+```tsx
+function ErrorHandlingExample() {
+  const { account, isAuthenticated } = useB3();
+  const { requestPermissions, error: permissionError } = useRequestPermissions();
+  const { assets, error: assetError } = useAccountAssets();
+
+  // Handle specific errors
+  useEffect(() => {
+    if (permissionError) {
+      console.error('Permission error:', permissionError);
+      // Show user-friendly error message
+    }
+    
+    if (assetError) {
+      console.error('Asset loading error:', assetError);
+      // Retry or show fallback UI
+    }
+  }, [permissionError, assetError]);
+
+  return (
+    <div>
+      {/* Your component JSX */}
+    </div>
+  );
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+
+<Card title="Examples" icon="code" href="/global-account/examples">
+  See complete examples using these hooks.
+</Card>
+
+</CardGroup>
