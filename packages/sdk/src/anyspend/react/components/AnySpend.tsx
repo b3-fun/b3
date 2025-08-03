@@ -72,14 +72,14 @@ export enum PanelView {
 const ANYSPEND_RECIPIENTS_KEY = "anyspend_recipients";
 
 export function AnySpend(props: {
-  destinationTokenAddress?: string;
-  destinationTokenChainId?: number;
   isMainnet?: boolean;
   mode?: "page" | "modal";
   defaultActiveTab?: "crypto" | "fiat";
+  destinationTokenAddress?: string;
+  destinationTokenChainId?: number;
+  recipientAddress?: string;
   loadOrder?: string;
   hideTransactionHistoryButton?: boolean;
-  recipientAddress?: string;
 }) {
   const fingerprintConfig = getFingerprintConfig();
 

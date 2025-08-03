@@ -18,18 +18,16 @@ enum OrderStatus {
   // Initial States
   SCANNING_DEPOSIT_TRANSACTION = "scanning_deposit_transaction",
   WAITING_STRIPE_PAYMENT = "waiting_stripe_payment",
-  OBTAIN_TOKEN = "obtain_token",
+  EXPIRED = "expired",
 
   // Processing States
   SENDING_TOKEN_FROM_VAULT = "sending_token_from_vault",
   RELAY = "relay",
-  
+
   // Success States
   EXECUTED = "executed",
 
   // Failure States
-  OBTAIN_FAILED = "obtain_failed",
-  EXPIRED = "expired",
   REFUNDING = "refunding",
   REFUNDED = "refunded",
   FAILURE = "failure",
@@ -58,11 +56,6 @@ enum OrderStatus {
       <td>May need to complete 3D Secure</td>
     </tr>
     <tr>
-      <td>`obtain_token`</td>
-      <td>Getting source tokens from vault</td>
-      <td>None - automatic process</td>
-    </tr>
-    <tr>
       <td>`sending_token_from_vault`</td>
       <td>Sending tokens for swap</td>
       <td>None - automatic process</td>
@@ -76,11 +69,6 @@ enum OrderStatus {
       <td>`executed`</td>
       <td>Transaction completed successfully</td>
       <td>None - success!</td>
-    </tr>
-    <tr>
-      <td>`obtain_failed`</td>
-      <td>Failed to obtain source tokens</td>
-      <td>Check payment method/balance</td>
     </tr>
     <tr>
       <td>`expired`</td>
@@ -116,6 +104,7 @@ enum OrderStatus {
 **Solution**: Request user to add funds to their wallet or choose a different payment token
 
 **Example**:
+
 ```typescript
 if (error.message === "INSUFFICIENT_BALANCE") {
   toast.error("Insufficient balance. Please add funds to your wallet.");
@@ -123,6 +112,7 @@ if (error.message === "INSUFFICIENT_BALANCE") {
   openFiatOnramp();
 }
 ```
+
 </Accordion>
 
 <Accordion title="INVALID_TOKEN_ADDRESS">
@@ -131,12 +121,14 @@ if (error.message === "INSUFFICIENT_BALANCE") {
 **Solution**: Verify token is supported and provide alternative options
 
 **Example**:
+
 ```typescript
 if (error.message === "INVALID_TOKEN_ADDRESS") {
   toast.error("This token is not supported. Please choose another.");
   showSupportedTokens();
 }
 ```
+
 </Accordion>
 
 <Accordion title="MINIMUM_AMOUNT_NOT_MET">
@@ -145,11 +137,13 @@ if (error.message === "INVALID_TOKEN_ADDRESS") {
 **Solution**: Increase transaction amount or inform user of minimum requirements
 
 **Example**:
+
 ```typescript
 if (error.message === "MINIMUM_AMOUNT_NOT_MET") {
   toast.error(`Minimum amount is $${minimumAmount}. Please increase your amount.`);
 }
 ```
+
 </Accordion>
 
 <Accordion title="MAXIMUM_AMOUNT_EXCEEDED">
@@ -158,11 +152,13 @@ if (error.message === "MINIMUM_AMOUNT_NOT_MET") {
 **Solution**: Reduce amount or split into multiple transactions
 
 **Example**:
+
 ```typescript
 if (error.message === "MAXIMUM_AMOUNT_EXCEEDED") {
   toast.error(`Maximum amount is $${maximumAmount}. Please reduce your amount.`);
 }
 ```
+
 </Accordion>
 </AccordionGroup>
 
@@ -175,12 +171,14 @@ if (error.message === "MAXIMUM_AMOUNT_EXCEEDED") {
 **Solution**: Retry with higher slippage tolerance or wait for price stability
 
 **Example**:
+
 ```typescript
 if (error.message === "SLIPPAGE") {
   toast.warning("Price moved unfavorably. Retrying with adjusted settings...");
   retryWithHigherSlippage();
 }
 ```
+
 </Accordion>
 
 <Accordion title="NETWORK_ERROR">
@@ -189,12 +187,14 @@ if (error.message === "SLIPPAGE") {
 **Solution**: Retry after delay or switch to alternative RPC
 
 **Example**:
+
 ```typescript
 if (error.message === "NETWORK_ERROR") {
   toast.error("Network issue detected. Please check connection and try again.");
   scheduleRetry();
 }
 ```
+
 </Accordion>
 
 <Accordion title="QUOTE_EXPIRED">
@@ -203,12 +203,14 @@ if (error.message === "NETWORK_ERROR") {
 **Solution**: Get fresh quote and retry transaction
 
 **Example**:
+
 ```typescript
 if (error.message === "QUOTE_EXPIRED") {
   toast.info("Price quote expired. Getting fresh quote...");
   refreshQuoteAndRetry();
 }
 ```
+
 </Accordion>
 
 <Accordion title="CHAIN_NOT_SUPPORTED">
@@ -217,12 +219,14 @@ if (error.message === "QUOTE_EXPIRED") {
 **Solution**: Use supported chains or implement fallback
 
 **Example**:
+
 ```typescript
 if (error.message === "CHAIN_NOT_SUPPORTED") {
   toast.error("This blockchain is not supported. Please choose another.");
   showSupportedChains();
 }
 ```
+
 </Accordion>
 </AccordionGroup>
 
@@ -235,12 +239,14 @@ if (error.message === "CHAIN_NOT_SUPPORTED") {
 **Solution**: Check contract parameters and state
 
 **Example**:
+
 ```typescript
 if (error.message === "CONTRACT_CALL_FAILED") {
   toast.error("Contract interaction failed. Please verify parameters.");
   logContractError(error);
 }
 ```
+
 </Accordion>
 
 <Accordion title="INSUFFICIENT_GAS">
@@ -249,12 +255,14 @@ if (error.message === "CONTRACT_CALL_FAILED") {
 **Solution**: Increase gas limit or suggest gas optimization
 
 **Example**:
+
 ```typescript
 if (error.message === "INSUFFICIENT_GAS") {
   toast.error("Transaction requires more gas. Increasing gas limit...");
   retryWithHigherGas();
 }
 ```
+
 </Accordion>
 
 <Accordion title="NONCE_TOO_LOW">
@@ -263,12 +271,14 @@ if (error.message === "INSUFFICIENT_GAS") {
 **Solution**: Wait for pending transactions to complete
 
 **Example**:
+
 ```typescript
 if (error.message === "NONCE_TOO_LOW") {
   toast.info("Please wait for pending transactions to complete.");
   waitAndRetry();
 }
 ```
+
 </Accordion>
 
 <Accordion title="TRANSACTION_REVERTED">
@@ -277,12 +287,14 @@ if (error.message === "NONCE_TOO_LOW") {
 **Solution**: Check contract state and parameters
 
 **Example**:
+
 ```typescript
 if (error.message === "TRANSACTION_REVERTED") {
   toast.error("Transaction was rejected by the contract. Please check requirements.");
   showTransactionDetails();
 }
 ```
+
 </Accordion>
 </AccordionGroup>
 
@@ -298,15 +310,15 @@ function PaymentComponent() {
   const [retryCount, setRetryCount] = useState(0);
 
   const { createOrder, isCreatingOrder } = useAnyspendCreateOrder({
-    onError: (error) => {
+    onError: error => {
       console.error("Payment failed:", error);
-      
+
       // Handle specific errors
       switch (error.message) {
         case "INSUFFICIENT_BALANCE":
           setError("Insufficient balance. Please add funds to your wallet.");
           break;
-          
+
         case "SLIPPAGE":
           if (retryCount < 3) {
             setError("Price moved unfavorably. Retrying...");
@@ -318,16 +330,16 @@ function PaymentComponent() {
             setError("Price too volatile. Please try again later.");
           }
           break;
-          
+
         case "NETWORK_ERROR":
           setError("Network issue. Please check your connection and try again.");
           break;
-          
+
         case "QUOTE_EXPIRED":
           setError("Price quote expired. Getting fresh quote...");
           refreshQuote();
           break;
-          
+
         default:
           setError("Payment failed. Please try again or contact support.");
       }
@@ -339,7 +351,7 @@ function PaymentComponent() {
         timestamp: new Date().toISOString(),
       });
     },
-    
+
     onSuccess: () => {
       setError(null);
       setRetryCount(0);
@@ -355,11 +367,8 @@ function PaymentComponent() {
           <button onClick={() => setError(null)}>Dismiss</button>
         </div>
       )}
-      
-      <button 
-        onClick={handlePayment} 
-        disabled={isCreatingOrder}
-      >
+
+      <button onClick={handlePayment} disabled={isCreatingOrder}>
         {isCreatingOrder ? "Processing..." : "Pay Now"}
       </button>
     </div>
@@ -373,17 +382,14 @@ function PaymentComponent() {
 import { useAnyspendOrderAndTransactions } from "@b3dotfun/sdk/anyspend";
 
 function OrderStatusMonitor({ orderId }: { orderId: string }) {
-  const { orderAndTransactions, getOrderAndTransactionsError } = 
-    useAnyspendOrderAndTransactions(true, orderId);
+  const { orderAndTransactions, getOrderAndTransactionsError } = useAnyspendOrderAndTransactions(true, orderId);
 
   if (getOrderAndTransactionsError) {
     return (
       <div className="error-state">
         <h3>Unable to load order status</h3>
         <p>Please check your connection and try again.</p>
-        <button onClick={() => window.location.reload()}>
-          Retry
-        </button>
+        <button onClick={() => window.location.reload()}>Retry</button>
       </div>
     );
   }
@@ -404,7 +410,7 @@ function OrderStatusMonitor({ orderId }: { orderId: string }) {
               <h3>⏳ Waiting for payment confirmation</h3>
               <p>This usually takes 1-2 minutes. Please don't close this window.</p>
               {depositTxs.length > 0 && (
-                <a 
+                <a
                   href={getExplorerUrl(depositTxs[0].txHash, depositTxs[0].chainId)}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -435,11 +441,7 @@ function OrderStatusMonitor({ orderId }: { orderId: string }) {
               <h3>Transaction completed successfully!</h3>
               <p>Your order has been processed.</p>
               {executeTx && (
-                <a 
-                  href={getExplorerUrl(executeTx.txHash, executeTx.chainId)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+                <a href={getExplorerUrl(executeTx.txHash, executeTx.chainId)} target="_blank" rel="noopener noreferrer">
                   View transaction
                 </a>
               )}
@@ -456,12 +458,8 @@ function OrderStatusMonitor({ orderId }: { orderId: string }) {
               <h3>Transaction failed</h3>
               <p>{order.errorDetails || "An error occurred while processing your order."}</p>
               <div className="error-actions">
-                <button onClick={() => createNewOrder()}>
-                  Try Again
-                </button>
-                <button onClick={() => contactSupport(orderId)}>
-                  Contact Support
-                </button>
+                <button onClick={() => createNewOrder()}>Try Again</button>
+                <button onClick={() => contactSupport(orderId)}>Contact Support</button>
               </div>
             </div>
           </div>
@@ -475,7 +473,7 @@ function OrderStatusMonitor({ orderId }: { orderId: string }) {
               <h3>Refund processed</h3>
               <p>Your payment has been refunded automatically.</p>
               {refundTxs.length > 0 && (
-                <a 
+                <a
                   href={getExplorerUrl(refundTxs[0].txHash, refundTxs[0].chainId)}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -494,9 +492,7 @@ function OrderStatusMonitor({ orderId }: { orderId: string }) {
             <div>
               <h3>Order expired</h3>
               <p>This order expired before payment was received.</p>
-              <button onClick={() => createNewOrder()}>
-                Create New Order
-              </button>
+              <button onClick={() => createNewOrder()}>Create New Order</button>
             </div>
           </div>
         );
@@ -565,7 +561,7 @@ class AnySpendErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("AnySpend Error Boundary caught an error:", error, errorInfo);
-    
+
     // Report to error tracking service
     if (typeof window !== "undefined") {
       // Example: Sentry.captureException(error, { contexts: { errorInfo } });
@@ -579,12 +575,7 @@ class AnySpendErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       const FallbackComponent = this.props.fallback || DefaultErrorFallback;
-      return (
-        <FallbackComponent 
-          error={this.state.error!} 
-          resetError={this.resetError} 
-        />
-      );
+      return <FallbackComponent error={this.state.error!} resetError={this.resetError} />;
     }
 
     return this.props.children;
@@ -602,9 +593,7 @@ function DefaultErrorFallback({ error, resetError }: { error: Error; resetError:
       </details>
       <div className="error-actions">
         <button onClick={resetError}>Try Again</button>
-        <button onClick={() => window.location.reload()}>
-          Reload Page
-        </button>
+        <button onClick={() => window.location.reload()}>Reload Page</button>
       </div>
     </div>
   );
@@ -703,7 +692,7 @@ function getErrorMessage(error: Error): { title: string; message: string; action
 // Usage in component
 function ErrorDisplay({ error }: { error: Error }) {
   const errorInfo = getErrorMessage(error);
-  
+
   return (
     <div className="error-display">
       <h3>{errorInfo.title}</h3>
@@ -721,8 +710,7 @@ function ErrorDisplay({ error }: { error: Error }) {
 ```tsx title="Debug Helper" icon="bug" lines
 // Enable debug mode for detailed logging
 function useAnyspendDebug() {
-  const isDebug = process.env.NODE_ENV === "development" || 
-                  localStorage.getItem("anyspend_debug") === "true";
+  const isDebug = process.env.NODE_ENV === "development" || localStorage.getItem("anyspend_debug") === "true";
 
   const log = (message: string, data?: any) => {
     if (isDebug) {
@@ -742,12 +730,12 @@ function useAnyspendDebug() {
 // Usage
 function PaymentComponent() {
   const debug = useAnyspendDebug();
-  
+
   const { createOrder } = useAnyspendCreateOrder({
-    onSuccess: (data) => {
+    onSuccess: data => {
       debug.log("Order created successfully", data);
     },
-    onError: (error) => {
+    onError: error => {
       debug.error("Order creation failed", error);
     },
   });
@@ -761,25 +749,25 @@ function PaymentComponent() {
 ```tsx title="Network Status" icon="wifi" lines
 function useNetworkStatus() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [networkSpeed, setNetworkSpeed] = useState<'slow' | 'fast' | 'unknown'>('unknown');
+  const [networkSpeed, setNetworkSpeed] = useState<"slow" | "fast" | "unknown">("unknown");
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
 
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
 
     // Check network speed
     const connection = (navigator as any).connection;
     if (connection) {
       const speed = connection.effectiveType;
-      setNetworkSpeed(speed === '4g' ? 'fast' : 'slow');
+      setNetworkSpeed(speed === "4g" ? "fast" : "slow");
     }
 
     return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
     };
   }, []);
 
@@ -799,7 +787,7 @@ function PaymentComponent() {
     );
   }
 
-  if (networkSpeed === 'slow') {
+  if (networkSpeed === "slow") {
     return (
       <div className="network-warning">
         <p>⚠️ Slow network detected. Transactions may take longer than usual.</p>
@@ -827,6 +815,7 @@ Keep users informed about what's happening, especially during longer operations 
 // Bad: No feedback during long operations
 <div>{isLoading && <Spinner />}</div>
 ```
+
 </Accordion>
 
 <Accordion title="Implement Retry Logic">
@@ -844,6 +833,7 @@ if (error) {
   throw error;
 }
 ```
+
 </Accordion>
 
 <Accordion title="Log Errors for Monitoring">
@@ -861,6 +851,7 @@ console.error("Payment failed", {
 // Bad: Generic error logging
 console.error("Error occurred");
 ```
+
 </Accordion>
 
 <Accordion title="Graceful Degradation">
@@ -877,6 +868,7 @@ if (crossChainFailed) {
   throw new Error("Transaction failed");
 }
 ```
+
 </Accordion>
 </AccordionGroup>
 
@@ -893,12 +885,8 @@ if (crossChainFailed) {
 </CardGroup>
 
 <Info>
-When reporting issues, please include:
-- Error messages and codes
-- Steps to reproduce the issue
-- Browser and device information
-- Network conditions (if relevant)
-- Order IDs (if applicable)
+  When reporting issues, please include: - Error messages and codes - Steps to reproduce the issue - Browser and device
+  information - Network conditions (if relevant) - Order IDs (if applicable)
 </Info>
 
 Remember: Good error handling is about more than just catching errors—it's about providing a smooth, understandable experience for your users even when things go wrong.
