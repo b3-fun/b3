@@ -25,10 +25,10 @@ function NFTCard() {
         chainId: 8333,
         contractAddress: "0x9c275ff1634519E9B5449ec79cd939B5F900564d",
         price: "500000000000000000",
-        currency: { symbol: "ETH", decimals: 18 }
+        currency: { symbol: "ETH", decimals: 18 },
       }}
       recipientAddress={userAddress}
-      onSuccess={(txHash) => showSuccess(txHash)}
+      onSuccess={txHash => showSuccess(txHash)}
     />
   );
 }
@@ -40,13 +40,7 @@ function NFTCard() {
 import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
 
 function CrossChainSwap() {
-  return (
-    <AnySpend
-      mode="page"
-      recipientAddress={userAddress}
-      onSuccess={(txHash) => updatePortfolio(txHash)}
-    />
-  );
+  return <AnySpend mode="page" recipientAddress={userAddress} onSuccess={txHash => updatePortfolio(txHash)} />;
 }
 ```
 
@@ -61,7 +55,7 @@ function App() {
       <SignInWithB3
         provider={{ strategy: "google" }}
         partnerId="your-partner-id"
-        onLoginSuccess={(globalAccount) => {
+        onLoginSuccess={globalAccount => {
           console.log("Authenticated:", globalAccount);
         }}
       />
@@ -82,7 +76,7 @@ function WalletButton() {
     try {
       await connect({
         chainId: 8333,
-        rpcUrl: "https://mainnet-rpc.b3.fun"
+        rpcUrl: "https://mainnet-rpc.b3.fun",
       });
     } catch (error) {
       console.error("Connection failed:", error);
