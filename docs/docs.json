@@ -158,6 +158,13 @@
           {
             "group": "Resources",
             "pages": ["createkit/examples"]
+          },
+          {
+            "group": "API Reference",
+            "openapi": {
+              "source": "https://createkit.b3.fun/swagger.json",
+              "directory": "createkit/api-reference"
+            }
           }
         ]
       },
