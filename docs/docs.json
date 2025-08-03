@@ -142,6 +142,7 @@
         ]
       },
       {
+        "icon": "rocket",
         "tab": "BondKit",
         "groups": [
           {
@@ -151,6 +152,7 @@
         ]
       },
       {
+        "icon": "trophy",
         "tab": "ArenaKit",
         "groups": [
           {
@@ -160,6 +162,7 @@
         ]
       },
       {
+        "icon": "parachute-box",
         "tab": "B3AR",
         "groups": [
           {
@@ -174,21 +177,17 @@
         "groups": [
           {
             "group": "Getting Started",
-            "pages": ["index", "quickstart", "brand-kit"]
+            "pages": ["sdk/introduction"]
           },
           {
             "group": "Global Accounts",
             "pages": [
-              "global-account/introduction",
-              "global-account/authentication",
-              "global-account/permissions",
-              "global-account/hooks",
-              "global-account/examples"
+              "sdk/global-account/introduction",
+              "sdk/global-account/authentication",
+              "sdk/global-account/permissions",
+              "sdk/global-account/hooks",
+              "sdk/global-account/examples"
             ]
-          },
-          {
-            "group": "Shared Utilities",
-            "pages": ["shared/chains", "shared/utils", "shared/thirdweb"]
           }
         ]
       }
