@@ -27,3 +27,12 @@
 .dark .nav-tabs a[href="/anyspend/introduction"] img {
   filter: invert(0);
 }
+
+.nav-tabs {
+  width: 100%;
+}
+
+/* Target the third tab (BSMNT.fun) to push it and everything after to the right */
+.nav-tabs .nav-tabs-item:nth-child(3) {
+  margin-left: auto;
+}
