@@ -89,25 +89,22 @@ Accept recurring payments in crypto with automatic conversion to your preferred 
 Get started with AnySpend in just a few steps:
 
 ```tsx
-import { AnySpendProvider, AnySpendNFTButton } from "@b3dotfun/sdk/anyspend/react";
+import { AnySpend, AnyspendProvider } from "@b3dotfun/sdk/anyspend/react";
+import { B3Provider } from "@b3dotfun/sdk/global-account/react";
+
 import "@b3dotfun/sdk/index.css";
 
 function App() {
   return (
-    <AnySpendProvider>
-      <AnySpendNFTButton
-        nftContract={{
-          chainId: 8333,
-          contractAddress: "0x9c275ff1634519E9B5449ec79cd939B5F900564d",
-          price: "500000000000000000",
-          currency: { symbol: "ETH", decimals: 18 }
-        }}
-        recipientAddress="0x..."
-        onSuccess={(txHash) => console.log("Purchase completed!", txHash)}
-      />
-    </AnySpendProvider>
+    <B3Provider theme="light" environment="production">
+      <AnyspendProvider>
+        <AnySpend />
+      </AnyspendProvider>
+    </B3Provider>
   );
 }
+
+export default App
 ```
 
 ## What's Next?

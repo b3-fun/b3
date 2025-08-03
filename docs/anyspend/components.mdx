@@ -10,6 +10,7 @@ description: "React components for seamless crypto payments, NFT purchases, and 
 The primary interface component for token-to-token exchanges and fiat onramps.
 
 ```tsx title="Basic Usage" icon="react"
+// https://github.com/b3-fun/b3/blob/main/packages/sdk/src/anyspend/react/components/AnySpend.tsx
 import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
 
 <AnySpend
@@ -20,8 +21,7 @@ import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
   destinationTokenChainId={8333}
   recipientAddress="0x..."
   hideTransactionHistoryButton={false}
-  onSuccess={(txHash) => console.log("Swap completed", txHash)}
-/>
+/>;
 ```
 
 #### Props
@@ -58,34 +58,27 @@ import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
   Load specific order by ID
 </ParamField>
 
-<ParamField path="onSuccess" type="(txHash?: string) => void">
-  Success callback with transaction hash
-</ParamField>
-
 #### Usage Examples
 
 <Tabs>
 <Tab title="Basic Token Swap">
-```tsx
-<AnySpend
-  mode="page"
-  recipientAddress={userWalletAddress}
-  onSuccess={(txHash) => {
-    toast.success(`Swap completed! TX: ${txHash}`);
-  }}
-/>
-```
+  ```tsx
+  <AnySpend
+    mode="page"
+    recipientAddress={userWalletAddress}
+  />
+  ```
 </Tab>
 
 <Tab title="Fiat-to-Crypto Onramp">
-```tsx
-<AnySpend
-  defaultActiveTab="fiat"
-  destinationTokenAddress="0xA0b86a33E6Fb6Dd9a9B3d8B5FEb2b3C8e7D9Ff1E"
-  destinationTokenChainId={8333}
-  recipientAddress={userWalletAddress}
-/>
-```
+  ```tsx
+  <AnySpend
+    defaultActiveTab="fiat"
+    destinationTokenAddress="0xA0b86a33E6Fb6Dd9a9B3d8B5FEb2b3C8e7D9Ff1E"
+    destinationTokenChainId={8333}
+    recipientAddress={userWalletAddress}
+  />
+  ```
 </Tab>
 </Tabs>
 
@@ -98,12 +91,7 @@ A streamlined button component for NFT purchases with built-in payment handling.
 ```tsx title="NFT Purchase Button" icon="shopping-cart"
 import { AnySpendNFTButton } from "@b3dotfun/sdk/anyspend/react";
 
-<AnySpendNFTButton
-  nftContract={nftContractDetails}
-  recipientAddress="0x..."
-  isMainnet={true}
-  onSuccess={(txHash) => console.log("NFT minted:", txHash)}
-/>
+<AnySpendNFTButton nftContract={nftContractDetails} recipientAddress="0x..." />;
 ```
 
 #### Props
@@ -116,32 +104,29 @@ import { AnySpendNFTButton } from "@b3dotfun/sdk/anyspend/react";
   Wallet address to receive the NFT
 </ParamField>
 
-<ParamField path="isMainnet" type="boolean">
-  Environment selection (mainnet or testnet)
-</ParamField>
-
-<ParamField path="onSuccess" type="(txHash?: string) => void">
-  Success callback with transaction hash
-</ParamField>
-
 #### NFTContract Interface
 
 ```typescript title="Type Definition" icon="code"
 interface NFTContract {
-  chainId: number;                    // Blockchain network ID
-  contractAddress: string;            // NFT contract address
-  price: string;                      // Price in wei
-  priceFormatted: string;             // Human-readable price
+  chainId: number; // Blockchain network ID
+  contractAddress: string; // NFT contract address
+  price: string; // Price in wei
+  priceFormatted: string; // Human-readable price
   currency: {
     chainId: number;
-    address: string;                  // Token contract (0x0 for native ETH)
+    address: string; // Token contract (0x0 for native ETH)
     name: string;
     symbol: string;
     decimals: number;
+    metadata: {
+      logoURI: string;
+    };
   };
-  name: string;                       // NFT collection name
-  description: string;                // NFT description
-  imageUrl: string;                   // Preview image URL
+  name: string; // NFT collection name
+  description: string; // NFT description
+  imageUrl: string; // Preview image URL
+  tokenId: number | null; // Token ID (null for ERC721, specific ID for ERC1155)
+  type: "erc721" | "erc1155"; // NFT contract type
 }
 ```
 
@@ -159,20 +144,18 @@ const coolNFT = {
     name: "Ether",
     symbol: "ETH",
     decimals: 18,
+    metadata: {
+      logoURI: "https://assets.coingecko.com/coins/images/279/standard/ethereum.png?1696501628",
+    },
   },
   name: "Cool Art Collection",
   description: "Unique digital artwork",
   imageUrl: "https://example.com/nft-preview.png",
+  tokenId: null,
+  type: "erc721",
 };
 
-<AnySpendNFTButton
-  nftContract={coolNFT}
-  recipientAddress={userAddress}
-  onSuccess={(txHash) => {
-    // Update UI to show NFT ownership
-    refreshUserNFTs();
-  }}
-/>
+<AnySpendNFTButton nftContract={coolNFT} recipientAddress={userAddress} />;
 ```
 
 ---
@@ -182,6 +165,7 @@ const coolNFT = {
 The most flexible component for custom smart contract interactions, including gaming, staking, and DeFi operations.
 
 ```tsx title="Custom Contract Interaction" icon="code"
+// https://github.com/b3-fun/b3/blob/main/packages/sdk/src/anyspend/react/components/AnySpendCustom.tsx
 import { AnySpendCustom } from "@b3dotfun/sdk/anyspend/react";
 
 <AnySpendCustom
@@ -194,8 +178,8 @@ import { AnySpendCustom } from "@b3dotfun/sdk/anyspend/react";
   spenderAddress="0x..."
   metadata={customMetadata}
   header={CustomHeaderComponent}
-  onSuccess={(txHash) => console.log("Custom action completed", txHash)}
-/>
+  onSuccess={txHash => console.log("Custom action completed", txHash)}
+/>;
 ```
 
 #### Props
@@ -248,7 +232,7 @@ const stakeAmount = "1000000000000000000"; // 1 token
 const stakingCalldata = encodeFunctionData({
   abi: stakingABI,
   functionName: "stake",
-  args: [stakeAmount, 30] // 30 days
+  args: [stakeAmount, 30], // 30 days
 });
 
 <AnySpendCustom
@@ -261,19 +245,17 @@ const stakingCalldata = encodeFunctionData({
   metadata={{
     action: "stake",
     duration: 30,
-    expectedRewards: "5.2%"
+    expectedRewards: "5.2%",
   }}
   header={({ anyspendPrice, isLoadingAnyspendPrice }) => (
     <div className="staking-header">
       <h2>Stake Tokens</h2>
       <p>Duration: 30 days</p>
       <p>Expected APY: 5.2%</p>
-      {!isLoadingAnyspendPrice && (
-        <p>Total Cost: ${anyspendPrice?.usdPrice}</p>
-      )}
+      {!isLoadingAnyspendPrice && <p>Total Cost: ${anyspendPrice?.usdPrice}</p>}
     </div>
   )}
-/>
+/>;
 ```
 
 ## Specialized Components
@@ -283,12 +265,8 @@ const stakingCalldata = encodeFunctionData({
 Enhanced NFT component with additional marketplace features.
 
 ```tsx title="Enhanced NFT Component" icon="store"
-<AnySpendNFT
-  nftContract={nftDetails}
-  recipientAddress="0x..."
-  showMetadata={true}
-  showPriceHistory={true}
-/>
+// https://github.com/b3-fun/b3/blob/main/packages/sdk/src/anyspend/react/components/AnySpendNFT.tsx
+<AnySpendNFT nftContract={nftDetails} recipientAddress="0x..." showMetadata={true} showPriceHistory={true} />
 ```
 
 ### `<AnySpendStakeB3>`
@@ -296,11 +274,8 @@ Enhanced NFT component with additional marketplace features.
 Pre-configured component for B3 token staking.
 
 ```tsx title="B3 Staking" icon="coins"
-<AnySpendStakeB3
-  stakeAmount="1000000000000000000"
-  stakingDuration={30}
-  recipientAddress="0x..."
-/>
+// https://github.com/b3-fun/b3/blob/main/packages/sdk/src/anyspend/react/components/AnySpendStakeB3.tsx
+<AnySpendStakeB3 stakeAmount="1000000000000000000" stakingDuration={30} recipientAddress="0x..." />
 ```
 
 ### `<AnySpendBuySpin>`
@@ -308,11 +283,8 @@ Pre-configured component for B3 token staking.
 Gaming-specific component for purchasing spin wheels or lottery tickets.
 
 ```tsx title="Gaming Spin Wheel" icon="gamepad"
-<AnySpendBuySpin
-  gameContract="0x..."
-  spinPrice="100000000000000000"
-  recipientAddress="0x..."
-/>
+// https://github.com/b3-fun/b3/blob/main/packages/sdk/src/anyspend/react/components/AnySpendBuySpin.tsx
+<AnySpendBuySpin gameContract="0x..." spinPrice="100000000000000000" recipientAddress="0x..." />
 ```
 
 ### `<AnySpendTournament>`
@@ -320,11 +292,8 @@ Gaming-specific component for purchasing spin wheels or lottery tickets.
 Tournament entry payment component.
 
 ```tsx title="Tournament Entry" icon="trophy"
-<AnySpendTournament
-  tournamentId="tournament-123"
-  entryFee="500000000000000000"
-  recipientAddress="0x..."
-/>
+// https://github.com/b3-fun/b3/blob/main/packages/sdk/src/anyspend/react/components/AnySpendTournament.tsx
+<AnySpendTournament tournamentId="tournament-123" entryFee="500000000000000000" recipientAddress="0x..." />
 ```
 
 ## Component Styling
