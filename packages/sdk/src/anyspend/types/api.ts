@@ -52,10 +52,6 @@ export interface paths {
                 metadata: {
                   /** @description Token logo URI */
                   logoURI: string;
-                  /** @description Whether token is verified */
-                  verified: boolean;
-                  /** @description Whether token is native to chain */
-                  isNative: boolean;
                 };
               }[];
               /** @example 200 */
@@ -431,12 +427,8 @@ export interface paths {
                  *       "createdAt": 1752505817654
                  *     } */
                 relayTx: components["schemas"]["RelayTx"] | null;
-                /** @example null */
                 executeTx: components["schemas"]["ExecuteTx"] | null;
-                /**
-                 * @description Refund transactions if order failed
-                 * @example null
-                 */
+                /** @description Refund transactions if order failed */
                 refundTxs: components["schemas"]["RefundTx"][] | null;
               };
               /** @example 200 */
@@ -649,8 +641,6 @@ export interface paths {
                     metadata?: {
                       /** @example https://assets.relay.link/icons/1/light.png */
                       logoURI?: string;
-                      /** @example true */
-                      verified?: boolean;
                     };
                   };
                   /**
@@ -690,8 +680,6 @@ export interface paths {
                     metadata?: {
                       /** @example https://coin-images.coingecko.com/coins/images/6319/large/usdc.png?1696506694 */
                       logoURI?: string;
-                      /** @example true */
-                      verified?: boolean;
                     };
                   };
                   /**
@@ -1032,7 +1020,7 @@ export interface components {
       expectedDstAmount: string;
       /**
        * @description Actual received amount (null for new orders)
-       * @example null
+       * @example 990000
        */
       actualDstAmount: string | null;
     };
@@ -1068,7 +1056,7 @@ export interface components {
       contractAddress: string;
       /**
        * @description Token ID (for ERC1155, null for ERC721)
-       * @example null
+       * @example 1
        */
       tokenId: number | null;
       /**
@@ -1194,10 +1182,7 @@ export interface components {
         | "refunding"
         | "refunded"
         | "failure";
-      /**
-       * @description Error details if order failed
-       * @example null
-       */
+      /** @description Error details if order failed */
       errorDetails: string | null;
       /**
        * @description Creation timestamp
@@ -1214,17 +1199,11 @@ export interface components {
        * @example 0xb34facb90a200251318e8841c05102366f2158cf
        */
       creatorAddress: string | null;
-      /**
-       * @description Optional partner identifier
-       * @example null
-       */
+      /** @description Optional partner identifier */
       partnerId: string | null;
       /** @description Onramp configuration if used */
       onrampMetadata: components["schemas"]["OnrampMetadata"] | null;
-      /**
-       * @description Quick purchase URL if available
-       * @example null
-       */
+      /** @description Quick purchase URL if available */
       oneClickBuyUrl: string | null;
       /**
        * @description Stripe payment intent ID if using Stripe
@@ -1653,36 +1632,6 @@ export interface components {
        */
       createdAt: number;
     };
-    StripeWeb2Support:
-      | {
-          /**
-           * @example false
-           * @constant
-           */
-          isSupport: false;
-        }
-      | {
-          /**
-           * @example true
-           * @constant
-           */
-          isSupport: true;
-          /**
-           * @description Total payment amount formatted in USD
-           * @example 10.00
-           */
-          formattedTotalUsd: string;
-          /**
-           * @description Onramp amount formatted in USD
-           * @example 9.50
-           */
-          formattedOnrampUsd: string;
-          /**
-           * @description Stripe fee formatted in USD
-           * @example 0.50
-           */
-          formattedFeeUsd: string;
-        };
     /** @description NFT contract details */
     NftContract: {
       /**
@@ -1723,7 +1672,7 @@ export interface components {
       description: string;
       /**
        * @description Token ID (null for ERC721, specific ID for ERC1155)
-       * @example null
+       * @example 1
        */
       tokenId: number | null;
       /**
@@ -1733,6 +1682,36 @@ export interface components {
        */
       type: "erc721" | "erc1155";
     };
+    StripeWeb2Support:
+      | {
+          /**
+           * @example false
+           * @constant
+           */
+          isSupport: false;
+        }
+      | {
+          /**
+           * @example true
+           * @constant
+           */
+          isSupport: true;
+          /**
+           * @description Total payment amount formatted in USD
+           * @example 10.00
+           */
+          formattedTotalUsd: string;
+          /**
+           * @description Onramp amount formatted in USD
+           * @example 9.50
+           */
+          formattedOnrampUsd: string;
+          /**
+           * @description Stripe fee formatted in USD
+           * @example 0.50
+           */
+          formattedFeeUsd: string;
+        };
   };
   responses: never;
   parameters: never;
