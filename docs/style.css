@@ -20,5 +20,10 @@
 }
 
 .nav-tabs a[href="/anyspend/introduction"] img {
-  max-height: 18px;
+  max-height: 16px;
+  filter: invert(1);
+}
+
+.dark .nav-tabs a[href="/anyspend/introduction"] img {
+  filter: invert(0);
 }

@@ -16,7 +16,15 @@
         "groups": [
           {
             "group": "About B3",
-            "pages": ["index", "quickstart", "protocol/scaling", "protocol/liquidity"]
+            "pages": [
+              "index",
+              "quickstart",
+              "protocol/scaling",
+              "protocol/liquidity",
+              "protocol/tokenomics",
+              "protocol/b3-token",
+              "protocol/staking-b3"
+            ]
           },
           {
             "group": "Network",
@@ -24,7 +32,7 @@
           },
           {
             "group": "Build on B3",
-            "pages": ["protocol/brand-kit", "ecosystem/introduction", "sdk/introduction"]
+            "pages": ["protocol/brand-kit", "redirect/ecosystem", "redirect/sdk"]
           },
           {
             "group": "Governance",
@@ -43,11 +51,11 @@
         "groups": [
           {
             "group": "Overview",
-            "pages": ["ecosystem/introduction", "protocol/network-setup"]
+            "pages": ["ecosystem/introduction", "protocol/network-setup", "ai-optimized"]
           },
           {
             "group": "Resources",
-            "pages": ["data/api-reference/introduction", "sdk/introduction", "basement/unity-guide"]
+            "pages": ["data/api-reference/introduction", "data/profiles/index", "redirect/sdk"]
           },
           {
             "group": "Ecosystem Tools",
@@ -66,10 +74,22 @@
           },
           {
             "group": "Data API",
-            "openapi": {
-              "source": "https://data-api.b3.fun/swagger.json?fresh=1",
-              "directory": "data/api-reference"
-            }
+            "pages": [
+              {
+                "group": "Blockchain",
+                "openapi": {
+                  "source": "https://data-api.b3.fun/swagger.json",
+                  "directory": "data/api-reference"
+                }
+              },
+              {
+                "group": "Profiles",
+                "openapi": {
+                  "source": "https://profiles.b3.fun/swagger.json?v=1",
+                  "directory": "data/profiles"
+                }
+              }
+            ]
           }
         ]
       },
@@ -78,7 +98,7 @@
         "tab": "BSMNT.fun",
         "groups": [
           {
-            "group": "Getting Started",
+            "group": "Overview",
             "pages": ["basement/introduction", "basement/game-launcher", "basement/brand-kit"]
           },
           {
@@ -146,7 +166,7 @@
         "tab": "BondKit",
         "groups": [
           {
-            "group": "Getting Started",
+            "group": "Overview",
             "pages": ["bondkit/introduction"]
           }
         ]
@@ -156,7 +176,7 @@
         "tab": "ArenaKit",
         "groups": [
           {
-            "group": "Getting Started",
+            "group": "Overview",
             "pages": ["arenakit/introduction"]
           }
         ]
@@ -166,7 +186,7 @@
         "tab": "B3AR",
         "groups": [
           {
-            "group": "Getting Started",
+            "group": "Overview",
             "pages": ["b3ar/introduction"]
           }
         ]
@@ -176,7 +196,7 @@
         "tab": "B3 SDK",
         "groups": [
           {
-            "group": "Getting Started",
+            "group": "Overview",
             "pages": ["sdk/introduction"]
           },
           {
@@ -245,5 +265,15 @@
       "github": "https://github.com/b3-fun/b3",
       "discord": "https://discord.gg/b3dotfun"
     }
-  }
+  },
+  "redirects": [
+    {
+      "source": "/redirect/ecosystem",
+      "destination": "/ecosystem/introduction"
+    },
+    {
+      "source": "/redirect/sdk",
+      "destination": "/sdk/introduction"
+    }
+  ]
 }
