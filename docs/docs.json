@@ -24,7 +24,7 @@
           },
           {
             "group": "Build on B3",
-            "pages": ["protocol/brand-kit"]
+            "pages": ["protocol/brand-kit", "ecosystem/introduction", "sdk/introduction"]
           },
           {
             "group": "Governance",
