@@ -44,16 +44,12 @@ export function AnySpendFingerprintWrapper({ children, fingerprint }: AnySpendFi
   );
 }
 
+const defaultApiKey = "80EnsS6POsxPAR9xGxmN";
+
 // Helper function to get fingerprint config from environment variables
-export function getFingerprintConfig(): FingerprintConfig | undefined {
-  const apiKey = process.env.NEXT_PUBLIC_FINGERPRINT_API_KEY;
-
-  if (!apiKey) {
-    return undefined;
-  }
-
+export function getFingerprintConfig(): FingerprintConfig {
   return {
-    apiKey,
+    apiKey: process.env.NEXT_PUBLIC_FINGERPRINT_API_KEY || defaultApiKey,
     endpoint: process.env.NEXT_PUBLIC_FINGERPRINT_ENDPOINT,
     scriptUrlPattern: process.env.NEXT_PUBLIC_FINGERPRINT_SCRIPT_URL,
   };
