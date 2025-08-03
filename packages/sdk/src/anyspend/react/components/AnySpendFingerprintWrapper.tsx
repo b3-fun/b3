@@ -48,16 +48,8 @@ const defaultApiKey = "80EnsS6POsxPAR9xGxmN";
 
 // Helper function to get fingerprint config from environment variables
 export function getFingerprintConfig(): FingerprintConfig {
-  const apiKey = process.env.NEXT_PUBLIC_FINGERPRINT_API_KEY || defaultApiKey;
-
-  if (!apiKey) {
-    return {
-      apiKey,
-    };
-  }
-
   return {
-    apiKey,
+    apiKey: process.env.NEXT_PUBLIC_FINGERPRINT_API_KEY || defaultApiKey,
     endpoint: process.env.NEXT_PUBLIC_FINGERPRINT_ENDPOINT,
     scriptUrlPattern: process.env.NEXT_PUBLIC_FINGERPRINT_SCRIPT_URL,
   };
