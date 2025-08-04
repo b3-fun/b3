@@ -462,8 +462,8 @@ function AnySpendInner({
         },
   );
 
-  const { address: connectedAddress, name: connectedName } = useConnectedUserProfile();
-  const { name: recipientName } = useUserProfile(recipientAddress);
+  const { address: connectedAddress, name: connectedName, profile: connectedProfile } = useConnectedUserProfile();
+  const { name: recipientName, profile: recipientProfile } = useUserProfile(recipientAddress);
 
   // Load custom recipients from local storage on mount
   useEffect(() => {
@@ -1076,16 +1076,17 @@ function AnySpendInner({
                   <>
                     {connectedAddress ? (
                       <>
-                        {globalWallet?.meta?.icon && (
+                        {recipientProfile && (
                           <img
-                            src={globalWallet.meta.icon}
-                            alt="Connected Wallet"
-                            className="bg-as-primary h-6 w-6 rounded-full"
+                            src={recipientProfile.data?.avatar || ""}
+                            alt={recipientProfile.data?.name || ""}
+                            className="bg-b3-react-foreground size-7 rounded-full object-cover opacity-100"
                           />
                         )}
-                        <span className="text-as-tertiarry">
-                          {connectedName || shortenAddress(connectedAddress || "")}
-                        </span>
+                        <div className="flex items-center gap-1">
+                          {recipientName && <span>@{recipientName}</span>}
+                          <span>{shortenAddress(recipientAddress || "")}</span>
+                        </div>
                       </>
                     ) : (
                       "Connect wallet"
@@ -1205,19 +1206,26 @@ function AnySpendInner({
                   className={cn("text-as-tertiarry flex h-7 items-center gap-2 rounded-lg")}
                   onClick={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
                 >
-                  {globalAddress && recipientAddress === globalAddress && globalWallet?.meta?.icon ? (
-                    <img
-                      src={globalWallet?.meta?.icon}
-                      alt="Current wallet"
-                      className="bg-as-primary h-6 w-6 rounded-full"
-                    />
-                  ) : (
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-orange-500 text-xs text-white">
-                      🦊
-                    </div>
-                  )}
-                  <div className="text-sm">{recipientName ? recipientName : shortenAddress(recipientAddress)}</div>
-                  <ChevronRight className="h-4 w-4" />
+                  <>
+                    {connectedAddress ? (
+                      <>
+                        {connectedProfile?.data?.avatar && (
+                          <img
+                            src={connectedProfile.data?.avatar || ""}
+                            alt="Connected Wallet"
+                            className="bg-as-primary h-6 w-6 rounded-full"
+                          />
+                        )}
+                        <span className="text-as-tertiarry flex items-center gap-1 text-sm">
+                          {connectedName && <span>@{connectedName}</span>}
+                          <span>{shortenAddress(connectedAddress || "")}</span>
+                        </span>
+                      </>
+                    ) : (
+                      "Connect wallet"
+                    )}
+                    <ChevronRight className="h-4 w-4" />
+                  </>
                 </button>
               ) : (
                 <button

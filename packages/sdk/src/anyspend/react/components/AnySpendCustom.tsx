@@ -402,8 +402,7 @@ function AnySpendCustomInner({
 
   const isCreatingOrder = isCreatingRegularOrder || isCreatingOnrampOrder;
 
-  const { wallet: globalWallet } = useAccountWallet();
-  const { address: connectedAddress, name: connectedName } = useConnectedUserProfile();
+  const { address: connectedAddress, name: connectedName, profile: connectedProfile } = useConnectedUserProfile();
   const { name: recipientName, profile: recipientProfile } = useUserProfile(recipientAddress);
 
   const handleCreateOrder = async (
@@ -596,7 +595,7 @@ function AnySpendCustomInner({
               ? "Join for"
               : "Recipient"}
       </div>
-      <div>
+      <div className="flex items-center gap-2">
         {recipientAddress ? (
           <button
             className={cn("text-as-tertiarry flex h-7 items-center gap-2 rounded-lg")}
@@ -607,10 +606,10 @@ function AnySpendCustomInner({
                 <img
                   src={recipientProfile.data?.avatar || ""}
                   alt={recipientProfile.data?.name || ""}
-                  className="bg-b3-react-foreground size-7 rounded-full object-cover opacity-100"
+                  className="bg-b3-react-foreground size-6 rounded-full object-cover opacity-100"
                 />
               )}
-              <div className="flex items-center gap-1">
+              <div className="text-as-tertiarry flex items-center gap-1 text-sm">
                 {recipientName && <span>@{recipientName}</span>}
                 <span>{shortenAddress(recipientAddress)}</span>
               </div>
@@ -625,6 +624,7 @@ function AnySpendCustomInner({
             <ChevronsUpDown className="h-3 w-3" />
           </button>
         )}
+        <ChevronRight className="h-4 w-4" />
       </div>
     </motion.div>
   ) : null;
@@ -852,22 +852,23 @@ function AnySpendCustomInner({
               >
                 <div className="text-as-tertiarry flex h-7 items-center text-sm">Pay</div>
                 <button
-                  className="text-as-tertiarry flex h-7 items-center gap-1 text-sm transition-colors hover:text-blue-700"
+                  className="text-as-tertiarry flex h-7 items-center gap-2 text-sm transition-colors hover:text-blue-700"
                   onClick={() => setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD)}
                 >
                   {selectedPaymentMethod === PaymentMethod.CONNECT_WALLET ? (
                     <>
                       {connectedAddress ? (
                         <>
-                          {globalWallet?.meta?.icon && (
+                          {connectedProfile?.data?.avatar && (
                             <img
-                              src={globalWallet.meta.icon}
+                              src={connectedProfile.data?.avatar || ""}
                               alt="Connected Wallet"
                               className="bg-as-primary h-6 w-6 rounded-full"
                             />
                           )}
-                          <span className="text-as-tertiarry">
-                            {connectedName || shortenAddress(connectedAddress || "")}
+                          <span className="text-as-tertiarry flex items-center gap-1">
+                            {connectedName && <span>@{connectedName}</span>}
+                            <span>{shortenAddress(connectedAddress || "")}</span>
                           </span>
                         </>
                       ) : (
