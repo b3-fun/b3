@@ -9,7 +9,7 @@ import { ChevronLeft, ChevronRightCircle, Wallet, X } from "lucide-react";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
-import { ConnectEmbed, lightTheme } from "thirdweb/react";
+import { ConnectEmbed, lightTheme, useActiveWallet } from "thirdweb/react";
 import { createWallet } from "thirdweb/wallets";
 import { useDisconnect } from "wagmi";
 
@@ -40,7 +40,8 @@ export function CryptoPaymentMethod({
   onBack,
   onSelectPaymentMethod,
 }: CryptoPaymentMethodProps) {
-  const { address: globalAddress, wallet: globalWallet } = useAccountWallet();
+  const { wallet: globalWallet } = useAccountWallet();
+  const activeWallet = useActiveWallet();
   const { disconnect } = useDisconnect();
   const [showWalletModal, setShowWalletModal] = useState(false);
 
@@ -73,7 +74,7 @@ export function CryptoPaymentMethod({
         {/* Payment Methods */}
         <div className="flex flex-col gap-3">
           {/* Connect Wallet Option */}
-          {!globalAddress ? (
+          {!activeWallet ? (
             // Not connected - show single connect button
             <button
               onClick={() => setShowWalletModal(true)}
@@ -104,7 +105,9 @@ export function CryptoPaymentMethod({
                   )}
                   <div className="flex flex-col">
                     <span className="text-as-primary font-semibold">Connected Wallet</span>
-                    <span className="text-as-primary/60 text-sm">{shortenAddress(globalAddress)}</span>
+                    <span className="text-as-primary/60 text-sm">
+                      {shortenAddress(activeWallet.getAccount()?.address || "")}
+                    </span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">

@@ -6,7 +6,9 @@ import {
   useAnyspendCreateOrder,
   useAnyspendOrderAndTransactions,
   useAnyspendQuote,
+  useConnectedUserProfile,
   useGeoOnrampOptions,
+  useUserProfile,
 } from "@b3dotfun/sdk/anyspend/react";
 import {
   Button,
@@ -14,7 +16,6 @@ import {
   StyleRoot,
   TransitionPanel,
   useAccountWallet,
-  useProfile,
   useRouter,
   useSearchParamsSSR,
   useTokenData,
@@ -24,19 +25,10 @@ import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { formatDisplayNumber, formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import invariant from "invariant";
-import {
-  ArrowDown,
-  ChevronLeft,
-  ChevronRight,
-  ChevronRightCircle,
-  ChevronsUpDown,
-  CircleAlert,
-  HistoryIcon,
-} from "lucide-react";
+import { ArrowDown, ChevronRight, ChevronRightCircle, ChevronsUpDown, CircleAlert, HistoryIcon } from "lucide-react";
 import { motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { useConnectedWallets } from "thirdweb/react";
 import { parseUnits } from "viem";
 import { b3Sepolia, base, mainnet, sepolia } from "viem/chains";
 import { components } from "../../types/api";
@@ -49,6 +41,7 @@ import { OrderStatus } from "./common/OrderStatus";
 import { OrderTokenAmount } from "./common/OrderTokenAmount";
 import { PanelOnramp } from "./common/PanelOnramp";
 import { PanelOnrampPayment } from "./common/PanelOnrampPayment";
+import { RecipientSelection } from "./common/RecipientSelection";
 import { TokenBalance } from "./common/TokenBalance";
 
 export interface RecipientOption {
@@ -111,9 +104,6 @@ function AnySpendInner({
 }) {
   const searchParams = useSearchParamsSSR();
   const router = useRouter();
-
-  // Get wagmi account state for wallet connection
-  const connectedWallets = useConnectedWallets();
 
   // Determine if we're in "buy mode" based on whether destination token props are provided
   const isBuyMode = !!(destinationTokenAddress && destinationTokenChainId);
@@ -472,12 +462,8 @@ function AnySpendInner({
         },
   );
 
-  const connectedAddress = globalAddress || connectedWallets?.[0]?.getAccount()?.address;
-  const connectedProfile = useProfile({ address: connectedAddress });
-  const connectedName = connectedProfile.data?.name?.replace(/\.b3\.fun/g, "");
-
-  const recipientProfile = useProfile({ address: recipientAddress });
-  const recipientName = recipientProfile.data?.name?.replace(/\.b3\.fun/g, "");
+  const { address: connectedAddress, name: connectedName } = useConnectedUserProfile();
+  const { name: recipientName } = useUserProfile(recipientAddress);
 
   // Load custom recipients from local storage on mount
   useEffect(() => {
@@ -1404,70 +1390,14 @@ function AnySpendInner({
   );
 
   const recipientSelectionView = (
-    <div className="mx-auto w-[460px] max-w-full">
-      <div className="flex flex-col gap-6">
-        {/* Header */}
-        <div className="flex justify-around">
-          <button
-            onClick={() => setActivePanel(PanelView.MAIN)}
-            className="text-as-quaternary hover:text-as-primary flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
-          >
-            <ChevronLeft className="h-6 w-6" />
-          </button>
-          <div className="flex-1 text-center">
-            <h2 className="text-as-primary text-lg font-semibold">Add recipient address or ENS</h2>
-            <p className="text-as-primary/60 text-sm">Swap and send tokens to another address</p>
-          </div>
-        </div>
-
-        {/* Address Input */}
-        <div className="flex flex-col gap-4">
-          <div className="bg-as-surface-secondary border-as-border-secondary flex h-12 w-full overflow-hidden rounded-xl border">
-            <input
-              type="text"
-              placeholder="Enter recipient address"
-              value={recipientAddress || ""}
-              onChange={e => setRecipientAddress(e.target.value)}
-              onKeyDown={e => {
-                if (e.key === "Enter" && recipientAddress) {
-                  setActivePanel(PanelView.MAIN);
-                }
-              }}
-              className="text-as-primary placeholder:text-as-primary/50 flex-1 bg-transparent px-4 text-base focus:outline-none"
-              autoFocus
-            />
-            <div className="border-as-border-secondary border-l">
-              <button
-                onClick={async () => {
-                  try {
-                    const text = await navigator.clipboard.readText();
-                    setRecipientAddress(text);
-                  } catch (err) {
-                    console.error("Failed to read clipboard:", err);
-                  }
-                }}
-                className="text-as-primary/70 hover:text-as-primary hover:bg-as-surface-primary h-full px-4 font-semibold transition-colors"
-              >
-                Paste
-              </button>
-            </div>
-          </div>
-
-          {/* Confirm Button */}
-          <button
-            onClick={() => {
-              if (recipientAddress) {
-                setActivePanel(PanelView.MAIN);
-              }
-            }}
-            disabled={!recipientAddress}
-            className="bg-as-brand hover:bg-as-brand/90 disabled:bg-as-on-surface-2 disabled:text-as-secondary h-12 w-full rounded-xl font-medium text-white transition-colors disabled:cursor-not-allowed"
-          >
-            Confirm recipient address
-          </button>
-        </div>
-      </div>
-    </div>
+    <RecipientSelection
+      initialValue={recipientAddress || ""}
+      onBack={() => setActivePanel(PanelView.MAIN)}
+      onConfirm={address => {
+        setRecipientAddress(address);
+        setActivePanel(PanelView.MAIN);
+      }}
+    />
   );
 
   const cryptoPaymentMethodView = (

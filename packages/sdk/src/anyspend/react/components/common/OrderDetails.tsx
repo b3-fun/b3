@@ -199,7 +199,7 @@ export const OrderDetails = memo(function OrderDetails({
   relayTx,
   executeTx,
   refundTxs,
-  paymentMethod = PaymentMethod.NONE,
+  paymentMethod,
   onBack,
 }: OrderDetailsProps) {
   const router = useRouter();
@@ -207,7 +207,7 @@ export const OrderDetails = memo(function OrderDetails({
 
   // Read payment method from URL parameters
   const paymentMethodFromUrl = searchParams.get("paymentMethod") as PaymentMethod | null;
-  const effectivePaymentMethod = paymentMethodFromUrl || paymentMethod || PaymentMethod.NONE;
+  const effectivePaymentMethod = paymentMethod || paymentMethodFromUrl || PaymentMethod.NONE;
 
   const setB3ModalOpen = useModalStore((state: any) => state.setB3ModalOpen);
 
