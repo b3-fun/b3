@@ -304,7 +304,7 @@ export function getChainName(chainId: number): string {
   return EVM_CHAINS[chainId] ? EVM_CHAINS[chainId].viem.name : "Solana";
 }
 
-export function getPaymentUrl(address: string, amount: bigint, currency: string, chainId: number) {
+export function getPaymentUrl(address: string, amount: bigint, currency: string, chainId: number, decimals?: number) {
   // Get chain type to determine URL format
   const chainType = getChainType(chainId);
   const chain = ALL_CHAINS[chainId];
@@ -321,16 +321,67 @@ export function getPaymentUrl(address: string, amount: bigint, currency: string,
         params.append("value", amount.toString());
       }
 
-      // Add chain ID for non-Ethereum chains
-      const chainParam = chainId !== mainnet.id ? `@${chainId}` : "";
-
-      // Add token info for non-native token transfers
+      // Handle token transfers differently from native transfers
       if (currency !== chain.nativeToken.symbol) {
-        params.append("symbol", currency);
+        // For ERC20 tokens, the issue is that mobile wallets often ignore chainId
+        // and default to mainnet when they see ethereum: scheme
+        // Let's try a different approach: put chainId first and be very explicit
+
+        const tokenParams = new URLSearchParams();
+
+        // Put chainId first to make it more prominent
+        if (chainId !== mainnet.id) {
+          tokenParams.append("chainId", chainId.toString());
+        }
+
+        // For ERC20 tokens, convert from smallest unit to display units using decimals
+        // For example: 2400623 (raw) with 6 decimals becomes "2.400623"
+        let displayAmount: string;
+        if (decimals !== undefined && currency !== chain.nativeToken.symbol) {
+          // Convert from smallest unit to display unit for ERC20 tokens
+          const divisor = BigInt(10 ** decimals);
+          const wholePart = amount / divisor;
+          const fractionalPart = amount % divisor;
+
+          if (fractionalPart === BigInt(0)) {
+            displayAmount = wholePart.toString();
+          } else {
+            // Format fractional part with leading zeros if needed
+            const fractionalStr = fractionalPart.toString().padStart(decimals, "0");
+            // Remove trailing zeros
+            const trimmedFractional = fractionalStr.replace(/0+$/, "");
+            displayAmount = trimmedFractional ? `${wholePart}.${trimmedFractional}` : wholePart.toString();
+          }
+        } else {
+          // For native tokens or when decimals not provided, use raw amount
+          displayAmount = amount.toString();
+        }
+
+        tokenParams.append("amount", displayAmount);
+        tokenParams.append("address", address); // recipient address
+
+        // For Arbitrum and other L2s, try a more explicit format
+        if (chainId !== mainnet.id) {
+          // Include the token contract address in the path more explicitly
+          const url = `ethereum:${currency}@${chainId}?${tokenParams.toString()}`;
+          console.log("L2 ERC20 token URL:", url);
+          return url;
+        } else {
+          // Mainnet tokens
+          const url = `ethereum:${currency}?${tokenParams.toString()}`;
+          console.log("Mainnet ERC20 token URL:", url);
+          return url;
+        }
       }
 
+      // For native ETH transfers:
+      if (chainId !== mainnet.id) {
+        params.append("chainId", chainId.toString());
+      }
       const queryString = params.toString();
-      return `ethereum:${address}${chainParam}${queryString ? `?${queryString}` : ""}`;
+      const url = `ethereum:${address}${queryString ? `?${queryString}` : ""}`;
+      console.log("Native ETH URL:", url);
+      return url;
     }
 
     case ChainType.SOLANA: {

@@ -195,6 +195,7 @@ export const TransferCryptoDetails = memo(function TransferCryptoDetails({
                     BigInt(order.srcAmount),
                     order.srcTokenAddress === RELAY_ETH_ADDRESS ? "ETH" : order.srcTokenAddress,
                     order.srcChain,
+                    srcToken?.decimals,
                   )}
                   className="bg-as-surface-secondary max-h-48 max-w-48"
                 />
