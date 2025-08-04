@@ -53,6 +53,7 @@
             "group": "Overview",
             "pages": ["ecosystem/introduction", "protocol/network-setup", "ai-optimized"]
           },
+
           {
             "group": "Resources",
             "pages": ["data/api-reference/introduction", "data/profiles/index", "redirect/sdk"]
@@ -88,6 +89,62 @@
                   "source": "https://profiles.b3.fun/swagger.json?v=1",
                   "directory": "data/profiles"
                 }
+              }
+            ]
+          },
+          {
+            "group": "Learn",
+            "icon": "graduation-cap",
+            "pages": [
+              {
+                "group": "Getting Started",
+                "pages": [
+                  "learn/getting-started/how-to-create-an-account",
+                  "learn/getting-started/how-to-customize-your-basement-profile",
+                  "learn/getting-started/how-to-link-additional-social-accounts",
+                  "learn/getting-started/how-to-export-your-embedded-wallet",
+                  "learn/getting-started/crypto-and-wallet-security"
+                ]
+              },
+              {
+                "group": "Deposits & Withdrawals",
+                "pages": [
+                  "learn/deposits-withdrawals/depositing-tokens-on-b3",
+                  "learn/deposits-withdrawals/withdrawing-tokens-from-b3",
+                  "learn/deposits-withdrawals/how-to-swap-tokens",
+                  "learn/deposits-withdrawals/b3-token",
+                  "learn/deposits-withdrawals/how-to-verify-transaction-status"
+                ]
+              },
+              {
+                "group": "Staking & Rewards",
+                "pages": [
+                  "learn/staking-rewards/what-is-staking-and-how-does-it-work",
+                  "learn/staking-rewards/how-to-stake-b3",
+                  "learn/staking-rewards/how-to-unstake-your-tokens",
+                  "learn/staking-rewards/stake-to-win",
+                  "learn/staking-rewards/how-daily-slots-work",
+                  "learn/staking-rewards/how-spin-the-wheel-works",
+                  "learn/staking-rewards/how-prize-pool-works"
+                ]
+              },
+              {
+                "group": "Games & Experiences",
+                "pages": [
+                  "learn/games-experiences/how-to-join-a-tournament-on-basement",
+                  "learn/games-experiences/how-to-start-a-wager-on-basement"
+                ]
+              },
+              {
+                "group": "Troubleshooting",
+                "pages": [
+                  "learn/troubleshooting/login-and-account-access",
+                  "learn/troubleshooting/staking-and-rewards-faq",
+                  "learn/troubleshooting/transactions-and-wallet-issues",
+                  "learn/troubleshooting/stake-to-win-games-faq",
+                  "learn/troubleshooting/games-and-competition-faq",
+                  "learn/troubleshooting/feedback-and-reporting-issues"
+                ]
               }
             ]
           }
