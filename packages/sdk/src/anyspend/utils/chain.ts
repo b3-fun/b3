@@ -364,12 +364,10 @@ export function getPaymentUrl(address: string, amount: bigint, currency: string,
         if (chainId !== mainnet.id) {
           // Include the token contract address in the path more explicitly
           const url = `ethereum:${currency}@${chainId}?${tokenParams.toString()}`;
-          console.log("L2 ERC20 token URL:", url);
           return url;
         } else {
           // Mainnet tokens
           const url = `ethereum:${currency}?${tokenParams.toString()}`;
-          console.log("Mainnet ERC20 token URL:", url);
           return url;
         }
       }
@@ -380,7 +378,6 @@ export function getPaymentUrl(address: string, amount: bigint, currency: string,
       }
       const queryString = params.toString();
       const url = `ethereum:${address}${queryString ? `?${queryString}` : ""}`;
-      console.log("Native ETH URL:", url);
       return url;
     }
 
