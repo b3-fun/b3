@@ -1067,7 +1067,7 @@ export const OrderDetails = memo(function OrderDetails({
                       value={getPaymentUrl(
                         order.globalAddress,
                         BigInt(order.srcAmount),
-                        order.srcTokenAddress === RELAY_ETH_ADDRESS ? "ETH" : order.srcTokenAddress,
+                        order.srcTokenAddress === RELAY_ETH_ADDRESS ? srcToken?.symbol || "ETH" : order.srcTokenAddress,
                         order.srcChain,
                         srcToken?.decimals,
                       )}
