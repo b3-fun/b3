@@ -26,7 +26,7 @@ import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { formatDisplayNumber, formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import invariant from "invariant";
-import { ArrowDown, ChevronRight, ChevronRightCircle, ChevronsUpDown, CircleAlert, HistoryIcon } from "lucide-react";
+import { ArrowDown, ChevronRight, ChevronRightCircle, CircleAlert, HistoryIcon } from "lucide-react";
 import { motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -1237,7 +1237,6 @@ function AnySpendInner({
                   onClick={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
                 >
                   <div className="text-sm font-medium">Select recipient</div>
-                  <ChevronsUpDown className="h-3 w-3" />
                 </button>
               )}
             </div>

@@ -37,7 +37,7 @@ import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { formatTokenAmount, formatUnits } from "@b3dotfun/sdk/shared/utils/number";
 import { simpleHashChainToChainName } from "@b3dotfun/sdk/shared/utils/simplehash";
 import invariant from "invariant";
-import { ChevronRight, ChevronRightCircle, ChevronsUpDown, Loader2 } from "lucide-react";
+import { ChevronRight, ChevronRightCircle, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -624,7 +624,6 @@ function AnySpendCustomInner({
             onClick={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
           >
             <div className="text-sm font-medium">Select recipient</div>
-            <ChevronsUpDown className="h-3 w-3" />
           </button>
         )}
         <ChevronRight className="h-4 w-4" />
