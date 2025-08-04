@@ -330,6 +330,10 @@
       "discord": "https://discord.gg/b3dotfun"
     }
   },
+  "thumbnails": {
+    "appearance": "light",
+    "background": "/images/b3-open-graph-bg.jpg"
+  },
   "redirects": [
     {
       "source": "/redirect/ecosystem",
@@ -338,6 +342,10 @@
     {
       "source": "/redirect/sdk",
       "destination": "/sdk/introduction"
+    },
+    {
+      "source": "/brand-kit",
+      "destination": "/protocol/brand-kit"
     }
   ]
 }
