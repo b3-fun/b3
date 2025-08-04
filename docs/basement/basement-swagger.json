@@ -1,1 +1,646 @@
-{"info":{"title":"Basement API Docs","description":"","version":"1.0.0"},"include":["launcher"],"schemes":["http","https"],"paths":{"/authentication":{"post":{"parameters":[],"responses":{"201":{"description":"created","content":{"application/json":{"schema":{"$ref":"#/components/schemas/authentication"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Creates a new resource with data.","summary":"","tags":["authentication"],"security":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/authentication"}}}}}},"/authentication/{id}":{"delete":{"parameters":[{"in":"path","name":"id","description":"ID of authentication to remove","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/authentication"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Removes the resource with id.","summary":"","tags":["authentication"],"security":[]}},"/proof-of-play-emitter":{"get":{"parameters":[{"description":"Number of results to return","in":"query","name":"$limit","schema":{"type":"integer"}},{"description":"Number of results to skip","in":"query","name":"$skip","schema":{"type":"integer"}},{"description":"Property to sort results","in":"query","name":"$sort","style":"deepObject","schema":{"type":"object"}},{"description":"Query parameters to filter","in":"query","name":"filter","style":"form","explode":true,"schema":{"$ref":"#/components/schemas/proof-of-play-emitter"}}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/proof-of-play-emitterList"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Retrieves a list of all resources from the service.","summary":"","tags":["proof-of-play-emitter"],"security":[]},"post":{"parameters":[],"responses":{"201":{"description":"created","content":{"application/json":{"schema":{"$ref":"#/components/schemas/proof-of-play-emitter"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Creates a new resource with data.","summary":"","tags":["proof-of-play-emitter"],"security":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/proof-of-play-emitter"}}}}}},"/proof-of-play-emitter/{id}":{"get":{"parameters":[{"in":"path","name":"id","description":"ID of proof-of-play-emitter to return","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/proof-of-play-emitter"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Retrieves a single resource with the given id from the service.","summary":"","tags":["proof-of-play-emitter"],"security":[]},"patch":{"parameters":[{"in":"path","name":"id","description":"ID of proof-of-play-emitter to update","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/proof-of-play-emitter"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Updates the resource identified by id using data.","summary":"","tags":["proof-of-play-emitter"],"security":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/proof-of-play-emitter"}}}}},"delete":{"parameters":[{"in":"path","name":"id","description":"ID of proof-of-play-emitter to remove","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/proof-of-play-emitter"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Removes the resource with id.","summary":"","tags":["proof-of-play-emitter"],"security":[]}},"/ens-webhooks":{"post":{"parameters":[],"responses":{"201":{"description":"created","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ens-webhooks"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Creates a new resource with data.","summary":"","tags":["ens-webhooks"],"security":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ens-webhooks"}}}}}},"/aggregate-leaderboards":{"get":{"parameters":[{"description":"Number of results to return","in":"query","name":"$limit","schema":{"type":"integer"}},{"description":"Number of results to skip","in":"query","name":"$skip","schema":{"type":"integer"}},{"description":"Property to sort results","in":"query","name":"$sort","style":"deepObject","schema":{"type":"object"}},{"description":"Query parameters to filter","in":"query","name":"filter","style":"form","explode":true,"schema":{"$ref":"#/components/schemas/aggregate-leaderboards"}}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/aggregate-leaderboardsPagination"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Retrieves a list of all resources from the service.","summary":"","tags":["aggregate-leaderboards"],"security":[]}},"/aggregate-leaderboards/{_id}":{"get":{"parameters":[{"in":"path","name":"_id","description":"ID of aggregate-leaderboards to return","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/aggregate-leaderboards"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Retrieves a single resource with the given id from the service.","summary":"","tags":["aggregate-leaderboards"],"security":[]}},"/campaign-verifier":{"post":{"parameters":[],"responses":{"201":{"description":"created","content":{"application/json":{"schema":{"$ref":"#/components/schemas/campaign-verifier"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Creates a new resource with data.","summary":"","tags":["campaign-verifier"],"security":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/campaign-verifier"}}}}}},"/leaderboard-histories":{"get":{"parameters":[{"description":"Number of results to return","in":"query","name":"$limit","schema":{"type":"integer"}},{"description":"Number of results to skip","in":"query","name":"$skip","schema":{"type":"integer"}},{"description":"Property to sort results","in":"query","name":"$sort","style":"deepObject","schema":{"type":"object"}},{"description":"Query parameters to filter","in":"query","name":"filter","style":"form","explode":true,"schema":{"$ref":"#/components/schemas/leaderboard-histories"}}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/leaderboard-historiesPagination"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Retrieves a list of all resources from the service.","summary":"","tags":["leaderboard-histories"],"security":[]}},"/leaderboard-histories/{_id}":{"get":{"parameters":[{"in":"path","name":"_id","description":"ID of leaderboard-histories to return","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/leaderboard-histories"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Retrieves a single resource with the given id from the service.","summary":"","tags":["leaderboard-histories"],"security":[]}},"/sig-mint-collections":{"get":{"parameters":[{"description":"Number of results to return","in":"query","name":"$limit","schema":{"type":"integer"}},{"description":"Number of results to skip","in":"query","name":"$skip","schema":{"type":"integer"}},{"description":"Property to sort results","in":"query","name":"$sort","style":"deepObject","schema":{"type":"object"}},{"description":"Query parameters to filter","in":"query","name":"filter","style":"form","explode":true,"schema":{"$ref":"#/components/schemas/sig-mint-collections"}}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/sig-mint-collectionsPagination"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Retrieves a list of all resources from the service.","summary":"","tags":["sig-mint-collections"],"security":[]}},"/sig-mint-collections/{_id}":{"get":{"parameters":[{"in":"path","name":"_id","description":"ID of sig-mint-collections to return","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/sig-mint-collections"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Retrieves a single resource with the given id from the service.","summary":"","tags":["sig-mint-collections"],"security":[]}},"/tournament-events":{"get":{"parameters":[{"description":"Number of results to return","in":"query","name":"$limit","schema":{"type":"integer"}},{"description":"Number of results to skip","in":"query","name":"$skip","schema":{"type":"integer"}},{"description":"Property to sort results","in":"query","name":"$sort","style":"deepObject","schema":{"type":"object"}},{"description":"Query parameters to filter","in":"query","name":"filter","style":"form","explode":true,"schema":{"$ref":"#/components/schemas/tournament-events"}}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/tournament-eventsPagination"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Retrieves a list of all resources from the service.","summary":"","tags":["tournament-events"],"security":[]}},"/tournament-events/{_id}":{"get":{"parameters":[{"in":"path","name":"_id","description":"ID of tournament-events to return","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/tournament-events"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Retrieves a single resource with the given id from the service.","summary":"","tags":["tournament-events"],"security":[]}},"/indexer-webhook":{"post":{"parameters":[],"responses":{"201":{"description":"created","content":{"application/json":{"schema":{"$ref":"#/components/schemas/indexer-webhook"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Creates a new resource with data.","summary":"","tags":["indexer-webhook"],"security":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/indexer-webhook"}}}}}},"/onchain-scores":{"get":{"parameters":[{"description":"Number of results to return","in":"query","name":"$limit","schema":{"type":"integer"}},{"description":"Number of results to skip","in":"query","name":"$skip","schema":{"type":"integer"}},{"description":"Property to sort results","in":"query","name":"$sort","style":"deepObject","schema":{"type":"object"}},{"description":"Query parameters to filter","in":"query","name":"filter","style":"form","explode":true,"schema":{"$ref":"#/components/schemas/onchain-scores"}}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/onchain-scoresPagination"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Retrieves a list of all resources from the service.","summary":"","tags":["onchain-scores"],"security":[]},"post":{"parameters":[],"responses":{"201":{"description":"created","content":{"application/json":{"schema":{"$ref":"#/components/schemas/onchain-scores"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Creates a new resource with data.","summary":"","tags":["onchain-scores"],"security":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/onchain-scores"}}}}}},"/onchain-scores/{_id}":{"get":{"parameters":[{"in":"path","name":"_id","description":"ID of onchain-scores to return","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/onchain-scores"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Retrieves a single resource with the given id from the service.","summary":"","tags":["onchain-scores"],"security":[]}},"/event-triggers":{"get":{"parameters":[{"description":"Number of results to return","in":"query","name":"$limit","schema":{"type":"integer"}},{"description":"Number of results to skip","in":"query","name":"$skip","schema":{"type":"integer"}},{"description":"Property to sort results","in":"query","name":"$sort","style":"deepObject","schema":{"type":"object"}},{"description":"Query parameters to filter","in":"query","name":"filter","style":"form","explode":true,"schema":{"$ref":"#/components/schemas/event-triggers"}}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/event-triggersPagination"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Retrieves a list of all resources from the service.","summary":"","tags":["event-triggers"],"security":[]},"post":{"parameters":[],"responses":{"201":{"description":"created","content":{"application/json":{"schema":{"$ref":"#/components/schemas/event-triggers"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Creates a new resource with data.","summary":"","tags":["event-triggers"],"security":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/event-triggers"}}}}}},"/event-triggers/{_id}":{"get":{"parameters":[{"in":"path","name":"_id","description":"ID of event-triggers to return","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/event-triggers"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Retrieves a single resource with the given id from the service.","summary":"","tags":["event-triggers"],"security":[]},"patch":{"parameters":[{"in":"path","name":"_id","description":"ID of event-triggers to update","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/event-triggers"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Updates the resource identified by id using data.","summary":"","tags":["event-triggers"],"security":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/event-triggers"}}}}},"delete":{"parameters":[{"in":"path","name":"_id","description":"ID of event-triggers to remove","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/event-triggers"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Removes the resource with id.","summary":"","tags":["event-triggers"],"security":[]}},"/privy-webhook":{"post":{"parameters":[],"responses":{"201":{"description":"created","content":{"application/json":{"schema":{"$ref":"#/components/schemas/privy-webhook"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Creates a new resource with data.","summary":"","tags":["privy-webhook"],"security":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/privy-webhook"}}}}}},"/associated-accounts":{"get":{"parameters":[{"description":"Number of results to return","in":"query","name":"$limit","schema":{"type":"integer"}},{"description":"Number of results to skip","in":"query","name":"$skip","schema":{"type":"integer"}},{"description":"Property to sort results","in":"query","name":"$sort","style":"deepObject","schema":{"type":"object"}},{"description":"Query parameters to filter","in":"query","name":"filter","style":"form","explode":true,"schema":{"$ref":"#/components/schemas/associated-accounts"}}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/associated-accountsPagination"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Retrieves a list of all resources from the service.","summary":"","tags":["associated-accounts"],"security":[]},"post":{"parameters":[],"responses":{"201":{"description":"created","content":{"application/json":{"schema":{"$ref":"#/components/schemas/associated-accounts"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Creates a new resource with data.","summary":"","tags":["associated-accounts"],"security":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/associated-accounts"}}}}}},"/associated-accounts/{_id}":{"get":{"parameters":[{"in":"path","name":"_id","description":"ID of associated-accounts to return","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/associated-accounts"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Retrieves a single resource with the given id from the service.","summary":"","tags":["associated-accounts"],"security":[]},"patch":{"parameters":[{"in":"path","name":"_id","description":"ID of associated-accounts to update","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/associated-accounts"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Updates the resource identified by id using data.","summary":"","tags":["associated-accounts"],"security":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/associated-accounts"}}}}},"delete":{"parameters":[{"in":"path","name":"_id","description":"ID of associated-accounts to remove","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/associated-accounts"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Removes the resource with id.","summary":"","tags":["associated-accounts"],"security":[]}},"/games-change-logs":{"get":{"parameters":[{"description":"Number of results to return","in":"query","name":"$limit","schema":{"type":"integer"}},{"description":"Number of results to skip","in":"query","name":"$skip","schema":{"type":"integer"}},{"description":"Property to sort results","in":"query","name":"$sort","style":"deepObject","schema":{"type":"object"}},{"description":"Query parameters to filter","in":"query","name":"filter","style":"form","explode":true,"schema":{"$ref":"#/components/schemas/games-change-logs"}}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/games-change-logsPagination"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Retrieves a list of all resources from the service.","summary":"","tags":["games-change-logs"],"security":[]},"post":{"parameters":[],"responses":{"201":{"description":"created","content":{"application/json":{"schema":{"$ref":"#/components/schemas/games-change-logs"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Creates a new resource with data.","summary":"","tags":["games-change-logs"],"security":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/games-change-logs"}}}}}},"/games-change-logs/{_id}":{"get":{"parameters":[{"in":"path","name":"_id","description":"ID of games-change-logs to return","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/games-change-logs"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Retrieves a single resource with the given id from the service.","summary":"","tags":["games-change-logs"],"security":[]},"patch":{"parameters":[{"in":"path","name":"_id","description":"ID of games-change-logs to update","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/games-change-logs"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Updates the resource identified by id using data.","summary":"","tags":["games-change-logs"],"security":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/games-change-logs"}}}}},"delete":{"parameters":[{"in":"path","name":"_id","description":"ID of games-change-logs to remove","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/games-change-logs"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Removes the resource with id.","summary":"","tags":["games-change-logs"],"security":[]}},"/get/{id}":{"get":{"parameters":[{"in":"path","name":"id","description":"ID of get to return","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/get"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Retrieves a single resource with the given id from the service.","summary":"","tags":["get"],"security":[]}},"/content-ratings":{"get":{"parameters":[{"description":"Number of results to return","in":"query","name":"$limit","schema":{"type":"integer"}},{"description":"Number of results to skip","in":"query","name":"$skip","schema":{"type":"integer"}},{"description":"Property to sort results","in":"query","name":"$sort","style":"deepObject","schema":{"type":"object"}},{"description":"Query parameters to filter","in":"query","name":"filter","style":"form","explode":true,"schema":{"$ref":"#/components/schemas/content-ratings"}}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/content-ratingsPagination"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Retrieves a list of all resources from the service.","summary":"","tags":["content-ratings"],"security":[]}},"/content-ratings/{_id}":{"get":{"parameters":[{"in":"path","name":"_id","description":"ID of content-ratings to return","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/content-ratings"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Retrieves a single resource with the given id from the service.","summary":"","tags":["content-ratings"],"security":[]},"delete":{"parameters":[{"in":"path","name":"_id","description":"ID of content-ratings to remove","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/content-ratings"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Removes the resource with id.","summary":"","tags":["content-ratings"],"security":[]}},"/thirdweb-webhook":{"post":{"parameters":[],"responses":{"201":{"description":"created","content":{"application/json":{"schema":{"$ref":"#/components/schemas/thirdweb-webhook"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Creates a new resource with data.","summary":"","tags":["thirdweb-webhook"],"security":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/thirdweb-webhook"}}}}}},"/social-actions":{"get":{"parameters":[{"description":"Number of results to return","in":"query","name":"$limit","schema":{"type":"integer"}},{"description":"Number of results to skip","in":"query","name":"$skip","schema":{"type":"integer"}},{"description":"Property to sort results","in":"query","name":"$sort","style":"deepObject","schema":{"type":"object"}},{"description":"Query parameters to filter","in":"query","name":"filter","style":"form","explode":true,"schema":{"$ref":"#/components/schemas/social-actions"}}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/social-actionsPagination"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Retrieves a list of all resources from the service.","summary":"","tags":["social-actions"],"security":[]}},"/social-actions/{_id}":{"get":{"parameters":[{"in":"path","name":"_id","description":"ID of social-actions to return","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/social-actions"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Retrieves a single resource with the given id from the service.","summary":"","tags":["social-actions"],"security":[]},"delete":{"parameters":[{"in":"path","name":"_id","description":"ID of social-actions to remove","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/social-actions"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Removes the resource with id.","summary":"","tags":["social-actions"],"security":[]}},"/layer3":{"get":{"parameters":[{"description":"Number of results to return","in":"query","name":"$limit","schema":{"type":"integer"}},{"description":"Number of results to skip","in":"query","name":"$skip","schema":{"type":"integer"}},{"description":"Property to sort results","in":"query","name":"$sort","style":"deepObject","schema":{"type":"object"}},{"description":"Query parameters to filter","in":"query","name":"filter","style":"form","explode":true,"schema":{"$ref":"#/components/schemas/layer3"}}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/layer3List"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Retrieves a list of all resources from the service.","summary":"","tags":["layer3"],"security":[]}},"/intract":{"post":{"parameters":[],"responses":{"201":{"description":"created","content":{"application/json":{"schema":{"$ref":"#/components/schemas/intract"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Creates a new resource with data.","summary":"","tags":["intract"],"security":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/intract"}}}}}},"/chain-networks":{"get":{"parameters":[{"description":"Number of results to return","in":"query","name":"$limit","schema":{"type":"integer"}},{"description":"Number of results to skip","in":"query","name":"$skip","schema":{"type":"integer"}},{"description":"Property to sort results","in":"query","name":"$sort","style":"deepObject","schema":{"type":"object"}},{"description":"Query parameters to filter","in":"query","name":"filter","style":"form","explode":true,"schema":{"$ref":"#/components/schemas/chain-networks"}}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/chain-networksPagination"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Retrieves a list of all resources from the service.","summary":"","tags":["chain-networks"],"security":[]}},"/game-creators":{"get":{"parameters":[{"description":"Number of results to return","in":"query","name":"$limit","schema":{"type":"integer"}},{"description":"Number of results to skip","in":"query","name":"$skip","schema":{"type":"integer"}},{"description":"Property to sort results","in":"query","name":"$sort","style":"deepObject","schema":{"type":"object"}},{"description":"Query parameters to filter","in":"query","name":"filter","style":"form","explode":true,"schema":{"$ref":"#/components/schemas/game-creators"}}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/game-creatorsPagination"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Retrieves a list of all resources from the service.","summary":"","tags":["game-creators"],"security":[]}},"/game-creators/{_id}":{"get":{"parameters":[{"in":"path","name":"_id","description":"ID of game-creators to return","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/game-creators"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Retrieves a single resource with the given id from the service.","summary":"","tags":["game-creators"],"security":[]},"delete":{"parameters":[{"in":"path","name":"_id","description":"ID of game-creators to remove","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/game-creators"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Removes the resource with id.","summary":"","tags":["game-creators"],"security":[]}},"/game-categories":{"get":{"parameters":[{"description":"Number of results to return","in":"query","name":"$limit","schema":{"type":"integer"}},{"description":"Number of results to skip","in":"query","name":"$skip","schema":{"type":"integer"}},{"description":"Property to sort results","in":"query","name":"$sort","style":"deepObject","schema":{"type":"object"}},{"description":"Query parameters to filter","in":"query","name":"filter","style":"form","explode":true,"schema":{"$ref":"#/components/schemas/game-categories"}}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/game-categoriesPagination"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Retrieves a list of all resources from the service.","summary":"","tags":["game-categories"],"security":[]}},"/game-categories/{_id}":{"get":{"parameters":[{"in":"path","name":"_id","description":"ID of game-categories to return","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/game-categories"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Retrieves a single resource with the given id from the service.","summary":"","tags":["game-categories"],"security":[]}},"/custom-activities":{"get":{"parameters":[{"description":"Number of results to return","in":"query","name":"$limit","schema":{"type":"integer"}},{"description":"Number of results to skip","in":"query","name":"$skip","schema":{"type":"integer"}},{"description":"Property to sort results","in":"query","name":"$sort","style":"deepObject","schema":{"type":"object"}},{"description":"Query parameters to filter","in":"query","name":"filter","style":"form","explode":true,"schema":{"$ref":"#/components/schemas/custom-activities"}}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/custom-activitiesPagination"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Retrieves a list of all resources from the service.","summary":"","tags":["custom-activities"],"security":[]}},"/custom-activities/{_id}":{"get":{"parameters":[{"in":"path","name":"_id","description":"ID of custom-activities to return","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/custom-activities"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Retrieves a single resource with the given id from the service.","summary":"","tags":["custom-activities"],"security":[]}},"/channels-history":{"get":{"parameters":[{"description":"Number of results to return","in":"query","name":"$limit","schema":{"type":"integer"}},{"description":"Number of results to skip","in":"query","name":"$skip","schema":{"type":"integer"}},{"description":"Property to sort results","in":"query","name":"$sort","style":"deepObject","schema":{"type":"object"}},{"description":"Query parameters to filter","in":"query","name":"filter","style":"form","explode":true,"schema":{"$ref":"#/components/schemas/channels-history"}}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/channels-historyPagination"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Retrieves a list of all resources from the service.","summary":"","tags":["channels-history"],"security":[]},"put":{"parameters":[],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/channels-historyList"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Updates multiple resources.","summary":"","tags":["channels-history"],"security":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/channels-historyList"}}}}},"patch":{"parameters":[{"description":"Query parameters to filter","in":"query","name":"filter","style":"form","explode":true,"schema":{"$ref":"#/components/schemas/channels-history"}}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/channels-historyList"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Updates multiple resources queried by given filters.","summary":"","tags":["channels-history"],"security":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/channels-history"}}}}},"delete":{"parameters":[{"description":"Query parameters to filter","in":"query","name":"filter","style":"form","explode":true,"schema":{"$ref":"#/components/schemas/channels-history"}}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/channels-historyList"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Removes multiple resources queried by given filters.","summary":"","tags":["channels-history"],"security":[]}},"/channels-history/{_id}":{"get":{"parameters":[{"in":"path","name":"_id","description":"ID of channels-history to return","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/channels-history"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Retrieves a single resource with the given id from the service.","summary":"","tags":["channels-history"],"security":[]}},"/trade-sessions":{"get":{"parameters":[{"description":"Number of results to return","in":"query","name":"$limit","schema":{"type":"integer"}},{"description":"Number of results to skip","in":"query","name":"$skip","schema":{"type":"integer"}},{"description":"Property to sort results","in":"query","name":"$sort","style":"deepObject","schema":{"type":"object"}},{"description":"Query parameters to filter","in":"query","name":"filter","style":"form","explode":true,"schema":{"$ref":"#/components/schemas/trade-sessions"}}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/trade-sessionsPagination"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Retrieves a list of all resources from the service.","summary":"","tags":["trade-sessions"],"security":[]},"post":{"parameters":[],"responses":{"201":{"description":"created","content":{"application/json":{"schema":{"$ref":"#/components/schemas/trade-sessions"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Creates a new resource with data.","summary":"","tags":["trade-sessions"],"security":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/trade-sessions"}}}}}},"/trade-sessions/{_id}":{"get":{"parameters":[{"in":"path","name":"_id","description":"ID of trade-sessions to return","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/trade-sessions"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Retrieves a single resource with the given id from the service.","summary":"","tags":["trade-sessions"],"security":[]},"patch":{"parameters":[{"in":"path","name":"_id","description":"ID of trade-sessions to update","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/trade-sessions"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Updates the resource identified by id using data.","summary":"","tags":["trade-sessions"],"security":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/trade-sessions"}}}}},"delete":{"parameters":[{"in":"path","name":"_id","description":"ID of trade-sessions to remove","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/trade-sessions"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Removes the resource with id.","summary":"","tags":["trade-sessions"],"security":[]}},"/scores":{"get":{"parameters":[{"description":"Number of results to return","in":"query","name":"$limit","schema":{"type":"integer"}},{"description":"Number of results to skip","in":"query","name":"$skip","schema":{"type":"integer"}},{"description":"Property to sort results","in":"query","name":"$sort","style":"deepObject","schema":{"type":"object"}},{"description":"Query parameters to filter","in":"query","name":"filter","style":"form","explode":true,"schema":{"$ref":"#/components/schemas/scores"}}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/scoresPagination"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Retrieves a list of all resources from the service.","summary":"","tags":["scores"],"security":[]}},"/profiles":{"get":{"parameters":[{"description":"Number of results to return","in":"query","name":"$limit","schema":{"type":"integer"}},{"description":"Number of results to skip","in":"query","name":"$skip","schema":{"type":"integer"}},{"description":"Property to sort results","in":"query","name":"$sort","style":"deepObject","schema":{"type":"object"}},{"description":"Query parameters to filter","in":"query","name":"filter","style":"form","explode":true,"schema":{"$ref":"#/components/schemas/profiles"}}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/profilesPagination"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Retrieves a list of all resources from the service.","summary":"","tags":["profiles"],"security":[]}},"/profiles/{_id}":{"get":{"parameters":[{"in":"path","name":"_id","description":"ID of profiles to return","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/profiles"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Retrieves a single resource with the given id from the service.","summary":"","tags":["profiles"],"security":[]}},"/game-channels":{"get":{"parameters":[{"description":"Number of results to return","in":"query","name":"$limit","schema":{"type":"integer"}},{"description":"Number of results to skip","in":"query","name":"$skip","schema":{"type":"integer"}},{"description":"Property to sort results","in":"query","name":"$sort","style":"deepObject","schema":{"type":"object"}},{"description":"Query parameters to filter","in":"query","name":"filter","style":"form","explode":true,"schema":{"$ref":"#/components/schemas/game-channels"}}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/game-channelsPagination"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Retrieves a list of all resources from the service.","summary":"","tags":["game-channels"],"security":[]},"post":{"parameters":[],"responses":{"201":{"description":"created","content":{"application/json":{"schema":{"oneOf":[{"$ref":"#/components/schemas/game-channels"},{"$ref":"#/components/schemas/game-channelsList"}]}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Creates a new resource with data.","summary":"","tags":["game-channels"],"security":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"oneOf":[{"$ref":"#/components/schemas/game-channels"},{"$ref":"#/components/schemas/game-channelsList"}]}}}}},"put":{"parameters":[],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/game-channelsList"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Updates multiple resources.","summary":"","tags":["game-channels"],"security":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/game-channelsList"}}}}},"patch":{"parameters":[{"description":"Query parameters to filter","in":"query","name":"filter","style":"form","explode":true,"schema":{"$ref":"#/components/schemas/game-channels"}}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/game-channelsList"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Updates multiple resources queried by given filters.","summary":"","tags":["game-channels"],"security":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/game-channels"}}}}},"delete":{"parameters":[{"description":"Query parameters to filter","in":"query","name":"filter","style":"form","explode":true,"schema":{"$ref":"#/components/schemas/game-channels"}}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/game-channelsList"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Removes multiple resources queried by given filters.","summary":"","tags":["game-channels"],"security":[]}},"/game-channels/{_id}":{"get":{"parameters":[{"in":"path","name":"_id","description":"ID of game-channels to return","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/game-channels"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Retrieves a single resource with the given id from the service.","summary":"","tags":["game-channels"],"security":[]},"delete":{"parameters":[{"in":"path","name":"_id","description":"ID of game-channels to remove","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/game-channels"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Removes the resource with id.","summary":"","tags":["game-channels"],"security":[]}},"/games":{"get":{"parameters":[{"description":"Number of results to return","in":"query","name":"$limit","schema":{"type":"integer"}},{"description":"Number of results to skip","in":"query","name":"$skip","schema":{"type":"integer"}},{"description":"Property to sort results","in":"query","name":"$sort","style":"deepObject","schema":{"type":"object"}},{"description":"Query parameters to filter","in":"query","name":"filter","style":"form","explode":true,"schema":{"$ref":"#/components/schemas/games"}}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/gamesPagination"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Retrieves a list of all resources from the service.","summary":"","tags":["games"],"security":[]},"post":{"parameters":[],"responses":{"201":{"description":"created","content":{"application/json":{"schema":{"$ref":"#/components/schemas/games"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Creates a new resource with data.","summary":"","tags":["games"],"security":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/games"}}}}}},"/games/{_id}":{"get":{"parameters":[{"in":"path","name":"_id","description":"ID of games to return","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/games"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Retrieves a single resource with the given id from the service.","summary":"","tags":["games"],"security":[]},"patch":{"parameters":[{"in":"path","name":"_id","description":"ID of games to update","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/games"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Updates the resource identified by id using data.","summary":"","tags":["games"],"security":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/games"}}}}},"delete":{"parameters":[{"in":"path","name":"_id","description":"ID of games to remove","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/games"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Removes the resource with id.","summary":"","tags":["games"],"security":[]}},"/activities":{"get":{"parameters":[{"description":"Number of results to return","in":"query","name":"$limit","schema":{"type":"integer"}},{"description":"Number of results to skip","in":"query","name":"$skip","schema":{"type":"integer"}},{"description":"Property to sort results","in":"query","name":"$sort","style":"deepObject","schema":{"type":"object"}},{"description":"Query parameters to filter","in":"query","name":"filter","style":"form","explode":true,"schema":{"$ref":"#/components/schemas/activities"}}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/activitiesList"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Retrieves a list of all resources from the service.","summary":"","tags":["activities"],"security":[]}},"/basemint":{"get":{"parameters":[{"description":"Number of results to return","in":"query","name":"$limit","schema":{"type":"integer"}},{"description":"Number of results to skip","in":"query","name":"$skip","schema":{"type":"integer"}},{"description":"Property to sort results","in":"query","name":"$sort","style":"deepObject","schema":{"type":"object"}},{"description":"Query parameters to filter","in":"query","name":"filter","style":"form","explode":true,"schema":{"$ref":"#/components/schemas/basemint"}}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/basemintPagination"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Retrieves a list of all resources from the service.","summary":"","tags":["basemint"],"security":[]},"post":{"parameters":[],"responses":{"201":{"description":"created","content":{"application/json":{"schema":{"$ref":"#/components/schemas/basemint"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Creates a new resource with data.","summary":"","tags":["basemint"],"security":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/basemint"}}}}}},"/basemint/{_id}":{"get":{"parameters":[{"in":"path","name":"_id","description":"ID of basemint to return","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/basemint"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Retrieves a single resource with the given id from the service.","summary":"","tags":["basemint"],"security":[]},"patch":{"parameters":[{"in":"path","name":"_id","description":"ID of basemint to update","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/basemint"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Updates the resource identified by id using data.","summary":"","tags":["basemint"],"security":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/basemint"}}}}},"delete":{"parameters":[{"in":"path","name":"_id","description":"ID of basemint to remove","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/basemint"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Removes the resource with id.","summary":"","tags":["basemint"],"security":[]}},"/leaderboard-sdk-buffer":{"put":{"parameters":[],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/leaderboard-sdk-bufferList"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Updates multiple resources.","summary":"","tags":["leaderboard-sdk-buffer"],"security":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/leaderboard-sdk-bufferList"}}}}},"patch":{"parameters":[{"description":"Query parameters to filter","in":"query","name":"filter","style":"form","explode":true,"schema":{"$ref":"#/components/schemas/leaderboard-sdk-buffer"}}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/leaderboard-sdk-bufferList"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Updates multiple resources queried by given filters.","summary":"","tags":["leaderboard-sdk-buffer"],"security":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/leaderboard-sdk-buffer"}}}}},"delete":{"parameters":[{"description":"Query parameters to filter","in":"query","name":"filter","style":"form","explode":true,"schema":{"$ref":"#/components/schemas/leaderboard-sdk-buffer"}}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/leaderboard-sdk-bufferList"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Removes multiple resources queried by given filters.","summary":"","tags":["leaderboard-sdk-buffer"],"security":[]}},"/portal-chains":{"get":{"parameters":[{"description":"Number of results to return","in":"query","name":"$limit","schema":{"type":"integer"}},{"description":"Number of results to skip","in":"query","name":"$skip","schema":{"type":"integer"}},{"description":"Property to sort results","in":"query","name":"$sort","style":"deepObject","schema":{"type":"object"}},{"description":"Query parameters to filter","in":"query","name":"filter","style":"form","explode":true,"schema":{"$ref":"#/components/schemas/portal-chains"}}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/portal-chainsPagination"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Retrieves a list of all resources from the service.","summary":"","tags":["portal-chains"],"security":[]}},"/quests":{"get":{"parameters":[{"description":"Number of results to return","in":"query","name":"$limit","schema":{"type":"integer"}},{"description":"Number of results to skip","in":"query","name":"$skip","schema":{"type":"integer"}},{"description":"Property to sort results","in":"query","name":"$sort","style":"deepObject","schema":{"type":"object"}},{"description":"Query parameters to filter","in":"query","name":"filter","style":"form","explode":true,"schema":{"$ref":"#/components/schemas/quests"}}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/questsPagination"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Retrieves a list of all resources from the service.","summary":"","tags":["quests"],"security":[]}},"/quests/{_id}":{"get":{"parameters":[{"in":"path","name":"_id","description":"ID of quests to return","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/quests"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Retrieves a single resource with the given id from the service.","summary":"","tags":["quests"],"security":[]},"delete":{"parameters":[{"in":"path","name":"_id","description":"ID of quests to remove","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/quests"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Removes the resource with id.","summary":"","tags":["quests"],"security":[]}},"/quest-claim-rewards":{"get":{"parameters":[{"description":"Number of results to return","in":"query","name":"$limit","schema":{"type":"integer"}},{"description":"Number of results to skip","in":"query","name":"$skip","schema":{"type":"integer"}},{"description":"Property to sort results","in":"query","name":"$sort","style":"deepObject","schema":{"type":"object"}},{"description":"Query parameters to filter","in":"query","name":"filter","style":"form","explode":true,"schema":{"$ref":"#/components/schemas/quest-claim-rewards"}}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/quest-claim-rewardsPagination"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Retrieves a list of all resources from the service.","summary":"","tags":["quest-claim-rewards"],"security":[]}},"/task-registry":{"get":{"parameters":[{"description":"Number of results to return","in":"query","name":"$limit","schema":{"type":"integer"}},{"description":"Number of results to skip","in":"query","name":"$skip","schema":{"type":"integer"}},{"description":"Property to sort results","in":"query","name":"$sort","style":"deepObject","schema":{"type":"object"}},{"description":"Query parameters to filter","in":"query","name":"filter","style":"form","explode":true,"schema":{"$ref":"#/components/schemas/task-registry"}}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/task-registryList"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Retrieves a list of all resources from the service.","summary":"","tags":["task-registry"],"security":[]}},"/task-registry/{id}":{"get":{"parameters":[{"in":"path","name":"id","description":"ID of task-registry to return","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/task-registry"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Retrieves a single resource with the given id from the service.","summary":"","tags":["task-registry"],"security":[]}},"/tournaments":{"get":{"parameters":[{"description":"Number of results to return","in":"query","name":"$limit","schema":{"type":"integer"}},{"description":"Number of results to skip","in":"query","name":"$skip","schema":{"type":"integer"}},{"description":"Property to sort results","in":"query","name":"$sort","style":"deepObject","schema":{"type":"object"}},{"description":"Query parameters to filter","in":"query","name":"filter","style":"form","explode":true,"schema":{"$ref":"#/components/schemas/tournaments"}}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/tournamentsPagination"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Retrieves a list of all resources from the service.","summary":"","tags":["tournaments"],"security":[]},"post":{"parameters":[],"responses":{"201":{"description":"created","content":{"application/json":{"schema":{"$ref":"#/components/schemas/tournaments"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Creates a new resource with data.","summary":"","tags":["tournaments"],"security":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/tournaments"}}}}}},"/tournaments/{_id}":{"get":{"parameters":[{"in":"path","name":"_id","description":"ID of tournaments to return","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/tournaments"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Retrieves a single resource with the given id from the service.","summary":"","tags":["tournaments"],"security":[]}},"/sign-messages":{"get":{"parameters":[{"description":"Number of results to return","in":"query","name":"$limit","schema":{"type":"integer"}},{"description":"Number of results to skip","in":"query","name":"$skip","schema":{"type":"integer"}},{"description":"Property to sort results","in":"query","name":"$sort","style":"deepObject","schema":{"type":"object"}},{"description":"Query parameters to filter","in":"query","name":"filter","style":"form","explode":true,"schema":{"$ref":"#/components/schemas/sign-messages"}}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/sign-messagesPagination"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Retrieves a list of all resources from the service.","summary":"","tags":["sign-messages"],"security":[]},"post":{"parameters":[],"responses":{"201":{"description":"created","content":{"application/json":{"schema":{"$ref":"#/components/schemas/sign-messages"}}}},"401":{"description":"not authenticated"},"500":{"description":"general error"}},"description":"Creates a new resource with data.","summary":"","tags":["sign-messages"],"security":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/sign-messages"}}}}}},"/sign-messages/{_id}":{"get":{"parameters":[{"in":"path","name":"_id","description":"ID of sign-messages to return","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/sign-messages"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Retrieves a single resource with the given id from the service.","summary":"","tags":["sign-messages"],"security":[]},"patch":{"parameters":[{"in":"path","name":"_id","description":"ID of sign-messages to update","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/sign-messages"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Updates the resource identified by id using data.","summary":"","tags":["sign-messages"],"security":[],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/sign-messages"}}}}},"delete":{"parameters":[{"in":"path","name":"_id","description":"ID of sign-messages to remove","schema":{"type":"integer"},"required":true}],"responses":{"200":{"description":"success","content":{"application/json":{"schema":{"$ref":"#/components/schemas/sign-messages"}}}},"401":{"description":"not authenticated"},"404":{"description":"not found"},"500":{"description":"general error"}},"description":"Removes the resource with id.","summary":"","tags":["sign-messages"],"security":[]}}},"components":{"schemas":{"LauncherJwt":{"type":"object","required":["launcherJwt"],"properties":{"launcherJwt":{"type":"string","description":"JWT token for launcher authentication"}}},"WalletAddress":{"type":"string","pattern":"^0x[a-fA-F0-9]{40}$","description":"Ethereum wallet address"},"ObjectId":{"type":"string","pattern":"^[0-9a-fA-F]{24}$","description":"MongoDB ObjectId"},"UUID":{"type":"string","format":"uuid","description":"UUID v4 string"},"PaginationQuery":{"type":"object","properties":{"$limit":{"type":"integer","minimum":1,"maximum":100,"description":"Number of records to return"},"$skip":{"type":"integer","minimum":0,"description":"Number of records to skip"},"$sort":{"type":"object","description":"Sort order object"}}},"PaginatedResponse":{"type":"object","properties":{"total":{"type":"integer","description":"Total number of records"},"limit":{"type":"integer","description":"Limit used for this query"},"skip":{"type":"integer","description":"Skip used for this query"},"data":{"type":"array","description":"Array of result objects"}}},"Token":{"type":"object","required":["chainId","contractAddress","type"],"properties":{"chainId":{"type":"integer","description":"Blockchain chain ID"},"contractAddress":{"$ref":"#/definitions/WalletAddress","description":"Token contract address"},"type":{"type":"string","enum":["erc20","erc721","erc1155"],"description":"Token standard type"}}},"SendNotificationRequest":{"allOf":[{"$ref":"#/definitions/LauncherJwt"},{"type":"object","required":["type","message"],"properties":{"type":{"type":"string","description":"Notification type"},"message":{"type":"string","description":"Notification message content"}}}]},"GetScoresRequest":{"allOf":[{"$ref":"#/definitions/LauncherJwt"},{"$ref":"#/definitions/PaginationQuery"},{"type":"object","properties":{"nonce":{"type":"string","description":"Optional nonce for filtering scores"}}}]},"SetScoreRequest":{"allOf":[{"$ref":"#/definitions/LauncherJwt"},{"type":"object","required":["score","nonce","sessionId"],"properties":{"score":{"type":"number","description":"Score value to set"},"nonce":{"type":"string","description":"Unique nonce for this score entry"},"sessionId":{"type":"string","description":"Game session identifier"}}}]},"SetStateRequest":{"allOf":[{"$ref":"#/definitions/LauncherJwt"},{"type":"object","required":["state","label"],"properties":{"state":{"type":"string","maxLength":1048576,"description":"State data (max 1MB)"},"label":{"type":"string","maxLength":64,"description":"State label/identifier"}}}]},"GetStatesRequest":{"allOf":[{"$ref":"#/definitions/LauncherJwt"},{"$ref":"#/definitions/PaginationQuery"},{"type":"object","properties":{"label":{"type":"string","description":"Optional label filter"}}}]},"SendCustomActivityRequest":{"allOf":[{"$ref":"#/definitions/LauncherJwt"},{"type":"object","required":["label","eventId"],"properties":{"label":{"type":"string","description":"Activity label"},"eventId":{"type":"string","description":"Event identifier"}}}]},"TriggerRulesEngineRequest":{"allOf":[{"$ref":"#/definitions/LauncherJwt"},{"type":"object","required":["trigger"],"properties":{"trigger":{"type":"string","description":"Rules engine trigger name"},"nonce":{"type":"string","description":"Optional nonce"},"value":{"oneOf":[{"type":"string"},{"type":"number"}],"description":"Optional trigger value"},"otherWallet":{"$ref":"#/definitions/WalletAddress","description":"Optional other wallet address"},"walletToTip":{"$ref":"#/definitions/WalletAddress","description":"Optional wallet to tip"},"amountEth":{"type":"string","description":"Optional ETH amount"},"chainId":{"type":"integer","description":"Optional chain ID"},"profileAddress":{"$ref":"#/definitions/WalletAddress","description":"Optional profile address"},"interactionId":{"$ref":"#/definitions/ObjectId","description":"Optional interaction ID"},"mintNftlayout":{"type":"string","enum":["default","compact"],"description":"Optional NFT mint layout"},"contractAddress":{"$ref":"#/definitions/WalletAddress","description":"Optional contract address"},"sessionId":{"type":"string","description":"Optional session ID"}}}]},"CreateUnverifiedChannelRequest":{"type":"object","required":["wallet"],"properties":{"wallet":{"$ref":"#/definitions/WalletAddress","description":"Wallet address for channel creation"}}},"VerifyUnverifiedChannelRequest":{"type":"object","required":["channelId"],"properties":{"channelId":{"$ref":"#/definitions/ObjectId","description":"Channel ID to verify"},"signature":{"type":"string","description":"Wallet signature for verification"},"chainId":{"type":"integer","description":"Chain ID for verification"}}},"CreateMessageChannelRequest":{"allOf":[{"$ref":"#/definitions/LauncherJwt"},{"type":"object","required":["otherParticipants"],"properties":{"otherParticipants":{"type":"array","items":{"$ref":"#/definitions/WalletAddress"},"description":"Array of participant wallet addresses"},"channelName":{"type":"string","description":"Optional channel name"}}}]},"GetChannelMessagesRequest":{"allOf":[{"$ref":"#/definitions/LauncherJwt"},{"$ref":"#/definitions/PaginationQuery"},{"type":"object","required":["channelId"],"properties":{"channelId":{"$ref":"#/definitions/ObjectId","description":"Channel ID to get messages from"}}}]},"SendChannelMessageRequest":{"allOf":[{"$ref":"#/definitions/LauncherJwt"},{"type":"object","required":["channelId","content"],"properties":{"channelId":{"$ref":"#/definitions/ObjectId","description":"Channel ID to send message to"},"content":{"type":"string","description":"Message content"}}}]},"EditChannelMessageRequest":{"allOf":[{"$ref":"#/definitions/LauncherJwt"},{"type":"object","required":["messageId","newContent"],"properties":{"messageId":{"$ref":"#/definitions/ObjectId","description":"Message ID to edit"},"newContent":{"type":"string","description":"New message content"}}}]},"UnsendChannelMessageRequest":{"allOf":[{"$ref":"#/definitions/LauncherJwt"},{"type":"object","required":["messageId"],"properties":{"messageId":{"$ref":"#/definitions/ObjectId","description":"Message ID to unsend"}}}]},"GetTokenBalanceRequest":{"allOf":[{"$ref":"#/definitions/LauncherJwt"},{"type":"object","required":["tokens"],"properties":{"tokens":{"type":"array","items":{"$ref":"#/definitions/Token"},"description":"Array of tokens to check balances for"}}}]},"TrackGameSessionsRequest":{"allOf":[{"$ref":"#/definitions/LauncherJwt"},{"type":"object","required":["sessionId","state"],"properties":{"sessionId":{"$ref":"#/definitions/UUID","description":"Game session UUID"},"state":{"type":"string","maxLength":1048576,"description":"Session state data (max 1MB)"},"endTime":{"type":"number","description":"Optional session end timestamp"}}}]},"SuccessResponse":{"type":"object","properties":{"success":{"type":"boolean","description":"Operation success status"},"error":{"type":"string","description":"Error message if success is false"}}},"ScoreResponse":{"type":"object","properties":{"_id":{"$ref":"#/definitions/ObjectId"},"score":{"type":"number"},"nonce":{"type":"string"},"sessionId":{"type":"string"},"createdAt":{"type":"string","format":"date-time"},"updatedAt":{"type":"string","format":"date-time"}}},"StateResponse":{"type":"object","properties":{"_id":{"$ref":"#/definitions/ObjectId"},"state":{"type":"string"},"label":{"type":"string"},"createdAt":{"type":"string","format":"date-time"},"updatedAt":{"type":"string","format":"date-time"}}},"MessageChannelResponse":{"type":"object","properties":{"_id":{"$ref":"#/definitions/ObjectId"},"participants":{"type":"array","items":{"$ref":"#/definitions/WalletAddress"}},"channelName":{"type":"string"},"createdAt":{"type":"string","format":"date-time"},"updatedAt":{"type":"string","format":"date-time"}}},"ChatMessageResponse":{"type":"object","properties":{"_id":{"$ref":"#/definitions/ObjectId"},"content":{"type":"string"},"sender":{"$ref":"#/definitions/WalletAddress"},"channelId":{"$ref":"#/definitions/ObjectId"},"createdAt":{"type":"string","format":"date-time"},"updatedAt":{"type":"string","format":"date-time"}}},"TokenBalanceResponse":{"type":"object","properties":{"chainId":{"type":"integer"},"contractAddress":{"$ref":"#/definitions/WalletAddress"},"type":{"type":"string","enum":["erc20","erc721","erc1155"]},"balance":{"type":"string","description":"Token balance as string"},"decimals":{"type":"integer","description":"Token decimals (for ERC20)"},"symbol":{"type":"string","description":"Token symbol"},"name":{"type":"string","description":"Token name"}}},"ErrorResponse":{"type":"object","properties":{"success":{"type":"boolean","const":false},"message":{"type":"string","description":"Human-readable error message"}}},"AuthenticationErrorResponses":{"type":"object","description":"Common authentication error responses","properties":{"401":{"description":"Unauthorized - Missing or invalid JWT","content":{"application/json":{"schema":{"$ref":"#/definitions/ErrorResponse"},"examples":{"missingJWT":{"value":{"success":false,"message":"Missing JWT"}},"invalidJWT":{"value":{"success":false,"message":"No JWT was provided"}}}}}},"403":{"description":"Forbidden - Authentication failed","content":{"application/json":{"schema":{"$ref":"#/definitions/ErrorResponse"},"examples":{"authFailed":{"value":{"success":false,"message":"Could not verify authentication"}},"invalidSecret":{"value":{"success":false,"message":"Invalid secret"}}}}}},"404":{"description":"Not Found - Resource not found","content":{"application/json":{"schema":{"$ref":"#/definitions/ErrorResponse"},"examples":{"noChannel":{"value":{"success":false,"message":"No channel found"}},"userNotFound":{"value":{"success":false,"message":"User not found"}}}}}}}}}},"openapi":"3.0.3","tags":[{"name":"authentication","description":"A authentication service"},{"name":"proof-of-play-emitter","description":"A proof-of-play-emitter service"},{"name":"ens-webhooks","description":"A ens-webhooks service"},{"name":"aggregate-leaderboards","description":"A aggregate-leaderboards service"},{"name":"campaign-verifier","description":"A campaign-verifier service"},{"name":"leaderboard-histories","description":"A leaderboard-histories service"},{"name":"sig-mint-collections","description":"A sig-mint-collections service"},{"name":"tournament-events","description":"A tournament-events service"},{"name":"indexer-webhook","description":"A indexer-webhook service"},{"name":"onchain-scores","description":"A onchain-scores service"},{"name":"event-triggers","description":"A event-triggers service"},{"name":"privy-webhook","description":"A privy-webhook service"},{"name":"associated-accounts","description":"A associated-accounts service"},{"name":"games-change-logs","description":"A games-change-logs service"},{"name":"get","description":"A get service"},{"name":"content-ratings","description":"A content-ratings service"},{"name":"thirdweb-webhook","description":"A thirdweb-webhook service"},{"name":"social-actions","description":"A social-actions service"},{"name":"layer3","description":"A layer3 service"},{"name":"intract","description":"A intract service"},{"name":"chain-networks","description":"A chain-networks service"},{"name":"game-creators","description":"A game-creators service"},{"name":"game-categories","description":"A game-categories service"},{"name":"custom-activities","description":"A custom-activities service"},{"name":"channels-history","description":"A channels-history service"},{"name":"trade-sessions","description":"A trade-sessions service"},{"name":"scores","description":"A scores service"},{"name":"profiles","description":"A profiles service"},{"name":"game-channels","description":"A game-channels service"},{"name":"games","description":"A games service"},{"name":"activities","description":"A activities service"},{"name":"basemint","description":"A basemint service"},{"name":"leaderboard-sdk-buffer","description":"A leaderboard-sdk-buffer service"},{"name":"portal-chains","description":"A portal-chains service"},{"name":"quests","description":"A quests service"},{"name":"quest-claim-rewards","description":"A quest-claim-rewards service"},{"name":"task-registry","description":"A task-registry service"},{"name":"tournaments","description":"A tournaments service"},{"name":"sign-messages","description":"A sign-messages service"}]}
+{
+  "info": {
+    "title": "Basement Launcher API Documentation",
+    "description": "Welcome to the Basement.fun Launcher API documentation! This guide will help you integrate your game with our platform using B3's Launcher API.\n\nSee more documentation at [https://docs.b3.fun](https://docs.b3.fun)\n\n## **Authorization**\n\nTo call the APIs, there are two steps of authorization. The launcherJwt (A JSON-Web-Token that links to the specific user's session with the game (passed in the request body), and the client secret (passed as Authorization header)\n\n##### Obtaining a Launcher JWT:\n\n1. Embedded games in launcher, or external web games: the launcher loads the link of the game with an additional query parameter which contains the token.\n2. External non-web games (Telegram, desktop, etc.): to get a JWT and maintain the session, you must manually create a session and call the heartbeat API to keep it alive.\n\n## Session Management\n\nFor external games, use the createUnverifiedChannel and verifyUnverifiedChannel flow, then maintain the session with channelHeartbeat every 3 minutes.\n\n## Payload Verification\n\nUse the \"launcherSignatureVerification\" feature flag with MD5 signatures to prevent client-side request forgery.",
+    "version": "1.0.0"
+  },
+  "include": ["launcher"],
+  "schemes": ["http", "https"],
+  "paths": {
+    "/launcher/sendNotification": {
+      "post": {
+        "summary": "Send Notification",
+        "description": "Send a notification to the user",
+        "tags": ["launcher"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendNotificationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Notification sent successfully"},
+          "401": {"description": "not authenticated"},
+          "500": {"description": "general error"}
+        }
+      }
+    },
+    "/launcher/getUserScores": {
+      "post": {
+        "summary": "Get User Scores",
+        "description": "Get user scores with optional filtering",
+        "tags": ["launcher"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetScoresRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "User scores retrieved successfully"},
+          "401": {"description": "not authenticated"},
+          "500": {"description": "general error"}
+        }
+      }
+    },
+    "/launcher/setUserScore": {
+      "post": {
+        "summary": "Set User Score",
+        "description": "Set or update a user's score",
+        "tags": ["launcher"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetScoreRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Score set successfully"},
+          "401": {"description": "not authenticated"},
+          "500": {"description": "general error"}
+        }
+      }
+    },
+    "/launcher/setState": {
+      "post": {
+        "summary": "Set State",
+        "description": "Set or update user state data",
+        "tags": ["launcher"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetStateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "State set successfully"},
+          "401": {"description": "not authenticated"},
+          "500": {"description": "general error"}
+        }
+      }
+    },
+    "/launcher/getStates": {
+      "post": {
+        "summary": "Get States",
+        "description": "Get user state data with optional filtering",
+        "tags": ["launcher"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetStatesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "States retrieved successfully"},
+          "401": {"description": "not authenticated"},
+          "500": {"description": "general error"}
+        }
+      }
+    },
+    "/launcher/sendCustomActivity": {
+      "post": {
+        "summary": "Send Custom Activity",
+        "description": "Send a custom activity event",
+        "tags": ["launcher"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendCustomActivityRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Custom activity sent successfully"},
+          "401": {"description": "not authenticated"},
+          "500": {"description": "general error"}
+        }
+      }
+    },
+    "/launcher/triggerRulesEngine": {
+      "post": {
+        "summary": "Trigger Rules Engine",
+        "description": "Trigger a rules engine event",
+        "tags": ["launcher"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TriggerRulesEngineRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Rules engine triggered successfully"},
+          "401": {"description": "not authenticated"},
+          "500": {"description": "general error"}
+        }
+      }
+    },
+    "/launcher/createUnverifiedChannel": {
+      "post": {
+        "summary": "Create Unverified Channel",
+        "description": "Create an unverified channel for external games",
+        "tags": ["launcher"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUnverifiedChannelRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Unverified channel created successfully"},
+          "401": {"description": "not authenticated"},
+          "500": {"description": "general error"}
+        }
+      }
+    },
+    "/launcher/verifyUnverifiedChannel": {
+      "post": {
+        "summary": "Verify Unverified Channel",
+        "description": "Verify an unverified channel with wallet signature",
+        "tags": ["launcher"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyUnverifiedChannelRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Channel verified successfully"},
+          "401": {"description": "not authenticated"},
+          "500": {"description": "general error"}
+        }
+      }
+    },
+    "/launcher/channelHeartbeat": {
+      "post": {
+        "summary": "Channel Heartbeat",
+        "description": "Send heartbeat to keep session alive",
+        "tags": ["launcher"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LauncherJwt"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Heartbeat sent successfully"},
+          "401": {"description": "not authenticated"},
+          "500": {"description": "general error"}
+        }
+      }
+    },
+    "/launcher/createMessageChannel": {
+      "post": {
+        "summary": "Create Message Channel",
+        "description": "Create a new message channel",
+        "tags": ["launcher"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMessageChannelRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Message channel created successfully"},
+          "401": {"description": "not authenticated"},
+          "500": {"description": "general error"}
+        }
+      }
+    },
+    "/launcher/getChannelMessages": {
+      "post": {
+        "summary": "Get Channel Messages",
+        "description": "Get messages from a channel",
+        "tags": ["launcher"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetChannelMessagesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Channel messages retrieved successfully"},
+          "401": {"description": "not authenticated"},
+          "500": {"description": "general error"}
+        }
+      }
+    },
+    "/launcher/sendChannelMessage": {
+      "post": {
+        "summary": "Send Channel Message",
+        "description": "Send a message to a channel",
+        "tags": ["launcher"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendChannelMessageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Message sent successfully"},
+          "401": {"description": "not authenticated"},
+          "500": {"description": "general error"}
+        }
+      }
+    },
+    "/launcher/editChannelMessage": {
+      "post": {
+        "summary": "Edit Channel Message",
+        "description": "Edit a channel message",
+        "tags": ["launcher"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditChannelMessageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Message edited successfully"},
+          "401": {"description": "not authenticated"},
+          "500": {"description": "general error"}
+        }
+      }
+    },
+    "/launcher/unsendChannelMessage": {
+      "post": {
+        "summary": "Unsend Channel Message",
+        "description": "Unsend a channel message",
+        "tags": ["launcher"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnsendChannelMessageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Message unsent successfully"},
+          "401": {"description": "not authenticated"},
+          "500": {"description": "general error"}
+        }
+      }
+    },
+    "/launcher/getTokenBalance": {
+      "post": {
+        "summary": "Get Token Balance",
+        "description": "Get token balances for the user",
+        "tags": ["launcher"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetTokenBalanceRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Token balances retrieved successfully"},
+          "401": {"description": "not authenticated"},
+          "500": {"description": "general error"}
+        }
+      }
+    },
+    "/launcher/trackGameSessions": {
+      "post": {
+        "summary": "Track Game Sessions",
+        "description": "Track game session data",
+        "tags": ["launcher"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TrackGameSessionsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Game session tracked successfully"},
+          "401": {"description": "not authenticated"},
+          "500": {"description": "general error"}
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "LauncherJwt": {
+        "type": "object",
+        "required": ["launcherJwt"],
+        "properties": {
+          "launcherJwt": {"type": "string", "description": "JWT token for launcher authentication"}
+        }
+      },
+      "WalletAddress": {
+        "type": "string",
+        "pattern": "^0x[a-fA-F0-9]{40}$",
+        "description": "Ethereum wallet address"
+      },
+      "ObjectId": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]{24}$",
+        "description": "MongoDB ObjectId"
+      },
+      "UUID": {
+        "type": "string",
+        "format": "uuid",
+        "description": "UUID v4 string"
+      },
+      "PaginationQuery": {
+        "type": "object",
+        "properties": {
+          "$limit": {"type": "integer", "minimum": 1, "maximum": 100},
+          "$skip": {"type": "integer", "minimum": 0},
+          "$sort": {"type": "object"}
+        }
+      },
+      "SendNotificationRequest": {
+        "allOf": [
+          {"$ref": "#/components/schemas/LauncherJwt"},
+          {
+            "type": "object",
+            "required": ["type", "message"],
+            "properties": {
+              "type": {"type": "string"},
+              "message": {"type": "string"}
+            }
+          }
+        ]
+      },
+      "GetScoresRequest": {
+        "allOf": [
+          {"$ref": "#/components/schemas/LauncherJwt"},
+          {"$ref": "#/components/schemas/PaginationQuery"},
+          {
+            "type": "object",
+            "properties": {
+              "nonce": {"type": "string"}
+            }
+          }
+        ]
+      },
+      "SetScoreRequest": {
+        "allOf": [
+          {"$ref": "#/components/schemas/LauncherJwt"},
+          {
+            "type": "object",
+            "required": ["score", "nonce", "sessionId"],
+            "properties": {
+              "score": {"type": "number"},
+              "nonce": {"type": "string"},
+              "sessionId": {"type": "string"}
+            }
+          }
+        ]
+      },
+      "SetStateRequest": {
+        "allOf": [
+          {"$ref": "#/components/schemas/LauncherJwt"},
+          {
+            "type": "object",
+            "required": ["state", "label"],
+            "properties": {
+              "state": {"type": "string", "maxLength": 1048576},
+              "label": {"type": "string", "maxLength": 64}
+            }
+          }
+        ]
+      },
+      "GetStatesRequest": {
+        "allOf": [
+          {"$ref": "#/components/schemas/LauncherJwt"},
+          {"$ref": "#/components/schemas/PaginationQuery"},
+          {
+            "type": "object",
+            "properties": {
+              "label": {"type": "string"}
+            }
+          }
+        ]
+      },
+      "SendCustomActivityRequest": {
+        "allOf": [
+          {"$ref": "#/components/schemas/LauncherJwt"},
+          {
+            "type": "object",
+            "required": ["label", "eventId"],
+            "properties": {
+              "label": {"type": "string"},
+              "eventId": {"type": "string"}
+            }
+          }
+        ]
+      },
+      "TriggerRulesEngineRequest": {
+        "allOf": [
+          {"$ref": "#/components/schemas/LauncherJwt"},
+          {
+            "type": "object",
+            "required": ["trigger"],
+            "properties": {
+              "trigger": {"type": "string"},
+              "nonce": {"type": "string"},
+              "value": {"oneOf": [{"type": "string"}, {"type": "number"}]},
+              "otherWallet": {"$ref": "#/components/schemas/WalletAddress"},
+              "walletToTip": {"$ref": "#/components/schemas/WalletAddress"},
+              "amountEth": {"type": "string"},
+              "chainId": {"type": "integer"},
+              "profileAddress": {"$ref": "#/components/schemas/WalletAddress"},
+              "interactionId": {"$ref": "#/components/schemas/ObjectId"},
+              "mintNftlayout": {"type": "string", "enum": ["default", "compact"]},
+              "contractAddress": {"$ref": "#/components/schemas/WalletAddress"},
+              "sessionId": {"type": "string"}
+            }
+          }
+        ]
+      },
+      "CreateUnverifiedChannelRequest": {
+        "type": "object",
+        "required": ["wallet"],
+        "properties": {
+          "wallet": {"$ref": "#/components/schemas/WalletAddress"}
+        }
+      },
+      "VerifyUnverifiedChannelRequest": {
+        "type": "object",
+        "required": ["channelId"],
+        "properties": {
+          "channelId": {"$ref": "#/components/schemas/ObjectId"},
+          "signature": {"type": "string"},
+          "chainId": {"type": "integer"}
+        }
+      },
+      "CreateMessageChannelRequest": {
+        "allOf": [
+          {"$ref": "#/components/schemas/LauncherJwt"},
+          {
+            "type": "object",
+            "required": ["otherParticipants"],
+            "properties": {
+              "otherParticipants": {
+                "type": "array",
+                "items": {"$ref": "#/components/schemas/WalletAddress"}
+              },
+              "channelName": {"type": "string"}
+            }
+          }
+        ]
+      },
+      "GetChannelMessagesRequest": {
+        "allOf": [
+          {"$ref": "#/components/schemas/LauncherJwt"},
+          {"$ref": "#/components/schemas/PaginationQuery"},
+          {
+            "type": "object",
+            "required": ["channelId"],
+            "properties": {
+              "channelId": {"$ref": "#/components/schemas/ObjectId"}
+            }
+          }
+        ]
+      },
+      "SendChannelMessageRequest": {
+        "allOf": [
+          {"$ref": "#/components/schemas/LauncherJwt"},
+          {
+            "type": "object",
+            "required": ["channelId", "content"],
+            "properties": {
+              "channelId": {"$ref": "#/components/schemas/ObjectId"},
+              "content": {"type": "string"}
+            }
+          }
+        ]
+      },
+      "EditChannelMessageRequest": {
+        "allOf": [
+          {"$ref": "#/components/schemas/LauncherJwt"},
+          {
+            "type": "object",
+            "required": ["messageId", "newContent"],
+            "properties": {
+              "messageId": {"$ref": "#/components/schemas/ObjectId"},
+              "newContent": {"type": "string"}
+            }
+          }
+        ]
+      },
+      "UnsendChannelMessageRequest": {
+        "allOf": [
+          {"$ref": "#/components/schemas/LauncherJwt"},
+          {
+            "type": "object",
+            "required": ["messageId"],
+            "properties": {
+              "messageId": {"$ref": "#/components/schemas/ObjectId"}
+            }
+          }
+        ]
+      },
+      "GetTokenBalanceRequest": {
+        "allOf": [
+          {"$ref": "#/components/schemas/LauncherJwt"},
+          {
+            "type": "object",
+            "required": ["tokens"],
+            "properties": {
+              "tokens": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["chainId", "contractAddress", "type"],
+                  "properties": {
+                    "chainId": {"type": "integer"},
+                    "contractAddress": {"$ref": "#/components/schemas/WalletAddress"},
+                    "type": {"type": "string", "enum": ["erc20", "erc721", "erc1155"]}
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "TrackGameSessionsRequest": {
+        "allOf": [
+          {"$ref": "#/components/schemas/LauncherJwt"},
+          {
+            "type": "object",
+            "required": ["sessionId", "state"],
+            "properties": {
+              "sessionId": {"$ref": "#/components/schemas/UUID"},
+              "state": {"type": "string", "maxLength": 1048576},
+              "endTime": {"type": "number"}
+            }
+          }
+        ]
+      }
+    }
+  },
+  "openapi": "3.0.3",
+  "tags": [
+    {
+      "name": "launcher",
+      "description": "Launcher API endpoints for game integration"
+    }
+  ]
+}
