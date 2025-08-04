@@ -374,11 +374,19 @@ export function getPaymentUrl(address: string, amount: bigint, currency: string,
 
       // For native ETH transfers:
       if (chainId !== mainnet.id) {
-        params.append("chainId", chainId.toString());
+        // For non-mainnet chains, use the same explicit format as tokens
+        // to make sure wallets recognize the correct chain
+        const nativeParams = new URLSearchParams();
+        nativeParams.append("chainId", chainId.toString());
+        nativeParams.append("value", amount.toString());
+        const url = `ethereum:${address}@${chainId}?${nativeParams.toString()}`;
+        return url;
+      } else {
+        // For mainnet, use the simple format
+        const queryString = params.toString();
+        const url = `ethereum:${address}${queryString ? `?${queryString}` : ""}`;
+        return url;
       }
-      const queryString = params.toString();
-      const url = `ethereum:${address}${queryString ? `?${queryString}` : ""}`;
-      return url;
     }
 
     case ChainType.SOLANA: {
