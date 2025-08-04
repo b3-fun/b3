@@ -12,16 +12,13 @@ export function useConnectedUserProfile() {
   // Get connected address from global account or first connected wallet
   const connectedAddress = globalAddress || connectedWallets?.[0]?.getAccount()?.address;
 
-  // Fetch profile data for the connected address
+  // Fetch profile data for the connected address with cleaned name
   const connectedProfile = useProfile({ address: connectedAddress });
-
-  // Clean the display name by removing .b3.fun suffix
-  const connectedName = connectedProfile.data?.name?.replace(/\.b3\.fun/g, "");
 
   return {
     address: connectedAddress,
     profile: connectedProfile,
-    name: connectedName,
+    name: connectedProfile.data?.name,
     isLoading: connectedProfile.isLoading,
     isError: connectedProfile.isError,
     error: connectedProfile.error,

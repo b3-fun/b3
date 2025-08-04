@@ -8,7 +8,6 @@ import {
   useAnyspendQuote,
   useConnectedUserProfile,
   useGeoOnrampOptions,
-  useUserProfile,
 } from "@b3dotfun/sdk/anyspend/react";
 import {
   Button,
@@ -16,11 +15,13 @@ import {
   StyleRoot,
   TransitionPanel,
   useAccountWallet,
+  useProfile,
   useRouter,
   useSearchParamsSSR,
   useTokenData,
   useTokenFromUrl,
 } from "@b3dotfun/sdk/global-account/react";
+import { formatUsername } from "@b3dotfun/sdk/shared/utils";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { formatDisplayNumber, formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
@@ -465,7 +466,8 @@ function AnySpendInner({
   );
 
   const { address: connectedAddress, name: connectedName, profile: connectedProfile } = useConnectedUserProfile();
-  const { name: recipientName, profile: recipientProfile } = useUserProfile(recipientAddress);
+  const recipientProfile = useProfile({ address: recipientAddress });
+  const recipientName = formatUsername(recipientProfile.data?.name ?? "");
 
   // Load custom recipients from local storage on mount
   useEffect(() => {
@@ -1086,7 +1088,7 @@ function AnySpendInner({
                           />
                         )}
                         <div className="flex items-center gap-1">
-                          {recipientName && <span>@{recipientName}</span>}
+                          {recipientName && <span>{recipientName}</span>}
                           <span>{shortenAddress(recipientAddress || "")}</span>
                         </div>
                       </>
@@ -1219,7 +1221,7 @@ function AnySpendInner({
                           />
                         )}
                         <span className="text-as-tertiarry flex items-center gap-1 text-sm">
-                          {connectedName && <span>@{connectedName}</span>}
+                          {connectedName && <span>{connectedName}</span>}
                           <span>{shortenAddress(connectedAddress || "")}</span>
                         </span>
                       </>

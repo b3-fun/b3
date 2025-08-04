@@ -9,7 +9,6 @@ import {
   useAnyspendTokenList,
   useConnectedUserProfile,
   useGeoOnrampOptions,
-  useUserProfile,
 } from "@b3dotfun/sdk/anyspend/react";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { GetQuoteRequest, GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
@@ -27,11 +26,12 @@ import {
   TransitionPanel,
   useAccountWallet,
   useHasMounted,
+  useProfile,
   useRouter,
   useSearchParamsSSR,
   useTokenBalancesByChain,
 } from "@b3dotfun/sdk/global-account/react";
-import { cn } from "@b3dotfun/sdk/shared/utils";
+import { cn, formatUsername } from "@b3dotfun/sdk/shared/utils";
 
 import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { formatTokenAmount, formatUnits } from "@b3dotfun/sdk/shared/utils/number";
@@ -405,7 +405,8 @@ function AnySpendCustomInner({
   const isCreatingOrder = isCreatingRegularOrder || isCreatingOnrampOrder;
 
   const { address: connectedAddress, name: connectedName, profile: connectedProfile } = useConnectedUserProfile();
-  const { name: recipientName, profile: recipientProfile } = useUserProfile(recipientAddress);
+  const recipientProfile = useProfile({ address: recipientAddress });
+  const recipientName = formatUsername(recipientProfile.data?.name ?? "");
 
   const handleCreateOrder = async (
     recipientAddress: string,
@@ -612,7 +613,7 @@ function AnySpendCustomInner({
                 />
               )}
               <div className="text-as-tertiarry flex items-center gap-1 text-sm">
-                {recipientName && <span>@{recipientName}</span>}
+                {recipientName && <span>{recipientName}</span>}
                 <span>{shortenAddress(recipientAddress)}</span>
               </div>
             </>
@@ -869,7 +870,7 @@ function AnySpendCustomInner({
                             />
                           )}
                           <span className="text-as-tertiarry flex items-center gap-1">
-                            {connectedName && <span>@{connectedName}</span>}
+                            {connectedName && <span>{connectedName}</span>}
                             <span>{shortenAddress(connectedAddress || "")}</span>
                           </span>
                         </>
