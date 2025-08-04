@@ -1154,10 +1154,7 @@ function TransactionDetails({
               initial={{ opacity: 0, scale: 0.3 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, ease: "easeOut", delay }}
-              className="bg-as-brand/70 absolute z-10 m-2 flex h-6 w-6 items-center justify-center rounded-full border border-white/30 shadow-lg shadow-purple-500/30 backdrop-blur-sm"
-              style={{
-                boxShadow: "0 0 15px 5px rgba(138, 43, 226, 0.2)",
-              }}
+              className="bg-as-brand/70 absolute z-10 m-2 flex h-6 w-6 items-center justify-center rounded-full border border-white/30 shadow-lg backdrop-blur-sm"
             >
               <CheckIcon className="text-as-primary h-3 w-3" />
             </motion.div>

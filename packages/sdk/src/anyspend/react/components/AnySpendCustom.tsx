@@ -42,6 +42,7 @@ import { motion } from "motion/react";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { base, baseSepolia } from "viem/chains";
+import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
 import { CryptoPaymentMethod, PaymentMethod } from "./common/CryptoPaymentMethod";
 import { FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaymentMethod";
 import { OrderDetails } from "./common/OrderDetails";
@@ -142,7 +143,39 @@ function generateGetRelayQuoteRequest({
   }
 }
 
-export function AnySpendCustom({
+export function AnySpendCustom(props: {
+  isMainnet?: boolean;
+  loadOrder?: string;
+  mode?: "modal" | "page";
+  recipientAddress?: string;
+  spenderAddress?: string;
+  orderType: components["schemas"]["Order"]["type"];
+  dstChainId: number;
+  dstToken: components["schemas"]["Token"];
+  dstAmount: string;
+  contractAddress: string;
+  encodedData: string;
+  metadata: any;
+  header: ({
+    anyspendPrice,
+    isLoadingAnyspendPrice,
+  }: {
+    anyspendPrice: GetQuoteResponse | undefined;
+    isLoadingAnyspendPrice: boolean;
+  }) => React.JSX.Element;
+  onSuccess?: (txHash?: string) => void;
+  showRecipient?: boolean;
+}) {
+  const fingerprintConfig = getFingerprintConfig();
+
+  return (
+    <AnySpendFingerprintWrapper fingerprint={fingerprintConfig}>
+      <AnySpendCustomInner {...props} />
+    </AnySpendFingerprintWrapper>
+  );
+}
+
+function AnySpendCustomInner({
   isMainnet = true,
   loadOrder,
   mode = "modal",
@@ -369,7 +402,7 @@ export function AnySpendCustom({
 
   const isCreatingOrder = isCreatingRegularOrder || isCreatingOnrampOrder;
 
-  const { address: globalAddress, wallet: globalWallet } = useAccountWallet();
+  const { wallet: globalWallet } = useAccountWallet();
   const { address: connectedAddress, name: connectedName } = useConnectedUserProfile();
   const { name: recipientName, profile: recipientProfile } = useUserProfile(recipientAddress);
 
@@ -435,15 +468,20 @@ export function AnySpendCustom({
       } as CreateOrderParams;
 
       if (onramp) {
-        invariant(srcToken.address === USDC_BASE.address, "Selected src token is not USDC");
-        invariant(srcChainId === base.id, "Selected src chain is not base");
+        const effectiveSrcToken = activeTab === "fiat" ? USDC_BASE : srcToken;
+        invariant(effectiveSrcToken.address === USDC_BASE.address, "Selected src token is not USDC");
+        invariant((activeTab === "fiat" ? base.id : srcChainId) === base.id, "Selected src chain is not base");
+
+        // Get the current geo data from the hook
+        const currentGeoData = geoData;
+
         void createOnrampOrder({
           ...createOrderParams,
           srcFiatAmount: srcFiatAmount,
           onramp: {
             vendor: onramp.vendor,
             paymentMethod: onramp.paymentMethod,
-            country: geoData?.country || "US",
+            country: currentGeoData?.country || "US",
             redirectUrl:
               window.location.origin === "https://basement.fun"
                 ? "https://basement.fun/deposit"
