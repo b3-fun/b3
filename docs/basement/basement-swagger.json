@@ -14,46 +14,12 @@
       "description": "Production server"
     }
   ],
-  "security": [
-    {
-      "bearerAuth": []
-    }
-  ],
   "paths": {
-    "/launcher/": {
+    "/launcher/channel-status": {
       "post": {
-        "summary": "Launcher Operations",
-        "description": "Generic launcher endpoint that handles multiple operations based on X-Service-Method header",
+        "summary": "Check Channel Status",
+        "description": "Check the status of a user's channel session",
         "parameters": [
-          {
-            "name": "X-Service-Method",
-            "in": "header",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "channelStatus",
-                "sendNotification",
-                "sendCustomActivity",
-                "getStates",
-                "setState",
-                "trackGameSessions",
-                "getUserScores",
-                "setUserScore",
-                "createUnverifiedChannel",
-                "verifyUnverifiedChannel",
-                "channelHeartbeat",
-                "triggerRulesEngine",
-                "createMessageChannel",
-                "getMessageChannels",
-                "getChannelMessages",
-                "sendChannelMessage",
-                "editChannelMessage",
-                "unsendChannelMessage"
-              ]
-            },
-            "description": "The specific method to call"
-          },
           {
             "name": "X-Request-Nonce",
             "in": "header",
@@ -78,62 +44,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "oneOf": [
-                  {
-                    "$ref": "#/components/schemas/ChannelStatusRequest"
-                  },
-                  {
-                    "$ref": "#/components/schemas/SendNotificationRequest"
-                  },
-                  {
-                    "$ref": "#/components/schemas/SendCustomActivityRequest"
-                  },
-                  {
-                    "$ref": "#/components/schemas/GetStatesRequest"
-                  },
-                  {
-                    "$ref": "#/components/schemas/SetStateRequest"
-                  },
-                  {
-                    "$ref": "#/components/schemas/TrackGameSessionsRequest"
-                  },
-                  {
-                    "$ref": "#/components/schemas/GetUserScoresRequest"
-                  },
-                  {
-                    "$ref": "#/components/schemas/SetUserScoreRequest"
-                  },
-                  {
-                    "$ref": "#/components/schemas/CreateUnverifiedChannelRequest"
-                  },
-                  {
-                    "$ref": "#/components/schemas/VerifyUnverifiedChannelRequest"
-                  },
-                  {
-                    "$ref": "#/components/schemas/RenewChannelHeartbeatRequest"
-                  },
-                  {
-                    "$ref": "#/components/schemas/TriggerRulesEngineRequest"
-                  },
-                  {
-                    "$ref": "#/components/schemas/CreateMessageChannelRequest"
-                  },
-                  {
-                    "$ref": "#/components/schemas/GetMessageChannelsRequest"
-                  },
-                  {
-                    "$ref": "#/components/schemas/GetChannelMessagesRequest"
-                  },
-                  {
-                    "$ref": "#/components/schemas/SendChannelMessageRequest"
-                  },
-                  {
-                    "$ref": "#/components/schemas/EditChannelMessageRequest"
-                  },
-                  {
-                    "$ref": "#/components/schemas/UnsendChannelMessageRequest"
-                  }
-                ]
+                "$ref": "#/components/schemas/ChannelStatusRequest"
               }
             }
           }
@@ -144,47 +55,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "oneOf": [
-                    {
-                      "$ref": "#/components/schemas/ChannelStatusResponse"
-                    },
-                    {
-                      "$ref": "#/components/schemas/SuccessResponse"
-                    },
-                    {
-                      "$ref": "#/components/schemas/CustomActivityResponse"
-                    },
-                    {
-                      "$ref": "#/components/schemas/GetStatesResponse"
-                    },
-                    {
-                      "$ref": "#/components/schemas/SetStateResponse"
-                    },
-                    {
-                      "$ref": "#/components/schemas/GetUserScoresResponse"
-                    },
-                    {
-                      "$ref": "#/components/schemas/SetUserScoreResponse"
-                    },
-                    {
-                      "$ref": "#/components/schemas/CreateUnverifiedChannelResponse"
-                    },
-                    {
-                      "$ref": "#/components/schemas/VerifyUnverifiedChannelResponse"
-                    },
-                    {
-                      "$ref": "#/components/schemas/MessageChannelResponse"
-                    },
-                    {
-                      "$ref": "#/components/schemas/GetMessageChannelsResponse"
-                    },
-                    {
-                      "$ref": "#/components/schemas/GetChannelMessagesResponse"
-                    },
-                    {
-                      "$ref": "#/components/schemas/MessageResponse"
-                    }
-                  ]
+                  "$ref": "#/components/schemas/ChannelStatusResponse"
                 }
               }
             }
@@ -209,12 +80,1163 @@
               }
             }
           }
-        },
-        "security": [
+        }
+      }
+    },
+    "/launcher/send-notification": {
+      "post": {
+        "summary": "Send Notification",
+        "description": "Send a notification to the user",
+        "parameters": [
           {
-            "bearerAuth": []
+            "name": "X-Request-Nonce",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Random string identifier for request (for signature verification)"
+          },
+          {
+            "name": "X-Request-Signature",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "MD5 hash for request verification"
           }
-        ]
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendNotificationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/launcher/send-custom-activity": {
+      "post": {
+        "summary": "Send Custom Activity",
+        "description": "Send a custom activity event for the user",
+        "parameters": [
+          {
+            "name": "X-Request-Nonce",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Random string identifier for request (for signature verification)"
+          },
+          {
+            "name": "X-Request-Signature",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "MD5 hash for request verification"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendCustomActivityRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomActivityResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/launcher/get-states": {
+      "post": {
+        "summary": "Get User States",
+        "description": "Retrieve user states for the game",
+        "parameters": [
+          {
+            "name": "X-Request-Nonce",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Random string identifier for request (for signature verification)"
+          },
+          {
+            "name": "X-Request-Signature",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "MD5 hash for request verification"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetStatesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetStatesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/launcher/set-state": {
+      "post": {
+        "summary": "Set User State",
+        "description": "Set or update user state for the game",
+        "parameters": [
+          {
+            "name": "X-Request-Nonce",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Random string identifier for request (for signature verification)"
+          },
+          {
+            "name": "X-Request-Signature",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "MD5 hash for request verification"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetStateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SetStateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/launcher/track-game-sessions": {
+      "post": {
+        "summary": "Track Game Sessions",
+        "description": "Track and update game session data",
+        "parameters": [
+          {
+            "name": "X-Request-Nonce",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Random string identifier for request (for signature verification)"
+          },
+          {
+            "name": "X-Request-Signature",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "MD5 hash for request verification"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TrackGameSessionsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/launcher/get-user-scores": {
+      "post": {
+        "summary": "Get User Scores",
+        "description": "Retrieve user scores for the game",
+        "parameters": [
+          {
+            "name": "X-Request-Nonce",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Random string identifier for request (for signature verification)"
+          },
+          {
+            "name": "X-Request-Signature",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "MD5 hash for request verification"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetUserScoresRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetUserScoresResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/launcher/set-user-score": {
+      "post": {
+        "summary": "Set User Score",
+        "description": "Set or update user score for the game",
+        "parameters": [
+          {
+            "name": "X-Request-Nonce",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Random string identifier for request (for signature verification)"
+          },
+          {
+            "name": "X-Request-Signature",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "MD5 hash for request verification"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetUserScoreRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SetUserScoreResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/launcher/create-unverified-channel": {
+      "post": {
+        "summary": "Create Unverified Channel",
+        "description": "Create a new unverified channel session for external games",
+        "parameters": [
+          {
+            "name": "X-Request-Nonce",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Random string identifier for request (for signature verification)"
+          },
+          {
+            "name": "X-Request-Signature",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "MD5 hash for request verification"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUnverifiedChannelRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateUnverifiedChannelResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/launcher/verify-unverified-channel": {
+      "post": {
+        "summary": "Verify Unverified Channel",
+        "description": "Verify an unverified channel with user's wallet signature",
+        "parameters": [
+          {
+            "name": "X-Request-Nonce",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Random string identifier for request (for signature verification)"
+          },
+          {
+            "name": "X-Request-Signature",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "MD5 hash for request verification"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyUnverifiedChannelRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerifyUnverifiedChannelResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/launcher/channel-heartbeat": {
+      "post": {
+        "summary": "Renew Channel Heartbeat",
+        "description": "Keep the user session alive by renewing the heartbeat",
+        "parameters": [
+          {
+            "name": "X-Request-Nonce",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Random string identifier for request (for signature verification)"
+          },
+          {
+            "name": "X-Request-Signature",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "MD5 hash for request verification"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RenewChannelHeartbeatRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/launcher/trigger-rules-engine": {
+      "post": {
+        "summary": "Trigger Rules Engine",
+        "description": "Trigger the rules engine with specific event data",
+        "parameters": [
+          {
+            "name": "X-Request-Nonce",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Random string identifier for request (for signature verification)"
+          },
+          {
+            "name": "X-Request-Signature",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "MD5 hash for request verification"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TriggerRulesEngineRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/launcher/create-message-channel": {
+      "post": {
+        "summary": "Create Message Channel",
+        "description": "Create a new message channel with specified participants",
+        "parameters": [
+          {
+            "name": "X-Request-Nonce",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Random string identifier for request (for signature verification)"
+          },
+          {
+            "name": "X-Request-Signature",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "MD5 hash for request verification"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMessageChannelRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageChannelResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/launcher/get-message-channels": {
+      "post": {
+        "summary": "Get Message Channels",
+        "description": "Retrieve all message channels for the user",
+        "parameters": [
+          {
+            "name": "X-Request-Nonce",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Random string identifier for request (for signature verification)"
+          },
+          {
+            "name": "X-Request-Signature",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "MD5 hash for request verification"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetMessageChannelsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetMessageChannelsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/launcher/get-channel-messages": {
+      "post": {
+        "summary": "Get Channel Messages",
+        "description": "Retrieve messages from a specific channel",
+        "parameters": [
+          {
+            "name": "X-Request-Nonce",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Random string identifier for request (for signature verification)"
+          },
+          {
+            "name": "X-Request-Signature",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "MD5 hash for request verification"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetChannelMessagesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetChannelMessagesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/launcher/send-channel-message": {
+      "post": {
+        "summary": "Send Channel Message",
+        "description": "Send a message to a specific channel",
+        "parameters": [
+          {
+            "name": "X-Request-Nonce",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Random string identifier for request (for signature verification)"
+          },
+          {
+            "name": "X-Request-Signature",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "MD5 hash for request verification"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendChannelMessageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/launcher/edit-channel-message": {
+      "post": {
+        "summary": "Edit Channel Message",
+        "description": "Edit an existing message in a channel",
+        "parameters": [
+          {
+            "name": "X-Request-Nonce",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Random string identifier for request (for signature verification)"
+          },
+          {
+            "name": "X-Request-Signature",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "MD5 hash for request verification"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditChannelMessageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/launcher/unsend-channel-message": {
+      "post": {
+        "summary": "Unsend Channel Message",
+        "description": "Delete/unsend a message from a channel",
+        "parameters": [
+          {
+            "name": "X-Request-Nonce",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Random string identifier for request (for signature verification)"
+          },
+          {
+            "name": "X-Request-Signature",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "MD5 hash for request verification"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnsendChannelMessageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/activities": {
