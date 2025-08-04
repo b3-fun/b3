@@ -43,7 +43,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { base, baseSepolia } from "viem/chains";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
-import { CryptoPaymentMethod, PaymentMethod } from "./common/CryptoPaymentMethod";
+import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPaymentMethod";
 import { FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaymentMethod";
 import { OrderDetails } from "./common/OrderDetails";
 import { OrderHistory } from "./common/OrderHistory";
@@ -225,7 +225,9 @@ function AnySpendCustomInner({
   const [activeTab, setActiveTab] = useState<"crypto" | "fiat">("crypto");
 
   // Add state for selected payment methods
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>(PaymentMethod.NONE);
+  const [selectedCryptoPaymentMethod, setSelectedCryptoPaymentMethod] = useState<CryptoPaymentMethodType>(
+    CryptoPaymentMethodType.NONE,
+  );
   const [selectedFiatPaymentMethod, setSelectedFiatPaymentMethod] = useState<FiatPaymentMethod>(FiatPaymentMethod.NONE);
 
   // Get current user's wallet
@@ -509,7 +511,7 @@ function AnySpendCustomInner({
     }
 
     // Check payment method selection for crypto tab
-    if (activeTab === "crypto" && selectedPaymentMethod === PaymentMethod.NONE) {
+    if (activeTab === "crypto" && selectedCryptoPaymentMethod === CryptoPaymentMethodType.NONE) {
       setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD);
       return;
     }
@@ -650,7 +652,7 @@ function AnySpendCustomInner({
     <div
       className={cn(
         "mx-auto flex w-full flex-col items-center gap-4 p-5",
-        mode === "modal" && "bg-b3-react-background",
+        mode === "modal" && "bg-b3-react-background rounded-xl",
       )}
     >
       {oat && (
@@ -664,7 +666,7 @@ function AnySpendCustomInner({
             relayTx={oat.data.relayTx}
             executeTx={oat.data.executeTx}
             refundTxs={oat.data.refundTxs}
-            paymentMethod={activeTab === "fiat" ? PaymentMethod.NONE : selectedPaymentMethod}
+            cryptoPaymentMethod={activeTab === "fiat" ? CryptoPaymentMethodType.NONE : selectedCryptoPaymentMethod}
             onBack={() => {
               setOrderId(undefined);
               setActivePanel(PanelView.CONFIRM_ORDER);
@@ -785,7 +787,7 @@ function AnySpendCustomInner({
               )}
               onClick={() => {
                 setActiveTab("crypto");
-                setSelectedPaymentMethod(PaymentMethod.NONE);
+                setSelectedCryptoPaymentMethod(CryptoPaymentMethodType.NONE);
                 setSelectedFiatPaymentMethod(FiatPaymentMethod.NONE);
               }}
             >
@@ -799,7 +801,7 @@ function AnySpendCustomInner({
                 )}
                 onClick={() => {
                   setActiveTab("fiat");
-                  setSelectedPaymentMethod(PaymentMethod.NONE);
+                  setSelectedCryptoPaymentMethod(CryptoPaymentMethodType.NONE);
                   setSelectedFiatPaymentMethod(FiatPaymentMethod.NONE);
                 }}
               >
@@ -855,7 +857,7 @@ function AnySpendCustomInner({
                   className="text-as-tertiarry flex h-7 items-center gap-2 text-sm transition-colors hover:text-blue-700"
                   onClick={() => setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD)}
                 >
-                  {selectedPaymentMethod === PaymentMethod.CONNECT_WALLET ? (
+                  {selectedCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET ? (
                     <>
                       {connectedAddress ? (
                         <>
@@ -876,7 +878,7 @@ function AnySpendCustomInner({
                       )}
                       <ChevronRight className="h-4 w-4" />
                     </>
-                  ) : selectedPaymentMethod === PaymentMethod.TRANSFER_CRYPTO ? (
+                  ) : selectedCryptoPaymentMethod === CryptoPaymentMethodType.TRANSFER_CRYPTO ? (
                     <>
                       Transfer crypto
                       <ChevronRight className="h-4 w-4" />
@@ -975,7 +977,7 @@ function AnySpendCustomInner({
                     </div>
                   ) : !recipientAddress ? (
                     "Select recipient"
-                  ) : selectedPaymentMethod === PaymentMethod.NONE ? (
+                  ) : selectedCryptoPaymentMethod === CryptoPaymentMethodType.NONE ? (
                     "Choose payment method"
                   ) : anyspendQuote ? (
                     <>
@@ -1142,12 +1144,12 @@ function AnySpendCustomInner({
       <CryptoPaymentMethod
         globalAddress={currentWallet?.wallet?.address}
         globalWallet={currentWallet?.wallet}
-        selectedPaymentMethod={selectedPaymentMethod}
-        setSelectedPaymentMethod={setSelectedPaymentMethod}
+        selectedPaymentMethod={selectedCryptoPaymentMethod}
+        setSelectedPaymentMethod={setSelectedCryptoPaymentMethod}
         isCreatingOrder={isCreatingOrder}
         onBack={() => setActivePanel(PanelView.CONFIRM_ORDER)}
-        onSelectPaymentMethod={(method: PaymentMethod) => {
-          setSelectedPaymentMethod(method);
+        onSelectPaymentMethod={(method: CryptoPaymentMethodType) => {
+          setSelectedCryptoPaymentMethod(method);
           setActivePanel(PanelView.CONFIRM_ORDER);
         }}
       />
