@@ -374,28 +374,88 @@ export function getPaymentUrl(address: string, amount: bigint, currency: string,
 
       // For native ETH transfers:
       if (chainId !== mainnet.id) {
-        params.append("chainId", chainId.toString());
+        // For non-mainnet chains, use the same explicit format as tokens
+        // to make sure wallets recognize the correct chain
+        const nativeParams = new URLSearchParams();
+        nativeParams.append("chainId", chainId.toString());
+        nativeParams.append("value", amount.toString());
+        const url = `ethereum:${address}@${chainId}?${nativeParams.toString()}`;
+        return url;
+      } else {
+        // For mainnet, use the simple format
+        const queryString = params.toString();
+        const url = `ethereum:${address}${queryString ? `?${queryString}` : ""}`;
+        return url;
       }
-      const queryString = params.toString();
-      const url = `ethereum:${address}${queryString ? `?${queryString}` : ""}`;
-      return url;
     }
 
     case ChainType.SOLANA: {
-      // Solana URL format: solana:${address}?amount=${amount}&spl-token=${tokenAddress}
+      // Solana URL format for Phantom and other mobile wallets
       const params = new URLSearchParams();
 
-      // Add amount for native SOL transfers
-      if (currency === "SOL") {
-        params.append("amount", amount.toString());
+      // Check if this is native SOL or SPL token
+      // The address "11111111111111111111111111111111" is Solana's System Program, indicating native SOL
+      const isNativeSOL =
+        currency === chain.nativeToken.symbol || currency === "SOL" || currency === "11111111111111111111111111111111";
+
+      if (isNativeSOL) {
+        // Native SOL transfers - convert from lamports to SOL
+        let displayAmount: string;
+        if (decimals !== undefined) {
+          const divisor = BigInt(10 ** decimals);
+          const wholePart = amount / divisor;
+          const fractionalPart = amount % divisor;
+
+          if (fractionalPart === BigInt(0)) {
+            displayAmount = wholePart.toString();
+          } else {
+            const fractionalStr = fractionalPart.toString().padStart(decimals, "0");
+            const trimmedFractional = fractionalStr.replace(/0+$/, "");
+            displayAmount = trimmedFractional ? `${wholePart}.${trimmedFractional}` : wholePart.toString();
+          }
+        } else {
+          // Fallback: assume SOL has 9 decimals
+          const divisor = BigInt(1000000000); // 1e9
+          const wholePart = amount / divisor;
+          const fractionalPart = amount % divisor;
+
+          if (fractionalPart === BigInt(0)) {
+            displayAmount = wholePart.toString();
+          } else {
+            const fractionalStr = fractionalPart.toString().padStart(9, "0");
+            const trimmedFractional = fractionalStr.replace(/0+$/, "");
+            displayAmount = trimmedFractional ? `${wholePart}.${trimmedFractional}` : wholePart.toString();
+          }
+        }
+
+        // For native SOL, use simple format without spl-token parameter
+        params.append("amount", displayAmount);
+      } else {
+        // SPL token transfers
+        let displayAmount: string;
+        if (decimals !== undefined) {
+          const divisor = BigInt(10 ** decimals);
+          const wholePart = amount / divisor;
+          const fractionalPart = amount % divisor;
+
+          if (fractionalPart === BigInt(0)) {
+            displayAmount = wholePart.toString();
+          } else {
+            const fractionalStr = fractionalPart.toString().padStart(decimals, "0");
+            const trimmedFractional = fractionalStr.replace(/0+$/, "");
+            displayAmount = trimmedFractional ? `${wholePart}.${trimmedFractional}` : wholePart.toString();
+          }
+        } else {
+          displayAmount = amount.toString();
+        }
+
+        params.append("amount", displayAmount);
+        params.append("spl-token", currency); // token mint address
       }
 
-      // Add SPL token info for token transfers
-      if (currency !== "SOL") {
-        params.append("spl-token", currency); // currency here should be token address
-      }
-
-      return `solana:${address}?${params.toString()}`;
+      const url = `solana:${address}?${params.toString()}`;
+      console.log("Solana URL (isNativeSOL:", isNativeSOL, "):", url);
+      return url;
     }
 
     default:
