@@ -406,7 +406,7 @@ function AnySpendCustomInner({
 
   const { address: connectedAddress, name: connectedName, profile: connectedProfile } = useConnectedUserProfile();
   const recipientProfile = useProfile({ address: recipientAddress });
-  const recipientName = formatUsername(recipientProfile.data?.name ?? "");
+  const recipientName = recipientProfile.data?.name;
 
   const handleCreateOrder = async (
     recipientAddress: string,
@@ -613,7 +613,7 @@ function AnySpendCustomInner({
                 />
               )}
               <div className="text-as-tertiarry flex items-center gap-1 text-sm">
-                {recipientName && <span>{recipientName}</span>}
+                {recipientName && <span>{formatUsername(recipientName)}</span>}
                 <span>{shortenAddress(recipientAddress)}</span>
               </div>
             </>
@@ -870,7 +870,7 @@ function AnySpendCustomInner({
                             />
                           )}
                           <span className="text-as-tertiarry flex items-center gap-1">
-                            {connectedName && <span>{connectedName}</span>}
+                            {connectedName && <span>{formatUsername(connectedName)}</span>}
                             <span>{shortenAddress(connectedAddress || "")}</span>
                           </span>
                         </>

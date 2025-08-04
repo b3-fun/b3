@@ -1221,7 +1221,7 @@ function AnySpendInner({
                           />
                         )}
                         <span className="text-as-tertiarry flex items-center gap-1 text-sm">
-                          {connectedName && <span>{connectedName}</span>}
+                          {connectedName && <span>{formatUsername(connectedName)}</span>}
                           <span>{shortenAddress(connectedAddress || "")}</span>
                         </span>
                       </>
