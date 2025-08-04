@@ -950,60 +950,76 @@ export function AnySpendCustom({
 
         {/* Fiat tab */}
         <TabsContent value="fiat">
-          <div className="mt-6 flex w-full flex-col gap-6">
-            {/* Fiat Payment Method Selection */}
-            <motion.div
-              initial={false}
-              animate={{
-                opacity: hasMounted ? 1 : 0,
-                y: hasMounted ? 0 : 20,
-                filter: hasMounted ? "blur(0px)" : "blur(10px)",
-              }}
-              transition={{ duration: 0.3, delay: 0, ease: "easeInOut" }}
-              className="relative flex w-full items-center justify-between"
-            >
-              <div className="text-b3-react-foreground/50 flex h-7 items-center text-sm">Pay with</div>
-              <button
-                className="text-b3-react-foreground/50 hover:text-b3-react-foreground/70 flex h-7 items-center gap-1 text-sm transition-colors"
-                onClick={() => setActivePanel(PanelView.FIAT_PAYMENT_METHOD)}
+          <div className="mt-2 flex flex-col gap-6">
+            <div className="border-as-border-secondary bg-as-surface-secondary flex w-full flex-col gap-4 rounded-xl border p-4">
+              {/* Fiat Payment Method Selection */}
+              <motion.div
+                initial={false}
+                animate={{
+                  opacity: hasMounted ? 1 : 0,
+                  y: hasMounted ? 0 : 20,
+                  filter: hasMounted ? "blur(0px)" : "blur(10px)",
+                }}
+                transition={{ duration: 0.3, delay: 0, ease: "easeInOut" }}
+                className="relative flex w-full items-center justify-between"
               >
-                {selectedFiatPaymentMethod === FiatPaymentMethod.COINBASE_PAY ? (
-                  <>
-                    Coinbase Pay
-                    <ChevronRightCircle className="h-4 w-4" />
-                  </>
-                ) : selectedFiatPaymentMethod === FiatPaymentMethod.STRIPE ? (
-                  <>
-                    Credit/Debit Card
-                    <ChevronRightCircle className="h-4 w-4" />
-                  </>
-                ) : (
-                  <>
-                    Select payment method
-                    <ChevronRightCircle className="h-4 w-4" />
-                  </>
-                )}
-              </button>
-            </motion.div>
+                <div className="text-as-tertiarry flex h-7 items-center text-sm">Pay with</div>
+                <button
+                  className="text-as-tertiarry flex h-7 items-center gap-1 text-sm transition-colors hover:text-blue-700"
+                  onClick={() => setActivePanel(PanelView.FIAT_PAYMENT_METHOD)}
+                >
+                  {selectedFiatPaymentMethod === FiatPaymentMethod.COINBASE_PAY ? (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600">
+                          <span className="text-xs font-bold text-white">C</span>
+                        </div>
+                        Coinbase Pay
+                      </div>
+                      <ChevronRight className="h-4 w-4" />
+                    </>
+                  ) : selectedFiatPaymentMethod === FiatPaymentMethod.STRIPE ? (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600">
+                          <span className="text-xs font-bold text-white">S</span>
+                        </div>
+                        Credit/Debit Card
+                      </div>
+                      <ChevronRight className="h-4 w-4" />
+                    </>
+                  ) : (
+                    <>
+                      Select payment method
+                      <ChevronRight className="h-4 w-4" />
+                    </>
+                  )}
+                </button>
+              </motion.div>
 
-            {recipientSection}
+              <div className="divider w-full" />
 
-            {/* Fiat Amount Display */}
-            <motion.div
-              initial={false}
-              animate={{
-                opacity: hasMounted ? 1 : 0,
-                y: hasMounted ? 0 : 20,
-                filter: hasMounted ? "blur(0px)" : "blur(10px)",
-              }}
-              transition={{ duration: 0.3, delay: 0.1, ease: "easeInOut" }}
-              className="relative flex w-full items-center justify-between"
-            >
-              <span className="font-medium">
-                Total <span className="text-sm text-gray-500">(USD)</span>
-              </span>
-              <h2 className={cn("text-as-primary text-2xl font-semibold")}>${srcFiatAmount || "0.00"}</h2>
-            </motion.div>
+              {recipientSection}
+
+              <div className="divider w-full" />
+
+              {/* Fiat Amount Display */}
+              <motion.div
+                initial={false}
+                animate={{
+                  opacity: hasMounted ? 1 : 0,
+                  y: hasMounted ? 0 : 20,
+                  filter: hasMounted ? "blur(0px)" : "blur(10px)",
+                }}
+                transition={{ duration: 0.3, delay: 0.1, ease: "easeInOut" }}
+                className="relative flex w-full items-center justify-between"
+              >
+                <span className="text-as-tertiarry text-sm">
+                  Total <span className="text-as-tertiarry">(USD)</span>
+                </span>
+                <span className="text-as-primary text-xl font-semibold">${srcFiatAmount || "0.00"}</span>
+              </motion.div>
+            </div>
 
             {/* Action Buttons */}
             <div className={cn("flex w-full flex-col items-center justify-between gap-2")}>

@@ -87,7 +87,7 @@ export default function ConnectWalletPayment({
         <ShinyButton
           accentColor={"hsl(var(--as-brand))"}
           textColor="text-white"
-          className="flex w-5/6 items-center gap-2 sm:px-0"
+          className="flex w-5/6 max-w-[400px] items-center gap-2 sm:px-0"
           disabled={txLoading || isSwitchingOrExecuting}
           onClick={onPayment}
         >
