@@ -429,8 +429,8 @@ importers:
         specifier: 2.14.0
         version: 2.14.0
       '@b3dotfun/b3-api':
-        specifier: 0.0.31
-        version: 0.0.31(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(bufferutil@4.0.9)(encoding@0.1.13)(h3@1.15.1)(next@15.3.3(@babel/core@7.26.10)(@opentelemetry/api@1.8.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react-native@0.79.2(@babel/core@7.26.10)(@types/react@19.1.0)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)(typescript@5.8.2)(utf-8-validate@5.0.10)(ws@7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.51)
+        specifier: 0.0.32
+        version: 0.0.32(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(bufferutil@4.0.9)(encoding@0.1.13)(h3@1.15.1)(next@15.3.3(@babel/core@7.26.10)(@opentelemetry/api@1.8.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react-native@0.79.2(@babel/core@7.26.10)(@types/react@19.1.0)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)(typescript@5.8.2)(utf-8-validate@5.0.10)(ws@7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.51)
       '@b3dotfun/basement-api':
         specifier: 0.0.11
         version: 0.0.11(bufferutil@4.0.9)(encoding@0.1.13)(express@4.21.2)(graphql@16.10.0)(h3@1.15.1)(koa@3.0.0)(next@15.3.3(@babel/core@7.26.10)(@opentelemetry/api@1.8.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(typescript@5.8.2)(utf-8-validate@5.0.10)(ws@7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.51)
@@ -908,8 +908,8 @@ packages:
     resolution: {integrity: sha512-DIIotRnefVL6DiaHtO6/21DhJ4JZnnIwdNbpwiAhdt/AVbttcE4yw925gsjur0OGv5BTYXQXU3YnANBYnZjuQA==}
     engines: {node: '>=18.0.0'}
 
-  '@b3dotfun/b3-api@0.0.31':
-    resolution: {integrity: sha512-lVXV6cMpHvLSFUO/T5ACKM3zHWMVdDKSKBK/Gq8FCxYfXeRHzXs/Nv951bPQjEiJ6c0kO0Sqa+RxbUDZgmWcGQ==}
+  '@b3dotfun/b3-api@0.0.32':
+    resolution: {integrity: sha512-Q5ozGLCOtmLPFk7YLa7w9qW5PFu1IJwvOut4Tqd+Md5WgnfPlQcUZ9qObqcJrijDTZUxzlLnuHgPTBNmKV/6Sg==}
     engines: {node: '>= 20.15.0'}
 
   '@b3dotfun/basement-api@0.0.11':
@@ -12816,7 +12816,7 @@ snapshots:
       '@smithy/types': 4.3.1
       tslib: 2.8.1
 
-  '@b3dotfun/b3-api@0.0.31(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(bufferutil@4.0.9)(encoding@0.1.13)(h3@1.15.1)(next@15.3.3(@babel/core@7.26.10)(@opentelemetry/api@1.8.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react-native@0.79.2(@babel/core@7.26.10)(@types/react@19.1.0)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)(typescript@5.8.2)(utf-8-validate@5.0.10)(ws@7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.51)':
+  '@b3dotfun/b3-api@0.0.32(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(bufferutil@4.0.9)(encoding@0.1.13)(h3@1.15.1)(next@15.3.3(@babel/core@7.26.10)(@opentelemetry/api@1.8.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react-native@0.79.2(@babel/core@7.26.10)(@types/react@19.1.0)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)(typescript@5.8.2)(utf-8-validate@5.0.10)(ws@7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.51)':
     dependencies:
       '@apollo/client': 3.13.6(@types/react@19.1.0)(graphql@16.10.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@feathersjs/adapter-commons': 5.0.34
@@ -12834,6 +12834,7 @@ snapshots:
       '@privy-io/server-auth': 1.19.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.27.2(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.51))
       '@thirdweb-dev/engine': 0.0.18
       '@types/koa': 2.15.0
+      big.js: 7.0.1
       cryptr: 6.3.0
       ethers: 6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       express: 4.21.2
