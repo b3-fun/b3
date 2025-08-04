@@ -75,7 +75,7 @@ export function FiatPaymentMethodComponent({
       id: FiatPaymentMethod.STRIPE,
       name: "Stripe",
       description: "Credit or debit card payment",
-      badge: stripeFee ? `$${stripeFee} fee` : "Standard Fee",
+      badge: stripeFee ? `$${Number(stripeFee).toFixed(2)} fee` : "Standard Fee",
       badgeColor: "bg-yellow-100 text-yellow-800",
       available: true,
     });
