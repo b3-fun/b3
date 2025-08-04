@@ -147,9 +147,7 @@ function StripePaymentForm({
     try {
       const result = (await stripe.confirmPayment({
         elements,
-        confirmParams: {
-          return_url: `${window.location.origin}/?orderId=${order.id}&waitingForDeposit=true&fromStripe=true`,
-        },
+        redirect: "if_required",
       })) as PaymentIntentResult;
 
       if (result.error) {
