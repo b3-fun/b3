@@ -123,7 +123,7 @@ export function AnySpendNFT({
 
         <DropdownMenu nftContract={nftContract} />
       </div>
-      <div className="from-b3-react-background to-as-on-surface-1 mt-[-100px] w-full rounded-t-lg bg-gradient-to-t">
+      <div className="from-b3-react-background to-as-on-surface-1 -mb-5 mt-[-100px] w-full rounded-t-lg bg-gradient-to-t">
         <div className="h-[100px] w-full" />
         <div className="mb-1 flex w-full flex-col items-center gap-2 p-5">
           <span className="font-sf-rounded text-2xl font-semibold">{nftContract.name}</span>

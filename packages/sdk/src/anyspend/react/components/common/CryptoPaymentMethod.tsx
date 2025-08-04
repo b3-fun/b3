@@ -9,11 +9,11 @@ import { ChevronLeft, ChevronRightCircle, Wallet, X } from "lucide-react";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
-import { ConnectEmbed, lightTheme } from "thirdweb/react";
+import { ConnectEmbed, lightTheme, useActiveWallet } from "thirdweb/react";
 import { createWallet } from "thirdweb/wallets";
 import { useDisconnect } from "wagmi";
 
-export enum PaymentMethod {
+export enum CryptoPaymentMethodType {
   NONE = "none",
   CONNECT_WALLET = "connect_wallet",
   TRANSFER_CRYPTO = "transfer_crypto",
@@ -26,11 +26,11 @@ interface CryptoPaymentMethodProps {
       icon?: string;
     };
   };
-  selectedPaymentMethod: PaymentMethod;
-  setSelectedPaymentMethod: (method: PaymentMethod) => void;
+  selectedPaymentMethod: CryptoPaymentMethodType;
+  setSelectedPaymentMethod: (method: CryptoPaymentMethodType) => void;
   isCreatingOrder: boolean;
   onBack: () => void;
-  onSelectPaymentMethod: (method: PaymentMethod) => void;
+  onSelectPaymentMethod: (method: CryptoPaymentMethodType) => void;
 }
 
 export function CryptoPaymentMethod({
@@ -40,7 +40,8 @@ export function CryptoPaymentMethod({
   onBack,
   onSelectPaymentMethod,
 }: CryptoPaymentMethodProps) {
-  const { address: globalAddress, wallet: globalWallet } = useAccountWallet();
+  const { wallet: globalWallet } = useAccountWallet();
+  const activeWallet = useActiveWallet();
   const { disconnect } = useDisconnect();
   const [showWalletModal, setShowWalletModal] = useState(false);
 
@@ -73,7 +74,7 @@ export function CryptoPaymentMethod({
         {/* Payment Methods */}
         <div className="flex flex-col gap-3">
           {/* Connect Wallet Option */}
-          {!globalAddress ? (
+          {!activeWallet ? (
             // Not connected - show single connect button
             <button
               onClick={() => setShowWalletModal(true)}
@@ -104,14 +105,16 @@ export function CryptoPaymentMethod({
                   )}
                   <div className="flex flex-col">
                     <span className="text-as-primary font-semibold">Connected Wallet</span>
-                    <span className="text-as-primary/60 text-sm">{shortenAddress(globalAddress)}</span>
+                    <span className="text-as-primary/60 text-sm">
+                      {shortenAddress(activeWallet.getAccount()?.address || "")}
+                    </span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => {
-                      setSelectedPaymentMethod(PaymentMethod.CONNECT_WALLET);
-                      onSelectPaymentMethod(PaymentMethod.CONNECT_WALLET);
+                      setSelectedPaymentMethod(CryptoPaymentMethodType.CONNECT_WALLET);
+                      onSelectPaymentMethod(CryptoPaymentMethodType.CONNECT_WALLET);
                     }}
                     className="bg-as-brand hover:bg-as-brand/90 rounded-lg px-3 py-1.5 text-sm font-medium text-white transition-colors"
                   >
@@ -121,8 +124,8 @@ export function CryptoPaymentMethod({
                     onClick={async () => {
                       disconnect();
                       toast.success("Wallet disconnected");
-                      if (selectedPaymentMethod === PaymentMethod.CONNECT_WALLET) {
-                        setSelectedPaymentMethod(PaymentMethod.NONE);
+                      if (selectedPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET) {
+                        setSelectedPaymentMethod(CryptoPaymentMethodType.NONE);
                       }
                     }}
                     className="text-as-primary/60 hover:text-as-primary/80 rounded-lg p-1.5 transition-colors"
@@ -137,8 +140,8 @@ export function CryptoPaymentMethod({
           {/* Transfer Crypto Option */}
           <button
             onClick={() => {
-              setSelectedPaymentMethod(PaymentMethod.TRANSFER_CRYPTO);
-              onSelectPaymentMethod(PaymentMethod.TRANSFER_CRYPTO);
+              setSelectedPaymentMethod(CryptoPaymentMethodType.TRANSFER_CRYPTO);
+              onSelectPaymentMethod(CryptoPaymentMethodType.TRANSFER_CRYPTO);
             }}
             disabled={isCreatingOrder}
             className="bg-as-surface-primary border-as-border-secondary hover:border-as-secondary/80 group flex w-full items-center justify-between gap-4 rounded-xl border px-4 py-3.5 transition-all duration-200 hover:shadow-md"
@@ -174,8 +177,8 @@ export function CryptoPaymentMethod({
                 onConnect={async wallet => {
                   console.log("Wallet connected:", wallet);
                   // setShowWalletModal(false);
-                  setSelectedPaymentMethod(PaymentMethod.CONNECT_WALLET);
-                  onSelectPaymentMethod(PaymentMethod.CONNECT_WALLET);
+                  setSelectedPaymentMethod(CryptoPaymentMethodType.CONNECT_WALLET);
+                  onSelectPaymentMethod(CryptoPaymentMethodType.CONNECT_WALLET);
                   setShowWalletModal(false);
                 }}
                 style={{

@@ -49,7 +49,7 @@ import { erc20Abi, WalletClient } from "viem";
 import { b3 } from "viem/chains";
 import { useWaitForTransactionReceipt, useWalletClient } from "wagmi";
 import ConnectWalletPayment from "./ConnectWalletPayment";
-import { PaymentMethod } from "./CryptoPaymentMethod";
+import { CryptoPaymentMethodType } from "./CryptoPaymentMethod";
 import { OrderDetailsCollapsible } from "./OrderDetailsCollapsible";
 import PaymentVendorUI from "./PaymentVendorUI";
 import { TransferCryptoDetails } from "./TransferCryptoDetails";
@@ -62,7 +62,7 @@ interface OrderDetailsProps {
   relayTx: components["schemas"]["RelayTx"] | null;
   executeTx: components["schemas"]["ExecuteTx"] | null;
   refundTxs: components["schemas"]["RefundTx"][] | null;
-  paymentMethod?: PaymentMethod; // Now optional since we read from URL
+  cryptoPaymentMethod?: CryptoPaymentMethodType; // Now optional since we read from URL
   onBack?: () => void;
 }
 
@@ -199,15 +199,16 @@ export const OrderDetails = memo(function OrderDetails({
   relayTx,
   executeTx,
   refundTxs,
-  paymentMethod = PaymentMethod.NONE,
+  cryptoPaymentMethod,
   onBack,
 }: OrderDetailsProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Read payment method from URL parameters
-  const paymentMethodFromUrl = searchParams.get("paymentMethod") as PaymentMethod | null;
-  const effectivePaymentMethod = paymentMethodFromUrl || paymentMethod || PaymentMethod.NONE;
+  // Read crypto payment method from URL parameters
+  const cryptoPaymentMethodFromUrl = searchParams.get("cryptoPaymentMethod") as CryptoPaymentMethodType | null;
+  const effectiveCryptoPaymentMethod =
+    cryptoPaymentMethod || cryptoPaymentMethodFromUrl || CryptoPaymentMethodType.NONE;
 
   const setB3ModalOpen = useModalStore((state: any) => state.setB3ModalOpen);
 
@@ -931,7 +932,7 @@ export const OrderDetails = memo(function OrderDetails({
         <>
           {order.onrampMetadata ? (
             <PaymentVendorUI isMainnet={isMainnet} order={order} dstTokenSymbol={dstToken.symbol} />
-          ) : effectivePaymentMethod === PaymentMethod.CONNECT_WALLET ? (
+          ) : effectiveCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET ? (
             <ConnectWalletPayment
               order={order}
               onPayment={handlePayment}
@@ -942,7 +943,7 @@ export const OrderDetails = memo(function OrderDetails({
               tournament={tournament}
               nft={nft}
             />
-          ) : effectivePaymentMethod === PaymentMethod.TRANSFER_CRYPTO ? (
+          ) : effectiveCryptoPaymentMethod === CryptoPaymentMethodType.TRANSFER_CRYPTO ? (
             // Transfer Crypto Payment Method - Show new card-based UI
             <TransferCryptoDetails
               order={order}
@@ -1154,10 +1155,7 @@ function TransactionDetails({
               initial={{ opacity: 0, scale: 0.3 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, ease: "easeOut", delay }}
-              className="bg-as-brand/70 absolute z-10 m-2 flex h-6 w-6 items-center justify-center rounded-full border border-white/30 shadow-lg shadow-purple-500/30 backdrop-blur-sm"
-              style={{
-                boxShadow: "0 0 15px 5px rgba(138, 43, 226, 0.2)",
-              }}
+              className="bg-as-brand/70 absolute z-10 m-2 flex h-6 w-6 items-center justify-center rounded-full border border-white/30 shadow-lg backdrop-blur-sm"
             >
               <CheckIcon className="text-as-primary h-3 w-3" />
             </motion.div>
