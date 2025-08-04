@@ -20,8 +20,6 @@ import {
   StyleRoot,
   Tabs,
   TabsContent,
-  TabsList,
-  TabTrigger,
   TextShimmer,
   Tooltip,
   TooltipContent,
@@ -728,27 +726,63 @@ export function AnySpendCustom({
         onValueChange={value => setActiveTab(value as "crypto" | "fiat")}
         className="bg-b3-react-background max-h-[60dvh] w-full overflow-y-auto p-5"
       >
-        <TabsList hideGradient className="justify-center">
-          <TabTrigger value="crypto">
-            <span className="text-as-primary w-[140px]">Pay with crypto</span>
-          </TabTrigger>
-          {isOnrampSupported ? (
-            <TabTrigger value="fiat">
-              <span className="text-as-primary w-[140px]">Pay with fiat</span>
-            </TabTrigger>
-          ) : (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <TabTrigger value="fiat" disabled>
-                  <span className="text-as-primary w-[140px]">Pay with fiat</span>
-                </TabTrigger>
-              </TooltipTrigger>
-              <TooltipContent>
-                <span className="text-as-primary w-[140px]">Fiat payments are not supported for this amount</span>
-              </TooltipContent>
-            </Tooltip>
-          )}
-        </TabsList>
+        <div className="w-full">
+          <div className="bg-as-surface-secondary relative mb-4 grid h-10 grid-cols-2 rounded-xl">
+            <div
+              className={cn(
+                "bg-as-brand absolute bottom-0 left-0 top-0 z-0 rounded-xl transition-transform duration-100",
+                "h-full w-1/2",
+                activeTab === "fiat" ? "translate-x-full" : "translate-x-0",
+              )}
+              style={{ willChange: "transform" }}
+            />
+            <button
+              className={cn(
+                "relative z-10 h-full w-full rounded-xl px-3 text-sm font-medium transition-colors duration-100",
+                activeTab === "crypto" ? "text-white" : "text-as-primary/70 hover:bg-as-on-surface-2 bg-transparent",
+              )}
+              onClick={() => {
+                setActiveTab("crypto");
+                setSelectedPaymentMethod(PaymentMethod.NONE);
+                setSelectedFiatPaymentMethod(FiatPaymentMethod.NONE);
+              }}
+            >
+              Pay with crypto
+            </button>
+            {isOnrampSupported ? (
+              <button
+                className={cn(
+                  "relative z-10 h-full w-full rounded-xl px-3 text-sm font-medium transition-colors duration-100",
+                  activeTab === "fiat" ? "text-white" : "text-as-primary/70 hover:bg-as-on-surface-2 bg-transparent",
+                )}
+                onClick={() => {
+                  setActiveTab("fiat");
+                  setSelectedPaymentMethod(PaymentMethod.NONE);
+                  setSelectedFiatPaymentMethod(FiatPaymentMethod.NONE);
+                }}
+              >
+                Pay with fiat
+              </button>
+            ) : (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    className={cn(
+                      "relative z-10 h-full w-full rounded-xl px-3 text-sm font-medium transition-colors duration-100",
+                      "text-as-primary/50 cursor-not-allowed bg-transparent",
+                    )}
+                    disabled
+                  >
+                    Pay with fiat
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <span className="text-as-primary w-[140px]">Fiat payments are not supported for this amount</span>
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+        </div>
 
         {/* Warning */}
         {/* {srcChainId === base.id || dstChainId === base.id || activeTab === "fiat" ? (
