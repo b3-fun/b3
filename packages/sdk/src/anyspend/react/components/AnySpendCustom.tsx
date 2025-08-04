@@ -371,7 +371,7 @@ export function AnySpendCustom({
 
   const { address: globalAddress, wallet: globalWallet } = useAccountWallet();
   const { address: connectedAddress, name: connectedName } = useConnectedUserProfile();
-  const { name: recipientName } = useUserProfile(recipientAddress);
+  const { name: recipientName, profile: recipientProfile } = useUserProfile(recipientAddress);
 
   const handleCreateOrder = async (
     recipientAddress: string,
@@ -564,15 +564,19 @@ export function AnySpendCustom({
             className={cn("text-as-tertiarry flex h-7 items-center gap-2 rounded-lg")}
             onClick={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
           >
-            {globalAddress && recipientAddress === globalAddress && globalWallet?.meta?.icon ? (
-              <img src={globalWallet?.meta?.icon} alt="Current wallet" className="bg-as-primary h-6 w-6 rounded-full" />
-            ) : (
-              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-orange-500 text-xs text-white">
-                🦊
+            <>
+              {recipientProfile && (
+                <img
+                  src={recipientProfile.data?.avatar || ""}
+                  alt={recipientProfile.data?.name || ""}
+                  className="bg-b3-react-foreground size-7 rounded-full object-cover opacity-100"
+                />
+              )}
+              <div className="flex items-center gap-1">
+                {recipientName && <span>@{recipientName}</span>}
+                <span>{shortenAddress(recipientAddress)}</span>
               </div>
-            )}
-            <div className="text-sm">{recipientName ? recipientName : shortenAddress(recipientAddress)}</div>
-            <ChevronRight className="h-4 w-4" />
+            </>
           </button>
         ) : (
           <button
