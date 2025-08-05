@@ -17,6 +17,9 @@ dist
 tsconfig.tsbuildinfo
 .tsbuildinfo
 
+# Turbo
+.turbo
+
 doppler.yaml
 
 .cursor

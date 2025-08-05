@@ -1,0 +1,8 @@
+{
+  "extends": ["next/core-web-vitals"],
+  "rules": {
+    "quotes": "off",
+    "@typescript-eslint/quotes": "off",
+    "no-undef": "off"
+  }
+}
