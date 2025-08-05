@@ -159,7 +159,7 @@ export function PanelOnramp({
 
         {/* Quick Amount Buttons */}
         <div className="mx-auto mb-6 inline-grid grid-cols-4 gap-2">
-          {["5", "10", "25", "100"].map(value => (
+          {["5", "10", "25"].map(value => (
             <button
               key={value}
               onClick={() => handleQuickAmount(value)}
