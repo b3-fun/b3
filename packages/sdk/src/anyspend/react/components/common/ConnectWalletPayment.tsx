@@ -6,9 +6,7 @@ import { ShinyButton, useProfile } from "@b3dotfun/sdk/global-account/react";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { motion } from "framer-motion";
 import { ChevronRight, Loader2 } from "lucide-react";
-import { useMemo } from "react";
 import { OrderDetailsCollapsible } from "./OrderDetailsCollapsible";
-import { Step, StepProgress } from "./StepProgress";
 
 type Tournament = components["schemas"]["Tournament"];
 type NFT = components["schemas"]["NFT"];
@@ -48,35 +46,12 @@ export default function ConnectWalletPayment({
       : order.payload.expectedDstAmount.toString();
   const formattedExpectedDstAmount = formatTokenAmount(BigInt(expectedDstAmount), dstToken.decimals);
 
-  const steps: Step[] = useMemo(
-    () => [
-      {
-        id: 1,
-        title: "Connect Wallet",
-        description: "Connect your wallet to continue",
-      },
-      {
-        id: 2,
-        title: "Awaiting Payment",
-        description: "Send your payment to the address below",
-      },
-      {
-        id: 3,
-        title: "Complete Payment",
-        description: "Finalize your transaction",
-      },
-    ],
-    [],
-  );
-
   if (!srcToken || !dstToken) {
     return <div>Loading...</div>;
   }
 
   return (
     <div className="flex w-full flex-col items-center gap-6">
-      <StepProgress steps={steps} currentStepIndex={1} />
-
       {/* Payment Button */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}

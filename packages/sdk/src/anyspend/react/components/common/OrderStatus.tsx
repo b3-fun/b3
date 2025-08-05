@@ -24,7 +24,7 @@ export const OrderStatus = memo(function OrderStatus({ order }: { order: compone
     },
   ];
 
-  if (["waiting_stripe_payment"].includes(order.status)) {
+  if (["waiting_stripe_payment", "scanning_deposit_transaction"].includes(order.status)) {
     return <StepProgress steps={paymentSteps} currentStepIndex={0} />;
   }
 
