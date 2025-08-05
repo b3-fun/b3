@@ -69,7 +69,7 @@ export function FiatPaymentMethodComponent({
   }
 
   // Add Stripe if available
-  if (isStripeOnrampSupported || (stripeWeb2Support && stripeWeb2Support.isSupport)) {
+  if (stripeWeb2Support && stripeWeb2Support.isSupport) {
     const stripeFee = getFeeFromApi(FiatPaymentMethod.STRIPE);
     availablePaymentMethods.push({
       id: FiatPaymentMethod.STRIPE,
