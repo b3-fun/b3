@@ -1,18 +1,19 @@
 import {
   Button,
   CopyToClipboard,
+  TabsContentPrimitive,
+  TabsListPrimitive,
+  TabsPrimitive,
+  TabTriggerPrimitive,
   TWSignerWithMetadata,
   useAccountAssets,
   useAuthentication,
+  useB3,
   useB3BalanceFromAddresses,
   useGetAllTWSigners,
+  useModalStore,
   useNativeBalance,
   useRemoveSessionKey,
-  useModalStore,
-  TabsPrimitive,
-  TabsContentPrimitive,
-  TabsListPrimitive,
-  TabTriggerPrimitive,
 } from "@b3dotfun/sdk/global-account/react";
 import { formatAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { formatNumber } from "@b3dotfun/sdk/shared/utils/formatNumber";
@@ -21,6 +22,7 @@ import { useState } from "react";
 import { Chain } from "thirdweb";
 import { useActiveAccount } from "thirdweb/react";
 import { formatUnits } from "viem";
+import useFirstEOA from "../../hooks/useFirstEOA";
 import { AccountAssets } from "../AccountAssets/AccountAssets";
 
 interface ManageAccountProps {
@@ -44,12 +46,19 @@ export function ManageAccount({
   chain,
   partnerId,
 }: ManageAccountProps) {
+  const { automaticallySetFirstEoa } = useB3();
   const [activeTab, setActiveTab] = useState("balance");
   const [revokingSignerId, setRevokingSignerId] = useState<string | null>(null);
   const account = useActiveAccount();
+  const {
+    address: eoaAddress,
+    info: { data: eoaInfo },
+  } = useFirstEOA();
   const { data: assets, isLoading } = useAccountAssets(account?.address);
   const { data: b3Balance } = useB3BalanceFromAddresses(account?.address);
   const { data: nativeBalance } = useNativeBalance(account?.address);
+  const { data: eoaNativeBalance } = useNativeBalance(eoaAddress);
+  const { data: eoaB3Balance } = useB3BalanceFromAddresses(eoaAddress);
   const { data: signers, refetch: refetchSigners } = useGetAllTWSigners({
     chain,
     accountAddress: account?.address,
@@ -57,8 +66,6 @@ export function ManageAccount({
   const { setB3ModalOpen, setB3ModalContentType } = useModalStore();
   const { logout } = useAuthentication(partnerId);
   const [logoutLoading, setLogoutLoading] = useState(false);
-
-  console.log("@@assets", assets);
 
   const { removeSessionKey } = useRemoveSessionKey({
     chain,
@@ -94,6 +101,20 @@ export function ManageAccount({
             <img src="https://cdn.b3.fun/b3_logo.svg" alt="B3" className="h-6 w-6" />
             <h2 className="font-neue-montreal-bold text-b3-react-primary text-lg">Global Account</h2>
           </div>
+
+          {!automaticallySetFirstEoa && (
+            <div className="mb-4">
+              <div className="flex items-center gap-4">
+                <img src="https://cdn.b3.fun/b3-coin-3d.png" alt="B3" className="h-10 w-10" />
+                <span className="font-neue-montreal-bold text-2xl">{b3Balance?.formattedTotal || "--"} B3</span>
+              </div>
+              <div className="border-b3-react-border my-4 border-t" />
+              <div className="flex items-center gap-4">
+                <img src="https://cdn.b3.fun/ethereum.svg" alt="ETH" className="h-10 w-10" />
+                <span className="font-neue-montreal-bold text-2xl">{nativeBalance?.formattedTotal || "--"} ETH</span>
+              </div>
+            </div>
+          )}
           <div className="flex flex-col gap-2">
             <p className="text-b3-react-secondary-foreground text-sm">Your universal account for all B3-powered apps</p>
             <div className="flex items-center gap-2">
@@ -107,15 +128,26 @@ export function ManageAccount({
       </div>
 
       <div className="border-b3-react-border bg-b3-react-subtle w-full rounded-lg border p-4">
-        <div className="flex items-center gap-4">
-          <img src="https://cdn.b3.fun/b3-coin-3d.png" alt="B3" className="h-10 w-10" />
-          <span className="font-neue-montreal-bold text-2xl">{b3Balance?.formattedTotal || "--"} B3</span>
-        </div>
-        <div className="border-b3-react-border my-4 border-t" />
-        <div className="flex items-center gap-4">
-          <img src="https://cdn.b3.fun/ethereum.svg" alt="ETH" className="h-10 w-10" />
-          <span className="font-neue-montreal-bold text-2xl">{nativeBalance?.formattedTotal || "--"} ETH</span>
-        </div>
+        {eoaAddress && (
+          <>
+            <div>
+              <h3 className="font-neue-montreal-bold text-b3-react-primary mb-2">Connected {eoaInfo?.name}</h3>
+              <div className="flex items-center gap-4">
+                <img src="https://cdn.b3.fun/ethereum.svg" alt="ETH" className="h-10 w-10" />
+                <span className="font-neue-montreal-bold text-2xl">{eoaNativeBalance?.formattedTotal || "--"} ETH</span>
+              </div>
+              <div className="border-b3-react-border my-4 border-t" />
+              <div className="flex items-center gap-4">
+                <img src="https://cdn.b3.fun/b3-coin-3d.png" alt="B3" className="h-10 w-10" />
+                <span className="font-neue-montreal-bold text-2xl">{eoaB3Balance?.formattedTotal || "--"} B3</span>
+              </div>
+              <div className="text-b3-react-muted-foreground mt-2">
+                <span className="font-mono text-sm">{centerTruncate(eoaAddress, 6)}</span>
+                <CopyToClipboard text={eoaAddress} />
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       <div className="flex w-full gap-4">
