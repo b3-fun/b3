@@ -6,7 +6,6 @@ import {
   useAnyspendCreateOrder,
   useAnyspendOrderAndTransactions,
   useAnyspendQuote,
-  useConnectedUserProfile,
   useGeoOnrampOptions,
 } from "@b3dotfun/sdk/anyspend/react";
 import {
@@ -465,9 +464,10 @@ function AnySpendInner({
         },
   );
 
-  const { address: connectedAddress, name: connectedName, profile: connectedProfile } = useConnectedUserProfile();
-  const recipientProfile = useProfile({ address: recipientAddress });
-  const recipientName = formatUsername(recipientProfile.data?.name ?? "");
+  const { wallet, ensName: connectedName } = useAccountWallet();
+  const connectedAddress = wallet?.address;
+  const recipientProfile = useProfile({ address: recipientAddress, fresh: true });
+  const recipientName = recipientProfile.data?.name;
 
   // Load custom recipients from local storage on mount
   useEffect(() => {
@@ -1080,16 +1080,16 @@ function AnySpendInner({
                   <>
                     {connectedAddress ? (
                       <>
-                        {recipientProfile && (
+                        {wallet?.meta?.icon && (
                           <img
-                            src={recipientProfile.data?.avatar || ""}
-                            alt={recipientProfile.data?.name || ""}
-                            className="bg-b3-react-foreground size-7 rounded-full object-cover opacity-100"
+                            src={wallet.meta.icon || ""}
+                            alt={wallet.ensName || ""}
+                            className="bg-b3-react-foreground size-6 rounded-full object-cover opacity-100"
                           />
                         )}
                         <div className="flex items-center gap-1">
-                          {recipientName && <span>{recipientName}</span>}
-                          <span>{shortenAddress(recipientAddress || "")}</span>
+                          {connectedName && <span>{formatUsername(connectedName)}</span>}
+                          <span>{shortenAddress(connectedAddress || "")}</span>
                         </div>
                       </>
                     ) : (
@@ -1211,18 +1211,18 @@ function AnySpendInner({
                   onClick={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
                 >
                   <>
-                    {connectedAddress ? (
+                    {recipientAddress ? (
                       <>
-                        {connectedProfile?.data?.avatar && (
+                        {recipientProfile?.data?.avatar && (
                           <img
-                            src={connectedProfile.data?.avatar || ""}
+                            src={recipientProfile.data?.avatar || ""}
                             alt="Connected Wallet"
                             className="bg-as-primary h-6 w-6 rounded-full"
                           />
                         )}
                         <span className="text-as-tertiarry flex items-center gap-1 text-sm">
-                          {connectedName && <span>{formatUsername(connectedName)}</span>}
-                          <span>{shortenAddress(connectedAddress || "")}</span>
+                          {recipientName && <span>{formatUsername(recipientName)}</span>}
+                          <span>{shortenAddress(recipientAddress || "")}</span>
                         </span>
                       </>
                     ) : (
@@ -1335,7 +1335,7 @@ function AnySpendInner({
         initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
         animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
         transition={{ duration: 0.3, delay: 0.2, ease: "easeInOut" }}
-        className="mt-4 flex w-full max-w-[460px] flex-col gap-2 pb-2"
+        className="flex w-full max-w-[460px] flex-col gap-2 pb-2"
       >
         <ShinyButton
           accentColor={"hsl(var(--as-brand))"}
