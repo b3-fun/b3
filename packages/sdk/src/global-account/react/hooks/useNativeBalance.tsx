@@ -3,6 +3,7 @@ import { formatNumber } from "@b3dotfun/sdk/shared/utils/formatNumber";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { createPublicClient, formatEther, formatUnits, http } from "viem";
+import { fetchNativeTokenPriceUsd } from "./useTokenPrice";
 interface NativeBalanceResponse {
   data: Array<{
     tokenDecimals: number;
@@ -30,14 +31,46 @@ async function fetchNativeBalance(address: string, chainIds: string) {
     return acc + Number(balance);
   }, 0);
 
+  // TODO: Revive me once CoinGecko supports B3
+  let usdBalances: Record<
+    number,
+    {
+      balance: number;
+      formatted: string;
+    }
+  > = {};
+
+  try {
+    for (const item of data.data) {
+      // Use chain ID once since native token ETH is the same across all chains
+      const usdPrice = await fetchNativeTokenPriceUsd("0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", "eth");
+
+      usdBalances[item.chainId] = {
+        balance: total * usdPrice,
+        formatted: formatNumber(total * usdPrice),
+      };
+    }
+  } catch (error) {
+    console.error("@@useNativeBalance:error in price calculation", error);
+  }
+
+  const totalUsd = Object.values(usdBalances).reduce((acc, curr) => acc + curr.balance, 0);
+
   return {
     total,
     formattedTotal: formatNumber(total),
-    breakdown: data.data.map(item => ({
-      chainId: item.chainId,
-      balance: BigInt(item.balance),
-      formatted: formatNumber(Number(formatUnits(BigInt(item.balance), item.tokenDecimals))),
-    })),
+    totalUsd,
+    formattedTotalUsd: formatNumber(totalUsd),
+    breakdown: data.data.map(item => {
+      const usdBalance = usdBalances[item.chainId]?.balance || 0;
+      return {
+        chainId: item.chainId,
+        balance: BigInt(item.balance),
+        formatted: formatNumber(Number(formatUnits(BigInt(item.balance), item.tokenDecimals))),
+        balanceUsd: usdBalance,
+        balanceUsdFormatted: formatNumber(usdBalance),
+      };
+    }),
   };
 }
 
