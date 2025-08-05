@@ -9,7 +9,7 @@ import { ChevronLeft, ChevronRightCircle, Wallet, X } from "lucide-react";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
-import { ConnectEmbed, lightTheme, useActiveWallet } from "thirdweb/react";
+import { ConnectEmbed, lightTheme, useActiveWallet, useDisconnect as useThirdwebDisconnect } from "thirdweb/react";
 import { createWallet } from "thirdweb/wallets";
 import { useDisconnect } from "wagmi";
 
@@ -43,6 +43,7 @@ export function CryptoPaymentMethod({
   const { wallet: globalWallet } = useAccountWallet();
   const activeWallet = useActiveWallet();
   const { disconnect } = useDisconnect();
+  const { disconnect: disconnectThirdweb } = useThirdwebDisconnect();
   const [showWalletModal, setShowWalletModal] = useState(false);
 
   // Define available wallets for the modal
@@ -123,6 +124,7 @@ export function CryptoPaymentMethod({
                   <button
                     onClick={async () => {
                       disconnect();
+                      disconnectThirdweb(activeWallet);
                       toast.success("Wallet disconnected");
                       if (selectedPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET) {
                         setSelectedPaymentMethod(CryptoPaymentMethodType.NONE);
