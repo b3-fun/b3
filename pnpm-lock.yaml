@@ -432,8 +432,8 @@ importers:
         specifier: 2.14.0
         version: 2.14.0
       '@b3dotfun/b3-api':
-        specifier: 0.0.31
-        version: 0.0.31(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(bufferutil@4.0.9)(encoding@0.1.13)(h3@1.15.1)(next@15.3.3(@babel/core@7.26.10)(@opentelemetry/api@1.8.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react-native@0.79.2(@babel/core@7.26.10)(@types/react@19.1.0)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)(typescript@5.8.2)(utf-8-validate@5.0.10)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.51)
+        specifier: 0.0.38
+        version: 0.0.38(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(bufferutil@4.0.9)(encoding@0.1.13)(h3@1.15.1)(next@15.3.3(@babel/core@7.26.10)(@opentelemetry/api@1.8.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react-native@0.79.2(@babel/core@7.26.10)(@types/react@19.1.0)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)(typescript@5.8.2)(utf-8-validate@5.0.10)(ws@7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.51)
       '@b3dotfun/basement-api':
         specifier: 0.0.11
         version: 0.0.11(bufferutil@4.0.9)(encoding@0.1.13)(express@4.21.2)(graphql@16.10.0)(h3@1.15.1)(koa@3.0.0)(next@15.3.3(@babel/core@7.26.10)(@opentelemetry/api@1.8.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(typescript@5.8.2)(utf-8-validate@5.0.10)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.51)
@@ -911,8 +911,8 @@ packages:
     resolution: {integrity: sha512-DIIotRnefVL6DiaHtO6/21DhJ4JZnnIwdNbpwiAhdt/AVbttcE4yw925gsjur0OGv5BTYXQXU3YnANBYnZjuQA==}
     engines: {node: '>=18.0.0'}
 
-  '@b3dotfun/b3-api@0.0.31':
-    resolution: {integrity: sha512-lVXV6cMpHvLSFUO/T5ACKM3zHWMVdDKSKBK/Gq8FCxYfXeRHzXs/Nv951bPQjEiJ6c0kO0Sqa+RxbUDZgmWcGQ==}
+  '@b3dotfun/b3-api@0.0.38':
+    resolution: {integrity: sha512-/aqlgbfwf6tbqCyuwhqa3kJCxSzAYjGrZGgYcW9JroH+QuQNs1loguzQHhLkBbhTx49gTHpWVaqvDZvLo51n/w==}
     engines: {node: '>= 20.15.0'}
 
   '@b3dotfun/basement-api@0.0.11':
@@ -1735,10 +1735,6 @@ packages:
   '@ethersproject/wordlists@5.8.0':
     resolution: {integrity: sha512-2df9bbXicZws2Sb5S6ET493uJ0Z84Fjr3pC4tu/qlnZERibZCeUVuqdtt+7Tv9xxhUxHoIekIA7avrKUWHrezg==}
 
-  '@feathersjs/adapter-commons@5.0.33':
-    resolution: {integrity: sha512-2IZLSccDF99zaoYyIXHtwR+CCjywxLGHs3SMYYqM6jvonSAfyKJ5Fp3eIvh6CQZoLnukFIKTU8Ow14mYOlVKyQ==}
-    engines: {node: '>= 12'}
-
   '@feathersjs/adapter-commons@5.0.34':
     resolution: {integrity: sha512-wc0HAZ0uov68p1ytBR5npyAePdNbFrRqr1fINSpLvIkrUkKDEcC6I/lOpk1TBpoI8so5IO/seZhkl25pqKM43A==}
     engines: {node: '>= 12'}
@@ -1751,20 +1747,12 @@ packages:
     resolution: {integrity: sha512-XrPtlbbClVdo/vWIu7ujd2Fdbg4Orhr15P51I2fS8hTQtLa+orxveFJVtlSHNm+9IKykhRZGbpApjWTgxHub6g==}
     engines: {node: '>= 12'}
 
-  '@feathersjs/commons@5.0.33':
-    resolution: {integrity: sha512-RPwOTERN6jeNjXqV/K0djBtc9Y9GcX3W5N9XKWOSdSkPQNzKwXG1G7sPkSRrnx2iJqFMuN/5nS+s69JwLW2m1g==}
-    engines: {node: '>= 12'}
-
   '@feathersjs/commons@5.0.34':
     resolution: {integrity: sha512-UfHzq7taVJx++TXxX5pmDSR72xRp+h5nler4xcUlcJWLLykCOYo8YCeW03S7T1p1NuFdy0qBmU+B+G89bjyGmg==}
     engines: {node: '>= 12'}
 
   '@feathersjs/configuration@5.0.33':
     resolution: {integrity: sha512-xmvSLWFmY2REvDx/tezWRxZnYxGzpEd1hQl45paOrSYhxkQ/b6Tkqa/Ntw467NB+5AyJvRrMVxbvJ+KyiPoDpg==}
-    engines: {node: '>= 12'}
-
-  '@feathersjs/errors@5.0.33':
-    resolution: {integrity: sha512-roM6xxEUdcm7b9OAtCBViafTF7K0tjW45p9IxAN3Q6VAo7bT2qb7Hh22VgBOtKxVTSYTncON4eQv8F0yVRSCSg==}
     engines: {node: '>= 12'}
 
   '@feathersjs/errors@5.0.34':
@@ -12853,7 +12841,7 @@ snapshots:
       '@smithy/types': 4.3.1
       tslib: 2.8.1
 
-  '@b3dotfun/b3-api@0.0.31(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(bufferutil@4.0.9)(encoding@0.1.13)(h3@1.15.1)(next@15.3.3(@babel/core@7.26.10)(@opentelemetry/api@1.8.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react-native@0.79.2(@babel/core@7.26.10)(@types/react@19.1.0)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)(typescript@5.8.2)(utf-8-validate@5.0.10)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.51)':
+  '@b3dotfun/b3-api@0.0.38(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(bufferutil@4.0.9)(encoding@0.1.13)(h3@1.15.1)(next@15.3.3(@babel/core@7.26.10)(@opentelemetry/api@1.8.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react-native@0.79.2(@babel/core@7.26.10)(@types/react@19.1.0)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)(typescript@5.8.2)(utf-8-validate@5.0.10)(ws@7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.51)':
     dependencies:
       '@apollo/client': 3.13.6(@types/react@19.1.0)(graphql@16.10.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@feathersjs/adapter-commons': 5.0.34
@@ -12871,6 +12859,7 @@ snapshots:
       '@privy-io/server-auth': 1.19.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.27.2(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.51))
       '@thirdweb-dev/engine': 0.0.18
       '@types/koa': 2.15.0
+      big.js: 7.0.1
       cryptr: 6.3.0
       ethers: 6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       express: 4.21.2
@@ -14034,12 +14023,6 @@ snapshots:
       '@ethersproject/properties': 5.8.0
       '@ethersproject/strings': 5.8.0
 
-  '@feathersjs/adapter-commons@5.0.33':
-    dependencies:
-      '@feathersjs/commons': 5.0.33
-      '@feathersjs/errors': 5.0.34
-      '@feathersjs/feathers': 5.0.33
-
   '@feathersjs/adapter-commons@5.0.34':
     dependencies:
       '@feathersjs/commons': 5.0.34
@@ -14071,8 +14054,6 @@ snapshots:
     transitivePeerDependencies:
       - typescript
 
-  '@feathersjs/commons@5.0.33': {}
-
   '@feathersjs/commons@5.0.34': {}
 
   '@feathersjs/configuration@5.0.33(typescript@5.8.2)':
@@ -14084,8 +14065,6 @@ snapshots:
       config: 3.3.12
     transitivePeerDependencies:
       - typescript
-
-  '@feathersjs/errors@5.0.33': {}
 
   '@feathersjs/errors@5.0.34': {}
 
@@ -14142,9 +14121,9 @@ snapshots:
 
   '@feathersjs/schema@5.0.33(typescript@5.8.2)':
     dependencies:
-      '@feathersjs/adapter-commons': 5.0.33
-      '@feathersjs/commons': 5.0.33
-      '@feathersjs/errors': 5.0.33
+      '@feathersjs/adapter-commons': 5.0.34
+      '@feathersjs/commons': 5.0.34
+      '@feathersjs/errors': 5.0.34
       '@feathersjs/feathers': 5.0.33
       '@feathersjs/hooks': 0.9.0
       '@types/json-schema': 7.0.15
@@ -14683,7 +14662,7 @@ snapshots:
       '@ethereumjs/tx': 4.2.0
       '@metamask/superstruct': 3.1.0
       '@noble/hashes': 1.8.0
-      '@scure/base': 1.2.4
+      '@scure/base': 1.2.6
       '@types/debug': 4.1.12
       debug: 4.4.0(supports-color@9.4.0)
       pony-cause: 2.1.11

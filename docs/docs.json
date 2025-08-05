@@ -285,7 +285,7 @@
         },
         {
           "anchor": "Explore Apps",
-          "href": "https://explore.b3.fun/apps",
+          "href": "https://explorer.b3.fun/apps",
           "icon": "window"
         },
         {
@@ -325,9 +325,11 @@
   },
   "footer": {
     "socials": {
+      "website": "https://b3.fun",
       "x": "https://x.com/b3dotfun",
       "github": "https://github.com/b3-fun/b3",
-      "discord": "https://discord.gg/b3dotfun"
+      "discord": "https://discord.gg/b3dotfun",
+      "telegram": "https://t.me/b3docs_bot"
     }
   },
   "thumbnails": {
