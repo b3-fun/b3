@@ -371,8 +371,10 @@ function AnySpendCustomInner({
   );
 
   // Get geo data and onramp options (after quote is available)
-  const { geoData, isOnrampSupported, coinbaseAvailablePaymentMethods, isStripeOnrampSupported, stripeWeb2Support } =
-    useGeoOnrampOptions(isMainnet, srcFiatAmount);
+  const { geoData, isOnrampSupported, coinbaseAvailablePaymentMethods, stripeWeb2Support } = useGeoOnrampOptions(
+    isMainnet,
+    srcFiatAmount,
+  );
 
   useEffect(() => {
     if (oat?.data?.order.status === "executed") {
@@ -556,7 +558,7 @@ function AnySpendCustomInner({
         vendor = "coinbase";
         paymentMethodString = coinbaseAvailablePaymentMethods[0]?.id || "";
       } else if (paymentMethod === FiatPaymentMethod.STRIPE) {
-        if (!isStripeOnrampSupported && (!stripeWeb2Support || !stripeWeb2Support.isSupport)) {
+        if (!stripeWeb2Support || !stripeWeb2Support.isSupport) {
           toast.error("Stripe not available");
           return;
         }
