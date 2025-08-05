@@ -1,6 +1,6 @@
 import { useAuthStore } from "@b3dotfun/sdk/global-account/react";
 import { useEffect, useState } from "react";
-import { getLastAuthProvider, useConnectedWallets } from "thirdweb/react";
+import { useConnectedWallets, useWalletInfo } from "thirdweb/react";
 import { Wallet } from "thirdweb/wallets";
 
 export default function useFirstEOA() {
@@ -8,27 +8,29 @@ export default function useFirstEOA() {
   const isConnected = useAuthStore(state => state.isConnected);
   const [firstEOA, setFirstEOA] = useState<Wallet | undefined>(undefined);
   const [address, setAddress] = useState<string | undefined>(undefined);
+  const walletInfo = useWalletInfo(firstEOA?.id);
+
+  console.log("@@wallets", wallets);
+  console.log("@@wallets:isConnected", isConnected);
 
   useEffect(() => {
     const autoSelectFirstEOAWallet = async () => {
       // Only proceed if auto-selection is enabled and user is authenticated
       if (!isConnected) {
+        console.log("@@wallets:not connected");
         return;
       }
 
       // Find the first EOA wallet (excluding ecosystem wallets)
       const isEOAWallet = (wallet: Wallet) => !wallet.id.startsWith("ecosystem.");
       const firstEOAWallet = wallets.find(isEOAWallet);
+      console.log("@@wallets:firstEOAWallet", firstEOAWallet);
 
-      // Only auto-select if the last auth was via wallet or no previous auth provider
-      const lastAuthProvider = await getLastAuthProvider();
-      const shouldAutoSelect = lastAuthProvider === null || lastAuthProvider === "wallet";
-
-      if (shouldAutoSelect) {
-        const address = await firstEOAWallet?.getAccount();
-        setFirstEOA(firstEOAWallet);
-        setAddress(address?.address);
-      }
+      const account = await firstEOAWallet?.getAccount();
+      console.log("@@wallets:account", account);
+      setFirstEOA(firstEOAWallet);
+      console.log("@@wallets:address", account?.address);
+      setAddress(account?.address);
     };
 
     autoSelectFirstEOAWallet();
@@ -37,5 +39,6 @@ export default function useFirstEOA() {
   return {
     account: firstEOA,
     address,
+    info: walletInfo,
   };
 }
