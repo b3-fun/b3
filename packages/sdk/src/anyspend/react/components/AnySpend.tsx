@@ -1322,7 +1322,7 @@ function AnySpendInner({
 
       {/* Error message section */}
       {getAnyspendQuoteError && (
-        <div className="bg-as-on-surface-1 flex w-full max-w-[460px] items-center gap-2 rounded-2xl p-4">
+        <div className="bg-as-on-surface-1 flex w-full max-w-[460px] items-center gap-2 rounded-2xl px-4 py-2">
           <CircleAlert className="bg-as-red h-4 min-h-4 w-4 min-w-4 rounded-full p-0 text-sm font-medium text-white" />
           <div className="text-as-red text-sm">{getAnyspendQuoteError.message}</div>
         </div>
@@ -1333,7 +1333,7 @@ function AnySpendInner({
         initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
         animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
         transition={{ duration: 0.3, delay: 0.2, ease: "easeInOut" }}
-        className="flex w-full max-w-[460px] flex-col gap-2 pb-2"
+        className={cn("mt-4 flex w-full max-w-[460px] flex-col gap-2", getAnyspendQuoteError && "mt-0")}
       >
         <ShinyButton
           accentColor={"hsl(var(--as-brand))"}
