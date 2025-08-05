@@ -77,8 +77,6 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
   // Ensure isAuthenticating stays true until we're fully ready
   useEffect(() => {
     if (useAutoConnectLoading) {
-      debug("@@setIsAuthenticating:true:5");
-      setIsAuthenticating(true);
       setIsConnecting(true);
     } else if (!isAuthenticated) {
       // Only set isAuthenticating to false if we're not authenticated
