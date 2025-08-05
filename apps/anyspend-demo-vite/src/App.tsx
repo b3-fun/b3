@@ -1,3 +1,4 @@
+import React from "react";
 import { AnyspendProvider } from "@b3dotfun/sdk/anyspend/react";
 import { useColorMode } from "@chakra-ui/react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
