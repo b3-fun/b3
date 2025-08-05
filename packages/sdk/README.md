@@ -2,24 +2,6 @@
 
 A comprehensive TypeScript SDK for AnySpend cross-chain operations and B3 Global Accounts authentication. Provides both React components for easy integration and headless TypeScript services for custom implementations.
 
-## Local dev
-
-If you are testing with one of the demos in this repo, simply make changes and they will reflect. If you are testing outside of this repo, follow the instructions below.
-
-Initial setup
-
-```
-yalc publish # run this in sdk folder
-yalc add @b3dotfun/sdk # run this in your other project
-```
-
-After making changes
-
-```
-yalc publish # run this in sdk folder
-yalc update # run this in your other project
-```
-
 ## Architecture
 
 The SDK is organized into focused modules:
@@ -436,3 +418,31 @@ try {
 ---
 
 For more detailed examples and advanced usage patterns, refer to the individual module documentation and type definitions.
+
+## Local dev
+
+If you are testing with one of the demos in this repo, simply make changes and they will reflect. If you are testing outside of this repo, follow the instructions below.
+
+Initial setup
+
+```
+yalc publish # run this in sdk folder
+yalc add @b3dotfun/sdk # run this in your other project
+```
+
+After making changes
+
+```
+yalc publish # run this in sdk folder
+yalc update # run this in your other project
+```
+
+## Debugging
+
+If you want to debug with existing logs that we provide, simply run this in your browser console, on the app you are debugging
+
+```
+localStorage.setItem('debug', '@@b3dotfun/sdk**')
+```
+
+Now, if you filter your console logs for `@@b3dotFun`, you will see several logs we provide.
