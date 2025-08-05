@@ -1,8 +1,8 @@
 import {
   Loading,
   useAuthentication,
-  useHandleConnectWithPrivy,
   useAuthStore,
+  useHandleConnectWithPrivy,
 } from "@b3dotfun/sdk/global-account/react";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { useEffect } from "react";
@@ -32,7 +32,6 @@ export function SignInWithB3Privy({ onSuccess, onError, partnerId, chain }: Sign
   useEffect(() => {
     async function autoConnect() {
       try {
-        setIsAuthenticating(true);
         const connectResult = await connectTw();
         const account = connectResult?.getAccount();
         if (!account) {
@@ -47,6 +46,7 @@ export function SignInWithB3Privy({ onSuccess, onError, partnerId, chain }: Sign
         await logout();
         setIsAuthenticated(false);
       } finally {
+        debug("@@setIsAuthenticating:false:7");
         setIsAuthenticating(false);
       }
     }

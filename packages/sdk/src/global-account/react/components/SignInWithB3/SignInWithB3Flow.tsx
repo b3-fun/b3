@@ -88,15 +88,6 @@ export function SignInWithB3Flow({
 
   // Handle post-login flow after signers are loaded
   useEffect(() => {
-    debug("@@SignInWithB3Flow:useEffect", {
-      isConnected,
-      isAuthenticating,
-      isFetchingSigners,
-      closeAfterLogin,
-      isOpen,
-      source,
-    });
-
     if (isConnected) {
       // Check if we already have a signer for this partner
       const hasExistingSigner = signers?.some(signer => signer.partner.id === partnerId);
@@ -196,12 +187,14 @@ export function SignInWithB3Flow({
       debug("Authenticating with B3 via SIWE");
       setIsConnected(true);
       if (loginWithSiwe) {
+        debug("@@setIsAuthenticating:true:1");
         setIsAuthenticating(true);
         const userAuth = await authenticate(account, partnerId);
         setUser(userAuth.user);
       }
       debug("handleLoginSuccess:account", account);
       onLoginSuccess?.(account);
+      debug("@@setIsAuthenticating:false:1");
       setIsAuthenticating(false);
     },
     [loginWithSiwe, onLoginSuccess, setIsAuthenticating, authenticate, partnerId, setUser, setIsConnected],
