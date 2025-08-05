@@ -404,7 +404,10 @@ function AnySpendInner({
   // State for recipient selection
   const [recipientAddress, setRecipientAddress] = useState<string | undefined>();
 
-  const { address: globalAddress, wallet: globalWallet } = useAccountWallet();
+  const { address: globalAddress, wallet: globalWallet, ensName: connectedName } = useAccountWallet();
+  const connectedAddress = globalWallet?.address;
+  const recipientProfile = useProfile({ address: recipientAddress, fresh: true });
+  const recipientName = recipientProfile.data?.name;
 
   // Set default recipient address when wallet changes
   useEffect(() => {
@@ -463,11 +466,6 @@ function AnySpendInner({
           onrampVendor: getOnrampVendor(selectedFiatPaymentMethod),
         },
   );
-
-  const { wallet, ensName: connectedName } = useAccountWallet();
-  const connectedAddress = wallet?.address;
-  const recipientProfile = useProfile({ address: recipientAddress, fresh: true });
-  const recipientName = recipientProfile.data?.name;
 
   // Load custom recipients from local storage on mount
   useEffect(() => {
@@ -1080,10 +1078,10 @@ function AnySpendInner({
                   <>
                     {connectedAddress ? (
                       <>
-                        {wallet?.meta?.icon && (
+                        {globalWallet?.meta?.icon && (
                           <img
-                            src={wallet.meta.icon || ""}
-                            alt={wallet.ensName || ""}
+                            src={globalWallet.meta.icon || ""}
+                            alt={globalWallet.ensName || ""}
                             className="bg-b3-react-foreground size-6 rounded-full object-cover opacity-100"
                           />
                         )}
@@ -1369,7 +1367,7 @@ function AnySpendInner({
   const onrampPaymentView = (
     <PanelOnrampPayment
       srcAmountOnRamp={srcAmountOnRamp}
-      recipientName={recipientName}
+      recipientName={recipientName || undefined}
       recipientAddress={recipientAddress}
       isMainnet={isMainnet}
       isBuyMode={isBuyMode}
