@@ -88,6 +88,15 @@ export function SignInWithB3Flow({
 
   // Handle post-login flow after signers are loaded
   useEffect(() => {
+    debug("@@SignInWithB3Flow:useEffect", {
+      isConnected,
+      isAuthenticating,
+      isFetchingSigners,
+      closeAfterLogin,
+      isOpen,
+      source,
+    });
+
     if (isConnected) {
       // Check if we already have a signer for this partner
       const hasExistingSigner = signers?.some(signer => signer.partner.id === partnerId);
