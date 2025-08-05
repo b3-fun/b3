@@ -4,8 +4,10 @@
   "scripts": {
     "prettier:check": "npx prettier \"**/*.{ts,tsx,js,jsx,mjs,cjs,json}\" --check",
     "prettier:write": "npx prettier \"**/*.{ts,tsx,js,jsx,mjs,cjs,json}\" --write",
-    "dev": "pnpm --parallel run dev",
-    "build-all": "pnpm --filter='./packages/sdk' run build && pnpm --parallel --filter='./apps/*' --bail run build",
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "test": "turbo test",
     "chain-networks": "ts-node scripts/fetch-chain-networks.ts",
     "coingecko-chains": "ts-node scripts/fetch-coingecko-chains.ts",
     "sdk:dev:css": "pnpm --filter @b3dotfun/sdk run dev:css",
@@ -29,7 +31,8 @@
   "license": "ISC",
   "devDependencies": {
     "prettier-plugin-tailwindcss": "^0.6.11",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "turbo": "^2.5.5"
   },
   "pnpm": {
     "overrides": {

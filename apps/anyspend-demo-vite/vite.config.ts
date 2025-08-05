@@ -4,6 +4,8 @@ import { defineConfig } from "vite";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 import path from "path";
 
+const __dirname = path.resolve();
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), nodePolyfills(), viteCommonjs()],
