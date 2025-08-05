@@ -413,7 +413,7 @@ function AnySpendInner({
   }, [recipientAddressFromProps, globalAddress]);
 
   // Get geo-based onramp options for fiat payments
-  const { geoData, coinbaseAvailablePaymentMethods, isStripeOnrampSupported, stripeWeb2Support } = useGeoOnrampOptions(
+  const { geoData, coinbaseAvailablePaymentMethods, stripeWeb2Support } = useGeoOnrampOptions(
     isMainnet,
     srcAmountOnRamp,
   );
@@ -425,9 +425,7 @@ function AnySpendInner({
         return "coinbase";
       case FiatPaymentMethod.STRIPE:
         // Determine if it's stripe onramp or stripe-web2 based on support
-        if (isStripeOnrampSupported) {
-          return "stripe";
-        } else if (stripeWeb2Support?.isSupport) {
+        if (stripeWeb2Support?.isSupport) {
           return "stripe-web2";
         }
         return undefined;
@@ -846,7 +844,7 @@ function AnySpendInner({
         vendor = "coinbase";
         paymentMethodString = coinbaseAvailablePaymentMethods[0]?.id || ""; // Use first available payment method ID
       } else if (paymentMethod === FiatPaymentMethod.STRIPE) {
-        if (!isStripeOnrampSupported && (!stripeWeb2Support || !stripeWeb2Support.isSupport)) {
+        if (!stripeWeb2Support || !stripeWeb2Support.isSupport) {
           toast.error("Stripe not available");
           return;
         }

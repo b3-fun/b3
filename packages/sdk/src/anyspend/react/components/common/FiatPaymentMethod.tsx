@@ -47,7 +47,6 @@ export function FiatPaymentMethodComponent({
   // Load geo-based onramp options like in PanelOnramp
   const {
     coinbaseAvailablePaymentMethods,
-    isStripeOnrampSupported,
     stripeWeb2Support,
     isLoading: isLoadingGeoOnramp,
   } = useGeoOnrampOptions(isMainnet, srcAmountOnRamp);

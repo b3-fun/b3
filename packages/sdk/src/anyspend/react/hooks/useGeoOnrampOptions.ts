@@ -20,7 +20,7 @@ export function useGeoOnrampOptions(isMainnet: boolean, srcFiatAmount: string) {
   const { geoData, loading: isLoadingGeo, error: geoError } = useGetGeo();
   const { coinbaseOnrampOptions, isLoadingCoinbaseOnrampOptions, coinbaseOnrampOptionsError } =
     useCoinbaseOnrampOptions(isMainnet, geoData?.country, visitorData);
-  const { isStripeOnrampSupported, stripeWeb2Support, isLoadingStripeSupport, stripeSupportError } = useStripeSupport(
+  const { stripeWeb2Support, isLoadingStripeSupport, stripeSupportError } = useStripeSupport(
     isMainnet,
     srcFiatAmount,
     visitorData,
@@ -44,9 +44,8 @@ export function useGeoOnrampOptions(isMainnet: boolean, srcFiatAmount: string) {
       geoData,
       coinbaseOnrampOptions,
       coinbaseAvailablePaymentMethods,
-      isStripeOnrampSupported,
       stripeWeb2Support,
-      isOnrampSupported: coinbaseAvailablePaymentMethods.length > 0 || isStripeOnrampSupported || stripeWeb2Support,
+      isOnrampSupported: coinbaseAvailablePaymentMethods.length > 0 || stripeWeb2Support,
       isLoading: isLoadingGeo || isLoadingCoinbaseOnrampOptions || isLoadingStripeSupport || isLoadingVisitorData,
       isLoadingGeo,
       isLoadingCoinbaseOnrampOptions,
@@ -59,7 +58,6 @@ export function useGeoOnrampOptions(isMainnet: boolean, srcFiatAmount: string) {
       geoData,
       coinbaseOnrampOptions,
       coinbaseAvailablePaymentMethods,
-      isStripeOnrampSupported,
       stripeWeb2Support,
       isLoadingGeo,
       isLoadingCoinbaseOnrampOptions,
