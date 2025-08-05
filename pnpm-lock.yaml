@@ -59,7 +59,7 @@ importers:
         version: 19.1.0(react@19.1.0)
       thirdweb:
         specifier: 5.105.20
-        version: 5.105.20(@types/react-dom@18.3.7(@types/react@18.3.23))(@types/react@18.3.23)(bufferutil@4.0.9)(encoding@0.1.13)(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))(ioredis@5.6.0)(react-dom@19.1.0(react@19.1.0))(react-native@0.79.2(@babel/core@7.26.10)(@types/react@18.3.23)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)(storybook@9.0.18(@testing-library/dom@10.4.1)(bufferutil@4.0.9)(prettier@3.5.3)(utf-8-validate@5.0.10))(typescript@5.8.2)(utf-8-validate@5.0.10)
+        version: 5.105.20(@hey-api/openapi-ts@0.64.13(magicast@0.3.5)(typescript@5.8.2))(@types/react-dom@18.3.7(@types/react@18.3.23))(@types/react@18.3.23)(bufferutil@4.0.9)(encoding@0.1.13)(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))(ioredis@5.6.0)(react-dom@19.1.0(react@19.1.0))(react-native@0.79.2(@babel/core@7.26.10)(@types/react@18.3.23)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)(storybook@9.0.18(@testing-library/dom@10.4.1)(bufferutil@4.0.9)(prettier@3.5.3)(utf-8-validate@5.0.10))(typescript@5.8.2)(utf-8-validate@5.0.10)
     devDependencies:
       '@types/node':
         specifier: ^20.11.24
@@ -369,7 +369,7 @@ importers:
         version: 1.0.7(tailwindcss@3.4.1(ts-node@10.9.2(@types/node@20.17.28)(typescript@5.8.2)))
       thirdweb:
         specifier: 5.105.20
-        version: 5.105.20(@types/react-dom@18.3.7(@types/react@18.3.23))(@types/react@18.3.23)(bufferutil@4.0.9)(encoding@0.1.13)(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))(ioredis@5.6.0)(react-dom@19.1.0(react@19.1.0))(react-native@0.79.2(@babel/core@7.26.10)(@types/react@18.3.23)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)(storybook@9.0.18(@testing-library/dom@10.4.1)(bufferutil@4.0.9)(prettier@3.5.3)(utf-8-validate@5.0.10))(typescript@5.8.2)(utf-8-validate@5.0.10)
+        version: 5.105.20(@hey-api/openapi-ts@0.64.13(magicast@0.3.5)(typescript@5.8.2))(@types/react-dom@18.3.7(@types/react@18.3.23))(@types/react@18.3.23)(bufferutil@4.0.9)(encoding@0.1.13)(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))(ioredis@5.6.0)(react-dom@19.1.0(react@19.1.0))(react-native@0.79.2(@babel/core@7.26.10)(@types/react@18.3.23)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)(storybook@9.0.18(@testing-library/dom@10.4.1)(bufferutil@4.0.9)(prettier@3.5.3)(utf-8-validate@5.0.10))(typescript@5.8.2)(utf-8-validate@5.0.10)
       viem:
         specifier: 2.27.2
         version: 2.27.2(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75)
@@ -429,11 +429,11 @@ importers:
         specifier: 2.14.0
         version: 2.14.0
       '@b3dotfun/b3-api':
-        specifier: 0.0.32
-        version: 0.0.32(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(bufferutil@4.0.9)(encoding@0.1.13)(h3@1.15.1)(next@15.3.3(@babel/core@7.26.10)(@opentelemetry/api@1.8.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react-native@0.79.2(@babel/core@7.26.10)(@types/react@19.1.0)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)(typescript@5.8.2)(utf-8-validate@5.0.10)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.51)
+        specifier: 0.0.34
+        version: 0.0.34(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(bufferutil@4.0.9)(encoding@0.1.13)(h3@1.15.1)(next@15.3.3(@babel/core@7.26.10)(@opentelemetry/api@1.8.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react-native@0.79.2(@babel/core@7.26.10)(@types/react@19.1.0)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)(typescript@5.8.2)(utf-8-validate@5.0.10)(ws@7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.51)
       '@b3dotfun/basement-api':
         specifier: 0.0.11
-        version: 0.0.11(bufferutil@4.0.9)(encoding@0.1.13)(express@4.21.2)(graphql@16.10.0)(h3@1.15.1)(koa@3.0.0)(next@15.3.3(@babel/core@7.26.10)(@opentelemetry/api@1.8.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(typescript@5.8.2)(utf-8-validate@5.0.10)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.51)
+        version: 0.0.11(bufferutil@4.0.9)(encoding@0.1.13)(express@4.21.2)(graphql@16.10.0)(h3@1.15.1)(koa@3.0.0)(next@15.3.3(@babel/core@7.26.10)(@opentelemetry/api@1.8.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(typescript@5.8.2)(utf-8-validate@5.0.10)(ws@7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.51)
       '@b3dotfun/bondkit':
         specifier: ^0.1.17
         version: 0.1.17(viem@2.27.2(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.51))
@@ -908,8 +908,8 @@ packages:
     resolution: {integrity: sha512-DIIotRnefVL6DiaHtO6/21DhJ4JZnnIwdNbpwiAhdt/AVbttcE4yw925gsjur0OGv5BTYXQXU3YnANBYnZjuQA==}
     engines: {node: '>=18.0.0'}
 
-  '@b3dotfun/b3-api@0.0.32':
-    resolution: {integrity: sha512-Q5ozGLCOtmLPFk7YLa7w9qW5PFu1IJwvOut4Tqd+Md5WgnfPlQcUZ9qObqcJrijDTZUxzlLnuHgPTBNmKV/6Sg==}
+  '@b3dotfun/b3-api@0.0.34':
+    resolution: {integrity: sha512-KLHix531jcCyYRoKZZUlhl2r1uG0F5c0cyYHW1PQvPhSpjyawGUZJ/ldvy2ZrLw4BLz5UqQOiPBcKybAw63RUQ==}
     engines: {node: '>= 20.15.0'}
 
   '@b3dotfun/basement-api@0.0.11':
@@ -12804,7 +12804,7 @@ snapshots:
       '@smithy/types': 4.3.1
       tslib: 2.8.1
 
-  '@b3dotfun/b3-api@0.0.32(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(bufferutil@4.0.9)(encoding@0.1.13)(h3@1.15.1)(next@15.3.3(@babel/core@7.26.10)(@opentelemetry/api@1.8.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react-native@0.79.2(@babel/core@7.26.10)(@types/react@19.1.0)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)(typescript@5.8.2)(utf-8-validate@5.0.10)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.51)':
+  '@b3dotfun/b3-api@0.0.34(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(bufferutil@4.0.9)(encoding@0.1.13)(h3@1.15.1)(next@15.3.3(@babel/core@7.26.10)(@opentelemetry/api@1.8.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react-native@0.79.2(@babel/core@7.26.10)(@types/react@19.1.0)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)(typescript@5.8.2)(utf-8-validate@5.0.10)(ws@7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.51)':
     dependencies:
       '@apollo/client': 3.13.6(@types/react@19.1.0)(graphql@16.10.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@feathersjs/adapter-commons': 5.0.34
@@ -12835,7 +12835,7 @@ snapshots:
       koa: 3.0.0
       mongodb: 6.15.0
       nanoid: 3.3.11
-      openai: 4.104.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.51)
+      openai: 4.104.0(encoding@0.1.13)(ws@7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.51)
       pg: 8.14.1
       stream-chat: 8.60.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       thirdweb: 5.93.16(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(bufferutil@4.0.9)(encoding@0.1.13)(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))(ioredis@5.6.0)(react-dom@19.1.0(react@19.1.0))(react-native@0.79.2(@babel/core@7.26.10)(@types/react@19.1.0)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.51)
@@ -12905,7 +12905,7 @@ snapshots:
       - ws
       - zod
 
-  '@b3dotfun/basement-api@0.0.11(bufferutil@4.0.9)(encoding@0.1.13)(express@4.21.2)(graphql@16.10.0)(h3@1.15.1)(koa@3.0.0)(next@15.3.3(@babel/core@7.26.10)(@opentelemetry/api@1.8.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(typescript@5.8.2)(utf-8-validate@5.0.10)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.51)':
+  '@b3dotfun/basement-api@0.0.11(bufferutil@4.0.9)(encoding@0.1.13)(express@4.21.2)(graphql@16.10.0)(h3@1.15.1)(koa@3.0.0)(next@15.3.3(@babel/core@7.26.10)(@opentelemetry/api@1.8.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(typescript@5.8.2)(utf-8-validate@5.0.10)(ws@7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.51)':
     dependencies:
       '@aws-sdk/client-s3': 3.826.0
       '@b3dotfun/leaderboards': 2.3.2(viem@2.27.2(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.51))
@@ -12941,7 +12941,7 @@ snapshots:
       meilisearch: 0.42.0(encoding@0.1.13)
       mongodb: 6.15.0
       node-html-markdown: 1.3.0
-      openai: 4.104.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.51)
+      openai: 4.104.0(encoding@0.1.13)(ws@7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.51)
       random-word-slugs: 0.1.7
       stream-chat: 8.60.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       strict-event-emitter: 0.5.1
@@ -25082,7 +25082,7 @@ snapshots:
       is-docker: 2.2.1
       is-wsl: 2.2.0
 
-  openai@4.104.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.51):
+  openai@4.104.0(encoding@0.1.13)(ws@7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.51):
     dependencies:
       '@types/node': 18.19.64
       '@types/node-fetch': 2.6.12
@@ -25092,7 +25092,7 @@ snapshots:
       formdata-node: 4.4.1
       node-fetch: 2.7.0(encoding@0.1.13)
     optionalDependencies:
-      ws: 8.18.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      ws: 7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       zod: 3.25.51
     transitivePeerDependencies:
       - encoding
@@ -27241,6 +27241,70 @@ snapshots:
     dependencies:
       any-promise: 1.3.0
 
+  thirdweb@5.105.20(@hey-api/openapi-ts@0.64.13(magicast@0.3.5)(typescript@5.8.2))(@types/react-dom@18.3.7(@types/react@18.3.23))(@types/react@18.3.23)(bufferutil@4.0.9)(encoding@0.1.13)(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))(ioredis@5.6.0)(react-dom@19.1.0(react@19.1.0))(react-native@0.79.2(@babel/core@7.26.10)(@types/react@18.3.23)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)(storybook@9.0.18(@testing-library/dom@10.4.1)(bufferutil@4.0.9)(prettier@3.5.3)(utf-8-validate@5.0.10))(typescript@5.8.2)(utf-8-validate@5.0.10):
+    dependencies:
+      '@coinbase/wallet-sdk': 4.3.0
+      '@emotion/react': 11.14.0(@types/react@18.3.23)(react@19.1.0)
+      '@emotion/styled': 11.14.1(@emotion/react@11.14.0(@types/react@18.3.23)(react@19.1.0))(@types/react@18.3.23)(react@19.1.0)
+      '@noble/curves': 1.8.2
+      '@noble/hashes': 1.7.2
+      '@passwordless-id/webauthn': 2.3.0
+      '@radix-ui/react-dialog': 1.1.14(@types/react-dom@18.3.7(@types/react@18.3.23))(@types/react@18.3.23)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@radix-ui/react-focus-scope': 1.1.7(@types/react-dom@18.3.7(@types/react@18.3.23))(@types/react@18.3.23)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@radix-ui/react-icons': 1.3.2(react@19.1.0)
+      '@radix-ui/react-tooltip': 1.2.7(@types/react-dom@18.3.7(@types/react@18.3.23))(@types/react@18.3.23)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@storybook/react': 9.0.15(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(storybook@9.0.18(@testing-library/dom@10.4.1)(bufferutil@4.0.9)(prettier@3.5.3)(utf-8-validate@5.0.10))(typescript@5.8.2)
+      '@tanstack/react-query': 5.55.0(react@19.1.0)
+      '@thirdweb-dev/engine': 3.2.1(@hey-api/openapi-ts@0.64.13(magicast@0.3.5)(typescript@5.8.2))(typescript@5.8.2)
+      '@thirdweb-dev/insight': 1.1.0(typescript@5.8.2)
+      '@walletconnect/sign-client': 2.20.1(bufferutil@4.0.9)(ioredis@5.6.0)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75)
+      '@walletconnect/universal-provider': 2.21.4(bufferutil@4.0.9)(encoding@0.1.13)(ioredis@5.6.0)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75)
+      abitype: 1.0.8(typescript@5.8.2)(zod@3.25.75)
+      cross-spawn: 7.0.6
+      fuse.js: 7.1.0
+      input-otp: 1.4.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      mipd: 0.0.7(typescript@5.8.2)
+      open: 10.1.1
+      ora: 8.2.0
+      ox: 0.7.0(typescript@5.8.2)(zod@3.25.75)
+      prompts: 2.4.2
+      toml: 3.0.0
+      uqr: 0.1.2
+      viem: 2.28.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75)
+      zod: 3.25.75
+    optionalDependencies:
+      ethers: 6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      react: 19.1.0
+      react-native: 0.79.2(@babel/core@7.26.10)(@types/react@18.3.23)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10)
+      typescript: 5.8.2
+    transitivePeerDependencies:
+      - '@azure/app-configuration'
+      - '@azure/cosmos'
+      - '@azure/data-tables'
+      - '@azure/identity'
+      - '@azure/keyvault-secrets'
+      - '@azure/storage-blob'
+      - '@capacitor/preferences'
+      - '@deno/kv'
+      - '@hey-api/openapi-ts'
+      - '@netlify/blobs'
+      - '@planetscale/database'
+      - '@types/react'
+      - '@types/react-dom'
+      - '@upstash/redis'
+      - '@vercel/blob'
+      - '@vercel/kv'
+      - aws4fetch
+      - bufferutil
+      - db0
+      - encoding
+      - ioredis
+      - react-dom
+      - storybook
+      - supports-color
+      - uploadthing
+      - utf-8-validate
+
   thirdweb@5.105.20(@hey-api/openapi-ts@0.64.13(magicast@0.3.5)(typescript@5.8.2))(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(bufferutil@4.0.9)(encoding@0.1.13)(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))(ioredis@5.6.0)(react-dom@19.1.0(react@19.1.0))(react-native@0.79.2(@babel/core@7.26.10)(@types/react@19.1.0)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)(storybook@9.0.18(@testing-library/dom@10.4.1)(bufferutil@4.0.9)(prettier@3.5.3)(utf-8-validate@5.0.10))(typescript@5.8.2)(utf-8-validate@5.0.10):
     dependencies:
       '@coinbase/wallet-sdk': 4.3.0
@@ -27276,70 +27340,6 @@ snapshots:
       ethers: 6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       react: 19.1.0
       react-native: 0.79.2(@babel/core@7.26.10)(@types/react@19.1.0)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10)
-      typescript: 5.8.2
-    transitivePeerDependencies:
-      - '@azure/app-configuration'
-      - '@azure/cosmos'
-      - '@azure/data-tables'
-      - '@azure/identity'
-      - '@azure/keyvault-secrets'
-      - '@azure/storage-blob'
-      - '@capacitor/preferences'
-      - '@deno/kv'
-      - '@hey-api/openapi-ts'
-      - '@netlify/blobs'
-      - '@planetscale/database'
-      - '@types/react'
-      - '@types/react-dom'
-      - '@upstash/redis'
-      - '@vercel/blob'
-      - '@vercel/kv'
-      - aws4fetch
-      - bufferutil
-      - db0
-      - encoding
-      - ioredis
-      - react-dom
-      - storybook
-      - supports-color
-      - uploadthing
-      - utf-8-validate
-
-  thirdweb@5.105.20(@types/react-dom@18.3.7(@types/react@18.3.23))(@types/react@18.3.23)(bufferutil@4.0.9)(encoding@0.1.13)(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10))(ioredis@5.6.0)(react-dom@19.1.0(react@19.1.0))(react-native@0.79.2(@babel/core@7.26.10)(@types/react@18.3.23)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)(storybook@9.0.18(@testing-library/dom@10.4.1)(bufferutil@4.0.9)(prettier@3.5.3)(utf-8-validate@5.0.10))(typescript@5.8.2)(utf-8-validate@5.0.10):
-    dependencies:
-      '@coinbase/wallet-sdk': 4.3.0
-      '@emotion/react': 11.14.0(@types/react@18.3.23)(react@19.1.0)
-      '@emotion/styled': 11.14.1(@emotion/react@11.14.0(@types/react@18.3.23)(react@19.1.0))(@types/react@18.3.23)(react@19.1.0)
-      '@noble/curves': 1.8.2
-      '@noble/hashes': 1.7.2
-      '@passwordless-id/webauthn': 2.3.0
-      '@radix-ui/react-dialog': 1.1.14(@types/react-dom@18.3.7(@types/react@18.3.23))(@types/react@18.3.23)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      '@radix-ui/react-focus-scope': 1.1.7(@types/react-dom@18.3.7(@types/react@18.3.23))(@types/react@18.3.23)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      '@radix-ui/react-icons': 1.3.2(react@19.1.0)
-      '@radix-ui/react-tooltip': 1.2.7(@types/react-dom@18.3.7(@types/react@18.3.23))(@types/react@18.3.23)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      '@storybook/react': 9.0.15(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(storybook@9.0.18(@testing-library/dom@10.4.1)(bufferutil@4.0.9)(prettier@3.5.3)(utf-8-validate@5.0.10))(typescript@5.8.2)
-      '@tanstack/react-query': 5.55.0(react@19.1.0)
-      '@thirdweb-dev/engine': 3.2.1(@hey-api/openapi-ts@0.64.13(magicast@0.3.5)(typescript@5.8.2))(typescript@5.8.2)
-      '@thirdweb-dev/insight': 1.1.0(typescript@5.8.2)
-      '@walletconnect/sign-client': 2.20.1(bufferutil@4.0.9)(ioredis@5.6.0)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75)
-      '@walletconnect/universal-provider': 2.21.4(bufferutil@4.0.9)(encoding@0.1.13)(ioredis@5.6.0)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75)
-      abitype: 1.0.8(typescript@5.8.2)(zod@3.25.75)
-      cross-spawn: 7.0.6
-      fuse.js: 7.1.0
-      input-otp: 1.4.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      mipd: 0.0.7(typescript@5.8.2)
-      open: 10.1.1
-      ora: 8.2.0
-      ox: 0.7.0(typescript@5.8.2)(zod@3.25.75)
-      prompts: 2.4.2
-      toml: 3.0.0
-      uqr: 0.1.2
-      viem: 2.28.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75)
-      zod: 3.25.75
-    optionalDependencies:
-      ethers: 6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      react: 19.1.0
-      react-native: 0.79.2(@babel/core@7.26.10)(@types/react@18.3.23)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10)
       typescript: 5.8.2
     transitivePeerDependencies:
       - '@azure/app-configuration'
