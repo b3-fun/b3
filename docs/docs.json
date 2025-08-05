@@ -79,7 +79,7 @@
               {
                 "group": "Blockchain",
                 "openapi": {
-                  "source": "https://data-api.b3.fun/swagger.json",
+                  "source": "https://data-api.b3.fun/swagger.json?v=1",
                   "directory": "data/api-reference"
                 }
               },
