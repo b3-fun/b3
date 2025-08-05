@@ -8,6 +8,7 @@ import {
   TWSignerWithMetadata,
   useAccountAssets,
   useAuthentication,
+  useB3,
   useB3BalanceFromAddresses,
   useGetAllTWSigners,
   useModalStore,
@@ -45,6 +46,7 @@ export function ManageAccount({
   chain,
   partnerId,
 }: ManageAccountProps) {
+  const { automaticallySetFirstEoa } = useB3();
   const [activeTab, setActiveTab] = useState("balance");
   const [revokingSignerId, setRevokingSignerId] = useState<string | null>(null);
   const account = useActiveAccount();
@@ -99,6 +101,20 @@ export function ManageAccount({
             <img src="https://cdn.b3.fun/b3_logo.svg" alt="B3" className="h-6 w-6" />
             <h2 className="font-neue-montreal-bold text-b3-react-primary text-lg">Global Account</h2>
           </div>
+
+          {!automaticallySetFirstEoa && (
+            <div className="mb-4">
+              <div className="flex items-center gap-4">
+                <img src="https://cdn.b3.fun/b3-coin-3d.png" alt="B3" className="h-10 w-10" />
+                <span className="font-neue-montreal-bold text-2xl">{b3Balance?.formattedTotal || "--"} B3</span>
+              </div>
+              <div className="border-b3-react-border my-4 border-t" />
+              <div className="flex items-center gap-4">
+                <img src="https://cdn.b3.fun/ethereum.svg" alt="ETH" className="h-10 w-10" />
+                <span className="font-neue-montreal-bold text-2xl">{nativeBalance?.formattedTotal || "--"} ETH</span>
+              </div>
+            </div>
+          )}
           <div className="flex flex-col gap-2">
             <p className="text-b3-react-secondary-foreground text-sm">Your universal account for all B3-powered apps</p>
             <div className="flex items-center gap-2">
@@ -112,22 +128,8 @@ export function ManageAccount({
       </div>
 
       <div className="border-b3-react-border bg-b3-react-subtle w-full rounded-lg border p-4">
-        <div className="mb-4">
-          <h3 className="font-neue-montreal-bold text-b3-react-primary mb-2">Smart Account Balance</h3>
-          <div className="flex items-center gap-4">
-            <img src="https://cdn.b3.fun/b3-coin-3d.png" alt="B3" className="h-10 w-10" />
-            <span className="font-neue-montreal-bold text-2xl">{eoaB3Balance?.formattedTotal || "--"} B3</span>
-          </div>
-          <div className="border-b3-react-border my-4 border-t" />
-          <div className="flex items-center gap-4">
-            <img src="https://cdn.b3.fun/ethereum.svg" alt="ETH" className="h-10 w-10" />
-            <span className="font-neue-montreal-bold text-2xl">{nativeBalance?.formattedTotal || "--"} ETH</span>
-          </div>
-        </div>
-
         {eoaAddress && (
           <>
-            <div className="border-b3-react-border my-4 border-t" />
             <div>
               <h3 className="font-neue-montreal-bold text-b3-react-primary mb-2">Connected {eoaInfo?.name}</h3>
               <div className="flex items-center gap-4">
