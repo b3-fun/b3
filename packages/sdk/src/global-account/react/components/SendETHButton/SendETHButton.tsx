@@ -1,12 +1,9 @@
-import { Button, useSendTransactionAA } from "@b3dotfun/sdk/global-account/react";
+import { Button, useUnifiedChainSwitchAndExecute } from "@b3dotfun/sdk/global-account/react";
 import type { JSX } from "react";
 import { useCallback } from "react";
-import { Chain } from "thirdweb";
-import { Account } from "thirdweb/wallets";
 
 interface SendETHButtonProps {
-  account: Account;
-  chain: Chain;
+  chainId: number;
   to: `0x${string}`;
   value: bigint;
   className?: string;
@@ -15,32 +12,25 @@ interface SendETHButtonProps {
   onError?: (error: Error) => void;
 }
 
-export function SendETHButton({
-  account,
-  chain,
-  to,
-  value,
-  className,
-  children,
-  onSuccess,
-  onError,
-}: SendETHButtonProps) {
-  const { sendTransaction, isSending } = useSendTransactionAA();
+export function SendETHButton({ chainId, to, value, className, children, onSuccess, onError }: SendETHButtonProps) {
+  const { switchChainAndExecute, isSwitchingOrExecuting } = useUnifiedChainSwitchAndExecute();
 
   const handleSendETH = useCallback(async () => {
     try {
-      const tx = await sendTransaction({ account, chain, to, data: "0x", value });
-      onSuccess?.(tx);
+      const tx = await switchChainAndExecute(chainId, { to: to as `0x${string}`, value });
+      if (tx) {
+        onSuccess?.(tx as `0x${string}`);
+      }
     } catch (error) {
       onError?.(error as Error);
       throw error;
     }
-  }, [sendTransaction, account, chain, to, value, onSuccess, onError]);
+  }, [switchChainAndExecute, chainId, to, value, onSuccess, onError]);
 
-  const buttonText = isSending ? "Sending..." : String(children);
+  const buttonText = isSwitchingOrExecuting ? "Sending..." : String(children);
 
   return (
-    <Button onClick={handleSendETH} disabled={isSending} className={className}>
+    <Button onClick={handleSendETH} disabled={isSwitchingOrExecuting} className={className}>
       {buttonText}
     </Button>
   );
