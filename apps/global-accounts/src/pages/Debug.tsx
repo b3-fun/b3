@@ -1,9 +1,8 @@
 import { getExplorerTxUrl } from "@b3dotfun/sdk/anyspend";
 import { MintButton, SendETHButton, useB3 } from "@b3dotfun/sdk/global-account/react";
 import { thirdwebB3Mainnet } from "@b3dotfun/sdk/shared/constants/chains/b3Chain";
-import { b3MainnetThirdWeb, supportedChainsTW } from "@b3dotfun/sdk/shared/constants/chains/supported";
+import { b3MainnetThirdWeb, getThirdwebChain } from "@b3dotfun/sdk/shared/constants/chains/supported";
 import createDebug from "debug";
-import invariant from "invariant";
 import { Bug, UnlinkIcon, User, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useActiveAccount, useLinkProfile, useProfiles, useUnlinkProfile } from "thirdweb/react";
@@ -21,9 +20,7 @@ interface DebugInfo {
 
 const debug = createDebug("@@b3dotfun/sdk:Debug");
 
-const _base = supportedChainsTW.find(chain => chain.id === 8453);
-invariant(_base, "Base chain not found");
-const base = _base;
+const base = getThirdwebChain(8453);
 
 export function Debug() {
   const { user, account } = useB3();
