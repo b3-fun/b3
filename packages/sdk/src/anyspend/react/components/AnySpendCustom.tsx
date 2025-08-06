@@ -406,7 +406,7 @@ function AnySpendCustomInner({
 
   const isCreatingOrder = isCreatingRegularOrder || isCreatingOnrampOrder;
 
-  const { address: connectedAddress, name: connectedName, profile: connectedProfile } = useConnectedUserProfile();
+  const { address: connectedAddress, name: connectedName } = useConnectedUserProfile();
   const recipientProfile = useProfile({ address: recipientAddress });
   const recipientName = recipientProfile.data?.name;
 
@@ -863,16 +863,8 @@ function AnySpendCustomInner({
                     <>
                       {connectedAddress ? (
                         <>
-                          {connectedProfile?.data?.avatar && (
-                            <img
-                              src={connectedProfile.data?.avatar || ""}
-                              alt="Connected Wallet"
-                              className="bg-as-primary h-6 w-6 rounded-full"
-                            />
-                          )}
                           <span className="text-as-tertiarry flex items-center gap-1">
-                            {connectedName && <span>{formatUsername(connectedName)}</span>}
-                            <span>{shortenAddress(connectedAddress || "")}</span>
+                            {connectedName ? formatUsername(connectedName) : shortenAddress(connectedAddress || "")}
                           </span>
                         </>
                       ) : (
