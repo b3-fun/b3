@@ -14,8 +14,7 @@ export default defineConfig(({ command: _command }) => {
   if (_command === "serve") {
     env = {
       PUBLIC_B3_API: "http://localhost:3031",
-      // PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID: "ceba2f84-45ff-4717-b3e9-0acf0d062abd", // Local dev
-      PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID: "c3c02e76-cddb-4c83-8442-f6079b6247ef", // David
+      PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID: "ceba2f84-45ff-4717-b3e9-0acf0d062abd", // Local dev
       NEXT_PUBLIC_THIRDWEB_CLIENT_ID: "eb17a5ec4314526d42fc567821aeb9a6",
       NEXT_PUBLIC_DEVMODE_SHARED_SECRET: "k1c4Ep6agmoejiBinKE70B6bzb8vSdm8",
       NEXT_PUBLIC_TRANSAK_API_KEY: "d1f4e8be-cacb-4cfa-b2cd-c591084b5ef6",
