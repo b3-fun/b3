@@ -1,4 +1,87 @@
 ---
 title: "Onramp Overview"
-description: "Description of your new file."
+description: "Let users pay in fiat and execute onchain actions in one seamless flow"
 ---
+
+## What It Does
+
+The AnySpend onramp allows users to pay with traditional fiat methods (e.g., credit card, bank transfer) and automatically execute any onchain transaction. This seamless flow eliminates the need for users to manually acquire cryptocurrency or manage wallet funding.
+
+It’s designed to reduce friction for non-crypto-native users, making blockchain-powered products accessible to a broader audience.
+
+## How It Works
+
+1. **User Initiates Action**\
+   A user begins an onchain action (e.g., minting, staking, or contract interaction).
+2. **Fiat Payment**\
+   They pay with a card or bank transfer via Stripe or Coinbase Pay.
+3. **Conversion \+ Execution**\
+   AnySpend converts fiat to crypto (typically USDC on Base) and executes the transaction.
+4. **Wallet Delivery**\
+   The result is sent to the user's connected wallet. No crypto acquisition required.
+
+## Payment Options
+
+**Stripe**
+
+- Global support for major credit/debit cards
+- 3D Secure authentication
+- Currency conversion for non-USD transactions
+- Localized payment methods and fee adjustment
+
+**Coinbase Pay**
+
+- Users can pay directly with their Coinbase account balances
+- No need to transfer funds between platforms
+- Trusted UX for existing Coinbase users
+- No additional fees from AnySpend
+
+**Extensible Provider Architecture**
+
+- Modular system to support additional fiat providers
+- Dynamic routing based on region and availability
+- Built-in compliance flexibility for regional support
+
+## Security
+
+AnySpend includes a built-in, real-time risk engine designed to minimize fraud while keeping the user experience seamless.
+
+**Key Features:**
+
+- Behavioral and transactional risk analysis
+- Device and network security checks
+- Real-time threat intelligence
+
+**Smart Transaction Evaluation**
+
+Each transaction is evaluated in real time:
+
+- **Allow** – transaction proceeds normally
+- **Verify** – additional user verification may be required
+- **Block** – suspicious activity is prevented
+
+This decision engine adapts continuously to new threats without introducing friction for legitimate users.
+
+## Global Coverage
+
+AnySpend supports a wide range of currencies and regions through integrated providers:
+
+- Automatic location detection and localization
+- Local payment methods and currency handling
+- Dynamic provider selection based on geography
+- Regional compliance out of the box
+
+## Fees
+
+- **Stripe Payments:** 5.4% \+ \$0.30 per transaction (flat rate, global)
+- **Coinbase Pay:** No additional fees from AnySpend
+
+Users are shown a transparent fee breakdown during checkout.
+
+## Common Use Cases
+
+AnySpend enables developers to:
+
+- Let users mint NFTs with a credit card
+- Allow staking, voting, or game actions directly from fiat
+- Onboard users to DeFi, gaming, or other dApps with no crypto prerequisite
