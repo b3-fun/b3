@@ -1076,16 +1076,8 @@ function AnySpendInner({
                   <>
                     {connectedAddress ? (
                       <>
-                        {globalWallet?.meta?.icon && (
-                          <img
-                            src={globalWallet.meta.icon || ""}
-                            alt={globalWallet.ensName || ""}
-                            className="bg-b3-react-foreground size-6 rounded-full object-cover opacity-100"
-                          />
-                        )}
                         <div className="flex items-center gap-1">
-                          {connectedName && <span>{formatUsername(connectedName)}</span>}
-                          <span>{shortenAddress(connectedAddress || "")}</span>
+                          {connectedName ? formatUsername(connectedName) : shortenAddress(connectedAddress || "")}
                         </div>
                       </>
                     ) : (
@@ -1209,16 +1201,8 @@ function AnySpendInner({
                   <>
                     {recipientAddress ? (
                       <>
-                        {recipientProfile?.data?.avatar && (
-                          <img
-                            src={recipientProfile.data?.avatar || ""}
-                            alt="Connected Wallet"
-                            className="bg-as-primary h-6 w-6 rounded-full"
-                          />
-                        )}
                         <span className="text-as-tertiarry flex items-center gap-1 text-sm">
-                          {recipientName && <span>{formatUsername(recipientName)}</span>}
-                          <span>{shortenAddress(recipientAddress || "")}</span>
+                          {recipientName ? formatUsername(recipientName) : shortenAddress(recipientAddress || "")}
                         </span>
                       </>
                     ) : (
