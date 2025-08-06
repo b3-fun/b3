@@ -48,6 +48,7 @@ import { Address } from "thirdweb";
 import { erc20Abi, WalletClient } from "viem";
 import { b3 } from "viem/chains";
 import { useWaitForTransactionReceipt, useWalletClient } from "wagmi";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./Accordion";
 import ConnectWalletPayment from "./ConnectWalletPayment";
 import { CryptoPaymentMethodType } from "./CryptoPaymentMethod";
 import { OrderDetailsCollapsible } from "./OrderDetailsCollapsible";
@@ -546,42 +547,57 @@ export const OrderDetails = memo(function OrderDetails({
   if (refundTxs) {
     return (
       <>
-        <div className="relative mt-4 flex w-full flex-col gap-4">
-          <div className="bg-b3-react-background absolute bottom-2 left-4 top-2 z-[5] w-2">
-            <motion.div
-              className="from-as-brand/50 absolute left-[2px] top-0 z-10 w-[3px] bg-gradient-to-b from-20% via-purple-500/50 via-80% to-transparent"
-              initial={{ height: "0%" }}
-              animate={{ height: "100%" }}
-              transition={{ duration: 1.5, ease: "easeInOut" }}
-            ></motion.div>
-          </div>
-          {depositTxs
-            ? depositTxs.map(dTx => (
-                <TransactionDetails
-                  key={dTx.txHash}
-                  title={
-                    order.onrampMetadata?.vendor === "stripe-web2"
-                      ? `Received payment`
-                      : `Received ${formatTokenAmount(BigInt(dTx.amount), srcToken.decimals)} ${srcToken.symbol}`
-                  }
-                  chainId={order.srcChain}
-                  tx={dTx}
-                  isProcessing={false}
-                />
-              ))
-            : null}
-          {refundTxs
-            ? refundTxs.map(rTx => (
-                <TransactionDetails
-                  key={rTx.txHash}
-                  title={`Refunded ${formatTokenAmount(BigInt(rTx.amount), srcToken.decimals)} ${srcToken.symbol}`}
-                  chainId={order.srcChain}
-                  tx={rTx}
-                  isProcessing={false}
-                />
-              ))
-            : null}
-        </div>
+        <OrderDetailsCollapsible
+          order={order}
+          dstToken={dstToken}
+          tournament={tournament}
+          nft={nft}
+          recipientName={recipientName}
+          formattedExpectedDstAmount={formattedExpectedDstAmount}
+        />
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="refund-details">
+            <AccordionTrigger>Transaction Details</AccordionTrigger>
+            <AccordionContent>
+              <div className="relative flex w-full flex-col gap-4">
+                <div className="bg-as-surface-secondary absolute bottom-2 left-4 top-2 z-[5] w-2">
+                  <motion.div
+                    className="bg-as-border-primary absolute left-[2px] top-0 z-10 w-[3px]"
+                    initial={{ height: "0%" }}
+                    animate={{ height: "100%" }}
+                    transition={{ duration: 1.5, ease: "easeInOut" }}
+                  ></motion.div>
+                </div>
+                {depositTxs
+                  ? depositTxs.map(dTx => (
+                      <TransactionDetails
+                        key={dTx.txHash}
+                        title={
+                          order.onrampMetadata?.vendor === "stripe-web2"
+                            ? `Received payment`
+                            : `Received ${formatTokenAmount(BigInt(dTx.amount), srcToken.decimals)} ${srcToken.symbol}`
+                        }
+                        chainId={order.srcChain}
+                        tx={dTx}
+                        isProcessing={false}
+                      />
+                    ))
+                  : null}
+                {refundTxs
+                  ? refundTxs.map(rTx => (
+                      <TransactionDetails
+                        key={rTx.txHash}
+                        title={`Refunded ${formatTokenAmount(BigInt(rTx.amount), srcToken.decimals)} ${srcToken.symbol}`}
+                        chainId={order.srcChain}
+                        tx={rTx}
+                        isProcessing={false}
+                      />
+                    ))
+                  : null}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
         {order.errorDetails && (
           <div className="flex justify-center">
             <span className="text-as-primary/50 text-center text-sm" style={{ maxWidth: "40ch" }}>
@@ -608,55 +624,70 @@ export const OrderDetails = memo(function OrderDetails({
   if (executeTx) {
     return (
       <>
-        <div className="relative mt-4 flex w-full flex-col gap-4">
-          <div className="bg-b3-react-background absolute bottom-2 left-4 top-2 z-[5] w-2">
-            <motion.div
-              className="from-as-brand/50 absolute left-[2px] top-0 z-10 w-[3px] bg-gradient-to-b from-20% via-purple-500/50 via-80% to-transparent"
-              initial={{ height: "0%" }}
-              animate={{ height: "100%" }}
-              transition={{ duration: 1.5, ease: "easeInOut" }}
-            ></motion.div>
-          </div>
-          {depositTxs
-            ? depositTxs.map(dTxs => (
+        <OrderDetailsCollapsible
+          order={order}
+          dstToken={dstToken}
+          tournament={tournament}
+          nft={nft}
+          recipientName={recipientName}
+          formattedExpectedDstAmount={formattedExpectedDstAmount}
+        />
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="execute-details">
+            <AccordionTrigger>Transaction Details</AccordionTrigger>
+            <AccordionContent>
+              <div className="relative flex w-full flex-col gap-4">
+                <div className="bg-as-surface-secondary absolute bottom-2 left-4 top-2 z-[5] w-2">
+                  <motion.div
+                    className="bg-as-border-primary absolute left-[2px] top-0 z-10 w-[3px]"
+                    initial={{ height: "0%" }}
+                    animate={{ height: "100%" }}
+                    transition={{ duration: 1.5, ease: "easeInOut" }}
+                  ></motion.div>
+                </div>
+                {depositTxs
+                  ? depositTxs.map(dTxs => (
+                      <TransactionDetails
+                        key={dTxs.txHash}
+                        title={
+                          order.onrampMetadata?.vendor === "stripe-web2"
+                            ? `Received payment`
+                            : `Received ${formatTokenAmount(BigInt(dTxs.amount), srcToken.decimals)} ${srcToken.symbol}`
+                        }
+                        chainId={order.srcChain}
+                        tx={dTxs}
+                        isProcessing={false}
+                      />
+                    ))
+                  : null}
                 <TransactionDetails
-                  key={dTxs.txHash}
-                  title={
-                    order.onrampMetadata?.vendor === "stripe-web2"
-                      ? `Received payment`
-                      : `Received ${formatTokenAmount(BigInt(dTxs.amount), srcToken.decimals)} ${srcToken.symbol}`
-                  }
+                  title="Processed Transaction"
                   chainId={order.srcChain}
-                  tx={dTxs}
+                  tx={relayTx}
+                  delay={0.5}
                   isProcessing={false}
                 />
-              ))
-            : null}
-          <TransactionDetails
-            title="Processed Transaction"
-            chainId={order.srcChain}
-            tx={relayTx}
-            delay={0.5}
-            isProcessing={false}
-          />
-          <TransactionDetails
-            title={
-              order.type === "swap"
-                ? "Processed Swap"
-                : order.type === "mint_nft"
-                  ? "Minted NFT"
-                  : order.type === "join_tournament"
-                    ? "Joined Tournament"
-                    : order.type === "fund_tournament"
-                      ? "Funded Tournament"
-                      : "Processed Order"
-            }
-            chainId={order.dstChain}
-            tx={executeTx}
-            isProcessing={false}
-            delay={1}
-          />
-        </div>
+                <TransactionDetails
+                  title={
+                    order.type === "swap"
+                      ? "Processed Swap"
+                      : order.type === "mint_nft"
+                        ? "Minted NFT"
+                        : order.type === "join_tournament"
+                          ? "Joined Tournament"
+                          : order.type === "fund_tournament"
+                            ? "Funded Tournament"
+                            : "Processed Order"
+                  }
+                  chainId={order.dstChain}
+                  tx={executeTx}
+                  isProcessing={false}
+                  delay={1}
+                />
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
         <div className="flex w-full flex-col gap-8">
           <Button variant="link" asChild>
             <a
@@ -720,78 +751,85 @@ export const OrderDetails = memo(function OrderDetails({
           recipientName={recipientName}
           formattedExpectedDstAmount={formattedExpectedDstAmount}
         />
-        <div className="relative mt-4 flex w-full flex-col gap-4">
-          <div className="bg-b3-react-background absolute bottom-2 left-4 top-2 z-[5] w-2">
-            <motion.div
-              className="from-as-brand/50 absolute left-[2px] top-0 z-10 w-[3px] bg-gradient-to-b from-20% via-purple-500/50 via-80% to-transparent"
-              initial={{ height: "0%" }}
-              animate={{ height: "100%" }}
-              transition={{ duration: 1.5, ease: "easeInOut" }}
-            ></motion.div>
-          </div>
-          {depositTxs
-            ? depositTxs.map(dTxs => (
-                <TransactionDetails
-                  key={dTxs.txHash}
-                  title={
-                    order.onrampMetadata?.vendor === "stripe-web2"
-                      ? `Received payment`
-                      : `Received ${formatTokenAmount(BigInt(dTxs.amount), srcToken.decimals)} ${srcToken.symbol}`
-                  }
-                  chainId={order.srcChain}
-                  tx={dTxs}
-                  isProcessing={false}
-                />
-              ))
-            : null}
-          {/* If the source and destination chains are the same, AnySpend doesn't have executeTransaction */}
-          {order.srcChain === order.dstChain ? (
-            <TransactionDetails
-              title={
-                order.type === "swap"
-                  ? "Processed Swap"
-                  : order.type === "mint_nft"
-                    ? "Minted NFT"
-                    : order.type === "join_tournament"
-                      ? "Joined Tournament"
-                      : order.type === "fund_tournament"
-                        ? "Funded Tournament"
-                        : "Processed Transaction"
-              }
-              chainId={order.srcChain}
-              isProcessing={false}
-              tx={relayTx}
-              delay={0.5}
-            />
-          ) : (
-            <>
-              <TransactionDetails
-                title="Processed Transaction"
-                chainId={order.srcChain}
-                isProcessing={false}
-                tx={relayTx}
-                delay={0.5}
-              />
-              <TransactionDetails
-                title={
-                  order.type === "swap"
-                    ? "Processing Swap"
-                    : order.type === "mint_nft"
-                      ? "Minting NFT"
-                      : order.type === "join_tournament"
-                        ? "Joining Tournament"
-                        : order.type === "fund_tournament"
-                          ? "Funding Tournament"
-                          : "Processing Bridge"
-                }
-                chainId={order.dstChain}
-                isProcessing={true}
-                tx={executeTx}
-                delay={1}
-              />
-            </>
-          )}
-        </div>
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="more-details">
+            <AccordionTrigger>More Details</AccordionTrigger>
+            <AccordionContent>
+              <div className="relative flex w-full flex-col gap-4">
+                <div className="bg-as-surface-secondary absolute bottom-2 left-4 top-2 z-[5] w-2">
+                  <motion.div
+                    className="bg-as-border-primary absolute left-[2px] top-0 z-10 w-[3px]"
+                    initial={{ height: "0%" }}
+                    animate={{ height: "100%" }}
+                    transition={{ duration: 1.5, ease: "easeInOut" }}
+                  ></motion.div>
+                </div>
+                {depositTxs
+                  ? depositTxs.map(dTxs => (
+                      <TransactionDetails
+                        key={dTxs.txHash}
+                        title={
+                          order.onrampMetadata?.vendor === "stripe-web2"
+                            ? `Received payment`
+                            : `Received ${formatTokenAmount(BigInt(dTxs.amount), srcToken.decimals)} ${srcToken.symbol}`
+                        }
+                        chainId={order.srcChain}
+                        tx={dTxs}
+                        isProcessing={false}
+                      />
+                    ))
+                  : null}
+                {/* If the source and destination chains are the same, AnySpend doesn't have executeTransaction */}
+                {order.srcChain === order.dstChain ? (
+                  <TransactionDetails
+                    title={
+                      order.type === "swap"
+                        ? "Processed Swap"
+                        : order.type === "mint_nft"
+                          ? "Minted NFT"
+                          : order.type === "join_tournament"
+                            ? "Joined Tournament"
+                            : order.type === "fund_tournament"
+                              ? "Funded Tournament"
+                              : "Processed Transaction"
+                    }
+                    chainId={order.srcChain}
+                    isProcessing={false}
+                    tx={relayTx}
+                    delay={0.5}
+                  />
+                ) : (
+                  <>
+                    <TransactionDetails
+                      title="Processed Transaction"
+                      chainId={order.srcChain}
+                      isProcessing={false}
+                      tx={relayTx}
+                      delay={0.5}
+                    />
+                    <TransactionDetails
+                      title={
+                        order.type === "swap"
+                          ? "Processing Swap"
+                          : order.type === "mint_nft"
+                            ? "Minting NFT"
+                            : order.type === "join_tournament"
+                              ? "Joining Tournament"
+                              : order.type === "fund_tournament"
+                                ? "Funding Tournament"
+                                : "Processing Bridge"
+                      }
+                      chainId={order.dstChain}
+                      isProcessing={true}
+                      tx={executeTx}
+                      delay={1}
+                    />
+                  </>
+                )}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
 
         <div className="flex w-full flex-col gap-8">
           <Button variant="link" asChild>
@@ -858,68 +896,75 @@ export const OrderDetails = memo(function OrderDetails({
           recipientName={recipientName}
           formattedExpectedDstAmount={formattedExpectedDstAmount}
         />
-        <div className="relative mt-4 flex w-full flex-col gap-6">
-          <div className="bg-b3-react-background absolute bottom-2 left-4 top-2 z-[5] w-2">
-            <motion.div
-              className="from-as-brand/50 absolute left-[2px] top-0 z-10 w-[3px] bg-gradient-to-b from-20% via-purple-500/50 via-80% to-transparent"
-              initial={{ height: "0%" }}
-              animate={{ height: "100%" }}
-              transition={{ duration: 1, ease: "easeInOut" }}
-            ></motion.div>
-          </div>
-          {(depositTxs || []).map((dTxs, index) => (
-            <TransactionDetails
-              key={dTxs.txHash}
-              title={
-                order.onrampMetadata?.vendor === "stripe-web2"
-                  ? `Received payment`
-                  : `Received ${formatTokenAmount(BigInt(dTxs.amount), srcToken.decimals)} ${srcToken.symbol}`
-              }
-              chainId={order.srcChain}
-              tx={dTxs}
-              isProcessing={index < (depositTxs || []).length - 1 ? false : !depositEnoughAmount}
-            />
-          ))}
-          {statusDisplay === "failure" ? (
-            <TransactionDetails
-              title={statusText}
-              chainId={order.srcChain}
-              tx={null}
-              isProcessing={false}
-              delay={0.5}
-            />
-          ) : depositEnoughAmount ? (
-            <TransactionDetails
-              title={
-                order.type === "swap"
-                  ? "Processing Swap"
-                  : order.type === "mint_nft"
-                    ? "Minting NFT"
-                    : order.type === "join_tournament"
-                      ? "Joining Tournament"
-                      : order.type === "fund_tournament"
-                        ? "Funding Tournament"
-                        : "Processing Transaction"
-              }
-              chainId={order.srcChain}
-              tx={null}
-              isProcessing={true}
-              delay={0.5}
-            />
-          ) : (
-            <TransactionDetails
-              title={
-                order.onrampMetadata?.vendor === "stripe-web2"
-                  ? `Waiting for payment`
-                  : `Waiting for deposit ${formattedDepositDeficit} ${srcToken.symbol}`
-              }
-              chainId={order.srcChain}
-              tx={null}
-              isProcessing={true}
-              delay={0.5}
-            />
-          )}
-        </div>
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="deposit-details">
+            <AccordionTrigger>Transaction Details</AccordionTrigger>
+            <AccordionContent>
+              <div className="relative flex w-full flex-col gap-6">
+                <div className="bg-as-surface-secondary absolute bottom-2 left-4 top-2 z-[5] w-2">
+                  <motion.div
+                    className="from-as-brand/50 absolute left-[2px] top-0 z-10 w-[3px] bg-gradient-to-b from-20% via-purple-500/50 via-80% to-transparent"
+                    initial={{ height: "0%" }}
+                    animate={{ height: "100%" }}
+                    transition={{ duration: 1, ease: "easeInOut" }}
+                  ></motion.div>
+                </div>
+                {(depositTxs || []).map((dTxs, index) => (
+                  <TransactionDetails
+                    key={dTxs.txHash}
+                    title={
+                      order.onrampMetadata?.vendor === "stripe-web2"
+                        ? `Received payment`
+                        : `Received ${formatTokenAmount(BigInt(dTxs.amount), srcToken.decimals)} ${srcToken.symbol}`
+                    }
+                    chainId={order.srcChain}
+                    tx={dTxs}
+                    isProcessing={index < (depositTxs || []).length - 1 ? false : !depositEnoughAmount}
+                  />
+                ))}
+                {statusDisplay === "failure" ? (
+                  <TransactionDetails
+                    title={statusText}
+                    chainId={order.srcChain}
+                    tx={null}
+                    isProcessing={false}
+                    delay={0.5}
+                  />
+                ) : depositEnoughAmount ? (
+                  <TransactionDetails
+                    title={
+                      order.type === "swap"
+                        ? "Processing Swap"
+                        : order.type === "mint_nft"
+                          ? "Minting NFT"
+                          : order.type === "join_tournament"
+                            ? "Joining Tournament"
+                            : order.type === "fund_tournament"
+                              ? "Funding Tournament"
+                              : "Processing Transaction"
+                    }
+                    chainId={order.srcChain}
+                    tx={null}
+                    isProcessing={true}
+                    delay={0.5}
+                  />
+                ) : (
+                  <TransactionDetails
+                    title={
+                      order.onrampMetadata?.vendor === "stripe-web2"
+                        ? `Waiting for payment`
+                        : `Waiting for deposit ${formattedDepositDeficit} ${srcToken.symbol}`
+                    }
+                    chainId={order.srcChain}
+                    tx={null}
+                    isProcessing={true}
+                    delay={0.5}
+                  />
+                )}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
 
         {/* <DelayedSupportMessage /> */}
       </>
@@ -1140,13 +1185,13 @@ function TransactionDetails({
   return (
     <div className={"relative flex w-full flex-1 items-center justify-between gap-4"}>
       <div className="flex grow items-center gap-4">
-        <motion.div className="bg-b3-react-background relative h-10 w-10 rounded-full">
+        <motion.div className="bg-as-surface-secondary relative h-10 w-10 rounded-full">
           {isProcessing ? (
             <motion.div
               initial={{ opacity: 0, scale: 0.3 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, ease: "easeInOut", delay }}
-              className="absolute z-10 m-2 flex h-6 w-6 items-center justify-center rounded-full bg-black/70 shadow-lg backdrop-blur-sm"
+              className="border-as-border-secondary absolute z-10 m-2 flex h-6 w-6 items-center justify-center rounded-full border-2 shadow-lg backdrop-blur-sm"
             >
               <Loader2 className="text-as-primary h-4 w-4 animate-spin" />
             </motion.div>
@@ -1155,9 +1200,9 @@ function TransactionDetails({
               initial={{ opacity: 0, scale: 0.3 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, ease: "easeOut", delay }}
-              className="bg-as-brand/70 absolute z-10 m-2 flex h-6 w-6 items-center justify-center rounded-full border border-white/30 shadow-lg backdrop-blur-sm"
+              className="bg-as-success-secondary absolute z-10 m-2 flex h-6 w-6 items-center justify-center rounded-full border border-white/30 shadow-lg backdrop-blur-sm"
             >
-              <CheckIcon className="text-as-primary h-3 w-3" />
+              <CheckIcon className="text-as-content-icon-success h-4 w-4" />
             </motion.div>
           )}
         </motion.div>

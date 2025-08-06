@@ -224,6 +224,7 @@
     "@hey-api/client-fetch": "0.8.3",
     "@hey-api/openapi-ts": "0.64.13",
     "@lottiefiles/dotlottie-react": "0.7.2",
+    "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-dialog": "1.1.7",
     "@radix-ui/react-popover": "1.1.7",
     "@radix-ui/react-scroll-area": "1.1.0",
