@@ -137,8 +137,7 @@ export function Debug() {
                 }}
               />
               <SendETHButton
-                account={activeAccount}
-                chain={thirdwebB3Mainnet}
+                chainId={thirdwebB3Mainnet.id}
                 to="0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1"
                 value={parseUnits("0.000000001", 18)}
                 className="bg-b3-blue w-full rounded-lg font-bold text-white"
@@ -150,8 +149,7 @@ export function Debug() {
               />
 
               <SendETHButton
-                account={activeAccount}
-                chain={base}
+                chainId={base.id}
                 to="0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1"
                 value={parseUnits("0.000000001", 18)}
                 className="bg-b3-blue w-full rounded-lg font-bold text-white"
