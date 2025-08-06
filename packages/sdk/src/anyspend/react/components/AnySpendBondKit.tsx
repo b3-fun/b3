@@ -202,7 +202,7 @@ export function AnySpendBondKit({
   };
 
   const header = () => (
-    <div className="w-full px-6 py-4">
+    <div className="bg-as-surface-primary w-full px-6 py-4">
       <div className="flex w-full flex-col items-center space-y-6">
         <h2 className="text-[28px] font-bold">
           Buy {tokenName} ({tokenSymbol})
