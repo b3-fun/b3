@@ -3,63 +3,52 @@ title: "Game Launcher"
 description: "Launch games natively inside the BSMNT (basement.fun) platform and build addicting onchain experiences without having to worry about the crypto components"
 ---
 
- <iframe
-   className="w-full aspect-video rounded-xl mb-6"
-    src="https://customer-gg6qs7nm5ue94t64.cloudflarestream.com/ae9e7c0694dacb8d602309c381fce796/iframe?poster=https%3A%2F%2Fcustomer-gg6qs7nm5ue94t64.cloudflarestream.com%2Fae9e7c0694dacb8d602309c381fce796%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600"
-    title="Basement.fun Developer Dashboard"
-    frameBorder="0"
-  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-  allowFullScreen
-  ></iframe>
-
+<iframe className="w-full aspect-video rounded-xl mb-6" src="https://customer-gg6qs7nm5ue94t64.cloudflarestream.com/ae9e7c0694dacb8d602309c381fce796/iframe?poster=https%3A%2F%2Fcustomer-gg6qs7nm5ue94t64.cloudflarestream.com%2Fae9e7c0694dacb8d602309c381fce796%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D33%26height%3D600" title="Basement.fun Developer Dashboard" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
 
 ## How It Works
 
 <Steps>
-<Step title="Load" icon="download">
-  Your game loads inside BSMNT launcher. We pass a JWT with the auth token to your game.
-  
-  ```text Example URL
-  https://yourgame.com?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-  ```
-</Step>
+  <Step title="Load" icon="download">
+    Your game loads inside BSMNT launcher. We pass a JWT with the auth token to your game.
 
-<Step title="Auth" icon="key">
-  You can load the player's profile by decoding the JWT, or by using our API. We'll take care of wallet connections, verification & onboarding.
-  
-  ```json Player Profile
-  {
-    "id": "550e8400-e29b-41d4-a716-446655440000",
-    "address": "0x1234567890abcdef1234567890abcdef12345678",
-    "username": "CryptoGamer42",
-    "avatar": "https://avatars.b3.fun/avatar.png",
-    "gameId": "game-123456-abcdef",
-    "license": "550e8400-e29b-41d4-a716-446655440000",
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-  }
-  ```
-</Step>
+    ```text Example URL
+    https://yourgame.com?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+    ```
+  </Step>
+  <Step title="Auth" icon="key">
+    You can load the player's profile by decoding the JWT, or by using our API. We'll take care of wallet connections, verification & onboarding.
 
-<Step title="Trigger" icon="zap">
-  Let the user play your game. When something happens, you can trigger an action via our Zapier-style rules engine, or directly via API.
-  
-  ```bash Trigger API Example
-  curl --location 'https://api.basement.fun/launcher/' \
-  --header 'X-Service-Method: triggerRulesEngine' \
-  --data '{
-      "launcherJwt": "{{ jwt }}",
-      "trigger": "achievementUnlocked",
-      "nonce": "d1312e"
-  }'
-  ```
-</Step>
+    ```json Player Profile
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "address": "0x1234567890abcdef1234567890abcdef12345678",
+      "username": "CryptoGamer42",
+      "avatar": "https://avatars.b3.fun/avatar.png",
+      "gameId": "game-123456-abcdef",
+      "license": "550e8400-e29b-41d4-a716-446655440000",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    }
+    ```
+  </Step>
+  <Step title="Trigger" icon="zap">
+    Let the user play your game. When something happens, you can trigger an action via our Zapier-style rules engine, or directly via API.
+
+    ```bash Trigger API Example
+    curl --location 'https://api.basement.fun/launcher/' \
+    --header 'X-Service-Method: triggerRulesEngine' \
+    --data '{
+        "launcherJwt": "{{ jwt }}",
+        "trigger": "achievementUnlocked",
+        "nonce": "d1312e"
+    }'
+    ```
+  </Step>
 </Steps>
 
 <CardGroup cols={2}>
   <Card title="Register as Developer" icon="user-plus" href="https://basement.fun/developer/signup" cta="Sign Up">
     Get started building games with BSMNT launcher
   </Card>
-  
   <Card title="Launcher Playground" icon="play" href="https://basement.fun/playground" cta="Try Now">
     Test the launcher integration in a sandbox environment
   </Card>
@@ -75,19 +64,15 @@ The real power of the game launcher is in the crypto UX abstraction. Your game c
   <Card title="Save state to IPFS" icon="database">
     Store player state on decentralized storage options like IPFS.
   </Card>
-  
   <Card title="Buy NFTs & Mint" icon="palette">
     Let users mint NFTs upon achievements or on certain game events.
   </Card>
-  
   <Card title="Onchain Leaderboards" icon="trophy">
     Bring player rankings onchain, host contests & tournaments.
   </Card>
-  
   <Card title="Issue Tokens & NFTs" icon="coins">
     Send ERC20s and ERC721 & 1155 NFTs based on game actions.
   </Card>
-  
   <Card title="Pay with Tokens" icon="credit-card">
     Prompt users to send or transfer tokens to pay for in-game actions or assets.
   </Card>
@@ -98,87 +83,97 @@ The real power of the game launcher is in the crypto UX abstraction. Your game c
 <CardGroup cols={2}>
   <Card title="Swap & Trade" icon="arrows-rotate">
     Users can use assets from other chains to swap for your tokens.
-    <div style={{ marginTop: '8px' }}>
-      <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>COMING SOON</span>
+
+    <div style={{ marginTop:"8px" }}>
+    <span style={{ type:"mdxJsxAttributeValueExpression",value:"{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }",data:{estree:{type:"Program",start:3518,end:3644,body:[{type:"ExpressionStatement",expression:{type:"ObjectExpression",start:3518,end:3644,loc:{start:{line:102,column:19,offset:3518},end:{line:102,column:145,offset:3644}},properties:[{type:"Property",start:3520,end:3546,loc:{start:{line:102,column:21,offset:3520},end:{line:102,column:47,offset:3546}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:3520,end:3535,loc:{start:{line:102,column:21,offset:3520},end:{line:102,column:36,offset:3535}},name:"backgroundColor",range:[3520,3535]},value:{type:"Literal",start:3537,end:3546,loc:{start:{line:102,column:38,offset:3537},end:{line:102,column:47,offset:3546}},value:"#f59e0b",raw:"'#f59e0b'",range:[3537,3546]},kind:"init",range:[3520,3546]},{type:"Property",start:3548,end:3562,loc:{start:{line:102,column:49,offset:3548},end:{line:102,column:63,offset:3562}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:3548,end:3553,loc:{start:{line:102,column:49,offset:3548},end:{line:102,column:54,offset:3553}},name:"color",range:[3548,3553]},value:{type:"Literal",start:3555,end:3562,loc:{start:{line:102,column:56,offset:3555},end:{line:102,column:63,offset:3562}},value:"white",raw:"'white'",range:[3555,3562]},kind:"init",range:[3548,3562]},{type:"Property",start:3564,end:3582,loc:{start:{line:102,column:65,offset:3564},end:{line:102,column:83,offset:3582}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:3564,end:3571,loc:{start:{line:102,column:65,offset:3564},end:{line:102,column:72,offset:3571}},name:"padding",range:[3564,3571]},value:{type:"Literal",start:3573,end:3582,loc:{start:{line:102,column:74,offset:3573},end:{line:102,column:83,offset:3582}},value:"2px 6px",raw:"'2px 6px'",range:[3573,3582]},kind:"init",range:[3564,3582]},{type:"Property",start:3584,end:3604,loc:{start:{line:102,column:85,offset:3584},end:{line:102,column:105,offset:3604}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:3584,end:3596,loc:{start:{line:102,column:85,offset:3584},end:{line:102,column:97,offset:3596}},name:"borderRadius",range:[3584,3596]},value:{type:"Literal",start:3598,end:3604,loc:{start:{line:102,column:99,offset:3598},end:{line:102,column:105,offset:3604}},value:"12px",raw:"'12px'",range:[3598,3604]},kind:"init",range:[3584,3604]},{type:"Property",start:3606,end:3622,loc:{start:{line:102,column:107,offset:3606},end:{line:102,column:123,offset:3622}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:3606,end:3614,loc:{start:{line:102,column:107,offset:3606},end:{line:102,column:115,offset:3614}},name:"fontSize",range:[3606,3614]},value:{type:"Literal",start:3616,end:3622,loc:{start:{line:102,column:117,offset:3616},end:{line:102,column:123,offset:3622}},value:"10px",raw:"'10px'",range:[3616,3622]},kind:"init",range:[3606,3622]},{type:"Property",start:3624,end:3642,loc:{start:{line:102,column:125,offset:3624},end:{line:102,column:143,offset:3642}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:3624,end:3634,loc:{start:{line:102,column:125,offset:3624},end:{line:102,column:135,offset:3634}},name:"fontWeight",range:[3624,3634]},value:{type:"Literal",start:3636,end:3642,loc:{start:{line:102,column:137,offset:3636},end:{line:102,column:143,offset:3642}},value:"bold",raw:"'bold'",range:[3636,3642]},kind:"init",range:[3624,3642]}],range:[3518,3644]},start:3518,end:3644,loc:{start:{line:102,column:19,offset:3518},end:{line:102,column:145,offset:3644}},range:[3518,3644]}],sourceType:"module",comments:[],loc:{start:{line:102,column:19,offset:3518},end:{line:102,column:145,offset:3644}},range:[3518,3644]}} }}>
+    COMING SOON</span>
+
     </div>
   </Card>
-  
   <Card title="Credit Card Onramp" icon="credit-card">
     Direct fiat to crypto onramp for seamless user experience.
-    <div style={{ marginTop: '8px' }}>
-      <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>COMING SOON</span>
+
+    <div style={{ marginTop:"8px" }}>
+    <span style={{ type:"mdxJsxAttributeValueExpression",value:"{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }",data:{estree:{type:"Program",start:3865,end:3991,body:[{type:"ExpressionStatement",expression:{type:"ObjectExpression",start:3865,end:3991,loc:{start:{line:109,column:19,offset:3865},end:{line:109,column:145,offset:3991}},properties:[{type:"Property",start:3867,end:3893,loc:{start:{line:109,column:21,offset:3867},end:{line:109,column:47,offset:3893}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:3867,end:3882,loc:{start:{line:109,column:21,offset:3867},end:{line:109,column:36,offset:3882}},name:"backgroundColor",range:[3867,3882]},value:{type:"Literal",start:3884,end:3893,loc:{start:{line:109,column:38,offset:3884},end:{line:109,column:47,offset:3893}},value:"#f59e0b",raw:"'#f59e0b'",range:[3884,3893]},kind:"init",range:[3867,3893]},{type:"Property",start:3895,end:3909,loc:{start:{line:109,column:49,offset:3895},end:{line:109,column:63,offset:3909}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:3895,end:3900,loc:{start:{line:109,column:49,offset:3895},end:{line:109,column:54,offset:3900}},name:"color",range:[3895,3900]},value:{type:"Literal",start:3902,end:3909,loc:{start:{line:109,column:56,offset:3902},end:{line:109,column:63,offset:3909}},value:"white",raw:"'white'",range:[3902,3909]},kind:"init",range:[3895,3909]},{type:"Property",start:3911,end:3929,loc:{start:{line:109,column:65,offset:3911},end:{line:109,column:83,offset:3929}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:3911,end:3918,loc:{start:{line:109,column:65,offset:3911},end:{line:109,column:72,offset:3918}},name:"padding",range:[3911,3918]},value:{type:"Literal",start:3920,end:3929,loc:{start:{line:109,column:74,offset:3920},end:{line:109,column:83,offset:3929}},value:"2px 6px",raw:"'2px 6px'",range:[3920,3929]},kind:"init",range:[3911,3929]},{type:"Property",start:3931,end:3951,loc:{start:{line:109,column:85,offset:3931},end:{line:109,column:105,offset:3951}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:3931,end:3943,loc:{start:{line:109,column:85,offset:3931},end:{line:109,column:97,offset:3943}},name:"borderRadius",range:[3931,3943]},value:{type:"Literal",start:3945,end:3951,loc:{start:{line:109,column:99,offset:3945},end:{line:109,column:105,offset:3951}},value:"12px",raw:"'12px'",range:[3945,3951]},kind:"init",range:[3931,3951]},{type:"Property",start:3953,end:3969,loc:{start:{line:109,column:107,offset:3953},end:{line:109,column:123,offset:3969}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:3953,end:3961,loc:{start:{line:109,column:107,offset:3953},end:{line:109,column:115,offset:3961}},name:"fontSize",range:[3953,3961]},value:{type:"Literal",start:3963,end:3969,loc:{start:{line:109,column:117,offset:3963},end:{line:109,column:123,offset:3969}},value:"10px",raw:"'10px'",range:[3963,3969]},kind:"init",range:[3953,3969]},{type:"Property",start:3971,end:3989,loc:{start:{line:109,column:125,offset:3971},end:{line:109,column:143,offset:3989}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:3971,end:3981,loc:{start:{line:109,column:125,offset:3971},end:{line:109,column:135,offset:3981}},name:"fontWeight",range:[3971,3981]},value:{type:"Literal",start:3983,end:3989,loc:{start:{line:109,column:137,offset:3983},end:{line:109,column:143,offset:3989}},value:"bold",raw:"'bold'",range:[3983,3989]},kind:"init",range:[3971,3989]}],range:[3865,3991]},start:3865,end:3991,loc:{start:{line:109,column:19,offset:3865},end:{line:109,column:145,offset:3991}},range:[3865,3991]}],sourceType:"module",comments:[],loc:{start:{line:109,column:19,offset:3865},end:{line:109,column:145,offset:3991}},range:[3865,3991]}} }}>
+    COMING SOON</span>
+
     </div>
   </Card>
-  
   <Card title="Collect Reviews" icon="star">
     Built-in review and rating system for games.
-    <div style={{ marginTop: '8px' }}>
-      <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>COMING SOON</span>
+
+    <div style={{ marginTop:"8px" }}>
+    <span style={{ type:"mdxJsxAttributeValueExpression",value:"{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }",data:{estree:{type:"Program",start:4188,end:4314,body:[{type:"ExpressionStatement",expression:{type:"ObjectExpression",start:4188,end:4314,loc:{start:{line:116,column:19,offset:4188},end:{line:116,column:145,offset:4314}},properties:[{type:"Property",start:4190,end:4216,loc:{start:{line:116,column:21,offset:4190},end:{line:116,column:47,offset:4216}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:4190,end:4205,loc:{start:{line:116,column:21,offset:4190},end:{line:116,column:36,offset:4205}},name:"backgroundColor",range:[4190,4205]},value:{type:"Literal",start:4207,end:4216,loc:{start:{line:116,column:38,offset:4207},end:{line:116,column:47,offset:4216}},value:"#f59e0b",raw:"'#f59e0b'",range:[4207,4216]},kind:"init",range:[4190,4216]},{type:"Property",start:4218,end:4232,loc:{start:{line:116,column:49,offset:4218},end:{line:116,column:63,offset:4232}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:4218,end:4223,loc:{start:{line:116,column:49,offset:4218},end:{line:116,column:54,offset:4223}},name:"color",range:[4218,4223]},value:{type:"Literal",start:4225,end:4232,loc:{start:{line:116,column:56,offset:4225},end:{line:116,column:63,offset:4232}},value:"white",raw:"'white'",range:[4225,4232]},kind:"init",range:[4218,4232]},{type:"Property",start:4234,end:4252,loc:{start:{line:116,column:65,offset:4234},end:{line:116,column:83,offset:4252}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:4234,end:4241,loc:{start:{line:116,column:65,offset:4234},end:{line:116,column:72,offset:4241}},name:"padding",range:[4234,4241]},value:{type:"Literal",start:4243,end:4252,loc:{start:{line:116,column:74,offset:4243},end:{line:116,column:83,offset:4252}},value:"2px 6px",raw:"'2px 6px'",range:[4243,4252]},kind:"init",range:[4234,4252]},{type:"Property",start:4254,end:4274,loc:{start:{line:116,column:85,offset:4254},end:{line:116,column:105,offset:4274}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:4254,end:4266,loc:{start:{line:116,column:85,offset:4254},end:{line:116,column:97,offset:4266}},name:"borderRadius",range:[4254,4266]},value:{type:"Literal",start:4268,end:4274,loc:{start:{line:116,column:99,offset:4268},end:{line:116,column:105,offset:4274}},value:"12px",raw:"'12px'",range:[4268,4274]},kind:"init",range:[4254,4274]},{type:"Property",start:4276,end:4292,loc:{start:{line:116,column:107,offset:4276},end:{line:116,column:123,offset:4292}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:4276,end:4284,loc:{start:{line:116,column:107,offset:4276},end:{line:116,column:115,offset:4284}},name:"fontSize",range:[4276,4284]},value:{type:"Literal",start:4286,end:4292,loc:{start:{line:116,column:117,offset:4286},end:{line:116,column:123,offset:4292}},value:"10px",raw:"'10px'",range:[4286,4292]},kind:"init",range:[4276,4292]},{type:"Property",start:4294,end:4312,loc:{start:{line:116,column:125,offset:4294},end:{line:116,column:143,offset:4312}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:4294,end:4304,loc:{start:{line:116,column:125,offset:4294},end:{line:116,column:135,offset:4304}},name:"fontWeight",range:[4294,4304]},value:{type:"Literal",start:4306,end:4312,loc:{start:{line:116,column:137,offset:4306},end:{line:116,column:143,offset:4312}},value:"bold",raw:"'bold'",range:[4306,4312]},kind:"init",range:[4294,4312]}],range:[4188,4314]},start:4188,end:4314,loc:{start:{line:116,column:19,offset:4188},end:{line:116,column:145,offset:4314}},range:[4188,4314]}],sourceType:"module",comments:[],loc:{start:{line:116,column:19,offset:4188},end:{line:116,column:145,offset:4314}},range:[4188,4314]}} }}>
+    COMING SOON</span>
+
     </div>
   </Card>
-  
   <Card title="Share your Game" icon="share">
     Social sharing and viral mechanics.
-    <div style={{ marginTop: '8px' }}>
-      <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>COMING SOON</span>
+
+    <div style={{ marginTop:"8px" }}>
+    <span style={{ type:"mdxJsxAttributeValueExpression",value:"{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }",data:{estree:{type:"Program",start:4503,end:4629,body:[{type:"ExpressionStatement",expression:{type:"ObjectExpression",start:4503,end:4629,loc:{start:{line:123,column:19,offset:4503},end:{line:123,column:145,offset:4629}},properties:[{type:"Property",start:4505,end:4531,loc:{start:{line:123,column:21,offset:4505},end:{line:123,column:47,offset:4531}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:4505,end:4520,loc:{start:{line:123,column:21,offset:4505},end:{line:123,column:36,offset:4520}},name:"backgroundColor",range:[4505,4520]},value:{type:"Literal",start:4522,end:4531,loc:{start:{line:123,column:38,offset:4522},end:{line:123,column:47,offset:4531}},value:"#f59e0b",raw:"'#f59e0b'",range:[4522,4531]},kind:"init",range:[4505,4531]},{type:"Property",start:4533,end:4547,loc:{start:{line:123,column:49,offset:4533},end:{line:123,column:63,offset:4547}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:4533,end:4538,loc:{start:{line:123,column:49,offset:4533},end:{line:123,column:54,offset:4538}},name:"color",range:[4533,4538]},value:{type:"Literal",start:4540,end:4547,loc:{start:{line:123,column:56,offset:4540},end:{line:123,column:63,offset:4547}},value:"white",raw:"'white'",range:[4540,4547]},kind:"init",range:[4533,4547]},{type:"Property",start:4549,end:4567,loc:{start:{line:123,column:65,offset:4549},end:{line:123,column:83,offset:4567}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:4549,end:4556,loc:{start:{line:123,column:65,offset:4549},end:{line:123,column:72,offset:4556}},name:"padding",range:[4549,4556]},value:{type:"Literal",start:4558,end:4567,loc:{start:{line:123,column:74,offset:4558},end:{line:123,column:83,offset:4567}},value:"2px 6px",raw:"'2px 6px'",range:[4558,4567]},kind:"init",range:[4549,4567]},{type:"Property",start:4569,end:4589,loc:{start:{line:123,column:85,offset:4569},end:{line:123,column:105,offset:4589}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:4569,end:4581,loc:{start:{line:123,column:85,offset:4569},end:{line:123,column:97,offset:4581}},name:"borderRadius",range:[4569,4581]},value:{type:"Literal",start:4583,end:4589,loc:{start:{line:123,column:99,offset:4583},end:{line:123,column:105,offset:4589}},value:"12px",raw:"'12px'",range:[4583,4589]},kind:"init",range:[4569,4589]},{type:"Property",start:4591,end:4607,loc:{start:{line:123,column:107,offset:4591},end:{line:123,column:123,offset:4607}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:4591,end:4599,loc:{start:{line:123,column:107,offset:4591},end:{line:123,column:115,offset:4599}},name:"fontSize",range:[4591,4599]},value:{type:"Literal",start:4601,end:4607,loc:{start:{line:123,column:117,offset:4601},end:{line:123,column:123,offset:4607}},value:"10px",raw:"'10px'",range:[4601,4607]},kind:"init",range:[4591,4607]},{type:"Property",start:4609,end:4627,loc:{start:{line:123,column:125,offset:4609},end:{line:123,column:143,offset:4627}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:4609,end:4619,loc:{start:{line:123,column:125,offset:4609},end:{line:123,column:135,offset:4619}},name:"fontWeight",range:[4609,4619]},value:{type:"Literal",start:4621,end:4627,loc:{start:{line:123,column:137,offset:4621},end:{line:123,column:143,offset:4627}},value:"bold",raw:"'bold'",range:[4621,4627]},kind:"init",range:[4609,4627]}],range:[4503,4629]},start:4503,end:4629,loc:{start:{line:123,column:19,offset:4503},end:{line:123,column:145,offset:4629}},range:[4503,4629]}],sourceType:"module",comments:[],loc:{start:{line:123,column:19,offset:4503},end:{line:123,column:145,offset:4629}},range:[4503,4629]}} }}>
+    COMING SOON</span>
+
     </div>
   </Card>
-  
   <Card title="Record Gameplay" icon="video">
     Automatic gameplay recording and sharing.
-    <div style={{ marginTop: '8px' }}>
-      <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>COMING SOON</span>
+
+    <div style={{ marginTop:"8px" }}>
+    <span style={{ type:"mdxJsxAttributeValueExpression",value:"{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }",data:{estree:{type:"Program",start:4824,end:4950,body:[{type:"ExpressionStatement",expression:{type:"ObjectExpression",start:4824,end:4950,loc:{start:{line:130,column:19,offset:4824},end:{line:130,column:145,offset:4950}},properties:[{type:"Property",start:4826,end:4852,loc:{start:{line:130,column:21,offset:4826},end:{line:130,column:47,offset:4852}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:4826,end:4841,loc:{start:{line:130,column:21,offset:4826},end:{line:130,column:36,offset:4841}},name:"backgroundColor",range:[4826,4841]},value:{type:"Literal",start:4843,end:4852,loc:{start:{line:130,column:38,offset:4843},end:{line:130,column:47,offset:4852}},value:"#f59e0b",raw:"'#f59e0b'",range:[4843,4852]},kind:"init",range:[4826,4852]},{type:"Property",start:4854,end:4868,loc:{start:{line:130,column:49,offset:4854},end:{line:130,column:63,offset:4868}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:4854,end:4859,loc:{start:{line:130,column:49,offset:4854},end:{line:130,column:54,offset:4859}},name:"color",range:[4854,4859]},value:{type:"Literal",start:4861,end:4868,loc:{start:{line:130,column:56,offset:4861},end:{line:130,column:63,offset:4868}},value:"white",raw:"'white'",range:[4861,4868]},kind:"init",range:[4854,4868]},{type:"Property",start:4870,end:4888,loc:{start:{line:130,column:65,offset:4870},end:{line:130,column:83,offset:4888}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:4870,end:4877,loc:{start:{line:130,column:65,offset:4870},end:{line:130,column:72,offset:4877}},name:"padding",range:[4870,4877]},value:{type:"Literal",start:4879,end:4888,loc:{start:{line:130,column:74,offset:4879},end:{line:130,column:83,offset:4888}},value:"2px 6px",raw:"'2px 6px'",range:[4879,4888]},kind:"init",range:[4870,4888]},{type:"Property",start:4890,end:4910,loc:{start:{line:130,column:85,offset:4890},end:{line:130,column:105,offset:4910}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:4890,end:4902,loc:{start:{line:130,column:85,offset:4890},end:{line:130,column:97,offset:4902}},name:"borderRadius",range:[4890,4902]},value:{type:"Literal",start:4904,end:4910,loc:{start:{line:130,column:99,offset:4904},end:{line:130,column:105,offset:4910}},value:"12px",raw:"'12px'",range:[4904,4910]},kind:"init",range:[4890,4910]},{type:"Property",start:4912,end:4928,loc:{start:{line:130,column:107,offset:4912},end:{line:130,column:123,offset:4928}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:4912,end:4920,loc:{start:{line:130,column:107,offset:4912},end:{line:130,column:115,offset:4920}},name:"fontSize",range:[4912,4920]},value:{type:"Literal",start:4922,end:4928,loc:{start:{line:130,column:117,offset:4922},end:{line:130,column:123,offset:4928}},value:"10px",raw:"'10px'",range:[4922,4928]},kind:"init",range:[4912,4928]},{type:"Property",start:4930,end:4948,loc:{start:{line:130,column:125,offset:4930},end:{line:130,column:143,offset:4948}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:4930,end:4940,loc:{start:{line:130,column:125,offset:4930},end:{line:130,column:135,offset:4940}},name:"fontWeight",range:[4930,4940]},value:{type:"Literal",start:4942,end:4948,loc:{start:{line:130,column:137,offset:4942},end:{line:130,column:143,offset:4948}},value:"bold",raw:"'bold'",range:[4942,4948]},kind:"init",range:[4930,4948]}],range:[4824,4950]},start:4824,end:4950,loc:{start:{line:130,column:19,offset:4824},end:{line:130,column:145,offset:4950}},range:[4824,4950]}],sourceType:"module",comments:[],loc:{start:{line:130,column:19,offset:4824},end:{line:130,column:145,offset:4950}},range:[4824,4950]}} }}>
+    COMING SOON</span>
+
     </div>
   </Card>
-  
   <Card title="List NFTs" icon="store">
     Marketplace integration for trading game assets.
-    <div style={{ marginTop: '8px' }}>
-      <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>COMING SOON</span>
+
+    <div style={{ marginTop:"8px" }}>
+    <span style={{ type:"mdxJsxAttributeValueExpression",value:"{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }",data:{estree:{type:"Program",start:5146,end:5272,body:[{type:"ExpressionStatement",expression:{type:"ObjectExpression",start:5146,end:5272,loc:{start:{line:137,column:19,offset:5146},end:{line:137,column:145,offset:5272}},properties:[{type:"Property",start:5148,end:5174,loc:{start:{line:137,column:21,offset:5148},end:{line:137,column:47,offset:5174}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:5148,end:5163,loc:{start:{line:137,column:21,offset:5148},end:{line:137,column:36,offset:5163}},name:"backgroundColor",range:[5148,5163]},value:{type:"Literal",start:5165,end:5174,loc:{start:{line:137,column:38,offset:5165},end:{line:137,column:47,offset:5174}},value:"#f59e0b",raw:"'#f59e0b'",range:[5165,5174]},kind:"init",range:[5148,5174]},{type:"Property",start:5176,end:5190,loc:{start:{line:137,column:49,offset:5176},end:{line:137,column:63,offset:5190}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:5176,end:5181,loc:{start:{line:137,column:49,offset:5176},end:{line:137,column:54,offset:5181}},name:"color",range:[5176,5181]},value:{type:"Literal",start:5183,end:5190,loc:{start:{line:137,column:56,offset:5183},end:{line:137,column:63,offset:5190}},value:"white",raw:"'white'",range:[5183,5190]},kind:"init",range:[5176,5190]},{type:"Property",start:5192,end:5210,loc:{start:{line:137,column:65,offset:5192},end:{line:137,column:83,offset:5210}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:5192,end:5199,loc:{start:{line:137,column:65,offset:5192},end:{line:137,column:72,offset:5199}},name:"padding",range:[5192,5199]},value:{type:"Literal",start:5201,end:5210,loc:{start:{line:137,column:74,offset:5201},end:{line:137,column:83,offset:5210}},value:"2px 6px",raw:"'2px 6px'",range:[5201,5210]},kind:"init",range:[5192,5210]},{type:"Property",start:5212,end:5232,loc:{start:{line:137,column:85,offset:5212},end:{line:137,column:105,offset:5232}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:5212,end:5224,loc:{start:{line:137,column:85,offset:5212},end:{line:137,column:97,offset:5224}},name:"borderRadius",range:[5212,5224]},value:{type:"Literal",start:5226,end:5232,loc:{start:{line:137,column:99,offset:5226},end:{line:137,column:105,offset:5232}},value:"12px",raw:"'12px'",range:[5226,5232]},kind:"init",range:[5212,5232]},{type:"Property",start:5234,end:5250,loc:{start:{line:137,column:107,offset:5234},end:{line:137,column:123,offset:5250}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:5234,end:5242,loc:{start:{line:137,column:107,offset:5234},end:{line:137,column:115,offset:5242}},name:"fontSize",range:[5234,5242]},value:{type:"Literal",start:5244,end:5250,loc:{start:{line:137,column:117,offset:5244},end:{line:137,column:123,offset:5250}},value:"10px",raw:"'10px'",range:[5244,5250]},kind:"init",range:[5234,5250]},{type:"Property",start:5252,end:5270,loc:{start:{line:137,column:125,offset:5252},end:{line:137,column:143,offset:5270}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:5252,end:5262,loc:{start:{line:137,column:125,offset:5252},end:{line:137,column:135,offset:5262}},name:"fontWeight",range:[5252,5262]},value:{type:"Literal",start:5264,end:5270,loc:{start:{line:137,column:137,offset:5264},end:{line:137,column:143,offset:5270}},value:"bold",raw:"'bold'",range:[5264,5270]},kind:"init",range:[5252,5270]}],range:[5146,5272]},start:5146,end:5272,loc:{start:{line:137,column:19,offset:5146},end:{line:137,column:145,offset:5272}},range:[5146,5272]}],sourceType:"module",comments:[],loc:{start:{line:137,column:19,offset:5146},end:{line:137,column:145,offset:5272}},range:[5146,5272]}} }}>
+    COMING SOON</span>
+
     </div>
   </Card>
 </CardGroup>
 
 <Note>
-And more actions coming - the future looks bright!
+  And more actions coming - the future looks bright\!
 </Note>
 
 ## Getting Started
 
-We'd love to have your game on basement.fun! It's simple, free, and easy to start integrating.
+We'd love to have your game on basement.fun\! It's simple, free, and easy to start integrating.
 
 <Tabs>
-<Tab title="Game Developers">
-  <CardGroup cols={1}>
-    <Card title="Register as a Developer" icon="user-plus" href="https://basement.fun/developer/signup" cta="Register Now" horizontal>
-      Sign up to start integrating your game with BSMNT launcher
-    </Card>
-  </CardGroup>
-  
-  <div style={{ marginTop: '16px' }}>
-    <strong>Already registered?</strong>
-  </div>
-  
-  <CardGroup cols={2}>
-    <Card title="Game Launcher Playground" icon="play" href="https://basement.fun/playground">
-      Test your integration in a sandbox environment
-    </Card>
-    
-    <Card title="BSMNT API Docs" icon="book" href="https://docs.basement.fun/api">
-      Complete API documentation and examples
-    </Card>
-  </CardGroup>
-</Tab>
+  <Tab title="Game Developers">
+    <CardGroup cols={1}>
+      <Card title="Register as a Developer" icon="user-plus" horizontal href="https://basement.fun/developer/signup" cta="Register Now">
+        Sign up to start integrating your game with BSMNT launcher
+      </Card>
+    </CardGroup>
+    <div style={{ marginTop:"16px" }}>
+    Already registered?
 
-<Tab title="Players">
-  <Card title="See BSMNT Launcher in Action" icon="gamepad-2" href="https://basement.fun/games" cta="Play Games" horizontal>
-    No vaporware here - play Games on BSMNT today!
-  </Card>
-  
-  <Note>
-  No vaporware - play today!
-  </Note>
-</Tab>
+    </div>
+
+    <CardGroup cols={2}>
+      <Card title="Game Launcher Playground" icon="play" href="https://basement.fun/playground">
+        Test your integration in a sandbox environment
+      </Card>
+      <Card title="BSMNT API Docs" icon="book" href="https://docs.basement.fun/api">
+        Complete API documentation and examples
+      </Card>
+    </CardGroup>
+  </Tab>
+  <Tab title="Players">
+    <Card title="See BSMNT Launcher in Action" icon="gamepad-2" horizontal href="https://basement.fun/games" cta="Play Games">
+      No vaporware here - play Games on BSMNT today\!
+    </Card>
+    <Note>
+      No vaporware - play today\!
+    </Note>
+  </Tab>
 </Tabs>
 
 ## What is Basement.fun?
@@ -187,7 +182,7 @@ Basement is the place to discover & play onchain games. Aside from being a disco
 
 Your game is loaded inside our game launcher, where users connect to Basement, and their player context is passed down to your game.
 
-From there, you can leverage any of our generic helper functions (such as saving state & scores) + trigger any number of built-in crypto UX (without you having to integrate anything onchain in your game).
+From there, you can leverage any of our generic helper functions (such as saving state & scores) \+ trigger any number of built-in crypto UX (without you having to integrate anything onchain in your game).
 
 ## Access Player Data
 
@@ -198,28 +193,25 @@ The payload is read from the GET parameters, so any hosted web game can easily a
 ### Basic Player Data Includes:
 
 <AccordionGroup>
-<Accordion title="Username and ENS">
-  Username (and compatible .b3.fun ENS resolvable address)
-</Accordion>
-
-<Accordion title="3D Avatar">
-  3D Avatar (.GLB model powered by ReadyPlayerMe)
-</Accordion>
-
-<Accordion title="Wallet Address">
-  Verified wallet address for onchain interactions
-</Accordion>
-
-<Accordion title="Additional Data">
-  Game-specific player data, session information, and more - see our Launcher API Docs
-</Accordion>
+  <Accordion title="Username and ENS">
+    Username (and compatible .b3.fun ENS resolvable address)
+  </Accordion>
+  <Accordion title="3D Avatar">
+    3D Avatar (.GLB model powered by ReadyPlayerMe)
+  </Accordion>
+  <Accordion title="Wallet Address">
+    Verified wallet address for onchain interactions
+  </Accordion>
+  <Accordion title="Additional Data">
+    Game-specific player data, session information, and more - see our Launcher API Docs
+  </Accordion>
 </AccordionGroup>
 
 <Tip>
-You can optionally store any arbitrary game-specific player data using our player state APIs.
+  You can optionally store any arbitrary game-specific player data using our player state APIs.
 </Tip>
 
-<Card title="Explore Launcher APIs" icon="code" href="https://docs.basement.fun/api" cta="View Docs" horizontal>
+<Card title="Explore Launcher APIs" icon="code" horizontal href="https://docs.basement.fun/api" cta="View Docs">
   Complete documentation for player data access and game integration
 </Card>
 
@@ -233,31 +225,30 @@ A number of customizations are available on the game launcher, so that BSMNT can
 
 - **Store & retrieve scores & leaderboards** - Persistent game state management
 - **Send notifications** - Alert players about game events
-- **Log and stream game activity** - Analytics and player behavior tracking  
+- **Log and stream game activity** - Analytics and player behavior tracking
 - **Store player state and game sessions** - Save game progress automatically
-- **And more coming!** - New features added regularly
+- **And more coming\!** - New features added regularly
 
-<Card title="Explore Launcher APIs" icon="api" href="https://docs.basement.fun/api" cta="View Documentation" horizontal>
+<Card title="Explore Launcher APIs" icon="api" horizontal href="https://docs.basement.fun/api" cta="View Documentation">
   Complete API reference for all available launcher features
 </Card>
 
 ## Architecture Overview
 
 <Frame caption="Game Launcher Integration Flow">
-  <div style={{ 
-    padding: '20px', 
-    backgroundColor: '#f8fafc', 
-    border: '1px solid #e2e8f0', 
-    borderRadius: '8px',
-    textAlign: 'center',
-    fontFamily: 'monospace'
-  }}>
-    <div style={{ marginBottom: '10px', color: '#64748b' }}>Connected: 0x..123</div>
-    <div style={{ marginBottom: '10px', backgroundColor: '#007AFF', color: 'white', padding: '8px', borderRadius: '4px' }}>
-      www.yourgame.com
-    </div>
-    <div style={{ fontSize: '14px', color: '#475569' }}>
-      Your game loads inside BSMNT launcher
-    </div>
+  <div style={{ padding:"20px",backgroundColor:"#f8fafc",border:"1px solid #e2e8f0",borderRadius:"8px",textAlign:"center",fontFamily:"monospace" }}>
+  <div style={{ type:"mdxJsxAttributeValueExpression",value:"{ marginBottom: '10px', color: '#64748b' }",data:{estree:{type:"Program",start:9390,end:9432,body:[{type:"ExpressionStatement",expression:{type:"ObjectExpression",start:9390,end:9432,loc:{start:{line:255,column:16,offset:9390},end:{line:255,column:58,offset:9432}},properties:[{type:"Property",start:9392,end:9412,loc:{start:{line:255,column:18,offset:9392},end:{line:255,column:38,offset:9412}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:9392,end:9404,loc:{start:{line:255,column:18,offset:9392},end:{line:255,column:30,offset:9404}},name:"marginBottom",range:[9392,9404]},value:{type:"Literal",start:9406,end:9412,loc:{start:{line:255,column:32,offset:9406},end:{line:255,column:38,offset:9412}},value:"10px",raw:"'10px'",range:[9406,9412]},kind:"init",range:[9392,9412]},{type:"Property",start:9414,end:9430,loc:{start:{line:255,column:40,offset:9414},end:{line:255,column:56,offset:9430}},method:false,shorthand:false,computed:false,key:{type:"Identifier",start:9414,end:9419,loc:{start:{line:255,column:40,offset:9414},end:{line:255,column:45,offset:9419}},name:"color",range:[9414,9419]},value:{type:"Literal",start:9421,end:9430,loc:{start:{line:255,column:47,offset:9421},end:{line:255,column:56,offset:9430}},value:"#64748b",raw:"'#64748b'",range:[9421,9430]},kind:"init",range:[9414,9430]}],range:[9390,9432]},start:9390,end:9432,loc:{start:{line:255,column:16,offset:9390},end:{line:255,column:58,offset:9432}},range:[9390,9432]}],sourceType:"module",comments:[],loc:{start:{line:255,column:16,offset:9390},end:{line:255,column:58,offset:9432}},range:[9390,9432]}} }}>
+  Connected: 0x..123</div>
+
+  <div style={{ marginBottom:"10px",backgroundColor:"#007AFF",color:"white",padding:"8px",borderRadius:"4px" }}>
+  [www.yourgame.com](http://www.yourgame.com)
+
+  </div>
+
+  <div style={{ fontSize:"14px",color:"#475569" }}>
+  Your game loads inside BSMNT launcher
+
+  </div>
+
   </div>
 </Frame>
