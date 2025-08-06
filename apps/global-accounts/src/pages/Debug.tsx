@@ -21,6 +21,8 @@ interface DebugInfo {
 
 const debug = createDebug("@@b3dotfun/sdk:Debug");
 
+console.log(`process.env.PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID`, process.env.PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID);
+
 const _base = supportedChainsTW.find(chain => chain.id === 8453);
 invariant(_base, "Base chain not found");
 const base = _base;

@@ -23,4 +23,4 @@ doppler.yaml
 
 .turbo
 
-z-*.*
+.env*
