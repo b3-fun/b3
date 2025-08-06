@@ -53,7 +53,7 @@ export function LoginStepCustom({
   const handleConnect = async (strategy: AllowedStrategy) => {
     try {
       setIsLoading(true);
-      debug("@@setIsAuthenticating:true:3");
+      debug("setIsAuthenticating:true:3");
       setIsAuthenticating(true);
       const options = getConnectOptionsFromStrategy(strategy);
       let connectResult: Wallet | null;
@@ -86,7 +86,7 @@ export function LoginStepCustom({
       setIsAuthenticated(false);
     } finally {
       setIsLoading(false);
-      debug("@@setIsAuthenticating:false:3");
+      debug("setIsAuthenticating:false:3");
       setIsAuthenticating(false);
     }
   };
