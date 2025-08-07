@@ -1,5 +1,5 @@
 import { getExplorerTxUrl } from "@b3dotfun/sdk/anyspend";
-import { MintButton, SendETHButton, useB3 } from "@b3dotfun/sdk/global-account/react";
+import { MintButton, SendERC20Button, SendETHButton, useB3 } from "@b3dotfun/sdk/global-account/react";
 import { thirdwebB3Mainnet } from "@b3dotfun/sdk/shared/constants/chains/b3Chain";
 import { b3MainnetThirdWeb, getThirdwebChain } from "@b3dotfun/sdk/shared/constants/chains/supported";
 import createDebug from "debug";
@@ -21,6 +21,7 @@ interface DebugInfo {
 const debug = createDebug("@@b3dotfun/sdk:Debug");
 
 const base = getThirdwebChain(8453);
+const ethereum = getThirdwebChain(1);
 
 export function Debug() {
   const { user, account } = useB3();
@@ -156,6 +157,31 @@ export function Debug() {
                 children="Send 0.000000001 ETH on Base to 0x5824...474e1"
                 onSuccess={txhash => {
                   setSuccessExplorerTxUrl(getExplorerTxUrl(base.id, txhash));
+                  setShowSuccessModal(true);
+                }}
+              />
+
+              <SendETHButton
+                chainId={ethereum.id}
+                to="0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1"
+                value={parseUnits("0.000000001", 18)}
+                className="bg-b3-blue w-full rounded-lg font-bold text-white"
+                children="Send 0.000000001 ETH on Ethereum to 0x5824...474e1"
+                onSuccess={txhash => {
+                  setSuccessExplorerTxUrl(getExplorerTxUrl(ethereum.id, txhash));
+                  setShowSuccessModal(true);
+                }}
+              />
+
+              <SendERC20Button
+                chainId={ethereum.id}
+                to="0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1"
+                tokenAddress="0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+                amount={parseUnits("0.01", 6)}
+                className="bg-b3-blue w-full rounded-lg font-bold text-white"
+                children="Send 0.01 USDC on Ethereum to 0x5824...474e1"
+                onSuccess={txhash => {
+                  setSuccessExplorerTxUrl(getExplorerTxUrl(ethereum.id, txhash));
                   setShowSuccessModal(true);
                 }}
               />

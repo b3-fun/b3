@@ -30,7 +30,6 @@ export { useQueryBSMNT } from "./useQueryBSMNT";
 export { useRemoveSessionKey } from "./useRemoveSessionKey";
 export { useRouter } from "./useRouter";
 export { useSearchParamsSSR } from "./useSearchParamsSSR";
-export * from "./useSendTransactionAA";
 export { useSiwe } from "./useSiwe";
 export { useTokenBalance } from "./useTokenBalance";
 export { useTokenBalancesByChain } from "./useTokenBalancesByChain";
