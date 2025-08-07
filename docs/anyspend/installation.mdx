@@ -3,20 +3,20 @@ title: "Installation & Setup"
 description: "Get started with AnySpend - installation, basic setup, and verification"
 ---
 
+<iframe class="w-full aspect-video rounded-xl mb-6" src="https://customer-gg6qs7nm5ue94t64.cloudflarestream.com/66d9ebc2e3a14ec87dfa360b83e26900/iframe?poster=https%3A%2F%2Fcustomer-gg6qs7nm5ue94t64.cloudflarestream.com%2F66d9ebc2e3a14ec87dfa360b83e26900%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D168%26height%3D600" title="AnySpend Setup" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen />
+
 ## Prerequisites
 
 <CardGroup cols={3}>
-<Card title="Node.js" icon="node-js">
-  v20.15.0 or higher
-</Card>
-
-<Card title="React" icon="react">
-  Version 18 or 19
-</Card>
-
-<Card title="TypeScript" icon="code">
-  Recommended for better DX
-</Card>
+  <Card title="Node.js" icon="node-js">
+    v20.15.0 or higher
+  </Card>
+  <Card title="React" icon="react">
+    Version 18 or 19
+  </Card>
+  <Card title="TypeScript" icon="code">
+    Recommended for better DX
+  </Card>
 </CardGroup>
 
 ## Installation
@@ -24,19 +24,16 @@ description: "Get started with AnySpend - installation, basic setup, and verific
 Choose your preferred package manager:
 
 <Tabs>
-<Tab title="npm">
-```bash
-npm install @b3dotfun/sdk
-```
-</Tab>
-
-<Tab title="yarn">```bash yarn add @b3dotfun/sdk ```</Tab>
-
-<Tab title="pnpm">
-```bash
-pnpm add @b3dotfun/sdk
-```
-</Tab>
+  <Tab title="npm">
+    ```bash
+    npm install @b3dotfun/sdk
+    ```
+  </Tab>
+  <Tab title="pnpm">
+    ```bash
+    pnpm add @b3dotfun/sdk
+    ```
+  </Tab>
 </Tabs>
 
 ## Basic Setup
@@ -45,7 +42,7 @@ pnpm add @b3dotfun/sdk
 
 Wrap your app with the `B3Provider` and `AnyspendProvider` to enable AnySpend functionality:
 
-```tsx title="App.tsx" icon="react"
+```tsx App.tsx icon=react
 import { AnyspendProvider } from "@b3dotfun/sdk/anyspend/react";
 import { B3Provider } from "@b3dotfun/sdk/global-account/react";
 import "@b3dotfun/sdk/index.css";
@@ -66,26 +63,25 @@ export default App;
 AnySpend automatically configures API endpoints based on the `isMainnet` parameter:
 
 <Tabs>
-<Tab title="Mainnet">
-**Endpoint**: `https://mainnet.anyspend.com`
+  <Tab title="Mainnet">
+    **Endpoint**: `https://mainnet.anyspend.com`
 
-Use this for production applications with real transactions.
+    Use this for production applications with real transactions.
+  </Tab>
+  <Tab title="Testnet">
+    **Endpoint**: `http://testnet.anyspend.com`
 
-</Tab>
-
-<Tab title="Testnet">
-**Endpoint**: `http://testnet.anyspend.com`
-
-Use this for development and testing with test tokens.
-
-</Tab>
+    Use this for development and testing with test tokens.
+  </Tab>
 </Tabs>
 
 ### 3. TypeScript Configuration (Optional but Recommended)
 
-<Note>If you're using TypeScript, ensure your `tsconfig.json` includes these settings for optimal compatibility:</Note>
+<Note>
+  If you're using TypeScript, ensure your `tsconfig.json` includes these settings for optimal compatibility:
+</Note>
 
-```json title="tsconfig.json" icon="settings"
+```json tsconfig.json icon=settings
 {
   "compilerOptions": {
     "moduleResolution": "node",
@@ -99,7 +95,7 @@ Use this for development and testing with test tokens.
 
 Create a simple test component to verify your setup works correctly:
 
-```tsx title="TestComponent.tsx" icon="test-tube" lines
+```tsx TestComponent.tsx icon=test-tube lines
 import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
 
 function TestComponent() {
@@ -110,31 +106,27 @@ function TestComponent() {
 ## Next Steps
 
 <CardGroup cols={3}>
-<Card title="Explore Components" icon="puzzle-piece" href="/anyspend/components">
-  Learn about available components for different payment scenarios
-</Card>
-
-<Card title="Learn about Hooks" icon="link" href="/anyspend/hooks">
-  Discover React hooks for building custom payment flows
-</Card>
-
-<Card title="See Examples" icon="code" href="/anyspend/examples">
-  Browse real-world implementation examples
-</Card>
+  <Card title="Explore Components" icon="puzzle-piece" href="/anyspend/components">
+    Learn about available components for different payment scenarios
+  </Card>
+  <Card title="Learn about Hooks" icon="link" href="/anyspend/hooks">
+    Discover React hooks for building custom payment flows
+  </Card>
+  <Card title="See Examples" icon="code" href="/anyspend/examples">
+    Browse real-world implementation examples
+  </Card>
 </CardGroup>
 
 ## Troubleshooting
 
 <AccordionGroup>
-<Accordion title="Import Errors">
-  Make sure you've installed the SDK correctly and imported the CSS file. The SDK requires React 18+ and may have compatibility issues with older versions.
-</Accordion>
-
-<Accordion title="Provider Not Found">
-  Ensure you have `B3Provider` and `AnyspendProvider` placed high in your component tree, typically in your main App component.
-</Accordion>
-
-<Accordion title="TypeScript Errors">
-If you're seeing TypeScript errors, verify your `tsconfig.json` includes the recommended settings above.
-</Accordion>
+  <Accordion title="Import Errors">
+    Make sure you've installed the SDK correctly and imported the CSS file. The SDK requires React 18\+ and may have compatibility issues with older versions.
+  </Accordion>
+  <Accordion title="Provider Not Found">
+    Ensure you have `B3Provider` and `AnyspendProvider` placed high in your component tree, typically in your main App component.
+  </Accordion>
+  <Accordion title="TypeScript Errors">
+    If you're seeing TypeScript errors, verify your `tsconfig.json` includes the recommended settings above.
+  </Accordion>
 </AccordionGroup>
