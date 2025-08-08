@@ -18,7 +18,7 @@ export function SignInButton() {
       blockExplorers: [{ name: "B3 Explorer", url: "https://explorer.b3.fun/" }],
       testnet: undefined,
     },
-    partnerId: String(process.env.NEXT_PUBLIC_THIRDWEB_PARTNER_ID),
+    partnerId: String(process.env.PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID),
     closeAfterLogin: true,
     loginWithSiwe: true,
     withLogo: true,

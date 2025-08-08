@@ -29,6 +29,12 @@ export { AccountAssets } from "./AccountAssets/AccountAssets";
 // MintButton Components
 export { MintButton } from "./MintButton/MintButton";
 
+// SendETHButton Components
+export { SendETHButton } from "./SendETHButton/SendETHButton";
+
+// SendERC20Button Components
+export { SendERC20Button } from "./SendERC20Button/SendERC20Button";
+
 // Transak Components
 export { TransakModal } from "./Transak/TransakModal";
 

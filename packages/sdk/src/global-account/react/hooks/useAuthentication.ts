@@ -44,7 +44,7 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
           setIsAuthenticated(true);
           return;
         }
-        debug("@@setIsAuthenticating:true:4");
+        debug("setIsAuthenticating:true:4");
         setIsAuthenticating(true);
         const account = await wallet.getAccount();
         if (!account) {
@@ -68,7 +68,7 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
       } catch (error) {
         debug("Auto-connect authentication failed", { error });
         setIsAuthenticated(false);
-        debug("@@setIsAuthenticating:false:4");
+        debug("setIsAuthenticating:false:4");
         setUser();
       }
     },
@@ -82,13 +82,13 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
       // Only set isAuthenticating to false if we're not authenticated
       // This prevents the flicker state where both isAuthenticating and isAuthenticated are false
       const timeout = setTimeout(() => {
-        debug("@@setIsAuthenticating:false:5a");
+        debug("setIsAuthenticating:false:5a");
         setIsAuthenticating(false);
         setIsConnecting(false);
       }, 100); // Add a small delay to prevent quick flickers
       return () => clearTimeout(timeout);
     } else {
-      debug("@@setIsAuthenticating:false:5b");
+      debug("setIsAuthenticating:false:5b");
       setIsAuthenticating(false);
       setIsConnecting(false);
     }

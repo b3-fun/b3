@@ -5,10 +5,10 @@ import {
   Input,
   StyleRoot,
   TextLoop,
-  useChainSwitchWithAction,
   useHasMounted,
   useModalStore,
   useTokenBalance,
+  useUnifiedChainSwitchAndExecute,
 } from "@b3dotfun/sdk/global-account/react";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import invariant from "invariant";
@@ -18,7 +18,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { createPublicClient, encodeFunctionData, erc20Abi, http } from "viem";
 import { base } from "viem/chains";
-import { useAccount, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { useAccount, useWaitForTransactionReceipt } from "wagmi";
 import { AnySpendCustom } from "./AnySpendCustom";
 import { EthIcon } from "./icons/EthIcon";
 import { SolIcon } from "./icons/SolIcon";
@@ -70,8 +70,7 @@ export function AnySpendStakeB3({
 
   // Wagmi hooks for direct staking
   const { address } = useAccount();
-  const { writeContractAsync } = useWriteContract();
-  const { switchChainAndExecute } = useChainSwitchWithAction();
+  const { switchChainAndExecute, isSwitchingOrExecuting } = useUnifiedChainSwitchAndExecute();
 
   // State for direct staking flow
   const [isStaking, setIsStaking] = useState(false);
@@ -191,41 +190,52 @@ export function AnySpendStakeB3({
     try {
       setIsStaking(true);
 
-      await switchChainAndExecute(base.id, async () => {
-        // Check current allowance
-        const allowance = await basePublicClient.readContract({
-          address: B3_TOKEN.address as `0x${string}`,
+      // Check current allowance
+      const allowance = await basePublicClient.readContract({
+        address: B3_TOKEN.address as `0x${string}`,
+        abi: erc20Abi,
+        functionName: "allowance",
+        args: [address, ERC20Staking as `0x${string}`],
+      });
+
+      // If allowance is insufficient, request approval first
+      if (allowance < BigInt(userStakeAmount)) {
+        toast.info("Approving B3 spending...");
+
+        const approvalData = encodeFunctionData({
           abi: erc20Abi,
-          functionName: "allowance",
-          args: [address, ERC20Staking as `0x${string}`],
+          functionName: "approve",
+          args: [ERC20Staking as `0x${string}`, BigInt(userStakeAmount)],
         });
 
-        // If allowance is insufficient, request approval
-        if (allowance < BigInt(userStakeAmount)) {
-          toast.info("Approving B3 spending...");
-
-          await writeContractAsync({
-            address: B3_TOKEN.address as `0x${string}`,
-            abi: erc20Abi,
-            functionName: "approve",
-            args: [ERC20Staking as `0x${string}`, BigInt(userStakeAmount)],
-          });
-
-          toast.info("Approval confirmed. Proceeding with stake...");
-        }
-
-        // Execute the stake
-        toast.info("Staking B3...");
-        const stakeHash = await writeContractAsync({
-          address: ERC20Staking as `0x${string}`,
-          abi: ABI_ERC20_STAKING,
-          functionName: "stake",
-          args: [BigInt(userStakeAmount), recipientAddress as `0x${string}`],
+        await switchChainAndExecute(base.id, {
+          to: B3_TOKEN.address as `0x${string}`,
+          data: approvalData,
+          value: BigInt(0),
         });
 
+        toast.info("Approval confirmed. Proceeding with stake...");
+      }
+
+      // Execute the stake
+      toast.info("Staking B3...");
+
+      const stakeData = encodeFunctionData({
+        abi: ABI_ERC20_STAKING,
+        functionName: "stake",
+        args: [BigInt(userStakeAmount), recipientAddress as `0x${string}`],
+      });
+
+      const stakeHash = await switchChainAndExecute(base.id, {
+        to: ERC20Staking as `0x${string}`,
+        data: stakeData,
+        value: BigInt(0),
+      });
+
+      if (stakeHash) {
         setStakingTxHash(stakeHash);
         toast.success("Staking transaction submitted!");
-      });
+      }
     } catch (error) {
       console.error("@@b3-stake:error:", error);
       toast.error("Staking failed. Please try again.");
@@ -375,10 +385,10 @@ export function AnySpendStakeB3({
 
             <Button
               onClick={confirmAmount}
-              disabled={!isAmountValid || !displayAmount || isStaking || isTxPending}
+              disabled={!isAmountValid || !displayAmount || isStaking || isTxPending || isSwitchingOrExecuting}
               className="bg-as-brand hover:bg-as-brand/90 text-as-primary mt-4 h-14 w-full rounded-xl text-lg font-medium"
             >
-              {isStaking ? "Staking..." : isTxPending ? "Confirming..." : "Continue"}
+              {isStaking || isSwitchingOrExecuting ? "Staking..." : isTxPending ? "Confirming..." : "Continue"}
             </Button>
           </motion.div>
         </div>

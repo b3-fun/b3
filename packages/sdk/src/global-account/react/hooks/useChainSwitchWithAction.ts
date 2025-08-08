@@ -3,7 +3,6 @@ import { supportedChains } from "@b3dotfun/sdk/shared/constants/chains/supported
 import invariant from "invariant";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { WalletClient } from "viem";
 import { useSwitchChain, useWalletClient } from "wagmi";
 
 export function useChainSwitchWithAction() {
@@ -24,7 +23,7 @@ export function useChainSwitchWithAction() {
   }, []);
 
   const switchChainAndExecute = useCallback(
-    async (targetChainId: number, action: (client: WalletClient) => Promise<void>) => {
+    async (targetChainId: number, action: () => Promise<void>) => {
       if (!walletClient) {
         toast.error("Please connect your wallet");
         return;
@@ -34,7 +33,7 @@ export function useChainSwitchWithAction() {
       const onCorrectChain = providerId === targetChainId;
 
       if (onCorrectChain) {
-        return run(() => action(walletClient));
+        return run(() => action());
       }
 
       toast.info(`Switching to ${getChainName(targetChainId)}…`);
@@ -62,7 +61,7 @@ export function useChainSwitchWithAction() {
             },
           },
         });
-        await run(() => action(walletClient));
+        await run(() => action());
       } catch (e: any) {
         if (e?.code === -32603 || e?.message?.includes("f is not a function")) {
           // This is a workaround for a bug in the wallet provider.

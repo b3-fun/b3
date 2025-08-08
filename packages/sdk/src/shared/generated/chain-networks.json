@@ -127,7 +127,7 @@
     "name": "Ethereum",
     "rpcUrls": {
       "default": {
-        "http": "https://cloudflare-eth.com",
+        "http": "https://eth.llamarpc.com",
         "ws": "wss://late-dimensional-yard.b3-mainnet.quiknode.pro/461dbdbd44158cd7a7a764a58ffb01a67eef77f2"
       },
       "backups": []

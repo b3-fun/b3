@@ -2,7 +2,6 @@
 
 import {
   ALL_CHAINS,
-  EVM_CHAINS,
   getChainName,
   getErrorDisplay,
   getExplorerTxUrl,
@@ -22,9 +21,9 @@ import {
   TextLoop,
   TextShimmer,
   useAccountWallet,
-  useChainSwitchWithAction,
   useModalStore,
   useProfile,
+  useUnifiedChainSwitchAndExecute,
 } from "@b3dotfun/sdk/global-account/react";
 import { useRouter, useSearchParams } from "@b3dotfun/sdk/shared/react/hooks";
 import { cn } from "@b3dotfun/sdk/shared/utils";
@@ -44,8 +43,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import TimeAgo from "react-timeago";
 import { toast } from "sonner";
-import { Address } from "thirdweb";
-import { erc20Abi, WalletClient } from "viem";
+import { encodeFunctionData, erc20Abi } from "viem";
 import { b3 } from "viem/chains";
 import { useWaitForTransactionReceipt, useWalletClient } from "wagmi";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./Accordion";
@@ -229,7 +227,7 @@ export const OrderDetails = memo(function OrderDetails({
   const [showQRCode, setShowQRCode] = useState(false);
   const { isLoading: txLoading, isSuccess: txSuccess } = useWaitForTransactionReceipt({ hash: txHash });
 
-  const { switchChainAndExecute, isSwitchingOrExecuting } = useChainSwitchWithAction();
+  const { switchChainAndExecute, isSwitchingOrExecuting } = useUnifiedChainSwitchAndExecute();
 
   const { colorMode } = useColorMode();
 
@@ -243,45 +241,33 @@ export const OrderDetails = memo(function OrderDetails({
     return roundTokenAmount(formattedSrcAmount);
   }, [order.srcAmount, srcToken]);
 
-  // This function handles the actual payment process
-  const handlePaymentProcess = useCallback(
-    async (currentWalletClient: WalletClient) => {
-      if (!currentWalletClient || !currentWalletClient?.chain?.id) {
-        toast.error("Please connect your wallet");
-        return;
-      }
+  // Unified payment handler for both EOA and AA wallets
+  const handleUnifiedPaymentProcess = useCallback(async () => {
+    let txData: `0x${string}` | undefined;
+    let value: bigint;
+    let to: `0x${string}`;
 
-      console.log("Processing transaction on chain:", currentWalletClient.chain.id);
+    if (isNativeToken(order.srcTokenAddress)) {
+      // Native token transfer
+      to = order.globalAddress as `0x${string}`;
+      value = BigInt(order.srcAmount);
+    } else {
+      // ERC20 token transfer - encode the transfer function call using proper ABI
+      txData = encodeFunctionData({
+        abi: erc20Abi,
+        functionName: "transfer",
+        args: [order.globalAddress as `0x${string}`, BigInt(order.srcAmount)],
+      });
+      to = order.srcTokenAddress as `0x${string}`;
+      value = BigInt(0);
+    }
 
-      const signer = currentWalletClient.account;
-      if (!signer) {
-        toast.error("No account connected");
-        return;
-      }
+    const txHash = await switchChainAndExecute(order.srcChain, { to, data: txData, value });
 
-      // Send transaction
-      if (isNativeToken(order.srcTokenAddress)) {
-        const hash = await currentWalletClient.sendTransaction({
-          account: signer,
-          chain: EVM_CHAINS[order.srcChain].viem,
-          to: order.globalAddress as `0x${string}`,
-          value: BigInt(order.srcAmount),
-        });
-        setTxHash(hash);
-      } else {
-        const hash = await currentWalletClient.writeContract({
-          account: signer,
-          chain: EVM_CHAINS[order.srcChain].viem,
-          address: order.srcTokenAddress as `0x${string}`,
-          abi: erc20Abi,
-          functionName: "transfer",
-          args: [order.globalAddress as Address, BigInt(order.srcAmount)],
-        });
-        setTxHash(hash);
-      }
-    },
-    [order],
-  );
+    if (txHash) {
+      setTxHash(txHash as `0x${string}`);
+    }
+  }, [order, switchChainAndExecute]);
 
   // Main payment handler that triggers chain switch and payment
   const handlePayment = async () => {
@@ -289,7 +275,8 @@ export const OrderDetails = memo(function OrderDetails({
     if (order.srcChain === RELAY_SOLANA_MAINNET_CHAIN_ID) {
       await initiatePhantomTransfer(order.srcAmount, order.srcTokenAddress, order.globalAddress);
     } else {
-      await switchChainAndExecute(order.srcChain, handlePaymentProcess);
+      // Use unified payment process for both EOA and AA wallets
+      await handleUnifiedPaymentProcess();
     }
   };
 

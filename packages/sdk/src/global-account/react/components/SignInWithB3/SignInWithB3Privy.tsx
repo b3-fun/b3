@@ -46,7 +46,7 @@ export function SignInWithB3Privy({ onSuccess, onError, partnerId, chain }: Sign
         await logout();
         setIsAuthenticated(false);
       } finally {
-        debug("@@setIsAuthenticating:false:7");
+        debug("setIsAuthenticating:false:7");
         setIsAuthenticating(false);
       }
     }

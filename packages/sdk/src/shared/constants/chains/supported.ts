@@ -66,3 +66,14 @@ export const b3Testnet = _b3Testnet;
 const _baseMainnet = supportedChains.find(chain => chain.id === 8453);
 invariant(_baseMainnet, "Base mainnet chain not found in supported chains");
 export const baseMainnet = _baseMainnet;
+
+/**
+ * Get a Thirdweb chain by chain ID from supportedChainsTW
+ */
+export function getThirdwebChain(chainId: number): ThirdwebChain {
+  const chain = supportedChainsTW.find(c => c.id === chainId);
+  if (!chain) {
+    throw new Error(`Chain ${chainId} is not supported`);
+  }
+  return chain;
+}

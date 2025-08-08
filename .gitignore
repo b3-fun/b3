@@ -22,3 +22,5 @@ doppler.yaml
 .cursor
 
 .turbo
+
+.env*
