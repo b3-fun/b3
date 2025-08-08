@@ -48,6 +48,15 @@ module.exports = {
         "b3-react-popover": "hsl(var(--b3-react-popover))",
         "b3-react-popover-foreground": "hsl(var(--b3-react-popover-foreground))",
 
+        "b3-foreground-muted": "#676767",
+        "b3-primary-blue": "#3268EF",
+        "b3-primary-wash": "#E5EAF8",
+        "b3-grey": "#272727",
+        "b3-line": "#E9E9E9",
+        "b3-white": "#F9F9F9",
+        "b3-positive": "#00C76D",
+        "b3-negative": "#FF4343",
+
         // Anyspend, we get this from apps/anyspend-web/tailwind.config.ts
         "as-primary": "hsl(var(--as-primary))",
         "as-content-primary": "hsl(var(--as-text-primary))",

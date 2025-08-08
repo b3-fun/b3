@@ -15,7 +15,12 @@ import {
   useProfile,
   useRemoveSessionKey,
 } from "@b3dotfun/sdk/global-account/react";
+import { BankIcon } from "@b3dotfun/sdk/global-account/react/components/icons/BankIcon";
+import { SignOutIcon } from "@b3dotfun/sdk/global-account/react/components/icons/SignOutIcon";
+import { SwapIcon } from "@b3dotfun/sdk/global-account/react/components/icons/SwapIcon";
+import { formatUsername } from "@b3dotfun/sdk/shared/utils";
 import { formatNumber } from "@b3dotfun/sdk/shared/utils/formatNumber";
+import { Loader2, Pencil, Triangle } from "lucide-react";
 import { useState } from "react";
 import { Chain } from "thirdweb";
 import { useActiveAccount } from "thirdweb/react";
@@ -93,22 +98,27 @@ export function ManageAccount({
     <div className="flex flex-col gap-6">
       {/* Profile Section */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <img
-            src={profile?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${account?.address}`}
-            alt="Profile"
-            className="h-12 w-12 rounded-full bg-black"
-          />
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            {profile?.avatar ? (
+              <img src={profile?.avatar} alt="Profile" className="size-24 rounded-full" />
+            ) : (
+              <div className="bg-b3-primary-wash size-24 rounded-full" />
+            )}
+            <div className="bg-b3-grey absolute -bottom-1 -right-1 flex size-8 items-center justify-center rounded-full border-4 border-white">
+              <Pencil size={16} className="text-b3-white" />
+            </div>
+          </div>
           <div>
-            <h2 className="text-base font-semibold text-gray-900 dark:text-white">
-              {profile?.displayName || profile?.name || "Unnamed User"}
+            <h2 className="text-b3-grey text-xl font-semibold">
+              {profile?.displayName || formatUsername(profile?.name || "")}
             </h2>
-            <span className="text-sm text-gray-500">{profile?.name ? `@${profile.name}` : ""}</span>
+            <span className="text-b3-foreground-muted">{formatUsername(profile?.name || "")}</span>
           </div>
         </div>
-        <div className="flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1.5 dark:bg-gray-800">
-          <span className="font-mono text-sm text-gray-600 dark:text-gray-400">
-            {centerTruncate(eoaAddress || account?.address || "", 4)}
+        <div className="bg-b3-line flex h-11 items-center gap-2 rounded-full px-4">
+          <span className="text-b3-grey font-neue-montreal-semibold">
+            {centerTruncate(eoaAddress || account?.address || "", 3)}
           </span>
           <CopyToClipboard text={eoaAddress || account?.address || ""} />
         </div>
@@ -117,8 +127,7 @@ export function ManageAccount({
       {/* Quick Actions */}
       <div className="grid grid-cols-2 gap-3">
         <Button
-          variant="outline"
-          className="w-full bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700"
+          className="bg-b3-primary-wash hover:bg-b3-primary-wash/70 h-[84px] w-full flex-col items-start gap-2 rounded-2xl"
           onClick={() => {
             setB3ModalOpen(true);
             setB3ModalContentType({
@@ -128,12 +137,11 @@ export function ManageAccount({
             });
           }}
         >
-          <span className="mr-2">💰</span>
-          Deposit
+          <BankIcon size={24} className="text-b3-primary-blue shrink-0" />
+          <div className="text-b3-grey font-neue-montreal-semibold">Deposit</div>
         </Button>
         <Button
-          variant="outline"
-          className="w-full bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700"
+          className="bg-b3-primary-wash hover:bg-b3-primary-wash/70 flex h-[84px] w-full flex-col items-start gap-2 rounded-2xl"
           onClick={() => {
             setB3ModalOpen(true);
             setB3ModalContentType({
@@ -142,29 +150,36 @@ export function ManageAccount({
             });
           }}
         >
-          <span className="mr-2">🔄</span>
-          Swap
+          <SwapIcon size={24} className="text-b3-primary-blue" />
+          <div className="text-b3-grey font-neue-montreal-semibold">Swap</div>
         </Button>
       </div>
 
       {/* Balance Section */}
       <div className="space-y-4">
-        <h3 className="text-sm font-medium text-gray-900 dark:text-white">Balance</h3>
+        <h3 className="text-b3-grey font-neue-montreal-semibold">Balance</h3>
 
         {/* B3 Balance */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="https://cdn.b3.fun/b3-coin-3d.png" alt="B3" className="h-8 w-8" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-full">
+              <img src="https://cdn.b3.fun/b3-coin-3d.png" alt="B3" className="size-10" />
+            </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-medium">B3</span>
-                <span className="text-sm text-gray-500">{b3Balance?.formattedTotal || "0.00"} B3</span>
+                <span className="text-b3-grey font-neue-montreal-semibold">B3</span>
               </div>
-              <div className="text-sm">
-                <span className="text-gray-900 dark:text-white">${b3Balance?.balanceUsdFormatted}</span>
-                {/* TODO: Add price change */}
-                {/* <span className="ml-2 text-green-500">+0.27%</span> */}
+              <div className="text-b3-negative font-neue-montreal-medium text-sm">
+                {b3Balance?.formattedTotal || "0.00"} B3
               </div>
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-b3-grey font-neue-montreal-semibold">${b3Balance?.balanceUsdFormatted || "0.00"}</div>
+            <div className="flex items-center gap-1">
+              <Triangle className="text-b3-positive fill-b3-positive size-3" />
+              {/* TODO: Add price change */}
+              <span className="text-b3-positive font-neue-montreal-medium text-sm">10.21%</span>
             </div>
           </div>
         </div>
@@ -172,47 +187,48 @@ export function ManageAccount({
         {/* ETH Balance */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="https://cdn.b3.fun/ethereum.svg" alt="ETH" className="h-8 w-8" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-full">
+              <img src="https://cdn.b3.fun/ethereum.svg" alt="ETH" className="size-10" />
+            </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-medium">Ethereum</span>
-                <span className="text-sm text-gray-500">{nativeBalance?.formattedTotal || "0.00"} ETH</span>
+                <span className="text-b3-grey font-neue-montreal-semibold">Ethereum</span>
               </div>
-              <div className="text-sm">
-                <span className="text-gray-900 dark:text-white">${nativeBalance?.formattedTotalUsd}</span>
-                {/* TODO: Add price change */}
-                {/* <span className="ml-2 text-red-500">-2.45%</span> */}
+              <div className="text-b3-foreground-muted font-neue-montreal-medium text-sm">
+                {nativeBalance?.formattedTotal || "0.00"} ETH
               </div>
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-b3-grey font-neue-montreal-semibold">
+              ${nativeBalance?.formattedTotalUsd || "0.00"}
+            </div>
+            <div className="flex items-center gap-2">
+              <Triangle className="text-b3-negative fill-b3-negative size-3" />
+              {/* TODO: Add price change */}
+              <span className="text-b3-negative font-neue-montreal-medium text-sm">2.40%</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Global Account Info */}
-      <div className="flex items-center justify-between rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-        <div className="flex items-center gap-3">
-          <img src="https://cdn.b3.fun/b3_logo.svg" alt="B3" className="h-6 w-6" />
-          <div>
-            <h3 className="font-medium text-gray-900 dark:text-white">Global Account</h3>
-            <p className="text-sm text-gray-500">Your universal account for all B3-powered apps</p>
+      <div className="border-b3-line flex items-center justify-between rounded-2xl border p-4">
+        <div className="">
+          <div className="flex items-center gap-2">
+            <img src="https://cdn.b3.fun/b3_logo.svg" alt="B3" className="h-4" />
+            <h3 className="font-neue-montreal-semibold text-b3-grey">Global Account</h3>
           </div>
+
+          <p className="text-b3-foreground-muted font-neue-montreal-medium mt-2 text-sm">
+            Your universal account for all B3-powered apps
+          </p>
         </div>
         <button
-          className="text-gray-400 hover:text-gray-600"
-          onClick={() => {
-            // You can add profile edit functionality here
-            alert("Profile settings coming soon");
-          }}
+          className="text-b3-grey hover:text-b3-grey/80 hover:bg-b3-line border-b3-line flex size-12 items-center justify-center rounded-full border"
+          onClick={onLogoutEnhanced}
         >
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="M7 17L17 7M17 7H7M17 7V17"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          {logoutLoading ? <Loader2 className="animate-spin" /> : <SignOutIcon size={16} className="text-b3-grey" />}
         </button>
       </div>
     </div>
@@ -271,50 +287,39 @@ export function ManageAccount({
     <div className="flex flex-col rounded-xl bg-white dark:bg-gray-900">
       <div className="flex-1">
         <TabsPrimitive defaultValue={activeTab} onValueChange={setActiveTab}>
-          <TabsListPrimitive className="flex w-full rounded-t-xl bg-gray-100 p-1 dark:bg-gray-800">
+          <TabsListPrimitive className="font-neue-montreal-semibold text-b3-grey flex h-8 w-full items-start justify-start gap-8 border-0 text-xl md:p-4">
             <TabTriggerPrimitive
               value="balance"
-              className="flex-1 rounded-lg px-4 py-2 text-sm font-medium text-gray-600 transition-colors data-[state=active]:bg-white data-[state=active]:text-gray-900 dark:text-gray-400 dark:data-[state=active]:bg-gray-900 dark:data-[state=active]:text-white"
+              className="data-[state=active]:text-b3-primary-blue data-[state=active]:border-b-b3-primary-blue flex-none rounded-none border-0 p-0 pb-1 text-xl leading-none tracking-wide transition-colors data-[state=active]:border-b data-[state=active]:bg-white md:pb-4"
             >
               Overview
             </TabTriggerPrimitive>
             <TabTriggerPrimitive
               value="assets"
-              className="flex-1 rounded-lg px-4 py-2 text-sm font-medium text-gray-600 transition-colors data-[state=active]:bg-white data-[state=active]:text-gray-900 dark:text-gray-400 dark:data-[state=active]:bg-gray-900 dark:data-[state=active]:text-white"
+              className="data-[state=active]:text-b3-primary-blue data-[state=active]:border-b-b3-primary-blue flex-none rounded-none border-0 p-0 pb-1 text-xl leading-none tracking-wide transition-colors data-[state=active]:border-b data-[state=active]:bg-white md:pb-4"
             >
               Mints
             </TabTriggerPrimitive>
             <TabTriggerPrimitive
               value="apps"
-              className="flex-1 rounded-lg px-4 py-2 text-sm font-medium text-gray-600 transition-colors data-[state=active]:bg-white data-[state=active]:text-gray-900 dark:text-gray-400 dark:data-[state=active]:bg-gray-900 dark:data-[state=active]:text-white"
+              className="data-[state=active]:text-b3-primary-blue data-[state=active]:border-b-b3-primary-blue flex-none rounded-none border-0 p-0 pb-1 text-xl leading-none tracking-wide transition-colors data-[state=active]:border-b data-[state=active]:bg-white md:pb-4"
             >
               Apps
             </TabTriggerPrimitive>
           </TabsListPrimitive>
 
-          <TabsContentPrimitive value="balance" className="p-4">
+          <TabsContentPrimitive value="balance" className="pt-4 md:p-4">
             <BalanceContent />
           </TabsContentPrimitive>
 
-          <TabsContentPrimitive value="assets" className="p-4">
+          <TabsContentPrimitive value="assets" className="pt-4 md:p-4">
             <AssetsContent />
           </TabsContentPrimitive>
 
-          <TabsContentPrimitive value="apps" className="p-4">
+          <TabsContentPrimitive value="apps" className="pt-4 md:p-4">
             <AppsContent />
           </TabsContentPrimitive>
         </TabsPrimitive>
-      </div>
-
-      <div className="border-t border-gray-200 p-6 dark:border-gray-800">
-        <Button
-          variant="outline"
-          size="lg"
-          className="w-full justify-center border-gray-200 text-gray-600 hover:text-gray-900 dark:border-gray-800 dark:text-gray-400 dark:hover:text-white"
-          onClick={onLogoutEnhanced}
-        >
-          {logoutLoading ? "Logging out..." : "Disconnect from apps"}
-        </Button>
       </div>
     </div>
   );
