@@ -49,7 +49,7 @@ export default defineConfig(({ command: _command, mode }) => {
       allowedHosts: ["global-accounts-production.up.railway.app", "global.b3.fun"],
     },
     optimizeDeps: {
-      include: ["@b3dotfun/sdk"],
+      include: [],
       exclude: [],
     },
     resolve: {

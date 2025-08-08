@@ -8,10 +8,11 @@ import { prepareTransaction, sendTransaction as twSendTransaction } from "thirdw
 import { useSwitchChain, useWalletClient } from "wagmi";
 import { useB3 } from "../components";
 import { useAccountWallet } from "./useAccountWallet";
+import app from "@b3dotfun/sdk/global-account/app";
 
 export interface UnifiedTransactionParams {
-  to: `0x${string}`;
-  data?: `0x${string}`;
+  to: string;
+  data?: string;
   value: bigint;
 }
 
@@ -45,7 +46,7 @@ export function useUnifiedChainSwitchAndExecute() {
           account: signer,
           chain: walletClient.chain,
           to: params.to,
-          data: params.data,
+          data: params.data as `0x${string}`,
           value: params.value,
         });
 
@@ -121,10 +122,21 @@ export function useUnifiedChainSwitchAndExecute() {
           client,
           chain,
           to: params.to,
-          data: params.data,
+          data: params.data as `0x${string}`,
           value: params.value,
         });
 
+        // Create transaction intent
+        toast.info("Creating transaction intent…");
+        await app.service("global-accounts-intents").create({
+          partnerId: String(process.env.PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID),
+          chainId: targetChainId,
+          to: params.to,
+          data: params.data || "0x",
+          value: params.value.toString(),
+        });
+
+        toast.info("Sending transaction…");
         const sendTxResponse = await twSendTransaction({
           account: aaAccount,
           transaction,
