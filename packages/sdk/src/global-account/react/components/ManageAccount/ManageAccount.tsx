@@ -169,7 +169,7 @@ export function ManageAccount({
               <div className="flex items-center gap-2">
                 <span className="text-b3-grey font-neue-montreal-semibold">B3</span>
               </div>
-              <div className="text-b3-negative font-neue-montreal-medium text-sm">
+              <div className="text-b3-foreground-muted font-neue-montreal-medium text-sm">
                 {b3Balance?.formattedTotal || "0.00"} B3
               </div>
             </div>
