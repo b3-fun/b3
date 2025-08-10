@@ -1,11 +1,11 @@
 import type { Address, Hex } from "viem";
 
 export type TokenDetails = {
-    name: string;
-    symbol: string;
-    decimals: number;
-    totalSupply: bigint;
-    owner: Address;
+  name: string;
+  symbol: string;
+  decimals: number;
+  totalSupply: bigint;
+  owner: Address;
 };
 
 // From BondkitTokenFactoryABI for deployBondkitToken function
@@ -65,7 +65,7 @@ export enum TokenStatus {
   BondingPhase = 1,
   DexPhase = 2,
   Migrated = 3,
-} 
+}
 
 export interface GetTransactionHistoryOptions {
   userAddress?: Address;
@@ -95,4 +95,4 @@ export interface TransactionResponse {
   limit: number;
   skip: number;
   data: Transaction[];
-} 
+}

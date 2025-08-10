@@ -8,14 +8,7 @@ import type {
   WalletClient,
   Transport,
 } from "viem";
-import {
-  createPublicClient,
-  createWalletClient,
-  custom,
-  getContract,
-  http,
-  parseEther,
-} from "viem";
+import { createPublicClient, createWalletClient, custom, getContract, http, parseEther } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { BondkitTokenABI } from "./abis";
 import { getConfig } from "./config";
@@ -29,14 +22,10 @@ import type {
 import { base } from "viem/chains";
 
 // Event ABI snippets for decoding
-const boughtEventAbi = BondkitTokenABI.find(
-  (item) => item.type === "event" && item.name === "BondingCurveBuy"
-);
-const soldEventAbi = BondkitTokenABI.find(
-  (item) => item.type === "event" && item.name === "BondingCurveSell"
-);
+const boughtEventAbi = BondkitTokenABI.find(item => item.type === "event" && item.name === "BondingCurveBuy");
+const soldEventAbi = BondkitTokenABI.find(item => item.type === "event" && item.name === "BondingCurveSell");
 const dexMigrationEventAbi = BondkitTokenABI.find(
-  (item) => item.type === "event" && item.name === "BondkitTokenMigrated"
+  item => item.type === "event" && item.name === "BondkitTokenMigrated",
 );
 
 // Define a type for the options that can be passed to executeWrite
@@ -96,16 +85,12 @@ export class BondkitToken {
 
   public connect(provider?: EIP1193Provider): boolean {
     try {
-      const transport: Transport = provider
-        ? custom(provider)
-        : http(this.rpcUrl);
+      const transport: Transport = provider ? custom(provider) : http(this.rpcUrl);
 
       this.walletClientInstance = createWalletClient({
         chain: this.chain,
         transport,
-        account: this.walletKey
-          ? privateKeyToAccount(this.walletKey)
-          : undefined,
+        account: this.walletKey ? privateKeyToAccount(this.walletKey) : undefined,
       });
 
       this.publicClient = createPublicClient({
@@ -126,9 +111,7 @@ export class BondkitToken {
   }
 
   private async handleError(error: any, context?: string): Promise<never> {
-    const defaultMessage = context
-      ? `Error in ${context}:`
-      : "An error occurred:";
+    const defaultMessage = context ? `Error in ${context}:` : "An error occurred:";
     console.error(defaultMessage, error);
     // TODO: Add more specific error checks based on BondkitTokenABI error types if needed
     throw error;
@@ -181,17 +164,11 @@ export class BondkitToken {
     }
   }
 
-  public async allowance(
-    owner: Address,
-    spender: Address
-  ): Promise<bigint | undefined> {
+  public async allowance(owner: Address, spender: Address): Promise<bigint | undefined> {
     try {
       return await this.contract.read.allowance([owner, spender]);
     } catch (error) {
-      console.warn(
-        `Error fetching allowance for owner ${owner} and spender ${spender}:`,
-        error
-      );
+      console.warn(`Error fetching allowance for owner ${owner} and spender ${spender}:`, error);
       return undefined;
     }
   }
@@ -200,10 +177,7 @@ export class BondkitToken {
     try {
       return await this.contract.read.owner();
     } catch (error) {
-      console.warn(
-        "Error fetching token owner or 'owner' function might not exist:",
-        error
-      );
+      console.warn("Error fetching token owner or 'owner' function might not exist:", error);
       return undefined;
     }
   }
@@ -217,12 +191,7 @@ export class BondkitToken {
         this.totalSupply(),
         this.owner(),
       ]);
-      if (
-        name === undefined ||
-        symbol === undefined ||
-        decimals === undefined ||
-        totalSupply === undefined
-      ) {
+      if (name === undefined || symbol === undefined || decimals === undefined || totalSupply === undefined) {
         console.warn("Failed to retrieve all essential token details.");
         return undefined;
       }
@@ -268,12 +237,9 @@ export class BondkitToken {
     }
   }
 
-  public async getAmountOfTokensToBuy(
-    ethAmount: bigint | string
-  ): Promise<bigint | undefined> {
+  public async getAmountOfTokensToBuy(ethAmount: bigint | string): Promise<bigint | undefined> {
     try {
-      const value =
-        typeof ethAmount === "string" ? parseEther(ethAmount) : ethAmount;
+      const value = typeof ethAmount === "string" ? parseEther(ethAmount) : ethAmount;
       return await this.contract.read.getAmountOfTokensToBuy([value]);
     } catch (e) {
       console.warn("Error in getAmountOfTokensToBuy:", e);
@@ -281,9 +247,7 @@ export class BondkitToken {
     }
   }
 
-  public async getAmountOfEthToSell(
-    tokenAmount: bigint
-  ): Promise<bigint | undefined> {
+  public async getAmountOfEthToSell(tokenAmount: bigint): Promise<bigint | undefined> {
     try {
       return await this.contract.read.getAmountOfEthToSell([tokenAmount]);
     } catch (e) {
@@ -292,9 +256,7 @@ export class BondkitToken {
     }
   }
 
-  public async getCurrentBondingCurvePricePerToken(): Promise<
-    bigint | undefined
-  > {
+  public async getCurrentBondingCurvePricePerToken(): Promise<bigint | undefined> {
     try {
       return await this.contract.read.getCurrentBondingCurvePricePerToken();
     } catch (e) {
@@ -323,13 +285,10 @@ export class BondkitToken {
 
   public async getPaginatedHolders(
     startIndex: bigint,
-    count = 1000n
+    count = 1000n,
   ): Promise<{ address: Address; balance: bigint }[]> {
     try {
-      const response = await this.contract.read.getPaginatedHolders([
-        startIndex,
-        count,
-      ]);
+      const response = await this.contract.read.getPaginatedHolders([startIndex, count]);
       const holders = response[0] as Address[];
       const balances = response[1] as bigint[];
 
@@ -352,8 +311,7 @@ export class BondkitToken {
     | undefined
   > {
     try {
-      const [progress, raised, threshold] =
-        await this.contract.read.getBondingProgressPercent();
+      const [progress, raised, threshold] = await this.contract.read.getBondingProgressPercent();
       return {
         progress: Number(progress) / 100,
         raised: Number(raised),
@@ -366,9 +324,7 @@ export class BondkitToken {
   }
 
   // --- Transaction History --- //
-  public async getTransactionHistory(
-    options?: GetTransactionHistoryOptions
-  ): Promise<TransactionResponse | undefined> {
+  public async getTransactionHistory(options?: GetTransactionHistoryOptions): Promise<TransactionResponse | undefined> {
     try {
       const { userAddress, type, from, to, limit, offset } = options || {};
       const response = await fetch(this.apiEndpoint, {
@@ -405,18 +361,13 @@ export class BondkitToken {
   private async executeWrite(
     functionName: string,
     args: any[],
-    options?: ExecuteWriteOptions
+    options?: ExecuteWriteOptions,
   ): Promise<Hex | undefined> {
     if (!this.walletClientInstance.account && !this.walletKey) {
-      throw new Error(
-        "Wallet key not set or client not connected for write operation."
-      );
+      throw new Error("Wallet key not set or client not connected for write operation.");
     }
-    const accountToUse = this.walletKey
-      ? privateKeyToAccount(this.walletKey)
-      : this.walletClientInstance.account;
-    if (!accountToUse)
-      throw new Error("Account for transaction could not be determined.");
+    const accountToUse = this.walletKey ? privateKeyToAccount(this.walletKey) : this.walletClientInstance.account;
+    if (!accountToUse) throw new Error("Account for transaction could not be determined.");
 
     try {
       let maxFee = options?.maxFeePerGas;
@@ -432,10 +383,7 @@ export class BondkitToken {
             priorityFee = feeEstimates.maxPriorityFeePerGas;
           }
         } catch (feeError) {
-          console.warn(
-            "Could not estimate fees, will rely on wallet defaults or provided values:",
-            feeError
-          );
+          console.warn("Could not estimate fees, will rely on wallet defaults or provided values:", feeError);
           maxFee = maxFee ?? undefined;
           priorityFee = priorityFee ?? undefined;
         }
@@ -445,17 +393,12 @@ export class BondkitToken {
         account: accountToUse,
         chain: this.chain,
       };
-      if (options?.value !== undefined)
-        transactionOptions.value = options.value;
+      if (options?.value !== undefined) transactionOptions.value = options.value;
       if (options?.gas !== undefined) transactionOptions.gas = options.gas;
       if (maxFee !== undefined) transactionOptions.maxFeePerGas = maxFee;
-      if (priorityFee !== undefined)
-        transactionOptions.maxPriorityFeePerGas = priorityFee;
+      if (priorityFee !== undefined) transactionOptions.maxPriorityFeePerGas = priorityFee;
 
-      const hash = await (this.contract.write as any)[functionName](
-        args,
-        transactionOptions
-      );
+      const hash = await (this.contract.write as any)[functionName](args, transactionOptions);
       return hash;
     } catch (error) {
       return this.handleError(error, functionName);
@@ -464,24 +407,16 @@ export class BondkitToken {
 
   public async initialize(
     config: BondkitTokenInitializationConfig,
-    options?: ExecuteWriteOptions
+    options?: ExecuteWriteOptions,
   ): Promise<Hex | undefined> {
     return this.executeWrite("initialize", [config], options);
   }
 
-  public async transfer(
-    to: Address,
-    amount: bigint,
-    options?: ExecuteWriteOptions
-  ): Promise<Hex | undefined> {
+  public async transfer(to: Address, amount: bigint, options?: ExecuteWriteOptions): Promise<Hex | undefined> {
     return this.executeWrite("transfer", [to, amount], options);
   }
 
-  public async approve(
-    spender: Address,
-    amount: bigint,
-    options?: ExecuteWriteOptions
-  ): Promise<Hex | undefined> {
+  public async approve(spender: Address, amount: bigint, options?: ExecuteWriteOptions): Promise<Hex | undefined> {
     return this.executeWrite("approve", [spender, amount], options);
   }
 
@@ -489,7 +424,7 @@ export class BondkitToken {
     from: Address,
     to: Address,
     amount: bigint,
-    options?: ExecuteWriteOptions
+    options?: ExecuteWriteOptions,
   ): Promise<Hex | undefined> {
     return this.executeWrite("transferFrom", [from, to, amount], options);
   }
@@ -498,45 +433,30 @@ export class BondkitToken {
   public async buy(
     minTokensOut: bigint,
     ethAmount: bigint | string,
-    options?: ExecuteWriteOptions
+    options?: ExecuteWriteOptions,
   ): Promise<Hex | undefined> {
-    if (!boughtEventAbi)
-      console.warn("Bought event ABI not found for event decoding.");
-    const value =
-      typeof ethAmount === "string" ? parseEther(ethAmount) : ethAmount;
+    if (!boughtEventAbi) console.warn("Bought event ABI not found for event decoding.");
+    const value = typeof ethAmount === "string" ? parseEther(ethAmount) : ethAmount;
     return this.executeWrite("buy", [minTokensOut], { ...options, value });
   }
 
   /** Sell tokens for ETH. */
-  public async sell(
-    tokenAmount: bigint,
-    minEthOut: bigint,
-    options?: ExecuteWriteOptions
-  ): Promise<Hex | undefined> {
-    if (!soldEventAbi)
-      console.warn("Sold event ABI not found for event decoding.");
+  public async sell(tokenAmount: bigint, minEthOut: bigint, options?: ExecuteWriteOptions): Promise<Hex | undefined> {
+    if (!soldEventAbi) console.warn("Sold event ABI not found for event decoding.");
     return this.executeWrite("sell", [tokenAmount, minEthOut], options);
   }
 
   /** Migrate liquidity to DEX. Only callable by owner/migrationAdmin based on typical patterns. */
-  public async migrateToDex(
-    options?: ExecuteWriteOptions
-  ): Promise<Hex | undefined> {
-    if (!dexMigrationEventAbi)
-      console.warn("DexMigration event ABI not found for event decoding.");
+  public async migrateToDex(options?: ExecuteWriteOptions): Promise<Hex | undefined> {
+    if (!dexMigrationEventAbi) console.warn("DexMigration event ABI not found for event decoding.");
     return this.executeWrite("migrateToDex", [], options);
   }
 
-  public async transferTokenOwnership(
-    newOwner: Address,
-    options?: ExecuteWriteOptions
-  ): Promise<Hex | undefined> {
+  public async transferTokenOwnership(newOwner: Address, options?: ExecuteWriteOptions): Promise<Hex | undefined> {
     return this.executeWrite("transferOwnership", [newOwner], options);
   }
 
-  public async renounceTokenOwnership(
-    options?: ExecuteWriteOptions
-  ): Promise<Hex | undefined> {
+  public async renounceTokenOwnership(options?: ExecuteWriteOptions): Promise<Hex | undefined> {
     return this.executeWrite("renounceOwnership", [], options);
   }
 

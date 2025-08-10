@@ -10,4 +10,4 @@ export * from "./constants";
 export * from "./types";
 
 // ABIs
-export * from "./abis"; 
+export * from "./abis";

@@ -1,9 +1,6 @@
 import type { Address } from "viem";
 import { base, type Chain } from "viem/chains";
-import {
-  BaseBondkitTokenFactoryContractAddress,
-  BaseMainnetRpcUrl,
-} from "./constants";
+import { BaseBondkitTokenFactoryContractAddress, BaseMainnetRpcUrl } from "./constants";
 
 export interface Config {
   chain: Chain;
@@ -25,7 +22,5 @@ export const getConfig = (chainId: number): Config => {
   if (chainId === base.id) {
     return baseMainnetConfig;
   }
-  throw new Error(
-    `Unsupported chainId: ${chainId}. This SDK is configured for Base (Chain ID: ${base.id}) only.`
-  );
+  throw new Error(`Unsupported chainId: ${chainId}. This SDK is configured for Base (Chain ID: ${base.id}) only.`);
 };
