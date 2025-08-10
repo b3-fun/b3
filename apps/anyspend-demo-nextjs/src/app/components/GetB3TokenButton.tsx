@@ -1,5 +1,5 @@
-import { B3_TOKEN } from "@b3dotfun/sdk/anyspend";
-import { useModalStore } from "@b3dotfun/sdk/global-account/react";
+import { B3_TOKEN } from '@b3dotfun/sdk/anyspend';
+import { useModalStore } from '@b3dotfun/sdk/global-account/react';
 
 export function GetB3TokenButton() {
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
@@ -10,7 +10,7 @@ export function GetB3TokenButton() {
       onClick={() => {
         setB3ModalOpen(true);
         setB3ModalContentType({
-          type: "anySpend",
+          type: 'anySpend',
           destinationTokenAddress: B3_TOKEN.address,
           destinationTokenChainId: B3_TOKEN.chainId,
         });

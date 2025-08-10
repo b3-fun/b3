@@ -1,4 +1,4 @@
-import { BondkitToken } from "@b3dotfun/bondkit";
+import { BondkitToken } from "../../../bondkit";
 import {
   Button,
   GlareCardRounded,

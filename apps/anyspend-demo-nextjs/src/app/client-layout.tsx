@@ -1,9 +1,10 @@
-"use client";
+'use client';
 
-import { AnyspendProvider } from "@b3dotfun/sdk/anyspend/react";
-import { B3DynamicModal, B3Provider, StyleRoot } from "@b3dotfun/sdk/global-account/react";
+import React from 'react';
+import { AnyspendProvider } from '@b3dotfun/sdk/anyspend/react';
+import { B3DynamicModal, B3Provider, StyleRoot } from '@b3dotfun/sdk/global-account/react';
 
-import "@b3dotfun/sdk/index.css";
+import '@b3dotfun/sdk/index.css';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   return (

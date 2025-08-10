@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import { SignInWithB3, useAccountWallet, useModalStore, useProfile } from "@b3dotfun/sdk/global-account/react";
-import { cn } from "@b3dotfun/sdk/shared/utils/cn";
-import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
-import { b3 } from "viem/chains";
+import { SignInWithB3, useAccountWallet, useModalStore, useProfile } from '@b3dotfun/sdk/global-account/react';
+import { cn } from '@b3dotfun/sdk/shared/utils/cn';
+import { shortenAddress } from '@b3dotfun/sdk/shared/utils/formatAddress';
+import { b3 } from 'viem/chains';
 
 export function SignInButton() {
   const { address, wallet } = useAccountWallet();
   const profile = useProfile({ address });
-  const ensName = profile.data?.name?.replace(/\.b3\.fun/g, "");
+  const ensName = profile.data?.name?.replace(/\.b3\.fun/g, '');
   const { setB3ModalOpen, setB3ModalContentType } = useModalStore();
 
   const b3Config = {
     chain: {
       ...b3,
-      rpc: "https://mainnet-rpc.b3.fun",
-      blockExplorers: [{ name: "B3 Explorer", url: "https://explorer.b3.fun/" }],
+      rpc: 'https://mainnet-rpc.b3.fun',
+      blockExplorers: [{ name: 'B3 Explorer', url: 'https://explorer.b3.fun/' }],
       testnet: undefined,
     },
     partnerId: String(process.env.NEXT_PUBLIC_THIRDWEB_PARTNER_ID),
@@ -27,7 +27,7 @@ export function SignInButton() {
   const handleManageAccount = () => {
     setB3ModalContentType({
       ...b3Config,
-      type: "manageAccount",
+      type: 'manageAccount',
     });
     setB3ModalOpen(true);
   };
@@ -40,9 +40,9 @@ export function SignInButton() {
             onClick={handleManageAccount}
             type="button"
             className={cn(
-              "relative flex items-center gap-2 rounded-full bg-black/80 px-4 py-2",
-              "text-sm font-medium text-white hover:bg-black/60",
-              "ring-1 ring-white/20 backdrop-blur",
+              'relative flex items-center gap-2 rounded-full bg-black/80 px-4 py-2',
+              'text-sm font-medium text-white hover:bg-black/60',
+              'ring-1 ring-white/20 backdrop-blur',
             )}
           >
             <div className="relative flex items-center gap-2">

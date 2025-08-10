@@ -285,7 +285,7 @@ export class BondkitToken {
 
   public async getPaginatedHolders(
     startIndex: bigint,
-    count = 1000n,
+    count = BigInt(1000),
   ): Promise<{ address: Address; balance: bigint }[]> {
     try {
       const response = await this.contract.read.getPaginatedHolders([startIndex, count]);

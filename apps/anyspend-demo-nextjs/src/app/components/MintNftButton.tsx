@@ -1,6 +1,6 @@
-import { components } from "@b3dotfun/sdk/anyspend";
-import { useModalStore } from "@b3dotfun/sdk/global-account/react";
-import { base } from "viem/chains";
+import { components } from '@b3dotfun/sdk/anyspend';
+import { useModalStore } from '@b3dotfun/sdk/global-account/react';
+import { base } from 'viem/chains';
 
 export function MintNftButton() {
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
@@ -9,33 +9,33 @@ export function MintNftButton() {
   const handleMint = async () => {
     const usdcOnBase = {
       chainId: base.id,
-      address: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
       decimals: 6,
-      name: "USD Coin",
-      symbol: "USDC",
+      name: 'USD Coin',
+      symbol: 'USDC',
       metadata: {
-        logoURI: "https://b3.fun/logo.png",
+        logoURI: 'https://b3.fun/logo.png',
       },
     };
     // Generate random token ID between 0 and 6
     const randomTokenId = Math.floor(Math.random() * 7);
 
-    const nftContract: components["schemas"]["NftContract"] = {
+    const nftContract: components['schemas']['NftContract'] = {
       chainId: base.id,
-      contractAddress: "0xe04074c294d0Db90F0ffBC60fa61b48672C91965",
-      price: "1990000", // 1.99 USDC (6 decimals)
-      priceFormatted: "1.99",
+      contractAddress: '0xe04074c294d0Db90F0ffBC60fa61b48672C91965',
+      price: '1990000', // 1.99 USDC (6 decimals)
+      priceFormatted: '1.99',
       currency: usdcOnBase,
-      name: "Mystery B3kemon",
-      description: "Summon a mysterious B3kemon creature!",
+      name: 'Mystery B3kemon',
+      description: 'Summon a mysterious B3kemon creature!',
       tokenId: randomTokenId,
-      type: "erc1155",
-      imageUrl: "",
+      type: 'erc1155',
+      imageUrl: '',
     };
 
     setB3ModalOpen(true);
     setB3ModalContentType({
-      type: "anySpendNft",
+      type: 'anySpendNft',
       nftContract,
     });
   };
