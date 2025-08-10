@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { AnyspendProvider } from "@b3dotfun/sdk/anyspend/react";
 import { B3DynamicModal, B3Provider, StyleRoot } from "@b3dotfun/sdk/global-account/react";
 
