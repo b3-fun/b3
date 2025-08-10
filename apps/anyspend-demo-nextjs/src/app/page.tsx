@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { BondKitButton } from './components/BondKitButton';
-import { BuyWithFiatButton } from './components/BuyWithFiatButton';
-import { GetB3TokenButton } from './components/GetB3TokenButton';
-import { MintNftButton } from './components/MintNftButton';
-import { SignInButton } from './components/SignInButton';
-import { SignatureMintButton } from './components/SignatureMintButton';
-import { SignatureMintModal } from './components/SignatureMintModal';
-import { SwapTokensButton } from './components/SwapTokensButton';
+import { useState } from "react";
+import { BondKitButton } from "./components/BondKitButton";
+import { BuyWithFiatButton } from "./components/BuyWithFiatButton";
+import { GetB3TokenButton } from "./components/GetB3TokenButton";
+import { MintNftButton } from "./components/MintNftButton";
+import { SignInButton } from "./components/SignInButton";
+import { SignatureMintButton } from "./components/SignatureMintButton";
+import { SignatureMintModal } from "./components/SignatureMintModal";
+import { SwapTokensButton } from "./components/SwapTokensButton";
 
 export default function Home() {
   const [isSignatureMintOpen, setIsSignatureMintOpen] = useState(false);

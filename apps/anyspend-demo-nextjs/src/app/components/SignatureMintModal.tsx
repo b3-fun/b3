@@ -1,4 +1,4 @@
-import { SignatureMint } from './SignatureMint';
+import { SignatureMint } from "./SignatureMint";
 
 interface SignatureMintModalProps {
   isOpen: boolean;

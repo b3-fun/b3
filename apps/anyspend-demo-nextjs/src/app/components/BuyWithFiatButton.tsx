@@ -1,4 +1,4 @@
-import { useModalStore } from '@b3dotfun/sdk/global-account/react';
+import { useModalStore } from "@b3dotfun/sdk/global-account/react";
 
 export function BuyWithFiatButton() {
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
@@ -8,7 +8,7 @@ export function BuyWithFiatButton() {
     <button
       onClick={() => {
         setB3ModalOpen(true);
-        setB3ModalContentType({ type: 'anySpend', defaultActiveTab: 'fiat' });
+        setB3ModalContentType({ type: "anySpend", defaultActiveTab: "fiat" });
       }}
       className="group flex h-40 flex-col justify-between overflow-hidden rounded-lg border border-gray-100 bg-white p-6 text-left shadow-sm transition-all hover:border-purple-100 hover:shadow-md"
     >
