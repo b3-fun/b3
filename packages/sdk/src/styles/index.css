@@ -486,6 +486,10 @@ Dark version
 
   /* Responsive adjustments */
   @media (max-width: 480px) {
+    & > div > div > div > div {
+      padding: 0 24px !important;
+    }
+
     & button[aria-label*="Login with"] {
       min-height: 48px !important;
       padding: 10px !important;
