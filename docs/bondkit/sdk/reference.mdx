@@ -1,0 +1,117 @@
+---
+title: "SDK (Reference)"
+description: "Standalone BondKit SDK for interacting with BondKit contracts."
+---
+
+<Note>
+This page documents a standalone reference SDK located in the repo under `docs/bondkit/sdk`. It is provided for reference and may be removed later. For production use, prefer the published SDK entrypoints under `@b3dotfun/sdk/bondkit`.
+</Note>
+
+## Install
+
+<CodeGroup>
+```bash pnpm
+pnpm add @b3dotfun/bondkit viem
+```
+```bash npm
+npm install @b3dotfun/bondkit viem
+```
+```bash yarn
+yarn add @b3dotfun/bondkit viem
+```
+</CodeGroup>
+
+## Initialize
+
+```ts
+import { BondkitTokenFactory, BondkitToken, getConfig } from "@b3dotfun/bondkit";
+import type { EIP1193Provider } from "viem";
+import { base } from "viem/chains";
+
+// Optional private key for server-side usage
+const walletKey = process.env.PRIVATE_KEY;
+
+// Factory (Base mainnet)
+const factory = new BondkitTokenFactory(base.id, walletKey);
+
+// Optionally connect a browser/provider for writes
+// const connected = factory.connect(provider as EIP1193Provider);
+
+// Token client
+const token = new BondkitToken("0xYourToken", walletKey);
+// token.connect(provider as EIP1193Provider);
+```
+
+## Read operations
+
+```ts
+// Factory
+const tokens = await factory.getDeployedBondkitTokens();
+const owner = await factory.getOwner();
+
+// Token
+const name = await token.name();
+const symbol = await token.symbol();
+const totalSupply = await token.totalSupply();
+const price = await token.getCurrentBondingCurvePricePerToken();
+const progress = await token.getBondingProgress();
+```
+
+## Trades and migration
+
+```ts
+// Buy with ETH (minTokensOut, ethAmount)
+await token.buy(0n, "0.1");
+
+// Sell (tokenAmount, minEthOut)
+await token.sell(1_000n * 10n ** 18n, 0n);
+
+// Migrate (owner/admin only)
+await token.migrateToDex();
+```
+
+<Note>
+Bonding supports both ETH and ERC20 quote assets. The reference SDK demonstrates ETH flows. For ERC20 pairs, ensure allowances/approvals are handled before calling contract methods.
+</Note>
+
+## Deploy a token
+
+```ts
+import type { BondkitTokenConfig } from "@b3dotfun/bondkit";
+
+const config: BondkitTokenConfig = {
+  name: "Example",
+  symbol: "EXM",
+  feeRecipient: "0x...",
+  finalTokenSupply: 1_000_000n * 10n ** 18n,
+  aggressivenessFactor: 35,
+  lpSplitRatioFeeRecipientBps: 1000n, // 10%
+  targetEth: 100n * 10n ** 18n,
+  uniswapV2RouterAddress: "0x...", // Field name subject to change with v4 rollout
+  migrationAdminAddress: "0x...",
+};
+
+const newTokenAddress = await factory.deployBondkitToken(config);
+```
+
+## API surface
+
+- `BondkitTokenFactory`:
+  - `getDeployedBondkitTokens()`
+  - `getBondkitTokenConfig(address)`
+  - `deployBondkitToken(config)`
+  - `getOwner()` / `transferOwnership(address)`
+- `BondkitToken`:
+  - ERC20 reads: `name`, `symbol`, `decimals`, `totalSupply`, `balanceOf`, `allowance`
+  - Curve reads: `getCurrentBondingCurvePricePerToken`, `getBondingProgress`, `getPaginatedHolders`
+  - Trades: `buy(minTokensOut, ethAmount)`, `sell(tokenAmount, minEthOut)`
+  - Lifecycle: `migrateToDex()`, `transferOwnership(address)`, `renounceOwnership()`
+
+## Notes
+
+- Base mainnet only.
+- ETH and ERC20 quote assets supported.
+- Current fee: 5% on buys and sells during bonding.
+- Migration targets Uniswap v4; names referring to V2 router will be updated as contracts roll out.
+
+

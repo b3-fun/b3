@@ -1,0 +1,52 @@
+---
+title: "How BondKit Works"
+description: "Create → Bond → Migrate: the end‑to‑end flow for launching ERC20 bond tokens on Base."
+---
+
+## Product flow at a glance
+
+<Steps>
+  <Step title="Create">
+    Deploy a new ERC20 bond token via the factory clone with your parameters:
+    name, symbol/logo, total supply, quote asset (ETH or allowed ERC20), target, and `aggressivenessFactor`.
+  </Step>
+  <Step title="Bond">
+    Trading happens in the bonding phase. Buys/sells accumulate the quote asset (ETH or allowed ERC20 such as B3).
+    Pricing progression is defined in‑contract and shaped by `aggressivenessFactor` (0–100).
+    Backend services index creation and trades for analytics (e.g., OHLCV).
+  </Step>
+  <Step title="Migrate">
+    Once the target is reached, the creator calls `migrateToDex()`.
+    The contract computes `sqrtPriceX96`, initializes a Uniswap v4 pool, renounces ownership,
+    and the token transitions to standard ERC20 trading on Uniswap v4.
+  </Step>
+</Steps>
+
+## Key actors
+
+- **Creator**: Configures parameters and initiates migration when the target is hit.
+- **Traders**: Participate during bonding; later trade on Uniswap v4.
+- **Backend**: Indexes events, stores history/metadata, and serves analytics to frontends.
+
+## On‑chain components
+
+- **Factory**: Deploys new bond tokens using minimal‑proxy/clone from the implementation.
+- **Bond Token (Implementation)**: ERC20 with bonding‑phase pricing and migration logic.
+- **Uniswap v4 Pool**: Initialized during migration; becomes the primary venue for price discovery.
+
+## Off‑chain components
+
+- **Analytics Backend**: Records creations and trades; exposes OHLCV and historical data.
+
+## Parameters that shape behavior
+
+- **Quote asset**: ETH or an allowed ERC20 (currently B3); set at creation.
+- **Target**: Quote‑asset threshold enabling `migrateToDex()`.
+- **AggressivenessFactor**: 0 (≈linear) to 100 (steep). Higher = faster price escalation during bonding.
+
+<Note>
+After migration, ownership is renounced to the zero address. Plan any admin actions for the bonding phase.
+</Note>
+
+
+

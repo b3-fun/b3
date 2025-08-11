@@ -1,0 +1,53 @@
+---
+title: "Installation"
+description: "Install and configure BondKit for launching ERC20 bond tokens on Base."
+---
+
+## Prerequisites
+
+- Node.js 18+
+- pnpm
+- A wallet with ETH on Base for deployment and transactions
+
+## Install the SDK
+
+<CodeGroup>
+```bash pnpm
+pnpm add @b3dotfun/sdk
+```
+```bash npm
+npm install @b3dotfun/sdk
+```
+```bash yarn
+yarn add @b3dotfun/sdk
+```
+</CodeGroup>
+
+## Configure environment
+
+Create a `.env` (or your preferred config) with your private key.
+
+```bash
+WALLET_PRIVATE_KEY=0x...
+```
+
+## Basic client setup
+
+```ts
+import { BondkitTokenFactory } from "@b3dotfun/sdk/bondkit";
+import { base } from "viem/chains";
+
+// Optional: pass a private key for server-side usage
+const factory = new BondkitTokenFactory(base.id, process.env.WALLET_PRIVATE_KEY);
+
+// Optional: in browser, connect an injected provider for writes
+// factory.connect(window.ethereum);
+```
+
+<Note>
+BondKit is a product: the SDK powers developer workflows, while managed backend services provide indexing and analytics.
+</Note>
+
+
+
+

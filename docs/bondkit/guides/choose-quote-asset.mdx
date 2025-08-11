@@ -1,0 +1,32 @@
+---
+title: "Choose a Quote Asset"
+description: "ETH vs ERC20 (e.g., B3) as the quote asset during bonding."
+---
+
+## Overview
+
+BondKit supports bonding against ETH or an allowed ERC20 (e.g., B3). Your choice impacts UX, integrations, and liquidity at migration.
+
+## When to use ETH
+
+- Broad accessibility; most users hold ETH on Base
+- Simpler UX (no prior approvals)
+- Direct ETH liquidity at migration
+
+## When to use an ERC20 (e.g., B3)
+
+- Aligns with an existing token economy
+- Can bootstrap deeper token‑token pairs at migration
+- Requires approvals before buys/sells
+
+## Operational differences
+
+- 5% fee on buys and sells for both ETH and ERC20
+- ERC20 flows require `approve` before curve interactions
+- Migration pairs are created against WETH or the chosen ERC20
+
+<Note>
+Confirm the allowed‑list for ERC20 quote assets with the team. By default only specific assets may be enabled.
+</Note>
+
+

@@ -1,8 +1,63 @@
 ---
 title: "BondKit Introduction"
-description: "Easily create token bonding curves & deploy tokens."
+description: "Product for launching ERC20 bond tokens on Base with a bonding phase and seamless Uniswap v4 migration."
 ---
 
 ## What is BondKit?
 
-More documentation is coming soon.
+BondKit is a product for launching ERC20 "bond tokens" on Base mainnet. It provides an end‑to‑end flow—from token creation and bonding‑phase trading to Uniswap v4 migration—combining audited contracts, a developer SDK, and a managed backend for analytics.
+
+Under the hood, BondKit includes a TypeScript SDK that abstracts low‑level contract calls and integrates with a backend service that records and processes blockchain activity for analytics.
+
+## What exists today
+
+- Two contracts: Factory and Implementation (ERC20). The factory deploys new bond tokens using the minimal‑proxy/clone pattern from the implementation.
+- Bonding phase trading (buy/sell) accumulates the quote asset (ETH or a whitelisted ERC20). The list of allowed quote assets is set in the factory contract. Currently, only B3 is allowed.
+- Aggressiveness Factor: configurable from 0 to 100. At 0, pricing is linear—each 1 ETH (or equivalent) buys the same amount of tokens. Higher values make pricing more aggressive—later buyers get fewer tokens for the same amount, following a curve determined by this factor.
+- Targets: each bond token is created with a target amount (in ETH or the paired ERC20). When reached, the admin/creator can call `migrateToDex()`.
+- Migration: `migrateToDex()` calculates the `sqrtPriceX96` internally, initializes a Uniswap v4 pool, and transitions the token to a standard ERC20 with DEX‑based price discovery.
+- Post‑migration ownership: after migration, the contract automatically renounces ownership to the zero address.
+- Backend integration: the BondKit backend records all token creations and transactions into a database. It processes this data to provide information such as OHLCV charts and other analytics to frontends via an API.
+
+## Who this is for
+
+- Token creators who want a streamlined way to launch ERC20s with an initial bonding phase.
+- DApp teams who need to programmatically spin up, monitor, and migrate tokens on Base.
+- Developers who want to integrate token analytics or trading history into their applications.
+
+## Product capabilities
+
+- Deploy ERC20 bond tokens via factory clones with metadata (name, symbol/logo), total supply, target, quote‑asset selection (ETH or an allowed ERC20), and aggressiveness factor.
+- Built‑in bonding phase trading helpers (quote, buy, sell) and event subscriptions.
+- Uniswap v4‑only migration helpers to initialize the pool and finalize the transition.
+- Read‑only utilities for state, price, supply, and basic analytics hooks.
+- Access to backend‑provided data such as OHLCV for charting.
+
+## Get started
+
+<CardGroup cols={2}>
+  <Card title="Request Access" icon="rocket" href="https://b3builders.typeform.com/bsmntdevelopers">
+    Launch with BondKit on Base
+  </Card>
+  <Card title="Chat with the Team" icon="discord" href="https://discord.gg/b3dotfun">
+    Questions or feedback? Talk to us on Discord
+  </Card>
+  
+</CardGroup>
+
+## Glossary (trimmed to current scope)
+
+- **Bonding Phase**: The pre‑DEX period where price/liquidity is handled by the bond contract logic.
+- **Clone (Minimal Proxy)**: Lightweight proxy pointing to an implementation contract to reduce gas and standardize logic.
+- **Target**: The quote‑asset threshold that enables `migrateToDex()`.
+- **AggressivenessFactor (0–100)**: Controls how quickly price increases as buys occur during bonding. 0 ≈ linear (each 1 ETH or allowed ERC20 buys ~the same amount); higher values make the curve steeper so the next 1 ETH or allowed ERC20 buys fewer tokens.
+- **Uniswap v4**: AMM used for post‑bonding trading; pool is initialized during migration.
+- **Backend Service**: Off‑chain system that stores transaction history, token metadata, and generates analytics such as OHLCV.
+
+## Current parameters & behavior
+
+- **Quote asset**: ETH or any ERC20 on the factory’s allowed‑list (currently only B3). More assets may be added later.
+- **Pricing**: Bonding price progression is contract‑defined and modulated by `aggressivenessFactor`.
+- **Migration price**: `sqrtPriceX96` is computed on‑chain by the bond contract during `migrateToDex()`.
+- **Access control**: Only admin/creator can call `migrateToDex()`.
+- **Post‑migration ownership**: Contract renounces ownership to the zero address immediately after migration.

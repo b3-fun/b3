@@ -1,0 +1,64 @@
+---
+title: "Quickstart"
+description: "Launch an ERC20 bond token in minutes: Create → Bond → Migrate."
+---
+
+## 1) Create a token
+
+```ts
+import { BondkitTokenFactory } from "@b3dotfun/sdk/bondkit";
+import { base } from "viem/chains";
+
+const factory = new BondkitTokenFactory(base.id, process.env.WALLET_PRIVATE_KEY);
+
+const tokenAddress = await factory.deployBondkitToken({
+  name: "Example",
+  symbol: "EXM",
+  feeRecipient: "0x...",
+  finalTokenSupply: 1_000_000n * 10n ** 18n,
+  aggressivenessFactor: 35,
+  lpSplitRatioFeeRecipientBps: 1000n,
+  targetEth: 100n * 10n ** 18n,
+  uniswapV2RouterAddress: "0x...", // will be updated as v4 rollout completes
+  migrationAdminAddress: "0x..."
+});
+```
+
+## 2) Bonding phase trades
+
+```ts
+import { BondkitToken } from "@b3dotfun/sdk/bondkit";
+
+const token = new BondkitToken(tokenAddress, process.env.WALLET_PRIVATE_KEY);
+
+const quote = await token.getAmountOfTokensToBuy(1n * 10n ** 18n); // quote 1 ETH
+const txHash = await token.buy(0n, "1"); // buy with 1 ETH, accept any tokens >= 0
+```
+
+### Optional: sell during bonding
+
+```ts
+// Sell tokens back to the curve (tokenAmount, minEthOut)
+const sellTx = await token.sell(1_000n * 10n ** 18n, 0n);
+```
+
+### Show bonding progress (for UI)
+
+```ts
+const progress = await token.getBondingProgress();
+// progress = { progress: 0.42, raised: 42000000000000000000, threshold: 100000000000000000000 }
+```
+
+## 3) Migrate to Uniswap v4
+
+```ts
+await token.migrateToDex(); // computes sqrtPriceX96 and initializes pool
+```
+
+<Note>
+After migration, ownership is renounced. Ensure any admin actions are completed during bonding.
+</Note>
+
+
+
+

@@ -1,0 +1,40 @@
+---
+title: "Bonding Phase"
+description: "How buying and selling works during the bonding phase, fees, and thresholds."
+---
+
+## Overview
+
+During the bonding phase, users can buy and sell tokens directly against the bonding curve. The contract accumulates the quote asset (ETH or an allowed ERC20 such as B3) until the target amount is reached.
+
+## Actions
+
+- **Buy**: Users purchase tokens with ETH or the configured ERC20.
+  - Inputs: amount in (if ERC20) or `msg.value` (if ETH), `minTokensOut` for slippage.
+  - A 5% fee is taken; the remainder increases the curve’s raised amount and mints/transfers tokens.
+  - If a buy would exceed the target, the contract caps the contribution at the target and refunds the remainder.
+
+- **Sell**: Users can sell tokens back during bonding.
+  - Inputs: `tokenAmount`, `minTradingTokenOut` for slippage.
+  - The contract returns the corresponding quote asset minus a 5% fee, updating the raised amount accordingly.
+
+## Fees
+
+- Default fee: 5% on buys and sells during bonding.
+- Fees are distributed to the configured `feeRecipient` via internal splitters.
+
+## Threshold and refunds
+
+- The contract enforces the `targetAmount` threshold for migration.
+- Contributions that would push above the target are partially accepted up to the threshold; any excess is refunded.
+
+## Events
+
+- `BondingCurveBuy(payer, recipient, tradingTokenIn, tokensOut, fee, totalRaisedBonding)`
+- `BondingCurveSell(seller, tokensIn, tradingTokenOut, fee, totalRaisedBonding)`
+
+<Note>
+Trading is disabled after migration to the DEX phase.
+</Note>
+
+

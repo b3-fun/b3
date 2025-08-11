@@ -1,0 +1,28 @@
+---
+title: "Pricing"
+description: "The bonding curve pricing model and the role of aggressivenessFactor."
+---
+
+## Bonding curve model
+
+Let final token supply be `S_final`, amount of base tokens raised be `R`, and target amount be `R_target`.
+
+- Token supply during bonding: `S = S_final × (R / R_target)^exponent`
+- Where `exponent = 1 / (1 + aggressivenessFactor/100)`
+
+Implications:
+- **Lower aggressiveness (0–30)**: flatter curve; later buyers receive amounts similar to early buyers.
+- **Medium (30–70)**: balanced; price rises at a moderate pace.
+- **Higher (70–100)**: steeper; price rises quickly; later buyers receive fewer tokens per unit.
+
+## Practical notes
+
+- The contract caps the curve at `R_target` and refunds excess.
+- Sells compute the inverse to return base tokens for a given token reduction, minus fees.
+- The contract uses fixed‑point math for stability; edge cases are handled for very small amounts.
+
+<Note>
+This page reflects the current curve math implemented in contracts. Future versions may introduce additional curve types.
+</Note>
+
+
