@@ -235,11 +235,7 @@
           },
           {
             "group": "Core Concepts",
-            "pages": [
-              "bondkit/concepts/bonding-phase",
-              "bondkit/concepts/pricing",
-              "bondkit/concepts/targets"
-            ]
+            "pages": ["bondkit/concepts/bonding-phase", "bondkit/concepts/pricing", "bondkit/concepts/targets"]
           },
           {
             "group": "Guides",
