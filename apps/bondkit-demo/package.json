@@ -1,0 +1,44 @@
+{
+  "name": "bondkit-demo",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@b3dotfun/sdk": "0.0.8-alpha.6",
+    "@feathersjs/socketio-client": "^5.0.34",
+    "@privy-io/react-auth": "^2.18.1",
+    "@rainbow-me/rainbowkit": "^2.2.8",
+    "@tanstack/react-query": "^5.81.2",
+    "big.js": "^7.0.1",
+    "clsx": "^2.1.1",
+    "lightweight-charts": "^5.0.8",
+    "next": "15.3.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "socket.io-client": "^4.8.1",
+    "tailwind-merge": "^3.3.1",
+    "viem": "^2.31.4",
+    "wagmi": "2.14.15"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/big.js": "^6.2.2",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "15.3.4",
+    "pino-pretty": "^11.2.1",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  },
+  "peerDependencies": {
+    "framer-motion": "^12.0.0"
+  }
+}
