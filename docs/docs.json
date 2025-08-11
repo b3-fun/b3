@@ -177,7 +177,7 @@
         "groups": [
           {
             "group": "Getting Started",
-            "pages": ["anyspend/introduction", "anyspend/installation"]
+            "pages": ["anyspend/introduction", "anyspend/installation", "anyspend/onramp"]
           },
           {
             "group": "React",

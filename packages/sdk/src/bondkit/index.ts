@@ -11,3 +11,6 @@ export * from "./types";
 
 // ABIs
 export * from "./abis";
+
+// Components
+export { default as TradingView } from "./components/TradingView";
