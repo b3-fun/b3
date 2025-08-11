@@ -4,6 +4,9 @@ module.exports = {
   darkMode: "class",
   // prefix: "b3-react-",
   // important: ".b3-root",
+  future: {
+    hoverOnlyWhenSupported: true,
+  },
   theme: {
     screens: {
       "3xl": { max: "1579px" },
@@ -48,14 +51,14 @@ module.exports = {
         "b3-react-popover": "hsl(var(--b3-react-popover))",
         "b3-react-popover-foreground": "hsl(var(--b3-react-popover-foreground))",
 
-        "b3-foreground-muted": "#676767",
-        "b3-primary-blue": "#3268EF",
-        "b3-primary-wash": "#E5EAF8",
-        "b3-grey": "#272727",
-        "b3-line": "#E9E9E9",
-        "b3-white": "#F9F9F9",
-        "b3-positive": "#00C76D",
-        "b3-negative": "#FF4343",
+        "b3-foreground-muted": "hsl(var(--b3-foreground-muted))",
+        "b3-primary-blue": "hsl(var(--b3-primary-blue))",
+        "b3-primary-wash": "hsl(var(--b3-primary-wash))",
+        "b3-grey": "hsl(var(--b3-grey))",
+        "b3-line": "hsl(var(--b3-line))",
+        "b3-white": "hsl(var(--b3-white))",
+        "b3-positive": "hsl(var(--b3-positive))",
+        "b3-negative": "hsl(var(--b3-negative))",
 
         // Anyspend, we get this from apps/anyspend-web/tailwind.config.ts
         "as-primary": "hsl(var(--as-primary))",
@@ -96,6 +99,10 @@ module.exports = {
         "pulse-fade": "pulse-fade 1.5s ease-in-out infinite",
       },
     },
+  },
+  corePlugins: {
+    // Enable nesting support
+    preflight: true,
   },
   plugins: [require("tailwindcss-animate")],
 };

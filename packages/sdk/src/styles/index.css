@@ -128,6 +128,16 @@
   --as-content-icon-success: 95 85% 35%;
   --as-content-disabled: 220 6% 47%;
 
+  /* global account */
+  --b3-foreground-muted: 0 0% 40%;
+  --b3-primary-blue: 223 86% 57%;
+  --b3-primary-wash: 224 58% 94%;
+  --b3-grey: 0 0% 15%;
+  --b3-line: 0 0% 91%;
+  --b3-white: 0 0% 98%;
+  --b3-positive: 153 100% 39%;
+  --b3-negative: 0 100% 63%;
+
   /* Override relay colors */
   --relay-colors-focus-color: hsl(215, 90%, 48%) !important;
 }
@@ -184,6 +194,16 @@ html[data-theme="dark"] .b3-root,
   /* --as-brand: 263 90% 63%;
     --as-light-brand: 255 10% 16%;
     --border: 256 16% 23%; */
+
+  /* global account */
+  --b3-foreground-muted: 0 0% 40%;
+  --b3-primary-blue: 223 86% 57%;
+  --b3-primary-wash: 224 58% 94%;
+  --b3-grey: 0 0% 15%;
+  --b3-line: 0 0% 91%;
+  --b3-white: 0 0% 98%;
+  --b3-positive: 153 100% 39%;
+  --b3-negative: 0 100% 63%;
 }
 
 /* src/tailwind.css */
@@ -298,4 +318,182 @@ Dark version
   font-size: 10px;
   letter-spacing: 0.05em;
   font-family: "SFCompact", sans-serif;
+}
+
+.b3-login-step {
+  /* Input fields styling */
+  & input {
+    color: hsl(var(--b3-react-foreground)) !important;
+    border-radius: 8px !important;
+    font-family: "Neue Montreal Semibold", sans-serif !important;
+    font-size: 16px !important;
+    transition: all 0.2s ease !important;
+    border: none !important;
+    outline: none !important;
+    padding-left: 16px !important;
+  }
+
+  & input:focus {
+    outline: none !important;
+    border: none !important;
+  }
+
+  & input::placeholder {
+    font-family: "Neue Montreal Semibold", sans-serif !important;
+    color: hsl(var(--b3-react-muted-foreground)) !important;
+    font-size: 16px;
+  }
+
+  & button span {
+    font-family: "Neue Montreal Semibold", sans-serif !important;
+  }
+
+  /* Social login buttons - target by aria-label structure */
+  & button[aria-label*="Login with"] {
+    background-color: white !important;
+    border: 1px solid hsl(var(--b3-line)) !important;
+    border-radius: 16px !important;
+    padding: 16px !important;
+    height: 72px !important;
+  }
+
+  & button[aria-label*="Login with"]:hover {
+    background-color: hsl(var(--b3-white) / 0.8) !important;
+    border-color: hsl(var(--b3-line) / 0.8) !important;
+    cursor: pointer;
+  }
+
+  & button[aria-label*="Login with"]:active {
+    transform: translateY(0) !important;
+    box-shadow: 0 2px 4px hsl(var(--b3-react-foreground) / 0.1) !important;
+  }
+
+  /* input container - target by structure */
+  & div[style*="flex-direction: row"][style*="position: relative"] {
+    background: hsla(var(--b3-white), 1);
+    border: 2px solid hsl(var(--b3-primary-blue)) !important;
+    border-radius: 32px !important;
+    overflow: hidden !important;
+    transition: all 0.2s ease !important;
+    font-size: 16px;
+    height: 56px;
+    margin: 0 1px !important;
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  & div[style*="flex-direction: row"][style*="position: relative"]:focus-within {
+    border-color: hsl(var(--b3-primary-blue)) !important;
+    /* box-shadow: 0 0 0 2px hsl(var(--b3-react-primary) / 0.1) !important; */
+  }
+
+  /* submit button - target button inside email container */
+  & div[style*="flex-direction: row"] button {
+    background-color: hsl(var(--b3-react-primary)) !important;
+    color: hsl(var(--b3-react-primary-foreground)) !important;
+    border: 8px solid white !important;
+    transition: all 0.2s ease !important;
+    border-radius: 100% !important;
+    width: 36px !important;
+    height: 36px !important;
+    padding: 0 !important;
+    flex-shrink: 0;
+  }
+
+  & select {
+    font-size: 16px !important;
+    font-family: "Neue Montreal Medium", sans-serif !important;
+    color: hsl(var(--b3-react-muted-foreground)) !important;
+  }
+
+  & div[style*="flex-direction: row"] button:hover {
+    background-color: hsl(var(--b3-react-primary) / 0.9) !important;
+  }
+
+  & div[style*="flex-direction: row"] button svg {
+    color: hsl(var(--b3-react-primary-foreground)) !important;
+  }
+
+  /* Alternative login options - target by structure and content */
+  & button[style*="justify-content: flex-start"] {
+    background-color: hsla(var(--b3-white), 1) !important;
+    border: 1px solid hsl(var(--b3-line)) !important;
+    border-radius: 32px !important;
+    color: hsl(var(--b3-react-foreground)) !important;
+    transition: all 0.2s ease !important;
+    font-family: "Neue Montreal Regular", sans-serif !important;
+    font-size: 16px !important;
+    height: 56px !important;
+    padding-left: 16px !important;
+    margin: 0 1px !important;
+  }
+
+  & button[style*="justify-content: flex-start"]:hover {
+    background-color: hsl(var(--b3-white) / 0.8) !important;
+    border-color: hsl(var(--b3-line) / 0.8) !important;
+    cursor: pointer;
+  }
+
+  & button[style*="justify-content: flex-start"]:active {
+    transform: translateY(0) !important;
+  }
+
+  /* Text styling for alternative options */
+  & button[style*="justify-content: flex-start"] span {
+    color: hsl(var(--b3-react-foreground)) !important;
+    font-weight: 500 !important;
+  }
+
+  /* Icon styling - target SVGs in alternative buttons */
+  & button[style*="justify-content: flex-start"] svg {
+    color: hsl(var(--b3-primary-blue)) !important;
+    transition: color 0.2s ease !important;
+  }
+
+  & button[style*="justify-content: flex-start"]:focus svg {
+    color: hsl(var(--b3-foreground-muted)) !important;
+  }
+
+  /* Main container styling - target by flex structure */
+  & div[style*="flex-direction: column"] {
+    gap: 16px !important;
+  }
+
+  /* Social buttons container - target by flex-flow wrap */
+  & div[style*="flex-flow: wrap"] {
+    gap: 12px !important;
+  }
+
+  & > div > div > div > div {
+    padding: 0 !important;
+  }
+
+  /* Add subtle animations */
+  & * {
+    transition: all 0.2s ease !important;
+  }
+
+  /* Focus states for accessibility */
+  & button:focus-visible {
+    outline: 2px solid hsl(var(--b3-react-primary)) !important;
+    outline-offset: 2px !important;
+  }
+
+  & span[color="danger"] {
+    color: hsl(var(--b3-negative)) !important;
+    font-family: "Neue Montreal Medium", sans-serif !important;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 480px) {
+    & button[aria-label*="Login with"] {
+      min-height: 48px !important;
+      padding: 10px !important;
+    }
+
+    & button[style*="justify-content: flex-start"] {
+      min-height: 44px !important;
+      padding: 10px 12px !important;
+    }
+  }
 }

@@ -1,4 +1,4 @@
-import { useAuthentication, useQueryB3, useAuthStore, useB3 } from "@b3dotfun/sdk/global-account/react";
+import { useAuthentication, useAuthStore, useB3, useQueryB3 } from "@b3dotfun/sdk/global-account/react";
 import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { Chain } from "thirdweb";
@@ -110,6 +110,7 @@ export function LoginStep({ onSuccess, onError, partnerId, chain }: LoginStepPro
           title: "Sign in with B3",
           titleIcon: "https://cdn.b3.fun/b3_logo.svg",
         }}
+        className="b3-login-step"
         onConnect={async wallet => {
           try {
             setIsAuthenticating(true);

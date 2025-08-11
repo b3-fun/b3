@@ -290,6 +290,7 @@
     "openapi-typescript": "7.4.2",
     "postcss": "8.5.3",
     "postcss-cli": "11.0.1",
+    "postcss-nesting": "^13.0.2",
     "postcss-prefix-selector": "^2.1.1",
     "tailwindcss": "3.4.1",
     "tailwindcss-animate": "^1.0.7",
