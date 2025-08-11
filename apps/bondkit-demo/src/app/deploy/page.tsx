@@ -15,28 +15,6 @@ interface ConfigFieldInfo {
   example?: string;
 }
 
-// const configGuide: Record<keyof BondkitTokenConfig, ConfigFieldInfo> = {
-//   name: { title: "Token Name", description: "Choose a unique name for your token." },
-//   symbol: { title: "Token Symbol", description: "Choose a short symbol (2-6 characters)." },
-//   feeRecipient: { title: "Fee Recipient", description: "Address receiving trading fees." },
-//   finalTokenSupply: { title: "Final Token Supply", description: "Total number of tokens that will exist." },
-//   targetEth: { title: "Target ETH", description: "Amount of ETH needed to complete bonding." },
-//   lpSplitRatioFeeRecipientBps: {
-//     title: "LP Split Ratio",
-//     description: "Percentage (in BPS) of LP tokens for fee recipient.",
-//   },
-//   uniswapV2RouterAddress: { title: "Uniswap V2 Router", description: "Router address for DEX operations." },
-//   aggressivenessFactor: { title: "Aggressiveness Factor", description: "Controls price curve steepness (1-100)." },
-//   migrationAdminAddress: { title: "Migration Admin", description: "Address that can migrate to DEX." },
-//   externalTokenAddress: { title: "External Token", description: "Optional external token address." },
-//   baseTokenMetadata: { title: "Base Token Metadata", description: "Optional metadata URL." },
-//   externalTokenMetadata: { title: "External Token Metadata", description: "Optional metadata URL." },
-//   externalTokenBuyQuote: { title: "Buy Quote", description: "External token buy quote." },
-//   externalTokenSellQuote: { title: "Sell Quote", description: "External token sell quote." },
-//   lpTokenMetadata: { title: "LP Token Metadata", description: "Optional LP metadata URL." },
-//   uniswapV3FeeTier: { title: "Uniswap V3 Fee Tier", description: "Fee tier for V3 pool." },
-// };
-
 const presetTemplates = [
   {
     name: "Standard Token",
