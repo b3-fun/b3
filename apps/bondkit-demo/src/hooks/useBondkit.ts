@@ -1,13 +1,7 @@
-import {
-  useAccount,
-  useReadContract,
-  useBalance,
-  useWriteContract,
-  useWaitForTransactionReceipt,
-} from "wagmi";
-import { BondkitToken, TokenDetails, BondkitTokenABI } from "@b3dotfun/sdk/bondkit";
+import { BondkitToken, BondkitTokenABI, TokenDetails } from "@b3dotfun/sdk/bondkit";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Address } from "viem";
+import { useAccount, useBalance, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 
 const REFETCH_INTERVAL = 5000; // 5 seconds
 
@@ -26,17 +20,13 @@ export function useBondkit(tokenAddress: `0x${string}`) {
   const [currentPhase, setCurrentPhase] = useState<string>();
   const [tokenBalance, setTokenBalance] = useState<bigint>(BigInt(0));
   const [allowance, setAllowance] = useState<bigint>(BigInt(0));
-  const [txType, setTxType] = useState<
-    "approve" | "sell" | "buy" | "migrate" | null
-  >(null);
+  const [txType, setTxType] = useState<"approve" | "sell" | "buy" | "migrate" | null>(null);
   const [bondingProgress, setBondingProgress] = useState({
     progress: 0,
     raised: BigInt(0),
     threshold: BigInt(0),
   });
-  const [holders, setHolders] = useState<
-    { address: Address; balance: bigint; percentage: number }[]
-  >([]);
+  const [holders, setHolders] = useState<{ address: Address; balance: bigint; percentage: number }[]>([]);
 
   const { data: ownerAddress } = useReadContract({
     address: tokenAddress,
@@ -63,15 +53,14 @@ export function useBondkit(tokenAddress: `0x${string}`) {
   const fetchDynamicData = useCallback(async () => {
     if (!bondkitTokenClient || !userAddress) return;
 
-    const [phase, balance, currentAllowance, progress, allHolders, details] =
-      await Promise.all([
-        bondkitTokenClient.getCurrentPhase(),
-        bondkitTokenClient.balanceOf(userAddress),
-        bondkitTokenClient.allowance(userAddress, tokenAddress),
-        bondkitTokenClient.getBondingProgress(),
-        fetchAllHolders(bondkitTokenClient),
-        bondkitTokenClient.getTokenDetails(),
-      ]);
+    const [phase, balance, currentAllowance, progress, allHolders, details] = await Promise.all([
+      bondkitTokenClient.getCurrentPhase(),
+      bondkitTokenClient.balanceOf(userAddress),
+      bondkitTokenClient.allowance(userAddress, tokenAddress),
+      bondkitTokenClient.getBondingProgress(),
+      fetchAllHolders(bondkitTokenClient),
+      bondkitTokenClient.getTokenDetails(),
+    ]);
 
     setCurrentPhase(phase || undefined);
     setTokenBalance(balance || BigInt(0));
@@ -110,7 +99,7 @@ export function useBondkit(tokenAddress: `0x${string}`) {
       if (!bondkitTokenClient) return;
       return bondkitTokenClient.getAmountOfTokensToBuy(ethAmount);
     },
-    [bondkitTokenClient]
+    [bondkitTokenClient],
   );
 
   const getSellQuote = useCallback(
@@ -118,7 +107,7 @@ export function useBondkit(tokenAddress: `0x${string}`) {
       if (!bondkitTokenClient) return;
       return bondkitTokenClient.getAmountOfEthToSell(tokenAmount);
     },
-    [bondkitTokenClient]
+    [bondkitTokenClient],
   );
 
   // Write Actions
@@ -204,29 +193,23 @@ export function useBondkit(tokenAddress: `0x${string}`) {
 
 async function fetchAllHolders(client: BondkitToken) {
   let startIndex = BigInt(0);
-  const holders: { address: Address; balance: bigint; percentage: number }[] =
-    [];
+  const holders: { address: Address; balance: bigint; percentage: number }[] = [];
   const totalSupply = await client.totalSupply();
   if (totalSupply === BigInt(0)) {
     return [];
   }
   while (true) {
-    const paginatedHolders = await client.getPaginatedHolders(
-      startIndex,
-      BigInt(1000)
-    );
+    const paginatedHolders = await client.getPaginatedHolders(startIndex, BigInt(1000));
     holders.push(
-      ...paginatedHolders.map((holder) => ({
+      ...paginatedHolders.map((holder: { address: Address; balance: bigint }) => ({
         ...holder,
         percentage: (Number(holder.balance) * 100) / Number(totalSupply),
-      }))
+      })),
     );
     if (paginatedHolders.length < 1000) {
       break;
     }
     startIndex += BigInt(1000);
   }
-  return holders
-    .filter((holder) => holder.balance > BigInt(0))
-    .sort((a, b) => b.percentage - a.percentage);
+  return holders.filter(holder => holder.balance > BigInt(0)).sort((a, b) => b.percentage - a.percentage);
 }

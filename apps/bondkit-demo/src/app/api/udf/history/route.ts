@@ -21,9 +21,7 @@ function getValidResolution(resolution: string): string {
   }
 
   // Default to "1D" if the resolution is not in the allowed list.
-  console.warn(
-    `Unrecognized or unsupported resolution "${resolution}", defaulting to "1D".`
-  );
+  console.warn(`Unrecognized or unsupported resolution "${resolution}", defaulting to "1D".`);
   return "1D";
 }
 
@@ -34,7 +32,7 @@ async function fetchRealOHLCVData(
   resolution: string,
   from: number,
   to: number,
-  limit?: number
+  limit?: number,
 ) {
   try {
     console.log(`Calling real service with:`, {
@@ -114,9 +112,7 @@ export async function GET(request: NextRequest) {
   // Extract contract address from symbol if it contains one
   // Format expected: SYMBOL-0x1234...5678
   const [displaySymbol, contractAddress] = (symbol || "").split("-");
-  console.log(
-    `Parsed symbol: displaySymbol=${displaySymbol}, contractAddress=${contractAddress}`
-  );
+  console.log(`Parsed symbol: displaySymbol=${displaySymbol}, contractAddress=${contractAddress}`);
 
   if (!symbol || !from || !to) {
     console.log("Missing required parameters");
@@ -143,7 +139,7 @@ export async function GET(request: NextRequest) {
       8453, // Default to Base chain
       validResolution,
       from,
-      to
+      to,
     );
 
     // console.log(`Raw service response:`, JSON.stringify(data, null, 2));

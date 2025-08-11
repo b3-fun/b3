@@ -1,9 +1,5 @@
 import { TradingViewChartProps } from "@/types";
-import {
-  CHART_COLORS,
-  DEFAULT_CHART_HEIGHT,
-  PRICE_DECIMALS,
-} from "@/types/constants";
+import { CHART_COLORS, DEFAULT_CHART_HEIGHT, PRICE_DECIMALS } from "@/types/constants";
 import { cn } from "@/utils/cn";
 import {
   CandlestickSeries,
@@ -181,12 +177,11 @@ export function TradingViewChart({
 
   // Update data when candleData or volumeData changes
   useEffect(() => {
-    if (!isInitialized || !candlestickSeries.current || !volumeSeries.current)
-      return;
+    if (!isInitialized || !candlestickSeries.current || !volumeSeries.current) return;
     if (candleData.length === 0) return;
 
     // Transform data for lightweight-charts format
-    const chartCandleData = candleData.map((candle) => ({
+    const chartCandleData = candleData.map(candle => ({
       time: Math.floor(candle.time / 1000) as any, // Convert to seconds
       open: candle.open,
       high: candle.high,
@@ -195,9 +190,7 @@ export function TradingViewChart({
     }));
 
     const chartVolumeData = volumeData.map((volume, index) => ({
-      time: Math.floor(
-        candleData[index]?.time / 1000 || volume.time / 1000
-      ) as any,
+      time: Math.floor(candleData[index]?.time / 1000 || volume.time / 1000) as any,
       value: volume.value,
       color: volume.color || CHART_COLORS.VOLUME,
     }));
@@ -212,12 +205,7 @@ export function TradingViewChart({
         chart.current.timeScale().fitContent();
 
         // Adjust price scale for better visibility of small values
-        const prices = candleData.flatMap((d) => [
-          d.high,
-          d.low,
-          d.open,
-          d.close,
-        ]);
+        const prices = candleData.flatMap(d => [d.high, d.low, d.open, d.close]);
         const minPrice = Math.min(...prices);
         const maxPrice = Math.max(...prices);
         const range = maxPrice - minPrice;
@@ -237,10 +225,7 @@ export function TradingViewChart({
   if (candleData.length === 0) {
     return (
       <div
-        className={cn(
-          "flex items-center justify-center bg-gray-900 rounded-lg border border-gray-700",
-          className
-        )}
+        className={cn("flex items-center justify-center rounded-lg border border-gray-700 bg-gray-900", className)}
         style={{ height }}
       >
         <div className="text-gray-400">No data available</div>
@@ -249,23 +234,18 @@ export function TradingViewChart({
   }
 
   return (
-    <div
-      className={cn(
-        "relative bg-gray-900 rounded-lg border border-gray-700 overflow-hidden",
-        className
-      )}
-    >
+    <div className={cn("relative overflow-hidden rounded-lg border border-gray-700 bg-gray-900", className)}>
       <div ref={chartContainerRef} className="w-full" style={{ height }} />
 
       {/* Enhanced Controls overlay */}
-      <div className="absolute top-4 left-4 flex gap-2 z-10">
+      <div className="absolute left-4 top-4 z-10 flex gap-2">
         <button
           onClick={() => {
             if (chart.current) {
               chart.current.timeScale().fitContent();
             }
           }}
-          className="px-3 py-1 bg-gray-800/90 hover:bg-gray-700 border border-gray-600 rounded text-xs text-white transition-colors"
+          className="rounded border border-gray-600 bg-gray-800/90 px-3 py-1 text-xs text-white transition-colors hover:bg-gray-700"
         >
           Fit Content
         </button>
@@ -275,25 +255,22 @@ export function TradingViewChart({
               chart.current.timeScale().resetTimeScale();
             }
           }}
-          className="px-3 py-1 bg-gray-800/90 hover:bg-gray-700 border border-gray-600 rounded text-xs text-white transition-colors"
+          className="rounded border border-gray-600 bg-gray-800/90 px-3 py-1 text-xs text-white transition-colors hover:bg-gray-700"
         >
           Reset Zoom
         </button>
       </div>
 
       {/* Price info overlay */}
-      <div className="absolute top-4 right-4 bg-gray-800/90 border border-gray-600 rounded px-3 py-2 text-xs text-white z-10">
+      <div className="absolute right-4 top-4 z-10 rounded border border-gray-600 bg-gray-800/90 px-3 py-2 text-xs text-white">
         <div className="text-gray-300">Price in ETH</div>
         {candleData.length > 0 && (
-          <div className="font-mono">
-            Latest: {formatETHPrice(candleData[candleData.length - 1].close)}{" "}
-            ETH
-          </div>
+          <div className="font-mono">Latest: {formatETHPrice(candleData[candleData.length - 1].close)} ETH</div>
         )}
       </div>
 
       {/* Instructions */}
-      <div className="absolute bottom-4 left-4 text-xs text-gray-400 z-10">
+      <div className="absolute bottom-4 left-4 z-10 text-xs text-gray-400">
         Scroll to zoom • Drag to pan • Professional TradingView charts
       </div>
     </div>

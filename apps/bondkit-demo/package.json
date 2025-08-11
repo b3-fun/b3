@@ -9,36 +9,28 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@b3dotfun/sdk": "0.0.8-alpha.6",
-    "@feathersjs/socketio-client": "^5.0.34",
-    "@privy-io/react-auth": "^2.18.1",
-    "@rainbow-me/rainbowkit": "^2.2.8",
-    "@tanstack/react-query": "^5.81.2",
+    "@b3dotfun/sdk": "workspace:*",
     "big.js": "^7.0.1",
     "clsx": "^2.1.1",
     "lightweight-charts": "^5.0.8",
-    "next": "15.3.4",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "socket.io-client": "^4.8.1",
+    "next": "14.1.0",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
     "tailwind-merge": "^3.3.1",
-    "viem": "^2.31.4",
-    "wagmi": "2.14.15"
+    "viem": "2.28.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@tailwindcss/postcss": "^4",
     "@types/big.js": "^6.2.2",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "15.3.4",
+    "@types/node": "^20.11.24",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.1",
+    "autoprefixer": "^10.0.1",
+    "eslint": "^8.56.0",
+    "eslint-config-next": "14.1.0",
     "pino-pretty": "^11.2.1",
-    "tailwindcss": "^4",
-    "typescript": "^5"
-  },
-  "peerDependencies": {
-    "framer-motion": "^12.0.0"
+    "postcss": "^8",
+    "tailwindcss": "^3.3.0",
+    "typescript": "^5.2.2"
   }
 }

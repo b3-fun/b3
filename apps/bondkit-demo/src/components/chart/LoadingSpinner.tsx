@@ -5,10 +5,7 @@ interface LoadingSpinnerProps {
   size?: "sm" | "md" | "lg";
 }
 
-export function LoadingSpinner({
-  className,
-  size = "md",
-}: LoadingSpinnerProps) {
+export function LoadingSpinner({ className, size = "md" }: LoadingSpinnerProps) {
   const sizeClasses = {
     sm: "w-4 h-4",
     md: "w-6 h-6",
@@ -17,12 +14,7 @@ export function LoadingSpinner({
 
   return (
     <div className={cn("flex items-center justify-center", className)}>
-      <div
-        className={cn(
-          "animate-spin rounded-full border-2 border-gray-600 border-t-blue-500",
-          sizeClasses[size]
-        )}
-      />
+      <div className={cn("animate-spin rounded-full border-2 border-gray-600 border-t-blue-500", sizeClasses[size])} />
     </div>
   );
 }

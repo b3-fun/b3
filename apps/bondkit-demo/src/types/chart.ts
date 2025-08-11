@@ -2,11 +2,4 @@
 export * from "./index";
 
 // Legacy exports for backwards compatibility
-export type {
-  CandleData,
-  TimeFrame,
-  TokenInfo,
-  Transaction,
-  TransactionData,
-  VolumeData,
-} from "./index";
+export type { CandleData, TimeFrame, TokenInfo, Transaction, TransactionData, VolumeData } from "./index";

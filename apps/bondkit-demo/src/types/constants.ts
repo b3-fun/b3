@@ -30,11 +30,9 @@ export const RESOLUTION_TO_SECONDS: Record<Resolution, number> = {
 // API CONSTANTS
 // =============================================================================
 
-export const DEFAULT_API_ENDPOINT =
-  process.env.NEXT_PUBLIC_B3_API_ENDPOINT || "http://localhost:3031";
+export const DEFAULT_API_ENDPOINT = process.env.NEXT_PUBLIC_B3_API_ENDPOINT || "http://localhost:3031";
 
-export const DEFAULT_API_ENDPOINT_BONDKIT =
-  process.env.NEXT_PUBLIC_B3_API_ENDPOINT + "/bondkit-tokens";
+export const DEFAULT_API_ENDPOINT_BONDKIT = process.env.NEXT_PUBLIC_B3_API_ENDPOINT + "/bondkit-tokens";
 
 export const DEFAULT_CHAIN_ID = 8453; // Base
 

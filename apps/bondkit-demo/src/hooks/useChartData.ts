@@ -13,7 +13,7 @@ export function useGetOHLCVData(
   tokenAddress: string,
   resolution: Resolution = "1D",
   chainId: number = DEFAULT_CHAIN_ID,
-  apiEndpoint: string = DEFAULT_API_ENDPOINT_BONDKIT
+  apiEndpoint: string = DEFAULT_API_ENDPOINT_BONDKIT,
 ) {
   const [candles, setCandles] = useState<Candle[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -73,12 +73,11 @@ export function useGetOHLCVData(
           volume: candle.volume,
         }));
 
-        setCandles((prev) => {
+        setCandles(prev => {
           if (appendData) {
             const combined = [...newCandles, ...prev];
             const uniqueCandles = combined.filter(
-              (candle, index, arr) =>
-                arr.findIndex((c) => c.timestamp === candle.timestamp) === index
+              (candle, index, arr) => arr.findIndex(c => c.timestamp === candle.timestamp) === index,
             );
             return uniqueCandles.sort((a, b) => a.timestamp - b.timestamp);
           } else {
@@ -90,14 +89,10 @@ export function useGetOHLCVData(
           setTokenInfo(data.tokenInfo);
         }
 
-        setTotalLoaded((prev) =>
-          appendData ? prev + newCandles.length : newCandles.length
-        );
+        setTotalLoaded(prev => (appendData ? prev + newCandles.length : newCandles.length));
         setError(null);
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to fetch chart data"
-        );
+        setError(err instanceof Error ? err.message : "Failed to fetch chart data");
         if (!appendData) {
           setCandles([]);
           setTotalLoaded(0);
@@ -106,7 +101,7 @@ export function useGetOHLCVData(
         setIsLoading(false);
       }
     },
-    [tokenAddress, chainId, resolution, apiEndpoint]
+    [tokenAddress, chainId, resolution, apiEndpoint],
   );
 
   const loadInitialData = useCallback(async () => {

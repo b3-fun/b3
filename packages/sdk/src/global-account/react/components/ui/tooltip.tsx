@@ -14,7 +14,7 @@ const TooltipTrigger: React.ForwardRefExoticComponent<
 > = TooltipPrimitive.Trigger;
 
 const TooltipContent: React.ForwardRefExoticComponent<
-  Omit<TooltipPrimitive.TooltipContentProps & React.RefAttributes<HTMLDivElement>, "ref"> & React.RefAttributes<never>
+  TooltipPrimitive.TooltipContentProps & React.RefAttributes<HTMLDivElement>
 > = React.forwardRef<
   React.ElementRef<typeof TooltipPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>

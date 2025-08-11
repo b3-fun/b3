@@ -1,24 +1,21 @@
 "use client";
 
-import TradingView from "@/components/trading/TradingView";
+import { TradingView } from "@b3dotfun/sdk/bondkit";
 import { useBondkit } from "@/hooks/useBondkit";
 import { TokenInfo } from "@/types/chart";
 import { useModalStore } from "@b3dotfun/sdk/global-account/react";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useRouter } from "next/navigation";
 import { use, useEffect, useMemo, useState } from "react";
 import { formatEther, parseEther } from "viem";
 import { useAccount } from "wagmi";
+import SignInWithB3OnBase from "../../SignInWithB3OnBase";
 
 type Action = "buy" | "sell";
 
-function debounce<F extends (...args: Parameters<F>) => ReturnType<F>>(
-  func: F,
-  waitFor: number
-) {
+function debounce<F extends (...args: Parameters<F>) => ReturnType<F>>(func: F, waitFor: number) {
   let timeout: NodeJS.Timeout;
   return (...args: Parameters<F>): Promise<ReturnType<F>> =>
-    new Promise((resolve) => {
+    new Promise(resolve => {
       if (timeout) {
         clearTimeout(timeout);
       }
@@ -35,10 +32,8 @@ interface TokenPageProps {
 export default function TokenPage({ params }: TokenPageProps) {
   const { address: userAddress, isConnected } = useAccount();
   const router = useRouter();
-  const setB3ModalOpen = useModalStore((state) => state.setB3ModalOpen);
-  const setB3ModalContentType = useModalStore(
-    (state) => state.setB3ModalContentType
-  );
+  const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
+  const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
 
   // Unwrap the params Promise
   const resolvedParams = use(params);
@@ -71,33 +66,21 @@ export default function TokenPage({ params }: TokenPageProps) {
   const [amount, setAmount] = useState("");
   const [quote, setQuote] = useState<string | null>(null);
   const [tokenInfo, setTokenInfo] = useState<TokenInfo | null>(null);
-  const [sellAmountToProcess, setSellAmountToProcess] = useState<bigint | null>(
-    null
-  );
+  const [sellAmountToProcess, setSellAmountToProcess] = useState<bigint | null>(null);
 
   useEffect(() => {
     if (tokenName && tokenSymbol && holders) {
       // Calculate latest price from holders' transactions if available
-      const latestPrice =
-        holders.length > 0 ? parseFloat(formatEther(holders[0].balance)) : 0;
-      const previousPrice =
-        holders.length > 24
-          ? parseFloat(formatEther(holders[24].balance))
-          : latestPrice;
+      const latestPrice = holders.length > 0 ? parseFloat(formatEther(holders[0].balance)) : 0;
+      const previousPrice = holders.length > 24 ? parseFloat(formatEther(holders[24].balance)) : latestPrice;
 
       // Calculate 24h change percentage
-      const change24h =
-        previousPrice !== 0
-          ? ((latestPrice - previousPrice) / previousPrice) * 100
-          : 0;
+      const change24h = previousPrice !== 0 ? ((latestPrice - previousPrice) / previousPrice) * 100 : 0;
 
       // Calculate 24h volume from recent holder transactions
       const volume24h = holders
-        .filter((holder) => holder.balance > BigInt(0))
-        .reduce(
-          (sum, holder) => sum + parseFloat(formatEther(holder.balance)),
-          0
-        );
+        .filter(holder => holder.balance > BigInt(0))
+        .reduce((sum, holder) => sum + parseFloat(formatEther(holder.balance)), 0);
 
       setTokenInfo({
         name: tokenName,
@@ -114,10 +97,7 @@ export default function TokenPage({ params }: TokenPageProps) {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
-  const isOwner =
-    owner &&
-    userAddress &&
-    (owner as string).toLowerCase() === userAddress.toLowerCase();
+  const isOwner = owner && userAddress && (owner as string).toLowerCase() === userAddress.toLowerCase();
 
   const needsApproval = useMemo(() => {
     if (action !== "sell" || !amount) return false;
@@ -141,7 +121,7 @@ export default function TokenPage({ params }: TokenPageProps) {
           setQuote(sellQuote ? formatEther(sellQuote) : null);
         }
       }, 500),
-    [getBuyQuote, getSellQuote]
+    [getBuyQuote, getSellQuote],
   );
 
   useEffect(() => {
@@ -191,11 +171,7 @@ export default function TokenPage({ params }: TokenPageProps) {
       return "Sell Token";
     }
     // Check if user has sufficient ETH balance
-    if (
-      userEthBalance &&
-      amount &&
-      parseEther(amount) <= userEthBalance.value
-    ) {
+    if (userEthBalance && amount && parseEther(amount) <= userEthBalance.value) {
       return "Buy with ETH";
     }
     return "Buy with AnySpend";
@@ -203,22 +179,19 @@ export default function TokenPage({ params }: TokenPageProps) {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col min-h-screen bg-gray-900 text-white">
-        <header className="flex justify-between items-center p-4 border-b border-gray-700">
+      <div className="flex min-h-screen flex-col bg-gray-900 text-white">
+        <header className="flex items-center justify-between border-b border-gray-700 p-4">
           <div className="flex items-center space-x-4">
-            <button
-              onClick={() => router.push("/")}
-              className="text-blue-400 hover:text-blue-300 underline"
-            >
+            <button onClick={() => router.push("/")} className="text-blue-400 underline hover:text-blue-300">
               ← Back to Tokens
             </button>
             <h1 className="text-2xl font-bold">Loading Token...</h1>
           </div>
-          <ConnectButton />
+          <SignInWithB3OnBase />
         </header>
-        <div className="flex-grow flex items-center justify-center">
+        <div className="flex flex-grow items-center justify-center">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-blue-500"></div>
             <p className="text-gray-400">Loading token information...</p>
           </div>
         </div>
@@ -227,110 +200,90 @@ export default function TokenPage({ params }: TokenPageProps) {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-900 text-white">
-      <header className="flex justify-between items-center p-4 border-b border-gray-700">
+    <div className="flex min-h-screen flex-col bg-gray-900 text-white">
+      <header className="flex items-center justify-between border-b border-gray-700 p-4">
         <div className="flex items-center space-x-4">
-          <button
-            onClick={() => router.push("/")}
-            className="text-blue-400 hover:text-blue-300 underline"
-          >
+          <button onClick={() => router.push("/")} className="text-blue-400 underline hover:text-blue-300">
             ← Back to Tokens
           </button>
           <div>
             <h1 className="text-2xl font-bold">
               {tokenName || "Unknown Token"} ({tokenSymbol || "???"})
             </h1>
-            <p className="text-sm text-gray-400">
-              {formatAddress(tokenAddress)}
-            </p>
+            <p className="text-sm text-gray-400">{formatAddress(tokenAddress)}</p>
           </div>
         </div>
-        <ConnectButton />
+        <SignInWithB3OnBase />
       </header>
 
       <main className="flex-grow p-8">
-        <div className="max-w-7xl mx-auto">
+        <div className="mx-auto max-w-7xl">
           {/* Token Overview */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-gray-800 rounded-lg p-6">
-              <h3 className="text-lg font-semibold mb-2">Current Phase</h3>
-              <p className="text-2xl font-bold text-blue-400">
-                {currentPhase || "Loading..."}
-              </p>
+          <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-4">
+            <div className="rounded-lg bg-gray-800 p-6">
+              <h3 className="mb-2 text-lg font-semibold">Current Phase</h3>
+              <p className="text-2xl font-bold text-blue-400">{currentPhase || "Loading..."}</p>
             </div>
 
-            <div className="bg-gray-800 rounded-lg p-6">
-              <h3 className="text-lg font-semibold mb-2">Your Balance</h3>
-              <p className="text-2xl font-bold text-green-400">
-                {tokenBalance ? formatEther(tokenBalance) : "0.0"}
-              </p>
+            <div className="rounded-lg bg-gray-800 p-6">
+              <h3 className="mb-2 text-lg font-semibold">Your Balance</h3>
+              <p className="text-2xl font-bold text-green-400">{tokenBalance ? formatEther(tokenBalance) : "0.0"}</p>
               <p className="text-sm text-gray-400">{tokenSymbol}</p>
             </div>
 
-            <div className="bg-gray-800 rounded-lg p-6">
-              <h3 className="text-lg font-semibold mb-2">Total Holders</h3>
-              <p className="text-2xl font-bold text-purple-400">
-                {holders?.length || 0}
-              </p>
+            <div className="rounded-lg bg-gray-800 p-6">
+              <h3 className="mb-2 text-lg font-semibold">Total Holders</h3>
+              <p className="text-2xl font-bold text-purple-400">{holders?.length || 0}</p>
             </div>
 
-            <div className="bg-gray-800 rounded-lg p-6">
-              <h3 className="text-lg font-semibold mb-2">Progress</h3>
-              <p className="text-2xl font-bold text-yellow-400">
-                {bondingProgress?.progress?.toFixed(2) || "0.00"}%
-              </p>
+            <div className="rounded-lg bg-gray-800 p-6">
+              <h3 className="mb-2 text-lg font-semibold">Progress</h3>
+              <p className="text-2xl font-bold text-yellow-400">{bondingProgress?.progress?.toFixed(2) || "0.00"}%</p>
             </div>
           </div>
 
           {/* Main Content Grid */}
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 gap-8 xl:grid-cols-3">
             {/* Left Column - Chart */}
             <div className="xl:col-span-2">
-              <div className="bg-gray-800 rounded-lg p-6">
-                <h3 className="text-lg font-semibold mb-4">Price Chart</h3>
-                <TradingView
-                  tokenAddress={tokenAddress}
-                  tokenSymbol={tokenSymbol}
-                />
+              <div className="rounded-lg bg-gray-800 p-6">
+                <h3 className="mb-4 text-lg font-semibold">Price Chart</h3>
+                <TradingView tokenAddress={tokenAddress} tokenSymbol={tokenSymbol} />
               </div>
             </div>
 
             {/* Right Column - Trading Interface & Token Details */}
-            <div className="xl:col-span-1 space-y-6">
-              <div className="bg-gray-800 rounded-lg p-6 shadow-lg">
-                <h3 className="text-lg font-semibold mb-4">Trade Token</h3>
+            <div className="space-y-6 xl:col-span-1">
+              <div className="rounded-lg bg-gray-800 p-6 shadow-lg">
+                <h3 className="mb-4 text-lg font-semibold">Trade Token</h3>
 
                 {currentPhase === "Bonding" && bondingProgress && (
                   <>
                     {/* Bonding Progress */}
                     <div className="mb-6">
-                      <div className="flex justify-between text-sm mb-2">
+                      <div className="mb-2 flex justify-between text-sm">
                         <span>Bonding Progress</span>
                         <span>{bondingProgress.progress.toFixed(2)}%</span>
                       </div>
-                      <div className="w-full bg-gray-600 rounded-full h-2">
+                      <div className="h-2 w-full rounded-full bg-gray-600">
                         <div
-                          className="bg-blue-500 h-2 rounded-full"
+                          className="h-2 rounded-full bg-blue-500"
                           style={{ width: `${bondingProgress.progress}%` }}
                         ></div>
                       </div>
-                      <div className="flex justify-between text-xs mt-1 text-gray-400">
+                      <div className="mt-1 flex justify-between text-xs text-gray-400">
                         <span>{formatEther(bondingProgress.raised)} ETH</span>
-                        <span>
-                          {formatEther(bondingProgress.threshold)} ETH
-                        </span>
+                        <span>{formatEther(bondingProgress.threshold)} ETH</span>
                       </div>
                     </div>
 
                     {bondingProgress.progress < 100 ? (
                       <div>
                         {/* Buy/Sell Toggle */}
-                        <div className="flex justify-center mb-4 border-b border-gray-600">
+                        <div className="mb-4 flex justify-center border-b border-gray-600">
                           <button
                             className={`px-6 py-2 font-semibold ${
-                              action === "buy"
-                                ? "border-b-2 border-blue-500 text-white"
-                                : "text-gray-500"
+                              action === "buy" ? "border-b-2 border-blue-500 text-white" : "text-gray-500"
                             }`}
                             onClick={() => setAction("buy")}
                           >
@@ -338,9 +291,7 @@ export default function TokenPage({ params }: TokenPageProps) {
                           </button>
                           <button
                             className={`px-6 py-2 font-semibold ${
-                              action === "sell"
-                                ? "border-b-2 border-blue-500 text-white"
-                                : "text-gray-500"
+                              action === "sell" ? "border-b-2 border-blue-500 text-white" : "text-gray-500"
                             }`}
                             onClick={() => setAction("sell")}
                           >
@@ -350,73 +301,50 @@ export default function TokenPage({ params }: TokenPageProps) {
 
                         {/* Trading Form */}
                         <div>
-                          <div className="flex justify-between text-sm text-gray-400 mb-2">
-                            <span>
-                              {action === "buy"
-                                ? "You pay (ETH)"
-                                : `You sell (${tokenSymbol || ""})`}
-                            </span>
+                          <div className="mb-2 flex justify-between text-sm text-gray-400">
+                            <span>{action === "buy" ? "You pay (ETH)" : `You sell (${tokenSymbol || ""})`}</span>
                             <span>
                               Balance:{" "}
                               {action === "buy"
                                 ? `${
-                                    userEthBalance
-                                      ? parseFloat(
-                                          formatEther(userEthBalance.value)
-                                        ).toFixed(4)
-                                      : "0.0"
+                                    userEthBalance ? parseFloat(formatEther(userEthBalance.value)).toFixed(4) : "0.0"
                                   } ETH`
-                                : `${
-                                    tokenBalance
-                                      ? formatEther(tokenBalance)
-                                      : "0.0"
-                                  }`}
+                                : `${tokenBalance ? formatEther(tokenBalance) : "0.0"}`}
                             </span>
                           </div>
                           <input
                             type="number"
                             value={amount}
-                            onChange={(e) => setAmount(e.target.value)}
+                            onChange={e => setAmount(e.target.value)}
                             placeholder="Amount"
-                            className="w-full bg-gray-600 text-white p-3 rounded-md mb-4"
+                            className="mb-4 w-full rounded-md bg-gray-600 p-3 text-white"
                           />
                           {quote && (
-                            <p className="text-sm text-gray-400 mb-4">
-                              You will receive ≈ {parseFloat(quote).toFixed(4)}{" "}
-                              {action === "buy" ? tokenSymbol : "ETH"}
+                            <p className="mb-4 text-sm text-gray-400">
+                              You will receive ≈ {parseFloat(quote).toFixed(4)} {action === "buy" ? tokenSymbol : "ETH"}
                             </p>
                           )}
                           <button
                             onClick={handleAction}
                             disabled={isPending || !isConnected || !amount}
-                            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-500 text-white font-bold py-3 px-4 rounded-md"
+                            className="w-full rounded-md bg-blue-600 px-4 py-3 font-bold text-white hover:bg-blue-700 disabled:bg-gray-500"
                           >
                             {buttonText()}
                           </button>
-                          {hash && (
-                            <p className="mt-2 text-center text-xs break-all">
-                              Tx: {hash}
-                            </p>
-                          )}
+                          {hash && <p className="mt-2 break-all text-center text-xs">Tx: {hash}</p>}
                         </div>
                       </div>
                     ) : (
                       <div className="text-center">
-                        <h4 className="text-lg font-semibold mb-2">
-                          Bonding Complete!
-                        </h4>
-                        <p className="text-gray-400 mb-4">
-                          Waiting for migration to DEX.
-                        </p>
+                        <h4 className="mb-2 text-lg font-semibold">Bonding Complete!</h4>
+                        <p className="mb-4 text-gray-400">Waiting for migration to DEX.</p>
                         {isOwner && (
                           <button
                             onClick={() => migrateToDex()}
                             disabled={isPending}
-                            className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-500 text-white font-bold py-3 px-4 rounded-md"
+                            className="w-full rounded-md bg-purple-600 px-4 py-3 font-bold text-white hover:bg-purple-700 disabled:bg-gray-500"
                           >
-                            {isPending && txType === "migrate"
-                              ? "Migrating..."
-                              : "Migrate to DEX"}
+                            {isPending && txType === "migrate" ? "Migrating..." : "Migrate to DEX"}
                           </button>
                         )}
                       </div>
@@ -426,12 +354,8 @@ export default function TokenPage({ params }: TokenPageProps) {
 
                 {currentPhase !== "Bonding" && (
                   <div className="text-center">
-                    <h4 className="text-lg font-semibold mb-2">
-                      Trading Phase
-                    </h4>
-                    <p className="text-gray-400 mb-4">
-                      This token has migrated to a DEX.
-                    </p>
+                    <h4 className="mb-2 text-lg font-semibold">Trading Phase</h4>
+                    <p className="mb-4 text-gray-400">This token has migrated to a DEX.</p>
                     <div className="mt-4 space-y-2">
                       <a
                         href={`https://dexscreener.com/base/${tokenAddress}`}
@@ -455,34 +379,28 @@ export default function TokenPage({ params }: TokenPageProps) {
               </div>
 
               {/* Token Details */}
-              <div className="bg-gray-800 rounded-lg p-6">
-                <h3 className="text-lg font-semibold mb-4">Token Details</h3>
+              <div className="rounded-lg bg-gray-800 p-6">
+                <h3 className="mb-4 text-lg font-semibold">Token Details</h3>
                 <div className="space-y-4">
                   <div>
-                    <p className="text-gray-400 text-sm mb-1">
-                      Contract Address
-                    </p>
-                    <p className="font-mono text-sm break-all text-blue-400">
-                      {tokenAddress}
-                    </p>
+                    <p className="mb-1 text-sm text-gray-400">Contract Address</p>
+                    <p className="break-all font-mono text-sm text-blue-400">{tokenAddress}</p>
                   </div>
                   <div>
-                    <p className="text-gray-400 text-sm mb-1">Network</p>
+                    <p className="mb-1 text-sm text-gray-400">Network</p>
                     <p className="font-semibold">Base</p>
                   </div>
                   <div>
-                    <p className="text-gray-400 text-sm mb-1">Owner</p>
+                    <p className="mb-1 text-sm text-gray-400">Owner</p>
                     <p className="font-mono text-sm">
                       {owner ? formatAddress(owner as string) : "Unknown"}
-                      {isOwner && (
-                        <span className="ml-2 text-green-400">(You)</span>
-                      )}
+                      {isOwner && <span className="ml-2 text-green-400">(You)</span>}
                     </p>
                   </div>
                   <div>
-                    <p className="text-gray-400 text-sm mb-1">Phase</p>
+                    <p className="mb-1 text-sm text-gray-400">Phase</p>
                     <span
-                      className={`px-2 py-1 rounded text-xs font-semibold ${
+                      className={`rounded px-2 py-1 text-xs font-semibold ${
                         currentPhase === "Bonding"
                           ? "bg-blue-600"
                           : currentPhase === "Trading"
@@ -494,14 +412,12 @@ export default function TokenPage({ params }: TokenPageProps) {
                     </span>
                   </div>
                   <div>
-                    <p className="text-gray-400 text-sm mb-1">
-                      View on Explorer
-                    </p>
+                    <p className="mb-1 text-sm text-gray-400">View on Explorer</p>
                     <a
                       href={`https://basescan.org/address/${tokenAddress}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-400 hover:text-blue-300 underline text-sm"
+                      className="text-sm text-blue-400 underline hover:text-blue-300"
                     >
                       BaseScan →
                     </a>
@@ -513,11 +429,11 @@ export default function TokenPage({ params }: TokenPageProps) {
 
           {/* Token Holders */}
           {holders && holders.length > 0 && (
-            <div className="mt-8 bg-gray-800 rounded-lg p-6">
-              <h3 className="text-lg font-semibold mb-4">Top Token Holders</h3>
+            <div className="mt-8 rounded-lg bg-gray-800 p-6">
+              <h3 className="mb-4 text-lg font-semibold">Top Token Holders</h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="text-xs text-gray-400 uppercase bg-gray-700">
+                  <thead className="bg-gray-700 text-xs uppercase text-gray-400">
                     <tr>
                       <th className="px-4 py-3 text-left">Rank</th>
                       <th className="px-4 py-3 text-left">Address</th>
@@ -527,33 +443,23 @@ export default function TokenPage({ params }: TokenPageProps) {
                   </thead>
                   <tbody>
                     {holders.slice(0, 10).map((holder, index) => (
-                      <tr
-                        key={holder.address}
-                        className="border-b border-gray-700"
-                      >
+                      <tr key={holder.address} className="border-b border-gray-700">
                         <td className="px-4 py-3 font-medium">#{index + 1}</td>
                         <td className="px-4 py-3">
                           <a
                             href={`https://basescan.org/address/${holder.address}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-blue-400 hover:underline font-mono"
+                            className="font-mono text-blue-400 hover:underline"
                           >
                             {formatAddress(holder.address)}
                           </a>
-                          {holder.address.toLowerCase() ===
-                            userAddress?.toLowerCase() && (
-                            <span className="ml-2 text-green-400 text-xs">
-                              (You)
-                            </span>
+                          {holder.address.toLowerCase() === userAddress?.toLowerCase() && (
+                            <span className="ml-2 text-xs text-green-400">(You)</span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-right font-mono">
-                          {formatEther(holder.balance)}
-                        </td>
-                        <td className="px-4 py-3 text-right font-semibold">
-                          {holder.percentage.toFixed(2)}%
-                        </td>
+                        <td className="px-4 py-3 text-right font-mono">{formatEther(holder.balance)}</td>
+                        <td className="px-4 py-3 text-right font-semibold">{holder.percentage.toFixed(2)}%</td>
                       </tr>
                     ))}
                   </tbody>

@@ -1,15 +1,11 @@
 import { Transaction } from "@/types";
-import {
-  DEFAULT_API_ENDPOINT_BONDKIT,
-  DEFAULT_CHAIN_ID,
-  DEFAULT_LIMIT,
-} from "@/types/constants";
+import { DEFAULT_API_ENDPOINT_BONDKIT, DEFAULT_CHAIN_ID, DEFAULT_LIMIT } from "@/types/constants";
 import { useCallback, useEffect, useState } from "react";
 
 export function useTransactionHistory(
   tokenAddress: string,
   chainId: number = DEFAULT_CHAIN_ID,
-  apiEndpoint: string = DEFAULT_API_ENDPOINT_BONDKIT
+  apiEndpoint: string = DEFAULT_API_ENDPOINT_BONDKIT,
 ) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -53,24 +49,21 @@ export function useTransactionHistory(
           return;
         }
 
-        const newTransactions: Transaction[] = result.data.map(
-          (tx: Transaction) => ({
-            timestamp: tx.timestamp,
-            price: tx.price,
-            amount: tx.amount,
-            type: tx.type,
-            userAddress: tx.userAddress,
-            txHash: tx.txHash,
-            chainId: tx.chainId || chainId,
-          })
-        );
+        const newTransactions: Transaction[] = result.data.map((tx: Transaction) => ({
+          timestamp: tx.timestamp,
+          price: tx.price,
+          amount: tx.amount,
+          type: tx.type,
+          userAddress: tx.userAddress,
+          txHash: tx.txHash,
+          chainId: tx.chainId || chainId,
+        }));
 
-        setTransactions((prev) => {
+        setTransactions(prev => {
           if (appendData) {
             const combined = [...prev, ...newTransactions];
             const uniqueTransactions = combined.filter(
-              (tx, index, arr) =>
-                arr.findIndex((t) => t.txHash === tx.txHash) === index
+              (tx, index, arr) => arr.findIndex(t => t.txHash === tx.txHash) === index,
             );
             return uniqueTransactions.sort((a, b) => b.timestamp - a.timestamp);
           } else {
@@ -78,16 +71,10 @@ export function useTransactionHistory(
           }
         });
 
-        setTotalLoaded((prev) =>
-          appendData ? prev + newTransactions.length : newTransactions.length
-        );
+        setTotalLoaded(prev => (appendData ? prev + newTransactions.length : newTransactions.length));
         setError(null);
       } catch (err) {
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Failed to fetch transaction history"
-        );
+        setError(err instanceof Error ? err.message : "Failed to fetch transaction history");
         if (!appendData) {
           setTransactions([]);
           setTotalLoaded(0);
@@ -96,7 +83,7 @@ export function useTransactionHistory(
         setIsLoading(false);
       }
     },
-    [tokenAddress, chainId, apiEndpoint]
+    [tokenAddress, chainId, apiEndpoint],
   );
 
   const loadInitialData = useCallback(async () => {

@@ -100,13 +100,9 @@ const Text = ({
     p3: "text-base",
   };
 
-  const textClass = preset
-    ? presetClasses[preset as keyof typeof presetClasses] || "text-sm"
-    : "text-sm";
+  const textClass = preset ? presetClasses[preset as keyof typeof presetClasses] || "text-sm" : "text-sm";
 
-  return (
-    <span className={`${textClass} ${className}`}>{text || children}</span>
-  );
+  return <span className={`${textClass} ${className}`}>{text || children}</span>;
 };
 
 // Simple UnitLabel component replacement
@@ -125,35 +121,20 @@ export const TradeHistory = ({ className }: { className?: string }) => {
   };
 
   const tradeHistory = mockTradeHistory;
-  const {
-    display_base_asset_symbol,
-    quote_asset_symbol,
-    quote_increment,
-    base_increment,
-  } = currentTrade;
+  const { display_base_asset_symbol, quote_asset_symbol, quote_increment, base_increment } = currentTrade;
 
   return (
-    <div
-      className={`relative flex w-full flex-col justify-center ${
-        className || ""
-      }`}
-    >
+    <div className={`relative flex w-full flex-col justify-center ${className || ""}`}>
       <div
         className="flex gap-1 overflow-hidden border-y border-gray-600 p-2 text-gray-200"
         style={{
           scrollbarGutter: "stable",
         }}
       >
-        <Text
-          preset="p5"
-          className="flex flex-1 items-center justify-start gap-1"
-        >
+        <Text preset="p5" className="flex flex-1 items-center justify-start gap-1">
           Price <UnitLabel unit={quote_asset_symbol} />
         </Text>
-        <Text
-          preset="p5"
-          className="flex flex-1 items-center justify-end gap-1 text-right"
-        >
+        <Text preset="p5" className="flex flex-1 items-center justify-end gap-1 text-right">
           Size <UnitLabel unit={display_base_asset_symbol} />
         </Text>
         <Text preset="p5" className="flex-1 text-right">
@@ -161,12 +142,12 @@ export const TradeHistory = ({ className }: { className?: string }) => {
         </Text>
       </div>
       <div
-        className="h-0 flex-auto overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800"
+        className="scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800 h-0 flex-auto overflow-y-auto"
         style={{
           scrollbarGutter: "stable",
         }}
       >
-        {tradeHistory?.map((item) => (
+        {tradeHistory?.map(item => (
           <TradeHistoryItem
             data={item}
             key={`${item.id}_${item.fe_nonce || "nonce"}`}
@@ -203,31 +184,19 @@ const TradeHistoryItem = memo(
           isSell ? "bg-red-900/20" : "bg-green-900/20"
         }`}
       >
-        <div
-          className={`flex-1 py-0.5 ${
-            isSell ? "text-red-400" : "text-green-400"
-          }`}
-        >
+        <div className={`flex-1 py-0.5 ${isSell ? "text-red-400" : "text-green-400"}`}>
           {numberPart}
-          {decimalPart ? (
-            <span className={isSell ? "text-red-300" : "text-green-300"}>
-              .{decimalPart}
-            </span>
-          ) : null}
+          {decimalPart ? <span className={isSell ? "text-red-300" : "text-green-300"}>.{decimalPart}</span> : null}
         </div>
-        <div className="flex-1 text-right text-gray-300">
-          {formatAmount(size, baseIncrement)}
-        </div>
-        <div className="flex-1 text-right text-gray-400">
-          {toClientTime(time).format("HH:mm:ss")}
-        </div>
+        <div className="flex-1 text-right text-gray-300">{formatAmount(size, baseIncrement)}</div>
+        <div className="flex-1 text-right text-gray-400">{toClientTime(time).format("HH:mm:ss")}</div>
       </div>
     );
   },
   (oldProps, newProps) =>
     oldProps.data.id === newProps.data.id &&
     oldProps.baseIncrement === newProps.baseIncrement &&
-    oldProps.quoteIncrement === newProps.quoteIncrement
+    oldProps.quoteIncrement === newProps.quoteIncrement,
 );
 
 TradeHistoryItem.displayName = "TradeHistoryItem";
