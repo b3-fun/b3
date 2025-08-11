@@ -5,9 +5,9 @@ import type {
   GetContractReturnType,
   Hex,
   PublicClient,
-  WalletClient,
-  Transport,
   TransactionReceipt,
+  Transport,
+  WalletClient,
 } from "viem";
 import { createPublicClient, createWalletClient, custom, decodeEventLog, getContract, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
@@ -28,6 +28,7 @@ export class BondkitTokenFactory {
   private walletKey?: Hex;
   private rpcUrl: string;
   private walletClientInstance: WalletClient; // Made non-optional, initialized in constructor
+  private connectedProvider?: EIP1193Provider;
 
   constructor(chainId: SupportedChainId, walletKey?: string) {
     if (walletKey && !walletKey.startsWith("0x")) {
@@ -63,6 +64,8 @@ export class BondkitTokenFactory {
     try {
       const transport: Transport = provider ? custom(provider) : http(this.rpcUrl);
 
+      this.connectedProvider = provider;
+
       this.walletClientInstance = createWalletClient({
         chain: this.chain,
         transport,
@@ -87,6 +90,79 @@ export class BondkitTokenFactory {
     }
   }
 
+  /**
+   * Connects using an EIP-1193 provider and requests accounts, selecting the first one.
+   * Enables frontend wallet flows without requiring a private key.
+   */
+  public async connectWithProvider(provider: EIP1193Provider): Promise<boolean> {
+    try {
+      const transport: Transport = custom(provider);
+      this.connectedProvider = provider;
+
+      // Request accounts; fall back to eth_accounts if user already connected
+      let addresses: string[] = [];
+      try {
+        const result = await provider.request({ method: "eth_requestAccounts" });
+        if (Array.isArray(result)) addresses = result as string[];
+      } catch (requestErr) {
+        try {
+          const result = await provider.request({ method: "eth_accounts" });
+          if (Array.isArray(result)) addresses = result as string[];
+        } catch (_) {}
+      }
+
+      const selectedAccount = (addresses?.[0] ?? undefined) as Address | undefined;
+
+      this.walletClientInstance = createWalletClient({
+        chain: this.chain,
+        transport,
+        account: selectedAccount,
+      });
+
+      this.publicClient = createPublicClient({
+        chain: this.chain,
+        transport,
+      });
+
+      this.contract = getContract({
+        address: this.contractAddress,
+        abi: BondkitTokenFactoryABI,
+        client: this.walletClientInstance,
+      });
+
+      return true;
+    } catch (error) {
+      console.error("Connection failed:", error);
+      return false;
+    }
+  }
+
+  /**
+   * Ensure we have an account set for write operations.
+   * If not, try to resolve from a connected provider and reinitialize the client.
+   */
+  private async ensureWriteAccount(): Promise<void> {
+    if (this.walletClientInstance.account || this.walletKey) return;
+    if (!this.connectedProvider) return;
+    try {
+      const addresses = (await this.connectedProvider.request({ method: "eth_accounts" })) as string[];
+      const selectedAccount = (addresses?.[0] ?? undefined) as Address | undefined;
+      if (selectedAccount) {
+        const transport: Transport = custom(this.connectedProvider);
+        this.walletClientInstance = createWalletClient({
+          chain: this.chain,
+          transport,
+          account: selectedAccount,
+        });
+        this.contract = getContract({
+          address: this.contractAddress,
+          abi: BondkitTokenFactoryABI,
+          client: this.walletClientInstance,
+        });
+      }
+    } catch (_) {}
+  }
+
   // TODO: Implement a more generic handleError based on leaderboards-sdk style if common errors are identified
   private async handleError(error: any, context?: string): Promise<never> {
     const defaultMessage = context ? `Error in ${context}:` : "An error occurred:";
@@ -105,7 +181,10 @@ export class BondkitTokenFactory {
     configArg: BondkitTokenConfig, // Renamed to avoid conflict with getConfig
   ): Promise<Address> {
     if (!this.walletClientInstance.account && !this.walletKey) {
-      throw new Error("Wallet key not set or client not connected with an account.");
+      await this.ensureWriteAccount();
+      if (!this.walletClientInstance.account && !this.walletKey) {
+        throw new Error("Wallet key not set or client not connected with an account.");
+      }
     }
     if (!bondkitTokenCreatedEventAbi) {
       throw new Error("BondkitTokenCreated event ABI not found.");
@@ -211,7 +290,10 @@ export class BondkitTokenFactory {
    */
   public async transferOwnership(newOwner: Address): Promise<Hex | undefined> {
     if (!this.walletClientInstance.account && !this.walletKey) {
-      throw new Error("Wallet key not set or client not connected with an account for write operation.");
+      await this.ensureWriteAccount();
+      if (!this.walletClientInstance.account && !this.walletKey) {
+        throw new Error("Wallet key not set or client not connected with an account for write operation.");
+      }
     }
     try {
       const accountToUse = this.walletKey ? privateKeyToAccount(this.walletKey) : this.walletClientInstance.account;

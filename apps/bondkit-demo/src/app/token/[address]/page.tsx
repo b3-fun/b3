@@ -1,11 +1,11 @@
 "use client";
 
-import { TradingView } from "@b3dotfun/sdk/bondkit";
 import { useBondkit } from "@/hooks/useBondkit";
 import { TokenInfo } from "@/types/chart";
+import { TradingView } from "@b3dotfun/sdk/bondkit";
 import { useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { useRouter } from "next/navigation";
-import { use, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { formatEther, parseEther } from "viem";
 import { useAccount } from "wagmi";
 import SignInWithB3OnBase from "../../SignInWithB3OnBase";
@@ -24,9 +24,9 @@ function debounce<F extends (...args: Parameters<F>) => ReturnType<F>>(func: F, 
 }
 
 interface TokenPageProps {
-  params: Promise<{
+  params: {
     address: string;
-  }>;
+  };
 }
 
 export default function TokenPage({ params }: TokenPageProps) {
@@ -35,9 +35,7 @@ export default function TokenPage({ params }: TokenPageProps) {
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
 
-  // Unwrap the params Promise
-  const resolvedParams = use(params);
-  const tokenAddress = resolvedParams.address as `0x${string}`;
+  const tokenAddress = params.address as `0x${string}`;
 
   const {
     tokenName,
