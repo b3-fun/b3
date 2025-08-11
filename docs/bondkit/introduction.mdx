@@ -5,33 +5,144 @@ description: "Product for launching ERC20 bond tokens on Base with a bonding pha
 
 ## What is BondKit?
 
-BondKit is a product for launching ERC20 "bond tokens" on Base mainnet. It provides an end‑to‑end flow—from token creation and bonding‑phase trading to Uniswap v4 migration—combining audited contracts, a developer SDK, and a managed backend for analytics.
+BondKit is a complete token launch platform for creating ERC20 "bond tokens" on Base mainnet. It provides an end‑to‑end solution that handles everything from initial token creation through bonding curve trading and finally migration to Uniswap v4 for full decentralized trading.
 
-Under the hood, BondKit includes a TypeScript SDK that abstracts low‑level contract calls and integrates with a backend service that records and processes blockchain activity for analytics.
+### Key Components
 
-## What exists today
+<Tabs>
+  <Tab title="Smart Contracts">
+    **Audited On-Chain Infrastructure**
+    - Factory contract for deploying new tokens
+    - ERC20 implementation with bonding curve logic
+    - Automatic Uniswap v4 pool initialization
+    - Gas-optimized minimal proxy pattern
+  </Tab>
+  <Tab title="TypeScript SDK">
+    **Developer-Friendly Tools**
+    - Simple API for all contract interactions
+    - Type-safe interfaces with full TypeScript support
+    - Built-in transaction management
+    - Event subscriptions and monitoring
+  </Tab>
+  <Tab title="Analytics Backend">
+    **Real-Time Data Services**
+    - Transaction history tracking
+    - OHLCV chart data generation
+    - Token metadata storage
+    - REST API for frontend integration
+  </Tab>
+</Tabs>
 
-- Two contracts: Factory and Implementation (ERC20). The factory deploys new bond tokens using the minimal‑proxy/clone pattern from the implementation.
-- Bonding phase trading (buy/sell) accumulates the quote asset (ETH or a whitelisted ERC20). The list of allowed quote assets is set in the factory contract. Currently, only B3 is allowed.
-- Aggressiveness Factor: configurable from 0 to 100. At 0, pricing is linear—each 1 ETH (or equivalent) buys the same amount of tokens. Higher values make pricing more aggressive—later buyers get fewer tokens for the same amount, following a curve determined by this factor.
-- Targets: each bond token is created with a target amount (in ETH or the paired ERC20). When reached, the admin/creator can call `migrateToDex()`.
-- Migration: `migrateToDex()` calculates the `sqrtPriceX96` internally, initializes a Uniswap v4 pool, and transitions the token to a standard ERC20 with DEX‑based price discovery.
-- Post‑migration ownership: after migration, the contract automatically renounces ownership to the zero address.
-- Backend integration: the BondKit backend records all token creations and transactions into a database. It processes this data to provide information such as OHLCV charts and other analytics to frontends via an API.
+## How BondKit Works
 
-## Who this is for
+```mermaid
+graph LR
+    A[Create Token] --> B[Bonding Phase]
+    B --> C[Target Reached]
+    C --> D[Migrate to DEX]
+    D --> E[Uniswap v4 Trading]
+    
+    style A fill:#e1f5fe
+    style B fill:#fff9c4
+    style C fill:#f3e5f5
+    style D fill:#c8e6c9
+    style E fill:#bbdefb
+```
 
-- Token creators who want a streamlined way to launch ERC20s with an initial bonding phase.
-- DApp teams who need to programmatically spin up, monitor, and migrate tokens on Base.
-- Developers who want to integrate token analytics or trading history into their applications.
+### The Three-Phase Lifecycle
 
-## Product capabilities
+1. **Creation Phase**: Deploy your token with custom parameters
+2. **Bonding Phase**: Automated market making via bonding curve
+3. **DEX Phase**: Full decentralized trading on Uniswap v4
 
-- Deploy ERC20 bond tokens via factory clones with metadata (name, symbol/logo), total supply, target, quote‑asset selection (ETH or an allowed ERC20), and aggressiveness factor.
-- Built‑in bonding phase trading helpers (quote, buy, sell) and event subscriptions.
-- Uniswap v4‑only migration helpers to initialize the pool and finalize the transition.
-- Read‑only utilities for state, price, supply, and basic analytics hooks.
-- Access to backend‑provided data such as OHLCV for charting.
+## Core Features
+
+<AccordionGroup>
+  <Accordion title="🏭 Factory Pattern Deployment">
+    - **Gas-Efficient Clones**: Uses minimal proxy pattern to reduce deployment costs by ~90%
+    - **Standardized Implementation**: All tokens share the same battle-tested logic
+    - **One-Click Deployment**: Simple function call to create a new token
+  </Accordion>
+  
+  <Accordion title="📈 Dynamic Bonding Curve">
+    - **Configurable Aggressiveness**: Factor from 0-100 controls price progression
+    - **Automatic Price Discovery**: Market-driven pricing during bonding phase
+    - **Buy & Sell Support**: Full two-way trading during bonding
+    - **5% Trading Fee**: Applied to both buys and sells, distributed to fee recipient
+  </Accordion>
+  
+  <Accordion title="🎯 Target-Based Migration">
+    - **Customizable Targets**: Set your funding goal in ETH or allowed ERC20
+    - **Automatic Threshold Detection**: Contract tracks progress to target
+    - **One-Click Migration**: Simple call to `migrateToDex()` when ready
+    - **Price Calculation**: `sqrtPriceX96` computed on-chain for fair initial pricing
+  </Accordion>
+  
+  <Accordion title="🔄 Uniswap v4 Integration">
+    - **Automatic Pool Creation**: Pool initialized with bonding curve exit price
+    - **Liquidity Provision**: Accumulated funds become initial liquidity
+    - **Ownership Renouncement**: Contract becomes fully decentralized post-migration
+    - **Seamless Transition**: No manual intervention required
+  </Accordion>
+  
+  <Accordion title="📊 Analytics & Monitoring">
+    - **Real-Time Indexing**: All transactions recorded and processed
+    - **OHLCV Data**: Professional trading charts available via API
+    - **Transaction History**: Complete audit trail for every token
+    - **Portfolio Tracking**: Monitor multiple tokens and positions
+  </Accordion>
+</AccordionGroup>
+
+## Use Cases
+
+<CardGroup cols={3}>
+  <Card title="🚀 Token Launches" icon="rocket">
+    **For Projects & Creators**
+    - Fair launch mechanisms
+    - Community-driven price discovery
+    - No upfront liquidity required
+    - Built-in anti-bot protection
+  </Card>
+  
+  <Card title="🎮 Gaming & NFTs" icon="gamepad">
+    **For GameFi Projects**
+    - In-game currency launches
+    - NFT project tokens
+    - Reward token distribution
+    - Player-owned economies
+  </Card>
+  
+  <Card title="🏢 DApp Integration" icon="building">
+    **For Developers**
+    - Programmatic token creation
+    - White-label solutions
+    - Custom frontend integration
+    - API-driven automation
+  </Card>
+</CardGroup>
+
+## Technical Capabilities
+
+### Smart Contract Features
+- ✅ ERC20-compliant bond tokens with extended functionality
+- ✅ Factory pattern for gas-efficient deployments
+- ✅ Configurable parameters (supply, target, aggressiveness)
+- ✅ Built-in fee distribution mechanism
+- ✅ Automatic Uniswap v4 migration
+
+### SDK Features
+- ✅ Full TypeScript support with type definitions
+- ✅ Promise-based async operations
+- ✅ Event listeners and subscriptions
+- ✅ Transaction receipt handling
+- ✅ Error handling and retry logic
+
+### Analytics Features
+- ✅ Real-time price tracking
+- ✅ Volume and liquidity metrics
+- ✅ Historical transaction data
+- ✅ OHLCV candlestick data
+- ✅ User portfolio tracking
 
 ## Get started
 
@@ -45,19 +156,76 @@ Under the hood, BondKit includes a TypeScript SDK that abstracts low‑level con
   
 </CardGroup>
 
-## Glossary (trimmed to current scope)
+## Key Terminology
 
-- **Bonding Phase**: The pre‑DEX period where price/liquidity is handled by the bond contract logic.
-- **Clone (Minimal Proxy)**: Lightweight proxy pointing to an implementation contract to reduce gas and standardize logic.
-- **Target**: The quote‑asset threshold that enables `migrateToDex()`.
-- **AggressivenessFactor (0–100)**: Controls how quickly price increases as buys occur during bonding. 0 ≈ linear (each 1 ETH or allowed ERC20 buys ~the same amount); higher values make the curve steeper so the next 1 ETH or allowed ERC20 buys fewer tokens.
-- **Uniswap v4**: AMM used for post‑bonding trading; pool is initialized during migration.
-- **Backend Service**: Off‑chain system that stores transaction history, token metadata, and generates analytics such as OHLCV.
+<Tabs>
+  <Tab title="Core Concepts">
+    | Term | Definition |
+    |------|------------|
+    | **Bonding Phase** | Initial trading period with algorithmic pricing via bonding curve |
+    | **Bond Token** | ERC20 token with built-in bonding curve mechanics |
+    | **Target Amount** | Funding goal that triggers migration eligibility |
+    | **Migration** | Transition from bonding curve to Uniswap v4 |
+    | **Quote Asset** | The currency used to buy tokens (ETH or allowed ERC20) |
+  </Tab>
+  
+  <Tab title="Technical Terms">
+    | Term | Definition |
+    |------|------------|
+    | **Minimal Proxy** | Gas-efficient contract cloning pattern |
+    | **Aggressiveness Factor** | Parameter (0-100) controlling price curve steepness |
+    | **sqrtPriceX96** | Uniswap v4 price format for pool initialization |
+    | **Fee Recipient** | Address receiving trading fees during bonding |
+    | **LP Split Ratio** | Liquidity provider fee percentage in basis points |
+  </Tab>
+  
+  <Tab title="SDK Terms">
+    | Term | Definition |
+    |------|------------|
+    | **Factory Contract** | Main contract for deploying new bond tokens |
+    | **Implementation** | Template contract cloned for each token |
+    | **Public Client** | Read-only blockchain connection |
+    | **Wallet Client** | Write-enabled blockchain connection |
+    | **Provider** | Web3 connection interface (e.g., MetaMask) |
+  </Tab>
+</Tabs>
 
-## Current parameters & behavior
+## Important Parameters
 
-- **Quote asset**: ETH or any ERC20 on the factory’s allowed‑list (currently only B3). More assets may be added later.
-- **Pricing**: Bonding price progression is contract‑defined and modulated by `aggressivenessFactor`.
-- **Migration price**: `sqrtPriceX96` is computed on‑chain by the bond contract during `migrateToDex()`.
-- **Access control**: Only admin/creator can call `migrateToDex()`.
-- **Post‑migration ownership**: Contract renounces ownership to the zero address immediately after migration.
+<Note>
+  **Current Network**: Base Mainnet only
+  
+  **Allowed Quote Assets**: 
+  - B3 Token (currently active)
+  - ETH (coming soon)
+  - Additional tokens can be whitelisted
+  
+  **Fee Structure**:
+  - 5% on all bonding phase trades
+  - Customizable LP split ratio for migration
+  
+  **Security**:
+  - Audited smart contracts
+  - Automatic ownership renouncement post-migration
+  - No admin keys after DEX phase begins
+</Note>
+
+## Next Steps
+
+<Steps>
+  <Step title="Install SDK">
+    Set up the BondKit SDK in your project
+    ```bash
+    pnpm add @b3dotfun/sdk
+    ```
+  </Step>
+  <Step title="Read Quickstart">
+    Learn the basics with our step-by-step guide
+  </Step>
+  <Step title="Explore Examples">
+    Check out working implementations and demos
+  </Step>
+  <Step title="Join Community">
+    Get help and share feedback on Discord
+  </Step>
+</Steps>

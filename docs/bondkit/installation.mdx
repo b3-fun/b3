@@ -5,48 +5,299 @@ description: "Install and configure BondKit for launching ERC20 bond tokens on B
 
 ## Prerequisites
 
-- Node.js 18+
-- pnpm
-- A wallet with ETH on Base for deployment and transactions
+<Card title="Required Tools" icon="wrench">
+  - **Node.js 18+** - JavaScript runtime
+  - **pnpm** (recommended) or npm/yarn - Package manager
+  - **Git** - Version control
+  - **Wallet with Base ETH** - For deployments and transactions
+</Card>
 
-## Install the SDK
+## Quick Start Options
 
-<CodeGroup>
-```bash pnpm
-pnpm add @b3dotfun/sdk
-```
-```bash npm
-npm install @b3dotfun/sdk
-```
-```bash yarn
-yarn add @b3dotfun/sdk
-```
-</CodeGroup>
+<Tabs>
+  <Tab title="New Project">
+    ## Install the SDK
+    
+    <CodeGroup>
+    ```bash pnpm
+    pnpm add @b3dotfun/sdk
+    ```
+    ```bash npm
+    npm install @b3dotfun/sdk
+    ```
+    ```bash yarn
+    yarn add @b3dotfun/sdk
+    ```
+    </CodeGroup>
 
-## Configure environment
+    ## Project Setup
 
-Create a `.env` (or your preferred config) with your private key.
+    ```bash
+    # Create a new project
+    mkdir my-bondkit-app
+    cd my-bondkit-app
+    pnpm init
+
+    # Install dependencies
+    pnpm add @b3dotfun/sdk typescript
+    pnpm add -D @types/node tsx
+
+    # Create TypeScript config
+    npx tsc --init
+    ```
+  </Tab>
+  
+  <Tab title="Existing Project">
+    ## Add to Existing Project
+    
+    <CodeGroup>
+    ```bash pnpm
+    pnpm add @b3dotfun/sdk
+    ```
+    ```bash npm
+    npm install @b3dotfun/sdk
+    ```
+    ```bash yarn
+    yarn add @b3dotfun/sdk
+    ```
+    </CodeGroup>
+
+    <Note>
+      The SDK includes all necessary dependencies including viem
+    </Note>
+  </Tab>
+  
+  <Tab title="Demo App">
+    ## Clone Demo Application
+    
+    The fastest way to get started is with our complete demo application:
+
+    ```bash
+    # Clone the B3 monorepo
+    git clone https://github.com/b3dotfun/b3-monorepo.git
+    cd b3-monorepo
+
+    # Install dependencies
+    pnpm install
+
+    # Navigate to the BondKit demo
+    cd apps/bondkit-demo
+
+    # Set up environment
+    cp .env.example .env.local
+    # Edit .env.local with your configuration
+
+    # Run the demo
+    pnpm dev
+    ```
+
+    <Info>
+      The demo app is located at `apps/bondkit-demo/src/app/` and includes:
+      - Complete token deployment flow
+      - Trading interface with TradingView charts
+      - Wallet connection with B3 authentication
+      - Real-time price and volume tracking
+      - Migration management interface
+    </Info>
+
+    ### Demo App Structure
+
+    ```
+    apps/bondkit-demo/src/app/
+    ├── page.tsx                 # Landing page with token list
+    ├── deploy/page.tsx          # Token deployment interface
+    ├── token/[address]/page.tsx # Individual token trading page
+    ├── providers.tsx            # Web3 providers setup
+    ├── b3ProviderWrapper.tsx    # B3 authentication wrapper
+    └── api/                     # TradingView data endpoints
+        └── udf/                 # Universal Data Feed for charts
+    ```
+  </Tab>
+</Tabs>
+
+## Environment Configuration
+
+### Basic Setup
+
+Create a `.env` file in your project root:
 
 ```bash
+# Required for server-side operations
 WALLET_PRIVATE_KEY=0x...
+
+# Optional: Custom RPC endpoint (defaults to public)
+RPC_URL=https://base-mainnet.g.alchemy.com/v2/YOUR_KEY
+
+# Optional: API configuration
+BONDKIT_API_ENDPOINT=https://api.b3.fun
 ```
 
-## Basic client setup
+### Security Best Practices
 
-```ts
+<Warning>
+  **Never commit private keys to version control!**
+  
+  - Add `.env` to your `.gitignore`
+  - Use environment variables in production
+  - Consider using a key management service
+  - Use separate wallets for development and production
+</Warning>
+
+## Client Initialization
+
+### Basic Setup
+
+```typescript
 import { BondkitTokenFactory } from "@b3dotfun/sdk/bondkit";
 import { base } from "viem/chains";
 
-// Optional: pass a private key for server-side usage
-const factory = new BondkitTokenFactory(base.id, process.env.WALLET_PRIVATE_KEY);
+// For server-side usage with private key
+const factory = new BondkitTokenFactory(
+  base.id, 
+  process.env.WALLET_PRIVATE_KEY
+);
 
-// Optional: in browser, connect an injected provider for writes
-// factory.connect(window.ethereum);
+// For client-side usage with wallet provider
+const clientFactory = new BondkitTokenFactory(base.id);
+await clientFactory.connect(window.ethereum);
 ```
 
-<Note>
-BondKit is a product: the SDK powers developer workflows, while managed backend services provide indexing and analytics.
-</Note>
+### Advanced Configuration
+
+```typescript
+import { 
+  BondkitTokenFactory, 
+  BondkitToken,
+  getConfig 
+} from "@b3dotfun/sdk/bondkit";
+import { createWalletClient, custom } from "viem";
+import { base } from "viem/chains";
+
+// Custom wallet client setup
+const walletClient = createWalletClient({
+  chain: base,
+  transport: custom(window.ethereum)
+});
+
+// Initialize with custom configuration
+const config = getConfig(base.id);
+const factory = new BondkitTokenFactory(base.id);
+
+// Connect with custom wallet client
+await factory.connect(walletClient.transport);
+
+// Work with existing token
+const token = new BondkitToken(
+  "0x123...", // token address
+  process.env.WALLET_PRIVATE_KEY
+);
+```
+
+## TypeScript Configuration
+
+Recommended `tsconfig.json` for BondKit projects:
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "lib": ["ES2020", "DOM"],
+    "moduleResolution": "node",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "noEmit": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}
+```
+
+## Testing Your Setup
+
+Create a test file `test-bondkit.ts`:
+
+```typescript
+import { BondkitTokenFactory } from "@b3dotfun/sdk/bondkit";
+import { base } from "viem/chains";
+
+async function testConnection() {
+  try {
+    const factory = new BondkitTokenFactory(base.id);
+    const implementationAddress = await factory.getImplementationAddress();
+    
+    console.log("✅ BondKit SDK connected successfully!");
+    console.log("Implementation address:", implementationAddress);
+  } catch (error) {
+    console.error("❌ Connection failed:", error);
+  }
+}
+
+testConnection();
+```
+
+Run the test:
+
+```bash
+npx tsx test-bondkit.ts
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Quickstart Guide" icon="rocket" href="/bondkit/quickstart">
+    Deploy your first token in minutes
+  </Card>
+  <Card title="SDK Reference" icon="code" href="/bondkit/sdk/reference">
+    Explore all SDK methods and features
+  </Card>
+  <Card title="Demo Application" icon="desktop" href="https://github.com/b3dotfun/b3-monorepo/tree/main/apps/bondkit-demo">
+    Study the complete implementation
+  </Card>
+  <Card title="API Documentation" icon="server" href="/bondkit/api">
+    Learn about backend services and analytics
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Module not found errors">
+    Ensure the SDK is properly installed:
+    ```bash
+    pnpm add @b3dotfun/sdk
+    ```
+    If using React components, you may need:
+    ```bash
+    pnpm add @wagmi/core @tanstack/react-query
+    ```
+  </Accordion>
+  
+  <Accordion title="TypeScript errors">
+    Update TypeScript to latest version:
+    ```bash
+    pnpm add -D typescript@latest @types/node@latest
+    ```
+  </Accordion>
+  
+  <Accordion title="Connection issues">
+    - Verify your RPC endpoint is working
+    - Check wallet has sufficient Base ETH
+    - Ensure private key format is correct (with 0x prefix)
+  </Accordion>
+  
+  <Accordion title="Build errors">
+    Clear cache and reinstall:
+    ```bash
+    rm -rf node_modules .next
+    pnpm install
+    ```
+  </Accordion>
+</AccordionGroup>
 
 
 
