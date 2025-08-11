@@ -1,13 +1,13 @@
 import type {
-    Address,
-    Chain,
-    EIP1193Provider,
-    GetContractReturnType,
-    Hex,
-    PublicClient,
-    TransactionReceipt,
-    Transport,
-    WalletClient,
+  Address,
+  Chain,
+  EIP1193Provider,
+  GetContractReturnType,
+  Hex,
+  PublicClient,
+  TransactionReceipt,
+  Transport,
+  WalletClient,
 } from "viem";
 import { createPublicClient, createWalletClient, custom, decodeEventLog, getContract, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
@@ -108,7 +108,7 @@ export class BondkitTokenFactory {
         try {
           const result = await provider.request({ method: "eth_accounts" });
           if (Array.isArray(result)) addresses = result as string[];
-        } catch (_) {}
+        } catch (_) { }
       }
 
       const selectedAccount = (addresses?.[0] ?? undefined) as Address | undefined;
@@ -160,7 +160,7 @@ export class BondkitTokenFactory {
           client: this.walletClientInstance,
         });
       }
-    } catch (_) {}
+    } catch (_) { }
   }
 
   // TODO: Implement a more generic handleError based on leaderboards-sdk style if common errors are identified
@@ -217,7 +217,7 @@ export class BondkitTokenFactory {
           });
 
           return (decodedEvent.args as BondkitTokenCreatedEventArgs).tokenAddress;
-        } catch (e) {}
+        } catch (e) { }
       }
       throw new Error("BondkitTokenCreated event not found in transaction logs.");
     } catch (error) {
