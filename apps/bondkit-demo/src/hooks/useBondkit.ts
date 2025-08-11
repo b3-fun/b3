@@ -1,13 +1,15 @@
 import { BondkitToken, BondkitTokenABI, TokenDetails } from "@b3dotfun/sdk/bondkit";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Address } from "viem";
-import { useAccount, useBalance, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { Address, Hex } from "viem";
+import { useAccount, useBalance, useReadContract } from "wagmi";
 
 const REFETCH_INTERVAL = 5000; // 5 seconds
 
 export function useBondkit(tokenAddress: `0x${string}`) {
   const { address: userAddress, isConnected } = useAccount();
-  const { data: hash, isPending, writeContract, reset } = useWriteContract();
+  const [hash, setHash] = useState<Hex | undefined>(undefined);
+  const [isPending, setIsPending] = useState(false);
+  const [isConfirmed, setIsConfirmed] = useState(false);
 
   const { data: userEthBalance, refetch: refetchEthBalance } = useBalance({
     address: userAddress,
@@ -48,6 +50,15 @@ export function useBondkit(tokenAddress: `0x${string}`) {
       return null;
     }
   }, [tokenAddress]);
+
+  // Connect SDK client with injected wallet provider to enable writes without private key
+  useEffect(() => {
+    if (!bondkitTokenClient) return;
+    if (typeof window === "undefined") return;
+    const provider = (window as any).ethereum;
+    if (!provider) return;
+    bondkitTokenClient.connectWithProvider(provider);
+  }, [bondkitTokenClient]);
 
   // Data fetching logic
   const fetchDynamicData = useCallback(async () => {
@@ -111,55 +122,81 @@ export function useBondkit(tokenAddress: `0x${string}`) {
   );
 
   // Write Actions
-  const buy = (ethAmount: bigint) => {
+  const buy = async (ethAmount: bigint) => {
+    if (!bondkitTokenClient) return;
     setTxType("buy");
-    writeContract({
-      abi: BondkitTokenABI,
-      address: tokenAddress,
-      functionName: "buy",
-      args: [BigInt(0)], // Slippage protection, 0 for demo
-      value: ethAmount,
-    });
+    setIsConfirmed(false);
+    setIsPending(true);
+    try {
+      const tx = await bondkitTokenClient.buy(BigInt(0), ethAmount);
+      if (tx) {
+        setHash(tx);
+        await bondkitTokenClient.publicClient.waitForTransactionReceipt({ hash: tx });
+        setIsConfirmed(true);
+      }
+    } finally {
+      setIsPending(false);
+    }
   };
 
-  const approve = (tokenAmount: bigint) => {
+  const approve = async (tokenAmount: bigint) => {
+    if (!bondkitTokenClient) return;
     setTxType("approve");
-    writeContract({
-      abi: BondkitTokenABI,
-      address: tokenAddress,
-      functionName: "approve",
-      args: [tokenAddress, tokenAmount],
-    });
+    setIsConfirmed(false);
+    setIsPending(true);
+    try {
+      const tx = await bondkitTokenClient.approve(tokenAddress as Address, tokenAmount);
+      if (tx) {
+        setHash(tx);
+        await bondkitTokenClient.publicClient.waitForTransactionReceipt({ hash: tx });
+        setIsConfirmed(true);
+      }
+    } finally {
+      setIsPending(false);
+    }
   };
 
-  const sell = (tokenAmount: bigint) => {
+  const sell = async (tokenAmount: bigint) => {
+    if (!bondkitTokenClient) return;
     setTxType("sell");
-    writeContract({
-      abi: BondkitTokenABI,
-      address: tokenAddress,
-      functionName: "sell",
-      args: [tokenAmount, BigInt(0)], // Slippage protection, 0 for demo
-    });
+    setIsConfirmed(false);
+    setIsPending(true);
+    try {
+      const tx = await bondkitTokenClient.sell(tokenAmount, BigInt(0));
+      if (tx) {
+        setHash(tx);
+        await bondkitTokenClient.publicClient.waitForTransactionReceipt({ hash: tx });
+        setIsConfirmed(true);
+      }
+    } finally {
+      setIsPending(false);
+    }
   };
 
-  const migrateToDex = () => {
+  const migrateToDex = async () => {
+    if (!bondkitTokenClient) return;
     setTxType("migrate");
-    writeContract({
-      abi: BondkitTokenABI,
-      address: tokenAddress,
-      functionName: "migrateToDex",
-    });
+    setIsConfirmed(false);
+    setIsPending(true);
+    try {
+      const tx = await bondkitTokenClient.migrateToDex();
+      if (tx) {
+        setHash(tx);
+        await bondkitTokenClient.publicClient.waitForTransactionReceipt({ hash: tx });
+        setIsConfirmed(true);
+      }
+    } finally {
+      setIsPending(false);
+    }
   };
 
   // Refetch balances after a transaction
-  const { isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
   useEffect(() => {
     if (isConfirmed) {
       refetchEthBalance();
       fetchDynamicData();
-      reset();
     }
-  }, [isConfirmed, refetchEthBalance, fetchDynamicData, reset]);
+  }, [isConfirmed, refetchEthBalance, fetchDynamicData]);
 
   return {
     // Data

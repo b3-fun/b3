@@ -1,36 +1,12 @@
 "use client";
 
 import { cn } from "@/utils/cn";
-// import {
-//   BaseBondkitTokenFactoryContractAddress,
-//   BondkitTokenConfig,
-//   BondkitTokenFactoryABI,
-// } from "@b3dotfun/sdk/bondkit";
-// Temporary until SDK builds
-const BaseBondkitTokenFactoryContractAddress = "0x0" as any;
-type BondkitTokenConfig = {
-  name: string;
-  symbol: string;
-  feeRecipient: `0x${string}`;
-  finalTokenSupply: bigint;
-  aggressivenessFactor: number;
-  targetEth?: bigint;
-  lpSplitRatioFeeRecipientBps?: bigint;
-  uniswapV2RouterAddress?: `0x${string}`;
-  migrationAdminAddress?: `0x${string}`;
-  externalTokenAddress?: `0x${string}`;
-  baseTokenMetadata?: string;
-  externalTokenMetadata?: string;
-  externalTokenBuyQuote?: bigint;
-  externalTokenSellQuote?: bigint;
-  lpTokenMetadata?: string;
-  uniswapV3FeeTier?: number;
-};
-const BondkitTokenFactoryABI = [] as any;
+import { BondkitTokenFactory, type BondkitTokenConfig } from "@b3dotfun/sdk/bondkit";
 import { useAccountWallet } from "@b3dotfun/sdk/global-account/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { Abi, decodeEventLog, formatEther, parseEther } from "viem";
+import { useEffect, useRef, useState } from "react";
+import { formatEther, parseEther } from "viem";
+import { base } from "viem/chains";
 import SignInWithB3OnBase from "../SignInWithB3OnBase";
 
 interface ConfigFieldInfo {
@@ -39,27 +15,27 @@ interface ConfigFieldInfo {
   example?: string;
 }
 
-const configGuide: Record<keyof BondkitTokenConfig, ConfigFieldInfo> = {
-  name: { title: "Token Name", description: "Choose a unique name for your token." },
-  symbol: { title: "Token Symbol", description: "Choose a short symbol (2-6 characters)." },
-  feeRecipient: { title: "Fee Recipient", description: "Address receiving trading fees." },
-  finalTokenSupply: { title: "Final Token Supply", description: "Total number of tokens that will exist." },
-  targetEth: { title: "Target ETH", description: "Amount of ETH needed to complete bonding." },
-  lpSplitRatioFeeRecipientBps: {
-    title: "LP Split Ratio",
-    description: "Percentage (in BPS) of LP tokens for fee recipient.",
-  },
-  uniswapV2RouterAddress: { title: "Uniswap V2 Router", description: "Router address for DEX operations." },
-  aggressivenessFactor: { title: "Aggressiveness Factor", description: "Controls price curve steepness (1-100)." },
-  migrationAdminAddress: { title: "Migration Admin", description: "Address that can migrate to DEX." },
-  externalTokenAddress: { title: "External Token", description: "Optional external token address." },
-  baseTokenMetadata: { title: "Base Token Metadata", description: "Optional metadata URL." },
-  externalTokenMetadata: { title: "External Token Metadata", description: "Optional metadata URL." },
-  externalTokenBuyQuote: { title: "Buy Quote", description: "External token buy quote." },
-  externalTokenSellQuote: { title: "Sell Quote", description: "External token sell quote." },
-  lpTokenMetadata: { title: "LP Token Metadata", description: "Optional LP metadata URL." },
-  uniswapV3FeeTier: { title: "Uniswap V3 Fee Tier", description: "Fee tier for V3 pool." },
-};
+// const configGuide: Record<keyof BondkitTokenConfig, ConfigFieldInfo> = {
+//   name: { title: "Token Name", description: "Choose a unique name for your token." },
+//   symbol: { title: "Token Symbol", description: "Choose a short symbol (2-6 characters)." },
+//   feeRecipient: { title: "Fee Recipient", description: "Address receiving trading fees." },
+//   finalTokenSupply: { title: "Final Token Supply", description: "Total number of tokens that will exist." },
+//   targetEth: { title: "Target ETH", description: "Amount of ETH needed to complete bonding." },
+//   lpSplitRatioFeeRecipientBps: {
+//     title: "LP Split Ratio",
+//     description: "Percentage (in BPS) of LP tokens for fee recipient.",
+//   },
+//   uniswapV2RouterAddress: { title: "Uniswap V2 Router", description: "Router address for DEX operations." },
+//   aggressivenessFactor: { title: "Aggressiveness Factor", description: "Controls price curve steepness (1-100)." },
+//   migrationAdminAddress: { title: "Migration Admin", description: "Address that can migrate to DEX." },
+//   externalTokenAddress: { title: "External Token", description: "Optional external token address." },
+//   baseTokenMetadata: { title: "Base Token Metadata", description: "Optional metadata URL." },
+//   externalTokenMetadata: { title: "External Token Metadata", description: "Optional metadata URL." },
+//   externalTokenBuyQuote: { title: "Buy Quote", description: "External token buy quote." },
+//   externalTokenSellQuote: { title: "Sell Quote", description: "External token sell quote." },
+//   lpTokenMetadata: { title: "LP Token Metadata", description: "Optional LP metadata URL." },
+//   uniswapV3FeeTier: { title: "Uniswap V3 Fee Tier", description: "Fee tier for V3 pool." },
+// };
 
 const presetTemplates = [
   {
@@ -99,32 +75,28 @@ export default function DeployPage() {
   const isConnected = !!address;
   const router = useRouter();
 
-  // Mock wagmi hooks for now
   const [isPending, setIsPending] = useState(false);
   const [hash, setHash] = useState<`0x${string}` | undefined>();
-  const [receipt, setReceipt] = useState<any>(null);
   const isConfirming = false;
+  const factoryRef = useRef<BondkitTokenFactory | null>(null);
 
-  const writeContract = ({ address, abi, functionName, args }: any) => {
-    console.log("Deploy contract:", { address, functionName, args });
-    setIsPending(true);
-    // Mock deployment
-    setTimeout(() => {
-      setHash("0x123456789abcdef" as `0x${string}`);
-      setIsPending(false);
-      // Mock receipt after a delay
-      setTimeout(() => {
-        setReceipt({
-          logs: [
-            {
-              data: "0x",
-              topics: [],
-            },
-          ],
-        });
-      }, 2000);
-    }, 1500);
-  };
+  // Initialize SDK factory and connect to injected provider
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const factory = new BondkitTokenFactory(base.id);
+        factoryRef.current = factory;
+        if (typeof window !== "undefined" && (window as any).ethereum) {
+          await factory.connectWithProvider((window as any).ethereum);
+        } else {
+          factory.connect();
+        }
+      } catch (e) {
+        console.error("Failed to init BondkitTokenFactory", e);
+      }
+    };
+    init();
+  }, []);
 
   const [activeTokenAddress, setActiveTokenAddress] = useState<`0x${string}` | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -158,24 +130,22 @@ export default function DeployPage() {
     }
   }, [address]);
 
-  const handleDeploy = (e: React.FormEvent) => {
+  const handleDeploy = async (e: React.FormEvent) => {
     e.preventDefault();
-    writeContract({
-      address: BaseBondkitTokenFactoryContractAddress,
-      abi: BondkitTokenFactoryABI,
-      functionName: "deployBondkitToken",
-      args: [config],
-    });
-  };
-
-  useEffect(() => {
-    if (receipt) {
-      // Mock token creation
-      const mockTokenAddress = `0x${Math.random().toString(16).slice(2, 42).padEnd(40, "0")}` as `0x${string}`;
-      setActiveTokenAddress(mockTokenAddress);
-      setShowSuccessModal(true);
+    if (!factoryRef.current) return;
+    setIsPending(true);
+    try {
+      const tokenAddress = await factoryRef.current.deployBondkitToken(config as any);
+      if (tokenAddress) {
+        setActiveTokenAddress(tokenAddress as `0x${string}`);
+        setShowSuccessModal(true);
+      }
+    } catch (err) {
+      console.error("Deploy failed", err);
+    } finally {
+      setIsPending(false);
     }
-  }, [receipt]);
+  };
 
   const handleCloseSuccessModal = () => {
     setShowSuccessModal(false);

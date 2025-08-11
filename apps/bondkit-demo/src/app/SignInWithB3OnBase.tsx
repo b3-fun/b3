@@ -21,5 +21,5 @@ export default function SignInWithB3OnBase() {
     ],
   });
 
-  return <SignInWithB3 chain={baseChain} partnerId="bondkit" />;
+  return <SignInWithB3 chain={baseChain} partnerId={process.env.NEXT_PUBLIC_THIRDWEB_PARTNER_ID} />;
 }
