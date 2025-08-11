@@ -47,6 +47,7 @@ export class BondkitToken {
   private rpcUrl: string;
   private apiEndpoint: string;
   private walletClientInstance: WalletClient;
+  private connectedProvider?: EIP1193Provider;
 
   constructor(contractAddress: string, walletKey?: string) {
     const sdkConfig = getConfig(base.id);
@@ -87,6 +88,8 @@ export class BondkitToken {
     try {
       const transport: Transport = provider ? custom(provider) : http(this.rpcUrl);
 
+      this.connectedProvider = provider;
+
       this.walletClientInstance = createWalletClient({
         chain: this.chain,
         transport,
@@ -103,6 +106,55 @@ export class BondkitToken {
         abi: BondkitTokenABI,
         client: this.walletClientInstance,
       });
+      return true;
+    } catch (error) {
+      console.error("Connection failed:", error);
+      return false;
+    }
+  }
+
+  /**
+   * Connects using an EIP-1193 provider and requests accounts, selecting the first one.
+   * Enables frontend wallet flows without requiring a private key.
+   */
+  public async connectWithProvider(provider: EIP1193Provider): Promise<boolean> {
+    try {
+      const transport: Transport = custom(provider);
+      this.connectedProvider = provider;
+
+      // Try to request accounts (prompt user if needed)
+      let addresses: string[] = [];
+      try {
+        const result = await provider.request({ method: "eth_requestAccounts" });
+        if (Array.isArray(result)) addresses = result as string[];
+      } catch (requestErr) {
+        try {
+          const result = await provider.request({ method: "eth_accounts" });
+          if (Array.isArray(result)) addresses = result as string[];
+        } catch (_) {
+          // ignore
+        }
+      }
+
+      const selectedAccount = (addresses?.[0] ?? undefined) as Address | undefined;
+
+      this.walletClientInstance = createWalletClient({
+        chain: this.chain,
+        transport,
+        account: selectedAccount,
+      });
+
+      this.publicClient = createPublicClient({
+        chain: this.chain,
+        transport,
+      });
+
+      this.contract = getContract({
+        address: this.contractAddress,
+        abi: BondkitTokenABI,
+        client: this.walletClientInstance,
+      });
+
       return true;
     } catch (error) {
       console.error("Connection failed:", error);
@@ -364,7 +416,29 @@ export class BondkitToken {
     options?: ExecuteWriteOptions,
   ): Promise<Hex | undefined> {
     if (!this.walletClientInstance.account && !this.walletKey) {
-      throw new Error("Wallet key not set or client not connected for write operation.");
+      // Try to resolve an account from a connected EIP-1193 provider on-demand
+      if (this.connectedProvider) {
+        try {
+          const addresses = (await this.connectedProvider.request({ method: "eth_accounts" })) as string[];
+          const selectedAccount = (addresses?.[0] ?? undefined) as Address | undefined;
+          if (selectedAccount) {
+            const transport: Transport = custom(this.connectedProvider);
+            this.walletClientInstance = createWalletClient({
+              chain: this.chain,
+              transport,
+              account: selectedAccount,
+            });
+            this.contract = getContract({
+              address: this.contractAddress,
+              abi: BondkitTokenABI,
+              client: this.walletClientInstance,
+            });
+          }
+        } catch (_) {}
+      }
+      if (!this.walletClientInstance.account && !this.walletKey) {
+        throw new Error("Wallet key not set or client not connected for write operation.");
+      }
     }
     const accountToUse = this.walletKey ? privateKeyToAccount(this.walletKey) : this.walletClientInstance.account;
     if (!accountToUse) throw new Error("Account for transaction could not be determined.");
