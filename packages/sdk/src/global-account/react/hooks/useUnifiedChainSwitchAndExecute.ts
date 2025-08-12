@@ -114,12 +114,11 @@ export function useUnifiedChainSwitchAndExecute() {
       }
 
       try {
-        toast.info("Sending transaction…");
-
         setIsSwitchingOrExecuting(true);
 
         const chain = getThirdwebChain(targetChainId);
 
+        toast.info("Preparing transaction…");
         const transaction = prepareTransaction({
           client,
           chain,
@@ -141,6 +140,7 @@ export function useUnifiedChainSwitchAndExecute() {
           console.error(err);
         }
 
+        toast.info("Sending transaction…");
         const sendTxResponse = await twSendTransaction({
           account: aaAccount,
           transaction,
