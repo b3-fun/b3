@@ -25,55 +25,49 @@ export function B3DynamicModal() {
   const { theme } = useB3();
   const isMobile = useIsMobile();
 
-  let contentClass = `b3-modal ${theme === "dark" ? "dark" : ""}`;
   let hideCloseButton = false;
 
-  if (
-    [
-      "anySpend",
-      "anySpendNft",
-      "anySpendJoinTournament",
-      "anySpendFundTournament",
-      "anySpendStakeB3",
-      "anySpendBuySpin",
-      "anySpendOrderHistory",
-      "signInWithB3",
-      "anySpendSignatureMint",
-      "anySpendBondKit",
-    ].find(type => contentType?.type === type)
-  ) {
-    contentClass += " w-full";
-  }
+  // Define arrays for different modal type groups
+  const fullWidthTypes = [
+    "anySpend",
+    "anySpendNft",
+    "anySpendJoinTournament",
+    "anySpendFundTournament",
+    "anySpendStakeB3",
+    "anySpendBuySpin",
+    "anySpendOrderHistory",
+    "signInWithB3",
+    "anySpendSignatureMint",
+    "anySpendBondKit",
+  ];
 
-  if (
-    [
-      "anySpendNft",
-      "anySpendJoinTournament",
-      "anySpendFundTournament",
-      "anySpendStakeB3",
-      "anySpendBuySpin",
-      "anySpendSignatureMint",
-      "anySpendBondKit",
-    ].find(type => contentType?.type === type)
-  ) {
-    // Due to the dynamic of (Pay with crypto),(Pay with fiat), we want the height fixed to 90dvh but still scrollable.
-    // NOTE: Just leave it here in case we want the fixed height
-    // contentClass += " min-h-[90dvh] b3-modal-freestyle";
-    contentClass += " b3-modal-freestyle";
+  const freestyleTypes = [
+    "anySpendNft",
+    "anySpendJoinTournament",
+    "anySpendFundTournament",
+    "anySpendStakeB3",
+    "anySpendBuySpin",
+    "anySpendSignatureMint",
+    "anySpendBondKit",
+  ];
+
+  // Check if current content type is in freestyle types
+  const isFreestyleType = freestyleTypes.includes(contentType?.type as string);
+  if (isFreestyleType) {
     hideCloseButton = true;
   }
 
-  if (contentType?.type === "signInWithB3") {
-    contentClass += " p-0";
-  }
-
-  if (contentType?.type === "anySpend") {
-    contentClass += " md:px-6";
-  }
-
-  if (contentType?.type === "transak") {
-    contentClass += " transak-modal";
-  }
+  // Build content class using cn utility
+  // eslint-disable-next-line tailwindcss/no-custom-classname
+  const contentClass = cn(
+    "b3-modal",
+    theme === "dark" && "dark",
+    fullWidthTypes.includes(contentType?.type as string) && "w-full",
+    isFreestyleType && "b3-modal-freestyle",
+    contentType?.type === "signInWithB3" && "p-0",
+    contentType?.type === "anySpend" && "md:px-6",
+    contentType?.type === "transak" && "transak-modal",
+  );
 
   debug("@@DynamicModal:contentType", contentType);
   const renderContent = () => {
