@@ -177,7 +177,7 @@
         "groups": [
           {
             "group": "Getting Started",
-            "pages": ["anyspend/introduction", "anyspend/installation"]
+            "pages": ["anyspend/introduction", "anyspend/installation", "anyspend/onramp"]
           },
           {
             "group": "React",
@@ -230,8 +230,24 @@
         "tab": "BondKit",
         "groups": [
           {
-            "group": "Overview",
-            "pages": ["bondkit/introduction"]
+            "group": "Getting Started",
+            "pages": ["bondkit/introduction", "bondkit/installation", "bondkit/quickstart", "bondkit/how-it-works"]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": ["bondkit/concepts/bonding-phase", "bondkit/concepts/pricing", "bondkit/concepts/targets"]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "bondkit/guides/choose-quote-asset",
+              "bondkit/guides/set-aggressiveness",
+              "bondkit/guides/est-migration-price"
+            ]
+          },
+          {
+            "group": "Resources",
+            "pages": ["bondkit/networks"]
           }
         ]
       },

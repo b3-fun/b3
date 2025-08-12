@@ -1,0 +1,34 @@
+---
+title: "Targets & Migration Trigger"
+description: "Understanding targetAmount, when migration can happen, and what occurs during migration."
+---
+
+## Target amount
+
+- `targetAmount` is the quote‑asset threshold that enables migration.
+- Set at creation; denominated in the quote asset (ETH or an allowed ERC20).
+- The bonding phase ends once total raised reaches the target (excess contributions are refunded).
+
+## Who can migrate
+
+- Only the token owner/creator (migration admin) can call `migrateToDex()`.
+
+## What happens at migration
+
+- Split of accumulated quote asset:
+  - Portion to `feeRecipient`, based on `lpSplitRatioFeeRecipientBps`.
+  - Remainder used as liquidity alongside tokens reserved for LP.
+- For Uniswap v4 migration, the contract computes `sqrtPriceX96` to initialize the pool.
+- Liquidity is added to the v4 pool with appropriate safeguards; LP tokens or positions are handled per v4 semantics, with ownership effectively burned/renounced for decentralization.
+- Ownership is renounced immediately to finalize decentralization.
+
+## Post‑migration
+
+- Bonding‑phase trading is disabled.
+- Token behaves as a standard ERC20 with DEX‑based price discovery.
+
+<Note>
+Networks & addresses (factory, v4 pool manager, hooks) are listed on the Networks page.
+</Note>
+
+

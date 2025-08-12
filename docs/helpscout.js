@@ -3,10 +3,10 @@
   function a() {
     var e = t.getElementsByTagName("script")[0],
       n = t.createElement("script");
-    (n.type = "text/javascript"),
+    ((n.type = "text/javascript"),
       (n.async = !0),
       (n.src = "https://beacon-v2.helpscout.net"),
-      e.parentNode.insertBefore(n, e);
+      e.parentNode.insertBefore(n, e));
   }
   if (
     ((e.Beacon = n =

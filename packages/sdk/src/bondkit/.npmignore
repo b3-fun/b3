@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Source files
+src/
+
+# Build artifacts
+*.tgz
+*.js.map
+
+# Tests
+# tests/ # This was already present, but commenting out to avoid duplication below
+
+# Config files
+.git/
+.gitignore
+# .npmignore # This was already present, but commenting out to avoid duplication below
+.eslintrc.js
+tsconfig.json
+.env.example
+.yarnrc.yml
+.env
+
+examples/
+
+# Examples / Non-essential dist contents
+# Let's explicitly ignore example if it exists in dist
+# dist/example/ # Add specific directory ignores if needed after checking content
+
+# Original ignores (retained)
+tests/
+.npmignore

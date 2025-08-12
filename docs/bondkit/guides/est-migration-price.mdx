@@ -1,0 +1,26 @@
+---
+title: "Estimate Migration Price"
+description: "Estimating price at migration and considerations for Uniswap v4 initialization."
+---
+
+## Overview
+
+Migration initializes a Uniswap v4 pool. The contract computes `sqrtPriceX96` from bonding state.
+
+## Practical approach
+
+- Use bonding reads to approximate price near the target:
+- `getCurrentBondingCurvePricePerToken()`
+- `getBondingProgress()`
+
+## Considerations
+
+- The final split and liquidity amount can affect initial ticks.
+- Slippage protections are applied when adding liquidity.
+- For ERC20 quote assets, ensure pair and decimals are accounted for when converting to `sqrtPriceX96`.
+
+<Note>
+Exact initialization math is handled on-chain. Use reads for UI estimation; treat final on-chain initialization as source of truth.
+</Note>
+
+

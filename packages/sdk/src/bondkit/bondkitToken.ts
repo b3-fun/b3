@@ -1,0 +1,539 @@
+import type {
+  Address,
+  Chain,
+  EIP1193Provider,
+  GetContractReturnType,
+  Hex,
+  PublicClient,
+  WalletClient,
+  Transport,
+} from "viem";
+import { createPublicClient, createWalletClient, custom, getContract, http, parseEther } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
+import { BondkitTokenABI } from "./abis";
+import { getConfig } from "./config";
+import type {
+  TokenDetails,
+  TokenStatus,
+  BondkitTokenInitializationConfig,
+  GetTransactionHistoryOptions,
+  TransactionResponse,
+} from "./types";
+import { base } from "viem/chains";
+
+// Event ABI snippets for decoding
+const boughtEventAbi = BondkitTokenABI.find(item => item.type === "event" && item.name === "BondingCurveBuy");
+const soldEventAbi = BondkitTokenABI.find(item => item.type === "event" && item.name === "BondingCurveSell");
+const dexMigrationEventAbi = BondkitTokenABI.find(
+  item => item.type === "event" && item.name === "BondkitTokenMigrated",
+);
+
+// Define a type for the options that can be passed to executeWrite
+// This mirrors common properties from viem's WriteContractParameters but makes them optional
+type ExecuteWriteOptions = {
+  value?: bigint;
+  gas?: bigint;
+  maxFeePerGas?: bigint;
+  maxPriorityFeePerGas?: bigint;
+  // Potentially add nonce or other parameters if needed
+};
+
+export class BondkitToken {
+  public contract: GetContractReturnType<typeof BondkitTokenABI, WalletClient>;
+  public publicClient: PublicClient;
+  public contractAddress: Hex;
+  private chain: Chain;
+  private walletKey?: Hex;
+  private rpcUrl: string;
+  private apiEndpoint: string;
+  private walletClientInstance: WalletClient;
+  private connectedProvider?: EIP1193Provider;
+
+  constructor(contractAddress: string, walletKey?: string) {
+    const sdkConfig = getConfig(base.id);
+    this.chain = sdkConfig.chain;
+    this.rpcUrl = sdkConfig.rpcUrl;
+    this.apiEndpoint = sdkConfig.apiEndpoint;
+
+    if (walletKey && !walletKey.startsWith("0x")) {
+      this.walletKey = `0x${walletKey}` as Hex;
+    } else if (walletKey) {
+      this.walletKey = walletKey as Hex;
+    }
+
+    if (!contractAddress || !contractAddress.startsWith("0x")) {
+      throw new Error("Valid contract address is required for BondkitToken.");
+    }
+    this.contractAddress = contractAddress as Hex;
+
+    this.publicClient = createPublicClient({
+      chain: this.chain,
+      transport: http(this.rpcUrl),
+    });
+
+    this.walletClientInstance = createWalletClient({
+      chain: this.chain,
+      transport: http(this.rpcUrl),
+      account: this.walletKey ? privateKeyToAccount(this.walletKey) : undefined,
+    });
+
+    this.contract = getContract({
+      address: this.contractAddress,
+      abi: BondkitTokenABI,
+      client: this.walletClientInstance,
+    });
+  }
+
+  public connect(provider?: EIP1193Provider): boolean {
+    try {
+      const transport: Transport = provider ? custom(provider) : http(this.rpcUrl);
+
+      this.connectedProvider = provider;
+
+      this.walletClientInstance = createWalletClient({
+        chain: this.chain,
+        transport,
+        account: this.walletKey ? privateKeyToAccount(this.walletKey) : undefined,
+      });
+
+      this.publicClient = createPublicClient({
+        chain: this.chain,
+        transport,
+      });
+
+      this.contract = getContract({
+        address: this.contractAddress,
+        abi: BondkitTokenABI,
+        client: this.walletClientInstance,
+      });
+      return true;
+    } catch (error) {
+      console.error("Connection failed:", error);
+      return false;
+    }
+  }
+
+  /**
+   * Connects using an EIP-1193 provider and requests accounts, selecting the first one.
+   * Enables frontend wallet flows without requiring a private key.
+   */
+  public async connectWithProvider(provider: EIP1193Provider): Promise<boolean> {
+    try {
+      const transport: Transport = custom(provider);
+      this.connectedProvider = provider;
+
+      // Try to request accounts (prompt user if needed)
+      let addresses: string[] = [];
+      try {
+        const result = await provider.request({ method: "eth_requestAccounts" });
+        if (Array.isArray(result)) addresses = result as string[];
+      } catch (requestErr) {
+        try {
+          const result = await provider.request({ method: "eth_accounts" });
+          if (Array.isArray(result)) addresses = result as string[];
+        } catch (_) {
+          // ignore
+        }
+      }
+
+      const selectedAccount = (addresses?.[0] ?? undefined) as Address | undefined;
+
+      this.walletClientInstance = createWalletClient({
+        chain: this.chain,
+        transport,
+        account: selectedAccount,
+      });
+
+      this.publicClient = createPublicClient({
+        chain: this.chain,
+        transport,
+      });
+
+      this.contract = getContract({
+        address: this.contractAddress,
+        abi: BondkitTokenABI,
+        client: this.walletClientInstance,
+      });
+
+      return true;
+    } catch (error) {
+      console.error("Connection failed:", error);
+      return false;
+    }
+  }
+
+  private async handleError(error: any, context?: string): Promise<never> {
+    const defaultMessage = context ? `Error in ${context}:` : "An error occurred:";
+    console.error(defaultMessage, error);
+    // TODO: Add more specific error checks based on BondkitTokenABI error types if needed
+    throw error;
+  }
+
+  // --- Read Methods (ERC20 + Custom) --- //
+  public async name(): Promise<string | undefined> {
+    try {
+      return await this.contract.read.name();
+    } catch (error) {
+      console.warn("Error fetching token name:", error);
+      return undefined;
+    }
+  }
+
+  public async symbol(): Promise<string | undefined> {
+    try {
+      return await this.contract.read.symbol();
+    } catch (error) {
+      console.warn("Error fetching token symbol:", error);
+      return undefined;
+    }
+  }
+
+  public async decimals(): Promise<number | undefined> {
+    try {
+      const dec = await this.contract.read.decimals();
+      return Number(dec);
+    } catch (error) {
+      console.warn("Error fetching token decimals:", error);
+      return undefined;
+    }
+  }
+
+  public async totalSupply(): Promise<bigint | undefined> {
+    try {
+      return await this.contract.read.totalSupply();
+    } catch (error) {
+      console.warn("Error fetching token total supply:", error);
+      return undefined;
+    }
+  }
+
+  public async balanceOf(account: Address): Promise<bigint | undefined> {
+    try {
+      return await this.contract.read.balanceOf([account]);
+    } catch (error) {
+      console.warn(`Error fetching balance for ${account}:`, error);
+      return undefined;
+    }
+  }
+
+  public async allowance(owner: Address, spender: Address): Promise<bigint | undefined> {
+    try {
+      return await this.contract.read.allowance([owner, spender]);
+    } catch (error) {
+      console.warn(`Error fetching allowance for owner ${owner} and spender ${spender}:`, error);
+      return undefined;
+    }
+  }
+
+  public async owner(): Promise<Address | undefined> {
+    try {
+      return await this.contract.read.owner();
+    } catch (error) {
+      console.warn("Error fetching token owner or 'owner' function might not exist:", error);
+      return undefined;
+    }
+  }
+
+  public async getTokenDetails(): Promise<TokenDetails | undefined> {
+    try {
+      const [name, symbol, decimals, totalSupply, owner] = await Promise.all([
+        this.name(),
+        this.symbol(),
+        this.decimals(),
+        this.totalSupply(),
+        this.owner(),
+      ]);
+      if (name === undefined || symbol === undefined || decimals === undefined || totalSupply === undefined) {
+        console.warn("Failed to retrieve all essential token details.");
+        return undefined;
+      }
+      return {
+        name,
+        symbol,
+        decimals,
+        totalSupply,
+        owner: owner || "0x0000000000000000000000000000000000000000",
+      };
+    } catch (error) {
+      console.warn("Error in getTokenDetails:", error);
+      return undefined;
+    }
+  }
+
+  // --- Bondkit Specific Read Methods ---
+  public async feeRecipient(): Promise<Address | undefined> {
+    try {
+      return await this.contract.read.feeRecipient();
+    } catch (e) {
+      console.warn("Error fetching feeRecipient:", e);
+      return undefined;
+    }
+  }
+
+  public async currentStatus(): Promise<TokenStatus | undefined> {
+    try {
+      const status = await this.contract.read.currentStatus();
+      return status as TokenStatus;
+    } catch (e) {
+      console.warn("Error fetching currentStatus:", e);
+      return undefined;
+    }
+  }
+
+  public async getCurrentPhase(): Promise<string | undefined> {
+    try {
+      return await this.contract.read.getCurrentPhase();
+    } catch (e) {
+      console.warn("Error fetching getCurrentPhase:", e);
+      return undefined;
+    }
+  }
+
+  public async getAmountOfTokensToBuy(ethAmount: bigint | string): Promise<bigint | undefined> {
+    try {
+      const value = typeof ethAmount === "string" ? parseEther(ethAmount) : ethAmount;
+      return await this.contract.read.getAmountOfTokensToBuy([value]);
+    } catch (e) {
+      console.warn("Error in getAmountOfTokensToBuy:", e);
+      return undefined;
+    }
+  }
+
+  public async getAmountOfEthToSell(tokenAmount: bigint): Promise<bigint | undefined> {
+    try {
+      return await this.contract.read.getAmountOfEthToSell([tokenAmount]);
+    } catch (e) {
+      console.warn("Error in getAmountOfEthToSell:", e);
+      return undefined;
+    }
+  }
+
+  public async getCurrentBondingCurvePricePerToken(): Promise<bigint | undefined> {
+    try {
+      return await this.contract.read.getCurrentBondingCurvePricePerToken();
+    } catch (e) {
+      console.warn("Error fetching current bonding curve price:", e);
+      return undefined;
+    }
+  }
+
+  public async totalEthRaisedBonding(): Promise<bigint | undefined> {
+    try {
+      return await this.contract.read.totalEthRaisedBonding();
+    } catch (e) {
+      console.warn("Error fetching totalEthRaisedBonding:", e);
+      return undefined;
+    }
+  }
+
+  public async getTotalSupply(): Promise<bigint | undefined> {
+    try {
+      return await this.contract.read.totalSupply();
+    } catch (e) {
+      console.warn("Error fetching total supply:", e);
+      return undefined;
+    }
+  }
+
+  public async getPaginatedHolders(
+    startIndex: bigint,
+    count = BigInt(1000),
+  ): Promise<{ address: Address; balance: bigint }[]> {
+    try {
+      const response = await this.contract.read.getPaginatedHolders([startIndex, count]);
+      const holders = response[0] as Address[];
+      const balances = response[1] as bigint[];
+
+      return holders.map((holder, index) => ({
+        address: holder as Address,
+        balance: balances[index] as bigint,
+      }));
+    } catch (e) {
+      console.warn("Error fetching paginated holders:", e);
+      return [];
+    }
+  }
+
+  public async getBondingProgress(): Promise<
+    | {
+        progress: number;
+        raised: number;
+        threshold: number;
+      }
+    | undefined
+  > {
+    try {
+      const [progress, raised, threshold] = await this.contract.read.getBondingProgressPercent();
+      return {
+        progress: Number(progress) / 100,
+        raised: Number(raised),
+        threshold: Number(threshold),
+      };
+    } catch (e) {
+      console.warn("Error fetching bonding progress percent:", e);
+      return undefined;
+    }
+  }
+
+  // --- Transaction History --- //
+  public async getTransactionHistory(options?: GetTransactionHistoryOptions): Promise<TransactionResponse | undefined> {
+    try {
+      const { userAddress, type, from, to, limit, offset } = options || {};
+      const response = await fetch(this.apiEndpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-service-method": "getTransactionHistory",
+        },
+        body: JSON.stringify({
+          contractAddress: this.contractAddress,
+          chainId: this.chain.id,
+          userAddress,
+          type,
+          from,
+          to: to || Date.now(),
+          limit: limit || 50,
+          offset,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result: TransactionResponse = await response.json();
+      return result;
+    } catch (e) {
+      console.warn("Error fetching transaction history:", e);
+      return undefined;
+    }
+  }
+
+  // --- Write Methods --- //
+  private async executeWrite(
+    functionName: string,
+    args: any[],
+    options?: ExecuteWriteOptions,
+  ): Promise<Hex | undefined> {
+    if (!this.walletClientInstance.account && !this.walletKey) {
+      // Try to resolve an account from a connected EIP-1193 provider on-demand
+      if (this.connectedProvider) {
+        try {
+          const addresses = (await this.connectedProvider.request({ method: "eth_accounts" })) as string[];
+          const selectedAccount = (addresses?.[0] ?? undefined) as Address | undefined;
+          if (selectedAccount) {
+            const transport: Transport = custom(this.connectedProvider);
+            this.walletClientInstance = createWalletClient({
+              chain: this.chain,
+              transport,
+              account: selectedAccount,
+            });
+            this.contract = getContract({
+              address: this.contractAddress,
+              abi: BondkitTokenABI,
+              client: this.walletClientInstance,
+            });
+          }
+        } catch (_) {}
+      }
+      if (!this.walletClientInstance.account && !this.walletKey) {
+        throw new Error("Wallet key not set or client not connected for write operation.");
+      }
+    }
+    const accountToUse = this.walletKey ? privateKeyToAccount(this.walletKey) : this.walletClientInstance.account;
+    if (!accountToUse) throw new Error("Account for transaction could not be determined.");
+
+    try {
+      let maxFee = options?.maxFeePerGas;
+      let priorityFee = options?.maxPriorityFeePerGas;
+
+      if (maxFee === undefined || priorityFee === undefined) {
+        try {
+          const feeEstimates = await this.publicClient.estimateFeesPerGas();
+          if (maxFee === undefined) {
+            maxFee = feeEstimates.maxFeePerGas;
+          }
+          if (priorityFee === undefined) {
+            priorityFee = feeEstimates.maxPriorityFeePerGas;
+          }
+        } catch (feeError) {
+          console.warn("Could not estimate fees, will rely on wallet defaults or provided values:", feeError);
+          maxFee = maxFee ?? undefined;
+          priorityFee = priorityFee ?? undefined;
+        }
+      }
+
+      const transactionOptions: any = {
+        account: accountToUse,
+        chain: this.chain,
+      };
+      if (options?.value !== undefined) transactionOptions.value = options.value;
+      if (options?.gas !== undefined) transactionOptions.gas = options.gas;
+      if (maxFee !== undefined) transactionOptions.maxFeePerGas = maxFee;
+      if (priorityFee !== undefined) transactionOptions.maxPriorityFeePerGas = priorityFee;
+
+      const hash = await (this.contract.write as any)[functionName](args, transactionOptions);
+      return hash;
+    } catch (error) {
+      return this.handleError(error, functionName);
+    }
+  }
+
+  public async initialize(
+    config: BondkitTokenInitializationConfig,
+    options?: ExecuteWriteOptions,
+  ): Promise<Hex | undefined> {
+    return this.executeWrite("initialize", [config], options);
+  }
+
+  public async transfer(to: Address, amount: bigint, options?: ExecuteWriteOptions): Promise<Hex | undefined> {
+    return this.executeWrite("transfer", [to, amount], options);
+  }
+
+  public async approve(spender: Address, amount: bigint, options?: ExecuteWriteOptions): Promise<Hex | undefined> {
+    return this.executeWrite("approve", [spender, amount], options);
+  }
+
+  public async transferFrom(
+    from: Address,
+    to: Address,
+    amount: bigint,
+    options?: ExecuteWriteOptions,
+  ): Promise<Hex | undefined> {
+    return this.executeWrite("transferFrom", [from, to, amount], options);
+  }
+
+  /** Buy tokens with ETH. Payable function. */
+  public async buy(
+    minTokensOut: bigint,
+    ethAmount: bigint | string,
+    options?: ExecuteWriteOptions,
+  ): Promise<Hex | undefined> {
+    if (!boughtEventAbi) console.warn("Bought event ABI not found for event decoding.");
+    const value = typeof ethAmount === "string" ? parseEther(ethAmount) : ethAmount;
+    return this.executeWrite("buy", [minTokensOut], { ...options, value });
+  }
+
+  /** Sell tokens for ETH. */
+  public async sell(tokenAmount: bigint, minEthOut: bigint, options?: ExecuteWriteOptions): Promise<Hex | undefined> {
+    if (!soldEventAbi) console.warn("Sold event ABI not found for event decoding.");
+    return this.executeWrite("sell", [tokenAmount, minEthOut], options);
+  }
+
+  /** Migrate liquidity to DEX. Only callable by owner/migrationAdmin based on typical patterns. */
+  public async migrateToDex(options?: ExecuteWriteOptions): Promise<Hex | undefined> {
+    if (!dexMigrationEventAbi) console.warn("DexMigration event ABI not found for event decoding.");
+    return this.executeWrite("migrateToDex", [], options);
+  }
+
+  public async transferTokenOwnership(newOwner: Address, options?: ExecuteWriteOptions): Promise<Hex | undefined> {
+    return this.executeWrite("transferOwnership", [newOwner], options);
+  }
+
+  public async renounceTokenOwnership(options?: ExecuteWriteOptions): Promise<Hex | undefined> {
+    return this.executeWrite("renounceOwnership", [], options);
+  }
+
+  // TODO: Add other specific write methods from BondkitTokenABI.ts
+  // e.g., setBondingCurve (if it exists and is external), updateArtistAddress, etc.
+}

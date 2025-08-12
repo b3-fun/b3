@@ -11,5 +11,11 @@ export function TestLoadNFTs() {
   });
   console.log("useTokensFromAddress response", response);
 
-  return <div>{response?.data.map(token => <div key={token.tokenId}>{token.name}</div>)}</div>;
+  return (
+    <div>
+      {response?.data.map(token => (
+        <div key={token.tokenId}>{token.name}</div>
+      ))}
+    </div>
+  );
 }

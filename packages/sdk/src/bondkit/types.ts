@@ -1,0 +1,98 @@
+import type { Address, Hex } from "viem";
+
+export type TokenDetails = {
+  name: string;
+  symbol: string;
+  decimals: number;
+  totalSupply: bigint;
+  owner: Address;
+};
+
+// From BondkitTokenFactoryABI for deployBondkitToken function
+export type BondkitTokenConfig = {
+  name: string;
+  symbol: string;
+  feeRecipient: Address;
+  finalTokenSupply: bigint;
+  aggressivenessFactor: number; // uint8
+  lpSplitRatioFeeRecipientBps: bigint;
+  targetEth: bigint;
+  uniswapV2RouterAddress: Address;
+  migrationAdminAddress: Address;
+};
+
+// Event type for BondkitTokenCreated from BondkitTokenFactoryABI
+export type BondkitTokenCreatedEventArgs = {
+  tokenAddress: Address;
+  implementationAddress: Address;
+  name: string;
+  symbol: string;
+  feeRecipient: Address;
+  migrationAdmin: Address;
+};
+
+// From BondkitTokenABI for initialize function
+// This is the same structure as BondkitTokenConfig from the factory, re-using it.
+// If they can diverge, define a separate type here.
+export type BondkitTokenInitializationConfig = BondkitTokenConfig;
+
+// Event type for Bought from BondkitTokenABI
+export type BoughtEventArgs = {
+  buyer: Address;
+  ethIn: bigint;
+  tokensOut: bigint;
+  feeRecipientFee: bigint;
+};
+
+// Event type for Sold from BondkitTokenABI
+export type SoldEventArgs = {
+  seller: Address;
+  tokensIn: bigint;
+  ethOut: bigint;
+  feeRecipientFee: bigint;
+};
+
+// Event type for DexMigration from BondkitTokenABI
+export type DexMigrationEventArgs = {
+  ethForLp: bigint;
+  tokensForLp: bigint;
+  ethForFeeRecipient: bigint;
+};
+
+// Enum for Status (used in BondkitToken ABI)
+export enum TokenStatus {
+  Inactive = 0, // Assuming mapping from ABI, verify actual enum values if specified elsewhere
+  BondingPhase = 1,
+  DexPhase = 2,
+  Migrated = 3,
+}
+
+export interface GetTransactionHistoryOptions {
+  userAddress?: Address;
+  type?: "buy" | "sell";
+  from?: number;
+  to?: number;
+  // The number of records to return. Minimum 1, maximum 100.
+  limit?: number;
+  offset?: number;
+}
+
+export interface Transaction {
+  timestamp: number;
+  price: number;
+  amount: string; // API returns amount as a string
+  type: "buy" | "sell";
+  userAddress: Address;
+  txHash: Hex;
+  chainId: number;
+  blockNumber?: number;
+  totalEthRaisedBonding?: string;
+  value?: string;
+}
+
+export interface TransactionResponse {
+  total: number;
+  limit: number;
+  skip: number;
+  data: Transaction[];
+}
