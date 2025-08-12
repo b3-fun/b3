@@ -63,6 +63,14 @@ export function B3DynamicModal() {
     hideCloseButton = true;
   }
 
+  if (contentType?.type === "signInWithB3") {
+    contentClass += " p-0";
+  }
+
+  if (contentType?.type === "anySpend") {
+    contentClass += " md:px-6";
+  }
+
   if (contentType?.type === "transak") {
     contentClass += " transak-modal";
   }
@@ -120,7 +128,6 @@ export function B3DynamicModal() {
           "border border-gray-200 dark:border-gray-800",
           "mx-auto w-full max-w-md",
           "sm:max-w-lg",
-          contentType?.type === "signInWithB3" && "p-0",
         )}
         hideCloseButton={hideCloseButton}
       >
