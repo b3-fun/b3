@@ -1,4 +1,5 @@
 import { getChainName, getNativeToken } from "@b3dotfun/sdk/anyspend";
+import app from "@b3dotfun/sdk/global-account/app";
 import { getThirdwebChain, supportedChains } from "@b3dotfun/sdk/shared/constants/chains/supported";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import invariant from "invariant";
@@ -8,7 +9,6 @@ import { prepareTransaction, sendTransaction as twSendTransaction } from "thirdw
 import { useSwitchChain, useWalletClient } from "wagmi";
 import { useB3 } from "../components";
 import { useAccountWallet } from "./useAccountWallet";
-import app from "@b3dotfun/sdk/global-account/app";
 
 export interface UnifiedTransactionParams {
   to: string;
@@ -114,6 +114,8 @@ export function useUnifiedChainSwitchAndExecute() {
       }
 
       try {
+        toast.info("Sending transaction…");
+
         setIsSwitchingOrExecuting(true);
 
         const chain = getThirdwebChain(targetChainId);
@@ -126,17 +128,19 @@ export function useUnifiedChainSwitchAndExecute() {
           value: params.value,
         });
 
-        // Create transaction intent
-        toast.info("Creating transaction intent…");
-        await app.service("global-accounts-intents").create({
-          partnerId: String(process.env.PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID),
-          chainId: targetChainId,
-          to: params.to,
-          data: params.data || "0x",
-          value: params.value.toString(),
-        });
+        // Check if we can use global-accounts-intents, if yes, create an intent.
+        try {
+          await app.service("global-accounts-intents").create({
+            partnerId: String(process.env.PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID),
+            chainId: targetChainId,
+            to: params.to,
+            data: params.data || "0x",
+            value: params.value.toString(),
+          });
+        } catch (err: any) {
+          console.error(err);
+        }
 
-        toast.info("Sending transaction…");
         const sendTxResponse = await twSendTransaction({
           account: aaAccount,
           transaction,
