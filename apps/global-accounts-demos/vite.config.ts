@@ -4,6 +4,8 @@ import path from "path";
 import { defineConfig } from "vite";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 
+const __dirname = path.resolve();
+
 // Define app types for type safety
 type AppType = "default" | "battle";
 

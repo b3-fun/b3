@@ -3,35 +3,43 @@ title: "AnySpend Introduction"
 description: "Cross-chain crypto payments made simple - swap tokens, buy NFTs, and integrate fiat onramps"
 ---
 
-# AnySpend
-
-Cross-chain crypto payments made simple - swap tokens, buy NFTs, and integrate fiat onramps with a few lines of code.
+<img src="/images/anyspend-example-banner.jpg" alt="AnySpend Banner" className="w-full rounded-xl" />
 
 ## What is AnySpend?
 
 AnySpend is B3's comprehensive payment infrastructure that enables seamless crypto transactions across multiple blockchains. Whether you're building a DeFi application, NFT marketplace, or gaming platform, AnySpend provides the components and APIs you need to accept payments in any token.
 
-## Key Features
+[Try AnySpend in your browser](https://anyspend.com/swap)
+
+## Use Cases
 
 <CardGroup cols={2}>
-<Card title="Cross-Chain Swaps" icon="exchange-alt">
-  Enable users to swap tokens between different blockchains with automatic routing and best price discovery
+<Card href="/anyspend/examples">
+  <img src="/images/customize-for-swap.png" className="w-full h-48 object-cover rounded-xl mb-4" />
+  <h3 className="text-lg font-semibold text-primary block mb-1">Cross-Chain Swaps</h3>
+  Enable users to swap tokens between different blockchains with automatic routing and best price discovery.
 </Card>
 
-<Card title="NFT Payments" icon="image">
-  One-click NFT purchase buttons that accept any token as payment, with automatic conversion
+<Card href="/anyspend/examples">
+  <img src="/images/customize-for-checkout.png" className="w-full h-48 object-cover rounded-xl mb-4" />
+  <h3 className="text-lg font-semibold text-primary block mb-1">Checkout</h3>
+  One-click checkout buttons that accept any token as payment, with automatic conversion.
 </Card>
 
-<Card title="Fiat Onramps" icon="credit-card">
-  Integrated credit card payments through Stripe and Coinbase for seamless fiat-to-crypto conversion
+<Card href="/anyspend/examples">
+  <img src="/images/customize-for-defi.png" className="w-full h-48 object-cover rounded-xl mb-4" />
+  <h3 className="text-lg font-semibold text-primary block mb-1">DeFi</h3>
+  Execute any onchain contract call, with usage for staking, prediction markets, bonding curves, and more.
 </Card>
 
-<Card title="Custom Integrations" icon="code">
-  Flexible components for staking, gaming, and any custom smart contract interaction
+<Card href="/anyspend/examples">
+  <img src="/images/customize-for-games.png" className="w-full h-48 object-cover rounded-xl mb-4" />
+  <h3 className="text-lg font-semibold text-primary block mb-1">Games</h3>
+  Embeddable in native iOS/Android, Unity, & other surfaces.
 </Card>
 </CardGroup>
 
-## How It Works
+## Features
 
 <Steps>
 <Step title="User Initiates Payment">
@@ -47,29 +55,12 @@ If needed, tokens are bridged across chains using secure, battle-tested infrastr
 </Step>
 
 <Step title="Final Delivery">
-Tokens arrive at the destination address, triggering your success callbacks
+Tokens arrive at the destination address, execute any custom logic, and trigger your success callbacks
 </Step>
 </Steps>
 
-## Supported Chains
-
-<Tabs>
-<Tab title="Mainnet">
-- **Ethereum** (ETH)
-- **Base** (ETH)
-- **B3** (ETH)
-- **Arbitrum** (ETH)
-- **Optimism** (ETH)
-</Tab>
-
-<Tab title="Testnet">
-- **Ethereum Sepolia**
-- **Base Sepolia**
-- **B3 Sepolia**
-</Tab>
-</Tabs>
-
 ## Use Cases
+<img src="/images/anyspend-onramp-anyone.png" alt="AnySpend Banner" className="w-full rounded-xl" />
 
 <AccordionGroup>
 <Accordion title="DeFi Applications">
@@ -98,25 +89,22 @@ Accept recurring payments in crypto with automatic conversion to your preferred 
 Get started with AnySpend in just a few steps:
 
 ```tsx
-import { AnySpendProvider, AnySpendNFTButton } from "@b3dotfun/sdk/anyspend/react";
+import { AnySpend, AnyspendProvider } from "@b3dotfun/sdk/anyspend/react";
+import { B3Provider } from "@b3dotfun/sdk/global-account/react";
+
 import "@b3dotfun/sdk/index.css";
 
 function App() {
   return (
-    <AnySpendProvider>
-      <AnySpendNFTButton
-        nftContract={{
-          chainId: 8333,
-          contractAddress: "0x9c275ff1634519E9B5449ec79cd939B5F900564d",
-          price: "500000000000000000",
-          currency: { symbol: "ETH", decimals: 18 }
-        }}
-        recipientAddress="0x..."
-        onSuccess={(txHash) => console.log("Purchase completed!", txHash)}
-      />
-    </AnySpendProvider>
+    <B3Provider theme="light" environment="production">
+      <AnyspendProvider>
+        <AnySpend />
+      </AnyspendProvider>
+    </B3Provider>
   );
 }
+
+export default App
 ```
 
 ## What's Next?
@@ -140,3 +128,17 @@ function App() {
 - **Discord**: Join our [Discord community](https://discord.gg/b3dotfun) for support
 - **Documentation**: Comprehensive guides and API references
 - **Examples**: Ready-to-use code samples and integrations
+
+<div className="flex flex-row gap-4">
+<div className="flex-1">
+<a href="https://x.com/anyspend" target="_blank">
+  <img src="/images/follow-updates-on-x.png" className="w-full h-full object-cover rounded-xl mb-4" />
+</a>
+</div>
+
+<div className="flex-1">
+  <a href="/anyspend/installation">
+    <img src="/images/anyspend-getting-started.png" className="w-full h-full object-cover rounded-xl mb-4" />
+  </a>
+</div>
+</div>

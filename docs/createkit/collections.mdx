@@ -1,0 +1,482 @@
+---
+title: "Collection Management"
+description: "Complete guide to creating and managing NFT collections with CreateKit"
+---
+
+## Overview
+
+Collection management is at the core of CreateKit. This guide covers everything you need to know about creating, configuring, and managing NFT collections using the BaseMint protocol.
+
+## Collection Metadata Structure
+
+Every collection requires specific metadata that defines its characteristics:
+
+### Required Parameters
+
+<ParamField path="name" type="string">
+  The name of your NFT collection (e.g., "Bored Ape Yacht Club")
+</ParamField>
+
+<ParamField path="symbol" type="string">
+  The symbol/ticker for your collection (e.g., "BAYC")
+</ParamField>
+
+<ParamField path="creator" type="0x${string}">
+  The Ethereum address of the collection creator
+</ParamField>
+
+<ParamField path="gameOwner" type="0x${string}">
+  The Ethereum address of the game owner (can be same as creator)
+</ParamField>
+
+### Optional Parameters
+
+<ParamField path="maxSupply" type="bigint" default="10000n">
+  Maximum number of tokens that can be minted
+</ParamField>
+
+<ParamField path="mintPrice" type="bigint" default="0n">
+  Price per token in wei (use parseEther() for ETH values)
+</ParamField>
+
+<ParamField path="maxPerWallet" type="bigint" default="100n">
+  Maximum tokens that can be minted per wallet
+</ParamField>
+
+<ParamField path="isWhitelistEnabled" type="boolean" default="false">
+  Whether whitelist-only minting is enabled
+</ParamField>
+
+<ParamField path="startTime" type="bigint" default="0n">
+  Unix timestamp when minting starts (0 = immediate)
+</ParamField>
+
+<ParamField path="endTime" type="bigint" default="BigInt(Date.now() / 1000 + 86400 * 365 * 100)">
+  Unix timestamp when minting ends
+</ParamField>
+
+<ParamField path="tokenStandard" type="'ERC721' | 'ERC1155'" default="'ERC721'">
+  The token standard to use
+</ParamField>
+
+<ParamField path="chainId" type="number" default="1993">
+  Chain ID (1993 = B3 Testnet, 8333 = B3 Mainnet)
+</ParamField>
+
+## Creating Collections
+
+### Basic Collection
+
+```typescript title="Basic Collection Creation"
+import { CollectionManager, b3Testnet } from '@b3dotfun/basemint'
+import { createPublicClient, createWalletClient, http } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+
+const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`)
+const publicClient = createPublicClient({
+  chain: b3Testnet,
+  transport: http()
+})
+
+const walletClient = createWalletClient({
+  chain: b3Testnet,
+  transport: http(),
+  account
+})
+
+const collectionManager = new CollectionManager(publicClient)
+
+// Define basic collection
+const basicCollection = {
+  name: "My Art Collection",
+  symbol: "MAC",
+  creator: account.address,
+  gameOwner: account.address,
+  description: "A collection of digital art pieces",
+  image: "https://example.com/collection-image.png"
+}
+
+// Generate creator signature
+const creatorSignature = await collectionManager.generateCreatorSignature(
+  walletClient,
+  basicCollection
+)
+```
+
+### Advanced Collection Configuration
+
+```typescript title="Advanced Collection Setup"
+import { parseEther } from 'viem'
+
+const advancedCollection = {
+  // Required
+  name: "Premium Gaming Items",
+  symbol: "PGI",
+  creator: account.address,
+  gameOwner: "0x1234567890123456789012345678901234567890", // Different game owner
+  
+  // Supply and pricing
+  maxSupply: 5000n,
+  mintPrice: parseEther("0.01"), // 0.01 ETH
+  maxPerWallet: 5n,
+  
+  // Timing controls
+  startTime: BigInt(Math.floor(Date.now() / 1000) + 3600), // Start in 1 hour
+  endTime: BigInt(Math.floor(Date.now() / 1000) + 86400 * 7), // End in 7 days
+  
+  // Whitelist configuration
+  isWhitelistEnabled: true,
+  whitelistMerkleRoot: "0x..." as `0x${string}`,
+  
+  // Metadata
+  description: "Exclusive gaming items for premium players",
+  image: "https://example.com/premium-collection.png",
+  external_url: "https://mygame.com/premium-items",
+  animation_url: "https://example.com/collection-animation.mp4",
+  
+  // Collection attributes
+  attributes: [
+    { trait_type: "Category", value: "Gaming" },
+    { trait_type: "Rarity", value: "Premium" },
+    { trait_type: "Edition", value: "First" }
+  ],
+  
+  // Technical
+  tokenStandard: "ERC1155" as const,
+  chainId: 1993
+}
+```
+
+## Token Standards
+
+CreateKit supports both ERC721 and ERC1155 standards:
+
+<Tabs>
+<Tab title="ERC721 Collections">
+```typescript
+const erc721Collection = {
+  name: "Unique Art Pieces",
+  symbol: "UAP",
+  creator: account.address,
+  gameOwner: account.address,
+  tokenStandard: "ERC721" as const,
+  maxSupply: 1000n, // Each token is unique
+  description: "One-of-a-kind digital art pieces"
+}
+
+// ERC721 minting (quantity always 1)
+const collection721 = collectionManager.createCollection(
+  predictedAddress,
+  "ERC721"
+)
+
+await collection721.mint(
+  walletClient,
+  1n, // Always 1 for ERC721
+  undefined, // metadata URI
+  mintPrice,
+  proof
+)
+```
+</Tab>
+
+<Tab title="ERC1155 Collections">
+```typescript
+const erc1155Collection = {
+  name: "Game Resources",
+  symbol: "GRS",
+  creator: account.address,
+  gameOwner: account.address,
+  tokenStandard: "ERC1155" as const,
+  maxSupply: 100000n, // Total across all token types
+  description: "Fungible and semi-fungible game resources"
+}
+
+// ERC1155 minting (can mint multiple)
+const collection1155 = collectionManager.createCollection(
+  predictedAddress,
+  "ERC1155"
+)
+
+await collection1155.mint(
+  walletClient,
+  10n, // Can mint multiple tokens
+  "https://example.com/token/1", // specific token metadata
+  mintPrice,
+  proof
+)
+```
+</Tab>
+</Tabs>
+
+## Metadata Management
+
+### Collection-Level Metadata
+
+```typescript title="Collection Metadata"
+const collectionMetadata = {
+  name: "My Collection",
+  description: "A fantastic collection of digital assets",
+  image: "https://example.com/collection-image.png",
+  external_url: "https://mywebsite.com/collection",
+  
+  // Background and banner for marketplaces
+  background_color: "ffffff",
+  banner_image_url: "https://example.com/banner.png",
+  
+  // Collection attributes
+  attributes: [
+    { trait_type: "Theme", value: "Fantasy" },
+    { trait_type: "Artist", value: "Digital Creator" }
+  ]
+}
+```
+
+### Token-Level Metadata
+
+CreateKit automatically generates token metadata based on your collection settings:
+
+<Tabs>
+<Tab title="Auto-Generated Metadata">
+```typescript
+import { NFTMetadataManager, MediaType } from '@b3dotfun/basemint'
+
+// Generate metadata for different media types
+const artworkMetadata = NFTMetadataManager.generateNFTMetadata(
+  collectionMetadata,
+  MediaType.ARTWORK
+)
+
+const model3dMetadata = NFTMetadataManager.generateNFTMetadata(
+  collectionMetadata,
+  MediaType.MODEL_3D
+)
+
+const videoMetadata = NFTMetadataManager.generateNFTMetadata(
+  collectionMetadata,
+  MediaType.VIDEO
+)
+
+// Convert to JSON
+const metadataJson = NFTMetadataManager.generateJSON(artworkMetadata)
+console.log(metadataJson)
+```
+</Tab>
+
+<Tab title="Custom Metadata">
+```typescript
+// For custom metadata, provide your own baseURI
+const customCollection = {
+  name: "Custom Metadata Collection",
+  symbol: "CMC",
+  creator: account.address,
+  gameOwner: account.address,
+  baseURI: "https://myapi.com/metadata/", // Your custom metadata endpoint
+  description: "Collection with custom metadata"
+}
+
+// Your API should respond to: https://myapi.com/metadata/{tokenId}
+// With standard OpenSea metadata format
+```
+</Tab>
+</Tabs>
+
+## Collection Validation
+
+CreateKit provides built-in validation for collection parameters:
+
+```typescript title="Parameter Validation"
+import { validateCollectionMetadata } from '@b3dotfun/basemint'
+
+try {
+  // Validate collection metadata
+  const validation = validateCollectionMetadata(collectionMetadata)
+  
+  if (!validation.isValid) {
+    console.error("Validation errors:", validation.errors)
+    return
+  }
+  
+  console.log("✅ Collection metadata is valid")
+  
+  // Proceed with signature generation
+  const signature = await collectionManager.generateCreatorSignature(
+    walletClient,
+    collectionMetadata
+  )
+} catch (error) {
+  console.error("Validation failed:", error)
+}
+```
+
+## Address Prediction
+
+One of CreateKit's key features is deterministic address prediction:
+
+```typescript title="Address Prediction"
+// Generate creator signature first
+const creatorSignature = await collectionManager.generateCreatorSignature(
+  walletClient,
+  collectionMetadata
+)
+
+// Predict the collection address
+const predictedAddress = collectionManager.predictCollectionAddress(
+  collectionMetadata,
+  creatorSignature
+)
+
+console.log(`Collection will be deployed at: ${predictedAddress}`)
+
+// You can now use this address before deployment
+// for marketplace integration, frontend display, etc.
+```
+
+## Collection Management Operations
+
+### Checking Collection Status
+
+```typescript title="Collection Status"
+const collection = collectionManager.createCollection(
+  predictedAddress,
+  "ERC721"
+)
+
+// Check if collection is deployed
+const isDeployed = await collection.isDeployed()
+console.log(`Deployed: ${isDeployed}`)
+
+// Get collection info (only works after deployment)
+if (isDeployed) {
+  const info = await collection.getCollectionInfo()
+  console.log("Collection Info:", {
+    name: info.name,
+    symbol: info.symbol,
+    totalSupply: info.totalSupply.toString(),
+    maxSupply: info.maxSupply.toString(),
+    mintPrice: info.mintPrice.toString(),
+    maxPerWallet: info.maxPerWallet.toString()
+  })
+}
+```
+
+### Updating Collection Settings
+
+<Warning>
+Most collection parameters cannot be changed after deployment. Plan your collection configuration carefully.
+</Warning>
+
+```typescript title="Post-Deployment Management"
+// Only certain operations are possible after deployment
+
+// Check current mint price (if dynamic pricing is implemented)
+const currentPrice = await collection.getCurrentMintPrice()
+
+// Check if minting is currently active
+const isMintingActive = await collection.isMintingActive()
+
+// Get remaining supply
+const remainingSupply = await collection.getRemainingSupply()
+
+console.log({
+  currentPrice: currentPrice.toString(),
+  isMintingActive,
+  remainingSupply: remainingSupply.toString()
+})
+```
+
+## Best Practices
+
+### 1. Collection Planning
+
+<CardGroup cols={2}>
+  <Card title="Supply Strategy" icon="chart-line">
+    - Set appropriate max supply based on use case
+    - Consider future demand and scarcity
+    - Leave room for growth or special editions
+  </Card>
+  <Card title="Pricing Strategy" icon="dollar-sign">
+    - Research similar collections for pricing reference
+    - Consider gas costs and transaction fees
+    - Plan for different market conditions
+  </Card>
+</CardGroup>
+
+### 2. Metadata Quality
+
+```typescript title="High-Quality Metadata"
+const qualityCollection = {
+  name: "Professional Art Collection",
+  symbol: "PAC",
+  creator: account.address,
+  gameOwner: account.address,
+  
+  // High-quality descriptions
+  description: "A curated collection of professional digital artworks featuring contemporary themes and innovative techniques.",
+  
+  // Professional imagery (minimum 640x640px)
+  image: "https://example.com/high-res-collection-image.png",
+  
+  // Comprehensive attributes for better discoverability
+  attributes: [
+    { trait_type: "Art Style", value: "Contemporary" },
+    { trait_type: "Medium", value: "Digital" },
+    { trait_type: "Artist Verification", value: "Verified" },
+    { trait_type: "Edition Type", value: "Limited" }
+  ],
+  
+  // External links for credibility
+  external_url: "https://professionalartist.com/collection"
+}
+```
+
+### 3. Security Considerations
+
+<AccordionGroup>
+  <Accordion title="Private Key Management">
+    - Never hardcode private keys in source code
+    - Use environment variables or secure key management
+    - Consider using multi-signature wallets for valuable collections
+  </Accordion>
+
+  <Accordion title="Signature Validation">
+    - Always validate signatures before deployment
+    - Verify collection parameters match intended values
+    - Test on testnet before mainnet deployment
+  </Accordion>
+
+  <Accordion title="Access Control">
+    - Carefully choose creator and gameOwner addresses
+    - Understand reward distribution implications
+    - Plan for long-term collection management
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Address prediction mismatch">
+    Ensure all collection parameters are identical between signature generation and deployment. Even small changes will result in different addresses.
+  </Accordion>
+
+  <Accordion title="Invalid collection parameters">
+    Check that all required fields are provided and that values are within acceptable ranges (e.g., maxSupply > 0, valid addresses).
+  </Accordion>
+
+  <Accordion title="Signature generation fails">
+    Verify that your wallet client is properly configured and that you have sufficient funds for the signing transaction.
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+Now that you understand collection management, explore these related topics:
+
+<CardGroup cols={2}>
+  <Card title="Minting Guide" icon="coins" href="/createkit/minting">
+    Learn how to implement token minting functionality
+  </Card>
+  <Card title="Whitelist Management" icon="list" href="/createkit/whitelist">
+    Set up whitelist-based minting for exclusive access
+  </Card>
+</CardGroup>

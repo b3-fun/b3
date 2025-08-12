@@ -150,7 +150,7 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     logoUrl: "https://avatars.githubusercontent.com/u/45615063?s=280&v=4",
     type: ChainType.EVM,
     nativeRequired: parseEther("0.00001"),
-    canDepositNative: false,
+    canDepositNative: true,
     defaultToken: getBnbToken(),
     nativeToken: getBnbToken(),
     viem: getCustomEvmChain(bsc, "https://bsc-rpc.publicnode.com"),
@@ -304,7 +304,7 @@ export function getChainName(chainId: number): string {
   return EVM_CHAINS[chainId] ? EVM_CHAINS[chainId].viem.name : "Solana";
 }
 
-export function getPaymentUrl(address: string, amount: bigint, currency: string, chainId: number) {
+export function getPaymentUrl(address: string, amount: bigint, currency: string, chainId: number, decimals?: number) {
   // Get chain type to determine URL format
   const chainType = getChainType(chainId);
   const chain = ALL_CHAINS[chainId];
@@ -321,33 +321,141 @@ export function getPaymentUrl(address: string, amount: bigint, currency: string,
         params.append("value", amount.toString());
       }
 
-      // Add chain ID for non-Ethereum chains
-      const chainParam = chainId !== mainnet.id ? `@${chainId}` : "";
-
-      // Add token info for non-native token transfers
+      // Handle token transfers differently from native transfers
       if (currency !== chain.nativeToken.symbol) {
-        params.append("symbol", currency);
+        // For ERC20 tokens, the issue is that mobile wallets often ignore chainId
+        // and default to mainnet when they see ethereum: scheme
+        // Let's try a different approach: put chainId first and be very explicit
+
+        const tokenParams = new URLSearchParams();
+
+        // Put chainId first to make it more prominent
+        if (chainId !== mainnet.id) {
+          tokenParams.append("chainId", chainId.toString());
+        }
+
+        // For ERC20 tokens, convert from smallest unit to display units using decimals
+        // For example: 2400623 (raw) with 6 decimals becomes "2.400623"
+        let displayAmount: string;
+        if (decimals !== undefined && currency !== chain.nativeToken.symbol) {
+          // Convert from smallest unit to display unit for ERC20 tokens
+          const divisor = BigInt(10 ** decimals);
+          const wholePart = amount / divisor;
+          const fractionalPart = amount % divisor;
+
+          if (fractionalPart === BigInt(0)) {
+            displayAmount = wholePart.toString();
+          } else {
+            // Format fractional part with leading zeros if needed
+            const fractionalStr = fractionalPart.toString().padStart(decimals, "0");
+            // Remove trailing zeros
+            const trimmedFractional = fractionalStr.replace(/0+$/, "");
+            displayAmount = trimmedFractional ? `${wholePart}.${trimmedFractional}` : wholePart.toString();
+          }
+        } else {
+          // For native tokens or when decimals not provided, use raw amount
+          displayAmount = amount.toString();
+        }
+
+        tokenParams.append("amount", displayAmount);
+        tokenParams.append("address", address); // recipient address
+
+        // For Arbitrum and other L2s, try a more explicit format
+        if (chainId !== mainnet.id) {
+          // Include the token contract address in the path more explicitly
+          const url = `ethereum:${currency}@${chainId}?${tokenParams.toString()}`;
+          return url;
+        } else {
+          // Mainnet tokens
+          const url = `ethereum:${currency}?${tokenParams.toString()}`;
+          return url;
+        }
       }
 
-      const queryString = params.toString();
-      return `ethereum:${address}${chainParam}${queryString ? `?${queryString}` : ""}`;
+      // For native ETH transfers:
+      if (chainId !== mainnet.id) {
+        // For non-mainnet chains, use the same explicit format as tokens
+        // to make sure wallets recognize the correct chain
+        const nativeParams = new URLSearchParams();
+        nativeParams.append("chainId", chainId.toString());
+        nativeParams.append("value", amount.toString());
+        const url = `ethereum:${address}@${chainId}?${nativeParams.toString()}`;
+        return url;
+      } else {
+        // For mainnet, use the simple format
+        const queryString = params.toString();
+        const url = `ethereum:${address}${queryString ? `?${queryString}` : ""}`;
+        return url;
+      }
     }
 
     case ChainType.SOLANA: {
-      // Solana URL format: solana:${address}?amount=${amount}&spl-token=${tokenAddress}
+      // Solana URL format for Phantom and other mobile wallets
       const params = new URLSearchParams();
 
-      // Add amount for native SOL transfers
-      if (currency === "SOL") {
-        params.append("amount", amount.toString());
+      // Check if this is native SOL or SPL token
+      // The address "11111111111111111111111111111111" is Solana's System Program, indicating native SOL
+      const isNativeSOL =
+        currency === chain.nativeToken.symbol || currency === "SOL" || currency === "11111111111111111111111111111111";
+
+      if (isNativeSOL) {
+        // Native SOL transfers - convert from lamports to SOL
+        let displayAmount: string;
+        if (decimals !== undefined) {
+          const divisor = BigInt(10 ** decimals);
+          const wholePart = amount / divisor;
+          const fractionalPart = amount % divisor;
+
+          if (fractionalPart === BigInt(0)) {
+            displayAmount = wholePart.toString();
+          } else {
+            const fractionalStr = fractionalPart.toString().padStart(decimals, "0");
+            const trimmedFractional = fractionalStr.replace(/0+$/, "");
+            displayAmount = trimmedFractional ? `${wholePart}.${trimmedFractional}` : wholePart.toString();
+          }
+        } else {
+          // Fallback: assume SOL has 9 decimals
+          const divisor = BigInt(1000000000); // 1e9
+          const wholePart = amount / divisor;
+          const fractionalPart = amount % divisor;
+
+          if (fractionalPart === BigInt(0)) {
+            displayAmount = wholePart.toString();
+          } else {
+            const fractionalStr = fractionalPart.toString().padStart(9, "0");
+            const trimmedFractional = fractionalStr.replace(/0+$/, "");
+            displayAmount = trimmedFractional ? `${wholePart}.${trimmedFractional}` : wholePart.toString();
+          }
+        }
+
+        // For native SOL, use simple format without spl-token parameter
+        params.append("amount", displayAmount);
+      } else {
+        // SPL token transfers
+        let displayAmount: string;
+        if (decimals !== undefined) {
+          const divisor = BigInt(10 ** decimals);
+          const wholePart = amount / divisor;
+          const fractionalPart = amount % divisor;
+
+          if (fractionalPart === BigInt(0)) {
+            displayAmount = wholePart.toString();
+          } else {
+            const fractionalStr = fractionalPart.toString().padStart(decimals, "0");
+            const trimmedFractional = fractionalStr.replace(/0+$/, "");
+            displayAmount = trimmedFractional ? `${wholePart}.${trimmedFractional}` : wholePart.toString();
+          }
+        } else {
+          displayAmount = amount.toString();
+        }
+
+        params.append("amount", displayAmount);
+        params.append("spl-token", currency); // token mint address
       }
 
-      // Add SPL token info for token transfers
-      if (currency !== "SOL") {
-        params.append("spl-token", currency); // currency here should be token address
-      }
-
-      return `solana:${address}?${params.toString()}`;
+      const url = `solana:${address}?${params.toString()}`;
+      console.log("Solana URL (isNativeSOL:", isNativeSOL, "):", url);
+      return url;
     }
 
     default:

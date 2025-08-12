@@ -20,3 +20,5 @@ tsconfig.tsbuildinfo
 doppler.yaml
 
 .cursor
+
+.turbo

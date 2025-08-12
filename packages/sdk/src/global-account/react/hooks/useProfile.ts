@@ -42,19 +42,22 @@ const PROFILES_API_URL = "https://profiles.b3.fun";
 async function fetchProfile({
   address,
   name,
+  b3GlobalId,
   fresh = false,
 }: {
   address?: string;
   name?: string;
+  b3GlobalId?: string;
   fresh?: boolean;
 }): Promise<CombinedProfile> {
-  if (!address && !name) {
-    throw new Error("Either address or name must be provided");
+  if (!address && !name && !b3GlobalId) {
+    throw new Error("Either address or name or b3GlobalId must be provided");
   }
 
   const params = new URLSearchParams();
   if (address) params.append("address", address);
   if (name) params.append("name", name);
+  if (b3GlobalId) params.append("b3GlobalId", b3GlobalId);
   if (fresh) params.append("fresh", "true");
 
   const response = await fetch(`${PROFILES_API_URL}?${params.toString()}`);
@@ -126,10 +129,12 @@ export function useProfile(
   {
     address,
     name,
+    b3GlobalId,
     fresh = false,
   }: {
     address?: string;
     name?: string;
+    b3GlobalId?: string;
     fresh?: boolean;
   },
   options?: {
@@ -139,9 +144,9 @@ export function useProfile(
   },
 ) {
   return useQuery({
-    queryKey: ["profile", address || name, fresh],
-    queryFn: () => fetchProfile({ address, name, fresh }),
-    enabled: (options?.enabled ?? true) && (!!address || !!name),
+    queryKey: ["profile", address || name || b3GlobalId, fresh],
+    queryFn: () => fetchProfile({ address, name, b3GlobalId, fresh }),
+    enabled: (options?.enabled ?? true) && (!!address || !!name || !!b3GlobalId),
     refetchInterval: options?.refetchInterval,
     staleTime: options?.staleTime ?? 5 * 60 * 1000, // 5 minutes default
   });

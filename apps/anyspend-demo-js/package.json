@@ -12,7 +12,8 @@
     "@b3dotfun/sdk": "workspace:*"
   },
   "devDependencies": {
+    "@originjs/vite-plugin-commonjs": "^1.0.3",
     "vite": "^5.1.4",
-    "vite-plugin-node-polyfills": "^0.23.0"
+    "vite-plugin-node-polyfills": "0.22.0"
   }
 }

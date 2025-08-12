@@ -18,5 +18,8 @@ jobs:
       - name: Setup Environment
         uses: ./.github/actions/setup-environment
 
+      - name: Lint all applications
+        run: pnpm lint
+
       - name: Build sdk and all applications
-        run: pnpm build-all
+        run: pnpm build

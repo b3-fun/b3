@@ -2,7 +2,8 @@ import { useCoinbaseOnrampOptions, useGeoOnrampOptions } from "@b3dotfun/sdk/any
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { ALL_CHAINS } from "@b3dotfun/sdk/anyspend/utils/chain";
 import { Input, useGetGeo, useProfile } from "@b3dotfun/sdk/global-account/react";
-import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
+import { formatUsername } from "@b3dotfun/sdk/shared/utils";
+import { formatAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { ChevronRight, Wallet } from "lucide-react";
 import { useRef } from "react";
 import { toast } from "sonner";
@@ -77,7 +78,7 @@ export function PanelOnramp({
 
   // Get recipient profile for displaying name
   const recipientProfile = useProfile({ address: _recipientAddress });
-  const recipientName = recipientProfile.data?.name?.replace(/\.b3\.fun/g, "");
+  const recipientName = recipientProfile.data?.name;
 
   const amountInputRef = useRef<HTMLInputElement>(null);
 
@@ -159,7 +160,7 @@ export function PanelOnramp({
 
         {/* Quick Amount Buttons */}
         <div className="mx-auto mb-6 inline-grid grid-cols-4 gap-2">
-          {["5", "10", "25", "100"].map(value => (
+          {["5", "10", "20", "25"].map(value => (
             <button
               key={value}
               onClick={() => handleQuickAmount(value)}
@@ -198,10 +199,9 @@ export function PanelOnramp({
               className="text-as-tertiarry flex h-7 items-center gap-1 text-sm transition-colors hover:text-blue-700"
               onClick={() => setActivePanel(5)} // Recipient selection panel
             >
-              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-orange-500 text-xs text-white">
-                🦊
-              </div>
-              <span className="text-sm">{recipientName || shortenAddress(_recipientAddress)}</span>
+              <span className="text-sm">
+                {recipientName ? formatUsername(recipientName) : formatAddress(_recipientAddress)}
+              </span>
               <ChevronRight size={16} />
             </button>
           ) : (

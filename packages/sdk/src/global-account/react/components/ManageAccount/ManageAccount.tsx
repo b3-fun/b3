@@ -60,6 +60,8 @@ export function ManageAccount({
     address: eoaAddress || account?.address,
     fresh: true,
   });
+  const { data: eoaNativeBalance } = useNativeBalance(eoaAddress);
+  const { data: eoaB3Balance } = useB3BalanceFromAddresses(eoaAddress);
   const { data: signers, refetch: refetchSigners } = useGetAllTWSigners({
     chain,
     accountAddress: account?.address,
@@ -67,6 +69,9 @@ export function ManageAccount({
   const { setB3ModalOpen, setB3ModalContentType } = useModalStore();
   const { logout } = useAuthentication(partnerId);
   const [logoutLoading, setLogoutLoading] = useState(false);
+
+  console.log("account", account);
+  console.log("eoaAddress", eoaAddress);
 
   const { removeSessionKey } = useRemoveSessionKey({
     chain,
@@ -94,145 +99,216 @@ export function ManageAccount({
     setLogoutLoading(false);
   };
 
-  const BalanceContent = () => (
-    <div className="flex flex-col gap-6">
-      {/* Profile Section */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="relative">
-            {profile?.avatar ? (
-              <img src={profile?.avatar} alt="Profile" className="size-24 rounded-full" />
-            ) : (
-              <div className="bg-b3-primary-wash size-24 rounded-full" />
-            )}
-            <div className="bg-b3-grey absolute -bottom-1 -right-1 flex size-8 items-center justify-center rounded-full border-4 border-white">
-              <Pencil size={16} className="text-b3-white" />
+  const BalanceContent = () => {
+    const { info: eoaInfo } = useFirstEOA();
+
+    return (
+      <div className="flex flex-col gap-6">
+        {/* Profile Section */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              {profile?.avatar ? (
+                <img src={profile?.avatar} alt="Profile" className="size-24 rounded-full" />
+              ) : (
+                <div className="bg-b3-primary-wash size-24 rounded-full" />
+              )}
+              <div className="bg-b3-grey absolute -bottom-1 -right-1 flex size-8 items-center justify-center rounded-full border-4 border-white">
+                <Pencil size={16} className="text-b3-white" />
+              </div>
             </div>
-          </div>
-          <div>
-            <h2 className="text-b3-grey text-xl font-semibold">
-              {profile?.displayName || formatUsername(profile?.name || "")}
-            </h2>
-            <span className="text-b3-foreground-muted">{formatUsername(profile?.name || "")}</span>
+            <div>
+              <h2 className="text-b3-grey text-xl font-semibold">
+                {profile?.displayName || formatUsername(profile?.name || "")}
+              </h2>
+              <span className="text-b3-foreground-muted">{formatUsername(profile?.name || "")}</span>
+            </div>
           </div>
         </div>
         <div className="bg-b3-line flex h-11 items-center gap-2 rounded-full px-4">
-          <span className="text-b3-grey font-neue-montreal-semibold">
-            {centerTruncate(eoaAddress || account?.address || "", 3)}
-          </span>
-          <CopyToClipboard text={eoaAddress || account?.address || ""} />
-        </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="grid grid-cols-2 gap-3">
-        <Button
-          className="bg-b3-primary-wash hover:bg-b3-primary-wash/70 h-[84px] w-full flex-col items-start gap-2 rounded-2xl"
-          onClick={() => {
-            setB3ModalOpen(true);
-            setB3ModalContentType({
-              type: "anySpend",
-              defaultActiveTab: "fiat",
-              showBackButton: true,
-            });
-          }}
-        >
-          <BankIcon size={24} className="text-b3-primary-blue shrink-0" />
-          <div className="text-b3-grey font-neue-montreal-semibold">Deposit</div>
-        </Button>
-        <Button
-          className="bg-b3-primary-wash hover:bg-b3-primary-wash/70 flex h-[84px] w-full flex-col items-start gap-2 rounded-2xl"
-          onClick={() => {
-            setB3ModalOpen(true);
-            setB3ModalContentType({
-              type: "anySpend",
-              showBackButton: true,
-            });
-          }}
-        >
-          <SwapIcon size={24} className="text-b3-primary-blue" />
-          <div className="text-b3-grey font-neue-montreal-semibold">Swap</div>
-        </Button>
-      </div>
-
-      {/* Balance Section */}
-      <div className="space-y-4">
-        <h3 className="text-b3-grey font-neue-montreal-semibold">Balance</h3>
-
-        {/* B3 Balance */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full">
-              <img src="https://cdn.b3.fun/b3-coin-3d.png" alt="B3" className="size-10" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-b3-grey font-neue-montreal-semibold">B3</span>
-              </div>
-              <div className="text-b3-foreground-muted font-neue-montreal-medium text-sm">
-                {b3Balance?.formattedTotal || "0.00"} B3
-              </div>
-            </div>
-          </div>
-          <div className="text-right">
-            <div className="text-b3-grey font-neue-montreal-semibold">${b3Balance?.balanceUsdFormatted || "0.00"}</div>
-            <div className="flex items-center gap-1">
-              <Triangle className="text-b3-positive fill-b3-positive size-3" />
-              {/* TODO: Add price change */}
-              <span className="text-b3-positive font-neue-montreal-medium text-sm">10.21%</span>
-            </div>
-          </div>
+          <span className="text-b3-grey font-neue-montreal-semibold">{centerTruncate(account?.address || "")}</span>
+          <CopyToClipboard text={account?.address || ""} />
         </div>
 
-        {/* ETH Balance */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full">
-              <img src="https://cdn.b3.fun/ethereum.svg" alt="ETH" className="size-10" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-b3-grey font-neue-montreal-semibold">Ethereum</span>
+        {/* Quick Actions */}
+        <div className="grid grid-cols-2 gap-3">
+          <Button
+            className="bg-b3-primary-wash hover:bg-b3-primary-wash/70 h-[84px] w-full flex-col items-start gap-2 rounded-2xl"
+            onClick={() => {
+              setB3ModalOpen(true);
+              setB3ModalContentType({
+                type: "anySpend",
+                defaultActiveTab: "fiat",
+                showBackButton: true,
+              });
+            }}
+          >
+            <BankIcon size={24} className="text-b3-primary-blue shrink-0" />
+            <div className="text-b3-grey font-neue-montreal-semibold">Deposit</div>
+          </Button>
+          <Button
+            className="bg-b3-primary-wash hover:bg-b3-primary-wash/70 flex h-[84px] w-full flex-col items-start gap-2 rounded-2xl"
+            onClick={() => {
+              setB3ModalOpen(true);
+              setB3ModalContentType({
+                type: "anySpend",
+                showBackButton: true,
+              });
+            }}
+          >
+            <SwapIcon size={24} className="text-b3-primary-blue" />
+            <div className="text-b3-grey font-neue-montreal-semibold">Swap</div>
+          </Button>
+        </div>
+
+        {/* Balance Section */}
+        <div className="space-y-4">
+          <h3 className="text-b3-grey font-neue-montreal-semibold">Balance</h3>
+
+          {/* B3 Balance */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full">
+                <img src="https://cdn.b3.fun/b3-coin-3d.png" alt="B3" className="size-10" />
               </div>
-              <div className="text-b3-foreground-muted font-neue-montreal-medium text-sm">
-                {nativeBalance?.formattedTotal || "0.00"} ETH
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-b3-grey font-neue-montreal-semibold">B3</span>
+                </div>
+                <div className="text-b3-foreground-muted font-neue-montreal-medium text-sm">
+                  {b3Balance?.formattedTotal || "0.00"} B3
+                </div>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-b3-grey font-neue-montreal-semibold">
+                ${b3Balance?.balanceUsdFormatted || "0.00"}
+              </div>
+              <div className="flex items-center gap-1">
+                <Triangle className="text-b3-positive fill-b3-positive size-3" />
+                {/* TODO: Add price change */}
+                <span className="text-b3-positive font-neue-montreal-medium text-sm">10.21%</span>
               </div>
             </div>
           </div>
-          <div className="text-right">
-            <div className="text-b3-grey font-neue-montreal-semibold">
-              ${nativeBalance?.formattedTotalUsd || "0.00"}
+
+          {/* ETH Balance */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full">
+                <img src="https://cdn.b3.fun/ethereum.svg" alt="ETH" className="size-10" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-b3-grey font-neue-montreal-semibold">Ethereum</span>
+                </div>
+                <div className="text-b3-foreground-muted font-neue-montreal-medium text-sm">
+                  {nativeBalance?.formattedTotal || "0.00"} ETH
+                </div>
+              </div>
             </div>
+            <div className="text-right">
+              <div className="text-b3-grey font-neue-montreal-semibold">
+                ${nativeBalance?.formattedTotalUsd || "0.00"}
+              </div>
+              <div className="flex items-center gap-2">
+                <Triangle className="text-b3-negative fill-b3-negative size-3" />
+                {/* TODO: Add price change */}
+                <span className="text-b3-negative font-neue-montreal-medium text-sm">2.40%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* EOA Account Balance Section - matching global balance styling */}
+        {eoaAddress && (
+          <div className="space-y-4">
+            <h3 className="text-b3-grey font-neue-montreal-semibold">Connected {eoaInfo?.data?.name || "Wallet"}</h3>
+
+            {/* EOA Address */}
+            <div className="bg-b3-line flex h-11 items-center gap-2 rounded-full px-4">
+              <span className="text-b3-grey font-neue-montreal-semibold">{centerTruncate(eoaAddress)}</span>
+              <CopyToClipboard text={eoaAddress} />
+            </div>
+
+            {/* EOA B3 Balance */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full">
+                  <img src="https://cdn.b3.fun/b3-coin-3d.png" alt="B3" className="size-10" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-b3-grey font-neue-montreal-semibold">B3</span>
+                  </div>
+                  <div className="text-b3-foreground-muted font-neue-montreal-medium text-sm">
+                    {eoaB3Balance?.formattedTotal || "0.00"} B3
+                  </div>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-b3-grey font-neue-montreal-semibold">
+                  ${eoaB3Balance?.balanceUsdFormatted || "0.00"}
+                </div>
+                <div className="flex items-center gap-1">
+                  <Triangle className="text-b3-positive fill-b3-positive size-3" />
+                  {/* TODO: Add price change */}
+                  <span className="text-b3-positive font-neue-montreal-medium text-sm">10.21%</span>
+                </div>
+              </div>
+            </div>
+
+            {/* EOA ETH Balance */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full">
+                  <img src="https://cdn.b3.fun/ethereum.svg" alt="ETH" className="size-10" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-b3-grey font-neue-montreal-semibold">Ethereum</span>
+                  </div>
+                  <div className="text-b3-foreground-muted font-neue-montreal-medium text-sm">
+                    {eoaNativeBalance?.formattedTotal || "0.00"} ETH
+                  </div>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-b3-grey font-neue-montreal-semibold">
+                  ${eoaNativeBalance?.formattedTotalUsd || "0.00"}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Triangle className="text-b3-negative fill-b3-negative size-3" />
+                  {/* TODO: Add price change */}
+                  <span className="text-b3-negative font-neue-montreal-medium text-sm">2.40%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Global Account Info */}
+        <div className="border-b3-line flex items-center justify-between rounded-2xl border p-4">
+          <div className="">
             <div className="flex items-center gap-2">
-              <Triangle className="text-b3-negative fill-b3-negative size-3" />
-              {/* TODO: Add price change */}
-              <span className="text-b3-negative font-neue-montreal-medium text-sm">2.40%</span>
+              <img src="https://cdn.b3.fun/b3_logo.svg" alt="B3" className="h-4" />
+              <h3 className="font-neue-montreal-semibold text-b3-grey">Global Account</h3>
             </div>
+
+            <p className="text-b3-foreground-muted font-neue-montreal-medium mt-2 text-sm">
+              Your universal account for all B3-powered apps
+            </p>
           </div>
+          <button
+            className="text-b3-grey hover:text-b3-grey/80 hover:bg-b3-line border-b3-line flex size-12 items-center justify-center rounded-full border"
+            onClick={onLogoutEnhanced}
+          >
+            {logoutLoading ? <Loader2 className="animate-spin" /> : <SignOutIcon size={16} className="text-b3-grey" />}
+          </button>
         </div>
       </div>
-
-      {/* Global Account Info */}
-      <div className="border-b3-line flex items-center justify-between rounded-2xl border p-4">
-        <div className="">
-          <div className="flex items-center gap-2">
-            <img src="https://cdn.b3.fun/b3_logo.svg" alt="B3" className="h-4" />
-            <h3 className="font-neue-montreal-semibold text-b3-grey">Global Account</h3>
-          </div>
-
-          <p className="text-b3-foreground-muted font-neue-montreal-medium mt-2 text-sm">
-            Your universal account for all B3-powered apps
-          </p>
-        </div>
-        <button
-          className="text-b3-grey hover:text-b3-grey/80 hover:bg-b3-line border-b3-line flex size-12 items-center justify-center rounded-full border"
-          onClick={onLogoutEnhanced}
-        >
-          {logoutLoading ? <Loader2 className="animate-spin" /> : <SignOutIcon size={16} className="text-b3-grey" />}
-        </button>
-      </div>
-    </div>
-  );
+    );
+  };
 
   const AssetsContent = () => (
     <div className="grid grid-cols-3 gap-4">

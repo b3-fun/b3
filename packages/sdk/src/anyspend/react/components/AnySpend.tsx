@@ -20,20 +20,20 @@ import {
   useTokenData,
   useTokenFromUrl,
 } from "@b3dotfun/sdk/global-account/react";
+import { formatUsername } from "@b3dotfun/sdk/shared/utils";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { formatDisplayNumber, formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import invariant from "invariant";
-import { ArrowDown, ChevronLeft, ChevronRightCircle, ChevronsUpDown, CircleAlert, HistoryIcon } from "lucide-react";
+import { ArrowDown, ChevronRight, ChevronRightCircle, CircleAlert, HistoryIcon } from "lucide-react";
 import { motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { parseUnits } from "viem";
 import { b3Sepolia, base, mainnet, sepolia } from "viem/chains";
-import { useAccount } from "wagmi";
 import { components } from "../../types/api";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
-import { CryptoPaymentMethod, PaymentMethod } from "./common/CryptoPaymentMethod";
+import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPaymentMethod";
 import { FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaymentMethod";
 import { OrderDetails, OrderDetailsLoadingView } from "./common/OrderDetails";
 import { OrderHistory } from "./common/OrderHistory";
@@ -41,6 +41,7 @@ import { OrderStatus } from "./common/OrderStatus";
 import { OrderTokenAmount } from "./common/OrderTokenAmount";
 import { PanelOnramp } from "./common/PanelOnramp";
 import { PanelOnrampPayment } from "./common/PanelOnrampPayment";
+import { RecipientSelection } from "./common/RecipientSelection";
 import { TokenBalance } from "./common/TokenBalance";
 
 export interface RecipientOption {
@@ -64,14 +65,14 @@ export enum PanelView {
 const ANYSPEND_RECIPIENTS_KEY = "anyspend_recipients";
 
 export function AnySpend(props: {
-  destinationTokenAddress?: string;
-  destinationTokenChainId?: number;
   isMainnet?: boolean;
   mode?: "page" | "modal";
   defaultActiveTab?: "crypto" | "fiat";
+  destinationTokenAddress?: string;
+  destinationTokenChainId?: number;
+  recipientAddress?: string;
   loadOrder?: string;
   hideTransactionHistoryButton?: boolean;
-  recipientAddress?: string;
 }) {
   const fingerprintConfig = getFingerprintConfig();
 
@@ -103,9 +104,6 @@ function AnySpendInner({
 }) {
   const searchParams = useSearchParamsSSR();
   const router = useRouter();
-
-  // Get wagmi account state for wallet connection
-  const wagmiAccount = useAccount();
 
   // Determine if we're in "buy mode" based on whether destination token props are provided
   const isBuyMode = !!(destinationTokenAddress && destinationTokenChainId);
@@ -140,7 +138,9 @@ function AnySpendInner({
   const [activePanel, setActivePanel] = useState<PanelView>(loadOrder ? PanelView.ORDER_DETAILS : PanelView.MAIN);
   const [customRecipients, setCustomRecipients] = useState<RecipientOption[]>([]);
   // Add state for selected payment method
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>(PaymentMethod.NONE);
+  const [selectedCryptoPaymentMethod, setSelectedCryptoPaymentMethod] = useState<CryptoPaymentMethodType>(
+    CryptoPaymentMethodType.NONE,
+  );
   // Add state for selected fiat payment method
   const [selectedFiatPaymentMethod, setSelectedFiatPaymentMethod] = useState<FiatPaymentMethod>(FiatPaymentMethod.NONE);
   // const [newRecipientAddress, setNewRecipientAddress] = useState("");
@@ -404,7 +404,10 @@ function AnySpendInner({
   // State for recipient selection
   const [recipientAddress, setRecipientAddress] = useState<string | undefined>();
 
-  const { address: globalAddress, wallet: globalWallet } = useAccountWallet();
+  const { address: globalAddress, wallet: globalWallet, ensName: connectedName } = useAccountWallet();
+  const connectedAddress = globalWallet?.address;
+  const recipientProfile = useProfile({ address: recipientAddress, fresh: true });
+  const recipientName = recipientProfile.data?.name;
 
   // Set default recipient address when wallet changes
   useEffect(() => {
@@ -412,7 +415,7 @@ function AnySpendInner({
   }, [recipientAddressFromProps, globalAddress]);
 
   // Get geo-based onramp options for fiat payments
-  const { geoData, coinbaseAvailablePaymentMethods, isStripeOnrampSupported, stripeWeb2Support } = useGeoOnrampOptions(
+  const { geoData, coinbaseAvailablePaymentMethods, stripeWeb2Support } = useGeoOnrampOptions(
     isMainnet,
     srcAmountOnRamp,
   );
@@ -424,9 +427,7 @@ function AnySpendInner({
         return "coinbase";
       case FiatPaymentMethod.STRIPE:
         // Determine if it's stripe onramp or stripe-web2 based on support
-        if (isStripeOnrampSupported) {
-          return "stripe";
-        } else if (stripeWeb2Support?.isSupport) {
+        if (stripeWeb2Support?.isSupport) {
           return "stripe-web2";
         }
         return undefined;
@@ -463,9 +464,6 @@ function AnySpendInner({
           onrampVendor: getOnrampVendor(selectedFiatPaymentMethod),
         },
   );
-
-  const recipientProfile = useProfile({ address: recipientAddress });
-  const recipientName = recipientProfile.data?.name?.replace(/\.b3\.fun/g, "");
 
   // Load custom recipients from local storage on mount
   useEffect(() => {
@@ -648,14 +646,14 @@ function AnySpendInner({
       setActivePanel(PanelView.ORDER_DETAILS);
 
       // Debug: Check payment method before setting URL
-      console.log("Creating order - selectedPaymentMethod:", selectedPaymentMethod);
+      console.log("Creating order - selectedCryptoPaymentMethod:", selectedCryptoPaymentMethod);
 
       // Add orderId and payment method to URL for persistence
       const params = new URLSearchParams(searchParams.toString()); // Preserve existing params
       params.set("orderId", orderId);
-      if (selectedPaymentMethod !== PaymentMethod.NONE) {
-        console.log("Setting paymentMethod in URL:", selectedPaymentMethod);
-        params.set("paymentMethod", selectedPaymentMethod);
+      if (selectedCryptoPaymentMethod !== CryptoPaymentMethodType.NONE) {
+        console.log("Setting cryptoPaymentMethod in URL:", selectedCryptoPaymentMethod);
+        params.set("cryptoPaymentMethod", selectedCryptoPaymentMethod);
       } else {
         console.log("Payment method is NONE, not setting in URL");
       }
@@ -697,14 +695,14 @@ function AnySpendInner({
 
     if (activeTab === "crypto") {
       // If no payment method selected, show "Choose payment method"
-      if (selectedPaymentMethod === PaymentMethod.NONE) {
+      if (selectedCryptoPaymentMethod === CryptoPaymentMethodType.NONE) {
         return { text: "Choose payment method", disable: false, error: false };
       }
       // If payment method selected, show appropriate action
-      if (selectedPaymentMethod === PaymentMethod.CONNECT_WALLET) {
+      if (selectedCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET) {
         return { text: "Swap", disable: false, error: false };
       }
-      if (selectedPaymentMethod === PaymentMethod.TRANSFER_CRYPTO) {
+      if (selectedCryptoPaymentMethod === CryptoPaymentMethodType.TRANSFER_CRYPTO) {
         return { text: "Continue to payment", disable: false, error: false };
       }
     }
@@ -727,7 +725,7 @@ function AnySpendInner({
     isCreatingOnrampOrder,
     anyspendQuote,
     activeTab,
-    selectedPaymentMethod,
+    selectedCryptoPaymentMethod,
     selectedFiatPaymentMethod,
   ]);
 
@@ -757,7 +755,7 @@ function AnySpendInner({
 
       if (activeTab === "crypto") {
         // If no payment method selected, show payment method selection
-        if (selectedPaymentMethod === PaymentMethod.NONE) {
+        if (selectedCryptoPaymentMethod === CryptoPaymentMethodType.NONE) {
           console.log("No payment method selected, showing selection panel");
           setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD);
           return;
@@ -765,11 +763,11 @@ function AnySpendInner({
 
         // If payment method is selected, create order with payment method info
         if (
-          selectedPaymentMethod === PaymentMethod.CONNECT_WALLET ||
-          selectedPaymentMethod === PaymentMethod.TRANSFER_CRYPTO
+          selectedCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET ||
+          selectedCryptoPaymentMethod === CryptoPaymentMethodType.TRANSFER_CRYPTO
         ) {
-          console.log("Creating crypto order with payment method:", selectedPaymentMethod);
-          await handleCryptoSwap(selectedPaymentMethod);
+          console.log("Creating crypto order with payment method:", selectedCryptoPaymentMethod);
+          await handleCryptoSwap(selectedCryptoPaymentMethod);
           return;
         }
       }
@@ -790,14 +788,14 @@ function AnySpendInner({
   };
 
   // Handle crypto swap creation
-  const handleCryptoSwap = async (method: PaymentMethod) => {
+  const handleCryptoSwap = async (method: CryptoPaymentMethodType) => {
     try {
       invariant(anyspendQuote, "Relay price is not found");
       invariant(recipientAddress, "Recipient address is not found");
 
       // Debug: Check payment method values
       console.log("handleCryptoSwap - method parameter:", method);
-      console.log("handleCryptoSwap - selectedPaymentMethod state:", selectedPaymentMethod);
+      console.log("handleCryptoSwap - selectedCryptoPaymentMethod state:", selectedCryptoPaymentMethod);
 
       const srcAmountBigInt = parseUnits(srcAmount.replace(/,/g, ""), selectedSrcToken.decimals);
 
@@ -844,7 +842,7 @@ function AnySpendInner({
         vendor = "coinbase";
         paymentMethodString = coinbaseAvailablePaymentMethods[0]?.id || ""; // Use first available payment method ID
       } else if (paymentMethod === FiatPaymentMethod.STRIPE) {
-        if (!isStripeOnrampSupported && (!stripeWeb2Support || !stripeWeb2Support.isSupport)) {
+        if (!stripeWeb2Support || !stripeWeb2Support.isSupport) {
           toast.error("Stripe not available");
           return;
         }
@@ -981,7 +979,7 @@ function AnySpendInner({
               onBack={() => {
                 setOrderId(undefined);
                 setActivePanel(PanelView.MAIN);
-                setSelectedPaymentMethod(PaymentMethod.NONE); // Reset payment method when going back
+                setSelectedCryptoPaymentMethod(CryptoPaymentMethodType.NONE); // Reset payment method when going back
               }}
             />
           </>
@@ -1029,7 +1027,7 @@ function AnySpendInner({
             )}
             onClick={() => {
               setActiveTab("crypto");
-              setSelectedPaymentMethod(PaymentMethod.NONE); // Reset payment method when switching to crypto
+              setSelectedCryptoPaymentMethod(CryptoPaymentMethodType.NONE); // Reset payment method when switching to crypto
               setSelectedFiatPaymentMethod(FiatPaymentMethod.NONE); // Reset fiat payment method when switching to crypto
             }}
           >
@@ -1042,7 +1040,7 @@ function AnySpendInner({
             )}
             onClick={() => {
               setActiveTab("fiat");
-              setSelectedPaymentMethod(PaymentMethod.NONE); // Reset crypto payment method when switching to fiat
+              setSelectedCryptoPaymentMethod(CryptoPaymentMethodType.NONE); // Reset crypto payment method when switching to fiat
               setSelectedFiatPaymentMethod(FiatPaymentMethod.NONE); // Reset fiat payment method when switching to fiat
             }}
           >
@@ -1071,32 +1069,31 @@ function AnySpendInner({
             <div className="flex items-center justify-between">
               <div className="text-as-primary/50 flex h-7 items-center text-sm">Pay</div>
               <button
-                className="text-as-primary/50 hover:text-as-primary/70 flex h-7 items-center gap-1 text-sm transition-colors"
+                className="text-as-tertiarry flex h-7 items-center gap-2 text-sm transition-colors"
                 onClick={() => setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD)}
               >
-                {selectedPaymentMethod === PaymentMethod.CONNECT_WALLET ? (
+                {selectedCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET ? (
                   <>
-                    {globalAddress || wagmiAccount.address ? (
+                    {connectedAddress ? (
                       <>
-                        {globalWallet?.meta?.icon && (
-                          <img src={globalWallet.meta.icon} alt="Connected Wallet" className="h-4 w-4 rounded-full" />
-                        )}
-                        <span>{shortenAddress(globalAddress || wagmiAccount.address || "")}</span>
+                        <div className="flex items-center gap-1">
+                          {connectedName ? formatUsername(connectedName) : shortenAddress(connectedAddress || "")}
+                        </div>
                       </>
                     ) : (
                       "Connect wallet"
                     )}
-                    <ChevronRightCircle className="h-4 w-4" />
+                    <ChevronRight className="h-4 w-4" />
                   </>
-                ) : selectedPaymentMethod === PaymentMethod.TRANSFER_CRYPTO ? (
+                ) : selectedCryptoPaymentMethod === CryptoPaymentMethodType.TRANSFER_CRYPTO ? (
                   <>
                     Transfer crypto
-                    <ChevronRightCircle className="h-4 w-4" />
+                    <ChevronRight className="h-4 w-4" />
                   </>
                 ) : (
                   <>
                     Select payment method
-                    <ChevronRightCircle className="h-4 w-4" />
+                    <ChevronRight className="h-4 w-4" />
                   </>
                 )}
               </button>
@@ -1198,22 +1195,21 @@ function AnySpendInner({
               <div className="text-as-primary/50 flex h-7 items-center text-sm">Receive</div>
               {recipientAddress ? (
                 <button
-                  className={cn("text-as-primary/70 flex h-7 items-center gap-2 rounded-lg px-2")}
+                  className={cn("text-as-tertiarry flex h-7 items-center gap-2 rounded-lg")}
                   onClick={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
                 >
-                  {globalAddress && recipientAddress === globalAddress && globalWallet?.meta?.icon ? (
-                    <img
-                      src={globalWallet?.meta?.icon}
-                      alt="Current wallet"
-                      className="bg-as-primary h-6 w-6 rounded-full"
-                    />
-                  ) : (
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-orange-500 text-xs text-white">
-                      🦊
-                    </div>
-                  )}
-                  <div className="text-sm">{recipientName ? recipientName : shortenAddress(recipientAddress)}</div>
-                  <ChevronRightCircle className="h-4 w-4" />
+                  <>
+                    {recipientAddress ? (
+                      <>
+                        <span className="text-as-tertiarry flex items-center gap-1 text-sm">
+                          {recipientName ? formatUsername(recipientName) : shortenAddress(recipientAddress || "")}
+                        </span>
+                      </>
+                    ) : (
+                      "Connect wallet"
+                    )}
+                    <ChevronRight className="h-4 w-4" />
+                  </>
                 </button>
               ) : (
                 <button
@@ -1221,7 +1217,6 @@ function AnySpendInner({
                   onClick={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
                 >
                   <div className="text-sm font-medium">Select recipient</div>
-                  <ChevronsUpDown className="h-3 w-3" />
                 </button>
               )}
             </div>
@@ -1309,7 +1304,7 @@ function AnySpendInner({
 
       {/* Error message section */}
       {getAnyspendQuoteError && (
-        <div className="bg-as-on-surface-1 flex w-full max-w-[460px] items-center gap-2 rounded-2xl p-4">
+        <div className="bg-as-on-surface-1 flex w-full max-w-[460px] items-center gap-2 rounded-2xl px-4 py-2">
           <CircleAlert className="bg-as-red h-4 min-h-4 w-4 min-w-4 rounded-full p-0 text-sm font-medium text-white" />
           <div className="text-as-red text-sm">{getAnyspendQuoteError.message}</div>
         </div>
@@ -1320,7 +1315,7 @@ function AnySpendInner({
         initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
         animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
         transition={{ duration: 0.3, delay: 0.2, ease: "easeInOut" }}
-        className="mt-4 flex w-full max-w-[460px] flex-col gap-2 pb-2"
+        className={cn("mt-4 flex w-full max-w-[460px] flex-col gap-2", getAnyspendQuoteError && "mt-0")}
       >
         <ShinyButton
           accentColor={"hsl(var(--as-brand))"}
@@ -1354,7 +1349,7 @@ function AnySpendInner({
   const onrampPaymentView = (
     <PanelOnrampPayment
       srcAmountOnRamp={srcAmountOnRamp}
-      recipientName={recipientName}
+      recipientName={recipientName || undefined}
       recipientAddress={recipientAddress}
       isMainnet={isMainnet}
       isBuyMode={isBuyMode}
@@ -1374,8 +1369,8 @@ function AnySpendInner({
         // For fiat payments, the payment method is always fiat (but we use the active tab context)
         if (activeTab === "fiat") {
           params.set("paymentMethod", "fiat");
-        } else if (selectedPaymentMethod !== PaymentMethod.NONE) {
-          params.set("paymentMethod", selectedPaymentMethod);
+        } else if (selectedCryptoPaymentMethod !== CryptoPaymentMethodType.NONE) {
+          params.set("paymentMethod", selectedCryptoPaymentMethod);
         }
         router.push(`${window.location.pathname}?${params.toString()}`);
       }}
@@ -1386,82 +1381,26 @@ function AnySpendInner({
   );
 
   const recipientSelectionView = (
-    <div className="mx-auto w-[460px] max-w-full">
-      <div className="flex flex-col gap-6">
-        {/* Header */}
-        <div className="flex justify-around">
-          <button
-            onClick={() => setActivePanel(PanelView.MAIN)}
-            className="text-as-quaternary hover:text-as-primary flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
-          >
-            <ChevronLeft className="h-6 w-6" />
-          </button>
-          <div className="flex-1 text-center">
-            <h2 className="text-as-primary text-lg font-semibold">Add recipient address or ENS</h2>
-            <p className="text-as-primary/60 text-sm">Swap and send tokens to another address</p>
-          </div>
-        </div>
-
-        {/* Address Input */}
-        <div className="flex flex-col gap-4">
-          <div className="bg-as-surface-secondary border-as-border-secondary flex h-12 w-full overflow-hidden rounded-xl border">
-            <input
-              type="text"
-              placeholder="Enter recipient address"
-              value={recipientAddress || ""}
-              onChange={e => setRecipientAddress(e.target.value)}
-              onKeyDown={e => {
-                if (e.key === "Enter" && recipientAddress) {
-                  setActivePanel(PanelView.MAIN);
-                }
-              }}
-              className="text-as-primary placeholder:text-as-primary/50 flex-1 bg-transparent px-4 text-base focus:outline-none"
-              autoFocus
-            />
-            <div className="border-as-border-secondary border-l">
-              <button
-                onClick={async () => {
-                  try {
-                    const text = await navigator.clipboard.readText();
-                    setRecipientAddress(text);
-                  } catch (err) {
-                    console.error("Failed to read clipboard:", err);
-                  }
-                }}
-                className="text-as-primary/70 hover:text-as-primary hover:bg-as-surface-primary h-full px-4 font-semibold transition-colors"
-              >
-                Paste
-              </button>
-            </div>
-          </div>
-
-          {/* Confirm Button */}
-          <button
-            onClick={() => {
-              if (recipientAddress) {
-                setActivePanel(PanelView.MAIN);
-              }
-            }}
-            disabled={!recipientAddress}
-            className="bg-as-brand hover:bg-as-brand/90 disabled:bg-as-on-surface-2 disabled:text-as-secondary h-12 w-full rounded-xl font-medium text-white transition-colors disabled:cursor-not-allowed"
-          >
-            Confirm recipient address
-          </button>
-        </div>
-      </div>
-    </div>
+    <RecipientSelection
+      initialValue={recipientAddress || ""}
+      onBack={() => setActivePanel(PanelView.MAIN)}
+      onConfirm={address => {
+        setRecipientAddress(address);
+        setActivePanel(PanelView.MAIN);
+      }}
+    />
   );
 
   const cryptoPaymentMethodView = (
     <CryptoPaymentMethod
       globalAddress={globalAddress}
       globalWallet={globalWallet}
-      selectedPaymentMethod={selectedPaymentMethod}
-      setSelectedPaymentMethod={setSelectedPaymentMethod}
+      selectedPaymentMethod={selectedCryptoPaymentMethod}
+      setSelectedPaymentMethod={setSelectedCryptoPaymentMethod}
       isCreatingOrder={isCreatingOrder}
       onBack={() => setActivePanel(PanelView.MAIN)}
-      onSelectPaymentMethod={(method: PaymentMethod) => {
-        setSelectedPaymentMethod(method);
+      onSelectPaymentMethod={(method: CryptoPaymentMethodType) => {
+        setSelectedCryptoPaymentMethod(method);
         setActivePanel(PanelView.MAIN);
       }}
     />
@@ -1487,7 +1426,8 @@ function AnySpendInner({
       <div
         className={cn(
           "mx-auto w-full max-w-[460px]",
-          mode === "page" && "bg-as-surface-primary border-as-border-secondary rounded-2xl border p-6 shadow-xl",
+          mode === "page" &&
+            "bg-as-surface-primary border-as-border-secondary overflow-hidden rounded-2xl border shadow-xl",
         )}
       >
         <TransitionPanel
@@ -1500,7 +1440,7 @@ function AnySpendInner({
                 ? PanelView.MAIN
                 : activePanel
           }
-          className={cn("overflow-hidden", {
+          className={cn("rounded-2xl", {
             "mt-0": mode === "modal",
           })}
           variants={{
@@ -1511,14 +1451,30 @@ function AnySpendInner({
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
           {[
-            <div key="main-view">{mainView}</div>,
-            <div key="history-view">{historyView}</div>,
-            <div key="order-details-view">{orderDetailsView}</div>,
-            <div key="loading-view">{OrderDetailsLoadingView}</div>,
-            <div key="fiat-payment-view">{onrampPaymentView}</div>,
-            <div key="recipient-selection-view">{recipientSelectionView}</div>,
-            <div key="crypto-payment-method-view">{cryptoPaymentMethodView}</div>,
-            <div key="fiat-payment-method-view">{fiatPaymentMethodView}</div>,
+            <div key="main-view" className={cn(mode === "page" && "p-6")}>
+              {mainView}
+            </div>,
+            <div key="history-view" className={cn(mode === "page" && "p-6")}>
+              {historyView}
+            </div>,
+            <div key="order-details-view" className={cn(mode === "page" && "p-6")}>
+              {orderDetailsView}
+            </div>,
+            <div key="loading-view" className={cn(mode === "page" && "p-6")}>
+              {OrderDetailsLoadingView}
+            </div>,
+            <div key="fiat-payment-view" className={cn(mode === "page" && "p-6")}>
+              {onrampPaymentView}
+            </div>,
+            <div key="recipient-selection-view" className={cn(mode === "page" && "p-6")}>
+              {recipientSelectionView}
+            </div>,
+            <div key="crypto-payment-method-view" className={cn(mode === "page" && "p-6")}>
+              {cryptoPaymentMethodView}
+            </div>,
+            <div key="fiat-payment-method-view" className={cn(mode === "page" && "p-6")}>
+              {fiatPaymentMethodView}
+            </div>,
           ]}
         </TransitionPanel>
       </div>

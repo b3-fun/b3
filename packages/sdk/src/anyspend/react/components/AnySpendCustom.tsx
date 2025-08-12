@@ -7,23 +7,18 @@ import {
   useAnyspendOrderAndTransactions,
   useAnyspendQuote,
   useAnyspendTokenList,
+  useConnectedUserProfile,
   useGeoOnrampOptions,
 } from "@b3dotfun/sdk/anyspend/react";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { GetQuoteRequest, GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
 import {
   Badge,
-  Button,
-  Dialog,
-  DialogContent,
-  Input,
   ShinyButton,
   Skeleton,
   StyleRoot,
   Tabs,
   TabsContent,
-  TabsList,
-  TabTrigger,
   TextShimmer,
   Tooltip,
   TooltipContent,
@@ -36,27 +31,34 @@ import {
   useSearchParamsSSR,
   useTokenBalancesByChain,
 } from "@b3dotfun/sdk/global-account/react";
-import { cn } from "@b3dotfun/sdk/shared/utils";
-import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
+import { cn, formatUsername } from "@b3dotfun/sdk/shared/utils";
+
+import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { formatTokenAmount, formatUnits } from "@b3dotfun/sdk/shared/utils/number";
 import { simpleHashChainToChainName } from "@b3dotfun/sdk/shared/utils/simplehash";
 import invariant from "invariant";
-import { ChevronRightCircle, Loader2 } from "lucide-react";
+import { ChevronRight, ChevronRightCircle, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { base, baseSepolia } from "viem/chains";
+import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
+import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPaymentMethod";
+import { FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaymentMethod";
 import { OrderDetails } from "./common/OrderDetails";
 import { OrderHistory } from "./common/OrderHistory";
 import { OrderStatus as OrderStatusDisplay } from "./common/OrderStatus";
 import { OrderToken } from "./common/OrderToken";
-import { PanelOnrampPayment } from "./common/PanelOnrampPayment";
+import { RecipientSelection } from "./common/RecipientSelection";
 
 enum PanelView {
   CONFIRM_ORDER,
   HISTORY,
   ORDER_DETAILS,
   LOADING,
+  RECIPIENT_SELECTION,
+  CRYPTO_PAYMENT_METHOD,
+  FIAT_PAYMENT_METHOD,
 }
 
 function generateGetRelayQuoteRequest({
@@ -141,7 +143,39 @@ function generateGetRelayQuoteRequest({
   }
 }
 
-export function AnySpendCustom({
+export function AnySpendCustom(props: {
+  isMainnet?: boolean;
+  loadOrder?: string;
+  mode?: "modal" | "page";
+  recipientAddress?: string;
+  spenderAddress?: string;
+  orderType: components["schemas"]["Order"]["type"];
+  dstChainId: number;
+  dstToken: components["schemas"]["Token"];
+  dstAmount: string;
+  contractAddress: string;
+  encodedData: string;
+  metadata: any;
+  header: ({
+    anyspendPrice,
+    isLoadingAnyspendPrice,
+  }: {
+    anyspendPrice: GetQuoteResponse | undefined;
+    isLoadingAnyspendPrice: boolean;
+  }) => React.JSX.Element;
+  onSuccess?: (txHash?: string) => void;
+  showRecipient?: boolean;
+}) {
+  const fingerprintConfig = getFingerprintConfig();
+
+  return (
+    <AnySpendFingerprintWrapper fingerprint={fingerprintConfig}>
+      <AnySpendCustomInner {...props} />
+    </AnySpendFingerprintWrapper>
+  );
+}
+
+function AnySpendCustomInner({
   isMainnet = true,
   loadOrder,
   mode = "modal",
@@ -190,20 +224,20 @@ export function AnySpendCustom({
   );
   const [activeTab, setActiveTab] = useState<"crypto" | "fiat">("crypto");
 
+  // Add state for selected payment methods
+  const [selectedCryptoPaymentMethod, setSelectedCryptoPaymentMethod] = useState<CryptoPaymentMethodType>(
+    CryptoPaymentMethodType.NONE,
+  );
+  const [selectedFiatPaymentMethod, setSelectedFiatPaymentMethod] = useState<FiatPaymentMethod>(FiatPaymentMethod.NONE);
+
   // Get current user's wallet
   const currentWallet = useAccountWallet();
-
-  // Add state for recipient modal
-  const [isRecipientModalOpen, setIsRecipientModalOpen] = useState(false);
 
   // Add state for custom recipient
   const [customRecipientAddress, setCustomRecipientAddress] = useState<string | undefined>(recipientAddressProps);
 
   // Update recipient logic to use custom recipient
   const recipientAddress = customRecipientAddress || currentWallet.address;
-  const recipientPropsProfile = useProfile({ address: recipientAddress });
-  const recipientEnsName = recipientPropsProfile.data?.name?.replace(/\.b3\.fun/g, "");
-  const recipientImageUrl = recipientPropsProfile.data?.avatar || currentWallet.wallet.meta?.icon;
 
   const [orderId, setOrderId] = useState<string | undefined>(loadOrder);
 
@@ -337,7 +371,10 @@ export function AnySpendCustom({
   );
 
   // Get geo data and onramp options (after quote is available)
-  const { geoData, isOnrampSupported } = useGeoOnrampOptions(isMainnet, srcFiatAmount);
+  const { geoData, isOnrampSupported, coinbaseAvailablePaymentMethods, stripeWeb2Support } = useGeoOnrampOptions(
+    isMainnet,
+    srcFiatAmount,
+  );
 
   useEffect(() => {
     if (oat?.data?.order.status === "executed") {
@@ -369,6 +406,10 @@ export function AnySpendCustom({
 
   const isCreatingOrder = isCreatingRegularOrder || isCreatingOnrampOrder;
 
+  const { address: connectedAddress, name: connectedName } = useConnectedUserProfile();
+  const recipientProfile = useProfile({ address: recipientAddress });
+  const recipientName = recipientProfile.data?.name;
+
   const handleCreateOrder = async (
     recipientAddress: string,
     onramp?: { paymentMethod: string; vendor: components["schemas"]["OnrampMetadata"]["vendor"] },
@@ -393,7 +434,7 @@ export function AnySpendCustom({
               ? {
                   type: "erc1155",
                   contractAddress: metadata.nftContract.contractAddress,
-                  tokenId: metadata.nftContract.tokenId!,
+                  tokenId: metadata.nftContract.tokenId ?? 0,
                   name: metadata.nftContract.name,
                   description: metadata.nftContract.description,
                   imageUrl: metadata.nftContract.imageUrl,
@@ -431,15 +472,20 @@ export function AnySpendCustom({
       } as CreateOrderParams;
 
       if (onramp) {
-        invariant(srcToken.address === USDC_BASE.address, "Selected src token is not USDC");
-        invariant(srcChainId === base.id, "Selected src chain is not base");
+        const effectiveSrcToken = activeTab === "fiat" ? USDC_BASE : srcToken;
+        invariant(effectiveSrcToken.address === USDC_BASE.address, "Selected src token is not USDC");
+        invariant((activeTab === "fiat" ? base.id : srcChainId) === base.id, "Selected src chain is not base");
+
+        // Get the current geo data from the hook
+        const currentGeoData = geoData;
+
         void createOnrampOrder({
           ...createOrderParams,
           srcFiatAmount: srcFiatAmount,
           onramp: {
             vendor: onramp.vendor,
             paymentMethod: onramp.paymentMethod,
-            country: geoData?.country || "US",
+            country: currentGeoData?.country || "US",
             redirectUrl:
               window.location.origin === "https://basement.fun"
                 ? "https://basement.fun/deposit"
@@ -461,22 +507,23 @@ export function AnySpendCustom({
     paymentMethod: string;
     vendor: components["schemas"]["OnrampMetadata"]["vendor"];
   }) => {
-    // if (!isAuthenticated) {
-    //   // Copied from https://github.com/b3-fun/b3-mono/blob/main/apps/anyspend-web/components/User/index.tsx#L85
-    //   setB3ModalContentType({
-    //     chain: {
-    //       ...b3,
-    //       rpc: "https://mainnet-rpc.b3.fun",
-    //       blockExplorers: [{ name: "B3 Explorer", url: "https://explorer.b3.fun/" }],
-    //       testnet: undefined,
-    //     },
-    //     partnerId: String(process.env.NEXT_PUBLIC_THIRDWEB_PARTNER_ID),
-    //     type: "signInWithB3",
-    //     showBackButton: false,
-    //   });
-    //   setB3ModalOpen(true);
-    //   return;
-    // }
+    // Check if recipient is selected
+    if (!recipientAddress) {
+      setActivePanel(PanelView.RECIPIENT_SELECTION);
+      return;
+    }
+
+    // Check payment method selection for crypto tab
+    if (activeTab === "crypto" && selectedCryptoPaymentMethod === CryptoPaymentMethodType.NONE) {
+      setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD);
+      return;
+    }
+
+    // Check payment method selection for fiat tab
+    if (activeTab === "fiat" && selectedFiatPaymentMethod === FiatPaymentMethod.NONE) {
+      setActivePanel(PanelView.FIAT_PAYMENT_METHOD);
+      return;
+    }
 
     if (recipientAddress) {
       try {
@@ -485,6 +532,50 @@ export function AnySpendCustom({
         console.error("Error creating order:", err);
         toast(`Error creating order: ${err instanceof Error ? err.message : err}`);
       }
+    }
+  };
+
+  // Handle fiat order creation
+  const handleFiatOrder = async (paymentMethod: FiatPaymentMethod) => {
+    try {
+      invariant(anyspendQuote, "Relay price is not found");
+      invariant(recipientAddress, "Recipient address is not found");
+
+      if (!srcFiatAmount || parseFloat(srcFiatAmount) <= 0) {
+        toast.error("Please enter a valid amount");
+        return;
+      }
+
+      // Determine vendor and payment method string based on selected payment method
+      let vendor: components["schemas"]["OnrampMetadata"]["vendor"];
+      let paymentMethodString = "";
+
+      if (paymentMethod === FiatPaymentMethod.COINBASE_PAY) {
+        if (coinbaseAvailablePaymentMethods.length === 0) {
+          toast.error("Coinbase Pay not available");
+          return;
+        }
+        vendor = "coinbase";
+        paymentMethodString = coinbaseAvailablePaymentMethods[0]?.id || "";
+      } else if (paymentMethod === FiatPaymentMethod.STRIPE) {
+        if (!stripeWeb2Support || !stripeWeb2Support.isSupport) {
+          toast.error("Stripe not available");
+          return;
+        }
+        vendor = stripeWeb2Support && stripeWeb2Support.isSupport ? "stripe-web2" : "stripe";
+        paymentMethodString = "";
+      } else {
+        toast.error("Please select a payment method");
+        return;
+      }
+
+      await handleCreateOrder(recipientAddress, {
+        paymentMethod: paymentMethodString,
+        vendor: vendor,
+      });
+    } catch (err: any) {
+      console.error(err);
+      toast.error("Failed to create order: " + err.message);
     }
   };
 
@@ -500,7 +591,7 @@ export function AnySpendCustom({
       transition={{ duration: 0.3, delay: 0.2, ease: "easeInOut" }}
       className="flex w-full items-center justify-between gap-4"
     >
-      <div className="text-b3-react-foreground">
+      <div className="text-as-tertiarry text-sm">
         {orderType === "swap"
           ? "Recipient"
           : orderType === "mint_nft"
@@ -509,33 +600,35 @@ export function AnySpendCustom({
               ? "Join for"
               : "Recipient"}
       </div>
-      <div>
-        <Button
-          variant="outline"
-          className="w-full justify-between border-none p-0"
-          onClick={() => setIsRecipientModalOpen(true)}
-        >
-          {recipientAddress ? (
-            <div className="flex items-center gap-2">
-              {recipientImageUrl && (
+      <div className="flex items-center gap-2">
+        {recipientAddress ? (
+          <button
+            className={cn("text-as-tertiarry flex h-7 items-center gap-2 rounded-lg")}
+            onClick={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
+          >
+            <>
+              {recipientProfile && (
                 <img
-                  src={recipientImageUrl}
-                  alt={recipientImageUrl}
-                  className="bg-b3-react-foreground size-7 rounded-full object-cover opacity-100"
+                  src={recipientProfile.data?.avatar || ""}
+                  alt={recipientProfile.data?.name || ""}
+                  className="bg-b3-react-foreground size-6 rounded-full object-cover opacity-100"
                 />
               )}
-              <div className="flex flex-col items-start gap-1">
-                {recipientEnsName && <span>@{recipientEnsName}</span>}
-                <span>{centerTruncate(recipientAddress)}</span>
+              <div className="text-as-tertiarry flex items-center gap-1 text-sm">
+                {recipientName && <span>{formatUsername(recipientName)}</span>}
+                <span>{shortenAddress(recipientAddress)}</span>
               </div>
-            </div>
-          ) : (
-            <div className="text-b3-react-foreground/60 flex items-center gap-2">
-              <span>Select address</span>
-            </div>
-          )}
-          <ChevronRightCircle className="ml-2 size-4 shrink-0 opacity-50" />
-        </Button>
+            </>
+          </button>
+        ) : (
+          <button
+            className="text-as-primary/70 flex items-center gap-1 rounded-lg"
+            onClick={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
+          >
+            <div className="text-sm font-medium">Select recipient</div>
+          </button>
+        )}
+        <ChevronRight className="h-4 w-4" />
       </div>
     </motion.div>
   ) : null;
@@ -561,7 +654,7 @@ export function AnySpendCustom({
     <div
       className={cn(
         "mx-auto flex w-full flex-col items-center gap-4 p-5",
-        mode === "modal" && "bg-b3-react-background",
+        mode === "modal" && "bg-b3-react-background rounded-xl",
       )}
     >
       {oat && (
@@ -575,6 +668,7 @@ export function AnySpendCustom({
             relayTx={oat.data.relayTx}
             executeTx={oat.data.executeTx}
             refundTxs={oat.data.refundTxs}
+            cryptoPaymentMethod={activeTab === "fiat" ? CryptoPaymentMethodType.NONE : selectedCryptoPaymentMethod}
             onBack={() => {
               setOrderId(undefined);
               setActivePanel(PanelView.CONFIRM_ORDER);
@@ -673,34 +767,68 @@ export function AnySpendCustom({
     <div className={"relative mx-auto flex w-full flex-col items-center"}>
       {header({ anyspendPrice: anyspendQuote, isLoadingAnyspendPrice: isLoadingAnyspendQuote })}
 
-      <div className="divider w-full" />
-
       <Tabs
         value={activeTab}
         onValueChange={value => setActiveTab(value as "crypto" | "fiat")}
         className="bg-b3-react-background max-h-[60dvh] w-full overflow-y-auto p-5"
       >
-        <TabsList hideGradient className="justify-center">
-          <TabTrigger value="crypto">
-            <span className="text-as-primary w-[140px]">Pay with crypto</span>
-          </TabTrigger>
-          {isOnrampSupported ? (
-            <TabTrigger value="fiat">
-              <span className="text-as-primary w-[140px]">Pay with fiat</span>
-            </TabTrigger>
-          ) : (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <TabTrigger value="fiat" disabled>
-                  <span className="text-as-primary w-[140px]">Pay with fiat</span>
-                </TabTrigger>
-              </TooltipTrigger>
-              <TooltipContent>
-                <span className="text-as-primary w-[140px]">Fiat payments are not supported for this amount</span>
-              </TooltipContent>
-            </Tooltip>
-          )}
-        </TabsList>
+        <div className="w-full">
+          <div className="bg-as-surface-secondary relative mb-4 grid h-10 grid-cols-2 rounded-xl">
+            <div
+              className={cn(
+                "bg-as-brand absolute bottom-0 left-0 top-0 z-0 rounded-xl transition-transform duration-100",
+                "h-full w-1/2",
+                activeTab === "fiat" ? "translate-x-full" : "translate-x-0",
+              )}
+              style={{ willChange: "transform" }}
+            />
+            <button
+              className={cn(
+                "relative z-10 h-full w-full rounded-xl px-3 text-sm font-medium transition-colors duration-100",
+                activeTab === "crypto" ? "text-white" : "text-as-primary/70 hover:bg-as-on-surface-2 bg-transparent",
+              )}
+              onClick={() => {
+                setActiveTab("crypto");
+                setSelectedCryptoPaymentMethod(CryptoPaymentMethodType.NONE);
+                setSelectedFiatPaymentMethod(FiatPaymentMethod.NONE);
+              }}
+            >
+              Pay with crypto
+            </button>
+            {isOnrampSupported ? (
+              <button
+                className={cn(
+                  "relative z-10 h-full w-full rounded-xl px-3 text-sm font-medium transition-colors duration-100",
+                  activeTab === "fiat" ? "text-white" : "text-as-primary/70 hover:bg-as-on-surface-2 bg-transparent",
+                )}
+                onClick={() => {
+                  setActiveTab("fiat");
+                  setSelectedCryptoPaymentMethod(CryptoPaymentMethodType.NONE);
+                  setSelectedFiatPaymentMethod(FiatPaymentMethod.NONE);
+                }}
+              >
+                Pay with fiat
+              </button>
+            ) : (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    className={cn(
+                      "relative z-10 h-full w-full rounded-xl px-3 text-sm font-medium transition-colors duration-100",
+                      "text-as-primary/50 cursor-not-allowed bg-transparent",
+                    )}
+                    disabled
+                  >
+                    Pay with fiat
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <span className="text-as-primary w-[140px]">Fiat payments are not supported for this amount</span>
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+        </div>
 
         {/* Warning */}
         {/* {srcChainId === base.id || dstChainId === base.id || activeTab === "fiat" ? (
@@ -713,8 +841,9 @@ export function AnySpendCustom({
 
         {/* Crypto tab */}
         <TabsContent value="crypto">
-          <div className="mt-2 flex flex-col gap-4">
-            <div className="flex flex-col gap-4">
+          <div className="mt-2 flex flex-col gap-6">
+            <div className="border-as-border-secondary bg-as-surface-secondary flex w-full flex-col gap-4 rounded-xl border p-4">
+              {/* Payment Method Selection */}
               <motion.div
                 initial={false}
                 animate={{
@@ -725,41 +854,91 @@ export function AnySpendCustom({
                 transition={{ duration: 0.3, delay: 0, ease: "easeInOut" }}
                 className="relative flex w-full items-center justify-between"
               >
-                <div className="font-medium">Pay with</div>
-                <OrderToken
-                  address={currentWallet?.wallet?.address}
-                  context="from"
-                  chainId={srcChainId}
-                  setChainId={setSrcChainId}
-                  token={srcToken}
-                  setToken={token => {
-                    setDirtySelectSrcToken(true);
-                    setSrcToken(token);
+                <div className="text-as-tertiarry flex h-7 items-center text-sm">Pay</div>
+                <button
+                  className="text-as-tertiarry flex h-7 items-center gap-2 text-sm transition-colors hover:text-blue-700"
+                  onClick={() => setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD)}
+                >
+                  {selectedCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET ? (
+                    <>
+                      {connectedAddress ? (
+                        <>
+                          <span className="text-as-tertiarry flex items-center gap-1">
+                            {connectedName ? formatUsername(connectedName) : shortenAddress(connectedAddress || "")}
+                          </span>
+                        </>
+                      ) : (
+                        "Connect wallet"
+                      )}
+                      <ChevronRight className="h-4 w-4" />
+                    </>
+                  ) : selectedCryptoPaymentMethod === CryptoPaymentMethodType.TRANSFER_CRYPTO ? (
+                    <>
+                      Transfer crypto
+                      <ChevronRight className="h-4 w-4" />
+                    </>
+                  ) : (
+                    <>
+                      Select payment method
+                      <ChevronRight className="h-4 w-4" />
+                    </>
+                  )}
+                </button>
+              </motion.div>
+
+              <div className="divider w-full" />
+
+              {recipientSection}
+
+              <div className="divider w-full" />
+
+              <div className="flex flex-col gap-4">
+                <motion.div
+                  initial={false}
+                  animate={{
+                    opacity: hasMounted ? 1 : 0,
+                    y: hasMounted ? 0 : 20,
+                    filter: hasMounted ? "blur(0px)" : "blur(10px)",
                   }}
-                  requiredAmount={srcAmount || undefined}
-                />
-              </motion.div>
+                  transition={{ duration: 0.3, delay: 0, ease: "easeInOut" }}
+                  className="relative flex w-full items-center justify-between"
+                >
+                  <div className="text-as-tertiarry text-sm">Pay with</div>
+                  <OrderToken
+                    address={currentWallet?.wallet?.address}
+                    context="from"
+                    chainId={srcChainId}
+                    setChainId={setSrcChainId}
+                    token={srcToken}
+                    setToken={token => {
+                      setDirtySelectSrcToken(true);
+                      setSrcToken(token);
+                    }}
+                    requiredAmount={srcAmount || undefined}
+                  />
+                </motion.div>
 
-              <motion.div
-                initial={false}
-                animate={{
-                  opacity: hasMounted ? 1 : 0,
-                  y: hasMounted ? 0 : 20,
-                  filter: hasMounted ? "blur(0px)" : "blur(10px)",
-                }}
-                transition={{ duration: 0.3, delay: 0.1, ease: "easeInOut" }}
-                className="relative flex w-full items-center justify-between"
-              >
-                <span className="font-medium">
-                  Total <span className="text-sm text-gray-500">(with fee)</span>
-                </span>
-                <h2 className={cn("text-as-primary text-2xl font-semibold")}>
-                  {formattedSrcAmount || "--"} {srcToken.symbol}
-                </h2>
-              </motion.div>
+                <div className="divider w-full" />
+
+                <motion.div
+                  initial={false}
+                  animate={{
+                    opacity: hasMounted ? 1 : 0,
+                    y: hasMounted ? 0 : 20,
+                    filter: hasMounted ? "blur(0px)" : "blur(10px)",
+                  }}
+                  transition={{ duration: 0.3, delay: 0.1, ease: "easeInOut" }}
+                  className="relative flex w-full items-center justify-between"
+                >
+                  <span className="text-as-tertiarry text-sm">
+                    Total <span className="text-as-tertiarry">(with fee)</span>
+                  </span>
+                  <span className="text-as-primary font-semibold">
+                    {formattedSrcAmount || "--"} {srcToken.symbol}
+                  </span>
+                </motion.div>
+              </div>
             </div>
-
-            {recipientSection}
 
             {/* Action Buttons */}
             <div className={cn("flex w-full flex-col items-center justify-between gap-2")}>
@@ -776,7 +955,7 @@ export function AnySpendCustom({
                 <ShinyButton
                   accentColor={"hsl(var(--as-brand))"}
                   textColor="text-white"
-                  disabled={isCreatingOrder || isLoadingAnyspendQuote || !anyspendQuote || !recipientAddress}
+                  disabled={isCreatingOrder || isLoadingAnyspendQuote || !anyspendQuote}
                   onClick={() => handleConfirmOrder()}
                   className="relative w-full"
                 >
@@ -790,15 +969,17 @@ export function AnySpendCustom({
                       <Loader2 className="size-4 animate-spin" />
                       <span>Loading quote...</span>
                     </div>
-                  ) : anyspendQuote && recipientAddress ? (
+                  ) : !recipientAddress ? (
+                    "Select recipient"
+                  ) : selectedCryptoPaymentMethod === CryptoPaymentMethodType.NONE ? (
+                    "Choose payment method"
+                  ) : anyspendQuote ? (
                     <>
                       <span>Checkout</span>
                       <ChevronRightCircle className="absolute right-0 top-1/2 size-6 -translate-y-1/2 opacity-70" />
                     </>
-                  ) : recipientAddress ? (
-                    "No quote found"
                   ) : (
-                    "Please select a recipient"
+                    "No quote found"
                   )}
                 </ShinyButton>
               </motion.div>
@@ -808,59 +989,181 @@ export function AnySpendCustom({
 
         {/* Fiat tab */}
         <TabsContent value="fiat">
-          <div className="mt-6 flex w-full flex-col gap-6">
-            <PanelOnrampPayment
-              srcAmountOnRamp={srcAmount ? formatUnits(srcAmount.toString(), USDC_BASE.decimals) : "0"}
-              recipientName={recipientEnsName}
-              recipientAddress={recipientAddress}
-              isMainnet={isMainnet}
-              isBuyMode={false}
-              selectedDstChainId={dstChainId}
-              selectedDstToken={dstToken}
-              anyspendQuote={anyspendQuote}
-              globalAddress={currentWallet?.wallet?.address}
-              onOrderCreated={(orderId: string) => setOrderId(orderId)}
-              onBack={() => setActiveTab("crypto")}
-              orderType={orderType}
-              nft={
-                metadata.type === "mint_nft"
-                  ? metadata.nftContract.type === "erc1155"
-                    ? {
-                        type: "erc1155",
-                        contractAddress: metadata.nftContract.contractAddress,
-                        tokenId: metadata.nftContract.tokenId!,
-                        imageUrl: metadata.nftContract.imageUrl,
-                        name: metadata.nftContract.name,
-                        description: metadata.nftContract.description,
-                        price: dstAmount,
-                      }
-                    : {
-                        type: "erc721",
-                        contractAddress: metadata.nftContract.contractAddress,
-                        name: metadata.nftContract.name,
-                        description: metadata.nftContract.description,
-                        imageUrl: metadata.nftContract.imageUrl,
-                        price: dstAmount,
-                      }
-                  : undefined
-              }
-              payload={
-                metadata.type === "custom"
-                  ? {
-                      ...metadata,
-                      amount: dstAmount,
-                      data: encodedData,
-                      to: contractAddress,
-                      spenderAddress: spenderAddress,
+          <div className="mt-2 flex flex-col gap-6">
+            <div className="border-as-border-secondary bg-as-surface-secondary flex w-full flex-col gap-4 rounded-xl border p-4">
+              {/* Fiat Payment Method Selection */}
+              <motion.div
+                initial={false}
+                animate={{
+                  opacity: hasMounted ? 1 : 0,
+                  y: hasMounted ? 0 : 20,
+                  filter: hasMounted ? "blur(0px)" : "blur(10px)",
+                }}
+                transition={{ duration: 0.3, delay: 0, ease: "easeInOut" }}
+                className="relative flex w-full items-center justify-between"
+              >
+                <div className="text-as-tertiarry flex h-7 items-center text-sm">Pay with</div>
+                <button
+                  className="text-as-tertiarry flex h-7 items-center gap-1 text-sm transition-colors hover:text-blue-700"
+                  onClick={() => setActivePanel(PanelView.FIAT_PAYMENT_METHOD)}
+                >
+                  {selectedFiatPaymentMethod === FiatPaymentMethod.COINBASE_PAY ? (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600">
+                          <span className="text-xs font-bold text-white">C</span>
+                        </div>
+                        Coinbase Pay
+                      </div>
+                      <ChevronRight className="h-4 w-4" />
+                    </>
+                  ) : selectedFiatPaymentMethod === FiatPaymentMethod.STRIPE ? (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600">
+                          <span className="text-xs font-bold text-white">S</span>
+                        </div>
+                        Credit/Debit Card
+                      </div>
+                      <ChevronRight className="h-4 w-4" />
+                    </>
+                  ) : (
+                    <>
+                      Select payment method
+                      <ChevronRight className="h-4 w-4" />
+                    </>
+                  )}
+                </button>
+              </motion.div>
+
+              <div className="divider w-full" />
+
+              {recipientSection}
+
+              <div className="divider w-full" />
+
+              {/* Fiat Amount Display */}
+              <motion.div
+                initial={false}
+                animate={{
+                  opacity: hasMounted ? 1 : 0,
+                  y: hasMounted ? 0 : 20,
+                  filter: hasMounted ? "blur(0px)" : "blur(10px)",
+                }}
+                transition={{ duration: 0.3, delay: 0.1, ease: "easeInOut" }}
+                className="relative flex w-full items-center justify-between"
+              >
+                <span className="text-as-tertiarry text-sm">
+                  Total <span className="text-as-tertiarry">(USD)</span>
+                </span>
+                <span className="text-as-primary text-xl font-semibold">${srcFiatAmount || "0.00"}</span>
+              </motion.div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className={cn("flex w-full flex-col items-center justify-between gap-2")}>
+              <motion.div
+                initial={false}
+                animate={{
+                  opacity: hasMounted ? 1 : 0,
+                  y: hasMounted ? 0 : 20,
+                  filter: hasMounted ? "blur(0px)" : "blur(10px)",
+                }}
+                transition={{ duration: 0.3, delay: 0.3, ease: "easeInOut" }}
+                className="flex w-full flex-col gap-2"
+              >
+                <ShinyButton
+                  accentColor={"hsl(var(--as-brand))"}
+                  textColor="text-white"
+                  disabled={isCreatingOrder || isLoadingAnyspendQuote || !anyspendQuote}
+                  onClick={() => {
+                    if (selectedFiatPaymentMethod !== FiatPaymentMethod.NONE) {
+                      handleFiatOrder(selectedFiatPaymentMethod);
+                    } else {
+                      handleConfirmOrder();
                     }
-                  : undefined
-              }
-              recipientEnsName={recipientEnsName}
-              recipientImageUrl={recipientImageUrl}
-            />
+                  }}
+                  className="relative w-full"
+                >
+                  {isCreatingOrder ? (
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="size-4 animate-spin" />
+                      <span>Creating order...</span>
+                    </div>
+                  ) : isLoadingAnyspendQuote ? (
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="size-4 animate-spin" />
+                      <span>Loading quote...</span>
+                    </div>
+                  ) : !recipientAddress ? (
+                    "Select recipient"
+                  ) : selectedFiatPaymentMethod === FiatPaymentMethod.NONE ? (
+                    "Select payment method"
+                  ) : anyspendQuote ? (
+                    <>
+                      <span>Buy</span>
+                      <ChevronRightCircle className="absolute right-0 top-1/2 size-6 -translate-y-1/2 opacity-70" />
+                    </>
+                  ) : (
+                    "No quote found"
+                  )}
+                </ShinyButton>
+              </motion.div>
+            </div>
           </div>
         </TabsContent>
       </Tabs>
+    </div>
+  );
+
+  // Recipient selection view
+  const recipientSelectionView = (
+    <div className={cn("bg-as-surface-primary mx-auto w-[460px] max-w-full rounded-xl p-4")}>
+      <RecipientSelection
+        initialValue={customRecipientAddress || ""}
+        title="Add recipient address or ENS"
+        description="Send tokens to another address"
+        onBack={() => setActivePanel(PanelView.CONFIRM_ORDER)}
+        onConfirm={address => {
+          setCustomRecipientAddress(address);
+          setActivePanel(PanelView.CONFIRM_ORDER);
+        }}
+      />
+    </div>
+  );
+
+  // Crypto payment method view
+  const cryptoPaymentMethodView = (
+    <div className={cn("bg-as-surface-primary mx-auto w-[460px] max-w-full rounded-xl p-4")}>
+      <CryptoPaymentMethod
+        globalAddress={currentWallet?.wallet?.address}
+        globalWallet={currentWallet?.wallet}
+        selectedPaymentMethod={selectedCryptoPaymentMethod}
+        setSelectedPaymentMethod={setSelectedCryptoPaymentMethod}
+        isCreatingOrder={isCreatingOrder}
+        onBack={() => setActivePanel(PanelView.CONFIRM_ORDER)}
+        onSelectPaymentMethod={(method: CryptoPaymentMethodType) => {
+          setSelectedCryptoPaymentMethod(method);
+          setActivePanel(PanelView.CONFIRM_ORDER);
+        }}
+      />
+    </div>
+  );
+
+  // Fiat payment method view
+  const fiatPaymentMethodView = (
+    <div className={cn("bg-as-surface-primary mx-auto w-[460px] max-w-full rounded-xl p-4")}>
+      <FiatPaymentMethodComponent
+        selectedPaymentMethod={selectedFiatPaymentMethod}
+        setSelectedPaymentMethod={setSelectedFiatPaymentMethod}
+        onBack={() => setActivePanel(PanelView.CONFIRM_ORDER)}
+        onSelectPaymentMethod={(method: FiatPaymentMethod) => {
+          setSelectedFiatPaymentMethod(method);
+          setActivePanel(PanelView.CONFIRM_ORDER);
+        }}
+        srcAmountOnRamp={srcFiatAmount}
+        isMainnet={isMainnet}
+      />
     </div>
   );
 
@@ -886,7 +1189,7 @@ export function AnySpendCustom({
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
         {[
-          <div key="edit-recipient-view" className="w-full">
+          <div key="confirm-order-view" className="w-full">
             {confirmOrderView}
           </div>,
           <div key="history-view" className="w-full">
@@ -898,34 +1201,17 @@ export function AnySpendCustom({
           <div key="loading-view" className="w-full">
             {loadingView}
           </div>,
+          <div key="recipient-selection-view" className="w-full">
+            {recipientSelectionView}
+          </div>,
+          <div key="crypto-payment-method-view" className="w-full">
+            {cryptoPaymentMethodView}
+          </div>,
+          <div key="fiat-payment-method-view" className="w-full">
+            {fiatPaymentMethodView}
+          </div>,
         ]}
       </TransitionPanel>
-
-      {/* Add EnterRecipientModal */}
-      <Dialog open={isRecipientModalOpen} onOpenChange={setIsRecipientModalOpen}>
-        <DialogContent className="w-[420px] max-w-[calc(100vw-32px)] rounded-2xl p-3.5">
-          <div className="flex flex-col gap-3">
-            <div className="text-as-primary font-semibold">To address</div>
-            <Input
-              value={customRecipientAddress || ""}
-              onChange={e => setCustomRecipientAddress(e.target.value)}
-              placeholder="Enter address"
-              className="h-12 rounded-lg"
-              spellCheck={false}
-            />
-            <ShinyButton
-              accentColor={"hsl(var(--as-brand))"}
-              textColor="text-white"
-              className="w-full rounded-lg"
-              onClick={() => {
-                setIsRecipientModalOpen(false);
-              }}
-            >
-              Save
-            </ShinyButton>
-          </div>
-        </DialogContent>
-      </Dialog>
     </StyleRoot>
   );
 }

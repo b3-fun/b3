@@ -1,0 +1,343 @@
+---
+title: "Quickstart"
+description: "Launch an ERC20 bond token in minutes: Create → Bond → Migrate."
+---
+
+## Overview
+
+This quickstart guide will walk you through the complete lifecycle of a BondKit token in under 5 minutes. You'll learn how to:
+
+1. **Deploy** a new bond token
+2. **Trade** during the bonding phase
+3. **Monitor** progress toward the target
+4. **Migrate** to Uniswap v4
+
+<Info>
+  **Prerequisites**: Make sure you've completed the [installation](/bondkit/installation) and have a funded wallet on Base.
+</Info>
+
+## Complete Flow Diagram
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Factory
+    participant Token
+    participant Traders
+    participant UniswapV4
+    
+    User->>Factory: deployBondkitToken()
+    Factory->>Token: Create via proxy
+    Token-->>User: Token address
+    
+    loop Bonding Phase
+        Traders->>Token: buy()/sell()
+        Token-->>Traders: Tokens/ETH
+    end
+    
+    User->>Token: Check progress
+    Token-->>User: Target reached!
+    
+    User->>Token: migrateToDex()
+    Token->>UniswapV4: Initialize pool
+    UniswapV4-->>Token: Pool created
+    Token-->>User: Migration complete
+```
+
+## Step 1: Deploy Your Token
+
+### Basic Deployment
+
+```typescript
+import { BondkitTokenFactory } from "@b3dotfun/sdk/bondkit";
+import { base } from "viem/chains";
+import { parseEther } from "viem";
+
+// Initialize the factory
+const factory = new BondkitTokenFactory(
+  base.id, 
+  process.env.WALLET_PRIVATE_KEY
+);
+
+// Deploy your token
+const tokenAddress = await factory.deployBondkitToken({
+  // Token metadata
+  name: "My Awesome Token",
+  symbol: "MAT",
+  
+  // Supply configuration (1 million tokens)
+  finalTokenSupply: parseEther("1000000"),
+  
+  // Bonding curve settings
+  aggressivenessFactor: 35,  // 0-100, higher = steeper curve
+  targetEth: parseEther("10"), // 10 ETH target for migration
+  
+  // Fee configuration
+  feeRecipient: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1", // Your address
+  lpSplitRatioFeeRecipientBps: 1000n, // 10% to fee recipient
+  
+  // Migration settings
+  migrationAdminAddress: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1",
+  uniswapV2RouterAddress: "0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24" // V4 router
+});
+
+console.log("✅ Token deployed at:", tokenAddress);
+```
+
+### Understanding Parameters
+
+<ParamField path="finalTokenSupply" type="bigint" required>
+  Total supply of tokens (with 18 decimals). Example: `parseEther("1000000")` for 1M tokens.
+</ParamField>
+
+<ParamField path="aggressivenessFactor" type="number" required>
+  Controls bonding curve steepness (0-100):
+  - **0-30**: Linear pricing, fair for all buyers
+  - **30-60**: Moderate curve, balanced approach
+  - **60-100**: Aggressive, rewards early buyers
+</ParamField>
+
+<ParamField path="targetEth" type="bigint" required>
+  Amount of ETH needed to enable migration. Use `parseEther("10")` for 10 ETH.
+</ParamField>
+
+<ParamField path="feeRecipient" type="address" required>
+  Address that receives trading fees (5% of all trades).
+</ParamField>
+
+<ParamField path="lpSplitRatioFeeRecipientBps" type="bigint" required>
+  Basis points (1/100th of 1%) for LP fee split. 1000 = 10%.
+</ParamField>
+
+## Step 2: Trading During Bonding Phase
+
+### Initialize Token Instance
+
+```typescript
+import { BondkitToken } from "@b3dotfun/sdk/bondkit";
+import { parseEther, formatEther } from "viem";
+
+// Connect to your deployed token
+const token = new BondkitToken(
+  tokenAddress, 
+  process.env.WALLET_PRIVATE_KEY
+);
+```
+
+### Buying Tokens
+
+```typescript
+// Get a price quote first
+const ethAmount = parseEther("1"); // 1 ETH
+const expectedTokens = await token.getAmountOfTokensToBuy(ethAmount);
+
+console.log(`1 ETH will buy: ${formatEther(expectedTokens)} tokens`);
+
+// Execute the purchase
+const buyTx = await token.buy(
+  0n,    // minTokensOut (0 = accept any amount, use for slippage protection)
+  "1"    // ETH amount as string
+);
+
+console.log("Purchase complete! Tx:", buyTx);
+```
+
+### Selling Tokens
+
+```typescript
+// Check your token balance
+const balance = await token.getBalance(userAddress);
+console.log(`Your balance: ${formatEther(balance)} tokens`);
+
+// Get sell quote
+const tokensToSell = parseEther("1000");
+const expectedEth = await token.getAmountOfEthToReceive(tokensToSell);
+
+console.log(`Selling 1000 tokens will return: ${formatEther(expectedEth)} ETH`);
+
+// Execute the sale
+const sellTx = await token.sell(
+  tokensToSell,  // Amount of tokens to sell
+  0n             // Min ETH out (for slippage protection)
+);
+
+console.log("Sale complete! Tx:", sellTx);
+```
+
+### Monitoring Progress
+
+```typescript
+// Check bonding progress
+const progress = await token.getBondingProgress();
+
+console.log(`
+  Progress: ${(progress.progress * 100).toFixed(2)}%
+  Raised: ${formatEther(progress.raised)} ETH
+  Target: ${formatEther(progress.threshold)} ETH
+  Remaining: ${formatEther(progress.threshold - progress.raised)} ETH
+`);
+
+// Get current token price
+const currentPrice = await token.getCurrentPrice();
+console.log(`Current price: ${formatEther(currentPrice)} ETH per token`);
+
+// Check if migration is available
+const canMigrate = await token.canMigrate();
+console.log(`Ready to migrate: ${canMigrate}`);
+```
+
+### Event Monitoring
+
+```typescript
+// Listen for buy events
+token.onBuy((event) => {
+  console.log("New purchase:", {
+    buyer: event.buyer,
+    ethIn: formatEther(event.ethIn),
+    tokensOut: formatEther(event.tokensOut)
+  });
+});
+
+// Listen for sell events
+token.onSell((event) => {
+  console.log("New sale:", {
+    seller: event.seller,
+    tokensIn: formatEther(event.tokensIn),
+    ethOut: formatEther(event.ethOut)
+  });
+});
+```
+
+## Step 3: Migration to Uniswap v4
+
+### Check Migration Readiness
+
+```typescript
+// Verify target is reached
+const progress = await token.getBondingProgress();
+
+if (progress.progress >= 1.0) {
+  console.log("✅ Target reached! Ready to migrate.");
+  
+  // Get migration details
+  const migrationData = await token.getMigrationData();
+  console.log("Migration will create pool with:", {
+    ethLiquidity: formatEther(migrationData.ethForLp),
+    tokenLiquidity: formatEther(migrationData.tokensForLp),
+    initialPrice: formatEther(migrationData.sqrtPriceX96)
+  });
+} else {
+  console.log(`⏳ Need ${formatEther(progress.threshold - progress.raised)} more ETH`);
+}
+```
+
+### Execute Migration
+
+```typescript
+// Only the migration admin can call this
+if (await token.isMigrationAdmin(userAddress)) {
+  console.log("🚀 Initiating migration to Uniswap v4...");
+  
+  const migrationTx = await token.migrateToDex();
+  console.log("Migration transaction:", migrationTx);
+  
+  // Wait for confirmation
+  const receipt = await token.waitForTransaction(migrationTx);
+  
+  if (receipt.status === "success") {
+    console.log("✅ Migration complete!");
+    console.log("Uniswap v4 pool address:", await token.getPoolAddress());
+  }
+} else {
+  console.log("❌ Only migration admin can execute migration");
+}
+```
+
+<Warning>
+  **Important**: After migration:
+  - Contract ownership is automatically renounced
+  - Bonding curve trading is permanently disabled
+  - All trading moves to Uniswap v4
+  - No further admin actions are possible
+</Warning>
+
+## Complete Example
+
+Here's a full working example that demonstrates the entire lifecycle:
+
+```typescript
+import { 
+  BondkitTokenFactory, 
+  BondkitToken 
+} from "@b3dotfun/sdk/bondkit";
+import { base } from "viem/chains";
+import { parseEther, formatEther } from "viem";
+
+async function launchToken() {
+  // 1. Deploy token
+  const factory = new BondkitTokenFactory(
+    base.id,
+    process.env.WALLET_PRIVATE_KEY
+  );
+  
+  const tokenAddress = await factory.deployBondkitToken({
+    name: "Demo Token",
+    symbol: "DEMO",
+    finalTokenSupply: parseEther("1000000"),
+    aggressivenessFactor: 50,
+    targetEth: parseEther("5"),
+    feeRecipient: process.env.WALLET_ADDRESS,
+    lpSplitRatioFeeRecipientBps: 1000n,
+    migrationAdminAddress: process.env.WALLET_ADDRESS,
+    uniswapV2RouterAddress: "0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24"
+  });
+  
+  console.log("Token deployed:", tokenAddress);
+  
+  // 2. Trade during bonding
+  const token = new BondkitToken(
+    tokenAddress,
+    process.env.WALLET_PRIVATE_KEY
+  );
+  
+  // Buy some tokens
+  await token.buy(0n, "0.5");
+  console.log("Bought tokens with 0.5 ETH");
+  
+  // Check progress
+  const progress = await token.getBondingProgress();
+  console.log(`Progress: ${(progress.progress * 100).toFixed(2)}%`);
+  
+  // 3. Continue trading until target is reached...
+  // (In production, other users would be trading)
+  
+  // 4. Migrate when ready
+  if (progress.progress >= 1.0) {
+    await token.migrateToDex();
+    console.log("Migration complete! Token is now on Uniswap v4");
+  }
+}
+
+launchToken().catch(console.error);
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Concepts" icon="book" href="/bondkit/concepts/bonding-phase">
+    Deep dive into bonding curves and pricing
+  </Card>
+  <Card title="SDK Reference" icon="code" href="/bondkit/sdk/reference">
+    Explore all available methods
+  </Card>
+  <Card title="Guides" icon="compass" href="/bondkit/guides/choose-quote-asset">
+    Learn advanced strategies
+  </Card>
+  <Card title="Demo App" icon="desktop" href="https://github.com/b3dotfun/b3-monorepo/tree/main/apps/bondkit-demo">
+    See a complete implementation
+  </Card>
+</CardGroup>
+
+
+
+

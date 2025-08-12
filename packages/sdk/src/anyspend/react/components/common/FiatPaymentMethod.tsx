@@ -47,7 +47,6 @@ export function FiatPaymentMethodComponent({
   // Load geo-based onramp options like in PanelOnramp
   const {
     coinbaseAvailablePaymentMethods,
-    isStripeOnrampSupported,
     stripeWeb2Support,
     isLoading: isLoadingGeoOnramp,
   } = useGeoOnrampOptions(isMainnet, srcAmountOnRamp);
@@ -69,13 +68,13 @@ export function FiatPaymentMethodComponent({
   }
 
   // Add Stripe if available
-  if (isStripeOnrampSupported || (stripeWeb2Support && stripeWeb2Support.isSupport)) {
+  if (stripeWeb2Support && stripeWeb2Support.isSupport) {
     const stripeFee = getFeeFromApi(FiatPaymentMethod.STRIPE);
     availablePaymentMethods.push({
       id: FiatPaymentMethod.STRIPE,
       name: "Stripe",
       description: "Credit or debit card payment",
-      badge: stripeFee ? `$${stripeFee} fee` : "Standard Fee",
+      badge: stripeFee ? `$${Number(stripeFee).toFixed(2)} fee` : "Standard Fee",
       badgeColor: "bg-yellow-100 text-yellow-800",
       available: true,
     });

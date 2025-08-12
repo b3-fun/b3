@@ -1,0 +1,554 @@
+---
+title: "Rewards System"
+description: "Understanding and implementing the CreateKit reward distribution system"
+---
+
+## Overview
+
+CreateKit features an innovative reward system that distributes a portion of each mint's value to various participants in the ecosystem. This creates aligned incentives and ensures all contributors benefit from successful collections.
+
+## Reward Structure
+
+### Default Distribution
+
+| Recipient Type | Default Share | Description |
+|----------------|---------------|-------------|
+| **Creator** | 40% | Collection originator who created the collection |
+| **First Minter** | 30% | User who triggers the initial deployment and first mint |
+| **Game Owner** | 20% | Platform or game that integrates the collection |
+| **Platform** | 10% | BaseMint protocol fee |
+
+<Note>
+Reward rates are configurable by the protocol administrator and may vary between deployments.
+</Note>
+
+### How Rewards Work
+
+1. **Mint Payment**: User pays the mint price for tokens
+2. **Reward Calculation**: A percentage of the payment is allocated to the reward pool
+3. **Distribution**: Rewards are distributed according to the configured rates
+4. **Accumulation**: Rewards accumulate in the escrow contract until claimed
+
+## Reward Tracking
+
+### Setting Up Reward Tracking
+
+```typescript title="Initialize Reward Tracker"
+import { RewardTracker } from '@b3dotfun/basemint'
+import { createPublicClient, http } from 'viem'
+import { b3Testnet } from '@b3dotfun/basemint'
+
+const publicClient = createPublicClient({
+  chain: b3Testnet,
+  transport: http()
+})
+
+const rewardTracker = new RewardTracker(publicClient)
+
+// Get escrow contract address
+const escrowAddress = rewardTracker.getEscrowAddress()
+console.log(`Escrow contract: ${escrowAddress}`)
+```
+
+### Collection-Level Rewards
+
+Track rewards accumulated for an entire collection:
+
+```typescript title="Collection Rewards"
+// Get total rewards for a collection
+const collectionRewards = await rewardTracker.getCollectionRewards(
+  escrowAddress,
+  collectionAddress
+)
+
+console.log("Collection Rewards:", {
+  totalRewards: collectionRewards.totalRewards.toString(),
+  unclaimedRewards: collectionRewards.unclaimedRewards.toString(),
+  totalMints: collectionRewards.totalMints.toString(),
+  averageRewardPerMint: (
+    collectionRewards.totalRewards / collectionRewards.totalMints
+  ).toString()
+})
+```
+
+### Individual Recipient Rewards
+
+Track rewards for specific participants:
+
+<Tabs>
+<Tab title="Creator Rewards">
+```typescript
+// Get creator rewards for a collection
+const creatorRewards = await rewardTracker.getRecipientRewards(
+  escrowAddress,
+  collectionAddress,
+  "CREATOR",
+  creatorAddress
+)
+
+console.log(`Creator rewards: ${creatorRewards.toString()} wei`)
+```
+</Tab>
+
+<Tab title="First Minter Rewards">
+```typescript
+// Get first minter rewards
+const firstMinterRewards = await rewardTracker.getRecipientRewards(
+  escrowAddress,
+  collectionAddress,
+  "FIRST_MINTER", 
+  firstMinterAddress
+)
+
+console.log(`First minter rewards: ${firstMinterRewards.toString()} wei`)
+```
+</Tab>
+
+<Tab title="Game Owner Rewards">
+```typescript
+// Get game owner rewards
+const gameOwnerRewards = await rewardTracker.getRecipientRewards(
+  escrowAddress,
+  collectionAddress,
+  "GAME_OWNER",
+  gameOwnerAddress
+)
+
+console.log(`Game owner rewards: ${gameOwnerRewards.toString()} wei`)
+```
+</Tab>
+</Tabs>
+
+### All Recipients for a Collection
+
+```typescript title="All Recipient Rewards"
+// Get rewards for all recipient types
+const allRewards = await Promise.all([
+  rewardTracker.getRecipientRewards(escrowAddress, collectionAddress, "CREATOR", creatorAddress),
+  rewardTracker.getRecipientRewards(escrowAddress, collectionAddress, "FIRST_MINTER", firstMinterAddress),
+  rewardTracker.getRecipientRewards(escrowAddress, collectionAddress, "GAME_OWNER", gameOwnerAddress),
+  rewardTracker.getRecipientRewards(escrowAddress, collectionAddress, "PLATFORM", platformAddress)
+])
+
+const [creatorRewards, firstMinterRewards, gameOwnerRewards, platformRewards] = allRewards
+
+console.log("Reward Distribution:", {
+  creator: creatorRewards.toString(),
+  firstMinter: firstMinterRewards.toString(),
+  gameOwner: gameOwnerRewards.toString(),
+  platform: platformRewards.toString(),
+  total: (creatorRewards + firstMinterRewards + gameOwnerRewards + platformRewards).toString()
+})
+```
+
+## Reward Events
+
+### Tracking Reward Distributions
+
+```typescript title="Reward Event Monitoring"
+import { getRewardDistributionEvents } from '@b3dotfun/basemint'
+
+// Get historical reward distribution events
+const fromBlock = await publicClient.getBlockNumber() - 1000n
+const toBlock = await publicClient.getBlockNumber()
+
+const rewardEvents = await getRewardDistributionEvents(
+  publicClient,
+  escrowAddress,
+  fromBlock,
+  toBlock
+)
+
+console.log("Recent reward distributions:")
+rewardEvents.forEach(event => {
+  console.log({
+    collection: event.args.collection,
+    recipient: event.args.recipient,
+    recipientType: event.args.recipientType,
+    amount: event.args.amount?.toString(),
+    blockNumber: event.blockNumber
+  })
+})
+```
+
+### Real-time Reward Monitoring
+
+```typescript title="Real-time Monitoring"
+// Watch for new reward distributions
+const unwatch = publicClient.watchContractEvent({
+  address: escrowAddress,
+  abi: rewardTracker.escrowAbi,
+  eventName: 'RewardDistributed',
+  onLogs: (logs) => {
+    logs.forEach(log => {
+      console.log('New reward distributed:', {
+        collection: log.args.collection,
+        recipient: log.args.recipient,
+        amount: log.args.amount?.toString(),
+        type: log.args.recipientType
+      })
+    })
+  }
+})
+
+// Stop watching when done
+// unwatch()
+```
+
+## Reward Withdrawal
+
+### Individual Withdrawals
+
+```typescript title="Withdraw Rewards"
+import { createWalletClient } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+
+const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`)
+const walletClient = createWalletClient({
+  chain: b3Testnet,
+  transport: http(),
+  account
+})
+
+// Withdraw rewards for a specific collection and recipient type
+async function withdrawRewards(
+  collectionAddress: string,
+  recipientType: "CREATOR" | "FIRST_MINTER" | "GAME_OWNER" | "PLATFORM"
+) {
+  try {
+    // Check available rewards first
+    const availableRewards = await rewardTracker.getRecipientRewards(
+      escrowAddress,
+      collectionAddress,
+      recipientType,
+      account.address
+    )
+
+    if (availableRewards === 0n) {
+      console.log("No rewards available to withdraw")
+      return
+    }
+
+    console.log(`Withdrawing ${availableRewards.toString()} wei of rewards...`)
+
+    // Withdraw rewards
+    const tx = await rewardTracker.withdrawRewards(
+      walletClient,
+      escrowAddress,
+      collectionAddress,
+      recipientType
+    )
+
+    console.log(`✅ Rewards withdrawn successfully: ${tx}`)
+    return tx
+
+  } catch (error) {
+    console.error("❌ Withdrawal failed:", error)
+    throw error
+  }
+}
+
+// Example: Creator withdraws their rewards
+await withdrawRewards(collectionAddress, "CREATOR")
+```
+
+### Batch Withdrawals
+
+```typescript title="Batch Withdrawal"
+// Withdraw rewards from multiple collections
+async function withdrawAllCreatorRewards(creatorAddress: string) {
+  // Get all collections where this address is the creator
+  const creatorCollections = await getCreatorCollections(creatorAddress)
+  
+  for (const collection of creatorCollections) {
+    const rewards = await rewardTracker.getRecipientRewards(
+      escrowAddress,
+      collection.address,
+      "CREATOR",
+      creatorAddress
+    )
+
+    if (rewards > 0n) {
+      console.log(`Withdrawing ${rewards.toString()} wei from ${collection.name}`)
+      
+      try {
+        await rewardTracker.withdrawRewards(
+          walletClient,
+          escrowAddress,
+          collection.address,
+          "CREATOR"
+        )
+        console.log(`✅ Withdrawn from ${collection.name}`)
+      } catch (error) {
+        console.error(`❌ Failed to withdraw from ${collection.name}:`, error)
+      }
+    }
+  }
+}
+```
+
+## Reward Analytics
+
+### Portfolio Overview
+
+```typescript title="Creator Portfolio"
+async function getCreatorPortfolio(creatorAddress: string) {
+  const collections = await getCreatorCollections(creatorAddress)
+  
+  let totalRewards = 0n
+  let totalUnclaimedRewards = 0n
+  let totalMints = 0n
+  
+  const collectionData = []
+  
+  for (const collection of collections) {
+    const collectionRewards = await rewardTracker.getCollectionRewards(
+      escrowAddress,
+      collection.address
+    )
+    
+    const creatorRewards = await rewardTracker.getRecipientRewards(
+      escrowAddress,
+      collection.address,
+      "CREATOR",
+      creatorAddress
+    )
+    
+    totalRewards += collectionRewards.totalRewards
+    totalUnclaimedRewards += creatorRewards
+    totalMints += collectionRewards.totalMints
+    
+    collectionData.push({
+      name: collection.name,
+      address: collection.address,
+      totalRewards: collectionRewards.totalRewards,
+      creatorRewards,
+      mints: collectionRewards.totalMints
+    })
+  }
+  
+  return {
+    summary: {
+      totalCollections: collections.length,
+      totalRewards: totalRewards.toString(),
+      totalUnclaimedRewards: totalUnclaimedRewards.toString(), 
+      totalMints: totalMints.toString(),
+      averageRewardPerMint: totalMints > 0n ? (totalRewards / totalMints).toString() : "0"
+    },
+    collections: collectionData
+  }
+}
+
+const portfolio = await getCreatorPortfolio(creatorAddress)
+console.log("Creator Portfolio:", portfolio)
+```
+
+### Performance Metrics
+
+```typescript title="Reward Performance"
+async function getRewardMetrics(collectionAddress: string) {
+  const collectionRewards = await rewardTracker.getCollectionRewards(
+    escrowAddress,
+    collectionAddress
+  )
+  
+  const collection = collectionManager.createCollection(collectionAddress, "ERC721")
+  const currentSupply = await collection.totalSupply()
+  const mintPrice = await collection.mintPrice()
+  
+  const totalMintRevenue = currentSupply * mintPrice
+  const rewardPercentage = totalMintRevenue > 0n 
+    ? (collectionRewards.totalRewards * 100n) / totalMintRevenue 
+    : 0n
+  
+  return {
+    totalMints: collectionRewards.totalMints.toString(),
+    totalRewards: collectionRewards.totalRewards.toString(),
+    totalRevenue: totalMintRevenue.toString(),
+    rewardPercentage: rewardPercentage.toString() + "%",
+    averageRewardPerMint: collectionRewards.totalMints > 0n 
+      ? (collectionRewards.totalRewards / collectionRewards.totalMints).toString()
+      : "0"
+  }
+}
+```
+
+## Advanced Reward Features
+
+### Custom Reward Rates
+
+<Warning>
+Reward rate configuration is typically restricted to protocol administrators.
+</Warning>
+
+```typescript title="Reward Rate Management"
+// For protocol administrators only
+async function updateRewardRates(
+  adminWalletClient: any,
+  escrowAddress: string
+) {
+  // Update reward rates (only callable by owner)
+  await rewardTracker.setRewardRates(
+    adminWalletClient,
+    escrowAddress,
+    {
+      creatorRate: 4500n,    // 45%
+      firstMinterRate: 2500n, // 25%
+      gameOwnerRate: 2000n,  // 20%
+      platformRate: 1000n    // 10%
+    }
+  )
+}
+
+// Check current reward rates
+const rates = await rewardTracker.getRewardRates(escrowAddress)
+console.log("Current reward rates:", {
+  creator: rates.creatorRate.toString(),
+  firstMinter: rates.firstMinterRate.toString(),
+  gameOwner: rates.gameOwnerRate.toString(),
+  platform: rates.platformRate.toString()
+})
+```
+
+### Recipient Management
+
+```typescript title="Recipient Status"
+// Check if a recipient type is active
+const isCreatorActive = await rewardTracker.isRecipientActive(
+  escrowAddress,
+  "CREATOR"
+)
+
+// Get recipient information
+const recipientInfo = await rewardTracker.getRecipientInfo(
+  escrowAddress,
+  "CREATOR"
+)
+
+console.log("Creator recipient info:", {
+  rate: recipientInfo.rate.toString(),
+  isActive: recipientInfo.isActive
+})
+```
+
+## Integration Best Practices
+
+### User Interface Integration
+
+```typescript title="UI Helper Functions"
+// Format rewards for display
+function formatRewards(weiAmount: bigint): string {
+  const eth = Number(weiAmount) / 1e18
+  return `${eth.toFixed(6)} ETH`
+}
+
+// Calculate USD value (example with price feed)
+async function getRewardValueUSD(weiAmount: bigint, ethPriceUSD: number): Promise<string> {
+  const eth = Number(weiAmount) / 1e18
+  const usd = eth * ethPriceUSD
+  return `$${usd.toFixed(2)}`
+}
+
+// Check if withdrawal is profitable (considering gas costs)
+async function isWithdrawalProfitable(
+  rewardAmount: bigint,
+  gasPrice: bigint,
+  gasLimit: bigint
+): Promise<boolean> {
+  const gasCost = gasPrice * gasLimit
+  return rewardAmount > gasCost * 2n // Require 2x gas cost minimum
+}
+```
+
+### Automated Reward Claiming
+
+```typescript title="Automated Claiming"
+// Automated reward claiming service
+class RewardClaimingService {
+  private rewardTracker: RewardTracker
+  private walletClient: any
+  private minWithdrawThreshold: bigint
+
+  constructor(rewardTracker: RewardTracker, walletClient: any, minThreshold: bigint) {
+    this.rewardTracker = rewardTracker
+    this.walletClient = walletClient
+    this.minWithdrawThreshold = minThreshold
+  }
+
+  async checkAndClaimRewards(
+    collections: string[],
+    recipientType: "CREATOR" | "FIRST_MINTER" | "GAME_OWNER"
+  ) {
+    for (const collectionAddress of collections) {
+      try {
+        const rewards = await this.rewardTracker.getRecipientRewards(
+          escrowAddress,
+          collectionAddress,
+          recipientType,
+          this.walletClient.account.address
+        )
+
+        if (rewards >= this.minWithdrawThreshold) {
+          console.log(`Claiming ${rewards.toString()} wei from ${collectionAddress}`)
+          
+          await this.rewardTracker.withdrawRewards(
+            this.walletClient,
+            escrowAddress,
+            collectionAddress,
+            recipientType
+          )
+          
+          console.log(`✅ Successfully claimed rewards from ${collectionAddress}`)
+        }
+      } catch (error) {
+        console.error(`❌ Failed to claim from ${collectionAddress}:`, error)
+      }
+    }
+  }
+}
+
+// Usage
+const claimingService = new RewardClaimingService(
+  rewardTracker,
+  walletClient,
+  parseEther("0.001") // Minimum 0.001 ETH to claim
+)
+
+await claimingService.checkAndClaimRewards(
+  creatorCollections,
+  "CREATOR"
+)
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="No rewards showing">
+    - Verify the collection has received mints after deployment
+    - Check that you're querying the correct recipient type and address
+    - Ensure the collection was created with proper signatures
+  </Accordion>
+
+  <Accordion title="Withdrawal failed">
+    - Confirm you have available rewards to withdraw
+    - Check that you have sufficient gas for the transaction
+    - Verify you're using the correct recipient type for your role
+  </Accordion>
+
+  <Accordion title="Reward amounts seem incorrect">
+    - Check the current reward rates configuration
+    - Verify the mint price and volume calculations
+    - Ensure you're using the correct escrow contract address
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Storage Service" icon="database" href="/createkit/storage">
+    Learn how to manage collection metadata with BaseMint storage
+  </Card>
+  <Card title="Examples" icon="code" href="/createkit/examples">
+    See complete implementation examples including reward tracking
+  </Card>
+</CardGroup>

@@ -1,0 +1,147 @@
+---
+title: "Introduction"
+description: "CreateKit (BaseMint SDK) - A TypeScript SDK for gasless NFT collection deployment and management on the B3 ecosystem"
+---
+
+[![NPM](https://nodei.co/npm/@b3dotfun/basemint.svg)](https://www.npmjs.com/package/@b3dotfun/basemint)
+
+<CodeGroup>
+```bash npm
+npm install @b3dotfun/basemint
+```
+
+```bash yarn
+yarn add @b3dotfun/basemint
+```
+
+```bash pnpm
+pnpm add @b3dotfun/basemint
+```
+</CodeGroup>
+
+## Why CreateKit?
+**Create NFTs for free** with CreateKit, users just sign a message (no gas required) and the collection is deployed and minted in a single transaction at the first mint.
+
+<Note>**Try it out:** [Create NFTs for free & earn](https://explorer.b3.fun/apps/nfts/create)</Note>
+
+CreateKit, powered by the BaseMint Protocol, is a comprehensive TypeScript SDK that revolutionizes NFT collection creation and management. Built specifically for the B3 ecosystem, it provides a streamlined, gas-efficient workflow for deploying and managing NFT collections with minimal costs and maximum flexibility.
+
+<CardGroup cols={2}>
+  <Card title="Zero Gas Creation" icon="circle-dollar">
+    Create NFTs with onchain addresses completely free during the initial setup phase
+  </Card>
+  <Card title="Single Transaction Deploy" icon="bolt">
+    Deploy collections and mint your first NFT in a single transaction
+  </Card>
+  <Card title="Multi-Standard Support" icon="layer-group">
+    Supports both ERC721 and ERC1155 token standards
+  </Card>
+  <Card title="Marketplace Ready" icon="store">
+    OpenSea-compatible metadata format ensures seamless marketplace integration
+  </Card>
+</CardGroup>
+
+## Key Features
+
+### 🎨 **Collection Management**
+- Deploy ERC721 and ERC1155 collections
+- Customize collection parameters (name, symbol, supply, pricing)
+- Set minting timeframes and limits
+- Manage collection metadata and URIs
+- Support for different media types (3D models, artwork, video, memes)
+
+### 🔒 **Secure Deployment**
+- Two-step signature verification process
+- Creator signature validation
+- Deployer signature validation
+- Collection address prediction
+
+### 🎯 **Token Operations**
+- Mint ERC721 and ERC1155 tokens
+- Whitelist-based minting with Merkle proofs
+- Automatic price calculation
+- Built-in parameter validation
+- Gas-efficient transactions
+
+### 💰 **Reward Distribution**
+- Track creator rewards
+- Monitor per-collection reward accumulation
+- View total and unclaimed rewards per collection
+- Track reward distribution per recipient type
+- Withdraw accumulated rewards
+
+## System Flow
+
+The BaseMint protocol provides a unique, gas-efficient workflow:
+
+<Steps>
+  <Step title="Collection Creation & Signature Generation">
+    Creators define collection parameters and generate cryptographic signatures stored off-chain with zero gas costs.
+  </Step>
+  <Step title="Off-chain Storage & Discovery">
+    Collection data is stored securely in BaseMint storage with deterministic addresses for easy discovery.
+  </Step>
+  <Step title="Deployment & First Mint">
+    The first minter triggers on-chain deployment in a single transaction that covers both deployment and first mint.
+  </Step>
+  <Step title="Regular Minting Phase">
+    Open minting for all users with optional whitelist support and wallet limits.
+  </Step>
+</Steps>
+
+## Reward Structure
+
+CreateKit features an innovative reward system that benefits all participants in the ecosystem:
+
+| Recipient Type | Default Share | Description |
+|----------------|---------------|-------------|
+| **Creator** | 40% | Collection originator |
+| **First Minter** | 30% | Initial deployer who triggers deployment |
+| **Game Owner** | 20% | Platform integrator |
+| **Platform** | 10% | Protocol fee |
+
+<Note>
+Reward rates are configurable by the protocol owner and can be adjusted based on ecosystem needs.
+</Note>
+
+## Supported Networks
+
+CreateKit supports the B3 ecosystem with planned expansion to additional networks:
+
+<CardGroup cols={2}>
+  <Card title="B3 Mainnet" icon="globe">
+    **Chain ID:** 8333  
+    Production-ready deployment for live applications
+  </Card>
+  <Card title="B3 Testnet" icon="flask">
+    **Chain ID:** 1993  
+    Development and testing environment
+  </Card>
+</CardGroup>
+
+## Getting Started
+
+Ready to start building? Check out our installation guide and quickstart tutorial to begin creating your first NFT collection with CreateKit.
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/createkit/installation">
+    Install CreateKit and set up your development environment
+  </Card>
+  <Card title="Quick Start" icon="rocket" href="/createkit/quickstart">
+    Build your first NFT collection in minutes
+  </Card>
+</CardGroup>
+
+## Developer Resources
+
+<CardGroup cols={3}>
+  <Card title="Collection Management" icon="folder" href="/createkit/collections">
+    Learn how to create and manage NFT collections
+  </Card>
+  <Card title="Minting" icon="coins" href="/createkit/minting">
+    Implement token minting functionality
+  </Card>
+  <Card title="Examples" icon="code" href="/createkit/examples">
+    Explore practical implementation examples
+  </Card>
+</CardGroup>

@@ -1,554 +1,228 @@
+---
+title: "Brand Kit"
+description: "Follow these guidelines to use our brand correctly when contributing to the B3 ecosystem."
+---
 
-# B3 Brand Kit
-
-Follow these guidelines to use our brand correctly when contributing to the B3 ecosystem and building applications that align with our visual identity.
-
-<div style={{ textAlign: "center", margin: "2rem 0", fontWeight: "bold", letterSpacing: "2px" }}>
+<div className="text-center my-4 font-bold text-lg tracking-wide text-primary">
   ✦ COMMUNITY DRIVEN ✦ FUN ✦ ECOSYSTEM ALIGNED ✦
 </div>
 
-## Brand Overview
+## Primary Logo
 
-B3 is **community-driven**, **fun**, and **ecosystem-aligned**. Our brand reflects the playful yet professional nature of onchain gaming while maintaining accessibility for developers and gamers alike.
-
-<CardGroup cols={2}>
-  <Card title="Brand Philosophy" icon="heart">
-    Keep things light, friendly, and engaging. B3 is about having fun through gaming and onchain experiences.
+<CardGroup cols={3}>
+  <Card title="Blue Logo">
+    <img src="/images/b3-logo-blue.svg" alt="B3 Blue Logo"  className='p-6 bg-black rounded-xl my-3'/>
+    
+    <div className="flex justify-start items-center gap-4">
+      <a href="https://cdn.b3.fun/b3_logo.svg" target="_blank" download="b3-logo-blue.svg">SVG</a>
+      <a href="https://cdn.b3.fun/b3_logo@.png" target="_blank" download="b3-logo-blue.png">PNG</a>
+    </div>
   </Card>
-  <Card title="Design Approach" icon="paintbrush">
-    Don't limit yourself to common brand colors. B3 invites expressive, vibrant color palettes that capture the gaming
-    spirit.
+  
+  <Card title="White Logo">
+    <img src="/images/b3-logo-white.svg" alt="B3 White Logo"  className='p-6 bg-black rounded-xl my-3'/>
+    
+    <div className="flex justify-start items-center gap-4">
+      <a href="https://cdn.b3.fun/b3_logo_white.svg" target="_blank" download="b3-logo-white.svg">SVG</a>
+    </div>
+  </Card>
+  
+  <Card title="Black Logo">
+    <img src="/images/b3_logo_black.svg" alt="B3 Black Logo"  className='p-6 bg-white rounded-xl my-3'/>
+    
+    <div className="flex justify-start items-center gap-4">
+      <a href="https://cdn.b3.fun/b3_logo_black.svg" target="_blank" download="b3-logo-black.svg">SVG</a>
+    </div>
   </Card>
 </CardGroup>
 
-## Logo Usage
+## Colors
 
-### Primary Logo Variations
+Don't limit yourself to just this common brand colors. B3 invites you to be expressive with different fun, vibrant color palletes.
 
-<Tabs>
-<Tab title="Blue Logo">
-  **Primary logo for light backgrounds**
+<CardGroup cols={3}>
+  <Card title="Primary Blue">
+    <div style={{ backgroundColor: "#007AFF", height: "80px", borderRadius: "8px", margin: "1rem 0" }}></div>
+    
+    ```
+    #007AFF
+    ```
+  </Card>
   
-  <Frame>
-    <img src="/logo/light.svg" alt="B3 Blue Logo" style={{ maxWidth: '200px' }} />
-  </Frame>
+  <Card title="Grey">
+    <div style={{ backgroundColor: "#6B7280", height: "80px", borderRadius: "8px", margin: "1rem 0" }}></div>
+    
+    ```
+    #6B7280
+    ```
+  </Card>
   
-  **Usage:**
-  - Primary brand representation
-  - Light backgrounds and interfaces
-  - Web applications and documentation
-  
-  **Downloads:**
-  - [SVG Format](/logo/light.svg)
-  - PNG Format (available on request)
-</Tab>
-
-<Tab title="White Logo">
-  **For dark backgrounds and overlays**
-  <div style={{ backgroundColor: "#000", padding: "2rem", borderRadius: "8px", textAlign: "center" }}>
-    <img src="/logo/white.svg" alt="B3 White Logo" style={{ maxWidth: "200px" }} />
-  </div>
-  **Usage:** - Dark backgrounds and themes - Video overlays and presentations - High contrast applications
-  **Downloads:** - SVG Format - PNG Format (available on request)
-</Tab>
-
-<Tab title="Black Logo">
-  **Monochrome version for special use cases**
-  
-  <Frame>
-    <img src="/logo/black.svg" alt="B3 Black Logo" style={{ maxWidth: '200px' }} />
-  </Frame>
-  
-  **Usage:**
-  - Print materials
-  - Monochrome applications
-  - Minimalist designs
-  
-  **Downloads:**
-  - SVG Format
-  - PNG Format (available on request)
-</Tab>
-</Tabs>
-
-### Logo Implementation
-
-<CodeGroup>
-```tsx React Component
-function B3Logo({ variant = 'blue', size = 120 }) {
-const logoSrc = variant === 'blue' ? '/logo/light.svg'
-: variant === 'white' ? '/logo/white.svg'
-: '/logo/black.svg';
-
-return (
-<img
-src={logoSrc}
-alt="B3 Logo"
-width={size}
-height={size * 0.4} // Maintain aspect ratio
-/>
-);
-}
-
-````
-
-```html HTML
-<!-- Blue Logo -->
-<img src="/logo/light.svg" alt="B3 Logo" />
-
-<!-- White Logo (for dark backgrounds) -->
-<img src="/logo/white.svg" alt="B3 Logo" />
-
-<!-- Black Logo -->
-<img src="/logo/black.svg" alt="B3 Logo" />
-````
-
-```css CSS Background
-.b3-logo {
-  background-image: url("/logo/light.svg");
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-}
-```
-
-</CodeGroup>
-
-## Brand Colors
-
-Our color palette balances professional appeal with gaming energy. Feel free to be creative with vibrant, fun color combinations!
-
-<div
-  style={{
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-    gap: "1rem",
-    margin: "2rem 0",
-  }}
->
-  <div style={{ textAlign: "center" }}>
-    <div
-      style={{
-        backgroundColor: "#007AFF",
-        height: "80px",
-        borderRadius: "8px",
-        border: "1px solid #e5e7eb",
-      }}
-    ></div>
-    <h4>Primary Blue</h4>
-    <code>{"#007AFF"}</code>
-  </div>
-
-  <div style={{ textAlign: "center" }}>
-    <div
-      style={{
-        backgroundColor: "#6B7280",
-        height: "80px",
-        borderRadius: "8px",
-        border: "1px solid #e5e7eb",
-      }}
-    ></div>
-    <h4>Grey</h4>
-    <code>{"#6B7280"}</code>
-  </div>
-
-  <div style={{ textAlign: "center" }}>
-    <div
-      style={{
-        backgroundColor: "#FFFFFF",
-        height: "80px",
-        borderRadius: "8px",
-        border: "2px solid #e5e7eb",
-      }}
-    ></div>
-    <h4>White</h4>
-    <code>{"#FFFFFF"}</code>
-  </div>
-</div>
-
-### Color Implementation
-
-<CodeGroup>
-```css CSS Variables
-:root {
-  --b3-primary: {"#007AFF"};
-  --b3-grey: {"#6B7280"};
-  --b3-white: {"#FFFFFF"};
-}
-
-.primary-button {
-background-color: var(--b3-primary);
-color: var(--b3-white);
-}
-
-````
-
-```tsx Tailwind Config
-// tailwind.config.js
-module.exports = {
-  theme: {
-    extend: {
-      colors: {
-        'b3-blue': '{"#007AFF"}',
-        'b3-grey': '{"#6B7280"}',
-        'b3-white': '{"#FFFFFF"}'
-      }
-    }
-  }
-}
-````
-
-```json Design Tokens
-{
-  "color": {
-    "primary": {
-      "value": "{"#007AFF"}",
-      "type": "color"
-    },
-    "neutral": {
-      "value": "{"#6B7280"}",
-      "type": "color"
-    }
-  }
-}
-```
-
-</CodeGroup>
-
-## Typography
-
-B3 uses custom typography to create a modern, gaming-focused aesthetic. Import our font package to maintain brand consistency.
-
-### Font Import Methods
-
-<Tabs>
-<Tab title="CSS Import">
-  ```css
-  @import url("{"https://cdn.b3.fun/fonts.css"}");
-  
-  body {
-    font-family: {"\"Neue Montreal Medium\", sans-serif"};
-  }
-  
-  .heading {
-    font-family: {"\"Calibre Bold\", sans-serif"};
-  }
-  ```
-</Tab>
-
-<Tab title="HTML Link">
-  ```html
-  <link href="{"https://cdn.b3.fun/fonts.css"}" rel="stylesheet">
-  
-  <style>
-    body { font-family: {"\"Neue Montreal Medium\", sans-serif"}; }
-  </style>
-  ```
-</Tab>
-
-<Tab title="React/Next.js">
-  ```tsx
-  // pages/_document.tsx or app/layout.tsx
-  import Head from 'next/head';
-  
-  export default function Document() {
-    return (
-      <Html>
-        <Head>
-          <link href="{"https://cdn.b3.fun/fonts.css"}" rel="stylesheet" />
-        </Head>
-        <body style={{ fontFamily: '{"\"Neue Montreal Medium\", sans-serif"}' }}>
-          {/* Your app */}
-        </body>
-      </Html>
-    );
-  }
-  ```
-</Tab>
-</Tabs>
-
-### Available Font Families
-
-<AccordionGroup>
-<Accordion title="Neue Montreal Family">
-  **Primary font family for B3 applications**
-  
-  <ul>
-    <li style={{ fontFamily: '"Neue Montreal Bold", sans-serif', fontSize: '18px', margin: '0.5rem 0' }}>
-      Neue Montreal Bold - The quick brown fox jumps over the lazy dog
-    </li>
-    <li style={{ fontFamily: '"Neue Montreal Regular", sans-serif', fontSize: '18px', margin: '0.5rem 0' }}>
-      Neue Montreal Regular - The quick brown fox jumps over the lazy dog
-    </li>
-    <li style={{ fontFamily: '"Neue Montreal Book", sans-serif', fontSize: '18px', margin: '0.5rem 0' }}>
-      Neue Montreal Book - The quick brown fox jumps over the lazy dog
-    </li>
-    <li style={{ fontFamily: '"Neue Montreal Medium", sans-serif', fontSize: '18px', margin: '0.5rem 0' }}>
-      Neue Montreal Medium - The quick brown fox jumps over the lazy dog
-    </li>
-    <li style={{ fontFamily: '"Neue Montreal Semibold", sans-serif', fontSize: '18px', margin: '0.5rem 0' }}>
-      Neue Montreal Semibold - The quick brown fox jumps over the lazy dog
-    </li>
-  </ul>
-  
-  **Usage:** Body text, UI elements, general content
-</Accordion>
-
-<Accordion title="Calibre Family">
-  **Secondary font for headings and emphasis**
-  <ul>
-    <li style={{ fontFamily: '"Calibre Bold", sans-serif', fontSize: '18px', margin: '0.5rem 0' }}>
-      Calibre Bold - Gaming is the future of onchain
-    </li>
-    <li style={{ fontFamily: '"Calibre Heavy", sans-serif', fontSize: '18px', margin: '0.5rem 0' }}>
-      Calibre Heavy - Gaming is the future of onchain
-    </li>
-  </ul>
-  **Usage:** Headlines, section titles, call-to-action buttons
-</Accordion>
-
-<Accordion title="Pack">
-  **Decorative font for special elements**
-  
-  <div style={{ fontFamily: '"Pack", sans-serif', fontSize: '24px', margin: '1rem 0' }}>
-    Pack Font - B3 GAMING ECOSYSTEM
-  </div>
-  
-  **Usage:** Logos, gaming-themed headers, decorative elements
-</Accordion>
-</AccordionGroup>
+  <Card title="White">
+    <div style={{ backgroundColor: "#FFFFFF", height: "80px", borderRadius: "8px", border: "2px solid #e5e7eb", margin: "1rem 0" }}></div>
+    
+    ```
+    #FFFFFF
+    ```
+  </Card>
+</CardGroup>
 
 ## Brand Guidelines
 
-<Steps>
-<Step title="Let it breathe">
-  **Maintain adequate spacing around the B3 logo**
-  
-  - Minimum clear space: 0.5x the logo height on all sides
-  - Don't place text or other elements too close to the logo
-  - Ensure the logo remains legible at all sizes
-  
-  <Tip>
-  The logo should never appear smaller than 24px in height for digital applications
-  </Tip>
-</Step>
-
-<Step title="Make it fun">
-  **Keep the brand experience light, friendly, and engaging** - Use vibrant colors when appropriate - Include playful
-  animations and micro-interactions - Write in a conversational, approachable tone - Embrace the gaming culture and
-  community spirit
-</Step>
-
-<Step title="Stay consistent">
-  **Use brand elements consistently across all touchpoints**
-  
-  - Stick to the approved color palette and fonts
-  - Follow logo usage guidelines
-  - Maintain the same tone and visual style
-  - Reference this brand kit for all brand decisions
-</Step>
-</Steps>
-
-## Fun Assets & Extensions
-
-### Special Assets
-
 <CardGroup cols={2}>
-  <Card title="The Cursor" icon="cursor-click">
-    Custom gaming cursor for interactive elements **Available formats:** - PNG (Standard resolution) - PNG @ 2x (High
-    resolution)
+  <Card title="Let it breathe" icon="expand">
+    Our logo works best when it has adequate margins.
   </Card>
-
-  <Card title="Blue Texture" icon="texture">
-    Background texture for gaming aesthetics **Format:** JPG **Usage:** Backgrounds, overlays, design elements
-  </Card>
-
-  <Card title="The Grid" icon="grid-3x3">
-    Geometric grid pattern for layouts **Available formats:** - SVG (Vector) - PNG (Raster)
-  </Card>
-
-  <Card title="Motion Assets" icon="play">
-    Logo animations for dynamic presentations **Available formats:** - MP4 (16:9 and 1:1 ratios) - After Effects
-    projects
+  
+  <Card title="Make it fun" icon="heart">
+    Keep things light, friendly, and engaging.
   </Card>
 </CardGroup>
 
-### Implementation Examples
+## Fonts
 
-<CodeGroup>
-```css Gaming Cursor
-.gaming-interface {
-  cursor: url('/assets/b3-cursor.png'), pointer;
-}
+Import inside CSS stylesheet:
 
-.interactive-element:hover {
-cursor: url('/assets/b3-cursor-2x.png'), pointer;
-}
-
-````
-
-```tsx React Animation
-import { motion } from 'framer-motion';
-
-function AnimatedLogo() {
-  return (
-    <motion.img
-      src={"/logo/light.svg"}
-      alt="B3 Logo"
-      initial={{ scale: 0.8, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
-      whileHover={{ scale: 1.05 }}
-    />
-  );
-}
-````
-
-```css Blue Texture Background
-.gaming-section {
-  background-image: url("/assets/blue-texture.jpg");
-  background-size: cover;
-  background-position: center;
-  background-blend-mode: multiply;
-}
+```css
+@import url("https://cdn.b3.fun/fonts.css");
 ```
 
-</CodeGroup>
+Import via `<link>` tag:
 
-## Motion & Animation
+```html
+<link href="https://cdn.b3.fun/fonts.css" rel="stylesheet">
+```
 
-<Info>
-  Animations are welcomed when representing B3 - after all, movement is fun! We recommend Framer Motion for React
-  applications, but use whatever animation library works best for your stack.
-</Info>
+Now you can use the fonts:
 
-### Animation Principles
+```css
+body { font-family: "Neue Montreal Medium", sans-serif; }
+```
 
-<AccordionGroup>
-<Accordion title="Playful & Smooth">
-  - Use ease-out transitions for natural feel
-  - Add subtle bounce effects for gaming appeal
-  - Keep animations under 500ms for responsiveness
-</Accordion>
+#### Available fonts:
 
-<Accordion title="Gaming-Inspired">
-  - Include hover effects on interactive elements - Use scale transforms for button interactions - Add loading
-  animations that feel game-like
-</Accordion>
+- **Neue Montreal Bold**  
+- **Neue Montreal Regular**  
+- **Neue Montreal Book**  
+- **Neue Montreal Medium**  
+- **Neue Montreal Semibold**  
+- **Calibre Bold**  
+- **Calibre Heavy**  
+- **Pack**
 
-<Accordion title="Performance-First">
-  - Use CSS transforms over position changes
-  - Prefer opacity changes over visibility
-  - Test animations on various device capabilities
-</Accordion>
-</AccordionGroup>
+#### Download the original fonts:
 
-### Logo Animation Assets
+<Card title="Calibre">
+  [License](https://klim.co.nz/retail-fonts/calibre/)
+</Card>
 
-<Tabs>
-<Tab title="16:9 Format">
-  **Perfect for presentations and wide layouts**
-  
-  - **MP4 Video:** High-quality animated logo
-  - **After Effects Project:** Customizable source file
-  - **Duration:** 3 seconds with loop options
-</Tab>
+<Card title="Neue Montreal">
+  [License](https://pangrampangram.com/products/neue-montreal)
+</Card>
 
-<Tab title="1:1 Format">
-  **Ideal for social media and square layouts**
-  
-  - **MP4 Video:** Square format animated logo
-  - **After Effects Project:** Editable source
-  - **Usage:** Profile pictures, app icons, social posts
-</Tab>
-</Tabs>
+<Card title="PACK">
+  [License](https://harrycresswell.com/pack/)
+</Card>
 
-## Building with B3 Brand
 
-### Quick Start Template
+## Fun Assets
 
-```tsx
-import { branding } from "/snippets/variables";
-
-function B3ThemedApp() {
-  return (
-    <div
-      style={{
-        fontFamily: "\"Neue Montreal Medium\", sans-serif",
-        backgroundColor: "#FFFFFF",
-        color: "#000000",
-      }}
-    >
-      <header
-        style={{
-          backgroundColor: "#007AFF",
-          color: "#FFFFFF",
-          padding: "1rem",
-        }}
-      >
-        <img src={"/logo/white.svg"} alt="B3" height="40" />
-        <h1 style={{ fontFamily: "\"Calibre Bold\", sans-serif" }}>Gaming DApp</h1>
-      </header>
-
-      <main style={{ padding: "2rem" }}>
-        <h2>Welcome to the B3 Ecosystem</h2>
-        <p>Build the future of onchain gaming!</p>
-      </main>
+<CardGroup cols={3}>
+  <Card title="The Cursor">
+    <img src="/images/cursor.png" alt="B3 Cursor" className='rounded-xl my-3 aspect-square p-6 bg-white'/>
+    
+    <div className="flex justify-start items-center gap-4">
+      <a href="https://cdn.b3.fun/cursor.png" target="_blank" download="cursor.png">PNG</a>
+      <a href="https://cdn.b3.fun/cursor%402x.png" target="_blank" download="cursor@2x.png">PNG @ 2x</a>
     </div>
-  );
-}
-```
-
-### Brand Checklist
-
-<Steps>
-<Step title="Visual Identity">
-  - [ ] Using approved B3 logo variations
-  - [ ] Following color palette guidelines  
-  - [ ] Implementing B3 typography
-  - [ ] Maintaining proper logo spacing
-</Step>
-
-<Step title="User Experience">
-  - [ ] Keeping interface fun and engaging - [ ] Using gaming-appropriate language - [ ] Including smooth animations - [
-  ] Maintaining accessibility standards
-</Step>
-
-<Step title="Technical Implementation">
-  - [ ] Optimizing assets for web performance
-  - [ ] Supporting dark/light theme variations
-  - [ ] Testing across different devices
-  - [ ] Following responsive design principles
-</Step>
-</Steps>
-
-## Contribute to B3 Brand
-
-<CardGroup cols={2}>
-  <Card title="Submit Brand Assets" icon="upload" href="mailto:partnerships@b3.fun?subject=B3 Brand Contribution">
-    Created something cool for the B3 community? Share your brand extensions and creative work.
   </Card>
+  
+  <Card title="Blue Texture">
+    <img src="/images/b3-bg-texture.jpg" alt="B3 Blue Texture" className='rounded-xl my-3 aspect-square'/>
 
-  <Card title="Brand Feedback" icon="comment-dots" href={"https://discord.gg/b3dotfun"}>
-    Join our Discord to discuss brand guidelines, share implementations, and get feedback.
+    <div className="flex justify-start items-center gap-4">
+      <a href="https://cdn.b3.fun/b3-bg-texture.jpg" target="_blank" download="b3-bg-texture.jpg">JPG</a>
+    </div>
   </Card>
-
-  <Card title="Developer Showcase" icon="star" href={"https://github.com/b3-fun/b3" + "/discussions"}>
-    Show off your B3-branded applications and tools in our GitHub discussions.
-  </Card>
-
-  <Card title="Brand Partnership" icon="handshake" href="mailto:partnerships@b3.fun">
-    Interested in deeper brand collaboration? Reach out to explore partnership opportunities.
+  
+  <Card title="The Grid">
+    <img src="/images/b3_grid.svg" alt="B3 Grid" className='rounded-xl my-3 aspect-square p-6 bg-white'/>
+    
+    <div className="flex justify-start items-center gap-4">
+      <a href="https://cdn.b3.fun/b3_grid.svg" target="_blank" download="b3_grid.svg">SVG</a>
+      <a href="https://cdn.b3.fun/b3_grid.png" target="_blank" download="b3_grid.png">PNG</a>
+    </div>
   </Card>
 </CardGroup>
 
-<Check>
-  **Ready to build with B3 branding?** Download the assets you need and start creating gaming experiences that align
-  with our visual identity. Remember to keep it fun, community-driven, and ecosystem-aligned! 🎮
-</Check>
+## Motion
 
----
+Animations are welcomed when representing B3, after all - movement is fun!
 
-<Note>
-  **Missing an asset or have questions?** Reach out to our team at [partnerships@b3.fun](
-  mailto:partnerships@b3.fun) or join our [Discord community](https://discord.gg/b3dotfun) for brand support.
-</Note>
+We recommend Framer Motion as a React animation library, but you can use whatever you like!
+
+<CardGroup cols={2}>
+  <Card title="Logo Animation (16:9)">
+    <video 
+      controls 
+      className='rounded-xl my-3 aspect-video'
+      src="/images/b3-logo-animation-wide.mp4"
+    >
+      Your browser does not support the video tag.
+    </video>
+    
+    <div className="flex justify-start items-center gap-4">
+      <a href="https://cdn.b3.fun/b3-logo-animation-wide.mp4" target="_blank" download="b3-logo-animation-wide.mp4">MP4</a>
+      <a href="https://cdn.b3.fun/b3-logo-animation-wide-after-effects-project.zip" target="_blank" download="b3-logo-animation-wide-after-effects-project.zip">After Effects Project</a>
+    </div>
+  </Card>
+  
+  <Card title="Logo Animation (1:1)">
+    <video 
+      controls 
+      className='rounded-xl my-3 aspect-square'
+      src="/images/b3-logo-animation-square.mp4"
+    >
+      Your browser does not support the video tag.
+    </video>
+    
+    <div className="flex justify-start items-center gap-4">
+      <a href="https://cdn.b3.fun/b3-logo-animation-square.mp4" target="_blank" download="b3-logo-animation-square.mp4">MP4</a>
+      <a href="https://cdn.b3.fun/b3-logo-animation-square-after-effects-project.zip" target="_blank" download="b3-logo-animation-square-after-effects-project.zip">After Effects Project</a>
+    </div>
+  </Card>
+</CardGroup>
+
+## Vibe 👌
+
+B3 is all about having fun, and representing that in your life through gaming & more.
+
+Rep B3 swag in other ways!
+
+## Phone Lock Screen Wallpapers
+
+<CardGroup cols={3}>
+  <Card title="Lock Screen v1">
+    <img src="/images/b3-iphone-wallpaper-v1.png" alt="B3 iPhone Wallpaper v1" className='rounded-xl my-3'/>
+    
+    [Download](https://cdn.b3.fun/b3-iphone-wallpaper-v1.png)
+  </Card>
+  
+  <Card title="Lock Screen v2">
+    <img src="/images/b3-iphone-wallpaper-v2.png" alt="B3 iPhone Wallpaper v2" className='rounded-xl my-3'/>
+    
+    [Download](https://cdn.b3.fun/b3-iphone-wallpaper-v2.png)
+  </Card>
+  
+  <Card title="Lock Screen v3">
+    <img src="/images/b3-iphone-wallpaper-simple.png" alt="B3 iPhone Wallpaper Simple" className='rounded-xl my-3'/>
+    
+    [Download](https://cdn.b3.fun/b3-iphone-wallpaper-simple.png)
+  </Card>
+</CardGroup>
+
+
+## Contribute to B3 brand
+
+Let's build B3 together - we welcome creators, artists, developers, gamers, players & everyone to contribute & be rewarded.
+
+Reach out if you've built something cool for the B3 community.

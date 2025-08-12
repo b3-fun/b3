@@ -10,6 +10,7 @@
     },
     "esModuleInterop": true,
     "declaration": true,
-    "isolatedModules": false
+    "isolatedModules": false,
+    "resolveJsonModule": true
   }
 }

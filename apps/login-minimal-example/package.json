@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -27,8 +27,8 @@
     "react-syntax-highlighter": "^15.5.0",
     "tailwind-merge": "2.6.0",
     "tailwindcss-animate": "^1.0.7",
-    "viem": "2.27.2",
-    "thirdweb": "5.105.20"
+    "thirdweb": "5.105.20",
+    "viem": "2.28.1"
   },
   "devDependencies": {
     "@types/node": "^20.11.24",
@@ -46,6 +46,6 @@
     "tailwindcss": "3.4.1",
     "typescript": "^5.2.2",
     "vite": "^5.1.4",
-    "vite-plugin-node-polyfills": "^0.23.0"
+    "vite-plugin-node-polyfills": "^0.22.0"
   }
 }

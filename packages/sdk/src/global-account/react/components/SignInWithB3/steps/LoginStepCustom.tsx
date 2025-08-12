@@ -10,11 +10,12 @@ import {
   useConnect,
   WalletRow,
 } from "@b3dotfun/sdk/global-account/react";
+import { debug } from "@b3dotfun/sdk/shared/utils/debug";
+import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { useState } from "react";
 import { Chain } from "thirdweb";
 import { useConnect as useConnectTW } from "thirdweb/react";
 import { Account, createWallet, Wallet, WalletId } from "thirdweb/wallets";
-import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 
 interface LoginStepCustomProps {
   automaticallySetFirstEoa: boolean;
@@ -52,6 +53,7 @@ export function LoginStepCustom({
   const handleConnect = async (strategy: AllowedStrategy) => {
     try {
       setIsLoading(true);
+      debug("@@setIsAuthenticating:true:3");
       setIsAuthenticating(true);
       const options = getConnectOptionsFromStrategy(strategy);
       let connectResult: Wallet | null;
@@ -84,6 +86,7 @@ export function LoginStepCustom({
       setIsAuthenticated(false);
     } finally {
       setIsLoading(false);
+      debug("@@setIsAuthenticating:false:3");
       setIsAuthenticating(false);
     }
   };

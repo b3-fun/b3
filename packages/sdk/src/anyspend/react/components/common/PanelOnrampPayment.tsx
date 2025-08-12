@@ -67,7 +67,6 @@ function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
     geoData,
     coinbaseOnrampOptions,
     coinbaseAvailablePaymentMethods,
-    isStripeOnrampSupported,
     stripeWeb2Support,
     isLoading: isLoadingGeoOnramp,
   } = useGeoOnrampOptions(isMainnet, srcAmountOnRamp);
@@ -102,11 +101,6 @@ function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
 
       if (vendor === "coinbase" && !coinbaseOnrampOptions) {
         toast.error("Onramp options not available");
-        return;
-      }
-
-      if (vendor === "stripe" && !isStripeOnrampSupported) {
-        toast.error("Stripe onramp not available");
         return;
       }
 

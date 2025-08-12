@@ -24,11 +24,11 @@ export const OrderStatus = memo(function OrderStatus({ order }: { order: compone
     },
   ];
 
-  if (order.status === "waiting_stripe_payment") {
+  if (["waiting_stripe_payment", "scanning_deposit_transaction"].includes(order.status)) {
     return <StepProgress steps={paymentSteps} currentStepIndex={0} />;
   }
 
-  if (order.status === "relay") {
+  if (["relay", "sending_token_from_vault"].includes(order.status)) {
     return <StepProgress steps={paymentSteps} currentStepIndex={1} />;
   }
 

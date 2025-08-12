@@ -1,0 +1,391 @@
+---
+title: "Error Handling"
+description: "Comprehensive error handling patterns and recovery strategies for CreateKit"
+---
+
+## Overview
+
+Robust error handling is crucial for production applications using CreateKit. This guide covers common error scenarios, best practices, and recovery strategies.
+
+## Common Error Types
+
+### Signature Errors
+
+```typescript title="Signature Error Handling"
+import { CollectionManager } from '@b3dotfun/basemint'
+
+async function handleSignatureErrors(walletClient: any, metadata: any) {
+  try {
+    const signature = await collectionManager.generateCreatorSignature(
+      walletClient,
+      metadata
+    )
+    return signature
+  } catch (error: any) {
+    if (error.message.includes('User rejected')) {
+      throw new Error('SIGNATURE_REJECTED: User rejected the signature request')
+    } else if (error.message.includes('Insufficient funds')) {
+      throw new Error('INSUFFICIENT_FUNDS: Not enough funds for gas')
+    } else if (error.message.includes('Network error')) {
+      throw new Error('NETWORK_ERROR: Unable to connect to network')
+    } else {
+      throw new Error(`SIGNATURE_FAILED: ${error.message}`)
+    }
+  }
+}
+```
+
+### Storage Errors
+
+```typescript title="Storage Error Handling"
+import { BaseMintStorage } from '@b3dotfun/basemint'
+
+async function handleStorageErrors(storage: BaseMintStorage, metadata: any, signature: string) {
+  try {
+    return await storage.submitCollection(metadata, signature)
+  } catch (error: any) {
+    if (error.message.includes('Invalid signature')) {
+      throw new Error('INVALID_SIGNATURE: Signature verification failed')
+    } else if (error.message.includes('Collection exists')) {
+      throw new Error('DUPLICATE_COLLECTION: Collection already exists')
+    } else if (error.message.includes('Rate limit')) {
+      throw new Error('RATE_LIMITED: Too many requests, please try again later')
+    } else if (error.status === 503) {
+      throw new Error('SERVICE_UNAVAILABLE: Storage service temporarily unavailable')
+    } else {
+      throw new Error(`STORAGE_ERROR: ${error.message}`)
+    }
+  }
+}
+```
+
+### Contract Interaction Errors
+
+```typescript title="Contract Error Handling"
+async function handleMintingErrors(collection: any, walletClient: any, params: any) {
+  try {
+    return await collection.mint(walletClient, ...params)
+  } catch (error: any) {
+    if (error.message.includes('Invalid merkle proof')) {
+      throw new Error('NOT_WHITELISTED: Address not in whitelist')
+    } else if (error.message.includes('Insufficient payment')) {
+      throw new Error('INSUFFICIENT_PAYMENT: Incorrect mint price')
+    } else if (error.message.includes('Max per wallet exceeded')) {
+      throw new Error('WALLET_LIMIT_EXCEEDED: Wallet minting limit reached')
+    } else if (error.message.includes('Max supply exceeded')) {
+      throw new Error('SUPPLY_EXHAUSTED: Collection fully minted')
+    } else if (error.message.includes('Minting not active')) {
+      throw new Error('MINTING_INACTIVE: Minting period not active')
+    } else {
+      throw new Error(`MINT_FAILED: ${error.message}`)
+    }
+  }
+}
+```
+
+## Error Recovery Patterns
+
+### Retry Logic
+
+```typescript title="Retry with Exponential Backoff"
+async function retryWithBackoff<T>(
+  operation: () => Promise<T>,
+  maxRetries: number = 3,
+  baseDelayMs: number = 1000
+): Promise<T> {
+  let lastError: Error
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await operation()
+    } catch (error: any) {
+      lastError = error
+      
+      // Don't retry certain errors
+      if (error.message.includes('SIGNATURE_REJECTED') ||
+          error.message.includes('INVALID_SIGNATURE') ||
+          error.message.includes('DUPLICATE_COLLECTION')) {
+        throw error
+      }
+      
+      if (attempt < maxRetries) {
+        const delay = baseDelayMs * Math.pow(2, attempt - 1)
+        console.warn(`Attempt ${attempt} failed, retrying in ${delay}ms...`)
+        await new Promise(resolve => setTimeout(resolve, delay))
+      }
+    }
+  }
+  
+  throw lastError
+}
+
+// Usage
+const result = await retryWithBackoff(async () => {
+  return await storage.submitCollection(metadata, signature)
+})
+```
+
+### Circuit Breaker
+
+```typescript title="Circuit Breaker Pattern"
+class CircuitBreaker {
+  private failures = 0
+  private lastFailTime = 0
+  private state: 'CLOSED' | 'OPEN' | 'HALF_OPEN' = 'CLOSED'
+  
+  constructor(
+    private maxFailures: number = 5,
+    private timeoutMs: number = 60000
+  ) {}
+  
+  async call<T>(operation: () => Promise<T>): Promise<T> {
+    if (this.state === 'OPEN') {
+      if (Date.now() - this.lastFailTime > this.timeoutMs) {
+        this.state = 'HALF_OPEN'
+      } else {
+        throw new Error('CIRCUIT_OPEN: Service temporarily unavailable')
+      }
+    }
+    
+    try {
+      const result = await operation()
+      this.reset()
+      return result
+    } catch (error) {
+      this.recordFailure()
+      throw error
+    }
+  }
+  
+  private recordFailure() {
+    this.failures++
+    this.lastFailTime = Date.now()
+    
+    if (this.failures >= this.maxFailures) {
+      this.state = 'OPEN'
+    }
+  }
+  
+  private reset() {
+    this.failures = 0
+    this.state = 'CLOSED'
+  }
+}
+
+// Usage
+const circuitBreaker = new CircuitBreaker()
+const result = await circuitBreaker.call(() => storage.submitCollection(metadata, signature))
+```
+
+## User-Friendly Error Messages
+
+```typescript title="Error Message Translation"
+const ERROR_MESSAGES = {
+  SIGNATURE_REJECTED: "Please approve the signature in your wallet to continue.",
+  INSUFFICIENT_FUNDS: "You don't have enough funds to cover gas fees.",
+  NOT_WHITELISTED: "Your address is not eligible for whitelist minting.",
+  WALLET_LIMIT_EXCEEDED: "You've reached the maximum number of tokens per wallet.",
+  SUPPLY_EXHAUSTED: "This collection is fully minted out.",
+  MINTING_INACTIVE: "Minting is not currently active for this collection.",
+  NETWORK_ERROR: "Network connection issue. Please check your internet and try again.",
+  SERVICE_UNAVAILABLE: "Service is temporarily unavailable. Please try again in a few minutes.",
+  RATE_LIMITED: "Too many requests. Please wait a moment before trying again."
+}
+
+function getUserFriendlyError(error: Error): string {
+  const errorCode = error.message.split(':')[0]
+  return ERROR_MESSAGES[errorCode] || "An unexpected error occurred. Please try again."
+}
+
+// Usage in React
+export function ErrorDisplay({ error }: { error: Error | null }) {
+  if (!error) return null
+  
+  return (
+    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+      <p>{getUserFriendlyError(error)}</p>
+    </div>
+  )
+}
+```
+
+## Error Monitoring
+
+```typescript title="Error Tracking"
+class ErrorTracker {
+  private errors: Array<{ timestamp: Date; error: Error; context: any }> = []
+  
+  track(error: Error, context: any = {}) {
+    this.errors.push({
+      timestamp: new Date(),
+      error,
+      context
+    })
+    
+    // Send to monitoring service
+    this.sendToMonitoring(error, context)
+  }
+  
+  private sendToMonitoring(error: Error, context: any) {
+    // Integration with error monitoring services
+    console.error('Error tracked:', {
+      message: error.message,
+      stack: error.stack,
+      context,
+      timestamp: new Date().toISOString()
+    })
+  }
+  
+  getErrorStats() {
+    const last24h = this.errors.filter(
+      e => Date.now() - e.timestamp.getTime() < 24 * 60 * 60 * 1000
+    )
+    
+    return {
+      total: this.errors.length,
+      last24h: last24h.length,
+      mostCommon: this.getMostCommonErrors()
+    }
+  }
+  
+  private getMostCommonErrors() {
+    const errorCounts = new Map<string, number>()
+    
+    this.errors.forEach(({ error }) => {
+      const errorType = error.message.split(':')[0]
+      errorCounts.set(errorType, (errorCounts.get(errorType) || 0) + 1)
+    })
+    
+    return Array.from(errorCounts.entries())
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 5)
+  }
+}
+
+// Global error tracker
+export const errorTracker = new ErrorTracker()
+```
+
+## Validation Helpers
+
+```typescript title="Input Validation"
+export class ValidationError extends Error {
+  constructor(field: string, message: string) {
+    super(`${field}: ${message}`)
+    this.name = 'ValidationError'
+  }
+}
+
+export function validateCollectionMetadata(metadata: any): void {
+  if (!metadata.name || metadata.name.length < 1) {
+    throw new ValidationError('name', 'Collection name is required')
+  }
+  
+  if (!metadata.symbol || metadata.symbol.length < 1) {
+    throw new ValidationError('symbol', 'Collection symbol is required')
+  }
+  
+  if (!metadata.creator || !isValidAddress(metadata.creator)) {
+    throw new ValidationError('creator', 'Valid creator address is required')
+  }
+  
+  if (metadata.maxSupply && metadata.maxSupply <= 0n) {
+    throw new ValidationError('maxSupply', 'Max supply must be greater than 0')
+  }
+  
+  if (metadata.mintPrice && metadata.mintPrice < 0n) {
+    throw new ValidationError('mintPrice', 'Mint price cannot be negative')
+  }
+}
+
+function isValidAddress(address: string): boolean {
+  return /^0x[a-fA-F0-9]{40}$/.test(address)
+}
+```
+
+## React Error Boundaries
+
+```tsx title="Error Boundary Component"
+import React, { Component, ErrorInfo, ReactNode } from 'react'
+
+interface Props {
+  children: ReactNode
+  fallback?: ReactNode
+}
+
+interface State {
+  hasError: boolean
+  error?: Error
+}
+
+export class CreateKitErrorBoundary extends Component<Props, State> {
+  constructor(props: Props) {
+    super(props)
+    this.state = { hasError: false }
+  }
+
+  static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, error }
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('CreateKit Error Boundary caught an error:', error, errorInfo)
+    
+    // Track error
+    errorTracker.track(error, { errorInfo })
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback || (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <h2 className="text-red-800 text-lg font-semibold mb-2">
+            Something went wrong
+          </h2>
+          <p className="text-red-600">
+            {getUserFriendlyError(this.state.error!)}
+          </p>
+          <button
+            onClick={() => this.setState({ hasError: false })}
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          >
+            Try Again
+          </button>
+        </div>
+      )
+    }
+
+    return this.props.children
+  }
+}
+```
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Error Classification" icon="tags">
+    - Categorize errors by type and severity
+    - Use consistent error codes
+    - Provide actionable error messages
+    - Log errors with sufficient context
+  </Card>
+  <Card title="Recovery Strategies" icon="refresh">
+    - Implement appropriate retry logic
+    - Use circuit breakers for external services
+    - Provide fallback mechanisms
+    - Allow manual error recovery
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+Now that you have comprehensive CreateKit documentation, you can:
+
+<CardGroup cols={2}>
+  <Card title="Start Building" icon="hammer">
+    Use the quickstart guide to create your first collection
+  </Card>
+  <Card title="Join Community" icon="users">
+    Connect with other developers in the B3 Discord
+  </Card>
+</CardGroup>

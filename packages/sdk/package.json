@@ -1,6 +1,6 @@
 {
   "name": "@b3dotfun/sdk",
-  "version": "0.0.20",
+  "version": "0.0.23",
   "source": "src/index.ts",
   "main": "./dist/cjs/index.js",
   "react-native": "./dist/cjs/index.native.js",
@@ -64,6 +64,36 @@
       "types": "./dist/types/anyspend/abis/*.d.ts",
       "import": "./dist/esm/anyspend/abis/*.js",
       "require": "./dist/cjs/anyspend/abis/*.js"
+    },
+    "./bondkit": {
+      "types": "./dist/types/bondkit/index.d.ts",
+      "import": "./dist/esm/bondkit/index.js",
+      "require": "./dist/cjs/bondkit/index.js"
+    },
+    "./bondkit/types": {
+      "types": "./dist/types/bondkit/types.d.ts",
+      "import": "./dist/esm/bondkit/types.js",
+      "require": "./dist/cjs/bondkit/types.js"
+    },
+    "./bondkit/constants": {
+      "types": "./dist/types/bondkit/constants.d.ts",
+      "import": "./dist/esm/bondkit/constants.js",
+      "require": "./dist/cjs/bondkit/constants.js"
+    },
+    "./bondkit/config": {
+      "types": "./dist/types/bondkit/config.d.ts",
+      "import": "./dist/esm/bondkit/config.js",
+      "require": "./dist/cjs/bondkit/config.js"
+    },
+    "./bondkit/abis": {
+      "types": "./dist/types/bondkit/abis/index.d.ts",
+      "import": "./dist/esm/bondkit/abis/index.js",
+      "require": "./dist/cjs/bondkit/abis/index.js"
+    },
+    "./bondkit/abis/*": {
+      "types": "./dist/types/bondkit/abis/*.d.ts",
+      "import": "./dist/esm/bondkit/abis/*.js",
+      "require": "./dist/cjs/bondkit/abis/*.js"
     },
     "./global-account": {
       "react-native": {
@@ -179,6 +209,11 @@
       "types": "./dist/types/generated/chain-networks.d.ts",
       "import": "./dist/esm/generated/chain-networks.js",
       "require": "./dist/cjs/generated/chain-networks.js"
+    },
+    "./bondkit/components/TradingView/TradingView": {
+      "types": "./dist/types/bondkit/components/TradingView/TradingView.d.ts",
+      "import": "./dist/esm/bondkit/components/TradingView/TradingView.js",
+      "require": "./dist/cjs/bondkit/components/TradingView/TradingView.js"
     }
   },
   "files": [
@@ -195,8 +230,8 @@
     "fix-dist": "[ -d ./dist/react/src ] && cp -r ./dist/react/src/* ./dist/ && rm -rf ./dist/react || echo \"No react directory found\"",
     "build": "pnpm clean && pnpm lint && pnpm build:types && pnpm build:cjs && pnpm build:esm && pnpm build:css",
     "build:types": "tsc -p tsconfig.cjs.json --emitDeclarationOnly --declarationDir dist/types",
-    "build:cjs": "tsc -p tsconfig.cjs.json --outDir dist/cjs --module commonjs && tsc-alias -p tsconfig.cjs.json --outDir dist/cjs && mkdir -p dist/cjs/shared/generated && cp src/shared/generated/chain-networks.json src/shared/generated/coingecko-chains.json dist/cjs/shared/generated/",
-    "build:esm": "tsc -p tsconfig.esm.json --outDir dist/esm --module esnext  && tsc-alias -p tsconfig.esm.json --outDir dist/esm && mkdir -p dist/esm/shared/generated && cp src/shared/generated/chain-networks.json src/shared/generated/coingecko-chains.json dist/esm/shared/generated/ && node scripts/fix-esm-imports.js",
+    "build:cjs": "tsc -p tsconfig.cjs.json --outDir dist/cjs --module commonjs && tsc-alias -p tsconfig.cjs.json --outDir dist/cjs && mkdir -p dist/cjs/shared/generated && cp src/shared/generated/chain-networks.json src/shared/generated/coingecko-chains.json dist/cjs/shared/generated/ && ([ -d src/bondkit/json_abis ] && mkdir -p dist/cjs/bondkit/json_abis && cp -r src/bondkit/json_abis/* dist/cjs/bondkit/json_abis/ || echo \"No bondkit json_abis\")",
+    "build:esm": "tsc -p tsconfig.esm.json --outDir dist/esm --module esnext  && tsc-alias -p tsconfig.esm.json --outDir dist/esm && mkdir -p dist/esm/shared/generated && cp src/shared/generated/chain-networks.json src/shared/generated/coingecko-chains.json dist/esm/shared/generated/ && ([ -d src/bondkit/json_abis ] && mkdir -p dist/esm/bondkit/json_abis && cp -r src/bondkit/json_abis/* dist/esm/bondkit/json_abis/ || echo \"No bondkit json_abis\") && node scripts/fix-esm-imports.js",
     "build:css": "postcss src/styles/index.css -o dist/styles/index.css",
     "dev:cjs": "tsc-watch -p tsconfig.cjs.json --onSuccess \"tsc-alias -p tsconfig.cjs.json --outDir dist/cjs\"",
     "dev:esm": "tsc-watch -p tsconfig.esm.json --onSuccess \"tsc-alias -p tsconfig.esm.json --outDir dist/esm\"",
@@ -212,9 +247,8 @@
   },
   "dependencies": {
     "@amplitude/analytics-browser": "2.14.0",
-    "@b3dotfun/b3-api": "0.0.30",
+    "@b3dotfun/b3-api": "0.0.40",
     "@b3dotfun/basement-api": "0.0.11",
-    "@b3dotfun/bondkit": "^0.1.17",
     "@chakra-ui/react": "2.10.7",
     "@feathersjs/authentication-client": "5.0.33",
     "@feathersjs/feathers": "5.0.33",
@@ -224,13 +258,14 @@
     "@hey-api/client-fetch": "0.8.3",
     "@hey-api/openapi-ts": "0.64.13",
     "@lottiefiles/dotlottie-react": "0.7.2",
+    "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-dialog": "1.1.7",
     "@radix-ui/react-popover": "1.1.7",
     "@radix-ui/react-scroll-area": "1.1.0",
     "@radix-ui/react-slot": "1.1.2",
     "@radix-ui/react-tabs": "1.1.3",
     "@radix-ui/react-tooltip": "1.1.8",
-    "@reservoir0x/relay-kit-ui": "2.15.9",
+    "@reservoir0x/relay-kit-ui": "2.15.11",
     "@reservoir0x/relay-sdk": "2.3.1",
     "@reservoir0x/reservoir-kit-ui": "2.8.7",
     "@solana/spl-token": "^0.4.13",
@@ -261,7 +296,7 @@
     "thirdweb": "5.105.20",
     "typescript": "5.8.2",
     "vaul": "^1.1.2",
-    "viem": "2.27.2",
+    "viem": "2.28.1",
     "wagmi": "2.14.15",
     "zod": "3.25.51",
     "zustand": "4.5.6"

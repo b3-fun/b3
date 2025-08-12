@@ -17,7 +17,6 @@ export function useStripeSupport(
 
   return useMemo(
     () => ({
-      isStripeOnrampSupported: data?.stripeOnramp || false,
       stripeWeb2Support: data?.stripeWeb2 || { isSupport: false },
       isLoadingStripeSupport: isLoading,
       stripeSupportError: error,

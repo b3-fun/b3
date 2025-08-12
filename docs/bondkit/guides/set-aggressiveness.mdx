@@ -1,0 +1,30 @@
+---
+title: "Set aggressivenessFactor"
+description: "How to pick aggressivenessFactor (0–100) for your launch."
+---
+
+## Guidance
+
+- 0–20: gentle; early and late buyers receive similar amounts per unit
+- 30–60: balanced; moderate price rise, typical for general launches
+- 70–100: steep; strong early advantage, faster price escalation
+
+## Rule of thumb
+
+- Smaller targets or tight communities: lean higher (50–80)
+- Larger targets or broader audiences: lean lower (20–50)
+
+## Example
+
+```ts
+const config = {
+  aggressivenessFactor: 35,
+  // ...other params
+};
+```
+
+<Note>
+`exponent = 1 / (1 + aggressivenessFactor/100)`. Higher aggressiveness increases curve steepness and reduces tokens per unit later in bonding.
+</Note>
+
+

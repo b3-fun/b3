@@ -1,20 +1,20 @@
+---
+title: "Bridge to B3"
+description: "There are several ways to bridge over to B3 & our appchains."
+---
 
-# Bridge to B3
-
-There are several ways to bridge over to B3 & our gamechains.
+<img src="/images/b3-banner.png" alt="Bridge to B3" className="w-full rounded-xl" />
 
 <CardGroup cols={2}>
-  <Card title="Basement Bridge" icon="zap" href="#cross-chain-bridge">
-    <div style={{ marginBottom: '8px' }}>
-      <span style={{ backgroundColor: '#22c55e', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>RECOMMENDED</span>
-    </div>
+  <Card title="Basement Bridge"  href="https://basement.fun/bridge">
+    <img src="/images/bsmnt-logo.svg" alt="Basement" className="p-8 bg-black rounded-2xl my-3" />
+
     Cross-chain bridge with instant deposits and withdrawals
   </Card>
   
-  <Card title="Relay Bridge" icon="arrow-right-left" href="#instant-bridge">
-    <div style={{ marginBottom: '8px' }}>
-      <span style={{ backgroundColor: '#22c55e', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>RECOMMENDED</span>
-    </div>
+  <Card title="Relay Bridge" href="https://relay.link/bridge/base?fromChainId=8453&fromCurrency=0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3&toCurrency=0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3">
+    <img src="/images/relay-logo.avif" alt="Relay" className="p-8 bg-black rounded-2xl my-3" />
+
     Bridge from any EVM chain & Solana to B3
   </Card>
   
@@ -39,7 +39,7 @@ Connect your wallet and bridge from major EVM networks in & out of B3.
 
 <Steps>
 <Step title="Go to the Basement Bridge">
-  Visit [basement.fun](https://basement.fun) to access the bridge interface.
+  Visit [basement.fun/bridge](https://basement.fun/bridge) to access the bridge interface.
 </Step>
 
 <Step title="Connect your Wallet">
@@ -59,7 +59,9 @@ Connect your wallet and bridge from major EVM networks in & out of B3.
 </Step>
 </Steps>
 
-<Card title="Use Basement Bridge" icon="external-link" href="https://basement.fun" cta="Use Bridge" horizontal>
+<Card title="Use Basement Bridge" href="https://basement.fun" cta="Use Bridge" horizontal>
+  <img src="/images/bsmnt-logo.svg" alt="Basement" className="w-32" />
+
   Start bridging your assets to B3 with instant deposits and withdrawals
 </Card>
 
@@ -95,7 +97,9 @@ Easily bridge from any EVM chain & Solana to B3 with Relay.
 </Step>
 </Steps>
 
-<Card title="Use Relay Bridge" icon="external-link" href="https://relay.link" cta="Use Bridge" horizontal>
+<Card title="Use Relay Bridge" href="https://relay.link" cta="Use Bridge" horizontal>
+  <img src="/images/relay-logo.avif" alt="Relay" className="w-32" />
+
   Bridge from any EVM chain and Solana to B3 instantly
 </Card>
 
@@ -141,7 +145,7 @@ Withdrawals from B3 back to Base have a 7-day challenge period for security. Use
 </Step>
 </Steps>
 
-<Card title="Use Official Bridge" icon="external-link" href="https://bridge.b3.fun" cta="Bridge" horizontal>
+<Card title="Use Official Bridge" icon="bridge" href="https://bridge.b3.fun" cta="Bridge" horizontal>
   Use the battle-tested OP Stack canonical bridge
 </Card>
 
@@ -177,21 +181,3 @@ When you send ETH to this address from Base, it will automatically appear in you
 Double-check you're on Base Mainnet before sending. Sending from other networks may result in lost funds.
 </Warning>
 </Accordion>
-
-## Next Steps
-
-Once you've bridged to B3, you can start exploring the ecosystem:
-
-<CardGroup cols={3}>
-  <Card title="Bridge" icon="arrow-right-left" href="/bridge">
-    Continue bridging assets to B3
-  </Card>
-  
-  <Card title="Tools" icon="wrench" href="/ecosystem-tools">
-    Discover developer tools and infrastructure
-  </Card>
-  
-  <Card title="Play Games" icon="gamepad-2" href="https://b3.fun/games">
-    Start playing games on B3
-  </Card>
-</CardGroup>

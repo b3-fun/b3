@@ -1,0 +1,187 @@
+---
+title: "B3 Profiles API"
+description: "Free unified onchain identity aggregation service with social identity data from B3, Basement, ENS, Lens, and Farcaster"
+---
+
+<img src="/images/profiles-banner.jpg" alt="B3 Profiles API" className="w-full h-auto rounded-3xl" />
+
+<Card title="Free Social Profiles API" icon="user" href="/data/profiles/index">
+  Check out the profiles API reference
+</Card>
+
+## Overview
+
+The B3 Profiles service serves as a data API for resolving decentralized user identities across the EVM ecosystem. It aggregates profile data from multiple sources and protocols, providing developers with a single API endpoint to access comprehensive user information and social context.
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Multi-Source Aggregation" icon="network-wired">
+    Combines data from Basement, ENS, Thirdweb Social, and other Web3 identity providers
+  </Card>
+  <Card title="Social Identity Integration" icon="users">
+    Fetches social profiles from ENS, Lens Protocol, and Farcaster networks
+  </Card>
+  <Card title="Intelligent Caching" icon="database">
+    Uses Cloudflare KV storage for efficient data caching with configurable TTL
+  </Card>
+  <Card title="User Preferences" icon="gear">
+    Allows users to set preferred profile sources via cryptographic signatures
+  </Card>
+</CardGroup>
+
+## Supported Data Sources
+
+- ENS (Ethereum Name Service)
+- Lens Protocol
+- Farcaster
+- B3.ID
+- Basement profiles
+
+## API Endpoints
+
+<Note>
+[Check out the API reference](/data/profiles/index) for more details.
+</Note>
+
+### Profile Lookup
+Retrieve aggregated profile information for any wallet address or username.
+
+```bash
+GET https://profiles.b3.fun/?address=0x1234567890abcdef1234567890abcdef12345678
+GET https://profiles.b3.fun/?name=vitalik.eth
+GET https://profiles.b3.fun/?name=sean.b3.fun
+```
+
+### Set Profile Preferences
+Allow users to specify their preferred profile source through cryptographic signatures.
+
+```bash
+POST /preference
+```
+
+### Custom Display Names
+Enable users to set custom display names that override all other sources.
+
+```bash
+POST /display-name
+```
+
+## Response Format
+
+The service returns a unified profile object that combines data from all sources:
+
+```json
+{
+  "name": "vitalik.eth",
+  "address": "0x1234567890abcdef1234567890abcdef12345678",
+  "avatar": "https://example.com/avatar.jpg",
+  "bio": "Ethereum co-founder",
+  "displayName": "Vitalik Buterin",
+  "profiles": [
+    {
+      "type": "ensdata",
+      "address": "0x123...",
+      "name": "vitalik.eth",
+      "avatar": "https://...",
+      "bio": null,
+      "displayName": null
+    },
+    {
+      "type": "thirdweb-farcaster",
+      "address": "0x123...",
+      "name": "vitalik",
+      "avatar": "https://...",
+      "bio": "Ethereum co-founder",
+      "displayName": "Vitalik Buterin"
+    }
+  ]
+}
+```
+
+## Use Cases
+
+<CardGroup cols={1}>
+  <Card title="Enhanced Wallet Authentication" icon="shield-check">
+    Provide rich context about users during wallet connection, showing their social identity and Web3 reputation across platforms.
+  </Card>
+  <Card title="Social Gaming Integration" icon="gamepad">
+    Display comprehensive player profiles in games, including ENS names, social handles, and cross-platform identities.
+  </Card>
+  <Card title="DeFi User Experience" icon="coins">
+    Enhance trading interfaces by showing trader identities from Lens, Farcaster, and ENS instead of just wallet addresses.
+  </Card>
+  <Card title="Community Management" icon="users-gear">
+    Build better community tools by aggregating user identities from multiple Web3 social platforms.
+  </Card>
+</CardGroup>
+
+
+## Example Usage
+
+### Basic Profile Lookup
+
+```javascript
+// Fetch profile by address
+const response = await fetch('https://profiles.b3.fun/?address=0x123...');
+const profile = await response.json();
+
+console.log(profile.displayName); // "Vitalik Buterin"
+console.log(profile.profiles.length); // Number of sources found
+```
+
+### ENS Name Resolution
+
+```javascript
+// Fetch profile by ENS name
+const response = await fetch('https://profiles.b3.fun/?name=vitalik.eth');
+const profile = await response.json();
+
+console.log(profile.address); // Resolved wallet address
+console.log(profile.avatar); // ENS avatar URL
+```
+
+### Setting User Preferences
+
+```javascript
+// Set preferred profile source with signature
+const message = `SetProfilePreference:${address}:thirdweb-farcaster:${timestamp}`;
+const signature = await wallet.signMessage(message);
+
+await fetch('https://profiles.b3.fun/preference', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    key: address,
+    preferredType: 'thirdweb-farcaster',
+    signature,
+    signer: address,
+    timestamp
+  })
+});
+```
+
+## Performance & Caching
+
+- **Cache Duration**: 1 hour for profile data
+- **Fresh Data**: Use `?fresh=true` to bypass cache
+- **Global CDN**: Powered by Cloudflare's edge network
+- **KV Storage**: Efficient key-value storage for preferences
+
+## Rate Limits
+
+The service inherits Cloudflare's built-in DDoS protection and rate limiting. For high-volume applications, consider implementing client-side caching or contact the B3 team for enterprise access.
+
+## Building onchain made easy
+<Note>
+[Check out the API reference](/data/profiles/index) for more details.
+</Note>
+
+<CardGroup cols={2}>
+  <Card title="B3 Data API" href="/data/api-reference/introduction">
+    Comprehensive blockchain data and analytics
+  </Card>
+  <Card title="B3 SDK" href="/sdk/introduction">
+    B3 SDK for cross-chain operations and global account authentication
+  </Card>
+</CardGroup>
