@@ -1425,11 +1425,10 @@ function AnySpendInner({
     <StyleRoot>
       <div
         className={cn(
-          "mx-auto w-full max-w-[460px]",
+          "font-inter mx-auto w-full max-w-[460px]",
           mode === "page" &&
             "bg-as-surface-primary border-as-border-secondary overflow-hidden rounded-2xl border shadow-xl",
         )}
-        style={{ fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}
       >
         <TransitionPanel
           activeIndex={

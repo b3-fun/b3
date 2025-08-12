@@ -33,6 +33,7 @@ module.exports = {
         "calibre-heavy": ['"Calibre Heavy"', "sans-serif"],
         calibre: ['"Calibre Regular"', "sans-serif"],
         pack: ["Pack", "sans-serif"],
+        inter: ["Inter", "sans-serif"],
       },
       colors: {
         "b3-react-background": "hsl(var(--b3-react-background))",
