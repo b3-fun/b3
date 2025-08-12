@@ -1,6 +1,9 @@
 /* B3 Fonts */
 /* See https://docs.b3.fun/brand-kit for more information */
 
+/* Inter Font Import */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap");
+
 @font-face {
   font-family: "Pack";
   src: url("https://cdn.b3.fun/fonts/pack.ttf") format("truetype");
@@ -140,6 +143,38 @@
 
   /* Override relay colors */
   --relay-colors-focus-color: hsl(215, 90%, 48%) !important;
+
+  --brand-50: #d5e5fd;
+  --brand-100: #d8f0ff;
+  --brand-200: #8dbaf9;
+  --brand-700: #0948a0;
+  --red-100: #fde6d7;
+  --green-100: #dff9e8;
+  --border-brand: #2a9fff;
+  --yellow-100: #fee6c7;
+  --purple-100: #f5edfa;
+  --purple-300: #ddc3ef;
+  --yellow-50: #fff6eb;
+  --dune: #f0eae3;
+  --green: #32ae60;
+  --red: #f04d1a;
+  --purple: #b981da;
+  --yellow: #fba94b;
+  --brand: #0c68e9;
+  --content-primary: #18181b;
+  --content-secondary: #3f3f46;
+  --content-placeholder: #70707b;
+  --success-50: #f3fee7;
+  --success-200: #d0f8ab;
+  --success-700: #3b7c0f;
+  --warning-50: #fefbe8;
+  --warning-200: #feee95;
+  --warning-700: #a15c07;
+  --error-50: #fef3f2;
+  --error-200: #fecdca;
+  --error-700: #b42318;
+  --brand-tertiary: #0b57c2;
+  --fg-quaternary: #a0a0ab;
 }
 
 html[data-theme="dark"] .b3-root,
@@ -204,6 +239,34 @@ html[data-theme="dark"] .b3-root,
   --b3-white: 0 0% 98%;
   --b3-positive: 153 100% 39%;
   --b3-negative: 0 100% 63%;
+
+  --brand-50: #031633;
+  --brand-100: #2a323f;
+  --brand-200: #07387c;
+  --brand-700: #67a4f7;
+  --red-100: #6a5550;
+  --green-100: rgba(68, 90, 76, 0.57);
+  --border-brand: #2a9fff;
+  --yellow-100: #957a6c;
+  --purple-100: rgba(113, 88, 126, 0.38);
+  --purple-300: #a375c3;
+  --yellow-50: #82776b;
+  --dune: #272c30;
+  --content-primary: #fafafa;
+  --content-secondary: #d1d1d6;
+  --content-placeholder: #70707b;
+  --utility-brand: #67a4f7;
+  --success-50: #15290a;
+  --success-200: #326212;
+  --success-700: #a6ef67;
+  --warning-50: #542c0d;
+  --warning-200: #854a0e;
+  --warning-700: #fde272;
+  --error-50: #55160c;
+  --error-200: #912018;
+  --error-700: #fda29b;
+  --brand-tertiary: #a0a0ab;
+  --fg-quaternary: #51525c;
 }
 
 /* src/tailwind.css */

@@ -42,47 +42,6 @@
   @apply font-neue-montreal-bold;
 }
 
-/* B3 Modal Text Color Overrides - properly escaped */
-.b3-modal .text-white {
-  color: black !important;
-}
-
-.b3-modal .text-white\/10 {
-  color: rgba(0, 0, 0, 0.1) !important;
-}
-
-.b3-modal .text-white\/20 {
-  color: rgba(0, 0, 0, 0.2) !important;
-}
-
-.b3-modal .text-white\/30 {
-  color: rgba(0, 0, 0, 0.3) !important;
-}
-
-.b3-modal .text-white\/40 {
-  color: rgba(0, 0, 0, 0.4) !important;
-}
-
-.b3-modal .text-white\/50 {
-  color: rgba(0, 0, 0, 0.5) !important;
-}
-
-.b3-modal .text-white\/60 {
-  color: rgba(0, 0, 0, 0.6) !important;
-}
-
-.b3-modal .text-white\/70 {
-  color: rgba(0, 0, 0, 0.7) !important;
-}
-
-.b3-modal .text-white\/80 {
-  color: rgba(0, 0, 0, 0.8) !important;
-}
-
-.b3-modal .text-white\/90 {
-  color: rgba(0, 0, 0, 0.9) !important;
-}
-
 .b3-modal.transak-modal {
   background: #343d4b;
 }

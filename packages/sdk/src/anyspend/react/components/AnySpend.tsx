@@ -1429,6 +1429,7 @@ function AnySpendInner({
           mode === "page" &&
             "bg-as-surface-primary border-as-border-secondary overflow-hidden rounded-2xl border shadow-xl",
         )}
+        style={{ fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}
       >
         <TransitionPanel
           activeIndex={
