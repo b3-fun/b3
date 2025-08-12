@@ -130,7 +130,9 @@ export function useUnifiedChainSwitchAndExecute() {
         // Check if we can use global-accounts-intents, if yes, create an intent.
         try {
           await app.service("global-accounts-intents").create({
-            partnerId: String(process.env.PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID),
+            partnerId: String(
+              process.env.PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID || process.env.NEXT_PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID,
+            ),
             chainId: targetChainId,
             to: params.to,
             data: params.data || "0x",
