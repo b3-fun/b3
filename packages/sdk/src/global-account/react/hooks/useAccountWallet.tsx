@@ -1,9 +1,12 @@
 import { useB3, useProfile } from "@b3dotfun/sdk/global-account/react";
 import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
+import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { useEffect, useMemo, useState } from "react";
 import { getLastAuthProvider, useActiveWallet, useConnectedWallets, useWalletImage } from "thirdweb/react";
 import { Account, Wallet } from "thirdweb/wallets";
 import { socialIcons } from "thirdweb/wallets/in-app";
+
+const debug = debugB3React("useAccountWallet");
 
 function useLastAuthProvider(): string | null {
   const [lastAuthProvider, setLastAuthProvider] = useState<string | null>(null);
@@ -43,13 +46,19 @@ export function useAccountWallet(): {
   const { account } = useB3();
 
   const activeWallet = useActiveWallet();
-
   const connectedWallets = useConnectedWallets();
 
   const connectedSmartWallet = connectedWallets.find(wallet => wallet.id === ecosystemWalletId);
   const connectedEOAWallet = connectedWallets.find(wallet => wallet.id !== ecosystemWalletId);
   const isActiveSmartWallet = activeWallet?.id === connectedSmartWallet?.id;
   const isActiveEOAWallet = activeWallet?.id === connectedEOAWallet?.id;
+
+  debug("activeWallet", activeWallet);
+  debug("connectedWallets", connectedWallets);
+  debug("connectedSmartWallet", connectedSmartWallet);
+  debug("connectedEOAWallet", connectedEOAWallet);
+  debug("isActiveSmartWallet", isActiveSmartWallet);
+  debug("isActiveEOAWallet", isActiveEOAWallet);
 
   const { data: walletImage } = useWalletImage(connectedEOAWallet?.id);
 

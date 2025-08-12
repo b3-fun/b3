@@ -79,17 +79,15 @@ export function SignIn(props: SignInWithB3Props) {
       <Menu className={`relative flex items-center ${className || ""}`} as="div">
         {globalAddress ? (
           <>
-            <MenuButton className="bg-theme-on-surface-2 group flex h-10 items-center gap-1 rounded-xl px-3">
+            <MenuButton className="bg-b3-react-background group flex h-10 items-center gap-1 rounded-xl px-3">
               {!!wallet.meta?.icon && (
                 <img
                   src={wallet.meta.icon}
                   alt={wallet.meta.icon}
-                  className="bg-theme-primary h-6 w-6 rounded-full object-cover opacity-100"
+                  className="bg-b3-react-primary h-6 w-6 rounded-full object-cover opacity-100"
                 />
               )}
-              <div className="text-body-1m text-theme-secondary">
-                {ensName ? ensName : truncateAddress(globalAddress)}
-              </div>
+              <div className="text-as-primary">{ensName ? ensName : truncateAddress(globalAddress)}</div>
             </MenuButton>
             <Transition
               enter="duration-200 ease-out"
@@ -100,7 +98,7 @@ export function SignIn(props: SignInWithB3Props) {
               leaveTo="scale-95 opacity-0"
             >
               <MenuItems
-                className="b3-root shadow-depth-1 absolute -right-4 top-full min-w-64 rounded-2xl border lg:right-0"
+                className="b3-root absolute -right-4 top-full min-w-64 rounded-2xl border lg:right-0"
                 modal={false}
                 // TODO: Figure out why setting anchor on mobile causes z-index issues where it appears under elements
                 anchor={isMobile ? "top end" : undefined}
@@ -110,46 +108,47 @@ export function SignIn(props: SignInWithB3Props) {
                     <div
                       className={cn(
                         "border-b3-react-subtle bg-b3-react-background flex cursor-pointer items-center justify-between rounded-xl p-3",
-                        "hover:bg-theme-on-surface-2",
                       )}
                       onClick={() => handleSetActiveAccount(connectedEOAWallet?.id)}
                     >
                       <div className="flex items-center">
                         <img
-                          className="bg-theme-primary h-16 w-16 rounded-full opacity-100"
+                          className="bg-b3-react-primary h-16 w-16 rounded-full opacity-100"
                           src={eoaWalletIcon}
                           alt={connectedEOAWallet?.id}
                         />
                         <div className="ml-4 grow">
-                          {ensName && <div className="text-title-1s">{ensName}</div>}
-                          <div className="text-title-1s">{truncateAddress(globalAddress)}</div>
-                          <div className="text-body-1m text-theme-secondary">{walletInfo?.name}</div>
+                          {ensName && <div>{ensName}</div>}
+                          <div>{truncateAddress(globalAddress)}</div>
+                          <div>{walletInfo?.name}</div>
                         </div>
                       </div>
-                      {isActiveEOAWallet && <Icon className="fill-theme-primary" name="check" />}
+                      {isActiveEOAWallet && <Icon className="fill-b3-react-primary" name="check" />}
                     </div>
                   ) : (
                     connectedSmartWallet && (
                       <div
                         className={cn(
                           "mb-2 flex cursor-pointer items-center justify-between rounded-xl p-3",
-                          isActiveSmartWallet ? "bg-theme-n-8" : "bg-b3-react-background hover:bg-theme-on-surface-2",
+                          isActiveSmartWallet
+                            ? "bg-b3-react-background"
+                            : "bg-b3-react-background hover:bg-b3-react-background",
                         )}
                         onClick={() => handleSetActiveAccount(connectedSmartWallet?.id)}
                       >
                         <div className="flex items-center">
                           <img
-                            className="bg-theme-primary h-16 w-16 rounded-full opacity-100"
+                            className="bg-b3-react-primary h-16 w-16 rounded-full opacity-100"
                             src={smartWalletIcon}
                             alt={connectedSmartWallet?.id}
                           />
-                          <div className="pl-4.5 grow">
-                            {ensName && <div className="text-title-1s">{ensName}</div>}
-                            <div className="text-title-1s">{truncateAddress(globalAddress)}</div>
-                            <div className="text-body-1m text-theme-secondary">Smart wallet</div>
+                          <div className="grow pl-4">
+                            {ensName && <div>{ensName}</div>}
+                            <div>{truncateAddress(globalAddress)}</div>
+                            <div>Smart wallet</div>
                           </div>
                         </div>
-                        {isActiveSmartWallet && <Icon className="fill-theme-primary" name="check" />}
+                        {isActiveSmartWallet && <Icon className="fill-b3-react-primary" name="check" />}
                       </div>
                     )
                   )}
@@ -159,12 +158,12 @@ export function SignIn(props: SignInWithB3Props) {
                   </div>
 
                   <button className="mb-2 w-full space-y-1" onClick={onDisconnect}>
-                    <div className="hover:bg-theme-on-surface-2 group flex h-12 items-center rounded-xl px-4 transition-colors">
+                    <div className="hover:bg-b3-react-background group flex h-12 items-center rounded-xl px-4 transition-colors">
                       <Icon
-                        className="fill-theme-secondary group-hover:fill-theme-primary mr-4 shrink-0 transition-colors"
+                        className="fill-b3-react-background group-hover:fill-b3-react-primary mr-4 shrink-0 transition-colors"
                         name="logout"
                       />
-                      <div className="text-base-1s text-theme-secondary group-hover:text-theme-primary mr-auto transition-colors">
+                      <div className="text-b3-react-background group-hover:text-b3-react-primary mr-auto transition-colors">
                         Disconnect
                       </div>
                     </div>

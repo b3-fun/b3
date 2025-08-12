@@ -1,7 +1,10 @@
 import { useAuthStore } from "@b3dotfun/sdk/global-account/react";
+import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { useEffect, useState } from "react";
 import { useConnectedWallets, useWalletInfo } from "thirdweb/react";
 import { Wallet } from "thirdweb/wallets";
+
+const debug = debugB3React("useFirstEOA");
 
 export default function useFirstEOA() {
   const wallets = useConnectedWallets();
@@ -10,26 +13,26 @@ export default function useFirstEOA() {
   const [address, setAddress] = useState<string | undefined>(undefined);
   const walletInfo = useWalletInfo(firstEOA?.id);
 
-  console.log("@@wallets", wallets);
-  console.log("@@wallets:isConnected", isConnected);
+  debug("Wallets", wallets);
+  debug("Is connected", isConnected);
 
   useEffect(() => {
     const autoSelectFirstEOAWallet = async () => {
       // Only proceed if auto-selection is enabled and user is authenticated
       if (!isConnected) {
-        console.log("@@wallets:not connected");
+        debug("Not connected");
         return;
       }
 
       // Find the first EOA wallet (excluding ecosystem wallets)
       const isEOAWallet = (wallet: Wallet) => !wallet.id.startsWith("ecosystem.");
       const firstEOAWallet = wallets.find(isEOAWallet);
-      console.log("@@wallets:firstEOAWallet", firstEOAWallet);
+      debug("First EOA wallet", firstEOAWallet);
 
-      const account = await firstEOAWallet?.getAccount();
-      console.log("@@wallets:account", account);
+      const account = firstEOAWallet?.getAccount();
+      debug("Account", account);
       setFirstEOA(firstEOAWallet);
-      console.log("@@wallets:address", account?.address);
+      debug("Address", account?.address);
       setAddress(account?.address);
     };
 

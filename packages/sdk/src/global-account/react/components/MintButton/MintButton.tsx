@@ -31,7 +31,6 @@ export function MintButton({
   onError,
 }: MintButtonProps) {
   const ecoSystemWallet = useActiveAccount();
-  console.log("@@ecoSystemWallet", ecoSystemWallet);
 
   const { claim, isMinting } = useClaim({
     contractAddress,

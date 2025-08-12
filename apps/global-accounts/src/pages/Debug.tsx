@@ -1,10 +1,14 @@
-import { useB3, MintButton } from "@b3dotfun/sdk/global-account/react";
-import { b3MainnetThirdWeb } from "@b3dotfun/sdk/shared/constants/chains/supported";
+import { getExplorerTxUrl } from "@b3dotfun/sdk/anyspend";
+import { MintButton, SendERC20Button, SendETHButton, useB3 } from "@b3dotfun/sdk/global-account/react";
+import { thirdwebB3Mainnet } from "@b3dotfun/sdk/shared/constants/chains/b3Chain";
+import { b3MainnetThirdWeb, getThirdwebChain } from "@b3dotfun/sdk/shared/constants/chains/supported";
+import createDebug from "debug";
 import { Bug, UnlinkIcon, User, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useActiveAccount, useConnectedWallets, useLinkProfile, useProfiles, useUnlinkProfile } from "thirdweb/react";
+import { useActiveAccount, useLinkProfile, useProfiles, useUnlinkProfile } from "thirdweb/react";
 import { createWallet, type Profile } from "thirdweb/wallets";
-import { MintSuccessModal } from "../components/MintSuccessModal";
+import { parseUnits } from "viem";
+import { SuccessModal } from "../components/SuccessModal";
 import { Background } from "../components/ui/Background";
 import { client } from "../utils/thirdweb";
 
@@ -14,28 +18,27 @@ interface DebugInfo {
   profiles?: Profile[];
 }
 
+const debug = createDebug("@@b3dotfun/sdk:Debug");
+
+const base = getThirdwebChain(8453);
+const ethereum = getThirdwebChain(1);
+
 export function Debug() {
   const { user, account } = useB3();
   const activeAccount = useActiveAccount();
   const profiles = useProfiles({ client });
-  const wallets = useConnectedWallets();
   const { mutate: unlinkProfile, isPending: isUnlinkPending } = useUnlinkProfile();
   const { mutate: linkProfile, isPending: isLinkPending } = useLinkProfile();
   const [debugInfo, setDebugInfo] = useState<DebugInfo>({});
   const [unlinkStatus, setUnlinkStatus] = useState<string>("");
   const [linkStatus, setLinkStatus] = useState<string>("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [successTxHash, setSuccessTxHash] = useState<string | null>(null);
+  const [successExplorerTxUrl, setSuccessExplorerTxUrl] = useState<string | null>(null);
 
-  console.log("@@profiles", profiles);
-  console.log("@@debugInfo", debugInfo);
-  console.log("@@wallets", wallets);
-
-  console.log("@@activeAccount", activeAccount);
   useEffect(() => {
     // Update debug info when user changes
     const updateDebugInfo = async () => {
-      if (!account?.address || !profiles) return;
+      if (!account?.address || !profiles.data) return;
 
       setDebugInfo({
         userEmail: user?.email,
@@ -44,15 +47,13 @@ export function Debug() {
       });
     };
     updateDebugInfo();
-  }, [user, activeAccount?.address, JSON.stringify(profiles)]);
+  }, [user, activeAccount?.address, account?.address, profiles.data]);
 
-  console.log("@@process.env.NEXT_PUBLIC_THIRDWEB_ECOSYSTEM_ID", process.env.NEXT_PUBLIC_THIRDWEB_ECOSYSTEM_ID);
   const handleUnlinkProfile = async (profile: Profile) => {
     try {
-      console.log("@@unlinkProfile", profile);
       setUnlinkStatus("Unlinking profile...");
 
-      await unlinkProfile({
+      unlinkProfile({
         client,
         profileToUnlink: profile,
       });
@@ -60,7 +61,7 @@ export function Debug() {
       // The profiles query will automatically update
       setUnlinkStatus("Profile unlinked successfully!");
     } catch (error) {
-      console.error("Error unlinking profile:", error);
+      debug("Error unlinking profile:", error);
       setUnlinkStatus(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
   };
@@ -68,7 +69,7 @@ export function Debug() {
   const handleLinkWallet = async () => {
     try {
       setLinkStatus("Linking wallet...");
-      await linkProfile({
+      linkProfile({
         client,
         strategy: "wallet",
         wallet: createWallet("io.metamask"),
@@ -76,7 +77,7 @@ export function Debug() {
       });
       setLinkStatus("Wallet linked successfully!");
     } catch (error) {
-      console.error("Error linking wallet:", error);
+      debug("Error linking wallet:", error);
       setLinkStatus(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
   };
@@ -84,13 +85,13 @@ export function Debug() {
   const handleLinkGuest = async () => {
     try {
       setLinkStatus("Linking guest...");
-      await linkProfile({
+      linkProfile({
         client,
         strategy: "guest",
       });
       setLinkStatus("Guest linked successfully!");
     } catch (error) {
-      console.error("Error linking wallet:", error);
+      debug("Error linking wallet:", error);
       setLinkStatus(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
   };
@@ -98,7 +99,7 @@ export function Debug() {
   const handleLinkCoinbase = async () => {
     try {
       setLinkStatus("Linking coinbase...");
-      await linkProfile({
+      linkProfile({
         client,
         strategy: "wallet",
         wallet: createWallet("com.coinbase.wallet"),
@@ -106,7 +107,7 @@ export function Debug() {
       });
       setLinkStatus("Coinbase linked successfully!");
     } catch (error) {
-      console.error("Error linking wallet:", error);
+      debug("Error linking wallet:", error);
       setLinkStatus(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
   };
@@ -121,21 +122,70 @@ export function Debug() {
         </div>
 
         <div className="rounded-lg bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-xl font-semibold">Mint NFT</h2>
+          <h2 className="mb-4 text-xl font-semibold">Actions</h2>
           {activeAccount && (
-            <MintButton
-              contractAddress={"0xa8e42121e318e3D3BeD7f5969AF6D360045317DD"}
-              chain={b3MainnetThirdWeb}
-              tokenId={7}
-              account={activeAccount}
-              to={activeAccount.address as `0x${string}`}
-              className="bg-b3-blue w-full font-bold text-white"
-              onSuccess={txhash => {
-                console.log("@@txhash", txhash);
-                setSuccessTxHash(txhash);
-                setShowSuccessModal(true);
-              }}
-            />
+            <div className="flex flex-col gap-4">
+              <MintButton
+                contractAddress={"0xa8e42121e318e3D3BeD7f5969AF6D360045317DD"}
+                chain={b3MainnetThirdWeb}
+                tokenId={7}
+                account={activeAccount}
+                to={activeAccount.address as `0x${string}`}
+                className="bg-b3-blue w-full rounded-lg font-bold text-white"
+                onSuccess={txhash => {
+                  setSuccessExplorerTxUrl(getExplorerTxUrl(8333, txhash));
+                  setShowSuccessModal(true);
+                }}
+              />
+              <SendETHButton
+                chainId={thirdwebB3Mainnet.id}
+                to="0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1"
+                value={parseUnits("0.000000001", 18)}
+                className="bg-b3-blue w-full rounded-lg font-bold text-white"
+                children="Send 0.000000001 ETH on B3 Mainnet to 0x5824...474e1"
+                onSuccess={txhash => {
+                  setSuccessExplorerTxUrl(getExplorerTxUrl(thirdwebB3Mainnet.id, txhash));
+                  setShowSuccessModal(true);
+                }}
+              />
+
+              <SendETHButton
+                chainId={base.id}
+                to="0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1"
+                value={parseUnits("0.000000001", 18)}
+                className="bg-b3-blue w-full rounded-lg font-bold text-white"
+                children="Send 0.000000001 ETH on Base to 0x5824...474e1"
+                onSuccess={txhash => {
+                  setSuccessExplorerTxUrl(getExplorerTxUrl(base.id, txhash));
+                  setShowSuccessModal(true);
+                }}
+              />
+
+              <SendETHButton
+                chainId={ethereum.id}
+                to="0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1"
+                value={parseUnits("0.000000001", 18)}
+                className="bg-b3-blue w-full rounded-lg font-bold text-white"
+                children="Send 0.000000001 ETH on Ethereum to 0x5824...474e1"
+                onSuccess={txhash => {
+                  setSuccessExplorerTxUrl(getExplorerTxUrl(ethereum.id, txhash));
+                  setShowSuccessModal(true);
+                }}
+              />
+
+              <SendERC20Button
+                chainId={ethereum.id}
+                to="0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1"
+                tokenAddress="0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+                amount={parseUnits("0.01", 6)}
+                className="bg-b3-blue w-full rounded-lg font-bold text-white"
+                children="Send 0.01 USDC on Ethereum to 0x5824...474e1"
+                onSuccess={txhash => {
+                  setSuccessExplorerTxUrl(getExplorerTxUrl(ethereum.id, txhash));
+                  setShowSuccessModal(true);
+                }}
+              />
+            </div>
           )}
         </div>
 
@@ -226,10 +276,11 @@ export function Debug() {
         </div>
       </div>
 
-      <MintSuccessModal
+      <SuccessModal
         isOpen={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
-        txHash={successTxHash || undefined}
+        explorerTxUrl={successExplorerTxUrl || undefined}
+        title="Success!"
       />
     </div>
   );
