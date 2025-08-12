@@ -33,7 +33,11 @@ export function SendERC20Button({
         functionName: "transfer",
         args: [to, amount],
       });
-      const tx = await switchChainAndExecute(chainId, { to: tokenAddress as `0x${string}`, data: bytecode, value: 0n });
+      const tx = await switchChainAndExecute(chainId, {
+        to: tokenAddress as `0x${string}`,
+        data: bytecode,
+        value: BigInt(0),
+      });
       if (tx) {
         onSuccess?.(tx as `0x${string}`);
       }
