@@ -120,6 +120,7 @@ export function B3DynamicModal() {
           "border border-gray-200 dark:border-gray-800",
           "mx-auto w-full max-w-md",
           "sm:max-w-lg",
+          contentType?.type === "signInWithB3" && "p-0",
         )}
         hideCloseButton={hideCloseButton}
       >

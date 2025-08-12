@@ -464,8 +464,19 @@ Dark version
     gap: 12px !important;
   }
 
+  /* handle padding for the main container */
   & > div > div > div > div {
+    padding: 24px 24px 0 24px !important;
+  }
+
+  /* handle padding for the wallet section */
+  & > div > div > div > div > div[style*="flex: 1 1 0%"] {
     padding: 0 !important;
+  }
+
+  /* handle padding for the wallet section */
+  & > div > div > div > div > div:first-child {
+    padding: 24px 0 !important;
   }
 
   /* Add subtle animations */
@@ -498,6 +509,49 @@ Dark version
     & button[style*="justify-content: flex-start"] {
       min-height: 44px !important;
       padding: 10px 12px !important;
+    }
+  }
+
+  /* select wallet section */
+
+  & ul {
+    gap: 24px !important;
+  }
+
+  & ul li button img {
+    height: 64px !important;
+    width: 64px !important;
+  }
+
+  & ul li button div:last-child {
+    gap: 4px !important;
+    & span[color="primaryText"] {
+      font-family: "Neue Montreal Semibold", sans-serif !important;
+      color: hsl(var(--b3-grey)) !important;
+      font-size: 16px !important;
+    }
+  }
+
+  h2 {
+    font-size: 24px !important;
+    font-family: "Neue Montreal Semibold", sans-serif !important;
+    color: hsl(var(--b3-grey)) !important;
+  }
+
+  & + h2 {
+    padding-bottom: 32px !important;
+  }
+
+  /* text = "Sign in with your wallet" */
+  & div > div > div > div > div > div > span[color="primaryText"] {
+    font-family: "Neue Montreal Semibold", sans-serif !important;
+    color: hsl(var(--b3-grey)) !important;
+    font-size: 24px !important;
+
+    & + div + span {
+      font-family: "Neue Montreal Medium", sans-serif !important;
+      color: hsl(var(--b3-foreground-muted)) !important;
+      font-size: 16px !important;
     }
   }
 }
