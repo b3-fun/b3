@@ -185,9 +185,21 @@ export function ManageAccount({
                 ${b3Balance?.balanceUsdFormatted || "0.00"}
               </div>
               <div className="flex items-center gap-1">
-                <Triangle className="text-b3-positive fill-b3-positive size-3" />
-                {/* TODO: Add price change */}
-                <span className="text-b3-positive font-neue-montreal-medium text-sm">10.21%</span>
+                {b3Balance?.priceChange24h !== null && b3Balance?.priceChange24h !== undefined ? (
+                  <>
+                    <Triangle
+                      className={`size-3 ${b3Balance.priceChange24h >= 0 ? "text-b3-positive fill-b3-positive" : "text-b3-negative fill-b3-negative rotate-180"}`}
+                    />
+                    <span
+                      className={`font-neue-montreal-medium text-sm ${b3Balance.priceChange24h >= 0 ? "text-b3-positive" : "text-b3-negative"}`}
+                    >
+                      {b3Balance.priceChange24h >= 0 ? "+" : ""}
+                      {b3Balance.priceChange24h.toFixed(2)}%
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-b3-foreground-muted font-neue-montreal-medium text-sm">--</span>
+                )}
               </div>
             </div>
           </div>
@@ -212,9 +224,21 @@ export function ManageAccount({
                 ${nativeBalance?.formattedTotalUsd || "0.00"}
               </div>
               <div className="flex items-center gap-2">
-                <Triangle className="text-b3-negative fill-b3-negative size-3" />
-                {/* TODO: Add price change */}
-                <span className="text-b3-negative font-neue-montreal-medium text-sm">2.40%</span>
+                {nativeBalance?.priceChange24h !== null && nativeBalance?.priceChange24h !== undefined ? (
+                  <>
+                    <Triangle
+                      className={`size-3 ${nativeBalance.priceChange24h >= 0 ? "text-b3-positive fill-b3-positive" : "text-b3-negative fill-b3-negative rotate-180"}`}
+                    />
+                    <span
+                      className={`font-neue-montreal-medium text-sm ${nativeBalance.priceChange24h >= 0 ? "text-b3-positive" : "text-b3-negative"}`}
+                    >
+                      {nativeBalance.priceChange24h >= 0 ? "+" : ""}
+                      {nativeBalance.priceChange24h.toFixed(2)}%
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-b3-foreground-muted font-neue-montreal-medium text-sm">--</span>
+                )}
               </div>
             </div>
           </div>
@@ -251,9 +275,21 @@ export function ManageAccount({
                   ${eoaB3Balance?.balanceUsdFormatted || "0.00"}
                 </div>
                 <div className="flex items-center gap-1">
-                  <Triangle className="text-b3-positive fill-b3-positive size-3" />
-                  {/* TODO: Add price change */}
-                  <span className="text-b3-positive font-neue-montreal-medium text-sm">10.21%</span>
+                  {eoaB3Balance?.priceChange24h !== null && eoaB3Balance?.priceChange24h !== undefined ? (
+                    <>
+                      <Triangle
+                        className={`size-3 ${eoaB3Balance.priceChange24h >= 0 ? "text-b3-positive fill-b3-positive" : "text-b3-negative fill-b3-negative rotate-180"}`}
+                      />
+                      <span
+                        className={`font-neue-montreal-medium text-sm ${eoaB3Balance.priceChange24h >= 0 ? "text-b3-positive" : "text-b3-negative"}`}
+                      >
+                        {eoaB3Balance.priceChange24h >= 0 ? "+" : ""}
+                        {eoaB3Balance.priceChange24h.toFixed(2)}%
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-b3-foreground-muted font-neue-montreal-medium text-sm">--</span>
+                  )}
                 </div>
               </div>
             </div>
@@ -278,9 +314,21 @@ export function ManageAccount({
                   ${eoaNativeBalance?.formattedTotalUsd || "0.00"}
                 </div>
                 <div className="flex items-center gap-2">
-                  <Triangle className="text-b3-negative fill-b3-negative size-3" />
-                  {/* TODO: Add price change */}
-                  <span className="text-b3-negative font-neue-montreal-medium text-sm">2.40%</span>
+                  {eoaNativeBalance?.priceChange24h !== null && eoaNativeBalance?.priceChange24h !== undefined ? (
+                    <>
+                      <Triangle
+                        className={`size-3 ${eoaNativeBalance.priceChange24h >= 0 ? "text-b3-positive fill-b3-positive" : "text-b3-negative fill-b3-negative rotate-180"}`}
+                      />
+                      <span
+                        className={`font-neue-montreal-medium text-sm ${eoaNativeBalance.priceChange24h >= 0 ? "text-b3-positive" : "text-b3-negative"}`}
+                      >
+                        {eoaNativeBalance.priceChange24h >= 0 ? "+" : ""}
+                        {eoaNativeBalance.priceChange24h.toFixed(2)}%
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-b3-foreground-muted font-neue-montreal-medium text-sm">--</span>
+                  )}
                 </div>
               </div>
             </div>

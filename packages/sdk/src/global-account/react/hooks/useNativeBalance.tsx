@@ -3,7 +3,7 @@ import { formatNumber } from "@b3dotfun/sdk/shared/utils/formatNumber";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { createPublicClient, formatEther, formatUnits, http } from "viem";
-import { fetchNativeTokenPriceUsd } from "./useTokenPrice";
+import { fetchNativeTokenPriceWithChange } from "./useTokenPrice";
 interface NativeBalanceResponse {
   data: Array<{
     tokenDecimals: number;
@@ -37,17 +37,26 @@ async function fetchNativeBalance(address: string, chainIds: string) {
     {
       balance: number;
       formatted: string;
+      priceChange24h: number | null;
     }
   > = {};
+
+  let globalPriceChange24h: number | null = null;
 
   try {
     for (const item of data.data) {
       // Use chain ID once since native token ETH is the same across all chains
-      const usdPrice = await fetchNativeTokenPriceUsd("0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", "eth");
+      const priceData = await fetchNativeTokenPriceWithChange("0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", "eth");
+
+      // Store the price change globally (same for all chains since it's ETH)
+      if (globalPriceChange24h === null) {
+        globalPriceChange24h = priceData.priceChange24h;
+      }
 
       usdBalances[item.chainId] = {
-        balance: total * usdPrice,
-        formatted: formatNumber(total * usdPrice),
+        balance: total * priceData.price,
+        formatted: formatNumber(total * priceData.price),
+        priceChange24h: priceData.priceChange24h,
       };
     }
   } catch (error) {
@@ -61,14 +70,17 @@ async function fetchNativeBalance(address: string, chainIds: string) {
     formattedTotal: formatNumber(total),
     totalUsd,
     formattedTotalUsd: formatNumber(totalUsd),
+    priceChange24h: globalPriceChange24h,
     breakdown: data.data.map(item => {
       const usdBalance = usdBalances[item.chainId]?.balance || 0;
+      const priceChange = usdBalances[item.chainId]?.priceChange24h || null;
       return {
         chainId: item.chainId,
         balance: BigInt(item.balance),
         formatted: formatNumber(Number(formatUnits(BigInt(item.balance), item.tokenDecimals))),
         balanceUsd: usdBalance,
         balanceUsdFormatted: formatNumber(usdBalance),
+        priceChange24h: priceChange,
       };
     }),
   };
@@ -77,7 +89,7 @@ async function fetchNativeBalance(address: string, chainIds: string) {
 export function useNativeBalance(address?: string, chainIds = "8333") {
   return useQuery({
     queryKey: ["nativeBalance", address, chainIds],
-    queryFn: () => fetchNativeBalance(address!, chainIds),
+    queryFn: () => fetchNativeBalance(address || "", chainIds),
     enabled: Boolean(address),
     staleTime: 30 * 1000, // Consider data fresh for 30 seconds
     gcTime: 5 * 60 * 1000, // Keep unused data in cache for 5 minutes
