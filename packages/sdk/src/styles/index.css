@@ -522,6 +522,14 @@ Dark version
     gap: 16px !important;
   }
 
+  & div[style*="flex-direction: column"] > div {
+    gap: 16px !important;
+  }
+
+  & > div > div > div > div > div[style*="height: 24px"] {
+    display: none !important;
+  }
+
   /* Social buttons container - target by flex-flow wrap */
   & div[style*="flex-flow: wrap"] {
     gap: 12px !important;
@@ -529,7 +537,7 @@ Dark version
 
   /* handle padding for the main container */
   & > div > div > div > div {
-    padding: 24px 24px 0 24px !important;
+    padding: 0 24px !important;
   }
 
   /* handle padding for the wallet section */
@@ -539,7 +547,7 @@ Dark version
 
   /* handle padding for the wallet section */
   & > div > div > div > div > div:first-child {
-    padding: 24px 0 !important;
+    padding: 0 !important;
   }
 
   /* Add subtle animations */
