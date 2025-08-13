@@ -73,7 +73,7 @@ export async function fetchNativeTokenPriceUsd(contractAddress: string, network:
   return numericPrice;
 }
 
-export async function fetchNativeTokenPriceWithChange(contractAddress: string, network: string) {
+export async function fetchNativeTokenPriceWithChange(network: string) {
   // For ETH, use the regular simple price API instead of on-chain API to get price changes
   const coinId = network === "eth" ? "ethereum" : network;
 

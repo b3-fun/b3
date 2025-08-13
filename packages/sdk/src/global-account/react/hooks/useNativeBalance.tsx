@@ -46,7 +46,7 @@ async function fetchNativeBalance(address: string, chainIds: string) {
   try {
     for (const item of data.data) {
       // Use chain ID once since native token ETH is the same across all chains
-      const priceData = await fetchNativeTokenPriceWithChange("0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", "eth");
+      const priceData = await fetchNativeTokenPriceWithChange("eth");
 
       // Store the price change globally (same for all chains since it's ETH)
       if (globalPriceChange24h === null) {
