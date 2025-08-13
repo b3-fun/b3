@@ -115,7 +115,7 @@ export function ManageAccount({
               ) : (
                 <div className="bg-b3-primary-wash size-24 rounded-full" />
               )}
-              <div className="bg-b3-grey absolute -bottom-1 -right-1 flex size-8 items-center justify-center rounded-full border-4 border-white">
+              <div className="bg-b3-grey border-b3-background absolute -bottom-1 -right-1 flex size-8 items-center justify-center rounded-full border-4">
                 <Pencil size={16} className="text-b3-background" />
               </div>
             </div>
