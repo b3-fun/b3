@@ -16,6 +16,13 @@ export interface UnifiedTransactionParams {
   value: bigint;
 }
 
+const partnerId =
+  String(process.env.PUBLIC_THIRDWEB_PARTNER_ID ||
+  process.env.NEXT_PUBLIC_THIRDWEB_PARTNER_ID ||
+  process.env.PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID ||
+  process.env.NEXT_PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID);
+invariant(partnerId, "Partner ID is required");
+
 export function useUnifiedChainSwitchAndExecute() {
   const { data: walletClient } = useWalletClient();
   const { switchChainAsync } = useSwitchChain();
@@ -130,9 +137,7 @@ export function useUnifiedChainSwitchAndExecute() {
         // Check if we can use global-accounts-intents, if yes, create an intent.
         try {
           await app.service("global-accounts-intents").create({
-            partnerId: String(
-              process.env.PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID || process.env.NEXT_PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID,
-            ),
+            partnerId: partnerId,
             chainId: targetChainId,
             to: params.to,
             data: params.data || "0x",
