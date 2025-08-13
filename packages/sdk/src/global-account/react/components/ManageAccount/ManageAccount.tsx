@@ -18,7 +18,7 @@ import {
 import { BankIcon } from "@b3dotfun/sdk/global-account/react/components/icons/BankIcon";
 import { SignOutIcon } from "@b3dotfun/sdk/global-account/react/components/icons/SignOutIcon";
 import { SwapIcon } from "@b3dotfun/sdk/global-account/react/components/icons/SwapIcon";
-import { formatUsername } from "@b3dotfun/sdk/shared/utils";
+import { cn, formatUsername } from "@b3dotfun/sdk/shared/utils";
 import { formatNumber } from "@b3dotfun/sdk/shared/utils/formatNumber";
 import { Loader2, Pencil, Triangle } from "lucide-react";
 import { useState } from "react";
@@ -35,6 +35,7 @@ interface ManageAccountProps {
   onViewProfile?: () => void;
   chain: Chain;
   partnerId: string;
+  containerClassName?: string;
 }
 
 function centerTruncate(str: string, length = 4) {
@@ -48,6 +49,7 @@ export function ManageAccount({
   onDeposit: _onDeposit,
   chain,
   partnerId,
+  containerClassName,
 }: ManageAccountProps) {
   const [activeTab, setActiveTab] = useState("balance");
   const [revokingSignerId, setRevokingSignerId] = useState<string | null>(null);
@@ -113,8 +115,8 @@ export function ManageAccount({
               ) : (
                 <div className="bg-b3-primary-wash size-24 rounded-full" />
               )}
-              <div className="bg-b3-grey absolute -bottom-1 -right-1 flex size-8 items-center justify-center rounded-full border-4 border-white">
-                <Pencil size={16} className="text-b3-white" />
+              <div className="bg-b3-grey border-b3-background absolute -bottom-1 -right-1 flex size-8 items-center justify-center rounded-full border-4">
+                <Pencil size={16} className="text-b3-background" />
               </div>
             </div>
             <div>
@@ -408,7 +410,7 @@ export function ManageAccount({
   );
 
   return (
-    <div className="flex flex-col rounded-xl bg-white dark:bg-gray-900">
+    <div className={cn("bg-b3-background flex flex-col rounded-xl", containerClassName)}>
       <div className="flex-1">
         <TabsPrimitive defaultValue={activeTab} onValueChange={setActiveTab}>
           <TabsListPrimitive className="font-neue-montreal-semibold text-b3-grey flex h-8 w-full items-start justify-start gap-8 border-0 text-xl md:p-4">

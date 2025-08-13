@@ -58,6 +58,7 @@ module.exports = {
         "b3-grey": "hsl(var(--b3-grey))",
         "b3-line": "hsl(var(--b3-line))",
         "b3-white": "hsl(var(--b3-white))",
+        "b3-background": "hsl(var(--b3-background))",
         "b3-positive": "hsl(var(--b3-positive))",
         "b3-negative": "hsl(var(--b3-negative))",
 

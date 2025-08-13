@@ -138,6 +138,7 @@
   --b3-grey: 0 0% 15%;
   --b3-line: 0 0% 91%;
   --b3-white: 0 0% 98%;
+  --b3-background: 0 0% 100%;
   --b3-positive: 153 100% 39%;
   --b3-negative: 0 100% 63%;
 
@@ -231,14 +232,15 @@ html[data-theme="dark"] .b3-root,
     --border: 256 16% 23%; */
 
   /* global account */
-  --b3-foreground-muted: 0 0% 40%;
-  --b3-primary-blue: 223 86% 57%;
-  --b3-primary-wash: 224 58% 94%;
-  --b3-grey: 0 0% 15%;
-  --b3-line: 0 0% 91%;
-  --b3-white: 0 0% 98%;
-  --b3-positive: 153 100% 39%;
-  --b3-negative: 0 100% 63%;
+  --b3-foreground-muted: 0 0% 65%;
+  --b3-primary-blue: 223 86% 67%;
+  --b3-primary-wash: 224 58% 15%;
+  --b3-grey: 0 0% 85%;
+  --b3-line: 0 0% 25%;
+  --b3-white: 0 0% 100%;
+  --b3-background: 0 0% 12%;
+  --b3-positive: 153 100% 49%;
+  --b3-negative: 0 100% 73%;
 
   --brand-50: #031633;
   --brand-100: #2a323f;
