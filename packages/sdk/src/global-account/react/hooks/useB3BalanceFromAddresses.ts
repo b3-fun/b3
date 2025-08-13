@@ -3,6 +3,7 @@ import { formatNumber } from "@b3dotfun/sdk/shared/utils/formatNumber";
 import { useQuery } from "@tanstack/react-query";
 import { createPublicClient, formatUnits, http } from "viem";
 import { base } from "viem/chains";
+import { fetchTokenPriceWithChange } from "./useTokenPrice";
 
 // ABI for just balanceOf
 const abi = [
@@ -28,9 +29,18 @@ async function fetchB3Balances(addresses: string[]): Promise<{
     address: string;
     balance: bigint;
     formatted: string;
+    balanceUsd: number;
+    balanceUsdFormatted: string;
+    priceChange24h: number | null;
   }[];
+  balanceUsd: number;
+  balanceUsdFormatted: string;
+  priceChange24h: number | null;
 }> {
   try {
+    // Fetch price with change data once (same for all addresses since it's the same token)
+    const priceData = await fetchTokenPriceWithChange(B3_TOKEN.address, B3_TOKEN.chainId, "usd");
+
     // Fetch all balances in parallel
     const balances = await Promise.all(
       addresses.map(async address => {
@@ -40,22 +50,30 @@ async function fetchB3Balances(addresses: string[]): Promise<{
           functionName: "balanceOf",
           args: [address as `0x${string}`],
         });
+        const balanceUsd = Number(formatUnits(balance, B3_TOKEN.decimals)) * priceData.price;
 
         return {
           address,
           balance,
           formatted: formatUnits(balance, B3_TOKEN.decimals),
+          balanceUsd,
+          balanceUsdFormatted: formatNumber(balanceUsd),
+          priceChange24h: priceData.priceChange24h,
         };
       }),
     );
 
     // Calculate total
     const totalBalance = balances.reduce((sum, { balance }) => sum + balance, BigInt(0));
+    const totalBalanceUsd = balances.reduce((sum, { balanceUsd }) => sum + balanceUsd, 0);
 
     return {
       totalBalance,
       formattedTotal: formatNumber(Number(formatUnits(totalBalance, B3_TOKEN.decimals))),
       breakdown: balances,
+      balanceUsd: totalBalanceUsd,
+      balanceUsdFormatted: formatNumber(totalBalanceUsd),
+      priceChange24h: priceData.priceChange24h,
     };
   } catch (error) {
     console.error("Error fetching B3 balances:", error);

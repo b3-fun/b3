@@ -2,6 +2,7 @@
 module.exports = {
   plugins: {
     "postcss-import": {},
+    "tailwindcss/nesting": "postcss-nesting",
     "postcss-prefix-selector": {
       prefix: ".b3-root",
       transform: function (prefix, selector, prefixedSelector) {

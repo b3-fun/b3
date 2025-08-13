@@ -9,6 +9,7 @@ import {
   OrderHistory,
 } from "@b3dotfun/sdk/anyspend/react";
 import { useIsMobile, useModalStore } from "@b3dotfun/sdk/global-account/react";
+import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { useB3 } from "./B3Provider/useB3";
 import { ManageAccount } from "./ManageAccount/ManageAccount";
@@ -25,47 +26,49 @@ export function B3DynamicModal() {
   const { theme } = useB3();
   const isMobile = useIsMobile();
 
-  let contentClass = `b3-modal ${theme === "dark" ? "dark" : ""}`;
   let hideCloseButton = false;
 
-  if (
-    [
-      "anySpend",
-      "anySpendNft",
-      "anySpendJoinTournament",
-      "anySpendFundTournament",
-      "anySpendStakeB3",
-      "anySpendBuySpin",
-      "anySpendOrderHistory",
-      "signInWithB3",
-      "anySpendSignatureMint",
-      "anySpendBondKit",
-    ].find(type => contentType?.type === type)
-  ) {
-    contentClass += " w-full";
-  }
+  // Define arrays for different modal type groups
+  const fullWidthTypes = [
+    "anySpend",
+    "anySpendNft",
+    "anySpendJoinTournament",
+    "anySpendFundTournament",
+    "anySpendStakeB3",
+    "anySpendBuySpin",
+    "anySpendOrderHistory",
+    "signInWithB3",
+    "anySpendSignatureMint",
+    "anySpendBondKit",
+  ];
 
-  if (
-    [
-      "anySpendNft",
-      "anySpendJoinTournament",
-      "anySpendFundTournament",
-      "anySpendStakeB3",
-      "anySpendBuySpin",
-      "anySpendSignatureMint",
-      "anySpendBondKit",
-    ].find(type => contentType?.type === type)
-  ) {
-    // Due to the dynamic of (Pay with crypto),(Pay with fiat), we want the height fixed to 90dvh but still scrollable.
-    // NOTE: Just leave it here in case we want the fixed height
-    // contentClass += " min-h-[90dvh] b3-modal-freestyle";
-    contentClass += " b3-modal-freestyle";
+  const freestyleTypes = [
+    "anySpendNft",
+    "anySpendJoinTournament",
+    "anySpendFundTournament",
+    "anySpendStakeB3",
+    "anySpendBuySpin",
+    "anySpendSignatureMint",
+    "anySpendBondKit",
+  ];
+
+  // Check if current content type is in freestyle types
+  const isFreestyleType = freestyleTypes.includes(contentType?.type as string);
+  if (isFreestyleType) {
     hideCloseButton = true;
   }
 
-  if (contentType?.type === "transak") {
-    contentClass += " transak-modal";
-  }
+  // Build content class using cn utility
+  // eslint-disable-next-line tailwindcss/no-custom-classname
+  const contentClass = cn(
+    "b3-modal",
+    theme === "dark" && "dark",
+    fullWidthTypes.includes(contentType?.type as string) && "w-full",
+    isFreestyleType && "b3-modal-freestyle",
+    contentType?.type === "signInWithB3" && "p-0",
+    contentType?.type === "anySpend" && "md:px-6",
+    contentType?.type === "transak" && "transak-modal",
+  );
 
   debug("contentType", contentType);
   const renderContent = () => {
@@ -113,17 +116,41 @@ export function B3DynamicModal() {
 
   return (
     <ModalComponent open={isOpen} onOpenChange={setB3ModalOpen}>
-      <ModalContent className={contentClass} hideCloseButton={hideCloseButton}>
+      <ModalContent
+        className={cn(
+          contentClass,
+          "rounded-2xl bg-white shadow-xl dark:bg-gray-900",
+          "border border-gray-200 dark:border-gray-800",
+          "mx-auto w-full max-w-md",
+          "sm:max-w-lg",
+        )}
+        hideCloseButton={hideCloseButton}
+      >
         <ModalTitle className="sr-only hidden">{contentType?.type || "Modal"}</ModalTitle>
         <ModalDescription className="sr-only hidden">{contentType?.type || "Modal Body"}</ModalDescription>
         <div className="no-scrollbar max-h-[90dvh] overflow-auto sm:max-h-[80dvh]">
           {history.length > 0 && contentType?.showBackButton && (
             <button
               onClick={navigateBack}
-              className="b3-modal-back-button mb-4 flex items-center gap-2 transition-colors hover:text-white"
+              className="flex items-center gap-2 px-6 py-4 text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
             >
-              <span>←</span>
-              <span className="text-sm">Back</span>
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M15.8337 10H4.16699"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M10.0003 15.8334L4.16699 10L10.0003 4.16669"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span className="text-sm font-medium">Back</span>
             </button>
           )}
           {renderContent()}

@@ -42,7 +42,7 @@ export function LoginStepContainer({ children, partnerId }: LoginStepContainerPr
   const partnerLogo = partner?.data?.[0]?.loginCustomization?.logoUrl;
 
   return (
-    <div className="flex flex-col items-center justify-center py-6">
+    <div className="flex flex-col items-center justify-center">
       {partnerLogo && <img src={partnerLogo} alt="Partner Logo" className="mb-4 h-12 w-auto object-contain" />}
       {children}
       <h2 className="mt-3 flex items-center gap-2 text-lg font-bold">
@@ -111,6 +111,7 @@ export function LoginStep({ onSuccess, onError, partnerId, chain }: LoginStepPro
           title: "Sign in with B3",
           titleIcon: "https://cdn.b3.fun/b3_logo.svg",
         }}
+        className="b3-login-step"
         onConnect={async wallet => {
           try {
             setIsAuthenticating(true);
