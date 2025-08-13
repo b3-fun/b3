@@ -20,6 +20,7 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from "./ui/dial
 import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "./ui/drawer";
 
 const debug = debugB3React("B3DynamicModal");
+
 export function B3DynamicModal() {
   const { isOpen, setB3ModalOpen, contentType, history, navigateBack } = useModalStore();
   const { theme } = useB3();
@@ -69,7 +70,7 @@ export function B3DynamicModal() {
     contentType?.type === "transak" && "transak-modal",
   );
 
-  debug("@@DynamicModal:contentType", contentType);
+  debug("contentType", contentType);
   const renderContent = () => {
     if (!contentType) return null;
 

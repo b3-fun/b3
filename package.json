@@ -1,6 +1,7 @@
 {
   "name": "b3",
   "description": "Monorepo for the B3 SDK, a comprehensive TypeScript SDK for the B3 ecosystem, including applications and demos.",
+  "packageManager": "pnpm@10.14.0",
   "scripts": {
     "prettier:check": "npx prettier \"**/*.{ts,tsx,js,jsx,mjs,cjs,json}\" --check",
     "prettier:write": "npx prettier \"**/*.{ts,tsx,js,jsx,mjs,cjs,json}\" --write",
@@ -42,7 +43,6 @@
       "viem": "2.28.1"
     }
   },
-  "packageManager": "pnpm@10.13.1+sha512.37ebf1a5c7a30d5fabe0c5df44ee8da4c965ca0c5af3dbab28c3a1681b70a256218d05c81c9c0dcf767ef6b8551eb5b960042b9ed4300c59242336377e01cfad",
   "dependencies": {
     "@tanstack/react-query": "5.55.0"
   }

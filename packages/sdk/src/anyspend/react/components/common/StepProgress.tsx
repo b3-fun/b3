@@ -22,9 +22,9 @@ export function StepProgress({ steps, currentStepIndex, className = "" }: StepPr
     <div className={`flex w-full flex-col items-center gap-4 ${className}`}>
       {/* Step Progress Indicator */}
       <div className="flex items-center gap-2">
-        {steps.map((step, index) => (
+        {steps.map((_, index) => (
           <>
-            <div key={step.id} className="flex items-center">
+            <div key={index} className="flex items-center">
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}

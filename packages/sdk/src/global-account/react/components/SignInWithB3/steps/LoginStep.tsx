@@ -115,7 +115,7 @@ export function LoginStep({ onSuccess, onError, partnerId, chain }: LoginStepPro
         onConnect={async wallet => {
           try {
             setIsAuthenticating(true);
-            debug("@@setIsAuthenticating:true:6");
+            debug("setIsAuthenticating:true:6");
 
             const account = wallet.getAccount();
             if (!account) throw new Error("No account found");
@@ -129,7 +129,7 @@ export function LoginStep({ onSuccess, onError, partnerId, chain }: LoginStepPro
             await logout();
             setIsAuthenticated(false);
           } finally {
-            debug("@@setIsAuthenticating:false:6");
+            debug("setIsAuthenticating:false:6");
             setIsAuthenticating(false);
           }
         }}

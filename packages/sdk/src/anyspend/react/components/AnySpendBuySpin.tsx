@@ -5,10 +5,10 @@ import {
   Input,
   StyleRoot,
   TextLoop,
-  useChainSwitchWithAction,
   useHasMounted,
   useModalStore,
   useTokenBalance,
+  useUnifiedChainSwitchAndExecute,
 } from "@b3dotfun/sdk/global-account/react";
 import { baseMainnet } from "@b3dotfun/sdk/shared/constants/chains/supported";
 import invariant from "invariant";
@@ -17,7 +17,7 @@ import { motion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { createPublicClient, encodeFunctionData, erc20Abi, formatUnits, http } from "viem";
-import { useAccount, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { useAccount, useWaitForTransactionReceipt } from "wagmi";
 import { AnySpendCustom } from "./AnySpendCustom";
 import { EthIcon } from "./icons/EthIcon";
 import { SolIcon } from "./icons/SolIcon";
@@ -159,8 +159,7 @@ export function AnySpendBuySpin({
 
   // Wagmi hooks
   const { address } = useAccount();
-  const { writeContractAsync } = useWriteContract();
-  const { switchChainAndExecute } = useChainSwitchWithAction();
+  const { switchChainAndExecute, isSwitchingOrExecuting } = useUnifiedChainSwitchAndExecute();
 
   // State for direct buying flow (when user has B3 tokens)
   const [isBuying, setIsBuying] = useState(false);
@@ -348,41 +347,52 @@ export function AnySpendBuySpin({
     try {
       setIsBuying(true);
 
-      await switchChainAndExecute(chainId, async () => {
-        // Check current allowance for B3 token to entryModule
-        const allowance = await basePublicClient.readContract({
-          address: B3_TOKEN.address as `0x${string}`,
+      // Check current allowance for B3 token to entryModule
+      const allowance = await basePublicClient.readContract({
+        address: B3_TOKEN.address as `0x${string}`,
+        abi: erc20Abi,
+        functionName: "allowance",
+        args: [address, paymentConfig.entryModule as `0x${string}`],
+      });
+
+      // If allowance is insufficient, request approval first
+      if (allowance < totalCost) {
+        toast.info("Approving B3 spending...");
+
+        const approvalData = encodeFunctionData({
           abi: erc20Abi,
-          functionName: "allowance",
-          args: [address, paymentConfig.entryModule as `0x${string}`],
+          functionName: "approve",
+          args: [paymentConfig.entryModule as `0x${string}`, totalCost],
         });
 
-        // If allowance is insufficient, request approval
-        if (allowance < totalCost) {
-          toast.info("Approving B3 spending...");
-
-          await writeContractAsync({
-            address: B3_TOKEN.address as `0x${string}`,
-            abi: erc20Abi,
-            functionName: "approve",
-            args: [paymentConfig.entryModule as `0x${string}`, totalCost],
-          });
-
-          toast.info("Approval confirmed. Proceeding with spin purchase...");
-        }
-
-        // Execute the buy entries and spin
-        toast.info("Buying spins...");
-        const buyHash = await writeContractAsync({
-          address: spinwheelContractAddress as `0x${string}`,
-          abi: SPIN_WHEEL_ABI,
-          functionName: "buyEntriesAndSpin",
-          args: [address, BigInt(userSpinQuantity)],
+        await switchChainAndExecute(chainId, {
+          to: B3_TOKEN.address as `0x${string}`,
+          data: approvalData,
+          value: BigInt(0),
         });
 
+        toast.info("Approval confirmed. Proceeding with spin purchase...");
+      }
+
+      // Execute the buy entries and spin
+      toast.info("Buying spins...");
+
+      const buyData = encodeFunctionData({
+        abi: SPIN_WHEEL_ABI,
+        functionName: "buyEntriesAndSpin",
+        args: [address, BigInt(userSpinQuantity)],
+      });
+
+      const buyHash = await switchChainAndExecute(chainId, {
+        to: spinwheelContractAddress as `0x${string}`,
+        data: buyData,
+        value: BigInt(0),
+      });
+
+      if (buyHash) {
         setBuyingTxHash(buyHash);
         toast.success("Spin purchase transaction submitted!");
-      });
+      }
     } catch (error) {
       console.error("@@anyspend-buy-spin:error:", error);
       toast.error("Spin purchase failed. Please try again.");
@@ -637,10 +647,10 @@ export function AnySpendBuySpin({
 
                 <Button
                   onClick={confirmQuantity}
-                  disabled={!isQuantityValid || !displayQuantity || isBuying || isTxPending}
+                  disabled={!isQuantityValid || !displayQuantity || isBuying || isTxPending || isSwitchingOrExecuting}
                   className="bg-as-brand hover:bg-as-brand/90 text-as-primary mt-4 h-14 w-full rounded-xl text-lg font-medium"
                 >
-                  {isBuying ? "Buying..." : isTxPending ? "Confirming..." : "Continue"}
+                  {isBuying || isSwitchingOrExecuting ? "Buying..." : isTxPending ? "Confirming..." : "Continue"}
                 </Button>
               </div>
             ) : null}
