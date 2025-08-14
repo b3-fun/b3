@@ -1,5 +1,6 @@
 import { getStatusDisplay } from "@b3dotfun/sdk/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
+import { useSearchParams } from "@b3dotfun/sdk/shared/react";
 import { Check, X } from "lucide-react";
 import { memo } from "react";
 import { Step, StepProgress } from "./StepProgress";
@@ -7,6 +8,8 @@ import { Step, StepProgress } from "./StepProgress";
 export const OrderStatus = memo(function OrderStatus({ order }: { order: components["schemas"]["Order"] }) {
   const isComplete = order.status === "executed";
   const { text, status: displayStatus, description } = getStatusDisplay(order);
+  const searchParams = useSearchParams();
+  const cryptoPaymentMethod = searchParams.get("cryptoPaymentMethod");
 
   console.log("OrderStatus", displayStatus);
   console.log("OrderStatus", order);
@@ -25,7 +28,10 @@ export const OrderStatus = memo(function OrderStatus({ order }: { order: compone
   ];
 
   if (["waiting_stripe_payment", "scanning_deposit_transaction"].includes(order.status)) {
-    return <StepProgress steps={paymentSteps} currentStepIndex={0} />;
+    // hide step if order is scanning_deposit_transaction and crypto payment method is transfer_crypto
+    if (!(order.status === "scanning_deposit_transaction" && cryptoPaymentMethod === "transfer_crypto")) {
+      return <StepProgress steps={paymentSteps} currentStepIndex={0} />;
+    }
   }
 
   if (["relay", "sending_token_from_vault"].includes(order.status)) {
