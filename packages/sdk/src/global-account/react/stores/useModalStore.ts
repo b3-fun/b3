@@ -12,8 +12,6 @@ import { create } from "zustand";
 interface BaseModalProps {
   /** Whether to show a back button in the modal header */
   showBackButton?: boolean;
-  /** Custom className to apply to the modal container/wrapper */
-  containerClassName?: string;
 }
 
 /**

@@ -1180,7 +1180,7 @@ function AnySpendCustomInner({
               ? PanelView.CONFIRM_ORDER
               : activePanel
         }
-        className={cn("font-inter w-full")}
+        className={cn("anyspend-container font-inter w-full")}
         variants={{
           enter: { x: 300, opacity: 0 },
           center: { x: 0, opacity: 1 },
