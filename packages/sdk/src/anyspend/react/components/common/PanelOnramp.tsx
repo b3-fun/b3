@@ -34,7 +34,7 @@ export function PanelOnramp({
   onDestinationChainChange?: (chainId: number) => void;
 }) {
   // Get geo-based onramp options to access fee information
-  const { stripeWeb2Support } = useGeoOnrampOptions(true, srcAmountOnRamp);
+  const { stripeWeb2Support } = useGeoOnrampOptions(srcAmountOnRamp);
 
   // Helper function to get fees from API data
   const getFeeFromApi = (paymentMethod: FiatPaymentMethod): number | null => {
@@ -74,7 +74,7 @@ export function PanelOnramp({
 
   // Get geo data for onramp availability
   const { geoData } = useGetGeo();
-  const { coinbaseOnrampOptions } = useCoinbaseOnrampOptions(true, geoData?.country || "US");
+  const { coinbaseOnrampOptions } = useCoinbaseOnrampOptions(geoData?.country || "US");
 
   // Get recipient profile for displaying name
   const recipientProfile = useProfile({ address: _recipientAddress });

@@ -43,13 +43,13 @@ function TokenSwapPage() {
         onSuccess={(txHash) => {
           // Update user's portfolio
           toast.success("Swap completed successfully!");
-          
+
           // Optional: Track analytics
           analytics.track("swap_completed", {
             txHash,
             userAddress,
           });
-          
+
           // Refresh user balances
           queryClient.invalidateQueries(['user-balances', userAddress]);
         }}
@@ -80,7 +80,7 @@ function AdvancedSwapInterface() {
     amount: parseUnits(amount || "0", fromToken.decimals).toString(),
   }), [fromToken, toToken, amount]);
 
-  const { anyspendQuote, isLoadingAnyspendQuote } = useAnyspendQuote(true, quoteRequest);
+  const { anyspendQuote, isLoadingAnyspendQuote } = useAnyspendQuote(quoteRequest);
 
   return (
     <div className="advanced-swap">
@@ -92,12 +92,12 @@ function AdvancedSwapInterface() {
           onTokenChange={setFromToken}
           onAmountChange={setAmount}
         />
-        
+
         <SwapArrowButton onClick={() => {
           setFromToken(toToken);
           setToToken(fromToken);
         }} />
-        
+
         <TokenInput
           label="To"
           token={toToken}
@@ -105,7 +105,7 @@ function AdvancedSwapInterface() {
           onTokenChange={setToToken}
           readOnly
         />
-        
+
         {anyspendQuote && (
           <div className="quote-details">
             <div>Rate: 1 {fromToken.symbol} = {anyspendQuote.rate} {toToken.symbol}</div>
@@ -114,7 +114,7 @@ function AdvancedSwapInterface() {
             <div>Total: ${anyspendQuote.totalUsdCost}</div>
           </div>
         )}
-        
+
         <button
           onClick={() => setIsSwapOpen(true)}
           disabled={isLoadingAnyspendQuote || !anyspendQuote}
@@ -172,7 +172,7 @@ function NFTCard({ nft }: { nft: NFTListing }) {
         <div className="price">
           {nft.priceFormatted} {nft.currency.symbol}
         </div>
-        
+
         {isOwned ? (
           <div className="owned-badge">✅ Owned</div>
         ) : (
@@ -181,10 +181,10 @@ function NFTCard({ nft }: { nft: NFTListing }) {
             recipientAddress={userAddress}
             onSuccess={(txHash) => {
               setIsOwned(true);
-              
+
               // Update user's NFT collection
               queryClient.invalidateQueries(['user-nfts', userAddress]);
-              
+
               // Show success message with explorer link
               toast.success(
                 <div>
@@ -224,8 +224,8 @@ function NFTMarketplace() {
     <div className="marketplace">
       <div className="nft-grid">
         {nfts.map((nft) => (
-          <NFTCard 
-            key={nft.id} 
+          <NFTCard
+            key={nft.id}
             nft={nft}
             onSelect={(selected) => {
               if (selected) {
@@ -237,7 +237,7 @@ function NFTMarketplace() {
           />
         ))}
       </div>
-      
+
       {selectedNFTs.length > 0 && (
         <div className="bulk-purchase">
           <p>Selected: {selectedNFTs.length} NFTs</p>
@@ -267,9 +267,9 @@ function StakingPool({ pool }: { pool: StakingPool }) {
 
   const stakingCalldata = useMemo(() => {
     if (!stakeAmount) return "0x";
-    
+
     const amountWei = parseUnits(stakeAmount, pool.token.decimals);
-    
+
     return encodeFunctionData({
       abi: stakingPoolABI,
       functionName: "stake",
@@ -350,10 +350,10 @@ function StakingPool({ pool }: { pool: StakingPool }) {
           )}
           onSuccess={(txHash) => {
             toast.success("Staking successful!");
-            
+
             // Update user's staking positions
             queryClient.invalidateQueries(['staking-positions', userAddress]);
-            
+
             // Reset form
             setStakeAmount("");
           }}
@@ -401,7 +401,7 @@ function SpinWheel({ game }: { game: GameConfig }) {
           // Listen for spin result event
           listenForSpinResult(txHash).then((result) => {
             setSpinHistory([result, ...spinHistory]);
-            
+
             if (result.isWinner) {
               toast.success(`You won ${result.prize.name}!`);
             } else {
@@ -435,7 +435,7 @@ import { AnySpendTournament } from "@b3dotfun/sdk/anyspend/react";
 function TournamentCard({ tournament }: { tournament: Tournament }) {
   const [userAddress] = useWallet();
   const [isRegistered, setIsRegistered] = useState(false);
-  
+
   const timeUntilStart = tournament.startTime - Date.now();
   const isStartingSoon = timeUntilStart < 60 * 60 * 1000; // 1 hour
 
@@ -460,12 +460,12 @@ function TournamentCard({ tournament }: { tournament: Tournament }) {
           <h4>Prize Pool</h4>
           <p>{tournament.prizePool} {tournament.currency.symbol}</p>
         </div>
-        
+
         <div className="participants">
           <h4>Participants</h4>
           <p>{tournament.currentParticipants} / {tournament.maxParticipants}</p>
         </div>
-        
+
         <div className="entry-fee">
           <h4>Entry Fee</h4>
           <p>{tournament.entryFee} {tournament.currency.symbol}</p>
@@ -484,7 +484,7 @@ function TournamentCard({ tournament }: { tournament: Tournament }) {
           onSuccess={() => {
             setIsRegistered(true);
             toast.success("Successfully registered for tournament!");
-            
+
             // Update tournament data
             queryClient.invalidateQueries(['tournament', tournament.id]);
           }}
@@ -523,14 +523,14 @@ function FiatOnramp({ targetToken }: { targetToken: Token }) {
         onSuccess={(txHash) => {
           // Welcome new user
           toast.success("Welcome to crypto! Your purchase was successful.");
-          
+
           // Track onboarding completion
           analytics.track("onramp_completed", {
             userAddress,
             token: targetToken.symbol,
             txHash,
           });
-          
+
           // Redirect to main app
           router.push("/dashboard");
         }}
@@ -557,7 +557,7 @@ function OnboardingWizard() {
       </div>
 
       {step === 1 && (
-        <WalletConnectionStep 
+        <WalletConnectionStep
           onConnect={(address) => {
             setUserAddress(address);
             setStep(2);
@@ -647,10 +647,10 @@ function CryptoCheckout({ order }: { order: Order }) {
           onSuccess={(txHash) => {
             // Process order fulfillment
             processOrder(order.id, txHash);
-            
+
             // Send confirmation email
             sendOrderConfirmation(order, txHash);
-            
+
             // Redirect to success page
             router.push(`/order-confirmation/${order.id}`);
           }}
@@ -680,7 +680,7 @@ function PortfolioRebalancer() {
   return (
     <div className="portfolio-rebalancer">
       <h2>Portfolio Rebalancing</h2>
-      
+
       <div className="current-allocation">
         <h3>Current Allocation</h3>
         <AllocationChart balances={currentBalances} />
@@ -724,4 +724,4 @@ function PortfolioRebalancer() {
 
 - [Error Handling Guide →](./error-handling.md)
 - [Components Reference →](./components.md)
-- [Hooks Reference →](./hooks.md) 
+- [Hooks Reference →](./hooks.md)

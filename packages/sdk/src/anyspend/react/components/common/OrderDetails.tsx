@@ -54,7 +54,6 @@ import PaymentVendorUI from "./PaymentVendorUI";
 import { TransferCryptoDetails } from "./TransferCryptoDetails";
 
 interface OrderDetailsProps {
-  isMainnet: boolean;
   mode?: "modal" | "page";
   order: components["schemas"]["Order"];
   depositTxs: components["schemas"]["DepositTx"][] | null;
@@ -191,7 +190,6 @@ function roundTokenAmount(amount: string | undefined): string | undefined {
 }
 
 export const OrderDetails = memo(function OrderDetails({
-  isMainnet,
   mode = "modal",
   order,
   depositTxs,
@@ -963,7 +961,7 @@ export const OrderDetails = memo(function OrderDetails({
       {statusDisplay === "processing" && (
         <>
           {order.onrampMetadata ? (
-            <PaymentVendorUI isMainnet={isMainnet} order={order} dstTokenSymbol={dstToken.symbol} />
+            <PaymentVendorUI order={order} dstTokenSymbol={dstToken.symbol} />
           ) : effectiveCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET ? (
             <ConnectWalletPayment
               order={order}

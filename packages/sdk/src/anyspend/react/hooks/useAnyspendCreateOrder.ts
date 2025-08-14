@@ -7,7 +7,6 @@ import { useMutation } from "@tanstack/react-query";
 import { useMemo } from "react";
 
 export type CreateOrderParams = {
-  isMainnet: boolean;
   recipientAddress: string;
   orderType: components["schemas"]["Order"]["type"];
   srcChain: number;
@@ -42,21 +41,10 @@ export function useAnyspendCreateOrder({ onSuccess, onError }: UseAnyspendCreate
   };
   const { mutate: createOrder, isPending } = useMutation({
     mutationFn: async (params: CreateOrderParams) => {
-      const {
-        isMainnet,
-        recipientAddress,
-        orderType,
-        srcChain,
-        dstChain,
-        srcToken,
-        dstToken,
-        srcAmount,
-        creatorAddress,
-      } = params;
+      const { recipientAddress, orderType, srcChain, dstChain, srcToken, dstToken, srcAmount, creatorAddress } = params;
 
       try {
         return await anyspendService.createOrder({
-          isMainnet,
           recipientAddress: normalizeAddress(recipientAddress),
           type: orderType,
           srcChain,

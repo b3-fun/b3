@@ -12,7 +12,6 @@ The primary interface component for token-to-token exchanges and fiat onramps.
 import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
 
 <AnySpend
-  isMainnet={true}
   mode="modal"
   defaultActiveTab="crypto"
   destinationTokenAddress="0x..."
@@ -27,7 +26,6 @@ import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `isMainnet` | `boolean` | `true` | Use mainnet or testnet environment |
 | `mode` | `"modal" \| "page"` | `"modal"` | Display as modal overlay or full page |
 | `defaultActiveTab` | `"crypto" \| "fiat"` | `"crypto"` | Initial payment method tab |
 | `destinationTokenAddress` | `string` | - | Target token address for buy mode |
@@ -72,7 +70,6 @@ import { AnySpendNFTButton } from "@b3dotfun/sdk/anyspend/react";
 <AnySpendNFTButton
   nftContract={nftContractDetails}
   recipientAddress="0x..."
-  isMainnet={true}
   onSuccess={(txHash) => console.log("NFT minted:", txHash)}
 />
 ```
@@ -83,7 +80,6 @@ import { AnySpendNFTButton } from "@b3dotfun/sdk/anyspend/react";
 |------|------|----------|-------------|
 | `nftContract` | `NFTContract` | ✅ | NFT contract configuration |
 | `recipientAddress` | `string` | ✅ | Wallet to receive the NFT |
-| `isMainnet` | `boolean` | - | Environment selection |
 | `onSuccess` | `(txHash?: string) => void` | - | Success callback |
 
 #### NFTContract Interface
@@ -289,4 +285,4 @@ All components come with default styling that can be customized:
 
 - [Learn about Hooks →](./hooks.md)
 - [See Examples →](./examples.md)
-- [Error Handling →](./error-handling.md) 
+- [Error Handling →](./error-handling.md)

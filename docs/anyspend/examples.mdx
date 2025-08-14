@@ -28,13 +28,13 @@ function TokenSwapPage() {
         onSuccess={(txHash) => {
           // Update user's portfolio
           toast.success("Swap completed successfully!");
-          
+
           // Optional: Track analytics
           analytics.track("swap_completed", {
             txHash,
             userAddress,
           });
-          
+
           // Refresh user balances
           queryClient.invalidateQueries(['user-balances', userAddress]);
         }}
@@ -65,7 +65,7 @@ function AdvancedSwapInterface() {
     amount: parseUnits(amount || "0", fromToken.decimals).toString(),
   }), [fromToken, toToken, amount]);
 
-  const { anyspendQuote, isLoadingAnyspendQuote } = useAnyspendQuote(true, quoteRequest);
+  const { anyspendQuote, isLoadingAnyspendQuote } = useAnyspendQuote(quoteRequest);
 
   return (
     <div className="advanced-swap">
@@ -77,12 +77,12 @@ function AdvancedSwapInterface() {
           onTokenChange={setFromToken}
           onAmountChange={setAmount}
         />
-        
+
         <SwapArrowButton onClick={() => {
           setFromToken(toToken);
           setToToken(fromToken);
         }} />
-        
+
         <TokenInput
           label="To"
           token={toToken}
@@ -90,7 +90,7 @@ function AdvancedSwapInterface() {
           onTokenChange={setToToken}
           readOnly
         />
-        
+
         {anyspendQuote && (
           <div className="quote-details">
             <div>Rate: 1 {fromToken.symbol} = {anyspendQuote.rate} {toToken.symbol}</div>
@@ -99,7 +99,7 @@ function AdvancedSwapInterface() {
             <div>Total: ${anyspendQuote.totalUsdCost}</div>
           </div>
         )}
-        
+
         <button
           onClick={() => setIsSwapOpen(true)}
           disabled={isLoadingAnyspendQuote || !anyspendQuote}
@@ -157,7 +157,7 @@ function NFTCard({ nft }: { nft: NFTListing }) {
         <div className="price">
           {nft.priceFormatted} {nft.currency.symbol}
         </div>
-        
+
         {isOwned ? (
           <div className="owned-badge">✅ Owned</div>
         ) : (
@@ -166,10 +166,10 @@ function NFTCard({ nft }: { nft: NFTListing }) {
             recipientAddress={userAddress}
             onSuccess={(txHash) => {
               setIsOwned(true);
-              
+
               // Update user's NFT collection
               queryClient.invalidateQueries(['user-nfts', userAddress]);
-              
+
               // Show success message with explorer link
               toast.success(
                 <div>
@@ -209,8 +209,8 @@ function NFTMarketplace() {
     <div className="marketplace">
       <div className="nft-grid">
         {nfts.map((nft) => (
-          <NFTCard 
-            key={nft.id} 
+          <NFTCard
+            key={nft.id}
             nft={nft}
             onSelect={(selected) => {
               if (selected) {
@@ -222,7 +222,7 @@ function NFTMarketplace() {
           />
         ))}
       </div>
-      
+
       {selectedNFTs.length > 0 && (
         <div className="bulk-purchase">
           <p>Selected: {selectedNFTs.length} NFTs</p>
@@ -252,9 +252,9 @@ function StakingPool({ pool }: { pool: StakingPool }) {
 
   const stakingCalldata = useMemo(() => {
     if (!stakeAmount) return "0x";
-    
+
     const amountWei = parseUnits(stakeAmount, pool.token.decimals);
-    
+
     return encodeFunctionData({
       abi: stakingPoolABI,
       functionName: "stake",
@@ -335,10 +335,10 @@ function StakingPool({ pool }: { pool: StakingPool }) {
           )}
           onSuccess={(txHash) => {
             toast.success("Staking successful!");
-            
+
             // Update user's staking positions
             queryClient.invalidateQueries(['staking-positions', userAddress]);
-            
+
             // Reset form
             setStakeAmount("");
           }}
@@ -386,7 +386,7 @@ function SpinWheel({ game }: { game: GameConfig }) {
           // Handle spin result
           fetchSpinResult(txHash).then((result) => {
             setSpinHistory([result, ...spinHistory]);
-            
+
             if (result.isWinner) {
               toast.success(`You won ${result.prize}! 🎉`);
             } else {
@@ -442,10 +442,10 @@ function TournamentEntry({ tournament }: { tournament: Tournament }) {
           recipientAddress={userAddress}
           onSuccess={(txHash) => {
             setIsRegistered(true);
-            
+
             // Update tournament player count
             queryClient.invalidateQueries(['tournament', tournament.id]);
-            
+
             toast.success("Successfully registered for tournament!");
           }}
         />
@@ -493,7 +493,7 @@ function UserOnboarding() {
         <div className="step-content">
           <h2>Buy your first crypto</h2>
           <p>Purchase tokens with your credit card to get started.</p>
-          
+
           <AnySpend
             mode="page"
             defaultActiveTab="fiat"
@@ -512,7 +512,7 @@ function UserOnboarding() {
         <div className="step-content">
           <h2>You're all set! 🎉</h2>
           <p>Your crypto purchase is complete. Here's what you can do next:</p>
-          
+
           <div className="next-actions">
             <button onClick={() => router.push('/explore')}>
               Explore the Platform
@@ -536,7 +536,7 @@ function UserOnboarding() {
 function CryptoCheckout({ cart }: { cart: CartItem[] }) {
   const [paymentMethod, setPaymentMethod] = useState<'crypto' | 'fiat'>('crypto');
   const [userAddress] = useWallet();
-  
+
   const total = cart.reduce((sum, item) => sum + item.price, 0);
 
   return (
@@ -556,15 +556,15 @@ function CryptoCheckout({ cart }: { cart: CartItem[] }) {
 
       <div className="payment-section">
         <h2>Payment Method</h2>
-        
+
         <div className="payment-options">
-          <button 
+          <button
             className={paymentMethod === 'crypto' ? 'active' : ''}
             onClick={() => setPaymentMethod('crypto')}
           >
             Pay with Crypto
           </button>
-          <button 
+          <button
             className={paymentMethod === 'fiat' ? 'active' : ''}
             onClick={() => setPaymentMethod('fiat')}
           >
@@ -618,7 +618,7 @@ function PortfolioRebalancer() {
   return (
     <div className="portfolio-rebalancer">
       <h2>Portfolio Rebalancing</h2>
-      
+
       <div className="current-allocation">
         <h3>Current Allocation</h3>
         <PieChart data={portfolio?.currentAllocation} />
@@ -626,7 +626,7 @@ function PortfolioRebalancer() {
 
       <div className="target-allocation">
         <h3>Target Allocation</h3>
-        <AllocationSliders 
+        <AllocationSliders
           allocations={targetAllocations}
           onChange={setTargetAllocations}
         />
@@ -640,7 +640,7 @@ function PortfolioRebalancer() {
             <span>{action.amount} {action.fromToken}</span>
             <span>→</span>
             <span>{action.expectedOutput} {action.toToken}</span>
-            
+
             <AnySpend
               mode="modal"
               destinationTokenAddress={action.toTokenAddress}

@@ -2,14 +2,14 @@ import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
-export function useAnyspendTokenList(isMainnet: boolean, chainId: number, query: string) {
+export function useAnyspendTokenList(chainId: number, query: string) {
   const {
     data = [],
     isLoading,
     refetch,
   } = useQuery({
     queryKey: ["getAnyspendTokenList", chainId, query],
-    queryFn: () => anyspendService.getTokenList(isMainnet, chainId, query),
+    queryFn: () => anyspendService.getTokenList(chainId, query),
     enabled: true,
   });
 

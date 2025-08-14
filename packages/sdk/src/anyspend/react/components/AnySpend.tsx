@@ -30,7 +30,7 @@ import { motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { parseUnits } from "viem";
-import { b3Sepolia, base, mainnet, sepolia } from "viem/chains";
+import { base, mainnet } from "viem/chains";
 import { components } from "../../types/api";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
 import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPaymentMethod";
@@ -65,7 +65,6 @@ export enum PanelView {
 const ANYSPEND_RECIPIENTS_KEY = "anyspend_recipients";
 
 export function AnySpend(props: {
-  isMainnet?: boolean;
   mode?: "page" | "modal";
   defaultActiveTab?: "crypto" | "fiat";
   destinationTokenAddress?: string;
@@ -86,7 +85,6 @@ export function AnySpend(props: {
 function AnySpendInner({
   destinationTokenAddress,
   destinationTokenChainId,
-  isMainnet = true,
   mode = "modal",
   defaultActiveTab = "crypto",
   loadOrder,
@@ -95,7 +93,6 @@ function AnySpendInner({
 }: {
   destinationTokenAddress?: string;
   destinationTokenChainId?: number;
-  isMainnet?: boolean;
   mode?: "page" | "modal";
   defaultActiveTab?: "crypto" | "fiat";
   loadOrder?: string;
@@ -129,10 +126,7 @@ function AnySpendInner({
   const [activeTab, setActiveTab] = useState<"crypto" | "fiat">(defaultActiveTab);
 
   const [orderId, setOrderId] = useState<string | undefined>(loadOrder);
-  const { orderAndTransactions: oat, getOrderAndTransactionsError } = useAnyspendOrderAndTransactions(
-    isMainnet,
-    orderId,
-  );
+  const { orderAndTransactions: oat, getOrderAndTransactionsError } = useAnyspendOrderAndTransactions(orderId);
   !!getOrderAndTransactionsError && console.log("getOrderAndTransactionsError", getOrderAndTransactionsError);
 
   const [activePanel, setActivePanel] = useState<PanelView>(loadOrder ? PanelView.ORDER_DETAILS : PanelView.MAIN);
@@ -147,10 +141,9 @@ function AnySpendInner({
   // const recipientInputRef = useRef<HTMLInputElement>(null);
 
   // Get initial chain IDs from URL or defaults
-  const initialSrcChainId = parseInt(searchParams.get("fromChainId") || "0") || (isMainnet ? mainnet.id : sepolia.id);
+  const initialSrcChainId = parseInt(searchParams.get("fromChainId") || "0") || mainnet.id;
   const initialDstChainId =
-    parseInt(searchParams.get("toChainId") || "0") ||
-    (isBuyMode ? destinationTokenChainId : isMainnet ? base.id : b3Sepolia.id);
+    parseInt(searchParams.get("toChainId") || "0") || (isBuyMode ? destinationTokenChainId : base.id);
 
   // State for source chain/token selection
   const [selectedSrcChainId, setSelectedSrcChainId] = useState<number>(initialSrcChainId);
@@ -415,10 +408,7 @@ function AnySpendInner({
   }, [recipientAddressFromProps, globalAddress]);
 
   // Get geo-based onramp options for fiat payments
-  const { geoData, coinbaseAvailablePaymentMethods, stripeWeb2Support } = useGeoOnrampOptions(
-    isMainnet,
-    srcAmountOnRamp,
-  );
+  const { geoData, coinbaseAvailablePaymentMethods, stripeWeb2Support } = useGeoOnrampOptions(srcAmountOnRamp);
 
   // Helper function to map payment method to onramp vendor
   const getOnrampVendor = (paymentMethod: FiatPaymentMethod): "coinbase" | "stripe" | "stripe-web2" | undefined => {
@@ -442,7 +432,6 @@ function AnySpendInner({
     : parseUnits(dstAmount.replace(/,/g, ""), selectedDstToken.decimals).toString();
   const srcAmountOnrampInWei = parseUnits(srcAmountOnRamp.replace(/,/g, ""), USDC_BASE.decimals).toString();
   const { anyspendQuote, isLoadingAnyspendQuote, getAnyspendQuoteError } = useAnyspendQuote(
-    isMainnet,
     activeTab === "crypto"
       ? {
           srcChain: selectedSrcChainId,
@@ -534,7 +523,6 @@ function AnySpendInner({
   //     const srcAmountBigInt = parseUnits(srcAmount.replace(/,/g, ""), selectedSrcToken.decimals);
 
   //     createOrder({
-  //       isMainnet,
   //       recipientAddress,
   //       orderType: "swap",
   //       srcChain: selectedSrcChainId,
@@ -800,7 +788,6 @@ function AnySpendInner({
       const srcAmountBigInt = parseUnits(srcAmount.replace(/,/g, ""), selectedSrcToken.decimals);
 
       createOrder({
-        isMainnet,
         recipientAddress,
         orderType: "swap",
         srcChain: selectedSrcChainId,
@@ -866,7 +853,6 @@ function AnySpendInner({
       };
 
       createOnrampOrder({
-        isMainnet,
         recipientAddress,
         orderType: "swap",
         dstChain: getDstToken().chainId,
@@ -969,7 +955,6 @@ function AnySpendInner({
           <>
             <OrderStatus order={oat.data.order} />
             <OrderDetails
-              isMainnet={isMainnet}
               mode={mode}
               order={oat.data.order}
               depositTxs={oat.data.depositTxs}
@@ -1348,7 +1333,6 @@ function AnySpendInner({
       srcAmountOnRamp={srcAmountOnRamp}
       recipientName={recipientName || undefined}
       recipientAddress={recipientAddress}
-      isMainnet={isMainnet}
       isBuyMode={isBuyMode}
       destinationTokenChainId={destinationTokenChainId}
       destinationTokenAddress={destinationTokenAddress}
@@ -1413,7 +1397,6 @@ function AnySpendInner({
         setActivePanel(PanelView.MAIN); // Go back to main panel to show updated pricing
       }}
       srcAmountOnRamp={srcAmountOnRamp}
-      isMainnet={isMainnet}
     />
   );
 

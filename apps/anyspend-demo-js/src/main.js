@@ -31,7 +31,6 @@ async function handleFormSubmit(event) {
     dstTokenDecimals: 6, // USDC has 6 decimals
     srcAmount: srcAmountWei,
     recipientAddress: recipientAddress,
-    isMainnet: true, // Always use mainnet
   };
 
   // Validate source amount
@@ -64,7 +63,7 @@ async function handleFormSubmit(event) {
     console.log(`Converting ${srcAmountEth} ETH to ${srcAmountWei} wei`);
 
     // Get quote from anyspend service
-    const quoteResponse = await anyspendService.getQuote(data.isMainnet, quoteRequest);
+    const quoteResponse = await anyspendService.getQuote(quoteRequest);
 
     console.log("Quote response:", quoteResponse);
 
@@ -147,10 +146,7 @@ async function handleCreateOrder() {
     console.log("Creating order:", orderRequest);
 
     // Create order using anyspend service
-    const orderResponse = await anyspendService.createOrder({
-      isMainnet: true,
-      ...orderRequest,
-    });
+    const orderResponse = await anyspendService.createOrder(orderRequest);
 
     console.log("Order response:", orderResponse);
 

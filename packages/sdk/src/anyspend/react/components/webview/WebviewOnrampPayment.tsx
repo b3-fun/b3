@@ -162,7 +162,7 @@ function WebviewOnrampPaymentInner({
   const [createdOrder, setCreatedOrder] = useState<components["schemas"]["Order"] | null>(null);
   const orderCreationAttempted = useRef(false);
 
-  const { geoData, stripeWeb2Support, isLoading: isLoadingGeoOnramp } = useGeoOnrampOptions(true, srcAmountOnRamp);
+  const { geoData, stripeWeb2Support, isLoading: isLoadingGeoOnramp } = useGeoOnrampOptions(srcAmountOnRamp);
 
   const { createOrder, isCreatingOrder } = useAnyspendCreateOnrampOrder({
     onSuccess: data => {
@@ -175,7 +175,6 @@ function WebviewOnrampPaymentInner({
   });
 
   const { clientSecret, isLoadingStripeClientSecret } = useStripeClientSecret(
-    true,
     createdOrder?.stripePaymentIntentId || "",
   );
 
@@ -203,7 +202,6 @@ function WebviewOnrampPaymentInner({
           };
 
           createOrder({
-            isMainnet: true,
             recipientAddress,
             orderType: "swap",
             dstChain: getDstToken().chainId,

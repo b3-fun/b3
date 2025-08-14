@@ -31,14 +31,12 @@ const CONTRACT_URI_ABI = [
 ] as const;
 
 export function AnySpendNFT({
-  isMainnet = true,
   loadOrder,
   mode = "modal",
   recipientAddress,
   nftContract,
   onSuccess,
 }: {
-  isMainnet?: boolean;
   loadOrder?: string;
   mode?: "modal" | "page";
   recipientAddress?: string;
@@ -150,7 +148,6 @@ export function AnySpendNFT({
 
   return (
     <AnySpendCustom
-      isMainnet={isMainnet}
       loadOrder={loadOrder}
       mode={mode}
       recipientAddress={recipientAddress}

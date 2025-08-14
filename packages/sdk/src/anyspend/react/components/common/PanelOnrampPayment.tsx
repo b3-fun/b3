@@ -13,7 +13,6 @@ interface PanelOnrampPaymentProps {
   srcAmountOnRamp: string;
   recipientName?: string;
   recipientAddress?: string;
-  isMainnet: boolean;
   isBuyMode: boolean;
   destinationTokenChainId?: number;
   destinationTokenAddress?: string;
@@ -45,7 +44,6 @@ function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
   const {
     srcAmountOnRamp,
     recipientAddress,
-    isMainnet,
     isBuyMode,
     destinationTokenChainId,
     destinationTokenAddress,
@@ -69,7 +67,7 @@ function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
     coinbaseAvailablePaymentMethods,
     stripeWeb2Support,
     isLoading: isLoadingGeoOnramp,
-  } = useGeoOnrampOptions(isMainnet, srcAmountOnRamp);
+  } = useGeoOnrampOptions(srcAmountOnRamp);
 
   const isLoading = isLoadingGeoOnramp;
 
@@ -127,7 +125,6 @@ function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
       };
 
       createOrder({
-        isMainnet,
         recipientAddress,
         orderType,
         dstChain: getDstToken().chainId,

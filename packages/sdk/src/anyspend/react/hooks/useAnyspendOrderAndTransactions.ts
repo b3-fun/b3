@@ -27,7 +27,7 @@ function customDeepEqual(oldData: any, newData: any): boolean {
 }
 
 // Hook to fetch and auto-refresh order status and transaction details
-export function useAnyspendOrderAndTransactions(isMainnet: boolean, orderId: string | undefined) {
+export function useAnyspendOrderAndTransactions(orderId: string | undefined) {
   const selectFn = useCallback((data: any) => {
     if (!data) return undefined;
     return data;
@@ -35,7 +35,7 @@ export function useAnyspendOrderAndTransactions(isMainnet: boolean, orderId: str
 
   const { data, isLoading, refetch, error } = useQuery<GetOrderAndTxsResponse>({
     queryKey: ["getAnyspendOrderAndTransactions", orderId],
-    queryFn: () => anyspendService.getOrderAndTransactions(isMainnet, orderId!),
+    queryFn: () => anyspendService.getOrderAndTransactions(orderId!),
     enabled: !!orderId,
     refetchInterval: 3000,
     staleTime: 1000,

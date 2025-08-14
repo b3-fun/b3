@@ -29,7 +29,7 @@ The SDK is organized into focused modules designed for maximum flexibility and e
 Each module contains organized, purpose-built components:
 
 - **`react/`** - React components and hooks for easy integration
-- **`services/`** - Headless TypeScript services for custom implementations  
+- **`services/`** - Headless TypeScript services for custom implementations
 - **`types/`** - Comprehensive TypeScript definitions
 - **`utils/`** - Utility functions and helpers
 - **`constants/`** - Configuration and constants
@@ -49,7 +49,7 @@ Each module contains organized, purpose-built components:
 npm install @b3dotfun/sdk
 ```
 
-```bash yarn  
+```bash yarn
 yarn add @b3dotfun/sdk
 ```
 
@@ -74,12 +74,7 @@ import "@b3dotfun/sdk/index.css";
 import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
 
 function PaymentPage() {
-  return (
-    <AnySpend 
-      isMainnet={true} 
-      mode="page" 
-    />
-  );
+  return <AnySpend mode="page" />;
 }
 ```
 
@@ -112,16 +107,16 @@ function NFTMinting() {
   const nftContract = {
     address: "0x9c275ff1634519E9B5449ec79cd939B5F900564d",
     chainId: 8333,
-    name: "Example NFT Collection", 
+    name: "Example NFT Collection",
     imageUrl: "https://example.com/nft.jpg",
     price: "1000000000000000000", // 1 ETH in wei
     currency: { symbol: "ETH", decimals: 18 }
   };
 
   return (
-    <AnySpendNFTButton 
-      nftContract={nftContract} 
-      recipientAddress="0x..." 
+    <AnySpendNFTButton
+      nftContract={nftContract}
+      recipientAddress="0x..."
     />
   );
 }
@@ -179,7 +174,7 @@ For developers who need maximum control, all functionality is available through 
 import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
 
 // Get quote for cross-chain swap
-const quote = await anyspendService.getQuote(true, {
+const quote = await anyspendService.getQuote({
   srcChain: 1,
   dstChain: 8333,
   srcTokenAddress: "0x...",
@@ -191,7 +186,6 @@ const quote = await anyspendService.getQuote(true, {
 
 // Create and execute order
 const order = await anyspendService.createOrder({
-  isMainnet: true,
   // ... order parameters
 });
 ```
@@ -203,7 +197,7 @@ import { authenticate } from "@b3dotfun/sdk/global-account/app";
 
 // Authenticate user
 const authResult = await authenticate(
-  "access-token", 
+  "access-token",
   "identity-token"
 );
 

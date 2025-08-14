@@ -55,7 +55,7 @@ AnySpend enables cross-chain swaps, NFT minting, and other blockchain operations
 import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
 
 function CrossChainSwapPage() {
-  return <AnySpend isMainnet={true} mode="page" />;
+  return <AnySpend mode="page" />;
 }
 ```
 
@@ -105,14 +105,12 @@ import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
 
 // Get available tokens for a chain
 const tokens = await anyspendService.getTokenList(
-  true, // isMainnet
   1, // chainId (Ethereum)
   "usdc", // search query
 );
 
 // Get specific token details
 const token = await anyspendService.getToken(
-  true, // isMainnet
   1, // chainId
   "0xA0b86a33E6c51c7C36c654d6C9e7b8F5d4a8b5c5", // token address
 );
@@ -135,11 +133,10 @@ const quoteRequest: GetQuoteRequest = {
   type: "swap",
 };
 
-const quote = await anyspendService.getQuote(true, quoteRequest);
+const quote = await anyspendService.getQuote(quoteRequest);
 
 // Create order
 const order = await anyspendService.createOrder({
-  isMainnet: true,
   recipientAddress: "0x...",
   type: "swap",
   srcChain: 1,
@@ -159,13 +156,11 @@ import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
 
 // Get order details and transactions
 const orderDetails = await anyspendService.getOrderAndTransactions(
-  true, // isMainnet
   "order-id",
 );
 
 // Get order history for an address
 const history = await anyspendService.getOrderHistory(
-  true, // isMainnet
   "0x...", // creator address
   50, // limit
   0, // offset
@@ -407,7 +402,7 @@ All services include proper error handling and type-safe responses:
 
 ```typescript
 try {
-  const result = await anyspendService.getQuote(true, quoteRequest);
+  const result = await anyspendService.getQuote(quoteRequest);
   // Handle success
 } catch (error) {
   // Handle error

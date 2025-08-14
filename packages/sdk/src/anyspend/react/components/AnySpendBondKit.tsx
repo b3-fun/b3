@@ -357,7 +357,6 @@ export function AnySpendBondKit({
 
   return (
     <AnySpendCustom
-      isMainnet={true}
       mode={mode}
       recipientAddress={recipientAddress}
       orderType={"custom"}

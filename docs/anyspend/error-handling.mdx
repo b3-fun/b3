@@ -382,7 +382,7 @@ function PaymentComponent() {
 import { useAnyspendOrderAndTransactions } from "@b3dotfun/sdk/anyspend";
 
 function OrderStatusMonitor({ orderId }: { orderId: string }) {
-  const { orderAndTransactions, getOrderAndTransactionsError } = useAnyspendOrderAndTransactions(true, orderId);
+  const { orderAndTransactions, getOrderAndTransactionsError } = useAnyspendOrderAndTransactions(orderId);
 
   if (getOrderAndTransactionsError) {
     return (

@@ -16,14 +16,13 @@ const {
   isLoadingAnyspendQuote,
   getAnyspendQuoteError,
   refetchAnyspendQuote
-} = useAnyspendQuote(isMainnet, quoteRequest);
+} = useAnyspendQuote(quoteRequest);
 ```
 
 #### Parameters
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `isMainnet` | `boolean` | Use mainnet or testnet environment |
 | `quoteRequest` | `QuoteRequest` | Quote configuration object |
 
 #### QuoteRequest Interface
@@ -63,8 +62,8 @@ function SwapQuote() {
     amount: "1000000", // 1 USDC (6 decimals)
   };
 
-  const { anyspendQuote, isLoadingAnyspendQuote, getAnyspendQuoteError } = 
-    useAnyspendQuote(true, quoteRequest);
+  const { anyspendQuote, isLoadingAnyspendQuote, getAnyspendQuoteError } =
+    useAnyspendQuote(quoteRequest);
 
   if (isLoadingAnyspendQuote) return <div>Getting best price...</div>;
   if (getAnyspendQuoteError) return <div>Failed to get quote</div>;
@@ -138,7 +137,6 @@ function PaymentForm() {
 
   const handlePayment = () => {
     createOrder({
-      isMainnet: true,
       recipientAddress: userWalletAddress,
       orderType: "swap",
       srcChain: 1,
@@ -164,8 +162,8 @@ function PaymentForm() {
   };
 
   return (
-    <button 
-      onClick={handlePayment} 
+    <button
+      onClick={handlePayment}
       disabled={isCreatingOrder}
     >
       {isCreatingOrder ? "Processing..." : "Pay with Crypto"}
@@ -187,14 +185,13 @@ const {
   orderAndTransactions,
   isLoadingOrderAndTransactions,
   getOrderAndTransactionsError
-} = useAnyspendOrderAndTransactions(isMainnet, orderId);
+} = useAnyspendOrderAndTransactions(orderId);
 ```
 
 #### Parameters
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `isMainnet` | `boolean` | Environment selection |
 | `orderId` | `string` | Order ID to track |
 
 #### Return Values
@@ -223,8 +220,8 @@ interface OrderWithTransactions {
 
 ```tsx
 function OrderTracker({ orderId }: { orderId: string }) {
-  const { orderAndTransactions, isLoadingOrderAndTransactions } = 
-    useAnyspendOrderAndTransactions(true, orderId);
+  const { orderAndTransactions, isLoadingOrderAndTransactions } =
+    useAnyspendOrderAndTransactions(orderId);
 
   if (isLoadingOrderAndTransactions) {
     return <div>Loading order status...</div>;
@@ -255,11 +252,11 @@ function OrderTracker({ orderId }: { orderId: string }) {
     <div className="order-status">
       <h2>Order #{orderId.slice(0, 8)}</h2>
       <p>{getStatusMessage(order.status)}</p>
-      
+
       {depositTxs.length > 0 && (
         <div>
           <h3>Payment Transaction</h3>
-          <a 
+          <a
             href={`https://etherscan.io/tx/${depositTxs[0].txHash}`}
             target="_blank"
             rel="noopener noreferrer"
@@ -272,7 +269,7 @@ function OrderTracker({ orderId }: { orderId: string }) {
       {executeTx && (
         <div>
           <h3>Execution Transaction</h3>
-          <a 
+          <a
             href={`https://explorer.b3.fun/tx/${executeTx.txHash}`}
             target="_blank"
             rel="noopener noreferrer"
@@ -305,14 +302,13 @@ const {
   orderHistory,
   isLoadingOrderHistory,
   getOrderHistoryError
-} = useAnyspendOrderHistory(isMainnet, creatorAddress, limit, offset);
+} = useAnyspendOrderHistory(creatorAddress, limit, offset);
 ```
 
 #### Parameters
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `isMainnet` | `boolean` | Environment selection |
 | `creatorAddress` | `string` | User wallet address |
 | `limit` | `number` | Number of orders to fetch (max 100) |
 | `offset` | `number` | Pagination offset |
@@ -325,7 +321,6 @@ function OrderHistory({ userAddress }: { userAddress: string }) {
   const pageSize = 10;
 
   const { orderHistory, isLoadingOrderHistory } = useAnyspendOrderHistory(
-    true,
     userAddress,
     pageSize,
     page * pageSize
@@ -346,14 +341,14 @@ function OrderHistory({ userAddress }: { userAddress: string }) {
           <p>Date: {new Date(order.createdAt).toLocaleDateString()}</p>
         </div>
       ))}
-      
-      <button 
-        onClick={() => setPage(page - 1)} 
+
+      <button
+        onClick={() => setPage(page - 1)}
         disabled={page === 0}
       >
         Previous
       </button>
-      <button 
+      <button
         onClick={() => setPage(page + 1)}
         disabled={!orderHistory?.data || orderHistory.data.length < pageSize}
       >
@@ -371,7 +366,7 @@ function OrderHistory({ userAddress }: { userAddress: string }) {
 Get available tokens for a specific chain.
 
 ```tsx
-const { tokens, isLoadingTokens } = useAnyspendTokens(true, 1, "USDC");
+const { tokens, isLoadingTokens } = useAnyspendTokens(1, "USDC");
 ```
 
 ### `useCoinbaseOnrampOptions`
@@ -400,7 +395,7 @@ function PaymentComponent() {
     onError: (error) => {
       // Log error for debugging
       console.error("Payment failed:", error);
-      
+
       // Show user-friendly message
       switch (error.message) {
         case "INSUFFICIENT_BALANCE":
@@ -423,7 +418,7 @@ function PaymentComponent() {
 
 ```tsx
 function SwapInterface() {
-  const { anyspendQuote, isLoadingAnyspendQuote } = useAnyspendQuote(true, quoteRequest);
+  const { anyspendQuote, isLoadingAnyspendQuote } = useAnyspendQuote(quoteRequest);
   const { createOrder, isCreatingOrder } = useAnyspendCreateOrder();
 
   const isLoading = isLoadingAnyspendQuote || isCreatingOrder;
@@ -441,7 +436,7 @@ function SwapInterface() {
 
 ```tsx
 function OrderStatus({ orderId }: { orderId: string }) {
-  const { orderAndTransactions } = useAnyspendOrderAndTransactions(true, orderId);
+  const { orderAndTransactions } = useAnyspendOrderAndTransactions(orderId);
 
   // Auto-refresh every 5 seconds for pending orders
   useEffect(() => {
@@ -449,7 +444,7 @@ function OrderStatus({ orderId }: { orderId: string }) {
       const interval = setInterval(() => {
         // Refetch is handled automatically by the hook
       }, 5000);
-      
+
       return () => clearInterval(interval);
     }
   }, [orderAndTransactions?.data.order.status]);
@@ -462,4 +457,4 @@ function OrderStatus({ orderId }: { orderId: string }) {
 
 - [See Examples →](./examples.md)
 - [Error Handling →](./error-handling.md)
-- [Components Reference →](./components.md) 
+- [Components Reference →](./components.md)

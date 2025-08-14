@@ -15,17 +15,15 @@ import PaymentMethodIcons from "./PaymentMethodIcons";
 const stripePromise = loadStripe(STRIPE_CONFIG.publishableKey);
 
 interface PaymentStripeWeb2Props {
-  isMainnet: boolean;
   order: components["schemas"]["Order"];
   onPaymentSuccess?: (paymentIntent: any) => void;
 }
 
-export default function PaymentStripeWeb2({ isMainnet, order, onPaymentSuccess }: PaymentStripeWeb2Props) {
+export default function PaymentStripeWeb2({ order, onPaymentSuccess }: PaymentStripeWeb2Props) {
   const { theme } = useB3();
   const fingerprintConfig = getFingerprintConfig();
 
   const { clientSecret, isLoadingStripeClientSecret, stripeClientSecretError } = useStripeClientSecret(
-    isMainnet,
     order.stripePaymentIntentId!,
   );
 

@@ -43,7 +43,6 @@ export function useAnyspendCreateOnrampOrder({ onSuccess, onError }: UseAnyspend
   const { mutate: createOrder, isPending } = useMutation({
     mutationFn: async (params: CreateOnrampOrderParams) => {
       const {
-        isMainnet,
         recipientAddress,
         orderType,
         dstChain,
@@ -71,7 +70,6 @@ export function useAnyspendCreateOnrampOrder({ onSuccess, onError }: UseAnyspend
         const srcAmountOnRampInWei = parseUnits(srcFiatAmount, USDC_BASE.decimals);
 
         return await anyspendService.createOrder({
-          isMainnet,
           recipientAddress: normalizeAddress(recipientAddress),
           type: orderType,
           srcChain,

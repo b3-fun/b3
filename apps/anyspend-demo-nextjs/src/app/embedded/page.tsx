@@ -37,7 +37,6 @@ export default function NFTDemoPage() {
         <AnySpendNFT
           nftContract={nftContract}
           mode="modal"
-          isMainnet={true}
           onSuccess={txHash => {
             console.log("Success!", txHash);
           }}

@@ -7,7 +7,6 @@ import { AnySpendCustom } from "./AnySpendCustom";
 
 type AnySpendTournamentProps =
   | {
-      isMainnet?: boolean;
       mode?: "modal" | "page";
       action: "join";
       joinFor: string;
@@ -20,7 +19,6 @@ type AnySpendTournamentProps =
       onSuccess?: () => void;
     }
   | {
-      isMainnet?: boolean;
       mode?: "modal" | "page";
       action: "fund";
       loadOrder?: string;
@@ -34,7 +32,6 @@ type AnySpendTournamentProps =
 
 export function AnySpendTournament(props: AnySpendTournamentProps) {
   const {
-    isMainnet = true,
     mode = "modal",
     action,
     loadOrder,
@@ -91,7 +88,6 @@ export function AnySpendTournament(props: AnySpendTournamentProps) {
 
   return (
     <AnySpendCustom
-      isMainnet={isMainnet}
       loadOrder={loadOrder}
       mode={mode}
       recipientAddress={action === "join" ? props.joinFor : undefined}

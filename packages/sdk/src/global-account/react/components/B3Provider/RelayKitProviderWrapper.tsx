@@ -1,13 +1,11 @@
 import { RelayKitProvider } from "@reservoir0x/relay-kit-ui";
-import { fetchChainConfigs, MAINNET_RELAY_API, RelayChain, TESTNET_RELAY_API } from "@reservoir0x/relay-sdk";
+import { fetchChainConfigs, MAINNET_RELAY_API, RelayChain } from "@reservoir0x/relay-sdk";
 import { useEffect, useState } from "react";
 
 export function RelayKitProviderWrapper({
-  isMainnet,
   children,
   simDuneApiKey,
 }: {
-  isMainnet: boolean;
   children: React.ReactNode;
   simDuneApiKey?: string;
 }) {
@@ -15,16 +13,16 @@ export function RelayKitProviderWrapper({
 
   useEffect(() => {
     const fetchChains = async () => {
-      const chains = await fetchChainConfigs(isMainnet ? MAINNET_RELAY_API : TESTNET_RELAY_API);
+      const chains = await fetchChainConfigs(MAINNET_RELAY_API);
       setRelayChains(chains);
     };
     fetchChains();
-  }, [isMainnet]);
+  }, []);
 
   return (
     <RelayKitProvider
       options={{
-        baseApiUrl: isMainnet ? MAINNET_RELAY_API : TESTNET_RELAY_API,
+        baseApiUrl: MAINNET_RELAY_API,
         source: "anyspend",
         duneConfig: {
           apiKey: simDuneApiKey,
