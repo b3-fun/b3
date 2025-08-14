@@ -57,7 +57,7 @@ export function CryptoPaymentMethod({
   ];
 
   return (
-    <div className="mx-auto h-fit w-[460px] max-w-full">
+    <div className="crypto-payment-method mx-auto h-fit w-[460px] max-w-full">
       <div className={cn("relative flex flex-col gap-10")}>
         {/* Header */}
         <button
@@ -73,13 +73,13 @@ export function CryptoPaymentMethod({
         </div>
 
         {/* Payment Methods */}
-        <div className="flex flex-col gap-3">
+        <div className="crypto-payment-methods flex flex-col gap-3">
           {/* Connect Wallet Option */}
           {!activeWallet ? (
             // Not connected - show single connect button
             <button
               onClick={() => setShowWalletModal(true)}
-              className="bg-as-surface-primary border-as-border-secondary hover:border-as-secondary/80 group flex w-full items-center justify-between gap-4 rounded-xl border px-4 py-3.5 transition-all duration-200 hover:shadow-md"
+              className="crypto-payment-method-connect-wallet bg-as-surface-primary border-as-border-secondary hover:border-as-secondary/80 group flex w-full items-center justify-between gap-4 rounded-xl border px-4 py-3.5 transition-all duration-200 hover:shadow-md"
             >
               <div className="flex items-center gap-3">
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
@@ -94,7 +94,7 @@ export function CryptoPaymentMethod({
             </button>
           ) : (
             // Connected - show wallet info
-            <div className="bg-as-surface-primary border-as-border-secondary rounded-xl border">
+            <div className="crypto-payment-method-connect-wallet bg-as-surface-primary border-as-border-secondary rounded-xl border">
               <div className="flex items-center justify-between p-4">
                 <div className="flex items-center gap-3">
                   {globalWallet?.meta?.icon ? (
@@ -146,7 +146,7 @@ export function CryptoPaymentMethod({
               onSelectPaymentMethod(CryptoPaymentMethodType.TRANSFER_CRYPTO);
             }}
             disabled={isCreatingOrder}
-            className="bg-as-surface-primary border-as-border-secondary hover:border-as-secondary/80 group flex w-full items-center justify-between gap-4 rounded-xl border px-4 py-3.5 transition-all duration-200 hover:shadow-md"
+            className="crypto-payment-method-transfer bg-as-surface-primary border-as-border-secondary hover:border-as-secondary/80 group flex w-full items-center justify-between gap-4 rounded-xl border px-4 py-3.5 transition-all duration-200 hover:shadow-md"
           >
             <div className="flex flex-col items-start text-left">
               <h4 className="text-as-primary font-semibold">Transfer crypto</h4>
