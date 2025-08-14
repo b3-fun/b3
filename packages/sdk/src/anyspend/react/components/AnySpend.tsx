@@ -25,7 +25,7 @@ import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { formatDisplayNumber, formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import invariant from "invariant";
-import { ArrowDown, ChevronRight, ChevronRightCircle, CircleAlert, HistoryIcon } from "lucide-react";
+import { ArrowDown, ChevronRight, CircleAlert, HistoryIcon } from "lucide-react";
 import { motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -1322,15 +1322,12 @@ function AnySpendInner({
           disabled={btnInfo.disable}
           onClick={onMainButtonClick}
           className={cn(
-            "relative w-full",
+            "as-main-button relative w-full",
             btnInfo.error ? "!bg-as-red" : btnInfo.disable ? "!bg-as-on-surface-2" : "!bg-as-brand",
           )}
           textClassName={cn(btnInfo.error ? "text-white" : btnInfo.disable ? "text-as-secondary" : "text-white")}
         >
           {btnInfo.text}
-          {!btnInfo.disable && !btnInfo.error && (
-            <ChevronRightCircle className="absolute right-0 top-1/2 h-6 w-6 -translate-y-1/2 opacity-70" />
-          )}
         </ShinyButton>
 
         {!hideTransactionHistoryButton && (globalAddress || recipientAddress) ? (
@@ -1425,7 +1422,7 @@ function AnySpendInner({
     <StyleRoot>
       <div
         className={cn(
-          "font-inter mx-auto w-full max-w-[460px]",
+          "anyspend-container font-inter mx-auto w-full max-w-[460px]",
           mode === "page" &&
             "bg-as-surface-primary border-as-border-secondary overflow-hidden rounded-2xl border shadow-xl",
         )}

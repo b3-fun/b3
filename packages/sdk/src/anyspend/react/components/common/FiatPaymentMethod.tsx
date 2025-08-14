@@ -83,7 +83,7 @@ export function FiatPaymentMethodComponent({
   // Show loading state while checking geo availability
   if (isLoadingGeoOnramp) {
     return (
-      <div className="mx-auto w-[460px] max-w-full">
+      <div className="fiat-payment-method mx-auto w-[460px] max-w-full">
         <div className="flex flex-col gap-6">
           <div className="flex items-center gap-4">
             <button
@@ -106,7 +106,7 @@ export function FiatPaymentMethodComponent({
   }
 
   return (
-    <div className="mx-auto w-[460px] max-w-full">
+    <div className="fiat-payment-method mx-auto w-[460px] max-w-full">
       <div className="flex flex-col gap-6">
         {/* Header */}
         <div className="flex items-center gap-4">
@@ -124,7 +124,7 @@ export function FiatPaymentMethodComponent({
         {/* Payment Methods */}
         <div className="flex flex-col gap-3">
           {availablePaymentMethods.length === 0 ? (
-            <div className="bg-as-surface-secondary border-as-border-secondary rounded-2xl border p-6 text-center">
+            <div className="fiat-payment-method-no-methods bg-as-surface-secondary border-as-border-secondary rounded-2xl border p-6 text-center">
               <p className="text-as-secondary text-sm">
                 No payment methods available in your region for the selected amount.
               </p>
@@ -138,7 +138,7 @@ export function FiatPaymentMethodComponent({
                   onSelectPaymentMethod(method.id);
                 }}
                 className={cn(
-                  "bg-as-surface-secondary border-as-border-secondary flex w-full items-center gap-4 rounded-2xl border p-4 transition-all duration-200",
+                  "fiat-payment-method-item bg-as-surface-secondary border-as-border-secondary flex w-full items-center gap-4 rounded-2xl border p-4 transition-all duration-200",
                   selectedPaymentMethod === method.id
                     ? "border-as-brand bg-as-brand/10"
                     : "hover:border-as-brand/50 hover:bg-as-brand/5",

@@ -25,6 +25,8 @@ module.exports = [
     rules: {
       ...tsPlugin.configs.recommended.rules,
       ...tailwindPlugin.configs.recommended.rules,
+      // custom classnames for overrides sdk component styling
+      "tailwindcss/no-custom-classname": "off",
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "warn",
       "tailwindcss/classnames-order": "off",

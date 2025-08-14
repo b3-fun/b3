@@ -18,7 +18,7 @@ import {
 import { BankIcon } from "@b3dotfun/sdk/global-account/react/components/icons/BankIcon";
 import { SignOutIcon } from "@b3dotfun/sdk/global-account/react/components/icons/SignOutIcon";
 import { SwapIcon } from "@b3dotfun/sdk/global-account/react/components/icons/SwapIcon";
-import { cn, formatUsername } from "@b3dotfun/sdk/shared/utils";
+import { formatUsername } from "@b3dotfun/sdk/shared/utils";
 import { formatNumber } from "@b3dotfun/sdk/shared/utils/formatNumber";
 import { Loader2, Pencil, Triangle } from "lucide-react";
 import { useState } from "react";
@@ -49,7 +49,6 @@ export function ManageAccount({
   onDeposit: _onDeposit,
   chain,
   partnerId,
-  containerClassName,
 }: ManageAccountProps) {
   const [activeTab, setActiveTab] = useState("balance");
   const [revokingSignerId, setRevokingSignerId] = useState<string | null>(null);
@@ -127,7 +126,7 @@ export function ManageAccount({
             </div>
           </div>
         </div>
-        <div className="bg-b3-line flex h-11 items-center gap-2 rounded-full px-4">
+        <div className="manage-account-address bg-b3-line flex h-11 items-center gap-2 rounded-full px-4">
           <span className="text-b3-grey font-neue-montreal-semibold">{centerTruncate(account?.address || "")}</span>
           <CopyToClipboard text={account?.address || ""} />
         </div>
@@ -135,7 +134,7 @@ export function ManageAccount({
         {/* Quick Actions */}
         <div className="grid grid-cols-2 gap-3">
           <Button
-            className="bg-b3-primary-wash hover:bg-b3-primary-wash/70 h-[84px] w-full flex-col items-start gap-2 rounded-2xl"
+            className="manage-account-deposit bg-b3-primary-wash hover:bg-b3-primary-wash/70 h-[84px] w-full flex-col items-start gap-2 rounded-2xl"
             onClick={() => {
               setB3ModalOpen(true);
               setB3ModalContentType({
@@ -149,7 +148,7 @@ export function ManageAccount({
             <div className="text-b3-grey font-neue-montreal-semibold">Deposit</div>
           </Button>
           <Button
-            className="bg-b3-primary-wash hover:bg-b3-primary-wash/70 flex h-[84px] w-full flex-col items-start gap-2 rounded-2xl"
+            className="manage-account-swap bg-b3-primary-wash hover:bg-b3-primary-wash/70 flex h-[84px] w-full flex-col items-start gap-2 rounded-2xl"
             onClick={() => {
               setB3ModalOpen(true);
               setB3ModalContentType({
@@ -252,7 +251,7 @@ export function ManageAccount({
             <h3 className="text-b3-grey font-neue-montreal-semibold">Connected {eoaInfo?.data?.name || "Wallet"}</h3>
 
             {/* EOA Address */}
-            <div className="bg-b3-line flex h-11 items-center gap-2 rounded-full px-4">
+            <div className="manage-account-address bg-b3-line flex h-11 items-center gap-2 rounded-full px-4">
               <span className="text-b3-grey font-neue-montreal-semibold">{centerTruncate(eoaAddress)}</span>
               <CopyToClipboard text={eoaAddress} />
             </div>
@@ -410,7 +409,7 @@ export function ManageAccount({
   );
 
   return (
-    <div className={cn("bg-b3-background flex flex-col rounded-xl", containerClassName)}>
+    <div className="b3-manage-account bg-b3-background flex flex-col rounded-xl">
       <div className="flex-1">
         <TabsPrimitive defaultValue={activeTab} onValueChange={setActiveTab}>
           <TabsListPrimitive className="font-neue-montreal-semibold text-b3-grey flex h-8 w-full items-start justify-start gap-8 border-0 text-xl md:p-4">
