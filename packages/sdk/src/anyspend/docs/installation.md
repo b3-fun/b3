@@ -49,10 +49,7 @@ export default App;
 
 ### 2. Environment Configuration
 
-AnySpend automatically configures API endpoints based on the `isMainnet` parameter:
-
 - **Mainnet**: `https://mainnet.anyspend.com`
-- **Testnet**: `http://testnet.anyspend.com`
 
 ### 3. TypeScript Configuration (Optional but Recommended)
 
@@ -97,7 +94,6 @@ function TestComponent() {
     <AnySpendNFTButton
       nftContract={testNFT}
       recipientAddress="0x742d35Cc6634C0532925a3b8D07d77d9F05C4d57"
-      isMainnet={false} // Use testnet for testing
       onSuccess={(txHash) => {
         console.log("Test successful!", txHash);
       }}
@@ -110,4 +106,4 @@ function TestComponent() {
 
 - [Explore Components →](./components.md)
 - [Learn about Hooks →](./hooks.md)
-- [See Examples →](./examples.md) 
+- [See Examples →](./examples.md)

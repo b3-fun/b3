@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
 export function useAnyspendOrderHistory(
-  isMainnet: boolean,
   creatorAddress: string | undefined,
   limit = 100,
   offset = 0,
@@ -16,7 +15,7 @@ export function useAnyspendOrderHistory(
   } = useQuery({
     queryKey: ["getOrderHistory", creatorAddress, limit, offset],
     queryFn: async () => {
-      const response = await anyspendService.getOrderHistory(isMainnet, creatorAddress, limit, offset);
+      const response = await anyspendService.getOrderHistory(creatorAddress, limit, offset);
       return response.data;
     },
   });

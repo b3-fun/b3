@@ -5,7 +5,7 @@ import { useCoinbaseOnrampOptions } from "./useCoinbaseOnrampOptions";
 import { useGetGeo } from "./useGetGeo";
 import { useStripeSupport } from "./useStripeSupport";
 
-export function useGeoOnrampOptions(isMainnet: boolean, srcFiatAmount: string) {
+export function useGeoOnrampOptions(srcFiatAmount: string) {
   // Get fingerprint data
   const { data: fpData, isLoading: isLoadingVisitorData } = useVisitorData(
     { extendedResult: true },
@@ -19,9 +19,8 @@ export function useGeoOnrampOptions(isMainnet: boolean, srcFiatAmount: string) {
   // Use existing hooks
   const { geoData, loading: isLoadingGeo, error: geoError } = useGetGeo();
   const { coinbaseOnrampOptions, isLoadingCoinbaseOnrampOptions, coinbaseOnrampOptionsError } =
-    useCoinbaseOnrampOptions(isMainnet, geoData?.country, visitorData);
+    useCoinbaseOnrampOptions(geoData?.country, visitorData);
   const { stripeWeb2Support, isLoadingStripeSupport, stripeSupportError } = useStripeSupport(
-    isMainnet,
     srcFiatAmount,
     visitorData,
   );

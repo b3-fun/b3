@@ -16,7 +16,6 @@ interface FiatPaymentMethodProps {
   onBack: () => void;
   onSelectPaymentMethod: (method: FiatPaymentMethod) => void;
   srcAmountOnRamp: string;
-  isMainnet: boolean;
 }
 
 export function FiatPaymentMethodComponent({
@@ -25,7 +24,6 @@ export function FiatPaymentMethodComponent({
   onBack,
   onSelectPaymentMethod,
   srcAmountOnRamp,
-  isMainnet,
 }: FiatPaymentMethodProps) {
   // Helper function to get fees from API data
   const getFeeFromApi = (paymentMethod: FiatPaymentMethod): string | null => {
@@ -49,7 +47,7 @@ export function FiatPaymentMethodComponent({
     coinbaseAvailablePaymentMethods,
     stripeWeb2Support,
     isLoading: isLoadingGeoOnramp,
-  } = useGeoOnrampOptions(isMainnet, srcAmountOnRamp);
+  } = useGeoOnrampOptions(srcAmountOnRamp);
 
   // Generate payment methods based on geo availability (like in PanelOnrampPayment)
   const availablePaymentMethods = [];

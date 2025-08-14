@@ -6,7 +6,6 @@ import { GetQuoteRequest, GetQuoteResponse } from "../../types/api_req_res";
 /**
  * React hook to fetch the price or rate for a relay swap using Anyspend.
  *
- * @param isMainnet - Whether to use mainnet or testnet endpoints.
  * @param req - The request object containing source/destination chain, token addresses, and amount/price.
  * @remarks The query is enabled only if all required fields in `req` are present and the amount/price is non-zero.
  */
@@ -16,11 +15,11 @@ export type UseAnyspendQuoteResult = {
   getAnyspendQuoteError: Error | null;
   refetchAnyspendQuote: () => void;
 };
-export function useAnyspendQuote(isMainnet: boolean, req: GetQuoteRequest): UseAnyspendQuoteResult {
+export function useAnyspendQuote(req: GetQuoteRequest): UseAnyspendQuoteResult {
   const { data, isLoading, refetch, error } = useQuery({
-    queryKey: ["useAnyspendQuote", isMainnet, JSON.stringify(req)],
+    queryKey: ["useAnyspendQuote", JSON.stringify(req)],
     queryFn: (): Promise<GetQuoteResponse> => {
-      return anyspendService.getQuote(isMainnet, req);
+      return anyspendService.getQuote(req);
     },
     enabled: Boolean(
       req.srcChain &&

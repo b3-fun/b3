@@ -5,8 +5,6 @@ import { Button, Skeleton, useAccountWallet } from "@b3dotfun/sdk/global-account
 import { ArrowLeft, RefreshCcw } from "lucide-react";
 import { OrderHistoryItem } from "./OrderHistoryItem";
 
-const isMainnet = true;
-
 interface OrderHistoryProps {
   mode: "modal" | "page";
   onBack: () => void;
@@ -15,7 +13,7 @@ interface OrderHistoryProps {
 
 export function OrderHistory({ mode, onBack, onSelectOrder }: OrderHistoryProps) {
   const { address } = useAccountWallet();
-  const { orderHistory, isLoadingOrderHistory, refetchOrderHistory } = useAnyspendOrderHistory(isMainnet, address);
+  const { orderHistory, isLoadingOrderHistory, refetchOrderHistory } = useAnyspendOrderHistory(address);
 
   return (
     <>

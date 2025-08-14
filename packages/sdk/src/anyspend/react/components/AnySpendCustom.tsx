@@ -41,7 +41,7 @@ import { ChevronRight, ChevronRightCircle, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { base, baseSepolia } from "viem/chains";
+import { base } from "viem/chains";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
 import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPaymentMethod";
 import { FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaymentMethod";
@@ -144,7 +144,6 @@ function generateGetRelayQuoteRequest({
 }
 
 export function AnySpendCustom(props: {
-  isMainnet?: boolean;
   loadOrder?: string;
   mode?: "modal" | "page";
   recipientAddress?: string;
@@ -176,7 +175,6 @@ export function AnySpendCustom(props: {
 }
 
 function AnySpendCustomInner({
-  isMainnet = true,
   loadOrder,
   mode = "modal",
   recipientAddress: recipientAddressProps,
@@ -192,7 +190,6 @@ function AnySpendCustomInner({
   onSuccess,
   showRecipient = true,
 }: {
-  isMainnet?: boolean;
   loadOrder?: string;
   mode?: "modal" | "page";
   recipientAddress?: string;
@@ -241,11 +238,11 @@ function AnySpendCustomInner({
 
   const [orderId, setOrderId] = useState<string | undefined>(loadOrder);
 
-  const [srcChainId, setSrcChainId] = useState<number>(isMainnet ? base.id : baseSepolia.id);
+  const [srcChainId, setSrcChainId] = useState<number>(base.id);
 
   // Get token list for token balance check
   const chainName = useMemo(() => simpleHashChainToChainName(srcChainId), [srcChainId]);
-  const { data: tokenList } = useAnyspendTokenList(isMainnet, srcChainId, "");
+  const { data: tokenList } = useAnyspendTokenList(srcChainId, "");
 
   // Get token balances for the selected chain
   const { nativeTokens, fungibleTokens } = useTokenBalancesByChain({
@@ -334,9 +331,9 @@ function AnySpendCustomInner({
     srcChainId,
     srcToken,
   ]);
-  const { anyspendQuote, isLoadingAnyspendQuote } = useAnyspendQuote(isMainnet, getRelayQuoteRequest);
+  const { anyspendQuote, isLoadingAnyspendQuote } = useAnyspendQuote(getRelayQuoteRequest);
 
-  const { orderAndTransactions: oat } = useAnyspendOrderAndTransactions(isMainnet, orderId);
+  const { orderAndTransactions: oat } = useAnyspendOrderAndTransactions(orderId);
 
   const onSelectOrder = (selectedOrderId: string) => {
     setActivePanel(PanelView.ORDER_DETAILS);
@@ -371,10 +368,8 @@ function AnySpendCustomInner({
   );
 
   // Get geo data and onramp options (after quote is available)
-  const { geoData, isOnrampSupported, coinbaseAvailablePaymentMethods, stripeWeb2Support } = useGeoOnrampOptions(
-    isMainnet,
-    srcFiatAmount,
-  );
+  const { geoData, isOnrampSupported, coinbaseAvailablePaymentMethods, stripeWeb2Support } =
+    useGeoOnrampOptions(srcFiatAmount);
 
   useEffect(() => {
     if (oat?.data?.order.status === "executed") {
@@ -419,7 +414,6 @@ function AnySpendCustomInner({
       invariant(srcAmount, "Src amount is null");
 
       const createOrderParams = {
-        isMainnet: isMainnet,
         orderType: orderType,
         srcChain: activeTab === "fiat" ? base.id : srcChainId,
         dstChain: dstChainId,
@@ -661,7 +655,6 @@ function AnySpendCustomInner({
         <>
           <OrderStatusDisplay order={oat.data.order} />
           <OrderDetails
-            isMainnet={isMainnet}
             mode={mode}
             order={oat.data.order}
             depositTxs={oat.data.depositTxs}
@@ -1162,7 +1155,6 @@ function AnySpendCustomInner({
           setActivePanel(PanelView.CONFIRM_ORDER);
         }}
         srcAmountOnRamp={srcFiatAmount}
-        isMainnet={isMainnet}
       />
     </div>
   );

@@ -36,7 +36,7 @@ export default function OnrampFlowPage() {
   ) as components["schemas"]["Token"];
 
   // Get quote for the transaction
-  const { anyspendQuote } = useAnyspendQuote(true, {
+  const { anyspendQuote } = useAnyspendQuote({
     type: "swap",
     srcChain: 8453, // Base chain ID
     srcTokenAddress: USDC_BASE.address,

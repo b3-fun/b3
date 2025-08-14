@@ -24,14 +24,11 @@ const queryClient = new QueryClient();
  * Main B3Provider component
  */
 export function B3Provider({
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  isMainnetAnySpend = true,
   theme = "light",
   children,
   accountOverride,
   environment,
 }: {
-  isMainnetAnySpend?: boolean;
   theme: "light" | "dark";
   children: React.ReactNode;
   accountOverride?: Account;
@@ -41,7 +38,7 @@ export function B3Provider({
     <QueryClientProvider client={queryClient}>
       <ThirdwebProvider>
         <InnerProvider accountOverride={accountOverride} environment={environment} theme={theme}>
-          {/* <RelayKitProviderWrapper isMainnet={isMainnetAnySpend}> */}
+          {/* <RelayKitProviderWrapper> */}
           {children}
           {/* </RelayKitProviderWrapper> */}
         </InnerProvider>

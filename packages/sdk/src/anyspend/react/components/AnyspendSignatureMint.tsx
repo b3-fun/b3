@@ -134,7 +134,6 @@ export function AnyspendSignatureMint({
 
   return (
     <AnySpendCustom
-      isMainnet={true}
       loadOrder={loadOrder}
       mode={mode}
       recipientAddress={signatureData.payload.to}

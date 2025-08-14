@@ -42,14 +42,12 @@ function generateEncodedDataForStakingB3(amount: string, beneficiary: string): s
 }
 
 export function AnySpendStakeB3({
-  isMainnet = true,
   loadOrder,
   mode = "modal",
   recipientAddress,
   stakeAmount,
   onSuccess,
 }: {
-  isMainnet?: boolean;
   loadOrder?: string;
   mode?: "modal" | "page";
   recipientAddress: string;
@@ -482,7 +480,6 @@ export function AnySpendStakeB3({
 
   return (
     <AnySpendCustom
-      isMainnet={isMainnet}
       loadOrder={loadOrder}
       mode={mode}
       recipientAddress={recipientAddress}

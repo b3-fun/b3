@@ -108,7 +108,7 @@ export function startOrderStatusPolling(orderId) {
         statusMessage.textContent = "🔄 Checking order status...";
       }
 
-      const orderData = await anyspendService.getOrderAndTransactions(true, orderId);
+      const orderData = await anyspendService.getOrderAndTransactions(orderId);
 
       if (orderData.success && orderData.data) {
         const status = orderData.data.order?.status || "pending";

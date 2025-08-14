@@ -18,7 +18,7 @@ enum OrderStatus {
   // Processing States
   SENDING_TOKEN_FROM_VAULT = "sending_token_from_vault",
   RELAY = "relay",
-  
+
   // Success States
   EXECUTED = "executed",
 
@@ -90,13 +90,13 @@ function PaymentComponent() {
   const { createOrder, isCreatingOrder } = useAnyspendCreateOrder({
     onError: (error) => {
       console.error("Payment failed:", error);
-      
+
       // Handle specific errors
       switch (error.message) {
         case "INSUFFICIENT_BALANCE":
           setError("Insufficient balance. Please add funds to your wallet.");
           break;
-          
+
         case "SLIPPAGE":
           if (retryCount < 3) {
             setError("Price moved unfavorably. Retrying...");
@@ -108,16 +108,16 @@ function PaymentComponent() {
             setError("Price too volatile. Please try again later.");
           }
           break;
-          
+
         case "NETWORK_ERROR":
           setError("Network issue. Please check your connection and try again.");
           break;
-          
+
         case "QUOTE_EXPIRED":
           setError("Price quote expired. Getting fresh quote...");
           refreshQuote();
           break;
-          
+
         default:
           setError("Payment failed. Please try again or contact support.");
       }
@@ -129,7 +129,7 @@ function PaymentComponent() {
         timestamp: new Date().toISOString(),
       });
     },
-    
+
     onSuccess: () => {
       setError(null);
       setRetryCount(0);
@@ -145,9 +145,9 @@ function PaymentComponent() {
           <button onClick={() => setError(null)}>Dismiss</button>
         </div>
       )}
-      
-      <button 
-        onClick={handlePayment} 
+
+      <button
+        onClick={handlePayment}
         disabled={isCreatingOrder}
       >
         {isCreatingOrder ? "Processing..." : "Pay Now"}
@@ -163,8 +163,8 @@ function PaymentComponent() {
 import { useAnyspendOrderAndTransactions } from "@b3dotfun/sdk/anyspend";
 
 function OrderStatusMonitor({ orderId }: { orderId: string }) {
-  const { orderAndTransactions, getOrderAndTransactionsError } = 
-    useAnyspendOrderAndTransactions(true, orderId);
+  const { orderAndTransactions, getOrderAndTransactionsError } =
+    useAnyspendOrderAndTransactions(orderId);
 
   if (getOrderAndTransactionsError) {
     return (
@@ -194,7 +194,7 @@ function OrderStatusMonitor({ orderId }: { orderId: string }) {
               <h3>⏳ Waiting for payment confirmation</h3>
               <p>This usually takes 1-2 minutes. Please don't close this window.</p>
               {depositTxs.length > 0 && (
-                <a 
+                <a
                   href={getExplorerUrl(depositTxs[0].txHash, depositTxs[0].chainId)}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -225,7 +225,7 @@ function OrderStatusMonitor({ orderId }: { orderId: string }) {
               <h3>Transaction completed successfully!</h3>
               <p>Your order has been processed.</p>
               {executeTx && (
-                <a 
+                <a
                   href={getExplorerUrl(executeTx.txHash, executeTx.chainId)}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -265,7 +265,7 @@ function OrderStatusMonitor({ orderId }: { orderId: string }) {
               <h3>Refund processed</h3>
               <p>Your payment has been refunded automatically.</p>
               {refundTxs.length > 0 && (
-                <a 
+                <a
                   href={getExplorerUrl(refundTxs[0].txHash, refundTxs[0].chainId)}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -355,7 +355,7 @@ class AnySpendErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("AnySpend Error Boundary caught an error:", error, errorInfo);
-    
+
     // Report to error tracking service
     if (typeof window !== "undefined") {
       // Example: Sentry.captureException(error, { contexts: { errorInfo } });
@@ -370,9 +370,9 @@ class AnySpendErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       const FallbackComponent = this.props.fallback || DefaultErrorFallback;
       return (
-        <FallbackComponent 
-          error={this.state.error!} 
-          resetError={this.resetError} 
+        <FallbackComponent
+          error={this.state.error!}
+          resetError={this.resetError}
         />
       );
     }
@@ -433,42 +433,42 @@ function DiagnoseQuoteIssue() {
       // Check if tokens are valid
       const srcTokenValid = await validateToken(quoteRequest.srcTokenAddress, quoteRequest.srcChain);
       const dstTokenValid = await validateToken(quoteRequest.dstTokenAddress, quoteRequest.dstChain);
-      
+
       if (!srcTokenValid) {
         setDiagnosis("Source token address is invalid or not supported");
         return;
       }
-      
+
       if (!dstTokenValid) {
         setDiagnosis("Destination token address is invalid or not supported");
         return;
       }
-      
+
       // Check if amount is within limits
       const amount = parseFloat(quoteRequest.amount);
       if (amount < MIN_SWAP_AMOUNT) {
         setDiagnosis(`Amount too small. Minimum: ${MIN_SWAP_AMOUNT}`);
         return;
       }
-      
+
       if (amount > MAX_SWAP_AMOUNT) {
         setDiagnosis(`Amount too large. Maximum: ${MAX_SWAP_AMOUNT}`);
         return;
       }
-      
+
       // Check if chain pair is supported
       const chainPairSupported = await checkChainPairSupport(
-        quoteRequest.srcChain, 
+        quoteRequest.srcChain,
         quoteRequest.dstChain
       );
-      
+
       if (!chainPairSupported) {
         setDiagnosis("This chain pair is not currently supported");
         return;
       }
-      
+
       setDiagnosis("All checks passed. Try refreshing the quote.");
-      
+
     } catch (error) {
       setDiagnosis(`Network error: ${error.message}`);
     }
@@ -498,8 +498,8 @@ function DepositDiagnostics({ orderId }: { orderId: string }) {
 
   const diagnoseDespositIssue = async () => {
     try {
-      const order = await anyspendService.getOrder(true, orderId);
-      
+      const order = await anyspendService.getOrder(orderId);
+
       if (!order.depositAddress) {
         setDepositDiag({
           issue: "No deposit address generated",
@@ -507,11 +507,11 @@ function DepositDiagnostics({ orderId }: { orderId: string }) {
         });
         return;
       }
-      
+
       // Check if payment was sent to correct address
       const expectedAddress = order.depositAddress;
       const userTxs = await getTransactionsToAddress(expectedAddress);
-      
+
       if (userTxs.length === 0) {
         setDepositDiag({
           issue: "No payment received at deposit address",
@@ -519,11 +519,11 @@ function DepositDiagnostics({ orderId }: { orderId: string }) {
         });
         return;
       }
-      
+
       // Check if amount matches
       const expectedAmount = order.srcAmount;
       const receivedAmount = userTxs[0].amount;
-      
+
       if (receivedAmount !== expectedAmount) {
         setDepositDiag({
           issue: `Amount mismatch. Expected: ${expectedAmount}, Received: ${receivedAmount}`,
@@ -531,11 +531,11 @@ function DepositDiagnostics({ orderId }: { orderId: string }) {
         });
         return;
       }
-      
+
       // Check transaction confirmations
       const confirmations = await getTransactionConfirmations(userTxs[0].hash);
       const requiredConfirmations = getRequiredConfirmations(order.srcChain);
-      
+
       if (confirmations < requiredConfirmations) {
         setDepositDiag({
           issue: `Waiting for confirmations: ${confirmations}/${requiredConfirmations}`,
@@ -543,12 +543,12 @@ function DepositDiagnostics({ orderId }: { orderId: string }) {
         });
         return;
       }
-      
+
       setDepositDiag({
         issue: "Payment detected but not processed",
         solution: "This may be a system delay. Contact support if it persists."
       });
-      
+
     } catch (error) {
       setDepositDiag({
         issue: "Unable to diagnose",
@@ -562,7 +562,7 @@ function DepositDiagnostics({ orderId }: { orderId: string }) {
       <button onClick={diagnoseDespositIssue}>
         Diagnose Deposit Issue
       </button>
-      
+
       {depositDiag && (
         <div className="diagnosis-result">
           <h4>Issue: {depositDiag.issue}</h4>
@@ -651,19 +651,19 @@ function DebugInfo({ orderId }: { orderId: string }) {
       userAgent: navigator.userAgent,
       url: window.location.href,
       orderId,
-      
+
       // Network info
       connection: (navigator as any).connection,
-      
+
       // Order data
-      order: await anyspendService.getOrder(true, orderId),
-      
+      order: await anyspendService.getOrder(orderId),
+
       // Browser storage
       localStorage: { ...localStorage },
-      
+
       // Console errors
       recentErrors: getRecentConsoleErrors(),
-      
+
       // SDK version
       sdkVersion: process.env.REACT_APP_SDK_VERSION,
     };
@@ -681,7 +681,7 @@ function DebugInfo({ orderId }: { orderId: string }) {
       <button onClick={collectDebugInfo}>
         Collect Debug Info
       </button>
-      
+
       {debugData && (
         <div>
           <button onClick={copyDebugInfo}>
@@ -732,4 +732,4 @@ interface BugReport {
 
 - [View Installation Guide →](./installation.md)
 - [Explore Components →](./components.md)
-- [See Examples →](./examples.md) 
+- [See Examples →](./examples.md)

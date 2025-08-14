@@ -7,7 +7,6 @@ export default function OnrampOrderStatusPage() {
   const orderId = searchParams.get("orderId");
 
   const { orderAndTransactions: oat, getOrderAndTransactionsError } = useAnyspendOrderAndTransactions(
-    true, // isMainnet
     orderId || undefined,
   );
 

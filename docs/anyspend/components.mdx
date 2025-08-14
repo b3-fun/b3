@@ -14,7 +14,6 @@ The primary interface component for token-to-token exchanges and fiat onramps.
 import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
 
 <AnySpend
-  isMainnet={true}
   mode="modal"
   defaultActiveTab="crypto"
   destinationTokenAddress="0x..."
@@ -25,10 +24,6 @@ import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
 ```
 
 #### Props
-
-<ParamField path="isMainnet" type="boolean" default="true">
-  Use mainnet or testnet environment
-</ParamField>
 
 <ParamField path="mode" type="'modal' | 'page'" default="'modal'">
   Display as modal overlay or full page

@@ -121,7 +121,6 @@ const basePublicClient = createPublicClient({
 });
 
 export function AnySpendBuySpin({
-  isMainnet = true,
   loadOrder,
   mode = "modal",
   spinwheelContractAddress,
@@ -130,7 +129,6 @@ export function AnySpendBuySpin({
   prefillQuantity,
   onSuccess,
 }: {
-  isMainnet?: boolean;
   loadOrder?: string;
   mode?: "modal" | "page";
   spinwheelContractAddress: string;
@@ -665,7 +663,6 @@ export function AnySpendBuySpin({
 
   return (
     <AnySpendCustom
-      isMainnet={isMainnet}
       loadOrder={loadOrder}
       mode={mode}
       recipientAddress={recipientAddress}

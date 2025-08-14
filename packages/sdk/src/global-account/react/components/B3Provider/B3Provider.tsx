@@ -41,7 +41,6 @@ const queryClient = new QueryClient();
  * Main B3Provider component
  */
 export function B3Provider({
-  isMainnetAnySpend = true,
   theme = "light",
   children,
   accountOverride,
@@ -50,7 +49,6 @@ export function B3Provider({
   simDuneApiKey,
   toaster,
 }: {
-  isMainnetAnySpend?: boolean;
   theme: "light" | "dark";
   children: React.ReactNode;
   accountOverride?: Account;
@@ -73,7 +71,7 @@ export function B3Provider({
               theme={theme}
               automaticallySetFirstEoa={!!automaticallySetFirstEoa}
             >
-              <RelayKitProviderWrapper isMainnet={isMainnetAnySpend} simDuneApiKey={simDuneApiKey}>
+              <RelayKitProviderWrapper simDuneApiKey={simDuneApiKey}>
                 {children}
                 {/* For the modal https://github.com/b3-fun/b3/blob/main/packages/sdk/src/global-account/react/components/ui/dialog.tsx#L46 */}
                 <StyleRoot id="b3-root" />
