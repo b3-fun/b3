@@ -126,7 +126,7 @@ export function ManageAccount({
             </div>
           </div>
         </div>
-        <div className="bg-b3-line flex h-11 items-center gap-2 rounded-full px-4">
+        <div className="manage-account-address bg-b3-line flex h-11 items-center gap-2 rounded-full px-4">
           <span className="text-b3-grey font-neue-montreal-semibold">{centerTruncate(account?.address || "")}</span>
           <CopyToClipboard text={account?.address || ""} />
         </div>
@@ -134,7 +134,7 @@ export function ManageAccount({
         {/* Quick Actions */}
         <div className="grid grid-cols-2 gap-3">
           <Button
-            className="bg-b3-primary-wash hover:bg-b3-primary-wash/70 h-[84px] w-full flex-col items-start gap-2 rounded-2xl"
+            className="manage-account-deposit bg-b3-primary-wash hover:bg-b3-primary-wash/70 h-[84px] w-full flex-col items-start gap-2 rounded-2xl"
             onClick={() => {
               setB3ModalOpen(true);
               setB3ModalContentType({
@@ -148,7 +148,7 @@ export function ManageAccount({
             <div className="text-b3-grey font-neue-montreal-semibold">Deposit</div>
           </Button>
           <Button
-            className="bg-b3-primary-wash hover:bg-b3-primary-wash/70 flex h-[84px] w-full flex-col items-start gap-2 rounded-2xl"
+            className="manage-account-swap bg-b3-primary-wash hover:bg-b3-primary-wash/70 flex h-[84px] w-full flex-col items-start gap-2 rounded-2xl"
             onClick={() => {
               setB3ModalOpen(true);
               setB3ModalContentType({
@@ -251,7 +251,7 @@ export function ManageAccount({
             <h3 className="text-b3-grey font-neue-montreal-semibold">Connected {eoaInfo?.data?.name || "Wallet"}</h3>
 
             {/* EOA Address */}
-            <div className="bg-b3-line flex h-11 items-center gap-2 rounded-full px-4">
+            <div className="manage-account-address bg-b3-line flex h-11 items-center gap-2 rounded-full px-4">
               <span className="text-b3-grey font-neue-montreal-semibold">{centerTruncate(eoaAddress)}</span>
               <CopyToClipboard text={eoaAddress} />
             </div>
