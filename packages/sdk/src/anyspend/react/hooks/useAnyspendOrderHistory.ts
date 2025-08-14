@@ -2,11 +2,7 @@ import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
-export function useAnyspendOrderHistory(
-  creatorAddress: string | undefined,
-  limit = 100,
-  offset = 0,
-) {
+export function useAnyspendOrderHistory(creatorAddress: string | undefined, limit = 100, offset = 0) {
   const {
     data: rawData = [],
     isLoading,
