@@ -57,9 +57,9 @@ export default function DeployPage() {
     targetAmount: parseEther("0.0000001"),
     tradingToken: "0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3" as `0x${string}`,
     migrationAdminAddress: (address || "0x0000000000000000000000000000000000000000") as `0x${string}`,
-    bondingPhaseSplitter: "0x867F8DE1e5723C8cb793f41e381305BD8ab75A7A" as `0x${string}`,
+    bondingPhaseSplitter: "0x2AB69e0d9D20D3700466153D84a6574128154Fd2" as `0x${string}`,
     v4PoolManager: "0x498581fF718922c3f8e6A244956aF099B2652b2b" as `0x${string}`,
-    v4Hook: "0x0EAD1EA7e78B895069AF815AD187270408c0B0cC" as `0x${string}`,
+    v4Hook: "0xB36f4A2FB18b745ef8eD31452781a463d2B3f0cC" as `0x${string}`,
     v4PoolFee: 30000,
     v4TickSpacing: 60,
   });
