@@ -66,16 +66,17 @@ export function useBondkit(tokenAddress: `0x${string}`) {
   const fetchDynamicData = useCallback(async () => {
     if (!bondkitTokenClient || !userAddress) return;
 
-    const [phase, balance, currentAllowance, progress, allHolders, details, tradingTokenAddr, tradingTokenBal] = await Promise.all([
-      bondkitTokenClient.getCurrentPhase(),
-      bondkitTokenClient.balanceOf(userAddress),
-      bondkitTokenClient.allowance(userAddress, tokenAddress),
-      bondkitTokenClient.getBondingProgress(),
-      fetchAllHolders(bondkitTokenClient),
-      bondkitTokenClient.getTokenDetails(),
-      bondkitTokenClient.getTradingTokenAddress(),
-      bondkitTokenClient.getTradingTokenBalanceOf(userAddress),
-    ]);
+    const [phase, balance, currentAllowance, progress, allHolders, details, tradingTokenAddr, tradingTokenBal] =
+      await Promise.all([
+        bondkitTokenClient.getCurrentPhase(),
+        bondkitTokenClient.balanceOf(userAddress),
+        bondkitTokenClient.allowance(userAddress, tokenAddress),
+        bondkitTokenClient.getBondingProgress(),
+        fetchAllHolders(bondkitTokenClient),
+        bondkitTokenClient.getTokenDetails(),
+        bondkitTokenClient.getTradingTokenAddress(),
+        bondkitTokenClient.getTradingTokenBalanceOf(userAddress),
+      ]);
 
     setCurrentPhase(phase || undefined);
     setTokenBalance(balance || BigInt(0));

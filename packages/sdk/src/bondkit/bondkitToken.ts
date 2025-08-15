@@ -250,7 +250,7 @@ export class BondkitToken {
   public async getTradingTokenAddress(): Promise<Address | undefined> {
     try {
       if (!this.tradingToken) {
-        this.tradingToken = await this.contract.read.tradingToken() as Address;
+        this.tradingToken = (await this.contract.read.tradingToken()) as Address;
       }
       return this.tradingToken;
     } catch (error) {
@@ -399,10 +399,10 @@ export class BondkitToken {
 
   public async getBondingProgress(): Promise<
     | {
-      progress: number;
-      raised: number;
-      threshold: number;
-    }
+        progress: number;
+        raised: number;
+        threshold: number;
+      }
     | undefined
   > {
     try {
@@ -477,7 +477,7 @@ export class BondkitToken {
               client: this.walletClientInstance,
             });
           }
-        } catch (_) { }
+        } catch (_) {}
       }
       if (!this.walletClientInstance.account && !this.walletKey) {
         throw new Error("Wallet key not set or client not connected for write operation.");
@@ -567,7 +567,7 @@ export class BondkitToken {
 
       const currentAllowance = await tradingTokenContract.read.allowance([
         this.walletClientInstance.account?.address as Address,
-        this.contractAddress as Address
+        this.contractAddress as Address,
       ]);
 
       const amountBigInt = typeof amount === "string" ? parseEther(amount) : BigInt(amount);
@@ -586,12 +586,13 @@ export class BondkitToken {
         // Add optional transaction parameters if provided
         if (options?.gas !== undefined) approveOptions.gas = options.gas;
         if (options?.maxFeePerGas !== undefined) approveOptions.maxFeePerGas = options.maxFeePerGas;
-        if (options?.maxPriorityFeePerGas !== undefined) approveOptions.maxPriorityFeePerGas = options.maxPriorityFeePerGas;
+        if (options?.maxPriorityFeePerGas !== undefined)
+          approveOptions.maxPriorityFeePerGas = options.maxPriorityFeePerGas;
 
-        const approveTx = await tradingTokenContract.write.approve([
-          this.contractAddress as Address,
-          amountBigInt
-        ], approveOptions);
+        const approveTx = await tradingTokenContract.write.approve(
+          [this.contractAddress as Address, amountBigInt],
+          approveOptions,
+        );
 
         await this.publicClient.waitForTransactionReceipt({ hash: approveTx });
       }

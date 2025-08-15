@@ -245,7 +245,7 @@ export function TradingViewChart({
               chart.current.timeScale().fitContent();
             }
           }}
-          className="rounded border border-b3-react-border bg-b3-react-card/90 px-3 py-1 text-xs text-b3-react-foreground transition-colors hover:bg-b3-react-subtle"
+          className="border-b3-react-border bg-b3-react-card/90 text-b3-react-foreground hover:bg-b3-react-subtle rounded border px-3 py-1 text-xs transition-colors"
         >
           Fit Content
         </button>
@@ -255,14 +255,14 @@ export function TradingViewChart({
               chart.current.timeScale().resetTimeScale();
             }
           }}
-          className="rounded border border-b3-react-border bg-b3-react-card/90 px-3 py-1 text-xs text-b3-react-foreground transition-colors hover:bg-b3-react-subtle"
+          className="border-b3-react-border bg-b3-react-card/90 text-b3-react-foreground hover:bg-b3-react-subtle rounded border px-3 py-1 text-xs transition-colors"
         >
           Reset Zoom
         </button>
       </div>
 
       {/* Price info overlay */}
-      <div className="absolute right-4 top-4 z-10 rounded border border-b3-react-border bg-b3-react-card/90 px-3 py-2 text-xs text-b3-react-foreground">
+      <div className="border-b3-react-border bg-b3-react-card/90 text-b3-react-foreground absolute right-4 top-4 z-10 rounded border px-3 py-2 text-xs">
         <div className="text-gray-300">Price in ETH</div>
         {candleData.length > 0 && (
           <div className="font-mono">Latest: {formatETHPrice(candleData[candleData.length - 1].close)} ETH</div>

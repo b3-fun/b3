@@ -25,7 +25,9 @@ export function TimeFrameSelector({ selectedTimeFrame, onTimeFrameChange, classN
           onClick={() => onTimeFrameChange(value)}
           className={cn(
             "min-w-[3rem] rounded px-3 py-1 font-mono text-xs font-medium transition-colors",
-            selectedTimeFrame === value ? "bg-blue-600 text-white" : "text-b3-react-muted-foreground hover:bg-b3-react-subtle hover:text-b3-react-foreground",
+            selectedTimeFrame === value
+              ? "bg-blue-600 text-white"
+              : "text-b3-react-muted-foreground hover:bg-b3-react-subtle hover:text-b3-react-foreground",
           )}
         >
           {label}
