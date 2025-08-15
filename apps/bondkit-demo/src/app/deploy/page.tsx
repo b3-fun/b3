@@ -3,50 +3,12 @@
 import { cn } from "@/utils/cn";
 import { BondkitTokenFactory, type BondkitTokenConfig } from "@b3dotfun/sdk/bondkit";
 import { useAccountWallet } from "@b3dotfun/sdk/global-account/react";
+import { Input } from "@b3dotfun/sdk/global-account/react/components/ui/input";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { formatEther, parseEther } from "viem";
+import { parseEther } from "viem";
 import { base } from "viem/chains";
 import SignInWithB3OnBase from "../SignInWithB3OnBase";
-
-interface ConfigFieldInfo {
-  title: string;
-  description: string;
-  example?: string;
-}
-
-const presetTemplates = [
-  {
-    name: "Standard Token",
-    description: "Basic bonding curve token",
-    config: {
-      finalTokenSupply: parseEther("100000000000"),
-      targetEth: parseEther("0.0000001"),
-      aggressivenessFactor: 50,
-      lpSplitRatioFeeRecipientBps: BigInt(1000),
-    },
-  },
-  {
-    name: "Quick Launch",
-    description: "Fast bonding with lower target",
-    config: {
-      finalTokenSupply: parseEther("100000000000"),
-      targetEth: parseEther("0.000001"),
-      aggressivenessFactor: 70,
-      lpSplitRatioFeeRecipientBps: BigInt(500),
-    },
-  },
-  {
-    name: "Community Token",
-    description: "Higher supply, gradual curve",
-    config: {
-      finalTokenSupply: parseEther("100000000000"),
-      targetEth: parseEther("0.01"),
-      aggressivenessFactor: 30,
-      lpSplitRatioFeeRecipientBps: BigInt(2000),
-    },
-  },
-];
 
 export default function DeployPage() {
   const { address } = useAccountWallet();
@@ -81,7 +43,7 @@ export default function DeployPage() {
 
   // Keep track of raw input values for decimal fields
   const [rawInputs, setRawInputs] = useState({
-    targetEth: "0.0000001",
+    targetAmount: "0.0000001",
     finalTokenSupply: "100000000000",
   });
 
@@ -92,9 +54,14 @@ export default function DeployPage() {
     finalTokenSupply: parseEther("100000000000"),
     aggressivenessFactor: 50,
     lpSplitRatioFeeRecipientBps: BigInt(1000),
-    targetEth: parseEther("0.0000001"),
-    uniswapV2RouterAddress: "0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24" as `0x${string}`,
+    targetAmount: parseEther("0.0000001"),
+    tradingToken: "0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3" as `0x${string}`,
     migrationAdminAddress: (address || "0x0000000000000000000000000000000000000000") as `0x${string}`,
+    bondingPhaseSplitter: "0x867F8DE1e5723C8cb793f41e381305BD8ab75A7A" as `0x${string}`,
+    v4PoolManager: "0x498581fF718922c3f8e6A244956aF099B2652b2b" as `0x${string}`,
+    v4Hook: "0x0EAD1EA7e78B895069AF815AD187270408c0B0cC" as `0x${string}`,
+    v4PoolFee: 30000,
+    v4TickSpacing: 60,
   });
 
   // Update config when address changes
@@ -146,12 +113,12 @@ export default function DeployPage() {
             newConfig[field] = value as `0x${string}`;
           }
           break;
-        case "targetEth":
+        case "targetAmount":
           // Handle decimal input for ETH
-          setRawInputs(prev => ({ ...prev, targetEth: value }));
+          setRawInputs(prev => ({ ...prev, targetAmount: value }));
           if (value && !isNaN(Number(value))) {
             try {
-              newConfig.targetEth = parseEther(value);
+              newConfig.targetAmount = parseEther(value);
             } catch {}
           }
           break;
@@ -182,37 +149,41 @@ export default function DeployPage() {
     });
   };
 
-  const applyTemplate = (template: (typeof presetTemplates)[0]) => {
-    setConfig(prev => ({
-      ...prev,
-      ...template.config,
-    }));
-    setRawInputs({
-      targetEth: formatEther(template.config.targetEth || BigInt(0)),
-      finalTokenSupply: formatEther(template.config.finalTokenSupply),
-    });
-  };
-
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-b3-react-background">
       {/* Success Modal */}
       {showSuccessModal && activeTokenAddress && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
-          <div className="relative max-w-md rounded-lg bg-gray-800 p-6 text-center">
-            <div className="mb-4 text-4xl">🎉</div>
-            <h2 className="mb-2 text-2xl font-bold">Token Deployed!</h2>
-            <p className="mb-4 text-gray-400">Your token has been successfully deployed</p>
-            <div className="mb-4 break-all rounded bg-gray-700 p-3 font-mono text-sm">{activeTokenAddress}</div>
-            <div className="flex gap-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop with blur */}
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={handleCloseSuccessModal} />
+          
+          {/* Modal Content */}
+          <div className="relative z-10 w-full max-w-sm mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 p-6 text-center">
+            <div className="mb-6">
+              <div className="mx-auto w-14 h-14 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center mb-4">
+                <svg className="w-7 h-7 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Token Deployed!</h2>
+              <p className="text-gray-600 dark:text-gray-300 text-sm">Your bonding curve token is now live and ready for trading</p>
+            </div>
+            
+            <div className="mb-6 p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Contract Address</p>
+              <p className="font-mono text-xs text-gray-800 dark:text-gray-200 break-all leading-relaxed">{activeTokenAddress}</p>
+            </div>
+            
+            <div className="space-y-3">
               <button
                 onClick={() => router.push(`/token/${activeTokenAddress}`)}
-                className="flex-1 rounded-lg bg-green-600 px-4 py-2 text-white hover:bg-green-700"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium transition-colors shadow-sm"
               >
-                View Token
+                View Token Page
               </button>
               <button
                 onClick={handleCloseSuccessModal}
-                className="flex-1 rounded-lg bg-gray-600 px-4 py-2 text-white hover:bg-gray-700"
+                className="w-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-3 rounded-lg font-medium transition-colors border border-gray-300 dark:border-gray-600"
               >
                 Close
               </button>
@@ -221,158 +192,338 @@ export default function DeployPage() {
         </div>
       )}
 
-      <div className="mx-auto max-w-4xl">
-        <div className="mb-8 rounded-lg bg-gray-800 p-6">
+      {/* Header - Match Homepage */}
+      <header className="border-b border-b3-react-border bg-b3-react-card">
+        <div className="mx-auto max-w-7xl px-6 py-4">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold">Deploy Bondkit Token</h1>
-              <p className="mt-2 text-gray-400">Create your token with a customizable bonding curve</p>
+            <div className="flex items-center space-x-8">
+              <h1 className="text-3xl font-bold text-b3-react-foreground">Bondkit</h1>
+              <nav className="hidden md:flex items-center space-x-1">
+                <button
+                  onClick={() => router.push("/")}
+                  className="px-4 py-2 rounded-lg text-b3-react-muted-foreground hover:text-b3-react-foreground hover:bg-b3-react-subtle text-sm font-medium transition-colors"
+                >
+                  Tokens
+                </button>
+                <div className="px-4 py-2 rounded-lg bg-b3-react-primary text-b3-react-primary-foreground text-sm font-medium">
+                  Deploy Token
+                </div>
+              </nav>
             </div>
-            <SignInWithB3OnBase />
-          </div>
-        </div>
-
-        {/* Template Selection */}
-        <div className="mb-8 rounded-lg bg-gray-800 p-6">
-          <h2 className="mb-4 text-xl font-semibold">Quick Start Templates</h2>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            {presetTemplates.map((template, index) => (
+            <div className="flex items-center space-x-4">
               <button
-                key={index}
-                onClick={() => applyTemplate(template)}
-                className="rounded-lg border border-gray-700 bg-gray-900 p-4 text-left transition-all hover:border-blue-500 hover:bg-gray-800"
+                onClick={() => router.push("/")}
+                className="flex items-center space-x-2 text-b3-react-primary hover:text-b3-react-primary/80 transition-colors group"
               >
-                <div className="font-semibold">{template.name}</div>
-                <div className="mt-1 text-sm text-gray-400">{template.description}</div>
+                <svg className="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                <span className="text-sm font-medium">Back to Tokens</span>
               </button>
-            ))}
+              <SignInWithB3OnBase />
+            </div>
           </div>
         </div>
+      </header>
 
-        {/* Configuration Form */}
-        <form onSubmit={handleDeploy} className="space-y-6">
-          <div className="rounded-lg bg-gray-800 p-6">
-            <h2 className="mb-4 text-xl font-semibold">Basic Configuration</h2>
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+      {/* Main Content */}
+      <main className="mx-auto max-w-7xl px-6 py-8">
+        {/* Page Header */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-b3-react-foreground">Deploy New Token</h2>
+          <p className="text-b3-react-muted-foreground mt-1">Create your token with a customizable bonding curve</p>
+        </div>
+
+        {/* Connection Warning */}
+        {!isConnected && (
+          <div className="mb-8 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-6">
+            <div className="flex items-center space-x-3">
+              <svg className="w-6 h-6 text-amber-600 dark:text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
               <div>
-                <label className="mb-2 block text-sm font-medium">Token Name</label>
-                <input
-                  type="text"
-                  value={config.name}
-                  onChange={e => handleInputChange("name", e.target.value)}
-                  className="w-full rounded-lg bg-gray-900 px-4 py-2 text-white"
-                  required
-                />
-              </div>
-              <div>
-                <label className="mb-2 block text-sm font-medium">Token Symbol</label>
-                <input
-                  type="text"
-                  value={config.symbol}
-                  onChange={e => handleInputChange("symbol", e.target.value)}
-                  className="w-full rounded-lg bg-gray-900 px-4 py-2 text-white"
-                  required
-                />
-              </div>
-              <div>
-                <label className="mb-2 block text-sm font-medium">Final Token Supply</label>
-                <input
-                  type="text"
-                  value={rawInputs.finalTokenSupply}
-                  onChange={e => handleInputChange("finalTokenSupply", e.target.value)}
-                  className="w-full rounded-lg bg-gray-900 px-4 py-2 text-white"
-                  required
-                />
-              </div>
-              <div>
-                <label className="mb-2 block text-sm font-medium">Target ETH</label>
-                <input
-                  type="text"
-                  value={rawInputs.targetEth}
-                  onChange={e => handleInputChange("targetEth", e.target.value)}
-                  className="w-full rounded-lg bg-gray-900 px-4 py-2 text-white"
-                />
-              </div>
-              <div>
-                <label className="mb-2 block text-sm font-medium">Aggressiveness Factor (1-100)</label>
-                <input
-                  type="number"
-                  value={config.aggressivenessFactor}
-                  onChange={e => handleInputChange("aggressivenessFactor", e.target.value)}
-                  className="w-full rounded-lg bg-gray-900 px-4 py-2 text-white"
-                  min="1"
-                  max="100"
-                  required
-                />
-              </div>
-              <div>
-                <label className="mb-2 block text-sm font-medium">LP Split Ratio (BPS)</label>
-                <input
-                  type="number"
-                  value={config.lpSplitRatioFeeRecipientBps?.toString()}
-                  onChange={e => handleInputChange("lpSplitRatioFeeRecipientBps", e.target.value)}
-                  className="w-full rounded-lg bg-gray-900 px-4 py-2 text-white"
-                  min="0"
-                  max="10000"
-                />
+                <h3 className="font-semibold text-amber-800 dark:text-amber-200">Wallet Connection Required</h3>
+                <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">Please connect your wallet to deploy a token</p>
               </div>
             </div>
-          </div>
-
-          <div className="rounded-lg bg-gray-800 p-6">
-            <h2 className="mb-4 text-xl font-semibold">Advanced Settings</h2>
-            <div className="grid grid-cols-1 gap-6">
-              <div>
-                <label className="mb-2 block text-sm font-medium">Fee Recipient Address</label>
-                <input
-                  type="text"
-                  value={config.feeRecipient}
-                  onChange={e => handleInputChange("feeRecipient", e.target.value)}
-                  className="w-full rounded-lg bg-gray-900 px-4 py-2 font-mono text-sm text-white"
-                />
-              </div>
-              <div>
-                <label className="mb-2 block text-sm font-medium">Migration Admin Address</label>
-                <input
-                  type="text"
-                  value={config.migrationAdminAddress}
-                  onChange={e => handleInputChange("migrationAdminAddress", e.target.value)}
-                  className="w-full rounded-lg bg-gray-900 px-4 py-2 font-mono text-sm text-white"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="flex gap-4">
-            <button
-              type="submit"
-              disabled={!isConnected || isPending}
-              className={cn(
-                "flex-1 rounded-lg px-6 py-3 font-semibold transition-colors",
-                isConnected && !isPending
-                  ? "bg-green-600 text-white hover:bg-green-700"
-                  : "cursor-not-allowed bg-gray-600 text-gray-400",
-              )}
-            >
-              {isPending ? "Deploying..." : isConfirming ? "Confirming..." : "Deploy Token"}
-            </button>
-            <button
-              type="button"
-              onClick={() => router.push("/")}
-              className="rounded-lg bg-gray-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-gray-700"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-
-        {hash && (
-          <div className="mt-6 rounded-lg bg-blue-900/20 p-4">
-            <p className="text-sm text-blue-300">Transaction Hash:</p>
-            <p className="font-mono text-xs">{hash}</p>
           </div>
         )}
-      </div>
+
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-8 max-w-7xl mx-auto">
+          {/* Left Column - Form */}
+          <div className="xl:col-span-3 max-w-4xl">
+            <form onSubmit={handleDeploy} className="space-y-8">
+              
+              {/* Basic Configuration */}
+              <div className="rounded-xl bg-b3-react-card border border-b3-react-border p-6">
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-b3-react-foreground">Basic Configuration</h3>
+                  <p className="text-sm text-b3-react-muted-foreground mt-1">Configure the basic properties of your token</p>
+                </div>
+                
+                {/* Token Identity - 2 columns */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <label className="block text-sm font-medium text-b3-react-foreground mb-2">
+                      Token Name <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                      type="text"
+                      value={config.name}
+                      onChange={e => handleInputChange("name", e.target.value)}
+                      placeholder="e.g., My Awesome Token"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-b3-react-foreground mb-2">
+                      Token Symbol <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                      type="text"
+                      value={config.symbol}
+                      onChange={e => handleInputChange("symbol", e.target.value)}
+                      placeholder="e.g., MAT"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Supply & Target - 2 columns */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <label className="block text-sm font-medium text-b3-react-foreground mb-2">
+                      Final Token Supply <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                      type="text"
+                      value={rawInputs.finalTokenSupply}
+                      onChange={e => handleInputChange("finalTokenSupply", e.target.value)}
+                      placeholder="e.g., 100000000000"
+                      required
+                    />
+                    <p className="text-xs text-b3-react-muted-foreground mt-1">Total number of tokens that will exist</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-b3-react-foreground mb-2">
+                      Target Amount
+                    </label>
+                    <Input
+                      type="text"
+                      value={rawInputs.targetAmount}
+                      onChange={e => handleInputChange("targetAmount", e.target.value)}
+                      placeholder="e.g., 0.0000001"
+                    />
+                    <p className="text-xs text-b3-react-muted-foreground mt-1">Trading token amount needed to complete bonding phase</p>
+                  </div>
+                </div>
+
+                {/* Trading Token - Full width */}
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-b3-react-foreground mb-2">
+                    Trading Token Contract
+                  </label>
+                  <Input
+                    type="text"
+                    value={config.tradingToken}
+                    disabled
+                    className="font-mono text-sm bg-b3-react-subtle"
+                  />
+                  <p className="text-xs text-b3-react-muted-foreground mt-1">ERC20 token used for trading (currently using default token)</p>
+                </div>
+
+                {/* Curve Parameters - 2 columns */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-b3-react-foreground mb-2">
+                      Aggressiveness Factor (1-100) <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                      type="number"
+                      value={config.aggressivenessFactor}
+                      onChange={e => handleInputChange("aggressivenessFactor", e.target.value)}
+                      min="1"
+                      max="100"
+                      required
+                    />
+                    <p className="text-xs text-b3-react-muted-foreground mt-1">Higher values = steeper price curve</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-b3-react-foreground mb-2">
+                      LP Split Ratio (BPS)
+                    </label>
+                    <Input
+                      type="number"
+                      value={config.lpSplitRatioFeeRecipientBps?.toString()}
+                      onChange={e => handleInputChange("lpSplitRatioFeeRecipientBps", e.target.value)}
+                      min="0"
+                      max="10000"
+                      placeholder="e.g., 1000"
+                    />
+                    <p className="text-xs text-b3-react-muted-foreground mt-1">Basis points (100 = 1%)</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Advanced Settings */}
+              <div className="rounded-xl bg-b3-react-card border border-b3-react-border p-6">
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-b3-react-foreground">Advanced Settings</h3>
+                  <p className="text-sm text-b3-react-muted-foreground mt-1">Configure administrative addresses</p>
+                </div>
+                
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-b3-react-foreground mb-2">
+                      Fee Recipient Address
+                    </label>
+                    <Input
+                      type="text"
+                      value={config.feeRecipient}
+                      onChange={e => handleInputChange("feeRecipient", e.target.value)}
+                      className="font-mono text-sm"
+                      placeholder="0x..."
+                    />
+                    <p className="text-xs text-b3-react-muted-foreground mt-1">Address that will receive trading fees</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-b3-react-foreground mb-2">
+                      Migration Admin Address
+                    </label>
+                    <Input
+                      type="text"
+                      value={config.migrationAdminAddress}
+                      onChange={e => handleInputChange("migrationAdminAddress", e.target.value)}
+                      className="font-mono text-sm"
+                      placeholder="0x..."
+                    />
+                    <p className="text-xs text-b3-react-muted-foreground mt-1">Address that can manage token migration</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                <button
+                  type="submit"
+                  disabled={!isConnected || isPending}
+                  className={cn(
+                    "flex-1 flex items-center justify-center space-x-2 rounded-lg px-8 py-4 font-semibold transition-all",
+                    isConnected && !isPending
+                      ? "bg-b3-react-primary text-b3-react-primary-foreground hover:bg-b3-react-primary/90 hover:shadow-lg"
+                      : "cursor-not-allowed bg-b3-react-muted text-b3-react-muted-foreground",
+                  )}
+                >
+                  {isPending && (
+                    <div className="w-5 h-5 border-2 border-current border-r-transparent animate-spin rounded-full"></div>
+                  )}
+                  <span>
+                    {isPending ? "Deploying Token..." : isConfirming ? "Confirming..." : "Deploy Token"}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => router.push("/")}
+                  className="sm:w-auto w-full rounded-lg bg-b3-react-subtle border border-b3-react-border px-8 py-4 font-semibold text-b3-react-foreground transition-colors hover:bg-b3-react-muted"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+
+          {/* Right Column - Preview/Info */}
+          <div className="xl:col-span-1">
+            <div className="sticky top-8 space-y-6">
+              
+              {/* Configuration Preview */}
+              <div className="rounded-xl bg-b3-react-card border border-b3-react-border p-6">
+                <h3 className="text-lg font-semibold text-b3-react-foreground mb-4">Configuration Preview</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between py-2 border-b border-b3-react-border">
+                    <span className="text-sm text-b3-react-muted-foreground">Token Name</span>
+                    <span className="font-medium text-b3-react-foreground text-sm">{config.name}</span>
+                  </div>
+                  <div className="flex items-center justify-between py-2 border-b border-b3-react-border">
+                    <span className="text-sm text-b3-react-muted-foreground">Symbol</span>
+                    <span className="font-medium text-b3-react-foreground text-sm">{config.symbol}</span>
+                  </div>
+                  <div className="flex items-center justify-between py-2 border-b border-b3-react-border">
+                    <span className="text-sm text-b3-react-muted-foreground">Supply</span>
+                    <span className="font-medium text-b3-react-foreground text-sm">{rawInputs.finalTokenSupply}</span>
+                  </div>
+                  <div className="flex items-center justify-between py-2 border-b border-b3-react-border">
+                    <span className="text-sm text-b3-react-muted-foreground">Target</span>
+                    <span className="font-medium text-b3-react-foreground text-sm">{rawInputs.targetAmount}</span>
+                  </div>
+                  <div className="flex items-center justify-between py-2 border-b border-b3-react-border">
+                    <span className="text-sm text-b3-react-muted-foreground">Trading Token</span>
+                    <span className="font-mono text-b3-react-foreground text-xs">{config.tradingToken.slice(0, 6)}...{config.tradingToken.slice(-4)}</span>
+                  </div>
+                  <div className="flex items-center justify-between py-2">
+                    <span className="text-sm text-b3-react-muted-foreground">Aggressiveness</span>
+                    <span className="font-medium text-b3-react-foreground text-sm">{config.aggressivenessFactor}%</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Deployment Status */}
+              {isPending && (
+                <div className="rounded-xl bg-b3-react-card border border-b3-react-border p-6">
+                  <h3 className="text-lg font-semibold text-b3-react-foreground mb-4">Deployment Status</h3>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-5 h-5 border-2 border-b3-react-primary border-r-transparent animate-spin rounded-full"></div>
+                    <span className="text-b3-react-muted-foreground">Deploying your token...</span>
+                  </div>
+                  <div className="mt-4 text-xs text-b3-react-muted-foreground">
+                    This may take a few moments. Please don't close this page.
+                  </div>
+                </div>
+              )}
+
+              {/* Help & Info */}
+              <div className="rounded-xl bg-b3-react-card border border-b3-react-border p-6">
+                <h3 className="text-lg font-semibold text-b3-react-foreground mb-4">About Bonding Curves</h3>
+                <div className="space-y-4 text-sm text-b3-react-muted-foreground">
+                  <p>
+                    Bonding curves create automatic price discovery through mathematical formulas. As more people buy your token, the price increases according to the curve.
+                  </p>
+                  <div className="space-y-3">
+                    <div>
+                      <strong className="text-b3-react-foreground">Target Amount:</strong> The trading token threshold needed before your token migrates to a full DEX.
+                    </div>
+                    <div>
+                      <strong className="text-b3-react-foreground">Trading Token:</strong> The ERC20 token used for buying/selling your bonding curve token.
+                    </div>
+                    <div>
+                      <strong className="text-b3-react-foreground">Aggressiveness Factor:</strong> Controls how steep the price curve is. Higher values mean faster price increases.
+                    </div>
+                    <div>
+                      <strong className="text-b3-react-foreground">LP Split Ratio:</strong> Percentage of fees that go to the fee recipient (in basis points).
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Transaction Hash Display */}
+        {hash && (
+          <div className="mt-8 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 p-6">
+            <div className="flex items-start space-x-3">
+              <svg className="w-6 h-6 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div className="flex-1">
+                <h4 className="font-semibold text-blue-800 dark:text-blue-200">Transaction Submitted</h4>
+                <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">Transaction Hash:</p>
+                <p className="font-mono text-xs text-blue-600 dark:text-blue-400 mt-1 break-all">{hash}</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
     </div>
   );
 }

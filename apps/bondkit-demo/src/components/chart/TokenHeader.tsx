@@ -16,12 +16,12 @@ export function TokenHeader({ tokenInfo, className }: TokenHeaderProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-white">{name}</h1>
+            <h1 className="text-2xl font-bold text-b3-react-foreground">{name}</h1>
             <p className="text-sm uppercase tracking-wide text-gray-400">{symbol}</p>
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="font-mono text-3xl font-bold text-white">${formatPrice(currentPrice)}</div>
+            <div className="font-mono text-3xl font-bold text-b3-react-foreground">${formatPrice(currentPrice)}</div>
             <div
               className={cn(
                 "flex items-center gap-1 rounded-md px-2 py-1 text-sm font-medium",
@@ -38,7 +38,7 @@ export function TokenHeader({ tokenInfo, className }: TokenHeaderProps) {
         <div className="flex items-center gap-6 text-right">
           <div>
             <p className="text-sm text-gray-400">24h Volume</p>
-            <div className="flex items-center gap-1 text-lg font-semibold text-white">
+            <div className="flex items-center gap-1 text-lg font-semibold text-b3-react-foreground">
               {volume24h.toLocaleString("en-US", {
                 notation: "compact",
                 maximumFractionDigits: 2,

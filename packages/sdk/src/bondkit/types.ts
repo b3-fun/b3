@@ -16,9 +16,14 @@ export type BondkitTokenConfig = {
   finalTokenSupply: bigint;
   aggressivenessFactor: number; // uint8
   lpSplitRatioFeeRecipientBps: bigint;
-  targetEth: bigint;
-  uniswapV2RouterAddress: Address;
+  targetAmount: bigint;
+  tradingToken: Address;
   migrationAdminAddress: Address;
+  bondingPhaseSplitter: Address;
+  v4PoolManager: Address;
+  v4Hook: Address;
+  v4PoolFee: number;
+  v4TickSpacing: number;
 };
 
 // Event type for BondkitTokenCreated from BondkitTokenFactoryABI
