@@ -5,21 +5,21 @@ import type {
   GetContractReturnType,
   Hex,
   PublicClient,
-  WalletClient,
   Transport,
+  WalletClient,
 } from "viem";
-import { createPublicClient, createWalletClient, custom, getContract, http, parseEther } from "viem";
+import { createPublicClient, createWalletClient, custom, erc20Abi, getContract, http, parseEther } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
+import { base } from "viem/chains";
 import { BondkitTokenABI } from "./abis";
 import { getConfig } from "./config";
 import type {
-  TokenDetails,
-  TokenStatus,
   BondkitTokenInitializationConfig,
   GetTransactionHistoryOptions,
+  TokenDetails,
+  TokenStatus,
   TransactionResponse,
 } from "./types";
-import { base } from "viem/chains";
 
 // Event ABI snippets for decoding
 const boughtEventAbi = BondkitTokenABI.find(item => item.type === "event" && item.name === "BondingCurveBuy");
@@ -48,6 +48,7 @@ export class BondkitToken {
   private apiEndpoint: string;
   private walletClientInstance: WalletClient;
   private connectedProvider?: EIP1193Provider;
+  private tradingToken?: Address;
 
   constructor(contractAddress: string, walletKey?: string) {
     const sdkConfig = getConfig(base.id);
@@ -81,6 +82,10 @@ export class BondkitToken {
       address: this.contractAddress,
       abi: BondkitTokenABI,
       client: this.walletClientInstance,
+    });
+
+    this.contract.read.tradingToken().then(tradingToken => {
+      this.tradingToken = tradingToken as Address;
     });
   }
 
@@ -216,6 +221,44 @@ export class BondkitToken {
     }
   }
 
+  public async getTradingTokenBalanceOf(account: Address): Promise<bigint | undefined> {
+    try {
+      if (!this.tradingToken) {
+        console.warn("Trading token address not available");
+        return undefined;
+      }
+
+      // If trading token is ETH (zero address), get ETH balance
+      if (this.tradingToken === "0x0000000000000000000000000000000000000000") {
+        return await this.publicClient.getBalance({ address: account });
+      }
+
+      // For ERC20 trading tokens, get token balance
+      const tradingTokenContract = getContract({
+        address: this.tradingToken as Address,
+        abi: erc20Abi,
+        client: this.publicClient, // Use public client for read operations
+      });
+
+      return await tradingTokenContract.read.balanceOf([account]);
+    } catch (error) {
+      console.warn(`Error fetching trading token balance for ${account}:`, error);
+      return undefined;
+    }
+  }
+
+  public async getTradingTokenAddress(): Promise<Address | undefined> {
+    try {
+      if (!this.tradingToken) {
+        this.tradingToken = (await this.contract.read.tradingToken()) as Address;
+      }
+      return this.tradingToken;
+    } catch (error) {
+      console.warn("Error fetching trading token address:", error);
+      return undefined;
+    }
+  }
+
   public async allowance(owner: Address, spender: Address): Promise<bigint | undefined> {
     try {
       return await this.contract.read.allowance([owner, spender]);
@@ -299,11 +342,11 @@ export class BondkitToken {
     }
   }
 
-  public async getAmountOfEthToSell(tokenAmount: bigint): Promise<bigint | undefined> {
+  public async getAmountOfTradingTokensToSell(amount: bigint): Promise<bigint | undefined> {
     try {
-      return await this.contract.read.getAmountOfEthToSell([tokenAmount]);
+      return await this.contract.read.getAmountOfTradingTokensToSell([amount]);
     } catch (e) {
-      console.warn("Error in getAmountOfEthToSell:", e);
+      console.warn("Error in getAmountOfTradingTokensToSell:", e);
       return undefined;
     }
   }
@@ -317,11 +360,11 @@ export class BondkitToken {
     }
   }
 
-  public async totalEthRaisedBonding(): Promise<bigint | undefined> {
+  public async totalRaisedBonding(): Promise<bigint | undefined> {
     try {
-      return await this.contract.read.totalEthRaisedBonding();
+      return await this.contract.read.totalRaisedBonding();
     } catch (e) {
-      console.warn("Error fetching totalEthRaisedBonding:", e);
+      console.warn("Error fetching totalRaisedBonding:", e);
       return undefined;
     }
   }
@@ -505,13 +548,58 @@ export class BondkitToken {
 
   /** Buy tokens with ETH. Payable function. */
   public async buy(
+    amount: bigint | string,
     minTokensOut: bigint,
-    ethAmount: bigint | string,
     options?: ExecuteWriteOptions,
   ): Promise<Hex | undefined> {
     if (!boughtEventAbi) console.warn("Bought event ABI not found for event decoding.");
-    const value = typeof ethAmount === "string" ? parseEther(ethAmount) : ethAmount;
-    return this.executeWrite("buy", [minTokensOut], { ...options, value });
+
+    if (this.tradingToken === "0x0000000000000000000000000000000000000000") {
+      const value = typeof amount === "string" ? parseEther(amount) : amount;
+      return this.executeWrite("buy", [minTokensOut], { ...options, value });
+    } else {
+      // For ERC20 trading tokens, we need to approve first, then call buy
+      const tradingTokenContract = getContract({
+        address: this.tradingToken as Address,
+        abi: erc20Abi,
+        client: this.walletClientInstance,
+      });
+
+      const currentAllowance = await tradingTokenContract.read.allowance([
+        this.walletClientInstance.account?.address as Address,
+        this.contractAddress as Address,
+      ]);
+
+      const amountBigInt = typeof amount === "string" ? parseEther(amount) : BigInt(amount);
+
+      if (currentAllowance < amountBigInt) {
+        // Get account for the approve transaction
+        const accountToUse = this.walletKey ? privateKeyToAccount(this.walletKey) : this.walletClientInstance.account;
+        if (!accountToUse) throw new Error("Account for transaction could not be determined.");
+
+        // Create approve options with required fields but without value (ERC20 approve doesn't need ETH)
+        const approveOptions: any = {
+          account: accountToUse,
+          chain: this.chain,
+        };
+
+        // Add optional transaction parameters if provided
+        if (options?.gas !== undefined) approveOptions.gas = options.gas;
+        if (options?.maxFeePerGas !== undefined) approveOptions.maxFeePerGas = options.maxFeePerGas;
+        if (options?.maxPriorityFeePerGas !== undefined)
+          approveOptions.maxPriorityFeePerGas = options.maxPriorityFeePerGas;
+
+        const approveTx = await tradingTokenContract.write.approve(
+          [this.contractAddress as Address, amountBigInt],
+          approveOptions,
+        );
+
+        await this.publicClient.waitForTransactionReceipt({ hash: approveTx });
+      }
+
+      // Now call the buy function with the trading token amount
+      return this.executeWrite("buy", [amountBigInt, minTokensOut], options);
+    }
   }
 
   /** Sell tokens for ETH. */

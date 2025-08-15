@@ -119,7 +119,10 @@ export default function TokenInteraction({ tokenAddress, onUnmount }: TokenInter
 
   return (
     <div className="relative w-full rounded-lg bg-gray-800 p-6 shadow-lg">
-      <button onClick={onUnmount} className="absolute right-3 top-3 text-gray-500 hover:text-white">
+      <button
+        onClick={onUnmount}
+        className="text-b3-react-muted-foreground hover:text-b3-react-foreground absolute right-3 top-3"
+      >
         &times;
       </button>
       <h2 className="mb-2 text-xl font-semibold">Interact with Token</h2>
@@ -169,7 +172,9 @@ export default function TokenInteraction({ tokenAddress, onUnmount }: TokenInter
               <div className="mb-4 flex justify-center border-b border-gray-600">
                 <button
                   className={`px-6 py-2 font-semibold ${
-                    action === "buy" ? "border-b-2 border-blue-500 text-white" : "text-gray-500"
+                    action === "buy"
+                      ? "text-b3-react-foreground border-b-2 border-blue-500"
+                      : "text-b3-react-muted-foreground"
                   }`}
                   onClick={() => setAction("buy")}
                 >
@@ -177,7 +182,9 @@ export default function TokenInteraction({ tokenAddress, onUnmount }: TokenInter
                 </button>
                 <button
                   className={`px-6 py-2 font-semibold ${
-                    action === "sell" ? "border-b-2 border-blue-500 text-white" : "text-gray-500"
+                    action === "sell"
+                      ? "text-b3-react-foreground border-b-2 border-blue-500"
+                      : "text-b3-react-muted-foreground"
                   }`}
                   onClick={() => setAction("sell")}
                 >
@@ -200,7 +207,7 @@ export default function TokenInteraction({ tokenAddress, onUnmount }: TokenInter
                   value={amount}
                   onChange={e => setAmount(e.target.value)}
                   placeholder={`Amount`}
-                  className="mb-4 w-full rounded-md bg-gray-600 p-2 text-white"
+                  className="bg-b3-react-subtle text-b3-react-foreground mb-4 w-full rounded-md p-2"
                 />
                 {quote && (
                   <p className="mb-2 text-sm text-gray-400">
@@ -210,7 +217,7 @@ export default function TokenInteraction({ tokenAddress, onUnmount }: TokenInter
                 <button
                   onClick={handleAction}
                   disabled={isPending || !isConnected || !amount}
-                  className="w-full rounded bg-blue-600 px-4 py-2 font-bold text-white hover:bg-blue-700 disabled:bg-gray-500"
+                  className="disabled:bg-b3-react-muted w-full rounded bg-blue-600 px-4 py-2 font-bold text-white hover:bg-blue-700"
                 >
                   {buttonText()}
                 </button>
@@ -243,7 +250,7 @@ export default function TokenInteraction({ tokenAddress, onUnmount }: TokenInter
           <button
             onClick={() => migrateToDex()}
             disabled={isPending}
-            className="w-full rounded bg-purple-600 px-4 py-2 font-bold text-white hover:bg-purple-700 disabled:bg-gray-500"
+            className="disabled:bg-b3-react-muted w-full rounded bg-purple-600 px-4 py-2 font-bold text-white hover:bg-purple-700"
           >
             {isPending && txType === "migrate" ? "Migrating..." : "Migrate to DEX"}
           </button>

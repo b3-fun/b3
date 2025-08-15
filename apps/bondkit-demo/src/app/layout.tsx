@@ -17,7 +17,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={`${inter.className} b3-root`} data-theme="dark">
         <Providers>
           <B3ProviderWrapper>{children}</B3ProviderWrapper>
         </Providers>

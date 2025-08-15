@@ -22,7 +22,9 @@ export function DataTypeSelector({ selectedType, onTypeChange, className }: Data
           onClick={() => onTypeChange(value)}
           className={cn(
             "min-w-[5rem] rounded px-3 py-1 text-xs font-medium transition-colors",
-            selectedType === value ? "bg-blue-600 text-white" : "text-gray-400 hover:bg-gray-600 hover:text-white",
+            selectedType === value
+              ? "bg-blue-600 text-white"
+              : "text-b3-react-muted-foreground hover:bg-b3-react-subtle hover:text-b3-react-foreground",
           )}
         >
           {label}

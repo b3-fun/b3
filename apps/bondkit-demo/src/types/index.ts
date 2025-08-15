@@ -86,7 +86,7 @@ export interface BondkitTokenData {
   symbol: string;
   initializer: string;
   initializationTxHash: string;
-  initializationTimestamp: number;
+  initializationTimestamp: string;
   initializationBlockNumber: number;
   isActive: boolean;
   createdAt: number;

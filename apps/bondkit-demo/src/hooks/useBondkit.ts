@@ -23,6 +23,8 @@ export function useBondkit(tokenAddress: `0x${string}`) {
   const [tokenBalance, setTokenBalance] = useState<bigint>(BigInt(0));
   const [allowance, setAllowance] = useState<bigint>(BigInt(0));
   const [txType, setTxType] = useState<"approve" | "sell" | "buy" | "migrate" | null>(null);
+  const [tradingTokenBalance, setTradingTokenBalance] = useState<bigint>(BigInt(0));
+  const [tradingTokenAddress, setTradingTokenAddress] = useState<Address | undefined>();
   const [bondingProgress, setBondingProgress] = useState({
     progress: 0,
     raised: BigInt(0),
@@ -64,18 +66,23 @@ export function useBondkit(tokenAddress: `0x${string}`) {
   const fetchDynamicData = useCallback(async () => {
     if (!bondkitTokenClient || !userAddress) return;
 
-    const [phase, balance, currentAllowance, progress, allHolders, details] = await Promise.all([
-      bondkitTokenClient.getCurrentPhase(),
-      bondkitTokenClient.balanceOf(userAddress),
-      bondkitTokenClient.allowance(userAddress, tokenAddress),
-      bondkitTokenClient.getBondingProgress(),
-      fetchAllHolders(bondkitTokenClient),
-      bondkitTokenClient.getTokenDetails(),
-    ]);
+    const [phase, balance, currentAllowance, progress, allHolders, details, tradingTokenAddr, tradingTokenBal] =
+      await Promise.all([
+        bondkitTokenClient.getCurrentPhase(),
+        bondkitTokenClient.balanceOf(userAddress),
+        bondkitTokenClient.allowance(userAddress, tokenAddress),
+        bondkitTokenClient.getBondingProgress(),
+        fetchAllHolders(bondkitTokenClient),
+        bondkitTokenClient.getTokenDetails(),
+        bondkitTokenClient.getTradingTokenAddress(),
+        bondkitTokenClient.getTradingTokenBalanceOf(userAddress),
+      ]);
 
     setCurrentPhase(phase || undefined);
     setTokenBalance(balance || BigInt(0));
     setAllowance(currentAllowance || BigInt(0));
+    setTradingTokenAddress(tradingTokenAddr);
+    setTradingTokenBalance(tradingTokenBal || BigInt(0));
     if (progress) {
       setBondingProgress({
         progress: progress.progress,
@@ -106,9 +113,9 @@ export function useBondkit(tokenAddress: `0x${string}`) {
 
   // Quotes
   const getBuyQuote = useCallback(
-    async (ethAmount: bigint) => {
+    async (tradingTokenAmount: bigint) => {
       if (!bondkitTokenClient) return;
-      return bondkitTokenClient.getAmountOfTokensToBuy(ethAmount);
+      return bondkitTokenClient.getAmountOfTokensToBuy(tradingTokenAmount);
     },
     [bondkitTokenClient],
   );
@@ -116,19 +123,19 @@ export function useBondkit(tokenAddress: `0x${string}`) {
   const getSellQuote = useCallback(
     async (tokenAmount: bigint) => {
       if (!bondkitTokenClient) return;
-      return bondkitTokenClient.getAmountOfEthToSell(tokenAmount);
+      return bondkitTokenClient.getAmountOfTradingTokensToSell(tokenAmount);
     },
     [bondkitTokenClient],
   );
 
   // Write Actions
-  const buy = async (ethAmount: bigint) => {
+  const buy = async (tradingTokenAmount: bigint) => {
     if (!bondkitTokenClient) return;
     setTxType("buy");
     setIsConfirmed(false);
     setIsPending(true);
     try {
-      const tx = await bondkitTokenClient.buy(BigInt(0), ethAmount);
+      const tx = await bondkitTokenClient.buy(tradingTokenAmount, BigInt(0));
       if (tx) {
         setHash(tx);
         await bondkitTokenClient.publicClient.waitForTransactionReceipt({ hash: tx });
@@ -204,6 +211,8 @@ export function useBondkit(tokenAddress: `0x${string}`) {
     tokenSymbol: tokenDetails?.symbol,
     tokenBalance,
     userEthBalance,
+    tradingTokenBalance,
+    tradingTokenAddress,
     currentPhase,
     allowance,
     owner: ownerAddress,
