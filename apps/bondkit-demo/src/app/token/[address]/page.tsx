@@ -524,17 +524,46 @@ export default function TokenPage({ params }: TokenPageProps) {
                         </div>
                       ) : (
                         <div className="text-center">
-                          <h4 className="text-b3-react-foreground mb-2 text-lg font-semibold">Bonding Complete!</h4>
-                          <p className="text-b3-react-muted-foreground mb-4">Waiting for migration to DEX.</p>
-                          {isOwner && (
-                            <button
-                              onClick={() => migrateToDex()}
-                              disabled={isPending}
-                              className="disabled:bg-b3-react-muted disabled:text-b3-react-muted-foreground w-full rounded-lg bg-purple-600 px-4 py-3 font-bold text-white transition-colors hover:bg-purple-700"
-                            >
-                              {isPending && txType === "migrate" ? "Migrating..." : "Migrate to DEX"}
-                            </button>
-                          )}
+                                                     <h4 className="text-b3-react-foreground mb-2 text-lg font-semibold">Bonding Complete!</h4>
+                           <p className="text-b3-react-muted-foreground mb-4">Waiting for migration to DEX.</p>
+                           {isOwner && (
+                             <button
+                               onClick={() => migrateToDex()}
+                               disabled={isPending}
+                               className="group relative w-full rounded-lg bg-blue-600 px-4 py-3 font-bold text-white shadow-lg transition-all duration-200 hover:bg-blue-700 hover:shadow-xl disabled:bg-gray-400 disabled:text-gray-600 disabled:shadow-none"
+                             >
+                               <div className="flex items-center justify-center space-x-2">
+                                 {isPending && txType === "migrate" ? (
+                                   <>
+                                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                                     <span>Migrating...</span>
+                                   </>
+                                 ) : (
+                                   <>
+                                     <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                       <path
+                                         strokeLinecap="round"
+                                         strokeLinejoin="round"
+                                         strokeWidth={2}
+                                         d="M13 10V3L4 14h7v7l9-11h-7z"
+                                       />
+                                     </svg>
+                                     <span>Migrate to DEX</span>
+                                     <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                       <path
+                                         strokeLinecap="round"
+                                         strokeLinejoin="round"
+                                         strokeWidth={2}
+                                         d="M9 5l7 7-7 7"
+                                       />
+                                     </svg>
+                                   </>
+                                 )}
+                               </div>
+                               {/* Shine effect on hover */}
+                               <div className="absolute inset-0 -translate-x-full transform bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-700 group-hover:translate-x-full"></div>
+                             </button>
+                           )}
                         </div>
                       )}
                     </>
@@ -553,14 +582,14 @@ export default function TokenPage({ params }: TokenPageProps) {
                         >
                           View on DexScreener
                         </a>
-                        <a
-                          href={`https://app.uniswap.org/swap?chain=base&inputCurrency=NATIVE&outputCurrency=${tokenAddress}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-block w-full rounded-lg bg-pink-600 px-4 py-3 font-bold text-white transition-colors hover:bg-pink-700"
-                        >
-                          Swap on Uniswap
-                        </a>
+                                                 <a
+                           href={`https://app.uniswap.org/swap?chain=base&inputCurrency=NATIVE&outputCurrency=${tokenAddress}`}
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           className="inline-block w-full rounded-lg bg-b3-react-primary text-b3-react-primary-foreground hover:bg-b3-react-primary/90 px-4 py-3 font-bold transition-colors"
+                         >
+                           Swap on Uniswap
+                         </a>
                       </div>
                     </div>
                   )}
