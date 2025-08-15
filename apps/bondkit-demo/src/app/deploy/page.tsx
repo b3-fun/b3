@@ -510,7 +510,7 @@ export default function DeployPage() {
                     <span className="text-b3-react-muted-foreground">Deploying your token...</span>
                   </div>
                   <div className="text-b3-react-muted-foreground mt-4 text-xs">
-                    This may take a few moments. Please don't close this page.
+                    This may take a few moments. Please do not close this page.
                   </div>
                 </div>
               )}
