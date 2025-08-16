@@ -4,10 +4,10 @@ import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { ShinyButton, useB3, useModalStore, useProfile } from "@b3dotfun/sdk/global-account/react";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { formatStripeAmount } from "@b3dotfun/sdk/shared/utils/payment.utils";
-import { AddressElement, Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
-import { loadStripe, PaymentIntentResult, StripePaymentElementOptions } from "@stripe/stripe-js";
+import { AddressElement, CardElement, Elements, useElements, useStripe } from "@stripe/react-stripe-js";
+import { loadStripe, PaymentIntentResult, StripeCardElement } from "@stripe/stripe-js";
 import { X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "../AnySpendFingerprintWrapper";
 import HowItWorks from "./HowItWorks";
 import PaymentMethodIcons from "./PaymentMethodIcons";
@@ -16,16 +16,16 @@ const stripePromise = loadStripe(STRIPE_CONFIG.publishableKey);
 
 interface PaymentStripeWeb2Props {
   order: components["schemas"]["Order"];
+  stripePaymentIntentId: string;
   onPaymentSuccess?: (paymentIntent: any) => void;
 }
 
-export default function PaymentStripeWeb2({ order, onPaymentSuccess }: PaymentStripeWeb2Props) {
+export default function PaymentStripeWeb2({ order, stripePaymentIntentId, onPaymentSuccess }: PaymentStripeWeb2Props) {
   const { theme } = useB3();
   const fingerprintConfig = getFingerprintConfig();
 
-  const { clientSecret, isLoadingStripeClientSecret, stripeClientSecretError } = useStripeClientSecret(
-    order.stripePaymentIntentId!,
-  );
+  const { clientSecret, isLoadingStripeClientSecret, stripeClientSecretError } =
+    useStripeClientSecret(stripePaymentIntentId);
 
   if (isLoadingStripeClientSecret) {
     return <StripeLoadingState />;
@@ -99,7 +99,17 @@ function StripePaymentForm({
   const [amount, setAmount] = useState<string | null>(null);
   const [stripeReady, setStripeReady] = useState<boolean>(false);
   const [showHowItWorks, setShowHowItWorks] = useState<boolean>(false);
-  const [showAddressElement, setShowAddressElement] = useState<boolean>(false);
+  // Require-completion flags for Card & Address
+  const [cardComplete, setCardComplete] = useState<boolean>(false);
+  const [addressComplete, setAddressComplete] = useState<boolean>(false);
+  // Snapshot of AddressElement value to pass to billing_details
+  const [addressValue, setAddressValue] = useState<any>(null);
+
+  // Helper function to mark "How it works" as seen
+  const markHowItWorksAsSeen = useCallback(() => {
+    setShowHowItWorks(false);
+    localStorage.setItem("b3-payment-how-it-works-seen", "true");
+  }, []);
 
   useEffect(() => {
     if (stripe && elements) {
@@ -107,16 +117,22 @@ function StripePaymentForm({
     }
   }, [stripe, elements, order.id]);
 
+  // Check if user has seen "How it works" before
+  useEffect(() => {
+    const hasSeenHowItWorks = localStorage.getItem("b3-payment-how-it-works-seen");
+    if (!hasSeenHowItWorks) {
+      setShowHowItWorks(true);
+    }
+  }, []);
+
   useEffect(() => {
     const fetchPaymentIntent = async () => {
       if (!stripe || !clientSecret) return;
 
       try {
         const paymentIntent = await stripe.retrievePaymentIntent(clientSecret);
-        const amount = paymentIntent.paymentIntent?.amount
-          ? formatStripeAmount(paymentIntent.paymentIntent.amount)
-          : null;
-        setAmount(amount);
+        const amt = paymentIntent.paymentIntent?.amount ? formatStripeAmount(paymentIntent.paymentIntent.amount) : null;
+        setAmount(amt);
       } catch (error) {
         console.error("@@stripe-web2-payment:retrieve-intent-error:", JSON.stringify(error, null, 2));
       }
@@ -125,16 +141,10 @@ function StripePaymentForm({
     fetchPaymentIntent();
   }, [clientSecret, stripe]);
 
-  // Handle payment element changes
-  const handlePaymentElementChange = (event: any) => {
-    // Show address element only for card payments
-    setShowAddressElement(event.value.type === "card");
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!stripe || !elements) {
+    if (!stripe || !elements || !clientSecret) {
       setMessage("Stripe is not initialized");
       return;
     }
@@ -142,10 +152,44 @@ function StripePaymentForm({
     setLoading(true);
     setMessage(null);
 
+    // Block submission until both card and billing address are complete
+    if (!cardComplete || !addressComplete) {
+      setMessage("Please complete all required billing address and card fields.");
+      setLoading(false);
+      return;
+    }
+
     try {
-      const result = (await stripe.confirmPayment({
-        elements,
-        redirect: "if_required",
+      const card = elements.getElement(CardElement) as StripeCardElement | null;
+      if (!card) {
+        setMessage("Card element not found");
+        setLoading(false);
+        return;
+      }
+
+      const result = (await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          card,
+          billing_details: {
+            // Map AddressElement values into billing_details
+            name: addressValue?.name
+              ? typeof addressValue.name === "string"
+                ? addressValue.name
+                : [addressValue.name.firstName, addressValue.name.lastName].filter(Boolean).join(" ")
+              : undefined,
+            phone: addressValue?.phone || undefined,
+            address: addressValue?.address
+              ? {
+                  line1: addressValue.address.line1 || undefined,
+                  line2: addressValue.address.line2 || undefined,
+                  city: addressValue.address.city || undefined,
+                  state: addressValue.address.state || undefined, // province/region
+                  postal_code: addressValue.address.postal_code || undefined,
+                  country: addressValue.address.country || undefined,
+                }
+              : undefined,
+          },
+        },
       })) as PaymentIntentResult;
 
       if (result.error) {
@@ -204,17 +248,6 @@ function StripePaymentForm({
     return <StripeLoadingState />;
   }
 
-  const stripeElementOptions: StripePaymentElementOptions = {
-    layout: "tabs" as const,
-    fields: {
-      billingDetails: "auto" as const,
-    },
-    wallets: {
-      applePay: "auto" as const,
-      googlePay: "auto" as const,
-    },
-  };
-
   const howItWorksSteps = [
     {
       number: 1,
@@ -246,30 +279,28 @@ function StripePaymentForm({
           totalAmount={amount ? `$${Number(amount).toFixed(2)}` : undefined}
         />
 
-        {/* Simplified Payment Form */}
+        {/* Simplified Payment Form (Card + LinkAuth) */}
         <div className="w-full">
           <div className="text-as-primary mb-4 text-lg font-semibold">Payment Details</div>
-          <PaymentElement onChange={handlePaymentElementChange} options={stripeElementOptions} />
-          {showAddressElement && (
-            <AddressElement
-              options={{
-                mode: "billing",
-                fields: {
-                  phone: "always",
-                },
-                // More granular control
-                display: {
-                  name: "split", // or 'split' for first/last name separately
-                },
-                // Validation
-                validation: {
-                  phone: {
-                    required: "auto", // or 'always', 'never'
-                  },
-                },
-              }}
-            />
-          )}
+
+          {/* Card input */}
+          <div className="border-as-stroke mb-4 rounded-lg border p-3">
+            <CardElement options={{}} onChange={(e: any) => setCardComplete(!!e.complete)} />
+          </div>
+
+          <AddressElement
+            options={{
+              mode: "billing",
+              fields: { phone: "always" },
+              display: { name: "split" },
+              validation: { phone: { required: "always" } },
+            }}
+            // Ensure we mirror Stripe's built-in completeness signal and capture values
+            onChange={(e: any) => {
+              setAddressComplete(!!e.complete);
+              setAddressValue(e.value);
+            }}
+          />
         </div>
 
         {/* Error Message */}
@@ -288,7 +319,7 @@ function StripePaymentForm({
         <ShinyButton
           type="submit"
           accentColor="hsl(var(--as-brand))"
-          disabled={!stripe || !elements || loading}
+          disabled={!stripe || !elements || loading || !cardComplete || !addressComplete}
           className="relative w-full py-4 text-lg font-semibold"
         >
           {loading ? (
@@ -307,13 +338,20 @@ function StripePaymentForm({
 
       {/* How it works modal */}
       {showHowItWorks && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={e => {
+            if (e.target === e.currentTarget) {
+              markHowItWorksAsSeen();
+            }
+          }}
+        >
           <div className="bg-as-on-surface-1 relative max-h-[80vh] w-full max-w-2xl overflow-y-auto rounded-2xl p-6">
             {/* Modal header */}
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-as-primary text-xl font-semibold">How it works</h2>
               <button
-                onClick={() => setShowHowItWorks(false)}
+                onClick={markHowItWorksAsSeen}
                 className="text-as-primary/60 hover:text-as-primary transition-colors"
               >
                 <X className="h-6 w-6" />
@@ -331,26 +369,3 @@ function StripePaymentForm({
     </div>
   );
 }
-
-// Add tooltip component
-// function Tooltip({ children, content }: { children: React.ReactNode; content: string }) {
-//   const [isVisible, setIsVisible] = useState(false);
-
-//   return (
-//     <div className="relative inline-block">
-//       <div onMouseEnter={() => setIsVisible(true)} onMouseLeave={() => setIsVisible(false)} className="cursor-help">
-//         {children}
-//       </div>
-//       {isVisible && (
-//         <div className="absolute bottom-full left-1/2 z-50 mb-2 w-80 -translate-x-1/2">
-//           <div className="bg-as-on-surface-1 border-as-stroke text-as-primary rounded-lg border p-3 text-sm shadow-lg">
-//             <div className="whitespace-pre-line">{content}</div>
-//             <div className="absolute left-1/2 top-full -translate-x-1/2">
-//               <div className="border-t-as-on-surface-1 border-l-4 border-r-4 border-t-4 border-transparent"></div>
-//             </div>
-//           </div>
-//         </div>
-//       )}
-//     </div>
-//   );
-// }

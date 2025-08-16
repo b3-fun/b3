@@ -16,8 +16,8 @@ export default function PaymentVendorUI({ order, dstTokenSymbol }: PaymentVendor
   }
 
   // Handle Stripe Web2 payment flow
-  if (vendor === "stripe-web2") {
-    return <PaymentStripeWeb2 order={order} />;
+  if (vendor === "stripe-web2" && order.stripePaymentIntentId) {
+    return <PaymentStripeWeb2 order={order} stripePaymentIntentId={order.stripePaymentIntentId} />;
   }
 
   // Return null for unsupported vendors
