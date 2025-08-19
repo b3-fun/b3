@@ -1,0 +1,35 @@
+---
+title: Objetivos y Disparador de Migración
+description: >-
+  Comprender targetAmount, cuándo puede ocurrir la migración y qué sucede
+  durante la migración.
+lang: es
+originalPath: bondkit/concepts/targets.mdx
+---
+## Cantidad objetivo
+
+- `targetAmount` es el umbral del activo de cotización que habilita la migración.
+- Establecido en la creación; denominado en el activo de cotización (ETH o un ERC20 permitido).
+- La fase de vinculación termina una vez que el total recaudado alcanza el objetivo (los excesos de contribuciones son reembolsados).
+
+## Quién puede migrar
+
+- Solo el propietario/creador del token (administrador de migración) puede llamar a `migrateToDex()`.
+
+## Qué sucede en la migración
+
+- División del activo de cotización acumulado:
+  - Porción para `feeRecipient`, basada en `lpSplitRatioFeeRecipientBps`.
+  - El resto se utiliza como liquidez junto con los tokens reservados para LP.
+- Para la migración de Uniswap v4, el contrato calcula `sqrtPriceX96` para inicializar el pool.
+- La liquidez se añade al pool v4 con salvaguardias apropiadas; los tokens LP o posiciones se manejan según la semántica de v4, con la propiedad efectivamente quemada/renunciada para la descentralización.
+- La propiedad se renuncia inmediatamente para finalizar la descentralización.
+
+## Post-migración
+
+- Se deshabilita el comercio en la fase de vinculación.
+- El token se comporta como un ERC20 estándar con descubrimiento de precios basado en DEX.
+
+<Note>
+Las redes y direcciones (fábrica, gestor de pool v4, hooks) están listadas en la página de Redes.
+</Note>

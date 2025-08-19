@@ -1,0 +1,71 @@
+---
+title: Cómo verificar el estado de una transacción en B3
+description: >-
+  Aprende cómo rastrear y verificar tus transacciones en la Red B3 utilizando el
+  explorador de bloques con hashes de transacciones o direcciones de billetera
+lang: es
+originalPath: learn/deposits-withdrawals/how-to-verify-transaction-status.mdx
+---
+Si has enviado una transacción en la Red B3 y quieres verificar si ha sido confirmada, está pendiente o ha fallado, puedes rastrearla fácilmente usando el Explorador de Bloques B3. Todo lo que necesitas es el hash de la transacción (TxHash) o la dirección de la cartera involucrada en la transacción.
+
+## Pasos para Verificar una Transacción
+
+<iframe
+  className="w-full aspect-video rounded-xl"
+  src="https://www.youtube.com/embed/CZncVWI1aHk"
+  title="Cómo verificar el estado de la transacción en B3"
+  frameBorder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowFullScreen
+></iframe>
+
+<Steps>
+<Step title="Navega al Explorador B3">
+  Ve a [explorer.b3.fun](https://explorer.b3.fun).
+</Step>
+
+<Step title="Accede a las transacciones">
+  Pasa el cursor sobre el panel lateral izquierdo para expandirlo y haz clic en **Transactions.**
+  
+  <Frame>
+    <img src="https://s3.amazonaws.com/helpscout.net/docs/assets/685306b72e0550277aa9250e/images/687e55494b3936693ba0ecbb/file-o0WPrzMUbf.png" alt="Barra lateral del Explorador B3 con la opción Transacciones resaltada" />
+  </Frame>
+</Step>
+
+<Step title="Busca tu transacción">
+  Aparecerá una nueva barra de búsqueda. En la barra de búsqueda, ingresa:
+  - La dirección de la cartera que inició la transacción
+  - O el hash de la transacción (TxHash)
+  
+  <Frame>
+    <img src="https://s3.amazonaws.com/helpscout.net/docs/assets/685306b72e0550277aa9250e/images/687e556e1946514c34bffae9/file-sfCem4gBEs.png" alt="Barra de búsqueda para ingresar la dirección de la cartera o el hash de la transacción" />
+  </Frame>
+</Step>
+
+<Step title="Ver detalles de la transacción">
+  Explora los resultados y haz clic en la transacción relevante para ver:
+  - Estado (Éxito / Fallido / Pendiente)
+  - Fecha y hora
+  - Tokens transferidos
+  - Gas utilizado
+  - Cualquier otro detalle en la cadena
+  
+  <Frame>
+    <img src="https://s3.amazonaws.com/helpscout.net/docs/assets/685306b72e0550277aa9250e/images/687e55b1ffa88610da986dfd/file-ERrTVA4NLO.png" alt="Página de detalles de la transacción mostrando el estado e información de la transacción" />
+  </Frame>
+  
+  <Check>
+    Esta es la mejor manera de rastrear minteos, transferencias y otras actividades directamente en la Red B3.
+  </Check>
+</Step>
+</Steps>
+
+## Significados del Estado de la Transacción
+
+- **Success:** La transacción se completó con éxito
+- **Failed:** La transacción falló al ejecutarse (a menudo debido a gas insuficiente u otros errores)
+- **Pending:** La transacción aún está siendo procesada por la red
+
+<Tip>
+Puedes marcar direcciones de carteras usadas frecuentemente en el explorador para verificar rápidamente el historial de transacciones en el futuro.
+</Tip>

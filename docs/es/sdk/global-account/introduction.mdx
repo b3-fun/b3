@@ -1,0 +1,133 @@
+---
+title: Introducción a las Cuentas Globales
+description: >-
+  Las cuentas globales B3 proporcionan autenticación y gestión de usuarios sin
+  interrupciones a través del ecosistema B3
+lang: es
+originalPath: sdk/global-account/introduction.mdx
+---
+
+## ¿Qué son las Cuentas Globales B3?
+
+Las Cuentas Globales B3 son un sistema de autenticación unificado que proporciona a los usuarios una identidad única en todo el ecosistema B3. Los usuarios pueden autenticarse una vez y acceder a todas las aplicaciones, juegos y servicios de B3 sin problemas.
+
+## Características Clave
+
+<CardGroup cols={2}>
+
+<Card title="Inicio de Sesión Social" icon="users">
+  Soporte para Google, Discord y otros proveedores de autenticación social.
+</Card>
+
+<Card title="Gestión de Sesiones" icon="key">
+  Autenticación de clave de sesión segura con permisos personalizables.
+</Card>
+
+<Card title="Multiplataforma" icon="mobile">
+  Funciona en aplicaciones web, móviles y de escritorio.
+</Card>
+
+<Card title="Amigable para Desarrolladores" icon="code">
+  Componentes React simples y servicios TypeScript sin interfaz.
+</Card>
+
+</CardGroup>
+
+## Arquitectura
+
+El sistema de Cuentas Globales consta de varios componentes clave:
+
+### Flujo de Autenticación
+1. **Inicio de Sesión Social**: Los usuarios se autentican con su proveedor social preferido
+2. **Creación de Cuenta**: Se crea o vincula una Cuenta Global B3
+3. **Claves de Sesión**: Claves de sesión opcionales para mayor seguridad
+4. **Permisos**: Permisos granulares para diferentes acciones
+
+### Componentes React
+- `B3Provider`: Proveedor de contexto para Cuentas Globales
+- `SignInWithB3`: Flujo de autenticación completo
+- `RequestPermissionsButton`: Gestión de permisos
+- `AccountAssets`: Mostrar activos del usuario
+
+### Servicios sin Interfaz
+- Servicio de autenticación para implementaciones personalizadas
+- Utilidades de gestión de sesiones
+- Ayudantes de validación de permisos
+
+## Inicio Rápido
+
+### Autenticación Básica
+
+```tsx
+import { B3Provider, SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
+
+function App() {
+  return (
+    <B3Provider environment="production">
+      <SignInWithB3
+        provider={{ strategy: "google" }}
+        partnerId="your-partner-id"
+        onLoginSuccess={(globalAccount) => {
+          console.log("Usuario autenticado:", globalAccount);
+        }}
+      />
+    </B3Provider>
+  );
+}
+```
+
+### Verificar el Estado de Autenticación
+
+```tsx
+import { useB3 } from "@b3dotfun/sdk/global-account/react";
+
+function UserProfile() {
+  const { account, isAuthenticated } = useB3();
+
+  return (
+    <div>
+      {isAuthenticated ? (
+        <p>Bienvenido, {account?.displayName}!</p>
+      ) : (
+        <p>Por favor, inicia sesión</p>
+      )}
+    </div>
+  );
+}
+```
+
+## Configuración del Entorno
+
+Configura tus variables de entorno:
+
+```bash
+# Producción
+NEXT_PUBLIC_B3_API=https://api.b3.fun
+NEXT_PUBLIC_BSMNT_API=https://api.basement.fun
+
+# Desarrollo  
+NEXT_PUBLIC_B3_API=https://dev-api.b3.fun
+NEXT_PUBLIC_BSMNT_API=https://dev-api.basement.fun
+```
+
+## Próximos Pasos
+
+<CardGroup cols={2}>
+
+<Card title="Guía de Autenticación" icon="shield" href="/sdk/global-account/authentication">
+  Aprende sobre diferentes estrategias de autenticación e implementación.
+</Card>
+
+<Card title="Sistema de Permisos" icon="lock" href="/sdk/global-account/permissions">
+  Entiende las claves de sesión y la gestión de permisos.
+</Card>
+
+<Card title="Hooks React" icon="react" href="/sdk/global-account/hooks">
+  Explora los hooks disponibles para la integración de Cuentas Globales.
+</Card>
+
+<Card title="Ejemplos" icon="code" href="/sdk/global-account/examples">
+  Ve ejemplos completos y patrones de integración.
+</Card>
+
+</CardGroup>

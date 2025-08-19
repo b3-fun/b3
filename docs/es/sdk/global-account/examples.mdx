@@ -1,0 +1,659 @@
+---
+title: Ejemplos
+description: Ejemplos completos y patrones de integración para Cuentas Globales B3
+lang: es
+originalPath: sdk/global-account/examples.mdx
+---
+## Ejemplo de Autenticación Básica
+
+Un flujo de autenticación simple con manejo de errores y estados de carga.
+
+```tsx
+import { 
+  B3Provider, 
+  SignInWithB3, 
+  useB3 
+} from "@b3dotfun/sdk/global-account/react";
+
+function AuthExample() {
+  return (
+    <B3Provider environment="production">
+      <AuthComponent />
+    </B3Provider>
+  );
+}
+
+function AuthComponent() {
+  const { account, isAuthenticated, isLoading, signOut } = useB3();
+  const [authError, setAuthError] = useState<string | null>(null);
+
+  if (isLoading) {
+    return (
+      <div className="loading-container">
+        <div className="spinner" />
+        <p>Cargando tu cuenta...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="auth-container">
+      {isAuthenticated ? (
+        <div className="user-profile">
+          <img 
+            src={account?.avatarUrl} 
+            alt="Perfil" 
+            className="avatar"
+          />
+          <h2>¡Bienvenido, {account?.displayName}!</h2>
+          <p>Email: {account?.email}</p>
+          <button onClick={signOut} className="sign-out-btn">
+            Cerrar sesión
+          </button>
+        </div>
+      ) : (
+        <div className="sign-in-container">
+          <h2>Inicia sesión en B3</h2>
+          
+          <SignInWithB3
+            provider={{ strategy: "google" }}
+            partnerId="your-partner-id"
+            onLoginSuccess={(globalAccount) => {
+              setAuthError(null);
+              console.log("Autenticación exitosa:", globalAccount);
+            }}
+            onLoginError={(error) => {
+              setAuthError(error.message);
+              console.error("Autenticación fallida:", error);
+            }}
+          />
+
+          <SignInWithB3
+            provider={{ strategy: "discord" }}
+            partnerId="your-partner-id"
+            onLoginSuccess={(globalAccount) => {
+              setAuthError(null);
+              console.log("Autenticación de Discord exitosa:", globalAccount);
+            }}
+            onLoginError={(error) => {
+              setAuthError(error.message);
+            }}
+          />
+
+          {authError && (
+            <div className="error-message">
+              <p>Autenticación fallida: {authError}</p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default AuthExample;
+```
+
+## Ejemplo de Aplicación de Juegos
+
+Ejemplo completo para una aplicación de juegos con claves de sesión y permisos.
+
+```tsx
+import {
+  B3Provider,
+  SignInWithB3,
+  RequestPermissionsButton,
+  useB3,
+  usePermissions,
+  useAccountWallet
+} from "@b3dotfun/sdk/global-account/react";
+
+const b3Chain = {
+  id: 8333,
+  name: "B3",
+  nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+  rpc: "https://mainnet-rpc.b3.fun",
+};
+
+const gameContracts = [
+  "0x9c275ff1634519E9B5449ec79cd939B5F900564d", // Contrato del juego
+  "0x...", // Mercado de NFT
+  "0x...", // Contrato de token
+];
+
+function GameApp() {
+  return (
+    <B3Provider environment="production">
+      <GameContainer />
+    </B3Provider>
+  );
+}
+
+function GameContainer() {
+  const { account, isAuthenticated } = useB3();
+  const { hasPermissions, isExpired } = usePermissions();
+  const { wallet, isConnected } = useAccountWallet();
+
+  const isGameReady = isAuthenticated && hasPermissions && !isExpired && isConnected;
+
+  return (
+    <div className="game-container">
+      <header className="game-header">
+        <h1>🎮 Épico Juego B3</h1>
+        {isAuthenticated && (
+          <div className="user-info">
+            <img src={account?.avatarUrl} alt="Avatar" className="small-avatar" />
+            <span>{account?.displayName}</span>
+          </div>
+        )}
+      </header>
+
+      <main className="game-content">
+        {!isAuthenticated ? (
+          <AuthenticationStep />
+        ) : !isConnected ? (
+          <WalletConnectionStep />
+        ) : !hasPermissions || isExpired ? (
+          <PermissionStep />
+        ) : (
+          <GameReadyState />
+        )}
+      </main>
+    </div>
+  );
+}
+
+function AuthenticationStep() {
+  return (
+    <div className="setup-step">
+      <h2>🔐 Iniciar Sesión</h2>
+      <p>Conecta tu Cuenta Global B3 para empezar a jugar</p>
+      
+      <div className="auth-options">
+        <SignInWithB3
+          provider={{ strategy: "google" }}
+          partnerId="epic-game-studio"
+          onLoginSuccess={(account) => {
+            console.log("Bienvenido al juego:", account.displayName);
+          }}
+        />
+        
+        <SignInWithB3
+          provider={{ strategy: "discord" }}
+          partnerId="epic-game-studio"
+          onLoginSuccess={(account) => {
+            console.log("Jugador de Discord unido:", account.displayName);
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function WalletConnectionStep() {
+  const { connect } = useAccountWallet();
+
+  return (
+    <div className="setup-step">
+      <h2>👛 Conectar Cartera</h2>
+      <p>Conecta tu cartera para interactuar con el juego</p>
+      <button onClick={connect} className="connect-wallet-btn">
+        Conectar Cartera
+      </button>
+    </div>
+  );
+}
+
+function PermissionStep() {
+  const gamePermissions = {
+    approvedTargets: gameContracts,
+    startDate: new Date(),
+    endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 días
+    nativeTokenLimitPerTransaction: 0.001, // Pequeño límite de ETH para gas
+  };
+
+  return (
+    <div className="setup-step">
+      <h2>🛡️ Otorgar Permisos al Juego</h2>
+      <p>Permite que el juego realice acciones en tu nombre</p>
+      
+      <div className="permission-details">
+        <h3>Esto permitirá al juego:</h3>
+        <ul>
+          <li>✅ Interactuar con contratos del juego</li>
+          <li>✅ Comerciar NFTs en tu nombre</li>
+          <li>✅ Gastar hasta 0.001 ETH por transacción</li>
+          <li>✅ Válido por 7 días</li>
+        </ul>
+      </div>
+
+      <RequestPermissionsButton
+        chain={b3Chain}
+        sessionKeyAddress="0x..." // Tu dirección de clave de sesión
+        permissions={gamePermissions}
+        onSuccess={() => {
+          console.log("¡Permisos del juego otorgados! Iniciando juego...");
+        }}
+        onError={(error) => {
+          console.error("Fallo al otorgar permisos:", error);
+        }}
+      />
+    </div>
+  );
+}
+
+function GameReadyState() {
+  const { account } = useB3();
+  const { wallet } = useAccountWallet();
+  
+  return (
+    <div className="game-ready">
+      <h2>🎯 ¡Juego Listo!</h2>
+      <div className="player-stats">
+        <div className="stat">
+          <label>Jugador:</label>
+          <span>{account?.displayName}</span>
+        </div>
+        <div className="stat">
+          <label>Cartera:</label>
+          <span>{wallet?.address?.substring(0, 6)}...{wallet?.address?.substring(-4)}</span>
+        </div>
+        <div className="stat">
+          <label>Saldo:</label>
+          <span>{wallet?.balance} ETH</span>
+        </div>
+      </div>
+      
+      <div className="game-actions">
+        <button className="play-btn">Empezar a Jugar</button>
+        <button className="inventory-btn">Ver Inventario</button>
+        <button className="marketplace-btn">Mercado</button>
+      </div>
+    </div>
+  );
+}
+
+export default GameApp;
+```
+
+## Ejemplo de Aplicación de Comercio Electrónico
+
+Ejemplo que muestra la integración de Cuentas Globales B3 en un contexto de comercio electrónico.
+
+```tsx
+import {
+  B3Provider,
+  SignInWithB3,
+  useB3,
+  useAccountAssets
+} from "@b3dotfun/sdk/global-account/react";
+
+function EcommerceApp() {
+  return (
+    <B3Provider environment="production">
+      <ShopContainer />
+    </B3Provider>
+  );
+}
+
+function ShopContainer() {
+  const { isAuthenticated } = useB3();
+
+  return (
+    <div className="shop-container">
+      <header className="shop-header">
+        <h1>🛍️ Mercado NFT B3</h1>
+        <UserSection />
+      </header>
+
+      <main>
+        {isAuthenticated ? (
+          <AuthenticatedShop />
+        ) : (
+          <GuestShop />
+        )}
+      </main>
+    </div>
+  );
+}
+
+function UserSection() {
+  const { account, isAuthenticated, signOut } = useB3();
+
+  return (
+    <div className="user-section">
+      {isAuthenticated ? (
+        <div className="user-menu">
+          <img src={account?.avatarUrl} alt="Perfil" className="avatar" />
+          <div className="dropdown">
+            <span>{account?.displayName}</span>
+            <div className="dropdown-content">
+              <button>Mi Colección</button>
+              <button>Historial de Compras</button>
+              <button onClick={signOut}>Cerrar Sesión</button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="auth-buttons">
+          <SignInWithB3
+            provider={{ strategy: "google" }}
+            partnerId="nft-marketplace"
+            onLoginSuccess={(account) => {
+              console.log("¡Bienvenido al mercado:", account.displayName);
+            }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AuthenticatedShop() {
+  const { assets } = useAccountAssets();
+
+  return (
+    <div className="authenticated-shop">
+      <section className="user-collection">
+        <h2>Tu Colección</h2>
+        <div className="asset-grid">
+          {assets?.map((asset) => (
+            <div key={asset.id} className="asset-card">
+              <img src={asset.imageUrl} alt={asset.name} />
+              <h3>{asset.name}</h3>
+              <p className="price">{asset.value} {asset.currency}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="marketplace">
+        <h2>Mercado</h2>
+        <MarketplaceGrid />
+      </section>
+    </div>
+  );
+}
+
+function GuestShop() {
+  return (
+    <div className="guest-shop">
+      <section className="hero">
+        <h2>Descubre NFTs Increíbles</h2>
+        <p>Inicia sesión para empezar a coleccionar e intercambiar</p>
+        
+        <SignInWithB3
+          provider={{ strategy: "google" }}
+          partnerId="nft-marketplace"
+          onLoginSuccess={() => {
+            console.log("¡Usuario unido al mercado!");
+          }}
+        />
+      </section>
+
+      <section className="featured">
+        <h2>Colecciones Destacadas</h2>
+        <MarketplaceGrid />
+      </section>
+    </div>
+  );
+}
+
+function MarketplaceGrid() {
+  // Artículos simulados del mercado
+  const items = [
+    { id: 1, name: "Cool NFT #1", price: "0.1 ETH", image: "/nft1.jpg" },
+    { id: 2, name: "Artículo Raro #42", price: "0.5 ETH", image: "/nft2.jpg" },
+    // ... más artículos
+  ];
+
+  return (
+    <div className="marketplace-grid">
+      {items.map((item) => (
+        <div key={item.id} className="marketplace-item">
+          <img src={item.image} alt={item.name} />
+          <h3>{item.name}</h3>
+          <p className="price">{item.price}</p>
+          <button className="buy-btn">Comprar Ahora</button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default EcommerceApp;
+```
+
+## Ejemplo para React Native
+
+Ejemplo para aplicaciones React Native.
+
+```tsx
+// App.tsx (React Native)
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { B3Provider, useB3 } from '@b3dotfun/sdk/global-account/react';
+
+function App() {
+  return (
+    <B3Provider environment="production">
+      <MainScreen />
+    </B3Provider>
+  );
+}
+
+function MainScreen() {
+  const { account, isAuthenticated, isLoading } = useB3();
+
+  if (isLoading) {
+    return (
+      <View style={styles.container}>
+        <Text>Cargando...</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      {isAuthenticated ? (
+        <AuthenticatedView account={account} />
+      ) : (
+        <SignInView />
+      )}
+    </View>
+  );
+}
+
+function SignInView() {
+  return (
+    <View style={styles.signInContainer}>
+      <Text style={styles.title}>Bienvenido a B3 Móvil</Text>
+      
+      {/* La implementación en React Native usaría flujos de autenticación nativos */}
+      <TouchableOpacity style={styles.signInButton}>
+        <Text style={styles.buttonText}>Iniciar Sesión con Google</Text>
+      </TouchableOpacity>
+      
+      <TouchableOpacity style={styles.signInButton}>
+        <Text style={styles.buttonText}>Iniciar Sesión con Discord</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+function AuthenticatedView({ account }) {
+  const { signOut } = useB3();
+
+  return (
+    <View style={styles.authenticatedContainer}>
+      <Text style={styles.welcomeText}>
+        ¡Bienvenido, {account?.displayName}!
+      </Text>
+      
+      <TouchableOpacity 
+        style={styles.signOutButton}
+        onPress={signOut}
+      >
+        <Text style={styles.buttonText}>Cerrar Sesión</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+  },
+  signInContainer: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 30,
+  },
+  signInButton: {
+    backgroundColor: '#007AFF',
+    padding: 15,
+    borderRadius: 10,
+    marginVertical: 10,
+    minWidth: 200,
+  },
+  signOutButton: {
+    backgroundColor: '#FF3B30',
+    padding: 15,
+    borderRadius: 10,
+    marginTop: 20,
+  },
+  buttonText: {
+    color: 'white',
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  authenticatedContainer: {
+    alignItems: 'center',
+  },
+  welcomeText: {
+    fontSize: 20,
+    marginBottom: 20,
+  },
+});
+
+export default App;
+```
+
+## Ejemplo de Enrutador de Aplicación Next.js
+
+Ejemplo para Next.js 13+ App Router.
+
+```tsx
+// app/layout.tsx
+import { B3Provider } from '@b3dotfun/sdk/global-account/react';
+import '@b3dotfun/sdk/index.css';
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body>
+        <B3Provider environment="production">
+          {children}
+        </B3Provider>
+      </body>
+    </html>
+  );
+}
+
+// app/page.tsx
+'use client';
+
+import { useB3 } from '@b3dotfun/sdk/global-account/react';
+import AuthComponent from './components/AuthComponent';
+import Dashboard from './components/Dashboard';
+
+export default function HomePage() {
+  const { isAuthenticated, isLoading } = useB3();
+
+  if (isLoading) {
+    return <div>Cargando...</div>;
+  }
+
+  return (
+    <main>
+      {isAuthenticated ? <Dashboard /> : <AuthComponent />}
+    </main>
+  );
+}
+
+// app/components/AuthComponent.tsx
+'use client';
+
+import { SignInWithB3 } from '@b3dotfun/sdk/global-account/react';
+
+export default function AuthComponent() {
+  return (
+    <div className="auth-container">
+      <h1>Bienvenido a la App B3</h1>
+      
+      <SignInWithB3
+        provider={{ strategy: "google" }}
+        partnerId="nextjs-app"
+        onLoginSuccess={(account) => {
+          console.log("Éxito de autenticación en Next.js:", account);
+        }}
+      />
+    </div>
+  );
+}
+```
+
+## Ejemplo de Hook Personalizado Avanzado
+
+Hook personalizado que combina múltiples características de B3:
+
+```tsx
+import { 
+  useB3, 
+  usePermissions, 
+  useAccountWallet,
+  useAccountAssets 
+} from "@b3dotfun/sdk/global-account/react";
+
+function useB3GameState() {
+  const { account, isAuthenticated } = useB3();
+  const { hasPermissions, isExpired, permissions } = usePermissions();
+  const { wallet, isConnected } = useAccountWallet();
+  const { assets } = useAccountAssets();
+
+  // Calcular la preparación del juego
+  const isGameReady = isAuthenticated && hasPermissions && !isExpired && isConnected;
+  
+  // Obtener activos específicos del juego (NFTs, tokens)
+  const gameAssets = assets?.filter(asset => 
+    asset.contractAddress && 
+    permissions?.approvedTargets.includes(asset.contractAddress)
+  ) || [];
+
+  // Calcular el valor total del juego
+  const totalGameValue = gameAssets.reduce((sum, asset) => sum + asset.value, 0);
+
+  // Objeto de estado del juego
+  const gameState = {
+    player: {
+      id: account?.id,
+      name: account?.displayName,
+      avatar: account?.avatarUrl,
+      email: account?.email,
+    },
+    wallet: {
+      address: wallet?.address,
+      balance: wallet?.balance,
+      chainId: wallet?.

@@ -1,0 +1,150 @@
+---
+title: Introducción
+description: >-
+  CreateKit (BaseMint SDK) - Un SDK de TypeScript para la implementación y
+  gestión sin gas de colecciones de NFT en el ecosistema B3
+lang: es
+originalPath: createkit/introduction.mdx
+---
+[![NPM](https://nodei.co/npm/@b3dotfun/basemint.svg)](https://www.npmjs.com/package/@b3dotfun/basemint)
+
+<CodeGroup>
+```bash npm
+npm install @b3dotfun/basemint
+```
+
+```bash yarn
+yarn add @b3dotfun/basemint
+```
+
+```bash pnpm
+pnpm add @b3dotfun/basemint
+```
+</CodeGroup>
+
+## ¿Por qué CreateKit?
+**Crea NFTs gratis** con CreateKit, los usuarios solo firman un mensaje (sin gas requerido) y la colección se despliega y acuña en una sola transacción en la primera acuñación.
+
+<Note>**Pruébalo:** [Crea NFTs gratis y gana](https://explorer.b3.fun/apps/nfts/create)</Note>
+
+CreateKit, potenciado por el Protocolo BaseMint, es un SDK de TypeScript integral que revoluciona la creación y gestión de colecciones de NFT. Construido específicamente para el ecosistema B3, proporciona un flujo de trabajo eficiente en términos de gas para desplegar y gestionar colecciones de NFT con costos mínimos y máxima flexibilidad.
+
+<CardGroup cols={2}>
+  <Card title="Creación Sin Gas" icon="circle-dollar">
+    Crea NFTs con direcciones onchain completamente gratis durante la fase de configuración inicial
+  </Card>
+  <Card title="Despliegue en Una Transacción" icon="bolt">
+    Despliega colecciones y acuña tu primer NFT en una sola transacción
+  </Card>
+  <Card title="Soporte Multi-Estándar" icon="layer-group">
+    Soporta los estándares de token ERC721 y ERC1155
+  </Card>
+  <Card title="Listo para el Mercado" icon="store">
+    Formato de metadatos compatible con OpenSea asegura una integración sin problemas con el mercado
+  </Card>
+</CardGroup>
+
+## Características Clave
+
+### 🎨 **Gestión de Colecciones**
+- Despliegue de colecciones ERC721 y ERC1155
+- Personalización de parámetros de la colección (nombre, símbolo, suministro, precios)
+- Establecimiento de marcos temporales y límites de acuñación
+- Gestión de metadatos y URIs de la colección
+- Soporte para diferentes tipos de medios (modelos 3D, obras de arte, videos, memes)
+
+### 🔒 **Despliegue Seguro**
+- Proceso de verificación de firma en dos pasos
+- Validación de firma del creador
+- Validación de firma del desplegador
+- Predicción de dirección de la colección
+
+### 🎯 **Operaciones con Tokens**
+- Acuñación de tokens ERC721 y ERC1155
+- Acuñación basada en lista blanca con pruebas de Merkle
+- Cálculo automático de precios
+- Validación de parámetros integrada
+- Transacciones eficientes en términos de gas
+
+### 💰 **Distribución de Recompensas**
+- Seguimiento de recompensas para creadores
+- Monitoreo de acumulación de recompensas por colección
+- Vista de recompensas totales y no reclamadas por colección
+- Seguimiento de distribución de recompensas por tipo de destinatario
+- Retiro de recompensas acumuladas
+
+## Flujo del Sistema
+
+El protocolo BaseMint proporciona un flujo de trabajo único y eficiente en términos de gas:
+
+<Steps>
+  <Step title="Creación de Colección & Generación de Firma">
+    Los creadores definen los parámetros de la colección y generan firmas criptográficas almacenadas fuera de la cadena con costos de gas cero.
+  </Step>
+  <Step title="Almacenamiento y Descubrimiento Fuera de Cadena">
+    Los datos de la colección se almacenan de forma segura en el almacenamiento de BaseMint con direcciones deterministas para un fácil descubrimiento.
+  </Step>
+  <Step title="Despliegue & Primera Acuñación">
+    El primer acuñador activa el despliegue en cadena en una sola transacción que cubre tanto el despliegue como la primera acuñación.
+  </Step>
+  <Step title="Fase de Acuñación Regular">
+    Acuñación abierta para todos los usuarios con soporte opcional de lista blanca y límites de billetera.
+  </Step>
+</Steps>
+
+## Estructura de Recompensas
+
+CreateKit presenta un sistema de recompensas innovador que beneficia a todos los participantes en el ecosistema:
+
+| Tipo de Destinatario | Participación Predeterminada | Descripción |
+|----------------|---------------|-------------|
+| **Creador** | 40% | Originador de la colección |
+| **Primer Acuñador** | 30% | Desplegador inicial que activa el despliegue |
+| **Propietario del Juego** | 20% | Integrador de la plataforma |
+| **Plataforma** | 10% | Tarifa del protocolo |
+
+<Note>
+Las tasas de recompensa son configurables por el propietario del protocolo y pueden ajustarse según las necesidades del ecosistema.
+</Note>
+
+## Redes Soportadas
+
+CreateKit soporta el ecosistema B3 con planes de expansión a redes adicionales:
+
+<CardGroup cols={2}>
+  <Card title="B3 Mainnet" icon="globe">
+    **Chain ID:** 8333  
+    Despliegue listo para producción para aplicaciones en vivo
+  </Card>
+  <Card title="B3 Testnet" icon="flask">
+    **Chain ID:** 1993  
+    Entorno de desarrollo y pruebas
+  </Card>
+</CardGroup>
+
+## Empezando
+
+¿Listo para empezar a construir? Consulta nuestra guía de instalación y tutorial de inicio rápido para comenzar a crear tu primera colección de NFT con CreateKit.
+
+<CardGroup cols={2}>
+  <Card title="Instalación" icon="download" href="/createkit/installation">
+    Instala CreateKit y configura tu entorno de desarrollo
+  </Card>
+  <Card title="Inicio Rápido" icon="rocket" href="/createkit/quickstart">
+    Construye tu primera colección de NFT en minutos
+  </Card>
+</CardGroup>
+
+## Recursos para Desarrolladores
+
+<CardGroup cols={3}>
+  <Card title="Gestión de Colecciones" icon="folder" href="/createkit/collections">
+    Aprende cómo crear y gestionar colecciones de NFT
+  </Card>
+  <Card title="Acuñación" icon="coins" href="/createkit/minting">
+    Implementa la funcionalidad de acuñación de tokens
+  </Card>
+  <Card title="Ejemplos" icon="code" href="/createkit/examples">
+    Explora ejemplos prácticos de implementación
+  </Card>
+</CardGroup>

@@ -1,0 +1,186 @@
+---
+title: Puente a B3
+description: >-
+  Existen varias formas de tender puentes hacia B3 y nuestras cadenas de
+  aplicaciones.
+lang: es
+originalPath: protocol/bridge.mdx
+---
+<img src="/images/b3-banner.png" alt="Bridge to B3" className="w-full rounded-xl" />
+
+<CardGroup cols={2}>
+  <Card title="Basement Bridge"  href="https://basement.fun/bridge">
+    <img src="/images/bsmnt-logo.svg" alt="Basement" className="p-8 bg-black rounded-2xl my-3" />
+
+    Puente entre cadenas con depósitos y retiros instantáneos
+  </Card>
+  
+  <Card title="Relay Bridge" href="https://relay.link/bridge/base?fromChainId=8453&fromCurrency=0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3&toCurrency=0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3">
+    <img src="/images/relay-logo.avif" alt="Relay" className="p-8 bg-black rounded-2xl my-3" />
+
+    Puente desde cualquier cadena EVM & Solana a B3
+  </Card>
+  
+  <Card title="Native Bridge" icon="bridge" href="#native-bridge">
+    Puente Canónico OP con período de retiro de 7 días
+  </Card>
+  
+  <Card title="Bridge Contract" icon="code" href="#bridge-contract">
+    Interacción directa con el contrato para usuarios avanzados
+  </Card>
+</CardGroup>
+
+## Puente Entre Cadenas
+
+<div style={{ marginBottom: '16px' }}>
+  <span style={{ backgroundColor: '#3b82f6', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', marginRight: '8px' }}>Depósitos Instantáneos</span>
+  <span style={{ backgroundColor: '#8b5cf6', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', marginRight: '8px' }}>Retiros Instantáneos</span>
+  <span style={{ backgroundColor: '#10b981', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px' }}>Baja Comisión</span>
+</div>
+
+Conecta tu cartera y puentea desde las principales redes EVM hacia y desde B3.
+
+<Steps>
+<Step title="Ir al Basement Bridge">
+  Visita [basement.fun/bridge](https://basement.fun/bridge) para acceder a la interfaz del puente.
+</Step>
+
+<Step title="Conectar tu Cartera">
+  Conecta tu cartera usando MetaMask, Coinbase Wallet, u otras carteras compatibles.
+</Step>
+
+<Step title="Seleccionar red & fondos">
+  Elige la red de origen y la cantidad de fondos que quieres puentea a B3.
+</Step>
+
+<Step title="Confirmar transacción">
+  Confirma la transacción y recibirás los fondos puenteados en menos de un minuto.
+  
+  <Check>
+  Tus fondos aparecerán en tu cartera B3 en 60 segundos.
+  </Check>
+</Step>
+</Steps>
+
+<Card title="Usar Basement Bridge" href="https://basement.fun" cta="Usar Puente" horizontal>
+  <img src="/images/bsmnt-logo.svg" alt="Basement" className="w-32" />
+
+  Comienza a puentea tus activos a B3 con depósitos y retiros instantáneos
+</Card>
+
+## Puente Instantáneo
+
+<div style={{ marginBottom: '16px' }}>
+  <span style={{ backgroundColor: '#3b82f6', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', marginRight: '8px' }}>Depósitos Instantáneos</span>
+  <span style={{ backgroundColor: '#8b5cf6', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', marginRight: '8px' }}>Retiros Instantáneos</span>
+  <span style={{ backgroundColor: '#10b981', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px' }}>Baja Comisión</span>
+</div>
+
+Puentea fácilmente desde cualquier cadena EVM & Solana a B3 con Relay.
+
+<Steps>
+<Step title="Ir al Relay Bridge">
+  Visita [relay.link](https://relay.link) para acceder a la interfaz del puente Relay.
+</Step>
+
+<Step title="Conectar tu Cartera">
+  Conecta tu cartera para iniciar el proceso de puenteo.
+</Step>
+
+<Step title="Ingresar cantidad a puentea">
+  Ingresa la cantidad de ETH que quieres puentea a B3.
+</Step>
+
+<Step title="Confirmar transacción">
+  Confirma la transacción y recibirás los fondos puenteados en menos de un minuto.
+  
+  <Check>
+  Relay soporta el puenteo desde múltiples cadenas incluyendo Solana.
+  </Check>
+</Step>
+</Steps>
+
+<Card title="Usar Relay Bridge" href="https://relay.link" cta="Usar Puente" horizontal>
+  <img src="/images/relay-logo.avif" alt="Relay" className="w-32" />
+
+  Puentea desde cualquier cadena EVM y Solana a B3 instantáneamente
+</Card>
+
+## Puente Nativo
+
+<div style={{ marginBottom: '16px' }}>
+  <span style={{ backgroundColor: '#3b82f6', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', marginRight: '8px' }}>Base a B3</span>
+  <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', marginRight: '8px' }}>Retiros de 7 Días</span>
+  <span style={{ backgroundColor: '#10b981', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px' }}>Sin Comisiones</span>
+</div>
+
+Puentea fácilmente desde Base a B3 usando el puente canónico oficial de OP Stack!
+
+<Warning>
+Los retiros de B3 de vuelta a Base tienen un período de desafío de 7 días por seguridad. Usa puentes de terceros para retiros instantáneos.
+</Warning>
+
+<Steps>
+<Step title="Visitar el puente">
+  Ve a [bridge.b3.fun](https://bridge.b3.fun) para acceder al puente oficial.
+</Step>
+
+<Step title="Conectar tu Cartera">
+  Conecta tu cartera a la interfaz del puente.
+</Step>
+
+<Step title="Elegir dirección">
+  Selecciona si quieres:
+  - **Depositar**: Traer fondos de Base → B3
+  - **Retirar**: Puentea de vuelta de B3 → Base
+</Step>
+
+<Step title="Ingresar cantidad">
+  Ingresa la cantidad de ETH que quieres puentea.
+</Step>
+
+<Step title="Completar transacción">
+  Haz clic en "Depositar" y confirma la transacción en tu cartera.
+  
+  <Tip>
+  Los depósitos a B3 son instantáneos, pero los retiros toman 7 días por el período de desafío.
+  </Tip>
+</Step>
+</Steps>
+
+<Card title="Usar Puente Oficial" icon="bridge" href="https://bridge.b3.fun" cta="Puentea" horizontal>
+  Usa el puente canónico de OP Stack probado en batalla
+</Card>
+
+## Transferencia Nativa (Bridge Contract)
+
+<div style={{ marginBottom: '16px' }}>
+  <span style={{ backgroundColor: '#3b82f6', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', marginRight: '8px' }}>Depósitos Instantáneos</span>
+  <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', marginRight: '8px' }}>Retiros de 7 Días</span>
+  <span style={{ backgroundColor: '#10b981', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px' }}>Sin Comisiones</span>
+</div>
+
+Envía ETH de Base a través del contrato de puente. Transfiere **ETH de Base** a la siguiente dirección del puente en **Base Mainnet**:
+
+<Warning>
+Este método es solo para usuarios avanzados. Asegúrate de estar enviando desde Base Mainnet para evitar perder fondos.
+</Warning>
+
+```text Dirección del Puente
+0x769547a723783FCA36BAaf1ECcf9dfdbF6d09F38
+```
+
+<Note>
+Cuando envíes ETH a esta dirección desde Base, aparecerá automáticamente en tu cartera en B3. Este es un método de interacción directa con el contrato.
+</Note>
+
+<Accordion title="Cómo usar el contrato de puente">
+1. **Asegúrate de estar en Base Mainnet** en tu cartera
+2. **Envía ETH** a la dirección del contrato de puente arriba mencionada
+3. **Espera la confirmación** - tus fondos aparecerán en B3 automáticamente
+4. **Revisa tu cartera B3** - cambia a la red B3 para ver tu ETH puenteado
+
+<Warning>
+Doble chequea que estás en Base Mainnet antes de enviar. Enviar desde otras redes puede resultar en la pérdida de fondos.
+</Warning>
+</Accordion>

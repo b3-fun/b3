@@ -1,0 +1,102 @@
+name: Update Translations
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**/*.mdx"
+      - "docs/**/*.md"
+      - "pnpm-workspace.yaml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "docs/**/*.mdx"
+      - "docs/**/*.md"
+      - "pnpm-workspace.yaml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  translate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Build on latest main to avoid modify/delete conflicts in PR step
+      - name: Sync to latest main
+        run: |
+          git fetch origin main
+          git checkout main
+          git reset --hard origin/main
+
+      - name: Setup Git
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git config pull.rebase false
+
+      - name: Setup Node.js (20.15.0)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.15.0"
+
+      # Let pnpm/action-setup read packageManager from the root package.json
+      # (and transitively the workspace). Do not set an explicit version here.
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Verify workspace detection (diagnostic)
+        run: |
+          echo "== pnpm-workspace.yaml =="
+          cat pnpm-workspace.yaml || true
+          echo "== pnpm ls (depth 1) =="
+          pnpm ls --depth 1 || true
+
+      - name: Install dependencies (workspace)
+        run: |
+          pnpm install
+
+      - name: Run translation update (root, directory filter)
+        id: translate
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          NODE_OPTIONS: "--max-old-space-size=8192"
+        run: |
+          echo "Starting translation process..."
+          # Use a DIRECTORY filter to avoid name mismatches:
+          pnpm --filter b3-docs run translate:ci -- --update
+
+          # Detect changes limited to docs/
+          if git status --porcelain docs | grep -E '^(M|A|\?\?)' >/dev/null 2>&1; then
+            echo "changes_made=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changes_made=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create / Update PR
+        if: steps.translate.outputs.changes_made == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          title: "chore: update translations"
+          commit-message: "chore: update translations"
+          body: |
+            Automated translation update.
+
+            Trigger: ${{ github.event_name }}
+          base: main
+          branch: chore/update-translations
+          delete-branch: false
+          add-paths: |
+            docs/**

@@ -1,0 +1,19 @@
+{
+  "name": "b3-docs",
+  "scripts": {
+    "translate": "doppler run -- ts-node scripts/translate.ts",
+    "translate:local": "ts-node scripts/translate.ts",
+    "translate:ci": "ts-node scripts/translate.ts"
+  },
+  "dependencies": {
+    "openai": "^4.28.0",
+    "dotenv": "^16.4.1",
+    "glob": "^10.3.10",
+    "gray-matter": "^4.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.16",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}
