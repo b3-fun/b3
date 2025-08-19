@@ -5,6 +5,30 @@ import matter from "gray-matter";
 import { OpenAI } from "openai";
 import * as path from "path";
 
+// Performance logging utility
+class Timer {
+  private startTime: number;
+  private name: string;
+
+  constructor(name: string) {
+    this.startTime = Date.now();
+    this.name = name;
+  }
+
+  log(message?: string) {
+    const elapsed = Date.now() - this.startTime;
+    console.log(`[${this.name}${message ? ` - ${message}` : ""}] ${elapsed}ms`);
+  }
+
+  reset() {
+    this.startTime = Date.now();
+  }
+}
+
+// Parse command line arguments
+const args = process.argv.slice(2);
+const processAllFiles = args.includes("--all");
+
 // Load environment variables from .env only if not using Doppler
 if (!process.env.DOPPLER_PROJECT) {
   dotenv.config();
@@ -35,7 +59,7 @@ const CONFIG = {
   // Frontmatter fields that should be translated
   translatableFrontmatter: ["title", "description"],
   // Add configuration from environment variables
-  batchSize: Number(process.env.TRANSLATION_BATCH_SIZE) || 1,
+  batchSize: processAllFiles ? Infinity : Number(process.env.TRANSLATION_BATCH_SIZE) || 1,
   dryRun: process.env.TRANSLATION_DRY_RUN === "true",
 } as const;
 
@@ -68,7 +92,9 @@ interface Navigation {
   };
 }
 
-async function translateText(text: string, language: string): Promise<string> {
+async function translateText(text: string, language: string, context: string = ""): Promise<string> {
+  const timer = new Timer("translateText");
+
   if (CONFIG.dryRun) {
     console.log("Dry run: Would translate text:", text);
     return text;
@@ -90,6 +116,7 @@ async function translateText(text: string, language: string): Promise<string> {
       temperature: 0.3,
     });
 
+    timer.log(context);
     return response.choices[0]?.message?.content || text;
   } catch (error) {
     console.error("Translation error:", error);
@@ -98,14 +125,15 @@ async function translateText(text: string, language: string): Promise<string> {
 }
 
 async function translateNavigationItem(item: NavigationItem, language: string): Promise<NavigationItem> {
+  const timer = new Timer("translateNavigationItem");
   const translatedItem: NavigationItem = { ...item };
 
   if (item.group) {
-    translatedItem.group = await translateText(item.group, language);
+    translatedItem.group = await translateText(item.group, language, "group");
   }
 
   if (item.tab) {
-    translatedItem.tab = await translateText(item.tab, language);
+    translatedItem.tab = await translateText(item.tab, language, "tab");
   }
 
   if (item.pages) {
@@ -124,78 +152,98 @@ async function translateNavigationItem(item: NavigationItem, language: string): 
     );
   }
 
+  timer.log();
   return translatedItem;
 }
 
 async function translateNavigation(language: string): Promise<void> {
+  const timer = new Timer("translateNavigation");
   try {
-    // Read the docs.json file
     const docsPath = path.join(CONFIG.docsContentDir, "docs.json");
     const docsContent = await fs.readFile(docsPath, "utf-8");
     const docs = JSON.parse(docsContent);
+    timer.log("read docs.json");
 
     // Get the original navigation structure
     const originalNavigation = docs.navigation;
 
-    // Create the language-specific navigation
-    const translatedNavigation = {
-      ...originalNavigation,
-      tabs: await Promise.all(originalNavigation.tabs.map(tab => translateNavigationItem(tab, language))),
+    // Find existing language entry if it exists
+    const existingLangEntry = docs.navigation.languages?.find((l: any) => l.language === language);
+
+    // If we have an existing entry, use it as the base
+    const translatedNavigation = existingLangEntry || {
+      language,
+      tabs: [],
+      global: {},
     };
 
-    if (originalNavigation.global) {
+    // Only translate tabs if they don't exist in the language entry
+    if (!translatedNavigation.tabs?.length && originalNavigation.tabs?.length) {
+      translatedNavigation.tabs = await Promise.all(
+        originalNavigation.tabs.map(tab => translateNavigationItem(tab, language)),
+      );
+      timer.log("translated tabs");
+    } else {
+      console.log("Preserving existing tabs for language:", language);
+    }
+
+    // Only translate global anchors if they don't exist in the language entry
+    if (!translatedNavigation.global?.anchors?.length && originalNavigation.global?.anchors?.length) {
       translatedNavigation.global = {
         anchors: await Promise.all(
           originalNavigation.global.anchors.map(async anchor => ({
             ...anchor,
-            anchor: await translateText(anchor.anchor, language),
+            anchor: await translateText(anchor.anchor, language, "anchor"),
           })),
         ),
       };
+      timer.log("translated anchors");
+    } else {
+      console.log("Preserving existing anchors for language:", language);
     }
 
-    // Update the docs.json with the new language configuration
+    // Initialize languages array if needed
     if (!docs.navigation.languages) {
       docs.navigation.languages = [];
     }
 
-    // Find or create the language entry
+    // Update or add the language entry
     const langIndex = docs.navigation.languages.findIndex((l: any) => l.language === language);
     if (langIndex >= 0) {
-      docs.navigation.languages[langIndex] = {
-        language,
-        ...translatedNavigation,
-      };
+      docs.navigation.languages[langIndex] = translatedNavigation;
     } else {
-      docs.navigation.languages.push({
-        language,
-        ...translatedNavigation,
-      });
+      docs.navigation.languages.push(translatedNavigation);
     }
 
     // Write the updated docs.json
     await fs.writeFile(docsPath, JSON.stringify(docs, null, 2));
 
+    timer.log("wrote updated docs.json");
     console.log(`✓ Updated docs.json with ${language} navigation`);
   } catch (error) {
     console.error("Error translating navigation:", error);
+    throw error;
   }
 }
 
 async function translateFrontmatter(frontmatter: Record<string, any>, language: string): Promise<Record<string, any>> {
+  const timer = new Timer("translateFrontmatter");
   const translatedFrontmatter = { ...frontmatter };
 
   for (const field of CONFIG.translatableFrontmatter) {
     if (frontmatter[field]) {
       console.log(`Translating frontmatter field: ${field}`);
-      translatedFrontmatter[field] = await translateText(frontmatter[field], language);
+      translatedFrontmatter[field] = await translateText(frontmatter[field], language, `field: ${field}`);
     }
   }
 
+  timer.log();
   return translatedFrontmatter;
 }
 
 async function translateContent(content: string, language: string): Promise<string> {
+  const timer = new Timer("translateContent");
+
   // If dry run, return content unchanged
   if (CONFIG.dryRun) {
     console.log("Dry run: Would translate content here");
@@ -227,6 +275,7 @@ async function translateContent(content: string, language: string): Promise<stri
       temperature: 0.3,
     });
 
+    timer.log();
     return response.choices[0]?.message?.content || content;
   } catch (error) {
     console.error("Translation error:", error);
@@ -235,12 +284,15 @@ async function translateContent(content: string, language: string): Promise<stri
 }
 
 async function processFile(filePath: string, language: string): Promise<void> {
+  const timer = new Timer("processFile");
   try {
     // Read the source file
     const content = await fs.readFile(filePath, "utf-8");
+    timer.log("read file");
 
     // Parse frontmatter
     const { data: frontmatter, content: markdownContent } = matter(content);
+    timer.log("parsed frontmatter");
 
     // Create target path
     const relativePath = path.relative(CONFIG.docsContentDir, filePath);
@@ -258,12 +310,15 @@ async function processFile(filePath: string, language: string): Promise<void> {
 
     // Ensure target directory exists
     await fs.mkdir(targetDir, { recursive: true });
+    timer.log("created target directory");
 
     // Translate frontmatter
     const translatedFrontmatter = await translateFrontmatter(frontmatter, language);
+    timer.log("translated frontmatter");
 
     // Translate content
     const translatedContent = await translateContent(markdownContent, language);
+    timer.log("translated content");
 
     // Update frontmatter for translated version
     const updatedFrontmatter = {
@@ -278,6 +333,7 @@ async function processFile(filePath: string, language: string): Promise<void> {
     if (!CONFIG.dryRun) {
       // Write translated file
       await fs.writeFile(targetPath, finalContent);
+      timer.log("wrote translated file");
       console.log(`✓ Translated: ${relativePath} -> ${language}/${relativePath}`);
     } else {
       console.log(`Would translate: ${relativePath} -> ${language}/${relativePath}`);
@@ -288,6 +344,7 @@ async function processFile(filePath: string, language: string): Promise<void> {
 }
 
 async function main() {
+  const totalTimer = new Timer("total");
   try {
     // Get all documentation files
     const files = await glob("**/*{.md,.mdx}", {
@@ -303,7 +360,7 @@ async function main() {
 
     console.log(`Found ${files.length} files to process`);
     console.log(`Mode: ${CONFIG.dryRun ? "DRY RUN" : "LIVE"}`);
-    console.log(`Batch size: ${CONFIG.batchSize}`);
+    console.log(`Processing: ${processAllFiles ? "ALL FILES" : `${CONFIG.batchSize} file(s)`}`);
 
     // First, translate the navigation
     for (const language of CONFIG.languages) {
@@ -311,12 +368,14 @@ async function main() {
     }
 
     // Then process the documentation files
-    const filesToProcess = files.slice(0, CONFIG.batchSize);
+    const filesToProcess = processAllFiles ? files : files.slice(0, CONFIG.batchSize);
 
     for (const file of filesToProcess) {
       console.log(`\nProcessing file: ${file}`);
       await processFile(file, "es");
     }
+
+    totalTimer.log("completed all translations");
   } catch (error) {
     console.error("Translation failed:", error);
     process.exit(1);
