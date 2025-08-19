@@ -88,6 +88,7 @@ function generateGetRelayQuoteRequest({
 }): GetQuoteRequest {
   switch (orderType) {
     case "mint_nft": {
+      invariant(contractType, "Contract type is required");
       return {
         type: "mint_nft",
         srcChain: srcChainId,
@@ -96,8 +97,8 @@ function generateGetRelayQuoteRequest({
         dstTokenAddress: dstToken.address,
         price: dstAmount,
         contractAddress: contractAddress,
-        tokenId: tokenId!,
-        contractType: contractType!,
+        tokenId: tokenId,
+        contractType: contractType,
       };
     }
     case "join_tournament": {
@@ -146,6 +147,7 @@ function generateGetRelayQuoteRequest({
 export function AnySpendCustom(props: {
   loadOrder?: string;
   mode?: "modal" | "page";
+  activeTab?: "crypto" | "fiat";
   recipientAddress?: string;
   spenderAddress?: string;
   orderType: components["schemas"]["Order"]["type"];
@@ -177,6 +179,7 @@ export function AnySpendCustom(props: {
 function AnySpendCustomInner({
   loadOrder,
   mode = "modal",
+  activeTab: activeTabProps = "crypto",
   recipientAddress: recipientAddressProps,
   spenderAddress,
   orderType,
@@ -192,6 +195,7 @@ function AnySpendCustomInner({
 }: {
   loadOrder?: string;
   mode?: "modal" | "page";
+  activeTab?: "crypto" | "fiat";
   recipientAddress?: string;
   spenderAddress?: string;
   orderType: components["schemas"]["Order"]["type"];
@@ -219,7 +223,7 @@ function AnySpendCustomInner({
   const [activePanel, setActivePanel] = useState<PanelView>(
     loadOrder ? PanelView.ORDER_DETAILS : PanelView.CONFIRM_ORDER,
   );
-  const [activeTab, setActiveTab] = useState<"crypto" | "fiat">("crypto");
+  const [activeTab, setActiveTab] = useState<"crypto" | "fiat">(activeTabProps);
 
   // Add state for selected payment methods
   const [selectedCryptoPaymentMethod, setSelectedCryptoPaymentMethod] = useState<CryptoPaymentMethodType>(

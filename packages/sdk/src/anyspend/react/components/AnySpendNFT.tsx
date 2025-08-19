@@ -100,7 +100,7 @@ export function AnySpendNFT({
     }
 
     fetchContractMetadata();
-  }, [nftContract.contractAddress, nftContract.chainId, nftContract.imageUrl, nftContract.tokenId]);
+  }, [nftContract.contractAddress, nftContract.chainId, nftContract.imageUrl, nftContract.tokenId, isLoadingFallback]);
 
   const header = ({
     anyspendPrice,
@@ -150,6 +150,7 @@ export function AnySpendNFT({
     <AnySpendCustom
       loadOrder={loadOrder}
       mode={mode}
+      activeTab="fiat"
       recipientAddress={recipientAddress}
       orderType={"mint_nft"}
       dstChainId={nftContract.chainId}
