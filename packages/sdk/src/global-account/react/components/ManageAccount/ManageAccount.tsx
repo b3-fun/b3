@@ -580,7 +580,7 @@ export function ManageAccount({
           onValueChange={value => {
             const tab = value as TabValue;
             if (["balance", "assets", "apps", "settings"].includes(tab)) {
-              setActiveTab(tab);
+              setActiveTab?.(tab);
             }
           }}
         >
