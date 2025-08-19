@@ -13,11 +13,19 @@ on:
       - "docs/**/*.md"
   workflow_dispatch: # Manual trigger
 
+# Cancel in-progress runs on new commits to same PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   translate:
     runs-on: ubuntu-latest
+    timeout-minutes: 360 # 6 hours max runtime
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Required for creating PR
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -34,15 +42,31 @@ jobs:
         working-directory: docs
 
       - name: Update translations
-        run: pnpm translate --all --update
+        id: translate
+        timeout-minutes: 300 # 5 hours max for translation step
+        run: |
+          echo "Starting translation process..."
+          pnpm translate --all --update
+          echo "Translation completed"
         working-directory: docs
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          NODE_OPTIONS: "--max-old-space-size=8192" # Increase Node.js memory limit to 8GB
 
       - name: Create Pull Request
+        if: success() && steps.translate.outcome == 'success'
         uses: peter-evans/create-pull-request@v5
         with:
           commit-message: "chore: update translations"
           title: "chore: update translations"
-          body: "Automated translation update"
+          body: |
+            Automated translation update
+
+            This PR was automatically created by the translation workflow.
+            - Triggered by: ${{ github.event_name }}
+            - Source branch: ${{ github.ref_name }}
           branch: "chore/update-translations"
+          delete-branch: true # Delete branch after merge
+          labels: |
+            automated
+            translations
