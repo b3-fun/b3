@@ -50,9 +50,15 @@ export function useUnifiedChainSwitchAndExecute() {
           throw new Error("No account connected");
         }
 
+        // Get the target chain configuration instead of using potentially stale walletClient.chain
+        const targetChain = supportedChains.find(chain => chain.id === targetChainId);
+        if (!targetChain) {
+          throw new Error(`Chain ${targetChainId} is not supported`);
+        }
+
         const hash = await walletClient.sendTransaction({
           account: signer,
-          chain: walletClient.chain,
+          chain: targetChain,
           to: params.to,
           data: params.data as `0x${string}`,
           value: params.value,
@@ -69,7 +75,7 @@ export function useUnifiedChainSwitchAndExecute() {
           return await executeTransaction();
         }
 
-        toast.info(`Switching to ${getChainName(targetChainId)}…`);
+        const switchingToastId = toast.info(`Switching to ${getChainName(targetChainId)}…`);
 
         const targetChain = supportedChains.find(chain => chain.id === targetChainId);
         if (!targetChain) {
@@ -95,6 +101,7 @@ export function useUnifiedChainSwitchAndExecute() {
           },
         });
 
+        toast.dismiss(switchingToastId);
         return await executeTransaction();
       } catch (e: any) {
         if (e?.code === -32603 || e?.message?.includes("f is not a function")) {
