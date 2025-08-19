@@ -1,0 +1,131 @@
+---
+title: Γρήγορη Εκκίνηση
+description: >-
+  Ξεκινήστε με το B3 SDK σε λίγα λεπτά και αρχίστε να δημιουργείτε στο
+  οικοσύστημα B3
+lang: el
+originalPath: quickstart.mdx
+---
+### Βήμα 1: Εγκατάσταση του B3 SDK
+<Steps>
+  <Step title="Εγκατάσταση του πακέτου SDK">
+    Επιλέξτε τον προτιμώμενο διαχειριστή πακέτων σας για να εγκαταστήσετε το B3 SDK:
+
+    <CodeGroup>
+    ```bash npm
+    npm install @b3dotfun/sdk
+    ```
+    ```bash pnpm
+    pnpm add @b3dotfun/sdk
+    ```
+    ```bash yarn
+    yarn add @b3dotfun/sdk
+    ```
+    </CodeGroup>
+
+    <Tip>Το B3 SDK περιλαμβάνει ορισμούς TypeScript εξ' ορισμού!</Tip>
+  </Step>
+
+  <Step title="Εισαγωγή CSS στυλ">
+    Εισάγετε τα προεπιλεγμένα στυλ στην εφαρμογή σας:
+
+    ```typescript
+    import "@b3dotfun/sdk/index.css";
+    ```
+  </Step>
+</Steps>
+
+### Βήμα 2: Προσθήκη του B3Provider
+Περικλείστε το B3Provider γύρω από τη ρίζα της εφαρμογής σας:
+
+```tsx
+import { B3Provider, SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
+
+function App() {
+  return (
+    <B3Provider environment="production">
+      {children}
+    </B3Provider>
+  );
+}
+```
+
+
+### Βήμα 3: Χρήση του B3 SDK
+<AccordionGroup>
+ <Accordion icon="swap" title="Άμεσοι Λογαριασμοί">
+    Ενεργοποιήστε την παγκόσμια ταυτοποίηση λογαριασμών με το B3:
+
+    ```tsx
+    import { SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
+
+    function App() {
+      return (
+        <B3Provider environment="production">
+          <SignInWithB3
+            provider={{ strategy: "google" }}
+            partnerId="your-partner-id"
+            onLoginSuccess={(globalAccount) => {
+              console.log("Authenticated:", globalAccount);
+            }}
+          />
+        </B3Provider>
+      );
+    }
+    ```
+  </Accordion>
+  <Accordion icon="swap" title="Πρόσβαση σε Ρευστότητα">
+    Ενεργοποιήστε διασυναλλαγές cross-chain & προσαρμοσμένες αλληλεπιδράσεις με το AnySpend:
+
+    ```tsx
+    import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
+
+    function SwapPage() {
+      return <AnySpend mode="page" />;
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Βήμα 4: Εξερευνήστε το Οικοσύστημα
+
+<Card title="Ανακαλύψτε το Οικοσύστημα B3" icon="globe" href="/ecosystem/introduction">
+  Μάθετε για το πλήρες οικοσύστημα B3, τα εργαλεία και τους διαθέσιμους πόρους για τους δημιουργούς.
+</Card>
+
+## Τι έπεται;
+
+Τώρα που έχετε εγκαταστήσει το B3 SDK, εξερευνήστε αυτές τις ισχυρές δυνατότητες:
+
+<CardGroup cols={2}>
+
+<Card title="Παγκόσμιοι Λογαριασμοί" icon="user" href="/sdk/global-account/introduction">
+  Απρόσκοπτη ταυτοποίηση και διαχείριση χρηστών σε όλο το οικοσύστημα B3.
+</Card>
+
+<Card title="Data API" icon="user" href="/data/api-reference/introduction">
+  Πρόσβαση σε δεδομένα blockchain για tokens, NFTs, προφίλ και αναλύσεις.
+</Card>
+
+<Card title="AnySpend SDK" icon="arrows-cross" href="/anyspend/introduction">
+  Διασυναλλαγές cross-chain, δημιουργία NFT και λειτουργίες blockchain.
+</Card>
+
+<Card title="Παραδείγματα & Demos" icon="code" href="/sdk/introduction">
+  Έτοιμα προς χρήση παραδείγματα και μοτίβα ενσωμάτωσης.
+</Card>
+
+</CardGroup>
+
+## Υποστήριξη Πλατφόρμας
+
+| Δυνατότητα           | React Web | React Native |
+| ----------------- | --------- | ------------ |
+| AnySpend          | ✅         | ❌            |
+| Παγκόσμιοι Λογαριασμοί   | ✅         | ✅            |
+| Headless Services | ✅         | ✅            |
+
+<Note>
+  **Χρειάζεστε βοήθεια;** Ενταχθείτε στην [κοινότητα Discord](https://discord.gg/b3dotfun) μας ή δείτε την
+  [εισαγωγή στο οικοσύστημα](/ecosystem/introduction) για ολοκληρωμένους πόρους.
+</Note>

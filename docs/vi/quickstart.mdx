@@ -1,0 +1,129 @@
+---
+title: Bắt đầu nhanh
+description: Bắt đầu với B3 SDK trong vài phút và bắt đầu xây dựng trên hệ sinh thái B3
+lang: vi
+originalPath: quickstart.mdx
+---
+### Bước 1: Cài đặt B3 SDK
+<Steps>
+  <Step title="Cài đặt gói SDK">
+    Chọn trình quản lý gói ưa thích của bạn để cài đặt B3 SDK:
+
+    <CodeGroup>
+    ```bash npm
+    npm install @b3dotfun/sdk
+    ```
+    ```bash pnpm
+    pnpm add @b3dotfun/sdk
+    ```
+    ```bash yarn
+    yarn add @b3dotfun/sdk
+    ```
+    </CodeGroup>
+
+    <Tip>B3 SDK bao gồm định nghĩa TypeScript ngay từ đầu!</Tip>
+  </Step>
+
+  <Step title="Nhập CSS styles">
+    Nhập styles mặc định vào ứng dụng của bạn:
+
+    ```typescript
+    import "@b3dotfun/sdk/index.css";
+    ```
+  </Step>
+</Steps>
+
+### Bước 2: Thêm B3Provider
+Bọc B3Provider quanh gốc của ứng dụng:
+
+```tsx
+import { B3Provider, SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
+
+function App() {
+  return (
+    <B3Provider environment="production">
+      {children}
+    </B3Provider>
+  );
+}
+```
+
+
+### Bước 3: Sử dụng B3 SDK
+<AccordionGroup>
+ <Accordion icon="swap" title="Tài khoản tức thì">
+    Kích hoạt xác thực tài khoản toàn cầu với B3:
+
+    ```tsx
+    import { SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
+
+    function App() {
+      return (
+        <B3Provider environment="production">
+          <SignInWithB3
+            provider={{ strategy: "google" }}
+            partnerId="your-partner-id"
+            onLoginSuccess={(globalAccount) => {
+              console.log("Đã xác thực:", globalAccount);
+            }}
+          />
+        </B3Provider>
+      );
+    }
+    ```
+  </Accordion>
+  <Accordion icon="swap" title="Truy cập thanh khoản">
+    Kích hoạt chuyển đổi chuỗi chéo & tương tác tùy chỉnh với AnySpend:
+
+    ```tsx
+    import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
+
+    function SwapPage() {
+      return <AnySpend mode="page" />;
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Bước 4: Khám phá Hệ sinh thái
+
+<Card title="Khám phá Hệ sinh thái B3" icon="globe" href="/ecosystem/introduction">
+  Tìm hiểu về hệ sinh thái B3 đầy đủ, công cụ và tài nguyên sẵn có cho các nhà xây dựng.
+</Card>
+
+## Bước Tiếp Theo?
+
+Giờ đây, khi bạn đã cài đặt B3 SDK, hãy khám phá những tính năng mạnh mẽ này:
+
+<CardGroup cols={2}>
+
+<Card title="Tài khoản Toàn cầu" icon="user" href="/sdk/global-account/introduction">
+  Xác thực và quản lý người dùng mượt mà trên toàn hệ sinh thái B3.
+</Card>
+
+<Card title="Data API" icon="user" href="/data/api-reference/introduction">
+  Truy cập dữ liệu blockchain cho token, NFT, hồ sơ và phân tích.
+</Card>
+
+<Card title="AnySpend SDK" icon="arrows-cross" href="/anyspend/introduction">
+  Chuyển đổi chuỗi chéo, tạo NFT và hoạt động blockchain.
+</Card>
+
+<Card title="Ví dụ & Demo" icon="code" href="/sdk/introduction">
+  Ví dụ sẵn có và mô hình tích hợp.
+</Card>
+
+</CardGroup>
+
+## Hỗ trợ Nền tảng
+
+| Tính năng          | React Web | React Native |
+| ----------------- | --------- | ------------ |
+| AnySpend          | ✅         | ❌            |
+| Tài khoản Toàn cầu   | ✅         | ✅            |
+| Dịch vụ Không giao diện | ✅         | ✅            |
+
+<Note>
+  **Cần trợ giúp?** Tham gia cộng đồng [Discord](https://discord.gg/b3dotfun) của chúng tôi hoặc xem
+  [giới thiệu hệ sinh thái](/ecosystem/introduction) để có nguồn tài nguyên toàn diện.
+</Note>
