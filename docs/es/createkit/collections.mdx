@@ -1,0 +1,483 @@
+---
+title: Gestión de Colecciones
+description: Guía completa para crear y gestionar colecciones de NFT con CreateKit
+lang: es
+originalPath: createkit/collections.mdx
+---
+## Visión General
+
+La gestión de colecciones está en el núcleo de CreateKit. Esta guía cubre todo lo que necesitas saber sobre la creación, configuración y gestión de colecciones NFT utilizando el protocolo BaseMint.
+
+## Estructura de Metadatos de Colección
+
+Cada colección requiere metadatos específicos que definen sus características:
+
+### Parámetros Requeridos
+
+<ParamField path="name" type="string">
+  El nombre de tu colección NFT (p. ej., "Bored Ape Yacht Club")
+</ParamField>
+
+<ParamField path="symbol" type="string">
+  El símbolo/ticker de tu colección (p. ej., "BAYC")
+</ParamField>
+
+<ParamField path="creator" type="0x${string}">
+  La dirección Ethereum del creador de la colección
+</ParamField>
+
+<ParamField path="gameOwner" type="0x${string}">
+  La dirección Ethereum del propietario del juego (puede ser el mismo que el creador)
+</ParamField>
+
+### Parámetros Opcionales
+
+<ParamField path="maxSupply" type="bigint" default="10000n">
+  Número máximo de tokens que pueden ser acuñados
+</ParamField>
+
+<ParamField path="mintPrice" type="bigint" default="0n">
+  Precio por token en wei (usa parseEther() para valores en ETH)
+</ParamField>
+
+<ParamField path="maxPerWallet" type="bigint" default="100n">
+  Máximo de tokens que pueden ser acuñados por cartera
+</ParamField>
+
+<ParamField path="isWhitelistEnabled" type="boolean" default="false">
+  Si la acuñación solo para lista blanca está habilitada
+</ParamField>
+
+<ParamField path="startTime" type="bigint" default="0n">
+  Timestamp Unix cuando comienza la acuñación (0 = inmediato)
+</ParamField>
+
+<ParamField path="endTime" type="bigint" default="BigInt(Date.now() / 1000 + 86400 * 365 * 100)">
+  Timestamp Unix cuando termina la acuñación
+</ParamField>
+
+<ParamField path="tokenStandard" type="'ERC721' | 'ERC1155'" default="'ERC721'">
+  El estándar de token a usar
+</ParamField>
+
+<ParamField path="chainId" type="number" default="1993">
+  ID de cadena (1993 = B3 Testnet, 8333 = B3 Mainnet)
+</ParamField>
+
+## Creación de Colecciones
+
+### Colección Básica
+
+```typescript title="Creación de Colección Básica"
+import { CollectionManager, b3Testnet } from '@b3dotfun/basemint'
+import { createPublicClient, createWalletClient, http } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+
+const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`)
+const publicClient = createPublicClient({
+  chain: b3Testnet,
+  transport: http()
+})
+
+const walletClient = createWalletClient({
+  chain: b3Testnet,
+  transport: http(),
+  account
+})
+
+const collectionManager = new CollectionManager(publicClient)
+
+// Define colección básica
+const basicCollection = {
+  name: "Mi Colección de Arte",
+  symbol: "MAC",
+  creator: account.address,
+  gameOwner: account.address,
+  description: "Una colección de piezas de arte digital",
+  image: "https://example.com/collection-image.png"
+}
+
+// Generar firma del creador
+const creatorSignature = await collectionManager.generateCreatorSignature(
+  walletClient,
+  basicCollection
+)
+```
+
+### Configuración Avanzada de Colección
+
+```typescript title="Configuración Avanzada de Colección"
+import { parseEther } from 'viem'
+
+const advancedCollection = {
+  // Requerido
+  name: "Artículos de Juego Premium",
+  symbol: "PGI",
+  creator: account.address,
+  gameOwner: "0x1234567890123456789012345678901234567890", // Propietario del juego diferente
+  
+  // Suministro y precios
+  maxSupply: 5000n,
+  mintPrice: parseEther("0.01"), // 0.01 ETH
+  maxPerWallet: 5n,
+  
+  // Controles de tiempo
+  startTime: BigInt(Math.floor(Date.now() / 1000) + 3600), // Comienza en 1 hora
+  endTime: BigInt(Math.floor(Date.now() / 1000) + 86400 * 7), // Termina en 7 días
+  
+  // Configuración de lista blanca
+  isWhitelistEnabled: true,
+  whitelistMerkleRoot: "0x..." as `0x${string}`,
+  
+  // Metadatos
+  description: "Artículos de juego exclusivos para jugadores premium",
+  image: "https://example.com/premium-collection.png",
+  external_url: "https://mygame.com/premium-items",
+  animation_url: "https://example.com/collection-animation.mp4",
+  
+  // Atributos de colección
+  attributes: [
+    { trait_type: "Categoría", value: "Juego" },
+    { trait_type: "Rareza", value: "Premium" },
+    { trait_type: "Edición", value: "Primera" }
+  ],
+  
+  // Técnico
+  tokenStandard: "ERC1155" as const,
+  chainId: 1993
+}
+```
+
+## Estándares de Token
+
+CreateKit soporta tanto los estándares ERC721 como ERC1155:
+
+<Tabs>
+<Tab title="Colecciones ERC721">
+```typescript
+const erc721Collection = {
+  name: "Piezas de Arte Únicas",
+  symbol: "UAP",
+  creator: account.address,
+  gameOwner: account.address,
+  tokenStandard: "ERC721" as const,
+  maxSupply: 1000n, // Cada token es único
+  description: "Piezas de arte digital únicas en su tipo"
+}
+
+// Acuñación ERC721 (cantidad siempre 1)
+const collection721 = collectionManager.createCollection(
+  predictedAddress,
+  "ERC721"
+)
+
+await collection721.mint(
+  walletClient,
+  1n, // Siempre 1 para ERC721
+  undefined, // URI de metadatos
+  mintPrice,
+  proof
+)
+```
+</Tab>
+
+<Tab title="Colecciones ERC1155">
+```typescript
+const erc1155Collection = {
+  name: "Recursos de Juego",
+  symbol: "GRS",
+  creator: account.address,
+  gameOwner: account.address,
+  tokenStandard: "ERC1155" as const,
+  maxSupply: 100000n, // Total a través de todos los tipos de token
+  description: "Recursos de juego fungibles y semi-fungibles"
+}
+
+// Acuñación ERC1155 (puede acuñar múltiples)
+const collection1155 = collectionManager.createCollection(
+  predictedAddress,
+  "ERC1155"
+)
+
+await collection1155.mint(
+  walletClient,
+  10n, // Puede acuñar múltiples tokens
+  "https://example.com/token/1", // metadatos de token específico
+  mintPrice,
+  proof
+)
+```
+</Tab>
+</Tabs>
+
+## Gestión de Metadatos
+
+### Metadatos a Nivel de Colección
+
+```typescript title="Metadatos de Colección"
+const collectionMetadata = {
+  name: "Mi Colección",
+  description: "Una fantástica colección de activos digitales",
+  image: "https://example.com/collection-image.png",
+  external_url: "https://mywebsite.com/collection",
+  
+  // Fondo y banner para mercados
+  background_color: "ffffff",
+  banner_image_url: "https://example.com/banner.png",
+  
+  // Atributos de colección
+  attributes: [
+    { trait_type: "Tema", value: "Fantasía" },
+    { trait_type: "Artista", value: "Creador Digital" }
+  ]
+}
+```
+
+### Metadatos a Nivel de Token
+
+CreateKit genera automáticamente metadatos de token basados en la configuración de tu colección:
+
+<Tabs>
+<Tab title="Metadatos Generados Automáticamente">
+```typescript
+import { NFTMetadataManager, MediaType } from '@b3dotfun/basemint'
+
+// Generar metadatos para diferentes tipos de medios
+const artworkMetadata = NFTMetadataManager.generateNFTMetadata(
+  collectionMetadata,
+  MediaType.ARTWORK
+)
+
+const model3dMetadata = NFTMetadataManager.generateNFTMetadata(
+  collectionMetadata,
+  MediaType.MODEL_3D
+)
+
+const videoMetadata = NFTMetadataManager.generateNFTMetadata(
+  collectionMetadata,
+  MediaType.VIDEO
+)
+
+// Convertir a JSON
+const metadataJson = NFTMetadataManager.generateJSON(artworkMetadata)
+console.log(metadataJson)
+```
+</Tab>
+
+<Tab title="Metadatos Personalizados">
+```typescript
+// Para metadatos personalizados, proporciona tu propio baseURI
+const customCollection = {
+  name: "Colección con Metadatos Personalizados",
+  symbol: "CMC",
+  creator: account.address,
+  gameOwner: account.address,
+  baseURI: "https://myapi.com/metadata/", // Tu endpoint de metadatos personalizado
+  description: "Colección con metadatos personalizados"
+}
+
+// Tu API debería responder a: https://myapi.com/metadata/{tokenId}
+// Con el formato de metadatos estándar de OpenSea
+```
+</Tab>
+</Tabs>
+
+## Validación de Colección
+
+CreateKit proporciona validación integrada para los parámetros de la colección:
+
+```typescript title="Validación de Parámetros"
+import { validateCollectionMetadata } from '@b3dotfun/basemint'
+
+try {
+  // Validar metadatos de colección
+  const validation = validateCollectionMetadata(collectionMetadata)
+  
+  if (!validation.isValid) {
+    console.error("Errores de validación:", validation.errors)
+    return
+  }
+  
+  console.log("✅ Los metadatos de la colección son válidos")
+  
+  // Proceder con la generación de firma
+  const signature = await collectionManager.generateCreatorSignature(
+    walletClient,
+    collectionMetadata
+  )
+} catch (error) {
+  console.error("La validación falló:", error)
+}
+```
+
+## Predicción de Dirección
+
+Una de las características clave de CreateKit es la predicción determinista de direcciones:
+
+```typescript title="Predicción de Dirección"
+// Generar primero la firma del creador
+const creatorSignature = await collectionManager.generateCreatorSignature(
+  walletClient,
+  collectionMetadata
+)
+
+// Predecir la dirección de la colección
+const predictedAddress = collectionManager.predictCollectionAddress(
+  collectionMetadata,
+  creatorSignature
+)
+
+console.log(`La colección será desplegada en: ${predictedAddress}`)
+
+// Ahora puedes usar esta dirección antes del despliegue
+// para integración en mercados, visualización en el frontend, etc.
+```
+
+## Operaciones de Gestión de Colección
+
+### Verificar el Estado de la Colección
+
+```typescript title="Estado de la Colección"
+const collection = collectionManager.createCollection(
+  predictedAddress,
+  "ERC721"
+)
+
+// Verificar si la colección está desplegada
+const isDeployed = await collection.isDeployed()
+console.log(`Desplegada: ${isDeployed}`)
+
+// Obtener información de la colección (solo funciona después del despliegue)
+if (isDeployed) {
+  const info = await collection.getCollectionInfo()
+  console.log("Información de la Colección:", {
+    name: info.name,
+    symbol: info.symbol,
+    totalSupply: info.totalSupply.toString(),
+    maxSupply: info.maxSupply.toString(),
+    mintPrice: info.mintPrice.toString(),
+    maxPerWallet: info.maxPerWallet.toString()
+  })
+}
+```
+
+### Actualizar Configuraciones de la Colección
+
+<Warning>
+La mayoría de los parámetros de la colección no pueden cambiarse después del despliegue. Planifica cuidadosamente la configuración de tu colección.
+</Warning>
+
+```typescript title="Gestión Post-Despliegue"
+// Solo ciertas operaciones son posibles después del despliegue
+
+// Verificar el precio actual de acuñación (si se implementa precios dinámicos)
+const currentPrice = await collection.getCurrentMintPrice()
+
+// Verificar si la acuñación está actualmente activa
+const isMintingActive = await collection.isMintingActive()
+
+// Obtener el suministro restante
+const remainingSupply = await collection.getRemainingSupply()
+
+console.log({
+  currentPrice: currentPrice.toString(),
+  isMintingActive,
+  remainingSupply: remainingSupply.toString()
+})
+```
+
+## Mejores Prácticas
+
+### 1. Planificación de la Colección
+
+<CardGroup cols={2}>
+  <Card title="Estrategia de Suministro" icon="chart-line">
+    - Establecer un suministro máximo apropiado basado en el caso de uso
+    - Considerar la demanda futura y la escasez
+    - Dejar espacio para crecimiento o ediciones especiales
+  </Card>
+  <Card title="Estrategia de Precios" icon="dollar-sign">
+    - Investigar colecciones similares para referencia de precios
+    - Considerar los costos de gas y las tarifas de transacción
+    - Planificar para diferentes condiciones del mercado
+  </Card>
+</CardGroup>
+
+### 2. Calidad de Metadatos
+
+```typescript title="Metadatos de Alta Calidad"
+const qualityCollection = {
+  name: "Colección de Arte Profesional",
+  symbol: "PAC",
+  creator: account.address,
+  gameOwner: account.address,
+  
+  // Descripciones de alta calidad
+  description: "Una colección curada de obras de arte digital profesional que presenta temas contemporáneos y técnicas innovadoras.",
+  
+  // Imágenes profesionales (mínimo 640x640px)
+  image: "https://example.com/high-res-collection-image.png",
+  
+  // Atributos completos para mejor descubrimiento
+  attributes: [
+    { trait_type: "Estilo de Arte", value: "Contemporáneo" },
+    { trait_type: "Medio", value: "Digital" },
+    { trait_type: "Verificación de Artista", value: "Verificado" },
+    { trait_type: "Tipo de Edición", value: "Limitada" }
+  ],
+  
+  // Enlaces externos para credibilidad
+  external_url: "https://professionalartist.com/collection"
+}
+```
+
+### 3. Consideraciones de Seguridad
+
+<AccordionGroup>
+  <Accordion title="Gestión de Claves Privadas">
+    - Nunca codificar claves privadas en el código fuente
+    - Usar variables de entorno o gestión de claves segura
+    - Considerar usar carteras de múltiples firmas para colecciones valiosas
+  </Accordion>
+
+  <Accordion title="Validación de Firmas">
+    - Siempre validar firmas antes del despliegue
+    - Verificar que los parámetros de la colección coincidan con los valores previstos
+    - Probar en testnet antes del despliegue en mainnet
+  </Accordion>
+
+  <Accordion title="Control de Acceso">
+    - Elegir cuidadosamente las direcciones del creador y del propietario del juego
+    - Entender las implicaciones de distribución de recompensas
+    - Planificar para la gestión de la colección a largo plazo
+  </Accordion>
+</AccordionGroup>
+
+## Solución de Problemas
+
+<AccordionGroup>
+  <Accordion title="Incompatibilidad en la predicción de direcciones">
+    Asegúrate de que todos los parámetros de la colección sean idénticos entre la generación de la firma y el despliegue. Incluso pequeños cambios resultarán en direcciones diferentes.
+  </Accordion>
+
+  <Accordion title="Parámetros de colección inválidos">
+    Verifica que todos los campos requeridos estén provistos y que los valores estén dentro de los rangos aceptables (p. ej., maxSupply > 0, direcciones válidas).
+  </Accordion>
+
+  <Accordion title="Falla en la generación de firmas">
+    Verifica que tu cliente de cartera esté configurado correctamente y que tengas fondos suficientes para la transacción de firma.
+  </Accordion>
+</AccordionGroup>
+
+## Próximos Pasos
+
+Ahora que entiendes la gestión de colecciones, explora estos temas relacionados:
+
+<CardGroup cols={2}>
+  <Card title="Guía de Acuñación" icon="coins" href="/createkit/minting">
+    Aprende cómo implementar la funcionalidad de acuñación de tokens
+  </Card>
+  <Card title="Gestión de Lista Blanca" icon="list" href="/createkit/whitelist">
+    Configura la acuñación basada en lista blanca para acceso exclusivo
+  </Card>
+</CardGroup>

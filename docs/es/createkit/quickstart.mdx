@@ -1,0 +1,399 @@
+---
+title: Inicio rápido
+description: Crea tu primera colección de NFT con CreateKit en solo unos minutos
+lang: es
+originalPath: createkit/quickstart.mdx
+---
+## Visión General
+
+Esta guía te guiará a través de la creación de tu primera colección de NFT usando CreateKit. Aprenderás cómo:
+
+- Crear metadatos y firmas de colección
+- Desplegar una colección
+- Acuñar tu primer NFT
+- Seguir recompensas
+
+<Note>
+Este inicio rápido utiliza B3 Testnet. Asegúrate de tener fondos de testnet para las tarifas de gas.
+</Note>
+
+## Paso 1: Configuración Básica
+
+Primero, vamos a configurar la infraestructura básica:
+
+```typescript title="quickstart.ts"
+import { 
+  CollectionManager, 
+  RewardTracker,
+  BaseMintStorage,
+  b3Testnet 
+} from '@b3dotfun/basemint'
+import { createPublicClient, createWalletClient, http } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+
+// Inicializar clientes
+const publicClient = createPublicClient({
+  chain: b3Testnet,
+  transport: http()
+})
+
+const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`)
+const walletClient = createWalletClient({
+  chain: b3Testnet,
+  transport: http(),
+  account
+})
+
+// Inicializar servicios de CreateKit
+const collectionManager = new CollectionManager(publicClient)
+const rewardTracker = new RewardTracker(publicClient)
+const storage = new BaseMintStorage({
+  baseUrl: 'https://api.basemint.fun'
+})
+```
+
+## Paso 2: Crear Metadatos de la Colección
+
+Define los parámetros de tu colección:
+
+```typescript title="Crear Colección"
+const collectionMetadata = {
+  // Parámetros requeridos
+  name: "Mi Primera Colección",
+  symbol: "MFC",
+  creator: account.address,
+  gameOwner: account.address, // Puede ser una dirección diferente
+  
+  // Parámetros opcionales
+  maxSupply: 1000n,
+  mintPrice: 0n, // Acuñación gratuita
+  maxPerWallet: 10n,
+  description: "Mi primera colección de NFT en B3",
+  image: "https://example.com/collection-image.png",
+  
+  // Temporización
+  startTime: 0n, // Comenzar inmediatamente
+  endTime: BigInt(Math.floor(Date.now() / 1000) + 86400 * 30), // 30 días
+  
+  // Estándar del token
+  tokenStandard: "ERC721" as const,
+  chainId: 1993 // B3 Testnet
+}
+```
+
+## Paso 3: Generar Firmas
+
+Crea las firmas requeridas para el despliegue:
+
+```typescript title="Generar Firmas"
+// Generar firma del creador
+const creatorSignature = await collectionManager.generateCreatorSignature(
+  walletClient,
+  collectionMetadata
+)
+
+// Predecir dirección de la colección
+const predictedAddress = collectionManager.predictCollectionAddress(
+  collectionMetadata,
+  creatorSignature
+)
+
+console.log(`📍 Dirección de la colección predicha: ${predictedAddress}`)
+```
+
+## Paso 4: Enviar a Almacenamiento
+
+Almacena tus metadatos de colección fuera de la cadena:
+
+```typescript title="Enviar a Almacenamiento"
+try {
+  await storage.submitCollection(collectionMetadata, creatorSignature)
+  console.log("✅ Metadatos de la colección almacenados con éxito")
+} catch (error) {
+  console.error("❌ Fallo al almacenar la colección:", error)
+}
+```
+
+## Paso 5: Desplegar y Acuñar
+
+Ahora viene la parte emocionante - desplegar tu colección y acuñar el primer NFT:
+
+```typescript title="Desplegar y Acuñar"
+// Generar firma del desplegador
+const deployerSignature = await collectionManager.generateDeployerSignature(
+  walletClient,
+  predictedAddress
+)
+
+// Crear instancia de la colección
+const collection = collectionManager.createCollection(
+  predictedAddress,
+  collectionMetadata.tokenStandard
+)
+
+// Desplegar y acuñar el primer NFT en una transacción
+const mintTx = await collection.mint(
+  walletClient,
+  1n, // cantidad
+  undefined, // URI de metadatos (usará baseURI)
+  0n, // precio de acuñación
+  [], // prueba de lista blanca (vacía para acuñación pública)
+  creatorSignature,
+  deployerSignature
+)
+
+console.log(`🎉 Colección desplegada y primer NFT acuñado!`)
+console.log(`📋 Hash de la transacción: ${mintTx}`)
+```
+
+## Paso 6: Verificar el Despliegue
+
+Verifiquemos que todo funcionó correctamente:
+
+```typescript title="Verificar el Despliegue"
+// Verificar si la colección está desplegada
+const isDeployed = await collection.isDeployed()
+console.log(`🏭 Colección desplegada: ${isDeployed}`)
+
+// Obtener información de la colección
+const info = await collection.getCollectionInfo()
+console.log("📊 Información de la Colección:", {
+  name: info.name,
+  symbol: info.symbol,
+  totalSupply: info.totalSupply.toString(),
+  maxSupply: info.maxSupply.toString()
+})
+
+// Verificar propiedad del token
+const balance = await collection.balanceOf(account.address)
+console.log(`💰 Tu saldo de tokens: ${balance.toString()}`)
+```
+
+## Paso 7: Seguir Recompensas
+
+Revisa las recompensas generadas por tu acuñación:
+
+```typescript title="Seguir Recompensas"
+// Obtener contrato de depósito en garantía para recompensas
+const escrowAddress = collectionManager.getEscrowAddress()
+
+// Seguir recompensas para esta colección
+const collectionRewards = await rewardTracker.getCollectionRewards(
+  escrowAddress,
+  predictedAddress
+)
+
+console.log("💎 Recompensas de la Colección:", {
+  totalRewards: collectionRewards.totalRewards.toString(),
+  unclaimedRewards: collectionRewards.unclaimedRewards.toString(),
+  totalMints: collectionRewards.totalMints.toString()
+})
+
+// Obtener recompensas individuales del destinatario
+const creatorRewards = await rewardTracker.getRecipientRewards(
+  escrowAddress,
+  predictedAddress,
+  "CREATOR",
+  account.address
+)
+
+console.log(`🎨 Recompensas del creador: ${creatorRewards.toString()}`)
+```
+
+## Ejemplo Completo
+
+Aquí está el script completo de inicio rápido:
+
+<Accordion title="quickstart.ts completo">
+```typescript
+import { 
+  CollectionManager, 
+  RewardTracker,
+  BaseMintStorage,
+  b3Testnet 
+} from '@b3dotfun/basemint'
+import { createPublicClient, createWalletClient, http } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+
+async function quickstart() {
+  // Inicializar clientes
+  const publicClient = createPublicClient({
+    chain: b3Testnet,
+    transport: http()
+  })
+
+  const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`)
+  const walletClient = createWalletClient({
+    chain: b3Testnet,
+    transport: http(),
+    account
+  })
+
+  // Inicializar servicios de CreateKit
+  const collectionManager = new CollectionManager(publicClient)
+  const rewardTracker = new RewardTracker(publicClient)
+  const storage = new BaseMintStorage({
+    baseUrl: 'https://api.basemint.fun'
+  })
+
+  // Paso 1: Crear metadatos de la colección
+  const collectionMetadata = {
+    name: "Mi Primera Colección",
+    symbol: "MFC",
+    creator: account.address,
+    gameOwner: account.address,
+    maxSupply: 1000n,
+    mintPrice: 0n,
+    maxPerWallet: 10n,
+    description: "Mi primera colección de NFT en B3",
+    image: "https://example.com/collection-image.png",
+    startTime: 0n,
+    endTime: BigInt(Math.floor(Date.now() / 1000) + 86400 * 30),
+    tokenStandard: "ERC721" as const,
+    chainId: 1993
+  }
+
+  // Paso 2: Generar firmas
+  const creatorSignature = await collectionManager.generateCreatorSignature(
+    walletClient,
+    collectionMetadata
+  )
+
+  const predictedAddress = collectionManager.predictCollectionAddress(
+    collectionMetadata,
+    creatorSignature
+  )
+
+  console.log(`📍 Dirección de la colección predicha: ${predictedAddress}`)
+
+  // Paso 3: Enviar a almacenamiento
+  try {
+    await storage.submitCollection(collectionMetadata, creatorSignature)
+    console.log("✅ Metadatos de la colección almacenados con éxito")
+  } catch (error) {
+    console.error("❌ Fallo al almacenar la colección:", error)
+    return
+  }
+
+  // Paso 4: Desplegar y acuñar
+  const deployerSignature = await collectionManager.generateDeployerSignature(
+    walletClient,
+    predictedAddress
+  )
+
+  const collection = collectionManager.createCollection(
+    predictedAddress,
+    collectionMetadata.tokenStandard
+  )
+
+  const mintTx = await collection.mint(
+    walletClient,
+    1n,
+    undefined,
+    0n,
+    [],
+    creatorSignature,
+    deployerSignature
+  )
+
+  console.log(`🎉 Colección desplegada y primer NFT acuñado!`)
+  console.log(`📋 Hash de la transacción: ${mintTx}`)
+
+  // Paso 5: Verificar el despliegue
+  const isDeployed = await collection.isDeployed()
+  console.log(`🏭 Colección desplegada: ${isDeployed}`)
+
+  // Paso 6: Seguir recompensas
+  const escrowAddress = collectionManager.getEscrowAddress()
+  const collectionRewards = await rewardTracker.getCollectionRewards(
+    escrowAddress,
+    predictedAddress
+  )
+
+  console.log("💎 Recompensas de la Colección:", {
+    totalRewards: collectionRewards.totalRewards.toString(),
+    unclaimedRewards: collectionRewards.unclaimedRewards.toString(),
+    totalMints: collectionRewards.totalMints.toString()
+  })
+}
+
+// Ejecutar el inicio rápido
+quickstart().catch(console.error)
+```
+</Accordion>
+
+## Ejecutar el Ejemplo
+
+Guarda el ejemplo completo como `quickstart.ts` y ejecútalo:
+
+<CodeGroup>
+```bash npm
+npx tsx quickstart.ts
+```
+
+```bash yarn
+yarn tsx quickstart.ts
+```
+
+```bash pnpm
+pnpm tsx quickstart.ts
+```
+</CodeGroup>
+
+## Salida Esperada
+
+Cuando ejecutes el script de inicio rápido, deberías ver una salida similar a:
+
+```
+📍 Dirección de la colección predicha: 0x1234567890abcdef...
+✅ Metadatos de la colección almacenados con éxito
+🎉 Colección desplegada y primer NFT acuñado!
+📋 Hash de la transacción: 0xabcdef1234567890...
+🏭 Colección desplegada: true
+💎 Recompensas de la Colección: {
+  totalRewards: "1000000000000000000",
+  unclaimedRewards: "1000000000000000000", 
+  totalMints: "1"
+}
+```
+
+## ¿Qué Sigue?
+
+¡Felicidades! Has creado con éxito tu primera colección de NFT con CreateKit. Aquí tienes algunos pasos siguientes para explorar:
+
+<CardGroup cols={2}>
+  <Card title="Gestión de Colecciones" icon="folder" href="/createkit/collections">
+    Aprende opciones avanzadas de configuración de colecciones
+  </Card>
+  <Card title="Características de Acuñación" icon="coins" href="/createkit/minting">
+    Explora diferentes escenarios y opciones de acuñación
+  </Card>
+  <Card title="Configuración de Lista Blanca" icon="list" href="/createkit/whitelist">
+    Implementa la acuñación basada en lista blanca
+  </Card>
+  <Card title="Gestión de Recompensas" icon="gift" href="/createkit/rewards">
+    Profundiza en el sistema de distribución de recompensas
+  </Card>
+</CardGroup>
+
+## Solución de Problemas
+
+<AccordionGroup>
+  <Accordion title="La transacción falló">
+    - Asegúrate de tener fondos de testnet suficientes
+    - Verifica que todas las firmas sean válidas
+    - Verifica que los parámetros de la colección estén dentro de los límites
+  </Accordion>
+
+  <Accordion title="El envío al almacenamiento falló">
+    - Verifica tu conexión a internet
+    - Verifica el formato de los metadatos de la colección
+    - Asegúrate de que la firma del creador sea válida
+  </Accordion>
+
+  <Accordion title="La colección ya existe">
+    - La dirección predicha ya está tomada
+    - Intenta cambiar ligeramente los parámetros de la colección
+    - Usa una dirección de creador o propietario del juego diferente
+  </Accordion>
+</AccordionGroup>

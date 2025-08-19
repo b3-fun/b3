@@ -1,0 +1,530 @@
+---
+title: Gestión de lista blanca
+description: >-
+  Implementa la acuñación exclusiva con listas blancas basadas en árboles de
+  Merkle en CreateKit
+lang: es
+originalPath: createkit/whitelist.mdx
+---
+
+## Visión General
+
+CreateKit soporta la gestión de listas blancas sofisticadas utilizando árboles de Merkle para la verificación eficiente en términos de gas. Esto te permite crear experiencias de acuñación exclusivas para direcciones específicas manteniendo la escalabilidad y seguridad.
+
+## Fundamentos de las Listas Blancas
+
+### Cómo Funcionan las Listas Blancas
+
+1. **Generación Fuera de la Cadena**: Crear un árbol de Merkle a partir de direcciones en la lista blanca
+2. **Almacenamiento en la Cadena**: Almacenar solo la raíz de Merkle en el contrato inteligente
+3. **Verificación de Prueba**: Los usuarios proporcionan una prueba de Merkle al acuñar
+4. **Eficiencia de Gas**: Los costos de verificación son constantes independientemente del tamaño de la lista blanca
+
+<CardGroup cols={2}>
+  <Card title="Escalable" icon="arrows-split-up-and-left">
+    Soporta miles de direcciones con costos mínimos de gas
+  </Card>
+  <Card title="Seguro" icon="shield">
+    Verificación de direcciones garantizada criptográficamente
+  </Card>
+  <Card title="Flexible" icon="settings">
+    Fácil de generar y actualizar configuraciones de lista blanca
+  </Card>
+  <Card title="Transparente" icon="eye">
+    Verificable en la cadena sin revelar la lista completa
+  </Card>
+</CardGroup>
+
+## Configuración de Listas Blancas
+
+### Creación Básica de Lista Blanca
+
+```typescript title="Crear Lista Blanca"
+import { WhitelistManager } from '@b3dotfun/basemint'
+
+// Definir direcciones en la lista blanca
+const whitelistedAddresses = [
+  { address: "0x1234567890123456789012345678901234567890" },
+  { address: "0x2345678901234567890123456789012345678901" },
+  { address: "0x3456789012345678901234567890123456789012" },
+  { address: "0x4567890123456789012345678901234567890123" },
+  { address: "0x5678901234567890123456789012345678901234" }
+]
+
+// Crear gestor de lista blanca
+const whitelist = new WhitelistManager(whitelistedAddresses)
+
+// Obtener raíz de Merkle para el despliegue del contrato
+const merkleRoot = whitelist.getRoot()
+console.log(`Raíz de Merkle: ${merkleRoot}`)
+
+// Verificar que la lista blanca esté construida correctamente
+console.log(`La lista blanca contiene ${whitelistedAddresses.length} direcciones`)
+```
+
+### Configuración Avanzada de Lista Blanca
+
+```typescript title="Lista Blanca con Metadatos"
+// Las entradas de la lista blanca pueden incluir metadatos adicionales
+const advancedWhitelist = [
+  { 
+    address: "0x1234567890123456789012345678901234567890",
+    allocation: 5, // Máx 5 tokens para esta dirección
+    tier: "gold"
+  },
+  { 
+    address: "0x2345678901234567890123456789012345678901",
+    allocation: 3,
+    tier: "silver"
+  },
+  { 
+    address: "0x3456789012345678901234567890123456789012",
+    allocation: 1,
+    tier: "bronze"
+  }
+]
+
+// Crear lista blanca (solo se usan direcciones para el árbol de Merkle)
+const whitelist = new WhitelistManager(
+  advancedWhitelist.map(entry => ({ address: entry.address }))
+)
+
+// Almacenar metadatos por separado para la lógica de la aplicación
+const allocationMap = new Map(
+  advancedWhitelist.map(entry => [entry.address, entry.allocation])
+)
+```
+
+## Integración de Colecciones
+
+### Colección Habilitada para Lista Blanca
+
+```typescript title="Configuración de Colección con Lista Blanca"
+import { CollectionManager } from '@b3dotfun/basemint'
+
+// Crear colección con lista blanca habilitada
+const whitelistCollection = {
+  name: "Colección Exclusiva",
+  symbol: "EXCL",
+  creator: account.address,
+  gameOwner: account.address,
+  
+  // Configuración de lista blanca
+  isWhitelistEnabled: true,
+  whitelistMerkleRoot: merkleRoot,
+  
+  // Configuraciones de la colección
+  maxSupply: 1000n,
+  mintPrice: parseEther("0.01"),
+  maxPerWallet: 3n,
+  
+  // Opcional: Combinar con acceso basado en tiempo
+  startTime: BigInt(Math.floor(Date.now() / 1000) + 3600), // La lista blanca comienza en 1 hora
+  endTime: BigInt(Math.floor(Date.now() / 1000) + 86400 * 7), // Termina en 7 días
+}
+
+// Generar firmas y desplegar
+const creatorSignature = await collectionManager.generateCreatorSignature(
+  walletClient,
+  whitelistCollection
+)
+
+const predictedAddress = collectionManager.predictCollectionAddress(
+  whitelistCollection,
+  creatorSignature
+)
+
+console.log(`La colección de lista blanca se desplegará en: ${predictedAddress}`)
+```
+
+### Modelos de Acceso Híbridos
+
+```typescript title="Acceso Fasado"
+// Crear colecciones con diferentes fases de acceso
+const phasedCollection = {
+  name: "Colección de Acceso Fasado",
+  symbol: "PAC",
+  creator: account.address,
+  gameOwner: account.address,
+  
+  // Fase 1: Solo lista blanca (primeras 24 horas)
+  isWhitelistEnabled: true,
+  whitelistMerkleRoot: merkleRoot,
+  startTime: BigInt(Math.floor(Date.now() / 1000)),
+  
+  // Nota: Para la fase 2 (acceso público), necesitarás lógica adicional
+  // para deshabilitar la verificación de la lista blanca después de cierto tiempo
+}
+
+// En tu aplicación, implementa la lógica de fases
+async function checkMintingPhase(collection: any): Promise<'whitelist' | 'public' | 'ended'> {
+  const now = BigInt(Math.floor(Date.now() / 1000))
+  const startTime = await collection.startTime()
+  const endTime = await collection.endTime()
+  
+  const whitelistPhaseEnd = startTime + 86400n // 24 horas
+  
+  if (now < startTime) {
+    throw new Error("La acuñación aún no ha comenzado")
+  } else if (now < whitelistPhaseEnd) {
+    return 'whitelist'
+  } else if (now < endTime) {
+    return 'public'
+  } else {
+    return 'ended'
+  }
+}
+```
+
+## Verificación de Lista Blanca
+
+### Generación de Pruebas
+
+```typescript title="Generar Pruebas de Merkle"
+// Generar prueba para una dirección específica
+function generateProofForAddress(whitelist: WhitelistManager, address: string): string[] {
+  try {
+    const proof = whitelist.getProof(address)
+    console.log(`Prueba generada para ${address}:`, proof)
+    return proof
+  } catch (error) {
+    console.error(`Falló al generar la prueba para ${address}:`, error)
+    throw new Error(`Dirección ${address} no en lista blanca`)
+  }
+}
+
+// Verificar prueba localmente (opcional)
+function verifyWhitelistProof(
+  whitelist: WhitelistManager, 
+  address: string, 
+  proof: string[]
+): boolean {
+  const isValid = whitelist.verify(address, proof)
+  console.log(`Verificación de prueba para ${address}: ${isValid ? '✅ Válida' : '❌ Inválida'}`)
+  return isValid
+}
+
+// Ejemplo de uso
+const userAddress = "0x1234567890123456789012345678901234567890"
+const proof = generateProofForAddress(whitelist, userAddress)
+const isValid = verifyWhitelistProof(whitelist, userAddress, proof)
+```
+
+### Generación de Pruebas en Lote
+
+```typescript title="Generación de Pruebas en Lote"
+// Generar pruebas para múltiples direcciones
+function generateBatchProofs(
+  whitelist: WhitelistManager, 
+  addresses: string[]
+): Map<string, string[]> {
+  const proofMap = new Map<string, string[]>()
+  
+  for (const address of addresses) {
+    try {
+      const proof = whitelist.getProof(address)
+      proofMap.set(address, proof)
+      console.log(`✅ Prueba generada para ${address}`)
+    } catch (error) {
+      console.error(`❌ Falló al generar prueba para ${address}:`, error)
+    }
+  }
+  
+  return proofMap
+}
+
+// Generar pruebas para todas las direcciones en la lista blanca
+const allAddresses = whitelistedAddresses.map(entry => entry.address)
+const allProofs = generateBatchProofs(whitelist, allAddresses)
+
+// Guardar pruebas en un archivo o base de datos para uso en el frontend
+const proofData = {
+  merkleRoot,
+  proofs: Object.fromEntries(allProofs)
+}
+
+// Ejemplo: Guardar en archivo JSON
+import { writeFileSync } from 'fs'
+writeFileSync('whitelist-proofs.json', JSON.stringify(proofData, null, 2))
+```
+
+## Acuñación con Listas Blancas
+
+### Acuñación Básica con Lista Blanca
+
+```typescript title="Acuñar con Lista Blanca"
+async function mintWithWhitelist(
+  collection: any,
+  walletClient: any,
+  whitelist: WhitelistManager,
+  quantity: bigint = 1n
+) {
+  const userAddress = walletClient.account.address
+  
+  try {
+    // Generar prueba para el usuario
+    const proof = whitelist.getProof(userAddress)
+    
+    // Verificar prueba localmente (opcional)
+    const isValid = whitelist.verify(userAddress, proof)
+    if (!isValid) {
+      throw new Error("Prueba de lista blanca inválida")
+    }
+    
+    // Obtener precio de acuñación
+    const mintPrice = await collection.mintPrice()
+    const totalPrice = mintPrice * quantity
+    
+    // Acuñar con prueba de lista blanca
+    const tx = await collection.mint(
+      walletClient,
+      quantity,
+      undefined, // URI de metadatos
+      totalPrice,
+      proof // Prueba de lista blanca
+    )
+    
+    console.log(`✅ Acuñación con lista blanca exitosa: ${tx}`)
+    return tx
+    
+  } catch (error: any) {
+    if (error.message.includes('Prueba de Merkle inválida')) {
+      console.error('❌ Dirección no en lista blanca o prueba inválida')
+    } else {
+      console.error('❌ Acuñación con lista blanca fallida:', error)
+    }
+    throw error
+  }
+}
+
+// Uso
+await mintWithWhitelist(collection, walletClient, whitelist, 2n)
+```
+
+### Acuñación Avanzada con Lista Blanca
+
+```typescript title="Lógica Avanzada de Lista Blanca"
+async function advancedWhitelistMint(
+  collection: any,
+  walletClient: any,
+  whitelist: WhitelistManager,
+  allocationMap: Map<string, number>,
+  quantity: bigint
+) {
+  const userAddress = walletClient.account.address
+  
+  // Verificar la asignación del usuario
+  const maxAllocation = allocationMap.get(userAddress) || 0
+  if (maxAllocation === 0) {
+    throw new Error("Dirección no en lista blanca")
+  }
+  
+  // Verificar saldo actual contra asignación
+  const currentBalance = await collection.balanceOf(userAddress)
+  const newBalance = currentBalance + quantity
+  
+  if (newBalance > BigInt(maxAllocation)) {
+    throw new Error(`Excedería la asignación. Máx: ${maxAllocation}, Actual: ${currentBalance}`)
+  }
+  
+  // Generar prueba y acuñar
+  const proof = whitelist.getProof(userAddress)
+  const mintPrice = await collection.mintPrice()
+  
+  const tx = await collection.mint(
+    walletClient,
+    quantity,
+    undefined,
+    mintPrice * quantity,
+    proof
+  )
+  
+  console.log(`✅ Acuñación avanzada con lista blanca exitosa: ${tx}`)
+  return tx
+}
+```
+
+## Integración en el Frontend
+
+### Hook de React para Estado de Lista Blanca
+
+```typescript title="Hook useWhitelistStatus"
+import { useState, useEffect } from 'react'
+import { useAccount } from 'wagmi'
+
+interface WhitelistStatus {
+  isWhitelisted: boolean
+  proof: string[] | null
+  allocation: number
+  loading: boolean
+  error: string | null
+}
+
+export function useWhitelistStatus(
+  whitelist: WhitelistManager,
+  allocationMap?: Map<string, number>
+): WhitelistStatus {
+  const { address } = useAccount()
+  const [status, setStatus] = useState<WhitelistStatus>({
+    isWhitelisted: false,
+    proof: null,
+    allocation: 0,
+    loading: true,
+    error: null
+  })
+  
+  useEffect(() => {
+    async function checkWhitelistStatus() {
+      if (!address) {
+        setStatus({
+          isWhitelisted: false,
+          proof: null,
+          allocation: 0,
+          loading: false,
+          error: null
+        })
+        return
+      }
+      
+      try {
+        setStatus(prev => ({ ...prev, loading: true, error: null }))
+        
+        // Generar prueba
+        const proof = whitelist.getProof(address)
+        const isValid = whitelist.verify(address, proof)
+        const allocation = allocationMap?.get(address) || 0
+        
+        setStatus({
+          isWhitelisted: isValid,
+          proof: isValid ? proof : null,
+          allocation,
+          loading: false,
+          error: null
+        })
+        
+      } catch (error: any) {
+        setStatus({
+          isWhitelisted: false,
+          proof: null,
+          allocation: 0,
+          loading: false,
+          error: error.message
+        })
+      }
+    }
+    
+    checkWhitelistStatus()
+  }, [address, whitelist, allocationMap])
+  
+  return status
+}
+```
+
+### Componente de Estado de Lista Blanca
+
+```tsx title="Componente WhitelistStatus"
+import React from 'react'
+import { useWhitelistStatus } from './useWhitelistStatus'
+
+interface WhitelistStatusProps {
+  whitelist: WhitelistManager
+  allocationMap?: Map<string, number>
+}
+
+export function WhitelistStatus({ whitelist, allocationMap }: WhitelistStatusProps) {
+  const { isWhitelisted, allocation, loading, error } = useWhitelistStatus(
+    whitelist, 
+    allocationMap
+  )
+  
+  if (loading) {
+    return <div className="animate-pulse">Verificando estado de lista blanca...</div>
+  }
+  
+  if (error) {
+    return <div className="text-red-500">Error: {error}</div>
+  }
+  
+  return (
+    <div className={`p-4 rounded-lg ${isWhitelisted ? 'bg-green-100' : 'bg-gray-100'}`}>
+      {isWhitelisted ? (
+        <div className="text-green-800">
+          <h3 className="font-bold">✅ En Lista Blanca</h3>
+          <p>Puedes acuñar hasta {allocation} tokens</p>
+        </div>
+      ) : (
+        <div className="text-gray-800">
+          <h3 className="font-bold">❌ No En Lista Blanca</h3>
+          <p>Tu dirección no es elegible para la acuñación de lista blanca</p>
+        </div>
+      )}
+    </div>
+  )
+}
+```
+
+## Múltiples Listas Blancas
+
+### Sistema de Lista Blanca por Niveles
+
+```typescript title="Listas Blancas por Niveles"
+// Crear diferentes niveles con distintos beneficios
+const goldTierAddresses = [
+  { address: "0x1111..." },
+  { address: "0x2222..." }
+]
+
+const silverTierAddresses = [
+  { address: "0x3333..." },
+  { address: "0x4444..." }
+]
+
+const bronzeTierAddresses = [
+  { address: "0x5555..." },
+  { address: "0x6666..." }
+]
+
+// Crear listas blancas separadas para cada nivel
+const goldWhitelist = new WhitelistManager(goldTierAddresses)
+const silverWhitelist = new WhitelistManager(silverTierAddresses)
+const bronzeWhitelist = new WhitelistManager(bronzeTierAddresses)
+
+// Para el contrato inteligente, podrías combinar todos los niveles
+const allTierAddresses = [
+  ...goldTierAddresses,
+  ...silverTierAddresses,
+  ...bronzeTierAddresses
+]
+
+const combinedWhitelist = new WhitelistManager(allTierAddresses)
+
+// Lógica de aplicación para beneficios por nivel
+const tierBenefits = {
+  gold: { maxMint: 10, discount: 0.2 },
+  silver: { maxMint: 5, discount: 0.1 },
+  bronze: { maxMint: 2, discount: 0.05 }
+}
+
+function getTierForAddress(address: string): 'gold' | 'silver' | 'bronze' | null {
+  if (goldTierAddresses.some(entry => entry.address === address)) return 'gold'
+  if (silverTierAddresses.some(entry => entry.address === address)) return 'silver'  
+  if (bronzeTierAddresses.some(entry => entry.address === address)) return 'bronze'
+  return null
+}
+```
+
+### Acceso por Niveles Basado en Tiempo
+
+```typescript title="Acceso por Niveles Fasado"
+async function getActiveTierForTime(timestamp: number): Promise<'gold' | 'silver' | 'bronze' | 'public' | null> {
+  const phaseStartTime = 1640995200 // Ejemplo de marca de tiempo
+  const hoursSinceStart = (timestamp - phaseStartTime) / 3600
+  
+  if (hoursSinceStart < 0) return null // No ha comenzado
+  if (hoursSinceStart < 1) return 'gold' // Primera hora: solo nivel oro
+  if (hoursSinceStart < 4) return 'silver' // Próximas 3 horas: oro + plata
+  if (hoursSinceStart < 24) return 'bronze' // Próximas 20 horas: todos los niveles
+  return 'public' // Después de 24 horas: acceso público
+}
+
+async function mintWithTierAccess

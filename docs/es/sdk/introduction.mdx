@@ -1,0 +1,238 @@
+---
+title: Kit de Desarrollo de Software B3
+description: >-
+  Un SDK de TypeScript completo para operaciones cross-chain de AnySpend y
+  autenticación de Cuentas Globales B3. Proporciona componentes de React para
+  una integración fácil y servicios de TypeScript sin interfaz para
+  implementaciones personalizadas.
+lang: es
+originalPath: sdk/introduction.mdx
+---
+<img src="/images/b3-banner.png" alt="B3 SDK" className="w-full rounded-xl" />
+
+## ¿Qué es el B3 SDK?
+
+El B3 SDK (`@b3dotfun/sdk`) es un SDK de TypeScript unificado que proporciona todo lo que necesitas para construir aplicaciones en el ecosistema B3. Combina una poderosa infraestructura de pagos entre cadenas con autenticación sin fisuras, todo envuelto en componentes React amigables para el desarrollador y servicios sin interfaz.
+
+## Arquitectura
+
+El SDK está organizado en módulos enfocados diseñados para la máxima flexibilidad y facilidad de uso:
+
+<CardGroup cols={2}>
+<Card title="Módulo AnySpend" icon="arrows-right-left" href="/anyspend/introduction">
+  Motor de ejecución entre cadenas para pagos, intercambios y acuñación de NFT en múltiples blockchains.
+</Card>
+
+<Card title="Módulo de Cuenta Global" icon="user" href="/sdk/global-account/introduction">
+  Autenticación y gestión de usuarios de Cuentas Globales B3 con inicio de sesión social y claves de sesión.
+</Card>
+
+</CardGroup>
+
+### Estructura del Módulo
+
+Cada módulo contiene componentes organizados y construidos con un propósito específico:
+
+- **`react/`** - Componentes y hooks de React para una fácil integración
+- **`services/`** - Servicios TypeScript sin interfaz para implementaciones personalizadas
+- **`types/`** - Definiciones de TypeScript completas
+- **`utils/`** - Funciones de utilidad y ayudantes
+- **`constants/`** - Configuración y constantes
+
+## Soporte de Plataforma
+
+| Característica      | React Web | React Native | Sin Interfaz |
+|---------------------|-----------|--------------|--------------|
+| AnySpend            | ✅         | ❌            | ✅            |
+| Cuentas Globales    | ✅         | ✅            | ✅            |
+| Utilidades Compartidas | ✅         | ✅            | ✅            |
+
+## Instalación
+
+<CodeGroup>
+```bash npm
+npm install @b3dotfun/sdk
+```
+
+```bash yarn
+yarn add @b3dotfun/sdk
+```
+
+```bash pnpm
+pnpm add @b3dotfun/sdk
+```
+</CodeGroup>
+
+### Estilos CSS
+
+Importa los estilos predeterminados para la mejor experiencia visual:
+
+```typescript
+import "@b3dotfun/sdk/index.css";
+```
+
+## Inicio Rápido
+
+### Pagos Entre Cadenas con AnySpend
+
+```tsx
+import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
+
+function PaymentPage() {
+  return <AnySpend mode="page" />;
+}
+```
+
+### Autenticación con Cuentas Globales
+
+```tsx
+import { B3Provider, SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
+
+function App() {
+  return (
+    <B3Provider environment="production">
+      <SignInWithB3
+        provider={{ strategy: "google" }}
+        partnerId="your-partner-id"
+        onLoginSuccess={(globalAccount) => {
+          console.log("Autenticado:", globalAccount);
+        }}
+      />
+    </B3Provider>
+  );
+}
+```
+
+### Acuñación de NFT
+
+```tsx
+import { AnySpendNFTButton } from "@b3dotfun/sdk/anyspend/react";
+
+function NFTMinting() {
+  const nftContract = {
+    address: "0x9c275ff1634519E9B5449ec79cd939B5F900564d",
+    chainId: 8333,
+    name: "Colección de NFT de Ejemplo",
+    imageUrl: "https://example.com/nft.jpg",
+    price: "1000000000000000000", // 1 ETH en wei
+    currency: { symbol: "ETH", decimals: 18 }
+  };
+
+  return (
+    <AnySpendNFTButton
+      nftContract={nftContract}
+      recipientAddress="0x..."
+    />
+  );
+}
+```
+
+## Características Clave
+
+### Infraestructura de Pago Universal
+
+<CardGroup cols={2}>
+<Card title="Pagos con Cualquier Token" icon="coins">
+  Acepta pagos en cualquier criptomoneda con conversión automática a tu token preferido.
+</Card>
+
+<Card title="Intercambios Entre Cadenas" icon="arrow-right-arrow-left">
+  Habilita intercambios de tokens sin fisuras a través de más de 20 blockchains soportadas con enrutamiento óptimo.
+</Card>
+
+<Card title="Acuñación de NFT" icon="image">
+  Botones de acuñación de NFT de un clic que aceptan pagos en cualquier token de cualquier cadena.
+</Card>
+
+<Card title="Pasarelas de Fiat" icon="credit-card">
+  Pasarelas de fiat a cripto integradas para usuarios sin criptomoneda existente.
+</Card>
+</CardGroup>
+
+### Autenticación Sin Fisuras
+
+<CardGroup cols={2}>
+<Card title="Inicio de Sesión Social" icon="users">
+  Google, Discord y otros proveedores sociales con incorporación instantánea.
+</Card>
+
+<Card title="Claves de Sesión" icon="key">
+  Gestión de sesiones segura con permisos granulares para una UX mejorada.
+</Card>
+
+<Card title="Identidad Multiplataforma" icon="globe">
+  Una identidad única que funciona en todas las aplicaciones y juegos B3.
+</Card>
+
+<Card title="Cuentas Inteligentes" icon="wallet">
+  Abstracción de cuenta inteligente integrada para transacciones sin gas.
+</Card>
+</CardGroup>
+
+## Servicios TypeScript Sin Interfaz
+
+Para desarrolladores que necesitan control máximo, toda la funcionalidad está disponible a través de servicios sin interfaz:
+
+### Servicios de AnySpend
+
+```typescript
+import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
+
+// Obtener cotización para intercambio entre cadenas
+const quote = await anyspendService.getQuote({
+  srcChain: 1,
+  dstChain: 8333,
+  srcTokenAddress: "0x...",
+  dstTokenAddress: "0x...",
+  srcAmount: "1000000",
+  recipientAddress: "0x...",
+  type: "swap"
+});
+
+// Crear y ejecutar orden
+const order = await anyspendService.createOrder({
+  // ... parámetros de la orden
+});
+```
+
+### Servicios de Cuenta Global
+
+```typescript
+import { authenticate } from "@b3dotfun/sdk/global-account/app";
+
+// Autenticar usuario
+const authResult = await authenticate(
+  "access-token",
+  "identity-token"
+);
+
+if (authResult) {
+  console.log("Autenticación exitosa:", authResult);
+}
+```
+
+## Soporte y Comunidad
+
+<CardGroup cols={3}>
+<Card title="Soporte para Desarrolladores" icon="handshake" href="https://b3builders.typeform.com/bsmntdevelopers">
+  Obtén ayuda integrando el B3 SDK en tu proyecto.
+</Card>
+
+<Card title="Comunidad en Discord" icon="discord" href="https://discord.gg/b3dotfun">
+  Únete a la comunidad de desarrolladores de B3 para soporte y discusiones.
+</Card>
+
+<Card title="GitHub" icon="github" href="https://github.com/b3-fun/b3">
+  Ver código fuente, reportar problemas y contribuir al SDK.
+</Card>
+</CardGroup>
+
+## ¿Qué Sigue?
+
+1. **[Instala el SDK](#installation)** e importa los estilos
+2. **[Configura AnySpend](/anyspend/introduction)** para pagos entre cadenas
+3. **[Configura Cuentas Globales](/sdk/global-account/authentication)** para autenticación de usuarios
+4. **[Explora ejemplos](/anyspend/examples)** y patrones de implementación
+5. **[Únete a la comunidad](https://discord.gg/b3dotfun)** para soporte y actualizaciones
+
+El B3 SDK proporciona todo lo que necesitas para construir la próxima generación de aplicaciones entre cadenas con experiencias de usuario sin fisuras. ¡Comienza a construir hoy!

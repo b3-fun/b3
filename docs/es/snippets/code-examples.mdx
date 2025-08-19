@@ -1,0 +1,96 @@
+---
+lang: es
+originalPath: snippets/code-examples.mdx
+---
+# Ejemplos de Código
+
+## Instalación
+
+```bash title="Instalar B3 SDK" icon="download"
+npm install @b3dotfun/sdk
+```
+
+## Configuración Básica
+
+```tsx title="Importar Componentes del SDK" icon="react"
+import "@b3dotfun/sdk/index.css";
+import { AnyspendProvider, B3Provider } from "@b3dotfun/sdk";
+```
+
+## Componente de Compra de NFT
+
+```tsx title="Ejemplo de Botón NFT" icon="shopping-cart" lines
+import { AnySpendNFTButton } from "@b3dotfun/sdk/anyspend/react";
+
+function NFTCard() {
+  return (
+    <AnySpendNFTButton
+      nftContract={{
+        chainId: 8333,
+        contractAddress: "0x9c275ff1634519E9B5449ec79cd939B5F900564d",
+        price: "500000000000000000",
+        currency: { symbol: "ETH", decimals: 18 },
+      }}
+      recipientAddress={userAddress}
+      onSuccess={txHash => showSuccess(txHash)}
+    />
+  );
+}
+```
+
+## Intercambio Entre Cadenas
+
+```tsx title="Modo Página de AnySpend" icon="arrows-rotate" highlight={6-8}
+import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
+
+function CrossChainSwap() {
+  return <AnySpend mode="page" recipientAddress={userAddress} onSuccess={txHash => updatePortfolio(txHash)} />;
+}
+```
+
+## Autenticación
+
+```tsx title="Configuración de Autenticación B3" icon="user-shield" expandable
+import { B3Provider, SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
+
+function App() {
+  return (
+    <B3Provider environment="production">
+      <SignInWithB3
+        provider={{ strategy: "google" }}
+        partnerId="your-partner-id"
+        onLoginSuccess={globalAccount => {
+          console.log("Authenticated:", globalAccount);
+        }}
+      />
+    </B3Provider>
+  );
+}
+```
+
+## Conexión de Cartera
+
+```tsx title="Conectar Cartera a B3" icon="wallet" focus={8-12}
+import { useConnect } from "@b3dotfun/sdk";
+
+function WalletButton() {
+  const { connect, isConnecting } = useConnect();
+
+  const handleConnect = async () => {
+    try {
+      await connect({
+        chainId: 8333,
+        rpcUrl: "https://mainnet-rpc.b3.fun",
+      });
+    } catch (error) {
+      console.error("Connection failed:", error);
+    }
+  };
+
+  return (
+    <button onClick={handleConnect} disabled={isConnecting}>
+      {isConnecting ? "Conectando..." : "Conectar a B3"}
+    </button>
+  );
+}
+```

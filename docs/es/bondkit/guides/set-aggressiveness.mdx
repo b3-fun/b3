@@ -1,0 +1,30 @@
+---
+title: Establecer factorDeAgresividad
+description: Cómo elegir el factor de agresividad (0–100) para tu lanzamiento.
+lang: es
+originalPath: bondkit/guides/set-aggressiveness.mdx
+---
+## Orientación
+
+- 0–20: suave; compradores tempranos y tardíos reciben cantidades similares por unidad
+- 30–60: equilibrado; aumento moderado del precio, típico para lanzamientos generales
+- 70–100: pronunciado; fuerte ventaja temprana, escalada de precios más rápida
+
+## Regla general
+
+- Objetivos más pequeños o comunidades estrechas: inclinarse más alto (50–80)
+- Objetivos más grandes o audiencias más amplias: inclinarse más bajo (20–50)
+
+## Ejemplo
+
+```ts
+const config = {
+  aggressivenessFactor: 35,
+  // ...otros parámetros
+};
+```
+
+<Note>
+`exponent = 1 / (1 + aggressivenessFactor/100)`. Una mayor agresividad aumenta la inclinación de la curva y reduce los tokens por unidad más adelante en el bonding.
+</Note>
+

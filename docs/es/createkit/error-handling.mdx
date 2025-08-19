@@ -1,0 +1,394 @@
+---
+title: Manejo de errores
+description: >-
+  Patrones integrales de manejo de errores y estrategias de recuperación para
+  CreateKit
+lang: es
+originalPath: createkit/error-handling.mdx
+---
+## Visión general
+
+El manejo robusto de errores es crucial para aplicaciones en producción que usan CreateKit. Esta guía cubre escenarios comunes de errores, mejores prácticas y estrategias de recuperación.
+
+## Tipos de Errores Comunes
+
+### Errores de Firma
+
+```typescript title="Manejo de Errores de Firma"
+import { CollectionManager } from '@b3dotfun/basemint'
+
+async function handleSignatureErrors(walletClient: any, metadata: any) {
+  try {
+    const signature = await collectionManager.generateCreatorSignature(
+      walletClient,
+      metadata
+    )
+    return signature
+  } catch (error: any) {
+    if (error.message.includes('User rejected')) {
+      throw new Error('SIGNATURE_REJECTED: Usuario rechazó la solicitud de firma')
+    } else if (error.message.includes('Insufficient funds')) {
+      throw new Error('INSUFFICIENT_FUNDS: Fondos insuficientes para gas')
+    } else if (error.message.includes('Network error')) {
+      throw new Error('NETWORK_ERROR: Imposible conectar a la red')
+    } else {
+      throw new Error(`SIGNATURE_FAILED: ${error.message}`)
+    }
+  }
+}
+```
+
+### Errores de Almacenamiento
+
+```typescript title="Manejo de Errores de Almacenamiento"
+import { BaseMintStorage } from '@b3dotfun/basemint'
+
+async function handleStorageErrors(storage: BaseMintStorage, metadata: any, signature: string) {
+  try {
+    return await storage.submitCollection(metadata, signature)
+  } catch (error: any) {
+    if (error.message.includes('Invalid signature')) {
+      throw new Error('INVALID_SIGNATURE: Falló la verificación de firma')
+    } else if (error.message.includes('Collection exists')) {
+      throw new Error('DUPLICATE_COLLECTION: La colección ya existe')
+    } else if (error.message.includes('Rate limit')) {
+      throw new Error('RATE_LIMITED: Demasiadas solicitudes, por favor intente más tarde')
+    } else if (error.status === 503) {
+      throw new Error('SERVICE_UNAVAILABLE: Servicio de almacenamiento temporalmente no disponible')
+    } else {
+      throw new Error(`STORAGE_ERROR: ${error.message}`)
+    }
+  }
+}
+```
+
+### Errores de Interacción con Contratos
+
+```typescript title="Manejo de Errores de Contrato"
+async function handleMintingErrors(collection: any, walletClient: any, params: any) {
+  try {
+    return await collection.mint(walletClient, ...params)
+  } catch (error: any) {
+    if (error.message.includes('Invalid merkle proof')) {
+      throw new Error('NOT_WHITELISTED: Dirección no en lista blanca')
+    } else if (error.message.includes('Insufficient payment')) {
+      throw new Error('INSUFFICIENT_PAYMENT: Precio de acuñación incorrecto')
+    } else if (error.message.includes('Max per wallet exceeded')) {
+      throw new Error('WALLET_LIMIT_EXCEEDED: Límite de acuñación por cartera alcanzado')
+    } else if (error.message.includes('Max supply exceeded')) {
+      throw new Error('SUPPLY_EXHAUSTED: Colección completamente acuñada')
+    } else if (error.message.includes('Minting not active')) {
+      throw new Error('MINTING_INACTIVE: Periodo de acuñación no activo')
+    } else {
+      throw new Error(`MINT_FAILED: ${error.message}`)
+    }
+  }
+}
+```
+
+## Patrones de Recuperación de Errores
+
+### Lógica de Reintentos
+
+```typescript title="Reintentar con Retroceso Exponencial"
+async function retryWithBackoff<T>(
+  operation: () => Promise<T>,
+  maxRetries: number = 3,
+  baseDelayMs: number = 1000
+): Promise<T> {
+  let lastError: Error
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await operation()
+    } catch (error: any) {
+      lastError = error
+      
+      // No reintentar ciertos errores
+      if (error.message.includes('SIGNATURE_REJECTED') ||
+          error.message.includes('INVALID_SIGNATURE') ||
+          error.message.includes('DUPLICATE_COLLECTION')) {
+        throw error
+      }
+      
+      if (attempt < maxRetries) {
+        const delay = baseDelayMs * Math.pow(2, attempt - 1)
+        console.warn(`Intento ${attempt} fallido, reintentando en ${delay}ms...`)
+        await new Promise(resolve => setTimeout(resolve, delay))
+      }
+    }
+  }
+  
+  throw lastError
+}
+
+// Uso
+const result = await retryWithBackoff(async () => {
+  return await storage.submitCollection(metadata, signature)
+})
+```
+
+### Interruptor Automático
+
+```typescript title="Patrón de Interruptor Automático"
+class CircuitBreaker {
+  private failures = 0
+  private lastFailTime = 0
+  private state: 'CLOSED' | 'OPEN' | 'HALF_OPEN' = 'CLOSED'
+  
+  constructor(
+    private maxFailures: number = 5,
+    private timeoutMs: number = 60000
+  ) {}
+  
+  async call<T>(operation: () => Promise<T>): Promise<T> {
+    if (this.state === 'OPEN') {
+      if (Date.now() - this.lastFailTime > this.timeoutMs) {
+        this.state = 'HALF_OPEN'
+      } else {
+        throw new Error('CIRCUIT_OPEN: Servicio temporalmente no disponible')
+      }
+    }
+    
+    try {
+      const result = await operation()
+      this.reset()
+      return result
+    } catch (error) {
+      this.recordFailure()
+      throw error
+    }
+  }
+  
+  private recordFailure() {
+    this.failures++
+    this.lastFailTime = Date.now()
+    
+    if (this.failures >= this.maxFailures) {
+      this.state = 'OPEN'
+    }
+  }
+  
+  private reset() {
+    this.failures = 0
+    this.state = 'CLOSED'
+  }
+}
+
+// Uso
+const circuitBreaker = new CircuitBreaker()
+const result = await circuitBreaker.call(() => storage.submitCollection(metadata, signature))
+```
+
+## Mensajes de Error Amigables para el Usuario
+
+```typescript title="Traducción de Mensajes de Error"
+const ERROR_MESSAGES = {
+  SIGNATURE_REJECTED: "Por favor, apruebe la firma en su cartera para continuar.",
+  INSUFFICIENT_FUNDS: "No tiene fondos suficientes para cubrir los costos de gas.",
+  NOT_WHITELISTED: "Su dirección no es elegible para la acuñación en lista blanca.",
+  WALLET_LIMIT_EXCEEDED: "Ha alcanzado el número máximo de tokens por cartera.",
+  SUPPLY_EXHAUSTED: "Esta colección está completamente acuñada.",
+  MINTING_INACTIVE: "La acuñación no está activa actualmente para esta colección.",
+  NETWORK_ERROR: "Problema de conexión de red. Por favor, verifique su internet y vuelva a intentarlo.",
+  SERVICE_UNAVAILABLE: "El servicio está temporalmente no disponible. Por favor, intente de nuevo en unos minutos.",
+  RATE_LIMITED: "Demasiadas solicitudes. Por favor, espere un momento antes de intentar de nuevo."
+}
+
+function getUserFriendlyError(error: Error): string {
+  const errorCode = error.message.split(':')[0]
+  return ERROR_MESSAGES[errorCode] || "Ocurrió un error inesperado. Por favor, intente de nuevo."
+}
+
+// Uso en React
+export function ErrorDisplay({ error }: { error: Error | null }) {
+  if (!error) return null
+  
+  return (
+    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+      <p>{getUserFriendlyError(error)}</p>
+    </div>
+  )
+}
+```
+
+## Monitoreo de Errores
+
+```typescript title="Seguimiento de Errores"
+class ErrorTracker {
+  private errors: Array<{ timestamp: Date; error: Error; context: any }> = []
+  
+  track(error: Error, context: any = {}) {
+    this.errors.push({
+      timestamp: new Date(),
+      error,
+      context
+    })
+    
+    // Enviar a servicio de monitoreo
+    this.sendToMonitoring(error, context)
+  }
+  
+  private sendToMonitoring(error: Error, context: any) {
+    // Integración con servicios de monitoreo de errores
+    console.error('Error rastreado:', {
+      message: error.message,
+      stack: error.stack,
+      context,
+      timestamp: new Date().toISOString()
+    })
+  }
+  
+  getErrorStats() {
+    const last24h = this.errors.filter(
+      e => Date.now() - e.timestamp.getTime() < 24 * 60 * 60 * 1000
+    )
+    
+    return {
+      total: this.errors.length,
+      last24h: last24h.length,
+      mostCommon: this.getMostCommonErrors()
+    }
+  }
+  
+  private getMostCommonErrors() {
+    const errorCounts = new Map<string, number>()
+    
+    this.errors.forEach(({ error }) => {
+      const errorType = error.message.split(':')[0]
+      errorCounts.set(errorType, (errorCounts.get(errorType) || 0) + 1)
+    })
+    
+    return Array.from(errorCounts.entries())
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 5)
+  }
+}
+
+// Rastreador de errores global
+export const errorTracker = new ErrorTracker()
+```
+
+## Ayudantes de Validación
+
+```typescript title="Validación de Entrada"
+export class ValidationError extends Error {
+  constructor(field: string, message: string) {
+    super(`${field}: ${message}`)
+    this.name = 'ValidationError'
+  }
+}
+
+export function validateCollectionMetadata(metadata: any): void {
+  if (!metadata.name || metadata.name.length < 1) {
+    throw new ValidationError('name', 'Se requiere nombre de la colección')
+  }
+  
+  if (!metadata.symbol || metadata.symbol.length < 1) {
+    throw new ValidationError('symbol', 'Se requiere símbolo de la colección')
+  }
+  
+  if (!metadata.creator || !isValidAddress(metadata.creator)) {
+    throw new ValidationError('creator', 'Se requiere una dirección de creador válida')
+  }
+  
+  if (metadata.maxSupply && metadata.maxSupply <= 0n) {
+    throw new ValidationError('maxSupply', 'El suministro máximo debe ser mayor que 0')
+  }
+  
+  if (metadata.mintPrice && metadata.mintPrice < 0n) {
+    throw new ValidationError('mintPrice', 'El precio de acuñación no puede ser negativo')
+  }
+}
+
+function isValidAddress(address: string): boolean {
+  return /^0x[a-fA-F0-9]{40}$/.test(address)
+}
+```
+
+## Límites de Error en React
+
+```tsx title="Componente de Límite de Error"
+import React, { Component, ErrorInfo, ReactNode } from 'react'
+
+interface Props {
+  children: ReactNode
+  fallback?: ReactNode
+}
+
+interface State {
+  hasError: boolean
+  error?: Error
+}
+
+export class CreateKitErrorBoundary extends Component<Props, State> {
+  constructor(props: Props) {
+    super(props)
+    this.state = { hasError: false }
+  }
+
+  static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, error }
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('Límite de Error CreateKit capturó un error:', error, errorInfo)
+    
+    // Rastrear error
+    errorTracker.track(error, { errorInfo })
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback || (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <h2 className="text-red-800 text-lg font-semibold mb-2">
+            Algo salió mal
+          </h2>
+          <p className="text-red-600">
+            {getUserFriendlyError(this.state.error!)}
+          </p>
+          <button
+            onClick={() => this.setState({ hasError: false })}
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          >
+            Intentar de Nuevo
+          </button>
+        </div>
+      )
+    }
+
+    return this.props.children
+  }
+}
+```
+
+## Mejores Prácticas
+
+<CardGroup cols={2}>
+  <Card title="Clasificación de Errores" icon="tags">
+    - Categorizar errores por tipo y severidad
+    - Usar códigos de error consistentes
+    - Proporcionar mensajes de error accionables
+    - Registrar errores con suficiente contexto
+  </Card>
+  <Card title="Estrategias de Recuperación" icon="refresh">
+    - Implementar lógica de reintentos apropiada
+    - Usar interruptores automáticos para servicios externos
+    - Proporcionar mecanismos de respaldo
+    - Permitir recuperación manual de errores
+  </Card>
+</CardGroup>
+
+## Próximos Pasos
+
+Ahora que tienes documentación completa de CreateKit, puedes:
+
+<CardGroup cols={2}>
+  <Card title="Comenzar a Construir" icon="hammer">
+    Usa la guía rápida para crear tu primera colección
+  </Card>
+  <Card title="Unirse a la Comunidad" icon="users">
+    Conéctate con otros desarrolladores en el Discord de B3
+  </Card>
+</CardGroup>

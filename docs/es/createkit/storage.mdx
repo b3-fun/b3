@@ -1,0 +1,611 @@
+---
+title: Servicio de Almacenamiento
+description: >-
+  Gestiona los metadatos y activos de la colección con el servicio de
+  almacenamiento BaseMint
+lang: es
+originalPath: createkit/storage.mdx
+---
+## Visión General
+
+El Servicio de Almacenamiento BaseMint proporciona una solución confiable y escalable para almacenar y gestionar metadatos de colecciones NFT. Ofrece direccionamiento determinista, entrega respaldada por CDN e integración sin fisuras con el ecosistema CreateKit.
+
+## Arquitectura de Almacenamiento
+
+### Cómo Funciona el Almacenamiento
+
+<Steps>
+  <Step title="Envío de Metadatos">
+    Metadatos de la colección y firmas de creadores son enviados al servicio de almacenamiento
+  </Step>
+  <Step title="Validación y Almacenamiento">
+    El servicio valida firmas y almacena metadatos con una dirección determinista
+  </Step>
+  <Step title="Distribución CDN">
+    Metadatos son distribuidos vía CDN para un acceso rápido y global
+  </Step>
+  <Step title="Integración con el Mercado">
+    Colecciones son descubribles vía direcciones predichas antes del despliegue
+  </Step>
+</Steps>
+
+### Características Clave
+
+<CardGroup cols={2}>
+  <Card title="Direccionamiento Determinista" icon="link">
+    Colecciones tienen direcciones predecibles para la integración con el mercado
+  </Card>
+  <Card title="Validación de Firmas" icon="shield-check">
+    Verificación criptográfica de la autenticidad de la colección
+  </Card>
+  <Card title="Entrega CDN" icon="globe">
+    Entrega de metadatos rápida y confiable a nivel mundial
+  </Card>
+  <Card title="Sistema de Referidos" icon="users">
+    Seguimiento y gestión de colecciones por socios de integración
+  </Card>
+</CardGroup>
+
+## Configuración del Servicio de Almacenamiento
+
+### Configuración Básica
+
+```typescript title="Inicializar Servicio de Almacenamiento"
+import { BaseMintStorage } from '@b3dotfun/basemint'
+
+// Inicializar servicio de almacenamiento
+const storage = new BaseMintStorage({
+  baseUrl: 'https://api.basemint.fun', // URL de producción
+  // Para desarrollo en testnet:
+  // baseUrl: 'https://testnet-api.basemint.fun'
+})
+
+// Probar conexión
+try {
+  const health = await storage.healthCheck()
+  console.log('✅ Servicio de almacenamiento conectado:', health)
+} catch (error) {
+  console.error('❌ Servicio de almacenamiento no disponible:', error)
+}
+```
+
+### Configuración Basada en el Entorno
+
+```typescript title="Configuración Basada en el Entorno"
+// Configuración específica del entorno
+const getStorageConfig = (environment: 'development' | 'staging' | 'production') => {
+  const configs = {
+    development: {
+      baseUrl: 'https://testnet-api.basemint.fun',
+      chainId: 1993 // B3 Testnet
+    },
+    staging: {
+      baseUrl: 'https://staging-api.basemint.fun',
+      chainId: 1993
+    },
+    production: {
+      baseUrl: 'https://api.basemint.fun',
+      chainId: 8333 // B3 Mainnet
+    }
+  }
+  
+  return configs[environment]
+}
+
+const config = getStorageConfig(process.env.NODE_ENV as any || 'development')
+const storage = new BaseMintStorage(config)
+```
+
+## Enviar Colecciones
+
+### Envío Básico de Colecciones
+
+```typescript title="Enviar Colección"
+async function submitCollection(
+  collectionMetadata: any,
+  creatorSignature: string,
+  referrerId?: string
+) {
+  try {
+    const response = await storage.submitCollection(
+      collectionMetadata,
+      creatorSignature,
+      referrerId // Opcional: rastrear colecciones por referido
+    )
+    
+    console.log('✅ Colección enviada con éxito')
+    console.log('ID de la Colección:', response.collectionId)
+    console.log('Dirección predicha:', response.predictedAddress)
+    console.log('URI de Metadatos:', response.metadataUri)
+    
+    return response
+    
+  } catch (error: any) {
+    if (error.message.includes('Firma inválida')) {
+      console.error('❌ Verificación de firma del creador fallida')
+    } else if (error.message.includes('La colección existe')) {
+      console.error('❌ Colección con esta dirección ya existe')
+    } else if (error.message.includes('Referido no encontrado')) {
+      console.error('❌ ID de referido inválido')
+    } else {
+      console.error('❌ Envío fallido:', error.message)
+    }
+    throw error
+  }
+}
+
+// Ejemplo de uso
+const response = await submitCollection(
+  collectionMetadata,
+  creatorSignature,
+  "mi-plataforma-de-juegos" // Tu ID de referido
+)
+```
+
+### Envío de Colecciones en Lote
+
+```typescript title="Envío en Lote"
+async function submitMultipleCollections(
+  collections: Array<{
+    metadata: any
+    signature: string
+    referrerId?: string
+  }>
+) {
+  const results = []
+  
+  for (const collection of collections) {
+    try {
+      const response = await storage.submitCollection(
+        collection.metadata,
+        collection.signature,
+        collection.referrerId
+      )
+      
+      results.push({
+        success: true,
+        collectionName: collection.metadata.name,
+        response
+      })
+      
+      console.log(`✅ Enviado: ${collection.metadata.name}`)
+      
+    } catch (error) {
+      results.push({
+        success: false,
+        collectionName: collection.metadata.name,
+        error: error.message
+      })
+      
+      console.error(`❌ Fallido: ${collection.metadata.name}`, error)
+    }
+  }
+  
+  return results
+}
+```
+
+## Consultar Colecciones
+
+### Consultas Básicas
+
+```typescript title="Consultar Colecciones"
+// Consultar todas las colecciones
+const allCollections = await storage.queryCollections()
+console.log(`Encontradas ${allCollections.collections.length} colecciones`)
+
+// Consultar con paginación
+const paginatedResults = await storage.queryCollections({
+  limit: 20,
+  offset: 0
+})
+
+// Consultar por referido
+const gameCollections = await storage.queryCollections({
+  referrer: "mi-plataforma-de-juegos"
+})
+
+// Consultar por creador
+const creatorCollections = await storage.queryCollections({
+  creator: "0x1234567890123456789012345678901234567890"
+})
+```
+
+### Filtrado Avanzado
+
+```typescript title="Consultas Avanzadas"
+// Consulta compleja con múltiples filtros
+const advancedQuery = await storage.queryCollections({
+  referrer: "mi-plataforma-de-juegos",
+  creator: "0x1234567890123456789012345678901234567890",
+  tokenStandard: "ERC721",
+  chainId: 1993,
+  limit: 50,
+  offset: 0,
+  sortBy: "createdAt",
+  sortOrder: "desc"
+})
+
+console.log("Resultados de consulta avanzada:", {
+  total: advancedQuery.total,
+  count: advancedQuery.collections.length,
+  hasMore: advancedQuery.hasMore
+})
+
+// Filtrar por estado de despliegue
+const undeployedCollections = advancedQuery.collections.filter(
+  collection => !collection.isDeployed
+)
+
+const deployedCollections = advancedQuery.collections.filter(
+  collection => collection.isDeployed
+)
+
+console.log(`Sin desplegar: ${undeployedCollections.length}`)
+console.log(`Desplegadas: ${deployedCollections.length}`)
+```
+
+### Funcionalidad de Búsqueda
+
+```typescript title="Buscar Colecciones"
+// Buscar por nombre o símbolo
+const searchResults = await storage.searchCollections({
+  query: "fantasía",
+  limit: 10
+})
+
+// Buscar con filtros
+const filteredSearch = await storage.searchCollections({
+  query: "juego",
+  referrer: "mi-plataforma-de-juegos",
+  tokenStandard: "ERC1155"
+})
+
+console.log("Resultados de búsqueda:", searchResults.collections.map(c => ({
+  name: c.name,
+  symbol: c.symbol,
+  description: c.description
+})))
+```
+
+## Gestión de Referidos
+
+### Registrarse como Referido
+
+```typescript title="Registro de Referidos"
+// Registra tu plataforma como referido
+async function registerAsReferrer(referrerId: string, metadata?: any) {
+  try {
+    await storage.registerReferrer(referrerId, metadata)
+    console.log(`✅ Registrado como referido: ${referrerId}`)
+  } catch (error: any) {
+    if (error.message.includes('ya existe')) {
+      console.log(`ℹ️ Referido ${referrerId} ya registrado`)
+    } else {
+      console.error('❌ Registro fallido:', error)
+      throw error
+    }
+  }
+}
+
+// Registrar con metadatos
+await registerAsReferrer("mi-plataforma-de-juegos", {
+  name: "Mi Plataforma de Juegos",
+  website: "https://mijuego.com",
+  contact: "dev@mijuego.com",
+  description: "Una plataforma de juegos para colecciones NFT"
+})
+```
+
+### Gestión de Colecciones de Referidos
+
+```typescript title="Gestión de Colecciones de Referidos"
+// Obtener todas las colecciones para tu plataforma
+async function getReferrerDashboard(referrerId: string) {
+  const collections = await storage.queryCollections({
+    referrer: referrerId
+  })
+  
+  const stats = {
+    total: collections.total,
+    deployed: collections.collections.filter(c => c.isDeployed).length,
+    undeployed: collections.collections.filter(c => !c.isDeployed).length,
+    erc721: collections.collections.filter(c => c.tokenStandard === 'ERC721').length,
+    erc1155: collections.collections.filter(c => c.tokenStandard === 'ERC1155').length
+  }
+  
+  console.log("Tablero de referidos:", stats)
+  
+  return {
+    collections: collections.collections,
+    stats
+  }
+}
+
+const dashboard = await getReferrerDashboard("mi-plataforma-de-juegos")
+```
+
+## Gestión de Colecciones
+
+### Recuperar Datos de la Colección
+
+```typescript title="Obtener Detalles de la Colección"
+// Obtener colección por dirección
+async function getCollectionDetails(address: string) {
+  try {
+    const collection = await storage.getCollection(address)
+    
+    console.log("Detalles de la colección:", {
+      name: collection.name,
+      symbol: collection.symbol,
+      creator: collection.creator,
+      gameOwner: collection.gameOwner,
+      isDeployed: collection.isDeployed,
+      createdAt: collection.createdAt,
+      metadataUri: collection.metadataUri
+    })
+    
+    return collection
+    
+  } catch (error: any) {
+    if (error.message.includes('no encontrada')) {
+      console.error('❌ Colección no encontrada')
+    } else {
+      console.error('❌ Error al recuperar colección:', error)
+    }
+    throw error
+  }
+}
+
+// Obtener múltiples colecciones por direcciones
+async function getMultipleCollections(addresses: string[]) {
+  const collections = await Promise.allSettled(
+    addresses.map(address => storage.getCollection(address))
+  )
+  
+  const successful = collections
+    .filter((result): result is PromiseFulfilledResult<any> => result.status === 'fulfilled')
+    .map(result => result.value)
+    
+  const failed = collections
+    .filter((result): result is PromiseRejectedResult => result.status === 'rejected')
+    .map(result => result.reason)
+  
+  console.log(`✅ Recuperadas ${successful.length} colecciones`)
+  console.log(`❌ Falló la recuperación de ${failed.length} colecciones`)
+  
+  return { successful, failed }
+}
+```
+
+### Actualizar Colecciones
+
+<Warning>
+Las actualizaciones de colecciones están limitadas a campos específicos y pueden requerir autenticación adicional.
+</Warning>
+
+```typescript title="Actualizar Colección"
+// Actualizar metadatos de la colección (campos limitados)
+async function updateCollectionMetadata(
+  address: string,
+  updates: {
+    description?: string
+    image?: string
+    external_url?: string
+    animation_url?: string
+  }
+) {
+  try {
+    const updatedCollection = await storage.updateCollection(address, updates)
+    console.log('✅ Colección actualizada con éxito')
+    return updatedCollection
+  } catch (error: any) {
+    if (error.message.includes('no autorizado')) {
+      console.error('❌ No autorizado para actualizar esta colección')
+    } else if (error.message.includes('campo inmutable')) {
+      console.error('❌ Intento de actualizar campo inmutable')
+    } else {
+      console.error('❌ Actualización fallida:', error)
+    }
+    throw error
+  }
+}
+```
+
+### Eliminar Colecciones
+
+```typescript title="Eliminar Colecciones"
+// Eliminar una sola colección (solo no desplegadas)
+async function deleteCollection(address: string) {
+  try {
+    await storage.deleteCollection(address)
+    console.log(`✅ Colección ${address} eliminada`)
+  } catch (error: any) {
+    if (error.message.includes('desplegada')) {
+      console.error('❌ No se puede eliminar colección desplegada')
+    } else if (error.message.includes('no encontrada')) {
+      console.error('❌ Colección no encontrada')
+    } else {
+      console.error('❌ Eliminación fallida:', error)
+    }
+    throw error
+  }
+}
+
+// Eliminación masiva de colecciones (solo para referidos)
+async function bulkDeleteCollections(
+  identifiers: string[], // UUIDs o direcciones
+  referrerId: string
+) {
+  try {
+    const result = await storage.bulkDeleteCollections(identifiers, referrerId)
+    
+    console.log(`✅ Eliminadas ${result.deleted.length} colecciones`)
+    console.log(`❌ Falló la eliminación de ${result.failed.length} colecciones`)
+    
+    return result
+  } catch (error) {
+    console.error('❌ Eliminación masiva fallida:', error)
+    throw error
+  }
+}
+```
+
+## Gestión de Metadatos
+
+### URIs de Metadatos Personalizados
+
+```typescript title="Manejo de URI de Metadatos"
+// Generar URI de metadatos para una colección
+function generateMetadataUri(collectionId: string, baseUrl: string): string {
+  return `${baseUrl}/metadata/${collectionId}`
+}
+
+// Obtener metadatos directamente
+async function getCollectionMetadata(collectionId: string) {
+  try {
+    const metadataUri = generateMetadataUri(collectionId, storage.baseUrl)
+    const response = await fetch(metadataUri)
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+    }
+    
+    const metadata = await response.json()
+    return metadata
+  } catch (error) {
+    console.error('❌ Falló la obtención de metadatos:', error)
+    throw error
+  }
+}
+
+// Validar formato de metadatos
+function validateMetadata(metadata: any): { isValid: boolean; errors: string[] } {
+  const errors: string[] = []
+  
+  if (!metadata.name) errors.push('Falta nombre')
+  if (!metadata.description) errors.push('Falta descripción')
+  if (!metadata.image) errors.push('Falta imagen')
+  
+  // Verificar compatibilidad con OpenSea
+  if (metadata.attributes && !Array.isArray(metadata.attributes)) {
+    errors.push('Los atributos deben ser un arreglo')
+  }
+  
+  return {
+    isValid: errors.length === 0,
+    errors
+  }
+}
+```
+
+### Gestión de Activos
+
+```typescript title="Carga y Gestión de Activos"
+// Cargar activos al servicio de almacenamiento (si se soporta)
+async function uploadAsset(
+  file: File | Buffer,
+  filename: string,
+  contentType: string
+): Promise<string> {
+  try {
+    // Esto depende de la implementación de tu servicio de almacenamiento
+    const formData = new FormData()
+    formData.append('file', file, filename)
+    formData.append('contentType', contentType)
+    
+    const response = await fetch(`${storage.baseUrl}/upload`, {
+      method: 'POST',
+      body: formData
+    })
+    
+    if (!response.ok) {
+      throw new Error(`Carga fallida: ${response.statusText}`)
+    }
+    
+    const result = await response.json()
+    return result.url
+    
+  } catch (error) {
+    console.error('❌ Carga de activo fallida:', error)
+    throw error
+  }
+}
+
+// Optimizar imágenes para estándares NFT
+function getOptimizedImageUrl(
+  originalUrl: string,
+  size: 'thumbnail' | 'medium' | 'large' = 'medium'
+): string {
+  const sizeMap = {
+    thumbnail: '200x200',
+    medium: '640x640',
+    large: '1200x1200'
+  }
+  
+  // Ejemplo de transformación de URL CDN
+  return `${originalUrl}?size=${sizeMap[size]}&format=webp&quality=85`
+}
+```
+
+## Manejo de Errores
+
+### Manejo de Errores Integral
+
+```typescript title="Patrones de Manejo de Errores"
+class StorageError extends Error {
+  constructor(
+    message: string,
+    public code: string,
+    public statusCode?: number
+  ) {
+    super(message)
+    this.name = 'StorageError'
+  }
+}
+
+async function robustStorageOperation<T>(
+  operation: () => Promise<T>,
+  retries: number = 3,
+  delayMs: number = 1000
+): Promise<T> {
+  let lastError: Error
+  
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      return await operation()
+    } catch (error: any) {
+      lastError = error
+      
+      // No reintentar ciertos errores
+      if (error.message.includes('Firma inválida') ||
+          error.message.includes('La colección existe')) {
+        throw error
+      }
+      
+      console.warn(`Intento ${attempt} fallido:`, error.message)
+      
+      if (attempt < retries) {
+        await new Promise(resolve => setTimeout(resolve, delayMs * attempt))
+      }
+    }
+  }
+  
+  throw new StorageError(
+    `Operación fallida después de ${retries} intentos: ${lastError.message}`,
+    'MAX_RETRIES_EXCEEDED'
+  )
+}
+
+// Uso
+const result = await robustStorageOperation(async () => {
+  return await storage.submitCollection(metadata, signature)
+})
+```
+
+### Monitoreo de la Salud del Servicio
+
+```typescript title="Monitoreo de Salud"
+class StorageHealthMonitor {
+  private storage: BaseMintStorage
+  private healthStatus: 'healthy' | 'degraded' | 'unhealthy' = 'healthy'
