@@ -28,6 +28,11 @@ jobs:
           fetch-depth: 0 # Required for creating PR
           ref: ${{ github.head_ref || github.ref_name }} # Checkout the PR branch or current branch
 
+      - name: Setup Git
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
@@ -47,7 +52,20 @@ jobs:
         timeout-minutes: 300 # 5 hours max for translation step
         run: |
           echo "Starting translation process..."
-          pnpm translate:ci --update
+          # Reset any unstaged changes to avoid conflicts
+          git checkout -- .
+          # Run translation update
+          pnpm translate:ci --update # todo put --all back 
+          # Stage any new or modified files
+          git add docs/*/
+          # Commit if there are changes
+          if ! git diff --staged --quiet; then
+            git commit -m "chore: update translations"
+            echo "changes_made=true" >> $GITHUB_OUTPUT
+          else
+            echo "No translation changes to commit"
+            echo "changes_made=false" >> $GITHUB_OUTPUT
+          fi
           echo "Translation completed"
         working-directory: docs
         env:
@@ -55,7 +73,7 @@ jobs:
           NODE_OPTIONS: "--max-old-space-size=8192" # Increase Node.js memory limit to 8GB
 
       - name: Create Pull Request
-        if: success() && steps.translate.outcome == 'success'
+        if: success() && steps.translate.outputs.changes_made == 'true'
         uses: peter-evans/create-pull-request@v5
         with:
           commit-message: "chore: update translations"
