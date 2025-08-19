@@ -52,13 +52,21 @@ const openai = new OpenAI({
 
 // Configuration
 const CONFIG = {
-  languages: ["es"], // Start with Spanish, can expand later
+  languages: ["es", "pt-BR", "id", "ko", "cn"], // All supported languages
   sourceDir: path.join(process.cwd(), "..", "docs"), // Root docs directory
   docsContentDir: path.join(process.cwd(), "..", "docs"), // Where the actual docs content lives
   excludeDirs: ["node_modules", ".next", "public", "scripts", "images"],
   supportedExtensions: [".mdx", ".md"],
   // Frontmatter fields that should be translated
   translatableFrontmatter: ["title", "description"],
+  // Language-specific instructions
+  languageInstructions: {
+    es: "Spanish (Español)",
+    "pt-BR": "Brazilian Portuguese (Português do Brasil)",
+    id: "Indonesian/Malay (Bahasa Indonesia/Melayu)",
+    ko: "Korean (한국어)",
+    cn: "Simplified Chinese (简体中文)",
+  },
   // Add configuration from environment variables
   batchSize: processAllFiles ? Infinity : Number(process.env.TRANSLATION_BATCH_SIZE) || 1,
   dryRun: process.env.TRANSLATION_DRY_RUN === "true",
@@ -107,7 +115,14 @@ async function translateText(text: string, language: string, context: string = "
       messages: [
         {
           role: "system",
-          content: `You are a professional translator. Translate the following text to ${language}. Preserve any special characters, quotes, or formatting. Only translate the actual text content.`,
+          content: `You are a professional translator. Translate the following text to ${CONFIG.languageInstructions[language]}. 
+          Important rules:
+          1. Preserve all markdown and MDX syntax exactly as is
+          2. Preserve all special characters, quotes, and formatting
+          3. Only translate human-readable text
+          4. Keep all technical terms in English
+          5. For ${language === "cn" ? "Chinese" : language === "ko" ? "Korean" : "your"} language, ensure proper character usage and typography
+          6. Maintain the same line breaks and spacing as the original text`,
         },
         {
           role: "user",
