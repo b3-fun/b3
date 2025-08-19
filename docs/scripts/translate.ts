@@ -28,6 +28,7 @@ class Timer {
 // Parse command line arguments
 const args = process.argv.slice(2);
 const processAllFiles = args.includes("--all");
+const updateMode = args.includes("--update");
 
 // Load environment variables from .env only if not using Doppler
 if (!process.env.DOPPLER_PROJECT) {
@@ -283,6 +284,40 @@ async function translateContent(content: string, language: string): Promise<stri
   }
 }
 
+async function shouldTranslateFile(sourcePath: string, targetPath: string): Promise<boolean> {
+  try {
+    // If target doesn't exist, we should translate
+    try {
+      await fs.access(targetPath);
+    } catch {
+      console.log(`New file detected: ${path.relative(CONFIG.docsContentDir, sourcePath)}`);
+      return true;
+    }
+
+    // In non-update mode, skip existing files
+    if (!updateMode) {
+      console.log(`Skipping existing file: ${path.relative(CONFIG.docsContentDir, targetPath)}`);
+      return false;
+    }
+
+    // In update mode, check modification dates
+    const sourceStats = await fs.stat(sourcePath);
+    const targetStats = await fs.stat(targetPath);
+
+    const shouldUpdate = sourceStats.mtime > targetStats.mtime;
+    if (shouldUpdate) {
+      console.log(`Source file modified, updating: ${path.relative(CONFIG.docsContentDir, sourcePath)}`);
+    } else {
+      console.log(`No changes detected, skipping: ${path.relative(CONFIG.docsContentDir, targetPath)}`);
+    }
+
+    return shouldUpdate;
+  } catch (error) {
+    console.error(`Error checking file status: ${error}`);
+    return false;
+  }
+}
+
 async function processFile(filePath: string, language: string): Promise<void> {
   const timer = new Timer("processFile");
   try {
@@ -298,6 +333,11 @@ async function processFile(filePath: string, language: string): Promise<void> {
     const relativePath = path.relative(CONFIG.docsContentDir, filePath);
     const targetDir = path.join(CONFIG.docsContentDir, language, path.dirname(relativePath));
     const targetPath = path.join(targetDir, path.basename(filePath));
+
+    // Check if we should translate this file
+    if (!(await shouldTranslateFile(filePath, targetPath))) {
+      return;
+    }
 
     // Create translation metadata
     const meta: TranslationMeta = {
@@ -361,6 +401,7 @@ async function main() {
     console.log(`Found ${files.length} files to process`);
     console.log(`Mode: ${CONFIG.dryRun ? "DRY RUN" : "LIVE"}`);
     console.log(`Processing: ${processAllFiles ? "ALL FILES" : `${CONFIG.batchSize} file(s)`}`);
+    console.log(`Update mode: ${updateMode ? "ON" : "OFF"}`);
 
     // First, translate the navigation
     for (const language of CONFIG.languages) {
@@ -370,12 +411,22 @@ async function main() {
     // Then process the documentation files
     const filesToProcess = processAllFiles ? files : files.slice(0, CONFIG.batchSize);
 
+    let processedCount = 0;
+    let skippedCount = 0;
+
     for (const file of filesToProcess) {
       console.log(`\nProcessing file: ${file}`);
-      await processFile(file, "es");
+      const targetPath = path.join(CONFIG.docsContentDir, "es", path.relative(CONFIG.docsContentDir, file));
+
+      if (await shouldTranslateFile(file, targetPath)) {
+        await processFile(file, "es");
+        processedCount++;
+      } else {
+        skippedCount++;
+      }
     }
 
-    totalTimer.log("completed all translations");
+    totalTimer.log(`completed all translations (${processedCount} processed, ${skippedCount} skipped)`);
   } catch (error) {
     console.error("Translation failed:", error);
     process.exit(1);
