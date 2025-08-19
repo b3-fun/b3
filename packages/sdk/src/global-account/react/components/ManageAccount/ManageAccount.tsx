@@ -70,7 +70,7 @@ export function ManageAccount({
     accountAddress: account?.address,
   });
   const { setB3ModalOpen, setB3ModalContentType, contentType } = useModalStore();
-  const { activeTab, setActiveTab } = contentType as ManageAccountModalProps;
+  const { activeTab = "balance", setActiveTab } = contentType as ManageAccountModalProps;
   const { logout } = useAuthentication(partnerId);
   const [logoutLoading, setLogoutLoading] = useState(false);
 
@@ -414,8 +414,8 @@ export function ManageAccount({
   const SettingsContent = () => {
     const [unlinkingAccountId, setUnlinkingAccountId] = useState<string | null>(null);
     const { data: profilesRaw = [], isLoading: isLoadingProfiles } = useProfiles({ client });
-    const { mutate: unlinkProfile } = useUnlinkProfile();
-    const { setB3ModalOpen, setB3ModalContentType, isLinking, setLinkingState } = useModalStore();
+    const { mutate: unlinkProfile, isPending: isUnlinking } = useUnlinkProfile();
+    const { setB3ModalOpen, setB3ModalContentType, isLinking } = useModalStore();
 
     const profiles = profilesRaw
       .filter((profile: any) => !["custom_auth_endpoint", "siwe"].includes(profile.type))
@@ -514,9 +514,9 @@ export function ManageAccount({
                     size="icon"
                     className="text-b3-grey hover:text-b3-negative"
                     onClick={() => handleUnlink(profile)}
-                    disabled={unlinkingAccountId === profile.title}
+                    disabled={unlinkingAccountId === profile.title || isUnlinking}
                   >
-                    {unlinkingAccountId === profile.title ? (
+                    {unlinkingAccountId === profile.title || isUnlinking ? (
                       <Loader2 className="animate-spin" />
                     ) : (
                       <UnlinkIcon size={16} />

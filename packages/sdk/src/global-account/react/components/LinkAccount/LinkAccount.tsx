@@ -28,8 +28,14 @@ const AUTH_METHODS: AuthMethod[] = [
   { id: "apple", label: "Apple", enabled: true },
 ];
 
-export function LinkAccount({ onSuccess: onSuccessCallback, onError, onClose }: LinkAccountModalProps) {
-  const { isLinking, linkingMethod, setLinkingState, navigateBack } = useModalStore();
+export function LinkAccount({
+  onSuccess: onSuccessCallback,
+  onError,
+  onClose,
+  chain,
+  partnerId,
+}: LinkAccountModalProps) {
+  const { isLinking, linkingMethod, setLinkingState, navigateBack, setB3ModalContentType } = useModalStore();
   const [selectedMethod, setSelectedMethod] = useState<Strategy | null>(null);
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -206,6 +212,13 @@ export function LinkAccount({ onSuccess: onSuccessCallback, onError, onClose }: 
     if (isLinking) {
       setLinkingState(false);
       navigateBack();
+      setB3ModalContentType({
+        type: "manageAccount",
+        activeTab: "settings",
+        setActiveTab: () => {},
+        chain,
+        partnerId,
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profiles.length]);
