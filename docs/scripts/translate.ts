@@ -47,6 +47,27 @@ interface TranslationMeta {
   frontmatter: Record<string, any>;
 }
 
+interface NavigationItem {
+  group?: string;
+  pages?: (string | NavigationItem)[];
+  tab?: string;
+  icon?: string;
+  openapi?: any;
+}
+
+interface Navigation {
+  navigation: {
+    tabs: NavigationItem[];
+    global?: {
+      anchors: {
+        anchor: string;
+        href: string;
+        icon: string;
+      }[];
+    };
+  };
+}
+
 async function translateText(text: string, language: string): Promise<string> {
   if (CONFIG.dryRun) {
     console.log("Dry run: Would translate text:", text);
@@ -73,6 +94,91 @@ async function translateText(text: string, language: string): Promise<string> {
   } catch (error) {
     console.error("Translation error:", error);
     throw error;
+  }
+}
+
+async function translateNavigationItem(item: NavigationItem, language: string): Promise<NavigationItem> {
+  const translatedItem: NavigationItem = { ...item };
+
+  if (item.group) {
+    translatedItem.group = await translateText(item.group, language);
+  }
+
+  if (item.tab) {
+    translatedItem.tab = await translateText(item.tab, language);
+  }
+
+  if (item.pages) {
+    translatedItem.pages = await Promise.all(
+      item.pages.map(async page => {
+        if (typeof page === "string") {
+          // Remove any existing language prefix
+          const cleanPath = page.replace(/^[a-z]{2}\//, "");
+          // Add the new language prefix
+          return `${language}/${cleanPath}`;
+        } else {
+          // Recursively translate nested navigation items
+          return await translateNavigationItem(page, language);
+        }
+      }),
+    );
+  }
+
+  return translatedItem;
+}
+
+async function translateNavigation(language: string): Promise<void> {
+  try {
+    // Read the docs.json file
+    const docsPath = path.join(CONFIG.docsContentDir, "docs.json");
+    const docsContent = await fs.readFile(docsPath, "utf-8");
+    const docs = JSON.parse(docsContent);
+
+    // Get the original navigation structure
+    const originalNavigation = docs.navigation;
+
+    // Create the language-specific navigation
+    const translatedNavigation = {
+      ...originalNavigation,
+      tabs: await Promise.all(originalNavigation.tabs.map(tab => translateNavigationItem(tab, language))),
+    };
+
+    if (originalNavigation.global) {
+      translatedNavigation.global = {
+        anchors: await Promise.all(
+          originalNavigation.global.anchors.map(async anchor => ({
+            ...anchor,
+            anchor: await translateText(anchor.anchor, language),
+          })),
+        ),
+      };
+    }
+
+    // Update the docs.json with the new language configuration
+    if (!docs.navigation.languages) {
+      docs.navigation.languages = [];
+    }
+
+    // Find or create the language entry
+    const langIndex = docs.navigation.languages.findIndex((l: any) => l.language === language);
+    if (langIndex >= 0) {
+      docs.navigation.languages[langIndex] = {
+        language,
+        ...translatedNavigation,
+      };
+    } else {
+      docs.navigation.languages.push({
+        language,
+        ...translatedNavigation,
+      });
+    }
+
+    // Write the updated docs.json
+    await fs.writeFile(docsPath, JSON.stringify(docs, null, 2));
+
+    console.log(`✓ Updated docs.json with ${language} navigation`);
+  } catch (error) {
+    console.error("Error translating navigation:", error);
   }
 }
 
@@ -199,7 +305,12 @@ async function main() {
     console.log(`Mode: ${CONFIG.dryRun ? "DRY RUN" : "LIVE"}`);
     console.log(`Batch size: ${CONFIG.batchSize}`);
 
-    // For testing, take the first N files based on batch size
+    // First, translate the navigation
+    for (const language of CONFIG.languages) {
+      await translateNavigation(language);
+    }
+
+    // Then process the documentation files
     const filesToProcess = files.slice(0, CONFIG.batchSize);
 
     for (const file of filesToProcess) {
