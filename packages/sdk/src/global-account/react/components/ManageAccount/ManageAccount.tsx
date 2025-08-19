@@ -1,6 +1,7 @@
 import {
   Button,
   CopyToClipboard,
+  ManageAccountModalProps,
   TabsContentPrimitive,
   TabsListPrimitive,
   TabsPrimitive,
@@ -20,13 +21,17 @@ import { SignOutIcon } from "@b3dotfun/sdk/global-account/react/components/icons
 import { SwapIcon } from "@b3dotfun/sdk/global-account/react/components/icons/SwapIcon";
 import { formatUsername } from "@b3dotfun/sdk/shared/utils";
 import { formatNumber } from "@b3dotfun/sdk/shared/utils/formatNumber";
-import { Loader2, Pencil, Triangle } from "lucide-react";
+import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
+import { LinkIcon, Loader2, Pencil, Triangle, UnlinkIcon } from "lucide-react";
 import { useState } from "react";
 import { Chain } from "thirdweb";
-import { useActiveAccount } from "thirdweb/react";
+import { useActiveAccount, useProfiles, useUnlinkProfile } from "thirdweb/react";
 import { formatUnits } from "viem";
 import useFirstEOA from "../../hooks/useFirstEOA";
+import { getProfileDisplayInfo } from "../../utils/profileDisplay";
 import { AccountAssets } from "../AccountAssets/AccountAssets";
+
+type TabValue = "balance" | "assets" | "apps" | "settings";
 
 interface ManageAccountProps {
   onLogout?: () => void;
@@ -50,7 +55,6 @@ export function ManageAccount({
   chain,
   partnerId,
 }: ManageAccountProps) {
-  const [activeTab, setActiveTab] = useState("balance");
   const [revokingSignerId, setRevokingSignerId] = useState<string | null>(null);
   const account = useActiveAccount();
   const { data: assets, isLoading } = useAccountAssets(account?.address);
@@ -67,7 +71,8 @@ export function ManageAccount({
     chain,
     accountAddress: account?.address,
   });
-  const { setB3ModalOpen, setB3ModalContentType } = useModalStore();
+  const { setB3ModalOpen, setB3ModalContentType, contentType } = useModalStore();
+  const { activeTab = "balance", setActiveTab } = contentType as ManageAccountModalProps;
   const { logout } = useAuthentication(partnerId);
   const [logoutLoading, setLogoutLoading] = useState(false);
 
@@ -408,10 +413,177 @@ export function ManageAccount({
     </div>
   );
 
+  const SettingsContent = () => {
+    const [unlinkingAccountId, setUnlinkingAccountId] = useState<string | null>(null);
+    const { data: profilesRaw = [], isLoading: isLoadingProfiles } = useProfiles({ client });
+    const { mutate: unlinkProfile, isPending: isUnlinking } = useUnlinkProfile();
+    const { setB3ModalOpen, setB3ModalContentType, isLinking } = useModalStore();
+
+    const profiles = profilesRaw
+      .filter((profile: any) => !["custom_auth_endpoint", "siwe"].includes(profile.type))
+      .map((profile: any) => ({
+        ...getProfileDisplayInfo(profile),
+        originalProfile: profile,
+      }));
+
+    const handleUnlink = async (profile: any) => {
+      setUnlinkingAccountId(profile.title);
+      try {
+        await unlinkProfile({
+          client,
+          profileToUnlink: profile.originalProfile,
+        });
+      } catch (error) {
+        console.error("Error unlinking account:", error);
+      } finally {
+        setUnlinkingAccountId(null);
+      }
+    };
+
+    const handleOpenLinkModal = () => {
+      setB3ModalOpen(true);
+      setB3ModalContentType({
+        type: "linkAccount",
+        showBackButton: true,
+        partnerId,
+        chain,
+        onSuccess: async () => {
+          // Let the LinkAccount component handle modal closing
+        },
+        onError: () => {
+          // Let the LinkAccount component handle errors
+        },
+        onClose: () => {
+          // Let the LinkAccount component handle closing
+        },
+      });
+    };
+
+    return (
+      <div className="space-y-8">
+        {/* Linked Accounts Section */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-b3-grey font-neue-montreal-semibold text-xl">Linked Accounts</h3>
+            <Button
+              className="bg-b3-primary-wash hover:bg-b3-primary-wash/70 flex items-center gap-2 rounded-full px-4 py-2"
+              onClick={handleOpenLinkModal}
+              disabled={isLinking}
+            >
+              {isLinking ? (
+                <Loader2 className="text-b3-primary-blue animate-spin" size={16} />
+              ) : (
+                <LinkIcon size={16} className="text-b3-primary-blue" />
+              )}
+              <span className="text-b3-grey font-neue-montreal-semibold">
+                {isLinking ? "Linking..." : "Link New Account"}
+              </span>
+            </Button>
+          </div>
+
+          {isLoadingProfiles ? (
+            <div className="flex justify-center py-8">
+              <Loader2 className="text-b3-grey animate-spin" />
+            </div>
+          ) : profiles.length > 0 ? (
+            <div className="space-y-4">
+              {profiles.map(profile => (
+                <div key={profile.title} className="bg-b3-line flex items-center justify-between rounded-xl p-4">
+                  <div className="flex items-center gap-3">
+                    {profile.imageUrl ? (
+                      <img src={profile.imageUrl} alt={profile.title} className="size-10 rounded-full" />
+                    ) : (
+                      <div className="bg-b3-primary-wash flex h-10 w-10 items-center justify-center rounded-full">
+                        <span className="text-b3-grey font-neue-montreal-semibold text-sm uppercase">
+                          {profile.initial}
+                        </span>
+                      </div>
+                    )}
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-b3-grey font-neue-montreal-semibold">{profile.title}</span>
+                        <span className="text-b3-foreground-muted font-neue-montreal-medium bg-b3-primary-wash rounded px-2 py-0.5 text-xs">
+                          {profile.type.toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="text-b3-foreground-muted font-neue-montreal-medium text-sm">
+                        {profile.subtitle}
+                      </div>
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-b3-grey hover:text-b3-negative"
+                    onClick={() => handleUnlink(profile)}
+                    disabled={unlinkingAccountId === profile.title || isUnlinking}
+                  >
+                    {unlinkingAccountId === profile.title || isUnlinking ? (
+                      <Loader2 className="animate-spin" />
+                    ) : (
+                      <UnlinkIcon size={16} />
+                    )}
+                  </Button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-b3-foreground-muted py-8 text-center">No linked accounts found</div>
+          )}
+        </div>
+
+        {/* Additional Settings Sections */}
+        <div className="space-y-4">
+          <h3 className="text-b3-grey font-neue-montreal-semibold text-xl">Account Preferences</h3>
+          <div className="bg-b3-line rounded-xl p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-b3-grey font-neue-montreal-semibold">Dark Mode</div>
+                <div className="text-b3-foreground-muted font-neue-montreal-medium text-sm">
+                  Switch between light and dark theme
+                </div>
+              </div>
+              {/* Theme toggle placeholder - can be implemented later */}
+              <div className="bg-b3-primary-wash h-6 w-12 rounded-full"></div>
+            </div>
+          </div>
+        </div>
+
+        {/* Global Account Info */}
+        <div className="border-b3-line flex items-center justify-between rounded-2xl border p-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <img src="https://cdn.b3.fun/b3_logo.svg" alt="B3" className="h-4" />
+              <h3 className="font-neue-montreal-semibold text-b3-grey">Global Account</h3>
+            </div>
+
+            <p className="text-b3-foreground-muted font-neue-montreal-medium mt-2 text-sm">
+              Your universal account for all B3-powered apps
+            </p>
+          </div>
+          <button
+            className="text-b3-grey hover:text-b3-grey/80 hover:bg-b3-line border-b3-line flex size-12 items-center justify-center rounded-full border"
+            onClick={onLogoutEnhanced}
+          >
+            {logoutLoading ? <Loader2 className="animate-spin" /> : <SignOutIcon size={16} className="text-b3-grey" />}
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="b3-manage-account bg-b3-background flex flex-col rounded-xl">
       <div className="flex-1">
-        <TabsPrimitive defaultValue={activeTab} onValueChange={setActiveTab}>
+        <TabsPrimitive
+          defaultValue={activeTab}
+          onValueChange={value => {
+            const tab = value as TabValue;
+            if (["balance", "assets", "apps", "settings"].includes(tab)) {
+              setActiveTab?.(tab);
+            }
+          }}
+        >
           <TabsListPrimitive className="font-neue-montreal-semibold text-b3-grey flex h-8 w-full items-start justify-start gap-8 border-0 text-xl md:p-4">
             <TabTriggerPrimitive
               value="balance"
@@ -431,6 +603,12 @@ export function ManageAccount({
             >
               Apps
             </TabTriggerPrimitive>
+            <TabTriggerPrimitive
+              value="settings"
+              className="data-[state=active]:text-b3-primary-blue data-[state=active]:border-b-b3-primary-blue flex-none rounded-none border-0 p-0 pb-1 text-xl leading-none tracking-wide transition-colors data-[state=active]:border-b data-[state=active]:bg-white md:pb-4"
+            >
+              Settings
+            </TabTriggerPrimitive>
           </TabsListPrimitive>
 
           <TabsContentPrimitive value="balance" className="pt-4 md:p-4">
@@ -443,6 +621,10 @@ export function ManageAccount({
 
           <TabsContentPrimitive value="apps" className="pt-4 md:p-4">
             <AppsContent />
+          </TabsContentPrimitive>
+
+          <TabsContentPrimitive value="settings" className="pt-4 md:p-4">
+            <SettingsContent />
           </TabsContentPrimitive>
         </TabsPrimitive>
       </div>

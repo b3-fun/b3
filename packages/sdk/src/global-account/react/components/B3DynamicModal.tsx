@@ -12,6 +12,7 @@ import { useIsMobile, useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { useB3 } from "./B3Provider/useB3";
+import { LinkAccount } from "./LinkAccount/LinkAccount";
 import { ManageAccount } from "./ManageAccount/ManageAccount";
 import { RequestPermissions } from "./RequestPermissions/RequestPermissions";
 import { SignInWithB3Flow } from "./SignInWithB3/SignInWithB3Flow";
@@ -40,6 +41,7 @@ export function B3DynamicModal() {
     "signInWithB3",
     "anySpendSignatureMint",
     "anySpendBondKit",
+    "linkAccount",
   ];
 
   const freestyleTypes = [
@@ -103,6 +105,8 @@ export function B3DynamicModal() {
         return <AnyspendSignatureMint {...contentType} mode="modal" />;
       case "anySpendBondKit":
         return <AnySpendBondKit {...contentType} />;
+      case "linkAccount":
+        return <LinkAccount {...contentType} />;
       // Add other modal types here
       default:
         return null;

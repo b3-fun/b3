@@ -83,6 +83,10 @@ export interface ManageAccountModalProps extends BaseModalProps {
   chain: Chain;
   /** Partner ID */
   partnerId: string;
+  /** Active Tab */
+  activeTab?: "balance" | "assets" | "apps" | "settings";
+  /** Function to set the active tab */
+  setActiveTab?: (tab: "balance" | "assets" | "apps" | "settings") => void;
 }
 
 /**
@@ -291,6 +295,16 @@ export interface AnySpendBondKitProps extends BaseModalProps {
   onSuccess?: (txHash?: string) => void;
 }
 
+export interface LinkAccountModalProps extends BaseModalProps {
+  type: "linkAccount";
+  showBackButton?: boolean;
+  onSuccess?: () => void;
+  onError?: (error: Error) => void;
+  onClose?: () => void;
+  partnerId: string;
+  chain: Chain;
+}
+
 /**
  * Union type of all possible modal content types
  */
@@ -308,7 +322,8 @@ export type ModalContentType =
   | AnySpendStakeB3Props
   | AnySpendBuySpinProps
   | AnySpendSignatureMintProps
-  | AnySpendBondKitProps;
+  | AnySpendBondKitProps
+  | LinkAccountModalProps;
 // Add other modal types here like: | OtherModalProps | AnotherModalProps
 
 /**
@@ -333,6 +348,12 @@ interface ModalState {
   ecoSystemAccountAddress?: Address;
   /** Function to set the ecosystem account address */
   setEcoSystemAccountAddress: (address: Address) => void;
+  /** Whether an account linking operation is in progress */
+  isLinking: boolean;
+  /** The method currently being linked */
+  linkingMethod: string | null;
+  /** Function to set the linking state */
+  setLinkingState: (isLinking: boolean, method?: string | null) => void;
 }
 
 /**
@@ -368,4 +389,8 @@ export const useModalStore = create<ModalState>(set => ({
   clearHistory: () => set({ history: [] }),
   ecoSystemAccountAddress: undefined,
   setEcoSystemAccountAddress: (address: Address) => set({ ecoSystemAccountAddress: address }),
+  isLinking: false,
+  linkingMethod: null,
+  setLinkingState: (isLinking: boolean, method: string | null = null) =>
+    set({ isLinking, linkingMethod: isLinking ? method : null }),
 }));
