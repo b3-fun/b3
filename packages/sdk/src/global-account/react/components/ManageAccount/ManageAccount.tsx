@@ -1,6 +1,7 @@
 import {
   Button,
   CopyToClipboard,
+  ManageAccountModalProps,
   TabsContentPrimitive,
   TabsListPrimitive,
   TabsPrimitive,
@@ -52,7 +53,6 @@ export function ManageAccount({
   chain,
   partnerId,
 }: ManageAccountProps) {
-  const [activeTab, setActiveTab] = useState("balance");
   const [revokingSignerId, setRevokingSignerId] = useState<string | null>(null);
   const account = useActiveAccount();
   const { data: assets, isLoading } = useAccountAssets(account?.address);
@@ -69,7 +69,8 @@ export function ManageAccount({
     chain,
     accountAddress: account?.address,
   });
-  const { setB3ModalOpen, setB3ModalContentType } = useModalStore();
+  const { setB3ModalOpen, setB3ModalContentType, contentType } = useModalStore();
+  const { activeTab, setActiveTab } = contentType as ManageAccountModalProps;
   const { logout } = useAuthentication(partnerId);
   const [logoutLoading, setLogoutLoading] = useState(false);
 
