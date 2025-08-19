@@ -32,6 +32,8 @@ const CONFIG = {
   docsContentDir: path.join(process.cwd(), "..", "docs"), // Where the actual docs content lives
   excludeDirs: ["node_modules", ".next", "public", "scripts", "images"],
   supportedExtensions: [".mdx", ".md"],
+  // Frontmatter fields that should be translated
+  translatableFrontmatter: ["title", "description"],
   // Add configuration from environment variables
   batchSize: Number(process.env.TRANSLATION_BATCH_SIZE) || 1,
   dryRun: process.env.TRANSLATION_DRY_RUN === "true",
@@ -43,6 +45,48 @@ interface TranslationMeta {
   language: string;
   originalContent: string;
   frontmatter: Record<string, any>;
+}
+
+async function translateText(text: string, language: string): Promise<string> {
+  if (CONFIG.dryRun) {
+    console.log("Dry run: Would translate text:", text);
+    return text;
+  }
+
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4-turbo-preview",
+      messages: [
+        {
+          role: "system",
+          content: `You are a professional translator. Translate the following text to ${language}. Preserve any special characters, quotes, or formatting. Only translate the actual text content.`,
+        },
+        {
+          role: "user",
+          content: text,
+        },
+      ],
+      temperature: 0.3,
+    });
+
+    return response.choices[0]?.message?.content || text;
+  } catch (error) {
+    console.error("Translation error:", error);
+    throw error;
+  }
+}
+
+async function translateFrontmatter(frontmatter: Record<string, any>, language: string): Promise<Record<string, any>> {
+  const translatedFrontmatter = { ...frontmatter };
+
+  for (const field of CONFIG.translatableFrontmatter) {
+    if (frontmatter[field]) {
+      console.log(`Translating frontmatter field: ${field}`);
+      translatedFrontmatter[field] = await translateText(frontmatter[field], language);
+    }
+  }
+
+  return translatedFrontmatter;
 }
 
 async function translateContent(content: string, language: string): Promise<string> {
@@ -66,14 +110,15 @@ async function translateContent(content: string, language: string): Promise<stri
           5. URLs
           6. Component names
           7. Configuration keys
-          8. Command line commands`,
+          8. Command line commands
+          9. HTML/JSX tags and attributes`,
         },
         {
           role: "user",
           content,
         },
       ],
-      temperature: 0.3, // Lower temperature for more consistent translations
+      temperature: 0.3,
     });
 
     return response.choices[0]?.message?.content || content;
@@ -108,12 +153,15 @@ async function processFile(filePath: string, language: string): Promise<void> {
     // Ensure target directory exists
     await fs.mkdir(targetDir, { recursive: true });
 
+    // Translate frontmatter
+    const translatedFrontmatter = await translateFrontmatter(frontmatter, language);
+
     // Translate content
     const translatedContent = await translateContent(markdownContent, language);
 
     // Update frontmatter for translated version
     const updatedFrontmatter = {
-      ...frontmatter,
+      ...translatedFrontmatter,
       lang: language,
       originalPath: relativePath,
     };
