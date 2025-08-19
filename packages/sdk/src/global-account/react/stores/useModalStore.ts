@@ -296,6 +296,7 @@ export interface LinkAccountModalProps extends BaseModalProps {
   showBackButton?: boolean;
   onSuccess?: () => void;
   onError?: (error: Error) => void;
+  onClose?: () => void;
   partnerId: string;
   chain: Chain;
 }
@@ -343,6 +344,12 @@ interface ModalState {
   ecoSystemAccountAddress?: Address;
   /** Function to set the ecosystem account address */
   setEcoSystemAccountAddress: (address: Address) => void;
+  /** Whether an account linking operation is in progress */
+  isLinking: boolean;
+  /** The method currently being linked */
+  linkingMethod: string | null;
+  /** Function to set the linking state */
+  setLinkingState: (isLinking: boolean, method?: string | null) => void;
 }
 
 /**
@@ -378,4 +385,8 @@ export const useModalStore = create<ModalState>(set => ({
   clearHistory: () => set({ history: [] }),
   ecoSystemAccountAddress: undefined,
   setEcoSystemAccountAddress: (address: Address) => set({ ecoSystemAccountAddress: address }),
+  isLinking: false,
+  linkingMethod: null,
+  setLinkingState: (isLinking: boolean, method: string | null = null) =>
+    set({ isLinking, linkingMethod: isLinking ? method : null }),
 }));

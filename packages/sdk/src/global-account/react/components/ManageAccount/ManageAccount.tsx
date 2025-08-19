@@ -414,6 +414,7 @@ export function ManageAccount({
     const [unlinkingAccountId, setUnlinkingAccountId] = useState<string | null>(null);
     const { data: profilesRaw = [], isLoading: isLoadingProfiles } = useProfiles({ client });
     const { mutate: unlinkProfile } = useUnlinkProfile();
+    const { setB3ModalOpen, setB3ModalContentType, isLinking, setLinkingState } = useModalStore();
 
     const profiles = profilesRaw
       .filter((profile: any) => !["custom_auth_endpoint", "siwe"].includes(profile.type))
@@ -436,6 +437,25 @@ export function ManageAccount({
       }
     };
 
+    const handleOpenLinkModal = () => {
+      setB3ModalOpen(true);
+      setB3ModalContentType({
+        type: "linkAccount",
+        showBackButton: true,
+        partnerId,
+        chain,
+        onSuccess: async () => {
+          // Let the LinkAccount component handle modal closing
+        },
+        onError: () => {
+          // Let the LinkAccount component handle errors
+        },
+        onClose: () => {
+          // Let the LinkAccount component handle closing
+        },
+      });
+    };
+
     return (
       <div className="space-y-8">
         {/* Linked Accounts Section */}
@@ -444,18 +464,17 @@ export function ManageAccount({
             <h3 className="text-b3-grey font-neue-montreal-semibold text-xl">Linked Accounts</h3>
             <Button
               className="bg-b3-primary-wash hover:bg-b3-primary-wash/70 flex items-center gap-2 rounded-full px-4 py-2"
-              onClick={() => {
-                setB3ModalOpen(true);
-                setB3ModalContentType({
-                  type: "linkAccount",
-                  showBackButton: true,
-                  partnerId,
-                  chain,
-                });
-              }}
+              onClick={handleOpenLinkModal}
+              disabled={isLinking}
             >
-              <LinkIcon size={16} className="text-b3-primary-blue" />
-              <span className="text-b3-grey font-neue-montreal-semibold">Link New Account</span>
+              {isLinking ? (
+                <Loader2 className="text-b3-primary-blue animate-spin" size={16} />
+              ) : (
+                <LinkIcon size={16} className="text-b3-primary-blue" />
+              )}
+              <span className="text-b3-grey font-neue-montreal-semibold">
+                {isLinking ? "Linking..." : "Link New Account"}
+              </span>
             </Button>
           </div>
 

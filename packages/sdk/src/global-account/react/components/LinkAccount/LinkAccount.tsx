@@ -1,9 +1,10 @@
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { Loader2 } from "lucide-react";
-import { useState } from "react";
-import { useLinkProfile } from "thirdweb/react";
+import { useCallback, useEffect, useState } from "react";
+import { useLinkProfile, useProfiles } from "thirdweb/react";
 import { preAuthenticate } from "thirdweb/wallets";
-import { LinkAccountModalProps } from "../../stores/useModalStore";
+import { LinkAccountModalProps, useModalStore } from "../../stores/useModalStore";
+import { getProfileDisplayInfo } from "../../utils/profileDisplay";
 import { useB3 } from "../B3Provider/useB3";
 import { Button } from "../ui/button";
 
@@ -27,17 +28,38 @@ const AUTH_METHODS: AuthMethod[] = [
   { id: "apple", label: "Apple", enabled: true },
 ];
 
-export function LinkAccount({ onSuccess, onError }: LinkAccountModalProps) {
-  const [isLinking, setIsLinking] = useState(false);
+export function LinkAccount({ onSuccess: onSuccessCallback, onError, onClose }: LinkAccountModalProps) {
+  const { isLinking, linkingMethod, setLinkingState, navigateBack } = useModalStore();
   const [selectedMethod, setSelectedMethod] = useState<Strategy | null>(null);
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { data: profilesRaw = [] } = useProfiles({ client });
+
+  const profiles = profilesRaw
+    .filter((profile: any) => !["custom_auth_endpoint", "siwe"].includes(profile.type))
+    .map((profile: any) => ({
+      ...getProfileDisplayInfo(profile),
+      originalProfile: profile,
+    }));
 
   const { account } = useB3();
   const { mutate: linkProfile } = useLinkProfile();
+
+  const onSuccess = useCallback(async () => {
+    await onSuccessCallback?.();
+  }, [onSuccessCallback]);
+
+  // Reset linking state when component unmounts
+  useEffect(() => {
+    return () => {
+      if (isLinking) {
+        setLinkingState(false);
+      }
+    };
+  }, [isLinking, setLinkingState]);
 
   const validateInput = () => {
     if (selectedMethod === "email") {
@@ -67,7 +89,7 @@ export function LinkAccount({ onSuccess, onError }: LinkAccountModalProps) {
     if (!validateInput()) return;
 
     try {
-      setIsLinking(true);
+      setLinkingState(true, selectedMethod);
       setError(null);
 
       if (selectedMethod === "email") {
@@ -89,8 +111,7 @@ export function LinkAccount({ onSuccess, onError }: LinkAccountModalProps) {
       console.error("Error sending OTP:", error);
       setError(error instanceof Error ? error.message : "Failed to send OTP");
       onError?.(error as Error);
-    } finally {
-      setIsLinking(false);
+      setLinkingState(false);
     }
   };
 
@@ -101,7 +122,7 @@ export function LinkAccount({ onSuccess, onError }: LinkAccountModalProps) {
     }
 
     try {
-      setIsLinking(true);
+      setLinkingState(true, selectedMethod);
       setError(null);
 
       if (selectedMethod === "email") {
@@ -121,18 +142,19 @@ export function LinkAccount({ onSuccess, onError }: LinkAccountModalProps) {
       }
 
       onSuccess?.();
+      onClose?.();
     } catch (error) {
       console.error("Error linking account:", error);
       setError(error instanceof Error ? error.message : "Failed to link account");
       onError?.(error as Error);
     } finally {
-      setIsLinking(false);
+      setLinkingState(false);
     }
   };
 
   const handleSocialLink = async (strategy: SocialStrategy) => {
     try {
-      setIsLinking(true);
+      setLinkingState(true, strategy);
       setError(null);
 
       await linkProfile({
@@ -140,24 +162,53 @@ export function LinkAccount({ onSuccess, onError }: LinkAccountModalProps) {
         strategy,
       });
 
+      // Don't close the modal yet, wait for auth to complete
       onSuccess?.();
     } catch (error) {
       console.error("Error linking with social:", error);
       setError(error instanceof Error ? error.message : "Failed to link social account");
       onError?.(error as Error);
-    } finally {
-      setIsLinking(false);
+      setLinkingState(false);
     }
   };
 
-  const handleBack = () => {
+  // Add effect to handle social auth completion
+  useEffect(() => {
+    if (isLinking && linkingMethod && !selectedMethod) {
+      // This means we're in a social auth flow
+      const checkAuthStatus = async () => {
+        try {
+          // Wait a bit to ensure auth is complete
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          onClose?.();
+        } catch (error) {
+          console.error("Error checking auth status:", error);
+          setLinkingState(false);
+        }
+      };
+
+      checkAuthStatus();
+    }
+  }, [isLinking, linkingMethod, selectedMethod, onClose, setLinkingState]);
+
+  const handleBack = useCallback(() => {
+    if (isLinking) return;
     setSelectedMethod(null);
     setEmail("");
     setPhone("");
     setOtp("");
     setOtpSent(false);
     setError(null);
-  };
+    setLinkingState(false);
+  }, [isLinking, setSelectedMethod, setEmail, setPhone, setOtp, setOtpSent, setError, setLinkingState]);
+
+  useEffect(() => {
+    if (isLinking) {
+      setLinkingState(false);
+      navigateBack();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profiles.length]);
 
   if (!account) {
     return <div className="text-b3-foreground-muted py-8 text-center">Please connect your account first</div>;
@@ -169,7 +220,7 @@ export function LinkAccount({ onSuccess, onError }: LinkAccountModalProps) {
         <h2 className="text-b3-grey font-neue-montreal-semibold text-2xl">Link New Account</h2>
         {selectedMethod && (
           <Button variant="ghost" className="text-b3-grey hover:text-b3-grey/80" onClick={handleBack}>
-            Back
+            Backs
           </Button>
         )}
       </div>
@@ -187,9 +238,9 @@ export function LinkAccount({ onSuccess, onError }: LinkAccountModalProps) {
                   handleSocialLink(method.id as SocialStrategy);
                 }
               }}
-              disabled={isLinking}
+              disabled={linkingMethod === method.id}
             >
-              {isLinking ? <Loader2 className="animate-spin" /> : method.label}
+              {isLinking && linkingMethod === method.id ? <Loader2 className="animate-spin" /> : method.label}
             </Button>
           ))}
         </div>
@@ -204,7 +255,7 @@ export function LinkAccount({ onSuccess, onError }: LinkAccountModalProps) {
                 className="bg-b3-line text-b3-grey font-neue-montreal-medium focus:ring-b3-primary-blue/20 w-full rounded-xl p-4 focus:outline-none focus:ring-2"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                disabled={otpSent || isLinking}
+                disabled={otpSent || (isLinking && linkingMethod === "email")}
               />
             </div>
           )}
@@ -218,7 +269,7 @@ export function LinkAccount({ onSuccess, onError }: LinkAccountModalProps) {
                 className="bg-b3-line text-b3-grey font-neue-montreal-medium focus:ring-b3-primary-blue/20 w-full rounded-xl p-4 focus:outline-none focus:ring-2"
                 value={phone}
                 onChange={e => setPhone(e.target.value)}
-                disabled={otpSent || isLinking}
+                disabled={otpSent || (isLinking && linkingMethod === "phone")}
               />
               <p className="text-b3-foreground-muted font-neue-montreal-medium text-sm">
                 Include country code (e.g., +1 for US)
@@ -238,24 +289,28 @@ export function LinkAccount({ onSuccess, onError }: LinkAccountModalProps) {
                   className="bg-b3-line text-b3-grey font-neue-montreal-medium focus:ring-b3-primary-blue/20 w-full rounded-xl p-4 focus:outline-none focus:ring-2"
                   value={otp}
                   onChange={e => setOtp(e.target.value)}
-                  disabled={isLinking}
+                  disabled={isLinking && linkingMethod === selectedMethod}
                 />
               </div>
               <Button
                 className="bg-b3-primary-blue hover:bg-b3-primary-blue/90 font-neue-montreal-semibold h-12 w-full text-white"
                 onClick={handleLinkAccount}
-                disabled={isLinking || !otp}
+                disabled={!otp || (isLinking && linkingMethod === selectedMethod)}
               >
-                {isLinking ? <Loader2 className="animate-spin" /> : "Link Account"}
+                {isLinking && linkingMethod === selectedMethod ? <Loader2 className="animate-spin" /> : "Link Account"}
               </Button>
             </div>
           ) : (
             <Button
               className="bg-b3-primary-blue hover:bg-b3-primary-blue/90 font-neue-montreal-semibold h-12 w-full text-white"
               onClick={handleSendOTP}
-              disabled={isLinking || (!email && !phone)}
+              disabled={(!email && !phone) || (isLinking && linkingMethod === selectedMethod)}
             >
-              {isLinking ? <Loader2 className="animate-spin" /> : "Send Verification Code"}
+              {isLinking && linkingMethod === selectedMethod ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                "Send Verification Code"
+              )}
             </Button>
           )}
         </div>
