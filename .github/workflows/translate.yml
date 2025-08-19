@@ -57,7 +57,7 @@ jobs:
           # Run translation update
           pnpm translate:ci --update # todo put --all back 
           # Stage any new or modified files
-          git add docs/*/
+          git add */
           # Commit if there are changes
           if ! git diff --staged --quiet; then
             git commit -m "chore: update translations"
