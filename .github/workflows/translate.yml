@@ -46,7 +46,7 @@ jobs:
         timeout-minutes: 300 # 5 hours max for translation step
         run: |
           echo "Starting translation process..."
-          pnpm translate --all --update
+          pnpm translate:ci --all --update
           echo "Translation completed"
         working-directory: docs
         env:

@@ -2,7 +2,8 @@
   "name": "b3-docs",
   "scripts": {
     "translate": "doppler run -- ts-node scripts/translate.ts",
-    "translate:local": "ts-node scripts/translate.ts"
+    "translate:local": "ts-node scripts/translate.ts",
+    "translate:ci": "ts-node scripts/translate.ts"
   },
   "dependencies": {
     "openai": "^4.28.0",
