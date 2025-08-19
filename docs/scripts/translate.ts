@@ -52,7 +52,7 @@ const openai = new OpenAI({
 
 // Configuration
 const CONFIG = {
-  languages: ["es", "pt-BR", "id", "ko", "cn"], // All supported languages
+  languages: ["es", "pt-BR"], // All supported languages
   sourceDir: path.join(process.cwd(), "..", "docs"), // Root docs directory
   docsContentDir: path.join(process.cwd(), "..", "docs"), // Where the actual docs content lives
   excludeDirs: ["node_modules", ".next", "public", "scripts", "images"],

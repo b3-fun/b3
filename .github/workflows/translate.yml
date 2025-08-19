@@ -6,11 +6,13 @@ on:
     paths:
       - "docs/**/*.mdx"
       - "docs/**/*.md"
+      - "pnpm-workspace.yaml"
   pull_request:
     branches: [main]
     paths:
       - "docs/**/*.mdx"
       - "docs/**/*.md"
+      - "pnpm-workspace.yaml"
   workflow_dispatch:
 
 concurrency:
@@ -30,35 +32,51 @@ jobs:
         with:
           fetch-depth: 0
 
+      # Build on latest main to avoid modify/delete conflicts in PR step
+      - name: Sync to latest main
+        run: |
+          git fetch origin main
+          git checkout main
+          git reset --hard origin/main
+
       - name: Setup Git
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git config pull.rebase false
 
-      - name: Setup Node.js (20.x)
+      - name: Setup Node.js (20.15.0)
         uses: actions/setup-node@v4
         with:
           node-version: "20.15.0"
 
+      # Let pnpm/action-setup read packageManager from the root package.json
+      # (and transitively the workspace). Do not set an explicit version here.
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10.14.0
+          run_install: false
 
-      - name: Install dependencies
-        run: pnpm install
-        working-directory: docs
+      - name: Verify workspace detection (diagnostic)
+        run: |
+          echo "== pnpm-workspace.yaml =="
+          cat pnpm-workspace.yaml || true
+          echo "== pnpm ls (depth 1) =="
+          pnpm ls --depth 1 || true
 
-      - name: Run translation update
+      - name: Install dependencies (workspace)
+        run: |
+          pnpm install
+
+      - name: Run translation update (root, directory filter)
         id: translate
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           NODE_OPTIONS: "--max-old-space-size=8192"
         run: |
           echo "Starting translation process..."
-          # Run your updater; do NOT create/push branches here.
-          pnpm --filter=b3-docs translate:ci --update
+          # Use a DIRECTORY filter to avoid name mismatches:
+          pnpm --filter b3-docs run translate:ci -- --update
 
           # Detect changes limited to docs/
           if git status --porcelain docs | grep -E '^(M|A|\?\?)' >/dev/null 2>&1; then
