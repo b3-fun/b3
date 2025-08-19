@@ -8,6 +8,7 @@ import {
   AnySpendTournament,
   OrderHistory,
 } from "@b3dotfun/sdk/anyspend/react";
+import { AnySpendDepositHype } from "@b3dotfun/sdk/anyspend/react/components/AnyspendDepositHype";
 import { useIsMobile, useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
@@ -107,6 +108,8 @@ export function B3DynamicModal() {
         return <AnySpendBondKit {...contentType} />;
       case "linkAccount":
         return <LinkAccount {...contentType} />;
+      case "anySpendDepositHype":
+        return <AnySpendDepositHype {...contentType} mode="modal" />;
       // Add other modal types here
       default:
         return null;

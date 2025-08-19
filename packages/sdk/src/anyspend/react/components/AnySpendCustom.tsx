@@ -605,16 +605,8 @@ function AnySpendCustomInner({
             onClick={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
           >
             <>
-              {recipientProfile && (
-                <img
-                  src={recipientProfile.data?.avatar || ""}
-                  alt={recipientProfile.data?.name || ""}
-                  className="bg-b3-react-foreground size-6 rounded-full object-cover opacity-100"
-                />
-              )}
               <div className="text-as-tertiarry flex items-center gap-1 text-sm">
-                {recipientName && <span>{formatUsername(recipientName)}</span>}
-                <span>{shortenAddress(recipientAddress)}</span>
+                <span>{recipientName ? formatUsername(recipientName) : shortenAddress(recipientAddress)}</span>
               </div>
             </>
           </button>
@@ -651,7 +643,7 @@ function AnySpendCustomInner({
   const orderDetailsView = (
     <div
       className={cn(
-        "mx-auto flex w-full flex-col items-center gap-4 p-5",
+        "mx-auto flex w-full flex-col items-center gap-4",
         mode === "modal" && "bg-b3-react-background rounded-xl",
       )}
     >

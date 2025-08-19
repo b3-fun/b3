@@ -19,6 +19,8 @@ export { OrderHistoryItem } from "./common/OrderHistoryItem";
 export { OrderStatus } from "./common/OrderStatus";
 export { OrderToken } from "./common/OrderToken";
 export { OrderTokenAmount } from "./common/OrderTokenAmount";
+export { PaySection } from "./common/PaySection";
+export { ReceiveSection } from "./common/ReceiveSection";
 export { RecipientSelection } from "./common/RecipientSelection";
 export { StepProgress } from "./common/StepProgress";
 export { TokenBalance } from "./common/TokenBalance";
