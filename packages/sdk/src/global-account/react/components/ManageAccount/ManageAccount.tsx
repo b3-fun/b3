@@ -31,6 +31,8 @@ import useFirstEOA from "../../hooks/useFirstEOA";
 import { getProfileDisplayInfo } from "../../utils/profileDisplay";
 import { AccountAssets } from "../AccountAssets/AccountAssets";
 
+type TabValue = "balance" | "assets" | "apps" | "settings";
+
 interface ManageAccountProps {
   onLogout?: () => void;
   onSwap?: () => void;
@@ -573,7 +575,15 @@ export function ManageAccount({
   return (
     <div className="b3-manage-account bg-b3-background flex flex-col rounded-xl">
       <div className="flex-1">
-        <TabsPrimitive defaultValue={activeTab} onValueChange={setActiveTab}>
+        <TabsPrimitive
+          defaultValue={activeTab}
+          onValueChange={value => {
+            const tab = value as TabValue;
+            if (["balance", "assets", "apps", "settings"].includes(tab)) {
+              setActiveTab(tab);
+            }
+          }}
+        >
           <TabsListPrimitive className="font-neue-montreal-semibold text-b3-grey flex h-8 w-full items-start justify-start gap-8 border-0 text-xl md:p-4">
             <TabTriggerPrimitive
               value="balance"

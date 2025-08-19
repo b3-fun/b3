@@ -86,7 +86,7 @@ export interface ManageAccountModalProps extends BaseModalProps {
   /** Active Tab */
   activeTab?: "balance" | "assets" | "apps" | "settings";
   /** Function to set the active tab */
-  setActiveTab: (tab: "balance" | "assets" | "apps" | "settings") => void;
+  setActiveTab?: (tab: "balance" | "assets" | "apps" | "settings") => void;
 }
 
 /**
