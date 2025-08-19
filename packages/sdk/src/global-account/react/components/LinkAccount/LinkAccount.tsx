@@ -1,13 +1,13 @@
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { Loader2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import { useLinkProfile, useProfiles } from "thirdweb/react";
 import { preAuthenticate } from "thirdweb/wallets";
 import { LinkAccountModalProps, useModalStore } from "../../stores/useModalStore";
 import { getProfileDisplayInfo } from "../../utils/profileDisplay";
 import { useB3 } from "../B3Provider/useB3";
 import { Button } from "../ui/button";
-
 type OTPStrategy = "email" | "phone";
 type SocialStrategy = "google" | "x" | "discord" | "apple";
 type Strategy = OTPStrategy | SocialStrategy;
@@ -77,6 +77,15 @@ export function LinkAccount({
     };
   }, [isLinking, setLinkingState]);
 
+  const mutationOptions = {
+    onError: (error: Error) => {
+      console.error("Error linking account:", error);
+      toast.error(error.message);
+      setLinkingState(false);
+      onError?.(error);
+    },
+  };
+
   const validateInput = () => {
     if (selectedMethod === "email") {
       if (!email) {
@@ -142,19 +151,25 @@ export function LinkAccount({
       setError(null);
 
       if (selectedMethod === "email") {
-        await linkProfile({
-          client,
-          strategy: "email",
-          email,
-          verificationCode: otp,
-        });
+        await linkProfile(
+          {
+            client,
+            strategy: "email",
+            email,
+            verificationCode: otp,
+          },
+          mutationOptions,
+        );
       } else if (selectedMethod === "phone") {
-        await linkProfile({
-          client,
-          strategy: "phone",
-          phoneNumber: phone,
-          verificationCode: otp,
-        });
+        await linkProfile(
+          {
+            client,
+            strategy: "phone",
+            phoneNumber: phone,
+            verificationCode: otp,
+          },
+          mutationOptions,
+        );
       }
 
       onSuccess?.();
@@ -170,13 +185,19 @@ export function LinkAccount({
 
   const handleSocialLink = async (strategy: SocialStrategy) => {
     try {
+      console.log("handleSocialLink", strategy);
       setLinkingState(true, strategy);
       setError(null);
 
-      await linkProfile({
-        client,
-        strategy,
-      });
+      const result = await linkProfile(
+        {
+          client,
+          strategy,
+        },
+        mutationOptions,
+      );
+
+      console.log("result", result);
 
       // Don't close the modal yet, wait for auth to complete
       onSuccess?.();
