@@ -44,6 +44,16 @@ export function LinkAccount({
   const [error, setError] = useState<string | null>(null);
   const { data: profilesRaw = [] } = useProfiles({ client });
 
+  // Get connected auth methods
+  const connectedAuthMethods = profilesRaw
+    .filter((profile: any) => !["custom_auth_endpoint", "siwe"].includes(profile.type))
+    .map((profile: any) => profile.type as Strategy);
+
+  // Filter available auth methods
+  const availableAuthMethods = AUTH_METHODS.filter(
+    method => !connectedAuthMethods.includes(method.id) && method.enabled,
+  );
+
   const profiles = profilesRaw
     .filter((profile: any) => !["custom_auth_endpoint", "siwe"].includes(profile.type))
     .map((profile: any) => ({
@@ -240,7 +250,7 @@ export function LinkAccount({
 
       {!selectedMethod ? (
         <div className="grid gap-3">
-          {AUTH_METHODS.filter(method => method.enabled).map(method => (
+          {availableAuthMethods.map(method => (
             <Button
               key={method.id}
               className="bg-b3-primary-wash hover:bg-b3-primary-wash/70 text-b3-grey font-neue-montreal-semibold h-16 justify-start px-6 text-lg"
@@ -256,6 +266,11 @@ export function LinkAccount({
               {isLinking && linkingMethod === method.id ? <Loader2 className="animate-spin" /> : method.label}
             </Button>
           ))}
+          {availableAuthMethods.length === 0 && (
+            <div className="text-b3-foreground-muted py-8 text-center">
+              All available authentication methods have been connected
+            </div>
+          )}
         </div>
       ) : (
         <div className="space-y-4">
