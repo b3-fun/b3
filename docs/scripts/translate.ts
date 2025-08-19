@@ -331,8 +331,13 @@ async function processFile(filePath: string, language: string): Promise<void> {
 
     // Create target path
     const relativePath = path.relative(CONFIG.docsContentDir, filePath);
-    const targetDir = path.join(CONFIG.docsContentDir, language, path.dirname(relativePath));
-    const targetPath = path.join(targetDir, path.basename(filePath));
+
+    // Check if the file is already in a language directory
+    const isInLanguageDir = relativePath.startsWith(language + "/");
+    const cleanRelativePath = isInLanguageDir ? relativePath : path.join(language, relativePath);
+
+    const targetDir = path.join(CONFIG.docsContentDir, path.dirname(cleanRelativePath));
+    const targetPath = path.join(CONFIG.docsContentDir, cleanRelativePath);
 
     // Check if we should translate this file
     if (!(await shouldTranslateFile(filePath, targetPath))) {
@@ -374,9 +379,9 @@ async function processFile(filePath: string, language: string): Promise<void> {
       // Write translated file
       await fs.writeFile(targetPath, finalContent);
       timer.log("wrote translated file");
-      console.log(`✓ Translated: ${relativePath} -> ${language}/${relativePath}`);
+      console.log(`✓ Translated: ${relativePath} -> ${cleanRelativePath}`);
     } else {
-      console.log(`Would translate: ${relativePath} -> ${language}/${relativePath}`);
+      console.log(`Would translate: ${relativePath} -> ${cleanRelativePath}`);
     }
   } catch (error) {
     console.error(`Error processing ${filePath}:`, error);
@@ -386,9 +391,12 @@ async function processFile(filePath: string, language: string): Promise<void> {
 async function main() {
   const totalTimer = new Timer("total");
   try {
-    // Get all documentation files
     const files = await glob("**/*{.md,.mdx}", {
-      ignore: CONFIG.excludeDirs.map(dir => `**/${dir}/**`),
+      ignore: [
+        ...CONFIG.excludeDirs.map(dir => `**/${dir}/**`),
+        // Ignore files that are already in language directories
+        ...CONFIG.languages.map(lang => `${lang}/**`),
+      ],
       cwd: CONFIG.docsContentDir,
       absolute: true,
     });
@@ -416,7 +424,16 @@ async function main() {
 
     for (const file of filesToProcess) {
       console.log(`\nProcessing file: ${file}`);
-      const targetPath = path.join(CONFIG.docsContentDir, "es", path.relative(CONFIG.docsContentDir, file));
+      const relativePath = path.relative(CONFIG.docsContentDir, file);
+
+      // Skip files that are already in language directories
+      if (CONFIG.languages.some(lang => relativePath.startsWith(lang + "/"))) {
+        console.log(`Skipping already translated file: ${relativePath}`);
+        skippedCount++;
+        continue;
+      }
+
+      const targetPath = path.join(CONFIG.docsContentDir, "es", relativePath);
 
       if (await shouldTranslateFile(file, targetPath)) {
         await processFile(file, "es");
