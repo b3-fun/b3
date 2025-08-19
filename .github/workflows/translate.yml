@@ -76,7 +76,7 @@ jobs:
         run: |
           echo "Starting translation process..."
           # Use a DIRECTORY filter to avoid name mismatches:
-          pnpm --filter b3-docs run translate:ci -- --update
+          pnpm --filter b3-docs run translate:ci --all --update
 
           # Detect changes limited to docs/
           if git status --porcelain docs | grep -E '^(M|A|\?\?)' >/dev/null 2>&1; then
