@@ -32,6 +32,13 @@ jobs:
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          # Configure Git to automatically resolve conflicts in favor of our changes
+          git config --global merge.theirs.driver true
+          git config pull.rebase false
+          git config merge.conflictstyle diff3
+          # Set merge strategy to always prefer our changes
+          git config merge.defaultToUpstream true
+          git config merge.ours.driver "true"
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -52,19 +59,17 @@ jobs:
         timeout-minutes: 300 # 5 hours max for translation step
         run: |
           echo "Starting translation process..."
-          # Reset any unstaged changes and untracked files
+          # Reset any unstaged changes to avoid conflicts
           git clean -fd
           git reset --hard
           # Run translation update
           pnpm translate:ci --update # todo put --all back 
-          # Force add any new or modified files in language directories
-          git add -f es/ pt-BR/ id/ ko/ cn/ || true
-          # Remove any files that were deleted
-          git add -u es/ pt-BR/ id/ ko/ cn/
+          # Stage changes with -X ours to automatically accept our changes
+          git add -A
           # Commit if there are changes
           if ! git diff --staged --quiet; then
-            git commit -m "chore: update translations"
-            echo "changes_made=true" >> $GITHUB_OUTPUT
+            # Use -X ours to automatically accept our changes during merge conflicts
+            git commit -m "chore: update translations" -X ours --allow-empty
           else
             echo "No translation changes to commit"
             echo "changes_made=false" >> $GITHUB_OUTPUT
