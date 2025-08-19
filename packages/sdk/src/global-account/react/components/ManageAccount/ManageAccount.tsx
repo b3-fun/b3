@@ -27,6 +27,7 @@ import { Chain } from "thirdweb";
 import { useActiveAccount, useProfiles, useUnlinkProfile } from "thirdweb/react";
 import { formatUnits } from "viem";
 import useFirstEOA from "../../hooks/useFirstEOA";
+import { getProfileDisplayInfo } from "../../utils/profileDisplay";
 import { AccountAssets } from "../AccountAssets/AccountAssets";
 
 interface ManageAccountProps {
@@ -414,14 +415,19 @@ export function ManageAccount({
     const { data: profilesRaw = [], isLoading: isLoadingProfiles } = useProfiles({ client });
     const { mutate: unlinkProfile } = useUnlinkProfile();
 
-    const profiles = profilesRaw.filter((profile: any) => !["custom_auth_endpoint", "siwe"].includes(profile.type));
+    const profiles = profilesRaw
+      .filter((profile: any) => !["custom_auth_endpoint", "siwe"].includes(profile.type))
+      .map((profile: any) => ({
+        ...getProfileDisplayInfo(profile),
+        originalProfile: profile,
+      }));
 
     const handleUnlink = async (profile: any) => {
-      setUnlinkingAccountId(profile.id);
+      setUnlinkingAccountId(profile.title);
       try {
         await unlinkProfile({
           client,
-          profileToUnlink: profile,
+          profileToUnlink: profile.originalProfile,
         });
       } catch (error) {
         console.error("Error unlinking account:", error);
@@ -460,19 +466,26 @@ export function ManageAccount({
           ) : profiles.length > 0 ? (
             <div className="space-y-4">
               {profiles.map(profile => (
-                <div key={profile.id} className="bg-b3-line flex items-center justify-between rounded-xl p-4">
+                <div key={profile.title} className="bg-b3-line flex items-center justify-between rounded-xl p-4">
                   <div className="flex items-center gap-3">
-                    <div className="bg-b3-primary-wash flex h-10 w-10 items-center justify-center rounded-full">
-                      <span className="text-b3-grey font-neue-montreal-semibold text-sm uppercase">
-                        {(profile.authProvider || "U").charAt(0)}
-                      </span>
-                    </div>
+                    {profile.imageUrl ? (
+                      <img src={profile.imageUrl} alt={profile.title} className="size-10 rounded-full" />
+                    ) : (
+                      <div className="bg-b3-primary-wash flex h-10 w-10 items-center justify-center rounded-full">
+                        <span className="text-b3-grey font-neue-montreal-semibold text-sm uppercase">
+                          {profile.initial}
+                        </span>
+                      </div>
+                    )}
                     <div>
-                      <div className="text-b3-grey font-neue-montreal-semibold">
-                        {profile.email || profile.address || profile.phone || "Unknown"}
+                      <div className="flex items-center gap-2">
+                        <span className="text-b3-grey font-neue-montreal-semibold">{profile.title}</span>
+                        <span className="text-b3-foreground-muted font-neue-montreal-medium bg-b3-primary-wash rounded px-2 py-0.5 text-xs">
+                          {profile.type.toUpperCase()}
+                        </span>
                       </div>
                       <div className="text-b3-foreground-muted font-neue-montreal-medium text-sm">
-                        {profile.authProvider || "Unknown"}
+                        {profile.subtitle}
                       </div>
                     </div>
                   </div>
@@ -481,9 +494,9 @@ export function ManageAccount({
                     size="icon"
                     className="text-b3-grey hover:text-b3-negative"
                     onClick={() => handleUnlink(profile)}
-                    disabled={unlinkingAccountId === profile.id}
+                    disabled={unlinkingAccountId === profile.title}
                   >
-                    {unlinkingAccountId === profile.id ? (
+                    {unlinkingAccountId === profile.title ? (
                       <Loader2 className="animate-spin" />
                     ) : (
                       <UnlinkIcon size={16} />
