@@ -11,14 +11,12 @@ on:
     paths:
       - "docs/**/*.mdx"
       - "docs/**/*.md"
-  workflow_dispatch: # Manual trigger
+  workflow_dispatch:
 
-# Cancel in-progress runs on new commits to same PR
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-# Add permissions needed for creating PRs and pushing code
 permissions:
   contents: write
   pull-requests: write
@@ -26,81 +24,61 @@ permissions:
 jobs:
   translate:
     runs-on: ubuntu-latest
-    timeout-minutes: 360 # 6 hours max runtime
+    timeout-minutes: 360
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Required for creating PR
-          token: ${{ secrets.GITHUB_TOKEN }} # Use token with permissions
+          fetch-depth: 0
 
       - name: Setup Git
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          # Configure Git to automatically resolve conflicts in favor of our changes
           git config pull.rebase false
-          git config merge.conflictstyle diff3
-          git config merge.ours.driver "true"
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - name: Setup Node.js (20.x)
+        uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: "20.15.0"
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
-          version: 8
+          version: 10.14.0
 
       - name: Install dependencies
         run: pnpm install
         working-directory: docs
 
-      - name: Update translations
+      - name: Run translation update
         id: translate
-        timeout-minutes: 300 # 5 hours max for translation step
-        run: |
-          echo "Starting translation process..."
-          # Create a new branch for translations
-          git checkout -B chore/update-translations
-          # Reset any unstaged changes to avoid conflicts
-          git clean -fd
-          git reset --hard
-          # Run translation update
-          pnpm translate:ci --update # todo put --all back 
-          # Stage all changes
-          git add -A
-          # Commit if there are changes
-          if ! git diff --staged --quiet; then
-            git commit -m "chore: update translations" --allow-empty
-            # Force push to ensure our changes take precedence
-            git push origin chore/update-translations --force
-            echo "changes_made=true" >> $GITHUB_OUTPUT
-          else
-            echo "No translation changes to commit"
-            echo "changes_made=false" >> $GITHUB_OUTPUT
-          fi
-          echo "Translation completed"
-        working-directory: docs
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          NODE_OPTIONS: "--max-old-space-size=8192" # Increase Node.js memory limit to 8GB
+          NODE_OPTIONS: "--max-old-space-size=8192"
+        run: |
+          echo "Starting translation process..."
+          # Run your updater; do NOT create/push branches here.
+          pnpm --filter=b3-docs translate:ci --update
 
-      - name: Create Pull Request
-        if: success() && steps.translate.outputs.changes_made == 'true'
+          # Detect changes limited to docs/
+          if git status --porcelain docs | grep -E '^(M|A|\?\?)' >/dev/null 2>&1; then
+            echo "changes_made=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changes_made=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create / Update PR
+        if: steps.translate.outputs.changes_made == 'true'
         uses: peter-evans/create-pull-request@v5
         with:
-          commit-message: "chore: update translations"
           title: "chore: update translations"
+          commit-message: "chore: update translations"
           body: |
-            Automated translation update
+            Automated translation update.
 
-            This PR was automatically created by the translation workflow.
-            - Triggered by: ${{ github.event_name }}
-            - Source branch: ${{ github.ref_name }}
-          base: ${{ github.event.pull_request.base.ref || 'main' }} # Use PR's base branch or default to main
-          branch: "chore/update-translations"
-          delete-branch: true # Delete branch after merge
-          labels: |
-            automated
-            translations
+            Trigger: ${{ github.event_name }}
+          base: main
+          branch: chore/update-translations
+          delete-branch: false
+          add-paths: |
+            docs/**
