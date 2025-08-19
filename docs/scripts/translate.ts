@@ -426,39 +426,52 @@ async function main() {
     console.log(`Processing: ${processAllFiles ? "ALL FILES" : `${CONFIG.batchSize} file(s)`}`);
     console.log(`Update mode: ${updateMode ? "ON" : "OFF"}`);
 
-    // First, translate the navigation
+    // First, translate the navigation for all languages
     for (const language of CONFIG.languages) {
       await translateNavigation(language);
     }
 
-    // Then process the documentation files
+    // Then process the documentation files for each language
     const filesToProcess = processAllFiles ? files : files.slice(0, CONFIG.batchSize);
 
-    let processedCount = 0;
-    let skippedCount = 0;
+    let totalProcessed = 0;
+    let totalSkipped = 0;
 
-    for (const file of filesToProcess) {
-      console.log(`\nProcessing file: ${file}`);
-      const relativePath = path.relative(CONFIG.docsContentDir, file);
+    // Process each language independently
+    for (const language of CONFIG.languages) {
+      console.log(`\nProcessing language: ${language}`);
+      let processedCount = 0;
+      let skippedCount = 0;
 
-      // Skip files that are already in language directories
-      if (CONFIG.languages.some(lang => relativePath.startsWith(lang + "/"))) {
-        console.log(`Skipping already translated file: ${relativePath}`);
-        skippedCount++;
-        continue;
+      for (const file of filesToProcess) {
+        console.log(`\nProcessing file: ${file}`);
+        const relativePath = path.relative(CONFIG.docsContentDir, file);
+
+        // Skip files that are already in language directories
+        if (CONFIG.languages.some(lang => relativePath.startsWith(lang + "/"))) {
+          console.log(`Skipping already translated file: ${relativePath}`);
+          skippedCount++;
+          continue;
+        }
+
+        const targetPath = path.join(CONFIG.docsContentDir, language, relativePath);
+
+        if (await shouldTranslateFile(file, targetPath)) {
+          await processFile(file, language);
+          processedCount++;
+          totalProcessed++;
+        } else {
+          skippedCount++;
+          totalSkipped++;
+        }
       }
 
-      const targetPath = path.join(CONFIG.docsContentDir, "es", relativePath);
-
-      if (await shouldTranslateFile(file, targetPath)) {
-        await processFile(file, "es");
-        processedCount++;
-      } else {
-        skippedCount++;
-      }
+      console.log(`\nLanguage ${language} summary:`);
+      console.log(`- Processed: ${processedCount} files`);
+      console.log(`- Skipped: ${skippedCount} files`);
     }
 
-    totalTimer.log(`completed all translations (${processedCount} processed, ${skippedCount} skipped)`);
+    totalTimer.log(`completed all translations (${totalProcessed} processed, ${totalSkipped} skipped)`);
   } catch (error) {
     console.error("Translation failed:", error);
     process.exit(1);
