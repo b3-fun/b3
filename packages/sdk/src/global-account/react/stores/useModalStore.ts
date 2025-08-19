@@ -291,6 +291,15 @@ export interface AnySpendBondKitProps extends BaseModalProps {
   onSuccess?: (txHash?: string) => void;
 }
 
+export interface LinkAccountModalProps extends BaseModalProps {
+  type: "linkAccount";
+  showBackButton?: boolean;
+  onSuccess?: () => void;
+  onError?: (error: Error) => void;
+  partnerId: string;
+  chain: Chain;
+}
+
 /**
  * Union type of all possible modal content types
  */
@@ -308,7 +317,8 @@ export type ModalContentType =
   | AnySpendStakeB3Props
   | AnySpendBuySpinProps
   | AnySpendSignatureMintProps
-  | AnySpendBondKitProps;
+  | AnySpendBondKitProps
+  | LinkAccountModalProps;
 // Add other modal types here like: | OtherModalProps | AnotherModalProps
 
 /**
