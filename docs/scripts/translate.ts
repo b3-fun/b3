@@ -5,7 +5,7 @@ import matter from "gray-matter";
 import { OpenAI } from "openai";
 import * as path from "path";
 
-// Performance logging utility
+// Performance logging utility - trigger cache
 class Timer {
   private startTime: number;
   private name: string;
