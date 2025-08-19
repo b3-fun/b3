@@ -1,0 +1,43 @@
+name: Update Translations
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**/*.mdx"
+      - "docs/**/*.md"
+  workflow_dispatch: # Manual trigger
+
+jobs:
+  translate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install
+        working-directory: docs
+
+      - name: Update translations
+        run: pnpm translate --all --update
+        working-directory: docs
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          commit-message: "chore: update translations"
+          title: "chore: update translations"
+          body: "Automated translation update"
+          branch: "chore/update-translations"
