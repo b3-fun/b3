@@ -52,12 +52,15 @@ jobs:
         timeout-minutes: 300 # 5 hours max for translation step
         run: |
           echo "Starting translation process..."
-          # Reset any unstaged changes to avoid conflicts
-          git checkout -- .
+          # Reset any unstaged changes and untracked files
+          git clean -fd
+          git reset --hard
           # Run translation update
           pnpm translate:ci --update # todo put --all back 
-          # Stage any new or modified files in language directories
-          git add es/ pt-BR/ id/ ko/ cn/
+          # Force add any new or modified files in language directories
+          git add -f es/ pt-BR/ id/ ko/ cn/ || true
+          # Remove any files that were deleted
+          git add -u es/ pt-BR/ id/ ko/ cn/
           # Commit if there are changes
           if ! git diff --staged --quiet; then
             git commit -m "chore: update translations"
