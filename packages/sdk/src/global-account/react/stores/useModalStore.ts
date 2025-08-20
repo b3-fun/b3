@@ -305,6 +305,23 @@ export interface LinkAccountModalProps extends BaseModalProps {
   chain: Chain;
 }
 
+export interface AnySpendDepositHypeProps extends BaseModalProps {
+  /** Modal type identifier */
+  type: "anySpendDepositHype";
+  /** Recipient address to receive the tokens */
+  recipientAddress: string;
+  /** Destination token address */
+  sourceTokenAddress?: string;
+  /** Source token chain ID */
+  sourceTokenChainId?: number;
+  /** Payment type - crypto or fiat */
+  paymentType?: "crypto" | "fiat";
+  /** Deposit contract address */
+  depositContractAddress: string;
+  /** Callback function called when the deposit is successful */
+  onSuccess?: () => void;
+}
+
 /**
  * Union type of all possible modal content types
  */
@@ -323,7 +340,8 @@ export type ModalContentType =
   | AnySpendBuySpinProps
   | AnySpendSignatureMintProps
   | AnySpendBondKitProps
-  | LinkAccountModalProps;
+  | LinkAccountModalProps
+  | AnySpendDepositHypeProps;
 // Add other modal types here like: | OtherModalProps | AnotherModalProps
 
 /**
