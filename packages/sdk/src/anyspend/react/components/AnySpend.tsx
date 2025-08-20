@@ -40,7 +40,7 @@ import { OrderStatus } from "./common/OrderStatus";
 import { PanelOnramp } from "./common/PanelOnramp";
 import { PanelOnrampPayment } from "./common/PanelOnrampPayment";
 import { PaySection } from "./common/PaySection";
-import { ReceiveSection } from "./common/ReceiveSection";
+import { CryptoReceiveSection } from "./common/ReceiveSection";
 import { RecipientSelection } from "./common/RecipientSelection";
 import { TabSection } from "./common/TabSection";
 
@@ -931,9 +931,8 @@ function AnySpendInner({
         </Button>
 
         {/* Receive section - Hidden when fiat tab is active */}
-        {activeTab !== "fiat" && (
-          <ReceiveSection
-            paymentType="crypto"
+        {activeTab === "crypto" && (
+          <CryptoReceiveSection
             isDepositMode={false}
             isBuyMode={isBuyMode}
             selectedRecipientAddress={recipientAddress}
@@ -949,7 +948,6 @@ function AnySpendInner({
               setDstAmount(value);
             }}
             anyspendQuote={anyspendQuote}
-            _globalAddress={globalAddress}
           />
         )}
       </div>

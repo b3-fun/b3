@@ -15,7 +15,7 @@ import { FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaym
 import { OrderDetails } from "./common/OrderDetails";
 import { OrderStatus } from "./common/OrderStatus";
 import { PaySection } from "./common/PaySection";
-import { ReceiveSection } from "./common/ReceiveSection";
+import { CryptoReceiveSection } from "./common/ReceiveSection";
 import { RecipientSelection } from "./common/RecipientSelection";
 
 import { ESCROW_ABI } from "@b3dotfun/sdk/anyspend/abis/escrow";
@@ -453,8 +453,7 @@ function AnySpendDepositHypeInner({
 
                     {/* Receive section - Hidden when fiat tab is active */}
                     {paymentType === "crypto" && (
-                      <ReceiveSection
-                        paymentType="crypto"
+                      <CryptoReceiveSection
                         isDepositMode={false}
                         isBuyMode={isBuyMode}
                         selectedRecipientAddress={recipientAddress}
@@ -470,7 +469,6 @@ function AnySpendDepositHypeInner({
                           setSrcAmount(value);
                         }}
                         anyspendQuote={anyspendQuote}
-                        _globalAddress={globalAddress}
                       />
                     )}
                   </div>

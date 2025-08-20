@@ -7,8 +7,7 @@ import { motion } from "motion/react";
 import { components } from "../../../types/api";
 import { OrderTokenAmount } from "./OrderTokenAmount";
 
-interface ReceiveSectionProps {
-  paymentType: "crypto" | "fiat";
+interface CryptoReceiveSectionProps {
   isDepositMode?: boolean;
   isBuyMode?: boolean;
   // Recipient data
@@ -25,11 +24,9 @@ interface ReceiveSectionProps {
   onChangeDstAmount?: (value: string) => void;
   // Quote data
   anyspendQuote?: any;
-  _globalAddress?: string;
 }
 
-export function ReceiveSection({
-  paymentType,
+export function CryptoReceiveSection({
   isDepositMode = false,
   isBuyMode = false,
   selectedRecipientAddress,
@@ -42,71 +39,7 @@ export function ReceiveSection({
   setSelectedDstToken,
   onChangeDstAmount,
   anyspendQuote,
-  _globalAddress,
-}: ReceiveSectionProps) {
-  if (paymentType === "fiat") {
-    /* Fiat recipient section like PanelOnramp */
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-        transition={{ duration: 0.3, delay: 0.1, ease: "easeInOut" }}
-        className="bg-as-surface-secondary border-as-border-secondary mt-4 flex w-full flex-col gap-3 rounded-xl border p-4"
-      >
-        <div className="flex w-full items-center justify-between gap-2">
-          <span className="text-as-tertiarry flex items-center text-sm">Recipient</span>
-          {selectedRecipientAddress ? (
-            <button
-              className="text-as-tertiarry flex h-7 items-center gap-1 text-sm transition-colors"
-              onClick={onSelectRecipient}
-            >
-              <span className="text-sm">
-                {recipientName ? formatUsername(recipientName) : shortenAddress(selectedRecipientAddress)}
-              </span>
-              <ChevronRight size={16} />
-            </button>
-          ) : (
-            <button
-              className="text-as-tertiarry flex h-7 items-center gap-1 text-sm transition-colors"
-              onClick={onSelectRecipient}
-            >
-              Select recipient
-              <ChevronRight size={16} />
-            </button>
-          )}
-        </div>
-
-        <div className="divider w-full" />
-
-        <div className="flex items-center justify-between">
-          <span className="text-as-tertiarry text-sm">Expected to receive</span>
-          <div className="flex items-center gap-2">
-            <span className="text-as-primary font-semibold">
-              {dstAmount || "0"} {dstToken.symbol}
-            </span>
-            <span className="text-as-tertiarry text-sm">on Base</span>
-            {dstToken.metadata?.logoURI && (
-              <img src={dstToken.metadata.logoURI} alt={dstToken.symbol} className="h-4 w-4 rounded-full" />
-            )}
-          </div>
-        </div>
-
-        <div className="divider w-full" />
-
-        <div className="flex items-center justify-between">
-          <span className="text-as-tertiarry text-sm">Total</span>
-          <span className="text-as-tertiarry text-sm">
-            {formatDisplayNumber(anyspendQuote?.data?.currencyOut?.amountUsd, {
-              style: "currency",
-              fallback: "",
-            })}
-          </span>
-        </div>
-      </motion.div>
-    );
-  }
-
-  /* Crypto receive section */
+}: CryptoReceiveSectionProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
