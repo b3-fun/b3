@@ -23,12 +23,19 @@ export function DepositHypeButton() {
     }
 
     try {
+      if (!process.env.NEXT_PUBLIC_BETTING_ESCROW) {
+        alert("NEXT_PUBLIC_BETTING_ESCROW is not set");
+        return;
+      }
       setIsModalOpen(false); // Close input modal first
       setB3ModalOpen(true);
       setB3ModalContentType({
         type: "anySpendDepositHype",
         recipientAddress: recipientAddress,
         paymentType: paymentType,
+        sourceTokenAddress: "0x0000000000000000000000000000000000000000",
+        sourceTokenChainId: 8453,
+        depositContractAddress: process.env.NEXT_PUBLIC_BETTING_ESCROW as `0x${string}`,
       });
     } catch (error) {
       alert("Please enter a valid deposit amount");

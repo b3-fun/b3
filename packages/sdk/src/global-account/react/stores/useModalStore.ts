@@ -310,10 +310,14 @@ export interface AnySpendDepositHypeProps extends BaseModalProps {
   type: "anySpendDepositHype";
   /** Recipient address to receive the tokens */
   recipientAddress: string;
-  /** Deposit amount */
-  depositAmount?: string;
+  /** Destination token address */
+  sourceTokenAddress?: string;
+  /** Source token chain ID */
+  sourceTokenChainId?: number;
   /** Payment type - crypto or fiat */
   paymentType?: "crypto" | "fiat";
+  /** Deposit contract address */
+  depositContractAddress: string;
   /** Callback function called when the deposit is successful */
   onSuccess?: () => void;
 }

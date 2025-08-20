@@ -6,6 +6,7 @@ import {
   useAnyspendQuote,
   useGeoOnrampOptions,
 } from "@b3dotfun/sdk/anyspend/react";
+import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
 import { useAccountWallet, useProfile } from "@b3dotfun/sdk/global-account/react";
 import { formatTokenAmount, formatUnits } from "@b3dotfun/sdk/shared/utils/number";
 import { useEffect, useState } from "react";
@@ -32,6 +33,8 @@ interface UseAnyspendFlowProps {
   isDepositMode?: boolean;
   onOrderSuccess?: (orderId: string) => void;
   onTransactionSuccess?: () => void;
+  sourceTokenAddress?: string;
+  sourceTokenChainId?: number;
 }
 
 export function useAnyspendFlow({
@@ -41,14 +44,18 @@ export function useAnyspendFlow({
   isDepositMode = false,
   onOrderSuccess,
   onTransactionSuccess,
+  sourceTokenAddress,
+  sourceTokenChainId,
 }: UseAnyspendFlowProps) {
   // Panel and order state
   const [activePanel, setActivePanel] = useState<PanelView>(loadOrder ? PanelView.ORDER_DETAILS : PanelView.MAIN);
   const [orderId, setOrderId] = useState<string | undefined>(loadOrder);
   const { orderAndTransactions: oat } = useAnyspendOrderAndTransactions(orderId);
 
-  // Token selection state
-  const [selectedSrcChainId, setSelectedSrcChainId] = useState<number>(paymentType === "fiat" ? base.id : mainnet.id);
+  // Token selection state - use provided sourceTokenChainId if available
+  const [selectedSrcChainId, setSelectedSrcChainId] = useState<number>(
+    sourceTokenChainId || (paymentType === "fiat" ? base.id : mainnet.id),
+  );
   const [selectedDstChainId, setSelectedDstChainId] = useState<number>(base.id); // Default to Base for cross-chain swaps
   const defaultSrcToken = paymentType === "fiat" ? USDC_BASE : getDefaultToken(selectedSrcChainId);
   const [selectedSrcToken, setSelectedSrcToken] = useState<components["schemas"]["Token"]>(defaultSrcToken);
@@ -74,6 +81,24 @@ export function useAnyspendFlow({
       setSelectedRecipientAddress(globalAddress);
     }
   }, [selectedRecipientAddress, globalAddress]);
+
+  // Fetch specific token when sourceTokenAddress and sourceTokenChainId are provided
+  useEffect(() => {
+    const fetchSourceToken = async () => {
+      if (sourceTokenAddress && sourceTokenChainId) {
+        try {
+          const token = await anyspendService.getToken(sourceTokenChainId, sourceTokenAddress);
+          setSelectedSrcToken(token);
+        } catch (error) {
+          console.error("Failed to fetch source token:", error);
+          toast.error(`Failed to load token ${sourceTokenAddress} on chain ${sourceTokenChainId}`);
+          // Keep the default token on error
+        }
+      }
+    };
+
+    fetchSourceToken();
+  }, [sourceTokenAddress, sourceTokenChainId]);
 
   // Helper function for onramp vendor mapping
   const getOnrampVendor = (paymentMethod: FiatPaymentMethod): "coinbase" | "stripe" | "stripe-web2" | undefined => {

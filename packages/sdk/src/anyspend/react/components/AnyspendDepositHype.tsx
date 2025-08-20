@@ -22,8 +22,6 @@ import { ESCROW_ABI } from "@b3dotfun/sdk/anyspend/abis/escrow";
 import { ArrowDown } from "lucide-react";
 import { PanelOnramp } from "./common/PanelOnramp";
 
-const DEPOSIT_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_BETTING_ESCROW as `0x${string}`;
-
 function generateEncodedDataForDepositHype(amount: string, beneficiary: string): string {
   invariant(BigInt(amount) > 0, "Amount must be greater than zero");
   const encodedData = encodeFunctionData({
@@ -39,9 +37,10 @@ export function AnySpendDepositHype(props: {
   mode?: "modal" | "page";
   recipientAddress: string;
   paymentType?: "crypto" | "fiat";
-  destinationTokenAddress?: string;
-  destinationTokenChainId?: number;
+  sourceTokenAddress?: string;
+  sourceTokenChainId?: number;
   onSuccess?: () => void;
+  depositContractAddress?: string;
 }) {
   const fingerprintConfig = getFingerprintConfig();
 
@@ -57,17 +56,19 @@ function AnySpendDepositHypeInner({
   mode = "modal",
   recipientAddress,
   paymentType = "crypto",
-  destinationTokenAddress,
-  destinationTokenChainId,
+  sourceTokenAddress,
+  sourceTokenChainId,
   onSuccess,
+  depositContractAddress,
 }: {
   loadOrder?: string;
   mode?: "modal" | "page";
   recipientAddress: string;
   paymentType?: "crypto" | "fiat";
-  destinationTokenAddress?: string;
-  destinationTokenChainId?: number;
+  sourceTokenAddress?: string;
+  sourceTokenChainId?: number;
   onSuccess?: () => void;
+  depositContractAddress?: string;
 }) {
   // Use shared flow hook
   const {
@@ -108,10 +109,9 @@ function AnySpendDepositHypeInner({
     loadOrder,
     isDepositMode: true,
     onTransactionSuccess: onSuccess,
+    sourceTokenAddress,
+    sourceTokenChainId,
   });
-
-  // Determine if we're in "buy mode" based on whether destination token props are provided
-  const isBuyMode = !!(destinationTokenAddress && destinationTokenChainId);
 
   // Button state logic
   const btnInfo: { text: string; disable: boolean; error: boolean } = useMemo(() => {
@@ -190,6 +190,7 @@ function AnySpendDepositHypeInner({
     try {
       invariant(anyspendQuote, "Relay price is not found");
       invariant(selectedRecipientAddress, "Recipient address is not found");
+      invariant(depositContractAddress, "Deposit contract address is not found");
 
       const srcAmountBigInt = BigInt(activeInputAmountInWei);
       const depositAmountWei = anyspendQuote.data?.currencyOut?.amount || "0";
@@ -207,7 +208,7 @@ function AnySpendDepositHypeInner({
         payload: {
           amount: depositAmountWei,
           data: encodedData,
-          to: DEPOSIT_CONTRACT_ADDRESS,
+          to: depositContractAddress,
           action: "deposit HYPE",
         },
       });
@@ -222,6 +223,7 @@ function AnySpendDepositHypeInner({
     try {
       invariant(anyspendQuote, "Relay price is not found");
       invariant(selectedRecipientAddress, "Recipient address is not found");
+      invariant(depositContractAddress, "Deposit contract address is not found");
 
       if (!srcAmount || parseFloat(srcAmount) <= 0) {
         toast.error("Please enter a valid amount");
@@ -271,7 +273,7 @@ function AnySpendDepositHypeInner({
         payload: {
           amount: depositAmountWei,
           data: encodedData,
-          to: DEPOSIT_CONTRACT_ADDRESS,
+          to: depositContractAddress,
           action: "deposit HYPE",
         },
       });
@@ -441,8 +443,7 @@ function AnySpendDepositHypeInner({
                     <Button
                       variant="ghost"
                       className={cn(
-                        "swap-direction-button border-as-stroke bg-as-surface-primary absolute left-1/2 top-1/2 z-10 h-10 w-10 -translate-x-1/2 -translate-y-1/2 cursor-default rounded-xl border-2 sm:h-8 sm:w-8 sm:rounded-xl",
-                        isBuyMode && "top-[calc(50%+56px)] cursor-default",
+                        "swap-direction-button border-as-stroke bg-as-surface-primary absolute left-1/2 top-[calc(50%+56px)] z-10 h-10 w-10 -translate-x-1/2 -translate-y-1/2 cursor-default rounded-xl border-2 sm:h-8 sm:w-8 sm:rounded-xl",
                         paymentType === "fiat" && "hidden",
                       )}
                     >
@@ -455,7 +456,7 @@ function AnySpendDepositHypeInner({
                     {paymentType === "crypto" && (
                       <CryptoReceiveSection
                         isDepositMode={false}
-                        isBuyMode={isBuyMode}
+                        isBuyMode={true}
                         selectedRecipientAddress={recipientAddress}
                         recipientName={recipientName || undefined}
                         onSelectRecipient={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
