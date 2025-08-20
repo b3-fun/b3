@@ -7,7 +7,6 @@ export function DepositHypeButton() {
   const { address } = useAccountWallet();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [depositAmount, setDepositAmount] = useState("");
   const [recipientAddress, setRecipientAddress] = useState(address || "");
   const [paymentType, setPaymentType] = useState<"crypto" | "fiat">("crypto");
 
@@ -38,7 +37,6 @@ export function DepositHypeButton() {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setDepositAmount("");
     setRecipientAddress(address || "");
   };
 
