@@ -12,6 +12,7 @@ import { AnySpendDepositHype } from "@b3dotfun/sdk/anyspend/react/components/Any
 import { useIsMobile, useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
+import { AvatarCreator } from "./AvatarCreator/AvatarCreator";
 import { useB3 } from "./B3Provider/useB3";
 import { LinkAccount } from "./LinkAccount/LinkAccount";
 import { ManageAccount } from "./ManageAccount/ManageAccount";
@@ -40,6 +41,8 @@ export function B3DynamicModal() {
     "anySpendSignatureMint",
     "anySpendBondKit",
     "linkAccount",
+    "anySpendDepositHype",
+    "avatarEditor",
   ];
 
   const freestyleTypes = [
@@ -102,6 +105,8 @@ export function B3DynamicModal() {
         return <LinkAccount {...contentType} />;
       case "anySpendDepositHype":
         return <AnySpendDepositHype {...contentType} mode="modal" />;
+      case "avatarEditor":
+        return <AvatarCreator onSetAvatar={contentType.onSuccess} />;
       // Add other modal types here
       default:
         return null;
