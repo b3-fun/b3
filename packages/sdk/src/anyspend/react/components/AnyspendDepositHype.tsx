@@ -264,8 +264,7 @@ function AnySpendDepositHypeInner({
           vendor: vendor,
           paymentMethod: paymentMethodString,
           country: geoData?.country || "US",
-          redirectUrl:
-            window.location.origin === "https://basement.fun" ? "https://basement.fun/deposit" : window.location.origin,
+          redirectUrl: window.location.origin,
         },
         expectedDstAmount: anyspendQuote?.data?.currencyOut?.amount?.toString() || "0",
         creatorAddress: globalAddress,
