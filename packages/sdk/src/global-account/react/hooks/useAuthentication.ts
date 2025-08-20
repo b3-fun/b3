@@ -1,4 +1,5 @@
 import app from "@b3dotfun/sdk/global-account/app";
+import { authenticateWithB3JWT } from "@b3dotfun/sdk/global-account/bsmnt";
 import { useAuthStore, useB3 } from "@b3dotfun/sdk/global-account/react";
 import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { b3MainnetThirdWeb } from "@b3dotfun/sdk/shared/constants/chains/supported";
@@ -57,6 +58,10 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
           setUser(userAuth.user);
           setIsAuthenticated(true);
           debug("Re-authenticated successfully", { userAuth });
+
+          // Authenticate on BSMNT with B3 JWT
+          const b3Jwt = await authenticateWithB3JWT(userAuth.accessToken);
+          console.log("@@b3Jwt", b3Jwt);
         } catch (error) {
           // If re-authentication fails, try fresh authentication
           debug("Re-authentication failed, attempting fresh authentication");
@@ -64,6 +69,10 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
           setUser(userAuth.user);
           setIsAuthenticated(true);
           debug("Fresh authentication successful", { userAuth });
+
+          // Authenticate on BSMNT with B3 JWT
+          const b3Jwt = await authenticateWithB3JWT(userAuth.accessToken);
+          console.log("@@b3Jwt", b3Jwt);
         }
       } catch (error) {
         debug("Auto-connect authentication failed", { error });

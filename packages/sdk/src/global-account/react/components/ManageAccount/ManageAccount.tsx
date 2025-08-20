@@ -107,6 +107,18 @@ export function ManageAccount({
 
   const BalanceContent = () => {
     const { info: eoaInfo } = useFirstEOA();
+    const { setB3ModalOpen, setB3ModalContentType } = useModalStore();
+
+    const handleEditAvatar = () => {
+      setB3ModalOpen(true);
+      setB3ModalContentType({
+        type: "avatarEditor",
+        showBackButton: true,
+        onSuccess: () => {
+          alert("Avatar update success - WIP");
+        },
+      });
+    };
 
     return (
       <div className="flex flex-col gap-6">
@@ -119,9 +131,12 @@ export function ManageAccount({
               ) : (
                 <div className="bg-b3-primary-wash size-24 rounded-full" />
               )}
-              <div className="bg-b3-grey border-b3-background absolute -bottom-1 -right-1 flex size-8 items-center justify-center rounded-full border-4">
+              <button
+                onClick={handleEditAvatar}
+                className="bg-b3-grey border-b3-background absolute -bottom-1 -right-1 flex size-8 items-center justify-center rounded-full border-4"
+              >
                 <Pencil size={16} className="text-b3-background" />
-              </div>
+              </button>
             </div>
             <div>
               <h2 className="text-b3-grey text-xl font-semibold">

@@ -305,6 +305,13 @@ export interface LinkAccountModalProps extends BaseModalProps {
   chain: Chain;
 }
 
+export interface AvatarEditorModalProps extends BaseModalProps {
+  /** Modal type identifier */
+  type: "avatarEditor";
+  /** Callback function called when avatar is successfully set */
+  onSuccess?: () => void;
+}
+
 /**
  * Union type of all possible modal content types
  */
@@ -323,7 +330,8 @@ export type ModalContentType =
   | AnySpendBuySpinProps
   | AnySpendSignatureMintProps
   | AnySpendBondKitProps
-  | LinkAccountModalProps;
+  | LinkAccountModalProps
+  | AvatarEditorModalProps;
 // Add other modal types here like: | OtherModalProps | AnotherModalProps
 
 /**
