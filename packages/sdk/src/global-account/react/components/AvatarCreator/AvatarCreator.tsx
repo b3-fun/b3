@@ -51,7 +51,7 @@ export function AvatarCreator({ onSetAvatar, className }: AvatarCreatorProps) {
         hasAvatar ? "Nice look! Your avatar has been updated!" : "Looks great! Your avatar has been saved!",
       );
       onSetAvatar?.();
-      await refetchRPMToken();
+      await refetchRPMToken(undefined);
     } catch (e) {
       debug("@@error:AvatarCreator", e);
       toast.error("Failed to update avatar. Please try again.");
