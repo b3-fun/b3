@@ -8,7 +8,7 @@ import { B3_AUTH_COOKIE_NAME } from "../shared/constants";
 const B3_API_URL =
   process.env.EXPO_PUBLIC_B3_API || process.env.NEXT_PUBLIC_B3_API || process.env.PUBLIC_B3_API || "https://api.b3.fun";
 
-const socket = io(B3_API_URL);
+const socket = io(B3_API_URL, { transports: ["websocket"] });
 
 class MyAuthenticationClient extends AuthenticationClient {
   getFromLocation(location: any) {
