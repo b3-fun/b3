@@ -20,12 +20,10 @@ import {
   useTokenData,
   useTokenFromUrl,
 } from "@b3dotfun/sdk/global-account/react";
-import { formatUsername } from "@b3dotfun/sdk/shared/utils";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
-import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
-import { formatDisplayNumber, formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
+import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import invariant from "invariant";
-import { ArrowDown, ChevronRight, CircleAlert, HistoryIcon } from "lucide-react";
+import { ArrowDown, HistoryIcon } from "lucide-react";
 import { motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -34,15 +32,17 @@ import { base, mainnet } from "viem/chains";
 import { components } from "../../types/api";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
 import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPaymentMethod";
+import { ErrorSection } from "./common/ErrorSection";
 import { FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaymentMethod";
 import { OrderDetails, OrderDetailsLoadingView } from "./common/OrderDetails";
 import { OrderHistory } from "./common/OrderHistory";
 import { OrderStatus } from "./common/OrderStatus";
-import { OrderTokenAmount } from "./common/OrderTokenAmount";
 import { PanelOnramp } from "./common/PanelOnramp";
 import { PanelOnrampPayment } from "./common/PanelOnrampPayment";
+import { PaySection } from "./common/PaySection";
+import { ReceiveSection } from "./common/ReceiveSection";
 import { RecipientSelection } from "./common/RecipientSelection";
-import { TokenBalance } from "./common/TokenBalance";
+import { TabSection } from "./common/TabSection";
 
 export interface RecipientOption {
   address: string;
@@ -397,8 +397,7 @@ function AnySpendInner({
   // State for recipient selection
   const [recipientAddress, setRecipientAddress] = useState<string | undefined>();
 
-  const { address: globalAddress, wallet: globalWallet, ensName: connectedName } = useAccountWallet();
-  const connectedAddress = globalWallet?.address;
+  const { address: globalAddress, wallet: globalWallet } = useAccountWallet();
   const recipientProfile = useProfile({ address: recipientAddress, fresh: true });
   const recipientName = recipientProfile.data?.name;
 
@@ -479,125 +478,6 @@ function AnySpendInner({
     }
     // Only run this effect once on mount
   }, [globalAddress, recipientAddress, customRecipients.length]);
-
-  // Available recipient options
-  // const recipientOptions = useMemo<RecipientOption[]>(() => {
-  //   const options: RecipientOption[] = [];
-
-  //   // Add current wallet if connected
-  //   if (globalAddress) {
-  //     options.push({
-  //       address: globalAddress,
-  //       icon: "https://gradvatar.com/" + globalAddress,
-  //       label: "Current Wallet",
-  //       ensName: walletName
-  //     });
-  //   }
-
-  //   // Add custom recipients with their onchain names
-  //   customRecipients.forEach((recipient, index) => {
-  //     options.push({
-  //       ...recipient,
-  //       ensName: customRecipientNames[index] || undefined
-  //     });
-  //   });
-
-  //   // Add current recipientAddress if it exists and isn't already in options
-  //   if (
-  //     recipientAddress &&
-  //     !options.some(opt => normalizeAddress(opt.address) === normalizeAddress(recipientAddress))
-  //   ) {
-  //     options.push({
-  //       address: recipientAddress,
-  //       label: `Custom (${centerTruncate(recipientAddress, 6)})`,
-  //       ensName: recipientName
-  //     });
-  //   }
-
-  //   return options;
-  // }, [globalAddress, customRecipients, recipientAddress, recipientName, walletName, customRecipientNames]);
-
-  // const handleCreateOrder = async (recipientAddress: string) => {
-  //   try {
-  //     invariant(anyspendPrice, "Relay price is not found");
-  //     const srcAmountBigInt = parseUnits(srcAmount.replace(/,/g, ""), selectedSrcToken.decimals);
-
-  //     createOrder({
-  //       recipientAddress,
-  //       orderType: "swap",
-  //       srcChain: selectedSrcChainId,
-  //       dstChain: selectedDstChainId,
-  //       srcToken: selectedSrcToken,
-  //       dstToken: selectedDstToken,
-  //       srcAmount: srcAmountBigInt.toString(),
-  //       expectedDstAmount: anyspendPrice?.data?.currencyOut?.amount || "0"
-  //     });
-  //   } catch (err) {
-  //     console.error(err);
-  //     toast.error((err as Error).message);
-  //     throw err; // Re-throw to handle in the calling function
-  //   }
-  // };
-
-  // const handleSaveRecipient = async () => {
-  //   if (!newRecipientAddress) {
-  //     toast.error("Please enter an address");
-  //     recipientInputRef.current?.focus();
-  //     return;
-  //   }
-
-  //   let normalizedAddress: string;
-
-  //   try {
-  //     // Handle ENS name
-  //     if (
-  //       newRecipientAddress.toLowerCase().endsWith(".eth") ||
-  //       newRecipientAddress.startsWith("@") ||
-  //       newRecipientAddress.includes(".b3")
-  //     ) {
-  //       if (!resolvedAddress) {
-  //         toast.error("Could not resolve ENS name");
-  //         return;
-  //       }
-  //       normalizedAddress = getAddress(resolvedAddress);
-  //     }
-  //     // Handle regular address
-  //     else {
-  //       if (!isEvmOrSolanaAddress(newRecipientAddress)) {
-  //         toast.error("Please enter a valid address or ENS name");
-  //         recipientInputRef.current?.focus();
-  //         return;
-  //       }
-  //       normalizedAddress = normalizeAddress(newRecipientAddress);
-  //     }
-
-  //     // Check for duplicate address
-  //     if (!customRecipients.some(r => normalizeAddress(r.address) === normalizedAddress)) {
-  //       // Add to custom recipients
-  //       const newRecipient = {
-  //         address: normalizedAddress,
-  //         label:
-  //           newRecipientAddress.toLowerCase().endsWith(".eth") ||
-  //           newRecipientAddress.startsWith("@") ||
-  //           newRecipientAddress.includes(".b3")
-  //             ? newRecipientAddress // Keep ENS name as label
-  //             : `Custom (${centerTruncate(normalizedAddress, 6)})`
-  //       };
-  //       setCustomRecipients(prev => [...prev, newRecipient]);
-  //     }
-  //     setRecipientAddress(normalizedAddress);
-
-  //     // Handle based on login state
-  //     if (!globalAddress) {
-  //       await handleCreateOrder(normalizedAddress);
-  //     } else {
-  //       setActivePanel(PanelView.MAIN);
-  //     }
-  //   } catch (err) {
-  //     // Error handling is done in handleCreateOrder
-  //     console.error("Error in handleSaveRecipient:", err);
-  //   }
-  // };
 
   // Update dependent amount when relay price changes
   useEffect(() => {
@@ -913,35 +793,6 @@ function AnySpendInner({
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [activePanel]);
 
-  const calculatePriceImpact = (inputUsd?: string | number, outputUsd?: string | number) => {
-    if (!inputUsd || !outputUsd) {
-      return { percentage: "0.00", isNegative: false };
-    }
-
-    const input = Number(inputUsd);
-    const output = Number(outputUsd);
-
-    // Handle edge cases
-    if (input === 0 || isNaN(input) || isNaN(output) || input <= output) {
-      return { percentage: "0.00", isNegative: false };
-    }
-
-    const percentageValue = ((output - input) / input) * 100;
-
-    // Handle the -0.00% case
-    if (percentageValue > -0.005 && percentageValue < 0) {
-      return { percentage: "0.00", isNegative: false };
-    }
-
-    return {
-      percentage: Math.abs(percentageValue).toFixed(2),
-      isNegative: percentageValue < 0,
-    };
-  };
-
-  // Add state for rate details toggle
-  // const [showRateDetails, setShowRateDetails] = useState(false);
-
   const historyView = (
     <div className={"mx-auto flex w-[560px] max-w-full flex-col items-center"}>
       <OrderHistory mode={mode} onBack={() => setActivePanel(PanelView.MAIN)} onSelectOrder={onSelectOrder} />
@@ -995,121 +846,31 @@ function AnySpendInner({
       )}
 
       {/* Tab section */}
-      <div className="w-full">
-        <div className="bg-as-surface-secondary relative mb-4 grid h-10 grid-cols-2 rounded-xl">
-          <div
-            className={cn(
-              "bg-as-brand absolute bottom-0 left-0 top-0 z-0 rounded-xl transition-transform duration-100",
-              "h-full w-1/2",
-              activeTab === "fiat" ? "translate-x-full" : "translate-x-0",
-            )}
-            style={{ willChange: "transform" }}
-          />
-          <button
-            className={cn(
-              "relative z-10 h-full w-full rounded-xl px-3 text-sm font-medium transition-colors duration-100",
-              activeTab === "crypto" ? "text-white" : "text-as-primary/70 hover:bg-as-on-surface-2 bg-transparent",
-            )}
-            onClick={() => {
-              setActiveTab("crypto");
-              setSelectedCryptoPaymentMethod(CryptoPaymentMethodType.NONE); // Reset payment method when switching to crypto
-              setSelectedFiatPaymentMethod(FiatPaymentMethod.NONE); // Reset fiat payment method when switching to crypto
-            }}
-          >
-            Pay with crypto
-          </button>
-          <button
-            className={cn(
-              "relative z-10 h-full w-full rounded-xl px-3 text-sm font-medium transition-colors duration-100",
-              activeTab === "fiat" ? "text-white" : "text-as-primary/70 hover:bg-as-on-surface-2 bg-transparent",
-            )}
-            onClick={() => {
-              setActiveTab("fiat");
-              setSelectedCryptoPaymentMethod(CryptoPaymentMethodType.NONE); // Reset crypto payment method when switching to fiat
-              setSelectedFiatPaymentMethod(FiatPaymentMethod.NONE); // Reset fiat payment method when switching to fiat
-            }}
-          >
-            Pay with Fiat
-          </button>
-        </div>
-      </div>
-
-      {/* {selectedSrcChainId === base.id || selectedDstChainId === base.id || activeTab === "fiat" ? (
-        <>
-          <Warning text="Base is experiencing temporary issues. Please check back later." />
-
-          <div className="h-1" />
-        </>
-      ) : null} */}
+      <TabSection
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        setSelectedCryptoPaymentMethod={setSelectedCryptoPaymentMethod}
+        setSelectedFiatPaymentMethod={setSelectedFiatPaymentMethod}
+      />
 
       <div className="relative flex w-full max-w-[calc(100vw-32px)] flex-col gap-2">
         {/* Send section */}
         {activeTab === "crypto" ? (
-          <motion.div
-            initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            transition={{ duration: 0.3, delay: 0, ease: "easeInOut" }}
-            className="bg-as-surface-secondary border-as-border-secondary relative flex w-full flex-col gap-2 rounded-2xl border p-4 sm:p-6"
-          >
-            <div className="flex items-center justify-between">
-              <div className="text-as-primary/50 flex h-7 items-center text-sm">Pay</div>
-              <button
-                className="text-as-tertiarry flex h-7 items-center gap-2 text-sm transition-colors"
-                onClick={() => setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD)}
-              >
-                {selectedCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET ? (
-                  <>
-                    {connectedAddress ? (
-                      <>
-                        <div className="flex items-center gap-1">
-                          {connectedName ? formatUsername(connectedName) : shortenAddress(connectedAddress || "")}
-                        </div>
-                      </>
-                    ) : (
-                      "Connect wallet"
-                    )}
-                    <ChevronRight className="h-4 w-4" />
-                  </>
-                ) : selectedCryptoPaymentMethod === CryptoPaymentMethodType.TRANSFER_CRYPTO ? (
-                  <>
-                    Transfer crypto
-                    <ChevronRight className="h-4 w-4" />
-                  </>
-                ) : (
-                  <>
-                    Select payment method
-                    <ChevronRight className="h-4 w-4" />
-                  </>
-                )}
-              </button>
-            </div>
-            <OrderTokenAmount
-              address={globalAddress}
-              context="from"
-              inputValue={srcAmount}
-              onChangeInput={value => {
-                setIsSrcInputDirty(true);
-                setSrcAmount(value);
-              }}
-              chainId={selectedSrcChainId}
-              setChainId={setSelectedSrcChainId}
-              token={selectedSrcToken}
-              setToken={setSelectedSrcToken}
-            />
-            <div className="flex items-center justify-between">
-              <div className="text-as-primary/50 flex h-5 items-center text-sm">
-                {formatDisplayNumber(anyspendQuote?.data?.currencyIn?.amountUsd, { style: "currency", fallback: "" })}
-              </div>
-              <TokenBalance
-                token={selectedSrcToken}
-                walletAddress={globalAddress}
-                onChangeInput={value => {
-                  setIsSrcInputDirty(true);
-                  setSrcAmount(value);
-                }}
-              />
-            </div>
-          </motion.div>
+          <PaySection
+            paymentType="crypto"
+            selectedSrcChainId={selectedSrcChainId}
+            setSelectedSrcChainId={setSelectedSrcChainId}
+            selectedSrcToken={selectedSrcToken}
+            setSelectedSrcToken={setSelectedSrcToken}
+            srcAmount={srcAmount}
+            setSrcAmount={setSrcAmount}
+            setIsSrcInputDirty={setIsSrcInputDirty}
+            selectedCryptoPaymentMethod={selectedCryptoPaymentMethod}
+            selectedFiatPaymentMethod={selectedFiatPaymentMethod}
+            onSelectCryptoPaymentMethod={() => setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD)}
+            onSelectFiatPaymentMethod={() => setActivePanel(PanelView.FIAT_PAYMENT_METHOD)}
+            anyspendQuote={anyspendQuote}
+          />
         ) : (
           <motion.div
             initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
@@ -1127,6 +888,7 @@ function AnySpendInner({
               destinationAmount={dstAmount}
               onDestinationTokenChange={setSelectedDstToken}
               onDestinationChainChange={setSelectedDstChainId}
+              fiatPaymentMethodIndex={PanelView.FIAT_PAYMENT_METHOD}
             />
           </motion.div>
         )}
@@ -1170,130 +932,29 @@ function AnySpendInner({
 
         {/* Receive section - Hidden when fiat tab is active */}
         {activeTab !== "fiat" && (
-          <motion.div
-            initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            transition={{ duration: 0.3, delay: 0.1, ease: "easeInOut" }}
-            className="bg-as-surface-secondary border-as-border-secondary relative flex w-full flex-col gap-2 rounded-2xl border p-4 sm:p-6"
-          >
-            <div className="flex w-full items-center justify-between">
-              <div className="text-as-primary/50 flex h-7 items-center text-sm">Receive</div>
-              {recipientAddress ? (
-                <button
-                  className={cn("text-as-tertiarry flex h-7 items-center gap-2 rounded-lg")}
-                  onClick={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
-                >
-                  <>
-                    {recipientAddress ? (
-                      <>
-                        <span className="text-as-tertiarry flex items-center gap-1 text-sm">
-                          {recipientName ? formatUsername(recipientName) : shortenAddress(recipientAddress || "")}
-                        </span>
-                      </>
-                    ) : (
-                      "Connect wallet"
-                    )}
-                    <ChevronRight className="h-4 w-4" />
-                  </>
-                </button>
-              ) : (
-                <button
-                  className="text-as-primary/70 flex items-center gap-1 rounded-lg"
-                  onClick={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
-                >
-                  <div className="text-sm font-medium">Select recipient</div>
-                </button>
-              )}
-            </div>
-            {isBuyMode ? (
-              // Fixed destination token display in buy mode
-              <div className="flex items-center justify-between">
-                <div className="text-as-primary text-2xl font-bold">{dstAmount || "0"}</div>
-                <div className="bg-as-brand/10 border-as-brand/30 flex items-center gap-3 rounded-xl border px-4 py-3">
-                  {selectedDstToken.metadata?.logoURI && (
-                    <img
-                      src={selectedDstToken.metadata.logoURI}
-                      alt={selectedDstToken.symbol}
-                      className="h-8 w-8 rounded-full"
-                    />
-                  )}
-                  <span className="text-as-brand text-lg font-bold">{selectedDstToken.symbol}</span>
-                </div>
-              </div>
-            ) : (
-              <OrderTokenAmount
-                address={recipientAddress}
-                context="to"
-                inputValue={dstAmount}
-                onChangeInput={value => {
-                  setIsSrcInputDirty(false);
-                  setDstAmount(value);
-                }}
-                chainId={selectedDstChainId}
-                setChainId={setSelectedDstChainId}
-                token={selectedDstToken}
-                setToken={setSelectedDstToken}
-              />
-            )}
-            <div className="text-as-primary/50 flex h-5 items-center text-sm">
-              {formatDisplayNumber(anyspendQuote?.data?.currencyOut?.amountUsd, { style: "currency", fallback: "" })}
-              {anyspendQuote?.data?.currencyIn?.amountUsd &&
-                anyspendQuote?.data?.currencyOut?.amountUsd &&
-                (() => {
-                  const { percentage, isNegative } = calculatePriceImpact(
-                    anyspendQuote.data.currencyIn.amountUsd,
-                    anyspendQuote.data.currencyOut.amountUsd,
-                  );
-
-                  // Parse the percentage as a number for comparison
-                  const percentageNum = parseFloat(percentage);
-
-                  // Don't show if less than 1%
-                  if (percentageNum < 1) {
-                    return null;
-                  }
-
-                  // Using inline style to ensure color displays
-                  return (
-                    <span className="ml-2" style={{ color: percentageNum >= 10 ? "red" : "#FFD700" }}>
-                      ({isNegative ? "-" : ""}
-                      {percentage}%)
-                    </span>
-                  );
-                })()}
-            </div>
-          </motion.div>
+          <ReceiveSection
+            paymentType="crypto"
+            isDepositMode={false}
+            isBuyMode={isBuyMode}
+            selectedRecipientAddress={recipientAddress}
+            recipientName={recipientName || undefined}
+            onSelectRecipient={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
+            dstAmount={dstAmount}
+            dstToken={selectedDstToken}
+            selectedDstChainId={selectedDstChainId}
+            setSelectedDstChainId={setSelectedDstChainId}
+            setSelectedDstToken={setSelectedDstToken}
+            onChangeDstAmount={value => {
+              setIsSrcInputDirty(false);
+              setDstAmount(value);
+            }}
+            anyspendQuote={anyspendQuote}
+            _globalAddress={globalAddress}
+          />
         )}
       </div>
-
-      {/* Order details section */}
-      {/* <div className="bg-as-on-surface-1 flex w-full max-w-[460px] items-center justify-between rounded-2xl p-4">
-        <div className="text-as-primary flex w-full items-center justify-between text-sm font-medium">
-          <div>
-            1 {selectedSrcToken.symbol} = {anyspendPrice?.data?.rate} {selectedDstToken.symbol}
-          </div>
-          <div
-            className="ml-10 flex flex-1 cursor-pointer items-center justify-end"
-            onClick={() => setShowRateDetails(!showRateDetails)}
-          >
-            <motion.div
-              animate={{ rotate: showRateDetails ? 180 : 0 }}
-              transition={{ duration: 0.3 }}
-              className="w-fit"
-            >
-              <ChevronDown className="text-as-primary/70 h-5 w-5" />
-            </motion.div>
-          </div>
-        </div>
-      </div> */}
-
       {/* Error message section */}
-      {getAnyspendQuoteError && (
-        <div className="bg-as-on-surface-1 flex w-full max-w-[460px] items-center gap-2 rounded-2xl px-4 py-2">
-          <CircleAlert className="bg-as-red h-4 min-h-4 w-4 min-w-4 rounded-full p-0 text-sm font-medium text-white" />
-          <div className="text-as-red text-sm">{getAnyspendQuoteError.message}</div>
-        </div>
-      )}
+      <ErrorSection error={getAnyspendQuoteError} />
 
       {/* Main button section */}
       <motion.div

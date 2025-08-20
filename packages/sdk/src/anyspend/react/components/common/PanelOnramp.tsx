@@ -21,6 +21,7 @@ export function PanelOnramp({
   destinationAmount,
   onDestinationTokenChange,
   onDestinationChainChange,
+  fiatPaymentMethodIndex,
 }: {
   srcAmountOnRamp: string;
   setSrcAmountOnRamp: (amount: string) => void;
@@ -32,6 +33,7 @@ export function PanelOnramp({
   destinationAmount?: string;
   onDestinationTokenChange?: (token: components["schemas"]["Token"]) => void;
   onDestinationChainChange?: (chainId: number) => void;
+  fiatPaymentMethodIndex: number;
 }) {
   // Get geo-based onramp options to access fee information
   const { stripeWeb2Support } = useGeoOnrampOptions(srcAmountOnRamp);
@@ -102,14 +104,14 @@ export function PanelOnramp({
   };
 
   return (
-    <div className="bg-as-surface-primary flex w-full flex-col">
+    <div className="panel-onramp bg-as-surface-primary flex w-full flex-col">
       {/* Pay Section */}
       <div className="border-as-border-secondary bg-as-surface-secondary relative flex w-full flex-col rounded-2xl border p-4">
         <div className="flex h-7 w-full items-center justify-between">
           <span className="text-as-tertiarry flex items-center text-sm font-bold">Pay</span>
           <button
             className="text-as-tertiarry flex h-7 items-center gap-1 text-sm"
-            onClick={() => setActivePanel(7)} // PanelView.FIAT_PAYMENT_METHOD
+            onClick={() => setActivePanel(fiatPaymentMethodIndex)} // PanelView.FIAT_PAYMENT_METHOD
           >
             {selectedPaymentMethod === FiatPaymentMethod.COINBASE_PAY ? (
               <>

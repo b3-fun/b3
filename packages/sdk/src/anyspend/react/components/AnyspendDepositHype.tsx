@@ -1,5 +1,5 @@
 import { B3_TOKEN } from "@b3dotfun/sdk/anyspend";
-import { ShinyButton, StyleRoot, TransitionPanel } from "@b3dotfun/sdk/global-account/react";
+import { Button, ShinyButton, StyleRoot, TransitionPanel } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import invariant from "invariant";
 import { motion } from "motion/react";
@@ -8,7 +8,9 @@ import { toast } from "sonner";
 import { encodeFunctionData } from "viem";
 import { base } from "viem/chains";
 import { PanelView, useAnyspendFlow } from "../hooks/useAnyspendFlow";
+import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
 import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPaymentMethod";
+import { ErrorSection } from "./common/ErrorSection";
 import { FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaymentMethod";
 import { OrderDetails } from "./common/OrderDetails";
 import { OrderStatus } from "./common/OrderStatus";
@@ -17,6 +19,8 @@ import { ReceiveSection } from "./common/ReceiveSection";
 import { RecipientSelection } from "./common/RecipientSelection";
 
 import { ESCROW_ABI } from "@b3dotfun/sdk/anyspend/abis/escrow";
+import { ArrowDown } from "lucide-react";
+import { PanelOnramp } from "./common/PanelOnramp";
 
 const DEPOSIT_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_BETTING_ESCROW as `0x${string}`;
 
@@ -30,19 +34,39 @@ function generateEncodedDataForDepositHype(amount: string, beneficiary: string):
   return encodedData;
 }
 
-export function AnySpendDepositHype({
+export function AnySpendDepositHype(props: {
+  loadOrder?: string;
+  mode?: "modal" | "page";
+  recipientAddress: string;
+  paymentType?: "crypto" | "fiat";
+  destinationTokenAddress?: string;
+  destinationTokenChainId?: number;
+  onSuccess?: () => void;
+}) {
+  const fingerprintConfig = getFingerprintConfig();
+
+  return (
+    <AnySpendFingerprintWrapper fingerprint={fingerprintConfig}>
+      <AnySpendDepositHypeInner {...props} />
+    </AnySpendFingerprintWrapper>
+  );
+}
+
+function AnySpendDepositHypeInner({
   loadOrder,
   mode = "modal",
   recipientAddress,
-  depositAmount,
   paymentType = "crypto",
+  destinationTokenAddress,
+  destinationTokenChainId,
   onSuccess,
 }: {
   loadOrder?: string;
   mode?: "modal" | "page";
   recipientAddress: string;
-  depositAmount?: string;
   paymentType?: "crypto" | "fiat";
+  destinationTokenAddress?: string;
+  destinationTokenChainId?: number;
   onSuccess?: () => void;
 }) {
   // Use shared flow hook
@@ -74,7 +98,6 @@ export function AnySpendDepositHype({
     geoData,
     coinbaseAvailablePaymentMethods,
     stripeWeb2Support,
-    getOnrampVendor,
     createOrder,
     isCreatingOrder,
     createOnrampOrder,
@@ -87,7 +110,8 @@ export function AnySpendDepositHype({
     onTransactionSuccess: onSuccess,
   });
 
-  const showTokenSelection = !depositAmount;
+  // Determine if we're in "buy mode" based on whether destination token props are provided
+  const isBuyMode = !!(destinationTokenAddress && destinationTokenChainId);
 
   // Button state logic
   const btnInfo: { text: string; disable: boolean; error: boolean } = useMemo(() => {
@@ -99,9 +123,15 @@ export function AnySpendDepositHype({
     if (!dstAmount) return { text: "No quote available", disable: true, error: true };
 
     // Check minimum deposit amount (10 HYPE)
-    const dstAmountNum = parseFloat(dstAmount);
-    if (dstAmountNum < 10) {
-      return { text: "Minimum 10 HYPE deposit", disable: true, error: true };
+    // Use the raw amount from the quote instead of the formatted display string
+    if (anyspendQuote.data?.currencyOut?.amount && anyspendQuote.data.currencyOut.currency?.decimals) {
+      const rawAmountInWei = anyspendQuote.data.currencyOut.amount;
+      const decimals = anyspendQuote.data.currencyOut.currency.decimals;
+      const actualAmount = parseFloat(rawAmountInWei) / Math.pow(10, decimals);
+
+      if (actualAmount < 10) {
+        return { text: "Minimum 10 HYPE deposit", disable: true, error: true };
+      }
     }
 
     if (paymentType === "crypto") {
@@ -326,131 +356,172 @@ export function AnySpendDepositHype({
   );
 
   // If showing token selection, render with panel transitions
-  if (showTokenSelection) {
-    return (
-      <StyleRoot>
-        <div
-          className={cn(
-            "anyspend-container font-inter mx-auto w-full max-w-[460px]",
-            mode === "page" &&
-              "bg-as-surface-primary border-as-border-secondary overflow-hidden rounded-2xl border shadow-xl",
-          )}
+  return (
+    <StyleRoot>
+      <div
+        className={cn(
+          "anyspend-container font-inter mx-auto w-full max-w-[460px]",
+          mode === "page" &&
+            "bg-as-surface-primary border-as-border-secondary overflow-hidden rounded-2xl border shadow-xl",
+        )}
+      >
+        <TransitionPanel
+          activeIndex={
+            orderId
+              ? oat
+                ? PanelView.ORDER_DETAILS
+                : PanelView.LOADING
+              : activePanel === PanelView.ORDER_DETAILS
+                ? PanelView.MAIN
+                : activePanel
+          }
+          className={cn("rounded-2xl", {
+            "mt-0": mode === "modal",
+          })}
+          variants={{
+            enter: { x: 300, opacity: 0 },
+            center: { x: 0, opacity: 1 },
+            exit: { x: -300, opacity: 0 },
+          }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
-          <TransitionPanel
-            activeIndex={
-              orderId
-                ? oat
-                  ? PanelView.ORDER_DETAILS
-                  : PanelView.LOADING
-                : activePanel === PanelView.ORDER_DETAILS
-                  ? PanelView.MAIN
-                  : activePanel
-            }
-            className={cn("rounded-2xl", {
-              "mt-0": mode === "modal",
-            })}
-            variants={{
-              enter: { x: 300, opacity: 0 },
-              center: { x: 0, opacity: 1 },
-              exit: { x: -300, opacity: 0 },
-            }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          >
-            {[
-              <div key="main-view" className={cn(mode === "page" && "p-6")}>
-                <div className="mx-auto flex w-[460px] max-w-full flex-col items-center gap-2">
-                  {/* Header */}
-                  <div className="mb-4 flex flex-col items-center gap-3 text-center">
-                    <div>
-                      <h1 className="text-as-primary text-xl font-bold">
-                        {paymentType === "crypto" ? "Deposit Crypto" : "Fund with Fiat"}
-                      </h1>
-                    </div>
+          {[
+            <div key="main-view" className={cn(mode === "page" && "p-6")}>
+              <div className="mx-auto flex w-[460px] max-w-full flex-col items-center gap-2">
+                {/* Header */}
+                <div className="mb-4 flex flex-col items-center gap-3 text-center">
+                  <div>
+                    <h1 className="text-as-primary text-xl font-bold">
+                      {paymentType === "crypto" ? "Deposit Crypto" : "Fund with Fiat"}
+                    </h1>
                   </div>
+                </div>
 
+                <div className="relative flex w-full max-w-[calc(100vw-32px)] flex-col gap-2">
                   <div className="relative flex w-full max-w-[calc(100vw-32px)] flex-col gap-2">
-                    <PaySection
-                      paymentType={paymentType}
-                      selectedSrcChainId={selectedSrcChainId}
-                      setSelectedSrcChainId={setSelectedSrcChainId}
-                      selectedSrcToken={selectedSrcToken}
-                      setSelectedSrcToken={setSelectedSrcToken}
-                      srcAmount={srcAmount}
-                      setSrcAmount={setSrcAmount}
-                      setIsSrcInputDirty={setIsSrcInputDirty}
-                      selectedCryptoPaymentMethod={selectedCryptoPaymentMethod}
-                      selectedFiatPaymentMethod={selectedFiatPaymentMethod}
-                      onSelectCryptoPaymentMethod={() => setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD)}
-                      onSelectFiatPaymentMethod={() => setActivePanel(PanelView.FIAT_PAYMENT_METHOD)}
-                      anyspendQuote={anyspendQuote}
-                    />
+                    {/* Send section */}
+                    {paymentType === "crypto" ? (
+                      <PaySection
+                        paymentType="crypto"
+                        selectedSrcChainId={selectedSrcChainId}
+                        setSelectedSrcChainId={setSelectedSrcChainId}
+                        selectedSrcToken={selectedSrcToken}
+                        setSelectedSrcToken={setSelectedSrcToken}
+                        srcAmount={srcAmount}
+                        setSrcAmount={setSrcAmount}
+                        setIsSrcInputDirty={setIsSrcInputDirty}
+                        selectedCryptoPaymentMethod={selectedCryptoPaymentMethod}
+                        selectedFiatPaymentMethod={selectedFiatPaymentMethod}
+                        onSelectCryptoPaymentMethod={() => setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD)}
+                        onSelectFiatPaymentMethod={() => setActivePanel(PanelView.FIAT_PAYMENT_METHOD)}
+                        anyspendQuote={anyspendQuote}
+                      />
+                    ) : (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
+                        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                        transition={{ duration: 0.3, delay: 0, ease: "easeInOut" }}
+                      >
+                        <PanelOnramp
+                          srcAmountOnRamp={srcAmount}
+                          setSrcAmountOnRamp={setSrcAmount}
+                          selectedPaymentMethod={selectedFiatPaymentMethod}
+                          setActivePanel={setActivePanel}
+                          _recipientAddress={recipientAddress}
+                          destinationToken={B3_TOKEN}
+                          destinationChainId={base.id}
+                          destinationAmount={dstAmount}
+                          onDestinationTokenChange={() => {}}
+                          onDestinationChainChange={() => {}}
+                          fiatPaymentMethodIndex={PanelView.FIAT_PAYMENT_METHOD}
+                        />
+                      </motion.div>
+                    )}
 
-                    <ReceiveSection
-                      paymentType={paymentType}
-                      isDepositMode={true}
-                      selectedRecipientAddress={selectedRecipientAddress}
-                      recipientName={recipientName || undefined}
-                      onSelectRecipient={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
-                      dstAmount={dstAmount}
-                      dstToken={B3_TOKEN}
-                      anyspendQuote={anyspendQuote}
-                    />
-                  </div>
-
-                  {/* Error message section */}
-                  {getAnyspendQuoteError && (
-                    <div className="bg-as-on-surface-1 flex w-full max-w-[460px] items-center gap-2 rounded-2xl px-4 py-2">
-                      <div className="bg-as-red h-4 min-h-4 w-4 min-w-4 rounded-full p-0 text-sm font-medium text-white" />
-                      <div className="text-as-red text-sm">{getAnyspendQuoteError.message}</div>
-                    </div>
-                  )}
-
-                  {/* Main button section */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                    transition={{ duration: 0.3, delay: 0.2, ease: "easeInOut" }}
-                    className={cn("mt-4 flex w-full max-w-[460px] flex-col gap-2", getAnyspendQuoteError && "mt-0")}
-                  >
-                    <ShinyButton
-                      accentColor={"hsl(var(--as-brand))"}
-                      disabled={btnInfo.disable}
-                      onClick={onMainButtonClick}
+                    {/* Reverse swap direction section */}
+                    <Button
+                      variant="ghost"
                       className={cn(
-                        "as-main-button relative w-full",
-                        btnInfo.error ? "!bg-as-red" : btnInfo.disable ? "!bg-as-on-surface-2" : "!bg-as-brand",
-                      )}
-                      textClassName={cn(
-                        btnInfo.error ? "text-white" : btnInfo.disable ? "text-as-secondary" : "text-white",
+                        "swap-direction-button border-as-stroke bg-as-surface-primary absolute left-1/2 top-1/2 z-10 h-10 w-10 -translate-x-1/2 -translate-y-1/2 cursor-default rounded-xl border-2 sm:h-8 sm:w-8 sm:rounded-xl",
+                        isBuyMode && "top-[calc(50%+56px)] cursor-default",
+                        paymentType === "fiat" && "hidden",
                       )}
                     >
-                      {btnInfo.text}
-                    </ShinyButton>
-                  </motion.div>
-                </div>
-              </div>,
-              <div key="crypto-payment-method-view" className={cn(mode === "page" && "p-6")}>
-                {cryptoPaymentMethodView}
-              </div>,
-              <div key="fiat-payment-method-view" className={cn(mode === "page" && "p-6")}>
-                {fiatPaymentMethodView}
-              </div>,
-              <div key="recipient-selection-view" className={cn(mode === "page" && "p-6")}>
-                {recipientSelectionView}
-              </div>,
-              <div key="order-details-view" className={cn(mode === "page" && "p-6")}>
-                {orderDetailsView}
-              </div>,
-              <div key="loading-view" className={cn(mode === "page" && "p-6")}>
-                {loadingView}
-              </div>,
-            ]}
-          </TransitionPanel>
-        </div>
-      </StyleRoot>
-    );
-  }
+                      <div className="relative flex items-center justify-center transition-opacity">
+                        <ArrowDown className="text-as-primary/50 h-5 w-5" />
+                      </div>
+                    </Button>
 
-  // If not showing token selection, return null (orders are created directly)
-  return null;
+                    {/* Receive section - Hidden when fiat tab is active */}
+                    {paymentType === "crypto" && (
+                      <ReceiveSection
+                        paymentType="crypto"
+                        isDepositMode={false}
+                        isBuyMode={isBuyMode}
+                        selectedRecipientAddress={recipientAddress}
+                        recipientName={recipientName || undefined}
+                        onSelectRecipient={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
+                        dstAmount={dstAmount}
+                        dstToken={B3_TOKEN}
+                        selectedDstChainId={base.id}
+                        setSelectedDstChainId={() => {}}
+                        setSelectedDstToken={() => {}}
+                        onChangeDstAmount={value => {
+                          setIsSrcInputDirty(false);
+                          setSrcAmount(value);
+                        }}
+                        anyspendQuote={anyspendQuote}
+                        _globalAddress={globalAddress}
+                      />
+                    )}
+                  </div>
+                </div>
+
+                {/* Error message section */}
+                <ErrorSection error={getAnyspendQuoteError} />
+
+                {/* Main button section */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
+                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                  transition={{ duration: 0.3, delay: 0.2, ease: "easeInOut" }}
+                  className={cn("mt-4 flex w-full max-w-[460px] flex-col gap-2", getAnyspendQuoteError && "mt-0")}
+                >
+                  <ShinyButton
+                    accentColor={"hsl(var(--as-brand))"}
+                    disabled={btnInfo.disable}
+                    onClick={onMainButtonClick}
+                    className={cn(
+                      "as-main-button relative w-full",
+                      btnInfo.error ? "!bg-as-red" : btnInfo.disable ? "!bg-as-on-surface-2" : "!bg-as-brand",
+                    )}
+                    textClassName={cn(
+                      btnInfo.error ? "text-white" : btnInfo.disable ? "text-as-secondary" : "text-white",
+                    )}
+                  >
+                    {btnInfo.text}
+                  </ShinyButton>
+                </motion.div>
+              </div>
+            </div>,
+            <div key="crypto-payment-method-view" className={cn(mode === "page" && "p-6")}>
+              {cryptoPaymentMethodView}
+            </div>,
+            <div key="fiat-payment-method-view" className={cn(mode === "page" && "p-6")}>
+              {fiatPaymentMethodView}
+            </div>,
+            <div key="recipient-selection-view" className={cn(mode === "page" && "p-6")}>
+              {recipientSelectionView}
+            </div>,
+            <div key="order-details-view" className={cn(mode === "page" && "p-6")}>
+              {orderDetailsView}
+            </div>,
+            <div key="loading-view" className={cn(mode === "page" && "p-6")}>
+              {loadingView}
+            </div>,
+          ]}
+        </TransitionPanel>
+      </div>
+    </StyleRoot>
+  );
 }

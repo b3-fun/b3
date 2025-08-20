@@ -51,7 +51,7 @@ export function useAnyspendFlow({
   const [selectedSrcChainId, setSelectedSrcChainId] = useState<number>(paymentType === "fiat" ? base.id : mainnet.id);
   const defaultSrcToken = paymentType === "fiat" ? USDC_BASE : getDefaultToken(selectedSrcChainId);
   const [selectedSrcToken, setSelectedSrcToken] = useState<components["schemas"]["Token"]>(defaultSrcToken);
-  const [srcAmount, setSrcAmount] = useState<string>(paymentType === "fiat" ? "5" : "100");
+  const [srcAmount, setSrcAmount] = useState<string>(paymentType === "fiat" ? "5" : "0.1");
   const [dstAmount, setDstAmount] = useState<string>("");
   const [isSrcInputDirty, setIsSrcInputDirty] = useState(true);
 

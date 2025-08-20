@@ -122,14 +122,6 @@ export function CryptoPaymentMethod({
                     Use Wallet
                   </button>
                   <button
-                    onClick={() => {
-                      setShowWalletModal(true);
-                    }}
-                    className="text-as-primary/60 hover:text-as-primary/80 rounded-lg p-1.5 transition-colors"
-                  >
-                    Connect other wallet
-                  </button>
-                  <button
                     onClick={async () => {
                       disconnect();
                       disconnectThirdweb(activeWallet);
