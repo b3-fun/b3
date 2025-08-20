@@ -214,6 +214,18 @@
       "types": "./dist/types/bondkit/components/TradingView/TradingView.d.ts",
       "import": "./dist/esm/bondkit/components/TradingView/TradingView.js",
       "require": "./dist/cjs/bondkit/components/TradingView/TradingView.js"
+    },
+    "./global-account/react/hooks/useSiwe": {
+      "react-native": {
+        "types": "./dist/types/global-account/react/hooks/useSiwe.native.d.ts",
+        "import": "./dist/esm/global-account/react/hooks/useSiwe.native.js",
+        "require": "./dist/cjs/global-account/react/hooks/useSiwe.native.js"
+      },
+      "default": {
+        "types": "./dist/types/global-account/react/hooks/useSiwe.d.ts",
+        "import": "./dist/esm/global-account/react/hooks/useSiwe.js",
+        "require": "./dist/cjs/global-account/react/hooks/useSiwe.js"
+      }
     }
   },
   "files": [
