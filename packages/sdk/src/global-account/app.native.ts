@@ -51,7 +51,7 @@ class LocalStorage {
 
 const localStorage = new LocalStorage();
 
-const socket = io(B3_API_URL);
+const socket = io(B3_API_URL, { transports: ["websocket"] });
 
 class MyAuthenticationClient extends AuthenticationClient {
   getFromLocation(location: any) {
