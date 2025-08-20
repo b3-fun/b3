@@ -49,6 +49,7 @@ export function useAnyspendFlow({
 
   // Token selection state
   const [selectedSrcChainId, setSelectedSrcChainId] = useState<number>(paymentType === "fiat" ? base.id : mainnet.id);
+  const [selectedDstChainId, setSelectedDstChainId] = useState<number>(base.id); // Default to Base for cross-chain swaps
   const defaultSrcToken = paymentType === "fiat" ? USDC_BASE : getDefaultToken(selectedSrcChainId);
   const [selectedSrcToken, setSelectedSrcToken] = useState<components["schemas"]["Token"]>(defaultSrcToken);
   const [srcAmount, setSrcAmount] = useState<string>(paymentType === "fiat" ? "5" : "0.1");
@@ -90,7 +91,7 @@ export function useAnyspendFlow({
   const activeInputAmountInWei = parseUnits(srcAmount.replace(/,/g, ""), selectedSrcToken.decimals).toString();
   const { anyspendQuote, isLoadingAnyspendQuote, getAnyspendQuoteError } = useAnyspendQuote({
     srcChain: paymentType === "fiat" ? base.id : selectedSrcChainId,
-    dstChain: isDepositMode ? base.id : selectedSrcChainId, // For deposits, always Base
+    dstChain: isDepositMode ? base.id : selectedDstChainId, // For deposits, always Base; for swaps, use selected destination
     srcTokenAddress: paymentType === "fiat" ? USDC_BASE.address : selectedSrcToken.address,
     dstTokenAddress: isDepositMode ? B3_TOKEN.address : selectedSrcToken.address, // For deposits, always B3
     type: "swap",
@@ -161,6 +162,8 @@ export function useAnyspendFlow({
     // Token state
     selectedSrcChainId,
     setSelectedSrcChainId,
+    selectedDstChainId,
+    setSelectedDstChainId,
     selectedSrcToken,
     setSelectedSrcToken,
     srcAmount,

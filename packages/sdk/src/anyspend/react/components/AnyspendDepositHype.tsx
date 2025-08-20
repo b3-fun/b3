@@ -10,12 +10,12 @@ import { base } from "viem/chains";
 import { PanelView, useAnyspendFlow } from "../hooks/useAnyspendFlow";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
 import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPaymentMethod";
+import { CryptoReceiveSection } from "./common/CryptoReceiveSection";
 import { ErrorSection } from "./common/ErrorSection";
 import { FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaymentMethod";
 import { OrderDetails } from "./common/OrderDetails";
 import { OrderStatus } from "./common/OrderStatus";
 import { PaySection } from "./common/PaySection";
-import { CryptoReceiveSection } from "./common/ReceiveSection";
 import { RecipientSelection } from "./common/RecipientSelection";
 
 import { ESCROW_ABI } from "@b3dotfun/sdk/anyspend/abis/escrow";

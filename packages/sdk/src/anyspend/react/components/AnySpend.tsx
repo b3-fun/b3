@@ -32,6 +32,7 @@ import { base, mainnet } from "viem/chains";
 import { components } from "../../types/api";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
 import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPaymentMethod";
+import { CryptoReceiveSection } from "./common/CryptoReceiveSection";
 import { ErrorSection } from "./common/ErrorSection";
 import { FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaymentMethod";
 import { OrderDetails, OrderDetailsLoadingView } from "./common/OrderDetails";
@@ -40,7 +41,6 @@ import { OrderStatus } from "./common/OrderStatus";
 import { PanelOnramp } from "./common/PanelOnramp";
 import { PanelOnrampPayment } from "./common/PanelOnrampPayment";
 import { PaySection } from "./common/PaySection";
-import { CryptoReceiveSection } from "./common/ReceiveSection";
 import { RecipientSelection } from "./common/RecipientSelection";
 import { TabSection } from "./common/TabSection";
 
