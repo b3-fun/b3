@@ -1,0 +1,226 @@
+import { B3_TOKEN, getDefaultToken, USDC_BASE } from "@b3dotfun/sdk/anyspend";
+import {
+  useAnyspendCreateOnrampOrder,
+  useAnyspendCreateOrder,
+  useAnyspendOrderAndTransactions,
+  useAnyspendQuote,
+  useGeoOnrampOptions,
+} from "@b3dotfun/sdk/anyspend/react";
+import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
+import { useAccountWallet, useProfile } from "@b3dotfun/sdk/global-account/react";
+import { formatTokenAmount, formatUnits } from "@b3dotfun/sdk/shared/utils/number";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { parseUnits } from "viem";
+import { base, mainnet } from "viem/chains";
+import { components } from "../../types/api";
+import { CryptoPaymentMethodType } from "../components/common/CryptoPaymentMethod";
+import { FiatPaymentMethod } from "../components/common/FiatPaymentMethod";
+
+export enum PanelView {
+  MAIN,
+  CRYPTO_PAYMENT_METHOD,
+  FIAT_PAYMENT_METHOD,
+  RECIPIENT_SELECTION,
+  ORDER_DETAILS,
+  LOADING,
+}
+
+interface UseAnyspendFlowProps {
+  paymentType?: "crypto" | "fiat";
+  recipientAddress?: string;
+  loadOrder?: string;
+  isDepositMode?: boolean;
+  onOrderSuccess?: (orderId: string) => void;
+  onTransactionSuccess?: () => void;
+  sourceTokenAddress?: string;
+  sourceTokenChainId?: number;
+}
+
+export function useAnyspendFlow({
+  paymentType = "crypto",
+  recipientAddress,
+  loadOrder,
+  isDepositMode = false,
+  onOrderSuccess,
+  onTransactionSuccess,
+  sourceTokenAddress,
+  sourceTokenChainId,
+}: UseAnyspendFlowProps) {
+  // Panel and order state
+  const [activePanel, setActivePanel] = useState<PanelView>(loadOrder ? PanelView.ORDER_DETAILS : PanelView.MAIN);
+  const [orderId, setOrderId] = useState<string | undefined>(loadOrder);
+  const { orderAndTransactions: oat } = useAnyspendOrderAndTransactions(orderId);
+
+  // Token selection state - use provided sourceTokenChainId if available
+  const [selectedSrcChainId, setSelectedSrcChainId] = useState<number>(
+    sourceTokenChainId || (paymentType === "fiat" ? base.id : mainnet.id),
+  );
+  const [selectedDstChainId, setSelectedDstChainId] = useState<number>(base.id); // Default to Base for cross-chain swaps
+  const defaultSrcToken = paymentType === "fiat" ? USDC_BASE : getDefaultToken(selectedSrcChainId);
+  const [selectedSrcToken, setSelectedSrcToken] = useState<components["schemas"]["Token"]>(defaultSrcToken);
+  const [srcAmount, setSrcAmount] = useState<string>(paymentType === "fiat" ? "5" : "0.1");
+  const [dstAmount, setDstAmount] = useState<string>("");
+  const [isSrcInputDirty, setIsSrcInputDirty] = useState(true);
+
+  // Payment method state
+  const [selectedCryptoPaymentMethod, setSelectedCryptoPaymentMethod] = useState<CryptoPaymentMethodType>(
+    CryptoPaymentMethodType.NONE,
+  );
+  const [selectedFiatPaymentMethod, setSelectedFiatPaymentMethod] = useState<FiatPaymentMethod>(FiatPaymentMethod.NONE);
+
+  // Recipient state
+  const { address: globalAddress } = useAccountWallet();
+  const [selectedRecipientAddress, setSelectedRecipientAddress] = useState<string | undefined>(recipientAddress);
+  const recipientProfile = useProfile({ address: selectedRecipientAddress, fresh: true });
+  const recipientName = recipientProfile.data?.name;
+
+  // Set default recipient address when wallet changes
+  useEffect(() => {
+    if (!selectedRecipientAddress && globalAddress) {
+      setSelectedRecipientAddress(globalAddress);
+    }
+  }, [selectedRecipientAddress, globalAddress]);
+
+  // Fetch specific token when sourceTokenAddress and sourceTokenChainId are provided
+  useEffect(() => {
+    const fetchSourceToken = async () => {
+      if (sourceTokenAddress && sourceTokenChainId) {
+        try {
+          const token = await anyspendService.getToken(sourceTokenChainId, sourceTokenAddress);
+          setSelectedSrcToken(token);
+        } catch (error) {
+          console.error("Failed to fetch source token:", error);
+          toast.error(`Failed to load token ${sourceTokenAddress} on chain ${sourceTokenChainId}`);
+          // Keep the default token on error
+        }
+      }
+    };
+
+    fetchSourceToken();
+  }, [sourceTokenAddress, sourceTokenChainId]);
+
+  // Helper function for onramp vendor mapping
+  const getOnrampVendor = (paymentMethod: FiatPaymentMethod): "coinbase" | "stripe" | "stripe-web2" | undefined => {
+    switch (paymentMethod) {
+      case FiatPaymentMethod.COINBASE_PAY:
+        return "coinbase";
+      case FiatPaymentMethod.STRIPE:
+        return "stripe-web2";
+      default:
+        return undefined;
+    }
+  };
+
+  // Get quote
+  const activeInputAmountInWei = parseUnits(srcAmount.replace(/,/g, ""), selectedSrcToken.decimals).toString();
+  const { anyspendQuote, isLoadingAnyspendQuote, getAnyspendQuoteError } = useAnyspendQuote({
+    srcChain: paymentType === "fiat" ? base.id : selectedSrcChainId,
+    dstChain: isDepositMode ? base.id : selectedDstChainId, // For deposits, always Base; for swaps, use selected destination
+    srcTokenAddress: paymentType === "fiat" ? USDC_BASE.address : selectedSrcToken.address,
+    dstTokenAddress: isDepositMode ? B3_TOKEN.address : selectedSrcToken.address, // For deposits, always B3
+    type: "swap",
+    tradeType: "EXACT_INPUT",
+    amount: activeInputAmountInWei,
+    onrampVendor: paymentType === "fiat" ? getOnrampVendor(selectedFiatPaymentMethod) : undefined,
+  });
+
+  // Get geo options for fiat
+  const { geoData, coinbaseAvailablePaymentMethods, stripeWeb2Support } = useGeoOnrampOptions(
+    paymentType === "fiat" ? formatUnits(activeInputAmountInWei, USDC_BASE.decimals) : "0",
+  );
+
+  // Update destination amount when quote changes
+  useEffect(() => {
+    if (anyspendQuote?.data?.currencyOut?.amount && anyspendQuote.data.currencyOut.currency?.decimals) {
+      const amount = anyspendQuote.data.currencyOut.amount;
+      const decimals = anyspendQuote.data.currencyOut.currency.decimals;
+      const formattedAmount = formatTokenAmount(BigInt(amount), decimals, 6, false);
+      setDstAmount(formattedAmount);
+    } else {
+      setDstAmount("");
+    }
+  }, [anyspendQuote]);
+
+  // Order creation hooks
+  const { createOrder, isCreatingOrder } = useAnyspendCreateOrder({
+    onSuccess: data => {
+      const newOrderId = data.data.id;
+      setOrderId(newOrderId);
+      setActivePanel(PanelView.ORDER_DETAILS);
+      onOrderSuccess?.(newOrderId);
+    },
+    onError: error => {
+      console.error(error);
+      toast.error("Failed to create order: " + error.message);
+    },
+  });
+
+  const { createOrder: createOnrampOrder, isCreatingOrder: isCreatingOnrampOrder } = useAnyspendCreateOnrampOrder({
+    onSuccess: data => {
+      const newOrderId = data.data.id;
+      setOrderId(newOrderId);
+      setActivePanel(PanelView.ORDER_DETAILS);
+      onOrderSuccess?.(newOrderId);
+    },
+    onError: error => {
+      console.error(error);
+      toast.error("Failed to create order: " + error.message);
+    },
+  });
+
+  // Handle order completion
+  useEffect(() => {
+    if (oat?.data?.order.status === "executed") {
+      console.log("Order executed successfully");
+      onTransactionSuccess?.();
+    }
+  }, [oat?.data?.order.status, onTransactionSuccess]);
+
+  return {
+    // State
+    activePanel,
+    setActivePanel,
+    orderId,
+    setOrderId,
+    oat,
+    // Token state
+    selectedSrcChainId,
+    setSelectedSrcChainId,
+    selectedDstChainId,
+    setSelectedDstChainId,
+    selectedSrcToken,
+    setSelectedSrcToken,
+    srcAmount,
+    setSrcAmount,
+    dstAmount,
+    setDstAmount,
+    isSrcInputDirty,
+    setIsSrcInputDirty,
+    // Payment methods
+    selectedCryptoPaymentMethod,
+    setSelectedCryptoPaymentMethod,
+    selectedFiatPaymentMethod,
+    setSelectedFiatPaymentMethod,
+    // Recipient
+    selectedRecipientAddress,
+    setSelectedRecipientAddress,
+    recipientName,
+    globalAddress,
+    // Quote data
+    anyspendQuote,
+    isLoadingAnyspendQuote,
+    getAnyspendQuoteError,
+    activeInputAmountInWei,
+    // Geo/onramp data
+    geoData,
+    coinbaseAvailablePaymentMethods,
+    stripeWeb2Support,
+    getOnrampVendor,
+    // Order creation
+    createOrder,
+    isCreatingOrder,
+    createOnrampOrder,
+    isCreatingOnrampOrder,
+  };
+}
