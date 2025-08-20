@@ -6,8 +6,6 @@ import { Account } from "thirdweb/wallets";
 export function useSiwe() {
   const authenticate = useCallback(async (account: Account, partnerId: string) => {
     if (!account || !account.signMessage) throw new Error("Account not found");
-
-    console.log("@@useAuthenticate:referrerId", referrerId);
     // generate challenge
     const challenge = await app.service("global-accounts-challenge").create({
       address: account.address,
