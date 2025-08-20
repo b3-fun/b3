@@ -54,7 +54,7 @@ class LocalStorage {
 
 const localStorage = new LocalStorage();
 
-const socket = io(BSMNT_API_URL);
+const socket = io(BSMNT_API_URL, { transports: ["websocket"] });
 
 class MyAuthenticationClient extends AuthenticationClient {
   getFromLocation(location: any) {
