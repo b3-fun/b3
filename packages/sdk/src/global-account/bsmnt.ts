@@ -71,3 +71,9 @@ export const resetSocket = () => {
 };
 
 export default app;
+
+export function extractAvatarIdFromUrl(url: string): string | null {
+  const regex = /https:\/\/models\.readyplayer\.me\/([a-f0-9]{24})\.[a-zA-Z0-9]+/;
+  const match = url.match(regex);
+  return match ? match[1] : null;
+}
