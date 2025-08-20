@@ -10,9 +10,9 @@ export function BondKitButton() {
         setB3ModalOpen(true);
         setB3ModalContentType({
           type: "anySpendBondKit",
-          recipientAddress: "0xd67C2dfb4862Ae6F5c079FbEbF403dC01E5Df3f0",
-          contractAddress: "0x01ef4b21bb06fa40fe08e112a472b8925bb271d1",
-          ethAmount: "0.001",
+          recipientAddress: "0x55c71fca5E01cf246718748Ae540473E608D0282",
+          contractAddress: "0x172fc0063E6f96961b7968065F3F1Ee47b1e7ff8",
+          // b3Amount: "0.001",
           minTokensOut: "0",
         });
       }}

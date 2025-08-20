@@ -323,7 +323,7 @@ export const BondkitTokenABI = [
     ],
     name: "buy",
     outputs: [],
-    stateMutability: "payable",
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -334,7 +334,7 @@ export const BondkitTokenABI = [
     ],
     name: "buyFor",
     outputs: [],
-    stateMutability: "payable",
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -701,5 +701,4 @@ export const BondkitTokenABI = [
     stateMutability: "view",
     type: "function",
   },
-  { stateMutability: "payable", type: "receive" },
 ] as const;

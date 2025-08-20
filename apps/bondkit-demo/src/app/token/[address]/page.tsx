@@ -155,7 +155,7 @@ export default function TokenPage({ params }: TokenPageProps) {
             type: "anySpendBondKit",
             recipientAddress: userAddress || "",
             contractAddress: tokenAddress,
-            ethAmount: formatEther(parsedAmount),
+            b3Amount: formatEther(parsedAmount),
             minTokensOut: "0",
           });
         } else {

@@ -1,4 +1,3 @@
-import { BondkitToken } from "../../../bondkit";
 import {
   Button,
   GlareCardRounded,
@@ -12,7 +11,7 @@ import { baseMainnet } from "@b3dotfun/sdk/shared/constants/chains/supported";
 import { motion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 import { createPublicClient, encodeFunctionData, formatEther, http, parseEther } from "viem";
-import { ABI_bondKit } from "../../abis/bondKit";
+import { BondkitToken, BondkitTokenABI } from "../../../bondkit";
 import { AnySpendCustom } from "./AnySpendCustom";
 
 // Debounce utility function
@@ -37,13 +36,13 @@ export function AnySpendBondKit({
   contractAddress,
   minTokensOut = "0",
   imageUrl,
-  ethAmount: initialEthAmount,
+  b3Amount: initialB3Amount,
   onSuccess,
 }: AnySpendBondKitProps) {
   const hasMounted = useHasMounted();
-  const [showAmountPrompt, setShowAmountPrompt] = useState(!initialEthAmount);
-  const [ethAmount, setEthAmount] = useState(initialEthAmount || "");
-  const [isAmountValid, setIsAmountValid] = useState(!!initialEthAmount);
+  const [showAmountPrompt, setShowAmountPrompt] = useState(!initialB3Amount);
+  const [b3Amount, setB3Amount] = useState(initialB3Amount || "");
+  const [isAmountValid, setIsAmountValid] = useState(!!initialB3Amount);
   const [validationError, setValidationError] = useState("");
   const [tokenName, setTokenName] = useState<string>("");
   const [tokenSymbol, setTokenSymbol] = useState<string>("");
@@ -76,12 +75,12 @@ export function AnySpendBondKit({
         const [name, symbol] = await Promise.all([
           basePublicClient.readContract({
             address: contractAddress as `0x${string}`,
-            abi: ABI_bondKit,
+            abi: BondkitTokenABI,
             functionName: "name",
           }),
           basePublicClient.readContract({
             address: contractAddress as `0x${string}`,
-            abi: ABI_bondKit,
+            abi: BondkitTokenABI,
             functionName: "symbol",
           }),
         ]);
@@ -99,12 +98,12 @@ export function AnySpendBondKit({
     }
   }, [contractAddress, basePublicClient]);
 
-  // Get native token data for the chain
+  // Get b3 token data
   const {
     data: tokenData,
     isError: isTokenError,
     isLoading,
-  } = useTokenData(baseMainnet.id, "0x0000000000000000000000000000000000000000");
+  } = useTokenData(baseMainnet.id, "0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3");
 
   // Convert token data to AnySpend Token type
   const dstToken = useMemo(() => {
@@ -144,17 +143,18 @@ export function AnySpendBondKit({
       }, 500),
     [bondkitTokenClient],
   );
-  // Fetch initial quote if ethAmount is provided
+
+  // Fetch initial quote if b3Amount is provided
   useEffect(() => {
-    if (initialEthAmount && bondkitTokenClient) {
-      debouncedGetQuote(initialEthAmount);
+    if (initialB3Amount && bondkitTokenClient) {
+      debouncedGetQuote(initialB3Amount);
     }
-  }, [initialEthAmount, bondkitTokenClient, debouncedGetQuote]);
+  }, [initialB3Amount, bondkitTokenClient, debouncedGetQuote]);
 
   const validateAndSetAmount = (value: string) => {
     // Allow empty input
     if (value === "") {
-      setEthAmount("");
+      setB3Amount("");
       setIsAmountValid(false);
       setValidationError("");
       setQuote(null);
@@ -173,7 +173,7 @@ export function AnySpendBondKit({
       return;
     }
 
-    // Prevent more than 18 decimal places (ETH precision)
+    // Prevent more than 18 decimal places (B3 precision)
     const parts = value.split(".");
     if (parts[1] && parts[1].length > 18) {
       return;
@@ -181,7 +181,7 @@ export function AnySpendBondKit({
 
     // Clean the input - remove leading zeros if not decimal
     const cleanedValue = value.startsWith("0") && !value.startsWith("0.") ? value.replace(/^0+/, "0") : value;
-    setEthAmount(cleanedValue);
+    setB3Amount(cleanedValue);
 
     try {
       const parsedAmount = parseEther(cleanedValue);
@@ -208,7 +208,7 @@ export function AnySpendBondKit({
           Buy {tokenName} ({tokenSymbol})
         </h2>
         <div className="flex w-full flex-col items-center space-y-2">
-          <span className="text-[28px] font-bold">{ethAmount} ETH</span>
+          <span className="text-[28px] font-bold">{b3Amount} B3</span>
           {quote && (
             <span className="text-lg">
               ≈ {formatNumberWithCommas(parseFloat(quote).toFixed(4))} {tokenSymbol}
@@ -294,7 +294,7 @@ export function AnySpendBondKit({
           >
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <p className="text-as-primary/70 text-sm font-medium">ETH Amount</p>
+                <p className="text-as-primary/70 text-sm font-medium">B3 Amount</p>
               </div>
 
               <div className="relative">
@@ -302,19 +302,19 @@ export function AnySpendBondKit({
                   type="text"
                   inputMode="decimal"
                   placeholder="0.1"
-                  value={ethAmount}
+                  value={b3Amount}
                   onChange={e => validateAndSetAmount(e.target.value)}
-                  className={`h-14 px-4 text-lg ${!isAmountValid && ethAmount ? "border-as-red" : "border-b3-react-border"}`}
+                  className={`h-14 px-4 text-lg ${!isAmountValid && b3Amount ? "border-as-red" : "border-b3-react-border"}`}
                 />
               </div>
 
-              {!isAmountValid && ethAmount && <p className="text-as-red text-sm">{validationError}</p>}
+              {!isAmountValid && b3Amount && <p className="text-as-red text-sm">{validationError}</p>}
 
               <div className="bg-as-on-surface-2/30 rounded-lg border border-white/10 p-4 backdrop-blur-sm">
                 <div className="flex items-center justify-between">
                   <span className="text-as-primary/70 text-sm font-medium">Total Cost:</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-as-primary text-lg font-bold">{ethAmount || "0"} ETH</span>
+                    <span className="text-as-primary text-lg font-bold">{b3Amount || "0"} B3</span>
                   </div>
                 </div>
                 {isLoadingQuote ? (
@@ -333,11 +333,11 @@ export function AnySpendBondKit({
 
               <Button
                 onClick={() => {
-                  if (isAmountValid && ethAmount) {
+                  if (isAmountValid && b3Amount) {
                     setShowAmountPrompt(false);
                   }
                 }}
-                disabled={!isAmountValid || !ethAmount || isLoadingQuote}
+                disabled={!isAmountValid || !b3Amount || isLoadingQuote}
                 className="bg-as-brand hover:bg-as-brand/90 text-as-primary mt-4 h-14 w-full rounded-xl text-lg font-medium"
               >
                 Continue
@@ -350,9 +350,9 @@ export function AnySpendBondKit({
   }
 
   const encodedData = encodeFunctionData({
-    abi: ABI_bondKit,
+    abi: BondkitTokenABI,
     functionName: "buyFor",
-    args: [recipientAddress as `0x${string}`, BigInt(minTokensOut)],
+    args: [recipientAddress as `0x${string}`, parseEther(b3Amount), BigInt(minTokensOut)],
   });
 
   return (
@@ -362,7 +362,7 @@ export function AnySpendBondKit({
       orderType={"custom"}
       dstChainId={baseMainnet.id}
       dstToken={dstToken}
-      dstAmount={parseEther(ethAmount).toString()}
+      dstAmount={parseEther(b3Amount).toString()}
       contractAddress={contractAddress}
       encodedData={encodedData}
       metadata={{
