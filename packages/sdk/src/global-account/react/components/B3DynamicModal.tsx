@@ -72,6 +72,9 @@ export function B3DynamicModal() {
     contentType?.type === "signInWithB3" && "p-0",
     contentType?.type === "anySpend" && "md:px-6",
     contentType?.type === "transak" && "transak-modal",
+    // Add specific styles for avatar editor
+    contentType?.type === "avatarEditor" &&
+      "h-[90dvh] w-[90vw] bg-black p-0 overflow-y-auto overflow-x-hidden max-md:-mt-8 max-md:rounded-t-xl",
   );
 
   debug("contentType", contentType);
@@ -129,8 +132,10 @@ export function B3DynamicModal() {
           contentClass,
           "rounded-2xl bg-white shadow-xl dark:bg-gray-900",
           "border border-gray-200 dark:border-gray-800",
-          "mx-auto w-full max-w-md",
-          "sm:max-w-lg",
+          // Remove default width classes for avatar editor
+          contentType?.type === "avatarEditor"
+            ? "!w-[90vw] !max-w-none" // Use !important to override default styles
+            : "mx-auto w-full max-w-md sm:max-w-lg",
         )}
         hideCloseButton={hideCloseButton}
       >
@@ -164,6 +169,22 @@ export function B3DynamicModal() {
           {renderContent()}
         </div>
       </ModalContent>
+      {contentType?.type === "avatarEditor" && (
+        <button
+          onClick={() => setB3ModalOpen(false)}
+          className="fixed right-5 top-5 z-[100] cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M18 6L6 18M6 6L18 18"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+      )}
     </ModalComponent>
   );
 }
