@@ -32,7 +32,7 @@ function generateEncodedDataForDepositHype(amount: string, beneficiary: string):
   return encodedData;
 }
 
-export function AnySpendDepositHype(props: {
+export interface AnySpendDepositHypeProps {
   loadOrder?: string;
   mode?: "modal" | "page";
   recipientAddress: string;
@@ -41,7 +41,10 @@ export function AnySpendDepositHype(props: {
   sourceTokenChainId?: number;
   onSuccess?: () => void;
   depositContractAddress?: string;
-}) {
+  mainFooter?: React.ReactNode;
+}
+
+export function AnySpendDepositHype(props: AnySpendDepositHypeProps) {
   const fingerprintConfig = getFingerprintConfig();
 
   return (
@@ -60,16 +63,8 @@ function AnySpendDepositHypeInner({
   sourceTokenChainId,
   onSuccess,
   depositContractAddress,
-}: {
-  loadOrder?: string;
-  mode?: "modal" | "page";
-  recipientAddress: string;
-  paymentType?: "crypto" | "fiat";
-  sourceTokenAddress?: string;
-  sourceTokenChainId?: number;
-  onSuccess?: () => void;
-  depositContractAddress?: string;
-}) {
+  mainFooter,
+}: AnySpendDepositHypeProps) {
   // Use shared flow hook
   const {
     activePanel,
@@ -299,6 +294,8 @@ function AnySpendDepositHypeInner({
           {btnInfo.text}
         </ShinyButton>
       </motion.div>
+
+      {mainFooter ? mainFooter : null}
     </div>
   );
 
