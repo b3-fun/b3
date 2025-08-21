@@ -774,6 +774,18 @@
     {
       "source": "/brand-kit",
       "destination": "/protocol/brand-kit"
+    },
+    {
+      "source": "/constitution",
+      "destination": "/protocol/constitution"
+    },
+    {
+      "source": "/tokenomics",
+      "destination": "/protocol/tokenomics"
+    },
+    {
+      "source": "/whitepaper-mica",
+      "destination": "/protocol/whitepaper-mica"
     }
   ]
 }
