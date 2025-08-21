@@ -1,4 +1,4 @@
-import { B3_TOKEN } from "@b3dotfun/sdk/anyspend";
+import { B3_TOKEN, DEPOSIT_HYPE_ACTION } from "@b3dotfun/sdk/anyspend";
 import { Button, ShinyButton, StyleRoot, TransitionPanel } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import invariant from "invariant";
@@ -323,7 +323,7 @@ function AnySpendDepositHypeInner({
           amount: depositAmountWei,
           data: encodedData,
           to: depositContractAddress,
-          action: "deposit HYPE",
+          action: DEPOSIT_HYPE_ACTION,
         },
       });
     } catch (err: any) {
@@ -388,7 +388,7 @@ function AnySpendDepositHypeInner({
           amount: depositAmountWei,
           data: encodedData,
           to: depositContractAddress,
-          action: "deposit HYPE",
+          action: DEPOSIT_HYPE_ACTION,
         },
       });
     } catch (err: any) {
