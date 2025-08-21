@@ -1,184 +1,443 @@
 export const BondkitTokenABI = [
-  { inputs: [], stateMutability: "nonpayable", type: "constructor" },
-  { inputs: [], name: "CalculatedTradingTokenOutIsZero", type: "error" },
+  {
+    inputs: [],
+    stateMutability: "nonpayable",
+    type: "constructor",
+  },
+  {
+    inputs: [],
+    name: "CalculatedTradingTokenOutIsZero",
+    type: "error",
+  },
   {
     inputs: [
-      { internalType: "uint256", name: "required", type: "uint256" },
-      { internalType: "uint256", name: "available", type: "uint256" },
+      {
+        internalType: "uint256",
+        name: "required",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "available",
+        type: "uint256",
+      },
     ],
     name: "CurveReserveInsufficient",
     type: "error",
   },
   {
     inputs: [
-      { internalType: "uint256", name: "currentRaised", type: "uint256" },
-      { internalType: "uint256", name: "threshold", type: "uint256" },
+      {
+        internalType: "uint256",
+        name: "currentRaised",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "threshold",
+        type: "uint256",
+      },
     ],
     name: "DexTriggerThresholdNotMet",
     type: "error",
   },
   {
     inputs: [
-      { internalType: "address", name: "spender", type: "address" },
-      { internalType: "uint256", name: "allowance", type: "uint256" },
-      { internalType: "uint256", name: "needed", type: "uint256" },
+      {
+        internalType: "address",
+        name: "spender",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "allowance",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "needed",
+        type: "uint256",
+      },
     ],
     name: "ERC20InsufficientAllowance",
     type: "error",
   },
   {
     inputs: [
-      { internalType: "address", name: "sender", type: "address" },
-      { internalType: "uint256", name: "balance", type: "uint256" },
-      { internalType: "uint256", name: "needed", type: "uint256" },
+      {
+        internalType: "address",
+        name: "sender",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "balance",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "needed",
+        type: "uint256",
+      },
     ],
     name: "ERC20InsufficientBalance",
     type: "error",
   },
   {
-    inputs: [{ internalType: "address", name: "approver", type: "address" }],
+    inputs: [
+      {
+        internalType: "address",
+        name: "approver",
+        type: "address",
+      },
+    ],
     name: "ERC20InvalidApprover",
     type: "error",
   },
   {
-    inputs: [{ internalType: "address", name: "receiver", type: "address" }],
+    inputs: [
+      {
+        internalType: "address",
+        name: "receiver",
+        type: "address",
+      },
+    ],
     name: "ERC20InvalidReceiver",
     type: "error",
   },
-  { inputs: [{ internalType: "address", name: "sender", type: "address" }], name: "ERC20InvalidSender", type: "error" },
   {
-    inputs: [{ internalType: "address", name: "spender", type: "address" }],
+    inputs: [
+      {
+        internalType: "address",
+        name: "sender",
+        type: "address",
+      },
+    ],
+    name: "ERC20InvalidSender",
+    type: "error",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "spender",
+        type: "address",
+      },
+    ],
     name: "ERC20InvalidSpender",
     type: "error",
   },
   {
     inputs: [
-      { internalType: "address", name: "owner", type: "address" },
-      { internalType: "uint256", name: "required", type: "uint256" },
-      { internalType: "uint256", name: "available", type: "uint256" },
+      {
+        internalType: "address",
+        name: "owner",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "required",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "available",
+        type: "uint256",
+      },
     ],
     name: "InsufficientTokenBalance",
     type: "error",
   },
   {
-    inputs: [{ internalType: "uint256", name: "available", type: "uint256" }],
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "available",
+        type: "uint256",
+      },
+    ],
     name: "InsufficientTradingTokenForLiquidity",
     type: "error",
   },
   {
-    inputs: [{ internalType: "uint256", name: "value", type: "uint256" }],
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "value",
+        type: "uint256",
+      },
+    ],
     name: "InvalidCurveExponent",
     type: "error",
   },
   {
     inputs: [
-      { internalType: "uint8", name: "currentPhase", type: "uint8" },
-      { internalType: "uint8", name: "requiredPhase", type: "uint8" },
+      {
+        internalType: "uint8",
+        name: "currentPhase",
+        type: "uint8",
+      },
+      {
+        internalType: "uint8",
+        name: "requiredPhase",
+        type: "uint8",
+      },
     ],
     name: "InvalidPhaseForAction",
     type: "error",
   },
-  { inputs: [], name: "NoTokensForLiquidity", type: "error" },
-  { inputs: [{ internalType: "address", name: "owner", type: "address" }], name: "OwnableInvalidOwner", type: "error" },
   {
-    inputs: [{ internalType: "address", name: "account", type: "address" }],
+    inputs: [],
+    name: "NoTokensForLiquidity",
+    type: "error",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "owner",
+        type: "address",
+      },
+    ],
+    name: "OwnableInvalidOwner",
+    type: "error",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
     name: "OwnableUnauthorizedAccount",
     type: "error",
   },
   {
     inputs: [
-      { internalType: "uint256", name: "x", type: "uint256" },
-      { internalType: "uint256", name: "y", type: "uint256" },
+      {
+        internalType: "uint256",
+        name: "x",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "y",
+        type: "uint256",
+      },
     ],
     name: "PRBMath_MulDiv18_Overflow",
     type: "error",
   },
   {
     inputs: [
-      { internalType: "uint256", name: "x", type: "uint256" },
-      { internalType: "uint256", name: "y", type: "uint256" },
-      { internalType: "uint256", name: "denominator", type: "uint256" },
+      {
+        internalType: "uint256",
+        name: "x",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "y",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "denominator",
+        type: "uint256",
+      },
     ],
     name: "PRBMath_MulDiv_Overflow",
     type: "error",
   },
   {
-    inputs: [{ internalType: "UD60x18", name: "x", type: "uint256" }],
+    inputs: [
+      {
+        internalType: "UD60x18",
+        name: "x",
+        type: "uint256",
+      },
+    ],
     name: "PRBMath_UD60x18_Exp2_InputTooBig",
     type: "error",
   },
   {
-    inputs: [{ internalType: "UD60x18", name: "x", type: "uint256" }],
+    inputs: [
+      {
+        internalType: "UD60x18",
+        name: "x",
+        type: "uint256",
+      },
+    ],
     name: "PRBMath_UD60x18_Log_InputTooSmall",
     type: "error",
   },
-  { inputs: [], name: "ReentrancyGuardReentrantCall", type: "error" },
+  {
+    inputs: [],
+    name: "ReentrancyGuardReentrantCall",
+    type: "error",
+  },
   {
     inputs: [
-      { internalType: "uint256", name: "tokensToMint", type: "uint256" },
-      { internalType: "uint256", name: "minTokensOut", type: "uint256" },
+      {
+        internalType: "uint256",
+        name: "tokensToMint",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "minTokensOut",
+        type: "uint256",
+      },
     ],
     name: "SlippageProtectionTokens",
     type: "error",
   },
   {
     inputs: [
-      { internalType: "uint256", name: "tradingTokenToUser", type: "uint256" },
-      { internalType: "uint256", name: "minTradingTokenOut", type: "uint256" },
+      {
+        internalType: "uint256",
+        name: "tradingTokenToUser",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "minTradingTokenOut",
+        type: "uint256",
+      },
     ],
     name: "SlippageProtectionTradingToken",
     type: "error",
   },
-  { inputs: [], name: "TokenAmountMustBePositive", type: "error" },
-  { inputs: [], name: "TradingDisabledDexPhaseActive", type: "error" },
-  { inputs: [], name: "TradingTokenAmountMustBePositive", type: "error" },
-  { inputs: [], name: "TradingTokenForCurveMustBePositive", type: "error" },
   {
-    inputs: [{ internalType: "address", name: "recipient", type: "address" }],
+    inputs: [],
+    name: "TokenAmountMustBePositive",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "TradingDisabledDexPhaseActive",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "TradingTokenAmountMustBePositive",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "TradingTokenForCurveMustBePositive",
+    type: "error",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "recipient",
+        type: "address",
+      },
+    ],
     name: "TradingTokenTransferFailed",
     type: "error",
   },
   {
-    inputs: [{ internalType: "uint256", name: "value", type: "uint256" }],
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "value",
+        type: "uint256",
+      },
+    ],
     name: "ValidationInvalidAggressivenessFactor",
     type: "error",
   },
   {
-    inputs: [{ internalType: "address", name: "providedAddress", type: "address" }],
+    inputs: [
+      {
+        internalType: "address",
+        name: "providedAddress",
+        type: "address",
+      },
+    ],
     name: "ValidationInvalidFeeRecipientAddress",
     type: "error",
   },
   {
-    inputs: [{ internalType: "uint256", name: "value", type: "uint256" }],
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "value",
+        type: "uint256",
+      },
+    ],
     name: "ValidationInvalidFinalTokenSupply",
     type: "error",
   },
   {
-    inputs: [{ internalType: "uint256", name: "value", type: "uint256" }],
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "value",
+        type: "uint256",
+      },
+    ],
     name: "ValidationInvalidLPSplitRatio",
     type: "error",
   },
   {
-    inputs: [{ internalType: "address", name: "providedAddress", type: "address" }],
+    inputs: [
+      {
+        internalType: "address",
+        name: "providedAddress",
+        type: "address",
+      },
+    ],
     name: "ValidationInvalidMigrationAdminAddress",
     type: "error",
   },
   {
-    inputs: [{ internalType: "uint24", name: "value", type: "uint24" }],
+    inputs: [
+      {
+        internalType: "uint24",
+        name: "value",
+        type: "uint24",
+      },
+    ],
     name: "ValidationInvalidV4PoolFee",
     type: "error",
   },
   {
-    inputs: [{ internalType: "int24", name: "value", type: "int24" }],
+    inputs: [
+      {
+        internalType: "int24",
+        name: "value",
+        type: "int24",
+      },
+    ],
     name: "ValidationInvalidV4TickSpacing",
     type: "error",
   },
   {
     anonymous: false,
     inputs: [
-      { indexed: true, internalType: "address", name: "owner", type: "address" },
-      { indexed: true, internalType: "address", name: "spender", type: "address" },
-      { indexed: false, internalType: "uint256", name: "value", type: "uint256" },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "owner",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "spender",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "value",
+        type: "uint256",
+      },
     ],
     name: "Approval",
     type: "event",
@@ -186,12 +445,42 @@ export const BondkitTokenABI = [
   {
     anonymous: false,
     inputs: [
-      { indexed: true, internalType: "address", name: "payer", type: "address" },
-      { indexed: true, internalType: "address", name: "recipient", type: "address" },
-      { indexed: false, internalType: "uint256", name: "tradingTokenIn", type: "uint256" },
-      { indexed: false, internalType: "uint256", name: "tokensOut", type: "uint256" },
-      { indexed: false, internalType: "uint256", name: "fee", type: "uint256" },
-      { indexed: false, internalType: "uint256", name: "totalRaisedBonding", type: "uint256" },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "payer",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "recipient",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "tradingTokenIn",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "tokensOut",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "fee",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "totalRaisedBonding",
+        type: "uint256",
+      },
     ],
     name: "BondingCurveBuy",
     type: "event",
@@ -199,11 +488,36 @@ export const BondkitTokenABI = [
   {
     anonymous: false,
     inputs: [
-      { indexed: true, internalType: "address", name: "seller", type: "address" },
-      { indexed: false, internalType: "uint256", name: "tokensIn", type: "uint256" },
-      { indexed: false, internalType: "uint256", name: "tradingTokenOut", type: "uint256" },
-      { indexed: false, internalType: "uint256", name: "fee", type: "uint256" },
-      { indexed: false, internalType: "uint256", name: "totalRaisedBonding", type: "uint256" },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "seller",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "tokensIn",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "tradingTokenOut",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "fee",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "totalRaisedBonding",
+        type: "uint256",
+      },
     ],
     name: "BondingCurveSell",
     type: "event",
@@ -211,15 +525,60 @@ export const BondkitTokenABI = [
   {
     anonymous: false,
     inputs: [
-      { indexed: true, internalType: "address", name: "initializer", type: "address" },
-      { indexed: false, internalType: "string", name: "name", type: "string" },
-      { indexed: false, internalType: "string", name: "symbol", type: "string" },
-      { indexed: false, internalType: "address", name: "feeRecipient", type: "address" },
-      { indexed: false, internalType: "uint256", name: "finalTokenSupply", type: "uint256" },
-      { indexed: false, internalType: "uint8", name: "aggressivenessFactor", type: "uint8" },
-      { indexed: false, internalType: "uint256", name: "lpSplitRatioFeeRecipientBps", type: "uint256" },
-      { indexed: false, internalType: "uint256", name: "targetAmount", type: "uint256" },
-      { indexed: false, internalType: "address", name: "tradingToken", type: "address" },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "initializer",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "string",
+        name: "name",
+        type: "string",
+      },
+      {
+        indexed: false,
+        internalType: "string",
+        name: "symbol",
+        type: "string",
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "feeRecipient",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "finalTokenSupply",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint8",
+        name: "aggressivenessFactor",
+        type: "uint8",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "lpSplitRatioFeeRecipientBps",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "targetAmount",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "tradingToken",
+        type: "address",
+      },
     ],
     name: "BondkitTokenInitialized",
     type: "event",
@@ -227,9 +586,24 @@ export const BondkitTokenABI = [
   {
     anonymous: false,
     inputs: [
-      { indexed: false, internalType: "uint256", name: "tradingTokenForLp", type: "uint256" },
-      { indexed: false, internalType: "uint256", name: "tokensForLp", type: "uint256" },
-      { indexed: false, internalType: "uint256", name: "tradingTokenForFeeRecipient", type: "uint256" },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "tradingTokenForLp",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "tokensForLp",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "tradingTokenForFeeRecipient",
+        type: "uint256",
+      },
     ],
     name: "BondkitTokenMigrated",
     type: "event",
@@ -237,8 +611,37 @@ export const BondkitTokenABI = [
   {
     anonymous: false,
     inputs: [
-      { indexed: true, internalType: "address", name: "splitter", type: "address" },
-      { indexed: false, internalType: "uint256", name: "amount", type: "uint256" },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "totalRaisedBonding",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "targetAmount",
+        type: "uint256",
+      },
+    ],
+    name: "DexTriggerThresholdMet",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "splitter",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
     ],
     name: "FeesSentToSplitter",
     type: "event",
@@ -246,8 +649,37 @@ export const BondkitTokenABI = [
   {
     anonymous: false,
     inputs: [
-      { indexed: true, internalType: "address", name: "previousOwner", type: "address" },
-      { indexed: true, internalType: "address", name: "newOwner", type: "address" },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "previousAdmin",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "newAdmin",
+        type: "address",
+      },
+    ],
+    name: "MigrationAdminUpdated",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "previousOwner",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "newOwner",
+        type: "address",
+      },
     ],
     name: "OwnershipTransferred",
     type: "event",
@@ -255,8 +687,18 @@ export const BondkitTokenABI = [
   {
     anonymous: false,
     inputs: [
-      { indexed: true, internalType: "address", name: "splitter", type: "address" },
-      { indexed: false, internalType: "bool", name: "isEnabled", type: "bool" },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "splitter",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "bool",
+        name: "isEnabled",
+        type: "bool",
+      },
     ],
     name: "SplitterConfigured",
     type: "event",
@@ -264,9 +706,24 @@ export const BondkitTokenABI = [
   {
     anonymous: false,
     inputs: [
-      { indexed: true, internalType: "address", name: "from", type: "address" },
-      { indexed: true, internalType: "address", name: "to", type: "address" },
-      { indexed: false, internalType: "uint256", name: "value", type: "uint256" },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "from",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "to",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "value",
+        type: "uint256",
+      },
     ],
     name: "Transfer",
     type: "event",
@@ -274,52 +731,126 @@ export const BondkitTokenABI = [
   {
     anonymous: false,
     inputs: [
-      { indexed: true, internalType: "bytes32", name: "poolId", type: "bytes32" },
-      { indexed: true, internalType: "address", name: "hook", type: "address" },
-      { indexed: false, internalType: "uint24", name: "fee", type: "uint24" },
-      { indexed: false, internalType: "int24", name: "tickSpacing", type: "int24" },
+      {
+        indexed: true,
+        internalType: "bytes32",
+        name: "poolId",
+        type: "bytes32",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "hook",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint24",
+        name: "fee",
+        type: "uint24",
+      },
+      {
+        indexed: false,
+        internalType: "int24",
+        name: "tickSpacing",
+        type: "int24",
+      },
     ],
     name: "V4PoolConfigured",
     type: "event",
   },
   {
     inputs: [
-      { internalType: "address", name: "owner", type: "address" },
-      { internalType: "address", name: "spender", type: "address" },
+      {
+        internalType: "address",
+        name: "owner",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "spender",
+        type: "address",
+      },
     ],
     name: "allowance",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [
-      { internalType: "address", name: "spender", type: "address" },
-      { internalType: "uint256", name: "value", type: "uint256" },
+      {
+        internalType: "address",
+        name: "spender",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "value",
+        type: "uint256",
+      },
     ],
     name: "approve",
-    outputs: [{ internalType: "bool", name: "", type: "bool" }],
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
     stateMutability: "nonpayable",
     type: "function",
   },
   {
-    inputs: [{ internalType: "address", name: "account", type: "address" }],
+    inputs: [
+      {
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
     name: "balanceOf",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
     name: "bondingPhaseSplitter",
-    outputs: [{ internalType: "address", name: "", type: "address" }],
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [
-      { internalType: "uint256", name: "_amount", type: "uint256" },
-      { internalType: "uint256", name: "_minTokensOut", type: "uint256" },
+      {
+        internalType: "uint256",
+        name: "_amount",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "_minTokensOut",
+        type: "uint256",
+      },
     ],
     name: "buy",
     outputs: [],
@@ -328,9 +859,21 @@ export const BondkitTokenABI = [
   },
   {
     inputs: [
-      { internalType: "address", name: "_recipient", type: "address" },
-      { internalType: "uint256", name: "_amount", type: "uint256" },
-      { internalType: "uint256", name: "_minTokensOut", type: "uint256" },
+      {
+        internalType: "address",
+        name: "_recipient",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "_amount",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "_minTokensOut",
+        type: "uint256",
+      },
     ],
     name: "buyFor",
     outputs: [],
@@ -341,9 +884,21 @@ export const BondkitTokenABI = [
     inputs: [],
     name: "checkV4PoolState",
     outputs: [
-      { internalType: "bool", name: "initialized", type: "bool" },
-      { internalType: "bytes32", name: "poolId", type: "bytes32" },
-      { internalType: "address", name: "hookAddress", type: "address" },
+      {
+        internalType: "bool",
+        name: "initialized",
+        type: "bool",
+      },
+      {
+        internalType: "bytes32",
+        name: "poolId",
+        type: "bytes32",
+      },
+      {
+        internalType: "address",
+        name: "hookAddress",
+        type: "address",
+      },
     ],
     stateMutability: "view",
     type: "function",
@@ -351,49 +906,103 @@ export const BondkitTokenABI = [
   {
     inputs: [],
     name: "circulatingSupply",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
     name: "currentStatus",
-    outputs: [{ internalType: "enum Status", name: "", type: "uint8" }],
+    outputs: [
+      {
+        internalType: "enum Status",
+        name: "",
+        type: "uint8",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
     name: "decimals",
-    outputs: [{ internalType: "uint8", name: "", type: "uint8" }],
+    outputs: [
+      {
+        internalType: "uint8",
+        name: "",
+        type: "uint8",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
     name: "feeRecipient",
-    outputs: [{ internalType: "address", name: "", type: "address" }],
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
     name: "finalTokenSupply",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
   {
-    inputs: [{ internalType: "uint256", name: "_tradingTokenAmount", type: "uint256" }],
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_tradingTokenAmount",
+        type: "uint256",
+      },
+    ],
     name: "getAmountOfTokensToBuy",
-    outputs: [{ internalType: "uint256", name: "tokensToMint", type: "uint256" }],
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "tokensToMint",
+        type: "uint256",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
   {
-    inputs: [{ internalType: "uint256", name: "_tokenAmount", type: "uint256" }],
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_tokenAmount",
+        type: "uint256",
+      },
+    ],
     name: "getAmountOfTradingTokensToSell",
-    outputs: [{ internalType: "uint256", name: "tradingTokenToUser", type: "uint256" }],
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "tradingTokenToUser",
+        type: "uint256",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
@@ -401,8 +1010,16 @@ export const BondkitTokenABI = [
     inputs: [],
     name: "getBondingCurveConfig",
     outputs: [
-      { internalType: "uint256", name: "num", type: "uint256" },
-      { internalType: "uint256", name: "den", type: "uint256" },
+      {
+        internalType: "uint256",
+        name: "num",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "den",
+        type: "uint256",
+      },
     ],
     stateMutability: "view",
     type: "function",
@@ -411,9 +1028,21 @@ export const BondkitTokenABI = [
     inputs: [],
     name: "getBondingProgressPercent",
     outputs: [
-      { internalType: "uint256", name: "progressBps", type: "uint256" },
-      { internalType: "uint256", name: "raised", type: "uint256" },
-      { internalType: "uint256", name: "threshold", type: "uint256" },
+      {
+        internalType: "uint256",
+        name: "progressBps",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "raised",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "threshold",
+        type: "uint256",
+      },
     ],
     stateMutability: "view",
     type: "function",
@@ -421,47 +1050,106 @@ export const BondkitTokenABI = [
   {
     inputs: [],
     name: "getCurrentBondingCurvePricePerToken",
-    outputs: [{ internalType: "uint256", name: "currentPriceWei", type: "uint256" }],
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "currentPriceWei",
+        type: "uint256",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
     name: "getCurrentPhase",
-    outputs: [{ internalType: "string", name: "phase", type: "string" }],
+    outputs: [
+      {
+        internalType: "string",
+        name: "phase",
+        type: "string",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
     name: "getCurrentStatusEnum",
-    outputs: [{ internalType: "enum Status", name: "", type: "uint8" }],
+    outputs: [
+      {
+        internalType: "enum Status",
+        name: "",
+        type: "uint8",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
     name: "getFeeRecipient",
-    outputs: [{ internalType: "address", name: "", type: "address" }],
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
     name: "getLPSplitRatioFeeRecipientBps",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "getMigrationAdmin",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [
-      { internalType: "uint256", name: "_startIndex", type: "uint256" },
-      { internalType: "uint256", name: "_count", type: "uint256" },
+      {
+        internalType: "uint256",
+        name: "_startIndex",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "_count",
+        type: "uint256",
+      },
     ],
     name: "getPaginatedHolders",
     outputs: [
-      { internalType: "address[]", name: "holders", type: "address[]" },
-      { internalType: "uint256[]", name: "balances", type: "uint256[]" },
+      {
+        internalType: "address[]",
+        name: "holders",
+        type: "address[]",
+      },
+      {
+        internalType: "uint256[]",
+        name: "balances",
+        type: "uint256[]",
+      },
     ],
     stateMutability: "view",
     type: "function",
@@ -470,8 +1158,16 @@ export const BondkitTokenABI = [
     inputs: [],
     name: "getSplitterInfo",
     outputs: [
-      { internalType: "address", name: "splitter", type: "address" },
-      { internalType: "bool", name: "isEnabled", type: "bool" },
+      {
+        internalType: "address",
+        name: "splitter",
+        type: "address",
+      },
+      {
+        internalType: "bool",
+        name: "isEnabled",
+        type: "bool",
+      },
     ],
     stateMutability: "view",
     type: "function",
@@ -479,24 +1175,54 @@ export const BondkitTokenABI = [
   {
     inputs: [],
     name: "getTargetAmount",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
     name: "getTradingToken",
-    outputs: [{ internalType: "address", name: "", type: "address" }],
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
   {
-    inputs: [{ internalType: "address", name: "user", type: "address" }],
+    inputs: [
+      {
+        internalType: "address",
+        name: "user",
+        type: "address",
+      },
+    ],
     name: "getUserQuote",
     outputs: [
-      { internalType: "uint256", name: "balance", type: "uint256" },
-      { internalType: "uint256", name: "tokensFor1TradingToken", type: "uint256" },
-      { internalType: "uint256", name: "tradingTokenFor1Token", type: "uint256" },
+      {
+        internalType: "uint256",
+        name: "balance",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "tokensFor1TradingToken",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "tradingTokenFor1Token",
+        type: "uint256",
+      },
     ],
     stateMutability: "view",
     type: "function",
@@ -505,10 +1231,26 @@ export const BondkitTokenABI = [
     inputs: [],
     name: "getV4Config",
     outputs: [
-      { internalType: "address", name: "hook", type: "address" },
-      { internalType: "uint24", name: "fee", type: "uint24" },
-      { internalType: "int24", name: "tickSpacing", type: "int24" },
-      { internalType: "bytes32", name: "poolId", type: "bytes32" },
+      {
+        internalType: "address",
+        name: "hook",
+        type: "address",
+      },
+      {
+        internalType: "uint24",
+        name: "fee",
+        type: "uint24",
+      },
+      {
+        internalType: "int24",
+        name: "tickSpacing",
+        type: "int24",
+      },
+      {
+        internalType: "bytes32",
+        name: "poolId",
+        type: "bytes32",
+      },
     ],
     stateMutability: "view",
     type: "function",
@@ -516,14 +1258,26 @@ export const BondkitTokenABI = [
   {
     inputs: [],
     name: "getV4PoolId",
-    outputs: [{ internalType: "bytes32", name: "", type: "bytes32" }],
+    outputs: [
+      {
+        internalType: "bytes32",
+        name: "",
+        type: "bytes32",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
     name: "getV4PoolManager",
-    outputs: [{ internalType: "address", name: "", type: "address" }],
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
@@ -531,20 +1285,76 @@ export const BondkitTokenABI = [
     inputs: [
       {
         components: [
-          { internalType: "string", name: "name", type: "string" },
-          { internalType: "string", name: "symbol", type: "string" },
-          { internalType: "address", name: "feeRecipient", type: "address" },
-          { internalType: "uint256", name: "finalTokenSupply", type: "uint256" },
-          { internalType: "uint8", name: "aggressivenessFactor", type: "uint8" },
-          { internalType: "uint256", name: "lpSplitRatioFeeRecipientBps", type: "uint256" },
-          { internalType: "uint256", name: "targetAmount", type: "uint256" },
-          { internalType: "address", name: "tradingToken", type: "address" },
-          { internalType: "address", name: "migrationAdminAddress", type: "address" },
-          { internalType: "address", name: "bondingPhaseSplitter", type: "address" },
-          { internalType: "address", name: "v4PoolManager", type: "address" },
-          { internalType: "address", name: "v4Hook", type: "address" },
-          { internalType: "uint24", name: "v4PoolFee", type: "uint24" },
-          { internalType: "int24", name: "v4TickSpacing", type: "int24" },
+          {
+            internalType: "string",
+            name: "name",
+            type: "string",
+          },
+          {
+            internalType: "string",
+            name: "symbol",
+            type: "string",
+          },
+          {
+            internalType: "address",
+            name: "feeRecipient",
+            type: "address",
+          },
+          {
+            internalType: "uint256",
+            name: "finalTokenSupply",
+            type: "uint256",
+          },
+          {
+            internalType: "uint8",
+            name: "aggressivenessFactor",
+            type: "uint8",
+          },
+          {
+            internalType: "uint256",
+            name: "lpSplitRatioFeeRecipientBps",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "targetAmount",
+            type: "uint256",
+          },
+          {
+            internalType: "address",
+            name: "tradingToken",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "migrationAdminAddress",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "bondingPhaseSplitter",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "v4PoolManager",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "v4Hook",
+            type: "address",
+          },
+          {
+            internalType: "uint24",
+            name: "v4PoolFee",
+            type: "uint24",
+          },
+          {
+            internalType: "int24",
+            name: "v4TickSpacing",
+            type: "int24",
+          },
         ],
         internalType: "struct BondkitTokenConfigLib.Config",
         name: "_config",
@@ -552,44 +1362,107 @@ export const BondkitTokenABI = [
       },
     ],
     name: "initialize",
-    outputs: [{ internalType: "bool", name: "success", type: "bool" }],
+    outputs: [
+      {
+        internalType: "bool",
+        name: "success",
+        type: "bool",
+      },
+    ],
     stateMutability: "nonpayable",
     type: "function",
   },
   {
     inputs: [],
     name: "lpSplitRatioFeeRecipientBps",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
-  { inputs: [], name: "migrateToDex", outputs: [], stateMutability: "nonpayable", type: "function" },
+  {
+    inputs: [],
+    name: "migrateToDex",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "migrationAdmin",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
   {
     inputs: [],
     name: "name",
-    outputs: [{ internalType: "string", name: "", type: "string" }],
+    outputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
     name: "owner",
-    outputs: [{ internalType: "address", name: "", type: "address" }],
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
-  { inputs: [], name: "renounceOwnership", outputs: [], stateMutability: "nonpayable", type: "function" },
+  {
+    inputs: [],
+    name: "renounceOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
   {
     inputs: [],
     name: "scaledCurveExponent",
-    outputs: [{ internalType: "UD60x18", name: "", type: "uint256" }],
+    outputs: [
+      {
+        internalType: "UD60x18",
+        name: "",
+        type: "uint256",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [
-      { internalType: "uint256", name: "_tokenAmount", type: "uint256" },
-      { internalType: "uint256", name: "_minTradingTokenOut", type: "uint256" },
+      {
+        internalType: "uint256",
+        name: "_tokenAmount",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "_minTradingTokenOut",
+        type: "uint256",
+      },
     ],
     name: "sell",
     outputs: [],
@@ -599,68 +1472,155 @@ export const BondkitTokenABI = [
   {
     inputs: [],
     name: "symbol",
-    outputs: [{ internalType: "string", name: "", type: "string" }],
+    outputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
     name: "targetAmount",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
     name: "totalRaisedBonding",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
     name: "totalSupply",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
     name: "tradingToken",
-    outputs: [{ internalType: "address", name: "", type: "address" }],
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [
-      { internalType: "address", name: "to", type: "address" },
-      { internalType: "uint256", name: "value", type: "uint256" },
+      {
+        internalType: "address",
+        name: "to",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "value",
+        type: "uint256",
+      },
     ],
     name: "transfer",
-    outputs: [{ internalType: "bool", name: "", type: "bool" }],
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
     stateMutability: "nonpayable",
     type: "function",
   },
   {
     inputs: [
-      { internalType: "address", name: "from", type: "address" },
-      { internalType: "address", name: "to", type: "address" },
-      { internalType: "uint256", name: "value", type: "uint256" },
+      {
+        internalType: "address",
+        name: "from",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "to",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "value",
+        type: "uint256",
+      },
     ],
     name: "transferFrom",
-    outputs: [{ internalType: "bool", name: "", type: "bool" }],
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
     stateMutability: "nonpayable",
     type: "function",
   },
   {
-    inputs: [{ internalType: "address", name: "newOwner", type: "address" }],
+    inputs: [
+      {
+        internalType: "address",
+        name: "newOwner",
+        type: "address",
+      },
+    ],
     name: "transferOwnership",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },
   {
-    inputs: [{ internalType: "address", name: "_bondingPhaseSplitter", type: "address" }],
+    inputs: [
+      {
+        internalType: "address",
+        name: "_newAdmin",
+        type: "address",
+      },
+    ],
+    name: "updateMigrationAdmin",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_bondingPhaseSplitter",
+        type: "address",
+      },
+    ],
     name: "updateSplitter",
     outputs: [],
     stateMutability: "nonpayable",
@@ -669,35 +1629,65 @@ export const BondkitTokenABI = [
   {
     inputs: [],
     name: "v4Hook",
-    outputs: [{ internalType: "address", name: "", type: "address" }],
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
     name: "v4PoolFee",
-    outputs: [{ internalType: "uint24", name: "", type: "uint24" }],
+    outputs: [
+      {
+        internalType: "uint24",
+        name: "",
+        type: "uint24",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
     name: "v4PoolId",
-    outputs: [{ internalType: "bytes32", name: "", type: "bytes32" }],
+    outputs: [
+      {
+        internalType: "bytes32",
+        name: "",
+        type: "bytes32",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
     name: "v4PoolManager",
-    outputs: [{ internalType: "contract IPoolManager", name: "", type: "address" }],
+    outputs: [
+      {
+        internalType: "contract IPoolManager",
+        name: "",
+        type: "address",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
     name: "v4TickSpacing",
-    outputs: [{ internalType: "int24", name: "", type: "int24" }],
+    outputs: [
+      {
+        internalType: "int24",
+        name: "",
+        type: "int24",
+      },
+    ],
     stateMutability: "view",
     type: "function",
   },
