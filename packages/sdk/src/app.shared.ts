@@ -1,6 +1,7 @@
 import { ClientApplication } from "@b3dotfun/b3-api";
 import { AuthenticationClient } from "@feathersjs/authentication-client";
 import Cookies from "js-cookie";
+import { B3_AUTH_COOKIE_NAME } from "./shared/constants";
 
 export const B3_API_URL =
   process.env.EXPO_PUBLIC_B3_API || process.env.NEXT_PUBLIC_B3_API || process.env.PUBLIC_B3_API || "https://api.b3.fun";
@@ -49,5 +50,12 @@ export const clientOptions = {
     getItem: (key: string) => {
       return Cookies.get(key);
     },
+    setItem: (key: string, value: string) => {
+      Cookies.set(key, value);
+    },
+    removeItem: (key: string) => {
+      Cookies.remove(key);
+    },
   },
+  storageKey: B3_AUTH_COOKIE_NAME,
 };
