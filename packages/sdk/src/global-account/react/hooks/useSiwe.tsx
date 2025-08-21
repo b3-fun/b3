@@ -1,4 +1,4 @@
-import app from "@b3dotfun/sdk/global-account/app";
+import app from "@b3dotfun/sdk/global-account/app.rest";
 import debug from "@b3dotfun/sdk/shared/utils/debug";
 import { useCallback } from "react";
 import { Account } from "thirdweb/wallets";
