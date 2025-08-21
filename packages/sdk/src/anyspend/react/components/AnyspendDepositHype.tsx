@@ -238,17 +238,20 @@ function AnySpendDepositHypeInner({
           )}
 
           {/* Reverse swap direction section */}
-          <Button
-            variant="ghost"
-            className={cn(
-              "swap-direction-button border-as-stroke bg-as-surface-primary absolute left-1/2 top-[calc(50%+56px)] z-10 h-10 w-10 -translate-x-1/2 -translate-y-1/2 cursor-default rounded-xl border-2 sm:h-8 sm:w-8 sm:rounded-xl",
-              paymentType === "fiat" && "hidden",
-            )}
+          <div
+            className={cn("relative -my-1 flex h-0 items-center justify-center", paymentType === "fiat" && "hidden")}
           >
-            <div className="relative flex items-center justify-center transition-opacity">
-              <ArrowDown className="text-as-primary/50 h-5 w-5" />
-            </div>
-          </Button>
+            <Button
+              variant="ghost"
+              className={cn(
+                "swap-direction-button border-as-stroke bg-as-surface-primary z-10 h-10 w-10 cursor-default rounded-xl border-2 sm:h-8 sm:w-8 sm:rounded-xl",
+              )}
+            >
+              <div className="relative flex items-center justify-center transition-opacity">
+                <ArrowDown className="text-as-primary/50 h-5 w-5" />
+              </div>
+            </Button>
+          </div>
 
           {/* Receive section - Hidden when fiat tab is active */}
           {paymentType === "crypto" && (
