@@ -3,13 +3,20 @@ import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { useSearchParams } from "@b3dotfun/sdk/shared/react";
 import { Check, X } from "lucide-react";
 import { memo } from "react";
+import { CryptoPaymentMethodType } from "./CryptoPaymentMethod";
 import { Step, StepProgress } from "./StepProgress";
 
-export const OrderStatus = memo(function OrderStatus({ order }: { order: components["schemas"]["Order"] }) {
+export const OrderStatus = memo(function OrderStatus({
+  order,
+  selectedCryptoPaymentMethod,
+}: {
+  order: components["schemas"]["Order"];
+  selectedCryptoPaymentMethod?: CryptoPaymentMethodType;
+}) {
   const isComplete = order.status === "executed";
   const { text, status: displayStatus, description } = getStatusDisplay(order);
   const searchParams = useSearchParams();
-  const cryptoPaymentMethod = searchParams.get("cryptoPaymentMethod");
+  const cryptoPaymentMethod = selectedCryptoPaymentMethod || searchParams.get("cryptoPaymentMethod");
 
   console.log("OrderStatus", displayStatus);
   console.log("OrderStatus", order);

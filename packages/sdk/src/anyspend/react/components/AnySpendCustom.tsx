@@ -649,7 +649,7 @@ function AnySpendCustomInner({
     >
       {oat && (
         <>
-          <OrderStatusDisplay order={oat.data.order} />
+          <OrderStatusDisplay order={oat.data.order} selectedCryptoPaymentMethod={selectedCryptoPaymentMethod} />
           <OrderDetails
             mode={mode}
             order={oat.data.order}
