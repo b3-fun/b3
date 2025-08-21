@@ -96,3 +96,5 @@ export const VENDOR_DISPLAY_NAMES = {
   stripe: "Stripe",
   unknown: "Unknown Vendor",
 } as const;
+
+export const DEPOSIT_HYPE_ACTION = "deposit_hype";

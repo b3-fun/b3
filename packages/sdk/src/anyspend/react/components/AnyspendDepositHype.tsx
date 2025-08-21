@@ -1,4 +1,4 @@
-import { B3_TOKEN } from "@b3dotfun/sdk/anyspend";
+import { B3_TOKEN, DEPOSIT_HYPE_ACTION } from "@b3dotfun/sdk/anyspend";
 import { Button, ShinyButton, StyleRoot, TransitionPanel } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import invariant from "invariant";
@@ -32,7 +32,7 @@ function generateEncodedDataForDepositHype(amount: string, beneficiary: string):
   return encodedData;
 }
 
-export function AnySpendDepositHype(props: {
+export interface AnySpendDepositHypeProps {
   loadOrder?: string;
   mode?: "modal" | "page";
   recipientAddress: string;
@@ -41,7 +41,10 @@ export function AnySpendDepositHype(props: {
   sourceTokenChainId?: number;
   onSuccess?: () => void;
   depositContractAddress?: string;
-}) {
+  mainFooter?: React.ReactNode;
+}
+
+export function AnySpendDepositHype(props: AnySpendDepositHypeProps) {
   const fingerprintConfig = getFingerprintConfig();
 
   return (
@@ -60,16 +63,8 @@ function AnySpendDepositHypeInner({
   sourceTokenChainId,
   onSuccess,
   depositContractAddress,
-}: {
-  loadOrder?: string;
-  mode?: "modal" | "page";
-  recipientAddress: string;
-  paymentType?: "crypto" | "fiat";
-  sourceTokenAddress?: string;
-  sourceTokenChainId?: number;
-  onSuccess?: () => void;
-  depositContractAddress?: string;
-}) {
+  mainFooter,
+}: AnySpendDepositHypeProps) {
   // Use shared flow hook
   const {
     activePanel,
@@ -185,6 +180,125 @@ function AnySpendDepositHypeInner({
     }
   };
 
+  const mainView = (
+    <div className="mx-auto flex w-[460px] max-w-full flex-col items-center gap-2">
+      {/* Header */}
+      <div className="mb-4 flex flex-col items-center gap-3 text-center">
+        <div>
+          <h1 className="text-as-primary text-xl font-bold">
+            {paymentType === "crypto" ? "Deposit Crypto" : "Fund with Fiat"}
+          </h1>
+        </div>
+      </div>
+
+      <div className="relative flex w-full max-w-[calc(100vw-32px)] flex-col gap-2">
+        <div className="relative flex w-full max-w-[calc(100vw-32px)] flex-col gap-2">
+          {/* Send section */}
+          {paymentType === "crypto" ? (
+            <PaySection
+              paymentType="crypto"
+              selectedSrcChainId={selectedSrcChainId}
+              setSelectedSrcChainId={setSelectedSrcChainId}
+              selectedSrcToken={selectedSrcToken}
+              setSelectedSrcToken={setSelectedSrcToken}
+              srcAmount={srcAmount}
+              setSrcAmount={setSrcAmount}
+              setIsSrcInputDirty={setIsSrcInputDirty}
+              selectedCryptoPaymentMethod={selectedCryptoPaymentMethod}
+              selectedFiatPaymentMethod={selectedFiatPaymentMethod}
+              onSelectCryptoPaymentMethod={() => setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD)}
+              onSelectFiatPaymentMethod={() => setActivePanel(PanelView.FIAT_PAYMENT_METHOD)}
+              anyspendQuote={anyspendQuote}
+            />
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              transition={{ duration: 0.3, delay: 0, ease: "easeInOut" }}
+            >
+              <PanelOnramp
+                srcAmountOnRamp={srcAmount}
+                setSrcAmountOnRamp={setSrcAmount}
+                selectedPaymentMethod={selectedFiatPaymentMethod}
+                setActivePanel={setActivePanel}
+                _recipientAddress={recipientAddress}
+                destinationToken={B3_TOKEN}
+                destinationChainId={base.id}
+                destinationAmount={dstAmount}
+                onDestinationTokenChange={() => {}}
+                onDestinationChainChange={() => {}}
+                fiatPaymentMethodIndex={PanelView.FIAT_PAYMENT_METHOD}
+              />
+            </motion.div>
+          )}
+
+          {/* Reverse swap direction section */}
+          <div
+            className={cn("relative -my-1 flex h-0 items-center justify-center", paymentType === "fiat" && "hidden")}
+          >
+            <Button
+              variant="ghost"
+              className={cn(
+                "swap-direction-button border-as-stroke bg-as-surface-primary z-10 h-10 w-10 cursor-default rounded-xl border-2 sm:h-8 sm:w-8 sm:rounded-xl",
+              )}
+            >
+              <div className="relative flex items-center justify-center transition-opacity">
+                <ArrowDown className="text-as-primary/50 h-5 w-5" />
+              </div>
+            </Button>
+          </div>
+
+          {/* Receive section - Hidden when fiat tab is active */}
+          {paymentType === "crypto" && (
+            <CryptoReceiveSection
+              isDepositMode={false}
+              isBuyMode={true}
+              selectedRecipientAddress={recipientAddress}
+              recipientName={recipientName || undefined}
+              onSelectRecipient={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
+              dstAmount={dstAmount}
+              dstToken={B3_TOKEN}
+              selectedDstChainId={base.id}
+              setSelectedDstChainId={() => {}}
+              setSelectedDstToken={() => {}}
+              onChangeDstAmount={value => {
+                setIsSrcInputDirty(false);
+                setSrcAmount(value);
+              }}
+              anyspendQuote={anyspendQuote}
+            />
+          )}
+        </div>
+      </div>
+
+      {/* Error message section */}
+      <ErrorSection error={getAnyspendQuoteError} />
+
+      {/* Main button section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
+        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+        transition={{ duration: 0.3, delay: 0.2, ease: "easeInOut" }}
+        className={cn("mt-4 flex w-full max-w-[460px] flex-col gap-2", getAnyspendQuoteError && "mt-0")}
+      >
+        <ShinyButton
+          accentColor={"hsl(var(--as-brand))"}
+          disabled={btnInfo.disable}
+          onClick={onMainButtonClick}
+          className={cn(
+            "as-main-button relative w-full",
+            btnInfo.error ? "!bg-as-red" : btnInfo.disable ? "!bg-as-on-surface-2" : "!bg-as-brand",
+          )}
+          textClassName={cn(btnInfo.error ? "text-white" : btnInfo.disable ? "text-as-secondary" : "text-white")}
+        >
+          {btnInfo.text}
+        </ShinyButton>
+      </motion.div>
+
+      {mainFooter ? mainFooter : null}
+    </div>
+  );
+
   // Handle crypto order creation
   const handleCryptoOrder = async () => {
     try {
@@ -209,7 +323,7 @@ function AnySpendDepositHypeInner({
           amount: depositAmountWei,
           data: encodedData,
           to: depositContractAddress,
-          action: "deposit HYPE",
+          action: DEPOSIT_HYPE_ACTION,
         },
       });
     } catch (err: any) {
@@ -274,7 +388,7 @@ function AnySpendDepositHypeInner({
           amount: depositAmountWei,
           data: encodedData,
           to: depositContractAddress,
-          action: "deposit HYPE",
+          action: DEPOSIT_HYPE_ACTION,
         },
       });
     } catch (err: any) {
@@ -289,7 +403,7 @@ function AnySpendDepositHypeInner({
       <div className="relative flex flex-col gap-4">
         {oat && (
           <>
-            <OrderStatus order={oat.data.order} />
+            <OrderStatus order={oat.data.order} selectedCryptoPaymentMethod={selectedCryptoPaymentMethod} />
             <OrderDetails
               mode={mode}
               order={oat.data.order}
@@ -388,119 +502,7 @@ function AnySpendDepositHypeInner({
         >
           {[
             <div key="main-view" className={cn(mode === "page" && "p-6")}>
-              <div className="mx-auto flex w-[460px] max-w-full flex-col items-center gap-2">
-                {/* Header */}
-                <div className="mb-4 flex flex-col items-center gap-3 text-center">
-                  <div>
-                    <h1 className="text-as-primary text-xl font-bold">
-                      {paymentType === "crypto" ? "Deposit Crypto" : "Fund with Fiat"}
-                    </h1>
-                  </div>
-                </div>
-
-                <div className="relative flex w-full max-w-[calc(100vw-32px)] flex-col gap-2">
-                  <div className="relative flex w-full max-w-[calc(100vw-32px)] flex-col gap-2">
-                    {/* Send section */}
-                    {paymentType === "crypto" ? (
-                      <PaySection
-                        paymentType="crypto"
-                        selectedSrcChainId={selectedSrcChainId}
-                        setSelectedSrcChainId={setSelectedSrcChainId}
-                        selectedSrcToken={selectedSrcToken}
-                        setSelectedSrcToken={setSelectedSrcToken}
-                        srcAmount={srcAmount}
-                        setSrcAmount={setSrcAmount}
-                        setIsSrcInputDirty={setIsSrcInputDirty}
-                        selectedCryptoPaymentMethod={selectedCryptoPaymentMethod}
-                        selectedFiatPaymentMethod={selectedFiatPaymentMethod}
-                        onSelectCryptoPaymentMethod={() => setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD)}
-                        onSelectFiatPaymentMethod={() => setActivePanel(PanelView.FIAT_PAYMENT_METHOD)}
-                        anyspendQuote={anyspendQuote}
-                      />
-                    ) : (
-                      <motion.div
-                        initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-                        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                        transition={{ duration: 0.3, delay: 0, ease: "easeInOut" }}
-                      >
-                        <PanelOnramp
-                          srcAmountOnRamp={srcAmount}
-                          setSrcAmountOnRamp={setSrcAmount}
-                          selectedPaymentMethod={selectedFiatPaymentMethod}
-                          setActivePanel={setActivePanel}
-                          _recipientAddress={recipientAddress}
-                          destinationToken={B3_TOKEN}
-                          destinationChainId={base.id}
-                          destinationAmount={dstAmount}
-                          onDestinationTokenChange={() => {}}
-                          onDestinationChainChange={() => {}}
-                          fiatPaymentMethodIndex={PanelView.FIAT_PAYMENT_METHOD}
-                        />
-                      </motion.div>
-                    )}
-
-                    {/* Reverse swap direction section */}
-                    <Button
-                      variant="ghost"
-                      className={cn(
-                        "swap-direction-button border-as-stroke bg-as-surface-primary absolute left-1/2 top-[calc(50%+56px)] z-10 h-10 w-10 -translate-x-1/2 -translate-y-1/2 cursor-default rounded-xl border-2 sm:h-8 sm:w-8 sm:rounded-xl",
-                        paymentType === "fiat" && "hidden",
-                      )}
-                    >
-                      <div className="relative flex items-center justify-center transition-opacity">
-                        <ArrowDown className="text-as-primary/50 h-5 w-5" />
-                      </div>
-                    </Button>
-
-                    {/* Receive section - Hidden when fiat tab is active */}
-                    {paymentType === "crypto" && (
-                      <CryptoReceiveSection
-                        isDepositMode={false}
-                        isBuyMode={true}
-                        selectedRecipientAddress={recipientAddress}
-                        recipientName={recipientName || undefined}
-                        onSelectRecipient={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
-                        dstAmount={dstAmount}
-                        dstToken={B3_TOKEN}
-                        selectedDstChainId={base.id}
-                        setSelectedDstChainId={() => {}}
-                        setSelectedDstToken={() => {}}
-                        onChangeDstAmount={value => {
-                          setIsSrcInputDirty(false);
-                          setSrcAmount(value);
-                        }}
-                        anyspendQuote={anyspendQuote}
-                      />
-                    )}
-                  </div>
-                </div>
-
-                {/* Error message section */}
-                <ErrorSection error={getAnyspendQuoteError} />
-
-                {/* Main button section */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                  transition={{ duration: 0.3, delay: 0.2, ease: "easeInOut" }}
-                  className={cn("mt-4 flex w-full max-w-[460px] flex-col gap-2", getAnyspendQuoteError && "mt-0")}
-                >
-                  <ShinyButton
-                    accentColor={"hsl(var(--as-brand))"}
-                    disabled={btnInfo.disable}
-                    onClick={onMainButtonClick}
-                    className={cn(
-                      "as-main-button relative w-full",
-                      btnInfo.error ? "!bg-as-red" : btnInfo.disable ? "!bg-as-on-surface-2" : "!bg-as-brand",
-                    )}
-                    textClassName={cn(
-                      btnInfo.error ? "text-white" : btnInfo.disable ? "text-as-secondary" : "text-white",
-                    )}
-                  >
-                    {btnInfo.text}
-                  </ShinyButton>
-                </motion.div>
-              </div>
+              {mainView}
             </div>,
             <div key="crypto-payment-method-view" className={cn(mode === "page" && "p-6")}>
               {cryptoPaymentMethodView}

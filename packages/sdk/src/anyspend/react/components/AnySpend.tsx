@@ -804,7 +804,7 @@ function AnySpendInner({
       <div className="relative flex flex-col gap-4">
         {oat && (
           <>
-            <OrderStatus order={oat.data.order} />
+            <OrderStatus order={oat.data.order} selectedCryptoPaymentMethod={selectedCryptoPaymentMethod} />
             <OrderDetails
               mode={mode}
               order={oat.data.order}

@@ -1,6 +1,6 @@
 "use client";
 
-import { ALL_CHAINS, capitalizeFirstLetter, getChainName } from "@b3dotfun/sdk/anyspend";
+import { ALL_CHAINS, capitalizeFirstLetter, DEPOSIT_HYPE_ACTION, getChainName } from "@b3dotfun/sdk/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { CopyToClipboard } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils";
@@ -94,9 +94,11 @@ export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
                     : order.type === "fund_tournament"
                       ? "Fund tournament"
                       : order.type === "custom"
-                        ? order.metadata.action
-                          ? capitalizeFirstLetter(order.metadata.action)
-                          : "Contract execution"
+                        ? order.metadata.action === DEPOSIT_HYPE_ACTION
+                          ? "Deposit HYPE"
+                          : order.metadata.action
+                            ? capitalizeFirstLetter(order.metadata.action)
+                            : "Contract execution"
                         : ""}
               </div>
 
@@ -112,6 +114,10 @@ export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
                   <div className="flex items-center gap-2">
                     <img src={tournament?.imageUrl} alt={tournament?.name || "Tournament"} className="h-5 w-5" />
                     <div>{tournament?.name || "Tournament"}</div>
+                  </div>
+                ) : order.type === "custom" && order.metadata.action === DEPOSIT_HYPE_ACTION ? (
+                  <div className="flex items-center gap-2">
+                    <div>{formatTokenAmount(BigInt(order.payload.amount), dstToken.decimals)} HYPE</div>
                   </div>
                 ) : null}
 
