@@ -536,6 +536,9 @@ importers:
       '@feathersjs/feathers':
         specifier: 5.0.33
         version: 5.0.33
+      '@feathersjs/rest-client':
+        specifier: 5.0.33
+        version: 5.0.33
       '@feathersjs/socketio-client':
         specifier: 5.0.33
         version: 5.0.33
@@ -1838,6 +1841,10 @@ packages:
     engines: {node: '>= 14'}
     peerDependencies:
       mongodb: ^6.16.0
+
+  '@feathersjs/rest-client@5.0.33':
+    resolution: {integrity: sha512-BTGj4THdG3lpvxyXp8R8MmL0rcLB2pQcAmtb+T8H2THz0mReYgw8K33gdEm57JUm3pxYD01omTEhpIBabkFVtA==}
+    engines: {node: '>= 12'}
 
   '@feathersjs/schema@5.0.34':
     resolution: {integrity: sha512-BpQxp46Vp0tH7l9jW4HIAGQerql7aJBeRXRggCVhBuqK48KoD1UhvYCWBmWwEouaYUnZ77HjQIMn9c1fK+dF2w==}
@@ -5085,6 +5092,9 @@ packages:
   '@types/content-disposition@0.5.9':
     resolution: {integrity: sha512-8uYXI3Gw35MhiVYhG3s295oihrxRyytcRHjSjqnqZVDDy/xcGBRny7+Xj1Wgfhv5QzRtN2hB2dVRBUX9XW3UcQ==}
 
+  '@types/cookiejar@2.1.5':
+    resolution: {integrity: sha512-he+DHOWReW0nghN24E1WUqM0efK4kI9oTqDm6XmK8ZPe2djZ90BSNdGnIyCLzCPw7/pogPlGbzI2wHGGmi4O/Q==}
+
   '@types/cookies@0.9.1':
     resolution: {integrity: sha512-E/DPgzifH4sM1UMadJMWd6mO2jOd4g1Ejwzx8/uRCDpJis1IrlyQEcGAYEomtAqRYmD5ORbNXMeI9U0RiVGZbg==}
 
@@ -5177,6 +5187,9 @@ packages:
 
   '@types/memcached@2.2.10':
     resolution: {integrity: sha512-AM9smvZN55Gzs2wRrqeMHVP7KE8KWgCJO/XL5yCly2xF6EKa4YlbpK+cLSAH4NG/Ah64HrlegmGqW8kYws7Vxg==}
+
+  '@types/methods@1.1.4':
+    resolution: {integrity: sha512-ymXWVrDiCxTBE3+RIrrP533E70eA+9qu7zdWoHuOmGujkYtzf4HQF96b8nwHLqhuf4ykX61IGRIB38CC6/sImQ==}
 
   '@types/mime@1.3.5':
     resolution: {integrity: sha512-/pyBZWSLD2n0dcHE3hq8s8ZvcETHtEuF+3E7XVt0Ig2nvsVQXdghHVcEkIWjy9A0wKfTn97a/PSDYohKIlnP/w==}
@@ -5291,6 +5304,9 @@ packages:
 
   '@types/stylis@4.2.5':
     resolution: {integrity: sha512-1Xve+NMN7FWjY14vLoY5tL3BVEQ/n42YLwaqJIPYhotZ9uBHt87VceMwWQpzmdEt2TNXIorIFG+YeCUUW7RInw==}
+
+  '@types/superagent@8.1.9':
+    resolution: {integrity: sha512-pTVjI73witn+9ILmoJdajHGW2jkSaOzhiFYF1Rd3EQ94kymLqB9PjD9ISg7WaALC7+dCHT0FGe9T2LktLq/3GQ==}
 
   '@types/tedious@4.0.14':
     resolution: {integrity: sha512-KHPsfX/FoVbUGbyYvk1q9MMQHLPeRZhRJZdO45Q4YjvFkv4hMNghCWTvy7rdKessBsmtz4euWCWAB6/tVpI1Iw==}
@@ -14372,6 +14388,14 @@ snapshots:
       '@feathersjs/feathers': 5.0.34
       mongodb: 6.18.0(socks@2.8.7)
 
+  '@feathersjs/rest-client@5.0.33':
+    dependencies:
+      '@feathersjs/commons': 5.0.34
+      '@feathersjs/errors': 5.0.34
+      '@feathersjs/feathers': 5.0.33
+      '@types/superagent': 8.1.9
+      qs: 6.14.0
+
   '@feathersjs/schema@5.0.34(typescript@5.8.2)':
     dependencies:
       '@feathersjs/adapter-commons': 5.0.34
@@ -20122,6 +20146,8 @@ snapshots:
 
   '@types/content-disposition@0.5.9': {}
 
+  '@types/cookiejar@2.1.5': {}
+
   '@types/cookies@0.9.1':
     dependencies:
       '@types/connect': 3.4.38
@@ -20238,6 +20264,8 @@ snapshots:
   '@types/memcached@2.2.10':
     dependencies:
       '@types/node': 20.19.10
+
+  '@types/methods@1.1.4': {}
 
   '@types/mime@1.3.5': {}
 
@@ -20363,6 +20391,13 @@ snapshots:
   '@types/stats.js@0.17.4': {}
 
   '@types/stylis@4.2.5': {}
+
+  '@types/superagent@8.1.9':
+    dependencies:
+      '@types/cookiejar': 2.1.5
+      '@types/methods': 1.1.4
+      '@types/node': 20.19.10
+      form-data: 4.0.4
 
   '@types/tedious@4.0.14':
     dependencies:
@@ -28916,6 +28951,70 @@ snapshots:
       '@radix-ui/react-icons': 1.3.2(react@19.1.0)
       '@radix-ui/react-tooltip': 1.2.7(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@storybook/react': 9.0.15(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(storybook@9.1.1(@testing-library/dom@10.4.1)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10)(vite@5.4.19(@types/node@22.14.0)(lightningcss@1.25.1)(terser@5.43.1)))(typescript@5.8.2)
+      '@tanstack/react-query': 5.55.0(react@19.1.0)
+      '@thirdweb-dev/engine': 3.2.1(@hey-api/openapi-ts@0.64.13(typescript@5.8.2))(typescript@5.8.2)
+      '@thirdweb-dev/insight': 1.1.0(typescript@5.8.2)
+      '@walletconnect/sign-client': 2.20.1(bufferutil@4.0.9)(ioredis@5.7.0)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75)
+      '@walletconnect/universal-provider': 2.21.4(bufferutil@4.0.9)(encoding@0.1.13)(ioredis@5.7.0)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75)
+      abitype: 1.0.8(typescript@5.8.2)(zod@3.25.75)
+      cross-spawn: 7.0.6
+      fuse.js: 7.1.0
+      input-otp: 1.4.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      mipd: 0.0.7(typescript@5.8.2)
+      open: 10.1.1
+      ora: 8.2.0
+      ox: 0.7.0(typescript@5.8.2)(zod@3.25.75)
+      prompts: 2.4.2
+      toml: 3.0.0
+      uqr: 0.1.2
+      viem: 2.28.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75)
+      zod: 3.25.75
+    optionalDependencies:
+      ethers: 6.15.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      react: 19.1.0
+      react-native: 0.80.2(@babel/core@7.28.0)(@types/react@19.1.0)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10)
+      typescript: 5.8.2
+    transitivePeerDependencies:
+      - '@azure/app-configuration'
+      - '@azure/cosmos'
+      - '@azure/data-tables'
+      - '@azure/identity'
+      - '@azure/keyvault-secrets'
+      - '@azure/storage-blob'
+      - '@capacitor/preferences'
+      - '@deno/kv'
+      - '@hey-api/openapi-ts'
+      - '@netlify/blobs'
+      - '@planetscale/database'
+      - '@types/react'
+      - '@types/react-dom'
+      - '@upstash/redis'
+      - '@vercel/blob'
+      - '@vercel/kv'
+      - aws4fetch
+      - bufferutil
+      - db0
+      - encoding
+      - ioredis
+      - react-dom
+      - storybook
+      - supports-color
+      - uploadthing
+      - utf-8-validate
+
+  thirdweb@5.105.20(@hey-api/openapi-ts@0.64.13(typescript@5.8.2))(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(bufferutil@4.0.9)(ethers@6.15.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(ioredis@5.7.0)(react-dom@19.1.0(react@19.1.0))(react-native@0.80.2(@babel/core@7.28.0)(@types/react@19.1.0)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)(storybook@9.1.1(@testing-library/dom@10.4.1)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10)(vite@5.4.19(@types/node@20.19.10)(lightningcss@1.25.1)(terser@5.43.1)))(typescript@5.8.2)(utf-8-validate@5.0.10):
+    dependencies:
+      '@coinbase/wallet-sdk': 4.3.0
+      '@emotion/react': 11.14.0(@types/react@19.1.0)(react@19.1.0)
+      '@emotion/styled': 11.14.1(@emotion/react@11.14.0(@types/react@19.1.0)(react@19.1.0))(@types/react@19.1.0)(react@19.1.0)
+      '@noble/curves': 1.8.2
+      '@noble/hashes': 1.7.2
+      '@passwordless-id/webauthn': 2.3.1
+      '@radix-ui/react-dialog': 1.1.14(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@radix-ui/react-focus-scope': 1.1.7(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@radix-ui/react-icons': 1.3.2(react@19.1.0)
+      '@radix-ui/react-tooltip': 1.2.7(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@storybook/react': 9.0.15(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(storybook@9.1.1(@testing-library/dom@10.4.1)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10)(vite@5.4.19(@types/node@20.19.10)(lightningcss@1.25.1)(terser@5.43.1)))(typescript@5.8.2)
       '@tanstack/react-query': 5.55.0(react@19.1.0)
       '@thirdweb-dev/engine': 3.2.1(@hey-api/openapi-ts@0.64.13(typescript@5.8.2))(typescript@5.8.2)
       '@thirdweb-dev/insight': 1.1.0(typescript@5.8.2)

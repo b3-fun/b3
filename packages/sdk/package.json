@@ -263,6 +263,7 @@
     "@feathersjs/authentication-client": "5.0.33",
     "@feathersjs/feathers": "5.0.33",
     "@feathersjs/socketio-client": "5.0.33",
+    "@feathersjs/rest-client": "5.0.33",
     "@feathersjs/typebox": "5.0.33",
     "@fingerprintjs/fingerprintjs-pro-react": "^2.7.0",
     "@hey-api/client-fetch": "0.8.3",
