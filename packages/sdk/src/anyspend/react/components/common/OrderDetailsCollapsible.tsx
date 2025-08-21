@@ -113,6 +113,10 @@ export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
                     <img src={tournament?.imageUrl} alt={tournament?.name || "Tournament"} className="h-5 w-5" />
                     <div>{tournament?.name || "Tournament"}</div>
                   </div>
+                ) : order.type === "custom" && order.metadata.action === "deposit HYPE" ? (
+                  <div className="flex items-center gap-2">
+                    <div>{formatTokenAmount(BigInt(order.payload.amount), dstToken.decimals)} HYPE</div>
+                  </div>
                 ) : null}
 
                 <div className="text-as-primary/50 flex items-center gap-2">
