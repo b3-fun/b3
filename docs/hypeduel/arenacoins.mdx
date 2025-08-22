@@ -7,8 +7,49 @@ description: "Arena-specific tokens with bonding curve pricing that let you own 
 
 ## Core Concept
 
-<img className="block dark:hidden" src="/images/arenacoins-overview-light.png" alt="ArenaCoins System Overview" />
-<img className="hidden dark:block" src="/images/arenacoins-overview-dark.png" alt="ArenaCoins System Overview" />
+```mermaid
+graph TD
+    subgraph "Arena Creation"
+        AC[Arena Created] --> BP[Bonding Phase Starts]
+        BP --> BC[Bonding Curve Pricing]
+    end
+
+    subgraph "Community Building"
+        BC --> PB[Players Bond $B3]
+        PB --> RA[Receive ArenaCoins]
+        RA --> ES[Early Supporters]
+    end
+
+    subgraph "Arena Growth"
+        ES --> LB[Live Battles Begin]
+        LB --> BF[Betting & Fees Generate]
+        BF --> RS[Revenue Sharing]
+    end
+
+    subgraph "Token Features"
+        RS --> RV[Revenue from Bets]
+        RS --> BR[Boost Revenue]
+        RS --> TF[Trading Fees]
+        RV --> TB[Token Buybacks]
+        BR --> TB
+        TF --> TB
+    end
+
+    subgraph "Value Creation"
+        TB --> VA[Value Appreciation]
+        VA --> CG[Community Growth]
+        CG --> AT[Attract Traders]
+        AT --> DX[DEX Trading]
+    end
+
+    DX --> TF
+    CG --> LB
+
+    style AC fill:#e3f2fd
+    style RA fill:#e8f5e8
+    style RS fill:#fff3e0
+    style VA fill:#c8e6c9
+```
 
 ### What Makes ArenaCoins Unique
 
@@ -117,8 +158,47 @@ ArenaCoins generate value through multiple revenue streams:
 
 ### Primary Revenue Sources
 
-<img className="block dark:hidden" src="/images/arenacoin-revenue-light.png" alt="ArenaCoin Revenue Streams" />
-<img className="hidden dark:block" src="/images/arenacoin-revenue-dark.png" alt="ArenaCoin Revenue Streams" />
+```mermaid
+graph LR
+    subgraph "Revenue Sources"
+        A[Betting Activity] --> B[10% of Pools<br/>to Treasury]
+        C[Boost Purchases] --> D[50% to Treasury]
+        E[DEX Trading] --> F[66% of Fees<br/>to Treasury]
+    end
+
+    subgraph "Arena Treasury"
+        B --> T[Arena Treasury]
+        D --> T
+        F --> T
+    end
+
+    subgraph "Treasury Actions"
+        T --> G[ArenaCoin Buybacks]
+        T --> H[Token Burns]
+        T --> I[Liquidity Support]
+    end
+
+    subgraph "Value Impact"
+        G --> J[Reduced Supply]
+        H --> J
+        I --> K[Improved Trading]
+        J --> L[Price Appreciation]
+        K --> L
+    end
+
+    subgraph "Community Benefits"
+        L --> M[Higher Token Value]
+        M --> N[Increased Interest]
+        N --> O[More Players]
+        O --> A
+        O --> C
+        O --> E
+    end
+
+    style T fill:#fff3e0
+    style L fill:#c8e6c9
+    style M fill:#e8f5e8
+```
 
 <Tabs>
   <Tab title="Betting Fees">

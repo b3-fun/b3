@@ -7,8 +7,43 @@ HypeDuel operates on a sophisticated three-token economic system designed to opt
 
 ## The Three-Token Architecture
 
-<img className="block dark:hidden" src="/images/three-token-system-light.png" alt="HypeDuel Three-Token System" />
-<img className="hidden dark:block" src="/images/three-token-system-dark.png" alt="HypeDuel Three-Token System" />
+```mermaid
+graph TD
+    subgraph "Token Hierarchy"
+        A[B3 Token<br/>Foundation Currency] --> B[HYPES Credits<br/>Gaming Currency<br/>1:1 peg]
+        A --> C[ArenaCoins<br/>Arena Ownership<br/>Bonding Curves]
+    end
+
+    subgraph "Core Functions"
+        B --> D[Instant Betting<br/>Zero Gas Fees]
+        B --> E[Boost Purchases<br/>Real-time Action]
+        C --> F[Fee Sharing<br/>Revenue Rights]
+        C --> G[Community<br/>Governance]
+        A --> H[Cross-Platform<br/>Utility]
+        A --> I[Treasury<br/>Operations]
+    end
+
+    subgraph "Value Creation"
+        D --> J[Platform Growth]
+        E --> J
+        F --> K[Token Appreciation]
+        G --> L[Community Building]
+        H --> M[Ecosystem Expansion]
+        I --> N[Sustainability]
+    end
+
+    J --> O[More Players]
+    K --> O
+    L --> O
+    M --> O
+    N --> O
+    O --> A
+
+    style A fill:#e3f2fd
+    style B fill:#e8f5e8
+    style C fill:#fff3e0
+    style O fill:#c8e6c9
+```
 
 ### Token Hierarchy
 

@@ -14,8 +14,25 @@ Unlike traditional gaming platforms that extract maximum profit, HypeDuel's fee 
 - **Grow Ecosystem**: Treasury buybacks benefit all token holders
 - **Maintain Platform**: Operations and development funding
 
-<img className="block dark:hidden" src="/images/fee-structure-overview-light.png" alt="HypeDuel Fee Structure" />
-<img className="hidden dark:block" src="/images/fee-structure-overview-dark.png" alt="HypeDuel Fee Structure" />
+```mermaid
+graph TD
+    A["Total Betting Pool<br/>100%"] --> B["Winners<br/>85%<br/>🏆"]
+    A --> C["Arena Treasury<br/>10%<br/>💰"]
+    A --> D["Arena Creator<br/>5%<br/>👨‍💻"]
+
+    C --> E["$B3 Buybacks<br/>50%"]
+    C --> F["ArenaCoin Buybacks<br/>50%"]
+
+    B --> G["Proportional Payout<br/>Based on Bet Size"]
+    D --> H["Development Incentive<br/>Immediate Payment"]
+    E --> I["$B3 Value Support"]
+    F --> J["ArenaCoin Appreciation"]
+
+    style A fill:#e1f5fe
+    style B fill:#c8e6c9
+    style C fill:#fff3e0
+    style D fill:#f3e5f5
+```
 
 ## Betting Fees
 

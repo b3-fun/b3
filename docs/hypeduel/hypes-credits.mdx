@@ -9,8 +9,42 @@ description: "Platform-native gaming currency that enables instant betting witho
 
 HYPES solve the fundamental UX problem of blockchain gaming: transaction delays and gas fees that interrupt the flow of entertainment. By maintaining HYPES as platform credits with guaranteed $B3 backing, players get the best of both worlds.
 
-<img className="block dark:hidden" src="/images/hypes-system-light.png" alt="HYPES Credit System" />
-<img className="hidden dark:block" src="/images/hypes-system-dark.png" alt="HYPES Credit System" />
+```mermaid
+graph TD
+    subgraph "Deposit Flow"
+        A[Player Has $B3] --> B[Send to Reserve Contract]
+        B --> C[Receive HYPES 1:1]
+        C --> D[Available for Gaming]
+    end
+
+    subgraph "Reserve System"
+        B --> E[Reserve Pool<br/>100% $B3 Backing]
+        E --> F[80% Cold Storage<br/>Multi-sig Security]
+        E --> G[15% Hot Wallet<br/>Instant Withdrawals]
+        E --> H[5% Emergency<br/>Operational Reserve]
+    end
+
+    subgraph "Gaming Activities"
+        D --> I[Place Bets<br/>Zero Gas Fees]
+        D --> J[Buy Boosts<br/>Instant Action]
+        D --> K[Arena Navigation<br/>Seamless UX]
+    end
+
+    subgraph "Withdrawal Flow"
+        L[Request Withdrawal] --> M[HYPES Burned]
+        M --> N[$B3 from Reserve]
+        N --> O[Sent to Wallet]
+    end
+
+    I --> L
+    J --> L
+    K --> L
+
+    style E fill:#fff3e0
+    style C fill:#e8f5e8
+    style I fill:#e3f2fd
+    style O fill:#c8e6c9
+```
 
 ## Key Features
 

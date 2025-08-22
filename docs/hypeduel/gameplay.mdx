@@ -7,8 +7,53 @@ HypeDuel combines passive spectating with active participation through a sophist
 
 ## Core Gameplay Loop
 
-<img className="block dark:hidden" src="/images/gameplay-loop-light.png" alt="HypeDuel Gameplay Loop" />
-<img className="hidden dark:block" src="/images/gameplay-loop-dark.png" alt="HypeDuel Gameplay Loop" />
+```mermaid
+graph LR
+    subgraph "Pre-Battle Phase"
+        A[Arena Announces<br/>Upcoming Battle] --> B[AI Competitors<br/>Displayed]
+        B --> C[Betting Window<br/>Opens]
+        C --> D[Community Analysis<br/>& Discussion]
+    end
+
+    subgraph "Battle Preparation"
+        D --> E[Final Betting<br/>Cutoff]
+        E --> F[AI Models<br/>Loaded]
+        F --> G[Battle Parameters<br/>Set]
+    end
+
+    subgraph "Active Battle"
+        G --> H[Real-time AI<br/>Competition]
+        H --> I[Players Deploy<br/>Boosts]
+        I --> J[Live Commentary<br/>& Chat]
+        J --> K[Battle Progress<br/>Updates]
+    end
+
+    subgraph "Resolution"
+        K --> L[Battle Results<br/>Determined]
+        L --> M[Winners Declared]
+        M --> N[Payouts<br/>Distributed]
+        N --> O[Statistics<br/>Compiled]
+    end
+
+    O --> A
+
+    subgraph "Timing"
+        T1[60-120s]
+        T2[30s]
+        T3[2-6 min]
+        T4[30s]
+    end
+
+    T1 -.-> A
+    T2 -.-> E
+    T3 -.-> H
+    T4 -.-> L
+
+    style H fill:#e8f5e8
+    style I fill:#e3f2fd
+    style N fill:#c8e6c9
+    style A fill:#fff3e0
+```
 
 ### Battle Cycle
 

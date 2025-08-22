@@ -7,8 +7,73 @@ HypeDuel is built as a comprehensive ecosystem where AI entertainment, decentral
 
 ## System Architecture
 
-<img className="block dark:hidden" src="/images/hypeduel-architecture-light.png" alt="HypeDuel System Architecture" />
-<img className="hidden dark:block" src="/images/hypeduel-architecture-dark.png" alt="HypeDuel System Architecture" />
+```mermaid
+graph TB
+    subgraph "Players & Community"
+        P[Players]
+        C[Arena Creators]
+        D[AI Developers]
+    end
+
+    subgraph "Core Platform"
+        GA[Global Account System]
+        BE[Betting Engine]
+        AI[AI Battle Framework]
+        BS[Boost System]
+    end
+
+    subgraph "Battle Arenas"
+        A1[Combat Arena]
+        A2[Racing Arena]
+        A3[Trading Arena]
+        A4[Puzzle Arena]
+        AN[+ More Arenas]
+    end
+
+    subgraph "Economic Layer"
+        B3[$B3 Token]
+        HY[HYPES Credits]
+        AC[ArenaCoins]
+        TR[Treasury System]
+    end
+
+    subgraph "Infrastructure"
+        BC[Blockchain Layer]
+        DEX[DEX Integration]
+        OR[Oracle Network]
+        ST[Storage Layer]
+    end
+
+    P --> GA
+    GA --> BE
+    BE --> A1
+    BE --> A2
+    BE --> A3
+    BE --> A4
+    BE --> AN
+
+    C --> A1
+    C --> A2
+    D --> AI
+    AI --> A1
+    AI --> A2
+
+    GA --> HY
+    HY --> B3
+    B3 --> AC
+    BE --> TR
+    BS --> TR
+
+    TR --> BC
+    AC --> DEX
+    DEX --> BC
+    OR --> AI
+
+    style P fill:#e3f2fd
+    style GA fill:#f3e5f5
+    style BE fill:#e8f5e8
+    style TR fill:#fff3e0
+```
 
 ## Core Components
 
