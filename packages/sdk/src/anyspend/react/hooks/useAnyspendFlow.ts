@@ -35,6 +35,7 @@ interface UseAnyspendFlowProps {
   onTransactionSuccess?: () => void;
   sourceTokenAddress?: string;
   sourceTokenChainId?: number;
+  slippage?: number;
 }
 
 export function useAnyspendFlow({
@@ -46,6 +47,7 @@ export function useAnyspendFlow({
   onTransactionSuccess,
   sourceTokenAddress,
   sourceTokenChainId,
+  slippage = 0,
 }: UseAnyspendFlowProps) {
   const searchParams = useSearchParamsSSR();
   const router = useRouter();
@@ -144,12 +146,16 @@ export function useAnyspendFlow({
     if (anyspendQuote?.data?.currencyOut?.amount && anyspendQuote.data.currencyOut.currency?.decimals) {
       const amount = anyspendQuote.data.currencyOut.amount;
       const decimals = anyspendQuote.data.currencyOut.currency.decimals;
-      const formattedAmount = formatTokenAmount(BigInt(amount), decimals, 6, false);
+
+      // Apply slippage (0-100) - reduce amount by slippage percentageFixed slippage value
+      const amountWithSlippage = (BigInt(amount) * BigInt(100 - slippage)) / BigInt(100);
+
+      const formattedAmount = formatTokenAmount(amountWithSlippage, decimals, 6, false);
       setDstAmount(formattedAmount);
     } else {
       setDstAmount("");
     }
-  }, [anyspendQuote]);
+  }, [anyspendQuote, slippage]);
 
   // Update useEffect for URL parameter to not override loadOrder
   useEffect(() => {
