@@ -22,6 +22,8 @@ import { ESCROW_ABI } from "@b3dotfun/sdk/anyspend/abis/escrow";
 import { ArrowDown } from "lucide-react";
 import { PanelOnramp } from "./common/PanelOnramp";
 
+const SLIPPAGE = 3;
+
 function generateEncodedDataForDepositHype(amount: string, beneficiary: string): string {
   invariant(BigInt(amount) > 0, "Amount must be greater than zero");
   const encodedData = encodeFunctionData({
@@ -107,6 +109,7 @@ function AnySpendDepositHypeInner({
     onTransactionSuccess: onSuccess,
     sourceTokenAddress,
     sourceTokenChainId,
+    slippage: SLIPPAGE,
   });
 
   // Button state logic
@@ -308,7 +311,9 @@ function AnySpendDepositHypeInner({
       invariant(depositContractAddress, "Deposit contract address is not found");
 
       const srcAmountBigInt = BigInt(activeInputAmountInWei);
-      const depositAmountWei = anyspendQuote.data?.currencyOut?.amount || "0";
+      // TODO: temp subtract 3% for slippage
+      const originalDepositAmountWei = anyspendQuote.data?.currencyOut?.amount || "0";
+      const depositAmountWei = ((BigInt(originalDepositAmountWei) * BigInt(100 - SLIPPAGE)) / BigInt(100)).toString();
       const encodedData = generateEncodedDataForDepositHype(depositAmountWei, selectedRecipientAddress);
 
       createOrder({
@@ -471,8 +476,6 @@ function AnySpendDepositHypeInner({
       srcAmountOnRamp={srcAmount}
     />
   );
-
-  console.log("activePanel", activePanel, orderId, oat);
 
   // If showing token selection, render with panel transitions
   return (

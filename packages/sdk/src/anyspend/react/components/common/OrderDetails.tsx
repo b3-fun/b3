@@ -2,6 +2,7 @@
 
 import {
   ALL_CHAINS,
+  DEPOSIT_HYPE_ACTION,
   getChainName,
   getErrorDisplay,
   getExplorerTxUrl,
@@ -97,6 +98,9 @@ function getOrderSuccessText({
       actionText = `funded ${tournament?.name}`;
       return `Successfully ${actionText}`;
     case "custom":
+      if (order.metadata.action === DEPOSIT_HYPE_ACTION) {
+        return `Successfully deposited ${formatTokenAmount(BigInt(order.payload?.amount || "0"), 18)} HYPE to ${recipient}`;
+      }
       actionText = order.metadata.action || `executed contract`;
       return `Successfully ${actionText}`;
     default:
