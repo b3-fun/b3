@@ -1,0 +1,138 @@
+---
+title: "ArenaCoins"
+description: "Arena-specific tokens with bonding curve pricing that let you own a piece of AI battle environments"
+---
+
+**ArenaCoins** are the native tokens for each battle environment on HypeDuel — a revolutionary way to own a piece of the action in the world's first AI vs AI entertainment arena. Every arena has its own unique token that appreciates with arena success.
+
+## Core Concept
+
+<img className="block dark:hidden" src="/images/arenacoins-overview-light.png" alt="ArenaCoins System Overview" />
+<img className="hidden dark:block" src="/images/arenacoins-overview-dark.png" alt="ArenaCoins System Overview" />
+
+### What Makes ArenaCoins Unique
+
+<Card title="One Per Arena" icon="building">
+  Each battle environment has its own unique ArenaCoin ($COMBAT, $RACING, etc.)
+</Card>
+
+<Card title="Bonding Curve Pricing" icon="trending-up">
+  Fair price discovery through mathematical curves, no front-running possible
+</Card>
+
+<Card title="Revenue Sharing" icon="coins">
+  Earn fees from every bet, boost, and trade in your arena
+</Card>
+
+<Card title="Community Governance" icon="users">
+  ArenaCoin holders vote on arena improvements and rule changes
+</Card>
+
+## ArenaCoin Lifecycle
+
+### Phase 1: Arena Creation & Bonding
+
+When a new arena launches, it enters the **bonding phase**:
+
+<Steps>
+  <Step title="Arena Launch">Creator deploys new battle environment with unique gameplay</Step>
+  <Step title="Bonding Opens">Players can bond $B3 to receive ArenaCoins at curve prices</Step>
+  <Step title="Community Building">Early supporters accumulate tokens and build initial community</Step>
+  <Step title="Graduation Criteria">Arena reaches bonding targets (liquidity + community size)</Step>
+</Steps>
+
+### Phase 2: DEX Trading
+
+After successful bonding, ArenaCoins graduate to full market trading:
+
+- **Uniswap Pool**: ArenaCoin/$B3 trading pair created
+- **Market Discovery**: Open market determines token value
+- **Liquidity Provision**: Bonding funds seed initial liquidity
+- **Fee Generation**: Trading fees support arena economy
+
+## Bonding Curve Mechanics
+
+### Mathematical Foundation
+
+ArenaCoins use a **quadratic bonding curve** for fair price discovery:
+
+```typescript
+// Bonding curve pricing formula
+function calculatePrice(supply: number, bondingConstant: number): number {
+  return (supply / bondingConstant) ** 2;
+}
+
+// Example with $COMBAT arena
+const bondingConstant = 1000000; // 1M tokens at 1:1 ratio
+const currentSupply = 250000; // 250k tokens minted
+
+const pricePerToken = (250000 / 1000000) ** 2;
+// = 0.25^2 = 0.0625 $B3 per ArenaCoin
+```
+
+### Bonding Benefits
+
+<Tabs>
+  <Tab title="Fair Launch">
+    - No pre-sale or insider allocations - Price increases with demand - Early supporters get better prices -
+    Mathematical price discovery
+  </Tab>
+
+<Tab title="Liquidity Guaranteed">
+  - Always possible to buy/sell - No reliance on market makers - Curve provides instant liquidity - Predictable price
+  impact
+</Tab>
+
+  <Tab title="Anti-Manipulation">
+    - No front-running possible - Large purchases have price impact - Curve naturally deters pumps - Transparent pricing
+    algorithm
+  </Tab>
+</Tabs>
+
+### Bonding Example
+
+Let's trace an early investor's journey:
+
+<AccordionGroup>
+  <Accordion title="Day 1: Arena Launch">
+    - **Arena**: Combat Simulator launches - **Supply**: 0 $COMBAT tokens exist - **Price**: Starting price ≈ 0.001 $B3
+    - **Investment**: Alice bonds 100 $B3 - **Received**: ~316 $COMBAT tokens
+  </Accordion>
+
+<Accordion title="Week 2: Growing Interest">
+  - **Supply**: 50,000 $COMBAT tokens minted - **Price**: ~0.0025 $B3 per token - **Alice's Holdings**: 316 tokens worth
+  ~79 $B3 - **Investment**: Bob bonds 500 $B3 - **Received**: ~200 $COMBAT tokens
+</Accordion>
+
+  <Accordion title="Month 1: Arena Success">
+    - **Supply**: 200,000 $COMBAT tokens minted - **Price**: ~0.04 $B3 per token - **Alice's Holdings**: 316 tokens
+    worth ~126 $B3 - **Community**: Active battles and growing user base - **Graduation**: Arena approaches DEX listing
+    criteria
+  </Accordion>
+</AccordionGroup>
+
+## Revenue Sharing Model
+
+ArenaCoins generate value through multiple revenue streams:
+
+### Primary Revenue Sources
+
+<img className="block dark:hidden" src="/images/arenacoin-revenue-light.png" alt="ArenaCoin Revenue Streams" />
+<img className="hidden dark:block" src="/images/arenacoin-revenue-dark.png" alt="ArenaCoin Revenue Streams" />
+
+<Tabs>
+  <Tab title="Betting Fees">
+    **10% of all betting pools** - Collected from every battle - Proportional to betting volume - Accumulates in arena
+    treasury - Used for token buybacks *Example: 10,000 HYPES betting pool = 1,000 HYPES to treasury*
+  </Tab>
+
+<Tab title="Boost Revenue">
+  **50% of boost purchases** - Real-time revenue from interactive features - Higher engagement = more revenue - Scales
+  with arena popularity - Immediate treasury impact *Example: 500 HYPES in boosts = 250 HYPES to treasury*
+</Tab>
+
+  <Tab title="Trading Fees">
+    **66% of DEX trading fees** (post-graduation) - Continuous revenue from token trading - Grows with token adoption -
+    Market-driven revenue scaling - Long-term sustainability *Example: 1% trading fee, 66% to treasury*
+  </Tab>
+</Tabs>

@@ -4,6 +4,7 @@ description: Ejemplos de implementación completos para casos de uso comunes de 
 lang: es
 originalPath: createkit/examples.mdx
 ---
+
 ## Resumen
 
 Esta página proporciona ejemplos completos y reales de implementación de CreateKit en varios escenarios. Cada ejemplo incluye código completo, manejo de errores y mejores prácticas.
@@ -13,35 +14,31 @@ Esta página proporciona ejemplos completos y reales de implementación de Creat
 Una colección de arte simple con acuñación gratuita:
 
 ```typescript title="Colección de Arte Básica"
-import { 
-  CollectionManager, 
-  BaseMintStorage, 
-  b3Testnet 
-} from '@b3dotfun/basemint'
-import { createPublicClient, createWalletClient, http } from 'viem'
-import { privateKeyToAccount } from 'viem/accounts'
+import { CollectionManager, BaseMintStorage, b3Testnet } from "@b3dotfun/basemint";
+import { createPublicClient, createWalletClient, http } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
 
 async function createBasicArtCollection() {
   // Configurar clientes
-  const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`)
+  const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`);
   const publicClient = createPublicClient({
     chain: b3Testnet,
-    transport: http()
-  })
+    transport: http(),
+  });
   const walletClient = createWalletClient({
     chain: b3Testnet,
     transport: http(),
-    account
-  })
+    account,
+  });
 
   // Inicializar servicios
-  const collectionManager = new CollectionManager(publicClient)
-  const storage = new BaseMintStorage({ baseUrl: 'https://api.basemint.fun' })
+  const collectionManager = new CollectionManager(publicClient);
+  const storage = new BaseMintStorage({ baseUrl: "https://api.basemint.fun" });
 
   // Definir colección
   const artCollection = {
     name: "Galería de Arte Digital",
-    symbol: "DAG", 
+    symbol: "DAG",
     creator: account.address,
     gameOwner: account.address,
     description: "Una colección curada de obras de arte digitales",
@@ -50,59 +47,41 @@ async function createBasicArtCollection() {
     mintPrice: 0n, // Acuñación gratuita
     maxPerWallet: 5n,
     tokenStandard: "ERC721" as const,
-    chainId: 1993
-  }
+    chainId: 1993,
+  };
 
   try {
-    console.log("🎨 Creando colección de arte...")
+    console.log("🎨 Creando colección de arte...");
 
     // Generar firma del creador
-    const creatorSignature = await collectionManager.generateCreatorSignature(
-      walletClient,
-      artCollection
-    )
+    const creatorSignature = await collectionManager.generateCreatorSignature(walletClient, artCollection);
 
     // Predecir dirección
-    const predictedAddress = collectionManager.predictCollectionAddress(
-      artCollection,
-      creatorSignature
-    )
-    console.log(`📍 Dirección de la colección: ${predictedAddress}`)
+    const predictedAddress = collectionManager.predictCollectionAddress(artCollection, creatorSignature);
+    console.log(`📍 Dirección de la colección: ${predictedAddress}`);
 
     // Enviar a almacenamiento
-    await storage.submitCollection(artCollection, creatorSignature)
-    console.log("✅ Metadatos de la colección almacenados")
+    await storage.submitCollection(artCollection, creatorSignature);
+    console.log("✅ Metadatos de la colección almacenados");
 
     // Desplegar y acuñar el primer NFT
-    const deployerSignature = await collectionManager.generateDeployerSignature(
-      walletClient,
-      predictedAddress
-    )
+    const deployerSignature = await collectionManager.generateDeployerSignature(walletClient, predictedAddress);
 
-    const collection = collectionManager.createCollection(predictedAddress, "ERC721")
-    const mintTx = await collection.mint(
-      walletClient,
-      1n,
-      undefined,
-      0n,
-      [],
-      creatorSignature,
-      deployerSignature
-    )
+    const collection = collectionManager.createCollection(predictedAddress, "ERC721");
+    const mintTx = await collection.mint(walletClient, 1n, undefined, 0n, [], creatorSignature, deployerSignature);
 
-    console.log(`🎉 Colección desplegada y primer NFT acuñado: ${mintTx}`)
-    return { collection, predictedAddress, mintTx }
-
+    console.log(`🎉 Colección desplegada y primer NFT acuñado: ${mintTx}`);
+    return { collection, predictedAddress, mintTx };
   } catch (error) {
-    console.error("❌ Falló la creación de la colección de arte:", error)
-    throw error
+    console.error("❌ Falló la creación de la colección de arte:", error);
+    throw error;
   }
 }
 
 // Uso
 createBasicArtCollection()
   .then(result => console.log("Colección creada exitosamente:", result))
-  .catch(error => console.error("Creación fallida:", error))
+  .catch(error => console.error("Creación fallida:", error));
 ```
 
 ## Colección de Juegos con Lista Blanca
@@ -122,20 +101,20 @@ import { createPublicClient, createWalletClient, http, parseEther } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 
 class GamingCollectionManager {
-  private publicClient: any
-  private walletClient: any
-  private collectionManager: CollectionManager
-  private storage: BaseMintStorage
-  private rewardTracker: RewardTracker
+private publicClient: any
+private walletClient: any
+private collectionManager: CollectionManager
+private storage: BaseMintStorage
+private rewardTracker: RewardTracker
 
-  constructor(privateKey: string) {
-    const account = privateKeyToAccount(privateKey as `0x${string}`)
-    
+constructor(privateKey: string) {
+const account = privateKeyToAccount(privateKey as `0x${string}`)
+
     this.publicClient = createPublicClient({
       chain: b3Testnet,
       transport: http()
     })
-    
+
     this.walletClient = createWalletClient({
       chain: b3Testnet,
       transport: http(),
@@ -145,26 +124,27 @@ class GamingCollectionManager {
     this.collectionManager = new CollectionManager(this.publicClient)
     this.storage = new BaseMintStorage({ baseUrl: 'https://api.basemint.fun' })
     this.rewardTracker = new RewardTracker(this.publicClient)
-  }
 
-  async createGamingCollection() {
-    // Definir niveles de jugadores
-    const playerTiers = {
-      legendary: [
-        "0x1111111111111111111111111111111111111111",
-        "0x2222222222222222222222222222222222222222"
-      ],
-      epic: [
-        "0x3333333333333333333333333333333333333333",
-        "0x4444444444444444444444444444444444444444",
-        "0x5555555555555555555555555555555555555555"
-      ],
-      rare: [
-        "0x6666666666666666666666666666666666666666",
-        "0x7777777777777777777777777777777777777777",
-        "0x8888888888888888888888888888888888888888"
-      ]
-    }
+}
+
+async createGamingCollection() {
+// Definir niveles de jugadores
+const playerTiers = {
+legendary: [
+"0x1111111111111111111111111111111111111111",
+"0x2222222222222222222222222222222222222222"
+],
+epic: [
+"0x3333333333333333333333333333333333333333",
+"0x4444444444444444444444444444444444444444",
+"0x5555555555555555555555555555555555555555"
+],
+rare: [
+"0x6666666666666666666666666666666666666666",
+"0x7777777777777777777777777777777777777777",
+"0x8888888888888888888888888888888888888888"
+]
+}
 
     // Crear lista blanca combinada
     const allPlayers = [
@@ -184,23 +164,23 @@ class GamingCollectionManager {
       gameOwner: "0x9999999999999999999999999999999999999999", // Plataforma de juego
       description: "Ítems exclusivos de juego para los mejores jugadores",
       image: "https://example.com/gaming-collection.png",
-      
+
       // Configuración de lista blanca
       isWhitelistEnabled: true,
       whitelistMerkleRoot: merkleRoot,
-      
+
       // Precios y límites
       maxSupply: 500n,
       mintPrice: parseEther("0.01"),
       maxPerWallet: 3n,
-      
+
       // Tiempos - fase de lista blanca por 24 horas
       startTime: BigInt(Math.floor(Date.now() / 1000)),
       endTime: BigInt(Math.floor(Date.now() / 1000) + 86400 * 7),
-      
+
       tokenStandard: "ERC1155" as const,
       chainId: 1993,
-      
+
       // Metadatos específicos del juego
       attributes: [
         { trait_type: "Categoría", value: "Juego" },
@@ -243,18 +223,19 @@ class GamingCollectionManager {
       console.error("❌ Creación de colección de juegos fallida:", error)
       throw error
     }
-  }
 
-  async mintForPlayer(
-    collectionAddress: string,
-    whitelist: WhitelistManager,
-    playerAddress: string,
-    quantity: bigint = 1n
-  ) {
-    try {
-      // Verificar si la colección está desplegada
-      const collection = this.collectionManager.createCollection(collectionAddress, "ERC1155")
-      const isDeployed = await collection.isDeployed()
+}
+
+async mintForPlayer(
+collectionAddress: string,
+whitelist: WhitelistManager,
+playerAddress: string,
+quantity: bigint = 1n
+) {
+try {
+// Verificar si la colección está desplegada
+const collection = this.collectionManager.createCollection(collectionAddress, "ERC1155")
+const isDeployed = await collection.isDeployed()
 
       if (!isDeployed) {
         // Primera acuñación - desplegar colección
@@ -305,11 +286,12 @@ class GamingCollectionManager {
       }
       throw error
     }
-  }
 
-  async getPlayerRewards(collectionAddress: string, playerAddress: string) {
-    const escrowAddress = this.collectionManager.getEscrowAddress()
-    
+}
+
+async getPlayerRewards(collectionAddress: string, playerAddress: string) {
+const escrowAddress = this.collectionManager.getEscrowAddress()
+
     // Verificar si el jugador fue el primer acuñador
     const firstMinterRewards = await this.rewardTracker.getRecipientRewards(
       escrowAddress,
@@ -329,27 +311,29 @@ class GamingCollectionManager {
       collectionTotalRewards: collectionRewards.totalRewards.toString(),
       collectionMints: collectionRewards.totalMints.toString()
     }
-  }
+
+}
 }
 
 // Ejemplo de uso
 async function main() {
-  const gameManager = new GamingCollectionManager(process.env.PRIVATE_KEY!)
-  
-  // Crear colección
-  const { predictedAddress, whitelist, playerTiers } = await gameManager.createGamingCollection()
-  
-  // Simular acuñación de jugador legendario
-  const legendaryPlayer = playerTiers.legendary[0]
-  await gameManager.mintForPlayer(predictedAddress, whitelist, legendaryPlayer, 2n)
-  
-  // Verificar recompensas
-  const rewards = await gameManager.getPlayerRewards(predictedAddress, legendaryPlayer)
-  console.log("Recompensas del jugador:", rewards)
+const gameManager = new GamingCollectionManager(process.env.PRIVATE_KEY!)
+
+// Crear colección
+const { predictedAddress, whitelist, playerTiers } = await gameManager.createGamingCollection()
+
+// Simular acuñación de jugador legendario
+const legendaryPlayer = playerTiers.legendary[0]
+await gameManager.mintForPlayer(predictedAddress, whitelist, legendaryPlayer, 2n)
+
+// Verificar recompensas
+const rewards = await gameManager.getPlayerRewards(predictedAddress, legendaryPlayer)
+console.log("Recompensas del jugador:", rewards)
 }
 
 main().catch(console.error)
-```
+
+````
 </Accordion>
 
 ## Plataforma Multi-Colección
@@ -358,11 +342,11 @@ Una plataforma que gestiona múltiples colecciones:
 
 <Accordion title="Ejemplo de Plataforma Multi-Colección">
 ```typescript
-import { 
-  CollectionManager, 
+import {
+  CollectionManager,
   BaseMintStorage,
   RewardTracker,
-  b3Testnet 
+  b3Testnet
 } from '@b3dotfun/basemint'
 
 class NFTPlatform {
@@ -457,7 +441,7 @@ class NFTPlatform {
     )
 
     const collection = this.collectionManager.createCollection(collectionAddress, "ERC721")
-    
+
     const tx = await collection.mint(
       deployerWalletClient,
       1n,
@@ -489,7 +473,7 @@ class NFTPlatform {
     for (const collection of collections.collections) {
       if (collection.isDeployed) {
         stats.deployed++
-        
+
         // Obtener recompensas de la colección
         const rewards = await this.rewardTracker.getCollectionRewards(
           escrowAddress,
@@ -526,7 +510,7 @@ class NFTPlatform {
             creatorAddress
           )
           totalCreatorRewards += rewards
-          
+
           return {
             ...collection,
             creatorRewards: rewards.toString()
@@ -555,10 +539,10 @@ async function runPlatform() {
   })
 
   const platform = new NFTPlatform(publicClient, "mi-plataforma-nft")
-  
+
   // Registrar plataforma
   await platform.registerPlatform()
-  
+
   // Creador crea colección
   const creatorAccount = privateKeyToAccount(process.env.CREATOR_PRIVATE_KEY as `0x${string}`)
   const creatorWalletClient = createWalletClient({
@@ -605,4 +589,7 @@ async function runPlatform() {
   console.log("Panel de control del creador:", dashboard)
 }
 
-runPlatform().catch
+runPlatform().catch(console.error)
+````
+
+</Accordion>

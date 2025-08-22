@@ -28,6 +28,10 @@
   filter: invert(0);
 }
 
+.nav-tabs a[href="/hypeduel/introduction"] img {
+  max-height: 36px;
+}
+
 .nav-tabs {
   width: 100%;
 }
