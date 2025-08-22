@@ -147,7 +147,7 @@ export function useAnyspendFlow({
       const amount = anyspendQuote.data.currencyOut.amount;
       const decimals = anyspendQuote.data.currencyOut.currency.decimals;
 
-      // Apply slippage (0-100) - reduce amount by slippage percentageFixed slippage value (5%)
+      // Apply slippage (0-100) - reduce amount by slippage percentageFixed slippage value
       const amountWithSlippage = (BigInt(amount) * BigInt(100 - slippage)) / BigInt(100);
 
       const formattedAmount = formatTokenAmount(amountWithSlippage, decimals, 6, false);
