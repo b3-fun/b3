@@ -64,7 +64,7 @@ const DialogContent: React.ForwardRefExoticComponent<DialogContentProps & React.
             {!hideCloseButton && (
               <DialogPrimitive.Close
                 className={cn(
-                  "data-[state=open]:bg-b3-react-background data-[state=open]:text-b3-react-muted-foreground absolute right-4 top-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none dark:data-[state=open]:bg-gray-800 dark:data-[state=open]:text-gray-400",
+                  "data-[state=open]:bg-b3-react-background data-[state=open]:text-b3-react-muted-foreground absolute right-2 top-2 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none dark:data-[state=open]:bg-gray-800 dark:data-[state=open]:text-gray-400",
                   closeBtnClassName,
                 )}
               >

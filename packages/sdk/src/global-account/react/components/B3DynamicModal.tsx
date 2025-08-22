@@ -28,8 +28,6 @@ export function B3DynamicModal() {
   const { theme } = useB3();
   const isMobile = useIsMobile();
 
-  let hideCloseButton = false;
-
   // Define arrays for different modal type groups
   const fullWidthTypes = [
     "anySpend",
@@ -57,9 +55,7 @@ export function B3DynamicModal() {
 
   // Check if current content type is in freestyle types
   const isFreestyleType = freestyleTypes.includes(contentType?.type as string);
-  if (isFreestyleType) {
-    hideCloseButton = true;
-  }
+  const hideCloseButton = isFreestyleType;
 
   // Build content class using cn utility
   // eslint-disable-next-line tailwindcss/no-custom-classname
@@ -135,7 +131,12 @@ export function B3DynamicModal() {
       >
         <ModalTitle className="sr-only hidden">{contentType?.type || "Modal"}</ModalTitle>
         <ModalDescription className="sr-only hidden">{contentType?.type || "Modal Body"}</ModalDescription>
-        <div className="no-scrollbar max-h-[90dvh] overflow-auto sm:max-h-[80dvh]">
+        <div
+          className={cn(
+            "no-scrollbar max-h-[90dvh] overflow-auto sm:max-h-[80dvh]",
+            contentType?.type === "manageAccount" && "h-[90dvh]",
+          )}
+        >
           {history.length > 0 && contentType?.showBackButton && (
             <button
               onClick={navigateBack}

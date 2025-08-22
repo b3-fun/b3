@@ -84,9 +84,9 @@ export interface ManageAccountModalProps extends BaseModalProps {
   /** Partner ID */
   partnerId: string;
   /** Active Tab */
-  activeTab?: "balance" | "assets" | "apps" | "settings";
+  activeTab?: "balance" | "tokens" | "assets" | "apps" | "settings";
   /** Function to set the active tab */
-  setActiveTab?: (tab: "balance" | "assets" | "apps" | "settings") => void;
+  setActiveTab?: (tab: "balance" | "tokens" | "assets" | "apps" | "settings") => void;
 }
 
 /**

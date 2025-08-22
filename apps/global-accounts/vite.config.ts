@@ -45,8 +45,12 @@ export default defineConfig(({ command: _command, mode }) => {
     define: {
       "process.env": finalEnv,
     },
+    server: {
+      host: true,
+      allowedHosts: true,
+    },
     preview: {
-      allowedHosts: ["global-accounts-production.up.railway.app", "global.b3.fun"],
+      allowedHosts: true,
     },
     optimizeDeps: {
       include: [],
