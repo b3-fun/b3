@@ -7,7 +7,7 @@ import {
   useGeoOnrampOptions,
 } from "@b3dotfun/sdk/anyspend/react";
 import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
-import { useAccountWallet, useProfile } from "@b3dotfun/sdk/global-account/react";
+import { useAccountWallet, useProfile, useRouter, useSearchParamsSSR } from "@b3dotfun/sdk/global-account/react";
 import { formatTokenAmount, formatUnits } from "@b3dotfun/sdk/shared/utils/number";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -47,6 +47,9 @@ export function useAnyspendFlow({
   sourceTokenAddress,
   sourceTokenChainId,
 }: UseAnyspendFlowProps) {
+  const searchParams = useSearchParamsSSR();
+  const router = useRouter();
+
   // Panel and order state
   const [activePanel, setActivePanel] = useState<PanelView>(loadOrder ? PanelView.ORDER_DETAILS : PanelView.MAIN);
   const [orderId, setOrderId] = useState<string | undefined>(loadOrder);
@@ -81,6 +84,12 @@ export function useAnyspendFlow({
       setSelectedRecipientAddress(globalAddress);
     }
   }, [selectedRecipientAddress, globalAddress]);
+
+  useEffect(() => {
+    if (paymentType === "crypto") {
+      setSelectedCryptoPaymentMethod(CryptoPaymentMethodType.CONNECT_WALLET);
+    }
+  }, [paymentType]);
 
   // Fetch specific token when sourceTokenAddress and sourceTokenChainId are provided
   useEffect(() => {
@@ -142,6 +151,17 @@ export function useAnyspendFlow({
     }
   }, [anyspendQuote]);
 
+  // Update useEffect for URL parameter to not override loadOrder
+  useEffect(() => {
+    if (loadOrder) return; // Skip if we have a loadOrder
+
+    const orderIdParam = searchParams.get("orderId");
+    if (orderIdParam) {
+      setOrderId(orderIdParam);
+      setActivePanel(PanelView.ORDER_DETAILS);
+    }
+  }, [searchParams, loadOrder]);
+
   // Order creation hooks
   const { createOrder, isCreatingOrder } = useAnyspendCreateOrder({
     onSuccess: data => {
@@ -149,6 +169,18 @@ export function useAnyspendFlow({
       setOrderId(newOrderId);
       setActivePanel(PanelView.ORDER_DETAILS);
       onOrderSuccess?.(newOrderId);
+
+      // Add orderId and payment method to URL for persistence
+      const params = new URLSearchParams(searchParams.toString()); // Preserve existing params
+      params.set("orderId", newOrderId);
+      if (selectedCryptoPaymentMethod !== CryptoPaymentMethodType.NONE) {
+        console.log("Setting cryptoPaymentMethod in URL:", selectedCryptoPaymentMethod);
+        params.set("cryptoPaymentMethod", selectedCryptoPaymentMethod);
+      } else {
+        console.log("Payment method is NONE, not setting in URL");
+      }
+      console.log("Final URL params:", params.toString());
+      router.push(`${window.location.pathname}?${params.toString()}`);
     },
     onError: error => {
       console.error(error);
