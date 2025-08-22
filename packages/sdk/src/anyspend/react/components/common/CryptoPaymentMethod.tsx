@@ -299,8 +299,8 @@ export function CryptoPaymentMethod({
                           <button
                             key={walletOption.id}
                             onClick={async () => {
-                              handleCloseModal();
-                              await requestWalletPermissions(walletOption.connector);
+                              setSelectedWalletConnector(walletOption.connector);
+                              setModalStep("account-selection");
                             }}
                             disabled={isPending}
                             className={`w-full rounded-xl border p-4 text-left transition-all hover:shadow-md disabled:opacity-50 ${
@@ -349,20 +349,8 @@ export function CryptoPaymentMethod({
                     </p>
                     <button
                       onClick={async () => {
-                        try {
-                          // Disconnect current wallet first if switching
-                          if (isConnected && connector?.name !== selectedWalletConnector?.name) {
-                            disconnect();
-                          }
-                          await connect({ connector: selectedWalletConnector });
-                          setSelectedPaymentMethod(CryptoPaymentMethodType.CONNECT_WALLET);
-                          onSelectPaymentMethod(CryptoPaymentMethodType.CONNECT_WALLET);
-                          handleCloseModal();
-                          toast.success(`Connected to ${selectedWalletConnector.name}`);
-                        } catch (error) {
-                          toast.error(`Failed to connect to ${selectedWalletConnector.name}`);
-                          console.error("Connection error:", error);
-                        }
+                        handleCloseModal();
+                        await requestWalletPermissions(selectedWalletConnector);
                       }}
                       disabled={isPending}
                       className="w-full rounded-lg border border-gray-200 bg-white p-4 text-center transition-all hover:border-gray-300 hover:shadow-md disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:hover:border-gray-500"

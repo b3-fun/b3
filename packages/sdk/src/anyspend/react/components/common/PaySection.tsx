@@ -1,10 +1,11 @@
-import { Input, useAccountWallet, useProfile, useTokenData } from "@b3dotfun/sdk/global-account/react";
+import { Input, useProfile, useTokenData } from "@b3dotfun/sdk/global-account/react";
 import { formatUsername } from "@b3dotfun/sdk/shared/utils";
 import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { formatDisplayNumber } from "@b3dotfun/sdk/shared/utils/number";
 import { ChevronRight } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect, useRef } from "react";
+import { useAccount } from "wagmi";
 import { components } from "../../../types/api";
 import { CryptoPaymentMethodType } from "./CryptoPaymentMethod";
 import { FiatPaymentMethod } from "./FiatPaymentMethod";
@@ -45,8 +46,7 @@ export function PaySection({
   onSelectFiatPaymentMethod,
   anyspendQuote,
 }: PaySectionProps) {
-  const { connectedEOAWallet } = useAccountWallet();
-  const connectedAddress = connectedEOAWallet?.getAccount()?.address;
+  const { address: connectedAddress, isConnected } = useAccount();
   const { data: profileData } = useProfile({ address: connectedAddress });
   const connectedName = profileData?.displayName;
   const { data: srcTokenMetadata } = useTokenData(selectedSrcToken?.chainId, selectedSrcToken?.address);
@@ -95,7 +95,7 @@ export function PaySection({
           >
             {selectedCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET ? (
               <>
-                {connectedEOAWallet ? (
+                {isConnected ? (
                   <div className="flex items-center gap-1">
                     {connectedName ? formatUsername(connectedName) : shortenAddress(connectedAddress || "")}
                   </div>
