@@ -192,6 +192,7 @@ export function useUnifiedChainSwitchAndExecute() {
 
   return {
     switchChainAndExecute,
+    switchChainAndExecuteWithEOA: handleEOASwitchChainAndSendTransaction,
     isSwitchingOrExecuting,
     isActiveSmartWallet,
     isActiveEOAWallet,

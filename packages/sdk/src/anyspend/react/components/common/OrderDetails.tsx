@@ -225,7 +225,7 @@ export const OrderDetails = memo(function OrderDetails({
   const [showQRCode, setShowQRCode] = useState(false);
   const { isLoading: txLoading, isSuccess: txSuccess } = useWaitForTransactionReceipt({ hash: txHash });
 
-  const { switchChainAndExecute, isSwitchingOrExecuting } = useUnifiedChainSwitchAndExecute();
+  const { switchChainAndExecuteWithEOA, isSwitchingOrExecuting } = useUnifiedChainSwitchAndExecute();
 
   const { colorMode } = useColorMode();
 
@@ -260,12 +260,12 @@ export const OrderDetails = memo(function OrderDetails({
       value = BigInt(0);
     }
 
-    const txHash = await switchChainAndExecute(order.srcChain, { to, data: txData, value });
+    const txHash = await switchChainAndExecuteWithEOA(order.srcChain, { to, data: txData, value });
 
     if (txHash) {
       setTxHash(txHash as `0x${string}`);
     }
-  }, [order, switchChainAndExecute]);
+  }, [order, switchChainAndExecuteWithEOA]);
 
   // Main payment handler that triggers chain switch and payment
   const handlePayment = async () => {

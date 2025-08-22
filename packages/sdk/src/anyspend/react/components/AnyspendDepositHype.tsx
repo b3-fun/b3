@@ -70,6 +70,7 @@ function AnySpendDepositHypeInner({
     activePanel,
     setActivePanel,
     orderId,
+    setOrderId,
     oat,
     selectedSrcChainId,
     setSelectedSrcChainId,
@@ -413,6 +414,7 @@ function AnySpendDepositHypeInner({
               refundTxs={oat.data.refundTxs}
               cryptoPaymentMethod={paymentType === "fiat" ? CryptoPaymentMethodType.NONE : selectedCryptoPaymentMethod}
               onBack={() => {
+                setOrderId(undefined);
                 setActivePanel(PanelView.MAIN);
                 onSuccess?.();
               }}
@@ -469,6 +471,8 @@ function AnySpendDepositHypeInner({
       srcAmountOnRamp={srcAmount}
     />
   );
+
+  console.log("activePanel", activePanel, orderId, oat);
 
   // If showing token selection, render with panel transitions
   return (

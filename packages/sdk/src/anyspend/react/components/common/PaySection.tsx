@@ -1,10 +1,11 @@
-import { Input, useAccountWallet, useTokenData } from "@b3dotfun/sdk/global-account/react";
+import { Input, useProfile, useTokenData } from "@b3dotfun/sdk/global-account/react";
 import { formatUsername } from "@b3dotfun/sdk/shared/utils";
 import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { formatDisplayNumber } from "@b3dotfun/sdk/shared/utils/number";
 import { ChevronRight } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect, useRef } from "react";
+import { useAccount } from "wagmi";
 import { components } from "../../../types/api";
 import { CryptoPaymentMethodType } from "./CryptoPaymentMethod";
 import { FiatPaymentMethod } from "./FiatPaymentMethod";
@@ -45,8 +46,9 @@ export function PaySection({
   onSelectFiatPaymentMethod,
   anyspendQuote,
 }: PaySectionProps) {
-  const { address: globalAddress, wallet: globalWallet, ensName: connectedName } = useAccountWallet();
-  const connectedAddress = globalWallet?.address;
+  const { address: connectedAddress, isConnected } = useAccount();
+  const { data: profileData } = useProfile({ address: connectedAddress });
+  const connectedName = profileData?.displayName;
   const { data: srcTokenMetadata } = useTokenData(selectedSrcToken?.chainId, selectedSrcToken?.address);
 
   // Add ref to track if we've applied metadata
@@ -88,12 +90,12 @@ export function PaySection({
         <div className="text-as-primary/50 flex h-7 items-center text-sm">Pay</div>
         {paymentType === "crypto" ? (
           <button
-            className="text-as-tertiarry flex h-7 items-center gap-2 text-sm transition-colors"
+            className="text-as-tertiarry flex h-7 items-center gap-2 text-sm transition-colors focus:!outline-none"
             onClick={onSelectCryptoPaymentMethod}
           >
             {selectedCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET ? (
               <>
-                {globalAddress ? (
+                {isConnected ? (
                   <div className="flex items-center gap-1">
                     {connectedName ? formatUsername(connectedName) : shortenAddress(connectedAddress || "")}
                   </div>
@@ -151,7 +153,7 @@ export function PaySection({
       {paymentType === "crypto" ? (
         <>
           <OrderTokenAmount
-            address={globalAddress}
+            address={connectedAddress}
             context="from"
             inputValue={srcAmount}
             onChangeInput={value => {
@@ -172,7 +174,7 @@ export function PaySection({
             </div>
             <TokenBalance
               token={selectedSrcToken}
-              walletAddress={globalAddress}
+              walletAddress={connectedAddress}
               onChangeInput={value => {
                 setIsSrcInputDirty(true);
                 setSrcAmount(value);

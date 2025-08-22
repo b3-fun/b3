@@ -3,9 +3,11 @@
 import { RELAY_SOLANA_MAINNET_CHAIN_ID } from "@b3dotfun/sdk/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { ShinyButton, useProfile } from "@b3dotfun/sdk/global-account/react";
+import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { motion } from "framer-motion";
 import { ChevronRight, Loader2 } from "lucide-react";
+import { useAccount } from "wagmi";
 import { OrderDetailsCollapsible } from "./OrderDetailsCollapsible";
 
 type Tournament = components["schemas"]["Tournament"];
@@ -33,6 +35,7 @@ export default function ConnectWalletPayment({
 }: ConnectWalletPaymentProps) {
   const profile = useProfile({ address: order.recipientAddress });
   const recipientName = profile.data?.name?.replace(/\.b3\.fun/g, "");
+  const { address: connectedAddress } = useAccount();
 
   const srcToken = order.metadata.srcToken;
   const dstToken = order.metadata.dstToken;
@@ -82,6 +85,12 @@ export default function ConnectWalletPayment({
             </>
           )}
         </ShinyButton>
+        <span className="label-style text-as-primary/50 text-xs">
+          Connected to:{" "}
+          {order.srcChain === RELAY_SOLANA_MAINNET_CHAIN_ID && phantomWalletAddress
+            ? centerTruncate(phantomWalletAddress, 6)
+            : centerTruncate(connectedAddress || "")}
+        </span>
 
         <div className="mt-4">
           <OrderDetailsCollapsible
