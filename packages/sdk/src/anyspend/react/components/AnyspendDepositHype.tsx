@@ -22,7 +22,7 @@ import { ESCROW_ABI } from "@b3dotfun/sdk/anyspend/abis/escrow";
 import { ArrowDown } from "lucide-react";
 import { PanelOnramp } from "./common/PanelOnramp";
 
-const SLIPPAGE = 3;
+const SLIPPAGE_PERCENT = 3;
 
 function generateEncodedDataForDepositHype(amount: string, beneficiary: string): string {
   invariant(BigInt(amount) > 0, "Amount must be greater than zero");
@@ -109,7 +109,7 @@ function AnySpendDepositHypeInner({
     onTransactionSuccess: onSuccess,
     sourceTokenAddress,
     sourceTokenChainId,
-    slippage: SLIPPAGE,
+    slippage: SLIPPAGE_PERCENT,
   });
 
   // Button state logic
@@ -313,7 +313,10 @@ function AnySpendDepositHypeInner({
       const srcAmountBigInt = BigInt(activeInputAmountInWei);
       // TODO: temp subtract 3% for slippage
       const originalDepositAmountWei = anyspendQuote.data?.currencyOut?.amount || "0";
-      const depositAmountWei = ((BigInt(originalDepositAmountWei) * BigInt(100 - SLIPPAGE)) / BigInt(100)).toString();
+      const depositAmountWei = (
+        (BigInt(originalDepositAmountWei) * BigInt(100 - SLIPPAGE_PERCENT)) /
+        BigInt(100)
+      ).toString();
       const encodedData = generateEncodedDataForDepositHype(depositAmountWei, selectedRecipientAddress);
 
       createOrder({
