@@ -1,4 +1,5 @@
 import { B3_TOKEN } from "@b3dotfun/sdk/anyspend";
+import { PUBLIC_BASE_RPC_URL } from "@b3dotfun/sdk/shared/constants";
 import { formatNumber } from "@b3dotfun/sdk/shared/utils/formatNumber";
 import { useQuery } from "@tanstack/react-query";
 import { createPublicClient, formatUnits, http } from "viem";
@@ -19,7 +20,7 @@ const abi = [
 // Create a public client for Base
 const client = createPublicClient({
   chain: base,
-  transport: http(),
+  transport: http(PUBLIC_BASE_RPC_URL),
 });
 
 async function fetchB3Balances(addresses: string[]): Promise<{

@@ -10,6 +10,7 @@ import {
   useTokenBalance,
   useUnifiedChainSwitchAndExecute,
 } from "@b3dotfun/sdk/global-account/react";
+import { PUBLIC_BASE_RPC_URL } from "@b3dotfun/sdk/shared/constants";
 import { baseMainnet } from "@b3dotfun/sdk/shared/constants/chains/supported";
 import invariant from "invariant";
 import { ArrowRight, Loader2 } from "lucide-react";
@@ -117,7 +118,7 @@ function generateEncodedDataForBuyEntriesAndSpin(user: string, quantity: string)
 
 const basePublicClient = createPublicClient({
   chain: baseMainnet,
-  transport: http(),
+  transport: http(PUBLIC_BASE_RPC_URL),
 });
 
 export function AnySpendBuySpin({
