@@ -232,6 +232,7 @@ function AnySpendDepositHypeInner({
                 onDestinationTokenChange={() => {}}
                 onDestinationChainChange={() => {}}
                 fiatPaymentMethodIndex={PanelView.FIAT_PAYMENT_METHOD}
+                recipientSelectionPanelIndex={PanelView.RECIPIENT_SELECTION}
               />
             </motion.div>
           )}

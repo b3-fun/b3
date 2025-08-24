@@ -889,6 +889,7 @@ function AnySpendInner({
               onDestinationTokenChange={setSelectedDstToken}
               onDestinationChainChange={setSelectedDstChainId}
               fiatPaymentMethodIndex={PanelView.FIAT_PAYMENT_METHOD}
+              recipientSelectionPanelIndex={PanelView.RECIPIENT_SELECTION}
             />
           </motion.div>
         )}
