@@ -111,6 +111,7 @@ export function LinkAccount({
   };
 
   const handleSendOTP = async () => {
+    console.log("handleSendOTP", selectedMethod);
     if (!validateInput()) return;
 
     try {
@@ -131,6 +132,7 @@ export function LinkAccount({
         });
       }
 
+      console.log("otpSent", otpSent);
       setOtpSent(true);
     } catch (error) {
       console.error("Error sending OTP:", error);
@@ -338,15 +340,13 @@ export function LinkAccount({
                   className="bg-b3-line text-b3-grey font-neue-montreal-medium focus:ring-b3-primary-blue/20 w-full rounded-xl p-4 focus:outline-none focus:ring-2"
                   value={otp}
                   onChange={e => setOtp(e.target.value)}
-                  disabled={isLinking && linkingMethod === selectedMethod}
                 />
               </div>
               <Button
                 className="bg-b3-primary-blue hover:bg-b3-primary-blue/90 font-neue-montreal-semibold h-12 w-full text-white"
                 onClick={handleLinkAccount}
-                disabled={!otp || (isLinking && linkingMethod === selectedMethod)}
               >
-                {isLinking && linkingMethod === selectedMethod ? <Loader2 className="animate-spin" /> : "Link Account"}
+                Link Account
               </Button>
             </div>
           ) : (
