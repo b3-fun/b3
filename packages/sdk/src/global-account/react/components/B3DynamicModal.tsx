@@ -125,7 +125,7 @@ export function B3DynamicModal() {
           "rounded-2xl bg-white shadow-xl dark:bg-gray-900",
           "border border-gray-200 dark:border-gray-800",
           "mx-auto w-full max-w-md",
-          "sm:max-w-lg",
+          "sm:max-w-lg sm:rounded-b-none",
         )}
         hideCloseButton={hideCloseButton}
       >
