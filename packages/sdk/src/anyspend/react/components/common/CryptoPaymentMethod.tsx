@@ -42,8 +42,6 @@ export function CryptoPaymentMethod({
   const { disconnect } = useDisconnect();
   const { data: walletClient } = useWalletClient();
   const [showWalletModal, setShowWalletModal] = useState(false);
-  const [selectedWalletConnector, setSelectedWalletConnector] = useState<any>(null);
-  const [modalStep, setModalStep] = useState<"wallet-selection" | "account-selection">("wallet-selection");
 
   // Define available wallet connectors
   const availableConnectors = connectors.filter(connector =>
@@ -80,13 +78,18 @@ export function CryptoPaymentMethod({
       description: "Connect using WalletConnect protocol",
       connector: availableConnectors.find(c => c.name === "WalletConnect"),
     },
+    {
+      id: "phantom",
+      name: "Phantom",
+      icon: "https://phantom.app/favicon.ico",
+      description: "Connect using Phantom wallet",
+      connector: availableConnectors.find(c => c.name === "Phantom"),
+    },
   ].filter(wallet => wallet.connector); // Only show wallets that have available connectors
 
   // Reset modal state when closing
   const handleCloseModal = () => {
     setShowWalletModal(false);
-    setModalStep("wallet-selection");
-    setSelectedWalletConnector(null);
   };
 
   // Function to request wallet permissions for specific wallet
@@ -258,24 +261,12 @@ export function CryptoPaymentMethod({
       {/* Wallet Connection Modal */}
       {showWalletModal &&
         createPortal(
-          <div className="pointer-events-auto fixed inset-0 z-[9999] flex items-center justify-center bg-black/50">
+          <div className="wallet-connection-modal pointer-events-auto fixed inset-0 z-[9999] flex items-center justify-center bg-black/50">
             <div className="max-h-[80vh] w-[400px] max-w-[90vw] overflow-auto rounded-xl bg-white p-6 dark:bg-gray-900">
               <div className="mb-4 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  {modalStep === "account-selection" && (
-                    <button
-                      onClick={() => setModalStep("wallet-selection")}
-                      className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                    >
-                      <ChevronLeft className="h-5 w-5" />
-                    </button>
-                  )}
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    {modalStep === "wallet-selection"
-                      ? "Select a payment method"
-                      : `Connect ${selectedWalletConnector?.name}`}
-                  </h3>
-                </div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {isConnected ? "Switch wallet or account" : "Choose wallet to connect"}
+                </h3>
                 <button
                   onClick={handleCloseModal}
                   className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
@@ -285,94 +276,56 @@ export function CryptoPaymentMethod({
               </div>
 
               <div className="space-y-4">
-                {modalStep === "wallet-selection" ? (
-                  <>
-                    {/* Custom wallet options */}
-                    <div className="space-y-3">
-                      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        {isConnected ? "Switch wallet or account" : "Choose wallet to connect"}
-                      </h4>
-                      {walletOptions.map(walletOption => {
-                        const isCurrentWallet = isConnected && connector?.name === walletOption.connector?.name;
+                {/* Custom wallet options */}
+                <div className="space-y-3">
+                  {walletOptions.map(walletOption => {
+                    const isCurrentWallet = isConnected && connector?.name === walletOption.connector?.name;
 
-                        return (
-                          <button
-                            key={walletOption.id}
-                            onClick={async () => {
-                              setSelectedWalletConnector(walletOption.connector);
-                              setModalStep("account-selection");
-                            }}
-                            disabled={isPending}
-                            className={`w-full rounded-xl border p-4 text-left transition-all hover:shadow-md disabled:opacity-50 ${
-                              isCurrentWallet
-                                ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                                : "border-gray-200 bg-white hover:border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:hover:border-gray-500"
-                            }`}
-                          >
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <div
-                                  className={`flex h-12 w-12 items-center justify-center rounded-xl text-xl ${
-                                    isCurrentWallet ? "bg-blue-100 dark:bg-blue-800" : "bg-gray-100 dark:bg-gray-700"
-                                  }`}
-                                >
-                                  {walletOption.icon}
-                                </div>
-                                <div>
-                                  <div className="flex items-center gap-2">
-                                    <div className="text-sm font-semibold text-gray-900 dark:text-white">
-                                      {walletOption.name}
-                                    </div>
-                                    {isCurrentWallet && (
-                                      <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-800 dark:text-blue-200">
-                                        Connected
-                                      </span>
-                                    )}
-                                  </div>
-                                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                                    {isCurrentWallet ? "Switch account or reconnect" : walletOption.description}
-                                  </div>
-                                </div>
-                              </div>
-                              <ChevronRightCircle className="h-5 w-5 text-gray-400" />
+                    return (
+                      <button
+                        key={walletOption.id}
+                        onClick={async () => {
+                          handleCloseModal();
+                          await requestWalletPermissions(walletOption.connector);
+                        }}
+                        disabled={isPending}
+                        className={`wallet-option w-full rounded-xl border p-4 text-left transition-all hover:shadow-md disabled:opacity-50 ${
+                          isCurrentWallet
+                            ? "wallet-option--active border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                            : "border-gray-200 bg-white hover:border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:hover:border-gray-500"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`flex h-12 w-12 items-center justify-center rounded-xl text-xl ${
+                                isCurrentWallet ? "bg-blue-100 dark:bg-blue-800" : "bg-gray-100 dark:bg-gray-700"
+                              }`}
+                            >
+                              {walletOption.icon}
                             </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </>
-                ) : (
-                  /* Account Selection Step */
-                  <div className="space-y-4">
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Connect to {selectedWalletConnector?.name} to view available accounts
-                    </p>
-                    <button
-                      onClick={async () => {
-                        handleCloseModal();
-                        await requestWalletPermissions(selectedWalletConnector);
-                      }}
-                      disabled={isPending}
-                      className="w-full rounded-lg border border-gray-200 bg-white p-4 text-center transition-all hover:border-gray-300 hover:shadow-md disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:hover:border-gray-500"
-                    >
-                      <div className="flex items-center justify-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700">
-                          <Wallet className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                        </div>
-                        <div>
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
-                            {isPending
-                              ? `Connecting to ${selectedWalletConnector?.name}...`
-                              : `Connect ${selectedWalletConnector?.name}`}
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                                  {walletOption.name}
+                                </div>
+                                {isCurrentWallet && (
+                                  <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-800 dark:text-blue-200">
+                                    Connected
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400">
+                                {isCurrentWallet ? "Switch account or reconnect" : walletOption.description}
+                              </div>
+                            </div>
                           </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            {isPending ? "Please check your wallet" : "Click to connect and select account"}
-                          </div>
+                          <ChevronRightCircle className="h-5 w-5 text-gray-400" />
                         </div>
-                      </div>
-                    </button>
-                  </div>
-                )}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>,

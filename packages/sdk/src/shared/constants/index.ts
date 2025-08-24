@@ -28,3 +28,5 @@ export const CLIENT_APP_BUNDLE_ID = process.env.EXPO_PUBLIC_B3_BUNDLE_ID || "";
 export const B3_AUTH_COOKIE_NAME = "b3-auth";
 
 export const ENS_GATEWAY_URL = "https://ens-gateway.b3.fun/";
+
+export const PUBLIC_BASE_RPC_URL = "https://base-rpc.publicnode.com";

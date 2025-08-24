@@ -5,11 +5,11 @@ import { useEffect, useRef } from "react";
 import { NumericFormat } from "react-number-format";
 
 import { ALL_CHAINS, RELAY_SOLANA_MAINNET_CHAIN_ID } from "@b3dotfun/sdk/anyspend";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { Button } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils";
 import { TokenSelector } from "@reservoir0x/relay-kit-ui";
 import { ChainTokenIcon } from "./ChainTokenIcon";
-import { components } from "@b3dotfun/sdk/anyspend/types/api";
 
 export function OrderTokenAmount({
   disabled,
@@ -140,7 +140,7 @@ export function OrderTokenAmount({
                 variant="outline"
                 role="combobox"
                 className={cn(
-                  "bg-b3-react-background border-as-stroke flex h-auto w-fit shrink-0 items-center justify-center gap-2 rounded-xl border-2 px-2 py-1 pr-2 text-center",
+                  "token-selector-button bg-b3-react-background border-as-stroke flex h-auto w-fit shrink-0 items-center justify-center gap-2 rounded-xl border-2 px-2 py-1 pr-2 text-center",
                   tokenSelectClassName,
                 )}
               >

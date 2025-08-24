@@ -10,6 +10,7 @@ import {
   useTokenBalance,
   useUnifiedChainSwitchAndExecute,
 } from "@b3dotfun/sdk/global-account/react";
+import { PUBLIC_BASE_RPC_URL } from "@b3dotfun/sdk/shared/constants";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import invariant from "invariant";
 import { ArrowRight, Loader2 } from "lucide-react";
@@ -26,7 +27,7 @@ import { UsdcIcon } from "./icons/USDCIcon";
 
 const basePublicClient = createPublicClient({
   chain: base,
-  transport: http(),
+  transport: http(PUBLIC_BASE_RPC_URL),
 });
 
 const ERC20Staking = "0xbf04200be3cbf371467a539706393c81c470f523";
