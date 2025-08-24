@@ -112,7 +112,6 @@ export function LinkAccount({
   };
 
   const handleSendOTP = async () => {
-    console.log("handleSendOTP", selectedMethod);
     if (!validateInput()) return;
 
     try {
@@ -141,7 +140,6 @@ export function LinkAccount({
         });
       }
 
-      console.log("otpSent", otpSent);
       setOtpSent(true);
     } catch (error) {
       console.error("Error sending OTP:", error);
@@ -153,11 +151,13 @@ export function LinkAccount({
 
   const handleLinkAccount = async () => {
     if (!otp) {
+      console.error("No OTP entered");
       setError("Please enter the verification code");
       return;
     }
 
     try {
+      setOtpSent(false);
       setLinkingState(true, selectedMethod);
       setError(null);
 
@@ -182,15 +182,10 @@ export function LinkAccount({
           mutationOptions,
         );
       }
-
-      onSuccess?.();
-      onClose?.();
     } catch (error) {
       console.error("Error linking account:", error);
       setError(error instanceof Error ? error.message : "Failed to link account");
       onError?.(error as Error);
-    } finally {
-      setLinkingState(false);
     }
   };
 
@@ -250,8 +245,13 @@ export function LinkAccount({
     setLinkingState(false);
   }, [isLinking, setSelectedMethod, setEmail, setPhone, setOtp, setOtpSent, setError, setLinkingState]);
 
-  useEffect(() => {
-    if (isLinking) {
+  const handleFinishedLinking = useCallback(
+    (success: boolean) => {
+      if (success) {
+        onSuccess?.();
+        onClose?.();
+      }
+
       setLinkingState(false);
       navigateBack();
       setB3ModalContentType({
@@ -261,6 +261,13 @@ export function LinkAccount({
         chain,
         partnerId,
       });
+    },
+    [chain, navigateBack, partnerId, setB3ModalContentType, setLinkingState, onSuccess, onClose],
+  );
+
+  useEffect(() => {
+    if (isLinking) {
+      handleFinishedLinking(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profiles.length]);
