@@ -1,3 +1,4 @@
+import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { Loader2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -123,12 +124,20 @@ export function LinkAccount({
           client,
           strategy: "email",
           email,
+          ecosystem: {
+            id: ecosystemWalletId,
+            partnerId: partnerId,
+          },
         });
       } else if (selectedMethod === "phone") {
         await preAuthenticate({
           client,
           strategy: "phone",
           phoneNumber: phone,
+          ecosystem: {
+            id: ecosystemWalletId,
+            partnerId: partnerId,
+          },
         });
       }
 
