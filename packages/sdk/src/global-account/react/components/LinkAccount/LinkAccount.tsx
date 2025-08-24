@@ -1,3 +1,4 @@
+import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { Loader2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -122,12 +123,20 @@ export function LinkAccount({
           client,
           strategy: "email",
           email,
+          ecosystem: {
+            id: ecosystemWalletId,
+            partnerId: partnerId,
+          },
         });
       } else if (selectedMethod === "phone") {
         await preAuthenticate({
           client,
           strategy: "phone",
           phoneNumber: phone,
+          ecosystem: {
+            id: ecosystemWalletId,
+            partnerId: partnerId,
+          },
         });
       }
 
@@ -142,11 +151,13 @@ export function LinkAccount({
 
   const handleLinkAccount = async () => {
     if (!otp) {
+      console.error("No OTP entered");
       setError("Please enter the verification code");
       return;
     }
 
     try {
+      setOtpSent(false);
       setLinkingState(true, selectedMethod);
       setError(null);
 
@@ -171,15 +182,10 @@ export function LinkAccount({
           mutationOptions,
         );
       }
-
-      onSuccess?.();
-      onClose?.();
     } catch (error) {
       console.error("Error linking account:", error);
       setError(error instanceof Error ? error.message : "Failed to link account");
       onError?.(error as Error);
-    } finally {
-      setLinkingState(false);
     }
   };
 
@@ -239,8 +245,13 @@ export function LinkAccount({
     setLinkingState(false);
   }, [isLinking, setSelectedMethod, setEmail, setPhone, setOtp, setOtpSent, setError, setLinkingState]);
 
-  useEffect(() => {
-    if (isLinking) {
+  const handleFinishedLinking = useCallback(
+    (success: boolean) => {
+      if (success) {
+        onSuccess?.();
+        onClose?.();
+      }
+
       setLinkingState(false);
       navigateBack();
       setB3ModalContentType({
@@ -250,6 +261,13 @@ export function LinkAccount({
         chain,
         partnerId,
       });
+    },
+    [chain, navigateBack, partnerId, setB3ModalContentType, setLinkingState, onSuccess, onClose],
+  );
+
+  useEffect(() => {
+    if (isLinking) {
+      handleFinishedLinking(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profiles.length]);
@@ -338,15 +356,13 @@ export function LinkAccount({
                   className="bg-b3-line text-b3-grey font-neue-montreal-medium focus:ring-b3-primary-blue/20 w-full rounded-xl p-4 focus:outline-none focus:ring-2"
                   value={otp}
                   onChange={e => setOtp(e.target.value)}
-                  disabled={isLinking && linkingMethod === selectedMethod}
                 />
               </div>
               <Button
                 className="bg-b3-primary-blue hover:bg-b3-primary-blue/90 font-neue-montreal-semibold h-12 w-full text-white"
                 onClick={handleLinkAccount}
-                disabled={!otp || (isLinking && linkingMethod === selectedMethod)}
               >
-                {isLinking && linkingMethod === selectedMethod ? <Loader2 className="animate-spin" /> : "Link Account"}
+                Link Account
               </Button>
             </div>
           ) : (

@@ -597,12 +597,16 @@ export function ManageAccount({
             >
               Mints
             </TabTriggerPrimitive>
+            {/*
+            // TODO: Apps is a remnant of session key flow. Moving forward, we should find a way to properly associate apps from linked partners that a user has logged in with
+            https://linear.app/npclabs/issue/B3-2318/find-a-way-to-properly-display-which-partner-apps-a-user-has-logged-in
+            
             <TabTriggerPrimitive
               value="apps"
               className="data-[state=active]:text-b3-primary-blue data-[state=active]:border-b-b3-primary-blue flex-none rounded-none border-0 p-0 pb-1 text-xl leading-none tracking-wide transition-colors data-[state=active]:border-b data-[state=active]:bg-white md:pb-4"
             >
               Apps
-            </TabTriggerPrimitive>
+            </TabTriggerPrimitive> */}
             <TabTriggerPrimitive
               value="settings"
               className="data-[state=active]:text-b3-primary-blue data-[state=active]:border-b-b3-primary-blue flex-none rounded-none border-0 p-0 pb-1 text-xl leading-none tracking-wide transition-colors data-[state=active]:border-b data-[state=active]:bg-white md:pb-4"
