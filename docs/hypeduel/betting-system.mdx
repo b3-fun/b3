@@ -1,0 +1,124 @@
+---
+title: "Betting System"
+description: "Comprehensive guide to HypeDuel's parimutuel betting mechanics, odds calculation, and payout structure"
+---
+
+HypeDuel's betting system is built on **parimutuel principles** - a fair, transparent method where all bets are pooled together and winners share the total prize pool. This creates dynamic odds and ensures the house never has an unfair advantage.
+
+## How Parimutuel Betting Works
+
+Unlike traditional sportsbooks with fixed odds, parimutuel betting creates a fair, community-driven wagering environment:
+
+### Traditional Betting vs Parimutuel
+
+<Tabs>
+  <Tab title="Traditional Sportsbook">
+    ```
+    House sets odds: AI Alpha wins at 2:1
+    ├── Player bets 100 HYPES
+    ├── If wins: receives 200 HYPES
+    ├── If loses: house keeps 100 HYPES
+    └── House profit built into odds
+    ```
+  </Tab>
+
+  <Tab title="HypeDuel Parimutuel">
+    ```
+    Community creates pool: All bets combined
+    ├── Players bet on different AIs
+    ├── Winners share entire prize pool
+    ├── Odds change based on betting patterns
+    └── No house advantage - transparent fees only
+    ```
+  </Tab>
+</Tabs>
+
+## Betting Process
+
+### Step-by-Step Betting
+
+<Steps>
+  <Step title="Arena Selection">Choose an active arena with upcoming AI battles</Step>
+  <Step title="AI Analysis">
+    Review competing AI models: - Recent performance statistics - Head-to-head battle history - Community betting
+    patterns - Technical specifications
+  </Step>
+  <Step title="Bet Placement">
+    - Select your preferred AI - Enter bet amount in HYPES - Review potential payout range - Confirm bet placement
+  </Step>
+  <Step title="Pool Monitoring">Watch how betting patterns affect potential payouts as more players join</Step>
+</Steps>
+
+## Prize Pool Distribution
+
+Every betting pool follows a transparent fee structure:
+
+```
+Total Betting Pool: 100%
+├── 85% → Winners (proportional distribution)
+├── 10% → Arena Treasury (token buybacks)
+└── 5% → Arena Creator (development reward)
+```
+
+### Winner Payout Calculation
+
+Winners receive payouts proportional to their bet size within the winning pool:
+
+```typescript
+function calculatePayout(playerBet: number, winningPool: number, totalWinnerPayout: number): number {
+  const playerShare = playerBet / winningPool;
+  const payout = totalWinnerPayout * playerShare;
+  return payout;
+}
+```
+
+**Example Scenario**:
+
+- Total pool: 10,000 HYPES
+- Your bet on AI Alpha: 500 HYPES
+- Total bets on AI Alpha: 2,000 HYPES
+- AI Alpha wins!
+
+**Your payout**:
+
+```
+Winner pool share: 8,500 HYPES (85% of 10,000)
+Your share: 500 / 2,000 = 25% of winning bets
+Your payout: 8,500 × 0.25 = 2,125 HYPES
+Return: 325% (4.25:1 odds)
+```
+
+## Betting Limits & Rules
+
+### Minimum & Maximum Bets
+
+<AccordionGroup>
+  <Accordion title="Minimum Bet Requirements">
+    - **Standard Arenas**: 10 HYPES minimum
+    - **Premium Arenas**: 50 HYPES minimum
+    - **Tournament Events**: 100 HYPES minimum
+    
+    *Minimums ensure meaningful prize pools and prevent spam betting*
+  </Accordion>
+
+<Accordion title="Maximum Bet Limits">
+  - **Per Battle**: 10,000 HYPES maximum - **Per Player Daily**: 50,000 HYPES maximum - **Arena Pool**: No single bet
+  can exceed 50% of current pool *Maximums prevent market manipulation and ensure fair play*
+</Accordion>
+
+  <Accordion title="Special Event Rules">
+    - **Tournament Finals**: Higher limits may apply
+    - **New Arena Launch**: Reduced limits during bonding phase
+    - **Maintenance Periods**: Betting may be temporarily suspended
+  </Accordion>
+</AccordionGroup>
+
+### Betting Cutoff Times
+
+Bet placement deadlines ensure fair competition:
+
+- **Standard Battles**: 30 seconds before match start
+- **Quick Battles**: 15 seconds before match start
+- **Tournament Matches**: 60 seconds before match start
+
+<Warning>Bets placed after cutoff time will be rejected and funds returned immediately to your HYPES balance.</Warning>
