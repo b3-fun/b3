@@ -84,7 +84,7 @@ export function PaySection({
       initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
       animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
       transition={{ duration: 0.3, delay: 0, ease: "easeInOut" }}
-      className="bg-as-surface-secondary border-as-border-secondary relative flex w-full flex-col gap-2 rounded-2xl border p-4 sm:p-6"
+      className="pay-section bg-as-surface-secondary border-as-border-secondary relative flex w-full flex-col gap-2 rounded-2xl border p-4 sm:p-6"
     >
       <div className="flex items-center justify-between">
         <div className="text-as-primary/50 flex h-7 items-center text-sm">Pay</div>
