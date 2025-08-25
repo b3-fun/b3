@@ -3,6 +3,7 @@
 import { useAccountWallet } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
+import { WalletCoinbase, WalletMetamask, WalletPhantom, WalletRainbow, WalletWalletConnect } from "@web3icons/react";
 import { ChevronLeft, ChevronRightCircle, Wallet, X, ZapIcon } from "lucide-react";
 import { useState } from "react";
 import { createPortal } from "react-dom";
@@ -45,7 +46,7 @@ export function CryptoPaymentMethod({
 
   // Define available wallet connectors
   const availableConnectors = connectors.filter(connector =>
-    ["MetaMask", "WalletConnect", "Coinbase Wallet", "Rainbow"].includes(connector.name),
+    ["MetaMask", "WalletConnect", "Coinbase Wallet", "Rainbow", "Phantom"].includes(connector.name),
   );
 
   // Define wallet options with icons and info
@@ -53,35 +54,35 @@ export function CryptoPaymentMethod({
     {
       id: "metamask",
       name: "MetaMask",
-      icon: "🦊",
+      icon: <WalletMetamask size={48} />,
       description: "Connect using MetaMask browser extension",
       connector: availableConnectors.find(c => c.name === "MetaMask"),
     },
     {
       id: "coinbase",
       name: "Coinbase Wallet",
-      icon: "🔵",
+      icon: <WalletCoinbase size={48} />,
       description: "Connect using Coinbase Wallet",
       connector: availableConnectors.find(c => c.name === "Coinbase Wallet"),
     },
     {
       id: "rainbow",
       name: "Rainbow",
-      icon: "🌈",
+      icon: <WalletRainbow size={48} />,
       description: "Connect using Rainbow wallet",
       connector: availableConnectors.find(c => c.name === "Rainbow"),
     },
     {
       id: "walletconnect",
       name: "WalletConnect",
-      icon: "🔗",
+      icon: <WalletWalletConnect size={48} />,
       description: "Connect using WalletConnect protocol",
       connector: availableConnectors.find(c => c.name === "WalletConnect"),
     },
     {
       id: "phantom",
       name: "Phantom",
-      icon: "https://phantom.app/favicon.ico",
+      icon: <WalletPhantom size={48} />,
       description: "Connect using Phantom wallet",
       connector: availableConnectors.find(c => c.name === "Phantom"),
     },
@@ -297,15 +298,10 @@ export function CryptoPaymentMethod({
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <div
-                              className={`flex h-12 w-12 items-center justify-center rounded-xl text-xl ${
-                                isCurrentWallet ? "bg-blue-100 dark:bg-blue-800" : "bg-gray-100 dark:bg-gray-700"
-                              }`}
-                            >
-                              {walletOption.icon}
-                            </div>
+                            {walletOption.icon}
+
                             <div>
-                              <div className="flex items-center gap-2">
+                              <div className="wallet-option-name flex items-center gap-2">
                                 <div className="text-sm font-semibold text-gray-900 dark:text-white">
                                   {walletOption.name}
                                 </div>
