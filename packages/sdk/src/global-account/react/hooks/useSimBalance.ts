@@ -29,9 +29,12 @@ export interface SimBalanceResponse {
 async function fetchSimBalance(address: string): Promise<SimBalanceResponse> {
   if (!address) throw new Error("Address is required");
 
-  const response = await fetch(
-    `https://simdune-api.sean-430.workers.dev/?url=https://api.sim.dune.com/v1/evm/balances/${address}?metadata=logo&localkey=${process.env.PUBLIC_LOCAL_KEY}`,
-  );
+  let url = `https://simdune-api.sean-430.workers.dev/?url=https://api.sim.dune.com/v1/evm/balances/${address}?metadata=logo&chain_ids=mainnet`;
+  if (process.env.PUBLIC_LOCAL_KEY) {
+    url += `&localkey=${process.env.PUBLIC_LOCAL_KEY}`;
+  }
+
+  const response = await fetch(url);
 
   if (!response.ok) {
     throw new Error(`Failed to fetch balance: ${response.statusText}`);

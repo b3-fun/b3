@@ -1,7 +1,8 @@
-// Global window interface augmentations for AnySpend wallet providers
+// Global window interface augmentations for B3 SDK
 
 declare global {
   interface Window {
+    // AnySpend wallet providers
     phantom?: {
       solana?: {
         isPhantom?: boolean;
@@ -9,6 +10,9 @@ declare global {
         signAndSendTransaction: (transaction: any) => Promise<{ signature: string }>;
       };
     };
+    // Google Analytics 4
+    gtag: (...args: any[]) => void;
+    dataLayer: any[];
   }
 }
 
