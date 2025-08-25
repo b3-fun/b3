@@ -24,3 +24,5 @@ doppler.yaml
 .turbo
 
 .env*
+
+CURRENT_WORK.md

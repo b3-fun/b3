@@ -22,7 +22,7 @@ import { SwapIcon } from "@b3dotfun/sdk/global-account/react/components/icons/Sw
 import { formatUsername } from "@b3dotfun/sdk/shared/utils";
 import { formatNumber } from "@b3dotfun/sdk/shared/utils/formatNumber";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
-import { LinkIcon, Loader2, Pencil, Triangle, UnlinkIcon } from "lucide-react";
+import { BarChart3, Coins, Image, LinkIcon, Loader2, Pencil, Settings, Triangle, UnlinkIcon } from "lucide-react";
 import { useState } from "react";
 import { Chain } from "thirdweb";
 import { useActiveAccount, useProfiles, useUnlinkProfile } from "thirdweb/react";
@@ -31,7 +31,7 @@ import useFirstEOA from "../../hooks/useFirstEOA";
 import { getProfileDisplayInfo } from "../../utils/profileDisplay";
 import { AccountAssets } from "../AccountAssets/AccountAssets";
 
-type TabValue = "balance" | "assets" | "apps" | "settings";
+type TabValue = "overview" | "tokens" | "nfts" | "apps" | "settings";
 
 interface ManageAccountProps {
   onLogout?: () => void;
@@ -57,7 +57,7 @@ export function ManageAccount({
 }: ManageAccountProps) {
   const [revokingSignerId, setRevokingSignerId] = useState<string | null>(null);
   const account = useActiveAccount();
-  const { data: assets, isLoading } = useAccountAssets(account?.address);
+  const { data: nfts, isLoading } = useAccountAssets(account?.address);
   const { data: b3Balance } = useB3BalanceFromAddresses(account?.address);
   const { data: nativeBalance } = useNativeBalance(account?.address);
   const { address: eoaAddress } = useFirstEOA();
@@ -72,7 +72,7 @@ export function ManageAccount({
     accountAddress: account?.address,
   });
   const { setB3ModalOpen, setB3ModalContentType, contentType } = useModalStore();
-  const { activeTab = "balance", setActiveTab } = contentType as ManageAccountModalProps;
+  const { activeTab = "overview", setActiveTab } = contentType as ManageAccountModalProps;
   const { logout } = useAuthentication(partnerId);
   const [logoutLoading, setLogoutLoading] = useState(false);
 
@@ -127,13 +127,14 @@ export function ManageAccount({
               <h2 className="text-b3-grey text-xl font-semibold">
                 {profile?.displayName || formatUsername(profile?.name || "")}
               </h2>
-              <span className="text-b3-foreground-muted">{formatUsername(profile?.name || "")}</span>
+              <div className="border-b3-line bg-b3-line/20 hover:bg-b3-line/40 flex w-fit items-center gap-2 rounded-full border px-3 py-1 transition-colors">
+                <span className="text-b3-foreground-muted font-mono text-xs">
+                  {centerTruncate(account?.address || "", 6)}
+                </span>
+                <CopyToClipboard text={account?.address || ""} />
+              </div>
             </div>
           </div>
-        </div>
-        <div className="manage-account-address bg-b3-line flex h-11 items-center gap-2 rounded-full px-4">
-          <span className="text-b3-grey font-neue-montreal-semibold">{centerTruncate(account?.address || "")}</span>
-          <CopyToClipboard text={account?.address || ""} />
         </div>
 
         {/* Quick Actions */}
@@ -250,15 +251,15 @@ export function ManageAccount({
           </div>
         </div>
 
-        {/* EOA Account Balance Section - matching global balance styling */}
+        {/* EOA Account Balance Section - matching global overview styling */}
         {eoaAddress && (
           <div className="space-y-4">
-            <h3 className="text-b3-grey font-neue-montreal-semibold">Connected {eoaInfo?.data?.name || "Wallet"}</h3>
-
-            {/* EOA Address */}
-            <div className="manage-account-address bg-b3-line flex h-11 items-center gap-2 rounded-full px-4">
-              <span className="text-b3-grey font-neue-montreal-semibold">{centerTruncate(eoaAddress)}</span>
-              <CopyToClipboard text={eoaAddress} />
+            <div className="flex items-center gap-3">
+              <h3 className="text-b3-grey font-neue-montreal-semibold">Connected {eoaInfo?.data?.name || "Wallet"}</h3>
+              <div className="border-b3-line bg-b3-line/20 hover:bg-b3-line/40 flex w-fit items-center gap-2 rounded-full border px-3 py-1 transition-colors">
+                <span className="text-b3-foreground-muted font-mono text-xs">{centerTruncate(eoaAddress, 6)}</span>
+                <CopyToClipboard text={eoaAddress} />
+              </div>
             </div>
 
             {/* EOA B3 Balance */}
@@ -350,7 +351,7 @@ export function ManageAccount({
             </div>
 
             <p className="text-b3-foreground-muted font-neue-montreal-medium mt-2 text-sm">
-              Your universal account for all B3-powered apps
+              Your universal account for all B3 apps
             </p>
           </div>
           <button
@@ -364,10 +365,59 @@ export function ManageAccount({
     );
   };
 
+  const TokensContent = () => (
+    <div className="space-y-4">
+      <h3 className="text-b3-grey font-neue-montreal-semibold text-xl">My Tokens</h3>
+      <div className="space-y-3">
+        {/* B3 Token */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full">
+              <img src="https://cdn.b3.fun/b3-coin-3d.png" alt="B3" className="size-10" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-b3-grey font-neue-montreal-semibold">B3</span>
+              </div>
+              <div className="text-b3-foreground-muted font-neue-montreal-medium text-sm">B3 Token</div>
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-b3-grey font-neue-montreal-semibold">{b3Balance?.formattedTotal || "0.00"}</div>
+            <div className="text-b3-foreground-muted font-neue-montreal-medium text-sm">
+              ${b3Balance?.balanceUsdFormatted || "0.00"}
+            </div>
+          </div>
+        </div>
+
+        {/* ETH Token */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full">
+              <img src="https://cdn.b3.fun/ethereum.svg" alt="ETH" className="size-10" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-b3-grey font-neue-montreal-semibold">Ethereum</span>
+              </div>
+              <div className="text-b3-foreground-muted font-neue-montreal-medium text-sm">ETH</div>
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-b3-grey font-neue-montreal-semibold">{nativeBalance?.formattedTotal || "0.00"}</div>
+            <div className="text-b3-foreground-muted font-neue-montreal-medium text-sm">
+              ${nativeBalance?.formattedTotalUsd || "0.00"}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   const AssetsContent = () => (
     <div className="grid grid-cols-3 gap-4">
-      {assets?.nftResponse ? (
-        <AccountAssets nfts={assets.nftResponse} isLoading={isLoading} />
+      {nfts?.nftResponse ? (
+        <AccountAssets nfts={nfts.nftResponse} isLoading={isLoading} />
       ) : (
         <div className="col-span-3 py-12 text-center text-gray-500">No NFTs found</div>
       )}
@@ -429,10 +479,7 @@ export function ManageAccount({
     const handleUnlink = async (profile: any) => {
       setUnlinkingAccountId(profile.title);
       try {
-        await unlinkProfile({
-          client,
-          profileToUnlink: profile.originalProfile,
-        });
+        unlinkProfile({ client, profileToUnlink: profile.originalProfile });
       } catch (error) {
         console.error("Error unlinking account:", error);
       } finally {
@@ -558,7 +605,7 @@ export function ManageAccount({
             </div>
 
             <p className="text-b3-foreground-muted font-neue-montreal-medium mt-2 text-sm">
-              Your universal account for all B3-powered apps
+              Your universal account for all B3 apps
             </p>
           </div>
           <button
@@ -579,55 +626,85 @@ export function ManageAccount({
           defaultValue={activeTab}
           onValueChange={value => {
             const tab = value as TabValue;
-            if (["balance", "assets", "apps", "settings"].includes(tab)) {
+            if (["overview", "tokens", "nfts", "apps", "settings"].includes(tab)) {
               setActiveTab?.(tab);
             }
           }}
         >
-          <TabsListPrimitive className="font-neue-montreal-semibold text-b3-grey flex h-8 w-full items-start justify-start gap-8 border-0 text-xl md:p-4">
-            <TabTriggerPrimitive
-              value="balance"
-              className="data-[state=active]:text-b3-primary-blue data-[state=active]:border-b-b3-primary-blue flex-none rounded-none border-0 p-0 pb-1 text-xl leading-none tracking-wide transition-colors data-[state=active]:border-b data-[state=active]:bg-white md:pb-4"
-            >
-              Overview
-            </TabTriggerPrimitive>
-            <TabTriggerPrimitive
-              value="assets"
-              className="data-[state=active]:text-b3-primary-blue data-[state=active]:border-b-b3-primary-blue flex-none rounded-none border-0 p-0 pb-1 text-xl leading-none tracking-wide transition-colors data-[state=active]:border-b data-[state=active]:bg-white md:pb-4"
-            >
-              Mints
-            </TabTriggerPrimitive>
-            {/*
-            // TODO: Apps is a remnant of session key flow. Moving forward, we should find a way to properly associate apps from linked partners that a user has logged in with
-            https://linear.app/npclabs/issue/B3-2318/find-a-way-to-properly-display-which-partner-apps-a-user-has-logged-in
-            
-            <TabTriggerPrimitive
-              value="apps"
-              className="data-[state=active]:text-b3-primary-blue data-[state=active]:border-b-b3-primary-blue flex-none rounded-none border-0 p-0 pb-1 text-xl leading-none tracking-wide transition-colors data-[state=active]:border-b data-[state=active]:bg-white md:pb-4"
-            >
-              Apps
-            </TabTriggerPrimitive> */}
-            <TabTriggerPrimitive
-              value="settings"
-              className="data-[state=active]:text-b3-primary-blue data-[state=active]:border-b-b3-primary-blue flex-none rounded-none border-0 p-0 pb-1 text-xl leading-none tracking-wide transition-colors data-[state=active]:border-b data-[state=active]:bg-white md:pb-4"
-            >
-              Settings
-            </TabTriggerPrimitive>
-          </TabsListPrimitive>
+          <div className="px-4">
+            <TabsListPrimitive className="grid h-auto grid-cols-2 grid-rows-2 gap-3 rounded-none border-none bg-transparent">
+              <TabTriggerPrimitive
+                value="overview"
+                className="data-[state=active]:bg-b3-primary-blue data-[state=active]:hover:bg-b3-primary-blue data-[state=active]:border-b3-primary-blue group flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white p-2 text-center shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md data-[state=active]:shadow-lg"
+              >
+                <BarChart3 size={20} className="text-b3-primary-blue shrink-0 group-data-[state=active]:text-white" />
+                <span className="text-b3-grey font-neue-montreal-semibold text-sm group-data-[state=active]:text-white">
+                  Overview
+                </span>
+              </TabTriggerPrimitive>
+              <TabTriggerPrimitive
+                value="tokens"
+                className="data-[state=active]:bg-b3-primary-blue data-[state=active]:hover:bg-b3-primary-blue data-[state=active]:border-b3-primary-blue group flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white p-2 text-center shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md data-[state=active]:shadow-lg"
+              >
+                <Coins size={20} className="text-b3-primary-blue shrink-0 group-data-[state=active]:text-white" />
+                <span className="text-b3-grey font-neue-montreal-semibold text-sm group-data-[state=active]:text-white">
+                  Tokens
+                </span>
+              </TabTriggerPrimitive>
+              <TabTriggerPrimitive
+                value="nfts"
+                className="data-[state=active]:bg-b3-primary-blue data-[state=active]:hover:bg-b3-primary-blue data-[state=active]:border-b3-primary-blue group flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white p-2 text-center shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md data-[state=active]:shadow-lg"
+              >
+                <Image size={20} className="text-b3-primary-blue shrink-0 group-data-[state=active]:text-white" />
+                <span className="text-b3-grey font-neue-montreal-semibold text-sm group-data-[state=active]:text-white">
+                  NFTs
+                </span>
+              </TabTriggerPrimitive>
+              {/*
+              // TODO: Apps is a remnant of session key flow. Moving forward, we should find a way to properly associate apps from linked partners that a user has logged in with
+              // https://linear.app/npclabs/issue/B3-2318/find-a-way-to-properly-display-which-partner-apps-a-user-has-logged-in
+              <TabTriggerPrimitive
+                value="apps"
+                className="data-[state=active]:bg-b3-primary-blue data-[state=active]:hover:bg-b3-primary-blue data-[state=active]:border-b3-primary-blue group flex h-16 w-full flex-col items-start justify-between rounded-xl border border-gray-200 bg-white p-3 text-left shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md data-[state=active]:shadow-lg col-start-1 col-end-2"
+              >
+                <div className="flex w-full items-center justify-between">
+                  <Grid3X3 size={20} className="text-b3-primary-blue shrink-0 group-data-[state=active]:text-white" />
+                  <span className="text-b3-grey font-neue-montreal-bold text-lg group-data-[state=active]:text-white">4</span>
+                </div>
+                <span className="text-b3-grey font-neue-montreal-semibold text-sm group-data-[state=active]:text-white">
+                  Apps
+                </span>
+              </TabTriggerPrimitive>
+              */}
+              <TabTriggerPrimitive
+                value="settings"
+                className="data-[state=active]:bg-b3-primary-blue data-[state=active]:hover:bg-b3-primary-blue data-[state=active]:border-b3-primary-blue group flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white p-2 text-center shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md data-[state=active]:shadow-lg"
+              >
+                <Settings size={20} className="text-b3-primary-blue shrink-0 group-data-[state=active]:text-white" />
+                <span className="text-b3-grey font-neue-montreal-semibold text-sm group-data-[state=active]:text-white">
+                  Settings
+                </span>
+              </TabTriggerPrimitive>
+            </TabsListPrimitive>
+          </div>
 
-          <TabsContentPrimitive value="balance" className="pt-4 md:p-4">
+          <TabsContentPrimitive value="overview" className="px-4 pb-4 pt-2">
             <BalanceContent />
           </TabsContentPrimitive>
 
-          <TabsContentPrimitive value="assets" className="pt-4 md:p-4">
+          <TabsContentPrimitive value="tokens" className="px-4 pb-4 pt-2">
+            <TokensContent />
+          </TabsContentPrimitive>
+
+          <TabsContentPrimitive value="nfts" className="px-4 pb-4 pt-2">
             <AssetsContent />
           </TabsContentPrimitive>
 
-          <TabsContentPrimitive value="apps" className="pt-4 md:p-4">
+          <TabsContentPrimitive value="apps" className="px-4 pb-4 pt-2">
             <AppsContent />
           </TabsContentPrimitive>
 
-          <TabsContentPrimitive value="settings" className="pt-4 md:p-4">
+          <TabsContentPrimitive value="settings" className="px-4 pb-4 pt-2">
             <SettingsContent />
           </TabsContentPrimitive>
         </TabsPrimitive>
