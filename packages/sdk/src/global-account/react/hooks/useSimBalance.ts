@@ -49,7 +49,5 @@ export function useSimBalance(address?: string) {
       return fetchSimBalance(address);
     },
     enabled: Boolean(address),
-    staleTime: 30 * 1000, // Consider data fresh for 30 seconds
-    gcTime: 5 * 60 * 1000, // Keep unused data in cache for 5 minutes
   });
 }

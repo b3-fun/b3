@@ -143,7 +143,7 @@ export function ContentTokens({ activeTab }: ContentTokensProps) {
     // Handle percentage button clicks (25%, 50%, 75%, 100%)
     const handlePercentageClick = (percentage: number) => {
       if (displayToken) {
-        const tokenBalance = (BigInt(displayToken.amount) * BigInt(percentage)) / 100n;
+        const tokenBalance = (BigInt(displayToken.amount) * BigInt(percentage)) / BigInt(100);
         const amount = formatTokenAmount(tokenBalance, displayToken.decimals, 30, false);
         setSendAmount(amount);
       }
@@ -180,7 +180,11 @@ export function ContentTokens({ activeTab }: ContentTokensProps) {
         // Error
         toast.error(`Failed to send ${displayToken.symbol}: ${error.message || "Unknown error"}`);
       } finally {
-        await refetchSimBalance();
+        // Wait 1 second to make sure the tx is indexed on sim api.
+        setTimeout(async () => {
+          // Force refetch to bypass cache and get fresh balance data
+          await refetchSimBalance();
+        }, 1000);
         setIsSending(false);
       }
     };
