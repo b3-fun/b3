@@ -169,7 +169,7 @@ export function ContentTokens({ activeTab }: ContentTokensProps) {
         const tx = await switchChainAndExecute(displayToken.chain_id, {
           to: displayToken.address === "native" ? recipientAddress : displayToken.address,
           data: sendTokenData,
-          value: displayToken.address === "native" ? amountInWei : 0n,
+          value: displayToken.address === "native" ? amountInWei : BigInt(0),
         });
 
         if (tx) {
