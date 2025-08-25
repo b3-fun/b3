@@ -133,7 +133,6 @@ export function useUnifiedChainSwitchAndExecute() {
 
         const chain = getThirdwebChain(targetChainId);
 
-        toast.info("Preparing transaction…");
         const transaction = prepareTransaction({
           client,
           chain,

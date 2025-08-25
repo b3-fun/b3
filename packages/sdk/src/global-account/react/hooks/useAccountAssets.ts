@@ -1,5 +1,6 @@
 import { fetchSimpleHashData } from "@b3dotfun/sdk/shared/utils/simplehash";
 import { useQuery } from "@tanstack/react-query";
+
 async function fetchAccountAssets(address: string) {
   if (!address) throw new Error("Address is required");
 

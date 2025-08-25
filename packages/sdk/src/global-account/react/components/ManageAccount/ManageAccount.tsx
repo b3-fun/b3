@@ -21,6 +21,7 @@ import { SignOutIcon } from "@b3dotfun/sdk/global-account/react/components/icons
 import { SwapIcon } from "@b3dotfun/sdk/global-account/react/components/icons/SwapIcon";
 import { formatUsername } from "@b3dotfun/sdk/shared/utils";
 import { formatNumber } from "@b3dotfun/sdk/shared/utils/formatNumber";
+
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { BarChart3, Coins, Image, LinkIcon, Loader2, Pencil, Settings, Triangle, UnlinkIcon } from "lucide-react";
 import { useState } from "react";
@@ -30,6 +31,7 @@ import { formatUnits } from "viem";
 import useFirstEOA from "../../hooks/useFirstEOA";
 import { getProfileDisplayInfo } from "../../utils/profileDisplay";
 import { AccountAssets } from "../AccountAssets/AccountAssets";
+import { ContentTokens } from "./ContentTokens";
 
 type TabValue = "overview" | "tokens" | "nfts" | "apps" | "settings";
 
@@ -75,9 +77,6 @@ export function ManageAccount({
   const { activeTab = "overview", setActiveTab } = contentType as ManageAccountModalProps;
   const { logout } = useAuthentication(partnerId);
   const [logoutLoading, setLogoutLoading] = useState(false);
-
-  console.log("account", account);
-  console.log("eoaAddress", eoaAddress);
 
   const { removeSessionKey } = useRemoveSessionKey({
     chain,
@@ -365,65 +364,6 @@ export function ManageAccount({
     );
   };
 
-  const TokensContent = () => (
-    <div className="space-y-4">
-      <h3 className="text-b3-grey font-neue-montreal-semibold text-xl">My Tokens</h3>
-      <div className="space-y-3">
-        {/* B3 Token */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full">
-              <img src="https://cdn.b3.fun/b3-coin-3d.png" alt="B3" className="size-10" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-b3-grey font-neue-montreal-semibold">B3</span>
-              </div>
-              <div className="text-b3-foreground-muted font-neue-montreal-medium text-sm">B3 Token</div>
-            </div>
-          </div>
-          <div className="text-right">
-            <div className="text-b3-grey font-neue-montreal-semibold">{b3Balance?.formattedTotal || "0.00"}</div>
-            <div className="text-b3-foreground-muted font-neue-montreal-medium text-sm">
-              ${b3Balance?.balanceUsdFormatted || "0.00"}
-            </div>
-          </div>
-        </div>
-
-        {/* ETH Token */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full">
-              <img src="https://cdn.b3.fun/ethereum.svg" alt="ETH" className="size-10" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-b3-grey font-neue-montreal-semibold">Ethereum</span>
-              </div>
-              <div className="text-b3-foreground-muted font-neue-montreal-medium text-sm">ETH</div>
-            </div>
-          </div>
-          <div className="text-right">
-            <div className="text-b3-grey font-neue-montreal-semibold">{nativeBalance?.formattedTotal || "0.00"}</div>
-            <div className="text-b3-foreground-muted font-neue-montreal-medium text-sm">
-              ${nativeBalance?.formattedTotalUsd || "0.00"}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const AssetsContent = () => (
-    <div className="grid grid-cols-3 gap-4">
-      {nfts?.nftResponse ? (
-        <AccountAssets nfts={nfts.nftResponse} isLoading={isLoading} />
-      ) : (
-        <div className="col-span-3 py-12 text-center text-gray-500">No NFTs found</div>
-      )}
-    </div>
-  );
-
   const AppsContent = () => (
     <div className="space-y-4">
       {signers?.map((signer: TWSignerWithMetadata) => (
@@ -693,11 +633,17 @@ export function ManageAccount({
           </TabsContentPrimitive>
 
           <TabsContentPrimitive value="tokens" className="px-4 pb-4 pt-2">
-            <TokensContent />
+            <ContentTokens activeTab={activeTab} />
           </TabsContentPrimitive>
 
           <TabsContentPrimitive value="nfts" className="px-4 pb-4 pt-2">
-            <AssetsContent />
+            <div className="grid grid-cols-3 gap-4">
+              {nfts?.nftResponse ? (
+                <AccountAssets nfts={nfts.nftResponse} isLoading={isLoading} />
+              ) : (
+                <div className="col-span-3 py-12 text-center text-gray-500">No NFTs found</div>
+              )}
+            </div>
           </TabsContentPrimitive>
 
           <TabsContentPrimitive value="apps" className="px-4 pb-4 pt-2">

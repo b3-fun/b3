@@ -1,1 +1,52 @@
 - Use pnpm for the whole project.
+
+## Framer Motion Directional Animations
+
+### 🚨 Critical Rule: Component Identity vs Component Content
+
+When working with Framer Motion TransitionPanel and form inputs:
+
+**❌ NEVER DO THIS - Creates component remounting and focus loss:**
+
+```tsx
+const MyComponent = useCallback(() => <div>content</div>, [deps]);
+return <TransitionPanel>{[<MyComponent key="panel" />]}</TransitionPanel>;
+```
+
+**✅ ALWAYS DO THIS - Stable element pattern preserves focus:**
+
+```tsx
+const renderMyPanel = () => <div>content</div>;
+return <TransitionPanel>{[<div key="panel">{renderMyPanel()}</div>]}</TransitionPanel>;
+```
+
+### Animation Direction Management
+
+**Always use useRef for animation direction tracking:**
+
+```tsx
+const animationDirection = useRef<"forward" | "back" | null>(null);
+
+// Set direction BEFORE state changes
+const handleNavigation = () => {
+  animationDirection.current = "forward";  // Synchronous update
+  setPanelView(NEXT_PANEL);
+};
+
+// Use functional variants with custom prop
+<TransitionPanel
+  custom={animationDirection.current}
+  variants={{
+    enter: direction => ({ x: direction === "back" ? -300 : 300, opacity: 0 }),
+    exit: direction => ({ x: direction === "back" ? 300 : -300, opacity: 0 }),
+  }}
+>
+```
+
+### Key Principles
+
+1. **Stable DOM structure**: Use consistent keys and wrapper elements
+2. **Synchronous direction setting**: useRef prevents timing issues
+3. **Render functions not components**: Avoid creating component instances
+4. **Memoize variants**: Prevent unwanted re-renders
+5. **Reset direction on unmount**: Clean up animation state
