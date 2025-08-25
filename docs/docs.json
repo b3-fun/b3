@@ -254,6 +254,10 @@
                 ]
               },
               {
+                "group": "Developers",
+                "pages": ["hypeduel/developers"]
+              },
+              {
                 "group": "Support",
                 "pages": ["hypeduel/faq", "hypeduel/glossary"]
               }
