@@ -627,39 +627,36 @@ export function ManageAccount({
           onValueChange={value => {
             const tab = value as TabValue;
             if (["overview", "tokens", "nfts", "apps", "settings"].includes(tab)) {
-              (setActiveTab as any)?.(tab);
+              setActiveTab?.(tab);
             }
           }}
         >
           <div className="px-4">
-            <TabsListPrimitive
-              className="grid !h-auto gap-3 !rounded-none !border-none !bg-transparent"
-              style={{ gridTemplateColumns: "repeat(2, 1fr)", gridTemplateRows: "repeat(2, 1fr)" }}
-            >
+            <TabsListPrimitive className="grid h-auto grid-cols-2 grid-rows-2 gap-3 rounded-none border-none bg-transparent">
               <TabTriggerPrimitive
                 value="overview"
-                className="data-[state=active]:bg-b3-primary-blue data-[state=active]:hover:bg-b3-primary-blue data-[state=active]:border-b3-primary-blue group flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white p-2 text-center shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md data-[state=active]:text-white data-[state=active]:shadow-lg"
+                className="data-[state=active]:bg-b3-primary-blue data-[state=active]:hover:bg-b3-primary-blue data-[state=active]:border-b3-primary-blue group flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white p-2 text-center shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md data-[state=active]:shadow-lg"
               >
                 <BarChart3 size={20} className="text-b3-primary-blue shrink-0 group-data-[state=active]:text-white" />
-                <span className="text-b3-grey font-neue-montreal-semibold text-sm data-[state=active]:text-white">
+                <span className="text-b3-grey font-neue-montreal-semibold text-sm group-data-[state=active]:text-white">
                   Overview
                 </span>
               </TabTriggerPrimitive>
               <TabTriggerPrimitive
                 value="tokens"
-                className="data-[state=active]:bg-b3-primary-blue data-[state=active]:hover:bg-b3-primary-blue data-[state=active]:border-b3-primary-blue group flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white p-2 text-center shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md data-[state=active]:text-white data-[state=active]:shadow-lg"
+                className="data-[state=active]:bg-b3-primary-blue data-[state=active]:hover:bg-b3-primary-blue data-[state=active]:border-b3-primary-blue group flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white p-2 text-center shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md data-[state=active]:shadow-lg"
               >
                 <Coins size={20} className="text-b3-primary-blue shrink-0 group-data-[state=active]:text-white" />
-                <span className="text-b3-grey font-neue-montreal-semibold text-sm data-[state=active]:text-white">
+                <span className="text-b3-grey font-neue-montreal-semibold text-sm group-data-[state=active]:text-white">
                   Tokens
                 </span>
               </TabTriggerPrimitive>
               <TabTriggerPrimitive
                 value="nfts"
-                className="data-[state=active]:bg-b3-primary-blue data-[state=active]:hover:bg-b3-primary-blue data-[state=active]:border-b3-primary-blue group flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white p-2 text-center shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md data-[state=active]:text-white data-[state=active]:shadow-lg"
+                className="data-[state=active]:bg-b3-primary-blue data-[state=active]:hover:bg-b3-primary-blue data-[state=active]:border-b3-primary-blue group flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white p-2 text-center shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md data-[state=active]:shadow-lg"
               >
                 <Image size={20} className="text-b3-primary-blue shrink-0 group-data-[state=active]:text-white" />
-                <span className="text-b3-grey font-neue-montreal-semibold text-sm data-[state=active]:text-white">
+                <span className="text-b3-grey font-neue-montreal-semibold text-sm group-data-[state=active]:text-white">
                   NFTs
                 </span>
               </TabTriggerPrimitive>
@@ -668,24 +665,23 @@ export function ManageAccount({
               // https://linear.app/npclabs/issue/B3-2318/find-a-way-to-properly-display-which-partner-apps-a-user-has-logged-in
               <TabTriggerPrimitive
                 value="apps"
-                className="data-[state=active]:bg-b3-primary-blue data-[state=active]:hover:bg-b3-primary-blue data-[state=active]:border-b3-primary-blue group flex h-16 w-full flex-col items-start justify-between rounded-xl border border-gray-200 bg-white p-3 text-left shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md data-[state=active]:text-white data-[state=active]:shadow-lg"
-                style={{ gridColumn: "1 / 2" }}
+                className="data-[state=active]:bg-b3-primary-blue data-[state=active]:hover:bg-b3-primary-blue data-[state=active]:border-b3-primary-blue group flex h-16 w-full flex-col items-start justify-between rounded-xl border border-gray-200 bg-white p-3 text-left shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md data-[state=active]:shadow-lg col-start-1 col-end-2"
               >
                 <div className="flex w-full items-center justify-between">
                   <Grid3X3 size={20} className="text-b3-primary-blue shrink-0 group-data-[state=active]:text-white" />
-                  <span className="text-b3-grey font-neue-montreal-bold text-lg data-[state=active]:text-white">4</span>
+                  <span className="text-b3-grey font-neue-montreal-bold text-lg group-data-[state=active]:text-white">4</span>
                 </div>
-                <span className="text-b3-grey font-neue-montreal-semibold text-sm data-[state=active]:text-white">
+                <span className="text-b3-grey font-neue-montreal-semibold text-sm group-data-[state=active]:text-white">
                   Apps
                 </span>
               </TabTriggerPrimitive>
               */}
               <TabTriggerPrimitive
                 value="settings"
-                className="data-[state=active]:bg-b3-primary-blue data-[state=active]:hover:bg-b3-primary-blue data-[state=active]:border-b3-primary-blue group flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white p-2 text-center shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md data-[state=active]:text-white data-[state=active]:shadow-lg"
+                className="data-[state=active]:bg-b3-primary-blue data-[state=active]:hover:bg-b3-primary-blue data-[state=active]:border-b3-primary-blue group flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white p-2 text-center shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md data-[state=active]:shadow-lg"
               >
                 <Settings size={20} className="text-b3-primary-blue shrink-0 group-data-[state=active]:text-white" />
-                <span className="text-b3-grey font-neue-montreal-semibold text-sm data-[state=active]:text-white">
+                <span className="text-b3-grey font-neue-montreal-semibold text-sm group-data-[state=active]:text-white">
                   Settings
                 </span>
               </TabTriggerPrimitive>
