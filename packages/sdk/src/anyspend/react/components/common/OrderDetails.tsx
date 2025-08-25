@@ -595,7 +595,7 @@ export const OrderDetails = memo(function OrderDetails({
           </div>
         )}
         <button
-          className="bg-as-brand flex w-full items-center justify-center gap-2 rounded-lg p-2 font-semibold text-white"
+          className="order-close-button bg-as-brand flex w-full items-center justify-center gap-2 rounded-lg p-2 font-semibold text-white"
           onClick={mode === "page" ? handleBack : handleCloseModal}
         >
           {mode === "page" ? (
@@ -682,7 +682,7 @@ export const OrderDetails = memo(function OrderDetails({
             <a
               href={getExplorerTxUrl(order.dstChain, executeTx.txHash)}
               target="_blank"
-              className="text-as-primary/70 hover:text-as-primary"
+              className="order-success-text text-as-primary/70 hover:text-as-primary"
               style={{ whiteSpace: "normal" }} // Don't know why but class can't override.
             >
               {getOrderSuccessText({
@@ -713,7 +713,7 @@ export const OrderDetails = memo(function OrderDetails({
 
         {order.status === "executed" && (
           <button
-            className="bg-as-brand flex w-full items-center justify-center gap-2 rounded-lg p-2 font-semibold text-white"
+            className="order-close-button bg-as-brand flex w-full items-center justify-center gap-2 rounded-lg p-2 font-semibold text-white"
             onClick={mode === "page" ? handleBack : handleCloseModal}
           >
             {mode === "page" ? (
@@ -825,7 +825,7 @@ export const OrderDetails = memo(function OrderDetails({
             <a
               href={getExplorerTxUrl(order.dstChain, relayTx.txHash)}
               target="_blank"
-              className="text-as-primary/70 hover:text-as-primary"
+              className="order-success-text text-as-primary/70 hover:text-as-primary"
               style={{ whiteSpace: "normal" }}
             >
               {getOrderSuccessText({
@@ -856,7 +856,7 @@ export const OrderDetails = memo(function OrderDetails({
 
         {order.status === "executed" && (
           <button
-            className="bg-as-brand flex w-full items-center justify-center gap-2 rounded-lg p-2 font-semibold text-white"
+            className="order-close-button bg-as-brand flex w-full items-center justify-center gap-2 rounded-lg p-2 font-semibold text-white"
             onClick={mode === "page" ? handleBack : handleCloseModal}
           >
             {mode === "page" ? (
