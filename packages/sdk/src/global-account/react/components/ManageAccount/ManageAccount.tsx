@@ -22,18 +22,7 @@ import { SwapIcon } from "@b3dotfun/sdk/global-account/react/components/icons/Sw
 import { formatUsername } from "@b3dotfun/sdk/shared/utils";
 import { formatNumber } from "@b3dotfun/sdk/shared/utils/formatNumber";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
-import {
-  BarChart3,
-  Coins,
-  Grid3X3,
-  Image,
-  LinkIcon,
-  Loader2,
-  Pencil,
-  Settings,
-  Triangle,
-  UnlinkIcon,
-} from "lucide-react";
+import { BarChart3, Coins, Image, LinkIcon, Loader2, Pencil, Settings, Triangle, UnlinkIcon } from "lucide-react";
 import { useState } from "react";
 import { Chain } from "thirdweb";
 import { useActiveAccount, useProfiles, useUnlinkProfile } from "thirdweb/react";
@@ -42,7 +31,7 @@ import useFirstEOA from "../../hooks/useFirstEOA";
 import { getProfileDisplayInfo } from "../../utils/profileDisplay";
 import { AccountAssets } from "../AccountAssets/AccountAssets";
 
-type TabValue = "balance" | "tokens" | "assets" | "apps" | "settings";
+type TabValue = "overview" | "tokens" | "nfts" | "apps" | "settings";
 
 interface ManageAccountProps {
   onLogout?: () => void;
@@ -68,7 +57,7 @@ export function ManageAccount({
 }: ManageAccountProps) {
   const [revokingSignerId, setRevokingSignerId] = useState<string | null>(null);
   const account = useActiveAccount();
-  const { data: assets, isLoading } = useAccountAssets(account?.address);
+  const { data: nfts, isLoading } = useAccountAssets(account?.address);
   const { data: b3Balance } = useB3BalanceFromAddresses(account?.address);
   const { data: nativeBalance } = useNativeBalance(account?.address);
   const { address: eoaAddress } = useFirstEOA();
@@ -83,7 +72,7 @@ export function ManageAccount({
     accountAddress: account?.address,
   });
   const { setB3ModalOpen, setB3ModalContentType, contentType } = useModalStore();
-  const { activeTab = "balance", setActiveTab } = contentType as ManageAccountModalProps;
+  const { activeTab = "overview", setActiveTab } = contentType as ManageAccountModalProps;
   const { logout } = useAuthentication(partnerId);
   const [logoutLoading, setLogoutLoading] = useState(false);
 
@@ -262,7 +251,7 @@ export function ManageAccount({
           </div>
         </div>
 
-        {/* EOA Account Balance Section - matching global balance styling */}
+        {/* EOA Account Balance Section - matching global overview styling */}
         {eoaAddress && (
           <div className="space-y-4">
             <div className="flex items-center gap-3">
@@ -427,8 +416,8 @@ export function ManageAccount({
 
   const AssetsContent = () => (
     <div className="grid grid-cols-3 gap-4">
-      {assets?.nftResponse ? (
-        <AccountAssets nfts={assets.nftResponse} isLoading={isLoading} />
+      {nfts?.nftResponse ? (
+        <AccountAssets nfts={nfts.nftResponse} isLoading={isLoading} />
       ) : (
         <div className="col-span-3 py-12 text-center text-gray-500">No NFTs found</div>
       )}
@@ -490,10 +479,7 @@ export function ManageAccount({
     const handleUnlink = async (profile: any) => {
       setUnlinkingAccountId(profile.title);
       try {
-        await unlinkProfile({
-          client,
-          profileToUnlink: profile.originalProfile,
-        });
+        unlinkProfile({ client, profileToUnlink: profile.originalProfile });
       } catch (error) {
         console.error("Error unlinking account:", error);
       } finally {
@@ -640,7 +626,7 @@ export function ManageAccount({
           defaultValue={activeTab}
           onValueChange={value => {
             const tab = value as TabValue;
-            if (["balance", "tokens", "assets", "apps", "settings"].includes(tab)) {
+            if (["overview", "tokens", "nfts", "apps", "settings"].includes(tab)) {
               (setActiveTab as any)?.(tab);
             }
           }}
@@ -648,42 +634,33 @@ export function ManageAccount({
           <div className="px-4">
             <TabsListPrimitive
               className="grid !h-auto gap-3 !rounded-none !border-none !bg-transparent"
-              style={{ gridTemplateColumns: "repeat(3, 1fr)", gridTemplateRows: "repeat(2, 1fr)" }}
+              style={{ gridTemplateColumns: "repeat(2, 1fr)", gridTemplateRows: "repeat(2, 1fr)" }}
             >
               <TabTriggerPrimitive
-                value="balance"
-                className="data-[state=active]:bg-b3-primary-blue data-[state=active]:hover:bg-b3-primary-blue data-[state=active]:border-b3-primary-blue group flex h-16 w-full flex-col items-start justify-between rounded-xl border border-gray-200 bg-white p-3 text-left shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md data-[state=active]:text-white data-[state=active]:shadow-lg"
+                value="overview"
+                className="data-[state=active]:bg-b3-primary-blue data-[state=active]:hover:bg-b3-primary-blue data-[state=active]:border-b3-primary-blue group flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white p-2 text-center shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md data-[state=active]:text-white data-[state=active]:shadow-lg"
               >
-                <div className="flex w-full items-center justify-between">
-                  <BarChart3 size={20} className="text-b3-primary-blue shrink-0 group-data-[state=active]:text-white" />
-                  <span className="text-b3-grey font-neue-montreal-bold text-lg data-[state=active]:text-white">1</span>
-                </div>
+                <BarChart3 size={20} className="text-b3-primary-blue shrink-0 group-data-[state=active]:text-white" />
                 <span className="text-b3-grey font-neue-montreal-semibold text-sm data-[state=active]:text-white">
                   Overview
                 </span>
               </TabTriggerPrimitive>
               <TabTriggerPrimitive
                 value="tokens"
-                className="data-[state=active]:bg-b3-primary-blue data-[state=active]:hover:bg-b3-primary-blue data-[state=active]:border-b3-primary-blue group flex h-16 w-full flex-col items-start justify-between rounded-xl border border-gray-200 bg-white p-3 text-left shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md data-[state=active]:text-white data-[state=active]:shadow-lg"
+                className="data-[state=active]:bg-b3-primary-blue data-[state=active]:hover:bg-b3-primary-blue data-[state=active]:border-b3-primary-blue group flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white p-2 text-center shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md data-[state=active]:text-white data-[state=active]:shadow-lg"
               >
-                <div className="flex w-full items-center justify-between">
-                  <Coins size={20} className="text-b3-primary-blue shrink-0 group-data-[state=active]:text-white" />
-                  <span className="text-b3-grey font-neue-montreal-bold text-lg data-[state=active]:text-white">2</span>
-                </div>
+                <Coins size={20} className="text-b3-primary-blue shrink-0 group-data-[state=active]:text-white" />
                 <span className="text-b3-grey font-neue-montreal-semibold text-sm data-[state=active]:text-white">
                   Tokens
                 </span>
               </TabTriggerPrimitive>
               <TabTriggerPrimitive
-                value="assets"
-                className="data-[state=active]:bg-b3-primary-blue data-[state=active]:hover:bg-b3-primary-blue data-[state=active]:border-b3-primary-blue group flex h-16 w-full flex-col items-start justify-between rounded-xl border border-gray-200 bg-white p-3 text-left shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md data-[state=active]:text-white data-[state=active]:shadow-lg"
+                value="nfts"
+                className="data-[state=active]:bg-b3-primary-blue data-[state=active]:hover:bg-b3-primary-blue data-[state=active]:border-b3-primary-blue group flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white p-2 text-center shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md data-[state=active]:text-white data-[state=active]:shadow-lg"
               >
-                <div className="flex w-full items-center justify-between">
-                  <Image size={20} className="text-b3-primary-blue shrink-0 group-data-[state=active]:text-white" />
-                  <span className="text-b3-grey font-neue-montreal-bold text-lg data-[state=active]:text-white">3</span>
-                </div>
+                <Image size={20} className="text-b3-primary-blue shrink-0 group-data-[state=active]:text-white" />
                 <span className="text-b3-grey font-neue-montreal-semibold text-sm data-[state=active]:text-white">
-                  Mints
+                  NFTs
                 </span>
               </TabTriggerPrimitive>
               {/*
@@ -705,13 +682,9 @@ export function ManageAccount({
               */}
               <TabTriggerPrimitive
                 value="settings"
-                className="data-[state=active]:bg-b3-primary-blue data-[state=active]:hover:bg-b3-primary-blue data-[state=active]:border-b3-primary-blue group flex h-16 w-full flex-col items-start justify-between rounded-xl border border-gray-200 bg-white p-3 text-left shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md data-[state=active]:text-white data-[state=active]:shadow-lg"
-                style={{ gridColumn: "2 / 3" }}
+                className="data-[state=active]:bg-b3-primary-blue data-[state=active]:hover:bg-b3-primary-blue data-[state=active]:border-b3-primary-blue group flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white p-2 text-center shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md data-[state=active]:text-white data-[state=active]:shadow-lg"
               >
-                <div className="flex w-full items-center justify-between">
-                  <Settings size={20} className="text-b3-primary-blue shrink-0 group-data-[state=active]:text-white" />
-                  <span className="text-b3-grey font-neue-montreal-bold text-lg data-[state=active]:text-white">5</span>
-                </div>
+                <Settings size={20} className="text-b3-primary-blue shrink-0 group-data-[state=active]:text-white" />
                 <span className="text-b3-grey font-neue-montreal-semibold text-sm data-[state=active]:text-white">
                   Settings
                 </span>
@@ -719,7 +692,7 @@ export function ManageAccount({
             </TabsListPrimitive>
           </div>
 
-          <TabsContentPrimitive value="balance" className="px-4 pb-4 pt-2">
+          <TabsContentPrimitive value="overview" className="px-4 pb-4 pt-2">
             <BalanceContent />
           </TabsContentPrimitive>
 
@@ -727,7 +700,7 @@ export function ManageAccount({
             <TokensContent />
           </TabsContentPrimitive>
 
-          <TabsContentPrimitive value="assets" className="px-4 pb-4 pt-2">
+          <TabsContentPrimitive value="nfts" className="px-4 pb-4 pt-2">
             <AssetsContent />
           </TabsContentPrimitive>
 
