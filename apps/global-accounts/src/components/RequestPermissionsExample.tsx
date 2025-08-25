@@ -1,16 +1,5 @@
 import React from "react";
 
-// Add window.ethereum type declaration at the top of the file
-declare global {
-  interface Window {
-    ethereum?: {
-      request: (args: { method: string; params?: any[] }) => Promise<any>;
-      on: (event: string, listener: (...args: any[]) => void) => void;
-      removeListener: (event: string, listener: (...args: any[]) => void) => void;
-    };
-  }
-}
-
 import { useB3 } from "@b3dotfun/sdk/global-account/react";
 import { motion } from "framer-motion";
 import { useState } from "react";

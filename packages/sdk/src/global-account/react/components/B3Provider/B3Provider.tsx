@@ -1,6 +1,7 @@
 import { RelayKitProviderWrapper, TooltipProvider, useAuthStore } from "@b3dotfun/sdk/global-account/react";
 import { User } from "@b3dotfun/sdk/global-account/types/b3-api.types";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
+import { loadGA4Script } from "@b3dotfun/sdk/global-account/utils/analytics";
 import { supportedChains } from "@b3dotfun/sdk/shared/constants/chains/supported";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
@@ -60,6 +61,11 @@ export function B3Provider({
     style?: React.CSSProperties;
   };
 }) {
+  // Initialize Google Analytics on mount
+  useEffect(() => {
+    loadGA4Script();
+  }, []);
+
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>

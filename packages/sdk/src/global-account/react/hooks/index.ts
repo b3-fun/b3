@@ -1,6 +1,7 @@
 export { useAccountAssets } from "./useAccountAssets";
 export { useAccountWallet } from "./useAccountWallet";
 export { useAddTWSessionKey } from "./useAddTWSessionKey";
+export { useAnalytics } from "./useAnalytics";
 export { useAuthentication } from "./useAuthentication";
 export { useB3BalanceFromAddresses } from "./useB3BalanceFromAddresses";
 export { useB3EnsName } from "./useB3EnsName";
@@ -18,7 +19,6 @@ export { useIsomorphicLayoutEffect } from "./useIsomorphicLayoutEffect";
 export { useMediaQuery } from "./useMediaQuery";
 export { useNativeBalance, useNativeBalanceFromRPC } from "./useNativeBalance";
 export { useOneBalance } from "./useOneBalance";
-export { useSimBalance } from "./useSimBalance";
 export {
   useProfile,
   useProfilePreference,
@@ -31,6 +31,7 @@ export { useQueryBSMNT } from "./useQueryBSMNT";
 export { useRemoveSessionKey } from "./useRemoveSessionKey";
 export { useRouter } from "./useRouter";
 export { useSearchParamsSSR } from "./useSearchParamsSSR";
+export { useSimBalance } from "./useSimBalance";
 export { useSiwe } from "./useSiwe";
 export { useTokenBalance } from "./useTokenBalance";
 export { useTokenBalancesByChain } from "./useTokenBalancesByChain";

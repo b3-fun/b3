@@ -1,8 +1,9 @@
-import { ALL_CHAINS } from "@b3dotfun/sdk/anyspend";
+import { ALL_CHAINS, getExplorerTxUrl } from "@b3dotfun/sdk/anyspend";
 import { ChainTokenIcon } from "@b3dotfun/sdk/anyspend/react/components/common/ChainTokenIcon";
 import {
   Button,
   TransitionPanel,
+  useAnalytics,
   useSimBalance,
   useUnifiedChainSwitchAndExecute,
 } from "@b3dotfun/sdk/global-account/react";
@@ -59,6 +60,9 @@ export function ContentTokens({ activeTab }: ContentTokensProps) {
 
   // === BLOCKCHAIN INTERACTION ===
   const { switchChainAndExecute } = useUnifiedChainSwitchAndExecute();
+
+  // === ANALYTICS ===
+  const { sendAnalyticsEvent } = useAnalytics();
 
   // === ADDRESS VALIDATION ===
   // Handle recipient address change with real-time validation using viem
@@ -159,6 +163,14 @@ export function ContentTokens({ activeTab }: ContentTokensProps) {
 
       const amountInWei = parseUnits(sendAmount, displayToken.decimals);
 
+      // Prepare analytics event data
+      const analyticsData = {
+        amount: sendAmount,
+        symbol: displayToken.symbol,
+        chain_id: displayToken.chain_id,
+        address: displayToken.address,
+      };
+
       try {
         const sendTokenData = encodeFunctionData({
           abi: erc20Abi,
@@ -173,10 +185,24 @@ export function ContentTokens({ activeTab }: ContentTokensProps) {
         });
 
         if (tx) {
+          // Track successful send
+          sendAnalyticsEvent("send_token_button_click", {
+            ...analyticsData,
+            success: true,
+            tx: getExplorerTxUrl(displayToken.chain_id, tx),
+          });
+
           // Reset form
           setSendAmount("");
         }
       } catch (error: any) {
+        // Track failed send
+        sendAnalyticsEvent("send_token_button_click", {
+          ...analyticsData,
+          success: false,
+          reason: error.message || "Unknown error",
+        });
+
         // Error
         toast.error(`Failed to send ${displayToken.symbol}: ${error.message || "Unknown error"}`);
       } finally {
