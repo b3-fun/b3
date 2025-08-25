@@ -29,7 +29,7 @@
     "testnetConfigID": "66b380b0fae0f6d8266798d0",
     "badge": "https://cdn.b3.fun/b3_logo.svg",
     "color": "#3368ef",
-    "enabledFeatures": ["explorer.all", "basement.all"]
+    "enabledFeatures": ["basement", "explorer"]
   },
   {
     "_id": "66b380b0fae0f6d8266798d0",
@@ -49,7 +49,7 @@
       "format": "svg"
     },
     "blockExplorers": {
-      "default": "https://sepolia-explorer.b3.fun",
+      "default": "https://sepolia.explorer.b3.fun",
       "explorerTitle": "B3 Sepolia Explorer"
     },
     "nativeCurrency": {
@@ -59,7 +59,8 @@
     },
     "testnet": true,
     "badge": "https://cdn.b3.fun/b3_logo.svg",
-    "color": "#3368ef"
+    "color": "#3368ef",
+    "enabledFeatures": ["basement", "explorer"]
   },
   {
     "_id": "66f2044afe5a3ac32a1de9ff",
@@ -89,7 +90,8 @@
     },
     "testnet": false,
     "badge": "https://cdn.b3.fun/base-badge.svg",
-    "color": "#004ae7"
+    "color": "#004ae7",
+    "enabledFeatures": ["basement", "explorer"]
   },
   {
     "_id": "66f3221afe5a3ac32a1dea00",
@@ -119,7 +121,8 @@
     },
     "testnet": false,
     "badge": "https://cdn.b3.fun/base-badge.svg",
-    "color": "#004ae7"
+    "color": "#004ae7",
+    "enabledFeatures": ["basement"]
   },
   {
     "_id": "6706b240d442b7a2f8cb9efa",
@@ -149,7 +152,8 @@
     },
     "testnet": true,
     "badge": "https://cdn.b3.fun/eth-badge.svg",
-    "color": "#B38DF0"
+    "color": "#B38DF0",
+    "enabledFeatures": ["basement"]
   },
   {
     "_id": "671945d9d442b7a2f8cb9efe",
@@ -178,7 +182,8 @@
     },
     "testnet": true,
     "badge": "https://cdn.b3.fun/eth-badge.svg",
-    "color": "#B38DF0"
+    "color": "#B38DF0",
+    "enabledFeatures": ["basement"]
   },
   {
     "_id": "679a4a91703428bb5bb2f1ba",
@@ -208,7 +213,8 @@
     },
     "testnet": false,
     "badge": "https://cdn.b3.fun/avalanche-badge.svg",
-    "color": "#c33738"
+    "color": "#c33738",
+    "enabledFeatures": ["basement"]
   },
   {
     "_id": "679be46ca0f78fd619f6954b",
@@ -238,7 +244,8 @@
     },
     "testnet": false,
     "badge": "https://cdn.b3.fun/geist-logo.svg",
-    "color": "#808080"
+    "color": "#808080",
+    "enabledFeatures": ["basement"]
   },
   {
     "_id": "679be960a0f78fd619f6954d",
@@ -268,7 +275,8 @@
     },
     "testnet": false,
     "badge": "https://cdn.b3.fun/arbitrum-badge.svg",
-    "color": "#4a5c7e"
+    "color": "#4a5c7e",
+    "enabledFeatures": ["basement"]
   },
   {
     "_id": "679be9eba0f78fd619f6954f",
@@ -298,7 +306,8 @@
     },
     "testnet": false,
     "badge": "https://cdn.b3.fun/ronin-logo.svg",
-    "color": "#004de5"
+    "color": "#004de5",
+    "enabledFeatures": ["basement"]
   },
   {
     "_id": "679beabca0f78fd619f69551",
@@ -328,7 +337,8 @@
     },
     "testnet": false,
     "badge": "https://cdn.b3.fun/solana-logo.png",
-    "color": "#9945FF"
+    "color": "#9945FF",
+    "enabledFeatures": ["basement"]
   },
   {
     "_id": "67a452dda0f78fd619f69558",
@@ -358,7 +368,8 @@
     },
     "testnet": true,
     "badge": "https://cdn.b3.fun/gunz-logo.svg",
-    "color": "#c8edfa"
+    "color": "#c8edfa",
+    "enabledFeatures": ["basement"]
   },
   {
     "_id": "67aede9db3ba503f51eeaff7",
@@ -388,7 +399,8 @@
     },
     "testnet": false,
     "badge": "https://cdn.b3.fun/ton-logo.svg",
-    "color": "#0088cc"
+    "color": "#0088cc",
+    "enabledFeatures": ["basement"]
   },
   {
     "_id": "67b7895fb3ba503f51eeaffc",
@@ -418,7 +430,8 @@
     },
     "testnet": false,
     "badge": "https://cdn.b3.fun/optimism-badge.svg",
-    "color": "#d6031b"
+    "color": "#d6031b",
+    "enabledFeatures": ["basement"]
   },
   {
     "_id": "67bcbdb782f62aa6dc1efa60",
@@ -448,7 +461,8 @@
     },
     "testnet": false,
     "badge": "https://cdn.b3.fun/polygon-badge.svg",
-    "color": "#7540cf"
+    "color": "#7540cf",
+    "enabledFeatures": ["basement"]
   },
   {
     "_id": "6837258b25c59b8e08f806bf",
@@ -478,6 +492,160 @@
     },
     "testnet": false,
     "badge": "https://avatars.githubusercontent.com/u/45615063?s=280&v=4",
-    "color": "#F3BA2F"
+    "color": "#F3BA2F",
+    "enabledFeatures": ["basement"]
+  },
+  {
+    "_id": "684afd314a478ffb44a4f83e",
+    "id": 19934,
+    "name": "B4 Testnet",
+    "rpcUrls": {
+      "default": {
+        "http": "https://b4-testnet.rpc.caldera.xyz/http",
+        "ws": "wss://b4-testnet.rpc.caldera.xyz/ws"
+      },
+      "backups": []
+    },
+    "icon": {
+      "url": "https://cdn.b3.fun/b4-logo.png",
+      "width": 32,
+      "height": 32,
+      "format": "svg"
+    },
+    "blockExplorers": {
+      "default": "https://b4-testnet.explorer.caldera.xyz",
+      "explorerTitle": "B4 Testnet Explorer"
+    },
+    "nativeCurrency": {
+      "name": "Ether",
+      "symbol": "ETH",
+      "decimals": 18
+    },
+    "testnet": true,
+    "badge": "https://cdn.b3.fun/b4-logo.png",
+    "color": "#3368ef",
+    "enabledFeatures": ["explorer"]
+  },
+  {
+    "_id": "684afdec4a478ffb44a4f83f",
+    "id": 243,
+    "name": "Reach Testnet",
+    "rpcUrls": {
+      "default": {
+        "http": "https://reach-testnet.rpc.caldera.xyz/http",
+        "ws": "wss://reach-testnet.rpc.caldera.xyz/ws"
+      },
+      "backups": []
+    },
+    "icon": {
+      "url": "https://cdn.b3.fun/reach-logo.png",
+      "width": 32,
+      "height": 32,
+      "format": "png"
+    },
+    "blockExplorers": {
+      "default": "https://reach-testnet.explorer.caldera.xyz",
+      "explorerTitle": "Reach Testnet Explorer"
+    },
+    "nativeCurrency": {
+      "name": "Ether",
+      "symbol": "ETH",
+      "decimals": 18
+    },
+    "testnet": true,
+    "badge": "https://cdn.b3.fun/reach-logo.png",
+    "color": "#3368ef",
+    "enabledFeatures": ["explorer"]
+  },
+  {
+    "_id": "684afed04a478ffb44a4f840",
+    "id": 10211403,
+    "name": "GLHF Testnet",
+    "rpcUrls": {
+      "default": {
+        "http": "https://glhf-testnet.rpc.caldera.xyz/http",
+        "ws": "wss://glhf-testnet.rpc.caldera.xyz/ws"
+      },
+      "backups": []
+    },
+    "icon": {
+      "url": "https://cdn.b3.fun/supergaming-logo.png",
+      "width": 62,
+      "height": 48,
+      "format": "png"
+    },
+    "blockExplorers": {
+      "default": "https://glhf-testnet.explorer.caldera.xyz",
+      "explorerTitle": "SuperGaming Testnet Explorer"
+    },
+    "nativeCurrency": {
+      "name": "Ether",
+      "symbol": "ETH",
+      "decimals": 18
+    },
+    "testnet": true,
+    "badge": "https://cdn.b3.fun/supergaming-logo.png",
+    "color": "#000000",
+    "enabledFeatures": ["explorer"]
+  },
+  {
+    "_id": "685341f5ac22b8c3faae86ae",
+    "id": 4224,
+    "name": "Arpa Testnet",
+    "rpcUrls": {
+      "default": {
+        "http": "https://arpachain.calderachain.xyz/http",
+        "ws": "wss://arpachain.calderachain.xyz/ws"
+      },
+      "backups": []
+    },
+    "icon": {
+      "url": "https://cdn.b3.fun/arpa-logo.png",
+      "width": 175,
+      "height": 158,
+      "format": "png"
+    },
+    "blockExplorers": {
+      "default": "https://arpachain.calderaexplorer.xyz/",
+      "explorerTitle": "ArpaChain Testnet Explorer"
+    },
+    "nativeCurrency": {
+      "name": "Ether",
+      "symbol": "ETH",
+      "decimals": 18
+    },
+    "testnet": true,
+    "badge": "https://cdn.b3.fun/arpa-logo.png",
+    "color": "#3368ef",
+    "enabledFeatures": ["explorer"]
+  },
+  {
+    "_id": "68a351c603e65c07b7645581",
+    "id": 1448000,
+    "name": "XRPLT",
+    "rpcUrls": {
+      "default": {
+        "http": "https://xrplt.rpc.caldera.xyz/http",
+        "ws": "wss://xrplt.rpc.caldera.xyz/ws"
+      },
+      "backups": []
+    },
+    "icon": {
+      "url": "https://cdn.b3.fun/xrpl_logo.svg",
+      "width": 32,
+      "height": 32,
+      "format": "svg"
+    },
+    "blockExplorers": {
+      "default": "https://xrplt.explorer.caldera.xyz/",
+      "explorerTitle": "XRPLT Explorer"
+    },
+    "nativeCurrency": {
+      "name": "XRP",
+      "symbol": "XRP",
+      "decimals": 18
+    },
+    "testnet": true,
+    "enabledFeatures": ["xcade", "explorer"]
   }
 ]
