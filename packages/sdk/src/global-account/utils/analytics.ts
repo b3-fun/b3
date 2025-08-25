@@ -1,3 +1,13 @@
+// Global window interface augmentations for B3 SDK
+
+declare global {
+  interface Window {
+    // Google Analytics 4
+    gtag: (...args: any[]) => void;
+    dataLayer: any[];
+  }
+}
+
 const GA4_MEASUREMENT_ID = "G-VER9DKJH87";
 
 /**
