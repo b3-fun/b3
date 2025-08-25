@@ -45,6 +45,15 @@ export function getProfileDisplayInfo(profile: ExtendedProfile): ProfileDisplayI
         type,
       };
       break;
+    case "farcaster":
+      displayInfo = {
+        title: details.name || details.username || "Unknown",
+        subtitle: details.username ? `@${details.username}` : "Farcaster Account",
+        imageUrl: details.profileImageUrl || null,
+        initial: "F",
+        type,
+      };
+      break;
     case "google":
       displayInfo = {
         title: details.name || details.email || "Unknown",
