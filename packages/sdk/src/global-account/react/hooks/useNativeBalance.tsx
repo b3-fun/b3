@@ -1,3 +1,4 @@
+import { PUBLIC_BASE_RPC_URL } from "@b3dotfun/sdk/shared/constants";
 import { b3Mainnet, b3Testnet } from "@b3dotfun/sdk/shared/constants/chains/supported";
 import { formatNumber } from "@b3dotfun/sdk/shared/utils/formatNumber";
 import { useQuery } from "@tanstack/react-query";
@@ -114,7 +115,7 @@ export function useNativeBalanceFromRPC(address: string, chainId: number) {
       try {
         const publicClient = createPublicClient({
           chain: chainId === 8333 ? b3Mainnet : b3Testnet,
-          transport: http(),
+          transport: http(chainId === 8333 ? PUBLIC_BASE_RPC_URL : undefined),
         });
 
         const balance = await publicClient.getBalance({

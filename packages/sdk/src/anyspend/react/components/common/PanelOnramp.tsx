@@ -22,6 +22,7 @@ export function PanelOnramp({
   onDestinationTokenChange,
   onDestinationChainChange,
   fiatPaymentMethodIndex,
+  recipientSelectionPanelIndex,
 }: {
   srcAmountOnRamp: string;
   setSrcAmountOnRamp: (amount: string) => void;
@@ -34,6 +35,7 @@ export function PanelOnramp({
   onDestinationTokenChange?: (token: components["schemas"]["Token"]) => void;
   onDestinationChainChange?: (chainId: number) => void;
   fiatPaymentMethodIndex: number;
+  recipientSelectionPanelIndex: number;
 }) {
   // Get geo-based onramp options to access fee information
   const { stripeWeb2Support } = useGeoOnrampOptions(srcAmountOnRamp);
@@ -199,7 +201,7 @@ export function PanelOnramp({
           {_recipientAddress ? (
             <button
               className="text-as-tertiarry flex h-7 items-center gap-1 text-sm transition-colors hover:text-blue-700"
-              onClick={() => setActivePanel(5)} // Recipient selection panel
+              onClick={() => setActivePanel(recipientSelectionPanelIndex)} // Recipient selection panel
             >
               <span className="text-sm">
                 {recipientName ? formatUsername(recipientName) : formatAddress(_recipientAddress)}
