@@ -1,4 +1,4 @@
-const GA4_MEASUREMENT_ID = "G-Z67JCLMNZE";
+const GA4_MEASUREMENT_ID = "G-VER9DKJH87";
 
 /**
  * Initialize Google Analytics 4
