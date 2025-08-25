@@ -18,6 +18,7 @@ export { useIsomorphicLayoutEffect } from "./useIsomorphicLayoutEffect";
 export { useMediaQuery } from "./useMediaQuery";
 export { useNativeBalance, useNativeBalanceFromRPC } from "./useNativeBalance";
 export { useOneBalance } from "./useOneBalance";
+export { useSimBalance } from "./useSimBalance";
 export {
   useProfile,
   useProfilePreference,
