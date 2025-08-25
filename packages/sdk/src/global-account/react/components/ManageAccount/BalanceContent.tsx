@@ -11,12 +11,13 @@ import { BankIcon } from "@b3dotfun/sdk/global-account/react/components/icons/Ba
 import { SignOutIcon } from "@b3dotfun/sdk/global-account/react/components/icons/SignOutIcon";
 import { SwapIcon } from "@b3dotfun/sdk/global-account/react/components/icons/SwapIcon";
 import { formatUsername } from "@b3dotfun/sdk/shared/utils";
-import { Loader2, Pencil, Triangle } from "lucide-react";
+import { Loader2, Pencil } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useActiveAccount } from "thirdweb/react";
 import useFirstEOA from "../../hooks/useFirstEOA";
 import { B3TokenIcon, EthereumTokenIcon } from "../TokenIcon";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
+import { TokenBalanceRow } from "./TokenBalanceRow";
 
 interface BalanceContentProps {
   onLogout?: () => void;
@@ -71,9 +72,6 @@ export function BalanceContent({ onLogout, partnerId }: BalanceContentProps) {
     if (isBothDataReady && !hasExpandedRef.current && eoaAddress && account?.address) {
       hasExpandedRef.current = true;
 
-      console.log("globalAccountTotalUsd", globalAccountTotalUsd);
-      console.log("eoaTotalUsd", eoaTotalUsd);
-
       // Determine which section to expand based on higher balance
       if (globalAccountTotalUsd === 0 && eoaTotalUsd === 0) {
         // If both have 0 balance, expand global account by default
@@ -84,7 +82,7 @@ export function BalanceContent({ onLogout, partnerId }: BalanceContentProps) {
         setOpenAccordions(["eoa-account"]);
       }
     }
-  }, [isBothDataReady, globalAccountTotalUsd, eoaTotalUsd]);
+  }, [isBothDataReady, globalAccountTotalUsd, eoaTotalUsd, eoaAddress, account?.address]);
 
   const onLogoutEnhanced = async () => {
     setLogoutLoading(true);
@@ -162,83 +160,20 @@ export function BalanceContent({ onLogout, partnerId }: BalanceContentProps) {
             <span>Balance</span>
           </AccordionTrigger>
           <AccordionContent className="space-y-4">
-            {/* B3 Balance */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full">
-                  <B3TokenIcon className="size-10" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-b3-grey font-neue-montreal-semibold">B3</span>
-                  </div>
-                  <div className="text-b3-foreground-muted font-neue-montreal-medium text-sm">
-                    {b3Balance?.formattedTotal || "0.00"} B3
-                  </div>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="text-b3-grey font-neue-montreal-semibold">
-                  ${b3Balance?.balanceUsdFormatted || "0.00"}
-                </div>
-                <div className="flex items-center gap-1">
-                  {b3Balance?.priceChange24h !== null && b3Balance?.priceChange24h !== undefined ? (
-                    <>
-                      <Triangle
-                        className={`size-3 ${b3Balance.priceChange24h >= 0 ? "text-b3-positive fill-b3-positive" : "text-b3-negative fill-b3-negative rotate-180"}`}
-                      />
-                      <span
-                        className={`font-neue-montreal-medium text-sm ${b3Balance.priceChange24h >= 0 ? "text-b3-positive" : "text-b3-negative"}`}
-                      >
-                        {b3Balance.priceChange24h >= 0 ? "+" : ""}
-                        {b3Balance.priceChange24h.toFixed(2)}%
-                      </span>
-                    </>
-                  ) : (
-                    <span className="text-b3-foreground-muted font-neue-montreal-medium text-sm">--</span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* ETH Balance */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full">
-                  <EthereumTokenIcon className="size-10" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-b3-grey font-neue-montreal-semibold">Ethereum</span>
-                  </div>
-                  <div className="text-b3-foreground-muted font-neue-montreal-medium text-sm">
-                    {nativeBalance?.formattedTotal || "0.00"} ETH
-                  </div>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="text-b3-grey font-neue-montreal-semibold">
-                  ${nativeBalance?.formattedTotalUsd || "0.00"}
-                </div>
-                <div className="flex items-center gap-2">
-                  {nativeBalance?.priceChange24h !== null && nativeBalance?.priceChange24h !== undefined ? (
-                    <>
-                      <Triangle
-                        className={`size-3 ${nativeBalance.priceChange24h >= 0 ? "text-b3-positive fill-b3-positive" : "text-b3-negative fill-b3-negative rotate-180"}`}
-                      />
-                      <span
-                        className={`font-neue-montreal-medium text-sm ${nativeBalance.priceChange24h >= 0 ? "text-b3-positive" : "text-b3-negative"}`}
-                      >
-                        {nativeBalance.priceChange24h >= 0 ? "+" : ""}
-                        {nativeBalance.priceChange24h.toFixed(2)}%
-                      </span>
-                    </>
-                  ) : (
-                    <span className="text-b3-foreground-muted font-neue-montreal-medium text-sm">--</span>
-                  )}
-                </div>
-              </div>
-            </div>
+            <TokenBalanceRow
+              icon={<B3TokenIcon className="size-10" />}
+              name="B3"
+              balance={`${b3Balance?.formattedTotal || "0.00"} B3`}
+              usdValue={b3Balance?.balanceUsdFormatted || "0.00"}
+              priceChange={b3Balance?.priceChange24h}
+            />
+            <TokenBalanceRow
+              icon={<EthereumTokenIcon className="size-10" />}
+              name="Ethereum"
+              balance={`${nativeBalance?.formattedTotal || "0.00"} ETH`}
+              usdValue={nativeBalance?.formattedTotalUsd || "0.00"}
+              priceChange={nativeBalance?.priceChange24h}
+            />
           </AccordionContent>
         </AccordionItem>
 
@@ -255,83 +190,20 @@ export function BalanceContent({ onLogout, partnerId }: BalanceContentProps) {
               </div>
             </AccordionTrigger>
             <AccordionContent className="space-y-4">
-              {/* EOA B3 Balance */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full">
-                    <B3TokenIcon className="size-10" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-b3-grey font-neue-montreal-semibold">B3</span>
-                    </div>
-                    <div className="text-b3-foreground-muted font-neue-montreal-medium text-sm">
-                      {eoaB3Balance?.formattedTotal || "0.00"} B3
-                    </div>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-b3-grey font-neue-montreal-semibold">
-                    ${eoaB3Balance?.balanceUsdFormatted || "0.00"}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    {eoaB3Balance?.priceChange24h !== null && eoaB3Balance?.priceChange24h !== undefined ? (
-                      <>
-                        <Triangle
-                          className={`size-3 ${eoaB3Balance.priceChange24h >= 0 ? "text-b3-positive fill-b3-positive" : "text-b3-negative fill-b3-negative rotate-180"}`}
-                        />
-                        <span
-                          className={`font-neue-montreal-medium text-sm ${eoaB3Balance.priceChange24h >= 0 ? "text-b3-positive" : "text-b3-negative"}`}
-                        >
-                          {eoaB3Balance.priceChange24h >= 0 ? "+" : ""}
-                          {eoaB3Balance.priceChange24h.toFixed(2)}%
-                        </span>
-                      </>
-                    ) : (
-                      <span className="text-b3-foreground-muted font-neue-montreal-medium text-sm">--</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* EOA ETH Balance */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full">
-                    <EthereumTokenIcon className="size-10" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-b3-grey font-neue-montreal-semibold">Ethereum</span>
-                    </div>
-                    <div className="text-b3-foreground-muted font-neue-montreal-medium text-sm">
-                      {eoaNativeBalance?.formattedTotal || "0.00"} ETH
-                    </div>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-b3-grey font-neue-montreal-semibold">
-                    ${eoaNativeBalance?.formattedTotalUsd || "0.00"}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {eoaNativeBalance?.priceChange24h !== null && eoaNativeBalance?.priceChange24h !== undefined ? (
-                      <>
-                        <Triangle
-                          className={`size-3 ${eoaNativeBalance.priceChange24h >= 0 ? "text-b3-positive fill-b3-positive" : "text-b3-negative fill-b3-negative rotate-180"}`}
-                        />
-                        <span
-                          className={`font-neue-montreal-medium text-sm ${eoaNativeBalance.priceChange24h >= 0 ? "text-b3-positive" : "text-b3-negative"}`}
-                        >
-                          {eoaNativeBalance.priceChange24h >= 0 ? "+" : ""}
-                          {eoaNativeBalance.priceChange24h.toFixed(2)}%
-                        </span>
-                      </>
-                    ) : (
-                      <span className="text-b3-foreground-muted font-neue-montreal-medium text-sm">--</span>
-                    )}
-                  </div>
-                </div>
-              </div>
+              <TokenBalanceRow
+                icon={<B3TokenIcon className="size-10" />}
+                name="B3"
+                balance={`${eoaB3Balance?.formattedTotal || "0.00"} B3`}
+                usdValue={eoaB3Balance?.balanceUsdFormatted || "0.00"}
+                priceChange={eoaB3Balance?.priceChange24h}
+              />
+              <TokenBalanceRow
+                icon={<EthereumTokenIcon className="size-10" />}
+                name="Ethereum"
+                balance={`${eoaNativeBalance?.formattedTotal || "0.00"} ETH`}
+                usdValue={eoaNativeBalance?.formattedTotalUsd || "0.00"}
+                priceChange={eoaNativeBalance?.priceChange24h}
+              />
             </AccordionContent>
           </AccordionItem>
         )}

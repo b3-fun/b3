@@ -86,16 +86,6 @@ export function ManageAccount({
     setLogoutLoading(false);
   };
 
-  const AssetsContent = () => (
-    <div className="grid grid-cols-3 gap-4">
-      {nfts?.nftResponse ? (
-        <AccountAssets nfts={nfts.nftResponse} isLoading={isLoading} />
-      ) : (
-        <div className="col-span-3 py-12 text-center text-gray-500">No NFTs found</div>
-      )}
-    </div>
-  );
-
   const AppsContent = () => (
     <div className="space-y-4">
       {signers?.map((signer: TWSignerWithMetadata) => (
