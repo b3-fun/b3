@@ -10,7 +10,7 @@ import { getProfileDisplayInfo } from "../../utils/profileDisplay";
 import { useB3 } from "../B3Provider/useB3";
 import { Button } from "../ui/button";
 type OTPStrategy = "email" | "phone";
-type SocialStrategy = "google" | "x" | "discord" | "apple";
+type SocialStrategy = "google" | "x" | "discord" | "apple" | "farcaster";
 type Strategy = OTPStrategy | SocialStrategy;
 
 interface AuthMethod {
@@ -27,6 +27,7 @@ const AUTH_METHODS: AuthMethod[] = [
   { id: "x", label: "X (Twitter)", enabled: true },
   { id: "discord", label: "Discord", enabled: true },
   { id: "apple", label: "Apple", enabled: true },
+  { id: "farcaster", label: "Farcaster", enabled: true },
 ];
 
 export function LinkAccount({
