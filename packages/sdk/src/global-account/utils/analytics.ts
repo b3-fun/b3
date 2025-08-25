@@ -1,4 +1,4 @@
-const GA4_MEASUREMENT_ID = "";
+const GA4_MEASUREMENT_ID = "G-Z67JCLMNZE";
 
 /**
  * Initialize Google Analytics 4
@@ -17,7 +17,10 @@ const initializeGA4 = () => {
 
   // Configure GA4
   window.gtag("js", new Date());
-  window.gtag("config", "G-Z67JCLMNZE", { send_page_view: false }); // We'll handle page views manually if needed
+  window.gtag("config", GA4_MEASUREMENT_ID, {
+    page_location: window.location.href,
+    page_hostname: window.location.hostname,
+  });
 };
 
 /**
