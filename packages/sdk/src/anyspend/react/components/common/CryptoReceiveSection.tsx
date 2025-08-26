@@ -79,7 +79,7 @@ export function CryptoReceiveSection({
           <div className="bg-as-brand/10 border-as-brand/30 flex items-center gap-3 rounded-xl border px-4 py-3">
             {(dstTokenLogoURI || dstToken.metadata?.logoURI) && (
               <img
-                src={dstTokenLogoURI || dstToken.metadata.logoURI}
+                src={dstTokenLogoURI || dstToken.metadata?.logoURI}
                 alt={dstTokenSymbol || dstToken.symbol}
                 className="h-8 w-8 rounded-full"
               />
