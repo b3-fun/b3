@@ -24,6 +24,9 @@ interface CryptoReceiveSectionProps {
   onChangeDstAmount?: (value: string) => void;
   // Quote data
   anyspendQuote?: any;
+  // custom dst token data
+  dstTokenSymbol?: string;
+  dstTokenLogoURI?: string;
 }
 
 export function CryptoReceiveSection({
@@ -39,6 +42,8 @@ export function CryptoReceiveSection({
   setSelectedDstToken,
   onChangeDstAmount,
   anyspendQuote,
+  dstTokenSymbol,
+  dstTokenLogoURI,
 }: CryptoReceiveSectionProps) {
   return (
     <motion.div
@@ -72,10 +77,14 @@ export function CryptoReceiveSection({
         <div className="flex items-center justify-between">
           <div className="text-as-primary text-2xl font-bold">{dstAmount || "0"}</div>
           <div className="bg-as-brand/10 border-as-brand/30 flex items-center gap-3 rounded-xl border px-4 py-3">
-            {dstToken.metadata?.logoURI && (
-              <img src={dstToken.metadata.logoURI} alt={dstToken.symbol} className="h-8 w-8 rounded-full" />
+            {(dstTokenLogoURI || dstToken.metadata?.logoURI) && (
+              <img
+                src={dstTokenLogoURI || dstToken.metadata?.logoURI}
+                alt={dstTokenSymbol || dstToken.symbol}
+                className="h-8 w-8 rounded-full"
+              />
             )}
-            <span className="text-as-brand text-lg font-bold">{dstToken.symbol}</span>
+            <span className="text-as-brand text-lg font-bold">{dstTokenSymbol || dstToken.symbol}</span>
           </div>
         </div>
       ) : (
