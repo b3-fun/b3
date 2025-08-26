@@ -2,7 +2,7 @@ import { useCoinbaseOnrampOptions, useGeoOnrampOptions } from "@b3dotfun/sdk/any
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { ALL_CHAINS } from "@b3dotfun/sdk/anyspend/utils/chain";
 import { Input, useGetGeo, useProfile } from "@b3dotfun/sdk/global-account/react";
-import { formatUsername } from "@b3dotfun/sdk/shared/utils";
+import { cn, formatUsername } from "@b3dotfun/sdk/shared/utils";
 import { formatAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { ChevronRight, Wallet } from "lucide-react";
 import { useRef } from "react";
@@ -23,6 +23,8 @@ export function PanelOnramp({
   onDestinationChainChange,
   fiatPaymentMethodIndex,
   recipientSelectionPanelIndex,
+  dstTokenSymbol,
+  hideDstToken = false,
 }: {
   srcAmountOnRamp: string;
   setSrcAmountOnRamp: (amount: string) => void;
@@ -36,6 +38,8 @@ export function PanelOnramp({
   onDestinationChainChange?: (chainId: number) => void;
   fiatPaymentMethodIndex: number;
   recipientSelectionPanelIndex: number;
+  dstTokenSymbol?: string;
+  hideDstToken?: boolean;
 }) {
   // Get geo-based onramp options to access fee information
   const { stripeWeb2Support } = useGeoOnrampOptions(srcAmountOnRamp);
@@ -163,7 +167,7 @@ export function PanelOnramp({
         </div>
 
         {/* Quick Amount Buttons */}
-        <div className="mx-auto mb-6 inline-grid grid-cols-4 gap-2">
+        <div className={cn("mx-auto mb-6 inline-grid grid-cols-4 gap-2", hideDstToken && "mb-0")}>
           {["5", "10", "20", "25"].map(value => (
             <button
               key={value}
@@ -180,7 +184,7 @@ export function PanelOnramp({
         </div>
 
         {/* Token Display */}
-        {destinationToken && destinationChainId && (
+        {destinationToken && destinationChainId && !hideDstToken && (
           <OrderTokenAmountFiat
             address={_recipientAddress}
             context="to"
@@ -226,7 +230,7 @@ export function PanelOnramp({
           <span className="text-as-tertiarry text-sm">Expected to receive</span>
           <div className="flex items-center gap-2">
             <span className="text-as-primary font-semibold">
-              {destinationAmount || "0"} {destinationToken?.symbol || ""}
+              {destinationAmount || "0"} {dstTokenSymbol || destinationToken?.symbol || ""}
             </span>
             <span className="text-as-tertiarry text-sm">
               on {destinationChainId ? ALL_CHAINS[destinationChainId]?.name : ""}

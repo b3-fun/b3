@@ -24,6 +24,8 @@ import { PanelOnramp } from "./common/PanelOnramp";
 
 const SLIPPAGE_PERCENT = 3;
 
+const HYPE_TOKEN_LOGO_URI = "https://cdn.hypeduel.com/hypes-coin.svg";
+
 function generateEncodedDataForDepositHype(amount: string, beneficiary: string): string {
   invariant(BigInt(amount) > 0, "Amount must be greater than zero");
   const encodedData = encodeFunctionData({
@@ -228,6 +230,8 @@ function AnySpendDepositHypeInner({
                 _recipientAddress={recipientAddress}
                 destinationToken={B3_TOKEN}
                 destinationChainId={base.id}
+                dstTokenSymbol="HYPE"
+                hideDstToken
                 destinationAmount={dstAmount}
                 onDestinationTokenChange={() => {}}
                 onDestinationChainChange={() => {}}
@@ -263,6 +267,8 @@ function AnySpendDepositHypeInner({
               onSelectRecipient={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
               dstAmount={dstAmount}
               dstToken={B3_TOKEN}
+              dstTokenSymbol="HYPE"
+              dstTokenLogoURI={HYPE_TOKEN_LOGO_URI}
               selectedDstChainId={base.id}
               setSelectedDstChainId={() => {}}
               setSelectedDstToken={() => {}}
