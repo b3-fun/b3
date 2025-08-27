@@ -115,6 +115,7 @@ function AnySpendDepositHypeInner({
     sourceTokenAddress,
     sourceTokenChainId,
     slippage: SLIPPAGE_PERCENT,
+    disableUrlParamManagement: true,
   });
 
   // Button state logic
@@ -434,8 +435,8 @@ function AnySpendDepositHypeInner({
               onBack={() => {
                 setOrderId(undefined);
                 setActivePanel(PanelView.MAIN);
-                onSuccess?.();
               }}
+              disableUrlParamManagement
             />
           </>
         )}

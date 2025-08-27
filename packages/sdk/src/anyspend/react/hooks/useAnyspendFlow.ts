@@ -7,12 +7,19 @@ import {
   useGeoOnrampOptions,
 } from "@b3dotfun/sdk/anyspend/react";
 import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
-import { useAccountWallet, useProfile, useRouter, useSearchParamsSSR } from "@b3dotfun/sdk/global-account/react";
+import {
+  useAccountWallet,
+  useProfile,
+  useRouter,
+  useSearchParamsSSR,
+  useTokenBalance,
+} from "@b3dotfun/sdk/global-account/react";
 import { formatTokenAmount, formatUnits } from "@b3dotfun/sdk/shared/utils/number";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { parseUnits } from "viem";
 import { base, mainnet } from "viem/chains";
+import { useAccount } from "wagmi";
 import { components } from "../../types/api";
 import { CryptoPaymentMethodType } from "../components/common/CryptoPaymentMethod";
 import { FiatPaymentMethod } from "../components/common/FiatPaymentMethod";
@@ -36,6 +43,7 @@ interface UseAnyspendFlowProps {
   sourceTokenAddress?: string;
   sourceTokenChainId?: number;
   slippage?: number;
+  disableUrlParamManagement?: boolean;
 }
 
 export function useAnyspendFlow({
@@ -48,6 +56,7 @@ export function useAnyspendFlow({
   sourceTokenAddress,
   sourceTokenChainId,
   slippage = 0,
+  disableUrlParamManagement = false,
 }: UseAnyspendFlowProps) {
   const searchParams = useSearchParamsSSR();
   const router = useRouter();
@@ -76,6 +85,7 @@ export function useAnyspendFlow({
 
   // Recipient state
   const { address: globalAddress } = useAccountWallet();
+  const { address: wagmiAddress } = useAccount();
   const [selectedRecipientAddress, setSelectedRecipientAddress] = useState<string | undefined>(recipientAddress);
   const recipientProfile = useProfile({ address: selectedRecipientAddress, fresh: true });
   const recipientName = recipientProfile.data?.name;
@@ -87,11 +97,33 @@ export function useAnyspendFlow({
     }
   }, [selectedRecipientAddress, globalAddress]);
 
-  useEffect(() => {
-    if (paymentType === "crypto") {
-      setSelectedCryptoPaymentMethod(CryptoPaymentMethodType.CONNECT_WALLET);
+  // Check token balance for crypto payments
+  const { rawBalance, isLoading: isBalanceLoading } = useTokenBalance({
+    token: selectedSrcToken,
+    address: wagmiAddress,
+  });
+
+  // Check if user has enough balance
+  const hasEnoughBalance = useMemo(() => {
+    if (!rawBalance || isBalanceLoading || paymentType !== "crypto") return false;
+    try {
+      const requiredAmount = parseUnits(srcAmount.replace(/,/g, ""), selectedSrcToken.decimals);
+      return rawBalance >= requiredAmount;
+    } catch {
+      return false;
     }
-  }, [paymentType]);
+  }, [rawBalance, srcAmount, selectedSrcToken.decimals, isBalanceLoading, paymentType]);
+
+  // Auto-set crypto payment method based on balance
+  useEffect(() => {
+    if (paymentType === "crypto" && !isBalanceLoading) {
+      if (hasEnoughBalance) {
+        setSelectedCryptoPaymentMethod(CryptoPaymentMethodType.CONNECT_WALLET);
+      } else {
+        setSelectedCryptoPaymentMethod(CryptoPaymentMethodType.TRANSFER_CRYPTO);
+      }
+    }
+  }, [paymentType, hasEnoughBalance, isBalanceLoading]);
 
   // Fetch specific token when sourceTokenAddress and sourceTokenChainId are provided
   useEffect(() => {
@@ -159,14 +191,14 @@ export function useAnyspendFlow({
 
   // Update useEffect for URL parameter to not override loadOrder
   useEffect(() => {
-    if (loadOrder) return; // Skip if we have a loadOrder
+    if (loadOrder || disableUrlParamManagement) return; // Skip if we have a loadOrder or URL param management is disabled
 
     const orderIdParam = searchParams.get("orderId");
     if (orderIdParam) {
       setOrderId(orderIdParam);
       setActivePanel(PanelView.ORDER_DETAILS);
     }
-  }, [searchParams, loadOrder]);
+  }, [searchParams, loadOrder, disableUrlParamManagement]);
 
   // Order creation hooks
   const { createOrder, isCreatingOrder } = useAnyspendCreateOrder({
@@ -177,16 +209,18 @@ export function useAnyspendFlow({
       onOrderSuccess?.(newOrderId);
 
       // Add orderId and payment method to URL for persistence
-      const params = new URLSearchParams(searchParams.toString()); // Preserve existing params
-      params.set("orderId", newOrderId);
-      if (selectedCryptoPaymentMethod !== CryptoPaymentMethodType.NONE) {
-        console.log("Setting cryptoPaymentMethod in URL:", selectedCryptoPaymentMethod);
-        params.set("cryptoPaymentMethod", selectedCryptoPaymentMethod);
-      } else {
-        console.log("Payment method is NONE, not setting in URL");
+      if (!disableUrlParamManagement) {
+        const params = new URLSearchParams(searchParams.toString()); // Preserve existing params
+        params.set("orderId", newOrderId);
+        if (selectedCryptoPaymentMethod !== CryptoPaymentMethodType.NONE) {
+          console.log("Setting cryptoPaymentMethod in URL:", selectedCryptoPaymentMethod);
+          params.set("cryptoPaymentMethod", selectedCryptoPaymentMethod);
+        } else {
+          console.log("Payment method is NONE, not setting in URL");
+        }
+        console.log("Final URL params:", params.toString());
+        router.push(`${window.location.pathname}?${params.toString()}`);
       }
-      console.log("Final URL params:", params.toString());
-      router.push(`${window.location.pathname}?${params.toString()}`);
     },
     onError: error => {
       console.error(error);
@@ -245,6 +279,9 @@ export function useAnyspendFlow({
     setSelectedRecipientAddress,
     recipientName,
     globalAddress,
+    // Balance check
+    hasEnoughBalance,
+    isBalanceLoading,
     // Quote data
     anyspendQuote,
     isLoadingAnyspendQuote,
