@@ -435,7 +435,6 @@ function AnySpendDepositHypeInner({
               onBack={() => {
                 setOrderId(undefined);
                 setActivePanel(PanelView.MAIN);
-                onSuccess?.();
               }}
               disableUrlParamManagement
             />
