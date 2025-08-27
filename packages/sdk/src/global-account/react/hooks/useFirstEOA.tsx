@@ -45,3 +45,5 @@ export default function useFirstEOA() {
     info: walletInfo,
   };
 }
+
+export { useFirstEOA };

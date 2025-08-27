@@ -10,6 +10,7 @@ export { useChainSwitchWithAction } from "./useChainSwitchWithAction";
 export * from "./useClaim";
 export { useConnect } from "./useConnect";
 export { useExchangeRate } from "./useExchangeRate";
+export { useFirstEOA } from "./useFirstEOA";
 export { useGetAllTWSigners, type TWSignerWithMetadata } from "./useGetAllTWSigners";
 export { useGetGeo } from "./useGetGeo";
 export { useHandleConnectWithPrivy } from "./useHandleConnectWithPrivy";
@@ -24,7 +25,7 @@ export {
   useProfilePreference,
   type CombinedProfile,
   type PreferenceRequestBody,
-  type Profile,
+  type Profile
 } from "./useProfile";
 export { useQueryB3 } from "./useQueryB3";
 export { useQueryBSMNT } from "./useQueryBSMNT";
@@ -42,3 +43,4 @@ export { useTokenPriceWithFallback } from "./useTokenPriceWithFallback";
 export { useTokensFromAddress } from "./useTokensFromAddress";
 export { useUnifiedChainSwitchAndExecute } from "./useUnifiedChainSwitchAndExecute";
 export { useURLParams } from "./useURLParams";
+
