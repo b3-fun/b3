@@ -63,6 +63,7 @@ interface OrderDetailsProps {
   refundTxs: components["schemas"]["RefundTx"][] | null;
   cryptoPaymentMethod?: CryptoPaymentMethodType; // Now optional since we read from URL
   onBack?: () => void;
+  disableUrlParamManagement?: boolean; // When true, will not modify URL parameters
 }
 
 // Add this helper function near the top or just above the component
@@ -202,6 +203,7 @@ export const OrderDetails = memo(function OrderDetails({
   refundTxs,
   cryptoPaymentMethod,
   onBack,
+  disableUrlParamManagement = false,
 }: OrderDetailsProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -284,13 +286,15 @@ export const OrderDetails = memo(function OrderDetails({
 
   // When waitingForDeposit is true, we show a message to the user to wait for the deposit to be processed.
   const setWaitingForDeposit = useCallback(() => {
+    if (disableUrlParamManagement) return;
     const params = new URLSearchParams(searchParams.toString());
     params.set("waitingForDeposit", "true");
     router.push(`?${params}`);
-  }, [router, searchParams]);
+  }, [router, searchParams, disableUrlParamManagement]);
 
   // Clean up URL parameters before closing modal or navigating back
   const cleanupUrlParams = useCallback(() => {
+    if (disableUrlParamManagement) return;
     const params = new URLSearchParams(searchParams.toString());
     params.delete("waitingForDeposit");
     params.delete("orderId");
@@ -300,7 +304,7 @@ export const OrderDetails = memo(function OrderDetails({
     if (params.toString() !== searchParams.toString()) {
       router.push(`?${params}`);
     }
-  }, [router, searchParams]);
+  }, [router, searchParams, disableUrlParamManagement]);
 
   // Helper functions that clean up URL params before executing actions
   const handleCloseModal = useCallback(() => {

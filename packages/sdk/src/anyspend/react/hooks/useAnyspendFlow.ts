@@ -36,6 +36,7 @@ interface UseAnyspendFlowProps {
   sourceTokenAddress?: string;
   sourceTokenChainId?: number;
   slippage?: number;
+  disableUrlParamManagement?: boolean;
 }
 
 export function useAnyspendFlow({
@@ -48,6 +49,7 @@ export function useAnyspendFlow({
   sourceTokenAddress,
   sourceTokenChainId,
   slippage = 0,
+  disableUrlParamManagement = false,
 }: UseAnyspendFlowProps) {
   const searchParams = useSearchParamsSSR();
   const router = useRouter();
@@ -159,14 +161,14 @@ export function useAnyspendFlow({
 
   // Update useEffect for URL parameter to not override loadOrder
   useEffect(() => {
-    if (loadOrder) return; // Skip if we have a loadOrder
+    if (loadOrder || disableUrlParamManagement) return; // Skip if we have a loadOrder or URL param management is disabled
 
     const orderIdParam = searchParams.get("orderId");
     if (orderIdParam) {
       setOrderId(orderIdParam);
       setActivePanel(PanelView.ORDER_DETAILS);
     }
-  }, [searchParams, loadOrder]);
+  }, [searchParams, loadOrder, disableUrlParamManagement]);
 
   // Order creation hooks
   const { createOrder, isCreatingOrder } = useAnyspendCreateOrder({
@@ -177,16 +179,18 @@ export function useAnyspendFlow({
       onOrderSuccess?.(newOrderId);
 
       // Add orderId and payment method to URL for persistence
-      const params = new URLSearchParams(searchParams.toString()); // Preserve existing params
-      params.set("orderId", newOrderId);
-      if (selectedCryptoPaymentMethod !== CryptoPaymentMethodType.NONE) {
-        console.log("Setting cryptoPaymentMethod in URL:", selectedCryptoPaymentMethod);
-        params.set("cryptoPaymentMethod", selectedCryptoPaymentMethod);
-      } else {
-        console.log("Payment method is NONE, not setting in URL");
+      if (!disableUrlParamManagement) {
+        const params = new URLSearchParams(searchParams.toString()); // Preserve existing params
+        params.set("orderId", newOrderId);
+        if (selectedCryptoPaymentMethod !== CryptoPaymentMethodType.NONE) {
+          console.log("Setting cryptoPaymentMethod in URL:", selectedCryptoPaymentMethod);
+          params.set("cryptoPaymentMethod", selectedCryptoPaymentMethod);
+        } else {
+          console.log("Payment method is NONE, not setting in URL");
+        }
+        console.log("Final URL params:", params.toString());
+        router.push(`${window.location.pathname}?${params.toString()}`);
       }
-      console.log("Final URL params:", params.toString());
-      router.push(`${window.location.pathname}?${params.toString()}`);
     },
     onError: error => {
       console.error(error);
