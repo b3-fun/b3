@@ -46,7 +46,7 @@ async function fetchB3Balances(addresses: string[]): Promise<{
     const balances = await Promise.all(
       addresses.map(async address => {
         const balance = await client.readContract({
-          address: B3_TOKEN.address,
+          address: B3_TOKEN.address as `0x${string}`,
           abi,
           functionName: "balanceOf",
           args: [address as `0x${string}`],

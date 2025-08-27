@@ -37,7 +37,7 @@ function generateEncodedDataForStakingB3(amount: string, beneficiary: string): s
   const encodedData = encodeFunctionData({
     abi: ABI_ERC20_STAKING,
     functionName: "stake",
-    args: [BigInt(amount), beneficiary],
+    args: [BigInt(amount), beneficiary as `0x${string}`],
   });
   return encodedData;
 }

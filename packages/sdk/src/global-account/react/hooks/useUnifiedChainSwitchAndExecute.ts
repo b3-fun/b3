@@ -9,6 +9,7 @@ import { prepareTransaction, sendTransaction as twSendTransaction } from "thirdw
 import { useSwitchChain, useWalletClient } from "wagmi";
 import { useB3 } from "../components";
 import { useAccountWallet } from "./useAccountWallet";
+import { isAddress } from "viem";
 
 export interface UnifiedTransactionParams {
   to: string;
@@ -55,6 +56,8 @@ export function useUnifiedChainSwitchAndExecute() {
         if (!targetChain) {
           throw new Error(`Chain ${targetChainId} is not supported`);
         }
+
+        invariant(isAddress(params.to), "params.to is not a valid address");
 
         const hash = await walletClient.sendTransaction({
           account: signer,
