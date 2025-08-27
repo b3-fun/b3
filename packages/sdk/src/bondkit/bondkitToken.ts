@@ -522,6 +522,38 @@ export class BondkitToken {
     }
   }
 
+  /** Helper method to wait for transaction confirmation with OKX wallet fallback */
+  public async waitForTransaction(hash: Hex) {
+    const isOKX = typeof window !== "undefined" && 
+      (window as any).ethereum?.isOKXWallet || 
+      (window as any).okxwallet;
+
+    if (isOKX) {
+      // Fallback to polling for OKX wallet
+      let retries = 0;
+      const maxRetries = 60; // 5 minutes with 5 second intervals
+      
+      while (retries < maxRetries) {
+        try {
+          const receipt = await this.publicClient.getTransactionReceipt({ hash });
+          if (receipt) {
+            return receipt;
+          }
+        } catch (error) {
+          
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        retries++;
+      }
+      
+      throw new Error("Transaction confirmation timeout");
+    } else {
+      // Use normal waitForTransactionReceipt for other wallets
+      return await this.publicClient.waitForTransactionReceipt({ hash });
+    }
+  }
+
   public async initialize(
     config: BondkitTokenInitializationConfig,
     options?: ExecuteWriteOptions,
@@ -594,7 +626,7 @@ export class BondkitToken {
           approveOptions,
         );
 
-        await this.publicClient.waitForTransactionReceipt({ hash: approveTx });
+        await this.waitForTransaction(approveTx);
       }
 
       // Now call the buy function with the trading token amount
