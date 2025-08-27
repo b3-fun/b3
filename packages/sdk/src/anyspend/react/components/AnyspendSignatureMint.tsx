@@ -18,15 +18,15 @@ function generateEncodedDataForSignatureMint(signatureData: GenerateSigMintRespo
   invariant(payload, "Payload is required");
 
   const mintRequest = {
-    to: payload.to,
-    royaltyRecipient: payload.royaltyRecipient,
+    to: payload.to as `0x${string}`,
+    royaltyRecipient: payload.royaltyRecipient as `0x${string}`,
     royaltyBps: BigInt(payload.royaltyBps || 0),
-    primarySaleRecipient: payload.primarySaleRecipient,
+    primarySaleRecipient: payload.primarySaleRecipient as `0x${string}`,
     tokenId: BigInt(payload.tokenId || 0),
     uri: payload.uri,
     quantity: BigInt(payload.quantity || 1),
     pricePerToken: parseEther(payload.price?.toString() || "0"),
-    currency: payload.currencyAddress,
+    currency: payload.currencyAddress as `0x${string}`,
     validityStartTimestamp: BigInt(payload.mintStartTime || 0),
     validityEndTimestamp: BigInt(payload.mintEndTime || 0),
     uid: payload.uid as `0x${string}`,

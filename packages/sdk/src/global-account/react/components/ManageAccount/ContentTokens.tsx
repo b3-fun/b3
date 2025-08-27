@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { useActiveAccount } from "thirdweb/react";
 import { encodeFunctionData, erc20Abi, isAddress, parseUnits } from "viem";
 import { SimBalanceItem } from "../../hooks/useSimBalance";
+import invariant from "invariant";
 
 // Panel view enum for managing navigation between token list and send form
 enum TokenPanelView {
@@ -172,6 +173,8 @@ export function ContentTokens({ activeTab }: ContentTokensProps) {
       };
 
       try {
+        invariant(isAddress(recipientAddress), "Recipient address is not a valid address");
+
         const sendTokenData = encodeFunctionData({
           abi: erc20Abi,
           functionName: "transfer",
