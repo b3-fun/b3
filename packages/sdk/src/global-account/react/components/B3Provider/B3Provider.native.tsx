@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ThirdwebProvider, useActiveAccount } from "thirdweb/react";
 import { Account } from "thirdweb/wallets";
 
-import { User } from "@b3dotfun/sdk/global-account/types/b3-api.types";
+import { Users } from "@b3dotfun/b3-api";
 import { B3Context, B3ContextType } from "./types";
 
 /**
@@ -64,7 +64,7 @@ export function InnerProvider({
   theme: "light" | "dark";
 }) {
   const activeAccount = useActiveAccount();
-  const [user, setUser] = useState<User | undefined>(undefined);
+  const [user, setUser] = useState<Users | undefined>(undefined);
 
   // Use given accountOverride or activeAccount from thirdweb
   const effectiveAccount = accountOverride || activeAccount;

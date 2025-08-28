@@ -1,5 +1,4 @@
 import { RelayKitProviderWrapper, TooltipProvider, useAuthStore } from "@b3dotfun/sdk/global-account/react";
-import { User } from "@b3dotfun/sdk/global-account/types/b3-api.types";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { loadGA4Script } from "@b3dotfun/sdk/global-account/utils/analytics";
 import { supportedChains } from "@b3dotfun/sdk/shared/constants/chains/supported";
@@ -18,6 +17,7 @@ import { createConfig, http, WagmiProvider } from "wagmi";
 import { StyleRoot } from "../StyleRoot";
 import { B3Context, B3ContextType } from "./types";
 
+import { Users } from "@b3dotfun/b3-api";
 import "@reservoir0x/relay-kit-ui/styles.css";
 
 /**
@@ -115,7 +115,7 @@ export function InnerProvider({
   const setActiveWallet = useSetActiveWallet();
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
 
-  const [user, setUser] = useState<User | undefined>(undefined);
+  const [user, setUser] = useState<Users | undefined>(undefined);
 
   // Use given accountOverride or activeAccount from thirdweb
   const effectiveAccount = isAuthenticated ? accountOverride || activeAccount : undefined;
