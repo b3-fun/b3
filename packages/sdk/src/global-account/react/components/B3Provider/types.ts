@@ -1,8 +1,7 @@
-import { Account } from "thirdweb/wallets";
-import { User } from "@b3dotfun/sdk/global-account/types/b3-api.types";
-import { Wallet } from "thirdweb/wallets";
+import { Users } from "@b3dotfun/b3-api";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { createContext } from "react";
+import { Account, Wallet } from "thirdweb/wallets";
 
 /**
  * Context type for B3Provider
@@ -10,10 +9,10 @@ import { createContext } from "react";
 export interface B3ContextType {
   account?: Account;
   automaticallySetFirstEoa: boolean;
-  user?: User;
+  user?: Users;
   setWallet: (wallet: Wallet) => void;
   wallet?: Wallet;
-  setUser: (user?: User) => void;
+  setUser: (user?: Users) => void;
   initialized: boolean;
   ready: boolean;
   environment?: "development" | "production";
