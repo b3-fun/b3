@@ -14,7 +14,7 @@ import { formatUsername } from "@b3dotfun/sdk/shared/utils";
 import { Loader2, Pencil } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useActiveAccount } from "thirdweb/react";
-import useFirstEOA from "../../hooks/useFirstEOA";
+import { useFirstEOA } from "../../hooks/useFirstEOA";
 import { B3TokenIcon, EthereumTokenIcon } from "../TokenIcon";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
 import { TokenBalanceRow } from "./TokenBalanceRow";

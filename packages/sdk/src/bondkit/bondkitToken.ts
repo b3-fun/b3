@@ -539,8 +539,11 @@ export class BondkitToken {
           if (receipt) {
             return receipt;
           }
-        } catch (error) {
-          
+        } catch (error: any) {
+
+          if (error.name !== "TransactionReceiptNotFoundError") {
+            throw error;
+          }
         }
         
         await new Promise(resolve => setTimeout(resolve, 5000));

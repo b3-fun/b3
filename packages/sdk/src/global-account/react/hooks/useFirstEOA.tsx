@@ -6,7 +6,7 @@ import { Wallet } from "thirdweb/wallets";
 
 const debug = debugB3React("useFirstEOA");
 
-export default function useFirstEOA() {
+export function useFirstEOA() {
   const wallets = useConnectedWallets();
   const isConnected = useAuthStore(state => state.isConnected);
   const [firstEOA, setFirstEOA] = useState<Wallet | undefined>(undefined);
@@ -45,5 +45,3 @@ export default function useFirstEOA() {
     info: walletInfo,
   };
 }
-
-export { useFirstEOA };
