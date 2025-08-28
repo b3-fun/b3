@@ -10,6 +10,7 @@ export { useChainSwitchWithAction } from "./useChainSwitchWithAction";
 export * from "./useClaim";
 export { useConnect } from "./useConnect";
 export { useExchangeRate } from "./useExchangeRate";
+export { useFirstEOA } from "./useFirstEOA";
 export { useGetAllTWSigners, type TWSignerWithMetadata } from "./useGetAllTWSigners";
 export { useGetGeo } from "./useGetGeo";
 export { useHandleConnectWithPrivy } from "./useHandleConnectWithPrivy";
