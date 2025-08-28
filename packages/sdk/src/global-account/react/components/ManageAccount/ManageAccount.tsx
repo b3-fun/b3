@@ -19,7 +19,7 @@ import { SignOutIcon } from "@b3dotfun/sdk/global-account/react/components/icons
 import { formatNumber } from "@b3dotfun/sdk/shared/utils/formatNumber";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { BarChart3, Coins, Copy, Image, LinkIcon, Loader2, Pencil, Settings, UnlinkIcon } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { Chain } from "thirdweb";
 import { useActiveAccount, useProfiles, useUnlinkProfile } from "thirdweb/react";
@@ -138,6 +138,7 @@ export function ManageAccount({
     const [isUpdatingCode, setIsUpdatingCode] = useState(false);
     const [newReferralCode, setNewReferralCode] = useState("");
     const [isEditingCode, setIsEditingCode] = useState(false);
+    const referallCodeRef = useRef<HTMLInputElement>(null);
     const { data: referrals, isLoading: isLoadingReferrals } = useQueryB3(
       "referrals",
       "find",
@@ -294,13 +295,23 @@ export function ManageAccount({
 
           {/* Referral Code */}
           <div className="bg-b3-line rounded-xl p-4">
-            <div className="flex items-center justify-between">
+            {isEditingCode && (
               <div>
                 <div className="text-b3-grey font-neue-montreal-semibold">Your Referral Code</div>
                 <div className="text-b3-foreground-muted font-neue-montreal-medium text-sm">
                   Share this code with friends to earn rewards
                 </div>
               </div>
+            )}
+            <div className="flex items-center justify-between">
+              {!isEditingCode && (
+                <div>
+                  <div className="text-b3-grey font-neue-montreal-semibold">Your Referral Code</div>
+                  <div className="text-b3-foreground-muted font-neue-montreal-medium text-sm">
+                    Share this code with friends to earn rewards
+                  </div>
+                </div>
+              )}
               <div className="flex items-center gap-2">
                 {isEditingCode ? (
                   <div className="flex items-center gap-2">
@@ -310,6 +321,7 @@ export function ManageAccount({
                       onChange={e => setNewReferralCode(e.target.value)}
                       className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm"
                       placeholder="Enter new code"
+                      ref={referallCodeRef}
                     />
                     <Button size="sm" onClick={handleUpdateReferralCode} disabled={isUpdatingCode || !newReferralCode}>
                       {isUpdatingCode ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
@@ -333,7 +345,16 @@ export function ManageAccount({
                     <Button size="icon" variant="ghost" onClick={handleCopyCode}>
                       <Copy className="h-4 w-4" />
                     </Button>
-                    <Button size="icon" variant="ghost" onClick={() => setIsEditingCode(true)}>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => {
+                        setIsEditingCode(true);
+                        setTimeout(() => {
+                          referallCodeRef.current?.focus();
+                        }, 100);
+                      }}
+                    >
                       <Pencil className="h-4 w-4" />
                     </Button>
                   </>
