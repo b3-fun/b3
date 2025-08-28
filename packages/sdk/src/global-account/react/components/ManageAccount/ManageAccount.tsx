@@ -29,7 +29,7 @@ import { getProfileDisplayInfo } from "../../utils/profileDisplay";
 import { AccountAssets } from "../AccountAssets/AccountAssets";
 import { ContentTokens } from "./ContentTokens";
 
-import { Referrals } from "@b3dotfun/b3-api";
+import { Referrals, Users } from "@b3dotfun/b3-api";
 import { BalanceContent } from "./BalanceContent";
 
 type TabValue = "overview" | "tokens" | "nfts" | "apps" | "settings";
@@ -168,7 +168,7 @@ export function ManageAccount({
           userId: user?.userId,
           referralCode: newReferralCode,
         });
-        setUser(newUser);
+        setUser(newUser as Users);
         toast.success("Referral code updated successfully!");
         setIsEditingCode(false);
         setNewReferralCode("");
