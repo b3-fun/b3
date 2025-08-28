@@ -38,6 +38,10 @@ type ExecuteWriteOptions = {
   // Potentially add nonce or other parameters if needed
 };
 
+// OKX wallet polling constants
+const OKX_POLLING_MAX_RETRIES = 60; // 5 minutes with 5 second intervals
+const OKX_POLLING_INTERVAL_MS = 5000; // 5 seconds
+
 export class BondkitToken {
   public contract: GetContractReturnType<typeof BondkitTokenABI, WalletClient>;
   public publicClient: PublicClient;
@@ -529,9 +533,8 @@ export class BondkitToken {
     if (isOKX) {
       // Fallback to polling for OKX wallet
       let retries = 0;
-      const maxRetries = 60; // 5 minutes with 5 second intervals
 
-      while (retries < maxRetries) {
+      while (retries < OKX_POLLING_MAX_RETRIES) {
         try {
           const receipt = await this.publicClient.getTransactionReceipt({ hash });
           if (receipt) {
@@ -543,7 +546,7 @@ export class BondkitToken {
           }
         }
 
-        await new Promise(resolve => setTimeout(resolve, 5000));
+        await new Promise(resolve => setTimeout(resolve, OKX_POLLING_INTERVAL_MS));
         retries++;
       }
 
