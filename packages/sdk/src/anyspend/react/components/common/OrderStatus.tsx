@@ -45,7 +45,7 @@ export const OrderStatus = memo(function OrderStatus({
     return <StepProgress steps={paymentSteps} currentStepIndex={1} />;
   }
 
-  if (!isComplete && displayStatus !== "failure") {
+  if (selectedCryptoPaymentMethod === "transfer_crypto" && order.status === "scanning_deposit_transaction") {
     return null;
   }
 
