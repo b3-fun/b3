@@ -524,15 +524,13 @@ export class BondkitToken {
 
   /** Helper method to wait for transaction confirmation with OKX wallet fallback */
   public async waitForTransaction(hash: Hex) {
-    const isOKX = typeof window !== "undefined" && 
-      (window as any).ethereum?.isOKXWallet || 
-      (window as any).okxwallet;
+    const isOKX = (typeof window !== "undefined" && (window as any).ethereum?.isOKXWallet) || (window as any).okxwallet;
 
     if (isOKX) {
       // Fallback to polling for OKX wallet
       let retries = 0;
       const maxRetries = 60; // 5 minutes with 5 second intervals
-      
+
       while (retries < maxRetries) {
         try {
           const receipt = await this.publicClient.getTransactionReceipt({ hash });
@@ -540,16 +538,15 @@ export class BondkitToken {
             return receipt;
           }
         } catch (error: any) {
-
           if (error.name !== "TransactionReceiptNotFoundError") {
             throw error;
           }
         }
-        
+
         await new Promise(resolve => setTimeout(resolve, 5000));
         retries++;
       }
-      
+
       throw new Error("Transaction confirmation timeout");
     } else {
       // Use normal waitForTransactionReceipt for other wallets

@@ -25,7 +25,7 @@ export {
   useProfilePreference,
   type CombinedProfile,
   type PreferenceRequestBody,
-  type Profile
+  type Profile,
 } from "./useProfile";
 export { useQueryB3 } from "./useQueryB3";
 export { useQueryBSMNT } from "./useQueryBSMNT";
@@ -43,4 +43,3 @@ export { useTokenPriceWithFallback } from "./useTokenPriceWithFallback";
 export { useTokensFromAddress } from "./useTokensFromAddress";
 export { useUnifiedChainSwitchAndExecute } from "./useUnifiedChainSwitchAndExecute";
 export { useURLParams } from "./useURLParams";
-
