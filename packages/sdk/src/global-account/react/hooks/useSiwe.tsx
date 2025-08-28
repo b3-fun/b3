@@ -5,13 +5,13 @@ import { Account } from "thirdweb/wallets";
 import { useSearchParam } from "./useSearchParamsSSR";
 
 export function useSiwe() {
-  const referrerId = useSearchParam("referrerId");
+  const referralCode = useSearchParam("referralCode");
 
   const authenticate = useCallback(
     async (account: Account, partnerId: string) => {
       if (!account || !account.signMessage) throw new Error("Account not found");
 
-      console.log("@@useAuthenticate:referrerId", referrerId);
+      console.log("@@useAuthenticate:referralCode", referralCode);
       // generate challenge
       const challenge = await app.service("global-accounts-challenge").create({
         address: account.address,
@@ -32,15 +32,15 @@ export function useSiwe() {
         signature,
         serverSignature: challenge.serverSignature,
         nonce: challenge.nonce,
-        // http://localhost:5173/?referrerId=cd8fda06-3840-43d3-8f35-ae9472a13759
-        referrerId: referrerId,
+        // http://localhost:5173/?referralCode=GIO2
+        referralCode,
         partnerId: partnerId,
       });
       debug("@@useAuthenticate:response", response);
 
       return response;
     },
-    [referrerId],
+    [referralCode],
   );
 
   return {
