@@ -51,7 +51,7 @@ export interface paths {
                 decimals: number;
                 metadata: {
                   /** @description Token logo URI */
-                  logoURI: string;
+                  logoURI?: string;
                 };
               }[];
               /** @example 200 */
@@ -880,28 +880,47 @@ export interface components {
        * @description Country code
        * @example US
        */
-      country?: string;
+      country: string;
       /**
        * @description Onramp vendor used
        * @example stripe-web2
        * @enum {string}
        */
-      vendor?: "coinbase" | "stripe" | "stripe-web2";
+      vendor: "coinbase" | "stripe" | "stripe-web2";
       /**
        * @description Payment method used
        * @example
        */
-      paymentMethod?: string;
+      paymentMethod: string;
       /**
        * @description Redirect URL after payment
        * @example https://www.anyspend.com
        */
-      redirectUrl?: string;
+      redirectUrl: string;
       /**
        * @description Stripe payment amount in cents
        * @example 9900
        */
       stripeAmountInCents?: number;
+      /**
+       * Format: ipv4
+       * @description Optional IP address for location detection
+       * @example 192.168.1.1
+       */
+      ipAddress?: string;
+      /** @description Optional fingerprint data for fraud detection */
+      fingerprint?: {
+        /**
+         * @description Fingerprint request ID
+         * @example fp_req_12345
+         */
+        requestId: string;
+        /**
+         * @description Fingerprint visitor ID
+         * @example fp_visitor_67890
+         */
+        visitorId: string;
+      };
     };
     /** @description Optional onramp configuration */
     Onramp: {
@@ -1522,10 +1541,10 @@ export interface components {
        */
       chain: number;
       /**
-       * @description Sender address
+       * @description Sender address (can be null)
        * @example 0xa7539e73700B1726aBA29526606442A491Ef5747
        */
-      from: string;
+      from?: string | null;
       /**
        * @description Transaction hash
        * @example 0x60ece99a645201668d20db6775a6b3d30967433ff0750b356cdad46d3e13f9c8
