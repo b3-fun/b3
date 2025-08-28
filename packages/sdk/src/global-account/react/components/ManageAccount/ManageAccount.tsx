@@ -1,3 +1,4 @@
+import app from "@b3dotfun/sdk/global-account/app";
 import {
   Button,
   ManageAccountModalProps,
@@ -8,16 +9,18 @@ import {
   TWSignerWithMetadata,
   useAccountAssets,
   useAuthentication,
+  useB3,
   useGetAllTWSigners,
   useModalStore,
+  useQueryB3,
   useRemoveSessionKey,
 } from "@b3dotfun/sdk/global-account/react";
 import { SignOutIcon } from "@b3dotfun/sdk/global-account/react/components/icons/SignOutIcon";
 import { formatNumber } from "@b3dotfun/sdk/shared/utils/formatNumber";
-
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
-import { BarChart3, Coins, Image, LinkIcon, Loader2, Settings, UnlinkIcon } from "lucide-react";
+import { BarChart3, Coins, Copy, Image, LinkIcon, Loader2, Pencil, Settings, UnlinkIcon } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Chain } from "thirdweb";
 import { useActiveAccount, useProfiles, useUnlinkProfile } from "thirdweb/react";
 import { formatUnits } from "viem";
@@ -26,6 +29,7 @@ import { getProfileDisplayInfo } from "../../utils/profileDisplay";
 import { AccountAssets } from "../AccountAssets/AccountAssets";
 import { ContentTokens } from "./ContentTokens";
 
+import { Referrals } from "@b3dotfun/b3-api";
 import { BalanceContent } from "./BalanceContent";
 
 type TabValue = "overview" | "tokens" | "nfts" | "apps" | "settings";
@@ -130,6 +134,49 @@ export function ManageAccount({
     const { data: profilesRaw = [], isLoading: isLoadingProfiles } = useProfiles({ client });
     const { mutate: unlinkProfile, isPending: isUnlinking } = useUnlinkProfile();
     const { setB3ModalOpen, setB3ModalContentType, isLinking } = useModalStore();
+    const { user, setUser } = useB3();
+    const [isUpdatingCode, setIsUpdatingCode] = useState(false);
+    const [newReferralCode, setNewReferralCode] = useState("");
+    const [isEditingCode, setIsEditingCode] = useState(false);
+    const { data: referrals, isLoading: isLoadingReferrals } = useQueryB3(
+      "referrals",
+      "find",
+      { query: { referrerId: user?.userId } },
+      !!user?.userId,
+    );
+
+    // Fetch referred users
+    const currentReferralCode = user?.referralCode || user?.userId || "";
+
+    const handleCopyCode = async () => {
+      try {
+        await navigator.clipboard.writeText(currentReferralCode);
+        toast.success("Referral code copied to clipboard!");
+      } catch (error) {
+        toast.error("Failed to copy referral code");
+      }
+    };
+
+    const handleUpdateReferralCode = async () => {
+      if (!newReferralCode) return;
+
+      setIsUpdatingCode(true);
+      try {
+        // @ts-expect-error - setReferralCode is not typed for some reason
+        const newUser = await app.service("users").setReferralCode({
+          userId: user?.userId,
+          referralCode: newReferralCode,
+        });
+        setUser(newUser);
+        toast.success("Referral code updated successfully!");
+        setIsEditingCode(false);
+        setNewReferralCode("");
+      } catch (error) {
+        toast.error("Failed to update referral code");
+      } finally {
+        setIsUpdatingCode(false);
+      }
+    };
 
     const profiles = profilesRaw
       .filter((profile: any) => !["custom_auth_endpoint", "siwe"].includes(profile.type))
@@ -239,6 +286,82 @@ export function ManageAccount({
           ) : (
             <div className="text-b3-foreground-muted py-8 text-center">No linked accounts found</div>
           )}
+        </div>
+
+        {/* Referral Section */}
+        <div className="space-y-4">
+          <h3 className="text-b3-grey font-neue-montreal-semibold text-xl">Referrals</h3>
+
+          {/* Referral Code */}
+          <div className="bg-b3-line rounded-xl p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-b3-grey font-neue-montreal-semibold">Your Referral Code</div>
+                <div className="text-b3-foreground-muted font-neue-montreal-medium text-sm">
+                  Share this code with friends to earn rewards
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {isEditingCode ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={newReferralCode}
+                      onChange={e => setNewReferralCode(e.target.value)}
+                      className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm"
+                      placeholder="Enter new code"
+                    />
+                    <Button size="sm" onClick={handleUpdateReferralCode} disabled={isUpdatingCode || !newReferralCode}>
+                      {isUpdatingCode ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        setIsEditingCode(false);
+                        setNewReferralCode("");
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm">
+                      {currentReferralCode}
+                    </div>
+                    <Button size="icon" variant="ghost" onClick={handleCopyCode}>
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                    <Button size="icon" variant="ghost" onClick={() => setIsEditingCode(true)}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Referred Users */}
+          <div className="bg-b3-line rounded-xl p-4">
+            <div className="text-b3-grey font-neue-montreal-semibold mb-4">Referred Users</div>
+            {isLoadingReferrals ? (
+              <div className="flex justify-center py-4">
+                <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+              </div>
+            ) : referrals?.data?.length ? (
+              <div className="space-y-3">
+                {referrals.data.map((referral: Referrals) => (
+                  <div key={String(referral._id)} className="flex items-center justify-between rounded-lg bg-white p-3">
+                    <div className="text-sm font-medium">{referral.referreeId}</div>
+                    <div className="text-sm text-gray-500">{new Date(referral.createdAt).toLocaleDateString()}</div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-4 text-center text-gray-500">No referred users yet</div>
+            )}
+          </div>
         </div>
 
         {/* Additional Settings Sections */}
