@@ -302,7 +302,7 @@ export interface AnySpendDepositHypeProps extends BaseModalProps {
   /** Main footer */
   mainFooter?: React.ReactNode;
   /** Callback function called when the deposit is successful */
-  onSuccess?: () => void;
+  onSuccess?: (amount?: string) => void;
 }
 
 /**

@@ -554,7 +554,7 @@ export const OrderDetails = memo(function OrderDetails({
         <Accordion type="single" collapsible className="w-full">
           <AccordionItem value="refund-details">
             <AccordionTrigger>Transaction Details</AccordionTrigger>
-            <AccordionContent>
+            <AccordionContent className="pl-2">
               <div className="relative flex w-full flex-col gap-4">
                 <div className="bg-as-surface-secondary absolute bottom-2 left-4 top-2 z-[5] w-2">
                   <motion.div
@@ -631,7 +631,7 @@ export const OrderDetails = memo(function OrderDetails({
         <Accordion type="single" collapsible className="w-full">
           <AccordionItem value="execute-details">
             <AccordionTrigger>Transaction Details</AccordionTrigger>
-            <AccordionContent>
+            <AccordionContent className="pl-2">
               <div className="relative flex w-full flex-col gap-4">
                 <div className="bg-as-surface-secondary absolute bottom-2 left-4 top-2 z-[5] w-2">
                   <motion.div
@@ -750,7 +750,7 @@ export const OrderDetails = memo(function OrderDetails({
         <Accordion type="single" collapsible className="w-full">
           <AccordionItem value="more-details">
             <AccordionTrigger>More Details</AccordionTrigger>
-            <AccordionContent>
+            <AccordionContent className="pl-2">
               <div className="relative flex w-full flex-col gap-4">
                 <div className="bg-as-surface-secondary absolute bottom-2 left-4 top-2 z-[5] w-2">
                   <motion.div
@@ -895,7 +895,7 @@ export const OrderDetails = memo(function OrderDetails({
         <Accordion type="single" collapsible className="w-full">
           <AccordionItem value="deposit-details">
             <AccordionTrigger>Transaction Details</AccordionTrigger>
-            <AccordionContent>
+            <AccordionContent className="pl-2">
               <div className="relative flex w-full flex-col gap-6">
                 <div className="bg-as-surface-secondary absolute bottom-2 left-4 top-2 z-[5] w-2">
                   <motion.div

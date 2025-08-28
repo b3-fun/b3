@@ -39,7 +39,7 @@ interface UseAnyspendFlowProps {
   loadOrder?: string;
   isDepositMode?: boolean;
   onOrderSuccess?: (orderId: string) => void;
-  onTransactionSuccess?: () => void;
+  onTransactionSuccess?: (amount?: string) => void;
   sourceTokenAddress?: string;
   sourceTokenChainId?: number;
   slippage?: number;
@@ -245,9 +245,11 @@ export function useAnyspendFlow({
   useEffect(() => {
     if (oat?.data?.order.status === "executed") {
       console.log("Order executed successfully");
-      onTransactionSuccess?.();
+      // just get the payload.amount if available from custompayload
+      const amount = (oat.data.order.payload as { amount?: string })?.amount;
+      onTransactionSuccess?.(amount);
     }
-  }, [oat?.data?.order.status, onTransactionSuccess]);
+  }, [oat?.data?.order.status, oat?.data?.order.payload, onTransactionSuccess]);
 
   return {
     // State

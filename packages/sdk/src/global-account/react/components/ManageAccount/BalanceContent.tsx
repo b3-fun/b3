@@ -96,8 +96,8 @@ export function BalanceContent({ onLogout, partnerId }: BalanceContentProps) {
     <div className="flex flex-col gap-6">
       {/* Profile Section */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="relative">
+        <div className="global-account-profile flex items-center gap-4">
+          <div className="global-account-profile-avatar relative">
             {profile?.avatar ? (
               <img src={profile?.avatar} alt="Profile" className="size-24 rounded-full" />
             ) : (
@@ -107,11 +107,11 @@ export function BalanceContent({ onLogout, partnerId }: BalanceContentProps) {
               <Pencil size={16} className="text-b3-background" />
             </div>
           </div>
-          <div>
+          <div className="global-account-profile-info">
             <h2 className="text-b3-grey text-xl font-semibold">
               {profile?.displayName || formatUsername(profile?.name || "")}
             </h2>
-            <div className="border-b3-line bg-b3-line/20 hover:bg-b3-line/40 flex w-fit items-center gap-2 rounded-full border px-3 py-1 transition-colors">
+            <div className="address-button border-b3-line bg-b3-line/20 hover:bg-b3-line/40 flex w-fit items-center gap-2 rounded-full border px-3 py-1 transition-colors">
               <span className="text-b3-foreground-muted font-mono text-xs">
                 {centerTruncate(account?.address || "", 6)}
               </span>
@@ -183,7 +183,7 @@ export function BalanceContent({ onLogout, partnerId }: BalanceContentProps) {
             <AccordionTrigger className="text-b3-grey font-neue-montreal-semibold py-2 hover:no-underline">
               <div className="flex items-center gap-3">
                 <span>Connected {eoaInfo?.data?.name || "Wallet"}</span>
-                <div className="border-b3-line bg-b3-line/20 hover:bg-b3-line/40 flex w-fit items-center gap-2 rounded-full border px-3 py-1 transition-colors">
+                <div className="address-button border-b3-line bg-b3-line/20 hover:bg-b3-line/40 flex w-fit items-center gap-2 rounded-full border px-3 py-1 transition-colors">
                   <span className="text-b3-foreground-muted font-mono text-xs">{centerTruncate(eoaAddress, 6)}</span>
                   <CopyToClipboard text={eoaAddress} />
                 </div>
@@ -211,7 +211,7 @@ export function BalanceContent({ onLogout, partnerId }: BalanceContentProps) {
 
       {/* Sign Out */}
       <button
-        className="border-b3-line hover:bg-b3-line relative flex w-full items-center justify-center rounded-2xl border p-4 transition-colors"
+        className="logout-button border-b3-line hover:bg-b3-line relative flex w-full items-center justify-center rounded-2xl border p-4 transition-colors"
         onClick={onLogoutEnhanced}
       >
         <span className="font-neue-montreal-semibold text-b3-grey">Sign out</span>
