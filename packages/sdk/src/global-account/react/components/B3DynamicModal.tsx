@@ -17,7 +17,6 @@ import { LinkAccount } from "./LinkAccount/LinkAccount";
 import { ManageAccount } from "./ManageAccount/ManageAccount";
 import { RequestPermissions } from "./RequestPermissions/RequestPermissions";
 import { SignInWithB3Flow } from "./SignInWithB3/SignInWithB3Flow";
-import { TransakModal } from "./Transak/TransakModal";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "./ui/dialog";
 import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "./ui/drawer";
 
@@ -66,7 +65,6 @@ export function B3DynamicModal() {
     isFreestyleType && "b3-modal-freestyle",
     contentType?.type === "signInWithB3" && "p-0",
     contentType?.type === "anySpend" && "md:px-6",
-    contentType?.type === "transak" && "transak-modal",
   );
 
   debug("contentType", contentType);
@@ -90,8 +88,6 @@ export function B3DynamicModal() {
         return <AnySpendTournament {...contentType} mode="modal" action="join" />;
       case "anySpendFundTournament":
         return <AnySpendTournament {...contentType} mode="modal" action="fund" />;
-      case "transak":
-        return <TransakModal />;
       case "anySpendOrderHistory":
         return <OrderHistory onBack={() => {}} mode="modal" />;
       case "anySpendStakeB3":

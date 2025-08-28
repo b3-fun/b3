@@ -195,25 +195,6 @@ export interface AnyspendOrderDetailsProps extends BaseModalProps {
 }
 
 /**
- * Props for the Transak modal
- * Handles Transak-specific on-ramping
- */
-export interface TransakProps extends BaseModalProps {
-  /** Modal type identifier */
-  type: "transak";
-  /** Wallet address to receive the purchased crypto */
-  destinationWalletAddress?: string;
-  /** Default amount of crypto to purchase */
-  defaultCryptoAmount?: number;
-  /** Amount of fiat currency to spend */
-  fiatAmount?: number;
-  /** ISO country code for KYC and available payment methods */
-  countryCode?: string;
-  /** Callback function called when the purchase is successful */
-  onSuccess?: () => void;
-}
-
-/**
  * Props for the AnySpend order history modal
  */
 export interface AnySpendOrderHistoryProps extends BaseModalProps {
@@ -336,7 +317,6 @@ export type ModalContentType =
   | AnySpendNftProps
   | AnySpendJoinTournamentProps
   | AnySpendFundTournamentProps
-  | TransakProps
   | AnySpendOrderHistoryProps
   | AnySpendStakeB3Props
   | AnySpendBuySpinProps
