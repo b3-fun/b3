@@ -39,7 +39,7 @@ interface UseAnyspendFlowProps {
   loadOrder?: string;
   isDepositMode?: boolean;
   onOrderSuccess?: (orderId: string) => void;
-  onTransactionSuccess?: () => void;
+  onTransactionSuccess?: (amount?: string) => void;
   sourceTokenAddress?: string;
   sourceTokenChainId?: number;
   slippage?: number;
@@ -245,8 +245,9 @@ export function useAnyspendFlow({
   useEffect(() => {
     if (oat?.data?.order.status === "executed") {
       console.log("Order executed successfully");
-      onTransactionSuccess?.();
+      onTransactionSuccess?.((oat.data.order.payload as any)?.amount);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [oat?.data?.order.status, onTransactionSuccess]);
 
   return {
