@@ -7,12 +7,11 @@ export type {
   AnySpendJoinTournamentProps,
   AnySpendModalProps,
   AnySpendNftProps,
-  AnyspendOrderDetailsProps,
   AnySpendOrderHistoryProps,
   AnySpendStakeB3Props,
+  AnyspendOrderDetailsProps,
   ManageAccountModalProps,
   ModalContentType,
   RequestPermissionsModalProps,
   SignInWithB3ModalProps,
-  TransakProps,
 } from "./useModalStore";
