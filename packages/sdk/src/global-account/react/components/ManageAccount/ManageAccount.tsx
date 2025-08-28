@@ -168,7 +168,7 @@ export function ManageAccount({
           userId: user?.userId,
           referralCode: newReferralCode,
         });
-        setUser(newUser as Users);
+        setUser(newUser as unknown as Users);
         toast.success("Referral code updated successfully!");
         setIsEditingCode(false);
         setNewReferralCode("");
