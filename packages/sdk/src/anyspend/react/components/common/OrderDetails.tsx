@@ -22,6 +22,7 @@ import {
   TextLoop,
   TextShimmer,
   useAccountWallet,
+  useB3,
   useModalStore,
   useProfile,
   useUnifiedChainSwitchAndExecute,
@@ -30,7 +31,7 @@ import { useRouter, useSearchParams } from "@b3dotfun/sdk/shared/react/hooks";
 import { cn } from "@b3dotfun/sdk/shared/utils";
 import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
-import { useColorMode } from "@chakra-ui/react";
+
 import {
   createAssociatedTokenAccountInstruction,
   createTransferCheckedInstruction,
@@ -208,6 +209,10 @@ export const OrderDetails = memo(function OrderDetails({
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  // Get theme from B3Provider context
+  const { theme } = useB3();
+  const colorMode = theme || "light";
+
   // Read crypto payment method from URL parameters
   const cryptoPaymentMethodFromUrl = searchParams.get("cryptoPaymentMethod") as CryptoPaymentMethodType | null;
   const effectiveCryptoPaymentMethod =
@@ -232,8 +237,6 @@ export const OrderDetails = memo(function OrderDetails({
   const { isLoading: txLoading, isSuccess: txSuccess } = useWaitForTransactionReceipt({ hash: txHash });
 
   const { switchChainAndExecuteWithEOA, isSwitchingOrExecuting } = useUnifiedChainSwitchAndExecute();
-
-  const { colorMode } = useColorMode();
 
   const roundedUpSrcAmount = useMemo(() => {
     // Display the full transfer amount without rounding since users need to see the exact value they're transferring.

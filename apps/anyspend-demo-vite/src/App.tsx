@@ -1,6 +1,5 @@
-import React from "react";
 import { AnyspendProvider } from "@b3dotfun/sdk/anyspend/react";
-import { useColorMode } from "@chakra-ui/react";
+import React from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import OnrampExamplePage from "./pages/OnrampExamplePage";
@@ -31,7 +30,8 @@ function App() {
 }
 
 function B3ProviderWrapper({ children }: { children: React.ReactNode }) {
-  const { colorMode } = useColorMode();
+  // Default to light theme since we removed Chakra UI
+  const colorMode = "light";
   return (
     <B3Provider environment="production" theme={colorMode} automaticallySetFirstEoa={true}>
       <B3DynamicModal />
