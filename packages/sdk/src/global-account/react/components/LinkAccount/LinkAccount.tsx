@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useLinkProfile, useProfiles } from "thirdweb/react";
 import { preAuthenticate } from "thirdweb/wallets";
+import { useSiwe } from "../../hooks/useSiwe";
 import { LinkAccountModalProps, useModalStore } from "../../stores/useModalStore";
 import { getProfileDisplayInfo } from "../../utils/profileDisplay";
 import { useB3 } from "../B3Provider/useB3";
@@ -63,8 +64,9 @@ export function LinkAccount({
       originalProfile: profile,
     }));
 
-  const { account } = useB3();
+  const { account, setUser } = useB3();
   const { mutate: linkProfile } = useLinkProfile();
+  const { authenticate } = useSiwe();
 
   const onSuccess = useCallback(async () => {
     await onSuccessCallback?.();
@@ -85,6 +87,18 @@ export function LinkAccount({
       toast.error(error.message);
       setLinkingState(false);
       onError?.(error);
+    },
+    onSuccess: async (data: any) => {
+      console.log("Raw Link Account Data:", data);
+      try {
+        if (account) {
+          console.log("Sync user data...");
+          const userAuth = await authenticate(account, partnerId);
+          setUser(userAuth.user);
+        }
+      } catch (refreshError) {
+        console.warn("⚠️ Could not sync user data:", refreshError);
+      }
     },
   };
 
