@@ -65,9 +65,8 @@ export function LinkAccount({
       originalProfile: profile,
     }));
 
-  const { account, user, setUser } = useB3();
+  const { account, setUser } = useB3();
   const { mutate: linkProfile } = useLinkProfile();
-  const queryClient = useQueryClient();
   const { authenticate } = useSiwe();
 
   const onSuccess = useCallback(async () => {
