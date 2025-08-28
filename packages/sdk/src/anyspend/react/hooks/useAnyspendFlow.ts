@@ -245,10 +245,11 @@ export function useAnyspendFlow({
   useEffect(() => {
     if (oat?.data?.order.status === "executed") {
       console.log("Order executed successfully");
-      onTransactionSuccess?.((oat.data.order.payload as any)?.amount);
+      // just get the payload.amount if available from custompayload
+      const amount = (oat.data.order.payload as { amount?: string })?.amount;
+      onTransactionSuccess?.(amount);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [oat?.data?.order.status, onTransactionSuccess]);
+  }, [oat?.data?.order.status, oat?.data?.order.payload, onTransactionSuccess]);
 
   return {
     // State
