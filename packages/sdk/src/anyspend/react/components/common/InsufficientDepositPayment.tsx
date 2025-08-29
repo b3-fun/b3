@@ -20,7 +20,7 @@ import { toast } from "sonner";
 
 interface InsufficientDepositPaymentProps {
   order: components["schemas"]["Order"];
-  srcToken: any;
+  srcToken: components["schemas"]["Token"];
   formattedDepositDeficit: string;
   depositDeficit: bigint;
   phantomWalletAddress: string | null;
