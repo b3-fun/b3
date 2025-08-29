@@ -146,6 +146,24 @@ export function ManageAccount({
       !!user?.userId,
     );
 
+    const mutationOptions = {
+      onError: (error: Error) => {
+        console.error("Error Unlinking account:", error);
+        toast.error(error.message);
+      },
+      onSuccess: async (data: any) => {
+        console.log("Raw Link Account Data:", data);
+        try {
+          if (account) {
+            console.log("Sync user data...");
+            await app.service("users").syncTwProfiles({});
+          }
+        } catch (refreshError) {
+          console.warn("⚠️ Could not sync user data:", refreshError);
+        }
+      },
+    };
+
     // Fetch referred users
     const currentReferralCode = user?.referralCode || user?.userId || "";
 
@@ -189,7 +207,7 @@ export function ManageAccount({
     const handleUnlink = async (profile: any) => {
       setUnlinkingAccountId(profile.title);
       try {
-        unlinkProfile({ client, profileToUnlink: profile.originalProfile });
+        unlinkProfile({ client, profileToUnlink: profile.originalProfile },mutationOptions);
       } catch (error) {
         console.error("Error unlinking account:", error);
       } finally {

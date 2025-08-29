@@ -10,6 +10,7 @@ import { LinkAccountModalProps, useModalStore } from "../../stores/useModalStore
 import { getProfileDisplayInfo } from "../../utils/profileDisplay";
 import { useB3 } from "../B3Provider/useB3";
 import { Button } from "../ui/button";
+import app from "@b3dotfun/sdk/global-account/app";
 type OTPStrategy = "email" | "phone";
 type SocialStrategy = "google" | "x" | "discord" | "apple" | "farcaster";
 type Strategy = OTPStrategy | SocialStrategy;
@@ -93,8 +94,7 @@ export function LinkAccount({
       try {
         if (account) {
           console.log("Sync user data...");
-          const userAuth = await authenticate(account, partnerId);
-          setUser(userAuth.user);
+          await app.service("users").syncTwProfiles({});
         }
       } catch (refreshError) {
         console.warn("⚠️ Could not sync user data:", refreshError);
