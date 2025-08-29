@@ -249,18 +249,22 @@ export const OrderDetails = memo(function OrderDetails({
     return roundTokenAmount(formattedSrcAmount);
   }, [order.srcAmount, srcToken]);
 
+  // Calculate deposit amounts - moved here to be used in useCallback hooks
+  const depositedAmount = depositTxs
+    ? depositTxs.reduce((acc, curr) => acc + BigInt(curr.amount), BigInt(0))
+    : BigInt(0);
+  const depositDeficit = BigInt(order.srcAmount) - depositedAmount;
+  const depositEnoughAmount = depositDeficit <= BigInt(0);
+  const formattedDepositDeficit = formatTokenAmount(BigInt(depositDeficit), srcToken.decimals);
+
   // Unified payment handler for both EOA and AA wallets
   const handleUnifiedPaymentProcess = useCallback(async () => {
     let txData: `0x${string}` | undefined;
     let value: bigint;
     let to: `0x${string}`;
 
-    // Calculate remaining amount if there are existing deposits, otherwise use full amount
-    const depositedAmount = depositTxs
-      ? depositTxs.reduce((acc, curr) => acc + BigInt(curr.amount), BigInt(0))
-      : BigInt(0);
-    const currentDepositDeficit = BigInt(order.srcAmount) - depositedAmount;
-    const amountToSend = currentDepositDeficit > BigInt(0) ? currentDepositDeficit : BigInt(order.srcAmount);
+    // Use the existing depositDeficit calculation to determine amount to send
+    const amountToSend = depositDeficit > BigInt(0) ? depositDeficit : BigInt(order.srcAmount);
 
     if (isNativeToken(order.srcTokenAddress)) {
       // Native token transfer
@@ -282,18 +286,14 @@ export const OrderDetails = memo(function OrderDetails({
     if (txHash) {
       setTxHash(txHash as `0x${string}`);
     }
-  }, [order, switchChainAndExecuteWithEOA, depositTxs]);
+  }, [order, switchChainAndExecuteWithEOA, depositDeficit]);
 
   // Main payment handler that triggers chain switch and payment
   const handlePayment = async () => {
     console.log("Initiating payment process. Target chain:", order.srcChain, "Current chain:", walletClient?.chain?.id);
     if (order.srcChain === RELAY_SOLANA_MAINNET_CHAIN_ID) {
-      // Calculate remaining amount if there are existing deposits, otherwise use full amount
-      const depositedAmount = depositTxs
-        ? depositTxs.reduce((acc, curr) => acc + BigInt(curr.amount), BigInt(0))
-        : BigInt(0);
-      const currentDepositDeficit = BigInt(order.srcAmount) - depositedAmount;
-      const amountToSend = currentDepositDeficit > BigInt(0) ? currentDepositDeficit.toString() : order.srcAmount;
+      // Use the existing depositDeficit calculation to determine amount to send
+      const amountToSend = depositDeficit > BigInt(0) ? depositDeficit.toString() : order.srcAmount;
       await initiatePhantomTransfer(amountToSend, order.srcTokenAddress, order.globalAddress);
     } else {
       // Use unified payment process for both EOA and AA wallets
@@ -377,13 +377,6 @@ export const OrderDetails = memo(function OrderDetails({
   const formattedActualDstAmount = actualDstAmount
     ? formatTokenAmount(BigInt(actualDstAmount), dstToken.decimals)
     : undefined;
-
-  const depositedAmount = depositTxs
-    ? depositTxs.reduce((acc, curr) => acc + BigInt(curr.amount), BigInt(0))
-    : BigInt(0);
-  const depositDeficit = BigInt(order.srcAmount) - depositedAmount;
-  const depositEnoughAmount = depositDeficit <= BigInt(0);
-  const formattedDepositDeficit = formatTokenAmount(BigInt(depositDeficit), srcToken.decimals);
 
   const { text: statusText, status: statusDisplay } = getStatusDisplay(order);
 
