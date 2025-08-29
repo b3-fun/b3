@@ -664,7 +664,7 @@ export const OrderDetails = memo(function OrderDetails({
                       <TransactionDetails
                         key={relayTx.txHash}
                         title="Processed Transaction"
-                        chainId={order.srcChain}
+                        chainId={relayTx.chain}
                         tx={relayTx}
                         delay={0.5}
                         isProcessing={false}
