@@ -38,20 +38,21 @@ export function InsufficientDepositPayment({
   isSwitchingOrExecuting,
   onPayment,
 }: InsufficientDepositPaymentProps) {
+  const depositDeficitAmount = formatUnits(depositDeficit.toString(), srcToken.decimals);
   return (
     <div className="insufficient-deposit-payment relative flex w-full flex-1 flex-col">
       <div className="flex flex-col gap-1">
         <span className="insufficient-deposit-payment-text text-as-primary/50">Please send remaining</span>
         <div className="flex w-full flex-wrap items-center gap-6 sm:justify-between sm:gap-0">
           <CopyToClipboard
-            text={formatUnits(depositDeficit.toString(), srcToken.decimals)}
+            text={depositDeficitAmount}
             onCopy={() => {
               toast.success("Copied to clipboard");
             }}
           >
             <div className="flex items-center gap-2">
               <strong className="border-as-brand text-as-primary border-b-2 pb-1 text-2xl font-semibold sm:text-xl">
-                {formatUnits(depositDeficit.toString(), srcToken.decimals)} {srcToken.symbol}
+                {depositDeficitAmount} {srcToken.symbol}
               </strong>
               <Copy className="text-as-primary/50 hover:text-as-primary h-5 w-5 cursor-pointer transition-all duration-200" />
             </div>
