@@ -59,10 +59,10 @@ import { TransferCryptoDetails } from "./TransferCryptoDetails";
 interface OrderDetailsProps {
   mode?: "modal" | "page";
   order: components["schemas"]["Order"];
-  depositTxs: components["schemas"]["DepositTx"][] | null;
-  relayTx: components["schemas"]["RelayTx"] | null;
+  depositTxs: components["schemas"]["DepositTx"][];
+  relayTxs: components["schemas"]["RelayTx"][];
   executeTx: components["schemas"]["ExecuteTx"] | null;
-  refundTxs: components["schemas"]["RefundTx"][] | null;
+  refundTxs: components["schemas"]["RefundTx"][];
   cryptoPaymentMethod?: CryptoPaymentMethodType; // Now optional since we read from URL
   onBack?: () => void;
   disableUrlParamManagement?: boolean; // When true, will not modify URL parameters
@@ -106,6 +106,9 @@ function getOrderSuccessText({
       }
       actionText = order.metadata.action || `executed contract`;
       return `Successfully ${actionText}`;
+    case "hype_duel":
+      actionText = `deposited ${formattedActualDstAmount || "--"} HYPE`;
+      return `Successfully ${actionText} to ${recipient}`;
     default:
       throw new Error("Invalid order type");
   }
@@ -200,7 +203,7 @@ export const OrderDetails = memo(function OrderDetails({
   mode = "modal",
   order,
   depositTxs,
-  relayTx,
+  relayTxs,
   executeTx,
   refundTxs,
   cryptoPaymentMethod,
@@ -556,7 +559,7 @@ export const OrderDetails = memo(function OrderDetails({
     }
   };
 
-  if (refundTxs) {
+  if (refundTxs.length > 0) {
     return (
       <>
         <OrderDetailsCollapsible
@@ -672,13 +675,19 @@ export const OrderDetails = memo(function OrderDetails({
                       />
                     ))
                   : null}
-                <TransactionDetails
-                  title="Processed Transaction"
-                  chainId={order.srcChain}
-                  tx={relayTx}
-                  delay={0.5}
-                  isProcessing={false}
-                />
+                {relayTxs
+                  ? relayTxs.map(relayTx => (
+                      <TransactionDetails
+                        key={relayTx.txHash}
+                        title="Processed Transaction"
+                        chainId={relayTx.chain}
+                        tx={relayTx}
+                        delay={0.5}
+                        isProcessing={false}
+                      />
+                    ))
+                  : null}
+
                 <TransactionDetails
                   title={
                     order.type === "swap"
@@ -752,7 +761,7 @@ export const OrderDetails = memo(function OrderDetails({
     );
   }
 
-  if (relayTx && relayTx.status === "success") {
+  if (relayTxs.length > 0 && relayTxs.every(tx => tx.status === "success")) {
     return (
       <>
         <OrderDetailsCollapsible
@@ -791,59 +800,42 @@ export const OrderDetails = memo(function OrderDetails({
                       />
                     ))
                   : null}
-                {/* If the source and destination chains are the same, AnySpend doesn't have executeTransaction */}
-                {order.srcChain === order.dstChain ? (
+                {relayTxs.map(relayTx => (
                   <TransactionDetails
-                    title={
-                      order.type === "swap"
-                        ? "Processed Swap"
-                        : order.type === "mint_nft"
-                          ? "Minted NFT"
-                          : order.type === "join_tournament"
-                            ? "Joined Tournament"
-                            : order.type === "fund_tournament"
-                              ? "Funded Tournament"
-                              : "Processed Transaction"
-                    }
-                    chainId={order.srcChain}
+                    title="Processed Transaction"
+                    chainId={relayTx.chain}
                     isProcessing={false}
                     tx={relayTx}
                     delay={0.5}
                   />
-                ) : (
-                  <>
-                    <TransactionDetails
-                      title="Processed Transaction"
-                      chainId={order.srcChain}
-                      isProcessing={false}
-                      tx={relayTx}
-                      delay={0.5}
-                    />
-                    <TransactionDetails
-                      title={
-                        order.type === "swap"
-                          ? "Processing Swap"
-                          : order.type === "mint_nft"
-                            ? "Minting NFT"
-                            : order.type === "join_tournament"
-                              ? "Joining Tournament"
-                              : order.type === "fund_tournament"
-                                ? "Funding Tournament"
+                ))}
+                {order.status === "executing" && (
+                  <TransactionDetails
+                    title={
+                      order.type === "swap"
+                        ? "Processing Swap"
+                        : order.type === "mint_nft"
+                          ? "Minting NFT"
+                          : order.type === "join_tournament"
+                            ? "Joining Tournament"
+                            : order.type === "fund_tournament"
+                              ? "Funding Tournament"
+                              : order.type === "hype_duel"
+                                ? "Depositing Hype Duel"
                                 : "Processing Bridge"
-                      }
-                      chainId={order.dstChain}
-                      isProcessing={true}
-                      tx={executeTx}
-                      delay={1}
-                    />
-                  </>
+                    }
+                    chainId={order.dstChain}
+                    isProcessing={true}
+                    tx={null}
+                    delay={1}
+                  />
                 )}
               </div>
             </AccordionContent>
           </AccordionItem>
         </Accordion>
 
-        <div className="flex w-full flex-col gap-8">
+        {/* <div className="flex w-full flex-col gap-8">
           <Button variant="link" asChild>
             <a
               href={getExplorerTxUrl(order.dstChain, relayTx.txHash)}
@@ -862,7 +854,7 @@ export const OrderDetails = memo(function OrderDetails({
               <ExternalLink className="ml-2 h-4 w-4" />
             </a>
           </Button>
-        </div>
+        </div> */}
 
         {order.type === "join_tournament" && order.status === "executed" && (
           <ShinyButton

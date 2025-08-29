@@ -48,6 +48,11 @@ export const buildPayload = (orderType: components["schemas"]["Order"]["type"], 
       };
     case "custom":
       return { ...payload };
+    case "hype_duel":
+      return {
+        expectedDstAmount,
+        actualDstAmount: null,
+      };
     default:
       throw new Error(`Invalid order type: ${orderType}`);
   }
@@ -69,6 +74,8 @@ export const buildMetadata = (orderType: components["schemas"]["Order"]["type"],
       return { ...baseMetadata, tournament };
     case "custom":
       return { ...baseMetadata, action: payload.action };
+    case "hype_duel":
+      return { ...baseMetadata };
     default:
       throw new Error(`Invalid order type: ${orderType}`);
   }

@@ -41,7 +41,7 @@ export const OrderStatus = memo(function OrderStatus({
     }
   }
 
-  if (["relay", "sending_token_from_vault"].includes(order.status)) {
+  if (["relay", "executing", "sending_token_from_vault"].includes(order.status)) {
     return <StepProgress steps={paymentSteps} currentStepIndex={1} />;
   }
 
