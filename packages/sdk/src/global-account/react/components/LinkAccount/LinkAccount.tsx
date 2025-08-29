@@ -92,10 +92,8 @@ export function LinkAccount({
     onSuccess: async (data: any) => {
       console.log("Raw Link Account Data:", data);
       try {
-        if (account) {
-          console.log("Sync user data...");
-          await app.service("users").syncTwProfiles({});
-        }
+        console.log("Sync user data...");
+        await app.service("users").syncTwProfiles({});
       } catch (refreshError) {
         console.warn("⚠️ Could not sync user data:", refreshError);
       }
