@@ -87,6 +87,8 @@ export interface ManageAccountModalProps extends BaseModalProps {
   activeTab?: "overview" | "tokens" | "nfts" | "apps" | "settings";
   /** Function to set the active tab */
   setActiveTab?: (tab: "overview" | "tokens" | "nfts" | "apps" | "settings") => void;
+  /** Whether to show the referral information */
+  showReferralInfo?: boolean;
 }
 
 /**
