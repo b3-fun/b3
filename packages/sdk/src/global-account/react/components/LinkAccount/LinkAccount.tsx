@@ -5,7 +5,6 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useLinkProfile, useProfiles } from "thirdweb/react";
 import { preAuthenticate } from "thirdweb/wallets";
-import { useSiwe } from "../../hooks/useSiwe";
 import { LinkAccountModalProps, useModalStore } from "../../stores/useModalStore";
 import { getProfileDisplayInfo } from "../../utils/profileDisplay";
 import { useB3 } from "../B3Provider/useB3";
@@ -65,9 +64,8 @@ export function LinkAccount({
       originalProfile: profile,
     }));
 
-  const { account, setUser } = useB3();
+  const { account } = useB3();
   const { mutate: linkProfile } = useLinkProfile();
-  const { authenticate } = useSiwe();
 
   const onSuccess = useCallback(async () => {
     await onSuccessCallback?.();
