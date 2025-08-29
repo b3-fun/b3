@@ -297,8 +297,6 @@ export interface AnySpendDepositHypeProps extends BaseModalProps {
   sourceTokenChainId?: number;
   /** Payment type - crypto or fiat */
   paymentType?: "crypto" | "fiat";
-  /** Deposit contract address */
-  depositContractAddress: string;
   /** Main footer */
   mainFooter?: React.ReactNode;
   /** Callback function called when the deposit is successful */

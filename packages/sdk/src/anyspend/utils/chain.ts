@@ -64,7 +64,7 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     name: "Arbitrum",
     type: ChainType.EVM,
     logoUrl: "https://assets.relay.link/icons/square/42161/light.png",
-    nativeRequired: parseEther("0.0001"),
+    nativeRequired: parseEther("0.0003"),
     canDepositNative: true,
     defaultToken: getEthToken(arbitrum.id),
     nativeToken: getEthToken(arbitrum.id),

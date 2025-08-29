@@ -418,18 +418,23 @@ export interface paths {
                  *       }
                  *     ]
                  */
-                depositTxs: components["schemas"]["DepositTx"][] | null;
-                /** @example {
-                 *       "orderId": "5392f7a7-d472-4d6b-9848-bd07117fb82d",
-                 *       "chain": 8453,
-                 *       "txHash": "0x9df917e14bb089f74763d1d2662761d75c97a5a068b8a9e411c3d384c9c40d19",
-                 *       "status": "success",
-                 *       "createdAt": 1752505817654
-                 *     } */
-                relayTx: components["schemas"]["RelayTx"] | null;
+                depositTxs: components["schemas"]["DepositTx"][];
+                /**
+                 * @description Cross-chain relay transactions
+                 * @example [
+                 *       {
+                 *         "orderId": "5392f7a7-d472-4d6b-9848-bd07117fb82d",
+                 *         "chain": 8453,
+                 *         "txHash": "0x9df917e14bb089f74763d1d2662761d75c97a5a068b8a9e411c3d384c9c40d19",
+                 *         "status": "success",
+                 *         "createdAt": 1752505817654
+                 *       }
+                 *     ]
+                 */
+                relayTxs: components["schemas"]["RelayTx"][];
                 executeTx: components["schemas"]["ExecuteTx"] | null;
                 /** @description Refund transactions if order failed */
-                refundTxs: components["schemas"]["RefundTx"][] | null;
+                refundTxs: components["schemas"]["RefundTx"][];
               };
               /** @example 200 */
               statusCode: number;
@@ -468,7 +473,7 @@ export interface paths {
   "/orders/quote": {
     /**
      * Get anyspend quote
-     * @description Retrieves a quote to swap or execute contract
+     * @description Retrieves a quote to swap, execute contract, or participate in HypeDuel
      */
     post: {
       requestBody: {
@@ -597,6 +602,43 @@ export interface paths {
                 onrampVendor?: "coinbase" | "stripe" | "stripe-web2";
                 contractAddress: string;
                 fundAmount: string;
+              }
+            | {
+                /**
+                 * @description Order type for HypeDuel
+                 * @enum {string}
+                 */
+                type: "hype_duel";
+                /**
+                 * @description Source chain ID
+                 * @example 1
+                 */
+                srcChain: number;
+                /**
+                 * @description Destination chain ID
+                 * @example 8453
+                 */
+                dstChain: number;
+                /**
+                 * @description Source token contract address
+                 * @example 0x0000000000000000000000000000000000000000
+                 */
+                srcTokenAddress: string;
+                /**
+                 * @description Destination token contract address
+                 * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+                 */
+                dstTokenAddress: string;
+                /**
+                 * @description Amount to quote
+                 * @example 1000000000000000000
+                 */
+                amount: string;
+                /**
+                 * @description Optional onramp vendor
+                 * @enum {string}
+                 */
+                onrampVendor?: "coinbase" | "stripe" | "stripe-web2";
               };
         };
       };
@@ -1043,6 +1085,19 @@ export interface components {
        */
       actualDstAmount: string | null;
     };
+    /** @description HypeDuel-specific payload */
+    HypeDuelPayload: {
+      /**
+       * @description Expected amount of destination tokens
+       * @example 990000
+       */
+      expectedDstAmount: string;
+      /**
+       * @description Actual received amount (null for new orders)
+       * @example 990000
+       */
+      actualDstAmount: string | null;
+    };
     /** @description Custom execution payload */
     CustomPayload: {
       /**
@@ -1118,6 +1173,11 @@ export interface components {
     };
     /** @description Swap metadata for display purposes */
     SwapMetadata: {
+      srcToken: components["schemas"]["Token"];
+      dstToken: components["schemas"]["Token"];
+    };
+    /** @description HypeDuel metadata for display purposes */
+    HypeDuelMetadata: {
       srcToken: components["schemas"]["Token"];
       dstToken: components["schemas"]["Token"];
     };
@@ -1197,6 +1257,7 @@ export interface components {
         | "expired"
         | "sending_token_from_vault"
         | "relay"
+        | "executing"
         | "executed"
         | "refunding"
         | "refunded"
@@ -1239,6 +1300,15 @@ export interface components {
       payload: components["schemas"]["SwapPayload"];
       metadata: components["schemas"]["SwapMetadata"];
     };
+    HypeDuelOrder: components["schemas"]["BaseOrder"] & {
+      /**
+       * @description Order type
+       * @enum {string}
+       */
+      type: "hype_duel";
+      payload: components["schemas"]["HypeDuelPayload"];
+      metadata: components["schemas"]["HypeDuelMetadata"];
+    };
     CustomOrder: components["schemas"]["BaseOrder"] & {
       /**
        * @description Order type
@@ -1277,6 +1347,7 @@ export interface components {
     };
     Order:
       | components["schemas"]["SwapOrder"]
+      | components["schemas"]["HypeDuelOrder"]
       | components["schemas"]["CustomOrder"]
       | components["schemas"]["MintNftOrder"]
       | components["schemas"]["JoinTournamentOrder"]
@@ -1320,6 +1391,54 @@ export interface components {
       srcAmount: string;
       payload: components["schemas"]["SwapPayload"];
       metadata: components["schemas"]["SwapMetadata"];
+      /** @description Optional partner identifier */
+      partnerId?: string;
+      onramp?: components["schemas"]["Onramp"];
+      /**
+       * @description Optional address of the order creator
+       * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
+       */
+      creatorAddress?: string;
+    };
+    /** @description HypeDuel order request */
+    HypeDuelOrderRequest: {
+      /**
+       * @description Order type
+       * @enum {string}
+       */
+      type: "hype_duel";
+      /**
+       * @description Address to receive the destination tokens
+       * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
+       */
+      recipientAddress: string;
+      /**
+       * @description Source chain ID
+       * @example 1
+       */
+      srcChain: number;
+      /**
+       * @description Destination chain ID
+       * @example 8453
+       */
+      dstChain: number;
+      /**
+       * @description Source token contract address
+       * @example 0xA0b86a33E6441E8A91DEF8f5663ACb4C9B4a1234
+       */
+      srcTokenAddress: string;
+      /**
+       * @description Destination token contract address
+       * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+       */
+      dstTokenAddress: string;
+      /**
+       * @description Amount of source tokens for HypeDuel
+       * @example 1000000
+       */
+      srcAmount: string;
+      payload: components["schemas"]["HypeDuelPayload"];
+      metadata: components["schemas"]["HypeDuelMetadata"];
       /** @description Optional partner identifier */
       partnerId?: string;
       onramp?: components["schemas"]["Onramp"];
@@ -1523,6 +1642,7 @@ export interface components {
     };
     OrderRequest:
       | components["schemas"]["SwapOrderRequest"]
+      | components["schemas"]["HypeDuelOrderRequest"]
       | components["schemas"]["CustomOrderRequest"]
       | components["schemas"]["MintNftOrderRequest"]
       | components["schemas"]["JoinTournamentOrderRequest"]

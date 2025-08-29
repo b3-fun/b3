@@ -1,11 +1,10 @@
-import { B3_TOKEN, DEPOSIT_HYPE_ACTION } from "@b3dotfun/sdk/anyspend";
+import { B3_TOKEN } from "@b3dotfun/sdk/anyspend";
 import { Button, ShinyButton, StyleRoot, TransitionPanel } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import invariant from "invariant";
 import { motion } from "motion/react";
 import { useMemo } from "react";
 import { toast } from "sonner";
-import { encodeFunctionData } from "viem";
 import { base } from "viem/chains";
 import { PanelView, useAnyspendFlow } from "../hooks/useAnyspendFlow";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
@@ -18,7 +17,6 @@ import { OrderStatus } from "./common/OrderStatus";
 import { PaySection } from "./common/PaySection";
 import { RecipientSelection } from "./common/RecipientSelection";
 
-import { ESCROW_ABI } from "@b3dotfun/sdk/anyspend/abis/escrow";
 import { ArrowDown } from "lucide-react";
 import { PanelOnramp } from "./common/PanelOnramp";
 
@@ -29,16 +27,6 @@ export const HYPE_TOKEN_DETAILS = {
   LOGO_URI: "https://cdn.hypeduel.com/hypes-coin.svg",
 };
 
-function generateEncodedDataForDepositHype(amount: string, beneficiary: string): string {
-  invariant(BigInt(amount) > 0, "Amount must be greater than zero");
-  const encodedData = encodeFunctionData({
-    abi: ESCROW_ABI,
-    functionName: "depositFor",
-    args: [beneficiary as `0x${string}`, B3_TOKEN.address as `0x${string}`, BigInt(amount)],
-  });
-  return encodedData;
-}
-
 export interface AnySpendDepositHypeProps {
   loadOrder?: string;
   mode?: "modal" | "page";
@@ -47,7 +35,6 @@ export interface AnySpendDepositHypeProps {
   sourceTokenAddress?: string;
   sourceTokenChainId?: number;
   onSuccess?: () => void;
-  depositContractAddress?: string;
   mainFooter?: React.ReactNode;
 }
 
@@ -69,7 +56,6 @@ function AnySpendDepositHypeInner({
   sourceTokenAddress,
   sourceTokenChainId,
   onSuccess,
-  depositContractAddress,
   mainFooter,
 }: AnySpendDepositHypeProps) {
   // Use shared flow hook
@@ -319,32 +305,18 @@ function AnySpendDepositHypeInner({
     try {
       invariant(anyspendQuote, "Relay price is not found");
       invariant(selectedRecipientAddress, "Recipient address is not found");
-      invariant(depositContractAddress, "Deposit contract address is not found");
 
       const srcAmountBigInt = BigInt(activeInputAmountInWei);
-      // TODO: temp subtract 3% for slippage
-      const originalDepositAmountWei = anyspendQuote.data?.currencyOut?.amount || "0";
-      const depositAmountWei = (
-        (BigInt(originalDepositAmountWei) * BigInt(100 - SLIPPAGE_PERCENT)) /
-        BigInt(100)
-      ).toString();
-      const encodedData = generateEncodedDataForDepositHype(depositAmountWei, selectedRecipientAddress);
-
       createOrder({
         recipientAddress: selectedRecipientAddress,
-        orderType: "custom",
+        orderType: "hype_duel",
         srcChain: selectedSrcChainId,
         dstChain: base.id,
         srcToken: selectedSrcToken,
         dstToken: B3_TOKEN,
         srcAmount: srcAmountBigInt.toString(),
+        expectedDstAmount: anyspendQuote?.data?.currencyOut?.amount?.toString() || "0",
         creatorAddress: globalAddress,
-        payload: {
-          amount: depositAmountWei,
-          data: encodedData,
-          to: depositContractAddress,
-          action: DEPOSIT_HYPE_ACTION,
-        },
       });
     } catch (err: any) {
       console.error(err);
@@ -357,7 +329,6 @@ function AnySpendDepositHypeInner({
     try {
       invariant(anyspendQuote, "Relay price is not found");
       invariant(selectedRecipientAddress, "Recipient address is not found");
-      invariant(depositContractAddress, "Deposit contract address is not found");
 
       if (!srcAmount || parseFloat(srcAmount) <= 0) {
         toast.error("Please enter a valid amount");
@@ -387,12 +358,9 @@ function AnySpendDepositHypeInner({
         return;
       }
 
-      const depositAmountWei = anyspendQuote.data?.currencyOut?.amount || "0";
-      const encodedData = generateEncodedDataForDepositHype(depositAmountWei, selectedRecipientAddress);
-
       createOnrampOrder({
         recipientAddress: selectedRecipientAddress,
-        orderType: "custom",
+        orderType: "hype_duel",
         dstChain: base.id,
         dstToken: B3_TOKEN,
         srcFiatAmount: srcAmount,
@@ -404,12 +372,6 @@ function AnySpendDepositHypeInner({
         },
         expectedDstAmount: anyspendQuote?.data?.currencyOut?.amount?.toString() || "0",
         creatorAddress: globalAddress,
-        payload: {
-          amount: depositAmountWei,
-          data: encodedData,
-          to: depositContractAddress,
-          action: DEPOSIT_HYPE_ACTION,
-        },
       });
     } catch (err: any) {
       console.error(err);
@@ -428,7 +390,7 @@ function AnySpendDepositHypeInner({
               mode={mode}
               order={oat.data.order}
               depositTxs={oat.data.depositTxs}
-              relayTx={oat.data.relayTx}
+              relayTxs={oat.data.relayTxs}
               executeTx={oat.data.executeTx}
               refundTxs={oat.data.refundTxs}
               cryptoPaymentMethod={paymentType === "fiat" ? CryptoPaymentMethodType.NONE : selectedCryptoPaymentMethod}

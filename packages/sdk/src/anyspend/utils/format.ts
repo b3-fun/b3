@@ -27,6 +27,7 @@ export const getStatusDisplay = (
       return { text: "Sending Token", status: "processing" };
 
     case "relay":
+    case "executing":
       return {
         text: "Executing Order",
         status: "processing",

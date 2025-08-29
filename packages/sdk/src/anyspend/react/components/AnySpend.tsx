@@ -809,7 +809,7 @@ function AnySpendInner({
               mode={mode}
               order={oat.data.order}
               depositTxs={oat.data.depositTxs}
-              relayTx={oat.data.relayTx}
+              relayTxs={oat.data.relayTxs}
               executeTx={oat.data.executeTx}
               refundTxs={oat.data.refundTxs}
               onBack={() => {
