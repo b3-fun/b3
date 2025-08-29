@@ -51,6 +51,7 @@ import { useWaitForTransactionReceipt, useWalletClient } from "wagmi";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./Accordion";
 import ConnectWalletPayment from "./ConnectWalletPayment";
 import { CryptoPaymentMethodType } from "./CryptoPaymentMethod";
+import { InsufficientDepositPayment } from "./InsufficientDepositPayment";
 import { OrderDetailsCollapsible } from "./OrderDetailsCollapsible";
 import PaymentVendorUI from "./PaymentVendorUI";
 import { TransferCryptoDetails } from "./TransferCryptoDetails";
@@ -254,16 +255,23 @@ export const OrderDetails = memo(function OrderDetails({
     let value: bigint;
     let to: `0x${string}`;
 
+    // Calculate remaining amount if there are existing deposits, otherwise use full amount
+    const depositedAmount = depositTxs
+      ? depositTxs.reduce((acc, curr) => acc + BigInt(curr.amount), BigInt(0))
+      : BigInt(0);
+    const currentDepositDeficit = BigInt(order.srcAmount) - depositedAmount;
+    const amountToSend = currentDepositDeficit > BigInt(0) ? currentDepositDeficit : BigInt(order.srcAmount);
+
     if (isNativeToken(order.srcTokenAddress)) {
       // Native token transfer
       to = order.globalAddress as `0x${string}`;
-      value = BigInt(order.srcAmount);
+      value = amountToSend;
     } else {
       // ERC20 token transfer - encode the transfer function call using proper ABI
       txData = encodeFunctionData({
         abi: erc20Abi,
         functionName: "transfer",
-        args: [order.globalAddress as `0x${string}`, BigInt(order.srcAmount)],
+        args: [order.globalAddress as `0x${string}`, amountToSend],
       });
       to = order.srcTokenAddress as `0x${string}`;
       value = BigInt(0);
@@ -274,13 +282,19 @@ export const OrderDetails = memo(function OrderDetails({
     if (txHash) {
       setTxHash(txHash as `0x${string}`);
     }
-  }, [order, switchChainAndExecuteWithEOA]);
+  }, [order, switchChainAndExecuteWithEOA, depositTxs]);
 
   // Main payment handler that triggers chain switch and payment
   const handlePayment = async () => {
     console.log("Initiating payment process. Target chain:", order.srcChain, "Current chain:", walletClient?.chain?.id);
     if (order.srcChain === RELAY_SOLANA_MAINNET_CHAIN_ID) {
-      await initiatePhantomTransfer(order.srcAmount, order.srcTokenAddress, order.globalAddress);
+      // Calculate remaining amount if there are existing deposits, otherwise use full amount
+      const depositedAmount = depositTxs
+        ? depositTxs.reduce((acc, curr) => acc + BigInt(curr.amount), BigInt(0))
+        : BigInt(0);
+      const currentDepositDeficit = BigInt(order.srcAmount) - depositedAmount;
+      const amountToSend = currentDepositDeficit > BigInt(0) ? currentDepositDeficit.toString() : order.srcAmount;
+      await initiatePhantomTransfer(amountToSend, order.srcTokenAddress, order.globalAddress);
     } else {
       // Use unified payment process for both EOA and AA wallets
       await handleUnifiedPaymentProcess();
@@ -961,6 +975,20 @@ export const OrderDetails = memo(function OrderDetails({
             </AccordionContent>
           </AccordionItem>
         </Accordion>
+
+        {/* Show payment UI when deposit is not enough and order is not expired */}
+        {!depositEnoughAmount && order.status !== "expired" && (
+          <InsufficientDepositPayment
+            order={order}
+            srcToken={srcToken}
+            formattedDepositDeficit={formattedDepositDeficit}
+            depositDeficit={depositDeficit}
+            phantomWalletAddress={phantomWalletAddress}
+            txLoading={txLoading}
+            isSwitchingOrExecuting={isSwitchingOrExecuting}
+            onPayment={handlePayment}
+          />
+        )}
 
         {/* <DelayedSupportMessage /> */}
       </>
