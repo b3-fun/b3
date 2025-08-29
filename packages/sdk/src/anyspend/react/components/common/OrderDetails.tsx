@@ -974,7 +974,6 @@ export const OrderDetails = memo(function OrderDetails({
           <InsufficientDepositPayment
             order={order}
             srcToken={srcToken}
-            formattedDepositDeficit={formattedDepositDeficit}
             depositDeficit={depositDeficit}
             phantomWalletAddress={phantomWalletAddress}
             txLoading={txLoading}

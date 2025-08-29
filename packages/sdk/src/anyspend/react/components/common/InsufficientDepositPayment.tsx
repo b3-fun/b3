@@ -12,6 +12,7 @@ import { Badge, CopyToClipboard, ShinyButton, TextLoop } from "@b3dotfun/sdk/glo
 import { cn } from "@b3dotfun/sdk/shared/utils";
 import { b3 } from "viem/chains";
 
+import { formatUnits } from "@b3dotfun/sdk/shared/utils/number";
 import { WalletCoinbase, WalletMetamask, WalletPhantom, WalletTrust } from "@web3icons/react";
 import { ChevronRight, Copy, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
@@ -21,7 +22,6 @@ import { toast } from "sonner";
 interface InsufficientDepositPaymentProps {
   order: components["schemas"]["Order"];
   srcToken: components["schemas"]["Token"];
-  formattedDepositDeficit: string;
   depositDeficit: bigint;
   phantomWalletAddress: string | null;
   txLoading: boolean;
@@ -32,7 +32,6 @@ interface InsufficientDepositPaymentProps {
 export function InsufficientDepositPayment({
   order,
   srcToken,
-  formattedDepositDeficit,
   depositDeficit,
   phantomWalletAddress,
   txLoading,
@@ -45,14 +44,14 @@ export function InsufficientDepositPayment({
         <span className="insufficient-deposit-payment-text text-as-primary/50">Please send remaining</span>
         <div className="flex w-full flex-wrap items-center gap-6 sm:justify-between sm:gap-0">
           <CopyToClipboard
-            text={formattedDepositDeficit}
+            text={formatUnits(depositDeficit.toString(), srcToken.decimals)}
             onCopy={() => {
               toast.success("Copied to clipboard");
             }}
           >
             <div className="flex items-center gap-2">
               <strong className="border-as-brand text-as-primary border-b-2 pb-1 text-2xl font-semibold sm:text-xl">
-                {formattedDepositDeficit} {srcToken.symbol}
+                {formatUnits(depositDeficit.toString(), srcToken.decimals)} {srcToken.symbol}
               </strong>
               <Copy className="text-as-primary/50 hover:text-as-primary h-5 w-5 cursor-pointer transition-all duration-200" />
             </div>
