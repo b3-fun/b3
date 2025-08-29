@@ -51,6 +51,7 @@ import { useWaitForTransactionReceipt, useWalletClient } from "wagmi";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./Accordion";
 import ConnectWalletPayment from "./ConnectWalletPayment";
 import { CryptoPaymentMethodType } from "./CryptoPaymentMethod";
+import { InsufficientDepositPayment } from "./InsufficientDepositPayment";
 import { OrderDetailsCollapsible } from "./OrderDetailsCollapsible";
 import PaymentVendorUI from "./PaymentVendorUI";
 import { TransferCryptoDetails } from "./TransferCryptoDetails";
@@ -248,22 +249,42 @@ export const OrderDetails = memo(function OrderDetails({
     return roundTokenAmount(formattedSrcAmount);
   }, [order.srcAmount, srcToken]);
 
+  // Calculate deposit amounts - moved here to be used in useCallback hooks
+  const depositedAmount = useMemo(() => {
+    return depositTxs ? depositTxs.reduce((acc, curr) => acc + BigInt(curr.amount), BigInt(0)) : BigInt(0);
+  }, [depositTxs]);
+
+  const depositDeficit = useMemo(() => {
+    return BigInt(order.srcAmount) - depositedAmount;
+  }, [order.srcAmount, depositedAmount]);
+
+  const depositEnoughAmount = useMemo(() => {
+    return depositDeficit <= BigInt(0);
+  }, [depositDeficit]);
+
+  const formattedDepositDeficit = useMemo(() => {
+    return formatTokenAmount(BigInt(depositDeficit), srcToken.decimals);
+  }, [depositDeficit, srcToken.decimals]);
+
   // Unified payment handler for both EOA and AA wallets
   const handleUnifiedPaymentProcess = useCallback(async () => {
     let txData: `0x${string}` | undefined;
     let value: bigint;
     let to: `0x${string}`;
 
+    // Use the existing depositDeficit calculation to determine amount to send
+    const amountToSend = depositDeficit > BigInt(0) ? depositDeficit : BigInt(order.srcAmount);
+
     if (isNativeToken(order.srcTokenAddress)) {
       // Native token transfer
       to = order.globalAddress as `0x${string}`;
-      value = BigInt(order.srcAmount);
+      value = amountToSend;
     } else {
       // ERC20 token transfer - encode the transfer function call using proper ABI
       txData = encodeFunctionData({
         abi: erc20Abi,
         functionName: "transfer",
-        args: [order.globalAddress as `0x${string}`, BigInt(order.srcAmount)],
+        args: [order.globalAddress as `0x${string}`, amountToSend],
       });
       to = order.srcTokenAddress as `0x${string}`;
       value = BigInt(0);
@@ -274,13 +295,15 @@ export const OrderDetails = memo(function OrderDetails({
     if (txHash) {
       setTxHash(txHash as `0x${string}`);
     }
-  }, [order, switchChainAndExecuteWithEOA]);
+  }, [order, switchChainAndExecuteWithEOA, depositDeficit]);
 
   // Main payment handler that triggers chain switch and payment
   const handlePayment = async () => {
     console.log("Initiating payment process. Target chain:", order.srcChain, "Current chain:", walletClient?.chain?.id);
     if (order.srcChain === RELAY_SOLANA_MAINNET_CHAIN_ID) {
-      await initiatePhantomTransfer(order.srcAmount, order.srcTokenAddress, order.globalAddress);
+      // Use the existing depositDeficit calculation to determine amount to send
+      const amountToSend = depositDeficit > BigInt(0) ? depositDeficit.toString() : order.srcAmount;
+      await initiatePhantomTransfer(amountToSend, order.srcTokenAddress, order.globalAddress);
     } else {
       // Use unified payment process for both EOA and AA wallets
       await handleUnifiedPaymentProcess();
@@ -363,13 +386,6 @@ export const OrderDetails = memo(function OrderDetails({
   const formattedActualDstAmount = actualDstAmount
     ? formatTokenAmount(BigInt(actualDstAmount), dstToken.decimals)
     : undefined;
-
-  const depositedAmount = depositTxs
-    ? depositTxs.reduce((acc, curr) => acc + BigInt(curr.amount), BigInt(0))
-    : BigInt(0);
-  const depositDeficit = BigInt(order.srcAmount) - depositedAmount;
-  const depositEnoughAmount = depositDeficit <= BigInt(0);
-  const formattedDepositDeficit = formatTokenAmount(BigInt(depositDeficit), srcToken.decimals);
 
   const { text: statusText, status: statusDisplay } = getStatusDisplay(order);
 
@@ -961,6 +977,19 @@ export const OrderDetails = memo(function OrderDetails({
             </AccordionContent>
           </AccordionItem>
         </Accordion>
+
+        {/* Show payment UI when deposit is not enough and order is not expired */}
+        {!depositEnoughAmount && order.status !== "expired" && (
+          <InsufficientDepositPayment
+            order={order}
+            srcToken={srcToken}
+            depositDeficit={depositDeficit}
+            phantomWalletAddress={phantomWalletAddress}
+            txLoading={txLoading}
+            isSwitchingOrExecuting={isSwitchingOrExecuting}
+            onPayment={handlePayment}
+          />
+        )}
 
         {/* <DelayedSupportMessage /> */}
       </>
