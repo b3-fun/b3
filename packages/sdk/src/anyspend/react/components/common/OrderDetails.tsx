@@ -250,12 +250,21 @@ export const OrderDetails = memo(function OrderDetails({
   }, [order.srcAmount, srcToken]);
 
   // Calculate deposit amounts - moved here to be used in useCallback hooks
-  const depositedAmount = depositTxs
-    ? depositTxs.reduce((acc, curr) => acc + BigInt(curr.amount), BigInt(0))
-    : BigInt(0);
-  const depositDeficit = BigInt(order.srcAmount) - depositedAmount;
-  const depositEnoughAmount = depositDeficit <= BigInt(0);
-  const formattedDepositDeficit = formatTokenAmount(BigInt(depositDeficit), srcToken.decimals);
+  const depositedAmount = useMemo(() => {
+    return depositTxs ? depositTxs.reduce((acc, curr) => acc + BigInt(curr.amount), BigInt(0)) : BigInt(0);
+  }, [depositTxs]);
+
+  const depositDeficit = useMemo(() => {
+    return BigInt(order.srcAmount) - depositedAmount;
+  }, [order.srcAmount, depositedAmount]);
+
+  const depositEnoughAmount = useMemo(() => {
+    return depositDeficit <= BigInt(0);
+  }, [depositDeficit]);
+
+  const formattedDepositDeficit = useMemo(() => {
+    return formatTokenAmount(BigInt(depositDeficit), srcToken.decimals);
+  }, [depositDeficit, srcToken.decimals]);
 
   // Unified payment handler for both EOA and AA wallets
   const handleUnifiedPaymentProcess = useCallback(async () => {
