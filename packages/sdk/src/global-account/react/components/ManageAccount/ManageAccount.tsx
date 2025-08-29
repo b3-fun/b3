@@ -207,7 +207,7 @@ export function ManageAccount({
     const handleUnlink = async (profile: any) => {
       setUnlinkingAccountId(profile.title);
       try {
-        unlinkProfile({ client, profileToUnlink: profile.originalProfile },mutationOptions);
+        unlinkProfile({ client, profileToUnlink: profile.originalProfile }, mutationOptions);
       } catch (error) {
         console.error("Error unlinking account:", error);
       } finally {
