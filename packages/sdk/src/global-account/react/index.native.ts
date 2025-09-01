@@ -13,4 +13,3 @@ export { useAuthentication } from "./hooks/useAuthentication";
 export { useProfile } from "./hooks/useProfile";
 export { useSiwe } from "./hooks/useSiwe";
 export { useAuthStore } from "./stores/useAuthStore";
-
