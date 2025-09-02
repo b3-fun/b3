@@ -444,30 +444,6 @@
         }
       },
       {
-        "language": "es",
-        "name": "Español",
-        "tabs": [],
-        "global": {
-          "anchors": [
-            {
-              "anchor": "Discover B3",
-              "href": "https://b3.fun",
-              "icon": "globe"
-            },
-            {
-              "anchor": "Explore Apps",
-              "href": "https://explorer.b3.fun/apps",
-              "icon": "window"
-            },
-            {
-              "anchor": "Discord",
-              "href": "https://discord.gg/b3dotfun",
-              "icon": "discord"
-            }
-          ]
-        }
-      },
-      {
         "language": "pt-BR",
         "name": "Português (Brasil)",
         "tabs": [],
