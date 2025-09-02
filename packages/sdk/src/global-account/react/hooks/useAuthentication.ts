@@ -28,10 +28,10 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
   const isConnecting = useAuthStore(state => state.isConnecting);
   const isConnected = useAuthStore(state => state.isConnected);
   const useAutoConnectLoadingPrevious = useRef(false);
-  const setV2IsAuthenticating = useAuthStore(state => state.setV2IsAuthenticating);
-  const setV2IsAuthenticated = useAuthStore(state => state.setV2IsAuthenticated);
-  const V2IsAuthenticating = useAuthStore(state => state.V2IsAuthenticating);
-  const V2IsAuthenticated = useAuthStore(state => state.V2IsAuthenticated);
+  const setIsAuthenticatingV2 = useAuthStore(state => state.setIsAuthenticatingV2);
+  const setIsAuthenticatedV2 = useAuthStore(state => state.setIsAuthenticatedV2);
+  const IsAuthenticatingV2 = useAuthStore(state => state.IsAuthenticatingV2);
+  const IsAuthenticatedV2 = useAuthStore(state => state.IsAuthenticatedV2);
   const hasStartedConnecting = useRef(false);
   const { connect } = useConnect(partnerId, b3MainnetThirdWeb);
 
@@ -49,8 +49,8 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
         if (!loginWithSiwe) {
           debug("Skipping SIWE login", { loginWithSiwe });
           setIsAuthenticated(true);
-          setV2IsAuthenticating(false);
-          setV2IsAuthenticated(true);
+          setIsAuthenticatingV2(false);
+          setIsAuthenticatedV2(true);
           return;
         }
         debug("setIsAuthenticating:true:4");
@@ -65,8 +65,8 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
           const userAuth = await app.reAuthenticate();
           setUser(userAuth.user);
           setIsAuthenticated(true);
-          setV2IsAuthenticating(false);
-          setV2IsAuthenticated(true);
+          setIsAuthenticatingV2(false);
+          setIsAuthenticatedV2(true);
           debug("Re-authenticated successfully", { userAuth });
         } catch (error) {
           // If re-authentication fails, try fresh authentication
@@ -74,18 +74,18 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
           const userAuth = await authenticate(account, partnerId);
           setUser(userAuth.user);
           setIsAuthenticated(true);
-          setV2IsAuthenticating(false);
-          setV2IsAuthenticated(true);
+          setIsAuthenticatingV2(false);
+          setIsAuthenticatedV2(true);
           debug("Fresh authentication successful", { userAuth });
         }
       } catch (error) {
         debug("Auto-connect authentication failed", { error });
         setIsAuthenticated(false);
-        setV2IsAuthenticated(false);
+        setIsAuthenticatedV2(false);
         debug("setIsAuthenticating:false:4");
         setUser();
       }
-      setV2IsAuthenticating(false);
+      setIsAuthenticatingV2(false);
     },
   });
 
@@ -94,7 +94,7 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
    */
   useEffect(() => {
     if (!useAutoConnectLoading && useAutoConnectLoadingPrevious.current && !hasStartedConnecting.current) {
-      setV2IsAuthenticating(false);
+      setIsAuthenticatingV2(false);
     }
     useAutoConnectLoadingPrevious.current = useAutoConnectLoading;
   }, [useAutoConnectLoading]);
@@ -162,7 +162,7 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
     wallet,
     preAuthenticate,
     connect,
-    V2IsAuthenticating,
-    V2IsAuthenticated
+    IsAuthenticatingV2,
+    IsAuthenticatedV2
   };
 }
