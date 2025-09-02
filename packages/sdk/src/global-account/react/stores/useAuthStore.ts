@@ -27,6 +27,10 @@ interface AuthState {
     onError?: (error: Error) => void;
   }) => void;
   reset: () => void;
+  V2IsAuthenticating: boolean;
+  setV2IsAuthenticating: (isAuthenticating: boolean) => void;
+  V2IsAuthenticated: boolean;
+  setV2IsAuthenticated: (isAuthenticated: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>(set => ({
@@ -69,4 +73,8 @@ export const useAuthStore = create<AuthState>(set => ({
       onSuccess: undefined,
       onError: undefined,
     }),
+  V2IsAuthenticating: true,
+  setV2IsAuthenticating: V2IsAuthenticating => set({ V2IsAuthenticating }),
+  V2IsAuthenticated: false,
+  setV2IsAuthenticated: V2IsAuthenticated => set({ V2IsAuthenticated }),
 }));

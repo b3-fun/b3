@@ -4,7 +4,7 @@ import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { b3MainnetThirdWeb } from "@b3dotfun/sdk/shared/constants/chains/supported";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useActiveWallet, useAutoConnect, useConnectedWallets, useDisconnect } from "thirdweb/react";
 import { ecosystemWallet } from "thirdweb/wallets";
 import { preAuthenticate } from "thirdweb/wallets/in-app";
@@ -27,6 +27,12 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
   const setIsConnected = useAuthStore(state => state.setIsConnected);
   const isConnecting = useAuthStore(state => state.isConnecting);
   const isConnected = useAuthStore(state => state.isConnected);
+  const [useAutoConnectLoadingPrevious, setUseAutoConnectLoadingPrevious] = useState(false);
+  const setV2IsAuthenticating = useAuthStore(state => state.setV2IsAuthenticating);
+  const setV2IsAuthenticated = useAuthStore(state => state.setV2IsAuthenticated);
+  const V2IsAuthenticating = useAuthStore(state => state.V2IsAuthenticating);
+  const V2IsAuthenticated = useAuthStore(state => state.V2IsAuthenticated);
+  const hasStartedConnecting = useRef(false);
   const { connect } = useConnect(partnerId, b3MainnetThirdWeb);
 
   const wallet = ecosystemWallet(ecosystemWalletId, {
@@ -37,6 +43,7 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
     client,
     wallets: [wallet],
     onConnect: async wallet => {
+      hasStartedConnecting.current = true;
       try {
         setIsConnected(true);
         if (!loginWithSiwe) {
@@ -56,6 +63,8 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
           const userAuth = await app.reAuthenticate();
           setUser(userAuth.user);
           setIsAuthenticated(true);
+          setV2IsAuthenticating(false);
+          setV2IsAuthenticated(true);
           debug("Re-authenticated successfully", { userAuth });
         } catch (error) {
           // If re-authentication fails, try fresh authentication
@@ -63,16 +72,30 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
           const userAuth = await authenticate(account, partnerId);
           setUser(userAuth.user);
           setIsAuthenticated(true);
+          setV2IsAuthenticating(false);
+          setV2IsAuthenticated(true);
           debug("Fresh authentication successful", { userAuth });
         }
       } catch (error) {
         debug("Auto-connect authentication failed", { error });
         setIsAuthenticated(false);
+        setV2IsAuthenticated(false);
         debug("setIsAuthenticating:false:4");
         setUser();
       }
+      setV2IsAuthenticating(false);
     },
   });
+
+  /**
+   * useAutoConnectLoading starts as false
+   */
+  useEffect(() => {
+    if (!useAutoConnectLoading && useAutoConnectLoadingPrevious && !hasStartedConnecting.current) {
+      setV2IsAuthenticating(false);
+    }
+    setUseAutoConnectLoadingPrevious(useAutoConnectLoading);
+  }, [useAutoConnectLoading, useAutoConnectLoadingPrevious]);
 
   // Ensure isAuthenticating stays true until we're fully ready
   useEffect(() => {
@@ -137,5 +160,7 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
     wallet,
     preAuthenticate,
     connect,
+    V2IsAuthenticating,
+    V2IsAuthenticated
   };
 }
