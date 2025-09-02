@@ -127,13 +127,17 @@ async function translateText(text: string, language: string, context: string = "
         {
           role: "system",
           content: `You are a professional translator. Translate the following text to ${CONFIG.languageInstructions[language]}. 
+          CRITICAL: This is MDX content that contains HTML elements. You MUST preserve all HTML exactly as written.
+          
           Important rules:
-          1. Preserve all markdown and MDX syntax exactly as is
+          1. Preserve all markdown, MDX, and HTML syntax exactly as is - DO NOT modify HTML tags
           2. Preserve all special characters, quotes, and formatting
-          3. Only translate human-readable text
+          3. Only translate human-readable text content, NOT HTML attributes or tags
           4. Keep all technical terms in English
           5. For ${language === "cn" ? "Chinese" : language === "ko" ? "Korean" : "your"} language, ensure proper character usage and typography
-          6. Maintain the same line breaks and spacing as the original text`,
+          6. Maintain the same line breaks and spacing as the original text
+          7. NEVER wrap HTML elements in code blocks (\`\`\`html) or escape them
+          8. HTML elements like <iframe>, <img>, <Card>, etc. must remain as raw HTML, not code blocks`,
         },
         {
           role: "user",
@@ -386,7 +390,11 @@ async function translateContent(content: string, language: string): Promise<stri
       messages: [
         {
           role: "system",
-          content: `You are a professional translator. Translate the following content to ${language} while preserving all markdown and MDX syntax, code blocks, and special formatting. Do not translate:
+          content: `You are a professional translator. Translate the following content to ${language} while preserving all markdown and MDX syntax, code blocks, and special formatting. 
+          
+          CRITICAL: This is MDX content that contains HTML elements. You MUST preserve all HTML exactly as written - DO NOT wrap HTML in code blocks.
+          
+          Do not translate:
           1. Code examples
           2. Variable names
           3. Technical terms
@@ -395,7 +403,9 @@ async function translateContent(content: string, language: string): Promise<stri
           6. Component names
           7. Configuration keys
           8. Command line commands
-          9. HTML/JSX tags and attributes`,
+          9. HTML/JSX tags and attributes
+          
+          NEVER wrap HTML elements like <iframe>, <img>, <Card>, etc. in code blocks. Keep them as raw HTML.`,
         },
         {
           role: "user",
@@ -636,8 +646,9 @@ async function main() {
 
     // Process each language independently
     // // TEMPORARY: Only process Spanish
+    // for (const language of CONFIG.languages) {
     // for (const language of ["es", "pt-BR"]) {
-    for (const language of CONFIG.languages) {
+    for (const language of ["es", "pt-BR"]) {
       console.log(`\nProcessing language: ${language}`);
       let processedCount = 0;
       let skippedCount = 0;
