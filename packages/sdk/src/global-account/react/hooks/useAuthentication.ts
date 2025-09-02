@@ -163,6 +163,6 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
     preAuthenticate,
     connect,
     isAuthenticatingV2,
-    isAuthenticatedV2
+    isAuthenticatedV2,
   };
 }
