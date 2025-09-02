@@ -1,0 +1,244 @@
+---
+title: Conectar-se à B3
+description: >-
+  B3 é uma rede de cadeias totalmente compatível com EVM. Conecte-se facilmente
+  à B3 com sua carteira.
+lang: pt-BR
+originalPath: protocol/network-setup.mdx
+---
+## Usando B3 com Sua Carteira
+É fácil se conectar com qualquer carteira Ethereum incluindo MetaMask, Coinbase Wallet, Rainbow e mais.
+
+<Tip>
+  Estes botões funcionam com MetaMask e outras carteiras Web3. Eles automaticamente adicionam a configuração da rede ou mudam para B3 se já estiver adicionada.
+</Tip>
+
+<Card title="Adicionar B3 Mainnet" icon="plus" href="https://explorer.b3.fun/add-b3-chain" horizontal>
+  Usando B3 Explorer <span className="bg-primary text-white px-2 py-1 rounded-md text-xs ml-2">Recomendado</span>
+</Card>
+<Card title="Adicionar com Chainlist" icon="plus" href="https://chainlist.org/chain/8333" horizontal>
+  Use Chainlist para adicionar B3 à sua carteira
+</Card>
+
+<br />
+
+<Tabs>
+<Tab title="Usando B3 Explorer (Recomendado)">
+  A maneira mais rápida de adicionar B3 à sua carteira:
+  <Steps>
+  <Step title="Visite B3 Explorer">
+    Vá até [explorer.b3.fun](https://explorer.b3.fun/add-b3-chain) e clique em "Adicionar B3 Chain"
+  </Step>
+  
+  <Step title="Conectar Carteira">
+    Conecte sua carteira (MetaMask, Coinbase Wallet, etc.)
+  </Step>
+  
+  <Step title="Adicionar Rede">
+    Clique em "Adicionar à Carteira" para B3 Mainnet
+    
+    <Check>
+    B3 será automaticamente adicionado à sua carteira com a configuração correta
+    </Check>
+  </Step>
+  </Steps>
+</Tab>
+
+<Tab title="Usando Chainlist">
+  A maneira mais rápida de adicionar B3 à sua carteira:
+  <Steps>
+  <Step title="Visite Chainlist">
+    Vá até [chainlist.org](https://chainlist.org/chain/8333) e procure por "B3"
+  </Step>
+  
+  <Step title="Conectar Carteira">
+    Conecte sua carteira (MetaMask, Coinbase Wallet, etc.)
+  </Step>
+  
+  <Step title="Adicionar Rede">
+    Clique em "Adicionar à Carteira" para B3 Mainnet
+    
+    <Check>
+    B3 será automaticamente adicionado à sua carteira com a configuração correta
+    </Check>
+  </Step>
+  </Steps>
+</Tab>
+
+<Tab title="Manualmente">
+  Se você preferir adicionar B3 manualmente, use os detalhes da rede abaixo:
+  
+  <Note>Detalhes da Rede: [Configuração B3 Mainnet](#b3-mainnet-configuration)</Note>
+  <Note>Detalhes da Rede: [Configuração B3 Testnet](#b3-testnet-configuration)</Note>
+</Tab>
+</Tabs>
+
+## Instruções Específicas para Carteiras
+
+### MetaMask
+
+<Steps>
+<Step title="Abrir MetaMask">
+  Clique na extensão MetaMask no seu navegador
+</Step>
+
+<Step title="Acessar Redes">Clique no dropdown de redes no topo e selecione "Adicionar rede"</Step>
+
+<Step title="Adicionar Rede Manualmente">Clique em "Adicionar uma rede manualmente" na parte inferior</Step>
+
+<Step title="Inserir Detalhes B3">
+  Preencha as informações da rede B3 
+  
+  <Note>Veja a [Configuração B3 Mainnet](#b3-mainnet-configuration) completa</Note>
+</Step>
+
+<Step title="Salvar e Mudar">
+  Clique em "Salvar" e o MetaMask automaticamente mudará para B3
+  
+  <Check>
+  Você está agora conectado à B3! Você verá "B3 Mainnet" no seu dropdown de redes.
+  </Check>
+</Step>
+</Steps>
+
+### Coinbase Wallet
+
+<Steps>
+<Step title="Abrir Coinbase Wallet">
+  Inicie a extensão do navegador Coinbase Wallet
+</Step>
+
+<Step title="Navegar até Configurações">Vá até a aba **Configurações** e clique em **Redes**</Step>
+
+<Step title="Adicionar Rede Personalizada">Clique no sinal de mais (➕) no topo direito para **Adicionar rede personalizada**</Step>
+
+<Step title="Configurar Rede B3">
+  No diálogo **Adicionar rede personalizada**, insira as informações da mainnet B3:
+  <Note>Veja a [Configuração B3 Mainnet](#b3-mainnet-configuration) completa para valores copiáveis</Note>
+</Step>
+
+<Step title="Salvar Configuração">
+  Clique em "Salvar" para adicionar B3 às suas redes disponíveis
+  
+  <Tip>
+  A Coinbase Wallet automaticamente detectará que o token nativo é ETH
+  </Tip>
+</Step>
+</Steps>
+
+### Rainbow Wallet
+
+<Steps>
+<Step title="Abrir Rainbow">
+  Inicie a carteira Rainbow no seu dispositivo móvel ou extensão de navegador
+</Step>
+
+<Step title="Acessar Configurações">Toque no ícone de perfil e vá para Configurações → Redes</Step>
+
+<Step title="Adicionar Rede Personalizada">
+  Toque em "Adicionar Rede Personalizada" e insira os detalhes B3
+  <Note>Veja a [Configuração B3 Mainnet](#b3-mainnet-configuration) completa para valores copiáveis</Note>
+</Step>
+
+<Step title="Conectar à B3">
+  Salve a configuração e mude para B3 Mainnet
+</Step>
+</Steps>
+
+## Configuração B3 Mainnet
+<Card title="B3 Mainnet" icon="globe" id="b3-mainnet-config">
+    Detalhes completos da configuração para B3 Mainnet:
+
+    **Nome da Rede:**
+    ```
+    B3 Mainnet
+    ```
+
+    **Chain ID:**
+    ```
+    8333
+    ```
+
+    **URL RPC:**
+    ```
+    https://mainnet-rpc.b3.fun
+    ```
+
+    **URL do Explorador:**
+    ```
+    https://explorer.b3.fun
+    ```
+
+    **Token Nativo:**
+    ```
+    Símbolo: ETH
+    Decimais: 18
+    ```
+  </Card>
+
+## Configuração B3 Testnet
+<Card title="B3 Testnet" icon="flask" id="b3-testnet-config">
+    Detalhes completos da configuração para B3 Testnet:
+
+    **Nome da Rede:**
+    ```
+    B3 Testnet
+    ```
+
+    **Chain ID:**
+    ```
+    1993
+    ```
+
+    **URL RPC:**
+    ```
+    https://testnet-rpc.b3.fun
+    ```
+
+    **URL do Explorador:**
+    ```
+    https://testnet-explorer.b3.fun
+    ```
+
+    **Token Nativo:**
+    ```
+    Símbolo: ETH
+    Decimais: 18
+    ```
+  </Card>
+
+
+## Solução de Problemas
+
+<AccordionGroup>
+<Accordion title="Rede não aparece na carteira">
+  - Verifique novamente o Chain ID (8333 para mainnet)
+  - Certifique-se de que a URL RPC está correta: `https://mainnet-rpc.b3.fun`
+  - Tente atualizar sua carteira ou reiniciar o navegador
+</Accordion>
+
+<Accordion title="Transações falhando">
+  - Verifique se você está conectado à rede B3 correta - Verifique se você tem ETH suficiente para as taxas de gás - Certifique-se de que o endereço do contrato é válido em B3
+</Accordion>
+
+<Accordion title="Velocidades de transação lentas">
+  - B3 normalmente processa transações em 1-2 segundos - Se estiver enfrentando atrasos, verifique o [status da rede B3](
+  https://docs.b3.fun/network-status) - Considere ajustar o preço do gás se necessário
+</Accordion>
+
+<Accordion title="Não consigo ver meus tokens">
+  - Importe contratos de tokens manualmente usando o B3 Explorer
+  - Certifique-se de que você está visualizando a rede correta na sua carteira
+  - Alguns tokens podem precisar ser adicionados manualmente à lista de tokens da sua carteira
+</Accordion>
+</AccordionGroup>
+
+---
+
+<Warning>
+  Sempre verifique se os usuários estão conectados à rede B3 correta antes de executar transações. O Chain ID para B3 Mainnet é 8333.
+</Warning>
+
+<Check>
+  **Pronto para começar a construir em B3?** Sua carteira agora está configurada! Confira nossa [documentação SDK](/quickstart) para começar a integrar B3 em seu aplicativo.
+</Check>

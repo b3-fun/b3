@@ -1,0 +1,483 @@
+---
+title: Gerenciamento de Coleções
+description: Guia completo para criar e gerenciar coleções de NFT com CreateKit
+lang: pt-BR
+originalPath: createkit/collections.mdx
+---
+## Visão Geral
+
+A gestão de coleções está no cerne do CreateKit. Este guia cobre tudo o que você precisa saber sobre a criação, configuração e gerenciamento de coleções NFT usando o protocolo BaseMint.
+
+## Estrutura de Metadados da Coleção
+
+Cada coleção requer metadados específicos que definem suas características:
+
+### Parâmetros Obrigatórios
+
+<ParamField path="name" type="string">
+  O nome da sua coleção NFT (ex.: "Bored Ape Yacht Club")
+</ParamField>
+
+<ParamField path="symbol" type="string">
+  O símbolo/ticker da sua coleção (ex.: "BAYC")
+</ParamField>
+
+<ParamField path="creator" type="0x${string}">
+  O endereço Ethereum do criador da coleção
+</ParamField>
+
+<ParamField path="gameOwner" type="0x${string}">
+  O endereço Ethereum do proprietário do jogo (pode ser o mesmo que o criador)
+</ParamField>
+
+### Parâmetros Opcionais
+
+<ParamField path="maxSupply" type="bigint" default="10000n">
+  Número máximo de tokens que podem ser cunhados
+</ParamField>
+
+<ParamField path="mintPrice" type="bigint" default="0n">
+  Preço por token em wei (use parseEther() para valores em ETH)
+</ParamField>
+
+<ParamField path="maxPerWallet" type="bigint" default="100n">
+  Máximo de tokens que podem ser cunhados por carteira
+</ParamField>
+
+<ParamField path="isWhitelistEnabled" type="boolean" default="false">
+  Se a cunhagem apenas para whitelist está habilitada
+</ParamField>
+
+<ParamField path="startTime" type="bigint" default="0n">
+  Timestamp Unix quando a cunhagem começa (0 = imediato)
+</ParamField>
+
+<ParamField path="endTime" type="bigint" default="BigInt(Date.now() / 1000 + 86400 * 365 * 100)">
+  Timestamp Unix quando a cunhagem termina
+</ParamField>
+
+<ParamField path="tokenStandard" type="'ERC721' | 'ERC1155'" default="'ERC721'">
+  O padrão de token a ser usado
+</ParamField>
+
+<ParamField path="chainId" type="number" default="1993">
+  ID da cadeia (1993 = Testnet B3, 8333 = Mainnet B3)
+</ParamField>
+
+## Criando Coleções
+
+### Coleção Básica
+
+```typescript title="Criação de Coleção Básica"
+import { CollectionManager, b3Testnet } from '@b3dotfun/basemint'
+import { createPublicClient, createWalletClient, http } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+
+const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`)
+const publicClient = createPublicClient({
+  chain: b3Testnet,
+  transport: http()
+})
+
+const walletClient = createWalletClient({
+  chain: b3Testnet,
+  transport: http(),
+  account
+})
+
+const collectionManager = new CollectionManager(publicClient)
+
+// Definir coleção básica
+const basicCollection = {
+  name: "Minha Coleção de Arte",
+  symbol: "MAC",
+  creator: account.address,
+  gameOwner: account.address,
+  description: "Uma coleção de peças de arte digital",
+  image: "https://example.com/collection-image.png"
+}
+
+// Gerar assinatura do criador
+const creatorSignature = await collectionManager.generateCreatorSignature(
+  walletClient,
+  basicCollection
+)
+```
+
+### Configuração Avançada da Coleção
+
+```typescript title="Configuração Avançada da Coleção"
+import { parseEther } from 'viem'
+
+const advancedCollection = {
+  // Obrigatório
+  name: "Itens de Jogo Premium",
+  symbol: "PGI",
+  creator: account.address,
+  gameOwner: "0x1234567890123456789012345678901234567890", // Proprietário do jogo diferente
+  
+  // Suprimento e preço
+  maxSupply: 5000n,
+  mintPrice: parseEther("0.01"), // 0.01 ETH
+  maxPerWallet: 5n,
+  
+  // Controles de tempo
+  startTime: BigInt(Math.floor(Date.now() / 1000) + 3600), // Começa em 1 hora
+  endTime: BigInt(Math.floor(Date.now() / 1000) + 86400 * 7), // Termina em 7 dias
+  
+  // Configuração de whitelist
+  isWhitelistEnabled: true,
+  whitelistMerkleRoot: "0x..." as `0x${string}`,
+  
+  // Metadados
+  description: "Itens de jogo exclusivos para jogadores premium",
+  image: "https://example.com/premium-collection.png",
+  external_url: "https://mygame.com/premium-items",
+  animation_url: "https://example.com/collection-animation.mp4",
+  
+  // Atributos da coleção
+  attributes: [
+    { trait_type: "Categoria", value: "Jogos" },
+    { trait_type: "Raridade", value: "Premium" },
+    { trait_type: "Edição", value: "Primeira" }
+  ],
+  
+  // Técnico
+  tokenStandard: "ERC1155" as const,
+  chainId: 1993
+}
+```
+
+## Padrões de Token
+
+CreateKit suporta ambos os padrões ERC721 e ERC1155:
+
+<Tabs>
+<Tab title="Coleções ERC721">
+```typescript
+const erc721Collection = {
+  name: "Peças de Arte Únicas",
+  symbol: "UAP",
+  creator: account.address,
+  gameOwner: account.address,
+  tokenStandard: "ERC721" as const,
+  maxSupply: 1000n, // Cada token é único
+  description: "Peças de arte digital únicas"
+}
+
+// Cunhagem ERC721 (quantidade sempre 1)
+const collection721 = collectionManager.createCollection(
+  predictedAddress,
+  "ERC721"
+)
+
+await collection721.mint(
+  walletClient,
+  1n, // Sempre 1 para ERC721
+  undefined, // URI dos metadados
+  mintPrice,
+  proof
+)
+```
+</Tab>
+
+<Tab title="Coleções ERC1155">
+```typescript
+const erc1155Collection = {
+  name: "Recursos de Jogo",
+  symbol: "GRS",
+  creator: account.address,
+  gameOwner: account.address,
+  tokenStandard: "ERC1155" as const,
+  maxSupply: 100000n, // Total entre todos os tipos de token
+  description: "Recursos de jogo fungíveis e semi-fungíveis"
+}
+
+// Cunhagem ERC1155 (pode cunhar múltiplos)
+const collection1155 = collectionManager.createCollection(
+  predictedAddress,
+  "ERC1155"
+)
+
+await collection1155.mint(
+  walletClient,
+  10n, // Pode cunhar múltiplos tokens
+  "https://example.com/token/1", // metadados específicos do token
+  mintPrice,
+  proof
+)
+```
+</Tab>
+</Tabs>
+
+## Gerenciamento de Metadados
+
+### Metadados no Nível da Coleção
+
+```typescript title="Metadados da Coleção"
+const collectionMetadata = {
+  name: "Minha Coleção",
+  description: "Uma fantástica coleção de ativos digitais",
+  image: "https://example.com/collection-image.png",
+  external_url: "https://mywebsite.com/collection",
+  
+  // Cor de fundo e banner para marketplaces
+  background_color: "ffffff",
+  banner_image_url: "https://example.com/banner.png",
+  
+  // Atributos da coleção
+  attributes: [
+    { trait_type: "Tema", value: "Fantasia" },
+    { trait_type: "Artista", value: "Criador Digital" }
+  ]
+}
+```
+
+### Metadados no Nível do Token
+
+CreateKit gera automaticamente metadados do token com base nas configurações da sua coleção:
+
+<Tabs>
+<Tab title="Metadados Auto-Gerados">
+```typescript
+import { NFTMetadataManager, MediaType } from '@b3dotfun/basemint'
+
+// Gera metadados para diferentes tipos de mídia
+const artworkMetadata = NFTMetadataManager.generateNFTMetadata(
+  collectionMetadata,
+  MediaType.ARTWORK
+)
+
+const model3dMetadata = NFTMetadataManager.generateNFTMetadata(
+  collectionMetadata,
+  MediaType.MODEL_3D
+)
+
+const videoMetadata = NFTMetadataManager.generateNFTMetadata(
+  collectionMetadata,
+  MediaType.VIDEO
+)
+
+// Converter para JSON
+const metadataJson = NFTMetadataManager.generateJSON(artworkMetadata)
+console.log(metadataJson)
+```
+</Tab>
+
+<Tab title="Metadados Personalizados">
+```typescript
+// Para metadados personalizados, forneça seu próprio baseURI
+const customCollection = {
+  name: "Coleção com Metadados Personalizados",
+  symbol: "CMC",
+  creator: account.address,
+  gameOwner: account.address,
+  baseURI: "https://myapi.com/metadata/", // Seu endpoint de metadados personalizado
+  description: "Coleção com metadados personalizados"
+}
+
+// Sua API deve responder a: https://myapi.com/metadata/{tokenId}
+// Com o formato de metadados padrão do OpenSea
+```
+</Tab>
+</Tabs>
+
+## Validação da Coleção
+
+CreateKit fornece validação integrada para parâmetros da coleção:
+
+```typescript title="Validação de Parâmetros"
+import { validateCollectionMetadata } from '@b3dotfun/basemint'
+
+try {
+  // Valida metadados da coleção
+  const validation = validateCollectionMetadata(collectionMetadata)
+  
+  if (!validation.isValid) {
+    console.error("Erros de validação:", validation.errors)
+    return
+  }
+  
+  console.log("✅ Metadados da coleção são válidos")
+  
+  // Prossiga com a geração da assinatura
+  const signature = await collectionManager.generateCreatorSignature(
+    walletClient,
+    collectionMetadata
+  )
+} catch (error) {
+  console.error("Validação falhou:", error)
+}
+```
+
+## Previsão de Endereço
+
+Uma das principais funcionalidades do CreateKit é a previsão determinística de endereços:
+
+```typescript title="Previsão de Endereço"
+// Gere a assinatura do criador primeiro
+const creatorSignature = await collectionManager.generateCreatorSignature(
+  walletClient,
+  collectionMetadata
+)
+
+// Preveja o endereço da coleção
+const predictedAddress = collectionManager.predictCollectionAddress(
+  collectionMetadata,
+  creatorSignature
+)
+
+console.log(`A coleção será implantada em: ${predictedAddress}`)
+
+// Agora você pode usar este endereço antes da implantação
+// para integração com marketplaces, exibição no frontend, etc.
+```
+
+## Operações de Gerenciamento da Coleção
+
+### Verificando o Status da Coleção
+
+```typescript title="Status da Coleção"
+const collection = collectionManager.createCollection(
+  predictedAddress,
+  "ERC721"
+)
+
+// Verifique se a coleção está implantada
+const isDeployed = await collection.isDeployed()
+console.log(`Implantada: ${isDeployed}`)
+
+// Obtenha informações da coleção (só funciona após a implantação)
+if (isDeployed) {
+  const info = await collection.getCollectionInfo()
+  console.log("Informações da Coleção:", {
+    name: info.name,
+    symbol: info.symbol,
+    totalSupply: info.totalSupply.toString(),
+    maxSupply: info.maxSupply.toString(),
+    mintPrice: info.mintPrice.toString(),
+    maxPerWallet: info.maxPerWallet.toString()
+  })
+}
+```
+
+### Atualizando Configurações da Coleção
+
+<Warning>
+A maioria dos parâmetros da coleção não pode ser alterada após a implantação. Planeje a configuração da sua coleção com cuidado.
+</Warning>
+
+```typescript title="Gerenciamento Pós-Implantação"
+// Somente certas operações são possíveis após a implantação
+
+// Verifique o preço atual da cunhagem (se a precificação dinâmica for implementada)
+const currentPrice = await collection.getCurrentMintPrice()
+
+// Verifique se a cunhagem está ativa no momento
+const isMintingActive = await collection.isMintingActive()
+
+// Obtenha o suprimento restante
+const remainingSupply = await collection.getRemainingSupply()
+
+console.log({
+  currentPrice: currentPrice.toString(),
+  isMintingActive,
+  remainingSupply: remainingSupply.toString()
+})
+```
+
+## Melhores Práticas
+
+### 1. Planejamento da Coleção
+
+<CardGroup cols={2}>
+  <Card title="Estratégia de Suprimento" icon="chart-line">
+    - Defina o máximo de suprimento apropriado com base no caso de uso
+    - Considere a demanda futura e a escassez
+    - Deixe espaço para crescimento ou edições especiais
+  </Card>
+  <Card title="Estratégia de Preço" icon="dollar-sign">
+    - Pesquise coleções semelhantes para referência de preço
+    - Considere os custos de gas e taxas de transação
+    - Planeje para diferentes condições de mercado
+  </Card>
+</CardGroup>
+
+### 2. Qualidade dos Metadados
+
+```typescript title="Metadados de Alta Qualidade"
+const qualityCollection = {
+  name: "Coleção de Arte Profissional",
+  symbol: "PAC",
+  creator: account.address,
+  gameOwner: account.address,
+  
+  // Descrições de alta qualidade
+  description: "Uma coleção selecionada de obras de arte digitais apresentando temas contemporâneos e técnicas inovadoras.",
+  
+  // Imagens profissionais (mínimo de 640x640px)
+  image: "https://example.com/high-res-collection-image.png",
+  
+  // Atributos abrangentes para melhor descoberta
+  attributes: [
+    { trait_type: "Estilo de Arte", value: "Contemporâneo" },
+    { trait_type: "Meio", value: "Digital" },
+    { trait_type: "Verificação do Artista", value: "Verificado" },
+    { trait_type: "Tipo de Edição", value: "Limitada" }
+  ],
+  
+  // Links externos para credibilidade
+  external_url: "https://professionalartist.com/collection"
+}
+```
+
+### 3. Considerações de Segurança
+
+<AccordionGroup>
+  <Accordion title="Gerenciamento de Chave Privada">
+    - Nunca codifique chaves privadas diretamente no código-fonte
+    - Use variáveis de ambiente ou gerenciamento de chaves seguro
+    - Considere usar carteiras de assinatura múltipla para coleções valiosas
+  </Accordion>
+
+  <Accordion title="Validação de Assinatura">
+    - Sempre valide assinaturas antes da implantação
+    - Verifique se os parâmetros da coleção correspondem aos valores pretendidos
+    - Teste na testnet antes da implantação na mainnet
+  </Accordion>
+
+  <Accordion title="Controle de Acesso">
+    - Escolha cuidadosamente os endereços do criador e do proprietário do jogo
+    - Entenda as implicações da distribuição de recompensas
+    - Planeje o gerenciamento de longo prazo da coleção
+  </Accordion>
+</AccordionGroup>
+
+## Solução de Problemas
+
+<AccordionGroup>
+  <Accordion title="Incompatibilidade na previsão de endereço">
+    Garanta que todos os parâmetros da coleção sejam idênticos entre a geração da assinatura e a implantação. Mesmo pequenas alterações resultarão em endereços diferentes.
+  </Accordion>
+
+  <Accordion title="Parâmetros da coleção inválidos">
+    Verifique se todos os campos obrigatórios são fornecidos e que os valores estão dentro dos intervalos aceitáveis (ex.: maxSupply > 0, endereços válidos).
+  </Accordion>
+
+  <Accordion title="Falha na geração da assinatura">
+    Verifique se o seu cliente de carteira está configurado corretamente e se você tem fundos suficientes para a transação de assinatura.
+  </Accordion>
+</AccordionGroup>
+
+## Próximos Passos
+
+Agora que você entende a gestão de coleções, explore estes tópicos relacionados:
+
+<CardGroup cols={2}>
+  <Card title="Guia de Cunhagem" icon="coins" href="/createkit/minting">
+    Aprenda a implementar a funcionalidade de cunhagem de tokens
+  </Card>
+  <Card title="Gerenciamento de Whitelist" icon="list" href="/createkit/whitelist">
+    Configure a cunhagem baseada em whitelist para acesso exclusivo
+  </Card>
+</CardGroup>

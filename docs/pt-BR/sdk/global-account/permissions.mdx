@@ -1,0 +1,355 @@
+---
+title: Permissões & Chaves de Sessão
+description: >-
+  Gerencie permissões e chaves de sessão para interações seguras com a Conta
+  Global B3
+lang: pt-BR
+originalPath: sdk/global-account/permissions.mdx
+---
+## Visão Geral
+
+Chaves de sessão e permissões fornecem uma maneira segura de permitir que aplicativos realizem ações em nome dos usuários sem exigir autenticação constante. Isso é particularmente útil para jogos e aplicativos que precisam executar transações automaticamente.
+
+## Sistema de Permissões
+
+### Tipos de Permissão
+
+Contas Globais B3 suportam permissões granulares que podem ser configuradas para diferentes casos de uso:
+
+- **Interações com Contratos**: Especificar quais contratos inteligentes podem ser chamados
+- **Limites de Tokens**: Definir limites de gastos para tokens nativos e tokens ERC-20
+- **Restrições de Tempo**: Definir datas de início e término para permissões
+- **Limites de Transação**: Controlar o valor máximo por transação
+
+### Estrutura de Permissão
+
+```typescript
+interface Permissions {
+  approvedTargets: string[];  // Endereços de contratos
+  startDate: Date;           // Quando as permissões se tornam ativas
+  endDate: Date;             // Quando as permissões expiram
+  nativeTokenLimitPerTransaction: number; // Limite de ETH por tx
+  // Limites adicionais de tokens ERC-20 podem ser adicionados
+}
+```
+
+## Implementação de Chave de Sessão
+
+### Solicitação de Permissão Básica
+
+```tsx
+import { RequestPermissionsButton } from "@b3dotfun/sdk/global-account/react";
+
+const b3Chain = {
+  id: 8333,
+  name: "B3",
+  nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+  rpc: "https://mainnet-rpc.b3.fun",
+};
+
+function BasicPermissions() {
+  const permissions = {
+    approvedTargets: [
+      "0x9c275ff1634519E9B5449ec79cd939B5F900564d", // Seu contrato de jogo
+    ],
+    startDate: new Date(),
+    endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 dias
+    nativeTokenLimitPerTransaction: 0.01, // 0.01 ETH por transação
+  };
+
+  return (
+    <RequestPermissionsButton
+      chain={b3Chain}
+      sessionKeyAddress="0x..." // MetaMask ou endereço da carteira
+      permissions={permissions}
+      onSuccess={() => {
+        console.log("Permissões concedidas com sucesso!");
+      }}
+      onError={(error) => {
+        console.error("Falha na solicitação de permissão:", error);
+      }}
+    />
+  );
+}
+```
+
+### Permissões Específicas para Jogos
+
+Para aplicações de jogos, você pode precisar de permissões mais amplas:
+
+```tsx
+function GamePermissions() {
+  const gamePermissions = {
+    approvedTargets: [
+      "0x...", // Contrato do jogo
+      "0x...", // Mercado de NFT
+      "0x...", // Contrato de token
+    ],
+    startDate: new Date(),
+    endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 dias
+    nativeTokenLimitPerTransaction: 0.001, // Pequeno limite de ETH para gas
+  };
+
+  return (
+    <div className="game-permissions">
+      <h3>Conceder Permissões de Jogo</h3>
+      <p>Permita que este jogo realize ações em seu nome por 7 dias</p>
+      
+      <RequestPermissionsButton
+        chain={b3Chain}
+        sessionKeyAddress="0x..."
+        permissions={gamePermissions}
+        onSuccess={() => {
+          // Redirecionar para o jogo ou atualizar a UI
+          console.log("Permissões de jogo concedidas!");
+        }}
+        onError={(error) => {
+          console.error("Falha ao conceder permissões de jogo:", error);
+        }}
+      />
+    </div>
+  );
+}
+```
+
+### UI de Permissão Personalizada
+
+Para mais controle sobre o fluxo de permissão:
+
+```tsx
+import { useRequestPermissions } from "@b3dotfun/sdk/global-account/react";
+
+function CustomPermissionFlow() {
+  const { requestPermissions, isLoading, error } = useRequestPermissions();
+
+  const handlePermissionRequest = async () => {
+    try {
+      const result = await requestPermissions({
+        chain: b3Chain,
+        sessionKeyAddress: "0x...",
+        permissions: {
+          approvedTargets: ["0x..."],
+          startDate: new Date(),
+          endDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 horas
+          nativeTokenLimitPerTransaction: 0.005,
+        },
+      });
+
+      if (result.success) {
+        console.log("Permissões concedidas:", result.data);
+      }
+    } catch (err) {
+      console.error("Falha na solicitação de permissão:", err);
+    }
+  };
+
+  return (
+    <div>
+      <button 
+        onClick={handlePermissionRequest}
+        disabled={isLoading}
+      >
+        {isLoading ? "Solicitando Permissões..." : "Conceder Permissões"}
+      </button>
+      
+      {error && (
+        <div className="error">
+          Erro: {error.message}
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## Gerenciamento de Chave de Sessão
+
+### Verificando o Status da Permissão
+
+```tsx
+import { usePermissions } from "@b3dotfun/sdk/global-account/react";
+
+function PermissionStatus() {
+  const { permissions, hasPermissions, isExpired } = usePermissions();
+
+  return (
+    <div className="permission-status">
+      <h3>Status da Permissão</h3>
+      
+      {hasPermissions ? (
+        <div className="permissions-active">
+          <p>✅ Permissões Ativas</p>
+          <p>Expira: {permissions?.endDate.toLocaleDateString()}</p>
+          <p>Contratos Aprovados: {permissions?.approvedTargets.length}</p>
+          
+          {isExpired && (
+            <p className="warning">⚠️ Permissões expiraram</p>
+          )}
+        </div>
+      ) : (
+        <div className="no-permissions">
+          <p>❌ Sem permissões ativas</p>
+          <RequestPermissionsButton {...permissionConfig} />
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+### Revogando Permissões
+
+```tsx
+import { useRevokePermissions } from "@b3dotfun/sdk/global-account/react";
+
+function RevokePermissions() {
+  const { revokePermissions, isLoading } = useRevokePermissions();
+
+  const handleRevoke = async () => {
+    try {
+      await revokePermissions({
+        sessionKeyAddress: "0x...",
+        chain: b3Chain,
+      });
+      console.log("Permissões revogadas com sucesso");
+    } catch (error) {
+      console.error("Falha ao revogar permissões:", error);
+    }
+  };
+
+  return (
+    <button 
+      onClick={handleRevoke}
+      disabled={isLoading}
+      className="revoke-button"
+    >
+      {isLoading ? "Revogando..." : "Revogar Permissões"}
+    </button>
+  );
+}
+```
+
+## Padrões Avançados de Permissão
+
+### Atualizações Dinâmicas de Permissão
+
+```tsx
+function DynamicPermissions() {
+  const [permissionLevel, setPermissionLevel] = useState<'basic' | 'advanced'>('basic');
+
+  const getPermissions = (level: string) => {
+    const basePermissions = {
+      startDate: new Date(),
+      endDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 horas
+    };
+
+    if (level === 'basic') {
+      return {
+        ...basePermissions,
+        approvedTargets: ["0x..."], // Contratos limitados
+        nativeTokenLimitPerTransaction: 0.001,
+      };
+    } else {
+      return {
+        ...basePermissions,
+        approvedTargets: ["0x...", "0x...", "0x..."], // Mais contratos
+        nativeTokenLimitPerTransaction: 0.01,
+      };
+    }
+  };
+
+  return (
+    <div>
+      <div className="permission-selector">
+        <button 
+          onClick={() => setPermissionLevel('basic')}
+          className={permissionLevel === 'basic' ? 'active' : ''}
+        >
+          Permissões Básicas
+        </button>
+        <button 
+          onClick={() => setPermissionLevel('advanced')}
+          className={permissionLevel === 'advanced' ? 'active' : ''}
+        >
+          Permissões Avançadas
+        </button>
+      </div>
+
+      <RequestPermissionsButton
+        chain={b3Chain}
+        sessionKeyAddress="0x..."
+        permissions={getPermissions(permissionLevel)}
+        onSuccess={() => console.log(`Permissões ${permissionLevel} concedidas`)}
+      />
+    </div>
+  );
+}
+```
+
+## Melhores Práticas de Segurança
+
+<CardGroup cols={2}>
+
+<Card title="Permissões Mínimas" icon="shield">
+  Solicite apenas as permissões mínimas necessárias para sua aplicação.
+</Card>
+
+<Card title="Duração Curta" icon="clock">
+  Use durações de permissão mais curtas para uma segurança aprimorada.
+</Card>
+
+<Card title="Alvos Específicos" icon="target">
+  Especifique endereços exatos de contratos em vez de permissões amplas.
+</Card>
+
+<Card title="Auditorias Regulares" icon="search">
+  Audite e rotacione as chaves de sessão regularmente.
+</Card>
+
+</CardGroup>
+
+## Tratamento de Erros
+
+Erros comuns relacionados a permissões e como lidar com eles:
+
+```tsx
+function PermissionErrorHandling() {
+  const handlePermissionError = (error: Error) => {
+    switch (error.message) {
+      case 'USER_REJECTED':
+        console.log('Usuário rejeitou a solicitação de permissão');
+        break;
+      case 'INSUFFICIENT_PERMISSIONS':
+        console.log('As permissões solicitadas excedem os limites');
+        break;
+      case 'EXPIRED_SESSION':
+        console.log('A chave de sessão expirou');
+        // Solicitar novas permissões
+        break;
+      default:
+        console.error('Erro de permissão desconhecido:', error);
+    }
+  };
+
+  return (
+    <RequestPermissionsButton
+      // ... outras props
+      onError={handlePermissionError}
+    />
+  );
+}
+```
+
+## Próximos Passos
+
+<CardGroup cols={2}>
+
+<Card title="React Hooks" icon="react" href="/sdk/global-account/hooks">
+  Explore todos os hooks disponíveis para gerenciamento de permissões.
+</Card>
+
+<Card title="Exemplos" icon="code" href="/sdk/global-account/examples">
+  Veja exemplos completos de implementação de permissões.
+</Card>
+
+</CardGroup>

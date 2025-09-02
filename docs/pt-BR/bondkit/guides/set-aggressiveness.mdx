@@ -1,0 +1,30 @@
+---
+title: Definir fatorDeAgressividade
+description: Como escolher o fator de agressividade (0–100) para o seu lançamento.
+lang: pt-BR
+originalPath: bondkit/guides/set-aggressiveness.mdx
+---
+## Orientação
+
+- 0–20: suave; compradores iniciais e finais recebem quantidades similares por unidade
+- 30–60: equilibrado; aumento de preço moderado, típico para lançamentos gerais
+- 70–100: íngreme; vantagem forte para os primeiros, escalada de preço mais rápida
+
+## Regra prática
+
+- Alvos menores ou comunidades restritas: incline-se para mais alto (50–80)
+- Alvos maiores ou públicos mais amplos: incline-se para mais baixo (20–50)
+
+## Exemplo
+
+```ts
+const config = {
+  aggressivenessFactor: 35,
+  // ...outros parâmetros
+};
+```
+
+<Note>
+`exponent = 1 / (1 + aggressivenessFactor/100)`. Uma agressividade maior aumenta a inclinação da curva e reduz os tokens por unidade mais tarde na ligação.
+</Note>
+

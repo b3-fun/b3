@@ -1,0 +1,566 @@
+---
+title: Cunhagem
+description: >-
+  Guia completo para cunhagem de tokens com CreateKit incluindo implantação,
+  cunhagem regular e recursos avançados
+lang: pt-BR
+originalPath: createkit/minting.mdx
+---
+## Visão Geral
+
+Cunhagem é o processo de criar novos tokens NFT dentro da sua coleção. O CreateKit oferece um sistema de cunhagem em duas fases único que otimiza a eficiência de gás e a experiência do usuário.
+
+## Fases da Cunhagem
+
+### Fase 1: Implantação & Primeira Cunhagem
+
+A primeira operação de cunhagem é especial - ela implanta o contrato da coleção e cunha o primeiro token em uma única transação:
+
+```typescript title="Implantação e Primeira Cunhagem"
+import { CollectionManager } from '@b3dotfun/basemint'
+
+const collectionManager = new CollectionManager(publicClient)
+
+// Suponha que temos metadados da coleção e assinatura do criador
+const predictedAddress = collectionManager.predictCollectionAddress(
+  collectionMetadata,
+  creatorSignature
+)
+
+// Gerar assinatura do implantador
+const deployerSignature = await collectionManager.generateDeployerSignature(
+  walletClient,
+  predictedAddress
+)
+
+// Criar instância da coleção
+const collection = collectionManager.createCollection(
+  predictedAddress,
+  collectionMetadata.tokenStandard
+)
+
+// Implantar e cunhar o primeiro NFT
+const mintTx = await collection.mint(
+  walletClient,
+  1n, // quantidade
+  undefined, // URI dos metadados (usa baseURI)
+  collectionMetadata.mintPrice || 0n,
+  [], // prova da lista branca (vazia para público)
+  creatorSignature, // Necessário para a primeira cunhagem
+  deployerSignature // Necessário para a primeira cunhagem
+)
+
+console.log(`🚀 Coleção implantada e primeiro token cunhado: ${mintTx}`)
+```
+
+### Fase 2: Cunhagem Regular
+
+Após a implantação, as cunhagens subsequentes são mais simples e só requerem os parâmetros padrão:
+
+```typescript title="Cunhagem Regular"
+// Para cunhagens subsequentes (após a implantação)
+const regularMintTx = await collection.mint(
+  walletClient,
+  1n, // quantidade
+  undefined, // URI dos metadados
+  collectionMetadata.mintPrice || 0n,
+  [] // prova da lista branca
+  // Nenhuma assinatura necessária para cunhagens regulares
+)
+
+console.log(`✨ Token cunhado: ${regularMintTx}`)
+```
+
+## Padrões de Token
+
+O CreateKit suporta tanto os padrões ERC721 quanto ERC1155 com comportamentos de cunhagem diferentes:
+
+<Tabs>
+<Tab title="Cunhagem ERC721">
+```typescript title="Tokens Únicos ERC721"
+// ERC721 - Cada token é único
+const erc721Collection = collectionManager.createCollection(
+  predictedAddress,
+  "ERC721"
+)
+
+// ERC721 sempre cunha quantidade de 1
+await erc721Collection.mint(
+  walletClient,
+  1n, // Sempre 1 para ERC721
+  "https://example.com/metadata/1.json", // Metadados únicos para este token
+  parseEther("0.01"),
+  []
+)
+
+// Cada cunhagem cria um novo ID de token único
+// IDs de token incrementam: 1, 2, 3, etc.
+```
+</Tab>
+
+<Tab title="Cunhagem ERC1155">
+```typescript title="Tokens Semi-Fungíveis ERC1155"
+// ERC1155 - Pode cunhar múltiplos do mesmo ou diferentes tokens
+const erc1155Collection = collectionManager.createCollection(
+  predictedAddress,
+  "ERC1155"
+)
+
+// Pode cunhar múltiplos tokens do mesmo tipo
+await erc1155Collection.mint(
+  walletClient,
+  10n, // Cunhar 10 tokens
+  "https://example.com/metadata/sword.json", // Metadados para tokens "espada"
+  parseEther("0.005"),
+  []
+)
+
+// Pode cunhar diferentes tipos de token mudando o URI dos metadados
+await erc1155Collection.mint(
+  walletClient,
+  5n,
+  "https://example.com/metadata/shield.json", // Diferente tipo de token
+  parseEther("0.01"),
+  []
+)
+```
+</Tab>
+</Tabs>
+
+## Preços e Pagamento
+
+### Preços Fixos
+
+```typescript title="Cunhagem com Preço Fixo"
+import { parseEther } from 'viem'
+
+const fixedPriceCollection = {
+  name: "Coleção de Preço Fixo",
+  symbol: "FPC",
+  creator: account.address,
+  gameOwner: account.address,
+  mintPrice: parseEther("0.01"), // 0.01 ETH por token
+  maxPerWallet: 5n
+}
+
+// Cunhar com preço fixo
+await collection.mint(
+  walletClient,
+  2n, // quantidade
+  undefined,
+  parseEther("0.02"), // 2 * 0.01 ETH
+  []
+)
+```
+
+### Cunhagem Gratuita
+
+```typescript title="Cunhagem Gratuita"
+const freeCollection = {
+  name: "Coleção Gratuita",
+  symbol: "FREE",
+  creator: account.address,
+  gameOwner: account.address,
+  mintPrice: 0n, // Cunhagem gratuita
+  maxPerWallet: 10n
+}
+
+// Cunhar de graça (apenas custos de gás)
+await collection.mint(
+  walletClient,
+  1n,
+  undefined,
+  0n, // Sem pagamento necessário
+  []
+)
+```
+
+### Preços Dinâmicos
+
+```typescript title="Lógica de Preços Dinâmicos"
+// Lógica de preços personalizada na sua aplicação
+function calculateMintPrice(totalSupply: bigint, basePrice: bigint): bigint {
+  // O preço aumenta com a oferta
+  const priceMultiplier = totalSupply / 1000n + 1n
+  return basePrice * priceMultiplier
+}
+
+// Obter oferta atual e calcular preço
+const currentSupply = await collection.totalSupply()
+const dynamicPrice = calculateMintPrice(currentSupply, parseEther("0.001"))
+
+await collection.mint(
+  walletClient,
+  1n,
+  undefined,
+  dynamicPrice,
+  []
+)
+```
+
+## Cunhagem com Lista Branca
+
+O CreateKit suporta listas brancas baseadas em árvore de Merkle para cunhagem exclusiva:
+
+### Configurando Lista Branca
+
+```typescript title="Configuração da Lista Branca"
+import { WhitelistManager } from '@b3dotfun/basemint'
+
+// Criar lista branca com endereços
+const whitelist = new WhitelistManager([
+  { address: "0x1234567890123456789012345678901234567890" },
+  { address: "0x2345678901234567890123456789012345678901" },
+  { address: "0x3456789012345678901234567890123456789012" }
+])
+
+// Obter raiz da Merkle para implantação da coleção
+const merkleRoot = whitelist.getRoot()
+
+const whitelistCollection = {
+  name: "Coleção Lista Branca",
+  symbol: "WLC",
+  creator: account.address,
+  gameOwner: account.address,
+  isWhitelistEnabled: true,
+  whitelistMerkleRoot: merkleRoot,
+  mintPrice: parseEther("0.005")
+}
+```
+
+### Cunhagem com Prova de Lista Branca
+
+```typescript title="Cunhagem com Prova de Lista Branca"
+// Obter prova para o endereço de cunhagem
+const userAddress = account.address
+const proof = whitelist.getProof(userAddress)
+
+// Verificar se o usuário está na lista branca (checagem opcional)
+const isWhitelisted = whitelist.verify(userAddress, proof)
+if (!isWhitelisted) {
+  throw new Error("Endereço não está na lista branca")
+}
+
+// Cunhar com prova de lista branca
+await collection.mint(
+  walletClient,
+  1n,
+  undefined,
+  parseEther("0.005"),
+  proof // Fornecer prova de lista branca
+)
+```
+
+## Limites e Controles de Cunhagem
+
+### Limites por Carteira
+
+```typescript title="Limites da Carteira"
+// Definir tokens máximos por carteira
+const limitedCollection = {
+  name: "Coleção Limitada",
+  symbol: "LTD",
+  creator: account.address,
+  gameOwner: account.address,
+  maxPerWallet: 3n, // Máximo de 3 tokens por carteira
+  maxSupply: 1000n
+}
+
+// Verificar saldo atual antes de cunhar
+const currentBalance = await collection.balanceOf(account.address)
+const maxPerWallet = await collection.maxPerWallet()
+
+if (currentBalance >= maxPerWallet) {
+  throw new Error("Limite da carteira excedido")
+}
+
+await collection.mint(walletClient, 1n, undefined, 0n, [])
+```
+
+### Controles Baseados em Tempo
+
+```typescript title="Controles de Tempo"
+const timedCollection = {
+  name: "Lançamento Programado",
+  symbol: "TIME",
+  creator: account.address,
+  gameOwner: account.address,
+  startTime: BigInt(Math.floor(Date.now() / 1000) + 3600), // Começa em 1 hora
+  endTime: BigInt(Math.floor(Date.now() / 1000) + 86400), // Termina em 24 horas
+}
+
+// Verificar se a cunhagem está ativa no momento
+const currentTime = BigInt(Math.floor(Date.now() / 1000))
+const startTime = await collection.startTime()
+const endTime = await collection.endTime()
+
+const isMintingActive = currentTime >= startTime && currentTime <= endTime
+
+if (!isMintingActive) {
+  throw new Error("Cunhagem não está ativa no momento")
+}
+```
+
+## Manipulação de Metadados
+
+### Metadados Automáticos
+
+O CreateKit pode gerar automaticamente metadados com base nas configurações da coleção:
+
+```typescript title="Metadados Gerados Automaticamente"
+// Usando baseURI para metadados automáticos
+const autoMetadataCollection = {
+  name: "Coleção de Metadados Automáticos",
+  symbol: "AMC",
+  creator: account.address,
+  gameOwner: account.address,
+  // baseURI será gerado automaticamente pelo CDN do BaseMint
+}
+
+// Cunhar com metadados automáticos (passar undefined para URI)
+await collection.mint(
+  walletClient,
+  1n,
+  undefined, // Usa baseURI + tokenId
+  0n,
+  []
+)
+
+// Metadados estarão disponíveis em: {baseURI}/{tokenId}
+```
+
+### Metadados Personalizados
+
+```typescript title="URIs de Metadados Personalizados"
+// Fornecer URI de metadados específicos para cada token
+const customMetadataURIs = [
+  "https://myapi.com/metadata/special-sword.json",
+  "https://myapi.com/metadata/rare-shield.json",
+  "https://myapi.com/metadata/epic-helmet.json"
+]
+
+for (const metadataURI of customMetadataURIs) {
+  await collection.mint(
+    walletClient,
+    1n,
+    metadataURI, // Metadados personalizados para este token
+    parseEther("0.01"),
+    []
+  )
+}
+```
+
+## Cunhagem em Lote
+
+Para coleções ERC1155, você pode cunhar múltiplos tokens de forma eficiente:
+
+```typescript title="Cunhagem em Lote"
+// Única transação, múltiplos tokens
+await erc1155Collection.mint(
+  walletClient,
+  10n, // Cunhar 10 tokens do mesmo tipo
+  "https://example.com/metadata/resource.json",
+  parseEther("0.001") * 10n, // Preço total para todos os tokens
+  []
+)
+
+// Para diferentes tipos de token, use transações separadas
+const tokenTypes = [
+  { uri: "https://example.com/wood.json", quantity: 5n },
+  { uri: "https://example.com/stone.json", quantity: 3n },
+  { uri: "https://example.com/gold.json", quantity: 1n }
+]
+
+for (const tokenType of tokenTypes) {
+  await erc1155Collection.mint(
+    walletClient,
+    tokenType.quantity,
+    tokenType.uri,
+    calculatePrice(tokenType.quantity),
+    []
+  )
+}
+```
+
+## Tratamento de Erros
+
+```typescript title="Tratamento Abrangente de Erros"
+async function safeMint(
+  collection: any,
+  walletClient: any,
+  quantity: bigint,
+  metadataURI: string | undefined,
+  mintPrice: bigint,
+  proof: string[]
+) {
+  try {
+    // Validações pré-cunhagem
+    const isDeployed = await collection.isDeployed()
+    if (!isDeployed) {
+      throw new Error("Coleção ainda não implantada")
+    }
+
+    const currentSupply = await collection.totalSupply()
+    const maxSupply = await collection.maxSupply()
+    if (currentSupply + quantity > maxSupply) {
+      throw new Error("Ultrapassaria o máximo de oferta")
+    }
+
+    const userBalance = await collection.balanceOf(walletClient.account.address)
+    const maxPerWallet = await collection.maxPerWallet()
+    if (userBalance + quantity > maxPerWallet) {
+      throw new Error("Ultrapassaria o limite da carteira")
+    }
+
+    // Verificar quantidade de pagamento
+    const requiredPayment = await collection.mintPrice() * quantity
+    if (mintPrice < requiredPayment) {
+      throw new Error("Pagamento insuficiente")
+    }
+
+    // Tentar cunhar
+    const tx = await collection.mint(
+      walletClient,
+      quantity,
+      metadataURI,
+      mintPrice,
+      proof
+    )
+
+    console.log(`✅ Cunhagem bem-sucedida: ${tx}`)
+    return tx
+
+  } catch (error: any) {
+    if (error.message.includes('Invalid merkle proof')) {
+      console.error('❌ Endereço não está na lista branca')
+    } else if (error.message.includes('Pagamento insuficiente')) {
+      console.error('❌ Preço de cunhagem incorreto')
+    } else if (error.message.includes('Limite por carteira excedido')) {
+      console.error('❌ Limite da carteira atingido')
+    } else {
+      console.error('❌ Cunhagem falhou:', error.message)
+    }
+    throw error
+  }
+}
+```
+
+## Otimização de Gás
+
+### Padrões de Cunhagem Eficientes
+
+```typescript title="Cunhagem Eficiente de Gás"
+// Para ERC1155: Cunhar múltiplos tokens em uma transação
+await erc1155Collection.mint(
+  walletClient,
+  10n, // Mais eficiente em gás do que 10 transações separadas
+  metadataURI,
+  totalPrice,
+  proof
+)
+
+// Para ERC721: Considere operações em lote no nível da aplicação
+const mintPromises = []
+for (let i = 0; i < 5; i++) {
+  mintPromises.push(
+    collection.mint(walletClient, 1n, undefined, mintPrice, proof)
+  )
+}
+
+// Executar cunhagens simultaneamente (cuidado com o gerenciamento de nonce)
+const results = await Promise.all(mintPromises)
+```
+
+### Gerenciamento do Preço do Gás
+
+```typescript title="Otimização do Preço do Gás"
+import { createWalletClient, http } from 'viem'
+
+// Configuração de gás personalizada
+const optimizedWalletClient = createWalletClient({
+  chain: b3Testnet,
+  transport: http(),
+  account,
+  // Configuração de gás
+  gasPrice: parseGwei('20'), // Preço de gás personalizado
+})
+
+// Ou use precificação de gás dinâmica
+const gasPrice = await publicClient.getGasPrice()
+const adjustedGasPrice = gasPrice * 110n / 100n // 10% acima do preço atual
+
+await collection.mint(
+  optimizedWalletClient,
+  1n,
+  undefined,
+  mintPrice,
+  proof,
+  {
+    gasPrice: adjustedGasPrice
+  }
+)
+```
+
+## Monitoramento e Análise
+
+### Rastreamento de Eventos de Cunhagem
+
+```typescript title="Monitoramento de Eventos"
+import { getCollectionMintEvents } from '@b3dotfun/basemint'
+
+// Rastrear eventos de cunhagem
+const fromBlock = await publicClient.getBlockNumber() - 1000n
+const toBlock = await publicClient.getBlockNumber()
+
+const mintEvents = await getCollectionMintEvents(
+  publicClient,
+  collection.address,
+  "ERC721",
+  fromBlock,
+  toBlock
+)
+
+console.log("Cunhagens recentes:", mintEvents.map(event => ({
+  minter: event.args.minter,
+  tokenId: event.args.tokenId?.toString(),
+  quantity: event.args.quantity?.toString(),
+  blockNumber: event.blockNumber
+})))
+```
+
+### Monitoramento em Tempo Real
+
+```typescript title="Monitoramento de Cunhagem em Tempo Real"
+// Observar novos eventos de cunhagem
+const unwatch = publicClient.watchContractEvent({
+  address: collection.address,
+  abi: collection.abi,
+  eventName: 'Transfer', // ou 'TransferSingle' para ERC1155
+  onLogs: (logs) => {
+    logs.forEach(log => {
+      console.log('Nova cunhagem detectada:', {
+        from: log.args.from,
+        to: log.args.to,
+        tokenId: log.args.tokenId?.toString()
+      })
+    })
+  }
+})
+
+// Parar de observar quando terminar
+// unwatch()
+```
+
+## Melhores Práticas
+
+<CardGroup cols={2}>
+  <Card title="Experiência do Usuário" icon="user">
+    - Fornecer feedback claro durante o processo de cunhagem
+    - Mostrar custos estimados de gás antecipadamente
+    - Implementar estados de carregamento adequados
+    - Tratar erros de forma graciosa com mensagens amigáveis ao usuário
+  </Card>
+  <Card title="Interação com Contrato Inteligente" icon="code">
+    - Sempre validar parâmetros antes das transações
+    - Implementar tratamento de erros adequado
+    - Usar limites e preços de

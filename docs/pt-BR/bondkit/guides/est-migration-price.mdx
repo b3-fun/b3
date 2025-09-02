@@ -1,0 +1,28 @@
+---
+title: Estimar Preço de Migração
+description: >-
+  Estimando preço na migração e considerações para a inicialização do Uniswap
+  v4.
+lang: pt-BR
+originalPath: bondkit/guides/est-migration-price.mdx
+---
+## Visão Geral
+
+A migração inicializa um pool do Uniswap v4. O contrato calcula `sqrtPriceX96` a partir do estado de bonding.
+
+## Abordagem Prática
+
+- Use leituras de bonding para aproximar o preço perto do alvo:
+- `getCurrentBondingCurvePricePerToken()`
+- `getBondingProgress()`
+
+## Considerações
+
+- A divisão final e a quantidade de liquidez podem afetar os ticks iniciais.
+- Proteções contra deslizamento são aplicadas ao adicionar liquidez.
+- Para ativos de cotação ERC20, certifique-se de que o par e os decimais sejam considerados ao converter para `sqrtPriceX96`.
+
+<Note>
+A matemática exata de inicialização é tratada on-chain. Use leituras para estimativa de UI; trate a inicialização final on-chain como fonte da verdade.
+</Note>
+

@@ -1,0 +1,71 @@
+---
+title: Como Verificar o Status de uma Transação na B3
+description: >-
+  Aprenda como rastrear e verificar suas transações na Rede B3 usando o
+  explorador de blocos com hashes de transações ou endereços de carteiras
+lang: pt-BR
+originalPath: learn/deposits-withdrawals/how-to-verify-transaction-status.mdx
+---
+Se você enviou uma transação na Rede B3 e quer verificar se ela foi confirmada, está pendente ou falhou, você pode facilmente rastreá-la usando o B3 Block Explorer. Tudo o que você precisa é do hash da transação (TxHash) ou do endereço da carteira envolvida na transação.
+
+## Passos para Verificar uma Transação
+
+<iframe
+  className="w-full aspect-video rounded-xl"
+  src="https://www.youtube.com/embed/CZncVWI1aHk"
+  title="Como verificar o status da transação no B3"
+  frameBorder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowFullScreen
+></iframe>
+
+<Steps>
+<Step title="Navegue até o B3 Explorer">
+  Acesse [explorer.b3.fun](https://explorer.b3.fun).
+</Step>
+
+<Step title="Acesse transações">
+  Passe o mouse sobre o painel lateral esquerdo para expandi-lo e clique em **Transações.**
+  
+  <Frame>
+    <img src="https://s3.amazonaws.com/helpscout.net/docs/assets/685306b72e0550277aa9250e/images/687e55494b3936693ba0ecbb/file-o0WPrzMUbf.png" alt="Barra lateral do B3 Explorer com a opção Transações destacada" />
+  </Frame>
+</Step>
+
+<Step title="Pesquise por sua transação">
+  Uma nova barra de pesquisa aparecerá. Na barra de pesquisa, insira:
+  - O endereço da carteira que iniciou a transação
+  - Ou o hash da transação (TxHash)
+  
+  <Frame>
+    <img src="https://s3.amazonaws.com/helpscout.net/docs/assets/685306b72e0550277aa9250e/images/687e556e1946514c34bffae9/file-sfCem4gBEs.png" alt="Barra de pesquisa para inserir endereço da carteira ou hash da transação" />
+  </Frame>
+</Step>
+
+<Step title="Visualize os detalhes da transação">
+  Navegue pelos resultados e clique na transação relevante para visualizar:
+  - Status (Sucesso / Falha / Pendente)
+  - Data & Hora
+  - Tokens transferidos
+  - Gás utilizado
+  - Quaisquer outros detalhes on-chain
+  
+  <Frame>
+    <img src="https://s3.amazonaws.com/helpscout.net/docs/assets/685306b72e0550277aa9250e/images/687e55b1ffa88610da986dfd/file-ERrTVA4NLO.png" alt="Página de detalhes da transação mostrando status e informações da transação" />
+  </Frame>
+  
+  <Check>
+    Esta é a melhor maneira de rastrear cunhagens, transferências e outras atividades diretamente na Rede B3.
+  </Check>
+</Step>
+</Steps>
+
+## Significados do Status da Transação
+
+- **Sucesso:** Transação completada com sucesso
+- **Falha:** Transação falhou ao ser executada (muitas vezes devido a gás insuficiente ou outros erros)
+- **Pendente:** Transação ainda está sendo processada pela rede
+
+<Tip>
+Você pode marcar endereços de carteiras frequentemente usados no explorador para verificar rapidamente o histórico de transações no futuro.
+</Tip>

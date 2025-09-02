@@ -1,0 +1,31 @@
+---
+title: Escolha um Ativo de Cotação
+description: 'ETH vs ERC20 (por exemplo, B3) como ativo de cotação durante o bonding.'
+lang: pt-BR
+originalPath: bondkit/guides/choose-quote-asset.mdx
+---
+## Visão Geral
+
+BondKit suporta a emissão de títulos contra ETH ou um ERC20 permitido (por exemplo, B3). Sua escolha impacta a UX, integrações e liquidez na migração.
+
+## Quando usar ETH
+
+- Acessibilidade ampla; a maioria dos usuários possui ETH na Base
+- UX mais simples (sem aprovações prévias)
+- Liquidez direta em ETH na migração
+
+## Quando usar um ERC20 (por exemplo, B3)
+
+- Alinha-se com uma economia de tokens existente
+- Pode iniciar pares de tokens mais profundos na migração
+- Requer aprovações antes de compras/vendas
+
+## Diferenças operacionais
+
+- Taxa de 5% em compras e vendas para ambos ETH e ERC20
+- Fluxos ERC20 requerem `approve` antes das interações com a curva
+- Pares de migração são criados contra WETH ou o ERC20 escolhido
+
+<Note>
+Confirme a lista de permissões para ativos de cotação ERC20 com a equipe. Por padrão, apenas ativos específicos podem ser habilitados.
+</Note>

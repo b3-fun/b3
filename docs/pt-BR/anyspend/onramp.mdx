@@ -1,0 +1,88 @@
+---
+title: Visão Geral do Onramp
+description: >-
+  Permita que os usuários paguem em moeda fiduciária e executem ações onchain em
+  um fluxo contínuo.
+lang: pt-BR
+originalPath: anyspend/onramp.mdx
+---
+## O Que Faz
+
+O onramp AnySpend permite que os usuários paguem com métodos tradicionais de fiat (por exemplo, cartão de crédito, transferência bancária) e executem automaticamente qualquer transação onchain. Esse fluxo contínuo elimina a necessidade de os usuários adquirirem manualmente criptomoedas ou gerenciarem o financiamento de carteiras.
+
+Ele é projetado para reduzir o atrito para usuários não familiarizados com cripto, tornando produtos alimentados por blockchain acessíveis a um público mais amplo.
+
+## Como Funciona
+
+1. **Usuário Inicia Ação**\
+   Um usuário começa uma ação onchain (por exemplo, cunhagem, staking ou interação com contrato).
+2. **Pagamento Fiat**\
+   Eles pagam com um cartão ou transferência bancária via Stripe ou Coinbase Pay.
+3. **Conversão \+ Execução**\
+   AnySpend converte fiat para a criptomoeda desejada e executa a transação.
+4. **Entrega na Carteira**\
+   O resultado é enviado para a carteira conectada do usuário ou carteira global. Não é necessário adquirir cripto.
+
+## Opções de Pagamento
+
+**Stripe**
+
+- Suporte global para os principais cartões de crédito/débito
+- Autenticação 3D Secure
+- Conversão de moeda para transações não em USD
+- Métodos de pagamento localizados e ajuste de taxa
+
+**Coinbase Pay**
+
+- Os usuários podem pagar diretamente com seus saldos de conta Coinbase ou cartão de débito
+- Não é necessário transferir fundos entre plataformas
+- UX confiável para usuários existentes da Coinbase
+- Sem taxas adicionais do AnySpend
+
+**Arquitetura de Provedor Extensível**
+
+- Sistema modular para suportar provedores de fiat adicionais
+- Roteamento dinâmico baseado em região e disponibilidade
+- Flexibilidade de conformidade integrada para suporte regional
+
+## Segurança
+
+AnySpend inclui um motor de risco em tempo real integrado projetado para minimizar fraudes enquanto mantém a experiência do usuário contínua.
+
+**Principais Características:**
+
+- Análise de risco comportamental e transacional
+- Verificações de segurança de dispositivo e rede
+- Inteligência de ameaças em tempo real
+
+**Avaliação Inteligente de Transação**
+
+Cada transação é avaliada em tempo real:
+
+- **Permitir** – a transação prossegue normalmente
+- **Verificar** – pode ser necessária verificação adicional do usuário
+- **Bloquear** – atividade suspeita é prevenida
+
+## Cobertura Global
+
+AnySpend suporta uma ampla gama de moedas e regiões através de provedores integrados:
+
+- Detecção automática de localização e localização
+- Métodos de pagamento locais e manuseio de moeda
+- Seleção dinâmica de provedor baseada em geografia
+- Conformidade regional pronta para uso
+
+## Taxas
+
+- **Pagamentos Stripe:** 5,4% \+ \$0,30 por transação (taxa fixa, global)
+- **Coinbase Pay:** Sem taxas adicionais do AnySpend
+
+Os usuários recebem uma discriminação transparente das taxas durante o checkout.
+
+## Casos de Uso Comuns
+
+AnySpend permite que desenvolvedores:
+
+- Permitam que usuários cunhem NFTs com cartão de crédito
+- Permitam staking, votação ou ações de jogo diretamente de fiat
+- Introduzam usuários a DeFi, jogos ou outros dApps sem pré-requisito de cripto

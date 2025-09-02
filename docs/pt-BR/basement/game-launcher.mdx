@@ -1,0 +1,268 @@
+---
+title: Game Launcher
+description: >-
+  Inicie jogos nativamente dentro da plataforma BSMNT (basement.fun) e construa
+  experiências viciantes onchain sem ter que se preocupar com os componentes
+  cripto
+lang: pt-BR
+originalPath: basement/game-launcher.mdx
+---
+```html
+<iframe
+  className="w-full aspect-video rounded-xl mb-6"
+  src="https://customer-gg6qs7nm5ue94t64.cloudflarestream.com/ae9e7c0694dacb8d602309c381fce796/iframe?poster=https%3A%2F%2Fcustomer-gg6qs7nm5ue94t64.cloudflarestream.com%2Fae9e7c0694dacb8d602309c381fce796%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600"
+  title="Basement.fun Developer Dashboard"
+  frameBorder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowFullScreen
+></iframe>
+
+## Como Funciona
+
+<Steps>
+<Step title="Carregar" icon="download">
+  Seu jogo é carregado dentro do lançador BSMNT. Nós passamos um JWT com o token de autenticação para o seu jogo.
+  
+  ```text Exemplo de URL
+  https://seujogo.com?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+  ```
+</Step>
+
+<Step title="Autenticação" icon="key">
+  Você pode carregar o perfil do jogador decodificando o JWT, ou usando nossa API. Nós cuidaremos das conexões com carteiras, verificação e integração.
+  
+  ```json Perfil do Jogador
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "address": "0x1234567890abcdef1234567890abcdef12345678",
+    "username": "CryptoGamer42",
+    "avatar": "https://avatars.b3.fun/avatar.png",
+    "gameId": "game-123456-abcdef",
+    "license": "550e8400-e29b-41d4-a716-446655440000",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  }
+  ```
+</Step>
+
+<Step title="Gatilho" icon="zap">
+  Permita que o usuário jogue seu jogo. Quando algo acontecer, você pode acionar uma ação via nosso motor de regras estilo Zapier, ou diretamente via API.
+  
+  ```bash Exemplo de API de Gatilho
+  curl --location 'https://api.basement.fun/launcher/' \
+  --header 'X-Service-Method: triggerRulesEngine' \
+  --data '{
+      "launcherJwt": "{{ jwt }}",
+      "trigger": "achievementUnlocked",
+      "nonce": "d1312e"
+  }'
+  ```
+</Step>
+</Steps>
+
+<CardGroup cols={2}>
+  <Card title="Registre-se como Desenvolvedor" icon="user-plus" href="https://basement.fun/developer/signup" cta="Inscreva-se">
+    Comece a construir jogos com o lançador BSMNT
+  </Card>
+  
+  <Card title="Playground do Lançador" icon="play" href="https://basement.fun/playground" cta="Experimente Agora">
+    Teste a integração do lançador em um ambiente sandbox
+  </Card>
+</CardGroup>
+
+## O que você pode fazer com o lançador BSMNT?
+
+O verdadeiro poder do lançador de jogos está na abstração da UX cripto. Seu jogo pode enviar eventos onchain de forma segura através de uma simples API REST, executável do lado do cliente.
+
+### Disponível Agora
+
+<CardGroup cols={2}>
+  <Card title="Salvar estado no IPFS" icon="database">
+    Armazene o estado do jogador em opções de armazenamento descentralizado como IPFS.
+  </Card>
+  
+  <Card title="Comprar NFTs & Cunhar" icon="palette">
+    Permita que os usuários cunhem NFTs mediante conquistas ou em certos eventos do jogo.
+  </Card>
+  
+  <Card title="Leaderboards Onchain" icon="trophy">
+    Traga o ranking dos jogadores para o onchain, hospede concursos & torneios.
+  </Card>
+  
+  <Card title="Emitir Tokens & NFTs" icon="coins">
+    Envie ERC20s e NFTs ERC721 & 1155 com base em ações do jogo.
+  </Card>
+  
+  <Card title="Pagar com Tokens" icon="credit-card">
+    Solicite aos usuários que enviem ou transfiram tokens para pagar por ações ou ativos no jogo.
+  </Card>
+</CardGroup>
+
+### Em Breve
+
+<CardGroup cols={2}>
+  <Card title="Trocar & Comercializar" icon="arrows-rotate">
+    Os usuários podem usar ativos de outras cadeias para trocar pelos seus tokens.
+    <div style={{ marginTop: '8px' }}>
+      <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>EM BREVE</span>
+    </div>
+  </Card>
+  
+  <Card title="Onramp de Cartão de Crédito" icon="credit-card">
+    Onramp direto de fiat para cripto para uma experiência do usuário sem complicações.
+    <div style={{ marginTop: '8px' }}>
+      <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>EM BREVE</span>
+    </div>
+  </Card>
+  
+  <Card title="Coletar Avaliações" icon="star">
+    Sistema integrado de avaliação e classificação para jogos.
+    <div style={{ marginTop: '8px' }}>
+      <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>EM BREVE</span>
+    </div>
+  </Card>
+  
+  <Card title="Compartilhe seu Jogo" icon="share">
+    Mecânicas de compartilhamento social e viral.
+    <div style={{ marginTop: '8px' }}>
+      <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>EM BREVE</span>
+    </div>
+  </Card>
+  
+  <Card title="Gravar Jogabilidade" icon="video">
+    Gravação e compartilhamento automático da jogabilidade.
+    <div style={{ marginTop: '8px' }}>
+      <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>EM BREVE</span>
+    </div>
+  </Card>
+  
+  <Card title="Listar NFTs" icon="store">
+    Integração com o mercado para comercializar ativos do jogo.
+    <div style={{ marginTop: '8px' }}>
+      <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>EM BREVE</span>
+    </div>
+  </Card>
+</CardGroup>
+
+<Note>
+E mais ações estão a caminho - o futuro parece promissor!
+</Note>
+
+## Começando
+
+Adoraríamos ter seu jogo no basement.fun! É simples, gratuito e fácil de começar a integrar.
+
+<Tabs>
+<Tab title="Desenvolvedores de Jogos">
+  <CardGroup cols={1}>
+    <Card title="Registre-se como Desenvolvedor" icon="user-plus" href="https://basement.fun/developer/signup" cta="Registre-se Agora" horizontal>
+      Inscreva-se para começar a integrar seu jogo com o lançador BSMNT
+    </Card>
+  </CardGroup>
+  
+  <div style={{ marginTop: '16px' }}>
+    <strong>Já registrado?</strong>
+  </div>
+  
+  <CardGroup cols={2}>
+    <Card title="Playground do Lançador de Jogos" icon="play" href="https://basement.fun/playground">
+      Teste sua integração em um ambiente sandbox
+    </Card>
+    
+    <Card title="Documentação da API BSMNT" icon="book" href="https://docs.basement.fun/api">
+      Documentação completa da API e exemplos
+    </Card>
+  </CardGroup>
+</Tab>
+
+<Tab title="Jogadores">
+  <Card title="Veja o Lançador BSMNT em Ação" icon="gamepad-2" href="https://basement.fun/games" cta="Jogar Jogos" horizontal>
+    Aqui não tem vaporware - jogue jogos no BSMNT hoje!
+  </Card>
+  
+  <Note>
+  Sem vaporware - jogue hoje!
+  </Note>
+</Tab>
+</Tabs>
+
+## O que é Basement.fun?
+
+Basement é o lugar para descobrir e jogar jogos onchain. Além de ser uma plataforma de descoberta para encontrar ótimos jogos onchain, Basement oferece uma maneira para desenvolvedores de jogos construírem experiências nativas, integradas e sem emendas dentro do Basement.
+
+Seu jogo é carregado dentro do nosso lançador de jogos, onde os usuários se conectam ao Basement, e seu contexto de jogador é passado para o seu jogo.
+
+A partir daí, você pode aproveitar qualquer uma de nossas funções auxiliares genéricas (como salvar estado e pontuações) + acionar qualquer número de UX cripto integradas (sem que você precise integrar nada onchain no seu jogo).
+
+## Acesso aos Dados do Jogador
+
+O lançador de jogos usa um JWT (JSON Web Token) para codificar de forma segura um contexto de jogador verificado e autenticado, que é enviado ao seu jogo.
+
+O payload é lido dos parâmetros GET, então qualquer jogo hospedado na web pode facilmente acessar e decodificá-lo usando qualquer número de bibliotecas JWT (ou usando nossas APIs do lançador).
+
+### Dados Básicos do Jogador Incluem:
+
+<AccordionGroup>
+<Accordion title="Username e ENS">
+  Username (e endereço ENS resolvível compatível .b3.fun)
+</Accordion>
+
+<Accordion title="Avatar 3D">
+  Avatar 3D (modelo .GLB alimentado por ReadyPlayerMe)
+</Accordion>
+
+<Accordion title="Endereço da Carteira">
+  Endereço da carteira verificado para interações onchain
+</Accordion>
+
+<Accordion title="Dados Adicionais">
+  Dados específicos do jogador no jogo, informações da sessão e mais - veja nossa Documentação da API do Lançador
+</Accordion>
+</AccordionGroup>
+
+<Tip>
+Você pode opcionalmente armazenar qualquer dado específico do jogo do jogador usando nossas APIs de estado do jogador.
+</Tip>
+
+<Card title="Explore as APIs do Lançador" icon="code" href="https://docs.basement.fun/api" cta="Ver Documentação" horizontal>
+  Documentação completa para acesso aos dados do jogador e integração do jogo
+</Card>
+
+## Abstração UX Integrada
+
+Nossa experiência mínima com o lançador de jogos significa que o foco permanece no seu jogo.
+
+Várias personalizações estão disponíveis no lançador de jogos, para que o BSMNT possa fornecer uma experiência quase invisível, lidando com todos os desafios centrais da UX cripto para você.
+
+### APIs Úteis Disponíveis:
+
+- **Armazenar e recuperar pontuações e leaderboards** - Gerenciamento de estado de jogo persistente
+- **Enviar notificações** - Alertar jogadores sobre eventos do jogo
+- **Registrar e transmitir atividade do jogo** - Análises e rastreamento de comportamento do jogador  
+- **Armazenar estado do jogador e sessões de jogo** - Salvar progresso do jogo automaticamente
+- **E mais vindo!** - Novos recursos adicionados regularmente
+
+<Card title="Explore as APIs do Lançador" icon="api" href="https://docs.basement.fun/api" cta="Ver Documentação" horizontal>
+  Referência completa da API para todos os recursos disponíveis do lançador
+</Card>
+
+## Visão Geral da Arquitetura
+
+<Frame caption="Fluxo de Integração do Lançador de Jogos">
+  <div style={{ 
+    padding: '20px', 
+    backgroundColor: '#f8fafc', 
+    border: '1px solid #e2e8f0', 
+    borderRadius: '8px',
+    textAlign: 'center',
+    fontFamily: 'monospace'
+  }}>
+    <div style={{ marginBottom: '10px', color: '#64748b' }}>Conectado: 0x..123</div>
+    <div style={{ marginBottom: '10px', backgroundColor: '#007AFF', color: 'white', padding: '8px', borderRadius: '4px' }}>
+      www.seujogo.com
+    </div>
+    <div style={{ fontSize: '14px', color: '#475569' }}>
+      Seu jogo é carregado dentro do lançador BSMNT
+    </div>
+  </div>
+</Frame>
+```

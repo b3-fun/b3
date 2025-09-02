@@ -1,0 +1,191 @@
+---
+title: B3 Perfis API
+description: >-
+  Serviço unificado gratuito de agregação de identidade onchain com dados de
+  identidade social de B3, Basement, ENS, Lens e Farcaster
+lang: pt-BR
+originalPath: data/profiles/index.mdx
+---
+
+<img src="/images/profiles-banner.jpg" alt="B3 Profiles API" className="w-full h-auto rounded-3xl" />
+
+<Card title="API Gratuita de Perfis Sociais" icon="user" href="/data/profiles/index">
+  Confira a referência da API de perfis
+</Card>
+
+## Visão Geral
+
+O serviço B3 Profiles atua como uma API de dados para resolver identidades de usuários descentralizados em todo o ecossistema EVM. Ele agrega dados de perfil de múltiplas fontes e protocolos, fornecendo aos desenvolvedores um único ponto de acesso à API para obter informações completas sobre usuários e contexto social.
+
+## Principais Funcionalidades
+
+<CardGroup cols={2}>
+  <Card title="Agregação de Múltiplas Fontes" icon="network-wired">
+    Combina dados do Basement, ENS, Thirdweb Social e outros provedores de identidade Web3
+  </Card>
+  <Card title="Integração de Identidade Social" icon="users">
+    Busca perfis sociais do ENS, Protocolo Lens e redes Farcaster
+  </Card>
+  <Card title="Caching Inteligente" icon="database">
+    Utiliza o armazenamento KV da Cloudflare para caching eficiente de dados com TTL configurável
+  </Card>
+  <Card title="Preferências do Usuário" icon="gear">
+    Permite que usuários definam fontes de perfil preferenciais por meio de assinaturas criptográficas
+  </Card>
+</CardGroup>
+
+## Fontes de Dados Suportadas
+
+- ENS (Ethereum Name Service)
+- Protocolo Lens
+- Farcaster
+- B3.ID
+- Perfis do Basement
+
+## Pontos de Extremidade da API
+
+<Note>
+[Confira a referência da API](/data/profiles/index) para mais detalhes.
+</Note>
+
+### Consulta de Perfil
+Recupere informações de perfil agregadas para qualquer endereço de carteira ou nome de usuário.
+
+```bash
+GET https://profiles.b3.fun/?address=0x1234567890abcdef1234567890abcdef12345678
+GET https://profiles.b3.fun/?name=vitalik.eth
+GET https://profiles.b3.fun/?name=sean.b3.fun
+```
+
+### Definir Preferências de Perfil
+Permite que usuários especifiquem sua fonte de perfil preferida por meio de assinaturas criptográficas.
+
+```bash
+POST /preference
+```
+
+### Nomes de Exibição Personalizados
+Habilita usuários a definirem nomes de exibição personalizados que sobrepõem todas as outras fontes.
+
+```bash
+POST /display-name
+```
+
+## Formato de Resposta
+
+O serviço retorna um objeto de perfil unificado que combina dados de todas as fontes:
+
+```json
+{
+  "name": "vitalik.eth",
+  "address": "0x1234567890abcdef1234567890abcdef12345678",
+  "avatar": "https://example.com/avatar.jpg",
+  "bio": "Co-fundador do Ethereum",
+  "displayName": "Vitalik Buterin",
+  "profiles": [
+    {
+      "type": "ensdata",
+      "address": "0x123...",
+      "name": "vitalik.eth",
+      "avatar": "https://...",
+      "bio": null,
+      "displayName": null
+    },
+    {
+      "type": "thirdweb-farcaster",
+      "address": "0x123...",
+      "name": "vitalik",
+      "avatar": "https://...",
+      "bio": "Co-fundador do Ethereum",
+      "displayName": "Vitalik Buterin"
+    }
+  ]
+}
+```
+
+## Casos de Uso
+
+<CardGroup cols={1}>
+  <Card title="Autenticação de Carteira Aprimorada" icon="shield-check">
+    Fornece um contexto rico sobre os usuários durante a conexão da carteira, mostrando sua identidade social e reputação Web3 em plataformas.
+  </Card>
+  <Card title="Integração com Jogos Sociais" icon="gamepad">
+    Exibe perfis de jogadores abrangentes em jogos, incluindo nomes ENS, identificadores sociais e identidades entre plataformas.
+  </Card>
+  <Card title="Experiência de Usuário em DeFi" icon="coins">
+    Melhora interfaces de negociação ao mostrar identidades de comerciantes do Lens, Farcaster e ENS em vez de apenas endereços de carteira.
+  </Card>
+  <Card title="Gestão de Comunidade" icon="users-gear">
+    Constrói melhores ferramentas de comunidade agregando identidades de usuários de múltiplas plataformas sociais Web3.
+  </Card>
+</CardGroup>
+
+
+## Exemplo de Uso
+
+### Consulta Básica de Perfil
+
+```javascript
+// Busca perfil por endereço
+const response = await fetch('https://profiles.b3.fun/?address=0x123...');
+const profile = await response.json();
+
+console.log(profile.displayName); // "Vitalik Buterin"
+console.log(profile.profiles.length); // Número de fontes encontradas
+```
+
+### Resolução de Nome ENS
+
+```javascript
+// Busca perfil por nome ENS
+const response = await fetch('https://profiles.b3.fun/?name=vitalik.eth');
+const profile = await response.json();
+
+console.log(profile.address); // Endereço de carteira resolvido
+console.log(profile.avatar); // URL do avatar ENS
+```
+
+### Definindo Preferências do Usuário
+
+```javascript
+// Define a fonte de perfil preferida com assinatura
+const message = `SetProfilePreference:${address}:thirdweb-farcaster:${timestamp}`;
+const signature = await wallet.signMessage(message);
+
+await fetch('https://profiles.b3.fun/preference', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    key: address,
+    preferredType: 'thirdweb-farcaster',
+    signature,
+    signer: address,
+    timestamp
+  })
+});
+```
+
+## Desempenho & Caching
+
+- **Duração do Cache**: 1 hora para dados de perfil
+- **Dados Atualizados**: Use `?fresh=true` para ignorar o cache
+- **CDN Global**: Alimentado pela rede de borda da Cloudflare
+- **Armazenamento KV**: Armazenamento eficiente de chave-valor para preferências
+
+## Limites de Taxa
+
+O serviço herda a proteção integrada contra DDoS e limitação de taxa da Cloudflare. Para aplicações de alto volume, considere implementar caching do lado do cliente ou contate a equipe B3 para acesso empresarial.
+
+## Construindo onchain de forma fácil
+<Note>
+[Confira a referência da API](/data/profiles/index) para mais detalhes.
+</Note>
+
+<CardGroup cols={2}>
+  <Card title="API de Dados B3" href="/data/api-reference/introduction">
+    Dados e análises de blockchain abrangentes
+  </Card>
+  <Card title="B3 SDK" href="/sdk/introduction">
+    B3 SDK para operações cross-chain e autenticação de contas globais
+  </Card>
+</CardGroup>

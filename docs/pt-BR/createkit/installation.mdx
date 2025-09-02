@@ -1,0 +1,258 @@
+---
+title: Instalação
+description: Instale e configure o CreateKit (BaseMint SDK) no seu projeto
+lang: pt-BR
+originalPath: createkit/installation.mdx
+---
+
+## Instalação do Pacote
+
+Instale o CreateKit usando o gerenciador de pacotes de sua preferência:
+
+<CodeGroup>
+```bash npm
+npm install @b3dotfun/basemint
+```
+
+```bash yarn
+yarn add @b3dotfun/basemint
+```
+
+```bash pnpm
+pnpm add @b3dotfun/basemint
+```
+</CodeGroup>
+
+<Note>
+O CreateKit é construído com TypeScript e fornece definições de tipo completas imediatamente.
+</Note>
+
+## Dependências
+
+O CreateKit é construído sobre tecnologias web3 modernas e requer as seguintes dependências de pares:
+
+<CodeGroup>
+```bash npm
+npm install viem @wagmi/core
+```
+
+```bash yarn
+yarn add viem @wagmi/core
+```
+
+```bash pnpm
+pnpm add viem @wagmi/core
+```
+</CodeGroup>
+
+## Configuração do Ambiente
+
+### 1. Configurar Redes de Cadeias
+
+O CreateKit fornece definições de cadeias pré-configuradas para redes B3:
+
+```typescript title="chains.ts"
+import { b3Mainnet, b3Testnet } from '@b3dotfun/basemint'
+
+// B3 Mainnet (Produção)
+console.log('ID da Cadeia:', b3Mainnet.id) // 8333
+console.log('Nome:', b3Mainnet.name)
+console.log('URL RPC:', b3Mainnet.rpcUrls.default.http[0])
+
+// B3 Testnet (Desenvolvimento)
+console.log('ID da Cadeia:', b3Testnet.id) // 1993
+console.log('Nome:', b3Testnet.name)
+console.log('URL RPC:', b3Testnet.rpcUrls.default.http[0])
+```
+
+### 2. Inicializar Cliente Viem
+
+Configure seu cliente viem para interagir com a blockchain:
+
+```typescript title="client.ts"
+import { createPublicClient, createWalletClient, http } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+import { b3Testnet } from '@b3dotfun/basemint'
+
+// Cliente público para leitura de dados
+export const publicClient = createPublicClient({
+  chain: b3Testnet,
+  transport: http()
+})
+
+// Cliente de carteira para transações (para uso do lado do servidor)
+export const walletClient = createWalletClient({
+  chain: b3Testnet,
+  transport: http(),
+  account: privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`)
+})
+```
+
+### 3. Variáveis de Ambiente
+
+Crie um arquivo `.env` na raiz do seu projeto:
+
+```bash title=".env"
+# Necessário para assinar transações
+PRIVATE_KEY=0x...
+
+# Opcional: Endereços RPC personalizados
+B3_MAINNET_RPC=https://your-custom-rpc.com
+B3_TESTNET_RPC=https://your-custom-testnet-rpc.com
+```
+
+<Warning>
+Nunca cometa chaves privadas no controle de versão. Use variáveis de ambiente ou soluções seguras de gerenciamento de chaves.
+</Warning>
+
+## Integração com Framework
+
+### Configuração para Next.js
+
+Para aplicações Next.js, crie um arquivo de configuração:
+
+```typescript title="lib/createkit.ts"
+import { createPublicClient, http } from 'viem'
+import { b3Testnet } from '@b3dotfun/basemint'
+import { 
+  CollectionManager, 
+  RewardTracker, 
+  BaseMintStorage 
+} from '@b3dotfun/basemint'
+
+// Inicializar clientes
+export const publicClient = createPublicClient({
+  chain: b3Testnet,
+  transport: http()
+})
+
+// Inicializar gerenciadores do CreateKit
+export const collectionManager = new CollectionManager(publicClient)
+export const rewardTracker = new RewardTracker(publicClient)
+export const storage = new BaseMintStorage({
+  baseUrl: 'https://api.basemint.fun'
+})
+```
+
+### Configuração para React/Vite
+
+```typescript title="src/lib/createkit.ts"
+import { createPublicClient, http } from 'viem'
+import { b3Testnet } from '@b3dotfun/basemint'
+import { CollectionManager } from '@b3dotfun/basemint'
+
+export const publicClient = createPublicClient({
+  chain: b3Testnet,
+  transport: http(import.meta.env.VITE_RPC_URL)
+})
+
+export const collectionManager = new CollectionManager(publicClient)
+```
+
+## Verificar Instalação
+
+Teste sua instalação com um script simples:
+
+```typescript title="test-installation.ts"
+import { b3Testnet, CollectionManager } from '@b3dotfun/basemint'
+import { createPublicClient, http } from 'viem'
+
+async function testInstallation() {
+  try {
+    // Criar cliente
+    const client = createPublicClient({
+      chain: b3Testnet,
+      transport: http()
+    })
+
+    // Inicializar gerenciador
+    const manager = new CollectionManager(client)
+    
+    // Testar conexão
+    const blockNumber = await client.getBlockNumber()
+    console.log('✅ Conectado com sucesso ao B3 Testnet')
+    console.log(`📊 Número do bloco atual: ${blockNumber}`)
+    
+    // Testar interação com contrato
+    const factoryAddress = manager.getFactoryAddress()
+    console.log(`🏭 Endereço da fábrica: ${factoryAddress}`)
+    
+    console.log('🎉 Instalação do CreateKit bem-sucedida!')
+  } catch (error) {
+    console.error('❌ Teste de instalação falhou:', error)
+  }
+}
+
+testInstallation()
+```
+
+Execute o script de teste:
+
+<CodeGroup>
+```bash npm
+npx tsx test-installation.ts
+```
+
+```bash yarn
+yarn tsx test-installation.ts
+```
+
+```bash pnpm
+pnpm tsx test-installation.ts
+```
+</CodeGroup>
+
+## Configuração do TypeScript
+
+Certifique-se de que seu `tsconfig.json` inclui as configurações necessárias:
+
+```json title="tsconfig.json"
+{
+  "compilerOptions": {
+    "strict": true,
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "target": "ES2020",
+    "module": "ESNext",
+    "lib": ["ES2020", "DOM"]
+  }
+}
+```
+
+## Próximos Passos
+
+Agora que você instalou e configurou o CreateKit, está pronto para começar a construir:
+
+<CardGroup cols={2}>
+  <Card title="Guia de Início Rápido" icon="rocket" href="/createkit/quickstart">
+    Crie sua primeira coleção de NFT em minutos
+  </Card>
+  <Card title="Gerenciamento de Coleções" icon="folder" href="/createkit/collections">
+    Aprenda sobre criação e gerenciamento de coleções
+  </Card>
+</CardGroup>
+
+## Solução de Problemas
+
+<AccordionGroup>
+  <Accordion title="Erros de módulo não encontrado">
+    Certifique-se de que todas as dependências de pares estão instaladas:
+    ```bash
+    npm install viem @wagmi/core
+    ```
+  </Accordion>
+
+  <Accordion title="Erros de TypeScript">
+    Certifique-se de que sua configuração do TypeScript inclui as entradas lib necessárias e que `skipLibCheck` está habilitado.
+  </Accordion>
+
+  <Accordion title="Problemas de conexão de rede">
+    Verifique se seus endpoints RPC estão corretos e acessíveis. Use os endpoints RPC B3 padrão se os personalizados falharem.
+  </Accordion>
+
+  <Accordion title="Erros de formato de chave privada">
+    Certifique-se de que sua chave privada está no formato correto (prefixado com 0x) e possui fundos suficientes para taxas de gás.
+  </Accordion>
+</AccordionGroup>

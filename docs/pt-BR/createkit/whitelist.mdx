@@ -1,0 +1,541 @@
+---
+title: Gerenciamento de Lista de Permissões
+description: >-
+  Implemente mintagem exclusiva com listas de permissão baseadas em árvore de
+  Merkle no CreateKit
+lang: pt-BR
+originalPath: createkit/whitelist.mdx
+---
+## Visão Geral
+
+CreateKit suporta gerenciamento sofisticado de whitelist usando árvores de Merkle para verificação eficiente em termos de gás. Isso permite que você crie experiências exclusivas de mintagem para endereços específicos enquanto mantém escalabilidade e segurança.
+
+## Fundamentos da Whitelist
+
+### Como Funcionam as Whitelists
+
+1. **Geração Off-chain**: Crie uma árvore de Merkle a partir dos endereços na whitelist
+2. **Armazenamento On-chain**: Armazene apenas a raiz de Merkle no smart contract
+3. **Verificação de Prova**: Usuários fornecem uma prova de Merkle ao fazer a mintagem
+4. **Eficiência de Gás**: Os custos de verificação são constantes, independentemente do tamanho da whitelist
+
+<CardGroup cols={2}>
+  <Card title="Escalável" icon="arrows-split-up-and-left">
+    Suporta milhares de endereços com custos mínimos de gás
+  </Card>
+  <Card title="Seguro" icon="shield">
+    Verificação de endereço garantida criptograficamente
+  </Card>
+  <Card title="Flexível" icon="settings">
+    Fácil de gerar e atualizar configurações de whitelist
+  </Card>
+  <Card title="Transparente" icon="eye">
+    Verificável on-chain sem revelar a lista completa
+  </Card>
+</CardGroup>
+
+## Configurando Whitelists
+
+### Criação Básica de Whitelist
+
+```typescript title="Criar Whitelist"
+import { WhitelistManager } from '@b3dotfun/basemint'
+
+// Definir endereços na whitelist
+const whitelistedAddresses = [
+  { address: "0x1234567890123456789012345678901234567890" },
+  { address: "0x2345678901234567890123456789012345678901" },
+  { address: "0x3456789012345678901234567890123456789012" },
+  { address: "0x4567890123456789012345678901234567890123" },
+  { address: "0x5678901234567890123456789012345678901234" }
+]
+
+// Criar gerenciador de whitelist
+const whitelist = new WhitelistManager(whitelistedAddresses)
+
+// Obter raiz de Merkle para implantação do contrato
+const merkleRoot = whitelist.getRoot()
+console.log(`Raiz de Merkle: ${merkleRoot}`)
+
+// Verificar se a whitelist está corretamente construída
+console.log(`Whitelist contém ${whitelistedAddresses.length} endereços`)
+```
+
+### Configuração Avançada de Whitelist
+
+```typescript title="Whitelist com Metadados"
+// Entradas da whitelist podem incluir metadados adicionais
+const advancedWhitelist = [
+  { 
+    address: "0x1234567890123456789012345678901234567890",
+    allocation: 5, // Máx 5 tokens para este endereço
+    tier: "gold"
+  },
+  { 
+    address: "0x2345678901234567890123456789012345678901",
+    allocation: 3,
+    tier: "silver"
+  },
+  { 
+    address: "0x3456789012345678901234567890123456789012",
+    allocation: 1,
+    tier: "bronze"
+  }
+]
+
+// Criar whitelist (apenas endereços são usados para a árvore de Merkle)
+const whitelist = new WhitelistManager(
+  advancedWhitelist.map(entry => ({ address: entry.address }))
+)
+
+// Armazenar metadados separadamente para lógica de aplicação
+const allocationMap = new Map(
+  advancedWhitelist.map(entry => [entry.address, entry.allocation])
+)
+```
+
+## Integração com Coleções
+
+### Coleção Habilitada para Whitelist
+
+```typescript title="Configuração de Coleção com Whitelist"
+import { CollectionManager } from '@b3dotfun/basemint'
+
+// Criar coleção com whitelist habilitada
+const whitelistCollection = {
+  name: "Coleção Exclusiva",
+  symbol: "EXCL",
+  creator: account.address,
+  gameOwner: account.address,
+  
+  // Configuração de whitelist
+  isWhitelistEnabled: true,
+  whitelistMerkleRoot: merkleRoot,
+  
+  // Configurações da coleção
+  maxSupply: 1000n,
+  mintPrice: parseEther("0.01"),
+  maxPerWallet: 3n,
+  
+  // Opcional: Combinar com acesso baseado em tempo
+  startTime: BigInt(Math.floor(Date.now() / 1000) + 3600), // Whitelist começa em 1 hora
+  endTime: BigInt(Math.floor(Date.now() / 1000) + 86400 * 7), // Termina em 7 dias
+}
+
+// Gerar assinaturas e implantar
+const creatorSignature = await collectionManager.generateCreatorSignature(
+  walletClient,
+  whitelistCollection
+)
+
+const predictedAddress = collectionManager.predictCollectionAddress(
+  whitelistCollection,
+  creatorSignature
+)
+
+console.log(`Coleção com whitelist será implantada em: ${predictedAddress}`)
+```
+
+### Modelos de Acesso Híbridos
+
+```typescript title="Acesso Faseado"
+// Criar coleções com diferentes fases de acesso
+const phasedCollection = {
+  name: "Coleção com Acesso Faseado",
+  symbol: "PAC",
+  creator: account.address,
+  gameOwner: account.address,
+  
+  // Fase 1: Apenas whitelist (primeiras 24 horas)
+  isWhitelistEnabled: true,
+  whitelistMerkleRoot: merkleRoot,
+  startTime: BigInt(Math.floor(Date.now() / 1000)),
+  
+  // Nota: Para a fase 2 (acesso público), você precisará de lógica adicional
+  // para desabilitar a verificação da whitelist após um certo tempo
+}
+
+// Na sua aplicação, implemente a lógica de fases
+async function checkMintingPhase(collection: any): Promise<'whitelist' | 'public' | 'ended'> {
+  const now = BigInt(Math.floor(Date.now() / 1000))
+  const startTime = await collection.startTime()
+  const endTime = await collection.endTime()
+  
+  const whitelistPhaseEnd = startTime + 86400n // 24 horas
+  
+  if (now < startTime) {
+    throw new Error("A mintagem ainda não começou")
+  } else if (now < whitelistPhaseEnd) {
+    return 'whitelist'
+  } else if (now < endTime) {
+    return 'public'
+  } else {
+    return 'ended'
+  }
+}
+```
+
+## Verificação de Whitelist
+
+### Gerando Provas
+
+```typescript title="Gerar Provas de Merkle"
+// Gerar prova para um endereço específico
+function generateProofForAddress(whitelist: WhitelistManager, address: string): string[] {
+  try {
+    const proof = whitelist.getProof(address)
+    console.log(`Prova gerada para ${address}:`, proof)
+    return proof
+  } catch (error) {
+    console.error(`Falha ao gerar prova para ${address}:`, error)
+    throw new Error(`Endereço ${address} não está na whitelist`)
+  }
+}
+
+// Verificar prova localmente (verificação opcional)
+function verifyWhitelistProof(
+  whitelist: WhitelistManager, 
+  address: string, 
+  proof: string[]
+): boolean {
+  const isValid = whitelist.verify(address, proof)
+  console.log(`Verificação de prova para ${address}: ${isValid ? '✅ Válida' : '❌ Inválida'}`)
+  return isValid
+}
+
+// Exemplo de uso
+const userAddress = "0x1234567890123456789012345678901234567890"
+const proof = generateProofForAddress(whitelist, userAddress)
+const isValid = verifyWhitelistProof(whitelist, userAddress, proof)
+```
+
+### Geração de Provas em Lote
+
+```typescript title="Geração de Provas em Lote"
+// Gerar provas para vários endereços
+function generateBatchProofs(
+  whitelist: WhitelistManager, 
+  addresses: string[]
+): Map<string, string[]> {
+  const proofMap = new Map<string, string[]>()
+  
+  for (const address of addresses) {
+    try {
+      const proof = whitelist.getProof(address)
+      proofMap.set(address, proof)
+      console.log(`✅ Prova gerada para ${address}`)
+    } catch (error) {
+      console.error(`❌ Falha ao gerar prova para ${address}:`, error)
+    }
+  }
+  
+  return proofMap
+}
+
+// Gerar provas para todos os endereços na whitelist
+const allAddresses = whitelistedAddresses.map(entry => entry.address)
+const allProofs = generateBatchProofs(whitelist, allAddresses)
+
+// Salvar provas em um arquivo ou banco de dados para uso no frontend
+const proofData = {
+  merkleRoot,
+  proofs: Object.fromEntries(allProofs)
+}
+
+// Exemplo: Salvar em arquivo JSON
+import { writeFileSync } from 'fs'
+writeFileSync('whitelist-proofs.json', JSON.stringify(proofData, null, 2))
+```
+
+## Mintagem com Whitelists
+
+### Mintagem Básica com Whitelist
+
+```typescript title="Mint com Whitelist"
+async function mintWithWhitelist(
+  collection: any,
+  walletClient: any,
+  whitelist: WhitelistManager,
+  quantity: bigint = 1n
+) {
+  const userAddress = walletClient.account.address
+  
+  try {
+    // Gerar prova para o usuário
+    const proof = whitelist.getProof(userAddress)
+    
+    // Verificar prova localmente (opcional)
+    const isValid = whitelist.verify(userAddress, proof)
+    if (!isValid) {
+      throw new Error("Prova de whitelist inválida")
+    }
+    
+    // Obter preço de mintagem
+    const mintPrice = await collection.mintPrice()
+    const totalPrice = mintPrice * quantity
+    
+    // Mintar com prova de whitelist
+    const tx = await collection.mint(
+      walletClient,
+      quantity,
+      undefined, // URI de metadados
+      totalPrice,
+      proof // Prova de whitelist
+    )
+    
+    console.log(`✅ Mintagem com whitelist bem-sucedida: ${tx}`)
+    return tx
+    
+  } catch (error: any) {
+    if (error.message.includes('Prova de Merkle inválida')) {
+      console.error('❌ Endereço não está na whitelist ou prova inválida')
+    } else {
+      console.error('❌ Mintagem com whitelist falhou:', error)
+    }
+    throw error
+  }
+}
+
+// Uso
+await mintWithWhitelist(collection, walletClient, whitelist, 2n)
+```
+
+### Mintagem Avançada com Whitelist
+
+```typescript title="Lógica Avançada de Whitelist"
+async function advancedWhitelistMint(
+  collection: any,
+  walletClient: any,
+  whitelist: WhitelistManager,
+  allocationMap: Map<string, number>,
+  quantity: bigint
+) {
+  const userAddress = walletClient.account.address
+  
+  // Verificar alocação do usuário
+  const maxAllocation = allocationMap.get(userAddress) || 0
+  if (maxAllocation === 0) {
+    throw new Error("Endereço não está na whitelist")
+  }
+  
+  // Verificar saldo atual contra alocação
+  const currentBalance = await collection.balanceOf(userAddress)
+  const newBalance = currentBalance + quantity
+  
+  if (newBalance > BigInt(maxAllocation)) {
+    throw new Error(`Ultrapassaria a alocação. Máx: ${maxAllocation}, Atual: ${currentBalance}`)
+  }
+  
+  // Gerar prova e mintar
+  const proof = whitelist.getProof(userAddress)
+  const mintPrice = await collection.mintPrice()
+  
+  const tx = await collection.mint(
+    walletClient,
+    quantity,
+    undefined,
+    mintPrice * quantity,
+    proof
+  )
+  
+  console.log(`✅ Mintagem avançada com whitelist bem-sucedida: ${tx}`)
+  return tx
+}
+```
+
+## Integração com Frontend
+
+### Hook React para Status da Whitelist
+
+```typescript title="Hook useWhitelistStatus"
+import { useState, useEffect } from 'react'
+import { useAccount } from 'wagmi'
+
+interface WhitelistStatus {
+  isWhitelisted: boolean
+  proof: string[] | null
+  allocation: number
+  loading: boolean
+  error: string | null
+}
+
+export function useWhitelistStatus(
+  whitelist: WhitelistManager,
+  allocationMap?: Map<string, number>
+): WhitelistStatus {
+  const { address } = useAccount()
+  const [status, setStatus] = useState<WhitelistStatus>({
+    isWhitelisted: false,
+    proof: null,
+    allocation: 0,
+    loading: true,
+    error: null
+  })
+  
+  useEffect(() => {
+    async function checkWhitelistStatus() {
+      if (!address) {
+        setStatus({
+          isWhitelisted: false,
+          proof: null,
+          allocation: 0,
+          loading: false,
+          error: null
+        })
+        return
+      }
+      
+      try {
+        setStatus(prev => ({ ...prev, loading: true, error: null }))
+        
+        // Gerar prova
+        const proof = whitelist.getProof(address)
+        const isValid = whitelist.verify(address, proof)
+        const allocation = allocationMap?.get(address) || 0
+        
+        setStatus({
+          isWhitelisted: isValid,
+          proof: isValid ? proof : null,
+          allocation,
+          loading: false,
+          error: null
+        })
+        
+      } catch (error: any) {
+        setStatus({
+          isWhitelisted: false,
+          proof: null,
+          allocation: 0,
+          loading: false,
+          error: error.message
+        })
+      }
+    }
+    
+    checkWhitelistStatus()
+  }, [address, whitelist, allocationMap])
+  
+  return status
+}
+```
+
+### Componente de Status da Whitelist
+
+```tsx title="Componente WhitelistStatus"
+import React from 'react'
+import { useWhitelistStatus } from './useWhitelistStatus'
+
+interface WhitelistStatusProps {
+  whitelist: WhitelistManager
+  allocationMap?: Map<string, number>
+}
+
+export function WhitelistStatus({ whitelist, allocationMap }: WhitelistStatusProps) {
+  const { isWhitelisted, allocation, loading, error } = useWhitelistStatus(
+    whitelist, 
+    allocationMap
+  )
+  
+  if (loading) {
+    return <div className="animate-pulse">Verificando status da whitelist...</div>
+  }
+  
+  if (error) {
+    return <div className="text-red-500">Erro: {error}</div>
+  }
+  
+  return (
+    <div className={`p-4 rounded-lg ${isWhitelisted ? 'bg-green-100' : 'bg-gray-100'}`}>
+      {isWhitelisted ? (
+        <div className="text-green-800">
+          <h3 className="font-bold">✅ Na Whitelist</h3>
+          <p>Você pode mintar até {allocation} tokens</p>
+        </div>
+      ) : (
+        <div className="text-gray-800">
+          <h3 className="font-bold">❌ Não está na Whitelist</h3>
+          <p>Seu endereço não é elegível para mintagem na whitelist</p>
+        </div>
+      )}
+    </div>
+  )
+}
+```
+
+## Múltiplas Whitelists
+
+### Sistema de Whitelist por Níveis
+
+```typescript title="Whitelists por Níveis"
+// Criar diferentes níveis com benefícios distintos
+const goldTierAddresses = [
+  { address: "0x1111..." },
+  { address: "0x2222..." }
+]
+
+const silverTierAddresses = [
+  { address: "0x3333..." },
+  { address: "0x4444..." }
+]
+
+const bronzeTierAddresses = [
+  { address: "0x5555..." },
+  { address: "0x6666..." }
+]
+
+// Criar whitelists separadas para cada nível
+const goldWhitelist = new WhitelistManager(goldTierAddresses)
+const silverWhitelist = new WhitelistManager(silverTierAddresses)
+const bronzeWhitelist = new WhitelistManager(bronzeTierAddresses)
+
+// Para o smart contract, você pode combinar todos os níveis
+const allTierAddresses = [
+  ...goldTierAddresses,
+  ...silverTierAddresses,
+  ...bronzeTierAddresses
+]
+
+const combinedWhitelist = new WhitelistManager(allTierAddresses)
+
+// Lógica de aplicação para benefícios de nível
+const tierBenefits = {
+  gold: { maxMint: 10, discount: 0.2 },
+  silver: { maxMint: 5, discount: 0.1 },
+  bronze: { maxMint: 2, discount: 0.05 }
+}
+
+function getTierForAddress(address: string): 'gold' | 'silver' | 'bronze' | null {
+  if (goldTierAddresses.some(entry => entry.address === address)) return 'gold'
+  if (silverTierAddresses.some(entry => entry.address === address)) return 'silver'  
+  if (bronzeTierAddresses.some(entry => entry.address === address)) return 'bronze'
+  return null
+}
+```
+
+### Acesso por Nível Baseado em Tempo
+
+```typescript title="Acesso por Nível Faseado"
+async function getActiveTierForTime(timestamp: number): Promise<'gold' | 'silver' | 'bronze' | 'public' | null> {
+  const phaseStartTime = 1640995200 // Exemplo de timestamp
+  const hoursSinceStart = (timestamp - phaseStartTime) / 3600
+  
+  if (hoursSinceStart < 0) return null // Não começou
+  if (hoursSinceStart < 1) return 'gold' // Primeira hora: apenas nível ouro
+  if (hoursSinceStart < 4) return 'silver' // Próximas 3 horas: ouro + prata
+  if (hoursSinceStart < 24) return 'bronze' // Próximas 20 horas: todos os níveis
+  return 'public' // Após 24 horas: acesso público
+}
+
+async function mintWithTierAccess(
+  collection: any,
+  walletClient: any,
+  address: string,
+  quantity: bigint
+) {
+  const now = Math.floor(Date.now() / 1000)
+  const activeTier = await getActiveTierForTime(now)
+  const userTier = getTierForAddress(address)
+  
+  // Verificar se o usuário pode mintar na fase atual
+  if (activeTier === 'public') {
+    // Mintagem pública - sem necessidade

@@ -1,0 +1,148 @@
+---
+title: Ponte para o Testnet B3
+description: >-
+  Facilmente faça a ponte de Base Sepolia (Base Testnet) para B3 Sepolia (B3
+  Testnet) seguindo os passos abaixo!
+lang: pt-BR
+originalPath: protocol/bridge-to-testnet.mdx
+---
+<Note>
+Esta ponte é especificamente para fins de testnet. Use o ETH de testnet gratuito para testar suas aplicações antes de implantá-las na mainnet.
+</Note>
+
+## Como Utilizar a Ponte
+
+<Steps>
+<Step title="Visite a Ponte Testnet">
+  Acesse [testnet.bridge.b3.fun](https://testnet.bridge.b3.fun) para acessar a interface oficial da ponte testnet.
+</Step>
+
+<Step title="Conecte sua Carteira">
+  Conecte sua carteira (MetaMask, Coinbase Wallet, etc.) à interface da ponte.
+  
+  <Tip>
+  Certifique-se de que sua carteira está conectada ao Base Sepolia ou ao B3 Testnet, dependendo da direção que você deseja utilizar na ponte.
+  </Tip>
+</Step>
+
+<Step title="Escolha a Direção da Ponte">
+  Selecione se você deseja:
+  - **Depositar**: Transferir fundos do Base Sepolia → B3 Testnet
+  - **Retirar**: Voltar da B3 Testnet → Base Sepolia
+  
+  Clique nas abas **Depositar** ou **Retirar** conforme apropriado.
+</Step>
+
+<Step title="Insira o Valor">
+  Digite a quantidade de ETH que deseja transferir pela ponte.
+  
+  <Card title="Precisa de ETH do Base Sepolia?" icon="faucet" href="https://docs.base.org/base-chain/tools/network-faucets" cta="Obtenha ETH do Testnet Base" horizontal>
+    Se você precisa de ETH do Base Sepolia, use uma torneira (faucet) do Base Sepolia para obter tokens de testnet gratuitamente
+  </Card>
+</Step>
+
+<Step title="Confirme a Transação">
+  Clique em "Depositar" (ou "Retirar") e confirme o prompt de transação que aparece em sua carteira.
+  
+  <Warning>
+  Verifique duas vezes se você está na testnet correta e usando ETH de testnet, não fundos da mainnet.
+  </Warning>
+</Step>
+
+<Step title="Aguarde a Conclusão">
+  Aguarde alguns minutos para que o processo da ponte seja concluído. Você pode verificar o status na aba "Histórico".
+  
+  <Check>
+  Seu ETH de testnet aparecerá em sua carteira na rede de destino dentro de alguns minutos.
+  </Check>
+</Step>
+</Steps>
+
+## Informações da Rede
+
+<CardGroup cols={2}>
+  <Card title="Base Sepolia Testnet">
+    **Chain ID**: 84532  
+    **RPC**: https://sepolia.base.org  
+    **Explorador**: https://sepolia.basescan.org
+  </Card>
+  
+  <Card title="B3 Sepolia Testnet">
+    **Chain ID**: 1993  
+    **RPC**: https://testnet-rpc.b3.fun  
+    **Explorador**: https://testnet-explorer.b3.fun
+  </Card>
+</CardGroup>
+
+## Recursos da Testnet
+
+<CardGroup cols={2}>
+  <Card title="Ponte Testnet" icon="bridge" href="https://testnet.bridge.b3.fun" cta="Usar a Ponte Agora">
+    Ponte oficial para mover ativos entre Base Sepolia e B3 Testnet
+  </Card>
+  
+  <Card title="Torneira B3 Testnet" icon="faucet" href="https://testnet-faucet.b3.fun" cta="Obter ETH de Teste">
+    Obtenha ETH de testnet B3 gratuitamente para desenvolvimento e testes
+  </Card>
+</CardGroup>
+
+## Torneiras Adicionais
+
+Se você precisa de ETH de testnet para desenvolvimento, aqui estão algumas opções confiáveis de torneiras:
+
+<AccordionGroup>
+<Accordion title="Torneiras Base Sepolia">
+  - [Coinbase Base Faucet](https://coinbase.com/faucets/base-ethereum-sepolia-faucet) - Torneira oficial da Coinbase
+  - [Alchemy Base Sepolia Faucet](https://sepoliafaucet.com) - Torneira confiável para ETH do Base Sepolia
+  - [QuickNode Base Faucet](https://faucet.quicknode.com/base/sepolia) - Suporte a múltiplos testnets
+</Accordion>
+
+<Accordion title="Torneira B3 Testnet">
+  - [B3 Testnet Faucet](https://testnet-faucet.b3.fun) - Torneira oficial do B3 testnet
+  - Obtenha ETH de testnet B3 diretamente sem precisar usar a ponte
+</Accordion>
+</AccordionGroup>
+
+## Solução de Problemas
+
+<AccordionGroup>
+<Accordion title="Transação da ponte travada">
+  - Verifique o status da transação no explorador de blocos
+  - Verifique se você está conectado ao testnet correto
+  - Tente aumentar as taxas de gás se a transação estiver pendente
+  - Contate o suporte se a ponte estiver pendente por mais de 30 minutos
+</Accordion>
+
+<Accordion title="Carteira não conecta">
+  - Certifique-se de que sua carteira suporta as redes testnet
+  - Tente atualizar a página e reconectar
+  - Verifique se você está na rede correta em sua carteira
+  - Limpe o cache do seu navegador se os problemas persistirem
+</Accordion>
+
+<Accordion title="Fundos insuficientes para o gás">
+  - Certifique-se de que você tem ETH suficiente para pagar as taxas de gás
+  - Use uma torneira para obter mais ETH de testnet
+  - Tente transferir uma quantidade menor para economizar gás
+</Accordion>
+</AccordionGroup>
+
+## Fluxo de Desenvolvimento
+
+<Steps>
+<Step title="Obtenha ETH do Base Sepolia">
+  Use uma torneira do Base Sepolia para obter ETH de testnet gratuitamente.
+</Step>
+
+<Step title="Use a Ponte para B3 Testnet">
+  Use a ponte testnet para mover ETH do Base Sepolia para o B3 Testnet.
+</Step>
+
+<Step title="Implante e Teste">
+  Implante seus contratos e teste suas aplicações no B3 Testnet.
+</Step>
+
+<Step title="Pronto para a Mainnet">
+  Quando os testes estiverem completos, implante na B3 Mainnet usando a [ponte mainnet](/protocol/bridge).
+</Step>
+</Steps>
