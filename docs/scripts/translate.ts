@@ -50,6 +50,12 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+interface SourceHash {
+  sourceFile: string;
+  sourceHash: string;
+  lastUpdated: string;
+}
+
 // Configuration
 const CONFIG = {
   languages: ["es", "pt-BR", "id", "ko", "cn"], // All supported languages, removed "el" and "vi" as they are not supported
@@ -57,6 +63,7 @@ const CONFIG = {
   docsContentDir: path.join(process.cwd(), "..", "docs"), // Where the actual docs content lives
   excludeDirs: ["node_modules", ".next", "public", "scripts", "images"],
   supportedExtensions: [".mdx", ".md"],
+  sourceHashFile: path.join(process.cwd(), "..", "docs", ".source-hashes.json"), // File to store source content hashes
   // Frontmatter fields that should be translated
   translatableFrontmatter: ["title", "description"],
   // Language-specific instructions
@@ -301,6 +308,42 @@ async function translateContent(content: string, language: string): Promise<stri
   }
 }
 
+async function loadSourceHashes(): Promise<SourceHash[]> {
+  try {
+    const content = await fs.readFile(CONFIG.sourceHashFile, "utf-8");
+    return JSON.parse(content);
+  } catch (error) {
+    // If file doesn't exist or is invalid, return empty array
+    return [];
+  }
+}
+
+async function saveSourceHashes(hashes: SourceHash[]): Promise<void> {
+  await fs.writeFile(CONFIG.sourceHashFile, JSON.stringify(hashes, null, 2));
+}
+
+async function updateSourceHash(sourceFile: string, content: string): Promise<string> {
+  const sourceData = matter(content);
+  const hash = Buffer.from(sourceData.content).toString("base64");
+
+  const hashes = await loadSourceHashes();
+  const existingIndex = hashes.findIndex(h => h.sourceFile === sourceFile);
+  const hashEntry: SourceHash = {
+    sourceFile,
+    sourceHash: hash,
+    lastUpdated: new Date().toISOString(),
+  };
+
+  if (existingIndex >= 0) {
+    hashes[existingIndex] = hashEntry;
+  } else {
+    hashes.push(hashEntry);
+  }
+
+  await saveSourceHashes(hashes);
+  return hash;
+}
+
 async function shouldTranslateFile(sourcePath: string, targetPath: string): Promise<boolean> {
   try {
     // If target doesn't exist, we should translate
@@ -317,25 +360,29 @@ async function shouldTranslateFile(sourcePath: string, targetPath: string): Prom
       return false;
     }
 
-    // In update mode, check modification dates
-    const sourceStats = await fs.stat(sourcePath);
-    const targetStats = await fs.stat(targetPath);
+    // In update mode, compare source content with stored hash
+    const sourceContent = await fs.readFile(sourcePath, "utf-8");
+    const sourceData = matter(sourceContent);
+    const currentSourceHash = Buffer.from(sourceData.content).toString("base64");
+
+    // Load stored hashes
+    const hashes = await loadSourceHashes();
+    const storedHash = hashes.find(h => h.sourceFile === path.relative(CONFIG.docsContentDir, sourcePath));
 
     console.log(`
       sourcePath: ${sourcePath}      
-      sourceStats: ${JSON.stringify(sourceStats)}
-
+      currentSourceHash: ${currentSourceHash.slice(0, 20)}...
       
-      targetStats: ${JSON.stringify(targetStats)}
-      targetPath: ${targetPath}
-      
-      `);
+      storedHash: ${storedHash?.sourceHash.slice(0, 20) || "not found"}...
+      lastUpdated: ${storedHash?.lastUpdated || "never"}
+    `);
 
-    const shouldUpdate = sourceStats.mtime > targetStats.mtime;
+    // If no stored hash or hash differs, we should update
+    const shouldUpdate = !storedHash || currentSourceHash !== storedHash.sourceHash;
     if (shouldUpdate) {
-      console.log(`Source file modified, updating: ${path.relative(CONFIG.docsContentDir, sourcePath)}`);
+      console.log(`Source content changed, updating: ${path.relative(CONFIG.docsContentDir, sourcePath)}`);
     } else {
-      console.log(`No changes detected, skipping: ${path.relative(CONFIG.docsContentDir, targetPath)}`);
+      console.log(`No content changes detected, skipping: ${path.relative(CONFIG.docsContentDir, targetPath)}`);
     }
 
     return shouldUpdate;
@@ -391,6 +438,9 @@ async function processFile(filePath: string, language: string): Promise<void> {
     // Translate content
     const translatedContent = await translateContent(markdownContent, language);
     timer.log("translated content");
+
+    // Update source hash in our central storage
+    await updateSourceHash(relativePath, content);
 
     // Update frontmatter for translated version
     const updatedFrontmatter = {
