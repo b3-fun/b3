@@ -32,20 +32,11 @@
               },
               {
                 "group": "Network",
-                "pages": [
-                  "protocol/network-setup",
-                  "protocol/bridge",
-                  "protocol/testnet",
-                  "protocol/bridge-to-testnet"
-                ]
+                "pages": ["protocol/network-setup", "protocol/bridge", "protocol/testnet", "protocol/bridge-to-testnet"]
               },
               {
                 "group": "Build on B3",
-                "pages": [
-                  "protocol/brand-kit",
-                  "redirect/ecosystem",
-                  "redirect/sdk"
-                ]
+                "pages": ["protocol/brand-kit", "redirect/ecosystem", "redirect/sdk"]
               },
               {
                 "group": "Governance",
@@ -88,19 +79,11 @@
             "groups": [
               {
                 "group": "Overview",
-                "pages": [
-                  "ecosystem/introduction",
-                  "protocol/network-setup",
-                  "ai-optimized"
-                ]
+                "pages": ["ecosystem/introduction", "protocol/network-setup", "ai-optimized"]
               },
               {
                 "group": "Resources",
-                "pages": [
-                  "data/api-reference/introduction",
-                  "data/profiles/index",
-                  "redirect/sdk"
-                ]
+                "pages": ["data/api-reference/introduction", "data/profiles/index", "redirect/sdk"]
               },
               {
                 "group": "Ecosystem Tools",
@@ -115,10 +98,7 @@
               },
               {
                 "group": "User Experience",
-                "pages": [
-                  "ecosystem/wallets",
-                  "ecosystem/bridges"
-                ]
+                "pages": ["ecosystem/wallets", "ecosystem/bridges"]
               },
               {
                 "group": "Data API",
@@ -222,18 +202,11 @@
             "groups": [
               {
                 "group": "Overview",
-                "pages": [
-                  "basement/introduction",
-                  "basement/game-launcher",
-                  "basement/brand-kit"
-                ]
+                "pages": ["basement/introduction", "basement/game-launcher", "basement/brand-kit"]
               },
               {
                 "group": "Game Development",
-                "pages": [
-                  "basement/unity-guide",
-                  "basement/construct-guide"
-                ]
+                "pages": ["basement/unity-guide", "basement/construct-guide"]
               },
               {
                 "group": "API Reference",
@@ -264,20 +237,11 @@
             "groups": [
               {
                 "group": "Getting Started",
-                "pages": [
-                  "hypeduel/introduction",
-                  "hypeduel/quick-start",
-                  "hypeduel/platform-overview"
-                ]
+                "pages": ["hypeduel/introduction", "hypeduel/quick-start", "hypeduel/platform-overview"]
               },
               {
                 "group": "Game Mechanics",
-                "pages": [
-                  "hypeduel/betting-system",
-                  "hypeduel/boosts",
-                  "hypeduel/arenas",
-                  "hypeduel/gameplay"
-                ]
+                "pages": ["hypeduel/betting-system", "hypeduel/boosts", "hypeduel/arenas", "hypeduel/gameplay"]
               },
               {
                 "group": "Tokenomics",
@@ -291,16 +255,11 @@
               },
               {
                 "group": "Developers",
-                "pages": [
-                  "hypeduel/developers"
-                ]
+                "pages": ["hypeduel/developers"]
               },
               {
                 "group": "Support",
-                "pages": [
-                  "hypeduel/faq",
-                  "hypeduel/glossary"
-                ]
+                "pages": ["hypeduel/faq", "hypeduel/glossary"]
               }
             ],
             "global": {
@@ -324,19 +283,11 @@
             "groups": [
               {
                 "group": "Getting Started",
-                "pages": [
-                  "anyspend/introduction",
-                  "anyspend/installation",
-                  "anyspend/onramp"
-                ]
+                "pages": ["anyspend/introduction", "anyspend/installation", "anyspend/onramp"]
               },
               {
                 "group": "React",
-                "pages": [
-                  "anyspend/components",
-                  "anyspend/hooks",
-                  "anyspend/examples"
-                ]
+                "pages": ["anyspend/components", "anyspend/hooks", "anyspend/examples"]
               },
               {
                 "group": "REST API",
@@ -347,9 +298,7 @@
               },
               {
                 "group": "Advanced",
-                "pages": [
-                  "anyspend/error-handling"
-                ]
+                "pages": ["anyspend/error-handling"]
               }
             ],
             "global": {
@@ -382,33 +331,19 @@
                 "groups": [
                   {
                     "group": "Getting Started",
-                    "pages": [
-                      "createkit/introduction",
-                      "createkit/installation",
-                      "createkit/quickstart"
-                    ]
+                    "pages": ["createkit/introduction", "createkit/installation", "createkit/quickstart"]
                   },
                   {
                     "group": "Core Features",
-                    "pages": [
-                      "createkit/collections",
-                      "createkit/minting",
-                      "createkit/rewards"
-                    ]
+                    "pages": ["createkit/collections", "createkit/minting", "createkit/rewards"]
                   },
                   {
                     "group": "Advanced",
-                    "pages": [
-                      "createkit/whitelist",
-                      "createkit/storage",
-                      "createkit/error-handling"
-                    ]
+                    "pages": ["createkit/whitelist", "createkit/storage", "createkit/error-handling"]
                   },
                   {
                     "group": "Resources",
-                    "pages": [
-                      "createkit/examples"
-                    ]
+                    "pages": ["createkit/examples"]
                   },
                   {
                     "group": "API Reference",
@@ -434,11 +369,7 @@
                   },
                   {
                     "group": "Core Concepts",
-                    "pages": [
-                      "bondkit/concepts/bonding-phase",
-                      "bondkit/concepts/pricing",
-                      "bondkit/concepts/targets"
-                    ]
+                    "pages": ["bondkit/concepts/bonding-phase", "bondkit/concepts/pricing", "bondkit/concepts/targets"]
                   },
                   {
                     "group": "Guides",
@@ -450,25 +381,19 @@
                   },
                   {
                     "group": "Resources",
-                    "pages": [
-                      "bondkit/networks"
-                    ]
+                    "pages": ["bondkit/networks"]
                   }
                 ]
               },
               {
                 "item": "ArenaKit",
                 "icon": "trophy",
-                "pages": [
-                  "arenakit/introduction"
-                ]
+                "pages": ["arenakit/introduction"]
               },
               {
                 "item": "B3AR",
                 "icon": "parachute-box",
-                "pages": [
-                  "b3ar/introduction"
-                ]
+                "pages": ["b3ar/introduction"]
               },
               {
                 "item": "B3 SDK",
@@ -476,9 +401,7 @@
                 "groups": [
                   {
                     "group": "Overview",
-                    "pages": [
-                      "sdk/introduction"
-                    ]
+                    "pages": ["sdk/introduction"]
                   },
                   {
                     "group": "Global Accounts",
@@ -639,16 +562,6 @@
             }
           ]
         }
-      },
-      {
-        "language": "vi",
-        "tabs": [],
-        "global": {}
-      },
-      {
-        "language": "el",
-        "tabs": [],
-        "global": {}
       }
     ]
   },
@@ -676,16 +589,7 @@
     }
   },
   "contextual": {
-    "options": [
-      "copy",
-      "view",
-      "chatgpt",
-      "claude",
-      "perplexity",
-      "mcp",
-      "cursor",
-      "vscode"
-    ]
+    "options": ["copy", "view", "chatgpt", "claude", "perplexity", "mcp", "cursor", "vscode"]
   },
   "footer": {
     "socials": {
