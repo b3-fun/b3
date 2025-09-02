@@ -6,6 +6,8 @@ on:
     paths:
       - "docs/**/*.mdx"
       - "docs/**/*.md"
+      - "docs/scripts/translate.ts"
+      - ".github/workflows/translate.yml"
       - "pnpm-workspace.yaml"
   workflow_dispatch:
 
