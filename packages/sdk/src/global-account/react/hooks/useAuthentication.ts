@@ -4,7 +4,7 @@ import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { b3MainnetThirdWeb } from "@b3dotfun/sdk/shared/constants/chains/supported";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useActiveWallet, useAutoConnect, useConnectedWallets, useDisconnect } from "thirdweb/react";
 import { ecosystemWallet } from "thirdweb/wallets";
 import { preAuthenticate } from "thirdweb/wallets/in-app";
@@ -27,7 +27,7 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
   const setIsConnected = useAuthStore(state => state.setIsConnected);
   const isConnecting = useAuthStore(state => state.isConnecting);
   const isConnected = useAuthStore(state => state.isConnected);
-  const [useAutoConnectLoadingPrevious, setUseAutoConnectLoadingPrevious] = useState(false);
+  const useAutoConnectLoadingPrevious = useRef(false);
   const setV2IsAuthenticating = useAuthStore(state => state.setV2IsAuthenticating);
   const setV2IsAuthenticated = useAuthStore(state => state.setV2IsAuthenticated);
   const V2IsAuthenticating = useAuthStore(state => state.V2IsAuthenticating);
