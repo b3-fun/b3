@@ -74,7 +74,7 @@ export const useAuthStore = create<AuthState>(set => ({
       onError: undefined,
     }),
   isAuthenticatingV2: true,
-  setIsAuthenticatingV2: isAuthenticating => set({ IsAuthenticatingV2: isAuthenticating }),
+  setIsAuthenticatingV2: isAuthenticating => set({ isAuthenticatingV2: isAuthenticating }),
   isAuthenticatedV2: false,
-  setIsAuthenticatedV2: isAuthenticated => set({ IsAuthenticatedV2: isAuthenticated }),
+  setIsAuthenticatedV2: isAuthenticated => set({ isAuthenticatedV2: isAuthenticated }),
 }));
