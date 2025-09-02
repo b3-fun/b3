@@ -580,7 +580,63 @@ async function processFile(filePath: string, language: string): Promise<void> {
   }
 }
 
+function showHelp(): void {
+  console.log(`
+B3 Documentation Translation Script
+
+Usage:
+  pnpm run translate [options]
+
+Options:
+  --all                    Process ALL files (not just changed ones)
+  --update                 Update existing translated files if source changed
+  --force-update-navigation Force retranslation of navigation structure
+  --source-hashes-only     Only update source file hashes (no translation)
+  --help, -h               Show this help message
+
+Environment Variables:
+  TRANSLATION_DRY_RUN=true Run in dry-run mode (preview only, no changes)
+  TRANSLATION_BATCH_SIZE=N Process N files at a time (default: 1)
+
+Examples:
+  pnpm run translate                           # Translate only new/changed files
+  pnpm run translate --all                     # Translate all files
+  pnpm run translate --update                  # Update existing files if source changed
+  pnpm run translate --force-update-navigation # Force retranslate navigation
+  pnpm run translate --source-hashes-only      # Only update source hashes
+  TRANSLATION_DRY_RUN=true pnpm run translate  # Preview what would be translated
+
+Language Support:
+  - Spanish (es)
+  - Brazilian Portuguese (pt-BR) 
+  - Indonesian/Malay (id)
+  - Korean (ko)
+  - Simplified Chinese (cn)
+
+What Gets Translated:
+  - Page titles and descriptions
+  - Navigation structure and labels
+  - All human-readable text content
+  - Preserves HTML elements, code blocks, and technical terms
+
+HTML Preservation:
+  The script now properly preserves HTML elements like <iframe>, <img>, <br />, etc.
+  without wrapping them in code blocks. If you encounter files with HTML escaping
+  issues, use the cleanup script:
+  
+  pnpm run clean-html-escaped --dry-run    # Preview affected files
+  pnpm run clean-html-escaped --delete     # Delete affected files
+  pnpm run translate --all                 # Re-translate with fixed prompts
+`);
+}
+
 async function main() {
+  // Handle help flag
+  if (process.argv.includes("--help") || process.argv.includes("-h")) {
+    showHelp();
+    process.exit(0);
+  }
+
   const totalTimer = new Timer("total");
   try {
     const files = await glob("**/*{.md,.mdx}", {
