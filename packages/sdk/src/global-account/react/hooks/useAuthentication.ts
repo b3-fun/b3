@@ -30,8 +30,8 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
   const useAutoConnectLoadingPrevious = useRef(false);
   const setIsAuthenticatingV2 = useAuthStore(state => state.setIsAuthenticatingV2);
   const setIsAuthenticatedV2 = useAuthStore(state => state.setIsAuthenticatedV2);
-  const IsAuthenticatingV2 = useAuthStore(state => state.IsAuthenticatingV2);
-  const IsAuthenticatedV2 = useAuthStore(state => state.IsAuthenticatedV2);
+  const isAuthenticatingV2 = useAuthStore(state => state.isAuthenticatingV2);
+  const isAuthenticatedV2 = useAuthStore(state => state.isAuthenticatedV2);
   const hasStartedConnecting = useRef(false);
   const { connect } = useConnect(partnerId, b3MainnetThirdWeb);
 
@@ -162,7 +162,7 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
     wallet,
     preAuthenticate,
     connect,
-    IsAuthenticatingV2,
-    IsAuthenticatedV2
+    isAuthenticatingV2,
+    isAuthenticatedV2
   };
 }
