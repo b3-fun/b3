@@ -151,6 +151,29 @@ async function translateText(text: string, language: string, context: string = "
   }
 }
 
+// Helper function to ensure all pages have proper language prefix
+function ensureLanguagePrefix(pages: (string | NavigationItem)[], language: string): (string | NavigationItem)[] {
+  return pages.map(page => {
+    if (typeof page === "string") {
+      // Handle special paths that shouldn't be prefixed
+      if (page.startsWith("http") || page.startsWith("redirect/")) {
+        return page;
+      }
+      // Remove any existing language prefix and ensure clean path
+      const cleanPath = page.replace(/^[a-z]{2}(-[A-Z]{2})?\//, "");
+      // Add the new language prefix
+      return `${language}/${cleanPath}`;
+    } else {
+      // For nested items, recursively ensure language prefix
+      const translatedNestedItem = { ...page };
+      if (translatedNestedItem.pages) {
+        translatedNestedItem.pages = ensureLanguagePrefix(translatedNestedItem.pages, language);
+      }
+      return translatedNestedItem;
+    }
+  });
+}
+
 async function translateNavigationItem(item: NavigationItem, language: string): Promise<NavigationItem> {
   const timer = new Timer("translateNavigationItem");
   const translatedItem: NavigationItem = { ...item };
@@ -164,19 +187,20 @@ async function translateNavigationItem(item: NavigationItem, language: string): 
   }
 
   if (item.pages) {
+    // First translate any text content in nested items
     translatedItem.pages = await Promise.all(
       item.pages.map(async page => {
         if (typeof page === "string") {
-          // Remove any existing language prefix
-          const cleanPath = page.replace(/^[a-z]{2}\//, "");
-          // Add the new language prefix
-          return `${language}/${cleanPath}`;
+          return page; // Will be handled by ensureLanguagePrefix
         } else {
           // Recursively translate nested navigation items
           return await translateNavigationItem(page, language);
         }
       }),
     );
+    
+    // Then ensure all pages have proper language prefix
+    translatedItem.pages = ensureLanguagePrefix(translatedItem.pages, language);
   }
 
   timer.log();
@@ -204,6 +228,7 @@ async function translateNavigation(language: string): Promise<void> {
     // If we have an existing entry, use it as the base
     const translatedNavigation = existingLangEntry || {
       language,
+      name: CONFIG.languageInstructions[language], // Add proper language name
       tabs: [],
       global: {},
     };
@@ -211,21 +236,93 @@ async function translateNavigation(language: string): Promise<void> {
     // Always translate tabs if force update is enabled, otherwise only if they don't exist or are empty
     if (forceUpdateNavigation || (!translatedNavigation.tabs?.length && originalTabs?.length)) {
       console.log(`Translating navigation tabs for ${language}...`);
+      
+      // Create a deep copy of the original tabs to avoid modifying the source
+      const tabsToTranslate = JSON.parse(JSON.stringify(originalTabs));
+      
+      // Translate and ensure proper language prefixing
       translatedNavigation.tabs = await Promise.all(
-        originalTabs.map(tab => translateNavigationItem(tab, language)),
+        tabsToTranslate.map(async tab => {
+          const translatedTab = await translateNavigationItem(tab, language);
+          
+          // Ensure all page references in the tab have proper language prefixes
+          if (translatedTab.pages) {
+            translatedTab.pages = ensureLanguagePrefix(translatedTab.pages, language);
+          }
+          
+          return translatedTab;
+        })
       );
+      
       timer.log("translated tabs");
     } else {
       console.log(`Navigation tabs already exist for ${language} with ${translatedNavigation.tabs?.length || 0} items`);
+      
+      // Even if tabs exist, we need to ensure language prefixes are correct
+      if (translatedNavigation.tabs?.length) {
+        console.log(`Ensuring language prefixes are correct for existing ${language} navigation...`);
+        translatedNavigation.tabs = translatedNavigation.tabs.map(tab => {
+          // Recursively apply language prefix to all nested items
+          const processTab = (tabItem: any): any => {
+            if (tabItem.pages) {
+              tabItem.pages = ensureLanguagePrefix(tabItem.pages, language);
+            }
+            if (tabItem.groups) {
+              tabItem.groups = tabItem.groups.map((group: any) => processTab(group));
+            }
+            if (tabItem.menu) {
+              tabItem.menu = tabItem.menu.map((menuItem: any) => processTab(menuItem));
+            }
+            return tabItem;
+          };
+          return processTab(tab);
+        });
+        timer.log("ensured language prefixes");
+      }
+      
       if (!forceUpdateNavigation) {
         console.log("Use --force-update-navigation to retranslate existing navigation");
       }
     }
 
-    // Copy English global anchors as-is
+    // CRITICAL: Always ensure language prefixes are applied to ALL navigation structures
+    if (translatedNavigation.tabs?.length) {
+      console.log(`Final pass: Ensuring ALL pages have ${language}/ prefix...`);
+      translatedNavigation.tabs = translatedNavigation.tabs.map(tab => {
+        const processTab = (tabItem: any): any => {
+          if (tabItem.pages) {
+            tabItem.pages = tabItem.pages.map((page: any) => {
+              if (typeof page === "string" && !page.startsWith("http") && !page.startsWith("redirect/")) {
+                const cleanPath = page.replace(/^[a-z]{2}(-[A-Z]{2})?\//, "");
+                return `${language}/${cleanPath}`;
+              }
+              return page;
+            });
+          }
+          if (tabItem.groups) {
+            tabItem.groups = tabItem.groups.map((group: any) => processTab(group));
+          }
+          if (tabItem.menu) {
+            tabItem.menu = tabItem.menu.map((menuItem: any) => processTab(menuItem));
+          }
+          return tabItem;
+        };
+        return processTab(tab);
+      });
+      timer.log("final language prefix pass");
+    }
+
+    // Handle global anchors - these might need translation too
     if (englishNav.global?.anchors) {
+      const translatedAnchors = await Promise.all(
+        englishNav.global.anchors.map(async anchor => ({
+          ...anchor,
+          anchor: await translateText(anchor.anchor, language, "anchor")
+        }))
+      );
+      
       translatedNavigation.global = {
-        anchors: [...englishNav.global.anchors]
+        anchors: translatedAnchors
       };
       timer.log("translated anchors");
     } else {
@@ -538,8 +635,9 @@ async function main() {
     let totalSkipped = 0;
 
     // Process each language independently
-    // TEMPORARY: Only process Spanish
-    for (const language of ["es", "pt-BR"]) {
+    // // TEMPORARY: Only process Spanish
+    // for (const language of ["es", "pt-BR"]) {
+    for (const language of CONFIG.languages) {
       console.log(`\nProcessing language: ${language}`);
       let processedCount = 0;
       let skippedCount = 0;
