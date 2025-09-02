@@ -635,8 +635,9 @@ async function main() {
     let totalSkipped = 0;
 
     // Process each language independently
-    // TEMPORARY: Only process Spanish
-    for (const language of ["es", "pt-BR"]) {
+    // // TEMPORARY: Only process Spanish
+    // for (const language of ["es", "pt-BR"]) {
+    for (const language of CONFIG.languages) {
       console.log(`\nProcessing language: ${language}`);
       let processedCount = 0;
       let skippedCount = 0;
