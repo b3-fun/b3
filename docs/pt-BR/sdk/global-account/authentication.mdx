@@ -1,0 +1,281 @@
+---
+title: Autenticação
+description: Aprenda como implementar autenticação com B3 Global Accounts
+lang: pt-BR
+originalPath: sdk/global-account/authentication.mdx
+---
+
+## Estratégias de Autenticação
+
+As Contas Globais B3 suportam múltiplas estratégias de autenticação para atender às necessidades da sua aplicação.
+
+## Login Social
+
+### Autenticação Google
+
+```tsx
+import { SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
+
+function GoogleAuth() {
+  return (
+    <SignInWithB3
+      provider={{ strategy: "google" }}
+      partnerId="your-partner-id"
+      onLoginSuccess={(globalAccount) => {
+        console.log("Autenticação Google bem-sucedida:", globalAccount);
+      }}
+      onLoginError={(error) => {
+        console.error("Falha na autenticação:", error);
+      }}
+    />
+  );
+}
+```
+
+### Autenticação Discord
+
+```tsx
+import { SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
+
+function DiscordAuth() {
+  return (
+    <SignInWithB3
+      provider={{ strategy: "discord" }}
+      partnerId="your-partner-id"
+      onLoginSuccess={(globalAccount) => {
+        console.log("Autenticação Discord bem-sucedida:", globalAccount);
+      }}
+    />
+  );
+}
+```
+
+## Autenticação por Chave de Sessão
+
+As chaves de sessão proporcionam segurança aprimorada e permitem permissões granulares. Isso é particularmente útil para jogos e aplicações que precisam realizar ações em nome dos usuários.
+
+### Configuração Básica de Chave de Sessão
+
+```tsx
+import { SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
+
+const b3Chain = {
+  id: 8333,
+  name: "B3",
+  nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+  rpc: "https://mainnet-rpc.b3.fun",
+};
+
+function SessionKeyAuth() {
+  return (
+    <SignInWithB3
+      provider={{ strategy: "google" }}
+      chain={b3Chain}
+      partnerId="your-partner-id"
+      sessionKeyAddress="0x..." // Endereço MetaMask ou outra carteira
+      onLoginSuccess={(globalAccount) => {
+        console.log("Chave de sessão autenticada:", globalAccount);
+      }}
+    />
+  );
+}
+```
+
+### Configuração Personalizada de Chave de Sessão
+
+```tsx
+function AdvancedSessionAuth() {
+  const sessionKeyConfig = {
+    permissions: {
+      approvedTargets: ["0x..."], // Endereços de contratos específicos
+      startDate: new Date(),
+      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 dias
+      nativeTokenLimitPerTransaction: 0.0001, // Limite de ETH por transação
+    }
+  };
+
+  return (
+    <SignInWithB3
+      provider={{ strategy: "google" }}
+      chain={b3Chain}
+      partnerId="your-partner-id"
+      sessionKeyAddress="0x..."
+      sessionKeyConfig={sessionKeyConfig}
+      onLoginSuccess={(globalAccount) => {
+        console.log("Configuração avançada de chave de sessão:", globalAccount);
+      }}
+    />
+  );
+}
+```
+
+## Autenticação sem Interface
+
+Para implementações personalizadas, use o serviço de autenticação sem interface:
+
+### Autenticação Básica
+
+```typescript
+import { authenticate } from "@b3dotfun/sdk/global-account/app";
+
+async function authenticateUser(accessToken: string, identityToken: string) {
+  try {
+    const authResult = await authenticate(accessToken, identityToken, {
+      // configuração adicional
+    });
+    
+    if (authResult) {
+      console.log("Autenticação bem-sucedida:", authResult);
+      return authResult;
+    } else {
+      console.log("Falha na autenticação");
+      return null;
+    }
+  } catch (error) {
+    console.error("Erro de autenticação:", error);
+    throw error;
+  }
+}
+```
+
+### Autenticação React Native
+
+```typescript
+// Para aplicações React Native
+import { authenticate } from "@b3dotfun/sdk/global-account/app";
+
+async function authenticateInReactNative() {
+  const result = await authenticate("access-token", "identity-token");
+  return result;
+}
+```
+
+## Hooks de Autenticação
+
+### Hook useB3
+
+O principal hook para acessar o estado de autenticação:
+
+```tsx
+import { useB3 } from "@b3dotfun/sdk/global-account/react";
+
+function AuthStatus() {
+  const { 
+    account, 
+    isAuthenticated, 
+    isLoading,
+    signOut 
+  } = useB3();
+
+  if (isLoading) return <div>Carregando...</div>;
+
+  return (
+    <div>
+      {isAuthenticated ? (
+        <div>
+          <p>Bem-vindo(a), {account?.displayName}!</p>
+          <button onClick={signOut}>Sair</button>
+        </div>
+      ) : (
+        <p>Por favor, faça login</p>
+      )}
+    </div>
+  );
+}
+```
+
+### Hook useAccountWallet
+
+Acesse informações da carteira:
+
+```tsx
+import { useAccountWallet } from "@b3dotfun/sdk/global-account/react";
+
+function WalletInfo() {
+  const { wallet, isConnected } = useAccountWallet();
+
+  return (
+    <div>
+      {isConnected && (
+        <div>
+          <p>Endereço da Carteira: {wallet?.address}</p>
+          <p>ID da Cadeia: {wallet?.chainId}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## Tratamento de Erros
+
+Implemente um tratamento de erros adequado para fluxos de autenticação:
+
+```tsx
+function AuthWithErrorHandling() {
+  const [authError, setAuthError] = useState<string | null>(null);
+
+  return (
+    <div>
+      <SignInWithB3
+        provider={{ strategy: "google" }}
+        partnerId="your-partner-id"
+        onLoginSuccess={(globalAccount) => {
+          setAuthError(null);
+          console.log("Sucesso:", globalAccount);
+        }}
+        onLoginError={(error) => {
+          setAuthError(error.message);
+          console.error("Erro de autenticação:", error);
+        }}
+      />
+      
+      {authError && (
+        <div className="error">
+          Autenticação falhou: {authError}
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## Melhores Práticas
+
+<CardGroup cols={2}>
+
+<Card title="ID do Parceiro" icon="id-badge">
+  Sempre use seu ID de parceiro único para atribuição e análises adequadas.
+</Card>
+
+<Card title="Tratamento de Erros" icon="exclamation-triangle">
+  Implemente um tratamento de erros abrangente para uma melhor experiência do usuário.
+</Card>
+
+<Card title="Gerenciamento de Sessão" icon="clock">
+  Defina durações de sessão apropriadas com base nas necessidades de segurança da sua aplicação.
+</Card>
+
+<Card title="Configuração de Ambiente" icon="settings">
+  Use variáveis de ambiente adequadas para diferentes estágios de implantação.
+</Card>
+
+</CardGroup>
+
+## Próximos Passos
+
+<CardGroup cols={2}>
+
+<Card title="Permissões" icon="lock" href="/sdk/global-account/permissions">
+  Saiba mais sobre o gerenciamento de permissões e chaves de sessão.
+</Card>
+
+<Card title="Referência de Hooks" icon="react" href="/sdk/global-account/hooks">
+  Explore todos os hooks React disponíveis.
+</Card>
+
+<Card title="Exemplos" icon="code" href="/sdk/global-account/examples">
+  Veja exemplos completos de integração.
+</Card>
+
+</CardGroup>

@@ -1,0 +1,174 @@
+---
+title: Testnet
+description: Conecte-se à testnet B3 com qualquer carteira compatível com EVM
+lang: pt-BR
+originalPath: protocol/testnet.mdx
+---
+## Informações da Rede
+
+<Card title="Chain ID">
+  ```text
+  1993
+  ```
+  <Note>
+  Curiosidade: 1993 é o ano em que "Doom" foi lançado, revolucionando o gênero de jogos de tiro em primeira pessoa.
+  </Note>
+</Card>
+
+<Card title="Token Nativo">
+  **Ether (ETH)**
+  
+  O mesmo token usado na rede principal Ethereum, mas apenas para fins de teste.
+</Card>
+
+### Pontos de Acesso à Rede
+
+<Tabs>
+<Tab title="HTTP RPC">
+  ```text RPC Endpoint
+  https://testnet-rpc.b3.fun
+  ```
+  
+  Use este ponto de acesso para requisições HTTP padrão à testnet B3.
+</Tab>
+
+<Tab title="WebSocket RPC">
+  ```text WebSocket Endpoint  
+  wss://testnet-rpc.b3.fun
+  ```
+  
+  Use este ponto de acesso para conexões WebSocket em tempo real com a testnet B3.
+</Tab>
+</Tabs>
+
+### Explorador de Blocos
+
+<Card title="B3 Explorer" icon="magnifying-glass" href="https://explorer.b3.fun" cta="Ver Explorador" horizontal>
+  Explore transações, blocos e contratos na B3 (incluindo testnet).
+</Card>
+
+## Links Rápidos
+
+<CardGroup cols={3}>
+  <Card title="Ponte da Testnet" icon="bridge" href="https://testnet-bridge.b3.fun" cta="Transferir Ativos">
+    Transfira ativos para a testnet B3 para testes
+  </Card>
+  
+  <Card title="Torneira" icon="faucet" href="https://faucet.b3.fun" cta="Obter ETH de Teste">
+    Obtenha ETH de teste gratuitamente para desenvolvimento e testes
+  </Card>
+  
+  <Card title="Ferramentas para Desenvolvedores" icon="wrench" href="/ecosystem/introduction" cta="Explorar Ferramentas">
+    Descubra ferramentas e infraestrutura para construir na B3
+  </Card>
+</CardGroup>
+
+## Adicionando a Testnet B3 à Sua Carteira
+
+<Steps>
+<Step title="Abrir Configurações da Carteira">
+  Abra sua carteira (MetaMask, Coinbase Wallet, etc.) e navegue até as configurações de rede.
+</Step>
+
+<Step title="Adicionar Rede Personalizada">
+  Clique em "Adicionar Rede" ou "Adicionar Rede Personalizada", dependendo da sua carteira.
+</Step>
+
+<Step title="Inserir Detalhes da Rede">
+  Preencha as seguintes informações:
+  
+  - **Nome da Rede**: B3 Testnet
+  - **Chain ID**: 1993
+  - **URL RPC**: https://testnet-rpc.b3.fun
+  - **Símbolo da Moeda**: ETH
+  - **URL do Explorador de Blocos**: https://explorer.b3.fun
+</Step>
+
+<Step title="Salvar e Mudar">
+  Salve a configuração da rede e mude para a Testnet B3.
+  
+  <Check>
+  Você está agora conectado à Testnet B3! Você pode começar a testar suas aplicações.
+  </Check>
+</Step>
+</Steps>
+
+## Por Que Usar Testnets?
+
+As testnets fornecem um ambiente seguro, controlado e eficiente para testes e experimentação. Redes de teste, ou testnets, servem como ferramentas essenciais para você testar seus contratos inteligentes antes de implantá-los na mainnet, minimizando o risco de falhas ou vulnerabilidades em aplicações ao vivo.
+
+### Principais Benefícios
+
+<CardGroup cols={2}>
+  <Card title="Testes Sem Riscos" icon="shield-check">
+    Teste seus contratos inteligentes e aplicações sem arriscar fundos reais ou afetar usuários ao vivo.
+  </Card>
+  
+  <Card title="Ambiente Realista" icon="globe">
+    Simule condições da mainnet incluindo latência da rede, taxas de gás e throughput de transações.
+  </Card>
+  
+  <Card title="Desenvolvimento Custo-Efetivo" icon="dollar-sign">
+    Use tokens de testnet gratuitos em vez de ETH da mainnet caro para desenvolvimento e testes.
+  </Card>
+  
+  <Card title="Plataforma de Aprendizado" icon="graduation-cap">
+    Ambiente perfeito para desenvolvedores aprenderem e experimentarem com o desenvolvimento blockchain.
+  </Card>
+</CardGroup>
+
+Ao simular o ambiente da mainnet, as testnets oferecem uma representação realista das condições do mundo real, completa com latência de rede, taxas de gás e outros fatores que impactam o desempenho dos contratos inteligentes. Esta representação precisa permite que você identifique possíveis problemas, otimize suas aplicações e garanta a melhor experiência possível para seus usuários finais.
+
+Além disso, as testnets permitem que você se familiarize com o ecossistema B3 e ganhe experiência prática valiosa, tornando-as ferramentas indispensáveis tanto para desenvolvedores experientes quanto para novatos no mundo do desenvolvimento blockchain.
+
+## Fluxo de Trabalho de Desenvolvimento
+
+<Steps>
+<Step title="Obter ETH de Teste">
+  Use a [torneira de testnet](https://testnet-faucet.b3.fun) para obter ETH gratuito para testes.
+</Step>
+
+<Step title="Implantar e Testar">
+  Implante seus contratos inteligentes na testnet e teste todas as funcionalidades exaustivamente.
+</Step>
+
+<Step title="Depurar e Otimizar">
+  Use o explorador de blocos e as ferramentas de desenvolvimento para depurar problemas e otimizar o desempenho.
+</Step>
+
+<Step title="Implantar na Mainnet">
+  Uma vez que os testes estejam completos, implante seus contratos prontos para produção na mainnet B3.
+  
+  <Warning>
+  Sempre teste exaustivamente na testnet antes de implantar na mainnet com fundos reais.
+  </Warning>
+</Step>
+</Steps>
+
+## Testnet vs Mainnet
+
+<AccordionGroup>
+<Accordion title="Configuração da Rede">
+  **Testnet**:
+  - Chain ID: 1993
+  - RPC: https://testnet-rpc.b3.fun
+  - Explorador: https://testnet-explorer.b3.fun
+  
+  **Mainnet**:
+  - Chain ID: 8333
+  - RPC: https://mainnet-rpc.b3.fun
+  - Explorador: https://explorer.b3.fun
+</Accordion>
+
+<Accordion title="Valor do Token">
+  **Testnet**: ETH não tem valor no mundo real - usado apenas para testes
+  
+  **Mainnet**: ETH tem valor no mundo real e custa dinheiro para adquirir
+</Accordion>
+
+<Accordion title="Casos de Uso">
+  **Testnet**: Desenvolvimento, testes, aprendizado, experimentação
+  
+  **Mainnet**: Aplicações em produção, usuários reais, transações reais
+</Accordion>
+</AccordionGroup>

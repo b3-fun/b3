@@ -1,0 +1,234 @@
+---
+title: Introdução ao BondKit
+description: >-
+  Produto para lançamento de tokens de títulos ERC20 no Base com uma fase de
+  vinculação e migração sem interrupções para o Uniswap v4.
+lang: pt-BR
+originalPath: bondkit/introduction.mdx
+---
+## O que é BondKit?
+
+BondKit é uma plataforma completa de lançamento de tokens para a criação de "bond tokens" ERC20 na rede principal Base. Ela oferece uma solução de ponta a ponta que lida com tudo, desde a criação inicial do token até a negociação via curva de bonding e, finalmente, a migração para o Uniswap v4 para negociação descentralizada completa.
+
+### Componentes Principais
+
+<Tabs>
+  <Tab title="Smart Contracts">
+    **Infraestrutura On-Chain Auditada**
+    - Contrato de fábrica para implantar novos tokens
+    - Implementação ERC20 com lógica de curva de bonding
+    - Inicialização automática de pool do Uniswap v4
+    - Padrão de proxy mínimo otimizado para gás
+  </Tab>
+  <Tab title="TypeScript SDK">
+    **Ferramentas Amigáveis para Desenvolvedores**
+    - API simples para todas as interações com contratos
+    - Interfaces seguras de tipo com suporte completo a TypeScript
+    - Gerenciamento de transações integrado
+    - Assinaturas de eventos e monitoramento
+  </Tab>
+  <Tab title="Analytics Backend">
+    **Serviços de Dados em Tempo Real**
+    - Rastreamento do histórico de transações
+    - Geração de dados de gráficos OHLCV
+    - Armazenamento de metadados de tokens
+    - API REST para integração frontend
+  </Tab>
+</Tabs>
+
+## Como o BondKit Funciona
+
+```mermaid
+graph LR
+    A[Create Token] --> B[Bonding Phase]
+    B --> C[Target Reached]
+    C --> D[Migrate to DEX]
+    D --> E[Uniswap v4 Trading]
+    
+    style A fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style B fill:#FF9800,stroke:#F57C00,stroke-width:2px,color:#fff
+    style C fill:#9C27B0,stroke:#6A1B9A,stroke-width:2px,color:#fff
+    style D fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#fff
+    style E fill:#00BCD4,stroke:#00838F,stroke-width:2px,color:#fff
+```
+
+### O Ciclo de Vida em Três Fases
+
+1. **Fase de Criação**: Implante seu token com parâmetros personalizados
+2. **Fase de Bonding**: Fazendo de mercado automatizado via curva de bonding
+3. **Fase DEX**: Negociação descentralizada completa no Uniswap v4
+
+## Recursos Principais
+
+<AccordionGroup>
+  <Accordion title="🏭 Implantação Padrão de Fábrica">
+    - **Clones Eficientes em Gás**: Usa o padrão de proxy mínimo para reduzir os custos de implantação em ~90%
+    - **Implementação Padronizada**: Todos os tokens compartilham a mesma lógica testada em batalha
+    - **Implantação com Um Clique**: Chamada de função simples para criar um novo token
+  </Accordion>
+  
+  <Accordion title="📈 Curva de Bonding Dinâmica">
+    - **Agressividade Configurável**: Fator de 0-100 controla a progressão do preço
+    - **Descoberta Automática de Preço**: Preços orientados pelo mercado durante a fase de bonding
+    - **Suporte de Compra e Venda**: Negociação bidirecional completa durante o bonding
+    - **Taxa de Negociação de 5%**: Aplicada a compras e vendas, distribuída ao destinatário da taxa
+  </Accordion>
+  
+  <Accordion title="🎯 Migração Baseada em Objetivos">
+    - **Objetivos Personalizáveis**: Defina sua meta de financiamento em ETH ou ERC20 permitidos
+    - **Detecção Automática de Limiar**: Contrato rastreia progresso até o objetivo
+    - **Migração com Um Clique**: Chamada simples para `migrateToDex()` quando pronto
+    - **Cálculo de Preço**: `sqrtPriceX96` calculado on-chain para precificação inicial justa
+  </Accordion>
+  
+  <Accordion title="🔄 Integração com Uniswap v4">
+    - **Criação Automática de Pool**: Pool inicializado com preço de saída da curva de bonding
+    - **Provisão de Liquidez**: Fundos acumulados tornam-se liquidez inicial
+    - **Renúncia de Propriedade**: Contrato torna-se totalmente descentralizado após a migração
+    - **Transição Sem Interrupções**: Nenhuma intervenção manual necessária
+  </Accordion>
+  
+  <Accordion title="📊 Análises e Monitoramento">
+    - **Indexação em Tempo Real**: Todas as transações gravadas e processadas
+    - **Dados OHLCV**: Gráficos de negociação profissionais disponíveis via API
+    - **Histórico de Transações**: Rastro de auditoria completo para cada token
+    - **Rastreamento de Portfólio**: Monitore múltiplos tokens e posições
+  </Accordion>
+</AccordionGroup>
+
+## Casos de Uso
+
+<CardGroup cols={3}>
+  <Card title="🚀 Lançamentos de Token" icon="rocket">
+    **Para Projetos & Criadores**
+    - Mecanismos de lançamento justo
+    - Descoberta de preço conduzida pela comunidade
+    - Sem liquidez inicial necessária
+    - Proteção integrada contra bots
+  </Card>
+  
+  <Card title="🎮 Jogos & NFTs" icon="gamepad">
+    **Para Projetos GameFi**
+    - Lançamentos de moeda em jogos
+    - Tokens de projetos NFT
+    - Distribuição de tokens de recompensa
+    - Economias de propriedade dos jogadores
+  </Card>
+  
+  <Card title="🏢 Integração DApp" icon="building">
+    **Para Desenvolvedores**
+    - Criação programática de tokens
+    - Soluções white-label
+    - Integração de frontend personalizada
+    - Automação baseada em API
+  </Card>
+</CardGroup>
+
+## Capacidades Técnicas
+
+### Recursos do Smart Contract
+- ✅ Tokens de bond compatíveis com ERC20 com funcionalidade estendida
+- ✅ Padrão de fábrica para implantações eficientes em gás
+- ✅ Parâmetros configuráveis (suprimento, objetivo, agressividade)
+- ✅ Mecanismo de distribuição de taxas integrado
+- ✅ Migração automática para Uniswap v4
+
+### Recursos do SDK
+- ✅ Suporte completo a TypeScript com definições de tipo
+- ✅ Operações assíncronas baseadas em Promise
+- ✅ Ouvintes de eventos e assinaturas
+- ✅ Manipulação de recibos de transação
+- ✅ Lógica de tratamento de erros e tentativas
+
+### Recursos de Análises
+- ✅ Rastreamento de preço em tempo real
+- ✅ Métricas de volume e liquidez
+- ✅ Dados históricos de transações
+- ✅ Dados de candlestick OHLCV
+- ✅ Rastreamento de portfólio do usuário
+
+## Comece Agora
+
+<CardGroup cols={2}>
+  <Card title="Solicitar Acesso" icon="rocket" href="https://b3builders.typeform.com/bsmntdevelopers">
+    Lançar com BondKit na Base
+  </Card>
+  <Card title="Converse com a Equipe" icon="discord" href="https://discord.gg/b3dotfun">
+    Dúvidas ou feedback? Fale conosco no Discord
+  </Card>
+  
+</CardGroup>
+
+## Terminologia Chave
+
+<Tabs>
+  <Tab title="Conceitos Centrais">
+    | Termo | Definição |
+    |------|------------|
+    | **Fase de Bonding** | Período inicial de negociação com precificação algorítmica via curva de bonding |
+    | **Bond Token** | Token ERC20 com mecânicas de curva de bonding integradas |
+    | **Quantia Alvo** | Meta de financiamento que aciona a elegibilidade para migração |
+    | **Migração** | Transição da curva de bonding para o Uniswap v4 |
+    | **Ativo de Cotação** | A moeda usada para comprar tokens (ETH ou ERC20 permitidos) |
+  </Tab>
+  
+  <Tab title="Termos Técnicos">
+    | Termo | Definição |
+    |------|------------|
+    | **Proxy Mínimo** | Padrão de clonagem de contrato eficiente em gás |
+    | **Fator de Agressividade** | Parâmetro (0-100) controlando a inclinação da curva de preço |
+    | **sqrtPriceX96** | Formato de preço do Uniswap v4 para inicialização de pool |
+    | **Destinatário da Taxa** | Endereço recebendo taxas de negociação durante o bonding |
+    | **Razão de Divisão LP** | Percentual da taxa do provedor de liquidez em pontos base |
+  </Tab>
+  
+  <Tab title="Termos do SDK">
+    | Termo | Definição |
+    |------|------------|
+    | **Contrato de Fábrica** | Contrato principal para implantar novos bond tokens |
+    | **Implementação** | Contrato modelo clonado para cada token |
+    | **Cliente Público** | Conexão blockchain somente leitura |
+    | **Cliente de Carteira** | Conexão blockchain com permissão de escrita |
+    | **Provedor** | Interface de conexão Web3 (ex.: MetaMask) |
+  </Tab>
+</Tabs>
+
+## Parâmetros Importantes
+
+<Note>
+  **Rede Atual**: Apenas Base Mainnet
+  
+  **Ativos de Cotação Permitidos**: 
+  - Token B3 (atualmente ativo)
+  - ETH (em breve)
+  - Tokens adicionais podem ser incluídos na lista branca
+  
+  **Estrutura de Taxas**:
+  - 5% em todas as negociações da fase de bonding
+  - Razão de divisão LP personalizável para migração
+  
+  **Segurança**:
+  - Contratos inteligentes auditados
+  - Renúncia automática de propriedade após migração
+  - Sem chaves de admin após o início da fase DEX
+</Note>
+
+## Próximos Passos
+
+<Steps>
+  <Step title="Instalar SDK">
+    Configure o SDK do BondKit no seu projeto
+    ```bash
+    pnpm add @b3dotfun/sdk
+    ```
+  </Step>
+  <Step title="Ler o Guia Rápido">
+    Aprenda o básico com nosso guia passo a passo
+  </Step>
+  <Step title="Explorar Exemplos">
+    Confira implementações e demonstrações funcionais
+  </Step>
+  <Step title="Junte-se à Comunidade">
+    Obtenha ajuda e compartilhe feedback no Discord
+  </Step>
+</Steps>

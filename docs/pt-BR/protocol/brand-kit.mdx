@@ -1,0 +1,231 @@
+---
+title: Kit de Marca
+description: >-
+  Siga estas diretrizes para usar nossa marca corretamente ao contribuir para o
+  ecossistema B3.
+lang: pt-BR
+originalPath: protocol/brand-kit.mdx
+---
+<div className="text-center my-4 font-bold text-lg tracking-wide text-primary">
+  ✦ IMPULSIONADA PELA COMUNIDADE ✦ DIVERTIDA ✦ ALINHADA COM O ECOSSISTEMA ✦
+</div>
+
+## Logo Principal
+
+<CardGroup cols={3}>
+  <Card title="Logo Azul">
+    <img src="/images/b3-logo-blue.svg" alt="B3 Logo Azul"  className='p-6 bg-black rounded-xl my-3'/>
+    
+    <div className="flex justify-start items-center gap-4">
+      <a href="https://cdn.b3.fun/b3_logo.svg" target="_blank" download="b3-logo-blue.svg">SVG</a>
+      <a href="https://cdn.b3.fun/b3_logo@.png" target="_blank" download="b3-logo-blue.png">PNG</a>
+    </div>
+  </Card>
+  
+  <Card title="Logo Branco">
+    <img src="/images/b3-logo-white.svg" alt="B3 Logo Branco"  className='p-6 bg-black rounded-xl my-3'/>
+    
+    <div className="flex justify-start items-center gap-4">
+      <a href="https://cdn.b3.fun/b3_logo_white.svg" target="_blank" download="b3-logo-white.svg">SVG</a>
+    </div>
+  </Card>
+  
+  <Card title="Logo Preto">
+    <img src="/images/b3_logo_black.svg" alt="B3 Logo Preto"  className='p-6 bg-white rounded-xl my-3'/>
+    
+    <div className="flex justify-start items-center gap-4">
+      <a href="https://cdn.b3.fun/b3_logo_black.svg" target="_blank" download="b3-logo-black.svg">SVG</a>
+    </div>
+  </Card>
+</CardGroup>
+
+## Cores
+
+Não se limite apenas a estas cores comuns da marca. B3 convida você a ser expressivo com diferentes paletas de cores divertidas e vibrantes.
+
+<CardGroup cols={3}>
+  <Card title="Azul Primário">
+    <div style={{ backgroundColor: "#007AFF", height: "80px", borderRadius: "8px", margin: "1rem 0" }}></div>
+    
+    ```
+    #007AFF
+    ```
+  </Card>
+  
+  <Card title="Cinza">
+    <div style={{ backgroundColor: "#6B7280", height: "80px", borderRadius: "8px", margin: "1rem 0" }}></div>
+    
+    ```
+    #6B7280
+    ```
+  </Card>
+  
+  <Card title="Branco">
+    <div style={{ backgroundColor: "#FFFFFF", height: "80px", borderRadius: "8px", border: "2px solid #e5e7eb", margin: "1rem 0" }}></div>
+    
+    ```
+    #FFFFFF
+    ```
+  </Card>
+</CardGroup>
+
+## Diretrizes da Marca
+
+<CardGroup cols={2}>
+  <Card title="Deixe respirar" icon="expand">
+    Nosso logo funciona melhor quando tem margens adequadas.
+  </Card>
+  
+  <Card title="Torne divertido" icon="heart">
+    Mantenha as coisas leves, amigáveis e envolventes.
+  </Card>
+</CardGroup>
+
+## Fontes
+
+Importe dentro da folha de estilos CSS:
+
+```css
+@import url("https://cdn.b3.fun/fonts.css");
+```
+
+Importe via tag `<link>`:
+
+```html
+<link href="https://cdn.b3.fun/fonts.css" rel="stylesheet">
+```
+
+Agora você pode usar as fontes:
+
+```css
+body { font-family: "Neue Montreal Medium", sans-serif; }
+```
+
+#### Fontes disponíveis:
+
+- **Neue Montreal Bold**  
+- **Neue Montreal Regular**  
+- **Neue Montreal Book**  
+- **Neue Montreal Medium**  
+- **Neue Montreal Semibold**  
+- **Calibre Bold**  
+- **Calibre Heavy**  
+- **Pack**
+
+#### Baixe as fontes originais:
+
+<Card title="Calibre">
+  [Licença](https://klim.co.nz/retail-fonts/calibre/)
+</Card>
+
+<Card title="Neue Montreal">
+  [Licença](https://pangrampangram.com/products/neue-montreal)
+</Card>
+
+<Card title="PACK">
+  [Licença](https://harrycresswell.com/pack/)
+</Card>
+
+
+## Ativos Divertidos
+
+<CardGroup cols={3}>
+  <Card title="O Cursor">
+    <img src="/images/cursor.png" alt="Cursor B3" className='rounded-xl my-3 aspect-square p-6 bg-white'/>
+    
+    <div className="flex justify-start items-center gap-4">
+      <a href="https://cdn.b3.fun/cursor.png" target="_blank" download="cursor.png">PNG</a>
+      <a href="https://cdn.b3.fun/cursor%402x.png" target="_blank" download="cursor@2x.png">PNG @ 2x</a>
+    </div>
+  </Card>
+  
+  <Card title="Textura Azul">
+    <img src="/images/b3-bg-texture.jpg" alt="Textura Azul B3" className='rounded-xl my-3 aspect-square'/>
+
+    <div className="flex justify-start items-center gap-4">
+      <a href="https://cdn.b3.fun/b3-bg-texture.jpg" target="_blank" download="b3-bg-texture.jpg">JPG</a>
+    </div>
+  </Card>
+  
+  <Card title="A Grade">
+    <img src="/images/b3_grid.svg" alt="Grade B3" className='rounded-xl my-3 aspect-square p-6 bg-white'/>
+    
+    <div className="flex justify-start items-center gap-4">
+      <a href="https://cdn.b3.fun/b3_grid.svg" target="_blank" download="b3_grid.svg">SVG</a>
+      <a href="https://cdn.b3.fun/b3_grid.png" target="_blank" download="b3_grid.png">PNG</a>
+    </div>
+  </Card>
+</CardGroup>
+
+## Movimento
+
+Animações são bem-vindas ao representar B3, afinal - movimento é divertido!
+
+Recomendamos o Framer Motion como uma biblioteca de animação React, mas você pode usar o que preferir!
+
+<CardGroup cols={2}>
+  <Card title="Animação do Logo (16:9)">
+    <video 
+      controls 
+      className='rounded-xl my-3 aspect-video'
+      src="/images/b3-logo-animation-wide.mp4"
+    >
+      Seu navegador não suporta a tag de vídeo.
+    </video>
+    
+    <div className="flex justify-start items-center gap-4">
+      <a href="https://cdn.b3.fun/b3-logo-animation-wide.mp4" target="_blank" download="b3-logo-animation-wide.mp4">MP4</a>
+      <a href="https://cdn.b3.fun/b3-logo-animation-wide-after-effects-project.zip" target="_blank" download="b3-logo-animation-wide-after-effects-project.zip">Projeto After Effects</a>
+    </div>
+  </Card>
+  
+  <Card title="Animação do Logo (1:1)">
+    <video 
+      controls 
+      className='rounded-xl my-3 aspect-square'
+      src="/images/b3-logo-animation-square.mp4"
+    >
+      Seu navegador não suporta a tag de vídeo.
+    </video>
+    
+    <div className="flex justify-start items-center gap-4">
+      <a href="https://cdn.b3.fun/b3-logo-animation-square.mp4" target="_blank" download="b3-logo-animation-square.mp4">MP4</a>
+      <a href="https://cdn.b3.fun/b3-logo-animation-square-after-effects-project.zip" target="_blank" download="b3-logo-animation-square-after-effects-project.zip">Projeto After Effects</a>
+    </div>
+  </Card>
+</CardGroup>
+
+## Vibração 👌
+
+B3 é tudo sobre se divertir e representar isso na sua vida através de jogos e mais.
+
+Represente o swag B3 de outras maneiras!
+
+## Papéis de Parede para Tela de Bloqueio de Celular
+
+<CardGroup cols={3}>
+  <Card title="Tela de Bloqueio v1">
+    <img src="/images/b3-iphone-wallpaper-v1.png" alt="Papel de Parede B3 iPhone v1" className='rounded-xl my-3'/>
+    
+    [Download](https://cdn.b3.fun/b3-iphone-wallpaper-v1.png)
+  </Card>
+  
+  <Card title="Tela de Bloqueio v2">
+    <img src="/images/b3-iphone-wallpaper-v2.png" alt="Papel de Parede B3 iPhone v2" className='rounded-xl my-3'/>
+    
+    [Download](https://cdn.b3.fun/b3-iphone-wallpaper-v2.png)
+  </Card>
+  
+  <Card title="Tela de Bloqueio v3">
+    <img src="/images/b3-iphone-wallpaper-simple.png" alt="Papel de Parede B3 iPhone Simples" className='rounded-xl my-3'/>
+    
+    [Download](https://cdn.b3.fun/b3-iphone-wallpaper-simple.png)
+  </Card>
+</CardGroup>
+
+
+## Contribua com a marca B3
+
+Vamos construir B3 juntos - damos as boas-vindas a criadores, artistas, desenvolvedores, gamers, jogadores e todos para contribuir e serem recompensados.
+
+Entre em contato se você construiu algo legal para a comunidade B3.

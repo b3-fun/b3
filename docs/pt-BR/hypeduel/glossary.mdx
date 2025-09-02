@@ -1,0 +1,320 @@
+---
+title: Glossário
+description: Definições de termos e conceitos chave usados ao longo do HypeDuel
+lang: pt-BR
+originalPath: hypeduel/glossary.mdx
+---
+Referência rápida para todos os termos-chave, conceitos e siglas usados no ecossistema de entretenimento com IA da HypeDuel.
+
+## Termos da Plataforma Principal
+
+<AccordionGroup>
+  <Accordion title="Batalha de IA">
+    Competição em tempo real entre modelos de inteligência artificial em um ambiente de arena específico. As batalhas normalmente duram de 2 a 5 minutos e determinam os vencedores das apostas através dos resultados do jogo.
+  </Accordion>
+
+<Accordion title="Arena">
+  Um ambiente competitivo específico onde modelos de IA batalham. Cada arena possui regras únicas, mecânicas e estilos de jogo
+  (por exemplo, Arena de Combate, Circuito de Corrida, Piso de Negociação).
+</Accordion>
+
+<Accordion title="Criador de Arena">
+  O desenvolvedor ou equipe responsável pela construção e manutenção de uma arena específica. Os criadores ganham receita da atividade da arena e possuem responsabilidades de governança.
+</Accordion>
+
+<Accordion title="Tesouraria da Arena">
+  Contrato inteligente que coleta taxas da atividade da arena (apostas, impulsos, negociação) e executa automaticamente recompras de tokens para apoiar a economia da arena.
+</Accordion>
+
+<Accordion title="Motor de Batalha">
+  A infraestrutura técnica que executa competições de IA vs IA, processa interações em tempo real e determina
+  resultados de batalhas verificáveis.
+</Accordion>
+
+<Accordion title="Conta Global">
+  Seu perfil unificado da HypeDuel que funciona em todas as arenas, contendo seu saldo de HYPES, histórico de apostas,
+  conquistas e estatísticas.
+</Accordion>
+
+  <Accordion title="HypeDuel">
+    A primeira plataforma de entretenimento do mundo de IA vs IA onde usuários podem assistir, apostar e interagir com batalhas de inteligência artificial em vários ambientes de arena.
+  </Accordion>
+</AccordionGroup>
+
+## Ecossistema de Tokens
+
+<AccordionGroup>
+  <Accordion title="$B3 Token">
+    A criptomoeda fundamental do ecossistema Base. Usada para bonding de ArenaCoins, transações entre plataformas e operações de tesouraria. Mantém respaldo de 1:1 para créditos HYPES.
+  </Accordion>
+
+<Accordion title="HYPES">
+  Créditos nativos da plataforma que mantêm uma taxa de câmbio de 1:1 com $B3. Usados para apostas e compras de impulsos, possibilitando
+  transações instantâneas sem atrasos da blockchain. Podem ser sacados como $B3 a qualquer momento.
+</Accordion>
+
+<Accordion title="ArenaCoins">
+  Tokens únicos para cada arena que representam propriedade na economia da arena. Os detentores ganham taxas da atividade da arena e
+  participam de decisões de governança. Cada arena tem seu próprio ArenaCoin (por exemplo, $COMBAT, $RACING).
+</Accordion>
+
+<Accordion title="Curva de Bonding">
+  Algoritmo de precificação matemática que determina os preços dos ArenaCoins baseado na oferta e demanda. Os preços aumentam à medida que mais
+  tokens são comprados, garantindo descoberta de preço justa e prevenindo manipulação.
+</Accordion>
+
+  <Accordion title="Recompras de Tokens">
+    Processo automatizado onde as tesourarias das arenas usam taxas coletadas para comprar $B3 e ArenaCoins do mercado, criando pressão de alta no preço e beneficiando os detentores de tokens.
+  </Accordion>
+</AccordionGroup>
+
+## Apostas & Jogos
+
+<AccordionGroup>
+  <Accordion title="Pool de Apostas">
+    O montante total de HYPES apostados em uma batalha específica. Os vencedores compartilham o pool proporcionalmente após a dedução de taxas. Pools maiores significam ganhos potenciais maiores.
+  </Accordion>
+
+<Accordion title="Impulsos">
+  Power-ups de uso único comprados com HYPES que fornecem vantagens temporárias a modelos de IA específicos durante batalhas ao vivo.
+  Exemplos incluem impulsos de velocidade, escudos defensivos ou vantagens táticas.
+</Accordion>
+
+<Accordion title="Odds">
+  A proporção de pagamento potencial para apostas vencedoras, calculada dinamicamente com base na distribuição de apostas no
+  sistema parimutuel. Odds mais altas significam retornos potenciais maiores, mas probabilidade menor.
+</Accordion>
+
+<Accordion title="Apostas Parimutuel">
+  Um sistema de apostas justo onde todas as apostas são agrupadas juntas e os vencedores compartilham o total do pool proporcionalmente. Ao contrário
+  de casas de apostas tradicionais, não há vantagem da casa - apenas taxas transparentes.
+</Accordion>
+
+<Accordion title="Pool de Prêmios">
+  A porção do pool de apostas (85%) que é distribuída aos apostadores vencedores. Os 15% restantes vão para a tesouraria da arena
+  (10%) e para o criador da arena (5%).
+</Accordion>
+
+  <Accordion title="Pagamento">
+    A quantidade de HYPES que um apostador vencedor recebe, consistindo em sua parte proporcional do total do pool de prêmios com base no tamanho de sua aposta em relação a todas as apostas vencedoras.
+  </Accordion>
+</AccordionGroup>
+
+## Termos Técnicos
+
+<AccordionGroup>
+  <Accordion title="Base Network">
+    Blockchain Ethereum Layer 2 da Coinbase em que a HypeDuel opera. Oferece transações rápidas e de baixo custo enquanto mantém as garantias de segurança do Ethereum.
+  </Accordion>
+
+<Accordion title="Fase de Bonding">
+  O estágio inicial do ciclo de vida de uma arena onde os jogadores podem comprar ArenaCoins diretamente de uma curva de bonding usando
+  $B3. Ocorre antes que a negociação DEX se torne disponível.
+</Accordion>
+
+<Accordion title="Negociação DEX">
+  Negociação em exchange descentralizada que se torna disponível após os ArenaCoins saírem da fase de bonding. Permite negociação de mercado aberto com pares de $B3 em plataformas como Uniswap.
+</Accordion>
+
+<Accordion title="Resultados Determinísticos">
+  Resultados de batalhas que são reprodutíveis e verificáveis dado as mesmas condições iniciais. Garante justiça e previne
+  manipulação enquanto mantém o jogo emocionante.
+</Accordion>
+
+<Accordion title="Contrato Inteligente">
+  Código de blockchain autoexecutável que lida automaticamente com operações da arena como distribuição de taxas, recompras de tokens e
+  cálculos de pagamento sem requerer confiança em partes centralizadas.
+</Accordion>
+
+  <Accordion title="Mecânicas de Tesouraria">
+    Sistemas automatizados que coletam taxas da arena e executam recompras estratégicas para apoiar economias de token. Inclui algoritmos para estratégias de timing e distribuição ótimos.
+  </Accordion>
+</AccordionGroup>
+
+## IA & Competição
+
+<AccordionGroup>
+  <Accordion title="Modelo de IA">
+    Um sistema de inteligência artificial treinado para competir em ambientes de arena específicos. Modelos são submetidos por desenvolvedores e devem atender padrões de desempenho e justiça.
+  </Accordion>
+
+<Accordion title="IA vs IA">
+  O conceito central da HypeDuel onde modelos de inteligência artificial competem diretamente entre si sem
+  intervenção humana durante as batalhas.
+</Accordion>
+
+<Accordion title="Graduação de Arena">
+  O processo pelo qual arenas de sucesso transitam da fase de bonding para negociação DEX, normalmente acionado ao atingir
+  marcos específicos de liquidez e comunidade.
+</Accordion>
+
+<Accordion title="Análise de Batalha">
+  Estatísticas abrangentes e dados de desempenho coletados de batalhas de IA, incluindo taxas de vitória, padrões de desempenho,
+  e métricas de eficácia.
+</Accordion>
+
+<Accordion title="Desempenho do Modelo">
+  Medidas estatísticas de quão bem um modelo de IA se apresenta em sua arena, incluindo taxa de vitória, duração média de batalha e
+  eficácia contra diferentes oponentes.
+</Accordion>
+
+  <Accordion title="Interação em Tempo Real">
+    A capacidade dos jogadores de influenciar batalhas em andamento através da compra de impulsos e outros elementos interativos enquanto as partidas estão acontecendo.
+  </Accordion>
+</AccordionGroup>
+
+## Conceitos Econômicos
+
+<AccordionGroup>
+  <Accordion title="Estrutura de Taxas">
+    A divisão transparente de como a receita é distribuída: 85% para os vencedores, 10% para a tesouraria da arena, 5% para os criadores da arena, com variações para diferentes tipos de atividade.
+  </Accordion>
+
+<Accordion title="Roda de Crescimento">
+  O ciclo auto-reforçador onde o sucesso da plataforma atrai mais usuários, gera mais taxas, aumenta os valores dos tokens,
+  atrai atenção da mídia e traz ainda mais usuários.
+</Accordion>
+
+<Accordion title="Liquidez">
+  A facilidade com a qual tokens podem ser comprados ou vendidos sem afetar significativamente seu preço. Maior liquidez significa
+  negociação mais suave e preços mais estáveis.
+</Accordion>
+
+<Accordion title="Capitalização de Mercado">
+  O valor total de todos os ArenaCoins para uma arena específica, calculado multiplicando o preço atual do token pelo total
+  de tokens em circulação.
+</Accordion>
+
+<Accordion title="Compartilhamento de Receita">
+  A distribuição de renda gerada pela arena entre os stakeholders: criadores da arena, detentores de tokens e o ecossistema mais amplo através de recompras de tesouraria.
+</Accordion>
+
+  <Accordion title="Acúmulo de Valor">
+    O processo pelo qual a atividade na plataforma cria valor que retorna aos detentores de tokens através de recompras, compartilhamento de taxas e mecanismos de valorização.
+  </Accordion>
+</AccordionGroup>
+
+## Comunidade & Governança
+
+<AccordionGroup>
+  <Accordion title="Governança Comunitária">
+    Processos de tomada de decisão democráticos onde detentores de tokens votam em parâmetros da arena, implementações de recursos e prioridades de desenvolvimento da plataforma.
+  </Accordion>
+
+<Accordion title="Discord">
+  A principal plataforma comunitária para discussão em tempo real, suporte, anúncios e coordenação entre jogadores da HypeDuel,
+  criadores e desenvolvedores.
+</Accordion>
+
+<Accordion title="Token de Governança">
+  Tokens (ArenaCoins e $B3) que fornecem direitos de voto em decisões comunitárias sobre operações da arena, mudanças de parâmetros e desenvolvimento da plataforma.
+</Accordion>
+
+<Accordion title="Leaderboard">
+  Classificações dos jogadores, arenas e modelos de IA de melhor desempenho com base em várias métricas como lucros, taxas de vitória e
+  engajamento comunitário.
+</Accordion>
+
+  <Accordion title="Proposta">
+    Sugestões submetidas pela comunidade para novos recursos, melhorias na arena ou mudanças na plataforma que podem ser votadas pelos detentores de tokens.
+  </Accordion>
+</AccordionGroup>
+
+## Negociação & Investimento
+
+<AccordionGroup>
+  <Accordion title="Arbitragem">
+    Estratégia de negociação que explora diferenças de preço entre diferentes mercados ou períodos de tempo para gerar lucro com risco mínimo.
+  </Accordion>
+
+<Accordion title="Due Diligence">
+  O processo de pesquisa que os investidores devem completar antes de comprar ArenaCoins, incluindo análise da qualidade da arena,
+  histórico do criador e potencial de mercado.
+</Accordion>
+
+<Accordion title="HODLing">
+  Estratégia de retenção de longo prazo para tokens, esperando valorização ao longo do tempo em vez de negociação ativa por
+  lucros de curto prazo.
+</Accordion>
+
+<Accordion title="Diversificação de Portfólio">
+  Estratégia de investimento de distribuir fundos por várias arenas ou tipos de ativos para reduzir risco e otimizar retornos.
+</Accordion>
+
+<Accordion title="Gestão de Risco">
+  Estratégias e práticas usadas para minimizar potenciais perdas ao apostar ou investir, incluindo dimensionamento de posição, stop
+  losses e diversificação.
+</Accordion>
+
+  <Accordion title="ROI (Retorno sobre Investimento)">
+    Medida percentual de desempenho de investimento, calculada como (Valor Atual - Investimento Inicial) / Investimento Inicial × 100%.
+  </Accordion>
+</AccordionGroup>
+
+## Recursos da Plataforma
+
+<AccordionGroup>
+  <Accordion title="Painel de Análise">
+    Interface abrangente mostrando estatísticas detalhadas sobre desempenho da arena, histórico de apostas, posições de token e tendências de mercado.
+  </Accordion>
+
+<Accordion title="Histórico de Batalhas">
+  Registro completo de batalhas de IA passadas incluindo participantes, resultados, pools de apostas e análise estatística para
+  pesquisa e desenvolvimento de estratégias.
+</Accordion>
+
+<Accordion title="Transmissão ao Vivo">
+  Transmissão em tempo real de batalhas de IA com comentários, estatísticas e elementos interativos para engajamento da comunidade
+  durante as partidas.
+</Accordion>
+
+<Accordion title="Otimização Móvel">
+  Design da plataforma que funciona perfeitamente em dispositivos móveis através de design web responsivo, com aplicativos nativos planejados para
+  lançamento futuro.
+</Accordion>
+
+<Accordion title="Sistema de Referência">
+  Programa de recompensas planejado onde usuários ganham benefícios por introduzir novos jogadores à plataforma, criando incentivos de crescimento viral.
+</Accordion>
+
+  <Accordion title="Modo Torneio">
+    Eventos competitivos especiais com regras únicas, apostas mais altas e recompensas exclusivas que reúnem os melhores modelos de IA e jogadores.
+  </Accordion>
+</AccordionGroup>
+
+## Siglas & Abreviações
+
+<AccordionGroup>
+  <Accordion title="IA">
+    **Inteligência Artificial** - Sistemas de computador que podem realizar tarefas que normalmente requerem inteligência humana, como tomada de decisão e reconhecimento de padrões.
+  </Accordion>
+
+<Accordion title="DEX">
+  **Exchange Descentralizada** - Plataformas de negociação baseadas em blockchain como Uniswap que permitem negociação direta de token para token
+  sem intermediários.
+</Accordion>
+
+<Accordion title="DeFi">
+  **Finanças Descentralizadas** - Serviços financeiros baseados em blockchain incluindo empréstimos, empréstimos, negociação e yield
+  farming sem intermediários bancários tradicionais.
+</Accordion>
+
+<Accordion title="LP">
+  **Provedor de Liquidez** - Usuários que depositam pares de tokens em pools DEX para possibilitar a negociação, ganhando taxas em troca de
+  fornecer liquidez.
+</Accordion>
+
+<Accordion title="NFT">
+  **Token Não Fungível** - Ativos digitais únicos em redes blockchain, potencialmente usados para itens especiais de arena,
+  conquistas ou colecionáveis.
+</Accordion>
+
+<Accordion title="TVL">
+  **Valor Total Bloqueado** - O montante total de fundos depositados em um protocolo ou plataforma, indicando seu tamanho e
+  nível de adoção.
+</Accordion>
+
+  <Accordion title="UX/UI">
+    **Experiência do Usuário/Interface do Usuário** - Os aspectos de design e usabilidade da plataforma que determinam quão fácil e agradável é usá-la.
+  </Accordion>
+</AccordionGroup>

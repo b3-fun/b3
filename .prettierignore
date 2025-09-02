@@ -1,3 +1,6 @@
 # Ignore generated files
 **/*.gen.js
 **/*.gen.ts
+
+# Ignore docs
+docs/**

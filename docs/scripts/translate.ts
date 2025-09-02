@@ -29,6 +29,8 @@ class Timer {
 const args = process.argv.slice(2);
 const processAllFiles = args.includes("--all");
 const updateMode = args.includes("--update");
+const sourceHashesOnly = args.includes("--source-hashes-only");
+const forceUpdateNavigation = args.includes("--force-update-navigation");
 
 // Load environment variables from .env only if not using Doppler
 if (!process.env.DOPPLER_PROJECT) {
@@ -50,13 +52,20 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+interface SourceHash {
+  sourceFile: string;
+  sourceHash: string;
+  lastUpdated: string;
+}
+
 // Configuration
 const CONFIG = {
-  languages: ["es", "pt-BR", "id", "ko", "cn", "vi", "el"], // All supported languages
+  languages: ["es", "pt-BR", "id", "ko", "cn"], // All supported languages, removed "el" and "vi" as they are not supported
   sourceDir: path.join(process.cwd(), "..", "docs"), // Root docs directory
   docsContentDir: path.join(process.cwd(), "..", "docs"), // Where the actual docs content lives
   excludeDirs: ["node_modules", ".next", "public", "scripts", "images"],
   supportedExtensions: [".mdx", ".md"],
+  sourceHashFile: path.join(process.cwd(), "..", "docs", ".source-hashes.json"), // File to store source content hashes
   // Frontmatter fields that should be translated
   translatableFrontmatter: ["title", "description"],
   // Language-specific instructions
@@ -66,8 +75,8 @@ const CONFIG = {
     id: "Indonesian/Malay (Bahasa Indonesia/Melayu)",
     ko: "Korean (한국어)",
     cn: "Simplified Chinese (简体中文)",
-    vi: "Vietnamese (Tiếng Việt)",
-    el: "Greek (Ελληνικά)",
+    // vi: "Vietnamese (Tiếng Việt)",
+    // el: "Greek (Ελληνικά)",
   },
   // Add configuration from environment variables
   batchSize: processAllFiles ? Infinity : Number(process.env.TRANSLATION_BATCH_SIZE) || 1,
@@ -182,8 +191,12 @@ async function translateNavigation(language: string): Promise<void> {
     const docs = JSON.parse(docsContent);
     timer.log("read docs.json");
 
-    // Get the original navigation structure
-    const originalNavigation = docs.navigation;
+    // Get the original navigation structure (English)
+    const englishNav = docs.navigation.languages?.find(l => l.language === "en");
+    if (!englishNav) {
+      throw new Error("English navigation not found in docs.json");
+    }
+    const originalTabs = englishNav.tabs;
 
     // Find existing language entry if it exists
     const existingLangEntry = docs.navigation.languages?.find((l: any) => l.language === language);
@@ -195,29 +208,31 @@ async function translateNavigation(language: string): Promise<void> {
       global: {},
     };
 
-    // Only translate tabs if they don't exist in the language entry
-    if (!translatedNavigation.tabs?.length && originalNavigation.tabs?.length) {
+    // Always translate tabs if force update is enabled, otherwise only if they don't exist or are empty
+    if (forceUpdateNavigation || (!translatedNavigation.tabs?.length && originalTabs?.length)) {
+      console.log(`Translating navigation tabs for ${language}...`);
       translatedNavigation.tabs = await Promise.all(
-        originalNavigation.tabs.map(tab => translateNavigationItem(tab, language)),
+        originalTabs.map(tab => translateNavigationItem(tab, language)),
       );
       timer.log("translated tabs");
     } else {
-      console.log("Preserving existing tabs for language:", language);
+      console.log(`Navigation tabs already exist for ${language} with ${translatedNavigation.tabs?.length || 0} items`);
+      if (!forceUpdateNavigation) {
+        console.log("Use --force-update-navigation to retranslate existing navigation");
+      }
     }
 
-    // Only translate global anchors if they don't exist in the language entry
-    if (!translatedNavigation.global?.anchors?.length && originalNavigation.global?.anchors?.length) {
+    // Copy English global anchors as-is
+    if (englishNav.global?.anchors) {
       translatedNavigation.global = {
-        anchors: await Promise.all(
-          originalNavigation.global.anchors.map(async anchor => ({
-            ...anchor,
-            anchor: await translateText(anchor.anchor, language, "anchor"),
-          })),
-        ),
+        anchors: [...englishNav.global.anchors]
       };
       timer.log("translated anchors");
     } else {
-      console.log("Preserving existing anchors for language:", language);
+      console.log(`Global anchors already exist for ${language}`);
+      if (!forceUpdateNavigation) {
+        console.log("Use --force-update-navigation to retranslate existing anchors");
+      }
     }
 
     // Initialize languages array if needed
@@ -301,6 +316,42 @@ async function translateContent(content: string, language: string): Promise<stri
   }
 }
 
+async function loadSourceHashes(): Promise<SourceHash[]> {
+  try {
+    const content = await fs.readFile(CONFIG.sourceHashFile, "utf-8");
+    return JSON.parse(content);
+  } catch (error) {
+    // If file doesn't exist or is invalid, return empty array
+    return [];
+  }
+}
+
+async function saveSourceHashes(hashes: SourceHash[]): Promise<void> {
+  await fs.writeFile(CONFIG.sourceHashFile, JSON.stringify(hashes, null, 2));
+}
+
+async function updateSourceHash(sourceFile: string, content: string): Promise<string> {
+  const sourceData = matter(content);
+  const hash = Buffer.from(sourceData.content).toString("base64");
+
+  const hashes = await loadSourceHashes();
+  const existingIndex = hashes.findIndex(h => h.sourceFile === sourceFile);
+  const hashEntry: SourceHash = {
+    sourceFile,
+    sourceHash: hash,
+    lastUpdated: new Date().toISOString(),
+  };
+
+  if (existingIndex >= 0) {
+    hashes[existingIndex] = hashEntry;
+  } else {
+    hashes.push(hashEntry);
+  }
+
+  await saveSourceHashes(hashes);
+  return hash;
+}
+
 async function shouldTranslateFile(sourcePath: string, targetPath: string): Promise<boolean> {
   try {
     // If target doesn't exist, we should translate
@@ -317,25 +368,29 @@ async function shouldTranslateFile(sourcePath: string, targetPath: string): Prom
       return false;
     }
 
-    // In update mode, check modification dates
-    const sourceStats = await fs.stat(sourcePath);
-    const targetStats = await fs.stat(targetPath);
+    // In update mode, compare source content with stored hash
+    const sourceContent = await fs.readFile(sourcePath, "utf-8");
+    const sourceData = matter(sourceContent);
+    const currentSourceHash = Buffer.from(sourceData.content).toString("base64");
+
+    // Load stored hashes
+    const hashes = await loadSourceHashes();
+    const storedHash = hashes.find(h => h.sourceFile === path.relative(CONFIG.docsContentDir, sourcePath));
 
     console.log(`
       sourcePath: ${sourcePath}      
-      sourceStats: ${JSON.stringify(sourceStats)}
-
+      currentSourceHash: ${currentSourceHash.slice(0, 20)}...
       
-      targetStats: ${JSON.stringify(targetStats)}
-      targetPath: ${targetPath}
-      
-      `);
+      storedHash: ${storedHash?.sourceHash.slice(0, 20) || "not found"}...
+      lastUpdated: ${storedHash?.lastUpdated || "never"}
+    `);
 
-    const shouldUpdate = sourceStats.mtime > targetStats.mtime;
+    // If no stored hash or hash differs, we should update
+    const shouldUpdate = !storedHash || currentSourceHash !== storedHash.sourceHash;
     if (shouldUpdate) {
-      console.log(`Source file modified, updating: ${path.relative(CONFIG.docsContentDir, sourcePath)}`);
+      console.log(`Source content changed, updating: ${path.relative(CONFIG.docsContentDir, sourcePath)}`);
     } else {
-      console.log(`No changes detected, skipping: ${path.relative(CONFIG.docsContentDir, targetPath)}`);
+      console.log(`No content changes detected, skipping: ${path.relative(CONFIG.docsContentDir, targetPath)}`);
     }
 
     return shouldUpdate;
@@ -392,6 +447,9 @@ async function processFile(filePath: string, language: string): Promise<void> {
     const translatedContent = await translateContent(markdownContent, language);
     timer.log("translated content");
 
+    // Update source hash in our central storage
+    await updateSourceHash(relativePath, content);
+
     // Update frontmatter for translated version
     const updatedFrontmatter = {
       ...translatedFrontmatter,
@@ -434,9 +492,41 @@ async function main() {
     }
 
     console.log(`Found ${files.length} files to process`);
-    console.log(`Mode: ${CONFIG.dryRun ? "DRY RUN" : "LIVE"}`);
+    console.log(`Mode: ${CONFIG.dryRun ? "DRY RUN" : "LIVE"}${sourceHashesOnly ? " (SOURCE HASHES ONLY)" : ""}`);
     console.log(`Processing: ${processAllFiles ? "ALL FILES" : `${CONFIG.batchSize} file(s)`}`);
     console.log(`Update mode: ${updateMode ? "ON" : "OFF"}`);
+
+    const filesToProcess = processAllFiles ? files : files.slice(0, CONFIG.batchSize);
+
+    if (sourceHashesOnly) {
+      // Only process source files and update their hashes
+      console.log("\nUpdating source file hashes...");
+      let hashesUpdated = 0;
+
+      for (const file of filesToProcess) {
+        const relativePath = path.relative(CONFIG.docsContentDir, file);
+        console.log(`\nProcessing: ${relativePath}`);
+
+        try {
+          const content = await fs.readFile(file, "utf-8");
+          if (CONFIG.dryRun) {
+            console.log(`Would update hash for: ${relativePath}`);
+            hashesUpdated++;
+          } else {
+            await updateSourceHash(relativePath, content);
+            hashesUpdated++;
+            console.log(`✓ Updated hash for: ${relativePath}`);
+          }
+        } catch (error) {
+          console.error(`Error processing ${relativePath}:`, error);
+        }
+      }
+
+      console.log(`\nSource hash update complete:`);
+      console.log(`- Updated: ${hashesUpdated} files`);
+      console.log(`- Skipped: ${files.length - hashesUpdated} files`);
+      return;
+    }
 
     // First, translate the navigation for all languages
     for (const language of CONFIG.languages) {
@@ -444,14 +534,12 @@ async function main() {
     }
 
     // Then process the documentation files for each language
-    const filesToProcess = processAllFiles ? files : files.slice(0, CONFIG.batchSize);
-
     let totalProcessed = 0;
     let totalSkipped = 0;
 
     // Process each language independently
     // TEMPORARY: Only process Spanish
-    for (const language of ["es"]) {
+    for (const language of ["es", "pt-BR"]) {
       console.log(`\nProcessing language: ${language}`);
       let processedCount = 0;
       let skippedCount = 0;

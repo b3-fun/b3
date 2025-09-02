@@ -1,0 +1,534 @@
+---
+title: Exemplos & Casos de Uso
+description: >-
+  Exemplos de implementação no mundo real para padrões comuns de integração
+  AnySpend
+lang: pt-BR
+originalPath: anyspend/examples.mdx
+---
+
+# Exemplos & Casos de Uso
+
+Exemplos de implementação do mundo real para padrões comuns de integração AnySpend, desde trocas simples até aplicações complexas de DeFi e jogos.
+
+## 🔄 Trocas de Tokens Entre Cadeias
+
+### Interface de Troca Básica
+
+Perfeito para aplicações DeFi, gerentes de portfólio ou qualquer app que necessite de funcionalidade de troca de tokens.
+
+```tsx title="Página de Troca Simples" icon="exchange-alt"
+import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
+
+function TokenSwapPage() {
+  const [userAddress] = useWallet(); // Seu hook de carteira
+
+  return (
+    <div className="swap-container">
+      <h1>Trocar Tokens</h1>
+      <AnySpend
+        mode="page"
+        recipientAddress={userAddress}
+        onSuccess={(txHash) => {
+          // Atualizar o portfólio do usuário
+          toast.success("Troca completada com sucesso!");
+
+          // Opcional: Rastrear análises
+          analytics.track("swap_completed", {
+            txHash,
+            userAddress,
+          });
+
+          // Atualizar saldos do usuário
+          queryClient.invalidateQueries(['user-balances', userAddress]);
+        }}
+      />
+    </div>
+  );
+}
+```
+
+### Troca Avançada com Pré-visualização de Cotação
+
+```tsx title="Interface de Troca Avançada" icon="chart-line" lines
+import { useAnyspendQuote, AnySpend } from "@b3dotfun/sdk/anyspend/react";
+
+function AdvancedSwapInterface() {
+  const [fromToken, setFromToken] = useState(USDC_ETHEREUM);
+  const [toToken, setToToken] = useState(ETH_B3);
+  const [amount, setAmount] = useState("100");
+  const [isSwapOpen, setIsSwapOpen] = useState(false);
+
+  const quoteRequest = useMemo(() => ({
+    srcChain: fromToken.chainId,
+    dstChain: toToken.chainId,
+    srcTokenAddress: fromToken.address,
+    dstTokenAddress: toToken.address,
+    type: "swap" as const,
+    tradeType: "EXACT_INPUT" as const,
+    amount: parseUnits(amount || "0", fromToken.decimals).toString(),
+  }), [fromToken, toToken, amount]);
+
+  const { anyspendQuote, isLoadingAnyspendQuote } = useAnyspendQuote(quoteRequest);
+
+  return (
+    <div className="advanced-swap">
+      <div className="swap-form">
+        <TokenInput
+          label="De"
+          token={fromToken}
+          amount={amount}
+          onTokenChange={setFromToken}
+          onAmountChange={setAmount}
+        />
+
+        <SwapArrowButton onClick={() => {
+          setFromToken(toToken);
+          setToToken(fromToken);
+        }} />
+
+        <TokenInput
+          label="Para"
+          token={toToken}
+          amount={anyspendQuote?.expectedOutput || "0"}
+          onTokenChange={setToToken}
+          readOnly
+        />
+
+        {anyspendQuote && (
+          <div className="quote-details">
+            <div>Taxa: 1 {fromToken.symbol} = {anyspendQuote.rate} {toToken.symbol}</div>
+            <div>Taxa de Rede: ${anyspendQuote.networkFeeUsd}</div>
+            <div>Taxa de Serviço: ${anyspendQuote.serviceFeeUsd}</div>
+            <div>Total: ${anyspendQuote.totalUsdCost}</div>
+          </div>
+        )}
+
+        <button
+          onClick={() => setIsSwapOpen(true)}
+          disabled={isLoadingAnyspendQuote || !anyspendQuote}
+          className="swap-button"
+        >
+          {isLoadingAnyspendQuote ? "Obtendo Cotação..." : "Trocar Tokens"}
+        </button>
+      </div>
+
+      {isSwapOpen && (
+        <AnySpend
+          mode="modal"
+          recipientAddress={userAddress}
+          destinationTokenAddress={toToken.address}
+          destinationTokenChainId={toToken.chainId}
+          onSuccess={() => {
+            setIsSwapOpen(false);
+            toast.success("Troca completada!");
+          }}
+        />
+      )}
+    </div>
+  );
+}
+```
+
+## 🖼️ Integração com Marketplace de NFT
+
+### Compra Simples de NFT
+
+```tsx title="Componente de Cartão NFT" icon="image" lines
+import { AnySpendNFTButton } from "@b3dotfun/sdk/anyspend/react";
+
+function NFTCard({ nft }: { nft: NFTListing }) {
+  const [userAddress] = useWallet();
+  const [isOwned, setIsOwned] = useState(false);
+
+  const nftContract = {
+    chainId: nft.chainId,
+    contractAddress: nft.contractAddress,
+    price: nft.priceWei,
+    priceFormatted: nft.priceFormatted,
+    currency: nft.currency,
+    name: nft.name,
+    description: nft.description,
+    imageUrl: nft.imageUrl,
+  };
+
+  return (
+    <div className="nft-card">
+      <img src={nft.imageUrl} alt={nft.name} />
+      <div className="nft-details">
+        <h3>{nft.name}</h3>
+        <p>{nft.description}</p>
+        <div className="price">
+          {nft.priceFormatted} {nft.currency.symbol}
+        </div>
+
+        {isOwned ? (
+          <div className="owned-badge">✅ Propriedade</div>
+        ) : (
+          <AnySpendNFTButton
+            nftContract={nftContract}
+            recipientAddress={userAddress}
+            onSuccess={(txHash) => {
+              setIsOwned(true);
+
+              // Atualizar a coleção de NFTs do usuário
+              queryClient.invalidateQueries(['user-nfts', userAddress]);
+
+              // Mostrar mensagem de sucesso com link do explorador
+              toast.success(
+                <div>
+                  NFT comprado com sucesso!
+                  <a href={`https://explorer.b3.fun/tx/${txHash}`} target="_blank">
+                    Ver Transação
+                  </a>
+                </div>
+              );
+            }}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+```
+
+### Marketplace de NFT com Compra em Massa
+
+```tsx title="Compra em Massa de NFT" icon="shopping-cart" lines
+function NFTMarketplace() {
+  const [selectedNFTs, setSelectedNFTs] = useState<NFTListing[]>([]);
+  const [userAddress] = useWallet();
+
+  const handleBulkPurchase = () => {
+    // Para compras em massa, criar múltiplos pedidos ou usar contrato de lote
+    selectedNFTs.forEach((nft, index) => {
+      setTimeout(() => {
+        // Escalonar compras para evitar limitação de taxa
+        createSingleNFTPurchase(nft);
+      }, index * 1000);
+    });
+  };
+
+  return (
+    <div className="marketplace">
+      <div className="nft-grid">
+        {nfts.map((nft) => (
+          <NFTCard
+            key={nft.id}
+            nft={nft}
+            onSelect={(selected) => {
+              if (selected) {
+                setSelectedNFTs([...selectedNFTs, nft]);
+              } else {
+                setSelectedNFTs(selectedNFTs.filter(n => n.id !== nft.id));
+              }
+            }}
+          />
+        ))}
+      </div>
+
+      {selectedNFTs.length > 0 && (
+        <div className="bulk-purchase">
+          <p>Selecionados: {selectedNFTs.length} NFTs</p>
+          <p>Total: {calculateTotal(selectedNFTs)} ETH</p>
+          <button onClick={handleBulkPurchase}>
+            Comprar NFTs Selecionados
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## 🎮 Aplicações de Jogos & DeFi
+
+### Interface de Staking
+
+```tsx title="Componente de Pool de Staking" icon="coins" lines
+import { AnySpendCustom } from "@b3dotfun/sdk/anyspend/react";
+import { encodeFunctionData } from "viem";
+
+function StakingPool({ pool }: { pool: StakingPool }) {
+  const [stakeAmount, setStakeAmount] = useState("");
+  const [stakingDuration, setStakingDuration] = useState(30);
+  const [userAddress] = useWallet();
+
+  const stakingCalldata = useMemo(() => {
+    if (!stakeAmount) return "0x";
+
+    const amountWei = parseUnits(stakeAmount, pool.token.decimals);
+
+    return encodeFunctionData({
+      abi: stakingPoolABI,
+      functionName: "stake",
+      args: [amountWei, stakingDuration * 24 * 60 * 60], // duração em segundos
+    });
+  }, [stakeAmount, stakingDuration]);
+
+  const expectedRewards = useMemo(() => {
+    if (!stakeAmount) return "0";
+    const amount = parseFloat(stakeAmount);
+    const apy = pool.apy / 100;
+    const durationInYears = stakingDuration / 365;
+    return (amount * apy * durationInYears).toFixed(4);
+  }, [stakeAmount, stakingDuration, pool.apy]);
+
+  return (
+    <div className="staking-pool">
+      <div className="pool-info">
+        <h2>{pool.name}</h2>
+        <p>APY: {pool.apy}%</p>
+        <p>TVL: ${pool.totalValueLocked.toLocaleString()}</p>
+      </div>
+
+      <div className="stake-form">
+        <div className="input-group">
+          <label>Quantidade para stake</label>
+          <input
+            type="number"
+            value={stakeAmount}
+            onChange={(e) => setStakeAmount(e.target.value)}
+            placeholder="0.0"
+          />
+          <span>{pool.token.symbol}</span>
+        </div>
+
+        <div className="input-group">
+          <label>Duração do Staking</label>
+          <select
+            value={stakingDuration}
+            onChange={(e) => setStakingDuration(Number(e.target.value))}
+          >
+            <option value={7}>7 dias (2% APY)</option>
+            <option value={30}>30 dias (5% APY)</option>
+            <option value={90}>90 dias (8% APY)</option>
+            <option value={365}>1 ano (12% APY)</option>
+          </select>
+        </div>
+
+        <div className="rewards-preview">
+          <p>Recompensas esperadas: {expectedRewards} {pool.token.symbol}</p>
+        </div>
+
+        <AnySpendCustom
+          orderType="custom"
+          dstChainId={pool.chainId}
+          dstToken={pool.token}
+          dstAmount={parseUnits(stakeAmount || "0", pool.token.decimals).toString()}
+          contractAddress={pool.contractAddress}
+          encodedData={stakingCalldata}
+          metadata={{
+            action: "stake",
+            poolId: pool.id,
+            duration: stakingDuration,
+            expectedRewards,
+          }}
+          header={({ anyspendPrice, isLoadingAnyspendPrice }) => (
+            <div className="staking-header">
+              <h3>Stake {pool.token.symbol}</h3>
+              <div className="stake-summary">
+                <div>Quantidade: {stakeAmount} {pool.token.symbol}</div>
+                <div>Duração: {stakingDuration} dias</div>
+                <div>Recompensas esperadas: {expectedRewards} {pool.token.symbol}</div>
+                {anyspendPrice && (
+                  <div>Custo total: ${anyspendPrice.totalUsdCost}</div>
+                )}
+              </div>
+            </div>
+          )}
+          onSuccess={(txHash) => {
+            toast.success("Staking bem-sucedido!");
+
+            // Atualizar posições de staking do usuário
+            queryClient.invalidateQueries(['staking-positions', userAddress]);
+
+            // Resetar formulário
+            setStakeAmount("");
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+```
+
+### Roda da Fortuna em Jogos
+
+```tsx title="Jogo da Roda da Fortuna" icon="gamepad" lines
+import { AnySpendBuySpin } from "@b3dotfun/sdk/anyspend/react";
+
+function SpinWheel({ game }: { game: GameConfig }) {
+  const [userAddress] = useWallet();
+  const [spinHistory, setSpinHistory] = useState<SpinResult[]>([]);
+
+  return (
+    <div className="spin-game">
+      <div className="wheel-container">
+        <SpinWheelVisual prizes={game.prizes} />
+      </div>
+
+      <div className="game-info">
+        <h2>{game.name}</h2>
+        <p>Custo por giro: {game.spinCost} {game.currency.symbol}</p>
+        <div className="prizes">
+          <h3>Prêmios Possíveis:</h3>
+          {game.prizes.map((prize, index) => (
+            <div key={index} className="prize">
+              <span>{prize.name}</span>
+              <span>{prize.probability}% chance</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <AnySpendBuySpin
+        gameContract={game.contractAddress}
+        spinPrice={game.spinCostWei}
+        recipientAddress={userAddress}
+        onSuccess={(txHash) => {
+          // Tratar resultado do giro
+          fetchSpinResult(txHash).then((result) => {
+            setSpinHistory([result, ...spinHistory]);
+
+            if (result.isWinner) {
+              toast.success(`Você ganhou ${result.prize}! 🎉`);
+            } else {
+              toast.info("Mais sorte na próxima vez!");
+            }
+          });
+        }}
+      />
+
+      <div className="spin-history">
+        <h3>Giros Recentes</h3>
+        {spinHistory.map((spin, index) => (
+          <div key={index} className={`spin-result ${spin.isWinner ? 'winner' : ''}`}>
+            <span>{spin.prize || "Sem prêmio"}</span>
+            <span>{new Date(spin.timestamp).toLocaleTimeString()}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+### Entrada em Torneios
+
+```tsx title="Entrada em Torneio" icon="trophy" lines
+import { AnySpendTournament } from "@b3dotfun/sdk/anyspend/react";
+
+function TournamentEntry({ tournament }: { tournament: Tournament }) {
+  const [userAddress] = useWallet();
+  const [isRegistered, setIsRegistered] = useState(false);
+
+  return (
+    <div className="tournament-entry">
+      <div className="tournament-info">
+        <h2>{tournament.name}</h2>
+        <p>Prêmio Total: ${tournament.prizePool.toLocaleString()}</p>
+        <p>Taxa de Entrada: {tournament.entryFee} {tournament.currency.symbol}</p>
+        <p>Jogadores: {tournament.currentPlayers}/{tournament.maxPlayers}</p>
+        <p>Início: {new Date(tournament.startTime).toLocaleString()}</p>
+      </div>
+
+      {isRegistered ? (
+        <div className="registered">
+          <span className="check-icon">✅</span>
+          <span>Você está registrado!</span>
+          <p>O torneio começa {formatTimeUntil(tournament.startTime)}</p>
+        </div>
+      ) : (
+        <AnySpendTournament
+          tournamentId={tournament.id}
+          entryFee={tournament.entryFeeWei}
+          recipientAddress={userAddress}
+          onSuccess={(txHash) => {
+            setIsRegistered(true);
+
+            // Atualizar contagem de jogadores do torneio
+            queryClient.invalidateQueries(['tournament', tournament.id]);
+
+            toast.success("Registro no torneio bem-sucedido!");
+          }}
+        />
+      )}
+
+      <div className="tournament-rules">
+        <h3>Regras</h3>
+        <ul>
+          {tournament.rules.map((rule, index) => (
+            <li key={index}>{rule}</li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+```
+
+## 💰 Onramp de Fiat-para-Crypto
+
+### Fluxo de Onboarding Simples
+
+```tsx title="Onboarding de Usuário" icon="credit-card" lines
+function UserOnboarding() {
+  const [step, setStep] = useState(1);
+  const [userAddress] = useWallet();
+
+  return (
+    <div className="onboarding">
+      <div className="progress-bar">
+        <div className={`step ${step >= 1 ? 'active' : ''}`}>1. Conectar Carteira</div>
+        <div className={`step ${step >= 2 ? 'active' : ''}`}>2. Comprar Crypto</div>
+        <div className={`step ${step >= 3 ? 'active' : ''}`}>3. Começar a Usar</div>
+      </div>
+
+      {step === 1 && (
+        <div className="step-content">
+          <h2>Bem-vindo! Vamos começar</h2>
+          <p>Primeiro, conecte sua carteira para continuar.</p>
+          <WalletConnectButton onConnect={() => setStep(2)} />
+        </div>
+      )}
+
+      {step === 2 && (
+        <div className="step-content">
+          <h2>Compre seu primeiro crypto</h2>
+          <p>Compre tokens com seu cartão de crédito para começar.</p>
+
+          <AnySpend
+            mode="page"
+            defaultActiveTab="fiat"
+            destinationTokenAddress="0x0000000000000000000000000000000000000000" // ETH
+            destinationTokenChainId={8333} // B3
+            recipientAddress={userAddress}
+            onSuccess={() => {
+              setStep(3);
+              toast.success("Compra bem-sucedida! Bem-vindo ao ecossistema!");
+            }}
+          />
+        </div>
+      )}
+
+      {step === 3 && (
+        <div className="step-content">
+          <h2>Você está pronto! 🎉</h2>
+          <p>Sua compra de crypto está completa. Aqui está o que você pode fazer a seguir:</p>
+
+          <div className="next-actions">
+            <button onClick={() => router.push('/explore')}>
+              Explorar a Plataforma
+            </button>
+            <button onClick={() => router.push('/portfolio')}>
+              Ver Seu Portfólio
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+

@@ -1,0 +1,36 @@
+---
+title: Alvos & Gatilho de Migração
+description: >-
+  Entendendo targetAmount, quando a migração pode ocorrer e o que acontece
+  durante a migração.
+lang: pt-BR
+originalPath: bondkit/concepts/targets.mdx
+---
+## Quantia alvo
+
+- `targetAmount` é o limiar do ativo de cotação que habilita a migração.
+- Definido na criação; denominado no ativo de cotação (ETH ou um ERC20 permitido).
+- A fase de bonding termina uma vez que o total arrecadado atinge o alvo (contribuições excedentes são reembolsadas).
+
+## Quem pode migrar
+
+- Somente o proprietário/criador do token (admin de migração) pode chamar `migrateToDex()`.
+
+## O que acontece na migração
+
+- Divisão do ativo de cotação acumulado:
+  - Parte para `feeRecipient`, baseado em `lpSplitRatioFeeRecipientBps`.
+  - O restante é usado como liquidez ao lado dos tokens reservados para LP.
+- Para a migração Uniswap v4, o contrato calcula `sqrtPriceX96` para inicializar a piscina.
+- A liquidez é adicionada à piscina v4 com salvaguardas apropriadas; tokens LP ou posições são tratados conforme a semântica v4, com a propriedade efetivamente queimada/renunciada para descentralização.
+- A propriedade é renunciada imediatamente para finalizar a descentralização.
+
+## Pós-migração
+
+- A negociação na fase de bonding é desabilitada.
+- O token se comporta como um ERC20 padrão com descoberta de preço baseada em DEX.
+
+<Note>
+Redes & endereços (fábrica, gerente da piscina v4, hooks) estão listados na página de Redes.
+</Note>
+

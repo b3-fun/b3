@@ -1,0 +1,122 @@
+---
+title: Whitepaper
+description: 'Apresentando Open Gaming e B3: Destino Premier de Jogos Onchain'
+lang: pt-BR
+originalPath: protocol/whitepaper.mdx
+---
+## Resumo Executivo
+
+Jogar na nossa era moderna tornou-se onipresente entre comunidades, geografias e mídias; em suas inúmeras formas, tornou-se tanto uma indústria enorme quanto um aspecto integral da vida digital moderna. No entanto, apesar do crescimento e sucesso da indústria, um conjunto de entidades de controle e jardins murados gradualmente emergiu – como em muitos aspectos do mundo da tecnologia e da economia mais ampla. Essa consolidação piora as experiências dos jogadores, restringe oportunidades para desenvolvedores e reduz a diversidade dentro da indústria. Os jogos tradicionais "off-chain" parecem desprovidos da inovação desimpedida e da diversão que caracterizavam décadas anteriores – parece fechado.
+
+Web3 há anos se apresenta como uma alternativa ao status quo, trazendo os componentes de um novo paradigma para jogos focados em interoperabilidade, maior entrada da comunidade, ativos de propriedade do usuário e transferíveis, e estruturas de recompensa únicas. A promessa era de jogos abertos. Mas essa visão permanece não realizada. Uma série de obstáculos tem impedido em grande parte que estúdios mergulhem, jogadores migrem e o ecossistema de jogos web3 mais amplo floresça. A fragmentação da comunidade também tem sido uma grande luta para jogos on-chain, com audiências isoladas em ecossistemas discretos, em grande parte desconectados, impactando tanto a descoberta quanto a jogabilidade, e desencorajando mais inovações. Finalmente, e criticamente, é trágico que uma indústria tão focada em projetar novos sistemas de incentivo abertos tenha tacitamente recriado muitas pressões econômicas contra a colaboração. A indústria precisa de uma visão mais ampla e soluções para realizá-la.
+
+Propomos o Jogo Aberto como um mandato, um conjunto de ferramentas técnicas e um sistema de incentivo para elevar o jogo on-chain e inaugurar uma era dourada nos jogos.
+
+Isso apresenta um motor de desenvolvimento sofisticado capaz de alimentar a próxima geração de jogos on-chain e permitir que eles rivalizem, se não superem, seus predecessores web2. Uma blockchain Layer 3 (L3) central que se estabelece na Base, oferecendo transações rápidas e baratas, oferecerá novas capacidades para desenvolvedores de jogos. Jogos podem lançar suas próprias GameChains personalizadas que se estabelecem no B3 L3 enquanto aproveitam recursos de usabilidade de primeira classe como abstração de conta, intenções e carteiras inteligentes. Com o tempo, o ecossistema de Jogo Aberto poderia incluir e integrar outras chains ao lado do B3. Isso dá aos desenvolvedores controle sobre a experiência do jogo sem ter que lidar com a fragmentação que pode vir com appchains tradicionais.
+
+Finalmente, o Jogo Aberto está enfrentando de frente o desafio de incentivos desalinhados. Um sistema econômico aberto e compartilhado pode começar a permitir que desenvolvedores e provedores de infraestrutura se beneficiem do crescimento um do outro e, no mínimo, incentivem a cooperação neste período crítico de atrair novos usuários. Um sistema de referência que recompensa o ecossistema por compartilhar usuários é apenas o primeiro passo.
+
+Em última análise, essas inovações prometem transformar 'jogos web3' em simplesmente 'jogos'. Para alcançar isso, o Jogo Aberto, começando com o B3 L3, introduz um local para o surgimento dos jogos mais envolventes e sofisticados, para comunidades de jogos apaixonadas se reunirem, e com o ecossistema de jogos maior se tornando o maior beneficiário.
+
+## Jogos: Um Cruzamento
+
+Jogos em muitas formas digitais são apreciados em todo o mundo. Mais de 3 bilhões de jogadores globais desfrutam de uma abundância de plataformas de jogos que os permitem se envolver virtualmente a qualquer momento e em qualquer cenário, de um jogo móvel no metrô a um jogo de console em uma TV de tela grande. Que uma média estimada de mais de 8 horas seja gastas semanalmente pelo jogador médio é uma clara medida do lugar dos jogos na sociedade.
+
+Ondas sucessivas de inovação em tecnologia e jogabilidade expandiram radicalmente as demografias assumidas de um 'jogador'. O Wii da Nintendo, Farmville no Facebook, Candy Crush Saga no celular – todos trouxeram mais e mais pessoas para o mundo dos jogos. Por sua vez, os jogos expandiram radicalmente sua presença na cultura popular e na mídia. Desde o crescimento dramático e a aceitação crescente dos Esports, até o sucesso de filmes e programas de TV baseados em jogos, a importância dos jogos como uma força cultural é clara. De muitas maneiras, ser digital hoje em dia é ter pelo menos se deparado com jogos.
+
+No entanto, a indústria e a comunidade de jogos hoje se encontram em um lugar de tensão.
+
+### Jogos Off-chain: Sintomas de controle
+
+Apesar da enorme expansão no número de jogadores e nas maneiras como eles jogam, desenvolvedores e jogadores enfrentam alguns pontos críticos importantes.
+
+Como muitos setores do ecossistema tecnológico e do mundo mais amplo, nos últimos anos a indústria de jogos tem se concentrado cada vez mais nas mãos de um pequeno número de editoras e plataformas de distribuição. Para os desenvolvedores, isso aumenta o desafio de se destacar, levando a prêmios mais altos em marketing e distribuição, menos ênfase na jogabilidade e fortes incentivos contra a tomada de riscos. Pressões para lançar produtos rapidamente e emular modelos testados e comprovados, ambos minando a criatividade e a tomada de riscos, tornaram-se realidades para designers de jogos.
+
+Para uma indústria que sempre foi um confluxo de autoexpressão, arte e busca comercial – mais orientada para o produto do que o cinema independente, mas mais artística do que aplicativos de consumo – muitos participantes estão profundamente desconfortáveis. De fato, desenvolvedores independentes e estúdios que assumem riscos há muito desempenham um papel desproporcionalmente grande em impulsionar a indústria, cultura e comunidade de jogos para frente. Tetris, um dos jogos mais jogados de todos os tempos, foi desenvolvido por um único engenheiro. O gênero dos MOBAs (arena de batalha online multijogador), responsável por mais de uma década de esports de sucesso em Dota 2 e League of Legends, começou com usuários modificando jogos populares da Blizzard. Minecraft foi a genialidade de Markus "Notch" Persson e passou a definir a experiência de uma geração de jogos, uma era dourada de conteúdo gerado pelo usuário tanto no jogo quanto pela Internet, e ser um sucesso comercial estrondoso. Tem sido e continua sendo imperativo que desenvolvedores dispostos a assumir riscos possam prosperar, mas a indústria de jogos de hoje não está estruturada de uma forma que os apoie.
+
+Os jogadores parecem sentir os efeitos dessa centralização também. Muitos reclamam de modelos de negócios extrativos, seja microtransações, o modelo free-to-play / pay-to-win móvel, compras intermináveis no jogo ou a proliferação de jogos com contas bloqueadas.
+
+São os melhores dos tempos. São os piores dos tempos.
+
+<Note>
+O tweet de Elon obteve mais de 75 milhões de visualizações, sugerindo que tocou uma corda profunda.
+</Note>
+
+Apesar do crescente alcance dos jogos, da variedade de ferramentas disponíveis para desenvolvedores e da relativa facilidade de acesso aos jogos, insatisfação e desconforto estão presentes em toda a indústria. De uma perspectiva mais ampla, é inquestionavelmente um desses períodos de tensão dos quais transformações significativas muitas vezes emergem.
+
+### Jogos On-chain: Fechado (novamente)
+
+Jogos web3 representam uma direção óbvia para um potencial renascimento dos jogos. É uma nova tecnologia digital e de rede. É global, multiplataforma e se orgulha de remover controladores. Pode tornar os usuários partes interessadas diretas e oferecer aos desenvolvedores novas maneiras de se financiarem. Pelo menos no papel, a promessa parece corresponder ao momento.
+
+Jogos já desempenharam um papel crítico na indústria de blockchain de forma ampla, e está apenas começando. Cryptokitties, lançado em 2017, foi um dos primeiros momentos mainstream em todo o crypto. Embora seja famoso por quase parar a blockchain Ethereum, também pode ser visto como o momento que destacou a importância das soluções de escalabilidade da blockchain. De certa forma, a indústria de blockchain mais ampla tem a agradecer a Cryptokitties por expandir massivamente as visões populares do potencial de dapps — e o quão seriamente as pessoas se dedicaram a resolver questões de escalabilidade.
+
+Jogos on-chain conseguiram feitos semelhantes nos anos seguintes, com Axie Infinity, STEPN, Parallel e Pixels mostrando ao mundo o que era possível quando jogos e incentivos tokenizados convergiam. Esses sucessos demonstraram que as pessoas se envolveriam com mecânicas de jogo novas, que a propriedade digital poderia melhorar em vez de detratar da jogabilidade, e que incentivos econômicos poderiam inicializar comunidades de jogos vibrantes.
+
+No entanto, apesar dessas vitórias iniciais, jogos web3 lutaram para alcançar adoção mainstream. As barreiras de experiência do usuário permanecem altas, com gerenciamento de carteira, taxas de transação e processos de integração complexos criando atrito para jogadores tradicionais. A infraestrutura tem sido fragmentada, com jogos espalhados por várias blockchains incompatíveis. Mais criticamente, muitos jogos web3 priorizaram tokenomics em detrimento da jogabilidade, resultando em experiências que parecem mais trabalho do que diversão.
+
+## A Visão para o Jogo Aberto
+
+O Jogo Aberto representa uma reimaginação fundamental do que pode ser o jogo on-chain. Em vez de tratar a blockchain como um complemento para jogos tradicionais, o Jogo Aberto posiciona a infraestrutura on-chain como a fundação para tipos inteiramente novos de experiências de jogo.
+
+### Infraestrutura Técnica
+
+No coração do Jogo Aberto está o B3, uma blockchain Layer 3 construída na Base que fornece a fundação técnica para a próxima geração de jogos on-chain. O B3 oferece:
+
+**Alto Desempenho**: Finalidade de transação em sub-segundos e taxas baixas possibilitam experiências de jogo em tempo real anteriormente impossíveis na blockchain.
+
+**Ferramentas para Desenvolvedores**: Um conjunto abrangente de ferramentas de desenvolvimento, incluindo motores de jogo, sistemas de gestão de ativos e frameworks de implantação especificamente projetados para jogos on-chain.
+
+**Abstração de Conta**: Carteiras inteligentes e abstração de conta removem a complexidade do gerenciamento de carteiras para os jogadores, possibilitando integração e jogabilidade sem emendas.
+
+**Interoperabilidade**: Suporte integrado para transferências de ativos entre jogos e estado compartilhado possibilita níveis sem precedentes de interconectividade de jogos.
+
+### GameChains
+
+Um dos aspectos mais inovadores da arquitetura do Jogo Aberto é o sistema GameChain. Jogos individuais podem implantar sua própria blockchain personalizada que se estabelece no B3, dando aos desenvolvedores:
+
+- **Controle completo** sobre os parâmetros econômicos e técnicos de seu jogo
+- **Recursos dedicados** garantindo desempenho ótimo para seu caso de uso específico  
+- **Integração perfeita** com o ecossistema Jogo Aberto mais amplo
+- **Segurança compartilhada** através da infraestrutura subjacente do B3
+
+Essa abordagem resolve o trilema tradicional entre personalização, interoperabilidade e segurança que tem atormentado a infraestrutura de jogos blockchain.
+
+### Camada Comunitária e Social
+
+O Jogo Aberto reconhece que grandes jogos são construídos por e para comunidades. A plataforma inclui:
+
+**Recursos Sociais Nativos**: Ferramentas integradas de comunicação, gestão de guildas e descoberta social que se estendem por jogos e GameChains.
+
+**Economia do Criador**: Ferramentas e incentivos para criadores de conteúdo, streamers e construtores de comunidade monetizarem suas contribuições para o ecossistema.
+
+**Participação na Governança**: Jogadores e desenvolvedores podem participar da governança do ecossistema, ajudando a moldar a direção futura do Jogo Aberto.
+
+**Identidade entre Jogos**: Identidades de jogadores persistentes e sistemas de reputação que aprimoram experiências sociais em todo o ecossistema.
+
+### Incentivos Compartilhados
+
+Uma realidade infeliz da paisagem fragmentada de jogos on-chain hoje são os desincentivos para verdadeira interoperabilidade. Jogos e chains não querem compartilhar usuários, que muitas vezes são geradores de taxas de transação e compradores primários de tokens. Jogos têm incentivos fracos para integrar os itens e mecanismos de outros jogos, que já colheram os benefícios econômicos de cunhá-los. Até mesmo os jogadores podem enfrentar incentivos ruins para crescer a base de usuários de um jogo e diluir seus próprios ganhos de airdrop. Isso é duplamente trágico em uma indústria que se orgulha de reinventar a economia das aplicações de internet.
+
+Combater isso levará tempo, mas acreditamos que é uma batalha que vale a pena lutar.
+
+O primeiro passo é um mecanismo de referência e compartilhamento de receita que coleta uma parte da receita de transação para reinvestimento no ecossistema. Referir usuários que geram mais transações pode beneficiar todos no ecossistema. Além disso, qualquer gamechain que comprometa uma parte de seus tokens para aquisição de usuários (UA) e também traga um novo usuário pode ganhar tokens B3. O B3 também inicializará o pool de incentivos inicial para o propósito de aquisição de usuários (por exemplo, influenciadores, programa de referência de criadores) contribuindo com uma parte do suprimento de tokens B3.
+
+## Oportunidades para Principais Stakeholders
+
+A infraestrutura do B3 pode alcançar muitos tipos de atores e stakeholders, com recursos e benefícios para cada um.
+
+### Desenvolvedores de Jogos
+
+Web3 é uma nova fronteira para jogos que desenvolvedores de todos os tipos podem abraçar. O Jogo Aberto oferece um novo conjunto de ferramentas para transformar usuários em parceiros, para se envolver criativamente com uma comunidade de jogo e para financiar a criação de jogos. É uma plataforma de implantação não dominada por controladores e intencionalmente estabelecida contra isso.
+
+O conjunto único de infraestrutura, ferramentas e plataforma do Jogo Aberto reduz as barreiras do desenvolvimento de jogos on-chain. Isso deve permitir que o jogo on-chain encontre expressão mais ampla e desenvolva estruturas novas, refletindo melhor e até expandindo além das inúmeras maneiras como os jogos off-chain são experimentados hoje.
+
+Ao longo da última década e meia, a indústria "on-chain" tem sido incansável em produzir novas narrativas. Ela encontra maneiras de desafiar rumores de sua própria morte. Essa resiliência fala de um valor subjacente dos jogos web3 e de um desejo dentro do espaço de jogos de ver novas abordagens emergirem. Acreditamos que, com os avanços da tecnologia em geral, e especificamente em relação às ferramentas e infraestrutura que está introduzindo, jogos on-chain finalmente estão prontos para desempenhar um papel central na evolução dos jogos.
+
+### Jogadores
+
+Abaixar a barreira de entrada para jogadores os ajudará a encontrar as experiências que estão procurando e, esperançosamente, aquelas que eles gostam, mas não sabiam que existiam. Eles podem experimentar novas formas de jogabilidade sem atravessar o abismo da UX que ser on-chain exigiu até agora. Eles também podem ser cofinanciadores, coconstrutores e coadvogados para desenvolvedores de jogos trazendo suas próprias visões para o mundo.
+
+### Base e o Ecossistema Base
+
+Base pode ser a plataforma para o próximo bilhão de usuários on-chain. É um L2 aberto e neutro, sem um token nativo e incentivos para maximizar o valor de um e com um histórico de contribuição para o ecossistema Ethereum base

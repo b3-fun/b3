@@ -1,0 +1,501 @@
+---
+title: Hooks
+description: >-
+  React hooks para construção de fluxos de pagamento personalizados e
+  gerenciamento de ciclos de vida de pedidos
+lang: pt-BR
+originalPath: anyspend/hooks.mdx
+---
+## Hooks Principais
+
+### `useAnyspendQuote`
+
+Obtenha informações de preços em tempo real para trocas de tokens e transações entre cadeias.
+
+```tsx title="Uso Básico" icon="quote-left"
+import { useAnyspendQuote } from "@b3dotfun/sdk/anyspend";
+
+const {
+  anyspendQuote,
+  isLoadingAnyspendQuote,
+  getAnyspendQuoteError,
+  refetchAnyspendQuote
+} = useAnyspendQuote(quoteRequest);
+```
+
+#### Parâmetros
+
+<ParamField path="quoteRequest" type="QuoteRequest" required>
+  Objeto de configuração de cotação
+</ParamField>
+
+#### Interface QuoteRequest
+
+```typescript title="Definição de Tipo" icon="code"
+interface QuoteRequest {
+  srcChain: number;              // ID da cadeia de origem
+  dstChain: number;              // ID da cadeia de destino
+  srcTokenAddress: string;       // Endereço do contrato do token de origem
+  dstTokenAddress: string;       // Endereço do contrato do token de destino
+  type: "swap" | "custom";       // Tipo de ordem
+  tradeType: "EXACT_INPUT" | "EXACT_OUTPUT";
+  amount: string;                // Quantidade na menor unidade (wei)
+}
+```
+
+#### Valores de Retorno
+
+<ResponseField name="anyspendQuote" type="QuoteResponse | null">
+  Dados da cotação com preços e taxas
+</ResponseField>
+
+<ResponseField name="isLoadingAnyspendQuote" type="boolean">
+  Indicador de estado de carregamento
+</ResponseField>
+
+<ResponseField name="getAnyspendQuoteError" type="Error | null">
+  Objeto de erro se a cotação falhar
+</ResponseField>
+
+<ResponseField name="refetchAnyspendQuote" type="() => void">
+  Função para atualizar manualmente a cotação
+</ResponseField>
+
+#### Exemplo de Uso
+
+```tsx title="Componente de Cotação de Troca" icon="exchange-alt" lines
+function SwapQuote() {
+  const quoteRequest = {
+    srcChain: 1,           // Ethereum
+    dstChain: 8333,        // B3
+    srcTokenAddress: "0xA0b86a33E6Fb6Dd9a9B3d8B5FEb2b3C8e7D9Ff1E", // USDC
+    dstTokenAddress: "0x0000000000000000000000000000000000000000", // ETH
+    type: "swap",
+    tradeType: "EXACT_INPUT",
+    amount: "1000000", // 1 USDC (6 decimais)
+  };
+
+  const { anyspendQuote, isLoadingAnyspendQuote, getAnyspendQuoteError } =
+    useAnyspendQuote(quoteRequest);
+
+  if (isLoadingAnyspendQuote) return <div>Obtendo melhor preço...</div>;
+  if (getAnyspendQuoteError) return <div>Falha ao obter cotação</div>;
+
+  return (
+    <div>
+      <p>Você receberá: {anyspendQuote?.expectedOutput} ETH</p>
+      <p>Taxa de rede: ${anyspendQuote?.networkFeeUsd}</p>
+      <p>Taxa de serviço: ${anyspendQuote?.serviceFeeUsd}</p>
+      <p>Custo total: ${anyspendQuote?.totalUsdCost}</p>
+    </div>
+  );
+}
+```
+
+---
+
+### `useAnyspendCreateOrder`
+
+Crie e execute ordens AnySpend com tratamento de erro abrangente.
+
+```tsx title="Uso Básico" icon="plus-circle"
+import { useAnyspendCreateOrder } from "@b3dotfun/sdk/anyspend";
+
+const {
+  createOrder,
+  isCreatingOrder,
+  createOrderError
+} = useAnyspendCreateOrder(options);
+```
+
+#### Parâmetros
+
+<ParamField path="options" type="CreateOrderOptions">
+  Objeto de configuração com funções de callback
+</ParamField>
+
+#### Interface CreateOrderOptions
+
+```typescript title="Definição de Tipo" icon="settings"
+interface CreateOrderOptions {
+  onSuccess?: (data: OrderResponse) => void;
+  onError?: (error: Error) => void;
+  onSettled?: () => void;
+}
+```
+
+#### Valores de Retorno
+
+<ResponseField name="createOrder" type="(request: CreateOrderRequest) => void">
+  Função para criar e executar uma ordem
+</ResponseField>
+
+<ResponseField name="isCreatingOrder" type="boolean">
+  Indicador de estado de criação da ordem
+</ResponseField>
+
+<ResponseField name="createOrderError" type="Error | null">
+  Objeto de erro se a criação da ordem falhar
+</ResponseField>
+
+#### Exemplo de Uso
+
+```tsx title="Formulário de Pagamento" icon="credit-card" lines
+function PaymentForm() {
+  const { createOrder, isCreatingOrder } = useAnyspendCreateOrder({
+    onSuccess: (data) => {
+      console.log("Ordem criada:", data.data.id);
+      // Redirecionar para pagamento ou mostrar sucesso
+      router.push(`/payment/${data.data.id}`);
+    },
+    onError: (error) => {
+      console.error("Falha na ordem:", error.message);
+      toast.error("Pagamento falhou. Por favor, tente novamente.");
+    },
+  });
+
+  const handlePayment = () => {
+    createOrder({
+      recipientAddress: userWalletAddress,
+      orderType: "swap",
+      srcChain: 1,
+      dstChain: 8333,
+      srcToken: {
+        chainId: 1,
+        address: "0xA0b86a33E6Fb6Dd9a9B3d8B5FEb2b3C8e7D9Ff1E",
+        name: "USD Coin",
+        symbol: "USDC",
+        decimals: 6,
+      },
+      dstToken: {
+        chainId: 8333,
+        address: "0x0000000000000000000000000000000000000000",
+        name: "Ether",
+        symbol: "ETH",
+        decimals: 18,
+      },
+      srcAmount: "1000000", // 1 USDC
+      expectedDstAmount: "500000000000000000", // ~0.5 ETH
+      creatorAddress: userWalletAddress,
+    });
+  };
+
+  return (
+    <button
+      onClick={handlePayment}
+      disabled={isCreatingOrder}
+    >
+      {isCreatingOrder ? "Processando..." : "Pagar com Cripto"}
+    </button>
+  );
+}
+```
+
+---
+
+### `useAnyspendOrderAndTransactions`
+
+Monitore o status da ordem e rastreie as transações da blockchain associadas em tempo real.
+
+```tsx title="Uso Básico" icon="search"
+import { useAnyspendOrderAndTransactions } from "@b3dotfun/sdk/anyspend";
+
+const {
+  orderAndTransactions,
+  isLoadingOrderAndTransactions,
+  getOrderAndTransactionsError
+} = useAnyspendOrderAndTransactions(orderId);
+```
+
+#### Parâmetros
+
+<ParamField path="orderId" type="string" required>
+  ID da ordem para rastrear e monitorar
+</ParamField>
+
+#### Valores de Retorno
+
+<ResponseField name="orderAndTransactions" type="OrderWithTransactions | null">
+  Dados completos da ordem com detalhes da transação
+</ResponseField>
+
+<ResponseField name="isLoadingOrderAndTransactions" type="boolean">
+  Indicador de estado de carregamento
+</ResponseField>
+
+<ResponseField name="getOrderAndTransactionsError" type="Error | null">
+  Objeto de erro se a busca falhar
+</ResponseField>
+
+#### Interface OrderWithTransactions
+
+```typescript title="Definição de Tipo" icon="database"
+interface OrderWithTransactions {
+  data: {
+    order: Order;               // Detalhes e status da ordem
+    depositTxs: Transaction[];  // Transações de depósito do usuário
+    relayTx?: Transaction;      // Transação de relay entre cadeias
+    executeTx?: Transaction;    // Transação de execução final
+    refundTxs: Transaction[];   // Transações de reembolso (se houver)
+  };
+}
+```
+
+#### Exemplo de Uso
+
+```tsx title="Rastreador de Ordem" icon="eye" lines
+function OrderTracker({ orderId }: { orderId: string }) {
+  const { orderAndTransactions, isLoadingOrderAndTransactions } =
+    useAnyspendOrderAndTransactions(orderId);
+
+  if (isLoadingOrderAndTransactions) {
+    return <div>Carregando status da ordem...</div>;
+  }
+
+  if (!orderAndTransactions) {
+    return <div>Ordem não encontrada</div>;
+  }
+
+  const { order, depositTxs, executeTx, refundTxs } = orderAndTransactions.data;
+
+  const getStatusMessage = (status: string) => {
+    switch (status) {
+      case "scanning_deposit_transaction":
+        return "⏳ Aguardando confirmação do pagamento...";
+      case "relay":
+        return "🔄 Processando transação entre cadeias...";
+      case "executed":
+        return "✅ Transação concluída com sucesso!";
+      case "refunded":
+        return "↩️ Reembolso processado";
+      default:
+        return "🔄 Processando...";
+    }
+  };
+
+  return (
+    <div className="order-status">
+      <h2>Ordem #{orderId.slice(0, 8)}</h2>
+      <p>{getStatusMessage(order.status)}</p>
+
+      {depositTxs.length > 0 && (
+        <div>
+          <h3>Transação de Pagamento</h3>
+          <a
+            href={`https://etherscan.io/tx/${depositTxs[0].txHash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Ver no Etherscan
+          </a>
+        </div>
+      )}
+
+      {executeTx && (
+        <div>
+          <h3>Transação de Execução</h3>
+          <a
+            href={`https://explorer.b3.fun/tx/${executeTx.txHash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Ver no Explorador B3
+          </a>
+        </div>
+      )}
+
+      {order.errorDetails && (
+        <div className="error">
+          <strong>Erro:</strong> {order.errorDetails}
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+---
+
+### `useAnyspendOrderHistory`
+
+Recupere o histórico de ordens paginado para um endereço de usuário.
+
+```tsx title="Uso Básico" icon="history"
+import { useAnyspendOrderHistory } from "@b3dotfun/sdk/anyspend";
+
+const {
+  orderHistory,
+  isLoadingOrderHistory,
+  getOrderHistoryError
+} = useAnyspendOrderHistory(creatorAddress, limit, offset);
+```
+
+#### Parâmetros
+
+<ParamField path="creatorAddress" type="string" required>
+  Endereço da carteira do usuário
+</ParamField>
+
+<ParamField path="limit" type="number" required>
+  Número de ordens para buscar (máximo 100)
+</ParamField>
+
+<ParamField path="offset" type="number" required>
+  Offset de paginação
+</ParamField>
+
+#### Exemplo de Uso
+
+```tsx title="Componente de Histórico de Ordens" icon="list" lines
+function OrderHistory({ userAddress }: { userAddress: string }) {
+  const [page, setPage] = useState(0);
+  const pageSize = 10;
+
+  const { orderHistory, isLoadingOrderHistory } = useAnyspendOrderHistory(
+    userAddress,
+    pageSize,
+    page * pageSize
+  );
+
+  if (isLoadingOrderHistory) {
+    return <div>Carregando histórico de ordens...</div>;
+  }
+
+  return (
+    <div>
+      <h2>Suas Ordens</h2>
+      {orderHistory?.data.map((order) => (
+        <div key={order.id} className="order-item">
+          <p>Tipo: {order.type}</p>
+          <p>Status: {order.status}</p>
+          <p>Quantidade: {order.srcAmount} {order.srcToken.symbol}</p>
+          <p>Data: {new Date(order.createdAt).toLocaleDateString()}</p>
+        </div>
+      ))}
+
+      <button
+        onClick={() => setPage(page - 1)}
+        disabled={page === 0}
+      >
+        Anterior
+      </button>
+      <button
+        onClick={() => setPage(page + 1)}
+        disabled={!orderHistory?.data || orderHistory.data.length < pageSize}
+      >
+        Próximo
+      </button>
+    </div>
+  );
+}
+```
+
+## Hooks Adicionais
+
+### `useAnyspendTokens`
+
+Obtenha tokens disponíveis para uma cadeia específica.
+
+```tsx title="Lista de Tokens" icon="coins"
+const { tokens, isLoadingTokens } = useAnyspendTokens(1, "USDC");
+```
+
+### `useCoinbaseOnrampOptions`
+
+Obtenha a configuração de onramp da Coinbase para pagamentos em fiat.
+
+```tsx title="Onramp da Coinbase" icon="credit-card"
+const { coinbaseOptions, isLoadingCoinbaseOptions } = useCoinbaseOnrampOptions();
+```
+
+### `useStripeClientSecret`
+
+Obtenha a intenção de pagamento do Stripe para pagamentos com cartão de crédito.
+
+```tsx title="Integração com Stripe" icon="stripe"
+const { clientSecret, isLoadingClientSecret } = useStripeClientSecret(orderData);
+```
+
+## Padrões de Hook
+
+### Padrão de Tratamento de Erros
+
+```tsx title="Tratamento de Erros" icon="shield-exclamation" lines
+function PaymentComponent() {
+  const { createOrder, isCreatingOrder } = useAnyspendCreateOrder({
+    onError: (error) => {
+      // Registrar erro para depuração
+      console.error("Pagamento falhou:", error);
+
+      // Mostrar mensagem amigável ao usuário
+      switch (error.message) {
+        case "INSUFFICIENT_BALANCE":
+          toast.error("Saldo insuficiente. Por favor, adicione fundos.");
+          break;
+        case "SLIPPAGE":
+          toast.error("Movimento de preço desfavorável. Por favor, tente novamente.");
+          break;
+        default:
+          toast.error("Pagamento falhou. Por favor, tente novamente.");
+      }
+    },
+  });
+
+  // Implementação do componente...
+}
+```
+
+### Padrão de Estado de Carregamento
+
+```tsx title="Estados de Carregamento" icon="spinner" lines
+function SwapInterface() {
+  const { anyspendQuote, isLoadingAnyspendQuote } = useAnyspendQuote(quoteRequest);
+  const { createOrder, isCreatingOrder } = useAnyspendCreateOrder();
+
+  const isLoading = isLoadingAnyspendQuote || isCreatingOrder;
+
+  return (
+    <div>
+      {isLoading && <LoadingSpinner />}
+      {/* Resto do componente */}
+    </div>
+  );
+}
+```
+
+### Padrão de Atualizações em Tempo Real
+
+```tsx title="Atualizações em Tempo Real" icon="sync-alt" lines
+function OrderStatus({ orderId }: { orderId: string }) {
+  const { orderAndTransactions } = useAnyspendOrderAndTransactions(orderId);
+
+  // Auto-atualização a cada 5 segundos para ordens pendentes
+  useEffect(() => {
+    if (orderAndTransactions?.data.order.status === "relay") {
+      const interval = setInterval(() => {
+        // A atualização é tratada automaticamente pelo hook
+      }, 5000);
+
+      return () => clearInterval(interval);
+    }
+  }, [orderAndTransactions?.data.order.status]);
+
+  // Implementação do componente...
+}
+```
+
+## Próximos Passos
+
+<CardGroup cols={3}>
+<Card title="Ver Exemplos" icon="code" href="/anyspend/examples">
+  Navegue por exemplos de implementações do mundo real
+</Card>
+
+<Card title="Tratamento de Erros" icon="bug" href="/anyspend/error-handling">
+  Aprenda estratégias abrangentes de tratamento de erros
+</Card>
+
+<Card title="Referência de Componentes" icon="puzzle-piece" href="/anyspend/components">
+  Explore componentes pré-construídos
+</Card>
+</CardGroup>
