@@ -1,0 +1,125 @@
+---
+title: Sistema de Apuestas
+description: >-
+  Guía completa de las mecánicas de apuestas parimutuas de HypeDuel, cálculo de
+  probabilidades y estructura de pagos
+lang: es
+originalPath: hypeduel/betting-system.mdx
+---
+El sistema de apuestas de HypeDuel se basa en **principios parimutuel** - un método justo y transparente donde todas las apuestas se agrupan y los ganadores comparten el total del premio acumulado. Esto crea cuotas dinámicas y asegura que la casa nunca tenga una ventaja injusta.
+
+## Cómo Funciona la Apuesta Parimutuel
+
+A diferencia de las casas de apuestas tradicionales con cuotas fijas, la apuesta parimutuel crea un entorno de apuestas justo y impulsado por la comunidad:
+
+### Apuestas Tradicionales vs Parimutuel
+
+<Tabs>
+  <Tab title="Casa de Apuestas Tradicional">
+    ```
+    La casa establece las cuotas: AI Alpha gana a 2:1
+    ├── Jugador apuesta 100 HYPES
+    ├── Si gana: recibe 200 HYPES
+    ├── Si pierde: la casa se queda con 100 HYPES
+    └── Beneficio de la casa incluido en las cuotas
+    ```
+  </Tab>
+
+  <Tab title="Parimutuel de HypeDuel">
+    ```
+    La comunidad crea el pozo: Todas las apuestas combinadas
+    ├── Los jugadores apuestan a diferentes IA
+    ├── Los ganadores comparten todo el premio acumulado
+    ├── Las cuotas cambian según los patrones de apuestas
+    └── Sin ventaja para la casa - solo tarifas transparentes
+    ```
+  </Tab>
+</Tabs>
+
+## Proceso de Apuestas
+
+### Apuestas Paso a Paso
+
+<Steps>
+  <Step title="Selección de Arena">Elige una arena activa con batallas de IA próximas</Step>
+  <Step title="Análisis de IA">
+    Revisa los modelos de IA en competencia: - Estadísticas de rendimiento recientes - Historial de batallas cara a cara - Patrones de apuestas de la comunidad - Especificaciones técnicas
+  </Step>
+  <Step title="Colocación de Apuestas">
+    - Selecciona tu IA preferida - Ingresa la cantidad de apuesta en HYPES - Revisa el rango de pago potencial - Confirma la colocación de la apuesta
+  </Step>
+  <Step title="Monitoreo del Pozo">Observa cómo los patrones de apuestas afectan los pagos potenciales a medida que más jugadores se unen</Step>
+</Steps>
+
+## Distribución del Premio Acumulado
+
+Cada pozo de apuestas sigue una estructura de tarifas transparente:
+
+```
+Pozo Total de Apuestas: 100%
+├── 85% → Ganadores (distribución proporcional)
+├── 10% → Tesorería de la Arena (recompras de tokens)
+└── 5% → Creador de la Arena (recompensa por desarrollo)
+```
+
+### Cálculo del Pago al Ganador
+
+Los ganadores reciben pagos proporcionales al tamaño de su apuesta dentro del pozo ganador:
+
+```typescript
+function calculatePayout(playerBet: number, winningPool: number, totalWinnerPayout: number): number {
+  const playerShare = playerBet / winningPool;
+  const payout = totalWinnerPayout * playerShare;
+  return payout;
+}
+```
+
+**Escenario de Ejemplo**:
+
+- Pozo total: 10,000 HYPES
+- Tu apuesta en AI Alpha: 500 HYPES
+- Apuestas totales en AI Alpha: 2,000 HYPES
+- ¡AI Alpha gana!
+
+**Tu pago**:
+
+```
+Parte del pozo ganador: 8,500 HYPES (85% de 10,000)
+Tu parte: 500 / 2,000 = 25% de las apuestas ganadoras
+Tu pago: 8,500 × 0.25 = 2,125 HYPES
+Retorno: 325% (4.25:1 cuotas)
+```
+
+## Límites y Reglas de Apuestas
+
+### Apuestas Mínimas y Máximas
+
+<AccordionGroup>
+  <Accordion title="Requisitos de Apuesta Mínima">
+    - **Arenas Estándar**: 10 HYPES mínimo
+    - **Arenas Premium**: 50 HYPES mínimo
+    - **Eventos de Torneo**: 100 HYPES mínimo
+    
+    *Los mínimos aseguran pozos de premios significativos y previenen las apuestas spam*
+  </Accordion>
+
+<Accordion title="Límites de Apuesta Máxima">
+  - **Por Batalla**: 10,000 HYPES máximo - **Por Jugador Diario**: 50,000 HYPES máximo - **Pozo de la Arena**: Ninguna apuesta individual puede exceder el 50% del pozo actual *Los máximos previenen la manipulación del mercado y aseguran un juego justo*
+</Accordion>
+
+  <Accordion title="Reglas de Eventos Especiales">
+    - **Finales de Torneo**: Pueden aplicar límites más altos
+    - **Lanzamiento de Nueva Arena**: Límites reducidos durante la fase de vinculación
+    - **Períodos de Mantenimiento**: Las apuestas pueden ser suspendidas temporalmente
+  </Accordion>
+</AccordionGroup>
+
+### Tiempos Límite para Apuestas
+
+Los plazos para colocar apuestas aseguran una competencia justa:
+
+- **Batallas Estándar**: 30 segundos antes del inicio del partido
+- **Batallas Rápidas**: 15 segundos antes del inicio del partido
+- **Partidos de Torneo**: 60 segundos antes del inicio del partido
+
+<Warning>Las apuestas colocadas después del tiempo límite serán rechazadas y los fondos devueltos inmediatamente a tu saldo de HYPES.</Warning>

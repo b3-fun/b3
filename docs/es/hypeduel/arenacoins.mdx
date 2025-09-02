@@ -1,0 +1,216 @@
+---
+title: ArenaCoins
+description: >-
+  Tokens específicos de arena con precios de curva de vinculación que te
+  permiten poseer una parte de los entornos de batalla de IA
+lang: es
+originalPath: hypeduel/arenacoins.mdx
+---
+**ArenaCoins** son los tokens nativos para cada entorno de batalla en HypeDuel — una forma revolucionaria de poseer una parte de la acción en la primera arena de entretenimiento AI vs AI del mundo. Cada arena tiene su propio token único que se aprecia con el éxito de la arena.
+
+## Concepto Principal
+
+```mermaid
+graph TD
+    subgraph "Creación de Arena"
+        AC[Arena Creada] --> BP[Comienza Fase de Vinculación]
+        BP --> BC[Precios de Curva de Vinculación]
+    end
+
+    subgraph "Construcción de Comunidad"
+        BC --> PB[Jugadores Vinculan $B3]
+        PB --> RA[Reciben ArenaCoins]
+        RA --> ES[Soportes Tempranos]
+    end
+
+    subgraph "Crecimiento de Arena"
+        ES --> LB[Comienzan Batallas en Vivo]
+        LB --> BF[Apuestas & Tarifas Generan]
+        BF --> RS[Reparto de Ingresos]
+    end
+
+    subgraph "Características del Token"
+        RS --> RV[Ingresos de Apuestas]
+        RS --> BR[Incrementar Ingresos]
+        RS --> TF[Tarifas de Comercio]
+        RV --> TB[Recompras de Token]
+        BR --> TB
+        TF --> TB
+    end
+
+    subgraph "Creación de Valor"
+        TB --> VA[Apreciación de Valor]
+        VA --> CG[Crecimiento de Comunidad]
+        CG --> AT[Atraer Comerciantes]
+        AT --> DX[Comercio en DEX]
+    end
+
+    DX --> TF
+    CG --> LB
+
+    style AC fill:#e3f2fd
+    style RA fill:#e8f5e8
+    style RS fill:#fff3e0
+    style VA fill:#c8e6c9
+```
+
+### Qué Hace Únicos a los ArenaCoins
+
+<Card title="Uno Por Arena" icon="building">
+  Cada entorno de batalla tiene su propio ArenaCoin único ($COMBAT, $RACING, etc.)
+</Card>
+
+<Card title="Precios de Curva de Vinculación" icon="trending-up">
+  Descubrimiento de precios justo a través de curvas matemáticas, sin posibilidad de front-running
+</Card>
+
+<Card title="Reparto de Ingresos" icon="coins">
+  Gana tarifas de cada apuesta, impulso y comercio en tu arena
+</Card>
+
+<Card title="Gobernanza Comunitaria" icon="users">
+  Los poseedores de ArenaCoin votan sobre mejoras de la arena y cambios de reglas
+</Card>
+
+## Ciclo de Vida de ArenaCoin
+
+### Fase 1: Creación de Arena & Vinculación
+
+Cuando se lanza una nueva arena, entra en la **fase de vinculación**:
+
+<Steps>
+  <Step title="Lanzamiento de Arena">El creador despliega un nuevo entorno de batalla con jugabilidad única</Step>
+  <Step title="Apertura de Vinculación">Los jugadores pueden vincular $B3 para recibir ArenaCoins a precios de curva</Step>
+  <Step title="Construcción de Comunidad">Los primeros soportes acumulan tokens y construyen la comunidad inicial</Step>
+  <Step title="Criterios de Graduación">La arena alcanza los objetivos de vinculación (liquidez + tamaño de la comunidad)</Step>
+</Steps>
+
+### Fase 2: Comercio en DEX
+
+Después de una vinculación exitosa, los ArenaCoins se gradúan a comercio completo en el mercado:
+
+- **Pool en Uniswap**: Se crea el par de comercio ArenaCoin/$B3
+- **Descubrimiento de Mercado**: El mercado abierto determina el valor del token
+- **Provisión de Liquidez**: Los fondos de vinculación siembran la liquidez inicial
+- **Generación de Tarifas**: Las tarifas de comercio apoyan la economía de la arena
+
+## Mecánica de Curva de Vinculación
+
+### Fundamento Matemático
+
+Los ArenaCoins utilizan una **curva de vinculación cuadrática** para el descubrimiento de precios justo:
+
+```typescript
+// Fórmula de precios de curva de vinculación
+function calculatePrice(supply: number, bondingConstant: number): number {
+  return (supply / bondingConstant) ** 2;
+}
+
+// Ejemplo con arena $COMBAT
+const bondingConstant = 1000000; // 1M de tokens a ratio 1:1
+const currentSupply = 250000; // 250k de tokens acuñados
+
+const pricePerToken = (250000 / 1000000) ** 2;
+// = 0.25^2 = 0.0625 $B3 por ArenaCoin
+```
+
+### Beneficios de Vinculación
+
+<Tabs>
+  <Tab title="Lanzamiento Justo">
+    - Sin preventa o asignaciones internas - El precio aumenta con la demanda - Los primeros soportes obtienen mejores precios -
+    Descubrimiento de precios matemático
+  </Tab>
+
+<Tab title="Liquidez Garantizada">
+  - Siempre es posible comprar/vender - Sin dependencia de creadores de mercado - La curva proporciona liquidez instantánea - Impacto de precio predecible
+</Tab>
+
+  <Tab title="Anti-Manipulación">
+    - Sin front-running posible - Las compras grandes tienen impacto en el precio - La curva disuade naturalmente las infladas - Algoritmo de precios transparente
+  </Tab>
+</Tabs>
+
+### Ejemplo de Vinculación
+
+Sigamos el viaje de un inversor temprano:
+
+<AccordionGroup>
+  <Accordion title="Día 1: Lanzamiento de Arena">
+    - **Arena**: Se lanza el Simulador de Combate - **Suministro**: 0 tokens $COMBAT existen - **Precio**: Precio inicial ≈ 0.001 $B3
+    - **Inversión**: Alice vincula 100 $B3 - **Recibido**: ~316 tokens $COMBAT
+  </Accordion>
+
+<Accordion title="Semana 2: Interés Creciente">
+  - **Suministro**: 50,000 tokens $COMBAT acuñados - **Precio**: ~0.0025 $B3 por token - **Tenencias de Alice**: 316 tokens valen
+  ~79 $B3 - **Inversión**: Bob vincula 500 $B3 - **Recibido**: ~200 tokens $COMBAT
+</Accordion>
+
+  <Accordion title="Mes 1: Éxito de la Arena">
+    - **Suministro**: 200,000 tokens $COMBAT acuñados - **Precio**: ~0.04 $B3 por token - **Tenencias de Alice**: 316 tokens
+    valen ~126 $B3 - **Comunidad**: Batallas activas y base de usuarios en crecimiento - **Graduación**: La arena se acerca a los criterios de listado en DEX
+  </Accordion>
+</AccordionGroup>
+
+## Modelo de Reparto de Ingresos
+
+Los ArenaCoins generan valor a través de múltiples fuentes de ingresos:
+
+### Fuentes de Ingresos Primarias
+
+```mermaid
+graph LR
+    subgraph "Fuentes de Ingresos"
+        A[Actividad de Apuestas] --> B[10% de Pools<br/>al Tesoro]
+        C[Compras de Impulsos] --> D[50% al Tesoro]
+        E[Comercio en DEX] --> F[66% de Tarifas<br/>al Tesoro]
+    end
+
+    subgraph "Tesoro de Arena"
+        B --> T[Tesoro de Arena]
+        D --> T
+        F --> T
+    end
+
+    subgraph "Acciones del Tesoro"
+        T --> G[Recompras de ArenaCoin]
+        T --> H[Quemas de Token]
+        T --> I[Soporte de Liquidez]
+    end
+
+    subgraph "Impacto en Valor"
+        G --> J[Reducción de Suministro]
+        H --> J
+        I --> K[Mejora del Comercio]
+        J --> L[Apreciación de Precio]
+        K --> L
+    end
+
+    subgraph "Beneficios Comunitarios"
+        L --> M[Mayor Valor de Token]
+        M --> N[Interés Aumentado]
+        N --> O[Más Jugadores]
+        O --> A
+        O --> C
+        O --> E
+    end
+
+    style T fill:#fff3e0
+    style L fill:#c8e6c9
+    style M fill:#e8f5e8
+```
+
+<Tabs>
+  <Tab title="Tarifas de Apuestas">
+    **10% de todos los pools de apuestas** - Recaudado de cada batalla - Proporcional al volumen de apuestas - Se acumula en el tesoro de la arena - Usado para recompras de token *Ejemplo: pool de apuestas de 10,000 HYPES = 1,000 HYPES al tesoro*
+  </Tab>
+
+<Tab title="Ingresos de Impulsos">
+  **50% de las compras de impulsos** - Ingresos en tiempo real de características interactivas - Mayor compromiso = más ingresos - Escala con la popularidad de la arena - Impacto inmediato en el tesoro *Ejemplo: 500 HYPES en impulsos = 250 HYPES al tesoro*
+</Tab>
+
+  <Tab title="Tarifas de Comercio">
+    **66% de las tarifas de comercio en DEX** (post-graduación) - Ingresos continuos del comercio de tokens - Crece con la adopción del token -
+    Escalado de ingresos impulsado por el mercado - Sostenibilidad a largo plazo *Ejemplo: tarifa de comercio del 1%, 66% al tesoro*
+  </Tab>
+</Tabs>
