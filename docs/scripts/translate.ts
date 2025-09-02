@@ -52,7 +52,8 @@ const openai = new OpenAI({
 
 // Configuration
 const CONFIG = {
-  languages: ["es", "pt-BR", "id", "ko", "cn", "vi", "el"], // All supported languages
+  languages: ["es"],
+  // languages: ["es", "pt-BR", "id", "ko", "cn", "vi", "el"], // All supported languages
   sourceDir: path.join(process.cwd(), "..", "docs"), // Root docs directory
   docsContentDir: path.join(process.cwd(), "..", "docs"), // Where the actual docs content lives
   excludeDirs: ["node_modules", ".next", "public", "scripts", "images"],
@@ -62,12 +63,12 @@ const CONFIG = {
   // Language-specific instructions
   languageInstructions: {
     es: "Spanish (Español)",
-    "pt-BR": "Brazilian Portuguese (Português do Brasil)",
-    id: "Indonesian/Malay (Bahasa Indonesia/Melayu)",
-    ko: "Korean (한국어)",
-    cn: "Simplified Chinese (简体中文)",
-    vi: "Vietnamese (Tiếng Việt)",
-    el: "Greek (Ελληνικά)",
+    // "pt-BR": "Brazilian Portuguese (Português do Brasil)",
+    // id: "Indonesian/Malay (Bahasa Indonesia/Melayu)",
+    // ko: "Korean (한국어)",
+    // cn: "Simplified Chinese (简体中文)",
+    // vi: "Vietnamese (Tiếng Việt)",
+    // el: "Greek (Ελληνικά)",
   },
   // Add configuration from environment variables
   batchSize: processAllFiles ? Infinity : Number(process.env.TRANSLATION_BATCH_SIZE) || 1,
