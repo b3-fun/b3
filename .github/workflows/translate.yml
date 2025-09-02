@@ -2,10 +2,12 @@ name: Update Translations
 
 on:
   push:
-    branches: [main]
+    branches: [B3-2425-fix-translation-workflow]
     paths:
       - "docs/**/*.mdx"
       - "docs/**/*.md"
+      - "docs/scripts/translate.ts"
+      - ".github/workflows/translate.yml"
       - "pnpm-workspace.yaml"
   workflow_dispatch:
 

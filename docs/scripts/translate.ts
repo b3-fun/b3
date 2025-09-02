@@ -321,6 +321,16 @@ async function shouldTranslateFile(sourcePath: string, targetPath: string): Prom
     const sourceStats = await fs.stat(sourcePath);
     const targetStats = await fs.stat(targetPath);
 
+    console.log(`
+      sourcePath: ${sourcePath}      
+      sourceStats: ${JSON.stringify(sourceStats)}
+
+      
+      targetStats: ${JSON.stringify(targetStats)}
+      targetPath: ${targetPath}
+      
+      `);
+
     const shouldUpdate = sourceStats.mtime > targetStats.mtime;
     if (shouldUpdate) {
       console.log(`Source file modified, updating: ${path.relative(CONFIG.docsContentDir, sourcePath)}`);
@@ -440,7 +450,8 @@ async function main() {
     let totalSkipped = 0;
 
     // Process each language independently
-    for (const language of CONFIG.languages) {
+    // TEMPORARY: Only process Spanish
+    for (const language of ["es"]) {
       console.log(`\nProcessing language: ${language}`);
       let processedCount = 0;
       let skippedCount = 0;
