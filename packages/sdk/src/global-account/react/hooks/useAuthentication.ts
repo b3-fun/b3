@@ -49,6 +49,8 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
         if (!loginWithSiwe) {
           debug("Skipping SIWE login", { loginWithSiwe });
           setIsAuthenticated(true);
+          setV2IsAuthenticating(false);
+          setV2IsAuthenticated(true);
           return;
         }
         debug("setIsAuthenticating:true:4");
