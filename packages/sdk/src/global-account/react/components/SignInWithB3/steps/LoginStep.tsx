@@ -63,6 +63,7 @@ export function LoginStep({ onSuccess, onError, partnerId, chain }: LoginStepPro
 
   const { theme } = useB3();
   const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
+  const setV2IsAuthenticating = useAuthStore(state => state.setV2IsAuthenticating);
   const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
   const { logout } = useAuthentication(partnerId);
 
@@ -117,6 +118,7 @@ export function LoginStep({ onSuccess, onError, partnerId, chain }: LoginStepPro
         onConnect={async wallet => {
           try {
             setIsAuthenticating(true);
+            setV2IsAuthenticating(true);
             debug("setIsAuthenticating:true:6");
 
             const account = wallet.getAccount();
@@ -133,6 +135,7 @@ export function LoginStep({ onSuccess, onError, partnerId, chain }: LoginStepPro
           } finally {
             debug("setIsAuthenticating:false:6");
             setIsAuthenticating(false);
+            setV2IsAuthenticating(false);
           }
         }}
       />

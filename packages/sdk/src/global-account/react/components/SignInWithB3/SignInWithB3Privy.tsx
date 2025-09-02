@@ -21,6 +21,7 @@ interface SignInWithB3PrivyProps {
 export function SignInWithB3Privy({ onSuccess, onError, partnerId, chain }: SignInWithB3PrivyProps) {
   const { isLoading, connectTw, fullToken } = useHandleConnectWithPrivy(partnerId, chain, onSuccess);
   const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
+  const setV2IsAuthenticating = useAuthStore(state => state.setV2IsAuthenticating);
   const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
   const { logout } = useAuthentication(partnerId);
 
@@ -48,10 +49,11 @@ export function SignInWithB3Privy({ onSuccess, onError, partnerId, chain }: Sign
       } finally {
         debug("setIsAuthenticating:false:7");
         setIsAuthenticating(false);
+        setV2IsAuthenticating(false);
       }
     }
     autoConnect();
-  }, [connectTw, onSuccess, onError, setIsAuthenticating, setIsAuthenticated, logout]);
+  }, [connectTw, onSuccess, onError, setIsAuthenticating, setIsAuthenticated, logout, setV2IsAuthenticating]);
 
   // Currently we auto login, so we can show loading immediately and the onSuccess will proceed to the next modal
   return (
