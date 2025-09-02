@@ -29,6 +29,7 @@ class Timer {
 const args = process.argv.slice(2);
 const processAllFiles = args.includes("--all");
 const updateMode = args.includes("--update");
+const sourceHashesOnly = args.includes("--source-hashes-only");
 
 // Load environment variables from .env only if not using Doppler
 if (!process.env.DOPPLER_PROJECT) {
@@ -484,9 +485,41 @@ async function main() {
     }
 
     console.log(`Found ${files.length} files to process`);
-    console.log(`Mode: ${CONFIG.dryRun ? "DRY RUN" : "LIVE"}`);
+    console.log(`Mode: ${CONFIG.dryRun ? "DRY RUN" : "LIVE"}${sourceHashesOnly ? " (SOURCE HASHES ONLY)" : ""}`);
     console.log(`Processing: ${processAllFiles ? "ALL FILES" : `${CONFIG.batchSize} file(s)`}`);
     console.log(`Update mode: ${updateMode ? "ON" : "OFF"}`);
+
+    const filesToProcess = processAllFiles ? files : files.slice(0, CONFIG.batchSize);
+
+    if (sourceHashesOnly) {
+      // Only process source files and update their hashes
+      console.log("\nUpdating source file hashes...");
+      let hashesUpdated = 0;
+
+      for (const file of filesToProcess) {
+        const relativePath = path.relative(CONFIG.docsContentDir, file);
+        console.log(`\nProcessing: ${relativePath}`);
+
+        try {
+          const content = await fs.readFile(file, "utf-8");
+          if (CONFIG.dryRun) {
+            console.log(`Would update hash for: ${relativePath}`);
+            hashesUpdated++;
+          } else {
+            await updateSourceHash(relativePath, content);
+            hashesUpdated++;
+            console.log(`✓ Updated hash for: ${relativePath}`);
+          }
+        } catch (error) {
+          console.error(`Error processing ${relativePath}:`, error);
+        }
+      }
+
+      console.log(`\nSource hash update complete:`);
+      console.log(`- Updated: ${hashesUpdated} files`);
+      console.log(`- Skipped: ${files.length - hashesUpdated} files`);
+      return;
+    }
 
     // First, translate the navigation for all languages
     for (const language of CONFIG.languages) {
@@ -494,8 +527,6 @@ async function main() {
     }
 
     // Then process the documentation files for each language
-    const filesToProcess = processAllFiles ? files : files.slice(0, CONFIG.batchSize);
-
     let totalProcessed = 0;
     let totalSkipped = 0;
 
