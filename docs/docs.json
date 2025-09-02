@@ -499,7 +499,488 @@
       {
         "language": "es",
         "name": "Español",
-        "tabs": [],
+        "tabs": [
+          {
+            "icon": "circle-nodes",
+            "tab": "Protocolo",
+            "groups": [
+              {
+                "group": "About B3",
+                "pages": [
+                  "index",
+                  "quickstart",
+                  "protocol/scaling",
+                  "protocol/liquidity",
+                  "protocol/tokenomics",
+                  "protocol/b3-token",
+                  "protocol/staking-b3"
+                ]
+              },
+              {
+                "group": "Network",
+                "pages": [
+                  "protocol/network-setup",
+                  "protocol/bridge",
+                  "protocol/testnet",
+                  "protocol/bridge-to-testnet"
+                ]
+              },
+              {
+                "group": "Build on B3",
+                "pages": [
+                  "protocol/brand-kit",
+                  "redirect/ecosystem",
+                  "redirect/sdk"
+                ]
+              },
+              {
+                "group": "Governance",
+                "pages": [
+                  "protocol/whitepaper",
+                  "protocol/constitution",
+                  "protocol/bylaws",
+                  "protocol/governance-platforms"
+                ]
+              }
+            ],
+            "global": {
+              "anchors": [
+                {
+                  "anchor": "Discover B3",
+                  "href": "https://b3.fun",
+                  "icon": "globe"
+                },
+                {
+                  "anchor": "Explore Apps",
+                  "href": "https://explorer.b3.fun/apps",
+                  "icon": "window"
+                },
+                {
+                  "anchor": "Discord",
+                  "href": "https://discord.gg/b3dotfun",
+                  "icon": "discord"
+                },
+                {
+                  "anchor": "Telegram Dev Group",
+                  "href": "https://t.me/b3devcartel",
+                  "icon": "telegram"
+                }
+              ]
+            }
+          },
+          {
+            "icon": "globe",
+            "tab": "Ecosistema",
+            "groups": [
+              {
+                "group": "Overview",
+                "pages": [
+                  "ecosystem/introduction",
+                  "protocol/network-setup",
+                  "ai-optimized"
+                ]
+              },
+              {
+                "group": "Resources",
+                "pages": [
+                  "data/api-reference/introduction",
+                  "data/profiles/index",
+                  "redirect/sdk"
+                ]
+              },
+              {
+                "group": "Ecosystem Tools",
+                "pages": [
+                  "ecosystem/onchain-sdks",
+                  "ecosystem/node-providers",
+                  "ecosystem/nft-infrastructure",
+                  "ecosystem/infrastructure",
+                  "ecosystem/governance",
+                  "ecosystem/data-analytics"
+                ]
+              },
+              {
+                "group": "User Experience",
+                "pages": [
+                  "ecosystem/wallets",
+                  "ecosystem/bridges"
+                ]
+              },
+              {
+                "group": "Data API",
+                "pages": [
+                  {
+                    "group": "Blockchain",
+                    "openapi": {
+                      "source": "https://data-api.b3.fun/swagger.json?v=1",
+                      "directory": "data/api-reference"
+                    }
+                  },
+                  {
+                    "group": "Profiles",
+                    "openapi": {
+                      "source": "https://profiles.b3.fun/swagger.json?v=1",
+                      "directory": "data/profiles"
+                    }
+                  }
+                ]
+              },
+              {
+                "group": "Learn",
+                "icon": "graduation-cap",
+                "pages": [
+                  {
+                    "group": "Getting Started",
+                    "pages": [
+                      "learn/getting-started/how-to-create-an-account",
+                      "learn/getting-started/how-to-customize-your-basement-profile",
+                      "learn/getting-started/how-to-link-additional-social-accounts",
+                      "learn/getting-started/how-to-export-your-embedded-wallet",
+                      "learn/getting-started/crypto-and-wallet-security"
+                    ]
+                  },
+                  {
+                    "group": "Deposits & Withdrawals",
+                    "pages": [
+                      "learn/deposits-withdrawals/depositing-tokens-on-b3",
+                      "learn/deposits-withdrawals/withdrawing-tokens-from-b3",
+                      "learn/deposits-withdrawals/how-to-swap-tokens",
+                      "learn/deposits-withdrawals/b3-token",
+                      "learn/deposits-withdrawals/how-to-verify-transaction-status"
+                    ]
+                  },
+                  {
+                    "group": "Staking & Rewards",
+                    "pages": [
+                      "learn/staking-rewards/what-is-staking-and-how-does-it-work",
+                      "learn/staking-rewards/how-to-stake-b3",
+                      "learn/staking-rewards/how-to-unstake-your-tokens",
+                      "learn/staking-rewards/stake-to-win",
+                      "learn/staking-rewards/how-daily-slots-work",
+                      "learn/staking-rewards/how-spin-the-wheel-works",
+                      "learn/staking-rewards/how-prize-pool-works"
+                    ]
+                  },
+                  {
+                    "group": "Games & Experiences",
+                    "pages": [
+                      "learn/games-experiences/how-to-join-a-tournament-on-basement",
+                      "learn/games-experiences/how-to-start-a-wager-on-basement"
+                    ]
+                  },
+                  {
+                    "group": "Troubleshooting",
+                    "pages": [
+                      "learn/troubleshooting/login-and-account-access",
+                      "learn/troubleshooting/staking-and-rewards-faq",
+                      "learn/troubleshooting/transactions-and-wallet-issues",
+                      "learn/troubleshooting/stake-to-win-games-faq",
+                      "learn/troubleshooting/games-and-competition-faq",
+                      "learn/troubleshooting/feedback-and-reporting-issues"
+                    ]
+                  }
+                ]
+              }
+            ],
+            "global": {
+              "anchors": [
+                {
+                  "anchor": "Explore Apps",
+                  "href": "https://explorer.b3.fun/apps",
+                  "icon": "window"
+                },
+                {
+                  "anchor": "Discord",
+                  "href": "https://discord.gg/b3dotfun",
+                  "icon": "discord"
+                },
+                {
+                  "anchor": "Telegram Dev Group",
+                  "href": "https://t.me/b3devcartel",
+                  "icon": "telegram"
+                }
+              ]
+            }
+          },
+          {
+            "icon": "/images/basement-logo-purple.svg",
+            "tab": "BSMNT.fun",
+            "groups": [
+              {
+                "group": "Overview",
+                "pages": [
+                  "basement/introduction",
+                  "basement/game-launcher",
+                  "basement/brand-kit"
+                ]
+              },
+              {
+                "group": "Game Development",
+                "pages": [
+                  "basement/unity-guide",
+                  "basement/construct-guide"
+                ]
+              },
+              {
+                "group": "API Reference",
+                "openapi": {
+                  "source": "/basement/basement-swagger.json",
+                  "directory": "basement/api-reference"
+                }
+              }
+            ],
+            "global": {
+              "anchors": [
+                {
+                  "anchor": "Visit basement.fun",
+                  "href": "https://basement.fun",
+                  "icon": "globe"
+                },
+                {
+                  "anchor": "Apply as a developer",
+                  "href": "https://basement.fun",
+                  "icon": "rocket"
+                }
+              ]
+            }
+          },
+          {
+            "icon": "/images/hypeduel-logo-shadow.png",
+            "tab": "HypeDuel",
+            "groups": [
+              {
+                "group": "Getting Started",
+                "pages": [
+                  "hypeduel/introduction",
+                  "hypeduel/quick-start",
+                  "hypeduel/platform-overview"
+                ]
+              },
+              {
+                "group": "Game Mechanics",
+                "pages": [
+                  "hypeduel/betting-system",
+                  "hypeduel/boosts",
+                  "hypeduel/arenas",
+                  "hypeduel/gameplay"
+                ]
+              },
+              {
+                "group": "Tokenomics",
+                "pages": [
+                  "hypeduel/tokens-overview",
+                  "hypeduel/hypes-credits",
+                  "hypeduel/arenacoins",
+                  "hypeduel/fee-structure",
+                  "hypeduel/growth-flywheel"
+                ]
+              },
+              {
+                "group": "Developers",
+                "pages": [
+                  "hypeduel/developers"
+                ]
+              },
+              {
+                "group": "Support",
+                "pages": [
+                  "hypeduel/faq",
+                  "hypeduel/glossary"
+                ]
+              }
+            ],
+            "global": {
+              "anchors": [
+                {
+                  "anchor": "Visit hypeduel.com",
+                  "href": "https://hypeduel.com",
+                  "icon": "globe"
+                },
+                {
+                  "anchor": "Join the community",
+                  "href": "https://discord.gg/b3dotfun",
+                  "icon": "rocket"
+                }
+              ]
+            }
+          },
+          {
+            "icon": "/images/anyspend-logo-white.svg",
+            "tab": "AnySpend SDK",
+            "groups": [
+              {
+                "group": "Getting Started",
+                "pages": [
+                  "anyspend/introduction",
+                  "anyspend/installation",
+                  "anyspend/onramp"
+                ]
+              },
+              {
+                "group": "React",
+                "pages": [
+                  "anyspend/components",
+                  "anyspend/hooks",
+                  "anyspend/examples"
+                ]
+              },
+              {
+                "group": "REST API",
+                "openapi": {
+                  "source": "https://mainnet.anyspend.com/openapi.json",
+                  "directory": "anyspend/api-reference"
+                }
+              },
+              {
+                "group": "Advanced",
+                "pages": [
+                  "anyspend/error-handling"
+                ]
+              }
+            ],
+            "global": {
+              "anchors": [
+                {
+                  "anchor": "Visit anyspend.com",
+                  "href": "https://anyspend.com",
+                  "icon": "globe"
+                },
+                {
+                  "anchor": "Try AnySpend",
+                  "href": "https://www.anyspend.com/",
+                  "icon": "sparkles"
+                },
+                {
+                  "anchor": "Follow @anyspend",
+                  "href": "https://x.com/anyspend",
+                  "icon": "twitter"
+                }
+              ]
+            }
+          },
+          {
+            "icon": "code",
+            "tab": "Kits de desarrollo para desarrolladores",
+            "menu": [
+              {
+                "item": "CreateKit",
+                "icon": "palette",
+                "groups": [
+                  {
+                    "group": "Getting Started",
+                    "pages": [
+                      "createkit/introduction",
+                      "createkit/installation",
+                      "createkit/quickstart"
+                    ]
+                  },
+                  {
+                    "group": "Core Features",
+                    "pages": [
+                      "createkit/collections",
+                      "createkit/minting",
+                      "createkit/rewards"
+                    ]
+                  },
+                  {
+                    "group": "Advanced",
+                    "pages": [
+                      "createkit/whitelist",
+                      "createkit/storage",
+                      "createkit/error-handling"
+                    ]
+                  },
+                  {
+                    "group": "Resources",
+                    "pages": [
+                      "createkit/examples"
+                    ]
+                  },
+                  {
+                    "group": "API Reference",
+                    "openapi": {
+                      "source": "https://createkit.b3.fun/swagger.json",
+                      "directory": "createkit/api-reference"
+                    }
+                  }
+                ]
+              },
+              {
+                "item": "BondKit",
+                "icon": "rocket",
+                "groups": [
+                  {
+                    "group": "Getting Started",
+                    "pages": [
+                      "bondkit/introduction",
+                      "bondkit/installation",
+                      "bondkit/quickstart",
+                      "bondkit/how-it-works"
+                    ]
+                  },
+                  {
+                    "group": "Core Concepts",
+                    "pages": [
+                      "bondkit/concepts/bonding-phase",
+                      "bondkit/concepts/pricing",
+                      "bondkit/concepts/targets"
+                    ]
+                  },
+                  {
+                    "group": "Guides",
+                    "pages": [
+                      "bondkit/guides/choose-quote-asset",
+                      "bondkit/guides/set-aggressiveness",
+                      "bondkit/guides/est-migration-price"
+                    ]
+                  },
+                  {
+                    "group": "Resources",
+                    "pages": [
+                      "bondkit/networks"
+                    ]
+                  }
+                ]
+              },
+              {
+                "item": "ArenaKit",
+                "icon": "trophy",
+                "pages": [
+                  "arenakit/introduction"
+                ]
+              },
+              {
+                "item": "B3AR",
+                "icon": "parachute-box",
+                "pages": [
+                  "b3ar/introduction"
+                ]
+              },
+              {
+                "item": "B3 SDK",
+                "icon": "code",
+                "groups": [
+                  {
+                    "group": "Overview",
+                    "pages": [
+                      "sdk/introduction"
+                    ]
+                  },
+                  {
+                    "group": "Global Accounts",
+                    "pages": [
+                      "sdk/global-account/introduction",
+                      "sdk/global-account/authentication",
+                      "sdk/global-account/permissions",
+                      "sdk/global-account/hooks",
+                      "sdk/global-account/examples"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
         "global": {
           "anchors": [
             {
@@ -523,7 +1004,488 @@
       {
         "language": "pt-BR",
         "name": "Português (Brasil)",
-        "tabs": [],
+        "tabs": [
+          {
+            "icon": "circle-nodes",
+            "tab": "Protocolo",
+            "groups": [
+              {
+                "group": "About B3",
+                "pages": [
+                  "index",
+                  "quickstart",
+                  "protocol/scaling",
+                  "protocol/liquidity",
+                  "protocol/tokenomics",
+                  "protocol/b3-token",
+                  "protocol/staking-b3"
+                ]
+              },
+              {
+                "group": "Network",
+                "pages": [
+                  "protocol/network-setup",
+                  "protocol/bridge",
+                  "protocol/testnet",
+                  "protocol/bridge-to-testnet"
+                ]
+              },
+              {
+                "group": "Build on B3",
+                "pages": [
+                  "protocol/brand-kit",
+                  "redirect/ecosystem",
+                  "redirect/sdk"
+                ]
+              },
+              {
+                "group": "Governance",
+                "pages": [
+                  "protocol/whitepaper",
+                  "protocol/constitution",
+                  "protocol/bylaws",
+                  "protocol/governance-platforms"
+                ]
+              }
+            ],
+            "global": {
+              "anchors": [
+                {
+                  "anchor": "Discover B3",
+                  "href": "https://b3.fun",
+                  "icon": "globe"
+                },
+                {
+                  "anchor": "Explore Apps",
+                  "href": "https://explorer.b3.fun/apps",
+                  "icon": "window"
+                },
+                {
+                  "anchor": "Discord",
+                  "href": "https://discord.gg/b3dotfun",
+                  "icon": "discord"
+                },
+                {
+                  "anchor": "Telegram Dev Group",
+                  "href": "https://t.me/b3devcartel",
+                  "icon": "telegram"
+                }
+              ]
+            }
+          },
+          {
+            "icon": "globe",
+            "tab": "Ecossistema",
+            "groups": [
+              {
+                "group": "Overview",
+                "pages": [
+                  "ecosystem/introduction",
+                  "protocol/network-setup",
+                  "ai-optimized"
+                ]
+              },
+              {
+                "group": "Resources",
+                "pages": [
+                  "data/api-reference/introduction",
+                  "data/profiles/index",
+                  "redirect/sdk"
+                ]
+              },
+              {
+                "group": "Ecosystem Tools",
+                "pages": [
+                  "ecosystem/onchain-sdks",
+                  "ecosystem/node-providers",
+                  "ecosystem/nft-infrastructure",
+                  "ecosystem/infrastructure",
+                  "ecosystem/governance",
+                  "ecosystem/data-analytics"
+                ]
+              },
+              {
+                "group": "User Experience",
+                "pages": [
+                  "ecosystem/wallets",
+                  "ecosystem/bridges"
+                ]
+              },
+              {
+                "group": "Data API",
+                "pages": [
+                  {
+                    "group": "Blockchain",
+                    "openapi": {
+                      "source": "https://data-api.b3.fun/swagger.json?v=1",
+                      "directory": "data/api-reference"
+                    }
+                  },
+                  {
+                    "group": "Profiles",
+                    "openapi": {
+                      "source": "https://profiles.b3.fun/swagger.json?v=1",
+                      "directory": "data/profiles"
+                    }
+                  }
+                ]
+              },
+              {
+                "group": "Learn",
+                "icon": "graduation-cap",
+                "pages": [
+                  {
+                    "group": "Getting Started",
+                    "pages": [
+                      "learn/getting-started/how-to-create-an-account",
+                      "learn/getting-started/how-to-customize-your-basement-profile",
+                      "learn/getting-started/how-to-link-additional-social-accounts",
+                      "learn/getting-started/how-to-export-your-embedded-wallet",
+                      "learn/getting-started/crypto-and-wallet-security"
+                    ]
+                  },
+                  {
+                    "group": "Deposits & Withdrawals",
+                    "pages": [
+                      "learn/deposits-withdrawals/depositing-tokens-on-b3",
+                      "learn/deposits-withdrawals/withdrawing-tokens-from-b3",
+                      "learn/deposits-withdrawals/how-to-swap-tokens",
+                      "learn/deposits-withdrawals/b3-token",
+                      "learn/deposits-withdrawals/how-to-verify-transaction-status"
+                    ]
+                  },
+                  {
+                    "group": "Staking & Rewards",
+                    "pages": [
+                      "learn/staking-rewards/what-is-staking-and-how-does-it-work",
+                      "learn/staking-rewards/how-to-stake-b3",
+                      "learn/staking-rewards/how-to-unstake-your-tokens",
+                      "learn/staking-rewards/stake-to-win",
+                      "learn/staking-rewards/how-daily-slots-work",
+                      "learn/staking-rewards/how-spin-the-wheel-works",
+                      "learn/staking-rewards/how-prize-pool-works"
+                    ]
+                  },
+                  {
+                    "group": "Games & Experiences",
+                    "pages": [
+                      "learn/games-experiences/how-to-join-a-tournament-on-basement",
+                      "learn/games-experiences/how-to-start-a-wager-on-basement"
+                    ]
+                  },
+                  {
+                    "group": "Troubleshooting",
+                    "pages": [
+                      "learn/troubleshooting/login-and-account-access",
+                      "learn/troubleshooting/staking-and-rewards-faq",
+                      "learn/troubleshooting/transactions-and-wallet-issues",
+                      "learn/troubleshooting/stake-to-win-games-faq",
+                      "learn/troubleshooting/games-and-competition-faq",
+                      "learn/troubleshooting/feedback-and-reporting-issues"
+                    ]
+                  }
+                ]
+              }
+            ],
+            "global": {
+              "anchors": [
+                {
+                  "anchor": "Explore Apps",
+                  "href": "https://explorer.b3.fun/apps",
+                  "icon": "window"
+                },
+                {
+                  "anchor": "Discord",
+                  "href": "https://discord.gg/b3dotfun",
+                  "icon": "discord"
+                },
+                {
+                  "anchor": "Telegram Dev Group",
+                  "href": "https://t.me/b3devcartel",
+                  "icon": "telegram"
+                }
+              ]
+            }
+          },
+          {
+            "icon": "/images/basement-logo-purple.svg",
+            "tab": "BSMNT.fun",
+            "groups": [
+              {
+                "group": "Overview",
+                "pages": [
+                  "basement/introduction",
+                  "basement/game-launcher",
+                  "basement/brand-kit"
+                ]
+              },
+              {
+                "group": "Game Development",
+                "pages": [
+                  "basement/unity-guide",
+                  "basement/construct-guide"
+                ]
+              },
+              {
+                "group": "API Reference",
+                "openapi": {
+                  "source": "/basement/basement-swagger.json",
+                  "directory": "basement/api-reference"
+                }
+              }
+            ],
+            "global": {
+              "anchors": [
+                {
+                  "anchor": "Visit basement.fun",
+                  "href": "https://basement.fun",
+                  "icon": "globe"
+                },
+                {
+                  "anchor": "Apply as a developer",
+                  "href": "https://basement.fun",
+                  "icon": "rocket"
+                }
+              ]
+            }
+          },
+          {
+            "icon": "/images/hypeduel-logo-shadow.png",
+            "tab": "HypeDuel",
+            "groups": [
+              {
+                "group": "Getting Started",
+                "pages": [
+                  "hypeduel/introduction",
+                  "hypeduel/quick-start",
+                  "hypeduel/platform-overview"
+                ]
+              },
+              {
+                "group": "Game Mechanics",
+                "pages": [
+                  "hypeduel/betting-system",
+                  "hypeduel/boosts",
+                  "hypeduel/arenas",
+                  "hypeduel/gameplay"
+                ]
+              },
+              {
+                "group": "Tokenomics",
+                "pages": [
+                  "hypeduel/tokens-overview",
+                  "hypeduel/hypes-credits",
+                  "hypeduel/arenacoins",
+                  "hypeduel/fee-structure",
+                  "hypeduel/growth-flywheel"
+                ]
+              },
+              {
+                "group": "Developers",
+                "pages": [
+                  "hypeduel/developers"
+                ]
+              },
+              {
+                "group": "Support",
+                "pages": [
+                  "hypeduel/faq",
+                  "hypeduel/glossary"
+                ]
+              }
+            ],
+            "global": {
+              "anchors": [
+                {
+                  "anchor": "Visit hypeduel.com",
+                  "href": "https://hypeduel.com",
+                  "icon": "globe"
+                },
+                {
+                  "anchor": "Join the community",
+                  "href": "https://discord.gg/b3dotfun",
+                  "icon": "rocket"
+                }
+              ]
+            }
+          },
+          {
+            "icon": "/images/anyspend-logo-white.svg",
+            "tab": "AnySpend SDK",
+            "groups": [
+              {
+                "group": "Getting Started",
+                "pages": [
+                  "anyspend/introduction",
+                  "anyspend/installation",
+                  "anyspend/onramp"
+                ]
+              },
+              {
+                "group": "React",
+                "pages": [
+                  "anyspend/components",
+                  "anyspend/hooks",
+                  "anyspend/examples"
+                ]
+              },
+              {
+                "group": "REST API",
+                "openapi": {
+                  "source": "https://mainnet.anyspend.com/openapi.json",
+                  "directory": "anyspend/api-reference"
+                }
+              },
+              {
+                "group": "Advanced",
+                "pages": [
+                  "anyspend/error-handling"
+                ]
+              }
+            ],
+            "global": {
+              "anchors": [
+                {
+                  "anchor": "Visit anyspend.com",
+                  "href": "https://anyspend.com",
+                  "icon": "globe"
+                },
+                {
+                  "anchor": "Try AnySpend",
+                  "href": "https://www.anyspend.com/",
+                  "icon": "sparkles"
+                },
+                {
+                  "anchor": "Follow @anyspend",
+                  "href": "https://x.com/anyspend",
+                  "icon": "twitter"
+                }
+              ]
+            }
+          },
+          {
+            "icon": "code",
+            "tab": "Kits de Desenvolvimento para Desenvolvedores",
+            "menu": [
+              {
+                "item": "CreateKit",
+                "icon": "palette",
+                "groups": [
+                  {
+                    "group": "Getting Started",
+                    "pages": [
+                      "createkit/introduction",
+                      "createkit/installation",
+                      "createkit/quickstart"
+                    ]
+                  },
+                  {
+                    "group": "Core Features",
+                    "pages": [
+                      "createkit/collections",
+                      "createkit/minting",
+                      "createkit/rewards"
+                    ]
+                  },
+                  {
+                    "group": "Advanced",
+                    "pages": [
+                      "createkit/whitelist",
+                      "createkit/storage",
+                      "createkit/error-handling"
+                    ]
+                  },
+                  {
+                    "group": "Resources",
+                    "pages": [
+                      "createkit/examples"
+                    ]
+                  },
+                  {
+                    "group": "API Reference",
+                    "openapi": {
+                      "source": "https://createkit.b3.fun/swagger.json",
+                      "directory": "createkit/api-reference"
+                    }
+                  }
+                ]
+              },
+              {
+                "item": "BondKit",
+                "icon": "rocket",
+                "groups": [
+                  {
+                    "group": "Getting Started",
+                    "pages": [
+                      "bondkit/introduction",
+                      "bondkit/installation",
+                      "bondkit/quickstart",
+                      "bondkit/how-it-works"
+                    ]
+                  },
+                  {
+                    "group": "Core Concepts",
+                    "pages": [
+                      "bondkit/concepts/bonding-phase",
+                      "bondkit/concepts/pricing",
+                      "bondkit/concepts/targets"
+                    ]
+                  },
+                  {
+                    "group": "Guides",
+                    "pages": [
+                      "bondkit/guides/choose-quote-asset",
+                      "bondkit/guides/set-aggressiveness",
+                      "bondkit/guides/est-migration-price"
+                    ]
+                  },
+                  {
+                    "group": "Resources",
+                    "pages": [
+                      "bondkit/networks"
+                    ]
+                  }
+                ]
+              },
+              {
+                "item": "ArenaKit",
+                "icon": "trophy",
+                "pages": [
+                  "arenakit/introduction"
+                ]
+              },
+              {
+                "item": "B3AR",
+                "icon": "parachute-box",
+                "pages": [
+                  "b3ar/introduction"
+                ]
+              },
+              {
+                "item": "B3 SDK",
+                "icon": "code",
+                "groups": [
+                  {
+                    "group": "Overview",
+                    "pages": [
+                      "sdk/introduction"
+                    ]
+                  },
+                  {
+                    "group": "Global Accounts",
+                    "pages": [
+                      "sdk/global-account/introduction",
+                      "sdk/global-account/authentication",
+                      "sdk/global-account/permissions",
+                      "sdk/global-account/hooks",
+                      "sdk/global-account/examples"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
         "global": {
           "anchors": [
             {
@@ -547,7 +1509,488 @@
       {
         "language": "id",
         "name": "Bahasa Indonesia",
-        "tabs": [],
+        "tabs": [
+          {
+            "icon": "circle-nodes",
+            "tab": "Protokol",
+            "groups": [
+              {
+                "group": "About B3",
+                "pages": [
+                  "index",
+                  "quickstart",
+                  "protocol/scaling",
+                  "protocol/liquidity",
+                  "protocol/tokenomics",
+                  "protocol/b3-token",
+                  "protocol/staking-b3"
+                ]
+              },
+              {
+                "group": "Network",
+                "pages": [
+                  "protocol/network-setup",
+                  "protocol/bridge",
+                  "protocol/testnet",
+                  "protocol/bridge-to-testnet"
+                ]
+              },
+              {
+                "group": "Build on B3",
+                "pages": [
+                  "protocol/brand-kit",
+                  "redirect/ecosystem",
+                  "redirect/sdk"
+                ]
+              },
+              {
+                "group": "Governance",
+                "pages": [
+                  "protocol/whitepaper",
+                  "protocol/constitution",
+                  "protocol/bylaws",
+                  "protocol/governance-platforms"
+                ]
+              }
+            ],
+            "global": {
+              "anchors": [
+                {
+                  "anchor": "Discover B3",
+                  "href": "https://b3.fun",
+                  "icon": "globe"
+                },
+                {
+                  "anchor": "Explore Apps",
+                  "href": "https://explorer.b3.fun/apps",
+                  "icon": "window"
+                },
+                {
+                  "anchor": "Discord",
+                  "href": "https://discord.gg/b3dotfun",
+                  "icon": "discord"
+                },
+                {
+                  "anchor": "Telegram Dev Group",
+                  "href": "https://t.me/b3devcartel",
+                  "icon": "telegram"
+                }
+              ]
+            }
+          },
+          {
+            "icon": "globe",
+            "tab": "Ekosistem",
+            "groups": [
+              {
+                "group": "Overview",
+                "pages": [
+                  "ecosystem/introduction",
+                  "protocol/network-setup",
+                  "ai-optimized"
+                ]
+              },
+              {
+                "group": "Resources",
+                "pages": [
+                  "data/api-reference/introduction",
+                  "data/profiles/index",
+                  "redirect/sdk"
+                ]
+              },
+              {
+                "group": "Ecosystem Tools",
+                "pages": [
+                  "ecosystem/onchain-sdks",
+                  "ecosystem/node-providers",
+                  "ecosystem/nft-infrastructure",
+                  "ecosystem/infrastructure",
+                  "ecosystem/governance",
+                  "ecosystem/data-analytics"
+                ]
+              },
+              {
+                "group": "User Experience",
+                "pages": [
+                  "ecosystem/wallets",
+                  "ecosystem/bridges"
+                ]
+              },
+              {
+                "group": "Data API",
+                "pages": [
+                  {
+                    "group": "Blockchain",
+                    "openapi": {
+                      "source": "https://data-api.b3.fun/swagger.json?v=1",
+                      "directory": "data/api-reference"
+                    }
+                  },
+                  {
+                    "group": "Profiles",
+                    "openapi": {
+                      "source": "https://profiles.b3.fun/swagger.json?v=1",
+                      "directory": "data/profiles"
+                    }
+                  }
+                ]
+              },
+              {
+                "group": "Learn",
+                "icon": "graduation-cap",
+                "pages": [
+                  {
+                    "group": "Getting Started",
+                    "pages": [
+                      "learn/getting-started/how-to-create-an-account",
+                      "learn/getting-started/how-to-customize-your-basement-profile",
+                      "learn/getting-started/how-to-link-additional-social-accounts",
+                      "learn/getting-started/how-to-export-your-embedded-wallet",
+                      "learn/getting-started/crypto-and-wallet-security"
+                    ]
+                  },
+                  {
+                    "group": "Deposits & Withdrawals",
+                    "pages": [
+                      "learn/deposits-withdrawals/depositing-tokens-on-b3",
+                      "learn/deposits-withdrawals/withdrawing-tokens-from-b3",
+                      "learn/deposits-withdrawals/how-to-swap-tokens",
+                      "learn/deposits-withdrawals/b3-token",
+                      "learn/deposits-withdrawals/how-to-verify-transaction-status"
+                    ]
+                  },
+                  {
+                    "group": "Staking & Rewards",
+                    "pages": [
+                      "learn/staking-rewards/what-is-staking-and-how-does-it-work",
+                      "learn/staking-rewards/how-to-stake-b3",
+                      "learn/staking-rewards/how-to-unstake-your-tokens",
+                      "learn/staking-rewards/stake-to-win",
+                      "learn/staking-rewards/how-daily-slots-work",
+                      "learn/staking-rewards/how-spin-the-wheel-works",
+                      "learn/staking-rewards/how-prize-pool-works"
+                    ]
+                  },
+                  {
+                    "group": "Games & Experiences",
+                    "pages": [
+                      "learn/games-experiences/how-to-join-a-tournament-on-basement",
+                      "learn/games-experiences/how-to-start-a-wager-on-basement"
+                    ]
+                  },
+                  {
+                    "group": "Troubleshooting",
+                    "pages": [
+                      "learn/troubleshooting/login-and-account-access",
+                      "learn/troubleshooting/staking-and-rewards-faq",
+                      "learn/troubleshooting/transactions-and-wallet-issues",
+                      "learn/troubleshooting/stake-to-win-games-faq",
+                      "learn/troubleshooting/games-and-competition-faq",
+                      "learn/troubleshooting/feedback-and-reporting-issues"
+                    ]
+                  }
+                ]
+              }
+            ],
+            "global": {
+              "anchors": [
+                {
+                  "anchor": "Explore Apps",
+                  "href": "https://explorer.b3.fun/apps",
+                  "icon": "window"
+                },
+                {
+                  "anchor": "Discord",
+                  "href": "https://discord.gg/b3dotfun",
+                  "icon": "discord"
+                },
+                {
+                  "anchor": "Telegram Dev Group",
+                  "href": "https://t.me/b3devcartel",
+                  "icon": "telegram"
+                }
+              ]
+            }
+          },
+          {
+            "icon": "/images/basement-logo-purple.svg",
+            "tab": "BSMNT.fun",
+            "groups": [
+              {
+                "group": "Overview",
+                "pages": [
+                  "basement/introduction",
+                  "basement/game-launcher",
+                  "basement/brand-kit"
+                ]
+              },
+              {
+                "group": "Game Development",
+                "pages": [
+                  "basement/unity-guide",
+                  "basement/construct-guide"
+                ]
+              },
+              {
+                "group": "API Reference",
+                "openapi": {
+                  "source": "/basement/basement-swagger.json",
+                  "directory": "basement/api-reference"
+                }
+              }
+            ],
+            "global": {
+              "anchors": [
+                {
+                  "anchor": "Visit basement.fun",
+                  "href": "https://basement.fun",
+                  "icon": "globe"
+                },
+                {
+                  "anchor": "Apply as a developer",
+                  "href": "https://basement.fun",
+                  "icon": "rocket"
+                }
+              ]
+            }
+          },
+          {
+            "icon": "/images/hypeduel-logo-shadow.png",
+            "tab": "HypeDuel",
+            "groups": [
+              {
+                "group": "Getting Started",
+                "pages": [
+                  "hypeduel/introduction",
+                  "hypeduel/quick-start",
+                  "hypeduel/platform-overview"
+                ]
+              },
+              {
+                "group": "Game Mechanics",
+                "pages": [
+                  "hypeduel/betting-system",
+                  "hypeduel/boosts",
+                  "hypeduel/arenas",
+                  "hypeduel/gameplay"
+                ]
+              },
+              {
+                "group": "Tokenomics",
+                "pages": [
+                  "hypeduel/tokens-overview",
+                  "hypeduel/hypes-credits",
+                  "hypeduel/arenacoins",
+                  "hypeduel/fee-structure",
+                  "hypeduel/growth-flywheel"
+                ]
+              },
+              {
+                "group": "Developers",
+                "pages": [
+                  "hypeduel/developers"
+                ]
+              },
+              {
+                "group": "Support",
+                "pages": [
+                  "hypeduel/faq",
+                  "hypeduel/glossary"
+                ]
+              }
+            ],
+            "global": {
+              "anchors": [
+                {
+                  "anchor": "Visit hypeduel.com",
+                  "href": "https://hypeduel.com",
+                  "icon": "globe"
+                },
+                {
+                  "anchor": "Join the community",
+                  "href": "https://discord.gg/b3dotfun",
+                  "icon": "rocket"
+                }
+              ]
+            }
+          },
+          {
+            "icon": "/images/anyspend-logo-white.svg",
+            "tab": "AnySpend SDK",
+            "groups": [
+              {
+                "group": "Getting Started",
+                "pages": [
+                  "anyspend/introduction",
+                  "anyspend/installation",
+                  "anyspend/onramp"
+                ]
+              },
+              {
+                "group": "React",
+                "pages": [
+                  "anyspend/components",
+                  "anyspend/hooks",
+                  "anyspend/examples"
+                ]
+              },
+              {
+                "group": "REST API",
+                "openapi": {
+                  "source": "https://mainnet.anyspend.com/openapi.json",
+                  "directory": "anyspend/api-reference"
+                }
+              },
+              {
+                "group": "Advanced",
+                "pages": [
+                  "anyspend/error-handling"
+                ]
+              }
+            ],
+            "global": {
+              "anchors": [
+                {
+                  "anchor": "Visit anyspend.com",
+                  "href": "https://anyspend.com",
+                  "icon": "globe"
+                },
+                {
+                  "anchor": "Try AnySpend",
+                  "href": "https://www.anyspend.com/",
+                  "icon": "sparkles"
+                },
+                {
+                  "anchor": "Follow @anyspend",
+                  "href": "https://x.com/anyspend",
+                  "icon": "twitter"
+                }
+              ]
+            }
+          },
+          {
+            "icon": "code",
+            "tab": "Paket Pengembangan Perangkat Lunak (SDK) untuk Pengembang",
+            "menu": [
+              {
+                "item": "CreateKit",
+                "icon": "palette",
+                "groups": [
+                  {
+                    "group": "Getting Started",
+                    "pages": [
+                      "createkit/introduction",
+                      "createkit/installation",
+                      "createkit/quickstart"
+                    ]
+                  },
+                  {
+                    "group": "Core Features",
+                    "pages": [
+                      "createkit/collections",
+                      "createkit/minting",
+                      "createkit/rewards"
+                    ]
+                  },
+                  {
+                    "group": "Advanced",
+                    "pages": [
+                      "createkit/whitelist",
+                      "createkit/storage",
+                      "createkit/error-handling"
+                    ]
+                  },
+                  {
+                    "group": "Resources",
+                    "pages": [
+                      "createkit/examples"
+                    ]
+                  },
+                  {
+                    "group": "API Reference",
+                    "openapi": {
+                      "source": "https://createkit.b3.fun/swagger.json",
+                      "directory": "createkit/api-reference"
+                    }
+                  }
+                ]
+              },
+              {
+                "item": "BondKit",
+                "icon": "rocket",
+                "groups": [
+                  {
+                    "group": "Getting Started",
+                    "pages": [
+                      "bondkit/introduction",
+                      "bondkit/installation",
+                      "bondkit/quickstart",
+                      "bondkit/how-it-works"
+                    ]
+                  },
+                  {
+                    "group": "Core Concepts",
+                    "pages": [
+                      "bondkit/concepts/bonding-phase",
+                      "bondkit/concepts/pricing",
+                      "bondkit/concepts/targets"
+                    ]
+                  },
+                  {
+                    "group": "Guides",
+                    "pages": [
+                      "bondkit/guides/choose-quote-asset",
+                      "bondkit/guides/set-aggressiveness",
+                      "bondkit/guides/est-migration-price"
+                    ]
+                  },
+                  {
+                    "group": "Resources",
+                    "pages": [
+                      "bondkit/networks"
+                    ]
+                  }
+                ]
+              },
+              {
+                "item": "ArenaKit",
+                "icon": "trophy",
+                "pages": [
+                  "arenakit/introduction"
+                ]
+              },
+              {
+                "item": "B3AR",
+                "icon": "parachute-box",
+                "pages": [
+                  "b3ar/introduction"
+                ]
+              },
+              {
+                "item": "B3 SDK",
+                "icon": "code",
+                "groups": [
+                  {
+                    "group": "Overview",
+                    "pages": [
+                      "sdk/introduction"
+                    ]
+                  },
+                  {
+                    "group": "Global Accounts",
+                    "pages": [
+                      "sdk/global-account/introduction",
+                      "sdk/global-account/authentication",
+                      "sdk/global-account/permissions",
+                      "sdk/global-account/hooks",
+                      "sdk/global-account/examples"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
         "global": {
           "anchors": [
             {
@@ -571,7 +2014,488 @@
       {
         "language": "ko",
         "name": "한국어",
-        "tabs": [],
+        "tabs": [
+          {
+            "icon": "circle-nodes",
+            "tab": "프로토콜",
+            "groups": [
+              {
+                "group": "About B3",
+                "pages": [
+                  "index",
+                  "quickstart",
+                  "protocol/scaling",
+                  "protocol/liquidity",
+                  "protocol/tokenomics",
+                  "protocol/b3-token",
+                  "protocol/staking-b3"
+                ]
+              },
+              {
+                "group": "Network",
+                "pages": [
+                  "protocol/network-setup",
+                  "protocol/bridge",
+                  "protocol/testnet",
+                  "protocol/bridge-to-testnet"
+                ]
+              },
+              {
+                "group": "Build on B3",
+                "pages": [
+                  "protocol/brand-kit",
+                  "redirect/ecosystem",
+                  "redirect/sdk"
+                ]
+              },
+              {
+                "group": "Governance",
+                "pages": [
+                  "protocol/whitepaper",
+                  "protocol/constitution",
+                  "protocol/bylaws",
+                  "protocol/governance-platforms"
+                ]
+              }
+            ],
+            "global": {
+              "anchors": [
+                {
+                  "anchor": "Discover B3",
+                  "href": "https://b3.fun",
+                  "icon": "globe"
+                },
+                {
+                  "anchor": "Explore Apps",
+                  "href": "https://explorer.b3.fun/apps",
+                  "icon": "window"
+                },
+                {
+                  "anchor": "Discord",
+                  "href": "https://discord.gg/b3dotfun",
+                  "icon": "discord"
+                },
+                {
+                  "anchor": "Telegram Dev Group",
+                  "href": "https://t.me/b3devcartel",
+                  "icon": "telegram"
+                }
+              ]
+            }
+          },
+          {
+            "icon": "globe",
+            "tab": "Ecosystem",
+            "groups": [
+              {
+                "group": "Overview",
+                "pages": [
+                  "ecosystem/introduction",
+                  "protocol/network-setup",
+                  "ai-optimized"
+                ]
+              },
+              {
+                "group": "Resources",
+                "pages": [
+                  "data/api-reference/introduction",
+                  "data/profiles/index",
+                  "redirect/sdk"
+                ]
+              },
+              {
+                "group": "Ecosystem Tools",
+                "pages": [
+                  "ecosystem/onchain-sdks",
+                  "ecosystem/node-providers",
+                  "ecosystem/nft-infrastructure",
+                  "ecosystem/infrastructure",
+                  "ecosystem/governance",
+                  "ecosystem/data-analytics"
+                ]
+              },
+              {
+                "group": "User Experience",
+                "pages": [
+                  "ecosystem/wallets",
+                  "ecosystem/bridges"
+                ]
+              },
+              {
+                "group": "Data API",
+                "pages": [
+                  {
+                    "group": "Blockchain",
+                    "openapi": {
+                      "source": "https://data-api.b3.fun/swagger.json?v=1",
+                      "directory": "data/api-reference"
+                    }
+                  },
+                  {
+                    "group": "Profiles",
+                    "openapi": {
+                      "source": "https://profiles.b3.fun/swagger.json?v=1",
+                      "directory": "data/profiles"
+                    }
+                  }
+                ]
+              },
+              {
+                "group": "Learn",
+                "icon": "graduation-cap",
+                "pages": [
+                  {
+                    "group": "Getting Started",
+                    "pages": [
+                      "learn/getting-started/how-to-create-an-account",
+                      "learn/getting-started/how-to-customize-your-basement-profile",
+                      "learn/getting-started/how-to-link-additional-social-accounts",
+                      "learn/getting-started/how-to-export-your-embedded-wallet",
+                      "learn/getting-started/crypto-and-wallet-security"
+                    ]
+                  },
+                  {
+                    "group": "Deposits & Withdrawals",
+                    "pages": [
+                      "learn/deposits-withdrawals/depositing-tokens-on-b3",
+                      "learn/deposits-withdrawals/withdrawing-tokens-from-b3",
+                      "learn/deposits-withdrawals/how-to-swap-tokens",
+                      "learn/deposits-withdrawals/b3-token",
+                      "learn/deposits-withdrawals/how-to-verify-transaction-status"
+                    ]
+                  },
+                  {
+                    "group": "Staking & Rewards",
+                    "pages": [
+                      "learn/staking-rewards/what-is-staking-and-how-does-it-work",
+                      "learn/staking-rewards/how-to-stake-b3",
+                      "learn/staking-rewards/how-to-unstake-your-tokens",
+                      "learn/staking-rewards/stake-to-win",
+                      "learn/staking-rewards/how-daily-slots-work",
+                      "learn/staking-rewards/how-spin-the-wheel-works",
+                      "learn/staking-rewards/how-prize-pool-works"
+                    ]
+                  },
+                  {
+                    "group": "Games & Experiences",
+                    "pages": [
+                      "learn/games-experiences/how-to-join-a-tournament-on-basement",
+                      "learn/games-experiences/how-to-start-a-wager-on-basement"
+                    ]
+                  },
+                  {
+                    "group": "Troubleshooting",
+                    "pages": [
+                      "learn/troubleshooting/login-and-account-access",
+                      "learn/troubleshooting/staking-and-rewards-faq",
+                      "learn/troubleshooting/transactions-and-wallet-issues",
+                      "learn/troubleshooting/stake-to-win-games-faq",
+                      "learn/troubleshooting/games-and-competition-faq",
+                      "learn/troubleshooting/feedback-and-reporting-issues"
+                    ]
+                  }
+                ]
+              }
+            ],
+            "global": {
+              "anchors": [
+                {
+                  "anchor": "Explore Apps",
+                  "href": "https://explorer.b3.fun/apps",
+                  "icon": "window"
+                },
+                {
+                  "anchor": "Discord",
+                  "href": "https://discord.gg/b3dotfun",
+                  "icon": "discord"
+                },
+                {
+                  "anchor": "Telegram Dev Group",
+                  "href": "https://t.me/b3devcartel",
+                  "icon": "telegram"
+                }
+              ]
+            }
+          },
+          {
+            "icon": "/images/basement-logo-purple.svg",
+            "tab": "BSMNT.fun",
+            "groups": [
+              {
+                "group": "Overview",
+                "pages": [
+                  "basement/introduction",
+                  "basement/game-launcher",
+                  "basement/brand-kit"
+                ]
+              },
+              {
+                "group": "Game Development",
+                "pages": [
+                  "basement/unity-guide",
+                  "basement/construct-guide"
+                ]
+              },
+              {
+                "group": "API Reference",
+                "openapi": {
+                  "source": "/basement/basement-swagger.json",
+                  "directory": "basement/api-reference"
+                }
+              }
+            ],
+            "global": {
+              "anchors": [
+                {
+                  "anchor": "Visit basement.fun",
+                  "href": "https://basement.fun",
+                  "icon": "globe"
+                },
+                {
+                  "anchor": "Apply as a developer",
+                  "href": "https://basement.fun",
+                  "icon": "rocket"
+                }
+              ]
+            }
+          },
+          {
+            "icon": "/images/hypeduel-logo-shadow.png",
+            "tab": "HypeDuel",
+            "groups": [
+              {
+                "group": "Getting Started",
+                "pages": [
+                  "hypeduel/introduction",
+                  "hypeduel/quick-start",
+                  "hypeduel/platform-overview"
+                ]
+              },
+              {
+                "group": "Game Mechanics",
+                "pages": [
+                  "hypeduel/betting-system",
+                  "hypeduel/boosts",
+                  "hypeduel/arenas",
+                  "hypeduel/gameplay"
+                ]
+              },
+              {
+                "group": "Tokenomics",
+                "pages": [
+                  "hypeduel/tokens-overview",
+                  "hypeduel/hypes-credits",
+                  "hypeduel/arenacoins",
+                  "hypeduel/fee-structure",
+                  "hypeduel/growth-flywheel"
+                ]
+              },
+              {
+                "group": "Developers",
+                "pages": [
+                  "hypeduel/developers"
+                ]
+              },
+              {
+                "group": "Support",
+                "pages": [
+                  "hypeduel/faq",
+                  "hypeduel/glossary"
+                ]
+              }
+            ],
+            "global": {
+              "anchors": [
+                {
+                  "anchor": "Visit hypeduel.com",
+                  "href": "https://hypeduel.com",
+                  "icon": "globe"
+                },
+                {
+                  "anchor": "Join the community",
+                  "href": "https://discord.gg/b3dotfun",
+                  "icon": "rocket"
+                }
+              ]
+            }
+          },
+          {
+            "icon": "/images/anyspend-logo-white.svg",
+            "tab": "AnySpend SDK",
+            "groups": [
+              {
+                "group": "Getting Started",
+                "pages": [
+                  "anyspend/introduction",
+                  "anyspend/installation",
+                  "anyspend/onramp"
+                ]
+              },
+              {
+                "group": "React",
+                "pages": [
+                  "anyspend/components",
+                  "anyspend/hooks",
+                  "anyspend/examples"
+                ]
+              },
+              {
+                "group": "REST API",
+                "openapi": {
+                  "source": "https://mainnet.anyspend.com/openapi.json",
+                  "directory": "anyspend/api-reference"
+                }
+              },
+              {
+                "group": "Advanced",
+                "pages": [
+                  "anyspend/error-handling"
+                ]
+              }
+            ],
+            "global": {
+              "anchors": [
+                {
+                  "anchor": "Visit anyspend.com",
+                  "href": "https://anyspend.com",
+                  "icon": "globe"
+                },
+                {
+                  "anchor": "Try AnySpend",
+                  "href": "https://www.anyspend.com/",
+                  "icon": "sparkles"
+                },
+                {
+                  "anchor": "Follow @anyspend",
+                  "href": "https://x.com/anyspend",
+                  "icon": "twitter"
+                }
+              ]
+            }
+          },
+          {
+            "icon": "code",
+            "tab": "개발자 SDK들",
+            "menu": [
+              {
+                "item": "CreateKit",
+                "icon": "palette",
+                "groups": [
+                  {
+                    "group": "Getting Started",
+                    "pages": [
+                      "createkit/introduction",
+                      "createkit/installation",
+                      "createkit/quickstart"
+                    ]
+                  },
+                  {
+                    "group": "Core Features",
+                    "pages": [
+                      "createkit/collections",
+                      "createkit/minting",
+                      "createkit/rewards"
+                    ]
+                  },
+                  {
+                    "group": "Advanced",
+                    "pages": [
+                      "createkit/whitelist",
+                      "createkit/storage",
+                      "createkit/error-handling"
+                    ]
+                  },
+                  {
+                    "group": "Resources",
+                    "pages": [
+                      "createkit/examples"
+                    ]
+                  },
+                  {
+                    "group": "API Reference",
+                    "openapi": {
+                      "source": "https://createkit.b3.fun/swagger.json",
+                      "directory": "createkit/api-reference"
+                    }
+                  }
+                ]
+              },
+              {
+                "item": "BondKit",
+                "icon": "rocket",
+                "groups": [
+                  {
+                    "group": "Getting Started",
+                    "pages": [
+                      "bondkit/introduction",
+                      "bondkit/installation",
+                      "bondkit/quickstart",
+                      "bondkit/how-it-works"
+                    ]
+                  },
+                  {
+                    "group": "Core Concepts",
+                    "pages": [
+                      "bondkit/concepts/bonding-phase",
+                      "bondkit/concepts/pricing",
+                      "bondkit/concepts/targets"
+                    ]
+                  },
+                  {
+                    "group": "Guides",
+                    "pages": [
+                      "bondkit/guides/choose-quote-asset",
+                      "bondkit/guides/set-aggressiveness",
+                      "bondkit/guides/est-migration-price"
+                    ]
+                  },
+                  {
+                    "group": "Resources",
+                    "pages": [
+                      "bondkit/networks"
+                    ]
+                  }
+                ]
+              },
+              {
+                "item": "ArenaKit",
+                "icon": "trophy",
+                "pages": [
+                  "arenakit/introduction"
+                ]
+              },
+              {
+                "item": "B3AR",
+                "icon": "parachute-box",
+                "pages": [
+                  "b3ar/introduction"
+                ]
+              },
+              {
+                "item": "B3 SDK",
+                "icon": "code",
+                "groups": [
+                  {
+                    "group": "Overview",
+                    "pages": [
+                      "sdk/introduction"
+                    ]
+                  },
+                  {
+                    "group": "Global Accounts",
+                    "pages": [
+                      "sdk/global-account/introduction",
+                      "sdk/global-account/authentication",
+                      "sdk/global-account/permissions",
+                      "sdk/global-account/hooks",
+                      "sdk/global-account/examples"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
         "global": {
           "anchors": [
             {
@@ -595,7 +2519,488 @@
       {
         "language": "cn",
         "name": "简体中文",
-        "tabs": [],
+        "tabs": [
+          {
+            "icon": "circle-nodes",
+            "tab": "协议",
+            "groups": [
+              {
+                "group": "About B3",
+                "pages": [
+                  "index",
+                  "quickstart",
+                  "protocol/scaling",
+                  "protocol/liquidity",
+                  "protocol/tokenomics",
+                  "protocol/b3-token",
+                  "protocol/staking-b3"
+                ]
+              },
+              {
+                "group": "Network",
+                "pages": [
+                  "protocol/network-setup",
+                  "protocol/bridge",
+                  "protocol/testnet",
+                  "protocol/bridge-to-testnet"
+                ]
+              },
+              {
+                "group": "Build on B3",
+                "pages": [
+                  "protocol/brand-kit",
+                  "redirect/ecosystem",
+                  "redirect/sdk"
+                ]
+              },
+              {
+                "group": "Governance",
+                "pages": [
+                  "protocol/whitepaper",
+                  "protocol/constitution",
+                  "protocol/bylaws",
+                  "protocol/governance-platforms"
+                ]
+              }
+            ],
+            "global": {
+              "anchors": [
+                {
+                  "anchor": "Discover B3",
+                  "href": "https://b3.fun",
+                  "icon": "globe"
+                },
+                {
+                  "anchor": "Explore Apps",
+                  "href": "https://explorer.b3.fun/apps",
+                  "icon": "window"
+                },
+                {
+                  "anchor": "Discord",
+                  "href": "https://discord.gg/b3dotfun",
+                  "icon": "discord"
+                },
+                {
+                  "anchor": "Telegram Dev Group",
+                  "href": "https://t.me/b3devcartel",
+                  "icon": "telegram"
+                }
+              ]
+            }
+          },
+          {
+            "icon": "globe",
+            "tab": "生态系统",
+            "groups": [
+              {
+                "group": "Overview",
+                "pages": [
+                  "ecosystem/introduction",
+                  "protocol/network-setup",
+                  "ai-optimized"
+                ]
+              },
+              {
+                "group": "Resources",
+                "pages": [
+                  "data/api-reference/introduction",
+                  "data/profiles/index",
+                  "redirect/sdk"
+                ]
+              },
+              {
+                "group": "Ecosystem Tools",
+                "pages": [
+                  "ecosystem/onchain-sdks",
+                  "ecosystem/node-providers",
+                  "ecosystem/nft-infrastructure",
+                  "ecosystem/infrastructure",
+                  "ecosystem/governance",
+                  "ecosystem/data-analytics"
+                ]
+              },
+              {
+                "group": "User Experience",
+                "pages": [
+                  "ecosystem/wallets",
+                  "ecosystem/bridges"
+                ]
+              },
+              {
+                "group": "Data API",
+                "pages": [
+                  {
+                    "group": "Blockchain",
+                    "openapi": {
+                      "source": "https://data-api.b3.fun/swagger.json?v=1",
+                      "directory": "data/api-reference"
+                    }
+                  },
+                  {
+                    "group": "Profiles",
+                    "openapi": {
+                      "source": "https://profiles.b3.fun/swagger.json?v=1",
+                      "directory": "data/profiles"
+                    }
+                  }
+                ]
+              },
+              {
+                "group": "Learn",
+                "icon": "graduation-cap",
+                "pages": [
+                  {
+                    "group": "Getting Started",
+                    "pages": [
+                      "learn/getting-started/how-to-create-an-account",
+                      "learn/getting-started/how-to-customize-your-basement-profile",
+                      "learn/getting-started/how-to-link-additional-social-accounts",
+                      "learn/getting-started/how-to-export-your-embedded-wallet",
+                      "learn/getting-started/crypto-and-wallet-security"
+                    ]
+                  },
+                  {
+                    "group": "Deposits & Withdrawals",
+                    "pages": [
+                      "learn/deposits-withdrawals/depositing-tokens-on-b3",
+                      "learn/deposits-withdrawals/withdrawing-tokens-from-b3",
+                      "learn/deposits-withdrawals/how-to-swap-tokens",
+                      "learn/deposits-withdrawals/b3-token",
+                      "learn/deposits-withdrawals/how-to-verify-transaction-status"
+                    ]
+                  },
+                  {
+                    "group": "Staking & Rewards",
+                    "pages": [
+                      "learn/staking-rewards/what-is-staking-and-how-does-it-work",
+                      "learn/staking-rewards/how-to-stake-b3",
+                      "learn/staking-rewards/how-to-unstake-your-tokens",
+                      "learn/staking-rewards/stake-to-win",
+                      "learn/staking-rewards/how-daily-slots-work",
+                      "learn/staking-rewards/how-spin-the-wheel-works",
+                      "learn/staking-rewards/how-prize-pool-works"
+                    ]
+                  },
+                  {
+                    "group": "Games & Experiences",
+                    "pages": [
+                      "learn/games-experiences/how-to-join-a-tournament-on-basement",
+                      "learn/games-experiences/how-to-start-a-wager-on-basement"
+                    ]
+                  },
+                  {
+                    "group": "Troubleshooting",
+                    "pages": [
+                      "learn/troubleshooting/login-and-account-access",
+                      "learn/troubleshooting/staking-and-rewards-faq",
+                      "learn/troubleshooting/transactions-and-wallet-issues",
+                      "learn/troubleshooting/stake-to-win-games-faq",
+                      "learn/troubleshooting/games-and-competition-faq",
+                      "learn/troubleshooting/feedback-and-reporting-issues"
+                    ]
+                  }
+                ]
+              }
+            ],
+            "global": {
+              "anchors": [
+                {
+                  "anchor": "Explore Apps",
+                  "href": "https://explorer.b3.fun/apps",
+                  "icon": "window"
+                },
+                {
+                  "anchor": "Discord",
+                  "href": "https://discord.gg/b3dotfun",
+                  "icon": "discord"
+                },
+                {
+                  "anchor": "Telegram Dev Group",
+                  "href": "https://t.me/b3devcartel",
+                  "icon": "telegram"
+                }
+              ]
+            }
+          },
+          {
+            "icon": "/images/basement-logo-purple.svg",
+            "tab": "BSMNT.fun",
+            "groups": [
+              {
+                "group": "Overview",
+                "pages": [
+                  "basement/introduction",
+                  "basement/game-launcher",
+                  "basement/brand-kit"
+                ]
+              },
+              {
+                "group": "Game Development",
+                "pages": [
+                  "basement/unity-guide",
+                  "basement/construct-guide"
+                ]
+              },
+              {
+                "group": "API Reference",
+                "openapi": {
+                  "source": "/basement/basement-swagger.json",
+                  "directory": "basement/api-reference"
+                }
+              }
+            ],
+            "global": {
+              "anchors": [
+                {
+                  "anchor": "Visit basement.fun",
+                  "href": "https://basement.fun",
+                  "icon": "globe"
+                },
+                {
+                  "anchor": "Apply as a developer",
+                  "href": "https://basement.fun",
+                  "icon": "rocket"
+                }
+              ]
+            }
+          },
+          {
+            "icon": "/images/hypeduel-logo-shadow.png",
+            "tab": "HypeDuel",
+            "groups": [
+              {
+                "group": "Getting Started",
+                "pages": [
+                  "hypeduel/introduction",
+                  "hypeduel/quick-start",
+                  "hypeduel/platform-overview"
+                ]
+              },
+              {
+                "group": "Game Mechanics",
+                "pages": [
+                  "hypeduel/betting-system",
+                  "hypeduel/boosts",
+                  "hypeduel/arenas",
+                  "hypeduel/gameplay"
+                ]
+              },
+              {
+                "group": "Tokenomics",
+                "pages": [
+                  "hypeduel/tokens-overview",
+                  "hypeduel/hypes-credits",
+                  "hypeduel/arenacoins",
+                  "hypeduel/fee-structure",
+                  "hypeduel/growth-flywheel"
+                ]
+              },
+              {
+                "group": "Developers",
+                "pages": [
+                  "hypeduel/developers"
+                ]
+              },
+              {
+                "group": "Support",
+                "pages": [
+                  "hypeduel/faq",
+                  "hypeduel/glossary"
+                ]
+              }
+            ],
+            "global": {
+              "anchors": [
+                {
+                  "anchor": "Visit hypeduel.com",
+                  "href": "https://hypeduel.com",
+                  "icon": "globe"
+                },
+                {
+                  "anchor": "Join the community",
+                  "href": "https://discord.gg/b3dotfun",
+                  "icon": "rocket"
+                }
+              ]
+            }
+          },
+          {
+            "icon": "/images/anyspend-logo-white.svg",
+            "tab": "AnySpend SDK",
+            "groups": [
+              {
+                "group": "Getting Started",
+                "pages": [
+                  "anyspend/introduction",
+                  "anyspend/installation",
+                  "anyspend/onramp"
+                ]
+              },
+              {
+                "group": "React",
+                "pages": [
+                  "anyspend/components",
+                  "anyspend/hooks",
+                  "anyspend/examples"
+                ]
+              },
+              {
+                "group": "REST API",
+                "openapi": {
+                  "source": "https://mainnet.anyspend.com/openapi.json",
+                  "directory": "anyspend/api-reference"
+                }
+              },
+              {
+                "group": "Advanced",
+                "pages": [
+                  "anyspend/error-handling"
+                ]
+              }
+            ],
+            "global": {
+              "anchors": [
+                {
+                  "anchor": "Visit anyspend.com",
+                  "href": "https://anyspend.com",
+                  "icon": "globe"
+                },
+                {
+                  "anchor": "Try AnySpend",
+                  "href": "https://www.anyspend.com/",
+                  "icon": "sparkles"
+                },
+                {
+                  "anchor": "Follow @anyspend",
+                  "href": "https://x.com/anyspend",
+                  "icon": "twitter"
+                }
+              ]
+            }
+          },
+          {
+            "icon": "code",
+            "tab": "开发者 SDKs",
+            "menu": [
+              {
+                "item": "CreateKit",
+                "icon": "palette",
+                "groups": [
+                  {
+                    "group": "Getting Started",
+                    "pages": [
+                      "createkit/introduction",
+                      "createkit/installation",
+                      "createkit/quickstart"
+                    ]
+                  },
+                  {
+                    "group": "Core Features",
+                    "pages": [
+                      "createkit/collections",
+                      "createkit/minting",
+                      "createkit/rewards"
+                    ]
+                  },
+                  {
+                    "group": "Advanced",
+                    "pages": [
+                      "createkit/whitelist",
+                      "createkit/storage",
+                      "createkit/error-handling"
+                    ]
+                  },
+                  {
+                    "group": "Resources",
+                    "pages": [
+                      "createkit/examples"
+                    ]
+                  },
+                  {
+                    "group": "API Reference",
+                    "openapi": {
+                      "source": "https://createkit.b3.fun/swagger.json",
+                      "directory": "createkit/api-reference"
+                    }
+                  }
+                ]
+              },
+              {
+                "item": "BondKit",
+                "icon": "rocket",
+                "groups": [
+                  {
+                    "group": "Getting Started",
+                    "pages": [
+                      "bondkit/introduction",
+                      "bondkit/installation",
+                      "bondkit/quickstart",
+                      "bondkit/how-it-works"
+                    ]
+                  },
+                  {
+                    "group": "Core Concepts",
+                    "pages": [
+                      "bondkit/concepts/bonding-phase",
+                      "bondkit/concepts/pricing",
+                      "bondkit/concepts/targets"
+                    ]
+                  },
+                  {
+                    "group": "Guides",
+                    "pages": [
+                      "bondkit/guides/choose-quote-asset",
+                      "bondkit/guides/set-aggressiveness",
+                      "bondkit/guides/est-migration-price"
+                    ]
+                  },
+                  {
+                    "group": "Resources",
+                    "pages": [
+                      "bondkit/networks"
+                    ]
+                  }
+                ]
+              },
+              {
+                "item": "ArenaKit",
+                "icon": "trophy",
+                "pages": [
+                  "arenakit/introduction"
+                ]
+              },
+              {
+                "item": "B3AR",
+                "icon": "parachute-box",
+                "pages": [
+                  "b3ar/introduction"
+                ]
+              },
+              {
+                "item": "B3 SDK",
+                "icon": "code",
+                "groups": [
+                  {
+                    "group": "Overview",
+                    "pages": [
+                      "sdk/introduction"
+                    ]
+                  },
+                  {
+                    "group": "Global Accounts",
+                    "pages": [
+                      "sdk/global-account/introduction",
+                      "sdk/global-account/authentication",
+                      "sdk/global-account/permissions",
+                      "sdk/global-account/hooks",
+                      "sdk/global-account/examples"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
         "global": {
           "anchors": [
             {

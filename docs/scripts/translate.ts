@@ -30,6 +30,7 @@ const args = process.argv.slice(2);
 const processAllFiles = args.includes("--all");
 const updateMode = args.includes("--update");
 const sourceHashesOnly = args.includes("--source-hashes-only");
+const forceUpdateNavigation = args.includes("--force-update-navigation");
 
 // Load environment variables from .env only if not using Doppler
 if (!process.env.DOPPLER_PROJECT) {
@@ -190,8 +191,12 @@ async function translateNavigation(language: string): Promise<void> {
     const docs = JSON.parse(docsContent);
     timer.log("read docs.json");
 
-    // Get the original navigation structure
-    const originalNavigation = docs.navigation;
+    // Get the original navigation structure (English)
+    const englishNav = docs.navigation.languages?.find(l => l.language === "en");
+    if (!englishNav) {
+      throw new Error("English navigation not found in docs.json");
+    }
+    const originalTabs = englishNav.tabs;
 
     // Find existing language entry if it exists
     const existingLangEntry = docs.navigation.languages?.find((l: any) => l.language === language);
@@ -203,29 +208,31 @@ async function translateNavigation(language: string): Promise<void> {
       global: {},
     };
 
-    // Only translate tabs if they don't exist in the language entry
-    if (!translatedNavigation.tabs?.length && originalNavigation.tabs?.length) {
+    // Always translate tabs if force update is enabled, otherwise only if they don't exist or are empty
+    if (forceUpdateNavigation || (!translatedNavigation.tabs?.length && originalTabs?.length)) {
+      console.log(`Translating navigation tabs for ${language}...`);
       translatedNavigation.tabs = await Promise.all(
-        originalNavigation.tabs.map(tab => translateNavigationItem(tab, language)),
+        originalTabs.map(tab => translateNavigationItem(tab, language)),
       );
       timer.log("translated tabs");
     } else {
-      console.log("Preserving existing tabs for language:", language);
+      console.log(`Navigation tabs already exist for ${language} with ${translatedNavigation.tabs?.length || 0} items`);
+      if (!forceUpdateNavigation) {
+        console.log("Use --force-update-navigation to retranslate existing navigation");
+      }
     }
 
-    // Only translate global anchors if they don't exist in the language entry
-    if (!translatedNavigation.global?.anchors?.length && originalNavigation.global?.anchors?.length) {
+    // Copy English global anchors as-is
+    if (englishNav.global?.anchors) {
       translatedNavigation.global = {
-        anchors: await Promise.all(
-          originalNavigation.global.anchors.map(async anchor => ({
-            ...anchor,
-            anchor: await translateText(anchor.anchor, language, "anchor"),
-          })),
-        ),
+        anchors: [...englishNav.global.anchors]
       };
       timer.log("translated anchors");
     } else {
-      console.log("Preserving existing anchors for language:", language);
+      console.log(`Global anchors already exist for ${language}`);
+      if (!forceUpdateNavigation) {
+        console.log("Use --force-update-navigation to retranslate existing anchors");
+      }
     }
 
     // Initialize languages array if needed
