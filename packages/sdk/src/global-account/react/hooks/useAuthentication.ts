@@ -91,11 +91,11 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
    * useAutoConnectLoading starts as false
    */
   useEffect(() => {
-    if (!useAutoConnectLoading && useAutoConnectLoadingPrevious && !hasStartedConnecting.current) {
+    if (!useAutoConnectLoading && useAutoConnectLoadingPrevious.current && !hasStartedConnecting.current) {
       setV2IsAuthenticating(false);
     }
-    setUseAutoConnectLoadingPrevious(useAutoConnectLoading);
-  }, [useAutoConnectLoading, useAutoConnectLoadingPrevious]);
+    useAutoConnectLoadingPrevious.current = useAutoConnectLoading;
+  }, [useAutoConnectLoading]);
 
   // Ensure isAuthenticating stays true until we're fully ready
   useEffect(() => {
