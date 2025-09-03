@@ -1,0 +1,133 @@
+---
+title: Instalación y Configuración
+description: 'Comienza con AnySpend - instalación, configuración básica y verificación'
+lang: es
+originalPath: anyspend/installation.mdx
+---
+<iframe class="w-full aspect-video rounded-xl mb-6" src="https://customer-gg6qs7nm5ue94t64.cloudflarestream.com/66d9ebc2e3a14ec87dfa360b83e26900/iframe?poster=https%3A%2F%2Fcustomer-gg6qs7nm5ue94t64.cloudflarestream.com%2F66d9ebc2e3a14ec87dfa360b83e26900%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D168%26height%3D600" title="Configuración de AnySpend" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen />
+
+## Prerrequisitos
+
+<CardGroup cols={3}>
+  <Card title="Node.js" icon="node-js">
+    v20.15.0 o superior
+  </Card>
+  <Card title="React" icon="react">
+    Versión 18 o 19
+  </Card>
+  <Card title="TypeScript" icon="code">
+    Recomendado para una mejor DX
+  </Card>
+</CardGroup>
+
+## Instalación
+
+Elige tu gestor de paquetes preferido:
+
+<Tabs>
+  <Tab title="npm">
+    ```bash
+    npm install @b3dotfun/sdk
+    ```
+  </Tab>
+  <Tab title="pnpm">
+    ```bash
+    pnpm add @b3dotfun/sdk
+    ```
+  </Tab>
+</Tabs>
+
+## Configuración Básica
+
+### 1. Configuración del Proveedor
+
+Envuelve tu aplicación con `B3Provider` y `AnyspendProvider` para habilitar la funcionalidad de AnySpend:
+
+```tsx App.tsx icon=react
+import { AnyspendProvider } from "@b3dotfun/sdk/anyspend/react";
+import { B3Provider } from "@b3dotfun/sdk/global-account/react";
+import "@b3dotfun/sdk/index.css";
+
+function App() {
+  return (
+    <B3Provider theme="light" environment="production">
+      <AnyspendProvider>{/* Tus componentes de la aplicación */}</AnyspendProvider>
+    </B3Provider>
+  );
+}
+
+export default App;
+```
+
+### 2. Configuración del Entorno
+
+<Tabs>
+  <Tab title="Mainnet">
+    **Endpoint**: `https://mainnet.anyspend.com`
+
+    Usa esto para aplicaciones en producción con transacciones reales.
+  </Tab>
+  <Tab title="Testnet">
+    **Endpoint**: `http://testnet.anyspend.com`
+
+    Usa esto para desarrollo y pruebas con tokens de prueba.
+
+    Nota: Testnet actualmente no está disponible.
+  </Tab>
+</Tabs>
+
+### 3. Configuración de TypeScript (Opcional pero Recomendado)
+
+<Note>
+  Si estás usando TypeScript, asegúrate de que tu `tsconfig.json` incluya estas configuraciones para una compatibilidad óptima:
+</Note>
+
+```json tsconfig.json icon=settings
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true
+  }
+}
+```
+
+## Verificación
+
+Crea un componente de prueba simple para verificar que tu configuración funciona correctamente:
+
+```tsx TestComponent.tsx icon=test-tube lines
+import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
+
+function TestComponent() {
+  return <AnySpend />;
+}
+```
+
+## Próximos Pasos
+
+<CardGroup cols={3}>
+  <Card title="Explorar Componentes" icon="puzzle-piece" href="/anyspend/components">
+    Aprende sobre los componentes disponibles para diferentes escenarios de pago
+  </Card>
+  <Card title="Aprender sobre Hooks" icon="link" href="/anyspend/hooks">
+    Descubre hooks de React para construir flujos de pago personalizados
+  </Card>
+  <Card title="Ver Ejemplos" icon="code" href="/anyspend/examples">
+    Explora ejemplos de implementación del mundo real
+  </Card>
+</CardGroup>
+
+## Solución de Problemas
+
+<AccordionGroup>
+  <Accordion title="Errores de Importación">
+    Asegúrate de haber instalado el SDK correctamente e importado el archivo CSS. El SDK requiere React 18\+ y puede tener problemas de compatibilidad con versiones anteriores.
+  </Accordion>
+  <Accordion title="Proveedor No Encontrado">
+    Asegúrate de tener `B3Provider` y `AnyspendProvider` colocados en lo alto de tu árbol de componentes, típicamente en tu componente principal App.
+  </Accordion>
+  <Accordion title="Errores de TypeScript">
+    Si estás viendo errores de TypeScript, verifica que tu `tsconfig.json` incluya las configuraciones recomendadas arriba.
+  </Accordion>
+</AccordionGroup>

@@ -6,23 +6,22 @@ description: >-
 lang: id
 originalPath: protocol/liquidity.mdx
 ---
-```html
 <iframe
-  className="w-full aspect-video rounded-xl"
-  src="https://customer-gg6qs7nm5ue94t64.cloudflarestream.com/03160a1a61ac99b9003e44a2059c7dae/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-gg6qs7nm5ue94t64.cloudflarestream.com%2F03160a1a61ac99b9003e44a2059c7dae%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600"
-  title="Fragmentasi Likuiditas"
-  frameBorder="0"
+   className="w-full aspect-video rounded-xl"
+    src="https://customer-gg6qs7nm5ue94t64.cloudflarestream.com/03160a1a61ac99b9003e44a2059c7dae/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-gg6qs7nm5ue94t64.cloudflarestream.com%2F03160a1a61ac99b9003e44a2059c7dae%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600"
+    title="Fragmentasi Likuiditas"
+    frameBorder="0"
   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
   allowFullScreen
-></iframe>
+  ></iframe>
 
 <Note>
-[Jelajahi ekosistem multichain B3 di explorer.b3.fun](https://explorer.b3.fun/chains)
+[Explore ekosistem multichain B3 di explorer.b3.fun](https://explorer.b3.fun/chains)
 </Note>
 
 ## Masalahnya
 
-Appchains, L2s, dan L3s memiliki likuiditas yang terisolasi, membuatnya menyebalkan untuk membangun pengalaman tanpa harus menjembatani aset lintas rantai.
+Appchains, L2s, dan L3s memiliki likuiditas yang terisolasi, membuatnya menyebalkan untuk membangun pengalaman tanpa harus memindahkan aset lintas rantai.
 
 
 <CardGroup cols={2}>
@@ -36,7 +35,7 @@ Appchains, L2s, dan L3s memiliki likuiditas yang terisolasi, membuatnya menyebal
 </Card>
 
 <Card title="UX yang Buruk" icon="face-frown">
-  Pengguna secara manual menjembatani aset dan mengelola beberapa dompet.
+  Pengguna secara manual memindahkan aset dan mengelola beberapa dompet.
 </Card>
 
 <Card title="Inefisiensi Modal" icon="chart-line-down">
@@ -60,11 +59,11 @@ Didukung oleh produk kami, AnySpend, beroperasi di lapisan eksekusi klien, berad
 ```mermaid
 flowchart TD
     A[Niat Pengguna] --> B[Deposit dari Rantai Mana Pun]
-    B --> C{Pemrosesan AnySpend}
+    B --> C{Pengolahan AnySpend}
     C --> D[Penemuan Rute]
     D --> E[Temukan Jalur Optimal]
     E --> F[Eksekusi Atomik]
-    F --> G[Berhasil?]
+    F --> G[Sukses?]
     G -->|Ya| H[Transaksi Terpadu Selesai]
     G -->|Tidak| I[Gagal Anggun & Rollback]
     
@@ -113,4 +112,3 @@ AnySpend menyediakan dukungan rantai universal:
 </Card>
 
 </CardGroup>
-```

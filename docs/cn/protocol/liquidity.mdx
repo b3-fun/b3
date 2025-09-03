@@ -4,15 +4,14 @@ description: 如何 AnySpend（由 B3 构建）抽象执行层以跨所有区块
 lang: cn
 originalPath: protocol/liquidity.mdx
 ---
-```html
 <iframe
-  className="w-full aspect-video rounded-xl"
-  src="https://customer-gg6qs7nm5ue94t64.cloudflarestream.com/03160a1a61ac99b9003e44a2059c7dae/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-gg6qs7nm5ue94t64.cloudflarestream.com%2F03160a1a61ac99b9003e44a2059c7dae%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600"
-  title="流动性碎片化"
-  frameBorder="0"
+   className="w-full aspect-video rounded-xl"
+    src="https://customer-gg6qs7nm5ue94t64.cloudflarestream.com/03160a1a61ac99b9003e44a2059c7dae/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-gg6qs7nm5ue94t64.cloudflarestream.com%2F03160a1a61ac99b9003e44a2059c7dae%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600"
+    title="流动性碎片化"
+    frameBorder="0"
   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
   allowFullScreen
-></iframe>
+  ></iframe>
 
 <Note>
 [在 explorer.b3.fun 上探索 B3 的多链生态系统](https://explorer.b3.fun/chains)
@@ -20,7 +19,7 @@ originalPath: protocol/liquidity.mdx
 
 ## 问题
 
-Appchains、L2s 和 L3s 拥有孤立的流动性，构建跨链资产桥接体验变得繁琐。
+Appchains、L2s 和 L3s 拥有孤立的流动性，这使得在不跨链桥接资产的情况下构建体验变得令人烦恼。
 
 
 <CardGroup cols={2}>
@@ -34,7 +33,7 @@ Appchains、L2s 和 L3s 拥有孤立的流动性，构建跨链资产桥接体�
 </Card>
 
 <Card title="糟糕的用户体验" icon="face-frown">
-  用户需手动桥接资产并管理多个钱包。
+  用户手动桥接资产并管理多个钱包。
 </Card>
 
 <Card title="资本效率低" icon="chart-line-down">
@@ -49,18 +48,18 @@ Appchains、L2s 和 L3s 拥有孤立的流动性，构建跨链资产桥接体�
 
 ### 如何工作
 
-1. **从任何链存款**：接受来自大多数链的代币
+1. **从任何链存款**：接受大多数链上的代币
 2. **基于意图**：用户表达他们想要什么，而不是如何实现
-3. **路由发现**：在所有支持的链中找到最优路径
+3. **路由发现**：在所有支持的链上找到最优路径
 4. **原子执行**：交易原子执行或优雅失败
-5. **统一体验**：复杂操作显示为单一交易
+5. **统一体验**：复杂操作呈现为单一交易
 
 ```mermaid
 flowchart TD
-    A[用户意图] --> B[从任意链存款]
+    A[用户意图] --> B[从任何链存款]
     B --> C{AnySpend 处理}
     C --> D[路由发现]
-    D --> E[寻找最优路径]
+    D --> E[找到最优路径]
     E --> F[原子执行]
     F --> G[成功?]
     G -->|是| H[统一交易完成]
@@ -87,7 +86,7 @@ flowchart TD
 AnySpend 提供全链支持：
 
 - **EVM 链**：大多数 EVM 链，包括 Ethereum、Polygon、Arbitrum、Base、BSC、Avalanche
-- **Solana**：与 Solana 生态系统完全集成
+- **Solana**：与 Solana 生态系统的全面集成
 - **B3 生态系统**：与 B3 和游戏链的原生集成
 
 ## 下一步
@@ -111,4 +110,3 @@ AnySpend 提供全链支持：
 </Card>
 
 </CardGroup>
-```

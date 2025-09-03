@@ -2,26 +2,26 @@
 title: Game Launcher
 description: >-
   Luncurkan game secara native di dalam platform BSMNT (basement.fun) dan bangun
-  pengalaman onchain yang menarik tanpa harus khawatir tentang komponen crypto
+  pengalaman onchain yang membuat ketagihan tanpa harus khawatir tentang
+  komponen kripto
 lang: id
 originalPath: basement/game-launcher.mdx
 ---
-```html
 <iframe
-  className="w-full aspect-video rounded-xl mb-6"
-   src="https://customer-gg6qs7nm5ue94t64.cloudflarestream.com/ae9e7c0694dacb8d602309c381fce796/iframe?poster=https%3A%2F%2Fcustomer-gg6qs7nm5ue94t64.cloudflarestream.com%2Fae9e7c0694dacb8d602309c381fce796%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600"
-   title="Basement.fun Developer Dashboard"
-   frameBorder="0"
- allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
- allowFullScreen
- ></iframe>
+   className="w-full aspect-video rounded-xl mb-6"
+    src="https://customer-gg6qs7nm5ue94t64.cloudflarestream.com/ae9e7c0694dacb8d602309c381fce796/iframe?poster=https%3A%2F%2Fcustomer-gg6qs7nm5ue94t64.cloudflarestream.com%2Fae9e7c0694dacb8d602309c381fce796%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600"
+    title="Dasbor Pengembang Basement.fun"
+    frameBorder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowFullScreen
+  ></iframe>
 
 
 ## Cara Kerjanya
 
 <Steps>
 <Step title="Load" icon="download">
-  Game Anda dimuat di dalam peluncur BSMNT. Kami mengirimkan JWT dengan token auth ke game Anda.
+  Game Anda dimuat di dalam peluncur BSMNT. Kami mengirimkan JWT dengan token autentikasi ke game Anda.
   
   ```text Contoh URL
   https://yourgame.com?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
@@ -45,7 +45,7 @@ originalPath: basement/game-launcher.mdx
 </Step>
 
 <Step title="Trigger" icon="zap">
-  Biarkan pemain memainkan game Anda. Ketika sesuatu terjadi, Anda dapat memicu sebuah aksi melalui mesin aturan ala Zapier kami, atau langsung melalui API.
+  Biarkan pengguna memainkan game Anda. Ketika sesuatu terjadi, Anda dapat memicu sebuah aksi melalui mesin aturan bergaya Zapier kami, atau langsung melalui API.
   
   ```bash Contoh API Trigger
   curl --location 'https://api.basement.fun/launcher/' \
@@ -60,16 +60,16 @@ originalPath: basement/game-launcher.mdx
 </Steps>
 
 <CardGroup cols={2}>
-  <Card title="Daftar sebagai Pengembang" icon="user-plus" href="https://basement.fun/developer/signup" cta="Daftar">
+  <Card title="Daftar sebagai Pengembang" icon="user-plus" href="https://basement.fun/developer/signup" cta="Daftar Sekarang">
     Mulai membangun game dengan peluncur BSMNT
   </Card>
   
-  <Card title="Launcher Playground" icon="play" href="https://basement.fun/playground" cta="Coba Sekarang">
+  <Card title="Playground Peluncur" icon="play" href="https://basement.fun/playground" cta="Coba Sekarang">
     Uji integrasi peluncur dalam lingkungan sandbox
   </Card>
 </CardGroup>
 
-## Apa yang dapat Anda lakukan dengan peluncur BSMNT?
+## Apa yang bisa Anda lakukan dengan peluncur BSMNT?
 
 Kekuatan sebenarnya dari peluncur game adalah dalam abstraksi UX crypto. Game Anda dapat mengirimkan event onchain secara aman melalui REST API sederhana, yang dapat dijalankan di sisi klien.
 
@@ -80,19 +80,19 @@ Kekuatan sebenarnya dari peluncur game adalah dalam abstraksi UX crypto. Game An
     Simpan state pemain pada opsi penyimpanan terdesentralisasi seperti IPFS.
   </Card>
   
-  <Card title="Beli NFT & Mint" icon="palette">
-    Biarkan pengguna mint NFT berdasarkan pencapaian atau pada event game tertentu.
+  <Card title="Beli NFTs & Mint" icon="palette">
+    Biarkan pengguna mint NFTs saat pencapaian atau pada event game tertentu.
   </Card>
   
   <Card title="Leaderboards Onchain" icon="trophy">
     Bawa peringkat pemain ke onchain, selenggarakan kontes & turnamen.
   </Card>
   
-  <Card title="Keluarkan Token & NFT" icon="coins">
-    Kirim ERC20 dan ERC721 & 1155 NFT berdasarkan aksi game.
+  <Card title="Terbitkan Tokens & NFTs" icon="coins">
+    Kirim ERC20s dan ERC721 & 1155 NFTs berdasarkan aksi game.
   </Card>
   
-  <Card title="Bayar dengan Token" icon="credit-card">
+  <Card title="Bayar dengan Tokens" icon="credit-card">
     Minta pengguna untuk mengirim atau mentransfer token untuk membayar aksi atau aset dalam game.
   </Card>
 </CardGroup>
@@ -129,13 +129,13 @@ Kekuatan sebenarnya dari peluncur game adalah dalam abstraksi UX crypto. Game An
   </Card>
   
   <Card title="Rekam Gameplay" icon="video">
-    Perekaman dan berbagi gameplay otomatis.
+    Perekaman dan berbagi gameplay secara otomatis.
     <div style={{ marginTop: '8px' }}>
       <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>SEGERA</span>
     </div>
   </Card>
   
-  <Card title="Daftar NFT" icon="store">
+  <Card title="Daftar NFTs" icon="store">
     Integrasi marketplace untuk perdagangan aset game.
     <div style={{ marginTop: '8px' }}>
       <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>SEGERA</span>
@@ -149,7 +149,7 @@ Dan lebih banyak aksi yang akan datang - masa depan terlihat cerah!
 
 ## Memulai
 
-Kami ingin memiliki game Anda di basement.fun! Ini sederhana, gratis, dan mudah untuk mulai diintegrasikan.
+Kami ingin memiliki game Anda di basement.fun! Ini sederhana, gratis, dan mudah untuk mulai mengintegrasikan.
 
 <Tabs>
 <Tab title="Pengembang Game">
@@ -164,7 +164,7 @@ Kami ingin memiliki game Anda di basement.fun! Ini sederhana, gratis, dan mudah 
   </div>
   
   <CardGroup cols={2}>
-    <Card title="Game Launcher Playground" icon="play" href="https://basement.fun/playground">
+    <Card title="Playground Peluncur Game" icon="play" href="https://basement.fun/playground">
       Uji integrasi Anda dalam lingkungan sandbox
     </Card>
     
@@ -199,7 +199,7 @@ Peluncur game menggunakan JWT (JSON Web Token) untuk mengkodekan konteks pemain 
 
 Payload dibaca dari parameter GET, sehingga setiap game web yang dihosting dapat dengan mudah mengakses & mendekodenya menggunakan sejumlah perpustakaan JWT (atau menggunakan API peluncur kami).
 
-### Data Pemain Dasar Termasuk:
+### Data Pemain Dasar Meliputi:
 
 <AccordionGroup>
 <Accordion title="Username dan ENS">
@@ -231,7 +231,7 @@ Anda dapat secara opsional menyimpan data pemain spesifik game apa pun menggunak
 
 Pengalaman peluncur game minimal kami berarti fokus tetap pada game Anda.
 
-Sejumlah kustomisasi tersedia pada peluncur game, sehingga BSMNT dapat menyediakan pengalaman hampir tidak terlihat, menangani semua tantangan UX crypto inti untuk Anda.
+Sejumlah kustomisasi tersedia pada peluncur game, sehingga BSMNT dapat menyediakan pengalaman yang hampir tidak terlihat, menangani semua tantangan UX crypto inti untuk Anda.
 
 ### API Bermanfaat Tersedia:
 
@@ -239,7 +239,7 @@ Sejumlah kustomisasi tersedia pada peluncur game, sehingga BSMNT dapat menyediak
 - **Kirim notifikasi** - Beritahu pemain tentang event game
 - **Log dan stream aktivitas game** - Analitik dan pelacakan perilaku pemain  
 - **Simpan state pemain dan sesi game** - Simpan kemajuan game secara otomatis
-- **Dan lebih banyak lagi yang akan datang!** - Fitur baru ditambahkan secara teratur
+- **Dan lebih banyak lagi yang akan datang!** - Fitur baru ditambahkan secara reguler
 
 <Card title="Jelajahi API Peluncur" icon="api" href="https://docs.basement.fun/api" cta="Lihat Dokumentasi" horizontal>
   Referensi API lengkap untuk semua fitur peluncur yang tersedia
@@ -265,4 +265,3 @@ Sejumlah kustomisasi tersedia pada peluncur game, sehingga BSMNT dapat menyediak
     </div>
   </div>
 </Frame>
-```
