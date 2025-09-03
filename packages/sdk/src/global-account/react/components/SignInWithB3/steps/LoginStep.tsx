@@ -42,7 +42,7 @@ export function LoginStepContainer({ children, partnerId }: LoginStepContainerPr
   const partnerLogo = partner?.data?.[0]?.loginCustomization?.logoUrl;
 
   return (
-    <div className="flex flex-col items-center justify-center">
+    <div className="flex flex-col items-center justify-center pt-6">
       {partnerLogo && (
         <img src={partnerLogo} alt="Partner Logo" className="partner-logo mb-6 mt-6 h-12 w-auto object-contain" />
       )}

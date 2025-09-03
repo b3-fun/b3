@@ -343,8 +343,7 @@ Dark version
   @apply bg-b3-react-background;
 }
 .b3-modal .css-1m9ejup,
-.b3-modal .css-1cv2836,
-.b3-modal .css-1d4s0we img[width="24"] {
+.b3-modal .css-1cv2836 {
   display: none !important;
 }
 
@@ -385,7 +384,15 @@ Dark version
   font-family: "SFCompact", sans-serif;
 }
 
+div:has(> .b3-login-step) {
+  padding-top: 24px;
+}
+
 .b3-login-step {
+  & > div > div > div > div > div > div > div > img {
+    display: none;
+  }
+
   /* Input fields styling */
   & input {
     color: hsl(var(--b3-react-foreground)) !important;

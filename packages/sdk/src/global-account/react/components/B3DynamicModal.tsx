@@ -127,12 +127,7 @@ export function B3DynamicModal() {
       >
         <ModalTitle className="sr-only hidden">{contentType?.type || "Modal"}</ModalTitle>
         <ModalDescription className="sr-only hidden">{contentType?.type || "Modal Body"}</ModalDescription>
-        <div
-          className={cn(
-            "no-scrollbar max-h-[90dvh] overflow-auto sm:max-h-[80dvh]",
-            contentType?.type === "manageAccount" && "h-[90dvh]",
-          )}
-        >
+        <div className={cn("no-scrollbar max-h-[90dvh] overflow-auto sm:max-h-[80dvh]")}>
           {history.length > 0 && contentType?.showBackButton && (
             <button
               onClick={navigateBack}
