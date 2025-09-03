@@ -2,7 +2,7 @@ name: Update Translations
 
 on:
   push:
-    branches: [main, B3-2425-fix-translation-workflow]
+    branches: [main]
     paths:
       - "docs/**/*.mdx"
       - "docs/**/*.md"
