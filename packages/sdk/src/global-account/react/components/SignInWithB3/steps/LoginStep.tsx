@@ -44,7 +44,7 @@ export function LoginStepContainer({ children, partnerId }: LoginStepContainerPr
   return (
     <div className="flex flex-col items-center justify-center pt-6">
       {partnerLogo && (
-        <img src={partnerLogo} alt="Partner Logo" className="partner-logo mb-6 mt-6 h-12 w-auto object-contain" />
+        <img src={partnerLogo} alt="Partner Logo" className="partner-logo mb-6 h-12 w-auto object-contain" />
       )}
       {children}
       <h2 className="mt-6 flex items-center gap-2 text-lg font-bold">
