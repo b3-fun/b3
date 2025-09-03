@@ -1,0 +1,280 @@
+---
+title: 인증
+description: B3 Global Accounts로 인증 구현 방법을 배우세요
+lang: ko
+originalPath: sdk/global-account/authentication.mdx
+---
+## 인증 전략
+
+B3 Global Accounts는 애플리케이션의 요구 사항에 맞는 여러 인증 전략을 지원합니다.
+
+## 소셜 로그인
+
+### Google 인증
+
+```tsx
+import { SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
+
+function GoogleAuth() {
+  return (
+    <SignInWithB3
+      provider={{ strategy: "google" }}
+      partnerId="your-partner-id"
+      onLoginSuccess={(globalAccount) => {
+        console.log("Google 인증 성공:", globalAccount);
+      }}
+      onLoginError={(error) => {
+        console.error("인증 실패:", error);
+      }}
+    />
+  );
+}
+```
+
+### Discord 인증
+
+```tsx
+import { SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
+
+function DiscordAuth() {
+  return (
+    <SignInWithB3
+      provider={{ strategy: "discord" }}
+      partnerId="your-partner-id"
+      onLoginSuccess={(globalAccount) => {
+        console.log("Discord 인증 성공:", globalAccount);
+      }}
+    />
+  );
+}
+```
+
+## 세션 키 인증
+
+세션 키는 강화된 보안을 제공하며, 사용자를 대신하여 작업을 수행해야 하는 게임 및 애플리케이션에 특히 유용합니다.
+
+### 기본 세션 키 설정
+
+```tsx
+import { SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
+
+const b3Chain = {
+  id: 8333,
+  name: "B3",
+  nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+  rpc: "https://mainnet-rpc.b3.fun",
+};
+
+function SessionKeyAuth() {
+  return (
+    <SignInWithB3
+      provider={{ strategy: "google" }}
+      chain={b3Chain}
+      partnerId="your-partner-id"
+      sessionKeyAddress="0x..." // MetaMask 또는 다른 지갑 주소
+      onLoginSuccess={(globalAccount) => {
+        console.log("세션 키 인증됨:", globalAccount);
+      }}
+    />
+  );
+}
+```
+
+### 사용자 정의 세션 키 구성
+
+```tsx
+function AdvancedSessionAuth() {
+  const sessionKeyConfig = {
+    permissions: {
+      approvedTargets: ["0x..."], // 특정 계약 주소
+      startDate: new Date(),
+      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30일
+      nativeTokenLimitPerTransaction: 0.0001, // 거래당 ETH 한도
+    }
+  };
+
+  return (
+    <SignInWithB3
+      provider={{ strategy: "google" }}
+      chain={b3Chain}
+      partnerId="your-partner-id"
+      sessionKeyAddress="0x..."
+      sessionKeyConfig={sessionKeyConfig}
+      onLoginSuccess={(globalAccount) => {
+        console.log("고급 세션 키 설정:", globalAccount);
+      }}
+    />
+  );
+}
+```
+
+## 헤드리스 인증
+
+사용자 정의 구현을 위해 헤드리스 인증 서비스를 사용하세요:
+
+### 기본 인증
+
+```typescript
+import { authenticate } from "@b3dotfun/sdk/global-account/app";
+
+async function authenticateUser(accessToken: string, identityToken: string) {
+  try {
+    const authResult = await authenticate(accessToken, identityToken, {
+      // 추가 구성
+    });
+    
+    if (authResult) {
+      console.log("인증 성공:", authResult);
+      return authResult;
+    } else {
+      console.log("인증 실패");
+      return null;
+    }
+  } catch (error) {
+    console.error("인증 오류:", error);
+    throw error;
+  }
+}
+```
+
+### React Native 인증
+
+```typescript
+// React Native 애플리케이션을 위해
+import { authenticate } from "@b3dotfun/sdk/global-account/app";
+
+async function authenticateInReactNative() {
+  const result = await authenticate("access-token", "identity-token");
+  return result;
+}
+```
+
+## 인증 훅
+
+### useB3 훅
+
+인증 상태에 접근하기 위한 주요 훅:
+
+```tsx
+import { useB3 } from "@b3dotfun/sdk/global-account/react";
+
+function AuthStatus() {
+  const { 
+    account, 
+    isAuthenticated, 
+    isLoading,
+    signOut 
+  } = useB3();
+
+  if (isLoading) return <div>로딩 중...</div>;
+
+  return (
+    <div>
+      {isAuthenticated ? (
+        <div>
+          <p>환영합니다, {account?.displayName}!</p>
+          <button onClick={signOut}>로그아웃</button>
+        </div>
+      ) : (
+        <p>로그인 해주세요</p>
+      )}
+    </div>
+  );
+}
+```
+
+### useAccountWallet 훅
+
+지갑 정보에 접근:
+
+```tsx
+import { useAccountWallet } from "@b3dotfun/sdk/global-account/react";
+
+function WalletInfo() {
+  const { wallet, isConnected } = useAccountWallet();
+
+  return (
+    <div>
+      {isConnected && (
+        <div>
+          <p>지갑 주소: {wallet?.address}</p>
+          <p>체인 ID: {wallet?.chainId}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## 오류 처리
+
+인증 흐름에 대한 적절한 오류 처리 구현:
+
+```tsx
+function AuthWithErrorHandling() {
+  const [authError, setAuthError] = useState<string | null>(null);
+
+  return (
+    <div>
+      <SignInWithB3
+        provider={{ strategy: "google" }}
+        partnerId="your-partner-id"
+        onLoginSuccess={(globalAccount) => {
+          setAuthError(null);
+          console.log("성공:", globalAccount);
+        }}
+        onLoginError={(error) => {
+          setAuthError(error.message);
+          console.error("인증 오류:", error);
+        }}
+      />
+      
+      {authError && (
+        <div className="error">
+          인증 실패: {authError}
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## 모범 사례
+
+<CardGroup cols={2}>
+
+<Card title="파트너 ID" icon="id-badge">
+  적절한 속성 및 분석을 위해 고유한 파트너 ID를 항상 사용하세요.
+</Card>
+
+<Card title="오류 처리" icon="exclamation-triangle">
+  더 나은 사용자 경험을 위해 포괄적인 오류 처리를 구현하세요.
+</Card>
+
+<Card title="세션 관리" icon="clock">
+  애플리케이션의 보안 요구 사항에 기반하여 적절한 세션 기간을 설정하세요.
+</Card>
+
+<Card title="환경 설정" icon="settings">
+  다른 배포 단계에 적합한 환경 변수를 사용하세요.
+</Card>
+
+</CardGroup>
+
+## 다음 단계
+
+<CardGroup cols={2}>
+
+<Card title="권한" icon="lock" href="/sdk/global-account/permissions">
+  권한 및 세션 키 관리에 대해 알아보세요.
+</Card>
+
+<Card title="훅 참조" icon="react" href="/sdk/global-account/hooks">
+  사용 가능한 모든 React 훅을 탐색하세요.
+</Card>
+
+<Card title="예제" icon="code" href="/sdk/global-account/examples">
+  완전한 통합 예제를 확인하세요.
+</Card>
+
+</CardGroup>

@@ -1,0 +1,69 @@
+---
+title: 如何在 B3 上验证交易状态
+description: 了解如何使用区块浏览器通过交易哈希或钱包地址在 B3 网络上跟踪和验证您的交易
+lang: cn
+originalPath: learn/deposits-withdrawals/how-to-verify-transaction-status.mdx
+---
+如果您在 B3 网络上发送了一笔交易，并想检查它是否已被确认、处于待处理状态，或失败，您可以使用 B3 区块浏览器轻松追踪它。您所需要的只是交易哈希（TxHash）或参与交易的钱包地址。
+
+## 验证交易的步骤
+
+<iframe
+  className="w-full aspect-video rounded-xl"
+  src="https://www.youtube.com/embed/CZncVWI1aHk"
+  title="如何在 B3 上验证交易状态"
+  frameBorder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowFullScreen
+></iframe>
+
+<Steps>
+<Step title="导航至 B3 浏览器">
+  前往 [explorer.b3.fun](https://explorer.b3.fun)。
+</Step>
+
+<Step title="访问交易">
+  将鼠标悬停在左侧面板上以展开它，然后点击 **Transactions.**
+  
+  <Frame>
+    <img src="https://s3.amazonaws.com/helpscout.net/docs/assets/685306b72e0550277aa9250e/images/687e55494b3936693ba0ecbb/file-o0WPrzMUbf.png" alt="B3 Explorer 侧边栏突出显示 Transactions 选项" />
+  </Frame>
+</Step>
+
+<Step title="搜索您的交易">
+  一个新的搜索栏将出现。在搜索栏中输入：
+  - 发起交易的钱包地址
+  - 或交易哈希（TxHash）
+  
+  <Frame>
+    <img src="https://s3.amazonaws.com/helpscout.net/docs/assets/685306b72e0550277aa9250e/images/687e556e1946514c34bffae9/file-sfCem4gBEs.png" alt="输入钱包地址或交易哈希的搜索栏" />
+  </Frame>
+</Step>
+
+<Step title="查看交易详情">
+  浏览结果并点击相关交易以查看：
+  - 状态（成功 / 失败 / 待处理）
+  - 日期与时间
+  - 转移的代币
+  - 使用的 Gas
+  - 任何其他链上详情
+  
+  <Frame>
+    <img src="https://s3.amazonaws.com/helpscout.net/docs/assets/685306b72e0550277aa9250e/images/687e55b1ffa88610da986dfd/file-ERrTVA4NLO.png" alt="显示状态和交易信息的交易详情页面" />
+  </Frame>
+  
+  <Check>
+    这是直接在 B3 网络上追踪铸造、转移和其他活动的最佳方式。
+  </Check>
+</Step>
+</Steps>
+
+## 交易状态含义
+
+- **成功：** 交易成功完成
+- **失败：** 交易执行失败（通常是由于 Gas 不足或其他错误）
+- **待处理：** 交易仍在网络中处理中
+
+<Tip>
+您可以在浏览器中为经常使用的钱包地址添加书签，以便将来快速检查交易历史。
+</Tip>

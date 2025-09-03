@@ -1,0 +1,392 @@
+---
+title: Penanganan Kesalahan
+description: Pola penanganan kesalahan komprehensif dan strategi pemulihan untuk CreateKit
+lang: id
+originalPath: createkit/error-handling.mdx
+---
+## Ikhtisar
+
+Penanganan kesalahan yang kuat sangat penting untuk aplikasi produksi yang menggunakan CreateKit. Panduan ini mencakup skenario kesalahan umum, praktik terbaik, dan strategi pemulihan.
+
+## Jenis Kesalahan Umum
+
+### Kesalahan Tanda Tangan
+
+```typescript title="Penanganan Kesalahan Tanda Tangan"
+import { CollectionManager } from '@b3dotfun/basemint'
+
+async function handleSignatureErrors(walletClient: any, metadata: any) {
+  try {
+    const signature = await collectionManager.generateCreatorSignature(
+      walletClient,
+      metadata
+    )
+    return signature
+  } catch (error: any) {
+    if (error.message.includes('User rejected')) {
+      throw new Error('SIGNATURE_REJECTED: Pengguna menolak permintaan tanda tangan')
+    } else if (error.message.includes('Insufficient funds')) {
+      throw new Error('INSUFFICIENT_FUNDS: Dana tidak cukup untuk gas')
+    } else if (error.message.includes('Network error')) {
+      throw new Error('NETWORK_ERROR: Tidak dapat terhubung ke jaringan')
+    } else {
+      throw new Error(`SIGNATURE_FAILED: ${error.message}`)
+    }
+  }
+}
+```
+
+### Kesalahan Penyimpanan
+
+```typescript title="Penanganan Kesalahan Penyimpanan"
+import { BaseMintStorage } from '@b3dotfun/basemint'
+
+async function handleStorageErrors(storage: BaseMintStorage, metadata: any, signature: string) {
+  try {
+    return await storage.submitCollection(metadata, signature)
+  } catch (error: any) {
+    if (error.message.includes('Invalid signature')) {
+      throw new Error('INVALID_SIGNATURE: Verifikasi tanda tangan gagal')
+    } else if (error.message.includes('Collection exists')) {
+      throw new Error('DUPLICATE_COLLECTION: Koleksi sudah ada')
+    } else if (error.message.includes('Rate limit')) {
+      throw new Error('RATE_LIMITED: Terlalu banyak permintaan, silakan coba lagi nanti')
+    } else if (error.status === 503) {
+      throw new Error('SERVICE_UNAVAILABLE: Layanan penyimpanan sementara tidak tersedia')
+    } else {
+      throw new Error(`STORAGE_ERROR: ${error.message}`)
+    }
+  }
+}
+```
+
+### Kesalahan Interaksi Kontrak
+
+```typescript title="Penanganan Kesalahan Kontrak"
+async function handleMintingErrors(collection: any, walletClient: any, params: any) {
+  try {
+    return await collection.mint(walletClient, ...params)
+  } catch (error: any) {
+    if (error.message.includes('Invalid merkle proof')) {
+      throw new Error('NOT_WHITELISTED: Alamat tidak ada dalam whitelist')
+    } else if (error.message.includes('Insufficient payment')) {
+      throw new Error('INSUFFICIENT_PAYMENT: Harga mint tidak benar')
+    } else if (error.message.includes('Max per wallet exceeded')) {
+      throw new Error('WALLET_LIMIT_EXCEEDED: Batas minting dompet tercapai')
+    } else if (error.message.includes('Max supply exceeded')) {
+      throw new Error('SUPPLY_EXHAUSTED: Koleksi sudah sepenuhnya dimint')
+    } else if (error.message.includes('Minting not active')) {
+      throw new Error('MINTING_INACTIVE: Periode minting tidak aktif')
+    } else {
+      throw new Error(`MINT_FAILED: ${error.message}`)
+    }
+  }
+}
+```
+
+## Pola Pemulihan Kesalahan
+
+### Logika Ulang Coba
+
+```typescript title="Ulang Coba dengan Mundur Eksponensial"
+async function retryWithBackoff<T>(
+  operation: () => Promise<T>,
+  maxRetries: number = 3,
+  baseDelayMs: number = 1000
+): Promise<T> {
+  let lastError: Error
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await operation()
+    } catch (error: any) {
+      lastError = error
+      
+      // Jangan ulang coba untuk kesalahan tertentu
+      if (error.message.includes('SIGNATURE_REJECTED') ||
+          error.message.includes('INVALID_SIGNATURE') ||
+          error.message.includes('DUPLICATE_COLLECTION')) {
+        throw error
+      }
+      
+      if (attempt < maxRetries) {
+        const delay = baseDelayMs * Math.pow(2, attempt - 1)
+        console.warn(`Percobaan ${attempt} gagal, mengulangi dalam ${delay}ms...`)
+        await new Promise(resolve => setTimeout(resolve, delay))
+      }
+    }
+  }
+  
+  throw lastError
+}
+
+// Penggunaan
+const result = await retryWithBackoff(async () => {
+  return await storage.submitCollection(metadata, signature)
+})
+```
+
+### Circuit Breaker
+
+```typescript title="Pola Circuit Breaker"
+class CircuitBreaker {
+  private failures = 0
+  private lastFailTime = 0
+  private state: 'CLOSED' | 'OPEN' | 'HALF_OPEN' = 'CLOSED'
+  
+  constructor(
+    private maxFailures: number = 5,
+    private timeoutMs: number = 60000
+  ) {}
+  
+  async call<T>(operation: () => Promise<T>): Promise<T> {
+    if (this.state === 'OPEN') {
+      if (Date.now() - this.lastFailTime > this.timeoutMs) {
+        this.state = 'HALF_OPEN'
+      } else {
+        throw new Error('CIRCUIT_OPEN: Layanan sementara tidak tersedia')
+      }
+    }
+    
+    try {
+      const result = await operation()
+      this.reset()
+      return result
+    } catch (error) {
+      this.recordFailure()
+      throw error
+    }
+  }
+  
+  private recordFailure() {
+    this.failures++
+    this.lastFailTime = Date.now()
+    
+    if (this.failures >= this.maxFailures) {
+      this.state = 'OPEN'
+    }
+  }
+  
+  private reset() {
+    this.failures = 0
+    this.state = 'CLOSED'
+  }
+}
+
+// Penggunaan
+const circuitBreaker = new CircuitBreaker()
+const result = await circuitBreaker.call(() => storage.submitCollection(metadata, signature))
+```
+
+## Pesan Kesalahan yang Ramah Pengguna
+
+```typescript title="Terjemahan Pesan Kesalahan"
+const ERROR_MESSAGES = {
+  SIGNATURE_REJECTED: "Silakan setujui tanda tangan di dompet Anda untuk melanjutkan.",
+  INSUFFICIENT_FUNDS: "Anda tidak memiliki dana yang cukup untuk biaya gas.",
+  NOT_WHITELISTED: "Alamat Anda tidak memenuhi syarat untuk minting whitelist.",
+  WALLET_LIMIT_EXCEEDED: "Anda telah mencapai jumlah token maksimum per dompet.",
+  SUPPLY_EXHAUSTED: "Koleksi ini sudah sepenuhnya dimint.",
+  MINTING_INACTIVE: "Minting saat ini tidak aktif untuk koleksi ini.",
+  NETWORK_ERROR: "Masalah koneksi jaringan. Silakan periksa internet Anda dan coba lagi.",
+  SERVICE_UNAVAILABLE: "Layanan sementara tidak tersedia. Silakan coba lagi dalam beberapa menit.",
+  RATE_LIMITED: "Terlalu banyak permintaan. Harap tunggu sebentar sebelum mencoba lagi."
+}
+
+function getUserFriendlyError(error: Error): string {
+  const errorCode = error.message.split(':')[0]
+  return ERROR_MESSAGES[errorCode] || "Terjadi kesalahan yang tidak terduga. Silakan coba lagi."
+}
+
+// Penggunaan di React
+export function ErrorDisplay({ error }: { error: Error | null }) {
+  if (!error) return null
+  
+  return (
+    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+      <p>{getUserFriendlyError(error)}</p>
+    </div>
+  )
+}
+```
+
+## Pemantauan Kesalahan
+
+```typescript title="Pelacakan Kesalahan"
+class ErrorTracker {
+  private errors: Array<{ timestamp: Date; error: Error; context: any }> = []
+  
+  track(error: Error, context: any = {}) {
+    this.errors.push({
+      timestamp: new Date(),
+      error,
+      context
+    })
+    
+    // Kirim ke layanan pemantauan
+    this.sendToMonitoring(error, context)
+  }
+  
+  private sendToMonitoring(error: Error, context: any) {
+    // Integrasi dengan layanan pemantauan kesalahan
+    console.error('Kesalahan terlacak:', {
+      message: error.message,
+      stack: error.stack,
+      context,
+      timestamp: new Date().toISOString()
+    })
+  }
+  
+  getErrorStats() {
+    const last24h = this.errors.filter(
+      e => Date.now() - e.timestamp.getTime() < 24 * 60 * 60 * 1000
+    )
+    
+    return {
+      total: this.errors.length,
+      last24h: last24h.length,
+      palingUmum: this.getMostCommonErrors()
+    }
+  }
+  
+  private getMostCommonErrors() {
+    const errorCounts = new Map<string, number>()
+    
+    this.errors.forEach(({ error }) => {
+      const errorType = error.message.split(':')[0]
+      errorCounts.set(errorType, (errorCounts.get(errorType) || 0) + 1)
+    })
+    
+    return Array.from(errorCounts.entries())
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 5)
+  }
+}
+
+// Pelacak kesalahan global
+export const errorTracker = new ErrorTracker()
+```
+
+## Pembantu Validasi
+
+```typescript title="Validasi Input"
+export class ValidationError extends Error {
+  constructor(field: string, message: string) {
+    super(`${field}: ${message}`)
+    this.name = 'ValidationError'
+  }
+}
+
+export function validateCollectionMetadata(metadata: any): void {
+  if (!metadata.name || metadata.name.length < 1) {
+    throw new ValidationError('name', 'Nama koleksi diperlukan')
+  }
+  
+  if (!metadata.symbol || metadata.symbol.length < 1) {
+    throw new ValidationError('symbol', 'Simbol koleksi diperlukan')
+  }
+  
+  if (!metadata.creator || !isValidAddress(metadata.creator)) {
+    throw new ValidationError('creator', 'Alamat pembuat yang valid diperlukan')
+  }
+  
+  if (metadata.maxSupply && metadata.maxSupply <= 0n) {
+    throw new ValidationError('maxSupply', 'Pasokan maksimal harus lebih dari 0')
+  }
+  
+  if (metadata.mintPrice && metadata.mintPrice < 0n) {
+    throw new ValidationError('mintPrice', 'Harga mint tidak boleh negatif')
+  }
+}
+
+function isValidAddress(address: string): boolean {
+  return /^0x[a-fA-F0-9]{40}$/.test(address)
+}
+```
+
+## Batas Kesalahan React
+
+```tsx title="Komponen Batas Kesalahan"
+import React, { Component, ErrorInfo, ReactNode } from 'react'
+
+interface Props {
+  children: ReactNode
+  fallback?: ReactNode
+}
+
+interface State {
+  hasError: boolean
+  error?: Error
+}
+
+export class CreateKitErrorBoundary extends Component<Props, State> {
+  constructor(props: Props) {
+    super(props)
+    this.state = { hasError: false }
+  }
+
+  static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, error }
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('CreateKit Error Boundary caught an error:', error, errorInfo)
+    
+    // Lacak kesalahan
+    errorTracker.track(error, { errorInfo })
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback || (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <h2 className="text-red-800 text-lg font-semibold mb-2">
+            Terjadi kesalahan
+          </h2>
+          <p className="text-red-600">
+            {getUserFriendlyError(this.state.error!)}
+          </p>
+          <button
+            onClick={() => this.setState({ hasError: false })}
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          >
+            Coba Lagi
+          </button>
+        </div>
+      )
+    }
+
+    return this.props.children
+  }
+}
+```
+
+## Praktik Terbaik
+
+<CardGroup cols={2}>
+  <Card title="Klasifikasi Kesalahan" icon="tags">
+    - Kategorikan kesalahan berdasarkan jenis dan tingkat keparahan
+    - Gunakan kode kesalahan yang konsisten
+    - Sediakan pesan kesalahan yang dapat ditindaklanjuti
+    - Log kesalahan dengan konteks yang cukup
+  </Card>
+  <Card title="Strategi Pemulihan" icon="refresh">
+    - Implementasikan logika ulang coba yang sesuai
+    - Gunakan circuit breakers untuk layanan eksternal
+    - Sediakan mekanisme fallback
+    - Izinkan pemulihan kesalahan manual
+  </Card>
+</CardGroup>
+
+## Langkah Selanjutnya
+
+Sekarang Anda memiliki dokumentasi CreateKit yang komprehensif, Anda dapat:
+
+<CardGroup cols={2}>
+  <Card title="Mulai Membangun" icon="hammer">
+    Gunakan panduan cepat untuk membuat koleksi pertama Anda
+  </Card>
+  <Card title="Bergabung dengan Komunitas" icon="users">
+    Terhubung dengan pengembang lain di Discord B3
+  </Card>
+</CardGroup>

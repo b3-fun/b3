@@ -1,0 +1,499 @@
+---
+title: Hooks
+description: React hooks를 사용하여 맞춤 결제 흐름을 구축하고 주문 수명 주기를 관리하기
+lang: ko
+originalPath: anyspend/hooks.mdx
+---
+## 핵심 훅
+
+### `useAnyspendQuote`
+
+토큰 스왑 및 크로스 체인 거래에 대한 실시간 가격 정보를 가져옵니다.
+
+```tsx title="기본 사용법" icon="quote-left"
+import { useAnyspendQuote } from "@b3dotfun/sdk/anyspend";
+
+const {
+  anyspendQuote,
+  isLoadingAnyspendQuote,
+  getAnyspendQuoteError,
+  refetchAnyspendQuote
+} = useAnyspendQuote(quoteRequest);
+```
+
+#### 매개변수
+
+<ParamField path="quoteRequest" type="QuoteRequest" required>
+  견적 구성 객체
+</ParamField>
+
+#### QuoteRequest 인터페이스
+
+```typescript title="타입 정의" icon="code"
+interface QuoteRequest {
+  srcChain: number;              // 출발 체인 ID
+  dstChain: number;              // 도착 체인 ID
+  srcTokenAddress: string;       // 출발 토큰 계약 주소
+  dstTokenAddress: string;       // 도착 토큰 계약 주소
+  type: "swap" | "custom";       // 주문 유형
+  tradeType: "EXACT_INPUT" | "EXACT_OUTPUT";
+  amount: string;                // 최소 단위(wei)로의 금액
+}
+```
+
+#### 반환 값
+
+<ResponseField name="anyspendQuote" type="QuoteResponse | null">
+  가격 및 수수료가 포함된 견적 데이터
+</ResponseField>
+
+<ResponseField name="isLoadingAnyspendQuote" type="boolean">
+  로딩 상태 지시기
+</ResponseField>
+
+<ResponseField name="getAnyspendQuoteError" type="Error | null">
+  견적 실패 시 오류 객체
+</ResponseField>
+
+<ResponseField name="refetchAnyspendQuote" type="() => void">
+  견적을 수동으로 새로고침하는 함수
+</ResponseField>
+
+#### 사용 예시
+
+```tsx title="스왑 견적 컴포넌트" icon="exchange-alt" lines
+function SwapQuote() {
+  const quoteRequest = {
+    srcChain: 1,           // 이더리움
+    dstChain: 8333,        // B3
+    srcTokenAddress: "0xA0b86a33E6Fb6Dd9a9B3d8B5FEb2b3C8e7D9Ff1E", // USDC
+    dstTokenAddress: "0x0000000000000000000000000000000000000000", // ETH
+    type: "swap",
+    tradeType: "EXACT_INPUT",
+    amount: "1000000", // 1 USDC (6 decimals)
+  };
+
+  const { anyspendQuote, isLoadingAnyspendQuote, getAnyspendQuoteError } =
+    useAnyspendQuote(quoteRequest);
+
+  if (isLoadingAnyspendQuote) return <div>최적의 가격을 찾는 중...</div>;
+  if (getAnyspendQuoteError) return <div>견적을 가져오는 데 실패했습니다</div>;
+
+  return (
+    <div>
+      <p>받을 금액: {anyspendQuote?.expectedOutput} ETH</p>
+      <p>네트워크 수수료: ${anyspendQuote?.networkFeeUsd}</p>
+      <p>서비스 수수료: ${anyspendQuote?.serviceFeeUsd}</p>
+      <p>총 비용: ${anyspendQuote?.totalUsdCost}</p>
+    </div>
+  );
+}
+```
+
+---
+
+### `useAnyspendCreateOrder`
+
+종합적인 오류 처리를 포함하여 AnySpend 주문을 생성하고 실행합니다.
+
+```tsx title="기본 사용법" icon="plus-circle"
+import { useAnyspendCreateOrder } from "@b3dotfun/sdk/anyspend";
+
+const {
+  createOrder,
+  isCreatingOrder,
+  createOrderError
+} = useAnyspendCreateOrder(options);
+```
+
+#### 매개변수
+
+<ParamField path="options" type="CreateOrderOptions">
+  콜백 함수가 포함된 구성 객체
+</ParamField>
+
+#### CreateOrderOptions 인터페이스
+
+```typescript title="타입 정의" icon="settings"
+interface CreateOrderOptions {
+  onSuccess?: (data: OrderResponse) => void;
+  onError?: (error: Error) => void;
+  onSettled?: () => void;
+}
+```
+
+#### 반환 값
+
+<ResponseField name="createOrder" type="(request: CreateOrderRequest) => void">
+  주문을 생성하고 실행하는 함수
+</ResponseField>
+
+<ResponseField name="isCreatingOrder" type="boolean">
+  로딩 상태 지시기
+</ResponseField>
+
+<ResponseField name="createOrderError" type="Error | null">
+  주문 생성 실패 시 오류 객체
+</ResponseField>
+
+#### 사용 예시
+
+```tsx title="결제 폼" icon="credit-card" lines
+function PaymentForm() {
+  const { createOrder, isCreatingOrder } = useAnyspendCreateOrder({
+    onSuccess: (data) => {
+      console.log("주문 생성됨:", data.data.id);
+      // 결제로 리다이렉트하거나 성공 표시
+      router.push(`/payment/${data.data.id}`);
+    },
+    onError: (error) => {
+      console.error("주문 실패:", error.message);
+      toast.error("결제 실패. 다시 시도해주세요.");
+    },
+  });
+
+  const handlePayment = () => {
+    createOrder({
+      recipientAddress: userWalletAddress,
+      orderType: "swap",
+      srcChain: 1,
+      dstChain: 8333,
+      srcToken: {
+        chainId: 1,
+        address: "0xA0b86a33E6Fb6Dd9a9B3d8B5FEb2b3C8e7D9Ff1E",
+        name: "USD Coin",
+        symbol: "USDC",
+        decimals: 6,
+      },
+      dstToken: {
+        chainId: 8333,
+        address: "0x0000000000000000000000000000000000000000",
+        name: "Ether",
+        symbol: "ETH",
+        decimals: 18,
+      },
+      srcAmount: "1000000", // 1 USDC
+      expectedDstAmount: "500000000000000000", // ~0.5 ETH
+      creatorAddress: userWalletAddress,
+    });
+  };
+
+  return (
+    <button
+      onClick={handlePayment}
+      disabled={isCreatingOrder}
+    >
+      {isCreatingOrder ? "처리 중..." : "암호화폐로 결제하기"}
+    </button>
+  );
+}
+```
+
+---
+
+### `useAnyspendOrderAndTransactions`
+
+실시간으로 주문 상태를 모니터링하고 관련 블록체인 거래를 추적합니다.
+
+```tsx title="기본 사용법" icon="search"
+import { useAnyspendOrderAndTransactions } from "@b3dotfun/sdk/anyspend";
+
+const {
+  orderAndTransactions,
+  isLoadingOrderAndTransactions,
+  getOrderAndTransactionsError
+} = useAnyspendOrderAndTransactions(orderId);
+```
+
+#### 매개변수
+
+<ParamField path="orderId" type="string" required>
+  추적 및 모니터링할 주문 ID
+</ParamField>
+
+#### 반환 값
+
+<ResponseField name="orderAndTransactions" type="OrderWithTransactions | null">
+  거래 세부 정보가 포함된 완전한 주문 데이터
+</ResponseField>
+
+<ResponseField name="isLoadingOrderAndTransactions" type="boolean">
+  로딩 상태 지시기
+</ResponseField>
+
+<ResponseField name="getOrderAndTransactionsError" type="Error | null">
+  조회 실패 시 오류 객체
+</ResponseField>
+
+#### OrderWithTransactions 인터페이스
+
+```typescript title="타입 정의" icon="database"
+interface OrderWithTransactions {
+  data: {
+    order: Order;               // 주문 세부 정보 및 상태
+    depositTxs: Transaction[];  // 사용자 예치 거래
+    relayTx?: Transaction;      // 크로스 체인 중계 거래
+    executeTx?: Transaction;    // 최종 실행 거래
+    refundTxs: Transaction[];   // 환불 거래(해당되는 경우)
+  };
+}
+```
+
+#### 사용 예시
+
+```tsx title="주문 추적기" icon="eye" lines
+function OrderTracker({ orderId }: { orderId: string }) {
+  const { orderAndTransactions, isLoadingOrderAndTransactions } =
+    useAnyspendOrderAndTransactions(orderId);
+
+  if (isLoadingOrderAndTransactions) {
+    return <div>주문 상태를 불러오는 중...</div>;
+  }
+
+  if (!orderAndTransactions) {
+    return <div>주문을 찾을 수 없습니다</div>;
+  }
+
+  const { order, depositTxs, executeTx, refundTxs } = orderAndTransactions.data;
+
+  const getStatusMessage = (status: string) => {
+    switch (status) {
+      case "scanning_deposit_transaction":
+        return "⏳ 결제 확인 대기 중...";
+      case "relay":
+        return "🔄 크로스 체인 거래 처리 중...";
+      case "executed":
+        return "✅ 거래가 성공적으로 완료되었습니다!";
+      case "refunded":
+        return "↩️ 환불 처리됨";
+      default:
+        return "🔄 처리 중...";
+    }
+  };
+
+  return (
+    <div className="order-status">
+      <h2>주문 #{orderId.slice(0, 8)}</h2>
+      <p>{getStatusMessage(order.status)}</p>
+
+      {depositTxs.length > 0 && (
+        <div>
+          <h3>결제 거래</h3>
+          <a
+            href={`https://etherscan.io/tx/${depositTxs[0].txHash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Etherscan에서 보기
+          </a>
+        </div>
+      )}
+
+      {executeTx && (
+        <div>
+          <h3>실행 거래</h3>
+          <a
+            href={`https://explorer.b3.fun/tx/${executeTx.txHash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            B3 탐색기에서 보기
+          </a>
+        </div>
+      )}
+
+      {order.errorDetails && (
+        <div className="error">
+          <strong>오류:</strong> {order.errorDetails}
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+---
+
+### `useAnyspendOrderHistory`
+
+사용자 주소에 대한 페이지네이션된 주문 기록을 검색합니다.
+
+```tsx title="기본 사용법" icon="history"
+import { useAnyspendOrderHistory } from "@b3dotfun/sdk/anyspend";
+
+const {
+  orderHistory,
+  isLoadingOrderHistory,
+  getOrderHistoryError
+} = useAnyspendOrderHistory(creatorAddress, limit, offset);
+```
+
+#### 매개변수
+
+<ParamField path="creatorAddress" type="string" required>
+  사용자 지갑 주소
+</ParamField>
+
+<ParamField path="limit" type="number" required>
+  가져올 주문 수(최대 100)
+</ParamField>
+
+<ParamField path="offset" type="number" required>
+  페이지네이션 오프셋
+</ParamField>
+
+#### 사용 예시
+
+```tsx title="주문 기록 컴포넌트" icon="list" lines
+function OrderHistory({ userAddress }: { userAddress: string }) {
+  const [page, setPage] = useState(0);
+  const pageSize = 10;
+
+  const { orderHistory, isLoadingOrderHistory } = useAnyspendOrderHistory(
+    userAddress,
+    pageSize,
+    page * pageSize
+  );
+
+  if (isLoadingOrderHistory) {
+    return <div>주문 기록을 불러오는 중...</div>;
+  }
+
+  return (
+    <div>
+      <h2>귀하의 주문</h2>
+      {orderHistory?.data.map((order) => (
+        <div key={order.id} className="order-item">
+          <p>유형: {order.type}</p>
+          <p>상태: {order.status}</p>
+          <p>금액: {order.srcAmount} {order.srcToken.symbol}</p>
+          <p>날짜: {new Date(order.createdAt).toLocaleDateString()}</p>
+        </div>
+      ))}
+
+      <button
+        onClick={() => setPage(page - 1)}
+        disabled={page === 0}
+      >
+        이전
+      </button>
+      <button
+        onClick={() => setPage(page + 1)}
+        disabled={!orderHistory?.data || orderHistory.data.length < pageSize}
+      >
+        다음
+      </button>
+    </div>
+  );
+}
+```
+
+## 추가 훅
+
+### `useAnyspendTokens`
+
+특정 체인에 대해 사용 가능한 토큰을 가져옵니다.
+
+```tsx title="토큰 목록" icon="coins"
+const { tokens, isLoadingTokens } = useAnyspendTokens(1, "USDC");
+```
+
+### `useCoinbaseOnrampOptions`
+
+피아트 결제를 위한 Coinbase 온램프 구성을 가져옵니다.
+
+```tsx title="Coinbase 온램프" icon="credit-card"
+const { coinbaseOptions, isLoadingCoinbaseOptions } = useCoinbaseOnrampOptions();
+```
+
+### `useStripeClientSecret`
+
+신용 카드 결제를 위한 Stripe 결제 의도를 가져옵니다.
+
+```tsx title="Stripe 통합" icon="stripe"
+const { clientSecret, isLoadingClientSecret } = useStripeClientSecret(orderData);
+```
+
+## 훅 패턴
+
+### 오류 처리 패턴
+
+```tsx title="오류 처리" icon="shield-exclamation" lines
+function PaymentComponent() {
+  const { createOrder, isCreatingOrder } = useAnyspendCreateOrder({
+    onError: (error) => {
+      // 디버깅을 위한 오류 로깅
+      console.error("결제 실패:", error);
+
+      // 사용자 친화적 메시지 표시
+      switch (error.message) {
+        case "INSUFFICIENT_BALANCE":
+          toast.error("잔액이 부족합니다. 자금을 추가해주세요.");
+          break;
+        case "SLIPPAGE":
+          toast.error("가격이 불리하게 움직였습니다. 다시 시도해주세요.");
+          break;
+        default:
+          toast.error("결제 실패. 다시 시도해주세요.");
+      }
+    },
+  });
+
+  // 컴포넌트 구현...
+}
+```
+
+### 로딩 상태 패턴
+
+```tsx title="로딩 상태" icon="spinner" lines
+function SwapInterface() {
+  const { anyspendQuote, isLoadingAnyspendQuote } = useAnyspendQuote(quoteRequest);
+  const { createOrder, isCreatingOrder } = useAnyspendCreateOrder();
+
+  const isLoading = isLoadingAnyspendQuote || isCreatingOrder;
+
+  return (
+    <div>
+      {isLoading && <LoadingSpinner />}
+      {/* 컴포넌트의 나머지 부분 */}
+    </div>
+  );
+}
+```
+
+### 실시간 업데이트 패턴
+
+```tsx title="실시간 업데이트" icon="sync-alt" lines
+function OrderStatus({ orderId }: { orderId: string }) {
+  const { orderAndTransactions } = useAnyspendOrderAndTransactions(orderId);
+
+  // 대기 중인 주문에 대해 5초마다 자동 새로고침
+  useEffect(() => {
+    if (orderAndTransactions?.data.order.status === "relay") {
+      const interval = setInterval(() => {
+        // 훅에 의해 자동으로 다시 조회됨
+      }, 5000);
+
+      return () => clearInterval(interval);
+    }
+  }, [orderAndTransactions?.data.order.status]);
+
+  // 컴포넌트 구현...
+}
+```
+
+## 다음 단계
+
+<CardGroup cols={3}>
+<Card title="예제 보기" icon="code" href="/anyspend/examples">
+  실제 구현 예제를 찾아보세요
+</Card>
+
+<Card title="오류 처리" icon="bug" href="/anyspend/error-handling">
+  종합적인 오류 처리 전략을 배우세요
+</Card>
+
+<Card title="컴포넌트 참조" icon="puzzle-piece" href="/anyspend/components">
+  사전 제작된 컴포넌트를 탐색하세요
+</Card>
+</CardGroup>

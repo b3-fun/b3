@@ -1,0 +1,552 @@
+---
+title: 奖励系统
+description: 理解并实施 CreateKit 奖励分配系统
+lang: cn
+originalPath: createkit/rewards.mdx
+---
+## 概览
+
+CreateKit 特色的创新奖励系统将每次铸造的价值的一部分分配给生态系统中的各种参与者。这创造了一致的激励机制，并确保所有贡献者都能从成功的收藏中受益。
+
+## 奖励结构
+
+### 默认分配
+
+| 收件人类型 | 默认份额 | 描述 |
+|------------|---------|------|
+| **创作者** | 40% | 创建集合的原始创作者 |
+| **首位铸造者** | 30% | 触发初始部署和首次铸造的用户 |
+| **游戏所有者** | 20% | 集成该集合的平台或游戏 |
+| **平台** | 10% | BaseMint 协议费用 |
+
+<Note>
+奖励率由协议管理员配置，可能会在不同部署之间有所不同。
+</Note>
+
+### 奖励工作原理
+
+1. **铸造支付**：用户支付代币的铸造价格
+2. **奖励计算**：支付的一部分被分配到奖励池中
+3. **分配**：根据配置的比率分配奖励
+4. **累积**：奖励在托管合约中累积，直到被领取
+
+## 奖励跟踪
+
+### 设置奖励跟踪
+
+```typescript title="初始化奖励跟踪器"
+import { RewardTracker } from '@b3dotfun/basemint'
+import { createPublicClient, http } from 'viem'
+import { b3Testnet } from '@b3dotfun/basemint'
+
+const publicClient = createPublicClient({
+  chain: b3Testnet,
+  transport: http()
+})
+
+const rewardTracker = new RewardTracker(publicClient)
+
+// 获取托管合约地址
+const escrowAddress = rewardTracker.getEscrowAddress()
+console.log(`托管合约: ${escrowAddress}`)
+```
+
+### 集合级奖励
+
+跟踪整个集合累积的奖励：
+
+```typescript title="集合奖励"
+// 获取集合的总奖励
+const collectionRewards = await rewardTracker.getCollectionRewards(
+  escrowAddress,
+  collectionAddress
+)
+
+console.log("集合奖励:", {
+  totalRewards: collectionRewards.totalRewards.toString(),
+  unclaimedRewards: collectionRewards.unclaimedRewards.toString(),
+  totalMints: collectionRewards.totalMints.toString(),
+  averageRewardPerMint: (
+    collectionRewards.totalRewards / collectionRewards.totalMints
+  ).toString()
+})
+```
+
+### 个别收件人奖励
+
+跟踪特定参与者的奖励：
+
+<Tabs>
+<Tab title="创作者奖励">
+```typescript
+// 获取集合的创作者奖励
+const creatorRewards = await rewardTracker.getRecipientRewards(
+  escrowAddress,
+  collectionAddress,
+  "CREATOR",
+  creatorAddress
+)
+
+console.log(`创作者奖励: ${creatorRewards.toString()} wei`)
+```
+</Tab>
+
+<Tab title="首位铸造者奖励">
+```typescript
+// 获取首位铸造者奖励
+const firstMinterRewards = await rewardTracker.getRecipientRewards(
+  escrowAddress,
+  collectionAddress,
+  "FIRST_MINTER", 
+  firstMinterAddress
+)
+
+console.log(`首位铸造者奖励: ${firstMinterRewards.toString()} wei`)
+```
+</Tab>
+
+<Tab title="游戏所有者奖励">
+```typescript
+// 获取游戏所有者奖励
+const gameOwnerRewards = await rewardTracker.getRecipientRewards(
+  escrowAddress,
+  collectionAddress,
+  "GAME_OWNER",
+  gameOwnerAddress
+)
+
+console.log(`游戏所有者奖励: ${gameOwnerRewards.toString()} wei`)
+```
+</Tab>
+</Tabs>
+
+### 集合的所有收件人
+
+```typescript title="所有收件人奖励"
+// 获取所有收件人类型的奖励
+const allRewards = await Promise.all([
+  rewardTracker.getRecipientRewards(escrowAddress, collectionAddress, "CREATOR", creatorAddress),
+  rewardTracker.getRecipientRewards(escrowAddress, collectionAddress, "FIRST_MINTER", firstMinterAddress),
+  rewardTracker.getRecipientRewards(escrowAddress, collectionAddress, "GAME_OWNER", gameOwnerAddress),
+  rewardTracker.getRecipientRewards(escrowAddress, collectionAddress, "PLATFORM", platformAddress)
+])
+
+const [creatorRewards, firstMinterRewards, gameOwnerRewards, platformRewards] = allRewards
+
+console.log("奖励分配:", {
+  creator: creatorRewards.toString(),
+  firstMinter: firstMinterRewards.toString(),
+  gameOwner: gameOwnerRewards.toString(),
+  platform: platformRewards.toString(),
+  total: (creatorRewards + firstMinterRewards + gameOwnerRewards + platformRewards).toString()
+})
+```
+
+## 奖励事件
+
+### 跟踪奖励分配
+
+```typescript title="奖励事件监控"
+import { getRewardDistributionEvents } from '@b3dotfun/basemint'
+
+// 获取历史奖励分配事件
+const fromBlock = await publicClient.getBlockNumber() - 1000n
+const toBlock = await publicClient.getBlockNumber()
+
+const rewardEvents = await getRewardDistributionEvents(
+  publicClient,
+  escrowAddress,
+  fromBlock,
+  toBlock
+)
+
+console.log("最近的奖励分配:")
+rewardEvents.forEach(event => {
+  console.log({
+    collection: event.args.collection,
+    recipient: event.args.recipient,
+    recipientType: event.args.recipientType,
+    amount: event.args.amount?.toString(),
+    blockNumber: event.blockNumber
+  })
+})
+```
+
+### 实时奖励监控
+
+```typescript title="实时监控"
+// 监控新的奖励分配
+const unwatch = publicClient.watchContractEvent({
+  address: escrowAddress,
+  abi: rewardTracker.escrowAbi,
+  eventName: 'RewardDistributed',
+  onLogs: (logs) => {
+    logs.forEach(log => {
+      console.log('新分配的奖励:', {
+        collection: log.args.collection,
+        recipient: log.args.recipient,
+        amount: log.args.amount?.toString(),
+        type: log.args.recipientType
+      })
+    })
+  }
+})
+
+// 完成后停止监控
+// unwatch()
+```
+
+## 奖励提取
+
+### 个别提取
+
+```typescript title="提取奖励"
+import { createWalletClient } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+
+const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`)
+const walletClient = createWalletClient({
+  chain: b3Testnet,
+  transport: http(),
+  account
+})
+
+// 为特定集合和收件人类型提取奖励
+async function withdrawRewards(
+  collectionAddress: string,
+  recipientType: "CREATOR" | "FIRST_MINTER" | "GAME_OWNER" | "PLATFORM"
+) {
+  try {
+    // 首先检查可用奖励
+    const availableRewards = await rewardTracker.getRecipientRewards(
+      escrowAddress,
+      collectionAddress,
+      recipientType,
+      account.address
+    )
+
+    if (availableRewards === 0n) {
+      console.log("没有可提取的奖励")
+      return
+    }
+
+    console.log(`提取 ${availableRewards.toString()} wei 的奖励...`)
+
+    // 提取奖励
+    const tx = await rewardTracker.withdrawRewards(
+      walletClient,
+      escrowAddress,
+      collectionAddress,
+      recipientType
+    )
+
+    console.log(`✅ 奖励成功提取: ${tx}`)
+    return tx
+
+  } catch (error) {
+    console.error("❌ 提取失败:", error)
+    throw error
+  }
+}
+
+// 示例：创作者提取他们的奖励
+await withdrawRewards(collectionAddress, "CREATOR")
+```
+
+### 批量提取
+
+```typescript title="批量提取"
+// 从多个集合提取奖励
+async function withdrawAllCreatorRewards(creatorAddress: string) {
+  // 获取此地址为创作者的所有集合
+  const creatorCollections = await getCreatorCollections(creatorAddress)
+  
+  for (const collection of creatorCollections) {
+    const rewards = await rewardTracker.getRecipientRewards(
+      escrowAddress,
+      collection.address,
+      "CREATOR",
+      creatorAddress
+    )
+
+    if (rewards > 0n) {
+      console.log(`从 ${collection.name} 提取 ${rewards.toString()} wei`)
+      
+      try {
+        await rewardTracker.withdrawRewards(
+          walletClient,
+          escrowAddress,
+          collection.address,
+          "CREATOR"
+        )
+        console.log(`✅ 从 ${collection.name} 提取成功`)
+      } catch (error) {
+        console.error(`❌ 从 ${collection.name} 提取失败:`, error)
+      }
+    }
+  }
+}
+```
+
+## 奖励分析
+
+### 投资组合概览
+
+```typescript title="创作者投资组合"
+async function getCreatorPortfolio(creatorAddress: string) {
+  const collections = await getCreatorCollections(creatorAddress)
+  
+  let totalRewards = 0n
+  let totalUnclaimedRewards = 0n
+  let totalMints = 0n
+  
+  const collectionData = []
+  
+  for (const collection of collections) {
+    const collectionRewards = await rewardTracker.getCollectionRewards(
+      escrowAddress,
+      collection.address
+    )
+    
+    const creatorRewards = await rewardTracker.getRecipientRewards(
+      escrowAddress,
+      collection.address,
+      "CREATOR",
+      creatorAddress
+    )
+    
+    totalRewards += collectionRewards.totalRewards
+    totalUnclaimedRewards += creatorRewards
+    totalMints += collectionRewards.totalMints
+    
+    collectionData.push({
+      name: collection.name,
+      address: collection.address,
+      totalRewards: collectionRewards.totalRewards,
+      creatorRewards,
+      mints: collectionRewards.totalMints
+    })
+  }
+  
+  return {
+    summary: {
+      totalCollections: collections.length,
+      totalRewards: totalRewards.toString(),
+      totalUnclaimedRewards: totalUnclaimedRewards.toString(), 
+      totalMints: totalMints.toString(),
+      averageRewardPerMint: totalMints > 0n ? (totalRewards / totalMints).toString() : "0"
+    },
+    collections: collectionData
+  }
+}
+
+const portfolio = await getCreatorPortfolio(creatorAddress)
+console.log("创作者投资组合:", portfolio)
+```
+
+### 绩效指标
+
+```typescript title="奖励绩效"
+async function getRewardMetrics(collectionAddress: string) {
+  const collectionRewards = await rewardTracker.getCollectionRewards(
+    escrowAddress,
+    collectionAddress
+  )
+  
+  const collection = collectionManager.createCollection(collectionAddress, "ERC721")
+  const currentSupply = await collection.totalSupply()
+  const mintPrice = await collection.mintPrice()
+  
+  const totalMintRevenue = currentSupply * mintPrice
+  const rewardPercentage = totalMintRevenue > 0n 
+    ? (collectionRewards.totalRewards * 100n) / totalMintRevenue 
+    : 0n
+  
+  return {
+    totalMints: collectionRewards.totalMints.toString(),
+    totalRewards: collectionRewards.totalRewards.toString(),
+    totalRevenue: totalMintRevenue.toString(),
+    rewardPercentage: rewardPercentage.toString() + "%",
+    averageRewardPerMint: collectionRewards.totalMints > 0n 
+      ? (collectionRewards.totalRewards / collectionRewards.totalMints).toString()
+      : "0"
+  }
+}
+```
+
+## 高级奖励功能
+
+### 自定义奖励率
+
+<Warning>
+奖励率配置通常限制给协议管理员。
+</Warning>
+
+```typescript title="奖励率管理"
+// 仅限协议管理员
+async function updateRewardRates(
+  adminWalletClient: any,
+  escrowAddress: string
+) {
+  // 更新奖励率（仅所有者可调用）
+  await rewardTracker.setRewardRates(
+    adminWalletClient,
+    escrowAddress,
+    {
+      creatorRate: 4500n,    // 45%
+      firstMinterRate: 2500n, // 25%
+      gameOwnerRate: 2000n,  // 20%
+      platformRate: 1000n    // 10%
+    }
+  )
+}
+
+// 检查当前奖励率
+const rates = await rewardTracker.getRewardRates(escrowAddress)
+console.log("当前奖励率:", {
+  creator: rates.creatorRate.toString(),
+  firstMinter: rates.firstMinterRate.toString(),
+  gameOwner: rates.gameOwnerRate.toString(),
+  platform: rates.platformRate.toString()
+})
+```
+
+### 收件人管理
+
+```typescript title="收件人状态"
+// 检查收件人类型是否活跃
+const isCreatorActive = await rewardTracker.isRecipientActive(
+  escrowAddress,
+  "CREATOR"
+)
+
+// 获取收件人信息
+const recipientInfo = await rewardTracker.getRecipientInfo(
+  escrowAddress,
+  "CREATOR"
+)
+
+console.log("创作者收件人信息:", {
+  rate: recipientInfo.rate.toString(),
+  isActive: recipientInfo.isActive
+})
+```
+
+## 集成最佳实践
+
+### 用户界面集成
+
+```typescript title="UI 辅助函数"
+// 格式化奖励以供显示
+function formatRewards(weiAmount: bigint): string {
+  const eth = Number(weiAmount) / 1e18
+  return `${eth.toFixed(6)} ETH`
+}
+
+// 计算 USD 价值（示例使用价格源）
+async function getRewardValueUSD(weiAmount: bigint, ethPriceUSD: number): Promise<string> {
+  const eth = Number(weiAmount) / 1e18
+  const usd = eth * ethPriceUSD
+  return `$${usd.toFixed(2)}`
+}
+
+// 检查提取是否划算（考虑到燃气费用）
+async function isWithdrawalProfitable(
+  rewardAmount: bigint,
+  gasPrice: bigint,
+  gasLimit: bigint
+): Promise<boolean> {
+  const gasCost = gasPrice * gasLimit
+  return rewardAmount > gasCost * 2n // 要求至少 2 倍燃气费用
+}
+```
+
+### 自动化奖励领取
+
+```typescript title="自动化领取"
+// 自动化奖励领取服务
+class RewardClaimingService {
+  private rewardTracker: RewardTracker
+  private walletClient: any
+  private minWithdrawThreshold: bigint
+
+  constructor(rewardTracker: RewardTracker, walletClient: any, minThreshold: bigint) {
+    this.rewardTracker = rewardTracker
+    this.walletClient = walletClient
+    this.minWithdrawThreshold = minThreshold
+  }
+
+  async checkAndClaimRewards(
+    collections: string[],
+    recipientType: "CREATOR" | "FIRST_MINTER" | "GAME_OWNER"
+  ) {
+    for (const collectionAddress of collections) {
+      try {
+        const rewards = await this.rewardTracker.getRecipientRewards(
+          escrowAddress,
+          collectionAddress,
+          recipientType,
+          this.walletClient.account.address
+        )
+
+        if (rewards >= this.minWithdrawThreshold) {
+          console.log(`从 ${collectionAddress} 领取 ${rewards.toString()} wei`)
+          
+          await this.rewardTracker.withdrawRewards(
+            this.walletClient,
+            escrowAddress,
+            collectionAddress,
+            recipientType
+          )
+          
+          console.log(`✅ 成功从 ${collectionAddress} 领取奖励`)
+        }
+      } catch (error) {
+        console.error(`❌ 从 ${collectionAddress} 领取失败:`, error)
+      }
+    }
+  }
+}
+
+// 使用
+const claimingService = new RewardClaimingService(
+  rewardTracker,
+  walletClient,
+  parseEther("0.001") // 最低领取 0.001 ETH
+)
+
+await claimingService.checkAndClaimRewards(
+  creatorCollections,
+  "CREATOR"
+)
+```
+
+## 故障排除
+
+<AccordionGroup>
+  <Accordion title="没有显示奖励">
+    - 验证集合在部署后是否收到了铸造
+    - 检查您是否查询了正确的收件人类型和地址
+    - 确保集合是使用正确的签名创建的
+  </Accordion>
+
+  <Accordion title="提取失败">
+    - 确认您有可提取的奖励
+    - 检查您是否有足够的燃气费用进行交易
+    - 验证您是否使用了与您的角色相符的正确收件人类型
+  </Accordion>
+
+  <Accordion title="奖励金额似乎不正确">
+    - 检查当前奖励率配置
+    - 验证铸造价格和数量计算
+    - 确保您使用的是正确的托管合约地址
+  </Accordion>
+</AccordionGroup>
+
+## 下一步
+
+<CardGroup cols={2}>
+  <Card title="存储服务" icon="database" href="/createkit/storage">
+    了解如何使用 BaseMint 存储管理集合元数据
+  </Card>
+  <Card title="示例" icon="code" href="/

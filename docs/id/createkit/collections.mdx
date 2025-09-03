@@ -1,0 +1,483 @@
+---
+title: Pengelolaan Koleksi
+description: Panduan lengkap untuk membuat dan mengelola koleksi NFT dengan CreateKit
+lang: id
+originalPath: createkit/collections.mdx
+---
+## Ikhtisar
+
+Manajemen koleksi adalah inti dari CreateKit. Panduan ini mencakup segala hal yang perlu Anda ketahui tentang pembuatan, konfigurasi, dan pengelolaan koleksi NFT menggunakan protokol BaseMint.
+
+## Struktur Metadata Koleksi
+
+Setiap koleksi memerlukan metadata spesifik yang mendefinisikan karakteristiknya:
+
+### Parameter Wajib
+
+<ParamField path="name" type="string">
+  Nama koleksi NFT Anda (mis., "Bored Ape Yacht Club")
+</ParamField>
+
+<ParamField path="symbol" type="string">
+  Simbol/ticker untuk koleksi Anda (mis., "BAYC")
+</ParamField>
+
+<ParamField path="creator" type="0x${string}">
+  Alamat Ethereum dari pembuat koleksi
+</ParamField>
+
+<ParamField path="gameOwner" type="0x${string}">
+  Alamat Ethereum dari pemilik game (dapat sama dengan pembuat)
+</ParamField>
+
+### Parameter Opsional
+
+<ParamField path="maxSupply" type="bigint" default="10000n">
+  Jumlah maksimum token yang dapat dicetak
+</ParamField>
+
+<ParamField path="mintPrice" type="bigint" default="0n">
+  Harga per token dalam wei (gunakan parseEther() untuk nilai ETH)
+</ParamField>
+
+<ParamField path="maxPerWallet" type="bigint" default="100n">
+  Maksimum token yang dapat dicetak per dompet
+</ParamField>
+
+<ParamField path="isWhitelistEnabled" type="boolean" default="false">
+  Apakah pencetakan hanya untuk whitelist diaktifkan
+</ParamField>
+
+<ParamField path="startTime" type="bigint" default="0n">
+  Cap waktu Unix ketika pencetakan dimulai (0 = segera)
+</ParamField>
+
+<ParamField path="endTime" type="bigint" default="BigInt(Date.now() / 1000 + 86400 * 365 * 100)">
+  Cap waktu Unix ketika pencetakan berakhir
+</ParamField>
+
+<ParamField path="tokenStandard" type="'ERC721' | 'ERC1155'" default="'ERC721'">
+  Standar token yang digunakan
+</ParamField>
+
+<ParamField path="chainId" type="number" default="1993">
+  ID Rantai (1993 = B3 Testnet, 8333 = B3 Mainnet)
+</ParamField>
+
+## Membuat Koleksi
+
+### Koleksi Dasar
+
+```typescript title="Pembuatan Koleksi Dasar"
+import { CollectionManager, b3Testnet } from '@b3dotfun/basemint'
+import { createPublicClient, createWalletClient, http } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+
+const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`)
+const publicClient = createPublicClient({
+  chain: b3Testnet,
+  transport: http()
+})
+
+const walletClient = createWalletClient({
+  chain: b3Testnet,
+  transport: http(),
+  account
+})
+
+const collectionManager = new CollectionManager(publicClient)
+
+// Definisikan koleksi dasar
+const basicCollection = {
+  name: "Koleksi Seni Saya",
+  symbol: "MAC",
+  creator: account.address,
+  gameOwner: account.address,
+  description: "Koleksi dari karya seni digital",
+  image: "https://example.com/collection-image.png"
+}
+
+// Hasilkan tanda tangan pembuat
+const creatorSignature = await collectionManager.generateCreatorSignature(
+  walletClient,
+  basicCollection
+)
+```
+
+### Konfigurasi Koleksi Lanjutan
+
+```typescript title="Pengaturan Koleksi Lanjutan"
+import { parseEther } from 'viem'
+
+const advancedCollection = {
+  // Wajib
+  name: "Barang Gaming Premium",
+  symbol: "PGI",
+  creator: account.address,
+  gameOwner: "0x1234567890123456789012345678901234567890", // Pemilik game berbeda
+  
+  // Pasokan dan harga
+  maxSupply: 5000n,
+  mintPrice: parseEther("0.01"), // 0.01 ETH
+  maxPerWallet: 5n,
+  
+  // Kontrol waktu
+  startTime: BigInt(Math.floor(Date.now() / 1000) + 3600), // Mulai dalam 1 jam
+  endTime: BigInt(Math.floor(Date.now() / 1000) + 86400 * 7), // Berakhir dalam 7 hari
+  
+  // Konfigurasi whitelist
+  isWhitelistEnabled: true,
+  whitelistMerkleRoot: "0x..." as `0x${string}`,
+  
+  // Metadata
+  description: "Barang eksklusif untuk pemain premium",
+  image: "https://example.com/premium-collection.png",
+  external_url: "https://mygame.com/premium-items",
+  animation_url: "https://example.com/collection-animation.mp4",
+  
+  // Atribut koleksi
+  attributes: [
+    { trait_type: "Kategori", value: "Gaming" },
+    { trait_type: "Kelangkaan", value: "Premium" },
+    { trait_type: "Edisi", value: "Pertama" }
+  ],
+  
+  // Teknis
+  tokenStandard: "ERC1155" as const,
+  chainId: 1993
+}
+```
+
+## Standar Token
+
+CreateKit mendukung standar ERC721 dan ERC1155:
+
+<Tabs>
+<Tab title="Koleksi ERC721">
+```typescript
+const erc721Collection = {
+  name: "Karya Seni Unik",
+  symbol: "UAP",
+  creator: account.address,
+  gameOwner: account.address,
+  tokenStandard: "ERC721" as const,
+  maxSupply: 1000n, // Setiap token unik
+  description: "Karya seni digital yang unik"
+}
+
+// Pencetakan ERC721 (kuantitas selalu 1)
+const collection721 = collectionManager.createCollection(
+  predictedAddress,
+  "ERC721"
+)
+
+await collection721.mint(
+  walletClient,
+  1n, // Selalu 1 untuk ERC721
+  undefined, // URI metadata
+  mintPrice,
+  proof
+)
+```
+</Tab>
+
+<Tab title="Koleksi ERC1155">
+```typescript
+const erc1155Collection = {
+  name: "Sumber Daya Game",
+  symbol: "GRS",
+  creator: account.address,
+  gameOwner: account.address,
+  tokenStandard: "ERC1155" as const,
+  maxSupply: 100000n, // Total untuk semua jenis token
+  description: "Sumber daya game yang fungible dan semi-fungible"
+}
+
+// Pencetakan ERC1155 (dapat mencetak beberapa)
+const collection1155 = collectionManager.createCollection(
+  predictedAddress,
+  "ERC1155"
+)
+
+await collection1155.mint(
+  walletClient,
+  10n, // Dapat mencetak beberapa token
+  "https://example.com/token/1", // metadata token spesifik
+  mintPrice,
+  proof
+)
+```
+</Tab>
+</Tabs>
+
+## Manajemen Metadata
+
+### Metadata Tingkat Koleksi
+
+```typescript title="Metadata Koleksi"
+const collectionMetadata = {
+  name: "Koleksi Saya",
+  description: "Koleksi aset digital yang fantastis",
+  image: "https://example.com/collection-image.png",
+  external_url: "https://mywebsite.com/collection",
+  
+  // Latar belakang dan banner untuk marketplace
+  background_color: "ffffff",
+  banner_image_url: "https://example.com/banner.png",
+  
+  // Atribut koleksi
+  attributes: [
+    { trait_type: "Tema", value: "Fantasi" },
+    { trait_type: "Artis", value: "Pencipta Digital" }
+  ]
+}
+```
+
+### Metadata Tingkat Token
+
+CreateKit secara otomatis menghasilkan metadata token berdasarkan pengaturan koleksi Anda:
+
+<Tabs>
+<Tab title="Metadata yang Dihasilkan Otomatis">
+```typescript
+import { NFTMetadataManager, MediaType } from '@b3dotfun/basemint'
+
+// Menghasilkan metadata untuk berbagai jenis media
+const artworkMetadata = NFTMetadataManager.generateNFTMetadata(
+  collectionMetadata,
+  MediaType.ARTWORK
+)
+
+const model3dMetadata = NFTMetadataManager.generateNFTMetadata(
+  collectionMetadata,
+  MediaType.MODEL_3D
+)
+
+const videoMetadata = NFTMetadataManager.generateNFTMetadata(
+  collectionMetadata,
+  MediaType.VIDEO
+)
+
+// Konversi ke JSON
+const metadataJson = NFTMetadataManager.generateJSON(artworkMetadata)
+console.log(metadataJson)
+```
+</Tab>
+
+<Tab title="Metadata Kustom">
+```typescript
+// Untuk metadata kustom, sediakan baseURI Anda sendiri
+const customCollection = {
+  name: "Koleksi Metadata Kustom",
+  symbol: "CMC",
+  creator: account.address,
+  gameOwner: account.address,
+  baseURI: "https://myapi.com/metadata/", // Endpoint metadata kustom Anda
+  description: "Koleksi dengan metadata kustom"
+}
+
+// API Anda harus merespons ke: https://myapi.com/metadata/{tokenId}
+// Dengan format metadata OpenSea standar
+```
+</Tab>
+</Tabs>
+
+## Validasi Koleksi
+
+CreateKit menyediakan validasi bawaan untuk parameter koleksi:
+
+```typescript title="Validasi Parameter"
+import { validateCollectionMetadata } from '@b3dotfun/basemint'
+
+try {
+  // Validasi metadata koleksi
+  const validation = validateCollectionMetadata(collectionMetadata)
+  
+  if (!validation.isValid) {
+    console.error("Kesalahan validasi:", validation.errors)
+    return
+  }
+  
+  console.log("✅ Metadata koleksi valid")
+  
+  // Lanjutkan dengan generasi tanda tangan
+  const signature = await collectionManager.generateCreatorSignature(
+    walletClient,
+    collectionMetadata
+  )
+} catch (error) {
+  console.error("Validasi gagal:", error)
+}
+```
+
+## Prediksi Alamat
+
+Salah satu fitur kunci CreateKit adalah prediksi alamat deterministik:
+
+```typescript title="Prediksi Alamat"
+// Hasilkan tanda tangan pembuat terlebih dahulu
+const creatorSignature = await collectionManager.generateCreatorSignature(
+  walletClient,
+  collectionMetadata
+)
+
+// Prediksi alamat koleksi
+const predictedAddress = collectionManager.predictCollectionAddress(
+  collectionMetadata,
+  creatorSignature
+)
+
+console.log(`Koleksi akan ditempatkan di: ${predictedAddress}`)
+
+// Anda sekarang dapat menggunakan alamat ini sebelum penyebaran
+// untuk integrasi marketplace, tampilan frontend, dll.
+```
+
+## Operasi Manajemen Koleksi
+
+### Memeriksa Status Koleksi
+
+```typescript title="Status Koleksi"
+const collection = collectionManager.createCollection(
+  predictedAddress,
+  "ERC721"
+)
+
+// Periksa apakah koleksi telah ditempatkan
+const isDeployed = await collection.isDeployed()
+console.log(`Ditempatkan: ${isDeployed}`)
+
+// Dapatkan informasi koleksi (hanya berfungsi setelah penyebaran)
+if (isDeployed) {
+  const info = await collection.getCollectionInfo()
+  console.log("Info Koleksi:", {
+    name: info.name,
+    symbol: info.symbol,
+    totalSupply: info.totalSupply.toString(),
+    maxSupply: info.maxSupply.toString(),
+    mintPrice: info.mintPrice.toString(),
+    maxPerWallet: info.maxPerWallet.toString()
+  })
+}
+```
+
+### Memperbarui Pengaturan Koleksi
+
+<Warning>
+Sebagian besar parameter koleksi tidak dapat diubah setelah penyebaran. Rencanakan konfigurasi koleksi Anda dengan hati-hati.
+</Warning>
+
+```typescript title="Manajemen Pasca-Penyebaran"
+// Hanya operasi tertentu yang mungkin setelah penyebaran
+
+// Periksa harga mint saat ini (jika harga dinamis diterapkan)
+const currentPrice = await collection.getCurrentMintPrice()
+
+// Periksa apakah pencetakan saat ini aktif
+const isMintingActive = await collection.isMintingActive()
+
+// Dapatkan sisa pasokan
+const remainingSupply = await collection.getRemainingSupply()
+
+console.log({
+  currentPrice: currentPrice.toString(),
+  isMintingActive,
+  remainingSupply: remainingSupply.toString()
+})
+```
+
+## Praktik Terbaik
+
+### 1. Perencanaan Koleksi
+
+<CardGroup cols={2}>
+  <Card title="Strategi Pasokan" icon="chart-line">
+    - Tetapkan pasokan maksimum berdasarkan kasus penggunaan
+    - Pertimbangkan permintaan masa depan dan kelangkaan
+    - Sisakan ruang untuk pertumbuhan atau edisi khusus
+  </Card>
+  <Card title="Strategi Harga" icon="dollar-sign">
+    - Teliti koleksi serupa untuk referensi harga
+    - Pertimbangkan biaya gas dan biaya transaksi
+    - Rencanakan untuk kondisi pasar yang berbeda
+  </Card>
+</CardGroup>
+
+### 2. Kualitas Metadata
+
+```typescript title="Metadata Berkualitas Tinggi"
+const qualityCollection = {
+  name: "Koleksi Seni Profesional",
+  symbol: "PAC",
+  creator: account.address,
+  gameOwner: account.address,
+  
+  // Deskripsi berkualitas tinggi
+  description: "Koleksi karya seni digital terkurasi yang menampilkan tema kontemporer dan teknik inovatif.",
+  
+  // Imagery profesional (minimal 640x640px)
+  image: "https://example.com/high-res-collection-image.png",
+  
+  // Atribut lengkap untuk penemuan yang lebih baik
+  attributes: [
+    { trait_type: "Gaya Seni", value: "Kontemporer" },
+    { trait_type: "Medium", value: "Digital" },
+    { trait_type: "Verifikasi Artis", value: "Terverifikasi" },
+    { trait_type: "Tipe Edisi", value: "Terbatas" }
+  ],
+  
+  // Tautan eksternal untuk kredibilitas
+  external_url: "https://professionalartist.com/collection"
+}
+```
+
+### 3. Pertimbangan Keamanan
+
+<AccordionGroup>
+  <Accordion title="Manajemen Kunci Privat">
+    - Jangan pernah menyematkan kunci privat dalam kode sumber
+    - Gunakan variabel lingkungan atau manajemen kunci yang aman
+    - Pertimbangkan menggunakan dompet multi-tanda tangan untuk koleksi berharga
+  </Accordion>
+
+  <Accordion title="Validasi Tanda Tangan">
+    - Selalu validasi tanda tangan sebelum penyebaran
+    - Verifikasi parameter koleksi sesuai dengan nilai yang dimaksudkan
+    - Uji di testnet sebelum penyebaran di mainnet
+  </Accordion>
+
+  <Accordion title="Kontrol Akses">
+    - Pilih dengan hati-hati alamat pembuat dan pemilik game
+    - Pahami implikasi distribusi hadiah
+    - Rencanakan untuk manajemen koleksi jangka panjang
+  </Accordion>
+</AccordionGroup>
+
+## Pemecahan Masalah
+
+<AccordionGroup>
+  <Accordion title="Ketidakcocokan prediksi alamat">
+    Pastikan semua parameter koleksi identik antara generasi tanda tangan dan penyebaran. Perubahan kecil pun akan menghasilkan alamat yang berbeda.
+  </Accordion>
+
+  <Accordion title="Parameter koleksi tidak valid">
+    Periksa bahwa semua bidang yang diperlukan disediakan dan bahwa nilai-nilai berada dalam rentang yang dapat diterima (mis., maxSupply > 0, alamat valid).
+  </Accordion>
+
+  <Accordion title="Pembuatan tanda tangan gagal">
+    Verifikasi bahwa klien dompet Anda dikonfigurasi dengan benar dan bahwa Anda memiliki dana yang cukup untuk transaksi penandatanganan.
+  </Accordion>
+</AccordionGroup>
+
+## Langkah Selanjutnya
+
+Sekarang Anda memahami manajemen koleksi, jelajahi topik terkait ini:
+
+<CardGroup cols={2}>
+  <Card title="Panduan Minting" icon="coins" href="/createkit/minting">
+    Pelajari cara mengimplementasikan fungsionalitas minting token
+  </Card>
+  <Card title="Manajemen Whitelist" icon="list" href="/createkit/whitelist">
+    Atur minting berbasis whitelist untuk akses eksklusif
+  </Card>
+</CardGroup>

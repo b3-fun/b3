@@ -1,0 +1,539 @@
+---
+title: 白名单管理
+description: 在 CreateKit 中使用基于 Merkle 树的白名单实现独家铸造
+lang: cn
+originalPath: createkit/whitelist.mdx
+---
+## 概述
+
+CreateKit 支持使用 Merkle 树进行复杂的白名单管理，以实现燃气效率高的验证。这允许您为特定地址创建独家铸造体验，同时保持可扩展性和安全性。
+
+## 白名单基础
+
+### 白名单工作原理
+
+1. **链下生成**：从白名单地址创建一个 Merkle 树
+2. **链上存储**：仅在智能合约中存储 Merkle 根
+3. **证明验证**：用户在铸造时提供 Merkle 证明
+4. **燃气效率**：验证成本与白名单大小无关，保持恒定
+
+<CardGroup cols={2}>
+  <Card title="可扩展" icon="arrows-split-up-and-left">
+    支持数千个地址，燃气成本最小
+  </Card>
+  <Card title="安全" icon="shield">
+    加密学保证的地址验证
+  </Card>
+  <Card title="灵活" icon="settings">
+    轻松生成和更新白名单配置
+  </Card>
+  <Card title="透明" icon="eye">
+    可在链上验证，无需公开完整列表
+  </Card>
+</CardGroup>
+
+## 设置白名单
+
+### 基本白名单创建
+
+```typescript title="Create Whitelist"
+import { WhitelistManager } from '@b3dotfun/basemint'
+
+// 定义白名单地址
+const whitelistedAddresses = [
+  { address: "0x1234567890123456789012345678901234567890" },
+  { address: "0x2345678901234567890123456789012345678901" },
+  { address: "0x3456789012345678901234567890123456789012" },
+  { address: "0x4567890123456789012345678901234567890123" },
+  { address: "0x5678901234567890123456789012345678901234" }
+]
+
+// 创建白名单管理器
+const whitelist = new WhitelistManager(whitelistedAddresses)
+
+// 获取合约部署的 Merkle 根
+const merkleRoot = whitelist.getRoot()
+console.log(`Merkle root: ${merkleRoot}`)
+
+// 验证白名单是否正确构建
+console.log(`Whitelist contains ${whitelistedAddresses.length} addresses`)
+```
+
+### 高级白名单配置
+
+```typescript title="Whitelist with Metadata"
+// 白名单条目可以包含额外的元数据
+const advancedWhitelist = [
+  { 
+    address: "0x1234567890123456789012345678901234567890",
+    allocation: 5, // 该地址最多 5 个代币
+    tier: "gold"
+  },
+  { 
+    address: "0x2345678901234567890123456789012345678901",
+    allocation: 3,
+    tier: "silver"
+  },
+  { 
+    address: "0x3456789012345678901234567890123456789012",
+    allocation: 1,
+    tier: "bronze"
+  }
+]
+
+// 创建白名单（仅使用地址构建 Merkle 树）
+const whitelist = new WhitelistManager(
+  advancedWhitelist.map(entry => ({ address: entry.address }))
+)
+
+// 单独存储元数据以用于应用逻辑
+const allocationMap = new Map(
+  advancedWhitelist.map(entry => [entry.address, entry.allocation])
+)
+```
+
+## 集合集成
+
+### 启用白名单的集合
+
+```typescript title="Whitelist Collection Setup"
+import { CollectionManager } from '@b3dotfun/basemint'
+
+// 创建启用白名单的集合
+const whitelistCollection = {
+  name: "Exclusive Collection",
+  symbol: "EXCL",
+  creator: account.address,
+  gameOwner: account.address,
+  
+  // 白名单配置
+  isWhitelistEnabled: true,
+  whitelistMerkleRoot: merkleRoot,
+  
+  // 集合设置
+  maxSupply: 1000n,
+  mintPrice: parseEther("0.01"),
+  maxPerWallet: 3n,
+  
+  // 可选：与基于时间的访问结合
+  startTime: BigInt(Math.floor(Date.now() / 1000) + 3600), // 白名单在 1 小时后开始
+  endTime: BigInt(Math.floor(Date.now() / 1000) + 86400 * 7), // 7 天后结束
+}
+
+// 生成签名并部署
+const creatorSignature = await collectionManager.generateCreatorSignature(
+  walletClient,
+  whitelistCollection
+)
+
+const predictedAddress = collectionManager.predictCollectionAddress(
+  whitelistCollection,
+  creatorSignature
+)
+
+console.log(`Whitelist collection will deploy at: ${predictedAddress}`)
+```
+
+### 混合访问模型
+
+```typescript title="Phased Access"
+// 创建具有不同访问阶段的集合
+const phasedCollection = {
+  name: "Phased Access Collection",
+  symbol: "PAC",
+  creator: account.address,
+  gameOwner: account.address,
+  
+  // 第 1 阶段：仅白名单（前 24 小时）
+  isWhitelistEnabled: true,
+  whitelistMerkleRoot: merkleRoot,
+  startTime: BigInt(Math.floor(Date.now() / 1000)),
+  
+  // 注意：对于第 2 阶段（公共访问），您需要额外的逻辑
+  // 在特定时间后禁用白名单检查
+}
+
+// 在您的应用中，实现阶段逻辑
+async function checkMintingPhase(collection: any): Promise<'whitelist' | 'public' | 'ended'> {
+  const now = BigInt(Math.floor(Date.now() / 1000))
+  const startTime = await collection.startTime()
+  const endTime = await collection.endTime()
+  
+  const whitelistPhaseEnd = startTime + 86400n // 24 小时
+  
+  if (now < startTime) {
+    throw new Error("Minting hasn't started yet")
+  } else if (now < whitelistPhaseEnd) {
+    return 'whitelist'
+  } else if (now < endTime) {
+    return 'public'
+  } else {
+    return 'ended'
+  }
+}
+```
+
+## 白名单验证
+
+### 生成证明
+
+```typescript title="Generate Merkle Proofs"
+// 为特定地址生成证明
+function generateProofForAddress(whitelist: WhitelistManager, address: string): string[] {
+  try {
+    const proof = whitelist.getProof(address)
+    console.log(`Generated proof for ${address}:`, proof)
+    return proof
+  } catch (error) {
+    console.error(`Failed to generate proof for ${address}:`, error)
+    throw new Error(`Address ${address} not in whitelist`)
+  }
+}
+
+// 本地验证证明（可选检查）
+function verifyWhitelistProof(
+  whitelist: WhitelistManager, 
+  address: string, 
+  proof: string[]
+): boolean {
+  const isValid = whitelist.verify(address, proof)
+  console.log(`Proof verification for ${address}: ${isValid ? '✅ Valid' : '❌ Invalid'}`)
+  return isValid
+}
+
+// 示例用法
+const userAddress = "0x1234567890123456789012345678901234567890"
+const proof = generateProofForAddress(whitelist, userAddress)
+const isValid = verifyWhitelistProof(whitelist, userAddress, proof)
+```
+
+### 批量证明生成
+
+```typescript title="Batch Proof Generation"
+// 为多个地址生成证明
+function generateBatchProofs(
+  whitelist: WhitelistManager, 
+  addresses: string[]
+): Map<string, string[]> {
+  const proofMap = new Map<string, string[]>()
+  
+  for (const address of addresses) {
+    try {
+      const proof = whitelist.getProof(address)
+      proofMap.set(address, proof)
+      console.log(`✅ Generated proof for ${address}`)
+    } catch (error) {
+      console.error(`❌ Failed to generate proof for ${address}:`, error)
+    }
+  }
+  
+  return proofMap
+}
+
+// 为所有白名单地址生成证明
+const allAddresses = whitelistedAddresses.map(entry => entry.address)
+const allProofs = generateBatchProofs(whitelist, allAddresses)
+
+// 将证明保存到文件或数据库以供前端使用
+const proofData = {
+  merkleRoot,
+  proofs: Object.fromEntries(allProofs)
+}
+
+// 示例：保存到 JSON 文件
+import { writeFileSync } from 'fs'
+writeFileSync('whitelist-proofs.json', JSON.stringify(proofData, null, 2))
+```
+
+## 使用白名单铸造
+
+### 基本白名单铸造
+
+```typescript title="Whitelist Mint"
+async function mintWithWhitelist(
+  collection: any,
+  walletClient: any,
+  whitelist: WhitelistManager,
+  quantity: bigint = 1n
+) {
+  const userAddress = walletClient.account.address
+  
+  try {
+    // 为用户生成证明
+    const proof = whitelist.getProof(userAddress)
+    
+    // 本地验证证明（可选）
+    const isValid = whitelist.verify(userAddress, proof)
+    if (!isValid) {
+      throw new Error("Invalid whitelist proof")
+    }
+    
+    // 获取铸造价格
+    const mintPrice = await collection.mintPrice()
+    const totalPrice = mintPrice * quantity
+    
+    // 使用白名单证明铸造
+    const tx = await collection.mint(
+      walletClient,
+      quantity,
+      undefined, // 元数据 URI
+      totalPrice,
+      proof // 白名单证明
+    )
+    
+    console.log(`✅ Whitelist mint successful: ${tx}`)
+    return tx
+    
+  } catch (error: any) {
+    if (error.message.includes('Invalid merkle proof')) {
+      console.error('❌ Address not in whitelist or invalid proof')
+    } else {
+      console.error('❌ Whitelist mint failed:', error)
+    }
+    throw error
+  }
+}
+
+// 用法
+await mintWithWhitelist(collection, walletClient, whitelist, 2n)
+```
+
+### 高级白名单铸造
+
+```typescript title="Advanced Whitelist Logic"
+async function advancedWhitelistMint(
+  collection: any,
+  walletClient: any,
+  whitelist: WhitelistManager,
+  allocationMap: Map<string, number>,
+  quantity: bigint
+) {
+  const userAddress = walletClient.account.address
+  
+  // 检查用户的分配
+  const maxAllocation = allocationMap.get(userAddress) || 0
+  if (maxAllocation === 0) {
+    throw new Error("Address not in whitelist")
+  }
+  
+  // 根据分配检查当前余额
+  const currentBalance = await collection.balanceOf(userAddress)
+  const newBalance = currentBalance + quantity
+  
+  if (newBalance > BigInt(maxAllocation)) {
+    throw new Error(`Would exceed allocation. Max: ${maxAllocation}, Current: ${currentBalance}`)
+  }
+  
+  // 生成证明并铸造
+  const proof = whitelist.getProof(userAddress)
+  const mintPrice = await collection.mintPrice()
+  
+  const tx = await collection.mint(
+    walletClient,
+    quantity,
+    undefined,
+    mintPrice * quantity,
+    proof
+  )
+  
+  console.log(`✅ Advanced whitelist mint successful: ${tx}`)
+  return tx
+}
+```
+
+## 前端集成
+
+### React Hook 用于白名单状态
+
+```typescript title="useWhitelistStatus Hook"
+import { useState, useEffect } from 'react'
+import { useAccount } from 'wagmi'
+
+interface WhitelistStatus {
+  isWhitelisted: boolean
+  proof: string[] | null
+  allocation: number
+  loading: boolean
+  error: string | null
+}
+
+export function useWhitelistStatus(
+  whitelist: WhitelistManager,
+  allocationMap?: Map<string, number>
+): WhitelistStatus {
+  const { address } = useAccount()
+  const [status, setStatus] = useState<WhitelistStatus>({
+    isWhitelisted: false,
+    proof: null,
+    allocation: 0,
+    loading: true,
+    error: null
+  })
+  
+  useEffect(() => {
+    async function checkWhitelistStatus() {
+      if (!address) {
+        setStatus({
+          isWhitelisted: false,
+          proof: null,
+          allocation: 0,
+          loading: false,
+          error: null
+        })
+        return
+      }
+      
+      try {
+        setStatus(prev => ({ ...prev, loading: true, error: null }))
+        
+        // 生成证明
+        const proof = whitelist.getProof(address)
+        const isValid = whitelist.verify(address, proof)
+        const allocation = allocationMap?.get(address) || 0
+        
+        setStatus({
+          isWhitelisted: isValid,
+          proof: isValid ? proof : null,
+          allocation,
+          loading: false,
+          error: null
+        })
+        
+      } catch (error: any) {
+        setStatus({
+          isWhitelisted: false,
+          proof: null,
+          allocation: 0,
+          loading: false,
+          error: error.message
+        })
+      }
+    }
+    
+    checkWhitelistStatus()
+  }, [address, whitelist, allocationMap])
+  
+  return status
+}
+```
+
+### 白名单状态组件
+
+```tsx title="WhitelistStatus Component"
+import React from 'react'
+import { useWhitelistStatus } from './useWhitelistStatus'
+
+interface WhitelistStatusProps {
+  whitelist: WhitelistManager
+  allocationMap?: Map<string, number>
+}
+
+export function WhitelistStatus({ whitelist, allocationMap }: WhitelistStatusProps) {
+  const { isWhitelisted, allocation, loading, error } = useWhitelistStatus(
+    whitelist, 
+    allocationMap
+  )
+  
+  if (loading) {
+    return <div className="animate-pulse">正在检查白名单状态...</div>
+  }
+  
+  if (error) {
+    return <div className="text-red-500">错误：{error}</div>
+  }
+  
+  return (
+    <div className={`p-4 rounded-lg ${isWhitelisted ? 'bg-green-100' : 'bg-gray-100'}`}>
+      {isWhitelisted ? (
+        <div className="text-green-800">
+          <h3 className="font-bold">✅ 已列入白名单</h3>
+          <p>您可以铸造最多 {allocation} 个代币</p>
+        </div>
+      ) : (
+        <div className="text-gray-800">
+          <h3 className="font-bold">❌ 未列入白名单</h3>
+          <p>您的地址不符合白名单铸造资格</p>
+        </div>
+      )}
+    </div>
+  )
+}
+```
+
+## 多重白名单
+
+### 分层白名单系统
+
+```typescript title="Tiered Whitelists"
+// 创建具有不同优惠的不同层级
+const goldTierAddresses = [
+  { address: "0x1111..." },
+  { address: "0x2222..." }
+]
+
+const silverTierAddresses = [
+  { address: "0x3333..." },
+  { address: "0x4444..." }
+]
+
+const bronzeTierAddresses = [
+  { address: "0x5555..." },
+  { address: "0x6666..." }
+]
+
+// 为每个层级创建单独的白名单
+const goldWhitelist = new WhitelistManager(goldTierAddresses)
+const silverWhitelist = new WhitelistManager(silverTierAddresses)
+const bronzeWhitelist = new WhitelistManager(bronzeTierAddresses)
+
+// 对于智能合约，您可能会合并所有层级
+const allTierAddresses = [
+  ...goldTierAddresses,
+  ...silverTierAddresses,
+  ...bronzeTierAddresses
+]
+
+const combinedWhitelist = new WhitelistManager(allTierAddresses)
+
+// 层级优惠的应用逻辑
+const tierBenefits = {
+  gold: { maxMint: 10, discount: 0.2 },
+  silver: { maxMint: 5, discount: 0.1 },
+  bronze: { maxMint: 2, discount: 0.05 }
+}
+
+function getTierForAddress(address: string): 'gold' | 'silver' | 'bronze' | null {
+  if (goldTierAddresses.some(entry => entry.address === address)) return 'gold'
+  if (silverTierAddresses.some(entry => entry.address === address)) return 'silver'  
+  if (bronzeTierAddresses.some(entry => entry.address === address)) return 'bronze'
+  return null
+}
+```
+
+### 基于时间的层级访问
+
+```typescript title="Phased Tier Access"
+async function getActiveTierForTime(timestamp: number): Promise<'gold' | 'silver' | 'bronze' | 'public' | null> {
+  const phaseStartTime = 1640995200 // 示例时间戳
+  const hoursSinceStart = (timestamp - phaseStartTime) / 3600
+  
+  if (hoursSinceStart < 0) return null // 尚未开始
+  if (hoursSinceStart < 1) return 'gold' // 第一小时：仅金属层
+  if (hoursSinceStart < 4) return 'silver' // 接下来的 3 小时：金属 + 银层
+  if (hoursSinceStart < 24) return 'bronze' // 接下来的 20 小时：所有层级
+  return 'public' // 24 小时后：公共访问
+}
+
+async function mintWithTierAccess(
+  collection: any,
+  walletClient: any,
+  address: string,
+  quantity: bigint
+) {
+  const now = Math.floor(Date.now() / 1000)
+  const activeTier = await getActiveTierForTime(now)
+  const userTier = getTierForAddress(address)
+  
+  // 检查用户在当前阶段是否可以铸造
+  if (activeTier === 'public') {
+    // 公共

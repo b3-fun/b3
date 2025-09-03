@@ -1,0 +1,147 @@
+---
+title: AnySpend 介绍
+description: 跨链加密支付变得简单 - 交换代币，购买NFT，以及集成法币通道
+lang: cn
+originalPath: anyspend/introduction.mdx
+---
+```html
+<img src="/images/anyspend-example-banner.jpg" alt="AnySpend Banner" className="w-full rounded-xl" />
+
+## AnySpend 是什么？
+
+AnySpend 是 B3 提供的全面支付基础设施，它能够在多个区块链之间无缝进行加密货币交易。无论您是在构建 DeFi 应用、NFT 市场还是游戏平台，AnySpend 都提供了您需要接受任何代币支付的组件和 API。
+
+[在您的浏览器中尝试 AnySpend](https://anyspend.com/swap)
+
+## 应用场景
+
+<CardGroup cols={2}>
+<Card href="/anyspend/examples">
+  <img src="/images/customize-for-swap.png" className="w-full h-48 object-cover rounded-xl mb-4" />
+  <h3 className="text-lg font-semibold text-primary block mb-1">跨链交换</h3>
+  使用户能够在不同的区块链之间交换代币，具有自动路由和最佳价格发现功能。
+</Card>
+
+<Card href="/anyspend/examples">
+  <img src="/images/customize-for-checkout.png" className="w-full h-48 object-cover rounded-xl mb-4" />
+  <h3 className="text-lg font-semibold text-primary block mb-1">结账</h3>
+  一键结账按钮，接受任何代币作为支付，具有自动转换功能。
+</Card>
+
+<Card href="/anyspend/examples">
+  <img src="/images/customize-for-defi.png" className="w-full h-48 object-cover rounded-xl mb-4" />
+  <h3 className="text-lg font-semibold text-primary block mb-1">DeFi</h3>
+  执行任何链上合约调用，用于质押、预测市场、债券曲线等。
+</Card>
+
+<Card href="/anyspend/examples">
+  <img src="/images/customize-for-games.png" className="w-full h-48 object-cover rounded-xl mb-4" />
+  <h3 className="text-lg font-semibold text-primary block mb-1">游戏</h3>
+  可嵌入原生 iOS/Android、Unity 和其他平台。
+</Card>
+</CardGroup>
+
+## 特性
+
+<Steps>
+<Step title="用户发起支付">
+用户点击支付按钮或与您的界面互动，选择他们偏好的代币
+</Step>
+
+<Step title="AnySpend 报价">
+我们的路由引擎找到将他们的代币转换为所需目的代币的最佳路径
+</Step>
+
+<Step title="跨链执行">
+如有需要，使用安全、经过实战测试的基础设施跨链桥接代币
+</Step>
+
+<Step title="最终交付">
+代币到达目的地址，执行任何自定义逻辑，并触发您的成功回调
+</Step>
+</Steps>
+
+## 应用场景
+<img src="/images/anyspend-onramp-anyone.png" alt="AnySpend Banner" className="w-full rounded-xl" />
+
+<AccordionGroup>
+<Accordion title="DeFi 应用">
+通过自动路由和竞争性价格在多个链上启用代币交换、提供流动性和促进产出农场。
+</Accordion>
+
+<Accordion title="NFT 市场">
+允许用户使用他们拥有的任何代币购买 NFT，通过支持他们偏好的支付方式来消除障碍并提高转化率。
+</Accordion>
+
+<Accordion title="游戏平台">
+使用任何加密货币或法定支付方式接受游戏内资产、比赛报名和高级功能的支付。
+</Accordion>
+
+<Accordion title="电子商务">
+将加密支付集成到传统电子商务平台中，具有自动法定货币转换和结算功能。
+</Accordion>
+
+<Accordion title="订阅服务">
+接受以加密货币进行的定期支付，并自动转换为您偏好的结算货币。
+</Accordion>
+</AccordionGroup>
+
+## 快速开始
+
+只需几个步骤即可开始使用 AnySpend：
+
+```tsx
+import { AnySpend, AnyspendProvider } from "@b3dotfun/sdk/anyspend/react";
+import { B3Provider } from "@b3dotfun/sdk/global-account/react";
+
+import "@b3dotfun/sdk/index.css";
+
+function App() {
+  return (
+    <B3Provider theme="light" environment="production">
+      <AnyspendProvider>
+        <AnySpend />
+      </AnyspendProvider>
+    </B3Provider>
+  );
+}
+
+export default App
+```
+
+## 下一步是什么？
+
+<CardGroup cols={3}>
+<Card title="安装" icon="download" href="/anyspend/installation">
+  使用 npm、yarn 或 pnpm 在您的项目中设置 AnySpend
+</Card>
+
+<Card title="组件" icon="puzzle-piece" href="/anyspend/components">
+  探索常见支付场景的预构建组件
+</Card>
+
+<Card title="示例" icon="code" href="/anyspend/examples">
+  查看现实世界的实施示例和最佳实践
+</Card>
+</CardGroup>
+
+## 获取帮助
+
+- **Discord**: 加入我们的 [Discord 社区](https://discord.gg/b3dotfun) 获取支持
+- **文档**: 全面的指南和 API 参考
+- **示例**: 现成的代码样本和集成
+
+<div className="flex flex-row gap-4">
+<div className="flex-1">
+<a href="https://x.com/anyspend" target="_blank">
+  <img src="/images/follow-updates-on-x.png" className="w-full h-full object-cover rounded-xl mb-4" />
+</a>
+</div>
+
+<div className="flex-1">
+  <a href="/anyspend/installation">
+    <img src="/images/anyspend-getting-started.png" className="w-full h-full object-cover rounded-xl mb-4" />
+  </a>
+</div>
+</div>
+```

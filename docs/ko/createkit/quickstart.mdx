@@ -1,0 +1,399 @@
+---
+title: 빠른 시작
+description: 몇 분 만에 CreateKit으로 첫 NFT 컬렉션을 만드세요
+lang: ko
+originalPath: createkit/quickstart.mdx
+---
+## 개요
+
+이 가이드는 CreateKit을 사용하여 첫 번째 NFT 컬렉션을 만드는 방법을 안내합니다. 다음을 배울 수 있습니다:
+
+- 컬렉션 메타데이터 및 서명 생성
+- 컬렉션 배포
+- 첫 번째 NFT 민팅
+- 보상 추적
+
+<Note>
+이 퀵스타트는 B3 테스트넷을 사용합니다. 가스 비용을 위한 테스트넷 자금이 있는지 확인하세요.
+</Note>
+
+## 1단계: 기본 설정
+
+먼저 기본 인프라를 설정합시다:
+
+```typescript title="quickstart.ts"
+import { 
+  CollectionManager, 
+  RewardTracker,
+  BaseMintStorage,
+  b3Testnet 
+} from '@b3dotfun/basemint'
+import { createPublicClient, createWalletClient, http } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+
+// 클라이언트 초기화
+const publicClient = createPublicClient({
+  chain: b3Testnet,
+  transport: http()
+})
+
+const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`)
+const walletClient = createWalletClient({
+  chain: b3Testnet,
+  transport: http(),
+  account
+})
+
+// CreateKit 서비스 초기화
+const collectionManager = new CollectionManager(publicClient)
+const rewardTracker = new RewardTracker(publicClient)
+const storage = new BaseMintStorage({
+  baseUrl: 'https://api.basemint.fun'
+})
+```
+
+## 2단계: 컬렉션 메타데이터 생성
+
+컬렉션 파라미터를 정의하세요:
+
+```typescript title="Create Collection"
+const collectionMetadata = {
+  // 필수 파라미터
+  name: "My First Collection",
+  symbol: "MFC",
+  creator: account.address,
+  gameOwner: account.address, // 다른 주소일 수 있음
+  
+  // 선택적 파라미터
+  maxSupply: 1000n,
+  mintPrice: 0n, // 무료 민팅
+  maxPerWallet: 10n,
+  description: "B3에서의 나의 첫 NFT 컬렉션",
+  image: "https://example.com/collection-image.png",
+  
+  // 타이밍
+  startTime: 0n, // 즉시 시작
+  endTime: BigInt(Math.floor(Date.now() / 1000) + 86400 * 30), // 30일
+  
+  // 토큰 표준
+  tokenStandard: "ERC721" as const,
+  chainId: 1993 // B3 테스트넷
+}
+```
+
+## 3단계: 서명 생성
+
+배포를 위한 필요한 서명을 생성하세요:
+
+```typescript title="Generate Signatures"
+// 생성자 서명 생성
+const creatorSignature = await collectionManager.generateCreatorSignature(
+  walletClient,
+  collectionMetadata
+)
+
+// 컬렉션 주소 예측
+const predictedAddress = collectionManager.predictCollectionAddress(
+  collectionMetadata,
+  creatorSignature
+)
+
+console.log(`📍 예측된 컬렉션 주소: ${predictedAddress}`)
+```
+
+## 4단계: 저장소에 제출
+
+컬렉션 메타데이터를 오프체인에 저장하세요:
+
+```typescript title="Submit to Storage"
+try {
+  await storage.submitCollection(collectionMetadata, creatorSignature)
+  console.log("✅ 컬렉션 메타데이터가 성공적으로 저장되었습니다")
+} catch (error) {
+  console.error("❌ 컬렉션 저장 실패:", error)
+}
+```
+
+## 5단계: 배포 및 민팅
+
+이제 가장 흥미로운 부분 - 컬렉션을 배포하고 첫 번째 NFT를 민팅합니다:
+
+```typescript title="Deploy and Mint"
+// 배포자 서명 생성
+const deployerSignature = await collectionManager.generateDeployerSignature(
+  walletClient,
+  predictedAddress
+)
+
+// 컬렉션 인스턴스 생성
+const collection = collectionManager.createCollection(
+  predictedAddress,
+  collectionMetadata.tokenStandard
+)
+
+// 한 번의 트랜잭션으로 배포 및 첫 NFT 민팅
+const mintTx = await collection.mint(
+  walletClient,
+  1n, // 수량
+  undefined, // 메타데이터 URI (baseURI 사용)
+  0n, // 민팅 가격
+  [], // 화이트리스트 증명 (공개 민팅을 위한 빈 배열)
+  creatorSignature,
+  deployerSignature
+)
+
+console.log(`🎉 컬렉션이 배포되었고 첫 NFT가 민팅되었습니다!`)
+console.log(`📋 트랜잭션 해시: ${mintTx}`)
+```
+
+## 6단계: 배포 확인
+
+모든 것이 올바르게 작동했는지 확인합시다:
+
+```typescript title="Verify Deployment"
+// 컬렉션이 배포되었는지 확인
+const isDeployed = await collection.isDeployed()
+console.log(`🏭 컬렉션 배포됨: ${isDeployed}`)
+
+// 컬렉션 정보 가져오기
+const info = await collection.getCollectionInfo()
+console.log("📊 컬렉션 정보:", {
+  name: info.name,
+  symbol: info.symbol,
+  totalSupply: info.totalSupply.toString(),
+  maxSupply: info.maxSupply.toString()
+})
+
+// 토큰 소유권 확인
+const balance = await collection.balanceOf(account.address)
+console.log(`💰 당신의 토큰 잔액: ${balance.toString()}`)
+```
+
+## 7단계: 보상 추적
+
+민팅에서 생성된 보상을 확인하세요:
+
+```typescript title="Track Rewards"
+// 보상을 위한 에스크로 계약 가져오기
+const escrowAddress = collectionManager.getEscrowAddress()
+
+// 이 컬렉션에 대한 보상 추적
+const collectionRewards = await rewardTracker.getCollectionRewards(
+  escrowAddress,
+  predictedAddress
+)
+
+console.log("💎 컬렉션 보상:", {
+  totalRewards: collectionRewards.totalRewards.toString(),
+  unclaimedRewards: collectionRewards.unclaimedRewards.toString(),
+  totalMints: collectionRewards.totalMints.toString()
+})
+
+// 개별 수령인 보상 가져오기
+const creatorRewards = await rewardTracker.getRecipientRewards(
+  escrowAddress,
+  predictedAddress,
+  "CREATOR",
+  account.address
+)
+
+console.log(`🎨 창작자 보상: ${creatorRewards.toString()}`)
+```
+
+## 완성된 예제
+
+여기 완성된 퀵스타트 스크립트가 있습니다:
+
+<Accordion title="Complete quickstart.ts">
+```typescript
+import { 
+  CollectionManager, 
+  RewardTracker,
+  BaseMintStorage,
+  b3Testnet 
+} from '@b3dotfun/basemint'
+import { createPublicClient, createWalletClient, http } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+
+async function quickstart() {
+  // 클라이언트 초기화
+  const publicClient = createPublicClient({
+    chain: b3Testnet,
+    transport: http()
+  })
+
+  const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`)
+  const walletClient = createWalletClient({
+    chain: b3Testnet,
+    transport: http(),
+    account
+  })
+
+  // CreateKit 서비스 초기화
+  const collectionManager = new CollectionManager(publicClient)
+  const rewardTracker = new RewardTracker(publicClient)
+  const storage = new BaseMintStorage({
+    baseUrl: 'https://api.basemint.fun'
+  })
+
+  // 1단계: 컬렉션 메타데이터 생성
+  const collectionMetadata = {
+    name: "My First Collection",
+    symbol: "MFC",
+    creator: account.address,
+    gameOwner: account.address,
+    maxSupply: 1000n,
+    mintPrice: 0n,
+    maxPerWallet: 10n,
+    description: "B3에서의 나의 첫 NFT 컬렉션",
+    image: "https://example.com/collection-image.png",
+    startTime: 0n,
+    endTime: BigInt(Math.floor(Date.now() / 1000) + 86400 * 30),
+    tokenStandard: "ERC721" as const,
+    chainId: 1993
+  }
+
+  // 2단계: 서명 생성
+  const creatorSignature = await collectionManager.generateCreatorSignature(
+    walletClient,
+    collectionMetadata
+  )
+
+  const predictedAddress = collectionManager.predictCollectionAddress(
+    collectionMetadata,
+    creatorSignature
+  )
+
+  console.log(`📍 예측된 컬렉션 주소: ${predictedAddress}`)
+
+  // 3단계: 저장소에 제출
+  try {
+    await storage.submitCollection(collectionMetadata, creatorSignature)
+    console.log("✅ 컬렉션 메타데이터가 성공적으로 저장되었습니다")
+  } catch (error) {
+    console.error("❌ 컬렉션 저장 실패:", error)
+    return
+  }
+
+  // 4단계: 배포 및 민팅
+  const deployerSignature = await collectionManager.generateDeployerSignature(
+    walletClient,
+    predictedAddress
+  )
+
+  const collection = collectionManager.createCollection(
+    predictedAddress,
+    collectionMetadata.tokenStandard
+  )
+
+  const mintTx = await collection.mint(
+    walletClient,
+    1n,
+    undefined,
+    0n,
+    [],
+    creatorSignature,
+    deployerSignature
+  )
+
+  console.log(`🎉 컬렉션이 배포되었고 첫 NFT가 민팅되었습니다!`)
+  console.log(`📋 트랜잭션 해시: ${mintTx}`)
+
+  // 5단계: 배포 확인
+  const isDeployed = await collection.isDeployed()
+  console.log(`🏭 컬렉션 배포됨: ${isDeployed}`)
+
+  // 6단계: 보상 추적
+  const escrowAddress = collectionManager.getEscrowAddress()
+  const collectionRewards = await rewardTracker.getCollectionRewards(
+    escrowAddress,
+    predictedAddress
+  )
+
+  console.log("💎 컬렉션 보상:", {
+    totalRewards: collectionRewards.totalRewards.toString(),
+    unclaimedRewards: collectionRewards.unclaimedRewards.toString(),
+    totalMints: collectionRewards.totalMints.toString()
+  })
+}
+
+// 퀵스타트 실행
+quickstart().catch(console.error)
+```
+</Accordion>
+
+## 예제 실행
+
+완성된 예제를 `quickstart.ts`로 저장하고 실행하세요:
+
+<CodeGroup>
+```bash npm
+npx tsx quickstart.ts
+```
+
+```bash yarn
+yarn tsx quickstart.ts
+```
+
+```bash pnpm
+pnpm tsx quickstart.ts
+```
+</CodeGroup>
+
+## 예상 출력
+
+퀵스타트 스크립트를 실행하면 다음과 비슷한 출력을 볼 수 있습니다:
+
+```
+📍 예측된 컬렉션 주소: 0x1234567890abcdef...
+✅ 컬렉션 메타데이터가 성공적으로 저장되었습니다
+🎉 컬렉션이 배포되었고 첫 NFT가 민팅되었습니다!
+📋 트랜잭션 해시: 0xabcdef1234567890...
+🏭 컬렉션 배포됨: true
+💎 컬렉션 보상: {
+  totalRewards: "1000000000000000000",
+  unclaimedRewards: "1000000000000000000", 
+  totalMints: "1"
+}
+```
+
+## 다음 단계는?
+
+축하합니다! CreateKit을 사용하여 첫 번째 NFT 컬렉션을 성공적으로 생성했습니다. 탐색할 다음 단계는 다음과 같습니다:
+
+<CardGroup cols={2}>
+  <Card title="컬렉션 관리" icon="folder" href="/createkit/collections">
+    고급 컬렉션 구성 옵션 학습
+  </Card>
+  <Card title="민팅 기능" icon="coins" href="/createkit/minting">
+    다양한 민팅 시나리오 및 옵션 탐색
+  </Card>
+  <Card title="화이트리스트 설정" icon="list" href="/createkit/whitelist">
+    화이트리스트 기반 민팅 구현
+  </Card>
+  <Card title="보상 관리" icon="gift" href="/createkit/rewards">
+    보상 분배 시스템에 대한 심층 탐구
+  </Card>
+</CardGroup>
+
+## 문제 해결
+
+<AccordionGroup>
+  <Accordion title="트랜잭션 실패">
+    - 충분한 테스트넷 자금이 있는지 확인하세요
+    - 모든 서명이 유효한지 확인하세요
+    - 컬렉션 파라미터가 한계 내에 있는지 확인하세요
+  </Accordion>
+
+  <Accordion title="저장소 제출 실패">
+    - 인터넷 연결을 확인하세요
+    - 컬렉션 메타데이터 형식을 확인하세요
+    - 생성자 서명이 유효한지 확인하세요
+  </Accordion>
+
+  <Accordion title="컬렉션이 이미 존재함">
+    - 예측된 주소가 이미 사용 중입니다
+    - 컬렉션 파라미터를 약간 변경해 보세요
+    - 다른 생성자 또는 게임 소유자 주소를 사용하세요
+  </Accordion>
+</AccordionGroup>

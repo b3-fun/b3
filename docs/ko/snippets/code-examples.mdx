@@ -1,0 +1,96 @@
+---
+lang: ko
+originalPath: snippets/code-examples.mdx
+---
+# 코드 예시
+
+## 설치
+
+```bash title="B3 SDK 설치" icon="download"
+npm install @b3dotfun/sdk
+```
+
+## 기본 설정
+
+```tsx title="SDK 컴포넌트 가져오기" icon="react"
+import "@b3dotfun/sdk/index.css";
+import { AnyspendProvider, B3Provider } from "@b3dotfun/sdk";
+```
+
+## NFT 구매 컴포넌트
+
+```tsx title="NFT 버튼 예시" icon="shopping-cart" lines
+import { AnySpendNFTButton } from "@b3dotfun/sdk/anyspend/react";
+
+function NFTCard() {
+  return (
+    <AnySpendNFTButton
+      nftContract={{
+        chainId: 8333,
+        contractAddress: "0x9c275ff1634519E9B5449ec79cd939B5F900564d",
+        price: "500000000000000000",
+        currency: { symbol: "ETH", decimals: 18 },
+      }}
+      recipientAddress={userAddress}
+      onSuccess={txHash => showSuccess(txHash)}
+    />
+  );
+}
+```
+
+## 크로스 체인 스왑
+
+```tsx title="AnySpend 페이지 모드" icon="arrows-rotate" highlight={6-8}
+import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
+
+function CrossChainSwap() {
+  return <AnySpend mode="page" recipientAddress={userAddress} onSuccess={txHash => updatePortfolio(txHash)} />;
+}
+```
+
+## 인증
+
+```tsx title="B3 인증 설정" icon="user-shield" expandable
+import { B3Provider, SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
+
+function App() {
+  return (
+    <B3Provider environment="production">
+      <SignInWithB3
+        provider={{ strategy: "google" }}
+        partnerId="your-partner-id"
+        onLoginSuccess={globalAccount => {
+          console.log("Authenticated:", globalAccount);
+        }}
+      />
+    </B3Provider>
+  );
+}
+```
+
+## 지갑 연결
+
+```tsx title="B3에 지갑 연결" icon="wallet" focus={8-12}
+import { useConnect } from "@b3dotfun/sdk";
+
+function WalletButton() {
+  const { connect, isConnecting } = useConnect();
+
+  const handleConnect = async () => {
+    try {
+      await connect({
+        chainId: 8333,
+        rpcUrl: "https://mainnet-rpc.b3.fun",
+      });
+    } catch (error) {
+      console.error("Connection failed:", error);
+    }
+  };
+
+  return (
+    <button onClick={handleConnect} disabled={isConnecting}>
+      {isConnecting ? "연결 중..." : "B3에 연결"}
+    </button>
+  );
+}
+```

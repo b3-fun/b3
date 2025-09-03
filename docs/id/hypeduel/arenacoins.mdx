@@ -1,0 +1,216 @@
+---
+title: ArenaCoins
+description: >-
+  Token spesifik arena dengan harga kurva bonding yang memungkinkan Anda
+  memiliki bagian dari lingkungan pertarungan AI
+lang: id
+originalPath: hypeduel/arenacoins.mdx
+---
+**ArenaCoins** adalah token asli untuk setiap lingkungan pertarungan di HypeDuel — cara revolusioner untuk memiliki bagian dari aksi di arena hiburan AI vs AI pertama di dunia. Setiap arena memiliki token uniknya sendiri yang mengapresiasi dengan kesuksesan arena.
+
+## Konsep Inti
+
+```mermaid
+graph TD
+    subgraph "Pembuatan Arena"
+        AC[Arena Dibuat] --> BP[Fase Bonding Dimulai]
+        BP --> BC[Harga Kurva Bonding]
+    end
+
+    subgraph "Pembangunan Komunitas"
+        BC --> PB[Pemain Bonding $B3]
+        PB --> RA[Menerima ArenaCoins]
+        RA --> ES[Penyokong Awal]
+    end
+
+    subgraph "Pertumbuhan Arena"
+        ES --> LB[Pertarungan Langsung Dimulai]
+        LB --> BF[Taruhan & Biaya Menghasilkan]
+        BF --> RS[Pembagian Pendapatan]
+    end
+
+    subgraph "Fitur Token"
+        RS --> RV[Pendapatan dari Taruhan]
+        RS --> BR[Meningkatkan Pendapatan]
+        RS --> TF[Biaya Perdagangan]
+        RV --> TB[Pembelian Kembali Token]
+        BR --> TB
+        TF --> TB
+    end
+
+    subgraph "Penciptaan Nilai"
+        TB --> VA[Apresiasi Nilai]
+        VA --> CG[Pertumbuhan Komunitas]
+        CG --> AT[Menarik Pedagang]
+        AT --> DX[Perdagangan DEX]
+    end
+
+    DX --> TF
+    CG --> LB
+
+    style AC fill:#e3f2fd
+    style RA fill:#e8f5e8
+    style RS fill:#fff3e0
+    style VA fill:#c8e6c9
+```
+
+### Apa yang Membuat ArenaCoins Unik
+
+<Card title="Satu Per Arena" icon="building">
+  Setiap lingkungan pertarungan memiliki ArenaCoin uniknya sendiri ($COMBAT, $RACING, dll.)
+</Card>
+
+<Card title="Harga Kurva Bonding" icon="trending-up">
+  Penemuan harga yang adil melalui kurva matematika, tidak mungkin ada front-running
+</Card>
+
+<Card title="Pembagian Pendapatan" icon="coins">
+  Dapatkan biaya dari setiap taruhan, boost, dan perdagangan di arena Anda
+</Card>
+
+<Card title="Tata Kelola Komunitas" icon="users">
+  Pemegang ArenaCoin memilih perbaikan arena dan perubahan aturan
+</Card>
+
+## Siklus Hidup ArenaCoin
+
+### Fase 1: Pembuatan Arena & Bonding
+
+Ketika arena baru diluncurkan, ia memasuki **fase bonding**:
+
+<Steps>
+  <Step title="Peluncuran Arena">Pencipta menerapkan lingkungan pertarungan baru dengan gameplay unik</Step>
+  <Step title="Bonding Dimulai">Pemain dapat bonding $B3 untuk menerima ArenaCoins dengan harga kurva</Step>
+  <Step title="Pembangunan Komunitas">Penyokong awal mengumpulkan token dan membangun komunitas awal</Step>
+  <Step title="Kriteria Kelulusan">Arena mencapai target bonding (likuiditas + ukuran komunitas)</Step>
+</Steps>
+
+### Fase 2: Perdagangan DEX
+
+Setelah bonding berhasil, ArenaCoins lulus ke perdagangan pasar penuh:
+
+- **Uniswap Pool**: Pasangan perdagangan ArenaCoin/$B3 dibuat
+- **Penemuan Pasar**: Pasar terbuka menentukan nilai token
+- **Penyediaan Likuiditas**: Dana bonding menyediakan likuiditas awal
+- **Generasi Biaya**: Biaya perdagangan mendukung ekonomi arena
+
+## Mekanika Kurva Bonding
+
+### Dasar Matematika
+
+ArenaCoins menggunakan **kurva bonding kuadratik** untuk penemuan harga yang adil:
+
+```typescript
+// Rumus harga kurva bonding
+function calculatePrice(supply: number, bondingConstant: number): number {
+  return (supply / bondingConstant) ** 2;
+}
+
+// Contoh dengan arena $COMBAT
+const bondingConstant = 1000000; // 1M token dengan rasio 1:1
+const currentSupply = 250000; // 250k token dicetak
+
+const pricePerToken = (250000 / 1000000) ** 2;
+// = 0.25^2 = 0.0625 $B3 per ArenaCoin
+```
+
+### Manfaat Bonding
+
+<Tabs>
+  <Tab title="Peluncuran Adil">
+    - Tidak ada pra-jual atau alokasi insider - Harga meningkat dengan permintaan - Penyokong awal mendapatkan harga lebih baik -
+    Penemuan harga matematis
+  </Tab>
+
+<Tab title="Likuiditas Dijamin">
+  - Selalu mungkin untuk membeli/menjual - Tidak bergantung pada pembuat pasar - Kurva menyediakan likuiditas instan - Dampak harga yang dapat diprediksi
+</Tab>
+
+  <Tab title="Anti-Manipulasi">
+    - Tidak mungkin ada front-running - Pembelian besar memiliki dampak harga - Kurva secara alami mencegah pompa - Algoritma penetapan harga transparan
+  </Tab>
+</Tabs>
+
+### Contoh Bonding
+
+Mari kita lacak perjalanan investor awal:
+
+<AccordionGroup>
+  <Accordion title="Hari 1: Peluncuran Arena">
+    - **Arena**: Combat Simulator diluncurkan - **Supply**: 0 token $COMBAT ada - **Harga**: Harga awal ≈ 0.001 $B3
+    - **Investasi**: Alice bonding 100 $B3 - **Diterima**: ~316 token $COMBAT
+  </Accordion>
+
+<Accordion title="Minggu 2: Minat Meningkat">
+  - **Supply**: 50,000 token $COMBAT dicetak - **Harga**: ~0.0025 $B3 per token - **Kepemilikan Alice**: 316 token bernilai
+  ~79 $B3 - **Investasi**: Bob bonding 500 $B3 - **Diterima**: ~200 token $COMBAT
+</Accordion>
+
+  <Accordion title="Bulan 1: Kesuksesan Arena">
+    - **Supply**: 200,000 token $COMBAT dicetak - **Harga**: ~0.04 $B3 per token - **Kepemilikan Alice**: 316 token
+    bernilai ~126 $B3 - **Komunitas**: Pertarungan aktif dan basis pengguna yang tumbuh - **Kelulusan**: Arena mendekati kriteria pencatatan DEX
+  </Accordion>
+</AccordionGroup>
+
+## Model Pembagian Pendapatan
+
+ArenaCoins menghasilkan nilai melalui beberapa aliran pendapatan:
+
+### Sumber Pendapatan Utama
+
+```mermaid
+graph LR
+    subgraph "Sumber Pendapatan"
+        A[Aktivitas Taruhan] --> B[10% dari Kolam<br/>ke Treasury]
+        C[Pembelian Boost] --> D[50% ke Treasury]
+        E[Perdagangan DEX] --> F[66% dari Biaya<br/>ke Treasury]
+    end
+
+    subgraph "Treasury Arena"
+        B --> T[Treasury Arena]
+        D --> T
+        F --> T
+    end
+
+    subgraph "Aksi Treasury"
+        T --> G[Pembelian Kembali ArenaCoin]
+        T --> H[Pembakaran Token]
+        T --> I[Dukungan Likuiditas]
+    end
+
+    subgraph "Dampak Nilai"
+        G --> J[Penurunan Supply]
+        H --> J
+        I --> K[Perdagangan Diperbaiki]
+        J --> L[Apresiasi Harga]
+        K --> L
+    end
+
+    subgraph "Manfaat Komunitas"
+        L --> M[Nilai Token Lebih Tinggi]
+        M --> N[Minat Meningkat]
+        N --> O[Lebih Banyak Pemain]
+        O --> A
+        O --> C
+        O --> E
+    end
+
+    style T fill:#fff3e0
+    style L fill:#c8e6c9
+    style M fill:#e8f5e8
+```
+
+<Tabs>
+  <Tab title="Biaya Taruhan">
+    **10% dari semua kolam taruhan** - Dikumpulkan dari setiap pertarungan - Proporsional terhadap volume taruhan - Terakumulasi di treasury arena - Digunakan untuk pembelian kembali token *Contoh: kolam taruhan 10,000 HYPES = 1,000 HYPES ke treasury*
+  </Tab>
+
+<Tab title="Pendapatan Boost">
+  **50% dari pembelian boost** - Pendapatan waktu nyata dari fitur interaktif - Keterlibatan lebih tinggi = pendapatan lebih banyak - Skala dengan popularitas arena - Dampak treasury langsung *Contoh: 500 HYPES dalam boost = 250 HYPES ke treasury*
+</Tab>
+
+  <Tab title="Biaya Perdagangan">
+    **66% dari biaya perdagangan DEX** (setelah kelulusan) - Pendapatan berkelanjutan dari perdagangan token - Tumbuh dengan adopsi token -
+    Skala pendapatan yang didorong pasar - Keberlanjutan jangka panjang *Contoh: biaya perdagangan 1%, 66% ke treasury*
+  </Tab>
+</Tabs>

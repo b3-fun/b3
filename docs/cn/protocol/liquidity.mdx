@@ -1,0 +1,114 @@
+---
+title: 跨链流动性
+description: 如何 AnySpend（由 B3 构建）抽象执行层以跨所有区块链网络提供统一的流动性访问权限
+lang: cn
+originalPath: protocol/liquidity.mdx
+---
+```html
+<iframe
+  className="w-full aspect-video rounded-xl"
+  src="https://customer-gg6qs7nm5ue94t64.cloudflarestream.com/03160a1a61ac99b9003e44a2059c7dae/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-gg6qs7nm5ue94t64.cloudflarestream.com%2F03160a1a61ac99b9003e44a2059c7dae%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600"
+  title="流动性碎片化"
+  frameBorder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowFullScreen
+></iframe>
+
+<Note>
+[在 explorer.b3.fun 上探索 B3 的多链生态系统](https://explorer.b3.fun/chains)
+</Note>
+
+## 问题
+
+Appchains、L2s 和 L3s 拥有孤立的流动性，构建跨链资产桥接体验变得繁琐。
+
+
+<CardGroup cols={2}>
+
+<Card title="碎片化的流动性" icon="puzzle-piece">
+  每个链都维护着孤立的资金池，限制了深度并增加了滑点。
+</Card>
+
+<Card title="复杂的集成" icon="gears">
+  构建者必须分别与数十个链进行集成。
+</Card>
+
+<Card title="糟糕的用户体验" icon="face-frown">
+  用户需手动桥接资产并管理多个钱包。
+</Card>
+
+<Card title="资本效率低" icon="chart-line-down">
+  锁定在特定链上的资产无法访问其他机会。
+</Card>
+
+</CardGroup>
+
+## 跨链访问流动性
+
+由我们的产品 AnySpend 提供支持，它操作在客户端执行层，位于用户意图与区块链执行之间：
+
+### 如何工作
+
+1. **从任何链存款**：接受来自大多数链的代币
+2. **基于意图**：用户表达他们想要什么，而不是如何实现
+3. **路由发现**：在所有支持的链中找到最优路径
+4. **原子执行**：交易原子执行或优雅失败
+5. **统一体验**：复杂操作显示为单一交易
+
+```mermaid
+flowchart TD
+    A[用户意图] --> B[从任意链存款]
+    B --> C{AnySpend 处理}
+    C --> D[路由发现]
+    D --> E[寻找最优路径]
+    E --> F[原子执行]
+    F --> G[成功?]
+    G -->|是| H[统一交易完成]
+    G -->|否| I[优雅失败 & 回滚]
+    
+    B --> B1[Ethereum]
+    B --> B2[Solana]
+    B --> B3[Polygon]
+    B --> B4[Arbitrum]
+    B --> B5[Base]
+    B --> B6[B3 & 游戏链]
+    
+    H --> J[目标链上的资产可用]
+    I --> K[原始资产返回]
+    
+    style A fill:#e1f5fe
+    style C fill:#f3e5f5
+    style H fill:#e8f5e8
+    style I fill:#ffebee
+```
+
+### 支持的链
+
+AnySpend 提供全链支持：
+
+- **EVM 链**：大多数 EVM 链，包括 Ethereum、Polygon、Arbitrum、Base、BSC、Avalanche
+- **Solana**：与 Solana 生态系统完全集成
+- **B3 生态系统**：与 B3 和游戏链的原生集成
+
+## 下一步
+
+<CardGroup cols={2}>
+
+<Card title="尝试 AnySpend" icon="rocket" href="/anyspend/introduction">
+  开始使用 AnySpend SDK。
+</Card>
+
+<Card title="集成指南" icon="book" href="/anyspend/installation">
+  学习如何集成 AnySpend。
+</Card>
+
+<Card title="API 参考" icon="code" href="/anyspend/api-reference/introduction">
+  探索完整的 API 文档。
+</Card>
+
+<Card title="加入 Discord" icon="discord" href="https://discord.gg/b3dotfun">
+  与其他构建者连接。
+</Card>
+
+</CardGroup>
+```

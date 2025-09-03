@@ -1,0 +1,71 @@
+---
+title: Cara Memverifikasi Status Transaksi pada B3
+description: >-
+  Pelajari cara melacak dan memverifikasi transaksi Anda di Jaringan B3
+  menggunakan block explorer dengan hash transaksi atau alamat dompet
+lang: id
+originalPath: learn/deposits-withdrawals/how-to-verify-transaction-status.mdx
+---
+Jika Anda telah mengirim transaksi di Jaringan B3 dan ingin memeriksa apakah sudah dikonfirmasi, tertunda, atau gagal, Anda dapat dengan mudah melacaknya menggunakan B3 Block Explorer. Yang Anda butuhkan hanyalah hash transaksi (TxHash) atau alamat dompet yang terlibat dalam transaksi.
+
+## Langkah-langkah untuk Memverifikasi Transaksi
+
+<iframe
+  className="w-full aspect-video rounded-xl"
+  src="https://www.youtube.com/embed/CZncVWI1aHk"
+  title="Cara memverifikasi status transaksi di B3"
+  frameBorder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowFullScreen
+></iframe>
+
+<Steps>
+<Step title="Menuju ke B3 Explorer">
+  Kunjungi [explorer.b3.fun](https://explorer.b3.fun).
+</Step>
+
+<Step title="Akses transaksi">
+  Arahkan kursor ke panel sisi kiri untuk memperluasnya dan klik pada **Transactions.**
+  
+  <Frame>
+    <img src="https://s3.amazonaws.com/helpscout.net/docs/assets/685306b72e0550277aa9250e/images/687e55494b3936693ba0ecbb/file-o0WPrzMUbf.png" alt="Sidebar B3 Explorer dengan opsi Transactions yang disorot" />
+  </Frame>
+</Step>
+
+<Step title="Cari transaksi Anda">
+  Sebuah bilah pencarian baru akan muncul. Di bilah pencarian, masukkan salah satu:
+  - Alamat dompet yang memulai transaksi
+  - Atau hash transaksi (TxHash)
+  
+  <Frame>
+    <img src="https://s3.amazonaws.com/helpscout.net/docs/assets/685306b72e0550277aa9250e/images/687e556e1946514c34bffae9/file-sfCem4gBEs.png" alt="Bilah pencarian untuk memasukkan alamat dompet atau hash transaksi" />
+  </Frame>
+</Step>
+
+<Step title="Lihat detail transaksi">
+  Telusuri hasilnya dan klik transaksi yang relevan untuk melihat:
+  - Status (Sukses / Gagal / Tertunda)
+  - Tanggal & Waktu
+  - Token yang ditransfer
+  - Gas yang digunakan
+  - Detail on-chain lainnya
+  
+  <Frame>
+    <img src="https://s3.amazonaws.com/helpscout.net/docs/assets/685306b72e0550277aa9250e/images/687e55b1ffa88610da986dfd/file-ERrTVA4NLO.png" alt="Halaman detail transaksi menunjukkan status dan informasi transaksi" />
+  </Frame>
+  
+  <Check>
+    Ini adalah cara terbaik untuk melacak mint, transfer, dan aktivitas lainnya langsung di Jaringan B3.
+  </Check>
+</Step>
+</Steps>
+
+## Arti Status Transaksi
+
+- **Sukses:** Transaksi berhasil diselesaikan
+- **Gagal:** Transaksi gagal dieksekusi (seringkali karena gas tidak cukup atau kesalahan lainnya)
+- **Tertunda:** Transaksi masih diproses oleh jaringan
+
+<Tip>
+Anda dapat mem-bookmark alamat dompet yang sering digunakan di explorer untuk dengan cepat memeriksa riwayat transaksi di masa mendatang.
+</Tip>

@@ -1,0 +1,232 @@
+---
+title: BondKit 介绍
+description: 在 Base 上推出 ERC20 债券代币的产品，具有债券化阶段和无缝迁移到 Uniswap v4 的功能。
+lang: cn
+originalPath: bondkit/introduction.mdx
+---
+## 什么是BondKit?
+
+BondKit是一个完整的代币发行平台，用于在Base主网上创建ERC20 "债券代币"。它提供了一个端到端的解决方案，处理从初始代币创建到债券曲线交易，最后迁移到Uniswap v4进行完全去中心化交易的所有事务。
+
+### 关键组件
+
+<Tabs>
+  <Tab title="智能合约">
+    **经审计的链上基础设施**
+    - 用于部署新代币的工厂合约
+    - 带有债券曲线逻辑的ERC20实现
+    - 自动Uniswap v4池初始化
+    - 优化的最小代理模式
+  </Tab>
+  <Tab title="TypeScript SDK">
+    **对开发者友好的工具**
+    - 所有合约交互的简单API
+    - 具有完整TypeScript支持的类型安全接口
+    - 内置的交易管理
+    - 事件订阅和监控
+  </Tab>
+  <Tab title="分析后端">
+    **实时数据服务**
+    - 交易历史跟踪
+    - OHLCV图表数据生成
+    - 代币元数据存储
+    - 前端集成的REST API
+  </Tab>
+</Tabs>
+
+## BondKit如何工作
+
+```mermaid
+graph LR
+    A[创建代币] --> B[债券阶段]
+    B --> C[达到目标]
+    C --> D[迁移到DEX]
+    D --> E[Uniswap v4交易]
+    
+    style A fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style B fill:#FF9800,stroke:#F57C00,stroke-width:2px,color:#fff
+    style C fill:#9C27B0,stroke:#6A1B9A,stroke-width:2px,color:#fff
+    style D fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#fff
+    style E fill:#00BCD4,stroke:#00838F,stroke-width:2px,color:#fff
+```
+
+### 三阶段生命周期
+
+1. **创建阶段**：使用自定义参数部署您的代币
+2. **债券阶段**：通过债券曲线自动市场制作
+3. **DEX阶段**：在Uniswap v4上进行完全去中心化交易
+
+## 核心特性
+
+<AccordionGroup>
+  <Accordion title="🏭 工厂模式部署">
+    - **节省燃气费的克隆**：使用最小代理模式减少部署成本约90%
+    - **标准化实现**：所有代币共享同样经过实战测试的逻辑
+    - **一键部署**：简单的函数调用以创建新代币
+  </Accordion>
+  
+  <Accordion title="📈 动态债券曲线">
+    - **可配置的攻击性**：0-100的因子控制价格进程
+    - **自动价格发现**：债券阶段的市场驱动定价
+    - **买卖支持**：债券期间的全双向交易
+    - **5% 交易费**：买卖双方均适用，分配给费用接收者
+  </Accordion>
+  
+  <Accordion title="🎯 基于目标的迁移">
+    - **可自定义目标**：以ETH或允许的ERC20设置您的筹资目标
+    - **自动阈值检测**：合约跟踪目标进度
+    - **一键迁移**：准备好时简单调用`migrateToDex()`
+    - **价格计算**：`sqrtPriceX96`在链上计算以公平定价
+  </Accordion>
+  
+  <Accordion title="🔄 Uniswap v4集成">
+    - **自动池创建**：用债券曲线退出价格初始化池
+    - **流动性提供**：累积资金成为初始流动性
+    - **所有权放弃**：合约在迁移后完全去中心化
+    - **无缝过渡**：无需手动干预
+  </Accordion>
+  
+  <Accordion title="📊 分析与监控">
+    - **实时索引**：记录并处理所有交易
+    - **OHLCV数据**：通过API提供的专业交易图表
+    - **交易历史**：每个代币的完整审计路径
+    - **投资组合跟踪**：监控多个代币和头寸
+  </Accordion>
+</AccordionGroup>
+
+## 应用场景
+
+<CardGroup cols={3}>
+  <Card title="🚀 代币发行" icon="rocket">
+    **对项目和创作者**
+    - 公平发行机制
+    - 社区驱动的价格发现
+    - 无需预先流动性
+    - 内置反机器人保护
+  </Card>
+  
+  <Card title="🎮 游戏和NFT" icon="gamepad">
+    **对GameFi项目**
+    - 游戏内货币发行
+    - NFT项目代币
+    - 奖励代币分发
+    - 玩家拥有的经济体
+  </Card>
+  
+  <Card title="🏢 DApp集成" icon="building">
+    **对开发者**
+    - 程序化代币创建
+    - 白标解决方案
+    - 自定义前端集成
+    - API驱动的自动化
+  </Card>
+</CardGroup>
+
+## 技术能力
+
+### 智能合约特性
+- ✅ 符合ERC20的债券代币，具有扩展功能
+- ✅ 用于节省燃气费的工厂模式
+- ✅ 可配置参数（供应量、目标、攻击性）
+- ✅ 内置的费用分配机制
+- ✅ 自动Uniswap v4迁移
+
+### SDK特性
+- ✅ 完整的TypeScript支持和类型定义
+- ✅ 基于Promise的异步操作
+- ✅ 事件监听器和订阅
+- ✅ 交易收据处理
+- ✅ 错误处理和重试逻辑
+
+### 分析特性
+- ✅ 实时价格跟踪
+- ✅ 交易量和流动性指标
+- ✅ 历史交易数据
+- ✅ OHLCV蜡烛图数据
+- ✅ 用户投资组合跟踪
+
+## 开始
+
+<CardGroup cols={2}>
+  <Card title="请求访问" icon="rocket" href="https://b3builders.typeform.com/bsmntdevelopers">
+    在Base上使用BondKit启动
+  </Card>
+  <Card title="与团队交流" icon="discord" href="https://discord.gg/b3dotfun">
+    有问题或反馈？在Discord上与我们交谈
+  </Card>
+  
+</CardGroup>
+
+## 关键术语
+
+<Tabs>
+  <Tab title="核心概念">
+    | 术语 | 定义 |
+    |------|------------|
+    | **债券阶段** | 初始交易期，通过债券曲线算法定价 |
+    | **债券代币** | 内置债券曲线机制的ERC20代币 |
+    | **目标金额** | 触发迁移资格的筹资目标 |
+    | **迁移** | 从债券曲线到Uniswap v4的过渡 |
+    | **报价资产** | 用于购买代币的货币（ETH或允许的ERC20） |
+  </Tab>
+  
+  <Tab title="技术术语">
+    | 术语 | 定义 |
+    |------|------------|
+    | **最小代理** | 节省燃气费的合约克隆模式 |
+    | **攻击性因子** | 控制价格曲线陡峭度的参数（0-100） |
+    | **sqrtPriceX96** | Uniswap v4池初始化的价格格式 |
+    | **费用接收者** | 在债券期间接收交易费的地址 |
+    | **LP分割比率** | 流动性提供者费用百分比（基点） |
+  </Tab>
+  
+  <Tab title="SDK术语">
+    | 术语 | 定义 |
+    |------|------------|
+    | **工厂合约** | 部署新债券代币的主合约 |
+    | **实现** | 为每个代币克隆的模板合约 |
+    | **公共客户端** | 只读区块链连接 |
+    | **钱包客户端** | 具有写权限的区块链连接 |
+    | **提供者** | Web3连接接口（例如，MetaMask） |
+  </Tab>
+</Tabs>
+
+## 重要参数
+
+<Note>
+  **当前网络**：仅限Base Mainnet
+  
+  **允许的报价资产**： 
+  - B3 Token（当前活跃）
+  - ETH（即将推出）
+  - 可以白名单其他代币
+  
+  **费用结构**：
+  - 债券阶段所有交易的5%
+  - 可自定义的LP分割比率以进行迁移
+  
+  **安全性**：
+  - 经审计的智能合约
+  - 迁移后自动放弃所有权
+  - DEX阶段开始后无管理员密钥
+</Note>
+
+## 下一步
+
+<Steps>
+  <Step title="安装SDK">
+    在您的项目中设置BondKit SDK
+    ```bash
+    pnpm add @b3dotfun/sdk
+    ```
+  </Step>
+  <Step title="阅读快速入门">
+    通过我们的分步指南了解基础知识
+  </Step>
+  <Step title="探索示例">
+    查看工作实现和演示
+  </Step>
+  <Step title="加入社区">
+    在Discord上获得帮助并分享反馈
+  </Step>
+</Steps>

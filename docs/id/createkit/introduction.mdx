@@ -1,0 +1,150 @@
+---
+title: Pendahuluan
+description: >-
+  CreateKit (BaseMint SDK) - Sebuah TypeScript SDK untuk penempatan dan
+  pengelolaan koleksi NFT tanpa gas pada ekosistem B3
+lang: id
+originalPath: createkit/introduction.mdx
+---
+[![NPM](https://nodei.co/npm/@b3dotfun/basemint.svg)](https://www.npmjs.com/package/@b3dotfun/basemint)
+
+<CodeGroup>
+```bash npm
+npm install @b3dotfun/basemint
+```
+
+```bash yarn
+yarn add @b3dotfun/basemint
+```
+
+```bash pnpm
+pnpm add @b3dotfun/basemint
+```
+</CodeGroup>
+
+## Mengapa CreateKit?
+**Buat NFT secara gratis** dengan CreateKit, pengguna hanya perlu menandatangani sebuah pesan (tanpa gas yang diperlukan) dan koleksi akan dideploy dan dimint dalam satu transaksi pada mint pertama.
+
+<Note>**Cobalah:** [Buat NFT secara gratis & dapatkan penghasilan](https://explorer.b3.fun/apps/nfts/create)</Note>
+
+CreateKit, didukung oleh Protokol BaseMint, adalah SDK TypeScript yang komprehensif yang merevolusi penciptaan dan pengelolaan koleksi NFT. Dibangun khusus untuk ekosistem B3, ini menyediakan alur kerja yang efisien dan hemat gas untuk mendeploy dan mengelola koleksi NFT dengan biaya minimal dan fleksibilitas maksimal.
+
+<CardGroup cols={2}>
+  <Card title="Penciptaan Tanpa Gas" icon="circle-dollar">
+    Buat NFT dengan alamat onchain sepenuhnya gratis selama fase pengaturan awal
+  </Card>
+  <Card title="Deploy Satu Transaksi" icon="bolt">
+    Deploy koleksi dan mint NFT pertama Anda dalam satu transaksi
+  </Card>
+  <Card title="Dukungan Multi-Standar" icon="layer-group">
+    Mendukung standar token ERC721 dan ERC1155
+  </Card>
+  <Card title="Siap Marketplace" icon="store">
+    Format metadata yang kompatibel dengan OpenSea memastikan integrasi marketplace yang mulus
+  </Card>
+</CardGroup>
+
+## Fitur Utama
+
+### 🎨 **Pengelolaan Koleksi**
+- Deploy koleksi ERC721 dan ERC1155
+- Sesuaikan parameter koleksi (nama, simbol, pasokan, harga)
+- Tetapkan jangka waktu dan batas minting
+- Kelola metadata dan URI koleksi
+- Dukungan untuk berbagai jenis media (model 3D, karya seni, video, meme)
+
+### 🔒 **Deploy Aman**
+- Proses verifikasi tanda tangan dua langkah
+- Validasi tanda tangan pembuat
+- Validasi tanda tangan deployer
+- Prediksi alamat koleksi
+
+### 🎯 **Operasi Token**
+- Mint token ERC721 dan ERC1155
+- Minting berbasis whitelist dengan bukti Merkle
+- Perhitungan harga otomatis
+- Validasi parameter bawaan
+- Transaksi hemat gas
+
+### 💰 **Distribusi Hadiah**
+- Lacak hadiah pembuat
+- Pantau akumulasi hadiah per koleksi
+- Lihat total dan hadiah yang belum diklaim per koleksi
+- Lacak distribusi hadiah per tipe penerima
+- Tarik hadiah yang terakumulasi
+
+## Alur Sistem
+
+Protokol BaseMint menyediakan alur kerja yang unik dan hemat gas:
+
+<Steps>
+  <Step title="Penciptaan Koleksi & Generasi Tanda Tangan">
+    Pembuat mendefinisikan parameter koleksi dan menghasilkan tanda tangan kriptografis yang disimpan off-chain tanpa biaya gas.
+  </Step>
+  <Step title="Penyimpanan & Penemuan Off-chain">
+    Data koleksi disimpan dengan aman di penyimpanan BaseMint dengan alamat deterministik untuk penemuan yang mudah.
+  </Step>
+  <Step title="Deploy & Mint Pertama">
+    Minter pertama memicu deploy on-chain dalam satu transaksi yang mencakup deploy dan mint pertama.
+  </Step>
+  <Step title="Fase Minting Reguler">
+    Minting terbuka untuk semua pengguna dengan dukungan whitelist opsional dan batas dompet.
+  </Step>
+</Steps>
+
+## Struktur Hadiah
+
+CreateKit menampilkan sistem hadiah inovatif yang memberi manfaat kepada semua peserta dalam ekosistem:
+
+| Tipe Penerima | Bagian Default | Deskripsi |
+|----------------|---------------|-------------|
+| **Pembuat** | 40% | Penggagas koleksi |
+| **Minter Pertama** | 30% | Deployer awal yang memicu deploy |
+| **Pemilik Game** | 20% | Integrator platform |
+| **Platform** | 10% | Biaya protokol |
+
+<Note>
+Tingkat hadiah dapat dikonfigurasi oleh pemilik protokol dan dapat disesuaikan berdasarkan kebutuhan ekosistem.
+</Note>
+
+## Jaringan yang Didukung
+
+CreateKit mendukung ekosistem B3 dengan rencana ekspansi ke jaringan tambahan:
+
+<CardGroup cols={2}>
+  <Card title="B3 Mainnet" icon="globe">
+    **Chain ID:** 8333  
+    Deploy siap produksi untuk aplikasi langsung
+  </Card>
+  <Card title="B3 Testnet" icon="flask">
+    **Chain ID:** 1993  
+    Lingkungan pengembangan dan pengujian
+  </Card>
+</CardGroup>
+
+## Memulai
+
+Siap untuk mulai membangun? Lihat panduan instalasi dan tutorial cepat kami untuk mulai membuat koleksi NFT pertama Anda dengan CreateKit.
+
+<CardGroup cols={2}>
+  <Card title="Instalasi" icon="download" href="/createkit/installation">
+    Instal CreateKit dan siapkan lingkungan pengembangan Anda
+  </Card>
+  <Card title="Panduan Cepat" icon="rocket" href="/createkit/quickstart">
+    Bangun koleksi NFT pertama Anda dalam beberapa menit
+  </Card>
+</CardGroup>
+
+## Sumber Daya Pengembang
+
+<CardGroup cols={3}>
+  <Card title="Pengelolaan Koleksi" icon="folder" href="/createkit/collections">
+    Pelajari cara membuat dan mengelola koleksi NFT
+  </Card>
+  <Card title="Minting" icon="coins" href="/createkit/minting">
+    Implementasikan fungsi minting token
+  </Card>
+  <Card title="Contoh" icon="code" href="/createkit/examples">
+    Jelajahi contoh implementasi praktis
+  </Card>
+</CardGroup>

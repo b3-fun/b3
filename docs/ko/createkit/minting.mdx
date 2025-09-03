@@ -1,0 +1,479 @@
+---
+title: 민팅
+description: 'CreateKit을 사용한 토큰 민팅 완벽 가이드: 배포, 정기 민팅 및 고급 기능'
+lang: ko
+originalPath: createkit/minting.mdx
+---
+## 개요
+
+민팅은 컬렉션 내에 새로운 NFT 토큰을 생성하는 과정입니다. CreateKit은 가스 효율성과 사용자 경험을 최적화하기 위한 독특한 이단계 민팅 시스템을 제공합니다.
+
+## 민팅 단계
+
+### 단계 1: 배포 및 첫 번째 민팅
+
+첫 번째 민팅 작업은 특별합니다 - 컬렉션 계약을 배포하고 첫 번째 토큰을 단일 트랜잭션으로 발행합니다:
+
+```typescript title="배포 및 첫 번째 민팅"
+import { CollectionManager } from '@b3dotfun/basemint'
+
+const collectionManager = new CollectionManager(publicClient)
+
+// 컬렉션 메타데이터와 생성자 서명을 가정합니다
+const predictedAddress = collectionManager.predictCollectionAddress(
+  collectionMetadata,
+  creatorSignature
+)
+
+// 배포자 서명 생성
+const deployerSignature = await collectionManager.generateDeployerSignature(
+  walletClient,
+  predictedAddress
+)
+
+// 컬렉션 인스턴스 생성
+const collection = collectionManager.createCollection(
+  predictedAddress,
+  collectionMetadata.tokenStandard
+)
+
+// 첫 NFT 배포 및 민팅
+const mintTx = await collection.mint(
+  walletClient,
+  1n, // 수량
+  undefined, // 메타데이터 URI (baseURI 사용)
+  collectionMetadata.mintPrice || 0n,
+  [], // 화이트리스트 증명 (공개용 빈 배열)
+  creatorSignature, // 첫 번째 민팅에 필요
+  deployerSignature // 첫 번째 민팅에 필요
+)
+
+console.log(`🚀 컬렉션 배포 및 첫 번째 토큰 민팅: ${mintTx}`)
+```
+
+### 단계 2: 일반 민팅
+
+배포 후, 이후 민팅은 더 간단하며 표준 파라미터만 요구됩니다:
+
+```typescript title="일반 민팅"
+// 배포 후 이후 민팅 (첫 번째 민팅 이후)
+const regularMintTx = await collection.mint(
+  walletClient,
+  1n, // 수량
+  undefined, // 메타데이터 URI
+  collectionMetadata.mintPrice || 0n,
+  [] // 화이트리스트 증명
+  // 일반 민팅에는 서명이 필요 없음
+)
+
+console.log(`✨ 토큰 민팅: ${regularMintTx}`)
+```
+
+## 토큰 표준
+
+CreateKit은 ERC721과 ERC1155 표준을 모두 지원하며, 다른 민팅 행동을 보입니다:
+
+<Tabs>
+<Tab title="ERC721 민팅">
+```typescript title="ERC721 고유 토큰"
+// ERC721 - 각 토큰은 고유함
+const erc721Collection = collectionManager.createCollection(
+  predictedAddress,
+  "ERC721"
+)
+
+// ERC721은 항상 수량을 1로 민팅
+await erc721Collection.mint(
+  walletClient,
+  1n, // ERC721은 항상 1
+  "https://example.com/metadata/1.json", // 이 토큰의 고유 메타데이터
+  parseEther("0.01"),
+  []
+)
+
+// 각 민팅은 새로운 고유 토큰 ID를 생성
+// 토큰 ID 증가: 1, 2, 3, 등.
+```
+</Tab>
+
+<Tab title="ERC1155 민팅">
+```typescript title="ERC1155 반(半)펀저블 토큰"
+// ERC1155 - 같은 종류 또는 다른 종류의 토큰 여러 개를 민팅할 수 있음
+const erc1155Collection = collectionManager.createCollection(
+  predictedAddress,
+  "ERC1155"
+)
+
+// 같은 종류의 토큰 여러 개를 민팅할 수 있음
+await erc1155Collection.mint(
+  walletClient,
+  10n, // 10개의 토큰 민팅
+  "https://example.com/metadata/sword.json", // "sword" 토큰의 메타데이터
+  parseEther("0.005"),
+  []
+)
+
+// 메타데이터 URI를 변경하여 다른 종류의 토큰을 민팅할 수 있음
+await erc1155Collection.mint(
+  walletClient,
+  5n,
+  "https://example.com/metadata/shield.json", // 다른 종류의 토큰
+  parseEther("0.01"),
+  []
+)
+```
+</Tab>
+</Tabs>
+
+## 가격 설정 및 결제
+
+### 고정 가격
+
+```typescript title="고정 가격 민팅"
+import { parseEther } from 'viem'
+
+const fixedPriceCollection = {
+  name: "고정 가격 컬렉션",
+  symbol: "FPC",
+  creator: account.address,
+  gameOwner: account.address,
+  mintPrice: parseEther("0.01"), // 토큰 당 0.01 ETH
+  maxPerWallet: 5n
+}
+
+// 고정 가격으로 민팅
+await collection.mint(
+  walletClient,
+  2n, // 수량
+  undefined,
+  parseEther("0.02"), // 2 * 0.01 ETH
+  []
+)
+```
+
+### 무료 민팅
+
+```typescript title="무료 민팅"
+const freeCollection = {
+  name: "무료 컬렉션",
+  symbol: "FREE",
+  creator: account.address,
+  gameOwner: account.address,
+  mintPrice: 0n, // 무료 민팅
+  maxPerWallet: 10n
+}
+
+// 무료로 민팅 (가스 비용만 발생)
+await collection.mint(
+  walletClient,
+  1n,
+  undefined,
+  0n, // 결제 필요 없음
+  []
+)
+```
+
+### 동적 가격 설정
+
+```typescript title="동적 가격 설정 로직"
+// 애플리케이션 내의 사용자 정의 가격 로직
+function calculateMintPrice(totalSupply: bigint, basePrice: bigint): bigint {
+  // 공급량이 증가함에 따라 가격 상승
+  const priceMultiplier = totalSupply / 1000n + 1n
+  return basePrice * priceMultiplier
+}
+
+// 현재 공급량을 가져와 가격 계산
+const currentSupply = await collection.totalSupply()
+const dynamicPrice = calculateMintPrice(currentSupply, parseEther("0.001"))
+
+await collection.mint(
+  walletClient,
+  1n,
+  undefined,
+  dynamicPrice,
+  []
+)
+```
+
+## 화이트리스트 민팅
+
+CreateKit은 배타적 민팅을 위한 Merkle 트리 기반 화이트리스팅을 지원합니다:
+
+### 화이트리스트 설정
+
+```typescript title="화이트리스트 설정"
+import { WhitelistManager } from '@b3dotfun/basemint'
+
+// 주소로 화이트리스트 생성
+const whitelist = new WhitelistManager([
+  { address: "0x1234567890123456789012345678901234567890" },
+  { address: "0x2345678901234567890123456789012345678901" },
+  { address: "0x3456789012345678901234567890123456789012" }
+])
+
+// 컬렉션 배포를 위한 메르클 루트 가져오기
+const merkleRoot = whitelist.getRoot()
+
+const whitelistCollection = {
+  name: "화이트리스트 컬렉션",
+  symbol: "WLC",
+  creator: account.address,
+  gameOwner: account.address,
+  isWhitelistEnabled: true,
+  whitelistMerkleRoot: merkleRoot,
+  mintPrice: parseEther("0.005")
+}
+```
+
+### 화이트리스트 민팅
+
+```typescript title="화이트리스트 증명으로 민팅"
+// 민팅 주소를 위한 증명 가져오기
+const userAddress = account.address
+const proof = whitelist.getProof(userAddress)
+
+// 사용자가 화이트리스트에 있는지 확인 (선택적 검사)
+const isWhitelisted = whitelist.verify(userAddress, proof)
+if (!isWhitelisted) {
+  throw new Error("화이트리스트에 없는 주소")
+}
+
+// 화이트리스트 증명으로 민팅
+await collection.mint(
+  walletClient,
+  1n,
+  undefined,
+  parseEther("0.005"),
+  proof // 화이트리스트 증명 제공
+)
+```
+
+## 민팅 제한 및 제어
+
+### 지갑별 제한
+
+```typescript title="지갑 제한"
+// 지갑당 최대 토큰 설정
+const limitedCollection = {
+  name: "제한된 컬렉션",
+  symbol: "LTD",
+  creator: account.address,
+  gameOwner: account.address,
+  maxPerWallet: 3n, // 지갑당 최대 3개의 토큰
+  maxSupply: 1000n
+}
+
+// 민팅 전 현재 잔액 확인
+const currentBalance = await collection.balanceOf(account.address)
+const maxPerWallet = await collection.maxPerWallet()
+
+if (currentBalance >= maxPerWallet) {
+  throw new Error("지갑 제한 초과")
+}
+
+await collection.mint(walletClient, 1n, undefined, 0n, [])
+```
+
+### 시간 기반 제어
+
+```typescript title="시간 제어"
+const timedCollection = {
+  name: "시간 제한 출시",
+  symbol: "TIME",
+  creator: account.address,
+  gameOwner: account.address,
+  startTime: BigInt(Math.floor(Date.now() / 1000) + 3600), // 1시간 후 시작
+  endTime: BigInt(Math.floor(Date.now() / 1000) + 86400), // 24시간 후 종료
+}
+
+// 현재 민팅이 활성화되어 있는지 확인
+const currentTime = BigInt(Math.floor(Date.now() / 1000))
+const startTime = await collection.startTime()
+const endTime = await collection.endTime()
+
+const isMintingActive = currentTime >= startTime && currentTime <= endTime
+
+if (!isMintingActive) {
+  throw new Error("현재 민팅 활성화되지 않음")
+}
+```
+
+## 메타데이터 처리
+
+### 자동 메타데이터
+
+CreateKit은 컬렉션 설정을 기반으로 자동으로 메타데이터를 생성할 수 있습니다:
+
+```typescript title="자동 생성된 메타데이터"
+// 자동 메타데이터를 위한 baseURI 사용
+const autoMetadataCollection = {
+  name: "자동 메타데이터 컬렉션",
+  symbol: "AMC",
+  creator: account.address,
+  gameOwner: account.address,
+  // BaseMint CDN에 의해 자동으로 생성될 baseURI
+}
+
+// 자동 메타데이터로 민팅 (URI에 undefined 전달)
+await collection.mint(
+  walletClient,
+  1n,
+  undefined, // baseURI + tokenId 사용
+  0n,
+  []
+)
+
+// 메타데이터는 {baseURI}/{tokenId}에서 사용 가능
+```
+
+### 사용자 정의 메타데이터
+
+```typescript title="사용자 정의 메타데이터 URI"
+// 각 토큰에 대한 특정 메타데이터 URI 제공
+const customMetadataURIs = [
+  "https://myapi.com/metadata/special-sword.json",
+  "https://myapi.com/metadata/rare-shield.json",
+  "https://myapi.com/metadata/epic-helmet.json"
+]
+
+for (const metadataURI of customMetadataURIs) {
+  await collection.mint(
+    walletClient,
+    1n,
+    metadataURI, // 이 토큰의 사용자 정의 메타데이터
+    parseEther("0.01"),
+    []
+  )
+}
+```
+
+## 배치 민팅
+
+ERC1155 컬렉션의 경우, 여러 토큰을 효율적으로 민팅할 수 있습니다:
+
+```typescript title="배치 민팅"
+// 단일 트랜잭션, 여러 토큰
+await erc1155Collection.mint(
+  walletClient,
+  10n, // 같은 종류의 토큰 10개 민팅
+  "https://example.com/metadata/resource.json",
+  parseEther("0.001") * 10n, // 모든 토큰의 총 가격
+  []
+)
+
+// 다른 토큰 종류의 경우, 별도의 트랜잭션 사용
+const tokenTypes = [
+  { uri: "https://example.com/wood.json", quantity: 5n },
+  { uri: "https://example.com/stone.json", quantity: 3n },
+  { uri: "https://example.com/gold.json", quantity: 1n }
+]
+
+for (const tokenType of tokenTypes) {
+  await erc1155Collection.mint(
+    walletClient,
+    tokenType.quantity,
+    tokenType.uri,
+    calculatePrice(tokenType.quantity),
+    []
+  )
+}
+```
+
+## 오류 처리
+
+```typescript title="포괄적 오류 처리"
+async function safeMint(
+  collection: any,
+  walletClient: any,
+  quantity: bigint,
+  metadataURI: string | undefined,
+  mintPrice: bigint,
+  proof: string[]
+) {
+  try {
+    // 민팅 전 유효성 검사
+    const isDeployed = await collection.isDeployed()
+    if (!isDeployed) {
+      throw new Error("컬렉션이 아직 배포되지 않음")
+    }
+
+    const currentSupply = await collection.totalSupply()
+    const maxSupply = await collection.maxSupply()
+    if (currentSupply + quantity > maxSupply) {
+      throw new Error("최대 공급량 초과")
+    }
+
+    const userBalance = await collection.balanceOf(walletClient.account.address)
+    const maxPerWallet = await collection.maxPerWallet()
+    if (userBalance + quantity > maxPerWallet) {
+      throw new Error("지갑 제한 초과")
+    }
+
+    // 결제 금액 확인
+    const requiredPayment = await collection.mintPrice() * quantity
+    if (mintPrice < requiredPayment) {
+      throw new Error("결제 금액 부족")
+    }
+
+    // 민팅 시도
+    const tx = await collection.mint(
+      walletClient,
+      quantity,
+      metadataURI,
+      mintPrice,
+      proof
+    )
+
+    console.log(`✅ 민팅 성공: ${tx}`)
+    return tx
+
+  } catch (error: any) {
+    if (error.message.includes('Invalid merkle proof')) {
+      console.error('❌ 화이트리스트에 없는 주소')
+    } else if (error.message.includes('Insufficient payment')) {
+      console.error('❌ 잘못된 민팅 가격')
+    } else if (error.message.includes('Max per wallet exceeded')) {
+      console.error('❌ 지갑 제한 도달')
+    } else {
+      console.error('❌ 민팅 실패:', error.message)
+    }
+    throw error
+  }
+}
+```
+
+## 가스 최적화
+
+### 효율적인 민팅 패턴
+
+```typescript title="가스 효율적 민팅"
+// ERC1155: 한 번의 트랜잭션으로 여러 토큰 민팅
+await erc1155Collection.mint(
+  walletClient,
+  10n, // 10개의 별도 트랜잭션보다 더 가스 효율적
+  metadataURI,
+  totalPrice,
+  proof
+)
+
+// ERC721: 애플리케이션 수준에서 배치 작업 고려
+const mintPromises = []
+for (let i = 0; i < 5; i++) {
+  mintPromises.push(
+    collection.mint(walletClient, 1n, undefined, mintPrice, proof)
+  )
+}
+
+// nonce 관리에 주의하며 동시에 민팅 실행
+const results = await Promise.all(mintPromises)
+```
+
+### 가스 가격 관리
+
+```typescript title="가스 가격 최적화"
+import { createWalletClient, http } from 'viem'
+
+// 사용자 정의 가스 설정
+const optimizedWalletClient = createWalletClient({
+  chain: b3Test

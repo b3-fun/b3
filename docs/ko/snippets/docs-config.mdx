@@ -1,0 +1,59 @@
+---
+lang: ko
+originalPath: snippets/docs-config.mdx
+---
+```jsx
+export const docsConfig = {
+  name: "B3 SDK",
+  theme: "mint",
+  colors: {
+    primary: "#007AFF",
+    light: "#4DA6FF",
+    dark: "#0056CC",
+  },
+
+navbar: {
+links: [
+{
+label: "라이브 데모",
+href: "https://anyspend.com",
+},
+{
+label: "B3 메인넷",
+href: "https://docs.b3.fun",
+},
+],
+primary: {
+type: "button",
+label: "시작하기",
+href: "/quickstart",
+},
+},
+
+globalAnchors: [
+{
+anchor: "B3 에코시스템",
+href: "https://docs.b3.fun",
+icon: "globe",
+},
+{
+anchor: "디스코드",
+href: "https://discord.gg/b3dotfun",
+icon: "discord",
+},
+{
+anchor: "깃허브",
+href: "https://github.com/b3-fun/b3",
+icon: "github",
+},
+],
+
+footer: {
+socials: {
+x: "https://x.com/b3dotfun",
+github: "https://github.com/b3-fun/b3",
+discord: "https://discord.gg/b3dotfun",
+},
+},
+};
+```

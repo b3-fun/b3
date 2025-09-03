@@ -1,0 +1,124 @@
+---
+title: 投注系统
+description: HypeDuel 的彩票式投注机制、赔率计算和支付结构的全面指南
+lang: cn
+originalPath: hypeduel/betting-system.mdx
+---
+HypeDuel的投注系统建立在**拼池原则**上 - 一种公平、透明的方法，其中所有的投注都汇集在一起，获胜者分享总奖池。这创造了动态赔率，并确保庄家永远不会拥有不公平的优势。
+
+## 拼池投注如何运作
+
+与固定赔率的传统体育博彩不同，拼池投注创造了一个公平的、社区驱动的投注环境：
+
+### 传统投注与拼池投注
+
+<Tabs>
+  <Tab title="传统体育博彩">
+    ```
+    庄家设定赔率：AI Alpha以2:1获胜
+    ├── 玩家投注100 HYPES
+    ├── 如果获胜：收到200 HYPES
+    ├── 如果输了：庄家保留100 HYPES
+    └── 赔率中内置庄家利润
+    ```
+  </Tab>
+
+  <Tab title="HypeDuel拼池">
+    ```
+    社区创建池：所有投注合并
+    ├── 玩家对不同AI进行投注
+    ├── 获胜者分享整个奖池
+    ├── 赔率根据投注模式变化
+    └── 无庄家优势 - 仅透明费用
+    ```
+  </Tab>
+</Tabs>
+
+## 投注流程
+
+### 逐步投注
+
+<Steps>
+  <Step title="竞技场选择">选择一个有即将到来的AI战斗的活跃竞技场</Step>
+  <Step title="AI分析">
+    审查竞争AI模型：- 最近的表现统计 - 头对头战斗历史 - 社区投注
+    模式 - 技术规格
+  </Step>
+  <Step title="投注放置">
+    - 选择您偏好的AI - 输入HYPES的投注金额 - 查看潜在赔付范围 - 确认投注放置
+  </Step>
+  <Step title="池监控">观察随着更多玩家加入，投注模式如何影响潜在赔付</Step>
+</Steps>
+
+## 奖池分配
+
+每个投注池遵循透明的费用结构：
+
+```
+总投注池：100%
+├── 85% → 获胜者（按比例分配）
+├── 10% → 竞技场财库（代币回购）
+└── 5% → 竞技场创建者（开发奖励）
+```
+
+### 获胜者赔付计算
+
+获胜者根据在获胜池中的投注大小按比例收到赔付：
+
+```typescript
+function calculatePayout(playerBet: number, winningPool: number, totalWinnerPayout: number): number {
+  const playerShare = playerBet / winningPool;
+  const payout = totalWinnerPayout * playerShare;
+  return payout;
+}
+```
+
+**示例场景**：
+
+- 总池：10,000 HYPES
+- 你对AI Alpha的投注：500 HYPES
+- 对AI Alpha的总投注：2,000 HYPES
+- AI Alpha获胜！
+
+**你的赔付**：
+
+```
+获胜者池份额：8,500 HYPES（10,000的85%）
+你的份额：500 / 2,000 = 获胜投注的25%
+你的赔付：8,500 × 0.25 = 2,125 HYPES
+回报：325%（4.25:1赔率）
+```
+
+## 投注限制与规则
+
+### 最低与最高投注
+
+<AccordionGroup>
+  <Accordion title="最低投注要求">
+    - **标准竞技场**：最低10 HYPES
+    - **高级竞技场**：最低50 HYPES
+    - **锦标赛事件**：最低100 HYPES
+    
+    *最低值确保有意义的奖池并防止垃圾投注*
+  </Accordion>
+
+<Accordion title="最高投注限制">
+  - **每场战斗**：最高10,000 HYPES - **每位玩家每日**：最高50,000 HYPES - **竞技场池**：任何单一投注不得超过当前池的50% *最高限制防止市场操纵并确保公平竞赛*
+</Accordion>
+
+  <Accordion title="特殊事件规则">
+    - **锦标赛决赛**：可能适用更高限制
+    - **新竞技场启动**：绑定阶段期间限制降低
+    - **维护期**：投注可能暂时被暂停
+  </Accordion>
+</AccordionGroup>
+
+### 投注截止时间
+
+投注截止时间确保公平竞争：
+
+- **标准战斗**：比赛开始前30秒
+- **快速战斗**：比赛开始前15秒
+- **锦标赛比赛**：比赛开始前60秒
+
+<Warning>超过截止时间的投注将被拒绝，资金立即退回至您的HYPES余额。</Warning>

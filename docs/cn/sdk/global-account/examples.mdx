@@ -1,0 +1,687 @@
+---
+title: 示例
+description: B3 全球账户的完整示例和集成模式
+lang: cn
+originalPath: sdk/global-account/examples.mdx
+---
+## 基本认证示例
+
+一个简单的认证流程，包含错误处理和加载状态。
+
+```tsx
+import { 
+  B3Provider, 
+  SignInWithB3, 
+  useB3 
+} from "@b3dotfun/sdk/global-account/react";
+
+function AuthExample() {
+  return (
+    <B3Provider environment="production">
+      <AuthComponent />
+    </B3Provider>
+  );
+}
+
+function AuthComponent() {
+  const { account, isAuthenticated, isLoading, signOut } = useB3();
+  const [authError, setAuthError] = useState<string | null>(null);
+
+  if (isLoading) {
+    return (
+      <div className="loading-container">
+        <div className="spinner" />
+        <p>Loading your account...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="auth-container">
+      {isAuthenticated ? (
+        <div className="user-profile">
+          <img 
+            src={account?.avatarUrl} 
+            alt="Profile" 
+            className="avatar"
+          />
+          <h2>Welcome, {account?.displayName}!</h2>
+          <p>Email: {account?.email}</p>
+          <button onClick={signOut} className="sign-out-btn">
+            Sign Out
+          </button>
+        </div>
+      ) : (
+        <div className="sign-in-container">
+          <h2>Sign in to B3</h2>
+          
+          <SignInWithB3
+            provider={{ strategy: "google" }}
+            partnerId="your-partner-id"
+            onLoginSuccess={(globalAccount) => {
+              setAuthError(null);
+              console.log("Authentication successful:", globalAccount);
+            }}
+            onLoginError={(error) => {
+              setAuthError(error.message);
+              console.error("Authentication failed:", error);
+            }}
+          />
+
+          <SignInWithB3
+            provider={{ strategy: "discord" }}
+            partnerId="your-partner-id"
+            onLoginSuccess={(globalAccount) => {
+              setAuthError(null);
+              console.log("Discord auth successful:", globalAccount);
+            }}
+            onLoginError={(error) => {
+              setAuthError(error.message);
+            }}
+          />
+
+          {authError && (
+            <div className="error-message">
+              <p>Authentication failed: {authError}</p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default AuthExample;
+```
+
+## 游戏应用示例
+
+完整的游戏应用示例，包含会话密钥和权限。
+
+```tsx
+import {
+  B3Provider,
+  SignInWithB3,
+  RequestPermissionsButton,
+  useB3,
+  usePermissions,
+  useAccountWallet
+} from "@b3dotfun/sdk/global-account/react";
+
+const b3Chain = {
+  id: 8333,
+  name: "B3",
+  nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+  rpc: "https://mainnet-rpc.b3.fun",
+};
+
+const gameContracts = [
+  "0x9c275ff1634519E9B5449ec79cd939B5F900564d", // 游戏合约
+  "0x...", // NFT市场
+  "0x...", // 代币合约
+];
+
+function GameApp() {
+  return (
+    <B3Provider environment="production">
+      <GameContainer />
+    </B3Provider>
+  );
+}
+
+function GameContainer() {
+  const { account, isAuthenticated } = useB3();
+  const { hasPermissions, isExpired } = usePermissions();
+  const { wallet, isConnected } = useAccountWallet();
+
+  const isGameReady = isAuthenticated && hasPermissions && !isExpired && isConnected;
+
+  return (
+    <div className="game-container">
+      <header className="game-header">
+        <h1>🎮 Epic B3 Game</h1>
+        {isAuthenticated && (
+          <div className="user-info">
+            <img src={account?.avatarUrl} alt="Avatar" className="small-avatar" />
+            <span>{account?.displayName}</span>
+          </div>
+        )}
+      </header>
+
+      <main className="game-content">
+        {!isAuthenticated ? (
+          <AuthenticationStep />
+        ) : !isConnected ? (
+          <WalletConnectionStep />
+        ) : !hasPermissions || isExpired ? (
+          <PermissionStep />
+        ) : (
+          <GameReadyState />
+        )}
+      </main>
+    </div>
+  );
+}
+
+function AuthenticationStep() {
+  return (
+    <div className="setup-step">
+      <h2>🔐 Sign In</h2>
+      <p>Connect your B3 Global Account to start playing</p>
+      
+      <div className="auth-options">
+        <SignInWithB3
+          provider={{ strategy: "google" }}
+          partnerId="epic-game-studio"
+          onLoginSuccess={(account) => {
+            console.log("Welcome to the game:", account.displayName);
+          }}
+        />
+        
+        <SignInWithB3
+          provider={{ strategy: "discord" }}
+          partnerId="epic-game-studio"
+          onLoginSuccess={(account) => {
+            console.log("Discord player joined:", account.displayName);
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function WalletConnectionStep() {
+  const { connect } = useAccountWallet();
+
+  return (
+    <div className="setup-step">
+      <h2>👛 Connect Wallet</h2>
+      <p>Connect your wallet to interact with the game</p>
+      <button onClick={connect} className="connect-wallet-btn">
+        Connect Wallet
+      </button>
+    </div>
+  );
+}
+
+function PermissionStep() {
+  const gamePermissions = {
+    approvedTargets: gameContracts,
+    startDate: new Date(),
+    endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7天
+    nativeTokenLimitPerTransaction: 0.001, // 小额ETH限制，用于gas
+  };
+
+  return (
+    <div className="setup-step">
+      <h2>🛡️ Grant Game Permissions</h2>
+      <p>Allow the game to perform actions on your behalf</p>
+      
+      <div className="permission-details">
+        <h3>This will allow the game to:</h3>
+        <ul>
+          <li>✅ Interact with game contracts</li>
+          <li>✅ Trade NFTs on your behalf</li>
+          <li>✅ Spend up to 0.001 ETH per transaction</li>
+          <li>✅ Valid for 7 days</li>
+        </ul>
+      </div>
+
+      <RequestPermissionsButton
+        chain={b3Chain}
+        sessionKeyAddress="0x..." // 你的会话密钥地址
+        permissions={gamePermissions}
+        onSuccess={() => {
+          console.log("Game permissions granted! Starting game...");
+        }}
+        onError={(error) => {
+          console.error("Permission grant failed:", error);
+        }}
+      />
+    </div>
+  );
+}
+
+function GameReadyState() {
+  const { account } = useB3();
+  const { wallet } = useAccountWallet();
+  
+  return (
+    <div className="game-ready">
+      <h2>🎯 Game Ready!</h2>
+      <div className="player-stats">
+        <div className="stat">
+          <label>Player:</label>
+          <span>{account?.displayName}</span>
+        </div>
+        <div className="stat">
+          <label>Wallet:</label>
+          <span>{wallet?.address?.substring(0, 6)}...{wallet?.address?.substring(-4)}</span>
+        </div>
+        <div className="stat">
+          <label>Balance:</label>
+          <span>{wallet?.balance} ETH</span>
+        </div>
+      </div>
+      
+      <div className="game-actions">
+        <button className="play-btn">Start Playing</button>
+        <button className="inventory-btn">View Inventory</button>
+        <button className="marketplace-btn">Marketplace</button>
+      </div>
+    </div>
+  );
+}
+
+export default GameApp;
+```
+
+## 电子商务应用示例
+
+展示在电子商务上下文中集成B3全球账户的示例。
+
+```tsx
+import {
+  B3Provider,
+  SignInWithB3,
+  useB3,
+  useAccountAssets
+} from "@b3dotfun/sdk/global-account/react";
+
+function EcommerceApp() {
+  return (
+    <B3Provider environment="production">
+      <ShopContainer />
+    </B3Provider>
+  );
+}
+
+function ShopContainer() {
+  const { isAuthenticated } = useB3();
+
+  return (
+    <div className="shop-container">
+      <header className="shop-header">
+        <h1>🛍️ B3 NFT Marketplace</h1>
+        <UserSection />
+      </header>
+
+      <main>
+        {isAuthenticated ? (
+          <AuthenticatedShop />
+        ) : (
+          <GuestShop />
+        )}
+      </main>
+    </div>
+  );
+}
+
+function UserSection() {
+  const { account, isAuthenticated, signOut } = useB3();
+
+  return (
+    <div className="user-section">
+      {isAuthenticated ? (
+        <div className="user-menu">
+          <img src={account?.avatarUrl} alt="Profile" className="avatar" />
+          <div className="dropdown">
+            <span>{account?.displayName}</span>
+            <div className="dropdown-content">
+              <button>My Collection</button>
+              <button>Purchase History</button>
+              <button onClick={signOut}>Sign Out</button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="auth-buttons">
+          <SignInWithB3
+            provider={{ strategy: "google" }}
+            partnerId="nft-marketplace"
+            onLoginSuccess={(account) => {
+              console.log("Welcome to the marketplace:", account.displayName);
+            }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AuthenticatedShop() {
+  const { assets } = useAccountAssets();
+
+  return (
+    <div className="authenticated-shop">
+      <section className="user-collection">
+        <h2>Your Collection</h2>
+        <div className="asset-grid">
+          {assets?.map((asset) => (
+            <div key={asset.id} className="asset-card">
+              <img src={asset.imageUrl} alt={asset.name} />
+              <h3>{asset.name}</h3>
+              <p className="price">{asset.value} {asset.currency}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="marketplace">
+        <h2>Marketplace</h2>
+        <MarketplaceGrid />
+      </section>
+    </div>
+  );
+}
+
+function GuestShop() {
+  return (
+    <div className="guest-shop">
+      <section className="hero">
+        <h2>Discover Amazing NFTs</h2>
+        <p>Sign in to start collecting and trading</p>
+        
+        <SignInWithB3
+          provider={{ strategy: "google" }}
+          partnerId="nft-marketplace"
+          onLoginSuccess={() => {
+            console.log("User joined the marketplace!");
+          }}
+        />
+      </section>
+
+      <section className="featured">
+        <h2>Featured Collections</h2>
+        <MarketplaceGrid />
+      </section>
+    </div>
+  );
+}
+
+function MarketplaceGrid() {
+  // 模拟市场项目
+  const items = [
+    { id: 1, name: "Cool NFT #1", price: "0.1 ETH", image: "/nft1.jpg" },
+    { id: 2, name: "Rare Item #42", price: "0.5 ETH", image: "/nft2.jpg" },
+    // ... 更多项目
+  ];
+
+  return (
+    <div className="marketplace-grid">
+      {items.map((item) => (
+        <div key={item.id} className="marketplace-item">
+          <img src={item.image} alt={item.name} />
+          <h3>{item.name}</h3>
+          <p className="price">{item.price}</p>
+          <button className="buy-btn">Buy Now</button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default EcommerceApp;
+```
+
+## React Native 示例
+
+适用于React Native应用程序的示例。
+
+```tsx
+// App.tsx (React Native)
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { B3Provider, useB3 } from '@b3dotfun/sdk/global-account/react';
+
+function App() {
+  return (
+    <B3Provider environment="production">
+      <MainScreen />
+    </B3Provider>
+  );
+}
+
+function MainScreen() {
+  const { account, isAuthenticated, isLoading } = useB3();
+
+  if (isLoading) {
+    return (
+      <View style={styles.container}>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      {isAuthenticated ? (
+        <AuthenticatedView account={account} />
+      ) : (
+        <SignInView />
+      )}
+    </View>
+  );
+}
+
+function SignInView() {
+  return (
+    <View style={styles.signInContainer}>
+      <Text style={styles.title}>Welcome to B3 Mobile</Text>
+      
+      {/* React Native实现将使用原生认证流程 */}
+      <TouchableOpacity style={styles.signInButton}>
+        <Text style={styles.buttonText}>Sign In with Google</Text>
+      </TouchableOpacity>
+      
+      <TouchableOpacity style={styles.signInButton}>
+        <Text style={styles.buttonText}>Sign In with Discord</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+function AuthenticatedView({ account }) {
+  const { signOut } = useB3();
+
+  return (
+    <View style={styles.authenticatedContainer}>
+      <Text style={styles.welcomeText}>
+        Welcome, {account?.displayName}!
+      </Text>
+      
+      <TouchableOpacity 
+        style={styles.signOutButton}
+        onPress={signOut}
+      >
+        <Text style={styles.buttonText}>Sign Out</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+  },
+  signInContainer: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 30,
+  },
+  signInButton: {
+    backgroundColor: '#007AFF',
+    padding: 15,
+    borderRadius: 10,
+    marginVertical: 10,
+    minWidth: 200,
+  },
+  signOutButton: {
+    backgroundColor: '#FF3B30',
+    padding: 15,
+    borderRadius: 10,
+    marginTop: 20,
+  },
+  buttonText: {
+    color: 'white',
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  authenticatedContainer: {
+    alignItems: 'center',
+  },
+  welcomeText: {
+    fontSize: 20,
+    marginBottom: 20,
+  },
+});
+
+export default App;
+```
+
+## Next.js 应用路由示例
+
+适用于Next.js 13+应用路由的示例。
+
+```tsx
+// app/layout.tsx
+import { B3Provider } from '@b3dotfun/sdk/global-account/react';
+import '@b3dotfun/sdk/index.css';
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body>
+        <B3Provider environment="production">
+          {children}
+        </B3Provider>
+      </body>
+    </html>
+  );
+}
+
+// app/page.tsx
+'use client';
+
+import { useB3 } from '@b3dotfun/sdk/global-account/react';
+import AuthComponent from './components/AuthComponent';
+import Dashboard from './components/Dashboard';
+
+export default function HomePage() {
+  const { isAuthenticated, isLoading } = useB3();
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <main>
+      {isAuthenticated ? <Dashboard /> : <AuthComponent />}
+    </main>
+  );
+}
+
+// app/components/AuthComponent.tsx
+'use client';
+
+import { SignInWithB3 } from '@b3dotfun/sdk/global-account/react';
+
+export default function AuthComponent() {
+  return (
+    <div className="auth-container">
+      <h1>Welcome to B3 App</h1>
+      
+      <SignInWithB3
+        provider={{ strategy: "google" }}
+        partnerId="nextjs-app"
+        onLoginSuccess={(account) => {
+          console.log("Next.js auth success:", account);
+        }}
+      />
+    </div>
+  );
+}
+```
+
+## 高级自定义钩子示例
+
+结合多个B3功能的自定义钩子：
+
+```tsx
+import { 
+  useB3, 
+  usePermissions, 
+  useAccountWallet,
+  useAccountAssets 
+} from "@b3dotfun/sdk/global-account/react";
+
+function useB3GameState() {
+  const { account, isAuthenticated } = useB3();
+  const { hasPermissions, isExpired, permissions } = usePermissions();
+  const { wallet, isConnected } = useAccountWallet();
+  const { assets } = useAccountAssets();
+
+  // 计算游戏准备状态
+  const isGameReady = isAuthenticated && hasPermissions && !isExpired && isConnected;
+  
+  // 获取游戏特定资产（NFTs, tokens）
+  const gameAssets = assets?.filter(asset => 
+    asset.contractAddress && 
+    permissions?.approvedTargets.includes(asset.contractAddress)
+  ) || [];
+
+  // 计算总游戏价值
+  const totalGameValue = gameAssets.reduce((sum, asset) => sum + asset.value, 0);
+
+  // 游戏状态对象
+  const gameState = {
+    player: {
+      id: account?.id,
+      name: account?.displayName,
+      avatar: account?.avatarUrl,
+      email: account?.email,
+    },
+    wallet: {
+      address: wallet?.address,
+      balance: wallet?.balance,
+      chainId: wallet?.chainId,
+    },
+    permissions: {
+      active: hasPermissions && !isExpired,
+      expires: permissions?.endDate,
+      contracts: permissions?.approvedTargets || [],
+    },
+    assets: {
+      items: gameAssets,
+      count: gameAssets.length,
+      totalValue: totalGameValue,
+    },
+    status: {
+      authenticated: isAuthenticated,
+      connected: isConnected,
+      authorized: hasPermissions && !isExpired,
+      ready: isGameReady,
+    }
+  };
+
+  return {
+    gameState,
+    isGameReady,
+    gameAssets,
+    totalGameValue,
+  };
+}
+
+// 在游

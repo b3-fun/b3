@@ -1,0 +1,28 @@
+---
+title: Perkiraan Harga Migrasi
+description: >-
+  Mengestimasi harga pada migrasi dan pertimbangan untuk inisialisasi Uniswap
+  v4.
+lang: id
+originalPath: bondkit/guides/est-migration-price.mdx
+---
+## Tinjauan Umum
+
+Migrasi menginisialisasi kolam Uniswap v4. Kontrak menghitung `sqrtPriceX96` dari keadaan bonding.
+
+## Pendekatan Praktis
+
+- Gunakan pembacaan bonding untuk mendekati harga di dekat target:
+- `getCurrentBondingCurvePricePerToken()`
+- `getBondingProgress()`
+
+## Pertimbangan
+
+- Pembagian akhir dan jumlah likuiditas dapat mempengaruhi ticks awal.
+- Perlindungan slippage diterapkan saat menambahkan likuiditas.
+- Untuk aset kutipan ERC20, pastikan pasangan dan desimal diperhitungkan saat mengonversi ke `sqrtPriceX96`.
+
+<Note>
+Matematika inisialisasi yang tepat ditangani di rantai. Gunakan pembacaan untuk estimasi UI; perlakukan inisialisasi akhir di rantai sebagai sumber kebenaran.
+</Note>
+

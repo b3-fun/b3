@@ -1,0 +1,133 @@
+---
+title: Instalasi & Pengaturan
+description: 'Memulai dengan AnySpend - instalasi, pengaturan dasar, dan verifikasi'
+lang: id
+originalPath: anyspend/installation.mdx
+---
+<iframe class="w-full aspect-video rounded-xl mb-6" src="https://customer-gg6qs7nm5ue94t64.cloudflarestream.com/66d9ebc2e3a14ec87dfa360b83e26900/iframe?poster=https%3A%2F%2Fcustomer-gg6qs7nm5ue94t64.cloudflarestream.com%2F66d9ebc2e3a14ec87dfa360b83e26900%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D168%26height%3D600" title="Pengaturan AnySpend" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen />
+
+## Prasyarat
+
+<CardGroup cols={3}>
+  <Card title="Node.js" icon="node-js">
+    v20.15.0 atau lebih tinggi
+  </Card>
+  <Card title="React" icon="react">
+    Versi 18 atau 19
+  </Card>
+  <Card title="TypeScript" icon="code">
+    Direkomendasikan untuk DX yang lebih baik
+  </Card>
+</CardGroup>
+
+## Instalasi
+
+Pilih manajer paket yang Anda sukai:
+
+<Tabs>
+  <Tab title="npm">
+    ```bash
+    npm install @b3dotfun/sdk
+    ```
+  </Tab>
+  <Tab title="pnpm">
+    ```bash
+    pnpm add @b3dotfun/sdk
+    ```
+  </Tab>
+</Tabs>
+
+## Pengaturan Dasar
+
+### 1. Pengaturan Provider
+
+Bungkus aplikasi Anda dengan `B3Provider` dan `AnyspendProvider` untuk mengaktifkan fungsionalitas AnySpend:
+
+```tsx App.tsx icon=react
+import { AnyspendProvider } from "@b3dotfun/sdk/anyspend/react";
+import { B3Provider } from "@b3dotfun/sdk/global-account/react";
+import "@b3dotfun/sdk/index.css";
+
+function App() {
+  return (
+    <B3Provider theme="light" environment="production">
+      <AnyspendProvider>{/* Komponen aplikasi Anda */}</AnyspendProvider>
+    </B3Provider>
+  );
+}
+
+export default App;
+```
+
+### 2. Konfigurasi Lingkungan
+
+<Tabs>
+  <Tab title="Mainnet">
+    **Endpoint**: `https://mainnet.anyspend.com`
+
+    Gunakan ini untuk aplikasi produksi dengan transaksi nyata.
+  </Tab>
+  <Tab title="Testnet">
+    **Endpoint**: `http://testnet.anyspend.com`
+
+    Gunakan ini untuk pengembangan dan pengujian dengan token tes.
+
+    Catatan: Testnet saat ini tidak tersedia.
+  </Tab>
+</Tabs>
+
+### 3. Konfigurasi TypeScript (Opsional tapi Direkomendasikan)
+
+<Note>
+  Jika Anda menggunakan TypeScript, pastikan `tsconfig.json` Anda mencakup pengaturan ini untuk kompatibilitas optimal:
+</Note>
+
+```json tsconfig.json icon=settings
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true
+  }
+}
+```
+
+## Verifikasi
+
+Buat komponen tes sederhana untuk memverifikasi pengaturan Anda bekerja dengan benar:
+
+```tsx TestComponent.tsx icon=test-tube lines
+import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
+
+function TestComponent() {
+  return <AnySpend />;
+}
+```
+
+## Langkah Selanjutnya
+
+<CardGroup cols={3}>
+  <Card title="Jelajahi Komponen" icon="puzzle-piece" href="/anyspend/components">
+    Pelajari tentang komponen yang tersedia untuk skenario pembayaran yang berbeda
+  </Card>
+  <Card title="Pelajari tentang Hooks" icon="link" href="/anyspend/hooks">
+    Temukan React hooks untuk membangun alur pembayaran kustom
+  </Card>
+  <Card title="Lihat Contoh" icon="code" href="/anyspend/examples">
+    Telusuri contoh implementasi dunia nyata
+  </Card>
+</CardGroup>
+
+## Pemecahan Masalah
+
+<AccordionGroup>
+  <Accordion title="Kesalahan Impor">
+    Pastikan Anda telah menginstal SDK dengan benar dan mengimpor file CSS. SDK memerlukan React 18\+ dan mungkin memiliki masalah kompatibilitas dengan versi yang lebih lama.
+  </Accordion>
+  <Accordion title="Provider Tidak Ditemukan">
+    Pastikan Anda memiliki `B3Provider` dan `AnyspendProvider` ditempatkan tinggi dalam pohon komponen Anda, biasanya dalam komponen App utama Anda.
+  </Accordion>
+  <Accordion title="Kesalahan TypeScript">
+    Jika Anda melihat kesalahan TypeScript, verifikasi `tsconfig.json` Anda mencakup pengaturan yang direkomendasikan di atas.
+  </Accordion>
+</AccordionGroup>

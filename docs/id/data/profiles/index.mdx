@@ -1,0 +1,190 @@
+---
+title: B3 Profil API
+description: >-
+  Layanan agregasi identitas onchain terpadu gratis dengan data identitas sosial
+  dari B3, Basement, ENS, Lens, dan Farcaster
+lang: id
+originalPath: data/profiles/index.mdx
+---
+<img src="/images/profiles-banner.jpg" alt="B3 Profiles API" className="w-full h-auto rounded-3xl" />
+
+<Card title="Free Social Profiles API" icon="user" href="/data/profiles/index">
+  Lihat referensi API profil
+</Card>
+
+## Ikhtisar
+
+Layanan B3 Profiles berfungsi sebagai data API untuk menyelesaikan identitas pengguna terdesentralisasi di seluruh ekosistem EVM. Ini mengagregasi data profil dari berbagai sumber dan protokol, menyediakan pengembang dengan satu titik akhir API untuk mengakses informasi pengguna yang komprehensif dan konteks sosial.
+
+## Fitur Utama
+
+<CardGroup cols={2}>
+  <Card title="Aggregasi Multi-Sumber" icon="network-wired">
+    Menggabungkan data dari Basement, ENS, Thirdweb Social, dan penyedia identitas Web3 lainnya
+  </Card>
+  <Card title="Integrasi Identitas Sosial" icon="users">
+    Mengambil profil sosial dari ENS, Lens Protocol, dan jaringan Farcaster
+  </Card>
+  <Card title="Pencachingan Cerdas" icon="database">
+    Menggunakan penyimpanan KV Cloudflare untuk pencachingan data yang efisien dengan TTL yang dapat dikonfigurasi
+  </Card>
+  <Card title="Preferensi Pengguna" icon="gear">
+    Memungkinkan pengguna untuk menetapkan sumber profil yang disukai melalui tanda tangan kriptografis
+  </Card>
+</CardGroup>
+
+## Sumber Data yang Didukung
+
+- ENS (Ethereum Name Service)
+- Lens Protocol
+- Farcaster
+- B3.ID
+- Profil Basement
+
+## Titik Akhir API
+
+<Note>
+[Lihat referensi API](/data/profiles/index) untuk detail lebih lanjut.
+</Note>
+
+### Pencarian Profil
+Ambil informasi profil teragregasi untuk alamat dompet atau nama pengguna apa pun.
+
+```bash
+GET https://profiles.b3.fun/?address=0x1234567890abcdef1234567890abcdef12345678
+GET https://profiles.b3.fun/?name=vitalik.eth
+GET https://profiles.b3.fun/?name=sean.b3.fun
+```
+
+### Menetapkan Preferensi Profil
+Memungkinkan pengguna untuk menentukan sumber profil yang disukai melalui tanda tangan kriptografis.
+
+```bash
+POST /preference
+```
+
+### Nama Tampilan Kustom
+Memungkinkan pengguna untuk menetapkan nama tampilan kustom yang menggantikan semua sumber lain.
+
+```bash
+POST /display-name
+```
+
+## Format Respons
+
+Layanan mengembalikan objek profil terpadu yang menggabungkan data dari semua sumber:
+
+```json
+{
+  "name": "vitalik.eth",
+  "address": "0x1234567890abcdef1234567890abcdef12345678",
+  "avatar": "https://example.com/avatar.jpg",
+  "bio": "Co-founder Ethereum",
+  "displayName": "Vitalik Buterin",
+  "profiles": [
+    {
+      "type": "ensdata",
+      "address": "0x123...",
+      "name": "vitalik.eth",
+      "avatar": "https://...",
+      "bio": null,
+      "displayName": null
+    },
+    {
+      "type": "thirdweb-farcaster",
+      "address": "0x123...",
+      "name": "vitalik",
+      "avatar": "https://...",
+      "bio": "Co-founder Ethereum",
+      "displayName": "Vitalik Buterin"
+    }
+  ]
+}
+```
+
+## Kasus Penggunaan
+
+<CardGroup cols={1}>
+  <Card title="Autentikasi Dompet yang Ditingkatkan" icon="shield-check">
+    Memberikan konteks kaya tentang pengguna saat koneksi dompet, menampilkan identitas sosial dan reputasi Web3 mereka di berbagai platform.
+  </Card>
+  <Card title="Integrasi Gaming Sosial" icon="gamepad">
+    Menampilkan profil pemain yang komprehensif dalam game, termasuk nama ENS, pegangan sosial, dan identitas lintas platform.
+  </Card>
+  <Card title="Pengalaman Pengguna DeFi" icon="coins">
+    Meningkatkan antarmuka perdagangan dengan menampilkan identitas pedagang dari Lens, Farcaster, dan ENS bukan hanya alamat dompet.
+  </Card>
+  <Card title="Manajemen Komunitas" icon="users-gear">
+    Membangun alat komunitas yang lebih baik dengan mengagregasi identitas pengguna dari berbagai platform sosial Web3.
+  </Card>
+</CardGroup>
+
+
+## Contoh Penggunaan
+
+### Pencarian Profil Dasar
+
+```javascript
+// Ambil profil berdasarkan alamat
+const response = await fetch('https://profiles.b3.fun/?address=0x123...');
+const profile = await response.json();
+
+console.log(profile.displayName); // "Vitalik Buterin"
+console.log(profile.profiles.length); // Jumlah sumber yang ditemukan
+```
+
+### Resolusi Nama ENS
+
+```javascript
+// Ambil profil berdasarkan nama ENS
+const response = await fetch('https://profiles.b3.fun/?name=vitalik.eth');
+const profile = await response.json();
+
+console.log(profile.address); // Alamat dompet yang diselesaikan
+console.log(profile.avatar); // URL avatar ENS
+```
+
+### Menetapkan Preferensi Pengguna
+
+```javascript
+// Tetapkan sumber profil yang disukai dengan tanda tangan
+const message = `SetProfilePreference:${address}:thirdweb-farcaster:${timestamp}`;
+const signature = await wallet.signMessage(message);
+
+await fetch('https://profiles.b3.fun/preference', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    key: address,
+    preferredType: 'thirdweb-farcaster',
+    signature,
+    signer: address,
+    timestamp
+  })
+});
+```
+
+## Performa & Pencachingan
+
+- **Durasi Cache**: 1 jam untuk data profil
+- **Data Segar**: Gunakan `?fresh=true` untuk melewati cache
+- **CDN Global**: Didukung oleh jaringan edge Cloudflare
+- **Penyimpanan KV**: Penyimpanan kunci-nilai yang efisien untuk preferensi
+
+## Batas Tarif
+
+Layanan mewarisi perlindungan DDoS bawaan Cloudflare dan pembatasan tarif. Untuk aplikasi bervolume tinggi, pertimbangkan untuk mengimplementasikan caching sisi klien atau hubungi tim B3 untuk akses perusahaan.
+
+## Membangun onchain menjadi mudah
+<Note>
+[Lihat referensi API](/data/profiles/index) untuk detail lebih lanjut.
+</Note>
+
+<CardGroup cols={2}>
+  <Card title="B3 Data API" href="/data/api-reference/introduction">
+    Data blockchain dan analitik yang komprehensif
+  </Card>
+  <Card title="B3 SDK" href="/sdk/introduction">
+    B3 SDK untuk operasi lintas rantai dan autentikasi akun global
+  </Card>
+</CardGroup>

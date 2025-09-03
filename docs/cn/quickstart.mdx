@@ -1,0 +1,129 @@
+---
+title: 快速开始
+description: 在几分钟内开始使用 B3 SDK，并开始在 B3 生态系统上构建
+lang: cn
+originalPath: quickstart.mdx
+---
+### 步骤 1：安装 B3 SDK
+<Steps>
+  <Step title="安装 SDK 包">
+    选择您偏好的包管理器来安装 B3 SDK：
+
+    <CodeGroup>
+    ```bash npm
+    npm install @b3dotfun/sdk
+    ```
+    ```bash pnpm
+    pnpm add @b3dotfun/sdk
+    ```
+    ```bash yarn
+    yarn add @b3dotfun/sdk
+    ```
+    </CodeGroup>
+
+    <Tip>B3 SDK 自带 TypeScript 定义！</Tip>
+  </Step>
+
+  <Step title="导入 CSS 样式">
+    在您的应用程序中导入默认样式：
+
+    ```typescript
+    import "@b3dotfun/sdk/index.css";
+    ```
+  </Step>
+</Steps>
+
+### 步骤 2：添加 B3Provider
+在您应用程序的根部署 B3Provider：
+
+```tsx
+import { B3Provider, SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
+
+function App() {
+  return (
+    <B3Provider environment="production">
+      {children}
+    </B3Provider>
+  );
+}
+```
+
+
+### 步骤 3：使用 B3 SDK
+<AccordionGroup>
+ <Accordion icon="swap" title="即时账户">
+    使用 B3 启用全球账户认证：
+
+    ```tsx
+    import { SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
+
+    function App() {
+      return (
+        <B3Provider environment="production">
+          <SignInWithB3
+            provider={{ strategy: "google" }}
+            partnerId="your-partner-id"
+            onLoginSuccess={(globalAccount) => {
+              console.log("Authenticated:", globalAccount);
+            }}
+          />
+        </B3Provider>
+      );
+    }
+    ```
+  </Accordion>
+  <Accordion icon="swap" title="访问流动性">
+    启用跨链交换 & 自定义交互 AnySpend：
+
+    ```tsx
+    import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
+
+    function SwapPage() {
+      return <AnySpend mode="page" />;
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### 步骤 4：探索生态系统
+
+<Card title="发现 B3 生态系统" icon="globe" href="/ecosystem/introduction">
+  了解完整的 B3 生态系统、工具和为构建者提供的资源。
+</Card>
+
+## 下一步是什么？
+
+现在您已经安装了 B3 SDK，探索这些强大的功能：
+
+<CardGroup cols={2}>
+
+<Card title="全球账户" icon="user" href="/sdk/global-account/introduction">
+  在 B3 生态系统中无缝的认证和用户管理。
+</Card>
+
+<Card title="数据 API" icon="user" href="/data/api-reference/introduction">
+  访问代币、NFT、个人资料和分析的区块链数据。
+</Card>
+
+<Card title="AnySpend SDK" icon="arrows-cross" href="/anyspend/introduction">
+  跨链交换、NFT 铸造和区块链操作。
+</Card>
+
+<Card title="示例 & 演示" icon="code" href="/sdk/introduction">
+  现成的示例和集成模式。
+</Card>
+
+</CardGroup>
+
+## 平台支持
+
+| 功能             | React Web | React Native |
+| ----------------- | --------- | ------------ |
+| AnySpend          | ✅         | ❌            |
+| 全球账户          | ✅         | ✅            |
+| 无头服务          | ✅         | ✅            |
+
+<Note>
+  **需要帮助？** 加入我们的 [Discord 社区](https://discord.gg/b3dotfun) 或查看
+  [生态系统介绍](/ecosystem/introduction) 获取全面的资源。
+</Note>

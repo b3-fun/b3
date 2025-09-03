@@ -1,0 +1,492 @@
+---
+title: 예시 및 사용 사례
+description: 실제 사례로 본 일반적인 AnySpend 통합 패턴
+lang: ko
+originalPath: anyspend/examples.mdx
+---
+# 예시 및 사용 사례
+
+일반적인 AnySpend 통합 패턴에 대한 실제 구현 예시, 단순한 스왑부터 복잡한 DeFi 및 게임 애플리케이션에 이르기까지.
+
+## 🔄 크로스 체인 토큰 스왑
+
+### 기본 스왑 인터페이스
+
+DeFi 애플리케이션, 포트폴리오 관리자 또는 토큰 교환 기능이 필요한 모든 앱에 적합합니다.
+
+```tsx title="Simple Swap Page" icon="exchange-alt"
+import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
+
+function TokenSwapPage() {
+  const [userAddress] = useWallet(); // 지갑 훅
+
+  return (
+    <div className="swap-container">
+      <h1>토큰 스왑</h1>
+      <AnySpend
+        mode="page"
+        recipientAddress={userAddress}
+        onSuccess={(txHash) => {
+          // 사용자 포트폴리오 업데이트
+          toast.success("스왑이 성공적으로 완료되었습니다!");
+
+          // 선택사항: 분석 추적
+          analytics.track("swap_completed", {
+            txHash,
+            userAddress,
+          });
+
+          // 사용자 잔액 새로고침
+          queryClient.invalidateQueries(['user-balances', userAddress]);
+        }}
+      />
+    </div>
+  );
+}
+```
+
+### 견적 미리보기가 포함된 고급 스왑
+
+```tsx title="Advanced Swap Interface" icon="chart-line" lines
+import { useAnyspendQuote, AnySpend } from "@b3dotfun/sdk/anyspend/react";
+
+function AdvancedSwapInterface() {
+  const [fromToken, setFromToken] = useState(USDC_ETHEREUM);
+  const [toToken, setToToken] = useState(ETH_B3);
+  const [amount, setAmount] = useState("100");
+  const [isSwapOpen, setIsSwapOpen] = useState(false);
+
+  const quoteRequest = useMemo(() => ({
+    srcChain: fromToken.chainId,
+    dstChain: toToken.chainId,
+    srcTokenAddress: fromToken.address,
+    dstTokenAddress: toToken.address,
+    type: "swap" as const,
+    tradeType: "EXACT_INPUT" as const,
+    amount: parseUnits(amount || "0", fromToken.decimals).toString(),
+  }), [fromToken, toToken, amount]);
+
+  const { anyspendQuote, isLoadingAnyspendQuote } = useAnyspendQuote(quoteRequest);
+
+  return (
+    <div className="advanced-swap">
+      <div className="swap-form">
+        <TokenInput
+          label="From"
+          token={fromToken}
+          amount={amount}
+          onTokenChange={setFromToken}
+          onAmountChange={setAmount}
+        />
+
+        <SwapArrowButton onClick={() => {
+          setFromToken(toToken);
+          setToToken(fromToken);
+        }} />
+
+        <TokenInput
+          label="To"
+          token={toToken}
+          amount={anyspendQuote?.expectedOutput || "0"}
+          onTokenChange={setToToken}
+          readOnly
+        />
+
+        {anyspendQuote && (
+          <div className="quote-details">
+            <div>환율: 1 {fromToken.symbol} = {anyspendQuote.rate} {toToken.symbol}</div>
+            <div>네트워크 수수료: ${anyspendQuote.networkFeeUsd}</div>
+            <div>서비스 수수료: ${anyspendQuote.serviceFeeUsd}</div>
+            <div>총액: ${anyspendQuote.totalUsdCost}</div>
+          </div>
+        )}
+
+        <button
+          onClick={() => setIsSwapOpen(true)}
+          disabled={isLoadingAnyspendQuote || !anyspendQuote}
+          className="swap-button"
+        >
+          {isLoadingAnyspendQuote ? "견적 받는 중..." : "토큰 스왑"}
+        </button>
+      </div>
+
+      {isSwapOpen && (
+        <AnySpend
+          mode="modal"
+          recipientAddress={userAddress}
+          destinationTokenAddress={toToken.address}
+          destinationTokenChainId={toToken.chainId}
+          onSuccess={() => {
+            setIsSwapOpen(false);
+            toast.success("스왑 완료!");
+          }}
+        />
+      )}
+    </div>
+  );
+}
+```
+
+## 🖼️ NFT 마켓플레이스 통합
+
+### 간단한 NFT 구매
+
+```tsx title="NFT Card Component" icon="image" lines
+import { AnySpendNFTButton } from "@b3dotfun/sdk/anyspend/react";
+
+function NFTCard({ nft }: { nft: NFTListing }) {
+  const [userAddress] = useWallet();
+  const [isOwned, setIsOwned] = useState(false);
+
+  const nftContract = {
+    chainId: nft.chainId,
+    contractAddress: nft.contractAddress,
+    price: nft.priceWei,
+    priceFormatted: nft.priceFormatted,
+    currency: nft.currency,
+    name: nft.name,
+    description: nft.description,
+    imageUrl: nft.imageUrl,
+  };
+
+  return (
+    <div className="nft-card">
+      <img src={nft.imageUrl} alt={nft.name} />
+      <div className="nft-details">
+        <h3>{nft.name}</h3>
+        <p>{nft.description}</p>
+        <div className="price">
+          {nft.priceFormatted} {nft.currency.symbol}
+        </div>
+
+        {isOwned ? (
+          <div className="owned-badge">✅ 소유</div>
+        ) : (
+          <AnySpendNFTButton
+            nftContract={nftContract}
+            recipientAddress={userAddress}
+            onSuccess={(txHash) => {
+              setIsOwned(true);
+
+              // 사용자의 NFT 컬렉션 업데이트
+              queryClient.invalidateQueries(['user-nfts', userAddress]);
+
+              // 탐색기 링크와 함께 성공 메시지 표시
+              toast.success(
+                <div>
+                  NFT 구매 성공!
+                  <a href={`https://explorer.b3.fun/tx/${txHash}`} target="_blank">
+                    거래 보기
+                  </a>
+                </div>
+              );
+            }}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+```
+
+### 대량 구매가 포함된 NFT 마켓플레이스
+
+```tsx title="Bulk NFT Purchase" icon="shopping-cart" lines
+function NFTMarketplace() {
+  const [selectedNFTs, setSelectedNFTs] = useState<NFTListing[]>([]);
+  const [userAddress] = useWallet();
+
+  const handleBulkPurchase = () => {
+    // 대량 구매의 경우 여러 주문을 생성하거나 배치 계약을 사용
+    selectedNFTs.forEach((nft, index) => {
+      setTimeout(() => {
+        // 속도 제한을 피하기 위해 구매를 순차적으로 실행
+        createSingleNFTPurchase(nft);
+      }, index * 1000);
+    });
+  };
+
+  return (
+    <div className="marketplace">
+      <div className="nft-grid">
+        {nfts.map((nft) => (
+          <NFTCard
+            key={nft.id}
+            nft={nft}
+            onSelect={(selected) => {
+              if (selected) {
+                setSelectedNFTs([...selectedNFTs, nft]);
+              } else {
+                setSelectedNFTs(selectedNFTs.filter(n => n.id !== nft.id));
+              }
+            }}
+          />
+        ))}
+      </div>
+
+      {selectedNFTs.length > 0 && (
+        <div className="bulk-purchase">
+          <p>선택됨: {selectedNFTs.length} NFTs</p>
+          <p>총액: {calculateTotal(selectedNFTs)} ETH</p>
+          <button onClick={handleBulkPurchase}>
+            선택된 NFT 구매
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## 🎮 게임 및 DeFi 애플리케이션
+
+### 스테이킹 인터페이스
+
+```tsx title="Staking Pool Component" icon="coins" lines
+import { AnySpendCustom } from "@b3dotfun/sdk/anyspend/react";
+import { encodeFunctionData } from "viem";
+
+function StakingPool({ pool }: { pool: StakingPool }) {
+  const [stakeAmount, setStakeAmount] = useState("");
+  const [stakingDuration, setStakingDuration] = useState(30);
+  const [userAddress] = useWallet();
+
+  const stakingCalldata = useMemo(() => {
+    if (!stakeAmount) return "0x";
+
+    const amountWei = parseUnits(stakeAmount, pool.token.decimals);
+
+    return encodeFunctionData({
+      abi: stakingPoolABI,
+      functionName: "stake",
+      args: [amountWei, stakingDuration * 24 * 60 * 60], // 초 단위 기간
+    });
+  }, [stakeAmount, stakingDuration]);
+
+  const expectedRewards = useMemo(() => {
+    if (!stakeAmount) return "0";
+    const amount = parseFloat(stakeAmount);
+    const apy = pool.apy / 100;
+    const durationInYears = stakingDuration / 365;
+    return (amount * apy * durationInYears).toFixed(4);
+  }, [stakeAmount, stakingDuration, pool.apy]);
+
+  return (
+    <div className="staking-pool">
+      <div className="pool-info">
+        <h2>{pool.name}</h2>
+        <p>APY: {pool.apy}%</p>
+        <p>TVL: ${pool.totalValueLocked.toLocaleString()}</p>
+      </div>
+
+      <div className="stake-form">
+        <div className="input-group">
+          <label>스테이크할 금액</label>
+          <input
+            type="number"
+            value={stakeAmount}
+            onChange={(e) => setStakeAmount(e.target.value)}
+            placeholder="0.0"
+          />
+          <span>{pool.token.symbol}</span>
+        </div>
+
+        <div className="input-group">
+          <label>스테이킹 기간</label>
+          <select
+            value={stakingDuration}
+            onChange={(e) => setStakingDuration(Number(e.target.value))}
+          >
+            <option value={7}>7일 (2% APY)</option>
+            <option value={30}>30일 (5% APY)</option>
+            <option value={90}>90일 (8% APY)</option>
+            <option value={365}>1년 (12% APY)</option>
+          </select>
+        </div>
+
+        <div className="rewards-preview">
+          <p>예상 보상: {expectedRewards} {pool.token.symbol}</p>
+        </div>
+
+        <AnySpendCustom
+          orderType="custom"
+          dstChainId={pool.chainId}
+          dstToken={pool.token}
+          dstAmount={parseUnits(stakeAmount || "0", pool.token.decimals).toString()}
+          contractAddress={pool.contractAddress}
+          encodedData={stakingCalldata}
+          metadata={{
+            action: "stake",
+            poolId: pool.id,
+            duration: stakingDuration,
+            expectedRewards,
+          }}
+          header={({ anyspendPrice, isLoadingAnyspendPrice }) => (
+            <div className="staking-header">
+              <h3>{pool.token.symbol} 스테이킹</h3>
+              <div className="stake-summary">
+                <div>금액: {stakeAmount} {pool.token.symbol}</div>
+                <div>기간: {stakingDuration}일</div>
+                <div>예상 보상: {expectedRewards} {pool.token.symbol}</div>
+                {anyspendPrice && (
+                  <div>총 비용: ${anyspendPrice.totalUsdCost}</div>
+                )}
+              </div>
+            </div>
+          )}
+          onSuccess={(txHash) => {
+            toast.success("스테이킹 성공!");
+
+            // 사용자의 스테이킹 포지션 업데이트
+            queryClient.invalidateQueries(['staking-positions', userAddress]);
+
+            // 폼 초기화
+            setStakeAmount("");
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+```
+
+### 게임 스핀 휠
+
+```tsx title="Spin Wheel Game" icon="gamepad" lines
+import { AnySpendBuySpin } from "@b3dotfun/sdk/anyspend/react";
+
+function SpinWheel({ game }: { game: GameConfig }) {
+  const [userAddress] = useWallet();
+  const [spinHistory, setSpinHistory] = useState<SpinResult[]>([]);
+
+  return (
+    <div className="spin-game">
+      <div className="wheel-container">
+        <SpinWheelVisual prizes={game.prizes} />
+      </div>
+
+      <div className="game-info">
+        <h2>{game.name}</h2>
+        <p>스핀당 비용: {game.spinCost} {game.currency.symbol}</p>
+        <div className="prizes">
+          <h3>가능한 상품:</h3>
+          {game.prizes.map((prize, index) => (
+            <div key={index} className="prize">
+              <span>{prize.name}</span>
+              <span>{prize.probability}% 확률</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <AnySpendBuySpin
+        gameContract={game.contractAddress}
+        spinPrice={game.spinCostWei}
+        recipientAddress={userAddress}
+        onSuccess={(txHash) => {
+          // 스핀 결과 처리
+          fetchSpinResult(txHash).then((result) => {
+            setSpinHistory([result, ...spinHistory]);
+
+            if (result.isWinner) {
+              toast.success(`당신은 ${result.prize}을(를) 이겼습니다! 🎉`);
+            } else {
+              toast.info("다음 기회에!");
+            }
+          });
+        }}
+      />
+
+      <div className="spin-history">
+        <h3>최근 스핀</h3>
+        {spinHistory.map((spin, index) => (
+          <div key={index} className={`spin-result ${spin.isWinner ? 'winner' : ''}`}>
+            <span>{spin.prize || "상품 없음"}</span>
+            <span>{new Date(spin.timestamp).toLocaleTimeString()}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+### 토너먼트 참가
+
+```tsx title="Tournament Entry" icon="trophy" lines
+import { AnySpendTournament } from "@b3dotfun/sdk/anyspend/react";
+
+function TournamentEntry({ tournament }: { tournament: Tournament }) {
+  const [userAddress] = useWallet();
+  const [isRegistered, setIsRegistered] = useState(false);
+
+  return (
+    <div className="tournament-entry">
+      <div className="tournament-info">
+        <h2>{tournament.name}</h2>
+        <p>상금 풀: ${tournament.prizePool.toLocaleString()}</p>
+        <p>참가비: {tournament.entryFee} {tournament.currency.symbol}</p>
+        <p>플레이어: {tournament.currentPlayers}/{tournament.maxPlayers}</p>
+        <p>시작: {new Date(tournament.startTime).toLocaleString()}</p>
+      </div>
+
+      {isRegistered ? (
+        <div className="registered">
+          <span className="check-icon">✅</span>
+          <span>등록 완료!</span>
+          <p>토너먼트 시작 {formatTimeUntil(tournament.startTime)}</p>
+        </div>
+      ) : (
+        <AnySpendTournament
+          tournamentId={tournament.id}
+          entryFee={tournament.entryFeeWei}
+          recipientAddress={userAddress}
+          onSuccess={(txHash) => {
+            setIsRegistered(true);
+
+            // 토너먼트 참가자 수 업데이트
+            queryClient.invalidateQueries(['tournament', tournament.id]);
+
+            toast.success("토너먼트 등록 성공!");
+          }}
+        />
+      )}
+
+      <div className="tournament-rules">
+        <h3>규칙</h3>
+        <ul>
+          {tournament.rules.map((rule, index) => (
+            <li key={index}>{rule}</li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+```
+
+## 💰 법정 화폐에서 암호 화폐로의 온램프
+
+### 간단한 온보딩 흐름
+
+```tsx title="User Onboarding" icon="credit-card" lines
+function UserOnboarding() {
+  const [step, setStep] = useState(1);
+  const [userAddress] = useWallet();
+
+  return (
+    <div className="onboarding">
+      <div className="progress-bar">
+        <div className={`step ${step >= 1 ? 'active' : ''}`}>1. 지갑 연결</div>
+        <div className={`step ${step >= 2 ? 'active' : ''}`}>2. 암호 화폐 구매</div>
+        <div className={`step ${step >= 3 ? 'active' : ''}`}>3. 사용 시작</div>
+      </div>
+
+      {step === 1 && (
+        <div className="step-content">
+          <h2>환영합니다! 시작해볼까요</h2>
+          <p>먼저, 계속하려면 지갑을 연결하세요.</p>
+          <WalletConnectButton onConnect={() => setStep(2)} />
+        </div>
+      )}
+

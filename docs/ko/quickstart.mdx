@@ -1,0 +1,129 @@
+---
+title: Quickstart
+description: 몇 분 안에 B3 SDK를 시작하고 B3 생태계 위에서 구축을 시작하세요
+lang: ko
+originalPath: quickstart.mdx
+---
+### 1단계: B3 SDK 설치
+<Steps>
+  <Step title="SDK 패키지 설치">
+    선호하는 패키지 관리자를 사용하여 B3 SDK를 설치하세요:
+
+    <CodeGroup>
+    ```bash npm
+    npm install @b3dotfun/sdk
+    ```
+    ```bash pnpm
+    pnpm add @b3dotfun/sdk
+    ```
+    ```bash yarn
+    yarn add @b3dotfun/sdk
+    ```
+    </CodeGroup>
+
+    <Tip>B3 SDK는 TypeScript 정의를 기본으로 포함하고 있습니다!</Tip>
+  </Step>
+
+  <Step title="CSS 스타일 가져오기">
+    애플리케이션에 기본 스타일을 가져옵니다:
+
+    ```typescript
+    import "@b3dotfun/sdk/index.css";
+    ```
+  </Step>
+</Steps>
+
+### 2단계: B3Provider 추가
+애플리케이션의 루트 주변에 B3Provider를 감싸세요:
+
+```tsx
+import { B3Provider, SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
+
+function App() {
+  return (
+    <B3Provider environment="production">
+      {children}
+    </B3Provider>
+  );
+}
+```
+
+
+### 3단계: B3 SDK 사용
+<AccordionGroup>
+ <Accordion icon="swap" title="즉시 계정">
+    B3를 사용한 글로벌 계정 인증 활성화:
+
+    ```tsx
+    import { SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
+
+    function App() {
+      return (
+        <B3Provider environment="production">
+          <SignInWithB3
+            provider={{ strategy: "google" }}
+            partnerId="your-partner-id"
+            onLoginSuccess={(globalAccount) => {
+              console.log("Authenticated:", globalAccount);
+            }}
+          />
+        </B3Provider>
+      );
+    }
+    ```
+  </Accordion>
+  <Accordion icon="swap" title="유동성 접근">
+    AnySpend를 사용한 크로스체인 스왑 및 사용자 정의 상호작용 활성화:
+
+    ```tsx
+    import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
+
+    function SwapPage() {
+      return <AnySpend mode="page" />;
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### 4단계: 생태계 탐색
+
+<Card title="B3 생태계 발견" icon="globe" href="/ecosystem/introduction">
+  빌더를 위한 B3 생태계, 도구 및 리소스에 대해 알아보세요.
+</Card>
+
+## 다음 단계는?
+
+이제 B3 SDK를 설치했으니, 이러한 강력한 기능을 탐색하세요:
+
+<CardGroup cols={2}>
+
+<Card title="글로벌 계정" icon="user" href="/sdk/global-account/introduction">
+  B3 생태계 전반에 걸친 원활한 인증 및 사용자 관리.
+</Card>
+
+<Card title="데이터 API" icon="user" href="/data/api-reference/introduction">
+  토큰, NFT, 프로필 및 분석을 위한 블록체인 데이터 접근.
+</Card>
+
+<Card title="AnySpend SDK" icon="arrows-cross" href="/anyspend/introduction">
+  크로스체인 스왑, NFT 민팅 및 블록체인 작업.
+</Card>
+
+<Card title="예제 및 데모" icon="code" href="/sdk/introduction">
+  사용 가능한 예제 및 통합 패턴.
+</Card>
+
+</CardGroup>
+
+## 플랫폼 지원
+
+| 기능               | React Web | React Native |
+| ----------------- | --------- | ------------ |
+| AnySpend          | ✅         | ❌            |
+| 글로벌 계정       | ✅         | ✅            |
+| 헤드리스 서비스   | ✅         | ✅            |
+
+<Note>
+  **도움이 필요하신가요?** 우리의 [Discord 커뮤니티](https://discord.gg/b3dotfun)에 가입하거나
+  [생태계 소개](/ecosystem/introduction)를 확인하여 종합적인 리소스를 확인하세요.
+</Note>

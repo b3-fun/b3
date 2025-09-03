@@ -1,0 +1,353 @@
+---
+title: 권한 및 세션 키
+description: B3 글로벌 계정 상호작용을 위한 권한 및 세션 키 관리
+lang: ko
+originalPath: sdk/global-account/permissions.mdx
+---
+## 개요
+
+세션 키와 권한은 사용자를 대신하여 애플리케이션이 지속적인 인증 없이 작업을 수행할 수 있도록 하는 안전한 방법을 제공합니다. 이는 자동으로 거래를 실행해야 하는 게임 및 애플리케이션에 특히 유용합니다.
+
+## 권한 시스템
+
+### 권한 유형
+
+B3 글로벌 계정은 다양한 사용 사례를 위해 구성할 수 있는 세분화된 권한을 지원합니다:
+
+- **계약 상호작용**: 호출할 수 있는 스마트 계약 지정
+- **토큰 한도**: 네이티브 토큰 및 ERC-20 토큰의 지출 한도 설정
+- **시간 제한**: 권한의 시작 및 종료 날짜 정의
+- **거래 한도**: 거래당 최대 가치 제어
+
+### 권한 구조
+
+```typescript
+interface Permissions {
+  approvedTargets: string[];  // 계약 주소
+  startDate: Date;           // 권한이 활성화되는 시점
+  endDate: Date;             // 권한이 만료되는 시점
+  nativeTokenLimitPerTransaction: number; // 거래당 ETH 한도
+  // 추가 ERC-20 토큰 한도를 추가할 수 있음
+}
+```
+
+## 세션 키 구현
+
+### 기본 권한 요청
+
+```tsx
+import { RequestPermissionsButton } from "@b3dotfun/sdk/global-account/react";
+
+const b3Chain = {
+  id: 8333,
+  name: "B3",
+  nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+  rpc: "https://mainnet-rpc.b3.fun",
+};
+
+function BasicPermissions() {
+  const permissions = {
+    approvedTargets: [
+      "0x9c275ff1634519E9B5449ec79cd939B5F900564d", // 게임 계약
+    ],
+    startDate: new Date(),
+    endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30일
+    nativeTokenLimitPerTransaction: 0.01, // 거래당 0.01 ETH
+  };
+
+  return (
+    <RequestPermissionsButton
+      chain={b3Chain}
+      sessionKeyAddress="0x..." // MetaMask 또는 지갑 주소
+      permissions={permissions}
+      onSuccess={() => {
+        console.log("권한이 성공적으로 부여되었습니다!");
+      }}
+      onError={(error) => {
+        console.error("권한 요청 실패:", error);
+      }}
+    />
+  );
+}
+```
+
+### 게임 특정 권한
+
+게임 애플리케이션의 경우, 더 넓은 권한이 필요할 수 있습니다:
+
+```tsx
+function GamePermissions() {
+  const gamePermissions = {
+    approvedTargets: [
+      "0x...", // 게임 계약
+      "0x...", // NFT 마켓플레이스
+      "0x...", // 토큰 계약
+    ],
+    startDate: new Date(),
+    endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7일
+    nativeTokenLimitPerTransaction: 0.001, // 가스를 위한 작은 ETH 한도
+  };
+
+  return (
+    <div className="game-permissions">
+      <h3>게임 권한 부여</h3>
+      <p>7일 동안 이 게임이 당신을 대신하여 작업을 수행하도록 허용합니다</p>
+      
+      <RequestPermissionsButton
+        chain={b3Chain}
+        sessionKeyAddress="0x..."
+        permissions={gamePermissions}
+        onSuccess={() => {
+          // 게임으로 리디렉션하거나 UI 업데이트
+          console.log("게임 권한이 부여되었습니다!");
+        }}
+        onError={(error) => {
+          console.error("게임 권한 부여 실패:", error);
+        }}
+      />
+    </div>
+  );
+}
+```
+
+### 맞춤형 권한 UI
+
+권한 흐름을 더 잘 제어하려면:
+
+```tsx
+import { useRequestPermissions } from "@b3dotfun/sdk/global-account/react";
+
+function CustomPermissionFlow() {
+  const { requestPermissions, isLoading, error } = useRequestPermissions();
+
+  const handlePermissionRequest = async () => {
+    try {
+      const result = await requestPermissions({
+        chain: b3Chain,
+        sessionKeyAddress: "0x...",
+        permissions: {
+          approvedTargets: ["0x..."],
+          startDate: new Date(),
+          endDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24시간
+          nativeTokenLimitPerTransaction: 0.005,
+        },
+      });
+
+      if (result.success) {
+        console.log("권한이 부여되었습니다:", result.data);
+      }
+    } catch (err) {
+      console.error("권한 요청 실패:", err);
+    }
+  };
+
+  return (
+    <div>
+      <button 
+        onClick={handlePermissionRequest}
+        disabled={isLoading}
+      >
+        {isLoading ? "권한 요청 중..." : "권한 부여"}
+      </button>
+      
+      {error && (
+        <div className="error">
+          오류: {error.message}
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## 세션 키 관리
+
+### 권한 상태 확인
+
+```tsx
+import { usePermissions } from "@b3dotfun/sdk/global-account/react";
+
+function PermissionStatus() {
+  const { permissions, hasPermissions, isExpired } = usePermissions();
+
+  return (
+    <div className="permission-status">
+      <h3>권한 상태</h3>
+      
+      {hasPermissions ? (
+        <div className="permissions-active">
+          <p>✅ 권한 활성화됨</p>
+          <p>만료: {permissions?.endDate.toLocaleDateString()}</p>
+          <p>승인된 계약: {permissions?.approvedTargets.length}</p>
+          
+          {isExpired && (
+            <p className="warning">⚠️ 권한이 만료되었습니다</p>
+          )}
+        </div>
+      ) : (
+        <div className="no-permissions">
+          <p>❌ 활성화된 권한 없음</p>
+          <RequestPermissionsButton {...permissionConfig} />
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+### 권한 철회
+
+```tsx
+import { useRevokePermissions } from "@b3dotfun/sdk/global-account/react";
+
+function RevokePermissions() {
+  const { revokePermissions, isLoading } = useRevokePermissions();
+
+  const handleRevoke = async () => {
+    try {
+      await revokePermissions({
+        sessionKeyAddress: "0x...",
+        chain: b3Chain,
+      });
+      console.log("권한이 성공적으로 철회되었습니다");
+    } catch (error) {
+      console.error("권한 철회 실패:", error);
+    }
+  };
+
+  return (
+    <button 
+      onClick={handleRevoke}
+      disabled={isLoading}
+      className="revoke-button"
+    >
+      {isLoading ? "철회 중..." : "권한 철회"}
+    </button>
+  );
+}
+```
+
+## 고급 권한 패턴
+
+### 동적 권한 업데이트
+
+```tsx
+function DynamicPermissions() {
+  const [permissionLevel, setPermissionLevel] = useState<'basic' | 'advanced'>('basic');
+
+  const getPermissions = (level: string) => {
+    const basePermissions = {
+      startDate: new Date(),
+      endDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24시간
+    };
+
+    if (level === 'basic') {
+      return {
+        ...basePermissions,
+        approvedTargets: ["0x..."], // 제한된 계약
+        nativeTokenLimitPerTransaction: 0.001,
+      };
+    } else {
+      return {
+        ...basePermissions,
+        approvedTargets: ["0x...", "0x...", "0x..."], // 더 많은 계약
+        nativeTokenLimitPerTransaction: 0.01,
+      };
+    }
+  };
+
+  return (
+    <div>
+      <div className="permission-selector">
+        <button 
+          onClick={() => setPermissionLevel('basic')}
+          className={permissionLevel === 'basic' ? 'active' : ''}
+        >
+          기본 권한
+        </button>
+        <button 
+          onClick={() => setPermissionLevel('advanced')}
+          className={permissionLevel === 'advanced' ? 'active' : ''}
+        >
+          고급 권한
+        </button>
+      </div>
+
+      <RequestPermissionsButton
+        chain={b3Chain}
+        sessionKeyAddress="0x..."
+        permissions={getPermissions(permissionLevel)}
+        onSuccess={() => console.log(`${permissionLevel} 권한이 부여되었습니다`)}
+      />
+    </div>
+  );
+}
+```
+
+## 보안 모범 사례
+
+<CardGroup cols={2}>
+
+<Card title="최소 권한" icon="shield">
+  애플리케이션에 필요한 최소한의 권한만 요청하세요.
+</Card>
+
+<Card title="짧은 기간" icon="clock">
+  보안을 강화하기 위해 더 짧은 권한 기간을 사용하세요.
+</Card>
+
+<Card title="구체적인 대상" icon="target">
+  광범위한 권한 대신 정확한 계약 주소를 지정하세요.
+</Card>
+
+<Card title="정기적인 감사" icon="search">
+  세션 키를 정기적으로 감사하고 교체하세요.
+</Card>
+
+</CardGroup>
+
+## 오류 처리
+
+권한 관련 일반적인 오류 및 처리 방법:
+
+```tsx
+function PermissionErrorHandling() {
+  const handlePermissionError = (error: Error) => {
+    switch (error.message) {
+      case 'USER_REJECTED':
+        console.log('사용자가 권한 요청을 거부했습니다');
+        break;
+      case 'INSUFFICIENT_PERMISSIONS':
+        console.log('요청된 권한이 한도를 초과합니다');
+        break;
+      case 'EXPIRED_SESSION':
+        console.log('세션 키가 만료되었습니다');
+        // 새 권한 요청
+        break;
+      default:
+        console.error('알 수 없는 권한 오류:', error);
+    }
+  };
+
+  return (
+    <RequestPermissionsButton
+      // ... 다른 props
+      onError={handlePermissionError}
+    />
+  );
+}
+```
+
+## 다음 단계
+
+<CardGroup cols={2}>
+
+<Card title="React Hooks" icon="react" href="/sdk/global-account/hooks">
+  권한 관리를 위한 모든 사용 가능한 훅 탐색하기.
+</Card>
+
+<Card title="예제" icon="code" href="/sdk/global-account/examples">
+  완전한 권한 구현 예제 보기.
+</Card>
+
+</CardGroup>

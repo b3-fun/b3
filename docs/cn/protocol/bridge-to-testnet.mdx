@@ -1,0 +1,146 @@
+---
+title: Bridge to B3 Testnet
+description: 轻松地按照以下步骤从 Base Sepolia（Base 测试网）桥接到 B3 Sepolia（B3 测试网）！
+lang: cn
+originalPath: protocol/bridge-to-testnet.mdx
+---
+<Note>
+此桥接专为测试网目的设计。使用免费的测试网ETH来测试您的应用程序，然后再部署到主网。
+</Note>
+
+## 如何桥接
+
+<Steps>
+<Step title="访问测试网桥接">
+  访问 [testnet.bridge.b3.fun](https://testnet.bridge.b3.fun) 以接入官方测试网桥接界面。
+</Step>
+
+<Step title="连接您的钱包">
+  将您的钱包（MetaMask、Coinbase Wallet 等）连接到桥接界面。
+  
+  <Tip>
+  确保您的钱包连接到 Base Sepolia 或 B3 测试网，这取决于您想要桥接的方向。
+  </Tip>
+</Step>
+
+<Step title="选择桥接方向">
+  选择您想要：
+  - **存入**：从 Base Sepolia → B3 测试网
+  - **提取**：从 B3 测试网 → Base Sepolia
+  
+  相应地点击 **存入** 或 **提取** 标签。
+</Step>
+
+<Step title="输入金额">
+  输入您想要桥接的 ETH 金额。
+  
+  <Card title="需要 Base Sepolia ETH 吗？" icon="faucet" href="https://docs.base.org/base-chain/tools/network-faucets" cta="获取 Base 测试网 ETH" horizontal>
+    如果您需要 Base Sepolia ETH，请使用 Base Sepolia 水龙头获取免费的测试网代币
+  </Card>
+</Step>
+
+<Step title="确认交易">
+  点击“存入”（或“提取”）并确认您钱包中出现的交易提示。
+  
+  <Warning>
+  仔细检查您是否在正确的测试网上并使用测试网ETH，而非主网资金。
+  </Warning>
+</Step>
+
+<Step title="等待完成">
+  等待几分钟以完成桥接过程。您可以在“历史”标签中检查状态。
+  
+  <Check>
+  您的测试网 ETH 将在几分钟内出现在目的网络的钱包中。
+  </Check>
+</Step>
+</Steps>
+
+## 网络信息
+
+<CardGroup cols={2}>
+  <Card title="Base Sepolia 测试网">
+    **链 ID**：84532  
+    **RPC**：https://sepolia.base.org  
+    **浏览器**：https://sepolia.basescan.org
+  </Card>
+  
+  <Card title="B3 Sepolia 测试网">
+    **链 ID**：1993  
+    **RPC**：https://testnet-rpc.b3.fun  
+    **浏览器**：https://testnet-explorer.b3.fun
+  </Card>
+</CardGroup>
+
+## 测试网资源
+
+<CardGroup cols={2}>
+  <Card title="测试网桥接" icon="bridge" href="https://testnet.bridge.b3.fun" cta="立即桥接">
+    官方桥接，用于在 Base Sepolia 和 B3 测试网之间移动资产
+  </Card>
+  
+  <Card title="B3 测试网水龙头" icon="faucet" href="https://testnet-faucet.b3.fun" cta="获取测试 ETH">
+    获取免费的 B3 测试网 ETH 以进行开发和测试
+  </Card>
+</CardGroup>
+
+## 额外的水龙头
+
+如果您需要测试网 ETH 进行开发，这里有一些可靠的水龙头选项：
+
+<AccordionGroup>
+<Accordion title="Base Sepolia 水龙头">
+  - [Coinbase Base 水龙头](https://coinbase.com/faucets/base-ethereum-sepolia-faucet) - 官方 Coinbase 水龙头
+  - [Alchemy Base Sepolia 水龙头](https://sepoliafaucet.com) - 可靠的 Base Sepolia ETH 水龙头
+  - [QuickNode Base 水龙头](https://faucet.quicknode.com/base/sepolia) - 支持多个测试网
+</Accordion>
+
+<Accordion title="B3 测试网水龙头">
+  - [B3 测试网水龙头](https://testnet-faucet.b3.fun) - 官方 B3 测试网水龙头
+  - 直接获取免费的 B3 测试网 ETH，无需桥接
+</Accordion>
+</AccordionGroup>
+
+## 故障排除
+
+<AccordionGroup>
+<Accordion title="桥接交易卡住">
+  - 检查交易状态在区块浏览器上
+  - 确认您连接到正确的测试网
+  - 如果交易处于挂起状态，尝试增加燃料费
+  - 如果桥接超过30分钟仍处于挂起状态，请联系支持
+</Accordion>
+
+<Accordion title="钱包无法连接">
+  - 确保您的钱包支持测试网网络
+  - 尝试刷新页面并重新连接
+  - 检查您的钱包是否连接到正确的网络
+  - 如果问题持续存在，请清除浏览器缓存
+</Accordion>
+
+<Accordion title="燃料费资金不足">
+  - 确保您有足够的 ETH 支付燃料费
+  - 使用水龙头获取更多测试网 ETH
+  - 尝试桥接较小金额以节省燃料费
+</Accordion>
+</AccordionGroup>
+
+## 开发工作流
+
+<Steps>
+<Step title="获取 Base Sepolia ETH">
+  使用 Base Sepolia 水龙头获取免费的测试网 ETH。
+</Step>
+
+<Step title="桥接至 B3 测试网">
+  使用测试网桥接将 ETH 从 Base Sepolia 移动到 B3 测试网。
+</Step>
+
+<Step title="部署和测试">
+  在 B3 测试网上部署您的合约并测试您的应用程序。
+</Step>
+
+<Step title="准备进入主网">
+  测试完成后，使用 [主网桥接](/protocol/bridge) 将应用部署到 B3 主网。
+</Step>
+</Steps>

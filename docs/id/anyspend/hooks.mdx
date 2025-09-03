@@ -1,0 +1,501 @@
+---
+title: Hooks
+description: >-
+  React hooks untuk membangun aliran pembayaran kustom dan mengelola siklus
+  hidup pesanan
+lang: id
+originalPath: anyspend/hooks.mdx
+---
+## Core Hooks
+
+### `useAnyspendQuote`
+
+Dapatkan informasi harga real-time untuk pertukaran token dan transaksi lintas-rantai.
+
+```tsx title="Penggunaan Dasar" icon="quote-left"
+import { useAnyspendQuote } from "@b3dotfun/sdk/anyspend";
+
+const {
+  anyspendQuote,
+  isLoadingAnyspendQuote,
+  getAnyspendQuoteError,
+  refetchAnyspendQuote
+} = useAnyspendQuote(quoteRequest);
+```
+
+#### Parameter
+
+<ParamField path="quoteRequest" type="QuoteRequest" required>
+  Objek konfigurasi kutipan
+</ParamField>
+
+#### Antarmuka QuoteRequest
+
+```typescript title="Definisi Tipe" icon="code"
+interface QuoteRequest {
+  srcChain: number;              // ID rantai sumber
+  dstChain: number;              // ID rantai tujuan
+  srcTokenAddress: string;       // Alamat kontrak token sumber
+  dstTokenAddress: string;       // Alamat kontrak token tujuan
+  type: "swap" | "custom";       // Tipe pesanan
+  tradeType: "EXACT_INPUT" | "EXACT_OUTPUT";
+  amount: string;                // Jumlah dalam unit terkecil (wei)
+}
+```
+
+#### Nilai Kembali
+
+<ResponseField name="anyspendQuote" type="QuoteResponse | null">
+  Data kutipan dengan harga dan biaya
+</ResponseField>
+
+<ResponseField name="isLoadingAnyspendQuote" type="boolean">
+  Indikator status memuat
+</ResponseField>
+
+<ResponseField name="getAnyspendQuoteError" type="Error | null">
+  Objek kesalahan jika gagal mendapatkan kutipan
+</ResponseField>
+
+<ResponseField name="refetchAnyspendQuote" type="() => void">
+  Fungsi untuk menyegarkan kutipan secara manual
+</ResponseField>
+
+#### Contoh Penggunaan
+
+```tsx title="Komponen Kutipan Swap" icon="exchange-alt" lines
+function SwapQuote() {
+  const quoteRequest = {
+    srcChain: 1,           // Ethereum
+    dstChain: 8333,        // B3
+    srcTokenAddress: "0xA0b86a33E6Fb6Dd9a9B3d8B5FEb2b3C8e7D9Ff1E", // USDC
+    dstTokenAddress: "0x0000000000000000000000000000000000000000", // ETH
+    type: "swap",
+    tradeType: "EXACT_INPUT",
+    amount: "1000000", // 1 USDC (6 desimal)
+  };
+
+  const { anyspendQuote, isLoadingAnyspendQuote, getAnyspendQuoteError } =
+    useAnyspendQuote(quoteRequest);
+
+  if (isLoadingAnyspendQuote) return <div>Mendapatkan harga terbaik...</div>;
+  if (getAnyspendQuoteError) return <div>Gagal mendapatkan kutipan</div>;
+
+  return (
+    <div>
+      <p>Anda akan menerima: {anyspendQuote?.expectedOutput} ETH</p>
+      <p>Biaya jaringan: ${anyspendQuote?.networkFeeUsd}</p>
+      <p>Biaya layanan: ${anyspendQuote?.serviceFeeUsd}</p>
+      <p>Total biaya: ${anyspendQuote?.totalUsdCost}</p>
+    </div>
+  );
+}
+```
+
+---
+
+### `useAnyspendCreateOrder`
+
+Buat dan eksekusi pesanan AnySpend dengan penanganan kesalahan yang komprehensif.
+
+```tsx title="Penggunaan Dasar" icon="plus-circle"
+import { useAnyspendCreateOrder } from "@b3dotfun/sdk/anyspend";
+
+const {
+  createOrder,
+  isCreatingOrder,
+  createOrderError
+} = useAnyspendCreateOrder(options);
+```
+
+#### Parameter
+
+<ParamField path="options" type="CreateOrderOptions">
+  Objek konfigurasi dengan fungsi callback
+</ParamField>
+
+#### Antarmuka CreateOrderOptions
+
+```typescript title="Definisi Tipe" icon="settings"
+interface CreateOrderOptions {
+  onSuccess?: (data: OrderResponse) => void;
+  onError?: (error: Error) => void;
+  onSettled?: () => void;
+}
+```
+
+#### Nilai Kembali
+
+<ResponseField name="createOrder" type="(request: CreateOrderRequest) => void">
+  Fungsi untuk membuat dan mengeksekusi pesanan
+</ResponseField>
+
+<ResponseField name="isCreatingOrder" type="boolean">
+  Indikator status memuat
+</ResponseField>
+
+<ResponseField name="createOrderError" type="Error | null">
+  Objek kesalahan jika pembuatan pesanan gagal
+</ResponseField>
+
+#### Contoh Penggunaan
+
+```tsx title="Form Pembayaran" icon="credit-card" lines
+function PaymentForm() {
+  const { createOrder, isCreatingOrder } = useAnyspendCreateOrder({
+    onSuccess: (data) => {
+      console.log("Pesanan dibuat:", data.data.id);
+      // Arahkan ke pembayaran atau tampilkan sukses
+      router.push(`/payment/${data.data.id}`);
+    },
+    onError: (error) => {
+      console.error("Pesanan gagal:", error.message);
+      toast.error("Pembayaran gagal. Silakan coba lagi.");
+    },
+  });
+
+  const handlePayment = () => {
+    createOrder({
+      recipientAddress: userWalletAddress,
+      orderType: "swap",
+      srcChain: 1,
+      dstChain: 8333,
+      srcToken: {
+        chainId: 1,
+        address: "0xA0b86a33E6Fb6Dd9a9B3d8B5FEb2b3C8e7D9Ff1E",
+        name: "USD Coin",
+        symbol: "USDC",
+        decimals: 6,
+      },
+      dstToken: {
+        chainId: 8333,
+        address: "0x0000000000000000000000000000000000000000",
+        name: "Ether",
+        symbol: "ETH",
+        decimals: 18,
+      },
+      srcAmount: "1000000", // 1 USDC
+      expectedDstAmount: "500000000000000000", // ~0.5 ETH
+      creatorAddress: userWalletAddress,
+    });
+  };
+
+  return (
+    <button
+      onClick={handlePayment}
+      disabled={isCreatingOrder}
+    >
+      {isCreatingOrder ? "Sedang Diproses..." : "Bayar dengan Crypto"}
+    </button>
+  );
+}
+```
+
+---
+
+### `useAnyspendOrderAndTransactions`
+
+Pantau status pesanan dan lacak transaksi blockchain yang terkait secara real-time.
+
+```tsx title="Penggunaan Dasar" icon="search"
+import { useAnyspendOrderAndTransactions } from "@b3dotfun/sdk/anyspend";
+
+const {
+  orderAndTransactions,
+  isLoadingOrderAndTransactions,
+  getOrderAndTransactionsError
+} = useAnyspendOrderAndTransactions(orderId);
+```
+
+#### Parameter
+
+<ParamField path="orderId" type="string" required>
+  ID pesanan untuk dilacak dan dipantau
+</ParamField>
+
+#### Nilai Kembali
+
+<ResponseField name="orderAndTransactions" type="OrderWithTransactions | null">
+  Data pesanan lengkap dengan detail transaksi
+</ResponseField>
+
+<ResponseField name="isLoadingOrderAndTransactions" type="boolean">
+  Indikator status memuat
+</ResponseField>
+
+<ResponseField name="getOrderAndTransactionsError" type="Error | null">
+  Objek kesalahan jika pengambilan gagal
+</ResponseField>
+
+#### Antarmuka OrderWithTransactions
+
+```typescript title="Definisi Tipe" icon="database"
+interface OrderWithTransactions {
+  data: {
+    order: Order;               // Detail dan status pesanan
+    depositTxs: Transaction[];  // Transaksi deposit pengguna
+    relayTx?: Transaction;      // Transaksi relay lintas-rantai
+    executeTx?: Transaction;    // Transaksi eksekusi akhir
+    refundTxs: Transaction[];   // Transaksi pengembalian dana (jika ada)
+  };
+}
+```
+
+#### Contoh Penggunaan
+
+```tsx title="Pelacak Pesanan" icon="eye" lines
+function OrderTracker({ orderId }: { orderId: string }) {
+  const { orderAndTransactions, isLoadingOrderAndTransactions } =
+    useAnyspendOrderAndTransactions(orderId);
+
+  if (isLoadingOrderAndTransactions) {
+    return <div>Memuat status pesanan...</div>;
+  }
+
+  if (!orderAndTransactions) {
+    return <div>Pesanan tidak ditemukan</div>;
+  }
+
+  const { order, depositTxs, executeTx, refundTxs } = orderAndTransactions.data;
+
+  const getStatusMessage = (status: string) => {
+    switch (status) {
+      case "scanning_deposit_transaction":
+        return "⏳ Menunggu konfirmasi pembayaran...";
+      case "relay":
+        return "🔄 Memproses transaksi lintas-rantai...";
+      case "executed":
+        return "✅ Transaksi berhasil diselesaikan!";
+      case "refunded":
+        return "↩️ Pengembalian dana diproses";
+      default:
+        return "🔄 Memproses...";
+    }
+  };
+
+  return (
+    <div className="order-status">
+      <h2>Pesanan #{orderId.slice(0, 8)}</h2>
+      <p>{getStatusMessage(order.status)}</p>
+
+      {depositTxs.length > 0 && (
+        <div>
+          <h3>Transaksi Pembayaran</h3>
+          <a
+            href={`https://etherscan.io/tx/${depositTxs[0].txHash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Lihat di Etherscan
+          </a>
+        </div>
+      )}
+
+      {executeTx && (
+        <div>
+          <h3>Transaksi Eksekusi</h3>
+          <a
+            href={`https://explorer.b3.fun/tx/${executeTx.txHash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Lihat di B3 Explorer
+          </a>
+        </div>
+      )}
+
+      {order.errorDetails && (
+        <div className="error">
+          <strong>Kesalahan:</strong> {order.errorDetails}
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+---
+
+### `useAnyspendOrderHistory`
+
+Ambil riwayat pesanan yang dipaginasi untuk alamat pengguna.
+
+```tsx title="Penggunaan Dasar" icon="history"
+import { useAnyspendOrderHistory } from "@b3dotfun/sdk/anyspend";
+
+const {
+  orderHistory,
+  isLoadingOrderHistory,
+  getOrderHistoryError
+} = useAnyspendOrderHistory(creatorAddress, limit, offset);
+```
+
+#### Parameter
+
+<ParamField path="creatorAddress" type="string" required>
+  Alamat dompet pengguna
+</ParamField>
+
+<ParamField path="limit" type="number" required>
+  Jumlah pesanan yang akan diambil (maks 100)
+</ParamField>
+
+<ParamField path="offset" type="number" required>
+  Offset paginasi
+</ParamField>
+
+#### Contoh Penggunaan
+
+```tsx title="Komponen Riwayat Pesanan" icon="list" lines
+function OrderHistory({ userAddress }: { userAddress: string }) {
+  const [page, setPage] = useState(0);
+  const pageSize = 10;
+
+  const { orderHistory, isLoadingOrderHistory } = useAnyspendOrderHistory(
+    userAddress,
+    pageSize,
+    page * pageSize
+  );
+
+  if (isLoadingOrderHistory) {
+    return <div>Memuat riwayat pesanan...</div>;
+  }
+
+  return (
+    <div>
+      <h2>Pesanan Anda</h2>
+      {orderHistory?.data.map((order) => (
+        <div key={order.id} className="order-item">
+          <p>Tipe: {order.type}</p>
+          <p>Status: {order.status}</p>
+          <p>Jumlah: {order.srcAmount} {order.srcToken.symbol}</p>
+          <p>Tanggal: {new Date(order.createdAt).toLocaleDateString()}</p>
+        </div>
+      ))}
+
+      <button
+        onClick={() => setPage(page - 1)}
+        disabled={page === 0}
+      >
+        Sebelumnya
+      </button>
+      <button
+        onClick={() => setPage(page + 1)}
+        disabled={!orderHistory?.data || orderHistory.data.length < pageSize}
+      >
+        Selanjutnya
+      </button>
+    </div>
+  );
+}
+```
+
+## Hook Tambahan
+
+### `useAnyspendTokens`
+
+Dapatkan token yang tersedia untuk rantai tertentu.
+
+```tsx title="Daftar Token" icon="coins"
+const { tokens, isLoadingTokens } = useAnyspendTokens(1, "USDC");
+```
+
+### `useCoinbaseOnrampOptions`
+
+Dapatkan konfigurasi onramp Coinbase untuk pembayaran fiat.
+
+```tsx title="Coinbase Onramp" icon="credit-card"
+const { coinbaseOptions, isLoadingCoinbaseOptions } = useCoinbaseOnrampOptions();
+```
+
+### `useStripeClientSecret`
+
+Dapatkan intent pembayaran Stripe untuk pembayaran kartu kredit.
+
+```tsx title="Integrasi Stripe" icon="stripe"
+const { clientSecret, isLoadingClientSecret } = useStripeClientSecret(orderData);
+```
+
+## Pola Hook
+
+### Pola Penanganan Kesalahan
+
+```tsx title="Penanganan Kesalahan" icon="shield-exclamation" lines
+function PaymentComponent() {
+  const { createOrder, isCreatingOrder } = useAnyspendCreateOrder({
+    onError: (error) => {
+      // Log kesalahan untuk debugging
+      console.error("Pembayaran gagal:", error);
+
+      // Tampilkan pesan ramah pengguna
+      switch (error.message) {
+        case "INSUFFICIENT_BALANCE":
+          toast.error("Saldo tidak cukup. Silakan tambah dana.");
+          break;
+        case "SLIPPAGE":
+          toast.error("Harga bergerak tidak menguntungkan. Silakan coba lagi.");
+          break;
+        default:
+          toast.error("Pembayaran gagal. Silakan coba lagi.");
+      }
+    },
+  });
+
+  // Implementasi komponen...
+}
+```
+
+### Pola Status Memuat
+
+```tsx title="Status Memuat" icon="spinner" lines
+function SwapInterface() {
+  const { anyspendQuote, isLoadingAnyspendQuote } = useAnyspendQuote(quoteRequest);
+  const { createOrder, isCreatingOrder } = useAnyspendCreateOrder();
+
+  const isLoading = isLoadingAnyspendQuote || isCreatingOrder;
+
+  return (
+    <div>
+      {isLoading && <LoadingSpinner />}
+      {/* Sisa komponen */}
+    </div>
+  );
+}
+```
+
+### Pola Pembaruan Real-time
+
+```tsx title="Pembaruan Real-time" icon="sync-alt" lines
+function OrderStatus({ orderId }: { orderId: string }) {
+  const { orderAndTransactions } = useAnyspendOrderAndTransactions(orderId);
+
+  // Auto-refresh setiap 5 detik untuk pesanan yang sedang diproses
+  useEffect(() => {
+    if (orderAndTransactions?.data.order.status === "relay") {
+      const interval = setInterval(() => {
+        // Refetch ditangani secara otomatis oleh hook
+      }, 5000);
+
+      return () => clearInterval(interval);
+    }
+  }, [orderAndTransactions?.data.order.status]);
+
+  // Implementasi komponen...
+}
+```
+
+## Langkah Selanjutnya
+
+<CardGroup cols={3}>
+<Card title="Lihat Contoh" icon="code" href="/anyspend/examples">
+  Telusuri contoh implementasi dunia nyata
+</Card>
+
+<Card title="Penanganan Kesalahan" icon="bug" href="/anyspend/error-handling">
+  Pelajari strategi penanganan kesalahan yang komprehensif
+</Card>
+
+<Card title="Referensi Komponen" icon="puzzle-piece" href="/anyspend/components">
+  Jelajahi komponen yang telah dibangun sebelumnya
+</Card>
+</CardGroup>

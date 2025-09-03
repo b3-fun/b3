@@ -1,0 +1,34 @@
+---
+title: Targets & Migration Trigger
+description: 理解 targetAmount，迁移何时可以发生，以及迁移期间会发生什么。
+lang: cn
+originalPath: bondkit/concepts/targets.mdx
+---
+## 目标金额
+
+- `targetAmount` 是启用迁移的报价资产阈值。
+- 在创建时设置；以报价资产（ETH或允许的ERC20）计价。
+- 一旦总筹资额达到目标（超额贡献将被退还），募资阶段结束。
+
+## 谁可以迁移
+
+- 只有代币所有者/创建者（迁移管理员）可以调用 `migrateToDex()`。
+
+## 迁移时发生什么
+
+- 累积的报价资产分割：
+  - 一部分给予 `feeRecipient`，基于 `lpSplitRatioFeeRecipientBps`。
+  - 剩余部分用作流动性，与为LP保留的代币一起使用。
+- 对于Uniswap v4迁移，合约计算 `sqrtPriceX96` 以初始化池子。
+- 流动性以适当的保障措施添加到v4池中；LP代币或位置按照v4语义处理，所有权有效地被烧毁/放弃以实现去中心化。
+- 立即放弃所有权以完成去中心化。
+
+## 迁移后
+
+- 禁用募资阶段的交易。
+- 代币表现为标准ERC20，具有基于DEX的价格发现。
+
+<Note>
+网络和地址（工厂，v4池管理器，钩子）列在网络页面上。
+</Note>
+

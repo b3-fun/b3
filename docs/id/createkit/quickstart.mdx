@@ -1,0 +1,399 @@
+---
+title: Panduan Cepat
+description: Buat koleksi NFT pertama Anda dengan CreateKit dalam beberapa menit saja
+lang: id
+originalPath: createkit/quickstart.mdx
+---
+## Ikhtisar
+
+Panduan ini akan memandu Anda dalam membuat koleksi NFT pertama Anda menggunakan CreateKit. Anda akan belajar cara:
+
+- Membuat metadata dan tanda tangan koleksi
+- Men-deploy koleksi
+- Mencetak NFT pertama Anda
+- Melacak hadiah
+
+<Note>
+Quickstart ini menggunakan B3 Testnet. Pastikan Anda memiliki dana testnet untuk biaya gas.
+</Note>
+
+## Langkah 1: Pengaturan Dasar
+
+Pertama, mari kita siapkan infrastruktur dasar:
+
+```typescript title="quickstart.ts"
+import { 
+  CollectionManager, 
+  RewardTracker,
+  BaseMintStorage,
+  b3Testnet 
+} from '@b3dotfun/basemint'
+import { createPublicClient, createWalletClient, http } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+
+// Inisialisasi klien
+const publicClient = createPublicClient({
+  chain: b3Testnet,
+  transport: http()
+})
+
+const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`)
+const walletClient = createWalletClient({
+  chain: b3Testnet,
+  transport: http(),
+  account
+})
+
+// Inisialisasi layanan CreateKit
+const collectionManager = new CollectionManager(publicClient)
+const rewardTracker = new RewardTracker(publicClient)
+const storage = new BaseMintStorage({
+  baseUrl: 'https://api.basemint.fun'
+})
+```
+
+## Langkah 2: Buat Metadata Koleksi
+
+Tentukan parameter koleksi Anda:
+
+```typescript title="Create Collection"
+const collectionMetadata = {
+  // Parameter wajib
+  name: "My First Collection",
+  symbol: "MFC",
+  creator: account.address,
+  gameOwner: account.address, // Bisa berbeda alamat
+  
+  // Parameter opsional
+  maxSupply: 1000n,
+  mintPrice: 0n, // Cetak gratis
+  maxPerWallet: 10n,
+  description: "Koleksi NFT pertama saya di B3",
+  image: "https://example.com/collection-image.png",
+  
+  // Waktu
+  startTime: 0n, // Mulai segera
+  endTime: BigInt(Math.floor(Date.now() / 1000) + 86400 * 30), // 30 hari
+  
+  // Standar token
+  tokenStandard: "ERC721" as const,
+  chainId: 1993 // B3 Testnet
+}
+```
+
+## Langkah 3: Hasilkan Tanda Tangan
+
+Buat tanda tangan yang diperlukan untuk penempatan:
+
+```typescript title="Generate Signatures"
+// Hasilkan tanda tangan pembuat
+const creatorSignature = await collectionManager.generateCreatorSignature(
+  walletClient,
+  collectionMetadata
+)
+
+// Prediksi alamat koleksi
+const predictedAddress = collectionManager.predictCollectionAddress(
+  collectionMetadata,
+  creatorSignature
+)
+
+console.log(`📍 Alamat koleksi yang diprediksi: ${predictedAddress}`)
+```
+
+## Langkah 4: Kirim ke Penyimpanan
+
+Simpan metadata koleksi Anda secara off-chain:
+
+```typescript title="Submit to Storage"
+try {
+  await storage.submitCollection(collectionMetadata, creatorSignature)
+  console.log("✅ Metadata koleksi berhasil disimpan")
+} catch (error) {
+  console.error("❌ Gagal menyimpan koleksi:", error)
+}
+```
+
+## Langkah 5: Deploy dan Cetak
+
+Sekarang bagian yang menarik - men-deploy koleksi Anda dan mencetak NFT pertama:
+
+```typescript title="Deploy and Mint"
+// Hasilkan tanda tangan deployer
+const deployerSignature = await collectionManager.generateDeployerSignature(
+  walletClient,
+  predictedAddress
+)
+
+// Buat instansi koleksi
+const collection = collectionManager.createCollection(
+  predictedAddress,
+  collectionMetadata.tokenStandard
+)
+
+// Deploy dan cetak NFT pertama dalam satu transaksi
+const mintTx = await collection.mint(
+  walletClient,
+  1n, // kuantitas
+  undefined, // URI metadata (akan menggunakan baseURI)
+  0n, // harga cetak
+  [], // bukti whitelist (kosong untuk cetak publik)
+  creatorSignature,
+  deployerSignature
+)
+
+console.log(`🎉 Koleksi berhasil di-deploy dan NFT pertama berhasil dicetak!`)
+console.log(`📋 Hash transaksi: ${mintTx}`)
+```
+
+## Langkah 6: Verifikasi Penempatan
+
+Mari kita verifikasi bahwa semuanya berjalan dengan benar:
+
+```typescript title="Verify Deployment"
+// Periksa apakah koleksi telah di-deploy
+const isDeployed = await collection.isDeployed()
+console.log(`🏭 Koleksi telah di-deploy: ${isDeployed}`)
+
+// Dapatkan info koleksi
+const info = await collection.getCollectionInfo()
+console.log("📊 Info Koleksi:", {
+  name: info.name,
+  symbol: info.symbol,
+  totalSupply: info.totalSupply.toString(),
+  maxSupply: info.maxSupply.toString()
+})
+
+// Periksa kepemilikan token
+const balance = await collection.balanceOf(account.address)
+console.log(`💰 Saldo token Anda: ${balance.toString()}`)
+```
+
+## Langkah 7: Lacak Hadiah
+
+Periksa hadiah yang dihasilkan dari cetakan Anda:
+
+```typescript title="Track Rewards"
+// Dapatkan kontrak escrow untuk hadiah
+const escrowAddress = collectionManager.getEscrowAddress()
+
+// Lacak hadiah untuk koleksi ini
+const collectionRewards = await rewardTracker.getCollectionRewards(
+  escrowAddress,
+  predictedAddress
+)
+
+console.log("💎 Hadiah Koleksi:", {
+  totalHadiah: collectionRewards.totalRewards.toString(),
+  hadiahBelumDiklaim: collectionRewards.unclaimedRewards.toString(),
+  totalCetakan: collectionRewards.totalMints.toString()
+})
+
+// Dapatkan hadiah penerima individu
+const creatorRewards = await rewardTracker.getRecipientRewards(
+  escrowAddress,
+  predictedAddress,
+  "CREATOR",
+  account.address
+)
+
+console.log(`🎨 Hadiah pembuat: ${creatorRewards.toString()}`)
+```
+
+## Contoh Lengkap
+
+Berikut adalah skrip quickstart lengkap:
+
+<Accordion title="Complete quickstart.ts">
+```typescript
+import { 
+  CollectionManager, 
+  RewardTracker,
+  BaseMintStorage,
+  b3Testnet 
+} from '@b3dotfun/basemint'
+import { createPublicClient, createWalletClient, http } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+
+async function quickstart() {
+  // Inisialisasi klien
+  const publicClient = createPublicClient({
+    chain: b3Testnet,
+    transport: http()
+  })
+
+  const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`)
+  const walletClient = createWalletClient({
+    chain: b3Testnet,
+    transport: http(),
+    account
+  })
+
+  // Inisialisasi layanan CreateKit
+  const collectionManager = new CollectionManager(publicClient)
+  const rewardTracker = new RewardTracker(publicClient)
+  const storage = new BaseMintStorage({
+    baseUrl: 'https://api.basemint.fun'
+  })
+
+  // Langkah 1: Buat metadata koleksi
+  const collectionMetadata = {
+    name: "My First Collection",
+    symbol: "MFC",
+    creator: account.address,
+    gameOwner: account.address,
+    maxSupply: 1000n,
+    mintPrice: 0n,
+    maxPerWallet: 10n,
+    description: "Koleksi NFT pertama saya di B3",
+    image: "https://example.com/collection-image.png",
+    startTime: 0n,
+    endTime: BigInt(Math.floor(Date.now() / 1000) + 86400 * 30),
+    tokenStandard: "ERC721" as const,
+    chainId: 1993
+  }
+
+  // Langkah 2: Hasilkan tanda tangan
+  const creatorSignature = await collectionManager.generateCreatorSignature(
+    walletClient,
+    collectionMetadata
+  )
+
+  const predictedAddress = collectionManager.predictCollectionAddress(
+    collectionMetadata,
+    creatorSignature
+  )
+
+  console.log(`📍 Alamat koleksi yang diprediksi: ${predictedAddress}`)
+
+  // Langkah 3: Kirim ke penyimpanan
+  try {
+    await storage.submitCollection(collectionMetadata, creatorSignature)
+    console.log("✅ Metadata koleksi berhasil disimpan")
+  } catch (error) {
+    console.error("❌ Gagal menyimpan koleksi:", error)
+    return
+  }
+
+  // Langkah 4: Deploy dan cetak
+  const deployerSignature = await collectionManager.generateDeployerSignature(
+    walletClient,
+    predictedAddress
+  )
+
+  const collection = collectionManager.createCollection(
+    predictedAddress,
+    collectionMetadata.tokenStandard
+  )
+
+  const mintTx = await collection.mint(
+    walletClient,
+    1n,
+    undefined,
+    0n,
+    [],
+    creatorSignature,
+    deployerSignature
+  )
+
+  console.log(`🎉 Koleksi berhasil di-deploy dan NFT pertama berhasil dicetak!`)
+  console.log(`📋 Hash transaksi: ${mintTx}`)
+
+  // Langkah 5: Verifikasi penempatan
+  const isDeployed = await collection.isDeployed()
+  console.log(`🏭 Koleksi telah di-deploy: ${isDeployed}`)
+
+  // Langkah 6: Lacak hadiah
+  const escrowAddress = collectionManager.getEscrowAddress()
+  const collectionRewards = await rewardTracker.getCollectionRewards(
+    escrowAddress,
+    predictedAddress
+  )
+
+  console.log("💎 Hadiah Koleksi:", {
+    totalHadiah: collectionRewards.totalRewards.toString(),
+    hadiahBelumDiklaim: collectionRewards.unclaimedRewards.toString(),
+    totalCetakan: collectionRewards.totalMints.toString()
+  })
+}
+
+// Jalankan quickstart
+quickstart().catch(console.error)
+```
+</Accordion>
+
+## Jalankan Contoh
+
+Simpan contoh lengkap sebagai `quickstart.ts` dan jalankan:
+
+<CodeGroup>
+```bash npm
+npx tsx quickstart.ts
+```
+
+```bash yarn
+yarn tsx quickstart.ts
+```
+
+```bash pnpm
+pnpm tsx quickstart.ts
+```
+</CodeGroup>
+
+## Output yang Diharapkan
+
+Ketika Anda menjalankan skrip quickstart, Anda seharusnya melihat output serupa dengan:
+
+```
+📍 Alamat koleksi yang diprediksi: 0x1234567890abcdef...
+✅ Metadata koleksi berhasil disimpan
+🎉 Koleksi berhasil di-deploy dan NFT pertama berhasil dicetak!
+📋 Hash transaksi: 0xabcdef1234567890...
+🏭 Koleksi telah di-deploy: true
+💎 Hadiah Koleksi: {
+  totalHadiah: "1000000000000000000",
+  hadiahBelumDiklaim: "1000000000000000000", 
+  totalCetakan: "1"
+}
+```
+
+## Apa Selanjutnya?
+
+Selamat! Anda telah berhasil membuat koleksi NFT pertama Anda dengan CreateKit. Berikut adalah beberapa langkah selanjutnya untuk dijelajahi:
+
+<CardGroup cols={2}>
+  <Card title="Manajemen Koleksi" icon="folder" href="/createkit/collections">
+    Pelajari opsi konfigurasi koleksi lanjutan
+  </Card>
+  <Card title="Fitur Pencetakan" icon="coins" href="/createkit/minting">
+    Jelajahi skenario dan opsi pencetakan yang berbeda
+  </Card>
+  <Card title="Pengaturan Whitelist" icon="list" href="/createkit/whitelist">
+    Implementasikan pencetakan berbasis whitelist
+  </Card>
+  <Card title="Manajemen Hadiah" icon="gift" href="/createkit/rewards">
+    Menyelami sistem distribusi hadiah
+  </Card>
+</CardGroup>
+
+## Pemecahan Masalah
+
+<AccordionGroup>
+  <Accordion title="Transaksi gagal">
+    - Pastikan Anda memiliki dana testnet yang cukup
+    - Periksa bahwa semua tanda tangan valid
+    - Verifikasi parameter koleksi berada dalam batas
+  </Accordion>
+
+  <Accordion title="Pengajuan penyimpanan gagal">
+    - Periksa koneksi internet Anda
+    - Verifikasi format metadata koleksi
+    - Pastikan tanda tangan pembuat valid
+  </Accordion>
+
+  <Accordion title="Koleksi sudah ada">
+    - Alamat yang diprediksi sudah diambil
+    - Coba ubah parameter koleksi sedikit
+    - Gunakan alamat pembuat atau gameOwner yang berbeda
+  </Accordion>
+</AccordionGroup>

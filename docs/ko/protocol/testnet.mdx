@@ -1,0 +1,174 @@
+---
+title: Testnet
+description: B3 테스트넷에 EVM-호환 지갑으로 연결하세요
+lang: ko
+originalPath: protocol/testnet.mdx
+---
+## 체인 정보
+
+<Card title="체인 ID">
+  ```text
+  1993
+  ```
+  <Note>
+  재미있는 사실: 1993년은 첫 번째 인물 슈팅 장르를 혁신한 "Doom"이 출시된 해입니다.
+  </Note>
+</Card>
+
+<Card title="네이티브 토큰">
+  **Ether (ETH)**
+  
+  이더리움 메인넷에서 사용되는 동일한 토큰이지만, 테스트 목적으로만 사용됩니다.
+</Card>
+
+### 네트워크 엔드포인트
+
+<Tabs>
+<Tab title="HTTP RPC">
+  ```text RPC Endpoint
+  https://testnet-rpc.b3.fun
+  ```
+  
+  B3 테스트넷에 표준 HTTP 요청을 위해 이 엔드포인트를 사용하세요.
+</Tab>
+
+<Tab title="WebSocket RPC">
+  ```text WebSocket Endpoint  
+  wss://testnet-rpc.b3.fun
+  ```
+  
+  B3 테스트넷에 실시간 WebSocket 연결을 위해 이 엔드포인트를 사용하세요.
+</Tab>
+</Tabs>
+
+### 블록 탐색기
+
+<Card title="B3 탐색기" icon="magnifying-glass" href="https://explorer.b3.fun" cta="탐색기 보기" horizontal>
+  B3(테스트넷 포함)의 거래, 블록, 계약을 탐색하세요.
+</Card>
+
+## 빠른 링크
+
+<CardGroup cols={3}>
+  <Card title="테스트넷 브릿지" icon="bridge" href="https://testnet-bridge.b3.fun" cta="자산 브릿지">
+    테스트를 위해 B3 테스트넷으로 자산 브릿지하기
+  </Card>
+  
+  <Card title="수도꼭지" icon="faucet" href="https://faucet.b3.fun" cta="테스트 ETH 받기">
+    개발 및 테스트를 위해 무료 테스트넷 ETH 받기
+  </Card>
+  
+  <Card title="개발자 도구" icon="wrench" href="/ecosystem/introduction" cta="도구 탐색">
+    B3에서 빌딩을 위한 도구와 인프라 발견하기
+  </Card>
+</CardGroup>
+
+## 지갑에 B3 테스트넷 추가하기
+
+<Steps>
+<Step title="지갑 설정 열기">
+  지갑(MetaMask, Coinbase Wallet 등)을 열고 네트워크 설정으로 이동하세요.
+</Step>
+
+<Step title="커스텀 네트워크 추가">
+  "네트워크 추가" 또는 "커스텀 네트워크 추가"를 클릭하세요.
+</Step>
+
+<Step title="네트워크 세부 정보 입력">
+  다음 정보를 입력하세요:
+  
+  - **네트워크 이름**: B3 테스트넷
+  - **체인 ID**: 1993
+  - **RPC URL**: https://testnet-rpc.b3.fun
+  - **통화 기호**: ETH
+  - **블록 탐색기 URL**: https://explorer.b3.fun
+</Step>
+
+<Step title="저장 및 전환">
+  네트워크 구성을 저장하고 B3 테스트넷으로 전환하세요.
+  
+  <Check>
+  이제 B3 테스트넷에 연결되었습니다! 애플리케이션 테스트를 시작할 수 있습니다.
+  </Check>
+</Step>
+</Steps>
+
+## 테스트넷 사용 이유
+
+테스트넷은 안전하고 통제된, 효율적인 테스트 및 실험 환경을 제공합니다. 테스트 네트워크, 또는 테스트넷은 메인넷에 배포하기 전에 스마트 계약을 테스트할 수 있는 필수 도구로, 실제 애플리케이션에서의 실패나 취약점의 위험을 최소화합니다.
+
+### 주요 이점
+
+<CardGroup cols={2}>
+  <Card title="위험 없는 테스트" icon="shield-check">
+    실제 자금이나 실제 사용자에게 영향을 주지 않고 스마트 계약과 애플리케이션을 테스트하세요.
+  </Card>
+  
+  <Card title="현실적인 환경" icon="globe">
+    네트워크 지연, 가스 요금, 거래 처리량을 포함한 메인넷 조건을 시뮬레이션하세요.
+  </Card>
+  
+  <Card title="비용 효율적인 개발" icon="dollar-sign">
+    개발 및 테스트를 위해 비싼 메인넷 ETH 대신 무료 테스트넷 토큰을 사용하세요.
+  </Card>
+  
+  <Card title="학습 플랫폼" icon="graduation-cap">
+    개발자가 블록체인 개발을 배우고 실험할 수 있는 완벽한 환경입니다.
+  </Card>
+</CardGroup>
+
+메인넷 환경을 시뮬레이션함으로써, 테스트넷은 네트워크 지연, 가스 요금, 그리고 스마트 계약의 성능에 영향을 미치는 다른 요소들을 포함한 실제 세계 조건의 현실적인 표현을 제공합니다. 이 정확한 표현은 잠재적인 문제를 식별하고, 애플리케이션을 최적화하며, 최종 사용자에게 최상의 사용자 경험을 보장할 수 있도록 합니다.
+
+또한, 테스트넷은 B3 생태계에 익숙해지고 소중한 실전 경험을 얻을 수 있게 해주어, 블록체인 개발의 세계에 새로운 개발자와 숙련된 개발자 모두에게 없어서는 안 될 도구입니다.
+
+## 개발 워크플로우
+
+<Steps>
+<Step title="테스트넷 ETH 받기">
+  [테스트넷 수도꼭지](https://testnet-faucet.b3.fun)를 사용하여 테스트를 위한 무료 ETH를 받으세요.
+</Step>
+
+<Step title="배포 및 테스트">
+  테스트넷에 스마트 계약을 배포하고 모든 기능을 철저히 테스트하세요.
+</Step>
+
+<Step title="디버그 및 최적화">
+  블록 탐색기와 개발 도구를 사용하여 문제를 디버그하고 성능을 최적화하세요.
+</Step>
+
+<Step title="메인넷에 배포">
+  테스트가 완료되면, 생산 준비가 된 계약을 B3 메인넷에 배포하세요.
+  
+  <Warning>
+  실제 자금을 사용하여 메인넷에 배포하기 전에 항상 테스트넷에서 철저히 테스트하세요.
+  </Warning>
+</Step>
+</Steps>
+
+## 테스트넷 vs 메인넷
+
+<AccordionGroup>
+<Accordion title="네트워크 구성">
+  **테스트넷**:
+  - 체인 ID: 1993
+  - RPC: https://testnet-rpc.b3.fun
+  - 탐색기: https://testnet-explorer.b3.fun
+  
+  **메인넷**:
+  - 체인 ID: 8333
+  - RPC: https://mainnet-rpc.b3.fun
+  - 탐색기: https://explorer.b3.fun
+</Accordion>
+
+<Accordion title="토큰 가치">
+  **테스트넷**: ETH는 실제 세계 가치가 없음 - 테스트용으로만 사용됨
+  
+  **메인넷**: ETH는 실제 세계 가치가 있고 구매 비용이 듬
+</Accordion>
+
+<Accordion title="사용 사례">
+  **테스트넷**: 개발, 테스트, 학습, 실험
+  
+  **메인넷**: 생산 애플리케이션, 실제 사용자, 실제 거래
+</Accordion>
+</AccordionGroup>

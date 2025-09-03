@@ -1,0 +1,531 @@
+---
+title: 보상 시스템
+description: CreateKit 보상 분배 시스템 이해 및 구현하기
+lang: ko
+originalPath: createkit/rewards.mdx
+---
+## 개요
+
+CreateKit은 각 민트의 가치의 일부를 생태계의 다양한 참여자에게 분배하는 혁신적인 보상 시스템을 특징으로 합니다. 이는 일치된 인센티브를 생성하고 성공적인 컬렉션에서 모든 기여자가 혜택을 받을 수 있도록 보장합니다.
+
+## 보상 구조
+
+### 기본 분배
+
+| 수령인 유형 | 기본 지분 | 설명 |
+|----------------|---------------|-------------|
+| **창작자** | 40% | 컬렉션을 만든 원작자 |
+| **첫 번째 민터** | 30% | 초기 배포와 첫 번째 민트를 트리거하는 사용자 |
+| **게임 소유자** | 20% | 컬렉션을 통합하는 플랫폼 또는 게임 |
+| **플랫폼** | 10% | BaseMint 프로토콜 수수료 |
+
+<Note>
+보상 비율은 프로토콜 관리자에 의해 구성 가능하며 배포 간에 다를 수 있습니다.
+</Note>
+
+### 보상 작동 방식
+
+1. **민트 결제**: 사용자가 토큰의 민트 가격을 지불합니다
+2. **보상 계산**: 지불금의 일정 비율이 보상 풀에 할당됩니다
+3. **분배**: 보상은 구성된 비율에 따라 분배됩니다
+4. **누적**: 보상은 청구될 때까지 에스크로 계약에 누적됩니다
+
+## 보상 추적
+
+### 보상 추적 설정
+
+```typescript title="보상 추적기 초기화"
+import { RewardTracker } from '@b3dotfun/basemint'
+import { createPublicClient, http } from 'viem'
+import { b3Testnet } from '@b3dotfun/basemint'
+
+const publicClient = createPublicClient({
+  chain: b3Testnet,
+  transport: http()
+})
+
+const rewardTracker = new RewardTracker(publicClient)
+
+// 에스크로 계약 주소 가져오기
+const escrowAddress = rewardTracker.getEscrowAddress()
+console.log(`에스크로 계약: ${escrowAddress}`)
+```
+
+### 컬렉션 수준 보상
+
+전체 컬렉션에 대해 누적된 보상 추적:
+
+```typescript title="컬렉션 보상"
+// 컬렉션의 총 보상 가져오기
+const collectionRewards = await rewardTracker.getCollectionRewards(
+  escrowAddress,
+  collectionAddress
+)
+
+console.log("컬렉션 보상:", {
+  totalRewards: collectionRewards.totalRewards.toString(),
+  unclaimedRewards: collectionRewards.unclaimedRewards.toString(),
+  totalMints: collectionRewards.totalMints.toString(),
+  averageRewardPerMint: (
+    collectionRewards.totalRewards / collectionRewards.totalMints
+  ).toString()
+})
+```
+
+### 개별 수령인 보상
+
+특정 참여자에 대한 보상 추적:
+
+<Tabs>
+<Tab title="창작자 보상">
+```typescript
+// 컬렉션의 창작자 보상 가져오기
+const creatorRewards = await rewardTracker.getRecipientRewards(
+  escrowAddress,
+  collectionAddress,
+  "CREATOR",
+  creatorAddress
+)
+
+console.log(`창작자 보상: ${creatorRewards.toString()} wei`)
+```
+</Tab>
+
+<Tab title="첫 번째 민터 보상">
+```typescript
+// 첫 번째 민터 보상 가져오기
+const firstMinterRewards = await rewardTracker.getRecipientRewards(
+  escrowAddress,
+  collectionAddress,
+  "FIRST_MINTER", 
+  firstMinterAddress
+)
+
+console.log(`첫 번째 민터 보상: ${firstMinterRewards.toString()} wei`)
+```
+</Tab>
+
+<Tab title="게임 소유자 보상">
+```typescript
+// 게임 소유자 보상 가져오기
+const gameOwnerRewards = await rewardTracker.getRecipientRewards(
+  escrowAddress,
+  collectionAddress,
+  "GAME_OWNER",
+  gameOwnerAddress
+)
+
+console.log(`게임 소유자 보상: ${gameOwnerRewards.toString()} wei`)
+```
+</Tab>
+</Tabs>
+
+### 컬렉션의 모든 수령인에 대한 보상
+
+```typescript title="모든 수령인 보상"
+// 모든 수령인 유형에 대한 보상 가져오기
+const allRewards = await Promise.all([
+  rewardTracker.getRecipientRewards(escrowAddress, collectionAddress, "CREATOR", creatorAddress),
+  rewardTracker.getRecipientRewards(escrowAddress, collectionAddress, "FIRST_MINTER", firstMinterAddress),
+  rewardTracker.getRecipientRewards(escrowAddress, collectionAddress, "GAME_OWNER", gameOwnerAddress),
+  rewardTracker.getRecipientRewards(escrowAddress, collectionAddress, "PLATFORM", platformAddress)
+])
+
+const [creatorRewards, firstMinterRewards, gameOwnerRewards, platformRewards] = allRewards
+
+console.log("보상 분배:", {
+  creator: creatorRewards.toString(),
+  firstMinter: firstMinterRewards.toString(),
+  gameOwner: gameOwnerRewards.toString(),
+  platform: platformRewards.toString(),
+  total: (creatorRewards + firstMinterRewards + gameOwnerRewards + platformRewards).toString()
+})
+```
+
+## 보상 이벤트
+
+### 보상 분배 추적
+
+```typescript title="보상 이벤트 모니터링"
+import { getRewardDistributionEvents } from '@b3dotfun/basemint'
+
+// 과거 보상 분배 이벤트 가져오기
+const fromBlock = await publicClient.getBlockNumber() - 1000n
+const toBlock = await publicClient.getBlockNumber()
+
+const rewardEvents = await getRewardDistributionEvents(
+  publicClient,
+  escrowAddress,
+  fromBlock,
+  toBlock
+)
+
+console.log("최근 보상 분배:")
+rewardEvents.forEach(event => {
+  console.log({
+    collection: event.args.collection,
+    recipient: event.args.recipient,
+    recipientType: event.args.recipientType,
+    amount: event.args.amount?.toString(),
+    blockNumber: event.blockNumber
+  })
+})
+```
+
+### 실시간 보상 모니터링
+
+```typescript title="실시간 모니터링"
+// 새로운 보상 분배 감시
+const unwatch = publicClient.watchContractEvent({
+  address: escrowAddress,
+  abi: rewardTracker.escrowAbi,
+  eventName: 'RewardDistributed',
+  onLogs: (logs) => {
+    logs.forEach(log => {
+      console.log('새로운 보상 분배:', {
+        collection: log.args.collection,
+        recipient: log.args.recipient,
+        amount: log.args.amount?.toString(),
+        type: log.args.recipientType
+      })
+    })
+  }
+})
+
+// 완료되면 감시 중지
+// unwatch()
+```
+
+## 보상 인출
+
+### 개별 인출
+
+```typescript title="보상 인출"
+import { createWalletClient } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+
+const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`)
+const walletClient = createWalletClient({
+  chain: b3Testnet,
+  transport: http(),
+  account
+})
+
+// 특정 컬렉션과 수령인 유형에 대한 보상 인출
+async function withdrawRewards(
+  collectionAddress: string,
+  recipientType: "CREATOR" | "FIRST_MINTER" | "GAME_OWNER" | "PLATFORM"
+) {
+  try {
+    // 먼저 사용 가능한 보상 확인
+    const availableRewards = await rewardTracker.getRecipientRewards(
+      escrowAddress,
+      collectionAddress,
+      recipientType,
+      account.address
+    )
+
+    if (availableRewards === 0n) {
+      console.log("인출할 보상이 없습니다")
+      return
+    }
+
+    console.log(`보상 ${availableRewards.toString()} wei 인출 중...`)
+
+    // 보상 인출
+    const tx = await rewardTracker.withdrawRewards(
+      walletClient,
+      escrowAddress,
+      collectionAddress,
+      recipientType
+    )
+
+    console.log(`✅ 보상이 성공적으로 인출되었습니다: ${tx}`)
+    return tx
+
+  } catch (error) {
+    console.error("❌ 인출 실패:", error)
+    throw error
+  }
+}
+
+// 예시: 창작자가 자신의 보상을 인출
+await withdrawRewards(collectionAddress, "CREATOR")
+```
+
+### 일괄 인출
+
+```typescript title="일괄 인출"
+// 여러 컬렉션에서 보상 인출
+async function withdrawAllCreatorRewards(creatorAddress: string) {
+  // 이 주소가 창작자인 모든 컬렉션 가져오기
+  const creatorCollections = await getCreatorCollections(creatorAddress)
+  
+  for (const collection of creatorCollections) {
+    const rewards = await rewardTracker.getRecipientRewards(
+      escrowAddress,
+      collection.address,
+      "CREATOR",
+      creatorAddress
+    )
+
+    if (rewards > 0n) {
+      console.log(`${collection.name}에서 ${rewards.toString()} wei 인출 중`)
+      
+      try {
+        await rewardTracker.withdrawRewards(
+          walletClient,
+          escrowAddress,
+          collection.address,
+          "CREATOR"
+        )
+        console.log(`✅ ${collection.name}에서 인출됨`)
+      } catch (error) {
+        console.error(`❌ ${collection.name}에서 인출 실패:`, error)
+      }
+    }
+  }
+}
+```
+
+## 보상 분석
+
+### 포트폴리오 개요
+
+```typescript title="창작자 포트폴리오"
+async function getCreatorPortfolio(creatorAddress: string) {
+  const collections = await getCreatorCollections(creatorAddress)
+  
+  let totalRewards = 0n
+  let totalUnclaimedRewards = 0n
+  let totalMints = 0n
+  
+  const collectionData = []
+  
+  for (const collection of collections) {
+    const collectionRewards = await rewardTracker.getCollectionRewards(
+      escrowAddress,
+      collection.address
+    )
+    
+    const creatorRewards = await rewardTracker.getRecipientRewards(
+      escrowAddress,
+      collection.address,
+      "CREATOR",
+      creatorAddress
+    )
+    
+    totalRewards += collectionRewards.totalRewards
+    totalUnclaimedRewards += creatorRewards
+    totalMints += collectionRewards.totalMints
+    
+    collectionData.push({
+      name: collection.name,
+      address: collection.address,
+      totalRewards: collectionRewards.totalRewards,
+      creatorRewards,
+      mints: collectionRewards.totalMints
+    })
+  }
+  
+  return {
+    summary: {
+      totalCollections: collections.length,
+      totalRewards: totalRewards.toString(),
+      totalUnclaimedRewards: totalUnclaimedRewards.toString(), 
+      totalMints: totalMints.toString(),
+      averageRewardPerMint: totalMints > 0n ? (totalRewards / totalMints).toString() : "0"
+    },
+    collections: collectionData
+  }
+}
+
+const portfolio = await getCreatorPortfolio(creatorAddress)
+console.log("창작자 포트폴리오:", portfolio)
+```
+
+### 성과 지표
+
+```typescript title="보상 성과"
+async function getRewardMetrics(collectionAddress: string) {
+  const collectionRewards = await rewardTracker.getCollectionRewards(
+    escrowAddress,
+    collectionAddress
+  )
+  
+  const collection = collectionManager.createCollection(collectionAddress, "ERC721")
+  const currentSupply = await collection.totalSupply()
+  const mintPrice = await collection.mintPrice()
+  
+  const totalMintRevenue = currentSupply * mintPrice
+  const rewardPercentage = totalMintRevenue > 0n 
+    ? (collectionRewards.totalRewards * 100n) / totalMintRevenue 
+    : 0n
+  
+  return {
+    totalMints: collectionRewards.totalMints.toString(),
+    totalRewards: collectionRewards.totalRewards.toString(),
+    totalRevenue: totalMintRevenue.toString(),
+    rewardPercentage: rewardPercentage.toString() + "%",
+    averageRewardPerMint: collectionRewards.totalMints > 0n 
+      ? (collectionRewards.totalRewards / collectionRewards.totalMints).toString()
+      : "0"
+  }
+}
+```
+
+## 고급 보상 기능
+
+### 사용자 정의 보상 비율
+
+<Warning>
+보상 비율 구성은 일반적으로 프로토콜 관리자에게 제한됩니다.
+</Warning>
+
+```typescript title="보상 비율 관리"
+// 프로토콜 관리자 전용
+async function updateRewardRates(
+  adminWalletClient: any,
+  escrowAddress: string
+) {
+  // 보상 비율 업데이트 (소유자만 호출 가능)
+  await rewardTracker.setRewardRates(
+    adminWalletClient,
+    escrowAddress,
+    {
+      creatorRate: 4500n,    // 45%
+      firstMinterRate: 2500n, // 25%
+      gameOwnerRate: 2000n,  // 20%
+      platformRate: 1000n    // 10%
+    }
+  )
+}
+
+// 현재 보상 비율 확인
+const rates = await rewardTracker.getRewardRates(escrowAddress)
+console.log("현재 보상 비율:", {
+  creator: rates.creatorRate.toString(),
+  firstMinter: rates.firstMinterRate.toString(),
+  gameOwner: rates.gameOwnerRate.toString(),
+  platform: rates.platformRate.toString()
+})
+```
+
+### 수령인 관리
+
+```typescript title="수령인 상태"
+// 수령인 유형이 활성화되었는지 확인
+const isCreatorActive = await rewardTracker.isRecipientActive(
+  escrowAddress,
+  "CREATOR"
+)
+
+// 수령인 정보 가져오기
+const recipientInfo = await rewardTracker.getRecipientInfo(
+  escrowAddress,
+  "CREATOR"
+)
+
+console.log("창작자 수령인 정보:", {
+  rate: recipientInfo.rate.toString(),
+  isActive: recipientInfo.isActive
+})
+```
+
+## 통합 모범 사례
+
+### 사용자 인터페이스 통합
+
+```typescript title="UI 도우미 함수"
+// 보상을 표시 형식으로 변환
+function formatRewards(weiAmount: bigint): string {
+  const eth = Number(weiAmount) / 1e18
+  return `${eth.toFixed(6)} ETH`
+}
+
+// USD 가치 계산 (가격 피드 예시 사용)
+async function getRewardValueUSD(weiAmount: bigint, ethPriceUSD: number): Promise<string> {
+  const eth = Number(weiAmount) / 1e18
+  const usd = eth * ethPriceUSD
+  return `$${usd.toFixed(2)}`
+}
+
+// 인출이 수익성 있는지 확인 (가스 비용 고려)
+async function isWithdrawalProfitable(
+  rewardAmount: bigint,
+  gasPrice: bigint,
+  gasLimit: bigint
+): Promise<boolean> {
+  const gasCost = gasPrice * gasLimit
+  return rewardAmount > gasCost * 2n // 최소 2배 가스 비용 필요
+}
+```
+
+### 자동 보상 청구
+
+```typescript title="자동 청구"
+// 자동 보상 청구 서비스
+class RewardClaimingService {
+  private rewardTracker: RewardTracker
+  private walletClient: any
+  private minWithdrawThreshold: bigint
+
+  constructor(rewardTracker: RewardTracker, walletClient: any, minThreshold: bigint) {
+    this.rewardTracker = rewardTracker
+    this.walletClient = walletClient
+    this.minWithdrawThreshold = minThreshold
+  }
+
+  async checkAndClaimRewards(
+    collections: string[],
+    recipientType: "CREATOR" | "FIRST_MINTER" | "GAME_OWNER"
+  ) {
+    for (const collectionAddress of collections) {
+      try {
+        const rewards = await this.rewardTracker.getRecipientRewards(
+          escrowAddress,
+          collectionAddress,
+          recipientType,
+          this.walletClient.account.address
+        )
+
+        if (rewards >= this.minWithdrawThreshold) {
+          console.log(`${collectionAddress}에서 ${rewards.toString()} wei 청구 중`)
+          
+          await this.rewardTracker.withdrawRewards(
+            this.walletClient,
+            escrowAddress,
+            collectionAddress,
+            recipientType
+          )
+          
+          console.log(`✅ ${collectionAddress}에서 보상이 성공적으로 청구됨`)
+        }
+      } catch (error) {
+        console.error(`❌ ${collectionAddress}에서 청구 실패:`, error)
+      }
+    }
+  }
+}
+
+// 사용법
+const claimingService = new RewardClaimingService(
+  rewardTracker,
+  walletClient,
+  parseEther("0.001") // 최소 0.001 ETH 청구
+)
+
+await claimingService.checkAndClaimRewards(
+  creatorCollections,
+  "CREATOR"
+)
+```
+
+## 문제 해결
+
+<AccordionGroup>
+  <Accordion title="보상이 표시되지 않음">
+    - 배포 후 컬렉션이 민트를 받았는지 확인
+    - 올바른 수령인 유형과 주소를 쿼리하고 있는지 확인
+    - 컬렉션이 적절한 서명으로 생성되었는지 확인
+ 

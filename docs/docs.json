@@ -632,51 +632,51 @@
                   {
                     "group": "Getting Started",
                     "pages": [
-                      "learn/getting-started/how-to-create-an-account",
-                      "learn/getting-started/how-to-customize-your-basement-profile",
-                      "learn/getting-started/how-to-link-additional-social-accounts",
-                      "learn/getting-started/how-to-export-your-embedded-wallet",
-                      "learn/getting-started/crypto-and-wallet-security"
+                      "id/learn/getting-started/how-to-create-an-account",
+                      "id/learn/getting-started/how-to-customize-your-basement-profile",
+                      "id/learn/getting-started/how-to-link-additional-social-accounts",
+                      "id/learn/getting-started/how-to-export-your-embedded-wallet",
+                      "id/learn/getting-started/crypto-and-wallet-security"
                     ]
                   },
                   {
                     "group": "Deposits & Withdrawals",
                     "pages": [
-                      "learn/deposits-withdrawals/depositing-tokens-on-b3",
-                      "learn/deposits-withdrawals/withdrawing-tokens-from-b3",
-                      "learn/deposits-withdrawals/how-to-swap-tokens",
-                      "learn/deposits-withdrawals/b3-token",
-                      "learn/deposits-withdrawals/how-to-verify-transaction-status"
+                      "id/learn/deposits-withdrawals/depositing-tokens-on-b3",
+                      "id/learn/deposits-withdrawals/withdrawing-tokens-from-b3",
+                      "id/learn/deposits-withdrawals/how-to-swap-tokens",
+                      "id/learn/deposits-withdrawals/b3-token",
+                      "id/learn/deposits-withdrawals/how-to-verify-transaction-status"
                     ]
                   },
                   {
                     "group": "Staking & Rewards",
                     "pages": [
-                      "learn/staking-rewards/what-is-staking-and-how-does-it-work",
-                      "learn/staking-rewards/how-to-stake-b3",
-                      "learn/staking-rewards/how-to-unstake-your-tokens",
-                      "learn/staking-rewards/stake-to-win",
-                      "learn/staking-rewards/how-daily-slots-work",
-                      "learn/staking-rewards/how-spin-the-wheel-works",
-                      "learn/staking-rewards/how-prize-pool-works"
+                      "id/learn/staking-rewards/what-is-staking-and-how-does-it-work",
+                      "id/learn/staking-rewards/how-to-stake-b3",
+                      "id/learn/staking-rewards/how-to-unstake-your-tokens",
+                      "id/learn/staking-rewards/stake-to-win",
+                      "id/learn/staking-rewards/how-daily-slots-work",
+                      "id/learn/staking-rewards/how-spin-the-wheel-works",
+                      "id/learn/staking-rewards/how-prize-pool-works"
                     ]
                   },
                   {
                     "group": "Games & Experiences",
                     "pages": [
-                      "learn/games-experiences/how-to-join-a-tournament-on-basement",
-                      "learn/games-experiences/how-to-start-a-wager-on-basement"
+                      "id/learn/games-experiences/how-to-join-a-tournament-on-basement",
+                      "id/learn/games-experiences/how-to-start-a-wager-on-basement"
                     ]
                   },
                   {
                     "group": "Troubleshooting",
                     "pages": [
-                      "learn/troubleshooting/login-and-account-access",
-                      "learn/troubleshooting/staking-and-rewards-faq",
-                      "learn/troubleshooting/transactions-and-wallet-issues",
-                      "learn/troubleshooting/stake-to-win-games-faq",
-                      "learn/troubleshooting/games-and-competition-faq",
-                      "learn/troubleshooting/feedback-and-reporting-issues"
+                      "id/learn/troubleshooting/login-and-account-access",
+                      "id/learn/troubleshooting/staking-and-rewards-faq",
+                      "id/learn/troubleshooting/transactions-and-wallet-issues",
+                      "id/learn/troubleshooting/stake-to-win-games-faq",
+                      "id/learn/troubleshooting/games-and-competition-faq",
+                      "id/learn/troubleshooting/feedback-and-reporting-issues"
                     ]
                   }
                 ]
@@ -1137,51 +1137,51 @@
                   {
                     "group": "Getting Started",
                     "pages": [
-                      "learn/getting-started/how-to-create-an-account",
-                      "learn/getting-started/how-to-customize-your-basement-profile",
-                      "learn/getting-started/how-to-link-additional-social-accounts",
-                      "learn/getting-started/how-to-export-your-embedded-wallet",
-                      "learn/getting-started/crypto-and-wallet-security"
+                      "ko/learn/getting-started/how-to-create-an-account",
+                      "ko/learn/getting-started/how-to-customize-your-basement-profile",
+                      "ko/learn/getting-started/how-to-link-additional-social-accounts",
+                      "ko/learn/getting-started/how-to-export-your-embedded-wallet",
+                      "ko/learn/getting-started/crypto-and-wallet-security"
                     ]
                   },
                   {
                     "group": "Deposits & Withdrawals",
                     "pages": [
-                      "learn/deposits-withdrawals/depositing-tokens-on-b3",
-                      "learn/deposits-withdrawals/withdrawing-tokens-from-b3",
-                      "learn/deposits-withdrawals/how-to-swap-tokens",
-                      "learn/deposits-withdrawals/b3-token",
-                      "learn/deposits-withdrawals/how-to-verify-transaction-status"
+                      "ko/learn/deposits-withdrawals/depositing-tokens-on-b3",
+                      "ko/learn/deposits-withdrawals/withdrawing-tokens-from-b3",
+                      "ko/learn/deposits-withdrawals/how-to-swap-tokens",
+                      "ko/learn/deposits-withdrawals/b3-token",
+                      "ko/learn/deposits-withdrawals/how-to-verify-transaction-status"
                     ]
                   },
                   {
                     "group": "Staking & Rewards",
                     "pages": [
-                      "learn/staking-rewards/what-is-staking-and-how-does-it-work",
-                      "learn/staking-rewards/how-to-stake-b3",
-                      "learn/staking-rewards/how-to-unstake-your-tokens",
-                      "learn/staking-rewards/stake-to-win",
-                      "learn/staking-rewards/how-daily-slots-work",
-                      "learn/staking-rewards/how-spin-the-wheel-works",
-                      "learn/staking-rewards/how-prize-pool-works"
+                      "ko/learn/staking-rewards/what-is-staking-and-how-does-it-work",
+                      "ko/learn/staking-rewards/how-to-stake-b3",
+                      "ko/learn/staking-rewards/how-to-unstake-your-tokens",
+                      "ko/learn/staking-rewards/stake-to-win",
+                      "ko/learn/staking-rewards/how-daily-slots-work",
+                      "ko/learn/staking-rewards/how-spin-the-wheel-works",
+                      "ko/learn/staking-rewards/how-prize-pool-works"
                     ]
                   },
                   {
                     "group": "Games & Experiences",
                     "pages": [
-                      "learn/games-experiences/how-to-join-a-tournament-on-basement",
-                      "learn/games-experiences/how-to-start-a-wager-on-basement"
+                      "ko/learn/games-experiences/how-to-join-a-tournament-on-basement",
+                      "ko/learn/games-experiences/how-to-start-a-wager-on-basement"
                     ]
                   },
                   {
                     "group": "Troubleshooting",
                     "pages": [
-                      "learn/troubleshooting/login-and-account-access",
-                      "learn/troubleshooting/staking-and-rewards-faq",
-                      "learn/troubleshooting/transactions-and-wallet-issues",
-                      "learn/troubleshooting/stake-to-win-games-faq",
-                      "learn/troubleshooting/games-and-competition-faq",
-                      "learn/troubleshooting/feedback-and-reporting-issues"
+                      "ko/learn/troubleshooting/login-and-account-access",
+                      "ko/learn/troubleshooting/staking-and-rewards-faq",
+                      "ko/learn/troubleshooting/transactions-and-wallet-issues",
+                      "ko/learn/troubleshooting/stake-to-win-games-faq",
+                      "ko/learn/troubleshooting/games-and-competition-faq",
+                      "ko/learn/troubleshooting/feedback-and-reporting-issues"
                     ]
                   }
                 ]
@@ -1642,51 +1642,51 @@
                   {
                     "group": "Getting Started",
                     "pages": [
-                      "learn/getting-started/how-to-create-an-account",
-                      "learn/getting-started/how-to-customize-your-basement-profile",
-                      "learn/getting-started/how-to-link-additional-social-accounts",
-                      "learn/getting-started/how-to-export-your-embedded-wallet",
-                      "learn/getting-started/crypto-and-wallet-security"
+                      "cn/learn/getting-started/how-to-create-an-account",
+                      "cn/learn/getting-started/how-to-customize-your-basement-profile",
+                      "cn/learn/getting-started/how-to-link-additional-social-accounts",
+                      "cn/learn/getting-started/how-to-export-your-embedded-wallet",
+                      "cn/learn/getting-started/crypto-and-wallet-security"
                     ]
                   },
                   {
                     "group": "Deposits & Withdrawals",
                     "pages": [
-                      "learn/deposits-withdrawals/depositing-tokens-on-b3",
-                      "learn/deposits-withdrawals/withdrawing-tokens-from-b3",
-                      "learn/deposits-withdrawals/how-to-swap-tokens",
-                      "learn/deposits-withdrawals/b3-token",
-                      "learn/deposits-withdrawals/how-to-verify-transaction-status"
+                      "cn/learn/deposits-withdrawals/depositing-tokens-on-b3",
+                      "cn/learn/deposits-withdrawals/withdrawing-tokens-from-b3",
+                      "cn/learn/deposits-withdrawals/how-to-swap-tokens",
+                      "cn/learn/deposits-withdrawals/b3-token",
+                      "cn/learn/deposits-withdrawals/how-to-verify-transaction-status"
                     ]
                   },
                   {
                     "group": "Staking & Rewards",
                     "pages": [
-                      "learn/staking-rewards/what-is-staking-and-how-does-it-work",
-                      "learn/staking-rewards/how-to-stake-b3",
-                      "learn/staking-rewards/how-to-unstake-your-tokens",
-                      "learn/staking-rewards/stake-to-win",
-                      "learn/staking-rewards/how-daily-slots-work",
-                      "learn/staking-rewards/how-spin-the-wheel-works",
-                      "learn/staking-rewards/how-prize-pool-works"
+                      "cn/learn/staking-rewards/what-is-staking-and-how-does-it-work",
+                      "cn/learn/staking-rewards/how-to-stake-b3",
+                      "cn/learn/staking-rewards/how-to-unstake-your-tokens",
+                      "cn/learn/staking-rewards/stake-to-win",
+                      "cn/learn/staking-rewards/how-daily-slots-work",
+                      "cn/learn/staking-rewards/how-spin-the-wheel-works",
+                      "cn/learn/staking-rewards/how-prize-pool-works"
                     ]
                   },
                   {
                     "group": "Games & Experiences",
                     "pages": [
-                      "learn/games-experiences/how-to-join-a-tournament-on-basement",
-                      "learn/games-experiences/how-to-start-a-wager-on-basement"
+                      "cn/learn/games-experiences/how-to-join-a-tournament-on-basement",
+                      "cn/learn/games-experiences/how-to-start-a-wager-on-basement"
                     ]
                   },
                   {
                     "group": "Troubleshooting",
                     "pages": [
-                      "learn/troubleshooting/login-and-account-access",
-                      "learn/troubleshooting/staking-and-rewards-faq",
-                      "learn/troubleshooting/transactions-and-wallet-issues",
-                      "learn/troubleshooting/stake-to-win-games-faq",
-                      "learn/troubleshooting/games-and-competition-faq",
-                      "learn/troubleshooting/feedback-and-reporting-issues"
+                      "cn/learn/troubleshooting/login-and-account-access",
+                      "cn/learn/troubleshooting/staking-and-rewards-faq",
+                      "cn/learn/troubleshooting/transactions-and-wallet-issues",
+                      "cn/learn/troubleshooting/stake-to-win-games-faq",
+                      "cn/learn/troubleshooting/games-and-competition-faq",
+                      "cn/learn/troubleshooting/feedback-and-reporting-issues"
                     ]
                   }
                 ]
@@ -2147,51 +2147,51 @@
                   {
                     "group": "Getting Started",
                     "pages": [
-                      "learn/getting-started/how-to-create-an-account",
-                      "learn/getting-started/how-to-customize-your-basement-profile",
-                      "learn/getting-started/how-to-link-additional-social-accounts",
-                      "learn/getting-started/how-to-export-your-embedded-wallet",
-                      "learn/getting-started/crypto-and-wallet-security"
+                      "es/learn/getting-started/how-to-create-an-account",
+                      "es/learn/getting-started/how-to-customize-your-basement-profile",
+                      "es/learn/getting-started/how-to-link-additional-social-accounts",
+                      "es/learn/getting-started/how-to-export-your-embedded-wallet",
+                      "es/learn/getting-started/crypto-and-wallet-security"
                     ]
                   },
                   {
                     "group": "Deposits & Withdrawals",
                     "pages": [
-                      "learn/deposits-withdrawals/depositing-tokens-on-b3",
-                      "learn/deposits-withdrawals/withdrawing-tokens-from-b3",
-                      "learn/deposits-withdrawals/how-to-swap-tokens",
-                      "learn/deposits-withdrawals/b3-token",
-                      "learn/deposits-withdrawals/how-to-verify-transaction-status"
+                      "es/learn/deposits-withdrawals/depositing-tokens-on-b3",
+                      "es/learn/deposits-withdrawals/withdrawing-tokens-from-b3",
+                      "es/learn/deposits-withdrawals/how-to-swap-tokens",
+                      "es/learn/deposits-withdrawals/b3-token",
+                      "es/learn/deposits-withdrawals/how-to-verify-transaction-status"
                     ]
                   },
                   {
                     "group": "Staking & Rewards",
                     "pages": [
-                      "learn/staking-rewards/what-is-staking-and-how-does-it-work",
-                      "learn/staking-rewards/how-to-stake-b3",
-                      "learn/staking-rewards/how-to-unstake-your-tokens",
-                      "learn/staking-rewards/stake-to-win",
-                      "learn/staking-rewards/how-daily-slots-work",
-                      "learn/staking-rewards/how-spin-the-wheel-works",
-                      "learn/staking-rewards/how-prize-pool-works"
+                      "es/learn/staking-rewards/what-is-staking-and-how-does-it-work",
+                      "es/learn/staking-rewards/how-to-stake-b3",
+                      "es/learn/staking-rewards/how-to-unstake-your-tokens",
+                      "es/learn/staking-rewards/stake-to-win",
+                      "es/learn/staking-rewards/how-daily-slots-work",
+                      "es/learn/staking-rewards/how-spin-the-wheel-works",
+                      "es/learn/staking-rewards/how-prize-pool-works"
                     ]
                   },
                   {
                     "group": "Games & Experiences",
                     "pages": [
-                      "learn/games-experiences/how-to-join-a-tournament-on-basement",
-                      "learn/games-experiences/how-to-start-a-wager-on-basement"
+                      "es/learn/games-experiences/how-to-join-a-tournament-on-basement",
+                      "es/learn/games-experiences/how-to-start-a-wager-on-basement"
                     ]
                   },
                   {
                     "group": "Troubleshooting",
                     "pages": [
-                      "learn/troubleshooting/login-and-account-access",
-                      "learn/troubleshooting/staking-and-rewards-faq",
-                      "learn/troubleshooting/transactions-and-wallet-issues",
-                      "learn/troubleshooting/stake-to-win-games-faq",
-                      "learn/troubleshooting/games-and-competition-faq",
-                      "learn/troubleshooting/feedback-and-reporting-issues"
+                      "es/learn/troubleshooting/login-and-account-access",
+                      "es/learn/troubleshooting/staking-and-rewards-faq",
+                      "es/learn/troubleshooting/transactions-and-wallet-issues",
+                      "es/learn/troubleshooting/stake-to-win-games-faq",
+                      "es/learn/troubleshooting/games-and-competition-faq",
+                      "es/learn/troubleshooting/feedback-and-reporting-issues"
                     ]
                   }
                 ]
@@ -2634,51 +2634,51 @@
                   {
                     "group": "Getting Started",
                     "pages": [
-                      "learn/getting-started/how-to-create-an-account",
-                      "learn/getting-started/how-to-customize-your-basement-profile",
-                      "learn/getting-started/how-to-link-additional-social-accounts",
-                      "learn/getting-started/how-to-export-your-embedded-wallet",
-                      "learn/getting-started/crypto-and-wallet-security"
+                      "pt-BR/learn/getting-started/how-to-create-an-account",
+                      "pt-BR/learn/getting-started/how-to-customize-your-basement-profile",
+                      "pt-BR/learn/getting-started/how-to-link-additional-social-accounts",
+                      "pt-BR/learn/getting-started/how-to-export-your-embedded-wallet",
+                      "pt-BR/learn/getting-started/crypto-and-wallet-security"
                     ]
                   },
                   {
                     "group": "Deposits & Withdrawals",
                     "pages": [
-                      "learn/deposits-withdrawals/depositing-tokens-on-b3",
-                      "learn/deposits-withdrawals/withdrawing-tokens-from-b3",
-                      "learn/deposits-withdrawals/how-to-swap-tokens",
-                      "learn/deposits-withdrawals/b3-token",
-                      "learn/deposits-withdrawals/how-to-verify-transaction-status"
+                      "pt-BR/learn/deposits-withdrawals/depositing-tokens-on-b3",
+                      "pt-BR/learn/deposits-withdrawals/withdrawing-tokens-from-b3",
+                      "pt-BR/learn/deposits-withdrawals/how-to-swap-tokens",
+                      "pt-BR/learn/deposits-withdrawals/b3-token",
+                      "pt-BR/learn/deposits-withdrawals/how-to-verify-transaction-status"
                     ]
                   },
                   {
                     "group": "Staking & Rewards",
                     "pages": [
-                      "learn/staking-rewards/what-is-staking-and-how-does-it-work",
-                      "learn/staking-rewards/how-to-stake-b3",
-                      "learn/staking-rewards/how-to-unstake-your-tokens",
-                      "learn/staking-rewards/stake-to-win",
-                      "learn/staking-rewards/how-daily-slots-work",
-                      "learn/staking-rewards/how-spin-the-wheel-works",
-                      "learn/staking-rewards/how-prize-pool-works"
+                      "pt-BR/learn/staking-rewards/what-is-staking-and-how-does-it-work",
+                      "pt-BR/learn/staking-rewards/how-to-stake-b3",
+                      "pt-BR/learn/staking-rewards/how-to-unstake-your-tokens",
+                      "pt-BR/learn/staking-rewards/stake-to-win",
+                      "pt-BR/learn/staking-rewards/how-daily-slots-work",
+                      "pt-BR/learn/staking-rewards/how-spin-the-wheel-works",
+                      "pt-BR/learn/staking-rewards/how-prize-pool-works"
                     ]
                   },
                   {
                     "group": "Games & Experiences",
                     "pages": [
-                      "learn/games-experiences/how-to-join-a-tournament-on-basement",
-                      "learn/games-experiences/how-to-start-a-wager-on-basement"
+                      "pt-BR/learn/games-experiences/how-to-join-a-tournament-on-basement",
+                      "pt-BR/learn/games-experiences/how-to-start-a-wager-on-basement"
                     ]
                   },
                   {
                     "group": "Troubleshooting",
                     "pages": [
-                      "learn/troubleshooting/login-and-account-access",
-                      "learn/troubleshooting/staking-and-rewards-faq",
-                      "learn/troubleshooting/transactions-and-wallet-issues",
-                      "learn/troubleshooting/stake-to-win-games-faq",
-                      "learn/troubleshooting/games-and-competition-faq",
-                      "learn/troubleshooting/feedback-and-reporting-issues"
+                      "pt-BR/learn/troubleshooting/login-and-account-access",
+                      "pt-BR/learn/troubleshooting/staking-and-rewards-faq",
+                      "pt-BR/learn/troubleshooting/transactions-and-wallet-issues",
+                      "pt-BR/learn/troubleshooting/stake-to-win-games-faq",
+                      "pt-BR/learn/troubleshooting/games-and-competition-faq",
+                      "pt-BR/learn/troubleshooting/feedback-and-reporting-issues"
                     ]
                   }
                 ]

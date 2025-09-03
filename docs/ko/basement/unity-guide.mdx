@@ -1,0 +1,159 @@
+---
+title: B3 Unity SDK
+description: >-
+  Unity 게임을 B3 Unity SDK로 basement에 통합하여 Unity 내에서 간단한 함수로 모든 런처 기능에 쉽게 접근할 수
+  있습니다.
+lang: ko
+originalPath: basement/unity-guide.mdx
+---
+## 기능
+
+B3 Unity SDK는 Unity 개발자를 위한 포괄적인 통합 기능을 제공합니다:
+
+<CardGroup cols={1}>
+  <Card title="세션 관리" icon="user-check">
+    SDK는 사용자 인증을 자동으로 원활하게 처리합니다.
+  </Card>
+  
+  <Card title="함수로서의 API" icon="code">
+    콜백 기반 및 async/await 기반 호출 모두를 지원하며 모든 런처 API를 쉽게 사용할 수 있습니다.
+  </Card>
+  
+  <Card title="WebGL을 위한 웹훅" icon="webhook">
+    런처 클라이언트 웹훅을 처리하고, 이를 자신의 C# 코드로 구문 분석하고 전파합니다.
+  </Card>
+</CardGroup>
+
+## 설치 및 사용법
+
+<Steps>
+<Step title="SDK 다운로드">
+  GitHub 저장소로 이동하여 최신 릴리스를 다운로드하세요.
+  
+  <Card title="Unity SDK 받기" icon="download" href="https://github.com/b3-fun/b3-unity-sdk" cta="GitHub에서 다운로드" horizontal>
+    설치 지침이 포함된 공식 B3 Unity SDK 저장소에 접근하세요
+  </Card>
+</Step>
+
+<Step title="Unity 프로젝트에 설치">
+  GitHub의 설치 가이드 지침을 따라 SDK를 Unity 프로젝트에 설치하세요.
+  
+  <Note>
+  GitHub 저장소에는 자세한 설치 지침과 설정 요구 사항이 포함되어 있습니다.
+  </Note>
+</Step>
+
+<Step title="SDK 초기화">
+  SDK를 설치하고 설정 가이드를 따른 후, 모든 API를 함수로 쉽게 호출할 수 있습니다.
+  
+  <Check>
+  Unity 프로젝트가 이제 B3 런처와 통합할 준비가 되었습니다!
+  </Check>
+</Step>
+</Steps>
+
+## 코드 예제
+
+### 규칙 엔진 트리거
+
+Unity 게임 내에서 규칙 엔진을 트리거하는 방법의 예입니다:
+
+```csharp Unity C# Example
+B3LauncherClient.TriggerRulesEngine(new B3LauncherClient.TriggerRulesEngineBody
+{
+    launcherJwt = B3Instance.Instance.SessionJWT ?? jwtInput.text,
+    trigger = "open-tip-modal",
+    otherWallet = otherWalletInput.text,
+}, null);
+```
+
+### 세션 관리
+
+SDK는 사용자 세션을 자동으로 처리합니다:
+
+```csharp Session Example
+// 현재 세션 JWT에 접근
+string sessionToken = B3Instance.Instance.SessionJWT;
+
+// 사용자가 인증되었는지 확인
+if (B3Instance.Instance.IsAuthenticated)
+{
+    // 사용자가 로그인되어 B3 서비스와 상호 작용할 준비가 되었습니다
+    Debug.Log("User authenticated successfully");
+}
+```
+
+## API 통합
+
+Unity SDK는 모든 B3 런처 API에 대한 원활한 접근을 제공합니다:
+
+<AccordionGroup>
+<Accordion title="콜백 기반 호출">
+  API 응답을 처리하기 위한 전통적인 콜백 패턴:
+  
+  ```csharp
+  B3LauncherClient.SomeAPICall(requestData, (response) => {
+      // 응답 처리
+      Debug.Log("API call completed");
+  });
+  ```
+</Accordion>
+
+<Accordion title="Async/Await 호출">
+  더 깔끔한 코드를 위한 현대적인 async/await 패턴:
+  
+  ```csharp
+  public async void CallAPI()
+  {
+      var response = await B3LauncherClient.SomeAPICallAsync(requestData);
+      // 응답 처리
+      Debug.Log("API call completed");
+  }
+  ```
+</Accordion>
+
+<Accordion title="WebGL 웹훅">
+  WebGL 빌드에서 런처 이벤트를 처리:
+  
+  ```csharp
+  // 웹훅 핸들러 등록
+  B3Instance.Instance.OnWebhookReceived += HandleWebhook;
+  
+  private void HandleWebhook(WebhookData data)
+  {
+      // 들어오는 웹훅 데이터 처리
+      Debug.Log($"Received webhook: {data.type}");
+  }
+  ```
+</Accordion>
+</AccordionGroup>
+
+## 다음 단계
+
+<CardGroup cols={2}>
+  <Card title="게임 런처 가이드" icon="rocket" href="/basement/game-launcher">
+    BSMNT 게임 런처와 통합하는 방법을 알아보세요
+  </Card>
+  
+  <Card title="BSMNT API 문서" icon="book" href="https://docs.basement.fun/api">
+    모든 사용 가능한 엔드포인트에 대한 완전한 API 문서
+  </Card>
+  
+  <Card title="Unity 문서" icon="external-link" href="https://docs.unity3d.com/">
+    공식 Unity 문서 및 리소스
+  </Card>
+  
+  <Card title="예제 프로젝트" icon="folder" href="https://github.com/b3-fun/unity-examples">
+    B3 SDK를 사용하는 샘플 Unity 프로젝트
+  </Card>
+</CardGroup>
+
+## 지원
+
+<Info>
+기술 지원, 버그 보고 또는 기능 요청을 위해 GitHub 저장소를 방문하거나 개발자 커뮤니티에 문의하세요.
+</Info>
+
+<Card title="Unity SDK 지원 받기" icon="help-circle" href="https://github.com/b3-fun/b3-unity-sdk/issues" cta="GitHub 이슈" horizontal>
+  개발자 커뮤니티에서 문제를 보고하거나 도움을 받으세요
+</Card>

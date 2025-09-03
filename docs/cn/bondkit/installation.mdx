@@ -1,0 +1,301 @@
+---
+title: 安装
+description: 在 Base 上安装并配置 BondKit 以启动 ERC20 债券代币。
+lang: cn
+originalPath: bondkit/installation.mdx
+---
+## 先决条件
+
+<Card title="所需工具" icon="wrench">
+  - **Node.js 18+** - JavaScript 运行时
+  - **pnpm**（推荐）或 npm/yarn - 包管理器
+  - **Git** - 版本控制
+  - **带有基础 ETH 的钱包** - 用于部署和交易
+</Card>
+
+## 快速开始选项
+
+<Tabs>
+  <Tab title="新项目">
+    ## 安装 SDK
+    
+    <CodeGroup>
+    ```bash pnpm
+    pnpm add @b3dotfun/sdk
+    ```
+    ```bash npm
+    npm install @b3dotfun/sdk
+    ```
+    ```bash yarn
+    yarn add @b3dotfun/sdk
+    ```
+    </CodeGroup>
+
+    ## 项目设置
+
+    ```bash
+    # 创建新项目
+    mkdir my-bondkit-app
+    cd my-bondkit-app
+    pnpm init
+
+    # 安装依赖
+    pnpm add @b3dotfun/sdk typescript
+    pnpm add -D @types/node tsx
+
+    # 创建 TypeScript 配置
+    npx tsc --init
+    ```
+  </Tab>
+  
+  <Tab title="现有项目">
+    ## 添加到现有项目
+    
+    <CodeGroup>
+    ```bash pnpm
+    pnpm add @b3dotfun/sdk
+    ```
+    ```bash npm
+    npm install @b3dotfun/sdk
+    ```
+    ```bash yarn
+    yarn add @b3dotfun/sdk
+    ```
+    </CodeGroup>
+
+    <Note>
+      SDK 包括所有必要的依赖项，包括 viem
+    </Note>
+  </Tab>
+  
+  <Tab title="演示应用">
+    ## 克隆演示应用程序
+    
+    快速开始的最佳方式是使用我们的完整演示应用程序：
+
+    ```bash
+    # 克隆 B3 单体仓库
+    git clone https://github.com/b3dotfun/b3-monorepo.git
+    cd b3-monorepo
+
+    # 安装依赖
+    pnpm install
+
+    # 导航到 BondKit 演示
+    cd apps/bondkit-demo
+
+    # 设置环境
+    cp .env.example .env.local
+    # 使用您的配置编辑 .env.local
+
+    # 运行演示
+    pnpm dev
+    ```
+
+    <Info>
+      演示应用位于 `apps/bondkit-demo/src/app/` 并包括：
+      - 完整的代币部署流程
+      - 带有 TradingView 图表的交易界面
+      - 带有 B3 认证的钱包连接
+      - 实时价格和交易量跟踪
+      - 迁移管理界面
+    </Info>
+
+    ### 演示应用结构
+
+    ```
+    apps/bondkit-demo/src/app/
+    ├── page.tsx                 # 带有代币列表的着陆页
+    ├── deploy/page.tsx          # 代币部署界面
+    ├── token/[address]/page.tsx # 单个代币交易页
+    ├── providers.tsx            # Web3 提供者设置
+    ├── b3ProviderWrapper.tsx    # B3 认证包装器
+    └── api/                     # TradingView 数据端点
+        └── udf/                 # 图表的通用数据源
+    ```
+  </Tab>
+</Tabs>
+
+## 环境配置
+
+### 基本设置
+
+在项目根目录下创建一个 `.env` 文件：
+
+```bash
+# 服务器端操作所需
+WALLET_PRIVATE_KEY=0x...
+
+# 可选：自定义 RPC 端点（默认为公共）
+RPC_URL=https://base-mainnet.g.alchemy.com/v2/YOUR_KEY
+
+# 可选：API 配置
+BONDKIT_API_ENDPOINT=https://api.b3.fun
+```
+
+### 安全最佳实践
+
+<Warning>
+  **永远不要将私钥提交到版本控制中！**
+  
+  - 将 `.env` 添加到您的 `.gitignore`
+  - 在生产中使用环境变量
+  - 考虑使用密钥管理服务
+  - 为开发和生产使用不同的钱包
+</Warning>
+
+## 客户端初始化
+
+### 基本设置
+
+```typescript
+import { BondkitTokenFactory } from "@b3dotfun/sdk/bondkit";
+import { base } from "viem/chains";
+
+// 使用私钥的服务器端用途
+const factory = new BondkitTokenFactory(
+  base.id, 
+  process.env.WALLET_PRIVATE_KEY
+);
+
+// 使用钱包提供者的客户端用途
+const clientFactory = new BondkitTokenFactory(base.id);
+await clientFactory.connect(window.ethereum);
+```
+
+### 高级配置
+
+```typescript
+import { 
+  BondkitTokenFactory, 
+  BondkitToken,
+  getConfig 
+} from "@b3dotfun/sdk/bondkit";
+import { createWalletClient, custom } from "viem";
+import { base } from "viem/chains";
+
+// 自定义钱包客户端设置
+const walletClient = createWalletClient({
+  chain: base,
+  transport: custom(window.ethereum)
+});
+
+// 使用自定义配置初始化
+const config = getConfig(base.id);
+const factory = new BondkitTokenFactory(base.id);
+
+// 使用自定义钱包客户端连接
+await factory.connect(walletClient.transport);
+
+// 使用现有代币
+const token = new BondkitToken(
+  "0x123...", // 代币地址
+  process.env.WALLET_PRIVATE_KEY
+);
+```
+
+## TypeScript 配置
+
+推荐的 `tsconfig.json` 配置，适用于 BondKit 项目：
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "lib": ["ES2020", "DOM"],
+    "moduleResolution": "node",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "noEmit": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}
+```
+
+## 测试您的设置
+
+创建测试文件 `test-bondkit.ts`：
+
+```typescript
+import { BondkitTokenFactory } from "@b3dotfun/sdk/bondkit";
+import { base } from "viem/chains";
+
+async function testConnection() {
+  try {
+    const factory = new BondkitTokenFactory(base.id);
+    const implementationAddress = await factory.getImplementationAddress();
+    
+    console.log("✅ BondKit SDK 成功连接！");
+    console.log("实现地址：", implementationAddress);
+  } catch (error) {
+    console.error("❌ 连接失败：", error);
+  }
+}
+
+testConnection();
+```
+
+运行测试：
+
+```bash
+npx tsx test-bondkit.ts
+```
+
+## 下一步
+
+<CardGroup cols={2}>
+  <Card title="快速入门指南" icon="rocket" href="/bondkit/quickstart">
+    数分钟内部署您的第一个代币
+  </Card>
+  <Card title="SDK 参考" icon="code" href="/bondkit/sdk/reference">
+    探索所有 SDK 方法和功能
+  </Card>
+  <Card title="演示应用程序" icon="desktop" href="https://github.com/b3dotfun/b3-monorepo/tree/main/apps/bondkit-demo">
+    研究完整实现
+  </Card>
+  <Card title="API 文档" icon="server" href="/bondkit/api">
+    了解后端服务和分析
+  </Card>
+</CardGroup>
+
+## 故障排除
+
+<AccordionGroup>
+  <Accordion title="找不到模块错误">
+    确保 SDK 已正确安装：
+    ```bash
+    pnpm add @b3dotfun/sdk
+    ```
+    如果使用 React 组件，您可能需要：
+    ```bash
+    pnpm add @wagmi/core @tanstack/react-query
+    ```
+  </Accordion>
+  
+  <Accordion title="TypeScript 错误">
+    将 TypeScript 更新到最新版本：
+    ```bash
+    pnpm add -D typescript@latest @types/node@latest
+    ```
+  </Accordion>
+  
+  <Accordion title="连接问题">
+    - 验证您的 RPC 端点是否工作
+    - 检查钱包是否有足够的基础 ETH
+    - 确保私钥格式正确（带有 0x 前缀）
+  </Accordion>
+  
+  <Accordion title="构建错误">
+    清除缓存并重新安装：
+    ```bash
+    rm -rf node_modules .next
+    pnpm install
+    ```
+  </Accordion>
+</AccordionGroup>

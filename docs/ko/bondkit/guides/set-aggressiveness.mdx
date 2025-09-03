@@ -1,0 +1,29 @@
+---
+title: aggressivenessFactor 설정
+description: How to pick aggressivenessFactor (0–100) for your launch.
+lang: ko
+originalPath: bondkit/guides/set-aggressiveness.mdx
+---
+## 지침
+
+- 0–20: 부드러움; 초기 및 후기 구매자가 단위당 비슷한 양을 받음
+- 30–60: 균형; 일반적인 출시에 대한 적당한 가격 상승
+- 70–100: 가파름; 초기 우위가 강하고 가격 상승 속도가 빠름
+
+## 경험칙
+
+- 작은 목표나 긴밀한 커뮤니티: 높은 쪽으로 기울기 (50–80)
+- 큰 목표나 넓은 대상: 낮은 쪽으로 기울기 (20–50)
+
+## 예시
+
+```ts
+const config = {
+  aggressivenessFactor: 35,
+  // ...기타 파라미터
+};
+```
+
+<Note>
+`exponent = 1 / (1 + aggressivenessFactor/100)`. 공격성이 높을수록 곡선의 가파름이 증가하고, 후반부의 토큰 당 단위가 감소합니다.
+</Note>

@@ -1,0 +1,146 @@
+---
+title: B3 테스트넷으로의 연결
+description: Base Sepolia (Base Testnet)에서 B3 Sepolia (B3 Testnet)로 쉽게 연결하려면 아래 단계를 따르세요!
+lang: ko
+originalPath: protocol/bridge-to-testnet.mdx
+---
+<Note>
+이 브릿지는 테스트넷 목적으로 특별히 제작되었습니다. 메인넷에 배포하기 전에 무료 테스트넷 ETH를 사용하여 애플리케이션을 테스트하세요.
+</Note>
+
+## 브릿지하는 방법
+
+<Steps>
+<Step title="테스트넷 브릿지 방문">
+  공식 테스트넷 브릿지 인터페이스에 접속하려면 [testnet.bridge.b3.fun](https://testnet.bridge.b3.fun)으로 이동하세요.
+</Step>
+
+<Step title="지갑 연결">
+  지갑(MetaMask, Coinbase Wallet 등)을 브릿지 인터페이스에 연결하세요.
+  
+  <Tip>
+  브릿지하려는 방향에 따라 지갑이 Base Sepolia 또는 B3 테스트넷에 연결되어 있는지 확인하세요.
+  </Tip>
+</Step>
+
+<Step title="브릿지 방향 선택">
+  다음 중에서 선택하세요:
+  - **입금**: Base Sepolia → B3 테스트넷으로 자금 이동
+  - **출금**: B3 테스트넷 → Base Sepolia로 브릿지 되돌리기
+  
+  **입금** 또는 **출금** 탭을 클릭하세요.
+</Step>
+
+<Step title="금액 입력">
+  브릿지하고자 하는 ETH의 금액을 입력하세요.
+  
+  <Card title="Base Sepolia ETH가 필요하신가요?" icon="faucet" href="https://docs.base.org/base-chain/tools/network-faucets" cta="Base 테스트넷 ETH 받기" horizontal>
+    Base Sepolia ETH가 필요한 경우, Base Sepolia 수도꼭지를 사용하여 무료 테스트넷 토큰을 받으세요
+  </Card>
+</Step>
+
+<Step title="거래 확인">
+  "입금" (또는 "출금")을 클릭하고 지갑에 나타나는 거래 프롬프트를 확인하세요.
+  
+  <Warning>
+  올바른 테스트넷에 있고 테스트넷 ETH를 사용하고 있는지, 메인넷 자금이 아닌지 다시 한번 확인하세요.
+  </Warning>
+</Step>
+
+<Step title="완료 대기">
+  브릿지 과정이 완료될 때까지 몇 분 기다리세요. "기록" 탭에서 상태를 확인할 수 있습니다.
+  
+  <Check>
+  몇 분 내에 목적지 네트워크의 지갑에 테스트넷 ETH가 나타납니다.
+  </Check>
+</Step>
+</Steps>
+
+## 네트워크 정보
+
+<CardGroup cols={2}>
+  <Card title="Base Sepolia 테스트넷">
+    **체인 ID**: 84532  
+    **RPC**: https://sepolia.base.org  
+    **탐색기**: https://sepolia.basescan.org
+  </Card>
+  
+  <Card title="B3 Sepolia 테스트넷">
+    **체인 ID**: 1993  
+    **RPC**: https://testnet-rpc.b3.fun  
+    **탐색기**: https://testnet-explorer.b3.fun
+  </Card>
+</CardGroup>
+
+## 테스트넷 리소스
+
+<CardGroup cols={2}>
+  <Card title="테스트넷 브릿지" icon="bridge" href="https://testnet.bridge.b3.fun" cta="지금 브릿지하기">
+    Base Sepolia와 B3 테스트넷 간에 자산을 이동하는 공식 브릿지
+  </Card>
+  
+  <Card title="B3 테스트넷 수도꼭지" icon="faucet" href="https://testnet-faucet.b3.fun" cta="테스트 ETH 받기">
+    개발 및 테스트를 위한 무료 B3 테스트넷 ETH 받기
+  </Card>
+</CardGroup>
+
+## 추가 수도꼭지
+
+개발을 위해 테스트넷 ETH가 필요한 경우, 다음은 신뢰할 수 있는 수도꼭지 옵션입니다:
+
+<AccordionGroup>
+<Accordion title="Base Sepolia 수도꼭지">
+  - [Coinbase Base 수도꼭지](https://coinbase.com/faucets/base-ethereum-sepolia-faucet) - 공식 Coinbase 수도꼭지
+  - [Alchemy Base Sepolia 수도꼭지](https://sepoliafaucet.com) - Base Sepolia ETH를 위한 신뢰할 수 있는 수도꼭지
+  - [QuickNode Base 수도꼭지](https://faucet.quicknode.com/base/sepolia) - 여러 테스트넷 지원
+</Accordion>
+
+<Accordion title="B3 테스트넷 수도꼭지">
+  - [B3 테스트넷 수도꼭지](https://testnet-faucet.b3.fun) - 공식 B3 테스트넷 수도꼭지
+  - 브릿지 없이 바로 무료 B3 테스트넷 ETH 받기
+</Accordion>
+</AccordionGroup>
+
+## 문제 해결
+
+<AccordionGroup>
+<Accordion title="브릿지 거래가 멈췄을 때">
+  - 블록 탐색기에서 거래 상태를 확인하세요
+  - 올바른 테스트넷에 연결되어 있는지 확인하세요
+  - 거래가 보류 중인 경우 가스 비용을 늘려보세요
+  - 브릿지가 30분 이상 보류 중인 경우 지원팀에 연락하세요
+</Accordion>
+
+<Accordion title="지갑이 연결되지 않을 때">
+  - 지갑이 테스트넷 네트워크를 지원하는지 확인하세요
+  - 페이지를 새로 고침하고 다시 연결해 보세요
+  - 지갑에서 올바른 네트워크에 있는지 확인하세요
+  - 문제가 지속되면 브라우저 캐시를 지우세요
+</Accordion>
+
+<Accordion title="가스 비용을 위한 자금 부족">
+  - 가스 비용을 지불할 충분한 ETH가 있는지 확인하세요
+  - 더 많은 테스트넷 ETH를 받기 위해 수도꼭지를 사용하세요
+  - 가스를 절약하기 위해 더 작은 금액을 브릿지해 보세요
+</Accordion>
+</AccordionGroup>
+
+## 개발 워크플로우
+
+<Steps>
+<Step title="Base Sepolia ETH 받기">
+  Base Sepolia 수도꼭지를 사용하여 무료 테스트넷 ETH를 받으세요.
+</Step>
+
+<Step title="B3 테스트넷으로 브릿지">
+  테스트넷 브릿지를 사용하여 ETH를 Base Sepolia에서 B3 테스트넷으로 이동하세요.
+</Step>
+
+<Step title="배포 및 테스트">
+  계약을 배포하고 B3 테스트넷에서 애플리케이션을 테스트하세요.
+</Step>
+
+<Step title="메인넷 준비 완료">
+  테스트가 완료되면 [메인넷 브릿지](/protocol/bridge)를 사용하여 B3 메인넷에 배포하세요.
+</Step>
+</Steps>

@@ -1,0 +1,280 @@
+---
+title: 认证
+description: 了解如何使用 B3 Global Accounts 实现身份验证
+lang: cn
+originalPath: sdk/global-account/authentication.mdx
+---
+## 认证策略
+
+B3 全球账户支持多种认证策略，以适应您的应用程序需求。
+
+## 社交登录
+
+### Google 认证
+
+```tsx
+import { SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
+
+function GoogleAuth() {
+  return (
+    <SignInWithB3
+      provider={{ strategy: "google" }}
+      partnerId="your-partner-id"
+      onLoginSuccess={(globalAccount) => {
+        console.log("Google auth successful:", globalAccount);
+      }}
+      onLoginError={(error) => {
+        console.error("Authentication failed:", error);
+      }}
+    />
+  );
+}
+```
+
+### Discord 认证
+
+```tsx
+import { SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
+
+function DiscordAuth() {
+  return (
+    <SignInWithB3
+      provider={{ strategy: "discord" }}
+      partnerId="your-partner-id"
+      onLoginSuccess={(globalAccount) => {
+        console.log("Discord auth successful:", globalAccount);
+      }}
+    />
+  );
+}
+```
+
+## 会话密钥认证
+
+会话密钥提供增强的安全性，并允许进行细粒度的权限控制。这对于需要代表用户执行操作的游戏和应用程序特别有用。
+
+### 基本会话密钥设置
+
+```tsx
+import { SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
+
+const b3Chain = {
+  id: 8333,
+  name: "B3",
+  nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+  rpc: "https://mainnet-rpc.b3.fun",
+};
+
+function SessionKeyAuth() {
+  return (
+    <SignInWithB3
+      provider={{ strategy: "google" }}
+      chain={b3Chain}
+      partnerId="your-partner-id"
+      sessionKeyAddress="0x..." // MetaMask 或其他钱包地址
+      onLoginSuccess={(globalAccount) => {
+        console.log("Session key authenticated:", globalAccount);
+      }}
+    />
+  );
+}
+```
+
+### 自定义会话密钥配置
+
+```tsx
+function AdvancedSessionAuth() {
+  const sessionKeyConfig = {
+    permissions: {
+      approvedTargets: ["0x..."], // 特定合约地址
+      startDate: new Date(),
+      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 天
+      nativeTokenLimitPerTransaction: 0.0001, // 每笔交易的 ETH 限额
+    }
+  };
+
+  return (
+    <SignInWithB3
+      provider={{ strategy: "google" }}
+      chain={b3Chain}
+      partnerId="your-partner-id"
+      sessionKeyAddress="0x..."
+      sessionKeyConfig={sessionKeyConfig}
+      onLoginSuccess={(globalAccount) => {
+        console.log("Advanced session key setup:", globalAccount);
+      }}
+    />
+  );
+}
+```
+
+## 无头认证
+
+对于自定义实现，请使用无头认证服务：
+
+### 基本认证
+
+```typescript
+import { authenticate } from "@b3dotfun/sdk/global-account/app";
+
+async function authenticateUser(accessToken: string, identityToken: string) {
+  try {
+    const authResult = await authenticate(accessToken, identityToken, {
+      // 额外配置
+    });
+    
+    if (authResult) {
+      console.log("Authentication successful:", authResult);
+      return authResult;
+    } else {
+      console.log("Authentication failed");
+      return null;
+    }
+  } catch (error) {
+    console.error("Authentication error:", error);
+    throw error;
+  }
+}
+```
+
+### React Native 认证
+
+```typescript
+// 对于 React Native 应用程序
+import { authenticate } from "@b3dotfun/sdk/global-account/app";
+
+async function authenticateInReactNative() {
+  const result = await authenticate("access-token", "identity-token");
+  return result;
+}
+```
+
+## 认证钩子
+
+### useB3 钩子
+
+用于访问认证状态的主要钩子：
+
+```tsx
+import { useB3 } from "@b3dotfun/sdk/global-account/react";
+
+function AuthStatus() {
+  const { 
+    account, 
+    isAuthenticated, 
+    isLoading,
+    signOut 
+  } = useB3();
+
+  if (isLoading) return <div>Loading...</div>;
+
+  return (
+    <div>
+      {isAuthenticated ? (
+        <div>
+          <p>Welcome, {account?.displayName}!</p>
+          <button onClick={signOut}>Sign Out</button>
+        </div>
+      ) : (
+        <p>Please sign in</p>
+      )}
+    </div>
+  );
+}
+```
+
+### useAccountWallet 钩子
+
+访问钱包信息：
+
+```tsx
+import { useAccountWallet } from "@b3dotfun/sdk/global-account/react";
+
+function WalletInfo() {
+  const { wallet, isConnected } = useAccountWallet();
+
+  return (
+    <div>
+      {isConnected && (
+        <div>
+          <p>Wallet Address: {wallet?.address}</p>
+          <p>Chain ID: {wallet?.chainId}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## 错误处理
+
+为认证流程实现适当的错误处理：
+
+```tsx
+function AuthWithErrorHandling() {
+  const [authError, setAuthError] = useState<string | null>(null);
+
+  return (
+    <div>
+      <SignInWithB3
+        provider={{ strategy: "google" }}
+        partnerId="your-partner-id"
+        onLoginSuccess={(globalAccount) => {
+          setAuthError(null);
+          console.log("Success:", globalAccount);
+        }}
+        onLoginError={(error) => {
+          setAuthError(error.message);
+          console.error("Auth error:", error);
+        }}
+      />
+      
+      {authError && (
+        <div className="error">
+          Authentication failed: {authError}
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## 最佳实践
+
+<CardGroup cols={2}>
+
+<Card title="Partner ID" icon="id-badge">
+  始终使用您的唯一合作伙伴 ID 以确保正确的归因和分析。
+</Card>
+
+<Card title="Error Handling" icon="exclamation-triangle">
+  实施全面的错误处理，以提供更好的用户体验。
+</Card>
+
+<Card title="Session Management" icon="clock">
+  根据您的应用程序的安全需求设置适当的会话持续时间。
+</Card>
+
+<Card title="Environment Config" icon="settings">
+  使用适当的环境变量针对不同的部署阶段。
+</Card>
+
+</CardGroup>
+
+## 下一步
+
+<CardGroup cols={2}>
+
+<Card title="Permissions" icon="lock" href="/sdk/global-account/permissions">
+  了解如何管理权限和会话密钥。
+</Card>
+
+<Card title="Hooks Reference" icon="react" href="/sdk/global-account/hooks">
+  探索所有可用的 React 钩子。
+</Card>
+
+<Card title="Examples" icon="code" href="/sdk/global-account/examples">
+  查看完整的集成示例。
+</Card>
+
+</CardGroup>

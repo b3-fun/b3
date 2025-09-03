@@ -1,0 +1,155 @@
+---
+title: Tinjauan Token
+description: 'Memahami ekonomi tiga token HypeDuel: $B3, HYPES, dan ArenaCoins'
+lang: id
+originalPath: hypeduel/tokens-overview.mdx
+---
+HypeDuel beroperasi pada sistem ekonomi tiga token yang canggih, dirancang untuk mengoptimalkan pengalaman pengguna, menciptakan aliran nilai yang berkelanjutan, dan memungkinkan kepemilikan komunitas. Setiap token melayani tujuan tertentu sambil bekerja bersama untuk menggerakkan seluruh ekosistem.
+
+## Arsitektur Tiga Token
+
+```mermaid
+graph TD
+    subgraph "Hierarki Token"
+        A[B3 Token<br/>Mata Uang Dasar] --> B[HYPES Credits<br/>Mata Uang Gaming<br/>Peg 1:1]
+        A --> C[ArenaCoins<br/>Kepemilikan Arena<br/>Kurva Bonding]
+    end
+
+    subgraph "Fungsi Inti"
+        B --> D[Taruhan Instan<br/>Biaya Gas Nol]
+        B --> E[Pembelian Boost<br/>Aksi Real-time]
+        C --> F[Pembagian Fee<br/>Hak Pendapatan]
+        C --> G[Governance<br/>Komunitas]
+        A --> H[Utilitas Lintas-Platform<br/>]
+        A --> I[Operasi<br/>Treasury]
+    end
+
+    subgraph "Penciptaan Nilai"
+        D --> J[Pertumbuhan Platform]
+        E --> J
+        F --> K[Apresiasi Token]
+        G --> L[Pembangunan Komunitas]
+        H --> M[Ekspansi Ekosistem]
+        I --> N[Kelanjutan]
+    end
+
+    J --> O[Lebih Banyak Pemain]
+    K --> O
+    L --> O
+    M --> O
+    N --> O
+    O --> A
+
+    style A fill:#e3f2fd
+    style B fill:#e8f5e8
+    style C fill:#fff3e0
+    style O fill:#c8e6c9
+```
+
+### Hierarki Token
+
+<Tabs>
+  <Tab title="$B3 Token" icon="coins">
+    **Mata Uang Dasar** - Token ekosistem dasar - Penyimpanan nilai utama - Utilitas lintas-platform - Cadangan treasury
+    - Bonding ArenaCoins
+  </Tab>
+
+<Tab title="HYPES Credits" icon="zap">
+  **Mata Uang Gaming** - Peg 1:1 dengan $B3 - Penempatan taruhan instan - Biaya gas nol - Penarikan tanpa hambatan - Pembelian
+  boost
+</Tab>
+
+  <Tab title="ArenaCoins" icon="chart-line">
+    **Kepemilikan Arena** - Unik per arena - Harga kurva bonding - Hak pembagian fee - Peluang trading -
+    Governance komunitas
+  </Tab>
+</Tabs>
+
+## Diagram Aliran Token
+
+```mermaid
+graph TB
+    A[Pemain] --> B[Deposit $B3]
+    B --> C[Terima HYPES 1:1]
+    C --> D[Tempatkan Taruhan & Beli Boosts]
+    D --> E[Hasilkan Pendapatan Arena]
+    E --> F[Treasury Arena]
+    F --> G[Beli $B3]
+    F --> H[Beli ArenaCoins]
+    G --> I[Dukungan Harga $B3]
+    H --> J[Kenaikan Nilai ArenaCoin]
+    J --> K[Menarik Investor Arena]
+    I --> L[Menarik Lebih Banyak Pemain]
+    K --> A
+    L --> A
+
+    M[Pencipta Arena] --> N[Meluncurkan Arena]
+    N --> O[Pemain Bond $B3]
+    O --> P[Terima ArenaCoins]
+    P --> Q[Apresiasi ArenaCoins]
+    Q --> M
+```
+
+## Mengapa Tiga Token?
+
+### Optimasi Pengalaman Pengguna
+
+Sistem tiga token menyelesaikan masalah UX kritis:
+
+<AccordionGroup>
+  <Accordion title="Transaksi Instan">
+    **Masalah**: Transaksi blockchain memiliki keterlambatan dan biaya gas yang mengganggu alur permainan. **Solusi**: HYPES
+    memungkinkan taruhan dan boost instan tanpa gesekan blockchain sambil mempertahankan dukungan penuh $B3.
+  </Accordion>
+
+<Accordion title="Investasi Arena">
+  **Masalah**: Tidak ada cara bagi pengguna untuk berinvestasi atau mendapat manfaat dari pertumbuhan arena yang sukses. **Solusi**: ArenaCoins memungkinkan pemain memiliki bagian dari ekonomi arena dan mendapatkan keuntungan dari kesuksesannya.
+</Accordion>
+
+<Accordion title="Penangkapan Nilai">
+  **Masalah**: Pendapatan platform biasanya hanya menguntungkan pemilik platform. **Solusi**: Pembelian kembali treasury dari $B3
+  dan ArenaCoins mendistribusikan nilai ke semua pemangku kepentingan.
+</Accordion>
+
+  <Accordion title="Insentif Pencipta">
+    **Masalah**: Sulit untuk memberi kompensasi yang adil kepada pencipta arena dan model AI. **Solusi**: ArenaCoins menyediakan
+    pembagian pendapatan langsung dan potensi apresiasi untuk pencipta.
+  </Accordion>
+</AccordionGroup>
+
+### Keberlanjutan Ekonomi
+
+Setiap token menciptakan nilai dengan cara yang berbeda:
+
+<Card title="Pendorong Nilai $B3" icon="trending-up">
+  - Pertumbuhan ekosistem dasar - Tekanan pembelian kembali treasury - Utilitas lintas-platform - Integrasi Staking dan DeFi
+</Card>
+
+<Card title="Stabilitas HYPES" icon="balance-scale">
+  - Jaminan dukungan 1:1 $B3 - Kemampuan konversi instan - Premi utilitas gaming - Nilai kenyamanan platform
+</Card>
+
+<Card title="Apresiasi ArenaCoin" icon="rocket">
+  - Pertumbuhan popularitas arena - Peningkatan generasi fee - Pengembangan komunitas - Ekspansi volume trading
+</Card>
+
+## Matriks Utilitas Token
+
+| Fitur              | $B3 | HYPES | ArenaCoins |
+| ------------------ | --- | ----- | ---------- |
+| **Taruhan**        | ❌  | ✅    | ❌         |
+| **Boosts**         | ❌  | ✅    | ❌         |
+| **Bonding Arena**  | ✅  | ❌    | ❌         |
+| **Pendapatan Fee** | ✅  | ❌    | ✅         |
+| **Trading**        | ✅  | ❌    | ✅         |
+| **Governance**     | ✅  | ❌    | ✅         |
+| **Lintas-Platform**| ✅  | ❌    | ❌         |
+
+### Mekanika Treasury
+
+Treasury arena menciptakan tekanan beli yang berkelanjutan:
+
+1. **Pengumpulan Pendapatan**: Fee terakumulasi di treasury arena
+2. **Alokasi Aset**: 50% untuk pembelian kembali $B3, 50% untuk pembelian kembali ArenaCoin
+3. **Pembelian Pasar**: Pembelian pasar otomatis menciptakan dukungan harga
+4. **Distribusi Nilai**: Manfaat mengalir ke semua pemegang token

@@ -1,0 +1,237 @@
+---
+title: B3 SDK
+description: >-
+  Sebuah SDK TypeScript yang komprehensif untuk operasi lintas rantai AnySpend
+  dan autentikasi Akun Global B3. Menyediakan komponen React untuk integrasi
+  yang mudah serta layanan TypeScript tanpa antarmuka untuk implementasi kustom.
+lang: id
+originalPath: sdk/introduction.mdx
+---
+<img src="/images/b3-banner.png" alt="B3 SDK" className="w-full rounded-xl" />
+
+## Apa itu B3 SDK?
+
+B3 SDK (`@b3dotfun/sdk`) adalah sebuah SDK TypeScript terpadu yang menyediakan segala yang Anda butuhkan untuk membangun aplikasi di ekosistem B3. Ini menggabungkan infrastruktur pembayaran lintas-rantai yang kuat dengan otentikasi yang mulus, semua dibungkus dalam komponen React yang ramah pengembang dan layanan tanpa kepala.
+
+## Arsitektur
+
+SDK ini disusun ke dalam modul-modul terfokus yang dirancang untuk fleksibilitas maksimum dan kemudahan penggunaan:
+
+<CardGroup cols={2}>
+<Card title="Modul AnySpend" icon="arrows-right-left" href="/anyspend/introduction">
+  Mesin eksekusi lintas-rantai untuk pembayaran, pertukaran, dan pencetakan NFT di berbagai blockchain.
+</Card>
+
+<Card title="Modul Akun Global" icon="user" href="/sdk/global-account/introduction">
+  Otentikasi dan manajemen pengguna Akun Global B3 dengan login sosial dan kunci sesi.
+</Card>
+
+</CardGroup>
+
+### Struktur Modul
+
+Setiap modul berisi komponen yang terorganisir dan dibuat untuk tujuan tertentu:
+
+- **`react/`** - Komponen dan hook React untuk integrasi mudah
+- **`services/`** - Layanan TypeScript tanpa kepala untuk implementasi kustom
+- **`types/`** - Definisi TypeScript yang komprehensif
+- **`utils/`** - Fungsi utilitas dan pembantu
+- **`constants/`** - Konfigurasi dan konstanta
+
+## Dukungan Platform
+
+| Fitur             | React Web | React Native | Tanpa Kepala |
+|-------------------|-----------|--------------|----------|
+| AnySpend          | ✅         | ❌            | ✅        |
+| Akun Global       | ✅         | ✅            | ✅        |
+| Utilitas Bersama  | ✅         | ✅            | ✅        |
+
+## Instalasi
+
+<CodeGroup>
+```bash npm
+npm install @b3dotfun/sdk
+```
+
+```bash yarn
+yarn add @b3dotfun/sdk
+```
+
+```bash pnpm
+pnpm add @b3dotfun/sdk
+```
+</CodeGroup>
+
+### Gaya CSS
+
+Impor gaya bawaan untuk pengalaman visual terbaik:
+
+```typescript
+import "@b3dotfun/sdk/index.css";
+```
+
+## Memulai Cepat
+
+### Pembayaran Lintas-Rantai dengan AnySpend
+
+```tsx
+import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
+
+function PaymentPage() {
+  return <AnySpend mode="page" />;
+}
+```
+
+### Otentikasi dengan Akun Global
+
+```tsx
+import { B3Provider, SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
+
+function App() {
+  return (
+    <B3Provider environment="production">
+      <SignInWithB3
+        provider={{ strategy: "google" }}
+        partnerId="your-partner-id"
+        onLoginSuccess={(globalAccount) => {
+          console.log("Authenticated:", globalAccount);
+        }}
+      />
+    </B3Provider>
+  );
+}
+```
+
+### Pencetakan NFT
+
+```tsx
+import { AnySpendNFTButton } from "@b3dotfun/sdk/anyspend/react";
+
+function NFTMinting() {
+  const nftContract = {
+    address: "0x9c275ff1634519E9B5449ec79cd939B5F900564d",
+    chainId: 8333,
+    name: "Example NFT Collection",
+    imageUrl: "https://example.com/nft.jpg",
+    price: "1000000000000000000", // 1 ETH dalam wei
+    currency: { symbol: "ETH", decimals: 18 }
+  };
+
+  return (
+    <AnySpendNFTButton
+      nftContract={nftContract}
+      recipientAddress="0x..."
+    />
+  );
+}
+```
+
+## Fitur Utama
+
+### Infrastruktur Pembayaran Universal
+
+<CardGroup cols={2}>
+<Card title="Pembayaran Token Apapun" icon="coins">
+  Terima pembayaran dalam cryptocurrency apapun dengan konversi otomatis ke token pilihan Anda.
+</Card>
+
+<Card title="Pertukaran Lintas-Rantai" icon="arrow-right-arrow-left">
+  Aktifkan pertukaran token yang mulus di lebih dari 20 blockchain yang didukung dengan rute optimal.
+</Card>
+
+<Card title="Pencetakan NFT" icon="image">
+  Tombol pencetakan NFT satu klik yang menerima pembayaran dalam token apapun dari rantai manapun.
+</Card>
+
+<Card title="Onramp Fiat" icon="credit-card">
+  Onramp fiat-ke-krypto terintegrasi untuk pengguna tanpa cryptocurrency yang ada.
+</Card>
+</CardGroup>
+
+### Otentikasi yang Mulus
+
+<CardGroup cols={2}>
+<Card title="Login Sosial" icon="users">
+  Google, Discord, dan penyedia sosial lainnya dengan onboarding instan.
+</Card>
+
+<Card title="Kunci Sesi" icon="key">
+  Manajemen sesi yang aman dengan izin granular untuk UX yang ditingkatkan.
+</Card>
+
+<Card title="Identitas Lintas-Platform" icon="globe">
+  Identitas tunggal yang berfungsi di semua aplikasi dan game B3.
+</Card>
+
+<Card title="Akun Cerdas" icon="wallet">
+  Abstraksi akun cerdas bawaan untuk transaksi tanpa gas.
+</Card>
+</CardGroup>
+
+## Layanan TypeScript Tanpa Kepala
+
+Untuk pengembang yang membutuhkan kontrol maksimum, semua fungsionalitas tersedia melalui layanan tanpa kepala:
+
+### Layanan AnySpend
+
+```typescript
+import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
+
+// Dapatkan kutipan untuk pertukaran lintas-rantai
+const quote = await anyspendService.getQuote({
+  srcChain: 1,
+  dstChain: 8333,
+  srcTokenAddress: "0x...",
+  dstTokenAddress: "0x...",
+  srcAmount: "1000000",
+  recipientAddress: "0x...",
+  type: "swap"
+});
+
+// Buat dan eksekusi pesanan
+const order = await anyspendService.createOrder({
+  // ... parameter pesanan
+});
+```
+
+### Layanan Akun Global
+
+```typescript
+import { authenticate } from "@b3dotfun/sdk/global-account/app";
+
+// Otentikasi pengguna
+const authResult = await authenticate(
+  "access-token",
+  "identity-token"
+);
+
+if (authResult) {
+  console.log("Otentikasi berhasil:", authResult);
+}
+```
+
+## Dukungan & Komunitas
+
+<CardGroup cols={3}>
+<Card title="Dukungan Pengembang" icon="handshake" href="https://b3builders.typeform.com/bsmntdevelopers">
+  Dapatkan bantuan mengintegrasikan B3 SDK ke dalam proyek Anda.
+</Card>
+
+<Card title="Komunitas Discord" icon="discord" href="https://discord.gg/b3dotfun">
+  Bergabung dengan komunitas pengembang B3 untuk dukungan dan diskusi.
+</Card>
+
+<Card title="GitHub" icon="github" href="https://github.com/b3-fun/b3">
+  Lihat kode sumber, laporkan masalah, dan berkontribusi pada SDK.
+</Card>
+</CardGroup>
+
+## Apa Selanjutnya?
+
+1. **[Instal SDK](#instalasi)** dan impor gayanya
+2. **[Atur AnySpend](/anyspend/introduction)** untuk pembayaran lintas-rantai
+3. **[Konfigurasi Akun Global](/sdk/global-account/authentication)** untuk otentikasi pengguna
+4. **[Jelajahi contoh](/anyspend/examples)** dan pola implementasi
+5. **[Bergabung dengan komunitas](https://discord.gg/b3dotfun)** untuk dukungan dan pembaruan
+
+B3 SDK menyediakan segala yang Anda butuhkan untuk membangun generasi berikutnya dari aplikasi lintas-rantai dengan pengalaman pengguna yang mulus. Mulai bangun hari ini!

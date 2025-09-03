@@ -1,0 +1,184 @@
+---
+title: Jembatan ke B3
+description: Ada beberapa cara untuk menjembatani ke B3 & appchains kami.
+lang: id
+originalPath: protocol/bridge.mdx
+---
+<img src="/images/b3-banner.png" alt="Bridge to B3" className="w-full rounded-xl" />
+
+<CardGroup cols={2}>
+  <Card title="Basement Bridge"  href="https://basement.fun/bridge">
+    <img src="/images/bsmnt-logo.svg" alt="Basement" className="p-8 bg-black rounded-2xl my-3" />
+
+    Cross-chain bridge dengan deposit dan penarikan instan
+  </Card>
+  
+  <Card title="Relay Bridge" href="https://relay.link/bridge/base?fromChainId=8453&fromCurrency=0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3&toCurrency=0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3">
+    <img src="/images/relay-logo.avif" alt="Relay" className="p-8 bg-black rounded-2xl my-3" />
+
+    Bridge dari setiap rantai EVM & Solana ke B3
+  </Card>
+  
+  <Card title="Native Bridge" icon="bridge" href="#native-bridge">
+    OP Canonical Bridge dengan periode penarikan 7 hari
+  </Card>
+  
+  <Card title="Bridge Contract" icon="code" href="#bridge-contract">
+    Interaksi kontrak langsung untuk pengguna lanjutan
+  </Card>
+</CardGroup>
+
+## Cross Chain Bridge
+
+<div style={{ marginBottom: '16px' }}>
+  <span style={{ backgroundColor: '#3b82f6', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', marginRight: '8px' }}>Deposit Instan</span>
+  <span style={{ backgroundColor: '#8b5cf6', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', marginRight: '8px' }}>Penarikan Instan</span>
+  <span style={{ backgroundColor: '#10b981', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px' }}>Biaya Rendah</span>
+</div>
+
+Sambungkan dompet Anda dan bridge dari jaringan EVM utama masuk & keluar dari B3.
+
+<Steps>
+<Step title="Pergi ke Basement Bridge">
+  Kunjungi [basement.fun/bridge](https://basement.fun/bridge) untuk mengakses antarmuka bridge.
+</Step>
+
+<Step title="Sambungkan Dompet Anda">
+  Sambungkan dompet Anda menggunakan MetaMask, Coinbase Wallet, atau dompet yang didukung lainnya.
+</Step>
+
+<Step title="Pilih jaringan & dana">
+  Pilih jaringan sumber dan jumlah dana yang ingin Anda bridge ke B3.
+</Step>
+
+<Step title="Konfirmasi transaksi">
+  Konfirmasi transaksi dan Anda akan menerima dana yang di-bridge dalam waktu kurang dari satu menit.
+  
+  <Check>
+  Dana Anda akan muncul di dompet B3 Anda dalam waktu 60 detik.
+  </Check>
+</Step>
+</Steps>
+
+<Card title="Gunakan Basement Bridge" href="https://basement.fun" cta="Gunakan Bridge" horizontal>
+  <img src="/images/bsmnt-logo.svg" alt="Basement" className="w-32" />
+
+  Mulai bridging aset Anda ke B3 dengan deposit dan penarikan instan
+</Card>
+
+## Instant Bridge
+
+<div style={{ marginBottom: '16px' }}>
+  <span style={{ backgroundColor: '#3b82f6', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', marginRight: '8px' }}>Deposit Instan</span>
+  <span style={{ backgroundColor: '#8b5cf6', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', marginRight: '8px' }}>Penarikan Instan</span>
+  <span style={{ backgroundColor: '#10b981', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px' }}>Biaya Rendah</span>
+</div>
+
+Dengan mudah bridge dari setiap rantai EVM & Solana ke B3 dengan Relay.
+
+<Steps>
+<Step title="Pergi ke Relay Bridge">
+  Kunjungi [relay.link](https://relay.link) untuk mengakses antarmuka Relay bridge.
+</Step>
+
+<Step title="Sambungkan Dompet Anda">
+  Sambungkan dompet Anda untuk memulai proses bridging.
+</Step>
+
+<Step title="Masukkan jumlah bridge">
+  Masukkan jumlah ETH yang ingin Anda bridge ke B3.
+</Step>
+
+<Step title="Konfirmasi transaksi">
+  Konfirmasi transaksi dan Anda akan menerima dana yang di-bridge dalam waktu kurang dari satu menit.
+  
+  <Check>
+  Relay mendukung bridging dari berbagai rantai termasuk Solana.
+  </Check>
+</Step>
+</Steps>
+
+<Card title="Gunakan Relay Bridge" href="https://relay.link" cta="Gunakan Bridge" horizontal>
+  <img src="/images/relay-logo.avif" alt="Relay" className="w-32" />
+
+  Bridge dari setiap rantai EVM dan Solana ke B3 secara instan
+</Card>
+
+## Native Bridge
+
+<div style={{ marginBottom: '16px' }}>
+  <span style={{ backgroundColor: '#3b82f6', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', marginRight: '8px' }}>Base ke B3</span>
+  <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', marginRight: '8px' }}>Penarikan 7 Hari</span>
+  <span style={{ backgroundColor: '#10b981', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px' }}>Tanpa Biaya</span>
+</div>
+
+Dengan mudah bridge dari Base ke B3 menggunakan official OP Stack canonical bridge!
+
+<Warning>
+Penarikan dari B3 kembali ke Base memiliki periode tantangan 7 hari untuk keamanan. Gunakan bridge pihak ketiga untuk penarikan instan.
+</Warning>
+
+<Steps>
+<Step title="Kunjungi bridge">
+  Pergi ke [bridge.b3.fun](https://bridge.b3.fun) untuk mengakses bridge resmi.
+</Step>
+
+<Step title="Sambungkan Dompet Anda">
+  Sambungkan dompet Anda ke antarmuka bridge.
+</Step>
+
+<Step title="Pilih arah">
+  Pilih apakah Anda ingin:
+  - **Deposit**: Membawa dana dari Base → B3
+  - **Penarikan**: Bridge kembali dari B3 → Base
+</Step>
+
+<Step title="Masukkan jumlah">
+  Masukkan jumlah ETH yang ingin Anda bridge.
+</Step>
+
+<Step title="Selesaikan transaksi">
+  Klik "Deposit" dan konfirmasi transaksi di dompet Anda.
+  
+  <Tip>
+  Deposit ke B3 instan, tetapi penarikan membutuhkan waktu 7 hari untuk periode tantangan.
+  </Tip>
+</Step>
+</Steps>
+
+<Card title="Gunakan Official Bridge" icon="bridge" href="https://bridge.b3.fun" cta="Bridge" horizontal>
+  Gunakan OP Stack canonical bridge yang telah teruji
+</Card>
+
+## Native Transfer (Bridge Contract)
+
+<div style={{ marginBottom: '16px' }}>
+  <span style={{ backgroundColor: '#3b82f6', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', marginRight: '8px' }}>Deposit Instan</span>
+  <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', marginRight: '8px' }}>Penarikan 7 Hari</span>
+  <span style={{ backgroundColor: '#10b981', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px' }}>Tanpa Biaya</span>
+</div>
+
+Kirim Base ETH melalui kontrak bridge. Transfer **Base ETH** ke alamat bridge berikut di **Base Mainnet**:
+
+<Warning>
+Metode ini hanya untuk pengguna lanjutan. Pastikan Anda mengirim dari Base Mainnet untuk menghindari kehilangan dana.
+</Warning>
+
+```text Bridge Address
+0x769547a723783FCA36BAaf1ECcf9dfdbF6d09F38
+```
+
+<Note>
+Ketika Anda mengirim ETH ke alamat ini dari Base, itu akan secara otomatis muncul di dompet Anda di B3. Ini adalah metode interaksi kontrak langsung.
+</Note>
+
+<Accordion title="Cara menggunakan kontrak bridge">
+1. **Pastikan Anda di Base Mainnet** di dompet Anda
+2. **Kirim ETH** ke alamat kontrak bridge di atas
+3. **Tunggu konfirmasi** - dana Anda akan muncul di B3 secara otomatis
+4. **Periksa dompet B3 Anda** - beralih ke jaringan B3 untuk melihat ETH yang di-bridge Anda
+
+<Warning>
+Periksa dua kali Anda berada di Base Mainnet sebelum mengirim. Mengirim dari jaringan lain dapat mengakibatkan kehilangan dana.
+</Warning>
+</Accordion>

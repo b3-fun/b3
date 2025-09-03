@@ -1,0 +1,265 @@
+---
+title: 游戏启动器
+description: 在 BSMNT (basement.fun) 平台上原生启动游戏，并构建令人上瘾的 onchain 体验，无需担心加密组件的问题
+lang: cn
+originalPath: basement/game-launcher.mdx
+---
+```html
+<iframe
+  className="w-full aspect-video rounded-xl mb-6"
+  src="https://customer-gg6qs7nm5ue94t64.cloudflarestream.com/ae9e7c0694dacb8d602309c381fce796/iframe?poster=https%3A%2F%2Fcustomer-gg6qs7nm5ue94t64.cloudflarestream.com%2Fae9e7c0694dacb8d602309c381fce796%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600"
+  title="Basement.fun Developer Dashboard"
+  frameBorder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowFullScreen
+></iframe>
+
+## 如何工作
+
+<Steps>
+<Step title="加载" icon="download">
+  你的游戏在BSMNT启动器内加载。我们会向你的游戏传递一个带有认证令牌的JWT。
+
+  ```text 示例 URL
+  https://yourgame.com?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+  ```
+</Step>
+
+<Step title="认证" icon="key">
+  你可以通过解码JWT或使用我们的API来加载玩家的个人资料。我们将负责钱包连接、验证和入门。
+
+  ```json 玩家资料
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "address": "0x1234567890abcdef1234567890abcdef12345678",
+    "username": "CryptoGamer42",
+    "avatar": "https://avatars.b3.fun/avatar.png",
+    "gameId": "game-123456-abcdef",
+    "license": "550e8400-e29b-41d4-a716-446655440000",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  }
+  ```
+</Step>
+
+<Step title="触发" icon="zap">
+  让用户玩你的游戏。当发生某些事情时，你可以通过我们的Zapier风格的规则引擎或直接通过API触发一个动作。
+
+  ```bash 触发API示例
+  curl --location 'https://api.basement.fun/launcher/' \
+  --header 'X-Service-Method: triggerRulesEngine' \
+  --data '{
+      "launcherJwt": "{{ jwt }}",
+      "trigger": "achievementUnlocked",
+      "nonce": "d1312e"
+  }'
+  ```
+</Step>
+</Steps>
+
+<CardGroup cols={2}>
+  <Card title="注册为开发者" icon="user-plus" href="https://basement.fun/developer/signup" cta="注册">
+    开始使用BSMNT启动器构建游戏
+  </Card>
+  
+  <Card title="启动器游乐场" icon="play" href="https://basement.fun/playground" cta="立即尝试">
+    在沙盒环境中测试启动器集成
+  </Card>
+</CardGroup>
+
+## 你可以用BSMNT启动器做什么？
+
+游戏启动器的真正力量在于加密UX抽象。你的游戏可以通过一个简单的REST API安全地发送链上事件，可在客户端执行。
+
+### 现已提供
+
+<CardGroup cols={2}>
+  <Card title="保存状态到IPFS" icon="database">
+    将玩家状态存储在像IPFS这样的去中心化存储选项上。
+  </Card>
+  
+  <Card title="购买NFTs & 铸造" icon="palette">
+    让用户在达成成就或在某些游戏事件上铸造NFTs。
+  </Card>
+  
+  <Card title="链上排行榜" icon="trophy">
+    将玩家排名带到链上，举办比赛和锦标赛。
+  </Card>
+  
+  <Card title="发行代币 & NFTs" icon="coins">
+    根据游戏动作发送ERC20和ERC721 & 1155 NFTs。
+  </Card>
+  
+  <Card title="用代币支付" icon="credit-card">
+    提示用户发送或转移代币以支付游戏动作或资产。
+  </Card>
+</CardGroup>
+
+### 即将推出
+
+<CardGroup cols={2}>
+  <Card title="交换 & 交易" icon="arrows-rotate">
+    用户可以使用来自其他链的资产来交换你的代币。
+    <div style={{ marginTop: '8px' }}>
+      <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>即将推出</span>
+    </div>
+  </Card>
+  
+  <Card title="信用卡通道" icon="credit-card">
+    直接的法币到加密货币通道，为用户提供无缝体验。
+    <div style={{ marginTop: '8px' }}>
+      <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>即将推出</span>
+    </div>
+  </Card>
+  
+  <Card title="收集评论" icon="star">
+    内置的游戏评论和评分系统。
+    <div style={{ marginTop: '8px' }}>
+      <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>即将推出</span>
+    </div>
+  </Card>
+  
+  <Card title="分享你的游戏" icon="share">
+    社交分享和病毒式机制。
+    <div style={{ marginTop: '8px' }}>
+      <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>即将推出</span>
+    </div>
+  </Card>
+  
+  <Card title="记录游戏玩法" icon="video">
+    自动游戏玩法录制和分享。
+    <div style={{ marginTop: '8px' }}>
+      <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>即将推出</span>
+    </div>
+  </Card>
+  
+  <Card title="列出NFTs" icon="store">
+    市场集成，用于交易游戏资产。
+    <div style={{ marginTop: '8px' }}>
+      <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>即将推出</span>
+    </div>
+  </Card>
+</CardGroup>
+
+<Note>
+更多动作即将到来 - 未来看起来很光明！
+</Note>
+
+## 入门
+
+我们很乐意在basement.fun上看到你的游戏！开始集成简单、免费且容易。
+
+<Tabs>
+<Tab title="游戏开发者">
+  <CardGroup cols={1}>
+    <Card title="注册为开发者" icon="user-plus" href="https://basement.fun/developer/signup" cta="立即注册" horizontal>
+      注册以开始将你的游戏与BSMNT启动器集成
+    </Card>
+  </CardGroup>
+  
+  <div style={{ marginTop: '16px' }}>
+    <strong>已经注册？</strong>
+  </div>
+  
+  <CardGroup cols={2}>
+    <Card title="游戏启动器游乐场" icon="play" href="https://basement.fun/playground">
+      在沙盒环境中测试你的集成
+    </Card>
+    
+    <Card title="BSMNT API文档" icon="book" href="https://docs.basement.fun/api">
+      完整的API文档和示例
+    </Card>
+  </CardGroup>
+</Tab>
+
+<Tab title="玩家">
+  <Card title="查看BSMNT启动器的实际操作" icon="gamepad-2" href="https://basement.fun/games" cta="玩游戏" horizontal>
+    这里没有蒸汽软件 - 今天就在BSMNT玩游戏！
+  </Card>
+  
+  <Note>
+  没有蒸汽软件 - 今天就玩！
+  </Note>
+</Tab>
+</Tabs>
+
+## Basement.fun是什么？
+
+Basement是发现和玩链上游戏的地方。除了作为一个发现伟大链上游戏的平台之外，Basement还为游戏开发者提供了一种在Basement内构建无缝、原生和嵌入式体验的方式。
+
+你的游戏加载在我们的游戏启动器内，用户连接到Basement，他们的玩家上下文被传递给你的游戏。
+
+从那里，你可以利用我们的任何通用辅助函数（如保存状态和分数）+触发任何数量的内置加密UX（无需你在游戏中集成任何链上内容）。
+
+## 访问玩家数据
+
+游戏启动器使用JWT（JSON Web Token）安全编码已验证和认证的玩家上下文，发送给你的游戏。
+
+有效载荷从GET参数中读取，因此任何托管的网络游戏都可以轻松访问和解码它，使用任意数量的JWT库（或使用我们的启动器API）。
+
+### 基本玩家数据包括：
+
+<AccordionGroup>
+<Accordion title="用户名和ENS">
+  用户名（和兼容的.b3.fun ENS可解析地址）
+</Accordion>
+
+<Accordion title="3D头像">
+  3D头像（由ReadyPlayerMe提供的.GLB模型）
+</Accordion>
+
+<Accordion title="钱包地址">
+  已验证的钱包地址，用于链上交互
+</Accordion>
+
+<Accordion title="附加数据">
+  特定于游戏的玩家数据、会话信息等 - 查看我们的启动器API文档
+</Accordion>
+</AccordionGroup>
+
+<Tip>
+你可以选择使用我们的玩家状态API存储任何任意的特定于游戏的玩家数据。
+</Tip>
+
+<Card title="探索启动器API" icon="code" href="https://docs.basement.fun/api" cta="查看文档" horizontal>
+  完整的玩家数据访问和游戏集成文档
+</Card>
+
+## 内置UX抽象
+
+我们的最小游戏启动器体验意味着焦点保持在你的游戏上。
+
+游戏启动器上可用的许多自定义选项，使BSMNT可以提供几乎不可见的体验，为你处理所有核心加密UX挑战。
+
+### 可用的有帮助的API：
+
+- **存储和检索分数和排行榜** - 持久的游戏状态管理
+- **发送通知** - 提醒玩家关于游戏事件
+- **记录和流式传输游戏活动** - 分析和玩家行为跟踪
+- **存储玩家状态和游戏会话** - 自动保存游戏进度
+- **更多即将到来！** - 定期添加新功能
+
+<Card title="探索启动器API" icon="api" href="https://docs.basement.fun/api" cta="查看文档" horizontal>
+  所有可用启动器功能的完整API参考
+</Card>
+
+## 架构概览
+
+<Frame caption="游戏启动器集成流程">
+  <div style={{ 
+    padding: '20px', 
+    backgroundColor: '#f8fafc', 
+    border: '1px solid #e2e8f0', 
+    borderRadius: '8px',
+    textAlign: 'center',
+    fontFamily: 'monospace'
+  }}>
+    <div style={{ marginBottom: '10px', color: '#64748b' }}>已连接: 0x..123</div>
+    <div style={{ marginBottom: '10px', backgroundColor: '#007AFF', color: 'white', padding: '8px', borderRadius: '4px' }}>
+      www.yourgame.com
+    </div>
+    <div style={{ fontSize: '14px', color: '#475569' }}>
+      你的游戏在BSMNT启动器内加载
+    </div>
+  </div>
+</Frame>
+```
