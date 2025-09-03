@@ -1,0 +1,570 @@
+---
+title: 예시들
+description: CreateKit 사용 사례에 대한 완벽한 구현 예시
+lang: ko
+originalPath: createkit/examples.mdx
+---
+## 개요
+
+이 페이지는 다양한 시나리오에서 CreateKit을 구현하는 실제 예제를 종합적으로 제공합니다. 각 예제에는 완전한 코드, 오류 처리 및 모범 사례가 포함되어 있습니다.
+
+## 기본 NFT 컬렉션
+
+무료 민팅이 가능한 간단한 아트 컬렉션:
+
+```typescript title="기본 아트 컬렉션"
+import { 
+  CollectionManager, 
+  BaseMintStorage, 
+  b3Testnet 
+} from '@b3dotfun/basemint'
+import { createPublicClient, createWalletClient, http } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+
+async function createBasicArtCollection() {
+  // 클라이언트 설정
+  const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`)
+  const publicClient = createPublicClient({
+    chain: b3Testnet,
+    transport: http()
+  })
+  const walletClient = createWalletClient({
+    chain: b3Testnet,
+    transport: http(),
+    account
+  })
+
+  // 서비스 초기화
+  const collectionManager = new CollectionManager(publicClient)
+  const storage = new BaseMintStorage({ baseUrl: 'https://api.basemint.fun' })
+
+  // 컬렉션 정의
+  const artCollection = {
+    name: "Digital Art Gallery",
+    symbol: "DAG", 
+    creator: account.address,
+    gameOwner: account.address,
+    description: "A curated collection of digital artworks",
+    image: "https://example.com/art-collection.png",
+    maxSupply: 1000n,
+    mintPrice: 0n, // 무료 민팅
+    maxPerWallet: 5n,
+    tokenStandard: "ERC721" as const,
+    chainId: 1993
+  }
+
+  try {
+    console.log("🎨 아트 컬렉션 생성 중...")
+
+    // 생성자 서명 생성
+    const creatorSignature = await collectionManager.generateCreatorSignature(
+      walletClient,
+      artCollection
+    )
+
+    // 주소 예측
+    const predictedAddress = collectionManager.predictCollectionAddress(
+      artCollection,
+      creatorSignature
+    )
+    console.log(`📍 컬렉션 주소: ${predictedAddress}`)
+
+    // 스토리지에 제출
+    await storage.submitCollection(artCollection, creatorSignature)
+    console.log("✅ 컬렉션 메타데이터 저장됨")
+
+    // 배포 및 첫 NFT 민팅
+    const deployerSignature = await collectionManager.generateDeployerSignature(
+      walletClient,
+      predictedAddress
+    )
+
+    const collection = collectionManager.createCollection(predictedAddress, "ERC721")
+    const mintTx = await collection.mint(
+      walletClient,
+      1n,
+      undefined,
+      0n,
+      [],
+      creatorSignature,
+      deployerSignature
+    )
+
+    console.log(`🎉 컬렉션 배포 및 첫 NFT 민팅됨: ${mintTx}`)
+    return { collection, predictedAddress, mintTx }
+
+  } catch (error) {
+    console.error("❌ 아트 컬렉션 생성 실패:", error)
+    throw error
+  }
+}
+
+// 사용법
+createBasicArtCollection()
+  .then(result => console.log("컬렉션 성공적으로 생성됨:", result))
+  .catch(error => console.error("생성 실패:", error))
+```
+
+## 화이트리스트가 있는 게이밍 컬렉션
+
+계층화된 화이트리스트 액세스가 있는 게이밍 컬렉션:
+
+<Accordion title="완전한 게이밍 컬렉션 예제">
+```typescript
+import { 
+  CollectionManager, 
+  WhitelistManager,
+  BaseMintStorage,
+  RewardTracker,
+  b3Testnet 
+} from '@b3dotfun/basemint'
+import { createPublicClient, createWalletClient, http, parseEther } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+
+class GamingCollectionManager {
+  private publicClient: any
+  private walletClient: any
+  private collectionManager: CollectionManager
+  private storage: BaseMintStorage
+  private rewardTracker: RewardTracker
+
+  constructor(privateKey: string) {
+    const account = privateKeyToAccount(privateKey as `0x${string}`)
+    
+    this.publicClient = createPublicClient({
+      chain: b3Testnet,
+      transport: http()
+    })
+    
+    this.walletClient = createWalletClient({
+      chain: b3Testnet,
+      transport: http(),
+      account
+    })
+
+    this.collectionManager = new CollectionManager(this.publicClient)
+    this.storage = new BaseMintStorage({ baseUrl: 'https://api.basemint.fun' })
+    this.rewardTracker = new RewardTracker(this.publicClient)
+  }
+
+  async createGamingCollection() {
+    // 플레이어 계층 정의
+    const playerTiers = {
+      legendary: [
+        "0x1111111111111111111111111111111111111111",
+        "0x2222222222222222222222222222222222222222"
+      ],
+      epic: [
+        "0x3333333333333333333333333333333333333333",
+        "0x4444444444444444444444444444444444444444",
+        "0x5555555555555555555555555555555555555555"
+      ],
+      rare: [
+        "0x6666666666666666666666666666666666666666",
+        "0x7777777777777777777777777777777777777777",
+        "0x8888888888888888888888888888888888888888"
+      ]
+    }
+
+    // 화이트리스트 생성
+    const allPlayers = [
+      ...playerTiers.legendary.map(address => ({ address })),
+      ...playerTiers.epic.map(address => ({ address })),
+      ...playerTiers.rare.map(address => ({ address }))
+    ]
+
+    const whitelist = new WhitelistManager(allPlayers)
+    const merkleRoot = whitelist.getRoot()
+
+    // 컬렉션 정의
+    const gamingCollection = {
+      name: "Legendary Gaming Items",
+      symbol: "LGI",
+      creator: this.walletClient.account.address,
+      gameOwner: "0x9999999999999999999999999999999999999999", // 게임 플랫폼
+      description: "Top players를 위한 독점 게이밍 아이템",
+      image: "https://example.com/gaming-collection.png",
+      
+      // 화이트리스트 구성
+      isWhitelistEnabled: true,
+      whitelistMerkleRoot: merkleRoot,
+      
+      // 가격 및 제한
+      maxSupply: 500n,
+      mintPrice: parseEther("0.01"),
+      maxPerWallet: 3n,
+      
+      // 타이밍 - 화이트리스트 단계 24시간
+      startTime: BigInt(Math.floor(Date.now() / 1000)),
+      endTime: BigInt(Math.floor(Date.now() / 1000) + 86400 * 7),
+      
+      tokenStandard: "ERC1155" as const,
+      chainId: 1993,
+      
+      // 게임별 메타데이터
+      attributes: [
+        { trait_type: "Category", value: "Gaming" },
+        { trait_type: "Rarity", value: "Legendary" },
+        { trait_type: "Game", value: "Fantasy RPG" }
+      ]
+    }
+
+    try {
+      console.log("🎮 게이밍 컬렉션 생성 중...")
+
+      // 서명 생성
+      const creatorSignature = await this.collectionManager.generateCreatorSignature(
+        this.walletClient,
+        gamingCollection
+      )
+
+      const predictedAddress = this.collectionManager.predictCollectionAddress(
+        gamingCollection,
+        creatorSignature
+      )
+
+      // 게임 리퍼러와 함께 스토리지에 제출
+      await this.storage.submitCollection(
+        gamingCollection,
+        creatorSignature,
+        "fantasy-rpg-game" // 리퍼러 ID
+      )
+
+      console.log(`✅ 게이밍 컬렉션 저장됨: ${predictedAddress}`)
+
+      return {
+        collection: gamingCollection,
+        predictedAddress,
+        whitelist,
+        playerTiers
+      }
+
+    } catch (error) {
+      console.error("❌ 게이밍 컬렉션 생성 실패:", error)
+      throw error
+    }
+  }
+
+  async mintForPlayer(
+    collectionAddress: string,
+    whitelist: WhitelistManager,
+    playerAddress: string,
+    quantity: bigint = 1n
+  ) {
+    try {
+      // 컬렉션이 배포되었는지 확인
+      const collection = this.collectionManager.createCollection(collectionAddress, "ERC1155")
+      const isDeployed = await collection.isDeployed()
+
+      if (!isDeployed) {
+        // 첫 번째 민트 - 컬렉션 배포
+        const deployerSignature = await this.collectionManager.generateDeployerSignature(
+          this.walletClient,
+          collectionAddress
+        )
+
+        // 화이트리스트 증명 가져오기
+        const proof = whitelist.getProof(playerAddress)
+        const mintPrice = parseEther("0.01") * quantity
+
+        const tx = await collection.mint(
+          this.walletClient,
+          quantity,
+          "https://example.com/legendary-sword.json", // 특정 아이템 메타데이터
+          mintPrice,
+          proof,
+          undefined, // 배포를 위해 필요한 creatorSignature
+          deployerSignature
+        )
+
+        console.log(`🚀 컬렉션 배포 및 아이템 민팅됨: ${tx}`)
+        return tx
+
+      } else {
+        // 일반 민트
+        const proof = whitelist.getProof(playerAddress)
+        const mintPrice = parseEther("0.01") * quantity
+
+        const tx = await collection.mint(
+          this.walletClient,
+          quantity,
+          "https://example.com/legendary-sword.json",
+          mintPrice,
+          proof
+        )
+
+        console.log(`⚔️ 게이밍 아이템 민팅됨: ${tx}`)
+        return tx
+      }
+
+    } catch (error: any) {
+      if (error.message.includes('Invalid merkle proof')) {
+        console.error(`❌ 플레이어 ${playerAddress} 화이트리스트에 없음`)
+      } else {
+        console.error("❌ 민팅 실패:", error)
+      }
+      throw error
+    }
+  }
+
+  async getPlayerRewards(collectionAddress: string, playerAddress: string) {
+    const escrowAddress = this.collectionManager.getEscrowAddress()
+    
+    // 플레이어가 첫 번째 민터인지 확인
+    const firstMinterRewards = await this.rewardTracker.getRecipientRewards(
+      escrowAddress,
+      collectionAddress,
+      "FIRST_MINTER",
+      playerAddress
+    )
+
+    // 컬렉션 통계 가져오기
+    const collectionRewards = await this.rewardTracker.getCollectionRewards(
+      escrowAddress,
+      collectionAddress
+    )
+
+    return {
+      firstMinterRewards: firstMinterRewards.toString(),
+      collectionTotalRewards: collectionRewards.totalRewards.toString(),
+      collectionMints: collectionRewards.totalMints.toString()
+    }
+  }
+}
+
+// 사용 예제
+async function main() {
+  const gameManager = new GamingCollectionManager(process.env.PRIVATE_KEY!)
+  
+  // 컬렉션 생성
+  const { predictedAddress, whitelist, playerTiers } = await gameManager.createGamingCollection()
+  
+  // 전설적인 플레이어 민팅 시뮬레이션
+  const legendaryPlayer = playerTiers.legendary[0]
+  await gameManager.mintForPlayer(predictedAddress, whitelist, legendaryPlayer, 2n)
+  
+  // 보상 확인
+  const rewards = await gameManager.getPlayerRewards(predictedAddress, legendaryPlayer)
+  console.log("플레이어 보상:", rewards)
+}
+
+main().catch(console.error)
+```
+</Accordion>
+
+## 멀티 컬렉션 플랫폼
+
+여러 컬렉션을 관리하는 플랫폼:
+
+<Accordion title="멀티 컬렉션 플랫폼 예제">
+```typescript
+import { 
+  CollectionManager, 
+  BaseMintStorage,
+  RewardTracker,
+  b3Testnet 
+} from '@b3dotfun/basemint'
+
+class NFTPlatform {
+  private collectionManager: CollectionManager
+  private storage: BaseMintStorage
+  private rewardTracker: RewardTracker
+  private platformId: string
+
+  constructor(
+    publicClient: any,
+    platformId: string
+  ) {
+    this.collectionManager = new CollectionManager(publicClient)
+    this.storage = new BaseMintStorage({ baseUrl: 'https://api.basemint.fun' })
+    this.rewardTracker = new RewardTracker(publicClient)
+    this.platformId = platformId
+  }
+
+  async registerPlatform() {
+    try {
+      await this.storage.registerReferrer(this.platformId, {
+        name: "My NFT Platform",
+        website: "https://mynftplatform.com",
+        description: "NFT 컬렉션을 생성하고 관리하는 플랫폼"
+      })
+      console.log(`✅ 플랫폼 등록됨: ${this.platformId}`)
+    } catch (error: any) {
+      if (error.message.includes('already exists')) {
+        console.log(`ℹ️ 플랫폼 ${this.platformId} 이미 등록됨`)
+      } else {
+        throw error
+      }
+    }
+  }
+
+  async createCollection(
+    creatorWalletClient: any,
+    collectionData: {
+      name: string
+      symbol: string
+      description: string
+      image: string
+      maxSupply: bigint
+      mintPrice: bigint
+      category: string
+    }
+  ) {
+    const collection = {
+      ...collectionData,
+      creator: creatorWalletClient.account.address,
+      gameOwner: creatorWalletClient.account.address, // 플랫폼이 gameOwner일 수 있음
+      tokenStandard: "ERC721" as const,
+      chainId: 1993,
+      attributes: [
+        { trait_type: "Platform", value: "My NFT Platform" },
+        { trait_type: "Category", value: collectionData.category }
+      ]
+    }
+
+    // 서명 생성 및 저장
+    const creatorSignature = await this.collectionManager.generateCreatorSignature(
+      creatorWalletClient,
+      collection
+    )
+
+    const predictedAddress = this.collectionManager.predictCollectionAddress(
+      collection,
+      creatorSignature
+    )
+
+    await this.storage.submitCollection(
+      collection,
+      creatorSignature,
+      this.platformId
+    )
+
+    return {
+      collection,
+      predictedAddress,
+      creatorSignature
+    }
+  }
+
+  async deployCollection(
+    deployerWalletClient: any,
+    collectionAddress: string,
+    creatorSignature: string
+  ) {
+    const deployerSignature = await this.collectionManager.generateDeployerSignature(
+      deployerWalletClient,
+      collectionAddress
+    )
+
+    const collection = this.collectionManager.createCollection(collectionAddress, "ERC721")
+    
+    const tx = await collection.mint(
+      deployerWalletClient,
+      1n,
+      undefined,
+      0n, // 배포자에게 첫 번째 민트 무료
+      [],
+      creatorSignature,
+      deployerSignature
+    )
+
+    return tx
+  }
+
+  async getPlatformStats() {
+    const collections = await this.storage.queryCollections({
+      referrer: this.platformId
+    })
+
+    const stats = {
+      totalCollections: collections.total,
+      deployed: 0,
+      undeployed: 0,
+      totalVolume: 0n,
+      totalRewards: 0n
+    }
+
+    const escrowAddress = this.collectionManager.getEscrowAddress()
+
+    for (const collection of collections.collections) {
+      if (collection.isDeployed) {
+        stats.deployed++
+        
+        // 컬렉션 보상 가져오기
+        const rewards = await this.rewardTracker.getCollectionRewards(
+          escrowAddress,
+          collection.address
+        )
+        stats.totalRewards += rewards.totalRewards
+      } else {
+        stats.undeployed++
+      }
+    }
+
+    return {
+      ...stats,
+      collections: collections.collections
+    }
+  }
+
+  async getCreatorDashboard(creatorAddress: string) {
+    const collections = await this.storage.queryCollections({
+      creator: creatorAddress,
+      referrer: this.platformId
+    })
+
+    const escrowAddress = this.collectionManager.getEscrowAddress()
+    let totalCreatorRewards = 0n
+
+    const collectionStats = await Promise.all(
+      collections.collections.map(async (collection) => {
+        if (collection.isDeployed) {
+          const rewards = await this.rewardTracker.getRecipientRewards(
+            escrowAddress,
+            collection.address,
+            "CREATOR",
+            creatorAddress
+          )
+          totalCreatorRewards += rewards
+          
+          return {
+            ...collection,
+            creatorRewards: rewards.toString()
+          }
+        }
+        return {
+          ...collection,
+          creatorRewards: "0"
+        }
+      })
+    )
+
+    return {
+      totalCollections: collections.total,
+      totalCreatorRewards: totalCreatorRewards.toString(),
+      collections: collectionStats
+    }
+  }
+}
+
+// 사용
+async function runPlatform() {
+  const publicClient = createPublicClient({
+    chain: b3Testnet,
+    transport: http()
+  })
+
+  const platform = new NFTPlatform(publicClient, "my-nft-platform")
+  
+  // 플랫폼 등록
+  await platform.registerPlatform()
+  
+  // 크리에이터가 컬렉션 생성
+  const creatorAccount = privateKeyToAccount(process.env.CREATOR_PRIVATE_KEY as `0x${string}`)
+  const creatorWalletClient = createWalletClient({
+    chain: b3Testnet,
+    transport: http(),
+    account: creatorAccount
+  })
+
+  const { predictedAddress,

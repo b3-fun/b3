@@ -1,0 +1,621 @@
+---
+title: 存储服务
+description: 使用 BaseMint 存储服务管理集合元数据和资产
+lang: cn
+originalPath: createkit/storage.mdx
+---
+## 概览
+
+BaseMint 存储服务提供了一个可靠、可扩展的解决方案，用于存储和管理 NFT 集合元数据。它提供确定性地址、CDN 支持的交付以及与 CreateKit 生态系统的无缝集成。
+
+## 存储架构
+
+### 存储工作原理
+
+<Steps>
+  <Step title="元数据提交">
+    集合元数据和创建者签名提交给存储服务
+  </Step>
+  <Step title="验证 & 存储">
+    服务验证签名并以确定性地址存储元数据
+  </Step>
+  <Step title="CDN 分发">
+    通过 CDN 分发元数据以实现快速、全球访问
+  </Step>
+  <Step title="市场集成">
+    集合通过预测地址在部署前可被发现
+  </Step>
+</Steps>
+
+### 关键特性
+
+<CardGroup cols={2}>
+  <Card title="确定性地址" icon="link">
+    集合拥有可预测的地址以便市场集成
+  </Card>
+  <Card title="签名验证" icon="shield-check">
+    集合真实性的加密验证
+  </Card>
+  <Card title="CDN 交付" icon="globe">
+    快速、可靠的全球元数据交付
+  </Card>
+  <Card title="推荐人系统" icon="users">
+    通过集成合作伙伴跟踪和管理集合
+  </Card>
+</CardGroup>
+
+## 存储服务设置
+
+### 基本配置
+
+```typescript title="初始化存储服务"
+import { BaseMintStorage } from '@b3dotfun/basemint'
+
+// 初始化存储服务
+const storage = new BaseMintStorage({
+  baseUrl: 'https://api.basemint.fun', // 生产 URL
+  // 对于测试网开发：
+  // baseUrl: 'https://testnet-api.basemint.fun'
+})
+
+// 测试连接
+try {
+  const health = await storage.healthCheck()
+  console.log('✅ 存储服务已连接:', health)
+} catch (error) {
+  console.error('❌ 存储服务不可用:', error)
+}
+```
+
+### 环境配置
+
+```typescript title="基于环境的设置"
+// 环境特定配置
+const getStorageConfig = (environment: 'development' | 'staging' | 'production') => {
+  const configs = {
+    development: {
+      baseUrl: 'https://testnet-api.basemint.fun',
+      chainId: 1993 // B3 测试网
+    },
+    staging: {
+      baseUrl: 'https://staging-api.basemint.fun',
+      chainId: 1993
+    },
+    production: {
+      baseUrl: 'https://api.basemint.fun',
+      chainId: 8333 // B3 主网
+    }
+  }
+  
+  return configs[environment]
+}
+
+const config = getStorageConfig(process.env.NODE_ENV as any || 'development')
+const storage = new BaseMintStorage(config)
+```
+
+## 提交集合
+
+### 基本集合提交
+
+```typescript title="提交集合"
+async function submitCollection(
+  collectionMetadata: any,
+  creatorSignature: string,
+  referrerId?: string
+) {
+  try {
+    const response = await storage.submitCollection(
+      collectionMetadata,
+      creatorSignature,
+      referrerId // 可选：通过推荐人跟踪集合
+    )
+    
+    console.log('✅ 集合提交成功')
+    console.log('集合 ID:', response.collectionId)
+    console.log('预测地址:', response.predictedAddress)
+    console.log('元数据 URI:', response.metadataUri)
+    
+    return response
+    
+  } catch (error: any) {
+    if (error.message.includes('Invalid signature')) {
+      console.error('❌ 创建者签名验证失败')
+    } else if (error.message.includes('Collection exists')) {
+      console.error('❌ 此地址的集合已存在')
+    } else if (error.message.includes('Referrer not found')) {
+      console.error('❌ 无效的推荐人 ID')
+    } else {
+      console.error('❌ 提交失败:', error.message)
+    }
+    throw error
+  }
+}
+
+// 示例用法
+const response = await submitCollection(
+  collectionMetadata,
+  creatorSignature,
+  "my-game-platform" // 您的推荐人 ID
+)
+```
+
+### 批量集合提交
+
+```typescript title="批量提交"
+async function submitMultipleCollections(
+  collections: Array<{
+    metadata: any
+    signature: string
+    referrerId?: string
+  }>
+) {
+  const results = []
+  
+  for (const collection of collections) {
+    try {
+      const response = await storage.submitCollection(
+        collection.metadata,
+        collection.signature,
+        collection.referrerId
+      )
+      
+      results.push({
+        success: true,
+        collectionName: collection.metadata.name,
+        response
+      })
+      
+      console.log(`✅ 已提交: ${collection.metadata.name}`)
+      
+    } catch (error) {
+      results.push({
+        success: false,
+        collectionName: collection.metadata.name,
+        error: error.message
+      })
+      
+      console.error(`❌ 提交失败: ${collection.metadata.name}`, error)
+    }
+  }
+  
+  return results
+}
+```
+
+## 查询集合
+
+### 基本查询
+
+```typescript title="查询集合"
+// 查询所有集合
+const allCollections = await storage.queryCollections()
+console.log(`找到 ${allCollections.collections.length} 个集合`)
+
+// 分页查询
+const paginatedResults = await storage.queryCollections({
+  limit: 20,
+  offset: 0
+})
+
+// 按推荐人查询
+const gameCollections = await storage.queryCollections({
+  referrer: "my-game-platform"
+})
+
+// 按创建者查询
+const creatorCollections = await storage.queryCollections({
+  creator: "0x1234567890123456789012345678901234567890"
+})
+```
+
+### 高级筛选
+
+```typescript title="高级查询"
+// 带有多个筛选条件的复杂查询
+const advancedQuery = await storage.queryCollections({
+  referrer: "my-game-platform",
+  creator: "0x1234567890123456789012345678901234567890",
+  tokenStandard: "ERC721",
+  chainId: 1993,
+  limit: 50,
+  offset: 0,
+  sortBy: "createdAt",
+  sortOrder: "desc"
+})
+
+console.log("高级查询结果:", {
+  total: advancedQuery.total,
+  count: advancedQuery.collections.length,
+  hasMore: advancedQuery.hasMore
+})
+
+// 按部署状态筛选
+const undeployedCollections = advancedQuery.collections.filter(
+  collection => !collection.isDeployed
+)
+
+const deployedCollections = advancedQuery.collections.filter(
+  collection => collection.isDeployed
+)
+
+console.log(`未部署: ${undeployedCollections.length}`)
+console.log(`已部署: ${deployedCollections.length}`)
+```
+
+### 搜索功能
+
+```typescript title="搜索集合"
+// 按名称或符号搜索
+const searchResults = await storage.searchCollections({
+  query: "fantasy",
+  limit: 10
+})
+
+// 带筛选条件的搜索
+const filteredSearch = await storage.searchCollections({
+  query: "game",
+  referrer: "my-game-platform",
+  tokenStandard: "ERC1155"
+})
+
+console.log("搜索结果:", searchResults.collections.map(c => ({
+  name: c.name,
+  symbol: c.symbol,
+  description: c.description
+})))
+```
+
+## 推荐人管理
+
+### 注册为推荐人
+
+```typescript title="推荐人注册"
+// 将您的平台注册为推荐人
+async function registerAsReferrer(referrerId: string, metadata?: any) {
+  try {
+    await storage.registerReferrer(referrerId, metadata)
+    console.log(`✅ 已注册为推荐人: ${referrerId}`)
+  } catch (error: any) {
+    if (error.message.includes('already exists')) {
+      console.log(`ℹ️ 推荐人 ${referrerId} 已注册`)
+    } else {
+      console.error('❌ 注册失败:', error)
+      throw error
+    }
+  }
+}
+
+// 带元数据注册
+await registerAsReferrer("my-game-platform", {
+  name: "My Game Platform",
+  website: "https://mygame.com",
+  contact: "dev@mygame.com",
+  description: "一个用于 NFT 集合的游戏平台"
+})
+```
+
+### 管理推荐人集合
+
+```typescript title="推荐人集合管理"
+// 获取您平台的所有集合
+async function getReferrerDashboard(referrerId: string) {
+  const collections = await storage.queryCollections({
+    referrer: referrerId
+  })
+  
+  const stats = {
+    total: collections.total,
+    deployed: collections.collections.filter(c => c.isDeployed).length,
+    undeployed: collections.collections.filter(c => !c.isDeployed).length,
+    erc721: collections.collections.filter(c => c.tokenStandard === 'ERC721').length,
+    erc1155: collections.collections.filter(c => c.tokenStandard === 'ERC1155').length
+  }
+  
+  console.log("推荐人仪表板:", stats)
+  
+  return {
+    collections: collections.collections,
+    stats
+  }
+}
+
+const dashboard = await getReferrerDashboard("my-game-platform")
+```
+
+## 集合管理
+
+### 检索集合数据
+
+```typescript title="获取集合详情"
+// 通过地址获取集合
+async function getCollectionDetails(address: string) {
+  try {
+    const collection = await storage.getCollection(address)
+    
+    console.log("集合详情:", {
+      name: collection.name,
+      symbol: collection.symbol,
+      creator: collection.creator,
+      gameOwner: collection.gameOwner,
+      isDeployed: collection.isDeployed,
+      createdAt: collection.createdAt,
+      metadataUri: collection.metadataUri
+    })
+    
+    return collection
+    
+  } catch (error: any) {
+    if (error.message.includes('not found')) {
+      console.error('❌ 集合未找到')
+    } else {
+      console.error('❌ 获取集合错误:', error)
+    }
+    throw error
+  }
+}
+
+// 通过地址获取多个集合
+async function getMultipleCollections(addresses: string[]) {
+  const collections = await Promise.allSettled(
+    addresses.map(address => storage.getCollection(address))
+  )
+  
+  const successful = collections
+    .filter((result): result is PromiseFulfilledResult<any> => result.status === 'fulfilled')
+    .map(result => result.value)
+    
+  const failed = collections
+    .filter((result): result is PromiseRejectedResult => result.status === 'rejected')
+    .map(result => result.reason)
+  
+  console.log(`✅ 检索到 ${successful.length} 个集合`)
+  console.log(`❌ 未能检索到 ${failed.length} 个集合`)
+  
+  return { successful, failed }
+}
+```
+
+### 更新集合
+
+<Warning>
+集合更新仅限于特定字段，可能需要额外的认证。
+</Warning>
+
+```typescript title="更新集合"
+// 更新集合元数据（限定字段）
+async function updateCollectionMetadata(
+  address: string,
+  updates: {
+    description?: string
+    image?: string
+    external_url?: string
+    animation_url?: string
+  }
+) {
+  try {
+    const updatedCollection = await storage.updateCollection(address, updates)
+    console.log('✅ 集合更新成功')
+    return updatedCollection
+  } catch (error: any) {
+    if (error.message.includes('not authorized')) {
+      console.error('❌ 无权更新此集合')
+    } else if (error.message.includes('immutable field')) {
+      console.error('❌ 尝试更新不可变字段')
+    } else {
+      console.error('❌ 更新失败:', error)
+    }
+    throw error
+  }
+}
+```
+
+### 删除集合
+
+```typescript title="删除集合"
+// 删除单个集合（仅未部署的）
+async function deleteCollection(address: string) {
+  try {
+    await storage.deleteCollection(address)
+    console.log(`✅ 集合 ${address} 已删除`)
+  } catch (error: any) {
+    if (error.message.includes('deployed')) {
+      console.error('❌ 无法删除已部署的集合')
+    } else if (error.message.includes('not found')) {
+      console.error('❌ 集合未找到')
+    } else {
+      console.error('❌ 删除失败:', error)
+    }
+    throw error
+  }
+}
+
+// 批量删除集合（仅推荐人）
+async function bulkDeleteCollections(
+  identifiers: string[], // UUID 或地址
+  referrerId: string
+) {
+  try {
+    const result = await storage.bulkDeleteCollections(identifiers, referrerId)
+    
+    console.log(`✅ 已删除 ${result.deleted.length} 个集合`)
+    console.log(`❌ 未能删除 ${result.failed.length} 个集合`)
+    
+    return result
+  } catch (error) {
+    console.error('❌ 批量删除失败:', error)
+    throw error
+  }
+}
+```
+
+## 元数据管理
+
+### 自定义元数据 URI
+
+```typescript title="元数据 URI 处理"
+// 为集合生成元数据 URI
+function generateMetadataUri(collectionId: string, baseUrl: string): string {
+  return `${baseUrl}/metadata/${collectionId}`
+}
+
+// 直接获取元数据
+async function getCollectionMetadata(collectionId: string) {
+  try {
+    const metadataUri = generateMetadataUri(collectionId, storage.baseUrl)
+    const response = await fetch(metadataUri)
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+    }
+    
+    const metadata = await response.json()
+    return metadata
+  } catch (error) {
+    console.error('❌ 获取元数据失败:', error)
+    throw error
+  }
+}
+
+// 验证元数据格式
+function validateMetadata(metadata: any): { isValid: boolean; errors: string[] } {
+  const errors: string[] = []
+  
+  if (!metadata.name) errors.push('缺少名称')
+  if (!metadata.description) errors.push('缺少描述')
+  if (!metadata.image) errors.push('缺少图片')
+  
+  // 检查 OpenSea 兼容性
+  if (metadata.attributes && !Array.isArray(metadata.attributes)) {
+    errors.push('属性必须是数组')
+  }
+  
+  return {
+    isValid: errors.length === 0,
+    errors
+  }
+}
+```
+
+### 资产管理
+
+```typescript title="资产上传和管理"
+// 上传资产到存储服务（如果支持）
+async function uploadAsset(
+  file: File | Buffer,
+  filename: string,
+  contentType: string
+): Promise<string> {
+  try {
+    // 这取决于您的存储服务实现
+    const formData = new FormData()
+    formData.append('file', file, filename)
+    formData.append('contentType', contentType)
+    
+    const response = await fetch(`${storage.baseUrl}/upload`, {
+      method: 'POST',
+      body: formData
+    })
+    
+    if (!response.ok) {
+      throw new Error(`上传失败: ${response.statusText}`)
+    }
+    
+    const result = await response.json()
+    return result.url
+    
+  } catch (error) {
+    console.error('❌ 资产上传失败:', error)
+    throw error
+  }
+}
+
+// 优化图片以符合 NFT 标准
+function getOptimizedImageUrl(
+  originalUrl: string,
+  size: 'thumbnail' | 'medium' | 'large' = 'medium'
+): string {
+  const sizeMap = {
+    thumbnail: '200x200',
+    medium: '640x640',
+    large: '1200x1200'
+  }
+  
+  // 示例 CDN URL 转换
+  return `${originalUrl}?size=${sizeMap[size]}&format=webp&quality=85`
+}
+```
+
+## 错误处理
+
+### 全面的错误处理
+
+```typescript title="错误处理模式"
+class StorageError extends Error {
+  constructor(
+    message: string,
+    public code: string,
+    public statusCode?: number
+  ) {
+    super(message)
+    this.name = 'StorageError'
+  }
+}
+
+async function robustStorageOperation<T>(
+  operation: () => Promise<T>,
+  retries: number = 3,
+  delayMs: number = 1000
+): Promise<T> {
+  let lastError: Error
+  
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      return await operation()
+    } catch (error: any) {
+      lastError = error
+      
+      // 不重试某些错误
+      if (error.message.includes('Invalid signature') ||
+          error.message.includes('Collection exists')) {
+        throw error
+      }
+      
+      console.warn(`尝试 ${attempt} 失败:`, error.message)
+      
+      if (attempt < retries) {
+        await new Promise(resolve => setTimeout(resolve, delayMs * attempt))
+      }
+    }
+  }
+  
+  throw new StorageError(
+    `操作在 ${retries} 次尝试后失败: ${lastError.message}`,
+    'MAX_RETRIES_EXCEEDED'
+  )
+}
+
+// 用法
+const result = await robustStorageOperation(async () => {
+  return await storage.submitCollection(metadata, signature)
+})
+```
+
+### 服务健康监控
+
+```typescript title="健康监控"
+class StorageHealthMonitor {
+  private storage: BaseMintStorage
+  private healthStatus: 'healthy' | 'degraded' | 'unhealthy' = 'healthy'
+  private lastCheck: Date = new Date()
+  
+  constructor(storage: BaseMintStorage) {
+    this.storage = storage
+  }
+  
+  async checkHealth(): Promise<{ status: string; latency: number; timestamp: Date }> {
+    const startTime = Date.now()
+    
+    try {
+      await this.storage.healthCheck()
+      const latency =

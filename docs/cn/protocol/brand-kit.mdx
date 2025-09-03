@@ -1,0 +1,231 @@
+---
+title: 品牌套件
+description: 遵循以下指南，正确地在贡献至B3生态系统时使用我们的品牌。
+lang: cn
+originalPath: protocol/brand-kit.mdx
+---
+```html
+<div className="text-center my-4 font-bold text-lg tracking-wide text-primary">
+  ✦ 社区驱动 ✦ 乐趣 ✦ 生态系统一致 ✦
+</div>
+
+## 主要标志
+
+<CardGroup cols={3}>
+  <Card title="蓝色标志">
+    <img src="/images/b3-logo-blue.svg" alt="B3 蓝色标志"  className='p-6 bg-black rounded-xl my-3'/>
+    
+    <div className="flex justify-start items-center gap-4">
+      <a href="https://cdn.b3.fun/b3_logo.svg" target="_blank" download="b3-logo-blue.svg">SVG</a>
+      <a href="https://cdn.b3.fun/b3_logo@.png" target="_blank" download="b3-logo-blue.png">PNG</a>
+    </div>
+  </Card>
+  
+  <Card title="白色标志">
+    <img src="/images/b3-logo-white.svg" alt="B3 白色标志"  className='p-6 bg-black rounded-xl my-3'/>
+    
+    <div className="flex justify-start items-center gap-4">
+      <a href="https://cdn.b3.fun/b3_logo_white.svg" target="_blank" download="b3-logo-white.svg">SVG</a>
+    </div>
+  </Card>
+  
+  <Card title="黑色标志">
+    <img src="/images/b3_logo_black.svg" alt="B3 黑色标志"  className='p-6 bg-white rounded-xl my-3'/>
+    
+    <div className="flex justify-start items-center gap-4">
+      <a href="https://cdn.b3.fun/b3_logo_black.svg" target="_blank" download="b3-logo-black.svg">SVG</a>
+    </div>
+  </Card>
+</CardGroup>
+
+## 颜色
+
+不要局限于这些常见的品牌颜色。B3 邀请你用不同的有趣、充满活力的色彩调色板来表达自己。
+
+<CardGroup cols={3}>
+  <Card title="主要蓝色">
+    <div style={{ backgroundColor: "#007AFF", height: "80px", borderRadius: "8px", margin: "1rem 0" }}></div>
+    
+    ```
+    #007AFF
+    ```
+  </Card>
+  
+  <Card title="灰色">
+    <div style={{ backgroundColor: "#6B7280", height: "80px", borderRadius: "8px", margin: "1rem 0" }}></div>
+    
+    ```
+    #6B7280
+    ```
+  </Card>
+  
+  <Card title="白色">
+    <div style={{ backgroundColor: "#FFFFFF", height: "80px", borderRadius: "8px", border: "2px solid #e5e7eb", margin: "1rem 0" }}></div>
+    
+    ```
+    #FFFFFF
+    ```
+  </Card>
+</CardGroup>
+
+## 品牌指南
+
+<CardGroup cols={2}>
+  <Card title="让它呼吸" icon="expand">
+    我们的标志在有足够边距时效果最佳。
+  </Card>
+  
+  <Card title="让它有趣" icon="heart">
+    保持轻松、友好和吸引人。
+  </Card>
+</CardGroup>
+
+## 字体
+
+在 CSS 样式表中导入：
+
+```css
+@import url("https://cdn.b3.fun/fonts.css");
+```
+
+通过 `<link>` 标签导入：
+
+```html
+<link href="https://cdn.b3.fun/fonts.css" rel="stylesheet">
+```
+
+现在你可以使用这些字体了：
+
+```css
+body { font-family: "Neue Montreal Medium", sans-serif; }
+```
+
+#### 可用字体：
+
+- **Neue Montreal Bold**  
+- **Neue Montreal Regular**  
+- **Neue Montreal Book**  
+- **Neue Montreal Medium**  
+- **Neue Montreal Semibold**  
+- **Calibre Bold**  
+- **Calibre Heavy**  
+- **Pack**
+
+#### 下载原始字体：
+
+<Card title="Calibre">
+  [许可证](https://klim.co.nz/retail-fonts/calibre/)
+</Card>
+
+<Card title="Neue Montreal">
+  [许可证](https://pangrampangram.com/products/neue-montreal)
+</Card>
+
+<Card title="PACK">
+  [许可证](https://harrycresswell.com/pack/)
+</Card>
+
+
+## 有趣的素材
+
+<CardGroup cols={3}>
+  <Card title="光标">
+    <img src="/images/cursor.png" alt="B3 光标" className='rounded-xl my-3 aspect-square p-6 bg-white'/>
+    
+    <div className="flex justify-start items-center gap-4">
+      <a href="https://cdn.b3.fun/cursor.png" target="_blank" download="cursor.png">PNG</a>
+      <a href="https://cdn.b3.fun/cursor%402x.png" target="_blank" download="cursor@2x.png">PNG @ 2x</a>
+    </div>
+  </Card>
+  
+  <Card title="蓝色纹理">
+    <img src="/images/b3-bg-texture.jpg" alt="B3 蓝色纹理" className='rounded-xl my-3 aspect-square'/>
+
+    <div className="flex justify-start items-center gap-4">
+      <a href="https://cdn.b3.fun/b3-bg-texture.jpg" target="_blank" download="b3-bg-texture.jpg">JPG</a>
+    </div>
+  </Card>
+  
+  <Card title="网格">
+    <img src="/images/b3_grid.svg" alt="B3 网格" className='rounded-xl my-3 aspect-square p-6 bg-white'/>
+    
+    <div className="flex justify-start items-center gap-4">
+      <a href="https://cdn.b3.fun/b3_grid.svg" target="_blank" download="b3_grid.svg">SVG</a>
+      <a href="https://cdn.b3.fun/b3_grid.png" target="_blank" download="b3_grid.png">PNG</a>
+    </div>
+  </Card>
+</CardGroup>
+
+## 动态
+
+当代表 B3 时，动画是受欢迎的，毕竟 - 动起来更有趣！
+
+我们推荐使用 Framer Motion 作为 React 动画库，但你可以使用任何你喜欢的库！
+
+<CardGroup cols={2}>
+  <Card title="标志动画 (16:9)">
+    <video 
+      controls 
+      className='rounded-xl my-3 aspect-video'
+      src="/images/b3-logo-animation-wide.mp4"
+    >
+      您的浏览器不支持视频标签。
+    </video>
+    
+    <div className="flex justify-start items-center gap-4">
+      <a href="https://cdn.b3.fun/b3-logo-animation-wide.mp4" target="_blank" download="b3-logo-animation-wide.mp4">MP4</a>
+      <a href="https://cdn.b3.fun/b3-logo-animation-wide-after-effects-project.zip" target="_blank" download="b3-logo-animation-wide-after-effects-project.zip">After Effects 项目</a>
+    </div>
+  </Card>
+  
+  <Card title="标志动画 (1:1)">
+    <video 
+      controls 
+      className='rounded-xl my-3 aspect-square'
+      src="/images/b3-logo-animation-square.mp4"
+    >
+      您的浏览器不支持视频标签。
+    </video>
+    
+    <div className="flex justify-start items-center gap-4">
+      <a href="https://cdn.b3.fun/b3-logo-animation-square.mp4" target="_blank" download="b3-logo-animation-square.mp4">MP4</a>
+      <a href="https://cdn.b3.fun/b3-logo-animation-square-after-effects-project.zip" target="_blank" download="b3-logo-animation-square-after-effects-project.zip">After Effects 项目</a>
+    </div>
+  </Card>
+</CardGroup>
+
+## 氛围 👌
+
+B3 一切都是关于乐趣，通过游戏等方式在你的生活中体现这一点。
+
+以其他方式展示 B3 的魅力！
+
+## 手机锁屏壁纸
+
+<CardGroup cols={3}>
+  <Card title="锁屏 v1">
+    <img src="/images/b3-iphone-wallpaper-v1.png" alt="B3 iPhone 壁纸 v1" className='rounded-xl my-3'/>
+    
+    [下载](https://cdn.b3.fun/b3-iphone-wallpaper-v1.png)
+  </Card>
+  
+  <Card title="锁屏 v2">
+    <img src="/images/b3-iphone-wallpaper-v2.png" alt="B3 iPhone 壁纸 v2" className='rounded-xl my-3'/>
+    
+    [下载](https://cdn.b3.fun/b3-iphone-wallpaper-v2.png)
+  </Card>
+  
+  <Card title="锁屏 v3">
+    <img src="/images/b3-iphone-wallpaper-simple.png" alt="B3 iPhone 简单壁纸" className='rounded-xl my-3'/>
+    
+    [下载](https://cdn.b3.fun/b3-iphone-wallpaper-simple.png)
+  </Card>
+</CardGroup>
+
+
+## 为 B3 品牌做贡献
+
+让我们一起构建 B3 - 我们欢迎创作者、艺术家、开发者、游戏玩家和每个人贡献并获得奖励。
+
+如果你为 B3 社区构建了一些酷炫的东西，请联系我们。
+```

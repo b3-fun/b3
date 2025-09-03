@@ -1,0 +1,353 @@
+---
+title: 权限 & 会话密钥
+description: 管理权限和会话密钥以确保 B3 Global Account 交互的安全性
+lang: cn
+originalPath: sdk/global-account/permissions.mdx
+---
+## 概览
+
+会话密钥和权限提供了一种安全的方式，允许应用代表用户执行操作，而无需不断进行身份验证。这对于需要自动执行交易的游戏和应用程序特别有用。
+
+## 权限系统
+
+### 权限类型
+
+B3 全球账户支持可为不同用例配置的细粒度权限：
+
+- **合约互动**：指定可以调用哪些智能合约
+- **代币限额**：为原生代币和 ERC-20 代币设置消费限额
+- **时间限制**：定义权限的开始和结束日期
+- **交易限额**：控制每笔交易的最大值
+
+### 权限结构
+
+```typescript
+interface Permissions {
+  approvedTargets: string[];  // 合约地址
+  startDate: Date;           // 权限激活时间
+  endDate: Date;             // 权限过期时间
+  nativeTokenLimitPerTransaction: number; // 每笔交易的 ETH 限额
+  // 可以添加额外的 ERC-20 代币限额
+}
+```
+
+## 会话密钥实现
+
+### 基本权限请求
+
+```tsx
+import { RequestPermissionsButton } from "@b3dotfun/sdk/global-account/react";
+
+const b3Chain = {
+  id: 8333,
+  name: "B3",
+  nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+  rpc: "https://mainnet-rpc.b3.fun",
+};
+
+function BasicPermissions() {
+  const permissions = {
+    approvedTargets: [
+      "0x9c275ff1634519E9B5449ec79cd939B5F900564d", // 你的游戏合约
+    ],
+    startDate: new Date(),
+    endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 天
+    nativeTokenLimitPerTransaction: 0.01, // 每笔交易 0.01 ETH
+  };
+
+  return (
+    <RequestPermissionsButton
+      chain={b3Chain}
+      sessionKeyAddress="0x..." // MetaMask 或钱包地址
+      permissions={permissions}
+      onSuccess={() => {
+        console.log("权限成功授予！");
+      }}
+      onError={(error) => {
+        console.error("权限请求失败：", error);
+      }}
+    />
+  );
+}
+```
+
+### 针对游戏的权限
+
+对于游戏应用程序，您可能需要更广泛的权限：
+
+```tsx
+function GamePermissions() {
+  const gamePermissions = {
+    approvedTargets: [
+      "0x...", // 游戏合约
+      "0x...", // NFT 市场
+      "0x...", // 代币合约
+    ],
+    startDate: new Date(),
+    endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 天
+    nativeTokenLimitPerTransaction: 0.001, // 小额 ETH 限制以支付燃气费
+  };
+
+  return (
+    <div className="game-permissions">
+      <h3>授予游戏权限</h3>
+      <p>允许此游戏代表您执行操作，有效期为 7 天</p>
+      
+      <RequestPermissionsButton
+        chain={b3Chain}
+        sessionKeyAddress="0x..."
+        permissions={gamePermissions}
+        onSuccess={() => {
+          // 重定向到游戏或更新 UI
+          console.log("游戏权限授予成功！");
+        }}
+        onError={(error) => {
+          console.error("授予游戏权限失败：", error);
+        }}
+      />
+    </div>
+  );
+}
+```
+
+### 自定义权限 UI
+
+为了更好地控制权限流程：
+
+```tsx
+import { useRequestPermissions } from "@b3dotfun/sdk/global-account/react";
+
+function CustomPermissionFlow() {
+  const { requestPermissions, isLoading, error } = useRequestPermissions();
+
+  const handlePermissionRequest = async () => {
+    try {
+      const result = await requestPermissions({
+        chain: b3Chain,
+        sessionKeyAddress: "0x...",
+        permissions: {
+          approvedTargets: ["0x..."],
+          startDate: new Date(),
+          endDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 小时
+          nativeTokenLimitPerTransaction: 0.005,
+        },
+      });
+
+      if (result.success) {
+        console.log("权限成功授予：", result.data);
+      }
+    } catch (err) {
+      console.error("权限请求失败：", err);
+    }
+  };
+
+  return (
+    <div>
+      <button 
+        onClick={handlePermissionRequest}
+        disabled={isLoading}
+      >
+        {isLoading ? "正在请求权限..." : "授予权限"}
+      </button>
+      
+      {error && (
+        <div className="error">
+          错误：{error.message}
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## 会话密钥管理
+
+### 检查权限状态
+
+```tsx
+import { usePermissions } from "@b3dotfun/sdk/global-account/react";
+
+function PermissionStatus() {
+  const { permissions, hasPermissions, isExpired } = usePermissions();
+
+  return (
+    <div className="permission-status">
+      <h3>权限状态</h3>
+      
+      {hasPermissions ? (
+        <div className="permissions-active">
+          <p>✅ 权限激活</p>
+          <p>过期时间：{permissions?.endDate.toLocaleDateString()}</p>
+          <p>已批准的合约：{permissions?.approvedTargets.length}</p>
+          
+          {isExpired && (
+            <p className="warning">⚠️ 权限已过期</p>
+          )}
+        </div>
+      ) : (
+        <div className="no-permissions">
+          <p>❌ 无活动权限</p>
+          <RequestPermissionsButton {...permissionConfig} />
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+### 撤销权限
+
+```tsx
+import { useRevokePermissions } from "@b3dotfun/sdk/global-account/react";
+
+function RevokePermissions() {
+  const { revokePermissions, isLoading } = useRevokePermissions();
+
+  const handleRevoke = async () => {
+    try {
+      await revokePermissions({
+        sessionKeyAddress: "0x...",
+        chain: b3Chain,
+      });
+      console.log("权限成功撤销");
+    } catch (error) {
+      console.error("撤销权限失败：", error);
+    }
+  };
+
+  return (
+    <button 
+      onClick={handleRevoke}
+      disabled={isLoading}
+      className="revoke-button"
+    >
+      {isLoading ? "正在撤销..." : "撤销权限"}
+    </button>
+  );
+}
+```
+
+## 高级权限模式
+
+### 动态权限更新
+
+```tsx
+function DynamicPermissions() {
+  const [permissionLevel, setPermissionLevel] = useState<'basic' | 'advanced'>('basic');
+
+  const getPermissions = (level: string) => {
+    const basePermissions = {
+      startDate: new Date(),
+      endDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 小时
+    };
+
+    if (level === 'basic') {
+      return {
+        ...basePermissions,
+        approvedTargets: ["0x..."], // 限制合约
+        nativeTokenLimitPerTransaction: 0.001,
+      };
+    } else {
+      return {
+        ...basePermissions,
+        approvedTargets: ["0x...", "0x...", "0x..."], // 更多合约
+        nativeTokenLimitPerTransaction: 0.01,
+      };
+    }
+  };
+
+  return (
+    <div>
+      <div className="permission-selector">
+        <button 
+          onClick={() => setPermissionLevel('basic')}
+          className={permissionLevel === 'basic' ? 'active' : ''}
+        >
+          基本权限
+        </button>
+        <button 
+          onClick={() => setPermissionLevel('advanced')}
+          className={permissionLevel === 'advanced' ? 'active' : ''}
+        >
+          高级权限
+        </button>
+      </div>
+
+      <RequestPermissionsButton
+        chain={b3Chain}
+        sessionKeyAddress="0x..."
+        permissions={getPermissions(permissionLevel)}
+        onSuccess={() => console.log(`${permissionLevel} 权限授予成功`)}
+      />
+    </div>
+  );
+}
+```
+
+## 安全最佳实践
+
+<CardGroup cols={2}>
+
+<Card title="最小权限" icon="shield">
+  只请求应用程序所必需的最小权限。
+</Card>
+
+<Card title="短期持续" icon="clock">
+  使用较短的权限持续时间以增强安全性。
+</Card>
+
+<Card title="特定目标" icon="target">
+  指定确切的合约地址，而不是广泛的权限。
+</Card>
+
+<Card title="定期审计" icon="search">
+  定期审计并轮换会话密钥。
+</Card>
+
+</CardGroup>
+
+## 错误处理
+
+常见的权限相关错误及其处理方法：
+
+```tsx
+function PermissionErrorHandling() {
+  const handlePermissionError = (error: Error) => {
+    switch (error.message) {
+      case 'USER_REJECTED':
+        console.log('用户拒绝权限请求');
+        break;
+      case 'INSUFFICIENT_PERMISSIONS':
+        console.log('请求的权限超出限制');
+        break;
+      case 'EXPIRED_SESSION':
+        console.log('会话密钥已过期');
+        // 请求新权限
+        break;
+      default:
+        console.error('未知权限错误：', error);
+    }
+  };
+
+  return (
+    <RequestPermissionsButton
+      // ... 其他属性
+      onError={handlePermissionError}
+    />
+  );
+}
+```
+
+## 下一步
+
+<CardGroup cols={2}>
+
+<Card title="React Hooks" icon="react" href="/sdk/global-account/hooks">
+  探索所有可用的权限管理钩子。
+</Card>
+
+<Card title="示例" icon="code" href="/sdk/global-account/examples">
+  查看完整的权限实现示例。
+</Card>
+
+</CardGroup>

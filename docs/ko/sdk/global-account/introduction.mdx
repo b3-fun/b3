@@ -1,0 +1,130 @@
+---
+title: 글로벌 계정 소개
+description: B3 Global Accounts는 B3 생태계 전반에 걸쳐 원활한 인증 및 사용자 관리를 제공합니다
+lang: ko
+originalPath: sdk/global-account/introduction.mdx
+---
+## B3 글로벌 계정이란?
+
+B3 글로벌 계정은 사용자에게 B3 생태계 전체에서 단일 신원을 제공하는 통합 인증 시스템입니다. 사용자는 한 번 인증하고 모든 B3 애플리케이션, 게임 및 서비스에 원활하게 접근할 수 있습니다.
+
+## 주요 기능
+
+<CardGroup cols={2}>
+
+<Card title="소셜 로그인" icon="users">
+  Google, Discord 및 기타 소셜 인증 제공자 지원.
+</Card>
+
+<Card title="세션 관리" icon="key">
+  사용자 정의 가능한 권한을 가진 보안 세션 키 인증.
+</Card>
+
+<Card title="크로스 플랫폼" icon="mobile">
+  웹, 모바일 및 데스크탑 애플리케이션에서 작동.
+</Card>
+
+<Card title="개발자 친화적" icon="code">
+  간단한 React 컴포넌트 및 무헤드 TypeScript 서비스.
+</Card>
+
+</CardGroup>
+
+## 아키텍처
+
+글로벌 계정 시스템은 여러 주요 구성 요소로 구성됩니다:
+
+### 인증 흐름
+1. **소셜 로그인**: 사용자가 선호하는 소셜 제공자로 인증
+2. **계정 생성**: B3 글로벌 계정이 생성되거나 연결됨
+3. **세션 키**: 강화된 보안을 위한 선택적 세션 키
+4. **권한**: 다양한 작업에 대한 세분화된 권한
+
+### React 컴포넌트
+- `B3Provider`: 글로벌 계정을 위한 컨텍스트 제공자
+- `SignInWithB3`: 완전한 인증 흐름
+- `RequestPermissionsButton`: 권한 관리
+- `AccountAssets`: 사용자 자산 표시
+
+### 무헤드 서비스
+- 사용자 정의 구현을 위한 인증 서비스
+- 세션 관리 유틸리티
+- 권한 검증 도우미
+
+## 빠른 시작
+
+### 기본 인증
+
+```tsx
+import { B3Provider, SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
+
+function App() {
+  return (
+    <B3Provider environment="production">
+      <SignInWithB3
+        provider={{ strategy: "google" }}
+        partnerId="your-partner-id"
+        onLoginSuccess={(globalAccount) => {
+          console.log("User authenticated:", globalAccount);
+        }}
+      />
+    </B3Provider>
+  );
+}
+```
+
+### 인증 상태 확인
+
+```tsx
+import { useB3 } from "@b3dotfun/sdk/global-account/react";
+
+function UserProfile() {
+  const { account, isAuthenticated } = useB3();
+
+  return (
+    <div>
+      {isAuthenticated ? (
+        <p>Welcome, {account?.displayName}!</p>
+      ) : (
+        <p>Please sign in</p>
+      )}
+    </div>
+  );
+}
+```
+
+## 환경 구성
+
+환경 변수 설정:
+
+```bash
+# Production
+NEXT_PUBLIC_B3_API=https://api.b3.fun
+NEXT_PUBLIC_BSMNT_API=https://api.basement.fun
+
+# Development  
+NEXT_PUBLIC_B3_API=https://dev-api.b3.fun
+NEXT_PUBLIC_BSMNT_API=https://dev-api.basement.fun
+```
+
+## 다음 단계
+
+<CardGroup cols={2}>
+
+<Card title="인증 가이드" icon="shield" href="/sdk/global-account/authentication">
+  다양한 인증 전략 및 구현에 대해 알아보기.
+</Card>
+
+<Card title="권한 시스템" icon="lock" href="/sdk/global-account/permissions">
+  세션 키와 권한 관리 이해하기.
+</Card>
+
+<Card title="React Hooks" icon="react" href="/sdk/global-account/hooks">
+  글로벌 계정 통합을 위한 사용 가능한 훅 탐색하기.
+</Card>
+
+<Card title="예제" icon="code" href="/sdk/global-account/examples">
+  완전한 예제 및 통합 패턴 보기.
+</Card>
+
+</CardGroup>

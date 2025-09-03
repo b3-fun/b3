@@ -1,0 +1,238 @@
+---
+title: Construct Guide
+description: 이 가이드는 웹 API를 사용하여 Construct 게임을 Basement.fun 플랫폼과 통합하는 방법을 안내합니다.
+lang: ko
+originalPath: basement/construct-guide.mdx
+---
+## 이벤트
+
+Construct는 개발자가 최소한의 코드 또는 코드 없이 게임을 만들 수 있게 해주는 훌륭한 GUI를 제공합니다. 다음 문서에서는 Construct의 이벤트 시트를 사용하여 게임을 Basement.fun에 연결하는 방법을 검토합니다.
+
+### 핵심 구성 요소
+
+Construct 게임이 Basement.fun 플랫폼과 상호 작용할 수 있도록 프로젝트에 몇 가지 객체를 추가해야 합니다.
+
+<Note>
+프로젝트에 객체를 추가하려면 **레이아웃 보기**로 이동하여 레이아웃에서 마우스 오른쪽 버튼을 클릭하고 **새 객체 삽입**을 선택한 다음 프로젝트에 삽입하려는 객체를 선택합니다. 객체를 추가한 후 이벤트 시트에서 사용할 수 있습니다.
+</Note>
+
+<CardGroup cols={1}>
+  <Card title="브라우저 객체" icon="globe">
+    브라우저 객체를 사용하면 콘솔에 기록할 수 있습니다. 필수는 아니지만 데이터를 확인하고 코드를 디버깅할 때 유용합니다.
+  </Card>
+  
+  <Card title="AJAX 객체" icon="arrow-right-left">
+    AJAX 객체를 사용하면 게임이 B3 API와 상호 작용할 수 있습니다.
+    
+    - **POST 요청**은 각 헤더 매개변수에 대해 별도의 작업을 생성하고 모든 본문 매개변수에 대해 하나의 URL로 게시 작업을 요구합니다
+    - **GET 요청**은 요청을 API로 보낼 단일 URL로 필요한 모든 매개변수와 값을 결합해야 합니다
+    - **API 응답**은 `AJAX.LastData`를 사용하여 참조할 수 있습니다
+  </Card>
+  
+  <Card title="JSON 객체" icon="braces">
+    JSON 객체를 사용하면 게임이 JSON 응답을 처리할 수 있습니다. 응답 데이터를 사용하려면 JSON 문자열을 구문 분석해야 합니다.
+  </Card>
+</CardGroup>
+
+## 샘플 이벤트
+
+이 샘플 이벤트는 BSMNT API 사양에 자세히 설명된 POST Set Scores 요청을 다룰 것입니다.
+
+### 샘플 요청
+
+<Steps>
+<Step title="함수 생성">
+  이벤트 시트의 아무 곳이나 마우스 오른쪽 버튼으로 클릭하여 함수를 생성하고 **SetScore**라고 이름을 지정합니다.
+</Step>
+
+<Step title="서비스 메서드 헤더 설정">
+  작업 추가를 클릭하고 **AJAX**를 선택한 다음 **요청 헤더 설정**을 선택합니다.
+  - **헤더 필드**: `X-Service-Method`
+  - **값 필드**: `setUserScore`
+</Step>
+
+<Step title="인증 헤더 설정">
+  다른 AJAX 작업을 추가하고 다시 **요청 헤더 설정**을 선택합니다.
+  - **헤더 필드**: `Authorization`
+  - **값 필드**: `Bearer <game secret>`
+  
+  <Warning>
+  `<game secret>`을 실제 게임 비밀 토큰으로 교체하십시오.
+  </Warning>
+</Step>
+
+<Step title="POST 요청 구성">
+  이번에는 **URL로 게시**를 선택하는 AJAX 작업을 추가합니다. 다음을 입력합니다:
+  - **태그**: `setUserScore`
+  - **URL**: `https://api.basement.fun/launcher`
+  - **데이터**: `{"launcherJwt": "string", "nonce": "string", "score": 0}`
+  - **방법**: `POST`
+  
+  <Tip>
+  이것은 샘플 요청입니다 - 게임의 이벤트에 의해 설정된 변수로 값을 교체하십시오.
+  </Tip>
+</Step>
+</Steps>
+
+### 샘플 응답
+
+샘플 응답은 다음과 같이 보일 것입니다:
+
+```json API Response
+{
+    "success": true | false,
+    "error"?: "error string",
+    "newScore"?: {
+        "_id": "unique id",
+        "nonce": "nonce",
+        "updatedAt": 23151264, // unix timestamp
+        "score": 100.235,
+        "gameId": "game uuid",
+        "normalizedAddress": "user lowercase address"
+    }
+}
+```
+
+## 데이터 검색
+
+Construct에서 응답에서 nonce를 검색하여 나중에 점수를 검색하는 데 사용합시다.
+
+<Steps>
+<Step title="전역 변수 생성">
+  이벤트 시트의 아무 곳이나 마우스 오른쪽 버튼으로 클릭하고 **Nonce**라는 이름의 전역 변수를 추가합니다.
+</Step>
+
+<Step title="트리거 이벤트 추가">
+  게임에서 트리거되는 이벤트를 추가합니다.
+  
+  **예시**: 사용자의 점수를 캡처하기 위해 다른 자전거와 충돌할 때 자전거에 **다른 객체와 충돌 시** 조건을 추가하고 객체를 자전거로 설정합니다.
+</Step>
+
+<Step title="SetScore 함수 호출">
+  작업을 추가하고 **함수**를 선택한 다음 **SetScore**를 선택합니다.
+</Step>
+
+<Step title="JSON 응답 구문 분석">
+  **JSON** 작업을 추가하고 **구문 분석**을 선택한 다음 JSON 문자열 필드에 `AJAX.LastData`를 입력합니다.
+  
+  <Note>
+  이것은 우리의 SetScore 요청에서 응답을 가져옵니다.
+  </Note>
+</Step>
+
+<Step title="Nonce 값 추출">
+  **시스템** 작업을 추가하고 **값 설정**을 선택한 다음 **Nonce** 변수를 선택하고 `JSON.Get("newScore.nonce")`를 입력합니다.
+  
+  <Check>
+  이제 Nonce 변수가 API 응답으로 반환된 nonce로 설정되었습니다!
+  </Check>
+</Step>
+</Steps>
+
+## 통합 완료
+
+동일한 단계를 따라 모든 API 엔드포인트에 대한 이벤트를 생성할 수 있으며 모든 매개변수와 응답을 검토함으로써 이를 수행할 수 있습니다.
+
+### 사용 가능한 API 엔드포인트
+
+<AccordionGroup>
+<Accordion title="사용자 점수 설정">
+  리더보드를 위해 사용자의 점수를 업데이트하거나 설정합니다.
+  
+  **엔드포인트**: `POST /launcher`  
+  **헤더**: `X-Service-Method: setUserScore`
+  
+  ```json
+  {
+    "launcherJwt": "string",
+    "nonce": "string", 
+    "score": 0
+  }
+  ```
+</Accordion>
+
+<Accordion title="사용자 점수 가져오기">
+  사용자의 현재 점수를 검색합니다.
+  
+  **엔드포인트**: `GET /launcher`  
+  **헤더**: `X-Service-Method: getUserScore`
+</Accordion>
+
+<Accordion title="규칙 엔진 트리거">
+  게임 이벤트를 기반으로 온체인 작업을 트리거합니다.
+  
+  **엔드포인트**: `POST /launcher`  
+  **헤더**: `X-Service-Method: triggerRulesEngine`
+  
+  ```json
+  {
+    "launcherJwt": "string",
+    "trigger": "string",
+    "nonce": "string"
+  }
+  ```
+</Accordion>
+</AccordionGroup>
+
+## 모범 사례
+
+<CardGroup cols={2}>
+  <Card title="오류 처리" icon="circle-info">
+    API 응답에서 `success` 필드를 항상 확인하고 오류를 우아하게 처리하십시오.
+  </Card>
+  
+  <Card title="변수 관리" icon="cube">
+    JWT 토큰과 사용자 점수와 같은 중요한 데이터를 저장하기 위해 Construct의 전역 변수를 사용하십시오.
+  </Card>
+  
+  <Card title="디버그 콘솔" icon="bug">
+    개발 중에 중요한 정보를 콘솔에 기록하기 위해 브라우저 객체를 사용하십시오.
+  </Card>
+  
+  <Card title="API 요청 한도" icon="clock">
+    API 요청 한도를 염두에 두고 빠른 연속으로 너무 많은 요청을 하지 마십시오.
+  </Card>
+</CardGroup>
+
+## 다음 단계
+
+<CardGroup cols={2}>
+  <Card title="BSMNT API 문서" icon="book" href="https://docs.basement.fun/api">
+    모든 사용 가능한 엔드포인트에 대한 완전한 API 참조
+  </Card>
+  
+  <Card title="게임 런처 가이드" icon="rocket" href="/basement/game-launcher">
+    BSMNT 게임 런처와 통합하는 방법을 배우십시오
+  </Card>
+  
+  <Card title="Construct 문서" icon="book" href="https://construct.net/make-games/manuals">
+    공식 Construct 3 문서 및 튜토리얼
+  </Card>
+  
+  <Card title="예제 프로젝트" icon="folder" href="https://github.com/b3-fun">
+    BSMNT 통합을 사용하는 샘플 프로젝트
+  </Card>
+</CardGroup>
+
+## 문제 해결
+
+<AccordionGroup>
+<Accordion title="AJAX 요청이 작동하지 않음">
+  - 프로젝트에 AJAX 객체를 추가했는지 확인하십시오
+  - 모든 필수 헤더가 올바르게 설정되었는지 확인하십시오
+  - 게임 비밀이 유효한지 확인하십시오
+  - API 엔드포인트 URL이 올바른지 확인하십시오
+</Accordion>
+
+<Accordion title="JSON 구문 분석 오류">
+  - 프로젝트에 JSON 객체가 추가되었는지 확인하십시오
+  - `AJAX.LastData`에 유효한 JSON이 포함되어 있는지 확인하십시오
+  - 디버깅을 위해 원시 응답을 기록하려면 브라우저 객체를 사용하십시오
+</Accordion>
+
+<Accordion title="인증 문제">
+  - 런처 JWT 토큰이 유효한지 확인하십시오
+  - 인증 헤더가 올바르게 형식화되었는지 확인하십시오
+  - 게임 비밀이 만료되지 않았는지 확인하십시오
+</Accordion>
+</AccordionGroup>

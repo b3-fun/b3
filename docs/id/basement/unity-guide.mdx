@@ -1,0 +1,160 @@
+---
+title: B3 Unity SDK
+description: >-
+  Integrasikan game Unity Anda ke dalam basement dengan B3 Unity SDK, yang
+  memungkinkan Anda untuk dengan mudah mengakses semua fungsi launcher dari
+  dalam Unity sebagai fungsi-fungsi sederhana
+lang: id
+originalPath: basement/unity-guide.mdx
+---
+## Fitur
+
+B3 Unity SDK menyediakan kemampuan integrasi yang komprehensif untuk pengembang Unity:
+
+<CardGroup cols={1}>
+  <Card title="Manajemen Sesi" icon="user-check">
+    SDK secara otomatis dan tanpa hambatan menangani otentikasi pengguna.
+  </Card>
+  
+  <Card title="API sebagai Fungsi" icon="code">
+    Gunakan semua API launcher dengan mudah dengan dukungan untuk panggilan berbasis callback DAN berbasis async/await.
+  </Card>
+  
+  <Card title="Webhooks untuk WebGL" icon="webhook">
+    Menangani webhooks klien launcher, dan mengurai serta menyebarkannya ke Kode C# Anda sendiri.
+  </Card>
+</CardGroup>
+
+## Instalasi dan Penggunaan
+
+<Steps>
+<Step title="Unduh SDK">
+  Kunjungi repositori GitHub dan unduh rilis terbaru.
+  
+  <Card title="Dapatkan Unity SDK" icon="download" href="https://github.com/b3-fun/b3-unity-sdk" cta="Unduh dari GitHub" horizontal>
+    Akses repositori resmi B3 Unity SDK dengan instruksi instalasi
+  </Card>
+</Step>
+
+<Step title="Instal ke Proyek Unity">
+  Ikuti petunjuk panduan pengaturan di GitHub untuk menginstal SDK ke Proyek Unity Anda.
+  
+  <Note>
+  Repositori GitHub berisi instruksi instalasi terperinci dan persyaratan pengaturan.
+  </Note>
+</Step>
+
+<Step title="Inisialisasi SDK">
+  Setelah menginstal SDK dan mengikuti panduan pengaturan, Anda akan dapat dengan mudah memanggil semua API sebagai fungsi.
+  
+  <Check>
+  Proyek Unity Anda sekarang siap untuk terintegrasi dengan launcher B3!
+  </Check>
+</Step>
+</Steps>
+
+## Contoh Kode
+
+### Memicu Mesin Aturan
+
+Berikut adalah contoh cara memicu mesin aturan dari dalam game Unity Anda:
+
+```csharp Unity C# Example
+B3LauncherClient.TriggerRulesEngine(new B3LauncherClient.TriggerRulesEngineBody
+{
+    launcherJwt = B3Instance.Instance.SessionJWT ?? jwtInput.text,
+    trigger = "open-tip-modal",
+    otherWallet = otherWalletInput.text,
+}, null);
+```
+
+### Manajemen Sesi
+
+SDK secara otomatis menangani sesi pengguna:
+
+```csharp Session Example
+// Akses JWT sesi saat ini
+string sessionToken = B3Instance.Instance.SessionJWT;
+
+// Periksa jika pengguna terotentikasi
+if (B3Instance.Instance.IsAuthenticated)
+{
+    // Pengguna telah masuk dan siap berinteraksi dengan layanan B3
+    Debug.Log("Pengguna terotentikasi dengan sukses");
+}
+```
+
+## Integrasi API
+
+Unity SDK menyediakan akses mulus ke semua API launcher B3:
+
+<AccordionGroup>
+<Accordion title="Panggilan Berbasis Callback">
+  Pola callback tradisional untuk menangani respons API:
+  
+  ```csharp
+  B3LauncherClient.SomeAPICall(requestData, (response) => {
+      // Tangani respons
+      Debug.Log("Panggilan API selesai");
+  });
+  ```
+</Accordion>
+
+<Accordion title="Panggilan Async/Await">
+  Pola modern async/await untuk kode yang lebih bersih:
+  
+  ```csharp
+  public async void CallAPI()
+  {
+      var response = await B3LauncherClient.SomeAPICallAsync(requestData);
+      // Tangani respons
+      Debug.Log("Panggilan API selesai");
+  }
+  ```
+</Accordion>
+
+<Accordion title="WebGL Webhooks">
+  Menangani event launcher di build WebGL:
+  
+  ```csharp
+  // Daftarkan penangan webhook
+  B3Instance.Instance.OnWebhookReceived += HandleWebhook;
+  
+  private void HandleWebhook(WebhookData data)
+  {
+      // Proses data webhook masuk
+      Debug.Log($"Webhook diterima: {data.type}");
+  }
+  ```
+</Accordion>
+</AccordionGroup>
+
+## Langkah Selanjutnya
+
+<CardGroup cols={2}>
+  <Card title="Panduan Peluncur Game" icon="rocket" href="/basement/game-launcher">
+    Pelajari cara terintegrasi dengan peluncur game BSMNT
+  </Card>
+  
+  <Card title="Dokumentasi API BSMNT" icon="book" href="https://docs.basement.fun/api">
+    Dokumentasi API lengkap untuk semua endpoint yang tersedia
+  </Card>
+  
+  <Card title="Dokumentasi Unity" icon="external-link" href="https://docs.unity3d.com/">
+    Dokumentasi dan sumber daya Unity resmi
+  </Card>
+  
+  <Card title="Proyek Contoh" icon="folder" href="https://github.com/b3-fun/unity-examples">
+    Sampel proyek Unity menggunakan SDK B3
+  </Card>
+</CardGroup>
+
+## Dukungan
+
+<Info>
+Untuk dukungan teknis, laporan bug, atau permintaan fitur, silakan kunjungi repositori GitHub atau hubungi komunitas pengembang kami.
+</Info>
+
+<Card title="Dapatkan Dukungan SDK Unity" icon="help-circle" href="https://github.com/b3-fun/b3-unity-sdk/issues" cta="GitHub Issues" horizontal>
+  Laporkan masalah atau dapatkan bantuan dari komunitas pengembang
+</Card>

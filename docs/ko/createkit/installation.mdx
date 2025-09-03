@@ -1,0 +1,257 @@
+---
+title: 설치
+description: 프로젝트에 CreateKit (BaseMint SDK) 설치 및 설정하기
+lang: ko
+originalPath: createkit/installation.mdx
+---
+## 패키지 설치
+
+선호하는 패키지 관리자를 사용하여 CreateKit를 설치하세요:
+
+<CodeGroup>
+```bash npm
+npm install @b3dotfun/basemint
+```
+
+```bash yarn
+yarn add @b3dotfun/basemint
+```
+
+```bash pnpm
+pnpm add @b3dotfun/basemint
+```
+</CodeGroup>
+
+<Note>
+CreateKit는 TypeScript로 구축되었으며 박스 안에 전체 타입 정의를 제공합니다.
+</Note>
+
+## 의존성
+
+CreateKit는 현대의 web3 기술 위에 구축되었으며 다음과 같은 피어 의존성이 필요합니다:
+
+<CodeGroup>
+```bash npm
+npm install viem @wagmi/core
+```
+
+```bash yarn
+yarn add viem @wagmi/core
+```
+
+```bash pnpm
+pnpm add viem @wagmi/core
+```
+</CodeGroup>
+
+## 환경 설정
+
+### 1. 체인 네트워크 구성
+
+CreateKit는 B3 네트워크에 대한 사전 구성된 체인 정의를 제공합니다:
+
+```typescript title="chains.ts"
+import { b3Mainnet, b3Testnet } from '@b3dotfun/basemint'
+
+// B3 메인넷 (운영)
+console.log('체인 ID:', b3Mainnet.id) // 8333
+console.log('이름:', b3Mainnet.name)
+console.log('RPC URL:', b3Mainnet.rpcUrls.default.http[0])
+
+// B3 테스트넷 (개발)
+console.log('체인 ID:', b3Testnet.id) // 1993
+console.log('이름:', b3Testnet.name)
+console.log('RPC URL:', b3Testnet.rpcUrls.default.http[0])
+```
+
+### 2. Viem 클라이언트 초기화
+
+블록체인과 상호 작용하기 위해 viem 클라이언트를 설정하세요:
+
+```typescript title="client.ts"
+import { createPublicClient, createWalletClient, http } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+import { b3Testnet } from '@b3dotfun/basemint'
+
+// 데이터 읽기용 공개 클라이언트
+export const publicClient = createPublicClient({
+  chain: b3Testnet,
+  transport: http()
+})
+
+// 거래용 지갑 클라이언트 (서버 측 사용)
+export const walletClient = createWalletClient({
+  chain: b3Testnet,
+  transport: http(),
+  account: privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`)
+})
+```
+
+### 3. 환경 변수
+
+프로젝트 루트에 `.env` 파일을 생성하세요:
+
+```bash title=".env"
+# 거래 서명에 필요
+PRIVATE_KEY=0x...
+
+# 선택사항: 사용자 정의 RPC 엔드포인트
+B3_MAINNET_RPC=https://your-custom-rpc.com
+B3_TESTNET_RPC=https://your-custom-testnet-rpc.com
+```
+
+<Warning>
+버전 관리에 개인 키를 커밋하지 마세요. 환경 변수나 안전한 키 관리 솔루션을 사용하세요.
+</Warning>
+
+## 프레임워크 통합
+
+### Next.js 설정
+
+Next.js 애플리케이션의 경우, 설정 파일을 생성하세요:
+
+```typescript title="lib/createkit.ts"
+import { createPublicClient, http } from 'viem'
+import { b3Testnet } from '@b3dotfun/basemint'
+import { 
+  CollectionManager, 
+  RewardTracker, 
+  BaseMintStorage 
+} from '@b3dotfun/basemint'
+
+// 클라이언트 초기화
+export const publicClient = createPublicClient({
+  chain: b3Testnet,
+  transport: http()
+})
+
+// CreateKit 관리자 초기화
+export const collectionManager = new CollectionManager(publicClient)
+export const rewardTracker = new RewardTracker(publicClient)
+export const storage = new BaseMintStorage({
+  baseUrl: 'https://api.basemint.fun'
+})
+```
+
+### React/Vite 설정
+
+```typescript title="src/lib/createkit.ts"
+import { createPublicClient, http } from 'viem'
+import { b3Testnet } from '@b3dotfun/basemint'
+import { CollectionManager } from '@b3dotfun/basemint'
+
+export const publicClient = createPublicClient({
+  chain: b3Testnet,
+  transport: http(import.meta.env.VITE_RPC_URL)
+})
+
+export const collectionManager = new CollectionManager(publicClient)
+```
+
+## 설치 확인
+
+간단한 스크립트로 설치를 테스트하세요:
+
+```typescript title="test-installation.ts"
+import { b3Testnet, CollectionManager } from '@b3dotfun/basemint'
+import { createPublicClient, http } from 'viem'
+
+async function testInstallation() {
+  try {
+    // 클라이언트 생성
+    const client = createPublicClient({
+      chain: b3Testnet,
+      transport: http()
+    })
+
+    // 관리자 초기화
+    const manager = new CollectionManager(client)
+    
+    // 연결 테스트
+    const blockNumber = await client.getBlockNumber()
+    console.log('✅ B3 테스트넷에 성공적으로 연결됨')
+    console.log(`📊 현재 블록 번호: ${blockNumber}`)
+    
+    // 계약 상호 작용 테스트
+    const factoryAddress = manager.getFactoryAddress()
+    console.log(`🏭 팩토리 주소: ${factoryAddress}`)
+    
+    console.log('🎉 CreateKit 설치 성공!')
+  } catch (error) {
+    console.error('❌ 설치 테스트 실패:', error)
+  }
+}
+
+testInstallation()
+```
+
+테스트 스크립트를 실행하세요:
+
+<CodeGroup>
+```bash npm
+npx tsx test-installation.ts
+```
+
+```bash yarn
+yarn tsx test-installation.ts
+```
+
+```bash pnpm
+pnpm tsx test-installation.ts
+```
+</CodeGroup>
+
+## TypeScript 설정
+
+`tsconfig.json`이 필요한 설정을 포함하고 있는지 확인하세요:
+
+```json title="tsconfig.json"
+{
+  "compilerOptions": {
+    "strict": true,
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "target": "ES2020",
+    "module": "ESNext",
+    "lib": ["ES2020", "DOM"]
+  }
+}
+```
+
+## 다음 단계
+
+CreateKit를 설치하고 구성했으니, 이제 빌드를 시작할 준비가 되었습니다:
+
+<CardGroup cols={2}>
+  <Card title="빠른 시작 가이드" icon="rocket" href="/createkit/quickstart">
+    몇 분 안에 첫 NFT 컬렉션을 만드세요
+  </Card>
+  <Card title="컬렉션 관리" icon="folder" href="/createkit/collections">
+    컬렉션 생성 및 관리에 대해 알아보세요
+  </Card>
+</CardGroup>
+
+## 문제 해결
+
+<AccordionGroup>
+  <Accordion title="모듈을 찾을 수 없는 오류">
+    모든 피어 의존성이 설치되어 있는지 확인하세요:
+    ```bash
+    npm install viem @wagmi/core
+    ```
+  </Accordion>
+
+  <Accordion title="TypeScript 오류">
+    TypeScript 설정에 필요한 lib 항목이 포함되어 있고 `skipLibCheck`이 활성화되어 있는지 확인하세요.
+  </Accordion>
+
+  <Accordion title="네트워크 연결 문제">
+    RPC 엔드포인트가 올바르고 접근 가능한지 확인하세요. 사용자 정의 엔드포인트가 실패하면 기본 B3 RPC 엔드포인트를 사용하세요.
+  </Accordion>
+
+  <Accordion title="개인 키 형식 오류">
+    개인 키가 올바른 형식(0x 접두사)으로 되어 있고 가스 비용에 충분한 자금이 있는지 확인하세요.
+  </Accordion>
+</AccordionGroup>

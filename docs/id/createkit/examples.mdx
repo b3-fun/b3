@@ -1,0 +1,657 @@
+---
+title: Contoh-contoh
+description: Contoh implementasi lengkap untuk kasus penggunaan CreateKit yang umum
+lang: id
+originalPath: createkit/examples.mdx
+---
+## Ikhtisar
+
+Halaman ini menyediakan contoh nyata yang komprehensif tentang implementasi CreateKit dalam berbagai skenario. Setiap contoh mencakup kode lengkap, penanganan kesalahan, dan praktik terbaik.
+
+## Koleksi NFT Dasar
+
+Koleksi seni sederhana dengan penambangan gratis:
+
+```typescript title="Koleksi Seni Dasar"
+import { 
+  CollectionManager, 
+  BaseMintStorage, 
+  b3Testnet 
+} from '@b3dotfun/basemint'
+import { createPublicClient, createWalletClient, http } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+
+async function createBasicArtCollection() {
+  // Setup clients
+  const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`)
+  const publicClient = createPublicClient({
+    chain: b3Testnet,
+    transport: http()
+  })
+  const walletClient = createWalletClient({
+    chain: b3Testnet,
+    transport: http(),
+    account
+  })
+
+  // Initialize services
+  const collectionManager = new CollectionManager(publicClient)
+  const storage = new BaseMintStorage({ baseUrl: 'https://api.basemint.fun' })
+
+  // Define collection
+  const artCollection = {
+    name: "Digital Art Gallery",
+    symbol: "DAG", 
+    creator: account.address,
+    gameOwner: account.address,
+    description: "A curated collection of digital artworks",
+    image: "https://example.com/art-collection.png",
+    maxSupply: 1000n,
+    mintPrice: 0n, // Free minting
+    maxPerWallet: 5n,
+    tokenStandard: "ERC721" as const,
+    chainId: 1993
+  }
+
+  try {
+    console.log("🎨 Creating art collection...")
+
+    // Generate creator signature
+    const creatorSignature = await collectionManager.generateCreatorSignature(
+      walletClient,
+      artCollection
+    )
+
+    // Predict address
+    const predictedAddress = collectionManager.predictCollectionAddress(
+      artCollection,
+      creatorSignature
+    )
+    console.log(`📍 Collection address: ${predictedAddress}`)
+
+    // Submit to storage
+    await storage.submitCollection(artCollection, creatorSignature)
+    console.log("✅ Collection metadata stored")
+
+    // Deploy and mint first NFT
+    const deployerSignature = await collectionManager.generateDeployerSignature(
+      walletClient,
+      predictedAddress
+    )
+
+    const collection = collectionManager.createCollection(predictedAddress, "ERC721")
+    const mintTx = await collection.mint(
+      walletClient,
+      1n,
+      undefined,
+      0n,
+      [],
+      creatorSignature,
+      deployerSignature
+    )
+
+    console.log(`🎉 Collection deployed and first NFT minted: ${mintTx}`)
+    return { collection, predictedAddress, mintTx }
+
+  } catch (error) {
+    console.error("❌ Failed to create art collection:", error)
+    throw error
+  }
+}
+
+// Usage
+createBasicArtCollection()
+  .then(result => console.log("Collection created successfully:", result))
+  .catch(error => console.error("Creation failed:", error))
+```
+
+## Koleksi Gaming dengan Whitelist
+
+Koleksi gaming dengan akses whitelist bertingkat:
+
+<Accordion title="Contoh Koleksi Gaming Lengkap">
+```typescript
+import { 
+  CollectionManager, 
+  WhitelistManager,
+  BaseMintStorage,
+  RewardTracker,
+  b3Testnet 
+} from '@b3dotfun/basemint'
+import { createPublicClient, createWalletClient, http, parseEther } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+
+class GamingCollectionManager {
+  private publicClient: any
+  private walletClient: any
+  private collectionManager: CollectionManager
+  private storage: BaseMintStorage
+  private rewardTracker: RewardTracker
+
+  constructor(privateKey: string) {
+    const account = privateKeyToAccount(privateKey as `0x${string}`)
+    
+    this.publicClient = createPublicClient({
+      chain: b3Testnet,
+      transport: http()
+    })
+    
+    this.walletClient = createWalletClient({
+      chain: b3Testnet,
+      transport: http(),
+      account
+    })
+
+    this.collectionManager = new CollectionManager(this.publicClient)
+    this.storage = new BaseMintStorage({ baseUrl: 'https://api.basemint.fun' })
+    this.rewardTracker = new RewardTracker(this.publicClient)
+  }
+
+  async createGamingCollection() {
+    // Define player tiers
+    const playerTiers = {
+      legendary: [
+        "0x1111111111111111111111111111111111111111",
+        "0x2222222222222222222222222222222222222222"
+      ],
+      epic: [
+        "0x3333333333333333333333333333333333333333",
+        "0x4444444444444444444444444444444444444444",
+        "0x5555555555555555555555555555555555555555"
+      ],
+      rare: [
+        "0x6666666666666666666666666666666666666666",
+        "0x7777777777777777777777777777777777777777",
+        "0x8888888888888888888888888888888888888888"
+      ]
+    }
+
+    // Create combined whitelist
+    const allPlayers = [
+      ...playerTiers.legendary.map(address => ({ address })),
+      ...playerTiers.epic.map(address => ({ address })),
+      ...playerTiers.rare.map(address => ({ address }))
+    ]
+
+    const whitelist = new WhitelistManager(allPlayers)
+    const merkleRoot = whitelist.getRoot()
+
+    // Define collection
+    const gamingCollection = {
+      name: "Legendary Gaming Items",
+      symbol: "LGI",
+      creator: this.walletClient.account.address,
+      gameOwner: "0x9999999999999999999999999999999999999999", // Game platform
+      description: "Exclusive gaming items for top players",
+      image: "https://example.com/gaming-collection.png",
+      
+      // Whitelist configuration
+      isWhitelistEnabled: true,
+      whitelistMerkleRoot: merkleRoot,
+      
+      // Pricing and limits
+      maxSupply: 500n,
+      mintPrice: parseEther("0.01"),
+      maxPerWallet: 3n,
+      
+      // Timing - whitelist phase for 24 hours
+      startTime: BigInt(Math.floor(Date.now() / 1000)),
+      endTime: BigInt(Math.floor(Date.now() / 1000) + 86400 * 7),
+      
+      tokenStandard: "ERC1155" as const,
+      chainId: 1993,
+      
+      // Game-specific metadata
+      attributes: [
+        { trait_type: "Category", value: "Gaming" },
+        { trait_type: "Rarity", value: "Legendary" },
+        { trait_type: "Game", value: "Fantasy RPG" }
+      ]
+    }
+
+    try {
+      console.log("🎮 Creating gaming collection...")
+
+      // Generate signatures
+      const creatorSignature = await this.collectionManager.generateCreatorSignature(
+        this.walletClient,
+        gamingCollection
+      )
+
+      const predictedAddress = this.collectionManager.predictCollectionAddress(
+        gamingCollection,
+        creatorSignature
+      )
+
+      // Submit to storage with game referrer
+      await this.storage.submitCollection(
+        gamingCollection,
+        creatorSignature,
+        "fantasy-rpg-game" // Referrer ID
+      )
+
+      console.log(`✅ Gaming collection stored at: ${predictedAddress}`)
+
+      return {
+        collection: gamingCollection,
+        predictedAddress,
+        whitelist,
+        playerTiers
+      }
+
+    } catch (error) {
+      console.error("❌ Gaming collection creation failed:", error)
+      throw error
+    }
+  }
+
+  async mintForPlayer(
+    collectionAddress: string,
+    whitelist: WhitelistManager,
+    playerAddress: string,
+    quantity: bigint = 1n
+  ) {
+    try {
+      // Check if collection is deployed
+      const collection = this.collectionManager.createCollection(collectionAddress, "ERC1155")
+      const isDeployed = await collection.isDeployed()
+
+      if (!isDeployed) {
+        // First mint - deploy collection
+        const deployerSignature = await this.collectionManager.generateDeployerSignature(
+          this.walletClient,
+          collectionAddress
+        )
+
+        // Get whitelist proof
+        const proof = whitelist.getProof(playerAddress)
+        const mintPrice = parseEther("0.01") * quantity
+
+        const tx = await collection.mint(
+          this.walletClient,
+          quantity,
+          "https://example.com/legendary-sword.json", // Specific item metadata
+          mintPrice,
+          proof,
+          undefined, // creatorSignature needed for deployment
+          deployerSignature
+        )
+
+        console.log(`🚀 Collection deployed and item minted: ${tx}`)
+        return tx
+
+      } else {
+        // Regular mint
+        const proof = whitelist.getProof(playerAddress)
+        const mintPrice = parseEther("0.01") * quantity
+
+        const tx = await collection.mint(
+          this.walletClient,
+          quantity,
+          "https://example.com/legendary-sword.json",
+          mintPrice,
+          proof
+        )
+
+        console.log(`⚔️ Gaming item minted: ${tx}`)
+        return tx
+      }
+
+    } catch (error: any) {
+      if (error.message.includes('Invalid merkle proof')) {
+        console.error(`❌ Player ${playerAddress} not in whitelist`)
+      } else {
+        console.error("❌ Minting failed:", error)
+      }
+      throw error
+    }
+  }
+
+  async getPlayerRewards(collectionAddress: string, playerAddress: string) {
+    const escrowAddress = this.collectionManager.getEscrowAddress()
+    
+    // Check if player was first minter
+    const firstMinterRewards = await this.rewardTracker.getRecipientRewards(
+      escrowAddress,
+      collectionAddress,
+      "FIRST_MINTER",
+      playerAddress
+    )
+
+    // Get collection stats
+    const collectionRewards = await this.rewardTracker.getCollectionRewards(
+      escrowAddress,
+      collectionAddress
+    )
+
+    return {
+      firstMinterRewards: firstMinterRewards.toString(),
+      collectionTotalRewards: collectionRewards.totalRewards.toString(),
+      collectionMints: collectionRewards.totalMints.toString()
+    }
+  }
+}
+
+// Usage example
+async function main() {
+  const gameManager = new GamingCollectionManager(process.env.PRIVATE_KEY!)
+  
+  // Create collection
+  const { predictedAddress, whitelist, playerTiers } = await gameManager.createGamingCollection()
+  
+  // Simulate legendary player minting
+  const legendaryPlayer = playerTiers.legendary[0]
+  await gameManager.mintForPlayer(predictedAddress, whitelist, legendaryPlayer, 2n)
+  
+  // Check rewards
+  const rewards = await gameManager.getPlayerRewards(predictedAddress, legendaryPlayer)
+  console.log("Player rewards:", rewards)
+}
+
+main().catch(console.error)
+```
+</Accordion>
+
+## Platform Multi-Koleksi
+
+Platform yang mengelola beberapa koleksi:
+
+<Accordion title="Contoh Platform Multi-Koleksi">
+```typescript
+import { 
+  CollectionManager, 
+  BaseMintStorage,
+  RewardTracker,
+  b3Testnet 
+} from '@b3dotfun/basemint'
+
+class NFTPlatform {
+  private collectionManager: CollectionManager
+  private storage: BaseMintStorage
+  private rewardTracker: RewardTracker
+  private platformId: string
+
+  constructor(
+    publicClient: any,
+    platformId: string
+  ) {
+    this.collectionManager = new CollectionManager(publicClient)
+    this.storage = new BaseMintStorage({ baseUrl: 'https://api.basemint.fun' })
+    this.rewardTracker = new RewardTracker(publicClient)
+    this.platformId = platformId
+  }
+
+  async registerPlatform() {
+    try {
+      await this.storage.registerReferrer(this.platformId, {
+        name: "My NFT Platform",
+        website: "https://mynftplatform.com",
+        description: "A platform for creating and managing NFT collections"
+      })
+      console.log(`✅ Platform registered: ${this.platformId}`)
+    } catch (error: any) {
+      if (error.message.includes('already exists')) {
+        console.log(`ℹ️ Platform ${this.platformId} already registered`)
+      } else {
+        throw error
+      }
+    }
+  }
+
+  async createCollection(
+    creatorWalletClient: any,
+    collectionData: {
+      name: string
+      symbol: string
+      description: string
+      image: string
+      maxSupply: bigint
+      mintPrice: bigint
+      category: string
+    }
+  ) {
+    const collection = {
+      ...collectionData,
+      creator: creatorWalletClient.account.address,
+      gameOwner: creatorWalletClient.account.address, // Platform could be gameOwner
+      tokenStandard: "ERC721" as const,
+      chainId: 1993,
+      attributes: [
+        { trait_type: "Platform", value: "My NFT Platform" },
+        { trait_type: "Category", value: collectionData.category }
+      ]
+    }
+
+    // Generate signature and store
+    const creatorSignature = await this.collectionManager.generateCreatorSignature(
+      creatorWalletClient,
+      collection
+    )
+
+    const predictedAddress = this.collectionManager.predictCollectionAddress(
+      collection,
+      creatorSignature
+    )
+
+    await this.storage.submitCollection(
+      collection,
+      creatorSignature,
+      this.platformId
+    )
+
+    return {
+      collection,
+      predictedAddress,
+      creatorSignature
+    }
+  }
+
+  async deployCollection(
+    deployerWalletClient: any,
+    collectionAddress: string,
+    creatorSignature: string
+  ) {
+    const deployerSignature = await this.collectionManager.generateDeployerSignature(
+      deployerWalletClient,
+      collectionAddress
+    )
+
+    const collection = this.collectionManager.createCollection(collectionAddress, "ERC721")
+    
+    const tx = await collection.mint(
+      deployerWalletClient,
+      1n,
+      undefined,
+      0n, // Deployer gets first mint free
+      [],
+      creatorSignature,
+      deployerSignature
+    )
+
+    return tx
+  }
+
+  async getPlatformStats() {
+    const collections = await this.storage.queryCollections({
+      referrer: this.platformId
+    })
+
+    const stats = {
+      totalCollections: collections.total,
+      deployed: 0,
+      undeployed: 0,
+      totalVolume: 0n,
+      totalRewards: 0n
+    }
+
+    const escrowAddress = this.collectionManager.getEscrowAddress()
+
+    for (const collection of collections.collections) {
+      if (collection.isDeployed) {
+        stats.deployed++
+        
+        // Get collection rewards
+        const rewards = await this.rewardTracker.getCollectionRewards(
+          escrowAddress,
+          collection.address
+        )
+        stats.totalRewards += rewards.totalRewards
+      } else {
+        stats.undeployed++
+      }
+    }
+
+    return {
+      ...stats,
+      collections: collections.collections
+    }
+  }
+
+  async getCreatorDashboard(creatorAddress: string) {
+    const collections = await this.storage.queryCollections({
+      creator: creatorAddress,
+      referrer: this.platformId
+    })
+
+    const escrowAddress = this.collectionManager.getEscrowAddress()
+    let totalCreatorRewards = 0n
+
+    const collectionStats = await Promise.all(
+      collections.collections.map(async (collection) => {
+        if (collection.isDeployed) {
+          const rewards = await this.rewardTracker.getRecipientRewards(
+            escrowAddress,
+            collection.address,
+            "CREATOR",
+            creatorAddress
+          )
+          totalCreatorRewards += rewards
+          
+          return {
+            ...collection,
+            creatorRewards: rewards.toString()
+          }
+        }
+        return {
+          ...collection,
+          creatorRewards: "0"
+        }
+      })
+    )
+
+    return {
+      totalCollections: collections.total,
+      totalCreatorRewards: totalCreatorRewards.toString(),
+      collections: collectionStats
+    }
+  }
+}
+
+// Usage
+async function runPlatform() {
+  const publicClient = createPublicClient({
+    chain: b3Testnet,
+    transport: http()
+  })
+
+  const platform = new NFTPlatform(publicClient, "my-nft-platform")
+  
+  // Register platform
+  await platform.registerPlatform()
+  
+  // Creator creates collection
+  const creatorAccount = privateKeyToAccount(process.env.CREATOR_PRIVATE_KEY as `0x${string}`)
+  const creatorWalletClient = createWalletClient({
+    chain: b3Testnet,
+    transport: http(),
+    account: creatorAccount
+  })
+
+  const { predictedAddress, creatorSignature } = await platform.createCollection(
+    creatorWalletClient,
+    {
+      name: "Awesome Art Collection",
+      symbol: "AAC",
+      description: "Amazing digital artworks",
+      image: "https://example.com/awesome-art.png",
+      maxSupply: 1000n,
+      mintPrice: parseEther("0.005"),
+      category: "Art"
+    }
+  )
+
+  // Deploy collection
+  const deployerAccount = privateKeyToAccount(process.env.DEPLOYER_PRIVATE_KEY as `0x${string}`)
+  const deployerWalletClient = createWalletClient({
+    chain: b3Testnet,
+    transport: http(),
+    account: deployerAccount
+  })
+
+  const deployTx = await platform.deployCollection(
+    deployerWalletClient,
+    predictedAddress,
+    creatorSignature
+  )
+
+  console.log(`🚀 Collection deployed: ${deployTx}`)
+
+  // Get platform statistics
+  const stats = await platform.getPlatformStats()
+  console.log("Platform stats:", stats)
+
+  // Get creator dashboard
+  const dashboard = await platform.getCreatorDashboard(creatorAccount.address)
+  console.log("Creator dashboard:", dashboard)
+}
+
+runPlatform().catch(console.error)
+```
+</Accordion>
+
+## Integrasi Marketplace
+
+Mengintegrasikan CreateKit dengan marketplace:
+
+```typescript title="Integrasi Marketplace"
+import { 
+  CollectionManager,
+  BaseMintStorage,
+  RewardTracker 
+} from '@b3dotfun/basemint'
+
+class NFTMarketplace {
+  private storage: BaseMintStorage
+  private collectionManager: CollectionManager
+  private rewardTracker: RewardTracker
+
+  constructor(publicClient: any) {
+    this.storage = new BaseMintStorage({ baseUrl: 'https://api.basemint.fun' })
+    this.collectionManager = new CollectionManager(publicClient)
+    this.rewardTracker = new RewardTracker(publicClient)
+  }
+
+  // Discover collections for marketplace display
+  async discoverCollections(filters?: {
+    category?: string
+    minSupply?: number
+    maxPrice?: string
+    deployed?: boolean
+  }) {
+    const queryFilters: any = {}
+    
+    if (filters?.deployed !== undefined) {
+      queryFilters.deployed = filters.deployed
+    }
+
+    const collections = await this.storage.queryCollections({
+      ...queryFilters,
+      limit: 50,
+      sortBy: "createdAt",
+      sortOrder: "desc"
+    })
+
+    // Enrich with on-chain data for deployed collections
+    const enrichedCollections = await Promise.all(
+      collections.collections.map(async (collection) => {
+        if (collection.isDeployed) {

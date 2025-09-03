@@ -1,0 +1,640 @@
+---
+title: SDK 参考
+description: BondKit SDK 的完整 API 参考，包括示例和 TypeScript 定义。
+lang: cn
+originalPath: bondkit/sdk/reference.mdx
+---
+## 安装与设置
+
+<Tabs>
+  <Tab title="NPM 包">
+    ```bash
+    # 生产 SDK
+    pnpm add @b3dotfun/sdk
+    
+    # 从主 SDK 导入
+    import { 
+      BondkitTokenFactory, 
+      BondkitToken 
+    } from "@b3dotfun/sdk/bondkit";
+    ```
+  </Tab>
+  <Tab title="开发">
+    ```bash
+    # 克隆 monorepo
+    git clone https://github.com/b3dotfun/b3-monorepo.git
+    cd b3-monorepo
+    pnpm install
+    
+    # 构建 SDK
+    pnpm --filter @b3dotfun/sdk build
+    ```
+  </Tab>
+</Tabs>
+
+## 核心类
+
+### BondkitTokenFactory
+
+工厂类处理部署新债券代币和查询已部署的代币。
+
+```typescript
+import { BondkitTokenFactory } from "@b3dotfun/sdk/bondkit";
+import { base } from "viem/chains";
+
+const factory = new BondkitTokenFactory(
+  base.id,                    // 链 ID（Base 主网）
+  process.env.WALLET_KEY      // 可选：写入操作的私钥
+);
+```
+
+#### 构造函数
+
+```typescript
+constructor(
+  chainId: SupportedChainId,
+  walletKey?: string
+)
+```
+
+| 参数        | 类型     | 必须的 | 描述                          |
+|-----------|--------|------|-----------------------------|
+| `chainId` | `number` | 是   | 链 ID（当前仅 Base: 8453）    |
+| `walletKey` | `string` | 否   | 写入操作的私钥                |
+
+#### 方法
+
+<AccordionGroup>
+  <Accordion title="deployBondkitToken">
+    **部署新的债券代币**
+    
+    ```typescript
+    async deployBondkitToken(
+      config: BondkitTokenConfig
+    ): Promise<Address>
+    ```
+    
+    **参数：**
+    ```typescript
+    interface BondkitTokenConfig {
+      name: string;                      // 代币名称
+      symbol: string;                    // 代币符号
+      feeRecipient: Address;            // 接收交易费用
+      finalTokenSupply: bigint;         // 总供应量（18 位小数）
+      aggressivenessFactor: number;     // 0-100 曲线陡度
+      lpSplitRatioFeeRecipientBps: bigint; // LP 费用分享（基点）
+      targetEth: bigint;                // 迁移目标（18 位小数）
+      uniswapV2RouterAddress: Address;  // 路由地址
+      migrationAdminAddress: Address;   // 可触发迁移
+    }
+    ```
+    
+    **示例：**
+    ```typescript
+    const tokenAddress = await factory.deployBondkitToken({
+      name: "My Token",
+      symbol: "MTK",
+      feeRecipient: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1",
+      finalTokenSupply: parseEther("1000000"),
+      aggressivenessFactor: 50,
+      lpSplitRatioFeeRecipientBps: 1000n, // 10%
+      targetEth: parseEther("10"),
+      uniswapV2RouterAddress: "0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24",
+      migrationAdminAddress: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1"
+    });
+    ```
+  </Accordion>
+  
+  <Accordion title="getDeployedBondkitTokens">
+    **获取所有已部署的代币**
+    
+    ```typescript
+    async getDeployedBondkitTokens(): Promise<Address[]>
+    ```
+    
+    **返回：** 代币地址数组
+    
+    **示例：**
+    ```typescript
+    const tokens = await factory.getDeployedBondkitTokens();
+    console.log(`找到 ${tokens.length} 个代币`);
+    ```
+  </Accordion>
+  
+  <Accordion title="getBondkitTokenConfig">
+    **获取代币配置**
+    
+    ```typescript
+    async getBondkitTokenConfig(
+      tokenAddress: Address
+    ): Promise<BondkitTokenConfig>
+    ```
+    
+    **示例：**
+    ```typescript
+    const config = await factory.getBondkitTokenConfig(
+      "0x123..."
+    );
+    console.log(`代币名称：${config.name}`);
+    ```
+  </Accordion>
+  
+  <Accordion title="getImplementationAddress">
+    **获取实现合约**
+    
+    ```typescript
+    async getImplementationAddress(): Promise<Address>
+    ```
+    
+    **示例：**
+    ```typescript
+    const impl = await factory.getImplementationAddress();
+    console.log(`实现：${impl}`);
+    ```
+  </Accordion>
+  
+  <Accordion title="connect">
+    **连接钱包提供者**
+    
+    ```typescript
+    connect(provider?: EIP1193Provider): boolean
+    ```
+    
+    **示例：**
+    ```typescript
+    // 浏览器环境
+    const connected = factory.connect(window.ethereum);
+    
+    // 自定义提供者
+    import { custom } from "viem";
+    const transport = custom(provider);
+    factory.connect(transport);
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### BondkitToken
+
+代币类处理特定债券代币的所有操作。
+
+```typescript
+import { BondkitToken } from "@b3dotfun/sdk/bondkit";
+
+const token = new BondkitToken(
+  "0x123...",                 // 代币地址
+  process.env.WALLET_KEY      // 可选：私钥
+);
+```
+
+#### 构造函数
+
+```typescript
+constructor(
+  contractAddress: string,
+  walletKey?: string
+)
+```
+
+| 参数              | 类型     | 必须的 | 描述            |
+|-----------------|--------|------|---------------|
+| `contractAddress` | `string` | 是   | 代币合约地址      |
+| `walletKey`      | `string` | 否   | 写入操作的私钥    |
+
+#### 读取方法
+
+<AccordionGroup>
+  <Accordion title="ERC20 标准方法">
+    ```typescript
+    // 基本代币信息
+    async name(): Promise<string>
+    async symbol(): Promise<string>
+    async decimals(): Promise<number>
+    async totalSupply(): Promise<bigint>
+    
+    // 余额
+    async balanceOf(address: Address): Promise<bigint>
+    async allowance(
+      owner: Address, 
+      spender: Address
+    ): Promise<bigint>
+    
+    // 示例
+    const balance = await token.balanceOf(userAddress);
+    console.log(`余额：${formatEther(balance)}`);
+    ```
+  </Accordion>
+  
+  <Accordion title="债券曲线方法">
+    ```typescript
+    // 当前每个代币的价格
+    async getCurrentBondingCurvePricePerToken(): Promise<bigint>
+    
+    // 当前以 ETH 计价的价格
+    async getCurrentPrice(): Promise<bigint>
+    
+    // 购买报价
+    async getAmountOfTokensToBuy(
+      ethAmount: bigint
+    ): Promise<bigint>
+    
+    // 出售报价
+    async getAmountOfEthToReceive(
+      tokenAmount: bigint
+    ): Promise<bigint>
+    
+    // 债券进度
+    async getBondingProgress(): Promise<{
+      progress: number;      // 0-1（百分比）
+      raised: bigint;       // 筹集金额
+      threshold: bigint;    // 目标金额
+    }>
+    
+    // 示例
+    const progress = await token.getBondingProgress();
+    console.log(`进度：${(progress.progress * 100).toFixed(2)}%`);
+    ```
+  </Accordion>
+  
+  <Accordion title="状态与配置">
+    ```typescript
+    // 代币状态
+    async getStatus(): Promise<TokenStatus>
+    async isMigrated(): Promise<boolean>
+    async canMigrate(): Promise<boolean>
+    
+    // 配置
+    async getOwner(): Promise<Address>
+    async getFeeRecipient(): Promise<Address>
+    async getAggressivenessFactor(): Promise<number>
+    async getTargetAmount(): Promise<bigint>
+    
+    // 迁移信息
+    async getMigrationData(): Promise<{
+      ethForLp: bigint;
+      tokensForLp: bigint;
+      sqrtPriceX96: bigint;
+    }>
+    
+    // 示例
+    if (await token.canMigrate()) {
+      console.log("准备迁移！");
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="分析方法">
+    ```typescript
+    // 代币持有者
+    async getPaginatedHolders(
+      offset: number,
+      limit: number
+    ): Promise<{
+      holders: Address[];
+      total: number;
+    }>
+    
+    // 交易历史（来自 API）
+    async getTransactionHistory(
+      options?: GetTransactionHistoryOptions
+    ): Promise<TransactionResponse>
+    
+    // 选项接口
+    interface GetTransactionHistoryOptions {
+      userAddress?: Address;
+      type?: "buy" | "sell";
+      from?: number;        // 时间戳
+      to?: number;          // 时间戳
+      limit?: number;       // 1-100
+      offset?: number;
+    }
+    
+    // 示例
+    const history = await token.getTransactionHistory({
+      type: "buy",
+      limit: 10
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+#### 写入方法
+
+<AccordionGroup>
+  <Accordion title="buy">
+    **用 ETH 购买代币**
+    
+    ```typescript
+    async buy(
+      minTokensOut: bigint,
+      ethAmount: string | bigint
+    ): Promise<Hex>
+    ```
+    
+    **参数：**
+    - `minTokensOut`: 接收的最少代币数（防止滑点）
+    - `ethAmount`: 花费的 ETH（字符串或 bigint）
+    
+    **示例：**
+    ```typescript
+    // 先获取报价
+    const quote = await token.getAmountOfTokensToBuy(
+      parseEther("1")
+    );
+    
+    // 以 5% 的滑点容忍度购买
+    const minTokens = quote * 95n / 100n;
+    const txHash = await token.buy(minTokens, "1");
+    
+    console.log(`交易：${txHash}`);
+    ```
+  </Accordion>
+  
+  <Accordion title="sell">
+    **出售代币换取 ETH**
+    
+    ```typescript
+    async sell(
+      tokenAmount: bigint,
+      minEthOut: bigint
+    ): Promise<Hex>
+    ```
+    
+    **参数：**
+    - `tokenAmount`: 出售的代币数量
+    - `minEthOut`: 接收的最少 ETH（防止滑点）
+    
+    **示例：**
+    ```typescript
+    // 出售 1000 代币
+    const sellAmount = parseEther("1000");
+    
+    // 获取报价
+    const quote = await token.getAmountOfEthToReceive(sellAmount);
+    
+    // 带有滑点保护的出售
+    const minEth = quote * 95n / 100n;
+    const txHash = await token.sell(sellAmount, minEth);
+    ```
+  </Accordion>
+  
+  <Accordion title="migrateToDex">
+    **迁移到 Uniswap v4**
+    
+    ```typescript
+    async migrateToDex(): Promise<Hex>
+    ```
+    
+    **要求：**
+    - 调用者必须是迁移管理员
+    - 必须达到目标
+    
+    **示例：**
+    ```typescript
+    if (await token.canMigrate()) {
+      const txHash = await token.migrateToDex();
+      console.log(`迁移交易：${txHash}`);
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="ERC20 写入方法">
+    ```typescript
+    // 标准转账
+    async transfer(
+      to: Address,
+      amount: bigint
+    ): Promise<Hex>
+    
+    async transferFrom(
+      from: Address,
+      to: Address,
+      amount: bigint
+    ): Promise<Hex>
+    
+    // 授权
+    async approve(
+      spender: Address,
+      amount: bigint
+    ): Promise<Hex>
+    
+    // 示例
+    await token.approve(
+      spenderAddress,
+      parseEther("1000")
+    );
+    ```
+  </Accordion>
+</AccordionGroup>
+
+#### 事件监听器
+
+```typescript
+// 监听购买事件
+token.onBuy((event: BoughtEventArgs) => {
+  console.log("购买：", {
+    buyer: event.buyer,
+    ethIn: formatEther(event.ethIn),
+    tokensOut: formatEther(event.tokensOut),
+    fee: formatEther(event.feeRecipientFee)
+  });
+});
+
+// 监听出售事件
+token.onSell((event: SoldEventArgs) => {
+  console.log("出售：", {
+    seller: event.seller,
+    tokensIn: formatEther(event.tokensIn),
+    ethOut: formatEther(event.ethOut),
+    fee: formatEther(event.feeRecipientFee)
+  });
+});
+
+// 监听迁移
+token.onMigration((event: DexMigrationEventArgs) => {
+  console.log("已迁移：", {
+    ethForLp: formatEther(event.ethForLp),
+    tokensForLp: formatEther(event.tokensForLp)
+  });
+});
+```
+
+## 类型定义
+
+### 核心类型
+
+```typescript
+// 代币配置
+interface BondkitTokenConfig {
+  name: string;
+  symbol: string;
+  feeRecipient: Address;
+  finalTokenSupply: bigint;
+  aggressivenessFactor: number;
+  lpSplitRatioFeeRecipientBps: bigint;
+  targetEth: bigint;
+  uniswapV2RouterAddress: Address;
+  migrationAdminAddress: Address;
+}
+
+// 代币状态枚举
+enum TokenStatus {
+  Inactive = 0,
+  BondingPhase = 1,
+  DexPhase = 2,
+  Migrated = 3
+}
+
+// 代币详情
+interface TokenDetails {
+  name: string;
+  symbol: string;
+  decimals: number;
+  totalSupply: bigint;
+  owner: Address;
+}
+```
+
+### 事件类型
+
+```typescript
+// 购买事件
+interface BoughtEventArgs {
+  buyer: Address;
+  ethIn: bigint;
+  tokensOut: bigint;
+  feeRecipientFee: bigint;
+}
+
+// 出售事件
+interface SoldEventArgs {
+  seller: Address;
+  tokensIn: bigint;
+  ethOut: bigint;
+  feeRecipientFee: bigint;
+}
+
+// 迁移事件
+interface DexMigrationEventArgs {
+  ethForLp: bigint;
+  tokensForLp: bigint;
+  ethForFeeRecipient: bigint;
+}
+
+// 工厂创建事件
+interface BondkitTokenCreatedEventArgs {
+  tokenAddress: Address;
+  implementationAddress: Address;
+  name: string;
+  symbol: string;
+  feeRecipient: Address;
+  migrationAdmin: Address;
+}
+```
+
+### 交易类型
+
+```typescript
+// 交易历史
+interface Transaction {
+  timestamp: number;
+  price: number;
+  amount: string;
+  type: "buy" | "sell";
+  userAddress: Address;
+  txHash: Hex;
+  chainId: number;
+  blockNumber?: number;
+  totalRaisedBonding?: string;
+  value?: string;
+}
+
+// API 响应
+interface TransactionResponse {
+  total: number;
+  limit: number;
+  skip: number;
+  data: Transaction[];
+}
+```
+
+## 配置
+
+### 网络支持
+
+```typescript
+import { getConfig } from "@b3dotfun/sdk/bondkit";
+import { base } from "viem/chains";
+
+const config = getConfig(base.id);
+
+console.log({
+  chain: config.chain.name,           // "Base"
+  factoryAddress: config.factoryAddress,
+  rpcUrl: config.rpcUrl,
+  apiEndpoint: config.apiEndpoint
+});
+```
+
+### 支持的链
+
+| 链       | 链 ID   | 状态        |
+|---------|--------|-----------|
+| Base 主网 | 8453  | ✅ 支持    |
+| Base Sepolia | 84532 | 🚧 即将推出 |
+
+## 错误处理
+
+```typescript
+try {
+  const txHash = await token.buy(minTokens, "1");
+} catch (error) {
+  if (error.message.includes("insufficient funds")) {
+    console.error("ETH 不足");
+  } else if (error.message.includes("slippage")) {
+    console.error("价格变动，请重试");
+  } else if (error.message.includes("target exceeded")) {
+    console.error("将超过迁移目标");
+  } else {
+    console.error("交易失败：", error);
+  }
+}
+```
+
+## 完整示例
+
+### 部署和交易
+
+```typescript
+import { 
+  BondkitTokenFactory, 
+  BondkitToken 
+} from "@b3dotfun/sdk/bondkit";
+import { parseEther, formatEther } from "viem";
+import { base } from "viem/chains";
+
+async function deployAndTrade() {
+  // 1. 部署代币
+  const factory = new BondkitTokenFactory(
+    base.id,
+    process.env.WALLET_KEY
+  );
+  
+  const tokenAddress = await factory.deployBondkitToken({
+    name: "Test Token",
+    symbol: "TEST",
+    finalTokenSupply: parseEther("1000000"),
+    aggressivenessFactor: 50,
+    targetEth: parseEther("10"),
+    feeRecipient: process.env.WALLET_ADDRESS,
+    lpSplitRatioFeeRecipientBps: 1000n,
+    migrationAdminAddress: process.env.WALLET_ADDRESS,
+    uniswapV2RouterAddress: "0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24"
+  });
+  
+  // 2. 初始化代币客户端
+  const token = new BondkitToken(
+    tokenAddress,
+    process.env.WALLET_KEY
+  );
+  
+  // 3. 购买代

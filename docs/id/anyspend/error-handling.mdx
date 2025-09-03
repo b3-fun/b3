@@ -1,0 +1,595 @@
+---
+title: Penanganan Kesalahan & Pemecahan Masalah
+description: >-
+  Panduan lengkap untuk menangani kesalahan dengan anggun dan men-debug masalah
+  umum dengan AnySpend
+lang: id
+originalPath: anyspend/error-handling.mdx
+---
+# Penanganan Kesalahan & Pemecahan Masalah
+
+Panduan lengkap untuk menangani kesalahan dengan anggun dan men-debug masalah umum dengan AnySpend untuk memberikan pengalaman pengguna terbaik.
+
+## 📊 Siklus Status Pesanan
+
+Memahami status pesanan sangat penting untuk penanganan kesalahan yang tepat dan pengalaman pengguna.
+
+### Tipe Status Pesanan
+
+```typescript title="Order Status Enum" icon="list"
+enum OrderStatus {
+  // Initial States
+  SCANNING_DEPOSIT_TRANSACTION = "scanning_deposit_transaction",
+  WAITING_STRIPE_PAYMENT = "waiting_stripe_payment",
+  EXPIRED = "expired",
+
+  // Processing States
+  SENDING_TOKEN_FROM_VAULT = "sending_token_from_vault",
+  RELAY = "relay",
+
+  // Success States
+  EXECUTED = "executed",
+
+  // Failure States
+  REFUNDING = "refunding",
+  REFUNDED = "refunded",
+  FAILURE = "failure",
+}
+```
+
+### Deskripsi Status
+
+<table>
+  <thead>
+    <tr>
+      <th>Status</th>
+      <th>Deskripsi</th>
+      <th>Tindakan Pengguna yang Diperlukan</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>`scanning_deposit_transaction`</td>
+      <td>Menunggu konfirmasi pembayaran</td>
+      <td>Tidak ada - tunggu konfirmasi blockchain</td>
+    </tr>
+    <tr>
+      <td>`waiting_stripe_payment`</td>
+      <td>Memproses pembayaran kartu kredit</td>
+      <td>Mungkin perlu menyelesaikan 3D Secure</td>
+    </tr>
+    <tr>
+      <td>`sending_token_from_vault`</td>
+      <td>Mengirim token untuk swap</td>
+      <td>Tidak ada - proses otomatis</td>
+    </tr>
+    <tr>
+      <td>`relay`</td>
+      <td>Transaksi lintas rantai sedang berlangsung</td>
+      <td>Tidak ada - tunggu hingga selesai</td>
+    </tr>
+    <tr>
+      <td>`executed`</td>
+      <td>Transaksi berhasil diselesaikan</td>
+      <td>Tidak ada - sukses!</td>
+    </tr>
+    <tr>
+      <td>`expired`</td>
+      <td>Pesanan kedaluwarsa sebelum selesai</td>
+      <td>Buat pesanan baru</td>
+    </tr>
+    <tr>
+      <td>`refunding`</td>
+      <td>Pengembalian dana otomatis sedang berlangsung</td>
+      <td>Tidak ada - tunggu pengembalian dana</td>
+    </tr>
+    <tr>
+      <td>`refunded`</td>
+      <td>Pengembalian dana selesai</td>
+      <td>Periksa dompet untuk token yang dikembalikan</td>
+    </tr>
+    <tr>
+      <td>`failure`</td>
+      <td>Transaksi gagal</td>
+      <td>Review detail kesalahan, coba lagi</td>
+    </tr>
+  </tbody>
+</table>
+
+## ⚠️ Kode Kesalahan Umum
+
+### Kesalahan Pembayaran
+
+<AccordionGroup>
+<Accordion title="INSUFFICIENT_BALANCE">
+**Deskripsi**: Pengguna tidak memiliki cukup token untuk transaksi
+
+**Solusi**: Minta pengguna untuk menambah dana ke dompet mereka atau memilih token pembayaran yang berbeda
+
+**Contoh**:
+
+```typescript
+if (error.message === "INSUFFICIENT_BALANCE") {
+  toast.error("Saldo tidak cukup. Silakan tambah dana ke dompet Anda.");
+  // Opsional mengarahkan ke fiat onramp
+  openFiatOnramp();
+}
+```
+
+</Accordion>
+
+<Accordion title="INVALID_TOKEN_ADDRESS">
+**Deskripsi**: Kontrak token tidak didukung di rantai target
+
+**Solusi**: Verifikasi token didukung dan berikan opsi alternatif
+
+**Contoh**:
+
+```typescript
+if (error.message === "INVALID_TOKEN_ADDRESS") {
+  toast.error("Token ini tidak didukung. Silakan pilih yang lain.");
+  showSupportedTokens();
+}
+```
+
+</Accordion>
+
+<Accordion title="MINIMUM_AMOUNT_NOT_MET">
+**Deskripsi**: Jumlah transaksi di bawah ambang minimum
+
+**Solusi**: Tingkatkan jumlah transaksi atau informasikan pengguna tentang persyaratan minimum
+
+**Contoh**:
+
+```typescript
+if (error.message === "MINIMUM_AMOUNT_NOT_MET") {
+  toast.error(`Jumlah minimum adalah $${minimumAmount}. Silakan tingkatkan jumlah Anda.`);
+}
+```
+
+</Accordion>
+
+<Accordion title="MAXIMUM_AMOUNT_EXCEEDED">
+**Deskripsi**: Jumlah transaksi melebihi batas maksimum
+
+**Solusi**: Kurangi jumlah atau bagi menjadi beberapa transaksi
+
+**Contoh**:
+
+```typescript
+if (error.message === "MAXIMUM_AMOUNT_EXCEEDED") {
+  toast.error(`Jumlah maksimum adalah $${maximumAmount}. Silakan kurangi jumlah Anda.`);
+}
+```
+
+</Accordion>
+</AccordionGroup>
+
+### Kesalahan Jaringan
+
+<AccordionGroup>
+<Accordion title="SLIPPAGE">
+**Deskripsi**: Harga bergerak di luar toleransi yang dapat diterima selama eksekusi
+
+**Solusi**: Coba lagi dengan toleransi slippage yang lebih tinggi atau tunggu stabilitas harga
+
+**Contoh**:
+
+```typescript
+if (error.message === "SLIPPAGE") {
+  toast.warning("Harga bergerak tidak menguntungkan. Mencoba lagi dengan pengaturan yang disesuaikan...");
+  retryWithHigherSlippage();
+}
+```
+
+</Accordion>
+
+<Accordion title="NETWORK_ERROR">
+**Deskripsi**: Masalah koneksi RPC atau kemacetan blockchain
+
+**Solusi**: Coba lagi setelah jeda atau beralih ke RPC alternatif
+
+**Contoh**:
+
+```typescript
+if (error.message === "NETWORK_ERROR") {
+  toast.error("Masalah jaringan terdeteksi. Silakan periksa koneksi dan coba lagi.");
+  scheduleRetry();
+}
+```
+
+</Accordion>
+
+<Accordion title="QUOTE_EXPIRED">
+**Deskripsi**: Kutipan harga tidak lagi valid
+
+**Solusi**: Dapatkan kutipan baru dan coba transaksi lagi
+
+**Contoh**:
+
+```typescript
+if (error.message === "QUOTE_EXPIRED") {
+  toast.info("Kutipan harga kedaluwarsa. Mendapatkan kutipan baru...");
+  refreshQuoteAndRetry();
+}
+```
+
+</Accordion>
+
+<Accordion title="CHAIN_NOT_SUPPORTED">
+**Deskripsi**: Blockchain yang diminta tidak didukung
+
+**Solusi**: Gunakan rantai yang didukung atau terapkan fallback
+
+**Contoh**:
+
+```typescript
+if (error.message === "CHAIN_NOT_SUPPORTED") {
+  toast.error("Blockchain ini tidak didukung. Silakan pilih yang lain.");
+  showSupportedChains();
+}
+```
+
+</Accordion>
+</AccordionGroup>
+
+### Kesalahan Kontrak
+
+<AccordionGroup>
+<Accordion title="CONTRACT_CALL_FAILED">
+**Deskripsi**: Eksekusi kontrak pintar gagal
+
+**Solusi**: Periksa parameter dan status kontrak
+
+**Contoh**:
+
+```typescript
+if (error.message === "CONTRACT_CALL_FAILED") {
+  toast.error("Interaksi kontrak gagal. Silakan verifikasi parameter.");
+  logContractError(error);
+}
+```
+
+</Accordion>
+
+<Accordion title="INSUFFICIENT_GAS">
+**Deskripsi**: Batas gas ditetapkan terlalu rendah untuk transaksi
+
+**Solusi**: Tingkatkan batas gas atau sarankan optimasi gas
+
+**Contoh**:
+
+```typescript
+if (error.message === "INSUFFICIENT_GAS") {
+  toast.error("Transaksi memerlukan lebih banyak gas. Meningkatkan batas gas...");
+  retryWithHigherGas();
+}
+```
+
+</Accordion>
+
+<Accordion title="NONCE_TOO_LOW">
+**Deskripsi**: Konflik nonce transaksi
+
+**Solusi**: Tunggu transaksi tertunda selesai
+
+**Contoh**:
+
+```typescript
+if (error.message === "NONCE_TOO_LOW") {
+  toast.info("Silakan tunggu transaksi tertunda selesai.");
+  waitAndRetry();
+}
+```
+
+</Accordion>
+
+<Accordion title="TRANSACTION_REVERTED">
+**Deskripsi**: Kontrak membatalkan transaksi
+
+**Solusi**: Periksa status dan parameter kontrak
+
+**Contoh**:
+
+```typescript
+if (error.message === "TRANSACTION_REVERTED") {
+  toast.error("Transaksi ditolak oleh kontrak. Silakan periksa persyaratan.");
+  showTransactionDetails();
+}
+```
+
+</Accordion>
+</AccordionGroup>
+
+## 🛠️ Pola Penanganan Kesalahan
+
+### Penanganan Kesalahan Tingkat Komponen
+
+```tsx title="Payment Component with Error Handling" icon="shield-exclamation" lines
+import { useAnyspendCreateOrder } from "@b3dotfun/sdk/anyspend";
+
+function PaymentComponent() {
+  const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  const { createOrder, isCreatingOrder } = useAnyspendCreateOrder({
+    onError: error => {
+      console.error("Pembayaran gagal:", error);
+
+      // Menangani kesalahan spesifik
+      switch (error.message) {
+        case "INSUFFICIENT_BALANCE":
+          setError("Saldo tidak cukup. Silakan tambah dana ke dompet Anda.");
+          break;
+
+        case "SLIPPAGE":
+          if (retryCount < 3) {
+            setError("Harga bergerak tidak menguntungkan. Mencoba lagi...");
+            setTimeout(() => {
+              setRetryCount(prev => prev + 1);
+              retryPayment();
+            }, 2000);
+          } else {
+            setError("Harga terlalu fluktuatif. Silakan coba lagi nanti.");
+          }
+          break;
+
+        case "NETWORK_ERROR":
+          setError("Masalah jaringan. Silakan periksa koneksi Anda dan coba lagi.");
+          break;
+
+        case "QUOTE_EXPIRED":
+          setError("Kutipan harga kedaluwarsa. Mendapatkan kutipan baru...");
+          refreshQuote();
+          break;
+
+        default:
+          setError("Pembayaran gagal. Silakan coba lagi atau hubungi dukungan.");
+      }
+
+      // Melacak kesalahan untuk pemantauan
+      analytics.track("payment_error", {
+        error: error.message,
+        retryCount,
+        timestamp: new Date().toISOString(),
+      });
+    },
+
+    onSuccess: () => {
+      setError(null);
+      setRetryCount(0);
+    },
+  });
+
+  return (
+    <div className="payment-component">
+      {error && (
+        <div className="error-banner">
+          <span className="error-icon">⚠️</span>
+          <span>{error}</span>
+          <button onClick={() => setError(null)}>Tutup</button>
+        </div>
+      )}
+
+      <button onClick={handlePayment} disabled={isCreatingOrder}>
+        {isCreatingOrder ? "Memproses..." : "Bayar Sekarang"}
+      </button>
+    </div>
+  );
+}
+```
+
+### Pemantauan Status Pesanan
+
+```tsx title="Order Status Monitor" icon="eye" lines
+import { useAnyspendOrderAndTransactions } from "@b3dotfun/sdk/anyspend";
+
+function OrderStatusMonitor({ orderId }: { orderId: string }) {
+  const { orderAndTransactions, getOrderAndTransactionsError } = useAnyspendOrderAndTransactions(orderId);
+
+  if (getOrderAndTransactionsError) {
+    return (
+      <div className="error-state">
+        <h3>Tidak dapat memuat status pesanan</h3>
+        <p>Silakan periksa koneksi Anda dan coba lagi.</p>
+        <button onClick={() => window.location.reload()}>Coba Lagi</button>
+      </div>
+    );
+  }
+
+  if (!orderAndTransactions) {
+    return <div>Memuat status pesanan...</div>;
+  }
+
+  const { order, depositTxs, executeTx, refundTxs } = orderAndTransactions.data;
+
+  const renderStatusMessage = () => {
+    switch (order.status) {
+      case "scanning_deposit_transaction":
+        return (
+          <div className="status-pending">
+            <div className="spinner" />
+            <div>
+              <h3>⏳ Menunggu konfirmasi pembayaran</h3>
+              <p>Ini biasanya memakan waktu 1-2 menit. Silakan jangan tutup jendela ini.</p>
+              {depositTxs.length > 0 && (
+                <a
+                  href={getExplorerUrl(depositTxs[0].txHash, depositTxs[0].chainId)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Lihat transaksi pembayaran
+                </a>
+              )}
+            </div>
+          </div>
+        );
+
+      case "relay":
+        return (
+          <div className="status-processing">
+            <div className="spinner" />
+            <div>
+              <h3>🔄 Memproses transaksi lintas rantai</h3>
+              <p>Pembayaran Anda sedang diproses. Ini mungkin memakan waktu beberapa menit.</p>
+            </div>
+          </div>
+        );
+
+      case "executed":
+        return (
+          <div className="status-success">
+            <div className="success-icon">✅</div>
+            <div>
+              <h3>Transaksi berhasil diselesaikan!</h3>
+              <p>Pesanan Anda telah diproses.</p>
+              {executeTx && (
+                <a href={getExplorerUrl(executeTx.txHash, executeTx.chainId)} target="_blank" rel="noopener noreferrer">
+                  Lihat transaksi
+                </a>
+              )}
+            </div>
+          </div>
+        );
+
+      case "failure":
+      case "obtain_failed":
+        return (
+          <div className="status-error">
+            <div className="error-icon">❌</div>
+            <div>
+              <h3>Transaksi gagal</h3>
+              <p>{order.errorDetails || "Terjadi kesalahan saat memproses pesanan Anda."}</p>
+              <div className="error-actions">
+                <button onClick={() => createNewOrder()}>Coba Lagi</button>
+                <button onClick={() => contactSupport(orderId)}>Hubungi Dukungan</button>
+              </div>
+            </div>
+          </div>
+        );
+
+      case "refunded":
+        return (
+          <div className="status-refunded">
+            <div className="refund-icon">↩️</div>
+            <div>
+              <h3>Pengembalian dana diproses</h3>
+              <p>Pembayaran Anda telah dikembalikan secara otomatis.</p>
+              {refundTxs.length > 0 && (
+                <a
+                  href={getExplorerUrl(refundTxs[0].txHash, refundTxs[0].chainId)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Lihat transaksi pengembalian dana
+                </a>
+              )}
+            </div>
+          </div>
+        );
+
+      case "expired":
+        return (
+          <div className="status-expired">
+            <div className="expired-icon">⏰</div>
+            <div>
+              <h3>Pesanan kedaluwarsa</h3>
+              <p>Pesanan ini kedaluwarsa sebelum pembayaran diterima.</p>
+              <button onClick={() => createNewOrder()}>Buat Pesanan Baru</button>
+            </div>
+          </div>
+        );
+
+      default:
+        return (
+          <div className="status-unknown">
+            <div className="spinner" />
+            <div>
+              <h3>Memproses...</h3>
+              <p>Status pesanan: {order.status}</p>
+            </div>
+          </div>
+        );
+    }
+  };
+
+  return (
+    <div className="order-status-monitor">
+      <div className="order-header">
+        <h2>Pesanan #{orderId.slice(0, 8)}</h2>
+        <div className="order-meta">
+          <span>Dibuat: {new Date(order.createdAt).toLocaleString()}</span>
+          <span>Status: {order.status}</span>
+        </div>
+      </div>
+
+      {renderStatusMessage()}
+
+      {/* Informasi debug dalam pengembangan */}
+      {process.env.NODE_ENV === "development" && (
+        <details className="debug-info">
+          <summary>Informasi Debug</summary>
+          <pre>{JSON.stringify(order, null, 2)}</pre>
+        </details>
+      )}
+    </div>
+  );
+}
+```
+
+### Batas Kesalahan Global
+
+```tsx title="Error Boundary Component" icon="shield" lines
+import React, { Component, ErrorInfo } from "react";
+
+interface Props {
+  children: React.ReactNode;
+  fallback?: React.ComponentType<{ error: Error; resetError: () => void }>;
+}
+
+interface State {
+  hasError: boolean;
+  error?: Error;
+}
+
+class AnySpendErrorBoundary extends Component<Props, State> {
+  constructor(props: Props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error("AnySpend Error Boundary caught an error:", error, errorInfo);
+
+    // Laporkan ke layanan pelacakan kesalahan
+    if (typeof window !== "undefined") {
+      // Contoh: Sentry.captureException(error, { contexts: { errorInfo } });
+    }
+  }
+
+  resetError = () => {
+    this.setState({ hasError: false, error: undefined });
+  };
+
+  render() {
+    if (this.state.hasError) {
+      const FallbackComponent = this.props.fallback || DefaultErrorFallback;
+      return <FallbackComponent error={this.state.error!} resetError={this.resetError} />;
+    }
+
+    return this.props.children;
+  }
+}
+
+function DefaultErrorFallback({ error, resetError }: { error: Error; resetError: () => void }) {
+  return (
+    <div className="error-fallback">
+      <h2>Terjadi kesalahan</h2>
+      <p>Terjadi kesalahan tak terduga pada komponen pembayaran.</p>
+      <details className="error-details">
+        <summary>Detail kesalahan</summary>
+        <pre>{error.message}</pre>

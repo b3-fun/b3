@@ -1,0 +1,99 @@
+---
+title: Keamanan Kripto dan Dompet
+description: >-
+  Memahami dompet kripto, komponen-komponennya, praktik terbaik keamanan, dan
+  bagaimana B3 menggunakan dompet untuk identitas dan kepemilikan
+lang: id
+originalPath: learn/getting-started/crypto-and-wallet-security.mdx
+---
+Bayangkan dompet kripto Anda sebagai kunci pribadi Anda ke alam semesta Web3 - ini bukan hanya alat; ini adalah gerbang Anda untuk memiliki, berdagang, dan berinteraksi di dunia desentralisasi. Aplikasi dompet seperti Rainbow membuat ini menjadi sederhana dengan memberi Anda antarmuka yang mudah digunakan untuk mengelola kunci kriptografis Anda, tanpa memerlukan keahlian teknis. Mari kita uraikan.
+
+Pada intinya, dompet kripto tidak "menyimpan" uang Anda. Sebaliknya, ini adalah cara aman untuk mengelola kunci yang memberi Anda akses ke dana Anda di blockchain. Kunci-kunci ini memungkinkan Anda untuk mengirim, menerima, dan memiliki aset seperti Ethereum.
+
+Ketika Anda "memiliki" 1 ETH, yang sebenarnya Anda lakukan adalah memiliki bukti di blockchain yang menghubungkan alamat dompet Anda dengan ETH tersebut. Dompet Anda adalah bukti kepemilikan digital Anda.
+
+Dompet hadir dalam berbagai bentuk untuk memenuhi kebutuhan Anda:
+
+- **Hot Wallets:** Selalu terhubung ke internet, sempurna untuk transaksi sering (misalnya, Rainbow).
+- **Cold Wallets:** Dompet perangkat keras seperti Ledger, dirancang untuk menyimpan kunci Anda secara offline untuk keamanan ekstra.
+
+<Frame caption="Perbandingan jenis dompet menunjukkan opsi penyimpanan hot vs cold">
+<img src="https://images.spr.so/cdn-cgi/imagedelivery/j42No7y-dcokJuNgXeA0ig/32bf5487-a8ef-452c-9971-a28d1f1415a7/Untitled/w=3840,quality=90,fit=scale-down" alt="Diagram menunjukkan berbagai jenis dompet kriptocurrency" />
+</Frame>
+
+## Komponen Dompet: Yang Esensial
+
+Setiap dompet kripto memiliki tiga bagian utama yang membuat semuanya bekerja:
+
+### 1. Alamat Dompet Publik
+- Pikirkan ini sebagai nama pengguna atau nomor akun Anda.
+- Bagikan dengan siapa saja untuk menerima dana.
+- Alamat publik memungkinkan orang melihat riwayat transaksi dan aset Anda (karena blockchain transparan).
+
+### 2. Frase Rahasia (Seed Phrase)
+- Frase 12 atau 24 kata yang memberi Anda akses penuh ke dompet Anda.
+- Perlakukan ini seperti mahkota permata — siapa pun yang memilikinya, memiliki aset dalam dompet Anda.
+
+### 3. Kunci Pribadi
+- String panjang karakter yang dihasilkan dari frase benih Anda.
+- Digunakan untuk menandatangani transaksi dan membuktikan kepemilikan.
+
+<Frame>
+<img src="https://images.spr.so/cdn-cgi/imagedelivery/j42No7y-dcokJuNgXeA0ig/2c909eef-a022-4ae4-a6bc-f8996eec7412/image/w=3840,quality=90,fit=scale-down" alt="Diagram menunjukkan komponen dompet termasuk alamat publik, kunci pribadi, dan frase benih" />
+</Frame>
+
+### Apa yang Terjadi jika Anda Kehilangan Kunci Anda?
+
+<Warning>
+Ini masalahnya: Kehilangan **kunci pribadi** atau **frase rahasia** Anda, dan permainannya berakhir. Tidak ada tombol "Lupa Kata Sandi", tidak ada dukungan teknis, dan tidak ada 2FA. Bahkan penyedia dompet Anda tidak dapat membantu Anda memulihkannya.
+</Warning>
+
+Itulah mengapa mencadangkan kunci Anda adalah hal yang tidak dapat dinegosiasikan. Berikut adalah beberapa tips pro untuk menjaga keamanannya:
+
+- Gunakan **pengelola kata sandi** seperti 1Password.
+- Tuliskan di selembar kertas (cara lama tapi efektif).
+- Cap ke sepotong logam untuk daya tahan utama.
+
+<Info>
+Kunci Anda = kontrol Anda. Kehilangannya, dan Anda terkunci keluar untuk selamanya.
+</Info>
+
+## Mengapa B3 Menggunakan Dompet Kripto
+
+Di **B3**, dompet Anda lebih dari sekadar login. Ini adalah identitas Anda, inventaris Anda, dan koneksi Anda ke seluruh ekosistem. Inilah mengapa dompet sangat sentral dalam visi Web3 kami:
+
+### 1. Kepemilikan yang Benar-benar Milik Anda
+Dompet Anda memberi Anda kendali atas aset digital Anda — tanpa perantara, tanpa kunci perusahaan.
+
+### 2. Interoperabilitas Lintas Platform
+Dompet B3 Anda tidak terikat hanya pada satu permainan atau ekosistem. Baik Anda mendapatkan Builder Points (BP) atau mengklaim token, dompet Anda berfungsi dengan mulus di berbagai pengalaman.
+
+### 3. Keamanan dan Transparansi
+Semua transaksi terlihat di blockchain, tetapi hanya Anda yang mengontrol kunci pribadi Anda. Ini memastikan keadilan dan akuntabilitas di seluruh ekosistem.
+
+## Keamanan Dompet
+
+Dompet kripto Anda memberi Anda kekuatan besar, tetapi dengan kekuatan besar, datang tanggung jawab besar. Anda bertanggung jawab atas aset Anda, tetapi Anda juga bertanggung jawab untuk menjaga aset tersebut aman dari aktor jahat.
+
+Berikut adalah beberapa tips dan trik yang berguna untuk membantu Anda menjaga aset Anda aman dan terlindungi.
+
+### Pedoman Keamanan
+
+- Hanya berinteraksi dengan situs web dan platform B3 resmi ([b3.fun](https://b3.fun), [bsmnt.fun](https://bsmnt.fun), [claim.b3.fun](https://claim.b3.fun)).
+- Jangan pernah membagikan kunci pribadi atau frase benih dompet Anda kepada siapa pun.
+- Waspada terhadap pesan langsung yang mengaku sebagai dukungan B3 - dukungan resmi hanya melalui [discord.gg/b3dotfun](https://discord.gg/b3dotfun) dan [https://b3.fun](https://b3.fun).
+- Periksa dua kali semua alamat dompet dan detail transaksi sebelum menyetujui transaksi.
+- Hindari mengklik tautan mencurigakan atau menghubungkan dompet Anda ke situs web yang tidak diverifikasi.
+- Aktifkan 2FA di mana tersedia dan gunakan dompet perangkat keras untuk keamanan ekstra.
+- Ingat: Tim B3 tidak akan pernah meminta informasi dompet pribadi Anda.
+
+### Praktik Terbaik Keamanan
+
+<Tip>
+Ikuti praktik esensial ini untuk menjaga keamanan dompet Anda:
+</Tip>
+
+- Gunakan kata sandi yang kuat dan unik.
+- Aktifkan otentikasi dua faktor (2FA).
+- Jangan pernah membagikan kunci dompet Anda.
+- Jaga dompet Anda tetap diperbarui dan terpercaya. Tetap aman dan terus bermain!

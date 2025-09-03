@@ -1,0 +1,483 @@
+---
+title: 收藏管理
+description: 创建和管理 NFT 收藏的完全指南，使用 CreateKit
+lang: cn
+originalPath: createkit/collections.mdx
+---
+## 概览
+
+集合管理是 CreateKit 的核心。本指南涵盖了使用 BaseMint 协议创建、配置和管理 NFT 集合所需了解的所有信息。
+
+## 集合元数据结构
+
+每个集合都需要特定的元数据来定义其特征：
+
+### 必需参数
+
+<ParamField path="name" type="string">
+  您的 NFT 集合名称（例如，“Bored Ape Yacht Club”）
+</ParamField>
+
+<ParamField path="symbol" type="string">
+  您的集合符号/股票代码（例如，“BAYC”）
+</ParamField>
+
+<ParamField path="creator" type="0x${string}">
+  集合创建者的以太坊地址
+</ParamField>
+
+<ParamField path="gameOwner" type="0x${string}">
+  游戏所有者的以太坊地址（可以与创建者相同）
+</ParamField>
+
+### 可选参数
+
+<ParamField path="maxSupply" type="bigint" default="10000n">
+  可铸造的最大代币数量
+</ParamField>
+
+<ParamField path="mintPrice" type="bigint" default="0n">
+  每个代币的价格（以 wei 为单位）（对于 ETH 值使用 parseEther()）
+</ParamField>
+
+<ParamField path="maxPerWallet" type="bigint" default="100n">
+  每个钱包可铸造的最大代币数量
+</ParamField>
+
+<ParamField path="isWhitelistEnabled" type="boolean" default="false">
+  是否启用了仅白名单铸造
+</ParamField>
+
+<ParamField path="startTime" type="bigint" default="0n">
+  铸造开始的 Unix 时间戳（0 = 立即）
+</ParamField>
+
+<ParamField path="endTime" type="bigint" default="BigInt(Date.now() / 1000 + 86400 * 365 * 100)">
+  铸造结束的 Unix 时间戳
+</ParamField>
+
+<ParamField path="tokenStandard" type="'ERC721' | 'ERC1155'" default="'ERC721'">
+  使用的代币标准
+</ParamField>
+
+<ParamField path="chainId" type="number" default="1993">
+  链 ID（1993 = B3 测试网，8333 = B3 主网）
+</ParamField>
+
+## 创建集合
+
+### 基础集合
+
+```typescript title="基础集合创建"
+import { CollectionManager, b3Testnet } from '@b3dotfun/basemint'
+import { createPublicClient, createWalletClient, http } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+
+const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`)
+const publicClient = createPublicClient({
+  chain: b3Testnet,
+  transport: http()
+})
+
+const walletClient = createWalletClient({
+  chain: b3Testnet,
+  transport: http(),
+  account
+})
+
+const collectionManager = new CollectionManager(publicClient)
+
+// 定义基础集合
+const basicCollection = {
+  name: "My Art Collection",
+  symbol: "MAC",
+  creator: account.address,
+  gameOwner: account.address,
+  description: "一系列数字艺术作品",
+  image: "https://example.com/collection-image.png"
+}
+
+// 生成创建者签名
+const creatorSignature = await collectionManager.generateCreatorSignature(
+  walletClient,
+  basicCollection
+)
+```
+
+### 高级集合配置
+
+```typescript title="高级集合设置"
+import { parseEther } from 'viem'
+
+const advancedCollection = {
+  // 必需
+  name: "Premium Gaming Items",
+  symbol: "PGI",
+  creator: account.address,
+  gameOwner: "0x1234567890123456789012345678901234567890", // 不同的游戏所有者
+  
+  // 供应量和定价
+  maxSupply: 5000n,
+  mintPrice: parseEther("0.01"), // 0.01 ETH
+  maxPerWallet: 5n,
+  
+  // 时间控制
+  startTime: BigInt(Math.floor(Date.now() / 1000) + 3600), // 1小时后开始
+  endTime: BigInt(Math.floor(Date.now() / 1000) + 86400 * 7), // 7天后结束
+  
+  // 白名单配置
+  isWhitelistEnabled: true,
+  whitelistMerkleRoot: "0x..." as `0x${string}`,
+  
+  // 元数据
+  description: "为高级玩家提供的独家游戏物品",
+  image: "https://example.com/premium-collection.png",
+  external_url: "https://mygame.com/premium-items",
+  animation_url: "https://example.com/collection-animation.mp4",
+  
+  // 集合属性
+  attributes: [
+    { trait_type: "Category", value: "Gaming" },
+    { trait_type: "Rarity", value: "Premium" },
+    { trait_type: "Edition", value: "First" }
+  ],
+  
+  // 技术
+  tokenStandard: "ERC1155" as const,
+  chainId: 1993
+}
+```
+
+## 代币标准
+
+CreateKit 支持 ERC721 和 ERC1155 标准：
+
+<Tabs>
+<Tab title="ERC721 集合">
+```typescript
+const erc721Collection = {
+  name: "Unique Art Pieces",
+  symbol: "UAP",
+  creator: account.address,
+  gameOwner: account.address,
+  tokenStandard: "ERC721" as const,
+  maxSupply: 1000n, // 每个代币都是独一无二的
+  description: "独一无二的数字艺术作品"
+}
+
+// ERC721 铸造（数量始终为 1）
+const collection721 = collectionManager.createCollection(
+  predictedAddress,
+  "ERC721"
+)
+
+await collection721.mint(
+  walletClient,
+  1n, // 对于 ERC721 始终为 1
+  undefined, // 元数据 URI
+  mintPrice,
+  proof
+)
+```
+</Tab>
+
+<Tab title="ERC1155 集合">
+```typescript
+const erc1155Collection = {
+  name: "Game Resources",
+  symbol: "GRS",
+  creator: account.address,
+  gameOwner: account.address,
+  tokenStandard: "ERC1155" as const,
+  maxSupply: 100000n, // 所有代币类型的总量
+  description: "可替代和半可替代的游戏资源"
+}
+
+// ERC1155 铸造（可以铸造多个）
+const collection1155 = collectionManager.createCollection(
+  predictedAddress,
+  "ERC1155"
+)
+
+await collection1155.mint(
+  walletClient,
+  10n, // 可以铸造多个代币
+  "https://example.com/token/1", // 特定代币元数据
+  mintPrice,
+  proof
+)
+```
+</Tab>
+</Tabs>
+
+## 元数据管理
+
+### 集合级元数据
+
+```typescript title="集合元数据"
+const collectionMetadata = {
+  name: "My Collection",
+  description: "一系列精彩的数字资产",
+  image: "https://example.com/collection-image.png",
+  external_url: "https://mywebsite.com/collection",
+  
+  // 市场背景和横幅
+  background_color: "ffffff",
+  banner_image_url: "https://example.com/banner.png",
+  
+  // 集合属性
+  attributes: [
+    { trait_type: "Theme", value: "Fantasy" },
+    { trait_type: "Artist", value: "Digital Creator" }
+  ]
+}
+```
+
+### 代币级元数据
+
+CreateKit 根据您的集合设置自动生成代币元数据：
+
+<Tabs>
+<Tab title="自动生成的元数据">
+```typescript
+import { NFTMetadataManager, MediaType } from '@b3dotfun/basemint'
+
+// 为不同的媒体类型生成元数据
+const artworkMetadata = NFTMetadataManager.generateNFTMetadata(
+  collectionMetadata,
+  MediaType.ARTWORK
+)
+
+const model3dMetadata = NFTMetadataManager.generateNFTMetadata(
+  collectionMetadata,
+  MediaType.MODEL_3D
+)
+
+const videoMetadata = NFTMetadataManager.generateNFTMetadata(
+  collectionMetadata,
+  MediaType.VIDEO
+)
+
+// 转换为 JSON
+const metadataJson = NFTMetadataManager.generateJSON(artworkMetadata)
+console.log(metadataJson)
+```
+</Tab>
+
+<Tab title="自定义元数据">
+```typescript
+// 对于自定义元数据，请提供您自己的 baseURI
+const customCollection = {
+  name: "Custom Metadata Collection",
+  symbol: "CMC",
+  creator: account.address,
+  gameOwner: account.address,
+  baseURI: "https://myapi.com/metadata/", // 您的自定义元数据端点
+  description: "具有自定义元数据的集合"
+}
+
+// 您的 API 应该响应：https://myapi.com/metadata/{tokenId}
+// 使用标准 OpenSea 元数据格式
+```
+</Tab>
+</Tabs>
+
+## 集合验证
+
+CreateKit 为集合参数提供内置验证：
+
+```typescript title="参数验证"
+import { validateCollectionMetadata } from '@b3dotfun/basemint'
+
+try {
+  // 验证集合元数据
+  const validation = validateCollectionMetadata(collectionMetadata)
+  
+  if (!validation.isValid) {
+    console.error("验证错误：", validation.errors)
+    return
+  }
+  
+  console.log("✅ 集合元数据有效")
+  
+  // 继续生成签名
+  const signature = await collectionManager.generateCreatorSignature(
+    walletClient,
+    collectionMetadata
+  )
+} catch (error) {
+  console.error("验证失败：", error)
+}
+```
+
+## 地址预测
+
+CreateKit 的一个关键特性是确定性地址预测：
+
+```typescript title="地址预测"
+// 首先生成创建者签名
+const creatorSignature = await collectionManager.generateCreatorSignature(
+  walletClient,
+  collectionMetadata
+)
+
+// 预测集合地址
+const predictedAddress = collectionManager.predictCollectionAddress(
+  collectionMetadata,
+  creatorSignature
+)
+
+console.log(`集合将部署在：${predictedAddress}`)
+
+// 现在您可以在部署前使用此地址
+// 用于市场集成、前端显示等。
+```
+
+## 集合管理操作
+
+### 检查集合状态
+
+```typescript title="集合状态"
+const collection = collectionManager.createCollection(
+  predictedAddress,
+  "ERC721"
+)
+
+// 检查集合是否已部署
+const isDeployed = await collection.isDeployed()
+console.log(`已部署：${isDeployed}`)
+
+// 获取集合信息（仅在部署后有效）
+if (isDeployed) {
+  const info = await collection.getCollectionInfo()
+  console.log("集合信息：", {
+    name: info.name,
+    symbol: info.symbol,
+    totalSupply: info.totalSupply.toString(),
+    maxSupply: info.maxSupply.toString(),
+    mintPrice: info.mintPrice.toString(),
+    maxPerWallet: info.maxPerWallet.toString()
+  })
+}
+```
+
+### 更新集合设置
+
+<Warning>
+大多数集合参数在部署后无法更改。请仔细规划您的集合配置。
+</Warning>
+
+```typescript title="部署后管理"
+// 部署后只能进行某些操作
+
+// 检查当前铸造价格（如果实现了动态定价）
+const currentPrice = await collection.getCurrentMintPrice()
+
+// 检查当前是否可以铸造
+const isMintingActive = await collection.isMintingActive()
+
+// 获取剩余供应量
+const remainingSupply = await collection.getRemainingSupply()
+
+console.log({
+  currentPrice: currentPrice.toString(),
+  isMintingActive,
+  remainingSupply: remainingSupply.toString()
+})
+```
+
+## 最佳实践
+
+### 1. 集合规划
+
+<CardGroup cols={2}>
+  <Card title="供应策略" icon="chart-line">
+    - 根据用例设置适当的最大供应量
+    - 考虑未来需求和稀缺性
+    - 为增长或特别版留出空间
+  </Card>
+  <Card title="定价策略" icon="dollar-sign">
+    - 研究类似集合以参考定价
+    - 考虑燃气费用和交易费用
+    - 为不同的市场条件规划
+  </Card>
+</CardGroup>
+
+### 2. 元数据质量
+
+```typescript title="高质量元数据"
+const qualityCollection = {
+  name: "Professional Art Collection",
+  symbol: "PAC",
+  creator: account.address,
+  gameOwner: account.address,
+  
+  // 高质量描述
+  description: "精选的专业数字艺术作品集，展示当代主题和创新技术。",
+  
+  // 专业图像（最小 640x640px）
+  image: "https://example.com/high-res-collection-image.png",
+  
+  // 全面的属性以提高可发现性
+  attributes: [
+    { trait_type: "Art Style", value: "Contemporary" },
+    { trait_type: "Medium", value: "Digital" },
+    { trait_type: "Artist Verification", value: "Verified" },
+    { trait_type: "Edition Type", value: "Limited" }
+  ],
+  
+  // 外部链接以增加可信度
+  external_url: "https://professionalartist.com/collection"
+}
+```
+
+### 3. 安全考虑
+
+<AccordionGroup>
+  <Accordion title="私钥管理">
+    - 永远不要在源代码中硬编码私钥
+    - 使用环境变量或安全的密钥管理
+    - 考虑对有价值的集合使用多签名钱包
+  </Accordion>
+
+  <Accordion title="签名验证">
+    - 总是在部署前验证签名
+    - 验证集合参数与预期值匹配
+    - 在主网部署前在测试网上测试
+  </Accordion>
+
+  <Accordion title="访问控制">
+    - 仔细选择创建者和游戏所有者地址
+    - 理解奖励分配的含义
+    - 规划长期集合管理
+  </Accordion>
+</AccordionGroup>
+
+## 故障排除
+
+<AccordionGroup>
+  <Accordion title="地址预测不匹配">
+    确保签名生成和部署之间的所有集合参数完全相同。即使是小的变化也会导致不同的地址。
+  </Accordion>
+
+  <Accordion title="无效的集合参数">
+    检查是否提供了所有必需的字段，以及值是否在可接受的范围内（例如，maxSupply > 0，有效地址）。
+  </Accordion>
+
+  <Accordion title="签名生成失败">
+    验证您的钱包客户端是否正确配置，以及您是否有足够的资金进行签名交易。
+  </Accordion>
+</AccordionGroup>
+
+## 下一步
+
+现在您已经了解了集合管理，探索这些相关主题：
+
+<CardGroup cols={2}>
+  <Card title="铸造指南" icon="coins" href="/createkit/minting">
+    学习如何实现代币铸造功能
+  </Card>
+  <Card title="白名单管理" icon="list" href="/createkit/whitelist">
+    为独家访问设置基于白名单的铸造
+  </Card>
+</CardGroup>

@@ -1,0 +1,217 @@
+---
+title: ArenaCoins
+description: 面向特定竞技场的带有债券曲线定价的代币，让您拥有一部分 AI 战斗环境的所有权
+lang: cn
+originalPath: hypeduel/arenacoins.mdx
+---
+**ArenaCoins** 是 HypeDuel 上每个战斗环境的原生代币 —— 一种在世界首个 AI 对 AI 娱乐竞技场中拥有一份行动的革命性方式。每个竞技场都有其独特的代币，随着竞技场的成功而升值。
+
+## 核心概念
+
+```mermaid
+graph TD
+    subgraph "竞技场创建"
+        AC[竞技场创建] --> BP[绑定阶段开始]
+        BP --> BC[绑定曲线定价]
+    end
+
+    subgraph "社区建设"
+        BC --> PB[玩家绑定 $B3]
+        PB --> RA[接收 ArenaCoins]
+        RA --> ES[早期支持者]
+    end
+
+    subgraph "竞技场增长"
+        ES --> LB[直播战斗开始]
+        LB --> BF[通过投注和费用产生]
+        BF --> RS[收益分享]
+    end
+
+    subgraph "代币特性"
+        RS --> RV[来自投注的收益]
+        RS --> BR[增加收益]
+        RS --> TF[交易费用]
+        RV --> TB[代币回购]
+        BR --> TB
+        TF --> TB
+    end
+
+    subgraph "价值创造"
+        TB --> VA[价值升值]
+        VA --> CG[社区增长]
+        CG --> AT[吸引交易者]
+        AT --> DX[DEX 交易]
+    end
+
+    DX --> TF
+    CG --> LB
+
+    style AC fill:#e3f2fd
+    style RA fill:#e8f5e8
+    style RS fill:#fff3e0
+    style VA fill:#c8e6c9
+```
+
+### ArenaCoins 的独特之处
+
+<Card title="每个竞技场一个" icon="building">
+  每个战斗环境都有其独特的 ArenaCoin ($COMBAT, $RACING 等)
+</Card>
+
+<Card title="绑定曲线定价" icon="trending-up">
+  通过数学曲线进行公平的价格发现，不可能出现前跑
+</Card>
+
+<Card title="收益分享" icon="coins">
+  从你的竞技场中的每一次投注、加速和交易中赚取费用
+</Card>
+
+<Card title="社区治理" icon="users">
+  ArenaCoin 持有者对竞技场改进和规则变更进行投票
+</Card>
+
+## ArenaCoin 生命周期
+
+### 阶段 1：竞技场创建 & 绑定
+
+当一个新的竞技场启动时，它进入**绑定阶段**：
+
+<Steps>
+  <Step title="竞技场启动">创建者部署具有独特玩法的新战斗环境</Step>
+  <Step title="绑定开放">玩家可以绑定 $B3 以按曲线价格接收 ArenaCoins</Step>
+  <Step title="社区建设">早期支持者积累代币并建立初始社区</Step>
+  <Step title="毕业标准">竞技场达到绑定目标（流动性 + 社区规模）</Step>
+</Steps>
+
+### 阶段 2：DEX 交易
+
+成功绑定后，ArenaCoins 毕业到完整市场交易：
+
+- **Uniswap 池**：创建 ArenaCoin/$B3 交易对
+- **市场发现**：开放市场决定代币价值
+- **流动性提供**：绑定资金为初始流动性提供种子
+- **费用生成**：交易费用支持竞技场经济
+
+## 绑定曲线机制
+
+### 数学基础
+
+ArenaCoins 使用**二次绑定曲线**进行公平的价格发现：
+
+```typescript
+// 绑定曲线定价公式
+function calculatePrice(supply: number, bondingConstant: number): number {
+  return (supply / bondingConstant) ** 2;
+}
+
+// $COMBAT 竞技场示例
+const bondingConstant = 1000000; // 1M 代币以 1:1 比例
+const currentSupply = 250000; // 已铸造 250k 代币
+
+const pricePerToken = (250000 / 1000000) ** 2;
+// = 0.25^2 = 0.0625 $B3 每 ArenaCoin
+```
+
+### 绑定好处
+
+<Tabs>
+  <Tab title="公平启动">
+    - 没有预售或内部分配 - 随需求增加价格 - 早期支持者获得更好的价格 -
+    数学价格发现
+  </Tab>
+
+<Tab title="流动性保证">
+  - 总是可以买卖 - 不依赖市场制造者 - 曲线提供即时流动性 - 可预测的价格
+  影响
+</Tab>
+
+  <Tab title="防止操纵">
+    - 不可能出现前跑 - 大额购买会影响价格 - 曲线自然抑制泵 - 透明的定价
+    算法
+  </Tab>
+</Tabs>
+
+### 绑定示例
+
+让我们追踪一位早期投资者的旅程：
+
+<AccordionGroup>
+  <Accordion title="第 1 天：竞技场启动">
+    - **竞技场**：战斗模拟器启动 - **供应**：0 $COMBAT 代币存在 - **价格**：起始价格 ≈ 0.001 $B3
+    - **投资**：Alice 绑定 100 $B3 - **收到**：约 316 $COMBAT 代币
+  </Accordion>
+
+<Accordion title="第 2 周：兴趣增长">
+  - **供应**：铸造 50,000 $COMBAT 代币 - **价格**：约 0.0025 $B3 每代币 - **Alice 的持有**：316 代币价值
+  约 79 $B3 - **投资**：Bob 绑定 500 $B3 - **收到**：约 200 $COMBAT 代币
+</Accordion>
+
+  <Accordion title="第 1 月：竞技场成功">
+    - **供应**：铸造 200,000 $COMBAT 代币 - **价格**：约 0.04 $B3 每代币 - **Alice 的持有**：316 代币
+    价值约 126 $B3 - **社区**：活跃的战斗和不断增长的用户基础 - **毕业**：竞技场接近 DEX 上市
+    标准
+  </Accordion>
+</AccordionGroup>
+
+## 收益分享模型
+
+ArenaCoins 通过多个收入流产生价值：
+
+### 主要收入来源
+
+```mermaid
+graph LR
+    subgraph "收入来源"
+        A[投注活动] --> B[池子的 10%<br/>到财政部]
+        C[加速购买] --> D[50% 到财政部]
+        E[DEX 交易] --> F[费用的 66%<br/>到财政部]
+    end
+
+    subgraph "竞技场财政部"
+        B --> T[竞技场财政部]
+        D --> T
+        F --> T
+    end
+
+    subgraph "财政部行动"
+        T --> G[ArenaCoin 回购]
+        T --> H[代币销毁]
+        T --> I[流动性支持]
+    end
+
+    subgraph "价值影响"
+        G --> J[供应减少]
+        H --> J
+        I --> K[交易改善]
+        J --> L[价格升值]
+        K --> L
+    end
+
+    subgraph "社区好处"
+        L --> M[更高的代币价值]
+        M --> N[增加的兴趣]
+        N --> O[更多玩家]
+        O --> A
+        O --> C
+        O --> E
+    end
+
+    style T fill:#fff3e0
+    style L fill:#c8e6c9
+    style M fill:#e8f5e8
+```
+
+<Tabs>
+  <Tab title="投注费用">
+    **所有投注池的 10%** - 从每场战斗中收集 - 与投注量成比例 - 累积在竞技场财政部 - 用于代币回购 *示例：10,000 HYPES 投注池 = 1,000 HYPES 到财政部*
+  </Tab>
+
+<Tab title="加速收入">
+  **加速购买的 50%** - 来自互动功能的实时收入 - 更高的参与度 = 更多收入 - 随竞技场受欢迎程度而增长 - 立即对财政部产生影响 *示例：500 HYPES 的加速 = 250 HYPES 到财政部*
+</Tab>
+
+  <Tab title="交易费用">
+    **DEX 交易费用的 66%**（毕业后） - 来自代币交易的持续收入 - 随代币采用而增长 -
+    市场驱动的收入规模 - 长期可持续性 *示例：1% 交易费，66% 到财政部*
+  </Tab>
+</Tabs>

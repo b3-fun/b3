@@ -1,0 +1,96 @@
+---
+lang: cn
+originalPath: snippets/code-examples.mdx
+---
+# 代码示例
+
+## 安装
+
+```bash title="安装 B3 SDK" icon="download"
+npm install @b3dotfun/sdk
+```
+
+## 基本设置
+
+```tsx title="导入 SDK 组件" icon="react"
+import "@b3dotfun/sdk/index.css";
+import { AnyspendProvider, B3Provider } from "@b3dotfun/sdk";
+```
+
+## NFT 购买组件
+
+```tsx title="NFT 按钮示例" icon="shopping-cart" lines
+import { AnySpendNFTButton } from "@b3dotfun/sdk/anyspend/react";
+
+function NFTCard() {
+  return (
+    <AnySpendNFTButton
+      nftContract={{
+        chainId: 8333,
+        contractAddress: "0x9c275ff1634519E9B5449ec79cd939B5F900564d",
+        price: "500000000000000000",
+        currency: { symbol: "ETH", decimals: 18 },
+      }}
+      recipientAddress={userAddress}
+      onSuccess={txHash => showSuccess(txHash)}
+    />
+  );
+}
+```
+
+## 跨链交换
+
+```tsx title="AnySpend 页面模式" icon="arrows-rotate" highlight={6-8}
+import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
+
+function CrossChainSwap() {
+  return <AnySpend mode="page" recipientAddress={userAddress} onSuccess={txHash => updatePortfolio(txHash)} />;
+}
+```
+
+## 认证
+
+```tsx title="B3 认证设置" icon="user-shield" expandable
+import { B3Provider, SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
+
+function App() {
+  return (
+    <B3Provider environment="production">
+      <SignInWithB3
+        provider={{ strategy: "google" }}
+        partnerId="your-partner-id"
+        onLoginSuccess={globalAccount => {
+          console.log("Authenticated:", globalAccount);
+        }}
+      />
+    </B3Provider>
+  );
+}
+```
+
+## 钱包连接
+
+```tsx title="连接钱包到 B3" icon="wallet" focus={8-12}
+import { useConnect } from "@b3dotfun/sdk";
+
+function WalletButton() {
+  const { connect, isConnecting } = useConnect();
+
+  const handleConnect = async () => {
+    try {
+      await connect({
+        chainId: 8333,
+        rpcUrl: "https://mainnet-rpc.b3.fun",
+      });
+    } catch (error) {
+      console.error("连接失败:", error);
+    }
+  };
+
+  return (
+    <button onClick={handleConnect} disabled={isConnecting}>
+      {isConnecting ? "正在连接..." : "连接到 B3"}
+    </button>
+  );
+}
+```

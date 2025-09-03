@@ -1,0 +1,32 @@
+---
+title: Pilih Aset Kutipan
+description: 'ETH vs ERC20 (misalnya, B3) sebagai aset kutipan selama bonding.'
+lang: id
+originalPath: bondkit/guides/choose-quote-asset.mdx
+---
+## Tinjauan Umum
+
+BondKit mendukung bonding terhadap ETH atau ERC20 yang diizinkan (misalnya, B3). Pilihan Anda mempengaruhi UX, integrasi, dan likuiditas saat migrasi.
+
+## Kapan menggunakan ETH
+
+- Aksesibilitas luas; kebanyakan pengguna memegang ETH di Base
+- UX lebih sederhana (tanpa persetujuan sebelumnya)
+- Likuiditas ETH langsung saat migrasi
+
+## Kapan menggunakan ERC20 (misalnya, B3)
+
+- Sejalan dengan ekonomi token yang ada
+- Dapat memulai pasangan token-token yang lebih dalam saat migrasi
+- Memerlukan persetujuan sebelum pembelian/penjualan
+
+## Perbedaan operasional
+
+- Biaya 5% pada pembelian dan penjualan untuk ETH dan ERC20
+- Alur ERC20 memerlukan `approve` sebelum interaksi kurva
+- Pasangan migrasi dibuat melawan WETH atau ERC20 yang dipilih
+
+<Note>
+Konfirmasikan daftar yang diizinkan untuk aset kutipan ERC20 dengan tim. Secara default hanya aset tertentu yang mungkin diaktifkan.
+</Note>
+

@@ -1,0 +1,148 @@
+---
+title: 介绍
+description: CreateKit（BaseMint SDK）- 一个用于在 B3 生态系统上无需支付燃气费用即可部署和管理 NFT 集合的 TypeScript SDK
+lang: cn
+originalPath: createkit/introduction.mdx
+---
+[![NPM](https://nodei.co/npm/@b3dotfun/basemint.svg)](https://www.npmjs.com/package/@b3dotfun/basemint)
+
+<CodeGroup>
+```bash npm
+npm install @b3dotfun/basemint
+```
+
+```bash yarn
+yarn add @b3dotfun/basemint
+```
+
+```bash pnpm
+pnpm add @b3dotfun/basemint
+```
+</CodeGroup>
+
+## 为什么选择 CreateKit？
+通过 CreateKit **免费创建 NFT**，用户只需签署一条信息（无需支付 gas 费用），集合就会在首次铸造时一次性部署和铸造。
+
+<Note>**尝试一下：** [免费创建 NFT 并赚取收益](https://explorer.b3.fun/apps/nfts/create)</Note>
+
+CreateKit 由 BaseMint 协议提供支持，是一个全面的 TypeScript SDK，它彻底改变了 NFT 集合的创建和管理方式。专为 B3 生态系统设计，提供了一种流畅、节省 gas 的工作流程，以最小的成本和最大的灵活性部署和管理 NFT 集合。
+
+<CardGroup cols={2}>
+  <Card title="零 Gas 创建" icon="circle-dollar">
+    在初始设置阶段完全免费使用链上地址创建 NFT
+  </Card>
+  <Card title="单次交易部署" icon="bolt">
+    一次交易部署集合并铸造您的第一个 NFT
+  </Card>
+  <Card title="多标准支持" icon="layer-group">
+    支持 ERC721 和 ERC1155 代币标准
+  </Card>
+  <Card title="市场准备就绪" icon="store">
+    与 OpenSea 兼容的元数据格式确保无缝市场集成
+  </Card>
+</CardGroup>
+
+## 关键特性
+
+### 🎨 **集合管理**
+- 部署 ERC721 和 ERC1155 集合
+- 自定义集合参数（名称、符号、供应量、定价）
+- 设置铸造时间框架和限制
+- 管理集合元数据和 URIs
+- 支持不同的媒体类型（3D 模型、艺术作品、视频、模因）
+
+### 🔒 **安全部署**
+- 两步签名验证过程
+- 创建者签名验证
+- 部署者签名验证
+- 集合地址预测
+
+### 🎯 **代币操作**
+- 铸造 ERC721 和 ERC1155 代币
+- 基于白名单的铸造，使用 Merkle 证明
+- 自动价格计算
+- 内置参数验证
+- 节省 gas 的交易
+
+### 💰 **奖励分配**
+- 跟踪创建者奖励
+- 监控每个集合的奖励累积
+- 查看每个集合的总奖励和未领取奖励
+- 跟踪每种接收者类型的奖励分配
+- 提取累积奖励
+
+## 系统流程
+
+BaseMint 协议提供了一个独特的、节省 gas 的工作流程：
+
+<Steps>
+  <Step title="集合创建 & 签名生成">
+    创建者定义集合参数并生成存储在链下的加密签名，无需消耗 gas。
+  </Step>
+  <Step title="链下存储 & 发现">
+    集合数据安全存储在 BaseMint 存储中，具有确定性地址，便于发现。
+  </Step>
+  <Step title="部署 & 首次铸造">
+    首次铸币者触发链上部署，一次交易涵盖部署和首次铸造。
+  </Step>
+  <Step title="常规铸造阶段">
+    为所有用户开放铸造，支持可选的白名单和钱包限制。
+  </Step>
+</Steps>
+
+## 奖励结构
+
+CreateKit 设有一个创新的奖励系统，惠及生态系统中的所有参与者：
+
+| 接收者类型 | 默认份额 | 描述 |
+|------------|---------|------|
+| **创建者** | 40% | 集合的发起人 |
+| **首次铸币者** | 30% | 触发部署的初始部署者 |
+| **游戏所有者** | 20% | 平台整合者 |
+| **平台** | 10% | 协议费 |
+
+<Note>
+奖励比例可由协议所有者配置，并可根据生态系统需求进行调整。
+</Note>
+
+## 支持的网络
+
+CreateKit 支持 B3 生态系统，并计划扩展到其他网络：
+
+<CardGroup cols={2}>
+  <Card title="B3 主网" icon="globe">
+    **链 ID:** 8333  
+    适用于实时应用的生产就绪部署
+  </Card>
+  <Card title="B3 测试网" icon="flask">
+    **链 ID:** 1993  
+    开发和测试环境
+  </Card>
+</CardGroup>
+
+## 入门
+
+准备开始构建了吗？查看我们的安装指南和快速入门教程，开始使用 CreateKit 创建您的第一个 NFT 集合。
+
+<CardGroup cols={2}>
+  <Card title="安装" icon="download" href="/createkit/installation">
+    安装 CreateKit 并设置您的开发环境
+  </Card>
+  <Card title="快速开始" icon="rocket" href="/createkit/quickstart">
+    在几分钟内构建您的第一个 NFT 集合
+  </Card>
+</CardGroup>
+
+## 开发者资源
+
+<CardGroup cols={3}>
+  <Card title="集合管理" icon="folder" href="/createkit/collections">
+    学习如何创建和管理 NFT 集合
+  </Card>
+  <Card title="铸造" icon="coins" href="/createkit/minting">
+    实现代币铸造功能
+  </Card>
+  <Card title="示例" icon="code" href="/createkit/examples">
+    探索实际实现示例
+  </Card>
+</CardGroup>

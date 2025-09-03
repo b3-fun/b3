@@ -1,0 +1,353 @@
+---
+title: Izin & Kunci Sesi
+description: Kelola izin dan kunci sesi untuk interaksi Akun Global B3 yang aman
+lang: id
+originalPath: sdk/global-account/permissions.mdx
+---
+## Tinjauan Umum
+
+Kunci sesi dan izin menyediakan cara aman untuk memungkinkan aplikasi melakukan tindakan atas nama pengguna tanpa memerlukan otentikasi terus-menerus. Ini sangat berguna untuk permainan dan aplikasi yang perlu melakukan transaksi secara otomatis.
+
+## Sistem Izin
+
+### Jenis Izin
+
+B3 Global Accounts mendukung izin granular yang dapat dikonfigurasi untuk berbagai kasus penggunaan:
+
+- **Interaksi Kontrak**: Tentukan kontrak pintar mana yang dapat dipanggil
+- **Batasan Token**: Tetapkan batas pengeluaran untuk token asli dan token ERC-20
+- **Pembatasan Waktu**: Tentukan tanggal mulai dan berakhir untuk izin
+- **Batasan Transaksi**: Kontrol nilai maksimum per transaksi
+
+### Struktur Izin
+
+```typescript
+interface Permissions {
+  approvedTargets: string[];  // Alamat kontrak
+  startDate: Date;           // Kapan izin menjadi aktif
+  endDate: Date;             // Kapan izin berakhir
+  nativeTokenLimitPerTransaction: number; // Batas ETH per tx
+  // Batasan token ERC-20 tambahan dapat ditambahkan
+}
+```
+
+## Implementasi Kunci Sesi
+
+### Permintaan Izin Dasar
+
+```tsx
+import { RequestPermissionsButton } from "@b3dotfun/sdk/global-account/react";
+
+const b3Chain = {
+  id: 8333,
+  name: "B3",
+  nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+  rpc: "https://mainnet-rpc.b3.fun",
+};
+
+function BasicPermissions() {
+  const permissions = {
+    approvedTargets: [
+      "0x9c275ff1634519E9B5449ec79cd939B5F900564d", // Kontrak game Anda
+    ],
+    startDate: new Date(),
+    endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 hari
+    nativeTokenLimitPerTransaction: 0.01, // 0.01 ETH per transaksi
+  };
+
+  return (
+    <RequestPermissionsButton
+      chain={b3Chain}
+      sessionKeyAddress="0x..." // MetaMask atau alamat dompet
+      permissions={permissions}
+      onSuccess={() => {
+        console.log("Izin berhasil diberikan!");
+      }}
+      onError={(error) => {
+        console.error("Permintaan izin gagal:", error);
+      }}
+    />
+  );
+}
+```
+
+### Izin Spesifik Game
+
+Untuk aplikasi permainan, Anda mungkin memerlukan izin yang lebih luas:
+
+```tsx
+function GamePermissions() {
+  const gamePermissions = {
+    approvedTargets: [
+      "0x...", // Kontrak game
+      "0x...", // Pasar NFT
+      "0x...", // Kontrak token
+    ],
+    startDate: new Date(),
+    endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 hari
+    nativeTokenLimitPerTransaction: 0.001, // Batas ETH kecil untuk gas
+  };
+
+  return (
+    <div className="game-permissions">
+      <h3>Berikan Izin Game</h3>
+      <p>Izinkan game ini melakukan tindakan atas nama Anda selama 7 hari</p>
+      
+      <RequestPermissionsButton
+        chain={b3Chain}
+        sessionKeyAddress="0x..."
+        permissions={gamePermissions}
+        onSuccess={() => {
+          // Arahkan ke game atau perbarui UI
+          console.log("Izin game berhasil diberikan!");
+        }}
+        onError={(error) => {
+          console.error("Gagal memberikan izin game:", error);
+        }}
+      />
+    </div>
+  );
+}
+```
+
+### UI Izin Kustom
+
+Untuk kontrol lebih atas alur izin:
+
+```tsx
+import { useRequestPermissions } from "@b3dotfun/sdk/global-account/react";
+
+function CustomPermissionFlow() {
+  const { requestPermissions, isLoading, error } = useRequestPermissions();
+
+  const handlePermissionRequest = async () => {
+    try {
+      const result = await requestPermissions({
+        chain: b3Chain,
+        sessionKeyAddress: "0x...",
+        permissions: {
+          approvedTargets: ["0x..."],
+          startDate: new Date(),
+          endDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 jam
+          nativeTokenLimitPerTransaction: 0.005,
+        },
+      });
+
+      if (result.success) {
+        console.log("Izin berhasil diberikan:", result.data);
+      }
+    } catch (err) {
+      console.error("Permintaan izin gagal:", err);
+    }
+  };
+
+  return (
+    <div>
+      <button 
+        onClick={handlePermissionRequest}
+        disabled={isLoading}
+      >
+        {isLoading ? "Meminta Izin..." : "Berikan Izin"}
+      </button>
+      
+      {error && (
+        <div className="error">
+          Error: {error.message}
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## Manajemen Kunci Sesi
+
+### Memeriksa Status Izin
+
+```tsx
+import { usePermissions } from "@b3dotfun/sdk/global-account/react";
+
+function PermissionStatus() {
+  const { permissions, hasPermissions, isExpired } = usePermissions();
+
+  return (
+    <div className="permission-status">
+      <h3>Status Izin</h3>
+      
+      {hasPermissions ? (
+        <div className="permissions-active">
+          <p>✅ Izin Aktif</p>
+          <p>Kadaluarsa: {permissions?.endDate.toLocaleDateString()}</p>
+          <p>Kontrak yang Disetujui: {permissions?.approvedTargets.length}</p>
+          
+          {isExpired && (
+            <p className="warning">⚠️ Izin telah kadaluarsa</p>
+          )}
+        </div>
+      ) : (
+        <div className="no-permissions">
+          <p>❌ Tidak ada izin aktif</p>
+          <RequestPermissionsButton {...permissionConfig} />
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+### Mencabut Izin
+
+```tsx
+import { useRevokePermissions } from "@b3dotfun/sdk/global-account/react";
+
+function RevokePermissions() {
+  const { revokePermissions, isLoading } = useRevokePermissions();
+
+  const handleRevoke = async () => {
+    try {
+      await revokePermissions({
+        sessionKeyAddress: "0x...",
+        chain: b3Chain,
+      });
+      console.log("Izin berhasil dicabut");
+    } catch (error) {
+      console.error("Gagal mencabut izin:", error);
+    }
+  };
+
+  return (
+    <button 
+      onClick={handleRevoke}
+      disabled={isLoading}
+      className="revoke-button"
+    >
+      {isLoading ? "Mencabut..." : "Cabut Izin"}
+    </button>
+  );
+}
+```
+
+## Pola Izin Lanjutan
+
+### Pembaruan Izin Dinamis
+
+```tsx
+function DynamicPermissions() {
+  const [permissionLevel, setPermissionLevel] = useState<'basic' | 'advanced'>('basic');
+
+  const getPermissions = (level: string) => {
+    const basePermissions = {
+      startDate: new Date(),
+      endDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 jam
+    };
+
+    if (level === 'basic') {
+      return {
+        ...basePermissions,
+        approvedTargets: ["0x..."], // Kontrak terbatas
+        nativeTokenLimitPerTransaction: 0.001,
+      };
+    } else {
+      return {
+        ...basePermissions,
+        approvedTargets: ["0x...", "0x...", "0x..."], // Lebih banyak kontrak
+        nativeTokenLimitPerTransaction: 0.01,
+      };
+    }
+  };
+
+  return (
+    <div>
+      <div className="permission-selector">
+        <button 
+          onClick={() => setPermissionLevel('basic')}
+          className={permissionLevel === 'basic' ? 'active' : ''}
+        >
+          Izin Dasar
+        </button>
+        <button 
+          onClick={() => setPermissionLevel('advanced')}
+          className={permissionLevel === 'advanced' ? 'active' : ''}
+        >
+          Izin Lanjutan
+        </button>
+      </div>
+
+      <RequestPermissionsButton
+        chain={b3Chain}
+        sessionKeyAddress="0x..."
+        permissions={getPermissions(permissionLevel)}
+        onSuccess={() => console.log(`${permissionLevel} izin berhasil diberikan`)}
+      />
+    </div>
+  );
+}
+```
+
+## Praktik Terbaik Keamanan
+
+<CardGroup cols={2}>
+
+<Card title="Izin Minimal" icon="shield">
+  Hanya minta izin minimum yang diperlukan untuk aplikasi Anda.
+</Card>
+
+<Card title="Durasi Pendek" icon="clock">
+  Gunakan durasi izin yang lebih pendek untuk keamanan yang lebih baik.
+</Card>
+
+<Card title="Target Spesifik" icon="target">
+  Tentukan alamat kontrak yang tepat daripada izin yang luas.
+</Card>
+
+<Card title="Audit Berkala" icon="search">
+  Secara berkala audit dan putar kunci sesi.
+</Card>
+
+</CardGroup>
+
+## Penanganan Kesalahan
+
+Kesalahan terkait izin umum dan cara menanganinya:
+
+```tsx
+function PermissionErrorHandling() {
+  const handlePermissionError = (error: Error) => {
+    switch (error.message) {
+      case 'USER_REJECTED':
+        console.log('Pengguna menolak permintaan izin');
+        break;
+      case 'INSUFFICIENT_PERMISSIONS':
+        console.log('Izin yang diminta melebihi batas');
+        break;
+      case 'EXPIRED_SESSION':
+        console.log('Kunci sesi telah kadaluarsa');
+        // Minta izin baru
+        break;
+      default:
+        console.error('Kesalahan izin tidak diketahui:', error);
+    }
+  };
+
+  return (
+    <RequestPermissionsButton
+      // ... prop lainnya
+      onError={handlePermissionError}
+    />
+  );
+}
+```
+
+## Langkah Selanjutnya
+
+<CardGroup cols={2}>
+
+<Card title="React Hooks" icon="react" href="/sdk/global-account/hooks">
+  Jelajahi semua hook yang tersedia untuk manajemen izin.
+</Card>
+
+<Card title="Contoh" icon="code" href="/sdk/global-account/examples">
+  Lihat contoh implementasi izin lengkap.
+</Card>
+
+</CardGroup>

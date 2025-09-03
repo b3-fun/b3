@@ -1,0 +1,395 @@
+---
+title: 错误处理
+description: |-
+  Comprehensive error handling patterns and recovery strategies for CreateKit
+
+  全面的错误处理模式和 CreateKit 的恢复策略
+lang: cn
+originalPath: createkit/error-handling.mdx
+---
+## 概览
+
+对于使用 CreateKit 的生产应用程序，健壮的错误处理至关重要。本指南涵盖了常见的错误场景、最佳实践和恢复策略。
+
+## 常见错误类型
+
+### 签名错误
+
+```typescript title="签名错误处理"
+import { CollectionManager } from '@b3dotfun/basemint'
+
+async function handleSignatureErrors(walletClient: any, metadata: any) {
+  try {
+    const signature = await collectionManager.generateCreatorSignature(
+      walletClient,
+      metadata
+    )
+    return signature
+  } catch (error: any) {
+    if (error.message.includes('User rejected')) {
+      throw new Error('SIGNATURE_REJECTED: 用户拒绝了签名请求')
+    } else if (error.message.includes('Insufficient funds')) {
+      throw new Error('INSUFFICIENT_FUNDS: 用于 gas 的资金不足')
+    } else if (error.message.includes('Network error')) {
+      throw new Error('NETWORK_ERROR: 无法连接到网络')
+    } else {
+      throw new Error(`SIGNATURE_FAILED: ${error.message}`)
+    }
+  }
+}
+```
+
+### 存储错误
+
+```typescript title="存储错误处理"
+import { BaseMintStorage } from '@b3dotfun/basemint'
+
+async function handleStorageErrors(storage: BaseMintStorage, metadata: any, signature: string) {
+  try {
+    return await storage.submitCollection(metadata, signature)
+  } catch (error: any) {
+    if (error.message.includes('Invalid signature')) {
+      throw new Error('INVALID_SIGNATURE: 签名验证失败')
+    } else if (error.message.includes('Collection exists')) {
+      throw new Error('DUPLICATE_COLLECTION: 集合已存在')
+    } else if (error.message.includes('Rate limit')) {
+      throw new Error('RATE_LIMITED: 请求过多，请稍后再试')
+    } else if (error.status === 503) {
+      throw new Error('SERVICE_UNAVAILABLE: 存储服务暂时不可用')
+    } else {
+      throw new Error(`STORAGE_ERROR: ${error.message}`)
+    }
+  }
+}
+```
+
+### 合约交互错误
+
+```typescript title="合约错误处理"
+async function handleMintingErrors(collection: any, walletClient: any, params: any) {
+  try {
+    return await collection.mint(walletClient, ...params)
+  } catch (error: any) {
+    if (error.message.includes('Invalid merkle proof')) {
+      throw new Error('NOT_WHITELISTED: 地址不在白名单中')
+    } else if (error.message.includes('Insufficient payment')) {
+      throw new Error('INSUFFICIENT_PAYMENT: 铸币价格不正确')
+    } else if (error.message.includes('Max per wallet exceeded')) {
+      throw new Error('WALLET_LIMIT_EXCEEDED: 钱包铸币限额已达到')
+    } else if (error.message.includes('Max supply exceeded')) {
+      throw new Error('SUPPLY_EXHAUSTED: 集合已完全铸造')
+    } else if (error.message.includes('Minting not active')) {
+      throw new Error('MINTING_INACTIVE: 铸币期未激活')
+    } else {
+      throw new Error(`MINT_FAILED: ${error.message}`)
+    }
+  }
+}
+```
+
+## 错误恢复模式
+
+### 重试逻辑
+
+```typescript title="带指数退避的重试"
+async function retryWithBackoff<T>(
+  operation: () => Promise<T>,
+  maxRetries: number = 3,
+  baseDelayMs: number = 1000
+): Promise<T> {
+  let lastError: Error
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await operation()
+    } catch (error: any) {
+      lastError = error
+      
+      // 不重试某些错误
+      if (error.message.includes('SIGNATURE_REJECTED') ||
+          error.message.includes('INVALID_SIGNATURE') ||
+          error.message.includes('DUPLICATE_COLLECTION')) {
+        throw error
+      }
+      
+      if (attempt < maxRetries) {
+        const delay = baseDelayMs * Math.pow(2, attempt - 1)
+        console.warn(`尝试 ${attempt} 失败，${delay}ms 后重试...`)
+        await new Promise(resolve => setTimeout(resolve, delay))
+      }
+    }
+  }
+  
+  throw lastError
+}
+
+// 使用示例
+const result = await retryWithBackoff(async () => {
+  return await storage.submitCollection(metadata, signature)
+})
+```
+
+### 断路器
+
+```typescript title="断路器模式"
+class CircuitBreaker {
+  private failures = 0
+  private lastFailTime = 0
+  private state: 'CLOSED' | 'OPEN' | 'HALF_OPEN' = 'CLOSED'
+  
+  constructor(
+    private maxFailures: number = 5,
+    private timeoutMs: number = 60000
+  ) {}
+  
+  async call<T>(operation: () => Promise<T>): Promise<T> {
+    if (this.state === 'OPEN') {
+      if (Date.now() - this.lastFailTime > this.timeoutMs) {
+        this.state = 'HALF_OPEN'
+      } else {
+        throw new Error('CIRCUIT_OPEN: 服务暂时不可用')
+      }
+    }
+    
+    try {
+      const result = await operation()
+      this.reset()
+      return result
+    } catch (error) {
+      this.recordFailure()
+      throw error
+    }
+  }
+  
+  private recordFailure() {
+    this.failures++
+    this.lastFailTime = Date.now()
+    
+    if (this.failures >= this.maxFailures) {
+      this.state = 'OPEN'
+    }
+  }
+  
+  private reset() {
+    this.failures = 0
+    this.state = 'CLOSED'
+  }
+}
+
+// 使用示例
+const circuitBreaker = new CircuitBreaker()
+const result = await circuitBreaker.call(() => storage.submitCollection(metadata, signature))
+```
+
+## 用户友好的错误消息
+
+```typescript title="错误消息翻译"
+const ERROR_MESSAGES = {
+  SIGNATURE_REJECTED: "请在您的钱包中批准签名以继续。",
+  INSUFFICIENT_FUNDS: "您没有足够的资金来支付 gas 费用。",
+  NOT_WHITELISTED: "您的地址不符合白名单铸币资格。",
+  WALLET_LIMIT_EXCEEDED: "您已达到每个钱包的最大代币数量。",
+  SUPPLY_EXHAUSTED: "此集合已完全铸造。",
+  MINTING_INACTIVE: "此集合目前未激活铸币。",
+  NETWORK_ERROR: "网络连接问题。请检查您的互联网连接并重试。",
+  SERVICE_UNAVAILABLE: "服务暂时不可用。请几分钟后再试。",
+  RATE_LIMITED: "请求过多。请稍等片刻再试。"
+}
+
+function getUserFriendlyError(error: Error): string {
+  const errorCode = error.message.split(':')[0]
+  return ERROR_MESSAGES[errorCode] || "发生意外错误。请再试一次。"
+}
+
+// 在 React 中的使用
+export function ErrorDisplay({ error }: { error: Error | null }) {
+  if (!error) return null
+  
+  return (
+    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+      <p>{getUserFriendlyError(error)}</p>
+    </div>
+  )
+}
+```
+
+## 错误监控
+
+```typescript title="错误跟踪"
+class ErrorTracker {
+  private errors: Array<{ timestamp: Date; error: Error; context: any }> = []
+  
+  track(error: Error, context: any = {}) {
+    this.errors.push({
+      timestamp: new Date(),
+      error,
+      context
+    })
+    
+    // 发送到监控服务
+    this.sendToMonitoring(error, context)
+  }
+  
+  private sendToMonitoring(error: Error, context: any) {
+    // 与错误监控服务集成
+    console.error('跟踪的错误:', {
+      message: error.message,
+      stack: error.stack,
+      context,
+      timestamp: new Date().toISOString()
+    })
+  }
+  
+  getErrorStats() {
+    const last24h = this.errors.filter(
+      e => Date.now() - e.timestamp.getTime() < 24 * 60 * 60 * 1000
+    )
+    
+    return {
+      total: this.errors.length,
+      last24h: last24h.length,
+      mostCommon: this.getMostCommonErrors()
+    }
+  }
+  
+  private getMostCommonErrors() {
+    const errorCounts = new Map<string, number>()
+    
+    this.errors.forEach(({ error }) => {
+      const errorType = error.message.split(':')[0]
+      errorCounts.set(errorType, (errorCounts.get(errorType) || 0) + 1)
+    })
+    
+    return Array.from(errorCounts.entries())
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 5)
+  }
+}
+
+// 全局错误跟踪器
+export const errorTracker = new ErrorTracker()
+```
+
+## 验证助手
+
+```typescript title="输入验证"
+export class ValidationError extends Error {
+  constructor(field: string, message: string) {
+    super(`${field}: ${message}`)
+    this.name = 'ValidationError'
+  }
+}
+
+export function validateCollectionMetadata(metadata: any): void {
+  if (!metadata.name || metadata.name.length < 1) {
+    throw new ValidationError('name', '集合名称是必需的')
+  }
+  
+  if (!metadata.symbol || metadata.symbol.length < 1) {
+    throw new ValidationError('symbol', '集合符号是必需的')
+  }
+  
+  if (!metadata.creator || !isValidAddress(metadata.creator)) {
+    throw new ValidationError('creator', '需要有效的创建者地址')
+  }
+  
+  if (metadata.maxSupply && metadata.maxSupply <= 0n) {
+    throw new ValidationError('maxSupply', '最大供应量必须大于 0')
+  }
+  
+  if (metadata.mintPrice && metadata.mintPrice < 0n) {
+    throw new ValidationError('mintPrice', '铸币价格不能为负')
+  }
+}
+
+function isValidAddress(address: string): boolean {
+  return /^0x[a-fA-F0-9]{40}$/.test(address)
+}
+```
+
+## React 错误边界
+
+```tsx title="错误边界组件"
+import React, { Component, ErrorInfo, ReactNode } from 'react'
+
+interface Props {
+  children: ReactNode
+  fallback?: ReactNode
+}
+
+interface State {
+  hasError: boolean
+  error?: Error
+}
+
+export class CreateKitErrorBoundary extends Component<Props, State> {
+  constructor(props: Props) {
+    super(props)
+    this.state = { hasError: false }
+  }
+
+  static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, error }
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('CreateKit 错误边界捕获到错误:', error, errorInfo)
+    
+    // 跟踪错误
+    errorTracker.track(error, { errorInfo })
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback || (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <h2 className="text-red-800 text-lg font-semibold mb-2">
+            出了些问题
+          </h2>
+          <p className="text-red-600">
+            {getUserFriendlyError(this.state.error!)}
+          </p>
+          <button
+            onClick={() => this.setState({ hasError: false })}
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          >
+            再试一次
+          </button>
+        </div>
+      )
+    }
+
+    return this.props.children
+  }
+}
+```
+
+## 最佳实践
+
+<CardGroup cols={2}>
+  <Card title="错误分类" icon="tags">
+    - 按类型和严重性对错误进行分类
+    - 使用一致的错误代码
+    - 提供可操作的错误消息
+    - 以足够的上下文记录错误
+  </Card>
+  <Card title="恢复策略" icon="refresh">
+    - 实现适当的重试逻辑
+    - 对外部服务使用断路器
+    - 提供备用机制
+    - 允许手动错误恢复
+  </Card>
+</CardGroup>
+
+## 下一步
+
+现在您已经拥有了全面的 CreateKit 文档，您可以：
+
+<CardGroup cols={2}>
+  <Card title="开始构建" icon="hammer">
+    使用快速入门指南创建您的第一个集合
+  </Card>
+  <Card title="加入社区" icon="users">
+    在 B3 Discord 中与其他开发者连接
+  </Card>
+</CardGroup>

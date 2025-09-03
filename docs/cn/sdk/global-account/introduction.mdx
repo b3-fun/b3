@@ -1,0 +1,130 @@
+---
+title: 全球账户介绍
+description: B3 Global Accounts 提供了跨 B3 生态系统的无缝身份验证和用户管理功能
+lang: cn
+originalPath: sdk/global-account/introduction.mdx
+---
+## 什么是B3全球账户？
+
+B3全球账户是一个统一的认证系统，为用户在整个B3生态系统中提供一个单一身份。用户可以一次认证，无缝访问所有B3应用程序、游戏和服务。
+
+## 关键特性
+
+<CardGroup cols={2}>
+
+<Card title="社交登录" icon="users">
+  支持Google、Discord和其他社交认证提供商。
+</Card>
+
+<Card title="会话管理" icon="key">
+  安全的会话密钥认证，可自定义权限。
+</Card>
+
+<Card title="跨平台" icon="mobile">
+  支持网页、移动和桌面应用程序。
+</Card>
+
+<Card title="开发者友好" icon="code">
+  简单的React组件和无头TypeScript服务。
+</Card>
+
+</CardGroup>
+
+## 架构
+
+全球账户系统由几个关键组成部分构成：
+
+### 认证流程
+1. **社交登录**：用户使用首选的社交提供商进行认证
+2. **账户创建**：创建或链接B3全球账户
+3. **会话密钥**：可选的会话密钥以增强安全性
+4. **权限**：不同操作的细粒度权限
+
+### React组件
+- `B3Provider`：全球账户的上下文提供者
+- `SignInWithB3`：完整的认证流程
+- `RequestPermissionsButton`：权限管理
+- `AccountAssets`：显示用户资产
+
+### 无头服务
+- 用于自定义实现的认证服务
+- 会话管理工具
+- 权限验证助手
+
+## 快速开始
+
+### 基本认证
+
+```tsx
+import { B3Provider, SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
+
+function App() {
+  return (
+    <B3Provider environment="production">
+      <SignInWithB3
+        provider={{ strategy: "google" }}
+        partnerId="your-partner-id"
+        onLoginSuccess={(globalAccount) => {
+          console.log("User authenticated:", globalAccount);
+        }}
+      />
+    </B3Provider>
+  );
+}
+```
+
+### 检查认证状态
+
+```tsx
+import { useB3 } from "@b3dotfun/sdk/global-account/react";
+
+function UserProfile() {
+  const { account, isAuthenticated } = useB3();
+
+  return (
+    <div>
+      {isAuthenticated ? (
+        <p>欢迎，{account?.displayName}！</p>
+      ) : (
+        <p>请登录</p>
+      )}
+    </div>
+  );
+}
+```
+
+## 环境配置
+
+设置您的环境变量：
+
+```bash
+# 生产
+NEXT_PUBLIC_B3_API=https://api.b3.fun
+NEXT_PUBLIC_BSMNT_API=https://api.basement.fun
+
+# 开发  
+NEXT_PUBLIC_B3_API=https://dev-api.b3.fun
+NEXT_PUBLIC_BSMNT_API=https://dev-api.basement.fun
+```
+
+## 下一步
+
+<CardGroup cols={2}>
+
+<Card title="认证指南" icon="shield" href="/sdk/global-account/authentication">
+  了解不同的认证策略和实现。
+</Card>
+
+<Card title="权限系统" icon="lock" href="/sdk/global-account/permissions">
+  了解会话密钥和权限管理。
+</Card>
+
+<Card title="React Hooks" icon="react" href="/sdk/global-account/hooks">
+  探索全球账户集成可用的钩子。
+</Card>
+
+<Card title="示例" icon="code" href="/sdk/global-account/examples">
+  查看完整示例和集成模式。
+</Card>
+
+</CardGroup>

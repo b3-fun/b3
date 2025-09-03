@@ -1,0 +1,231 @@
+---
+title: Brand Kit
+description: >-
+  Ikuti panduan ini untuk menggunakan merek kami dengan benar saat berkontribusi
+  pada ekosistem B3.
+lang: id
+originalPath: protocol/brand-kit.mdx
+---
+<div className="text-center my-4 font-bold text-lg tracking-wide text-primary">
+  ✦ DIDORONG OLEH KOMUNITAS ✦ MENYENANGKAN ✦ SELARAS DENGAN EKOSISTEM ✦
+</div>
+
+## Logo Utama
+
+<CardGroup cols={3}>
+  <Card title="Logo Biru">
+    <img src="/images/b3-logo-blue.svg" alt="B3 Blue Logo"  className='p-6 bg-black rounded-xl my-3'/>
+    
+    <div className="flex justify-start items-center gap-4">
+      <a href="https://cdn.b3.fun/b3_logo.svg" target="_blank" download="b3-logo-blue.svg">SVG</a>
+      <a href="https://cdn.b3.fun/b3_logo@.png" target="_blank" download="b3-logo-blue.png">PNG</a>
+    </div>
+  </Card>
+  
+  <Card title="Logo Putih">
+    <img src="/images/b3-logo-white.svg" alt="B3 White Logo"  className='p-6 bg-black rounded-xl my-3'/>
+    
+    <div className="flex justify-start items-center gap-4">
+      <a href="https://cdn.b3.fun/b3_logo_white.svg" target="_blank" download="b3-logo-white.svg">SVG</a>
+    </div>
+  </Card>
+  
+  <Card title="Logo Hitam">
+    <img src="/images/b3_logo_black.svg" alt="B3 Black Logo"  className='p-6 bg-white rounded-xl my-3'/>
+    
+    <div className="flex justify-start items-center gap-4">
+      <a href="https://cdn.b3.fun/b3_logo_black.svg" target="_blank" download="b3-logo-black.svg">SVG</a>
+    </div>
+  </Card>
+</CardGroup>
+
+## Warna
+
+Jangan batasi diri Anda hanya pada warna-warna merek yang umum. B3 mengundang Anda untuk berekspresi dengan palet warna yang berbeda, menyenangkan, dan penuh warna.
+
+<CardGroup cols={3}>
+  <Card title="Biru Utama">
+    <div style={{ backgroundColor: "#007AFF", height: "80px", borderRadius: "8px", margin: "1rem 0" }}></div>
+    
+    ```
+    #007AFF
+    ```
+  </Card>
+  
+  <Card title="Abu-abu">
+    <div style={{ backgroundColor: "#6B7280", height: "80px", borderRadius: "8px", margin: "1rem 0" }}></div>
+    
+    ```
+    #6B7280
+    ```
+  </Card>
+  
+  <Card title="Putih">
+    <div style={{ backgroundColor: "#FFFFFF", height: "80px", borderRadius: "8px", border: "2px solid #e5e7eb", margin: "1rem 0" }}></div>
+    
+    ```
+    #FFFFFF
+    ```
+  </Card>
+</CardGroup>
+
+## Pedoman Merek
+
+<CardGroup cols={2}>
+  <Card title="Biarkan Bernapas" icon="expand">
+    Logo kami bekerja terbaik ketika memiliki margin yang cukup.
+  </Card>
+  
+  <Card title="Buat Menyenangkan" icon="heart">
+    Pertahankan hal-hal yang ringan, ramah, dan menarik.
+  </Card>
+</CardGroup>
+
+## Font
+
+Impor di dalam stylesheet CSS:
+
+```css
+@import url("https://cdn.b3.fun/fonts.css");
+```
+
+Impor via tag `<link>`:
+
+```html
+<link href="https://cdn.b3.fun/fonts.css" rel="stylesheet">
+```
+
+Sekarang Anda dapat menggunakan font-font tersebut:
+
+```css
+body { font-family: "Neue Montreal Medium", sans-serif; }
+```
+
+#### Font yang tersedia:
+
+- **Neue Montreal Bold**  
+- **Neue Montreal Regular**  
+- **Neue Montreal Book**  
+- **Neue Montreal Medium**  
+- **Neue Montreal Semibold**  
+- **Calibre Bold**  
+- **Calibre Heavy**  
+- **Pack**
+
+#### Unduh font asli:
+
+<Card title="Calibre">
+  [Lisensi](https://klim.co.nz/retail-fonts/calibre/)
+</Card>
+
+<Card title="Neue Montreal">
+  [Lisensi](https://pangrampangram.com/products/neue-montreal)
+</Card>
+
+<Card title="PACK">
+  [Lisensi](https://harrycresswell.com/pack/)
+</Card>
+
+
+## Aset Menyenangkan
+
+<CardGroup cols={3}>
+  <Card title="Kursor">
+    <img src="/images/cursor.png" alt="B3 Cursor" className='rounded-xl my-3 aspect-square p-6 bg-white'/>
+    
+    <div className="flex justify-start items-center gap-4">
+      <a href="https://cdn.b3.fun/cursor.png" target="_blank" download="cursor.png">PNG</a>
+      <a href="https://cdn.b3.fun/cursor%402x.png" target="_blank" download="cursor@2x.png">PNG @ 2x</a>
+    </div>
+  </Card>
+  
+  <Card title="Tekstur Biru">
+    <img src="/images/b3-bg-texture.jpg" alt="B3 Blue Texture" className='rounded-xl my-3 aspect-square'/>
+
+    <div className="flex justify-start items-center gap-4">
+      <a href="https://cdn.b3.fun/b3-bg-texture.jpg" target="_blank" download="b3-bg-texture.jpg">JPG</a>
+    </div>
+  </Card>
+  
+  <Card title="Grid">
+    <img src="/images/b3_grid.svg" alt="B3 Grid" className='rounded-xl my-3 aspect-square p-6 bg-white'/>
+    
+    <div className="flex justify-start items-center gap-4">
+      <a href="https://cdn.b3.fun/b3_grid.svg" target="_blank" download="b3_grid.svg">SVG</a>
+      <a href="https://cdn.b3.fun/b3_grid.png" target="_blank" download="b3_grid.png">PNG</a>
+    </div>
+  </Card>
+</CardGroup>
+
+## Gerakan
+
+Animasi disambut baik saat mewakili B3, setelah semua - gerakan itu menyenangkan!
+
+Kami merekomendasikan Framer Motion sebagai pustaka animasi React, tetapi Anda dapat menggunakan apa saja yang Anda suka!
+
+<CardGroup cols={2}>
+  <Card title="Animasi Logo (16:9)">
+    <video 
+      controls 
+      className='rounded-xl my-3 aspect-video'
+      src="/images/b3-logo-animation-wide.mp4"
+    >
+      Browser Anda tidak mendukung tag video.
+    </video>
+    
+    <div className="flex justify-start items-center gap-4">
+      <a href="https://cdn.b3.fun/b3-logo-animation-wide.mp4" target="_blank" download="b3-logo-animation-wide.mp4">MP4</a>
+      <a href="https://cdn.b3.fun/b3-logo-animation-wide-after-effects-project.zip" target="_blank" download="b3-logo-animation-wide-after-effects-project.zip">Proyek After Effects</a>
+    </div>
+  </Card>
+  
+  <Card title="Animasi Logo (1:1)">
+    <video 
+      controls 
+      className='rounded-xl my-3 aspect-square'
+      src="/images/b3-logo-animation-square.mp4"
+    >
+      Browser Anda tidak mendukung tag video.
+    </video>
+    
+    <div className="flex justify-start items-center gap-4">
+      <a href="https://cdn.b3.fun/b3-logo-animation-square.mp4" target="_blank" download="b3-logo-animation-square.mp4">MP4</a>
+      <a href="https://cdn.b3.fun/b3-logo-animation-square-after-effects-project.zip" target="_blank" download="b3-logo-animation-square-after-effects-project.zip">Proyek After Effects</a>
+    </div>
+  </Card>
+</CardGroup>
+
+## Suasana 👌
+
+B3 itu semua tentang bersenang-senang, dan mewakili itu dalam hidup Anda melalui gaming & lainnya.
+
+Kenakan swag B3 dengan cara lain!
+
+## Wallpaper Layar Kunci Ponsel
+
+<CardGroup cols={3}>
+  <Card title="Layar Kunci v1">
+    <img src="/images/b3-iphone-wallpaper-v1.png" alt="B3 iPhone Wallpaper v1" className='rounded-xl my-3'/>
+    
+    [Unduh](https://cdn.b3.fun/b3-iphone-wallpaper-v1.png)
+  </Card>
+  
+  <Card title="Layar Kunci v2">
+    <img src="/images/b3-iphone-wallpaper-v2.png" alt="B3 iPhone Wallpaper v2" className='rounded-xl my-3'/>
+    
+    [Unduh](https://cdn.b3.fun/b3-iphone-wallpaper-v2.png)
+  </Card>
+  
+  <Card title="Layar Kunci v3">
+    <img src="/images/b3-iphone-wallpaper-simple.png" alt="B3 iPhone Wallpaper Simple" className='rounded-xl my-3'/>
+    
+    [Unduh](https://cdn.b3.fun/b3-iphone-wallpaper-simple.png)
+  </Card>
+</CardGroup>
+
+
+## Berkontribusi pada merek B3
+
+Mari membangun B3 bersama - kami menyambut kreator, seniman, pengembang, gamer, pemain & semua orang untuk berkontribusi & mendapatkan penghargaan.
+
+Hubungi kami jika Anda telah membangun sesuatu yang keren untuk komunitas B3.

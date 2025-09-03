@@ -1,0 +1,501 @@
+---
+title: 화이트리스트 관리
+description: CreateKit에서 메르클 트리 기반 화이트리스트를 사용한 독점적 민팅 구현하기
+lang: ko
+originalPath: createkit/whitelist.mdx
+---
+## 개요
+
+CreateKit은 가스 효율적인 검증을 위한 Merkle 트리를 사용하여 정교한 화이트리스트 관리를 지원합니다. 이를 통해 특정 주소에 대한 독점적인 민팅 경험을 생성하면서도 확장성과 보안을 유지할 수 있습니다.
+
+## 화이트리스트 기본사항
+
+### 화이트리스트 작동 방식
+
+1. **오프체인 생성**: 화이트리스트에 포함된 주소로 Merkle 트리 생성
+2. **온체인 저장**: 스마트 계약에 Merkle 루트만 저장
+3. **증명 검증**: 사용자가 민팅 시 Merkle 증명 제공
+4. **가스 효율성**: 화이트리스트 크기에 관계없이 검증 비용은 일정
+
+<CardGroup cols={2}>
+  <Card title="확장 가능" icon="arrows-split-up-and-left">
+    최소한의 가스 비용으로 수천 개의 주소 지원
+  </Card>
+  <Card title="보안" icon="shield">
+    암호학적으로 보장된 주소 검증
+  </Card>
+  <Card title="유연성" icon="settings">
+    화이트리스트 구성을 쉽게 생성하고 업데이트
+  </Card>
+  <Card title="투명성" icon="eye">
+    전체 목록을 공개하지 않고도 온체인에서 검증 가능
+  </Card>
+</CardGroup>
+
+## 화이트리스트 설정
+
+### 기본 화이트리스트 생성
+
+```typescript title="화이트리스트 생성"
+import { WhitelistManager } from '@b3dotfun/basemint'
+
+// 화이트리스트 주소 정의
+const whitelistedAddresses = [
+  { address: "0x1234567890123456789012345678901234567890" },
+  { address: "0x2345678901234567890123456789012345678901" },
+  { address: "0x3456789012345678901234567890123456789012" },
+  { address: "0x4567890123456789012345678901234567890123" },
+  { address: "0x5678901234567890123456789012345678901234" }
+]
+
+// 화이트리스트 관리자 생성
+const whitelist = new WhitelistManager(whitelistedAddresses)
+
+// 계약 배포를 위한 Merkle 루트 가져오기
+const merkleRoot = whitelist.getRoot()
+console.log(`Merkle root: ${merkleRoot}`)
+
+// 화이트리스트가 올바르게 구성되었는지 확인
+console.log(`Whitelist contains ${whitelistedAddresses.length} addresses`)
+```
+
+### 고급 화이트리스트 구성
+
+```typescript title="메타데이터가 포함된 화이트리스트"
+// 화이트리스트 항목에 추가 메타데이터 포함 가능
+const advancedWhitelist = [
+  { 
+    address: "0x1234567890123456789012345678901234567890",
+    allocation: 5, // 이 주소의 최대 5개 토큰
+    tier: "gold"
+  },
+  { 
+    address: "0x2345678901234567890123456789012345678901",
+    allocation: 3,
+    tier: "silver"
+  },
+  { 
+    address: "0x3456789012345678901234567890123456789012",
+    allocation: 1,
+    tier: "bronze"
+  }
+]
+
+// 화이트리스트 생성 (Merkle 트리를 위해 주소만 사용)
+const whitelist = new WhitelistManager(
+  advancedWhitelist.map(entry => ({ address: entry.address }))
+)
+
+// 애플리케이션 로직을 위해 메타데이터 별도 저장
+const allocationMap = new Map(
+  advancedWhitelist.map(entry => [entry.address, entry.allocation])
+)
+```
+
+## 컬렉션 통합
+
+### 화이트리스트 활성화 컬렉션
+
+```typescript title="화이트리스트 컬렉션 설정"
+import { CollectionManager } from '@b3dotfun/basemint'
+
+// 화이트리스트 활성화된 컬렉션 생성
+const whitelistCollection = {
+  name: "Exclusive Collection",
+  symbol: "EXCL",
+  creator: account.address,
+  gameOwner: account.address,
+  
+  // 화이트리스트 구성
+  isWhitelistEnabled: true,
+  whitelistMerkleRoot: merkleRoot,
+  
+  // 컬렉션 설정
+  maxSupply: 1000n,
+  mintPrice: parseEther("0.01"),
+  maxPerWallet: 3n,
+  
+  // 선택사항: 시간 기반 접근과 결합
+  startTime: BigInt(Math.floor(Date.now() / 1000) + 3600), // 화이트리스트 시작 1시간 후
+  endTime: BigInt(Math.floor(Date.now() / 1000) + 86400 * 7), // 7일 후 종료
+}
+
+// 서명 생성 및 배포
+const creatorSignature = await collectionManager.generateCreatorSignature(
+  walletClient,
+  whitelistCollection
+)
+
+const predictedAddress = collectionManager.predictCollectionAddress(
+  whitelistCollection,
+  creatorSignature
+)
+
+console.log(`Whitelist collection will deploy at: ${predictedAddress}`)
+```
+
+### 하이브리드 접근 모델
+
+```typescript title="단계별 접근"
+// 다양한 접근 단계를 가진 컬렉션 생성
+const phasedCollection = {
+  name: "Phased Access Collection",
+  symbol: "PAC",
+  creator: account.address,
+  gameOwner: account.address,
+  
+  // 단계 1: 화이트리스트만 (첫 24시간)
+  isWhitelistEnabled: true,
+  whitelistMerkleRoot: merkleRoot,
+  startTime: BigInt(Math.floor(Date.now() / 1000)),
+  
+  // 참고: 단계 2 (공개 접근)를 위해서는 특정 시간 후 화이트리스트 검사를 비활성화하는 추가 로직이 필요
+}
+
+// 애플리케이션에서 단계 로직 구현
+async function checkMintingPhase(collection: any): Promise<'whitelist' | 'public' | 'ended'> {
+  const now = BigInt(Math.floor(Date.now() / 1000))
+  const startTime = await collection.startTime()
+  const endTime = await collection.endTime()
+  
+  const whitelistPhaseEnd = startTime + 86400n // 24시간
+  
+  if (now < startTime) {
+    throw new Error("민팅이 아직 시작되지 않았습니다")
+  } else if (now < whitelistPhaseEnd) {
+    return 'whitelist'
+  } else if (now < endTime) {
+    return 'public'
+  } else {
+    return 'ended'
+  }
+}
+```
+
+## 화이트리스트 검증
+
+### 증명 생성
+
+```typescript title="Merkle 증명 생성"
+// 특정 주소에 대한 증명 생성
+function generateProofForAddress(whitelist: WhitelistManager, address: string): string[] {
+  try {
+    const proof = whitelist.getProof(address)
+    console.log(`Generated proof for ${address}:`, proof)
+    return proof
+  } catch (error) {
+    console.error(`Failed to generate proof for ${address}:`, error)
+    throw new Error(`Address ${address} not in whitelist`)
+  }
+}
+
+// 로컬에서 증명 검증 (선택적 검사)
+function verifyWhitelistProof(
+  whitelist: WhitelistManager, 
+  address: string, 
+  proof: string[]
+): boolean {
+  const isValid = whitelist.verify(address, proof)
+  console.log(`Proof verification for ${address}: ${isValid ? '✅ Valid' : '❌ Invalid'}`)
+  return isValid
+}
+
+// 사용 예
+const userAddress = "0x1234567890123456789012345678901234567890"
+const proof = generateProofForAddress(whitelist, userAddress)
+const isValid = verifyWhitelistProof(whitelist, userAddress, proof)
+```
+
+### 배치 증명 생성
+
+```typescript title="배치 증명 생성"
+// 여러 주소에 대한 증명 생성
+function generateBatchProofs(
+  whitelist: WhitelistManager, 
+  addresses: string[]
+): Map<string, string[]> {
+  const proofMap = new Map<string, string[]>()
+  
+  for (const address of addresses) {
+    try {
+      const proof = whitelist.getProof(address)
+      proofMap.set(address, proof)
+      console.log(`✅ Generated proof for ${address}`)
+    } catch (error) {
+      console.error(`❌ Failed to generate proof for ${address}:`, error)
+    }
+  }
+  
+  return proofMap
+}
+
+// 화이트리스트에 포함된 모든 주소에 대한 증명 생성
+const allAddresses = whitelistedAddresses.map(entry => entry.address)
+const allProofs = generateBatchProofs(whitelist, allAddresses)
+
+// 프론트엔드 사용을 위해 파일이나 데이터베이스에 증명 저장
+const proofData = {
+  merkleRoot,
+  proofs: Object.fromEntries(allProofs)
+}
+
+// 예시: JSON 파일로 저장
+import { writeFileSync } from 'fs'
+writeFileSync('whitelist-proofs.json', JSON.stringify(proofData, null, 2))
+```
+
+## 화이트리스트를 사용한 민팅
+
+### 기본 화이트리스트 민팅
+
+```typescript title="화이트리스트 민팅"
+async function mintWithWhitelist(
+  collection: any,
+  walletClient: any,
+  whitelist: WhitelistManager,
+  quantity: bigint = 1n
+) {
+  const userAddress = walletClient.account.address
+  
+  try {
+    // 사용자를 위한 증명 생성
+    const proof = whitelist.getProof(userAddress)
+    
+    // 로컬에서 증명 검증 (선택적)
+    const isValid = whitelist.verify(userAddress, proof)
+    if (!isValid) {
+      throw new Error("Invalid whitelist proof")
+    }
+    
+    // 민팅 가격 가져오기
+    const mintPrice = await collection.mintPrice()
+    const totalPrice = mintPrice * quantity
+    
+    // 화이트리스트 증명으로 민팅
+    const tx = await collection.mint(
+      walletClient,
+      quantity,
+      undefined, // 메타데이터 URI
+      totalPrice,
+      proof // 화이트리스트 증명
+    )
+    
+    console.log(`✅ Whitelist mint successful: ${tx}`)
+    return tx
+    
+  } catch (error: any) {
+    if (error.message.includes('Invalid merkle proof')) {
+      console.error('❌ Address not in whitelist or invalid proof')
+    } else {
+      console.error('❌ Whitelist mint failed:', error)
+    }
+    throw error
+  }
+}
+
+// 사용
+await mintWithWhitelist(collection, walletClient, whitelist, 2n)
+```
+
+### 고급 화이트리스트 민팅
+
+```typescript title="고급 화이트리스트 로직"
+async function advancedWhitelistMint(
+  collection: any,
+  walletClient: any,
+  whitelist: WhitelistManager,
+  allocationMap: Map<string, number>,
+  quantity: bigint
+) {
+  const userAddress = walletClient.account.address
+  
+  // 사용자 할당량 확인
+  const maxAllocation = allocationMap.get(userAddress) || 0
+  if (maxAllocation === 0) {
+    throw new Error("Address not in whitelist")
+  }
+  
+  // 현재 잔액과 할당량 비교
+  const currentBalance = await collection.balanceOf(userAddress)
+  const newBalance = currentBalance + quantity
+  
+  if (newBalance > BigInt(maxAllocation)) {
+    throw new Error(`Would exceed allocation. Max: ${maxAllocation}, Current: ${currentBalance}`)
+  }
+  
+  // 증명 생성 및 민팅
+  const proof = whitelist.getProof(userAddress)
+  const mintPrice = await collection.mintPrice()
+  
+  const tx = await collection.mint(
+    walletClient,
+    quantity,
+    undefined,
+    mintPrice * quantity,
+    proof
+  )
+  
+  console.log(`✅ Advanced whitelist mint successful: ${tx}`)
+  return tx
+}
+```
+
+## 프론트엔드 통합
+
+### 화이트리스트 상태를 위한 React Hook
+
+```typescript title="useWhitelistStatus Hook"
+import { useState, useEffect } from 'react'
+import { useAccount } from 'wagmi'
+
+interface WhitelistStatus {
+  isWhitelisted: boolean
+  proof: string[] | null
+  allocation: number
+  loading: boolean
+  error: string | null
+}
+
+export function useWhitelistStatus(
+  whitelist: WhitelistManager,
+  allocationMap?: Map<string, number>
+): WhitelistStatus {
+  const { address } = useAccount()
+  const [status, setStatus] = useState<WhitelistStatus>({
+    isWhitelisted: false,
+    proof: null,
+    allocation: 0,
+    loading: true,
+    error: null
+  })
+  
+  useEffect(() => {
+    async function checkWhitelistStatus() {
+      if (!address) {
+        setStatus({
+          isWhitelisted: false,
+          proof: null,
+          allocation: 0,
+          loading: false,
+          error: null
+        })
+        return
+      }
+      
+      try {
+        setStatus(prev => ({ ...prev, loading: true, error: null }))
+        
+        // 증명 생성
+        const proof = whitelist.getProof(address)
+        const isValid = whitelist.verify(address, proof)
+        const allocation = allocationMap?.get(address) || 0
+        
+        setStatus({
+          isWhitelisted: isValid,
+          proof: isValid ? proof : null,
+          allocation,
+          loading: false,
+          error: null
+        })
+        
+      } catch (error: any) {
+        setStatus({
+          isWhitelisted: false,
+          proof: null,
+          allocation: 0,
+          loading: false,
+          error: error.message
+        })
+      }
+    }
+    
+    checkWhitelistStatus()
+  }, [address, whitelist, allocationMap])
+  
+  return status
+}
+```
+
+### 화이트리스트 상태 컴포넌트
+
+```tsx title="WhitelistStatus Component"
+import React from 'react'
+import { useWhitelistStatus } from './useWhitelistStatus'
+
+interface WhitelistStatusProps {
+  whitelist: WhitelistManager
+  allocationMap?: Map<string, number>
+}
+
+export function WhitelistStatus({ whitelist, allocationMap }: WhitelistStatusProps) {
+  const { isWhitelisted, allocation, loading, error } = useWhitelistStatus(
+    whitelist, 
+    allocationMap
+  )
+  
+  if (loading) {
+    return <div className="animate-pulse">화이트리스트 상태 확인 중...</div>
+  }
+  
+  if (error) {
+    return <div className="text-red-500">오류: {error}</div>
+  }
+  
+  return (
+    <div className={`p-4 rounded-lg ${isWhitelisted ? 'bg-green-100' : 'bg-gray-100'}`}>
+      {isWhitelisted ? (
+        <div className="text-green-800">
+          <h3 className="font-bold">✅ 화이트리스트 등록됨</h3>
+          <p>최대 {allocation}개의 토큰을 민팅할 수 있습니다</p>
+        </div>
+      ) : (
+        <div className="text-gray-800">
+          <h3 className="font-bold">❌ 화이트리스트 등록되지 않음</h3>
+          <p>귀하의 주소는 화이트리스트 민팅에 자격이 없습니다</p>
+        </div>
+      )}
+    </div>
+  )
+}
+```
+
+## 다중 화이트리스트
+
+### 계층별 화이트리스트 시스템
+
+```typescript title="계층별 화이트리스트"
+// 다양한 혜택을 가진 다른 계층 생성
+const goldTierAddresses = [
+  { address: "0x1111..." },
+  { address: "0x2222..." }
+]
+
+const silverTierAddresses = [
+  { address: "0x3333..." },
+  { address: "0x4444..." }
+]
+
+const bronzeTierAddresses = [
+  { address: "0x5555..." },
+  { address: "0x6666..." }
+]
+
+// 각 계층별로 별도의 화이트리스트 생성
+const goldWhitelist = new WhitelistManager(goldTierAddresses)
+const silverWhitelist = new WhitelistManager(silverTierAddresses)
+const bronzeWhitelist = new WhitelistManager(bronzeTierAddresses)
+
+// 스마트 계약을 위해 모든 계층을 결합할 수 있음
+const allTierAddresses = [
+  ...goldTierAddresses,
+  ...silverTierAddresses,
+  ...bronzeTierAddresses
+]
+
+const combinedWhitelist = new WhitelistManager(allTierAddresses)
+
+// 계층 혜택을 위한 애플리케이션 로직
+const tierBenefits = {
+  gold: { maxMint: 10, discount: 0.2 },
+  silver: { maxMint: 5, discount: 0.1 },
+  bronze: { max

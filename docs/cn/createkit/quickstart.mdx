@@ -1,0 +1,399 @@
+---
+title: 快速开始
+description: 仅需几分钟，即可使用 CreateKit 创建您的首个 NFT 系列
+lang: cn
+originalPath: createkit/quickstart.mdx
+---
+## 概览
+
+本指南将引导您使用 CreateKit 创建您的第一个 NFT 集合。您将学习如何：
+
+- 创建集合元数据和签名
+- 部署一个集合
+- 铸造您的第一个 NFT
+- 跟踪奖励
+
+<Note>
+此快速入门使用 B3 测试网。确保您有测试网资金以支付燃料费。
+</Note>
+
+## 第 1 步：基本设置
+
+首先，让我们设置基本基础设施：
+
+```typescript title="quickstart.ts"
+import { 
+  CollectionManager, 
+  RewardTracker,
+  BaseMintStorage,
+  b3Testnet 
+} from '@b3dotfun/basemint'
+import { createPublicClient, createWalletClient, http } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+
+// 初始化客户端
+const publicClient = createPublicClient({
+  chain: b3Testnet,
+  transport: http()
+})
+
+const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`)
+const walletClient = createWalletClient({
+  chain: b3Testnet,
+  transport: http(),
+  account
+})
+
+// 初始化 CreateKit 服务
+const collectionManager = new CollectionManager(publicClient)
+const rewardTracker = new RewardTracker(publicClient)
+const storage = new BaseMintStorage({
+  baseUrl: 'https://api.basemint.fun'
+})
+```
+
+## 第 2 步：创建集合元数据
+
+定义您的集合参数：
+
+```typescript title="Create Collection"
+const collectionMetadata = {
+  // 必需参数
+  name: "My First Collection",
+  symbol: "MFC",
+  creator: account.address,
+  gameOwner: account.address, // 可以是不同的地址
+  
+  // 可选参数
+  maxSupply: 1000n,
+  mintPrice: 0n, // 免费铸造
+  maxPerWallet: 10n,
+  description: "My first NFT collection on B3",
+  image: "https://example.com/collection-image.png",
+  
+  // 时间
+  startTime: 0n, // 立即开始
+  endTime: BigInt(Math.floor(Date.now() / 1000) + 86400 * 30), // 30 天
+  
+  // 代币标准
+  tokenStandard: "ERC721" as const,
+  chainId: 1993 // B3 测试网
+}
+```
+
+## 第 3 步：生成签名
+
+创建部署所需的签名：
+
+```typescript title="Generate Signatures"
+// 生成创建者签名
+const creatorSignature = await collectionManager.generateCreatorSignature(
+  walletClient,
+  collectionMetadata
+)
+
+// 预测集合地址
+const predictedAddress = collectionManager.predictCollectionAddress(
+  collectionMetadata,
+  creatorSignature
+)
+
+console.log(`📍 预测的集合地址：${predictedAddress}`)
+```
+
+## 第 4 步：提交到存储
+
+将您的集合元数据存储在链下：
+
+```typescript title="Submit to Storage"
+try {
+  await storage.submitCollection(collectionMetadata, creatorSignature)
+  console.log("✅ 集合元数据存储成功")
+} catch (error) {
+  console.error("❌ 存储集合失败：", error)
+}
+```
+
+## 第 5 步：部署和铸造
+
+现在来到了激动人心的部分 - 部署您的集合并铸造第一个 NFT：
+
+```typescript title="Deploy and Mint"
+// 生成部署者签名
+const deployerSignature = await collectionManager.generateDeployerSignature(
+  walletClient,
+  predictedAddress
+)
+
+// 创建集合实例
+const collection = collectionManager.createCollection(
+  predictedAddress,
+  collectionMetadata.tokenStandard
+)
+
+// 在一次交易中部署并铸造第一个 NFT
+const mintTx = await collection.mint(
+  walletClient,
+  1n, // 数量
+  undefined, // 元数据 URI（将使用 baseURI）
+  0n, // 铸造价格
+  [], // 白名单证明（公开铸造为空）
+  creatorSignature,
+  deployerSignature
+)
+
+console.log(`🎉 集合部署并铸造了第一个 NFT！`)
+console.log(`📋 交易哈希：${mintTx}`)
+```
+
+## 第 6 步：验证部署
+
+让我们验证一切是否正确工作：
+
+```typescript title="Verify Deployment"
+// 检查集合是否已部署
+const isDeployed = await collection.isDeployed()
+console.log(`🏭 集合已部署：${isDeployed}`)
+
+// 获取集合信息
+const info = await collection.getCollectionInfo()
+console.log("📊 集合信息：", {
+  name: info.name,
+  symbol: info.symbol,
+  totalSupply: info.totalSupply.toString(),
+  maxSupply: info.maxSupply.toString()
+})
+
+// 检查代币所有权
+const balance = await collection.balanceOf(account.address)
+console.log(`💰 您的代币余额：${balance.toString()}`)
+```
+
+## 第 7 步：跟踪奖励
+
+检查您的铸造生成的奖励：
+
+```typescript title="Track Rewards"
+// 获取奖励的托管合约地址
+const escrowAddress = collectionManager.getEscrowAddress()
+
+// 跟踪此集合的奖励
+const collectionRewards = await rewardTracker.getCollectionRewards(
+  escrowAddress,
+  predictedAddress
+)
+
+console.log("💎 集合奖励：", {
+  totalRewards: collectionRewards.totalRewards.toString(),
+  unclaimedRewards: collectionRewards.unclaimedRewards.toString(),
+  totalMints: collectionRewards.totalMints.toString()
+})
+
+// 获取个别接收者奖励
+const creatorRewards = await rewardTracker.getRecipientRewards(
+  escrowAddress,
+  predictedAddress,
+  "CREATOR",
+  account.address
+)
+
+console.log(`🎨 创建者奖励：${creatorRewards.toString()}`)
+```
+
+## 完整示例
+
+这是完整的快速入门脚本：
+
+<Accordion title="Complete quickstart.ts">
+```typescript
+import { 
+  CollectionManager, 
+  RewardTracker,
+  BaseMintStorage,
+  b3Testnet 
+} from '@b3dotfun/basemint'
+import { createPublicClient, createWalletClient, http } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+
+async function quickstart() {
+  // 初始化客户端
+  const publicClient = createPublicClient({
+    chain: b3Testnet,
+    transport: http()
+  })
+
+  const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`)
+  const walletClient = createWalletClient({
+    chain: b3Testnet,
+    transport: http(),
+    account
+  })
+
+  // 初始化 CreateKit 服务
+  const collectionManager = new CollectionManager(publicClient)
+  const rewardTracker = new RewardTracker(publicClient)
+  const storage = new BaseMintStorage({
+    baseUrl: 'https://api.basemint.fun'
+  })
+
+  // 第 1 步：创建集合元数据
+  const collectionMetadata = {
+    name: "My First Collection",
+    symbol: "MFC",
+    creator: account.address,
+    gameOwner: account.address,
+    maxSupply: 1000n,
+    mintPrice: 0n,
+    maxPerWallet: 10n,
+    description: "My first NFT collection on B3",
+    image: "https://example.com/collection-image.png",
+    startTime: 0n,
+    endTime: BigInt(Math.floor(Date.now() / 1000) + 86400 * 30),
+    tokenStandard: "ERC721" as const,
+    chainId: 1993
+  }
+
+  // 第 2 步：生成签名
+  const creatorSignature = await collectionManager.generateCreatorSignature(
+    walletClient,
+    collectionMetadata
+  )
+
+  const predictedAddress = collectionManager.predictCollectionAddress(
+    collectionMetadata,
+    creatorSignature
+  )
+
+  console.log(`📍 预测的集合地址：${predictedAddress}`)
+
+  // 第 3 步：提交到存储
+  try {
+    await storage.submitCollection(collectionMetadata, creatorSignature)
+    console.log("✅ 集合元数据存储成功")
+  } catch (error) {
+    console.error("❌ 存储集合失败：", error)
+    return
+  }
+
+  // 第 4 步：部署和铸造
+  const deployerSignature = await collectionManager.generateDeployerSignature(
+    walletClient,
+    predictedAddress
+  )
+
+  const collection = collectionManager.createCollection(
+    predictedAddress,
+    collectionMetadata.tokenStandard
+  )
+
+  const mintTx = await collection.mint(
+    walletClient,
+    1n,
+    undefined,
+    0n,
+    [],
+    creatorSignature,
+    deployerSignature
+  )
+
+  console.log(`🎉 集合部署并铸造了第一个 NFT！`)
+  console.log(`📋 交易哈希：${mintTx}`)
+
+  // 第 5 步：验证部署
+  const isDeployed = await collection.isDeployed()
+  console.log(`🏭 集合已部署：${isDeployed}`)
+
+  // 第 6 步：跟踪奖励
+  const escrowAddress = collectionManager.getEscrowAddress()
+  const collectionRewards = await rewardTracker.getCollectionRewards(
+    escrowAddress,
+    predictedAddress
+  )
+
+  console.log("💎 集合奖励：", {
+    totalRewards: collectionRewards.totalRewards.toString(),
+    unclaimedRewards: collectionRewards.unclaimedRewards.toString(),
+    totalMints: collectionRewards.totalMints.toString()
+  })
+}
+
+// 运行快速入门
+quickstart().catch(console.error)
+```
+</Accordion>
+
+## 运行示例
+
+将完整示例保存为 `quickstart.ts` 并运行它：
+
+<CodeGroup>
+```bash npm
+npx tsx quickstart.ts
+```
+
+```bash yarn
+yarn tsx quickstart.ts
+```
+
+```bash pnpm
+pnpm tsx quickstart.ts
+```
+</CodeGroup>
+
+## 预期输出
+
+当您运行快速入门脚本时，您应该看到类似于以下内容的输出：
+
+```
+📍 预测的集合地址：0x1234567890abcdef...
+✅ 集合元数据存储成功
+🎉 集合部署并铸造了第一个 NFT！
+📋 交易哈希：0xabcdef1234567890...
+🏭 集合已部署：true
+💎 集合奖励：{
+  totalRewards: "1000000000000000000",
+  unclaimedRewards: "1000000000000000000", 
+  totalMints: "1"
+}
+```
+
+## 下一步是什么？
+
+恭喜！您已成功使用 CreateKit 创建了您的第一个 NFT 集合。以下是一些探索的下一步：
+
+<CardGroup cols={2}>
+  <Card title="集合管理" icon="folder" href="/createkit/collections">
+    了解高级集合配置选项
+  </Card>
+  <Card title="铸造功能" icon="coins" href="/createkit/minting">
+    探索不同的铸造场景和选项
+  </Card>
+  <Card title="白名单设置" icon="list" href="/createkit/whitelist">
+    实现基于白名单的铸造
+  </Card>
+  <Card title="奖励管理" icon="gift" href="/createkit/rewards">
+    深入了解奖励分配系统
+  </Card>
+</CardGroup>
+
+## 故障排除
+
+<AccordionGroup>
+  <Accordion title="交易失败">
+    - 确保您有足够的测试网资金
+    - 检查所有签名是否有效
+    - 验证集合参数是否在限制范围内
+  </Accordion>
+
+  <Accordion title="存储提交失败">
+    - 检查您的互联网连接
+    - 验证集合元数据格式
+    - 确保创建者签名有效
+  </Accordion>
+
+  <Accordion title="集合已存在">
+    - 预测的地址已被占用
+    - 尝试稍微更改集合参数
+    - 使用不同的创建者或游戏所有者地址
+  </Accordion>
+</AccordionGroup>

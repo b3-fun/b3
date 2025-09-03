@@ -1,0 +1,189 @@
+---
+title: Konstitusi
+description: Kerangka pengambilan keputusan untuk tata kelola B3 DAO
+lang: id
+originalPath: protocol/constitution.mdx
+---
+Dokumen ini menjelaskan Konstitusi B3 DAO (Konstitusi).
+
+Beberapa aturan dan prosedur Konstitusi ini akan diberlakukan langsung oleh smart contract di blockchain, dan beberapa tidak akan. Tindakan yang diambil di bawah Konstitusi ini dapat berupa tindakan on-chain atau off-chain. Tindakan on-chain adalah tindakan yang diaktualisasikan langsung oleh smart contract tata kelola DAO sebagai transaksi di blockchain. Tindakan off-chain adalah tindakan yang diaktualisasikan dengan cara lain.
+
+Konstitusi ini juga mencakup beberapa "pedoman yang direkomendasikan" yang tidak mengikat tetapi sangat disarankan sebagai praktik tata kelola yang baik.
+
+Konstitusi ini menjelaskan prosedur dimana Konstitusi ini dapat diamendemen dan menjelaskan kerangka tata kelola B3 DAO dan Player1 Foundation.
+
+## Definisi
+
+<AccordionGroup>
+<Accordion title="B3IP">
+Sebuah usulan yang diajukan oleh Pemegang Token untuk dipilih sesuai dengan Proses B3IP.
+</Accordion>
+
+<Accordion title="Proses B3IP">
+Aturan dan prosedur untuk mengajukan dan memilih B3IP seperti yang dijelaskan dalam Konstitusi ini, khususnya "Bagian 2: Proposal DAO dan Prosedur Pemungutan Suara", yang dapat diamendemen dari waktu ke waktu sesuai dengan B3IP.
+</Accordion>
+
+<Accordion title="B3 DAO">
+Komunitas terdesentralisasi dari individu yang memiliki Token, seperti yang dibuktikan oleh rantai Base atau B3.
+</Accordion>
+
+<Accordion title="DAO Treasury">
+Properti Player1 Foundation yang dipegang dalam smart contract tata kelola di Base yang diatur langsung oleh Pemegang Token dan Dewan Keamanan melalui mekanisme pemungutan suara onchain, seperti yang dipercayakan oleh Player1 Foundation.
+</Accordion>
+
+<Accordion title="Token">
+Token pemerintahan dari B3 DAO, dikenal sebagai $B3, seperti yang diwakili di rantai Base atau B3.
+</Accordion>
+
+<Accordion title="Pemegang Token">
+Setiap pemegang Token.
+</Accordion>
+
+<Accordion title="Token yang Dapat Dipilih">
+Semua Token yang ada (yaitu 100.000.000.000 token $B3).
+</Accordion>
+</AccordionGroup>
+
+## Bagian 1: "administrasi" Rantai
+
+Konstitusi ini menjelaskan kerangka pengambilan keputusan untuk tata kelola B3 DAO.
+
+Protokol B3 memiliki dua set "administrator" rantai yang memiliki kekuasaan untuk mengambil tindakan administratif yang mengubah protokol inti B3 dan kode dan/atau mengubah parameter intinya. Dengan peristiwa generasi token $B3 dan pembentukan B3 DAO yang terjadi, Player1 Foundation telah memberikan hak "administrator" pada B3 kepada Pemegang Token dan Dewan Keamanan Protokol B3. Jika B3IP mungkin melanggar hukum yang berlaku atau Konstitusi ini (sebagaimana ditentukan oleh Player1 Foundation), Player1 Foundation dapat memberi tahu Dewan Keamanan tentang kewajibannya untuk mencegah B3IP tersebut berlaku.
+
+"Administrator" juga akan memiliki kekuasaan untuk meningkatkan kontrak Layer 2 tertentu. "Administrator" akan mengontrol affordances di rantai seperti memperbarui implementasi kontrak dari salah satu kontrak protokol inti B3, dan menyesuaikan parameter sistem melalui, misalnya, metode setter dalam B3 Administrator precompile.
+
+## Bagian 2: Proposal DAO dan Prosedur Pemungutan Suara
+
+Proses berikut mengatur aturan dan prosedur dimana B3 DAO dapat mengusulkan, memilih, dan mengimplementasikan B3IP. Tidak ada B3IP yang boleh melanggar hukum yang berlaku, khususnya peraturan terkait sanksi.
+
+### Fase Proses B3IP
+
+<Steps>
+<Step title="Fase 1: Pemeriksaan Suhu / Periode Diskusi (1 minggu) (Opsional tapi Direkomendasikan)">
+B3IP disarankan di forum publik dan didiskusikan/debat selama 1 minggu. B3IP harus disertai dengan jajak pendapat atau metode lain sebagaimana ditentukan sesuai dengan proses tata kelola. Fase 1 ini harus berlangsung selama periode 1 minggu untuk memungkinkan diskusi dan umpan balik yang cukup. Jika B3IP melewatkan fase ini, sebagai praktik tata kelola yang baik, disarankan agar pemilih mempertimbangkan untuk menolaknya.
+</Step>
+
+<Step title="Fase 2: B3IP Formal dan pemanggilan untuk pemungutan suara (3 hari)">
+B3IP diajukan melalui kontrak tata kelola di Base, dengan antarmuka pengguna tersedia di Agora. Pengusul B3IP diharuskan memiliki alamat yang didelegasikan setidaknya **30.000.000 Token yang Dapat Dipilih**.
+
+Setelah 3 hari, snapshot distribusi pemilih akan diambil dan periode pemungutan suara akan dimulai; ini memberikan waktu bagi pihak yang tertarik untuk mendiskusikan B3IP dan mengumpulkan suara sebelum snapshot distribusi pemilih diambil.
+
+Setiap B3IP harus dilabeli sebagai Konstitusional atau Non-Konstitusional.
+</Step>
+
+<Step title="Fase 3: DAO memilih B3IP, di Base (14 hari)">
+Selama Fase 3 ini, B3 DAO akan dapat memilih langsung on-chain melalui Base. Suara yang berhasil memerlukan:
+
+**B3IP Konstitusional:**
+- Proposal lulus jika mencapai **5%** dari semua Token yang Dapat Dipilih yang memilih "ya" (kuorum persetujuan)
+- Setidaknya **55%** dari suara yang diberikan adalah suara "ya" (ambang persetujuan)
+
+**B3IP Non-Konstitusional:**
+- Proposal lulus jika mencapai **3%** dari semua Token yang Dapat Dipilih yang memilih "ya" (kuorum persetujuan)
+- Setidaknya **50%** dari suara yang diberikan adalah suara "ya" (ambang persetujuan)
+</Step>
+
+<Step title="Fase 4: Periode Tunggu L2 (3 hari)">
+Setelah B3IP lulus di Fase 3, akan ada periode tunggu 3 hari sebelum B3IP dapat dieksekusi. Penundaan ini dimaksudkan untuk memberikan kesempatan kepada semua Pemegang Token untuk keluar dari protokol jika mereka tidak senang dengan hasil tata kelola tetapi sebelumnya tidak mengetahui tentang pemungutan suara atau sebaliknya secara tidak sengaja terlewatkan selama fase sebelumnya.
+</Step>
+
+<Step title="Fase 5: Menginisiasi dan Menyelesaikan Pesan L3-ke-L2 (setidaknya 1 periode tantangan dari protokol rollup)">
+Kecuali dalam kasus B3IP Non-Konstitusional yang melibatkan DAO Treasury (yang berada di Base), setelah periode tunggu 3 hari di Fase 4 telah berlalu, pesan gubernur lintas-rantai dikirim ke B3 dari Base, setelah itu pesan B3-ke-Base dikirim menunjukkan bahwa B3IP telah lulus. Rasionale di balik pesan lintas-rantai dari Base ke B3 adalah bahwa sementara pemungutan suara terjadi di Base, B3IP Konstitusional diaktualisasikan di B3. Ketika pesan ini difinalisasi di Base, siapa pun dapat menebusnya untuk menyelesaikan langkah ini dan menginisiasi langkah selanjutnya. Langkah ini memastikan bahwa penyelesaian periode tunggu B3 akan diakui di Base setelah penarikan apa pun yang diinisiasi selama atau segera setelah periode pemungutan suara telah diakui di Base.
+</Step>
+
+<Step title="Fase 6: Periode Tunggu L2 (7 hari)">
+Setelah penyelesaian Fase 5, akan ada periode tunggu tambahan 7 hari. Ini memastikan bahwa pengguna yang menginisiasi penarikan atau pesan B3-ke-Base lainnya memiliki waktu untuk mengeksekusinya di Base sebelum B3IP berlaku.
+</Step>
+
+<Step title="Fase 7: Implementasi">
+B3IP sepenuhnya dieksekusi dan diimplementasikan. Ini dapat terjadi di B3 atau melalui transaksi yang dikirim dari B3 ke Base. Dalam kasus B3IP Non-Konstitusional yang melibatkan DAO Treasury, eksekusi dan implementasi akan terjadi langsung di Base.
+</Step>
+</Steps>
+
+<Note>
+Proses B3IP seperti yang ditentukan biasanya memerlukan **37 hari** dari awal pemeriksaan suhu di Fase 1 sampai B3IP akhirnya dieksekusi di Fase 7 untuk B3IP Konstitusional, atau **27 hari** untuk B3IP Non-Konstitusional. B3IP dapat secara opsional menentukan penundaan lebih lanjut sebelum implementasinya.
+</Note>
+
+### Jenis B3IP
+
+<Tabs>
+<Tab title="B3IP Konstitusional">
+**B3IP Konstitusional** adalah yang berkaitan dengan:
+
+- **Proses**: Memodifikasi teks atau prosedur Konstitusi ini
+- **Pembaruan perangkat lunak**: Memasang atau memodifikasi perangkat lunak di B3
+- **Inti**: Mengambil tindakan apa pun yang memerlukan izin "administrator" di B3
+</Tab>
+
+<Tab title="B3IP Non-Konstitusional">
+**B3IP Non-Konstitusional** adalah yang tidak dianggap sebagai "B3IP Konstitusional" termasuk:
+
+- **Pendanaan**: Meminta dana/hibah atau sebaliknya mengusulkan cara untuk menghabiskan atau mengalokasikan dana dari DAO Treasury. Ada empat jenis Pendanaan B3IP:
+  - **Pengembangan Ekosistem**: B3IP yang mengalokasikan dana DAO Treasury untuk mendukung pengembang game, inisiatif komunitas atau kampanye pemasaran untuk mendorong adopsi Protokol B3
+  - **Program Hibah**: B3IP yang merancang dan menyetujui mekanisme pendanaan untuk pengembang atau kontributor lain yang membangun di Protokol B3
+  - **Penerbitan Game dan Promosi**: B3IP yang menentukan game untuk diintegrasikan ke dalam tumpukan penerbit Protokol B3 atau dipromosikan di platform
+  - **Kemitraan Strategis**: B3IP yang menyetujui kolaborasi dengan organisasi eksternal untuk memperluas jangkauan dan utilitas Protokol B3
+
+- **Informatif**: Memberikan pedoman umum atau informasi kepada komunitas tetapi tidak mengusulkan fitur baru atau pembaruan
+</Tab>
+</Tabs>
+
+### Pedoman yang Direkomendasikan
+
+<AccordionGroup>
+<Accordion title="Pedoman Pemungutan Suara">
+- Anggota DAO harus memilih menentang B3IP yang salah label.
+</Accordion>
+
+<Accordion title="Persyaratan Konten B3IP">
+B3IP harus mencakup:
+
+- **Abstrak**: Dua atau tiga kalimat yang merangkum B3IP
+- **Motivasi**: Pernyataan mengapa B3 DAO harus mengimplementasikan B3IP
+- **Rasional**: Penjelasan bagaimana B3IP sejalan dengan misi dan nilai B3 DAO
+- **Istilah Kunci (opsional)**: Definisi dari istilah apa pun dalam proposal yang unik untuk proposal tersebut, baru bagi B3 DAO, dan/atau spesifik industri
+- **Spesifikasi**: Rincian terperinci dari platform dan teknologi yang akan digunakan
+- **Risiko dan Keamanan**: Rincian terperinci dari potensi risiko keamanan, teknis, hukum, reputasi, dan risiko lain yang berlaku
+- **Langkah-langkah Implementasi**: Langkah-langkah untuk mengimplementasikan B3IP, termasuk biaya terkait, tenaga kerja, dan sumber daya lain untuk setiap langkah jika berlaku. Untuk menghindari keraguan, B3IP apa pun yang melibatkan transaksi dengan pihak ketiga (seperti hibah) harus memastikan bahwa dokumentasi hukum dan prosedur yang berlaku juga disertakan
+- **Jadwal Waktu**: Detail waktu yang relevan, termasuk tetapi tidak terbatas pada tanggal mulai, tonggak, dan tanggal penyelesaian
+- **Biaya Keseluruhan**: Biaya total untuk mengimplementasikan B3IP
+- Penulis B3IP dapat menambahkan bidang tambahan ke template apa pun jika diperlukan untuk sepenuhnya mengkomunikasikan niat, spesifik, dan implikasi B3IP
+</Accordion>
+
+<Accordion title="B3IP yang Diajukan Kembali">
+B3IP yang diajukan kembali juga harus mencakup:
+
+- Tautan ke B3IP asli
+- Alasan B3IP asli tidak disetujui
+- Perubahan yang telah dilakukan dan mengapa sekarang harus disetujui
+- Bidang tambahan apa pun ke template apa pun jika diperlukan untuk sepenuhnya mengkomunikasikan perubahan yang dilakukan dan niat, spesifik, dan implikasi B3IP yang diajukan kembali
+</Accordion>
+</AccordionGroup>
+
+## Bagian 3: Dewan Keamanan
+
+Dewan Keamanan adalah komite dari **5 anggota yang merupakan penandatangan dompet multi-sig**, yang memiliki kekuasaan untuk melakukan tindakan Darurat tertentu dan Tindakan Non-Darurat, seperti yang didelegasikan kepadanya oleh Player1 Foundation, dan bertanggung jawab untuk menjaga Konstitusi B3 DAO ini. Melalui pengajuan, persetujuan, dan implementasi B3IP Konstitusional, B3 DAO dapat memodifikasi kekuasaan Dewan Keamanan atau mengeliminasi Dewan Keamanan sepenuhnya.
+
+"Salinan" setara dari kontrak multi-sig Dewan Keamanan ada, satu di Base dan yang lainnya di B3.
+
+### Tindakan Darurat
+
+<Card title="Tindakan Darurat" icon="alert-triangle">
+Dewan Keamanan memiliki kekuasaan untuk mengeksekusi pembaruan perangkat lunak apa pun atau melakukan tindakan lain yang diperlukan tanpa penundaan untuk menanggapi keadaan darurat keamanan, jika terjadi (tindakan tersebut, "**Tindakan Darurat**"). Melakukan Tindakan Darurat apa pun memerlukan persetujuan **4-dari-5** dari Dewan Keamanan. Dewan Keamanan tidak boleh menggunakan kekuasaannya untuk melakukan Tindakan Darurat kecuali dalam keadaan darurat keamanan yang sebenarnya, seperti kerentanan kritis yang dapat secara signifikan mengkompromikan integritas, kerahasiaan, atau ketersediaan B3.
+
+Setelah melakukan Tindakan Darurat apa pun, Dewan Keamanan harus mengeluarkan laporan transparansi penuh (pada waktu yang tepat setelah keadaan darurat keamanan telah berlalu) untuk menjelaskan apa yang dilakukan dan mengapa Tindakan Darurat tersebut dibenarkan.
+
+B3 DAO dapat membatasi atau mengeliminasi kekuasaan Dewan Keamanan untuk melakukan Tindakan Darurat melalui persetujuan dan implementasi B3IP Konstitusional.
+</Card>
+
+### Tindakan Non-Darurat
+
+<Card title="Tindakan Non-Darurat" icon="settings">
+Dewan Keamanan juga dapat menyetujui dan mengimplementasikan pembaruan perangkat lunak rutin, pemeliharaan rutin, dan penyesuaian parameter lain dalam pengaturan non-darurat (tindakan tersebut, "**Tindakan Non-Darurat**"), yang memerlukan persetujuan **3-dari-5** agar dapat berlaku. Setiap Tindakan Non-Darurat, setelah disetujui oleh Dewan Keamanan, akan melewati Fase 1 hingga 3 dari proses B3IP dan langsung melalui Fase 4 hingga 7 dari proses B3IP (sebagaimana berlaku), untuk memberikan penundaan sebelum Tindakan Non-Darurat dikerahkan. Dewan Keamanan dapat secara opsional menentukan penundaan tambahan sebelum penyebaran.
+
+B3 DAO dapat membatasi atau mengeliminasi kekuasaan Dewan Keamanan untuk melakukan Tindakan Non-Darurat melalui persetujuan dan implementasi B3IP Konstitusional.
+</Card>
+
+## Bagian 4: Pemilihan Dewan Keamanan
+
+Dewan Keamanan memiliki **5 anggota**, yang dibagi menjadi dua Kohort dari 2 hingga 3 anggota, yang melayani **18 bulan masa jabatan**. 'Kohort Kedua' akan melayani **24 bulan masa jabatan** mengingat pem

@@ -1,0 +1,236 @@
+---
+title: B3 SDK
+description: >-
+  一个全面的 TypeScript SDK，用于 AnySpend 跨链操作和 B3 Global Accounts 认证。提供了 React
+  组件以便于集成，以及无界面 TypeScript 服务以供自定义实现。
+lang: cn
+originalPath: sdk/introduction.mdx
+---
+<img src="/images/b3-banner.png" alt="B3 SDK" className="w-full rounded-xl" />
+
+## B3 SDK 是什么？
+
+B3 SDK（`@b3dotfun/sdk`）是一个统一的 TypeScript SDK，提供了构建 B3 生态系统应用所需的一切。它结合了强大的跨链支付基础设施和无缝认证，所有这些都包装在开发者友好的 React 组件和无头服务中。
+
+## 架构
+
+SDK 组织成专注的模块，旨在最大限度地灵活性和易用性：
+
+<CardGroup cols={2}>
+<Card title="AnySpend 模块" icon="arrows-right-left" href="/anyspend/introduction">
+  跨多个区块链的支付、交换和 NFT 铸造的跨链执行引擎。
+</Card>
+
+<Card title="全局账户模块" icon="user" href="/sdk/global-account/introduction">
+  B3 全局账户认证和用户管理，支持社交登录和会话密钥。
+</Card>
+
+</CardGroup>
+
+### 模块结构
+
+每个模块包含有组织的、专为特定目的构建的组件：
+
+- **`react/`** - 用于简单集成的 React 组件和钩子
+- **`services/`** - 用于自定义实现的无头 TypeScript 服务
+- **`types/`** - 全面的 TypeScript 定义
+- **`utils/`** - 实用功能和助手
+- **`constants/`** - 配置和常量
+
+## 平台支持
+
+| 功能             | React Web | React Native | 无头服务 |
+|-------------------|-----------|--------------|----------|
+| AnySpend          | ✅         | ❌            | ✅        |
+| 全局账户           | ✅         | ✅            | ✅        |
+| 共享工具           | ✅         | ✅            | ✅        |
+
+## 安装
+
+<CodeGroup>
+```bash npm
+npm install @b3dotfun/sdk
+```
+
+```bash yarn
+yarn add @b3dotfun/sdk
+```
+
+```bash pnpm
+pnpm add @b3dotfun/sdk
+```
+</CodeGroup>
+
+### CSS 样式
+
+导入默认样式以获得最佳视觉体验：
+
+```typescript
+import "@b3dotfun/sdk/index.css";
+```
+
+## 快速开始
+
+### 使用 AnySpend 进行跨链支付
+
+```tsx
+import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
+
+function PaymentPage() {
+  return <AnySpend mode="page" />;
+}
+```
+
+### 使用全局账户进行认证
+
+```tsx
+import { B3Provider, SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
+
+function App() {
+  return (
+    <B3Provider environment="production">
+      <SignInWithB3
+        provider={{ strategy: "google" }}
+        partnerId="your-partner-id"
+        onLoginSuccess={(globalAccount) => {
+          console.log("Authenticated:", globalAccount);
+        }}
+      />
+    </B3Provider>
+  );
+}
+```
+
+### NFT 铸造
+
+```tsx
+import { AnySpendNFTButton } from "@b3dotfun/sdk/anyspend/react";
+
+function NFTMinting() {
+  const nftContract = {
+    address: "0x9c275ff1634519E9B5449ec79cd939B5F900564d",
+    chainId: 8333,
+    name: "Example NFT Collection",
+    imageUrl: "https://example.com/nft.jpg",
+    price: "1000000000000000000", // 1 ETH in wei
+    currency: { symbol: "ETH", decimals: 18 }
+  };
+
+  return (
+    <AnySpendNFTButton
+      nftContract={nftContract}
+      recipientAddress="0x..."
+    />
+  );
+}
+```
+
+## 关键特性
+
+### 通用支付基础设施
+
+<CardGroup cols={2}>
+<Card title="任何代币支付" icon="coins">
+  接受任何加密货币的支付，并自动转换为您偏好的代币。
+</Card>
+
+<Card title="跨链交换" icon="arrow-right-arrow-left">
+  在 20+ 个支持的区块链上启用无缝代币交换，具有最优路径选择。
+</Card>
+
+<Card title="NFT 铸造" icon="image">
+  一键 NFT 铸造按钮，接受来自任何链的任何代币支付。
+</Card>
+
+<Card title="法币通道" icon="credit-card">
+  为没有现有加密货币的用户集成法币到加密货币通道。
+</Card>
+</CardGroup>
+
+### 无缝认证
+
+<CardGroup cols={2}>
+<Card title="社交登录" icon="users">
+  Google、Discord 和其他社交提供商，即时入门。
+</Card>
+
+<Card title="会话密钥" icon="key">
+  安全的会话管理，具有细粒度权限，以增强用户体验。
+</Card>
+
+<Card title="跨平台身份" icon="globe">
+  在所有 B3 应用和游戏中工作的单一身份。
+</Card>
+
+<Card title="智能账户" icon="wallet">
+  内置的智能账户抽象，用于无 Gas 交易。
+</Card>
+</CardGroup>
+
+## 无头 TypeScript 服务
+
+对于需要最大控制权的开发者，所有功能都可以通过无头服务获得：
+
+### AnySpend 服务
+
+```typescript
+import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
+
+// 获取跨链交换报价
+const quote = await anyspendService.getQuote({
+  srcChain: 1,
+  dstChain: 8333,
+  srcTokenAddress: "0x...",
+  dstTokenAddress: "0x...",
+  srcAmount: "1000000",
+  recipientAddress: "0x...",
+  type: "swap"
+});
+
+// 创建并执行订单
+const order = await anyspendService.createOrder({
+  // ... 订单参数
+});
+```
+
+### 全局账户服务
+
+```typescript
+import { authenticate } from "@b3dotfun/sdk/global-account/app";
+
+// 认证用户
+const authResult = await authenticate(
+  "access-token",
+  "identity-token"
+);
+
+if (authResult) {
+  console.log("Authentication successful:", authResult);
+}
+```
+
+## 支持与社区
+
+<CardGroup cols={3}>
+<Card title="开发者支持" icon="handshake" href="https://b3builders.typeform.com/bsmntdevelopers">
+  获取将 B3 SDK 集成到您的项目中的帮助。
+</Card>
+
+<Card title="Discord 社区" icon="discord" href="https://discord.gg/b3dotfun">
+  加入 B3 开发者社区，获得支持和讨论。
+</Card>
+
+<Card title="GitHub" icon="github" href="https://github.com/b3-fun/b3">
+  查看源代码，报告问题，并为 SDK 做出贡献。
+</Card>
+</CardGroup>
+
+## 下一步是什么？
+
+1. **[安装 SDK](#installation)** 并导入样式
+2. **[设置 AnySpend](/anyspend/introduction)** 用于跨链支付
+3. **[配置全局账户](/sdk/global-account/authentication)** 用于用户认证
+4. **[探索示例](/anyspend/examples)** 和实现模式
+5. **[加入社区](https://discord.gg/b3dotfun)** 获取支持和更新
+
+B3 SDK 提供了构建下一代跨链应用程序所需的一切，带来无缝的用户体验。今天就开始构建吧！

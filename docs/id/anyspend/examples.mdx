@@ -1,0 +1,532 @@
+---
+title: Contoh & Kasus Penggunaan
+description: Contoh implementasi dunia nyata untuk pola integrasi AnySpend yang umum
+lang: id
+originalPath: anyspend/examples.mdx
+---
+# Contoh & Kasus Penggunaan
+
+Contoh implementasi dunia nyata untuk pola integrasi AnySpend yang umum, mulai dari pertukaran token lintas rantai hingga aplikasi DeFi dan game yang kompleks.
+
+## 🔄 Pertukaran Token Lintas Rantai
+
+### Antarmuka Pertukaran Dasar
+
+Sempurna untuk aplikasi DeFi, manajer portofolio, atau aplikasi apa pun yang memerlukan fungsi pertukaran token.
+
+```tsx title="Halaman Pertukaran Sederhana" icon="exchange-alt"
+import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
+
+function TokenSwapPage() {
+  const [userAddress] = useWallet(); // Hook dompet Anda
+
+  return (
+    <div className="swap-container">
+      <h1>Tukar Token</h1>
+      <AnySpend
+        mode="page"
+        recipientAddress={userAddress}
+        onSuccess={(txHash) => {
+          // Perbarui portofolio pengguna
+          toast.success("Pertukaran berhasil!");
+
+          // Opsional: Lacak analitik
+          analytics.track("swap_completed", {
+            txHash,
+            userAddress,
+          });
+
+          // Segarkan saldo pengguna
+          queryClient.invalidateQueries(['user-balances', userAddress]);
+        }}
+      />
+    </div>
+  );
+}
+```
+
+### Pertukaran Lanjutan dengan Pratinjau Kutipan
+
+```tsx title="Antarmuka Pertukaran Lanjutan" icon="chart-line" lines
+import { useAnyspendQuote, AnySpend } from "@b3dotfun/sdk/anyspend/react";
+
+function AdvancedSwapInterface() {
+  const [fromToken, setFromToken] = useState(USDC_ETHEREUM);
+  const [toToken, setToToken] = useState(ETH_B3);
+  const [amount, setAmount] = useState("100");
+  const [isSwapOpen, setIsSwapOpen] = useState(false);
+
+  const quoteRequest = useMemo(() => ({
+    srcChain: fromToken.chainId,
+    dstChain: toToken.chainId,
+    srcTokenAddress: fromToken.address,
+    dstTokenAddress: toToken.address,
+    type: "swap" as const,
+    tradeType: "EXACT_INPUT" as const,
+    amount: parseUnits(amount || "0", fromToken.decimals).toString(),
+  }), [fromToken, toToken, amount]);
+
+  const { anyspendQuote, isLoadingAnyspendQuote } = useAnyspendQuote(quoteRequest);
+
+  return (
+    <div className="advanced-swap">
+      <div className="swap-form">
+        <TokenInput
+          label="Dari"
+          token={fromToken}
+          amount={amount}
+          onTokenChange={setFromToken}
+          onAmountChange={setAmount}
+        />
+
+        <SwapArrowButton onClick={() => {
+          setFromToken(toToken);
+          setToToken(fromToken);
+        }} />
+
+        <TokenInput
+          label="Ke"
+          token={toToken}
+          amount={anyspendQuote?.expectedOutput || "0"}
+          onTokenChange={setToToken}
+          readOnly
+        />
+
+        {anyspendQuote && (
+          <div className="quote-details">
+            <div>Rate: 1 {fromToken.symbol} = {anyspendQuote.rate} {toToken.symbol}</div>
+            <div>Biaya Jaringan: ${anyspendQuote.networkFeeUsd}</div>
+            <div>Biaya Layanan: ${anyspendQuote.serviceFeeUsd}</div>
+            <div>Total: ${anyspendQuote.totalUsdCost}</div>
+          </div>
+        )}
+
+        <button
+          onClick={() => setIsSwapOpen(true)}
+          disabled={isLoadingAnyspendQuote || !anyspendQuote}
+          className="swap-button"
+        >
+          {isLoadingAnyspendQuote ? "Mendapatkan Kutipan..." : "Tukar Token"}
+        </button>
+      </div>
+
+      {isSwapOpen && (
+        <AnySpend
+          mode="modal"
+          recipientAddress={userAddress}
+          destinationTokenAddress={toToken.address}
+          destinationTokenChainId={toToken.chainId}
+          onSuccess={() => {
+            setIsSwapOpen(false);
+            toast.success("Pertukaran berhasil!");
+          }}
+        />
+      )}
+    </div>
+  );
+}
+```
+
+## 🖼️ Integrasi Pasar NFT
+
+### Pembelian NFT Sederhana
+
+```tsx title="Komponen Kartu NFT" icon="image" lines
+import { AnySpendNFTButton } from "@b3dotfun/sdk/anyspend/react";
+
+function NFTCard({ nft }: { nft: NFTListing }) {
+  const [userAddress] = useWallet();
+  const [isOwned, setIsOwned] = useState(false);
+
+  const nftContract = {
+    chainId: nft.chainId,
+    contractAddress: nft.contractAddress,
+    price: nft.priceWei,
+    priceFormatted: nft.priceFormatted,
+    currency: nft.currency,
+    name: nft.name,
+    description: nft.description,
+    imageUrl: nft.imageUrl,
+  };
+
+  return (
+    <div className="nft-card">
+      <img src={nft.imageUrl} alt={nft.name} />
+      <div className="nft-details">
+        <h3>{nft.name}</h3>
+        <p>{nft.description}</p>
+        <div className="price">
+          {nft.priceFormatted} {nft.currency.symbol}
+        </div>
+
+        {isOwned ? (
+          <div className="owned-badge">✅ Dimiliki</div>
+        ) : (
+          <AnySpendNFTButton
+            nftContract={nftContract}
+            recipientAddress={userAddress}
+            onSuccess={(txHash) => {
+              setIsOwned(true);
+
+              // Perbarui koleksi NFT pengguna
+              queryClient.invalidateQueries(['user-nfts', userAddress]);
+
+              // Tampilkan pesan sukses dengan tautan penjelajah
+              toast.success(
+                <div>
+                  NFT berhasil dibeli!
+                  <a href={`https://explorer.b3.fun/tx/${txHash}`} target="_blank">
+                    Lihat Transaksi
+                  </a>
+                </div>
+              );
+            }}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+```
+
+### Pasar NFT dengan Pembelian Massal
+
+```tsx title="Pembelian NFT Massal" icon="shopping-cart" lines
+function NFTMarketplace() {
+  const [selectedNFTs, setSelectedNFTs] = useState<NFTListing[]>([]);
+  const [userAddress] = useWallet();
+
+  const handleBulkPurchase = () => {
+    // Untuk pembelian massal, buat beberapa pesanan atau gunakan kontrak batch
+    selectedNFTs.forEach((nft, index) => {
+      setTimeout(() => {
+        // Atur pembelian secara bertahap untuk menghindari pembatasan laju
+        createSingleNFTPurchase(nft);
+      }, index * 1000);
+    });
+  };
+
+  return (
+    <div className="marketplace">
+      <div className="nft-grid">
+        {nfts.map((nft) => (
+          <NFTCard
+            key={nft.id}
+            nft={nft}
+            onSelect={(selected) => {
+              if (selected) {
+                setSelectedNFTs([...selectedNFTs, nft]);
+              } else {
+                setSelectedNFTs(selectedNFTs.filter(n => n.id !== nft.id));
+              }
+            }}
+          />
+        ))}
+      </div>
+
+      {selectedNFTs.length > 0 && (
+        <div className="bulk-purchase">
+          <p>Terpilih: {selectedNFTs.length} NFT</p>
+          <p>Total: {calculateTotal(selectedNFTs)} ETH</p>
+          <button onClick={handleBulkPurchase}>
+            Beli NFT yang Terpilih
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## 🎮 Aplikasi Game & DeFi
+
+### Antarmuka Staking
+
+```tsx title="Komponen Kolam Staking" icon="coins" lines
+import { AnySpendCustom } from "@b3dotfun/sdk/anyspend/react";
+import { encodeFunctionData } from "viem";
+
+function StakingPool({ pool }: { pool: StakingPool }) {
+  const [stakeAmount, setStakeAmount] = useState("");
+  const [stakingDuration, setStakingDuration] = useState(30);
+  const [userAddress] = useWallet();
+
+  const stakingCalldata = useMemo(() => {
+    if (!stakeAmount) return "0x";
+
+    const amountWei = parseUnits(stakeAmount, pool.token.decimals);
+
+    return encodeFunctionData({
+      abi: stakingPoolABI,
+      functionName: "stake",
+      args: [amountWei, stakingDuration * 24 * 60 * 60], // durasi dalam detik
+    });
+  }, [stakeAmount, stakingDuration]);
+
+  const expectedRewards = useMemo(() => {
+    if (!stakeAmount) return "0";
+    const amount = parseFloat(stakeAmount);
+    const apy = pool.apy / 100;
+    const durationInYears = stakingDuration / 365;
+    return (amount * apy * durationInYears).toFixed(4);
+  }, [stakeAmount, stakingDuration, pool.apy]);
+
+  return (
+    <div className="staking-pool">
+      <div className="pool-info">
+        <h2>{pool.name}</h2>
+        <p>APY: {pool.apy}%</p>
+        <p>TVL: ${pool.totalValueLocked.toLocaleString()}</p>
+      </div>
+
+      <div className="stake-form">
+        <div className="input-group">
+          <label>Jumlah untuk staking</label>
+          <input
+            type="number"
+            value={stakeAmount}
+            onChange={(e) => setStakeAmount(e.target.value)}
+            placeholder="0.0"
+          />
+          <span>{pool.token.symbol}</span>
+        </div>
+
+        <div className="input-group">
+          <label>Durasi Staking</label>
+          <select
+            value={stakingDuration}
+            onChange={(e) => setStakingDuration(Number(e.target.value))}
+          >
+            <option value={7}>7 hari (2% APY)</option>
+            <option value={30}>30 hari (5% APY)</option>
+            <option value={90}>90 hari (8% APY)</option>
+            <option value={365}>1 tahun (12% APY)</option>
+          </select>
+        </div>
+
+        <div className="rewards-preview">
+          <p>Hadiah yang diharapkan: {expectedRewards} {pool.token.symbol}</p>
+        </div>
+
+        <AnySpendCustom
+          orderType="custom"
+          dstChainId={pool.chainId}
+          dstToken={pool.token}
+          dstAmount={parseUnits(stakeAmount || "0", pool.token.decimals).toString()}
+          contractAddress={pool.contractAddress}
+          encodedData={stakingCalldata}
+          metadata={{
+            action: "stake",
+            poolId: pool.id,
+            duration: stakingDuration,
+            expectedRewards,
+          }}
+          header={({ anyspendPrice, isLoadingAnyspendPrice }) => (
+            <div className="staking-header">
+              <h3>Stake {pool.token.symbol}</h3>
+              <div className="stake-summary">
+                <div>Jumlah: {stakeAmount} {pool.token.symbol}</div>
+                <div>Durasi: {stakingDuration} hari</div>
+                <div>Hadiah yang diharapkan: {expectedRewards} {pool.token.symbol}</div>
+                {anyspendPrice && (
+                  <div>Total biaya: ${anyspendPrice.totalUsdCost}</div>
+                )}
+              </div>
+            </div>
+          )}
+          onSuccess={(txHash) => {
+            toast.success("Staking berhasil!");
+
+            // Perbarui posisi staking pengguna
+            queryClient.invalidateQueries(['staking-positions', userAddress]);
+
+            // Reset formulir
+            setStakeAmount("");
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+```
+
+### Game Roda Putar
+
+```tsx title="Game Roda Putar" icon="gamepad" lines
+import { AnySpendBuySpin } from "@b3dotfun/sdk/anyspend/react";
+
+function SpinWheel({ game }: { game: GameConfig }) {
+  const [userAddress] = useWallet();
+  const [spinHistory, setSpinHistory] = useState<SpinResult[]>([]);
+
+  return (
+    <div className="spin-game">
+      <div className="wheel-container">
+        <SpinWheelVisual prizes={game.prizes} />
+      </div>
+
+      <div className="game-info">
+        <h2>{game.name}</h2>
+        <p>Biaya per putaran: {game.spinCost} {game.currency.symbol}</p>
+        <div className="prizes">
+          <h3>Hadiah yang Mungkin:</h3>
+          {game.prizes.map((prize, index) => (
+            <div key={index} className="prize">
+              <span>{prize.name}</span>
+              <span>{prize.probability}% kesempatan</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <AnySpendBuySpin
+        gameContract={game.contractAddress}
+        spinPrice={game.spinCostWei}
+        recipientAddress={userAddress}
+        onSuccess={(txHash) => {
+          // Tangani hasil putaran
+          fetchSpinResult(txHash).then((result) => {
+            setSpinHistory([result, ...spinHistory]);
+
+            if (result.isWinner) {
+              toast.success(`Anda menang ${result.prize}! 🎉`);
+            } else {
+              toast.info("Lebih beruntung lain kali!");
+            }
+          });
+        }}
+      />
+
+      <div className="spin-history">
+        <h3>Putaran Terbaru</h3>
+        {spinHistory.map((spin, index) => (
+          <div key={index} className={`spin-result ${spin.isWinner ? 'winner' : ''}`}>
+            <span>{spin.prize || "Tidak ada hadiah"}</span>
+            <span>{new Date(spin.timestamp).toLocaleTimeString()}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+### Pendaftaran Turnamen
+
+```tsx title="Pendaftaran Turnamen" icon="trophy" lines
+import { AnySpendTournament } from "@b3dotfun/sdk/anyspend/react";
+
+function TournamentEntry({ tournament }: { tournament: Tournament }) {
+  const [userAddress] = useWallet();
+  const [isRegistered, setIsRegistered] = useState(false);
+
+  return (
+    <div className="tournament-entry">
+      <div className="tournament-info">
+        <h2>{tournament.name}</h2>
+        <p>Hadiah Pool: ${tournament.prizePool.toLocaleString()}</p>
+        <p>Biaya Masuk: {tournament.entryFee} {tournament.currency.symbol}</p>
+        <p>Pemain: {tournament.currentPlayers}/{tournament.maxPlayers}</p>
+        <p>Mulai: {new Date(tournament.startTime).toLocaleString()}</p>
+      </div>
+
+      {isRegistered ? (
+        <div className="registered">
+          <span className="check-icon">✅</span>
+          <span>Anda terdaftar!</span>
+          <p>Turnamen dimulai {formatTimeUntil(tournament.startTime)}</p>
+        </div>
+      ) : (
+        <AnySpendTournament
+          tournamentId={tournament.id}
+          entryFee={tournament.entryFeeWei}
+          recipientAddress={userAddress}
+          onSuccess={(txHash) => {
+            setIsRegistered(true);
+
+            // Perbarui jumlah pemain turnamen
+            queryClient.invalidateQueries(['tournament', tournament.id]);
+
+            toast.success("Berhasil terdaftar untuk turnamen!");
+          }}
+        />
+      )}
+
+      <div className="tournament-rules">
+        <h3>Aturan</h3>
+        <ul>
+          {tournament.rules.map((rule, index) => (
+            <li key={index}>{rule}</li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+```
+
+## 💰 Onramp Fiat-ke-Kripto
+
+### Alur Onboarding Sederhana
+
+```tsx title="Onboarding Pengguna" icon="credit-card" lines
+function UserOnboarding() {
+  const [step, setStep] = useState(1);
+  const [userAddress] = useWallet();
+
+  return (
+    <div className="onboarding">
+      <div className="progress-bar">
+        <div className={`step ${step >= 1 ? 'active' : ''}`}>1. Hubungkan Dompet</div>
+        <div className={`step ${step >= 2 ? 'active' : ''}`}>2. Beli Kripto</div>
+        <div className={`step ${step >= 3 ? 'active' : ''}`}>3. Mulai Menggunakan</div>
+      </div>
+
+      {step === 1 && (
+        <div className="step-content">
+          <h2>Selamat datang! Mari kita mulai</h2>
+          <p>Pertama, hubungkan dompet Anda untuk melanjutkan.</p>
+          <WalletConnectButton onConnect={() => setStep(2)} />
+        </div>
+      )}
+
+      {step === 2 && (
+        <div className="step-content">
+          <h2>Beli kripto pertama Anda</h2>
+          <p>Beli token dengan kartu kredit Anda untuk memulai.</p>
+
+          <AnySpend
+            mode="page"
+            defaultActiveTab="fiat"
+            destinationTokenAddress="0x0000000000000000000000000000000000000000" // ETH
+            destinationTokenChainId={8333} // B3
+            recipientAddress={userAddress}
+            onSuccess={() => {
+              setStep(3);
+              toast.success("Pembelian berhasil! Selamat datang di ekosistem!");
+            }}
+          />
+        </div>
+      )}
+
+      {step === 3 && (
+        <div className="step-content">
+          <h2>Anda sudah siap! 🎉</h2>
+          <p>Pembelian kripto Anda selesai. Berikut yang bisa Anda lakukan selanjutnya:</p>
+
+          <div className="next-actions">
+            <button onClick={() => router.push('/explore')}>
+              Jelajahi Platform
+            </button>
+            <button onClick={() => router.push('/portfolio')}>
+              Lihat Portofolio Anda
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## 🛒 Integrasi E

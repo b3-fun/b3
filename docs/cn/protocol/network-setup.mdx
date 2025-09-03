@@ -1,0 +1,242 @@
+---
+title: 连接到 B3
+description: B3 是完全兼容 EVM 的链网络。轻松使用您的钱包连接到 B3。
+lang: cn
+originalPath: protocol/network-setup.mdx
+---
+## 在您的钱包中使用B3
+连接任何以太坊钱包都很简单，包括MetaMask、Coinbase Wallet、Rainbow等。
+
+<Tip>
+  这些按钮适用于MetaMask和其他Web3钱包。它们将自动添加网络配置或如果已添加则切换到B3。
+</Tip>
+
+<Card title="添加B3主网" icon="plus" href="https://explorer.b3.fun/add-b3-chain" horizontal>
+  使用B3 Explorer <span className="bg-primary text-white px-2 py-1 rounded-md text-xs ml-2">推荐</span>
+</Card>
+<Card title="通过Chainlist添加" icon="plus" href="https://chainlist.org/chain/8333" horizontal>
+  使用Chainlist将B3添加到您的钱包
+</Card>
+
+<br />
+
+<Tabs>
+<Tab title="使用B3 Explorer（推荐）">
+  将B3添加到您的钱包的最快方式：
+  <Steps>
+  <Step title="访问B3 Explorer">
+    前往 [explorer.b3.fun](https://explorer.b3.fun/add-b3-chain) 并点击“添加B3链”
+  </Step>
+  
+  <Step title="连接钱包">
+    连接您的钱包（MetaMask、Coinbase Wallet等）
+  </Step>
+  
+  <Step title="添加网络">
+    点击“添加到钱包”以添加B3主网
+    
+    <Check>
+    B3将自动以正确的配置添加到您的钱包中
+    </Check>
+  </Step>
+  </Steps>
+</Tab>
+
+<Tab title="使用Chainlist">
+  将B3添加到您的钱包的最快方式：
+  <Steps>
+  <Step title="访问Chainlist">
+    前往 [chainlist.org](https://chainlist.org/chain/8333) 并搜索“B3”
+  </Step>
+  
+  <Step title="连接钱包">
+    连接您的钱包（MetaMask、Coinbase Wallet等）
+  </Step>
+  
+  <Step title="添加网络">
+    点击“添加到钱包”以添加B3主网
+    
+    <Check>
+    B3将自动以正确的配置添加到您的钱包中
+    </Check>
+  </Step>
+  </Steps>
+</Tab>
+
+<Tab title="手动操作">
+  如果您更喜欢手动添加B3，请使用下面的网络详情：
+  
+  <Note>网络详情：[B3主网配置](#b3-mainnet-configuration)</Note>
+  <Note>网络详情：[B3测试网配置](#b3-testnet-configuration)</Note>
+</Tab>
+</Tabs>
+
+## 特定钱包的指南
+
+### MetaMask
+
+<Steps>
+<Step title="打开MetaMask">
+  点击浏览器中的MetaMask扩展
+</Step>
+
+<Step title="访问网络">点击顶部的网络下拉菜单并选择“添加网络”</Step>
+
+<Step title="手动添加网络">点击底部的“手动添加网络”</Step>
+
+<Step title="输入B3详情">
+  填写B3网络信息
+  
+  <Note>查看完整的 [B3主网配置](#b3-mainnet-configuration)</Note>
+</Step>
+
+<Step title="保存并切换">
+  点击“保存”，MetaMask将自动切换到B3
+  
+  <Check>
+  您现在已连接到B3！您将在网络下拉菜单中看到“B3主网”。
+  </Check>
+</Step>
+</Steps>
+
+### Coinbase Wallet
+
+<Steps>
+<Step title="打开Coinbase Wallet">
+  启动Coinbase Wallet浏览器扩展
+</Step>
+
+<Step title="导航到设置">转到 **设置** 标签并点击 **网络**</Step>
+
+<Step title="添加自定义网络">点击右上角的加号 (➕) 以 **添加自定义网络**</Step>
+
+<Step title="配置B3网络">
+  在 **添加自定义网络** 对话框中，输入B3主网信息：
+  <Note>查看完整的 [B3主网配置](#b3-mainnet-configuration) 以获取可复制的值</Note>
+</Step>
+
+<Step title="保存配置">
+  点击“保存”将B3添加到您的可用网络中
+  
+  <Tip>
+  Coinbase Wallet将自动检测到原生代币是ETH
+  </Tip>
+</Step>
+</Steps>
+
+### Rainbow Wallet
+
+<Steps>
+<Step title="打开Rainbow">
+  在您的移动设备或浏览器扩展上启动Rainbow钱包
+</Step>
+
+<Step title="访问设置">点击个人资料图标并转到设置 → 网络</Step>
+
+<Step title="添加自定义网络">
+  点击“添加自定义网络”并输入B3详情
+  <Note>查看完整的 [B3主网配置](#b3-mainnet-configuration) 以获取可复制的值</Note>
+</Step>
+
+<Step title="连接到B3">
+  保存配置并切换到B3主网
+</Step>
+</Steps>
+
+## B3主网配置
+<Card title="B3主网" icon="globe" id="b3-mainnet-config">
+    B3主网的完整配置详情：
+
+    **网络名称：**
+    ```
+    B3主网
+    ```
+
+    **链ID：**
+    ```
+    8333
+    ```
+
+    **RPC URL：**
+    ```
+    https://mainnet-rpc.b3.fun
+    ```
+
+    **浏览器URL：**
+    ```
+    https://explorer.b3.fun
+    ```
+
+    **原生代币：**
+    ```
+    符号：ETH
+    小数位数：18
+    ```
+  </Card>
+
+## B3测试网配置
+<Card title="B3测试网" icon="flask" id="b3-testnet-config">
+    B3测试网的完整配置详情：
+
+    **网络名称：**
+    ```
+    B3测试网
+    ```
+
+    **链ID：**
+    ```
+    1993
+    ```
+
+    **RPC URL：**
+    ```
+    https://testnet-rpc.b3.fun
+    ```
+
+    **浏览器URL：**
+    ```
+    https://testnet-explorer.b3.fun
+    ```
+
+    **原生代币：**
+    ```
+    符号：ETH
+    小数位数：18
+    ```
+  </Card>
+
+
+## 故障排除
+
+<AccordionGroup>
+<Accordion title="钱包中未显示网络">
+  - 仔细检查链ID（主网为8333）
+  - 确保RPC URL正确：`https://mainnet-rpc.b3.fun`
+  - 尝试刷新您的钱包或重启浏览器
+</Accordion>
+
+<Accordion title="交易失败">
+  - 确认您连接到正确的B3网络 - 检查您是否有足够的ETH支付燃料费 - 确保合约地址在B3上有效
+</Accordion>
+
+<Accordion title="交易速度缓慢">
+  - B3通常在1-2秒内处理交易 - 如果遇到延迟，请检查 [B3网络状态](
+  https://docs.b3.fun/network-status) - 如有需要，考虑调整燃料价格
+</Accordion>
+
+<Accordion title="看不到我的代币">
+  - 使用B3 Explorer手动导入代币合约
+  - 确保您在钱包中查看正确的网络
+  - 某些代币可能需要手动添加到您的钱包代币列表中
+</Accordion>
+</AccordionGroup>
+
+---
+
+<Warning>
+  始终验证用户是否连接到正确的B3网络再执行交易。B3主网的链ID为8333。
+</Warning>
+
+<Check>
+  **准备好在B3上开始构建了吗？** 您的钱包现已配置！查看我们的 [SDK文档](/quickstart) 开始将B3集成到您的应用程序中。
+</Check>

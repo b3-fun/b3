@@ -1,0 +1,607 @@
+---
+title: Layanan Penyimpanan
+description: Kelola metadata dan aset koleksi dengan layanan penyimpanan BaseMint
+lang: id
+originalPath: createkit/storage.mdx
+---
+## Ikhtisar
+
+BaseMint Storage Service menyediakan solusi yang dapat diandalkan dan dapat diskalakan untuk menyimpan dan mengelola metadata koleksi NFT. Layanan ini menawarkan penentuan alamat yang deterministik, pengiriman yang didukung CDN, dan integrasi yang mulus dengan ekosistem CreateKit.
+
+## Arsitektur Penyimpanan
+
+### Cara Kerja Penyimpanan
+
+<Steps>
+  <Step title="Pengajuan Metadata">
+    Metadata koleksi dan tanda tangan pembuat diajukan ke layanan penyimpanan
+  </Step>
+  <Step title="Validasi & Penyimpanan">
+    Layanan memvalidasi tanda tangan dan menyimpan metadata dengan alamat yang deterministik
+  </Step>
+  <Step title="Distribusi CDN">
+    Metadata didistribusikan melalui CDN untuk akses cepat dan global
+  </Step>
+  <Step title="Integrasi Marketplace">
+    Koleksi dapat ditemukan melalui alamat yang diprediksi sebelum dikerahkan
+  </Step>
+</Steps>
+
+### Fitur Utama
+
+<CardGroup cols={2}>
+  <Card title="Penentuan Alamat Deterministik" icon="link">
+    Koleksi memiliki alamat yang dapat diprediksi untuk integrasi marketplace
+  </Card>
+  <Card title="Validasi Tanda Tangan" icon="shield-check">
+    Verifikasi kriptografis keaslian koleksi
+  </Card>
+  <Card title="Pengiriman CDN" icon="globe">
+    Pengiriman metadata yang cepat dan dapat diandalkan di seluruh dunia
+  </Card>
+  <Card title="Sistem Referrer" icon="users">
+    Lacak dan kelola koleksi oleh mitra integrasi
+  </Card>
+</CardGroup>
+
+## Pengaturan Layanan Penyimpanan
+
+### Konfigurasi Dasar
+
+```typescript title="Inisialisasi Layanan Penyimpanan"
+import { BaseMintStorage } from '@b3dotfun/basemint'
+
+// Inisialisasi layanan penyimpanan
+const storage = new BaseMintStorage({
+  baseUrl: 'https://api.basemint.fun', // URL Produksi
+  // Untuk pengembangan testnet:
+  // baseUrl: 'https://testnet-api.basemint.fun'
+})
+
+// Tes koneksi
+try {
+  const health = await storage.healthCheck()
+  console.log('✅ Layanan penyimpanan terhubung:', health)
+} catch (error) {
+  console.error('❌ Layanan penyimpanan tidak tersedia:', error)
+}
+```
+
+### Konfigurasi Lingkungan
+
+```typescript title="Pengaturan Berbasis Lingkungan"
+// Konfigurasi spesifik lingkungan
+const getStorageConfig = (environment: 'development' | 'staging' | 'production') => {
+  const configs = {
+    development: {
+      baseUrl: 'https://testnet-api.basemint.fun',
+      chainId: 1993 // B3 Testnet
+    },
+    staging: {
+      baseUrl: 'https://staging-api.basemint.fun',
+      chainId: 1993
+    },
+    production: {
+      baseUrl: 'https://api.basemint.fun',
+      chainId: 8333 // B3 Mainnet
+    }
+  }
+  
+  return configs[environment]
+}
+
+const config = getStorageConfig(process.env.NODE_ENV as any || 'development')
+const storage = new BaseMintStorage(config)
+```
+
+## Mengajukan Koleksi
+
+### Pengajuan Koleksi Dasar
+
+```typescript title="Ajukan Koleksi"
+async function submitCollection(
+  collectionMetadata: any,
+  creatorSignature: string,
+  referrerId?: string
+) {
+  try {
+    const response = await storage.submitCollection(
+      collectionMetadata,
+      creatorSignature,
+      referrerId // Opsional: lacak koleksi oleh referrer
+    )
+    
+    console.log('✅ Koleksi berhasil diajukan')
+    console.log('ID Koleksi:', response.collectionId)
+    console.log('Alamat yang diprediksi:', response.predictedAddress)
+    console.log('URI Metadata:', response.metadataUri)
+    
+    return response
+    
+  } catch (error: any) {
+    if (error.message.includes('Invalid signature')) {
+      console.error('❌ Verifikasi tanda tangan pembuat gagal')
+    } else if (error.message.includes('Collection exists')) {
+      console.error('❌ Koleksi dengan alamat ini sudah ada')
+    } else if (error.message.includes('Referrer not found')) {
+      console.error('❌ ID Referrer tidak valid')
+    } else {
+      console.error('❌ Pengajuan gagal:', error.message)
+    }
+    throw error
+  }
+}
+
+// Contoh penggunaan
+const response = await submitCollection(
+  collectionMetadata,
+  creatorSignature,
+  "my-game-platform" // ID Referrer Anda
+)
+```
+
+### Pengajuan Koleksi Batch
+
+```typescript title="Pengajuan Batch"
+async function submitMultipleCollections(
+  collections: Array<{
+    metadata: any
+    signature: string
+    referrerId?: string
+  }>
+) {
+  const results = []
+  
+  for (const collection of collections) {
+    try {
+      const response = await storage.submitCollection(
+        collection.metadata,
+        collection.signature,
+        collection.referrerId
+      )
+      
+      results.push({
+        success: true,
+        collectionName: collection.metadata.name,
+        response
+      })
+      
+      console.log(`✅ Diajukan: ${collection.metadata.name}`)
+      
+    } catch (error) {
+      results.push({
+        success: false,
+        collectionName: collection.metadata.name,
+        error: error.message
+      })
+      
+      console.error(`❌ Gagal: ${collection.metadata.name}`, error)
+    }
+  }
+  
+  return results
+}
+```
+
+## Menanyakan Koleksi
+
+### Pertanyaan Dasar
+
+```typescript title="Menanyakan Koleksi"
+// Menanyakan semua koleksi
+const allCollections = await storage.queryCollections()
+console.log(`Ditemukan ${allCollections.collections.length} koleksi`)
+
+// Menanyakan dengan pagination
+const paginatedResults = await storage.queryCollections({
+  limit: 20,
+  offset: 0
+})
+
+// Menanyakan berdasarkan referrer
+const gameCollections = await storage.queryCollections({
+  referrer: "my-game-platform"
+})
+
+// Menanyakan berdasarkan pembuat
+const creatorCollections = await storage.queryCollections({
+  creator: "0x1234567890123456789012345678901234567890"
+})
+```
+
+### Penyaringan Lanjutan
+
+```typescript title="Pertanyaan Lanjutan"
+// Pertanyaan kompleks dengan beberapa filter
+const advancedQuery = await storage.queryCollections({
+  referrer: "my-game-platform",
+  creator: "0x1234567890123456789012345678901234567890",
+  tokenStandard: "ERC721",
+  chainId: 1993,
+  limit: 50,
+  offset: 0,
+  sortBy: "createdAt",
+  sortOrder: "desc"
+})
+
+console.log("Hasil pertanyaan lanjutan:", {
+  total: advancedQuery.total,
+  count: advancedQuery.collections.length,
+  hasMore: advancedQuery.hasMore
+})
+
+// Filter berdasarkan status penyebaran
+const undeployedCollections = advancedQuery.collections.filter(
+  collection => !collection.isDeployed
+)
+
+const deployedCollections = advancedQuery.collections.filter(
+  collection => collection.isDeployed
+)
+
+console.log(`Belum dikerahkan: ${undeployedCollections.length}`)
+console.log(`Sudah dikerahkan: ${deployedCollections.length}`)
+```
+
+### Fungsionalitas Pencarian
+
+```typescript title="Mencari Koleksi"
+// Mencari berdasarkan nama atau simbol
+const searchResults = await storage.searchCollections({
+  query: "fantasy",
+  limit: 10
+})
+
+// Mencari dengan filter
+const filteredSearch = await storage.searchCollections({
+  query: "game",
+  referrer: "my-game-platform",
+  tokenStandard: "ERC1155"
+})
+
+console.log("Hasil pencarian:", searchResults.collections.map(c => ({
+  name: c.name,
+  symbol: c.symbol,
+  description: c.description
+})))
+```
+
+## Manajemen Referrer
+
+### Mendaftar sebagai Referrer
+
+```typescript title="Pendaftaran Referrer"
+// Daftarkan platform Anda sebagai referrer
+async function registerAsReferrer(referrerId: string, metadata?: any) {
+  try {
+    await storage.registerReferrer(referrerId, metadata)
+    console.log(`✅ Terdaftar sebagai referrer: ${referrerId}`)
+  } catch (error: any) {
+    if (error.message.includes('already exists')) {
+      console.log(`ℹ️ Referrer ${referrerId} sudah terdaftar`)
+    } else {
+      console.error('❌ Pendaftaran gagal:', error)
+      throw error
+    }
+  }
+}
+
+// Daftar dengan metadata
+await registerAsReferrer("my-game-platform", {
+  name: "My Game Platform",
+  website: "https://mygame.com",
+  contact: "dev@mygame.com",
+  description: "Sebuah platform game untuk koleksi NFT"
+})
+```
+
+### Manajemen Koleksi Referrer
+
+```typescript title="Manajemen Koleksi Referrer"
+// Dapatkan semua koleksi untuk platform Anda
+async function getReferrerDashboard(referrerId: string) {
+  const collections = await storage.queryCollections({
+    referrer: referrerId
+  })
+  
+  const stats = {
+    total: collections.total,
+    deployed: collections.collections.filter(c => c.isDeployed).length,
+    undeployed: collections.collections.filter(c => !c.isDeployed).length,
+    erc721: collections.collections.filter(c => c.tokenStandard === 'ERC721').length,
+    erc1155: collections.collections.filter(c => c.tokenStandard === 'ERC1155').length
+  }
+  
+  console.log("Dasbor referrer:", stats)
+  
+  return {
+    collections: collections.collections,
+    stats
+  }
+}
+
+const dashboard = await getReferrerDashboard("my-game-platform")
+```
+
+## Manajemen Koleksi
+
+### Mengambil Data Koleksi
+
+```typescript title="Dapatkan Detail Koleksi"
+// Dapatkan koleksi berdasarkan alamat
+async function getCollectionDetails(address: string) {
+  try {
+    const collection = await storage.getCollection(address)
+    
+    console.log("Detail koleksi:", {
+      name: collection.name,
+      symbol: collection.symbol,
+      creator: collection.creator,
+      gameOwner: collection.gameOwner,
+      isDeployed: collection.isDeployed,
+      createdAt: collection.createdAt,
+      metadataUri: collection.metadataUri
+    })
+    
+    return collection
+    
+  } catch (error: any) {
+    if (error.message.includes('not found')) {
+      console.error('❌ Koleksi tidak ditemukan')
+    } else {
+      console.error('❌ Kesalahan saat mengambil koleksi:', error)
+    }
+    throw error
+  }
+}
+
+// Dapatkan beberapa koleksi berdasarkan alamat
+async function getMultipleCollections(addresses: string[]) {
+  const collections = await Promise.allSettled(
+    addresses.map(address => storage.getCollection(address))
+  )
+  
+  const successful = collections
+    .filter((result): result is PromiseFulfilledResult<any> => result.status === 'fulfilled')
+    .map(result => result.value)
+    
+  const failed = collections
+    .filter((result): result is PromiseRejectedResult => result.status === 'rejected')
+    .map(result => result.reason)
+  
+  console.log(`✅ Mengambil ${successful.length} koleksi`)
+  console.log(`❌ Gagal mengambil ${failed.length} koleksi`)
+  
+  return { successful, failed }
+}
+```
+
+### Memperbarui Koleksi
+
+<Warning>
+Pembaruan koleksi terbatas pada bidang tertentu dan mungkin memerlukan autentikasi tambahan.
+</Warning>
+
+```typescript title="Perbarui Koleksi"
+// Perbarui metadata koleksi (bidang terbatas)
+async function updateCollectionMetadata(
+  address: string,
+  updates: {
+    description?: string
+    image?: string
+    external_url?: string
+    animation_url?: string
+  }
+) {
+  try {
+    const updatedCollection = await storage.updateCollection(address, updates)
+    console.log('✅ Koleksi berhasil diperbarui')
+    return updatedCollection
+  } catch (error: any) {
+    if (error.message.includes('not authorized')) {
+      console.error('❌ Tidak berwenang memperbarui koleksi ini')
+    } else if (error.message.includes('immutable field')) {
+      console.error('❌ Mencoba memperbarui bidang yang tidak dapat diubah')
+    } else {
+      console.error('❌ Pembaruan gagal:', error)
+    }
+    throw error
+  }
+}
+```
+
+### Menghapus Koleksi
+
+```typescript title="Hapus Koleksi"
+// Hapus satu koleksi (hanya yang belum dikerahkan)
+async function deleteCollection(address: string) {
+  try {
+    await storage.deleteCollection(address)
+    console.log(`✅ Koleksi ${address} dihapus`)
+  } catch (error: any) {
+    if (error.message.includes('deployed')) {
+      console.error('❌ Tidak dapat menghapus koleksi yang sudah dikerahkan')
+    } else if (error.message.includes('not found')) {
+      console.error('❌ Koleksi tidak ditemukan')
+    } else {
+      console.error('❌ Penghapusan gagal:', error)
+    }
+    throw error
+  }
+}
+
+// Hapus koleksi secara massal (hanya untuk referrer)
+async function bulkDeleteCollections(
+  identifiers: string[], // UUID atau alamat
+  referrerId: string
+) {
+  try {
+    const result = await storage.bulkDeleteCollections(identifiers, referrerId)
+    
+    console.log(`✅ Menghapus ${result.deleted.length} koleksi`)
+    console.log(`❌ Gagal menghapus ${result.failed.length} koleksi`)
+    
+    return result
+  } catch (error) {
+    console.error('❌ Penghapusan massal gagal:', error)
+    throw error
+  }
+}
+```
+
+## Manajemen Metadata
+
+### URI Metadata Kustom
+
+```typescript title="Penanganan URI Metadata"
+// Hasilkan URI metadata untuk sebuah koleksi
+function generateMetadataUri(collectionId: string, baseUrl: string): string {
+  return `${baseUrl}/metadata/${collectionId}`
+}
+
+// Dapatkan metadata langsung
+async function getCollectionMetadata(collectionId: string) {
+  try {
+    const metadataUri = generateMetadataUri(collectionId, storage.baseUrl)
+    const response = await fetch(metadataUri)
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+    }
+    
+    const metadata = await response.json()
+    return metadata
+  } catch (error) {
+    console.error('❌ Gagal mengambil metadata:', error)
+    throw error
+  }
+}
+
+// Validasi format metadata
+function validateMetadata(metadata: any): { isValid: boolean; errors: string[] } {
+  const errors: string[] = []
+  
+  if (!metadata.name) errors.push('Nama hilang')
+  if (!metadata.description) errors.push('Deskripsi hilang')
+  if (!metadata.image) errors.push('Gambar hilang')
+  
+  // Periksa kompatibilitas OpenSea
+  if (metadata.attributes && !Array.isArray(metadata.attributes)) {
+    errors.push('Atribut harus berupa array')
+  }
+  
+  return {
+    isValid: errors.length === 0,
+    errors
+  }
+}
+```
+
+### Manajemen Aset
+
+```typescript title="Pengunggahan dan Manajemen Aset"
+// Unggah aset ke layanan penyimpanan (jika didukung)
+async function uploadAsset(
+  file: File | Buffer,
+  filename: string,
+  contentType: string
+): Promise<string> {
+  try {
+    // Ini tergantung pada implementasi layanan penyimpanan Anda
+    const formData = new FormData()
+    formData.append('file', file, filename)
+    formData.append('contentType', contentType)
+    
+    const response = await fetch(`${storage.baseUrl}/upload`, {
+      method: 'POST',
+      body: formData
+    })
+    
+    if (!response.ok) {
+      throw new Error(`Pengunggahan gagal: ${response.statusText}`)
+    }
+    
+    const result = await response.json()
+    return result.url
+    
+  } catch (error) {
+    console.error('❌ Pengunggahan aset gagal:', error)
+    throw error
+  }
+}
+
+// Optimalkan gambar untuk standar NFT
+function getOptimizedImageUrl(
+  originalUrl: string,
+  size: 'thumbnail' | 'medium' | 'large' = 'medium'
+): string {
+  const sizeMap = {
+    thumbnail: '200x200',
+    medium: '640x640',
+    large: '1200x1200'
+  }
+  
+  // Contoh transformasi URL CDN
+  return `${originalUrl}?size=${sizeMap[size]}&format=webp&quality=85`
+}
+```
+
+## Penanganan Kesalahan
+
+### Penanganan Kesalahan yang Komprehensif
+
+```typescript title="Pola Penanganan Kesalahan"
+class StorageError extends Error {
+  constructor(
+    message: string,
+    public code: string,
+    public statusCode?: number
+  ) {
+    super(message)
+    this.name = 'StorageError'
+  }
+}
+
+async function robustStorageOperation<T>(
+  operation: () => Promise<T>,
+  retries: number = 3,
+  delayMs: number = 1000
+): Promise<T> {
+  let lastError: Error
+  
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      return await operation()
+    } catch (error: any) {
+      lastError = error
+      
+      // Jangan coba ulang untuk kesalahan tertentu
+      if (error.message.includes('Invalid signature') ||
+          error.message.includes('Collection exists')) {
+        throw error
+      }
+      
+      console.warn(`Percobaan ${attempt} gagal:`, error.message)
+      
+      if (attempt < retries) {
+        await new Promise(resolve => setTimeout(resolve, delayMs * attempt))
+      }
+    }
+  }
+  
+  throw new StorageError(
+    `Operasi gagal setelah ${retries} percobaan: ${lastError.message}`,
+    'MAX_RETRIES_EXCEEDED'
+  )
+}
+
+// Penggunaan
+const result = await robustStorageOperation(async () => {
+  return await storage.submitCollection(metadata, signature)
+})
+```
+
+### Pemantauan Kesehatan Layanan
+
+```typescript title="Pemantauan Kesehatan"
+class StorageHealth

@@ -1,0 +1,555 @@
+---
+title: Sistem Hadiah
+description: Memahami dan mengimplementasikan sistem distribusi hadiah CreateKit
+lang: id
+originalPath: createkit/rewards.mdx
+---
+## Ikhtisar
+
+CreateKit menampilkan sistem hadiah inovatif yang mendistribusikan sebagian dari nilai setiap mint ke berbagai peserta dalam ekosistem. Ini menciptakan insentif yang sejalan dan memastikan semua kontributor mendapat manfaat dari koleksi yang sukses.
+
+## Struktur Hadiah
+
+### Distribusi Default
+
+| Tipe Penerima | Bagian Default | Deskripsi |
+|----------------|---------------|-------------|
+| **Pencipta** | 40% | Penggagas koleksi yang menciptakan koleksi |
+| **Pemint Pertama** | 30% | Pengguna yang memicu penyebaran awal dan mint pertama |
+| **Pemilik Game** | 20% | Platform atau game yang mengintegrasikan koleksi |
+| **Platform** | 10% | Biaya protokol BaseMint |
+
+<Note>
+Tingkat hadiah dapat dikonfigurasi oleh administrator protokol dan dapat bervariasi antar penyebaran.
+</Note>
+
+### Cara Kerja Hadiah
+
+1. **Pembayaran Mint**: Pengguna membayar harga mint untuk token
+2. **Perhitungan Hadiah**: Persentase dari pembayaran dialokasikan ke kolam hadiah
+3. **Distribusi**: Hadiah didistribusikan sesuai dengan tarif yang dikonfigurasi
+4. **Akumulasi**: Hadiah terakumulasi dalam kontrak escrow sampai diklaim
+
+## Pelacakan Hadiah
+
+### Menyiapkan Pelacakan Hadiah
+
+```typescript title="Inisialisasi Pelacak Hadiah"
+import { RewardTracker } from '@b3dotfun/basemint'
+import { createPublicClient, http } from 'viem'
+import { b3Testnet } from '@b3dotfun/basemint'
+
+const publicClient = createPublicClient({
+  chain: b3Testnet,
+  transport: http()
+})
+
+const rewardTracker = new RewardTracker(publicClient)
+
+// Dapatkan alamat kontrak escrow
+const escrowAddress = rewardTracker.getEscrowAddress()
+console.log(`Kontrak escrow: ${escrowAddress}`)
+```
+
+### Hadiah Tingkat Koleksi
+
+Lacak hadiah yang terakumulasi untuk seluruh koleksi:
+
+```typescript title="Hadiah Koleksi"
+// Dapatkan total hadiah untuk sebuah koleksi
+const collectionRewards = await rewardTracker.getCollectionRewards(
+  escrowAddress,
+  collectionAddress
+)
+
+console.log("Hadiah Koleksi:", {
+  totalHadiah: collectionRewards.totalRewards.toString(),
+  hadiahBelumDiklaim: collectionRewards.unclaimedRewards.toString(),
+  totalMints: collectionRewards.totalMints.toString(),
+  rataRataHadiahPerMint: (
+    collectionRewards.totalRewards / collectionRewards.totalMints
+  ).toString()
+})
+```
+
+### Hadiah Penerima Individu
+
+Lacak hadiah untuk peserta tertentu:
+
+<Tabs>
+<Tab title="Hadiah Pencipta">
+```typescript
+// Dapatkan hadiah pencipta untuk sebuah koleksi
+const creatorRewards = await rewardTracker.getRecipientRewards(
+  escrowAddress,
+  collectionAddress,
+  "CREATOR",
+  creatorAddress
+)
+
+console.log(`Hadiah pencipta: ${creatorRewards.toString()} wei`)
+```
+</Tab>
+
+<Tab title="Hadiah Pemint Pertama">
+```typescript
+// Dapatkan hadiah pemint pertama
+const firstMinterRewards = await rewardTracker.getRecipientRewards(
+  escrowAddress,
+  collectionAddress,
+  "FIRST_MINTER", 
+  firstMinterAddress
+)
+
+console.log(`Hadiah pemint pertama: ${firstMinterRewards.toString()} wei`)
+```
+</Tab>
+
+<Tab title="Hadiah Pemilik Game">
+```typescript
+// Dapatkan hadiah pemilik game
+const gameOwnerRewards = await rewardTracker.getRecipientRewards(
+  escrowAddress,
+  collectionAddress,
+  "GAME_OWNER",
+  gameOwnerAddress
+)
+
+console.log(`Hadiah pemilik game: ${gameOwnerRewards.toString()} wei`)
+```
+</Tab>
+</Tabs>
+
+### Semua Penerima untuk sebuah Koleksi
+
+```typescript title="Hadiah Semua Penerima"
+// Dapatkan hadiah untuk semua tipe penerima
+const allRewards = await Promise.all([
+  rewardTracker.getRecipientRewards(escrowAddress, collectionAddress, "CREATOR", creatorAddress),
+  rewardTracker.getRecipientRewards(escrowAddress, collectionAddress, "FIRST_MINTER", firstMinterAddress),
+  rewardTracker.getRecipientRewards(escrowAddress, collectionAddress, "GAME_OWNER", gameOwnerAddress),
+  rewardTracker.getRecipientRewards(escrowAddress, collectionAddress, "PLATFORM", platformAddress)
+])
+
+const [creatorRewards, firstMinterRewards, gameOwnerRewards, platformRewards] = allRewards
+
+console.log("Distribusi Hadiah:", {
+  pencipta: creatorRewards.toString(),
+  pemintPertama: firstMinterRewards.toString(),
+  pemilikGame: gameOwnerRewards.toString(),
+  platform: platformRewards.toString(),
+  total: (creatorRewards + firstMinterRewards + gameOwnerRewards + platformRewards).toString()
+})
+```
+
+## Event Hadiah
+
+### Pelacakan Distribusi Hadiah
+
+```typescript title="Pemantauan Event Hadiah"
+import { getRewardDistributionEvents } from '@b3dotfun/basemint'
+
+// Dapatkan event distribusi hadiah historis
+const fromBlock = await publicClient.getBlockNumber() - 1000n
+const toBlock = await publicClient.getBlockNumber()
+
+const rewardEvents = await getRewardDistributionEvents(
+  publicClient,
+  escrowAddress,
+  fromBlock,
+  toBlock
+)
+
+console.log("Distribusi hadiah terbaru:")
+rewardEvents.forEach(event => {
+  console.log({
+    koleksi: event.args.collection,
+    penerima: event.args.recipient,
+    tipePenerima: event.args.recipientType,
+    jumlah: event.args.amount?.toString(),
+    nomorBlok: event.blockNumber
+  })
+})
+```
+
+### Pemantauan Hadiah Real-time
+
+```typescript title="Pemantauan Real-time"
+// Pantau distribusi hadiah baru
+const unwatch = publicClient.watchContractEvent({
+  address: escrowAddress,
+  abi: rewardTracker.escrowAbi,
+  eventName: 'RewardDistributed',
+  onLogs: (logs) => {
+    logs.forEach(log => {
+      console.log('Hadiah baru didistribusikan:', {
+        koleksi: log.args.collection,
+        penerima: log.args.recipient,
+        jumlah: log.args.amount?.toString(),
+        tipe: log.args.recipientType
+      })
+    })
+  }
+})
+
+// Berhenti memantau saat selesai
+// unwatch()
+```
+
+## Penarikan Hadiah
+
+### Penarikan Individu
+
+```typescript title="Tarik Hadiah"
+import { createWalletClient } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+
+const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`)
+const walletClient = createWalletClient({
+  chain: b3Testnet,
+  transport: http(),
+  account
+})
+
+// Tarik hadiah untuk koleksi dan tipe penerima tertentu
+async function withdrawRewards(
+  collectionAddress: string,
+  recipientType: "CREATOR" | "FIRST_MINTER" | "GAME_OWNER" | "PLATFORM"
+) {
+  try {
+    // Periksa hadiah yang tersedia terlebih dahulu
+    const availableRewards = await rewardTracker.getRecipientRewards(
+      escrowAddress,
+      collectionAddress,
+      recipientType,
+      account.address
+    )
+
+    if (availableRewards === 0n) {
+      console.log("Tidak ada hadiah yang tersedia untuk ditarik")
+      return
+    }
+
+    console.log(`Menarik ${availableRewards.toString()} wei dari hadiah...`)
+
+    // Tarik hadiah
+    const tx = await rewardTracker.withdrawRewards(
+      walletClient,
+      escrowAddress,
+      collectionAddress,
+      recipientType
+    )
+
+    console.log(`✅ Hadiah berhasil ditarik: ${tx}`)
+    return tx
+
+  } catch (error) {
+    console.error("❌ Penarikan gagal:", error)
+    throw error
+  }
+}
+
+// Contoh: Pencipta menarik hadiah mereka
+await withdrawRewards(collectionAddress, "CREATOR")
+```
+
+### Penarikan Batch
+
+```typescript title="Penarikan Batch"
+// Tarik hadiah dari beberapa koleksi
+async function withdrawAllCreatorRewards(creatorAddress: string) {
+  // Dapatkan semua koleksi di mana alamat ini adalah pencipta
+  const creatorCollections = await getCreatorCollections(creatorAddress)
+  
+  for (const collection of creatorCollections) {
+    const rewards = await rewardTracker.getRecipientRewards(
+      escrowAddress,
+      collection.address,
+      "CREATOR",
+      creatorAddress
+    )
+
+    if (rewards > 0n) {
+      console.log(`Menarik ${rewards.toString()} wei dari ${collection.name}`)
+      
+      try {
+        await rewardTracker.withdrawRewards(
+          walletClient,
+          escrowAddress,
+          collection.address,
+          "CREATOR"
+        )
+        console.log(`✅ Ditarik dari ${collection.name}`)
+      } catch (error) {
+        console.error(`❌ Gagal menarik dari ${collection.name}:`, error)
+      }
+    }
+  }
+}
+```
+
+## Analitik Hadiah
+
+### Ikhtisar Portofolio
+
+```typescript title="Portofolio Pencipta"
+async function getCreatorPortfolio(creatorAddress: string) {
+  const collections = await getCreatorCollections(creatorAddress)
+  
+  let totalHadiah = 0n
+  let totalHadiahBelumDiklaim = 0n
+  let totalMints = 0n
+  
+  const dataKoleksi = []
+  
+  for (const collection of collections) {
+    const collectionRewards = await rewardTracker.getCollectionRewards(
+      escrowAddress,
+      collection.address
+    )
+    
+    const creatorRewards = await rewardTracker.getRecipientRewards(
+      escrowAddress,
+      collection.address,
+      "CREATOR",
+      creatorAddress
+    )
+    
+    totalHadiah += collectionRewards.totalRewards
+    totalHadiahBelumDiklaim += creatorRewards
+    totalMints += collectionRewards.totalMints
+    
+    dataKoleksi.push({
+      nama: collection.name,
+      alamat: collection.address,
+      totalHadiah: collectionRewards.totalRewards,
+      hadiahPencipta: creatorRewards,
+      mints: collectionRewards.totalMints
+    })
+  }
+  
+  return {
+    ringkasan: {
+      totalKoleksi: collections.length,
+      totalHadiah: totalHadiah.toString(),
+      totalHadiahBelumDiklaim: totalHadiahBelumDiklaim.toString(), 
+      totalMints: totalMints.toString(),
+      rataRataHadiahPerMint: totalMints > 0n ? (totalHadiah / totalMints).toString() : "0"
+    },
+    koleksi: dataKoleksi
+  }
+}
+
+const portofolio = await getCreatorPortfolio(creatorAddress)
+console.log("Portofolio Pencipta:", portofolio)
+```
+
+### Metrik Kinerja
+
+```typescript title="Kinerja Hadiah"
+async function getRewardMetrics(collectionAddress: string) {
+  const collectionRewards = await rewardTracker.getCollectionRewards(
+    escrowAddress,
+    collectionAddress
+  )
+  
+  const collection = collectionManager.createCollection(collectionAddress, "ERC721")
+  const currentSupply = await collection.totalSupply()
+  const mintPrice = await collection.mintPrice()
+  
+  totalPendapatanMint = currentSupply * mintPrice
+  persentaseHadiah = totalPendapatanMint > 0n 
+    ? (collectionRewards.totalRewards * 100n) / totalPendapatanMint 
+    : 0n
+  
+  return {
+    totalMints: collectionRewards.totalMints.toString(),
+    totalHadiah: collectionRewards.totalRewards.toString(),
+    totalPendapatan: totalPendapatanMint.toString(),
+    persentaseHadiah: persentaseHadiah.toString() + "%",
+    rataRataHadiahPerMint: collectionRewards.totalMints > 0n 
+      ? (collectionRewards.totalRewards / collectionRewards.totalMints).toString()
+      : "0"
+  }
+}
+```
+
+## Fitur Hadiah Lanjutan
+
+### Tingkat Hadiah Kustom
+
+<Warning>
+Konfigurasi tingkat hadiah biasanya dibatasi untuk administrator protokol.
+</Warning>
+
+```typescript title="Manajemen Tingkat Hadiah"
+// Hanya untuk administrator protokol
+async function updateRewardRates(
+  adminWalletClient: any,
+  escrowAddress: string
+) {
+  // Perbarui tingkat hadiah (hanya dapat dipanggil oleh pemilik)
+  await rewardTracker.setRewardRates(
+    adminWalletClient,
+    escrowAddress,
+    {
+      tingkatPencipta: 4500n,    // 45%
+      tingkatPemintPertama: 2500n, // 25%
+      tingkatPemilikGame: 2000n,  // 20%
+      tingkatPlatform: 1000n    // 10%
+    }
+  )
+}
+
+// Periksa tingkat hadiah saat ini
+rates = await rewardTracker.getRewardRates(escrowAddress)
+console.log("Tingkat hadiah saat ini:", {
+  pencipta: rates.creatorRate.toString(),
+  pemintPertama: rates.firstMinterRate.toString(),
+  pemilikGame: rates.gameOwnerRate.toString(),
+  platform: rates.platformRate.toString()
+})
+```
+
+### Manajemen Penerima
+
+```typescript title="Status Penerima"
+// Periksa apakah tipe penerima aktif
+const isCreatorActive = await rewardTracker.isRecipientActive(
+  escrowAddress,
+  "CREATOR"
+)
+
+// Dapatkan informasi penerima
+const recipientInfo = await rewardTracker.getRecipientInfo(
+  escrowAddress,
+  "CREATOR"
+)
+
+console.log("Info penerima pencipta:", {
+  tingkat: recipientInfo.rate.toString(),
+  isActive: recipientInfo.isActive
+})
+```
+
+## Praktik Terbaik Integrasi
+
+### Integrasi Antarmuka Pengguna
+
+```typescript title="Fungsi Bantuan UI"
+// Format hadiah untuk ditampilkan
+function formatRewards(weiAmount: bigint): string {
+  const eth = Number(weiAmount) / 1e18
+  return `${eth.toFixed(6)} ETH`
+}
+
+// Hitung nilai USD (contoh dengan umpan harga)
+async function getRewardValueUSD(weiAmount: bigint, ethPriceUSD: number): Promise<string> {
+  const eth = Number(weiAmount) / 1e18
+  const usd = eth * ethPriceUSD
+  return `$${usd.toFixed(2)}`
+}
+
+// Periksa apakah penarikan menguntungkan (mempertimbangkan biaya gas)
+async function isWithdrawalProfitable(
+  rewardAmount: bigint,
+  gasPrice: bigint,
+  gasLimit: bigint
+): Promise<boolean> {
+  const biayaGas = gasPrice * gasLimit
+  return rewardAmount > biayaGas * 2n // Memerlukan minimum 2x biaya gas
+}
+```
+
+### Klaim Hadiah Otomatis
+
+```typescript title="Klaim Otomatis"
+// Layanan klaim hadiah otomatis
+class RewardClaimingService {
+  private rewardTracker: RewardTracker
+  private walletClient: any
+  private ambangBatasPenarikanMin: bigint
+
+  constructor(rewardTracker: RewardTracker, walletClient: any, minThreshold: bigint) {
+    this.rewardTracker = rewardTracker
+    this.walletClient = walletClient
+    this.ambangBatasPenarikanMin = minThreshold
+  }
+
+  async checkAndClaimRewards(
+    collections: string[],
+    recipientType: "CREATOR" | "FIRST_MINTER" | "GAME_OWNER"
+  ) {
+    for (const collectionAddress of collections) {
+      try {
+        const rewards = await this.rewardTracker.getRecipientRewards(
+          escrowAddress,
+          collectionAddress,
+          recipientType,
+          this.walletClient.account.address
+        )
+
+        if (rewards >= this.ambangBatasPenarikanMin) {
+          console.log(`Mengklaim ${rewards.toString()} wei dari ${collectionAddress}`)
+          
+          await this.rewardTracker.withdrawRewards(
+            this.walletClient,
+            escrowAddress,
+            collectionAddress,
+            recipientType
+          )
+          
+          console.log(`✅ Hadiah berhasil diklaim dari ${collectionAddress}`)
+        }
+      } catch (error) {
+        console.error(`❌ Gagal mengklaim dari ${collectionAddress}:`, error)
+      }
+    }
+  }
+}
+
+// Penggunaan
+const claimingService = new RewardClaimingService(
+  rewardTracker,
+  walletClient,
+  parseEther("0.001") // Minimum 0.001 ETH untuk diklaim
+)
+
+await claimingService.checkAndClaimRewards(
+  creatorCollections,
+  "CREATOR"
+)
+```
+
+## Pemecahan Masalah
+
+<AccordionGroup>
+  <Accordion title="Tidak ada hadiah yang ditampilkan">
+    - Verifikasi koleksi telah menerima mint setelah penyebaran
+    - Periksa bahwa Anda meminta tipe penerima dan alamat yang benar
+    - Pastikan koleksi dibuat dengan tanda tangan yang tepat
+  </Accordion>
+
+  <Accordion title="Penarikan gagal">
+    - Konfirmasi Anda memiliki hadiah yang tersedia untuk ditarik
+    - Periksa bahwa Anda memiliki gas yang cukup untuk transaksi
+    - Verifikasi Anda menggunakan tipe penerima yang benar untuk peran Anda
+  </Accordion>
+
+  <Accordion title="Jumlah hadiah tampak salah">
+    - Periksa konfigurasi tingkat hadiah saat ini
+    - Verifikasi perhitungan harga mint dan volume
+    - Pastikan Anda menggunakan alamat kontrak escrow yang benar
+  </Accordion>
+</AccordionGroup>
+
+## Langkah Selanjutnya
+
+<CardGroup cols={2}>
+  <Card title="Layanan Penyimpanan" icon="database" href="/createkit/storage">
+    Pelajari cara mengelola metadata koleksi dengan penyimpanan BaseMint
+  </Card>
+  <Card title="Contoh" icon="code" href="/createkit/examples">
+    Lihat contoh implementasi lengkap termasuk pelacakan hadiah
+  </Card>
+</CardGroup

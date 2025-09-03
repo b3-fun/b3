@@ -1,0 +1,236 @@
+---
+title: B3 SDK
+description: >-
+  AnySpend 크로스 체인 작업 및 B3 Global Accounts 인증을 위한 종합적인 TypeScript SDK입니다. 쉬운 통합을
+  위한 React 컴포넌트와 맞춤 구현을 위한 headless TypeScript 서비스를 모두 제공합니다.
+lang: ko
+originalPath: sdk/introduction.mdx
+---
+<img src="/images/b3-banner.png" alt="B3 SDK" className="w-full rounded-xl" />
+
+## B3 SDK란 무엇인가요?
+
+B3 SDK(`@b3dotfun/sdk`)는 B3 생태계에서 애플리케이션을 구축하는 데 필요한 모든 것을 제공하는 통합 TypeScript SDK입니다. 강력한 크로스체인 결제 인프라와 원활한 인증을 결합하여, 개발자 친화적인 React 컴포넌트와 헤드리스 서비스로 제공됩니다.
+
+## 아키텍처
+
+SDK는 최대한의 유연성과 사용 용이성을 위해 집중된 모듈로 구성되어 있습니다:
+
+<CardGroup cols={2}>
+<Card title="AnySpend 모듈" icon="arrows-right-left" href="/anyspend/introduction">
+  여러 블록체인에 걸쳐 결제, 스왑, NFT 민팅을 위한 크로스체인 실행 엔진.
+</Card>
+
+<Card title="글로벌 계정 모듈" icon="user" href="/sdk/global-account/introduction">
+  소셜 로그인과 세션 키를 포함한 B3 글로벌 계정 인증 및 사용자 관리.
+</Card>
+
+</CardGroup>
+
+### 모듈 구조
+
+각 모듈은 목적에 맞게 구성된 컴포넌트를 포함합니다:
+
+- **`react/`** - 쉬운 통합을 위한 React 컴포넌트와 훅
+- **`services/`** - 커스텀 구현을 위한 헤드리스 TypeScript 서비스
+- **`types/`** - 포괄적인 TypeScript 정의
+- **`utils/`** - 유틸리티 함수와 헬퍼
+- **`constants/`** - 구성 및 상수
+
+## 플랫폼 지원
+
+| 기능              | React Web | React Native | 헤드리스 |
+|-------------------|-----------|--------------|----------|
+| AnySpend          | ✅         | ❌            | ✅        |
+| 글로벌 계정       | ✅         | ✅            | ✅        |
+| 공유 유틸리티     | ✅         | ✅            | ✅        |
+
+## 설치
+
+<CodeGroup>
+```bash npm
+npm install @b3dotfun/sdk
+```
+
+```bash yarn
+yarn add @b3dotfun/sdk
+```
+
+```bash pnpm
+pnpm add @b3dotfun/sdk
+```
+</CodeGroup>
+
+### CSS 스타일
+
+최상의 시각적 경험을 위해 기본 스타일을 가져옵니다:
+
+```typescript
+import "@b3dotfun/sdk/index.css";
+```
+
+## 빠른 시작
+
+### AnySpend를 사용한 크로스체인 결제
+
+```tsx
+import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
+
+function PaymentPage() {
+  return <AnySpend mode="page" />;
+}
+```
+
+### 글로벌 계정을 사용한 인증
+
+```tsx
+import { B3Provider, SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
+
+function App() {
+  return (
+    <B3Provider environment="production">
+      <SignInWithB3
+        provider={{ strategy: "google" }}
+        partnerId="your-partner-id"
+        onLoginSuccess={(globalAccount) => {
+          console.log("Authenticated:", globalAccount);
+        }}
+      />
+    </B3Provider>
+  );
+}
+```
+
+### NFT 민팅
+
+```tsx
+import { AnySpendNFTButton } from "@b3dotfun/sdk/anyspend/react";
+
+function NFTMinting() {
+  const nftContract = {
+    address: "0x9c275ff1634519E9B5449ec79cd939B5F900564d",
+    chainId: 8333,
+    name: "Example NFT Collection",
+    imageUrl: "https://example.com/nft.jpg",
+    price: "1000000000000000000", // 1 ETH in wei
+    currency: { symbol: "ETH", decimals: 18 }
+  };
+
+  return (
+    <AnySpendNFTButton
+      nftContract={nftContract}
+      recipientAddress="0x..."
+    />
+  );
+}
+```
+
+## 주요 기능
+
+### 범용 결제 인프라
+
+<CardGroup cols={2}>
+<Card title="모든 토큰 결제" icon="coins">
+  선호하는 토큰으로 자동 변환되는 모든 암호화폐로 결제를 수락합니다.
+</Card>
+
+<Card title="크로스체인 스왑" icon="arrow-right-arrow-left">
+  20개 이상의 지원되는 블록체인을 통한 원활한 토큰 스왑을 가능하게 합니다.
+</Card>
+
+<Card title="NFT 민팅" icon="image">
+  모든 체인의 모든 토큰으로 결제를 수락하는 원클릭 NFT 민팅 버튼.
+</Card>
+
+<Card title="피아트 온램프" icon="credit-card">
+  기존 암호화폐가 없는 사용자를 위한 통합된 피아트-크립토 온램프.
+</Card>
+</CardGroup>
+
+### 원활한 인증
+
+<CardGroup cols={2}>
+<Card title="소셜 로그인" icon="users">
+  Google, Discord 등의 소셜 제공자와 즉각적인 온보딩.
+</Card>
+
+<Card title="세션 키" icon="key">
+  강화된 UX를 위한 세분화된 권한을 가진 안전한 세션 관리.
+</Card>
+
+<Card title="크로스플랫폼 아이덴티티" icon="globe">
+  모든 B3 애플리케이션과 게임에서 작동하는 단일 아이덴티티.
+</Card>
+
+<Card title="스마트 계정" icon="wallet">
+  가스 없는 거래를 위한 내장된 스마트 계정 추상화.
+</Card>
+</CardGroup>
+
+## 헤드리스 TypeScript 서비스
+
+최대한의 제어가 필요한 개발자를 위해 모든 기능은 헤드리스 서비스를 통해 제공됩니다:
+
+### AnySpend 서비스
+
+```typescript
+import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
+
+// 크로스체인 스왑을 위한 견적 받기
+const quote = await anyspendService.getQuote({
+  srcChain: 1,
+  dstChain: 8333,
+  srcTokenAddress: "0x...",
+  dstTokenAddress: "0x...",
+  srcAmount: "1000000",
+  recipientAddress: "0x...",
+  type: "swap"
+});
+
+// 주문 생성 및 실행
+const order = await anyspendService.createOrder({
+  // ... 주문 매개변수
+});
+```
+
+### 글로벌 계정 서비스
+
+```typescript
+import { authenticate } from "@b3dotfun/sdk/global-account/app";
+
+// 사용자 인증
+const authResult = await authenticate(
+  "access-token",
+  "identity-token"
+);
+
+if (authResult) {
+  console.log("Authentication successful:", authResult);
+}
+```
+
+## 지원 및 커뮤니티
+
+<CardGroup cols={3}>
+<Card title="개발자 지원" icon="handshake" href="https://b3builders.typeform.com/bsmntdevelopers">
+  프로젝트에 B3 SDK를 통합하는 데 도움을 받으세요.
+</Card>
+
+<Card title="Discord 커뮤니티" icon="discord" href="https://discord.gg/b3dotfun">
+  지원과 토론을 위한 B3 개발자 커뮤니티에 가입하세요.
+</Card>
+
+<Card title="GitHub" icon="github" href="https://github.com/b3-fun/b3">
+  소스 코드를 보고, 이슈를 보고하고, SDK에 기여하세요.
+</Card>
+</CardGroup>
+
+## 다음 단계는?
+
+1. **[SDK를 설치](#installation)**하고 스타일을 가져옵니다
+2. **[AnySpend를 설정](/anyspend/introduction)**하여 크로스체인 결제를 준비합니다
+3. **[글로벌 계정을 구성](/sdk/global-account/authentication)**하여 사용자 인증을 설정합니다
+4. **[예제를 탐색](/anyspend/examples)**하고 구현 패턴을 살펴봅니다
+5. **[커뮤니티에 가입](https://discord.gg/b3dotfun)**하여 지원 및 업데이트를 받습니다
+
+B3 SDK는 원활한 사용자 경험을 가진 차세대 크로스체인 애플리케이션을 구축하는 데 필요한 모든 것을 제공합니다. 오늘 바로 구축을 시작하세요!

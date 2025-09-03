@@ -1,0 +1,174 @@
+---
+title: Testnet
+description: 使用任何兼容EVM的钱包连接到B3测试网
+lang: cn
+originalPath: protocol/testnet.mdx
+---
+## 链信息
+
+<Card title="链 ID">
+  ```text
+  1993
+  ```
+  <Note>
+  有趣的事实：1993是《毁灭战士》发布的年份，它革命性地改变了第一人称射击游戏类型。
+  </Note>
+</Card>
+
+<Card title="原生代币">
+  **以太币 (ETH)**
+  
+  与以太坊主网上使用的同一代币，但仅用于测试目的。
+</Card>
+
+### 网络端点
+
+<Tabs>
+<Tab title="HTTP RPC">
+  ```text RPC 端点
+  https://testnet-rpc.b3.fun
+  ```
+  
+  使用此端点通过标准HTTP请求连接到B3测试网。
+</Tab>
+
+<Tab title="WebSocket RPC">
+  ```text WebSocket 端点  
+  wss://testnet-rpc.b3.fun
+  ```
+  
+  使用此端点进行实时WebSocket连接到B3测试网。
+</Tab>
+</Tabs>
+
+### 区块浏览器
+
+<Card title="B3 浏览器" icon="magnifying-glass" href="https://explorer.b3.fun" cta="查看浏览器" horizontal>
+  探索B3（包括测试网）的交易、区块和合约。
+</Card>
+
+## 快速链接
+
+<CardGroup cols={3}>
+  <Card title="测试网桥" icon="bridge" href="https://testnet-bridge.b3.fun" cta="桥接资产">
+    将资产桥接到B3测试网进行测试
+  </Card>
+  
+  <Card title="水龙头" icon="faucet" href="https://faucet.b3.fun" cta="获取测试ETH">
+    免费获取测试网ETH进行开发和测试
+  </Card>
+  
+  <Card title="开发者工具" icon="wrench" href="/ecosystem/introduction" cta="探索工具">
+    发现用于在B3上构建的工具和基础设施
+  </Card>
+</CardGroup>
+
+## 将B3测试网添加到您的钱包
+
+<Steps>
+<Step title="打开钱包设置">
+  打开您的钱包（MetaMask、Coinbase Wallet等）并导航至网络设置。
+</Step>
+
+<Step title="添加自定义网络">
+  点击“添加网络”或“添加自定义网络”，具体取决于您的钱包。
+</Step>
+
+<Step title="输入网络详情">
+  填写以下信息：
+  
+  - **网络名称**：B3测试网
+  - **链 ID**：1993
+  - **RPC URL**：https://testnet-rpc.b3.fun
+  - **货币符号**：ETH
+  - **区块浏览器 URL**：https://explorer.b3.fun
+</Step>
+
+<Step title="保存并切换">
+  保存网络配置并切换到B3测试网。
+  
+  <Check>
+  您现在已连接到B3测试网！您可以开始测试您的应用程序。
+  </Check>
+</Step>
+</Steps>
+
+## 为什么使用测试网？
+
+测试网提供了一个安全、受控且高效的环境，用于测试和实验。测试网络或测试网，为您在将智能合约部署到主网之前测试它们提供了必不可少的工具，最小化了在实际应用中出现故障或漏洞的风险。
+
+### 关键优势
+
+<CardGroup cols={2}>
+  <Card title="无风险测试" icon="shield-check">
+    在不冒真实资金风险或影响实际用户的情况下测试您的智能合约和应用程序。
+  </Card>
+  
+  <Card title="真实环境" icon="globe">
+    模拟主网条件，包括网络延迟、燃气费用和交易吞吐量。
+  </Card>
+  
+  <Card title="成本效益的开发" icon="dollar-sign">
+    使用免费的测试网代币而不是昂贵的主网ETH进行开发和测试。
+  </Card>
+  
+  <Card title="学习平台" icon="graduation-cap">
+    为开发者提供学习和实验区块链开发的完美环境。
+  </Card>
+</CardGroup>
+
+通过模拟主网环境，测试网提供了真实世界条件的真实表示，包括网络延迟、燃气费用和其他影响智能合约性能的因素。这种准确的表示使您能够识别潜在问题，优化您的应用程序，并确保为最终用户提供最佳的用户体验。
+
+此外，测试网让您熟悉B3生态系统，并获得宝贵的实践经验，使它们成为经验丰富的开发者和区块链开发新手不可或缺的工具。
+
+## 开发工作流程
+
+<Steps>
+<Step title="获取测试网ETH">
+  使用[测试网水龙头](https://testnet-faucet.b3.fun)免费获取ETH进行测试。
+</Step>
+
+<Step title="部署和测试">
+  将您的智能合约部署到测试网并彻底测试所有功能。
+</Step>
+
+<Step title="调试和优化">
+  使用区块浏览器和开发工具调试问题并优化性能。
+</Step>
+
+<Step title="部署到主网">
+  测试完成后，将您的生产就绪合约部署到B3主网。
+  
+  <Warning>
+  在使用真实资金部署到主网之前，始终在测试网上彻底测试。
+  </Warning>
+</Step>
+</Steps>
+
+## 测试网与主网
+
+<AccordionGroup>
+<Accordion title="网络配置">
+  **测试网**：
+  - 链 ID：1993
+  - RPC：https://testnet-rpc.b3.fun
+  - 浏览器：https://testnet-explorer.b3.fun
+  
+  **主网**：
+  - 链 ID：8333
+  - RPC：https://mainnet-rpc.b3.fun
+  - 浏览器：https://explorer.b3.fun
+</Accordion>
+
+<Accordion title="代币价值">
+  **测试网**：ETH没有实际价值 - 仅用于测试
+  
+  **主网**：ETH具有实际价值，购买需要花费金钱
+</Accordion>
+
+<Accordion title="用例">
+  **测试网**：开发、测试、学习、实验
+  
+  **主网**：生产应用、真实用户、实际交易
+</Accordion>
+</AccordionGroup>

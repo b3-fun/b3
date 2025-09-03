@@ -1,0 +1,612 @@
+---
+title: 示例
+description: 常见 CreateKit 使用案例的完整实现示例
+lang: cn
+originalPath: createkit/examples.mdx
+---
+## 概览
+
+此页面提供了在各种场景中实现 CreateKit 的全面、真实世界的示例。每个示例都包括完整的代码、错误处理和最佳实践。
+
+## 基础 NFT 收藏
+
+一个简单的艺术收藏，免费铸造：
+
+```typescript title="基础艺术收藏"
+import { 
+  CollectionManager, 
+  BaseMintStorage, 
+  b3Testnet 
+} from '@b3dotfun/basemint'
+import { createPublicClient, createWalletClient, http } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+
+async function createBasicArtCollection() {
+  // 设置客户端
+  const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`)
+  const publicClient = createPublicClient({
+    chain: b3Testnet,
+    transport: http()
+  })
+  const walletClient = createWalletClient({
+    chain: b3Testnet,
+    transport: http(),
+    account
+  })
+
+  // 初始化服务
+  const collectionManager = new CollectionManager(publicClient)
+  const storage = new BaseMintStorage({ baseUrl: 'https://api.basemint.fun' })
+
+  // 定义收藏
+  const artCollection = {
+    name: "Digital Art Gallery",
+    symbol: "DAG", 
+    creator: account.address,
+    gameOwner: account.address,
+    description: "A curated collection of digital artworks",
+    image: "https://example.com/art-collection.png",
+    maxSupply: 1000n,
+    mintPrice: 0n, // 免费铸造
+    maxPerWallet: 5n,
+    tokenStandard: "ERC721" as const,
+    chainId: 1993
+  }
+
+  try {
+    console.log("🎨 正在创建艺术收藏...")
+
+    // 生成创建者签名
+    const creatorSignature = await collectionManager.generateCreatorSignature(
+      walletClient,
+      artCollection
+    )
+
+    // 预测地址
+    const predictedAddress = collectionManager.predictCollectionAddress(
+      artCollection,
+      creatorSignature
+    )
+    console.log(`📍 收藏地址: ${predictedAddress}`)
+
+    // 提交到存储
+    await storage.submitCollection(artCollection, creatorSignature)
+    console.log("✅ 收藏元数据已存储")
+
+    // 部署并铸造第一个 NFT
+    const deployerSignature = await collectionManager.generateDeployerSignature(
+      walletClient,
+      predictedAddress
+    )
+
+    const collection = collectionManager.createCollection(predictedAddress, "ERC721")
+    const mintTx = await collection.mint(
+      walletClient,
+      1n,
+      undefined,
+      0n,
+      [],
+      creatorSignature,
+      deployerSignature
+    )
+
+    console.log(`🎉 收藏已部署并铸造了第一个 NFT: ${mintTx}`)
+    return { collection, predictedAddress, mintTx }
+
+  } catch (error) {
+    console.error("❌ 创建艺术收藏失败:", error)
+    throw error
+  }
+}
+
+// 使用
+createBasicArtCollection()
+  .then(result => console.log("收藏成功创建:", result))
+  .catch(error => console.error("创建失败:", error))
+```
+
+## 带白名单的游戏收藏
+
+一个带有分级白名单访问的游戏收藏：
+
+<Accordion title="完整游戏收藏示例">
+```typescript
+import { 
+  CollectionManager, 
+  WhitelistManager,
+  BaseMintStorage,
+  RewardTracker,
+  b3Testnet 
+} from '@b3dotfun/basemint'
+import { createPublicClient, createWalletClient, http, parseEther } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+
+class GamingCollectionManager {
+  private publicClient: any
+  private walletClient: any
+  private collectionManager: CollectionManager
+  private storage: BaseMintStorage
+  private rewardTracker: RewardTracker
+
+  constructor(privateKey: string) {
+    const account = privateKeyToAccount(privateKey as `0x${string}`)
+    
+    this.publicClient = createPublicClient({
+      chain: b3Testnet,
+      transport: http()
+    })
+    
+    this.walletClient = createWalletClient({
+      chain: b3Testnet,
+      transport: http(),
+      account
+    })
+
+    this.collectionManager = new CollectionManager(this.publicClient)
+    this.storage = new BaseMintStorage({ baseUrl: 'https://api.basemint.fun' })
+    this.rewardTracker = new RewardTracker(this.publicClient)
+  }
+
+  async createGamingCollection() {
+    // 定义玩家等级
+    const playerTiers = {
+      legendary: [
+        "0x1111111111111111111111111111111111111111",
+        "0x2222222222222222222222222222222222222222"
+      ],
+      epic: [
+        "0x3333333333333333333333333333333333333333",
+        "0x4444444444444444444444444444444444444444",
+        "0x5555555555555555555555555555555555555555"
+      ],
+      rare: [
+        "0x6666666666666666666666666666666666666666",
+        "0x7777777777777777777777777777777777777777",
+        "0x8888888888888888888888888888888888888888"
+      ]
+    }
+
+    // 创建组合白名单
+    const allPlayers = [
+      ...playerTiers.legendary.map(address => ({ address })),
+      ...playerTiers.epic.map(address => ({ address })),
+      ...playerTiers.rare.map(address => ({ address }))
+    ]
+
+    const whitelist = new WhitelistManager(allPlayers)
+    const merkleRoot = whitelist.getRoot()
+
+    // 定义收藏
+    const gamingCollection = {
+      name: "Legendary Gaming Items",
+      symbol: "LGI",
+      creator: this.walletClient.account.address,
+      gameOwner: "0x9999999999999999999999999999999999999999", // 游戏平台
+      description: "Exclusive gaming items for top players",
+      image: "https://example.com/gaming-collection.png",
+      
+      // 白名单配置
+      isWhitelistEnabled: true,
+      whitelistMerkleRoot: merkleRoot,
+      
+      // 定价和限制
+      maxSupply: 500n,
+      mintPrice: parseEther("0.01"),
+      maxPerWallet: 3n,
+      
+      // 计时 - 白名单阶段 24 小时
+      startTime: BigInt(Math.floor(Date.now() / 1000)),
+      endTime: BigInt(Math.floor(Date.now() / 1000) + 86400 * 7),
+      
+      tokenStandard: "ERC1155" as const,
+      chainId: 1993,
+      
+      // 游戏特定元数据
+      attributes: [
+        { trait_type: "Category", value: "Gaming" },
+        { trait_type: "Rarity", value: "Legendary" },
+        { trait_type: "Game", value: "Fantasy RPG" }
+      ]
+    }
+
+    try {
+      console.log("🎮 正在创建游戏收藏...")
+
+      // 生成签名
+      const creatorSignature = await this.collectionManager.generateCreatorSignature(
+        this.walletClient,
+        gamingCollection
+      )
+
+      const predictedAddress = this.collectionManager.predictCollectionAddress(
+        gamingCollection,
+        creatorSignature
+      )
+
+      // 以游戏推荐人身份提交到存储
+      await this.storage.submitCollection(
+        gamingCollection,
+        creatorSignature,
+        "fantasy-rpg-game" // 推荐人 ID
+      )
+
+      console.log(`✅ 游戏收藏已存储在: ${predictedAddress}`)
+
+      return {
+        collection: gamingCollection,
+        predictedAddress,
+        whitelist,
+        playerTiers
+      }
+
+    } catch (error) {
+      console.error("❌ 游戏收藏创建失败:", error)
+      throw error
+    }
+  }
+
+  async mintForPlayer(
+    collectionAddress: string,
+    whitelist: WhitelistManager,
+    playerAddress: string,
+    quantity: bigint = 1n
+  ) {
+    try {
+      // 检查收藏是否已部署
+      const collection = this.collectionManager.createCollection(collectionAddress, "ERC1155")
+      const isDeployed = await collection.isDeployed()
+
+      if (!isDeployed) {
+        // 第一次铸造 - 部署收藏
+        const deployerSignature = await this.collectionManager.generateDeployerSignature(
+          this.walletClient,
+          collectionAddress
+        )
+
+        // 获取白名单证明
+        const proof = whitelist.getProof(playerAddress)
+        const mintPrice = parseEther("0.01") * quantity
+
+        const tx = await collection.mint(
+          this.walletClient,
+          quantity,
+          "https://example.com/legendary-sword.json", // 特定物品元数据
+          mintPrice,
+          proof,
+          undefined, // 部署需要创建者签名
+          deployerSignature
+        )
+
+        console.log(`🚀 收藏已部署并铸造物品: ${tx}`)
+        return tx
+
+      } else {
+        // 常规铸造
+        const proof = whitelist.getProof(playerAddress)
+        const mintPrice = parseEther("0.01") * quantity
+
+        const tx = await collection.mint(
+          this.walletClient,
+          quantity,
+          "https://example.com/legendary-sword.json",
+          mintPrice,
+          proof
+        )
+
+        console.log(`⚔️ 游戏物品已铸造: ${tx}`)
+        return tx
+      }
+
+    } catch (error: any) {
+      if (error.message.includes('Invalid merkle proof')) {
+        console.error(`❌ 玩家 ${playerAddress} 不在白名单中`)
+      } else {
+        console.error("❌ 铸造失败:", error)
+      }
+      throw error
+    }
+  }
+
+  async getPlayerRewards(collectionAddress: string, playerAddress: string) {
+    const escrowAddress = this.collectionManager.getEscrowAddress()
+    
+    // 检查玩家是否为首位铸造者
+    const firstMinterRewards = await this.rewardTracker.getRecipientRewards(
+      escrowAddress,
+      collectionAddress,
+      "FIRST_MINTER",
+      playerAddress
+    )
+
+    // 获取收藏统计
+    const collectionRewards = await this.rewardTracker.getCollectionRewards(
+      escrowAddress,
+      collectionAddress
+    )
+
+    return {
+      firstMinterRewards: firstMinterRewards.toString(),
+      collectionTotalRewards: collectionRewards.totalRewards.toString(),
+      collectionMints: collectionRewards.totalMints.toString()
+    }
+  }
+}
+
+// 使用示例
+async function main() {
+  const gameManager = new GamingCollectionManager(process.env.PRIVATE_KEY!)
+  
+  // 创建收藏
+  const { predictedAddress, whitelist, playerTiers } = await gameManager.createGamingCollection()
+  
+  // 模拟传奇玩家铸造
+  const legendaryPlayer = playerTiers.legendary[0]
+  await gameManager.mintForPlayer(predictedAddress, whitelist, legendaryPlayer, 2n)
+  
+  // 检查奖励
+  const rewards = await gameManager.getPlayerRewards(predictedAddress, legendaryPlayer)
+  console.log("玩家奖励:", rewards)
+}
+
+main().catch(console.error)
+```
+</Accordion>
+
+## 多收藏平台
+
+管理多个收藏的平台：
+
+<Accordion title="多收藏平台示例">
+```typescript
+import { 
+  CollectionManager, 
+  BaseMintStorage,
+  RewardTracker,
+  b3Testnet 
+} from '@b3dotfun/basemint'
+
+class NFTPlatform {
+  private collectionManager: CollectionManager
+  private storage: BaseMintStorage
+  private rewardTracker: RewardTracker
+  private platformId: string
+
+  constructor(
+    publicClient: any,
+    platformId: string
+  ) {
+    this.collectionManager = new CollectionManager(publicClient)
+    this.storage = new BaseMintStorage({ baseUrl: 'https://api.basemint.fun' })
+    this.rewardTracker = new RewardTracker(publicClient)
+    this.platformId = platformId
+  }
+
+  async registerPlatform() {
+    try {
+      await this.storage.registerReferrer(this.platformId, {
+        name: "My NFT Platform",
+        website: "https://mynftplatform.com",
+        description: "A platform for creating and managing NFT collections"
+      })
+      console.log(`✅ 平台已注册: ${this.platformId}`)
+    } catch (error: any) {
+      if (error.message.includes('already exists')) {
+        console.log(`ℹ️ 平台 ${this.platformId} 已注册`)
+      } else {
+        throw error
+      }
+    }
+  }
+
+  async createCollection(
+    creatorWalletClient: any,
+    collectionData: {
+      name: string
+      symbol: string
+      description: string
+      image: string
+      maxSupply: bigint
+      mintPrice: bigint
+      category: string
+    }
+  ) {
+    const collection = {
+      ...collectionData,
+      creator: creatorWalletClient.account.address,
+      gameOwner: creatorWalletClient.account.address, // 平台可以是游戏所有者
+      tokenStandard: "ERC721" as const,
+      chainId: 1993,
+      attributes: [
+        { trait_type: "Platform", value: "My NFT Platform" },
+        { trait_type: "Category", value: collectionData.category }
+      ]
+    }
+
+    // 生成签名并存储
+    const creatorSignature = await this.collectionManager.generateCreatorSignature(
+      creatorWalletClient,
+      collection
+    )
+
+    const predictedAddress = this.collectionManager.predictCollectionAddress(
+      collection,
+      creatorSignature
+    )
+
+    await this.storage.submitCollection(
+      collection,
+      creatorSignature,
+      this.platformId
+    )
+
+    return {
+      collection,
+      predictedAddress,
+      creatorSignature
+    }
+  }
+
+  async deployCollection(
+    deployerWalletClient: any,
+    collectionAddress: string,
+    creatorSignature: string
+  ) {
+    const deployerSignature = await this.collectionManager.generateDeployerSignature(
+      deployerWalletClient,
+      collectionAddress
+    )
+
+    const collection = this.collectionManager.createCollection(collectionAddress, "ERC721")
+    
+    const tx = await collection.mint(
+      deployerWalletClient,
+      1n,
+      undefined,
+      0n, // 部署者首次铸造免费
+      [],
+      creatorSignature,
+      deployerSignature
+    )
+
+    return tx
+  }
+
+  async getPlatformStats() {
+    const collections = await this.storage.queryCollections({
+      referrer: this.platformId
+    })
+
+    const stats = {
+      totalCollections: collections.total,
+      deployed: 0,
+      undeployed: 0,
+      totalVolume: 0n,
+      totalRewards: 0n
+    }
+
+    const escrowAddress = this.collectionManager.getEscrowAddress()
+
+    for (const collection of collections.collections) {
+      if (collection.isDeployed) {
+        stats.deployed++
+        
+        // 获取收藏奖励
+        const rewards = await this.rewardTracker.getCollectionRewards(
+          escrowAddress,
+          collection.address
+        )
+        stats.totalRewards += rewards.totalRewards
+      } else {
+        stats.undeployed++
+      }
+    }
+
+    return {
+      ...stats,
+      collections: collections.collections
+    }
+  }
+
+  async getCreatorDashboard(creatorAddress: string) {
+    const collections = await this.storage.queryCollections({
+      creator: creatorAddress,
+      referrer: this.platformId
+    })
+
+    const escrowAddress = this.collectionManager.getEscrowAddress()
+    let totalCreatorRewards = 0n
+
+    const collectionStats = await Promise.all(
+      collections.collections.map(async (collection) => {
+        if (collection.isDeployed) {
+          const rewards = await this.rewardTracker.getRecipientRewards(
+            escrowAddress,
+            collection.address,
+            "CREATOR",
+            creatorAddress
+          )
+          totalCreatorRewards += rewards
+          
+          return {
+            ...collection,
+            creatorRewards: rewards.toString()
+          }
+        }
+        return {
+          ...collection,
+          creatorRewards: "0"
+        }
+      })
+    )
+
+    return {
+      totalCollections: collections.total,
+      totalCreatorRewards: totalCreatorRewards.toString(),
+      collections: collectionStats
+    }
+  }
+}
+
+// 使用
+async function runPlatform() {
+  const publicClient = createPublicClient({
+    chain: b3Testnet,
+    transport: http()
+  })
+
+  const platform = new NFTPlatform(publicClient, "my-nft-platform")
+  
+  // 注册平台
+  await platform.registerPlatform()
+  
+  // 创建者创建收藏
+  const creatorAccount = privateKeyToAccount(process.env.CREATOR_PRIVATE_KEY as `0x${string}`)
+  const creatorWalletClient = createWalletClient({
+    chain: b3Testnet,
+    transport: http(),
+    account: creatorAccount
+  })
+
+  const { predictedAddress, creatorSignature } = await platform.createCollection(
+    creatorWalletClient,
+    {
+      name: "Awesome Art Collection",
+      symbol: "AAC",
+      description: "Amazing digital artworks",
+      image: "https://example.com/awesome-art.png",
+      maxSupply: 1000n,
+      mintPrice: parseEther("0.005"),
+      category: "Art"
+    }
+  )
+
+  // 部署收藏
+  const deployerAccount = privateKeyToAccount(process.env.DEPLOYER_PRIVATE_KEY as `0x${string}`)
+  const deployerWalletClient = createWalletClient({
+    chain: b3Testnet,
+    transport: http(),
+    account: deployerAccount
+  })
+
+  const deployTx = await platform.deployCollection(
+    deployerWalletClient,
+    predictedAddress,
+    creatorSignature
+  )
+
+  console.log(`🚀 收藏已部署: ${deployTx}`)
+
+  // 获取平台统计数据
+  const stats = await platform.getPlatformStats()
+  console.log("平台统计:", stats)
+
+  // 获取创建者仪表板
+  the dashboard = await platform.getCreatorDashboard(creatorAccount.address)
+  console.log("创建者仪表板:", dashboard)
+}
+
+runPlatform().catch(console.error)
+```
+</Accordion>
+
+## 市场

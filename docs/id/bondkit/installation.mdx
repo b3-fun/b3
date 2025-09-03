@@ -1,0 +1,303 @@
+---
+title: Instalasi
+description: >-
+  Pasang dan konfigurasikan BondKit untuk meluncurkan token obligasi ERC20 di
+  Base.
+lang: id
+originalPath: bondkit/installation.mdx
+---
+## Prasyarat
+
+<Card title="Alat yang Diperlukan" icon="wrench">
+  - **Node.js 18+** - JavaScript runtime
+  - **pnpm** (direkomendasikan) atau npm/yarn - Manajer paket
+  - **Git** - Kontrol versi
+  - **Wallet dengan Base ETH** - Untuk penyebaran dan transaksi
+</Card>
+
+## Opsi Mulai Cepat
+
+<Tabs>
+  <Tab title="Proyek Baru">
+    ## Instal SDK
+    
+    <CodeGroup>
+    ```bash pnpm
+    pnpm add @b3dotfun/sdk
+    ```
+    ```bash npm
+    npm install @b3dotfun/sdk
+    ```
+    ```bash yarn
+    yarn add @b3dotfun/sdk
+    ```
+    </CodeGroup>
+
+    ## Pengaturan Proyek
+
+    ```bash
+    # Buat proyek baru
+    mkdir my-bondkit-app
+    cd my-bondkit-app
+    pnpm init
+
+    # Instal dependensi
+    pnpm add @b3dotfun/sdk typescript
+    pnpm add -D @types/node tsx
+
+    # Buat konfigurasi TypeScript
+    npx tsc --init
+    ```
+  </Tab>
+  
+  <Tab title="Proyek yang Ada">
+    ## Tambahkan ke Proyek yang Ada
+    
+    <CodeGroup>
+    ```bash pnpm
+    pnpm add @b3dotfun/sdk
+    ```
+    ```bash npm
+    npm install @b3dotfun/sdk
+    ```
+    ```bash yarn
+    yarn add @b3dotfun/sdk
+    ```
+    </CodeGroup>
+
+    <Note>
+      SDK mencakup semua dependensi yang diperlukan termasuk viem
+    </Note>
+  </Tab>
+  
+  <Tab title="Aplikasi Demo">
+    ## Klon Aplikasi Demo
+    
+    Cara tercepat untuk memulai adalah dengan aplikasi demo lengkap kami:
+
+    ```bash
+    # Klon monorepo B3
+    git clone https://github.com/b3dotfun/b3-monorepo.git
+    cd b3-monorepo
+
+    # Instal dependensi
+    pnpm install
+
+    # Navigasi ke demo BondKit
+    cd apps/bondkit-demo
+
+    # Siapkan lingkungan
+    cp .env.example .env.local
+    # Edit .env.local dengan konfigurasi Anda
+
+    # Jalankan demo
+    pnpm dev
+    ```
+
+    <Info>
+      Aplikasi demo terletak di `apps/bondkit-demo/src/app/` dan mencakup:
+      - Alur penyebaran token lengkap
+      - Antarmuka perdagangan dengan grafik TradingView
+      - Koneksi wallet dengan autentikasi B3
+      - Pelacakan harga dan volume waktu nyata
+      - Antarmuka manajemen migrasi
+    </Info>
+
+    ### Struktur Aplikasi Demo
+
+    ```
+    apps/bondkit-demo/src/app/
+    ├── page.tsx                 # Halaman awal dengan daftar token
+    ├── deploy/page.tsx          # Antarmuka penyebaran token
+    ├── token/[address]/page.tsx # Halaman perdagangan token individu
+    ├── providers.tsx            # Pengaturan penyedia Web3
+    ├── b3ProviderWrapper.tsx    # Pembungkus autentikasi B3
+    └── api/                     # Endpoint data TradingView
+        └── udf/                 # Universal Data Feed untuk grafik
+    ```
+  </Tab>
+</Tabs>
+
+## Konfigurasi Lingkungan
+
+### Pengaturan Dasar
+
+Buat file `.env` di akar proyek Anda:
+
+```bash
+# Diperlukan untuk operasi sisi server
+WALLET_PRIVATE_KEY=0x...
+
+# Opsional: Endpoint RPC kustom (default ke publik)
+RPC_URL=https://base-mainnet.g.alchemy.com/v2/YOUR_KEY
+
+# Opsional: Konfigurasi API
+BONDKIT_API_ENDPOINT=https://api.b3.fun
+```
+
+### Praktik Keamanan Terbaik
+
+<Warning>
+  **Jangan pernah commit private keys ke kontrol versi!**
+  
+  - Tambahkan `.env` ke `.gitignore` Anda
+  - Gunakan variabel lingkungan di produksi
+  - Pertimbangkan menggunakan layanan manajemen kunci
+  - Gunakan wallet terpisah untuk pengembangan dan produksi
+</Warning>
+
+## Inisialisasi Klien
+
+### Pengaturan Dasar
+
+```typescript
+import { BondkitTokenFactory } from "@b3dotfun/sdk/bondkit";
+import { base } from "viem/chains";
+
+// Untuk penggunaan sisi server dengan private key
+const factory = new BondkitTokenFactory(
+  base.id, 
+  process.env.WALLET_PRIVATE_KEY
+);
+
+// Untuk penggunaan sisi klien dengan penyedia wallet
+const clientFactory = new BondkitTokenFactory(base.id);
+await clientFactory.connect(window.ethereum);
+```
+
+### Konfigurasi Lanjutan
+
+```typescript
+import { 
+  BondkitTokenFactory, 
+  BondkitToken,
+  getConfig 
+} from "@b3dotfun/sdk/bondkit";
+import { createWalletClient, custom } from "viem";
+import { base } from "viem/chains";
+
+// Pengaturan klien wallet kustom
+const walletClient = createWalletClient({
+  chain: base,
+  transport: custom(window.ethereum)
+});
+
+// Inisialisasi dengan konfigurasi kustom
+const config = getConfig(base.id);
+const factory = new BondkitTokenFactory(base.id);
+
+// Terhubung dengan klien wallet kustom
+await factory.connect(walletClient.transport);
+
+// Bekerja dengan token yang ada
+const token = new BondkitToken(
+  "0x123...", // alamat token
+  process.env.WALLET_PRIVATE_KEY
+);
+```
+
+## Konfigurasi TypeScript
+
+`tsconfig.json` yang direkomendasikan untuk proyek BondKit:
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "lib": ["ES2020", "DOM"],
+    "moduleResolution": "node",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "noEmit": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}
+```
+
+## Menguji Pengaturan Anda
+
+Buat file tes `test-bondkit.ts`:
+
+```typescript
+import { BondkitTokenFactory } from "@b3dotfun/sdk/bondkit";
+import { base } from "viem/chains";
+
+async function testConnection() {
+  try {
+    const factory = new BondkitTokenFactory(base.id);
+    const implementationAddress = await factory.getImplementationAddress();
+    
+    console.log("✅ BondKit SDK terhubung dengan sukses!");
+    console.log("Alamat implementasi:", implementationAddress);
+  } catch (error) {
+    console.error("❌ Gagal terhubung:", error);
+  }
+}
+
+testConnection();
+```
+
+Jalankan tes:
+
+```bash
+npx tsx test-bondkit.ts
+```
+
+## Langkah Selanjutnya
+
+<CardGroup cols={2}>
+  <Card title="Panduan Cepat" icon="rocket" href="/bondkit/quickstart">
+    Sebarkan token pertama Anda dalam hitungan menit
+  </Card>
+  <Card title="Referensi SDK" icon="code" href="/bondkit/sdk/reference">
+    Jelajahi semua metode dan fitur SDK
+  </Card>
+  <Card title="Aplikasi Demo" icon="desktop" href="https://github.com/b3dotfun/b3-monorepo/tree/main/apps/bondkit-demo">
+    Pelajari implementasi lengkap
+  </Card>
+  <Card title="Dokumentasi API" icon="server" href="/bondkit/api">
+    Pelajari tentang layanan backend dan analitik
+  </Card>
+</CardGroup>
+
+## Pemecahan Masalah
+
+<AccordionGroup>
+  <Accordion title="Kesalahan modul tidak ditemukan">
+    Pastikan SDK terinstal dengan benar:
+    ```bash
+    pnpm add @b3dotfun/sdk
+    ```
+    Jika menggunakan komponen React, Anda mungkin perlu:
+    ```bash
+    pnpm add @wagmi/core @tanstack/react-query
+    ```
+  </Accordion>
+  
+  <Accordion title="Kesalahan TypeScript">
+    Perbarui TypeScript ke versi terbaru:
+    ```bash
+    pnpm add -D typescript@latest @types/node@latest
+    ```
+  </Accordion>
+  
+  <Accordion title="Masalah koneksi">
+    - Verifikasi endpoint RPC Anda berfungsi
+    - Periksa wallet memiliki Base ETH yang cukup
+    - Pastikan format kunci privat benar (dengan awalan 0x)
+  </Accordion>
+  
+  <Accordion title="Kesalahan build">
+    Bersihkan cache dan instal ulang:
+    ```bash
+    rm -rf node_modules .next
+    pnpm install
+    ```
+  </Accordion>
+</AccordionGroup>

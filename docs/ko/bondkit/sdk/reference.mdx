@@ -1,0 +1,596 @@
+---
+title: SDK 참조
+description: 'BondKit SDK에 대한 완전한 API 참조, 예제 및 TypeScript 정의입니다.'
+lang: ko
+originalPath: bondkit/sdk/reference.mdx
+---
+## 설치 및 설정
+
+<Tabs>
+  <Tab title="NPM 패키지">
+    ```bash
+    # 프로덕션 SDK
+    pnpm add @b3dotfun/sdk
+    
+    # 메인 SDK에서 가져오기
+    import { 
+      BondkitTokenFactory, 
+      BondkitToken 
+    } from "@b3dotfun/sdk/bondkit";
+    ```
+  </Tab>
+  <Tab title="개발">
+    ```bash
+    # 모노레포 복제
+    git clone https://github.com/b3dotfun/b3-monorepo.git
+    cd b3-monorepo
+    pnpm install
+    
+    # SDK 빌드
+    pnpm --filter @b3dotfun/sdk build
+    ```
+  </Tab>
+</Tabs>
+
+## 핵심 클래스
+
+### BondkitTokenFactory
+
+팩토리 클래스는 새로운 본드 토큰을 배포하고 배포된 토큰을 조회하는 역할을 합니다.
+
+```typescript
+import { BondkitTokenFactory } from "@b3dotfun/sdk/bondkit";
+import { base } from "viem/chains";
+
+const factory = new BondkitTokenFactory(
+  base.id,                    // 체인 ID (Base 메인넷)
+  process.env.WALLET_KEY      // 선택사항: 쓰기 작업을 위한 개인 키
+);
+```
+
+#### 생성자
+
+```typescript
+constructor(
+  chainId: SupportedChainId,
+  walletKey?: string
+)
+```
+
+| 매개변수 | 타입 | 필수 여부 | 설명 |
+|-----------|------|----------|-------------|
+| `chainId` | `number` | 예 | 체인 ID (현재는 Base: 8453만 가능) |
+| `walletKey` | `string` | 아니오 | 쓰기 작업을 위한 개인 키 |
+
+#### 메소드
+
+<AccordionGroup>
+  <Accordion title="deployBondkitToken">
+    **새로운 본드 토큰 배포**
+    
+    ```typescript
+    async deployBondkitToken(
+      config: BondkitTokenConfig
+    ): Promise<Address>
+    ```
+    
+    **매개변수:**
+    ```typescript
+    interface BondkitTokenConfig {
+      name: string;                      // 토큰 이름
+      symbol: string;                    // 토큰 심볼
+      feeRecipient: Address;            // 거래 수수료 수령자
+      finalTokenSupply: bigint;         // 총 공급량 (18 소수점)
+      aggressivenessFactor: number;     // 0-100 곡선의 가파름
+      lpSplitRatioFeeRecipientBps: bigint; // LP 수수료 분배 (기준점)
+      targetEth: bigint;                // 마이그레이션 목표 (18 소수점)
+      uniswapV2RouterAddress: Address;  // 라우터 주소
+      migrationAdminAddress: Address;   // 마이그레이션을 트리거할 수 있는 관리자
+    }
+    ```
+    
+    **예시:**
+    ```typescript
+    const tokenAddress = await factory.deployBondkitToken({
+      name: "My Token",
+      symbol: "MTK",
+      feeRecipient: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1",
+      finalTokenSupply: parseEther("1000000"),
+      aggressivenessFactor: 50,
+      lpSplitRatioFeeRecipientBps: 1000n, // 10%
+      targetEth: parseEther("10"),
+      uniswapV2RouterAddress: "0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24",
+      migrationAdminAddress: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1"
+    });
+    ```
+  </Accordion>
+  
+  <Accordion title="getDeployedBondkitTokens">
+    **배포된 토큰 모두 가져오기**
+    
+    ```typescript
+    async getDeployedBondkitTokens(): Promise<Address[]>
+    ```
+    
+    **반환값:** 토큰 주소의 배열
+    
+    **예시:**
+    ```typescript
+    const tokens = await factory.getDeployedBondkitTokens();
+    console.log(`Found ${tokens.length} tokens`);
+    ```
+  </Accordion>
+  
+  <Accordion title="getBondkitTokenConfig">
+    **토큰 설정 가져오기**
+    
+    ```typescript
+    async getBondkitTokenConfig(
+      tokenAddress: Address
+    ): Promise<BondkitTokenConfig>
+    ```
+    
+    **예시:**
+    ```typescript
+    const config = await factory.getBondkitTokenConfig(
+      "0x123..."
+    );
+    console.log(`Token name: ${config.name}`);
+    ```
+  </Accordion>
+  
+  <Accordion title="getImplementationAddress">
+    **구현 계약 가져오기**
+    
+    ```typescript
+    async getImplementationAddress(): Promise<Address>
+    ```
+    
+    **예시:**
+    ```typescript
+    const impl = await factory.getImplementationAddress();
+    console.log(`Implementation: ${impl}`);
+    ```
+  </Accordion>
+  
+  <Accordion title="connect">
+    **지갑 프로바이더 연결**
+    
+    ```typescript
+    connect(provider?: EIP1193Provider): boolean
+    ```
+    
+    **예시:**
+    ```typescript
+    // 브라우저 환경
+    const connected = factory.connect(window.ethereum);
+    
+    // 사용자 정의 프로바이더
+    import { custom } from "viem";
+    const transport = custom(provider);
+    factory.connect(transport);
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### BondkitToken
+
+토큰 클래스는 특정 본드 토큰에 대한 모든 작업을 처리합니다.
+
+```typescript
+import { BondkitToken } from "@b3dotfun/sdk/bondkit";
+
+const token = new BondkitToken(
+  "0x123...",                 // 토큰 주소
+  process.env.WALLET_KEY      // 선택사항: 개인 키
+);
+```
+
+#### 생성자
+
+```typescript
+constructor(
+  contractAddress: string,
+  walletKey?: string
+)
+```
+
+| 매개변수 | 타입 | 필수 여부 | 설명 |
+|-----------|------|----------|-------------|
+| `contractAddress` | `string` | 예 | 토큰 계약 주소 |
+| `walletKey` | `string` | 아니오 | 쓰기 작업을 위한 개인 키 |
+
+#### 읽기 메소드
+
+<AccordionGroup>
+  <Accordion title="ERC20 표준 메소드">
+    ```typescript
+    // 기본 토큰 정보
+    async name(): Promise<string>
+    async symbol(): Promise<string>
+    async decimals(): Promise<number>
+    async totalSupply(): Promise<bigint>
+    
+    // 잔액
+    async balanceOf(address: Address): Promise<bigint>
+    async allowance(
+      owner: Address, 
+      spender: Address
+    ): Promise<bigint>
+    
+    // 예시
+    const balance = await token.balanceOf(userAddress);
+    console.log(`Balance: ${formatEther(balance)}`);
+    ```
+  </Accordion>
+  
+  <Accordion title="본딩 곡선 메소드">
+    ```typescript
+    // 현재 토큰 당 가격
+    async getCurrentBondingCurvePricePerToken(): Promise<bigint>
+    
+    // 현재 ETH 가격
+    async getCurrentPrice(): Promise<bigint>
+    
+    // 구매 견적
+    async getAmountOfTokensToBuy(
+      ethAmount: bigint
+    ): Promise<bigint>
+    
+    // 판매 견적
+    async getAmountOfEthToReceive(
+      tokenAmount: bigint
+    ): Promise<bigint>
+    
+    // 본딩 진행 상황
+    async getBondingProgress(): Promise<{
+      progress: number;      // 0-1 (퍼센트)
+      raised: bigint;       // 모금액
+      threshold: bigint;    // 목표액
+    }>
+    
+    // 예시
+    const progress = await token.getBondingProgress();
+    console.log(`Progress: ${(progress.progress * 100).toFixed(2)}%`);
+    ```
+  </Accordion>
+  
+  <Accordion title="상태 및 설정">
+    ```typescript
+    // 토큰 상태
+    async getStatus(): Promise<TokenStatus>
+    async isMigrated(): Promise<boolean>
+    async canMigrate(): Promise<boolean>
+    
+    // 설정
+    async getOwner(): Promise<Address>
+    async getFeeRecipient(): Promise<Address>
+    async getAggressivenessFactor(): Promise<number>
+    async getTargetAmount(): Promise<bigint>
+    
+    // 마이그레이션 정보
+    async getMigrationData(): Promise<{
+      ethForLp: bigint;
+      tokensForLp: bigint;
+      sqrtPriceX96: bigint;
+    }>
+    
+    // 예시
+    if (await token.canMigrate()) {
+      console.log("마이그레이션 준비 완료!");
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="분석 메소드">
+    ```typescript
+    // 토큰 보유자
+    async getPaginatedHolders(
+      offset: number,
+      limit: number
+    ): Promise<{
+      holders: Address[];
+      total: number;
+    }>
+    
+    // 거래 내역 (API에서)
+    async getTransactionHistory(
+      options?: GetTransactionHistoryOptions
+    ): Promise<TransactionResponse>
+    
+    // 옵션 인터페이스
+    interface GetTransactionHistoryOptions {
+      userAddress?: Address;
+      type?: "buy" | "sell";
+      from?: number;        // 타임스탬프
+      to?: number;          // 타임스탬프
+      limit?: number;       // 1-100
+      offset?: number;
+    }
+    
+    // 예시
+    const history = await token.getTransactionHistory({
+      type: "buy",
+      limit: 10
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+#### 쓰기 메소드
+
+<AccordionGroup>
+  <Accordion title="buy">
+    **ETH로 토큰 구매**
+    
+    ```typescript
+    async buy(
+      minTokensOut: bigint,
+      ethAmount: string | bigint
+    ): Promise<Hex>
+    ```
+    
+    **매개변수:**
+    - `minTokensOut`: 받을 최소 토큰 수 (미끄러짐 보호)
+    - `ethAmount`: 사용할 ETH (문자열 또는 bigint로)
+    
+    **예시:**
+    ```typescript
+    // 먼저 견적을 받습니다
+    const quote = await token.getAmountOfTokensToBuy(
+      parseEther("1")
+    );
+    
+    // 5% 미끄러짐 허용 범위로 구매
+    const minTokens = quote * 95n / 100n;
+    const txHash = await token.buy(minTokens, "1");
+    
+    console.log(`Transaction: ${txHash}`);
+    ```
+  </Accordion>
+  
+  <Accordion title="sell">
+    **토큰을 ETH로 판매**
+    
+    ```typescript
+    async sell(
+      tokenAmount: bigint,
+      minEthOut: bigint
+    ): Promise<Hex>
+    ```
+    
+    **매개변수:**
+    - `tokenAmount`: 판매할 토큰 수
+    - `minEthOut`: 받을 최소 ETH (미끄러짐 보호)
+    
+    **예시:**
+    ```typescript
+    // 1000 토큰 판매
+    const sellAmount = parseEther("1000");
+    
+    // 견적 받기
+    const quote = await token.getAmountOfEthToReceive(sellAmount);
+    
+    // 미끄러짐 보호로 판매
+    const minEth = quote * 95n / 100n;
+    const txHash = await token.sell(sellAmount, minEth);
+    ```
+  </Accordion>
+  
+  <Accordion title="migrateToDex">
+    **Uniswap v4로 마이그레이션**
+    
+    ```typescript
+    async migrateToDex(): Promise<Hex>
+    ```
+    
+    **요구 사항:**
+    - 호출자는 마이그레이션 관리자여야 함
+    - 목표가 달성되어야 함
+    
+    **예시:**
+    ```typescript
+    if (await token.canMigrate()) {
+      const txHash = await token.migrateToDex();
+      console.log(`Migration tx: ${txHash}`);
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="ERC20 쓰기 메소드">
+    ```typescript
+    // 표준 전송
+    async transfer(
+      to: Address,
+      amount: bigint
+    ): Promise<Hex>
+    
+    async transferFrom(
+      from: Address,
+      to: Address,
+      amount: bigint
+    ): Promise<Hex>
+    
+    // 승인
+    async approve(
+      spender: Address,
+      amount: bigint
+    ): Promise<Hex>
+    
+    // 예시
+    await token.approve(
+      spenderAddress,
+      parseEther("1000")
+    );
+    ```
+  </Accordion>
+</AccordionGroup>
+
+#### 이벤트 리스너
+
+```typescript
+// 구매 이벤트 듣기
+token.onBuy((event: BoughtEventArgs) => {
+  console.log("Buy:", {
+    buyer: event.buyer,
+    ethIn: formatEther(event.ethIn),
+    tokensOut: formatEther(event.tokensOut),
+    fee: formatEther(event.feeRecipientFee)
+  });
+});
+
+// 판매 이벤트 듣기
+token.onSell((event: SoldEventArgs) => {
+  console.log("Sell:", {
+    seller: event.seller,
+    tokensIn: formatEther(event.tokensIn),
+    ethOut: formatEther(event.ethOut),
+    fee: formatEther(event.feeRecipientFee)
+  });
+});
+
+// 마이그레이션 듣기
+token.onMigration((event: DexMigrationEventArgs) => {
+  console.log("Migrated:", {
+    ethForLp: formatEther(event.ethForLp),
+    tokensForLp: formatEther(event.tokensForLp)
+  });
+});
+```
+
+## 타입 정의
+
+### 핵심 타입
+
+```typescript
+// 토큰 설정
+interface BondkitTokenConfig {
+  name: string;
+  symbol: string;
+  feeRecipient: Address;
+  finalTokenSupply: bigint;
+  aggressivenessFactor: number;
+  lpSplitRatioFeeRecipientBps: bigint;
+  targetEth: bigint;
+  uniswapV2RouterAddress: Address;
+  migrationAdminAddress: Address;
+}
+
+// 토큰 상태 열거형
+enum TokenStatus {
+  Inactive = 0,
+  BondingPhase = 1,
+  DexPhase = 2,
+  Migrated = 3
+}
+
+// 토큰 세부 정보
+interface TokenDetails {
+  name: string;
+  symbol: string;
+  decimals: number;
+  totalSupply: bigint;
+  owner: Address;
+}
+```
+
+### 이벤트 타입
+
+```typescript
+// 구매 이벤트
+interface BoughtEventArgs {
+  buyer: Address;
+  ethIn: bigint;
+  tokensOut: bigint;
+  feeRecipientFee: bigint;
+}
+
+// 판매 이벤트
+interface SoldEventArgs {
+  seller: Address;
+  tokensIn: bigint;
+  ethOut: bigint;
+  feeRecipientFee: bigint;
+}
+
+// 마이그레이션 이벤트
+interface DexMigrationEventArgs {
+  ethForLp: bigint;
+  tokensForLp: bigint;
+  ethForFeeRecipient: bigint;
+}
+
+// 팩토리 생성 이벤트
+interface BondkitTokenCreatedEventArgs {
+  tokenAddress: Address;
+  implementationAddress: Address;
+  name: string;
+  symbol: string;
+  feeRecipient: Address;
+  migrationAdmin: Address;
+}
+```
+
+### 거래 타입
+
+```typescript
+// 거래 내역
+interface Transaction {
+  timestamp: number;
+  price: number;
+  amount: string;
+  type: "buy" | "sell";
+  userAddress: Address;
+  txHash: Hex;
+  chainId: number;
+  blockNumber?: number;
+  totalRaisedBonding?: string;
+  value?: string;
+}
+
+// API 응답
+interface TransactionResponse {
+  total: number;
+  limit: number;
+  skip: number;
+  data: Transaction[];
+}
+```
+
+## 설정
+
+### 네트워크 지원
+
+```typescript
+import { getConfig } from "@b3dotfun/sdk/bondkit";
+import { base } from "viem/chains";
+
+const config = getConfig(base.id);
+
+console.log({
+  chain: config.chain.name,           // "Base"
+  factoryAddress: config.factoryAddress,
+  rpcUrl: config.rpcUrl,
+  apiEndpoint: config.apiEndpoint
+});
+```
+
+### 지원되는 체인
+
+| 체인 | 체인 ID | 상태 |
+|-------|----------|--------|
+| Base 메인넷 | 8453 | ✅ 지원됨 |
+| Base Sepolia | 84532 | 🚧 곧 출시 예정 |
+
+## 오류 처리
+
+```typescript
+try {
+  const txHash = await token.buy(minTokens, "1");
+} catch (error) {
+  if (error.message.includes("insufficient funds")) {
+    console.error("ETH가 부족합니다");
+  } else if (error.message.includes("slippage")) {
+    console.error("가격이 변동되었습니다, 다시 시도해주세요");
+  } else if (error.message.includes("target exceeded")) {
+    console.error("마이그레이션

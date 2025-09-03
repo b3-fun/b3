@@ -1,0 +1,148 @@
+---
+title: Bridge ke B3 Testnet
+description: >-
+  Mudahnya menjembatani dari Base Sepolia (Base Testnet) ke B3 Sepolia (B3
+  Testnet) dengan mengikuti langkah-langkah di bawah ini!
+lang: id
+originalPath: protocol/bridge-to-testnet.mdx
+---
+<Note>
+Jembatan ini secara khusus untuk tujuan testnet. Gunakan ETH testnet gratis untuk menguji aplikasi Anda sebelum dikerahkan ke mainnet.
+</Note>
+
+## Cara Menggunakan Jembatan
+
+<Steps>
+<Step title="Kunjungi Jembatan Testnet">
+  Kunjungi [testnet.bridge.b3.fun](https://testnet.bridge.b3.fun) untuk mengakses antarmuka jembatan testnet resmi.
+</Step>
+
+<Step title="Hubungkan Dompet Anda">
+  Hubungkan dompet Anda (MetaMask, Coinbase Wallet, dll.) ke antarmuka jembatan.
+  
+  <Tip>
+  Pastikan dompet Anda terhubung ke Base Sepolia atau B3 Testnet tergantung arah jembatan yang Anda inginkan.
+  </Tip>
+</Step>
+
+<Step title="Pilih Arah Jembatan">
+  Pilih apakah Anda ingin:
+  - **Deposit**: Membawa dana dari Base Sepolia → B3 Testnet
+  - **Withdraw**: Membawa kembali dari B3 Testnet → Base Sepolia
+  
+  Klik tab **Deposit** atau **Withdraw** sesuai kebutuhan.
+</Step>
+
+<Step title="Masukkan Jumlah">
+  Masukkan jumlah ETH yang ingin Anda jembatani.
+  
+  <Card title="Butuh Base Sepolia ETH?" icon="faucet" href="https://docs.base.org/base-chain/tools/network-faucets" cta="Dapatkan Base Testnet ETH" horizontal>
+    Jika Anda membutuhkan Base Sepolia ETH, gunakan faucet Base Sepolia untuk mendapatkan token testnet gratis
+  </Card>
+</Step>
+
+<Step title="Konfirmasi Transaksi">
+  Klik "Deposit" (atau "Withdraw") dan konfirmasi prompt transaksi yang muncul di dompet Anda.
+  
+  <Warning>
+  Pastikan Anda berada di testnet yang benar dan menggunakan ETH testnet, bukan dana mainnet.
+  </Warning>
+</Step>
+
+<Step title="Tunggu Sampai Selesai">
+  Tunggu beberapa menit untuk proses jembatan selesai. Anda dapat memeriksa statusnya di tab "History".
+  
+  <Check>
+  ETH testnet Anda akan muncul di dompet Anda di jaringan tujuan dalam beberapa menit.
+  </Check>
+</Step>
+</Steps>
+
+## Informasi Jaringan
+
+<CardGroup cols={2}>
+  <Card title="Base Sepolia Testnet">
+    **Chain ID**: 84532  
+    **RPC**: https://sepolia.base.org  
+    **Explorer**: https://sepolia.basescan.org
+  </Card>
+  
+  <Card title="B3 Sepolia Testnet">
+    **Chain ID**: 1993  
+    **RPC**: https://testnet-rpc.b3.fun  
+    **Explorer**: https://testnet-explorer.b3.fun
+  </Card>
+</CardGroup>
+
+## Sumber Daya Testnet
+
+<CardGroup cols={2}>
+  <Card title="Jembatan Testnet" icon="bridge" href="https://testnet.bridge.b3.fun" cta="Jembatani Sekarang">
+    Jembatan resmi untuk memindahkan aset antara Base Sepolia dan B3 Testnet
+  </Card>
+  
+  <Card title="Faucet B3 Testnet" icon="faucet" href="https://testnet-faucet.b3.fun" cta="Dapatkan Test ETH">
+    Dapatkan ETH testnet B3 gratis untuk pengembangan dan pengujian
+  </Card>
+</CardGroup>
+
+## Faucet Tambahan
+
+Jika Anda membutuhkan ETH testnet untuk pengembangan, berikut beberapa opsi faucet yang dapat diandalkan:
+
+<AccordionGroup>
+<Accordion title="Faucet Base Sepolia">
+  - [Coinbase Base Faucet](https://coinbase.com/faucets/base-ethereum-sepolia-faucet) - Faucet resmi Coinbase
+  - [Alchemy Base Sepolia Faucet](https://sepoliafaucet.com) - Faucet terpercaya untuk Base Sepolia ETH
+  - [QuickNode Base Faucet](https://faucet.quicknode.com/base/sepolia) - Dukungan testnet multipel
+</Accordion>
+
+<Accordion title="Faucet B3 Testnet">
+  - [Faucet B3 Testnet](https://testnet-faucet.b3.fun) - Faucet resmi B3 testnet
+  - Dapatkan ETH testnet B3 langsung tanpa perlu jembatan
+</Accordion>
+</AccordionGroup>
+
+## Pemecahan Masalah
+
+<AccordionGroup>
+<Accordion title="Transaksi jembatan macet">
+  - Periksa status transaksi di block explorer
+  - Verifikasi Anda terhubung ke testnet yang benar
+  - Coba tingkatkan biaya gas jika transaksi tertunda
+  - Hubungi dukungan jika jembatan tertunda lebih dari 30 menit
+</Accordion>
+
+<Accordion title="Dompet tidak terhubung">
+  - Pastikan dompet Anda mendukung jaringan testnet
+  - Coba segarkan halaman dan hubungkan kembali
+  - Periksa Anda berada di jaringan yang benar di dompet Anda
+  - Bersihkan cache browser jika masalah berlanjut
+</Accordion>
+
+<Accordion title="Dana tidak cukup untuk biaya gas">
+  - Pastikan Anda memiliki cukup ETH untuk membayar biaya gas
+  - Gunakan faucet untuk mendapatkan lebih banyak ETH testnet
+  - Coba jembatani jumlah yang lebih kecil untuk menghemat gas
+</Accordion>
+</AccordionGroup>
+
+## Alur Kerja Pengembangan
+
+<Steps>
+<Step title="Dapatkan Base Sepolia ETH">
+  Gunakan faucet Base Sepolia untuk mendapatkan ETH testnet gratis.
+</Step>
+
+<Step title="Jembatani ke B3 Testnet">
+  Gunakan jembatan testnet untuk memindahkan ETH dari Base Sepolia ke B3 Testnet.
+</Step>
+
+<Step title="Terapkan dan Uji">
+  Terapkan kontrak Anda dan uji aplikasi Anda di B3 Testnet.
+</Step>
+
+<Step title="Siap untuk Mainnet">
+  Ketika pengujian selesai, terapkan ke B3 Mainnet menggunakan [jembatan mainnet](/protocol/bridge).
+</Step>
+</Steps>

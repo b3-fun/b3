@@ -1,0 +1,268 @@
+---
+title: Game Launcher
+description: >-
+  Luncurkan game secara native di dalam platform BSMNT (basement.fun) dan bangun
+  pengalaman onchain yang menarik tanpa harus khawatir tentang komponen crypto
+lang: id
+originalPath: basement/game-launcher.mdx
+---
+```html
+<iframe
+  className="w-full aspect-video rounded-xl mb-6"
+   src="https://customer-gg6qs7nm5ue94t64.cloudflarestream.com/ae9e7c0694dacb8d602309c381fce796/iframe?poster=https%3A%2F%2Fcustomer-gg6qs7nm5ue94t64.cloudflarestream.com%2Fae9e7c0694dacb8d602309c381fce796%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600"
+   title="Basement.fun Developer Dashboard"
+   frameBorder="0"
+ allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+ allowFullScreen
+ ></iframe>
+
+
+## Cara Kerjanya
+
+<Steps>
+<Step title="Load" icon="download">
+  Game Anda dimuat di dalam peluncur BSMNT. Kami mengirimkan JWT dengan token auth ke game Anda.
+  
+  ```text Contoh URL
+  https://yourgame.com?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+  ```
+</Step>
+
+<Step title="Auth" icon="key">
+  Anda dapat memuat profil pemain dengan mendekode JWT, atau dengan menggunakan API kami. Kami akan mengurus koneksi dompet, verifikasi & onboarding.
+  
+  ```json Profil Pemain
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "address": "0x1234567890abcdef1234567890abcdef12345678",
+    "username": "CryptoGamer42",
+    "avatar": "https://avatars.b3.fun/avatar.png",
+    "gameId": "game-123456-abcdef",
+    "license": "550e8400-e29b-41d4-a716-446655440000",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  }
+  ```
+</Step>
+
+<Step title="Trigger" icon="zap">
+  Biarkan pemain memainkan game Anda. Ketika sesuatu terjadi, Anda dapat memicu sebuah aksi melalui mesin aturan ala Zapier kami, atau langsung melalui API.
+  
+  ```bash Contoh API Trigger
+  curl --location 'https://api.basement.fun/launcher/' \
+  --header 'X-Service-Method: triggerRulesEngine' \
+  --data '{
+      "launcherJwt": "{{ jwt }}",
+      "trigger": "achievementUnlocked",
+      "nonce": "d1312e"
+  }'
+  ```
+</Step>
+</Steps>
+
+<CardGroup cols={2}>
+  <Card title="Daftar sebagai Pengembang" icon="user-plus" href="https://basement.fun/developer/signup" cta="Daftar">
+    Mulai membangun game dengan peluncur BSMNT
+  </Card>
+  
+  <Card title="Launcher Playground" icon="play" href="https://basement.fun/playground" cta="Coba Sekarang">
+    Uji integrasi peluncur dalam lingkungan sandbox
+  </Card>
+</CardGroup>
+
+## Apa yang dapat Anda lakukan dengan peluncur BSMNT?
+
+Kekuatan sebenarnya dari peluncur game adalah dalam abstraksi UX crypto. Game Anda dapat mengirimkan event onchain secara aman melalui REST API sederhana, yang dapat dijalankan di sisi klien.
+
+### Tersedia Sekarang
+
+<CardGroup cols={2}>
+  <Card title="Simpan state ke IPFS" icon="database">
+    Simpan state pemain pada opsi penyimpanan terdesentralisasi seperti IPFS.
+  </Card>
+  
+  <Card title="Beli NFT & Mint" icon="palette">
+    Biarkan pengguna mint NFT berdasarkan pencapaian atau pada event game tertentu.
+  </Card>
+  
+  <Card title="Leaderboards Onchain" icon="trophy">
+    Bawa peringkat pemain ke onchain, selenggarakan kontes & turnamen.
+  </Card>
+  
+  <Card title="Keluarkan Token & NFT" icon="coins">
+    Kirim ERC20 dan ERC721 & 1155 NFT berdasarkan aksi game.
+  </Card>
+  
+  <Card title="Bayar dengan Token" icon="credit-card">
+    Minta pengguna untuk mengirim atau mentransfer token untuk membayar aksi atau aset dalam game.
+  </Card>
+</CardGroup>
+
+### Segera Hadir
+
+<CardGroup cols={2}>
+  <Card title="Tukar & Perdagangkan" icon="arrows-rotate">
+    Pengguna dapat menggunakan aset dari rantai lain untuk ditukar dengan token Anda.
+    <div style={{ marginTop: '8px' }}>
+      <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>SEGERA</span>
+    </div>
+  </Card>
+  
+  <Card title="Onramp Kartu Kredit" icon="credit-card">
+    Onramp fiat ke crypto langsung untuk pengalaman pengguna yang mulus.
+    <div style={{ marginTop: '8px' }}>
+      <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>SEGERA</span>
+    </div>
+  </Card>
+  
+  <Card title="Kumpulkan Ulasan" icon="star">
+    Sistem ulasan dan penilaian bawaan untuk game.
+    <div style={{ marginTop: '8px' }}>
+      <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>SEGERA</span>
+    </div>
+  </Card>
+  
+  <Card title="Bagikan Game Anda" icon="share">
+    Mekanisme berbagi sosial dan viral.
+    <div style={{ marginTop: '8px' }}>
+      <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>SEGERA</span>
+    </div>
+  </Card>
+  
+  <Card title="Rekam Gameplay" icon="video">
+    Perekaman dan berbagi gameplay otomatis.
+    <div style={{ marginTop: '8px' }}>
+      <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>SEGERA</span>
+    </div>
+  </Card>
+  
+  <Card title="Daftar NFT" icon="store">
+    Integrasi marketplace untuk perdagangan aset game.
+    <div style={{ marginTop: '8px' }}>
+      <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>SEGERA</span>
+    </div>
+  </Card>
+</CardGroup>
+
+<Note>
+Dan lebih banyak aksi yang akan datang - masa depan terlihat cerah!
+</Note>
+
+## Memulai
+
+Kami ingin memiliki game Anda di basement.fun! Ini sederhana, gratis, dan mudah untuk mulai diintegrasikan.
+
+<Tabs>
+<Tab title="Pengembang Game">
+  <CardGroup cols={1}>
+    <Card title="Daftar sebagai Pengembang" icon="user-plus" href="https://basement.fun/developer/signup" cta="Daftar Sekarang" horizontal>
+      Daftar untuk mulai mengintegrasikan game Anda dengan peluncur BSMNT
+    </Card>
+  </CardGroup>
+  
+  <div style={{ marginTop: '16px' }}>
+    <strong>Sudah terdaftar?</strong>
+  </div>
+  
+  <CardGroup cols={2}>
+    <Card title="Game Launcher Playground" icon="play" href="https://basement.fun/playground">
+      Uji integrasi Anda dalam lingkungan sandbox
+    </Card>
+    
+    <Card title="Dokumentasi API BSMNT" icon="book" href="https://docs.basement.fun/api">
+      Dokumentasi API lengkap dan contoh
+    </Card>
+  </CardGroup>
+</Tab>
+
+<Tab title="Pemain">
+  <Card title="Lihat Peluncur BSMNT dalam Aksi" icon="gamepad-2" href="https://basement.fun/games" cta="Mainkan Game" horizontal>
+    Tidak ada vaporware di sini - mainkan Game di BSMNT hari ini!
+  </Card>
+  
+  <Note>
+  Tidak ada vaporware - mainkan hari ini!
+  </Note>
+</Tab>
+</Tabs>
+
+## Apa itu Basement.fun?
+
+Basement adalah tempat untuk menemukan & memainkan game onchain. Selain menjadi platform penemuan untuk menemukan game onchain yang hebat, Basement menawarkan cara bagi pengembang game untuk membangun pengalaman yang mulus, asli, dan terintegrasi dalam Basement.
+
+Game Anda dimuat di dalam peluncur game kami, di mana pengguna terhubung ke Basement, dan konteks pemain mereka diteruskan ke game Anda.
+
+Dari sana, Anda dapat memanfaatkan fungsi bantuan generik kami (seperti menyimpan state & skor) + memicu sejumlah UX crypto bawaan (tanpa Anda harus mengintegrasikan apa pun onchain di game Anda).
+
+## Akses Data Pemain
+
+Peluncur game menggunakan JWT (JSON Web Token) untuk mengkodekan konteks pemain yang diverifikasi & diautentikasi secara aman, yang dikirim ke game Anda.
+
+Payload dibaca dari parameter GET, sehingga setiap game web yang dihosting dapat dengan mudah mengakses & mendekodenya menggunakan sejumlah perpustakaan JWT (atau menggunakan API peluncur kami).
+
+### Data Pemain Dasar Termasuk:
+
+<AccordionGroup>
+<Accordion title="Username dan ENS">
+  Username (dan alamat ENS yang dapat diselesaikan .b3.fun yang kompatibel)
+</Accordion>
+
+<Accordion title="Avatar 3D">
+  Avatar 3D (model .GLB yang didukung oleh ReadyPlayerMe)
+</Accordion>
+
+<Accordion title="Alamat Wallet">
+  Alamat wallet yang diverifikasi untuk interaksi onchain
+</Accordion>
+
+<Accordion title="Data Tambahan">
+  Data pemain spesifik game, informasi sesi, dan lainnya - lihat Dokumentasi API Peluncur kami
+</Accordion>
+</AccordionGroup>
+
+<Tip>
+Anda dapat secara opsional menyimpan data pemain spesifik game apa pun menggunakan API state pemain kami.
+</Tip>
+
+<Card title="Jelajahi API Peluncur" icon="code" href="https://docs.basement.fun/api" cta="Lihat Dokumen" horizontal>
+  Dokumentasi lengkap untuk akses data pemain dan integrasi game
+</Card>
+
+## Abstraksi UX Terintegrasi
+
+Pengalaman peluncur game minimal kami berarti fokus tetap pada game Anda.
+
+Sejumlah kustomisasi tersedia pada peluncur game, sehingga BSMNT dapat menyediakan pengalaman hampir tidak terlihat, menangani semua tantangan UX crypto inti untuk Anda.
+
+### API Bermanfaat Tersedia:
+
+- **Simpan & ambil skor & leaderboard** - Manajemen state game persisten
+- **Kirim notifikasi** - Beritahu pemain tentang event game
+- **Log dan stream aktivitas game** - Analitik dan pelacakan perilaku pemain  
+- **Simpan state pemain dan sesi game** - Simpan kemajuan game secara otomatis
+- **Dan lebih banyak lagi yang akan datang!** - Fitur baru ditambahkan secara teratur
+
+<Card title="Jelajahi API Peluncur" icon="api" href="https://docs.basement.fun/api" cta="Lihat Dokumentasi" horizontal>
+  Referensi API lengkap untuk semua fitur peluncur yang tersedia
+</Card>
+
+## Ikhtisar Arsitektur
+
+<Frame caption="Alur Integrasi Peluncur Game">
+  <div style={{ 
+    padding: '20px', 
+    backgroundColor: '#f8fafc', 
+    border: '1px solid #e2e8f0', 
+    borderRadius: '8px',
+    textAlign: 'center',
+    fontFamily: 'monospace'
+  }}>
+    <div style={{ marginBottom: '10px', color: '#64748b' }}>Terhubung: 0x..123</div>
+    <div style={{ marginBottom: '10px', backgroundColor: '#007AFF', color: 'white', padding: '8px', borderRadius: '4px' }}>
+      www.yourgame.com
+    </div>
+    <div style={{ fontSize: '14px', color: '#475569' }}>
+      Game Anda dimuat di dalam peluncur BSMNT
+    </div>
+  </div>
+</Frame>
+```

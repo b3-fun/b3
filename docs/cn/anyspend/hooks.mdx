@@ -1,0 +1,499 @@
+---
+title: Hooks
+description: React hooks 用于构建自定义支付流程和管理订单生命周期
+lang: cn
+originalPath: anyspend/hooks.mdx
+---
+## 核心钩子
+
+### `useAnyspendQuote`
+
+获取代币交换和跨链交易的实时定价信息。
+
+```tsx title="基本用法" icon="quote-left"
+import { useAnyspendQuote } from "@b3dotfun/sdk/anyspend";
+
+const {
+  anyspendQuote,
+  isLoadingAnyspendQuote,
+  getAnyspendQuoteError,
+  refetchAnyspendQuote
+} = useAnyspendQuote(quoteRequest);
+```
+
+#### 参数
+
+<ParamField path="quoteRequest" type="QuoteRequest" required>
+  报价配置对象
+</ParamField>
+
+#### QuoteRequest 接口
+
+```typescript title="类型定义" icon="code"
+interface QuoteRequest {
+  srcChain: number;              // 源链 ID
+  dstChain: number;              // 目标链 ID
+  srcTokenAddress: string;       // 源代币合约地址
+  dstTokenAddress: string;       // 目标代币合约地址
+  type: "swap" | "custom";       // 订单类型
+  tradeType: "EXACT_INPUT" | "EXACT_OUTPUT";
+  amount: string;                // 最小单位金额（wei）
+}
+```
+
+#### 返回值
+
+<ResponseField name="anyspendQuote" type="QuoteResponse | null">
+  报价数据，包含定价和费用
+</ResponseField>
+
+<ResponseField name="isLoadingAnyspendQuote" type="boolean">
+  加载状态指示器
+</ResponseField>
+
+<ResponseField name="getAnyspendQuoteError" type="Error | null">
+  如果报价失败，则为错误对象
+</ResponseField>
+
+<ResponseField name="refetchAnyspendQuote" type="() => void">
+  手动刷新报价的函数
+</ResponseField>
+
+#### 使用示例
+
+```tsx title="交换报价组件" icon="exchange-alt" lines
+function SwapQuote() {
+  const quoteRequest = {
+    srcChain: 1,           // 以太坊
+    dstChain: 8333,        // B3
+    srcTokenAddress: "0xA0b86a33E6Fb6Dd9a9B3d8B5FEb2b3C8e7D9Ff1E", // USDC
+    dstTokenAddress: "0x0000000000000000000000000000000000000000", // ETH
+    type: "swap",
+    tradeType: "EXACT_INPUT",
+    amount: "1000000", // 1 USDC (6位小数)
+  };
+
+  const { anyspendQuote, isLoadingAnyspendQuote, getAnyspendQuoteError } =
+    useAnyspendQuote(quoteRequest);
+
+  if (isLoadingAnyspendQuote) return <div>正在获取最佳价格...</div>;
+  if (getAnyspendQuoteError) return <div>获取报价失败</div>;
+
+  return (
+    <div>
+      <p>您将收到：{anyspendQuote?.expectedOutput} ETH</p>
+      <p>网络费用：${anyspendQuote?.networkFeeUsd}</p>
+      <p>服务费用：${anyspendQuote?.serviceFeeUsd}</p>
+      <p>总成本：${anyspendQuote?.totalUsdCost}</p>
+    </div>
+  );
+}
+```
+
+---
+
+### `useAnyspendCreateOrder`
+
+创建并执行 AnySpend 订单，具有全面的错误处理。
+
+```tsx title="基本用法" icon="plus-circle"
+import { useAnyspendCreateOrder } from "@b3dotfun/sdk/anyspend";
+
+const {
+  createOrder,
+  isCreatingOrder,
+  createOrderError
+} = useAnyspendCreateOrder(options);
+```
+
+#### 参数
+
+<ParamField path="options" type="CreateOrderOptions">
+  配置对象，包含回调函数
+</ParamField>
+
+#### CreateOrderOptions 接口
+
+```typescript title="类型定义" icon="settings"
+interface CreateOrderOptions {
+  onSuccess?: (data: OrderResponse) => void;
+  onError?: (error: Error) => void;
+  onSettled?: () => void;
+}
+```
+
+#### 返回值
+
+<ResponseField name="createOrder" type="(request: CreateOrderRequest) => void">
+  创建并执行订单的函数
+</ResponseField>
+
+<ResponseField name="isCreatingOrder" type="boolean">
+  加载状态指示器
+</ResponseField>
+
+<ResponseField name="createOrderError" type="Error | null">
+  如果订单创建失败，则为错误对象
+</ResponseField>
+
+#### 使用示例
+
+```tsx title="支付表单" icon="credit-card" lines
+function PaymentForm() {
+  const { createOrder, isCreatingOrder } = useAnyspendCreateOrder({
+    onSuccess: (data) => {
+      console.log("订单创建成功：", data.data.id);
+      // 重定向到支付或显示成功信息
+      router.push(`/payment/${data.data.id}`);
+    },
+    onError: (error) => {
+      console.error("订单失败：", error.message);
+      toast.error("支付失败，请重试。");
+    },
+  });
+
+  const handlePayment = () => {
+    createOrder({
+      recipientAddress: userWalletAddress,
+      orderType: "swap",
+      srcChain: 1,
+      dstChain: 8333,
+      srcToken: {
+        chainId: 1,
+        address: "0xA0b86a33E6Fb6Dd9a9B3d8B5FEb2b3C8e7D9Ff1E",
+        name: "USD Coin",
+        symbol: "USDC",
+        decimals: 6,
+      },
+      dstToken: {
+        chainId: 8333,
+        address: "0x0000000000000000000000000000000000000000",
+        name: "Ether",
+        symbol: "ETH",
+        decimals: 18,
+      },
+      srcAmount: "1000000", // 1 USDC
+      expectedDstAmount: "500000000000000000", // 约 0.5 ETH
+      creatorAddress: userWalletAddress,
+    });
+  };
+
+  return (
+    <button
+      onClick={handlePayment}
+      disabled={isCreatingOrder}
+    >
+      {isCreatingOrder ? "处理中..." : "使用加密货币支付"}
+    </button>
+  );
+}
+```
+
+---
+
+### `useAnyspendOrderAndTransactions`
+
+实时监控订单状态并跟踪关联的区块链交易。
+
+```tsx title="基本用法" icon="search"
+import { useAnyspendOrderAndTransactions } from "@b3dotfun/sdk/anyspend";
+
+const {
+  orderAndTransactions,
+  isLoadingOrderAndTransactions,
+  getOrderAndTransactionsError
+} = useAnyspendOrderAndTransactions(orderId);
+```
+
+#### 参数
+
+<ParamField path="orderId" type="string" required>
+  要跟踪和监控的订单 ID
+</ParamField>
+
+#### 返回值
+
+<ResponseField name="orderAndTransactions" type="OrderWithTransactions | null">
+  完整的订单数据和交易详情
+</ResponseField>
+
+<ResponseField name="isLoadingOrderAndTransactions" type="boolean">
+  加载状态指示器
+</ResponseField>
+
+<ResponseField name="getOrderAndTransactionsError" type="Error | null">
+  如果获取失败，则为错误对象
+</ResponseField>
+
+#### OrderWithTransactions 接口
+
+```typescript title="类型定义" icon="database"
+interface OrderWithTransactions {
+  data: {
+    order: Order;               // 订单详情和状态
+    depositTxs: Transaction[];  // 用户存款交易
+    relayTx?: Transaction;      // 跨链中继交易
+    executeTx?: Transaction;    // 最终执行交易
+    refundTxs: Transaction[];   // 退款交易（如果有）
+  };
+}
+```
+
+#### 使用示例
+
+```tsx title="订单跟踪器" icon="eye" lines
+function OrderTracker({ orderId }: { orderId: string }) {
+  const { orderAndTransactions, isLoadingOrderAndTransactions } =
+    useAnyspendOrderAndTransactions(orderId);
+
+  if (isLoadingOrderAndTransactions) {
+    return <div>正在加载订单状态...</div>;
+  }
+
+  if (!orderAndTransactions) {
+    return <div>订单未找到</div>;
+  }
+
+  const { order, depositTxs, executeTx, refundTxs } = orderAndTransactions.data;
+
+  const getStatusMessage = (status: string) => {
+    switch (status) {
+      case "scanning_deposit_transaction":
+        return "⏳ 等待支付确认...";
+      case "relay":
+        return "🔄 处理跨链交易...";
+      case "executed":
+        return "✅ 交易成功完成！";
+      case "refunded":
+        return "↩️ 已处理退款";
+      default:
+        return "🔄 处理中...";
+    }
+  };
+
+  return (
+    <div className="order-status">
+      <h2>订单 #{orderId.slice(0, 8)}</h2>
+      <p>{getStatusMessage(order.status)}</p>
+
+      {depositTxs.length > 0 && (
+        <div>
+          <h3>支付交易</h3>
+          <a
+            href={`https://etherscan.io/tx/${depositTxs[0].txHash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            在 Etherscan 上查看
+          </a>
+        </div>
+      )}
+
+      {executeTx && (
+        <div>
+          <h3>执行交易</h3>
+          <a
+            href={`https://explorer.b3.fun/tx/${executeTx.txHash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            在 B3 浏览器上查看
+          </a>
+        </div>
+      )}
+
+      {order.errorDetails && (
+        <div className="error">
+          <strong>错误：</strong> {order.errorDetails}
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+---
+
+### `useAnyspendOrderHistory`
+
+检索用户地址的分页订单历史记录。
+
+```tsx title="基本用法" icon="history"
+import { useAnyspendOrderHistory } from "@b3dotfun/sdk/anyspend";
+
+const {
+  orderHistory,
+  isLoadingOrderHistory,
+  getOrderHistoryError
+} = useAnyspendOrderHistory(creatorAddress, limit, offset);
+```
+
+#### 参数
+
+<ParamField path="creatorAddress" type="string" required>
+  用户钱包地址
+</ParamField>
+
+<ParamField path="limit" type="number" required>
+  要获取的订单数量（最大 100）
+</ParamField>
+
+<ParamField path="offset" type="number" required>
+  分页偏移量
+</ParamField>
+
+#### 使用示例
+
+```tsx title="订单历史组件" icon="list" lines
+function OrderHistory({ userAddress }: { userAddress: string }) {
+  const [page, setPage] = useState(0);
+  const pageSize = 10;
+
+  const { orderHistory, isLoadingOrderHistory } = useAnyspendOrderHistory(
+    userAddress,
+    pageSize,
+    page * pageSize
+  );
+
+  if (isLoadingOrderHistory) {
+    return <div>正在加载订单历史...</div>;
+  }
+
+  return (
+    <div>
+      <h2>您的订单</h2>
+      {orderHistory?.data.map((order) => (
+        <div key={order.id} className="order-item">
+          <p>类型：{order.type}</p>
+          <p>状态：{order.status}</p>
+          <p>金额：{order.srcAmount} {order.srcToken.symbol}</p>
+          <p>日期：{new Date(order.createdAt).toLocaleDateString()}</p>
+        </div>
+      ))}
+
+      <button
+        onClick={() => setPage(page - 1)}
+        disabled={page === 0}
+      >
+        上一页
+      </button>
+      <button
+        onClick={() => setPage(page + 1)}
+        disabled={!orderHistory?.data || orderHistory.data.length < pageSize}
+      >
+        下一页
+      </button>
+    </div>
+  );
+}
+```
+
+## 额外的钩子
+
+### `useAnyspendTokens`
+
+获取特定链上可用的代币。
+
+```tsx title="代币列表" icon="coins"
+const { tokens, isLoadingTokens } = useAnyspendTokens(1, "USDC");
+```
+
+### `useCoinbaseOnrampOptions`
+
+获取 Coinbase 上行配置以进行法币支付。
+
+```tsx title="Coinbase 上行" icon="credit-card"
+const { coinbaseOptions, isLoadingCoinbaseOptions } = useCoinbaseOnrampOptions();
+```
+
+### `useStripeClientSecret`
+
+获取 Stripe 支付意图以进行信用卡支付。
+
+```tsx title="Stripe 集成" icon="stripe"
+const { clientSecret, isLoadingClientSecret } = useStripeClientSecret(orderData);
+```
+
+## 钩子模式
+
+### 错误处理模式
+
+```tsx title="错误处理" icon="shield-exclamation" lines
+function PaymentComponent() {
+  const { createOrder, isCreatingOrder } = useAnyspendCreateOrder({
+    onError: (error) => {
+      // 记录错误以便调试
+      console.error("支付失败：", error);
+
+      // 显示用户友好的消息
+      switch (error.message) {
+        case "INSUFFICIENT_BALANCE":
+          toast.error("余额不足，请添加资金。");
+          break;
+        case "SLIPPAGE":
+          toast.error("价格不利地移动，请重试。");
+          break;
+        default:
+          toast.error("支付失败，请重试。");
+      }
+    },
+  });
+
+  // 组件实现...
+}
+```
+
+### 加载状态模式
+
+```tsx title="加载状态" icon="spinner" lines
+function SwapInterface() {
+  const { anyspendQuote, isLoadingAnyspendQuote } = useAnyspendQuote(quoteRequest);
+  const { createOrder, isCreatingOrder } = useAnyspendCreateOrder();
+
+  const isLoading = isLoadingAnyspendQuote || isCreatingOrder;
+
+  return (
+    <div>
+      {isLoading && <LoadingSpinner />}
+      {/* 组件的其余部分 */}
+    </div>
+  );
+}
+```
+
+### 实时更新模式
+
+```tsx title="实时更新" icon="sync-alt" lines
+function OrderStatus({ orderId }: { orderId: string }) {
+  const { orderAndTransactions } = useAnyspendOrderAndTransactions(orderId);
+
+  // 每 5 秒自动刷新待处理的订单
+  useEffect(() => {
+    if (orderAndTransactions?.data.order.status === "relay") {
+      const interval = setInterval(() => {
+        // 钩子会自动处理重新获取
+      }, 5000);
+
+      return () => clearInterval(interval);
+    }
+  }, [orderAndTransactions?.data.order.status]);
+
+  // 组件实现...
+}
+```
+
+## 下一步
+
+<CardGroup cols={3}>
+<Card title="查看示例" icon="code" href="/anyspend/examples">
+  浏览真实世界的实现示例
+</Card>
+
+<Card title="错误处理" icon="bug" href="/anyspend/error-handling">
+  学习全面的错误处理策略
+</Card>
+
+<Card title="组件参考" icon="puzzle-piece" href="/anyspend/components">
+  探索预构建组件
+</Card>
+</CardGroup>

@@ -1,0 +1,26 @@
+---
+title: 估算迁移价格
+description: 估算迁移价格以及初始化 Uniswap v4 的考虑因素。
+lang: cn
+originalPath: bondkit/guides/est-migration-price.mdx
+---
+## 概述
+
+迁移初始化一个 Uniswap v4 池。合约从债券状态计算 `sqrtPriceX96`。
+
+## 实用方法
+
+- 使用债券读取来近似目标附近的价格：
+- `getCurrentBondingCurvePricePerToken()`
+- `getBondingProgress()`
+
+## 考虑因素
+
+- 最终分割和流动性金额可以影响初始ticks。
+- 添加流动性时应用滑点保护。
+- 对于 ERC20 报价资产，确保在转换为 `sqrtPriceX96` 时考虑到对和小数位。
+
+<Note>
+确切的初始化数学运算在链上处理。使用读取操作进行 UI 估算；将最终的链上初始化视为真理来源。
+</Note>
+

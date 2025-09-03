@@ -1,0 +1,287 @@
+---
+lang: cn
+originalPath: snippets/brand-components.mdx
+---
+```cn
+export const B3ColorPalette = () => (
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+      gap: "1rem",
+      margin: "2rem 0",
+    }}
+  >
+    <div style={{ textAlign: "center" }}>
+      <div
+        style={{
+          backgroundColor: "#007AFF",
+          height: "80px",
+          borderRadius: "8px",
+          border: "1px solid #e5e7eb",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "white",
+          fontWeight: "bold",
+        }}
+      >
+        主色
+      </div>
+      <h4 style={{ margin: "0.5rem 0" }}>主色蓝</h4>
+      <code style={{ fontSize: "0.875rem" }}>{"#007AFF"}</code>
+    </div>
+
+    <div style={{ textAlign: "center" }}>
+      <div
+        style={{
+          backgroundColor: "#6B7280",
+          height: "80px",
+          borderRadius: "8px",
+          border: "1px solid #e5e7eb",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "white",
+          fontWeight: "bold",
+        }}
+      >
+        灰色
+      </div>
+      <h4 style={{ margin: "0.5rem 0" }}>灰色</h4>
+      <code style={{ fontSize: "0.875rem" }}>{"#6B7280"}</code>
+    </div>
+
+    <div style={{ textAlign: "center" }}>
+      <div
+        style={{
+          backgroundColor: "#FFFFFF",
+          height: "80px",
+          borderRadius: "8px",
+          border: "2px solid #e5e7eb",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "black",
+          fontWeight: "bold",
+        }}
+      >
+        白色
+      </div>
+      <h4 style={{ margin: "0.5rem 0" }}>白色</h4>
+      <code style={{ fontSize: "0.875rem" }}>{"#FFFFFF"}</code>
+    </div>
+  </div>
+);
+
+export const B3FontShowcase = () => (
+  <div style={{ margin: "2rem 0" }}>
+    <div style={{ marginBottom: "2rem" }}>
+      <h3>Neue Montreal Family</h3>
+      {[
+        "Neue Montreal Bold",
+        "Neue Montreal Regular",
+        "Neue Montreal Book",
+        "Neue Montreal Medium",
+        "Neue Montreal Semibold"
+      ].map(font => (
+          <div
+            key={font}
+            style={{
+              fontFamily: `"${font}", sans-serif`,
+              fontSize: "18px",
+              margin: "1rem 0",
+              padding: "0.5rem",
+              border: "1px solid #e5e7eb",
+              borderRadius: "4px",
+            }}
+          >
+            <strong>{font}:</strong> The quick brown fox jumps over the lazy dog
+          </div>
+        ))}
+    </div>
+
+    <div style={{ marginBottom: "2rem" }}>
+      <h3>Calibre Family</h3>
+      {[
+        "Calibre Bold",
+        "Calibre Heavy"
+      ].map(font => (
+          <div
+            key={font}
+            style={{
+              fontFamily: `"${font}", sans-serif`,
+              fontSize: "18px",
+              margin: "1rem 0",
+              padding: "0.5rem",
+              border: "1px solid #e5e7eb",
+              borderRadius: "4px",
+            }}
+          >
+            <strong>{font}:</strong> Gaming is the future of onchain experiences
+          </div>
+        ))}
+    </div>
+  </div>
+);
+
+export const B3BrandValues = () => (
+  <div
+    style={{
+      textAlign: "center",
+      margin: "2rem 0",
+      padding: "2rem",
+      backgroundColor: "#f8fafc",
+      borderRadius: "8px",
+      fontWeight: "bold",
+      letterSpacing: "2px",
+      fontSize: "1.1rem",
+    }}
+  >
+    ✦ 社区驱动 ✦ 乐趣 ✦ 生态系统一致 ✦
+  </div>
+);
+
+export const LogoShowcase = ({ variant = "blue", size = 120 }) => {
+  const logoSrc =
+    variant === "blue"
+      ? "/logo/light.svg"
+      : variant === "white"
+        ? "/logo/white.svg"
+        : "/logo/black.svg";
+
+  const containerStyle =
+    variant === "white"
+      ? { backgroundColor: "#000", padding: "2rem", borderRadius: "8px", textAlign: "center" }
+      : { padding: "2rem", borderRadius: "8px", textAlign: "center", border: "1px solid #e5e7eb" };
+
+  return (
+    <div style={containerStyle}>
+      <img
+        src={logoSrc || "/logo/light.svg"}
+        alt="B3 Logo"
+        style={{ maxWidth: `${size}px`, height: "auto" }}
+      />
+    </div>
+  );
+};
+
+export const QuickBrandGuide = () => (
+  <div
+    style={{
+      padding: "1.5rem",
+      backgroundColor: "#f0f9ff",
+      borderRadius: "8px",
+      border: "1px solid #0ea5e9",
+      margin: "1rem 0",
+    }}
+  >
+    <h4 style={{ margin: "0 0 1rem 0", color: "#0369a1" }}>快速品牌实施指南</h4>
+    <ul style={{ margin: 0, paddingLeft: "1.5rem" }}>
+      <li>
+        <strong>颜色：</strong> 使用 {"#007AFF"} 作为主色，搭配活泼的点缀色
+      </li>
+      <li>
+        <strong>字体：</strong> 导入 {"https://cdn.b3.fun/fonts.css"}
+      </li>
+      <li>
+        <strong>标志：</strong> 保持四周0.5x高度的清晰空间
+      </li>
+      <li>
+        <strong>语调：</strong> 保持趣味性、社区驱动和专注于游戏
+      </li>
+    </ul>
+  </div>
+);
+
+export const BrandCodeExample = ({ language = "css" }) => {
+  const examples = {
+    css: `/* B3 Brand Implementation */
+@import url("${"https://cdn.b3.fun/fonts.css"}");
+
+:root {
+--b3-primary: ${"#007AFF"};
+--b3-grey: ${"#6B7280"};
+--b3-white: ${"#FFFFFF"};
+}
+
+body {
+font-family: ${"\"Neue Montreal Medium\", sans-serif"};
+}
+
+.b3-button {
+background-color: var(--b3-primary);
+color: var(--b3-white);
+font-family: ${"\"Calibre Bold\", sans-serif"};
+border-radius: 8px;
+padding: 0.75rem 1.5rem;
+border: none;
+cursor: pointer;
+transition: transform 0.2s ease;
+}
+
+.b3-button:hover {
+transform: scale(1.05);
+}`,
+
+    react: `import { branding } from '/snippets/variables';
+
+function B3Button({ children, onClick }) {
+return (
+<button
+onClick={onClick}
+style={{
+        backgroundColor: "#007AFF",
+        color: "#FFFFFF",
+        fontFamily: "\"Calibre Bold\", sans-serif",
+        borderRadius: '8px',
+        padding: '0.75rem 1.5rem',
+        border: 'none',
+        cursor: 'pointer',
+        transition: 'transform 0.2s ease'
+      }}
+onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
+onMouseLeave={(e) => e.target.style.transform = 'scale(1)'} >
+{children}
+</button>
+);
+}`,
+
+    tailwind: `// tailwind.config.js
+
+module.exports = {
+theme: {
+extend: {
+colors: {
+'b3-blue': '${"#007AFF"}',
+        'b3-grey': '${"#6B7280"}',
+},
+fontFamily: {
+'b3-primary': ['Neue Montreal Medium', 'sans-serif'],
+'b3-secondary': ['Calibre Bold', 'sans-serif'],
+}
+}
+}
+}
+
+<!-- Usage -->
+
+<button class="bg-b3-blue font-b3-secondary rounded-lg px-6 py-3 text-white transition-transform hover:scale-105">
+  游戏开始!
+</button>
+` }; return (
+<pre
+  style={{
+    backgroundColor: "#1e293b",
+    color: "#f1f5f9",
+    padding: "1rem",
+    borderRadius: "8px",
+    overflow: "auto",
+    fontSize: "0.875rem",
+    lineHeight: "1.5",
+  }}
+>
+  <code>{examples[language] || examples.css}</code>
+</pre>
+); };
+```

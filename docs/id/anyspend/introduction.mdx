@@ -1,0 +1,147 @@
+---
+title: Pengenalan AnySpend
+description: >-
+  Pembayaran kripto lintas rantai dibuat mudah - tukar token, beli NFT, dan
+  integrasikan onramp fiat
+lang: id
+originalPath: anyspend/introduction.mdx
+---
+<img src="/images/anyspend-example-banner.jpg" alt="AnySpend Banner" className="w-full rounded-xl" />
+
+## Apa itu AnySpend?
+
+AnySpend adalah infrastruktur pembayaran komprehensif B3 yang memungkinkan transaksi kripto yang mulus lintas berbagai blockchain. Baik Anda sedang membangun aplikasi DeFi, pasar NFT, atau platform game, AnySpend menyediakan komponen dan API yang Anda butuhkan untuk menerima pembayaran dalam token apa pun.
+
+[Coba AnySpend di browser Anda](https://anyspend.com/swap)
+
+## Kasus Penggunaan
+
+<CardGroup cols={2}>
+<Card href="/anyspend/examples">
+  <img src="/images/customize-for-swap.png" className="w-full h-48 object-cover rounded-xl mb-4" />
+  <h3 className="text-lg font-semibold text-primary block mb-1">Cross-Chain Swaps</h3>
+  Memungkinkan pengguna untuk menukar token antar berbagai blockchain dengan routing otomatis dan penemuan harga terbaik.
+</Card>
+
+<Card href="/anyspend/examples">
+  <img src="/images/customize-for-checkout.png" className="w-full h-48 object-cover rounded-xl mb-4" />
+  <h3 className="text-lg font-semibold text-primary block mb-1">Checkout</h3>
+  Tombol checkout satu klik yang menerima pembayaran dalam token apa pun, dengan konversi otomatis.
+</Card>
+
+<Card href="/anyspend/examples">
+  <img src="/images/customize-for-defi.png" className="w-full h-48 object-cover rounded-xl mb-4" />
+  <h3 className="text-lg font-semibold text-primary block mb-1">DeFi</h3>
+  Melaksanakan panggilan kontrak onchain apa pun, dengan penggunaan untuk staking, pasar prediksi, kurva obligasi, dan lainnya.
+</Card>
+
+<Card href="/anyspend/examples">
+  <img src="/images/customize-for-games.png" className="w-full h-48 object-cover rounded-xl mb-4" />
+  <h3 className="text-lg font-semibold text-primary block mb-1">Games</h3>
+  Dapat diintegrasikan di iOS/Android asli, Unity, & permukaan lainnya.
+</Card>
+</CardGroup>
+
+## Fitur
+
+<Steps>
+<Step title="Pengguna Memulai Pembayaran">
+Pengguna mengklik tombol pembayaran atau berinteraksi dengan antarmuka Anda, memilih token yang mereka inginkan
+</Step>
+
+<Step title="AnySpend Memberikan Kutipan">
+Mesin routing kami menemukan jalur terbaik untuk mengonversi token mereka ke token tujuan yang dibutuhkan
+</Step>
+
+<Step title="Eksekusi Cross-Chain">
+Jika diperlukan, token dijembatani lintas chain menggunakan infrastruktur yang aman dan teruji
+</Step>
+
+<Step title="Pengiriman Akhir">
+Token tiba di alamat tujuan, mengeksekusi logika kustom apa pun, dan memicu callback sukses Anda
+</Step>
+</Steps>
+
+## Kasus Penggunaan
+<img src="/images/anyspend-onramp-anyone.png" alt="AnySpend Banner" className="w-full rounded-xl" />
+
+<AccordionGroup>
+<Accordion title="Aplikasi DeFi">
+Memungkinkan pertukaran token, menyediakan likuiditas, dan memfasilitasi farming hasil lintas berbagai chain dengan routing otomatis dan tarif kompetitif.
+</Accordion>
+
+<Accordion title="Pasar NFT">
+Memungkinkan pengguna membeli NFT dengan token apa pun yang mereka miliki, menghilangkan hambatan dan meningkatkan tingkat konversi dengan mendukung metode pembayaran yang mereka inginkan.
+</Accordion>
+
+<Accordion title="Platform Game">
+Menerima pembayaran untuk aset dalam game, entri turnamen, dan fitur premium menggunakan cryptocurrency atau metode pembayaran fiat apa pun.
+</Accordion>
+
+<Accordion title="E-commerce">
+Mengintegrasikan pembayaran kripto ke dalam platform e-commerce tradisional dengan konversi dan penyelesaian fiat otomatis.
+</Accordion>
+
+<Accordion title="Layanan Berlangganan">
+Menerima pembayaran berulang dalam kripto dengan konversi otomatis ke mata uang penyelesaian pilihan Anda.
+</Accordion>
+</AccordionGroup>
+
+## Mulai Cepat
+
+Mulai dengan AnySpend hanya dalam beberapa langkah:
+
+```tsx
+import { AnySpend, AnyspendProvider } from "@b3dotfun/sdk/anyspend/react";
+import { B3Provider } from "@b3dotfun/sdk/global-account/react";
+
+import "@b3dotfun/sdk/index.css";
+
+function App() {
+  return (
+    <B3Provider theme="light" environment="production">
+      <AnyspendProvider>
+        <AnySpend />
+      </AnyspendProvider>
+    </B3Provider>
+  );
+}
+
+export default App
+```
+
+## Apa Selanjutnya?
+
+<CardGroup cols={3}>
+<Card title="Instalasi" icon="download" href="/anyspend/installation">
+  Siapkan AnySpend di proyek Anda dengan npm, yarn, atau pnpm
+</Card>
+
+<Card title="Komponen" icon="puzzle-piece" href="/anyspend/components">
+  Jelajahi komponen yang sudah dibuat untuk skenario pembayaran umum
+</Card>
+
+<Card title="Contoh" icon="code" href="/anyspend/examples">
+  Lihat contoh implementasi dunia nyata dan praktik terbaik
+</Card>
+</CardGroup>
+
+## Mendapatkan Bantuan
+
+- **Discord**: Bergabung dengan [komunitas Discord](https://discord.gg/b3dotfun) kami untuk mendapatkan dukungan
+- **Dokumentasi**: Panduan komprehensif dan referensi API
+- **Contoh**: Sampel kode dan integrasi yang siap digunakan
+
+<div className="flex flex-row gap-4">
+<div className="flex-1">
+<a href="https://x.com/anyspend" target="_blank">
+  <img src="/images/follow-updates-on-x.png" className="w-full h-full object-cover rounded-xl mb-4" />
+</a>
+</div>
+
+<div className="flex-1">
+  <a href="/anyspend/installation">
+    <img src="/images/anyspend-getting-started.png" className="w-full h-full object-cover rounded-xl mb-4" />
+  </a>
+</div>
+</div>

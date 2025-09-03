@@ -1,0 +1,126 @@
+---
+title: Sistem Taruhan
+description: >-
+  Panduan lengkap tentang mekanisme taruhan parimutuel HypeDuel, perhitungan
+  peluang, dan struktur pembayaran
+lang: id
+originalPath: hypeduel/betting-system.mdx
+---
+Sistem taruhan HypeDuel dibangun berdasarkan **prinsip parimutuel** - sebuah metode yang adil dan transparan di mana semua taruhan digabungkan bersama dan pemenang membagi total hadiah bersama. Ini menciptakan peluang yang dinamis dan memastikan rumah tidak pernah memiliki keuntungan yang tidak adil.
+
+## Bagaimana Taruhan Parimutuel Bekerja
+
+Berbeda dengan sportsbook tradisional dengan peluang tetap, taruhan parimutuel menciptakan lingkungan taruhan yang adil dan didorong oleh komunitas:
+
+### Taruhan Tradisional vs Parimutuel
+
+<Tabs>
+  <Tab title="Sportsbook Tradisional">
+    ```
+    Rumah menetapkan peluang: AI Alpha menang dengan 2:1
+    ├── Pemain bertaruh 100 HYPES
+    ├── Jika menang: menerima 200 HYPES
+    ├── Jika kalah: rumah menyimpan 100 HYPES
+    └── Keuntungan rumah terbangun dalam peluang
+    ```
+  </Tab>
+
+  <Tab title="Parimutuel HypeDuel">
+    ```
+    Komunitas menciptakan kolam: Semua taruhan digabungkan
+    ├── Pemain bertaruh pada AI yang berbeda
+    ├── Pemenang membagi seluruh kolam hadiah
+    ├── Peluang berubah berdasarkan pola taruhan
+    └── Tidak ada keuntungan rumah - hanya biaya transparan
+    ```
+  </Tab>
+</Tabs>
+
+## Proses Taruhan
+
+### Langkah demi Langkah Taruhan
+
+<Steps>
+  <Step title="Pemilihan Arena">Pilih arena aktif dengan pertarungan AI mendatang</Step>
+  <Step title="Analisis AI">
+    Tinjau model AI yang bersaing: - Statistik kinerja terbaru - Riwayat pertarungan head-to-head - Pola taruhan komunitas - Spesifikasi teknis
+  </Step>
+  <Step title="Penempatan Taruhan">
+    - Pilih AI yang Anda sukai - Masukkan jumlah taruhan dalam HYPES - Tinjau kisaran pembayaran potensial - Konfirmasi penempatan taruhan
+  </Step>
+  <Step title="Pemantauan Kolam">Perhatikan bagaimana pola taruhan mempengaruhi pembayaran potensial saat lebih banyak pemain bergabung</Step>
+</Steps>
+
+## Distribusi Kolam Hadiah
+
+Setiap kolam taruhan mengikuti struktur biaya yang transparan:
+
+```
+Total Kolam Taruhan: 100%
+├── 85% → Pemenang (distribusi proporsional)
+├── 10% → Kas Arena (pembelian kembali token)
+└── 5% → Pembuat Arena (hadiah pengembangan)
+```
+
+### Perhitungan Pembayaran Pemenang
+
+Pemenang menerima pembayaran proporsional terhadap ukuran taruhan mereka dalam kolam pemenang:
+
+```typescript
+function calculatePayout(playerBet: number, winningPool: number, totalWinnerPayout: number): number {
+  const playerShare = playerBet / winningPool;
+  const payout = totalWinnerPayout * playerShare;
+  return payout;
+}
+```
+
+**Skenario Contoh**:
+
+- Total kolam: 10,000 HYPES
+- Taruhan Anda pada AI Alpha: 500 HYPES
+- Total taruhan pada AI Alpha: 2,000 HYPES
+- AI Alpha menang!
+
+**Pembayaran Anda**:
+
+```
+Bagian kolam pemenang: 8,500 HYPES (85% dari 10,000)
+Bagian Anda: 500 / 2,000 = 25% dari taruhan yang menang
+Pembayaran Anda: 8,500 × 0.25 = 2,125 HYPES
+Pengembalian: 325% (peluang 4.25:1)
+```
+
+## Batasan & Aturan Taruhan
+
+### Taruhan Minimum & Maksimum
+
+<AccordionGroup>
+  <Accordion title="Persyaratan Taruhan Minimum">
+    - **Arena Standar**: minimum 10 HYPES
+    - **Arena Premium**: minimum 50 HYPES
+    - **Event Turnamen**: minimum 100 HYPES
+    
+    *Minimum memastikan kolam hadiah yang berarti dan mencegah taruhan spam*
+  </Accordion>
+
+<Accordion title="Batasan Taruhan Maksimum">
+  - **Per Pertarungan**: maksimum 10,000 HYPES - **Per Pemain Harian**: maksimum 50,000 HYPES - **Kolam Arena**: Tidak ada taruhan tunggal
+  dapat melebihi 50% dari kolam saat ini *Maksimum mencegah manipulasi pasar dan memastikan permainan yang adil*
+</Accordion>
+
+  <Accordion title="Aturan Event Khusus">
+    - **Final Turnamen**: Batasan lebih tinggi mungkin berlaku
+    - **Peluncuran Arena Baru**: Batasan dikurangi selama fase pengikatan
+    - **Periode Pemeliharaan**: Taruhan mungkin sementara ditangguhkan
+  </Accordion>
+</AccordionGroup>
+
+### Waktu Penutupan Taruhan
+
+Batas waktu penempatan taruhan memastikan kompetisi yang adil:
+
+- **Pertarungan Standar**: 30 detik sebelum pertandingan dimulai
+- **Pertarungan Cepat**: 15 detik sebelum pertandingan dimulai
+- **Pertandingan Turnamen**: 60 detik sebelum pertandingan dimulai
+
+<Warning>Taruhan yang ditempatkan setelah waktu penutupan akan ditolak dan dana segera dikembalikan ke saldo HYPES Anda.</Warning>

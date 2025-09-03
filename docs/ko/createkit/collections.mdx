@@ -1,0 +1,464 @@
+---
+title: 컬렉션 관리
+description: CreateKit을 사용한 NFT 컬렉션 생성 및 관리 완벽 가이드
+lang: ko
+originalPath: createkit/collections.mdx
+---
+## 개요
+
+컬렉션 관리는 CreateKit의 핵심입니다. 이 가이드는 BaseMint 프로토콜을 사용하여 NFT 컬렉션을 생성, 구성 및 관리하는 방법에 대해 알아야 할 모든 것을 다룹니다.
+
+## 컬렉션 메타데이터 구조
+
+모든 컬렉션에는 그 특성을 정의하는 특정 메타데이터가 필요합니다:
+
+### 필수 매개변수
+
+<ParamField path="name" type="string">
+  NFT 컬렉션의 이름 (예: "Bored Ape Yacht Club")
+</ParamField>
+
+<ParamField path="symbol" type="string">
+  컬렉션의 심볼/티커 (예: "BAYC")
+</ParamField>
+
+<ParamField path="creator" type="0x${string}">
+  컬렉션 생성자의 이더리움 주소
+</ParamField>
+
+<ParamField path="gameOwner" type="0x${string}">
+  게임 소유자의 이더리움 주소 (생성자와 동일할 수 있음)
+</ParamField>
+
+### 선택 매개변수
+
+<ParamField path="maxSupply" type="bigint" default="10000n">
+  총 발행 가능한 토큰 수
+</ParamField>
+
+<ParamField path="mintPrice" type="bigint" default="0n">
+  토큰당 가격(wei 단위) (ETH 값에는 parseEther() 사용)
+</ParamField>
+
+<ParamField path="maxPerWallet" type="bigint" default="100n">
+  지갑당 최대 발행 가능한 토큰 수
+</ParamField>
+
+<ParamField path="isWhitelistEnabled" type="boolean" default="false">
+  화이트리스트만 발행 가능한지 여부
+</ParamField>
+
+<ParamField path="startTime" type="bigint" default="0n">
+  발행 시작 시간 (Unix 타임스탬프) (0 = 즉시)
+</ParamField>
+
+<ParamField path="endTime" type="bigint" default="BigInt(Date.now() / 1000 + 86400 * 365 * 100)">
+  발행 종료 시간 (Unix 타임스탬프)
+</ParamField>
+
+<ParamField path="tokenStandard" type="'ERC721' | 'ERC1155'" default="'ERC721'">
+  사용할 토큰 표준
+</ParamField>
+
+<ParamField path="chainId" type="number" default="1993">
+  체인 ID (1993 = B3 테스트넷, 8333 = B3 메인넷)
+</ParamField>
+
+## 컬렉션 생성
+
+### 기본 컬렉션
+
+```typescript title="Basic Collection Creation"
+import { CollectionManager, b3Testnet } from '@b3dotfun/basemint'
+import { createPublicClient, createWalletClient, http } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+
+const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`)
+const publicClient = createPublicClient({
+  chain: b3Testnet,
+  transport: http()
+})
+
+const walletClient = createWalletClient({
+  chain: b3Testnet,
+  transport: http(),
+  account
+})
+
+const collectionManager = new CollectionManager(publicClient)
+
+// 기본 컬렉션 정의
+const basicCollection = {
+  name: "My Art Collection",
+  symbol: "MAC",
+  creator: account.address,
+  gameOwner: account.address,
+  description: "디지털 아트 작품 컬렉션",
+  image: "https://example.com/collection-image.png"
+}
+
+// 생성자 서명 생성
+const creatorSignature = await collectionManager.generateCreatorSignature(
+  walletClient,
+  basicCollection
+)
+```
+
+### 고급 컬렉션 설정
+
+```typescript title="Advanced Collection Setup"
+import { parseEther } from 'viem'
+
+const advancedCollection = {
+  // 필수
+  name: "Premium Gaming Items",
+  symbol: "PGI",
+  creator: account.address,
+  gameOwner: "0x1234567890123456789012345678901234567890", // 다른 게임 소유자
+  
+  // 공급 및 가격 설정
+  maxSupply: 5000n,
+  mintPrice: parseEther("0.01"), // 0.01 ETH
+  maxPerWallet: 5n,
+  
+  // 시간 제어
+  startTime: BigInt(Math.floor(Date.now() / 1000) + 3600), // 1시간 후 시작
+  endTime: BigInt(Math.floor(Date.now() / 1000) + 86400 * 7), // 7일 후 종료
+  
+  // 화이트리스트 설정
+  isWhitelistEnabled: true,
+  whitelistMerkleRoot: "0x..." as `0x${string}`,
+  
+  // 메타데이터
+  description: "프리미엄 플레이어를 위한 독점 게임 아이템",
+  image: "https://example.com/premium-collection.png",
+  external_url: "https://mygame.com/premium-items",
+  animation_url: "https://example.com/collection-animation.mp4",
+  
+  // 컬렉션 속성
+  attributes: [
+    { trait_type: "Category", value: "Gaming" },
+    { trait_type: "Rarity", value: "Premium" },
+    { trait_type: "Edition", value: "First" }
+  ],
+  
+  // 기술적
+  tokenStandard: "ERC1155" as const,
+  chainId: 1993
+}
+```
+
+## 토큰 표준
+
+CreateKit은 ERC721 및 ERC1155 표준을 모두 지원합니다:
+
+<Tabs>
+<Tab title="ERC721 컬렉션">
+```typescript
+const erc721Collection = {
+  name: "Unique Art Pieces",
+  symbol: "UAP",
+  creator: account.address,
+  gameOwner: account.address,
+  tokenStandard: "ERC721" as const,
+  maxSupply: 1000n, // 각 토큰은 고유함
+  description: "독특한 디지털 아트 작품"
+}
+
+// ERC721 발행 (수량은 항상 1)
+const collection721 = collectionManager.createCollection(
+  predictedAddress,
+  "ERC721"
+)
+
+await collection721.mint(
+  walletClient,
+  1n, // ERC721의 경우 항상 1
+  undefined, // 메타데이터 URI
+  mintPrice,
+  proof
+)
+```
+</Tab>
+
+<Tab title="ERC1155 컬렉션">
+```typescript
+const erc1155Collection = {
+  name: "Game Resources",
+  symbol: "GRS",
+  creator: account.address,
+  gameOwner: account.address,
+  tokenStandard: "ERC1155" as const,
+  maxSupply: 100000n, // 모든 토큰 유형에 걸쳐 총계
+  description: "대체 가능 및 반대체 가능한 게임 자원"
+}
+
+// ERC1155 발행 (여러 개 발행 가능)
+const collection1155 = collectionManager.createCollection(
+  predictedAddress,
+  "ERC1155"
+)
+
+await collection1155.mint(
+  walletClient,
+  10n, // 여러 토큰 발행 가능
+  "https://example.com/token/1", // 특정 토큰 메타데이터
+  mintPrice,
+  proof
+)
+```
+</Tab>
+</Tabs>
+
+## 메타데이터 관리
+
+### 컬렉션 수준 메타데이터
+
+```typescript title="Collection Metadata"
+const collectionMetadata = {
+  name: "My Collection",
+  description: "디지털 자산의 환상적인 컬렉션",
+  image: "https://example.com/collection-image.png",
+  external_url: "https://mywebsite.com/collection",
+  
+  // 마켓플레이스를 위한 배경 및 배너
+  background_color: "ffffff",
+  banner_image_url: "https://example.com/banner.png",
+  
+  // 컬렉션 속성
+  attributes: [
+    { trait_type: "Theme", value: "Fantasy" },
+    { trait_type: "Artist", value: "Digital Creator" }
+  ]
+}
+```
+
+### 토큰 수준 메타데이터
+
+CreateKit은 컬렉션 설정을 기반으로 자동으로 토큰 메타데이터를 생성합니다:
+
+<Tabs>
+<Tab title="자동 생성된 메타데이터">
+```typescript
+import { NFTMetadataManager, MediaType } from '@b3dotfun/basemint'
+
+// 다양한 미디어 유형에 대한 메타데이터 생성
+const artworkMetadata = NFTMetadataManager.generateNFTMetadata(
+  collectionMetadata,
+  MediaType.ARTWORK
+)
+
+const model3dMetadata = NFTMetadataManager.generateNFTMetadata(
+  collectionMetadata,
+  MediaType.MODEL_3D
+)
+
+const videoMetadata = NFTMetadataManager.generateNFTMetadata(
+  collectionMetadata,
+  MediaType.VIDEO
+)
+
+// JSON으로 변환
+const metadataJson = NFTMetadataManager.generateJSON(artworkMetadata)
+console.log(metadataJson)
+```
+</Tab>
+
+<Tab title="사용자 정의 메타데이터">
+```typescript
+// 사용자 정의 메타데이터의 경우, 자체 baseURI 제공
+const customCollection = {
+  name: "Custom Metadata Collection",
+  symbol: "CMC",
+  creator: account.address,
+  gameOwner: account.address,
+  baseURI: "https://myapi.com/metadata/", // 사용자 정의 메타데이터 엔드포인트
+  description: "사용자 정의 메타데이터가 있는 컬렉션"
+}
+
+// 귀하의 API는 다음에 응답해야 합니다: https://myapi.com/metadata/{tokenId}
+// 표준 OpenSea 메타데이터 형식으로
+```
+</Tab>
+</Tabs>
+
+## 컬렉션 유효성 검사
+
+CreateKit은 컬렉션 매개변수에 대한 내장 유효성 검사를 제공합니다:
+
+```typescript title="Parameter Validation"
+import { validateCollectionMetadata } from '@b3dotfun/basemint'
+
+try {
+  // 컬렉션 메타데이터 유효성 검사
+  const validation = validateCollectionMetadata(collectionMetadata)
+  
+  if (!validation.isValid) {
+    console.error("유효성 검사 오류:", validation.errors)
+    return
+  }
+  
+  console.log("✅ 컬렉션 메타데이터가 유효합니다")
+  
+  // 서명 생성 진행
+  const signature = await collectionManager.generateCreatorSignature(
+    walletClient,
+    collectionMetadata
+  )
+} catch (error) {
+  console.error("유효성 검사 실패:", error)
+}
+```
+
+## 주소 예측
+
+CreateKit의 주요 기능 중 하나는 결정적 주소 예측입니다:
+
+```typescript title="Address Prediction"
+// 먼저 생성자 서명 생성
+const creatorSignature = await collectionManager.generateCreatorSignature(
+  walletClient,
+  collectionMetadata
+)
+
+// 컬렉션 주소 예측
+const predictedAddress = collectionManager.predictCollectionAddress(
+  collectionMetadata,
+  creatorSignature
+)
+
+console.log(`컬렉션이 배포될 주소: ${predictedAddress}`)
+
+// 이제 마켓플레이스 통합, 프론트엔드 디스플레이 등을 위해
+// 배포 전에 이 주소를 사용할 수 있습니다.
+```
+
+## 컬렉션 관리 작업
+
+### 컬렉션 상태 확인
+
+```typescript title="Collection Status"
+const collection = collectionManager.createCollection(
+  predictedAddress,
+  "ERC721"
+)
+
+// 컬렉션이 배포되었는지 확인
+const isDeployed = await collection.isDeployed()
+console.log(`배포됨: ${isDeployed}`)
+
+// 배포 후에만 작동하는 컬렉션 정보 가져오기
+if (isDeployed) {
+  const info = await collection.getCollectionInfo()
+  console.log("컬렉션 정보:", {
+    name: info.name,
+    symbol: info.symbol,
+    totalSupply: info.totalSupply.toString(),
+    maxSupply: info.maxSupply.toString(),
+    mintPrice: info.mintPrice.toString(),
+    maxPerWallet: info.maxPerWallet.toString()
+  })
+}
+```
+
+### 컬렉션 설정 업데이트
+
+<Warning>
+대부분의 컬렉션 매개변수는 배포 후 변경할 수 없습니다. 컬렉션 구성을 신중하게 계획하세요.
+</Warning>
+
+```typescript title="Post-Deployment Management"
+// 배포 후 가능한 몇 가지 작업만
+
+// 현재 발행 가격 확인 (동적 가격 책정이 구현된 경우)
+const currentPrice = await collection.getCurrentMintPrice()
+
+// 현재 발행이 활성화되어 있는지 확인
+const isMintingActive = await collection.isMintingActive()
+
+// 남은 공급량 가져오기
+const remainingSupply = await collection.getRemainingSupply()
+
+console.log({
+  currentPrice: currentPrice.toString(),
+  isMintingActive,
+  remainingSupply: remainingSupply.toString()
+})
+```
+
+## 모범 사례
+
+### 1. 컬렉션 계획
+
+<CardGroup cols={2}>
+  <Card title="공급 전략" icon="chart-line">
+    - 사용 사례에 적합한 최대 공급량 설정
+    - 미래 수요 및 희소성 고려
+    - 성장 또는 특별 에디션을 위한 여유 공간 남기기
+  </Card>
+  <Card title="가격 전략" icon="dollar-sign">
+    - 가격 참조를 위해 유사한 컬렉션 조사
+    - 가스 비용 및 거래 수수료 고려
+    - 다양한 시장 상황에 대비한 계획 수립
+  </Card>
+</CardGroup>
+
+### 2. 메타데이터 품질
+
+```typescript title="High-Quality Metadata"
+const qualityCollection = {
+  name: "Professional Art Collection",
+  symbol: "PAC",
+  creator: account.address,
+  gameOwner: account.address,
+  
+  // 고품질 설명
+  description: "현대적인 테마와 혁신적인 기술을 특징으로 하는 전문 디지털 아트 작품 컬렉션",
+  
+  // 전문 이미지 (최소 640x640px)
+  image: "https://example.com/high-res-collection-image.png",
+  
+  // 더 나은 발견 가능성을 위한 포괄적인 속성
+  attributes: [
+    { trait_type: "Art Style", value: "Contemporary" },
+    { trait_type: "Medium", value: "Digital" },
+    { trait_type: "Artist Verification", value: "Verified" },
+    { trait_type: "Edition Type", value: "Limited" }
+  ],
+  
+  // 신뢰성을 위한 외부 링크
+  external_url: "https://professionalartist.com/collection"
+}
+```
+
+### 3. 보안 고려 사항
+
+<AccordionGroup>
+  <Accordion title="개인 키 관리">
+    - 소스 코드에 개인 키를 하드코딩하지 마세요
+    - 환경 변수나 안전한 키 관리 사용
+    - 가치 있는 컬렉션의 경우 다중 서명 지갑 고려
+  </Accordion>
+
+  <Accordion title="서명 유효성 검사">
+    - 배포 전에 항상 서명을 검증하세요
+    - 컬렉션 매개변수가 의도한 값과 일치하는지 확인
+    - 메인넷 배포 전에 테스트넷에서 테스트
+  </Accordion>
+
+  <Accordion title="접근 제어">
+    - 생성자 및 게임 소유자 주소를 신중하게 선택하세요
+    - 보상 분배 함의 이해
+    - 장기적인 컬렉션 관리 계획
+  </Accordion>
+</AccordionGroup>
+
+## 문제 해결
+
+<AccordionGroup>
+  <Accordion title="주소 예측 불일치">
+    서명 생성과 배포 사이에 모든 컬렉션 매개변수가 동일한지 확인하세요. 작은 변경 사항도 다른 주소를 초래할 수 있습니다.
+  </Accordion>
+
+  <Accordion title="잘못된 컬렉션 매개변수">
+    모든 필수 필드가 제공되었는지 그리고 값이 허용 범위 내에 있는지 확인하세요 (예: maxSupply > 0, 유효

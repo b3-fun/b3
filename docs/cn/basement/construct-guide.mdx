@@ -1,0 +1,238 @@
+---
+title: 构建指南
+description: 本指南将指导您使用 web APIs 将您的 Construct 游戏与 Basement.fun 平台集成。
+lang: cn
+originalPath: basement/construct-guide.mdx
+---
+## 事件
+
+Construct 拥有一个出色的 GUI，使开发者能够以最少或无需编码的方式创建游戏。以下文档将回顾如何使用 Construct 的事件表将您的游戏连接到 Basement.fun。
+
+### 关键组件
+
+您需要向项目中添加一些对象，以使您的 Construct 游戏能够与 Basement.fun 平台互动。
+
+<Note>
+要向项目中添加对象，请转到 **布局视图**，在布局中右键单击，选择 **插入新对象**，然后选择要插入项目的对象。添加对象后，它将在您的事件表中可用。
+</Note>
+
+<CardGroup cols={1}>
+  <Card title="浏览器对象" icon="globe">
+    浏览器对象使您能够写入控制台。它不是必需的，但在验证数据和调试代码时会很方便。
+  </Card>
+  
+  <Card title="AJAX 对象" icon="arrow-right-left">
+    AJAX 对象使您的游戏能够与 B3 API 互动。
+    
+    - **POST 请求** 需要您为每个头参数创建单独的操作，并为所有正文参数创建一个 post 到 URL 的操作
+    - **GET 请求** 需要您将所有需要的参数和值组合成单个 URL，以发送请求到 API
+    - **API 响应** 可以使用 `AJAX.LastData` 引用
+  </Card>
+  
+  <Card title="JSON 对象" icon="braces">
+    JSON 对象使您的游戏能够处理 JSON 响应。您需要解析 JSON 字符串以使用响应数据。
+  </Card>
+</CardGroup>
+
+## 示例事件
+
+此示例事件将涵盖 BSMNT API 规范中详细描述的 POST 设置分数请求。
+
+### 示例请求
+
+<Steps>
+<Step title="创建函数">
+  在事件表的任何地方右键单击，创建一个函数，并命名为 **SetScore**。
+</Step>
+
+<Step title="设置服务方法头">
+  点击添加操作，选择 **AJAX**，选择 **设置请求头**。
+  - **头字段**：`X-Service-Method`
+  - **值字段**：`setUserScore`
+</Step>
+
+<Step title="设置授权头">
+  再添加一个 AJAX 操作并再次选择 **设置请求头**。
+  - **头字段**：`Authorization`
+  - **值字段**：`Bearer <game secret>`
+  
+  <Warning>
+  将 `<game secret>` 替换为您实际的游戏密钥令牌。
+  </Warning>
+</Step>
+
+<Step title="配置 POST 请求">
+  再添加一个 AJAX 操作，但这次选择 **Post 到 URL**。输入以下内容：
+  - **标签**：`setUserScore`
+  - **URL**：`https://api.basement.fun/launcher`
+  - **数据**：`{"launcherJwt": "string", "nonce": "string", "score": 0}`
+  - **方法**：`POST`
+  
+  <Tip>
+  这是一个示例请求 - 请确保将您的值替换为游戏中的事件设置的变量。
+  </Tip>
+</Step>
+</Steps>
+
+### 示例响应
+
+示例响应将如下所示：
+
+```json API 响应
+{
+    "success": true | false,
+    "error"?: "error string",
+    "newScore"?: {
+        "_id": "unique id",
+        "nonce": "nonce",
+        "updatedAt": 23151264, // unix 时间戳
+        "score": 100.235,
+        "gameId": "game uuid",
+        "normalizedAddress": "user lowercase address"
+    }
+}
+```
+
+## 检索数据
+
+在 Construct 中，让我们从响应中检索 nonce，以便我们可以在稍后使用它来检索分数。
+
+<Steps>
+<Step title="创建全局变量">
+  在事件表的任何地方右键单击并添加一个名为 **Nonce** 的全局变量。
+</Step>
+
+<Step title="添加触发事件">
+  添加一个由您的游戏触发的事件。
+  
+  **示例**：要在您的自行车与另一辆自行车相撞时捕获用户的分数，请向骑手添加一个 **与另一个对象碰撞** 条件，并将对象设置为骑手。
+</Step>
+
+<Step title="调用 SetScore 函数">
+  添加操作，选择 **函数**，并选择 **SetScore**。
+</Step>
+
+<Step title="解析 JSON 响应">
+  添加一个 **JSON** 操作，选择 **解析**，并在 JSON 字符串字段中输入 `AJAX.LastData`。
+  
+  <Note>
+  这将从我们的 SetScore 请求中获取响应。
+  </Note>
+</Step>
+
+<Step title="提取 Nonce 值">
+  添加一个 **系统** 操作，选择 **设置值**，选择 **Nonce** 变量，并输入 `JSON.Get("newScore.nonce")`。
+  
+  <Check>
+  现在您的 Nonce 变量设置为 API 响应返回的 nonce 了！
+  </Check>
+</Step>
+</Steps>
+
+## 完成集成
+
+按照相同的步骤，您可以通过审查所有参数和响应为每个 API 端点创建事件。
+
+### 可用的 API 端点
+
+<AccordionGroup>
+<Accordion title="设置用户分数">
+  更新或设置用户的排行榜分数。
+  
+  **端点**：`POST /launcher`  
+  **头**：`X-Service-Method: setUserScore`
+  
+  ```json
+  {
+    "launcherJwt": "string",
+    "nonce": "string", 
+    "score": 0
+  }
+  ```
+</Accordion>
+
+<Accordion title="获取用户分数">
+  检索用户当前的分数。
+  
+  **端点**：`GET /launcher`  
+  **头**：`X-Service-Method: getUserScore`
+</Accordion>
+
+<Accordion title="触发规则引擎">
+  根据游戏事件触发链上动作。
+  
+  **端点**：`POST /launcher`  
+  **头**：`X-Service-Method: triggerRulesEngine`
+  
+  ```json
+  {
+    "launcherJwt": "string",
+    "trigger": "string",
+    "nonce": "string"
+  }
+  ```
+</Accordion>
+</AccordionGroup>
+
+## 最佳实践
+
+<CardGroup cols={2}>
+  <Card title="错误处理" icon="circle-info">
+    始终检查 API 响应中的 `success` 字段，并优雅地处理错误。
+  </Card>
+  
+  <Card title="变量管理" icon="cube">
+    使用 Construct 的全局变量来存储重要数据，如 JWT 令牌和用户分数。
+  </Card>
+  
+  <Card title="调试控制台" icon="bug">
+    在开发过程中使用浏览器对象将重要信息记录到控制台。
+  </Card>
+  
+  <Card title="API 速率限制" icon="clock">
+    注意 API 速率限制，避免在短时间内发出过多请求。
+  </Card>
+</CardGroup>
+
+## 下一步
+
+<CardGroup cols={2}>
+  <Card title="BSMNT API 文档" icon="book" href="https://docs.basement.fun/api">
+    完整的 API 端点参考
+  </Card>
+  
+  <Card title="游戏启动器指南" icon="rocket" href="/basement/game-launcher">
+    了解如何与 BSMNT 游戏启动器集成
+  </Card>
+  
+  <Card title="Construct 文档" icon="book" href="https://construct.net/make-games/manuals">
+    官方 Construct 3 文档和教程
+  </Card>
+  
+  <Card title="示例项目" icon="folder" href="https://github.com/b3-fun">
+    使用 BSMNT 集成的示例项目
+  </Card>
+</CardGroup>
+
+## 故障排除
+
+<AccordionGroup>
+<Accordion title="AJAX 请求不工作">
+  - 确保您已将 AJAX 对象添加到项目中
+  - 检查所有必需的头是否正确设置
+  - 验证您的游戏密钥是否有效
+  - 确保 API 端点 URL 正确
+</Accordion>
+
+<Accordion title="JSON 解析错误">
+  - 确认 JSON 对象已添加到项目中
+  - 检查 `AJAX.LastData` 是否包含有效的 JSON
+  - 使用浏览器对象记录原始响应以进行调试
+</Accordion>
+
+<Accordion title="认证问题">
+  - 验证您的启动器 JWT 令牌是否有效
+  - 检查授权头是否正确格式化
+  - 确保您的游戏密钥未过期
+</Accordion>
+</AccordionGroup>

@@ -1,0 +1,650 @@
+---
+title: Referensi SDK
+description: Referensi API lengkap untuk BondKit SDK dengan contoh dan definisi TypeScript.
+lang: id
+originalPath: bondkit/sdk/reference.mdx
+---
+## Instalasi & Pengaturan
+
+<Tabs>
+  <Tab title="Paket NPM">
+    ```bash
+    # SDK Produksi
+    pnpm add @b3dotfun/sdk
+    
+    # Impor dari SDK utama
+    import { 
+      BondkitTokenFactory, 
+      BondkitToken 
+    } from "@b3dotfun/sdk/bondkit";
+    ```
+  </Tab>
+  <Tab title="Pengembangan">
+    ```bash
+    # Klon monorepo
+    git clone https://github.com/b3dotfun/b3-monorepo.git
+    cd b3-monorepo
+    pnpm install
+    
+    # Bangun SDK
+    pnpm --filter @b3dotfun/sdk build
+    ```
+  </Tab>
+</Tabs>
+
+## Kelas Inti
+
+### BondkitTokenFactory
+
+Kelas pabrik menangani penyebaran token obligasi baru dan menanyakan token yang telah dikerahkan.
+
+```typescript
+import { BondkitTokenFactory } from "@b3dotfun/sdk/bondkit";
+import { base } from "viem/chains";
+
+const factory = new BondkitTokenFactory(
+  base.id,                    // ID Rantai (Base mainnet)
+  process.env.WALLET_KEY      // Opsional: kunci privat untuk penulisan
+);
+```
+
+#### Konstruktor
+
+```typescript
+constructor(
+  chainId: SupportedChainId,
+  walletKey?: string
+)
+```
+
+| Parameter | Tipe | Wajib | Deskripsi |
+|-----------|------|----------|-------------|
+| `chainId` | `number` | Ya | ID Rantai (saat ini hanya Base: 8453) |
+| `walletKey` | `string` | Tidak | Kunci privat untuk operasi penulisan |
+
+#### Metode
+
+<AccordionGroup>
+  <Accordion title="deployBondkitToken">
+    **Menyebarkan token obligasi baru**
+    
+    ```typescript
+    async deployBondkitToken(
+      config: BondkitTokenConfig
+    ): Promise<Address>
+    ```
+    
+    **Parameter:**
+    ```typescript
+    interface BondkitTokenConfig {
+      name: string;                      // Nama token
+      symbol: string;                    // Simbol token
+      feeRecipient: Address;            // Menerima biaya perdagangan
+      finalTokenSupply: bigint;         // Pasokan total (18 desimal)
+      aggressivenessFactor: number;     // 0-100 kecuraman kurva
+      lpSplitRatioFeeRecipientBps: bigint; // Bagian biaya LP (poin basis)
+      targetEth: bigint;                // Target migrasi (18 desimal)
+      uniswapV2RouterAddress: Address;  // Alamat router
+      migrationAdminAddress: Address;   // Dapat memicu migrasi
+    }
+    ```
+    
+    **Contoh:**
+    ```typescript
+    const tokenAddress = await factory.deployBondkitToken({
+      name: "My Token",
+      symbol: "MTK",
+      feeRecipient: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1",
+      finalTokenSupply: parseEther("1000000"),
+      aggressivenessFactor: 50,
+      lpSplitRatioFeeRecipientBps: 1000n, // 10%
+      targetEth: parseEther("10"),
+      uniswapV2RouterAddress: "0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24",
+      migrationAdminAddress: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1"
+    });
+    ```
+  </Accordion>
+  
+  <Accordion title="getDeployedBondkitTokens">
+    **Dapatkan semua token yang dikerahkan**
+    
+    ```typescript
+    async getDeployedBondkitTokens(): Promise<Address[]>
+    ```
+    
+    **Mengembalikan:** Array dari alamat token
+    
+    **Contoh:**
+    ```typescript
+    const tokens = await factory.getDeployedBondkitTokens();
+    console.log(`Ditemukan ${tokens.length} token`);
+    ```
+  </Accordion>
+  
+  <Accordion title="getBondkitTokenConfig">
+    **Dapatkan konfigurasi token**
+    
+    ```typescript
+    async getBondkitTokenConfig(
+      tokenAddress: Address
+    ): Promise<BondkitTokenConfig>
+    ```
+    
+    **Contoh:**
+    ```typescript
+    const config = await factory.getBondkitTokenConfig(
+      "0x123..."
+    );
+    console.log(`Nama token: ${config.name}`);
+    ```
+  </Accordion>
+  
+  <Accordion title="getImplementationAddress">
+    **Dapatkan kontrak implementasi**
+    
+    ```typescript
+    async getImplementationAddress(): Promise<Address>
+    ```
+    
+    **Contoh:**
+    ```typescript
+    const impl = await factory.getImplementationAddress();
+    console.log(`Implementasi: ${impl}`);
+    ```
+  </Accordion>
+  
+  <Accordion title="connect">
+    **Sambungkan penyedia dompet**
+    
+    ```typescript
+    connect(provider?: EIP1193Provider): boolean
+    ```
+    
+    **Contoh:**
+    ```typescript
+    // Lingkungan peramban
+    const connected = factory.connect(window.ethereum);
+    
+    // Penyedia khusus
+    import { custom } from "viem";
+    const transport = custom(provider);
+    factory.connect(transport);
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### BondkitToken
+
+Kelas token menangani semua operasi untuk token obligasi tertentu.
+
+```typescript
+import { BondkitToken } from "@b3dotfun/sdk/bondkit";
+
+const token = new BondkitToken(
+  "0x123...",                 // Alamat token
+  process.env.WALLET_KEY      // Opsional: kunci privat
+);
+```
+
+#### Konstruktor
+
+```typescript
+constructor(
+  contractAddress: string,
+  walletKey?: string
+)
+```
+
+| Parameter | Tipe | Wajib | Deskripsi |
+|-----------|------|----------|-------------|
+| `contractAddress` | `string` | Ya | Alamat kontrak token |
+| `walletKey` | `string` | Tidak | Kunci privat untuk operasi penulisan |
+
+#### Metode Baca
+
+<AccordionGroup>
+  <Accordion title="Metode Standar ERC20">
+    ```typescript
+    // Informasi token dasar
+    async name(): Promise<string>
+    async symbol(): Promise<string>
+    async decimals(): Promise<number>
+    async totalSupply(): Promise<bigint>
+    
+    // Saldo
+    async balanceOf(address: Address): Promise<bigint>
+    async allowance(
+      owner: Address, 
+      spender: Address
+    ): Promise<bigint>
+    
+    // Contoh
+    const balance = await token.balanceOf(userAddress);
+    console.log(`Saldo: ${formatEther(balance)}`);
+    ```
+  </Accordion>
+  
+  <Accordion title="Metode Kurva Obligasi">
+    ```typescript
+    // Harga per token saat ini
+    async getCurrentBondingCurvePricePerToken(): Promise<bigint>
+    
+    // Harga saat ini dalam ETH
+    async getCurrentPrice(): Promise<bigint>
+    
+    // Kutipan untuk pembelian
+    async getAmountOfTokensToBuy(
+      ethAmount: bigint
+    ): Promise<bigint>
+    
+    // Kutipan untuk penjualan
+    async getAmountOfEthToReceive(
+      tokenAmount: bigint
+    ): Promise<bigint>
+    
+    // Kemajuan obligasi
+    async getBondingProgress(): Promise<{
+      progress: number;      // 0-1 (persentase)
+      raised: bigint;       // Jumlah terkumpul
+      threshold: bigint;    // Jumlah target
+    }>
+    
+    // Contoh
+    const progress = await token.getBondingProgress();
+    console.log(`Kemajuan: ${(progress.progress * 100).toFixed(2)}%`);
+    ```
+  </Accordion>
+  
+  <Accordion title="Status & Konfigurasi">
+    ```typescript
+    // Status token
+    async getStatus(): Promise<TokenStatus>
+    async isMigrated(): Promise<boolean>
+    async canMigrate(): Promise<boolean>
+    
+    // Konfigurasi
+    async getOwner(): Promise<Address>
+    async getFeeRecipient(): Promise<Address>
+    async getAggressivenessFactor(): Promise<number>
+    async getTargetAmount(): Promise<bigint>
+    
+    // Info migrasi
+    async getMigrationData(): Promise<{
+      ethForLp: bigint;
+      tokensForLp: bigint;
+      sqrtPriceX96: bigint;
+    }>
+    
+    // Contoh
+    if (await token.canMigrate()) {
+      console.log("Siap untuk migrasi!");
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Metode Analitik">
+    ```typescript
+    // Pemegang token
+    async getPaginatedHolders(
+      offset: number,
+      limit: number
+    ): Promise<{
+      holders: Address[];
+      total: number;
+    }>
+    
+    // Riwayat transaksi (dari API)
+    async getTransactionHistory(
+      options?: GetTransactionHistoryOptions
+    ): Promise<TransactionResponse>
+    
+    // Interface opsi
+    interface GetTransactionHistoryOptions {
+      userAddress?: Address;
+      type?: "buy" | "sell";
+      from?: number;        // Cap waktu
+      to?: number;          // Cap waktu
+      limit?: number;       // 1-100
+      offset?: number;
+    }
+    
+    // Contoh
+    const history = await token.getTransactionHistory({
+      type: "buy",
+      limit: 10
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+#### Metode Tulis
+
+<AccordionGroup>
+  <Accordion title="buy">
+    **Beli token dengan ETH**
+    
+    ```typescript
+    async buy(
+      minTokensOut: bigint,
+      ethAmount: string | bigint
+    ): Promise<Hex>
+    ```
+    
+    **Parameter:**
+    - `minTokensOut`: Token minimum yang diterima (perlindungan slippage)
+    - `ethAmount`: ETH yang akan dibelanjakan (sebagai string atau bigint)
+    
+    **Contoh:**
+    ```typescript
+    // Dapatkan kutipan terlebih dahulu
+    const quote = await token.getAmountOfTokensToBuy(
+      parseEther("1")
+    );
+    
+    // Beli dengan toleransi slippage 5%
+    const minTokens = quote * 95n / 100n;
+    const txHash = await token.buy(minTokens, "1");
+    
+    console.log(`Transaksi: ${txHash}`);
+    ```
+  </Accordion>
+  
+  <Accordion title="sell">
+    **Jual token untuk ETH**
+    
+    ```typescript
+    async sell(
+      tokenAmount: bigint,
+      minEthOut: bigint
+    ): Promise<Hex>
+    ```
+    
+    **Parameter:**
+    - `tokenAmount`: Jumlah token yang akan dijual
+    - `minEthOut`: Minimum ETH yang akan diterima (perlindungan slippage)
+    
+    **Contoh:**
+    ```typescript
+    // Jual 1000 token
+    const sellAmount = parseEther("1000");
+    
+    // Dapatkan kutipan
+    const quote = await token.getAmountOfEthToReceive(sellAmount);
+    
+    // Jual dengan perlindungan slippage
+    const minEth = quote * 95n / 100n;
+    const txHash = await token.sell(sellAmount, minEth);
+    ```
+  </Accordion>
+  
+  <Accordion title="migrateToDex">
+    **Migrasi ke Uniswap v4**
+    
+    ```typescript
+    async migrateToDex(): Promise<Hex>
+    ```
+    
+    **Persyaratan:**
+    - Pemanggil harus admin migrasi
+    - Target harus tercapai
+    
+    **Contoh:**
+    ```typescript
+    if (await token.canMigrate()) {
+      const txHash = await token.migrateToDex();
+      console.log(`Transaksi migrasi: ${txHash}`);
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Metode Tulis ERC20">
+    ```typescript
+    // Transfer standar
+    async transfer(
+      to: Address,
+      amount: bigint
+    ): Promise<Hex>
+    
+    async transferFrom(
+      from: Address,
+      to: Address,
+      amount: bigint
+    ): Promise<Hex>
+    
+    // Persetujuan
+    async approve(
+      spender: Address,
+      amount: bigint
+    ): Promise<Hex>
+    
+    // Contoh
+    await token.approve(
+      spenderAddress,
+      parseEther("1000")
+    );
+    ```
+  </Accordion>
+</AccordionGroup>
+
+#### Pendengar Event
+
+```typescript
+// Mendengarkan event pembelian
+token.onBuy((event: BoughtEventArgs) => {
+  console.log("Beli:", {
+    pembeli: event.buyer,
+    ethIn: formatEther(event.ethIn),
+    tokensOut: formatEther(event.tokensOut),
+    fee: formatEther(event.feeRecipientFee)
+  });
+});
+
+// Mendengarkan event penjualan
+token.onSell((event: SoldEventArgs) => {
+  console.log("Jual:", {
+    penjual: event.seller,
+    tokensIn: formatEther(event.tokensIn),
+    ethOut: formatEther(event.ethOut),
+    fee: formatEther(event.feeRecipientFee)
+  });
+});
+
+// Mendengarkan migrasi
+token.onMigration((event: DexMigrationEventArgs) => {
+  console.log("Dimigrasikan:", {
+    ethForLp: formatEther(event.ethForLp),
+    tokensForLp: formatEther(event.tokensForLp)
+  });
+});
+```
+
+## Definisi Tipe
+
+### Tipe Inti
+
+```typescript
+// Konfigurasi token
+interface BondkitTokenConfig {
+  name: string;
+  symbol: string;
+  feeRecipient: Address;
+  finalTokenSupply: bigint;
+  aggressivenessFactor: number;
+  lpSplitRatioFeeRecipientBps: bigint;
+  targetEth: bigint;
+  uniswapV2RouterAddress: Address;
+  migrationAdminAddress: Address;
+}
+
+// Enum status token
+enum TokenStatus {
+  Inactive = 0,
+  BondingPhase = 1,
+  DexPhase = 2,
+  Migrated = 3
+}
+
+// Detail token
+interface TokenDetails {
+  name: string;
+  symbol: string;
+  decimals: number;
+  totalSupply: bigint;
+  owner: Address;
+}
+```
+
+### Tipe Event
+
+```typescript
+// Event beli
+interface BoughtEventArgs {
+  pembeli: Address;
+  ethIn: bigint;
+  tokensOut: bigint;
+  feeRecipientFee: bigint;
+}
+
+// Event jual
+interface SoldEventArgs {
+  penjual: Address;
+  tokensIn: bigint;
+  ethOut: bigint;
+  feeRecipientFee: bigint;
+}
+
+// Event migrasi
+interface DexMigrationEventArgs {
+  ethForLp: bigint;
+  tokensForLp: bigint;
+  ethForFeeRecipient: bigint;
+}
+
+// Event pembuatan pabrik
+interface BondkitTokenCreatedEventArgs {
+  tokenAddress: Address;
+  implementationAddress: Address;
+  name: string;
+  symbol: string;
+  feeRecipient: Address;
+  migrationAdmin: Address;
+}
+```
+
+### Tipe Transaksi
+
+```typescript
+// Riwayat transaksi
+interface Transaction {
+  timestamp: number;
+  price: number;
+  amount: string;
+  type: "buy" | "sell";
+  userAddress: Address;
+  txHash: Hex;
+  chainId: number;
+  blockNumber?: number;
+  totalRaisedBonding?: string;
+  value?: string;
+}
+
+// Respons API
+interface TransactionResponse {
+  total: number;
+  limit: number;
+  skip: number;
+  data: Transaction[];
+}
+```
+
+## Konfigurasi
+
+### Dukungan Jaringan
+
+```typescript
+import { getConfig } from "@b3dotfun/sdk/bondkit";
+import { base } from "viem/chains";
+
+const config = getConfig(base.id);
+
+console.log({
+  chain: config.chain.name,           // "Base"
+  factoryAddress: config.factoryAddress,
+  rpcUrl: config.rpcUrl,
+  apiEndpoint: config.apiEndpoint
+});
+```
+
+### Rantai yang Didukung
+
+| Rantai | ID Rantai | Status |
+|-------|----------|--------|
+| Base Mainnet | 8453 | ✅ Didukung |
+| Base Sepolia | 84532 | 🚧 Segera Hadir |
+
+## Penanganan Kesalahan
+
+```typescript
+try {
+  const txHash = await token.buy(minTokens, "1");
+} catch (error) {
+  if (error.message.includes("dana tidak cukup")) {
+    console.error("ETH tidak cukup");
+  } else if (error.message.includes("slippage")) {
+    console.error("Harga bergerak, coba lagi");
+  } else if (error.message.includes("target terlampaui")) {
+    console.error("Akan melebihi target migrasi");
+  } else {
+    console.error("Transaksi gagal:", error);
+  }
+}
+```
+
+## Contoh Lengkap
+
+### Penyebaran dan Perdagangan
+
+```typescript
+import { 
+  BondkitTokenFactory, 
+  BondkitToken 
+} from "@b3dotfun/sdk/bondkit";
+import { parseEther, formatEther } from "viem";
+import { base } from "viem/chains";
+
+async function deployAndTrade() {
+  // 1. Sebarkan token
+  const factory = new BondkitTokenFactory(
+    base.id,
+    process.env.WALLET_KEY
+  );
+  
+  const tokenAddress = await factory.deployBondkitToken({
+    name: "Test Token",
+    symbol: "TEST",
+    finalTokenSupply: parseEther("1000000"),
+    aggressivenessFactor: 50,
+    targetEth: parseEther("10"),
+    feeRecipient: process.env.WALLET_ADDRESS,
+    lpSplitRatioFeeRecipientBps: 1000n,
+    migrationAdminAddress: process.env.WALLET_ADDRESS,
+    uniswapV2RouterAddress: "0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24"
+  });
+  
+  // 2. Inisialisasi klien token
+  const token = new BondkitToken(
+    tokenAddress,
+    process.env.WALLET_KEY
+  );
+  
+  // 3. Beli token
+  const buyAmount = parseEther("0.5");
+  const expectedTokens = await token.getAmountOfTokensToBuy(buyAmount);
+  await token.buy(expectedTokens * 95n / 100n, "0.5");
+  
+  // 4. Periksa kemajuan
+  const progress = await token.getBondingProgress();
+  console.log(`Kemajuan: ${(progress.progress * 100).toFixed(2)}%`);
+  
+  // 5. Pantau event
+  token.onBuy((event) =>

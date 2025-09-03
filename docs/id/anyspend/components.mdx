@@ -1,0 +1,363 @@
+---
+title: Komponen-Komponen
+description: >-
+  Komponen React untuk pembayaran kripto yang mulus, pembelian NFT, dan
+  interaksi kontrak pintar yang disesuaikan
+lang: id
+originalPath: anyspend/components.mdx
+---
+## Komponen Inti
+
+### `<AnySpend>`
+
+Komponen antarmuka utama untuk pertukaran token-ke-token dan onramp fiat.
+
+```tsx title="Penggunaan Dasar" icon="react"
+// https://github.com/b3-fun/b3/blob/main/packages/sdk/src/anyspend/react/components/AnySpend.tsx
+import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
+
+<AnySpend
+  mode="modal"
+  defaultActiveTab="crypto"
+  destinationTokenAddress="0x..."
+  destinationTokenChainId={8333}
+  recipientAddress="0x..."
+  hideTransactionHistoryButton={false}
+/>;
+```
+
+#### Props
+
+<ParamField path="mode" type="'modal' | 'page'" default="'modal'">
+  Tampilkan sebagai overlay modal atau halaman penuh
+</ParamField>
+
+<ParamField path="defaultActiveTab" type="'crypto' | 'fiat'" default="'crypto'">
+  Tab metode pembayaran awal
+</ParamField>
+
+<ParamField path="destinationTokenAddress" type="string">
+  Alamat token tujuan untuk mode pembelian
+</ParamField>
+
+<ParamField path="destinationTokenChainId" type="number">
+  Chain ID dari token tujuan
+</ParamField>
+
+<ParamField path="recipientAddress" type="string">
+  Alamat dompet penerima
+</ParamField>
+
+<ParamField path="hideTransactionHistoryButton" type="boolean" default="false">
+  Sembunyikan akses riwayat transaksi
+</ParamField>
+
+<ParamField path="loadOrder" type="string">
+  Muat pesanan tertentu berdasarkan ID
+</ParamField>
+
+#### Contoh Penggunaan
+
+<Tabs>
+<Tab title="Penukaran Token Dasar">
+  ```tsx
+  <AnySpend
+    mode="page"
+    recipientAddress={userWalletAddress}
+  />
+  ```
+</Tab>
+
+<Tab title="Onramp Fiat-ke-Kripto">
+  ```tsx
+  <AnySpend
+    defaultActiveTab="fiat"
+    destinationTokenAddress="0xA0b86a33E6Fb6Dd9a9B3d8B5FEb2b3C8e7D9Ff1E"
+    destinationTokenChainId={8333}
+    recipientAddress={userWalletAddress}
+  />
+  ```
+</Tab>
+</Tabs>
+
+---
+
+### `<AnySpendNFTButton>`
+
+Komponen tombol yang disederhanakan untuk pembelian NFT dengan penanganan pembayaran terintegrasi.
+
+```tsx title="Tombol Pembelian NFT" icon="shopping-cart"
+import { AnySpendNFTButton } from "@b3dotfun/sdk/anyspend/react";
+
+<AnySpendNFTButton nftContract={nftContractDetails} recipientAddress="0x..." />;
+```
+
+#### Props
+
+<ParamField path="nftContract" type="NFTContract" required>
+  Objek konfigurasi kontrak NFT
+</ParamField>
+
+<ParamField path="recipientAddress" type="string" required>
+  Alamat dompet untuk menerima NFT
+</ParamField>
+
+#### Interface NFTContract
+
+```typescript title="Definisi Tipe" icon="code"
+interface NFTContract {
+  chainId: number; // ID jaringan blockchain
+  contractAddress: string; // Alamat kontrak NFT
+  price: string; // Harga dalam wei
+  priceFormatted: string; // Harga yang mudah dibaca
+  currency: {
+    chainId: number;
+    address: string; // Alamat kontrak token (0x0 untuk ETH asli)
+    name: string;
+    symbol: string;
+    decimals: number;
+    metadata: {
+      logoURI: string;
+    };
+  };
+  name: string; // Nama koleksi NFT
+  description: string; // Deskripsi NFT
+  imageUrl: string; // URL gambar pratinjau
+  tokenId: number | null; // ID token (null untuk ERC721, ID spesifik untuk ERC1155)
+  type: "erc721" | "erc1155"; // Tipe kontrak NFT
+}
+```
+
+#### Contoh Penggunaan
+
+```tsx title="Integrasi NFT Lengkap" icon="image" lines
+const coolNFT = {
+  chainId: 8333,
+  contractAddress: "0x9c275ff1634519E9B5449ec79cd939B5F900564d",
+  price: "500000000000000000", // 0.5 ETH
+  priceFormatted: "0.5",
+  currency: {
+    chainId: 8333,
+    address: "0x0000000000000000000000000000000000000000",
+    name: "Ether",
+    symbol: "ETH",
+    decimals: 18,
+    metadata: {
+      logoURI: "https://assets.coingecko.com/coins/images/279/standard/ethereum.png?1696501628",
+    },
+  },
+  name: "Cool Art Collection",
+  description: "Karya seni digital unik",
+  imageUrl: "https://example.com/nft-preview.png",
+  tokenId: null,
+  type: "erc721",
+};
+
+<AnySpendNFTButton nftContract={coolNFT} recipientAddress={userAddress} />;
+```
+
+---
+
+### `<AnySpendCustom>`
+
+Komponen paling fleksibel untuk interaksi kontrak pintar khusus, termasuk gaming, staking, dan operasi DeFi.
+
+```tsx title="Interaksi Kontrak Kustom" icon="code"
+// https://github.com/b3-fun/b3/blob/main/packages/sdk/src/anyspend/react/components/AnySpendCustom.tsx
+import { AnySpendCustom } from "@b3dotfun/sdk/anyspend/react";
+
+<AnySpendCustom
+  orderType="custom"
+  dstChainId={8333}
+  dstToken={tokenDetails}
+  dstAmount="1000000000000000000"
+  contractAddress="0x..."
+  encodedData="0x..."
+  spenderAddress="0x..."
+  metadata={customMetadata}
+  header={CustomHeaderComponent}
+  onSuccess={txHash => console.log("Aksi kustom selesai", txHash)}
+/>;
+```
+
+#### Props
+
+<ParamField path="orderType" type="'custom'" required>
+  Pengenal tipe pesanan
+</ParamField>
+
+<ParamField path="dstChainId" type="number" required>
+  Jaringan blockchain tujuan
+</ParamField>
+
+<ParamField path="dstToken" type="Token" required>
+  Token yang digunakan untuk pembayaran
+</ParamField>
+
+<ParamField path="dstAmount" type="string" required>
+  Jumlah dalam wei/satuan terkecil
+</ParamField>
+
+<ParamField path="contractAddress" type="string" required>
+  Alamat kontrak pintar tujuan
+</ParamField>
+
+<ParamField path="encodedData" type="string" required>
+  Data panggilan fungsi yang dikodekan
+</ParamField>
+
+<ParamField path="spenderAddress" type="string">
+  Alamat pengeluar token opsional
+</ParamField>
+
+<ParamField path="metadata" type="object">
+  Metadata kustom untuk pelacakan
+</ParamField>
+
+<ParamField path="header" type="React.ComponentType">
+  Komponen header kustom
+</ParamField>
+
+<ParamField path="onSuccess" type="(txHash?: string) => void">
+  Callback sukses dengan hash transaksi
+</ParamField>
+
+#### Contoh Penggunaan - Staking
+
+```tsx title="Integrasi Staking" icon="coins" lines
+// Enkode panggilan fungsi staking
+const stakeAmount = "1000000000000000000"; // 1 token
+const stakingCalldata = encodeFunctionData({
+  abi: stakingABI,
+  functionName: "stake",
+  args: [stakeAmount, 30], // 30 hari
+});
+
+<AnySpendCustom
+  orderType="custom"
+  dstChainId={8333}
+  dstToken={stakingToken}
+  dstAmount={stakeAmount}
+  contractAddress="0xStakingContract..."
+  encodedData={stakingCalldata}
+  metadata={{
+    action: "stake",
+    duration: 30,
+    expectedRewards: "5.2%",
+  }}
+  header={({ anyspendPrice, isLoadingAnyspendPrice }) => (
+    <div className="staking-header">
+      <h2>Stake Token</h2>
+      <p>Durasi: 30 hari</p>
+      <p>APY yang Diharapkan: 5.2%</p>
+      {!isLoadingAnyspendPrice && <p>Total Biaya: ${anyspendPrice?.usdPrice}</p>}
+    </div>
+  )}
+/>;
+```
+
+## Komponen Khusus
+
+### `<AnySpendNFT>`
+
+Komponen NFT yang ditingkatkan dengan fitur pasar tambahan.
+
+```tsx title="Komponen NFT yang Ditingkatkan" icon="store"
+// https://github.com/b3-fun/b3/blob/main/packages/sdk/src/anyspend/react/components/AnySpendNFT.tsx
+<AnySpendNFT nftContract={nftDetails} recipientAddress="0x..." showMetadata={true} showPriceHistory={true} />
+```
+
+### `<AnySpendStakeB3>`
+
+Komponen yang telah dikonfigurasi sebelumnya untuk staking token B3.
+
+```tsx title="Staking B3" icon="coins"
+// https://github.com/b3-fun/b3/blob/main/packages/sdk/src/anyspend/react/components/AnySpendStakeB3.tsx
+<AnySpendStakeB3 stakeAmount="1000000000000000000" stakingDuration={30} recipientAddress="0x..." />
+```
+
+### `<AnySpendBuySpin>`
+
+Komponen khusus game untuk membeli roda putar atau tiket lotere.
+
+```tsx title="Roda Putar Game" icon="gamepad"
+// https://github.com/b3-fun/b3/blob/main/packages/sdk/src/anyspend/react/components/AnySpendBuySpin.tsx
+<AnySpendBuySpin gameContract="0x..." spinPrice="100000000000000000" recipientAddress="0x..." />
+```
+
+### `<AnySpendTournament>`
+
+Komponen pembayaran masuk turnamen.
+
+```tsx title="Masuk Turnamen" icon="trophy"
+// https://github.com/b3-fun/b3/blob/main/packages/sdk/src/anyspend/react/components/AnySpendTournament.tsx
+<AnySpendTournament tournamentId="tournament-123" entryFee="500000000000000000" recipientAddress="0x..." />
+```
+
+## Gaya Komponen
+
+Semua komponen disertai dengan gaya bawaan yang dapat disesuaikan menggunakan variabel CSS:
+
+```css title="Gaya Kustom" icon="palette"
+/* Override gaya bawaan */
+.anyspend-modal {
+  --anyspend-primary: #6366f1;
+  --anyspend-secondary: #f3f4f6;
+  --anyspend-border-radius: 12px;
+}
+```
+
+## Dukungan Platform
+
+<table>
+  <thead>
+    <tr>
+      <th>Komponen</th>
+      <th>React Web</th>
+      <th>React Native</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>`AnySpend`</td>
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>`AnySpendNFTButton`</td>
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>`AnySpendCustom`</td>
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>`AnySpendNFT`</td>
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>Fitur onramp fiat</td>
+      <td>✅</td>
+      <td>❌</td>
+    </tr>
+  </tbody>
+</table>
+
+## Langkah Selanjutnya
+
+<CardGroup cols={3}>
+<Card title="Pelajari tentang Hooks" icon="link" href="/anyspend/hooks">
+  Temukan React hooks untuk alur pembayaran kustom
+</Card>
+
+<Card title="Lihat Contoh" icon="code" href="/anyspend/examples">
+  Telusuri contoh implementasi dunia nyata
+</Card>
+
+<Card title="Penanganan Kesalahan" icon="shield-exclamation" href="/anyspend/error-handling">
+  Pelajari cara menangani kesalahan dengan anggun
+</Card>
+</CardGroup>
