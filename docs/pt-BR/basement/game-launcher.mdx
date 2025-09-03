@@ -7,21 +7,21 @@ description: >-
 lang: pt-BR
 originalPath: basement/game-launcher.mdx
 ---
-```html
 <iframe
-  className="w-full aspect-video rounded-xl mb-6"
-  src="https://customer-gg6qs7nm5ue94t64.cloudflarestream.com/ae9e7c0694dacb8d602309c381fce796/iframe?poster=https%3A%2F%2Fcustomer-gg6qs7nm5ue94t64.cloudflarestream.com%2Fae9e7c0694dacb8d602309c381fce796%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600"
-  title="Basement.fun Developer Dashboard"
-  frameBorder="0"
+   className="w-full aspect-video rounded-xl mb-6"
+    src="https://customer-gg6qs7nm5ue94t64.cloudflarestream.com/ae9e7c0694dacb8d602309c381fce796/iframe?poster=https%3A%2F%2Fcustomer-gg6qs7nm5ue94t64.cloudflarestream.com%2Fae9e7c0694dacb8d602309c381fce796%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600"
+    title="Painel de Desenvolvedor do Basement.fun"
+    frameBorder="0"
   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
   allowFullScreen
-></iframe>
+  ></iframe>
+
 
 ## Como Funciona
 
 <Steps>
 <Step title="Carregar" icon="download">
-  Seu jogo é carregado dentro do lançador BSMNT. Nós passamos um JWT com o token de autenticação para o seu jogo.
+  Seu jogo é carregado dentro do lançador BSMNT. Passamos um JWT com o token de autenticação para o seu jogo.
   
   ```text Exemplo de URL
   https://seujogo.com?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
@@ -29,7 +29,7 @@ originalPath: basement/game-launcher.mdx
 </Step>
 
 <Step title="Autenticação" icon="key">
-  Você pode carregar o perfil do jogador decodificando o JWT, ou usando nossa API. Nós cuidaremos das conexões com carteiras, verificação e integração.
+  Você pode carregar o perfil do jogador decodificando o JWT, ou usando nossa API. Nós cuidaremos das conexões de carteira, verificação e integração.
   
   ```json Perfil do Jogador
   {
@@ -44,10 +44,10 @@ originalPath: basement/game-launcher.mdx
   ```
 </Step>
 
-<Step title="Gatilho" icon="zap">
-  Permita que o usuário jogue seu jogo. Quando algo acontecer, você pode acionar uma ação via nosso motor de regras estilo Zapier, ou diretamente via API.
+<Step title="Disparar" icon="zap">
+  Permita que o usuário jogue seu jogo. Quando algo acontecer, você pode disparar uma ação via nosso motor de regras estilo Zapier, ou diretamente via API.
   
-  ```bash Exemplo de API de Gatilho
+  ```bash Exemplo de API de Disparo
   curl --location 'https://api.basement.fun/launcher/' \
   --header 'X-Service-Method: triggerRulesEngine' \
   --data '{
@@ -60,7 +60,7 @@ originalPath: basement/game-launcher.mdx
 </Steps>
 
 <CardGroup cols={2}>
-  <Card title="Registre-se como Desenvolvedor" icon="user-plus" href="https://basement.fun/developer/signup" cta="Inscreva-se">
+  <Card title="Registrar como Desenvolvedor" icon="user-plus" href="https://basement.fun/developer/signup" cta="Inscreva-se">
     Comece a construir jogos com o lançador BSMNT
   </Card>
   
@@ -85,11 +85,11 @@ O verdadeiro poder do lançador de jogos está na abstração da UX cripto. Seu 
   </Card>
   
   <Card title="Leaderboards Onchain" icon="trophy">
-    Traga o ranking dos jogadores para o onchain, hospede concursos & torneios.
+    Traga classificações de jogadores para o onchain, hospede concursos & torneios.
   </Card>
   
   <Card title="Emitir Tokens & NFTs" icon="coins">
-    Envie ERC20s e NFTs ERC721 & 1155 com base em ações do jogo.
+    Envie ERC20s e NFTs ERC721 & 1155 baseados em ações do jogo.
   </Card>
   
   <Card title="Pagar com Tokens" icon="credit-card">
@@ -108,7 +108,7 @@ O verdadeiro poder do lançador de jogos está na abstração da UX cripto. Seu 
   </Card>
   
   <Card title="Onramp de Cartão de Crédito" icon="credit-card">
-    Onramp direto de fiat para cripto para uma experiência do usuário sem complicações.
+    Onramp direto de fiat para cripto para uma experiência de usuário perfeita.
     <div style={{ marginTop: '8px' }}>
       <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>EM BREVE</span>
     </div>
@@ -121,8 +121,8 @@ O verdadeiro poder do lançador de jogos está na abstração da UX cripto. Seu 
     </div>
   </Card>
   
-  <Card title="Compartilhe seu Jogo" icon="share">
-    Mecânicas de compartilhamento social e viral.
+  <Card title="Compartilhar seu Jogo" icon="share">
+    Compartilhamento social e mecânicas virais.
     <div style={{ marginTop: '8px' }}>
       <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>EM BREVE</span>
     </div>
@@ -144,7 +144,7 @@ O verdadeiro poder do lançador de jogos está na abstração da UX cripto. Seu 
 </CardGroup>
 
 <Note>
-E mais ações estão a caminho - o futuro parece promissor!
+E mais ações estão chegando - o futuro parece promissor!
 </Note>
 
 ## Começando
@@ -154,7 +154,7 @@ Adoraríamos ter seu jogo no basement.fun! É simples, gratuito e fácil de come
 <Tabs>
 <Tab title="Desenvolvedores de Jogos">
   <CardGroup cols={1}>
-    <Card title="Registre-se como Desenvolvedor" icon="user-plus" href="https://basement.fun/developer/signup" cta="Registre-se Agora" horizontal>
+    <Card title="Registrar como Desenvolvedor" icon="user-plus" href="https://basement.fun/developer/signup" cta="Registre-se Agora" horizontal>
       Inscreva-se para começar a integrar seu jogo com o lançador BSMNT
     </Card>
   </CardGroup>
@@ -176,7 +176,7 @@ Adoraríamos ter seu jogo no basement.fun! É simples, gratuito e fácil de come
 
 <Tab title="Jogadores">
   <Card title="Veja o Lançador BSMNT em Ação" icon="gamepad-2" href="https://basement.fun/games" cta="Jogar Jogos" horizontal>
-    Aqui não tem vaporware - jogue jogos no BSMNT hoje!
+    Sem vaporware aqui - jogue jogos no BSMNT hoje!
   </Card>
   
   <Note>
@@ -187,23 +187,23 @@ Adoraríamos ter seu jogo no basement.fun! É simples, gratuito e fácil de come
 
 ## O que é Basement.fun?
 
-Basement é o lugar para descobrir e jogar jogos onchain. Além de ser uma plataforma de descoberta para encontrar ótimos jogos onchain, Basement oferece uma maneira para desenvolvedores de jogos construírem experiências nativas, integradas e sem emendas dentro do Basement.
+Basement é o lugar para descobrir e jogar jogos onchain. Além de ser uma plataforma de descoberta para encontrar ótimos jogos onchain, Basement oferece uma maneira para desenvolvedores de jogos construírem experiências nativas, embutidas e sem interrupções dentro do Basement.
 
 Seu jogo é carregado dentro do nosso lançador de jogos, onde os usuários se conectam ao Basement, e seu contexto de jogador é passado para o seu jogo.
 
-A partir daí, você pode aproveitar qualquer uma de nossas funções auxiliares genéricas (como salvar estado e pontuações) + acionar qualquer número de UX cripto integradas (sem que você precise integrar nada onchain no seu jogo).
+A partir daí, você pode aproveitar qualquer uma de nossas funções auxiliares genéricas (como salvar estado e pontuações) + disparar qualquer número de UX cripto embutidas (sem que você precise integrar nada onchain no seu jogo).
 
 ## Acesso aos Dados do Jogador
 
-O lançador de jogos usa um JWT (JSON Web Token) para codificar de forma segura um contexto de jogador verificado e autenticado, que é enviado ao seu jogo.
+O lançador de jogos usa um JWT (JSON Web Token) para codificar de forma segura um contexto de jogador verificado e autenticado, que é enviado para o seu jogo.
 
-O payload é lido dos parâmetros GET, então qualquer jogo hospedado na web pode facilmente acessar e decodificá-lo usando qualquer número de bibliotecas JWT (ou usando nossas APIs do lançador).
+O payload é lido dos parâmetros GET, então qualquer jogo hospedado na web pode facilmente acessar e decodificá-lo usando qualquer número de bibliotecas JWT (ou usando nossas APIs de lançador).
 
 ### Dados Básicos do Jogador Incluem:
 
 <AccordionGroup>
-<Accordion title="Username e ENS">
-  Username (e endereço ENS resolvível compatível .b3.fun)
+<Accordion title="Nome de Usuário e ENS">
+  Nome de usuário (e endereço ENS resolvível compatível .b3.fun)
 </Accordion>
 
 <Accordion title="Avatar 3D">
@@ -211,19 +211,19 @@ O payload é lido dos parâmetros GET, então qualquer jogo hospedado na web pod
 </Accordion>
 
 <Accordion title="Endereço da Carteira">
-  Endereço da carteira verificado para interações onchain
+  Endereço de carteira verificado para interações onchain
 </Accordion>
 
 <Accordion title="Dados Adicionais">
-  Dados específicos do jogador no jogo, informações da sessão e mais - veja nossa Documentação da API do Lançador
+  Dados específicos do jogador no jogo, informações de sessão e mais - veja nossa Documentação da API do Lançador
 </Accordion>
 </AccordionGroup>
 
 <Tip>
-Você pode opcionalmente armazenar qualquer dado específico do jogo do jogador usando nossas APIs de estado do jogador.
+Você pode opcionalmente armazenar quaisquer dados específicos do jogador no jogo usando nossas APIs de estado do jogador.
 </Tip>
 
-<Card title="Explore as APIs do Lançador" icon="code" href="https://docs.basement.fun/api" cta="Ver Documentação" horizontal>
+<Card title="Explorar APIs do Lançador" icon="code" href="https://docs.basement.fun/api" cta="Ver Documentação" horizontal>
   Documentação completa para acesso aos dados do jogador e integração do jogo
 </Card>
 
@@ -235,14 +235,14 @@ Várias personalizações estão disponíveis no lançador de jogos, para que o 
 
 ### APIs Úteis Disponíveis:
 
-- **Armazenar e recuperar pontuações e leaderboards** - Gerenciamento de estado de jogo persistente
+- **Armazenar e recuperar pontuações e classificações** - Gerenciamento de estado de jogo persistente
 - **Enviar notificações** - Alertar jogadores sobre eventos do jogo
 - **Registrar e transmitir atividade do jogo** - Análises e rastreamento de comportamento do jogador  
 - **Armazenar estado do jogador e sessões de jogo** - Salvar progresso do jogo automaticamente
-- **E mais vindo!** - Novos recursos adicionados regularmente
+- **E mais por vir!** - Novas funcionalidades adicionadas regularmente
 
-<Card title="Explore as APIs do Lançador" icon="api" href="https://docs.basement.fun/api" cta="Ver Documentação" horizontal>
-  Referência completa da API para todos os recursos disponíveis do lançador
+<Card title="Explorar APIs do Lançador" icon="api" href="https://docs.basement.fun/api" cta="Ver Documentação" horizontal>
+  Referência completa da API para todos os recursos do lançador disponíveis
 </Card>
 
 ## Visão Geral da Arquitetura
@@ -265,4 +265,3 @@ Várias personalizações estão disponíveis no lançador de jogos, para que o 
     </div>
   </div>
 </Frame>
-```

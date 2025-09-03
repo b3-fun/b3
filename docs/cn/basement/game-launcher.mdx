@@ -1,6 +1,6 @@
 ---
 title: 游戏启动器
-description: 在 BSMNT (basement.fun) 平台上原生启动游戏，并构建令人上瘾的 onchain 体验，无需担心加密组件的问题
+description: 在 BSMNT (basement.fun) 平台内原生启动游戏，并构建令人上瘾的链上体验，而无需担心加密组件
 lang: cn
 originalPath: basement/game-launcher.mdx
 ---
@@ -18,7 +18,7 @@ originalPath: basement/game-launcher.mdx
 
 <Steps>
 <Step title="加载" icon="download">
-  你的游戏在BSMNT启动器内加载。我们会向你的游戏传递一个带有认证令牌的JWT。
+  你的游戏在BSMNT启动器内加载。我们会向你的游戏传递一个含有认证令牌的JWT。
 
   ```text 示例 URL
   https://yourgame.com?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
@@ -26,7 +26,7 @@ originalPath: basement/game-launcher.mdx
 </Step>
 
 <Step title="认证" icon="key">
-  你可以通过解码JWT或使用我们的API来加载玩家的个人资料。我们将负责钱包连接、验证和入门。
+  你可以通过解码JWT或使用我们的API来加载玩家的资料。我们将负责钱包连接、验证和入门。
 
   ```json 玩家资料
   {
@@ -42,7 +42,7 @@ originalPath: basement/game-launcher.mdx
 </Step>
 
 <Step title="触发" icon="zap">
-  让用户玩你的游戏。当发生某些事情时，你可以通过我们的Zapier风格的规则引擎或直接通过API触发一个动作。
+  让用户玩你的游戏。当发生某些事情时，你可以通过我们的类Zapier规则引擎或直接通过API触发一个动作。
 
   ```bash 触发API示例
   curl --location 'https://api.basement.fun/launcher/' \
@@ -57,7 +57,7 @@ originalPath: basement/game-launcher.mdx
 </Steps>
 
 <CardGroup cols={2}>
-  <Card title="注册为开发者" icon="user-plus" href="https://basement.fun/developer/signup" cta="注册">
+  <Card title="注册为开发者" icon="user-plus" href="https://basement.fun/developer/signup" cta="立即注册">
     开始使用BSMNT启动器构建游戏
   </Card>
   
@@ -68,7 +68,7 @@ originalPath: basement/game-launcher.mdx
 
 ## 你可以用BSMNT启动器做什么？
 
-游戏启动器的真正力量在于加密UX抽象。你的游戏可以通过一个简单的REST API安全地发送链上事件，可在客户端执行。
+游戏启动器的真正力量在于加密UX抽象。你的游戏可以通过一个简单的REST API安全地发送链上事件，客户端可执行。
 
 ### 现已提供
 
@@ -78,19 +78,19 @@ originalPath: basement/game-launcher.mdx
   </Card>
   
   <Card title="购买NFTs & 铸造" icon="palette">
-    让用户在达成成就或在某些游戏事件上铸造NFTs。
+    让用户在达成成就或某些游戏事件时铸造NFTs。
   </Card>
   
   <Card title="链上排行榜" icon="trophy">
-    将玩家排名带到链上，举办比赛和锦标赛。
+    将玩家排名上链，举办比赛和锦标赛。
   </Card>
   
   <Card title="发行代币 & NFTs" icon="coins">
-    根据游戏动作发送ERC20和ERC721 & 1155 NFTs。
+    根据游戏动作发送ERC20s和ERC721 & 1155 NFTs。
   </Card>
   
   <Card title="用代币支付" icon="credit-card">
-    提示用户发送或转移代币以支付游戏动作或资产。
+    提示用户发送或转移代币以支付游戏中的动作或资产。
   </Card>
 </CardGroup>
 
@@ -119,21 +119,21 @@ originalPath: basement/game-launcher.mdx
   </Card>
   
   <Card title="分享你的游戏" icon="share">
-    社交分享和病毒式机制。
+    社交分享和病毒式营销机制。
     <div style={{ marginTop: '8px' }}>
       <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>即将推出</span>
     </div>
   </Card>
   
   <Card title="记录游戏玩法" icon="video">
-    自动游戏玩法录制和分享。
+    自动游戏玩法记录和分享。
     <div style={{ marginTop: '8px' }}>
       <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>即将推出</span>
     </div>
   </Card>
   
   <Card title="列出NFTs" icon="store">
-    市场集成，用于交易游戏资产。
+    用于交易游戏资产的市场集成。
     <div style={{ marginTop: '8px' }}>
       <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>即将推出</span>
     </div>
@@ -141,7 +141,7 @@ originalPath: basement/game-launcher.mdx
 </CardGroup>
 
 <Note>
-更多动作即将到来 - 未来看起来很光明！
+更多动作即将推出 - 未来看起来很光明！
 </Note>
 
 ## 入门
@@ -173,7 +173,7 @@ originalPath: basement/game-launcher.mdx
 
 <Tab title="玩家">
   <Card title="查看BSMNT启动器的实际操作" icon="gamepad-2" href="https://basement.fun/games" cta="玩游戏" horizontal>
-    这里没有蒸汽软件 - 今天就在BSMNT玩游戏！
+    没有蒸汽软件 - 今天就在BSMNT上玩游戏！
   </Card>
   
   <Note>
@@ -184,17 +184,17 @@ originalPath: basement/game-launcher.mdx
 
 ## Basement.fun是什么？
 
-Basement是发现和玩链上游戏的地方。除了作为一个发现伟大链上游戏的平台之外，Basement还为游戏开发者提供了一种在Basement内构建无缝、原生和嵌入式体验的方式。
+Basement是发现和玩链上游戏的地方。除了作为发现伟大链上游戏的发现平台，Basement还为游戏开发者提供了一种构建无缝、原生和嵌入式体验的方式。
 
 你的游戏加载在我们的游戏启动器内，用户连接到Basement，他们的玩家上下文被传递给你的游戏。
 
-从那里，你可以利用我们的任何通用辅助函数（如保存状态和分数）+触发任何数量的内置加密UX（无需你在游戏中集成任何链上内容）。
+从那里，你可以利用我们的任何通用辅助函数（如保存状态和分数）+触发任意数量的内置加密UX（无需在你的游戏中集成任何链上内容）。
 
 ## 访问玩家数据
 
 游戏启动器使用JWT（JSON Web Token）安全编码已验证和认证的玩家上下文，发送给你的游戏。
 
-有效载荷从GET参数中读取，因此任何托管的网络游戏都可以轻松访问和解码它，使用任意数量的JWT库（或使用我们的启动器API）。
+负载从GET参数中读取，因此任何托管的网络游戏都可以轻松访问和解码它，使用任意数量的JWT库（或使用我们的启动器API）。
 
 ### 基本玩家数据包括：
 
@@ -208,11 +208,11 @@ Basement是发现和玩链上游戏的地方。除了作为一个发现伟大链
 </Accordion>
 
 <Accordion title="钱包地址">
-  已验证的钱包地址，用于链上交互
+  用于链上交互的已验证钱包地址
 </Accordion>
 
 <Accordion title="附加数据">
-  特定于游戏的玩家数据、会话信息等 - 查看我们的启动器API文档
+  特定于游戏的玩家数据、会话信息等 - 见我们的启动器API文档
 </Accordion>
 </AccordionGroup>
 
@@ -228,9 +228,9 @@ Basement是发现和玩链上游戏的地方。除了作为一个发现伟大链
 
 我们的最小游戏启动器体验意味着焦点保持在你的游戏上。
 
-游戏启动器上可用的许多自定义选项，使BSMNT可以提供几乎不可见的体验，为你处理所有核心加密UX挑战。
+游戏启动器上有许多自定义选项，以便BSMNT可以提供几乎不可见的体验，为你处理所有核心加密UX挑战。
 
-### 可用的有帮助的API：
+### 可用的有用API：
 
 - **存储和检索分数和排行榜** - 持久的游戏状态管理
 - **发送通知** - 提醒玩家关于游戏事件

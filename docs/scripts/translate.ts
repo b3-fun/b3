@@ -127,13 +127,17 @@ async function translateText(text: string, language: string, context: string = "
         {
           role: "system",
           content: `You are a professional translator. Translate the following text to ${CONFIG.languageInstructions[language]}. 
+          CRITICAL: This is MDX content that contains HTML elements. You MUST preserve all HTML exactly as written.
+          
           Important rules:
-          1. Preserve all markdown and MDX syntax exactly as is
+          1. Preserve all markdown, MDX, and HTML syntax exactly as is - DO NOT modify HTML tags
           2. Preserve all special characters, quotes, and formatting
-          3. Only translate human-readable text
+          3. Only translate human-readable text content, NOT HTML attributes or tags
           4. Keep all technical terms in English
           5. For ${language === "cn" ? "Chinese" : language === "ko" ? "Korean" : "your"} language, ensure proper character usage and typography
-          6. Maintain the same line breaks and spacing as the original text`,
+          6. Maintain the same line breaks and spacing as the original text
+          7. NEVER wrap HTML elements in code blocks (\`\`\`html) or escape them
+          8. HTML elements like <iframe>, <img>, <Card>, etc. must remain as raw HTML, not code blocks`,
         },
         {
           role: "user",
@@ -386,7 +390,11 @@ async function translateContent(content: string, language: string): Promise<stri
       messages: [
         {
           role: "system",
-          content: `You are a professional translator. Translate the following content to ${language} while preserving all markdown and MDX syntax, code blocks, and special formatting. Do not translate:
+          content: `You are a professional translator. Translate the following content to ${language} while preserving all markdown and MDX syntax, code blocks, and special formatting. 
+          
+          CRITICAL: This is MDX content that contains HTML elements. You MUST preserve all HTML exactly as written - DO NOT wrap HTML in code blocks.
+          
+          Do not translate:
           1. Code examples
           2. Variable names
           3. Technical terms
@@ -395,7 +403,9 @@ async function translateContent(content: string, language: string): Promise<stri
           6. Component names
           7. Configuration keys
           8. Command line commands
-          9. HTML/JSX tags and attributes`,
+          9. HTML/JSX tags and attributes
+          
+          NEVER wrap HTML elements like <iframe>, <img>, <Card>, etc. in code blocks. Keep them as raw HTML.`,
         },
         {
           role: "user",
@@ -570,7 +580,63 @@ async function processFile(filePath: string, language: string): Promise<void> {
   }
 }
 
+function showHelp(): void {
+  console.log(`
+B3 Documentation Translation Script
+
+Usage:
+  pnpm run translate [options]
+
+Options:
+  --all                    Process ALL files (not just changed ones)
+  --update                 Update existing translated files if source changed
+  --force-update-navigation Force retranslation of navigation structure
+  --source-hashes-only     Only update source file hashes (no translation)
+  --help, -h               Show this help message
+
+Environment Variables:
+  TRANSLATION_DRY_RUN=true Run in dry-run mode (preview only, no changes)
+  TRANSLATION_BATCH_SIZE=N Process N files at a time (default: 1)
+
+Examples:
+  pnpm run translate                           # Translate only new/changed files
+  pnpm run translate --all                     # Translate all files
+  pnpm run translate --update                  # Update existing files if source changed
+  pnpm run translate --force-update-navigation # Force retranslate navigation
+  pnpm run translate --source-hashes-only      # Only update source hashes
+  TRANSLATION_DRY_RUN=true pnpm run translate  # Preview what would be translated
+
+Language Support:
+  - Spanish (es)
+  - Brazilian Portuguese (pt-BR) 
+  - Indonesian/Malay (id)
+  - Korean (ko)
+  - Simplified Chinese (cn)
+
+What Gets Translated:
+  - Page titles and descriptions
+  - Navigation structure and labels
+  - All human-readable text content
+  - Preserves HTML elements, code blocks, and technical terms
+
+HTML Preservation:
+  The script now properly preserves HTML elements like <iframe>, <img>, <br />, etc.
+  without wrapping them in code blocks. If you encounter files with HTML escaping
+  issues, use the cleanup script:
+  
+  pnpm run clean-html-escaped --dry-run    # Preview affected files
+  pnpm run clean-html-escaped --delete     # Delete affected files
+  pnpm run translate --all                 # Re-translate with fixed prompts
+`);
+}
+
 async function main() {
+  // Handle help flag
+  if (process.argv.includes("--help") || process.argv.includes("-h")) {
+    showHelp();
+    process.exit(0);
+  }
+
   const totalTimer = new Timer("total");
   try {
     const files = await glob("**/*{.md,.mdx}", {
@@ -637,7 +703,7 @@ async function main() {
     // Process each language independently
     // // TEMPORARY: Only process Spanish
     // for (const language of ["es", "pt-BR"]) {
-    for (const language of CONFIG.languages) {
+      for (const language of CONFIG.languages) {
       console.log(`\nProcessing language: ${language}`);
       let processedCount = 0;
       let skippedCount = 0;

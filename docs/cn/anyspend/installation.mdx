@@ -4,21 +4,19 @@ description: 开始使用 AnySpend - 安装、基本设置和验证
 lang: cn
 originalPath: anyspend/installation.mdx
 ---
-```html
 <iframe class="w-full aspect-video rounded-xl mb-6" src="https://customer-gg6qs7nm5ue94t64.cloudflarestream.com/66d9ebc2e3a14ec87dfa360b83e26900/iframe?poster=https%3A%2F%2Fcustomer-gg6qs7nm5ue94t64.cloudflarestream.com%2F66d9ebc2e3a14ec87dfa360b83e26900%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D168%26height%3D600" title="AnySpend Setup" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen />
-```
 
 ## 先决条件
 
 <CardGroup cols={3}>
   <Card title="Node.js" icon="node-js">
-    v20.15.0 或更高
+    v20.15.0 或更高版本
   </Card>
   <Card title="React" icon="react">
     版本 18 或 19
   </Card>
   <Card title="TypeScript" icon="code">
-    推荐使用，以获得更好的开发体验
+    推荐使用以获得更好的开发体验
   </Card>
 </CardGroup>
 
@@ -39,11 +37,11 @@ originalPath: anyspend/installation.mdx
   </Tab>
 </Tabs>
 
-## 基本设置
+## 基础设置
 
 ### 1. 提供者设置
 
-用 `B3Provider` 和 `AnyspendProvider` 包裹您的应用，以启用 AnySpend 功能：
+使用 `B3Provider` 和 `AnyspendProvider` 包裹您的应用程序以启用 AnySpend 功能：
 
 ```tsx App.tsx icon=react
 import { AnyspendProvider } from "@b3dotfun/sdk/anyspend/react";
@@ -53,7 +51,7 @@ import "@b3dotfun/sdk/index.css";
 function App() {
   return (
     <B3Provider theme="light" environment="production">
-      <AnyspendProvider>{/* 您的应用组件 */}</AnyspendProvider>
+      <AnyspendProvider>{/* 您的应用程序组件 */}</AnyspendProvider>
     </B3Provider>
   );
 }
@@ -67,7 +65,7 @@ export default App;
   <Tab title="Mainnet">
     **端点**：`https://mainnet.anyspend.com`
 
-    用于生产应用程序与真实交易。
+    用于实际交易的生产应用程序。
   </Tab>
   <Tab title="Testnet">
     **端点**：`http://testnet.anyspend.com`
@@ -81,7 +79,7 @@ export default App;
 ### 3. TypeScript 配置（可选但推荐）
 
 <Note>
-  如果您使用 TypeScript，请确保您的 `tsconfig.json` 包含以下设置，以获得最佳兼容性：
+  如果您使用 TypeScript，请确保您的 `tsconfig.json` 包含以下设置以获得最佳兼容性：
 </Note>
 
 ```json tsconfig.json icon=settings
@@ -96,7 +94,7 @@ export default App;
 
 ## 验证
 
-创建一个简单的测试组件，以验证您的设置是否正确：
+创建一个简单的测试组件以验证您的设置是否正确：
 
 ```tsx TestComponent.tsx icon=test-tube lines
 import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
@@ -110,13 +108,13 @@ function TestComponent() {
 
 <CardGroup cols={3}>
   <Card title="探索组件" icon="puzzle-piece" href="/anyspend/components">
-    了解不同支付场景的可用组件
+    了解可用于不同支付场景的组件
   </Card>
-  <Card title="了解关于 Hooks" icon="link" href="/anyspend/hooks">
-    发现用于构建自定义支付流程的 React 钩子
+  <Card title="了解 Hooks" icon="link" href="/anyspend/hooks">
+    发现用于构建自定义支付流程的 React hooks
   </Card>
   <Card title="查看示例" icon="code" href="/anyspend/examples">
-    浏览现实世界的实现示例
+    浏览真实世界的实现示例
   </Card>
 </CardGroup>
 
@@ -124,10 +122,10 @@ function TestComponent() {
 
 <AccordionGroup>
   <Accordion title="导入错误">
-    确保您已正确安装 SDK 并导入了 CSS 文件。SDK 需要 React 18+，并且可能与旧版本存在兼容性问题。
+    确保您已正确安装 SDK 并导入了 CSS 文件。SDK 需要 React 18+ 并且可能与旧版本不兼容。
   </Accordion>
   <Accordion title="未找到提供者">
-    确保您在组件树的高层，通常在您的主应用组件中，放置了 `B3Provider` 和 `AnyspendProvider`。
+    确保您在组件树的高层，通常在您的主应用程序组件中放置了 `B3Provider` 和 `AnyspendProvider`。
   </Accordion>
   <Accordion title="TypeScript 错误">
     如果您看到 TypeScript 错误，请验证您的 `tsconfig.json` 包含上面推荐的设置。

@@ -1,26 +1,26 @@
 ---
 title: 게임 런처
 description: >-
-  BSMNT(basement.fun) 플랫폼 내에서 게임을 네이티브하게 실행하고 암호화폐 구성요소에 대해 걱정할 필요 없이 중독성 있는 온체인
-  경험을 구축하세요.
+  BSMNT(basement.fun) 플랫폼 내에서 게임을 네이티브하게 실행하고 암호화폐 구성요소에 대해 걱정하지 않고 중독성 있는 온체인
+  경험을 구축하세요
 lang: ko
 originalPath: basement/game-launcher.mdx
 ---
-```html
 <iframe
-  className="w-full aspect-video rounded-xl mb-6"
-  src="https://customer-gg6qs7nm5ue94t64.cloudflarestream.com/ae9e7c0694dacb8d602309c381fce796/iframe?poster=https%3A%2F%2Fcustomer-gg6qs7nm5ue94t64.cloudflarestream.com%2Fae9e7c0694dacb8d602309c381fce796%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600"
-  title="Basement.fun Developer Dashboard"
-  frameBorder="0"
+   className="w-full aspect-video rounded-xl mb-6"
+    src="https://customer-gg6qs7nm5ue94t64.cloudflarestream.com/ae9e7c0694dacb8d602309c381fce796/iframe?poster=https%3A%2F%2Fcustomer-gg6qs7nm5ue94t64.cloudflarestream.com%2Fae9e7c0694dacb8d602309c381fce796%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600"
+    title="Basement.fun Developer Dashboard"
+    frameBorder="0"
   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
   allowFullScreen
-></iframe>
+  ></iframe>
 
-## 작동 방식
+
+## 작동 원리
 
 <Steps>
 <Step title="로드" icon="download">
-  당신의 게임이 BSMNT 런처 안에서 로드됩니다. 우리는 인증 토큰이 담긴 JWT를 당신의 게임에 전달합니다.
+  당신의 게임이 BSMNT 런처 안에서 로드됩니다. 우리는 인증 토큰이 담긴 JWT를 게임으로 전달합니다.
   
   ```text 예시 URL
   https://yourgame.com?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
@@ -28,7 +28,7 @@ originalPath: basement/game-launcher.mdx
 </Step>
 
 <Step title="인증" icon="key">
-  JWT를 디코딩하거나 우리의 API를 사용하여 플레이어의 프로필을 로드할 수 있습니다. 지갑 연결, 검증 및 온보딩은 우리가 처리합니다.
+  JWT를 디코딩하거나 우리의 API를 사용하여 플레이어 프로필을 로드할 수 있습니다. 지갑 연결, 검증 및 온보딩은 저희가 처리합니다.
   
   ```json 플레이어 프로필
   {
@@ -44,7 +44,7 @@ originalPath: basement/game-launcher.mdx
 </Step>
 
 <Step title="트리거" icon="zap">
-  사용자가 게임을 플레이하게 합니다. 무언가 일어날 때, 우리의 Zapier 스타일 규칙 엔진을 통해 액션을 트리거하거나 API를 통해 직접 할 수 있습니다.
+  사용자가 게임을 플레이하게 합니다. 무언가 일어나면, 우리의 Zapier 스타일 규칙 엔진을 통해 액션을 트리거하거나 API를 통해 직접 할 수 있습니다.
   
   ```bash 트리거 API 예시
   curl --location 'https://api.basement.fun/launcher/' \
@@ -60,15 +60,15 @@ originalPath: basement/game-launcher.mdx
 
 <CardGroup cols={2}>
   <Card title="개발자 등록" icon="user-plus" href="https://basement.fun/developer/signup" cta="가입하기">
-    BSMNT 런처로 게임 개발을 시작하세요
+    BSMNT 런처와 함께 게임을 개발하기 시작하세요
   </Card>
   
-  <Card title="런처 플레이그라운드" icon="play" href="https://basement.fun/playground" cta="지금 시도해보기">
+  <Card title="런처 플레이그라운드" icon="play" href="https://basement.fun/playground" cta="지금 시도하기">
     샌드박스 환경에서 런처 통합을 테스트하세요
   </Card>
 </CardGroup>
 
-## BSMNT 런처로 할 수 있는 것은?
+## BSMNT 런처를 사용하면 무엇을 할 수 있나요?
 
 게임 런처의 진정한 힘은 암호화폐 UX 추상화에 있습니다. 당신의 게임은 간단한 REST API를 통해 클라이언트 측에서 실행 가능한 온체인 이벤트를 안전하게 전송할 수 있습니다.
 
@@ -80,7 +80,7 @@ originalPath: basement/game-launcher.mdx
   </Card>
   
   <Card title="NFT 구매 & 발행" icon="palette">
-    업적 달성이나 특정 게임 이벤트에 사용자가 NFT를 민팅할 수 있게 합니다.
+    성과나 특정 게임 이벤트에 따라 사용자가 NFT를 발행하게 하세요.
   </Card>
   
   <Card title="온체인 리더보드" icon="trophy">
@@ -88,11 +88,11 @@ originalPath: basement/game-launcher.mdx
   </Card>
   
   <Card title="토큰 & NFT 발행" icon="coins">
-    게임 액션에 기반한 ERC20 및 ERC721 & 1155 NFT를 전송하세요.
+    게임 액션에 따라 ERC20 및 ERC721 & 1155 NFT를 보내세요.
   </Card>
   
   <Card title="토큰으로 결제" icon="credit-card">
-    게임 내 행동이나 자산을 위해 토큰을 보내거나 전송하도록 사용자에게 요청하세요.
+    게임 내 액션 또는 자산을 위해 토큰을 보내거나 전송하도록 사용자에게 요청하세요.
   </Card>
 </CardGroup>
 
@@ -100,21 +100,21 @@ originalPath: basement/game-launcher.mdx
 
 <CardGroup cols={2}>
   <Card title="교환 & 거래" icon="arrows-rotate">
-    사용자가 다른 체인의 자산을 사용하여 귀하의 토큰을 교환할 수 있습니다.
+    사용자가 다른 체인의 자산을 사용하여 귀하의 토큰과 교환할 수 있습니다.
     <div style={{ marginTop: '8px' }}>
       <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>곧 출시 예정</span>
     </div>
   </Card>
   
   <Card title="신용카드 온램프" icon="credit-card">
-    사용자 경험을 위한 직접적인 법정화폐에서 암호화폐로의 온램프.
+    원활한 사용자 경험을 위한 직접적인 법정화폐에서 암호화폐로의 온램프.
     <div style={{ marginTop: '8px' }}>
       <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>곧 출시 예정</span>
     </div>
   </Card>
   
   <Card title="리뷰 수집" icon="star">
-    게임에 대한 내장된 리뷰 및 평가 시스템.
+    게임에 대한 내장 리뷰 및 평가 시스템.
     <div style={{ marginTop: '8px' }}>
       <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>곧 출시 예정</span>
     </div>
@@ -143,12 +143,12 @@ originalPath: basement/game-launcher.mdx
 </CardGroup>
 
 <Note>
-더 많은 액션이 오고 있습니다 - 미래는 밝아 보입니다!
+그리고 더 많은 액션이 오고 있습니다 - 미래는 밝아 보입니다!
 </Note>
 
 ## 시작하기
 
-basement.fun에 당신의 게임을 올리고 싶습니다! 시작하기는 간단하고, 무료이며, 통합하기 쉽습니다.
+basement.fun에서 여러분의 게임을 보고 싶습니다! 시작하기는 간단하고, 무료이며, 쉽습니다.
 
 <Tabs>
 <Tab title="게임 개발자">
@@ -168,45 +168,45 @@ basement.fun에 당신의 게임을 올리고 싶습니다! 시작하기는 간�
     </Card>
     
     <Card title="BSMNT API 문서" icon="book" href="https://docs.basement.fun/api">
-      완전한 API 문서 및 예시
+      완전한 API 문서와 예제
     </Card>
   </CardGroup>
 </Tab>
 
 <Tab title="플레이어">
   <Card title="BSMNT 런처를 행동에서 보기" icon="gamepad-2" href="https://basement.fun/games" cta="게임 플레이하기" horizontal>
-    여기에는 증기기관이 없습니다 - 오늘 BSMNT에서 게임을 플레이하세요!
+    여기에는 실제 게임만 있습니다 - 오늘 BSMNT에서 게임을 플레이하세요!
   </Card>
   
   <Note>
-  증기기관 없음 - 오늘 플레이하세요!
+  실제 게임만 있습니다 - 오늘 플레이하세요!
   </Note>
 </Tab>
 </Tabs>
 
 ## Basement.fun이란?
 
-Basement는 온체인 게임을 발견하고 플레이할 수 있는 장소입니다. 온체인 게임을 찾기 위한 발견 플랫폼일 뿐만 아니라, Basement는 게임 개발자가 Basement 내에서 원활하고, 네이티브하며, 임베디드 경험을 구축할 수 있는 방법을 제공합니다.
+Basement는 온체인 게임을 발견하고 플레이할 수 있는 곳입니다. 온체인 게임을 위한 발견 플랫폼일 뿐만 아니라, Basement는 게임 개발자가 Basement 내에서 원활하고, 네이티브하며, 내장된 경험을 구축할 수 있는 방법을 제공합니다.
 
-당신의 게임은 우리의 게임 런처 안에서 로드되며, 사용자는 Basement에 연결되고, 그들의 플레이어 컨텍스트가 당신의 게임에 전달됩니다.
+당신의 게임은 우리의 게임 런처 안에서 로드되며, 사용자는 Basement에 연결되고, 그들의 플레이어 컨텍스트는 당신의 게임으로 전달됩니다.
 
-거기서부터, 당신은 우리의 일반적인 도우미 함수(상태 및 점수 저장과 같은)를 활용할 수 있으며, 게임에서 온체인을 통합할 필요 없이 내장된 암호화폐 UX를 트리거할 수 있습니다.
+거기서부터, 상태 및 점수 저장과 같은 일반적인 도우미 함수를 활용할 수 있으며, 게임에서 온체인 통합을 직접 구현할 필요 없이 내장된 암호화폐 UX를 트리거할 수 있습니다.
 
 ## 플레이어 데이터 접근
 
-게임 런처는 JWT (JSON Web Token)를 사용하여 검증되고 인증된 플레이어 컨텍스트를 안전하게 인코딩하여 게임에 전송합니다.
+게임 런처는 JWT (JSON Web Token)를 사용하여 검증되고 인증된 플레이어 컨텍스트를 안전하게 인코딩하여 게임으로 전송합니다.
 
-페이로드는 GET 매개변수에서 읽혀지므로, 호스팅된 웹 게임은 어떤 JWT 라이브러리를 사용하든지 (또는 우리의 런처 API를 사용하여) 쉽게 접근 및 디코딩할 수 있습니다.
+페이로드는 GET 매개변수에서 읽혀지므로, 호스팅된 웹 게임은 다양한 JWT 라이브러리(또는 우리의 런처 API를 사용하여)를 사용하여 쉽게 접근하고 디코딩할 수 있습니다.
 
 ### 기본 플레이어 데이터에는 다음이 포함됩니다:
 
 <AccordionGroup>
-<Accordion title="사용자 이름 및 ENS">
-  사용자 이름 (및 호환 가능한 .b3.fun ENS 해석 가능 주소)
+<Accordion title="사용자 이름과 ENS">
+  사용자 이름(및 호환 가능한 .b3.fun ENS 해석 가능 주소)
 </Accordion>
 
 <Accordion title="3D 아바타">
-  3D 아바타 (.GLB 모델은 ReadyPlayerMe에 의해 구동됩니다)
+  3D 아바타(.GLB 모델은 ReadyPlayerMe에 의해 구동됨)
 </Accordion>
 
 <Accordion title="지갑 주소">
@@ -219,7 +219,7 @@ Basement는 온체인 게임을 발견하고 플레이할 수 있는 장소입�
 </AccordionGroup>
 
 <Tip>
-당신은 우리의 플레이어 상태 API를 사용하여 어떤 임의의 게임별 플레이어 데이터도 선택적으로 저장할 수 있습니다.
+우리의 플레이어 상태 API를 사용하여 임의의 게임별 플레이어 데이터를 선택적으로 저장할 수 있습니다.
 </Tip>
 
 <Card title="런처 API 탐색하기" icon="code" href="https://docs.basement.fun/api" cta="문서 보기" horizontal>
@@ -230,14 +230,14 @@ Basement는 온체인 게임을 발견하고 플레이할 수 있는 장소입�
 
 우리의 최소한의 게임 런처 경험은 당신의 게임에 초점을 맞추게 합니다.
 
-게임 런처에서 사용할 수 있는 다양한 커스터마이징이 있어서, BSMNT는 모든 핵심 암호화폐 UX 도전을 당신을 위해 거의 보이지 않게 처리할 수 있습니다.
+게임 런처에는 다양한 사용자 정의 옵션이 제공되므로, BSMNT는 거의 보이지 않는 경험을 제공하면서 모든 핵심 암호화폐 UX 도전을 대신 처리할 수 있습니다.
 
 ### 사용 가능한 도움이 되는 API:
 
 - **점수 및 리더보드 저장 및 검색** - 지속적인 게임 상태 관리
 - **알림 보내기** - 게임 이벤트에 대해 플레이어에게 알림
-- **게임 활동 로그 및 스트리밍** - 분석 및 플레이어 행동 추적
-- **플레이어 상태 및 게임 세션 저장** - 게임 진행 상황을 자동으로 저장
+- **게임 활동 로그 및 스트리밍** - 분석 및 플레이어 행동 추적  
+- **플레이어 상태 및 게임 세션 저장** - 게임 진행 상황 자동 저장
 - **그리고 더 많이 오고 있습니다!** - 정기적으로 새로운 기능 추가
 
 <Card title="런처 API 탐색하기" icon="api" href="https://docs.basement.fun/api" cta="문서 보기" horizontal>
@@ -264,4 +264,3 @@ Basement는 온체인 게임을 발견하고 플레이할 수 있는 장소입�
     </div>
   </div>
 </Frame>
-```

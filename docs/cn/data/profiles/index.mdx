@@ -4,38 +4,37 @@ description: 免费统一的链上身份聚合服务，包含来自 B3、Basemen
 lang: cn
 originalPath: data/profiles/index.mdx
 ---
-```html
 <img src="/images/profiles-banner.jpg" alt="B3 Profiles API" className="w-full h-auto rounded-3xl" />
 
 <Card title="免费社交档案 API" icon="user" href="/data/profiles/index">
   查看档案 API 参考
 </Card>
 
-## 概述
+## 概览
 
-B3 Profiles 服务作为一个数据 API，用于解析 EVM 生态系统中的去中心化用户身份。它从多个来源和协议聚合档案数据，为开发者提供一个单一的 API 端点，以访问全面的用户信息和社交上下文。
+B3 档案服务作为一个数据 API，用于解析 EVM 生态系统中的去中心化用户身份。它从多个来源和协议聚合档案数据，为开发者提供单一的 API 端点，以访问全面的用户信息和社交上下文。
 
 ## 主要特性
 
 <CardGroup cols={2}>
   <Card title="多源聚合" icon="network-wired">
-    结合了 Basement、ENS、Thirdweb Social 以及其他 Web3 身份提供者的数据
+    结合来自 Basement、ENS、Thirdweb Social 以及其他 Web3 身份提供者的数据
   </Card>
   <Card title="社交身份集成" icon="users">
-    从 ENS、Lens Protocol 和 Farcaster 网络获取社交档案
+    从 ENS、Lens 协议和 Farcaster 网络获取社交档案
   </Card>
   <Card title="智能缓存" icon="database">
-    使用 Cloudflare KV 存储进行高效数据缓存，可配置 TTL
+    使用 Cloudflare KV 存储进行高效数据缓存，支持可配置的 TTL
   </Card>
-  <Card title="用户偏好" icon="gear">
+  <Card title="用户偏好设置" icon="gear">
     允许用户通过加密签名设置首选档案来源
   </Card>
 </CardGroup>
 
-## 支持的数据来源
+## 支持的数据源
 
 - ENS (Ethereum Name Service)
-- Lens Protocol
+- Lens 协议
 - Farcaster
 - B3.ID
 - Basement 档案
@@ -43,7 +42,7 @@ B3 Profiles 服务作为一个数据 API，用于解析 EVM 生态系统中的�
 ## API 端点
 
 <Note>
-[查看 API 参考](/data/profiles/index) 获取更多详情。
+[查看 API 参考](/data/profiles/index)了解更多详情。
 </Note>
 
 ### 档案查找
@@ -56,14 +55,14 @@ GET https://profiles.b3.fun/?name=sean.b3.fun
 ```
 
 ### 设置档案偏好
-允许用户通过加密签名指定他们偏好的档案来源。
+允许用户通过加密签名指定他们首选的档案来源。
 
 ```bash
 POST /preference
 ```
 
 ### 自定义显示名称
-使用户能够设置覆盖所有其他来源的自定义显示名称。
+使用户能够设置自定义显示名称，覆盖所有其他来源。
 
 ```bash
 POST /display-name
@@ -139,7 +138,7 @@ console.log(profile.profiles.length); // 找到的来源数量
 const response = await fetch('https://profiles.b3.fun/?name=vitalik.eth');
 const profile = await response.json();
 
-console.log(profile.address); // 已解析的钱包地址
+console.log(profile.address); // 解析的钱包地址
 console.log(profile.avatar); // ENS 头像 URL
 ```
 
@@ -163,7 +162,7 @@ await fetch('https://profiles.b3.fun/preference', {
 });
 ```
 
-## 性能 & 缓存
+## 性能与缓存
 
 - **缓存持续时间**：档案数据 1 小时
 - **最新数据**：使用 `?fresh=true` 绕过缓存
@@ -172,11 +171,11 @@ await fetch('https://profiles.b3.fun/preference', {
 
 ## 速率限制
 
-该服务继承了 Cloudflare 内置的 DDoS 保护和速率限制。对于高容量应用，请考虑实现客户端缓存或联系 B3 团队获取企业访问权限。
+该服务继承了 Cloudflare 内置的 DDoS 保护和速率限制。对于高容量应用，考虑实现客户端缓存或联系 B3 团队获取企业访问权限。
 
 ## 构建链上变得简单
 <Note>
-[查看 API 参考](/data/profiles/index) 获取更多详情。
+[查看 API 参考](/data/profiles/index)了解更多详情。
 </Note>
 
 <CardGroup cols={2}>
@@ -184,7 +183,6 @@ await fetch('https://profiles.b3.fun/preference', {
     全面的区块链数据和分析
   </Card>
   <Card title="B3 SDK" href="/sdk/introduction">
-    B3 SDK 用于跨链操作和全球账户认证
+    用于跨链操作和全球账户认证的 B3 SDK
   </Card>
 </CardGroup>
-```

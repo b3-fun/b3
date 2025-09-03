@@ -1,20 +1,20 @@
 ---
-title: Liquidez entre Cadenas
+title: Liquidez Cross-Chain
 description: >-
   Cómo AnySpend (desarrollado por B3) abstrae capas de ejecución para
-  proporcionar acceso unificado a la liquidez en todas las redes de blockchain
+  proporcionar acceso unificado a la liquidez a través de todas las redes
+  blockchain
 lang: es
 originalPath: protocol/liquidity.mdx
 ---
-```html
 <iframe
-  className="w-full aspect-video rounded-xl"
-  src="https://customer-gg6qs7nm5ue94t64.cloudflarestream.com/03160a1a61ac99b9003e44a2059c7dae/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-gg6qs7nm5ue94t64.cloudflarestream.com%2F03160a1a61ac99b9003e44a2059c7dae%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600"
-  title="Fragmentación de Liquidez"
-  frameBorder="0"
+   className="w-full aspect-video rounded-xl"
+    src="https://customer-gg6qs7nm5ue94t64.cloudflarestream.com/03160a1a61ac99b9003e44a2059c7dae/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-gg6qs7nm5ue94t64.cloudflarestream.com%2F03160a1a61ac99b9003e44a2059c7dae%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600"
+    title="Fragmentación de Liquidez"
+    frameBorder="0"
   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
   allowFullScreen
-></iframe>
+  ></iframe>
 
 <Note>
 [Explora el ecosistema multichain de B3 en explorer.b3.fun](https://explorer.b3.fun/chains)
@@ -36,7 +36,7 @@ Appchains, L2s y L3s tienen liquidez aislada, lo que hace molesto construir expe
 </Card>
 
 <Card title="Mala UX" icon="face-frown">
-  Los usuarios deben transferir manualmente activos y gestionar múltiples carteras.
+  Los usuarios deben transferir activos manualmente y gestionar múltiples billeteras.
 </Card>
 
 <Card title="Ineficiencia de Capital" icon="chart-line-down">
@@ -47,36 +47,36 @@ Appchains, L2s y L3s tienen liquidez aislada, lo que hace molesto construir expe
 
 ## Acceso a Liquidez a Través de Cadenas
 
-Potenciado por nuestro producto, AnySpend, opera en la capa de ejecución del cliente, situándose entre la intención del usuario y la ejecución de la blockchain:
+Impulsado por nuestro producto, AnySpend, opera en la capa de ejecución del cliente, situándose entre la intención del usuario y la ejecución blockchain:
 
 ### Cómo Funciona
 
 1. **Depósito desde cualquier cadena**: Acepta tokens de la mayoría de las cadenas
-2. **Basado en Intenciones**: Los usuarios expresan lo que quieren, no cómo lograrlo
+2. **Basado en la Intención**: Los usuarios expresan lo que quieren, no cómo lograrlo
 3. **Descubrimiento de Rutas**: Encuentra caminos óptimos a través de todas las cadenas soportadas
 4. **Ejecución Atómica**: Las transacciones se ejecutan de manera atómica o fallan de manera elegante
 5. **Experiencia Unificada**: Operaciones complejas aparecen como transacciones únicas
 
 ```mermaid
 flowchart TD
-    A[Intención del Usuario] --> B[Depósito desde Cualquier Cadena]
-    B --> C{Procesamiento de AnySpend}
-    C --> D[Descubrimiento de Rutas]
-    D --> E[Encontrar Camino Óptimo]
-    E --> F[Ejecución Atómica]
-    F --> G[¿Éxito?]
-    G -->|Sí| H[Transacción Unificada Completa]
-    G -->|No| I[Fallo Elegante y Reversión]
+    A[User Intent] --> B[Deposit from Any Chain]
+    B --> C{AnySpend Processing}
+    C --> D[Route Discovery]
+    D --> E[Find Optimal Path]
+    E --> F[Atomic Execution]
+    F --> G[Success?]
+    G -->|Yes| H[Unified Transaction Complete]
+    G -->|No| I[Graceful Failure & Rollback]
     
     B --> B1[Ethereum]
     B --> B2[Solana]
     B --> B3[Polygon]
     B --> B4[Arbitrum]
     B --> B5[Base]
-    B --> B6[B3 & Cadenas de Juegos]
+    B --> B6[B3 & Game Chains]
     
-    H --> J[Activos Disponibles en la Cadena Destino]
-    I --> K[Activos Originales Devueltos]
+    H --> J[Assets Available on Target Chain]
+    I --> K[Original Assets Returned]
     
     style A fill:#e1f5fe
     style C fill:#f3e5f5
@@ -86,7 +86,7 @@ flowchart TD
 
 ### Cadenas Soportadas
 
-AnySpend proporciona soporte universal de cadenas:
+AnySpend proporciona soporte universal de cadena:
 
 - **Cadenas EVM**: La mayoría de las cadenas EVM, incluyendo Ethereum, Polygon, Arbitrum, Base, BSC, Avalanche
 - **Solana**: Integración completa con el ecosistema de Solana
@@ -113,4 +113,3 @@ AnySpend proporciona soporte universal de cadenas:
 </Card>
 
 </CardGroup>
-```

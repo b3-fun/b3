@@ -3,7 +3,8 @@
   "scripts": {
     "translate": "doppler run -- ts-node scripts/translate.ts",
     "translate:local": "ts-node scripts/translate.ts",
-    "translate:ci": "ts-node scripts/translate.ts"
+    "translate:ci": "ts-node scripts/translate.ts",
+    "clean-html-escaped": "ts-node scripts/clean-html-escaped-files.ts"
   },
   "dependencies": {
     "openai": "^4.28.0",

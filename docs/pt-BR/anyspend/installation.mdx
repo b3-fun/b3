@@ -1,16 +1,13 @@
 ---
 title: Instalação & Configuração
-description: 'Comece com o AnySpend - instalação, configuração básica e verificação'
+description: 'Comece a usar o AnySpend - instalação, configuração básica e verificação'
 lang: pt-BR
 originalPath: anyspend/installation.mdx
 ---
-```html
 <iframe class="w-full aspect-video rounded-xl mb-6" src="https://customer-gg6qs7nm5ue94t64.cloudflarestream.com/66d9ebc2e3a14ec87dfa360b83e26900/iframe?poster=https%3A%2F%2Fcustomer-gg6qs7nm5ue94t64.cloudflarestream.com%2F66d9ebc2e3a14ec87dfa360b83e26900%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D168%26height%3D600" title="Configuração do AnySpend" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen />
-```
 
 ## Pré-requisitos
 
-```jsx
 <CardGroup cols={3}>
   <Card title="Node.js" icon="node-js">
     v20.15.0 ou superior
@@ -22,13 +19,11 @@ originalPath: anyspend/installation.mdx
     Recomendado para uma melhor DX
   </Card>
 </CardGroup>
-```
 
 ## Instalação
 
-Escolha o seu gerenciador de pacotes preferido:
+Escolha seu gerenciador de pacotes preferido:
 
-```jsx
 <Tabs>
   <Tab title="npm">
     ```bash
@@ -41,7 +36,6 @@ Escolha o seu gerenciador de pacotes preferido:
     ```
   </Tab>
 </Tabs>
-```
 
 ## Configuração Básica
 
@@ -67,7 +61,6 @@ export default App;
 
 ### 2. Configuração do Ambiente
 
-```jsx
 <Tabs>
   <Tab title="Mainnet">
     **Endpoint**: `https://mainnet.anyspend.com`
@@ -82,13 +75,11 @@ export default App;
     Nota: Testnet atualmente não está disponível.
   </Tab>
 </Tabs>
-```
 
 ### 3. Configuração do TypeScript (Opcional mas Recomendado)
 
-```jsx
 <Note>
-  Se você está usando TypeScript, garanta que seu `tsconfig.json` inclua essas configurações para compatibilidade ótima:
+  Se você está usando TypeScript, certifique-se de que seu `tsconfig.json` inclua essas configurações para compatibilidade ótima:
 </Note>
 
 ```json tsconfig.json icon=settings
@@ -103,7 +94,7 @@ export default App;
 
 ## Verificação
 
-Crie um componente de teste simples para verificar se sua configuração funciona corretamente:
+Crie um componente de teste simples para verificar se sua configuração está funcionando corretamente:
 
 ```tsx TestComponent.tsx icon=test-tube lines
 import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
@@ -115,32 +106,28 @@ function TestComponent() {
 
 ## Próximos Passos
 
-```jsx
 <CardGroup cols={3}>
-  <Card title="Explorar Componentes" icon="puzzle-piece" href="/anyspend/components">
+  <Card title="Explore Componentes" icon="puzzle-piece" href="/anyspend/components">
     Aprenda sobre os componentes disponíveis para diferentes cenários de pagamento
   </Card>
-  <Card title="Aprender sobre Hooks" icon="link" href="/anyspend/hooks">
-    Descubra hooks do React para construir fluxos de pagamento personalizados
+  <Card title="Saiba sobre Hooks" icon="link" href="/anyspend/hooks">
+    Descubra hooks React para construir fluxos de pagamento personalizados
   </Card>
-  <Card title="Ver Exemplos" icon="code" href="/anyspend/examples">
+  <Card title="Veja Exemplos" icon="code" href="/anyspend/examples">
     Navegue por exemplos de implementação do mundo real
   </Card>
 </CardGroup>
-```
 
 ## Solução de Problemas
 
-```jsx
 <AccordionGroup>
   <Accordion title="Erros de Importação">
     Certifique-se de que você instalou o SDK corretamente e importou o arquivo CSS. O SDK requer React 18\+ e pode ter problemas de compatibilidade com versões anteriores.
   </Accordion>
   <Accordion title="Provider Não Encontrado">
-    Garanta que você tem `B3Provider` e `AnyspendProvider` colocados no alto da sua árvore de componentes, tipicamente no seu componente principal App.
+    Garanta que você tenha `B3Provider` e `AnyspendProvider` colocados no alto da sua árvore de componentes, tipicamente no seu componente principal App.
   </Accordion>
   <Accordion title="Erros de TypeScript">
     Se você está vendo erros de TypeScript, verifique se seu `tsconfig.json` inclui as configurações recomendadas acima.
   </Accordion>
 </AccordionGroup>
-```

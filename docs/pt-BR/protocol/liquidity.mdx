@@ -1,20 +1,19 @@
 ---
-title: Liquidez Cross-Chain
+title: Liquidez Inter-Blockchain
 description: >-
   Como o AnySpend (desenvolvido pela B3) abstrai camadas de execução para
   fornecer acesso unificado à liquidez em todas as redes blockchain
 lang: pt-BR
 originalPath: protocol/liquidity.mdx
 ---
-```html
 <iframe
-  className="w-full aspect-video rounded-xl"
-  src="https://customer-gg6qs7nm5ue94t64.cloudflarestream.com/03160a1a61ac99b9003e44a2059c7dae/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-gg6qs7nm5ue94t64.cloudflarestream.com%2F03160a1a61ac99b9003e44a2059c7dae%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600"
-  title="Fragmentação de Liquidez"
-  frameBorder="0"
+   className="w-full aspect-video rounded-xl"
+    src="https://customer-gg6qs7nm5ue94t64.cloudflarestream.com/03160a1a61ac99b9003e44a2059c7dae/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-gg6qs7nm5ue94t64.cloudflarestream.com%2F03160a1a61ac99b9003e44a2059c7dae%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600"
+    title="Fragmentação de Liquidez"
+    frameBorder="0"
   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
   allowFullScreen
-></iframe>
+  ></iframe>
 
 <Note>
 [Explore o ecossistema multichain da B3 em explorer.b3.fun](https://explorer.b3.fun/chains)
@@ -22,7 +21,7 @@ originalPath: protocol/liquidity.mdx
 
 ## O Problema
 
-Appchains, L2s e L3s têm liquidez isolada, tornando frustrante construir experiências sem ter que transferir ativos entre cadeias.
+Appchains, L2s e L3s possuem liquidez isolada, tornando frustrante construir experiências sem ter que transferir ativos entre cadeias.
 
 
 <CardGroup cols={2}>
@@ -32,11 +31,11 @@ Appchains, L2s e L3s têm liquidez isolada, tornando frustrante construir experi
 </Card>
 
 <Card title="Integração Complexa" icon="gears">
-  Os construtores devem integrar com dezenas de cadeias individualmente.
+  Construtores devem integrar com dezenas de cadeias individualmente.
 </Card>
 
 <Card title="Experiência de Usuário Ruim" icon="face-frown">
-  Usuários precisam transferir ativos manualmente e gerenciar múltiplas carteiras.
+  Usuários manualmente transferem ativos e gerenciam múltiplas carteiras.
 </Card>
 
 <Card title="Ineficiência de Capital" icon="chart-line-down">
@@ -47,13 +46,13 @@ Appchains, L2s e L3s têm liquidez isolada, tornando frustrante construir experi
 
 ## Acesso à Liquidez Entre Cadeias
 
-Impulsionado pelo nosso produto, AnySpend, opera na camada de execução do cliente, situando-se entre a intenção do usuário e a execução blockchain:
+Potencializado pelo nosso produto, AnySpend, opera na camada de execução do cliente, situando-se entre a intenção do usuário e a execução na blockchain:
 
 ### Como Funciona
 
 1. **Depósito de qualquer cadeia**: Aceita tokens da maioria das cadeias
-2. **Baseado em Intenção**: Usuários expressam o que querem, não como conseguir
-3. **Descoberta de Rota**: Encontra caminhos ótimos entre todas as cadeias suportadas
+2. **Baseado em Intenção**: Usuários expressam o que querem, não como alcançá-lo
+3. **Descoberta de Rota**: Encontra caminhos ótimos através de todas as cadeias suportadas
 4. **Execução Atômica**: Transações são executadas atomicamente ou falham graciosamente
 5. **Experiência Unificada**: Operações complexas aparecem como transações únicas
 
@@ -86,7 +85,7 @@ flowchart TD
 
 ### Cadeias Suportadas
 
-AnySpend fornece suporte universal a cadeias:
+AnySpend oferece suporte universal a cadeias:
 
 - **Cadeias EVM**: A maioria das cadeias EVM, incluindo Ethereum, Polygon, Arbitrum, Base, BSC, Avalanche
 - **Solana**: Integração completa com o ecossistema Solana
@@ -113,4 +112,3 @@ AnySpend fornece suporte universal a cadeias:
 </Card>
 
 </CardGroup>
-```
