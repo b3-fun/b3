@@ -384,10 +384,6 @@ Dark version
   font-family: "SFCompact", sans-serif;
 }
 
-div:has(> .b3-login-step) {
-  padding-top: 24px;
-}
-
 .b3-login-step {
   & > div > div > div > div > div > div > div > img {
     display: none;
