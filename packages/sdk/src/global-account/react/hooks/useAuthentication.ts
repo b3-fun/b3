@@ -29,10 +29,9 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
   const isConnected = useAuthStore(state => state.isConnected);
   const useAutoConnectLoadingPrevious = useRef(false);
   const setIsAuthenticatingV2 = useAuthStore(state => state.setIsAuthenticatingV2);
-  const setIsAuthenticatedV2 = useAuthStore(state => state.setIsAuthenticatedV2);
   const isAuthenticatingV2 = useAuthStore(state => state.isAuthenticatingV2);
-  const isAuthenticatedV2 = useAuthStore(state => state.isAuthenticatedV2);
-  const hasStartedConnecting = useRef(false);
+  const hasStartedConnecting = useAuthStore(state => state.hasStartedConnecting);
+  const setHasStartedConnecting = useAuthStore(state => state.setHasStartedConnecting);
   const { connect } = useConnect(partnerId, b3MainnetThirdWeb);
 
   const wallet = ecosystemWallet(ecosystemWalletId, {
@@ -43,14 +42,14 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
     client,
     wallets: [wallet],
     onConnect: async wallet => {
-      hasStartedConnecting.current = true;
+      setHasStartedConnecting(true);
       try {
         setIsConnected(true);
         if (!loginWithSiwe) {
           debug("Skipping SIWE login", { loginWithSiwe });
           setIsAuthenticated(true);
+
           setIsAuthenticatingV2(false);
-          setIsAuthenticatedV2(true);
           return;
         }
         debug("setIsAuthenticating:true:4");
@@ -66,7 +65,6 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
           setUser(userAuth.user);
           setIsAuthenticated(true);
           setIsAuthenticatingV2(false);
-          setIsAuthenticatedV2(true);
           debug("Re-authenticated successfully", { userAuth });
         } catch (error) {
           // If re-authentication fails, try fresh authentication
@@ -75,13 +73,11 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
           setUser(userAuth.user);
           setIsAuthenticated(true);
           setIsAuthenticatingV2(false);
-          setIsAuthenticatedV2(true);
           debug("Fresh authentication successful", { userAuth });
         }
       } catch (error) {
         debug("Auto-connect authentication failed", { error });
         setIsAuthenticated(false);
-        setIsAuthenticatedV2(false);
         debug("setIsAuthenticating:false:4");
         setUser();
       }
@@ -93,7 +89,7 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
    * useAutoConnectLoading starts as false
    */
   useEffect(() => {
-    if (!useAutoConnectLoading && useAutoConnectLoadingPrevious.current && !hasStartedConnecting.current) {
+    if (!useAutoConnectLoading && useAutoConnectLoadingPrevious.current && !hasStartedConnecting) {
       setIsAuthenticatingV2(false);
     }
     useAutoConnectLoadingPrevious.current = useAutoConnectLoading;
@@ -163,6 +159,5 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
     preAuthenticate,
     connect,
     isAuthenticatingV2,
-    isAuthenticatedV2,
   };
 }

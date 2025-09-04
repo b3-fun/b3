@@ -29,8 +29,8 @@ interface AuthState {
   reset: () => void;
   isAuthenticatingV2: boolean;
   setIsAuthenticatingV2: (isAuthenticating: boolean) => void;
-  isAuthenticatedV2: boolean;
-  setIsAuthenticatedV2: (isAuthenticated: boolean) => void;
+  hasStartedConnecting: boolean;
+  setHasStartedConnecting: (hasStartedConnecting: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>(set => ({
@@ -75,6 +75,6 @@ export const useAuthStore = create<AuthState>(set => ({
     }),
   isAuthenticatingV2: true,
   setIsAuthenticatingV2: isAuthenticating => set({ isAuthenticatingV2: isAuthenticating }),
-  isAuthenticatedV2: false,
-  setIsAuthenticatedV2: isAuthenticated => set({ isAuthenticatedV2: isAuthenticated }),
+  hasStartedConnecting: false,
+  setHasStartedConnecting: hasStartedConnecting => set({ hasStartedConnecting }),
 }));
