@@ -1,0 +1,618 @@
+---
+title: 예시들
+description: B3 Global 계정을 위한 완벽한 예제 및 통합 패턴
+lang: ko
+originalPath: sdk/global-account/examples.mdx
+---
+## 기본 인증 예제
+
+에러 처리 및 로딩 상태를 포함한 간단한 인증 흐름입니다.
+
+```tsx
+import { 
+  B3Provider, 
+  SignInWithB3, 
+  useB3 
+} from "@b3dotfun/sdk/global-account/react";
+
+function AuthExample() {
+  return (
+    <B3Provider environment="production">
+      <AuthComponent />
+    </B3Provider>
+  );
+}
+
+function AuthComponent() {
+  const { account, isAuthenticated, isLoading, signOut } = useB3();
+  const [authError, setAuthError] = useState<string | null>(null);
+
+  if (isLoading) {
+    return (
+      <div className="loading-container">
+        <div className="spinner" />
+        <p>계정을 로딩 중입니다...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="auth-container">
+      {isAuthenticated ? (
+        <div className="user-profile">
+          <img 
+            src={account?.avatarUrl} 
+            alt="Profile" 
+            className="avatar"
+          />
+          <h2>환영합니다, {account?.displayName}!</h2>
+          <p>이메일: {account?.email}</p>
+          <button onClick={signOut} className="sign-out-btn">
+            로그아웃
+          </button>
+        </div>
+      ) : (
+        <div className="sign-in-container">
+          <h2>B3에 로그인하기</h2>
+          
+          <SignInWithB3
+            provider={{ strategy: "google" }}
+            partnerId="your-partner-id"
+            onLoginSuccess={(globalAccount) => {
+              setAuthError(null);
+              console.log("인증 성공:", globalAccount);
+            }}
+            onLoginError={(error) => {
+              setAuthError(error.message);
+              console.error("인증 실패:", error);
+            }}
+          />
+
+          <SignInWithB3
+            provider={{ strategy: "discord" }}
+            partnerId="your-partner-id"
+            onLoginSuccess={(globalAccount) => {
+              setAuthError(null);
+              console.log("Discord 인증 성공:", globalAccount);
+            }}
+            onLoginError={(error) => {
+              setAuthError(error.message);
+            }}
+          />
+
+          {authError && (
+            <div className="error-message">
+              <p>인증 실패: {authError}</p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default AuthExample;
+```
+
+## 게임 애플리케이션 예제
+
+세션 키와 권한을 포함한 게임 애플리케이션의 완전한 예제입니다.
+
+```tsx
+import {
+  B3Provider,
+  SignInWithB3,
+  RequestPermissionsButton,
+  useB3,
+  usePermissions,
+  useAccountWallet
+} from "@b3dotfun/sdk/global-account/react";
+
+const b3Chain = {
+  id: 8333,
+  name: "B3",
+  nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+  rpc: "https://mainnet-rpc.b3.fun",
+};
+
+const gameContracts = [
+  "0x9c275ff1634519E9B5449ec79cd939B5F900564d", // 게임 계약
+  "0x...", // NFT 마켓플레이스
+  "0x...", // 토큰 계약
+];
+
+function GameApp() {
+  return (
+    <B3Provider environment="production">
+      <GameContainer />
+    </B3Provider>
+  );
+}
+
+function GameContainer() {
+  const { account, isAuthenticated } = useB3();
+  const { hasPermissions, isExpired } = usePermissions();
+  const { wallet, isConnected } = useAccountWallet();
+
+  const isGameReady = isAuthenticated && hasPermissions && !isExpired && isConnected;
+
+  return (
+    <div className="game-container">
+      <header className="game-header">
+        <h1>🎮 에픽 B3 게임</h1>
+        {isAuthenticated && (
+          <div className="user-info">
+            <img src={account?.avatarUrl} alt="Avatar" className="small-avatar" />
+            <span>{account?.displayName}</span>
+          </div>
+        )}
+      </header>
+
+      <main className="game-content">
+        {!isAuthenticated ? (
+          <AuthenticationStep />
+        ) : !isConnected ? (
+          <WalletConnectionStep />
+        ) : !hasPermissions || isExpired ? (
+          <PermissionStep />
+        ) : (
+          <GameReadyState />
+        )}
+      </main>
+    </div>
+  );
+}
+
+function AuthenticationStep() {
+  return (
+    <div className="setup-step">
+      <h2>🔐 로그인</h2>
+      <p>B3 글로벌 계정을 연결하여 게임을 시작하세요</p>
+      
+      <div className="auth-options">
+        <SignInWithB3
+          provider={{ strategy: "google" }}
+          partnerId="epic-game-studio"
+          onLoginSuccess={(account) => {
+            console.log("게임에 오신 것을 환영합니다:", account.displayName);
+          }}
+        />
+        
+        <SignInWithB3
+          provider={{ strategy: "discord" }}
+          partnerId="epic-game-studio"
+          onLoginSuccess={(account) => {
+            console.log("Discord 플레이어가 참여했습니다:", account.displayName);
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function WalletConnectionStep() {
+  const { connect } = useAccountWallet();
+
+  return (
+    <div className="setup-step">
+      <h2>👛 지갑 연결</h2>
+      <p>게임과 상호 작용하기 위해 지갑을 연결하세요</p>
+      <button onClick={connect} className="connect-wallet-btn">
+        지갑 연결
+      </button>
+    </div>
+  );
+}
+
+function PermissionStep() {
+  const gamePermissions = {
+    approvedTargets: gameContracts,
+    startDate: new Date(),
+    endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7일
+    nativeTokenLimitPerTransaction: 0.001, // 가스비를 위한 작은 ETH 한도
+  };
+
+  return (
+    <div className="setup-step">
+      <h2>🛡️ 게임 권한 부여</h2>
+      <p>게임이 당신을 대신하여 행동할 수 있도록 허용하세요</p>
+      
+      <div className="permission-details">
+        <h3>이 작업은 게임이 다음을 수행할 수 있도록 합니다:</h3>
+        <ul>
+          <li>✅ 게임 계약과 상호 작용</li>
+          <li>✅ 당신을 대신하여 NFT 거래</li>
+          <li>✅ 거래당 최대 0.001 ETH 소비</li>
+          <li>✅ 7일간 유효</li>
+        </ul>
+      </div>
+
+      <RequestPermissionsButton
+        chain={b3Chain}
+        sessionKeyAddress="0x..." // 세션 키 주소
+        permissions={gamePermissions}
+        onSuccess={() => {
+          console.log("게임 권한이 부여되었습니다! 게임 시작...");
+        }}
+        onError={(error) => {
+          console.error("권한 부여 실패:", error);
+        }}
+      />
+    </div>
+  );
+}
+
+function GameReadyState() {
+  const { account } = useB3();
+  const { wallet } = useAccountWallet();
+  
+  return (
+    <div className="game-ready">
+      <h2>🎯 게임 준비 완료!</h2>
+      <div className="player-stats">
+        <div className="stat">
+          <label>플레이어:</label>
+          <span>{account?.displayName}</span>
+        </div>
+        <div className="stat">
+          <label>지갑:</label>
+          <span>{wallet?.address?.substring(0, 6)}...{wallet?.address?.substring(-4)}</span>
+        </div>
+        <div className="stat">
+          <label>잔액:</label>
+          <span>{wallet?.balance} ETH</span>
+        </div>
+      </div>
+      
+      <div className="game-actions">
+        <button className="play-btn">게임 시작</button>
+        <button className="inventory-btn">인벤토리 보기</button>
+        <button className="marketplace-btn">마켓플레이스</button>
+      </div>
+    </div>
+  );
+}
+
+export default GameApp;
+```
+
+## 전자상거래 애플리케이션 예제
+
+전자상거래 컨텍스트에서 B3 글로벌 계정 통합을 보여주는 예제입니다.
+
+```tsx
+import {
+  B3Provider,
+  SignInWithB3,
+  useB3,
+  useAccountAssets
+} from "@b3dotfun/sdk/global-account/react";
+
+function EcommerceApp() {
+  return (
+    <B3Provider environment="production">
+      <ShopContainer />
+    </B3Provider>
+  );
+}
+
+function ShopContainer() {
+  const { isAuthenticated } = useB3();
+
+  return (
+    <div className="shop-container">
+      <header className="shop-header">
+        <h1>🛍️ B3 NFT 마켓플레이스</h1>
+        <UserSection />
+      </header>
+
+      <main>
+        {isAuthenticated ? (
+          <AuthenticatedShop />
+        ) : (
+          <GuestShop />
+        )}
+      </main>
+    </div>
+  );
+}
+
+function UserSection() {
+  const { account, isAuthenticated, signOut } = useB3();
+
+  return (
+    <div className="user-section">
+      {isAuthenticated ? (
+        <div className="user-menu">
+          <img src={account?.avatarUrl} alt="Profile" className="avatar" />
+          <div className="dropdown">
+            <span>{account?.displayName}</span>
+            <div className="dropdown-content">
+              <button>나의 컬렉션</button>
+              <button>구매 내역</button>
+              <button onClick={signOut}>로그아웃</button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="auth-buttons">
+          <SignInWithB3
+            provider={{ strategy: "google" }}
+            partnerId="nft-marketplace"
+            onLoginSuccess={(account) => {
+              console.log("마켓플레이스에 오신 것을 환영합니다:", account.displayName);
+            }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AuthenticatedShop() {
+  const { assets } = useAccountAssets();
+
+  return (
+    <div className="authenticated-shop">
+      <section className="user-collection">
+        <h2>당신의 컬렉션</h2>
+        <div className="asset-grid">
+          {assets?.map((asset) => (
+            <div key={asset.id} className="asset-card">
+              <img src={asset.imageUrl} alt={asset.name} />
+              <h3>{asset.name}</h3>
+              <p className="price">{asset.value} {asset.currency}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="marketplace">
+        <h2>마켓플레이스</h2>
+        <MarketplaceGrid />
+      </section>
+    </div>
+  );
+}
+
+function GuestShop() {
+  return (
+    <div className="guest-shop">
+      <section className="hero">
+        <h2>멋진 NFT 발견하기</h2>
+        <p>수집 및 거래를 시작하려면 로그인하세요</p>
+        
+        <SignInWithB3
+          provider={{ strategy: "google" }}
+          partnerId="nft-marketplace"
+          onLoginSuccess={() => {
+            console.log("사용자가 마켓플레이스에 참여했습니다!");
+          }}
+        />
+      </section>
+
+      <section className="featured">
+        <h2>추천 컬렉션</h2>
+        <MarketplaceGrid />
+      </section>
+    </div>
+  );
+}
+
+function MarketplaceGrid() {
+  // 모의 마켓플레이스 아이템
+  const items = [
+    { id: 1, name: "멋진 NFT #1", price: "0.1 ETH", image: "/nft1.jpg" },
+    { id: 2, name: "희귀 아이템 #42", price: "0.5 ETH", image: "/nft2.jpg" },
+    // ... 추가 아이템
+  ];
+
+  return (
+    <div className="marketplace-grid">
+      {items.map((item) => (
+        <div key={item.id} className="marketplace-item">
+          <img src={item.image} alt={item.name} />
+          <h3>{item.name}</h3>
+          <p className="price">{item.price}</p>
+          <button className="buy-btn">지금 구매하기</button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default EcommerceApp;
+```
+
+## React Native 예제
+
+React Native 애플리케이션을 위한 예제입니다.
+
+```tsx
+// App.tsx (React Native)
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { B3Provider, useB3 } from '@b3dotfun/sdk/global-account/react';
+
+function App() {
+  return (
+    <B3Provider environment="production">
+      <MainScreen />
+    </B3Provider>
+  );
+}
+
+function MainScreen() {
+  const { account, isAuthenticated, isLoading } = useB3();
+
+  if (isLoading) {
+    return (
+      <View style={styles.container}>
+        <Text>로딩 중...</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      {isAuthenticated ? (
+        <AuthenticatedView account={account} />
+      ) : (
+        <SignInView />
+      )}
+    </View>
+  );
+}
+
+function SignInView() {
+  return (
+    <View style={styles.signInContainer}>
+      <Text style={styles.title}>B3 모바일에 오신 것을 환영합니다</Text>
+      
+      {/* React Native 구현은 네이티브 인증 흐름을 사용할 것입니다 */}
+      <TouchableOpacity style={styles.signInButton}>
+        <Text style={styles.buttonText}>Google로 로그인하기</Text>
+      </TouchableOpacity>
+      
+      <TouchableOpacity style={styles.signInButton}>
+        <Text style={styles.buttonText}>Discord로 로그인하기</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+function AuthenticatedView({ account }) {
+  const { signOut } = useB3();
+
+  return (
+    <View style={styles.authenticatedContainer}>
+      <Text style={styles.welcomeText}>
+        환영합니다, {account?.displayName}!
+      </Text>
+      
+      <TouchableOpacity 
+        style={styles.signOutButton}
+        onPress={signOut}
+      >
+        <Text style={styles.buttonText}>로그아웃</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+  },
+  signInContainer: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 30,
+  },
+  signInButton: {
+    backgroundColor: '#007AFF',
+    padding: 15,
+    borderRadius: 10,
+    marginVertical: 10,
+    minWidth: 200,
+  },
+  signOutButton: {
+    backgroundColor: '#FF3B30',
+    padding: 15,
+    borderRadius: 10,
+    marginTop: 20,
+  },
+  buttonText: {
+    color: 'white',
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  authenticatedContainer: {
+    alignItems: 'center',
+  },
+  welcomeText: {
+    fontSize: 20,
+    marginBottom: 20,
+  },
+});
+
+export default App;
+```
+
+## Next.js 앱 라우터 예제
+
+Next.js 13+ 앱 라우터를 위한 예제입니다.
+
+```tsx
+// app/layout.tsx
+import { B3Provider } from '@b3dotfun/sdk/global-account/react';
+import '@b3dotfun/sdk/index.css';
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body>
+        <B3Provider environment="production">
+          {children}
+        </B3Provider>
+      </body>
+    </html>
+  );
+}
+
+// app/page.tsx
+'use client';
+
+import { useB3 } from '@b3dotfun/sdk/global-account/react';
+import AuthComponent from './components/AuthComponent';
+import Dashboard from './components/Dashboard';
+
+export default function HomePage() {
+  const { isAuthenticated, isLoading } = useB3();
+
+  if (isLoading) {
+    return <div>로딩 중...</div>;
+  }
+
+  return (
+    <main>
+      {isAuthenticated ? <Dashboard /> : <AuthComponent />}
+    </main>
+  );
+}
+
+// app/components/AuthComponent.tsx
+'use client';
+
+import { SignInWithB3 } from '@b3dotfun/sdk/global-account/react';
+
+export default function AuthComponent() {
+  return (
+    <div className="auth-container">
+      <h1>B3 앱에 오신 것을 환영합니다</h1>
+      
+      <SignInWithB3
+        provider={{ strategy: "google" }}
+        partnerId="nextjs-app"
+        onLoginSuccess={(account) => {
+          console.log("Next.js 인증 성공:", account);
+        }}
+      />
+    </div>
+  );
+}
+```
+
+## 고

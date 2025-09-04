@@ -1,0 +1,88 @@
+---
+title: Ikhtisar Onramp
+description: >-
+  Izinkan pengguna membayar dengan fiat dan menjalankan aksi onchain dalam satu
+  aliran yang mulus.
+lang: id
+originalPath: anyspend/onramp.mdx
+---
+## Apa yang Dilakukan
+
+Onramp AnySpend memungkinkan pengguna untuk membayar dengan metode fiat tradisional (misalnya, kartu kredit, transfer bank) dan secara otomatis menjalankan transaksi onchain apa pun. Alur tanpa hambatan ini menghilangkan kebutuhan bagi pengguna untuk secara manual memperoleh cryptocurrency atau mengelola pembiayaan dompet.
+
+Ini dirancang untuk mengurangi hambatan bagi pengguna yang tidak akrab dengan crypto, membuat produk berbasis blockchain dapat diakses oleh audiens yang lebih luas.
+
+## Cara Kerja
+
+1. **Pengguna Memulai Aksi**\
+   Seorang pengguna memulai aksi onchain (misalnya, minting, staking, atau interaksi kontrak).
+2. **Pembayaran Fiat**\
+   Mereka membayar dengan kartu atau transfer bank melalui Stripe atau Coinbase Pay.
+3. **Konversi \+ Eksekusi**\
+   AnySpend mengonversi fiat ke cryptocurrency yang diinginkan dan mengeksekusi transaksi.
+4. **Pengiriman Dompet**\
+   Hasilnya dikirim ke dompet terhubung pengguna atau dompet global. Tidak diperlukan akuisisi crypto.
+
+## Opsi Pembayaran
+
+**Stripe**
+
+- Dukungan global untuk kartu kredit/debit utama
+- Otentikasi 3D Secure
+- Konversi mata uang untuk transaksi non-USD
+- Metode pembayaran dan penyesuaian biaya lokal
+
+**Coinbase Pay**
+
+- Pengguna dapat membayar langsung dengan saldo akun Coinbase mereka atau kartu debit
+- Tidak perlu mentransfer dana antar platform
+- UX terpercaya untuk pengguna Coinbase yang ada
+- Tidak ada biaya tambahan dari AnySpend
+
+**Arsitektur Penyedia yang Dapat Diperluas**
+
+- Sistem modular untuk mendukung penyedia fiat tambahan
+- Perutean dinamis berdasarkan wilayah dan ketersediaan
+- Fleksibilitas kepatuhan bawaan untuk dukungan regional
+
+## Keamanan
+
+AnySpend mencakup mesin risiko waktu nyata yang terintegrasi yang dirancang untuk meminimalkan penipuan sambil menjaga pengalaman pengguna tetap mulus.
+
+**Fitur Utama:**
+
+- Analisis risiko perilaku dan transaksional
+- Pemeriksaan keamanan perangkat dan jaringan
+- Intelijen ancaman waktu nyata
+
+**Evaluasi Transaksi Cerdas**
+
+Setiap transaksi dievaluasi secara waktu nyata:
+
+- **Izinkan** – transaksi berlangsung normal
+- **Verifikasi** – verifikasi pengguna tambahan mungkin diperlukan
+- **Blokir** – aktivitas mencurigakan dicegah
+
+## Cakupan Global
+
+AnySpend mendukung berbagai mata uang dan wilayah melalui penyedia terintegrasi:
+
+- Deteksi lokasi otomatis dan lokalitas
+- Metode pembayaran dan penanganan mata uang lokal
+- Seleksi penyedia dinamis berdasarkan geografi
+- Kepatuhan regional langsung dari kotak
+
+## Biaya
+
+- **Pembayaran Stripe:** 5.4% \+ \$0.30 per transaksi (tarif tetap, global)
+- **Coinbase Pay:** Tidak ada biaya tambahan dari AnySpend
+
+Pengguna ditunjukkan rincian biaya yang transparan saat checkout.
+
+## Kasus Penggunaan Umum
+
+AnySpend memungkinkan pengembang untuk:
+
+- Membiarkan pengguna mint NFT dengan kartu kredit
+- Memungkinkan staking, voting, atau aksi game langsung dari fiat
+- Mengonboard pengguna ke DeFi, game, atau dApps lainnya tanpa prasyarat crypto

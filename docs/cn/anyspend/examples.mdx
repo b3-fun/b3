@@ -1,0 +1,518 @@
+---
+title: 示例 & 使用案例
+description: 常见 AnySpend 集成模式的实际应用示例
+lang: cn
+originalPath: anyspend/examples.mdx
+---
+# 示例和用例
+
+常见 AnySpend 集成模式的实际实现示例，从简单的交换到复杂的 DeFi 和游戏应用。
+
+## 🔄 跨链代币交换
+
+### 基础交换界面
+
+非常适合 DeFi 应用、投资组合管理器或任何需要代币交换功能的应用。
+
+```tsx title="简单交换页面" icon="exchange-alt"
+import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
+
+function TokenSwapPage() {
+  const [userAddress] = useWallet(); // 你的钱包钩子
+
+  return (
+    <div className="swap-container">
+      <h1>交换代币</h1>
+      <AnySpend
+        mode="page"
+        recipientAddress={userAddress}
+        onSuccess={(txHash) => {
+          // 更新用户的投资组合
+          toast.success("交换成功完成！");
+
+          // 可选：跟踪分析
+          analytics.track("swap_completed", {
+            txHash,
+            userAddress,
+          });
+
+          // 刷新用户余额
+          queryClient.invalidateQueries(['user-balances', userAddress]);
+        }}
+      />
+    </div>
+  );
+}
+```
+
+### 高级交换带报价预览
+
+```tsx title="高级交换界面" icon="chart-line" lines
+import { useAnyspendQuote, AnySpend } from "@b3dotfun/sdk/anyspend/react";
+
+function AdvancedSwapInterface() {
+  const [fromToken, setFromToken] = useState(USDC_ETHEREUM);
+  const [toToken, setToToken] = useState(ETH_B3);
+  const [amount, setAmount] = useState("100");
+  const [isSwapOpen, setIsSwapOpen] = useState(false);
+
+  const quoteRequest = useMemo(() => ({
+    srcChain: fromToken.chainId,
+    dstChain: toToken.chainId,
+    srcTokenAddress: fromToken.address,
+    dstTokenAddress: toToken.address,
+    type: "swap" as const,
+    tradeType: "EXACT_INPUT" as const,
+    amount: parseUnits(amount || "0", fromToken.decimals).toString(),
+  }), [fromToken, toToken, amount]);
+
+  const { anyspendQuote, isLoadingAnyspendQuote } = useAnyspendQuote(quoteRequest);
+
+  return (
+    <div className="advanced-swap">
+      <div className="swap-form">
+        <TokenInput
+          label="从"
+          token={fromToken}
+          amount={amount}
+          onTokenChange={setFromToken}
+          onAmountChange={setAmount}
+        />
+
+        <SwapArrowButton onClick={() => {
+          setFromToken(toToken);
+          setToToken(fromToken);
+        }} />
+
+        <TokenInput
+          label="到"
+          token={toToken}
+          amount={anyspendQuote?.expectedOutput || "0"}
+          onTokenChange={setToToken}
+          readOnly
+        />
+
+        {anyspendQuote && (
+          <div className="quote-details">
+            <div>汇率: 1 {fromToken.symbol} = {anyspendQuote.rate} {toToken.symbol}</div>
+            <div>网络费用: ${anyspendQuote.networkFeeUsd}</div>
+            <div>服务费: ${anyspendQuote.serviceFeeUsd}</div>
+            <div>总计: ${anyspendQuote.totalUsdCost}</div>
+          </div>
+        )}
+
+        <button
+          onClick={() => setIsSwapOpen(true)}
+          disabled={isLoadingAnyspendQuote || !anyspendQuote}
+          className="swap-button"
+        >
+          {isLoadingAnyspendQuote ? "正在获取报价..." : "交换代币"}
+        </button>
+      </div>
+
+      {isSwapOpen && (
+        <AnySpend
+          mode="modal"
+          recipientAddress={userAddress}
+          destinationTokenAddress={toToken.address}
+          destinationTokenChainId={toToken.chainId}
+          onSuccess={() => {
+            setIsSwapOpen(false);
+            toast.success("交换完成！");
+          }}
+        />
+      )}
+    </div>
+  );
+}
+```
+
+## 🖼️ NFT 市场集成
+
+### 简单 NFT 购买
+
+```tsx title="NFT 卡片组件" icon="image" lines
+import { AnySpendNFTButton } from "@b3dotfun/sdk/anyspend/react";
+
+function NFTCard({ nft }: { nft: NFTListing }) {
+  const [userAddress] = useWallet();
+  const [isOwned, setIsOwned] = useState(false);
+
+  const nftContract = {
+    chainId: nft.chainId,
+    contractAddress: nft.contractAddress,
+    price: nft.priceWei,
+    priceFormatted: nft.priceFormatted,
+    currency: nft.currency,
+    name: nft.name,
+    description: nft.description,
+    imageUrl: nft.imageUrl,
+  };
+
+  return (
+    <div className="nft-card">
+      <img src={nft.imageUrl} alt={nft.name} />
+      <div className="nft-details">
+        <h3>{nft.name}</h3>
+        <p>{nft.description}</p>
+        <div className="price">
+          {nft.priceFormatted} {nft.currency.symbol}
+        </div>
+
+        {isOwned ? (
+          <div className="owned-badge">✅ 已拥有</div>
+        ) : (
+          <AnySpendNFTButton
+            nftContract={nftContract}
+            recipientAddress={userAddress}
+            onSuccess={(txHash) => {
+              setIsOwned(true);
+
+              // 更新用户的 NFT 收藏
+              queryClient.invalidateQueries(['user-nfts', userAddress]);
+
+              // 显示成功消息和浏览器链接
+              toast.success(
+                <div>
+                  NFT 购买成功！
+                  <a href={`https://explorer.b3.fun/tx/${txHash}`} target="_blank">
+                    查看交易
+                  </a>
+                </div>
+              );
+            }}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+```
+
+### NFT 市场批量购买
+
+```tsx title="批量购买 NFT" icon="shopping-cart" lines
+function NFTMarketplace() {
+  const [selectedNFTs, setSelectedNFTs] = useState<NFTListing[]>([]);
+  const [userAddress] = useWallet();
+
+  const handleBulkPurchase = () => {
+    // 对于批量购买，创建多个订单或使用批处理合约
+    selectedNFTs.forEach((nft, index) => {
+      setTimeout(() => {
+        // 分阶段购买以避免速率限制
+        createSingleNFTPurchase(nft);
+      }, index * 1000);
+    });
+  };
+
+  return (
+    <div className="marketplace">
+      <div className="nft-grid">
+        {nfts.map((nft) => (
+          <NFTCard
+            key={nft.id}
+            nft={nft}
+            onSelect={(selected) => {
+              if (selected) {
+                setSelectedNFTs([...selectedNFTs, nft]);
+              } else {
+                setSelectedNFTs(selectedNFTs.filter(n => n.id !== nft.id));
+              }
+            }}
+          />
+        ))}
+      </div>
+
+      {selectedNFTs.length > 0 && (
+        <div className="bulk-purchase">
+          <p>已选中: {selectedNFTs.length} 个 NFT</p>
+          <p>总计: {calculateTotal(selectedNFTs)} ETH</p>
+          <button onClick={handleBulkPurchase}>
+            购买选中的 NFT
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## 🎮 游戏 & DeFi 应用
+
+### 质押界面
+
+```tsx title="质押池组件" icon="coins" lines
+import { AnySpendCustom } from "@b3dotfun/sdk/anyspend/react";
+import { encodeFunctionData } from "viem";
+
+function StakingPool({ pool }: { pool: StakingPool }) {
+  const [stakeAmount, setStakeAmount] = useState("");
+  const [stakingDuration, setStakingDuration] = useState(30);
+  const [userAddress] = useWallet();
+
+  const stakingCalldata = useMemo(() => {
+    if (!stakeAmount) return "0x";
+
+    const amountWei = parseUnits(stakeAmount, pool.token.decimals);
+
+    return encodeFunctionData({
+      abi: stakingPoolABI,
+      functionName: "stake",
+      args: [amountWei, stakingDuration * 24 * 60 * 60], // 以秒为单位的持续时间
+    });
+  }, [stakeAmount, stakingDuration]);
+
+  const expectedRewards = useMemo(() => {
+    if (!stakeAmount) return "0";
+    const amount = parseFloat(stakeAmount);
+    const apy = pool.apy / 100;
+    const durationInYears = stakingDuration / 365;
+    return (amount * apy * durationInYears).toFixed(4);
+  }, [stakeAmount, stakingDuration, pool.apy]);
+
+  return (
+    <div className="staking-pool">
+      <div className="pool-info">
+        <h2>{pool.name}</h2>
+        <p>APY: {pool.apy}%</p>
+        <p>TVL: ${pool.totalValueLocked.toLocaleString()}</p>
+      </div>
+
+      <div className="stake-form">
+        <div className="input-group">
+          <label>质押金额</label>
+          <input
+            type="number"
+            value={stakeAmount}
+            onChange={(e) => setStakeAmount(e.target.value)}
+            placeholder="0.0"
+          />
+          <span>{pool.token.symbol}</span>
+        </div>
+
+        <div className="input-group">
+          <label>质押时长</label>
+          <select
+            value={stakingDuration}
+            onChange={(e) => setStakingDuration(Number(e.target.value))}
+          >
+            <option value={7}>7 天 (2% APY)</option>
+            <option value={30}>30 天 (5% APY)</option>
+            <option value={90}>90 天 (8% APY)</option>
+            <option value={365}>1 年 (12% APY)</option>
+          </select>
+        </div>
+
+        <div className="rewards-preview">
+          <p>预期奖励: {expectedRewards} {pool.token.symbol}</p>
+        </div>
+
+        <AnySpendCustom
+          orderType="custom"
+          dstChainId={pool.chainId}
+          dstToken={pool.token}
+          dstAmount={parseUnits(stakeAmount || "0", pool.token.decimals).toString()}
+          contractAddress={pool.contractAddress}
+          encodedData={stakingCalldata}
+          metadata={{
+            action: "stake",
+            poolId: pool.id,
+            duration: stakingDuration,
+            expectedRewards,
+          }}
+          header={({ anyspendPrice, isLoadingAnyspendPrice }) => (
+            <div className="staking-header">
+              <h3>质押 {pool.token.symbol}</h3>
+              <div className="stake-summary">
+                <div>金额: {stakeAmount} {pool.token.symbol}</div>
+                <div>时长: {stakingDuration} 天</div>
+                <div>预期奖励: {expectedRewards} {pool.token.symbol}</div>
+                {anyspendPrice && (
+                  <div>总成本: ${anyspendPrice.totalUsdCost}</div>
+                )}
+              </div>
+            </div>
+          )}
+          onSuccess={(txHash) => {
+            toast.success("质押成功！");
+
+            // 更新用户的质押位置
+            queryClient.invalidateQueries(['staking-positions', userAddress]);
+
+            // 重置表单
+            setStakeAmount("");
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+```
+
+### 游戏转盘
+
+```tsx title="转盘游戏" icon="gamepad" lines
+import { AnySpendBuySpin } from "@b3dotfun/sdk/anyspend/react";
+
+function SpinWheel({ game }: { game: GameConfig }) {
+  const [userAddress] = useWallet();
+  const [spinHistory, setSpinHistory] = useState<SpinResult[]>([]);
+
+  return (
+    <div className="spin-game">
+      <div className="wheel-container">
+        <SpinWheelVisual prizes={game.prizes} />
+      </div>
+
+      <div className="game-info">
+        <h2>{game.name}</h2>
+        <p>每次旋转成本: {game.spinCost} {game.currency.symbol}</p>
+        <div className="prizes">
+          <h3>可能的奖品:</h3>
+          {game.prizes.map((prize, index) => (
+            <div key={index} className="prize">
+              <span>{prize.name}</span>
+              <span>{prize.probability}% 几率</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <AnySpendBuySpin
+        gameContract={game.contractAddress}
+        spinPrice={game.spinCostWei}
+        recipientAddress={userAddress}
+        onSuccess={(txHash) => {
+          // 处理旋转结果
+          fetchSpinResult(txHash).then((result) => {
+            setSpinHistory([result, ...spinHistory]);
+
+            if (result.isWinner) {
+              toast.success(`你赢得了 ${result.prize}! 🎉`);
+            } else {
+              toast.info("下次好运！");
+            }
+          });
+        }}
+      />
+
+      <div className="spin-history">
+        <h3>最近的旋转</h3>
+        {spinHistory.map((spin, index) => (
+          <div key={index} className={`spin-result ${spin.isWinner ? 'winner' : ''}`}>
+            <span>{spin.prize || "无奖品"}</span>
+            <span>{new Date(spin.timestamp).toLocaleTimeString()}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+### 锦标赛入口
+
+```tsx title="锦标赛入口" icon="trophy" lines
+import { AnySpendTournament } from "@b3dotfun/sdk/anyspend/react";
+
+function TournamentEntry({ tournament }: { tournament: Tournament }) {
+  const [userAddress] = useWallet();
+  const [isRegistered, setIsRegistered] = useState(false);
+
+  return (
+    <div className="tournament-entry">
+      <div className="tournament-info">
+        <h2>{tournament.name}</h2>
+        <p>奖池: ${tournament.prizePool.toLocaleString()}</p>
+        <p>报名费: {tournament.entryFee} {tournament.currency.symbol}</p>
+        <p>玩家: {tournament.currentPlayers}/{tournament.maxPlayers}</p>
+        <p>开始时间: {new Date(tournament.startTime).toLocaleString()}</p>
+      </div>
+
+      {isRegistered ? (
+        <div className="registered">
+          <span className="check-icon">✅</span>
+          <span>你已注册！</span>
+          <p>锦标赛开始 {formatTimeUntil(tournament.startTime)}</p>
+        </div>
+      ) : (
+        <AnySpendTournament
+          tournamentId={tournament.id}
+          entryFee={tournament.entryFeeWei}
+          recipientAddress={userAddress}
+          onSuccess={(txHash) => {
+            setIsRegistered(true);
+
+            // 更新锦标赛玩家计数
+            queryClient.invalidateQueries(['tournament', tournament.id]);
+
+            toast.success("成功注册锦标赛！");
+          }}
+        />
+      )}
+
+      <div className="tournament-rules">
+        <h3>规则</h3>
+        <ul>
+          {tournament.rules.map((rule, index) => (
+            <li key={index}>{rule}</li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+```
+
+## 💰 法币到加密货币入口
+
+### 简单入门流程
+
+```tsx title="用户入门" icon="credit-card" lines
+function UserOnboarding() {
+  const [step, setStep] = useState(1);
+  const [userAddress] = useWallet();
+
+  return (
+    <div className="onboarding">
+      <div className="progress-bar">
+        <div className={`step ${step >= 1 ? 'active' : ''}`}>1. 连接钱包</div>
+        <div className={`step ${step >= 2 ? 'active' : ''}`}>2. 购买加密货币</div>
+        <div className={`step ${step >= 3 ? 'active' : ''}`}>3. 开始使用</div>
+      </div>
+
+      {step === 1 && (
+        <div className="step-content">
+          <h2>欢迎！让我们开始吧</h2>
+          <p>首先，连接你的钱包以继续。</p>
+          <WalletConnectButton onConnect={() => setStep(2)} />
+        </div>
+      )}
+
+      {step === 2 && (
+        <div className="step-content">
+          <h2>购买你的第一笔加密货币</h2>
+          <p>使用你的信用卡购买代币以开始。</p>
+
+          <AnySpend
+            mode="page"
+            defaultActiveTab="fiat"
+            destinationTokenAddress="0x0000000000000000000000000000000000000000" // ETH
+            destinationTokenChainId={8333} // B3
+            recipientAddress={userAddress}
+            onSuccess={() => {
+              setStep(3);
+              toast.success("购买成功！欢迎来到生态系统！");
+            }}
+          />
+        </div>
+      )}
+
+      {step === 3 && (
+        <div className="step-content">
+          <h2>你已准备就绪！🎉</h2>
+          <p>你的加密货币购买已完成。接下来你可以做：</p>
+
+          <div className="next-actions">
+            <button onClick={() => router.push

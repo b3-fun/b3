@@ -1,0 +1,240 @@
+---
+title: Panduan Konstruksi
+description: >-
+  Panduan ini akan memandu Anda mengintegrasikan game Construct Anda dengan
+  platform Basement.fun menggunakan web APIs
+lang: id
+originalPath: basement/construct-guide.mdx
+---
+## Events
+
+Construct memiliki GUI yang hebat yang memungkinkan pengembang membuat game dengan sedikit hingga tanpa kode. Dokumen berikut akan mengulas bagaimana menghubungkan game Anda ke Basement.fun menggunakan lembar event Construct.
+
+### Komponen Kunci
+
+Anda perlu menambahkan beberapa objek ke proyek Anda untuk memungkinkan game Construct Anda berinteraksi dengan platform Basement.fun.
+
+<Note>
+Untuk menambahkan objek ke proyek Anda, pergi ke **Layout View**, klik kanan di layout, pilih **Insert New Object**, dan kemudian pilih objek yang ingin Anda masukkan ke dalam proyek Anda. Setelah menambahkan objek, objek tersebut akan tersedia di lembar event Anda.
+</Note>
+
+<CardGroup cols={1}>
+  <Card title="Browser Object" icon="globe">
+    Objek Browser memungkinkan Anda menulis ke konsol. Ini tidak diperlukan, tetapi akan berguna saat memverifikasi data dan debugging kode Anda.
+  </Card>
+  
+  <Card title="AJAX Object" icon="arrow-right-left">
+    Objek AJAX memungkinkan game Anda berinteraksi dengan API B3.
+    
+    - **Permintaan POST** memerlukan Anda untuk membuat aksi terpisah untuk setiap parameter header dan satu aksi post ke URL untuk semua parameter body
+    - **Permintaan GET** memerlukan Anda untuk menggabungkan semua parameter dan nilai yang Anda butuhkan ke dalam satu URL untuk mengirim permintaan ke API
+    - **Respon API** dapat dirujuk menggunakan `AJAX.LastData`
+  </Card>
+  
+  <Card title="JSON Object" icon="braces">
+    Objek JSON memungkinkan game Anda menangani respon JSON. Anda perlu mem-parse string JSON untuk memanfaatkan data respon.
+  </Card>
+</CardGroup>
+
+## Contoh Event
+
+Event contoh ini akan membahas permintaan POST Set Scores yang dijelaskan dalam Spesifikasi API BSMNT.
+
+### Contoh Permintaan
+
+<Steps>
+<Step title="Create Function">
+  Klik kanan di mana saja pada lembar event, buat sebuah fungsi, dan beri nama **SetScore**.
+</Step>
+
+<Step title="Set Service Method Header">
+  Klik tambah aksi, pilih **AJAX**, pilih **Set request header**.
+  - **Header field**: `X-Service-Method`
+  - **Value field**: `setUserScore`
+</Step>
+
+<Step title="Set Authorization Header">
+  Tambahkan aksi AJAX lain dan pilih **Set request header** lagi.
+  - **Header field**: `Authorization`
+  - **Value field**: `Bearer <game secret>`
+  
+  <Warning>
+  Ganti `<game secret>` dengan token rahasia game Anda yang sebenarnya.
+  </Warning>
+</Step>
+
+<Step title="Configure POST Request">
+  Tambahkan aksi AJAX lain tetapi kali ini, pilih **Post to URL**. Masukkan berikut ini:
+  - **Tag**: `setUserScore`
+  - **URL**: `https://api.basement.fun/launcher`
+  - **Data**: `{"launcherJwt": "string", "nonce": "string", "score": 0}`
+  - **Method**: `POST`
+  
+  <Tip>
+  Ini adalah permintaan contoh - pastikan untuk mengganti nilai Anda dengan variabel yang ditetapkan oleh event dalam game Anda.
+  </Tip>
+</Step>
+</Steps>
+
+### Contoh Respon
+
+Respon contoh akan terlihat seperti ini:
+
+```json API Response
+{
+    "success": true | false,
+    "error"?: "error string",
+    "newScore"?: {
+        "_id": "unique id",
+        "nonce": "nonce",
+        "updatedAt": 23151264, // unix timestamp
+        "score": 100.235,
+        "gameId": "game uuid",
+        "normalizedAddress": "user lowercase address"
+    }
+}
+```
+
+## Mengambil Data
+
+Di Construct, mari kita ambil nonce dari respon, sehingga kita dapat menggunakannya untuk mengambil skor pada waktu yang akan datang.
+
+<Steps>
+<Step title="Create Global Variable">
+  Klik kanan di mana saja pada lembar event dan tambahkan variabel global bernama **Nonce**.
+</Step>
+
+<Step title="Add Trigger Event">
+  Tambahkan event yang dipicu oleh game Anda.
+  
+  **Contoh**: Untuk menangkap skor pengguna saat mereka menabrak sepeda lain, tambahkan kondisi **on collision with another object** ke biker dan atur objeknya ke biker.
+</Step>
+
+<Step title="Call SetScore Function">
+  Tambahkan aksi, pilih **functions**, dan pilih **SetScore**.
+</Step>
+
+<Step title="Parse JSON Response">
+  Tambahkan aksi **JSON**, pilih **parse**, dan masukkan `AJAX.LastData` di bidang string JSON.
+  
+  <Note>
+  Ini akan mengambil respon dari permintaan SetScore kami.
+  </Note>
+</Step>
+
+<Step title="Extract Nonce Value">
+  Tambahkan aksi **system**, pilih **set value**, pilih variabel **Nonce**, dan masukkan `JSON.Get("newScore.nonce")`.
+  
+  <Check>
+  Sekarang variabel Nonce Anda diatur ke nonce yang dikembalikan oleh respon API!
+  </Check>
+</Step>
+</Steps>
+
+## Integrasi Lengkap
+
+Mengikuti langkah yang sama, Anda dapat membuat event untuk setiap titik akhir API dengan meninjau semua parameter dan respon.
+
+### Titik Akhir API yang Tersedia
+
+<AccordionGroup>
+<Accordion title="Set User Score">
+  Perbarui atau atur skor pengguna untuk papan peringkat.
+  
+  **Endpoint**: `POST /launcher`  
+  **Headers**: `X-Service-Method: setUserScore`
+  
+  ```json
+  {
+    "launcherJwt": "string",
+    "nonce": "string", 
+    "score": 0
+  }
+  ```
+</Accordion>
+
+<Accordion title="Get User Score">
+  Ambil skor saat ini dari pengguna.
+  
+  **Endpoint**: `GET /launcher`  
+  **Headers**: `X-Service-Method: getUserScore`
+</Accordion>
+
+<Accordion title="Trigger Rules Engine">
+  Picu aksi onchain berdasarkan event game.
+  
+  **Endpoint**: `POST /launcher`  
+  **Headers**: `X-Service-Method: triggerRulesEngine`
+  
+  ```json
+  {
+    "launcherJwt": "string",
+    "trigger": "string",
+    "nonce": "string"
+  }
+  ```
+</Accordion>
+</AccordionGroup>
+
+## Praktik Terbaik
+
+<CardGroup cols={2}>
+  <Card title="Error Handling" icon="circle-info">
+    Selalu periksa field `success` dalam respon API dan tangani kesalahan dengan anggun.
+  </Card>
+  
+  <Card title="Variable Management" icon="cube">
+    Gunakan variabel global Construct untuk menyimpan data penting seperti token JWT dan skor pengguna.
+  </Card>
+  
+  <Card title="Debug Console" icon="bug">
+    Gunakan objek Browser untuk mencatat informasi penting ke konsol selama pengembangan.
+  </Card>
+  
+  <Card title="API Rate Limits" icon="clock">
+    Perhatikan batasan laju API dan hindari membuat terlalu banyak permintaan dalam waktu singkat.
+  </Card>
+</CardGroup>
+
+## Langkah Selanjutnya
+
+<CardGroup cols={2}>
+  <Card title="BSMNT API Documentation" icon="book" href="https://docs.basement.fun/api">
+    Referensi API lengkap untuk semua titik akhir yang tersedia
+  </Card>
+  
+  <Card title="Game Launcher Guide" icon="rocket" href="/basement/game-launcher">
+    Pelajari cara mengintegrasikan dengan peluncur game BSMNT
+  </Card>
+  
+  <Card title="Construct Documentation" icon="book" href="https://construct.net/make-games/manuals">
+    Dokumentasi dan tutorial Construct 3 resmi
+  </Card>
+  
+  <Card title="Example Projects" icon="folder" href="https://github.com/b3-fun">
+    Proyek contoh menggunakan integrasi BSMNT
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+<Accordion title="AJAX requests not working">
+  - Pastikan Anda telah menambahkan objek AJAX ke proyek Anda
+  - Periksa apakah semua header yang diperlukan telah diatur dengan benar
+  - Verifikasi token rahasia game Anda valid
+  - Pastikan URL titik akhir API benar
+</Accordion>
+
+<Accordion title="JSON parsing errors">
+  - Konfirmasi objek JSON telah ditambahkan ke proyek Anda
+  - Periksa bahwa `AJAX.LastData` berisi JSON yang valid
+  - Gunakan objek Browser untuk mencatat respon mentah untuk debugging
+</Accordion>
+
+<Accordion title="Authentication issues">
+  - Verifikasi token JWT peluncur Anda valid
+  - Periksa bahwa header Authorization diformat dengan benar
+  - Pastikan rahasia game Anda belum kedaluwarsa
+</Accordion>
+</AccordionGroup>

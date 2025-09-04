@@ -1,0 +1,78 @@
+---
+lang: ko
+originalPath: snippets/contact-info.mdx
+---
+```jsx
+export const SupportLinks = () => (
+  <div>
+    <h3>도움이 필요하신가요?</h3>
+    <ul>
+      <li>
+        📚 <a href="https://docs.b3.fun">B3 문서</a>
+      </li>
+      <li>
+        💬 <a href="https://discord.gg/b3dotfun">우리의 Discord에 참여하기</a>
+      </li>
+      <li>
+        🐛 <a href="https://github.com/b3-fun/b3/issues">GitHub에서 이슈 보고하기</a>
+      </li>
+      <li>
+        📧 이메일로 문의하기 <a href="mailto:support@b3.fun">support@b3.fun</a>
+      </li>
+    </ul>
+  </div>
+);
+
+export const CommunityResources = () => (
+  <div>
+    <h3>커뮤니티 & 자원</h3>
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+      <div>
+        <h4>🎮 라이브로 체험하기</h4>
+        <p>
+          <a href="https://anyspend.com">AnySpend 데모</a> - 우리의 SDK를 실제로 체험해 보세요
+        </p>
+      </div>
+      <div>
+        <h4>💬 지원 받기</h4>
+        <p>
+          <a href="https://discord.gg/b3dotfun">Discord 커뮤니티</a> - 대화에 참여하세요
+        </p>
+      </div>
+      <div>
+        <h4>🔧 기여하기</h4>
+        <p>
+          <a href="https://github.com/b3-fun/b3">GitHub 저장소</a> - 프로젝트에 기여하세요
+        </p>
+      </div>
+      <div>
+        <h4>🌐 생태계</h4>
+        <p>
+          <a href="https://docs.b3.fun">B3 문서</a> - 더 넓은 생태계를 탐험하세요
+        </p>
+      </div>
+    </div>
+  </div>
+);
+
+export const ContactInfo = ({ type = "general" }) => {
+  const email =
+    type === "support"
+      ? "support@b3.fun"
+      : type === "partnerships"
+        ? "partnerships@b3.fun"
+        : type === "developer"
+          ? "developers@b3.fun"
+          : "support@b3.fun";
+
+return (
+
+<div>
+  <p>
+    📧 <a href={`mailto:${email}`}>{email}</a>
+  </p>
+</div>
+); };
+
+;
+```

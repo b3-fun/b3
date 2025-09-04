@@ -1,0 +1,133 @@
+---
+title: 설치 및 설정
+description: 'AnySpend 시작하기 - 설치, 기본 설정 및 검증'
+lang: ko
+originalPath: anyspend/installation.mdx
+---
+<iframe class="w-full aspect-video rounded-xl mb-6" src="https://customer-gg6qs7nm5ue94t64.cloudflarestream.com/66d9ebc2e3a14ec87dfa360b83e26900/iframe?poster=https%3A%2F%2Fcustomer-gg6qs7nm5ue94t64.cloudflarestream.com%2F66d9ebc2e3a14ec87dfa360b83e26900%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D168%26height%3D600" title="AnySpend Setup" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen />
+
+## 사전 요구 사항
+
+<CardGroup cols={3}>
+  <Card title="Node.js" icon="node-js">
+    v20.15.0 이상
+  </Card>
+  <Card title="React" icon="react">
+    버전 18 또는 19
+  </Card>
+  <Card title="TypeScript" icon="code">
+    더 나은 DX를 위해 권장됨
+  </Card>
+</CardGroup>
+
+## 설치
+
+선호하는 패키지 매니저를 선택하세요:
+
+<Tabs>
+  <Tab title="npm">
+    ```bash
+    npm install @b3dotfun/sdk
+    ```
+  </Tab>
+  <Tab title="pnpm">
+    ```bash
+    pnpm add @b3dotfun/sdk
+    ```
+  </Tab>
+</Tabs>
+
+## 기본 설정
+
+### 1. Provider 설정
+
+앱을 `B3Provider`와 `AnyspendProvider`로 감싸 AnySpend 기능을 활성화하세요:
+
+```tsx App.tsx icon=react
+import { AnyspendProvider } from "@b3dotfun/sdk/anyspend/react";
+import { B3Provider } from "@b3dotfun/sdk/global-account/react";
+import "@b3dotfun/sdk/index.css";
+
+function App() {
+  return (
+    <B3Provider theme="light" environment="production">
+      <AnyspendProvider>{/* 앱 컴포넌트들 */}</AnyspendProvider>
+    </B3Provider>
+  );
+}
+
+export default App;
+```
+
+### 2. 환경 설정
+
+<Tabs>
+  <Tab title="Mainnet">
+    **엔드포인트**: `https://mainnet.anyspend.com`
+
+    실제 거래가 있는 프로덕션 애플리케이션에 사용하세요.
+  </Tab>
+  <Tab title="Testnet">
+    **엔드포인트**: `http://testnet.anyspend.com`
+
+    테스트 토큰을 사용한 개발 및 테스트에 사용하세요.
+
+    참고: Testnet은 현재 사용할 수 없습니다.
+  </Tab>
+</Tabs>
+
+### 3. TypeScript 설정 (선택사항이지만 권장됨)
+
+<Note>
+  TypeScript를 사용하는 경우, 최적의 호환성을 위해 `tsconfig.json`에 다음 설정이 포함되어 있는지 확인하세요:
+</Note>
+
+```json tsconfig.json icon=settings
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true
+  }
+}
+```
+
+## 검증
+
+설정이 올바르게 작동하는지 확인하기 위해 간단한 테스트 컴포넌트를 만드세요:
+
+```tsx TestComponent.tsx icon=test-tube lines
+import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
+
+function TestComponent() {
+  return <AnySpend />;
+}
+```
+
+## 다음 단계
+
+<CardGroup cols={3}>
+  <Card title="컴포넌트 탐색" icon="puzzle-piece" href="/anyspend/components">
+    다양한 결제 시나리오를 위한 사용 가능한 컴포넌트에 대해 알아보세요
+  </Card>
+  <Card title="Hooks에 대해 알아보기" icon="link" href="/anyspend/hooks">
+    맞춤 결제 흐름을 구축하기 위한 React hooks를 발견하세요
+  </Card>
+  <Card title="예제 보기" icon="code" href="/anyspend/examples">
+    실제 구현 예제를 찾아보세요
+  </Card>
+</CardGroup>
+
+## 문제 해결
+
+<AccordionGroup>
+  <Accordion title="Import 오류">
+    SDK를 올바르게 설치했는지 확인하고 CSS 파일을 가져왔는지 확인하세요. SDK는 React 18\+을 요구하며 이전 버전과 호환성 문제가 있을 수 있습니다.
+  </Accordion>
+  <Accordion title="Provider 찾을 수 없음">
+    주로 메인 App 컴포넌트에 `B3Provider`와 `AnyspendProvider`가 컴포넌트 트리 상단에 위치하도록 해야 합니다.
+  </Accordion>
+  <Accordion title="TypeScript 오류">
+    TypeScript 오류가 발생하는 경우, 위에 권장된 설정이 `tsconfig.json`에 포함되어 있는지 확인하세요.
+  </Accordion>
+</AccordionGroup>

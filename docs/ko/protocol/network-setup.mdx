@@ -1,0 +1,243 @@
+---
+title: B3에 연결하세요
+description: B3는 완전히 EVM-호환 가능한 체인 네트워크입니다. 지갑으로 B3에 쉽게 연결하세요.
+lang: ko
+originalPath: protocol/network-setup.mdx
+---
+## 지갑과 B3 사용하기
+MetaMask, Coinbase Wallet, Rainbow 등 모든 이더리움 지갑과 연결하는 것은 쉽습니다.
+
+<Tip>
+  이 버튼들은 MetaMask 및 기타 Web3 지갑과 함께 작동합니다. 네트워크 구성을 자동으로 추가하거나 이미 추가된 경우 B3으로 전환합니다.
+</Tip>
+
+<Card title="B3 메인넷 추가" icon="plus" href="https://explorer.b3.fun/add-b3-chain" horizontal>
+  B3 탐색기 사용 <span className="bg-primary text-white px-2 py-1 rounded-md text-xs ml-2">추천</span>
+</Card>
+<Card title="Chainlist로 추가" icon="plus" href="https://chainlist.org/chain/8333" horizontal>
+  Chainlist를 사용하여 지갑에 B3 추가
+</Card>
+
+<br />
+
+<Tabs>
+<Tab title="B3 탐색기 사용하기 (추천)">
+  지갑에 B3를 추가하는 가장 빠른 방법:
+  <Steps>
+  <Step title="B3 탐색기 방문">
+    [explorer.b3.fun](https://explorer.b3.fun/add-b3-chain)으로 가서 "B3 체인 추가" 클릭
+  </Step>
+  
+  <Step title="지갑 연결">
+    지갑 연결 (MetaMask, Coinbase Wallet 등)
+  </Step>
+  
+  <Step title="네트워크 추가">
+    "지갑에 추가" 클릭하여 B3 메인넷 추가
+    
+    <Check>
+    B3가 올바른 구성으로 지갑에 자동으로 추가됩니다
+    </Check>
+  </Step>
+  </Steps>
+</Tab>
+
+<Tab title="Chainlist 사용하기">
+  지갑에 B3를 추가하는 가장 빠른 방법:
+  <Steps>
+  <Step title="Chainlist 방문">
+    [chainlist.org](https://chainlist.org/chain/8333)로 가서 "B3" 검색
+  </Step>
+  
+  <Step title="지갑 연결">
+    지갑 연결 (MetaMask, Coinbase Wallet 등)
+  </Step>
+  
+  <Step title="네트워크 추가">
+    "지갑에 추가" 클릭하여 B3 메인넷 추가
+    
+    <Check>
+    B3가 올바른 구성으로 지갑에 자동으로 추가됩니다
+    </Check>
+  </Step>
+  </Steps>
+</Tab>
+
+<Tab title="수동으로">
+  B3를 수동으로 추가하려면 아래의 네트워크 세부 정보를 사용하세요:
+  
+  <Note>네트워크 세부 정보: [B3 메인넷 구성](#b3-mainnet-configuration)</Note>
+  <Note>네트워크 세부 정보: [B3 테스트넷 구성](#b3-testnet-configuration)</Note>
+</Tab>
+</Tabs>
+
+## 지갑별 지침
+
+### MetaMask
+
+<Steps>
+<Step title="MetaMask 열기">
+  브라우저에서 MetaMask 확장 프로그램 클릭
+</Step>
+
+<Step title="네트워크 접근">상단의 네트워크 드롭다운을 클릭하고 "네트워크 추가" 선택</Step>
+
+<Step title="네트워크 수동 추가">하단에서 "네트워크 수동으로 추가" 클릭</Step>
+
+<Step title="B3 세부 정보 입력">
+  B3 네트워크 정보 입력
+  
+  <Note>완전한 [B3 메인넷 구성](#b3-mainnet-configuration) 참조</Note>
+</Step>
+
+<Step title="저장 및 전환">
+  "저장" 클릭하면 MetaMask가 자동으로 B3로 전환됩니다.
+  
+  <Check>
+  이제 B3에 연결되었습니다! 네트워크 드롭다운에서 "B3 메인넷"을 볼 수 있습니다.
+  </Check>
+</Step>
+</Steps>
+
+### Coinbase Wallet
+
+<Steps>
+<Step title="Coinbase Wallet 열기">
+  Coinbase Wallet 브라우저 확장 프로그램 실행
+</Step>
+
+<Step title="설정으로 이동">**설정** 탭으로 가서 **네트워크** 클릭</Step>
+
+<Step title="사용자 정의 네트워크 추가">오른쪽 상단의 플러스 기호 (➕)를 클릭하여 **사용자 정의 네트워크 추가**</Step>
+
+<Step title="B3 네트워크 구성">
+  **사용자 정의 네트워크 추가** 대화 상자에서 B3 메인넷 정보 입력:
+  <Note>복사 가능한 값에 대한 완전한 [B3 메인넷 구성](#b3-mainnet-configuration) 참조</Note>
+</Step>
+
+<Step title="구성 저장">
+  "저장"을 클릭하여 B3를 사용 가능한 네트워크에 추가합니다.
+  
+  <Tip>
+  Coinbase Wallet은 기본 토큰이 ETH임을 자동으로 감지합니다
+  </Tip>
+</Step>
+</Steps>
+
+### Rainbow Wallet
+
+<Steps>
+<Step title="Rainbow 열기">
+  모바일 기기 또는 브라우저 확장 프로그램에서 Rainbow 지갑 실행
+</Step>
+
+<Step title="설정 접근">프로필 아이콘을 탭하고 설정 → 네트워크로 이동</Step>
+
+<Step title="사용자 정의 네트워크 추가">
+  "사용자 정의 네트워크 추가"를 탭하고 B3 세부 정보 입력
+  <Note>복사 가능한 값에 대한 완전한 [B3 메인넷 구성](#b3-mainnet-configuration) 참조</Note>
+</Step>
+
+<Step title="B3에 연결">
+  구성을 저장하고 B3 메인넷으로 전환
+</Step>
+</Steps>
+
+## B3 메인넷 구성
+<Card title="B3 메인넷" icon="globe" id="b3-mainnet-config">
+    B3 메인넷에 대한 완전한 구성 세부 정보:
+
+    **네트워크 이름:**
+    ```
+    B3 메인넷
+    ```
+
+    **체인 ID:**
+    ```
+    8333
+    ```
+
+    **RPC URL:**
+    ```
+    https://mainnet-rpc.b3.fun
+    ```
+
+    **탐색기 URL:**
+    ```
+    https://explorer.b3.fun
+    ```
+
+    **기본 토큰:**
+    ```
+    심볼: ETH
+    소수점: 18
+    ```
+  </Card>
+
+## B3 테스트넷 구성
+<Card title="B3 테스트넷" icon="flask" id="b3-testnet-config">
+    B3 테스트넷에 대한 완전한 구성 세부 정보:
+
+    **네트워크 이름:**
+    ```
+    B3 테스트넷
+    ```
+
+    **체인 ID:**
+    ```
+    1993
+    ```
+
+    **RPC URL:**
+    ```
+    https://testnet-rpc.b3.fun
+    ```
+
+    **탐색기 URL:**
+    ```
+    https://testnet-explorer.b3.fun
+    ```
+
+    **기본 토큰:**
+    ```
+    심볼: ETH
+    소수점: 18
+    ```
+  </Card>
+
+
+## 문제 해결
+
+<AccordionGroup>
+<Accordion title="지갑에 네트워크가 나타나지 않음">
+  - 체인 ID(메인넷의 경우 8333)를 다시 확인하세요
+  - RPC URL이 정확한지 확인하세요: `https://mainnet-rpc.b3.fun`
+  - 지갑을 새로고침하거나 브라우저를 다시 시작해 보세요
+</Accordion>
+
+<Accordion title="거래 실패">
+  - 올바른 B3 네트워크에 연결되어 있는지 확인하세요 - 가스 비용을 위한 충분한 ETH가 있는지 확인하세요 - B3에서 유효한
+  계약 주소인지 확인하세요
+</Accordion>
+
+<Accordion title="거래 속도가 느림">
+  - B3은 일반적으로 거래를 1-2초 내에 처리합니다 - 지연이 발생하는 경우 [B3 네트워크 상태](
+  https://docs.b3.fun/network-status)를 확인하세요 - 필요한 경우 가스 가격을 조정하세요
+</Accordion>
+
+<Accordion title="내 토큰을 볼 수 없음">
+  - B3 탐색기를 사용하여 토큰 계약을 수동으로 가져오세요
+  - 지갑에서 올바른 네트워크를 보고 있는지 확인하세요
+  - 일부 토큰은 지갑의 토큰 목록에 수동으로 추가해야 할 수 있습니다
+</Accordion>
+</AccordionGroup>
+
+---
+
+<Warning>
+  거래를 실행하기 전에 사용자가 올바른 B3 네트워크에 연결되어 있는지 항상 확인하세요. B3 메인넷의 체인 ID는 8333입니다.
+</Warning>
+
+<Check>
+  **B3에서 빌딩을 시작할 준비가 되셨나요?** 이제 지갑이 구성되었습니다! B3을 애플리케이션에 통합하기 시작하려면 [SDK 문서](/quickstart)를 확인하세요.
+</Check>

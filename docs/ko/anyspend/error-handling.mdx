@@ -1,0 +1,523 @@
+---
+title: 오류 처리 및 문제 해결
+description: AnySpend을 사용하여 오류를 우아하게 처리하고 일반적인 문제를 디버깅하는 방법에 대한 종합 가이드
+lang: ko
+originalPath: anyspend/error-handling.mdx
+---
+# 오류 처리 및 문제 해결
+
+AnySpend을 사용하여 최상의 사용자 경험을 제공하기 위한 오류 처리 및 일반적인 문제 디버깅 방법에 대한 종합적인 가이드입니다.
+
+## 📊 주문 상태 수명주기
+
+적절한 오류 처리 및 사용자 경험을 위해 주문 상태를 이해하는 것이 중요합니다.
+
+### 주문 상태 유형
+
+```typescript title="주문 상태 Enum" icon="list"
+enum OrderStatus {
+  // 초기 상태
+  SCANNING_DEPOSIT_TRANSACTION = "scanning_deposit_transaction",
+  WAITING_STRIPE_PAYMENT = "waiting_stripe_payment",
+  EXPIRED = "expired",
+
+  // 처리 중 상태
+  SENDING_TOKEN_FROM_VAULT = "sending_token_from_vault",
+  RELAY = "relay",
+
+  // 성공 상태
+  EXECUTED = "executed",
+
+  // 실패 상태
+  REFUNDING = "refunding",
+  REFUNDED = "refunded",
+  FAILURE = "failure",
+}
+```
+
+### 상태 설명
+
+<table>
+  <thead>
+    <tr>
+      <th>상태</th>
+      <th>설명</th>
+      <th>사용자 조치 필요</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>`scanning_deposit_transaction`</td>
+      <td>결제 확인 대기 중</td>
+      <td>없음 - 블록체인 확인 대기</td>
+    </tr>
+    <tr>
+      <td>`waiting_stripe_payment`</td>
+      <td>신용카드 결제 처리 중</td>
+      <td>3D Secure를 완료해야 할 수 있음</td>
+    </tr>
+    <tr>
+      <td>`sending_token_from_vault`</td>
+      <td>스왑을 위한 토큰 전송 중</td>
+      <td>없음 - 자동 처리</td>
+    </tr>
+    <tr>
+      <td>`relay`</td>
+      <td>크로스체인 거래 진행 중</td>
+      <td>없음 - 완료 대기</td>
+    </tr>
+    <tr>
+      <td>`executed`</td>
+      <td>거래 성공적으로 완료</td>
+      <td>없음 - 성공!</td>
+    </tr>
+    <tr>
+      <td>`expired`</td>
+      <td>완료 전 주문 만료</td>
+      <td>새 주문 생성</td>
+    </tr>
+    <tr>
+      <td>`refunding`</td>
+      <td>자동 환불 진행 중</td>
+      <td>없음 - 환불 대기</td>
+    </tr>
+    <tr>
+      <td>`refunded`</td>
+      <td>환불 완료</td>
+      <td>지갑에서 환불된 토큰 확인</td>
+    </tr>
+    <tr>
+      <td>`failure`</td>
+      <td>거래 실패</td>
+      <td>오류 세부 정보 검토, 재시도</td>
+    </tr>
+  </tbody>
+</table>
+
+## ⚠️ 일반적인 오류 코드
+
+### 결제 오류
+
+<AccordionGroup>
+<Accordion title="INSUFFICIENT_BALANCE">
+**설명**: 사용자가 거래에 필요한 충분한 토큰이 없음
+
+**해결책**: 사용자에게 지갑에 자금을 추가하거나 다른 결제 토큰을 선택하도록 요청
+
+**예시**:
+
+```typescript
+if (error.message === "INSUFFICIENT_BALANCE") {
+  toast.error("잔액이 부족합니다. 지갑에 자금을 추가하세요.");
+  // 선택적으로 피아트 온램프로 리디렉션
+  openFiatOnramp();
+}
+```
+
+</Accordion>
+
+<Accordion title="INVALID_TOKEN_ADDRESS">
+**설명**: 대상 체인에서 지원하지 않는 토큰 계약
+
+**해결책**: 토큰이 지원되는지 확인하고 대안 제공
+
+**예시**:
+
+```typescript
+if (error.message === "INVALID_TOKEN_ADDRESS") {
+  toast.error("이 토큰은 지원되지 않습니다. 다른 것을 선택하세요.");
+  showSupportedTokens();
+}
+```
+
+</Accordion>
+
+<Accordion title="MINIMUM_AMOUNT_NOT_MET">
+**설명**: 거래 금액이 최소 임계값 미만
+
+**해결책**: 거래 금액 증가 또는 최소 요구 사항 안내
+
+**예시**:
+
+```typescript
+if (error.message === "MINIMUM_AMOUNT_NOT_MET") {
+  toast.error(`최소 금액은 $${minimumAmount}입니다. 금액을 증가시키세요.`);
+}
+```
+
+</Accordion>
+
+<Accordion title="MAXIMUM_AMOUNT_EXCEEDED">
+**설명**: 거래 금액이 최대 한도 초과
+
+**해결책**: 금액 줄이기 또는 여러 거래로 분할
+
+**예시**:
+
+```typescript
+if (error.message === "MAXIMUM_AMOUNT_EXCEEDED") {
+  toast.error(`최대 금액은 $${maximumAmount}입니다. 금액을 줄이세요.`);
+}
+```
+
+</Accordion>
+</AccordionGroup>
+
+### 네트워크 오류
+
+<AccordionGroup>
+<Accordion title="SLIPPAGE">
+**설명**: 실행 중 가격이 허용 오차를 벗어남
+
+**해결책**: 더 높은 슬리피지 허용 오차로 재시도하거나 가격 안정성 대기
+
+**예시**:
+
+```typescript
+if (error.message === "SLIPPAGE") {
+  toast.warning("가격이 불리하게 움직였습니다. 설정 조정 후 재시도 중...");
+  retryWithHigherSlippage();
+}
+```
+
+</Accordion>
+
+<Accordion title="NETWORK_ERROR">
+**설명**: RPC 연결 문제 또는 블록체인 혼잡
+
+**해결책**: 지연 후 재시도 또는 대체 RPC로 전환
+
+**예시**:
+
+```typescript
+if (error.message === "NETWORK_ERROR") {
+  toast.error("네트워크 문제가 감지되었습니다. 연결을 확인하고 다시 시도하세요.");
+  scheduleRetry();
+}
+```
+
+</Accordion>
+
+<Accordion title="QUOTE_EXPIRED">
+**설명**: 가격 견적이 더 이상 유효하지 않음
+
+**해결책**: 새로운 견적을 받고 거래 재시도
+
+**예시**:
+
+```typescript
+if (error.message === "QUOTE_EXPIRED") {
+  toast.info("가격 견적이 만료되었습니다. 새로운 견적을 받는 중...");
+  refreshQuoteAndRetry();
+}
+```
+
+</Accordion>
+
+<Accordion title="CHAIN_NOT_SUPPORTED">
+**설명**: 요청된 블록체인이 지원되지 않음
+
+**해결책**: 지원되는 체인 사용 또는 대체 구현
+
+**예시**:
+
+```typescript
+if (error.message === "CHAIN_NOT_SUPPORTED") {
+  toast.error("이 블록체인은 지원되지 않습니다. 다른 것을 선택하세요.");
+  showSupportedChains();
+}
+```
+
+</Accordion>
+</AccordionGroup>
+
+### 계약 오류
+
+<AccordionGroup>
+<Accordion title="CONTRACT_CALL_FAILED">
+**설명**: 스마트 계약 실행 실패
+
+**해결책**: 계약 매개변수 및 상태 확인
+
+**예시**:
+
+```typescript
+if (error.message === "CONTRACT_CALL_FAILED") {
+  toast.error("계약 상호 작용 실패. 매개변수를 확인하세요.");
+  logContractError(error);
+}
+```
+
+</Accordion>
+
+<Accordion title="INSUFFICIENT_GAS">
+**설명**: 거래에 설정된 가스 한도가 너무 낮음
+
+**해결책**: 가스 한도 증가 또는 가스 최적화 제안
+
+**예시**:
+
+```typescript
+if (error.message === "INSUFFICIENT_GAS") {
+  toast.error("거래에 더 많은 가스가 필요합니다. 가스 한도 증가 중...");
+  retryWithHigherGas();
+}
+```
+
+</Accordion>
+
+<Accordion title="NONCE_TOO_LOW">
+**설명**: 거래 nonce 충돌
+
+**해결책**: 보류 중인 거래 완료 대기
+
+**예시**:
+
+```typescript
+if (error.message === "NONCE_TOO_LOW") {
+  toast.info("보류 중인 거래가 완료될 때까지 기다려 주세요.");
+  waitAndRetry();
+}
+```
+
+</Accordion>
+
+<Accordion title="TRANSACTION_REVERTED">
+**설명**: 계약이 거래를 되돌림
+
+**해결책**: 계약 상태 및 매개변수 확인
+
+**예시**:
+
+```typescript
+if (error.message === "TRANSACTION_REVERTED") {
+  toast.error("계약이 거래를 거부했습니다. 요구 사항을 확인하세요.");
+  showTransactionDetails();
+}
+```
+
+</Accordion>
+</AccordionGroup>
+
+## 🛠️ 오류 처리 패턴
+
+### 컴포넌트 수준 오류 처리
+
+```tsx title="오류 처리가 포함된 결제 컴포넌트" icon="shield-exclamation" lines
+import { useAnyspendCreateOrder } from "@b3dotfun/sdk/anyspend";
+
+function PaymentComponent() {
+  const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  const { createOrder, isCreatingOrder } = useAnyspendCreateOrder({
+    onError: error => {
+      console.error("결제 실패:", error);
+
+      // 특정 오류 처리
+      switch (error.message) {
+        case "INSUFFICIENT_BALANCE":
+          setError("잔액이 부족합니다. 지갑에 자금을 추가하세요.");
+          break;
+
+        case "SLIPPAGE":
+          if (retryCount < 3) {
+            setError("가격이 불리하게 움직였습니다. 재시도 중...");
+            setTimeout(() => {
+              setRetryCount(prev => prev + 1);
+              retryPayment();
+            }, 2000);
+          } else {
+            setError("가격이 너무 변동적입니다. 나중에 다시 시도하세요.");
+          }
+          break;
+
+        case "NETWORK_ERROR":
+          setError("네트워크 문제. 연결을 확인하고 다시 시도하세요.");
+          break;
+
+        case "QUOTE_EXPIRED":
+          setError("가격 견적이 만료되었습니다. 새로운 견적을 받는 중...");
+          refreshQuote();
+          break;
+
+        default:
+          setError("결제 실패. 다시 시도하거나 지원팀에 문의하세요.");
+      }
+
+      // 모니터링을 위한 오류 추적
+      analytics.track("payment_error", {
+        error: error.message,
+        retryCount,
+        timestamp: new Date().toISOString(),
+      });
+    },
+
+    onSuccess: () => {
+      setError(null);
+      setRetryCount(0);
+    },
+  });
+
+  return (
+    <div className="payment-component">
+      {error && (
+        <div className="error-banner">
+          <span className="error-icon">⚠️</span>
+          <span>{error}</span>
+          <button onClick={() => setError(null)}>닫기</button>
+        </div>
+      )}
+
+      <button onClick={handlePayment} disabled={isCreatingOrder}>
+        {isCreatingOrder ? "처리 중..." : "지금 결제"}
+      </button>
+    </div>
+  );
+}
+```
+
+### 주문 상태 모니터링
+
+```tsx title="주문 상태 모니터" icon="eye" lines
+import { useAnyspendOrderAndTransactions } from "@b3dotfun/sdk/anyspend";
+
+function OrderStatusMonitor({ orderId }: { orderId: string }) {
+  const { orderAndTransactions, getOrderAndTransactionsError } = useAnyspendOrderAndTransactions(orderId);
+
+  if (getOrderAndTransactionsError) {
+    return (
+      <div className="error-state">
+        <h3>주문 상태를 불러올 수 없습니다</h3>
+        <p>연결을 확인하고 다시 시도하세요.</p>
+        <button onClick={() => window.location.reload()}>재시도</button>
+      </div>
+    );
+  }
+
+  if (!orderAndTransactions) {
+    return <div>주문 상태를 불러오는 중...</div>;
+  }
+
+  const { order, depositTxs, executeTx, refundTxs } = orderAndTransactions.data;
+
+  const renderStatusMessage = () => {
+    switch (order.status) {
+      case "scanning_deposit_transaction":
+        return (
+          <div className="status-pending">
+            <div className="spinner" />
+            <div>
+              <h3>⏳ 결제 확인 대기 중</h3>
+              <p>이 작업은 보통 1-2분이 소요됩니다. 이 창을 닫지 마세요.</p>
+              {depositTxs.length > 0 && (
+                <a
+                  href={getExplorerUrl(depositTxs[0].txHash, depositTxs[0].chainId)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  결제 거래 보기
+                </a>
+              )}
+            </div>
+          </div>
+        );
+
+      case "relay":
+        return (
+          <div className="status-processing">
+            <div className="spinner" />
+            <div>
+              <h3>🔄 크로스체인 거래 처리 중</h3>
+              <p>결제가 처리되고 있습니다. 몇 분이 소요될 수 있습니다.</p>
+            </div>
+          </div>
+        );
+
+      case "executed":
+        return (
+          <div className="status-success">
+            <div className="success-icon">✅</div>
+            <div>
+              <h3>거래가 성공적으로 완료되었습니다!</h3>
+              <p>주문이 처리되었습니다.</p>
+              {executeTx && (
+                <a href={getExplorerUrl(executeTx.txHash, executeTx.chainId)} target="_blank" rel="noopener noreferrer">
+                  거래 보기
+                </a>
+              )}
+            </div>
+          </div>
+        );
+
+      case "failure":
+      case "obtain_failed":
+        return (
+          <div className="status-error">
+            <div className="error-icon">❌</div>
+            <div>
+              <h3>거래 실패</h3>
+              <p>{order.errorDetails || "주문을 처리하는 동안 오류가 발생했습니다."}</p>
+              <div className="error-actions">
+                <button onClick={() => createNewOrder()}>다시 시도</button>
+                <button onClick={() => contactSupport(orderId)}>지원팀에 문의</button>
+              </div>
+            </div>
+          </div>
+        );
+
+      case "refunded":
+        return (
+          <div className="status-refunded">
+            <div className="refund-icon">↩️</div>
+            <div>
+              <h3>환불 처리됨</h3>
+              <p>결제가 자동으로 환불되었습니다.</p>
+              {refundTxs.length > 0 && (
+                <a
+                  href={getExplorerUrl(refundTxs[0].txHash, refundTxs[0].chainId)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  환불 거래 보기
+                </a>
+              )}
+            </div>
+          </div>
+        );
+
+      case "expired":
+        return (
+          <div className="status-expired">
+            <div className="expired-icon">⏰</div>
+            <div>
+              <h3>주문 만료됨</h3>
+              <p>결제가 수신되기 전에 이 주문이 만료되었습니다.</p>
+              <button onClick={() => createNewOrder()}>새 주문 생성</button>
+            </div>
+          </div>
+        );
+
+      default:
+        return (
+          <div className="status-unknown">
+            <div className="spinner" />
+            <div>
+              <h3>처리 중...</h3>
+              <p>주문 상태: {order.status}</p>
+            </div>
+          </div>
+        );
+    }
+  };
+
+  return (
+    <div className="order-status-monitor">
+      <div className="order-header">
+        <h2>주문 #{orderId.slice(0, 8)}</h2>
+        <div className="order-meta">
+          <span>생성됨: {new Date(order.createdAt).toLocaleString()}</span>
+          <span>상태: {order.status}</span>
+        </div>
+      </div>
+

@@ -1,0 +1,26 @@
+---
+title: 추정 이주 가격
+description: Uniswap v4 초기화를 위한 가격 추정 및 고려 사항.
+lang: ko
+originalPath: bondkit/guides/est-migration-price.mdx
+---
+## 개요
+
+마이그레이션은 Uniswap v4 풀을 초기화합니다. 계약은 결합 상태에서 `sqrtPriceX96`을 계산합니다.
+
+## 실용적 접근
+
+- 목표 근처의 가격을 대략적으로 추정하기 위해 결합 읽기를 사용하세요:
+- `getCurrentBondingCurvePricePerToken()`
+- `getBondingProgress()`
+
+## 고려 사항
+
+- 최종 분할과 유동성 양이 초기 틱에 영향을 줄 수 있습니다.
+- 유동성을 추가할 때 슬리피지 보호가 적용됩니다.
+- ERC20 견적 자산의 경우, `sqrtPriceX96`으로 변환할 때 페어와 소수점을 고려해야 합니다.
+
+<Note>
+정확한 초기화 수학은 체인상에서 처리됩니다. UI 추정을 위해 읽기를 사용하세요; 최종 체인상 초기화를 진실의 원천으로 취급하세요.
+</Note>
+

@@ -1,0 +1,147 @@
+---
+title: Introdução ao AnySpend
+description: >-
+  Pagamentos cripto entre cadeias simplificados - troque tokens, compre NFTs e
+  integre rampas de acesso para fiat
+lang: pt-BR
+originalPath: anyspend/introduction.mdx
+---
+<img src="/images/anyspend-example-banner.jpg" alt="Banner do AnySpend" className="w-full rounded-xl" />
+
+## O que é o AnySpend?
+
+AnySpend é a infraestrutura de pagamentos abrangente da B3 que possibilita transações cripto sem interrupções em múltiplas blockchains. Seja construindo uma aplicação DeFi, marketplace de NFTs ou plataforma de jogos, o AnySpend fornece os componentes e APIs necessários para aceitar pagamentos em qualquer token.
+
+[Experimente o AnySpend no seu navegador](https://anyspend.com/swap)
+
+## Casos de Uso
+
+<CardGroup cols={2}>
+<Card href="/anyspend/examples">
+  <img src="/images/customize-for-swap.png" className="w-full h-48 object-cover rounded-xl mb-4" />
+  <h3 className="text-lg font-semibold text-primary block mb-1">Trocas Cross-Chain</h3>
+  Possibilita aos usuários trocar tokens entre diferentes blockchains com roteamento automático e descoberta do melhor preço.
+</Card>
+
+<Card href="/anyspend/examples">
+  <img src="/images/customize-for-checkout.png" className="w-full h-48 object-cover rounded-xl mb-4" />
+  <h3 className="text-lg font-semibold text-primary block mb-1">Checkout</h3>
+  Botões de checkout com um clique que aceitam qualquer token como pagamento, com conversão automática.
+</Card>
+
+<Card href="/anyspend/examples">
+  <img src="/images/customize-for-defi.png" className="w-full h-48 object-cover rounded-xl mb-4" />
+  <h3 className="text-lg font-semibold text-primary block mb-1">DeFi</h3>
+  Execute qualquer chamada de contrato onchain, com uso para staking, mercados de previsão, curvas de bonding e mais.
+</Card>
+
+<Card href="/anyspend/examples">
+  <img src="/images/customize-for-games.png" className="w-full h-48 object-cover rounded-xl mb-4" />
+  <h3 className="text-lg font-semibold text-primary block mb-1">Jogos</h3>
+  Incorporável em iOS/Android nativo, Unity & outras superfícies.
+</Card>
+</CardGroup>
+
+## Funcionalidades
+
+<Steps>
+<Step title="Usuário Inicia o Pagamento">
+Usuário clica em um botão de pagamento ou interage com sua interface, escolhendo seu token preferido
+</Step>
+
+<Step title="Cotação do AnySpend">
+Nossa engine de roteamento encontra o melhor caminho para converter o token deles no token de destino requerido
+</Step>
+
+<Step title="Execução Cross-Chain">
+Se necessário, tokens são transferidos entre chains usando infraestrutura segura e testada em batalha
+</Step>
+
+<Step title="Entrega Final">
+Tokens chegam ao endereço de destino, executam qualquer lógica personalizada e acionam seus callbacks de sucesso
+</Step>
+</Steps>
+
+## Casos de Uso
+<img src="/images/anyspend-onramp-anyone.png" alt="Banner do AnySpend" className="w-full rounded-xl" />
+
+<AccordionGroup>
+<Accordion title="Aplicações DeFi">
+Possibilita trocas de tokens, fornece liquidez e facilita o farming de rendimento em múltiplas chains com roteamento automático e taxas competitivas.
+</Accordion>
+
+<Accordion title="Marketplaces de NFT">
+Permite que usuários comprem NFTs com qualquer token que possuam, removendo barreiras e aumentando as taxas de conversão ao suportar seus métodos de pagamento preferidos.
+</Accordion>
+
+<Accordion title="Plataformas de Jogos">
+Aceita pagamentos para ativos dentro do jogo, entradas de torneios e recursos premium usando qualquer criptomoeda ou métodos de pagamento fiat.
+</Accordion>
+
+<Accordion title="E-commerce">
+Integra pagamentos cripto em plataformas de e-commerce tradicionais com conversão automática para fiat e liquidação.
+</Accordion>
+
+<Accordion title="Serviços de Assinatura">
+Aceita pagamentos recorrentes em cripto com conversão automática para sua moeda de liquidação preferida.
+</Accordion>
+</AccordionGroup>
+
+## Início Rápido
+
+Comece a usar o AnySpend em apenas alguns passos:
+
+```tsx
+import { AnySpend, AnyspendProvider } from "@b3dotfun/sdk/anyspend/react";
+import { B3Provider } from "@b3dotfun/sdk/global-account/react";
+
+import "@b3dotfun/sdk/index.css";
+
+function App() {
+  return (
+    <B3Provider theme="light" environment="production">
+      <AnyspendProvider>
+        <AnySpend />
+      </AnyspendProvider>
+    </B3Provider>
+  );
+}
+
+export default App
+```
+
+## Próximos Passos?
+
+<CardGroup cols={3}>
+<Card title="Instalação" icon="download" href="/anyspend/installation">
+  Configure o AnySpend no seu projeto com npm, yarn ou pnpm
+</Card>
+
+<Card title="Componentes" icon="puzzle-piece" href="/anyspend/components">
+  Explore componentes pré-construídos para cenários comuns de pagamento
+</Card>
+
+<Card title="Exemplos" icon="code" href="/anyspend/examples">
+  Veja exemplos de implementações reais e melhores práticas
+</Card>
+</CardGroup>
+
+## Obtendo Ajuda
+
+- **Discord**: Junte-se à nossa [comunidade no Discord](https://discord.gg/b3dotfun) para suporte
+- **Documentação**: Guias abrangentes e referências de API
+- **Exemplos**: Amostras de código prontas para uso e integrações
+
+<div className="flex flex-row gap-4">
+<div className="flex-1">
+<a href="https://x.com/anyspend" target="_blank">
+  <img src="/images/follow-updates-on-x.png" className="w-full h-full object-cover rounded-xl mb-4" />
+</a>
+</div>
+
+<div className="flex-1">
+  <a href="/anyspend/installation">
+    <img src="/images/anyspend-getting-started.png" className="w-full h-full object-cover rounded-xl mb-4" />
+  </a>
+</div>
+</div>

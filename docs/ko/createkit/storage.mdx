@@ -1,0 +1,539 @@
+---
+title: 저장 서비스
+description: BaseMint 스토리지 서비스를 사용하여 컬렉션 메타데이터와 자산 관리하기
+lang: ko
+originalPath: createkit/storage.mdx
+---
+## 개요
+
+BaseMint Storage Service는 NFT 컬렉션 메타데이터를 저장하고 관리하기 위한 신뢰할 수 있고 확장 가능한 솔루션을 제공합니다. 이 서비스는 결정적 주소 지정, CDN 백업 전송, 그리고 CreateKit 생태계와의 원활한 통합을 제공합니다.
+
+## 저장소 구조
+
+### 저장소 작동 방식
+
+<Steps>
+  <Step title="메타데이터 제출">
+    컬렉션 메타데이터와 생성자 서명이 저장소 서비스에 제출됩니다
+  </Step>
+  <Step title="검증 및 저장">
+    서비스는 서명을 검증하고 결정적 주소로 메타데이터를 저장합니다
+  </Step>
+  <Step title="CDN 배포">
+    메타데이터는 CDN을 통해 빠르고 전 세계적으로 접근 가능합니다
+  </Step>
+  <Step title="마켓플레이스 통합">
+    배포 전에 예측된 주소를 통해 컬렉션이 검색 가능합니다
+  </Step>
+</Steps>
+
+### 주요 기능
+
+<CardGroup cols={2}>
+  <Card title="결정적 주소 지정" icon="link">
+    마켓플레이스 통합을 위한 예측 가능한 주소를 가진 컬렉션
+  </Card>
+  <Card title="서명 검증" icon="shield-check">
+    컬렉션의 진위성에 대한 암호화 검증
+  </Card>
+  <Card title="CDN 전송" icon="globe">
+    전 세계적으로 빠르고 신뢰할 수 있는 메타데이터 전송
+  </Card>
+  <Card title="리퍼러 시스템" icon="users">
+    통합 파트너별로 컬렉션 추적 및 관리
+  </Card>
+</CardGroup>
+
+## 저장소 서비스 설정
+
+### 기본 구성
+
+```typescript title="저장소 서비스 초기화"
+import { BaseMintStorage } from '@b3dotfun/basemint'
+
+// 저장소 서비스 초기화
+const storage = new BaseMintStorage({
+  baseUrl: 'https://api.basemint.fun', // 운영 URL
+  // 테스트넷 개발을 위해:
+  // baseUrl: 'https://testnet-api.basemint.fun'
+})
+
+// 연결 테스트
+try {
+  const health = await storage.healthCheck()
+  console.log('✅ 저장소 서비스 연결됨:', health)
+} catch (error) {
+  console.error('❌ 저장소 서비스를 사용할 수 없음:', error)
+}
+```
+
+### 환경 구성
+
+```typescript title="환경 기반 설정"
+// 환경별 구성
+const getStorageConfig = (environment: 'development' | 'staging' | 'production') => {
+  const configs = {
+    development: {
+      baseUrl: 'https://testnet-api.basemint.fun',
+      chainId: 1993 // B3 테스트넷
+    },
+    staging: {
+      baseUrl: 'https://staging-api.basemint.fun',
+      chainId: 1993
+    },
+    production: {
+      baseUrl: 'https://api.basemint.fun',
+      chainId: 8333 // B3 메인넷
+    }
+  }
+  
+  return configs[environment]
+}
+
+const config = getStorageConfig(process.env.NODE_ENV as any || 'development')
+const storage = new BaseMintStorage(config)
+```
+
+## 컬렉션 제출
+
+### 기본 컬렉션 제출
+
+```typescript title="컬렉션 제출"
+async function submitCollection(
+  collectionMetadata: any,
+  creatorSignature: string,
+  referrerId?: string
+) {
+  try {
+    const response = await storage.submitCollection(
+      collectionMetadata,
+      creatorSignature,
+      referrerId // 선택사항: 리퍼러별로 컬렉션 추적
+    )
+    
+    console.log('✅ 컬렉션 제출 성공')
+    console.log('컬렉션 ID:', response.collectionId)
+    console.log('예측된 주소:', response.predictedAddress)
+    console.log('메타데이터 URI:', response.metadataUri)
+    
+    return response
+    
+  } catch (error: any) {
+    if (error.message.includes('Invalid signature')) {
+      console.error('❌ 생성자 서명 검증 실패')
+    } else if (error.message.includes('Collection exists')) {
+      console.error('❌ 이 주소의 컬렉션이 이미 존재함')
+    } else if (error.message.includes('Referrer not found')) {
+      console.error('❌ 유효하지 않은 리퍼러 ID')
+    } else {
+      console.error('❌ 제출 실패:', error.message)
+    }
+    throw error
+  }
+}
+
+// 예시 사용법
+const response = await submitCollection(
+  collectionMetadata,
+  creatorSignature,
+  "my-game-platform" // 여러분의 리퍼러 ID
+)
+```
+
+### 배치 컬렉션 제출
+
+```typescript title="배치 제출"
+async function submitMultipleCollections(
+  collections: Array<{
+    metadata: any
+    signature: string
+    referrerId?: string
+  }>
+) {
+  const results = []
+  
+  for (const collection of collections) {
+    try {
+      const response = await storage.submitCollection(
+        collection.metadata,
+        collection.signature,
+        collection.referrerId
+      )
+      
+      results.push({
+        success: true,
+        collectionName: collection.metadata.name,
+        response
+      })
+      
+      console.log(`✅ 제출됨: ${collection.metadata.name}`)
+      
+    } catch (error) {
+      results.push({
+        success: false,
+        collectionName: collection.metadata.name,
+        error: error.message
+      })
+      
+      console.error(`❌ 실패: ${collection.metadata.name}`, error)
+    }
+  }
+  
+  return results
+}
+```
+
+## 컬렉션 조회
+
+### 기본 조회
+
+```typescript title="컬렉션 조회"
+// 모든 컬렉션 조회
+const allCollections = await storage.queryCollections()
+console.log(`총 ${allCollections.collections.length}개의 컬렉션을 찾았습니다`)
+
+// 페이지네이션으로 조회
+const paginatedResults = await storage.queryCollections({
+  limit: 20,
+  offset: 0
+})
+
+// 리퍼러별로 조회
+const gameCollections = await storage.queryCollections({
+  referrer: "my-game-platform"
+})
+
+// 생성자별로 조회
+const creatorCollections = await storage.queryCollections({
+  creator: "0x1234567890123456789012345678901234567890"
+})
+```
+
+### 고급 필터링
+
+```typescript title="고급 조회"
+// 다중 필터를 사용한 복잡한 조회
+const advancedQuery = await storage.queryCollections({
+  referrer: "my-game-platform",
+  creator: "0x1234567890123456789012345678901234567890",
+  tokenStandard: "ERC721",
+  chainId: 1993,
+  limit: 50,
+  offset: 0,
+  sortBy: "createdAt",
+  sortOrder: "desc"
+})
+
+console.log("고급 조회 결과:", {
+  total: advancedQuery.total,
+  count: advancedQuery.collections.length,
+  hasMore: advancedQuery.hasMore
+})
+
+// 배포 상태별로 필터링
+const undeployedCollections = advancedQuery.collections.filter(
+  collection => !collection.isDeployed
+)
+
+const deployedCollections = advancedQuery.collections.filter(
+  collection => collection.isDeployed
+)
+
+console.log(`미배포: ${undeployedCollections.length}`)
+console.log(`배포됨: ${deployedCollections.length}`)
+```
+
+### 검색 기능
+
+```typescript title="컬렉션 검색"
+// 이름이나 심볼로 검색
+const searchResults = await storage.searchCollections({
+  query: "fantasy",
+  limit: 10
+})
+
+// 필터를 사용한 검색
+const filteredSearch = await storage.searchCollections({
+  query: "game",
+  referrer: "my-game-platform",
+  tokenStandard: "ERC1155"
+})
+
+console.log("검색 결과:", searchResults.collections.map(c => ({
+  name: c.name,
+  symbol: c.symbol,
+  description: c.description
+})))
+```
+
+## 리퍼러 관리
+
+### 리퍼러로 등록하기
+
+```typescript title="리퍼러 등록"
+// 리퍼러로 플랫폼 등록
+async function registerAsReferrer(referrerId: string, metadata?: any) {
+  try {
+    await storage.registerReferrer(referrerId, metadata)
+    console.log(`✅ 리퍼러로 등록됨: ${referrerId}`)
+  } catch (error: any) {
+    if (error.message.includes('already exists')) {
+      console.log(`ℹ️ 리퍼러 ${referrerId} 이미 등록됨`)
+    } else {
+      console.error('❌ 등록 실패:', error)
+      throw error
+    }
+  }
+}
+
+// 메타데이터와 함께 등록
+await registerAsReferrer("my-game-platform", {
+  name: "My Game Platform",
+  website: "https://mygame.com",
+  contact: "dev@mygame.com",
+  description: "NFT 컬렉션을 위한 게임 플랫폼"
+})
+```
+
+### 리퍼러 컬렉션 관리
+
+```typescript title="리퍼러 컬렉션 관리"
+// 플랫폼의 모든 컬렉션 가져오기
+async function getReferrerDashboard(referrerId: string) {
+  const collections = await storage.queryCollections({
+    referrer: referrerId
+  })
+  
+  const stats = {
+    total: collections.total,
+    deployed: collections.collections.filter(c => c.isDeployed).length,
+    undeployed: collections.collections.filter(c => !c.isDeployed).length,
+    erc721: collections.collections.filter(c => c.tokenStandard === 'ERC721').length,
+    erc1155: collections.collections.filter(c => c.tokenStandard === 'ERC1155').length
+  }
+  
+  console.log("리퍼러 대시보드:", stats)
+  
+  return {
+    collections: collections.collections,
+    stats
+  }
+}
+
+const dashboard = await getReferrerDashboard("my-game-platform")
+```
+
+## 컬렉션 관리
+
+### 컬렉션 데이터 검색
+
+```typescript title="컬렉션 상세 정보 가져오기"
+// 주소로 컬렉션 가져오기
+async function getCollectionDetails(address: string) {
+  try {
+    const collection = await storage.getCollection(address)
+    
+    console.log("컬렉션 상세 정보:", {
+      name: collection.name,
+      symbol: collection.symbol,
+      creator: collection.creator,
+      gameOwner: collection.gameOwner,
+      isDeployed: collection.isDeployed,
+      createdAt: collection.createdAt,
+      metadataUri: collection.metadataUri
+    })
+    
+    return collection
+    
+  } catch (error: any) {
+    if (error.message.includes('not found')) {
+      console.error('❌ 컬렉션을 찾을 수 없음')
+    } else {
+      console.error('❌ 컬렉션 검색 오류:', error)
+    }
+    throw error
+  }
+}
+
+// 주소로 여러 컬렉션 가져오기
+async function getMultipleCollections(addresses: string[]) {
+  const collections = await Promise.allSettled(
+    addresses.map(address => storage.getCollection(address))
+  )
+  
+  const successful = collections
+    .filter((result): result is PromiseFulfilledResult<any> => result.status === 'fulfilled')
+    .map(result => result.value)
+    
+  const failed = collections
+    .filter((result): result is PromiseRejectedResult => result.status === 'rejected')
+    .map(result => result.reason)
+  
+  console.log(`✅ ${successful.length}개의 컬렉션을 검색함`)
+  console.log(`❌ ${failed.length}개의 컬렉션 검색 실패`)
+  
+  return { successful, failed }
+}
+```
+
+### 컬렉션 업데이트
+
+<Warning>
+컬렉션 업데이트는 특정 필드에 한정되며 추가 인증이 필요할 수 있습니다.
+</Warning>
+
+```typescript title="컬렉션 메타데이터 업데이트"
+// 컬렉션 메타데이터 업데이트 (제한된 필드)
+async function updateCollectionMetadata(
+  address: string,
+  updates: {
+    description?: string
+    image?: string
+    external_url?: string
+    animation_url?: string
+  }
+) {
+  try {
+    const updatedCollection = await storage.updateCollection(address, updates)
+    console.log('✅ 컬렉션 업데이트 성공')
+    return updatedCollection
+  } catch (error: any) {
+    if (error.message.includes('not authorized')) {
+      console.error('❌ 이 컬렉션을 업데이트할 권한이 없음')
+    } else if (error.message.includes('immutable field')) {
+      console.error('❌ 변경할 수 없는 필드를 업데이트하려 함')
+    } else {
+      console.error('❌ 업데이트 실패:', error)
+    }
+    throw error
+  }
+}
+```
+
+### 컬렉션 삭제
+
+```typescript title="컬렉션 삭제"
+// 단일 컬렉션 삭제 (미배포만 가능)
+async function deleteCollection(address: string) {
+  try {
+    await storage.deleteCollection(address)
+    console.log(`✅ 컬렉션 ${address} 삭제됨`)
+  } catch (error: any) {
+    if (error.message.includes('deployed')) {
+      console.error('❌ 배포된 컬렉션은 삭제할 수 없음')
+    } else if (error.message.includes('not found')) {
+      console.error('❌ 컬렉션을 찾을 수 없음')
+    } else {
+      console.error('❌ 삭제 실패:', error)
+    }
+    throw error
+  }
+}
+
+// 대량 삭제 (리퍼러만 가능)
+async function bulkDeleteCollections(
+  identifiers: string[], // UUID 또는 주소
+  referrerId: string
+) {
+  try {
+    const result = await storage.bulkDeleteCollections(identifiers, referrerId)
+    
+    console.log(`✅ ${result.deleted.length}개의 컬렉션 삭제됨`)
+    console.log(`❌ ${result.failed.length}개의 컬렉션 삭제 실패`)
+    
+    return result
+  } catch (error) {
+    console.error('❌ 대량 삭제 실패:', error)
+    throw error
+  }
+}
+```
+
+## 메타데이터 관리
+
+### 사용자 정의 메타데이터 URI
+
+```typescript title="메타데이터 URI 처리"
+// 컬렉션에 대한 메타데이터 URI 생성
+function generateMetadataUri(collectionId: string, baseUrl: string): string {
+  return `${baseUrl}/metadata/${collectionId}`
+}
+
+// 메타데이터 직접 가져오기
+async function getCollectionMetadata(collectionId: string) {
+  try {
+    const metadataUri = generateMetadataUri(collectionId, storage.baseUrl)
+    const response = await fetch(metadataUri)
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+    }
+    
+    const metadata = await response.json()
+    return metadata
+  } catch (error) {
+    console.error('❌ 메타데이터 가져오기 실패:', error)
+    throw error
+  }
+}
+
+// 메타데이터 형식 검증
+function validateMetadata(metadata: any): { isValid: boolean; errors: string[] } {
+  const errors: string[] = []
+  
+  if (!metadata.name) errors.push('이름이 없음')
+  if (!metadata.description) errors.push('설명이 없음')
+  if (!metadata.image) errors.push('이미지가 없음')
+  
+  // OpenSea 호환성 확인
+  if (metadata.attributes && !Array.isArray(metadata.attributes)) {
+    errors.push('속성은 배열이어야 함')
+  }
+  
+  return {
+    isValid: errors.length === 0,
+    errors
+  }
+}
+```
+
+### 자산 관리
+
+```typescript title="자산 업로드 및 관리"
+// 저장소 서비스에 자산 업로드 (지원되는 경우)
+async function uploadAsset(
+  file: File | Buffer,
+  filename: string,
+  contentType: string
+): Promise<string> {
+  try {
+    // 저장소 서비스 구현에 따라 다름
+    const formData = new FormData()
+    formData.append('file', file, filename)
+    formData.append('contentType', contentType)
+    
+    const response = await fetch(`${storage.baseUrl}/upload`, {
+      method: 'POST',
+      body: formData
+    })
+    
+    if (!response.ok) {
+      throw new Error(`업로드 실패: ${response.statusText}`)
+    }
+    
+    const result = await response.json()
+    return result.url
+    
+  } catch (error) {
+    console.error('❌ 자산 업로드 실패:', error)
+    throw error
+  }
+}
+
+// NFT 표준에 맞는 이미지 최적화
+function getOptimizedImageUrl(
+  originalUrl: string,
+  size: 'thumbnail' | 'medium' | 'large' = 'medium'
+): string {
+  const sizeMap = {
+   

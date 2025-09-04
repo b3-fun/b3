@@ -1,0 +1,543 @@
+---
+title: Manajemen Daftar Putih
+description: >-
+  Implementasikan *minting* eksklusif dengan *whitelist* berbasis *Merkle tree*
+  di CreateKit
+lang: id
+originalPath: createkit/whitelist.mdx
+---
+## Ikhtisar
+
+CreateKit mendukung pengelolaan whitelist yang canggih menggunakan Merkle trees untuk verifikasi yang efisien gas. Ini memungkinkan Anda untuk membuat pengalaman minting eksklusif untuk alamat tertentu sambil menjaga skalabilitas dan keamanan.
+
+## Dasar Whitelist
+
+### Cara Kerja Whitelist
+
+1. **Pembuatan Off-chain**: Membuat Merkle tree dari alamat yang masuk whitelist
+2. **Penyimpanan On-chain**: Menyimpan hanya akar Merkle di smart contract
+3. **Verifikasi Bukti**: Pengguna menyediakan bukti Merkle saat minting
+4. **Efisiensi Gas**: Biaya verifikasi konstan tanpa memandang ukuran whitelist
+
+<CardGroup cols={2}>
+  <Card title="Dapat Diskalakan" icon="arrows-split-up-and-left">
+    Mendukung ribuan alamat dengan biaya gas minimal
+  </Card>
+  <Card title="Aman" icon="shield">
+    Verifikasi alamat yang dijamin secara kriptografi
+  </Card>
+  <Card title="Fleksibel" icon="settings">
+    Mudah untuk menghasilkan dan memperbarui konfigurasi whitelist
+  </Card>
+  <Card title="Transparan" icon="eye">
+    Dapat diverifikasi on-chain tanpa mengungkapkan daftar lengkap
+  </Card>
+</CardGroup>
+
+## Menyiapkan Whitelist
+
+### Pembuatan Whitelist Dasar
+
+```typescript title="Create Whitelist"
+import { WhitelistManager } from '@b3dotfun/basemint'
+
+// Mendefinisikan alamat yang masuk whitelist
+const whitelistedAddresses = [
+  { address: "0x1234567890123456789012345678901234567890" },
+  { address: "0x2345678901234567890123456789012345678901" },
+  { address: "0x3456789012345678901234567890123456789012" },
+  { address: "0x4567890123456789012345678901234567890123" },
+  { address: "0x5678901234567890123456789012345678901234" }
+]
+
+// Membuat manajer whitelist
+const whitelist = new WhitelistManager(whitelistedAddresses)
+
+// Mendapatkan akar Merkle untuk penempatan kontrak
+const merkleRoot = whitelist.getRoot()
+console.log(`Akar Merkle: ${merkleRoot}`)
+
+// Memverifikasi whitelist dibangun dengan benar
+console.log(`Whitelist berisi ${whitelistedAddresses.length} alamat`)
+```
+
+### Konfigurasi Whitelist Lanjutan
+
+```typescript title="Whitelist with Metadata"
+// Entri whitelist dapat mencakup metadata tambahan
+const advancedWhitelist = [
+  { 
+    address: "0x1234567890123456789012345678901234567890",
+    alokasi: 5, // Maks 5 token untuk alamat ini
+    tier: "gold"
+  },
+  { 
+    address: "0x2345678901234567890123456789012345678901",
+    alokasi: 3,
+    tier: "silver"
+  },
+  { 
+    address: "0x3456789012345678901234567890123456789012",
+    alokasi: 1,
+    tier: "bronze"
+  }
+]
+
+// Membuat whitelist (hanya alamat yang digunakan untuk Merkle tree)
+const whitelist = new WhitelistManager(
+  advancedWhitelist.map(entry => ({ address: entry.address }))
+)
+
+// Menyimpan metadata secara terpisah untuk logika aplikasi
+const allocationMap = new Map(
+  advancedWhitelist.map(entry => [entry.address, entry.allocation])
+)
+```
+
+## Integrasi Koleksi
+
+### Koleksi yang Diaktifkan Whitelist
+
+```typescript title="Whitelist Collection Setup"
+import { CollectionManager } from '@b3dotfun/basemint'
+
+// Membuat koleksi dengan whitelist diaktifkan
+const whitelistCollection = {
+  name: "Exclusive Collection",
+  symbol: "EXCL",
+  creator: account.address,
+  gameOwner: account.address,
+  
+  // Konfigurasi whitelist
+  isWhitelistEnabled: true,
+  whitelistMerkleRoot: merkleRoot,
+  
+  // Pengaturan koleksi
+  maxSupply: 1000n,
+  mintPrice: parseEther("0.01"),
+  maxPerWallet: 3n,
+  
+  // Opsional: Gabungkan dengan akses berbasis waktu
+  startTime: BigInt(Math.floor(Date.now() / 1000) + 3600), // Whitelist dimulai dalam 1 jam
+  endTime: BigInt(Math.floor(Date.now() / 1000) + 86400 * 7), // Berakhir dalam 7 hari
+}
+
+// Menghasilkan tanda tangan dan penempatan
+const creatorSignature = await collectionManager.generateCreatorSignature(
+  walletClient,
+  whitelistCollection
+)
+
+const predictedAddress = collectionManager.predictCollectionAddress(
+  whitelistCollection,
+  creatorSignature
+)
+
+console.log(`Koleksi whitelist akan ditempatkan di: ${predictedAddress}`)
+```
+
+### Model Akses Hibrid
+
+```typescript title="Phased Access"
+// Membuat koleksi dengan fase akses yang berbeda
+const phasedCollection = {
+  name: "Phased Access Collection",
+  symbol: "PAC",
+  creator: account.address,
+  gameOwner: account.address,
+  
+  // Fase 1: Hanya whitelist (24 jam pertama)
+  isWhitelistEnabled: true,
+  whitelistMerkleRoot: merkleRoot,
+  startTime: BigInt(Math.floor(Date.now() / 1000)),
+  
+  // Catatan: Untuk fase 2 (akses publik), Anda akan memerlukan logika tambahan
+  // untuk menonaktifkan pemeriksaan whitelist setelah waktu tertentu
+}
+
+// Dalam aplikasi Anda, implementasikan logika fase
+async function checkMintingPhase(collection: any): Promise<'whitelist' | 'public' | 'ended'> {
+  const now = BigInt(Math.floor(Date.now() / 1000))
+  const startTime = await collection.startTime()
+  const endTime = await collection.endTime()
+  
+  const whitelistPhaseEnd = startTime + 86400n // 24 jam
+  
+  if (now < startTime) {
+    throw new Error("Minting belum dimulai")
+  } else if (now < whitelistPhaseEnd) {
+    return 'whitelist'
+  } else if (now < endTime) {
+    return 'public'
+  } else {
+    return 'ended'
+  }
+}
+```
+
+## Verifikasi Whitelist
+
+### Menghasilkan Bukti
+
+```typescript title="Generate Merkle Proofs"
+// Menghasilkan bukti untuk alamat tertentu
+function generateProofForAddress(whitelist: WhitelistManager, address: string): string[] {
+  try {
+    const proof = whitelist.getProof(address)
+    console.log(`Bukti dihasilkan untuk ${address}:`, proof)
+    return proof
+  } catch (error) {
+    console.error(`Gagal menghasilkan bukti untuk ${address}:`, error)
+    throw new Error(`Alamat ${address} tidak dalam whitelist`)
+  }
+}
+
+// Memverifikasi bukti secara lokal (pemeriksaan opsional)
+function verifyWhitelistProof(
+  whitelist: WhitelistManager, 
+  address: string, 
+  proof: string[]
+): boolean {
+  const isValid = whitelist.verify(address, proof)
+  console.log(`Verifikasi bukti untuk ${address}: ${isValid ? '✅ Valid' : '❌ Invalid'}`)
+  return isValid
+}
+
+// Contoh penggunaan
+const userAddress = "0x1234567890123456789012345678901234567890"
+const proof = generateProofForAddress(whitelist, userAddress)
+const isValid = verifyWhitelistProof(whitelist, userAddress, proof)
+```
+
+### Generasi Bukti Batch
+
+```typescript title="Batch Proof Generation"
+// Menghasilkan bukti untuk beberapa alamat
+function generateBatchProofs(
+  whitelist: WhitelistManager, 
+  addresses: string[]
+): Map<string, string[]> {
+  const proofMap = new Map<string, string[]>()
+  
+  for (const address of addresses) {
+    try {
+      const proof = whitelist.getProof(address)
+      proofMap.set(address, proof)
+      console.log(`✅ Bukti dihasilkan untuk ${address}`)
+    } catch (error) {
+      console.error(`❌ Gagal menghasilkan bukti untuk ${address}:`, error)
+    }
+  }
+  
+  return proofMap
+}
+
+// Menghasilkan bukti untuk semua alamat yang masuk whitelist
+const allAddresses = whitelistedAddresses.map(entry => entry.address)
+const allProofs = generateBatchProofs(whitelist, allAddresses)
+
+// Menyimpan bukti ke file atau database untuk penggunaan frontend
+const proofData = {
+  merkleRoot,
+  proofs: Object.fromEntries(allProofs)
+}
+
+// Contoh: Simpan ke file JSON
+import { writeFileSync } from 'fs'
+writeFileSync('whitelist-proofs.json', JSON.stringify(proofData, null, 2))
+```
+
+## Minting dengan Whitelist
+
+### Minting Whitelist Dasar
+
+```typescript title="Whitelist Mint"
+async function mintWithWhitelist(
+  collection: any,
+  walletClient: any,
+  whitelist: WhitelistManager,
+  quantity: bigint = 1n
+) {
+  const userAddress = walletClient.account.address
+  
+  try {
+    // Menghasilkan bukti untuk pengguna
+    const proof = whitelist.getProof(userAddress)
+    
+    // Memverifikasi bukti secara lokal (opsional)
+    const isValid = whitelist.verify(userAddress, proof)
+    if (!isValid) {
+      throw new Error("Bukti whitelist tidak valid")
+    }
+    
+    // Mendapatkan harga mint
+    const mintPrice = await collection.mintPrice()
+    const totalPrice = mintPrice * quantity
+    
+    // Mint dengan bukti whitelist
+    const tx = await collection.mint(
+      walletClient,
+      quantity,
+      undefined, // URI metadata
+      totalPrice,
+      proof // Bukti whitelist
+    )
+    
+    console.log(`✅ Mint whitelist berhasil: ${tx}`)
+    return tx
+    
+  } catch (error: any) {
+    if (error.message.includes('Invalid merkle proof')) {
+      console.error('❌ Alamat tidak dalam whitelist atau bukti tidak valid')
+    } else {
+      console.error('❌ Mint whitelist gagal:', error)
+    }
+    throw error
+  }
+}
+
+// Penggunaan
+await mintWithWhitelist(collection, walletClient, whitelist, 2n)
+```
+
+### Minting Whitelist Lanjutan
+
+```typescript title="Advanced Whitelist Logic"
+async function advancedWhitelistMint(
+  collection: any,
+  walletClient: any,
+  whitelist: WhitelistManager,
+  allocationMap: Map<string, number>,
+  quantity: bigint
+) {
+  const userAddress = walletClient.account.address
+  
+  // Memeriksa alokasi pengguna
+  const maxAllocation = allocationMap.get(userAddress) || 0
+  if (maxAllocation === 0) {
+    throw new Error("Alamat tidak dalam whitelist")
+  }
+  
+  // Memeriksa saldo saat ini terhadap alokasi
+  const currentBalance = await collection.balanceOf(userAddress)
+  const newBalance = currentBalance + quantity
+  
+  if (newBalance > BigInt(maxAllocation)) {
+    throw new Error(`Akan melebihi alokasi. Maks: ${maxAllocation}, Saat ini: ${currentBalance}`)
+  }
+  
+  // Menghasilkan bukti dan mint
+  const proof = whitelist.getProof(userAddress)
+  const mintPrice = await collection.mintPrice()
+  
+  const tx = await collection.mint(
+    walletClient,
+    quantity,
+    undefined,
+    mintPrice * quantity,
+    proof
+  )
+  
+  console.log(`✅ Mint whitelist lanjutan berhasil: ${tx}`)
+  return tx
+}
+```
+
+## Integrasi Frontend
+
+### React Hook untuk Status Whitelist
+
+```typescript title="useWhitelistStatus Hook"
+import { useState, useEffect } from 'react'
+import { useAccount } from 'wagmi'
+
+interface WhitelistStatus {
+  isWhitelisted: boolean
+  proof: string[] | null
+  allocation: number
+  loading: boolean
+  error: string | null
+}
+
+export function useWhitelistStatus(
+  whitelist: WhitelistManager,
+  allocationMap?: Map<string, number>
+): WhitelistStatus {
+  const { address } = useAccount()
+  const [status, setStatus] = useState<WhitelistStatus>({
+    isWhitelisted: false,
+    proof: null,
+    allocation: 0,
+    loading: true,
+    error: null
+  })
+  
+  useEffect(() => {
+    async function checkWhitelistStatus() {
+      if (!address) {
+        setStatus({
+          isWhitelisted: false,
+          proof: null,
+          allocation: 0,
+          loading: false,
+          error: null
+        })
+        return
+      }
+      
+      try {
+        setStatus(prev => ({ ...prev, loading: true, error: null }))
+        
+        // Menghasilkan bukti
+        const proof = whitelist.getProof(address)
+        const isValid = whitelist.verify(address, proof)
+        const allocation = allocationMap?.get(address) || 0
+        
+        setStatus({
+          isWhitelisted: isValid,
+          proof: isValid ? proof : null,
+          allocation,
+          loading: false,
+          error: null
+        })
+        
+      } catch (error: any) {
+        setStatus({
+          isWhitelisted: false,
+          proof: null,
+          allocation: 0,
+          loading: false,
+          error: error.message
+        })
+      }
+    }
+    
+    checkWhitelistStatus()
+  }, [address, whitelist, allocationMap])
+  
+  return status
+}
+```
+
+### Komponen Status Whitelist
+
+```tsx title="WhitelistStatus Component"
+import React from 'react'
+import { useWhitelistStatus } from './useWhitelistStatus'
+
+interface WhitelistStatusProps {
+  whitelist: WhitelistManager
+  allocationMap?: Map<string, number>
+}
+
+export function WhitelistStatus({ whitelist, allocationMap }: WhitelistStatusProps) {
+  const { isWhitelisted, allocation, loading, error } = useWhitelistStatus(
+    whitelist, 
+    allocationMap
+  )
+  
+  if (loading) {
+    return <div className="animate-pulse">Memeriksa status whitelist...</div>
+  }
+  
+  if (error) {
+    return <div className="text-red-500">Error: {error}</div>
+  }
+  
+  return (
+    <div className={`p-4 rounded-lg ${isWhitelisted ? 'bg-green-100' : 'bg-gray-100'}`}>
+      {isWhitelisted ? (
+        <div className="text-green-800">
+          <h3 className="font-bold">✅ Masuk Whitelist</h3>
+          <p>Anda dapat mint hingga {allocation} token</p>
+        </div>
+      ) : (
+        <div className="text-gray-800">
+          <h3 className="font-bold">❌ Tidak Masuk Whitelist</h3>
+          <p>Alamat Anda tidak memenuhi syarat untuk minting whitelist</p>
+        </div>
+      )}
+    </div>
+  )
+}
+```
+
+## Beberapa Whitelist
+
+### Sistem Whitelist Bertingkat
+
+```typescript title="Tiered Whitelists"
+// Membuat tingkatan yang berbeda dengan manfaat yang berbeda
+const goldTierAddresses = [
+  { address: "0x1111..." },
+  { address: "0x2222..." }
+]
+
+const silverTierAddresses = [
+  { address: "0x3333..." },
+  { address: "0x4444..." }
+]
+
+const bronzeTierAddresses = [
+  { address: "0x5555..." },
+  { address: "0x6666..." }
+]
+
+// Membuat whitelist terpisah untuk setiap tingkatan
+const goldWhitelist = new WhitelistManager(goldTierAddresses)
+const silverWhitelist = new WhitelistManager(silverTierAddresses)
+const bronzeWhitelist = new WhitelistManager(bronzeTierAddresses)
+
+// Untuk smart contract, Anda mungkin menggabungkan semua tingkatan
+const allTierAddresses = [
+  ...goldTierAddresses,
+  ...silverTierAddresses,
+  ...bronzeTierAddresses
+]
+
+const combinedWhitelist = new WhitelistManager(allTierAddresses)
+
+// Logika aplikasi untuk manfaat tingkatan
+const tierBenefits = {
+  gold: { maxMint: 10, diskon: 0.2 },
+  silver: { maxMint: 5, diskon: 0.1 },
+  bronze: { maxMint: 2, diskon: 0.05 }
+}
+
+function getTierForAddress(address: string): 'gold' | 'silver' | 'bronze' | null {
+  if (goldTierAddresses.some(entry => entry.address === address)) return 'gold'
+  if (silverTierAddresses.some(entry => entry.address === address)) return 'silver'  
+  if (bronzeTierAddresses.some(entry => entry.address === address)) return 'bronze'
+  return null
+}
+```
+
+### Akses Tingkatan Berbasis Waktu
+
+```typescript title="Phased Tier Access"
+async function getActiveTierForTime(timestamp: number): Promise<'gold' | 'silver' | 'bronze' | 'public' | null> {
+  const phaseStartTime = 1640995200 // Contoh timestamp
+  const hoursSinceStart = (timestamp - phaseStartTime) / 3600
+  
+  if (hoursSinceStart < 0) return null // Belum dimulai
+  if (hoursSinceStart < 1) return 'gold' // Jam pertama: hanya tingkatan emas
+  if (hoursSinceStart < 4) return 'silver' // 3 jam berikutnya: emas + perak
+  if (hoursSinceStart < 24) return 'bronze' // 20 jam berikutnya: semua tingkatan
+  return 'public' // Setelah 24 jam: akses publik
+}
+
+async function mintWithTierAccess(
+  collection: any,
+  walletClient: any,
+  address: string,
+  quantity: bigint
+) {
+  const now = Math.floor(Date.now() / 1000)
+  const activeTier = await getActiveTierForTime(now)
+  const userTier = getTierForAddress(address)
+  
+  // Memeriksa apakah pengguna dapat mint dalam fase saat ini
+  if (activeTier === 'public') {
+    // Minting publik - tidak memerlukan whitelist
+    await collection.mint(walletClient, quantity, undefined, mintPrice * quantity, [])
+  } else

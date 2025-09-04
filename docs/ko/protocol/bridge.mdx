@@ -1,0 +1,185 @@
+---
+title: Bridge to B3
+description: B3 및 우리의 appchains로 연결하는 몇 가지 방법이 있습니다.
+lang: ko
+originalPath: protocol/bridge.mdx
+---
+
+<img src="/images/b3-banner.png" alt="Bridge to B3" className="w-full rounded-xl" />
+
+<CardGroup cols={2}>
+  <Card title="Basement Bridge"  href="https://basement.fun/bridge">
+    <img src="/images/bsmnt-logo.svg" alt="Basement" className="p-8 bg-black rounded-2xl my-3" />
+
+    즉시 입금 및 출금이 가능한 크로스체인 브릿지
+  </Card>
+  
+  <Card title="Relay Bridge" href="https://relay.link/bridge/base?fromChainId=8453&fromCurrency=0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3&toCurrency=0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3">
+    <img src="/images/relay-logo.avif" alt="Relay" className="p-8 bg-black rounded-2xl my-3" />
+
+    모든 EVM 체인 및 Solana에서 B3로의 브릿지
+  </Card>
+  
+  <Card title="Native Bridge" icon="bridge" href="#native-bridge">
+    OP Canonical Bridge with 7-day withdrawal period
+  </Card>
+  
+  <Card title="Bridge Contract" icon="code" href="#bridge-contract">
+    고급 사용자를 위한 직접 계약 상호작용
+  </Card>
+</CardGroup>
+
+## Cross Chain Bridge
+
+<div style={{ marginBottom: '16px' }}>
+  <span style={{ backgroundColor: '#3b82f6', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', marginRight: '8px' }}>즉시 입금</span>
+  <span style={{ backgroundColor: '#8b5cf6', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', marginRight: '8px' }}>즉시 출금</span>
+  <span style={{ backgroundColor: '#10b981', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px' }}>저렴한 수수료</span>
+</div>
+
+지갑을 연결하고 주요 EVM 네트워크에서 B3으로 입출금하세요.
+
+<Steps>
+<Step title="Basement Bridge로 이동">
+  브릿지 인터페이스에 접근하려면 [basement.fun/bridge](https://basement.fun/bridge)를 방문하세요.
+</Step>
+
+<Step title="지갑 연결">
+  MetaMask, Coinbase Wallet 또는 지원되는 다른 지갑을 사용하여 지갑을 연결하세요.
+</Step>
+
+<Step title="네트워크 및 자금 선택">
+  출처 네트워크와 B3로 브릿지할 자금의 양을 선택하세요.
+</Step>
+
+<Step title="거래 확인">
+  거래를 확인하면 1분 이내에 브릿지된 자금을 받게 됩니다.
+  
+  <Check>
+  귀하의 자금은 60초 이내에 B3 지갑에 나타납니다.
+  </Check>
+</Step>
+</Steps>
+
+<Card title="Basement Bridge 사용하기" href="https://basement.fun" cta="브릿지 사용" horizontal>
+  <img src="/images/bsmnt-logo.svg" alt="Basement" className="w-32" />
+
+  즉시 입출금으로 B3로 자산을 브릿지하세요
+</Card>
+
+## Instant Bridge
+
+<div style={{ marginBottom: '16px' }}>
+  <span style={{ backgroundColor: '#3b82f6', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', marginRight: '8px' }}>즉시 입금</span>
+  <span style={{ backgroundColor: '#8b5cf6', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', marginRight: '8px' }}>즉시 출금</span>
+  <span style={{ backgroundColor: '#10b981', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px' }}>저렴한 수수료</span>
+</div>
+
+Relay를 사용하여 모든 EVM 체인 및 Solana에서 B3로 쉽게 브릿지하세요.
+
+<Steps>
+<Step title="Relay Bridge로 이동">
+  Relay 브릿지 인터페이스에 접근하려면 [relay.link](https://relay.link)을 방문하세요.
+</Step>
+
+<Step title="지갑 연결">
+  브릿지 과정을 시작하려면 지갑을 연결하세요.
+</Step>
+
+<Step title="브릿지 금액 입력">
+  B3로 브릿지할 ETH의 양을 입력하세요.
+</Step>
+
+<Step title="거래 확인">
+  거래를 확인하면 1분 이내에 브릿지된 자금을 받게 됩니다.
+  
+  <Check>
+  Relay는 Solana를 포함한 여러 체인에서의 브릿지를 지원합니다.
+  </Check>
+</Step>
+</Steps>
+
+<Card title="Relay Bridge 사용하기" href="https://relay.link" cta="브릿지 사용" horizontal>
+  <img src="/images/relay-logo.avif" alt="Relay" className="w-32" />
+
+  모든 EVM 체인 및 Solana에서 B3로 즉시 브릿지하세요
+</Card>
+
+## Native Bridge
+
+<div style={{ marginBottom: '16px' }}>
+  <span style={{ backgroundColor: '#3b82f6', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', marginRight: '8px' }}>Base to B3</span>
+  <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', marginRight: '8px' }}>7일 출금</span>
+  <span style={{ backgroundColor: '#10b981', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px' }}>수수료 없음</span>
+</div>
+
+공식 OP Stack canonical bridge를 사용하여 Base에서 B3로 쉽게 브릿지하세요!
+
+<Warning>
+B3에서 Base로 다시 출금하는 경우 보안을 위해 7일간의 챌린지 기간이 있습니다. 즉시 출금을 위해서는 타사 브릿지를 사용하세요.
+</Warning>
+
+<Steps>
+<Step title="브릿지 방문">
+  공식 브릿지에 접근하려면 [bridge.b3.fun](https://bridge.b3.fun)을 방문하세요.
+</Step>
+
+<Step title="지갑 연결">
+  브릿지 인터페이스에 지갑을 연결하세요.
+</Step>
+
+<Step title="방향 선택">
+  다음 중 하나를 선택하세요:
+  - **입금**: Base → B3로 자금을 가져옵니다
+  - **출금**: B3에서 Base로 브릿지합니다
+</Step>
+
+<Step title="금액 입력">
+  브릿지할 ETH의 양을 입력하세요.
+</Step>
+
+<Step title="거래 완료">
+  "입금"을 클릭하고 지갑에서 거래를 확인하세요.
+  
+  <Tip>
+  B3로의 입금은 즉시 이루어지지만, 출금은 챌린지 기간 동안 7일이 걸립니다.
+  </Tip>
+</Step>
+</Steps>
+
+<Card title="공식 브릿지 사용하기" icon="bridge" href="https://bridge.b3.fun" cta="브릿지" horizontal>
+  검증된 OP Stack canonical bridge 사용하기
+</Card>
+
+## Native Transfer (Bridge Contract)
+
+<div style={{ marginBottom: '16px' }}>
+  <span style={{ backgroundColor: '#3b82f6', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', marginRight: '8px' }}>즉시 입금</span>
+  <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', marginRight: '8px' }}>7일 출금</span>
+  <span style={{ backgroundColor: '#10b981', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px' }}>수수료 없음</span>
+</div>
+
+다음 브릿지 주소로 **Base Mainnet**에서 **Base ETH**를 전송하세요:
+
+<Warning>
+이 방법은 고급 사용자만을 위한 것입니다. 자금을 잃지 않도록 Base Mainnet에서 전송하는지 확인하세요.
+</Warning>
+
+```text Bridge Address
+0x769547a723783FCA36BAaf1ECcf9dfdbF6d09F38
+```
+
+<Note>
+Base에서 이 주소로 ETH를 보내면 자동으로 B3의 지갑에 나타납니다. 이는 직접 계약 상호작용 방법입니다.
+</Note>
+
+<Accordion title="브릿지 계약 사용 방법">
+1. **지갑에서 Base Mainnet에 있어야 합니다**
+2. **위의 브릿지 계약 주소로 ETH를 보냅니다**
+3. **확인을 기다립니다** - 귀하의 자금은 B3에서 자동으로 나타납니다
+4. **B3 지갑 확인** - 브릿지된 ETH를 보려면 B3 네트워크로 전환하세요
+
+<Warning>
+전송하기 전에 Base Mainnet에 있는지 확인하세요. 다른 네트워크에서 전송하면 자금이 손실될 수 있습니다.
+</Warning>
+</Accordion>

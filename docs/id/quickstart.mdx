@@ -1,0 +1,131 @@
+---
+title: Panduan Cepat
+description: >-
+  Mulai menggunakan B3 SDK dalam beberapa menit dan mulai membangun di ekosistem
+  B3
+lang: id
+originalPath: quickstart.mdx
+---
+### Langkah 1: Pasang SDK B3
+<Steps>
+  <Step title="Pasang paket SDK">
+    Pilih manajer paket pilihan Anda untuk memasang SDK B3:
+
+    <CodeGroup>
+    ```bash npm
+    npm install @b3dotfun/sdk
+    ```
+    ```bash pnpm
+    pnpm add @b3dotfun/sdk
+    ```
+    ```bash yarn
+    yarn add @b3dotfun/sdk
+    ```
+    </CodeGroup>
+
+    <Tip>SDK B3 sudah termasuk definisi TypeScript secara langsung!</Tip>
+  </Step>
+
+  <Step title="Impor gaya CSS">
+    Impor gaya bawaan dalam aplikasi Anda:
+
+    ```typescript
+    import "@b3dotfun/sdk/index.css";
+    ```
+  </Step>
+</Steps>
+
+### Langkah 2: Tambahkan B3Provider
+Bungkus B3Provider di sekitar akar aplikasi Anda:
+
+```tsx
+import { B3Provider, SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
+
+function App() {
+  return (
+    <B3Provider environment="production">
+      {children}
+    </B3Provider>
+  );
+}
+```
+
+
+### Langkah 3: Gunakan SDK B3
+<AccordionGroup>
+ <Accordion icon="swap" title="Akun Instan">
+    Aktifkan otentikasi akun global dengan B3:
+
+    ```tsx
+    import { SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
+
+    function App() {
+      return (
+        <B3Provider environment="production">
+          <SignInWithB3
+            provider={{ strategy: "google" }}
+            partnerId="your-partner-id"
+            onLoginSuccess={(globalAccount) => {
+              console.log("Authenticated:", globalAccount);
+            }}
+          />
+        </B3Provider>
+      );
+    }
+    ```
+  </Accordion>
+  <Accordion icon="swap" title="Akses Likuiditas">
+    Aktifkan pertukaran lintas rantai & interaksi kustom dengan AnySpend:
+
+    ```tsx
+    import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
+
+    function SwapPage() {
+      return <AnySpend mode="page" />;
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Langkah 4: Jelajahi Ekosistem
+
+<Card title="Jelajahi Ekosistem B3" icon="globe" href="/ecosystem/introduction">
+  Pelajari tentang ekosistem B3 yang lengkap, alat, dan sumber daya yang tersedia untuk pembangun.
+</Card>
+
+## Apa Selanjutnya?
+
+Sekarang Anda telah memasang SDK B3, jelajahi fitur-fitur canggih ini:
+
+<CardGroup cols={2}>
+
+<Card title="Akun Global" icon="user" href="/sdk/global-account/introduction">
+  Otentikasi dan manajemen pengguna yang mulus di seluruh ekosistem B3.
+</Card>
+
+<Card title="Data API" icon="user" href="/data/api-reference/introduction">
+  Akses data blockchain untuk token, NFT, profil, dan analitik.
+</Card>
+
+<Card title="SDK AnySpend" icon="arrows-cross" href="/anyspend/introduction">
+  Pertukaran lintas rantai, pencetakan NFT, dan operasi blockchain.
+</Card>
+
+<Card title="Contoh & Demo" icon="code" href="/sdk/introduction">
+  Contoh yang siap digunakan dan pola integrasi.
+</Card>
+
+</CardGroup>
+
+## Dukungan Platform
+
+| Fitur             | React Web | React Native |
+| ----------------- | --------- | ------------ |
+| AnySpend          | ✅         | ❌            |
+| Akun Global       | ✅         | ✅            |
+| Layanan Tanpa Kepala | ✅         | ✅            |
+
+<Note>
+  **Butuh bantuan?** Bergabung dengan [komunitas Discord](https://discord.gg/b3dotfun) kami atau lihat
+  [pengenalan ekosistem](/ecosystem/introduction) untuk sumber daya yang komprehensif.
+</Note>

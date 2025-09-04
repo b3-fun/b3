@@ -1,0 +1,257 @@
+---
+title: Instalasi
+description: Pasang dan siapkan CreateKit (BaseMint SDK) dalam proyek Anda
+lang: id
+originalPath: createkit/installation.mdx
+---
+## Instalasi Paket
+
+Instal CreateKit menggunakan package manager pilihan Anda:
+
+<CodeGroup>
+```bash npm
+npm install @b3dotfun/basemint
+```
+
+```bash yarn
+yarn add @b3dotfun/basemint
+```
+
+```bash pnpm
+pnpm add @b3dotfun/basemint
+```
+</CodeGroup>
+
+<Note>
+CreateKit dibangun dengan TypeScript dan menyediakan definisi tipe lengkap langsung dari kotak.
+</Note>
+
+## Dependensi
+
+CreateKit dibangun di atas teknologi web3 modern dan memerlukan dependensi peer berikut:
+
+<CodeGroup>
+```bash npm
+npm install viem @wagmi/core
+```
+
+```bash yarn
+yarn add viem @wagmi/core
+```
+
+```bash pnpm
+pnpm add viem @wagmi/core
+```
+</CodeGroup>
+
+## Pengaturan Lingkungan
+
+### 1. Konfigurasi Jaringan Chain
+
+CreateKit menyediakan definisi chain yang telah dikonfigurasi sebelumnya untuk jaringan B3:
+
+```typescript title="chains.ts"
+import { b3Mainnet, b3Testnet } from '@b3dotfun/basemint'
+
+// B3 Mainnet (Produksi)
+console.log('Chain ID:', b3Mainnet.id) // 8333
+console.log('Nama:', b3Mainnet.name)
+console.log('URL RPC:', b3Mainnet.rpcUrls.default.http[0])
+
+// B3 Testnet (Pengembangan)
+console.log('Chain ID:', b3Testnet.id) // 1993
+console.log('Nama:', b3Testnet.name)
+console.log('URL RPC:', b3Testnet.rpcUrls.default.http[0])
+```
+
+### 2. Inisialisasi Klien Viem
+
+Siapkan klien viem Anda untuk berinteraksi dengan blockchain:
+
+```typescript title="client.ts"
+import { createPublicClient, createWalletClient, http } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+import { b3Testnet } from '@b3dotfun/basemint'
+
+// Klien publik untuk membaca data
+export const publicClient = createPublicClient({
+  chain: b3Testnet,
+  transport: http()
+})
+
+// Klien dompet untuk transaksi (untuk penggunaan sisi server)
+export const walletClient = createWalletClient({
+  chain: b3Testnet,
+  transport: http(),
+  account: privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`)
+})
+```
+
+### 3. Variabel Lingkungan
+
+Buat file `.env` di akar proyek Anda:
+
+```bash title=".env"
+# Diperlukan untuk menandatangani transaksi
+PRIVATE_KEY=0x...
+
+# Opsional: Endpoint RPC kustom
+B3_MAINNET_RPC=https://your-custom-rpc.com
+B3_TESTNET_RPC=https://your-custom-testnet-rpc.com
+```
+
+<Warning>
+Jangan pernah commit private keys ke kontrol versi. Gunakan variabel lingkungan atau solusi manajemen kunci yang aman.
+</Warning>
+
+## Integrasi Kerangka Kerja
+
+### Pengaturan Next.js
+
+Untuk aplikasi Next.js, buat file konfigurasi:
+
+```typescript title="lib/createkit.ts"
+import { createPublicClient, http } from 'viem'
+import { b3Testnet } from '@b3dotfun/basemint'
+import { 
+  CollectionManager, 
+  RewardTracker, 
+  BaseMintStorage 
+} from '@b3dotfun/basemint'
+
+// Inisialisasi klien
+export const publicClient = createPublicClient({
+  chain: b3Testnet,
+  transport: http()
+})
+
+// Inisialisasi manajer CreateKit
+export const collectionManager = new CollectionManager(publicClient)
+export const rewardTracker = new RewardTracker(publicClient)
+export const storage = new BaseMintStorage({
+  baseUrl: 'https://api.basemint.fun'
+})
+```
+
+### Pengaturan React/Vite
+
+```typescript title="src/lib/createkit.ts"
+import { createPublicClient, http } from 'viem'
+import { b3Testnet } from '@b3dotfun/basemint'
+import { CollectionManager } from '@b3dotfun/basemint'
+
+export const publicClient = createPublicClient({
+  chain: b3Testnet,
+  transport: http(import.meta.env.VITE_RPC_URL)
+})
+
+export const collectionManager = new CollectionManager(publicClient)
+```
+
+## Verifikasi Instalasi
+
+Tes instalasi Anda dengan skrip sederhana:
+
+```typescript title="test-installation.ts"
+import { b3Testnet, CollectionManager } from '@b3dotfun/basemint'
+import { createPublicClient, http } from 'viem'
+
+async function testInstallation() {
+  try {
+    // Buat klien
+    const client = createPublicClient({
+      chain: b3Testnet,
+      transport: http()
+    })
+
+    // Inisialisasi manajer
+    const manager = new CollectionManager(client)
+    
+    // Tes koneksi
+    const blockNumber = await client.getBlockNumber()
+    console.log('✅ Berhasil terhubung ke B3 Testnet')
+    console.log(`📊 Nomor blok saat ini: ${blockNumber}`)
+    
+    // Tes interaksi kontrak
+    const factoryAddress = manager.getFactoryAddress()
+    console.log(`🏭 Alamat pabrik: ${factoryAddress}`)
+    
+    console.log('🎉 Instalasi CreateKit berhasil!')
+  } catch (error) {
+    console.error('❌ Tes instalasi gagal:', error)
+  }
+}
+
+testInstallation()
+```
+
+Jalankan skrip tes:
+
+<CodeGroup>
+```bash npm
+npx tsx test-installation.ts
+```
+
+```bash yarn
+yarn tsx test-installation.ts
+```
+
+```bash pnpm
+pnpm tsx test-installation.ts
+```
+</CodeGroup>
+
+## Konfigurasi TypeScript
+
+Pastikan `tsconfig.json` Anda mencakup konfigurasi yang diperlukan:
+
+```json title="tsconfig.json"
+{
+  "compilerOptions": {
+    "strict": true,
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "target": "ES2020",
+    "module": "ESNext",
+    "lib": ["ES2020", "DOM"]
+  }
+}
+```
+
+## Langkah Selanjutnya
+
+Sekarang Anda telah menginstal dan mengonfigurasi CreateKit, Anda siap untuk mulai membangun:
+
+<CardGroup cols={2}>
+  <Card title="Panduan Cepat" icon="rocket" href="/createkit/quickstart">
+    Buat koleksi NFT pertama Anda dalam hitungan menit
+  </Card>
+  <Card title="Manajemen Koleksi" icon="folder" href="/createkit/collections">
+    Pelajari tentang pembuatan dan manajemen koleksi
+  </Card>
+</CardGroup>
+
+## Pemecahan Masalah
+
+<AccordionGroup>
+  <Accordion title="Kesalahan modul tidak ditemukan">
+    Pastikan semua dependensi peer terinstal:
+    ```bash
+    npm install viem @wagmi/core
+    ```
+  </Accordion>
+
+  <Accordion title="Kesalahan TypeScript">
+    Pastikan konfigurasi TypeScript Anda mencakup entri lib yang diperlukan dan `skipLibCheck` diaktifkan.
+  </Accordion>
+
+  <Accordion title="Masalah koneksi jaringan">
+    Verifikasi endpoint RPC Anda benar dan dapat diakses. Gunakan endpoint RPC B3 default jika yang kustom gagal.
+  </Accordion>
+
+  <Accordion title="Kesalahan format kunci pribadi">
+    Pastikan kunci pribadi Anda dalam format yang benar (dengan awalan 0x) dan memiliki dana yang cukup untuk biaya gas.
+  </Accordion>
+</AccordionGroup>

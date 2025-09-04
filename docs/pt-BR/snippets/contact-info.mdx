@@ -1,0 +1,78 @@
+---
+lang: pt-BR
+originalPath: snippets/contact-info.mdx
+---
+```jsx
+export const SupportLinks = () => (
+  <div>
+    <h3>Precisa de Ajuda?</h3>
+    <ul>
+      <li>
+        📚 <a href="https://docs.b3.fun">Documentação da B3</a>
+      </li>
+      <li>
+        💬 <a href="https://discord.gg/b3dotfun">Junte-se ao nosso Discord</a>
+      </li>
+      <li>
+        🐛 <a href="https://github.com/b3-fun/b3/issues">Reporte Problemas no GitHub</a>
+      </li>
+      <li>
+        📧 Envie-nos um email em <a href="mailto:support@b3.fun">support@b3.fun</a>
+      </li>
+    </ul>
+  </div>
+);
+
+export const CommunityResources = () => (
+  <div>
+    <h3>Comunidade & Recursos</h3>
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+      <div>
+        <h4>🎮 Experimente ao Vivo</h4>
+        <p>
+          <a href="https://anyspend.com">Demo do AnySpend</a> - Experimente nosso SDK em ação
+        </p>
+      </div>
+      <div>
+        <h4>💬 Obtenha Suporte</h4>
+        <p>
+          <a href="https://discord.gg/b3dotfun">Comunidade no Discord</a> - Junte-se à conversa
+        </p>
+      </div>
+      <div>
+        <h4>🔧 Contribua</h4>
+        <p>
+          <a href="https://github.com/b3-fun/b3">Repositório no GitHub</a> - Contribua para o projeto
+        </p>
+      </div>
+      <div>
+        <h4>🌐 Ecossistema</h4>
+        <p>
+          <a href="https://docs.b3.fun">Documentação da B3</a> - Explore o ecossistema mais amplo
+        </p>
+      </div>
+    </div>
+  </div>
+);
+
+export const ContactInfo = ({ type = "general" }) => {
+  const email =
+    type === "support"
+      ? "support@b3.fun"
+      : type === "partnerships"
+        ? "partnerships@b3.fun"
+        : type === "developer"
+          ? "developers@b3.fun"
+          : "support@b3.fun";
+
+return (
+
+<div>
+  <p>
+    📧 <a href={`mailto:${email}`}>{email}</a>
+  </p>
+</div>
+); };
+
+;
+```

@@ -1,0 +1,301 @@
+---
+title: 설치
+description: Base에서 ERC20 채권 토큰을 출시하기 위한 BondKit 설치 및 구성
+lang: ko
+originalPath: bondkit/installation.mdx
+---
+## 사전 요구 사항
+
+<Card title="필요한 도구" icon="wrench">
+  - **Node.js 18+** - JavaScript 런타임
+  - **pnpm** (추천) 또는 npm/yarn - 패키지 관리자
+  - **Git** - 버전 관리
+  - **Base ETH가 있는 지갑** - 배포 및 거래를 위함
+</Card>
+
+## 빠른 시작 옵션
+
+<Tabs>
+  <Tab title="새 프로젝트">
+    ## SDK 설치하기
+    
+    <CodeGroup>
+    ```bash pnpm
+    pnpm add @b3dotfun/sdk
+    ```
+    ```bash npm
+    npm install @b3dotfun/sdk
+    ```
+    ```bash yarn
+    yarn add @b3dotfun/sdk
+    ```
+    </CodeGroup>
+
+    ## 프로젝트 설정
+
+    ```bash
+    # 새 프로젝트 생성
+    mkdir my-bondkit-app
+    cd my-bondkit-app
+    pnpm init
+
+    # 의존성 설치
+    pnpm add @b3dotfun/sdk typescript
+    pnpm add -D @types/node tsx
+
+    # TypeScript 설정 생성
+    npx tsc --init
+    ```
+  </Tab>
+  
+  <Tab title="기존 프로젝트에 추가">
+    ## 기존 프로젝트에 추가하기
+    
+    <CodeGroup>
+    ```bash pnpm
+    pnpm add @b3dotfun/sdk
+    ```
+    ```bash npm
+    npm install @b3dotfun/sdk
+    ```
+    ```bash yarn
+    yarn add @b3dotfun/sdk
+    ```
+    </CodeGroup>
+
+    <Note>
+      SDK는 viem을 포함한 모든 필수 의존성을 포함합니다
+    </Note>
+  </Tab>
+  
+  <Tab title="데모 앱">
+    ## 데모 애플리케이션 복제하기
+    
+    가장 빠르게 시작하는 방법은 완성된 데모 애플리케이션을 사용하는 것입니다:
+
+    ```bash
+    # B3 모노레포 복제
+    git clone https://github.com/b3dotfun/b3-monorepo.git
+    cd b3-monorepo
+
+    # 의존성 설치
+    pnpm install
+
+    # BondKit 데모로 이동
+    cd apps/bondkit-demo
+
+    # 환경 설정
+    cp .env.example .env.local
+    # .env.local을 구성으로 편집
+
+    # 데모 실행
+    pnpm dev
+    ```
+
+    <Info>
+      데모 앱은 `apps/bondkit-demo/src/app/`에 위치하며 다음을 포함합니다:
+      - 완전한 토큰 배포 흐름
+      - TradingView 차트가 있는 거래 인터페이스
+      - B3 인증을 통한 지갑 연결
+      - 실시간 가격 및 거래량 추적
+      - 마이그레이션 관리 인터페이스
+    </Info>
+
+    ### 데모 앱 구조
+
+    ```
+    apps/bondkit-demo/src/app/
+    ├── page.tsx                 # 토큰 목록이 있는 랜딩 페이지
+    ├── deploy/page.tsx          # 토큰 배포 인터페이스
+    ├── token/[address]/page.tsx # 개별 토큰 거래 페이지
+    ├── providers.tsx            # Web3 제공자 설정
+    ├── b3ProviderWrapper.tsx    # B3 인증 래퍼
+    └── api/                     # TradingView 데이터 엔드포인트
+        └── udf/                 # 차트를 위한 범용 데이터 피드
+    ```
+  </Tab>
+</Tabs>
+
+## 환경 구성
+
+### 기본 설정
+
+프로젝트 루트에 `.env` 파일 생성:
+
+```bash
+# 서버 측 작업에 필요
+WALLET_PRIVATE_KEY=0x...
+
+# 선택사항: 사용자 정의 RPC 엔드포인트 (기본값으로 공개)
+RPC_URL=https://base-mainnet.g.alchemy.com/v2/YOUR_KEY
+
+# 선택사항: API 구성
+BONDKIT_API_ENDPOINT=https://api.b3.fun
+```
+
+### 보안 모범 사례
+
+<Warning>
+  **버전 관리에 개인 키를 커밋하지 마세요!**
+  
+  - `.env`를 `.gitignore`에 추가
+  - 프로덕션에서 환경 변수 사용
+  - 키 관리 서비스 사용 고려
+  - 개발과 프로덕션에 별도의 지갑 사용
+</Warning>
+
+## 클라이언트 초기화
+
+### 기본 설정
+
+```typescript
+import { BondkitTokenFactory } from "@b3dotfun/sdk/bondkit";
+import { base } from "viem/chains";
+
+// 개인 키를 사용한 서버 측 사용
+const factory = new BondkitTokenFactory(
+  base.id, 
+  process.env.WALLET_PRIVATE_KEY
+);
+
+// 지갑 제공자를 사용한 클라이언트 측 사용
+const clientFactory = new BondkitTokenFactory(base.id);
+await clientFactory.connect(window.ethereum);
+```
+
+### 고급 구성
+
+```typescript
+import { 
+  BondkitTokenFactory, 
+  BondkitToken,
+  getConfig 
+} from "@b3dotfun/sdk/bondkit";
+import { createWalletClient, custom } from "viem";
+import { base } from "viem/chains";
+
+// 사용자 정의 지갑 클라이언트 설정
+const walletClient = createWalletClient({
+  chain: base,
+  transport: custom(window.ethereum)
+});
+
+// 사용자 정의 구성으로 초기화
+const config = getConfig(base.id);
+const factory = new BondkitTokenFactory(base.id);
+
+// 사용자 정의 지갑 클라이언트로 연결
+await factory.connect(walletClient.transport);
+
+// 기존 토큰 작업
+const token = new BondkitToken(
+  "0x123...", // 토큰 주소
+  process.env.WALLET_PRIVATE_KEY
+);
+```
+
+## TypeScript 구성
+
+BondKit 프로젝트에 권장되는 `tsconfig.json`:
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "lib": ["ES2020", "DOM"],
+    "moduleResolution": "node",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "noEmit": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}
+```
+
+## 설정 테스트하기
+
+`test-bondkit.ts` 테스트 파일 생성:
+
+```typescript
+import { BondkitTokenFactory } from "@b3dotfun/sdk/bondkit";
+import { base } from "viem/chains";
+
+async function testConnection() {
+  try {
+    const factory = new BondkitTokenFactory(base.id);
+    const implementationAddress = await factory.getImplementationAddress();
+    
+    console.log("✅ BondKit SDK가 성공적으로 연결되었습니다!");
+    console.log("구현 주소:", implementationAddress);
+  } catch (error) {
+    console.error("❌ 연결 실패:", error);
+  }
+}
+
+testConnection();
+```
+
+테스트 실행:
+
+```bash
+npx tsx test-bondkit.ts
+```
+
+## 다음 단계
+
+<CardGroup cols={2}>
+  <Card title="빠른 시작 가이드" icon="rocket" href="/bondkit/quickstart">
+    몇 분 안에 첫 토큰 배포
+  </Card>
+  <Card title="SDK 참조" icon="code" href="/bondkit/sdk/reference">
+    모든 SDK 메서드와 기능 탐색
+  </Card>
+  <Card title="데모 애플리케이션" icon="desktop" href="https://github.com/b3dotfun/b3-monorepo/tree/main/apps/bondkit-demo">
+    완전한 구현 연구
+  </Card>
+  <Card title="API 문서" icon="server" href="/bondkit/api">
+    백엔드 서비스와 분석에 대해 알아보기
+  </Card>
+</CardGroup>
+
+## 문제 해결
+
+<AccordionGroup>
+  <Accordion title="모듈을 찾을 수 없는 오류">
+    SDK가 제대로 설치되었는지 확인:
+    ```bash
+    pnpm add @b3dotfun/sdk
+    ```
+    React 컴포넌트를 사용하는 경우 필요할 수 있음:
+    ```bash
+    pnpm add @wagmi/core @tanstack/react-query
+    ```
+  </Accordion>
+  
+  <Accordion title="TypeScript 오류">
+    TypeScript를 최신 버전으로 업데이트:
+    ```bash
+    pnpm add -D typescript@latest @types/node@latest
+    ```
+  </Accordion>
+  
+  <Accordion title="연결 문제">
+    - RPC 엔드포인트가 작동하는지 확인
+    - 지갑에 충분한 Base ETH가 있는지 확인
+    - 개인 키 형식이 올바른지 확인 (0x 접두사 포함)
+  </Accordion>
+  
+  <Accordion title="빌드 오류">
+    캐시를 지우고 다시 설치:
+    ```bash
+    rm -rf node_modules .next
+    pnpm install
+    ```
+  </Accordion>
+</AccordionGroup>

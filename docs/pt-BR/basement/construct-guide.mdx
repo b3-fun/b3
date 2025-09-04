@@ -1,0 +1,240 @@
+---
+title: Guia de Construção
+description: >-
+  Este guia irá orientá-lo na integração do seu jogo Construct com a plataforma
+  Basement.fun usando web APIs
+lang: pt-BR
+originalPath: basement/construct-guide.mdx
+---
+## Eventos
+
+O Construct possui uma ótima interface gráfica que permite aos desenvolvedores criar jogos com mínimo ou nenhum código. Os seguintes documentos revisarão como conectar seu jogo ao Basement.fun usando a folha de eventos do Construct.
+
+### Componentes Chave
+
+Você precisará adicionar alguns objetos ao seu projeto para habilitar seu jogo Construct a interagir com a plataforma Basement.fun.
+
+<Note>
+Para adicionar objetos ao seu projeto, vá para a **Visualização de Layout**, clique com o botão direito no layout, selecione **Inserir Novo Objeto** e, em seguida, escolha o objeto que deseja inserir no seu projeto. Após adicionar o objeto, ele estará disponível na sua folha de eventos.
+</Note>
+
+<CardGroup cols={1}>
+  <Card title="Objeto Browser" icon="globe">
+    O objeto Browser permite que você escreva no console. Não é necessário, mas será útil ao verificar dados e depurar seu código.
+  </Card>
+  
+  <Card title="Objeto AJAX" icon="arrow-right-left">
+    O objeto AJAX permite que seu jogo interaja com as APIs do B3.
+    
+    - **Requisições POST** exigem que você crie ações separadas para cada parâmetro de cabeçalho e uma ação de postar para URL para todos os parâmetros do corpo
+    - **Requisições GET** exigem que você combine todos os parâmetros e valores necessários em uma única URL para enviar a solicitação à API
+    - As **respostas da API** podem ser referenciadas usando `AJAX.LastData`
+  </Card>
+  
+  <Card title="Objeto JSON" icon="braces">
+    O objeto JSON permite que seu jogo manipule respostas JSON. Você precisará analisar as strings JSON para utilizar os dados da resposta.
+  </Card>
+</CardGroup>
+
+## Evento de Exemplo
+
+Este evento de exemplo cobrirá a solicitação POST Set Scores detalhada nas Especificações da API BSMNT.
+
+### Solicitação de Exemplo
+
+<Steps>
+<Step title="Criar Função">
+  Clique com o botão direito em qualquer lugar na folha de eventos, crie uma função e nomeie-a **SetScore**.
+</Step>
+
+<Step title="Configurar Cabeçalho do Método de Serviço">
+  Clique em adicionar ação, selecione **AJAX**, selecione **Definir cabeçalho da solicitação**.
+  - **Campo de cabeçalho**: `X-Service-Method`
+  - **Campo de valor**: `setUserScore`
+</Step>
+
+<Step title="Configurar Cabeçalho de Autorização">
+  Adicione outra ação AJAX e selecione **Definir cabeçalho da solicitação** novamente.
+  - **Campo de cabeçalho**: `Authorization`
+  - **Campo de valor**: `Bearer <segredo do jogo>`
+  
+  <Warning>
+  Substitua `<segredo do jogo>` pelo seu token de segredo de jogo real.
+  </Warning>
+</Step>
+
+<Step title="Configurar Solicitação POST">
+  Adicione outra ação AJAX, mas desta vez, selecione **Postar para URL**. Insira o seguinte:
+  - **Tag**: `setUserScore`
+  - **URL**: `https://api.basement.fun/launcher`
+  - **Dados**: `{"launcherJwt": "string", "nonce": "string", "score": 0}`
+  - **Método**: `POST`
+  
+  <Tip>
+  Esta é uma solicitação de exemplo - certifique-se de substituir seus valores por variáveis que são definidas por eventos no seu jogo.
+  </Tip>
+</Step>
+</Steps>
+
+### Resposta de Exemplo
+
+A resposta de exemplo será algo assim:
+
+```json API Response
+{
+    "success": true | false,
+    "error"?: "string de erro",
+    "newScore"?: {
+        "_id": "id único",
+        "nonce": "nonce",
+        "updatedAt": 23151264, // timestamp unix
+        "score": 100.235,
+        "gameId": "uuid do jogo",
+        "normalizedAddress": "endereço em minúsculas do usuário"
+    }
+}
+```
+
+## Recuperando Dados
+
+No Construct, vamos recuperar o nonce da resposta, para que possamos usá-lo para recuperar a pontuação em um momento posterior.
+
+<Steps>
+<Step title="Criar Variável Global">
+  Clique com o botão direito em qualquer lugar na folha de eventos e adicione uma variável global chamada **Nonce**.
+</Step>
+
+<Step title="Adicionar Evento de Gatilho">
+  Adicione um evento que é acionado pelo seu jogo.
+  
+  **Exemplo**: Para capturar a pontuação do usuário quando sua bicicleta colide com outra bicicleta, adicione uma condição **em colisão com outro objeto** ao ciclista e defina o objeto para ciclista.
+</Step>
+
+<Step title="Chamar Função SetScore">
+  Adicione a ação, selecione **funções** e selecione **SetScore**.
+</Step>
+
+<Step title="Analisar Resposta JSON">
+  Adicione uma ação **JSON**, selecione **analisar**, e insira `AJAX.LastData` no campo de string JSON.
+  
+  <Note>
+  Isso capturará a resposta da nossa solicitação SetScore.
+  </Note>
+</Step>
+
+<Step title="Extrair Valor do Nonce">
+  Adicione uma ação **sistema**, selecione **definir valor**, escolha a variável **Nonce** e insira `JSON.Get("newScore.nonce")`.
+  
+  <Check>
+  Agora sua variável Nonce está definida para o nonce retornado pela resposta da API!
+  </Check>
+</Step>
+</Steps>
+
+## Integração Completa
+
+Seguindo os mesmos passos, você pode criar eventos para cada ponto de extremidade da API, revisando todos os parâmetros e respostas.
+
+### Pontos de Extremidade da API Disponíveis
+
+<AccordionGroup>
+<Accordion title="Definir Pontuação do Usuário">
+  Atualizar ou definir a pontuação de um usuário para os placares de líderes.
+  
+  **Ponto de extremidade**: `POST /launcher`  
+  **Cabeçalhos**: `X-Service-Method: setUserScore`
+  
+  ```json
+  {
+    "launcherJwt": "string",
+    "nonce": "string", 
+    "score": 0
+  }
+  ```
+</Accordion>
+
+<Accordion title="Obter Pontuação do Usuário">
+  Recuperar a pontuação atual de um usuário.
+  
+  **Ponto de extremidade**: `GET /launcher`  
+  **Cabeçalhos**: `X-Service-Method: getUserScore`
+</Accordion>
+
+<Accordion title="Acionar Motor de Regras">
+  Acionar ações onchain com base em eventos de jogo.
+  
+  **Ponto de extremidade**: `POST /launcher`  
+  **Cabeçalhos**: `X-Service-Method: triggerRulesEngine`
+  
+  ```json
+  {
+    "launcherJwt": "string",
+    "trigger": "string",
+    "nonce": "string"
+  }
+  ```
+</Accordion>
+</AccordionGroup>
+
+## Melhores Práticas
+
+<CardGroup cols={2}>
+  <Card title="Tratamento de Erros" icon="circle-info">
+    Sempre verifique o campo `success` nas respostas da API e trate os erros de maneira elegante.
+  </Card>
+  
+  <Card title="Gerenciamento de Variáveis" icon="cube">
+    Use as variáveis globais do Construct para armazenar dados importantes como tokens JWT e pontuações de usuários.
+  </Card>
+  
+  <Card title="Console de Depuração" icon="bug">
+    Use o objeto Browser para registrar informações importantes no console durante o desenvolvimento.
+  </Card>
+  
+  <Card title="Limites de Taxa da API" icon="clock">
+    Esteja ciente dos limites de taxa da API e evite fazer muitas solicitações em rápida sucessão.
+  </Card>
+</CardGroup>
+
+## Próximos Passos
+
+<CardGroup cols={2}>
+  <Card title="Documentação da API BSMNT" icon="book" href="https://docs.basement.fun/api">
+    Referência completa da API para todos os pontos de extremidade disponíveis
+  </Card>
+  
+  <Card title="Guia do Lançador de Jogos" icon="rocket" href="/basement/game-launcher">
+    Aprenda como integrar com o lançador de jogos BSMNT
+  </Card>
+  
+  <Card title="Documentação do Construct" icon="book" href="https://construct.net/make-games/manuals">
+    Documentação oficial e tutoriais do Construct 3
+  </Card>
+  
+  <Card title="Projetos de Exemplo" icon="folder" href="https://github.com/b3-fun">
+    Projetos de exemplo usando a integração BSMNT
+  </Card>
+</CardGroup>
+
+## Solução de Problemas
+
+<AccordionGroup>
+<Accordion title="Requisições AJAX não funcionam">
+  - Certifique-se de que adicionou o objeto AJAX ao seu projeto
+  - Verifique se todos os cabeçalhos necessários estão configurados corretamente
+  - Verifique se o seu segredo de jogo é válido
+  - Certifique-se de que a URL do ponto de extremidade da API está correta
+</Accordion>
+
+<Accordion title="Erros de análise JSON">
+  - Confirme que o objeto JSON foi adicionado ao seu projeto
+  - Verifique se `AJAX.LastData` contém JSON válido
+  - Use o objeto Browser para registrar a resposta bruta para depuração
+</Accordion>
+
+<Accordion title="Problemas de autenticação">
+  - Verifique se o seu token JWT do lançador é válido
+  - Verifique se o cabeçalho de Autorização está formatado corretamente
+  - Certifique-se de que o seu segredo de jogo não expirou
+</Accordion>
+</AccordionGroup>

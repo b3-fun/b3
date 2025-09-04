@@ -1,0 +1,548 @@
+---
+title: Sistema de Recompensas
+description: >-
+  Entendendo e implementando o sistema de distribuição de recompensas do
+  CreateKit
+lang: pt-BR
+originalPath: createkit/rewards.mdx
+---
+## Visão Geral
+
+CreateKit apresenta um sistema de recompensas inovador que distribui uma parte do valor de cada criação para vários participantes no ecossistema. Isso cria incentivos alinhados e garante que todos os contribuidores se beneficiem de coleções bem-sucedidas.
+
+## Estrutura de Recompensa
+
+### Distribuição Padrão
+
+| Tipo de Destinatário | Participação Padrão | Descrição |
+|----------------|---------------|-------------|
+| **Criador** | 40% | Originador da coleção que criou a coleção |
+| **Primeiro Criador** | 30% | Usuário que aciona a implantação inicial e a primeira criação |
+| **Proprietário do Jogo** | 20% | Plataforma ou jogo que integra a coleção |
+| **Plataforma** | 10% | Taxa do protocolo BaseMint |
+
+<Note>
+As taxas de recompensa são configuráveis pelo administrador do protocolo e podem variar entre as implantações.
+</Note>
+
+### Como Funcionam as Recompensas
+
+1. **Pagamento da Criação**: Usuário paga o preço da criação por tokens
+2. **Cálculo da Recompensa**: Uma porcentagem do pagamento é alocada para o pool de recompensas
+3. **Distribuição**: As recompensas são distribuídas de acordo com as taxas configuradas
+4. **Acumulação**: As recompensas acumulam no contrato de custódia até serem reivindicadas
+
+## Rastreamento de Recompensas
+
+### Configurando o Rastreamento de Recompensas
+
+```typescript title="Inicializar Rastreador de Recompensas"
+import { RewardTracker } from '@b3dotfun/basemint'
+import { createPublicClient, http } from 'viem'
+import { b3Testnet } from '@b3dotfun/basemint'
+
+const publicClient = createPublicClient({
+  chain: b3Testnet,
+  transport: http()
+})
+
+const rewardTracker = new RewardTracker(publicClient)
+
+// Obter endereço do contrato de custódia
+const escrowAddress = rewardTracker.getEscrowAddress()
+console.log(`Contrato de custódia: ${escrowAddress}`)
+```
+
+### Recompensas no Nível da Coleção
+
+Rastreie recompensas acumuladas para uma coleção inteira:
+
+```typescript title="Recompensas da Coleção"
+// Obter recompensas totais para uma coleção
+const collectionRewards = await rewardTracker.getCollectionRewards(
+  escrowAddress,
+  collectionAddress
+)
+
+console.log("Recompensas da Coleção:", {
+  totalRewards: collectionRewards.totalRewards.toString(),
+  unclaimedRewards: collectionRewards.unclaimedRewards.toString(),
+  totalMints: collectionRewards.totalMints.toString(),
+  averageRewardPerMint: (
+    collectionRewards.totalRewards / collectionRewards.totalMints
+  ).toString()
+})
+```
+
+### Recompensas para Destinatários Individuais
+
+Rastreie recompensas para participantes específicos:
+
+<Tabs>
+<Tab title="Recompensas do Criador">
+```typescript
+// Obter recompensas do criador para uma coleção
+const creatorRewards = await rewardTracker.getRecipientRewards(
+  escrowAddress,
+  collectionAddress,
+  "CREATOR",
+  creatorAddress
+)
+
+console.log(`Recompensas do criador: ${creatorRewards.toString()} wei`)
+```
+</Tab>
+
+<Tab title="Recompensas do Primeiro Criador">
+```typescript
+// Obter recompensas do primeiro criador
+const firstMinterRewards = await rewardTracker.getRecipientRewards(
+  escrowAddress,
+  collectionAddress,
+  "FIRST_MINTER", 
+  firstMinterAddress
+)
+
+console.log(`Recompensas do primeiro criador: ${firstMinterRewards.toString()} wei`)
+```
+</Tab>
+
+<Tab title="Recompensas do Proprietário do Jogo">
+```typescript
+// Obter recompensas do proprietário do jogo
+const gameOwnerRewards = await rewardTracker.getRecipientRewards(
+  escrowAddress,
+  collectionAddress,
+  "GAME_OWNER",
+  gameOwnerAddress
+)
+
+console.log(`Recompensas do proprietário do jogo: ${gameOwnerRewards.toString()} wei`)
+```
+</Tab>
+</Tabs>
+
+### Todos os Destinatários de uma Coleção
+
+```typescript title="Recompensas de Todos os Destinatários"
+// Obter recompensas para todos os tipos de destinatários
+const allRewards = await Promise.all([
+  rewardTracker.getRecipientRewards(escrowAddress, collectionAddress, "CREATOR", creatorAddress),
+  rewardTracker.getRecipientRewards(escrowAddress, collectionAddress, "FIRST_MINTER", firstMinterAddress),
+  rewardTracker.getRecipientRewards(escrowAddress, collectionAddress, "GAME_OWNER", gameOwnerAddress),
+  rewardTracker.getRecipientRewards(escrowAddress, collectionAddress, "PLATFORM", platformAddress)
+])
+
+const [creatorRewards, firstMinterRewards, gameOwnerRewards, platformRewards] = allRewards
+
+console.log("Distribuição de Recompensas:", {
+  creator: creatorRewards.toString(),
+  firstMinter: firstMinterRewards.toString(),
+  gameOwner: gameOwnerRewards.toString(),
+  platform: platformRewards.toString(),
+  total: (creatorRewards + firstMinterRewards + gameOwnerRewards + platformRewards).toString()
+})
+```
+
+## Eventos de Recompensa
+
+### Rastreamento de Distribuições de Recompensas
+
+```typescript title="Monitoramento de Eventos de Recompensa"
+import { getRewardDistributionEvents } from '@b3dotfun/basemint'
+
+// Obter eventos históricos de distribuição de recompensas
+const fromBlock = await publicClient.getBlockNumber() - 1000n
+const toBlock = await publicClient.getBlockNumber()
+
+const rewardEvents = await getRewardDistributionEvents(
+  publicClient,
+  escrowAddress,
+  fromBlock,
+  toBlock
+)
+
+console.log("Distribuições de recompensas recentes:")
+rewardEvents.forEach(event => {
+  console.log({
+    collection: event.args.collection,
+    recipient: event.args.recipient,
+    recipientType: event.args.recipientType,
+    amount: event.args.amount?.toString(),
+    blockNumber: event.blockNumber
+  })
+})
+```
+
+### Monitoramento de Recompensas em Tempo Real
+
+```typescript title="Monitoramento em Tempo Real"
+// Observar novas distribuições de recompensas
+const unwatch = publicClient.watchContractEvent({
+  address: escrowAddress,
+  abi: rewardTracker.escrowAbi,
+  eventName: 'RewardDistributed',
+  onLogs: (logs) => {
+    logs.forEach(log => {
+      console.log('Nova recompensa distribuída:', {
+        collection: log.args.collection,
+        recipient: log.args.recipient,
+        amount: log.args.amount?.toString(),
+        type: log.args.recipientType
+      })
+    })
+  }
+})
+
+// Parar de observar quando terminar
+// unwatch()
+```
+
+## Retirada de Recompensas
+
+### Retiradas Individuais
+
+```typescript title="Retirar Recompensas"
+import { createWalletClient } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+
+const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`)
+const walletClient = createWalletClient({
+  chain: b3Testnet,
+  transport: http(),
+  account
+})
+
+// Retirar recompensas para uma coleção específica e tipo de destinatário
+async function withdrawRewards(
+  collectionAddress: string,
+  recipientType: "CREATOR" | "FIRST_MINTER" | "GAME_OWNER" | "PLATFORM"
+) {
+  try {
+    // Verificar recompensas disponíveis primeiro
+    const availableRewards = await rewardTracker.getRecipientRewards(
+      escrowAddress,
+      collectionAddress,
+      recipientType,
+      account.address
+    )
+
+    if (availableRewards === 0n) {
+      console.log("Nenhuma recompensa disponível para retirar")
+      return
+    }
+
+    console.log(`Retirando ${availableRewards.toString()} wei de recompensas...`)
+
+    // Retirar recompensas
+    const tx = await rewardTracker.withdrawRewards(
+      walletClient,
+      escrowAddress,
+      collectionAddress,
+      recipientType
+    )
+
+    console.log(`✅ Recompensas retiradas com sucesso: ${tx}`)
+    return tx
+
+  } catch (error) {
+    console.error("❌ Falha na retirada:", error)
+    throw error
+  }
+}
+
+// Exemplo: Criador retira suas recompensas
+await withdrawRewards(collectionAddress, "CREATOR")
+```
+
+### Retiradas em Lote
+
+```typescript title="Retirada em Lote"
+// Retirar recompensas de múltiplas coleções
+async function withdrawAllCreatorRewards(creatorAddress: string) {
+  // Obter todas as coleções onde este endereço é o criador
+  const creatorCollections = await getCreatorCollections(creatorAddress)
+  
+  for (const collection of creatorCollections) {
+    const rewards = await rewardTracker.getRecipientRewards(
+      escrowAddress,
+      collection.address,
+      "CREATOR",
+      creatorAddress
+    )
+
+    if (rewards > 0n) {
+      console.log(`Retirando ${rewards.toString()} wei de ${collection.name}`)
+      
+      try {
+        await rewardTracker.withdrawRewards(
+          walletClient,
+          escrowAddress,
+          collection.address,
+          "CREATOR"
+        )
+        console.log(`✅ Retirado de ${collection.name}`)
+      } catch (error) {
+        console.error(`❌ Falha ao retirar de ${collection.name}:`, error)
+      }
+    }
+  }
+}
+```
+
+## Análise de Recompensas
+
+### Visão Geral do Portfólio
+
+```typescript title="Portfólio do Criador"
+async function getCreatorPortfolio(creatorAddress: string) {
+  const collections = await getCreatorCollections(creatorAddress)
+  
+  let totalRewards = 0n
+  let totalUnclaimedRewards = 0n
+  let totalMints = 0n
+  
+  const collectionData = []
+  
+  for (const collection of collections) {
+    const collectionRewards = await rewardTracker.getCollectionRewards(
+      escrowAddress,
+      collection.address
+    )
+    
+    const creatorRewards = await rewardTracker.getRecipientRewards(
+      escrowAddress,
+      collection.address,
+      "CREATOR",
+      creatorAddress
+    )
+    
+    totalRewards += collectionRewards.totalRewards
+    totalUnclaimedRewards += creatorRewards
+    totalMints += collectionRewards.totalMints
+    
+    collectionData.push({
+      name: collection.name,
+      address: collection.address,
+      totalRewards: collectionRewards.totalRewards,
+      creatorRewards,
+      mints: collectionRewards.totalMints
+    })
+  }
+  
+  return {
+    summary: {
+      totalCollections: collections.length,
+      totalRewards: totalRewards.toString(),
+      totalUnclaimedRewards: totalUnclaimedRewards.toString(), 
+      totalMints: totalMints.toString(),
+      averageRewardPerMint: totalMints > 0n ? (totalRewards / totalMints).toString() : "0"
+    },
+    collections: collectionData
+  }
+}
+
+const portfolio = await getCreatorPortfolio(creatorAddress)
+console.log("Portfólio do Criador:", portfolio)
+```
+
+### Métricas de Desempenho
+
+```typescript title="Desempenho das Recompensas"
+async function getRewardMetrics(collectionAddress: string) {
+  const collectionRewards = await rewardTracker.getCollectionRewards(
+    escrowAddress,
+    collectionAddress
+  )
+  
+  const collection = collectionManager.createCollection(collectionAddress, "ERC721")
+  const currentSupply = await collection.totalSupply()
+  const mintPrice = await collection.mintPrice()
+  
+  const totalMintRevenue = currentSupply * mintPrice
+  const rewardPercentage = totalMintRevenue > 0n 
+    ? (collectionRewards.totalRewards * 100n) / totalMintRevenue 
+    : 0n
+  
+  return {
+    totalMints: collectionRewards.totalMints.toString(),
+    totalRewards: collectionRewards.totalRewards.toString(),
+    totalRevenue: totalMintRevenue.toString(),
+    rewardPercentage: rewardPercentage.toString() + "%",
+    averageRewardPerMint: collectionRewards.totalMints > 0n 
+      ? (collectionRewards.totalRewards / collectionRewards.totalMints).toString()
+      : "0"
+  }
+}
+```
+
+## Recursos Avançados de Recompensa
+
+### Taxas de Recompensa Personalizadas
+
+<Warning>
+A configuração da taxa de recompensa é normalmente restrita aos administradores do protocolo.
+</Warning>
+
+```typescript title="Gerenciamento de Taxa de Recompensa"
+// Apenas para administradores do protocolo
+async function updateRewardRates(
+  adminWalletClient: any,
+  escrowAddress: string
+) {
+  // Atualizar taxas de recompensa (chamável apenas pelo proprietário)
+  await rewardTracker.setRewardRates(
+    adminWalletClient,
+    escrowAddress,
+    {
+      creatorRate: 4500n,    // 45%
+      firstMinterRate: 2500n, // 25%
+      gameOwnerRate: 2000n,  // 20%
+      platformRate: 1000n    // 10%
+    }
+  )
+}
+
+// Verificar taxas de recompensa atuais
+const rates = await rewardTracker.getRewardRates(escrowAddress)
+console.log("Taxas de recompensa atuais:", {
+  creator: rates.creatorRate.toString(),
+  firstMinter: rates.firstMinterRate.toString(),
+  gameOwner: rates.gameOwnerRate.toString(),
+  platform: rates.platformRate.toString()
+})
+```
+
+### Gerenciamento de Destinatários
+
+```typescript title="Status do Destinatário"
+// Verificar se um tipo de destinatário está ativo
+const isCreatorActive = await rewardTracker.isRecipientActive(
+  escrowAddress,
+  "CREATOR"
+)
+
+// Obter informações do destinatário
+const recipientInfo = await rewardTracker.getRecipientInfo(
+  escrowAddress,
+  "CREATOR"
+)
+
+console.log("Informações do destinatário criador:", {
+  rate: recipientInfo.rate.toString(),
+  isActive: recipientInfo.isActive
+})
+```
+
+## Melhores Práticas de Integração
+
+### Integração da Interface do Usuário
+
+```typescript title="Funções Auxiliares de UI"
+// Formatar recompensas para exibição
+function formatRewards(weiAmount: bigint): string {
+  const eth = Number(weiAmount) / 1e18
+  return `${eth.toFixed(6)} ETH`
+}
+
+// Calcular valor em USD (exemplo com feed de preço)
+async function getRewardValueUSD(weiAmount: bigint, ethPriceUSD: number): Promise<string> {
+  const eth = Number(weiAmount) / 1e18
+  const usd = eth * ethPriceUSD
+  return `$${usd.toFixed(2)}`
+}
+
+// Verificar se a retirada é lucrativa (considerando custos de gás)
+async function isWithdrawalProfitable(
+  rewardAmount: bigint,
+  gasPrice: bigint,
+  gasLimit: bigint
+): Promise<boolean> {
+  const gasCost = gasPrice * gasLimit
+  return rewardAmount > gasCost * 2n // Requer mínimo de 2x o custo do gás
+}
+```
+
+### Reivindicação Automatizada de Recompensas
+
+```typescript title="Reivindicação Automatizada"
+// Serviço de reivindicação automatizada de recompensas
+class RewardClaimingService {
+  private rewardTracker: RewardTracker
+  private walletClient: any
+  private minWithdrawThreshold: bigint
+
+  constructor(rewardTracker: RewardTracker, walletClient: any, minThreshold: bigint) {
+    this.rewardTracker = rewardTracker
+    this.walletClient = walletClient
+    this.minWithdrawThreshold = minThreshold
+  }
+
+  async checkAndClaimRewards(
+    collections: string[],
+    recipientType: "CREATOR" | "FIRST_MINTER" | "GAME_OWNER"
+  ) {
+    for (const collectionAddress of collections) {
+      try {
+        const rewards = await this.rewardTracker.getRecipientRewards(
+          escrowAddress,
+          collectionAddress,
+          recipientType,
+          this.walletClient.account.address
+        )
+
+        if (rewards >= this.minWithdrawThreshold) {
+          console.log(`Reivindicando ${rewards.toString()} wei de ${collectionAddress}`)
+          
+          await this.rewardTracker.withdrawRewards(
+            this.walletClient,
+            escrowAddress,
+            collectionAddress,
+            recipientType
+          )
+          
+          console.log(`✅ Recompensas reivindicadas com sucesso de ${collectionAddress}`)
+        }
+      } catch (error) {
+        console.error(`❌ Falha ao reivindicar de ${collectionAddress}:`, error)
+      }
+    }
+  }
+}
+
+// Uso
+const claimingService = new RewardClaimingService(
+  rewardTracker,
+  walletClient,
+  parseEther("0.001") // Mínimo de 0.001 ETH para reivindicar
+)
+
+await claimingService.checkAndClaimRewards(
+  creatorCollections,
+  "CREATOR"
+)
+```
+
+## Solução de Problemas
+
+<AccordionGroup>
+  <Accordion title="Sem recompensas exibidas">
+    - Verifique se a coleção recebeu criações após a implantação
+    - Verifique se você está consultando o tipo de destinatário e endereço corretos
+    - Garanta que a coleção foi criada com assinaturas adequadas
+  </Accordion>
+
+  <Accordion title="Falha na retirada">
+    - Confirme se você tem recompensas disponíveis para retirar
+    - Verifique se você tem gás suficiente para a transação
+    - Verifique se você está usando o tipo de destinatário correto para o seu papel
+  </Accordion>
+
+  <Accordion title="Quantias de recompensas parecem incorretas">
+    - Verifique a configuração atual das taxas de recompensa
+    - Verifique os cálculos do preço e volume da criação
+    - Garanta que você está usando o endereço correto do contrato de custódia
+  </Accordion>
+</AccordionGroup>
+
+## Próximos Pass

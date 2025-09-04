@@ -1,0 +1,611 @@
+---
+title: 错误处理与故障排除
+description: 全面指南：优雅地处理错误并调试 AnySpend 常见问题
+lang: cn
+originalPath: anyspend/error-handling.mdx
+---
+# 错误处理与故障排除
+
+全面指南，优雅地处理错误并调试 AnySpend 常见问题，以提供最佳用户体验。
+
+## 📊 订单状态生命周期
+
+了解订单状态对于正确的错误处理和用户体验至关重要。
+
+### 订单状态类型
+
+```typescript title="订单状态枚举" icon="list"
+enum OrderStatus {
+  // 初始状态
+  SCANNING_DEPOSIT_TRANSACTION = "scanning_deposit_transaction",
+  WAITING_STRIPE_PAYMENT = "waiting_stripe_payment",
+  EXPIRED = "expired",
+
+  // 处理状态
+  SENDING_TOKEN_FROM_VAULT = "sending_token_from_vault",
+  RELAY = "relay",
+
+  // 成功状态
+  EXECUTED = "executed",
+
+  // 失败状态
+  REFUNDING = "refunding",
+  REFUNDED = "refunded",
+  FAILURE = "failure",
+}
+```
+
+### 状态描述
+
+<table>
+  <thead>
+    <tr>
+      <th>状态</th>
+      <th>描述</th>
+      <th>用户操作要求</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>`scanning_deposit_transaction`</td>
+      <td>等待支付确认</td>
+      <td>无 - 等待区块链确认</td>
+    </tr>
+    <tr>
+      <td>`waiting_stripe_payment`</td>
+      <td>正在处理信用卡支付</td>
+      <td>可能需要完成 3D 安全验证</td>
+    </tr>
+    <tr>
+      <td>`sending_token_from_vault`</td>
+      <td>发送代币进行交换</td>
+      <td>无 - 自动过程</td>
+    </tr>
+    <tr>
+      <td>`relay`</td>
+      <td>跨链交易进行中</td>
+      <td>无 - 等待完成</td>
+    </tr>
+    <tr>
+      <td>`executed`</td>
+      <td>交易成功完成</td>
+      <td>无 - 成功！</td>
+    </tr>
+    <tr>
+      <td>`expired`</td>
+      <td>订单在完成前过期</td>
+      <td>创建新订单</td>
+    </tr>
+    <tr>
+      <td>`refunding`</td>
+      <td>自动退款进行中</td>
+      <td>无 - 等待退款</td>
+    </tr>
+    <tr>
+      <td>`refunded`</td>
+      <td>退款完成</td>
+      <td>检查钱包中的退款代币</td>
+    </tr>
+    <tr>
+      <td>`failure`</td>
+      <td>交易失败</td>
+      <td>查看错误详情，重试</td>
+    </tr>
+  </tbody>
+</table>
+
+## ⚠️ 常见错误代码
+
+### 支付错误
+
+<AccordionGroup>
+<Accordion title="INSUFFICIENT_BALANCE">
+**描述**：用户的代币不足以进行交易
+
+**解决方案**：请求用户向其钱包添加资金或选择不同的支付代币
+
+**示例**：
+
+```typescript
+if (error.message === "INSUFFICIENT_BALANCE") {
+  toast.error("余额不足。请向您的钱包添加资金。");
+  // 可选重定向到法币通道
+  openFiatOnramp();
+}
+```
+
+</Accordion>
+
+<Accordion title="INVALID_TOKEN_ADDRESS">
+**描述**：目标链上不支持代币合约
+
+**解决方案**：验证代币是否受支持并提供替代选项
+
+**示例**：
+
+```typescript
+if (error.message === "INVALID_TOKEN_ADDRESS") {
+  toast.error("此代币不受支持。请选择其他代币。");
+  showSupportedTokens();
+}
+```
+
+</Accordion>
+
+<Accordion title="MINIMUM_AMOUNT_NOT_MET">
+**描述**：交易金额低于最低阈值
+
+**解决方案**：增加交易金额或告知用户最低要求
+
+**示例**：
+
+```typescript
+if (error.message === "MINIMUM_AMOUNT_NOT_MET") {
+  toast.error(`最低金额为 $${minimumAmount}。请增加您的金额。`);
+}
+```
+
+</Accordion>
+
+<Accordion title="MAXIMUM_AMOUNT_EXCEEDED">
+**描述**：交易金额超过最大限制
+
+**解决方案**：减少金额或分成多笔交易
+
+**示例**：
+
+```typescript
+if (error.message === "MAXIMUM_AMOUNT_EXCEEDED") {
+  toast.error(`最大金额为 $${maximumAmount}。请减少您的金额。`);
+}
+```
+
+</Accordion>
+</AccordionGroup>
+
+### 网络错误
+
+<AccordionGroup>
+<Accordion title="SLIPPAGE">
+**描述**：执行期间价格移动超出可接受的容忍度
+
+**解决方案**：提高滑点容忍度重试或等待价格稳定
+
+**示例**：
+
+```typescript
+if (error.message === "SLIPPAGE") {
+  toast.warning("价格不利地移动。正在调整设置重试...");
+  retryWithHigherSlippage();
+}
+```
+
+</Accordion>
+
+<Accordion title="NETWORK_ERROR">
+**描述**：RPC 连接问题或区块链拥堵
+
+**解决方案**：延迟后重试或切换到备用 RPC
+
+**示例**：
+
+```typescript
+if (error.message === "NETWORK_ERROR") {
+  toast.error("检测到网络问题。请检查连接并重试。");
+  scheduleRetry();
+}
+```
+
+</Accordion>
+
+<Accordion title="QUOTE_EXPIRED">
+**描述**：价格报价不再有效
+
+**解决方案**：获取新的报价并重试交易
+
+**示例**：
+
+```typescript
+if (error.message === "QUOTE_EXPIRED") {
+  toast.info("价格报价已过期。获取新的报价...");
+  refreshQuoteAndRetry();
+}
+```
+
+</Accordion>
+
+<Accordion title="CHAIN_NOT_SUPPORTED">
+**描述**：请求的区块链不受支持
+
+**解决方案**：使用受支持的链或实施备用方案
+
+**示例**：
+
+```typescript
+if (error.message === "CHAIN_NOT_SUPPORTED") {
+  toast.error("此区块链不受支持。请选择其他区块链。");
+  showSupportedChains();
+}
+```
+
+</Accordion>
+</AccordionGroup>
+
+### 合约错误
+
+<AccordionGroup>
+<Accordion title="CONTRACT_CALL_FAILED">
+**描述**：智能合约执行失败
+
+**解决方案**：检查合约参数和状态
+
+**示例**：
+
+```typescript
+if (error.message === "CONTRACT_CALL_FAILED") {
+  toast.error("合约交互失败。请验证参数。");
+  logContractError(error);
+}
+```
+
+</Accordion>
+
+<Accordion title="INSUFFICIENT_GAS">
+**描述**：为交易设置的 Gas 限制过低
+
+**解决方案**：增加 Gas 限制或建议 Gas 优化
+
+**示例**：
+
+```typescript
+if (error.message === "INSUFFICIENT_GAS") {
+  toast.error("交易需要更多 Gas。正在增加 Gas 限制...");
+  retryWithHigherGas();
+}
+```
+
+</Accordion>
+
+<Accordion title="NONCE_TOO_LOW">
+**描述**：交易 nonce 冲突
+
+**解决方案**：等待挂起的交易完成
+
+**示例**：
+
+```typescript
+if (error.message === "NONCE_TOO_LOW") {
+  toast.info("请等待挂起的交易完成。");
+  waitAndRetry();
+}
+```
+
+</Accordion>
+
+<Accordion title="TRANSACTION_REVERTED">
+**描述**：合约撤销了交易
+
+**解决方案**：检查合约状态和参数
+
+**示例**：
+
+```typescript
+if (error.message === "TRANSACTION_REVERTED") {
+  toast.error("交易被合约拒绝。请检查要求。");
+  showTransactionDetails();
+}
+```
+
+</Accordion>
+</AccordionGroup>
+
+## 🛠️ 错误处理模式
+
+### 组件级错误处理
+
+```tsx title="带有错误处理的支付组件" icon="shield-exclamation" lines
+import { useAnyspendCreateOrder } from "@b3dotfun/sdk/anyspend";
+
+function PaymentComponent() {
+  const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  const { createOrder, isCreatingOrder } = useAnyspendCreateOrder({
+    onError: error => {
+      console.error("支付失败：", error);
+
+      // 处理特定错误
+      switch (error.message) {
+        case "INSUFFICIENT_BALANCE":
+          setError("余额不足。请向您的钱包添加资金。");
+          break;
+
+        case "SLIPPAGE":
+          if (retryCount < 3) {
+            setError("价格不利地移动。正在重试...");
+            setTimeout(() => {
+              setRetryCount(prev => prev + 1);
+              retryPayment();
+            }, 2000);
+          } else {
+            setError("价格过于波动。请稍后再试。");
+          }
+          break;
+
+        case "NETWORK_ERROR":
+          setError("网络问题。请检查您的连接并重试。");
+          break;
+
+        case "QUOTE_EXPIRED":
+          setError("价格报价已过期。获取新的报价...");
+          refreshQuote();
+          break;
+
+        default:
+          setError("支付失败。请重试或联系支持。");
+      }
+
+      // 跟踪错误以便监控
+      analytics.track("payment_error", {
+        error: error.message,
+        retryCount,
+        timestamp: new Date().toISOString(),
+      });
+    },
+
+    onSuccess: () => {
+      setError(null);
+      setRetryCount(0);
+    },
+  });
+
+  return (
+    <div className="payment-component">
+      {error && (
+        <div className="error-banner">
+          <span className="error-icon">⚠️</span>
+          <span>{error}</span>
+          <button onClick={() => setError(null)}>关闭</button>
+        </div>
+      )}
+
+      <button onClick={handlePayment} disabled={isCreatingOrder}>
+        {isCreatingOrder ? "处理中..." : "立即支付"}
+      </button>
+    </div>
+  );
+}
+```
+
+### 订单状态监控
+
+```tsx title="订单状态监控" icon="eye" lines
+import { useAnyspendOrderAndTransactions } from "@b3dotfun/sdk/anyspend";
+
+function OrderStatusMonitor({ orderId }: { orderId: string }) {
+  const { orderAndTransactions, getOrderAndTransactionsError } = useAnyspendOrderAndTransactions(orderId);
+
+  if (getOrderAndTransactionsError) {
+    return (
+      <div className="error-state">
+        <h3>无法加载订单状态</h3>
+        <p>请检查您的连接并重试。</p>
+        <button onClick={() => window.location.reload()}>重试</button>
+      </div>
+    );
+  }
+
+  if (!orderAndTransactions) {
+    return <div>加载订单状态中...</div>;
+  }
+
+  const { order, depositTxs, executeTx, refundTxs } = orderAndTransactions.data;
+
+  const renderStatusMessage = () => {
+    switch (order.status) {
+      case "scanning_deposit_transaction":
+        return (
+          <div className="status-pending">
+            <div className="spinner" />
+            <div>
+              <h3>⏳ 等待支付确认</h3>
+              <p>这通常需要 1-2 分钟。请不要关闭此窗口。</p>
+              {depositTxs.length > 0 && (
+                <a
+                  href={getExplorerUrl(depositTxs[0].txHash, depositTxs[0].chainId)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  查看支付交易
+                </a>
+              )}
+            </div>
+          </div>
+        );
+
+      case "relay":
+        return (
+          <div className="status-processing">
+            <div className="spinner" />
+            <div>
+              <h3>🔄 处理跨链交易</h3>
+              <p>您的支付正在处理中。这可能需要几分钟。</p>
+            </div>
+          </div>
+        );
+
+      case "executed":
+        return (
+          <div className="status-success">
+            <div className="success-icon">✅</div>
+            <div>
+              <h3>交易成功完成！</h3>
+              <p>您的订单已处理。</p>
+              {executeTx && (
+                <a href={getExplorerUrl(executeTx.txHash, executeTx.chainId)} target="_blank" rel="noopener noreferrer">
+                  查看交易
+                </a>
+              )}
+            </div>
+          </div>
+        );
+
+      case "failure":
+      case "obtain_failed":
+        return (
+          <div className="status-error">
+            <div className="error-icon">❌</div>
+            <div>
+              <h3>交易失败</h3>
+              <p>{order.errorDetails || "处理您的订单时发生错误。"}</p>
+              <div className="error-actions">
+                <button onClick={() => createNewOrder()}>重试</button>
+                <button onClick={() => contactSupport(orderId)}>联系支持</button>
+              </div>
+            </div>
+          </div>
+        );
+
+      case "refunded":
+        return (
+          <div className="status-refunded">
+            <div className="refund-icon">↩️</div>
+            <div>
+              <h3>退款已处理</h3>
+              <p>您的支付已自动退款。</p>
+              {refundTxs.length > 0 && (
+                <a
+                  href={getExplorerUrl(refundTxs[0].txHash, refundTxs[0].chainId)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  查看退款交易
+                </a>
+              )}
+            </div>
+          </div>
+        );
+
+      case "expired":
+        return (
+          <div className="status-expired">
+            <div className="expired-icon">⏰</div>
+            <div>
+              <h3>订单已过期</h3>
+              <p>此订单在收到支付前已过期。</p>
+              <button onClick={() => createNewOrder()}>创建新订单</button>
+            </div>
+          </div>
+        );
+
+      default:
+        return (
+          <div className="status-unknown">
+            <div className="spinner" />
+            <div>
+              <h3>处理中...</h3>
+              <p>订单状态：{order.status}</p>
+            </div>
+          </div>
+        );
+    }
+  };
+
+  return (
+    <div className="order-status-monitor">
+      <div className="order-header">
+        <h2>订单 #{orderId.slice(0, 8)}</h2>
+        <div className="order-meta">
+          <span>创建时间：{new Date(order.createdAt).toLocaleString()}</span>
+          <span>状态：{order.status}</span>
+        </div>
+      </div>
+
+      {renderStatusMessage()}
+
+      {/* 开发环境中的调试信息 */}
+      {process.env.NODE_ENV === "development" && (
+        <details className="debug-info">
+          <summary>调试信息</summary>
+          <pre>{JSON.stringify(order, null, 2)}</pre>
+        </details>
+      )}
+    </div>
+  );
+}
+```
+
+### 全局错误边界
+
+```tsx title="错误边界组件" icon="shield" lines
+import React, { Component, ErrorInfo } from "react";
+
+interface Props {
+  children: React.ReactNode;
+  fallback?: React.ComponentType<{ error: Error; resetError: () => void }>;
+}
+
+interface State {
+  hasError: boolean;
+  error?: Error;
+}
+
+class AnySpendErrorBoundary extends Component<Props, State> {
+  constructor(props: Props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error("AnySpend 错误边界捕获到错误：", error, errorInfo);
+
+    // 报告到错误跟踪服务
+    if (typeof window !== "undefined") {
+      // 示例：Sentry.captureException(error, { contexts: { errorInfo } });
+    }
+  }
+
+  resetError = () => {
+    this.setState({ hasError: false, error: undefined });
+  };
+
+  render() {
+    if (this.state.hasError) {
+      const FallbackComponent = this.props.fallback || DefaultErrorFallback;
+      return <FallbackComponent error={this.state.error!} resetError={this.resetError} />;
+    }
+
+    return this.props.children;
+  }
+}
+
+function DefaultErrorFallback({ error, resetError }: { error: Error; resetError: () => void }) {
+  return (
+    <div className="error-fallback">
+      <h2>出了点问题</h2>
+      <p>支付组件中发生了意外错误。</p>
+      <details className="error-details">
+        <summary>错误详情</summary>
+        <pre>{error.message}</pre>
+      </details>
+      <div className="error-actions">
+        <button onClick={resetError}>重试</button>
+        <button onClick={() => window.location.reload()}>重新加载页面</button>
+      </div>
+    </div>
+  );
+}
+
+// 使用方式
+function App() {
+  return (
+    <AnySpendErrorBoundary>
+      <AnySpendProvider>
+        <YourApp />
+      </AnySpendProvider>
+    </AnySpendErrorBoundary>
+  );

@@ -1,0 +1,190 @@
+---
+title: B3 프로필 API
+description: >-
+  B3, Basement, ENS, Lens, 그리고 Farcaster로부터의 소셜 아이덴티티 데이터를 포함한 무료 통합 온체인 아이덴티티
+  집계 서비스
+lang: ko
+originalPath: data/profiles/index.mdx
+---
+<img src="/images/profiles-banner.jpg" alt="B3 Profiles API" className="w-full h-auto rounded-3xl" />
+
+<Card title="Free Social Profiles API" icon="user" href="/data/profiles/index">
+  프로필 API 참조 확인하기
+</Card>
+
+## 개요
+
+B3 프로필 서비스는 EVM 생태계 전반에 걸쳐 분산 사용자 신원을 해결하기 위한 데이터 API로서 기능합니다. 여러 출처와 프로토콜에서 프로필 데이터를 집계하여, 개발자들이 단일 API 엔드포인트를 통해 포괄적인 사용자 정보와 사회적 맥락에 접근할 수 있도록 합니다.
+
+## 주요 기능
+
+<CardGroup cols={2}>
+  <Card title="다중 출처 집계" icon="network-wired">
+    Basement, ENS, Thirdweb Social 및 기타 Web3 신원 제공자의 데이터 결합
+  </Card>
+  <Card title="사회적 신원 통합" icon="users">
+    ENS, Lens Protocol, Farcaster 네트워크에서 소셜 프로필 가져오기
+  </Card>
+  <Card title="지능형 캐싱" icon="database">
+    구성 가능한 TTL을 사용하여 효율적인 데이터 캐싱을 위해 Cloudflare KV 저장소 사용
+  </Card>
+  <Card title="사용자 선호도" icon="gear">
+    암호화 서명을 통해 사용자가 선호하는 프로필 출처 설정 허용
+  </Card>
+</CardGroup>
+
+## 지원되는 데이터 출처
+
+- ENS (Ethereum Name Service)
+- Lens Protocol
+- Farcaster
+- B3.ID
+- Basement 프로필
+
+## API 엔드포인트
+
+<Note>
+[API 참조](/data/profiles/index)에서 자세한 내용 확인하기.
+</Note>
+
+### 프로필 조회
+지갑 주소나 사용자 이름에 대한 집계된 프로필 정보 검색.
+
+```bash
+GET https://profiles.b3.fun/?address=0x1234567890abcdef1234567890abcdef12345678
+GET https://profiles.b3.fun/?name=vitalik.eth
+GET https://profiles.b3.fun/?name=sean.b3.fun
+```
+
+### 프로필 선호도 설정
+사용자가 암호화 서명을 통해 선호하는 프로필 출처를 지정할 수 있도록 허용.
+
+```bash
+POST /preference
+```
+
+### 사용자 지정 표시 이름
+모든 다른 출처를 무시하고 사용자가 사용자 지정 표시 이름을 설정할 수 있도록 활성화.
+
+```bash
+POST /display-name
+```
+
+## 응답 형식
+
+서비스는 모든 출처의 데이터를 결합한 통합 프로필 객체를 반환합니다:
+
+```json
+{
+  "name": "vitalik.eth",
+  "address": "0x1234567890abcdef1234567890abcdef12345678",
+  "avatar": "https://example.com/avatar.jpg",
+  "bio": "Ethereum 공동 창립자",
+  "displayName": "Vitalik Buterin",
+  "profiles": [
+    {
+      "type": "ensdata",
+      "address": "0x123...",
+      "name": "vitalik.eth",
+      "avatar": "https://...",
+      "bio": null,
+      "displayName": null
+    },
+    {
+      "type": "thirdweb-farcaster",
+      "address": "0x123...",
+      "name": "vitalik",
+      "avatar": "https://...",
+      "bio": "Ethereum 공동 창립자",
+      "displayName": "Vitalik Buterin"
+    }
+  ]
+}
+```
+
+## 사용 사례
+
+<CardGroup cols={1}>
+  <Card title="향상된 지갑 인증" icon="shield-check">
+    지갑 연결 시 사용자의 사회적 신원과 Web3 플랫폼 전반에 걸친 명성을 보여주어 사용자에 대한 풍부한 맥락 제공.
+  </Card>
+  <Card title="소셜 게이밍 통합" icon="gamepad">
+    ENS 이름, 소셜 핸들, 플랫폼 간 신원을 포함한 포괄적인 플레이어 프로필을 게임에 표시.
+  </Card>
+  <Card title="DeFi 사용자 경험" icon="coins">
+    단순한 지갑 주소 대신 Lens, Farcaster, ENS에서의 거래자 신원을 보여주어 거래 인터페이스를 향상.
+  </Card>
+  <Card title="커뮤니티 관리" icon="users-gear">
+    여러 Web3 소셜 플랫폼에서 사용자 신원을 집계하여 더 나은 커뮤니티 도구 구축.
+  </Card>
+</CardGroup>
+
+
+## 예제 사용
+
+### 기본 프로필 조회
+
+```javascript
+// 주소로 프로필 가져오기
+const response = await fetch('https://profiles.b3.fun/?address=0x123...');
+const profile = await response.json();
+
+console.log(profile.displayName); // "Vitalik Buterin"
+console.log(profile.profiles.length); // 찾은 출처의 수
+```
+
+### ENS 이름 해석
+
+```javascript
+// ENS 이름으로 프로필 가져오기
+const response = await fetch('https://profiles.b3.fun/?name=vitalik.eth');
+const profile = await response.json();
+
+console.log(profile.address); // 해결된 지갑 주소
+console.log(profile.avatar); // ENS 아바타 URL
+```
+
+### 사용자 선호도 설정
+
+```javascript
+// 서명을 통해 선호하는 프로필 출처 설정
+const message = `SetProfilePreference:${address}:thirdweb-farcaster:${timestamp}`;
+const signature = await wallet.signMessage(message);
+
+await fetch('https://profiles.b3.fun/preference', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    key: address,
+    preferredType: 'thirdweb-farcaster',
+    signature,
+    signer: address,
+    timestamp
+  })
+});
+```
+
+## 성능 및 캐싱
+
+- **캐시 지속 시간**: 프로필 데이터에 대해 1시간
+- **신선한 데이터**: 캐시를 우회하려면 `?fresh=true` 사용
+- **글로벌 CDN**: Cloudflare의 엣지 네트워크에 의해 구동
+- **KV 저장소**: 선호도에 대한 효율적인 키-값 저장소
+
+## 요청 제한
+
+서비스는 Cloudflare의 내장된 DDoS 보호 및 요청 제한을 상속합니다. 고용량 애플리케이션의 경우, 클라이언트 측 캐싱을 구현하거나 엔터프라이즈 액세스를 위해 B3 팀에 문의하세요.
+
+## 온체인 구축 쉽게하기
+<Note>
+[API 참조](/data/profiles/index)에서 자세한 내용 확인하기.
+</Note>
+
+<CardGroup cols={2}>
+  <Card title="B3 데이터 API" href="/data/api-reference/introduction">
+    포괄적인 블록체인 데이터 및 분석
+  </Card>
+  <Card title="B3 SDK" href="/sdk/introduction">
+    크로스체인 작업 및 글로벌 계정 인증을 위한 B3 SDK
+  </Card>
+</CardGroup>

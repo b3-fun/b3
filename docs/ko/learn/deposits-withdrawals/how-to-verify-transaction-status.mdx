@@ -1,0 +1,69 @@
+---
+title: B3에서 거래 상태를 확인하는 방법
+description: B3 네트워크에서 블록 탐색기를 사용하여 트랜잭션 해시나 지갑 주소로 거래를 추적하고 확인하는 방법을 배우세요.
+lang: ko
+originalPath: learn/deposits-withdrawals/how-to-verify-transaction-status.mdx
+---
+B3 네트워크에서 거래를 보냈고 이 거래가 확인되었는지, 대기 중인지, 실패했는지 확인하고 싶다면, B3 블록 탐색기를 사용하여 쉽게 추적할 수 있습니다. 거래 해시(TxHash)나 거래에 관련된 지갑 주소만 있으면 됩니다.
+
+## 거래 확인하는 방법
+
+<iframe
+  className="w-full aspect-video rounded-xl"
+  src="https://www.youtube.com/embed/CZncVWI1aHk"
+  title="B3에서 거래 상태 확인하는 방법"
+  frameBorder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowFullScreen
+></iframe>
+
+<Steps>
+<Step title="B3 탐색기로 이동">
+  [explorer.b3.fun](https://explorer.b3.fun)으로 이동하세요.
+</Step>
+
+<Step title="거래 접근">
+  왼쪽 사이드 패널 위로 마우스를 올려 패널을 확장하고 **Transactions**을 클릭하세요.
+  
+  <Frame>
+    <img src="https://s3.amazonaws.com/helpscout.net/docs/assets/685306b72e0550277aa9250e/images/687e55494b3936693ba0ecbb/file-o0WPrzMUbf.png" alt="Transactions 옵션이 강조된 B3 탐색기 사이드바" />
+  </Frame>
+</Step>
+
+<Step title="거래 검색">
+  새 검색 바가 나타납니다. 검색 바에 다음 중 하나를 입력하세요:
+  - 거래를 시작한 지갑 주소
+  - 또는 거래 해시 (TxHash)
+  
+  <Frame>
+    <img src="https://s3.amazonaws.com/helpscout.net/docs/assets/685306b72e0550277aa9250e/images/687e556e1946514c34bffae9/file-sfCem4gBEs.png" alt="지갑 주소나 거래 해시를 입력하는 검색 바" />
+  </Frame>
+</Step>
+
+<Step title="거래 세부 정보 보기">
+  결과를 탐색하고 관련 거래를 클릭하여 다음을 확인하세요:
+  - 상태 (성공 / 실패 / 대기 중)
+  - 날짜 & 시간
+  - 전송된 토큰
+  - 사용된 가스
+  - 기타 온체인 세부 정보
+  
+  <Frame>
+    <img src="https://s3.amazonaws.com/helpscout.net/docs/assets/685306b72e0550277aa9250e/images/687e55b1ffa88610da986dfd/file-ERrTVA4NLO.png" alt="상태 및 거래 정보를 보여주는 거래 세부 정보 페이지" />
+  </Frame>
+  
+  <Check>
+    이것은 B3 네트워크에서 직접 민트, 전송 및 기타 활동을 추적하는 가장 좋은 방법입니다.
+  </Check>
+</Step>
+</Steps>
+
+## 거래 상태 의미
+
+- **성공:** 거래가 성공적으로 완료됨
+- **실패:** 거래 실행 실패 (종종 가스 부족 또는 기타 오류로 인해)
+- **대기 중:** 네트워크에서 거래가 아직 처리 중임
+
+<Tip>
+탐색기에서 자주 사용하는 지갑 주소를 북마크하여 미래에 거래 기록을 빠르게 확인할 수 있습니다.
+</Tip>

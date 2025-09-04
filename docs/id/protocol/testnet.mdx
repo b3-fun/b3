@@ -1,0 +1,174 @@
+---
+title: Testnet
+description: Sambungkan ke B3 testnet dengan dompet yang kompatibel dengan EVM apa pun
+lang: id
+originalPath: protocol/testnet.mdx
+---
+## Informasi Rantai
+
+<Card title="Chain ID">
+  ```text
+  1993
+  ```
+  <Note>
+  Fakta menarik: 1993 adalah tahun "Doom" dirilis, yang merevolusi genre permainan penembak orang pertama.
+  </Note>
+</Card>
+
+<Card title="Token Asli">
+  **Ether (ETH)**
+  
+  Token yang sama digunakan di Ethereum mainnet, tetapi hanya untuk tujuan pengujian.
+</Card>
+
+### Endpoint Jaringan
+
+<Tabs>
+<Tab title="HTTP RPC">
+  ```text RPC Endpoint
+  https://testnet-rpc.b3.fun
+  ```
+  
+  Gunakan endpoint ini untuk permintaan HTTP standar ke testnet B3.
+</Tab>
+
+<Tab title="WebSocket RPC">
+  ```text WebSocket Endpoint  
+  wss://testnet-rpc.b3.fun
+  ```
+  
+  Gunakan endpoint ini untuk koneksi WebSocket real-time ke testnet B3.
+</Tab>
+</Tabs>
+
+### Eksplorer Blok
+
+<Card title="B3 Explorer" icon="magnifying-glass" href="https://explorer.b3.fun" cta="Lihat Eksplorer" horizontal>
+  Jelajahi transaksi, blok, dan kontrak di seluruh B3 (termasuk testnet).
+</Card>
+
+## Tautan Cepat
+
+<CardGroup cols={3}>
+  <Card title="Jembatan Testnet" icon="bridge" href="https://testnet-bridge.b3.fun" cta="Jembatani Aset">
+    Jembatani aset ke testnet B3 untuk pengujian
+  </Card>
+  
+  <Card title="Faucet" icon="faucet" href="https://faucet.b3.fun" cta="Dapatkan ETH Testnet">
+    Dapatkan ETH testnet gratis untuk pengembangan dan pengujian
+  </Card>
+  
+  <Card title="Alat Pengembang" icon="wrench" href="/ecosystem/introduction" cta="Jelajahi Alat">
+    Temukan alat dan infrastruktur untuk membangun di B3
+  </Card>
+</CardGroup>
+
+## Menambahkan B3 Testnet ke Dompet Anda
+
+<Steps>
+<Step title="Buka Pengaturan Dompet">
+  Buka dompet Anda (MetaMask, Coinbase Wallet, dll.) dan navigasikan ke pengaturan jaringan.
+</Step>
+
+<Step title="Tambahkan Jaringan Kustom">
+  Klik "Tambah Jaringan" atau "Tambah Jaringan Kustom" tergantung pada dompet Anda.
+</Step>
+
+<Step title="Masukkan Detail Jaringan">
+  Isi informasi berikut:
+  
+  - **Nama Jaringan**: B3 Testnet
+  - **Chain ID**: 1993
+  - **RPC URL**: https://testnet-rpc.b3.fun
+  - **Simbol Mata Uang**: ETH
+  - **URL Eksplorer Blok**: https://explorer.b3.fun
+</Step>
+
+<Step title="Simpan dan Pindah">
+  Simpan konfigurasi jaringan dan pindah ke B3 Testnet.
+  
+  <Check>
+  Anda sekarang terhubung ke B3 Testnet! Anda dapat mulai menguji aplikasi Anda.
+  </Check>
+</Step>
+</Steps>
+
+## Mengapa Menggunakan Testnet?
+
+Testnet menyediakan lingkungan yang aman, terkontrol, dan efisien untuk pengujian dan eksperimen. Jaringan uji, atau testnet, berfungsi sebagai alat penting bagi Anda untuk menguji kontrak pintar Anda sebelum menerapkannya ke mainnet, meminimalkan risiko kegagalan atau kerentanan dalam aplikasi langsung.
+
+### Manfaat Utama
+
+<CardGroup cols={2}>
+  <Card title="Pengujian Bebas Risiko" icon="shield-check">
+    Uji kontrak pintar dan aplikasi Anda tanpa mempertaruhkan dana nyata atau mempengaruhi pengguna langsung.
+  </Card>
+  
+  <Card title="Lingkungan Realistis" icon="globe">
+    Simulasikan kondisi mainnet termasuk latensi jaringan, biaya gas, dan throughput transaksi.
+  </Card>
+  
+  <Card title="Pengembangan Hemat Biaya" icon="dollar-sign">
+    Gunakan token testnet gratis alih-alih ETH mainnet yang mahal untuk pengembangan dan pengujian.
+  </Card>
+  
+  <Card title="Platform Pembelajaran" icon="graduation-cap">
+    Lingkungan yang sempurna bagi pengembang untuk belajar dan bereksperimen dengan pengembangan blockchain.
+  </Card>
+</CardGroup>
+
+Dengan mensimulasikan lingkungan mainnet, testnet menawarkan representasi realistis dari kondisi dunia nyata, lengkap dengan latensi jaringan, biaya gas, dan faktor lain yang mempengaruhi kinerja kontrak pintar. Representasi akurat ini memungkinkan Anda untuk mengidentifikasi masalah potensial, mengoptimalkan aplikasi Anda, dan memastikan pengalaman pengguna terbaik untuk pengguna akhir Anda.
+
+Selain itu, testnet memungkinkan Anda untuk mengenal ekosistem B3 dan mendapatkan pengalaman praktis yang berharga, membuatnya menjadi alat yang tidak tergantikan bagi pengembang berpengalaman dan pendatang baru di dunia pengembangan blockchain.
+
+## Alur Kerja Pengembangan
+
+<Steps>
+<Step title="Dapatkan ETH Testnet">
+  Gunakan [faucet testnet](https://testnet-faucet.b3.fun) untuk mendapatkan ETH gratis untuk pengujian.
+</Step>
+
+<Step title="Terapkan dan Uji">
+  Terapkan kontrak pintar Anda ke testnet dan uji semua fungsionalitas secara menyeluruh.
+</Step>
+
+<Step title="Debug dan Optimalkan">
+  Gunakan eksplorer blok dan alat pengembangan untuk men-debug masalah dan mengoptimalkan kinerja.
+</Step>
+
+<Step title="Terapkan ke Mainnet">
+  Setelah pengujian selesai, terapkan kontrak Anda yang siap produksi ke mainnet B3.
+  
+  <Warning>
+  Selalu uji secara menyeluruh di testnet sebelum menerapkan ke mainnet dengan dana nyata.
+  </Warning>
+</Step>
+</Steps>
+
+## Testnet vs Mainnet
+
+<AccordionGroup>
+<Accordion title="Konfigurasi Jaringan">
+  **Testnet**:
+  - Chain ID: 1993
+  - RPC: https://testnet-rpc.b3.fun
+  - Eksplorer: https://testnet-explorer.b3.fun
+  
+  **Mainnet**:
+  - Chain ID: 8333
+  - RPC: https://mainnet-rpc.b3.fun
+  - Eksplorer: https://explorer.b3.fun
+</Accordion>
+
+<Accordion title="Nilai Token">
+  **Testnet**: ETH tidak memiliki nilai dunia nyata - digunakan hanya untuk pengujian
+  
+  **Mainnet**: ETH memiliki nilai dunia nyata dan memerlukan biaya untuk diperoleh
+</Accordion>
+
+<Accordion title="Kasus Penggunaan">
+  **Testnet**: Pengembangan, pengujian, pembelajaran, eksperimen
+  
+  **Mainnet**: Aplikasi produksi, pengguna nyata, transaksi aktual
+</Accordion>
+</AccordionGroup>

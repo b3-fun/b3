@@ -1,0 +1,361 @@
+---
+title: 컴포넌트
+description: '암호화폐 결제, NFT 구매 및 사용자 정의 스마트 계약 상호 작용을 위한 React 컴포넌트'
+lang: ko
+originalPath: anyspend/components.mdx
+---
+## 핵심 컴포넌트
+
+### `<AnySpend>`
+
+토큰 간 교환 및 법정 화폐 온램프를 위한 주요 인터페이스 컴포넌트입니다.
+
+```tsx title="기본 사용법" icon="react"
+// https://github.com/b3-fun/b3/blob/main/packages/sdk/src/anyspend/react/components/AnySpend.tsx
+import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
+
+<AnySpend
+  mode="modal"
+  defaultActiveTab="crypto"
+  destinationTokenAddress="0x..."
+  destinationTokenChainId={8333}
+  recipientAddress="0x..."
+  hideTransactionHistoryButton={false}
+/>;
+```
+
+#### 속성
+
+<ParamField path="mode" type="'modal' | 'page'" default="'modal'">
+  모달 오버레이 또는 전체 페이지로 표시
+</ParamField>
+
+<ParamField path="defaultActiveTab" type="'crypto' | 'fiat'" default="'crypto'">
+  초기 결제 방법 탭
+</ParamField>
+
+<ParamField path="destinationTokenAddress" type="string">
+  구매 모드의 대상 토큰 주소
+</ParamField>
+
+<ParamField path="destinationTokenChainId" type="number">
+  대상 토큰의 체인 ID
+</ParamField>
+
+<ParamField path="recipientAddress" type="string">
+  수령인 지갑 주소
+</ParamField>
+
+<ParamField path="hideTransactionHistoryButton" type="boolean" default="false">
+  거래 내역 접근 숨김
+</ParamField>
+
+<ParamField path="loadOrder" type="string">
+  ID로 특정 주문 로드
+</ParamField>
+
+#### 사용 예시
+
+<Tabs>
+<Tab title="기본 토큰 교환">
+  ```tsx
+  <AnySpend
+    mode="page"
+    recipientAddress={userWalletAddress}
+  />
+  ```
+</Tab>
+
+<Tab title="법정 화폐에서 암호화폐로 온램프">
+  ```tsx
+  <AnySpend
+    defaultActiveTab="fiat"
+    destinationTokenAddress="0xA0b86a33E6Fb6Dd9a9B3d8B5FEb2b3C8e7D9Ff1E"
+    destinationTokenChainId={8333}
+    recipientAddress={userWalletAddress}
+  />
+  ```
+</Tab>
+</Tabs>
+
+---
+
+### `<AnySpendNFTButton>`
+
+내장된 결제 처리 기능을 갖춘 NFT 구매를 위한 간소화된 버튼 컴포넌트입니다.
+
+```tsx title="NFT 구매 버튼" icon="shopping-cart"
+import { AnySpendNFTButton } from "@b3dotfun/sdk/anyspend/react";
+
+<AnySpendNFTButton nftContract={nftContractDetails} recipientAddress="0x..." />;
+```
+
+#### 속성
+
+<ParamField path="nftContract" type="NFTContract" required>
+  NFT 계약 구성 객체
+</ParamField>
+
+<ParamField path="recipientAddress" type="string" required>
+  NFT를 받을 지갑 주소
+</ParamField>
+
+#### NFTContract 인터페이스
+
+```typescript title="타입 정의" icon="code"
+interface NFTContract {
+  chainId: number; // 블록체인 네트워크 ID
+  contractAddress: string; // NFT 계약 주소
+  price: string; // wei 단위 가격
+  priceFormatted: string; // 사람이 읽을 수 있는 가격
+  currency: {
+    chainId: number;
+    address: string; // 토큰 계약 주소 (기본 ETH의 경우 0x0)
+    name: string;
+    symbol: string;
+    decimals: number;
+    metadata: {
+      logoURI: string;
+    };
+  };
+  name: string; // NFT 컬렉션 이름
+  description: string; // NFT 설명
+  imageUrl: string; // 미리보기 이미지 URL
+  tokenId: number | null; // 토큰 ID (ERC721의 경우 null, ERC1155의 경우 특정 ID)
+  type: "erc721" | "erc1155"; // NFT 계약 유형
+}
+```
+
+#### 사용 예시
+
+```tsx title="완전한 NFT 통합" icon="image" lines
+const coolNFT = {
+  chainId: 8333,
+  contractAddress: "0x9c275ff1634519E9B5449ec79cd939B5F900564d",
+  price: "500000000000000000", // 0.5 ETH
+  priceFormatted: "0.5",
+  currency: {
+    chainId: 8333,
+    address: "0x0000000000000000000000000000000000000000",
+    name: "Ether",
+    symbol: "ETH",
+    decimals: 18,
+    metadata: {
+      logoURI: "https://assets.coingecko.com/coins/images/279/standard/ethereum.png?1696501628",
+    },
+  },
+  name: "Cool Art Collection",
+  description: "독특한 디지털 아트워크",
+  imageUrl: "https://example.com/nft-preview.png",
+  tokenId: null,
+  type: "erc721",
+};
+
+<AnySpendNFTButton nftContract={coolNFT} recipientAddress={userAddress} />;
+```
+
+---
+
+### `<AnySpendCustom>`
+
+게임, 스테이킹, DeFi 작업을 포함한 맞춤형 스마트 계약 상호작용을 위한 가장 유연한 컴포넌트입니다.
+
+```tsx title="맞춤형 계약 상호작용" icon="code"
+// https://github.com/b3-fun/b3/blob/main/packages/sdk/src/anyspend/react/components/AnySpendCustom.tsx
+import { AnySpendCustom } from "@b3dotfun/sdk/anyspend/react";
+
+<AnySpendCustom
+  orderType="custom"
+  dstChainId={8333}
+  dstToken={tokenDetails}
+  dstAmount="1000000000000000000"
+  contractAddress="0x..."
+  encodedData="0x..."
+  spenderAddress="0x..."
+  metadata={customMetadata}
+  header={CustomHeaderComponent}
+  onSuccess={txHash => console.log("Custom action completed", txHash)}
+/>;
+```
+
+#### 속성
+
+<ParamField path="orderType" type="'custom'" required>
+  주문 유형 식별자
+</ParamField>
+
+<ParamField path="dstChainId" type="number" required>
+  대상 블록체인 네트워크
+</ParamField>
+
+<ParamField path="dstToken" type="Token" required>
+  결제에 사용되는 토큰
+</ParamField>
+
+<ParamField path="dstAmount" type="string" required>
+  wei/최소 단위의 금액
+</ParamField>
+
+<ParamField path="contractAddress" type="string" required>
+  대상 스마트 계약 주소
+</ParamField>
+
+<ParamField path="encodedData" type="string" required>
+  인코딩된 함수 호출 데이터
+</ParamField>
+
+<ParamField path="spenderAddress" type="string">
+  선택적 토큰 지출 주소
+</ParamField>
+
+<ParamField path="metadata" type="object">
+  추적을 위한 맞춤형 메타데이터
+</ParamField>
+
+<ParamField path="header" type="React.ComponentType">
+  맞춤형 헤더 컴포넌트
+</ParamField>
+
+<ParamField path="onSuccess" type="(txHash?: string) => void">
+  거래 해시와 함께 성공 콜백
+</ParamField>
+
+#### 사용 예시 - 스테이킹
+
+```tsx title="스테이킹 통합" icon="coins" lines
+// 스테이킹 함수 호출 인코딩
+const stakeAmount = "1000000000000000000"; // 1 토큰
+const stakingCalldata = encodeFunctionData({
+  abi: stakingABI,
+  functionName: "stake",
+  args: [stakeAmount, 30], // 30일
+});
+
+<AnySpendCustom
+  orderType="custom"
+  dstChainId={8333}
+  dstToken={stakingToken}
+  dstAmount={stakeAmount}
+  contractAddress="0xStakingContract..."
+  encodedData={stakingCalldata}
+  metadata={{
+    action: "stake",
+    duration: 30,
+    expectedRewards: "5.2%",
+  }}
+  header={({ anyspendPrice, isLoadingAnyspendPrice }) => (
+    <div className="staking-header">
+      <h2>토큰 스테이킹</h2>
+      <p>기간: 30일</p>
+      <p>예상 APY: 5.2%</p>
+      {!isLoadingAnyspendPrice && <p>총 비용: ${anyspendPrice?.usdPrice}</p>}
+    </div>
+  )}
+/>;
+```
+
+## 특수 컴포넌트
+
+### `<AnySpendNFT>`
+
+추가 마켓플레이스 기능을 갖춘 향상된 NFT 컴포넌트입니다.
+
+```tsx title="향상된 NFT 컴포넌트" icon="store"
+// https://github.com/b3-fun/b3/blob/main/packages/sdk/src/anyspend/react/components/AnySpendNFT.tsx
+<AnySpendNFT nftContract={nftDetails} recipientAddress="0x..." showMetadata={true} showPriceHistory={true} />
+```
+
+### `<AnySpendStakeB3>`
+
+B3 토큰 스테이킹을 위한 사전 구성된 컴포넌트입니다.
+
+```tsx title="B3 스테이킹" icon="coins"
+// https://github.com/b3-fun/b3/blob/main/packages/sdk/src/anyspend/react/components/AnySpendStakeB3.tsx
+<AnySpendStakeB3 stakeAmount="1000000000000000000" stakingDuration={30} recipientAddress="0x..." />
+```
+
+### `<AnySpendBuySpin>`
+
+스핀 휠이나 복권 티켓 구매를 위한 게임 전용 컴포넌트입니다.
+
+```tsx title="게임 스핀 휠" icon="gamepad"
+// https://github.com/b3-fun/b3/blob/main/packages/sdk/src/anyspend/react/components/AnySpendBuySpin.tsx
+<AnySpendBuySpin gameContract="0x..." spinPrice="100000000000000000" recipientAddress="0x..." />
+```
+
+### `<AnySpendTournament>`
+
+토너먼트 참가비 결제 컴포넌트입니다.
+
+```tsx title="토너먼트 참가" icon="trophy"
+// https://github.com/b3-fun/b3/blob/main/packages/sdk/src/anyspend/react/components/AnySpendTournament.tsx
+<AnySpendTournament tournamentId="tournament-123" entryFee="500000000000000000" recipientAddress="0x..." />
+```
+
+## 컴포넌트 스타일링
+
+모든 컴포넌트는 CSS 변수를 사용하여 사용자 정의할 수 있는 기본 스타일을 제공합니다:
+
+```css title="사용자 정의 스타일링" icon="palette"
+/* 기본 스타일 재정의 */
+.anyspend-modal {
+  --anyspend-primary: #6366f1;
+  --anyspend-secondary: #f3f4f6;
+  --anyspend-border-radius: 12px;
+}
+```
+
+## 플랫폼 지원
+
+<table>
+  <thead>
+    <tr>
+      <th>컴포넌트</th>
+      <th>React Web</th>
+      <th>React Native</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>`AnySpend`</td>
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>`AnySpendNFTButton`</td>
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>`AnySpendCustom`</td>
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>`AnySpendNFT`</td>
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>법정 화폐 온램프 기능</td>
+      <td>✅</td>
+      <td>❌</td>
+    </tr>
+  </tbody>
+</table>
+
+## 다음 단계
+
+<CardGroup cols={3}>
+<Card title="훅에 대해 알아보기" icon="link" href="/anyspend/hooks">
+  맞춤형 결제 흐름을 위한 React 훅 발견하기
+</Card>
+
+<Card title="예시 보기" icon="code" href="/anyspend/examples">
+  실제 구현 예시 탐색하기
+</Card>
+
+<Card title="오류 처리" icon="shield-exclamation" href="/anyspend/error-handling">
+  오류를 우아하게 처리하는 방법 배우기
+</Card>
+</CardGroup>

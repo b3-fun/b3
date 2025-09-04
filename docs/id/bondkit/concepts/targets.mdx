@@ -1,0 +1,36 @@
+---
+title: Targets & Migration Trigger
+description: >-
+  Memahami targetAmount, kapan migrasi dapat terjadi, dan apa yang terjadi
+  selama migrasi.
+lang: id
+originalPath: bondkit/concepts/targets.mdx
+---
+## Jumlah Target
+
+- `targetAmount` adalah ambang batas aset kutipan yang memungkinkan migrasi.
+- Ditentukan saat pembuatan; dinominasikan dalam aset kutipan (ETH atau ERC20 yang diizinkan).
+- Fase pengikatan berakhir setelah total yang terkumpul mencapai target (kontribusi berlebih dikembalikan).
+
+## Siapa yang bisa migrasi
+
+- Hanya pemilik/pencipta token (admin migrasi) yang dapat memanggil `migrateToDex()`.
+
+## Apa yang terjadi saat migrasi
+
+- Pembagian aset kutipan yang terakumulasi:
+  - Bagian ke `feeRecipient`, berdasarkan `lpSplitRatioFeeRecipientBps`.
+  - Sisa digunakan sebagai likuiditas bersama token yang disediakan untuk LP.
+- Untuk migrasi Uniswap v4, kontrak menghitung `sqrtPriceX96` untuk menginisialisasi kolam.
+- Likuiditas ditambahkan ke kolam v4 dengan perlindungan yang tepat; token LP atau posisi ditangani sesuai semantik v4, dengan kepemilikan efektif dibakar/dilepaskan untuk desentralisasi.
+- Kepemilikan dilepaskan segera untuk menyelesaikan desentralisasi.
+
+## Pasca-migrasi
+
+- Perdagangan fase pengikatan dinonaktifkan.
+- Token berperilaku sebagai ERC20 standar dengan penemuan harga berbasis DEX.
+
+<Catatan>
+Jaringan & alamat (pabrik, manajer kolam v4, hook) terdaftar di halaman Jaringan.
+</Catatan>
+

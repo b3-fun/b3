@@ -1,0 +1,486 @@
+---
+title: React Hooks
+description: B3 Global Accounts React hooks에 대한 완전한 참조
+lang: ko
+originalPath: sdk/global-account/hooks.mdx
+---
+## 인증 훅
+
+### useB3
+
+글로벌 계정 인증 상태와 액션에 접근하기 위한 주요 훅입니다.
+
+```tsx
+import { useB3 } from "@b3dotfun/sdk/global-account/react";
+
+function AuthComponent() {
+  const { 
+    account,           // 현재 글로벌 계정
+    isAuthenticated,   // 인증 상태
+    isLoading,         // 로딩 상태
+    signOut,           // 로그아웃 함수
+    refreshAccount     // 계정 데이터 새로고침
+  } = useB3();
+
+  return (
+    <div>
+      {isLoading && <p>로딩 중...</p>}
+      
+      {isAuthenticated ? (
+        <div>
+          <h3>환영합니다, {account?.displayName}!</h3>
+          <p>계정 ID: {account?.id}</p>
+          <p>이메일: {account?.email}</p>
+          <button onClick={signOut}>로그아웃</button>
+        </div>
+      ) : (
+        <p>계속하려면 로그인하세요</p>
+      )}
+    </div>
+  );
+}
+```
+
+#### 반환 값
+
+| 속성 | 타입 | 설명 |
+|----------|------|-------------|
+| `account` | `GlobalAccount \| null` | 현재 인증된 계정 |
+| `isAuthenticated` | `boolean` | 사용자가 인증되었는지 여부 |
+| `isLoading` | `boolean` | 인증 확인이 진행 중인지 여부 |
+| `signOut` | `() => Promise<void>` | 현재 사용자를 로그아웃하는 함수 |
+| `refreshAccount` | `() => Promise<void>` | 계정 데이터를 새로고치는 함수 |
+
+### useAccountWallet
+
+인증된 계정의 지갑 정보에 접근합니다.
+
+```tsx
+import { useAccountWallet } from "@b3dotfun/sdk/global-account/react";
+
+function WalletComponent() {
+  const { 
+    wallet,       // 지갑 정보
+    isConnected,  // 연결 상태
+    connect,      // 지갑 연결 함수
+    disconnect    // 지갑 연결 해제 함수
+  } = useAccountWallet();
+
+  return (
+    <div>
+      {isConnected ? (
+        <div>
+          <p>주소: {wallet?.address}</p>
+          <p>체인: {wallet?.chainId}</p>
+          <p>잔액: {wallet?.balance} ETH</p>
+          <button onClick={disconnect}>연결 해제</button>
+        </div>
+      ) : (
+        <button onClick={connect}>지갑 연결</button>
+      )}
+    </div>
+  );
+}
+```
+
+## 권한 훅
+
+### usePermissions
+
+세션 키 권한을 관리하고 확인합니다.
+
+```tsx
+import { usePermissions } from "@b3dotfun/sdk/global-account/react";
+
+function PermissionsComponent() {
+  const { 
+    permissions,      // 현재 권한
+    hasPermissions,   // 사용자에게 활성 권한이 있는지 여부
+    isExpired,        // 권한이 만료되었는지 여부
+    checkPermission   // 특정 권한 확인
+  } = usePermissions();
+
+  const canInteractWithContract = checkPermission("0x...");
+
+  return (
+    <div>
+      <h3>권한 상태</h3>
+      
+      {hasPermissions ? (
+        <div>
+          <p>✅ 활성 권한</p>
+          <p>만료일: {permissions?.endDate.toLocaleDateString()}</p>
+          <p>계약: {permissions?.approvedTargets.length}</p>
+          
+          {isExpired && <p>⚠️ 권한 만료</p>}
+          
+          <div>
+            <p>계약과 상호 작용 가능: {canInteractWithContract ? '✅' : '❌'}</p>
+          </div>
+        </div>
+      ) : (
+        <p>활성 권한 없음</p>
+      )}
+    </div>
+  );
+}
+```
+
+### useRequestPermissions
+
+세션 키에 대한 새로운 권한을 요청합니다.
+
+```tsx
+import { useRequestPermissions } from "@b3dotfun/sdk/global-account/react";
+
+function RequestPermissionsComponent() {
+  const { 
+    requestPermissions, 
+    isLoading, 
+    error,
+    reset 
+  } = useRequestPermissions();
+
+  const handleRequest = async () => {
+    try {
+      const result = await requestPermissions({
+        chain: { id: 8333, name: "B3" },
+        sessionKeyAddress: "0x...",
+        permissions: {
+          approvedTargets: ["0x..."],
+          startDate: new Date(),
+          endDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
+          nativeTokenLimitPerTransaction: 0.01,
+        },
+      });
+
+      if (result.success) {
+        console.log("권한 부여됨!");
+      }
+    } catch (err) {
+      console.error("권한 요청 실패:", err);
+    }
+  };
+
+  return (
+    <div>
+      <button 
+        onClick={handleRequest}
+        disabled={isLoading}
+      >
+        {isLoading ? "요청 중..." : "권한 요청"}
+      </button>
+      
+      {error && (
+        <div className="error">
+          오류: {error.message}
+          <button onClick={reset}>재시도</button>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+### useRevokePermissions
+
+기존 권한을 취소합니다.
+
+```tsx
+import { useRevokePermissions } from "@b3dotfun/sdk/global-account/react";
+
+function RevokePermissionsComponent() {
+  const { revokePermissions, isLoading, error } = useRevokePermissions();
+
+  const handleRevoke = async () => {
+    try {
+      await revokePermissions({
+        sessionKeyAddress: "0x...",
+        chain: { id: 8333, name: "B3" },
+      });
+      console.log("권한 성공적으로 취소됨");
+    } catch (err) {
+      console.error("권한 취소 실패:", err);
+    }
+  };
+
+  return (
+    <button 
+      onClick={handleRevoke}
+      disabled={isLoading}
+    >
+      {isLoading ? "취소 중..." : "권한 취소"}
+    </button>
+  );
+}
+```
+
+## 자산 관리 훅
+
+### useAccountAssets
+
+사용자의 디지털 자산을 검색하고 관리합니다.
+
+```tsx
+import { useAccountAssets } from "@b3dotfun/sdk/global-account/react";
+
+function AssetsComponent() {
+  const { 
+    assets,        // 사용자의 자산
+    isLoading,     // 로딩 상태
+    error,         // 오류 상태
+    refreshAssets  // 자산 새로고침 함수
+  } = useAccountAssets();
+
+  if (isLoading) return <div>자산 로딩 중...</div>;
+  if (error) return <div>자산 로딩 오류: {error.message}</div>;
+
+  return (
+    <div>
+      <h3>당신의 자산</h3>
+      <button onClick={refreshAssets}>새로고침</button>
+      
+      {assets?.map((asset) => (
+        <div key={asset.id} className="asset-item">
+          <img src={asset.imageUrl} alt={asset.name} />
+          <h4>{asset.name}</h4>
+          <p>{asset.description}</p>
+          <p>가치: {asset.value} {asset.currency}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+## 모달 관리 훅
+
+### useModal
+
+프로그래밍 방식으로 B3 모달을 제어합니다.
+
+```tsx
+import { useModal } from "@b3dotfun/sdk/global-account/react";
+
+function ModalControlComponent() {
+  const { 
+    openModal, 
+    closeModal, 
+    isModalOpen,
+    currentModal 
+  } = useModal();
+
+  const handleOpenAuth = () => {
+    openModal('authentication', {
+      provider: { strategy: 'google' },
+      partnerId: 'your-partner-id'
+    });
+  };
+
+  const handleOpenPermissions = () => {
+    openModal('permissions', {
+      sessionKeyAddress: '0x...',
+      permissions: {
+        approvedTargets: ['0x...'],
+        nativeTokenLimitPerTransaction: 0.01
+      }
+    });
+  };
+
+  return (
+    <div>
+      <p>현재 모달: {currentModal || '없음'}</p>
+      <p>모달 열림: {isModalOpen ? '예' : '아니오'}</p>
+      
+      <button onClick={handleOpenAuth}>인증 모달 열기</button>
+      <button onClick={handleOpenPermissions}>권한 모달 열기</button>
+      <button onClick={closeModal}>모달 닫기</button>
+    </div>
+  );
+}
+```
+
+## 네비게이션 훅
+
+### useNavigation
+
+B3 애플리케이션 내에서의 네비게이션을 처리합니다.
+
+```tsx
+import { useNavigation } from "@b3dotfun/sdk/global-account/react";
+
+function NavigationComponent() {
+  const { 
+    navigate, 
+    canGoBack, 
+    goBack,
+    currentPath 
+  } = useNavigation();
+
+  return (
+    <div>
+      <p>현재 경로: {currentPath}</p>
+      
+      <button onClick={() => navigate('/dashboard')}>
+        대시보드로 이동
+      </button>
+      
+      <button onClick={() => navigate('/profile')}>
+        프로필로 이동
+      </button>
+      
+      {canGoBack && (
+        <button onClick={goBack}>
+          뒤로 가기
+        </button>
+      )}
+    </div>
+  );
+}
+```
+
+## 설정 훅
+
+### useB3Config
+
+B3 설정과 환경 설정에 접근합니다.
+
+```tsx
+import { useB3Config } from "@b3dotfun/sdk/global-account/react";
+
+function ConfigComponent() {
+  const { 
+    environment,     // 'production' | 'development'
+    apiUrl,          // 현재 API URL
+    partnerId,       // 파트너 ID
+    features,        // 사용 가능한 기능
+    updateConfig     // 설정 업데이트
+  } = useB3Config();
+
+  return (
+    <div>
+      <h3>B3 설정</h3>
+      <p>환경: {environment}</p>
+      <p>API URL: {apiUrl}</p>
+      <p>파트너 ID: {partnerId}</p>
+      
+      <h4>사용 가능한 기능:</h4>
+      <ul>
+        {features.map(feature => (
+          <li key={feature}>{feature}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+```
+
+## 훅 조합
+
+### 커스텀 훅 예제
+
+복잡한 기능을 위해 여러 훅을 결합합니다:
+
+```tsx
+import { useB3, usePermissions, useAccountWallet } from "@b3dotfun/sdk/global-account/react";
+
+function useGameAuth() {
+  const { account, isAuthenticated } = useB3();
+  const { hasPermissions, isExpired } = usePermissions();
+  const { wallet, isConnected } = useAccountWallet();
+
+  const isGameReady = isAuthenticated && hasPermissions && !isExpired && isConnected;
+  
+  const gameAuthStatus = {
+    account: !!account,
+    permissions: hasPermissions && !isExpired,
+    wallet: isConnected,
+    ready: isGameReady
+  };
+
+  return {
+    account,
+    wallet,
+    isGameReady,
+    gameAuthStatus
+  };
+}
+
+// 사용법
+function GameComponent() {
+  const { isGameReady, gameAuthStatus } = useGameAuth();
+
+  if (!isGameReady) {
+    return (
+      <div>
+        <h3>설정 필요</h3>
+        <ul>
+          <li>계정: {gameAuthStatus.account ? '✅' : '❌'}</li>
+          <li>권한: {gameAuthStatus.permissions ? '✅' : '❌'}</li>
+          <li>지갑: {gameAuthStatus.wallet ? '✅' : '❌'}</li>
+        </ul>
+      </div>
+    );
+  }
+
+  return <div>🎮 게임 준비됨!</div>;
+}
+```
+
+## TypeScript 지원
+
+모든 훅은 전체 TypeScript 지원을 포함합니다:
+
+```typescript
+import type { 
+  GlobalAccount, 
+  Permissions, 
+  WalletInfo 
+} from "@b3dotfun/sdk/global-account/types";
+
+// 훅 반환 타입은 완전히 타입화됩니다
+const { account }: { account: GlobalAccount | null } = useB3();
+const { permissions }: { permissions: Permissions | null } = usePermissions();
+const { wallet }: { wallet: WalletInfo | null } = useAccountWallet();
+```
+
+## 오류 처리
+
+훅을 사용하여 오류를 처리하는 모범 사례:
+
+```tsx
+function ErrorHandlingExample() {
+  const { account, isAuthenticated } = useB3();
+  const { requestPermissions, error: permissionError } = useRequestPermissions();
+  const { assets, error: assetError } = useAccountAssets();
+
+  // 특정 오류 처리
+  useEffect(() => {
+    if (permissionError) {
+      console.error('권한 오류:', permissionError);
+      // 사용자 친화적인 오류 메시지 표시
+    }
+    
+    if (assetError) {
+      console.error('자산 로딩 오류:', assetError);
+      // 재시도하거나 대체 UI 표시
+    }
+  }, [permissionError, assetError]);
+
+  return (
+    <div>
+      {/* 컴포넌트 JSX */}
+    </div>
+  );
+}
+```
+
+## 다음 단계
+
+<CardGroup cols={2}>
+
+<Card title="예제" icon="code" href="/sdk/global-account/examples">
+  이 훅을 사용한 완전한 예제를 확인하세요.
+</Card>
+
+</CardGroup>

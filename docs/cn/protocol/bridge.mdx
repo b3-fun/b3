@@ -1,0 +1,184 @@
+---
+title: Bridge to B3
+description: 有几种方法可以桥接到 B3 & 我们的 appchains。
+lang: cn
+originalPath: protocol/bridge.mdx
+---
+<img src="/images/b3-banner.png" alt="Bridge to B3" className="w-full rounded-xl" />
+
+<CardGroup cols={2}>
+  <Card title="Basement Bridge"  href="https://basement.fun/bridge">
+    <img src="/images/bsmnt-logo.svg" alt="Basement" className="p-8 bg-black rounded-2xl my-3" />
+
+    跨链桥，支持即时存款和提款
+  </Card>
+  
+  <Card title="Relay Bridge" href="https://relay.link/bridge/base?fromChainId=8453&fromCurrency=0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3&toCurrency=0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3">
+    <img src="/images/relay-logo.avif" alt="Relay" className="p-8 bg-black rounded-2xl my-3" />
+
+    从任何 EVM 链和 Solana 到 B3 的桥
+  </Card>
+  
+  <Card title="Native Bridge" icon="bridge" href="#native-bridge">
+    OP Canonical Bridge，7天提款期
+  </Card>
+  
+  <Card title="Bridge Contract" icon="code" href="#bridge-contract">
+    针对高级用户的直接合约交互
+  </Card>
+</CardGroup>
+
+## 跨链桥
+
+<div style={{ marginBottom: '16px' }}>
+  <span style={{ backgroundColor: '#3b82f6', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', marginRight: '8px' }}>即时存款</span>
+  <span style={{ backgroundColor: '#8b5cf6', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', marginRight: '8px' }}>即时提款</span>
+  <span style={{ backgroundColor: '#10b981', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px' }}>低费用</span>
+</div>
+
+连接您的钱包，并从主要 EVM 网络进出 B3。
+
+<Steps>
+<Step title="前往 Basement Bridge">
+  访问 [basement.fun/bridge](https://basement.fun/bridge) 以访问桥接界面。
+</Step>
+
+<Step title="连接您的钱包">
+  使用 MetaMask、Coinbase Wallet 或其他支持的钱包连接您的钱包。
+</Step>
+
+<Step title="选择网络和资金">
+  选择源网络和您想要桥接到 B3 的资金金额。
+</Step>
+
+<Step title="确认交易">
+  确认交易，您将在一分钟内收到桥接资金。
+  
+  <Check>
+  您的资金将在 60 秒内出现在您的 B3 钱包中。
+  </Check>
+</Step>
+</Steps>
+
+<Card title="使用 Basement Bridge" href="https://basement.fun" cta="使用桥接" horizontal>
+  <img src="/images/bsmnt-logo.svg" alt="Basement" className="w-32" />
+
+  开始即时存取资产到 B3
+</Card>
+
+## 即时桥接
+
+<div style={{ marginBottom: '16px' }}>
+  <span style={{ backgroundColor: '#3b82f6', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', marginRight: '8px' }}>即时存款</span>
+  <span style={{ backgroundColor: '#8b5cf6', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', marginRight: '8px' }}>即时提款</span>
+  <span style={{ backgroundColor: '#10b981', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px' }}>低费用</span>
+</div>
+
+通过 Relay 轻松从任何 EVM 链和 Solana 到 B3。
+
+<Steps>
+<Step title="前往 Relay Bridge">
+  访问 [relay.link](https://relay.link) 以访问 Relay 桥接界面。
+</Step>
+
+<Step title="连接您的钱包">
+  连接您的钱包以开始桥接过程。
+</Step>
+
+<Step title="输入桥接金额">
+  输入您想要桥接到 B3 的 ETH 金额。
+</Step>
+
+<Step title="确认交易">
+  确认交易，您将在一分钟内收到桥接资金。
+  
+  <Check>
+  Relay 支持从包括 Solana 在内的多个链桥接。
+  </Check>
+</Step>
+</Steps>
+
+<Card title="使用 Relay Bridge" href="https://relay.link" cta="使用桥接" horizontal>
+  <img src="/images/relay-logo.avif" alt="Relay" className="w-32" />
+
+  即时从任何 EVM 链和 Solana 到 B3
+</Card>
+
+## 原生桥接
+
+<div style={{ marginBottom: '16px' }}>
+  <span style={{ backgroundColor: '#3b82f6', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', marginRight: '8px' }}>Base 到 B3</span>
+  <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', marginRight: '8px' }}>7天提款</span>
+  <span style={{ backgroundColor: '#10b981', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px' }}>无费用</span>
+</div>
+
+使用官方 OP Stack 规范桥轻松从 Base 到 B3！
+
+<Warning>
+从 B3 返回 Base 的提款有 7 天的挑战期以确保安全。使用第三方桥接以实现即时提款。
+</Warning>
+
+<Steps>
+<Step title="访问桥接">
+  前往 [bridge.b3.fun](https://bridge.b3.fun) 访问官方桥接。
+</Step>
+
+<Step title="连接您的钱包">
+  将您的钱包连接到桥接界面。
+</Step>
+
+<Step title="选择方向">
+  选择您想要的操作：
+  - **存款**：从 Base → B3
+  - **提款**：从 B3 → Base
+</Step>
+
+<Step title="输入金额">
+  输入您想要桥接的 ETH 金额。
+</Step>
+
+<Step title="完成交易">
+  点击“存款”并在您的钱包中确认交易。
+  
+  <Tip>
+  到 B3 的存款是即时的，但提款需要 7 天的挑战期。
+  </Tip>
+</Step>
+</Steps>
+
+<Card title="使用官方桥接" icon="bridge" href="https://bridge.b3.fun" cta="桥接" horizontal>
+  使用经过实战测试的 OP Stack 规范桥
+</Card>
+
+## 原生转账（桥接合约）
+
+<div style={{ marginBottom: '16px' }}>
+  <span style={{ backgroundColor: '#3b82f6', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', marginRight: '8px' }}>即时存款</span>
+  <span style={{ backgroundColor: '#f59e0b', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', marginRight: '8px' }}>7天提款</span>
+  <span style={{ backgroundColor: '#10b981', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px' }}>无费用</span>
+</div>
+
+通过桥接合约发送 Base ETH。将 **Base ETH** 发送到以下地址 **Base Mainnet** 上的桥接地址：
+
+<Warning>
+此方法仅适用于高级用户。确保您是从 Base Mainnet 发送，以避免资金损失。
+</Warning>
+
+```text Bridge Address
+0x769547a723783FCA36BAaf1ECcf9dfdbF6d09F38
+```
+
+<Note>
+当您从 Base 向此地址发送 ETH 时，它将自动出现在您的 B3 钱包中。这是一种直接合约交互方法。
+</Note>
+
+<Accordion title="如何使用桥接合约">
+1. **确保您的钱包处于 Base Mainnet** 
+2. **向上面的桥接合约地址发送 ETH** 
+3. **等待确认** - 您的资金将自动出现在 B3 上
+4. **检查您的 B3 钱包** - 切换到 B3 网络查看您的桥接 ETH
+
+<Warning>
+发送前请再次检查您是否在 Base Mainnet 上。从其他网络发送可能会导致资金损失。
+</Warning>
+</Accordion>

@@ -1,0 +1,30 @@
+---
+title: Tetapkan faktorKeganasan
+description: Bagaimana memilih faktor agresivitas (0–100) untuk peluncuran Anda.
+lang: id
+originalPath: bondkit/guides/set-aggressiveness.mdx
+---
+## Pedoman
+
+- 0–20: lembut; pembeli awal dan akhir menerima jumlah yang serupa per unit
+- 30–60: seimbang; kenaikan harga moderat, tipikal untuk peluncuran umum
+- 70–100: curam; keuntungan awal yang kuat, eskalasi harga lebih cepat
+
+## Aturan praktis
+
+- Target lebih kecil atau komunitas yang ketat: condong lebih tinggi (50–80)
+- Target lebih besar atau audiens yang lebih luas: condong lebih rendah (20–50)
+
+## Contoh
+
+```ts
+const config = {
+  aggressivenessFactor: 35,
+  // ...param lainnya
+};
+```
+
+<Note>
+`exponent = 1 / (1 + aggressivenessFactor/100)`. Agresivitas yang lebih tinggi meningkatkan kemiringan kurva dan mengurangi token per unit nantinya.
+</Note>
+

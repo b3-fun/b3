@@ -1,0 +1,280 @@
+---
+title: Autentikasi
+description: Pelajari cara mengimplementasikan autentikasi dengan B3 Global Accounts
+lang: id
+originalPath: sdk/global-account/authentication.mdx
+---
+## Strategi Autentikasi
+
+B3 Global Accounts mendukung berbagai strategi autentikasi untuk memenuhi kebutuhan aplikasi Anda.
+
+## Login Sosial
+
+### Autentikasi Google
+
+```tsx
+import { SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
+
+function GoogleAuth() {
+  return (
+    <SignInWithB3
+      provider={{ strategy: "google" }}
+      partnerId="your-partner-id"
+      onLoginSuccess={(globalAccount) => {
+        console.log("Autentikasi Google berhasil:", globalAccount);
+      }}
+      onLoginError={(error) => {
+        console.error("Autentikasi gagal:", error);
+      }}
+    />
+  );
+}
+```
+
+### Autentikasi Discord
+
+```tsx
+import { SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
+
+function DiscordAuth() {
+  return (
+    <SignInWithB3
+      provider={{ strategy: "discord" }}
+      partnerId="your-partner-id"
+      onLoginSuccess={(globalAccount) => {
+        console.log("Autentikasi Discord berhasil:", globalAccount);
+      }}
+    />
+  );
+}
+```
+
+## Autentikasi Kunci Sesi
+
+Kunci sesi menyediakan keamanan yang lebih baik dan memungkinkan untuk izin granular. Ini sangat berguna untuk game dan aplikasi yang perlu melakukan aksi atas nama pengguna.
+
+### Pengaturan Kunci Sesi Dasar
+
+```tsx
+import { SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
+
+const b3Chain = {
+  id: 8333,
+  name: "B3",
+  nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+  rpc: "https://mainnet-rpc.b3.fun",
+};
+
+function SessionKeyAuth() {
+  return (
+    <SignInWithB3
+      provider={{ strategy: "google" }}
+      chain={b3Chain}
+      partnerId="your-partner-id"
+      sessionKeyAddress="0x..." // Alamat MetaMask atau dompet lain
+      onLoginSuccess={(globalAccount) => {
+        console.log("Autentikasi kunci sesi berhasil:", globalAccount);
+      }}
+    />
+  );
+}
+```
+
+### Konfigurasi Kunci Sesi Kustom
+
+```tsx
+function AdvancedSessionAuth() {
+  const sessionKeyConfig = {
+    permissions: {
+      approvedTargets: ["0x..."], // Alamat kontrak tertentu
+      startDate: new Date(),
+      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 hari
+      nativeTokenLimitPerTransaction: 0.0001, // Batas ETH per transaksi
+    }
+  };
+
+  return (
+    <SignInWithB3
+      provider={{ strategy: "google" }}
+      chain={b3Chain}
+      partnerId="your-partner-id"
+      sessionKeyAddress="0x..."
+      sessionKeyConfig={sessionKeyConfig}
+      onLoginSuccess={(globalAccount) => {
+        console.log("Pengaturan kunci sesi lanjutan:", globalAccount);
+      }}
+    />
+  );
+}
+```
+
+## Autentikasi Tanpa Kepala
+
+Untuk implementasi kustom, gunakan layanan autentikasi tanpa kepala:
+
+### Autentikasi Dasar
+
+```typescript
+import { authenticate } from "@b3dotfun/sdk/global-account/app";
+
+async function authenticateUser(accessToken: string, identityToken: string) {
+  try {
+    const authResult = await authenticate(accessToken, identityToken, {
+      // konfigurasi tambahan
+    });
+    
+    if (authResult) {
+      console.log("Autentikasi berhasil:", authResult);
+      return authResult;
+    } else {
+      console.log("Autentikasi gagal");
+      return null;
+    }
+  } catch (error) {
+    console.error("Kesalahan autentikasi:", error);
+    throw error;
+  }
+}
+```
+
+### Autentikasi React Native
+
+```typescript
+// Untuk aplikasi React Native
+import { authenticate } from "@b3dotfun/sdk/global-account/app";
+
+async function authenticateInReactNative() {
+  const result = await authenticate("access-token", "identity-token");
+  return result;
+}
+```
+
+## Hook Autentikasi
+
+### Hook useB3
+
+Hook utama untuk mengakses status autentikasi:
+
+```tsx
+import { useB3 } from "@b3dotfun/sdk/global-account/react";
+
+function AuthStatus() {
+  const { 
+    account, 
+    isAuthenticated, 
+    isLoading,
+    signOut 
+  } = useB3();
+
+  if (isLoading) return <div>Memuat...</div>;
+
+  return (
+    <div>
+      {isAuthenticated ? (
+        <div>
+          <p>Selamat datang, {account?.displayName}!</p>
+          <button onClick={signOut}>Keluar</button>
+        </div>
+      ) : (
+        <p>Silakan masuk</p>
+      )}
+    </div>
+  );
+}
+```
+
+### Hook useAccountWallet
+
+Akses informasi dompet:
+
+```tsx
+import { useAccountWallet } from "@b3dotfun/sdk/global-account/react";
+
+function WalletInfo() {
+  const { wallet, isConnected } = useAccountWallet();
+
+  return (
+    <div>
+      {isConnected && (
+        <div>
+          <p>Alamat Dompet: {wallet?.address}</p>
+          <p>ID Rantai: {wallet?.chainId}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## Penanganan Kesalahan
+
+Implementasikan penanganan kesalahan yang tepat untuk alur autentikasi:
+
+```tsx
+function AuthWithErrorHandling() {
+  const [authError, setAuthError] = useState<string | null>(null);
+
+  return (
+    <div>
+      <SignInWithB3
+        provider={{ strategy: "google" }}
+        partnerId="your-partner-id"
+        onLoginSuccess={(globalAccount) => {
+          setAuthError(null);
+          console.log("Sukses:", globalAccount);
+        }}
+        onLoginError={(error) => {
+          setAuthError(error.message);
+          console.error("Kesalahan autentikasi:", error);
+        }}
+      />
+      
+      {authError && (
+        <div className="error">
+          Autentikasi gagal: {authError}
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## Praktik Terbaik
+
+<CardGroup cols={2}>
+
+<Card title="Partner ID" icon="id-badge">
+  Selalu gunakan Partner ID unik Anda untuk atribusi dan analitik yang tepat.
+</Card>
+
+<Card title="Penanganan Kesalahan" icon="exclamation-triangle">
+  Implementasikan penanganan kesalahan yang komprehensif untuk pengalaman pengguna yang lebih baik.
+</Card>
+
+<Card title="Manajemen Sesi" icon="clock">
+  Tetapkan durasi sesi yang sesuai berdasarkan kebutuhan keamanan aplikasi Anda.
+</Card>
+
+<Card title="Konfigurasi Lingkungan" icon="settings">
+  Gunakan variabel lingkungan yang tepat untuk berbagai tahap penyebaran.
+</Card>
+
+</CardGroup>
+
+## Langkah Selanjutnya
+
+<CardGroup cols={2}>
+
+<Card title="Izin" icon="lock" href="/sdk/global-account/permissions">
+  Pelajari tentang pengelolaan izin dan kunci sesi.
+</Card>
+
+<Card title="Referensi Hook" icon="react" href="/sdk/global-account/hooks">
+  Jelajahi semua hook React yang tersedia.
+</Card>
+
+<Card title="Contoh" icon="code" href="/sdk/global-account/examples">
+  Lihat contoh integrasi lengkap.
+</Card>
+
+</CardGroup>

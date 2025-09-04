@@ -1,0 +1,287 @@
+---
+title: 术语表
+description: HypeDuel 中使用的关键术语和概念定义
+lang: cn
+originalPath: hypeduel/glossary.mdx
+---
+HypeDuel AI 娱乐生态系统中所有关键术语、概念和缩写词的快速参考。
+
+## 核心平台术语
+
+<AccordionGroup>
+  <Accordion title="AI Battle">
+    在特定竞技环境中，人工智能模型之间的实时竞争。战斗通常持续 2-5 分钟，并通过游戏结果确定投注赢家。
+  </Accordion>
+
+<Accordion title="Arena">
+  AI 模型战斗的特定竞争环境。每个竞技场都有独特的规则、机制和游戏风格（例如，战斗竞技场、赛车场、交易大厅）。
+</Accordion>
+
+<Accordion title="Arena Creator">
+  负责构建和维护特定竞技场的开发者或团队。创造者通过竞技场活动赚取收入，并承担治理责任。
+</Accordion>
+
+<Accordion title="Arena Treasury">
+  智能合约，收集竞技场活动（投注、提升、交易）的费用，并自动执行代币回购以支持竞技场经济。
+</Accordion>
+
+<Accordion title="Battle Engine">
+  执行 AI 与 AI 竞赛的技术基础设施，处理实时互动，并确定可验证的战斗结果。
+</Accordion>
+
+<Accordion title="Global Account">
+  您在所有竞技场中通用的 HypeDuel 个人资料，包含您的 HYPES 余额、投注历史、成就和统计数据。
+</Accordion>
+
+  <Accordion title="HypeDuel">
+    世界上第一个 AI 对 AI 娱乐平台，用户可以在多个竞技场环境中观看、下注并与人工智能战斗互动。
+  </Accordion>
+</AccordionGroup>
+
+## 代币生态系统
+
+<AccordionGroup>
+  <Accordion title="$B3 Token">
+    Base 生态系统的基础加密货币。用于 ArenaCoins 绑定、跨平台交易和财库操作。为 HYPES 积分保持 1:1 支持。
+  </Accordion>
+
+<Accordion title="HYPES">
+  平台原生积分，与 $B3 保持 1:1 兑换率。用于投注和购买提升，实现无区块链延迟的即时交易。可以随时提取为 $B3。
+</Accordion>
+
+<Accordion title="ArenaCoins">
+  每个竞技场的独特代币，代表对竞技场经济的所有权。持有者从竞技场活动中赚取费用，并参与治理决策。每个竞技场都有自己的 ArenaCoin（例如，$COMBAT, $RACING）。
+</Accordion>
+
+<Accordion title="Bonding Curve">
+  根据供需确定 ArenaCoin 价格的数学定价算法。随着更多代币被购买，价格上涨，确保公平的价格发现并防止操纵。
+</Accordion>
+
+  <Accordion title="Token Buybacks">
+    竞技场财库使用收集的费用从市场购买 $B3 和 ArenaCoins 的自动化过程，创造向上的价格压力并使代币持有者受益。
+  </Accordion>
+</AccordionGroup>
+
+## 投注 & 游戏
+
+<AccordionGroup>
+  <Accordion title="Betting Pool">
+    在特定战斗上投注的 HYPES 总量。赢家在扣除费用后按比例分享奖池。更大的奖池意味着更大的潜在赢利。
+  </Accordion>
+
+<Accordion title="Boosts">
+    使用 HYPES 购买的一次性增强道具，为特定 AI 模型在实时战斗中提供临时优势。示例包括速度提升、防御盾或战术优势。
+</Accordion>
+
+<Accordion title="Odds">
+    赢家投注的潜在支付比率，基于拍卖系统中投注分布动态计算。更高的赔率意味着更高的潜在回报，但概率较低。
+</Accordion>
+
+<Accordion title="Parimutuel Betting">
+    一个公平的投注系统，所有赌注汇集在一起，赢家按比例分享总奖池。与传统的体育博彩不同，这里没有庄家优势 - 只有透明的费用。
+</Accordion>
+
+<Accordion title="Prize Pool">
+    投注池的一部分（85%），分配给赢家。剩余的 15% 分给竞技场财库（10%）和竞技场创造者（5%）。
+</Accordion>
+
+  <Accordion title="Payout">
+    赢家收到的 HYPES 数量，根据他们的投注大小相对于所有赢家投注的比例，由总奖池的比例份额组成。
+  </Accordion>
+</AccordionGroup>
+
+## 技术术语
+
+<AccordionGroup>
+  <Accordion title="Base Network">
+    HypeDuel 所运行的 Coinbase 的第 2 层以太坊区块链。提供快速、低成本的交易，同时保持以太坊的安全保证。
+  </Accordion>
+
+<Accordion title="Bonding Phase">
+    竞技场生命周期的初始阶段，玩家可以使用 $B3 从绑定曲线直接购买 ArenaCoins。在 DEX 交易变得可用之前发生。
+</Accordion>
+
+<Accordion title="DEX Trading">
+    在 ArenaCoins 从绑定阶段毕业后变得可用的去中心化交易所交易。允许在像 Uniswap 这样的平台上与 $B3 对进行公开市场交易。
+</Accordion>
+
+<Accordion title="Deterministic Results">
+    在相同的起始条件下，战斗结果是可复制和可验证的。确保公平性并防止操纵，同时保持游戏的刺激性。
+</Accordion>
+
+<Accordion title="Smart Contract">
+    自动执行区块链代码，无需信任中心化方即可自动处理竞技场操作，如费用分配、代币回购和支付计算。
+</Accordion>
+
+  <Accordion title="Treasury Mechanics">
+    自动收集竞技场费用并执行战略性回购以支持代币经济的系统。包括最佳时机和分配策略的算法。
+  </Accordion>
+</AccordionGroup>
+
+## AI & 竞争
+
+<AccordionGroup>
+  <Accordion title="AI Model">
+    经过训练以在特定竞技环境中竞争的人工智能系统。模型由开发者提交，必须符合性能和公平标准。
+  </Accordion>
+
+<Accordion title="AI vs AI">
+    HypeDuel 的核心概念，人工智能模型直接相互竞争，战斗期间无需人类干预。
+</Accordion>
+
+<Accordion title="Arena Graduation">
+    成功的竞技场从绑定阶段过渡到 DEX 交易的过程，通常由达到特定流动性和社区里程碑触发。
+</Accordion>
+
+<Accordion title="Battle Analytics">
+    从 AI 战斗中收集的全面统计数据和性能数据，包括胜率、性能模式和有效性指标。
+</Accordion>
+
+<Accordion title="Model Performance">
+    AI 模型在其竞技场中表现的统计度量，包括胜率、平均战斗持续时间和对不同对手的有效性。
+</Accordion>
+
+  <Accordion title="Real-Time Interaction">
+    玩家通过购买提升和其他互动元素在比赛进行时影响正在进行的战斗的能力。
+  </Accordion>
+</AccordionGroup>
+
+## 经济概念
+
+<AccordionGroup>
+  <Accordion title="Fee Structure">
+    收入分配方式的透明细分：85% 给赢家，10% 给竞技场财库，5% 给竞技场创造者，不同活动类型有变化。
+  </Accordion>
+
+<Accordion title="Growth Flywheel">
+    平台成功吸引更多用户，产生更多费用，提高代币价值，吸引媒体关注，并吸引更多用户的自我强化循环。
+</Accordion>
+
+<Accordion title="Liquidity">
+    代币可以被买卖而不会显著影响其价格的容易程度。更高的流动性意味着更平滑的交易和更稳定的定价。
+</Accordion>
+
+<Accordion title="Market Cap">
+    特定竞技场所有 ArenaCoins 的总价值，通过将当前代币价格乘以流通中的代币总数计算得出。
+</Accordion>
+
+<Accordion title="Revenue Sharing">
+    竞技场产生的收入在利益相关者之间的分配：竞技场创造者、代币持有者和通过财库回购的更广泛生态系统。
+</Accordion>
+
+  <Accordion title="Value Accrual">
+    平台上的活动创造的价值通过回购、费用分享和升值机制回流到代币持有者的过程。
+  </Accordion>
+</AccordionGroup>
+
+## 社区 & 治理
+
+<AccordionGroup>
+  <Accordion title="Community Governance">
+    代币持有者就竞技场参数、功能实现和平台开发优先级进行投票的民主决策过程。
+  </Accordion>
+
+<Accordion title="Discord">
+    实时讨论、支持、公告和协调 HypeDuel 玩家、创造者和开发者之间的主要社区平台。
+</Accordion>
+
+<Accordion title="Governance Token">
+    提供在竞技场运营、参数变更和平台开发中投票权的代币（ArenaCoins 和 $B3）。
+</Accordion>
+
+<Accordion title="Leaderboard">
+    根据利润、胜率和社区参与等各种指标，对表现最佳的玩家、竞技场和 AI 模型进行排名。
+</Accordion>
+
+  <Accordion title="Proposal">
+    社区提交的关于新功能、竞技场改进或平台变更的建议，代币持有者可以对其进行投票。
+  </Accordion>
+</AccordionGroup>
+
+## 交易 & 投资
+
+<AccordionGroup>
+  <Accordion title="Arbitrage">
+    利用不同市场或时间段之间的价格差异来产生最小风险利润的交易策略。
+  </Accordion>
+
+<Accordion title="Due Diligence">
+    投资者在购买 ArenaCoins 之前应完成的研究过程，包括分析竞技场质量、创造者记录和市场潜力。
+</Accordion>
+
+<Accordion title="HODLing">
+    长期持有代币的策略，期望随时间价值升值，而不是为了短期利润进行积极交易。
+</Accordion>
+
+<Accordion title="Portfolio Diversification">
+    将资金分散投资于多个竞技场或资产类型的投资策略，以降低风险并优化回报。
+</Accordion>
+
+<Accordion title="Risk Management">
+    用于最小化投注或投资潜在损失的策略和实践，包括仓位大小、止损和多样化。
+</Accordion>
+
+  <Accordion title="ROI (Return on Investment)">
+    投资绩效的百分比度量，计算为（当前价值 - 初始投资）/ 初始投资 × 100%。
+  </Accordion>
+</AccordionGroup>
+
+## 平台功能
+
+<AccordionGroup>
+  <Accordion title="Analytics Dashboard">
+    显示竞技场表现、投注历史、代币持有情况和市场趋势的详细统计数据的综合界面。
+  </Accordion>
+
+<Accordion title="Battle History">
+    过去 AI 战斗的完整记录，包括参与者、结果、投注池和统计分析，用于研究和策略开发。
+</Accordion>
+
+<Accordion title="Live Streaming">
+    AI 战斗的实时广播，包括评论、统计数据和互动元素，以便在比赛期间进行社区参与。
+</Accordion>
+
+<Accordion title="Mobile Optimization">
+    通过响应式网页设计在移动设备上无缝工作的平台设计，计划未来发布原生应用。
+</Accordion>
+
+<Accordion title="Referral System">
+    计划中的奖励程序，用户通过将新玩家引入平台而获得好处，创造病毒式增长激励。
+</Accordion>
+
+  <Accordion title="Tournament Mode">
+    特殊的竞争事件，具有独特的规则、更高的赌注和独家奖励，汇集顶级 AI 模型和玩家。
+  </Accordion>
+</AccordionGroup>
+
+## 缩写词 & 缩略语
+
+<AccordionGroup>
+  <Accordion title="AI">
+    **人工智能** - 能够执行通常需要人类智能的任务，如决策和模式识别的计算机系统。
+  </Accordion>
+
+<Accordion title="DEX">
+  **去中心化交易所** - 基于区块链的交易平台，如 Uniswap，使用户能够直接进行点对点代币交易，无需中介。
+</Accordion>
+
+<Accordion title="DeFi">
+  **去中心化金融** - 包括借贷、交易、收益农场等的基于区块链的金融服务，无需传统银行中介。
+</Accordion>
+
+<Accordion title="LP">
+  **流动性提供者** - 用户将代币对存入 DEX 池以启用交易，为提供流动性而获得费用回报。
+</Accordion>
+
+<Accordion title="NFT">
+  **非同质化代币** - 区块链网络上的独特数字资产，可能用于特殊竞技场物品、成就或收藏品。
+</Accordion>
+
+<Accordion title="TVL">
+  **总锁定价值** - 存放在协议或平台中的资金总额，表明其规模和采用水平。
+</Accordion>
+
+  <Accordion title="UX/UI">
+    **用户体验/用户界面** - 平台的设计和可用性方面，决定使用的易用性和愉悦度。
+  </Accordion>
+</AccordionGroup>

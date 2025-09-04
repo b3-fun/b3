@@ -1,0 +1,29 @@
+---
+title: 设置 aggressivenessFactor
+description: 如何为您的启动选择 aggressivenessFactor（0–100）。
+lang: cn
+originalPath: bondkit/guides/set-aggressiveness.mdx
+---
+## 指南
+
+- 0–20：温和；早期和晚期买家获得的单位数量相似
+- 30–60：平衡；适度的价格上涨，典型的一般发行
+- 70–100：陡峭；早期优势明显，价格上涨更快
+
+## 经验法则
+
+- 较小的目标或紧密的社区：倾向于较高（50–80）
+- 较大的目标或更广泛的受众：倾向于较低（20–50）
+
+## 示例
+
+```ts
+const config = {
+  aggressivenessFactor: 35,
+  // ...其他参数
+};
+```
+
+<Note>
+`exponent = 1 / (1 + aggressivenessFactor/100)`。较高的攻击性增加了曲线的陡峭度，并减少了后期每单位的代币。
+</Note>

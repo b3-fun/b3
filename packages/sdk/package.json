@@ -1,6 +1,6 @@
 {
   "name": "@b3dotfun/sdk",
-  "version": "0.0.33",
+  "version": "0.0.34",
   "source": "src/index.ts",
   "main": "./dist/cjs/index.js",
   "react-native": "./dist/cjs/index.native.js",
@@ -258,7 +258,7 @@
     "lint:fix": "eslint 'src/**/*.{ts,tsx}' --fix"
   },
   "dependencies": {
-    "@b3dotfun/b3-api": "0.0.47",
+    "@b3dotfun/b3-api": "0.0.48",
     "@b3dotfun/basement-api": "0.0.11",
     "@feathersjs/authentication-client": "5.0.33",
     "@feathersjs/feathers": "5.0.33",

@@ -29,6 +29,8 @@ class Timer {
 const args = process.argv.slice(2);
 const processAllFiles = args.includes("--all");
 const updateMode = args.includes("--update");
+const sourceHashesOnly = args.includes("--source-hashes-only");
+const forceUpdateNavigation = args.includes("--force-update-navigation");
 
 // Load environment variables from .env only if not using Doppler
 if (!process.env.DOPPLER_PROJECT) {
@@ -50,13 +52,20 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+interface SourceHash {
+  sourceFile: string;
+  sourceHash: string;
+  lastUpdated: string;
+}
+
 // Configuration
 const CONFIG = {
-  languages: ["es", "pt-BR", "id", "ko", "cn", "vi", "el"], // All supported languages
+  languages: ["es", "pt-BR", "id", "ko", "cn"], // All supported languages, removed "el" and "vi" as they are not supported
   sourceDir: path.join(process.cwd(), "..", "docs"), // Root docs directory
   docsContentDir: path.join(process.cwd(), "..", "docs"), // Where the actual docs content lives
   excludeDirs: ["node_modules", ".next", "public", "scripts", "images"],
   supportedExtensions: [".mdx", ".md"],
+  sourceHashFile: path.join(process.cwd(), "..", "docs", ".source-hashes.json"), // File to store source content hashes
   // Frontmatter fields that should be translated
   translatableFrontmatter: ["title", "description"],
   // Language-specific instructions
@@ -66,8 +75,8 @@ const CONFIG = {
     id: "Indonesian/Malay (Bahasa Indonesia/Melayu)",
     ko: "Korean (한국어)",
     cn: "Simplified Chinese (简体中文)",
-    vi: "Vietnamese (Tiếng Việt)",
-    el: "Greek (Ελληνικά)",
+    // vi: "Vietnamese (Tiếng Việt)",
+    // el: "Greek (Ελληνικά)",
   },
   // Add configuration from environment variables
   batchSize: processAllFiles ? Infinity : Number(process.env.TRANSLATION_BATCH_SIZE) || 1,
@@ -118,13 +127,17 @@ async function translateText(text: string, language: string, context: string = "
         {
           role: "system",
           content: `You are a professional translator. Translate the following text to ${CONFIG.languageInstructions[language]}. 
+          CRITICAL: This is MDX content that contains HTML elements. You MUST preserve all HTML exactly as written.
+          
           Important rules:
-          1. Preserve all markdown and MDX syntax exactly as is
+          1. Preserve all markdown, MDX, and HTML syntax exactly as is - DO NOT modify HTML tags
           2. Preserve all special characters, quotes, and formatting
-          3. Only translate human-readable text
+          3. Only translate human-readable text content, NOT HTML attributes or tags
           4. Keep all technical terms in English
           5. For ${language === "cn" ? "Chinese" : language === "ko" ? "Korean" : "your"} language, ensure proper character usage and typography
-          6. Maintain the same line breaks and spacing as the original text`,
+          6. Maintain the same line breaks and spacing as the original text
+          7. NEVER wrap HTML elements in code blocks (\`\`\`html) or escape them
+          8. HTML elements like <iframe>, <img>, <Card>, etc. must remain as raw HTML, not code blocks`,
         },
         {
           role: "user",
@@ -142,6 +155,29 @@ async function translateText(text: string, language: string, context: string = "
   }
 }
 
+// Helper function to ensure all pages have proper language prefix
+function ensureLanguagePrefix(pages: (string | NavigationItem)[], language: string): (string | NavigationItem)[] {
+  return pages.map(page => {
+    if (typeof page === "string") {
+      // Handle special paths that shouldn't be prefixed
+      if (page.startsWith("http") || page.startsWith("redirect/")) {
+        return page;
+      }
+      // Remove any existing language prefix and ensure clean path
+      const cleanPath = page.replace(/^[a-z]{2}(-[A-Z]{2})?\//, "");
+      // Add the new language prefix
+      return `${language}/${cleanPath}`;
+    } else {
+      // For nested items, recursively ensure language prefix
+      const translatedNestedItem = { ...page };
+      if (translatedNestedItem.pages) {
+        translatedNestedItem.pages = ensureLanguagePrefix(translatedNestedItem.pages, language);
+      }
+      return translatedNestedItem;
+    }
+  });
+}
+
 async function translateNavigationItem(item: NavigationItem, language: string): Promise<NavigationItem> {
   const timer = new Timer("translateNavigationItem");
   const translatedItem: NavigationItem = { ...item };
@@ -155,19 +191,20 @@ async function translateNavigationItem(item: NavigationItem, language: string): 
   }
 
   if (item.pages) {
+    // First translate any text content in nested items
     translatedItem.pages = await Promise.all(
       item.pages.map(async page => {
         if (typeof page === "string") {
-          // Remove any existing language prefix
-          const cleanPath = page.replace(/^[a-z]{2}\//, "");
-          // Add the new language prefix
-          return `${language}/${cleanPath}`;
+          return page; // Will be handled by ensureLanguagePrefix
         } else {
           // Recursively translate nested navigation items
           return await translateNavigationItem(page, language);
         }
       }),
     );
+    
+    // Then ensure all pages have proper language prefix
+    translatedItem.pages = ensureLanguagePrefix(translatedItem.pages, language);
   }
 
   timer.log();
@@ -182,8 +219,12 @@ async function translateNavigation(language: string): Promise<void> {
     const docs = JSON.parse(docsContent);
     timer.log("read docs.json");
 
-    // Get the original navigation structure
-    const originalNavigation = docs.navigation;
+    // Get the original navigation structure (English)
+    const englishNav = docs.navigation.languages?.find(l => l.language === "en");
+    if (!englishNav) {
+      throw new Error("English navigation not found in docs.json");
+    }
+    const originalTabs = englishNav.tabs;
 
     // Find existing language entry if it exists
     const existingLangEntry = docs.navigation.languages?.find((l: any) => l.language === language);
@@ -191,33 +232,108 @@ async function translateNavigation(language: string): Promise<void> {
     // If we have an existing entry, use it as the base
     const translatedNavigation = existingLangEntry || {
       language,
+      name: CONFIG.languageInstructions[language], // Add proper language name
       tabs: [],
       global: {},
     };
 
-    // Only translate tabs if they don't exist in the language entry
-    if (!translatedNavigation.tabs?.length && originalNavigation.tabs?.length) {
+    // Always translate tabs if force update is enabled, otherwise only if they don't exist or are empty
+    if (forceUpdateNavigation || (!translatedNavigation.tabs?.length && originalTabs?.length)) {
+      console.log(`Translating navigation tabs for ${language}...`);
+      
+      // Create a deep copy of the original tabs to avoid modifying the source
+      const tabsToTranslate = JSON.parse(JSON.stringify(originalTabs));
+      
+      // Translate and ensure proper language prefixing
       translatedNavigation.tabs = await Promise.all(
-        originalNavigation.tabs.map(tab => translateNavigationItem(tab, language)),
+        tabsToTranslate.map(async tab => {
+          const translatedTab = await translateNavigationItem(tab, language);
+          
+          // Ensure all page references in the tab have proper language prefixes
+          if (translatedTab.pages) {
+            translatedTab.pages = ensureLanguagePrefix(translatedTab.pages, language);
+          }
+          
+          return translatedTab;
+        })
       );
+      
       timer.log("translated tabs");
     } else {
-      console.log("Preserving existing tabs for language:", language);
+      console.log(`Navigation tabs already exist for ${language} with ${translatedNavigation.tabs?.length || 0} items`);
+      
+      // Even if tabs exist, we need to ensure language prefixes are correct
+      if (translatedNavigation.tabs?.length) {
+        console.log(`Ensuring language prefixes are correct for existing ${language} navigation...`);
+        translatedNavigation.tabs = translatedNavigation.tabs.map(tab => {
+          // Recursively apply language prefix to all nested items
+          const processTab = (tabItem: any): any => {
+            if (tabItem.pages) {
+              tabItem.pages = ensureLanguagePrefix(tabItem.pages, language);
+            }
+            if (tabItem.groups) {
+              tabItem.groups = tabItem.groups.map((group: any) => processTab(group));
+            }
+            if (tabItem.menu) {
+              tabItem.menu = tabItem.menu.map((menuItem: any) => processTab(menuItem));
+            }
+            return tabItem;
+          };
+          return processTab(tab);
+        });
+        timer.log("ensured language prefixes");
+      }
+      
+      if (!forceUpdateNavigation) {
+        console.log("Use --force-update-navigation to retranslate existing navigation");
+      }
     }
 
-    // Only translate global anchors if they don't exist in the language entry
-    if (!translatedNavigation.global?.anchors?.length && originalNavigation.global?.anchors?.length) {
+    // CRITICAL: Always ensure language prefixes are applied to ALL navigation structures
+    if (translatedNavigation.tabs?.length) {
+      console.log(`Final pass: Ensuring ALL pages have ${language}/ prefix...`);
+      translatedNavigation.tabs = translatedNavigation.tabs.map(tab => {
+        const processTab = (tabItem: any): any => {
+          if (tabItem.pages) {
+            tabItem.pages = tabItem.pages.map((page: any) => {
+              if (typeof page === "string" && !page.startsWith("http") && !page.startsWith("redirect/")) {
+                const cleanPath = page.replace(/^[a-z]{2}(-[A-Z]{2})?\//, "");
+                return `${language}/${cleanPath}`;
+              }
+              return page;
+            });
+          }
+          if (tabItem.groups) {
+            tabItem.groups = tabItem.groups.map((group: any) => processTab(group));
+          }
+          if (tabItem.menu) {
+            tabItem.menu = tabItem.menu.map((menuItem: any) => processTab(menuItem));
+          }
+          return tabItem;
+        };
+        return processTab(tab);
+      });
+      timer.log("final language prefix pass");
+    }
+
+    // Handle global anchors - these might need translation too
+    if (englishNav.global?.anchors) {
+      const translatedAnchors = await Promise.all(
+        englishNav.global.anchors.map(async anchor => ({
+          ...anchor,
+          anchor: await translateText(anchor.anchor, language, "anchor")
+        }))
+      );
+      
       translatedNavigation.global = {
-        anchors: await Promise.all(
-          originalNavigation.global.anchors.map(async anchor => ({
-            ...anchor,
-            anchor: await translateText(anchor.anchor, language, "anchor"),
-          })),
-        ),
+        anchors: translatedAnchors
       };
       timer.log("translated anchors");
     } else {
-      console.log("Preserving existing anchors for language:", language);
+      console.log(`Global anchors already exist for ${language}`);
+      if (!forceUpdateNavigation) {
+        console.log("Use --force-update-navigation to retranslate existing anchors");
+      }
     }
 
     // Initialize languages array if needed
@@ -274,7 +390,11 @@ async function translateContent(content: string, language: string): Promise<stri
       messages: [
         {
           role: "system",
-          content: `You are a professional translator. Translate the following content to ${language} while preserving all markdown and MDX syntax, code blocks, and special formatting. Do not translate:
+          content: `You are a professional translator. Translate the following content to ${language} while preserving all markdown and MDX syntax, code blocks, and special formatting. 
+          
+          CRITICAL: This is MDX content that contains HTML elements. You MUST preserve all HTML exactly as written - DO NOT wrap HTML in code blocks.
+          
+          Do not translate:
           1. Code examples
           2. Variable names
           3. Technical terms
@@ -283,7 +403,9 @@ async function translateContent(content: string, language: string): Promise<stri
           6. Component names
           7. Configuration keys
           8. Command line commands
-          9. HTML/JSX tags and attributes`,
+          9. HTML/JSX tags and attributes
+          
+          NEVER wrap HTML elements like <iframe>, <img>, <Card>, etc. in code blocks. Keep them as raw HTML.`,
         },
         {
           role: "user",
@@ -299,6 +421,42 @@ async function translateContent(content: string, language: string): Promise<stri
     console.error("Translation error:", error);
     throw error;
   }
+}
+
+async function loadSourceHashes(): Promise<SourceHash[]> {
+  try {
+    const content = await fs.readFile(CONFIG.sourceHashFile, "utf-8");
+    return JSON.parse(content);
+  } catch (error) {
+    // If file doesn't exist or is invalid, return empty array
+    return [];
+  }
+}
+
+async function saveSourceHashes(hashes: SourceHash[]): Promise<void> {
+  await fs.writeFile(CONFIG.sourceHashFile, JSON.stringify(hashes, null, 2));
+}
+
+async function updateSourceHash(sourceFile: string, content: string): Promise<string> {
+  const sourceData = matter(content);
+  const hash = Buffer.from(sourceData.content).toString("base64");
+
+  const hashes = await loadSourceHashes();
+  const existingIndex = hashes.findIndex(h => h.sourceFile === sourceFile);
+  const hashEntry: SourceHash = {
+    sourceFile,
+    sourceHash: hash,
+    lastUpdated: new Date().toISOString(),
+  };
+
+  if (existingIndex >= 0) {
+    hashes[existingIndex] = hashEntry;
+  } else {
+    hashes.push(hashEntry);
+  }
+
+  await saveSourceHashes(hashes);
+  return hash;
 }
 
 async function shouldTranslateFile(sourcePath: string, targetPath: string): Promise<boolean> {
@@ -317,15 +475,29 @@ async function shouldTranslateFile(sourcePath: string, targetPath: string): Prom
       return false;
     }
 
-    // In update mode, check modification dates
-    const sourceStats = await fs.stat(sourcePath);
-    const targetStats = await fs.stat(targetPath);
+    // In update mode, compare source content with stored hash
+    const sourceContent = await fs.readFile(sourcePath, "utf-8");
+    const sourceData = matter(sourceContent);
+    const currentSourceHash = Buffer.from(sourceData.content).toString("base64");
 
-    const shouldUpdate = sourceStats.mtime > targetStats.mtime;
+    // Load stored hashes
+    const hashes = await loadSourceHashes();
+    const storedHash = hashes.find(h => h.sourceFile === path.relative(CONFIG.docsContentDir, sourcePath));
+
+    console.log(`
+      sourcePath: ${sourcePath}      
+      currentSourceHash: ${currentSourceHash.slice(0, 20)}...
+      
+      storedHash: ${storedHash?.sourceHash.slice(0, 20) || "not found"}...
+      lastUpdated: ${storedHash?.lastUpdated || "never"}
+    `);
+
+    // If no stored hash or hash differs, we should update
+    const shouldUpdate = !storedHash || currentSourceHash !== storedHash.sourceHash;
     if (shouldUpdate) {
-      console.log(`Source file modified, updating: ${path.relative(CONFIG.docsContentDir, sourcePath)}`);
+      console.log(`Source content changed, updating: ${path.relative(CONFIG.docsContentDir, sourcePath)}`);
     } else {
-      console.log(`No changes detected, skipping: ${path.relative(CONFIG.docsContentDir, targetPath)}`);
+      console.log(`No content changes detected, skipping: ${path.relative(CONFIG.docsContentDir, targetPath)}`);
     }
 
     return shouldUpdate;
@@ -382,6 +554,9 @@ async function processFile(filePath: string, language: string): Promise<void> {
     const translatedContent = await translateContent(markdownContent, language);
     timer.log("translated content");
 
+    // Update source hash in our central storage
+    await updateSourceHash(relativePath, content);
+
     // Update frontmatter for translated version
     const updatedFrontmatter = {
       ...translatedFrontmatter,
@@ -405,7 +580,63 @@ async function processFile(filePath: string, language: string): Promise<void> {
   }
 }
 
+function showHelp(): void {
+  console.log(`
+B3 Documentation Translation Script
+
+Usage:
+  pnpm run translate [options]
+
+Options:
+  --all                    Process ALL files (not just changed ones)
+  --update                 Update existing translated files if source changed
+  --force-update-navigation Force retranslation of navigation structure
+  --source-hashes-only     Only update source file hashes (no translation)
+  --help, -h               Show this help message
+
+Environment Variables:
+  TRANSLATION_DRY_RUN=true Run in dry-run mode (preview only, no changes)
+  TRANSLATION_BATCH_SIZE=N Process N files at a time (default: 1)
+
+Examples:
+  pnpm run translate                           # Translate only new/changed files
+  pnpm run translate --all                     # Translate all files
+  pnpm run translate --update                  # Update existing files if source changed
+  pnpm run translate --force-update-navigation # Force retranslate navigation
+  pnpm run translate --source-hashes-only      # Only update source hashes
+  TRANSLATION_DRY_RUN=true pnpm run translate  # Preview what would be translated
+
+Language Support:
+  - Spanish (es)
+  - Brazilian Portuguese (pt-BR) 
+  - Indonesian/Malay (id)
+  - Korean (ko)
+  - Simplified Chinese (cn)
+
+What Gets Translated:
+  - Page titles and descriptions
+  - Navigation structure and labels
+  - All human-readable text content
+  - Preserves HTML elements, code blocks, and technical terms
+
+HTML Preservation:
+  The script now properly preserves HTML elements like <iframe>, <img>, <br />, etc.
+  without wrapping them in code blocks. If you encounter files with HTML escaping
+  issues, use the cleanup script:
+  
+  pnpm run clean-html-escaped --dry-run    # Preview affected files
+  pnpm run clean-html-escaped --delete     # Delete affected files
+  pnpm run translate --all                 # Re-translate with fixed prompts
+`);
+}
+
 async function main() {
+  // Handle help flag
+  if (process.argv.includes("--help") || process.argv.includes("-h")) {
+    showHelp();
+    process.exit(0);
+  }
+
   const totalTimer = new Timer("total");
   try {
     const files = await glob("**/*{.md,.mdx}", {
@@ -424,9 +655,41 @@ async function main() {
     }
 
     console.log(`Found ${files.length} files to process`);
-    console.log(`Mode: ${CONFIG.dryRun ? "DRY RUN" : "LIVE"}`);
+    console.log(`Mode: ${CONFIG.dryRun ? "DRY RUN" : "LIVE"}${sourceHashesOnly ? " (SOURCE HASHES ONLY)" : ""}`);
     console.log(`Processing: ${processAllFiles ? "ALL FILES" : `${CONFIG.batchSize} file(s)`}`);
     console.log(`Update mode: ${updateMode ? "ON" : "OFF"}`);
+
+    const filesToProcess = processAllFiles ? files : files.slice(0, CONFIG.batchSize);
+
+    if (sourceHashesOnly) {
+      // Only process source files and update their hashes
+      console.log("\nUpdating source file hashes...");
+      let hashesUpdated = 0;
+
+      for (const file of filesToProcess) {
+        const relativePath = path.relative(CONFIG.docsContentDir, file);
+        console.log(`\nProcessing: ${relativePath}`);
+
+        try {
+          const content = await fs.readFile(file, "utf-8");
+          if (CONFIG.dryRun) {
+            console.log(`Would update hash for: ${relativePath}`);
+            hashesUpdated++;
+          } else {
+            await updateSourceHash(relativePath, content);
+            hashesUpdated++;
+            console.log(`✓ Updated hash for: ${relativePath}`);
+          }
+        } catch (error) {
+          console.error(`Error processing ${relativePath}:`, error);
+        }
+      }
+
+      console.log(`\nSource hash update complete:`);
+      console.log(`- Updated: ${hashesUpdated} files`);
+      console.log(`- Skipped: ${files.length - hashesUpdated} files`);
+      return;
+    }
 
     // First, translate the navigation for all languages
     for (const language of CONFIG.languages) {
@@ -434,13 +697,13 @@ async function main() {
     }
 
     // Then process the documentation files for each language
-    const filesToProcess = processAllFiles ? files : files.slice(0, CONFIG.batchSize);
-
     let totalProcessed = 0;
     let totalSkipped = 0;
 
     // Process each language independently
-    for (const language of CONFIG.languages) {
+    // // TEMPORARY: Only process Spanish
+    // for (const language of ["es", "pt-BR"]) {
+      for (const language of CONFIG.languages) {
       console.log(`\nProcessing language: ${language}`);
       let processedCount = 0;
       let skippedCount = 0;

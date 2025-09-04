@@ -1,0 +1,157 @@
+---
+title: B3 Unity SDK
+description: 将您的 Unity 游戏集成到 basement 中，使用 B3 Unity SDK，它让您可以轻松地从 Unity 内部访问所有启动器功能，作为简单的函数
+lang: cn
+originalPath: basement/unity-guide.mdx
+---
+## 特性
+
+B3 Unity SDK 为 Unity 开发者提供了全面的集成能力：
+
+<CardGroup cols={1}>
+  <Card title="会话管理" icon="user-check">
+    该 SDK 自动且无缝地处理用户认证。
+  </Card>
+  
+  <Card title="API 作为函数" icon="code">
+    使用所有启动器 API，支持基于回调和基于 async/await 的调用。
+  </Card>
+  
+  <Card title="WebGL 的 Webhooks" icon="webhook">
+    处理启动器客户端 webhooks，并将它们解析并传播到您自己的 C# 代码中。
+  </Card>
+</CardGroup>
+
+## 安装和使用
+
+<Steps>
+<Step title="下载 SDK">
+  前往 GitHub 仓库并下载最新版本。
+  
+  <Card title="获取 Unity SDK" icon="download" href="https://github.com/b3-fun/b3-unity-sdk" cta="从 GitHub 下载" horizontal>
+    访问官方 B3 Unity SDK 仓库，获取安装说明
+  </Card>
+</Step>
+
+<Step title="安装到 Unity 项目">
+  按照 GitHub 上的设置指南说明安装 SDK 到您的 Unity 项目。
+  
+  <Note>
+  GitHub 仓库包含详细的安装说明和设置要求。
+  </Note>
+</Step>
+
+<Step title="初始化 SDK">
+  安装 SDK 并按照设置指南后，您将能够轻松调用所有 API 作为函数。
+  
+  <Check>
+  您的 Unity 项目现在已准备好与 B3 启动器集成！
+  </Check>
+</Step>
+</Steps>
+
+## 代码示例
+
+### 触发规则引擎
+
+以下是如何从您的 Unity 游戏内触发规则引擎的示例：
+
+```csharp Unity C# 示例
+B3LauncherClient.TriggerRulesEngine(new B3LauncherClient.TriggerRulesEngineBody
+{
+    launcherJwt = B3Instance.Instance.SessionJWT ?? jwtInput.text,
+    trigger = "open-tip-modal",
+    otherWallet = otherWalletInput.text,
+}, null);
+```
+
+### 会话管理
+
+SDK 自动处理用户会话：
+
+```csharp 会话示例
+// 访问当前会话 JWT
+string sessionToken = B3Instance.Instance.SessionJWT;
+
+// 检查用户是否已认证
+if (B3Instance.Instance.IsAuthenticated)
+{
+    // 用户已登录并准备与 B3 服务交互
+    Debug.Log("用户成功认证");
+}
+```
+
+## API 集成
+
+Unity SDK 提供了对所有 B3 启动器 API 的无缝访问：
+
+<AccordionGroup>
+<Accordion title="基于回调的调用">
+  传统的回调模式处理 API 响应：
+  
+  ```csharp
+  B3LauncherClient.SomeAPICall(requestData, (response) => {
+      // 处理响应
+      Debug.Log("API 调用完成");
+  });
+  ```
+</Accordion>
+
+<Accordion title="Async/Await 调用">
+  更干净的代码的现代 async/await 模式：
+  
+  ```csharp
+  public async void CallAPI()
+  {
+      var response = await B3LauncherClient.SomeAPICallAsync(requestData);
+      // 处理响应
+      Debug.Log("API 调用完成");
+  }
+  ```
+</Accordion>
+
+<Accordion title="WebGL Webhooks">
+  在 WebGL 构建中处理启动器事件：
+  
+  ```csharp
+  // 注册 webhook 处理程序
+  B3Instance.Instance.OnWebhookReceived += HandleWebhook;
+  
+  private void HandleWebhook(WebhookData data)
+  {
+      // 处理传入的 webhook 数据
+      Debug.Log($"收到 webhook: {data.type}");
+  }
+  ```
+</Accordion>
+</AccordionGroup>
+
+## 下一步
+
+<CardGroup cols={2}>
+  <Card title="游戏启动器指南" icon="rocket" href="/basement/game-launcher">
+    了解如何与 BSMNT 游戏启动器集成
+  </Card>
+  
+  <Card title="BSMNT API 文档" icon="book" href="https://docs.basement.fun/api">
+    所有可用端点的完整 API 文档
+  </Card>
+  
+  <Card title="Unity 文档" icon="external-link" href="https://docs.unity3d.com/">
+    官方 Unity 文档和资源
+  </Card>
+  
+  <Card title="示例项目" icon="folder" href="https://github.com/b3-fun/unity-examples">
+    使用 B3 SDK 的示例 Unity 项目
+  </Card>
+</CardGroup>
+
+## 支持
+
+<Info>
+如需技术支持、报告错误或功能请求，请访问 GitHub 仓库或联系我们的开发者社区。
+</Info>
+
+<Card title="获取 Unity SDK 支持" icon="help-circle" href="https://github.com/b3-fun/b3-unity-sdk/issues" cta="GitHub 问题" horizontal>
+  报告问题或从开发者社区获取帮助
+</Card>

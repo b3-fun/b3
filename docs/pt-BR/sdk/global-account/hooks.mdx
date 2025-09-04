@@ -1,0 +1,486 @@
+---
+title: React Hooks
+description: Referência completa para hooks React de Contas Globais B3
+lang: pt-BR
+originalPath: sdk/global-account/hooks.mdx
+---
+## Ganchos de Autenticação
+
+### useB3
+
+O gancho principal para acessar o estado de autenticação da Conta Global e ações.
+
+```tsx
+import { useB3 } from "@b3dotfun/sdk/global-account/react";
+
+function AuthComponent() {
+  const { 
+    account,           // Conta global atual
+    isAuthenticated,   // Status de autenticação
+    isLoading,         // Estado de carregamento
+    signOut,           // Função de sair
+    refreshAccount     // Atualizar dados da conta
+  } = useB3();
+
+  return (
+    <div>
+      {isLoading && <p>Carregando...</p>}
+      
+      {isAuthenticated ? (
+        <div>
+          <h3>Bem-vindo(a), {account?.displayName}!</h3>
+          <p>ID da Conta: {account?.id}</p>
+          <p>Email: {account?.email}</p>
+          <button onClick={signOut}>Sair</button>
+        </div>
+      ) : (
+        <p>Por favor, faça login para continuar</p>
+      )}
+    </div>
+  );
+}
+```
+
+#### Valores de Retorno
+
+| Propriedade | Tipo | Descrição |
+|----------|------|-------------|
+| `account` | `GlobalAccount \| null` | Conta autenticada atual |
+| `isAuthenticated` | `boolean` | Se o usuário está autenticado |
+| `isLoading` | `boolean` | Se a verificação de autenticação está em andamento |
+| `signOut` | `() => Promise<void>` | Função para sair do usuário atual |
+| `refreshAccount` | `() => Promise<void>` | Função para atualizar os dados da conta |
+
+### useAccountWallet
+
+Acessar informações da carteira para a conta autenticada.
+
+```tsx
+import { useAccountWallet } from "@b3dotfun/sdk/global-account/react";
+
+function WalletComponent() {
+  const { 
+    wallet,       // Informações da carteira
+    isConnected,  // Status de conexão
+    connect,      // Função de conectar carteira
+    disconnect    // Função de desconectar carteira
+  } = useAccountWallet();
+
+  return (
+    <div>
+      {isConnected ? (
+        <div>
+          <p>Endereço: {wallet?.address}</p>
+          <p>Chain: {wallet?.chainId}</p>
+          <p>Saldo: {wallet?.balance} ETH</p>
+          <button onClick={disconnect}>Desconectar</button>
+        </div>
+      ) : (
+        <button onClick={connect}>Conectar Carteira</button>
+      )}
+    </div>
+  );
+}
+```
+
+## Ganchos de Permissão
+
+### usePermissions
+
+Gerenciar e verificar permissões de chave de sessão.
+
+```tsx
+import { usePermissions } from "@b3dotfun/sdk/global-account/react";
+
+function PermissionsComponent() {
+  const { 
+    permissions,      // Permissões atuais
+    hasPermissions,   // Se o usuário possui permissões ativas
+    isExpired,        // Se as permissões estão expiradas
+    checkPermission   // Verificar permissão específica
+  } = usePermissions();
+
+  const canInteractWithContract = checkPermission("0x...");
+
+  return (
+    <div>
+      <h3>Status da Permissão</h3>
+      
+      {hasPermissions ? (
+        <div>
+          <p>✅ Permissões Ativas</p>
+          <p>Expira: {permissions?.endDate.toLocaleDateString()}</p>
+          <p>Contratos: {permissions?.approvedTargets.length}</p>
+          
+          {isExpired && <p>⚠️ Permissões expiradas</p>}
+          
+          <div>
+            <p>Pode interagir com o contrato: {canInteractWithContract ? '✅' : '❌'}</p>
+          </div>
+        </div>
+      ) : (
+        <p>Sem permissões ativas</p>
+      )}
+    </div>
+  );
+}
+```
+
+### useRequestPermissions
+
+Solicitar novas permissões para chaves de sessão.
+
+```tsx
+import { useRequestPermissions } from "@b3dotfun/sdk/global-account/react";
+
+function RequestPermissionsComponent() {
+  const { 
+    requestPermissions, 
+    isLoading, 
+    error,
+    reset 
+  } = useRequestPermissions();
+
+  const handleRequest = async () => {
+    try {
+      const result = await requestPermissions({
+        chain: { id: 8333, name: "B3" },
+        sessionKeyAddress: "0x...",
+        permissions: {
+          approvedTargets: ["0x..."],
+          startDate: new Date(),
+          endDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
+          nativeTokenLimitPerTransaction: 0.01,
+        },
+      });
+
+      if (result.success) {
+        console.log("Permissões concedidas!");
+      }
+    } catch (err) {
+      console.error("Falha na solicitação de permissão:", err);
+    }
+  };
+
+  return (
+    <div>
+      <button 
+        onClick={handleRequest}
+        disabled={isLoading}
+      >
+        {isLoading ? "Solicitando..." : "Solicitar Permissões"}
+      </button>
+      
+      {error && (
+        <div className="error">
+          Erro: {error.message}
+          <button onClick={reset}>Tentar Novamente</button>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+### useRevokePermissions
+
+Revogar permissões existentes.
+
+```tsx
+import { useRevokePermissions } from "@b3dotfun/sdk/global-account/react";
+
+function RevokePermissionsComponent() {
+  const { revokePermissions, isLoading, error } = useRevokePermissions();
+
+  const handleRevoke = async () => {
+    try {
+      await revokePermissions({
+        sessionKeyAddress: "0x...",
+        chain: { id: 8333, name: "B3" },
+      });
+      console.log("Permissões revogadas com sucesso");
+    } catch (err) {
+      console.error("Falha ao revogar permissões:", err);
+    }
+  };
+
+  return (
+    <button 
+      onClick={handleRevoke}
+      disabled={isLoading}
+    >
+      {isLoading ? "Revogando..." : "Revogar Permissões"}
+    </button>
+  );
+}
+```
+
+## Ganchos de Gerenciamento de Ativos
+
+### useAccountAssets
+
+Recuperar e gerenciar os ativos digitais do usuário.
+
+```tsx
+import { useAccountAssets } from "@b3dotfun/sdk/global-account/react";
+
+function AssetsComponent() {
+  const { 
+    assets,        // Ativos do usuário
+    isLoading,     // Estado de carregamento
+    error,         // Estado de erro
+    refreshAssets  // Função de atualizar ativos
+  } = useAccountAssets();
+
+  if (isLoading) return <div>Carregando ativos...</div>;
+  if (error) return <div>Erro ao carregar ativos: {error.message}</div>;
+
+  return (
+    <div>
+      <h3>Seus Ativos</h3>
+      <button onClick={refreshAssets}>Atualizar</button>
+      
+      {assets?.map((asset) => (
+        <div key={asset.id} className="asset-item">
+          <img src={asset.imageUrl} alt={asset.name} />
+          <h4>{asset.name}</h4>
+          <p>{asset.description}</p>
+          <p>Valor: {asset.value} {asset.currency}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+## Ganchos de Gerenciamento de Modais
+
+### useModal
+
+Controlar modais B3 programaticamente.
+
+```tsx
+import { useModal } from "@b3dotfun/sdk/global-account/react";
+
+function ModalControlComponent() {
+  const { 
+    openModal, 
+    closeModal, 
+    isModalOpen,
+    currentModal 
+  } = useModal();
+
+  const handleOpenAuth = () => {
+    openModal('authentication', {
+      provider: { strategy: 'google' },
+      partnerId: 'your-partner-id'
+    });
+  };
+
+  const handleOpenPermissions = () => {
+    openModal('permissions', {
+      sessionKeyAddress: '0x...',
+      permissions: {
+        approvedTargets: ['0x...'],
+        nativeTokenLimitPerTransaction: 0.01
+      }
+    });
+  };
+
+  return (
+    <div>
+      <p>Modal atual: {currentModal || 'Nenhum'}</p>
+      <p>Modal aberto: {isModalOpen ? 'Sim' : 'Não'}</p>
+      
+      <button onClick={handleOpenAuth}>Abrir Modal de Autenticação</button>
+      <button onClick={handleOpenPermissions}>Abrir Modal de Permissões</button>
+      <button onClick={closeModal}>Fechar Modal</button>
+    </div>
+  );
+}
+```
+
+## Ganchos de Navegação
+
+### useNavigation
+
+Manusear a navegação dentro das aplicações B3.
+
+```tsx
+import { useNavigation } from "@b3dotfun/sdk/global-account/react";
+
+function NavigationComponent() {
+  const { 
+    navigate, 
+    canGoBack, 
+    goBack,
+    currentPath 
+  } = useNavigation();
+
+  return (
+    <div>
+      <p>Caminho atual: {currentPath}</p>
+      
+      <button onClick={() => navigate('/dashboard')}>
+        Ir para Dashboard
+      </button>
+      
+      <button onClick={() => navigate('/profile')}>
+        Ir para Perfil
+      </button>
+      
+      {canGoBack && (
+        <button onClick={goBack}>
+          Voltar
+        </button>
+      )}
+    </div>
+  );
+}
+```
+
+## Ganchos de Configuração
+
+### useB3Config
+
+Acessar configuração e definições de ambiente B3.
+
+```tsx
+import { useB3Config } from "@b3dotfun/sdk/global-account/react";
+
+function ConfigComponent() {
+  const { 
+    environment,     // 'production' | 'development'
+    apiUrl,          // URL da API atual
+    partnerId,       // Seu ID de parceiro
+    features,        // Recursos disponíveis
+    updateConfig     // Atualizar configuração
+  } = useB3Config();
+
+  return (
+    <div>
+      <h3>Configuração B3</h3>
+      <p>Ambiente: {environment}</p>
+      <p>URL da API: {apiUrl}</p>
+      <p>ID do Parceiro: {partnerId}</p>
+      
+      <h4>Recursos Disponíveis:</h4>
+      <ul>
+        {features.map(feature => (
+          <li key={feature}>{feature}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+```
+
+## Composição de Ganchos
+
+### Exemplo de Gancho Personalizado
+
+Combinar múltiplos ganchos para funcionalidades complexas:
+
+```tsx
+import { useB3, usePermissions, useAccountWallet } from "@b3dotfun/sdk/global-account/react";
+
+function useGameAuth() {
+  const { account, isAuthenticated } = useB3();
+  const { hasPermissions, isExpired } = usePermissions();
+  const { wallet, isConnected } = useAccountWallet();
+
+  const isGameReady = isAuthenticated && hasPermissions && !isExpired && isConnected;
+  
+  const gameAuthStatus = {
+    account: !!account,
+    permissions: hasPermissions && !isExpired,
+    wallet: isConnected,
+    ready: isGameReady
+  };
+
+  return {
+    account,
+    wallet,
+    isGameReady,
+    gameAuthStatus
+  };
+}
+
+// Uso
+function GameComponent() {
+  const { isGameReady, gameAuthStatus } = useGameAuth();
+
+  if (!isGameReady) {
+    return (
+      <div>
+        <h3>Configuração Necessária</h3>
+        <ul>
+          <li>Conta: {gameAuthStatus.account ? '✅' : '❌'}</li>
+          <li>Permissões: {gameAuthStatus.permissions ? '✅' : '❌'}</li>
+          <li>Carteira: {gameAuthStatus.wallet ? '✅' : '❌'}</li>
+        </ul>
+      </div>
+    );
+  }
+
+  return <div>🎮 Jogo Pronto!</div>;
+}
+```
+
+## Suporte a TypeScript
+
+Todos os ganchos incluem suporte completo a TypeScript:
+
+```typescript
+import type { 
+  GlobalAccount, 
+  Permissions, 
+  WalletInfo 
+} from "@b3dotfun/sdk/global-account/types";
+
+// Os tipos de retorno dos ganchos são totalmente tipados
+const { account }: { account: GlobalAccount | null } = useB3();
+const { permissions }: { permissions: Permissions | null } = usePermissions();
+const { wallet }: { wallet: WalletInfo | null } = useAccountWallet();
+```
+
+## Tratamento de Erros
+
+Melhores práticas para o tratamento de erros com ganchos:
+
+```tsx
+function ErrorHandlingExample() {
+  const { account, isAuthenticated } = useB3();
+  const { requestPermissions, error: permissionError } = useRequestPermissions();
+  const { assets, error: assetError } = useAccountAssets();
+
+  // Tratar erros específicos
+  useEffect(() => {
+    if (permissionError) {
+      console.error('Erro de permissão:', permissionError);
+      // Mostrar mensagem de erro amigável ao usuário
+    }
+    
+    if (assetError) {
+      console.error('Erro ao carregar ativos:', assetError);
+      // Tentar novamente ou mostrar UI de fallback
+    }
+  }, [permissionError, assetError]);
+
+  return (
+    <div>
+      {/* Seu JSX de componente */}
+    </div>
+  );
+}
+```
+
+## Próximos Passos
+
+<CardGroup cols={2}>
+
+<Card title="Exemplos" icon="code" href="/sdk/global-account/examples">
+  Veja exemplos completos usando esses ganchos.
+</Card>
+
+</CardGroup>

@@ -1,0 +1,361 @@
+---
+title: 组件
+description: 用于无缝加密支付、NFT 购买和自定义智能合约交互的 React 组件
+lang: cn
+originalPath: anyspend/components.mdx
+---
+## 核心组件
+
+### `<AnySpend>`
+
+用于代币到代币交换和法币通道的主要界面组件。
+
+```tsx title="基本用法" icon="react"
+// https://github.com/b3-fun/b3/blob/main/packages/sdk/src/anyspend/react/components/AnySpend.tsx
+import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
+
+<AnySpend
+  mode="modal"
+  defaultActiveTab="crypto"
+  destinationTokenAddress="0x..."
+  destinationTokenChainId={8333}
+  recipientAddress="0x..."
+  hideTransactionHistoryButton={false}
+/>;
+```
+
+#### 属性
+
+<ParamField path="mode" type="'modal' | 'page'" default="'modal'">
+  以模态覆盖或全页显示
+</ParamField>
+
+<ParamField path="defaultActiveTab" type="'crypto' | 'fiat'" default="'crypto'">
+  初始支付方式标签页
+</ParamField>
+
+<ParamField path="destinationTokenAddress" type="string">
+  购买模式的目标代币地址
+</ParamField>
+
+<ParamField path="destinationTokenChainId" type="number">
+  目标代币的链 ID
+</ParamField>
+
+<ParamField path="recipientAddress" type="string">
+  接收者钱包地址
+</ParamField>
+
+<ParamField path="hideTransactionHistoryButton" type="boolean" default="false">
+  隐藏交易历史访问按钮
+</ParamField>
+
+<ParamField path="loadOrder" type="string">
+  通过 ID 加载特定订单
+</ParamField>
+
+#### 使用示例
+
+<Tabs>
+<Tab title="基础代币交换">
+  ```tsx
+  <AnySpend
+    mode="page"
+    recipientAddress={userWalletAddress}
+  />
+  ```
+</Tab>
+
+<Tab title="法币到加密货币通道">
+  ```tsx
+  <AnySpend
+    defaultActiveTab="fiat"
+    destinationTokenAddress="0xA0b86a33E6Fb6Dd9a9B3d8B5FEb2b3C8e7D9Ff1E"
+    destinationTokenChainId={8333}
+    recipientAddress={userWalletAddress}
+  />
+  ```
+</Tab>
+</Tabs>
+
+---
+
+### `<AnySpendNFTButton>`
+
+具有内置支付处理的简化 NFT 购买按钮组件。
+
+```tsx title="NFT 购买按钮" icon="shopping-cart"
+import { AnySpendNFTButton } from "@b3dotfun/sdk/anyspend/react";
+
+<AnySpendNFTButton nftContract={nftContractDetails} recipientAddress="0x..." />;
+```
+
+#### 属性
+
+<ParamField path="nftContract" type="NFTContract" required>
+  NFT 合约配置对象
+</ParamField>
+
+<ParamField path="recipientAddress" type="string" required>
+  接收 NFT 的钱包地址
+</ParamField>
+
+#### NFTContract 接口
+
+```typescript title="类型定义" icon="code"
+interface NFTContract {
+  chainId: number; // 区块链网络 ID
+  contractAddress: string; // NFT 合约地址
+  price: string; // 价格，以 wei 计
+  priceFormatted: string; // 人类可读的价格
+  currency: {
+    chainId: number;
+    address: string; // 代币合约地址（对于原生 ETH 为 0x0）
+    name: string;
+    symbol: string;
+    decimals: number;
+    metadata: {
+      logoURI: string;
+    };
+  };
+  name: string; // NFT 集合名称
+  description: string; // NFT 描述
+  imageUrl: string; // 预览图片 URL
+  tokenId: number | null; // 代币 ID（对于 ERC721 为 null，对于 ERC1155 为特定 ID）
+  type: "erc721" | "erc1155"; // NFT 合约类型
+}
+```
+
+#### 使用示例
+
+```tsx title="完整 NFT 集成" icon="image" lines
+const coolNFT = {
+  chainId: 8333,
+  contractAddress: "0x9c275ff1634519E9B5449ec79cd939B5F900564d",
+  price: "500000000000000000", // 0.5 ETH
+  priceFormatted: "0.5",
+  currency: {
+    chainId: 8333,
+    address: "0x0000000000000000000000000000000000000000",
+    name: "Ether",
+    symbol: "ETH",
+    decimals: 18,
+    metadata: {
+      logoURI: "https://assets.coingecko.com/coins/images/279/standard/ethereum.png?1696501628",
+    },
+  },
+  name: "Cool Art Collection",
+  description: "独特的数字艺术作品",
+  imageUrl: "https://example.com/nft-preview.png",
+  tokenId: null,
+  type: "erc721",
+};
+
+<AnySpendNFTButton nftContract={coolNFT} recipientAddress={userAddress} />;
+```
+
+---
+
+### `<AnySpendCustom>`
+
+用于自定义智能合约交互的最灵活组件，包括游戏、质押和 DeFi 操作。
+
+```tsx title="自定义合约交互" icon="code"
+// https://github.com/b3-fun/b3/blob/main/packages/sdk/src/anyspend/react/components/AnySpendCustom.tsx
+import { AnySpendCustom } from "@b3dotfun/sdk/anyspend/react";
+
+<AnySpendCustom
+  orderType="custom"
+  dstChainId={8333}
+  dstToken={tokenDetails}
+  dstAmount="1000000000000000000"
+  contractAddress="0x..."
+  encodedData="0x..."
+  spenderAddress="0x..."
+  metadata={customMetadata}
+  header={CustomHeaderComponent}
+  onSuccess={txHash => console.log("自定义操作完成", txHash)}
+/>;
+```
+
+#### 属性
+
+<ParamField path="orderType" type="'custom'" required>
+  订单类型标识符
+</ParamField>
+
+<ParamField path="dstChainId" type="number" required>
+  目标区块链网络
+</ParamField>
+
+<ParamField path="dstToken" type="Token" required>
+  用于支付的代币
+</ParamField>
+
+<ParamField path="dstAmount" type="string" required>
+  金额，以 wei/最小单位计
+</ParamField>
+
+<ParamField path="contractAddress" type="string" required>
+  目标智能合约地址
+</ParamField>
+
+<ParamField path="encodedData" type="string" required>
+  编码的函数调用数据
+</ParamField>
+
+<ParamField path="spenderAddress" type="string">
+  可选的代币支出地址
+</ParamField>
+
+<ParamField path="metadata" type="object">
+  用于跟踪的自定义元数据
+</ParamField>
+
+<ParamField path="header" type="React.ComponentType">
+  自定义头部组件
+</ParamField>
+
+<ParamField path="onSuccess" type="(txHash?: string) => void">
+  成功回调，带有交易哈希
+</ParamField>
+
+#### 使用示例 - 质押
+
+```tsx title="质押集成" icon="coins" lines
+// 编码质押函数调用
+const stakeAmount = "1000000000000000000"; // 1 代币
+const stakingCalldata = encodeFunctionData({
+  abi: stakingABI,
+  functionName: "stake",
+  args: [stakeAmount, 30], // 30 天
+});
+
+<AnySpendCustom
+  orderType="custom"
+  dstChainId={8333}
+  dstToken={stakingToken}
+  dstAmount={stakeAmount}
+  contractAddress="0xStakingContract..."
+  encodedData={stakingCalldata}
+  metadata={{
+    action: "stake",
+    duration: 30,
+    expectedRewards: "5.2%",
+  }}
+  header={({ anyspendPrice, isLoadingAnyspendPrice }) => (
+    <div className="staking-header">
+      <h2>质押代币</h2>
+      <p>期限：30 天</p>
+      <p>预期 APY：5.2%</p>
+      {!isLoadingAnyspendPrice && <p>总成本：${anyspendPrice?.usdPrice}</p>}
+    </div>
+  )}
+/>;
+```
+
+## 专用组件
+
+### `<AnySpendNFT>`
+
+具有额外市场功能的增强型 NFT 组件。
+
+```tsx title="增强型 NFT 组件" icon="store"
+// https://github.com/b3-fun/b3/blob/main/packages/sdk/src/anyspend/react/components/AnySpendNFT.tsx
+<AnySpendNFT nftContract={nftDetails} recipientAddress="0x..." showMetadata={true} showPriceHistory={true} />
+```
+
+### `<AnySpendStakeB3>`
+
+为 B3 代币质押预配置的组件。
+
+```tsx title="B3 质押" icon="coins"
+// https://github.com/b3-fun/b3/blob/main/packages/sdk/src/anyspend/react/components/AnySpendStakeB3.tsx
+<AnySpendStakeB3 stakeAmount="1000000000000000000" stakingDuration={30} recipientAddress="0x..." />
+```
+
+### `<AnySpendBuySpin>`
+
+专为购买转盘或彩票的游戏特定组件。
+
+```tsx title="游戏转盘" icon="gamepad"
+// https://github.com/b3-fun/b3/blob/main/packages/sdk/src/anyspend/react/components/AnySpendBuySpin.tsx
+<AnySpendBuySpin gameContract="0x..." spinPrice="100000000000000000" recipientAddress="0x..." />
+```
+
+### `<AnySpendTournament>`
+
+比赛入场费支付组件。
+
+```tsx title="比赛入场" icon="trophy"
+// https://github.com/b3-fun/b3/blob/main/packages/sdk/src/anyspend/react/components/AnySpendTournament.tsx
+<AnySpendTournament tournamentId="tournament-123" entryFee="500000000000000000" recipientAddress="0x..." />
+```
+
+## 组件样式
+
+所有组件都带有默认样式，可以使用 CSS 变量进行自定义：
+
+```css title="自定义样式" icon="palette"
+/* 覆盖默认样式 */
+.anyspend-modal {
+  --anyspend-primary: #6366f1;
+  --anyspend-secondary: #f3f4f6;
+  --anyspend-border-radius: 12px;
+}
+```
+
+## 平台支持
+
+<table>
+  <thead>
+    <tr>
+      <th>组件</th>
+      <th>React Web</th>
+      <th>React Native</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>`AnySpend`</td>
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>`AnySpendNFTButton`</td>
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>`AnySpendCustom`</td>
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>`AnySpendNFT`</td>
+      <td>✅</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>法币通道功能</td>
+      <td>✅</td>
+      <td>❌</td>
+    </tr>
+  </tbody>
+</table>
+
+## 下一步
+
+<CardGroup cols={3}>
+<Card title="了解 Hooks" icon="link" href="/anyspend/hooks">
+  探索用于自定义支付流程的 React 钩子
+</Card>
+
+<Card title="查看示例" icon="code" href="/anyspend/examples">
+  浏览现实世界的实现示例
+</Card>
+
+<Card title="错误处理" icon="shield-exclamation" href="/anyspend/error-handling">
+  了解如何优雅地处理错误
+</Card>
+</CardGroup>

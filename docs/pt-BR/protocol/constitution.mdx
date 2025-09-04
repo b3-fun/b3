@@ -1,0 +1,194 @@
+---
+title: Constituição
+description: Estrutura de tomada de decisão para a governança da B3 DAO
+lang: pt-BR
+originalPath: protocol/constitution.mdx
+---
+Este documento estabelece a Constituição da B3 DAO (a "**Constituição**").
+
+Algumas das regras e procedimentos desta Constituição serão aplicados diretamente por contratos inteligentes em uma blockchain, e alguns não serão. As ações tomadas sob esta Constituição podem ser ações on-chain ou off-chain. Ações on-chain são aquelas que são executadas diretamente pelos contratos inteligentes de governança da DAO como transações em uma blockchain. Ações off-chain são aquelas que são executadas por outros meios.
+
+Esta Constituição também inclui algumas "diretrizes recomendadas" que não são vinculativas, mas fortemente recomendadas como boas práticas de governança.
+
+Esta Constituição descreve os procedimentos pelos quais ela pode ser emendada e estabelece o quadro de governança da B3 DAO e da Fundação Player1.
+
+## Definições
+
+<AccordionGroup>
+<Accordion title="B3IP">
+Uma proposta apresentada por um Detentor de Token para votação de acordo com o Processo B3IP.
+</Accordion>
+
+<Accordion title="Processo B3IP">
+As regras e procedimentos para submeter e votar em B3IPs conforme descrito nesta Constituição, em particular "Seção 2: Propostas da DAO e Procedimentos de Votação", conforme pode ser emendado de tempos em tempos mediante um B3IP.
+</Accordion>
+
+<Accordion title="B3 DAO">
+A comunidade descentralizada de indivíduos que possuem um Token, conforme evidenciado pelas cadeias Base ou B3.
+</Accordion>
+
+<Accordion title="Tesouraria da DAO">
+Propriedade da Fundação Player1 mantida em um contrato inteligente de governança na Base governada diretamente pelos Detentores de Token e o Conselho de Segurança via mecanismos de votação onchain, conforme confiado pela Fundação Player1.
+</Accordion>
+
+<Accordion title="Token">
+O token de governança da B3 DAO, conhecido como $B3, conforme representado nas cadeias Base ou B3.
+</Accordion>
+
+<Accordion title="Detentor de Token">
+Qualquer detentor de um Token.
+</Accordion>
+
+<Accordion title="Tokens Votáveis">
+Todos os Tokens existentes (ou seja, 100.000.000.000 tokens $B3).
+</Accordion>
+</AccordionGroup>
+
+## Seção 1: "administração" da Cadeia
+
+Esta Constituição descreve o quadro de tomada de decisões para a governança da B3 DAO.
+
+O Protocolo B3 tem dois conjuntos de "administradores" da cadeia que têm o poder de tomar ações administrativas que alteram o protocolo central da B3 e o código e/ou alteram quaisquer de seus parâmetros centrais. Com o evento de geração do token $B3 e a subsequente criação da B3 DAO tendo ocorrido, a Fundação Player1 confiou privilégios de "administrador" na B3 tanto aos Detentores de Token quanto ao Conselho de Segurança do Protocolo B3. No caso de um B3IP poder violar qualquer lei aplicável ou esta Constituição (conforme determinado pela Fundação Player1), a Fundação Player1 pode notificar o Conselho de Segurança de sua obrigação de impedir que tal B3IP entre em vigor.
+
+O "administrador" também terá o poder de atualizar certos contratos associados da Camada 2. O "administrador" controlará facilidades na cadeia, como atualizar a implementação do contrato de qualquer um dos contratos do protocolo central da B3, e ajustar parâmetros do sistema via, por exemplo, métodos setter no precompilado do Administrador B3.
+
+## Seção 2: Propostas da DAO e Procedimentos de Votação
+
+O seguinte processo rege as regras e procedimentos pelos quais a B3 DAO pode propor, votar e implementar B3IPs. Nenhum B3IP pode estar em violação das leis aplicáveis, em particular regulamentos relacionados a sanções.
+
+### Fases do Processo B3IP
+
+<Steps>
+<Step title="Fase 1: Verificação de Temperatura / Período de Discussão (1 semana) (Opcional mas Recomendado)">
+O B3IP é sugerido no fórum público e discutido/debatido por 1 semana. O B3IP deve ser acompanhado por uma enquete ou outro método conforme determinado de acordo com o processo de governança. Esta Fase 1 deve durar um período de 1 semana para permitir discussão e feedback suficientes. No caso de um B3IP pular esta fase, como uma questão de boa prática de governança, é recomendado que os eleitores considerem votar para rejeitá-lo.
+</Step>
+
+<Step title="Fase 2: B3IP Formal e chamada para votação (3 dias)">
+O B3IP é submetido via contratos de governança na Base, com uma interface de usuário disponível na Agora. O proponente do B3IP é obrigado a ter um endereço que esteja delegado pelo menos **30.000.000 Tokens Votáveis**.
+
+Após 3 dias, um snapshot da distribuição dos eleitores será tirado e o período de votação começará; isso dá tempo para as partes interessadas discutirem o B3IP e reunirem votos antes que o snapshot da distribuição dos eleitores seja tirado.
+
+Cada B3IP deve ser rotulado como Constitucional ou Não-Constitucional.
+</Step>
+
+<Step title="Fase 3: DAO vota no B3IP, na Base (14 dias)">
+Durante esta Fase 3, a B3 DAO poderá votar diretamente on-chain através da Base. Uma votação bem-sucedida requer:
+
+**B3IPs Constitucionais:**
+- Propostas passam se alcançarem **5%** de todos os Tokens Votáveis votando "sim" (quórum de aprovação)
+- Pelo menos **55%** dos votos expressos são votos "sim" (limiar de aprovação)
+
+**B3IPs Não-Constitucionais:**
+- Propostas passam se alcançarem **3%** de todos os Tokens Votáveis votando "sim" (quórum de aprovação)
+- Pelo menos **50%** dos votos expressos são votos "sim" (limiar de aprovação)
+</Step>
+
+<Step title="Fase 4: Período de Espera L2 (3 dias)">
+Após um B3IP ser aprovado na Fase 3, haverá um período de espera de 3 dias antes que o B3IP possa ser executado. Este atraso é destinado a fornecer a todos os Detentores de Token a oportunidade de sair do protocolo se não estiverem satisfeitos com um resultado de governança, mas não estavam previamente cientes da votação ou de outra forma inadvertidamente perderam durante as fases anteriores.
+</Step>
+
+<Step title="Fase 5: Iniciar e Finalizar uma Mensagem L3-para-L2 (pelo menos 1 período de desafio do protocolo de rollup)">
+Exceto no caso de um B3IP Não-Constitucional envolvendo a Tesouraria da DAO (que vive na Base), após o período de espera de 3 dias na Fase 4 ter passado, uma mensagem de governador cross-chain é enviada para B3 da Base, após o qual uma mensagem de B3 para Base é enviada indicando que o B3IP foi aprovado. A razão por trás da mensagem cross-chain da Base para B3 é que, enquanto a votação ocorre na Base, o B3IP Constitucional é efetivado na B3. Quando esta mensagem é finalizada na Base, qualquer um pode resgatá-la para completar esta etapa e iniciar a próxima etapa. Esta etapa garante que a conclusão do período de espera da B3 será reconhecida na Base após quaisquer saques iniciados durante ou logo após o período de votação terem sido reconhecidos na Base.
+</Step>
+
+<Step title="Fase 6: Período de Espera L2 (7 dias)">
+Após a conclusão da Fase 5, haverá um período de espera adicional de 7 dias. Isso garante que os usuários que iniciaram saques ou outras mensagens de B3 para Base tenham tempo para executá-los na Base antes que o B3IP entre em vigor.
+</Step>
+
+<Step title="Fase 7: Implementação">
+O B3IP é totalmente executado e implementado. Isso pode acontecer em B3 ou via uma transação enviada de B3 para Base. No caso de um B3IP Não-Constitucional envolvendo a Tesouraria da DAO, a execução e implementação ocorrerão diretamente na Base.
+</Step>
+</Steps>
+
+<Note>
+Este processo B3IP conforme especificado normalmente requer **37 dias** desde o início da verificação de temperatura na Fase 1 até que um B3IP seja finalmente executado na Fase 7 para um B3IP Constitucional, ou **27 dias** para um B3IP Não-Constitucional. Um B3IP pode opcionalmente especificar um atraso adicional antes de sua implementação.
+</Note>
+
+### Tipos de B3IP
+
+<Tabs>
+<Tab title="B3IP Constitucional">
+**Um B3IP Constitucional** é aquele que se relaciona com:
+
+- **Processo**: Modifica o texto ou procedimentos desta Constituição
+- **Atualização de software**: Instala ou modifica software em B3
+- **Núcleo**: Toma qualquer ação que requer permissão de "administrador" em B3
+</Tab>
+
+<Tab title="B3IP Não-Constitucional">
+**Um B3IP Não-Constitucional** é aquele que não é considerado um "B3IP Constitucional", incluindo:
+
+- **Financiamento**: Solicita fundos/subsídios ou de outra forma propõe como gastar ou alocar fundos da Tesouraria da DAO. Existem quatro tipos de B3IPs de Financiamento:
+  - **Desenvolvimento do Ecossistema**: Um B3IP alocando fundos da Tesouraria da DAO para apoiar desenvolvedores de jogos, iniciativas comunitárias ou campanhas de marketing para impulsionar a adoção do Protocolo B3
+  - **Programas de Subsídios**: Um B3IP projetando e aprovando mecanismos de financiamento para desenvolvedores ou outros contribuidores que constroem no Protocolo B3
+  - **Publicação e Promoções de Jogos**: Um B3IP determinando jogos para integrar ao stack de publicação do Protocolo B3 ou promover em plataformas
+  - **Parcerias Estratégicas**: Um B3IP aprovando colaborações com organizações externas para expandir o alcance e utilidade do Protocolo B3
+
+- **Informativo**: Fornece diretrizes gerais ou informações para a comunidade, mas não propõe de outra forma uma nova funcionalidade ou atualização
+</Tab>
+</Tabs>
+
+### Diretrizes Recomendadas
+
+<AccordionGroup>
+<Accordion title="Diretrizes de Votação">
+- Os membros da DAO devem votar contra qualquer B3IP que esteja incorretamente rotulado.
+</Accordion>
+
+<Accordion title="Requisitos de Conteúdo do B3IP">
+Um B3IP deve incluir:
+
+- **Resumo**: Duas ou três frases que resumem o B3IP
+- **Motivação**: Uma declaração sobre por que a B3 DAO deve implementar o B3IP
+- **Racional**: Uma explicação de como o B3IP se alinha com a missão e valores da B3 DAO
+- **Termos Chave (opcional)**: Definições de quaisquer termos dentro da proposta que são únicos para a proposta, novos para a B3 DAO e/ou específicos da indústria
+- **Especificações**: Uma detalhada decomposição das plataformas e tecnologias que serão usadas
+- **Riscos e Segurança**: Uma detalhada decomposição dos potenciais riscos de segurança, técnicos, legais, reputacionais e outros aplicáveis
+- **Passos para Implementar**: Os passos para implementar o B3IP, incluindo custos associados, mão de obra e outros recursos para cada passo, quando aplicável. Para evitar dúvidas, quaisquer B3IPs envolvendo transações com terceiros (como subsídios) precisarão garantir que a documentação legal aplicável e procedimentos também estejam incluídos
+- **Cronograma**: Detalhes de tempo relevantes, incluindo, mas não limitado a, data de início, marcos e datas de conclusão
+- **Custo Total**: O custo total para implementar o B3IP
+- O autor do B3IP pode adicionar campos adicionais a qualquer modelo, se necessário, para comunicar completamente as intenções, especificidades e implicações do B3IP
+</Accordion>
+
+<Accordion title="B3IPs Reapresentados">
+B3IPs reapresentados também devem incluir:
+
+- Um link para o B3IP original
+- Razões pelas quais o B3IP original não foi aprovado
+- Mudanças que foram feitas e por que agora deve ser aprovado
+- Quaisquer campos adicionais a qualquer modelo, se necessário, para comunicar completamente as mudanças feitas e as intenções, especificidades e implicações de tal B3IP reapresentado
+</Accordion>
+</AccordionGroup>
+
+## Seção 3: O Conselho de Segurança
+
+O Conselho de Segurança é um comitê de **5 membros que são signatários de uma carteira multi-assinatura**, que tem poderes para realizar certas Ações de Emergência e Ações Não-Emergenciais, conforme delegado a ele pela Fundação Player1, e é responsável por defender esta Constituição da B3 DAO. Por meio da submissão, aprovação e implementação de um B3IP Constitucional, a B3 DAO é capaz de modificar os poderes do Conselho de Segurança ou eliminar completamente o Conselho de Segurança.
+
+"Cópias" equivalentes dos contratos multi-assinatura do Conselho de Segurança existem, uma na Base e outra em B3.
+
+### Ações de Emergência
+
+<Card title="Ações de Emergência" icon="alert-triangle">
+O Conselho de Segurança tem o poder de executar qualquer atualização de software ou realizar outras ações necessárias sem atraso para responder a uma emergência de segurança, caso surja (tais ações, "**Ações de Emergência**"). Realizar qualquer Ação de Emergência requer uma aprovação de **4 de 5** do Conselho de Segurança. O Conselho de Segurança não deve usar seu poder para realizar Ações de Emergência, exceto em uma verdadeira emergência de segurança, como uma vulnerabilidade crítica que possa comprometer significativamente a integridade, confidencialidade ou disponibilidade de B3.
+
+Após realizar qualquer Ação de Emergência, o Conselho de Segurança deve emitir um relatório completo de transparência (em um momento apropriado após a emergência de segurança ter passado) para explicar o que foi feito e por que tal Ação de Emergência foi justificada.
+
+A B3 DAO é capaz de limitar ou eliminar o poder do Conselho de Segurança de realizar Ações de Emergência por meio da aprovação e implementação de um B3IP Constitucional.
+</Card>
+
+### Ações Não-Emergenciais
+
+<Card title="Ações Não-Emergenciais" icon="settings">
+O Conselho de Segurança também pode aprovar e implementar atualizações de software de rotina, manutenção de rotina e outros ajustes de parâmetros em um cenário não-emergencial (tais ações, "**Ações Não-Emergenciais**"), que requerem uma aprovação de **3 de 5** para entrar em vigor. Qualquer Ação Não-Emergencial, após aprovação pelo Conselho de Segurança, irá contornar as Fases 1 a 3 do processo B3IP e, em vez disso, passar diretamente pelas Fases 4 a 7 do processo B3IP (conforme aplicável), para fornecer um atraso antes que qualquer Ação Não-Emergencial seja implantada. O Conselho de Segurança pode opcionalmente especificar atrasos adicionais antes da implantação.
+
+A B3 DAO é capaz de limitar ou eliminar o poder do Conselho de Segurança de realizar Ações Não-Emergenciais por meio da aprovação e implementação de um B3IP Constitucional.
+</Card>
+
+## Seção 4: Eleições do Conselho de Segurança
+
+O Conselho de Segurança tem **5 membros**, que são divididos em duas Coortes de 2 a 3 membros, que servem **mandatos de 18 meses**. A 'Segunda Coorte' servirá um **mandato de 24 meses** dado às eleições escalonadas, mas todas as futuras Coortes daí em diante servirão mandatos de 18 meses.
+
+As Coortes iniciais do Conselho de Segurança foram determinadas dividindo aleatoriamente os 5 membros em duas coortes – 2 membros na 'Primeira Coorte' e 3 membros na 'Segunda Coorte'. Os membros das Coortes iniciais do Conselho de Segurança estão detalhados em um relatório de transparência aqui.
+
+<Info>
+O primeiro processo de eleição do Conselho de Segurança está programado para começar em **

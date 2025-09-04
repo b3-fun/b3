@@ -133,7 +133,7 @@ export function ManageAccount({
     const [unlinkingAccountId, setUnlinkingAccountId] = useState<string | null>(null);
     const { data: profilesRaw = [], isLoading: isLoadingProfiles } = useProfiles({ client });
     const { mutate: unlinkProfile, isPending: isUnlinking } = useUnlinkProfile();
-    const { setB3ModalOpen, setB3ModalContentType, isLinking } = useModalStore();
+    const { setB3ModalOpen, setB3ModalContentType, isLinking, contentType } = useModalStore();
     const { user, setUser } = useB3();
     const [isUpdatingCode, setIsUpdatingCode] = useState(false);
     const [newReferralCode, setNewReferralCode] = useState("");
@@ -145,6 +145,7 @@ export function ManageAccount({
       { query: { referrerId: user?.userId } },
       !!user?.userId,
     );
+    const showReferralInfo = (contentType as ManageAccountModalProps)?.showReferralInfo ?? false;
 
     const mutationOptions = {
       onError: (error: Error) => {
@@ -305,22 +306,14 @@ export function ManageAccount({
           )}
         </div>
 
-        {/* Referral Section */}
-        <div className="space-y-4">
-          <h3 className="text-b3-grey font-neue-montreal-semibold text-xl">Referrals</h3>
+        {showReferralInfo && (
+          /* Referral Section */
+          <div className="space-y-4">
+            <h3 className="text-b3-grey font-neue-montreal-semibold text-xl">Referrals</h3>
 
-          {/* Referral Code */}
-          <div className="bg-b3-line rounded-xl p-4">
-            {isEditingCode && (
-              <div>
-                <div className="text-b3-grey font-neue-montreal-semibold">Your Referral Code</div>
-                <div className="text-b3-foreground-muted font-neue-montreal-medium text-sm">
-                  Share this code with friends to earn rewards
-                </div>
-              </div>
-            )}
-            <div className="flex items-center justify-between">
-              {!isEditingCode && (
+            {/* Referral Code */}
+            <div className="bg-b3-line rounded-xl p-4">
+              {isEditingCode && (
                 <div>
                   <div className="text-b3-grey font-neue-montreal-semibold">Your Referral Code</div>
                   <div className="text-b3-foreground-muted font-neue-montreal-medium text-sm">
@@ -328,78 +321,95 @@ export function ManageAccount({
                   </div>
                 </div>
               )}
-              <div className="flex items-center gap-2">
-                {isEditingCode ? (
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={newReferralCode}
-                      onChange={e => setNewReferralCode(e.target.value)}
-                      className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm"
-                      placeholder="Enter new code"
-                      ref={referallCodeRef}
-                    />
-                    <Button size="sm" onClick={handleUpdateReferralCode} disabled={isUpdatingCode || !newReferralCode}>
-                      {isUpdatingCode ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => {
-                        setIsEditingCode(false);
-                        setNewReferralCode("");
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                ) : (
-                  <>
-                    <div className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm">
-                      {currentReferralCode}
+              <div className="flex items-center justify-between">
+                {!isEditingCode && (
+                  <div>
+                    <div className="text-b3-grey font-neue-montreal-semibold">Your Referral Code</div>
+                    <div className="text-b3-foreground-muted font-neue-montreal-medium text-sm">
+                      Share this code with friends to earn rewards
                     </div>
-                    <Button size="icon" variant="ghost" onClick={handleCopyCode}>
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => {
-                        setIsEditingCode(true);
-                        setTimeout(() => {
-                          referallCodeRef.current?.focus();
-                        }, 100);
-                      }}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  </>
+                  </div>
                 )}
+                <div className="flex items-center gap-2">
+                  {isEditingCode ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={newReferralCode}
+                        onChange={e => setNewReferralCode(e.target.value)}
+                        className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm"
+                        placeholder="Enter new code"
+                        ref={referallCodeRef}
+                      />
+                      <Button
+                        size="sm"
+                        onClick={handleUpdateReferralCode}
+                        disabled={isUpdatingCode || !newReferralCode}
+                      >
+                        {isUpdatingCode ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          setIsEditingCode(false);
+                          setNewReferralCode("");
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm">
+                        {currentReferralCode}
+                      </div>
+                      <Button size="icon" variant="ghost" onClick={handleCopyCode}>
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => {
+                          setIsEditingCode(true);
+                          setTimeout(() => {
+                            referallCodeRef.current?.focus();
+                          }, 100);
+                        }}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Referred Users */}
-          <div className="bg-b3-line rounded-xl p-4">
-            <div className="text-b3-grey font-neue-montreal-semibold mb-4">Referred Users</div>
-            {isLoadingReferrals ? (
-              <div className="flex justify-center py-4">
-                <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-              </div>
-            ) : referrals?.data?.length ? (
-              <div className="space-y-3">
-                {referrals.data.map((referral: Referrals) => (
-                  <div key={String(referral._id)} className="flex items-center justify-between rounded-lg bg-white p-3">
-                    <div className="text-sm font-medium">{referral.referreeId}</div>
-                    <div className="text-sm text-gray-500">{new Date(referral.createdAt).toLocaleDateString()}</div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="py-4 text-center text-gray-500">No referred users yet</div>
-            )}
+            {/* Referred Users */}
+            <div className="bg-b3-line rounded-xl p-4">
+              <div className="text-b3-grey font-neue-montreal-semibold mb-4">Referred Users</div>
+              {isLoadingReferrals ? (
+                <div className="flex justify-center py-4">
+                  <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                </div>
+              ) : referrals?.data?.length ? (
+                <div className="space-y-3">
+                  {referrals.data.map((referral: Referrals) => (
+                    <div
+                      key={String(referral._id)}
+                      className="flex items-center justify-between rounded-lg bg-white p-3"
+                    >
+                      <div className="text-sm font-medium">{referral.referreeId}</div>
+                      <div className="text-sm text-gray-500">{new Date(referral.createdAt).toLocaleDateString()}</div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-4 text-center text-gray-500">No referred users yet</div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Additional Settings Sections */}
         <div className="space-y-4">

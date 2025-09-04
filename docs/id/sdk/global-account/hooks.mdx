@@ -1,0 +1,486 @@
+---
+title: React Hooks
+description: Referensi lengkap untuk B3 Global Accounts React hooks
+lang: id
+originalPath: sdk/global-account/hooks.mdx
+---
+## Authentication Hooks
+
+### useB3
+
+Hook utama untuk mengakses state dan aksi autentikasi Global Account.
+
+```tsx
+import { useB3 } from "@b3dotfun/sdk/global-account/react";
+
+function AuthComponent() {
+  const { 
+    account,           // Akun global saat ini
+    isAuthenticated,   // Status autentikasi
+    isLoading,         // Status loading
+    signOut,           // Fungsi untuk sign out
+    refreshAccount     // Fungsi untuk memperbarui data akun
+  } = useB3();
+
+  return (
+    <div>
+      {isLoading && <p>Loading...</p>}
+      
+      {isAuthenticated ? (
+        <div>
+          <h3>Welcome, {account?.displayName}!</h3>
+          <p>ID Akun: {account?.id}</p>
+          <p>Email: {account?.email}</p>
+          <button onClick={signOut}>Sign Out</button>
+        </div>
+      ) : (
+        <p>Please sign in to continue</p>
+      )}
+    </div>
+  );
+}
+```
+
+#### Nilai Kembali
+
+| Properti | Tipe | Deskripsi |
+|----------|------|-------------|
+| `account` | `GlobalAccount \| null` | Akun yang terautentikasi saat ini |
+| `isAuthenticated` | `boolean` | Apakah pengguna terautentikasi |
+| `isLoading` | `boolean` | Apakah pengecekan autentikasi sedang berlangsung |
+| `signOut` | `() => Promise<void>` | Fungsi untuk sign out pengguna saat ini |
+| `refreshAccount` | `() => Promise<void>` | Fungsi untuk memperbarui data akun |
+
+### useAccountWallet
+
+Akses informasi wallet untuk akun yang terautentikasi.
+
+```tsx
+import { useAccountWallet } from "@b3dotfun/sdk/global-account/react";
+
+function WalletComponent() {
+  const { 
+    wallet,       // Informasi wallet
+    isConnected,  // Status koneksi
+    connect,      // Fungsi untuk menghubungkan wallet
+    disconnect    // Fungsi untuk memutuskan koneksi wallet
+  } = useAccountWallet();
+
+  return (
+    <div>
+      {isConnected ? (
+        <div>
+          <p>Alamat: {wallet?.address}</p>
+          <p>Chain: {wallet?.chainId}</p>
+          <p>Saldo: {wallet?.balance} ETH</p>
+          <button onClick={disconnect}>Disconnect</button>
+        </div>
+      ) : (
+        <button onClick={connect}>Connect Wallet</button>
+      )}
+    </div>
+  );
+}
+```
+
+## Permission Hooks
+
+### usePermissions
+
+Kelola dan periksa izin kunci sesi.
+
+```tsx
+import { usePermissions } from "@b3dotfun/sdk/global-account/react";
+
+function PermissionsComponent() {
+  const { 
+    permissions,      // Izin saat ini
+    hasPermissions,   // Apakah pengguna memiliki izin aktif
+    isExpired,        // Apakah izin telah kedaluwarsa
+    checkPermission   // Periksa izin tertentu
+  } = usePermissions();
+
+  const canInteractWithContract = checkPermission("0x...");
+
+  return (
+    <div>
+      <h3>Status Izin</h3>
+      
+      {hasPermissions ? (
+        <div>
+          <p>✅ Izin Aktif</p>
+          <p>Kedaluwarsa: {permissions?.endDate.toLocaleDateString()}</p>
+          <p>Kontrak: {permissions?.approvedTargets.length}</p>
+          
+          {isExpired && <p>⚠️ Izin kedaluwarsa</p>}
+          
+          <div>
+            <p>Dapat berinteraksi dengan kontrak: {canInteractWithContract ? '✅' : '❌'}</p>
+          </div>
+        </div>
+      ) : (
+        <p>Tidak ada izin aktif</p>
+      )}
+    </div>
+  );
+}
+```
+
+### useRequestPermissions
+
+Meminta izin baru untuk kunci sesi.
+
+```tsx
+import { useRequestPermissions } from "@b3dotfun/sdk/global-account/react";
+
+function RequestPermissionsComponent() {
+  const { 
+    requestPermissions, 
+    isLoading, 
+    error,
+    reset 
+  } = useRequestPermissions();
+
+  const handleRequest = async () => {
+    try {
+      const result = await requestPermissions({
+        chain: { id: 8333, name: "B3" },
+        sessionKeyAddress: "0x...",
+        permissions: {
+          approvedTargets: ["0x..."],
+          startDate: new Date(),
+          endDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
+          nativeTokenLimitPerTransaction: 0.01,
+        },
+      });
+
+      if (result.success) {
+        console.log("Permissions granted!");
+      }
+    } catch (err) {
+      console.error("Permission request failed:", err);
+    }
+  };
+
+  return (
+    <div>
+      <button 
+        onClick={handleRequest}
+        disabled={isLoading}
+      >
+        {isLoading ? "Requesting..." : "Request Permissions"}
+      </button>
+      
+      {error && (
+        <div className="error">
+          Error: {error.message}
+          <button onClick={reset}>Retry</button>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+### useRevokePermissions
+
+Mencabut izin yang ada.
+
+```tsx
+import { useRevokePermissions } from "@b3dotfun/sdk/global-account/react";
+
+function RevokePermissionsComponent() {
+  const { revokePermissions, isLoading, error } = useRevokePermissions();
+
+  const handleRevoke = async () => {
+    try {
+      await revokePermissions({
+        sessionKeyAddress: "0x...",
+        chain: { id: 8333, name: "B3" },
+      });
+      console.log("Permissions revoked successfully");
+    } catch (err) {
+      console.error("Failed to revoke permissions:", err);
+    }
+  };
+
+  return (
+    <button 
+      onClick={handleRevoke}
+      disabled={isLoading}
+    >
+      {isLoading ? "Revoking..." : "Revoke Permissions"}
+    </button>
+  );
+}
+```
+
+## Asset Management Hooks
+
+### useAccountAssets
+
+Mengambil dan mengelola aset digital pengguna.
+
+```tsx
+import { useAccountAssets } from "@b3dotfun/sdk/global-account/react";
+
+function AssetsComponent() {
+  const { 
+    assets,        // Aset pengguna
+    isLoading,     // Status loading
+    error,         // Status error
+    refreshAssets  // Fungsi untuk memperbarui aset
+  } = useAccountAssets();
+
+  if (isLoading) return <div>Loading assets...</div>;
+  if (error) return <div>Error loading assets: {error.message}</div>;
+
+  return (
+    <div>
+      <h3>Your Assets</h3>
+      <button onClick={refreshAssets}>Refresh</button>
+      
+      {assets?.map((asset) => (
+        <div key={asset.id} className="asset-item">
+          <img src={asset.imageUrl} alt={asset.name} />
+          <h4>{asset.name}</h4>
+          <p>{asset.description}</p>
+          <p>Value: {asset.value} {asset.currency}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+## Modal Management Hooks
+
+### useModal
+
+Mengontrol modals B3 secara programatik.
+
+```tsx
+import { useModal } from "@b3dotfun/sdk/global-account/react";
+
+function ModalControlComponent() {
+  const { 
+    openModal, 
+    closeModal, 
+    isModalOpen,
+    currentModal 
+  } = useModal();
+
+  const handleOpenAuth = () => {
+    openModal('authentication', {
+      provider: { strategy: 'google' },
+      partnerId: 'your-partner-id'
+    });
+  };
+
+  const handleOpenPermissions = () => {
+    openModal('permissions', {
+      sessionKeyAddress: '0x...',
+      permissions: {
+        approvedTargets: ['0x...'],
+        nativeTokenLimitPerTransaction: 0.01
+      }
+    });
+  };
+
+  return (
+    <div>
+      <p>Modal saat ini: {currentModal || 'None'}</p>
+      <p>Modal terbuka: {isModalOpen ? 'Yes' : 'No'}</p>
+      
+      <button onClick={handleOpenAuth}>Open Auth Modal</button>
+      <button onClick={handleOpenPermissions}>Open Permissions Modal</button>
+      <button onClick={closeModal}>Close Modal</button>
+    </div>
+  );
+}
+```
+
+## Navigation Hooks
+
+### useNavigation
+
+Mengelola navigasi dalam aplikasi B3.
+
+```tsx
+import { useNavigation } from "@b3dotfun/sdk/global-account/react";
+
+function NavigationComponent() {
+  const { 
+    navigate, 
+    canGoBack, 
+    goBack,
+    currentPath 
+  } = useNavigation();
+
+  return (
+    <div>
+      <p>Path saat ini: {currentPath}</p>
+      
+      <button onClick={() => navigate('/dashboard')}>
+        Go to Dashboard
+      </button>
+      
+      <button onClick={() => navigate('/profile')}>
+        Go to Profile
+      </button>
+      
+      {canGoBack && (
+        <button onClick={goBack}>
+          Go Back
+        </button>
+      )}
+    </div>
+  );
+}
+```
+
+## Configuration Hooks
+
+### useB3Config
+
+Mengakses konfigurasi dan pengaturan lingkungan B3.
+
+```tsx
+import { useB3Config } from "@b3dotfun/sdk/global-account/react";
+
+function ConfigComponent() {
+  const { 
+    environment,     // 'production' | 'development'
+    apiUrl,          // URL API saat ini
+    partnerId,       // ID partner Anda
+    features,        // Fitur yang tersedia
+    updateConfig     // Perbarui konfigurasi
+  } = useB3Config();
+
+  return (
+    <div>
+      <h3>Konfigurasi B3</h3>
+      <p>Lingkungan: {environment}</p>
+      <p>URL API: {apiUrl}</p>
+      <p>ID Partner: {partnerId}</p>
+      
+      <h4>Fitur yang Tersedia:</h4>
+      <ul>
+        {features.map(feature => (
+          <li key={feature}>{feature}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+```
+
+## Hook Composition
+
+### Contoh Hook Kustom
+
+Menggabungkan beberapa hook untuk fungsionalitas yang kompleks:
+
+```tsx
+import { useB3, usePermissions, useAccountWallet } from "@b3dotfun/sdk/global-account/react";
+
+function useGameAuth() {
+  const { account, isAuthenticated } = useB3();
+  const { hasPermissions, isExpired } = usePermissions();
+  const { wallet, isConnected } = useAccountWallet();
+
+  const isGameReady = isAuthenticated && hasPermissions && !isExpired && isConnected;
+  
+  const gameAuthStatus = {
+    account: !!account,
+    permissions: hasPermissions && !isExpired,
+    wallet: isConnected,
+    ready: isGameReady
+  };
+
+  return {
+    account,
+    wallet,
+    isGameReady,
+    gameAuthStatus
+  };
+}
+
+// Penggunaan
+function GameComponent() {
+  const { isGameReady, gameAuthStatus } = useGameAuth();
+
+  if (!isGameReady) {
+    return (
+      <div>
+        <h3>Setup Required</h3>
+        <ul>
+          <li>Akun: {gameAuthStatus.account ? '✅' : '❌'}</li>
+          <li>Izin: {gameAuthStatus.permissions ? '✅' : '❌'}</li>
+          <li>Wallet: {gameAuthStatus.wallet ? '✅' : '❌'}</li>
+        </ul>
+      </div>
+    );
+  }
+
+  return <div>🎮 Game Ready!</div>;
+}
+```
+
+## Dukungan TypeScript
+
+Semua hook termasuk dukungan penuh TypeScript:
+
+```typescript
+import type { 
+  GlobalAccount, 
+  Permissions, 
+  WalletInfo 
+} from "@b3dotfun/sdk/global-account/types";
+
+// Tipe pengembalian hook sepenuhnya diketik
+const { account }: { account: GlobalAccount | null } = useB3();
+const { permissions }: { permissions: Permissions | null } = usePermissions();
+const { wallet }: { wallet: WalletInfo | null } = useAccountWallet();
+```
+
+## Penanganan Error
+
+Praktik terbaik untuk menangani error dengan hook:
+
+```tsx
+function ErrorHandlingExample() {
+  const { account, isAuthenticated } = useB3();
+  const { requestPermissions, error: permissionError } = useRequestPermissions();
+  const { assets, error: assetError } = useAccountAssets();
+
+  // Menangani error spesifik
+  useEffect(() => {
+    if (permissionError) {
+      console.error('Permission error:', permissionError);
+      // Menampilkan pesan error yang ramah pengguna
+    }
+    
+    if (assetError) {
+      console.error('Asset loading error:', assetError);
+      // Mencoba lagi atau menampilkan UI fallback
+    }
+  }, [permissionError, assetError]);
+
+  return (
+    <div>
+      {/* JSX komponen Anda */}
+    </div>
+  );
+}
+```
+
+## Langkah Selanjutnya
+
+<CardGroup cols={2}>
+
+<Card title="Contoh" icon="code" href="/sdk/global-account/examples">
+  Lihat contoh lengkap menggunakan hook ini.
+</Card>
+
+</CardGroup>
