@@ -43,7 +43,7 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
     wallets: [wallet],
     onConnect: async wallet => {
       setHasStartedConnecting(true);
-      
+
       try {
         setIsConnected(true);
         if (!loginWithSiwe) {
