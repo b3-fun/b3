@@ -21,7 +21,7 @@ export type SignInWithB3Props = Omit<SignInWithB3ModalProps, "type" | "showBackB
 export function SignInWithB3(props: SignInWithB3Props) {
   const { setB3ModalOpen, setB3ModalContentType, setEcoSystemAccountAddress } = useModalStore();
   const { account } = useB3();
-  const { isAuthenticating, isConnected } = useAuthentication(props.partnerId, props.loginWithSiwe);
+  const { isAuthenticatingV2, isAuthenticated } = useAuthentication(props.partnerId, props.loginWithSiwe);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -39,11 +39,11 @@ export function SignInWithB3(props: SignInWithB3Props) {
     setB3ModalOpen(true);
   };
 
-  if (isConnected) {
+  if (isAuthenticated) {
     return <ManageAccountButton {...props} />;
   }
 
-  if (isAuthenticating) {
+  if (isAuthenticatingV2) {
     return (
       <StyleRoot>
         <Button disabled style={{ backgroundColor: "#3368ef" }} className="flex items-center gap-2 text-white">

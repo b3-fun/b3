@@ -27,6 +27,10 @@ interface AuthState {
     onError?: (error: Error) => void;
   }) => void;
   reset: () => void;
+  isAuthenticatingV2: boolean;
+  setIsAuthenticatingV2: (isAuthenticating: boolean) => void;
+  hasStartedConnecting: boolean;
+  setHasStartedConnecting: (hasStartedConnecting: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>(set => ({
@@ -69,4 +73,8 @@ export const useAuthStore = create<AuthState>(set => ({
       onSuccess: undefined,
       onError: undefined,
     }),
+  isAuthenticatingV2: true,
+  setIsAuthenticatingV2: isAuthenticating => set({ isAuthenticatingV2: isAuthenticating }),
+  hasStartedConnecting: false,
+  setHasStartedConnecting: hasStartedConnecting => set({ hasStartedConnecting }),
 }));

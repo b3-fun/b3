@@ -41,6 +41,7 @@ export function SignInWithB3Flow({
   const { setB3ModalContentType, setB3ModalOpen, isOpen } = useModalStore();
   const account = useActiveAccount();
   const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
+  const setIsAuthenticatingV2 = useAuthStore(state => state.setIsAuthenticatingV2);
   const isAuthenticating = useAuthStore(state => state.isAuthenticating);
   const isConnected = useAuthStore(state => state.isConnected);
   const setIsConnected = useAuthStore(state => state.setIsConnected);
@@ -198,6 +199,7 @@ export function SignInWithB3Flow({
       if (loginWithSiwe) {
         debug("setIsAuthenticating:true:1");
         setIsAuthenticating(true);
+        setIsAuthenticatingV2(true);
         const userAuth = await authenticate(account, partnerId);
         setUser(userAuth.user);
       }
@@ -205,8 +207,18 @@ export function SignInWithB3Flow({
       onLoginSuccess?.(account);
       debug("setIsAuthenticating:false:1");
       setIsAuthenticating(false);
+      setIsAuthenticatingV2(false);
     },
-    [loginWithSiwe, onLoginSuccess, setIsAuthenticating, authenticate, partnerId, setUser, setIsConnected],
+    [
+      loginWithSiwe,
+      onLoginSuccess,
+      setIsAuthenticating,
+      authenticate,
+      partnerId,
+      setUser,
+      setIsConnected,
+      setIsAuthenticatingV2,
+    ],
   );
 
   useEffect(() => {
