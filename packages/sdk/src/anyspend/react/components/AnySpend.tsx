@@ -567,10 +567,10 @@ function AnySpendInner({
         return { text: "Choose payment method", disable: false, error: false };
       }
       // If payment method selected, show appropriate action
-      if (selectedCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET) {
-        return { text: "Swap", disable: false, error: false };
-      }
-      if (selectedCryptoPaymentMethod === CryptoPaymentMethodType.GLOBAL_WALLET) {
+      if (
+        selectedCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET ||
+        selectedCryptoPaymentMethod === CryptoPaymentMethodType.GLOBAL_WALLET
+      ) {
         return { text: "Swap", disable: false, error: false };
       }
       if (selectedCryptoPaymentMethod === CryptoPaymentMethodType.TRANSFER_CRYPTO) {
