@@ -240,7 +240,8 @@ export const OrderDetails = memo(function OrderDetails({
   const [showQRCode, setShowQRCode] = useState(false);
   const { isLoading: txLoading, isSuccess: txSuccess } = useWaitForTransactionReceipt({ hash: txHash });
 
-  const { switchChainAndExecuteWithEOA, isSwitchingOrExecuting } = useUnifiedChainSwitchAndExecute();
+  const { switchChainAndExecuteWithEOA, switchChainAndExecute, isSwitchingOrExecuting } =
+    useUnifiedChainSwitchAndExecute();
 
   const roundedUpSrcAmount = useMemo(() => {
     // Display the full transfer amount without rounding since users need to see the exact value they're transferring.
@@ -293,12 +294,18 @@ export const OrderDetails = memo(function OrderDetails({
       value = BigInt(0);
     }
 
-    const txHash = await switchChainAndExecuteWithEOA(order.srcChain, { to, data: txData, value });
+    // Use appropriate execution method based on payment method
+    let txHash: string | undefined;
+    if (effectiveCryptoPaymentMethod === CryptoPaymentMethodType.GLOBAL_WALLET) {
+      txHash = await switchChainAndExecute(order.srcChain, { to, data: txData, value });
+    } else {
+      txHash = await switchChainAndExecuteWithEOA(order.srcChain, { to, data: txData, value });
+    }
 
     if (txHash) {
       setTxHash(txHash as `0x${string}`);
     }
-  }, [order, switchChainAndExecuteWithEOA, depositDeficit]);
+  }, [order, switchChainAndExecuteWithEOA, switchChainAndExecute, depositDeficit, effectiveCryptoPaymentMethod]);
 
   // Main payment handler that triggers chain switch and payment
   const handlePayment = async () => {
@@ -994,7 +1001,8 @@ export const OrderDetails = memo(function OrderDetails({
         <>
           {order.onrampMetadata ? (
             <PaymentVendorUI order={order} dstTokenSymbol={dstToken.symbol} />
-          ) : effectiveCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET ? (
+          ) : effectiveCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET ||
+            effectiveCryptoPaymentMethod === CryptoPaymentMethodType.GLOBAL_WALLET ? (
             <ConnectWalletPayment
               order={order}
               onPayment={handlePayment}
@@ -1004,6 +1012,7 @@ export const OrderDetails = memo(function OrderDetails({
               phantomWalletAddress={phantomWalletAddress}
               tournament={tournament}
               nft={nft}
+              cryptoPaymentMethod={effectiveCryptoPaymentMethod}
             />
           ) : effectiveCryptoPaymentMethod === CryptoPaymentMethodType.TRANSFER_CRYPTO ? (
             // Transfer Crypto Payment Method - Show new card-based UI

@@ -8,6 +8,7 @@ import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { motion } from "framer-motion";
 import { ChevronRight, Loader2 } from "lucide-react";
 import { useAccount } from "wagmi";
+import { CryptoPaymentMethodType } from "./CryptoPaymentMethod";
 import { OrderDetailsCollapsible } from "./OrderDetailsCollapsible";
 
 type Tournament = components["schemas"]["Tournament"];
@@ -22,6 +23,7 @@ interface ConnectWalletPaymentProps {
   phantomWalletAddress?: string | null;
   tournament?: Tournament;
   nft?: NFT;
+  cryptoPaymentMethod: CryptoPaymentMethodType;
 }
 
 export default function ConnectWalletPayment({
@@ -32,6 +34,7 @@ export default function ConnectWalletPayment({
   phantomWalletAddress,
   tournament,
   nft,
+  cryptoPaymentMethod,
 }: ConnectWalletPaymentProps) {
   const profile = useProfile({ address: order.recipientAddress });
   const recipientName = profile.data?.name?.replace(/\.b3\.fun/g, "");
@@ -79,7 +82,9 @@ export default function ConnectWalletPayment({
               <span className="whitespace-nowrap pl-4 text-lg md:text-sm">
                 {order.srcChain === RELAY_SOLANA_MAINNET_CHAIN_ID && phantomWalletAddress
                   ? "Pay from Phantom Wallet"
-                  : "Pay from Connected Wallet"}
+                  : cryptoPaymentMethod === CryptoPaymentMethodType.GLOBAL_WALLET
+                    ? "Pay from Global Account"
+                    : "Pay from Connected Wallet"}
               </span>
               <ChevronRight className="h-4 w-4" />
             </>

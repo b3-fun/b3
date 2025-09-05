@@ -8,13 +8,13 @@ import { toast } from "sonner";
 import { base } from "viem/chains";
 import { PanelView, useAnyspendFlow } from "../hooks/useAnyspendFlow";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
+import { CryptoPaySection } from "./common/CryptoPaySection";
 import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPaymentMethod";
 import { CryptoReceiveSection } from "./common/CryptoReceiveSection";
 import { ErrorSection } from "./common/ErrorSection";
 import { FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaymentMethod";
 import { OrderDetails } from "./common/OrderDetails";
 import { OrderStatus } from "./common/OrderStatus";
-import { PaySection } from "./common/PaySection";
 import { RecipientSelection } from "./common/RecipientSelection";
 
 import { ArrowDown } from "lucide-react";
@@ -191,8 +191,7 @@ function AnySpendDepositHypeInner({
         <div className="relative flex w-full max-w-[calc(100vw-32px)] flex-col gap-2">
           {/* Send section */}
           {paymentType === "crypto" ? (
-            <PaySection
-              paymentType="crypto"
+            <CryptoPaySection
               selectedSrcChainId={selectedSrcChainId}
               setSelectedSrcChainId={setSelectedSrcChainId}
               selectedSrcToken={selectedSrcToken}
@@ -201,9 +200,7 @@ function AnySpendDepositHypeInner({
               setSrcAmount={setSrcAmount}
               setIsSrcInputDirty={setIsSrcInputDirty}
               selectedCryptoPaymentMethod={selectedCryptoPaymentMethod}
-              selectedFiatPaymentMethod={selectedFiatPaymentMethod}
               onSelectCryptoPaymentMethod={() => setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD)}
-              onSelectFiatPaymentMethod={() => setActivePanel(PanelView.FIAT_PAYMENT_METHOD)}
               anyspendQuote={anyspendQuote}
             />
           ) : (

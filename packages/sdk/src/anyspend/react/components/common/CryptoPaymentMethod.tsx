@@ -13,6 +13,7 @@ import { useAccount, useConnect, useDisconnect, useWalletClient } from "wagmi";
 export enum CryptoPaymentMethodType {
   NONE = "none",
   CONNECT_WALLET = "connect_wallet",
+  GLOBAL_WALLET = "global_wallet",
   TRANSFER_CRYPTO = "transfer_crypto",
 }
 
@@ -37,7 +38,7 @@ export function CryptoPaymentMethod({
   onBack,
   onSelectPaymentMethod,
 }: CryptoPaymentMethodProps) {
-  const { wallet: globalWallet } = useAccountWallet();
+  const { wallet: globalWallet, address: globalAddress } = useAccountWallet();
   const { address, isConnected, connector } = useAccount();
   const { connect, connectors, isPending } = useConnect();
   const { disconnect } = useDisconnect();
@@ -201,58 +202,94 @@ export function CryptoPaymentMethod({
           </button>
 
           {/* Installed Wallets Section */}
-          {isConnected && (
+          {(isConnected || globalAddress) && (
             <div className="installed-wallets">
-              <h3 className="text-as-primary/80 mb-3 text-sm font-medium">Connected wallets</h3>
+              <h3 className="text-as-primary/80 mb-3 text-sm font-medium">Connected wallets z</h3>
               <div className="space-y-2">
                 {/* Current Connected Wallet */}
-                <button
-                  onClick={() => {
-                    setSelectedPaymentMethod(CryptoPaymentMethodType.CONNECT_WALLET);
-                    onSelectPaymentMethod(CryptoPaymentMethodType.CONNECT_WALLET);
-                    toast.success(`Selected ${connector?.name || "wallet"}`);
-                  }}
-                  className={cn(
-                    "crypto-payment-method-connect-wallet w-full rounded-xl border p-4 text-left transition-all hover:shadow-md",
-                    selectedPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET
-                      ? "connected-wallet border-as-brand bg-as-brand/5"
-                      : "border-as-border-secondary bg-as-surface-primary hover:border-as-secondary/80",
-                  )}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      {globalWallet?.meta?.icon ? (
-                        <img src={globalWallet.meta.icon} alt="Wallet" className="h-10 w-10 rounded-full" />
-                      ) : (
+                {isConnected && (
+                  <button
+                    onClick={() => {
+                      setSelectedPaymentMethod(CryptoPaymentMethodType.CONNECT_WALLET);
+                      onSelectPaymentMethod(CryptoPaymentMethodType.CONNECT_WALLET);
+                      toast.success(`Selected ${connector?.name || "wallet"}`);
+                    }}
+                    className={cn(
+                      "crypto-payment-method-connect-wallet w-full rounded-xl border p-4 text-left transition-all hover:shadow-md",
+                      selectedPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET
+                        ? "connected-wallet border-as-brand bg-as-brand/5"
+                        : "border-as-border-secondary bg-as-surface-primary hover:border-as-secondary/80",
+                    )}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
                         <div className="wallet-icon flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
                           <Wallet className="h-5 w-5 text-blue-600" />
                         </div>
-                      )}
-                      <div className="flex flex-col">
-                        <span className="text-as-primary font-semibold">{connector?.name || "Connected Wallet"}</span>
-                        <span className="text-as-primary/60 text-sm">{shortenAddress(address || "")}</span>
+                        <div className="flex flex-col">
+                          <span className="text-as-primary font-semibold">{connector?.name || "Connected Wallet"}</span>
+                          <span className="text-as-primary/60 text-sm">{shortenAddress(address || "")}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {selectedPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET && (
+                          <div className="h-2 w-2 rounded-full bg-green-500"></div>
+                        )}
+                        <button
+                          onClick={e => {
+                            e.stopPropagation();
+                            disconnect();
+                            toast.success("Wallet disconnected");
+                            if (selectedPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET) {
+                              setSelectedPaymentMethod(CryptoPaymentMethodType.NONE);
+                            }
+                          }}
+                          className="text-as-primary/60 hover:text-as-primary/80 rounded-lg p-1.5 transition-colors"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {selectedPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET && (
-                        <div className="h-2 w-2 rounded-full bg-green-500"></div>
-                      )}
-                      <button
-                        onClick={e => {
-                          e.stopPropagation();
-                          disconnect();
-                          toast.success("Wallet disconnected");
-                          if (selectedPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET) {
-                            setSelectedPaymentMethod(CryptoPaymentMethodType.NONE);
-                          }
-                        }}
-                        className="text-as-primary/60 hover:text-as-primary/80 rounded-lg p-1.5 transition-colors"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
+                  </button>
+                )}
+
+                {/* Global Wallet (B3 Account) */}
+                {globalAddress && (
+                  <button
+                    onClick={() => {
+                      setSelectedPaymentMethod(CryptoPaymentMethodType.GLOBAL_WALLET);
+                      onSelectPaymentMethod(CryptoPaymentMethodType.GLOBAL_WALLET);
+                      toast.success("Selected B3 Account");
+                    }}
+                    className={cn(
+                      "crypto-payment-method-global-wallet w-full rounded-xl border p-4 text-left transition-all hover:shadow-md",
+                      selectedPaymentMethod === CryptoPaymentMethodType.GLOBAL_WALLET
+                        ? "connected-wallet border-as-brand bg-as-brand/5"
+                        : "border-as-border-secondary bg-as-surface-primary hover:border-as-secondary/80",
+                    )}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        {globalWallet?.meta?.icon ? (
+                          <img src={globalWallet.meta.icon} alt="Global Account" className="h-10 w-10 rounded-full" />
+                        ) : (
+                          <div className="wallet-icon flex h-10 w-10 items-center justify-center rounded-full bg-purple-100">
+                            <Wallet className="h-5 w-5 text-purple-600" />
+                          </div>
+                        )}
+                        <div className="flex flex-col">
+                          <span className="text-as-primary font-semibold">Global Account</span>
+                          <span className="text-as-primary/60 text-sm">{shortenAddress(globalAddress || "")}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {selectedPaymentMethod === CryptoPaymentMethodType.GLOBAL_WALLET && (
+                          <div className="h-2 w-2 rounded-full bg-green-500"></div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </button>
+                  </button>
+                )}
               </div>
             </div>
           )}
