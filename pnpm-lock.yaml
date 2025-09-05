@@ -585,11 +585,11 @@ importers:
         specifier: ^6.10.0
         version: 6.10.0(f2c3bc36c33e8277f7e88cb935f8f37a)
       '@reservoir0x/relay-kit-ui':
-        specifier: 2.15.11
-        version: 2.15.11(@emotion/is-prop-valid@1.3.1)(@pandacss/dev@1.0.1(typescript@5.8.2))(@radix-ui/colors@0.1.9)(@tanstack/react-query@5.55.0(react@19.1.0))(debug@4.4.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(viem@2.28.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))(wagmi@2.14.15(@tanstack/query-core@5.54.1)(@tanstack/react-query@5.55.0(react@19.1.0))(@types/react@19.1.0)(bufferutil@4.0.9)(encoding@0.1.13)(ioredis@5.7.0)(react@19.1.0)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.28.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))(zod@3.25.75))
+        specifier: 2.17.2
+        version: 2.17.2(@emotion/is-prop-valid@1.3.1)(@pandacss/dev@1.0.1(typescript@5.8.2))(@radix-ui/colors@0.1.9)(@tanstack/react-query@5.55.0(react@19.1.0))(debug@4.4.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(viem@2.28.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))(wagmi@2.14.15(@tanstack/query-core@5.54.1)(@tanstack/react-query@5.55.0(react@19.1.0))(@types/react@19.1.0)(bufferutil@4.0.9)(encoding@0.1.13)(ioredis@5.7.0)(react@19.1.0)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.28.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))(zod@3.25.75))
       '@reservoir0x/relay-sdk':
-        specifier: 2.3.1
-        version: 2.3.1(debug@4.4.1)(viem@2.28.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))
+        specifier: 2.4.0
+        version: 2.4.0(debug@4.4.1)(viem@2.28.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))
       '@solana/spl-token':
         specifier: ^0.4.13
         version: 0.4.13(@solana/web3.js@1.98.4(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.2)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.2)(utf-8-validate@5.0.10)
@@ -4356,16 +4356,16 @@ packages:
   '@reservoir0x/relay-design-system@0.0.2':
     resolution: {integrity: sha512-mVPywnyC0U7sb2ztYiXL0FruI5jjn1Jmd0PmCsE30m99AlwmIXxDf8OSVKQyXE5JwoGVuIIkIAec3mFcgtibkw==}
 
-  '@reservoir0x/relay-kit-hooks@1.11.3':
-    resolution: {integrity: sha512-TpJoP1cXGtJbINkW6zqlG8PPbgaTdu/QqDtEdUAiVPGop4bFT+WLdtFz7Yk5LIDkOSRP84ZwuT5+gWNNShqfPg==}
+  '@reservoir0x/relay-kit-hooks@1.12.0':
+    resolution: {integrity: sha512-Fi1C6+RebAD31aLUipOT+71kN6g7Lq/ZM0P6V5hgF/z3HPW1OXDDfRYV/Kxs5G0wA6vHQ20AKVcIq0uZz6Mf+w==}
     peerDependencies:
       '@tanstack/react-query': 5.55.0
       react: 19.1.0
       react-dom: 19.1.0
       viem: 2.28.1
 
-  '@reservoir0x/relay-kit-ui@2.15.11':
-    resolution: {integrity: sha512-mSbF1BwPk3Ipt2iSIPo7hquDSmkHT4lsSvOryaPnuph+GlWuzxaCAbjrzcno6/h67+ymDhvycPpDgeGWp+XTsA==}
+  '@reservoir0x/relay-kit-ui@2.17.2':
+    resolution: {integrity: sha512-OPy2UKp0FZ3f5COZwy+p9X4Lav8eY8pWa7+b5RG/dcIhwgs647r8LhOk1SK9phyewdhT2VbrcZNGUVug3VBKzg==}
     peerDependencies:
       '@moonpay/moonpay-react': ^1.8.3
       '@tanstack/react-query': 5.55.0
@@ -4377,13 +4377,8 @@ packages:
       '@moonpay/moonpay-react':
         optional: true
 
-  '@reservoir0x/relay-sdk@2.3.1':
-    resolution: {integrity: sha512-Wn1n10Y+PYtjKTXlmzmFNRjdNpdgbAxJf7rBwPQ4brw7CdXpzghF6tmaBtgQtekkFANSR7VVFyciO42Xn4njNw==}
-    peerDependencies:
-      viem: 2.28.1
-
-  '@reservoir0x/relay-sdk@2.3.2':
-    resolution: {integrity: sha512-iQ/cujtSleF1WU5NHO6d9TeohwA/fg/NR+K0M7k9Mv4lfZ+CQsBUcqOz5wCIgoz8w6CNZRrlztRNIMMpuAGrWQ==}
+  '@reservoir0x/relay-sdk@2.4.0':
+    resolution: {integrity: sha512-0KPLtOQ+P/Y3WkS3NB17Nv22Ba1eAnNsnxNF1qRCCiXeK3tE99ZYeiuYGDMqbLeIE43yiyFHxVLP/V9YzauFcQ==}
     peerDependencies:
       viem: 2.28.1
 
@@ -19164,9 +19159,9 @@ snapshots:
 
   '@reservoir0x/relay-design-system@0.0.2': {}
 
-  '@reservoir0x/relay-kit-hooks@1.11.3(@tanstack/react-query@5.55.0(react@19.1.0))(debug@4.4.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(viem@2.28.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))':
+  '@reservoir0x/relay-kit-hooks@1.12.0(@tanstack/react-query@5.55.0(react@19.1.0))(debug@4.4.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(viem@2.28.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))':
     dependencies:
-      '@reservoir0x/relay-sdk': 2.3.2(debug@4.4.1)(viem@2.28.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))
+      '@reservoir0x/relay-sdk': 2.4.0(debug@4.4.1)(viem@2.28.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))
       '@tanstack/react-query': 5.55.0(react@19.1.0)
       '@types/react': 18.3.23
       '@types/react-dom': 18.3.7(@types/react@18.3.23)
@@ -19177,7 +19172,7 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  '@reservoir0x/relay-kit-ui@2.15.11(@emotion/is-prop-valid@1.3.1)(@pandacss/dev@1.0.1(typescript@5.8.2))(@radix-ui/colors@0.1.9)(@tanstack/react-query@5.55.0(react@19.1.0))(debug@4.4.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(viem@2.28.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))(wagmi@2.14.15(@tanstack/query-core@5.54.1)(@tanstack/react-query@5.55.0(react@19.1.0))(@types/react@19.1.0)(bufferutil@4.0.9)(encoding@0.1.13)(ioredis@5.7.0)(react@19.1.0)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.28.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))(zod@3.25.75))':
+  '@reservoir0x/relay-kit-ui@2.17.2(@emotion/is-prop-valid@1.3.1)(@pandacss/dev@1.0.1(typescript@5.8.2))(@radix-ui/colors@0.1.9)(@tanstack/react-query@5.55.0(react@19.1.0))(debug@4.4.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(viem@2.28.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))(wagmi@2.14.15(@tanstack/query-core@5.54.1)(@tanstack/react-query@5.55.0(react@19.1.0))(@types/react@19.1.0)(bufferutil@4.0.9)(encoding@0.1.13)(ioredis@5.7.0)(react@19.1.0)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.28.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))(zod@3.25.75))':
     dependencies:
       '@fortawesome/fontawesome-svg-core': 6.7.2
       '@fortawesome/free-solid-svg-icons': 6.7.2
@@ -19193,8 +19188,8 @@ snapshots:
       '@radix-ui/react-tooltip': 1.1.8(@types/react-dom@18.3.7(@types/react@18.3.23))(@types/react@18.3.23)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@radix-ui/react-visually-hidden': 1.2.3(@types/react-dom@18.3.7(@types/react@18.3.23))(@types/react@18.3.23)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@reservoir0x/relay-design-system': 0.0.2
-      '@reservoir0x/relay-kit-hooks': 1.11.3(@tanstack/react-query@5.55.0(react@19.1.0))(debug@4.4.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(viem@2.28.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))
-      '@reservoir0x/relay-sdk': 2.3.2(debug@4.4.1)(viem@2.28.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))
+      '@reservoir0x/relay-kit-hooks': 1.12.0(@tanstack/react-query@5.55.0(react@19.1.0))(debug@4.4.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(viem@2.28.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))
+      '@reservoir0x/relay-sdk': 2.4.0(debug@4.4.1)(viem@2.28.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))
       '@tanstack/react-query': 5.55.0(react@19.1.0)
       '@types/react': 18.3.23
       '@types/react-dom': 18.3.7(@types/react@18.3.23)
@@ -19215,14 +19210,7 @@ snapshots:
       - '@radix-ui/colors'
       - debug
 
-  '@reservoir0x/relay-sdk@2.3.1(debug@4.4.1)(viem@2.28.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))':
-    dependencies:
-      axios: 1.11.0(debug@4.4.1)
-      viem: 2.28.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75)
-    transitivePeerDependencies:
-      - debug
-
-  '@reservoir0x/relay-sdk@2.3.2(debug@4.4.1)(viem@2.28.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))':
+  '@reservoir0x/relay-sdk@2.4.0(debug@4.4.1)(viem@2.28.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))':
     dependencies:
       axios: 1.11.0(debug@4.4.1)
       viem: 2.28.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75)
