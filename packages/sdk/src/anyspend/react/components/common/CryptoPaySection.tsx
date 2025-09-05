@@ -1,4 +1,4 @@
-import { useProfile, useTokenData } from "@b3dotfun/sdk/global-account/react";
+import { useAccountWallet, useProfile, useTokenData } from "@b3dotfun/sdk/global-account/react";
 import { formatUsername } from "@b3dotfun/sdk/shared/utils";
 import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { formatDisplayNumber } from "@b3dotfun/sdk/shared/utils/number";
@@ -42,7 +42,12 @@ export function CryptoPaySection({
   const { address: connectedAddress, isConnected } = useAccount();
   const { data: profileData } = useProfile({ address: connectedAddress });
   const connectedName = profileData?.displayName;
+  const { address: globalAddress } = useAccountWallet();
   const { data: srcTokenMetadata } = useTokenData(selectedSrcToken?.chainId, selectedSrcToken?.address);
+
+  // Determine which address to use based on payment method
+  const walletAddress =
+    selectedCryptoPaymentMethod === CryptoPaymentMethodType.GLOBAL_WALLET ? globalAddress : connectedAddress;
 
   // Add ref to track if we've applied metadata
   const appliedSrcMetadataRef = useRef(false);
@@ -115,7 +120,7 @@ export function CryptoPaySection({
         </button>
       </div>
       <OrderTokenAmount
-        address={connectedAddress}
+        address={walletAddress}
         context="from"
         inputValue={srcAmount}
         onChangeInput={value => {
@@ -136,7 +141,7 @@ export function CryptoPaySection({
         </div>
         <TokenBalance
           token={selectedSrcToken}
-          walletAddress={connectedAddress}
+          walletAddress={walletAddress}
           onChangeInput={value => {
             setIsSrcInputDirty(true);
             setSrcAmount(value);

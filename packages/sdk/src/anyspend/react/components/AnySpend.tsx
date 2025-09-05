@@ -32,6 +32,7 @@ import { base, mainnet } from "viem/chains";
 import { components } from "../../types/api";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
 import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPaymentMethod";
+import { CryptoPaySection } from "./common/CryptoPaySection";
 import { CryptoReceiveSection } from "./common/CryptoReceiveSection";
 import { ErrorSection } from "./common/ErrorSection";
 import { FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaymentMethod";
@@ -40,7 +41,6 @@ import { OrderHistory } from "./common/OrderHistory";
 import { OrderStatus } from "./common/OrderStatus";
 import { PanelOnramp } from "./common/PanelOnramp";
 import { PanelOnrampPayment } from "./common/PanelOnrampPayment";
-import { PaySection } from "./common/PaySection";
 import { RecipientSelection } from "./common/RecipientSelection";
 import { TabSection } from "./common/TabSection";
 
@@ -567,7 +567,10 @@ function AnySpendInner({
         return { text: "Choose payment method", disable: false, error: false };
       }
       // If payment method selected, show appropriate action
-      if (selectedCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET) {
+      if (
+        selectedCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET ||
+        selectedCryptoPaymentMethod === CryptoPaymentMethodType.GLOBAL_WALLET
+      ) {
         return { text: "Swap", disable: false, error: false };
       }
       if (selectedCryptoPaymentMethod === CryptoPaymentMethodType.TRANSFER_CRYPTO) {
@@ -632,6 +635,7 @@ function AnySpendInner({
         // If payment method is selected, create order with payment method info
         if (
           selectedCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET ||
+          selectedCryptoPaymentMethod === CryptoPaymentMethodType.GLOBAL_WALLET ||
           selectedCryptoPaymentMethod === CryptoPaymentMethodType.TRANSFER_CRYPTO
         ) {
           console.log("Creating crypto order with payment method:", selectedCryptoPaymentMethod);
@@ -856,8 +860,7 @@ function AnySpendInner({
       <div className="relative flex w-full max-w-[calc(100vw-32px)] flex-col gap-2">
         {/* Send section */}
         {activeTab === "crypto" ? (
-          <PaySection
-            paymentType="crypto"
+          <CryptoPaySection
             selectedSrcChainId={selectedSrcChainId}
             setSelectedSrcChainId={setSelectedSrcChainId}
             selectedSrcToken={selectedSrcToken}
@@ -866,9 +869,7 @@ function AnySpendInner({
             setSrcAmount={setSrcAmount}
             setIsSrcInputDirty={setIsSrcInputDirty}
             selectedCryptoPaymentMethod={selectedCryptoPaymentMethod}
-            selectedFiatPaymentMethod={selectedFiatPaymentMethod}
             onSelectCryptoPaymentMethod={() => setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD)}
-            onSelectFiatPaymentMethod={() => setActivePanel(PanelView.FIAT_PAYMENT_METHOD)}
             anyspendQuote={anyspendQuote}
           />
         ) : (
