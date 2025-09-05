@@ -22,6 +22,8 @@ import { TokenBalanceRow } from "./TokenBalanceRow";
 interface BalanceContentProps {
   onLogout?: () => void;
   partnerId: string;
+  showDeposit?: boolean;
+  showSwap?: boolean;
 }
 
 function centerTruncate(str: string, length = 4) {
@@ -29,7 +31,7 @@ function centerTruncate(str: string, length = 4) {
   return `${str.slice(0, length)}...${str.slice(-length)}`;
 }
 
-export function BalanceContent({ onLogout, partnerId }: BalanceContentProps) {
+export function BalanceContent({ onLogout, partnerId, showDeposit = true, showSwap = true }: BalanceContentProps) {
   const account = useActiveAccount();
   const { address: eoaAddress, info: eoaInfo } = useFirstEOA();
   const { data: profile } = useProfile({
@@ -122,35 +124,41 @@ export function BalanceContent({ onLogout, partnerId }: BalanceContentProps) {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 gap-3">
-        <Button
-          className="manage-account-deposit bg-b3-primary-wash hover:bg-b3-primary-wash/70 h-[84px] w-full flex-col items-start gap-2 rounded-2xl"
-          onClick={() => {
-            setB3ModalOpen(true);
-            setB3ModalContentType({
-              type: "anySpend",
-              defaultActiveTab: "fiat",
-              showBackButton: true,
-            });
-          }}
-        >
-          <BankIcon size={24} className="text-b3-primary-blue shrink-0" />
-          <div className="text-b3-grey font-neue-montreal-semibold">Deposit</div>
-        </Button>
-        <Button
-          className="manage-account-swap bg-b3-primary-wash hover:bg-b3-primary-wash/70 flex h-[84px] w-full flex-col items-start gap-2 rounded-2xl"
-          onClick={() => {
-            setB3ModalOpen(true);
-            setB3ModalContentType({
-              type: "anySpend",
-              showBackButton: true,
-            });
-          }}
-        >
-          <SwapIcon size={24} className="text-b3-primary-blue" />
-          <div className="text-b3-grey font-neue-montreal-semibold">Swap</div>
-        </Button>
-      </div>
+      {(showDeposit || showSwap) && (
+        <div className="grid grid-cols-2 gap-3">
+          {showDeposit && (
+            <Button
+              className="manage-account-deposit bg-b3-primary-wash hover:bg-b3-primary-wash/70 h-[84px] w-full flex-col items-start gap-2 rounded-2xl"
+              onClick={() => {
+                setB3ModalOpen(true);
+                setB3ModalContentType({
+                  type: "anySpend",
+                  defaultActiveTab: "fiat",
+                  showBackButton: true,
+                });
+              }}
+            >
+              <BankIcon size={24} className="text-b3-primary-blue shrink-0" />
+              <div className="text-b3-grey font-neue-montreal-semibold">Deposit</div>
+            </Button>
+          )}
+          {showSwap && (
+            <Button
+              className="manage-account-swap bg-b3-primary-wash hover:bg-b3-primary-wash/70 flex h-[84px] w-full flex-col items-start gap-2 rounded-2xl"
+              onClick={() => {
+                setB3ModalOpen(true);
+                setB3ModalContentType({
+                  type: "anySpend",
+                  showBackButton: true,
+                });
+              }}
+            >
+              <SwapIcon size={24} className="text-b3-primary-blue" />
+              <div className="text-b3-grey font-neue-montreal-semibold">Swap</div>
+            </Button>
+          )}
+        </div>
+      )}
 
       {/* Balance Sections with Accordions */}
       <Accordion type="multiple" value={openAccordions} onValueChange={setOpenAccordions} className="space-y-2">
