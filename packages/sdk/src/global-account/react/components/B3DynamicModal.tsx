@@ -41,7 +41,6 @@ export function B3DynamicModal() {
     "anySpendSignatureMint",
     "anySpendBondKit",
     "linkAccount",
-    "anySpendDepositHype",
     "avatarEditor",
   ];
 
@@ -68,7 +67,6 @@ export function B3DynamicModal() {
     isFreestyleType && "b3-modal-freestyle",
     contentType?.type === "signInWithB3" && "p-0",
     contentType?.type === "anySpend" && "md:px-6",
-    contentType?.type === "transak" && "transak-modal",
     // Add specific styles for avatar editor
     contentType?.type === "avatarEditor" &&
       "h-[90dvh] w-[90vw] bg-black p-0 overflow-y-auto overflow-x-hidden max-md:-mt-8 max-md:rounded-t-xl",

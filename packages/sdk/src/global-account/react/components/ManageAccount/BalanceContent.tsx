@@ -44,6 +44,17 @@ export function BalanceContent({ onLogout, partnerId, showDeposit = true, showSw
   const [openAccordions, setOpenAccordions] = useState<string[]>([]);
   const hasExpandedRef = useRef(false);
 
+  const handleEditAvatar = () => {
+    setB3ModalOpen(true);
+    setB3ModalContentType({
+      type: "avatarEditor",
+      showBackButton: true,
+      onSuccess: () => {
+        alert("Avatar update success - WIP");
+      },
+    });
+  };
+
   console.log("eoaAddress", eoaAddress);
   console.log("account?.address", account?.address);
 
@@ -105,9 +116,12 @@ export function BalanceContent({ onLogout, partnerId, showDeposit = true, showSw
             ) : (
               <div className="bg-b3-primary-wash size-24 rounded-full" />
             )}
-            <div className="bg-b3-grey border-b3-background absolute -bottom-1 -right-1 flex size-8 items-center justify-center rounded-full border-4">
+            <button
+              onClick={handleEditAvatar}
+              className="bg-b3-grey border-b3-background hover:bg-b3-grey/80 absolute -bottom-1 -right-1 flex size-8 items-center justify-center rounded-full border-4 transition-colors"
+            >
               <Pencil size={16} className="text-b3-background" />
-            </div>
+            </button>
           </div>
           <div className="global-account-profile-info">
             <h2 className="text-b3-grey text-xl font-semibold">
