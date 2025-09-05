@@ -42,6 +42,8 @@ interface ManageAccountProps {
   chain: Chain;
   partnerId: string;
   containerClassName?: string;
+  showSwap?: boolean;
+  showDeposit?: boolean;
 }
 
 export function ManageAccount({
@@ -50,6 +52,8 @@ export function ManageAccount({
   onDeposit: _onDeposit,
   chain,
   partnerId,
+  showSwap,
+  showDeposit,
 }: ManageAccountProps) {
   const [revokingSignerId, setRevokingSignerId] = useState<string | null>(null);
   const account = useActiveAccount();
@@ -234,53 +238,64 @@ export function ManageAccount({
     };
 
     return (
-      <div className="space-y-8">
+      <div className="linked-accounts-settings space-y-8">
         {/* Linked Accounts Section */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-b3-grey font-neue-montreal-semibold text-xl">Linked Accounts</h3>
+        <div className="linked-accounts-section space-y-4">
+          <div className="linked-accounts-header flex items-center justify-between">
+            <h3 className="text-b3-grey font-neue-montreal-semibold linked-accounts-settings-title text-xl">
+              Linked Accounts
+            </h3>
             <Button
-              className="bg-b3-primary-wash hover:bg-b3-primary-wash/70 flex items-center gap-2 rounded-full px-4 py-2"
+              className="linked-accounts-settings-button linked-accounts-link-button bg-b3-primary-wash hover:bg-b3-primary-wash/70 flex items-center gap-2 rounded-full px-4 py-2"
               onClick={handleOpenLinkModal}
               disabled={isLinking}
             >
               {isLinking ? (
-                <Loader2 className="text-b3-primary-blue animate-spin" size={16} />
+                <Loader2 className="linked-accounts-link-loading text-b3-primary-blue animate-spin" size={16} />
               ) : (
-                <LinkIcon size={16} className="text-b3-primary-blue" />
+                <LinkIcon size={16} className="linked-accounts-link-icon text-b3-primary-blue" />
               )}
-              <span className="text-b3-grey font-neue-montreal-semibold">
+              <span className="linked-accounts-link-text text-b3-grey font-neue-montreal-semibold">
                 {isLinking ? "Linking..." : "Link New Account"}
               </span>
             </Button>
           </div>
 
           {isLoadingProfiles ? (
-            <div className="flex justify-center py-8">
+            <div className="linked-accounts-loading flex justify-center py-8">
               <Loader2 className="text-b3-grey animate-spin" />
             </div>
           ) : profiles.length > 0 ? (
-            <div className="space-y-4">
+            <div className="linked-accounts-list space-y-4">
               {profiles.map(profile => (
-                <div key={profile.title} className="bg-b3-line flex items-center justify-between rounded-xl p-4">
-                  <div className="flex items-center gap-3">
+                <div
+                  key={profile.title}
+                  className="linked-account-item bg-b3-line flex items-center justify-between rounded-xl p-4"
+                >
+                  <div className="linked-account-info flex items-center gap-3">
                     {profile.imageUrl ? (
-                      <img src={profile.imageUrl} alt={profile.title} className="size-10 rounded-full" />
+                      <img
+                        src={profile.imageUrl}
+                        alt={profile.title}
+                        className="linked-account-avatar linked-account-avatar-image size-10 rounded-full"
+                      />
                     ) : (
-                      <div className="bg-b3-primary-wash flex h-10 w-10 items-center justify-center rounded-full">
-                        <span className="text-b3-grey font-neue-montreal-semibold text-sm uppercase">
+                      <div className="linked-account-avatar linked-account-avatar-placeholder bg-b3-primary-wash flex h-10 w-10 items-center justify-center rounded-full">
+                        <span className="linked-account-initial text-b3-grey font-neue-montreal-semibold text-sm uppercase">
                           {profile.initial}
                         </span>
                       </div>
                     )}
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-b3-grey font-neue-montreal-semibold">{profile.title}</span>
-                        <span className="text-b3-foreground-muted font-neue-montreal-medium bg-b3-primary-wash rounded px-2 py-0.5 text-xs">
+                    <div className="linked-account-details">
+                      <div className="linked-account-title-row flex items-center gap-2">
+                        <span className="linked-account-title text-b3-grey font-neue-montreal-semibold">
+                          {profile.title}
+                        </span>
+                        <span className="linked-account-type text-b3-foreground-muted font-neue-montreal-medium bg-b3-primary-wash rounded px-2 py-0.5 text-xs">
                           {profile.type.toUpperCase()}
                         </span>
                       </div>
-                      <div className="text-b3-foreground-muted font-neue-montreal-medium text-sm">
+                      <div className="linked-account-subtitle text-b3-foreground-muted font-neue-montreal-medium text-sm">
                         {profile.subtitle}
                       </div>
                     </div>
@@ -288,69 +303,79 @@ export function ManageAccount({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="text-b3-grey hover:text-b3-negative"
+                    className="linked-account-unlink-button text-b3-grey hover:text-b3-negative"
                     onClick={() => handleUnlink(profile)}
                     disabled={unlinkingAccountId === profile.title || isUnlinking}
                   >
                     {unlinkingAccountId === profile.title || isUnlinking ? (
-                      <Loader2 className="animate-spin" />
+                      <Loader2 className="linked-account-unlink-loading animate-spin" />
                     ) : (
-                      <UnlinkIcon size={16} />
+                      <UnlinkIcon size={16} className="linked-account-unlink-icon" />
                     )}
                   </Button>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-b3-foreground-muted py-8 text-center">No linked accounts found</div>
+            <div className="linked-accounts-empty text-b3-foreground-muted py-8 text-center">
+              No linked accounts found
+            </div>
           )}
         </div>
 
         {showReferralInfo && (
           /* Referral Section */
-          <div className="space-y-4">
-            <h3 className="text-b3-grey font-neue-montreal-semibold text-xl">Referrals</h3>
+          <div className="referrals-section space-y-4">
+            <h3 className="referrals-title text-b3-grey font-neue-montreal-semibold text-xl">Referrals</h3>
 
             {/* Referral Code */}
-            <div className="bg-b3-line rounded-xl p-4">
+            <div className="referral-code-container bg-b3-line rounded-xl p-4">
               {isEditingCode && (
-                <div>
-                  <div className="text-b3-grey font-neue-montreal-semibold">Your Referral Code</div>
-                  <div className="text-b3-foreground-muted font-neue-montreal-medium text-sm">
+                <div className="referral-code-header-editing">
+                  <div className="referral-code-title text-b3-grey font-neue-montreal-semibold">Your Referral Code</div>
+                  <div className="referral-code-description text-b3-foreground-muted font-neue-montreal-medium text-sm">
                     Share this code with friends to earn rewards
                   </div>
                 </div>
               )}
-              <div className="flex items-center justify-between">
+              <div className="referral-code-content flex items-center justify-between">
                 {!isEditingCode && (
-                  <div>
-                    <div className="text-b3-grey font-neue-montreal-semibold">Your Referral Code</div>
-                    <div className="text-b3-foreground-muted font-neue-montreal-medium text-sm">
+                  <div className="referral-code-header">
+                    <div className="referral-code-title text-b3-grey font-neue-montreal-semibold">
+                      Your Referral Code
+                    </div>
+                    <div className="referral-code-description text-b3-foreground-muted font-neue-montreal-medium text-sm">
                       Share this code with friends to earn rewards
                     </div>
                   </div>
                 )}
-                <div className="flex items-center gap-2">
+                <div className="referral-code-actions flex items-center gap-2">
                   {isEditingCode ? (
-                    <div className="flex items-center gap-2">
+                    <div className="referral-code-edit-form flex items-center gap-2">
                       <input
                         type="text"
                         value={newReferralCode}
                         onChange={e => setNewReferralCode(e.target.value)}
-                        className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm"
+                        className="referral-code-input rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm"
                         placeholder="Enter new code"
                         ref={referallCodeRef}
                       />
                       <Button
                         size="sm"
+                        className="referral-code-save-button"
                         onClick={handleUpdateReferralCode}
                         disabled={isUpdatingCode || !newReferralCode}
                       >
-                        {isUpdatingCode ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
+                        {isUpdatingCode ? (
+                          <Loader2 className="referral-code-save-loading h-4 w-4 animate-spin" />
+                        ) : (
+                          "Save"
+                        )}
                       </Button>
                       <Button
                         size="sm"
                         variant="ghost"
+                        className="referral-code-cancel-button"
                         onClick={() => {
                           setIsEditingCode(false);
                           setNewReferralCode("");
@@ -361,15 +386,21 @@ export function ManageAccount({
                     </div>
                   ) : (
                     <>
-                      <div className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm">
+                      <div className="referral-code-display rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm">
                         {currentReferralCode}
                       </div>
-                      <Button size="icon" variant="ghost" onClick={handleCopyCode}>
-                        <Copy className="h-4 w-4" />
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="referral-code-copy-button"
+                        onClick={handleCopyCode}
+                      >
+                        <Copy className="referral-code-copy-icon h-4 w-4" />
                       </Button>
                       <Button
                         size="icon"
                         variant="ghost"
+                        className="referral-code-edit-button"
                         onClick={() => {
                           setIsEditingCode(true);
                           setTimeout(() => {
@@ -377,7 +408,7 @@ export function ManageAccount({
                           }, 100);
                         }}
                       >
-                        <Pencil className="h-4 w-4" />
+                        <Pencil className="referral-code-edit-icon h-4 w-4" />
                       </Button>
                     </>
                   )}
@@ -386,67 +417,65 @@ export function ManageAccount({
             </div>
 
             {/* Referred Users */}
-            <div className="bg-b3-line rounded-xl p-4">
-              <div className="text-b3-grey font-neue-montreal-semibold mb-4">Referred Users</div>
+            <div className="referred-users-container bg-b3-line rounded-xl p-4">
+              <div className="referred-users-title text-b3-grey font-neue-montreal-semibold mb-4">Referred Users</div>
               {isLoadingReferrals ? (
-                <div className="flex justify-center py-4">
+                <div className="referred-users-loading flex justify-center py-4">
                   <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
                 </div>
               ) : referrals?.data?.length ? (
-                <div className="space-y-3">
+                <div className="referred-users-list space-y-3">
                   {referrals.data.map((referral: Referrals) => (
                     <div
                       key={String(referral._id)}
-                      className="flex items-center justify-between rounded-lg bg-white p-3"
+                      className="referred-user-item flex items-center justify-between rounded-lg bg-white p-3"
                     >
-                      <div className="text-sm font-medium">{referral.referreeId}</div>
-                      <div className="text-sm text-gray-500">{new Date(referral.createdAt).toLocaleDateString()}</div>
+                      <div className="referred-user-id text-sm font-medium">{referral.referreeId}</div>
+                      <div className="referred-user-date text-sm text-gray-500">
+                        {new Date(referral.createdAt).toLocaleDateString()}
+                      </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="py-4 text-center text-gray-500">No referred users yet</div>
+                <div className="referred-users-empty py-4 text-center text-gray-500">No referred users yet</div>
               )}
             </div>
           </div>
         )}
 
         {/* Additional Settings Sections */}
-        <div className="space-y-4">
-          <h3 className="text-b3-grey font-neue-montreal-semibold text-xl">Account Preferences</h3>
-          <div className="bg-b3-line rounded-xl p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-b3-grey font-neue-montreal-semibold">Dark Mode</div>
-                <div className="text-b3-foreground-muted font-neue-montreal-medium text-sm">
+        <div className="account-preferences-section space-y-4">
+          <h3 className="account-preferences-title text-b3-grey font-neue-montreal-semibold text-xl">
+            Account Preferences
+          </h3>
+          <div className="account-preferences-container bg-b3-line rounded-xl p-4">
+            <div className="account-preference-item flex items-center justify-between">
+              <div className="account-preference-info">
+                <div className="account-preference-title text-b3-grey font-neue-montreal-semibold">Dark Mode</div>
+                <div className="account-preference-description text-b3-foreground-muted font-neue-montreal-medium text-sm">
                   Switch between light and dark theme
                 </div>
               </div>
               {/* Theme toggle placeholder - can be implemented later */}
-              <div className="bg-b3-primary-wash h-6 w-12 rounded-full"></div>
+              <div className="account-preference-toggle theme-toggle-placeholder bg-b3-primary-wash h-6 w-12 rounded-full"></div>
             </div>
           </div>
         </div>
 
-        {/* Global Account Info */}
-        <div className="border-b3-line flex items-center justify-between rounded-2xl border p-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <img src="https://cdn.b3.fun/b3_logo.svg" alt="B3" className="h-4" />
-              <h3 className="font-neue-montreal-semibold text-b3-grey">Global Account</h3>
-            </div>
-
-            <p className="text-b3-foreground-muted font-neue-montreal-medium mt-2 text-sm">
-              Your universal account for all B3 apps
-            </p>
+        <button
+          className="logout-button logout-section border-b3-line hover:bg-b3-line relative flex w-full items-center justify-center rounded-2xl border p-4 transition-colors"
+          onClick={onLogoutEnhanced}
+        >
+          <span className="logout-text font-neue-montreal-semibold text-b3-grey">Sign out</span>
+          <div className="logout-icon-container absolute right-4">
+            {logoutLoading ? (
+              <Loader2 className="logout-loading animate-spin" size={16} />
+            ) : (
+              <SignOutIcon size={16} className="logout-icon text-b3-grey" />
+            )}
           </div>
-          <button
-            className="text-b3-grey hover:text-b3-grey/80 hover:bg-b3-line border-b3-line flex size-12 items-center justify-center rounded-full border"
-            onClick={onLogoutEnhanced}
-          >
-            {logoutLoading ? <Loader2 className="animate-spin" /> : <SignOutIcon size={16} className="text-b3-grey" />}
-          </button>
-        </div>
+        </button>
       </div>
     );
   };
@@ -521,7 +550,7 @@ export function ManageAccount({
           </div>
 
           <TabsContentPrimitive value="overview" className="px-4 pb-4 pt-2">
-            <BalanceContent onLogout={onLogout} partnerId={partnerId} />
+            <BalanceContent onLogout={onLogout} partnerId={partnerId} showDeposit={showDeposit} showSwap={showSwap} />
           </TabsContentPrimitive>
 
           <TabsContentPrimitive value="tokens" className="px-4 pb-4 pt-2">
