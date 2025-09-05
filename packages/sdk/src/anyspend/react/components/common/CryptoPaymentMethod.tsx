@@ -204,7 +204,7 @@ export function CryptoPaymentMethod({
           {/* Installed Wallets Section */}
           {(isConnected || globalAddress) && (
             <div className="installed-wallets">
-              <h3 className="text-as-primary/80 mb-3 text-sm font-medium">Connected wallets z</h3>
+              <h3 className="text-as-primary/80 mb-3 text-sm font-medium">Connected wallets</h3>
               <div className="space-y-2">
                 {/* Current Connected Wallet */}
                 {isConnected && (
