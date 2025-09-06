@@ -1,8 +1,8 @@
 import type { ClientApplication } from "@b3dotfun/b3-api";
 import { authenticate, getClient, getClientByType, setClientType } from "./client-manager";
 
-// Back-compat default: start as socket
-setClientType("socket");
+// Default to rest
+setClientType("rest");
 
 // Default export that *looks like* a Feathers app and auto-forwards
 const app = new Proxy({} as ClientApplication, {
