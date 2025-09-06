@@ -7,7 +7,7 @@ import { authenticate as authenticateB3, B3_API_URL, clientOptions } from "../ap
 export type ClientType = "socket" | "rest";
 
 // Global state to track which client type is active
-let currentClientType: ClientType = "socket";
+let currentClientType: ClientType = "rest";
 let currentClient: ClientApplication | null = null;
 
 // Socket client instance
