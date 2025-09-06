@@ -2,6 +2,7 @@ import {
   Button,
   CopyToClipboard,
   useAuthentication,
+  useB3,
   useB3BalanceFromAddresses,
   useModalStore,
   useNativeBalance,
@@ -11,6 +12,7 @@ import { BankIcon } from "@b3dotfun/sdk/global-account/react/components/icons/Ba
 import { SignOutIcon } from "@b3dotfun/sdk/global-account/react/components/icons/SignOutIcon";
 import { SwapIcon } from "@b3dotfun/sdk/global-account/react/components/icons/SwapIcon";
 import { formatUsername } from "@b3dotfun/sdk/shared/utils";
+import { getIpfsUrl } from "@b3dotfun/sdk/shared/utils/ipfs";
 import { Loader2, Pencil } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useActiveAccount } from "thirdweb/react";
@@ -38,11 +40,14 @@ export function BalanceContent({ onLogout, partnerId, showDeposit = true, showSw
     address: eoaAddress || account?.address,
     fresh: true,
   });
+  const { user } = useB3();
   const { setB3ModalOpen, setB3ModalContentType, navigateBack } = useModalStore();
   const { logout } = useAuthentication(partnerId);
   const [logoutLoading, setLogoutLoading] = useState(false);
   const [openAccordions, setOpenAccordions] = useState<string[]>([]);
   const hasExpandedRef = useRef(false);
+
+  const avatarUrl = user?.avatar ? getIpfsUrl(user?.avatar) : profile?.avatar;
 
   const handleEditAvatar = () => {
     setB3ModalOpen(true);
@@ -112,8 +117,8 @@ export function BalanceContent({ onLogout, partnerId, showDeposit = true, showSw
       <div className="flex items-center justify-between">
         <div className="global-account-profile flex items-center gap-4">
           <div className="global-account-profile-avatar relative">
-            {profile?.avatar ? (
-              <img src={profile?.avatar} alt="Profile" className="size-24 rounded-full" />
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="Profile" className="size-24 rounded-full" />
             ) : (
               <div className="bg-b3-primary-wash size-24 rounded-full" />
             )}

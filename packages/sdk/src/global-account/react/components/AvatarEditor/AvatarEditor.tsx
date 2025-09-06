@@ -1,7 +1,7 @@
 "use client";
 
 import app from "@b3dotfun/sdk/global-account/app";
-import { Button, useProfile } from "@b3dotfun/sdk/global-account/react";
+import { Button, useB3, useProfile } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
@@ -24,6 +24,7 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { setUser } = useB3();
 
   const account = useActiveAccount();
   const { data: profile, refetch: refreshProfile } = useProfile({
@@ -89,13 +90,16 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
 
       // Save avatar URL using profiles service
       setIsSaving(true);
-      await app.service("users").setAvatar(
+      const user = await app.service("users").setAvatar(
         {
           avatar: ipfsUrl,
         },
         // @ts-expect-error - our typed client is expecting context even though it's set elsewhere
         {},
       );
+      // update user
+      // @ts-expect-error this resolved fine, look into why expect-error needed
+      setUser(user);
 
       // Refresh profile to get updated avatar
       await refreshProfile();
