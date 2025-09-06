@@ -49,6 +49,8 @@ function createRestClient(): ClientApplication {
 
 /**
  * Sets the active client type and creates the appropriate client
+ *
+ * Note: When using, be sure to avoid race conditions between different clients
  */
 export function setClientType(t: ClientType): void {
   if (currentClientType === t && currentClient) return;
