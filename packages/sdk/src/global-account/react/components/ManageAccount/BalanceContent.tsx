@@ -38,7 +38,7 @@ export function BalanceContent({ onLogout, partnerId, showDeposit = true, showSw
     address: eoaAddress || account?.address,
     fresh: true,
   });
-  const { setB3ModalOpen, setB3ModalContentType } = useModalStore();
+  const { setB3ModalOpen, setB3ModalContentType, navigateBack } = useModalStore();
   const { logout } = useAuthentication(partnerId);
   const [logoutLoading, setLogoutLoading] = useState(false);
   const [openAccordions, setOpenAccordions] = useState<string[]>([]);
@@ -50,7 +50,8 @@ export function BalanceContent({ onLogout, partnerId, showDeposit = true, showSw
       type: "avatarEditor",
       showBackButton: true,
       onSuccess: () => {
-        alert("Avatar update success - WIP");
+        // navigate back on success
+        navigateBack();
       },
     });
   };
