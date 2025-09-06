@@ -1,12 +1,12 @@
 import { useB3 } from "@b3dotfun/sdk/global-account/react";
 import { useCallback } from "react";
 import {
-    ClientType,
-    authenticateBoth,
-    authenticateWithClient,
-    getClient,
-    getClientByType,
-    setClientType
+  ClientType,
+  authenticateBoth,
+  authenticateWithClient,
+  getClient,
+  getClientByType,
+  setClientType,
 } from "../../client-manager";
 
 /**
@@ -27,35 +27,31 @@ export function useClient() {
     setClientType(type);
   }, []);
 
-  const authenticateWithType = useCallback(async (
-    type: ClientType,
-    accessToken: string,
-    identityToken: string,
-    params?: Record<string, any>
-  ) => {
-    return authenticateWithClient(type, accessToken, identityToken, params);
-  }, []);
+  const authenticateWithType = useCallback(
+    async (type: ClientType, accessToken: string, identityToken: string, params?: Record<string, any>) => {
+      return authenticateWithClient(type, accessToken, identityToken, params);
+    },
+    [],
+  );
 
-  const authenticateWithBoth = useCallback(async (
-    accessToken: string,
-    identityToken: string,
-    params?: Record<string, any>
-  ) => {
-    return authenticateBoth(accessToken, identityToken, params);
-  }, []);
+  const authenticateWithBoth = useCallback(
+    async (accessToken: string, identityToken: string, params?: Record<string, any>) => {
+      return authenticateBoth(accessToken, identityToken, params);
+    },
+    [],
+  );
 
   return {
     // Current client info
     clientType,
     getCurrentClient,
-    
+
     // Client management
     getClientByType: getClientByTypeCallback,
     switchClientType,
-    
+
     // Authentication utilities
     authenticateWithType,
     authenticateWithBoth,
   };
 }
-

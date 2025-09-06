@@ -22,11 +22,11 @@ export { useMediaQuery } from "./useMediaQuery";
 export { useNativeBalance, useNativeBalanceFromRPC } from "./useNativeBalance";
 export { useOneBalance } from "./useOneBalance";
 export {
-    useProfile,
-    useProfilePreference,
-    type CombinedProfile,
-    type PreferenceRequestBody,
-    type Profile
+  useProfile,
+  useProfilePreference,
+  type CombinedProfile,
+  type PreferenceRequestBody,
+  type Profile,
 } from "./useProfile";
 export { useQueryB3 } from "./useQueryB3";
 export { useQueryBSMNT } from "./useQueryBSMNT";
@@ -44,4 +44,3 @@ export { useTokenPriceWithFallback } from "./useTokenPriceWithFallback";
 export { useTokensFromAddress } from "./useTokensFromAddress";
 export { useUnifiedChainSwitchAndExecute } from "./useUnifiedChainSwitchAndExecute";
 export { useURLParams } from "./useURLParams";
-

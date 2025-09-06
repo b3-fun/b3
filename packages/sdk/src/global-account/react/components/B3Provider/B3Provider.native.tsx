@@ -41,7 +41,12 @@ export function B3Provider({
   return (
     <QueryClientProvider client={queryClient}>
       <ThirdwebProvider>
-        <InnerProvider accountOverride={accountOverride} environment={environment} theme={theme} clientType={clientType}>
+        <InnerProvider
+          accountOverride={accountOverride}
+          environment={environment}
+          theme={theme}
+          clientType={clientType}
+        >
           {/* <RelayKitProviderWrapper> */}
           {children}
           {/* </RelayKitProviderWrapper> */}
