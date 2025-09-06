@@ -31,9 +31,17 @@ function createSocketClient(): ClientApplication {
 /**
  * Creates a REST client
  */
+function resolveFetch(): typeof fetch {
+  const f = (globalThis as any).fetch;
+  if (typeof f === "function") return f.bind(globalThis);
+  // lazy-require for Node environments
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  return require("cross-fetch").fetch as typeof fetch;
+}
+
 function createRestClient(): ClientApplication {
   if (!restClient) {
-    const connection = rest(B3_API_URL).fetch(window.fetch.bind(window));
+    const connection = rest(B3_API_URL).fetch(resolveFetch());
     restClient = createClient(connection, clientOptions);
   }
   return restClient;
