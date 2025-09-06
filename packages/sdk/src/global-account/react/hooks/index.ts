@@ -8,6 +8,7 @@ export { useB3EnsName } from "./useB3EnsName";
 export { useBestTransactionPath } from "./useBestTransactionPath";
 export { useChainSwitchWithAction } from "./useChainSwitchWithAction";
 export * from "./useClaim";
+export { useClient } from "./useClient";
 export { useConnect } from "./useConnect";
 export { useExchangeRate } from "./useExchangeRate";
 export { useFirstEOA } from "./useFirstEOA";
