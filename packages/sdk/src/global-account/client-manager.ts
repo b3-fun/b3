@@ -135,5 +135,5 @@ export const authenticateBoth = async (accessToken: string, identityToken: strin
  */
 export async function switchClientAndAuth(type: ClientType, access: string, id: string, params?: any) {
   setClientType(type);
-  return authenticateBoth(access, id, params);
+  return authenticateWithClient(type, access, id, params);
 }
