@@ -68,8 +68,8 @@ export function B3DynamicModal() {
     contentType?.type === "signInWithB3" && "p-0",
     contentType?.type === "anySpend" && "md:px-6",
     // Add specific styles for avatar editor
-    contentType?.type === "avatarEditor_disabled" &&
-      "h-[90dvh] w-[90vw] bg-black p-0 overflow-y-auto overflow-x-hidden max-md:-mt-8 max-md:rounded-t-xl",
+    // contentType?.type === "avatarEditor_disabled" &&
+    //   "h-[90dvh] w-[90vw] bg-black p-0 overflow-y-auto overflow-x-hidden max-md:-mt-8 max-md:rounded-t-xl",
   );
 
   debug("contentType", contentType);
