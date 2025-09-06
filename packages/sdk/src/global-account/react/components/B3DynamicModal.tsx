@@ -12,6 +12,7 @@ import { AnySpendDepositHype } from "@b3dotfun/sdk/anyspend/react/components/Any
 import { useIsMobile, useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
+import { AvatarEditor } from "./AvatarEditor/AvatarEditor";
 import { useB3 } from "./B3Provider/useB3";
 import { LinkAccount } from "./LinkAccount/LinkAccount";
 import { ManageAccount } from "./ManageAccount/ManageAccount";
@@ -40,6 +41,7 @@ export function B3DynamicModal() {
     "anySpendSignatureMint",
     "anySpendBondKit",
     "linkAccount",
+    "avatarEditor",
   ];
 
   const freestyleTypes = [
@@ -65,6 +67,9 @@ export function B3DynamicModal() {
     isFreestyleType && "b3-modal-freestyle",
     contentType?.type === "signInWithB3" && "p-0",
     contentType?.type === "anySpend" && "md:px-6",
+    // Add specific styles for avatar editor
+    // contentType?.type === "avatarEditor_disabled" &&
+    //   "h-[90dvh] w-[90vw] bg-black p-0 overflow-y-auto overflow-x-hidden max-md:-mt-8 max-md:rounded-t-xl",
   );
 
   debug("contentType", contentType);
@@ -102,6 +107,8 @@ export function B3DynamicModal() {
         return <LinkAccount {...contentType} />;
       case "anySpendDepositHype":
         return <AnySpendDepositHype {...contentType} mode="modal" />;
+      case "avatarEditor":
+        return <AvatarEditor onSetAvatar={contentType.onSuccess} />;
       // Add other modal types here
       default:
         return null;
@@ -120,8 +127,10 @@ export function B3DynamicModal() {
           contentClass,
           "rounded-2xl bg-white shadow-xl dark:bg-gray-900",
           "border border-gray-200 dark:border-gray-800",
-          "mx-auto w-full max-w-md",
-          "sm:max-w-lg sm:rounded-b-none",
+          // Remove default width classes for avatar editor
+          contentType?.type === "avatarEditor"
+            ? "!w-[90vw] !max-w-none" // Use !important to override default styles
+            : "mx-auto w-full max-w-md sm:max-w-lg",
         )}
         hideCloseButton={hideCloseButton}
       >
@@ -155,6 +164,22 @@ export function B3DynamicModal() {
           {renderContent()}
         </div>
       </ModalContent>
+      {contentType?.type === "avatarEditor" && (
+        <button
+          onClick={() => setB3ModalOpen(false)}
+          className="fixed right-5 top-5 z-[100] cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M18 6L6 18M6 6L18 18"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+      )}
     </ModalComponent>
   );
 }

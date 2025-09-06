@@ -2,6 +2,7 @@ import {
   Button,
   CopyToClipboard,
   useAuthentication,
+  useB3,
   useB3BalanceFromAddresses,
   useModalStore,
   useNativeBalance,
@@ -11,6 +12,7 @@ import { BankIcon } from "@b3dotfun/sdk/global-account/react/components/icons/Ba
 import { SignOutIcon } from "@b3dotfun/sdk/global-account/react/components/icons/SignOutIcon";
 import { SwapIcon } from "@b3dotfun/sdk/global-account/react/components/icons/SwapIcon";
 import { formatUsername } from "@b3dotfun/sdk/shared/utils";
+import { getIpfsUrl } from "@b3dotfun/sdk/shared/utils/ipfs";
 import { Loader2, Pencil } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useActiveAccount } from "thirdweb/react";
@@ -38,11 +40,26 @@ export function BalanceContent({ onLogout, partnerId, showDeposit = true, showSw
     address: eoaAddress || account?.address,
     fresh: true,
   });
-  const { setB3ModalOpen, setB3ModalContentType } = useModalStore();
+  const { user } = useB3();
+  const { setB3ModalOpen, setB3ModalContentType, navigateBack } = useModalStore();
   const { logout } = useAuthentication(partnerId);
   const [logoutLoading, setLogoutLoading] = useState(false);
   const [openAccordions, setOpenAccordions] = useState<string[]>([]);
   const hasExpandedRef = useRef(false);
+
+  const avatarUrl = user?.avatar ? getIpfsUrl(user?.avatar) : profile?.avatar;
+
+  const handleEditAvatar = () => {
+    setB3ModalOpen(true);
+    setB3ModalContentType({
+      type: "avatarEditor",
+      showBackButton: true,
+      onSuccess: () => {
+        // navigate back on success
+        navigateBack();
+      },
+    });
+  };
 
   console.log("eoaAddress", eoaAddress);
   console.log("account?.address", account?.address);
@@ -100,14 +117,17 @@ export function BalanceContent({ onLogout, partnerId, showDeposit = true, showSw
       <div className="flex items-center justify-between">
         <div className="global-account-profile flex items-center gap-4">
           <div className="global-account-profile-avatar relative">
-            {profile?.avatar ? (
-              <img src={profile?.avatar} alt="Profile" className="size-24 rounded-full" />
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="Profile" className="size-24 rounded-full" />
             ) : (
               <div className="bg-b3-primary-wash size-24 rounded-full" />
             )}
-            <div className="bg-b3-grey border-b3-background absolute -bottom-1 -right-1 flex size-8 items-center justify-center rounded-full border-4">
+            <button
+              onClick={handleEditAvatar}
+              className="bg-b3-grey border-b3-background hover:bg-b3-grey/80 absolute -bottom-1 -right-1 flex size-8 items-center justify-center rounded-full border-4 transition-colors"
+            >
               <Pencil size={16} className="text-b3-background" />
-            </div>
+            </button>
           </div>
           <div className="global-account-profile-info">
             <h2 className="text-b3-grey text-xl font-semibold">

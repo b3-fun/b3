@@ -93,7 +93,6 @@ export function ManageAccount({
     setB3ModalOpen(false);
     setLogoutLoading(false);
   };
-
   const AppsContent = () => (
     <div className="space-y-4">
       {signers?.map((signer: TWSignerWithMetadata) => (

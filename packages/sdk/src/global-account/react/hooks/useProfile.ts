@@ -13,7 +13,7 @@ export interface Profile {
 export interface CombinedProfile {
   name: string | null;
   address: string | null;
-  avatar: string | null;
+  avatar: string | undefined;
   bio: string | null;
   displayName: string | null;
   profiles: Profile[];

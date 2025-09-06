@@ -309,6 +309,13 @@ export interface AnySpendDepositHypeProps extends BaseModalProps {
   onSuccess?: (amount?: string) => void;
 }
 
+export interface AvatarEditorModalProps extends BaseModalProps {
+  /** Modal type identifier */
+  type: "avatarEditor";
+  /** Callback function called when avatar is successfully set */
+  onSuccess?: () => void;
+}
+
 /**
  * Union type of all possible modal content types
  */
@@ -327,7 +334,8 @@ export type ModalContentType =
   | AnySpendSignatureMintProps
   | AnySpendBondKitProps
   | LinkAccountModalProps
-  | AnySpendDepositHypeProps;
+  | AnySpendDepositHypeProps
+  | AvatarEditorModalProps;
 // Add other modal types here like: | OtherModalProps | AnotherModalProps
 
 /**
