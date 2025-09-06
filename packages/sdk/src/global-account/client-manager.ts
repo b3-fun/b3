@@ -14,7 +14,7 @@ let currentClient: ClientApplication | null = null;
 let socketClient: ClientApplication | null = null;
 let socketInstance: any = null;
 
-// REST client instance  
+// REST client instance
 let restClient: ClientApplication | null = null;
 
 /**
@@ -42,18 +42,20 @@ function createRestClient(): ClientApplication {
 /**
  * Sets the active client type and creates the appropriate client
  */
-export function setClientType(clientType: ClientType): void {
+export function setClientType(clientType: ClientType): ClientApplication {
   if (currentClientType === clientType && currentClient) {
-    return; // Already set to the correct type
+    return currentClient; // Already set to the correct type
   }
 
   currentClientType = clientType;
-  
+
   if (clientType === "socket") {
     currentClient = createSocketClient();
   } else {
     currentClient = createRestClient();
   }
+
+  return currentClient;
 }
 
 /**
@@ -61,9 +63,9 @@ export function setClientType(clientType: ClientType): void {
  */
 export function getClient(): ClientApplication {
   if (!currentClient) {
-    setClientType(currentClientType);
+    return setClientType(currentClientType);
   }
-  return currentClient!;
+  return currentClient;
 }
 
 /**
@@ -105,10 +107,10 @@ export const authenticate = async (accessToken: string, identityToken: string, p
  * Authenticates with a specific client type
  */
 export const authenticateWithClient = async (
-  clientType: ClientType, 
-  accessToken: string, 
-  identityToken: string, 
-  params?: Record<string, any>
+  clientType: ClientType,
+  accessToken: string,
+  identityToken: string,
+  params?: Record<string, any>,
 ) => {
   const client = getClientByType(clientType);
   return authenticateB3(client, accessToken, identityToken, params);
@@ -120,13 +122,12 @@ export const authenticateWithClient = async (
 export const authenticateBoth = async (accessToken: string, identityToken: string, params?: Record<string, any>) => {
   const [socketResult, restResult] = await Promise.allSettled([
     authenticateWithClient("socket", accessToken, identityToken, params),
-    authenticateWithClient("rest", accessToken, identityToken, params)
+    authenticateWithClient("rest", accessToken, identityToken, params),
   ]);
-  
+
   return {
     socket: socketResult.status === "fulfilled" ? socketResult.value : null,
     rest: restResult.status === "fulfilled" ? restResult.value : null,
-    success: socketResult.status === "fulfilled" || restResult.status === "fulfilled"
+    success: socketResult.status === "fulfilled" || restResult.status === "fulfilled",
   };
 };
-
