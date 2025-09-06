@@ -1,6 +1,6 @@
 "use client";
 
-import app from "@b3dotfun/sdk/global-account/bsmnt";
+import app from "@b3dotfun/sdk/global-account/app";
 import { Button, useProfile } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
@@ -83,21 +83,17 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
       const ipfsUrl = await upload({
         client,
         files: [selectedFile],
-        options: {
-          uploadWithGatewayUrl: true,
-          uploadWithoutDirectory: true,
-        },
       });
 
       debug("Upload successful", ipfsUrl);
 
       // Save avatar URL using profiles service
       setIsSaving(true);
-      await app.service("profiles").setAvatar(
+      await app.service("users").setAvatar(
         {
-          avatarUrl: ipfsUrl,
-          avatarID: ipfsUrl, // Use IPFS URL as ID for now
+          avatar: ipfsUrl,
         },
+        // @ts-expect-error - our typed client is expecting context even though it's set elsewhere
         {},
       );
 
