@@ -51,7 +51,7 @@ export function useQueryB3<
     setIsLoading(true);
     try {
       // Cast the service to avoid TypeScript issues with dynamic services
-      const serviceInstance = app().service(service) as any;
+      const serviceInstance = app.service(service) as any;
       const result = await serviceInstance[method](queryParams);
       setData(result); // Now `data` is correctly typed!
       return result;

@@ -63,7 +63,7 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
 
         // Try to re-authenticate first
         try {
-          const userAuth = await app().reAuthenticate();
+          const userAuth = await app.reAuthenticate();
           setUser(userAuth.user);
           setIsAuthenticated(true);
           setIsAuthenticatingV2(false);
@@ -147,7 +147,7 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
       localStorage.removeItem("lastAuthProvider");
     }
 
-    app().logout();
+    app.logout();
     debug("@@logout:loggedOut");
 
     setIsAuthenticated(false);

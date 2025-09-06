@@ -1,4 +1,4 @@
-import app from "@b3dotfun/sdk/global-account/app.rest";
+import app from "@b3dotfun/sdk/global-account/app";
 import debug from "@b3dotfun/sdk/shared/utils/debug";
 import { useCallback } from "react";
 import { Account } from "thirdweb/wallets";
@@ -13,7 +13,7 @@ export function useSiwe() {
 
       console.log("@@useAuthenticate:referralCode", referralCode);
       // generate challenge
-      const challenge = await app("rest").service("global-accounts-challenge").create({
+      const challenge = await app.service("global-accounts-challenge").create({
         address: account.address,
       });
       debug("@@useAuthenticate:challenge", challenge);
@@ -26,7 +26,7 @@ export function useSiwe() {
       debug("@@useAuthenticate:signature", signature);
 
       // authenticate
-      const response = await app("rest").authenticate({
+      const response = await app.authenticate({
         strategy: "smart-account-siwe",
         message: challenge.message,
         signature,
