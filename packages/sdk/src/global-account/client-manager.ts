@@ -42,20 +42,8 @@ function createRestClient(): ClientApplication {
 /**
  * Sets the active client type and creates the appropriate client
  */
-export function setClientType(clientType: ClientType): ClientApplication {
-  if (currentClientType === clientType && currentClient) {
-    return currentClient; // Already set to the correct type
-  }
-
+export function setClientType(clientType: ClientType): void {
   currentClientType = clientType;
-
-  if (clientType === "socket") {
-    currentClient = createSocketClient();
-  } else {
-    currentClient = createRestClient();
-  }
-
-  return currentClient;
 }
 
 /**
@@ -63,7 +51,7 @@ export function setClientType(clientType: ClientType): ClientApplication {
  */
 export function getClient(): ClientApplication {
   if (!currentClient) {
-    return setClientType(currentClientType);
+    currentClient = currentClientType === "socket" ? createSocketClient() : createRestClient();
   }
   return currentClient;
 }
