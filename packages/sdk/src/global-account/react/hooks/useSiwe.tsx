@@ -13,7 +13,7 @@ export function useSiwe() {
 
       console.log("@@useAuthenticate:referralCode", referralCode);
       // generate challenge
-      const challenge = await app.service("global-accounts-challenge").create({
+      const challenge = await app("rest").service("global-accounts-challenge").create({
         address: account.address,
       });
       debug("@@useAuthenticate:challenge", challenge);
@@ -26,7 +26,7 @@ export function useSiwe() {
       debug("@@useAuthenticate:signature", signature);
 
       // authenticate
-      const response = await app.authenticate({
+      const response = await app("rest").authenticate({
         strategy: "smart-account-siwe",
         message: challenge.message,
         signature,

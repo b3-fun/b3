@@ -7,7 +7,7 @@ export function useSiwe() {
   const authenticate = useCallback(async (account: Account, partnerId: string) => {
     if (!account || !account.signMessage) throw new Error("Account not found");
     // generate challenge
-    const challenge = await app.service("global-accounts-challenge").create({
+    const challenge = await app().service("global-accounts-challenge").create({
       address: account.address,
     });
     debug("@@useAuthenticate:challenge", challenge);
@@ -20,7 +20,7 @@ export function useSiwe() {
     debug("@@useAuthenticate:signature", signature);
 
     // authenticate
-    const response = await app.authenticate({
+    const response = await app().authenticate({
       strategy: "smart-account-siwe",
       message: challenge.message,
       signature,
