@@ -36,5 +36,5 @@ export const B3Context = createContext<B3ContextType>({
   ready: false,
   environment: "development",
   theme: "light",
-  clientType: "socket",
+  clientType: "rest",
 });
