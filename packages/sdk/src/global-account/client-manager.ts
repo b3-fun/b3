@@ -127,3 +127,11 @@ export const authenticateBoth = async (accessToken: string, identityToken: strin
     success: socketResult.status === "fulfilled" || restResult.status === "fulfilled",
   };
 };
+
+/**
+ * Switches the client type and authenticates
+ */
+export async function switchClientAndAuth(type: ClientType, access: string, id: string, params?: any) {
+  setClientType(type);
+  return authenticateBoth(access, id, params);
+}
