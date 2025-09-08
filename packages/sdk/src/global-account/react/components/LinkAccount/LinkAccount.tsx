@@ -1,6 +1,7 @@
+import app from "@b3dotfun/sdk/global-account/app";
 import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
-import { Loader2 } from "lucide-react";
+import { Loader2, Mail, Phone } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useLinkProfile, useProfiles } from "thirdweb/react";
@@ -8,8 +9,12 @@ import { preAuthenticate } from "thirdweb/wallets";
 import { LinkAccountModalProps, useModalStore } from "../../stores/useModalStore";
 import { getProfileDisplayInfo } from "../../utils/profileDisplay";
 import { useB3 } from "../B3Provider/useB3";
+import { AppleIcon } from "../icons/AppleIcon";
+import { DiscordIcon } from "../icons/DiscordIcon";
+import { FarcasterIcon } from "../icons/FarcasterIcon";
+import { GoogleIcon } from "../icons/GoogleIcon";
+import { XIcon } from "../icons/XIcon";
 import { Button } from "../ui/button";
-import app from "@b3dotfun/sdk/global-account/app";
 type OTPStrategy = "email" | "phone";
 type SocialStrategy = "google" | "x" | "discord" | "apple" | "farcaster";
 type Strategy = OTPStrategy | SocialStrategy;
@@ -18,17 +23,22 @@ interface AuthMethod {
   id: Strategy;
   label: string;
   enabled: boolean;
-  icon?: string;
+  icon: React.ReactNode;
 }
 
 const AUTH_METHODS: AuthMethod[] = [
-  { id: "email", label: "Email", enabled: true },
-  { id: "phone", label: "Phone", enabled: true },
-  { id: "google", label: "Google", enabled: true },
-  { id: "x", label: "X (Twitter)", enabled: true },
-  { id: "discord", label: "Discord", enabled: true },
-  { id: "apple", label: "Apple", enabled: true },
-  { id: "farcaster", label: "Farcaster", enabled: true },
+  { id: "email", label: "Email", enabled: true, icon: <Mail className="text-b3-primary-blue size-6" /> },
+  { id: "phone", label: "Phone", enabled: true, icon: <Phone className="text-b3-primary-blue size-6" /> },
+  { id: "google", label: "Google", enabled: true, icon: <GoogleIcon className="size-6" /> },
+  { id: "x", label: "X (Twitter)", enabled: true, icon: <XIcon className="size-6" /> },
+  { id: "discord", label: "Discord", enabled: true, icon: <DiscordIcon className="size-6" /> },
+  { id: "apple", label: "Apple", enabled: true, icon: <AppleIcon className="size-6" /> },
+  {
+    id: "farcaster",
+    label: "Farcaster",
+    enabled: true,
+    icon: <FarcasterIcon className="size-6" />,
+  },
 ];
 
 export function LinkAccount({
@@ -37,7 +47,8 @@ export function LinkAccount({
   onClose,
   chain,
   partnerId,
-}: LinkAccountModalProps) {
+  className,
+}: LinkAccountModalProps & { className?: string }) {
   const { isLinking, linkingMethod, setLinkingState, navigateBack, setB3ModalContentType } = useModalStore();
   const [selectedMethod, setSelectedMethod] = useState<Strategy | null>(null);
   const [email, setEmail] = useState("");
@@ -288,9 +299,9 @@ export function LinkAccount({
   }
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-b3-grey font-neue-montreal-semibold text-2xl">Link New Account</h2>
+    <div className={`b3-link-account space-y-6 p-6 ${className || ""}`} data-testid="link-account">
+      <div className="b3-link-account-header flex items-center justify-between">
+        <h2 className="b3-link-account-title text-b3-grey font-neue-montreal-semibold text-2xl">Link New Account</h2>
         {selectedMethod && (
           <Button variant="ghost" className="text-b3-grey hover:text-b3-grey/80" onClick={handleBack}>
             Backs
@@ -299,11 +310,13 @@ export function LinkAccount({
       </div>
 
       {!selectedMethod ? (
-        <div className="grid gap-3">
+        <div className="b3-link-account-methods grid gap-3">
           {availableAuthMethods.map(method => (
             <Button
               key={method.id}
-              className="bg-b3-primary-wash hover:bg-b3-primary-wash/70 text-b3-grey font-neue-montreal-semibold h-16 justify-start px-6 text-lg"
+              variant="outline"
+              className="b3-link-account-method-button border-b3-line hover:border-b3-primary-blue/30 hover:bg-b3-primary-blue/5 text-b3-grey font-neue-montreal-medium h-14 justify-start bg-transparent px-6 text-base transition-all duration-200"
+              data-method={method.id}
               onClick={() => {
                 if (method.id === "email" || method.id === "phone") {
                   setSelectedMethod(method.id);
@@ -313,7 +326,16 @@ export function LinkAccount({
               }}
               disabled={linkingMethod === method.id}
             >
-              {isLinking && linkingMethod === method.id ? <Loader2 className="animate-spin" /> : method.label}
+              {isLinking && linkingMethod === method.id ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <div className="b3-link-account-method-content flex items-center gap-4">
+                  <div className="b3-link-account-method-icon flex items-center justify-center rounded-full">
+                    {method.icon}
+                  </div>
+                  <span className="b3-link-account-method-label font-medium">{method.label}</span>
+                </div>
+              )}
             </Button>
           ))}
           {availableAuthMethods.length === 0 && (
@@ -323,7 +345,7 @@ export function LinkAccount({
           )}
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="b3-link-account-form space-y-4">
           {selectedMethod === "email" && (
             <div className="space-y-2">
               <label className="text-b3-grey font-neue-montreal-medium text-sm">Email Address</label>
