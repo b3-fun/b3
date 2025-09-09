@@ -131,8 +131,6 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
     if (activeWallet) {
       debug("@@logout:activeWallet", activeWallet);
       disconnect(activeWallet);
-      // disconnect wagmi
-      disconnectWagmi();
       debug("@@logout:disconnected");
       console.log("@@gio:logout:activeWallet", activeWallet);
     }
@@ -142,6 +140,9 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
       console.log("@@logging out", wallet);
       disconnect(wallet);
     });
+
+    // disconnect wagmi
+    disconnectWagmi();
 
     // Delete localStorage thirdweb:connected-wallet-ids
     // https://npc-labs.slack.com/archives/C070E6HNG85/p1750185115273099
