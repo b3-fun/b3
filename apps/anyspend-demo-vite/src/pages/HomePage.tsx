@@ -1,5 +1,6 @@
 import { B3_TOKEN, USDC_BASE } from "@b3dotfun/sdk/anyspend";
 import { useModalStore } from "@b3dotfun/sdk/global-account/react";
+import { Link } from "react-router-dom";
 import { base } from "viem/chains";
 
 export default function HomePage() {
@@ -34,7 +35,16 @@ export default function HomePage() {
       <div className="container mx-auto px-6 py-16">
         <div className="mx-auto max-w-6xl">
           <h1 className="mb-4 text-center text-3xl font-bold text-gray-800">AnySpend Examples</h1>
-          <p className="mb-12 text-center text-gray-500">Experience seamless crypto transactions</p>
+          <p className="mb-8 text-center text-gray-500">Experience seamless crypto transactions</p>
+
+          <div className="mb-8 text-center">
+            <Link
+              to="/playground"
+              className="inline-flex items-center rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-700"
+            >
+              🎮 Open Playground
+            </Link>
+          </div>
 
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <button

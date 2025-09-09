@@ -5,6 +5,7 @@ import HomePage from "./pages/HomePage";
 import OnrampExamplePage from "./pages/OnrampExamplePage";
 import OnrampFlowPage from "./pages/OnrampFlowPage";
 import OnrampOrderStatusPage from "./pages/OnrampOrderStatusPage";
+import PlaygroundPage from "./pages/PlaygroundPage";
 
 // Import SDK styles
 import { B3DynamicModal, B3Provider } from "@b3dotfun/sdk/global-account/react";
@@ -18,6 +19,7 @@ function App() {
           <div className="b3-root min-h-screen bg-gray-100">
             <Routes>
               <Route path="/" element={<HomePage />} />
+              <Route path="/playground" element={<PlaygroundPage />} />
               <Route path="/onramp-example" element={<OnrampExamplePage />} />
               <Route path="/onramp" element={<OnrampFlowPage />} />
               <Route path="/onramp/status" element={<OnrampOrderStatusPage />} />
