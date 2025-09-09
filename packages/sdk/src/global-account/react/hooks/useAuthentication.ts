@@ -20,17 +20,15 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
   const activeWallet = useActiveWallet();
   const { authenticate } = useSiwe();
   const { setUser } = useB3();
-  const isAuthenticating = useAuthStore(state => state.isAuthenticating);
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
   const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
-  const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
   const setIsConnecting = useAuthStore(state => state.setIsConnecting);
   const setIsConnected = useAuthStore(state => state.setIsConnected);
   const isConnecting = useAuthStore(state => state.isConnecting);
   const isConnected = useAuthStore(state => state.isConnected);
   const useAutoConnectLoadingPrevious = useRef(false);
-  const setIsAuthenticatingV2 = useAuthStore(state => state.setIsAuthenticatingV2);
-  const isAuthenticatingV2 = useAuthStore(state => state.isAuthenticatingV2);
+  const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
+  const isAuthenticating = useAuthStore(state => state.isAuthenticating);
   const hasStartedConnecting = useAuthStore(state => state.hasStartedConnecting);
   const setHasStartedConnecting = useAuthStore(state => state.setHasStartedConnecting);
   const { connect } = useConnect(partnerId, b3MainnetThirdWeb);
@@ -51,11 +49,10 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
           debug("Skipping SIWE login", { loginWithSiwe });
           setIsAuthenticated(true);
 
-          setIsAuthenticatingV2(false);
+          setIsAuthenticating(false);
           return;
         }
         debug("setIsAuthenticating:true:4");
-        setIsAuthenticating(true);
         const account = await wallet.getAccount();
         if (!account) {
           throw new Error("No account found during auto-connect");
@@ -66,7 +63,7 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
           const userAuth = await app.reAuthenticate();
           setUser(userAuth.user);
           setIsAuthenticated(true);
-          setIsAuthenticatingV2(false);
+          setIsAuthenticating(false);
           debug("Re-authenticated successfully", { userAuth });
 
           // Authenticate on BSMNT with B3 JWT
@@ -78,7 +75,7 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
           const userAuth = await authenticate(account, partnerId);
           setUser(userAuth.user);
           setIsAuthenticated(true);
-          setIsAuthenticatingV2(false);
+          setIsAuthenticating(false);
           debug("Fresh authentication successful", { userAuth });
 
           // Authenticate on BSMNT with B3 JWT
@@ -91,7 +88,7 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
         debug("setIsAuthenticating:false:4");
         setUser();
       }
-      setIsAuthenticatingV2(false);
+      setIsAuthenticating(false);
     },
   });
 
@@ -100,7 +97,7 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
    */
   useEffect(() => {
     if (!useAutoConnectLoading && useAutoConnectLoadingPrevious.current && !hasStartedConnecting) {
-      setIsAuthenticatingV2(false);
+      setIsAuthenticating(false);
     }
     useAutoConnectLoadingPrevious.current = useAutoConnectLoading;
   }, [useAutoConnectLoading]);
@@ -114,16 +111,14 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
       // This prevents the flicker state where both isAuthenticating and isAuthenticated are false
       const timeout = setTimeout(() => {
         debug("setIsAuthenticating:false:5a");
-        setIsAuthenticating(false);
         setIsConnecting(false);
       }, 100); // Add a small delay to prevent quick flickers
       return () => clearTimeout(timeout);
     } else {
       debug("setIsAuthenticating:false:5b");
-      setIsAuthenticating(false);
       setIsConnecting(false);
     }
-  }, [useAutoConnectLoading, isAuthenticated, setIsAuthenticating, setIsConnecting, setIsConnected]);
+  }, [useAutoConnectLoading, isAuthenticated, setIsConnecting, setIsConnected]);
 
   const logout = async (callback?: () => void) => {
     if (activeWallet) {
@@ -160,7 +155,6 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
 
   return {
     logout,
-    isAuthenticating: useAutoConnectLoading || isAuthenticating,
     isAuthenticated,
     isReady,
     isConnecting,
@@ -168,6 +162,6 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
     wallet,
     preAuthenticate,
     connect,
-    isAuthenticatingV2,
+    isAuthenticating,
   };
 }

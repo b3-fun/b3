@@ -30,9 +30,18 @@ export default defineConfig(({ command: _command, mode }) => {
           NEXT_PUBLIC_THIRDWEB_ECOSYSTEM_ID: "ecosystem.b3-open-gaming",
         };
 
+
   // Merge env vars with defaults (.env takes precedence)
   const finalEnv = {
     ...defaults,
+    ...{
+      PUBLIC_B3_API: "https://api.b3.fun",
+      PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID: "dbcd5e9b-564e-4ba0-91a0-becf0edabb61",
+      NEXT_PUBLIC_THIRDWEB_CLIENT_ID: "f393c7eb287696dc4db76d980cc68328",
+      NEXT_PUBLIC_DEVMODE_SHARED_SECRET: "k1c4Ep6agmoejiBinKE70B6bzb8vSdm8",
+      NEXT_PUBLIC_TRANSAK_API_KEY: "d1f4e8be-cacb-4cfa-b2cd-c591084b5ef6",
+      NEXT_PUBLIC_THIRDWEB_ECOSYSTEM_ID: "ecosystem.b3-open-gaming",
+    },
     ...Object.fromEntries(
       Object.entries(env).filter(([key]) => key.startsWith("PUBLIC_") || key.startsWith("NEXT_PUBLIC_")),
     ),
