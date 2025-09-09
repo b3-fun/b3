@@ -7,7 +7,6 @@ interface AuthState {
   provider?: string;
   accessToken?: string;
   chain?: Chain;
-  isAuthenticating: boolean;
   isAuthenticated: boolean;
   isConnecting: boolean;
   isConnected: boolean;
@@ -17,7 +16,6 @@ interface AuthState {
   setStep: (step: "login" | "permissions") => void;
   setIsConnecting: (isConnecting: boolean) => void;
   setIsConnected: (isConnected: boolean) => void;
-  setIsAuthenticating: (isAuthenticating: boolean) => void;
   setIsAuthenticated: (isAuthenticated: boolean) => void;
   startAuth: (params: {
     provider: string;
@@ -27,8 +25,8 @@ interface AuthState {
     onError?: (error: Error) => void;
   }) => void;
   reset: () => void;
-  isAuthenticatingV2: boolean;
-  setIsAuthenticatingV2: (isAuthenticating: boolean) => void;
+  isAuthenticating: boolean;
+  setIsAuthenticating: (isAuthenticating: boolean) => void;
   hasStartedConnecting: boolean;
   setHasStartedConnecting: (hasStartedConnecting: boolean) => void;
 }
@@ -39,7 +37,6 @@ export const useAuthStore = create<AuthState>(set => ({
   provider: undefined,
   accessToken: undefined,
   chain: undefined,
-  isAuthenticating: false,
   isAuthenticated: false,
   isConnecting: false,
   isConnected: false,
@@ -49,7 +46,6 @@ export const useAuthStore = create<AuthState>(set => ({
   setStep: step => set({ step }),
   setIsConnecting: isConnecting => set({ isConnecting }),
   setIsConnected: isConnected => set({ isConnected }),
-  setIsAuthenticating: isAuthenticating => set({ isAuthenticating }),
   setIsAuthenticated: isAuthenticated => set({ isAuthenticated }),
   startAuth: params =>
     set({
@@ -73,8 +69,8 @@ export const useAuthStore = create<AuthState>(set => ({
       onSuccess: undefined,
       onError: undefined,
     }),
-  isAuthenticatingV2: true,
-  setIsAuthenticatingV2: isAuthenticating => set({ isAuthenticatingV2: isAuthenticating }),
+  isAuthenticating: true,
+  setIsAuthenticating: isAuthenticating => set({ isAuthenticating: isAuthenticating }),
   hasStartedConnecting: false,
   setHasStartedConnecting: hasStartedConnecting => set({ hasStartedConnecting }),
 }));

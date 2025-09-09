@@ -40,7 +40,6 @@ export function LoginStepCustom({
   const [showAllWallets, setShowAllWallets] = useState(false);
   const { connect } = useConnect(partnerId, chain);
   const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
-  const setIsAuthenticatingV2 = useAuthStore(state => state.setIsAuthenticatingV2);
   const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
   const { logout } = useAuthentication(partnerId);
   const { connect: connectTW } = useConnectTW();
@@ -56,7 +55,6 @@ export function LoginStepCustom({
       setIsLoading(true);
       debug("setIsAuthenticating:true:3");
       setIsAuthenticating(true);
-      setIsAuthenticatingV2(true);
       const options = getConnectOptionsFromStrategy(strategy);
       let connectResult: Wallet | null;
 
@@ -90,7 +88,6 @@ export function LoginStepCustom({
       setIsLoading(false);
       debug("setIsAuthenticating:false:3");
       setIsAuthenticating(false);
-      setIsAuthenticatingV2(false);
     }
   };
 
