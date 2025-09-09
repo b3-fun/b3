@@ -9,6 +9,7 @@ import { useEffect, useRef } from "react";
 import { useActiveWallet, useAutoConnect, useConnectedWallets, useDisconnect } from "thirdweb/react";
 import { ecosystemWallet } from "thirdweb/wallets";
 import { preAuthenticate } from "thirdweb/wallets/in-app";
+import { useDisconnect as useDisconnectWagmi } from "wagmi";
 import { useConnect } from "./useConnect";
 import { useSiwe } from "./useSiwe";
 
@@ -16,6 +17,7 @@ const debug = debugB3React("useAuthentication");
 
 export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
   const { disconnect } = useDisconnect();
+  const { disconnect: disconnectWagmi } = useDisconnectWagmi();
   const wallets = useConnectedWallets();
   const activeWallet = useActiveWallet();
   const { authenticate } = useSiwe();
@@ -129,6 +131,8 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
     if (activeWallet) {
       debug("@@logout:activeWallet", activeWallet);
       disconnect(activeWallet);
+      // disconnect wagmi
+      disconnectWagmi();
       debug("@@logout:disconnected");
       console.log("@@gio:logout:activeWallet", activeWallet);
     }
