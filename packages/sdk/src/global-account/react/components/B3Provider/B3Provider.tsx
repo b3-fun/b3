@@ -117,12 +117,12 @@ export function InnerProvider({
 
   const [user, setUser] = useState<Users | undefined>(() => {
     // Try to restore user from localStorage on initialization
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       try {
-        const storedUser = localStorage.getItem('b3-user');
+        const storedUser = localStorage.getItem("b3-user");
         return storedUser ? JSON.parse(storedUser) : undefined;
       } catch (error) {
-        console.warn('Failed to restore user from localStorage:', error);
+        console.warn("Failed to restore user from localStorage:", error);
         return undefined;
       }
     }
@@ -134,11 +134,11 @@ export function InnerProvider({
 
   // Persist user to localStorage when it changes
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       if (user) {
-        localStorage.setItem('b3-user', JSON.stringify(user));
+        localStorage.setItem("b3-user", JSON.stringify(user));
       } else {
-        localStorage.removeItem('b3-user');
+        localStorage.removeItem("b3-user");
       }
     }
   }, [user]);
