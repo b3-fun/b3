@@ -206,15 +206,7 @@ export function SignInWithB3Flow({
       debug("setIsAuthenticating:false:1");
       setIsAuthenticating(false);
     },
-    [
-      loginWithSiwe,
-      onLoginSuccess,
-      authenticate,
-      partnerId,
-      setUser,
-      setIsConnected,
-      setIsAuthenticating,
-    ],
+    [loginWithSiwe, onLoginSuccess, authenticate, partnerId, setUser, setIsConnected, setIsAuthenticating],
   );
 
   useEffect(() => {
