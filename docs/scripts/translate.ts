@@ -144,7 +144,7 @@ async function translateText(text: string, language: string, context: string = "
           content: text,
         },
       ],
-      temperature: 0.3,
+      temperature: 0,
     });
 
     timer.log(context);
