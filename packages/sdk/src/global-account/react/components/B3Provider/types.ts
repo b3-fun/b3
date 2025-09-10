@@ -2,6 +2,7 @@ import { Users } from "@b3dotfun/b3-api";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { createContext } from "react";
 import { Account, Wallet } from "thirdweb/wallets";
+import { ClientType } from "../../../client-manager";
 
 /**
  * Context type for B3Provider
@@ -18,6 +19,7 @@ export interface B3ContextType {
   environment?: "development" | "production";
   defaultPermissions?: PermissionsConfig;
   theme: "light" | "dark";
+  clientType: ClientType;
 }
 
 /**
@@ -34,4 +36,5 @@ export const B3Context = createContext<B3ContextType>({
   ready: false,
   environment: "development",
   theme: "light",
+  clientType: "rest",
 });

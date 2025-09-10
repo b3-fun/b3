@@ -5,6 +5,8 @@ import { ThirdwebProvider, useActiveAccount } from "thirdweb/react";
 import { Account } from "thirdweb/wallets";
 
 import { Users } from "@b3dotfun/b3-api";
+import { ClientType } from "../../../client-manager";
+
 import { B3Context, B3ContextType } from "./types";
 
 /**
@@ -28,16 +30,23 @@ export function B3Provider({
   children,
   accountOverride,
   environment,
+  clientType = "socket",
 }: {
   theme: "light" | "dark";
   children: React.ReactNode;
   accountOverride?: Account;
   environment: B3ContextType["environment"];
+  clientType?: ClientType;
 }) {
   return (
     <QueryClientProvider client={queryClient}>
       <ThirdwebProvider>
-        <InnerProvider accountOverride={accountOverride} environment={environment} theme={theme}>
+        <InnerProvider
+          accountOverride={accountOverride}
+          environment={environment}
+          theme={theme}
+          clientType={clientType}
+        >
           {/* <RelayKitProviderWrapper> */}
           {children}
           {/* </RelayKitProviderWrapper> */}
@@ -56,12 +65,14 @@ export function InnerProvider({
   environment,
   defaultPermissions = DEFAULT_PERMISSIONS,
   theme = "light",
+  clientType = "socket",
 }: {
   children: React.ReactNode;
   accountOverride?: Account;
   environment: B3ContextType["environment"];
   defaultPermissions?: PermissionsConfig;
   theme: "light" | "dark";
+  clientType?: ClientType;
 }) {
   const activeAccount = useActiveAccount();
   const [user, setUser] = useState<Users | undefined>(undefined);
@@ -83,6 +94,7 @@ export function InnerProvider({
         environment,
         defaultPermissions,
         theme,
+        clientType,
       }}
     >
       {children}

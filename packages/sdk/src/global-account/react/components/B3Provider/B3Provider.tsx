@@ -14,6 +14,7 @@ import {
 } from "thirdweb/react";
 import { Account, Wallet } from "thirdweb/wallets";
 import { createConfig, http, WagmiProvider } from "wagmi";
+import { ClientType, setClientType } from "../../../client-manager";
 import { StyleRoot } from "../StyleRoot";
 import { B3Context, B3ContextType } from "./types";
 
@@ -49,6 +50,7 @@ export function B3Provider({
   automaticallySetFirstEoa,
   simDuneApiKey,
   toaster,
+  clientType = "rest",
 }: {
   theme: "light" | "dark";
   children: React.ReactNode;
@@ -60,11 +62,17 @@ export function B3Provider({
     position?: "top-center" | "top-right" | "bottom-center" | "bottom-right";
     style?: React.CSSProperties;
   };
+  clientType?: ClientType;
 }) {
   // Initialize Google Analytics on mount
   useEffect(() => {
     loadGA4Script();
   }, []);
+
+  // Set the client type when provider mounts
+  useEffect(() => {
+    setClientType(clientType);
+  }, [clientType]);
 
   return (
     <WagmiProvider config={wagmiConfig}>
@@ -76,6 +84,7 @@ export function B3Provider({
               environment={environment}
               theme={theme}
               automaticallySetFirstEoa={!!automaticallySetFirstEoa}
+              clientType={clientType}
             >
               <RelayKitProviderWrapper simDuneApiKey={simDuneApiKey}>
                 {children}
@@ -101,6 +110,7 @@ export function InnerProvider({
   defaultPermissions = DEFAULT_PERMISSIONS,
   automaticallySetFirstEoa,
   theme = "light",
+  clientType = "socket",
 }: {
   children: React.ReactNode;
   accountOverride?: Account;
@@ -108,6 +118,7 @@ export function InnerProvider({
   defaultPermissions?: PermissionsConfig;
   automaticallySetFirstEoa: boolean;
   theme: "light" | "dark";
+  clientType?: ClientType;
 }) {
   const activeAccount = useActiveAccount();
   const [manuallySelectedWallet, setManuallySelectedWallet] = useState<Wallet | undefined>(undefined);
@@ -192,6 +203,7 @@ export function InnerProvider({
         environment,
         defaultPermissions,
         theme,
+        clientType,
       }}
     >
       {children}

@@ -1,68 +1,22 @@
-import { createClient } from "@b3dotfun/b3-api";
-import { AuthenticationClient } from "@feathersjs/authentication-client";
-import socketio from "@feathersjs/socketio-client";
-import Cookies from "js-cookie";
-import io from "socket.io-client";
-import { B3_AUTH_COOKIE_NAME } from "../shared/constants";
+import type { ClientApplication } from "@b3dotfun/b3-api";
+import { authenticate, getClient, getClientByType, setClientType } from "./client-manager";
 
-const B3_API_URL =
-  process.env.EXPO_PUBLIC_B3_API || process.env.NEXT_PUBLIC_B3_API || process.env.PUBLIC_B3_API || "https://api.b3.fun";
+// Default to rest
+setClientType("rest");
 
-const socket = io(B3_API_URL, { transports: ["websocket"] });
-
-class MyAuthenticationClient extends AuthenticationClient {
-  getFromLocation(location: any) {
-    // Do custom location things here
-    return super.getFromLocation(location);
-  }
-}
-
-const app = createClient(socketio(socket), {
-  Authentication: MyAuthenticationClient,
-  jwtStrategy: "jwt",
-  storage: {
-    getItem: (key: string) => {
-      return Cookies.get(key);
-    },
-    setItem: (key: string, value: string) => {
-      Cookies.set(key, value);
-    },
-    removeItem: (key: string) => {
-      Cookies.remove(key);
-    },
+// Default export that *looks like* a Feathers app and auto-forwards
+const app = new Proxy({} as ClientApplication, {
+  get(_t, prop, receiver) {
+    const target = getClient() as any;
+    return Reflect.get(target, prop, receiver);
   },
-  storageKey: B3_AUTH_COOKIE_NAME,
-});
-
-export const authenticate = async (accessToken: string, identityToken: string, params?: Record<string, any>) => {
-  const fullToken = `${accessToken}+${identityToken}`;
-
-  // Do not authenticate if there is no token
-  if (!fullToken) {
-    console.log("No token found, not authenticating");
-    return null;
-  }
-
-  try {
-    const response = await app.authenticate(
-      {
-        strategy: "jwt",
-        accessToken: fullToken,
-      },
-      {
-        query: params || {},
-      },
-    );
-    return response;
-  } catch (error) {
-    return null;
-  }
-};
-
-export const resetSocket = () => {
-  if (socket.connected) socket.disconnect();
-  socket.connect();
-  // reset the socket connection
-};
+  set(_t, prop, value) {
+    const target = getClient() as any;
+    return Reflect.set(target, prop, value);
+  },
+}) as ClientApplication;
 
 export default app;
+
+// Power-user helpers (named exports)
+export { authenticate, getClient, getClientByType, setClientType };
