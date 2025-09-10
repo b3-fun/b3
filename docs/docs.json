@@ -276,7 +276,8 @@
                   "hypeduel/betting-system",
                   "hypeduel/boosts",
                   "hypeduel/arenas",
-                  "hypeduel/gameplay"
+                  "hypeduel/gameplay",
+                  "hypeduel/referral-system"
                 ]
               },
               {
@@ -292,7 +293,8 @@
               {
                 "group": "Developers",
                 "pages": [
-                  "hypeduel/developers"
+                  "hypeduel/developers",
+                  "hypeduel/training-your-agent"
                 ]
               },
               {
@@ -309,6 +311,11 @@
                   "anchor": "Visit hypeduel.com",
                   "href": "https://hypeduel.com",
                   "icon": "globe"
+                },
+                {
+                  "anchor": "@hypeduel on X",
+                  "href": "https://x.com/hypeduel",
+                  "icon": "twitter"
                 },
                 {
                   "anchor": "Join the community",
@@ -762,7 +769,8 @@
                   "id/hypeduel/betting-system",
                   "id/hypeduel/boosts",
                   "id/hypeduel/arenas",
-                  "id/hypeduel/gameplay"
+                  "id/hypeduel/gameplay",
+                  "id/hypeduel/referral-system"
                 ]
               },
               {
@@ -778,7 +786,8 @@
               {
                 "group": "Developers",
                 "pages": [
-                  "id/hypeduel/developers"
+                  "id/hypeduel/developers",
+                  "id/hypeduel/training-your-agent"
                 ]
               },
               {
@@ -1267,7 +1276,8 @@
                   "ko/hypeduel/betting-system",
                   "ko/hypeduel/boosts",
                   "ko/hypeduel/arenas",
-                  "ko/hypeduel/gameplay"
+                  "ko/hypeduel/gameplay",
+                  "ko/hypeduel/referral-system"
                 ]
               },
               {
@@ -1283,7 +1293,8 @@
               {
                 "group": "Developers",
                 "pages": [
-                  "ko/hypeduel/developers"
+                  "ko/hypeduel/developers",
+                  "ko/hypeduel/training-your-agent"
                 ]
               },
               {
@@ -1772,7 +1783,8 @@
                   "cn/hypeduel/betting-system",
                   "cn/hypeduel/boosts",
                   "cn/hypeduel/arenas",
-                  "cn/hypeduel/gameplay"
+                  "cn/hypeduel/gameplay",
+                  "cn/hypeduel/referral-system"
                 ]
               },
               {
@@ -1788,7 +1800,8 @@
               {
                 "group": "Developers",
                 "pages": [
-                  "cn/hypeduel/developers"
+                  "cn/hypeduel/developers",
+                  "cn/hypeduel/training-your-agent"
                 ]
               },
               {
@@ -2277,7 +2290,8 @@
                   "es/hypeduel/betting-system",
                   "es/hypeduel/boosts",
                   "es/hypeduel/arenas",
-                  "es/hypeduel/gameplay"
+                  "es/hypeduel/gameplay",
+                  "es/hypeduel/referral-system"
                 ]
               },
               {
@@ -2293,7 +2307,8 @@
               {
                 "group": "Developers",
                 "pages": [
-                  "es/hypeduel/developers"
+                  "es/hypeduel/developers",
+                  "es/hypeduel/training-your-agent"
                 ]
               },
               {
@@ -2764,7 +2779,8 @@
                   "pt-BR/hypeduel/betting-system",
                   "pt-BR/hypeduel/boosts",
                   "pt-BR/hypeduel/arenas",
-                  "pt-BR/hypeduel/gameplay"
+                  "pt-BR/hypeduel/gameplay",
+                  "pt-BR/hypeduel/referral-system"
                 ]
               },
               {
@@ -2780,7 +2796,8 @@
               {
                 "group": "Developers",
                 "pages": [
-                  "pt-BR/hypeduel/developers"
+                  "pt-BR/hypeduel/developers",
+                  "pt-BR/hypeduel/training-your-agent"
                 ]
               },
               {

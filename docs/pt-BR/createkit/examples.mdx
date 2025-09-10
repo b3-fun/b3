@@ -601,4 +601,8 @@ async function runPlatform() {
   console.log("Estatísticas da plataforma:", stats)
 
   // Obtenção do painel do criador
-  const dashboard = await platform.get
+  const dashboard = await platform.getCreatorDashboard(creatorAccount.address)
+  console.log("Painel do criador:", dashboard)
+}
+```
+</Accordion>
