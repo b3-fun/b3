@@ -690,7 +690,7 @@ export class BondkitToken {
    */
   public async getSwapQuoteForBondkitToken(
     amountTradingTokenIn: string,
-    slippageTolerance: number = 0.5,
+    slippageTolerance = 0.5,
   ): Promise<SwapQuote | undefined> {
     try {
       // Check if swapping is available
@@ -739,7 +739,7 @@ export class BondkitToken {
    */
   public async getSwapQuoteForTradingToken(
     amountBondkitTokenIn: string,
-    slippageTolerance: number = 0.5,
+    slippageTolerance = 0.5,
   ): Promise<SwapQuote | undefined> {
     try {
       // Check if swapping is available
@@ -788,7 +788,7 @@ export class BondkitToken {
    */
   public async swapTradingTokenForBondkitToken(
     amountTradingTokenIn: string,
-    slippageTolerance: number = 0.5,
+    slippageTolerance = 0.5,
     options?: ExecuteWriteOptions,
   ): Promise<Hex | undefined> {
     try {
@@ -857,7 +857,7 @@ export class BondkitToken {
    */
   public async swapBondkitTokenForTradingToken(
     amountBondkitTokenIn: string,
-    slippageTolerance: number = 0.5,
+    slippageTolerance = 0.5,
     options?: ExecuteWriteOptions,
   ): Promise<Hex | undefined> {
     try {
