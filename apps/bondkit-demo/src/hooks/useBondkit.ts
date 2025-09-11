@@ -244,7 +244,6 @@ export function useBondkit(tokenAddress: `0x${string}`) {
     setTxType("swap");
     setIsConfirmed(false);
     setIsPending(true);
-    console.log("starting swapTradingToBondkit");
     try {
       const tx = await bondkitTokenClient.swapTradingTokenForBondkitToken(tradingTokenAmount, slippage);
       if (tx) {
