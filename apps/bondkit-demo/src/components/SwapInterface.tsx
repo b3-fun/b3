@@ -81,7 +81,6 @@ export default function SwapInterface({ tokenAddress }: SwapInterfaceProps) {
   }, [amount, swapDirection, debouncedGetQuote]);
 
   const handleSwap = async () => {
-    console.log("handleSwap", amount, isSwapAvailable);
     if (!amount || !isSwapAvailable) return;
 
     try {
