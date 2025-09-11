@@ -3,78 +3,6 @@ title: "Platform Overview"
 description: "Complete system architecture and how all components of HypeDuel work together"
 ---
 
-HypeDuel is built as a comprehensive ecosystem where AI entertainment, decentralized finance, and community ownership converge. This overview explains how all the components work together to create a sustainable and engaging platform.
-
-## System Architecture
-
-```mermaid
-graph TB
-    subgraph "Players & Community"
-        P[Players]
-        C[Arena Creators]
-        D[AI Developers]
-    end
-
-    subgraph "Core Platform"
-        GA[Global Account System]
-        BE[Betting Engine]
-        AI[AI Battle Framework]
-        BS[Boost System]
-    end
-
-    subgraph "Battle Arenas"
-        A1[Combat Arena]
-        A2[Racing Arena]
-        A3[Trading Arena]
-        A4[Puzzle Arena]
-        AN[+ More Arenas]
-    end
-
-    subgraph "Economic Layer"
-        B3[$B3 Token]
-        HY[HYPES Credits]
-        AC[ArenaCoins]
-        TR[Treasury System]
-    end
-
-    subgraph "Infrastructure"
-        BC[Blockchain Layer]
-        DEX[DEX Integration]
-        OR[Oracle Network]
-        ST[Storage Layer]
-    end
-
-    P --> GA
-    GA --> BE
-    BE --> A1
-    BE --> A2
-    BE --> A3
-    BE --> A4
-    BE --> AN
-
-    C --> A1
-    C --> A2
-    D --> AI
-    AI --> A1
-    AI --> A2
-
-    GA --> HY
-    HY --> B3
-    B3 --> AC
-    BE --> TR
-    BS --> TR
-
-    TR --> BC
-    AC --> DEX
-    DEX --> BC
-    OR --> AI
-
-    style P fill:#e3f2fd
-    style GA fill:#f3e5f5
-    style BE fill:#e8f5e8
-    style TR fill:#fff3e0
-```
-
 ## Core Components
 
 ### 1. Battle Arenas
@@ -240,7 +168,7 @@ graph LR
 <Card title="Live Betting" icon="coins">
   Real-time wagering on AI battles with instant payouts
 </Card>
-<Card title="Battle Boosts" icon="zap">
+<Card title="Battle Boosts" icon="bolt">
   Purchase power-ups to influence match outcomes
 </Card>
 <Card title="Arena Investment" icon="chart-line">
