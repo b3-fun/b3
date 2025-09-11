@@ -249,7 +249,7 @@ export class BondkitSwapService {
     tokenAddress: Address,
     amountIn: string,
     walletClient: WalletClient,
-    deadline: number
+    deadline: number,
   ): Promise<void> {
     // Skip approvals for ETH
     if (tokenAddress === "0x0000000000000000000000000000000000000000") {
@@ -274,10 +274,7 @@ export class BondkitSwapService {
     });
 
     // Check ERC20 allowance to Permit2
-    const currentAllowance = (await erc20Contract.read.allowance([
-      userAddress,
-      Permit2Address,
-    ])) as bigint;
+    const currentAllowance = (await erc20Contract.read.allowance([userAddress, Permit2Address])) as bigint;
 
     const requiredAmount = BigInt(amountIn);
 
@@ -287,7 +284,7 @@ export class BondkitSwapService {
         {
           account: userAddress,
           chain: base,
-        }
+        },
       );
     }
 
@@ -308,7 +305,7 @@ export class BondkitSwapService {
         {
           account: userAddress,
           chain: base,
-        }
+        },
       );
     }
   }
@@ -381,7 +378,8 @@ export class BondkitSwapService {
    */
   async executeSwap(params: SwapParams, walletClient: WalletClient): Promise<string | null> {
     try {
-      const { tokenIn, tokenOut, amountIn, tokenInDecimals, tokenOutDecimals, slippageTolerance, recipient, deadline } = params;
+      const { tokenIn, tokenOut, amountIn, tokenInDecimals, tokenOutDecimals, slippageTolerance, recipient, deadline } =
+        params;
 
       const swapDeadline = deadline || Math.floor(Date.now() / 1000) + 3600;
 
@@ -390,7 +388,7 @@ export class BondkitSwapService {
       }
 
       const amountInWei = parseUnits(amountIn, tokenInDecimals);
-      
+
       // Handle token approvals
       await this.handleTokenApprovals(tokenIn, amountInWei.toString(), walletClient, swapDeadline);
 
@@ -427,35 +425,26 @@ export class BondkitSwapService {
       ];
 
       // Encode actions
-      const actionTypes = actions.map((action) => action.type);
-      const actionsBytes = ("0x" + actionTypes.map((type) => type.toString(16).padStart(2, "0")).join("")) as Hex;
+      const actionTypes = actions.map(action => action.type);
+      const actionsBytes = ("0x" + actionTypes.map(type => type.toString(16).padStart(2, "0")).join("")) as Hex;
 
-      const actionParams = actions.map((action) => {
+      const actionParams = actions.map(action => {
         switch (action.type) {
           case V4_ACTIONS.SWAP_EXACT_IN_SINGLE:
             return encodeAbiParameters(
               parseAbiParameters("((address,address,uint24,int24,address),bool,uint128,uint128,bytes)"),
-              [action.params as any]
+              [action.params as any],
             );
           case V4_ACTIONS.TAKE_ALL:
-            return encodeAbiParameters(
-              parseAbiParameters("address,uint256"),
-              action.params as [Address, bigint]
-            );
+            return encodeAbiParameters(parseAbiParameters("address,uint256"), action.params as [Address, bigint]);
           case V4_ACTIONS.SETTLE_ALL:
-            return encodeAbiParameters(
-              parseAbiParameters("address,uint256"),
-              action.params as [Address, bigint]
-            );
+            return encodeAbiParameters(parseAbiParameters("address,uint256"), action.params as [Address, bigint]);
           default:
             return "0x00" as Hex;
         }
       });
 
-      const v4SwapInput = encodeAbiParameters(
-        parseAbiParameters("bytes,bytes[]"),
-        [actionsBytes, actionParams]
-      );
+      const v4SwapInput = encodeAbiParameters(parseAbiParameters("bytes,bytes[]"), [actionsBytes, actionParams]);
 
       const commands = COMMANDS.V4_SWAP;
       const inputs = [v4SwapInput];
@@ -467,14 +456,11 @@ export class BondkitSwapService {
         client: walletClient,
       });
 
-      const txHash = await universalRouter.write.execute(
-        [commands, inputs, BigInt(swapDeadline)],
-        {
-          account: walletClient.account,
-          chain: base,
-          value: tokenIn === "0x0000000000000000000000000000000000000000" ? amountInWei : BigInt(0),
-        }
-      );
+      const txHash = await universalRouter.write.execute([commands, inputs, BigInt(swapDeadline)], {
+        account: walletClient.account,
+        chain: base,
+        value: tokenIn === "0x0000000000000000000000000000000000000000" ? amountInWei : BigInt(0),
+      });
 
       return txHash;
     } catch (error) {

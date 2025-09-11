@@ -575,9 +575,7 @@ export default function TokenPage({ params }: TokenPageProps) {
                     </>
                   )}
 
-                  {currentPhase === TokenPhase.DEX && (
-                    <SwapInterface tokenAddress={tokenAddress} />
-                  )}
+                  {currentPhase === TokenPhase.DEX && <SwapInterface tokenAddress={tokenAddress} />}
                 </div>
 
                 {/* Token Details */}

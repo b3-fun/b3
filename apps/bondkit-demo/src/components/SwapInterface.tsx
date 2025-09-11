@@ -20,7 +20,7 @@ function debounce<T extends (...args: any[]) => any>(func: T, wait: number): (..
 
 export default function SwapInterface({ tokenAddress }: SwapInterfaceProps) {
   const { address: userAddress, isConnected } = useAccount();
-  
+
   const {
     tokenSymbol,
     tokenBalance,
@@ -66,14 +66,14 @@ export default function SwapInterface({ tokenAddress }: SwapInterfaceProps) {
           } else {
             quoteResult = await getSwapQuoteForTrading(val, 0.5);
           }
-          
+
           setQuote(quoteResult ? quoteResult.amountOut : null);
         } catch (error) {
           console.warn("Error getting swap quote:", error);
           setQuote(null);
         }
       }, 500),
-    [getSwapQuoteForBondkit, getSwapQuoteForTrading, isSwapAvailable]
+    [getSwapQuoteForBondkit, getSwapQuoteForTrading, isSwapAvailable],
   );
 
   useEffect(() => {
@@ -83,7 +83,7 @@ export default function SwapInterface({ tokenAddress }: SwapInterfaceProps) {
   const handleSwap = async () => {
     console.log("handleSwap", amount, isSwapAvailable);
     if (!amount || !isSwapAvailable) return;
-    
+
     try {
       if (swapDirection === "tradingToBondkit") {
         console.log("swapTradingToBondkit", amount);
@@ -161,11 +161,15 @@ export default function SwapInterface({ tokenAddress }: SwapInterfaceProps) {
           placeholder="Amount"
           className="bg-b3-react-subtle border-b3-react-border text-b3-react-foreground placeholder-b3-react-muted-foreground focus:border-b3-react-primary mb-4 w-full rounded-lg border p-3 focus:outline-none"
         />
-        
+
         {/* Show both balances */}
         <div className="text-b3-react-muted-foreground mb-4 flex justify-between text-xs">
-          <span>{tradingTokenSymbol} Balance: {formatBalance(userTradingTokenBalance)}</span>
-          <span>{tokenSymbol} Balance: {formatBalance(tokenBalance)}</span>
+          <span>
+            {tradingTokenSymbol} Balance: {formatBalance(userTradingTokenBalance)}
+          </span>
+          <span>
+            {tokenSymbol} Balance: {formatBalance(tokenBalance)}
+          </span>
         </div>
 
         {quote && (
@@ -173,7 +177,7 @@ export default function SwapInterface({ tokenAddress }: SwapInterfaceProps) {
             You will receive ≈ {parseFloat(quote).toFixed(4)} {outputTokenSymbol}
           </p>
         )}
-        
+
         <button
           onClick={handleSwap}
           disabled={isPending || !isConnected || !amount || !isSwapAvailable}
@@ -181,11 +185,9 @@ export default function SwapInterface({ tokenAddress }: SwapInterfaceProps) {
         >
           {buttonText()}
         </button>
-        
+
         {hash && txType === "swap" && (
-          <p className="text-b3-react-muted-foreground mt-2 break-all text-center font-mono text-xs">
-            Tx: {hash}
-          </p>
+          <p className="text-b3-react-muted-foreground mt-2 break-all text-center font-mono text-xs">Tx: {hash}</p>
         )}
       </div>
     </div>

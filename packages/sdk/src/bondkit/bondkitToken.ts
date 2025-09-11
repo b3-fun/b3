@@ -690,7 +690,7 @@ export class BondkitToken {
    */
   public async getSwapQuoteForBondkitToken(
     amountTradingTokenIn: string,
-    slippageTolerance: number = 0.5
+    slippageTolerance: number = 0.5,
   ): Promise<SwapQuote | undefined> {
     try {
       // Check if swapping is available
@@ -739,7 +739,7 @@ export class BondkitToken {
    */
   public async getSwapQuoteForTradingToken(
     amountBondkitTokenIn: string,
-    slippageTolerance: number = 0.5
+    slippageTolerance: number = 0.5,
   ): Promise<SwapQuote | undefined> {
     try {
       // Check if swapping is available
@@ -789,7 +789,7 @@ export class BondkitToken {
   public async swapTradingTokenForBondkitToken(
     amountTradingTokenIn: string,
     slippageTolerance: number = 0.5,
-    options?: ExecuteWriteOptions
+    options?: ExecuteWriteOptions,
   ): Promise<Hex | undefined> {
     try {
       // Check if swapping is available
@@ -821,8 +821,9 @@ export class BondkitToken {
         return undefined;
       }
 
-      const recipient = this.walletClientInstance.account?.address || 
-                       (this.walletKey ? privateKeyToAccount(this.walletKey).address : undefined);
+      const recipient =
+        this.walletClientInstance.account?.address ||
+        (this.walletKey ? privateKeyToAccount(this.walletKey).address : undefined);
 
       if (!recipient) {
         console.warn("Unable to determine recipient address");
@@ -830,16 +831,19 @@ export class BondkitToken {
       }
 
       const swapService = this.getSwapService();
-      const txHash = await swapService.executeSwap({
-        tokenIn: tradingTokenAddress,
-        tokenOut: this.contractAddress,
-        amountIn: amountTradingTokenIn,
-        tokenInDecimals: tradingTokenDecimals,
-        tokenOutDecimals: bondkitTokenDecimals,
-        slippageTolerance,
-        recipient,
-        deadline: options?.value ? Math.floor(Date.now() / 1000) + 3600 : undefined,
-      }, this.walletClientInstance);
+      const txHash = await swapService.executeSwap(
+        {
+          tokenIn: tradingTokenAddress,
+          tokenOut: this.contractAddress,
+          amountIn: amountTradingTokenIn,
+          tokenInDecimals: tradingTokenDecimals,
+          tokenOutDecimals: bondkitTokenDecimals,
+          slippageTolerance,
+          recipient,
+          deadline: options?.value ? Math.floor(Date.now() / 1000) + 3600 : undefined,
+        },
+        this.walletClientInstance,
+      );
 
       return txHash ? (txHash as Hex) : undefined;
     } catch (error) {
@@ -854,7 +858,7 @@ export class BondkitToken {
   public async swapBondkitTokenForTradingToken(
     amountBondkitTokenIn: string,
     slippageTolerance: number = 0.5,
-    options?: ExecuteWriteOptions
+    options?: ExecuteWriteOptions,
   ): Promise<Hex | undefined> {
     try {
       // Check if swapping is available
@@ -886,8 +890,9 @@ export class BondkitToken {
         return undefined;
       }
 
-      const recipient = this.walletClientInstance.account?.address || 
-                       (this.walletKey ? privateKeyToAccount(this.walletKey).address : undefined);
+      const recipient =
+        this.walletClientInstance.account?.address ||
+        (this.walletKey ? privateKeyToAccount(this.walletKey).address : undefined);
 
       if (!recipient) {
         console.warn("Unable to determine recipient address");
@@ -895,16 +900,19 @@ export class BondkitToken {
       }
 
       const swapService = this.getSwapService();
-      const txHash = await swapService.executeSwap({
-        tokenIn: this.contractAddress,
-        tokenOut: tradingTokenAddress,
-        amountIn: amountBondkitTokenIn,
-        tokenInDecimals: bondkitTokenDecimals,
-        tokenOutDecimals: tradingTokenDecimals,
-        slippageTolerance,
-        recipient,
-        deadline: options?.value ? Math.floor(Date.now() / 1000) + 3600 : undefined,
-      }, this.walletClientInstance);
+      const txHash = await swapService.executeSwap(
+        {
+          tokenIn: this.contractAddress,
+          tokenOut: tradingTokenAddress,
+          amountIn: amountBondkitTokenIn,
+          tokenInDecimals: bondkitTokenDecimals,
+          tokenOutDecimals: tradingTokenDecimals,
+          slippageTolerance,
+          recipient,
+          deadline: options?.value ? Math.floor(Date.now() / 1000) + 3600 : undefined,
+        },
+        this.walletClientInstance,
+      );
 
       return txHash ? (txHash as Hex) : undefined;
     } catch (error) {
