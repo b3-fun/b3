@@ -4,7 +4,6 @@ import {
   formatUnits,
   encodeAbiParameters,
   parseAbiParameters,
-  encodeFunctionData,
   getContract,
   createPublicClient,
   http,
@@ -156,14 +155,6 @@ interface V4PoolConfig {
   hook: string;
   fee: number;
   tickSpacing: number;
-}
-
-interface PoolKey {
-  currency0: string;
-  currency1: string;
-  fee: number;
-  tickSpacing: number;
-  hooks: string;
 }
 
 interface SwapParams {
@@ -378,8 +369,7 @@ export class BondkitSwapService {
    */
   async executeSwap(params: SwapParams, walletClient: WalletClient): Promise<string | null> {
     try {
-      const { tokenIn, tokenOut, amountIn, tokenInDecimals, tokenOutDecimals, slippageTolerance, recipient, deadline } =
-        params;
+      const { tokenIn, tokenOut, amountIn, tokenInDecimals, tokenOutDecimals, deadline } = params;
 
       const swapDeadline = deadline || Math.floor(Date.now() / 1000) + 3600;
 
