@@ -567,4 +567,24 @@ async function runPlatform() {
     account: creatorAccount
   })
 
-  const { predictedAddress,
+  const { predictedAddress, creatorSignature } = await platform.createCollection(
+    creatorWalletClient,
+    {
+      name: "My NFT Collection",
+      symbol: "MNC",
+      description: "플랫폼에서 생성된 NFT 컬렉션",
+      image: "https://example.com/collection-image.png",
+      maxSupply: 1000n,
+      mintPrice: parseEther("0.01"),
+      category: "Art"
+    }
+  )
+  
+  console.log(`컬렉션 생성됨: ${predictedAddress}`)
+  
+  // 플랫폼 통계 확인
+  const stats = await platform.getPlatformStats()
+  console.log('플랫폼 통계:', stats)
+}
+```
+</Accordion>
