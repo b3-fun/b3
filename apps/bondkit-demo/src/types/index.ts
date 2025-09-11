@@ -179,17 +179,6 @@ export interface TokenHolder {
   percentage: number;
 }
 
-// =============================================================================
-// SWAP TYPES
-// =============================================================================
-
-export interface SwapQuote {
-  amountIn: string;
-  amountOut: string;
-  priceImpact: number;
-  minimumAmountOut: string;
-}
-
 export type SwapDirection = "tradingToBondkit" | "bondkitToTrading";
 
 // =============================================================================

@@ -1,5 +1,4 @@
 import { BondkitToken, BondkitTokenABI, TokenDetails } from "@b3dotfun/sdk/bondkit";
-import type { SwapQuote } from "@/types";
 import { TokenPhase } from "@/types";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Address, Hex } from "viem";
