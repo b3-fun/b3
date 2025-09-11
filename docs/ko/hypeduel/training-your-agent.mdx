@@ -1,0 +1,162 @@
+---
+title: 에이전트 훈련하기
+description: Unity ML 에이전트를 설정하고 깊은 강화 학습을 사용하여 HypeDuel 아레나에서 경쟁하도록 훈련하는 방법을 배우세요
+lang: ko
+originalPath: hypeduel/training-your-agent.mdx
+---
+<iframe class="w-full aspect-video rounded-xl mb-6" src="https://customer-gg6qs7nm5ue94t64.cloudflarestream.com/b875ed5a4303599a40e9eefb05f7083b/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-gg6qs7nm5ue94t64.cloudflarestream.com%2Fb875ed5a4303599a40e9eefb05f7083b%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600" title="Training Setup" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen />
+[시작하기 전에 문의하세요](https://form.typeform.com/to/nyvBvGbS)
+
+## 시작하기
+
+### 사전 요구 사항
+
+에이전트를 훈련하기 전에 다음이 준비되어 있는지 확인하세요:
+
+- **Unity 2022.3 LTS** 또는 그 이상
+- **Python 3.8+** 및 pip 설치됨
+- Unity의 **ML-Agents Toolkit**
+- 훈련을 위한 **PyTorch** 또는 **TensorFlow**
+
+### 설치 단계
+
+<Steps>
+  <Step title="Unity ML-Agents 설치">
+    ```bash
+    pip install mlagents
+    ```
+  </Step>
+  <Step title="HypeDuel 훈련 템플릿 클론">
+    ```bash
+    git clone https://github.com/hypeduel/agent-training-template
+    cd agent-training-template
+    ```
+  </Step>
+  <Step title="의존성 설치">
+    ```bash
+    pip install -r requirements.txt
+    ```
+  </Step>
+  <Step title="Unity에서 열기">
+    Unity Hub에서 프로젝트를 열고 훈련 장면을 로드하세요
+  </Step>
+</Steps>
+
+## 훈련 구성
+
+### 에이전트 행동 매개변수
+
+`config.yaml` 파일에서 에이전트의 학습 매개변수를 구성하세요:
+
+```yaml
+behaviors:
+  HypeDuelAgent:
+    trainer_type: ppo
+    hyperparameters:
+      batch_size: 1024
+      buffer_size: 10240
+      learning_rate: 3.0e-4
+      beta: 5.0e-4
+      epsilon: 0.2
+      lambd: 0.99
+      num_epoch: 3
+      learning_rate_schedule: linear
+    network_settings:
+      normalize: false
+      hidden_units: 128
+      num_layers: 2
+    reward_signals:
+      extrinsic:
+        gamma: 0.99
+        strength: 1.0
+    max_steps: 500000
+    time_horizon: 64
+    summary_freq: 10000
+```
+
+### 관찰 공간
+
+에이전트는 다음을 포함한 관찰을 받게 됩니다:
+
+- **아레나 상태**: 현재 위치, 체력, 파워업
+- **상대 행동**: 이동 패턴 및 최근 행동
+- **환경 데이터**: 아레나 경계, 장애물, 위험 요소
+- **게임 상태**: 남은 시간, 점수 차이, 파워업 가능 여부
+
+### 행동 공간
+
+에이전트는 다음과 같은 행동을 수행할 수 있습니다:
+
+- **이동**: 앞으로, 뒤로, 왼쪽, 오른쪽
+- **전투**: 공격, 방어, 특수 능력
+- **전략**: 위치 선정, 파워업 수집, 방어적 기동
+
+## 훈련 과정
+
+### 로컬 훈련
+
+에이전트를 로컬에서 훈련시키세요:
+
+```bash
+mlagents-learn config.yaml --run-id=hypeduel-agent-v1
+```
+
+### 훈련 메트릭
+
+주요 메트릭으로 에이전트의 진행 상황을 모니터링하세요:
+
+<CardGroup cols={2}>
+  <Card title="누적 보상" icon="chart-line">
+    에피소드별로 얻은 총 보상 추적
+  </Card>
+  <Card title="에피소드 길이" icon="clock">
+    에이전트가 전투에서 얼마나 오래 생존하는지 모니터링
+  </Card>
+  <Card title="승률" icon="trophy">
+    기준 상대에 대한 전투에서 승리한 비율
+  </Card>
+  <Card title="정책 손실" icon="trending-down">
+    학습 수렴 및 안정성 측정
+  </Card>
+</CardGroup>
+
+### 아레나 제출
+
+에이전트 훈련이 완료되면:
+
+1. **성능 테스트**: 벤치마크 상대에 대해 검증
+2. **모델 최적화**: 효율적인 추론 속도 보장
+3. **HypeDuel에 제출**: `.onnx` 모델 파일 업로드
+4. **아레나 등록**: 특정 아레나에 에이전트 등록
+
+## 모범 사례
+
+### 훈련 팁
+
+- **간단하게 시작**: 복잡한 전략보다는 기본 행동부터 시작
+- **보상 엔지니어링**: 원하는 행동을 장려하는 보상 설계
+- **정기적 평가**: 다양한 상대에 대해 자주 테스트
+- **점진적 복잡성**: 고급 메커니즘을 점차 도입
+
+### 성능 최적화
+
+- **관찰 정규화**: 안정적인 훈련을 위한 입력 스케일링
+- **행동 공간 설계**: 표현력과 훈련 효율성 사이의 균형
+- **메모리 관리**: 훈련 및 추론을 위한 최적화
+- **모델 압축**: 빠른 아레나 배포를 위한 모델 크기 축소
+
+## 문제 해결
+
+### 일반적인 문제
+
+<Accordion title="훈련이 수렴하지 않음">
+  학습률, 보상 스케일링, 관찰 정규화 확인. 복잡성을 줄이거나 하이퍼파라미터를 조정하세요.
+</Accordion>
+
+<Accordion title="에이전트 성능 정체">
+  커리큘럼 학습 구현, 환경 다양성 증가, 더 강한 상대와의 자체 플레이 훈련 시도.
+</Accordion>
+
+<Accordion title="추론 속도가 너무 느림">
+  모델 아키텍처 최적화, ONNX 런타임 사용, 반복적 결정을 위한 행동 캐싱 구현.
+</Accordion>

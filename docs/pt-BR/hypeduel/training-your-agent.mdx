@@ -1,0 +1,164 @@
+---
+title: Treinando seu Agente
+description: >-
+  Aprenda a configurar e treinar agentes Unity ML para competir em arenas
+  HypeDuel usando aprendizado por reforço profundo
+lang: pt-BR
+originalPath: hypeduel/training-your-agent.mdx
+---
+<iframe class="w-full aspect-video rounded-xl mb-6" src="https://customer-gg6qs7nm5ue94t64.cloudflarestream.com/b875ed5a4303599a40e9eefb05f7083b/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-gg6qs7nm5ue94t64.cloudflarestream.com%2Fb875ed5a4303599a40e9eefb05f7083b%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600" title="Configuração do Treinamento" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen />
+[Contate-nos antes de começar](https://form.typeform.com/to/nyvBvGbS)
+
+## Primeiros Passos
+
+### Pré-requisitos
+
+Antes de começar a treinar seu agente, certifique-se de ter:
+
+- **Unity 2022.3 LTS** ou mais recente
+- **Python 3.8+** com pip instalado
+- **ML-Agents Toolkit** da Unity
+- **PyTorch** ou **TensorFlow** para treinamento
+
+### Passos para Instalação
+
+<Steps>
+  <Step title="Instalar Unity ML-Agents">
+    ```bash
+    pip install mlagents
+    ```
+  </Step>
+  <Step title="Clonar Template de Treinamento HypeDuel">
+    ```bash
+    git clone https://github.com/hypeduel/agent-training-template
+    cd agent-training-template
+    ```
+  </Step>
+  <Step title="Instalar Dependências">
+    ```bash
+    pip install -r requirements.txt
+    ```
+  </Step>
+  <Step title="Abrir no Unity">
+    Abra o projeto no Unity Hub e carregue a cena de treinamento
+  </Step>
+</Steps>
+
+## Configuração de Treinamento
+
+### Parâmetros de Comportamento do Agente
+
+Configure os parâmetros de aprendizado do seu agente no arquivo `config.yaml`:
+
+```yaml
+behaviors:
+  HypeDuelAgent:
+    trainer_type: ppo
+    hyperparameters:
+      batch_size: 1024
+      buffer_size: 10240
+      learning_rate: 3.0e-4
+      beta: 5.0e-4
+      epsilon: 0.2
+      lambd: 0.99
+      num_epoch: 3
+      learning_rate_schedule: linear
+    network_settings:
+      normalize: false
+      hidden_units: 128
+      num_layers: 2
+    reward_signals:
+      extrinsic:
+        gamma: 0.99
+        strength: 1.0
+    max_steps: 500000
+    time_horizon: 64
+    summary_freq: 10000
+```
+
+### Espaço de Observação
+
+Seu agente receberá observações incluindo:
+
+- **Estado da Arena**: Posições atuais, saúde e power-ups
+- **Comportamento do Oponente**: Padrões de movimento e ações recentes
+- **Dados Ambientais**: Limites da arena, obstáculos e perigos
+- **Estado do Jogo**: Tempo restante, diferença de pontuação e disponibilidade de power-up
+
+### Espaço de Ação
+
+Os agentes podem realizar ações como:
+
+- **Movimento**: Para frente, para trás, esquerda, direita
+- **Combate**: Atacar, defender, habilidades especiais
+- **Estratégia**: Posicionamento, coleta de power-up, manobras defensivas
+
+## Processo de Treinamento
+
+### Treinamento Local
+
+Inicie o treinamento do seu agente localmente:
+
+```bash
+mlagents-learn config.yaml --run-id=hypeduel-agent-v1
+```
+
+### Métricas de Treinamento
+
+Monitore o progresso do seu agente com métricas chave:
+
+<CardGroup cols={2}>
+  <Card title="Recompensa Cumulativa" icon="chart-line">
+    Acompanhe as recompensas totais ganhas por episódio
+  </Card>
+  <Card title="Duração do Episódio" icon="clock">
+    Monitore quanto tempo seu agente sobrevive nas batalhas
+  </Card>
+  <Card title="Taxa de Vitória" icon="trophy">
+    Porcentagem de batalhas ganhas contra oponentes de referência
+  </Card>
+  <Card title="Perda de Política" icon="trending-down">
+    Meça a convergência e estabilidade da aprendizagem
+  </Card>
+</CardGroup>
+
+### Submissão na Arena
+
+Uma vez que seu agente esteja treinado:
+
+1. **Testar Desempenho**: Valide contra oponentes de referência
+2. **Otimização do Modelo**: Garanta velocidade de inferência eficiente
+3. **Submeter ao HypeDuel**: Faça upload do seu arquivo de modelo `.onnx`
+4. **Registro na Arena**: Registre seu agente para arenas específicas
+
+## Melhores Práticas
+
+### Dicas de Treinamento
+
+- **Comece Simples**: Comece com comportamentos básicos antes de estratégias complexas
+- **Engenharia de Recompensa**: Desenhe recompensas que incentivem comportamentos desejados
+- **Avaliação Regular**: Teste contra oponentes diversos frequentemente
+- **Complexidade Incremental**: Introduza mecanismos avançados gradualmente
+
+### Otimização de Desempenho
+
+- **Normalização de Observação**: Escale entradas para treinamento estável
+- **Design do Espaço de Ação**: Equilibre expressividade com eficiência de treinamento
+- **Gerenciamento de Memória**: Otimize tanto para treinamento quanto para inferência
+- **Compressão de Modelo**: Reduza o tamanho do modelo para implantação mais rápida na arena
+
+## Solução de Problemas
+
+### Problemas Comuns
+
+<Accordion title="Treinamento Não Convergindo">
+  Verifique a taxa de aprendizado, escalonamento de recompensa e normalização de observação. Considere reduzir a complexidade ou ajustar os hiperparâmetros.
+</Accordion>
+
+<Accordion title="Desempenho do Agente Estagnado">
+  Implemente aprendizado por currículo, aumente a diversidade do ambiente ou tente treinamento de autojogo contra oponentes mais fortes.
+</Accordion>
+
+<Accordion title="Inferência Muito Lenta">
+  Otimize a arquitetura do modelo, use o runtime ONNX ou implemente cache de ações para decisões repetidas.
+</Accordion>
