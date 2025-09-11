@@ -13,13 +13,15 @@ import { privateKeyToAccount } from "viem/accounts";
 import { base } from "viem/chains";
 import { BondkitTokenABI } from "./abis";
 import { getConfig } from "./config";
+import { BondkitSwapService } from "./swapService";
 import type {
   BondkitTokenInitializationConfig,
   GetTransactionHistoryOptions,
+  SwapQuote,
   TokenDetails,
-  TokenStatus,
   TransactionResponse,
 } from "./types";
+import { TokenStatus } from "./types";
 
 // Event ABI snippets for decoding
 const boughtEventAbi = BondkitTokenABI.find(item => item.type === "event" && item.name === "BondingCurveBuy");
@@ -53,6 +55,7 @@ export class BondkitToken {
   private walletClientInstance: WalletClient;
   private connectedProvider?: EIP1193Provider;
   private tradingToken?: Address;
+  private swapService?: BondkitSwapService;
 
   constructor(contractAddress: string, walletKey?: string) {
     const sdkConfig = getConfig(base.id);
@@ -655,6 +658,284 @@ export class BondkitToken {
 
   public async renounceTokenOwnership(options?: ExecuteWriteOptions): Promise<Hex | undefined> {
     return this.executeWrite("renounceOwnership", [], options);
+  }
+
+  // --- DEX Swap Methods ---
+
+  /**
+   * Get the swap service instance (lazy initialization)
+   */
+  private getSwapService(): BondkitSwapService {
+    if (!this.swapService) {
+      this.swapService = new BondkitSwapService(this.contractAddress);
+    }
+    return this.swapService;
+  }
+
+  /**
+   * Check if DEX swapping is available (token must be in DexPhase)
+   */
+  public async isSwapAvailable(): Promise<boolean | undefined> {
+    try {
+      const status = await this.currentStatus();
+      return status === TokenStatus.DexPhase;
+    } catch (error) {
+      console.warn("Error checking swap availability:", error);
+      return undefined;
+    }
+  }
+
+  /**
+   * Get swap quote for trading token → bondkit token
+   */
+  public async getSwapQuoteForBondkitToken(
+    amountTradingTokenIn: string,
+    slippageTolerance: number = 0.5
+  ): Promise<SwapQuote | undefined> {
+    try {
+      // Check if swapping is available
+      const swapAvailable = await this.isSwapAvailable();
+      if (!swapAvailable) {
+        console.warn("DEX swapping not available - token must be in DexPhase");
+        return undefined;
+      }
+
+      const tradingTokenAddress = await this.getTradingTokenAddress();
+      if (!tradingTokenAddress) {
+        console.warn("Trading token address not available");
+        return undefined;
+      }
+
+      // Get token details for decimals
+      const [tradingTokenDecimals, bondkitTokenDecimals] = await Promise.all([
+        this.getTradingTokenDecimals(tradingTokenAddress),
+        this.decimals(),
+      ]);
+
+      if (tradingTokenDecimals === undefined || bondkitTokenDecimals === undefined) {
+        console.warn("Unable to fetch token decimals");
+        return undefined;
+      }
+
+      const swapService = this.getSwapService();
+      const quote = await swapService.getSwapQuote({
+        tokenIn: tradingTokenAddress,
+        tokenOut: this.contractAddress,
+        amountIn: amountTradingTokenIn,
+        tokenInDecimals: tradingTokenDecimals,
+        tokenOutDecimals: bondkitTokenDecimals,
+        slippageTolerance,
+        recipient: this.walletClientInstance.account?.address || "0x0000000000000000000000000000000000000000",
+      });
+      return quote || undefined;
+    } catch (error) {
+      console.warn("Error getting swap quote for bondkit token:", error);
+      return undefined;
+    }
+  }
+
+  /**
+   * Get swap quote for bondkit token → trading token
+   */
+  public async getSwapQuoteForTradingToken(
+    amountBondkitTokenIn: string,
+    slippageTolerance: number = 0.5
+  ): Promise<SwapQuote | undefined> {
+    try {
+      // Check if swapping is available
+      const swapAvailable = await this.isSwapAvailable();
+      if (!swapAvailable) {
+        console.warn("DEX swapping not available - token must be in DexPhase");
+        return undefined;
+      }
+
+      const tradingTokenAddress = await this.getTradingTokenAddress();
+      if (!tradingTokenAddress) {
+        console.warn("Trading token address not available");
+        return undefined;
+      }
+
+      // Get token details for decimals
+      const [bondkitTokenDecimals, tradingTokenDecimals] = await Promise.all([
+        this.decimals(),
+        this.getTradingTokenDecimals(tradingTokenAddress),
+      ]);
+
+      if (bondkitTokenDecimals === undefined || tradingTokenDecimals === undefined) {
+        console.warn("Unable to fetch token decimals");
+        return undefined;
+      }
+
+      const swapService = this.getSwapService();
+      const quote = await swapService.getSwapQuote({
+        tokenIn: this.contractAddress,
+        tokenOut: tradingTokenAddress,
+        amountIn: amountBondkitTokenIn,
+        tokenInDecimals: bondkitTokenDecimals,
+        tokenOutDecimals: tradingTokenDecimals,
+        slippageTolerance,
+        recipient: this.walletClientInstance.account?.address || "0x0000000000000000000000000000000000000000",
+      });
+      return quote || undefined;
+    } catch (error) {
+      console.warn("Error getting swap quote for trading token:", error);
+      return undefined;
+    }
+  }
+
+  /**
+   * Swap trading token for bondkit token
+   */
+  public async swapTradingTokenForBondkitToken(
+    amountTradingTokenIn: string,
+    slippageTolerance: number = 0.5,
+    options?: ExecuteWriteOptions
+  ): Promise<Hex | undefined> {
+    try {
+      // Check if swapping is available
+      const swapAvailable = await this.isSwapAvailable();
+      if (!swapAvailable) {
+        console.warn("DEX swapping not available - token must be in DexPhase");
+        return undefined;
+      }
+
+      if (!this.walletClientInstance.account && !this.walletKey) {
+        console.warn("Wallet key not set or client not connected for swap operation");
+        return undefined;
+      }
+
+      const tradingTokenAddress = await this.getTradingTokenAddress();
+      if (!tradingTokenAddress) {
+        console.warn("Trading token address not available");
+        return undefined;
+      }
+
+      // Get token details for decimals
+      const [tradingTokenDecimals, bondkitTokenDecimals] = await Promise.all([
+        this.getTradingTokenDecimals(tradingTokenAddress),
+        this.decimals(),
+      ]);
+
+      if (tradingTokenDecimals === undefined || bondkitTokenDecimals === undefined) {
+        console.warn("Unable to fetch token decimals");
+        return undefined;
+      }
+
+      const recipient = this.walletClientInstance.account?.address || 
+                       (this.walletKey ? privateKeyToAccount(this.walletKey).address : undefined);
+
+      if (!recipient) {
+        console.warn("Unable to determine recipient address");
+        return undefined;
+      }
+
+      const swapService = this.getSwapService();
+      const txHash = await swapService.executeSwap({
+        tokenIn: tradingTokenAddress,
+        tokenOut: this.contractAddress,
+        amountIn: amountTradingTokenIn,
+        tokenInDecimals: tradingTokenDecimals,
+        tokenOutDecimals: bondkitTokenDecimals,
+        slippageTolerance,
+        recipient,
+        deadline: options?.value ? Math.floor(Date.now() / 1000) + 3600 : undefined,
+      }, this.walletClientInstance);
+
+      return txHash ? (txHash as Hex) : undefined;
+    } catch (error) {
+      console.warn("Error swapping trading token for bondkit token:", error);
+      return undefined;
+    }
+  }
+
+  /**
+   * Swap bondkit token for trading token
+   */
+  public async swapBondkitTokenForTradingToken(
+    amountBondkitTokenIn: string,
+    slippageTolerance: number = 0.5,
+    options?: ExecuteWriteOptions
+  ): Promise<Hex | undefined> {
+    try {
+      // Check if swapping is available
+      const swapAvailable = await this.isSwapAvailable();
+      if (!swapAvailable) {
+        console.warn("DEX swapping not available - token must be in DexPhase");
+        return undefined;
+      }
+
+      if (!this.walletClientInstance.account && !this.walletKey) {
+        console.warn("Wallet key not set or client not connected for swap operation");
+        return undefined;
+      }
+
+      const tradingTokenAddress = await this.getTradingTokenAddress();
+      if (!tradingTokenAddress) {
+        console.warn("Trading token address not available");
+        return undefined;
+      }
+
+      // Get token details for decimals
+      const [bondkitTokenDecimals, tradingTokenDecimals] = await Promise.all([
+        this.decimals(),
+        this.getTradingTokenDecimals(tradingTokenAddress),
+      ]);
+
+      if (bondkitTokenDecimals === undefined || tradingTokenDecimals === undefined) {
+        console.warn("Unable to fetch token decimals");
+        return undefined;
+      }
+
+      const recipient = this.walletClientInstance.account?.address || 
+                       (this.walletKey ? privateKeyToAccount(this.walletKey).address : undefined);
+
+      if (!recipient) {
+        console.warn("Unable to determine recipient address");
+        return undefined;
+      }
+
+      const swapService = this.getSwapService();
+      const txHash = await swapService.executeSwap({
+        tokenIn: this.contractAddress,
+        tokenOut: tradingTokenAddress,
+        amountIn: amountBondkitTokenIn,
+        tokenInDecimals: bondkitTokenDecimals,
+        tokenOutDecimals: tradingTokenDecimals,
+        slippageTolerance,
+        recipient,
+        deadline: options?.value ? Math.floor(Date.now() / 1000) + 3600 : undefined,
+      }, this.walletClientInstance);
+
+      return txHash ? (txHash as Hex) : undefined;
+    } catch (error) {
+      console.warn("Error swapping bondkit token for trading token:", error);
+      return undefined;
+    }
+  }
+
+  /**
+   * Helper method to get trading token decimals
+   */
+  private async getTradingTokenDecimals(tradingTokenAddress: Address): Promise<number | undefined> {
+    try {
+      // ETH has 18 decimals
+      if (tradingTokenAddress === "0x0000000000000000000000000000000000000000") {
+        return 18;
+      }
+
+      // For ERC20 tokens, read decimals from contract
+      const tradingTokenContract = getContract({
+        address: tradingTokenAddress,
+        abi: erc20Abi,
+        client: this.publicClient,
+      });
+
+      const decimals = await tradingTokenContract.read.decimals();
+      return Number(decimals);
+    } catch (error) {
+      console.warn("Error fetching trading token decimals:", error);
+      return undefined;
+    }
   }
 
   // TODO: Add other specific write methods from BondkitTokenABI.ts
