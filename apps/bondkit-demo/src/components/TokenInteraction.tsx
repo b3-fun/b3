@@ -1,7 +1,7 @@
 "use client";
 
 import { useBondkit } from "@/hooks/useBondkit";
-import { Action, TokenInteractionProps } from "@/types";
+import { Action, TokenInteractionProps, TokenPhase } from "@/types";
 import { useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { useEffect, useMemo, useState } from "react";
 import { formatEther, parseEther } from "viem";
@@ -153,7 +153,7 @@ export default function TokenInteraction({ tokenAddress, onUnmount }: TokenInter
         </div>
       </div>
 
-      {currentPhase === "Bonding" && bondingProgress && (
+      {currentPhase === TokenPhase.Bonding && bondingProgress && (
         <>
           <div className="mb-4">
             <h3 className="mb-2 text-lg font-semibold">Bonding Progress</h3>
@@ -234,14 +234,14 @@ export default function TokenInteraction({ tokenAddress, onUnmount }: TokenInter
           )}
         </>
       )}
-      {currentPhase === "Trading" && (
+      {currentPhase === TokenPhase.DEX && (
         <div className="rounded-lg bg-gray-700 p-6 text-center">
-          <h2 className="mb-2 text-xl font-semibold">Trading Phase</h2>
+          <h2 className="mb-2 text-xl font-semibold">DEX Phase</h2>
           <p className="text-gray-400">This token has migrated to a DEX.</p>
         </div>
       )}
 
-      {isOwner && currentPhase === "Bonding" && bondingProgress.progress >= 100 && (
+      {isOwner && currentPhase === TokenPhase.Bonding && bondingProgress.progress >= 100 && (
         <div className="mt-4 rounded-lg bg-gray-700 p-4">
           <h3 className="mb-2 text-lg font-semibold">Admin Actions</h3>
           <p className="mb-4 text-sm text-gray-400">
