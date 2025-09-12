@@ -1,6 +1,6 @@
 "use client";
 
-import { ALL_CHAINS, capitalizeFirstLetter, DEPOSIT_HYPE_ACTION, getChainName } from "@b3dotfun/sdk/anyspend";
+import { ALL_CHAINS, capitalizeFirstLetter, getChainName } from "@b3dotfun/sdk/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { CopyToClipboard } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils";
@@ -47,7 +47,8 @@ export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
     order.type === "mint_nft" ||
     order.type === "join_tournament" ||
     order.type === "fund_tournament" ||
-    order.type === "custom"
+    order.type === "custom" ||
+    order.type === "hype_duel"
       ? "0"
       : order.payload.expectedDstAmount.toString();
 
@@ -100,13 +101,13 @@ export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
                     ? "Join tournament"
                     : order.type === "fund_tournament"
                       ? "Fund tournament"
-                      : order.type === "custom"
-                        ? order.metadata.action === DEPOSIT_HYPE_ACTION
-                          ? "Deposit HYPE"
-                          : order.metadata.action
+                      : order.type === "hype_duel"
+                        ? "Deposit HYPE"
+                        : order.type === "custom"
+                          ? order.metadata.action
                             ? capitalizeFirstLetter(order.metadata.action)
                             : "Contract execution"
-                        : ""}
+                          : ""}
               </div>
 
               <div className="order-details-expected-value flex items-end gap-2">
@@ -126,10 +127,10 @@ export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
                     />
                     <div className="order-details-tournament-name">{tournament?.name || "Tournament"}</div>
                   </div>
-                ) : order.type === "custom" && order.metadata.action === DEPOSIT_HYPE_ACTION ? (
+                ) : order.type === "hype_duel" ? (
                   <div className="order-details-hype-info flex items-center gap-2">
                     <div className="order-details-hype-amount">
-                      {formatTokenAmount(BigInt(order.payload.amount), dstToken.decimals)} HYPE
+                      {formatTokenAmount(BigInt(order.payload.expectedDstAmount), dstToken.decimals)} HYPE
                     </div>
                   </div>
                 ) : null}

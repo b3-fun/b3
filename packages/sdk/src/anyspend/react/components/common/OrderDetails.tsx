@@ -2,7 +2,6 @@
 
 import {
   ALL_CHAINS,
-  DEPOSIT_HYPE_ACTION,
   getChainName,
   getErrorDisplay,
   getExplorerTxUrl,
@@ -76,6 +75,7 @@ function getOrderSuccessText({
   order,
   tournament,
   formattedActualDstAmount,
+  formattedExpectedDstAmount,
   dstToken,
   recipientName,
   centerTruncate,
@@ -83,6 +83,7 @@ function getOrderSuccessText({
   order: components["schemas"]["Order"];
   tournament?: any;
   formattedActualDstAmount?: string;
+  formattedExpectedDstAmount?: string;
   dstToken: any;
   recipientName?: string;
   centerTruncate: (address: string, n: number) => string;
@@ -103,10 +104,10 @@ function getOrderSuccessText({
     case "fund_tournament":
       actionText = `funded ${tournament?.name}`;
       return `Successfully ${actionText}`;
+    case "hype_duel":
+      actionText = `deposited ${formattedExpectedDstAmount || "--"} HYPE`;
+      return `Successfully ${actionText} to ${recipient}`;
     case "custom":
-      if (order.metadata.action === DEPOSIT_HYPE_ACTION) {
-        return `Successfully deposited ${formatTokenAmount(BigInt(order.payload?.amount || "0"), 18)} HYPE to ${recipient}`;
-      }
       actionText = order.metadata.action || `executed contract`;
       return `Successfully ${actionText}`;
     case "hype_duel":
@@ -738,6 +739,7 @@ export const OrderDetails = memo(function OrderDetails({
                 order,
                 tournament,
                 formattedActualDstAmount: formattedActualDstAmount,
+                formattedExpectedDstAmount: formattedExpectedDstAmount,
                 dstToken,
                 recipientName,
                 centerTruncate,
