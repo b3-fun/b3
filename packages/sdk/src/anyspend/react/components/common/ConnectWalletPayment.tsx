@@ -10,6 +10,7 @@ import { ChevronRight, Loader2 } from "lucide-react";
 import { useAccount } from "wagmi";
 import { CryptoPaymentMethodType } from "./CryptoPaymentMethod";
 import { OrderDetailsCollapsible } from "./OrderDetailsCollapsible";
+import { PaymentMethodSwitch } from "./PaymentMethodSwitch";
 
 type Tournament = components["schemas"]["Tournament"];
 type NFT = components["schemas"]["NFT"];
@@ -24,6 +25,7 @@ interface ConnectWalletPaymentProps {
   tournament?: Tournament;
   nft?: NFT;
   cryptoPaymentMethod: CryptoPaymentMethodType;
+  onPaymentMethodChange?: (method: CryptoPaymentMethodType) => void;
 }
 
 export default function ConnectWalletPayment({
@@ -35,6 +37,7 @@ export default function ConnectWalletPayment({
   tournament,
   nft,
   cryptoPaymentMethod,
+  onPaymentMethodChange,
 }: ConnectWalletPaymentProps) {
   const profile = useProfile({ address: order.recipientAddress });
   const recipientName = profile.data?.name?.replace(/\.b3\.fun/g, "");
@@ -96,6 +99,8 @@ export default function ConnectWalletPayment({
             ? centerTruncate(phantomWalletAddress, 6)
             : centerTruncate(connectedAddress || "")}
         </span>
+
+        <PaymentMethodSwitch currentMethod={cryptoPaymentMethod} onMethodChange={onPaymentMethodChange} />
 
         <div className="mt-4">
           <OrderDetailsCollapsible

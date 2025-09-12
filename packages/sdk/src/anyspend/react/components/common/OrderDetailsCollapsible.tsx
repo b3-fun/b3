@@ -55,38 +55,45 @@ export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
     formattedExpectedDstAmount || formatTokenAmount(BigInt(expectedDstAmount), dstToken.decimals);
 
   return (
-    <div className={cn("bg-as-surface-secondary border-as-border-secondary rounded-xl border px-4 py-2", className)}>
+    <div
+      className={cn(
+        "order-details-collapsible bg-as-surface-secondary border-as-border-secondary rounded-xl border px-4 py-2",
+        className,
+      )}
+    >
       {showOrderDetails ? (
         <motion.div
-          className="w-full"
+          className="order-details-expanded w-full"
           initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
           transition={{ duration: 0.3, delay: 0, ease: "easeInOut" }}
         >
-          <div className="flex w-full flex-col items-center gap-3 whitespace-nowrap py-2 text-sm">
+          <div className="order-details-content flex w-full flex-col items-center gap-3 whitespace-nowrap py-2 text-sm">
             {/* Recipient Section */}
-            <div className="flex w-full justify-between gap-4">
-              <div className="text-as-tertiarry">Recipient</div>
-              <div className="flex flex-col items-end gap-1">
-                {recipientName && <div className="text-as-primary font-semibold">{recipientName}</div>}
+            <div className="order-details-recipient-section flex w-full justify-between gap-4">
+              <div className="order-details-recipient-label text-as-tertiarry">Recipient</div>
+              <div className="order-details-recipient-info flex flex-col items-end gap-1">
+                {recipientName && (
+                  <div className="order-details-recipient-name text-as-primary font-semibold">{recipientName}</div>
+                )}
                 <CopyToClipboard
                   text={order.recipientAddress}
                   onCopy={() => {
                     toast.success("Copied recipient address to clipboard");
                   }}
                 >
-                  <div className="text-as-primary flex items-center gap-2">
+                  <div className="order-details-recipient-address text-as-primary flex items-center gap-2">
                     {centerTruncate(order.recipientAddress, 10)}
-                    <Copy className="text-as-primary/50 hover:text-as-primary h-4 w-4 cursor-pointer transition-all duration-200" />
+                    <Copy className="order-details-recipient-copy-icon text-as-primary/50 hover:text-as-primary h-4 w-4 cursor-pointer transition-all duration-200" />
                   </div>
                 </CopyToClipboard>
               </div>
             </div>
-            <div className="divider w-full" />
+            <div className="order-details-divider divider w-full" />
 
             {/* Expected Amount/Action Section */}
-            <div className="flex w-full items-center justify-between gap-2">
-              <div className="text-as-tertiarry">
+            <div className="order-details-expected-section flex w-full items-center justify-between gap-2">
+              <div className="order-details-expected-label text-as-tertiarry">
                 {order.type === "swap" || order.type === "mint_nft"
                   ? "Expected to receive"
                   : order.type === "join_tournament"
@@ -102,32 +109,40 @@ export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
                         : ""}
               </div>
 
-              <div className="flex items-end gap-2">
+              <div className="order-details-expected-value flex items-end gap-2">
                 {order.type === "swap" ? (
                   `~${finalFormattedExpectedDstAmount} ${dstToken.symbol}`
                 ) : order.type === "mint_nft" ? (
-                  <div className="flex items-center gap-2">
-                    <img src={nft?.imageUrl} alt={nft?.name || "NFT"} className="h-5 w-5" />
-                    <div>{nft?.name || "NFT"}</div>
+                  <div className="order-details-nft-info flex items-center gap-2">
+                    <img src={nft?.imageUrl} alt={nft?.name || "NFT"} className="order-details-nft-image h-5 w-5" />
+                    <div className="order-details-nft-name">{nft?.name || "NFT"}</div>
                   </div>
                 ) : order.type === "join_tournament" || order.type === "fund_tournament" ? (
-                  <div className="flex items-center gap-2">
-                    <img src={tournament?.imageUrl} alt={tournament?.name || "Tournament"} className="h-5 w-5" />
-                    <div>{tournament?.name || "Tournament"}</div>
+                  <div className="order-details-tournament-info flex items-center gap-2">
+                    <img
+                      src={tournament?.imageUrl}
+                      alt={tournament?.name || "Tournament"}
+                      className="order-details-tournament-image h-5 w-5"
+                    />
+                    <div className="order-details-tournament-name">{tournament?.name || "Tournament"}</div>
                   </div>
                 ) : order.type === "custom" && order.metadata.action === DEPOSIT_HYPE_ACTION ? (
-                  <div className="flex items-center gap-2">
-                    <div>{formatTokenAmount(BigInt(order.payload.amount), dstToken.decimals)} HYPE</div>
+                  <div className="order-details-hype-info flex items-center gap-2">
+                    <div className="order-details-hype-amount">
+                      {formatTokenAmount(BigInt(order.payload.amount), dstToken.decimals)} HYPE
+                    </div>
                   </div>
                 ) : null}
 
-                <div className="text-as-primary/50 flex items-center gap-2">
-                  <span>on {order.dstChain !== b3.id && getChainName(order.dstChain)}</span>
+                <div className="order-details-chain-info text-as-primary/50 flex items-center gap-2">
+                  <span className="order-details-chain-text">
+                    on {order.dstChain !== b3.id && getChainName(order.dstChain)}
+                  </span>
                   <img
                     src={ALL_CHAINS[order.dstChain].logoUrl}
                     alt={getChainName(order.dstChain)}
                     className={cn(
-                      "h-3",
+                      "order-details-chain-logo h-3",
                       order.dstChain !== b3.id && "w-3 rounded-full",
                       order.dstChain === b3.id && "h-4",
                     )}
@@ -136,25 +151,30 @@ export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
               </div>
             </div>
 
-            <div className="divider w-full" />
+            <div className="order-details-divider divider w-full" />
 
             {/* Order ID / Total Section */}
-            <div className="flex w-full justify-between gap-4">
-              <div className="text-as-tertiarry">{showTotal ? "Total (included fee)" : "Order ID"}</div>
-              <div className="text-as-primary overflow-hidden text-ellipsis whitespace-nowrap">
+            <div className="order-details-id-total-section flex w-full justify-between gap-4">
+              <div className="order-details-id-total-label text-as-tertiarry">
+                {showTotal ? "Total (included fee)" : "Order ID"}
+              </div>
+              <div className="order-details-id-total-value text-as-primary overflow-hidden text-ellipsis whitespace-nowrap">
                 {showTotal && totalAmount ? totalAmount : order.id}
               </div>
             </div>
           </div>
         </motion.div>
       ) : (
-        <div className="flex w-full items-center">
-          <div className="divider w-full" />
-          <button className="whitespace-nowrap text-sm" onClick={() => setShowOrderDetails(true)}>
+        <div className="order-details-collapsed flex w-full items-center">
+          <div className="order-details-collapsed-divider divider w-full" />
+          <button
+            className="order-details-collapsed-button whitespace-nowrap text-sm"
+            onClick={() => setShowOrderDetails(true)}
+          >
             Order Details
           </button>
-          <ChevronDown className="text-as-primary mx-1 h-4 min-h-4 w-4 min-w-4" />
-          <div className="divider w-full" />
+          <ChevronDown className="order-details-collapsed-chevron text-as-primary mx-1 h-4 min-h-4 w-4 min-w-4" />
+          <div className="order-details-collapsed-divider divider w-full" />
         </div>
       )}
     </div>

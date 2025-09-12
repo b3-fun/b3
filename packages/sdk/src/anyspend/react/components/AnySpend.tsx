@@ -38,7 +38,6 @@ import { ErrorSection } from "./common/ErrorSection";
 import { FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaymentMethod";
 import { OrderDetails, OrderDetailsLoadingView } from "./common/OrderDetails";
 import { OrderHistory } from "./common/OrderHistory";
-import { OrderStatus } from "./common/OrderStatus";
 import { PanelOnramp } from "./common/PanelOnramp";
 import { PanelOnrampPayment } from "./common/PanelOnrampPayment";
 import { RecipientSelection } from "./common/RecipientSelection";
@@ -807,22 +806,21 @@ function AnySpendInner({
     <div className={"mx-auto w-[460px] max-w-full"}>
       <div className="relative flex flex-col gap-4">
         {oat && (
-          <>
-            <OrderStatus order={oat.data.order} selectedCryptoPaymentMethod={selectedCryptoPaymentMethod} />
-            <OrderDetails
-              mode={mode}
-              order={oat.data.order}
-              depositTxs={oat.data.depositTxs}
-              relayTxs={oat.data.relayTxs}
-              executeTx={oat.data.executeTx}
-              refundTxs={oat.data.refundTxs}
-              onBack={() => {
-                setOrderId(undefined);
-                setActivePanel(PanelView.MAIN);
-                setSelectedCryptoPaymentMethod(CryptoPaymentMethodType.NONE); // Reset payment method when going back
-              }}
-            />
-          </>
+          <OrderDetails
+            mode={mode}
+            order={oat.data.order}
+            depositTxs={oat.data.depositTxs}
+            relayTxs={oat.data.relayTxs}
+            executeTx={oat.data.executeTx}
+            refundTxs={oat.data.refundTxs}
+            selectedCryptoPaymentMethod={selectedCryptoPaymentMethod}
+            onPaymentMethodChange={setSelectedCryptoPaymentMethod}
+            onBack={() => {
+              setOrderId(undefined);
+              setActivePanel(PanelView.MAIN);
+              setSelectedCryptoPaymentMethod(CryptoPaymentMethodType.NONE); // Reset payment method when going back
+            }}
+          />
         )}
         {/* {mode === "page" && <div className="h-12" />} */}
       </div>

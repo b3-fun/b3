@@ -53,6 +53,7 @@ import ConnectWalletPayment from "./ConnectWalletPayment";
 import { CryptoPaymentMethodType } from "./CryptoPaymentMethod";
 import { InsufficientDepositPayment } from "./InsufficientDepositPayment";
 import { OrderDetailsCollapsible } from "./OrderDetailsCollapsible";
+import { OrderStatus } from "./OrderStatus";
 import PaymentVendorUI from "./PaymentVendorUI";
 import { TransferCryptoDetails } from "./TransferCryptoDetails";
 
@@ -64,6 +65,8 @@ interface OrderDetailsProps {
   executeTx: components["schemas"]["ExecuteTx"] | null;
   refundTxs: components["schemas"]["RefundTx"][];
   cryptoPaymentMethod?: CryptoPaymentMethodType; // Now optional since we read from URL
+  selectedCryptoPaymentMethod?: CryptoPaymentMethodType; // For OrderStatus integration
+  onPaymentMethodChange?: (method: CryptoPaymentMethodType) => void; // Callback for payment method switching
   onBack?: () => void;
   disableUrlParamManagement?: boolean; // When true, will not modify URL parameters
 }
@@ -207,6 +210,8 @@ export const OrderDetails = memo(function OrderDetails({
   executeTx,
   refundTxs,
   cryptoPaymentMethod,
+  selectedCryptoPaymentMethod,
+  onPaymentMethodChange,
   onBack,
   disableUrlParamManagement = false,
 }: OrderDetailsProps) {
@@ -221,6 +226,9 @@ export const OrderDetails = memo(function OrderDetails({
   const cryptoPaymentMethodFromUrl = searchParams.get("cryptoPaymentMethod") as CryptoPaymentMethodType | null;
   const effectiveCryptoPaymentMethod =
     cryptoPaymentMethod || cryptoPaymentMethodFromUrl || CryptoPaymentMethodType.NONE;
+
+  // Use selectedCryptoPaymentMethod for OrderStatus if provided, otherwise fall back to effective method
+  const orderStatusPaymentMethod = selectedCryptoPaymentMethod || effectiveCryptoPaymentMethod;
 
   const setB3ModalOpen = useModalStore((state: any) => state.setB3ModalOpen);
 
@@ -569,6 +577,7 @@ export const OrderDetails = memo(function OrderDetails({
   if (refundTxs.length > 0) {
     return (
       <>
+        <OrderStatus order={order} selectedCryptoPaymentMethod={orderStatusPaymentMethod} />
         <OrderDetailsCollapsible
           order={order}
           dstToken={dstToken}
@@ -577,10 +586,10 @@ export const OrderDetails = memo(function OrderDetails({
           recipientName={recipientName}
           formattedExpectedDstAmount={formattedExpectedDstAmount}
         />
-        <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="refund-details">
-            <AccordionTrigger>Transaction Details</AccordionTrigger>
-            <AccordionContent className="pl-2">
+        <Accordion type="single" collapsible className="order-details-accordion w-full">
+          <AccordionItem value="refund-details" className="order-details-refund-item">
+            <AccordionTrigger className="accordion-trigger">Transaction Details</AccordionTrigger>
+            <AccordionContent className="accordion-content pl-2">
               <div className="relative flex w-full flex-col gap-4">
                 <div className="bg-as-surface-secondary absolute bottom-2 left-4 top-2 z-[5] w-2">
                   <motion.div
@@ -628,7 +637,7 @@ export const OrderDetails = memo(function OrderDetails({
           </div>
         )}
         <button
-          className="order-close-button bg-as-brand flex w-full items-center justify-center gap-2 rounded-lg p-2 font-semibold text-white"
+          className="order-close-button order-details-close-btn bg-as-brand flex w-full items-center justify-center gap-2 rounded-lg p-2 font-semibold text-white"
           onClick={mode === "page" ? handleBack : handleCloseModal}
         >
           {mode === "page" ? (
@@ -646,6 +655,7 @@ export const OrderDetails = memo(function OrderDetails({
   if (executeTx) {
     return (
       <>
+        <OrderStatus order={order} selectedCryptoPaymentMethod={orderStatusPaymentMethod} />
         <OrderDetailsCollapsible
           order={order}
           dstToken={dstToken}
@@ -654,10 +664,10 @@ export const OrderDetails = memo(function OrderDetails({
           recipientName={recipientName}
           formattedExpectedDstAmount={formattedExpectedDstAmount}
         />
-        <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="execute-details">
-            <AccordionTrigger>Transaction Details</AccordionTrigger>
-            <AccordionContent className="pl-2">
+        <Accordion type="single" collapsible className="order-details-accordion w-full">
+          <AccordionItem value="execute-details" className="order-details-execute-item">
+            <AccordionTrigger className="order-details-execute-trigger">Transaction Details</AccordionTrigger>
+            <AccordionContent className="order-details-execute-content pl-2">
               <div className="relative flex w-full flex-col gap-4">
                 <div className="bg-as-surface-secondary absolute bottom-2 left-4 top-2 z-[5] w-2">
                   <motion.div
@@ -752,7 +762,7 @@ export const OrderDetails = memo(function OrderDetails({
 
         {order.status === "executed" && (
           <button
-            className="order-close-button bg-as-brand flex w-full items-center justify-center gap-2 rounded-lg p-2 font-semibold text-white"
+            className="order-close-button order-details-close-btn bg-as-brand flex w-full items-center justify-center gap-2 rounded-lg p-2 font-semibold text-white"
             onClick={mode === "page" ? handleBack : handleCloseModal}
           >
             {mode === "page" ? (
@@ -771,6 +781,7 @@ export const OrderDetails = memo(function OrderDetails({
   if (relayTxs.length > 0 && relayTxs.every(tx => tx.status === "success")) {
     return (
       <>
+        <OrderStatus order={order} selectedCryptoPaymentMethod={orderStatusPaymentMethod} />
         <OrderDetailsCollapsible
           order={order}
           dstToken={dstToken}
@@ -779,10 +790,10 @@ export const OrderDetails = memo(function OrderDetails({
           recipientName={recipientName}
           formattedExpectedDstAmount={formattedExpectedDstAmount}
         />
-        <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="more-details">
-            <AccordionTrigger>More Details</AccordionTrigger>
-            <AccordionContent className="pl-2">
+        <Accordion type="single" collapsible className="order-details-accordion w-full">
+          <AccordionItem value="more-details" className="order-details-more-item">
+            <AccordionTrigger className="accordion-trigger">More Details</AccordionTrigger>
+            <AccordionContent className="accordion-content pl-2">
               <div className="relative flex w-full flex-col gap-4">
                 <div className="bg-as-surface-secondary absolute bottom-2 left-4 top-2 z-[5] w-2">
                   <motion.div
@@ -878,7 +889,7 @@ export const OrderDetails = memo(function OrderDetails({
 
         {order.status === "executed" && (
           <button
-            className="order-close-button bg-as-brand flex w-full items-center justify-center gap-2 rounded-lg p-2 font-semibold text-white"
+            className="order-close-button order-details-close-btn bg-as-brand flex w-full items-center justify-center gap-2 rounded-lg p-2 font-semibold text-white"
             onClick={mode === "page" ? handleBack : handleCloseModal}
           >
             {mode === "page" ? (
@@ -899,6 +910,7 @@ export const OrderDetails = memo(function OrderDetails({
   if (depositTxs?.length || waitingForDeposit) {
     return (
       <>
+        <OrderStatus order={order} selectedCryptoPaymentMethod={orderStatusPaymentMethod} />
         <OrderDetailsCollapsible
           order={order}
           dstToken={dstToken}
@@ -907,10 +919,10 @@ export const OrderDetails = memo(function OrderDetails({
           recipientName={recipientName}
           formattedExpectedDstAmount={formattedExpectedDstAmount}
         />
-        <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="deposit-details">
-            <AccordionTrigger>Transaction Details</AccordionTrigger>
-            <AccordionContent className="pl-2">
+        <Accordion type="single" collapsible className="order-details-accordion w-full">
+          <AccordionItem value="deposit-details" className="order-details-deposit-item">
+            <AccordionTrigger className="accordion-trigger">Transaction Details</AccordionTrigger>
+            <AccordionContent className="accordion-content pl-2">
               <div className="relative flex w-full flex-col gap-6">
                 <div className="bg-as-surface-secondary absolute bottom-2 left-4 top-2 z-[5] w-2">
                   <motion.div
@@ -997,6 +1009,7 @@ export const OrderDetails = memo(function OrderDetails({
 
   return (
     <>
+      <OrderStatus order={order} selectedCryptoPaymentMethod={orderStatusPaymentMethod} />
       {statusDisplay === "processing" && (
         <>
           {order.onrampMetadata ? (
@@ -1013,6 +1026,7 @@ export const OrderDetails = memo(function OrderDetails({
               tournament={tournament}
               nft={nft}
               cryptoPaymentMethod={effectiveCryptoPaymentMethod}
+              onPaymentMethodChange={onPaymentMethodChange}
             />
           ) : effectiveCryptoPaymentMethod === CryptoPaymentMethodType.TRANSFER_CRYPTO ? (
             // Transfer Crypto Payment Method - Show new card-based UI
@@ -1024,23 +1038,24 @@ export const OrderDetails = memo(function OrderDetails({
               tournament={tournament}
               nft={nft}
               onBack={handleBack}
+              onPaymentMethodChange={onPaymentMethodChange}
             />
           ) : (
-            <div className="relative flex w-full flex-1 flex-col">
-              <div className={"flex flex-col gap-1"}>
-                <span className={"text-as-primary/50"}>Please send</span>
-                <div className="flex w-full flex-wrap items-center gap-6 sm:justify-between sm:gap-0">
+            <div className="order-details-payment-section relative flex w-full flex-1 flex-col">
+              <div className={"order-details-amount-section flex flex-col gap-1"}>
+                <span className={"text-as-primary/50 order-details-amount-label"}>Please send</span>
+                <div className="order-details-amount-container flex w-full flex-wrap items-center gap-6 sm:justify-between sm:gap-0">
                   <CopyToClipboard
                     text={roundedUpSrcAmount}
                     onCopy={() => {
                       toast.success("Copied to clipboard");
                     }}
                   >
-                    <div className="flex items-center gap-2">
-                      <strong className="border-as-brand text-as-primary border-b-2 pb-1 text-2xl font-semibold sm:text-xl">
+                    <div className="order-details-amount-display flex items-center gap-2">
+                      <strong className="border-as-brand text-as-primary order-details-amount-text border-b-2 pb-1 text-2xl font-semibold sm:text-xl">
                         {roundedUpSrcAmount} {srcToken.symbol}
                       </strong>
-                      <Copy className="text-as-primary/50 hover:text-as-primary h-5 w-5 cursor-pointer transition-all duration-200" />
+                      <Copy className="text-as-primary/50 hover:text-as-primary order-details-copy-icon h-5 w-5 cursor-pointer transition-all duration-200" />
                     </div>
                   </CopyToClipboard>
 
@@ -1053,7 +1068,7 @@ export const OrderDetails = memo(function OrderDetails({
                     />
                   </Badge>
                 </div>
-                <span className={"text-as-primary/50 mb-1 mt-2"}> to the address:</span>
+                <span className={"text-as-primary/50 order-details-address-label mb-1 mt-2"}> to the address:</span>
               </div>
               <CopyToClipboard
                 text={order.globalAddress}
@@ -1061,11 +1076,11 @@ export const OrderDetails = memo(function OrderDetails({
                   toast.success("Copied to clipboard");
                 }}
               >
-                <div className="bg-b3-react-background border-b3-react-border hover:border-as-brand group flex cursor-pointer items-center justify-between gap-4 rounded-lg border p-3 px-4 shadow-md transition-all duration-200">
-                  <div className="text-as-primary overflow-hidden text-ellipsis whitespace-nowrap text-sm">
+                <div className="bg-b3-react-background border-b3-react-border hover:border-as-brand order-details-address-container group flex cursor-pointer items-center justify-between gap-4 rounded-lg border p-3 px-4 shadow-md transition-all duration-200">
+                  <div className="text-as-primary order-details-address-text overflow-hidden text-ellipsis whitespace-nowrap text-sm">
                     {order.globalAddress}
                   </div>
-                  <Copy className="group-hover:text-as-brand text-as-primary/50 h-5 w-5 cursor-pointer transition-all duration-200" />
+                  <Copy className="group-hover:text-as-brand text-as-primary/50 order-details-address-copy-icon h-5 w-5 cursor-pointer transition-all duration-200" />
                 </div>
               </CopyToClipboard>
 
@@ -1134,7 +1149,7 @@ export const OrderDetails = memo(function OrderDetails({
                   transition={{ duration: 0.5, ease: "easeInOut" }}
                   className="flex w-full items-center justify-evenly gap-4"
                 >
-                  <div className="mt-8 flex flex-col items-center rounded-lg bg-white p-6 pb-3">
+                  <div className="order-details-qr-container mt-8 flex flex-col items-center rounded-lg bg-white p-6 pb-3">
                     <QRCodeSVG
                       value={getPaymentUrl(
                         order.globalAddress,
@@ -1143,9 +1158,9 @@ export const OrderDetails = memo(function OrderDetails({
                         order.srcChain,
                         srcToken?.decimals,
                       )}
-                      className="max-w-[200px]"
+                      className="order-details-qr-code max-w-[200px]"
                     />
-                    <div className="mt-3 flex items-center justify-center gap-2 text-sm">
+                    <div className="order-details-qr-wallets mt-3 flex items-center justify-center gap-2 text-sm">
                       <span className="label-style text-as-brand/70 text-sm">Scan with</span>
                       <TextLoop interval={3}>
                         <WalletMetamask className="h-5 w-5" variant="branded" />
@@ -1162,9 +1177,9 @@ export const OrderDetails = memo(function OrderDetails({
         </>
       )}
 
-      <div className="flex w-full items-center justify-center gap-1 text-sm">
-        <div className="text-as-primary/30">Time remaining:</div>
-        <div className="text-as-primary">
+      <div className="order-details-time-remaining flex w-full items-center justify-center gap-1 text-sm">
+        <div className="text-as-primary/30 order-details-time-label">Time remaining:</div>
+        <div className="text-as-primary order-details-time-value">
           {depositEnoughAmount ? (
             "Received"
           ) : order.status === "expired" ? (
@@ -1186,7 +1201,7 @@ export const OrderDetails = memo(function OrderDetails({
         />
       )}
 
-      <button className="flex w-full items-center justify-center gap-2" onClick={handleBack}>
+      <button className="order-details-cancel-btn flex w-full items-center justify-center gap-2" onClick={handleBack}>
         <RefreshCcw className="ml-2 h-4 w-4" /> Cancel and start over
       </button>
 
@@ -1209,8 +1224,8 @@ function TransactionDetails({
   delay?: number;
 }) {
   return (
-    <div className={"relative flex w-full flex-1 items-center justify-between gap-4"}>
-      <div className="flex grow items-center gap-4">
+    <div className={"order-details-transaction-item relative flex w-full flex-1 items-center justify-between gap-4"}>
+      <div className="order-details-transaction-content flex grow items-center gap-4">
         <motion.div className="bg-as-surface-secondary relative h-10 w-10 rounded-full">
           {isProcessing ? (
             <motion.div

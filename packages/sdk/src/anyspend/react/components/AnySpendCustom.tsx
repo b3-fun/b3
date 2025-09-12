@@ -47,7 +47,6 @@ import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPay
 import { FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaymentMethod";
 import { OrderDetails } from "./common/OrderDetails";
 import { OrderHistory } from "./common/OrderHistory";
-import { OrderStatus as OrderStatusDisplay } from "./common/OrderStatus";
 import { OrderToken } from "./common/OrderToken";
 import { RecipientSelection } from "./common/RecipientSelection";
 
@@ -648,26 +647,25 @@ function AnySpendCustomInner({
       )}
     >
       {oat && (
-        <>
-          <OrderStatusDisplay order={oat.data.order} selectedCryptoPaymentMethod={selectedCryptoPaymentMethod} />
-          <OrderDetails
-            mode={mode}
-            order={oat.data.order}
-            depositTxs={oat.data.depositTxs}
-            relayTxs={oat.data.relayTxs}
-            executeTx={oat.data.executeTx}
-            refundTxs={oat.data.refundTxs}
-            cryptoPaymentMethod={activeTab === "fiat" ? CryptoPaymentMethodType.NONE : selectedCryptoPaymentMethod}
-            onBack={() => {
-              setOrderId(undefined);
-              setActivePanel(PanelView.CONFIRM_ORDER);
-              // Remove orderId from URL when canceling
-              const params = new URLSearchParams(searchParams.toString());
-              params.delete("orderId");
-              router.push(`${window.location.pathname}?${params.toString()}`);
-            }}
-          />
-        </>
+        <OrderDetails
+          mode={mode}
+          order={oat.data.order}
+          depositTxs={oat.data.depositTxs}
+          relayTxs={oat.data.relayTxs}
+          executeTx={oat.data.executeTx}
+          refundTxs={oat.data.refundTxs}
+          cryptoPaymentMethod={activeTab === "fiat" ? CryptoPaymentMethodType.NONE : selectedCryptoPaymentMethod}
+          selectedCryptoPaymentMethod={selectedCryptoPaymentMethod}
+          onPaymentMethodChange={setSelectedCryptoPaymentMethod}
+          onBack={() => {
+            setOrderId(undefined);
+            setActivePanel(PanelView.CONFIRM_ORDER);
+            // Remove orderId from URL when canceling
+            const params = new URLSearchParams(searchParams.toString());
+            params.delete("orderId");
+            router.push(`${window.location.pathname}?${params.toString()}`);
+          }}
+        />
       )}
       {mode === "page" && <div className="h-12" />}
     </div>

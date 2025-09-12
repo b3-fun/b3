@@ -14,7 +14,6 @@ import { CryptoReceiveSection } from "./common/CryptoReceiveSection";
 import { ErrorSection } from "./common/ErrorSection";
 import { FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaymentMethod";
 import { OrderDetails } from "./common/OrderDetails";
-import { OrderStatus } from "./common/OrderStatus";
 import { RecipientSelection } from "./common/RecipientSelection";
 
 import { ArrowDown } from "lucide-react";
@@ -381,23 +380,22 @@ function AnySpendDepositHypeInner({
     <div className={"mx-auto w-[460px] max-w-full"}>
       <div className="relative flex flex-col gap-4">
         {oat && (
-          <>
-            <OrderStatus order={oat.data.order} selectedCryptoPaymentMethod={selectedCryptoPaymentMethod} />
-            <OrderDetails
-              mode={mode}
-              order={oat.data.order}
-              depositTxs={oat.data.depositTxs}
-              relayTxs={oat.data.relayTxs}
-              executeTx={oat.data.executeTx}
-              refundTxs={oat.data.refundTxs}
-              cryptoPaymentMethod={paymentType === "fiat" ? CryptoPaymentMethodType.NONE : selectedCryptoPaymentMethod}
-              onBack={() => {
-                setOrderId(undefined);
-                setActivePanel(PanelView.MAIN);
-              }}
-              disableUrlParamManagement
-            />
-          </>
+          <OrderDetails
+            mode={mode}
+            order={oat.data.order}
+            depositTxs={oat.data.depositTxs}
+            relayTxs={oat.data.relayTxs}
+            executeTx={oat.data.executeTx}
+            refundTxs={oat.data.refundTxs}
+            cryptoPaymentMethod={paymentType === "fiat" ? CryptoPaymentMethodType.NONE : selectedCryptoPaymentMethod}
+            selectedCryptoPaymentMethod={selectedCryptoPaymentMethod}
+            onPaymentMethodChange={setSelectedCryptoPaymentMethod}
+            onBack={() => {
+              setOrderId(undefined);
+              setActivePanel(PanelView.MAIN);
+            }}
+            disableUrlParamManagement
+          />
         )}
       </div>
     </div>
