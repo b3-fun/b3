@@ -154,19 +154,22 @@ export function useUnifiedChainSwitchAndExecute() {
             value: params.value.toString(),
           });
         } catch (err: any) {
-          console.error(err);
+          console.error("Create global-accounts-intents error", err);
         }
 
         toast.info("Sending transaction…");
+        const start = performance.now();
         const sendTxResponse = await twSendTransaction({
           account: aaAccount,
           transaction,
         });
+        const end = performance.now();
+        console.log("Time taken to send transaction", end - start);
 
         toast.success("Transaction sent successfully");
         return sendTxResponse.transactionHash;
       } catch (err: any) {
-        console.error(err);
+        console.error("Send transaction error", err);
         toast.error(err?.message ?? "Transaction failed");
         return undefined;
       } finally {

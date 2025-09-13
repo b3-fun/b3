@@ -149,7 +149,7 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     name: bsc.name,
     logoUrl: "https://avatars.githubusercontent.com/u/45615063?s=280&v=4",
     type: ChainType.EVM,
-    nativeRequired: parseEther("0.000025"),
+    nativeRequired: parseEther("0.0001"),
     canDepositNative: true,
     defaultToken: getBnbToken(),
     nativeToken: getBnbToken(),
