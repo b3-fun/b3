@@ -165,7 +165,7 @@ export interface GetTokensResponse {
 
 export type Address = `0x${string}`;
 
-export type TxType = "approve" | "sell" | "buy" | "migrate" | null;
+export type TxType = "approve" | "sell" | "buy" | "migrate" | "swap" | null;
 
 export interface BondingProgress {
   progress: number;
@@ -177,4 +177,15 @@ export interface TokenHolder {
   address: Address;
   balance: bigint;
   percentage: number;
+}
+
+export type SwapDirection = "tradingToBondkit" | "bondkitToTrading";
+
+// =============================================================================
+// PHASE CONSTANTS
+// =============================================================================
+
+export const enum TokenPhase {
+  Bonding = "Bonding",
+  DEX = "DEX",
 }

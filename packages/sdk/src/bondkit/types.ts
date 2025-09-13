@@ -101,3 +101,11 @@ export interface TransactionResponse {
   skip: number;
   data: Transaction[];
 }
+
+export interface SwapQuote {
+  amountOut: string;
+  amountOutMin: string;
+  priceImpact: string;
+  executionPrice: string;
+  fee: string;
+}

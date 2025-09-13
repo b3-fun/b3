@@ -2,6 +2,7 @@
 
 import { useBondkit } from "@/hooks/useBondkit";
 import { TokenInfo } from "@/types/chart";
+import { TokenPhase } from "@/types";
 import { TradingView } from "@b3dotfun/sdk/bondkit";
 import { useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { useRouter } from "next/navigation";
@@ -9,6 +10,7 @@ import { useEffect, useMemo, useState } from "react";
 import { formatEther, parseEther } from "viem";
 import { useAccount } from "wagmi";
 import SignInWithB3OnBase from "../../SignInWithB3OnBase";
+import SwapInterface from "../../../components/SwapInterface";
 
 type Action = "buy" | "sell";
 
@@ -59,6 +61,10 @@ export default function TokenPage({ params }: TokenPageProps) {
     txType,
     isConfirmed,
     allowance,
+    // Use computed values from hook
+    isEthTradingToken,
+    tradingTokenSymbol,
+    userTradingTokenBalance,
   } = useBondkit(tokenAddress);
 
   const [isLoading, setIsLoading] = useState(true);
@@ -67,11 +73,6 @@ export default function TokenPage({ params }: TokenPageProps) {
   const [quote, setQuote] = useState<string | null>(null);
   const [tokenInfo, setTokenInfo] = useState<TokenInfo | null>(null);
   const [sellAmountToProcess, setSellAmountToProcess] = useState<bigint | null>(null);
-
-  // Check if trading token is ETH or ERC20
-  const isEthTradingToken = tradingTokenAddress === "0x0000000000000000000000000000000000000000";
-  const tradingTokenSymbol = isEthTradingToken ? "ETH" : "B3"; // We'll get the actual symbol later
-  const userTradingTokenBalance = isEthTradingToken ? userEthBalance?.value : tradingTokenBalance;
 
   useEffect(() => {
     if (tokenName && tokenSymbol && holders) {
@@ -424,7 +425,7 @@ export default function TokenPage({ params }: TokenPageProps) {
                 <div className="bg-b3-react-card border-b3-react-border rounded-xl border p-6 shadow-lg">
                   <h3 className="text-b3-react-foreground mb-6 text-xl font-semibold">Trade Token</h3>
 
-                  {currentPhase === "Bonding" && bondingProgress && (
+                  {currentPhase === TokenPhase.Bonding && bondingProgress && (
                     <>
                       {/* Bonding Progress */}
                       <div className="mb-6">
@@ -574,30 +575,7 @@ export default function TokenPage({ params }: TokenPageProps) {
                     </>
                   )}
 
-                  {currentPhase !== "Bonding" && (
-                    <div className="text-center">
-                      <h4 className="text-b3-react-foreground mb-2 text-lg font-semibold">Trading Phase</h4>
-                      <p className="text-b3-react-muted-foreground mb-4">This token has migrated to a DEX.</p>
-                      <div className="mt-4 space-y-3">
-                        <a
-                          href={`https://dexscreener.com/base/${tokenAddress}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="bg-b3-react-subtle border-b3-react-border text-b3-react-foreground hover:bg-b3-react-muted inline-block w-full rounded-lg border px-4 py-3 font-bold transition-colors"
-                        >
-                          View on DexScreener
-                        </a>
-                        <a
-                          href={`https://app.uniswap.org/swap?chain=base&inputCurrency=NATIVE&outputCurrency=${tokenAddress}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="bg-b3-react-primary text-b3-react-primary-foreground hover:bg-b3-react-primary/90 inline-block w-full rounded-lg px-4 py-3 font-bold transition-colors"
-                        >
-                          Swap on Uniswap
-                        </a>
-                      </div>
-                    </div>
-                  )}
+                  {currentPhase === TokenPhase.DEX && <SwapInterface tokenAddress={tokenAddress} />}
                 </div>
 
                 {/* Token Details */}
@@ -626,9 +604,9 @@ export default function TokenPage({ params }: TokenPageProps) {
                       <p className="text-b3-react-muted-foreground mb-1 text-sm">Phase</p>
                       <span
                         className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                          currentPhase === "Bonding"
+                          currentPhase === TokenPhase.Bonding
                             ? "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400"
-                            : currentPhase === "Trading"
+                            : currentPhase === TokenPhase.DEX
                               ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
                               : "bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-400"
                         }`}
