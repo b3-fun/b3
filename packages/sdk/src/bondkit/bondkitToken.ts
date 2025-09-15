@@ -54,8 +54,8 @@ export class BondkitToken {
   private connectedProvider?: EIP1193Provider;
   private tradingToken?: Address;
 
-  constructor(contractAddress: string, walletKey?: string) {
-    const sdkConfig = getConfig(base.id);
+  constructor(contractAddress: string, walletKey?: string, rpcUrl?: string) {
+    const sdkConfig = getConfig(base.id, rpcUrl);
     this.chain = sdkConfig.chain;
     this.rpcUrl = sdkConfig.rpcUrl;
     this.apiEndpoint = sdkConfig.apiEndpoint;
