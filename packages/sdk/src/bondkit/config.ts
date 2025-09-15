@@ -18,9 +18,12 @@ const baseMainnetConfig: Config = {
   apiEndpoint: "https://api.b3.fun/bondkit-tokens",
 };
 
-export const getConfig = (chainId: number): Config => {
+export const getConfig = (chainId: number, rpcUrl?: string): Config => {
   if (chainId === base.id) {
-    return baseMainnetConfig;
+    return {
+      ...baseMainnetConfig,
+      rpcUrl: rpcUrl || BaseMainnetRpcUrl,
+    };
   }
   throw new Error(`Unsupported chainId: ${chainId}. This SDK is configured for Base (Chain ID: ${base.id}) only.`);
 };

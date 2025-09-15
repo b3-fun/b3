@@ -30,14 +30,14 @@ export class BondkitTokenFactory {
   private walletClientInstance: WalletClient; // Made non-optional, initialized in constructor
   private connectedProvider?: EIP1193Provider;
 
-  constructor(chainId: SupportedChainId, walletKey?: string) {
+  constructor(chainId: SupportedChainId, walletKey?: string, rpcUrl?: string) {
     if (walletKey && !walletKey.startsWith("0x")) {
       this.walletKey = `0x${walletKey}` as Hex;
     } else if (walletKey) {
       this.walletKey = walletKey as Hex;
     }
 
-    const config = getConfig(chainId);
+    const config = getConfig(chainId, rpcUrl);
     this.chain = config.chain;
     this.contractAddress = config.factoryAddress;
     this.rpcUrl = config.rpcUrl;
