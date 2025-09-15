@@ -44,7 +44,7 @@ export function useBondkit(tokenAddress: `0x${string}`) {
   const bondkitTokenClient = useMemo(() => {
     if (!tokenAddress) return null;
     try {
-      const client = new BondkitToken(tokenAddress);
+      const client = new BondkitToken(tokenAddress, undefined);
       client.connect();
       return client;
     } catch (error) {

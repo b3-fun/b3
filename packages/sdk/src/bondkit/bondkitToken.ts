@@ -59,6 +59,7 @@ export class BondkitToken {
     this.chain = sdkConfig.chain;
     this.rpcUrl = sdkConfig.rpcUrl;
     this.apiEndpoint = sdkConfig.apiEndpoint;
+    console.log("rpcUrl", this.rpcUrl);
 
     if (walletKey && !walletKey.startsWith("0x")) {
       this.walletKey = `0x${walletKey}` as Hex;
@@ -75,6 +76,7 @@ export class BondkitToken {
       chain: this.chain,
       transport: http(this.rpcUrl),
     });
+    console.log("publicClient", this.publicClient);
 
     this.walletClientInstance = createWalletClient({
       chain: this.chain,
@@ -95,6 +97,7 @@ export class BondkitToken {
 
   public connect(provider?: EIP1193Provider): boolean {
     try {
+      console.log("connect", this.rpcUrl);
       const transport: Transport = provider ? custom(provider) : http(this.rpcUrl);
 
       this.connectedProvider = provider;

@@ -31,10 +31,19 @@ const DEFAULT_PERMISSIONS = {
   endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365), // 1 year from now
 };
 
-export const wagmiConfig = createConfig({
-  chains: [supportedChains[0], ...supportedChains.slice(1)],
-  transports: Object.fromEntries(supportedChains.map(chain => [chain.id, http()])) as any,
-});
+/**
+ * Creates wagmi config with optional custom RPC URLs
+ * @param rpcUrls - Optional mapping of chain IDs to RPC URLs
+ */
+function createWagmiConfig(rpcUrls?: Record<number, string>) {
+  return createConfig({
+    chains: [supportedChains[0], ...supportedChains.slice(1)],
+    transports: Object.fromEntries(supportedChains.map(chain => [
+      chain.id,
+      http(rpcUrls?.[chain.id])
+    ])) as any,
+  });
+}
 
 // Create queryClient instance
 const queryClient = new QueryClient();
@@ -51,6 +60,7 @@ export function B3Provider({
   simDuneApiKey,
   toaster,
   clientType = "rest",
+  rpcUrls,
 }: {
   theme: "light" | "dark";
   children: React.ReactNode;
@@ -63,7 +73,11 @@ export function B3Provider({
     style?: React.CSSProperties;
   };
   clientType?: ClientType;
+  rpcUrls?: Record<number, string>;
 }) {
+  // Create wagmi config with custom RPC URLs if provided
+  const [wagmiConfig] = useState(() => createWagmiConfig(rpcUrls));
+
   // Initialize Google Analytics on mount
   useEffect(() => {
     loadGA4Script();
