@@ -244,12 +244,19 @@ export function useAnyspendFlow({
   // Handle order completion
   useEffect(() => {
     if (oat?.data?.order.status === "executed") {
-      console.log("Order executed successfully");
-      // just get the payload.amount if available from custompayload
-      const amount = (oat.data.order.payload as { amount?: string })?.amount;
-      onTransactionSuccess?.(amount);
+      // get the actualDstAmount if available from custompayload
+      const amount = (oat.data.order.payload as { actualDstAmount?: string })?.actualDstAmount;
+      const formattedActualDstAmount = amount
+        ? formatTokenAmount(BigInt(amount), oat.data.order.metadata.dstToken.decimals)
+        : undefined;
+      onTransactionSuccess?.(formattedActualDstAmount);
     }
-  }, [oat?.data?.order.status, oat?.data?.order.payload, onTransactionSuccess]);
+  }, [
+    oat?.data?.order.status,
+    oat?.data?.order.payload,
+    onTransactionSuccess,
+    oat?.data?.order.metadata.dstToken.decimals,
+  ]);
 
   return {
     // State
