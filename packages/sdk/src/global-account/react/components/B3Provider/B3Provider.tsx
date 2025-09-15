@@ -38,10 +38,7 @@ const DEFAULT_PERMISSIONS = {
 function createWagmiConfig(rpcUrls?: Record<number, string>) {
   return createConfig({
     chains: [supportedChains[0], ...supportedChains.slice(1)],
-    transports: Object.fromEntries(supportedChains.map(chain => [
-      chain.id,
-      http(rpcUrls?.[chain.id])
-    ])) as any,
+    transports: Object.fromEntries(supportedChains.map(chain => [chain.id, http(rpcUrls?.[chain.id])])) as any,
   });
 }
 
