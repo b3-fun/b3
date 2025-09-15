@@ -110,9 +110,6 @@ function getOrderSuccessText({
     case "custom":
       actionText = order.metadata.action || `executed contract`;
       return `Successfully ${actionText}`;
-    case "hype_duel":
-      actionText = `deposited ${formattedActualDstAmount || "--"} HYPE`;
-      return `Successfully ${actionText} to ${recipient}`;
     default:
       throw new Error("Invalid order type");
   }
@@ -667,8 +664,8 @@ export const OrderDetails = memo(function OrderDetails({
         />
         <Accordion type="single" collapsible className="order-details-accordion w-full">
           <AccordionItem value="execute-details" className="order-details-execute-item">
-            <AccordionTrigger className="order-details-execute-trigger">Transaction Details</AccordionTrigger>
-            <AccordionContent className="order-details-execute-content pl-2">
+            <AccordionTrigger className="accordion-trigger">Transaction Details</AccordionTrigger>
+            <AccordionContent className="accordion-content pl-2">
               <div className="relative flex w-full flex-col gap-4">
                 <div className="bg-as-surface-secondary absolute bottom-2 left-4 top-2 z-[5] w-2">
                   <motion.div
