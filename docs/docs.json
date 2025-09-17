@@ -443,6 +443,7 @@
                     "group": "Core Concepts",
                     "pages": [
                       "bondkit/concepts/bonding-phase",
+                      "bondkit/concepts/dex-phase",
                       "bondkit/concepts/pricing",
                       "bondkit/concepts/targets"
                     ]
@@ -931,6 +932,7 @@
                     "group": "Core Concepts",
                     "pages": [
                       "id/bondkit/concepts/bonding-phase",
+                      "id/bondkit/concepts/dex-phase",
                       "id/bondkit/concepts/pricing",
                       "id/bondkit/concepts/targets"
                     ]
@@ -1438,6 +1440,7 @@
                     "group": "Core Concepts",
                     "pages": [
                       "ko/bondkit/concepts/bonding-phase",
+                      "ko/bondkit/concepts/dex-phase",
                       "ko/bondkit/concepts/pricing",
                       "ko/bondkit/concepts/targets"
                     ]
@@ -1945,6 +1948,7 @@
                     "group": "Core Concepts",
                     "pages": [
                       "cn/bondkit/concepts/bonding-phase",
+                      "cn/bondkit/concepts/dex-phase",
                       "cn/bondkit/concepts/pricing",
                       "cn/bondkit/concepts/targets"
                     ]
@@ -2452,6 +2456,7 @@
                     "group": "Core Concepts",
                     "pages": [
                       "es/bondkit/concepts/bonding-phase",
+                      "es/bondkit/concepts/dex-phase",
                       "es/bondkit/concepts/pricing",
                       "es/bondkit/concepts/targets"
                     ]
@@ -2941,6 +2946,7 @@
                     "group": "Core Concepts",
                     "pages": [
                       "pt-BR/bondkit/concepts/bonding-phase",
+                      "pt-BR/bondkit/concepts/dex-phase",
                       "pt-BR/bondkit/concepts/pricing",
                       "pt-BR/bondkit/concepts/targets"
                     ]

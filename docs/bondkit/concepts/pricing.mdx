@@ -49,56 +49,76 @@ The aggressiveness factor controls how the exponent affects price progression:
 | 75 | 0.57 | S = S_final × (R/R_target)^0.57 | Steep curve |
 | 100 | 0.50 | S = S_final × √(R/R_target) | Very steep (square root) |
 
-### Price Impact Examples
+### Aggressiveness Factor Impact
 
-Let's see how many tokens 1 ETH buys at different stages with a 10 ETH target:
+#### Cumulative Token Distribution
 
-<Tabs>
-  <Tab title="Aggressiveness = 0">
-    **Linear Pricing (Fair for all)**
-    
-    | ETH Raised | Tokens per ETH | Price Change |
-    |------------|---------------|---------------|
-    | 0 → 1 ETH | 100,000 | Baseline |
-    | 4 → 5 ETH | 100,000 | 0% |
-    | 9 → 10 ETH | 100,000 | 0% |
-    
-    *Everyone gets the same deal*
-  </Tab>
-  
-  <Tab title="Aggressiveness = 50">
-    **Moderate Curve (Balanced)**
-    
-    | ETH Raised | Tokens per ETH | Price Change |
-    |------------|---------------|---------------|
-    | 0 → 1 ETH | 146,000 | Baseline |
-    | 4 → 5 ETH | 87,000 | -40% |
-    | 9 → 10 ETH | 51,000 | -65% |
-    
-    *Early buyers get 3x more than late buyers*
-  </Tab>
-  
-  <Tab title="Aggressiveness = 100">
-    **Steep Curve (Rewards early)**
-    
-    | ETH Raised | Tokens per ETH | Price Change |
-    |------------|---------------|---------------|
-    | 0 → 1 ETH | 316,000 | Baseline |
-    | 4 → 5 ETH | 89,000 | -72% |
-    | 9 → 10 ETH | 31,000 | -90% |
-    
-    *Early buyers get 10x more than late buyers*
-  </Tab>
-</Tabs>
+See how tokens are distributed throughout the bonding process with different aggressiveness factors.
+
+**Example:** 10M B3 target, 1.25M total token supply (1M available for bonding, 250K reserved for LP)
+
+| Progress | Aggressiveness = 0 | 25 | 50 | 75 | 100 |
+|----------|-------------------|----------------------|----------------------|----------------------|----------------------|
+| 10% | 100,000 | 158,489 | 215,443 | 268,270 | 316,228 |
+| 20% | 200,000 | 275,946 | 341,995 | 398,647 | 447,214 |
+| 30% | 300,000 | 381,678 | 448,140 | 502,588 | 547,723 |
+| 40% | 400,000 | 480,450 | 542,884 | 592,387 | 632,456 |
+| 50% | 500,000 | 574,349 | 629,961 | 672,950 | 707,107 |
+| 60% | 600,000 | 664,540 | 711,379 | 746,843 | 774,597 |
+| 70% | 700,000 | 751,759 | 788,374 | 815,614 | 836,660 |
+| 80% | 800,000 | 836,512 | 861,774 | 880,284 | 894,427 |
+| 90% | 900,000 | 919,166 | 932,170 | 941,571 | 948,683 |
+| 100% | 1,000,000 | 1,000,000 | 1,000,000 | 1,000,000 | 1,000,000 |
+
+<Note>
+**Key Insight:** Higher aggressiveness front-loads token distribution to early buyers. At 10% progress:
+- **Aggressiveness 0**: 100,000 (linear)
+- **Aggressiveness 100**: 316,228 (3.16x advantage!)
+
+Early buyers with aggressive curves get significantly more tokens for their B3, while late buyers face much higher prices.
+</Note>
+
+#### Real-World Example: Alice's Purchase
+
+Let's follow Alice, who wants to buy tokens from a new project at launch:
+
+**Project Setup:**
+- **Total Supply**: 1.25M tokens (1M for bonding + 250K for LP)
+- **Target**: 10M B3 to reach migration  
+- **Aggressiveness**: 100 (maximum reward for early buyers)
+- **Current Progress**: 0% (project just launched)
+
+**Alice's Purchase:**
+Alice decides to buy 1M B3 worth of tokens right at launch (0% progress).
+
+1. **Alice sends**: 1M B3 tokens
+2. **Trading fee (3%)**: 30K B3 goes to fee recipients  
+3. **Amount for curve**: 970K B3 advances the project to ~9.7% progress
+4. **Tokens received**: ~306,000 tokens (calculated from bonding curve)
+
+**Comparing Different Entry Points:**
+If Alice waited and bought the same 1M B3 worth at different project stages:
+
+| Project Progress | Alice's 1M B3 Gets Her | Price per Token |
+|-----------------|------------------------|-----------------|
+| 0% (launch) | ~306,000 tokens | ~3.3 B3/token |
+| 50% progress | ~114,000 tokens | ~8.8 B3/token |  
+| 90% progress | ~49,000 tokens | ~20.4 B3/token |
+
+**Early Buyer Advantage:** Alice gets 6.2x more tokens by buying at launch versus waiting until 90% progress!
+
+<Note>
+**Key Takeaway**: With maximum aggressiveness (100), buying 1M B3 at launch gets Alice 6.2x more tokens than waiting until 90% progress. The bonding curve heavily rewards early participation!
+</Note>
 
 ## Interactive Price Calculator
 
 ```typescript
-// Calculate tokens received for a given ETH amount
+// Calculate tokens received for a given trading token amount
 function calculateTokensReceived(
-  ethAmount: number,
+  tradingTokenAmount: number,
   currentRaised: number,
-  targetEth: number,
+  targetAmount: number,
   totalSupply: number,
   aggressiveness: number
 ): number {
@@ -106,12 +126,12 @@ function calculateTokensReceived(
   
   // Calculate supply at current raised
   const currentSupply = totalSupply * 
-    Math.pow(currentRaised / targetEth, exponent);
+    Math.pow(currentRaised / targetAmount, exponent);
   
   // Calculate supply after purchase
-  const newRaised = currentRaised + ethAmount;
+  const newRaised = currentRaised + tradingTokenAmount;
   const newSupply = totalSupply * 
-    Math.pow(newRaised / targetEth, exponent);
+    Math.pow(newRaised / targetAmount, exponent);
   
   // Tokens received = difference in supply
   return newSupply - currentSupply;
@@ -195,12 +215,12 @@ When users sell tokens back to the curve:
 ### Sell Price Formula
 
 ```typescript
-// Calculate ETH received for selling tokens
-function calculateEthReceived(
+// Calculate trading token received for selling tokens
+function calculateTradingTokenReceived(
   tokenAmount: number,
   currentSupply: number,
   currentRaised: number,
-  targetEth: number,
+  targetAmount: number,
   totalSupply: number,
   aggressiveness: number
 ): number {

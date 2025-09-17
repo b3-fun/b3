@@ -1,0 +1,779 @@
+---
+title: "Troubleshooting Guide"
+description: "Solutions for common Bondkit SDK issues, wallet problems, and integration challenges."
+---
+
+## Quick Diagnostics
+
+Start here for rapid issue identification:
+
+```typescript
+import { BondkitToken, BondkitTokenFactory } from "@b3dotfun/sdk/bondkit";
+
+// Quick health check function
+async function bondkitHealthCheck() {
+  try {
+    // Test factory connection
+    const factory = new BondkitTokenFactory(8453); // Base mainnet
+    const implementationAddress = await factory.getImplementationAddress();
+    
+    if (!implementationAddress) {
+      return { status: "error", issue: "Factory connection failed" };
+    }
+    
+    // Test RPC connectivity
+    const deployedTokens = await factory.getDeployedBondkitTokens();
+    
+    return {
+      status: "success", 
+      factory: implementationAddress,
+      deployedTokens: deployedTokens.length,
+      rpc: "Connected"
+    };
+  } catch (error) {
+    return { status: "error", issue: error.message };
+  }
+}
+
+// Run diagnostics
+const health = await bondkitHealthCheck();
+console.log(health);
+```
+
+## Common Error Messages
+
+### Deployment Errors
+
+<AccordionGroup>
+  <Accordion title="Error: 'Invalid contract address is required for BondkitToken'">
+    **Cause:** Token address is missing, invalid, or not checksummed.
+    
+    **Solutions:**
+    ```typescript
+    // ❌ Wrong
+    const token = new BondkitToken(""); // Empty address
+    const token = new BondkitToken("0x123"); // Too short
+    
+    // ✅ Correct
+    const token = new BondkitToken("0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1");
+    
+    // ✅ Validate address first
+    import { isAddress } from "viem";
+    
+    const tokenAddress = "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1";
+    if (!isAddress(tokenAddress)) {
+      throw new Error("Invalid token address");
+    }
+    const token = new BondkitToken(tokenAddress);
+    ```
+  </Accordion>
+  
+  <Accordion title="Error: 'Unsupported chainId: X. This SDK is configured for Base only'">
+    **Cause:** Trying to use non-Base chain ID.
+    
+    **Solutions:**
+    ```typescript
+    import { base } from "viem/chains";
+    
+    // ❌ Wrong
+    const factory = new BondkitTokenFactory(1); // Ethereum mainnet
+    const factory = new BondkitTokenFactory(137); // Polygon
+    
+    // ✅ Correct - Use Base mainnet
+    const factory = new BondkitTokenFactory(base.id); // 8453
+    const factory = new BondkitTokenFactory(8453); // Explicit Base ID
+    ```
+  </Accordion>
+  
+  <Accordion title="Error: 'DeployBondkitToken: execution reverted'">
+    **Cause:** Invalid deployment parameters or insufficient permissions.
+    
+    **Solutions:**
+    ```typescript
+    // Check common parameter issues
+    const config = {
+      name: "MyToken",
+      symbol: "MTK", // Must be 1-11 characters
+      feeRecipient: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1", // Valid address
+      finalTokenSupply: parseEther("1000000"), // Must be > 0
+      aggressivenessFactor: 45, // Must be 0-100
+      lpSplitRatioFeeRecipientBps: 1000n, // Must be 0-10000 (basis points)
+      targetAmount: parseEther("10"), // Must be > 0
+      migrationAdminAddress: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1", // Valid address
+      
+      // V4 configuration - all required
+      bondingPhaseSplitter: "0x2AB69e0d9D20D3700466153D84a6574128154Fd2",
+      v4PoolManager: "0x498581fF718922c3f8e6A244956aF099B2652b2b", 
+      v4Hook: "0xB36f4A2FB18b745ef8eD31452781a463d2B3f0cC",
+      v4PoolFee: 3000, // 500, 3000, or 10000
+      v4TickSpacing: 60, // Must match fee tier
+      tradingToken: "0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3"
+    };
+    
+    // Validation helper
+    function validateConfig(config) {
+      const errors = [];
+      
+      if (!config.symbol || config.symbol.length > 11) {
+        errors.push("Symbol must be 1-11 characters");
+      }
+      
+      if (config.aggressivenessFactor < 0 || config.aggressivenessFactor > 100) {
+        errors.push("Aggressiveness must be 0-100");
+      }
+      
+      if (config.lpSplitRatioFeeRecipientBps > 10000n) {
+        errors.push("LP split ratio cannot exceed 100% (10000 bps)");
+      }
+      
+      return errors;
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Trading Errors  
+
+<AccordionGroup>
+  <Accordion title="Error: 'Buy: execution reverted' or 'Sell: execution reverted'">
+    **Cause:** Various trading issues during bonding phase.
+    
+    **Solutions:**
+    ```typescript
+    // Check token status first
+    const status = await token.currentStatus();
+    if (status !== 1) {
+      throw new Error("Token not in bonding phase - use DEX methods instead");
+    }
+    
+    // For Buy errors:
+    async function diagnoseBuyError(token, amount, minTokensOut) {
+      const progress = await token.getBondingProgress();
+      
+      if (progress.progress >= 1.0) {
+        return "Target reached - migration available, cannot buy more";
+      }
+      
+      const tradingTokenAddress = await token.getTradingTokenAddress();
+      if (tradingTokenAddress !== "0x0000000000000000000000000000000000000000") {
+        // ERC20 trading token - check allowance and balance
+        const balance = await token.getTradingTokenBalanceOf(userAddress);
+        const required = typeof amount === "string" ? parseEther(amount) : amount;
+        
+        if (balance < required) {
+          return `Insufficient ${await token.getTradingTokenSymbol()} balance. Need: ${formatEther(required)}, Have: ${formatEther(balance)}`;
+        }
+      }
+      
+      return "Unknown buy error - check transaction details";
+    }
+    
+    // For Sell errors:
+    async function diagnoseSellError(token, tokenAmount) {
+      const balance = await token.balanceOf(userAddress);
+      if (balance < tokenAmount) {
+        return `Insufficient token balance. Need: ${formatEther(tokenAmount)}, Have: ${formatEther(balance)}`;
+      }
+      
+      const progress = await token.getBondingProgress();
+      if (progress.raised === 0n) {
+        return "No liquidity available - cannot sell when nothing raised";
+      }
+      
+      return "Unknown sell error - check transaction details";
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Error: 'Trading token address not available'">
+    **Cause:** Token not fully initialized or network issues.
+    
+    **Solutions:**
+    ```typescript
+    // Force refresh trading token info
+    const tradingTokenAddress = await token.getTradingTokenAddress();
+    if (!tradingTokenAddress) {
+      // Retry with delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      const retryAddress = await token.getTradingTokenAddress();
+      
+      if (!retryAddress) {
+        throw new Error("Token contract may not be properly initialized");
+      }
+    }
+    
+    // Check if token contract is valid
+    try {
+      const tokenDetails = await token.getTokenDetails();
+      console.log(`Connected to: ${tokenDetails.name} (${tokenDetails.symbol})`);
+    } catch (error) {
+      throw new Error("Invalid token contract or network issues");
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Error: 'BondingPhaseEnded' or DEX trading issues">
+    **Cause:** Token migrated to DEX phase, but still using bonding methods.
+    
+    **Solutions:**
+    ```typescript
+    // Detect phase and use appropriate methods
+    async function getOptimalTradingMethod(tokenAddress) {
+      const token = new BondkitToken(tokenAddress);
+      const status = await token.currentStatus();
+      
+      switch (status) {
+        case 1: // Bonding phase
+          return {
+            phase: "bonding",
+            buyMethod: (amount, minOut) => token.buy(amount, minOut),
+            sellMethod: (amount, minOut) => token.sell(amount, minOut),
+            quoteMethod: (amount) => token.getAmountOfTokensToBuy(amount)
+          };
+          
+        case 2: // DEX phase
+          const swapService = new BondkitSwapService(tokenAddress);
+          return {
+            phase: "dex",
+            buyMethod: async (amount, minOut, wallet) => {
+              const params = {
+                tokenIn: await token.getTradingTokenAddress(),
+                tokenOut: tokenAddress,
+                amountIn: typeof amount === "string" ? amount : formatEther(amount),
+                tokenInDecimals: 18,
+                tokenOutDecimals: 18,
+                slippageTolerance: 0.005,
+                recipient: wallet.account.address
+              };
+              return swapService.executeSwap(params, wallet);
+            },
+            quoteMethod: async (amount) => {
+              const params = {
+                tokenIn: await token.getTradingTokenAddress(),
+                tokenOut: tokenAddress,
+                amountIn: typeof amount === "string" ? amount : formatEther(amount),
+                tokenInDecimals: 18,
+                tokenOutDecimals: 18,
+                slippageTolerance: 0.005,
+                recipient: "0x0000000000000000000000000000000000000000" // Dummy for quote
+              };
+              return swapService.getSwapQuote(params);
+            }
+          };
+          
+        default:
+          throw new Error(`Unknown token status: ${status}`);
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Wallet Integration Issues
+
+<AccordionGroup>
+  <Accordion title="Error: 'Account for transaction could not be determined'">
+    **Cause:** Wallet not properly connected or configured.
+    
+    **Solutions:**
+    ```typescript
+    // Option 1: Use private key (server-side only)
+    const token = new BondkitToken(
+      tokenAddress,
+      process.env.WALLET_PRIVATE_KEY
+    );
+    
+    // Option 2: Connect with provider (browser)
+    const token = new BondkitToken(tokenAddress);
+    const connected = await token.connect(window.ethereum);
+    
+    if (!connected) {
+      throw new Error("Failed to connect wallet");
+    }
+    
+    // Option 3: Verify connection before transactions
+    async function ensureWalletConnected(token) {
+      if (!window.ethereum) {
+        throw new Error("No wallet provider found - install MetaMask or similar");
+      }
+      
+      // Request account access
+      const accounts = await window.ethereum.request({
+        method: 'eth_requestAccounts'
+      });
+      
+      if (accounts.length === 0) {
+        throw new Error("No accounts available - connect wallet first");
+      }
+      
+      // Connect to token
+      const connected = await token.connect(window.ethereum);
+      if (!connected) {
+        throw new Error("Failed to connect token to wallet");
+      }
+      
+      return accounts[0];
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Error: 'Transaction confirmation timeout'">
+    **Cause:** Slow network, low gas, or OKX wallet issues.
+    
+    **Solutions:**
+    ```typescript
+    // Increase gas for faster confirmation
+    const options = {
+      gas: 300000n, // Increase from default
+      maxFeePerGas: parseGwei("20"), // Higher fee for faster inclusion
+      maxPriorityFeePerGas: parseGwei("2")
+    };
+    
+    await token.buy(parseEther("10"), 0n, options);
+    
+    // Manual transaction waiting with timeout
+    async function waitForTransactionWithTimeout(token, hash, timeoutMs = 300000) {
+      const start = Date.now();
+      
+      while (Date.now() - start < timeoutMs) {
+        try {
+          const receipt = await token.waitForTransaction(hash);
+          return receipt;
+        } catch (error) {
+          if (error.message.includes("TransactionReceiptNotFoundError")) {
+            // Still pending, wait more
+            await new Promise(resolve => setTimeout(resolve, 5000));
+            continue;
+          }
+          throw error; // Other error, re-throw
+        }
+      }
+      
+      throw new Error(`Transaction ${hash} timeout after ${timeoutMs}ms`);
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="MetaMask/Wallet specific issues">
+    **Common Wallet Problems:**
+    
+    ```typescript
+    // Network switching for MetaMask
+    async function ensureBaseNetwork() {
+      if (!window.ethereum) return false;
+      
+      try {
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: '0x2105' }], // Base mainnet
+        });
+        return true;
+      } catch (switchError) {
+        // Network not added, add it
+        if (switchError.code === 4902) {
+          try {
+            await window.ethereum.request({
+              method: 'wallet_addEthereumChain',
+              params: [{
+                chainId: '0x2105',
+                chainName: 'Base',
+                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                rpcUrls: ['https://base-rpc.publicnode.com'],
+                blockExplorerUrls: ['https://basescan.org/']
+              }]
+            });
+            return true;
+          } catch (addError) {
+            console.error('Failed to add Base network', addError);
+            return false;
+          }
+        }
+        return false;
+      }
+    }
+    
+    // Token import helper
+    async function addTokenToWallet(tokenAddress, symbol, decimals = 18) {
+      try {
+        await window.ethereum.request({
+          method: 'wallet_watchAsset',
+          params: {
+            type: 'ERC20',
+            options: {
+              address: tokenAddress,
+              symbol: symbol,
+              decimals: decimals
+            }
+          }
+        });
+        console.log(`${symbol} added to wallet`);
+      } catch (error) {
+        console.error('Failed to add token to wallet:', error);
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Network & RPC Issues
+
+<AccordionGroup>
+  <Accordion title="RPC Connection Problems">
+    **Symptoms:** Slow responses, timeouts, or connection errors.
+    
+    **Solutions:**
+    ```typescript
+    // Test RPC health
+    async function testRPCHealth() {
+      const rpcUrls = [
+        "https://base-rpc.publicnode.com",
+        "https://base-mainnet.g.alchemy.com/v2/demo",
+        "https://mainnet.base.org",
+        "https://base.gateway.fm"
+      ];
+      
+      for (const rpcUrl of rpcUrls) {
+        try {
+          const client = createPublicClient({
+            chain: base,
+            transport: http(rpcUrl)
+          });
+          
+          const blockNumber = await client.getBlockNumber();
+          console.log(`✅ ${rpcUrl}: Block ${blockNumber}`);
+          
+          return rpcUrl; // Return first working RPC
+        } catch (error) {
+          console.log(`❌ ${rpcUrl}: ${error.message}`);
+        }
+      }
+      
+      throw new Error("All RPC endpoints failed");
+    }
+    
+    // Use custom RPC with fallback
+    const workingRPC = await testRPCHealth();
+    
+    // Override SDK RPC if needed
+    const factory = new BondkitTokenFactory(8453);
+    factory.publicClient = createPublicClient({
+      chain: base,
+      transport: http(workingRPC)
+    });
+    ```
+  </Accordion>
+  
+  <Accordion title="Gas Estimation Issues">
+    **Problem:** Transactions fail with "out of gas" or gas estimation errors.
+    
+    **Solutions:**
+    ```typescript
+    // Gas estimation helper
+    async function estimateGasWithBuffer(contract, method, args, buffer = 1.2) {
+      try {
+        const estimated = await contract.estimateGas[method](args);
+        const withBuffer = BigInt(Math.floor(Number(estimated) * buffer));
+        return withBuffer;
+      } catch (error) {
+        // Fallback gas limits
+        const fallbackGas = {
+          'deployBondkitToken': 2000000n,
+          'buy': 300000n,
+          'sell': 250000n,
+          'migrateToDex': 500000n,
+          'approve': 50000n
+        };
+        
+        return fallbackGas[method] || 200000n;
+      }
+    }
+    
+    // Usage with manual gas
+    const gasLimit = await estimateGasWithBuffer(
+      token.contract, 
+      'buy', 
+      [parseEther("1"), 0n]
+    );
+    
+    await token.buy(parseEther("1"), 0n, { gas: gasLimit });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Integration Problems
+
+<AccordionGroup>
+  <Accordion title="Next.js / React Issues">
+    **Common React Integration Problems:**
+    
+    ```typescript
+    // Problem: "window is not defined" in SSR
+    // Solution: Dynamic imports and proper checks
+    
+    import dynamic from 'next/dynamic';
+    
+    const BondkitTrading = dynamic(
+      () => import('../components/BondkitTrading'),
+      { ssr: false }
+    );
+    
+    // Component with proper wallet detection
+    function BondkitIntegration() {
+      const [isClient, setIsClient] = useState(false);
+      const [walletConnected, setWalletConnected] = useState(false);
+      
+      useEffect(() => {
+        setIsClient(true);
+        
+        // Check for wallet
+        if (typeof window !== 'undefined' && window.ethereum) {
+          setWalletConnected(true);
+        }
+      }, []);
+      
+      if (!isClient) {
+        return <div>Loading...</div>;
+      }
+      
+      return walletConnected ? (
+        <BondkitTrading />
+      ) : (
+        <div>Please connect your wallet</div>
+      );
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="TradingView Component Issues">
+    **Problem:** Charts not loading or CDN errors.
+    
+    **Solutions:**
+    ```typescript
+    // Check CDN configuration
+    const cdnConfig = {
+      baseUrl: process.env.NEXT_PUBLIC_CDN_URL || "https://cdn.b3.fun",
+      chartingLibrary: "/static/charting_library"
+    };
+    
+    // Test CDN availability
+    async function testCDNHealth() {
+      try {
+        const response = await fetch(
+          `${cdnConfig.baseUrl}${cdnConfig.chartingLibrary}/charting_library.js`
+        );
+        
+        if (!response.ok) {
+          throw new Error(`CDN returned ${response.status}`);
+        }
+        
+        console.log("✅ CDN accessible");
+        return true;
+      } catch (error) {
+        console.error("❌ CDN failed:", error.message);
+        return false;
+      }
+    }
+    
+    // TradingView with error handling
+    import TradingView from "@b3dotfun/sdk/bondkit/components/TradingView";
+    
+    function SafeTradingView({ tokenAddress, tokenSymbol }) {
+      const [cdnReady, setCdnReady] = useState(false);
+      const [error, setError] = useState(null);
+      
+      useEffect(() => {
+        testCDNHealth()
+          .then(setCdnReady)
+          .catch(err => setError(err.message));
+      }, []);
+      
+      if (error) {
+        return <div>Chart unavailable: {error}</div>;
+      }
+      
+      if (!cdnReady) {
+        return <div>Loading chart...</div>;
+      }
+      
+      return (
+        <TradingView
+          tokenAddress={tokenAddress}
+          tokenSymbol={tokenSymbol}
+          className="w-full h-96"
+        />
+      );
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Advanced Debugging
+
+### Enable Debug Logging
+
+```typescript
+// SDK debug logging
+process.env.DEBUG = "bondkit:*";
+
+// Custom error logging
+class BondkitErrorLogger {
+  static logError(operation, error, context = {}) {
+    const errorInfo = {
+      timestamp: new Date().toISOString(),
+      operation,
+      error: error.message,
+      stack: error.stack,
+      context
+    };
+    
+    console.error("🚨 Bondkit Error:", errorInfo);
+    
+    // Send to monitoring service if configured
+    if (process.env.ERROR_REPORTING_URL) {
+      fetch(process.env.ERROR_REPORTING_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(errorInfo)
+      }).catch(console.error);
+    }
+  }
+}
+
+// Usage
+try {
+  await token.buy(parseEther("1"), 0n);
+} catch (error) {
+  BondkitErrorLogger.logError("token_buy", error, {
+    tokenAddress,
+    amount: "1 B3",
+    userAddress: await getUserAddress()
+  });
+  throw error;
+}
+```
+
+### Transaction Analysis
+
+```typescript
+// Detailed transaction debugging
+async function debugTransaction(txHash) {
+  const publicClient = createPublicClient({
+    chain: base,
+    transport: http("https://base-rpc.publicnode.com")
+  });
+  
+  try {
+    const [transaction, receipt] = await Promise.all([
+      publicClient.getTransaction({ hash: txHash }),
+      publicClient.getTransactionReceipt({ hash: txHash })
+    ]);
+    
+    console.log("Transaction Details:", {
+      status: receipt.status,
+      gasUsed: receipt.gasUsed.toString(),
+      gasLimit: transaction.gas.toString(),
+      gasPrice: transaction.gasPrice?.toString(),
+      value: transaction.value.toString(),
+      data: transaction.input.slice(0, 100) + "...",
+      logs: receipt.logs.length
+    });
+    
+    // Decode revert reason if failed
+    if (receipt.status === "reverted") {
+      try {
+        const reason = await publicClient.getTransactionReceipt({
+          hash: txHash
+        });
+        console.log("Revert reason:", reason);
+      } catch (e) {
+        console.log("Could not decode revert reason");
+      }
+    }
+    
+    return { transaction, receipt };
+  } catch (error) {
+    console.error("Transaction analysis failed:", error);
+    return null;
+  }
+}
+```
+
+## Getting Help
+
+### Community Support
+
+<CardGroup cols={2}>
+  <Card title="Discord Support" icon="discord" href="https://discord.gg/b3dotfun">
+    Join our Discord for real-time help from the community and team
+  </Card>
+  <Card title="GitHub Issues" icon="github" href="https://github.com/b3dotfun/bondkit-sdk/issues">
+    Report bugs and request features on GitHub
+  </Card>
+</CardGroup>
+
+### When to Contact Support
+
+**Contact support for:**
+- Smart contract bugs or exploits
+- SDK issues not covered in this guide  
+- Network infrastructure problems
+- Critical security concerns
+
+**Don't contact support for:**
+- Basic integration questions (use Discord)
+- Transaction failures due to user error
+- Wallet connection issues
+- General blockchain questions
+
+### Information to Include
+
+When reporting issues, always include:
+
+```typescript
+// Diagnostic information to collect
+const diagnosticInfo = {
+  // Environment
+  sdk_version: "@b3dotfun/sdk@latest",
+  node_version: process.version,
+  chain_id: 8453,
+  
+  // Contract details
+  token_address: tokenAddress,
+  factory_address: "0x5d641bbB206d4B5585eCCd919F36270200A9A2Ad",
+  
+  // Transaction details (if applicable)
+  transaction_hash: txHash,
+  block_number: blockNumber,
+  
+  // Error details
+  error_message: error.message,
+  error_stack: error.stack,
+  
+  // Context
+  operation: "buy/sell/deploy/migrate",
+  user_agent: navigator.userAgent, // Browser only
+  wallet_type: "MetaMask/OKX/etc"
+};
+
+console.log("Please include this diagnostic info:");
+console.log(JSON.stringify(diagnosticInfo, null, 2));
+```
+
+---
+
+<Warning>
+  **Security Reminder:**
+  - Never share private keys or seed phrases in support requests
+  - Only use official Bondkit contracts and addresses
+  - Verify all contract addresses before interacting
+  - Be cautious of scam tokens or fake support channels
+</Warning>
+
+<Note>
+  **Pro Tips:**
+  - Test with small amounts first
+  - Use TypeScript for better error detection
+  - Enable debug logging during development
+  - Keep your SDK version updated
+  - Monitor transaction costs and adjust gas accordingly
+</Note>

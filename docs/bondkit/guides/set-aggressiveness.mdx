@@ -3,28 +3,74 @@ title: "Set aggressivenessFactor"
 description: "How to pick aggressivenessFactor (0–100) for your launch."
 ---
 
-## Guidance
+## Understanding Aggressiveness Impact
 
-- 0–20: gentle; early and late buyers receive similar amounts per unit
-- 30–60: balanced; moderate price rise, typical for general launches
-- 70–100: steep; strong early advantage, faster price escalation
+The aggressiveness factor determines how much advantage early buyers get. Higher values create steeper price increases that reward early participation.
 
-## Rule of thumb
+### Impact at Different Levels
 
-- Smaller targets or tight communities: lean higher (50–80)
-- Larger targets or broader audiences: lean lower (20–50)
+| Range | Early Buyer Advantage | Best For | Price Behavior |
+|-------|---------------------|----------|---------------|
+| **0-20** | 1.5-2x advantage | Fair launches, community tokens | Nearly linear pricing |
+| **30-60** | 2-3x advantage | Most projects, balanced approach | Moderate curve |
+| **70-100** | 3-6x advantage | Hype launches, reward believers | Steep curve |
 
-## Example
+<Note>
+At maximum aggressiveness (100), early buyers can get **6x more tokens** than late buyers for the same amount of B3!
+</Note>
 
-```ts
+## Decision Framework
+
+### Choose Low (0-30) If:
+- **Goal**: Fair distribution for everyone
+- **Community**: Values equality over early rewards
+- **Timeline**: Want steady, predictable growth
+- **Risk**: Prefer minimal price volatility
+
+### Choose Medium (30-70) If:
+- **Goal**: Balanced approach with some early incentive
+- **Community**: Mix of early supporters and general public
+- **Timeline**: Moderate fundraising pace
+- **Risk**: Comfortable with some price variance
+
+### Choose High (70-100) If:
+- **Goal**: Maximum early adopter rewards
+- **Community**: Strong core believers
+- **Timeline**: Want fast fundraising
+- **Risk**: Comfortable with high price swings
+
+## Real Impact Example
+
+**Project Setup:** 10M B3 target, buying 1M B3 worth
+
+| Aggressiveness | Early Buyer Gets | Late Buyer Gets | Advantage |
+|---------------|-----------------|----------------|-----------|
+| 0 | ~100K tokens | ~100K tokens | 1x (no advantage) |
+| 50 | ~208K tokens | ~114K tokens | 1.8x advantage |
+| 100 | ~306K tokens | ~49K tokens | 6.2x advantage |
+
+## Configuration Example
+
+```typescript
 const config = {
-  aggressivenessFactor: 35,
+  name: "My Token",
+  symbol: "MTK", 
+  aggressivenessFactor: 75, // High reward for early buyers
+  targetAmount: parseEther("100"), // 100 B3 target
+  finalTokenSupply: parseEther("1000000"), // 1M tokens
   // ...other params
 };
 ```
 
-<Note>
-`exponent = 1 / (1 + aggressivenessFactor/100)`. Higher aggressiveness increases curve steepness and reduces tokens per unit later in bonding.
-</Note>
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Detailed Examples" icon="calculator" href="/bondkit/concepts/pricing#aggressiveness-factor-impact">
+    See detailed token distribution tables
+  </Card>
+  <Card title="Token Creation" icon="rocket" href="/bondkit/quickstart">
+    Ready to deploy your token
+  </Card>
+</CardGroup>
 
 

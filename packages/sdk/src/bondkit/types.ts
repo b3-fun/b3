@@ -64,12 +64,11 @@ export type DexMigrationEventArgs = {
   ethForFeeRecipient: bigint;
 };
 
-// Enum for Status (used in BondkitToken ABI)
+// Enum for Status (matches contract Status enum exactly)
 export enum TokenStatus {
-  Inactive = 0, // Assuming mapping from ABI, verify actual enum values if specified elsewhere
-  BondingPhase = 1,
-  DexPhase = 2,
-  Migrated = 3,
+  Uninitialized = 0,
+  Bonding = 1,
+  Dex = 2,
 }
 
 export interface GetTransactionHistoryOptions {
@@ -100,4 +99,12 @@ export interface TransactionResponse {
   limit: number;
   skip: number;
   data: Transaction[];
+}
+
+export interface SwapQuote {
+  amountOut: string;
+  amountOutMin: string;
+  priceImpact: string;
+  executionPrice: string;
+  fee: string;
 }

@@ -32,7 +32,7 @@ sequenceDiagram
     
     loop Bonding Phase
         Traders->>Token: buy()/sell()
-        Token-->>Traders: Tokens/ETH
+        Token-->>Traders: Tokens/Trading Token
     end
     
     User->>Token: Check progress
@@ -70,15 +70,24 @@ const tokenAddress = await factory.deployBondkitToken({
   
   // Bonding curve settings
   aggressivenessFactor: 35,  // 0-100, higher = steeper curve
-  targetEth: parseEther("10"), // 10 ETH target for migration
+  targetAmount: parseEther("10"), // 10 units of trading token target for migration
   
   // Fee configuration
   feeRecipient: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1", // Your address
   lpSplitRatioFeeRecipientBps: 1000n, // 10% to fee recipient
   
-  // Migration settings
+  // Migration settings  
   migrationAdminAddress: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1",
-  uniswapV2RouterAddress: "0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24" // V4 router
+  
+  // Uniswap V4 configuration
+  bondingPhaseSplitter: "0x2AB69e0d9D20D3700466153D84a6574128154Fd2",
+  v4PoolManager: "0x498581fF718922c3f8e6A244956aF099B2652b2b",
+  v4Hook: "0xB36f4A2FB18b745ef8eD31452781a463d2B3f0cC",
+  v4PoolFee: 3000, // 0.3% fee tier
+  v4TickSpacing: 60,
+  
+  // Trading token (B3 token address for Base mainnet)  
+  tradingToken: "0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3"
 });
 
 console.log("✅ Token deployed at:", tokenAddress);
@@ -97,8 +106,8 @@ console.log("✅ Token deployed at:", tokenAddress);
   - **60-100**: Aggressive, rewards early buyers
 </ParamField>
 
-<ParamField path="targetEth" type="bigint" required>
-  Amount of ETH needed to enable migration. Use `parseEther("10")` for 10 ETH.
+<ParamField path="targetAmount" type="bigint" required>
+  Amount of trading token needed to enable migration. Use `parseEther("10")` for 10 tokens (18 decimals).
 </ParamField>
 
 <ParamField path="feeRecipient" type="address" required>
@@ -124,19 +133,35 @@ const token = new BondkitToken(
 );
 ```
 
+### Understanding Trading Tokens
+
+BondKit tokens use a **configurable trading token** system. Check what token is used for trading:
+
+```typescript
+// Get the trading token details
+const tradingTokenAddress = await token.getTradingTokenAddress();
+const tradingTokenSymbol = await token.getTradingTokenSymbol();
+
+console.log(`Trading with: ${tradingTokenSymbol} (${tradingTokenAddress})`);
+// For Base mainnet, this is typically B3 token
+
+// Check if it's ETH (zero address) or an ERC20 token
+const isETH = tradingTokenAddress === "0x0000000000000000000000000000000000000000";
+```
+
 ### Buying Tokens
 
 ```typescript
 // Get a price quote first
-const ethAmount = parseEther("1"); // 1 ETH
-const expectedTokens = await token.getAmountOfTokensToBuy(ethAmount);
+const tradingTokenAmount = parseEther("100"); // 100 units of trading token
+const expectedTokens = await token.getAmountOfTokensToBuy(tradingTokenAmount);
 
-console.log(`1 ETH will buy: ${formatEther(expectedTokens)} tokens`);
+console.log(`${formatEther(tradingTokenAmount)} ${tradingTokenSymbol} will buy: ${formatEther(expectedTokens)} tokens`);
 
-// Execute the purchase
+// Execute the purchase (parameters: minTokensOut, amount)
 const buyTx = await token.buy(
-  0n,    // minTokensOut (0 = accept any amount, use for slippage protection)
-  "1"    // ETH amount as string
+  tradingTokenAmount, // Amount of trading token to spend  
+  0n                  // minTokensOut (0 = accept any amount, use for slippage protection)
 );
 
 console.log("Purchase complete! Tx:", buyTx);
@@ -151,14 +176,14 @@ console.log(`Your balance: ${formatEther(balance)} tokens`);
 
 // Get sell quote
 const tokensToSell = parseEther("1000");
-const expectedEth = await token.getAmountOfEthToReceive(tokensToSell);
+const expectedTradingToken = await token.getAmountOfTradingTokensToSell(tokensToSell);
 
-console.log(`Selling 1000 tokens will return: ${formatEther(expectedEth)} ETH`);
+console.log(`Selling 1000 tokens will return: ${formatEther(expectedTradingToken)} ${tradingTokenSymbol}`);
 
 // Execute the sale
 const sellTx = await token.sell(
-  tokensToSell,  // Amount of tokens to sell
-  0n             // Min ETH out (for slippage protection)
+  tokensToSell,         // Amount of tokens to sell
+  0n                    // Min trading token out (for slippage protection)
 );
 
 console.log("Sale complete! Tx:", sellTx);
@@ -172,14 +197,14 @@ const progress = await token.getBondingProgress();
 
 console.log(`
   Progress: ${(progress.progress * 100).toFixed(2)}%
-  Raised: ${formatEther(progress.raised)} ETH
-  Target: ${formatEther(progress.threshold)} ETH
-  Remaining: ${formatEther(progress.threshold - progress.raised)} ETH
+  Raised: ${formatEther(progress.raised)} ${tradingTokenSymbol}
+  Target: ${formatEther(progress.threshold)} ${tradingTokenSymbol}
+  Remaining: ${formatEther(progress.threshold - progress.raised)} ${tradingTokenSymbol}
 `);
 
 // Get current token price
 const currentPrice = await token.getCurrentPrice();
-console.log(`Current price: ${formatEther(currentPrice)} ETH per token`);
+console.log(`Current price: ${formatEther(currentPrice)} ${tradingTokenSymbol} per token`);
 
 // Check if migration is available
 const canMigrate = await token.canMigrate();
@@ -193,7 +218,7 @@ console.log(`Ready to migrate: ${canMigrate}`);
 token.onBuy((event) => {
   console.log("New purchase:", {
     buyer: event.buyer,
-    ethIn: formatEther(event.ethIn),
+    tradingTokenIn: formatEther(event.ethIn), // Note: field name is 'ethIn' but represents trading token
     tokensOut: formatEther(event.tokensOut)
   });
 });
@@ -203,7 +228,7 @@ token.onSell((event) => {
   console.log("New sale:", {
     seller: event.seller,
     tokensIn: formatEther(event.tokensIn),
-    ethOut: formatEther(event.ethOut)
+    tradingTokenOut: formatEther(event.ethOut) // Note: field name is 'ethOut' but represents trading token
   });
 });
 ```
@@ -222,12 +247,12 @@ if (progress.progress >= 1.0) {
   // Get migration details
   const migrationData = await token.getMigrationData();
   console.log("Migration will create pool with:", {
-    ethLiquidity: formatEther(migrationData.ethForLp),
+    tradingTokenLiquidity: formatEther(migrationData.ethForLp), // Note: 'ethForLp' field name
     tokenLiquidity: formatEther(migrationData.tokensForLp),
     initialPrice: formatEther(migrationData.sqrtPriceX96)
   });
 } else {
-  console.log(`⏳ Need ${formatEther(progress.threshold - progress.raised)} more ETH`);
+  console.log(`⏳ Need ${formatEther(progress.threshold - progress.raised)} more ${tradingTokenSymbol}`);
 }
 ```
 
@@ -285,11 +310,18 @@ async function launchToken() {
     symbol: "DEMO",
     finalTokenSupply: parseEther("1000000"),
     aggressivenessFactor: 50,
-    targetEth: parseEther("5"),
+    targetAmount: parseEther("5"),
     feeRecipient: process.env.WALLET_ADDRESS,
     lpSplitRatioFeeRecipientBps: 1000n,
     migrationAdminAddress: process.env.WALLET_ADDRESS,
-    uniswapV2RouterAddress: "0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24"
+    
+    // Uniswap V4 configuration
+    bondingPhaseSplitter: "0x2AB69e0d9D20D3700466153D84a6574128154Fd2",
+    v4PoolManager: "0x498581fF718922c3f8e6A244956aF099B2652b2b", 
+    v4Hook: "0xB36f4A2FB18b745ef8eD31452781a463d2B3f0cC",
+    v4PoolFee: 3000,
+    v4TickSpacing: 60,
+    tradingToken: "0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3"
   });
   
   console.log("Token deployed:", tokenAddress);
@@ -301,8 +333,8 @@ async function launchToken() {
   );
   
   // Buy some tokens
-  await token.buy(0n, "0.5");
-  console.log("Bought tokens with 0.5 ETH");
+  await token.buy(parseEther("50"), 0n); // 50 trading tokens, 0 min out
+  console.log("Bought tokens with 50 trading tokens");
   
   // Check progress
   const progress = await token.getBondingProgress();
@@ -330,8 +362,8 @@ launchToken().catch(console.error);
   <Card title="SDK Reference" icon="code" href="/bondkit/sdk/reference">
     Explore all available methods
   </Card>
-  <Card title="Guides" icon="compass" href="/bondkit/guides/choose-quote-asset">
-    Learn advanced strategies
+  <Card title="Complete Lifecycle" icon="compass" href="/bondkit/guides/token-lifecycle">
+    End-to-end token management guide
   </Card>
   <Card title="Demo App" icon="desktop" href="https://github.com/b3dotfun/b3-monorepo/tree/main/apps/bondkit-demo">
     See a complete implementation

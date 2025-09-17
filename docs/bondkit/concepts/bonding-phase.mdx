@@ -17,17 +17,17 @@ stateDiagram-v2
     DEX --> [*]: Fully Decentralized
     
     note right of Bonding
-        - Direct contract trading
-        - Algorithmic pricing
-        - 5% trading fee
-        - Accumulates liquidity
+        Direct contract trading
+        Algorithmic pricing
+        5% trading fee
+        Accumulates liquidity
     end note
     
     note right of DEX
-        - Uniswap v4 trading
-        - Market-driven price
-        - Standard LP fees
-        - No admin control
+        Uniswap v4 trading
+        Market-driven price
+        Standard LP fees
+        No admin control
     end note
 ```
 
@@ -49,7 +49,7 @@ During bonding, the contract acts as the sole market maker:
 <Tabs>
   <Tab title="How It Works">
     **Process Flow:**
-    1. User sends ETH/B3 to contract
+    1. User sends trading token (B3/ETH) to contract
     2. Contract calculates tokens based on curve
     3. 5% fee deducted and sent to recipient
     4. Tokens minted and sent to buyer
@@ -59,13 +59,13 @@ During bonding, the contract acts as the sole market maker:
     ```typescript
     // Get a quote first
     const quote = await token.getAmountOfTokensToBuy(
-      parseEther("1") // 1 ETH
+      parseEther("100") // 100 trading tokens
     );
     console.log(`Will receive: ${formatEther(quote)} tokens`);
     
-    // Execute purchase with slippage protection
+    // Execute purchase with slippage protection  
     const minTokens = quote * 0.95n; // 5% slippage
-    await token.buy(minTokens, "1");
+    await token.buy(parseEther("100"), minTokens);
     ```
   </Tab>
   
@@ -73,7 +73,7 @@ During bonding, the contract acts as the sole market maker:
     | Parameter | Type | Description |
     |-----------|------|-------------|
     | `minTokensOut` | uint256 | Minimum tokens to receive (slippage protection) |
-    | `ethAmount` | string/uint256 | Amount of ETH to spend |
+    | `tradingTokenAmount` | string/uint256 | Amount of trading token to spend |
     
     **Important Notes:**
     - Set `minTokensOut` to protect against front-running
@@ -84,15 +84,15 @@ During bonding, the contract acts as the sole market maker:
   <Tab title="Edge Cases">
     **Target Overflow:**
     - If purchase would exceed target, excess is refunded
-    - Example: Target is 10 ETH, raised is 9.5 ETH
-    - User sends 1 ETH → 0.5 ETH used, 0.5 ETH refunded
+    - Example: Target is 10 trading tokens, raised is 9.5 tokens
+    - User sends 1 token → 0.5 tokens used, 0.5 tokens refunded
     
     **Insufficient Gas:**
     - Recommended gas limit: 200,000
     - Complex calculations may require more
     
     **Zero Amount:**
-    - Transactions with 0 ETH will revert
+    - Transactions with 0 trading tokens will revert
   </Tab>
 </Tabs>
 
@@ -103,9 +103,9 @@ During bonding, the contract acts as the sole market maker:
     **Process Flow:**
     1. User approves token spending
     2. User calls sell with token amount
-    3. Contract calculates ETH based on curve
+    3. Contract calculates trading token amount based on curve
     4. 5% fee deducted from proceeds
-    5. ETH sent to seller, tokens burned
+    5. Trading token sent to seller, tokens burned
     6. Curve state updated (price decreases)
     
     **Code Example:**
@@ -114,14 +114,14 @@ During bonding, the contract acts as the sole market maker:
     const balance = await token.balanceOf(userAddress);
     const sellAmount = balance / 2n; // Sell half
     
-    const quote = await token.getAmountOfEthToReceive(
+    const quote = await token.getAmountOfTradingTokensToSell(
       sellAmount
     );
-    console.log(`Will receive: ${formatEther(quote)} ETH`);
+    console.log(`Will receive: ${formatEther(quote)} trading tokens`);
     
     // Execute sale with slippage protection
-    const minEth = quote * 0.95n; // 5% slippage
-    await token.sell(sellAmount, minEth);
+    const minTradingTokenOut = quote * 0.95n; // 5% slippage
+    await token.sell(sellAmount, minTradingTokenOut);
     ```
   </Tab>
   
@@ -129,7 +129,7 @@ During bonding, the contract acts as the sole market maker:
     | Parameter | Type | Description |
     |-----------|------|-------------|
     | `tokenAmount` | uint256 | Amount of tokens to sell |
-    | `minEthOut` | uint256 | Minimum ETH to receive (slippage protection) |
+    | `minTradingTokenOut` | uint256 | Minimum trading token to receive (slippage protection) |
     
     **Important Notes:**
     - Requires token approval before selling
@@ -169,32 +169,32 @@ graph LR
 
 <AccordionGroup>
   <Accordion title="Buy Fees">
-    **On a 1 ETH purchase:**
-    - 0.95 ETH goes to bonding curve
-    - 0.05 ETH goes to fee recipient
-    - Tokens calculated on 0.95 ETH value
+    **On a 1 trading token purchase:**
+    - 0.95 trading tokens go to bonding curve
+    - 0.05 trading tokens go to fee recipient
+    - Tokens calculated on 0.95 trading token value
     
     **Example:**
     ```typescript
-    // User sends 1 ETH
-    // Fee: 0.05 ETH
-    // Curve receives: 0.95 ETH
-    // Tokens minted based on 0.95 ETH
+    // User sends 1 trading token
+    // Fee: 0.05 trading token
+    // Curve receives: 0.95 trading token
+    // Tokens minted based on 0.95 trading token
     ```
   </Accordion>
   
   <Accordion title="Sell Fees">
-    **On selling for 1 ETH value:**
-    - User receives 0.95 ETH
-    - 0.05 ETH goes to fee recipient
-    - Curve reduced by full 1 ETH
+    **On selling for 1 trading token value:**
+    - User receives 0.95 trading tokens
+    - 0.05 trading tokens go to fee recipient
+    - Curve reduced by full 1 trading token
     
     **Example:**
     ```typescript
-    // Tokens worth 1 ETH on curve
-    // Fee: 0.05 ETH
-    // User receives: 0.95 ETH
-    // Curve drops by 1 ETH
+    // Tokens worth 1 trading token on curve
+    // Fee: 0.05 trading token
+    // User receives: 0.95 trading tokens
+    // Curve drops by 1 trading token
     ```
   </Accordion>
   
@@ -215,16 +215,16 @@ graph LR
 
 | Daily Volume | Fee Income | Monthly Income |
 |-------------|------------|----------------|
-| 10 ETH | 0.5 ETH | ~15 ETH |
-| 50 ETH | 2.5 ETH | ~75 ETH |
-| 100 ETH | 5 ETH | ~150 ETH |
-| 500 ETH | 25 ETH | ~750 ETH |
+| 10 trading tokens | 0.5 trading tokens | ~15 trading tokens |
+| 50 trading tokens | 2.5 trading tokens | ~75 trading tokens |
+| 100 trading tokens | 5 trading tokens | ~150 trading tokens |
+| 500 trading tokens | 25 trading tokens | ~750 trading tokens |
 
 ## Target Mechanics
 
 ### Understanding the Target
 
-The target is the amount of ETH/B3 that must be accumulated before migration:
+The target is the amount of trading token that must be accumulated before migration:
 
 <Info>
   **Target Purpose:**
@@ -252,7 +252,7 @@ async function trackProgress(token: BondkitToken) {
   }
   
   const remaining = progress.threshold - progress.raised;
-  console.log(`Need ${formatEther(remaining)} more ETH`);
+  console.log(`Need ${formatEther(remaining)} more trading token`);
 }
 ```
 
@@ -266,14 +266,14 @@ When a purchase would exceed the target:
 
 **Example Scenario:**
 ```
-Target: 100 ETH
-Current: 99.5 ETH
-User sends: 2 ETH
+Target: 100 trading tokens
+Current: 99.5 trading tokens
+User sends: 2 trading tokens
 
 Result:
-- 0.5 ETH accepted (reaches exactly 100 ETH)
-- 1.5 ETH refunded
-- User gets tokens for 0.5 ETH
+- 0.5 trading tokens accepted (reaches exactly 100)
+- 1.5 trading tokens refunded
+- User gets tokens for 0.5 trading tokens
 - Migration now available
 ```
 
@@ -432,7 +432,7 @@ await monitor.start();
   <Card title="Target Setting" icon="bullseye" href="/bondkit/concepts/targets">
     Choose the right target
   </Card>
-  <Card title="Migration Process" icon="rocket" href="/bondkit/guides/migration">
+  <Card title="Token Lifecycle" icon="rocket" href="/bondkit/guides/token-lifecycle">
     Learn about DEX transition
   </Card>
 </CardGroup>
