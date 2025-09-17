@@ -82,9 +82,14 @@ constructor(
       finalTokenSupply: bigint;         // Total supply (18 decimals)
       aggressivenessFactor: number;     // 0-100 curve steepness
       lpSplitRatioFeeRecipientBps: bigint; // LP fee share (basis points)
-      targetEth: bigint;                // Migration target (18 decimals)
-      uniswapV2RouterAddress: Address;  // Router address
+      targetAmount: bigint;             // Migration target in trading token (18 decimals)
       migrationAdminAddress: Address;   // Can trigger migration
+      bondingPhaseSplitter: Address;    // Bonding phase fee splitter
+      v4PoolManager: Address;           // Uniswap V4 pool manager
+      v4Hook: Address;                  // Custom Uniswap V4 hook
+      v4PoolFee: number;                // Pool fee tier (3000 = 0.3%)
+      v4TickSpacing: number;            // Tick spacing for the pool
+      tradingToken: Address;            // Token used for trading (B3/ETH/etc)
     }
     ```
     
@@ -97,9 +102,14 @@ constructor(
       finalTokenSupply: parseEther("1000000"),
       aggressivenessFactor: 50,
       lpSplitRatioFeeRecipientBps: 1000n, // 10%
-      targetEth: parseEther("10"),
-      uniswapV2RouterAddress: "0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24",
-      migrationAdminAddress: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1"
+      targetAmount: parseEther("10"),
+      migrationAdminAddress: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1",
+      bondingPhaseSplitter: "0x2AB69e0d9D20D3700466153D84a6574128154Fd2",
+      v4PoolManager: "0x498581fF718922c3f8e6A244956aF099B2652b2b",
+      v4Hook: "0xB36f4A2FB18b745ef8eD31452781a463d2B3f0cC",
+      v4PoolFee: 3000,
+      v4TickSpacing: 60,
+      tradingToken: "0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3"
     });
     ```
   </Accordion>
@@ -228,24 +238,24 @@ constructor(
     // Current price per token
     async getCurrentBondingCurvePricePerToken(): Promise<bigint>
     
-    // Current price in ETH
+    // Current price in trading token
     async getCurrentPrice(): Promise<bigint>
     
     // Quote for buying
     async getAmountOfTokensToBuy(
-      ethAmount: bigint
+      tradingTokenAmount: bigint | string
     ): Promise<bigint>
     
     // Quote for selling
-    async getAmountOfEthToReceive(
+    async getAmountOfTradingTokensToSell(
       tokenAmount: bigint
     ): Promise<bigint>
     
     // Bonding progress
     async getBondingProgress(): Promise<{
       progress: number;      // 0-1 (percentage)
-      raised: bigint;       // Amount raised
-      threshold: bigint;    // Target amount
+      raised: number;        // Amount raised (converted to number)
+      threshold: number;     // Target amount (converted to number)
     }>
     
     // Example
@@ -314,53 +324,155 @@ constructor(
     });
     ```
   </Accordion>
+  
+  <Accordion title="Trading Token Methods">
+    **Methods for interacting with the trading token**
+    
+    ```typescript
+    // Get trading token address (B3/ETH/etc)
+    async getTradingTokenAddress(): Promise<Address>
+    
+    // Get trading token symbol  
+    async getTradingTokenSymbol(): Promise<string>
+    
+    // Get user's trading token balance
+    async getTradingTokenBalanceOf(account: Address): Promise<bigint>
+    
+    // Check current token status/phase
+    async currentStatus(): Promise<TokenStatus>
+    async getCurrentPhase(): Promise<string>
+    
+    // Check if DEX swapping is available
+    async isSwapAvailable(): Promise<boolean>
+    ```
+    
+    **Example:**
+    ```typescript
+    // Check what trading token is used
+    const tradingTokenAddress = await token.getTradingTokenAddress();
+    const tradingTokenSymbol = await token.getTradingTokenSymbol();
+    console.log(`Trading with: ${tradingTokenSymbol} (${tradingTokenAddress})`);
+    
+    // Check user's trading token balance
+    const tradingBalance = await token.getTradingTokenBalanceOf(userAddress);
+    console.log(`Trading token balance: ${formatEther(tradingBalance)}`);
+    
+    // Check current phase
+    const status = await token.currentStatus();
+    if (status === TokenStatus.DexPhase) {
+      console.log("Token is in DEX trading phase");
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="DEX Phase Swap Methods">
+    **Built-in swap methods for DEX phase trading**
+    
+    ```typescript
+    // Get swap quotes
+    async getSwapQuoteForBondkitToken(
+      amountTradingTokenIn: string,
+      slippageTolerance?: number
+    ): Promise<SwapQuote | null>
+    
+    async getSwapQuoteForTradingToken(
+      amountBondkitTokenIn: string, 
+      slippageTolerance?: number
+    ): Promise<SwapQuote | null>
+    
+    // Execute swaps
+    async swapTradingTokenForBondkitToken(
+      amountTradingTokenIn: string,
+      slippageTolerance?: number,
+      walletClient: WalletClient
+    ): Promise<string | null>
+    
+    async swapBondkitTokenForTradingToken(
+      amountBondkitTokenIn: string,
+      slippageTolerance?: number, 
+      walletClient: WalletClient
+    ): Promise<string | null>
+    ```
+    
+    **Example:**
+    ```typescript
+    // Check if swapping is available (DEX phase only)
+    const canSwap = await token.isSwapAvailable();
+    if (!canSwap) {
+      console.log("Still in bonding phase - use buy()/sell()");
+      return;
+    }
+    
+    // Get quote for trading 100 B3 tokens → bondkit tokens
+    const quote = await token.getSwapQuoteForBondkitToken(
+      "100",      // 100 trading tokens
+      0.005       // 0.5% slippage
+    );
+    
+    if (quote) {
+      console.log(`Will receive: ${quote.amountOut} bondkit tokens`);
+      console.log(`Price impact: ${quote.priceImpact}%`);
+      
+      // Execute the swap
+      const txHash = await token.swapTradingTokenForBondkitToken(
+        "100",
+        0.005,
+        walletClient
+      );
+      console.log(`Swap completed: ${txHash}`);
+    }
+    ```
+  </Accordion>
 </AccordionGroup>
 
 #### Write Methods
 
 <AccordionGroup>
   <Accordion title="buy">
-    **Buy tokens with ETH**
+    **Buy tokens with trading token**
     
     ```typescript
     async buy(
-      minTokensOut: bigint,
-      ethAmount: string | bigint
+      amount: bigint | string,
+      minTokensOut: bigint
     ): Promise<Hex>
     ```
     
     **Parameters:**
+    - `amount`: Amount of trading token to spend (as string or bigint) 
     - `minTokensOut`: Minimum tokens to receive (slippage protection)
-    - `ethAmount`: ETH to spend (as string or bigint)
     
     **Example:**
     ```typescript
     // Get quote first
     const quote = await token.getAmountOfTokensToBuy(
-      parseEther("1")
+      parseEther("100") // 100 trading tokens
     );
     
     // Buy with 5% slippage tolerance
     const minTokens = quote * 95n / 100n;
-    const txHash = await token.buy(minTokens, "1");
+    const txHash = await token.buy(
+      parseEther("100"), // amount: 100 trading tokens
+      minTokens          // minTokensOut: slippage protection
+    );
     
     console.log(`Transaction: ${txHash}`);
     ```
   </Accordion>
   
   <Accordion title="sell">
-    **Sell tokens for ETH**
+    **Sell tokens for trading token**
     
     ```typescript
     async sell(
       tokenAmount: bigint,
-      minEthOut: bigint
+      minTradingTokenOut: bigint
     ): Promise<Hex>
     ```
     
     **Parameters:**
     - `tokenAmount`: Amount of tokens to sell
-    - `minEthOut`: Minimum ETH to receive (slippage protection)
+    - `minTradingTokenOut`: Minimum trading token to receive (slippage protection)
     
     **Example:**
     ```typescript
@@ -368,11 +480,11 @@ constructor(
     const sellAmount = parseEther("1000");
     
     // Get quote
-    const quote = await token.getAmountOfEthToReceive(sellAmount);
+    const quote = await token.getAmountOfTradingTokensToSell(sellAmount);
     
     // Sell with slippage protection
-    const minEth = quote * 95n / 100n;
-    const txHash = await token.sell(sellAmount, minEth);
+    const minTradingTokenOut = quote * 95n / 100n;
+    const txHash = await token.sell(sellAmount, minTradingTokenOut);
     ```
   </Accordion>
   
@@ -394,6 +506,34 @@ constructor(
       console.log(`Migration tx: ${txHash}`);
     }
     ```
+  </Accordion>
+  
+  <Accordion title="Ownership Methods">
+    **Transfer or renounce token ownership**
+    
+    ```typescript
+    // Transfer ownership to new address
+    async transferTokenOwnership(
+      newOwner: Address
+    ): Promise<Hex>
+    
+    // Renounce ownership (irreversible)
+    async renounceTokenOwnership(): Promise<Hex>
+    ```
+    
+    **Example:**
+    ```typescript
+    // Transfer ownership to multisig
+    const multisig = "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1";
+    await token.transferTokenOwnership(multisig);
+    
+    // Or renounce ownership completely (be careful!)
+    await token.renounceTokenOwnership();
+    ```
+    
+    <Warning>
+      **Important**: Renouncing ownership is irreversible and removes all admin capabilities. Only do this after migration or if you want to make the token completely decentralized.
+    </Warning>
   </Accordion>
   
   <Accordion title="ERC20 Write Methods">
@@ -432,7 +572,7 @@ constructor(
 token.onBuy((event: BoughtEventArgs) => {
   console.log("Buy:", {
     buyer: event.buyer,
-    ethIn: formatEther(event.ethIn),
+    tradingTokenIn: formatEther(event.ethIn), // Note: 'ethIn' field represents trading token
     tokensOut: formatEther(event.tokensOut),
     fee: formatEther(event.feeRecipientFee)
   });
@@ -443,7 +583,7 @@ token.onSell((event: SoldEventArgs) => {
   console.log("Sell:", {
     seller: event.seller,
     tokensIn: formatEther(event.tokensIn),
-    ethOut: formatEther(event.ethOut),
+    tradingTokenOut: formatEther(event.ethOut), // Note: 'ethOut' field represents trading token
     fee: formatEther(event.feeRecipientFee)
   });
 });
@@ -456,6 +596,377 @@ token.onMigration((event: DexMigrationEventArgs) => {
   });
 });
 ```
+
+### BondkitSwapService
+
+The swap service handles Uniswap V4 trading for tokens after they migrate to the DEX phase.
+
+<Info>
+  **When to use**: After migration when tokens are trading on Uniswap V4. During bonding phase, use `token.buy()` and `token.sell()` instead.
+</Info>
+
+#### Constructor
+
+```typescript
+import { BondkitSwapService } from "@b3dotfun/sdk/bondkit";
+
+const swapService = new BondkitSwapService(
+  "0x123..." // bondkitTokenAddress
+);
+```
+
+#### Methods
+
+<AccordionGroup>
+  <Accordion title="getSwapQuote">
+    **Get swap price quote**
+    
+    ```typescript
+    async getSwapQuote(params: SwapParams): Promise<SwapQuote | null>
+    ```
+    
+    **Parameters:**
+    ```typescript
+    interface SwapParams {
+      tokenIn: Address;           // Token to sell
+      tokenOut: Address;          // Token to buy
+      amountIn: string;           // Amount to sell (human readable)
+      tokenInDecimals: number;    // Decimals of input token
+      tokenOutDecimals: number;   // Decimals of output token
+      slippageTolerance: number;  // Slippage tolerance (0.01 = 1%)
+      recipient: Address;         // Address to receive tokens
+      deadline?: number;          // Transaction deadline (timestamp)
+    }
+    ```
+    
+    **Returns:**
+    ```typescript
+    interface SwapQuote {
+      amountOut: string;          // Expected output amount
+      amountOutMin: string;       // Minimum output (with slippage)
+      priceImpact: string;        // Price impact percentage
+      executionPrice: string;     // Execution price
+      fee: string;                // Swap fee
+    }
+    ```
+    
+    **Example:**
+    ```typescript
+    // Get quote for swapping 100 B3 tokens for bondkit tokens
+    const quote = await swapService.getSwapQuote({
+      tokenIn: "0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3", // B3 token
+      tokenOut: bondkitTokenAddress,
+      amountIn: "100",
+      tokenInDecimals: 18,
+      tokenOutDecimals: 18,
+      slippageTolerance: 0.005, // 0.5%
+      recipient: userAddress
+    });
+    
+    if (quote) {
+      console.log(`Will receive: ${quote.amountOut} tokens`);
+      console.log(`Price impact: ${quote.priceImpact}%`);
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="executeSwap">
+    **Execute swap transaction**
+    
+    ```typescript
+    async executeSwap(params: SwapParams, walletClient: WalletClient): Promise<string | null>
+    ```
+    
+    **Parameters:**
+    - `params`: Same SwapParams as getSwapQuote
+    - `walletClient`: Connected wallet client
+    
+    **Example:**
+    ```typescript
+    // First get a quote
+    const quote = await swapService.getSwapQuote(swapParams);
+    
+    if (quote) {
+      // Execute the swap
+      const txHash = await swapService.executeSwap(
+        swapParams,
+        walletClient
+      );
+      
+      console.log(`Swap executed: ${txHash}`);
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+#### Complete Example
+
+```typescript
+import { BondkitSwapService } from "@b3dotfun/sdk/bondkit";
+import { createWalletClient, custom } from "viem";
+
+// Initialize service
+const swapService = new BondkitSwapService(bondkitTokenAddress);
+
+// Set up swap parameters
+const swapParams = {
+  tokenIn: "0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3", // B3 token
+  tokenOut: bondkitTokenAddress,
+  amountIn: "50", // 50 B3 tokens
+  tokenInDecimals: 18,
+  tokenOutDecimals: 18,
+  slippageTolerance: 0.01, // 1%
+  recipient: userAddress,
+  deadline: Math.floor(Date.now() / 1000) + 1200 // 20 minutes
+};
+
+// Get quote and execute if acceptable
+const quote = await swapService.getSwapQuote(swapParams);
+
+if (quote && parseFloat(quote.priceImpact) < 5) {
+  console.log(`Swapping ${swapParams.amountIn} B3 for ${quote.amountOut} tokens`);
+  
+  const walletClient = createWalletClient({
+    transport: custom(window.ethereum)
+  });
+  
+  const txHash = await swapService.executeSwap(swapParams, walletClient);
+  console.log(`Transaction: ${txHash}`);
+} else {
+  console.log("Price impact too high or quote failed");
+}
+```
+
+<Warning>
+  **Important Notes:**
+  - Only works after token migration to DEX phase
+  - Automatically handles token approvals (ERC20 → Permit2 → Universal Router)
+  - Uses Uniswap V4 with custom hooks and pool configuration
+  - Slippage protection is built into the quotes
+></Warning>
+
+### TradingView Component
+
+A React component that renders professional trading charts for Bondkit tokens using TradingView's charting library.
+
+<Info>
+  **Use case**: Display price charts, volume data, and trading indicators for your Bondkit tokens in web applications.
+</Info>
+
+#### Installation & Setup
+
+```typescript
+import TradingView from "@b3dotfun/sdk/bondkit/components/TradingView";
+```
+
+<Note>
+  **Requirements:**
+  - React 18+
+  - TradingView charting library (loaded automatically from CDN)
+  - Tailwind CSS for styling (optional, but recommended)
+</Note>
+
+#### Props
+
+```typescript
+interface TradingViewProps {
+  className?: string;      // CSS classes for styling
+  tokenAddress?: string;   // Bondkit token address
+  tokenSymbol?: string;    // Token symbol (e.g., "DEMO")
+}
+```
+
+#### Basic Usage
+
+```tsx
+import React from "react";
+import TradingView from "@b3dotfun/sdk/bondkit/components/TradingView";
+
+function TokenChart({ token }) {
+  return (
+    <div className="h-96 w-full">
+      <TradingView 
+        tokenAddress={token.address}
+        tokenSymbol={token.symbol}
+        className="w-full h-full"
+      />
+    </div>
+  );
+}
+```
+
+#### Advanced Configuration
+
+```tsx
+// In your Next.js app, configure the CDN
+// next.config.js
+module.exports = {
+  env: {
+    NEXT_PUBLIC_CDN_URL: "https://your-cdn-domain.com",
+    NEXT_PUBLIC_FORCE_CDN: "true" // Force CDN usage in development
+  }
+};
+
+// Custom styled chart
+function ProfessionalChart({ tokenAddress, tokenSymbol }) {
+  return (
+    <div className="rounded-lg border bg-white shadow-lg">
+      <div className="p-4 border-b">
+        <h3 className="font-semibold">{tokenSymbol} Price Chart</h3>
+      </div>
+      <div className="h-[500px] p-4">
+        <TradingView 
+          tokenAddress={tokenAddress}
+          tokenSymbol={tokenSymbol}
+          className="w-full h-full rounded"
+        />
+      </div>
+    </div>
+  );
+}
+```
+
+#### Features
+
+<AccordionGroup>
+  <Accordion title="Chart Types & Indicators">
+    **Built-in Support:**
+    - Candlestick charts
+    - Volume indicators  
+    - Price overlays
+    - Technical analysis tools
+    - Multiple timeframes (1m, 5m, 1h, 1D, etc.)
+    
+    **Customization:**
+    - Light/dark themes
+    - Responsive design
+    - Mobile-friendly interface
+    - Professional trading UI
+  </Accordion>
+  
+  <Accordion title="Data Integration">
+    **Automatic Data Feeds:**
+    - Real-time price data from B3 API
+    - OHLCV (Open, High, Low, Close, Volume) data
+    - Historical price charts
+    - Transaction-based price updates
+    
+    **UDF Compatible:**
+    - Standard TradingView datafeed format
+    - Configurable API endpoints
+    - Fallback configurations
+  </Accordion>
+  
+  <Accordion title="Performance & CDN">
+    **Optimized Loading:**
+    - TradingView library loaded from CDN
+    - Lazy loading with loading states
+    - Error handling and fallbacks
+    - Configurable CDN domains
+    
+    **Production Ready:**
+    - Automatic CDN switching
+    - Custom domain support
+    - Development/production configurations
+  </Accordion>
+</AccordionGroup>
+
+#### Complete Integration Example
+
+```tsx
+import React, { useState, useEffect } from "react";
+import { BondkitToken } from "@b3dotfun/sdk/bondkit";
+import TradingView from "@b3dotfun/sdk/bondkit/components/TradingView";
+
+function TokenDashboard({ tokenAddress }) {
+  const [tokenData, setTokenData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    const loadTokenData = async () => {
+      try {
+        const token = new BondkitToken(tokenAddress);
+        const [details, price, progress] = await Promise.all([
+          token.getTokenDetails(),
+          token.getCurrentPrice(), 
+          token.getBondingProgress()
+        ]);
+        
+        setTokenData({ details, price, progress });
+      } catch (error) {
+        console.error("Failed to load token data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadTokenData();
+  }, [tokenAddress]);
+  
+  if (loading) return <div>Loading...</div>;
+  
+  return (
+    <div className="space-y-6">
+      {/* Token Info */}
+      <div className="grid grid-cols-3 gap-4">
+        <div className="bg-white p-4 rounded-lg shadow">
+          <h3 className="font-medium text-gray-500">Token</h3>
+          <p className="text-2xl font-bold">{tokenData.details.symbol}</p>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow">
+          <h3 className="font-medium text-gray-500">Price</h3>
+          <p className="text-2xl font-bold">${formatEther(tokenData.price)}</p>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow">
+          <h3 className="font-medium text-gray-500">Progress</h3>
+          <p className="text-2xl font-bold">{(tokenData.progress.progress * 100).toFixed(1)}%</p>
+        </div>
+      </div>
+      
+      {/* Trading Chart */}
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="p-4 border-b">
+          <h2 className="text-lg font-semibold">Price Chart</h2>
+        </div>
+        <div className="h-96">
+          <TradingView 
+            tokenAddress={tokenAddress}
+            tokenSymbol={tokenData.details.symbol}
+            className="w-full h-full"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+#### CDN Configuration
+
+```typescript
+// utils/cdn.ts - Configure your CDN settings
+export const CDN_CONFIG = {
+  baseUrl: process.env.NEXT_PUBLIC_CDN_URL || "https://cdn.b3.fun",
+  chartingLibrary: {
+    basePath: "/static/charting_library",
+    // TradingView library files will be loaded from this path
+  }
+};
+
+// Check CDN availability
+import { checkCDNResource, preloadFromCDN } from "@b3dotfun/sdk/bondkit/components";
+
+// Preload TradingView library
+preloadFromCDN("/static/charting_library/charting_library.js");
+```
+
+<Warning>
+  **Setup Requirements:**
+  1. **TradingView License**: Ensure you have proper licensing for TradingView library usage
+  2. **CDN Setup**: Configure CDN URLs in your environment variables
+  3. **API Access**: Ensure your app can access the B3 analytics API for chart data
+  4. **CORS**: Configure CORS settings if using custom API endpoints
+</Warning>
 
 ## Type Definitions
 
@@ -470,9 +981,14 @@ interface BondkitTokenConfig {
   finalTokenSupply: bigint;
   aggressivenessFactor: number;
   lpSplitRatioFeeRecipientBps: bigint;
-  targetEth: bigint;
-  uniswapV2RouterAddress: Address;
+  targetAmount: bigint;
   migrationAdminAddress: Address;
+  bondingPhaseSplitter: Address;
+  v4PoolManager: Address;
+  v4Hook: Address;
+  v4PoolFee: number;
+  v4TickSpacing: number;
+  tradingToken: Address;
 }
 
 // Token status enum
@@ -623,11 +1139,16 @@ async function deployAndTrade() {
     symbol: "TEST",
     finalTokenSupply: parseEther("1000000"),
     aggressivenessFactor: 50,
-    targetEth: parseEther("10"),
+    targetAmount: parseEther("10"),
     feeRecipient: process.env.WALLET_ADDRESS,
     lpSplitRatioFeeRecipientBps: 1000n,
     migrationAdminAddress: process.env.WALLET_ADDRESS,
-    uniswapV2RouterAddress: "0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24"
+    bondingPhaseSplitter: "0x2AB69e0d9D20D3700466153D84a6574128154Fd2",
+    v4PoolManager: "0x498581fF718922c3f8e6A244956aF099B2652b2b",
+    v4Hook: "0xB36f4A2FB18b745ef8eD31452781a463d2B3f0cC",
+    v4PoolFee: 3000,
+    v4TickSpacing: 60,
+    tradingToken: "0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3"
   });
   
   // 2. Initialize token client
@@ -717,10 +1238,10 @@ async function trackPortfolio(userAddress: Address) {
   <Card title="Discord" icon="discord" href="https://discord.gg/b3dotfun">
     Community support
   </Card>
+  <Card title="Troubleshooting" icon="wrench" href="/bondkit/guides/troubleshooting">
+    Fix common integration issues
+  </Card>
   <Card title="Demo App" icon="desktop" href="/bondkit/installation#demo-app">
     Example implementation
-  </Card>
-  <Card title="API Docs" icon="server" href="/bondkit/api">
-    Backend services
   </Card>
 </CardGroup>

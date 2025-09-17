@@ -94,11 +94,11 @@ Let's see how many tokens 1 ETH buys at different stages with a 10 ETH target:
 ## Interactive Price Calculator
 
 ```typescript
-// Calculate tokens received for a given ETH amount
+// Calculate tokens received for a given trading token amount
 function calculateTokensReceived(
-  ethAmount: number,
+  tradingTokenAmount: number,
   currentRaised: number,
-  targetEth: number,
+  targetAmount: number,
   totalSupply: number,
   aggressiveness: number
 ): number {
@@ -106,12 +106,12 @@ function calculateTokensReceived(
   
   // Calculate supply at current raised
   const currentSupply = totalSupply * 
-    Math.pow(currentRaised / targetEth, exponent);
+    Math.pow(currentRaised / targetAmount, exponent);
   
   // Calculate supply after purchase
-  const newRaised = currentRaised + ethAmount;
+  const newRaised = currentRaised + tradingTokenAmount;
   const newSupply = totalSupply * 
-    Math.pow(newRaised / targetEth, exponent);
+    Math.pow(newRaised / targetAmount, exponent);
   
   // Tokens received = difference in supply
   return newSupply - currentSupply;
@@ -195,12 +195,12 @@ When users sell tokens back to the curve:
 ### Sell Price Formula
 
 ```typescript
-// Calculate ETH received for selling tokens
-function calculateEthReceived(
+// Calculate trading token received for selling tokens
+function calculateTradingTokenReceived(
   tokenAmount: number,
   currentSupply: number,
   currentRaised: number,
-  targetEth: number,
+  targetAmount: number,
   totalSupply: number,
   aggressiveness: number
 ): number {
