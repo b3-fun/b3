@@ -1,0 +1,162 @@
+---
+title: 训练你的代理
+description: 学习如何使用深度强化学习设置和训练 Unity ML 代理，以在 HypeDuel 竞技场中竞争
+lang: cn
+originalPath: hypeduel/training-your-agent.mdx
+---
+<iframe class="w-full aspect-video rounded-xl mb-6" src="https://customer-gg6qs7nm5ue94t64.cloudflarestream.com/b875ed5a4303599a40e9eefb05f7083b/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-gg6qs7nm5ue94t64.cloudflarestream.com%2Fb875ed5a4303599a40e9eefb05f7083b%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600" title="Training Setup" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen />
+[在开始之前联系我们](https://form.typeform.com/to/nyvBvGbS)
+
+## 开始
+
+### 先决条件
+
+在开始训练您的代理之前，请确保您有：
+
+- **Unity 2022.3 LTS** 或更新版本
+- 安装了 pip 的 **Python 3.8+**
+- Unity 的 **ML-Agents Toolkit**
+- 用于训练的 **PyTorch** 或 **TensorFlow**
+
+### 安装步骤
+
+<Steps>
+  <Step title="安装 Unity ML-Agents">
+    ```bash
+    pip install mlagents
+    ```
+  </Step>
+  <Step title="克隆 HypeDuel 训练模板">
+    ```bash
+    git clone https://github.com/hypeduel/agent-training-template
+    cd agent-training-template
+    ```
+  </Step>
+  <Step title="安装依赖">
+    ```bash
+    pip install -r requirements.txt
+    ```
+  </Step>
+  <Step title="在 Unity 中打开">
+    在 Unity Hub 中打开项目并加载训练场景
+  </Step>
+</Steps>
+
+## 训练配置
+
+### 代理行为参数
+
+在 `config.yaml` 文件中配置您的代理学习参数：
+
+```yaml
+behaviors:
+  HypeDuelAgent:
+    trainer_type: ppo
+    hyperparameters:
+      batch_size: 1024
+      buffer_size: 10240
+      learning_rate: 3.0e-4
+      beta: 5.0e-4
+      epsilon: 0.2
+      lambd: 0.99
+      num_epoch: 3
+      learning_rate_schedule: linear
+    network_settings:
+      normalize: false
+      hidden_units: 128
+      num_layers: 2
+    reward_signals:
+      extrinsic:
+        gamma: 0.99
+        strength: 1.0
+    max_steps: 500000
+    time_horizon: 64
+    summary_freq: 10000
+```
+
+### 观察空间
+
+您的代理将接收到包括以下内容的观察：
+
+- **竞技场状态**：当前位置、健康状况和增强道具
+- **对手行为**：移动模式和最近的行动
+- **环境数据**：竞技场边界、障碍物和危险
+- **游戏状态**：剩余时间、得分差异和增强道具的可用性
+
+### 行动空间
+
+代理可以执行的行动包括：
+
+- **移动**：前进、后退、左转、右转
+- **战斗**：攻击、防御、特殊能力
+- **策略**：定位、收集增强道具、防御性策略
+
+## 训练过程
+
+### 本地训练
+
+开始本地训练您的代理：
+
+```bash
+mlagents-learn config.yaml --run-id=hypeduel-agent-v1
+```
+
+### 训练指标
+
+用关键指标监控您的代理进度：
+
+<CardGroup cols={2}>
+  <Card title="累积奖励" icon="chart-line">
+    跟踪每个剧集获得的总奖励
+  </Card>
+  <Card title="剧集长度" icon="clock">
+    监控您的代理在战斗中存活的时长
+  </Card>
+  <Card title="胜率" icon="trophy">
+    与基线对手相比，赢得战斗的百分比
+  </Card>
+  <Card title="策略损失" icon="trending-down">
+    测量学习的收敛性和稳定性
+  </Card>
+</CardGroup>
+
+### 竞技场提交
+
+一旦您的代理训练完成：
+
+1. **测试性能**：针对基准对手进行验证
+2. **模型优化**：确保推理速度高效
+3. **提交至 HypeDuel**：上传您的 `.onnx` 模型文件
+4. **竞技场注册**：为特定竞技场注册您的代理
+
+## 最佳实践
+
+### 训练提示
+
+- **从简单开始**：在复杂策略之前先开始基本行为
+- **奖励工程**：设计鼓励所需行为的奖励
+- **定期评估**：频繁地针对多样化的对手进行测试
+- **逐步增加复杂性**：逐渐引入高级机制
+
+### 性能优化
+
+- **观察归一化**：缩放输入以稳定训练
+- **行动空间设计**：平衡表达性与训练效率
+- **内存管理**：优化训练和推理的内存使用
+- **模型压缩**：减小模型大小以加快竞技场部署速度
+
+## 故障排除
+
+### 常见问题
+
+<Accordion title="训练未收敛">
+  检查学习率、奖励缩放和观察归一化。考虑降低复杂性或调整超参数。
+</Accordion>
+
+<Accordion title="代理性能停滞">
+  实施课程学习，增加环境多样性，或尝试与更强对手的自我对抗训练。
+</Accordion>
+
+<Accordion title="推理过慢">
+  优化模型架构，使用 ONNX 运行时，或实施行动缓存以重复决策。
+</Accordion>
