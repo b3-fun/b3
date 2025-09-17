@@ -1,5 +1,5 @@
-import { BondkitToken, BondkitTokenABI, TokenDetails } from "@b3dotfun/sdk/bondkit";
 import { TokenPhase } from "@/types";
+import { BondkitToken, BondkitTokenABI, TokenDetails } from "@b3dotfun/sdk/bondkit";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Address, Hex } from "viem";
 import { useAccount, useBalance, useReadContract } from "wagmi";
@@ -26,6 +26,8 @@ export function useBondkit(tokenAddress: `0x${string}`) {
   const [txType, setTxType] = useState<"approve" | "sell" | "buy" | "migrate" | "swap" | null>(null);
   const [tradingTokenBalance, setTradingTokenBalance] = useState<bigint>(BigInt(0));
   const [tradingTokenAddress, setTradingTokenAddress] = useState<Address | undefined>();
+  const [tradingTokenSymbol, setTradingTokenSymbol] = useState<string | undefined>();
+  const [isStaticDataInitialized, setIsStaticDataInitialized] = useState(false);
   const [bondingProgress, setBondingProgress] = useState({
     progress: 0,
     raised: BigInt(0),
@@ -64,7 +66,33 @@ export function useBondkit(tokenAddress: `0x${string}`) {
     bondkitTokenClient.connectWithProvider(provider);
   }, [bondkitTokenClient]);
 
-  // Data fetching logic
+  // Static data fetching logic (fetch once)
+  const fetchStaticData = useCallback(async () => {
+    if (!bondkitTokenClient || isStaticDataInitialized) return;
+
+    try {
+      // Fetch static data that never changes
+      const [details, tradingTokenAddr] = await Promise.all([
+        bondkitTokenClient.getTokenDetails(),
+        bondkitTokenClient.getTradingTokenAddress(),
+      ]);
+
+      // Get trading token symbol using the address we just fetched
+      const tradingTokenSym = await bondkitTokenClient.getTradingTokenSymbol(tradingTokenAddr);
+
+      // Set static data
+      setTokenDetails(details || null);
+      setTradingTokenAddress(tradingTokenAddr);
+      setTradingTokenSymbol(tradingTokenSym);
+
+      // Mark static data as initialized
+      setIsStaticDataInitialized(true);
+    } catch (error) {
+      console.error("Error fetching static data:", error);
+    }
+  }, [bondkitTokenClient, isStaticDataInitialized]);
+
+  // Dynamic data fetching logic
   const fetchDynamicData = useCallback(async () => {
     if (!bondkitTokenClient || !userAddress) return;
 
@@ -72,24 +100,20 @@ export function useBondkit(tokenAddress: `0x${string}`) {
     const phase = await bondkitTokenClient.getCurrentPhase();
     const isDexPhase = phase === TokenPhase.DEX;
 
-    // Fetch common data for both phases
-    const [balance, currentAllowance, allHolders, details, tradingTokenAddr, tradingTokenBal] = await Promise.all([
+    // Fetch dynamic data that changes with user actions
+    const [balance, currentAllowance, allHolders, tradingTokenBal] = await Promise.all([
       bondkitTokenClient.balanceOf(userAddress),
       bondkitTokenClient.allowance(userAddress, tokenAddress),
       fetchAllHolders(bondkitTokenClient),
-      bondkitTokenClient.getTokenDetails(),
-      bondkitTokenClient.getTradingTokenAddress(),
       bondkitTokenClient.getTradingTokenBalanceOf(userAddress),
     ]);
 
-    // Set common data
+    // Set dynamic data
     setCurrentPhase(phase || undefined);
     setTokenBalance(balance || BigInt(0));
     setAllowance(currentAllowance || BigInt(0));
-    setTradingTokenAddress(tradingTokenAddr);
     setTradingTokenBalance(tradingTokenBal || BigInt(0));
     setHolders(allHolders);
-    setTokenDetails(details || null);
 
     // Handle phase-specific data
     if (!isDexPhase) {
@@ -122,16 +146,23 @@ export function useBondkit(tokenAddress: `0x${string}`) {
     }
   }, [bondkitTokenClient, userAddress, tokenAddress]);
 
-  // Initial and interval fetching
+  // Static data fetching (only once)
   useEffect(() => {
-    if (isConnected) {
+    if (bondkitTokenClient) {
+      fetchStaticData();
+    }
+  }, [bondkitTokenClient, fetchStaticData]);
+
+  // Dynamic data fetching with interval
+  useEffect(() => {
+    if (isConnected && isStaticDataInitialized) {
       fetchDynamicData(); // initial fetch
       const interval = setInterval(() => {
         fetchDynamicData();
       }, REFETCH_INTERVAL);
       return () => clearInterval(interval);
     }
-  }, [isConnected, fetchDynamicData]);
+  }, [isConnected, isStaticDataInitialized, fetchDynamicData]);
 
   // Quotes
   const getBuyQuote = useCallback(
@@ -282,7 +313,7 @@ export function useBondkit(tokenAddress: `0x${string}`) {
 
   // Computed values to prevent redundant calculations in components
   const isEthTradingToken = tradingTokenAddress === "0x0000000000000000000000000000000000000000";
-  const tradingTokenSymbol = isEthTradingToken ? "ETH" : "B3";
+  const computedTradingTokenSymbol = tradingTokenSymbol || (isEthTradingToken ? "ETH" : "B3"); // fallback for loading state
   const userTradingTokenBalance = isEthTradingToken ? userEthBalance?.value : tradingTokenBalance;
 
   return {
@@ -300,7 +331,7 @@ export function useBondkit(tokenAddress: `0x${string}`) {
 
     // Computed values
     isEthTradingToken,
-    tradingTokenSymbol,
+    tradingTokenSymbol: computedTradingTokenSymbol,
     userTradingTokenBalance,
 
     // Quotes

@@ -2,7 +2,7 @@
 
 import { useBondkit } from "@/hooks/useBondkit";
 import type { SwapDirection } from "@/types";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAccount } from "wagmi";
 
 interface SwapInterfaceProps {
@@ -102,11 +102,11 @@ export default function SwapInterface({ tokenAddress }: SwapInterfaceProps) {
     return `Swap ${inputTokenSymbol} for ${outputTokenSymbol}`;
   };
 
-  const formatBalance = (balance: bigint | undefined) => {
+  const formatBalance = (balance: bigint | undefined, decimals: number = 18) => {
     if (!balance) return "0.0";
     // Convert string to number for formatting, then back to display
     const balanceStr = balance.toString();
-    const balanceNum = Number(balanceStr) / Math.pow(10, 18); // Assuming 18 decimals
+    const balanceNum = Number(balanceStr) / Math.pow(10, decimals);
     return balanceNum.toFixed(4);
   };
 

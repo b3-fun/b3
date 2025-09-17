@@ -840,7 +840,7 @@ export class BondkitToken {
           tokenOutDecimals: bondkitTokenDecimals,
           slippageTolerance,
           recipient,
-          deadline: options?.value ? Math.floor(Date.now() / 1000) + 3600 : undefined,
+          deadline: (options?.value ? Math.floor(Date.now() / 1000) : 0) + 3600,
         },
         this.walletClientInstance,
       );
@@ -909,7 +909,7 @@ export class BondkitToken {
           tokenOutDecimals: tradingTokenDecimals,
           slippageTolerance,
           recipient,
-          deadline: options?.value ? Math.floor(Date.now() / 1000) + 3600 : undefined,
+          deadline: (options?.value ? Math.floor(Date.now() / 1000) : 0) + 3600,
         },
         this.walletClientInstance,
       );
@@ -942,6 +942,37 @@ export class BondkitToken {
       return Number(decimals);
     } catch (error) {
       console.warn("Error fetching trading token decimals:", error);
+      return undefined;
+    }
+  }
+
+  /**
+   * Get trading token symbol
+   * @param tradingTokenAddress Optional trading token address to avoid fetching it again
+   */
+  public async getTradingTokenSymbol(tradingTokenAddress?: Address): Promise<string | undefined> {
+    try {
+      const tokenAddress = tradingTokenAddress || (await this.getTradingTokenAddress());
+      if (!tokenAddress) {
+        return undefined;
+      }
+
+      // ETH symbol
+      if (tokenAddress === "0x0000000000000000000000000000000000000000") {
+        return "ETH";
+      }
+
+      // For ERC20 tokens, read symbol from contract
+      const tradingTokenContract = getContract({
+        address: tokenAddress,
+        abi: erc20Abi,
+        client: this.publicClient,
+      });
+
+      const symbol = await tradingTokenContract.read.symbol();
+      return symbol;
+    } catch (error) {
+      console.warn("Error fetching trading token symbol:", error);
       return undefined;
     }
   }
