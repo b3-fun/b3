@@ -1,11 +1,13 @@
 import app from "@b3dotfun/sdk/global-account/app";
 import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
+import { thirdwebB3Mainnet } from "@b3dotfun/sdk/shared/constants/chains/b3Chain";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
-import { Loader2, Mail, Phone } from "lucide-react";
+import { Loader2, Mail, Phone, WalletIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useLinkProfile, useProfiles } from "thirdweb/react";
-import { preAuthenticate } from "thirdweb/wallets";
+import { createWallet, preAuthenticate, WalletId } from "thirdweb/wallets";
+import { WalletRow } from "../..";
 import { LinkAccountModalProps, useModalStore } from "../../stores/useModalStore";
 import { getProfileDisplayInfo } from "../../utils/profileDisplay";
 import { useB3 } from "../B3Provider/useB3";
@@ -17,13 +19,14 @@ import { XIcon } from "../icons/XIcon";
 import { Button } from "../ui/button";
 type OTPStrategy = "email" | "phone";
 type SocialStrategy = "google" | "x" | "discord" | "apple" | "farcaster";
-type Strategy = OTPStrategy | SocialStrategy;
+type Strategy = OTPStrategy | SocialStrategy | "wallet";
 
 interface AuthMethod {
   id: Strategy;
   label: string;
   enabled: boolean;
   icon: React.ReactNode;
+  walletType?: WalletId;
 }
 
 const AUTH_METHODS: AuthMethod[] = [
@@ -38,6 +41,39 @@ const AUTH_METHODS: AuthMethod[] = [
     label: "Farcaster",
     enabled: true,
     icon: <FarcasterIcon className="size-6" />,
+  },
+];
+
+const WALLET_METHODS: AuthMethod[] = [
+  {
+    id: "wallet",
+    label: "Wallet",
+    enabled: true,
+    icon: <WalletIcon className="size-6" />,
+    walletType: "com.coinbase.wallet",
+  },
+  { id: "wallet", label: "Wallet", enabled: true, icon: <WalletIcon className="size-6" />, walletType: "io.metamask" },
+  {
+    id: "wallet",
+    label: "Wallet",
+    enabled: true,
+    icon: <WalletIcon className="size-6" />,
+    walletType: "me.rainbow",
+  },
+  {
+    id: "wallet",
+    label: "Wallet",
+    enabled: true,
+    icon: <WalletIcon className="size-6" />,
+    walletType: "app.phantom",
+  },
+  { id: "wallet", label: "Wallet", enabled: true, icon: <WalletIcon className="size-6" />, walletType: "io.rabby" },
+  {
+    id: "wallet",
+    label: "Wallet",
+    enabled: true,
+    icon: <WalletIcon className="size-6" />,
+    walletType: "walletConnect",
   },
 ];
 
@@ -60,7 +96,7 @@ export function LinkAccount({
 
   // Get connected auth methods
   const connectedAuthMethods = profilesRaw
-    .filter((profile: any) => !["custom_auth_endpoint", "siwe"].includes(profile.type))
+    .filter((profile: any) => !["custom_auth_endpoint"].includes(profile.type))
     .map((profile: any) => profile.type as Strategy);
 
   // Filter available auth methods
@@ -69,7 +105,7 @@ export function LinkAccount({
   );
 
   const profiles = profilesRaw
-    .filter((profile: any) => !["custom_auth_endpoint", "siwe"].includes(profile.type))
+    .filter((profile: any) => !["custom_auth_endpoint"].includes(profile.type))
     .map((profile: any) => ({
       ...getProfileDisplayInfo(profile),
       originalProfile: profile,
@@ -211,6 +247,29 @@ export function LinkAccount({
     }
   };
 
+  const handleLinkWallet = async (walletType: WalletId) => {
+    setLinkingState(true, "wallet");
+    console.log("selectedMethod", walletType);
+    try {
+      if (!walletType) {
+        throw new Error("Wallet type not found");
+      }
+      await linkProfile(
+        {
+          client,
+          strategy: "wallet",
+          wallet: createWallet(walletType),
+          chain: thirdwebB3Mainnet,
+        },
+        mutationOptions,
+      );
+    } catch (error) {
+      console.error("Error linking account:", error);
+      setError(error instanceof Error ? error.message : "Failed to link account");
+      onError?.(error as Error);
+    }
+  };
+
   const handleSocialLink = async (strategy: SocialStrategy) => {
     try {
       console.log("handleSocialLink", strategy);
@@ -338,6 +397,20 @@ export function LinkAccount({
               )}
             </Button>
           ))}
+          {WALLET_METHODS.map(method => {
+            if (!method.walletType) {
+              return null;
+            }
+
+            return (
+              <WalletRow
+                key={method.walletType}
+                walletId={method.walletType as WalletId}
+                onClick={() => handleLinkWallet(method.walletType as WalletId)}
+                isLoading={isLinking}
+              />
+            );
+          })}
           {availableAuthMethods.length === 0 && (
             <div className="text-b3-foreground-muted py-8 text-center">
               All available authentication methods have been connected
@@ -379,38 +452,39 @@ export function LinkAccount({
 
           {error && <div className="text-b3-negative font-neue-montreal-medium py-2 text-sm">{error}</div>}
 
-          {otpSent ? (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-b3-grey font-neue-montreal-medium text-sm">Verification Code</label>
-                <input
-                  type="text"
-                  placeholder="Enter verification code"
-                  className="bg-b3-line text-b3-grey font-neue-montreal-medium focus:ring-b3-primary-blue/20 w-full rounded-xl p-4 focus:outline-none focus:ring-2"
-                  value={otp}
-                  onChange={e => setOtp(e.target.value)}
-                />
+          {(selectedMethod === "email" || selectedMethod === "phone") &&
+            (otpSent ? (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-b3-grey font-neue-montreal-medium text-sm">Verification Code</label>
+                  <input
+                    type="text"
+                    placeholder="Enter verification code"
+                    className="bg-b3-line text-b3-grey font-neue-montreal-medium focus:ring-b3-primary-blue/20 w-full rounded-xl p-4 focus:outline-none focus:ring-2"
+                    value={otp}
+                    onChange={e => setOtp(e.target.value)}
+                  />
+                </div>
+                <Button
+                  className="bg-b3-primary-blue hover:bg-b3-primary-blue/90 font-neue-montreal-semibold h-12 w-full text-white"
+                  onClick={handleLinkAccount}
+                >
+                  Link Account
+                </Button>
               </div>
+            ) : (
               <Button
                 className="bg-b3-primary-blue hover:bg-b3-primary-blue/90 font-neue-montreal-semibold h-12 w-full text-white"
-                onClick={handleLinkAccount}
+                onClick={handleSendOTP}
+                disabled={(!email && !phone) || (isLinking && linkingMethod === selectedMethod)}
               >
-                Link Account
+                {isLinking && linkingMethod === selectedMethod ? (
+                  <Loader2 className="animate-spin" />
+                ) : (
+                  "Send Verification Code"
+                )}
               </Button>
-            </div>
-          ) : (
-            <Button
-              className="bg-b3-primary-blue hover:bg-b3-primary-blue/90 font-neue-montreal-semibold h-12 w-full text-white"
-              onClick={handleSendOTP}
-              disabled={(!email && !phone) || (isLinking && linkingMethod === selectedMethod)}
-            >
-              {isLinking && linkingMethod === selectedMethod ? (
-                <Loader2 className="animate-spin" />
-              ) : (
-                "Send Verification Code"
-              )}
-            </Button>
-          )}
+            ))}
         </div>
       )}
     </div>
