@@ -236,6 +236,8 @@ export function ManageAccount({
       });
     };
 
+    console.log("@@profiles", profiles);
+
     return (
       <div className="linked-accounts-settings space-y-8">
         {/* Linked Accounts Section */}
@@ -287,7 +289,7 @@ export function ManageAccount({
                     )}
                     <div className="linked-account-details">
                       <div className="linked-account-title-row flex items-center gap-2">
-                        <span className="linked-account-title text-b3-grey font-neue-montreal-semibold">
+                        <span className="linked-account-title text-b3-grey font-neue-montreal-semibold break-all">
                           {profile.title}
                         </span>
                         <span className="linked-account-type text-b3-foreground-muted font-neue-montreal-medium bg-b3-primary-wash rounded px-2 py-0.5 text-xs">
