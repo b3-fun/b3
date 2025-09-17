@@ -1,19 +1,19 @@
 import app from "@b3dotfun/sdk/global-account/app";
 import {
-    Button,
-    ManageAccountModalProps,
-    TabsContentPrimitive,
-    TabsListPrimitive,
-    TabsPrimitive,
-    TabTriggerPrimitive,
-    TWSignerWithMetadata,
-    useAccountAssets,
-    useAuthentication,
-    useB3,
-    useGetAllTWSigners,
-    useModalStore,
-    useQueryB3,
-    useRemoveSessionKey,
+  Button,
+  ManageAccountModalProps,
+  TabsContentPrimitive,
+  TabsListPrimitive,
+  TabsPrimitive,
+  TabTriggerPrimitive,
+  TWSignerWithMetadata,
+  useAccountAssets,
+  useAuthentication,
+  useB3,
+  useGetAllTWSigners,
+  useModalStore,
+  useQueryB3,
+  useRemoveSessionKey,
 } from "@b3dotfun/sdk/global-account/react";
 import { SignOutIcon } from "@b3dotfun/sdk/global-account/react/components/icons/SignOutIcon";
 import { formatNumber } from "@b3dotfun/sdk/shared/utils/formatNumber";
@@ -34,17 +34,17 @@ import { ContentTokens } from "./ContentTokens";
 const formatProfileTitle = (title: string): { displayTitle: string; isAddress: boolean } => {
   // Check if title looks like an Ethereum address (0x followed by 40 hex characters)
   const isEthereumAddress = /^0x[a-fA-F0-9]{40}$/.test(title);
-  
+
   if (isEthereumAddress) {
     return {
       displayTitle: truncateAddress(title),
-      isAddress: true
+      isAddress: true,
     };
   }
-  
+
   return {
     displayTitle: title,
-    isAddress: false
+    isAddress: false,
   };
 };
 
@@ -290,7 +290,7 @@ export function ManageAccount({
               {profiles.map(profile => (
                 <div
                   key={profile.title}
-                  className="linked-account-item bg-b3-line flex items-center justify-between rounded-xl p-4 group"
+                  className="linked-account-item bg-b3-line group flex items-center justify-between rounded-xl p-4"
                 >
                   <div className="linked-account-info flex items-center gap-3">
                     {profile.imageUrl ? (
@@ -310,7 +310,7 @@ export function ManageAccount({
                       <div className="linked-account-title-row flex items-center gap-2">
                         {(() => {
                           const { displayTitle, isAddress } = formatProfileTitle(profile.title);
-                          
+
                           const handleCopyAddress = async (e: React.MouseEvent) => {
                             e.stopPropagation();
                             try {
@@ -320,14 +320,14 @@ export function ManageAccount({
                               toast.error("Failed to copy address");
                             }
                           };
-                          
+
                           return (
                             <div className="flex items-center gap-1">
-                              <span 
+                              <span
                                 className={`linked-account-title text-b3-grey font-neue-montreal-semibold ${
-                                  isAddress 
-                                    ? 'font-mono text-sm' // Use monospace font for addresses
-                                    : 'break-words' // Use break-words for emails/names (better than break-all)
+                                  isAddress
+                                    ? "font-mono text-sm" // Use monospace font for addresses
+                                    : "break-words" // Use break-words for emails/names (better than break-all)
                                 }`}
                                 title={isAddress ? profile.title : undefined} // Show full address on hover
                               >
@@ -336,7 +336,7 @@ export function ManageAccount({
                               {isAddress && (
                                 <button
                                   onClick={handleCopyAddress}
-                                  className="linked-account-copy-button ml-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gray-100 rounded p-1"
+                                  className="linked-account-copy-button ml-1 rounded p-1 opacity-0 transition-opacity hover:bg-gray-100 group-hover:opacity-100"
                                   title="Copy full address"
                                 >
                                   <Copy size={12} className="text-gray-500 hover:text-gray-700" />
