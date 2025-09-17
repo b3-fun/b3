@@ -200,7 +200,7 @@ export function ManageAccount({
     };
 
     const profiles = profilesRaw
-      .filter((profile: any) => !["custom_auth_endpoint", "siwe"].includes(profile.type))
+      .filter((profile: any) => !["custom_auth_endpoint"].includes(profile.type))
       .map((profile: any) => ({
         ...getProfileDisplayInfo(profile),
         originalProfile: profile,
