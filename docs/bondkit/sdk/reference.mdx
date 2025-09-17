@@ -359,7 +359,7 @@ constructor(
     
     // Check current phase
     const status = await token.currentStatus();
-    if (status === TokenStatus.DexPhase) {
+    if (status === TokenStatus.Dex) {
       console.log("Token is in DEX trading phase");
     }
     ```
@@ -993,10 +993,9 @@ interface BondkitTokenConfig {
 
 // Token status enum
 enum TokenStatus {
-  Inactive = 0,
-  BondingPhase = 1,
-  DexPhase = 2,
-  Migrated = 3
+  Uninitialized = 0,
+  Bonding = 1,
+  Dex = 2
 }
 
 // Token details

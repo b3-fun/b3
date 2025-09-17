@@ -673,12 +673,12 @@ export class BondkitToken {
   }
 
   /**
-   * Check if DEX swapping is available (token must be in DexPhase)
+   * Check if DEX swapping is available (token must be in Dex phase)
    */
   public async isSwapAvailable(): Promise<boolean | undefined> {
     try {
       const status = await this.currentStatus();
-      return status === TokenStatus.DexPhase;
+      return status === TokenStatus.Dex;
     } catch (error) {
       console.warn("Error checking swap availability:", error);
       return undefined;
@@ -696,7 +696,7 @@ export class BondkitToken {
       // Check if swapping is available
       const swapAvailable = await this.isSwapAvailable();
       if (!swapAvailable) {
-        console.warn("DEX swapping not available - token must be in DexPhase");
+        console.warn("DEX swapping not available - token must be in Dex phase");
         return undefined;
       }
 
@@ -745,7 +745,7 @@ export class BondkitToken {
       // Check if swapping is available
       const swapAvailable = await this.isSwapAvailable();
       if (!swapAvailable) {
-        console.warn("DEX swapping not available - token must be in DexPhase");
+        console.warn("DEX swapping not available - token must be in Dex phase");
         return undefined;
       }
 
@@ -795,7 +795,7 @@ export class BondkitToken {
       // Check if swapping is available
       const swapAvailable = await this.isSwapAvailable();
       if (!swapAvailable) {
-        console.warn("DEX swapping not available - token must be in DexPhase");
+        console.warn("DEX swapping not available - token must be in Dex phase");
         return undefined;
       }
 
@@ -864,7 +864,7 @@ export class BondkitToken {
       // Check if swapping is available
       const swapAvailable = await this.isSwapAvailable();
       if (!swapAvailable) {
-        console.warn("DEX swapping not available - token must be in DexPhase");
+        console.warn("DEX swapping not available - token must be in Dex phase");
         return undefined;
       }
 

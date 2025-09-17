@@ -35,7 +35,7 @@ stateDiagram-v2
 
 When `migrateToDex()` is called after reaching the target:
 
-1. **Contract Status**: Token status changes to `TokenStatus.DexPhase`
+1. **Contract Status**: Token status changes to `TokenStatus.Dex`
 2. **Uniswap v4 Pool**: New pool created with accumulated liquidity
 3. **Price Initialization**: Initial pool price calculated from bonding curve exit price
 4. **Ownership Renouncement**: Contract ownership transferred to zero address
@@ -114,11 +114,11 @@ const migrationData = {
 // Check current phase
 const status = await token.getStatus();
 
-if (status === TokenStatus.DexPhase) {
+if (status === TokenStatus.Dex) {
   // Use DEX trading methods
   const swapService = new BondkitSwapService(tokenAddress);
   // ... DEX trading code
-} else if (status === TokenStatus.BondingPhase) {
+} else if (status === TokenStatus.Bonding) {
   // Use bonding curve methods
   await token.buy(amount, minTokensOut);
 }
@@ -284,12 +284,12 @@ await swapService.executeSwap(...); // ✅ Use this instead
     async function getOptimalTradingMethod(token: BondkitToken) {
       const status = await token.getStatus();
       
-      if (status === TokenStatus.BondingPhase) {
+      if (status === TokenStatus.Bonding) {
         return {
           method: "bonding",
           interface: token
         };
-      } else if (status === TokenStatus.DexPhase) {
+      } else if (status === TokenStatus.Dex) {
         return {
           method: "dex", 
           interface: new BondkitSwapService(token.contractAddress)
@@ -308,7 +308,7 @@ await swapService.executeSwap(...); // ✅ Use this instead
         await tradingMethod.interface.executeSwap(params, wallet);
       }
     } catch (error) {
-      if (error.message.includes("BondingPhaseEnded")) {
+      if (error.message.includes("TradingDisabledDexPhaseActive")) {
         // Switch to DEX trading
         const swapService = new BondkitSwapService(tokenAddress);
         await swapService.executeSwap(params, wallet);
