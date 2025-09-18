@@ -75,7 +75,6 @@ export function useAccountWallet(): {
   const ensName = profileData?.displayName?.replace(/\.b3\.fun/g, "");
   const avatarUrl = user?.avatar ? getIpfsUrl(user?.avatar) : profileData?.avatar;
 
-  console.log("@@gio:connectedWallets", connectedWallets);
   // useEffect(() => {
   //   if (connectedWallets.length > 0) {
   //     console.log("connectedWallets:1", connectedWallets);

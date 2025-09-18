@@ -4,6 +4,7 @@ import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permission
 import { loadGA4Script } from "@b3dotfun/sdk/global-account/utils/analytics";
 import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { supportedChains } from "@b3dotfun/sdk/shared/constants/chains/supported";
+import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import "@reservoir0x/relay-kit-ui/styles.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -22,6 +23,8 @@ import { createConfig, http, WagmiProvider } from "wagmi";
 import { ClientType, setClientType } from "../../../client-manager";
 import { StyleRoot } from "../StyleRoot";
 import { B3Context, B3ContextType } from "./types";
+
+const debug = debugB3React("B3Provider");
 
 /**
  * Default permissions configuration for B3 provider
@@ -157,7 +160,7 @@ export function InnerProvider({
   const wallets = useConnectedWallets();
   const setActiveWallet = useSetActiveWallet();
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
-  console.log("@@wallets", wallets);
+  debug("@@wallets", wallets);
 
   // Get auth token fro mecosystm wallet
   useEffect(() => {
@@ -166,8 +169,8 @@ export function InnerProvider({
       if (ecosystemWallet) {
         const authToken = ecosystemWallet.getAuthToken?.();
         const ecosystemAccount = await ecosystemWallet.getAccount();
-        console.log("@wallets:@authToken", authToken);
-        console.log("@@wallets:ecosystemAccount", ecosystemAccount);
+        debug("@wallets:@authToken", authToken);
+        debug("@@wallets:ecosystemAccount", ecosystemAccount);
       }
     }
     getEcosystemAccount();
@@ -205,7 +208,7 @@ export function InnerProvider({
     (wallet: Wallet) => {
       setManuallySelectedWallet(wallet);
       const account = wallet.getAccount();
-      console.log("@@gio:setWallet", wallet.id, account?.address);
+      debug("@@setWallet", wallet.id, account?.address);
       setActiveWallet(wallet);
     },
     [setManuallySelectedWallet, setActiveWallet],
