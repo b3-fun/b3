@@ -10,7 +10,7 @@ import {
   useConnect,
   WalletRow,
 } from "@b3dotfun/sdk/global-account/react";
-import { debug } from "@b3dotfun/sdk/shared/utils/debug";
+import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { useState } from "react";
 import { Chain } from "thirdweb";
@@ -26,6 +26,8 @@ interface LoginStepCustomProps {
   strategies: AllowedStrategy[];
   maxInitialWallets?: number;
 }
+
+const debug = debugB3React("LoginStepCustom");
 
 export function LoginStepCustom({
   onSuccess,
@@ -76,7 +78,7 @@ export function LoginStepCustom({
       }
 
       const account = connectResult?.getAccount();
-      console.log("@@gio:connectResult", { connectResult, account, options });
+      debug("@@connectResult", { connectResult, account, options });
       if (!account) throw new Error("Failed to connect");
       await onSuccess(account);
       setIsAuthenticated(true);

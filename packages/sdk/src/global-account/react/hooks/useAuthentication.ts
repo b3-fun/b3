@@ -124,8 +124,7 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
     if (activeWallet) {
       debug("@@logout:activeWallet", activeWallet);
       disconnect(activeWallet);
-      debug("@@logout:disconnected");
-      console.log("@@gio:logout:activeWallet", activeWallet);
+      debug("@@logout:activeWallet", activeWallet);
     }
 
     // Log out of each wallet
