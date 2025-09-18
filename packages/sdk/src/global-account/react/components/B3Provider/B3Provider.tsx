@@ -99,7 +99,7 @@ export function B3Provider({
         transports: Object.fromEntries(supportedChains.map(chain => [chain.id, http(rpcUrls?.[chain.id])])) as any,
         connectors: [
           inAppWalletConnector({
-            ...ecocystemConfig,
+            ...(ecocystemConfig || {}),
             client,
           }),
           // injected(),
