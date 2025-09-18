@@ -1,9 +1,14 @@
+import { Users } from "@b3dotfun/b3-api";
 import { RelayKitProviderWrapper, TooltipProvider, useAuthStore } from "@b3dotfun/sdk/global-account/react";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { loadGA4Script } from "@b3dotfun/sdk/global-account/utils/analytics";
+import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { supportedChains } from "@b3dotfun/sdk/shared/constants/chains/supported";
+import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
+import "@reservoir0x/relay-kit-ui/styles.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useCallback, useEffect, useState } from "react";
+import { inAppWalletConnector } from "@thirdweb-dev/wagmi-adapter";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Toaster } from "sonner";
 import {
   getLastAuthProvider,
@@ -18,9 +23,6 @@ import { ClientType, setClientType } from "../../../client-manager";
 import { StyleRoot } from "../StyleRoot";
 import { B3Context, B3ContextType } from "./types";
 
-import { Users } from "@b3dotfun/b3-api";
-import "@reservoir0x/relay-kit-ui/styles.css";
-
 /**
  * Default permissions configuration for B3 provider
  */
@@ -30,17 +32,6 @@ const DEFAULT_PERMISSIONS = {
   startDate: new Date(),
   endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365), // 1 year from now
 };
-
-/**
- * Creates wagmi config with optional custom RPC URLs
- * @param rpcUrls - Optional mapping of chain IDs to RPC URLs
- */
-function createWagmiConfig(rpcUrls?: Record<number, string>) {
-  return createConfig({
-    chains: [supportedChains[0], ...supportedChains.slice(1)],
-    transports: Object.fromEntries(supportedChains.map(chain => [chain.id, http(rpcUrls?.[chain.id])])) as any,
-  });
-}
 
 // Create queryClient instance
 const queryClient = new QueryClient();
@@ -58,6 +49,7 @@ export function B3Provider({
   toaster,
   clientType = "rest",
   rpcUrls,
+  partnerId,
 }: {
   theme: "light" | "dark";
   children: React.ReactNode;
@@ -71,10 +63,8 @@ export function B3Provider({
   };
   clientType?: ClientType;
   rpcUrls?: Record<number, string>;
+  partnerId?: string;
 }) {
-  // Create wagmi config with custom RPC URLs if provided
-  const [wagmiConfig] = useState(() => createWagmiConfig(rpcUrls));
-
   // Initialize Google Analytics on mount
   useEffect(() => {
     loadGA4Script();
@@ -85,10 +75,41 @@ export function B3Provider({
     setClientType(clientType);
   }, [clientType]);
 
+  const ecocystemConfig = useMemo(() => {
+    if (!partnerId) return undefined;
+
+    return {
+      ecosystemId: ecosystemWalletId,
+      partnerId: partnerId,
+      client,
+    };
+  }, [partnerId]);
+
+  /**
+   * Creates wagmi config with optional custom RPC URLs
+   * @param rpcUrls - Optional mapping of chain IDs to RPC URLs
+   */
+  const wagmiConfig = useMemo(
+    () =>
+      createConfig({
+        chains: [supportedChains[0], ...supportedChains.slice(1)],
+        transports: Object.fromEntries(supportedChains.map(chain => [chain.id, http(rpcUrls?.[chain.id])])) as any,
+        connectors: [
+          inAppWalletConnector({
+            ...ecocystemConfig,
+            client,
+          }),
+          // injected(),
+          // coinbaseWallet({ appName: "HypeDuel" }),
+        ],
+      }),
+    [partnerId],
+  );
+
   return (
-    <WagmiProvider config={wagmiConfig}>
-      <QueryClientProvider client={queryClient}>
-        <ThirdwebProvider>
+    <ThirdwebProvider>
+      <WagmiProvider config={wagmiConfig}>
+        <QueryClientProvider client={queryClient}>
           <TooltipProvider>
             <InnerProvider
               accountOverride={accountOverride}
@@ -105,9 +126,9 @@ export function B3Provider({
               </RelayKitProviderWrapper>
             </InnerProvider>
           </TooltipProvider>
-        </ThirdwebProvider>
-      </QueryClientProvider>
-    </WagmiProvider>
+        </QueryClientProvider>
+      </WagmiProvider>
+    </ThirdwebProvider>
   );
 }
 
@@ -136,6 +157,21 @@ export function InnerProvider({
   const wallets = useConnectedWallets();
   const setActiveWallet = useSetActiveWallet();
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
+  console.log("@@wallets", wallets);
+
+  // Get auth token fro mecosystm wallet
+  useEffect(() => {
+    async function getEcosystemAccount() {
+      const ecosystemWallet = wallets.find(wallet => wallet.id === ecosystemWalletId);
+      if (ecosystemWallet) {
+        const authToken = ecosystemWallet.getAuthToken?.();
+        const ecosystemAccount = await ecosystemWallet.getAccount();
+        console.log("@wallets:@authToken", authToken);
+        console.log("@@wallets:ecosystemAccount", ecosystemAccount);
+      }
+    }
+    getEcosystemAccount();
+  }, [wallets]);
 
   const [user, setUser] = useState<Users | undefined>(() => {
     // Try to restore user from localStorage on initialization
