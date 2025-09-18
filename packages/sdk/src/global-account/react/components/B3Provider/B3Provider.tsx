@@ -162,20 +162,6 @@ export function InnerProvider({
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
   debug("@@wallets", wallets);
 
-  // Get auth token fro mecosystm wallet
-  useEffect(() => {
-    async function getEcosystemAccount() {
-      const ecosystemWallet = wallets.find(wallet => wallet.id === ecosystemWalletId);
-      if (ecosystemWallet) {
-        const authToken = ecosystemWallet.getAuthToken?.();
-        const ecosystemAccount = await ecosystemWallet.getAccount();
-        debug("@wallets:@authToken", authToken);
-        debug("@@wallets:ecosystemAccount", ecosystemAccount);
-      }
-    }
-    getEcosystemAccount();
-  }, [wallets]);
-
   const [user, setUser] = useState<Users | undefined>(() => {
     // Try to restore user from localStorage on initialization
     if (typeof window !== "undefined") {

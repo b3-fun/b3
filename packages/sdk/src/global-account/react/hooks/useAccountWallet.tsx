@@ -75,18 +75,6 @@ export function useAccountWallet(): {
   const ensName = profileData?.displayName?.replace(/\.b3\.fun/g, "");
   const avatarUrl = user?.avatar ? getIpfsUrl(user?.avatar) : profileData?.avatar;
 
-  // useEffect(() => {
-  //   if (connectedWallets.length > 0) {
-  //     console.log("connectedWallets:1", connectedWallets);
-  //     // force autoconnect
-  //     const firstWallet = connectedWallets[0];
-  //     console.log("firstWallet:1", firstWallet);
-  //     firstWallet.autoConnect({
-  //       client: client,
-  //     });
-  //   }
-  // }, [connectedWallets]);
-
   const res = useMemo(
     () => ({
       wallet: {
