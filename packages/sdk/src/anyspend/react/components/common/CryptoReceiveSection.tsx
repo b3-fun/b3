@@ -100,61 +100,68 @@ export function CryptoReceiveSection({
           setToken={setSelectedDstToken || (() => {})}
         />
       )}
-      <div className="text-as-primary/50 flex h-5 items-center text-sm">
-        {formatDisplayNumber(anyspendQuote?.data?.currencyOut?.amountUsd, {
-          style: "currency",
-          fallback: "",
-        })}
-        {anyspendQuote?.data?.currencyIn?.amountUsd &&
-          anyspendQuote?.data?.currencyOut?.amountUsd &&
-          (() => {
-            const calculatePriceImpact = (inputUsd?: string | number, outputUsd?: string | number) => {
-              if (!inputUsd || !outputUsd) {
-                return { percentage: "0.00", isNegative: false };
-              }
+      <div className="text-as-primary/50 flex h-5 items-center justify-between text-sm">
+        <div className="flex items-center gap-2">
+          {formatDisplayNumber(anyspendQuote?.data?.currencyOut?.amountUsd, {
+            style: "currency",
+            fallback: "",
+          })}
+          {anyspendQuote?.data?.currencyIn?.amountUsd &&
+            anyspendQuote?.data?.currencyOut?.amountUsd &&
+            (() => {
+              const calculatePriceImpact = (inputUsd?: string | number, outputUsd?: string | number) => {
+                if (!inputUsd || !outputUsd) {
+                  return { percentage: "0.00", isNegative: false };
+                }
 
-              const input = Number(inputUsd);
-              const output = Number(outputUsd);
+                const input = Number(inputUsd);
+                const output = Number(outputUsd);
 
-              // Handle edge cases
-              if (input === 0 || isNaN(input) || isNaN(output) || input <= output) {
-                return { percentage: "0.00", isNegative: false };
-              }
+                // Handle edge cases
+                if (input === 0 || isNaN(input) || isNaN(output) || input <= output) {
+                  return { percentage: "0.00", isNegative: false };
+                }
 
-              const percentageValue = ((output - input) / input) * 100;
+                const percentageValue = ((output - input) / input) * 100;
 
-              // Handle the -0.00% case
-              if (percentageValue > -0.005 && percentageValue < 0) {
-                return { percentage: "0.00", isNegative: false };
-              }
+                // Handle the -0.00% case
+                if (percentageValue > -0.005 && percentageValue < 0) {
+                  return { percentage: "0.00", isNegative: false };
+                }
 
-              return {
-                percentage: Math.abs(percentageValue).toFixed(2),
-                isNegative: percentageValue < 0,
+                return {
+                  percentage: Math.abs(percentageValue).toFixed(2),
+                  isNegative: percentageValue < 0,
+                };
               };
-            };
 
-            const { percentage, isNegative } = calculatePriceImpact(
-              anyspendQuote.data.currencyIn.amountUsd,
-              anyspendQuote.data.currencyOut.amountUsd,
-            );
+              const { percentage, isNegative } = calculatePriceImpact(
+                anyspendQuote.data.currencyIn.amountUsd,
+                anyspendQuote.data.currencyOut.amountUsd,
+              );
 
-            // Parse the percentage as a number for comparison
-            const percentageNum = parseFloat(percentage);
+              // Parse the percentage as a number for comparison
+              const percentageNum = parseFloat(percentage);
 
-            // Don't show if less than 1%
-            if (percentageNum < 1) {
-              return null;
-            }
+              // Don't show if less than 1%
+              if (percentageNum < 1) {
+                return null;
+              }
 
-            // Using inline style to ensure color displays
-            return (
-              <span className="ml-2" style={{ color: percentageNum >= 10 ? "red" : "#FFD700" }}>
-                ({isNegative ? "-" : ""}
-                {percentage}%)
-              </span>
-            );
-          })()}
+              // Using inline style to ensure color displays
+              return (
+                <span className="ml-2" style={{ color: percentageNum >= 10 ? "red" : "#FFD700" }}>
+                  ({isNegative ? "-" : ""}
+                  {percentage}%)
+                </span>
+              );
+            })()}
+        </div>
+        {anyspendQuote?.data?.pointsAmount && (
+          <div className="flex items-center gap-1">
+            <span className="text-as-brand font-medium">+{anyspendQuote.data.pointsAmount.toLocaleString()} pts</span>
+          </div>
+        )}
       </div>
     </motion.div>
   );
