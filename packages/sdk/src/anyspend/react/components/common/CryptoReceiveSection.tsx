@@ -4,6 +4,7 @@ import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { formatDisplayNumber } from "@b3dotfun/sdk/shared/utils/number";
 import { ChevronRight } from "lucide-react";
 import { motion } from "motion/react";
+import { useEffect } from "react";
 import { components } from "../../../types/api";
 import { OrderTokenAmount } from "./OrderTokenAmount";
 
@@ -45,6 +46,13 @@ export function CryptoReceiveSection({
   dstTokenSymbol,
   dstTokenLogoURI,
 }: CryptoReceiveSectionProps) {
+  // Debug: Log when quote changes
+  useEffect(() => {
+    if (anyspendQuote?.data?.pointsAmount) {
+      console.log('CryptoReceiveSection - Points updated:', anyspendQuote.data.pointsAmount);
+    }
+  }, [anyspendQuote?.data?.pointsAmount]);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
@@ -157,8 +165,8 @@ export function CryptoReceiveSection({
               );
             })()}
         </div>
-        {anyspendQuote?.data?.pointsAmount && (
-          <div className="flex items-center gap-1">
+        {anyspendQuote?.data?.pointsAmount && anyspendQuote.data.pointsAmount > 0 && (
+          <div key={`points-${anyspendQuote.data.pointsAmount}`} className="flex items-center gap-1">
             <span className="text-as-brand font-medium">+{anyspendQuote.data.pointsAmount.toLocaleString()} pts</span>
           </div>
         )}
