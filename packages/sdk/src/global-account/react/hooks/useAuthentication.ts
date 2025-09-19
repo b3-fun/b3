@@ -9,6 +9,7 @@ import { useEffect, useRef } from "react";
 import { useActiveWallet, useAutoConnect, useConnectedWallets, useDisconnect } from "thirdweb/react";
 import { ecosystemWallet } from "thirdweb/wallets";
 import { preAuthenticate } from "thirdweb/wallets/in-app";
+import { useDisconnect as useDisconnectWagmi } from "wagmi";
 import { useConnect } from "./useConnect";
 import { useSiwe } from "./useSiwe";
 
@@ -16,6 +17,7 @@ const debug = debugB3React("useAuthentication");
 
 export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
   const { disconnect } = useDisconnect();
+  const { disconnect: disconnectWagmi } = useDisconnectWagmi();
   const wallets = useConnectedWallets();
   const activeWallet = useActiveWallet();
   const { authenticate } = useSiwe();
@@ -132,6 +134,9 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
       console.log("@@logging out", wallet);
       disconnect(wallet);
     });
+
+    // disconnect wagmi
+    disconnectWagmi();
 
     // Delete localStorage thirdweb:connected-wallet-ids
     // https://npc-labs.slack.com/archives/C070E6HNG85/p1750185115273099
