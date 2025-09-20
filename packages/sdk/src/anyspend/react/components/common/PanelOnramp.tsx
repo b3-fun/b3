@@ -7,7 +7,7 @@ import { formatAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { ChevronRight, Wallet } from "lucide-react";
 import { useRef, useEffect } from "react";
 import { toast } from "sonner";
-import { FEATURE_FLAGS } from "../../../config/featureFlags";
+import { useFeatureFlags } from "../../contexts/FeatureFlagsContext";
 import { FiatPaymentMethod } from "./FiatPaymentMethod";
 import { OrderTokenAmountFiat } from "./OrderTokenAmountFiat";
 
@@ -44,6 +44,7 @@ export function PanelOnramp({
   hideDstToken?: boolean;
   anyspendQuote?: any;
 }) {
+  const featureFlags = useFeatureFlags();
   // Get geo-based onramp options to access fee information
   const { stripeWeb2Support } = useGeoOnrampOptions(srcAmountOnRamp);
 
@@ -262,7 +263,7 @@ export function PanelOnramp({
                   return fee !== null ? `Total (included $${fee.toFixed(2)} fee)` : "Total";
                 })()}
               </span>
-              {FEATURE_FLAGS.SHOW_POINTS &&
+              {featureFlags.showPoints &&
                 anyspendQuote?.data?.pointsAmount &&
                 anyspendQuote.data.pointsAmount > 0 && (
                   <span key={`points-${anyspendQuote.data.pointsAmount}`} className="text-as-brand text-sm font-medium">

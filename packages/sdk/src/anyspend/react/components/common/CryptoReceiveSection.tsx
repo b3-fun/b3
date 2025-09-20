@@ -6,7 +6,7 @@ import { ChevronRight } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect } from "react";
 import { components } from "../../../types/api";
-import { FEATURE_FLAGS } from "../../../config/featureFlags";
+import { useFeatureFlags } from "../../contexts/FeatureFlagsContext";
 import { OrderTokenAmount } from "./OrderTokenAmount";
 
 interface CryptoReceiveSectionProps {
@@ -47,6 +47,8 @@ export function CryptoReceiveSection({
   dstTokenSymbol,
   dstTokenLogoURI,
 }: CryptoReceiveSectionProps) {
+  const featureFlags = useFeatureFlags();
+
   // Debug: Log when quote changes
   useEffect(() => {
     if (anyspendQuote?.data?.pointsAmount) {
@@ -166,7 +168,7 @@ export function CryptoReceiveSection({
               );
             })()}
         </div>
-        {FEATURE_FLAGS.SHOW_POINTS && anyspendQuote?.data?.pointsAmount && anyspendQuote.data.pointsAmount > 0 && (
+        {featureFlags.showPoints && anyspendQuote?.data?.pointsAmount && anyspendQuote.data.pointsAmount > 0 && (
           <div key={`points-${anyspendQuote.data.pointsAmount}`} className="flex items-center gap-1">
             <span className="text-as-brand font-medium">+{anyspendQuote.data.pointsAmount.toLocaleString()} pts</span>
           </div>
