@@ -4,7 +4,6 @@ import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { formatDisplayNumber } from "@b3dotfun/sdk/shared/utils/number";
 import { ChevronRight } from "lucide-react";
 import { motion } from "motion/react";
-import { useEffect } from "react";
 import { components } from "../../../types/api";
 import { useFeatureFlags } from "../../contexts/FeatureFlagsContext";
 import { OrderTokenAmount } from "./OrderTokenAmount";

@@ -6,7 +6,7 @@ import { Input, useGetGeo, useProfile } from "@b3dotfun/sdk/global-account/react
 import { cn, formatUsername } from "@b3dotfun/sdk/shared/utils";
 import { formatAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { ChevronRight, Wallet } from "lucide-react";
-import { useRef, useEffect } from "react";
+import { useRef } from "react";
 import { toast } from "sonner";
 import { useFeatureFlags } from "../../contexts/FeatureFlagsContext";
 import { FiatPaymentMethod } from "./FiatPaymentMethod";
