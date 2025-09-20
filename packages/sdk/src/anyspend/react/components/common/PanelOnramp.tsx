@@ -50,7 +50,7 @@ export function PanelOnramp({
   // Debug: Log when quote changes
   useEffect(() => {
     if (anyspendQuote?.data?.pointsAmount) {
-      console.log('PanelOnramp - Points updated:', anyspendQuote.data.pointsAmount);
+      console.log("PanelOnramp - Points updated:", anyspendQuote.data.pointsAmount);
     }
   }, [anyspendQuote?.data?.pointsAmount]);
 
@@ -262,11 +262,13 @@ export function PanelOnramp({
                   return fee !== null ? `Total (included $${fee.toFixed(2)} fee)` : "Total";
                 })()}
               </span>
-              {FEATURE_FLAGS.SHOW_POINTS && anyspendQuote?.data?.pointsAmount && anyspendQuote.data.pointsAmount > 0 && (
-                <span key={`points-${anyspendQuote.data.pointsAmount}`} className="text-as-brand text-sm font-medium">
-                  +{anyspendQuote.data.pointsAmount.toLocaleString()} pts
-                </span>
-              )}
+              {FEATURE_FLAGS.SHOW_POINTS &&
+                anyspendQuote?.data?.pointsAmount &&
+                anyspendQuote.data.pointsAmount > 0 && (
+                  <span key={`points-${anyspendQuote.data.pointsAmount}`} className="text-as-brand text-sm font-medium">
+                    +{anyspendQuote.data.pointsAmount.toLocaleString()} pts
+                  </span>
+                )}
             </div>
             <span className="text-as-primary font-semibold">
               ${getTotalAmount(selectedPaymentMethod || FiatPaymentMethod.NONE).toFixed(2)}

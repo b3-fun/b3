@@ -50,7 +50,7 @@ export function CryptoReceiveSection({
   // Debug: Log when quote changes
   useEffect(() => {
     if (anyspendQuote?.data?.pointsAmount) {
-      console.log('CryptoReceiveSection - Points updated:', anyspendQuote.data.pointsAmount);
+      console.log("CryptoReceiveSection - Points updated:", anyspendQuote.data.pointsAmount);
     }
   }, [anyspendQuote?.data?.pointsAmount]);
 
