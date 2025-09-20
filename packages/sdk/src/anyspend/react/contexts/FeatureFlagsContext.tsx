@@ -22,11 +22,7 @@ const defaultFeatureFlags: FeatureFlags = {
 };
 
 export function FeatureFlagsProvider({ children, featureFlags = defaultFeatureFlags }: FeatureFlagsProviderProps) {
-  return (
-    <FeatureFlagsContext.Provider value={{ featureFlags }}>
-      {children}
-    </FeatureFlagsContext.Provider>
-  );
+  return <FeatureFlagsContext.Provider value={{ featureFlags }}>{children}</FeatureFlagsContext.Provider>;
 }
 
 export function useFeatureFlags(): FeatureFlags {

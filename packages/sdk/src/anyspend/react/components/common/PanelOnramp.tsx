@@ -263,13 +263,11 @@ export function PanelOnramp({
                   return fee !== null ? `Total (included $${fee.toFixed(2)} fee)` : "Total";
                 })()}
               </span>
-              {featureFlags.showPoints &&
-                anyspendQuote?.data?.pointsAmount &&
-                anyspendQuote.data.pointsAmount > 0 && (
-                  <span key={`points-${anyspendQuote.data.pointsAmount}`} className="text-as-brand text-sm font-medium">
-                    +{anyspendQuote.data.pointsAmount.toLocaleString()} pts
-                  </span>
-                )}
+              {featureFlags.showPoints && anyspendQuote?.data?.pointsAmount && anyspendQuote.data.pointsAmount > 0 && (
+                <span key={`points-${anyspendQuote.data.pointsAmount}`} className="text-as-brand text-sm font-medium">
+                  +{anyspendQuote.data.pointsAmount.toLocaleString()} pts
+                </span>
+              )}
             </div>
             <span className="text-as-primary font-semibold">
               ${getTotalAmount(selectedPaymentMethod || FiatPaymentMethod.NONE).toFixed(2)}
