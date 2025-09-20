@@ -1,12 +1,14 @@
 import { useCoinbaseOnrampOptions, useGeoOnrampOptions } from "@b3dotfun/sdk/anyspend/react";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
+import { GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
 import { ALL_CHAINS } from "@b3dotfun/sdk/anyspend/utils/chain";
 import { Input, useGetGeo, useProfile } from "@b3dotfun/sdk/global-account/react";
 import { cn, formatUsername } from "@b3dotfun/sdk/shared/utils";
 import { formatAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { ChevronRight, Wallet } from "lucide-react";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { toast } from "sonner";
+import { useFeatureFlags } from "../../contexts/FeatureFlagsContext";
 import { FiatPaymentMethod } from "./FiatPaymentMethod";
 import { OrderTokenAmountFiat } from "./OrderTokenAmountFiat";
 
@@ -25,6 +27,7 @@ export function PanelOnramp({
   recipientSelectionPanelIndex,
   dstTokenSymbol,
   hideDstToken = false,
+  anyspendQuote,
 }: {
   srcAmountOnRamp: string;
   setSrcAmountOnRamp: (amount: string) => void;
@@ -40,7 +43,9 @@ export function PanelOnramp({
   recipientSelectionPanelIndex: number;
   dstTokenSymbol?: string;
   hideDstToken?: boolean;
+  anyspendQuote?: GetQuoteResponse;
 }) {
+  const featureFlags = useFeatureFlags();
   // Get geo-based onramp options to access fee information
   const { stripeWeb2Support } = useGeoOnrampOptions(srcAmountOnRamp);
 
@@ -245,21 +250,22 @@ export function PanelOnramp({
 
         <div className="">
           <div className="flex items-center justify-between">
-            {(() => {
-              const currentPaymentMethod = selectedPaymentMethod || FiatPaymentMethod.NONE;
-              const fee = getFeeFromApi(currentPaymentMethod);
-
-              return (
-                <>
-                  <span className="text-as-tertiarry text-sm">
-                    {fee !== null ? `Total (included $${fee.toFixed(2)} fee)` : "Total"}
-                  </span>
-                  <span className="text-as-primary font-semibold">
-                    ${getTotalAmount(currentPaymentMethod).toFixed(2)}
-                  </span>
-                </>
-              );
-            })()}
+            <div className="flex items-center gap-2">
+              <span className="text-as-tertiarry text-sm">
+                {(() => {
+                  const fee = getFeeFromApi(selectedPaymentMethod || FiatPaymentMethod.NONE);
+                  return fee !== null ? `Total (included $${fee.toFixed(2)} fee)` : "Total";
+                })()}
+              </span>
+              {featureFlags.showPoints && anyspendQuote?.data?.pointsAmount && anyspendQuote.data.pointsAmount > 0 && (
+                <span key={`points-${anyspendQuote.data.pointsAmount}`} className="text-as-brand text-sm font-medium">
+                  +{anyspendQuote.data.pointsAmount.toLocaleString()} pts
+                </span>
+              )}
+            </div>
+            <span className="text-as-primary font-semibold">
+              ${getTotalAmount(selectedPaymentMethod || FiatPaymentMethod.NONE).toFixed(2)}
+            </span>
           </div>
         </div>
       </div>

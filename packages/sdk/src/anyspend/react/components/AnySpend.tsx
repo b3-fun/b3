@@ -890,6 +890,7 @@ function AnySpendInner({
               fiatPaymentMethodIndex={PanelView.FIAT_PAYMENT_METHOD}
               recipientSelectionPanelIndex={PanelView.RECIPIENT_SELECTION}
               hideDstToken={isBuyMode}
+              anyspendQuote={anyspendQuote}
             />
           </motion.div>
         )}
