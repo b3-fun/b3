@@ -6,6 +6,7 @@ import { ChevronRight } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect } from "react";
 import { components } from "../../../types/api";
+import { FEATURE_FLAGS } from "../../../config/featureFlags";
 import { OrderTokenAmount } from "./OrderTokenAmount";
 
 interface CryptoReceiveSectionProps {
@@ -165,7 +166,7 @@ export function CryptoReceiveSection({
               );
             })()}
         </div>
-        {anyspendQuote?.data?.pointsAmount && anyspendQuote.data.pointsAmount > 0 && (
+        {FEATURE_FLAGS.SHOW_POINTS && anyspendQuote?.data?.pointsAmount && anyspendQuote.data.pointsAmount > 0 && (
           <div key={`points-${anyspendQuote.data.pointsAmount}`} className="flex items-center gap-1">
             <span className="text-as-brand font-medium">+{anyspendQuote.data.pointsAmount.toLocaleString()} pts</span>
           </div>

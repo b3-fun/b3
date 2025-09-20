@@ -7,6 +7,7 @@ import { formatAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { ChevronRight, Wallet } from "lucide-react";
 import { useRef, useEffect } from "react";
 import { toast } from "sonner";
+import { FEATURE_FLAGS } from "../../../config/featureFlags";
 import { FiatPaymentMethod } from "./FiatPaymentMethod";
 import { OrderTokenAmountFiat } from "./OrderTokenAmountFiat";
 
@@ -261,7 +262,7 @@ export function PanelOnramp({
                   return fee !== null ? `Total (included $${fee.toFixed(2)} fee)` : "Total";
                 })()}
               </span>
-              {anyspendQuote?.data?.pointsAmount && anyspendQuote.data.pointsAmount > 0 && (
+              {FEATURE_FLAGS.SHOW_POINTS && anyspendQuote?.data?.pointsAmount && anyspendQuote.data.pointsAmount > 0 && (
                 <span key={`points-${anyspendQuote.data.pointsAmount}`} className="text-as-brand text-sm font-medium">
                   +{anyspendQuote.data.pointsAmount.toLocaleString()} pts
                 </span>
