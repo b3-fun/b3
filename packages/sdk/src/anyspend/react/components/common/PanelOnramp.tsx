@@ -1,5 +1,6 @@
 import { useCoinbaseOnrampOptions, useGeoOnrampOptions } from "@b3dotfun/sdk/anyspend/react";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
+import { GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
 import { ALL_CHAINS } from "@b3dotfun/sdk/anyspend/utils/chain";
 import { Input, useGetGeo, useProfile } from "@b3dotfun/sdk/global-account/react";
 import { cn, formatUsername } from "@b3dotfun/sdk/shared/utils";
@@ -42,18 +43,11 @@ export function PanelOnramp({
   recipientSelectionPanelIndex: number;
   dstTokenSymbol?: string;
   hideDstToken?: boolean;
-  anyspendQuote?: any;
+  anyspendQuote?: GetQuoteResponse;
 }) {
   const featureFlags = useFeatureFlags();
   // Get geo-based onramp options to access fee information
   const { stripeWeb2Support } = useGeoOnrampOptions(srcAmountOnRamp);
-
-  // Debug: Log when quote changes
-  useEffect(() => {
-    if (anyspendQuote?.data?.pointsAmount) {
-      console.log("PanelOnramp - Points updated:", anyspendQuote.data.pointsAmount);
-    }
-  }, [anyspendQuote?.data?.pointsAmount]);
 
   // Helper function to get fees from API data
   const getFeeFromApi = (paymentMethod: FiatPaymentMethod): number | null => {

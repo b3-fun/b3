@@ -49,13 +49,6 @@ export function CryptoReceiveSection({
 }: CryptoReceiveSectionProps) {
   const featureFlags = useFeatureFlags();
 
-  // Debug: Log when quote changes
-  useEffect(() => {
-    if (anyspendQuote?.data?.pointsAmount) {
-      console.log("CryptoReceiveSection - Points updated:", anyspendQuote.data.pointsAmount);
-    }
-  }, [anyspendQuote?.data?.pointsAmount]);
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
