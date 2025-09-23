@@ -10,5 +10,13 @@
   "bracketSameLine": false,
   "arrowParens": "avoid",
   "endOfLine": "lf",
-  "plugins": ["prettier-plugin-tailwindcss"]
+  "plugins": ["prettier-plugin-tailwindcss"],
+  "overrides": [
+    {
+      "files": ["packages/sdk/src/anyspend/types/api_req_res.ts"],
+      "options": {
+        "printWidth": 200
+      }
+    }
+  ]
 }

@@ -805,6 +805,16 @@ export interface paths {
                  * @example 0
                  */
                 userBalance?: string;
+                /**
+                 * @description Anyspend points that will be awarded for the order
+                 * @example 100
+                 */
+                pointsAmount?: number;
+                /**
+                 * @description Multiplier applied to points that will be awarded for the order
+                 * @example 1.5
+                 */
+                pointsMultiplier?: number;
               };
               /** @example 200 */
               statusCode: number;
