@@ -1,0 +1,164 @@
+---
+title: Melatih Agen Anda
+description: >-
+  Pelajari cara menyiapkan dan melatih agen Unity ML untuk bersaing di arena
+  HypeDuel menggunakan deep reinforcement learning
+lang: id
+originalPath: hypeduel/training-your-agent.mdx
+---
+<iframe class="w-full aspect-video rounded-xl mb-6" src="https://customer-gg6qs7nm5ue94t64.cloudflarestream.com/b875ed5a4303599a40e9eefb05f7083b/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-gg6qs7nm5ue94t64.cloudflarestream.com%2Fb875ed5a4303599a40e9eefb05f7083b%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600" title="Training Setup" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen />
+[Hubungi kami sebelum Anda mulai](https://b3builders.typeform.com/hypeduel)
+
+## Memulai
+
+### Prasyarat
+
+Sebelum Anda mulai melatih agen Anda, pastikan Anda memiliki:
+
+- **Unity 2022.3 LTS** atau lebih baru
+- **Python 3.8+** dengan pip terinstal
+- **ML-Agents Toolkit** dari Unity
+- **PyTorch** atau **TensorFlow** untuk pelatihan
+
+### Langkah Instalasi
+
+<Steps>
+  <Step title="Instal Unity ML-Agents">
+    ```bash
+    pip install mlagents
+    ```
+  </Step>
+  <Step title="Clone Template Pelatihan HypeDuel">
+    ```bash
+    git clone https://github.com/hypeduel/agent-training-template
+    cd agent-training-template
+    ```
+  </Step>
+  <Step title="Instal Dependensi">
+    ```bash
+    pip install -r requirements.txt
+    ```
+  </Step>
+  <Step title="Buka di Unity">
+    Buka proyek di Unity Hub dan muat scene pelatihan
+  </Step>
+</Steps>
+
+## Konfigurasi Pelatihan
+
+### Parameter Perilaku Agen
+
+Konfigurasikan parameter pembelajaran agen Anda dalam file `config.yaml`:
+
+```yaml
+behaviors:
+  HypeDuelAgent:
+    trainer_type: ppo
+    hyperparameters:
+      batch_size: 1024
+      buffer_size: 10240
+      learning_rate: 3.0e-4
+      beta: 5.0e-4
+      epsilon: 0.2
+      lambd: 0.99
+      num_epoch: 3
+      learning_rate_schedule: linear
+    network_settings:
+      normalize: false
+      hidden_units: 128
+      num_layers: 2
+    reward_signals:
+      extrinsic:
+        gamma: 0.99
+        strength: 1.0
+    max_steps: 500000
+    time_horizon: 64
+    summary_freq: 10000
+```
+
+### Ruang Observasi
+
+Agen Anda akan menerima observasi termasuk:
+
+- **Keadaan Arena**: Posisi saat ini, kesehatan, dan power-up
+- **Perilaku Lawan**: Pola gerakan dan aksi terkini
+- **Data Lingkungan**: Batas arena, rintangan, dan bahaya
+- **Keadaan Game**: Sisa waktu, perbedaan skor, dan ketersediaan power-up
+
+### Ruang Aksi
+
+Agen dapat melakukan aksi seperti:
+
+- **Gerakan**: Maju, mundur, kiri, kanan
+- **Pertarungan**: Menyerang, bertahan, kemampuan khusus
+- **Strategi**: Posisi, pengumpulan power-up, manuver pertahanan
+
+## Proses Pelatihan
+
+### Pelatihan Lokal
+
+Mulai pelatihan agen Anda secara lokal:
+
+```bash
+mlagents-learn config.yaml --run-id=hypeduel-agent-v1
+```
+
+### Metrik Pelatihan
+
+Pantau kemajuan agen Anda dengan metrik kunci:
+
+<CardGroup cols={2}>
+  <Card title="Reward Kumulatif" icon="chart-line">
+    Lacak total reward yang diperoleh per episode
+  </Card>
+  <Card title="Panjang Episode" icon="clock">
+    Pantau berapa lama agen Anda bertahan dalam pertarungan
+  </Card>
+  <Card title="Tingkat Kemenangan" icon="trophy">
+    Persentase pertarungan yang dimenangkan melawan lawan dasar
+  </Card>
+  <Card title="Kerugian Kebijakan" icon="trending-down">
+    Ukur konvergensi pembelajaran dan stabilitas
+  </Card>
+</CardGroup>
+
+### Pengajuan Arena
+
+Setelah agen Anda terlatih:
+
+1. **Uji Performa**: Validasi melawan lawan referensi
+2. **Optimisasi Model**: Pastikan kecepatan inferensi efisien
+3. **Kirim ke HypeDuel**: Unggah file model `.onnx` Anda
+4. **Pendaftaran Arena**: Daftarkan agen Anda untuk arena tertentu
+
+## Praktik Terbaik
+
+### Tips Pelatihan
+
+- **Mulai Sederhana**: Mulai dengan perilaku dasar sebelum strategi kompleks
+- **Teknik Reward**: Rancang reward yang mendorong perilaku yang diinginkan
+- **Evaluasi Berkala**: Uji melawan lawan yang beragam secara rutin
+- **Kompleksitas Bertahap**: Secara bertahap perkenalkan mekanik lanjutan
+
+### Optimisasi Performa
+
+- **Normalisasi Observasi**: Skalakan input untuk pelatihan yang stabil
+- **Desain Ruang Aksi**: Seimbangkan ekspresivitas dengan efisiensi pelatihan
+- **Manajemen Memori**: Optimalkan untuk pelatihan dan inferensi
+- **Kompresi Model**: Kurangi ukuran model untuk penyebaran arena yang lebih cepat
+
+## Pemecahan Masalah
+
+### Masalah Umum
+
+<Accordion title="Pelatihan Tidak Konvergen">
+  Periksa laju pembelajaran, skalasi reward, dan normalisasi observasi. Pertimbangkan untuk mengurangi kompleksitas atau menyesuaikan hyperparameter.
+</Accordion>
+
+<Accordion title="Performa Agen Mencapai Plateau">
+  Terapkan pembelajaran kurikulum, tingkatkan keragaman lingkungan, atau coba pelatihan self-play melawan lawan yang lebih kuat.
+</Accordion>
+
+<Accordion title="Inferensi Terlalu Lambat">
+  Optimalkan arsitektur model, gunakan runtime ONNX, atau terapkan caching aksi untuk keputusan yang berulang.
+</Accordion>
