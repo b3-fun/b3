@@ -2,12 +2,11 @@
 
 import { RELAY_SOLANA_MAINNET_CHAIN_ID } from "@b3dotfun/sdk/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
-import { ShinyButton, useProfile } from "@b3dotfun/sdk/global-account/react";
+import { ShinyButton, useAccountWallet, useProfile } from "@b3dotfun/sdk/global-account/react";
 import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { motion } from "framer-motion";
 import { ChevronRight, Loader2 } from "lucide-react";
-import { useAccount } from "wagmi";
 import { CryptoPaymentMethodType } from "./CryptoPaymentMethod";
 import { OrderDetailsCollapsible } from "./OrderDetailsCollapsible";
 import { PaymentMethodSwitch } from "./PaymentMethodSwitch";
@@ -41,7 +40,11 @@ export default function ConnectWalletPayment({
 }: ConnectWalletPaymentProps) {
   const profile = useProfile({ address: order.recipientAddress });
   const recipientName = profile.data?.name?.replace(/\.b3\.fun/g, "");
-  const { address: connectedAddress } = useAccount();
+  const { connectedEOAWallet, connectedSmartWallet } = useAccountWallet();
+  const connectedEvmAddress =
+    cryptoPaymentMethod === CryptoPaymentMethodType.GLOBAL_WALLET
+      ? connectedSmartWallet?.getAccount()?.address
+      : connectedEOAWallet?.getAccount()?.address;
 
   const srcToken = order.metadata.srcToken;
   const dstToken = order.metadata.dstToken;
@@ -97,7 +100,7 @@ export default function ConnectWalletPayment({
           Connected to:{" "}
           {order.srcChain === RELAY_SOLANA_MAINNET_CHAIN_ID && phantomWalletAddress
             ? centerTruncate(phantomWalletAddress, 6)
-            : centerTruncate(connectedAddress || "")}
+            : centerTruncate(connectedEvmAddress || "")}
         </span>
 
         <PaymentMethodSwitch currentMethod={cryptoPaymentMethod} onMethodChange={onPaymentMethodChange} />
