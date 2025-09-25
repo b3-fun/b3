@@ -28,6 +28,8 @@ interface CryptoReceiveSectionProps {
   // custom dst token data
   dstTokenSymbol?: string;
   dstTokenLogoURI?: string;
+  // Points navigation
+  onShowPointsDetail?: () => void;
 }
 
 export function CryptoReceiveSection({
@@ -45,6 +47,7 @@ export function CryptoReceiveSection({
   anyspendQuote,
   dstTokenSymbol,
   dstTokenLogoURI,
+  onShowPointsDetail,
 }: CryptoReceiveSectionProps) {
   const featureFlags = useFeatureFlags();
 
@@ -103,7 +106,7 @@ export function CryptoReceiveSection({
           setToken={setSelectedDstToken || (() => {})}
         />
       )}
-      <div className="text-as-primary/50 flex h-5 items-center justify-between text-sm">
+      <div className="text-as-primary/50 flex h-5 items-center justify-start gap-2 text-sm">
         <div className="flex items-center gap-2">
           {formatDisplayNumber(anyspendQuote?.data?.currencyOut?.amountUsd, {
             style: "currency",
@@ -161,9 +164,14 @@ export function CryptoReceiveSection({
             })()}
         </div>
         {featureFlags.showPoints && anyspendQuote?.data?.pointsAmount && anyspendQuote.data.pointsAmount > 0 && (
-          <div key={`points-${anyspendQuote.data.pointsAmount}`} className="flex items-center gap-1">
-            <span className="text-as-brand font-medium">+{anyspendQuote.data.pointsAmount.toLocaleString()} pts</span>
-          </div>
+          <button
+            key={`points-${anyspendQuote.data.pointsAmount}`}
+            className="bg-as-brand hover:scale-102 active:scale-98 active:scale-98 relative flex cursor-pointer items-center gap-1 rounded-lg px-2 py-1 transition-all"
+            onClick={() => onShowPointsDetail?.()}
+          >
+            <div className="pointer-events-none absolute inset-0 h-full w-full rounded-lg border border-white/10 border-t-white/20 bg-gradient-to-b from-white/10 to-white/0" />
+            <span className="text-xs text-white">+{anyspendQuote.data.pointsAmount.toLocaleString()} pts</span>
+          </button>
         )}
       </div>
     </motion.div>

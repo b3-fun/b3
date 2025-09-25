@@ -28,6 +28,7 @@ export function PanelOnramp({
   dstTokenSymbol,
   hideDstToken = false,
   anyspendQuote,
+  onShowPointsDetail,
 }: {
   srcAmountOnRamp: string;
   setSrcAmountOnRamp: (amount: string) => void;
@@ -44,6 +45,7 @@ export function PanelOnramp({
   dstTokenSymbol?: string;
   hideDstToken?: boolean;
   anyspendQuote?: GetQuoteResponse;
+  onShowPointsDetail?: () => void;
 }) {
   const featureFlags = useFeatureFlags();
   // Get geo-based onramp options to access fee information
@@ -258,9 +260,14 @@ export function PanelOnramp({
                 })()}
               </span>
               {featureFlags.showPoints && anyspendQuote?.data?.pointsAmount && anyspendQuote.data.pointsAmount > 0 && (
-                <span key={`points-${anyspendQuote.data.pointsAmount}`} className="text-as-brand text-sm font-medium">
-                  +{anyspendQuote.data.pointsAmount.toLocaleString()} pts
-                </span>
+                <button
+                  key={`points-${anyspendQuote.data.pointsAmount}`}
+                  className="bg-as-brand hover:scale-102 active:scale-98 relative flex cursor-pointer items-center gap-1 rounded-lg px-2 py-1 transition-all"
+                  onClick={() => onShowPointsDetail?.()}
+                >
+                  <div className="pointer-events-none absolute inset-0 h-full w-full rounded-lg border border-white/10 border-t-white/20 bg-gradient-to-b from-white/10 to-white/0" />
+                  <span className="text-xs text-white">+{anyspendQuote.data.pointsAmount.toLocaleString()} pts</span>
+                </button>
               )}
             </div>
             <span className="text-as-primary font-semibold">
