@@ -223,10 +223,9 @@ export const OrderDetails = memo(function OrderDetails({
   // Read crypto payment method from URL parameters
   const cryptoPaymentMethodFromUrl = searchParams.get("cryptoPaymentMethod") as CryptoPaymentMethodType | null;
   const effectiveCryptoPaymentMethod =
-    cryptoPaymentMethod || cryptoPaymentMethodFromUrl || CryptoPaymentMethodType.NONE;
-
-  // Use selectedCryptoPaymentMethod for OrderStatus if provided, otherwise fall back to effective method
-  const orderStatusPaymentMethod = selectedCryptoPaymentMethod || effectiveCryptoPaymentMethod;
+    selectedCryptoPaymentMethod !== CryptoPaymentMethodType.NONE
+      ? selectedCryptoPaymentMethod
+      : cryptoPaymentMethod || cryptoPaymentMethodFromUrl || CryptoPaymentMethodType.NONE;
 
   const setB3ModalOpen = useModalStore((state: any) => state.setB3ModalOpen);
 
@@ -575,7 +574,7 @@ export const OrderDetails = memo(function OrderDetails({
   if (refundTxs.length > 0) {
     return (
       <>
-        <OrderStatus order={order} selectedCryptoPaymentMethod={orderStatusPaymentMethod} />
+        <OrderStatus order={order} selectedCryptoPaymentMethod={effectiveCryptoPaymentMethod} />
         <OrderDetailsCollapsible
           order={order}
           dstToken={dstToken}
@@ -653,7 +652,7 @@ export const OrderDetails = memo(function OrderDetails({
   if (executeTx) {
     return (
       <>
-        <OrderStatus order={order} selectedCryptoPaymentMethod={orderStatusPaymentMethod} />
+        <OrderStatus order={order} selectedCryptoPaymentMethod={effectiveCryptoPaymentMethod} />
         <OrderDetailsCollapsible
           order={order}
           dstToken={dstToken}
@@ -780,7 +779,7 @@ export const OrderDetails = memo(function OrderDetails({
   if (relayTxs.length > 0 && relayTxs.every(tx => tx.status === "success")) {
     return (
       <>
-        <OrderStatus order={order} selectedCryptoPaymentMethod={orderStatusPaymentMethod} />
+        <OrderStatus order={order} selectedCryptoPaymentMethod={effectiveCryptoPaymentMethod} />
         <OrderDetailsCollapsible
           order={order}
           dstToken={dstToken}
@@ -909,7 +908,7 @@ export const OrderDetails = memo(function OrderDetails({
   if (depositTxs?.length || waitingForDeposit) {
     return (
       <>
-        <OrderStatus order={order} selectedCryptoPaymentMethod={orderStatusPaymentMethod} />
+        <OrderStatus order={order} selectedCryptoPaymentMethod={effectiveCryptoPaymentMethod} />
         <OrderDetailsCollapsible
           order={order}
           dstToken={dstToken}
@@ -1008,7 +1007,7 @@ export const OrderDetails = memo(function OrderDetails({
 
   return (
     <>
-      <OrderStatus order={order} selectedCryptoPaymentMethod={orderStatusPaymentMethod} />
+      <OrderStatus order={order} selectedCryptoPaymentMethod={effectiveCryptoPaymentMethod} />
       {statusDisplay === "processing" && (
         <>
           {order.onrampMetadata ? (
