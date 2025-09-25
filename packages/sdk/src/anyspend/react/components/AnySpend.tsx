@@ -893,6 +893,7 @@ function AnySpendInner({
               recipientSelectionPanelIndex={PanelView.RECIPIENT_SELECTION}
               hideDstToken={isBuyMode}
               anyspendQuote={anyspendQuote}
+              onShowPointsDetail={() => setActivePanel(PanelView.POINTS_DETAIL)}
             />
           </motion.div>
         )}

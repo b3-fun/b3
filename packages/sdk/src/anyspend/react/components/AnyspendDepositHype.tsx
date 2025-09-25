@@ -225,6 +225,7 @@ function AnySpendDepositHypeInner({
                 fiatPaymentMethodIndex={PanelView.FIAT_PAYMENT_METHOD}
                 recipientSelectionPanelIndex={PanelView.RECIPIENT_SELECTION}
                 anyspendQuote={anyspendQuote}
+                onShowPointsDetail={() => setActivePanel(PanelView.POINTS_DETAIL)}
               />
             </motion.div>
           )}
