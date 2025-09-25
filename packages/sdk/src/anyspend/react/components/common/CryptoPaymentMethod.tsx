@@ -272,7 +272,7 @@ export function CryptoPaymentMethod({
                     onClick={() => {
                       setSelectedPaymentMethod(CryptoPaymentMethodType.CONNECT_WALLET);
                       onSelectPaymentMethod(CryptoPaymentMethodType.CONNECT_WALLET);
-                      setActiveWallet(connectedEOAWallet as any);
+                      setActiveWallet(connectedEOAWallet);
                       toast.success(`Selected ${eoaWalletInfo?.name || connector?.name || "wallet"}`);
                     }}
                     className={cn(
