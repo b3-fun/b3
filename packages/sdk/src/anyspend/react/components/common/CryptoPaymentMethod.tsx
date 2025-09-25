@@ -10,7 +10,7 @@ import { useState } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import { useSetActiveWallet, useWalletInfo } from "thirdweb/react";
-import { createWallet } from "thirdweb/wallets";
+import { WalletId, createWallet } from "thirdweb/wallets";
 import { useAccount, useConnect, useDisconnect, useWalletClient } from "wagmi";
 
 export enum CryptoPaymentMethodType {
@@ -74,8 +74,8 @@ export function CryptoPaymentMethod({
   const shouldShowWagmiWallet = wagmiWalletIsConnected && (!isWalletDuplicated || !connectedEOAWallet);
 
   // Map wagmi connector names to thirdweb wallet IDs
-  const getThirdwebWalletId = (connectorName: string): string | null => {
-    const walletMap: Record<string, string> = {
+  const getThirdwebWalletId = (connectorName: string): WalletId | null => {
+    const walletMap: Record<string, WalletId> = {
       MetaMask: "io.metamask",
       "Coinbase Wallet": "com.coinbase.wallet",
       Rainbow: "me.rainbow",
@@ -94,7 +94,7 @@ export function CryptoPaymentMethod({
     }
 
     try {
-      const thirdwebWallet = createWallet(walletId as any);
+      const thirdwebWallet = createWallet(walletId);
       // Connect the wallet to sync with the existing wagmi connection
       await thirdwebWallet.connect({ client });
       return thirdwebWallet;
