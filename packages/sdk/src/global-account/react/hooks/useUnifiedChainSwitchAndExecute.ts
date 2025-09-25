@@ -63,7 +63,7 @@ export function useUnifiedChainSwitchAndExecute() {
         // Coinbase Smart Wallet specific chain switching (different behavior from other wallets)
         const walletChain = connectedEOAWallet.getChain();
         if (walletChain?.id !== targetChainId) {
-          activeWallet?.switchChain(targetChain as any);
+          activeWallet?.switchChain(getThirdwebChain(targetChainId));
         }
 
         invariant(isAddress(params.to), "params.to is not a valid address");
