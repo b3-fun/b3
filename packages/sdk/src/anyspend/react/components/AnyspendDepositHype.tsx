@@ -14,6 +14,7 @@ import { CryptoReceiveSection } from "./common/CryptoReceiveSection";
 import { ErrorSection } from "./common/ErrorSection";
 import { FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaymentMethod";
 import { OrderDetails } from "./common/OrderDetails";
+import { PointsDetailPanel } from "./common/PointsDetailPanel";
 import { RecipientSelection } from "./common/RecipientSelection";
 
 import { ArrowDown } from "lucide-react";
@@ -264,6 +265,7 @@ function AnySpendDepositHypeInner({
                 setSrcAmount(value);
               }}
               anyspendQuote={anyspendQuote}
+              onShowPointsDetail={() => setActivePanel(PanelView.POINTS_DETAIL)}
             />
           )}
         </div>
@@ -449,6 +451,13 @@ function AnySpendDepositHypeInner({
     />
   );
 
+  const pointsDetailView = (
+    <PointsDetailPanel
+      pointsAmount={anyspendQuote?.data?.pointsAmount || 0}
+      onBack={() => setActivePanel(PanelView.MAIN)}
+    />
+  );
+
   // If showing token selection, render with panel transitions
   return (
     <StyleRoot>
@@ -497,6 +506,9 @@ function AnySpendDepositHypeInner({
             </div>,
             <div key="loading-view" className={cn(mode === "page" && "p-6")}>
               {loadingView}
+            </div>,
+            <div key="points-detail-view" className={cn(mode === "page" && "p-6")}>
+              {pointsDetailView}
             </div>,
           ]}
         </TransitionPanel>

@@ -40,6 +40,7 @@ import { OrderDetails, OrderDetailsLoadingView } from "./common/OrderDetails";
 import { OrderHistory } from "./common/OrderHistory";
 import { PanelOnramp } from "./common/PanelOnramp";
 import { PanelOnrampPayment } from "./common/PanelOnrampPayment";
+import { PointsDetailPanel } from "./common/PointsDetailPanel";
 import { RecipientSelection } from "./common/RecipientSelection";
 import { TabSection } from "./common/TabSection";
 
@@ -59,6 +60,7 @@ export enum PanelView {
   RECIPIENT_SELECTION,
   CRYPTO_PAYMENT_METHOD,
   FIAT_PAYMENT_METHOD,
+  POINTS_DETAIL,
 }
 
 const ANYSPEND_RECIPIENTS_KEY = "anyspend_recipients";
@@ -950,6 +952,7 @@ function AnySpendInner({
               setDstAmount(value);
             }}
             anyspendQuote={anyspendQuote}
+            onShowPointsDetail={() => setActivePanel(PanelView.POINTS_DETAIL)}
           />
         )}
       </div>
@@ -1061,6 +1064,13 @@ function AnySpendInner({
     />
   );
 
+  const pointsDetailView = (
+    <PointsDetailPanel
+      pointsAmount={anyspendQuote?.data?.pointsAmount || 0}
+      onBack={() => setActivePanel(PanelView.MAIN)}
+    />
+  );
+
   // Add tabs to the main component when no order is loaded
   return (
     <StyleRoot>
@@ -1115,6 +1125,9 @@ function AnySpendInner({
             </div>,
             <div key="fiat-payment-method-view" className={cn(mode === "page" && "p-6")}>
               {fiatPaymentMethodView}
+            </div>,
+            <div key="points-detail-view" className={cn(mode === "page" && "p-6")}>
+              {pointsDetailView}
             </div>,
           ]}
         </TransitionPanel>

@@ -15,15 +15,27 @@ export default function Home() {
   const [isSignatureMintOpen, setIsSignatureMintOpen] = useState(false);
 
   return (
-    <div className="relative min-h-screen bg-[#FAFAFA]">
+    <div
+      className="relative min-h-screen"
+      style={{
+        height: "100vh",
+        background: "linear-gradient(to bottom, #3B82F6 0%, #FFFFFF 100%)",
+      }}
+    >
+      <img
+        src="https://cdn.b3.fun/anyspend/hero-clouds.png"
+        className="pointer-events-none absolute bottom-0 left-0 right-0"
+        alt="Anyspend Clouds"
+      />
+
       <SignInButton />
       <SignatureMintModal isOpen={isSignatureMintOpen} onClose={() => setIsSignatureMintOpen(false)} />
-      <div className="container mx-auto mb-10 px-6 py-16">
-        <div className="mx-auto mb-20 max-w-6xl">
-          <h1 className="mb-4 text-center text-3xl font-bold text-gray-800">AnySpend Demo</h1>
-          <p className="mb-12 text-center text-gray-500">Experience seamless crypto transactions</p>
+      <div className="container relative z-10 mx-auto mb-10 px-6 py-20">
+        <div className="mx-auto mb-20 max-w-6xl pt-12">
+          <h1 className="mb-3 text-start text-3xl font-bold text-white">AnySpend Demo</h1>
+          <p className="mb-12 text-start text-white/50">Swap any token, onramp anyone.</p>
 
-          <div className="grid grid-cols-1 gap-6 pb-10 sm:grid-cols-2">
+          <div className="grid grid-cols-2 gap-8 pb-10">
             <SwapTokensButton />
             <BuyWithFiatButton />
             <MintNftButton />

@@ -31,6 +31,7 @@ export enum PanelView {
   RECIPIENT_SELECTION,
   ORDER_DETAILS,
   LOADING,
+  POINTS_DETAIL,
 }
 
 interface UseAnyspendFlowProps {
