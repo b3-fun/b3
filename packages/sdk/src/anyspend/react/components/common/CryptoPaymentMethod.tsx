@@ -9,7 +9,7 @@ import { ChevronLeft, ChevronRightCircle, Wallet, X, ZapIcon } from "lucide-reac
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
-import { useConnectedWallets, useSetActiveWallet, useWalletInfo } from "thirdweb/react";
+import { useSetActiveWallet, useWalletInfo } from "thirdweb/react";
 import { createWallet } from "thirdweb/wallets";
 import { useAccount, useConnect, useDisconnect, useWalletClient } from "wagmi";
 
@@ -51,9 +51,6 @@ export function CryptoPaymentMethod({
   const { disconnect } = useDisconnect();
   const { data: walletClient } = useWalletClient();
   const [showWalletModal, setShowWalletModal] = useState(false);
-  // Note: useConnectedWallets only shows thirdweb ecosystem wallets, not wagmi EOA wallets
-  const connectedWallets = useConnectedWallets();
-  console.log("connectedWallets", connectedWallets);
 
   const setActiveWallet = useSetActiveWallet();
   const { data: eoaWalletInfo } = useWalletInfo(connectedEOAWallet?.id);
