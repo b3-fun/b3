@@ -6,10 +6,11 @@ import invariant from "invariant";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { prepareTransaction, sendTransaction as twSendTransaction } from "thirdweb";
+import { useActiveWallet } from "thirdweb/react";
+import { isAddress } from "viem";
 import { useSwitchChain, useWalletClient } from "wagmi";
 import { useB3 } from "../components";
 import { useAccountWallet } from "./useAccountWallet";
-import { isAddress } from "viem";
 
 export interface UnifiedTransactionParams {
   to: string;
@@ -29,46 +30,53 @@ export function useUnifiedChainSwitchAndExecute() {
   const { data: walletClient } = useWalletClient();
   const { switchChainAsync } = useSwitchChain();
   const [isSwitchingOrExecuting, setIsSwitchingOrExecuting] = useState(false);
+  const activeWallet = useActiveWallet();
 
-  const { isActiveSmartWallet, isActiveEOAWallet } = useAccountWallet();
+  const { isActiveSmartWallet, isActiveEOAWallet, connectedEOAWallet } = useAccountWallet();
   const { account: aaAccount } = useB3();
 
   // Handle EOA wallet chain switch and execute transaction
   const handleEOASwitchChainAndSendTransaction = useCallback(
     async (targetChainId: number, params: UnifiedTransactionParams): Promise<string | undefined> => {
-      if (!walletClient) {
+      if (!connectedEOAWallet) {
         toast.error("Please connect your wallet");
         return;
       }
 
-      const providerId = walletClient.chain.id;
-      const onCorrectChain = providerId === targetChainId;
+      // Get target chain configuration once
+      const targetChain = supportedChains.find(chain => chain.id === targetChainId);
+      if (!targetChain) {
+        toast.error(`Chain ${targetChainId} is not supported`);
+        return;
+      }
+
+      const currentChainId = activeWallet?.getChain()?.id;
+      const onCorrectChain = currentChainId === targetChainId;
 
       // Helper function to execute the transaction
       const executeTransaction = async (): Promise<string> => {
-        const signer = walletClient.account;
+        const signer = activeWallet?.getAccount();
         if (!signer) {
           throw new Error("No account connected");
         }
 
-        // Get the target chain configuration instead of using potentially stale walletClient.chain
-        const targetChain = supportedChains.find(chain => chain.id === targetChainId);
-        if (!targetChain) {
-          throw new Error(`Chain ${targetChainId} is not supported`);
+        // Coinbase Smart Wallet specific chain switching (different behavior from other wallets)
+        const walletChain = connectedEOAWallet.getChain();
+        if (walletChain?.id !== targetChainId) {
+          activeWallet?.switchChain(targetChain as any);
         }
 
         invariant(isAddress(params.to), "params.to is not a valid address");
 
-        const hash = await walletClient.sendTransaction({
-          account: signer,
-          chain: targetChain,
+        const result = await signer.sendTransaction({
+          chainId: targetChainId,
           to: params.to,
           data: params.data as `0x${string}`,
           value: params.value,
         });
 
-        toast.success(`Transaction sent: ${hash.slice(0, 10)}...`);
-        return hash;
+        toast.success(`Transaction sent: ${result.transactionHash.slice(0, 10)}...`);
+        return result.transactionHash;
       };
 
       try {
@@ -79,12 +87,6 @@ export function useUnifiedChainSwitchAndExecute() {
         }
 
         const switchingToastId = toast.info(`Switching to ${getChainName(targetChainId)}…`);
-
-        const targetChain = supportedChains.find(chain => chain.id === targetChainId);
-        if (!targetChain) {
-          toast.error(`Chain ${targetChainId} is not supported`);
-          return;
-        }
 
         const blockExplorerUrl = targetChain.blockExplorers?.default.url;
         invariant(blockExplorerUrl, "Block explorer URL is required");

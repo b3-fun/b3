@@ -3,11 +3,14 @@
 import { useAccountWallet } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
+import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { WalletCoinbase, WalletMetamask, WalletPhantom, WalletRainbow, WalletWalletConnect } from "@web3icons/react";
 import { ChevronLeft, ChevronRightCircle, Wallet, X, ZapIcon } from "lucide-react";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
+import { useConnectedWallets, useSetActiveWallet, useWalletInfo } from "thirdweb/react";
+import { createWallet } from "thirdweb/wallets";
 import { useAccount, useConnect, useDisconnect, useWalletClient } from "wagmi";
 
 export enum CryptoPaymentMethodType {
@@ -38,12 +41,71 @@ export function CryptoPaymentMethod({
   onBack,
   onSelectPaymentMethod,
 }: CryptoPaymentMethodProps) {
-  const { wallet: globalWallet, address: globalAddress } = useAccountWallet();
-  const { address, isConnected, connector } = useAccount();
+  const {
+    wallet: globalWallet,
+    connectedEOAWallet: connectedEOAWallet,
+    connectedSmartWallet: connectedSmartWallet,
+  } = useAccountWallet();
+  const { connector, address, isConnected: wagmiWalletIsConnected } = useAccount();
   const { connect, connectors, isPending } = useConnect();
   const { disconnect } = useDisconnect();
   const { data: walletClient } = useWalletClient();
   const [showWalletModal, setShowWalletModal] = useState(false);
+  // Note: useConnectedWallets only shows thirdweb ecosystem wallets, not wagmi EOA wallets
+  const connectedWallets = useConnectedWallets();
+  console.log("connectedWallets", connectedWallets);
+
+  const setActiveWallet = useSetActiveWallet();
+  const { data: eoaWalletInfo } = useWalletInfo(connectedEOAWallet?.id);
+
+  const isConnected = !!connectedEOAWallet;
+  const globalAddress = connectedSmartWallet?.getAccount()?.address;
+
+  // Helper function to check if two addresses are the same
+  const isSameAddress = (addr1?: string, addr2?: string): boolean => {
+    if (!addr1 || !addr2) return false;
+    return addr1.toLowerCase() === addr2.toLowerCase();
+  };
+
+  // Check if connectedEOAWallet and wagmi wallet represent the same wallet
+  const connectedEOAAddress = connectedEOAWallet?.getAccount()?.address;
+  const wagmiAddress = address;
+  const isWalletDuplicated = isSameAddress(connectedEOAAddress, wagmiAddress);
+
+  // Determine which wallet to show (prefer connectedEOAWallet if both exist and are the same)
+  const shouldShowConnectedEOA = !!connectedEOAWallet;
+  const shouldShowWagmiWallet = wagmiWalletIsConnected && (!isWalletDuplicated || !connectedEOAWallet);
+
+  // Map wagmi connector names to thirdweb wallet IDs
+  const getThirdwebWalletId = (connectorName: string): string | null => {
+    const walletMap: Record<string, string> = {
+      MetaMask: "io.metamask",
+      "Coinbase Wallet": "com.coinbase.wallet",
+      Rainbow: "me.rainbow",
+      WalletConnect: "walletConnect",
+      Phantom: "app.phantom",
+    };
+    return walletMap[connectorName] || null;
+  };
+
+  // Create thirdweb wallet from wagmi connector
+  const createThirdwebWalletFromConnector = async (connectorName: string) => {
+    const walletId = getThirdwebWalletId(connectorName);
+    if (!walletId) {
+      console.warn(`No thirdweb wallet ID found for connector: ${connectorName}`);
+      return null;
+    }
+
+    try {
+      const thirdwebWallet = createWallet(walletId as any);
+      // Connect the wallet to sync with the existing wagmi connection
+      await thirdwebWallet.connect({ client });
+      return thirdwebWallet;
+    } catch (error) {
+      console.error(`Failed to create thirdweb wallet for ${connectorName}:`, error);
+      return null;
+    }
+  };
 
   // Define available wallet connectors
   const availableConnectors = connectors.filter(connector =>
@@ -202,16 +264,77 @@ export function CryptoPaymentMethod({
           </button>
 
           {/* Installed Wallets Section */}
-          {(isConnected || globalAddress) && (
+          {(shouldShowConnectedEOA || shouldShowWagmiWallet || globalAddress) && (
             <div className="installed-wallets">
               <h3 className="text-as-primary/80 mb-3 text-sm font-medium">Connected wallets</h3>
               <div className="space-y-2">
                 {/* Current Connected Wallet */}
-                {isConnected && (
+
+                {shouldShowConnectedEOA && (
                   <button
                     onClick={() => {
                       setSelectedPaymentMethod(CryptoPaymentMethodType.CONNECT_WALLET);
                       onSelectPaymentMethod(CryptoPaymentMethodType.CONNECT_WALLET);
+                      setActiveWallet(connectedEOAWallet as any);
+                      toast.success(`Selected ${eoaWalletInfo?.name || connector?.name || "wallet"}`);
+                    }}
+                    className={cn(
+                      "crypto-payment-method-connect-wallet w-full rounded-xl border p-4 text-left transition-all hover:shadow-md",
+                      selectedPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET
+                        ? "connected-wallet border-as-brand bg-as-brand/5"
+                        : "border-as-border-secondary bg-as-surface-primary hover:border-as-secondary/80",
+                    )}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="wallet-icon flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
+                          <Wallet className="h-5 w-5 text-blue-600" />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-as-primary font-semibold">
+                            {eoaWalletInfo?.name || connector?.name || "Connected Wallet"}
+                          </span>
+                          <span className="text-as-primary/60 text-sm">
+                            {shortenAddress(connectedEOAWallet?.getAccount()?.address || "")}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {selectedPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET && (
+                          <div className="h-2 w-2 rounded-full bg-green-500"></div>
+                        )}
+                        <button
+                          onClick={e => {
+                            e.stopPropagation();
+                            disconnect();
+                            toast.success("Wallet disconnected");
+                            if (selectedPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET) {
+                              setSelectedPaymentMethod(CryptoPaymentMethodType.NONE);
+                            }
+                          }}
+                          className="text-as-primary/60 hover:text-as-primary/80 rounded-lg p-1.5 transition-colors"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </button>
+                )}
+
+                {shouldShowWagmiWallet && (
+                  <button
+                    onClick={async () => {
+                      setSelectedPaymentMethod(CryptoPaymentMethodType.CONNECT_WALLET);
+                      onSelectPaymentMethod(CryptoPaymentMethodType.CONNECT_WALLET);
+
+                      // Create thirdweb wallet from wagmi connector
+                      if (connector?.name) {
+                        const thirdwebWallet = await createThirdwebWalletFromConnector(connector.name);
+                        if (thirdwebWallet) {
+                          setActiveWallet(thirdwebWallet);
+                        }
+                      }
+
                       toast.success(`Selected ${connector?.name || "wallet"}`);
                     }}
                     className={cn(
