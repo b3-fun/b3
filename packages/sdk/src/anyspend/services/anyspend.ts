@@ -111,6 +111,7 @@ export const anyspendService = {
   },
 
   getOrderAndTransactions: async (orderId: string | undefined): Promise<GetOrderAndTxsResponse> => {
+    invariant(orderId, "orderId is required");
     const response = await fetch(`${ANYSPEND_MAINNET_BASE_URL}/orders/${orderId}`);
     const data: GetOrderAndTxsResponse = await response.json();
     return data;
@@ -134,9 +135,10 @@ export const anyspendService = {
   },
 
   getCoinbaseOnrampOptions: async (
-    country: string,
+    country: string | undefined,
     visitorData?: VisitorData,
   ): Promise<GetCoinbaseOnrampOptionsResponse> => {
+    invariant(country, "country is required");
     const params = new URLSearchParams({
       country,
       // include fingerprintId and requestId in the query params

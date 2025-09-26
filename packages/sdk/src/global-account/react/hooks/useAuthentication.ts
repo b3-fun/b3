@@ -100,7 +100,7 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
       setIsAuthenticating(false);
     }
     useAutoConnectLoadingPrevious.current = useAutoConnectLoading;
-  }, [useAutoConnectLoading]);
+  }, [useAutoConnectLoading, hasStartedConnecting, setIsAuthenticating]);
 
   // Ensure isAuthenticating stays true until we're fully ready
   useEffect(() => {

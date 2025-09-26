@@ -1,10 +1,10 @@
 "use client";
 
-import { loadScriptFromCDN } from "./utils/cdn-loader";
-import { formatNumberSmall } from "./utils/format";
 import { Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { TradingViewProps } from "./types";
+import { loadScriptFromCDN } from "./utils/cdn-loader";
+import { formatNumberSmall } from "./utils/format";
 
 // TypeScript types - these will be loaded from CDN at runtime
 type ChartingLibraryWidgetOptions = any;
@@ -24,8 +24,6 @@ const GifLoadingOverlay = ({ className }: { className?: string }) => (
 );
 
 const TradingView = ({ className, tokenAddress, tokenSymbol }: TradingViewProps) => {
-  const theme = "light";
-
   // Use token info for the current trade
   const currentTrade = {
     product_id: tokenAddress && tokenSymbol ? `${tokenSymbol}-${tokenAddress}` : "BONDKIT",
@@ -282,7 +280,7 @@ const TradingView = ({ className, tokenAddress, tokenSymbol }: TradingViewProps)
         tvWidgetRef.current = null;
       }
     };
-  }, [theme, librariesLoaded]);
+  }, [librariesLoaded, currentTrade?.product_id, tradingViewDefaultInterval, tradingViewTimezone]);
 
   useEffect(() => {
     if (

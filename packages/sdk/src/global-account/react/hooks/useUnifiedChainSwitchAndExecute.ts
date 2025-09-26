@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { prepareTransaction, sendTransaction as twSendTransaction } from "thirdweb";
 import { useActiveWallet } from "thirdweb/react";
 import { isAddress } from "viem";
-import { useSwitchChain, useWalletClient } from "wagmi";
+import { useSwitchChain } from "wagmi";
 import { useB3 } from "../components";
 import { useAccountWallet } from "./useAccountWallet";
 
@@ -27,7 +27,6 @@ const partnerId = String(
 invariant(partnerId, "Partner ID is required");
 
 export function useUnifiedChainSwitchAndExecute() {
-  const { data: walletClient } = useWalletClient();
   const { switchChainAsync } = useSwitchChain();
   const [isSwitchingOrExecuting, setIsSwitchingOrExecuting] = useState(false);
   const activeWallet = useActiveWallet();
@@ -122,7 +121,7 @@ export function useUnifiedChainSwitchAndExecute() {
         setIsSwitchingOrExecuting(false);
       }
     },
-    [walletClient, switchChainAsync],
+    [connectedEOAWallet, activeWallet, switchChainAsync],
   );
 
   // Handle AA wallet transaction (no chain switch needed for AA)

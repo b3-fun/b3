@@ -27,13 +27,16 @@ module.exports = [
       ...tailwindPlugin.configs.recommended.rules,
       // custom classnames for overrides sdk component styling
       "tailwindcss/no-custom-classname": "off",
-      "react-hooks/rules-of-hooks": "error",
-      "react-hooks/exhaustive-deps": "warn",
       "tailwindcss/classnames-order": "off",
       "tailwindcss/enforces-shorthand": "off",
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-empty-function": "off",
+
       "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
+
+      "react-hooks/rules-of-hooks": "error",
+      "@typescript-eslint/no-non-null-assertion": "error",
+      "react-hooks/exhaustive-deps": "error",
     },
     settings: {
       tailwindcss: {

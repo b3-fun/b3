@@ -19,7 +19,7 @@ export interface AssetBalance {
   chainBalances: ChainBalance[];
 }
 
-export const fetchBalances = async (address: string, testnet?: boolean): Promise<AssetBalance[]> => {
+export const fetchBalances = async (address: string | undefined, testnet?: boolean): Promise<AssetBalance[]> => {
   if (!address) return [];
 
   const assetsResponse = await fetch(`${getSprinterBaseUrl(testnet)}/assets/fungible`);
