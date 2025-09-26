@@ -1,6 +1,5 @@
-import { useAuthentication, useAuthStore, useB3, useQueryB3 } from "@b3dotfun/sdk/global-account/react";
+import { useAuthentication, useB3, useQueryB3 } from "@b3dotfun/sdk/global-account/react";
 import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
-import { debug } from "@b3dotfun/sdk/shared/utils/debug";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { Chain } from "thirdweb";
 import { ConnectEmbed, darkTheme, lightTheme } from "thirdweb/react";

@@ -1,21 +1,17 @@
 import app from "@b3dotfun/sdk/global-account/app";
-import { authenticateWithB3JWT } from "@b3dotfun/sdk/global-account/bsmnt";
 import { useAuthStore } from "@b3dotfun/sdk/global-account/react";
 import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { b3MainnetThirdWeb } from "@b3dotfun/sdk/shared/constants/chains/supported";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
-import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
-import { useEffect, useRef } from "react";
-import { useActiveWallet, useAutoConnect, useConnectedWallets, useDisconnect } from "thirdweb/react";
+import { useActiveWallet, useConnectedWallets, useDisconnect } from "thirdweb/react";
 import { ecosystemWallet } from "thirdweb/wallets";
 import { preAuthenticate } from "thirdweb/wallets/in-app";
 import { useConnect } from "./useConnect";
 import { useB3 } from "../components/B3Provider/useB3";
-import { useSiwe } from "./useSiwe";
 
 const debug = debugB3React("useAuthentication");
 
-export function useAuthentication(loginWithSiwe?: boolean) {
+export function useAuthentication(_loginWithSiwe?: boolean) {
   const { partnerId } = useB3();
   const { disconnect } = useDisconnect();
   const wallets = useConnectedWallets();

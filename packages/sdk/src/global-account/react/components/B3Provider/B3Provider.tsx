@@ -1,6 +1,4 @@
 import { Users } from "@b3dotfun/b3-api";
-import app from "@b3dotfun/sdk/global-account/app";
-import { authenticateWithB3JWT } from "@b3dotfun/sdk/global-account/bsmnt";
 import { RelayKitProviderWrapper, TooltipProvider, useAuthStore } from "@b3dotfun/sdk/global-account/react";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { loadGA4Script } from "@b3dotfun/sdk/global-account/utils/analytics";
@@ -11,7 +9,7 @@ import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import "@reservoir0x/relay-kit-ui/styles.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { inAppWalletConnector } from "@thirdweb-dev/wagmi-adapter";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Toaster } from "sonner";
 import {
   getLastAuthProvider,
@@ -21,13 +19,10 @@ import {
   useSetActiveWallet,
 } from "thirdweb/react";
 import { Account, Wallet } from "thirdweb/wallets";
-import { preAuthenticate } from "thirdweb/wallets/in-app";
 import { createConfig, http, WagmiProvider } from "wagmi";
 import { ClientType, setClientType } from "../../../client-manager";
-import { useSiwe } from "../../hooks/useSiwe";
 import { StyleRoot } from "../StyleRoot";
 import { B3Context, B3ContextType } from "./types";
-import { useB3 } from "../B3Provider/useB3";
 import { useOnConnect } from "../../hooks/useOnConnect";
 
 const debug = debugB3React("B3Provider");
@@ -115,7 +110,7 @@ export function B3Provider({
           // coinbaseWallet({ appName: "HypeDuel" }),
         ],
       }),
-    [partnerId, handleConnect, ecocystemConfig],
+    [partnerId, handleConnect, ecocystemConfig, rpcUrls],
   );
 
   return (
