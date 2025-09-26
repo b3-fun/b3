@@ -220,46 +220,7 @@ export function CryptoPaymentMethod({
         </div>
 
         {/* Payment Methods */}
-        <div className="crypto-payment-methods flex flex-col gap-6">
-          {/* Connect Wallet Section */}
-          <button
-            onClick={() => {
-              // Always show wallet selection modal first
-              setShowWalletModal(true);
-            }}
-            className="crypto-payment-method-connect-wallet bg-as-surface-primary border-as-border-secondary hover:border-as-secondary/80 group flex w-full items-center justify-between gap-4 rounded-xl border px-4 py-3.5 transition-all duration-200 hover:shadow-md"
-          >
-            <div className="flex items-center gap-3">
-              <div className="wallet-icon flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
-                <Wallet className="h-4 w-4 text-blue-600" />
-              </div>
-              <div className="flex flex-col items-start text-left">
-                <h4 className="text-as-primary font-semibold">Connect wallet</h4>
-              </div>
-            </div>
-            <ChevronRightCircle className="text-as-primary/40 group-hover:text-as-primary/60 h-5 w-5 transition-colors" />
-          </button>
-
-          {/* Transfer Crypto Section */}
-          <button
-            onClick={() => {
-              setSelectedPaymentMethod(CryptoPaymentMethodType.TRANSFER_CRYPTO);
-              onSelectPaymentMethod(CryptoPaymentMethodType.TRANSFER_CRYPTO);
-            }}
-            disabled={isCreatingOrder}
-            className="crypto-payment-method-transfer bg-as-surface-primary border-as-border-secondary hover:border-as-secondary/80 group flex w-full items-center justify-between gap-4 rounded-xl border px-4 py-3.5 transition-all duration-200 hover:shadow-md"
-          >
-            <div className="flex items-center gap-3">
-              <div className="wallet-icon flex h-8 w-8 items-center justify-center rounded-full bg-orange-100">
-                <ZapIcon className="h-4 w-4" />
-              </div>
-              <div className="flex flex-col items-start text-left">
-                <h4 className="text-as-primary font-semibold">Transfer crypto</h4>
-              </div>
-            </div>
-            <ChevronRightCircle className="text-as-primary/40 group-hover:text-as-primary/60 h-5 w-5 transition-colors" />
-          </button>
-
+        <div className="crypto-payment-methods flex flex-col gap-4">
           {/* Installed Wallets Section */}
           {(shouldShowConnectedEOA || shouldShowWagmiWallet || globalAddress) && (
             <div className="installed-wallets">
@@ -413,6 +374,51 @@ export function CryptoPaymentMethod({
               </div>
             </div>
           )}
+
+          {/* Other Payment Methods Section */}
+          <div className="other-payment-methods">
+            <h3 className="text-as-primary/80 mb-3 text-sm font-medium">Payment methods</h3>
+            <div className="space-y-3">
+              {/* Connect Wallet Section */}
+              <button
+                onClick={() => {
+                  // Always show wallet selection modal first
+                  setShowWalletModal(true);
+                }}
+                className="crypto-payment-method-connect-wallet bg-as-surface-primary border-as-border-secondary hover:border-as-secondary/80 group flex w-full items-center justify-between gap-4 rounded-xl border px-4 py-3.5 transition-all duration-200 hover:shadow-md"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="wallet-icon flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
+                    <Wallet className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <div className="flex flex-col items-start text-left">
+                    <h4 className="text-as-primary font-semibold">Connect wallet</h4>
+                  </div>
+                </div>
+                <ChevronRightCircle className="text-as-primary/40 group-hover:text-as-primary/60 h-5 w-5 transition-colors" />
+              </button>
+
+              {/* Transfer Crypto Section */}
+              <button
+                onClick={() => {
+                  setSelectedPaymentMethod(CryptoPaymentMethodType.TRANSFER_CRYPTO);
+                  onSelectPaymentMethod(CryptoPaymentMethodType.TRANSFER_CRYPTO);
+                }}
+                disabled={isCreatingOrder}
+                className="crypto-payment-method-transfer bg-as-surface-primary border-as-border-secondary hover:border-as-secondary/80 group flex w-full items-center justify-between gap-4 rounded-xl border px-4 py-3.5 transition-all duration-200 hover:shadow-md"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="wallet-icon flex h-8 w-8 items-center justify-center rounded-full bg-orange-100">
+                    <ZapIcon className="h-4 w-4" />
+                  </div>
+                  <div className="flex flex-col items-start text-left">
+                    <h4 className="text-as-primary font-semibold">Transfer crypto</h4>
+                  </div>
+                </div>
+                <ChevronRightCircle className="text-as-primary/40 group-hover:text-as-primary/60 h-5 w-5 transition-colors" />
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
