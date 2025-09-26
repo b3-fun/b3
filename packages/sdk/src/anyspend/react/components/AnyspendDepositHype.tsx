@@ -38,10 +38,10 @@ export interface AnySpendDepositHypeProps {
   onSuccess?: () => void;
   mainFooter?: React.ReactNode;
   /**
-   * Called when a token is selected. Return true to prevent default token selection behavior.
+   * Called when a token is selected. Call event.preventDefault() to prevent default token selection behavior.
    * Useful for handling special cases like B3 token selection.
    */
-  onTokenSelect?: (token: components["schemas"]["Token"]) => boolean | void;
+  onTokenSelect?: (token: components["schemas"]["Token"], event: { preventDefault: () => void }) => void;
 }
 
 export function AnySpendDepositHype(props: AnySpendDepositHypeProps) {

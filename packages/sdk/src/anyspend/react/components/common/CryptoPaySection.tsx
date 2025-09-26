@@ -25,7 +25,7 @@ interface CryptoPaySectionProps {
   // Quote data
   anyspendQuote?: any;
   // Token selection callback
-  onTokenSelect?: (token: components["schemas"]["Token"]) => boolean | void;
+  onTokenSelect?: (token: components["schemas"]["Token"], event: { preventDefault: () => void }) => void;
 }
 
 export function CryptoPaySection({

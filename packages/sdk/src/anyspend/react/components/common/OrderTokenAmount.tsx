@@ -44,7 +44,7 @@ export function OrderTokenAmount({
   innerClassName?: string;
   amountClassName?: string;
   tokenSelectClassName?: string;
-  onTokenSelect?: (token: components["schemas"]["Token"]) => boolean | void;
+  onTokenSelect?: (token: components["schemas"]["Token"], event: { preventDefault: () => void }) => void;
 }) {
   // Track previous token to detect changes
   const prevTokenRef = useRef<string>(token.address);
@@ -77,9 +77,17 @@ export function OrderTokenAmount({
 
     // Call the onTokenSelect callback if provided
     if (onTokenSelect) {
-      const shouldPreventDefault = onTokenSelect(token);
-      if (shouldPreventDefault) {
-        return; // Early return if callback wants to handle token selection
+      let isDefaultPrevented = false;
+      const event = {
+        preventDefault: () => {
+          isDefaultPrevented = true;
+        },
+      };
+
+      onTokenSelect(token, event);
+
+      if (isDefaultPrevented) {
+        return; // Early return if callback prevented default behavior
       }
     }
 
