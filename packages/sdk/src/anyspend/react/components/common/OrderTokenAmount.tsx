@@ -27,6 +27,7 @@ export function OrderTokenAmount({
   innerClassName,
   amountClassName,
   tokenSelectClassName,
+  onTokenSelect,
 }: {
   disabled?: boolean;
   inputValue: string;
@@ -43,6 +44,7 @@ export function OrderTokenAmount({
   innerClassName?: string;
   amountClassName?: string;
   tokenSelectClassName?: string;
+  onTokenSelect?: (token: components["schemas"]["Token"]) => boolean | void;
 }) {
   // Track previous token to detect changes
   const prevTokenRef = useRef<string>(token.address);
@@ -64,6 +66,23 @@ export function OrderTokenAmount({
   }, [token.address, chainId, context, onChangeInput]);
 
   const handleTokenSelect = (newToken: any) => {
+    const token: components["schemas"]["Token"] = {
+      address: newToken.address,
+      chainId: newToken.chainId,
+      decimals: newToken.decimals,
+      metadata: { logoURI: newToken.logoURI },
+      name: newToken.name,
+      symbol: newToken.symbol,
+    };
+
+    // Call the onTokenSelect callback if provided
+    if (onTokenSelect) {
+      const shouldPreventDefault = onTokenSelect(token);
+      if (shouldPreventDefault) {
+        return; // Early return if callback wants to handle token selection
+      }
+    }
+
     // Mark that we're about to change tokens
     prevTokenRef.current = "changing"; // Temporary value to force effect
 
@@ -71,14 +90,7 @@ export function OrderTokenAmount({
     setChainId(newToken.chainId);
 
     // Then set the new token
-    setToken({
-      address: newToken.address,
-      chainId: newToken.chainId, // Use the new chain ID
-      decimals: newToken.decimals,
-      metadata: { logoURI: newToken.logoURI },
-      name: newToken.name,
-      symbol: newToken.symbol,
-    });
+    setToken(token);
 
     // If this is the source token, reset the amount immediately
     if (context === "from") {
