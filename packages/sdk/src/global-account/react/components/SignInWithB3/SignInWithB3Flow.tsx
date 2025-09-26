@@ -261,7 +261,7 @@ export function SignInWithB3Flow({
     }
 
     // Default to handle all strategies we support
-    return <LoginStep partnerId={partnerId} chain={chain} onSuccess={handleLoginSuccess} onError={onError} />;
+    return <LoginStep chain={chain} onSuccess={handleLoginSuccess} onError={onError} />;
   }
 
   return null;

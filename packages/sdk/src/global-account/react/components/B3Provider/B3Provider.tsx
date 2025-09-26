@@ -23,6 +23,7 @@ import { createConfig, http, WagmiProvider } from "wagmi";
 import { ClientType, setClientType } from "../../../client-manager";
 import { StyleRoot } from "../StyleRoot";
 import { B3Context, B3ContextType } from "./types";
+import { useOnConnect } from "../../hooks/useOnConnect";
 
 const debug = debugB3React("B3Provider");
 
@@ -66,7 +67,7 @@ export function B3Provider({
   };
   clientType?: ClientType;
   rpcUrls?: Record<number, string>;
-  partnerId?: string;
+  partnerId: string;
 }) {
   // Initialize Google Analytics on mount
   useEffect(() => {
@@ -92,6 +93,8 @@ export function B3Provider({
    * Creates wagmi config with optional custom RPC URLs
    * @param rpcUrls - Optional mapping of chain IDs to RPC URLs
    */
+  const handleConnect = useOnConnect();
+
   const wagmiConfig = useMemo(
     () =>
       createConfig({
@@ -101,12 +104,13 @@ export function B3Provider({
           inAppWalletConnector({
             ...(ecocystemConfig || {}),
             client,
+            onConnect: handleConnect,
           }),
           // injected(),
           // coinbaseWallet({ appName: "HypeDuel" }),
         ],
       }),
-    [partnerId],
+    [partnerId, handleConnect, ecocystemConfig, rpcUrls],
   );
 
   return (
@@ -120,6 +124,7 @@ export function B3Provider({
               theme={theme}
               automaticallySetFirstEoa={!!automaticallySetFirstEoa}
               clientType={clientType}
+              partnerId={partnerId}
             >
               <RelayKitProviderWrapper simDuneApiKey={simDuneApiKey}>
                 {children}
@@ -146,6 +151,7 @@ export function InnerProvider({
   automaticallySetFirstEoa,
   theme = "light",
   clientType = "socket",
+  partnerId,
 }: {
   children: React.ReactNode;
   accountOverride?: Account;
@@ -154,6 +160,7 @@ export function InnerProvider({
   automaticallySetFirstEoa: boolean;
   theme: "light" | "dark";
   clientType?: ClientType;
+  partnerId: string;
 }) {
   const activeAccount = useActiveAccount();
   const [manuallySelectedWallet, setManuallySelectedWallet] = useState<Wallet | undefined>(undefined);
@@ -240,6 +247,7 @@ export function InnerProvider({
         defaultPermissions,
         theme,
         clientType,
+        partnerId: partnerId,
       }}
     >
       {children}
