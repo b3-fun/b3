@@ -20,6 +20,7 @@ export interface B3ContextType {
   defaultPermissions?: PermissionsConfig;
   theme: "light" | "dark";
   clientType: ClientType;
+  partnerId: string;
 }
 
 /**
@@ -37,4 +38,5 @@ export const B3Context = createContext<B3ContextType>({
   environment: "development",
   theme: "light",
   clientType: "rest",
+  partnerId: "",
 });

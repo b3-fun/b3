@@ -1,7 +1,7 @@
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { useCallback } from "react";
 import { Wallet } from "thirdweb/wallets";
-import { useB3 } from "./useB3";
+import { useB3 } from "../components/B3Provider/useB3";
 import { useSiwe } from "./useSiwe";
 import { useAuthStore } from "../stores/useAuthStore";
 import app from "@b3dotfun/sdk/global-account/app";

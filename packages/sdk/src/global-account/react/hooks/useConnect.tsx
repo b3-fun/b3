@@ -5,7 +5,7 @@ import { useCallback, useState } from "react";
 import { Chain } from "thirdweb";
 import { useConnect as useConnectTW } from "thirdweb/react";
 import { ecosystemWallet, SingleStepAuthArgsType } from "thirdweb/wallets";
-import { useB3 } from "./useB3";
+import { useB3 } from "../components/B3Provider/useB3";
 const debug = debugB3React("useConnect");
 
 /**

@@ -27,7 +27,7 @@ import { ClientType, setClientType } from "../../../client-manager";
 import { useSiwe } from "../../hooks/useSiwe";
 import { StyleRoot } from "../StyleRoot";
 import { B3Context, B3ContextType } from "./types";
-import { useB3 } from "../../hooks/useB3";
+import { useB3 } from "../B3Provider/useB3";
 import { useOnConnect } from "../../hooks/useOnConnect";
 
 const debug = debugB3React("B3Provider");
