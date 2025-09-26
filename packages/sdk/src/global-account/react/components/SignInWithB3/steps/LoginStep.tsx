@@ -82,7 +82,6 @@ export function LoginStep({ onSuccess, onError, chain }: LoginStepProps) {
                 },
               })
         }
-        autoConnect
         style={{
           width: "100%",
           height: "100%",

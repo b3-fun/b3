@@ -28,6 +28,7 @@ import { useSiwe } from "../../hooks/useSiwe";
 import { StyleRoot } from "../StyleRoot";
 import { B3Context, B3ContextType } from "./types";
 import { useB3 } from "../../hooks/useB3";
+import { useOnConnect } from "../../hooks/useOnConnect";
 
 const debug = debugB3React("B3Provider");
 
@@ -97,58 +98,7 @@ export function B3Provider({
    * Creates wagmi config with optional custom RPC URLs
    * @param rpcUrls - Optional mapping of chain IDs to RPC URLs
    */
-  const { authenticate } = useSiwe();
-  const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
-  const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
-  const setIsConnecting = useAuthStore(state => state.setIsConnecting);
-  const setIsConnected = useAuthStore(state => state.setIsConnected);
-  const setHasStartedConnecting = useAuthStore(state => state.setHasStartedConnecting);
-
-  const handleConnect = useCallback(async (wallet: Wallet) => {
-    setHasStartedConnecting(true);
-    setIsConnecting(true);
-
-    try {
-      setIsConnected(true);
-      debug("setIsAuthenticating:true");
-      setIsAuthenticating(true);
-
-      const account = await wallet.getAccount();
-      if (!account) {
-        throw new Error("No account found during connect");
-      }
-
-      // Try to re-authenticate first
-      try {
-        const userAuth = await app.reAuthenticate();
-        setUser(userAuth.user);
-        setIsAuthenticated(true);
-        debug("Re-authenticated successfully", { userAuth });
-
-        // Authenticate on BSMNT with B3 JWT
-        const b3Jwt = await authenticateWithB3JWT(userAuth.accessToken);
-        console.log("@@b3Jwt", b3Jwt);
-      } catch (error) {
-        // If re-authentication fails, try fresh authentication
-        debug("Re-authentication failed, attempting fresh authentication");
-        const userAuth = await authenticate(account, partnerId);
-        setUser(userAuth.user);
-        setIsAuthenticated(true);
-        debug("Fresh authentication successful", { userAuth });
-
-        // Authenticate on BSMNT with B3 JWT
-        const b3Jwt = await authenticateWithB3JWT(userAuth.accessToken);
-        console.log("@@b3Jwt", b3Jwt);
-      }
-    } catch (error) {
-      debug("Connect authentication failed", { error });
-      setIsAuthenticated(false);
-      setUser(undefined);
-    } finally {
-      setIsAuthenticating(false);
-      setIsConnecting(false);
-    }
-  }, [authenticate, partnerId, setUser, setIsAuthenticated, setIsAuthenticating, setIsConnecting, setIsConnected, setHasStartedConnecting]);
+  const handleConnect = useOnConnect();
 
   const wagmiConfig = useMemo(
     () =>
