@@ -95,6 +95,7 @@ export function InnerProvider({
         defaultPermissions,
         theme,
         clientType,
+        partnerId: "",
       }}
     >
       {children}

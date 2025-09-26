@@ -129,6 +129,7 @@ export function B3Provider({
               theme={theme}
               automaticallySetFirstEoa={!!automaticallySetFirstEoa}
               clientType={clientType}
+              partnerId={partnerId}
             >
               <RelayKitProviderWrapper simDuneApiKey={simDuneApiKey}>
                 {children}
@@ -155,6 +156,7 @@ export function InnerProvider({
   automaticallySetFirstEoa,
   theme = "light",
   clientType = "socket",
+  partnerId,
 }: {
   children: React.ReactNode;
   accountOverride?: Account;
@@ -163,6 +165,7 @@ export function InnerProvider({
   automaticallySetFirstEoa: boolean;
   theme: "light" | "dark";
   clientType?: ClientType;
+  partnerId: string;
 }) {
   const activeAccount = useActiveAccount();
   const [manuallySelectedWallet, setManuallySelectedWallet] = useState<Wallet | undefined>(undefined);
@@ -249,6 +252,7 @@ export function InnerProvider({
         defaultPermissions,
         theme,
         clientType,
+        partnerId: partnerId,
       }}
     >
       {children}

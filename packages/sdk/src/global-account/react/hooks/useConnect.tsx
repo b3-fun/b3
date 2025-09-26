@@ -11,11 +11,8 @@ const debug = debugB3React("useConnect");
 /**
  * This hook is used to connect to a wallet using the thirdweb client.
  */
-export function useConnect(chain?: Chain) {
+export function useConnect(chain: Chain) {
   const { partnerId } = useB3();
-  if (!chain) {
-    throw new Error("Chain is required");
-  }
 
   const { connect } = useConnectTW();
   const [isLoading, setIsLoading] = useState(false);

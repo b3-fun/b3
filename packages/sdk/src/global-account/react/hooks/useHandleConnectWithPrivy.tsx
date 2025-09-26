@@ -15,7 +15,7 @@ export function useHandleConnectWithPrivy(partnerId: string, chain?: Chain, onSu
     throw new Error("Chain is required");
   }
 
-  const { connect } = useConnect(partnerId, chain);
+  const { connect } = useConnect(chain);
   const [isLoading, setIsLoading] = useState(true);
   const isConnecting = useRef(false);
   const { identityToken } = useIdentityToken();

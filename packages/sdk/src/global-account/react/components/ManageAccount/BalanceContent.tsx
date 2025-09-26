@@ -42,7 +42,7 @@ export function BalanceContent({ onLogout, partnerId, showDeposit = true, showSw
   });
   const { user } = useB3();
   const { setB3ModalOpen, setB3ModalContentType, navigateBack } = useModalStore();
-  const { logout } = useAuthentication(partnerId);
+  const { logout } = useAuthentication();
   const [logoutLoading, setLogoutLoading] = useState(false);
   const [openAccordions, setOpenAccordions] = useState<string[]>([]);
   const hasExpandedRef = useRef(false);

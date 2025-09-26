@@ -43,7 +43,7 @@ export function SignIn(props: SignInWithB3Props) {
   } = useAccountWallet();
 
   const isMobile = useIsMobile();
-  const { logout } = useAuthentication(String(process.env.NEXT_PUBLIC_THIRDWEB_PARTNER_ID));
+  const { logout } = useAuthentication();
   const onDisconnect = async () => {
     await logout();
   };
