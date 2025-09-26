@@ -1,4 +1,6 @@
 import { Users } from "@b3dotfun/b3-api";
+import app from "@b3dotfun/sdk/global-account/app";
+import { authenticateWithB3JWT } from "@b3dotfun/sdk/global-account/bsmnt";
 import { RelayKitProviderWrapper, TooltipProvider, useAuthStore } from "@b3dotfun/sdk/global-account/react";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { loadGA4Script } from "@b3dotfun/sdk/global-account/utils/analytics";
@@ -9,7 +11,7 @@ import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import "@reservoir0x/relay-kit-ui/styles.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { inAppWalletConnector } from "@thirdweb-dev/wagmi-adapter";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Toaster } from "sonner";
 import {
   getLastAuthProvider,
@@ -19,10 +21,13 @@ import {
   useSetActiveWallet,
 } from "thirdweb/react";
 import { Account, Wallet } from "thirdweb/wallets";
+import { preAuthenticate } from "thirdweb/wallets/in-app";
 import { createConfig, http, WagmiProvider } from "wagmi";
 import { ClientType, setClientType } from "../../../client-manager";
+import { useSiwe } from "../../hooks/useSiwe";
 import { StyleRoot } from "../StyleRoot";
 import { B3Context, B3ContextType } from "./types";
+import { useB3 } from "../../hooks/useB3";
 
 const debug = debugB3React("B3Provider");
 
@@ -66,7 +71,7 @@ export function B3Provider({
   };
   clientType?: ClientType;
   rpcUrls?: Record<number, string>;
-  partnerId?: string;
+  partnerId: string;
 }) {
   // Initialize Google Analytics on mount
   useEffect(() => {
@@ -92,6 +97,59 @@ export function B3Provider({
    * Creates wagmi config with optional custom RPC URLs
    * @param rpcUrls - Optional mapping of chain IDs to RPC URLs
    */
+  const { authenticate } = useSiwe();
+  const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
+  const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
+  const setIsConnecting = useAuthStore(state => state.setIsConnecting);
+  const setIsConnected = useAuthStore(state => state.setIsConnected);
+  const setHasStartedConnecting = useAuthStore(state => state.setHasStartedConnecting);
+
+  const handleConnect = useCallback(async (wallet: Wallet) => {
+    setHasStartedConnecting(true);
+    setIsConnecting(true);
+
+    try {
+      setIsConnected(true);
+      debug("setIsAuthenticating:true");
+      setIsAuthenticating(true);
+
+      const account = await wallet.getAccount();
+      if (!account) {
+        throw new Error("No account found during connect");
+      }
+
+      // Try to re-authenticate first
+      try {
+        const userAuth = await app.reAuthenticate();
+        setUser(userAuth.user);
+        setIsAuthenticated(true);
+        debug("Re-authenticated successfully", { userAuth });
+
+        // Authenticate on BSMNT with B3 JWT
+        const b3Jwt = await authenticateWithB3JWT(userAuth.accessToken);
+        console.log("@@b3Jwt", b3Jwt);
+      } catch (error) {
+        // If re-authentication fails, try fresh authentication
+        debug("Re-authentication failed, attempting fresh authentication");
+        const userAuth = await authenticate(account, partnerId);
+        setUser(userAuth.user);
+        setIsAuthenticated(true);
+        debug("Fresh authentication successful", { userAuth });
+
+        // Authenticate on BSMNT with B3 JWT
+        const b3Jwt = await authenticateWithB3JWT(userAuth.accessToken);
+        console.log("@@b3Jwt", b3Jwt);
+      }
+    } catch (error) {
+      debug("Connect authentication failed", { error });
+      setIsAuthenticated(false);
+      setUser(undefined);
+    } finally {
+      setIsAuthenticating(false);
+      setIsConnecting(false);
+    }
+  }, [authenticate, partnerId, setUser, setIsAuthenticated, setIsAuthenticating, setIsConnecting, setIsConnected, setHasStartedConnecting]);
+
   const wagmiConfig = useMemo(
     () =>
       createConfig({
@@ -101,12 +159,13 @@ export function B3Provider({
           inAppWalletConnector({
             ...(ecocystemConfig || {}),
             client,
+            onConnect: handleConnect,
           }),
           // injected(),
           // coinbaseWallet({ appName: "HypeDuel" }),
         ],
       }),
-    [partnerId],
+    [partnerId, handleConnect, ecocystemConfig],
   );
 
   return (

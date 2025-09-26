@@ -13,8 +13,6 @@ interface LoginStepProps {
   onSuccess: (account: Account) => Promise<void>;
   /** Optional callback function called when an error occurs */
   onError?: (error: Error) => Promise<void>;
-  /** Partner ID used for authentication */
-  partnerId: string;
   /** Blockchain chain information */
   chain: Chain;
   /** Optional authentication strategy options */
@@ -56,15 +54,13 @@ export function LoginStepContainer({ children, partnerId }: LoginStepContainerPr
   );
 }
 
-export function LoginStep({ onSuccess, onError, partnerId, chain }: LoginStepProps) {
+export function LoginStep({ onSuccess, onError, chain }: LoginStepProps) {
+  const { theme, partnerId } = useB3();
+  const { logout } = useAuthentication();
+
   const wallet = ecosystemWallet(ecosystemWalletId, {
     partnerId: partnerId,
   });
-
-  const { theme } = useB3();
-  const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
-  const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
-  const { logout } = useAuthentication(partnerId);
 
   return (
     <LoginStepContainer partnerId={partnerId}>
@@ -92,23 +88,6 @@ export function LoginStep({ onSuccess, onError, partnerId, chain }: LoginStepPro
           height: "100%",
           border: 0,
         }}
-        // TODO: Integrate with SIWE in useSIWE
-        // auth={{
-        //   isLoggedIn: async (address) => {
-        //     console.log("checking if logged in!", { address });
-        //     return await isLoggedIn();
-        //   },
-        //   doLogin: async (params) => {
-        //     console.log("logging in!");
-        //     await login(params);
-        //   },
-        //   getLoginPayload: async ({ address }) =>
-        //     generatePayload({ address }),
-        //   doLogout: async () => {
-        //     console.log("logging out!");
-        //     await logout();
-        //   },
-        // }}
         header={{
           title: "Sign in with B3",
           titleIcon: "https://cdn.b3.fun/b3_logo.svg",
@@ -116,23 +95,12 @@ export function LoginStep({ onSuccess, onError, partnerId, chain }: LoginStepPro
         className="b3-login-step"
         onConnect={async wallet => {
           try {
-            setIsAuthenticating(true);
-            debug("setIsAuthenticating:true:6");
-
             const account = wallet.getAccount();
             if (!account) throw new Error("No account found");
-
             await onSuccess(account);
-            setIsAuthenticated(true);
-
-            console.log("connected!", wallet.id);
           } catch (error) {
             await onError?.(error as Error);
             await logout();
-            setIsAuthenticated(false);
-          } finally {
-            debug("setIsAuthenticating:false:6");
-            setIsAuthenticating(false);
           }
         }}
       />

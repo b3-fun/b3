@@ -10,11 +10,13 @@ import { useActiveWallet, useAutoConnect, useConnectedWallets, useDisconnect } f
 import { ecosystemWallet } from "thirdweb/wallets";
 import { preAuthenticate } from "thirdweb/wallets/in-app";
 import { useConnect } from "./useConnect";
+import { useB3 } from "./useB3";
 import { useSiwe } from "./useSiwe";
 
 const debug = debugB3React("useAuthentication");
 
-export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
+export function useAuthentication(loginWithSiwe?: boolean) {
+  const { partnerId } = useB3();
   const { disconnect } = useDisconnect();
   const wallets = useConnectedWallets();
   const activeWallet = useActiveWallet();
