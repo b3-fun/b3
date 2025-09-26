@@ -5,7 +5,6 @@ import { formatDisplayNumber } from "@b3dotfun/sdk/shared/utils/number";
 import { ChevronRight } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect, useRef } from "react";
-import { useAccount } from "wagmi";
 import { components } from "../../../types/api";
 import { CryptoPaymentMethodType } from "./CryptoPaymentMethod";
 import { OrderTokenAmount } from "./OrderTokenAmount";
@@ -39,15 +38,17 @@ export function CryptoPaySection({
   onSelectCryptoPaymentMethod,
   anyspendQuote,
 }: CryptoPaySectionProps) {
-  const { address: connectedAddress, isConnected } = useAccount();
-  const { data: profileData } = useProfile({ address: connectedAddress });
-  const connectedName = profileData?.displayName;
-  const { address: globalAddress } = useAccountWallet();
+  const { connectedSmartWallet, connectedEOAWallet } = useAccountWallet();
   const { data: srcTokenMetadata } = useTokenData(selectedSrcToken?.chainId, selectedSrcToken?.address);
 
   // Determine which address to use based on payment method
   const walletAddress =
-    selectedCryptoPaymentMethod === CryptoPaymentMethodType.GLOBAL_WALLET ? globalAddress : connectedAddress;
+    selectedCryptoPaymentMethod === CryptoPaymentMethodType.GLOBAL_WALLET
+      ? connectedSmartWallet?.getAccount()?.address
+      : connectedEOAWallet?.getAccount()?.address || connectedSmartWallet?.getAccount()?.address;
+
+  const { data: profileData } = useProfile({ address: walletAddress });
+  const connectedName = profileData?.displayName;
 
   // Add ref to track if we've applied metadata
   const appliedSrcMetadataRef = useRef(false);
@@ -92,9 +93,9 @@ export function CryptoPaySection({
         >
           {selectedCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET ? (
             <>
-              {isConnected ? (
+              {walletAddress ? (
                 <div className="flex items-center gap-1">
-                  {connectedName ? formatUsername(connectedName) : shortenAddress(connectedAddress || "")}
+                  {connectedName ? formatUsername(connectedName) : shortenAddress(walletAddress || "")}
                 </div>
               ) : (
                 "Connect wallet"
