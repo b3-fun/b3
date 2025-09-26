@@ -30,7 +30,7 @@ export const useOneBalance = (bypassCache = false) => {
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["balances", address, `testnet-${sprinterTestnet}`],
-    queryFn: () => fetchBalances(address!, sprinterTestnet), // nhd98z
+    queryFn: () => fetchBalances(address, sprinterTestnet),
     enabled: !!address,
     staleTime: 1000 * 60 * 1, // 1 minute
     gcTime: 1000 * 60 * 5, // 5 minutes (renamed from cacheTime in v5)
