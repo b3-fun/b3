@@ -111,7 +111,7 @@ export function B3Provider({
 
   return (
     <ThirdwebProvider>
-      <WagmiProvider config={wagmiConfig} reconnectOnMount={false}>
+      <WagmiProvider config={wagmiConfig}>
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
             <InnerProvider
