@@ -6,9 +6,11 @@ import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { supportedChains } from "@b3dotfun/sdk/shared/constants/chains/supported";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
+import { farcasterMiniApp as miniAppConnector } from "@farcaster/miniapp-wagmi-connector";
 import "@reservoir0x/relay-kit-ui/styles.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { inAppWalletConnector } from "@thirdweb-dev/wagmi-adapter";
+
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Toaster } from "sonner";
 import {
@@ -102,6 +104,7 @@ export function B3Provider({
             ...(ecocystemConfig || {}),
             client,
           }),
+          miniAppConnector(),
           // injected(),
           // coinbaseWallet({ appName: "HypeDuel" }),
         ],
