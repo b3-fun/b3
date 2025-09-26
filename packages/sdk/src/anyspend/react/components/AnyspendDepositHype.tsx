@@ -1,4 +1,5 @@
 import { B3_TOKEN } from "@b3dotfun/sdk/anyspend";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { Button, ShinyButton, StyleRoot, TransitionPanel } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import invariant from "invariant";
@@ -36,6 +37,11 @@ export interface AnySpendDepositHypeProps {
   sourceTokenChainId?: number;
   onSuccess?: () => void;
   mainFooter?: React.ReactNode;
+  /**
+   * Called when a token is selected. Call event.preventDefault() to prevent default token selection behavior.
+   * Useful for handling special cases like B3 token selection.
+   */
+  onTokenSelect?: (token: components["schemas"]["Token"], event: { preventDefault: () => void }) => void;
 }
 
 export function AnySpendDepositHype(props: AnySpendDepositHypeProps) {
@@ -57,6 +63,7 @@ function AnySpendDepositHypeInner({
   sourceTokenChainId,
   onSuccess,
   mainFooter,
+  onTokenSelect,
 }: AnySpendDepositHypeProps) {
   // Use shared flow hook
   const {
@@ -202,6 +209,7 @@ function AnySpendDepositHypeInner({
               selectedCryptoPaymentMethod={selectedCryptoPaymentMethod}
               onSelectCryptoPaymentMethod={() => setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD)}
               anyspendQuote={anyspendQuote}
+              onTokenSelect={onTokenSelect}
             />
           ) : (
             <motion.div

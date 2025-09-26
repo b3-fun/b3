@@ -73,6 +73,11 @@ export function AnySpend(props: {
   recipientAddress?: string;
   loadOrder?: string;
   hideTransactionHistoryButton?: boolean;
+  /**
+   * Called when a token is selected. Call event.preventDefault() to prevent default token selection behavior.
+   * Useful for handling special cases like B3 token selection.
+   */
+  onTokenSelect?: (token: components["schemas"]["Token"], event: { preventDefault: () => void }) => void;
 }) {
   const fingerprintConfig = getFingerprintConfig();
 
@@ -91,6 +96,7 @@ function AnySpendInner({
   loadOrder,
   hideTransactionHistoryButton,
   recipientAddress: recipientAddressFromProps,
+  onTokenSelect,
 }: {
   destinationTokenAddress?: string;
   destinationTokenChainId?: number;
@@ -99,6 +105,7 @@ function AnySpendInner({
   loadOrder?: string;
   hideTransactionHistoryButton?: boolean;
   recipientAddress?: string;
+  onTokenSelect?: (token: components["schemas"]["Token"], event: { preventDefault: () => void }) => void;
 }) {
   const searchParams = useSearchParamsSSR();
   const router = useRouter();
@@ -871,6 +878,7 @@ function AnySpendInner({
             selectedCryptoPaymentMethod={selectedCryptoPaymentMethod}
             onSelectCryptoPaymentMethod={() => setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD)}
             anyspendQuote={anyspendQuote}
+            onTokenSelect={onTokenSelect}
           />
         ) : (
           <motion.div

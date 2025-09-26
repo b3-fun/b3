@@ -24,6 +24,8 @@ interface CryptoPaySectionProps {
   onSelectCryptoPaymentMethod: () => void;
   // Quote data
   anyspendQuote?: any;
+  // Token selection callback
+  onTokenSelect?: (token: components["schemas"]["Token"], event: { preventDefault: () => void }) => void;
 }
 
 export function CryptoPaySection({
@@ -37,6 +39,7 @@ export function CryptoPaySection({
   selectedCryptoPaymentMethod,
   onSelectCryptoPaymentMethod,
   anyspendQuote,
+  onTokenSelect,
 }: CryptoPaySectionProps) {
   const { connectedSmartWallet, connectedEOAWallet } = useAccountWallet();
   const { data: srcTokenMetadata } = useTokenData(selectedSrcToken?.chainId, selectedSrcToken?.address);
@@ -132,6 +135,7 @@ export function CryptoPaySection({
         setChainId={setSelectedSrcChainId}
         token={selectedSrcToken}
         setToken={setSelectedSrcToken}
+        onTokenSelect={onTokenSelect}
       />
       <div className="flex items-center justify-between">
         <div className="text-as-primary/50 flex h-5 items-center text-sm">
