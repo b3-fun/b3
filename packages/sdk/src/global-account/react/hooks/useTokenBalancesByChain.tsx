@@ -54,7 +54,7 @@ export function useTokenBalancesByChain({
               const walletBalance = await getWalletBalance({
                 address,
                 client,
-                chain: viemToThirdwebChain(getChainById(chainId)!),
+                chain: viemToThirdwebChain(getChainById(chainId)!), // nhd98z
               });
 
               return {

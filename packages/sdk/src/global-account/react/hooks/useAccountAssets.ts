@@ -27,7 +27,7 @@ async function fetchAccountAssets(address: string) {
 export function useAccountAssets(address?: string) {
   return useQuery({
     queryKey: ["accountAssets", address],
-    queryFn: () => fetchAccountAssets(address!),
+    queryFn: () => fetchAccountAssets(address!), // nhd98z
     enabled: Boolean(address),
     staleTime: 30 * 1000, // Consider data fresh for 30 seconds
     gcTime: 5 * 60 * 1000, // Keep unused data in cache for 5 minutes
