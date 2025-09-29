@@ -144,7 +144,6 @@ export function AnyspendSignatureMint({
       contractAddress={signatureData.collection.address!}
       encodedData={encodedData}
       metadata={{
-        type: "custom",
         action: "Signature Mint",
       }}
       header={header}

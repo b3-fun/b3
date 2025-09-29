@@ -366,7 +366,6 @@ export function AnySpendBondKit({
       contractAddress={contractAddress}
       encodedData={encodedData}
       metadata={{
-        type: "custom",
         action: "BondKit Buy",
       }}
       header={header}

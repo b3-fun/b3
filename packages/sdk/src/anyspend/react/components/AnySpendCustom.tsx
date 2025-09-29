@@ -314,8 +314,8 @@ function AnySpendCustomInner({
       dstToken: dstToken,
       dstAmount: dstAmount,
       contractAddress: contractAddress,
-      tokenId: metadata.type === "mint_nft" ? metadata.nftContract.tokenId : undefined,
-      contractType: metadata.type === "mint_nft" ? metadata.nftContract.type : undefined,
+      tokenId: orderType === "mint_nft" ? metadata.nftContract.tokenId : undefined,
+      contractType: orderType === "mint_nft" ? metadata.nftContract.type : undefined,
       encodedData: encodedData,
       spenderAddress: spenderAddress,
     });
@@ -328,7 +328,6 @@ function AnySpendCustomInner({
     encodedData,
     metadata?.nftContract?.tokenId,
     metadata?.nftContract?.type,
-    metadata?.type,
     orderType,
     spenderAddress,
     srcChainId,
@@ -426,7 +425,7 @@ function AnySpendCustomInner({
         recipientAddress,
         creatorAddress: currentWallet?.wallet?.address,
         nft:
-          metadata.type === "mint_nft"
+          orderType === "mint_nft"
             ? metadata.nftContract.type === "erc1155"
               ? {
                   type: "erc1155",
@@ -448,7 +447,7 @@ function AnySpendCustomInner({
                 }
             : undefined,
         tournament:
-          metadata.type === "join_tournament" || metadata.type === "fund_tournament"
+          orderType === "join_tournament" || orderType === "fund_tournament"
             ? {
                 ...metadata.tournament,
                 contractAddress: contractAddress,
@@ -457,13 +456,12 @@ function AnySpendCustomInner({
             : undefined,
         // only populate payload for custom tx
         payload:
-          metadata.type === "custom"
+          orderType === "custom"
             ? {
                 amount: dstAmount,
                 data: encodedData,
                 spenderAddress: spenderAddress,
                 to: contractAddress,
-                action: metadata.action,
               }
             : undefined,
       } as CreateOrderParams;
