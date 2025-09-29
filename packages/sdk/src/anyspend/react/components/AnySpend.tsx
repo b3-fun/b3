@@ -446,7 +446,7 @@ function AnySpendInner({
           srcTokenAddress: selectedSrcToken.address,
           dstTokenAddress: isBuyMode ? destinationTokenAddress : selectedDstToken.address,
           type: "swap",
-          tradeType: isSrcInputDirty ? "EXACT_INPUT" : "EXPECTED_OUTPUT",
+          tradeType: isSrcInputDirty ? "EXACT_INPUT" : "EXACT_OUTPUT",
           amount: activeInputAmountInWei,
         }
       : {
