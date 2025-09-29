@@ -448,6 +448,7 @@ function AnySpendInner({
           type: "swap",
           tradeType: isSrcInputDirty ? "EXACT_INPUT" : "EXACT_OUTPUT",
           amount: activeInputAmountInWei,
+          recipientAddress,
         }
       : {
           srcChain: base.id,
@@ -457,6 +458,7 @@ function AnySpendInner({
           type: "swap",
           tradeType: "EXACT_INPUT",
           amount: srcAmountOnrampInWei,
+          recipientAddress,
           onrampVendor: getOnrampVendor(selectedFiatPaymentMethod),
         },
   );
