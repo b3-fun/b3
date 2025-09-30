@@ -13,8 +13,6 @@ interface LoginStepProps {
   onSuccess: (account: Account) => Promise<void>;
   /** Optional callback function called when an error occurs */
   onError?: (error: Error) => Promise<void>;
-  /** Partner ID used for authentication */
-  partnerId: string;
   /** Blockchain chain information */
   chain: Chain;
   /** Optional authentication strategy options */
@@ -56,15 +54,19 @@ export function LoginStepContainer({ children, partnerId }: LoginStepContainerPr
   );
 }
 
-export function LoginStep({ onSuccess, onError, partnerId, chain }: LoginStepProps) {
+export function LoginStep({ onSuccess, onError, chain }: LoginStepProps) {
+  const { theme, partnerId } = useB3();
+  const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
+  const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
+  const { logout } = useAuthentication();
+
+  if (!partnerId) {
+    throw new Error("partnerId is required in B3Provider");
+  }
+
   const wallet = ecosystemWallet(ecosystemWalletId, {
     partnerId: partnerId,
   });
-
-  const { theme } = useB3();
-  const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
-  const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
-  const { logout } = useAuthentication(partnerId);
 
   return (
     <LoginStepContainer partnerId={partnerId}>

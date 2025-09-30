@@ -243,7 +243,7 @@ export function SignInWithB3Flow({
   if (step === "login") {
     // Custom strategy
     if (strategies?.[0] === "privy") {
-      return <SignInWithB3Privy onSuccess={handleLoginSuccess} partnerId={partnerId} chain={chain} />;
+      return <SignInWithB3Privy onSuccess={handleLoginSuccess} chain={chain} />;
     }
 
     // Strategies are explicitly provided
@@ -251,7 +251,6 @@ export function SignInWithB3Flow({
       return (
         <LoginStepCustom
           strategies={strategies}
-          partnerId={partnerId}
           chain={chain}
           onSuccess={handleLoginSuccess}
           onError={onError}
@@ -261,7 +260,7 @@ export function SignInWithB3Flow({
     }
 
     // Default to handle all strategies we support
-    return <LoginStep partnerId={partnerId} chain={chain} onSuccess={handleLoginSuccess} onError={onError} />;
+    return <LoginStep chain={chain} onSuccess={handleLoginSuccess} onError={onError} />;
   }
 
   return null;

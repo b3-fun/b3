@@ -4,18 +4,24 @@ import { useIdentityToken, usePrivy } from "@privy-io/react-auth";
 import { useCallback, useRef, useState } from "react";
 import { Chain } from "thirdweb";
 import { Account } from "thirdweb/wallets";
+import { useB3 } from "../components/B3Provider/useB3";
 const debug = debugB3React("@@b3:useHandleConnectWithPrivy");
 
 /**
  * This essentially wraps our useConnect hook to handle the Privy auth flow.
  * Currently, this is for the basement-privy strategy
  */
-export function useHandleConnectWithPrivy(partnerId: string, chain?: Chain, onSuccess?: (account: Account) => void) {
+export function useHandleConnectWithPrivy(chain?: Chain, onSuccess?: (account: Account) => void) {
   if (!chain) {
     throw new Error("Chain is required");
   }
 
-  const { connect } = useConnect(partnerId, chain);
+  const { partnerId } = useB3();
+  const { connect } = useConnect(chain);
+
+  if (!partnerId) {
+    throw new Error("partnerId is required in B3Provider");
+  }
   const [isLoading, setIsLoading] = useState(true);
   const isConnecting = useRef(false);
   const { identityToken } = useIdentityToken();

@@ -5,18 +5,24 @@ import { useCallback, useState } from "react";
 import { Chain } from "thirdweb";
 import { useConnect as useConnectTW } from "thirdweb/react";
 import { ecosystemWallet, SingleStepAuthArgsType } from "thirdweb/wallets";
+import { useB3 } from "../components/B3Provider/useB3";
 const debug = debugB3React("useConnect");
 
 /**
  * This hook is used to connect to a wallet using the thirdweb client.
  */
-export function useConnect(partnerId: string, chain?: Chain) {
+export function useConnect(chain?: Chain) {
   if (!chain) {
     throw new Error("Chain is required");
   }
 
+  const { partnerId } = useB3();
   const { connect } = useConnectTW();
   const [isLoading, setIsLoading] = useState(false);
+
+  if (!partnerId) {
+    throw new Error("partnerId is required in B3Provider");
+  }
 
   /**
    * This is a wrapper around the thirdweb connect function.

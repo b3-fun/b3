@@ -88,7 +88,11 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <B3Provider environment="production" theme="light">
+      <B3Provider
+        environment="production"
+        theme="light"
+        partnerId={String(process.env.PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID || "dbcd5e9b-564e-4ba0-91a0-becf0edabb61")}
+      >
         <B3DynamicModal />
         <InnerComponent account={account} />
       </B3Provider>
