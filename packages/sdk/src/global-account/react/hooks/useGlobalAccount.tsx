@@ -21,9 +21,7 @@ export function useGlobalAccount() {
       return;
     }
 
-    const globalAccountWallet = wallets.find(wallet =>
-      wallet.id.startsWith("ecosystem."),
-    );
+    const globalAccountWallet = wallets.find(wallet => wallet.id.startsWith("ecosystem."));
 
     const account = globalAccountWallet?.getAccount();
     setGlobalAccount(globalAccountWallet);
