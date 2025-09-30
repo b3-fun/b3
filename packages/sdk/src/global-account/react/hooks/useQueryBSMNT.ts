@@ -62,12 +62,15 @@ export function useQueryBSMNT<
     }
   }, [service, method]);
 
+  // Serialize params for stable comparison
+  const paramsJson = JSON.stringify(params);
+
   useEffect(() => {
     if (fetchInitially) {
       runQuery(params);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [runQuery, fetchInitially, params]);
+  }, [runQuery, fetchInitially, paramsJson]);
 
   return { data, error, isLoading, runQuery };
 }
