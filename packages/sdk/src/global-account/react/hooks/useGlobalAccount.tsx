@@ -14,23 +14,20 @@ export function useGlobalAccount() {
   const walletInfo = useWalletInfo(globalAccount?.id);
 
   useEffect(() => {
-    const autoSelectGlobalAccount = async () => {
-      // Only proceed if auto-selection is enabled and user is authenticated
-      if (!isConnected) {
-        debug("Not connected");
-        return;
-      }
+    if (!isConnected) {
+      debug("Not connected");
+      setGlobalAccount(undefined);
+      setAddress(undefined);
+      return;
+    }
 
-      // Find the first ecosystem wallet (global account)
-      const isEcosystemWallet = (wallet: Wallet) => wallet.id.startsWith("ecosystem.");
-      const globalAccountWallet = wallets.find(isEcosystemWallet);
+    const globalAccountWallet = wallets.find(wallet =>
+      wallet.id.startsWith("ecosystem."),
+    );
 
-      const account = globalAccountWallet?.getAccount();
-      setGlobalAccount(globalAccountWallet);
-      setAddress(account?.address);
-    };
-
-    autoSelectGlobalAccount();
+    const account = globalAccountWallet?.getAccount();
+    setGlobalAccount(globalAccountWallet);
+    setAddress(account?.address);
   }, [isConnected, wallets]);
 
   return {
