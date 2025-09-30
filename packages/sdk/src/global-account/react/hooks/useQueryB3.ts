@@ -47,20 +47,23 @@ export function useQueryB3<
   const [error, setError] = useState<Error | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const runQuery = useCallback(async (queryParams: ParamsType<T, M>) => {
-    setIsLoading(true);
-    try {
-      // Cast the service to avoid TypeScript issues with dynamic services
-      const serviceInstance = app.service(service) as any;
-      const result = await serviceInstance[method](queryParams);
-      setData(result); // Now `data` is correctly typed!
-      return result;
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error("An error occurred"));
-    } finally {
-      setIsLoading(false);
-    }
-  }, [service, method]);
+  const runQuery = useCallback(
+    async (queryParams: ParamsType<T, M>) => {
+      setIsLoading(true);
+      try {
+        // Cast the service to avoid TypeScript issues with dynamic services
+        const serviceInstance = app.service(service) as any;
+        const result = await serviceInstance[method](queryParams);
+        setData(result); // Now `data` is correctly typed!
+        return result;
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error("An error occurred"));
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [service, method],
+  );
 
   // Serialize params for stable comparison
   const paramsJson = JSON.stringify(params);
