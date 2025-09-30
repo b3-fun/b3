@@ -20,7 +20,7 @@ import {
   useSetActiveWallet,
 } from "thirdweb/react";
 import { Account, Wallet } from "thirdweb/wallets";
-import { createConfig, http, WagmiProvider } from "wagmi";
+import { createConfig, http, useAccount, WagmiProvider } from "wagmi";
 import { ClientType, setClientType } from "../../../client-manager";
 import { StyleRoot } from "../StyleRoot";
 import { B3Context, B3ContextType } from "./types";
@@ -82,24 +82,24 @@ export function B3Provider({
 
   return (
     <ThirdwebProvider>
-          <TooltipProvider>
-            <InnerProvider
-              accountOverride={accountOverride}
-              environment={environment}
-              theme={theme}
-              automaticallySetFirstEoa={!!automaticallySetFirstEoa}
-              clientType={clientType}
-              partnerId={partnerId}
-              rpcUrls={rpcUrls}
-            >
-              <RelayKitProviderWrapper simDuneApiKey={simDuneApiKey}>
-                {children}
-                {/* For the modal https://github.com/b3-fun/b3/blob/main/packages/sdk/src/global-account/react/components/ui/dialog.tsx#L46 */}
-                <StyleRoot id="b3-root" />
-                <Toaster theme={theme} position={toaster?.position} style={toaster?.style} />
-              </RelayKitProviderWrapper>
-            </InnerProvider>
-          </TooltipProvider>
+      <TooltipProvider>
+        <InnerProvider
+          accountOverride={accountOverride}
+          environment={environment}
+          theme={theme}
+          automaticallySetFirstEoa={!!automaticallySetFirstEoa}
+          clientType={clientType}
+          partnerId={partnerId}
+          rpcUrls={rpcUrls}
+        >
+          <RelayKitProviderWrapper simDuneApiKey={simDuneApiKey}>
+            {children}
+            {/* For the modal https://github.com/b3-fun/b3/blob/main/packages/sdk/src/global-account/react/components/ui/dialog.tsx#L46 */}
+            <StyleRoot id="b3-root" />
+            <Toaster theme={theme} position={toaster?.position} style={toaster?.style} />
+          </RelayKitProviderWrapper>
+        </InnerProvider>
+      </TooltipProvider>
     </ThirdwebProvider>
   );
 }
@@ -138,6 +138,7 @@ export function InnerProvider({
   const setIsConnected = useAuthStore(state => state.setIsConnected);
   const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
   const setHasStartedConnecting = useAuthStore(state => state.setHasStartedConnecting);
+  const hasStartedConnecting = useAuthStore(state => state.hasStartedConnecting);
   const { authenticate } = useSiwe();
   const setActiveWallet = useSetActiveWallet();
 
@@ -249,7 +250,6 @@ export function InnerProvider({
       }),
     [partnerId],
   );
-  
 
   // Use given accountOverride or activeAccount from thirdweb
   const effectiveAccount = isAuthenticated ? accountOverride || activeAccount : undefined;
@@ -290,28 +290,47 @@ export function InnerProvider({
   }, [automaticallySetFirstEoa, isAuthenticated, setWallet, wallets]);
 
   return (
-      <WagmiProvider config={wagmiConfig}>
+    <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-    <B3Context.Provider
-      value={{
-        account: effectiveAccount,
-        setWallet,
-        wallet: manuallySelectedWallet,
-        user,
-        setUser,
-        initialized: true,
-        ready: !!effectiveAccount,
-        automaticallySetFirstEoa,
-        environment,
-        defaultPermissions,
-        theme,
-        clientType,
-        partnerId: partnerId,
-      }}
-    >
-      {children}
-    </B3Context.Provider>
-    </QueryClientProvider>
+        <B3Context.Provider
+          value={{
+            account: effectiveAccount,
+            setWallet,
+            wallet: manuallySelectedWallet,
+            user,
+            setUser,
+            initialized: true,
+            ready: !!effectiveAccount && wagmiConfig.state.status !== 'connecting',
+            automaticallySetFirstEoa,
+            environment,
+            defaultPermissions,
+            theme,
+            clientType,
+            partnerId: partnerId,
+          }}
+        >
+          <InnerProvider2> 
+            {children}
+          </InnerProvider2>
+        </B3Context.Provider>
+      </QueryClientProvider>
     </WagmiProvider>
+  );
+}
+
+
+const InnerProvider2 = ({ children }: { children: React.ReactNode }) => {
+  const account = useAccount();
+  const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
+
+  useEffect(() => {
+    if(account.isDisconnected){
+      setIsAuthenticating(false);
+    }
+  }, [account])
+  return (
+    <>
+      {children}
+    </>
   );
 }
