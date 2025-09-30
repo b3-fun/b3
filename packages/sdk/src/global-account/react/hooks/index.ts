@@ -14,6 +14,7 @@ export { useExchangeRate } from "./useExchangeRate";
 export { useFirstEOA } from "./useFirstEOA";
 export { useGetAllTWSigners, type TWSignerWithMetadata } from "./useGetAllTWSigners";
 export { useGetGeo } from "./useGetGeo";
+export { useGlobalAccount } from "./useGlobalAccount";
 export { useHandleConnectWithPrivy } from "./useHandleConnectWithPrivy";
 export { useHasMounted } from "./useHasMounted";
 export { useIsMobile } from "./useIsMobile";
