@@ -164,7 +164,7 @@ export function CryptoReceiveSection({
               );
             })()}
         </div>
-        {featureFlags.showPoints && anyspendQuote?.data?.pointsAmount && anyspendQuote.data.pointsAmount > 0 && (
+        {featureFlags.showPoints && anyspendQuote?.data?.pointsAmount > 0 && (
           <PointsBadge
             pointsAmount={anyspendQuote.data.pointsAmount}
             pointsMultiplier={anyspendQuote.data.pointsMultiplier}

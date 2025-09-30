@@ -145,7 +145,7 @@ export function AnySpendNFT({
             ) : (
               <div className="h-[36px] w-full" />
             )}
-            {featureFlags.showPoints && anyspendPrice?.data?.pointsAmount && anyspendPrice.data.pointsAmount > 0 && (
+            {featureFlags.showPoints && anyspendPrice?.data?.pointsAmount > 0 && (
               <PointsBadge
                 pointsAmount={anyspendPrice.data.pointsAmount}
                 pointsMultiplier={anyspendPrice.data.pointsMultiplier}
