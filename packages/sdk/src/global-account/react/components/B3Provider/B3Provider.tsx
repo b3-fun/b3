@@ -83,6 +83,9 @@ export function B3Provider({
     setClientType(clientType);
   }, [clientType]);
 
+  // Store for the onConnect handler reference
+  const onConnectHandlerRef = useRef<((wallet: Wallet) => Promise<void>) | null>(null);
+
   const ecocystemConfig = useMemo(() => {
     return {
       ecosystemId: ecosystemWalletId,
@@ -106,8 +109,10 @@ export function B3Provider({
             client,
             onConnect: async wallet => {
               debug("@@wagmi-adapter:onConnect", wallet);
-              // This onConnect will be triggered by the wagmi adapter's auto-connect
-              // We'll handle the authentication in InnerProvider
+              // Call the handler set by InnerProvider
+              if (onConnectHandlerRef.current) {
+                await onConnectHandlerRef.current(wallet);
+              }
             },
           }),
           // injected(),
@@ -130,6 +135,7 @@ export function B3Provider({
               clientType={clientType}
               partnerId={partnerId}
               loginWithSiwe={loginWithSiwe}
+              onConnectHandlerRef={onConnectHandlerRef}
             >
               <RelayKitProviderWrapper simDuneApiKey={simDuneApiKey}>
                 {children}
@@ -158,6 +164,7 @@ export function InnerProvider({
   clientType = "socket",
   partnerId,
   loginWithSiwe,
+  onConnectHandlerRef,
 }: {
   children: React.ReactNode;
   accountOverride?: Account;
@@ -168,6 +175,7 @@ export function InnerProvider({
   clientType?: ClientType;
   partnerId: string;
   loginWithSiwe?: boolean;
+  onConnectHandlerRef: React.MutableRefObject<((wallet: Wallet) => Promise<void>) | null>;
 }) {
   const activeAccount = useActiveAccount();
   const [manuallySelectedWallet, setManuallySelectedWallet] = useState<Wallet | undefined>(undefined);
@@ -196,22 +204,30 @@ export function InnerProvider({
     return undefined;
   });
 
-  // Handle authentication when wallets connect (from wagmi adapter auto-connect)
+  // Use given accountOverride or activeAccount from thirdweb
+  const effectiveAccount = isAuthenticated ? accountOverride || activeAccount : undefined;
+
+  // Persist user to localStorage when it changes
   useEffect(() => {
-    const handleWalletConnection = async () => {
-      // Only run if we have wallets and haven't authenticated yet
-      if (wallets.length === 0 || hasAuthenticatedRef.current || isAuthenticated) {
+    if (typeof window !== "undefined") {
+      if (user) {
+        localStorage.setItem("b3-user", JSON.stringify(user));
+      } else {
+        localStorage.removeItem("b3-user");
+      }
+    }
+  }, [user]);
+
+  // Consolidated onConnect handler - this is the SINGLE source of truth for auth
+  const handleWalletConnect = useCallback(
+    async (wallet: Wallet) => {
+      // Only run if we haven't authenticated yet
+      if (hasAuthenticatedRef.current || isAuthenticated) {
+        debug("@@handleWalletConnect:skipping - already authenticated");
         return;
       }
 
-      // Find ecosystem wallet
-      const ecosystemWallet = wallets.find(w => w.id.startsWith("ecosystem."));
-      if (!ecosystemWallet) {
-        debug("No ecosystem wallet found");
-        return;
-      }
-
-      debug("@@handleWalletConnection:starting", { wallets, loginWithSiwe });
+      debug("@@handleWalletConnect:starting", { loginWithSiwe });
       hasAuthenticatedRef.current = true;
       setHasStartedConnecting(true);
 
@@ -224,7 +240,7 @@ export function InnerProvider({
           return;
         }
 
-        const account = await ecosystemWallet.getAccount();
+        const account = await wallet.getAccount();
         if (!account) {
           throw new Error("No account found during auto-connect");
         }
@@ -260,35 +276,14 @@ export function InnerProvider({
         setUser(undefined);
         hasAuthenticatedRef.current = false;
       }
-    };
+    },
+    [loginWithSiwe, isAuthenticated, authenticate, partnerId, setHasStartedConnecting, setIsConnected, setIsAuthenticated, setIsAuthenticating, setUser],
+  );
 
-    handleWalletConnection();
-  }, [
-    wallets,
-    loginWithSiwe,
-    isAuthenticated,
-    partnerId,
-    authenticate,
-    setIsAuthenticated,
-    setIsAuthenticating,
-    setIsConnected,
-    setHasStartedConnecting,
-    setUser,
-  ]);
-
-  // Use given accountOverride or activeAccount from thirdweb
-  const effectiveAccount = isAuthenticated ? accountOverride || activeAccount : undefined;
-
-  // Persist user to localStorage when it changes
+  // Set the onConnect handler reference so wagmi adapter can call it
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      if (user) {
-        localStorage.setItem("b3-user", JSON.stringify(user));
-      } else {
-        localStorage.removeItem("b3-user");
-      }
-    }
-  }, [user]);
+    onConnectHandlerRef.current = handleWalletConnect;
+  }, [handleWalletConnect]);
 
   const setWallet = useCallback(
     (wallet: Wallet) => {
