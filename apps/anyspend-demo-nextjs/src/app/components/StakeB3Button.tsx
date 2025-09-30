@@ -1,8 +1,9 @@
-import { useModalStore } from "@b3dotfun/sdk/global-account/react";
+import { useAccountWallet, useModalStore } from "@b3dotfun/sdk/global-account/react";
 
 export function StakeB3Button() {
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
+  const currentWallet = useAccountWallet();
 
   return (
     <button
@@ -10,6 +11,7 @@ export function StakeB3Button() {
         setB3ModalOpen(true);
         setB3ModalContentType({
           type: "anySpendStakeB3",
+          recipientAddress: currentWallet.address || "",
         });
       }}
       className="group flex h-40 flex-col justify-between overflow-hidden rounded-lg border border-gray-100 bg-white p-6 text-left shadow-sm transition-all hover:border-purple-100 hover:shadow-md"
