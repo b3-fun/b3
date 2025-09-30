@@ -675,7 +675,6 @@ export function AnySpendBuySpin({
       spenderAddress={paymentConfig.entryModule}
       encodedData={encodedData}
       metadata={{
-        type: "custom",
         action: `buy ${userSpinQuantity} spin${userSpinQuantity !== "1" ? "s" : ""}`,
       }}
       header={header}

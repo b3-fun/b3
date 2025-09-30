@@ -491,7 +491,6 @@ export function AnySpendStakeB3({
       contractAddress={ERC20Staking}
       encodedData={encodedData}
       metadata={{
-        type: "custom",
         action: "stake B3",
       }}
       header={header}

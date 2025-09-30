@@ -509,7 +509,7 @@ export interface paths {
                  * @description Type of trade execution
                  * @enum {string}
                  */
-                tradeType: "EXACT_INPUT" | "EXPECTED_OUTPUT" | "EXACT_OUTPUT";
+                tradeType: "EXACT_INPUT" | "EXACT_OUTPUT";
                 /**
                  * @description Amount to quote
                  * @example 1000000000000000000

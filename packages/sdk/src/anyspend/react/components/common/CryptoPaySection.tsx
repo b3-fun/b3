@@ -48,7 +48,7 @@ export function CryptoPaySection({
   const walletAddress =
     selectedCryptoPaymentMethod === CryptoPaymentMethodType.GLOBAL_WALLET
       ? connectedSmartWallet?.getAccount()?.address
-      : connectedEOAWallet?.getAccount()?.address || connectedSmartWallet?.getAccount()?.address;
+      : connectedEOAWallet?.getAccount()?.address;
 
   const { data: profileData } = useProfile({ address: walletAddress });
   const connectedName = profileData?.displayName;

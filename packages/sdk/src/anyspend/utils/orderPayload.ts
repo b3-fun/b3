@@ -31,6 +31,7 @@ export const buildPayload = (orderType: components["schemas"]["Order"]["type"], 
         return {
           contractAddress: normalizeAddress(nft.contractAddress),
           nftPrice: nft?.price || "",
+          tokenId: null,
           contractType: nft?.type,
         };
       } else {
