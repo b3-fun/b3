@@ -79,7 +79,6 @@ export function B3Provider({
     setClientType(clientType);
   }, [clientType]);
 
-
   return (
     <ThirdwebProvider>
       <TooltipProvider>
@@ -142,8 +141,7 @@ export function InnerProvider({
   const { authenticate } = useSiwe();
   const setActiveWallet = useSetActiveWallet();
 
-
-  debug('@@B3Provider:isConnected', isConnected);
+  debug("@@B3Provider:isConnected", isConnected);
   const [user, setUser] = useState<Users | undefined>(() => {
     // Try to restore user from localStorage on initialization
     if (typeof window !== "undefined") {
@@ -167,10 +165,8 @@ export function InnerProvider({
     }
   }, [user]);
 
-
   debug("@@wallets", wallets);
-  debug('@@B3Provider:user', user);
-
+  debug("@@B3Provider:user", user);
 
   const ecocystemConfig = useMemo(() => {
     return {
@@ -198,7 +194,7 @@ export function InnerProvider({
 
               try {
                 setHasStartedConnecting(true);
-                setIsConnected(true)
+                setIsConnected(true);
                 setIsAuthenticating(true);
                 await setActiveWallet(wallet);
                 const account = await wallet.getAccount();
@@ -236,12 +232,12 @@ export function InnerProvider({
                 setIsAuthenticating(false);
               }
 
-              console.log('@@wtf')
+              console.log("@@wtf");
               debug({
                 isAuthenticated,
                 isAuthenticating,
                 isConnected,
-              })
+              });
             }) as any,
           }),
           // injected(),
@@ -300,7 +296,7 @@ export function InnerProvider({
             user,
             setUser,
             initialized: true,
-            ready: !!effectiveAccount && wagmiConfig.state.status !== 'connecting',
+            ready: !!effectiveAccount && wagmiConfig.state.status !== "connecting",
             automaticallySetFirstEoa,
             environment,
             defaultPermissions,
@@ -309,28 +305,21 @@ export function InnerProvider({
             partnerId: partnerId,
           }}
         >
-          <InnerProvider2> 
-            {children}
-          </InnerProvider2>
+          <InnerProvider2>{children}</InnerProvider2>
         </B3Context.Provider>
       </QueryClientProvider>
     </WagmiProvider>
   );
 }
 
-
 const InnerProvider2 = ({ children }: { children: React.ReactNode }) => {
   const account = useAccount();
   const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
 
   useEffect(() => {
-    if(account.isDisconnected){
+    if (account.isDisconnected) {
       setIsAuthenticating(false);
     }
-  }, [account])
-  return (
-    <>
-      {children}
-    </>
-  );
-}
+  }, [account]);
+  return <>{children}</>;
+};

@@ -33,7 +33,12 @@ function B3ProviderWrapper({ children }: { children: React.ReactNode }) {
   // Default to light theme since we removed Chakra UI
   const colorMode = "light";
   return (
-    <B3Provider environment="production" theme={colorMode} automaticallySetFirstEoa={true} partnerId={String(process.env.PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID)}>
+    <B3Provider
+      environment="production"
+      theme={colorMode}
+      automaticallySetFirstEoa={true}
+      partnerId={String(process.env.PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID)}
+    >
       <B3DynamicModal />
       {children}
     </B3Provider>
