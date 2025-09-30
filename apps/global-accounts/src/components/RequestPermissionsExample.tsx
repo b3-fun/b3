@@ -154,7 +154,7 @@ const b3Chain = defineChain({
 
 function App() {
   return (
-    <B3Provider environment="production">
+    <B3Provider environment="production" partnerId="your-awesome-partner-id">
         <RequestPermissionsButton
           chain={b3Chain}
           sessionKeyAddress={account as \`0x\${string}\`}
@@ -175,6 +175,7 @@ function App() {
           onError={(error: Error) => {
             console.error("Error requesting permissions:", error);
           }}
+          partnerId={String(process.env.NEXT_PUBLIC_B3_PARTNER_ID)}
         >
           Request Permissions
         </RequestPermissionsButton>
@@ -207,7 +208,7 @@ const nftContract = {
 function App() {
 
   return (
-    <B3Provider environment="production">
+    <B3Provider environment="production" partnerId={String(process.env.NEXT_PUBLIC_B3_PARTNER_ID)}>
       <AnySpendNFTButton
         nftContract={nftContract}
         recipientAddress={account.address} // Ensure account is defined before accessing address

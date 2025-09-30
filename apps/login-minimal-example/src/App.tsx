@@ -88,7 +88,7 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <B3Provider environment="production" theme="light">
+      <B3Provider environment="production" theme="light" partnerId="b9aac999-efef-4625-96d6-8043f20ec615">
         <B3DynamicModal />
         <InnerComponent account={account} />
       </B3Provider>
@@ -109,7 +109,6 @@ const InnerComponent = ({ account }: { account: string }) => {
           <div className="flex flex-col gap-4">
             <SignInWithB3
               chain={b3Chain}
-              partnerId="b9aac999-efef-4625-96d6-8043f20ec615"
               sessionKeyAddress={account as `0x${string}`}
               onLoginSuccess={(globalAccount: Account) => {
                 console.log("User authenticated with Global Account!", globalAccount);
