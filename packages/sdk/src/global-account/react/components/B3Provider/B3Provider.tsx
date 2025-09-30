@@ -1,8 +1,6 @@
 import { Users } from "@b3dotfun/b3-api";
-import app from "@b3dotfun/sdk/global-account/app";
 import { authenticateWithB3JWT } from "@b3dotfun/sdk/global-account/bsmnt";
-import { RelayKitProviderWrapper, TooltipProvider, useAuthStore } from "@b3dotfun/sdk/global-account/react";
-import { useSiwe } from "@b3dotfun/sdk/global-account/react/hooks/useSiwe";
+import { RelayKitProviderWrapper, TooltipProvider, useAuthStore, useSiwe } from "@b3dotfun/sdk/global-account/react";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { loadGA4Script } from "@b3dotfun/sdk/global-account/utils/analytics";
 import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
@@ -71,7 +69,80 @@ export function B3Provider({
   rpcUrls?: Record<number, string>;
   partnerId: string;
 }) {
+  // Initialize Google Analytics on mount
+  useEffect(() => {
+    loadGA4Script();
+  }, []);
 
+  // Set the client type when provider mounts
+  useEffect(() => {
+    setClientType(clientType);
+  }, [clientType]);
+
+
+  return (
+    <ThirdwebProvider>
+          <TooltipProvider>
+            <InnerProvider
+              accountOverride={accountOverride}
+              environment={environment}
+              theme={theme}
+              automaticallySetFirstEoa={!!automaticallySetFirstEoa}
+              clientType={clientType}
+              partnerId={partnerId}
+              rpcUrls={rpcUrls}
+            >
+              <RelayKitProviderWrapper simDuneApiKey={simDuneApiKey}>
+                {children}
+                {/* For the modal https://github.com/b3-fun/b3/blob/main/packages/sdk/src/global-account/react/components/ui/dialog.tsx#L46 */}
+                <StyleRoot id="b3-root" />
+                <Toaster theme={theme} position={toaster?.position} style={toaster?.style} />
+              </RelayKitProviderWrapper>
+            </InnerProvider>
+          </TooltipProvider>
+    </ThirdwebProvider>
+  );
+}
+
+/**
+ * Inner provider component that provides the actual B3Context
+ */
+export function InnerProvider({
+  children,
+  accountOverride,
+  environment,
+  defaultPermissions = DEFAULT_PERMISSIONS,
+  automaticallySetFirstEoa,
+  theme = "light",
+  clientType = "socket",
+  partnerId,
+  rpcUrls,
+}: {
+  children: React.ReactNode;
+  accountOverride?: Account;
+  environment: B3ContextType["environment"];
+  defaultPermissions?: PermissionsConfig;
+  automaticallySetFirstEoa: boolean;
+  theme: "light" | "dark";
+  clientType?: ClientType;
+  partnerId: string;
+  rpcUrls?: Record<number, string>;
+}) {
+  const activeAccount = useActiveAccount();
+  const [manuallySelectedWallet, setManuallySelectedWallet] = useState<Wallet | undefined>(undefined);
+  const wallets = useConnectedWallets();
+  const isAuthenticated = useAuthStore(state => state.isAuthenticated);
+  const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
+  const isAuthenticating = useAuthStore(state => state.isAuthenticating);
+  const isConnected = useAuthStore(state => state.isConnected);
+  const setIsConnected = useAuthStore(state => state.setIsConnected);
+  const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
+  const setHasStartedConnecting = useAuthStore(state => state.setHasStartedConnecting);
+  const { authenticate } = useSiwe();
+  const setActiveWallet = useSetActiveWallet();
+
+
+  debug('@@B3Provider:isConnected', isConnected);
   const [user, setUser] = useState<Users | undefined>(() => {
     // Try to restore user from localStorage on initialization
     if (typeof window !== "undefined") {
@@ -95,15 +166,10 @@ export function B3Provider({
     }
   }, [user]);
 
-  // Initialize Google Analytics on mount
-  useEffect(() => {
-    loadGA4Script();
-  }, []);
 
-  // Set the client type when provider mounts
-  useEffect(() => {
-    setClientType(clientType);
-  }, [clientType]);
+  debug("@@wallets", wallets);
+  debug('@@B3Provider:user', user);
+
 
   const ecocystemConfig = useMemo(() => {
     return {
@@ -128,21 +194,16 @@ export function B3Provider({
             client,
             onConnect: (async (wallet: Wallet) => {
               debug("@@wagmi:onConnect", { wallet });
-              const setIsAuthenticating = useAuthStore.getState().setIsAuthenticating;
-              const setIsAuthenticated = useAuthStore.getState().setIsAuthenticated;
-              const setIsConnected = useAuthStore.getState().setIsConnected;
-              const setHasStartedConnecting = useAuthStore.getState().setHasStartedConnecting;
-
-              setHasStartedConnecting(true);
-              setIsAuthenticating(true);
 
               try {
+                setHasStartedConnecting(true);
+                setIsConnected(true)
+                setIsAuthenticating(true);
+                await setActiveWallet(wallet);
                 const account = await wallet.getAccount();
                 if (!account) {
                   throw new Error("No account found during auto-connect");
                 }
-
-                setIsConnected(true);
 
                 // Try to re-authenticate first
                 try {
@@ -157,7 +218,6 @@ export function B3Provider({
                 } catch (error) {
                   // If re-authentication fails, try fresh authentication
                   debug("@@wagmi:onConnect:reauth:failed, attempting fresh auth", { error });
-                  const { authenticate } = useSiwe();
                   const userAuth = await authenticate(account, partnerId);
                   setUser(userAuth.user);
                   setIsAuthenticated(true);
@@ -174,6 +234,13 @@ export function B3Provider({
               } finally {
                 setIsAuthenticating(false);
               }
+
+              console.log('@@wtf')
+              debug({
+                isAuthenticated,
+                isAuthenticating,
+                isConnected,
+              })
             }) as any,
           }),
           // injected(),
@@ -182,68 +249,7 @@ export function B3Provider({
       }),
     [partnerId],
   );
-
-  return (
-    <ThirdwebProvider>
-      <WagmiProvider config={wagmiConfig}>
-        <QueryClientProvider client={queryClient}>
-          <TooltipProvider>
-            <InnerProvider
-              accountOverride={accountOverride}
-              environment={environment}
-              theme={theme}
-              automaticallySetFirstEoa={!!automaticallySetFirstEoa}
-              clientType={clientType}
-              partnerId={partnerId}
-              user={user}
-              setUser={setUser}
-            >
-              <RelayKitProviderWrapper simDuneApiKey={simDuneApiKey}>
-                {children}
-                {/* For the modal https://github.com/b3-fun/b3/blob/main/packages/sdk/src/global-account/react/components/ui/dialog.tsx#L46 */}
-                <StyleRoot id="b3-root" />
-                <Toaster theme={theme} position={toaster?.position} style={toaster?.style} />
-              </RelayKitProviderWrapper>
-            </InnerProvider>
-          </TooltipProvider>
-        </QueryClientProvider>
-      </WagmiProvider>
-    </ThirdwebProvider>
-  );
-}
-
-/**
- * Inner provider component that provides the actual B3Context
- */
-export function InnerProvider({
-  children,
-  accountOverride,
-  environment,
-  defaultPermissions = DEFAULT_PERMISSIONS,
-  automaticallySetFirstEoa,
-  theme = "light",
-  clientType = "socket",
-  partnerId,
-  user,
-  setUser,
-}: {
-  children: React.ReactNode;
-  accountOverride?: Account;
-  environment: B3ContextType["environment"];
-  defaultPermissions?: PermissionsConfig;
-  automaticallySetFirstEoa: boolean;
-  theme: "light" | "dark";
-  clientType?: ClientType;
-  partnerId: string;
-  user: Users | undefined;
-  setUser: (user: Users | undefined) => void;
-}) {
-  const activeAccount = useActiveAccount();
-  const [manuallySelectedWallet, setManuallySelectedWallet] = useState<Wallet | undefined>(undefined);
-  const wallets = useConnectedWallets();
-  const setActiveWallet = useSetActiveWallet();
-  const isAuthenticated = useAuthStore(state => state.isAuthenticated);
-  debug("@@wallets", wallets);
+  
 
   // Use given accountOverride or activeAccount from thirdweb
   const effectiveAccount = isAuthenticated ? accountOverride || activeAccount : undefined;
@@ -284,6 +290,8 @@ export function InnerProvider({
   }, [automaticallySetFirstEoa, isAuthenticated, setWallet, wallets]);
 
   return (
+      <WagmiProvider config={wagmiConfig}>
+      <QueryClientProvider client={queryClient}>
     <B3Context.Provider
       value={{
         account: effectiveAccount,
@@ -303,5 +311,7 @@ export function InnerProvider({
     >
       {children}
     </B3Context.Provider>
+    </QueryClientProvider>
+    </WagmiProvider>
   );
 }
