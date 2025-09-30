@@ -12,6 +12,7 @@ import { b3 } from "viem/chains";
 import { GetQuoteResponse } from "../../types/api_req_res";
 import { useFeatureFlags } from "../contexts/FeatureFlagsContext";
 import { AnySpendCustom } from "./AnySpendCustom";
+import { PointsBadge } from "./common/PointsBadge";
 
 // ABI for contractURI and uri functions
 const CONTRACT_URI_ABI = [
@@ -145,14 +146,11 @@ export function AnySpendNFT({
               <div className="h-[36px] w-full" />
             )}
             {featureFlags.showPoints && anyspendPrice?.data?.pointsAmount && anyspendPrice.data.pointsAmount > 0 && (
-              <button
-                key={`points-${anyspendPrice.data.pointsAmount}`}
-                className="bg-as-brand hover:scale-102 active:scale-98 active:scale-98 relative flex cursor-pointer items-center gap-1 rounded-lg px-2 py-1 transition-all"
+              <PointsBadge
+                pointsAmount={anyspendPrice.data.pointsAmount}
+                pointsMultiplier={anyspendPrice.data.pointsMultiplier}
                 onClick={() => onShowPointsDetail?.()}
-              >
-                <div className="pointer-events-none absolute inset-0 h-full w-full rounded-lg border border-white/10 border-t-white/20 bg-gradient-to-b from-white/10 to-white/0" />
-                <span className="text-xs text-white">+{anyspendPrice.data.pointsAmount.toLocaleString()} pts</span>
-              </button>
+              />
             )}
           </div>
         </div>
