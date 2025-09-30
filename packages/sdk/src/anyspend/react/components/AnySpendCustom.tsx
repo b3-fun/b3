@@ -48,7 +48,9 @@ import { FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaym
 import { OrderDetails } from "./common/OrderDetails";
 import { OrderHistory } from "./common/OrderHistory";
 import { OrderToken } from "./common/OrderToken";
+import { PointsDetailPanel } from "./common/PointsDetailPanel";
 import { RecipientSelection } from "./common/RecipientSelection";
+import { useFeatureFlags } from "../contexts/FeatureFlagsContext";
 
 enum PanelView {
   CONFIRM_ORDER,
@@ -58,6 +60,7 @@ enum PanelView {
   RECIPIENT_SELECTION,
   CRYPTO_PAYMENT_METHOD,
   FIAT_PAYMENT_METHOD,
+  POINTS_DETAIL,
 }
 
 function generateGetRelayQuoteRequest({
@@ -165,6 +168,7 @@ export function AnySpendCustom(props: {
   }) => React.JSX.Element;
   onSuccess?: (txHash?: string) => void;
   showRecipient?: boolean;
+  onShowPointsDetail?: () => void;
 }) {
   const fingerprintConfig = getFingerprintConfig();
 
@@ -191,6 +195,7 @@ function AnySpendCustomInner({
   header,
   onSuccess,
   showRecipient = true,
+  onShowPointsDetail,
 }: {
   loadOrder?: string;
   mode?: "modal" | "page";
@@ -213,8 +218,10 @@ function AnySpendCustomInner({
   }) => React.JSX.Element;
   onSuccess?: (txHash?: string) => void;
   showRecipient?: boolean;
+  onShowPointsDetail?: () => void;
 }) {
   const hasMounted = useHasMounted();
+  const featureFlags = useFeatureFlags();
 
   const searchParams = useSearchParamsSSR();
   const router = useRouter();
@@ -915,9 +922,24 @@ function AnySpendCustomInner({
                   transition={{ duration: 0.3, delay: 0.1, ease: "easeInOut" }}
                   className="relative flex w-full items-center justify-between"
                 >
-                  <span className="text-as-tertiarry text-sm">
-                    Total <span className="text-as-tertiarry">(with fee)</span>
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-as-tertiarry text-sm">
+                      Total <span className="text-as-tertiarry">(with fee)</span>
+                    </span>
+                    {featureFlags.showPoints && anyspendQuote?.data?.pointsAmount && anyspendQuote.data.pointsAmount > 0 && (
+                      <button
+                        key={`points-${anyspendQuote.data.pointsAmount}`}
+                        className="bg-as-brand hover:scale-102 active:scale-98 relative flex cursor-pointer items-center gap-1 rounded-lg px-2 py-1 transition-all"
+                        onClick={() => {
+                          onShowPointsDetail?.();
+                          setActivePanel(PanelView.POINTS_DETAIL);
+                        }}
+                      >
+                        <div className="pointer-events-none absolute inset-0 h-full w-full rounded-lg border border-white/10 border-t-white/20 bg-gradient-to-b from-white/10 to-white/0" />
+                        <span className="relative text-xs text-white">+{anyspendQuote.data.pointsAmount.toLocaleString()} pts</span>
+                      </button>
+                    )}
+                  </div>
                   <span className="text-as-primary font-semibold">
                     {formattedSrcAmount || "--"} {srcToken.symbol}
                   </span>
@@ -1038,9 +1060,24 @@ function AnySpendCustomInner({
                 transition={{ duration: 0.3, delay: 0.1, ease: "easeInOut" }}
                 className="relative flex w-full items-center justify-between"
               >
-                <span className="text-as-tertiarry text-sm">
-                  Total <span className="text-as-tertiarry">(USD)</span>
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-as-tertiarry text-sm">
+                    Total <span className="text-as-tertiarry">(USD)</span>
+                  </span>
+                  {featureFlags.showPoints && anyspendQuote?.data?.pointsAmount && anyspendQuote.data.pointsAmount > 0 && (
+                    <button
+                      key={`points-${anyspendQuote.data.pointsAmount}`}
+                      className="bg-as-brand hover:scale-102 active:scale-98 relative flex cursor-pointer items-center gap-1 rounded-lg px-2 py-1 transition-all"
+                      onClick={() => {
+                        onShowPointsDetail?.();
+                        setActivePanel(PanelView.POINTS_DETAIL);
+                      }}
+                    >
+                      <div className="pointer-events-none absolute inset-0 h-full w-full rounded-lg border border-white/10 border-t-white/20 bg-gradient-to-b from-white/10 to-white/0" />
+                      <span className="relative text-xs text-white">+{anyspendQuote.data.pointsAmount.toLocaleString()} pts</span>
+                    </button>
+                  )}
+                </div>
                 <span className="text-as-primary text-xl font-semibold">${srcFiatAmount || "0.00"}</span>
               </motion.div>
             </div>
@@ -1151,6 +1188,16 @@ function AnySpendCustomInner({
     </div>
   );
 
+  // Points detail view
+  const pointsDetailView = (
+    <div className={cn("bg-as-surface-primary mx-auto w-[460px] max-w-full rounded-xl p-4")}>
+      <PointsDetailPanel
+        pointsAmount={anyspendQuote?.data?.pointsAmount || 0}
+        onBack={() => setActivePanel(PanelView.CONFIRM_ORDER)}
+      />
+    </div>
+  );
+
   // Return the TransitionPanel with all views
   return (
     <StyleRoot>
@@ -1193,6 +1240,9 @@ function AnySpendCustomInner({
           </div>,
           <div key="fiat-payment-method-view" className="w-full">
             {fiatPaymentMethodView}
+          </div>,
+          <div key="points-detail-view" className="w-full">
+            {pointsDetailView}
           </div>,
         ]}
       </TransitionPanel>

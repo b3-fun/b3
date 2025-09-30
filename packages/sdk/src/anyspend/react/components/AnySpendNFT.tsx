@@ -10,6 +10,7 @@ import { AnimatePresence } from "motion/react";
 import { useEffect, useState } from "react";
 import { b3 } from "viem/chains";
 import { GetQuoteResponse } from "../../types/api_req_res";
+import { useFeatureFlags } from "../contexts/FeatureFlagsContext";
 import { AnySpendCustom } from "./AnySpendCustom";
 
 // ABI for contractURI and uri functions
@@ -36,15 +37,18 @@ export function AnySpendNFT({
   recipientAddress,
   nftContract,
   onSuccess,
+  onShowPointsDetail,
 }: {
   loadOrder?: string;
   mode?: "modal" | "page";
   recipientAddress?: string;
   nftContract: components["schemas"]["NftContract"];
   onSuccess?: (txHash?: string) => void;
+  onShowPointsDetail?: () => void;
 }) {
   const [imageUrlWithFallback, setFallbackImageUrl] = useState<string | null>(nftContract.imageUrl);
   const [isLoadingFallback, setIsLoadingFallback] = useState(false);
+  const featureFlags = useFeatureFlags();
 
   // Fetch contract metadata when imageUrl is empty
   useEffect(() => {
@@ -126,7 +130,7 @@ export function AnySpendNFT({
         <div className="mb-1 flex w-full flex-col items-center gap-2 p-5">
           <span className="font-sf-rounded text-2xl font-semibold">{nftContract.name}</span>
 
-          <div className="flex w-fit items-center gap-1">
+          <div className="flex w-fit items-center gap-2">
             {anyspendPrice ? (
               <AnimatePresence mode="wait">
                 <div
@@ -139,6 +143,16 @@ export function AnySpendNFT({
               </AnimatePresence>
             ) : (
               <div className="h-[36px] w-full" />
+            )}
+            {featureFlags.showPoints && anyspendPrice?.data?.pointsAmount && anyspendPrice.data.pointsAmount > 0 && (
+              <button
+                key={`points-${anyspendPrice.data.pointsAmount}`}
+                className="bg-as-brand hover:scale-102 active:scale-98 active:scale-98 relative flex cursor-pointer items-center gap-1 rounded-lg px-2 py-1 transition-all"
+                onClick={() => onShowPointsDetail?.()}
+              >
+                <div className="pointer-events-none absolute inset-0 h-full w-full rounded-lg border border-white/10 border-t-white/20 bg-gradient-to-b from-white/10 to-white/0" />
+                <span className="text-xs text-white">+{anyspendPrice.data.pointsAmount.toLocaleString()} pts</span>
+              </button>
             )}
           </div>
         </div>
