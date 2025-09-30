@@ -1,4 +1,4 @@
-import { useAuthentication, useAuthStore, useB3, useQueryB3 } from "@b3dotfun/sdk/global-account/react";
+import { useB3, useQueryB3 } from "@b3dotfun/sdk/global-account/react";
 import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { Chain } from "thirdweb";
@@ -61,9 +61,6 @@ export function LoginStep({ onSuccess, onError, chain }: LoginStepProps) {
   });
 
   const { theme } = useB3();
-  const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
-  const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
-  const { logout } = useAuthentication();
 
   return (
     <LoginStepContainer partnerId={partnerId}>
@@ -85,29 +82,11 @@ export function LoginStep({ onSuccess, onError, chain }: LoginStepProps) {
                 },
               })
         }
-        autoConnect
         style={{
           width: "100%",
           height: "100%",
           border: 0,
         }}
-        // TODO: Integrate with SIWE in useSIWE
-        // auth={{
-        //   isLoggedIn: async (address) => {
-        //     console.log("checking if logged in!", { address });
-        //     return await isLoggedIn();
-        //   },
-        //   doLogin: async (params) => {
-        //     console.log("logging in!");
-        //     await login(params);
-        //   },
-        //   getLoginPayload: async ({ address }) =>
-        //     generatePayload({ address }),
-        //   doLogout: async () => {
-        //     console.log("logging out!");
-        //     await logout();
-        //   },
-        // }}
         header={{
           title: "Sign in with B3",
           titleIcon: "https://cdn.b3.fun/b3_logo.svg",
