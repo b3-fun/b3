@@ -1,13 +1,14 @@
 import app from "@b3dotfun/sdk/global-account/app";
 import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { thirdwebB3Mainnet } from "@b3dotfun/sdk/shared/constants/chains/b3Chain";
+import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { Loader2, Mail, Phone, WalletIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useLinkProfile, useProfiles } from "thirdweb/react";
-import { createWallet, preAuthenticate, WalletId } from "thirdweb/wallets";
-import { WalletRow } from "../..";
+import { Account, createWallet, preAuthenticate, WalletId } from "thirdweb/wallets";
+import { useSiwe, WalletRow } from "../..";
 import { LinkAccountModalProps, useModalStore } from "../../stores/useModalStore";
 import { getProfileDisplayInfo } from "../../utils/profileDisplay";
 import { useB3 } from "../B3Provider/useB3";
@@ -21,6 +22,7 @@ type OTPStrategy = "email" | "phone";
 type SocialStrategy = "google" | "x" | "discord" | "apple" | "farcaster";
 type Strategy = OTPStrategy | SocialStrategy | "wallet";
 
+const debug = debugB3React("LinkAccount");
 interface AuthMethod {
   id: Strategy;
   label: string;
@@ -93,6 +95,8 @@ export function LinkAccount({
   const [otpSent, setOtpSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { data: profilesRaw = [] } = useProfiles({ client });
+  const { account, setUser } = useB3();
+  const { authenticate } = useSiwe();
 
   // Get connected auth methods
   const connectedAuthMethods = profilesRaw
@@ -111,10 +115,20 @@ export function LinkAccount({
       originalProfile: profile,
     }));
 
-  const { account } = useB3();
   const { mutate: linkProfile } = useLinkProfile();
 
   const onSuccess = useCallback(async () => {
+    // Update user on success
+    // Try to re-authenticate first
+    try {
+      const userAuth = await app.reAuthenticate();
+      setUser(userAuth.user);
+    } catch (error) {
+      // If re-authentication fails, try fresh authentication
+      debug("Re-authentication failed, attempting fresh authentication");
+      const userAuth = await authenticate(account as Account, partnerId);
+      debug("Fresh authentication successful", { userAuth });
+    }
     await onSuccessCallback?.();
   }, [onSuccessCallback]);
 
