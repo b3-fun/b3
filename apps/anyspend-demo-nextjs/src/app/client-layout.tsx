@@ -8,7 +8,7 @@ import "@b3dotfun/sdk/index.css";
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   return (
     <B3Provider environment="production" theme="light" automaticallySetFirstEoa={true}>
-      <AnyspendProvider featureFlags={{ showPoints: true }}>
+      <AnyspendProvider>
         <B3DynamicModal />
         <StyleRoot>
           <main className="min-h-screen bg-gray-50">{children}</main>
