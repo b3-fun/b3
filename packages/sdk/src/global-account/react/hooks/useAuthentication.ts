@@ -3,9 +3,8 @@ import { useAuthStore, useB3 } from "@b3dotfun/sdk/global-account/react";
 import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { b3MainnetThirdWeb } from "@b3dotfun/sdk/shared/constants/chains/supported";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
-import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
-import { useEffect, useRef } from "react";
-import { useActiveWallet, useAutoConnect, useConnectedWallets, useDisconnect } from "thirdweb/react";
+import { useRef } from "react";
+import { useActiveWallet, useConnectedWallets, useDisconnect } from "thirdweb/react";
 import { ecosystemWallet } from "thirdweb/wallets";
 import { preAuthenticate } from "thirdweb/wallets/in-app";
 import { useConnect } from "./useConnect";
@@ -37,39 +36,6 @@ export function useAuthentication(loginWithSiwe?: boolean) {
     partnerId: partnerId,
   });
 
-  const { isLoading: useAutoConnectLoading } = useAutoConnect({
-    client,
-    wallets: [wallet],
-  });
-
-  /**
-   * useAutoConnectLoading starts as false
-   */
-  useEffect(() => {
-    if (!useAutoConnectLoading && useAutoConnectLoadingPrevious.current && !hasStartedConnecting) {
-      setIsAuthenticating(false);
-    }
-    useAutoConnectLoadingPrevious.current = useAutoConnectLoading;
-  }, [useAutoConnectLoading]);
-
-  // Ensure isAuthenticating stays true until we're fully ready
-  useEffect(() => {
-    if (useAutoConnectLoading) {
-      setIsConnecting(true);
-    } else if (!isAuthenticated) {
-      // Only set isAuthenticating to false if we're not authenticated
-      // This prevents the flicker state where both isAuthenticating and isAuthenticated are false
-      const timeout = setTimeout(() => {
-        debug("setIsAuthenticating:false:5a");
-        setIsConnecting(false);
-      }, 100); // Add a small delay to prevent quick flickers
-      return () => clearTimeout(timeout);
-    } else {
-      debug("setIsAuthenticating:false:5b");
-      setIsConnecting(false);
-    }
-  }, [useAutoConnectLoading, isAuthenticated, setIsConnecting, setIsConnected]);
-
   const logout = async (callback?: () => void) => {
     if (activeWallet) {
       debug("@@logout:activeWallet", activeWallet);
@@ -100,7 +66,7 @@ export function useAuthentication(loginWithSiwe?: boolean) {
     callback?.();
   };
 
-  const isReady = isAuthenticated && !useAutoConnectLoading && !isAuthenticating;
+  const isReady = isAuthenticated && !isAuthenticating;
 
   return {
     logout,
