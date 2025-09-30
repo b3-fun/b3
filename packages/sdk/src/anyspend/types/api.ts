@@ -1124,6 +1124,11 @@ export interface components {
        * @example 990000
        */
       actualDstAmount: string | null;
+      /**
+       * @description Amount in after fee
+       * @example 990000
+       */
+      amountInAfterFee: string | null;
     };
     /** @description HypeDuel-specific payload */
     HypeDuelPayload: {
@@ -1137,6 +1142,11 @@ export interface components {
        * @example 990000
        */
       actualDstAmount: string | null;
+      /**
+       * @description Amount in after fee
+       * @example 990000
+       */
+      amountInAfterFee: string | null;
     };
     /** @description Custom execution payload */
     CustomPayload: {
