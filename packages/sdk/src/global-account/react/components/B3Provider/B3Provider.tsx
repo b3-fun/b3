@@ -106,7 +106,7 @@ export function B3Provider({
           // coinbaseWallet({ appName: "HypeDuel" }),
         ],
       }),
-    [partnerId],
+    [ecocystemConfig, rpcUrls],
   );
 
   return (

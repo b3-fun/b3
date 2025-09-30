@@ -60,13 +60,14 @@ export function useQueryBSMNT<
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [service, method]);
 
   useEffect(() => {
     if (fetchInitially) {
       runQuery(params);
     }
-  }, [runQuery, fetchInitially, JSON.stringify(params)]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [runQuery, fetchInitially, params]);
 
   return { data, error, isLoading, runQuery };
 }
