@@ -122,6 +122,7 @@ export function LinkAccount({
     // Try to re-authenticate first
     try {
       const userAuth = await app.reAuthenticate();
+      console.log("@@setting user", userAuth)
       setUser(userAuth.user);
     } catch (error) {
       // If re-authentication fails, try fresh authentication
@@ -130,7 +131,7 @@ export function LinkAccount({
       debug("Fresh authentication successful", { userAuth });
     }
     await onSuccessCallback?.();
-  }, [onSuccessCallback]);
+  }, [onSuccessCallback, setUser, account, partnerId, authenticate]);
 
   // Reset linking state when component unmounts
   useEffect(() => {
