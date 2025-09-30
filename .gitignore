@@ -16,6 +16,7 @@ dist
 .next
 tsconfig.tsbuildinfo
 .tsbuildinfo
+*.timestamp-*.mjs
 
 doppler.yaml
 
