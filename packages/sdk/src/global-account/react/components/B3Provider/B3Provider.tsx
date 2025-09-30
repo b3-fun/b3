@@ -71,6 +71,30 @@ export function B3Provider({
   rpcUrls?: Record<number, string>;
   partnerId: string;
 }) {
+
+  const [user, setUser] = useState<Users | undefined>(() => {
+    // Try to restore user from localStorage on initialization
+    if (typeof window !== "undefined") {
+      try {
+        const storedUser = localStorage.getItem("b3-user");
+        return storedUser ? JSON.parse(storedUser) : undefined;
+      } catch (error) {
+        console.warn("Failed to restore user from localStorage:", error);
+        return undefined;
+      }
+    }
+    return undefined;
+  });
+
+  // Persist user to localStorage when it changes
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem("b3-user", JSON.stringify(user));
+    } else {
+      localStorage.removeItem("b3-user");
+    }
+  }, [user]);
+
   // Initialize Google Analytics on mount
   useEffect(() => {
     loadGA4Script();
@@ -170,6 +194,9 @@ export function B3Provider({
               theme={theme}
               automaticallySetFirstEoa={!!automaticallySetFirstEoa}
               clientType={clientType}
+              partnerId={partnerId}
+              user={user}
+              setUser={setUser}
             >
               <RelayKitProviderWrapper simDuneApiKey={simDuneApiKey}>
                 {children}
@@ -196,6 +223,9 @@ export function InnerProvider({
   automaticallySetFirstEoa,
   theme = "light",
   clientType = "socket",
+  partnerId,
+  user,
+  setUser,
 }: {
   children: React.ReactNode;
   accountOverride?: Account;
@@ -204,6 +234,9 @@ export function InnerProvider({
   automaticallySetFirstEoa: boolean;
   theme: "light" | "dark";
   clientType?: ClientType;
+  partnerId: string;
+  user: Users | undefined;
+  setUser: (user: Users | undefined) => void;
 }) {
   const activeAccount = useActiveAccount();
   const [manuallySelectedWallet, setManuallySelectedWallet] = useState<Wallet | undefined>(undefined);
@@ -212,33 +245,8 @@ export function InnerProvider({
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
   debug("@@wallets", wallets);
 
-  const [user, setUser] = useState<Users | undefined>(() => {
-    // Try to restore user from localStorage on initialization
-    if (typeof window !== "undefined") {
-      try {
-        const storedUser = localStorage.getItem("b3-user");
-        return storedUser ? JSON.parse(storedUser) : undefined;
-      } catch (error) {
-        console.warn("Failed to restore user from localStorage:", error);
-        return undefined;
-      }
-    }
-    return undefined;
-  });
-
   // Use given accountOverride or activeAccount from thirdweb
   const effectiveAccount = isAuthenticated ? accountOverride || activeAccount : undefined;
-
-  // Persist user to localStorage when it changes
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      if (user) {
-        localStorage.setItem("b3-user", JSON.stringify(user));
-      } else {
-        localStorage.removeItem("b3-user");
-      }
-    }
-  }, [user]);
 
   const setWallet = useCallback(
     (wallet: Wallet) => {
@@ -289,9 +297,9 @@ export function InnerProvider({
         environment,
         defaultPermissions,
         theme,
-          clientType,
-          partnerId: partnerId,
-        }}
+        clientType,
+        partnerId: partnerId,
+      }}
     >
       {children}
     </B3Context.Provider>
