@@ -45,13 +45,13 @@ function generateEncodedDataForStakingB3(amount: string, beneficiary: string): s
 export function AnySpendStakeB3({
   loadOrder,
   mode = "modal",
-  recipientAddress: recipientAddressProp,
+  recipientAddress,
   stakeAmount,
   onSuccess,
 }: {
   loadOrder?: string;
   mode?: "modal" | "page";
-  recipientAddress?: string;
+  recipientAddress: string;
   stakeAmount?: string;
   onSuccess?: () => void;
 }) {
@@ -69,9 +69,6 @@ export function AnySpendStakeB3({
 
   // Wagmi hooks for direct staking
   const { address } = useAccount();
-
-  // Use provided recipient address or default to connected wallet
-  const recipientAddress = recipientAddressProp || address || "";
   const { switchChainAndExecute, isSwitchingOrExecuting } = useUnifiedChainSwitchAndExecute();
 
   // State for direct staking flow
@@ -480,8 +477,7 @@ export function AnySpendStakeB3({
     );
   }
 
-  // Only generate encoded data if we have a valid recipient address
-  const encodedData = recipientAddress ? generateEncodedDataForStakingB3(userStakeAmount, recipientAddress) : "0x";
+  const encodedData = generateEncodedDataForStakingB3(userStakeAmount, recipientAddress);
 
   return (
     <AnySpendCustom
