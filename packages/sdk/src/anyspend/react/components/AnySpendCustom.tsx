@@ -100,7 +100,7 @@ function generateGetRelayQuoteRequest({
         srcTokenAddress: srcToken.address,
         dstChain: dstChainId,
         dstTokenAddress: dstToken.address,
-        recipientAddress: recipientAddress,
+        recipientAddress,
         price: dstAmount,
         contractAddress: contractAddress,
         tokenId: tokenId,
@@ -114,7 +114,7 @@ function generateGetRelayQuoteRequest({
         srcTokenAddress: srcToken.address,
         dstChain: dstChainId,
         dstTokenAddress: dstToken.address,
-        recipientAddress: recipientAddress,
+        recipientAddress,
         price: dstAmount,
         contractAddress: contractAddress,
       };
@@ -126,7 +126,7 @@ function generateGetRelayQuoteRequest({
         srcTokenAddress: srcToken.address,
         dstChain: dstChainId,
         dstTokenAddress: dstToken.address,
-        recipientAddress: recipientAddress,
+        recipientAddress,
         fundAmount: dstAmount,
         contractAddress: contractAddress,
       };
@@ -138,7 +138,7 @@ function generateGetRelayQuoteRequest({
         srcTokenAddress: srcToken.address,
         dstChain: dstChainId,
         dstTokenAddress: dstToken.address,
-        recipientAddress: recipientAddress,
+        recipientAddress,
         payload: {
           amount: dstAmount,
           data: encodedData,
