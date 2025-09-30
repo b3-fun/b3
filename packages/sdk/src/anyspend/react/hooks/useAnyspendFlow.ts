@@ -163,8 +163,7 @@ export function useAnyspendFlow({
     dstChain: isDepositMode ? base.id : selectedDstChainId, // For deposits, always Base; for swaps, use selected destination
     srcTokenAddress: paymentType === "fiat" ? USDC_BASE.address : selectedSrcToken.address,
     dstTokenAddress: isDepositMode ? B3_TOKEN.address : selectedSrcToken.address, // For deposits, always B3
-    type: "swap",
-    tradeType: "EXACT_INPUT",
+    type: "hype_duel",
     amount: activeInputAmountInWei,
     recipientAddress: selectedRecipientAddress,
     onrampVendor: paymentType === "fiat" ? getOnrampVendor(selectedFiatPaymentMethod) : undefined,
