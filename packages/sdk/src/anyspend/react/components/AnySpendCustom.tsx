@@ -927,16 +927,18 @@ function AnySpendCustomInner({
                     <span className="text-as-tertiarry text-sm">
                       Total <span className="text-as-tertiarry">(with fee)</span>
                     </span>
-                    {featureFlags.showPoints && anyspendQuote?.data?.pointsAmount && anyspendQuote.data.pointsAmount > 0 && (
-                      <PointsBadge
-                        pointsAmount={anyspendQuote.data.pointsAmount}
-                        pointsMultiplier={anyspendQuote.data.pointsMultiplier}
-                        onClick={() => {
-                          onShowPointsDetail?.();
-                          setActivePanel(PanelView.POINTS_DETAIL);
-                        }}
-                      />
-                    )}
+                    {featureFlags.showPoints &&
+                      anyspendQuote?.data?.pointsAmount &&
+                      anyspendQuote.data.pointsAmount > 0 && (
+                        <PointsBadge
+                          pointsAmount={anyspendQuote.data.pointsAmount}
+                          pointsMultiplier={anyspendQuote.data.pointsMultiplier}
+                          onClick={() => {
+                            onShowPointsDetail?.();
+                            setActivePanel(PanelView.POINTS_DETAIL);
+                          }}
+                        />
+                      )}
                   </div>
                   <span className="text-as-primary font-semibold">
                     {formattedSrcAmount || "--"} {srcToken.symbol}
@@ -1062,16 +1064,18 @@ function AnySpendCustomInner({
                   <span className="text-as-tertiarry text-sm">
                     Total <span className="text-as-tertiarry">(USD)</span>
                   </span>
-                  {featureFlags.showPoints && anyspendQuote?.data?.pointsAmount && anyspendQuote.data.pointsAmount > 0 && (
-                    <PointsBadge
-                      pointsAmount={anyspendQuote.data.pointsAmount}
-                      pointsMultiplier={anyspendQuote.data.pointsMultiplier}
-                      onClick={() => {
-                        onShowPointsDetail?.();
-                        setActivePanel(PanelView.POINTS_DETAIL);
-                      }}
-                    />
-                  )}
+                  {featureFlags.showPoints &&
+                    anyspendQuote?.data?.pointsAmount &&
+                    anyspendQuote.data.pointsAmount > 0 && (
+                      <PointsBadge
+                        pointsAmount={anyspendQuote.data.pointsAmount}
+                        pointsMultiplier={anyspendQuote.data.pointsMultiplier}
+                        onClick={() => {
+                          onShowPointsDetail?.();
+                          setActivePanel(PanelView.POINTS_DETAIL);
+                        }}
+                      />
+                    )}
                 </div>
                 <span className="text-as-primary text-xl font-semibold">${srcFiatAmount || "0.00"}</span>
               </motion.div>

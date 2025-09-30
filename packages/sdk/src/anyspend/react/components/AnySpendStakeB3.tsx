@@ -481,9 +481,7 @@ export function AnySpendStakeB3({
   }
 
   // Only generate encoded data if we have a valid recipient address
-  const encodedData = recipientAddress
-    ? generateEncodedDataForStakingB3(userStakeAmount, recipientAddress)
-    : "0x";
+  const encodedData = recipientAddress ? generateEncodedDataForStakingB3(userStakeAmount, recipientAddress) : "0x";
 
   return (
     <AnySpendCustom

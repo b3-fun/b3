@@ -13,9 +13,7 @@ export function PointsBadge({ pointsAmount, pointsMultiplier, onClick }: PointsB
       <div className="pointer-events-none absolute inset-0 h-full w-full rounded-lg border border-white/10 border-t-white/20 bg-gradient-to-b from-white/10 to-white/0" />
       <span className="relative text-xs text-white">
         +{pointsAmount.toLocaleString()} pts
-        {pointsMultiplier && pointsMultiplier > 1 && (
-          <span className="ml-1 opacity-80">({pointsMultiplier}x)</span>
-        )}
+        {pointsMultiplier && pointsMultiplier > 1 && <span className="ml-1 opacity-80">({pointsMultiplier}x)</span>}
       </span>
     </button>
   );
