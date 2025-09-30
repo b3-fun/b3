@@ -166,6 +166,7 @@ export function useAnyspendFlow({
     type: "swap",
     tradeType: "EXACT_INPUT",
     amount: activeInputAmountInWei,
+    recipientAddress: selectedRecipientAddress,
     onrampVendor: paymentType === "fiat" ? getOnrampVendor(selectedFiatPaymentMethod) : undefined,
   });
 

@@ -506,6 +506,11 @@ export interface paths {
                  */
                 dstTokenAddress: string;
                 /**
+                 * @description Recipient address
+                 * @example 0x55c71fca5e01cf246718748ae540473e608d0282
+                 */
+                recipientAddress?: string;
+                /**
                  * @description Type of trade execution
                  * @enum {string}
                  */
@@ -547,6 +552,11 @@ export interface paths {
                  * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
                  */
                 dstTokenAddress: string;
+                /**
+                 * @description Recipient address
+                 * @example 0x55c71fca5e01cf246718748ae540473e608d0282
+                 */
+                recipientAddress?: string;
                 /** @description Custom payload for execution */
                 payload: {
                   /** @description Encoded transaction data */
@@ -571,6 +581,11 @@ export interface paths {
                 dstChain: number;
                 srcTokenAddress: string;
                 dstTokenAddress: string;
+                /**
+                 * @description Recipient address
+                 * @example 0x55c71fca5e01cf246718748ae540473e608d0282
+                 */
+                recipientAddress?: string;
                 /** @enum {string} */
                 onrampVendor?: "coinbase" | "stripe" | "stripe-web2";
                 contractAddress: string;
@@ -586,6 +601,11 @@ export interface paths {
                 dstChain: number;
                 srcTokenAddress: string;
                 dstTokenAddress: string;
+                /**
+                 * @description Recipient address
+                 * @example 0x55c71fca5e01cf246718748ae540473e608d0282
+                 */
+                recipientAddress?: string;
                 /** @enum {string} */
                 onrampVendor?: "coinbase" | "stripe" | "stripe-web2";
                 contractAddress: string;
@@ -598,6 +618,11 @@ export interface paths {
                 dstChain: number;
                 srcTokenAddress: string;
                 dstTokenAddress: string;
+                /**
+                 * @description Recipient address
+                 * @example 0x55c71fca5e01cf246718748ae540473e608d0282
+                 */
+                recipientAddress?: string;
                 /** @enum {string} */
                 onrampVendor?: "coinbase" | "stripe" | "stripe-web2";
                 contractAddress: string;
@@ -629,6 +654,11 @@ export interface paths {
                  * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
                  */
                 dstTokenAddress: string;
+                /**
+                 * @description Recipient address
+                 * @example 0x55c71fca5e01cf246718748ae540473e608d0282
+                 */
+                recipientAddress?: string;
                 /**
                  * @description Amount to quote
                  * @example 1000000000000000000

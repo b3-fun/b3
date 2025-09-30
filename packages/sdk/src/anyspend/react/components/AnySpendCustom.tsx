@@ -70,6 +70,7 @@ function generateGetRelayQuoteRequest({
   srcToken,
   dstChainId,
   dstToken,
+  recipientAddress,
   dstAmount,
   contractAddress,
   tokenId,
@@ -82,6 +83,7 @@ function generateGetRelayQuoteRequest({
   srcToken: components["schemas"]["Token"];
   dstChainId: number;
   dstToken: components["schemas"]["Token"];
+  recipientAddress: string | undefined;
   dstAmount: string;
   contractAddress: string;
   tokenId?: number | null;
@@ -98,6 +100,7 @@ function generateGetRelayQuoteRequest({
         srcTokenAddress: srcToken.address,
         dstChain: dstChainId,
         dstTokenAddress: dstToken.address,
+        recipientAddress,
         price: dstAmount,
         contractAddress: contractAddress,
         tokenId: tokenId,
@@ -111,6 +114,7 @@ function generateGetRelayQuoteRequest({
         srcTokenAddress: srcToken.address,
         dstChain: dstChainId,
         dstTokenAddress: dstToken.address,
+        recipientAddress,
         price: dstAmount,
         contractAddress: contractAddress,
       };
@@ -122,6 +126,7 @@ function generateGetRelayQuoteRequest({
         srcTokenAddress: srcToken.address,
         dstChain: dstChainId,
         dstTokenAddress: dstToken.address,
+        recipientAddress,
         fundAmount: dstAmount,
         contractAddress: contractAddress,
       };
@@ -133,6 +138,7 @@ function generateGetRelayQuoteRequest({
         srcTokenAddress: srcToken.address,
         dstChain: dstChainId,
         dstTokenAddress: dstToken.address,
+        recipientAddress,
         payload: {
           amount: dstAmount,
           data: encodedData,
@@ -320,10 +326,11 @@ function AnySpendCustomInner({
       srcToken: activeTab === "fiat" ? USDC_BASE : srcToken,
       dstChainId: dstChainId,
       dstToken: dstToken,
+      recipientAddress,
       dstAmount: dstAmount,
       contractAddress: contractAddress,
-      tokenId: orderType === "mint_nft" ? metadata.nftContract.tokenId : undefined,
-      contractType: orderType === "mint_nft" ? metadata.nftContract.type : undefined,
+      tokenId: orderType === "mint_nft" ? metadata?.nftContract?.tokenId : undefined,
+      contractType: orderType === "mint_nft" ? metadata?.nftContract?.type : undefined,
       encodedData: encodedData,
       spenderAddress: spenderAddress,
     });
@@ -337,6 +344,7 @@ function AnySpendCustomInner({
     metadata?.nftContract?.tokenId,
     metadata?.nftContract?.type,
     orderType,
+    recipientAddress,
     spenderAddress,
     srcChainId,
     srcToken,
