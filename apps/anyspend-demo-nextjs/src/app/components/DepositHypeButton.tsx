@@ -27,7 +27,7 @@ export function DepositHypeButton() {
       setB3ModalOpen(true);
       setB3ModalContentType({
         type: "anySpendDepositHype",
-        recipientAddress: recipientAddress,
+        recipientAddress,
         paymentType: paymentType,
         sourceTokenAddress: "0x0000000000000000000000000000000000000000",
         sourceTokenChainId: 8453,
