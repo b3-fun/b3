@@ -1,5 +1,8 @@
 import { Users } from "@b3dotfun/b3-api";
+import app from "@b3dotfun/sdk/global-account/app";
+import { authenticateWithB3JWT } from "@b3dotfun/sdk/global-account/bsmnt";
 import { RelayKitProviderWrapper, TooltipProvider, useAuthStore } from "@b3dotfun/sdk/global-account/react";
+import { useSiwe } from "@b3dotfun/sdk/global-account/react/hooks/useSiwe";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { loadGA4Script } from "@b3dotfun/sdk/global-account/utils/analytics";
 import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
@@ -66,7 +69,7 @@ export function B3Provider({
   };
   clientType?: ClientType;
   rpcUrls?: Record<number, string>;
-  partnerId?: string;
+  partnerId: string;
 }) {
   // Initialize Google Analytics on mount
   useEffect(() => {
@@ -79,8 +82,6 @@ export function B3Provider({
   }, [clientType]);
 
   const ecocystemConfig = useMemo(() => {
-    if (!partnerId) return undefined;
-
     return {
       ecosystemId: ecosystemWalletId,
       partnerId: partnerId,
@@ -99,8 +100,57 @@ export function B3Provider({
         transports: Object.fromEntries(supportedChains.map(chain => [chain.id, http(rpcUrls?.[chain.id])])) as any,
         connectors: [
           inAppWalletConnector({
-            ...(ecocystemConfig || {}),
+            ...ecocystemConfig,
             client,
+            onConnect: (async (wallet: Wallet) => {
+              debug("@@wagmi:onConnect", { wallet });
+              const setIsAuthenticating = useAuthStore.getState().setIsAuthenticating;
+              const setIsAuthenticated = useAuthStore.getState().setIsAuthenticated;
+              const setIsConnected = useAuthStore.getState().setIsConnected;
+              const setHasStartedConnecting = useAuthStore.getState().setHasStartedConnecting;
+
+              setHasStartedConnecting(true);
+              setIsAuthenticating(true);
+
+              try {
+                const account = await wallet.getAccount();
+                if (!account) {
+                  throw new Error("No account found during auto-connect");
+                }
+
+                setIsConnected(true);
+
+                // Try to re-authenticate first
+                try {
+                  const userAuth = await app.reAuthenticate();
+                  setUser(userAuth.user);
+                  setIsAuthenticated(true);
+                  debug("@@wagmi:onConnect:reauth:success", { userAuth });
+
+                  // Authenticate on BSMNT with B3 JWT
+                  const b3Jwt = await authenticateWithB3JWT(userAuth.accessToken);
+                  debug("@@wagmi:onConnect:bsmnt:success", { b3Jwt });
+                } catch (error) {
+                  // If re-authentication fails, try fresh authentication
+                  debug("@@wagmi:onConnect:reauth:failed, attempting fresh auth", { error });
+                  const { authenticate } = useSiwe();
+                  const userAuth = await authenticate(account, partnerId);
+                  setUser(userAuth.user);
+                  setIsAuthenticated(true);
+                  debug("@@wagmi:onConnect:fresh:success", { userAuth });
+
+                  // Authenticate on BSMNT with B3 JWT
+                  const b3Jwt = await authenticateWithB3JWT(userAuth.accessToken);
+                  debug("@@wagmi:onConnect:bsmnt:success", { b3Jwt });
+                }
+              } catch (error) {
+                debug("@@wagmi:onConnect:failed", { error });
+                setIsAuthenticated(false);
+                setUser(undefined);
+              } finally {
+                setIsAuthenticating(false);
+              }
+            }) as any,
           }),
           // injected(),
           // coinbaseWallet({ appName: "HypeDuel" }),
@@ -239,8 +289,9 @@ export function InnerProvider({
         environment,
         defaultPermissions,
         theme,
-        clientType,
-      }}
+          clientType,
+          partnerId: partnerId,
+        }}
     >
       {children}
     </B3Context.Provider>

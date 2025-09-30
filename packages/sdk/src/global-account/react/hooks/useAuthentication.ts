@@ -1,5 +1,4 @@
 import app from "@b3dotfun/sdk/global-account/app";
-import { authenticateWithB3JWT } from "@b3dotfun/sdk/global-account/bsmnt";
 import { useAuthStore, useB3 } from "@b3dotfun/sdk/global-account/react";
 import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { b3MainnetThirdWeb } from "@b3dotfun/sdk/shared/constants/chains/supported";
@@ -14,7 +13,8 @@ import { useSiwe } from "./useSiwe";
 
 const debug = debugB3React("useAuthentication");
 
-export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
+export function useAuthentication(loginWithSiwe?: boolean) {
+  const { partnerId } = useB3();
   const { disconnect } = useDisconnect();
   const wallets = useConnectedWallets();
   const activeWallet = useActiveWallet();
@@ -31,7 +31,7 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
   const isAuthenticating = useAuthStore(state => state.isAuthenticating);
   const hasStartedConnecting = useAuthStore(state => state.hasStartedConnecting);
   const setHasStartedConnecting = useAuthStore(state => state.setHasStartedConnecting);
-  const { connect } = useConnect(partnerId, b3MainnetThirdWeb);
+  const { connect } = useConnect(b3MainnetThirdWeb);
 
   const wallet = ecosystemWallet(ecosystemWalletId, {
     partnerId: partnerId,
@@ -40,56 +40,6 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
   const { isLoading: useAutoConnectLoading } = useAutoConnect({
     client,
     wallets: [wallet],
-    onConnect: async wallet => {
-      setHasStartedConnecting(true);
-
-      try {
-        setIsConnected(true);
-        if (!loginWithSiwe) {
-          debug("Skipping SIWE login", { loginWithSiwe });
-          setIsAuthenticated(true);
-
-          setIsAuthenticating(false);
-          return;
-        }
-        debug("setIsAuthenticating:true:4");
-        const account = await wallet.getAccount();
-        if (!account) {
-          throw new Error("No account found during auto-connect");
-        }
-
-        // Try to re-authenticate first
-        try {
-          const userAuth = await app.reAuthenticate();
-          setUser(userAuth.user);
-          setIsAuthenticated(true);
-          setIsAuthenticating(false);
-          debug("Re-authenticated successfully", { userAuth });
-
-          // Authenticate on BSMNT with B3 JWT
-          const b3Jwt = await authenticateWithB3JWT(userAuth.accessToken);
-          console.log("@@b3Jwt", b3Jwt);
-        } catch (error) {
-          // If re-authentication fails, try fresh authentication
-          debug("Re-authentication failed, attempting fresh authentication");
-          const userAuth = await authenticate(account, partnerId);
-          setUser(userAuth.user);
-          setIsAuthenticated(true);
-          setIsAuthenticating(false);
-          debug("Fresh authentication successful", { userAuth });
-
-          // Authenticate on BSMNT with B3 JWT
-          const b3Jwt = await authenticateWithB3JWT(userAuth.accessToken);
-          console.log("@@b3Jwt", b3Jwt);
-        }
-      } catch (error) {
-        debug("Auto-connect authentication failed", { error });
-        setIsAuthenticated(false);
-        debug("setIsAuthenticating:false:4");
-        setUser();
-      }
-      setIsAuthenticating(false);
-    },
   });
 
   /**
