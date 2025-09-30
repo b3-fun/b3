@@ -1,5 +1,5 @@
 import { Users } from "@b3dotfun/b3-api";
-import { authenticateWithB3JWT } from "@b3dotfun/sdk/global-account/bsmnt";
+import app, { authenticateWithB3JWT } from "@b3dotfun/sdk/global-account/bsmnt";
 import { RelayKitProviderWrapper, TooltipProvider, useAuthStore, useSiwe } from "@b3dotfun/sdk/global-account/react";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { loadGA4Script } from "@b3dotfun/sdk/global-account/utils/analytics";
