@@ -7,6 +7,7 @@ import { motion } from "motion/react";
 import { components } from "../../../types/api";
 import { useFeatureFlags } from "../../contexts/FeatureFlagsContext";
 import { OrderTokenAmount } from "./OrderTokenAmount";
+import { PointsBadge } from "./PointsBadge";
 
 interface CryptoReceiveSectionProps {
   isDepositMode?: boolean;
@@ -163,15 +164,12 @@ export function CryptoReceiveSection({
               );
             })()}
         </div>
-        {featureFlags.showPoints && anyspendQuote?.data?.pointsAmount && anyspendQuote.data.pointsAmount > 0 && (
-          <button
-            key={`points-${anyspendQuote.data.pointsAmount}`}
-            className="bg-as-brand hover:scale-102 active:scale-98 active:scale-98 relative flex cursor-pointer items-center gap-1 rounded-lg px-2 py-1 transition-all"
+        {featureFlags.showPoints && anyspendQuote?.data?.pointsAmount > 0 && (
+          <PointsBadge
+            pointsAmount={anyspendQuote.data.pointsAmount}
+            pointsMultiplier={anyspendQuote.data.pointsMultiplier}
             onClick={() => onShowPointsDetail?.()}
-          >
-            <div className="pointer-events-none absolute inset-0 h-full w-full rounded-lg border border-white/10 border-t-white/20 bg-gradient-to-b from-white/10 to-white/0" />
-            <span className="text-xs text-white">+{anyspendQuote.data.pointsAmount.toLocaleString()} pts</span>
-          </button>
+          />
         )}
       </div>
     </motion.div>

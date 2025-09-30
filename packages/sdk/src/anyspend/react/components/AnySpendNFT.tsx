@@ -36,12 +36,14 @@ export function AnySpendNFT({
   recipientAddress,
   nftContract,
   onSuccess,
+  onShowPointsDetail,
 }: {
   loadOrder?: string;
   mode?: "modal" | "page";
   recipientAddress?: string;
   nftContract: components["schemas"]["NftContract"];
   onSuccess?: (txHash?: string) => void;
+  onShowPointsDetail?: () => void;
 }) {
   const [imageUrlWithFallback, setFallbackImageUrl] = useState<string | null>(nftContract.imageUrl);
   const [isLoadingFallback, setIsLoadingFallback] = useState(false);
@@ -164,6 +166,7 @@ export function AnySpendNFT({
       }}
       header={header}
       onSuccess={onSuccess}
+      onShowPointsDetail={onShowPointsDetail}
     />
   );
 }

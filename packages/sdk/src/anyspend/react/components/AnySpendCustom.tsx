@@ -42,12 +42,15 @@ import { motion } from "motion/react";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { base } from "viem/chains";
+import { useFeatureFlags } from "../contexts/FeatureFlagsContext";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
 import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPaymentMethod";
 import { FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaymentMethod";
 import { OrderDetails } from "./common/OrderDetails";
 import { OrderHistory } from "./common/OrderHistory";
 import { OrderToken } from "./common/OrderToken";
+import { PointsBadge } from "./common/PointsBadge";
+import { PointsDetailPanel } from "./common/PointsDetailPanel";
 import { RecipientSelection } from "./common/RecipientSelection";
 
 enum PanelView {
@@ -58,6 +61,7 @@ enum PanelView {
   RECIPIENT_SELECTION,
   CRYPTO_PAYMENT_METHOD,
   FIAT_PAYMENT_METHOD,
+  POINTS_DETAIL,
 }
 
 function generateGetRelayQuoteRequest({
@@ -165,6 +169,7 @@ export function AnySpendCustom(props: {
   }) => React.JSX.Element;
   onSuccess?: (txHash?: string) => void;
   showRecipient?: boolean;
+  onShowPointsDetail?: () => void;
 }) {
   const fingerprintConfig = getFingerprintConfig();
 
@@ -191,6 +196,7 @@ function AnySpendCustomInner({
   header,
   onSuccess,
   showRecipient = true,
+  onShowPointsDetail,
 }: {
   loadOrder?: string;
   mode?: "modal" | "page";
@@ -213,8 +219,10 @@ function AnySpendCustomInner({
   }) => React.JSX.Element;
   onSuccess?: (txHash?: string) => void;
   showRecipient?: boolean;
+  onShowPointsDetail?: () => void;
 }) {
   const hasMounted = useHasMounted();
+  const featureFlags = useFeatureFlags();
 
   const searchParams = useSearchParamsSSR();
   const router = useRouter();
@@ -747,6 +755,23 @@ function AnySpendCustomInner({
     </div>
   );
 
+  // Render points badge if conditions are met
+  const renderPointsBadge = () => {
+    if (featureFlags.showPoints && anyspendQuote?.data?.pointsAmount && anyspendQuote.data.pointsAmount > 0) {
+      return (
+        <PointsBadge
+          pointsAmount={anyspendQuote.data.pointsAmount}
+          pointsMultiplier={anyspendQuote.data.pointsMultiplier}
+          onClick={() => {
+            onShowPointsDetail?.();
+            setActivePanel(PanelView.POINTS_DETAIL);
+          }}
+        />
+      );
+    }
+    return null;
+  };
+
   // Confirm order view.
   const confirmOrderView = (
     <div className={"relative mx-auto flex w-full flex-col items-center"}>
@@ -915,9 +940,12 @@ function AnySpendCustomInner({
                   transition={{ duration: 0.3, delay: 0.1, ease: "easeInOut" }}
                   className="relative flex w-full items-center justify-between"
                 >
-                  <span className="text-as-tertiarry text-sm">
-                    Total <span className="text-as-tertiarry">(with fee)</span>
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-as-tertiarry text-sm">
+                      Total <span className="text-as-tertiarry">(with fee)</span>
+                    </span>
+                    {renderPointsBadge()}
+                  </div>
                   <span className="text-as-primary font-semibold">
                     {formattedSrcAmount || "--"} {srcToken.symbol}
                   </span>
@@ -1038,9 +1066,12 @@ function AnySpendCustomInner({
                 transition={{ duration: 0.3, delay: 0.1, ease: "easeInOut" }}
                 className="relative flex w-full items-center justify-between"
               >
-                <span className="text-as-tertiarry text-sm">
-                  Total <span className="text-as-tertiarry">(USD)</span>
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-as-tertiarry text-sm">
+                    Total <span className="text-as-tertiarry">(USD)</span>
+                  </span>
+                  {renderPointsBadge()}
+                </div>
                 <span className="text-as-primary text-xl font-semibold">${srcFiatAmount || "0.00"}</span>
               </motion.div>
             </div>
@@ -1151,6 +1182,16 @@ function AnySpendCustomInner({
     </div>
   );
 
+  // Points detail view
+  const pointsDetailView = (
+    <div className={cn("bg-as-surface-primary mx-auto w-[460px] max-w-full rounded-xl p-4")}>
+      <PointsDetailPanel
+        pointsAmount={anyspendQuote?.data?.pointsAmount || 0}
+        onBack={() => setActivePanel(PanelView.CONFIRM_ORDER)}
+      />
+    </div>
+  );
+
   // Return the TransitionPanel with all views
   return (
     <StyleRoot>
@@ -1193,6 +1234,9 @@ function AnySpendCustomInner({
           </div>,
           <div key="fiat-payment-method-view" className="w-full">
             {fiatPaymentMethodView}
+          </div>,
+          <div key="points-detail-view" className="w-full">
+            {pointsDetailView}
           </div>,
         ]}
       </TransitionPanel>
