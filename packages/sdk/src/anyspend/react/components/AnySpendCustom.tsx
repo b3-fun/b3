@@ -42,6 +42,7 @@ import { motion } from "motion/react";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { base } from "viem/chains";
+import { useFeatureFlags } from "../contexts/FeatureFlagsContext";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
 import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPaymentMethod";
 import { FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaymentMethod";
@@ -51,7 +52,6 @@ import { OrderToken } from "./common/OrderToken";
 import { PointsBadge } from "./common/PointsBadge";
 import { PointsDetailPanel } from "./common/PointsDetailPanel";
 import { RecipientSelection } from "./common/RecipientSelection";
-import { useFeatureFlags } from "../contexts/FeatureFlagsContext";
 
 enum PanelView {
   CONFIRM_ORDER,
@@ -757,7 +757,7 @@ function AnySpendCustomInner({
 
   // Render points badge if conditions are met
   const renderPointsBadge = () => {
-    if (featureFlags.showPoints && anyspendQuote?.data?.pointsAmount > 0) {
+    if (featureFlags.showPoints && anyspendQuote?.data?.pointsAmount && anyspendQuote.data.pointsAmount > 0) {
       return (
         <PointsBadge
           pointsAmount={anyspendQuote.data.pointsAmount}

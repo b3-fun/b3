@@ -260,13 +260,15 @@ export function PanelOnramp({
                   return fee !== null ? `Total (included $${fee.toFixed(2)} fee)` : "Total";
                 })()}
               </span>
-              {featureFlags.showPoints && anyspendQuote?.data?.pointsAmount > 0 && (
-                <PointsBadge
-                  pointsAmount={anyspendQuote.data.pointsAmount}
-                  pointsMultiplier={anyspendQuote.data.pointsMultiplier}
-                  onClick={() => onShowPointsDetail?.()}
-                />
-              )}
+              {featureFlags.showPoints &&
+                anyspendQuote?.data?.pointsAmount &&
+                anyspendQuote?.data?.pointsAmount > 0 && (
+                  <PointsBadge
+                    pointsAmount={anyspendQuote.data.pointsAmount}
+                    pointsMultiplier={anyspendQuote.data.pointsMultiplier}
+                    onClick={() => onShowPointsDetail?.()}
+                  />
+                )}
             </div>
             <span className="text-as-primary font-semibold">
               ${getTotalAmount(selectedPaymentMethod || FiatPaymentMethod.NONE).toFixed(2)}

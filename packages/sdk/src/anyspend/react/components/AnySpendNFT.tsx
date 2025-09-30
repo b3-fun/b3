@@ -10,9 +10,7 @@ import { AnimatePresence } from "motion/react";
 import { useEffect, useState } from "react";
 import { b3 } from "viem/chains";
 import { GetQuoteResponse } from "../../types/api_req_res";
-import { useFeatureFlags } from "../contexts/FeatureFlagsContext";
 import { AnySpendCustom } from "./AnySpendCustom";
-import { PointsBadge } from "./common/PointsBadge";
 
 // ABI for contractURI and uri functions
 const CONTRACT_URI_ABI = [
@@ -49,7 +47,6 @@ export function AnySpendNFT({
 }) {
   const [imageUrlWithFallback, setFallbackImageUrl] = useState<string | null>(nftContract.imageUrl);
   const [isLoadingFallback, setIsLoadingFallback] = useState(false);
-  const featureFlags = useFeatureFlags();
 
   // Fetch contract metadata when imageUrl is empty
   useEffect(() => {
@@ -131,7 +128,7 @@ export function AnySpendNFT({
         <div className="mb-1 flex w-full flex-col items-center gap-2 p-5">
           <span className="font-sf-rounded text-2xl font-semibold">{nftContract.name}</span>
 
-          <div className="flex w-fit items-center gap-2">
+          <div className="flex w-fit items-center gap-1">
             {anyspendPrice ? (
               <AnimatePresence mode="wait">
                 <div
@@ -144,13 +141,6 @@ export function AnySpendNFT({
               </AnimatePresence>
             ) : (
               <div className="h-[36px] w-full" />
-            )}
-            {featureFlags.showPoints && anyspendPrice?.data?.pointsAmount > 0 && (
-              <PointsBadge
-                pointsAmount={anyspendPrice.data.pointsAmount}
-                pointsMultiplier={anyspendPrice.data.pointsMultiplier}
-                onClick={() => onShowPointsDetail?.()}
-              />
             )}
           </div>
         </div>
@@ -176,6 +166,7 @@ export function AnySpendNFT({
       }}
       header={header}
       onSuccess={onSuccess}
+      onShowPointsDetail={onShowPointsDetail}
     />
   );
 }
