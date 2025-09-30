@@ -14,12 +14,12 @@ import { useSiwe } from "./useSiwe";
 
 const debug = debugB3React("useAuthentication");
 
-export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
+export function useAuthentication(loginWithSiwe?: boolean) {
   const { disconnect } = useDisconnect();
   const wallets = useConnectedWallets();
   const activeWallet = useActiveWallet();
   const { authenticate } = useSiwe();
-  const { setUser } = useB3();
+  const { setUser, partnerId } = useB3();
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
   const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
   const setIsConnecting = useAuthStore(state => state.setIsConnecting);
@@ -31,7 +31,11 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
   const isAuthenticating = useAuthStore(state => state.isAuthenticating);
   const hasStartedConnecting = useAuthStore(state => state.hasStartedConnecting);
   const setHasStartedConnecting = useAuthStore(state => state.setHasStartedConnecting);
-  const { connect } = useConnect(partnerId, b3MainnetThirdWeb);
+  const { connect } = useConnect(b3MainnetThirdWeb);
+
+  if (!partnerId) {
+    throw new Error("partnerId is required in B3Provider");
+  }
 
   const wallet = ecosystemWallet(ecosystemWalletId, {
     partnerId: partnerId,

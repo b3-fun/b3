@@ -12,7 +12,13 @@ const rpcUrls = {
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <B3Provider environment="production" theme="light" automaticallySetFirstEoa={true} rpcUrls={rpcUrls}>
+    <B3Provider
+      environment="production"
+      theme="light"
+      automaticallySetFirstEoa={true}
+      rpcUrls={rpcUrls}
+      partnerId={String(process.env.NEXT_PUBLIC_THIRDWEB_PARTNER_ID || "68b6cf34-2699-42f6-8cbc-0d5ea40c6b52")}
+    >
       <B3DynamicModal />
       <StyleRoot>{children}</StyleRoot>
     </B3Provider>

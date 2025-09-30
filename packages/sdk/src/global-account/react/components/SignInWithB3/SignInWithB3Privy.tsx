@@ -14,15 +14,14 @@ interface SignInWithB3PrivyProps {
   onError?: (error: Error) => Promise<void>;
   onSuccess: (account: Account) => Promise<void>;
   accessToken?: string;
-  partnerId: string;
   chain: Chain;
 }
 
-export function SignInWithB3Privy({ onSuccess, onError, partnerId, chain }: SignInWithB3PrivyProps) {
-  const { isLoading, connectTw, fullToken } = useHandleConnectWithPrivy(partnerId, chain, onSuccess);
+export function SignInWithB3Privy({ onSuccess, onError, chain }: SignInWithB3PrivyProps) {
+  const { isLoading, connectTw, fullToken } = useHandleConnectWithPrivy(chain, onSuccess);
   const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
   const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
-  const { logout } = useAuthentication(partnerId);
+  const { logout } = useAuthentication();
 
   debug("@@SignInWithB3Privy", {
     isLoading,

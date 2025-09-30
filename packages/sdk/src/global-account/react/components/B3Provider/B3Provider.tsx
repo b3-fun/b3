@@ -1,4 +1,6 @@
 import { Users } from "@b3dotfun/b3-api";
+import app from "@b3dotfun/sdk/global-account/app";
+import { authenticateWithB3JWT } from "@b3dotfun/sdk/global-account/bsmnt";
 import { RelayKitProviderWrapper, TooltipProvider, useAuthStore } from "@b3dotfun/sdk/global-account/react";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { loadGA4Script } from "@b3dotfun/sdk/global-account/utils/analytics";
@@ -9,7 +11,7 @@ import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import "@reservoir0x/relay-kit-ui/styles.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { inAppWalletConnector } from "@thirdweb-dev/wagmi-adapter";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Toaster } from "sonner";
 import {
   getLastAuthProvider,
@@ -21,6 +23,7 @@ import {
 import { Account, Wallet } from "thirdweb/wallets";
 import { createConfig, http, WagmiProvider } from "wagmi";
 import { ClientType, setClientType } from "../../../client-manager";
+import { useSiwe } from "../../hooks/useSiwe";
 import { StyleRoot } from "../StyleRoot";
 import { B3Context, B3ContextType } from "./types";
 
@@ -53,6 +56,7 @@ export function B3Provider({
   clientType = "rest",
   rpcUrls,
   partnerId,
+  loginWithSiwe,
 }: {
   theme: "light" | "dark";
   children: React.ReactNode;
@@ -66,7 +70,8 @@ export function B3Provider({
   };
   clientType?: ClientType;
   rpcUrls?: Record<number, string>;
-  partnerId?: string;
+  partnerId: string;
+  loginWithSiwe?: boolean;
 }) {
   // Initialize Google Analytics on mount
   useEffect(() => {
@@ -79,8 +84,6 @@ export function B3Provider({
   }, [clientType]);
 
   const ecocystemConfig = useMemo(() => {
-    if (!partnerId) return undefined;
-
     return {
       ecosystemId: ecosystemWalletId,
       partnerId: partnerId,
@@ -89,7 +92,7 @@ export function B3Provider({
   }, [partnerId]);
 
   /**
-   * Creates wagmi config with optional custom RPC URLs
+   * Creates wagmi config with optional custom RPC URLs and handles onConnect from wagmi adapter
    * @param rpcUrls - Optional mapping of chain IDs to RPC URLs
    */
   const wagmiConfig = useMemo(
@@ -99,14 +102,19 @@ export function B3Provider({
         transports: Object.fromEntries(supportedChains.map(chain => [chain.id, http(rpcUrls?.[chain.id])])) as any,
         connectors: [
           inAppWalletConnector({
-            ...(ecocystemConfig || {}),
+            ...ecocystemConfig,
             client,
+            onConnect: async wallet => {
+              debug("@@wagmi-adapter:onConnect", wallet);
+              // This onConnect will be triggered by the wagmi adapter's auto-connect
+              // We'll handle the authentication in InnerProvider
+            },
           }),
           // injected(),
           // coinbaseWallet({ appName: "HypeDuel" }),
         ],
       }),
-    [partnerId],
+    [ecocystemConfig, rpcUrls],
   );
 
   return (
@@ -120,6 +128,8 @@ export function B3Provider({
               theme={theme}
               automaticallySetFirstEoa={!!automaticallySetFirstEoa}
               clientType={clientType}
+              partnerId={partnerId}
+              loginWithSiwe={loginWithSiwe}
             >
               <RelayKitProviderWrapper simDuneApiKey={simDuneApiKey}>
                 {children}
@@ -146,6 +156,8 @@ export function InnerProvider({
   automaticallySetFirstEoa,
   theme = "light",
   clientType = "socket",
+  partnerId,
+  loginWithSiwe,
 }: {
   children: React.ReactNode;
   accountOverride?: Account;
@@ -154,12 +166,20 @@ export function InnerProvider({
   automaticallySetFirstEoa: boolean;
   theme: "light" | "dark";
   clientType?: ClientType;
+  partnerId: string;
+  loginWithSiwe?: boolean;
 }) {
   const activeAccount = useActiveAccount();
   const [manuallySelectedWallet, setManuallySelectedWallet] = useState<Wallet | undefined>(undefined);
   const wallets = useConnectedWallets();
   const setActiveWallet = useSetActiveWallet();
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
+  const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
+  const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
+  const setIsConnected = useAuthStore(state => state.setIsConnected);
+  const setHasStartedConnecting = useAuthStore(state => state.setHasStartedConnecting);
+  const { authenticate } = useSiwe();
+  const hasAuthenticatedRef = useRef(false);
   debug("@@wallets", wallets);
 
   const [user, setUser] = useState<Users | undefined>(() => {
@@ -175,6 +195,86 @@ export function InnerProvider({
     }
     return undefined;
   });
+
+  // Handle authentication when wallets connect (from wagmi adapter auto-connect)
+  useEffect(() => {
+    const handleWalletConnection = async () => {
+      // Only run if we have wallets and haven't authenticated yet
+      if (wallets.length === 0 || hasAuthenticatedRef.current || isAuthenticated) {
+        return;
+      }
+
+      // Find ecosystem wallet
+      const ecosystemWallet = wallets.find(w => w.id.startsWith("ecosystem."));
+      if (!ecosystemWallet) {
+        debug("No ecosystem wallet found");
+        return;
+      }
+
+      debug("@@handleWalletConnection:starting", { wallets, loginWithSiwe });
+      hasAuthenticatedRef.current = true;
+      setHasStartedConnecting(true);
+
+      try {
+        setIsConnected(true);
+        if (!loginWithSiwe) {
+          debug("Skipping SIWE login", { loginWithSiwe });
+          setIsAuthenticated(true);
+          setIsAuthenticating(false);
+          return;
+        }
+
+        const account = await ecosystemWallet.getAccount();
+        if (!account) {
+          throw new Error("No account found during auto-connect");
+        }
+
+        // Try to re-authenticate first
+        try {
+          const userAuth = await app.reAuthenticate();
+          setUser(userAuth.user);
+          setIsAuthenticated(true);
+          setIsAuthenticating(false);
+          debug("Re-authenticated successfully", { userAuth });
+
+          // Authenticate on BSMNT with B3 JWT
+          const b3Jwt = await authenticateWithB3JWT(userAuth.accessToken);
+          console.log("@@b3Jwt", b3Jwt);
+        } catch (error) {
+          // If re-authentication fails, try fresh authentication
+          debug("Re-authentication failed, attempting fresh authentication");
+          const userAuth = await authenticate(account, partnerId);
+          setUser(userAuth.user);
+          setIsAuthenticated(true);
+          setIsAuthenticating(false);
+          debug("Fresh authentication successful", { userAuth });
+
+          // Authenticate on BSMNT with B3 JWT
+          const b3Jwt = await authenticateWithB3JWT(userAuth.accessToken);
+          console.log("@@b3Jwt", b3Jwt);
+        }
+      } catch (error) {
+        debug("Auto-connect authentication failed", { error });
+        setIsAuthenticated(false);
+        setIsAuthenticating(false);
+        setUser(undefined);
+        hasAuthenticatedRef.current = false;
+      }
+    };
+
+    handleWalletConnection();
+  }, [
+    wallets,
+    loginWithSiwe,
+    isAuthenticated,
+    partnerId,
+    authenticate,
+    setIsAuthenticated,
+    setIsAuthenticating,
+    setIsConnected,
+    setHasStartedConnecting,
+    setUser,
+  ]);
 
   // Use given accountOverride or activeAccount from thirdweb
   const effectiveAccount = isAuthenticated ? accountOverride || activeAccount : undefined;
@@ -240,6 +340,7 @@ export function InnerProvider({
         defaultPermissions,
         theme,
         clientType,
+        partnerId,
       }}
     >
       {children}

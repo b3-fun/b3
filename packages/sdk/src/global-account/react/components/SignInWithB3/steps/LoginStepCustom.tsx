@@ -7,6 +7,7 @@ import {
   LoginStepContainer,
   useAuthentication,
   useAuthStore,
+  useB3,
   useConnect,
   WalletRow,
 } from "@b3dotfun/sdk/global-account/react";
@@ -21,7 +22,6 @@ interface LoginStepCustomProps {
   automaticallySetFirstEoa: boolean;
   onSuccess: (account: Account) => Promise<void>;
   onError?: (error: Error) => Promise<void>;
-  partnerId: string;
   chain: Chain;
   strategies: AllowedStrategy[];
   maxInitialWallets?: number;
@@ -32,7 +32,6 @@ const debug = debugB3React("LoginStepCustom");
 export function LoginStepCustom({
   onSuccess,
   onError,
-  partnerId,
   chain,
   strategies,
   maxInitialWallets = 2,
@@ -40,11 +39,16 @@ export function LoginStepCustom({
 }: LoginStepCustomProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [showAllWallets, setShowAllWallets] = useState(false);
-  const { connect } = useConnect(partnerId, chain);
+  const { partnerId } = useB3();
+  const { connect } = useConnect(chain);
   const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
   const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
-  const { logout } = useAuthentication(partnerId);
+  const { logout } = useAuthentication();
   const { connect: connectTW } = useConnectTW();
+
+  if (!partnerId) {
+    throw new Error("partnerId is required in B3Provider");
+  }
 
   // Split strategies into auth and wallet types
   const authStrategies = strategies.filter(s => !isWalletType(s));
