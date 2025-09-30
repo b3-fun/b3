@@ -12,7 +12,7 @@ import { useSiwe } from "./useSiwe";
 
 const debug = debugB3React("useAuthentication");
 
-export function useAuthentication(loginWithSiwe?: boolean) {
+export function useAuthentication() {
   const { partnerId } = useB3();
   const { disconnect } = useDisconnect();
   const wallets = useConnectedWallets();

@@ -84,7 +84,7 @@ export function ManageAccount({
   });
   const { setB3ModalOpen, contentType } = useModalStore();
   const { activeTab = "overview", setActiveTab } = contentType as ManageAccountModalProps;
-  const { logout } = useAuthentication(partnerId);
+  const { logout } = useAuthentication();
   const [logoutLoading, setLogoutLoading] = useState(false);
 
   const { removeSessionKey } = useRemoveSessionKey({
