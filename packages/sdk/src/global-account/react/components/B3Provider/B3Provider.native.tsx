@@ -1,12 +1,11 @@
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useState } from "react";
 import { ThirdwebProvider, useActiveAccount } from "thirdweb/react";
 import { Account } from "thirdweb/wallets";
 
-import { Users } from "@b3dotfun/b3-api";
 import { ClientType } from "../../../client-manager";
 
+import { useOnConnect } from "../../hooks/useOnConnect";
 import { B3Context, B3ContextType } from "./types";
 
 /**
@@ -80,7 +79,7 @@ export function InnerProvider({
   partnerId: string;
 }) {
   const activeAccount = useActiveAccount();
-  const [user, setUser] = useState<Users | undefined>(undefined);
+  const { user, setUser, refetchUser } = useOnConnect(partnerId);
 
   // Use given accountOverride or activeAccount from thirdweb
   const effectiveAccount = accountOverride || activeAccount;
@@ -101,6 +100,7 @@ export function InnerProvider({
         theme,
         clientType,
         partnerId,
+        refetchUser,
       }}
     >
       {children}
