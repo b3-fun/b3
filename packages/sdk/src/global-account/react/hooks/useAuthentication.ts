@@ -81,7 +81,7 @@ export function useAuthentication(partnerId: string) {
         debug("@@b3Jwt", b3Jwt);
       }
     },
-    [activeWallet, partnerId, authenticate, setIsAuthenticated, setIsAuthenticating, setUser],
+    [activeWallet, partnerId, authenticate, setIsAuthenticated, setIsAuthenticating, setUser, setHasStartedConnecting],
   );
 
   const onConnect = useCallback(
