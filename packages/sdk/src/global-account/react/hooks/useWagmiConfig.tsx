@@ -42,7 +42,7 @@ export function useWagmiConfig(partnerId: string, rpcUrls?: Record<number, strin
         // coinbaseWallet({ appName: "HypeDuel" }),
       ],
     });
-  }, [partnerId, rpcUrlsString]);
+  }, [partnerId, rpcUrlsString, ecocystemConfig]);
 
   return wagmiConfig;
 }

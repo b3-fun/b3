@@ -214,6 +214,6 @@ const InnerProvider2 = ({ children }: { children: React.ReactNode }) => {
     if (account.isDisconnected) {
       setIsAuthenticating(false);
     }
-  }, [account]);
+  }, [account, setIsAuthenticating]);
   return <>{children}</>;
 };

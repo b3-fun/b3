@@ -70,7 +70,7 @@ export function useAuthentication(partnerId: string) {
         debug("@@b3Jwt", b3Jwt);
       }
     },
-    [activeWallet],
+    [activeWallet, partnerId, authenticate, setIsAuthenticated, setIsAuthenticating, setUser],
   );
 
   const onConnect = useCallback(async (wallet: Wallet) => {
