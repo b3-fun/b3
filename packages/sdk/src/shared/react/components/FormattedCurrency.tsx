@@ -27,7 +27,7 @@ export function FormattedCurrency({
   decimals,
   currency,
 }: FormattedCurrencyProps) {
-  const { formatCurrencyValue, selectedCurrency, baseCurrency, exchangeRate } = useCurrencyConversion();
+  const { formatCurrencyValue, formatTooltipValue, selectedCurrency, baseCurrency } = useCurrencyConversion();
   const { openModal } = useCurrencyModalStore();
 
   // Use passed currency or fall back to selected currency
@@ -60,60 +60,13 @@ export function FormattedCurrency({
     formattedValue = formatCurrencyValue(baseAmount);
   }
 
-  // Calculate tooltip value with dynamic decimal handling
-  const getTooltipValue = () => {
-    let baseTooltipValue = "";
+  // Generate tooltip using the centralized hook function
+  const baseTooltipValue = formatTooltipValue(amount, currency);
 
-    if (currency) {
-      // Custom currency - show base currency equivalent in tooltip
-      if (currency === baseCurrency) {
-        const usdValue = exchangeRate ? Math.abs(amount) * exchangeRate : Math.abs(amount);
-        let tooltipDecimals = 2;
-        let formatted = usdValue.toFixed(tooltipDecimals);
-        while (parseFloat(formatted) === 0 && usdValue > 0 && tooltipDecimals < 8) {
-          tooltipDecimals++;
-          formatted = usdValue.toFixed(tooltipDecimals);
-        }
-        baseTooltipValue = `$${formatted} USD`;
-      } else {
-        // Show as-is for other currencies, no conversion available
-        baseTooltipValue = `${Math.abs(amount).toFixed(4)} ${currency}`;
-      }
-    } else if (activeCurrency === baseCurrency) {
-      // Show USD equivalent when displaying base currency
-      const usdValue = exchangeRate ? Math.abs(amount) * exchangeRate : Math.abs(amount);
-
-      // Apply dynamic decimal handling for USD tooltip
-      let tooltipDecimals = 2;
-      let formatted = usdValue.toFixed(tooltipDecimals);
-      while (parseFloat(formatted) === 0 && usdValue > 0 && tooltipDecimals < 8) {
-        tooltipDecimals++;
-        formatted = usdValue.toFixed(tooltipDecimals);
-      }
-      baseTooltipValue = `$${formatted} USD`;
-    } else {
-      // Show original base currency value when displaying other currencies
-      const baseValue = Math.abs(amount);
-
-      // Apply dynamic decimal handling for base currency tooltip
-      let tooltipDecimals = baseCurrency === "B3" ? 0 : 2;
-      let formatted = baseValue.toFixed(tooltipDecimals);
-      while (parseFloat(formatted) === 0 && baseValue > 0 && tooltipDecimals < 8) {
-        tooltipDecimals++;
-        formatted = baseValue.toFixed(tooltipDecimals);
-      }
-      baseTooltipValue = `${formatted} ${baseCurrency}`;
-    }
-
-    // Add change indicator if needed
-    if (showChange) {
-      return `${isPositive ? "+" : "-"}${baseTooltipValue}`;
-    }
-
-    return baseTooltipValue;
-  };
-
-  const tooltipValue = getTooltipValue();
+  // Add change indicator if needed
+  const tooltipValue = showChange
+    ? `${isPositive ? "+" : "-"}${baseTooltipValue}`
+    : baseTooltipValue;
 
   // Determine color class
   let colorClass = "";
