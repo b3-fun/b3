@@ -69,6 +69,7 @@ export function InnerProvider({
   defaultPermissions = DEFAULT_PERMISSIONS,
   theme = "light",
   clientType = "socket",
+  partnerId,
 }: {
   children: React.ReactNode;
   accountOverride?: Account;
@@ -76,6 +77,7 @@ export function InnerProvider({
   defaultPermissions?: PermissionsConfig;
   theme: "light" | "dark";
   clientType?: ClientType;
+  partnerId: string;
 }) {
   const activeAccount = useActiveAccount();
   const [user, setUser] = useState<Users | undefined>(undefined);
@@ -98,6 +100,7 @@ export function InnerProvider({
         defaultPermissions,
         theme,
         clientType,
+        partnerId,
       }}
     >
       {children}
