@@ -73,29 +73,43 @@ export function useAuthentication(partnerId: string) {
     [activeWallet, partnerId, authenticate, setIsAuthenticated, setIsAuthenticating, setUser],
   );
 
-  const onConnect = useCallback(async (wallet: Wallet) => {
-    debug("@@wagmi:onConnect", { wallet });
+  const onConnect = useCallback(
+    async (wallet: Wallet) => {
+      debug("@@wagmi:onConnect", { wallet });
 
-    try {
-      setHasStartedConnecting(true);
-      setIsConnected(true);
-      setIsAuthenticating(true);
-      await setActiveWallet(wallet);
-      await authenticateUser(wallet);
-    } catch (error) {
-      debug("@@wagmi:onConnect:failed", { error });
-      setIsAuthenticated(false);
-      setUser(undefined);
-    } finally {
-      setIsAuthenticating(false);
-    }
+      try {
+        setHasStartedConnecting(true);
+        setIsConnected(true);
+        setIsAuthenticating(true);
+        await setActiveWallet(wallet);
+        await authenticateUser(wallet);
+      } catch (error) {
+        debug("@@wagmi:onConnect:failed", { error });
+        setIsAuthenticated(false);
+        setUser(undefined);
+      } finally {
+        setIsAuthenticating(false);
+      }
 
-    debug({
+      debug({
+        isAuthenticated,
+        isAuthenticating,
+        isConnected,
+      });
+    },
+    [
+      authenticateUser,
       isAuthenticated,
       isAuthenticating,
       isConnected,
-    });
-  }, []);
+      setActiveWallet,
+      setHasStartedConnecting,
+      setIsAuthenticated,
+      setIsAuthenticating,
+      setIsConnected,
+      setUser,
+    ],
+  );
 
   const logout = async (callback?: () => void) => {
     if (activeWallet) {
