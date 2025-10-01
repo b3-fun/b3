@@ -20,7 +20,7 @@ interface SignInWithB3PrivyProps {
 
 export function SignInWithB3Privy({ onSuccess, onError, chain }: SignInWithB3PrivyProps) {
   const { partnerId } = useB3();
-  const { isLoading, connectTw, fullToken } = useHandleConnectWithPrivy(partnerId, chain, onSuccess);
+  const { isLoading, connectTw, fullToken } = useHandleConnectWithPrivy(chain, onSuccess);
   const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
   const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
   const { logout } = useAuthentication();

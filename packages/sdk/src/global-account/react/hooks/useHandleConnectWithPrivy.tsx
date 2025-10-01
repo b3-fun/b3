@@ -10,7 +10,7 @@ const debug = debugB3React("@@b3:useHandleConnectWithPrivy");
  * This essentially wraps our useConnect hook to handle the Privy auth flow.
  * Currently, this is for the basement-privy strategy
  */
-export function useHandleConnectWithPrivy(partnerId: string, chain?: Chain, onSuccess?: (account: Account) => void) {
+export function useHandleConnectWithPrivy(chain?: Chain, onSuccess?: (account: Account) => void) {
   if (!chain) {
     throw new Error("Chain is required");
   }

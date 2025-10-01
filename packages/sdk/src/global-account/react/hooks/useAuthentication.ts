@@ -17,19 +17,13 @@ export function useAuthentication() {
   const { disconnect } = useDisconnect();
   const wallets = useConnectedWallets();
   const activeWallet = useActiveWallet();
-  const { authenticate } = useSiwe();
   const { setUser } = useB3();
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
   const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
-  const setIsConnecting = useAuthStore(state => state.setIsConnecting);
   const setIsConnected = useAuthStore(state => state.setIsConnected);
   const isConnecting = useAuthStore(state => state.isConnecting);
   const isConnected = useAuthStore(state => state.isConnected);
-  const useAutoConnectLoadingPrevious = useRef(false);
-  const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
   const isAuthenticating = useAuthStore(state => state.isAuthenticating);
-  const hasStartedConnecting = useAuthStore(state => state.hasStartedConnecting);
-  const setHasStartedConnecting = useAuthStore(state => state.setHasStartedConnecting);
   const { connect } = useConnect(b3MainnetThirdWeb);
 
   const wallet = ecosystemWallet(ecosystemWalletId, {

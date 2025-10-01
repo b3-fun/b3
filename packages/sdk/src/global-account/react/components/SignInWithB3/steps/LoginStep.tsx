@@ -54,7 +54,7 @@ export function LoginStepContainer({ children, partnerId }: LoginStepContainerPr
   );
 }
 
-export function LoginStep({ onSuccess, onError, chain }: LoginStepProps) {
+export function LoginStep({ onSuccess, chain }: LoginStepProps) {
   const { partnerId } = useB3();
   const wallet = ecosystemWallet(ecosystemWalletId, {
     partnerId: partnerId,

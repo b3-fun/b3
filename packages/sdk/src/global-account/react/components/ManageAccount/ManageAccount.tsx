@@ -604,7 +604,7 @@ export function ManageAccount({
           </div>
 
           <TabsContentPrimitive value="overview" className="px-4 pb-4 pt-2">
-            <BalanceContent onLogout={onLogout} partnerId={partnerId} showDeposit={showDeposit} showSwap={showSwap} />
+            <BalanceContent onLogout={onLogout} showDeposit={showDeposit} showSwap={showSwap} />
           </TabsContentPrimitive>
 
           <TabsContentPrimitive value="tokens" className="px-4 pb-4 pt-2">

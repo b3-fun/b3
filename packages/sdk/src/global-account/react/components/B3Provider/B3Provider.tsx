@@ -137,7 +137,6 @@ export function InnerProvider({
   const setIsConnected = useAuthStore(state => state.setIsConnected);
   const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
   const setHasStartedConnecting = useAuthStore(state => state.setHasStartedConnecting);
-  const hasStartedConnecting = useAuthStore(state => state.hasStartedConnecting);
   const { authenticate } = useSiwe();
   const setActiveWallet = useSetActiveWallet();
 
