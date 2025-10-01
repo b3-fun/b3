@@ -59,21 +59,13 @@ export function useCurrencyConversion() {
    * formatCurrencyValue(100, { decimals: 4, currency: "ETH" }) // Returns "100.0000 ETH"
    * ```
    */
-  const formatCurrencyValue = (
-    value: number,
-    options?: { decimals?: number; currency?: string },
-  ): string => {
+  const formatCurrencyValue = (value: number, options?: { decimals?: number; currency?: string }): string => {
     const overrideCurrency = options?.currency;
     const overrideDecimals = options?.decimals;
 
     // Custom currency provided - bypass conversion and use simple formatting
     if (overrideCurrency) {
-      const decimalsToUse =
-        overrideDecimals !== undefined
-          ? overrideDecimals
-          : overrideCurrency === "B3"
-            ? 0
-            : 2;
+      const decimalsToUse = overrideDecimals !== undefined ? overrideDecimals : overrideCurrency === "B3" ? 0 : 2;
 
       const formatted = formatDisplayNumber(value, {
         fractionDigits: decimalsToUse,
