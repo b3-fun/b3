@@ -55,9 +55,7 @@ export function CurrencySelector({ labelClassName, buttonVariant = "dark", label
               <DropdownMenuItem
                 onClick={() => setSelectedCurrency(currency)}
                 className={`flex cursor-pointer items-center justify-between gap-3 px-3 py-2.5 transition-colors ${
-                  selectedCurrency === currency
-                    ? "bg-accent"
-                    : "hover:bg-accent/50"
+                  selectedCurrency === currency ? "bg-accent" : "hover:bg-accent/50"
                 }`}
               >
                 <span className="text-foreground text-sm font-medium">{CURRENCY_NAMES[currency]}</span>
