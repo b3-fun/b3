@@ -1,7 +1,5 @@
-import { Users } from "@b3dotfun/b3-api";
-import app from "@b3dotfun/sdk/global-account/app";
-import { authenticateWithB3JWT } from "@b3dotfun/sdk/global-account/bsmnt";
-import { RelayKitProviderWrapper, TooltipProvider, useAuthStore, useSiwe } from "@b3dotfun/sdk/global-account/react";
+import { RelayKitProviderWrapper, TooltipProvider, useAuthStore } from "@b3dotfun/sdk/global-account/react";
+import { useOnConnect } from "@b3dotfun/sdk/global-account/react/hooks/useOnConnect";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { loadGA4Script } from "@b3dotfun/sdk/global-account/utils/analytics";
 import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
@@ -132,39 +130,11 @@ export function InnerProvider({
   const [manuallySelectedWallet, setManuallySelectedWallet] = useState<Wallet | undefined>(undefined);
   const wallets = useConnectedWallets();
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
-  const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
-  const isAuthenticating = useAuthStore(state => state.isAuthenticating);
   const isConnected = useAuthStore(state => state.isConnected);
-  const setIsConnected = useAuthStore(state => state.setIsConnected);
-  const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
-  const setHasStartedConnecting = useAuthStore(state => state.setHasStartedConnecting);
-  const { authenticate } = useSiwe();
   const setActiveWallet = useSetActiveWallet();
+  const { user, onConnect, setUser } = useOnConnect(partnerId);
 
   debug("@@B3Provider:isConnected", isConnected);
-  const [user, setUser] = useState<Users | undefined>(() => {
-    // Try to restore user from localStorage on initialization
-    if (typeof window !== "undefined") {
-      try {
-        const storedUser = localStorage.getItem("b3-user");
-        return storedUser ? JSON.parse(storedUser) : undefined;
-      } catch (error) {
-        console.warn("Failed to restore user from localStorage:", error);
-        return undefined;
-      }
-    }
-    return undefined;
-  });
-
-  // Persist user to localStorage when it changes
-  useEffect(() => {
-    if (user) {
-      localStorage.setItem("b3-user", JSON.stringify(user));
-    } else {
-      localStorage.removeItem("b3-user");
-    }
-  }, [user]);
-
   debug("@@wallets", wallets);
   debug("@@B3Provider:user", user);
 
@@ -189,56 +159,7 @@ export function InnerProvider({
           inAppWalletConnector({
             ...ecocystemConfig,
             client,
-            onConnect: (async (wallet: Wallet) => {
-              debug("@@wagmi:onConnect", { wallet });
-
-              try {
-                setHasStartedConnecting(true);
-                setIsConnected(true);
-                setIsAuthenticating(true);
-                await setActiveWallet(wallet);
-                const account = await wallet.getAccount();
-                if (!account) {
-                  throw new Error("No account found during auto-connect");
-                }
-
-                // Try to re-authenticate first
-                try {
-                  const userAuth = await app.reAuthenticate();
-                  setUser(userAuth.user);
-                  setIsAuthenticated(true);
-                  debug("@@wagmi:onConnect:reauth:success", { userAuth });
-
-                  // Authenticate on BSMNT with B3 JWT
-                  const b3Jwt = await authenticateWithB3JWT(userAuth.accessToken);
-                  debug("@@wagmi:onConnect:bsmnt:success", { b3Jwt });
-                } catch (error) {
-                  // If re-authentication fails, try fresh authentication
-                  debug("@@wagmi:onConnect:reauth:failed, attempting fresh auth", { error });
-                  const userAuth = await authenticate(account, partnerId);
-                  setUser(userAuth.user);
-                  setIsAuthenticated(true);
-                  debug("@@wagmi:onConnect:fresh:success", { userAuth });
-
-                  // Authenticate on BSMNT with B3 JWT
-                  const b3Jwt = await authenticateWithB3JWT(userAuth.accessToken);
-                  debug("@@wagmi:onConnect:bsmnt:success", { b3Jwt });
-                }
-              } catch (error) {
-                debug("@@wagmi:onConnect:failed", { error });
-                setIsAuthenticated(false);
-                setUser(undefined);
-              } finally {
-                setIsAuthenticating(false);
-              }
-
-              console.log("@@wtf");
-              debug({
-                isAuthenticated,
-                isAuthenticating,
-                isConnected,
-              });
-            }) as any,
+            onConnect,
           }),
           // injected(),
           // coinbaseWallet({ appName: "HypeDuel" }),
