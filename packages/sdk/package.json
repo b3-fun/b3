@@ -205,6 +205,26 @@
       "import": "./dist/esm/shared/thirdweb/*.js",
       "require": "./dist/cjs/shared/thirdweb/*.js"
     },
+    "./shared/react": {
+      "types": "./dist/types/shared/react/index.d.ts",
+      "import": "./dist/esm/shared/react/index.js",
+      "require": "./dist/cjs/shared/react/index.js"
+    },
+    "./shared/react/components": {
+      "types": "./dist/types/shared/react/components/index.d.ts",
+      "import": "./dist/esm/shared/react/components/index.js",
+      "require": "./dist/cjs/shared/react/components/index.js"
+    },
+    "./shared/react/hooks": {
+      "types": "./dist/types/shared/react/hooks/index.d.ts",
+      "import": "./dist/esm/shared/react/hooks/index.js",
+      "require": "./dist/cjs/shared/react/hooks/index.js"
+    },
+    "./shared/react/stores": {
+      "types": "./dist/types/shared/react/stores/index.d.ts",
+      "import": "./dist/esm/shared/react/stores/index.js",
+      "require": "./dist/cjs/shared/react/stores/index.js"
+    },
     "./types/chain-networks": {
       "types": "./dist/types/generated/chain-networks.d.ts",
       "import": "./dist/esm/generated/chain-networks.js",

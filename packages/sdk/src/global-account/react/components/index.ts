@@ -7,12 +7,12 @@ export { useB3 } from "./B3Provider/useB3";
 export { StyleRoot } from "./StyleRoot";
 
 // SignInWithB3 Components
-export { SignInWithB3 } from "./SignInWithB3/SignInWithB3";
-export { SignInWithB3Flow } from "./SignInWithB3/SignInWithB3Flow";
-export { SignInWithB3Privy } from "./SignInWithB3/SignInWithB3Privy";
 export { AuthButton } from "./SignInWithB3/components/AuthButton";
 export { PermissionItem } from "./SignInWithB3/components/PermissionItem";
 export { WalletRow } from "./SignInWithB3/components/WalletRow";
+export { SignInWithB3 } from "./SignInWithB3/SignInWithB3";
+export { SignInWithB3Flow } from "./SignInWithB3/SignInWithB3Flow";
+export { SignInWithB3Privy } from "./SignInWithB3/SignInWithB3Privy";
 export { LoginStepContainer } from "./SignInWithB3/steps/LoginStep";
 export { getConnectOptionsFromStrategy, isWalletType, type AllowedStrategy } from "./SignInWithB3/utils/signInUtils";
 
@@ -43,15 +43,6 @@ export { StaggeredFadeLoader } from "./custom/StaggeredFadeLoader";
 export { WalletConnectorIcon } from "./custom/WalletConnectorIcon";
 
 // UI Components
-export { Loading } from "./ui/Loading";
-export { ShinyButton } from "./ui/ShinyButton";
-export { TabTrigger, Tabs, TabsContent, TabsList, TabsTransitionWrapper } from "./ui/TabSystem";
-export {
-  TabTrigger as TabTriggerPrimitive,
-  TabsContent as TabsContentPrimitive,
-  TabsList as TabsListPrimitive,
-  Tabs as TabsPrimitive,
-} from "./ui/Tabs";
 export { Badge, badgeVariants } from "./ui/badge";
 export { Button, buttonVariants } from "./ui/button";
 export {
@@ -89,12 +80,28 @@ export {
   DrawerTitle,
   DrawerTrigger,
 } from "./ui/drawer";
+export {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 export { GlareCard } from "./ui/glare-card";
 export { GlareCardRounded } from "./ui/glare-card-rounded";
 export { Input } from "./ui/input";
+export { Loading } from "./ui/Loading";
 export { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 export { ScrollArea, ScrollBar } from "./ui/scroll-area";
+export { ShinyButton } from "./ui/ShinyButton";
 export { Skeleton } from "./ui/skeleton";
+export {
+  TabTrigger as TabTriggerPrimitive,
+  TabsContent as TabsContentPrimitive,
+  TabsList as TabsListPrimitive,
+  Tabs as TabsPrimitive,
+} from "./ui/Tabs";
+export { TabTrigger, Tabs, TabsContent, TabsList, TabsTransitionWrapper } from "./ui/TabSystem";
 export { TextLoop } from "./ui/text-loop";
 export { TextShimmer } from "./ui/text-shimmer";
 export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
