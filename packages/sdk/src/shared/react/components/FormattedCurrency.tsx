@@ -64,9 +64,7 @@ export function FormattedCurrency({
   const baseTooltipValue = formatTooltipValue(amount, currency);
 
   // Add change indicator if needed
-  const tooltipValue = showChange
-    ? `${isPositive ? "+" : "-"}${baseTooltipValue}`
-    : baseTooltipValue;
+  const tooltipValue = showChange ? `${isPositive ? "+" : "-"}${baseTooltipValue}` : baseTooltipValue;
 
   // Determine color class
   let colorClass = "";
