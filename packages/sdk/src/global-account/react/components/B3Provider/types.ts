@@ -14,6 +14,7 @@ export interface B3ContextType {
   setWallet: (wallet: Wallet) => void;
   wallet?: Wallet;
   setUser: (user?: Users) => void;
+  refetchUser: () => Promise<any>;
   initialized: boolean;
   ready: boolean;
   environment?: "development" | "production";
@@ -33,6 +34,7 @@ export const B3Context = createContext<B3ContextType>({
   setWallet: () => {},
   wallet: undefined,
   setUser: () => {},
+  refetchUser: async () => {},
   initialized: false,
   ready: false,
   environment: "development",

@@ -132,7 +132,7 @@ export function InnerProvider({
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
   const isConnected = useAuthStore(state => state.isConnected);
   const setActiveWallet = useSetActiveWallet();
-  const { user, onConnect, setUser } = useOnConnect(partnerId);
+  const { user, onConnect, setUser, refetchUser } = useOnConnect(partnerId);
 
   debug("@@B3Provider:isConnected", isConnected);
   debug("@@wallets", wallets);
@@ -216,6 +216,7 @@ export function InnerProvider({
             wallet: manuallySelectedWallet,
             user,
             setUser,
+            refetchUser,
             initialized: true,
             ready: !!effectiveAccount && wagmiConfig.state.status !== "connecting",
             automaticallySetFirstEoa,
