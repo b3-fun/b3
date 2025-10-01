@@ -42,7 +42,7 @@ export function useOnConnect(partnerId: string) {
 
         // Authenticate on BSMNT with B3 JWT
         const b3Jwt = await authenticateWithB3JWT(userAuth.accessToken);
-        console.log("@@b3Jwt", b3Jwt);
+        debug("@@b3Jwt", b3Jwt);
       } catch (error) {
         // If re-authentication fails, try fresh authentication
         debug("Re-authentication failed, attempting fresh authentication");
@@ -54,7 +54,7 @@ export function useOnConnect(partnerId: string) {
 
         // Authenticate on BSMNT with B3 JWT
         const b3Jwt = await authenticateWithB3JWT(userAuth.accessToken);
-        console.log("@@b3Jwt", b3Jwt);
+        debug("@@b3Jwt", b3Jwt);
       }
     },
     [activeWallet],
@@ -77,7 +77,6 @@ export function useOnConnect(partnerId: string) {
       setIsAuthenticating(false);
     }
 
-    console.log("@@wtf");
     debug({
       isAuthenticated,
       isAuthenticating,
