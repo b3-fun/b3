@@ -5,10 +5,10 @@ import { inAppWalletConnector } from "@thirdweb-dev/wagmi-adapter";
 import { useMemo } from "react";
 import { http } from "viem";
 import { createConfig } from "wagmi";
-import { useOnConnect } from "./useOnConnect";
+import { useAuthentication } from "./useAuthentication";
 
 export function useWagmiConfig(partnerId: string, rpcUrls?: Record<number, string>) {
-  const { onConnect } = useOnConnect(partnerId);
+  const { onConnect } = useAuthentication(partnerId);
 
   const ecocystemConfig = useMemo(() => {
     return {

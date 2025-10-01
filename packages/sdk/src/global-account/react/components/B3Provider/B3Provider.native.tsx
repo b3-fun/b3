@@ -6,7 +6,7 @@ import { Account } from "thirdweb/wallets";
 import { ClientType } from "../../../client-manager";
 
 import { WagmiProvider } from "wagmi";
-import { useOnConnect } from "../../hooks/useOnConnect";
+import { useAuthentication } from "../../hooks/useAuthentication";
 import { useWagmiConfig } from "../../hooks/useWagmiConfig";
 import { B3Context, B3ContextType } from "./types";
 
@@ -84,7 +84,7 @@ export function InnerProvider({
   rpcUrls?: Record<number, string>;
 }) {
   const activeAccount = useActiveAccount();
-  const { user, setUser, refetchUser } = useOnConnect(partnerId);
+  const { user, setUser, refetchUser } = useAuthentication(partnerId);
   const wagmiConfig = useWagmiConfig(partnerId, rpcUrls);
 
   // Use given accountOverride or activeAccount from thirdweb

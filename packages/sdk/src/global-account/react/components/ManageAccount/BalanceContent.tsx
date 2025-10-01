@@ -39,9 +39,9 @@ export function BalanceContent({ onLogout, showDeposit = true, showSwap = true }
     address: eoaAddress || account?.address,
     fresh: true,
   });
-  const { user } = useB3();
+  const { user, partnerId } = useB3();
   const { setB3ModalOpen, setB3ModalContentType, navigateBack } = useModalStore();
-  const { logout } = useAuthentication();
+  const { logout } = useAuthentication(partnerId);
   const [logoutLoading, setLogoutLoading] = useState(false);
   const [openAccordions, setOpenAccordions] = useState<string[]>([]);
   const hasExpandedRef = useRef(false);

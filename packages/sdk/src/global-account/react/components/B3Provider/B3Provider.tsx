@@ -1,5 +1,9 @@
-import { RelayKitProviderWrapper, TooltipProvider, useAuthStore } from "@b3dotfun/sdk/global-account/react";
-import { useOnConnect } from "@b3dotfun/sdk/global-account/react/hooks/useOnConnect";
+import {
+  RelayKitProviderWrapper,
+  TooltipProvider,
+  useAuthentication,
+  useAuthStore,
+} from "@b3dotfun/sdk/global-account/react";
 import { useWagmiConfig } from "@b3dotfun/sdk/global-account/react/hooks/useWagmiConfig";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { loadGA4Script } from "@b3dotfun/sdk/global-account/utils/analytics";
@@ -129,7 +133,7 @@ export function InnerProvider({
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
   const isConnected = useAuthStore(state => state.isConnected);
   const setActiveWallet = useSetActiveWallet();
-  const { user, setUser, refetchUser } = useOnConnect(partnerId);
+  const { user, setUser, refetchUser } = useAuthentication(partnerId);
   const wagmiConfig = useWagmiConfig(partnerId, rpcUrls);
 
   debug("@@B3Provider:isConnected", isConnected);

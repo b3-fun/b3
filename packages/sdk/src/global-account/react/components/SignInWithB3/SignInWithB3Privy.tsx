@@ -2,6 +2,7 @@ import {
   Loading,
   useAuthentication,
   useAuthStore,
+  useB3,
   useHandleConnectWithPrivy,
 } from "@b3dotfun/sdk/global-account/react";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
@@ -18,10 +19,11 @@ interface SignInWithB3PrivyProps {
 }
 
 export function SignInWithB3Privy({ onSuccess, onError, chain }: SignInWithB3PrivyProps) {
+  const { partnerId } = useB3();
   const { isLoading, connectTw, fullToken } = useHandleConnectWithPrivy(chain, onSuccess);
   const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
   const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
-  const { logout } = useAuthentication();
+  const { logout } = useAuthentication(partnerId);
 
   debug("@@SignInWithB3Privy", {
     isLoading,

@@ -40,10 +40,10 @@ export function LoginStepCustom({
   const { partnerId } = useB3();
   const [isLoading, setIsLoading] = useState(false);
   const [showAllWallets, setShowAllWallets] = useState(false);
-  const { connect } = useConnect(chain);
+  const { connect } = useConnect(partnerId, chain);
   const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
   const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
-  const { logout } = useAuthentication();
+  const { logout } = useAuthentication(partnerId);
   const { connect: connectTW } = useConnectTW();
 
   // Split strategies into auth and wallet types
