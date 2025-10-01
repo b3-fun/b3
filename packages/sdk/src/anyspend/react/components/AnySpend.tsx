@@ -78,6 +78,7 @@ export function AnySpend(props: {
    * Useful for handling special cases like B3 token selection.
    */
   onTokenSelect?: (token: components["schemas"]["Token"], event: { preventDefault: () => void }) => void;
+  onSuccess?: (txHash?: string) => void;
 }) {
   const fingerprintConfig = getFingerprintConfig();
 
@@ -97,6 +98,7 @@ function AnySpendInner({
   hideTransactionHistoryButton,
   recipientAddress: recipientAddressFromProps,
   onTokenSelect,
+  onSuccess,
 }: {
   destinationTokenAddress?: string;
   destinationTokenChainId?: number;
@@ -106,6 +108,7 @@ function AnySpendInner({
   hideTransactionHistoryButton?: boolean;
   recipientAddress?: string;
   onTokenSelect?: (token: components["schemas"]["Token"], event: { preventDefault: () => void }) => void;
+  onSuccess?: (txHash?: string) => void;
 }) {
   const searchParams = useSearchParamsSSR();
   const router = useRouter();
@@ -515,6 +518,14 @@ function AnySpendInner({
       }
     }
   }, [anyspendQuote, isSrcInputDirty]);
+
+  useEffect(() => {
+    if (oat?.data?.order.status === "executed") {
+      console.log("Calling onSuccess");
+      const txHash = oat?.data?.executeTx?.txHash;
+      onSuccess?.(txHash);
+    }
+  }, [oat?.data?.executeTx?.txHash, oat?.data?.order.status, onSuccess]);
 
   const { createOrder, isCreatingOrder } = useAnyspendCreateOrder({
     onSuccess: data => {
