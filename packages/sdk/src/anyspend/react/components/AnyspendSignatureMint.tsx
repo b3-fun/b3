@@ -141,7 +141,7 @@ export function AnyspendSignatureMint({
       dstChainId={signatureData.collection.chainId}
       dstToken={dstToken}
       dstAmount={price.toString()}
-      contractAddress={signatureData.collection.address!}
+      contractAddress={signatureData.collection.address || ""}
       encodedData={encodedData}
       metadata={{
         action: "Signature Mint",

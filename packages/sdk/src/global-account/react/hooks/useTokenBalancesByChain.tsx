@@ -7,6 +7,7 @@ import { viemToThirdwebChain } from "@b3dotfun/sdk/shared/constants/chains/b3Cha
 import { getChainById } from "@b3dotfun/sdk/shared/utils/chains";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { getWalletBalance } from "thirdweb/wallets";
+import invariant from "invariant";
 
 type GetWalletBalanceResult = {
   value: bigint;
@@ -51,10 +52,12 @@ export function useTokenBalancesByChain({
           // Fetch native token balances
           Promise.all(
             chainIds.map(async chainId => {
+              const chain = getChainById(chainId);
+              invariant(chain, "Chain is required");
               const walletBalance = await getWalletBalance({
                 address,
                 client,
-                chain: viemToThirdwebChain(getChainById(chainId)!),
+                chain: viemToThirdwebChain(chain),
               });
 
               return {

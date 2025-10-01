@@ -6,7 +6,7 @@ import { useMemo } from "react";
 export function useCoinbaseOnrampOptions(country?: string, visitorData?: VisitorData, isLoadingVisitorData?: boolean) {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["getCoinbaseOnrampOptions", country, visitorData],
-    queryFn: () => anyspendService.getCoinbaseOnrampOptions(country!, visitorData),
+    queryFn: () => anyspendService.getCoinbaseOnrampOptions(country, visitorData),
     enabled: Boolean(country) && !isLoadingVisitorData,
   });
 
