@@ -38,27 +38,11 @@ export function FormattedCurrency({
   // Get the formatted value (using absolute value for negative numbers when showing change)
   const baseAmount = showChange ? Math.abs(amount) : amount;
 
-  // Use custom decimal formatting and currency override
-  let formattedValue: string;
-  if (currency) {
-    // Custom currency provided - format with decimals if specified
-    if (decimals !== undefined) {
-      const fixed = baseAmount.toFixed(decimals);
-      formattedValue = `${parseFloat(fixed).toString()} ${currency}`;
-    } else {
-      // Use default decimals for the currency
-      const defaultDecimals = currency === "B3" ? 0 : 2;
-      const fixed = baseAmount.toFixed(defaultDecimals);
-      formattedValue = `${parseFloat(fixed).toString()} ${currency}`;
-    }
-  } else if (decimals !== undefined && activeCurrency === "B3") {
-    // Format with specified decimals for B3, then remove trailing zeros
-    const fixed = baseAmount.toFixed(decimals);
-    formattedValue = `${parseFloat(fixed).toString()} B3`;
-  } else {
-    // Use default formatting from hook for all other currencies (and B3 without custom decimals)
-    formattedValue = formatCurrencyValue(baseAmount);
-  }
+  // Use centralized formatting from hook with optional overrides
+  const formattedValue = formatCurrencyValue(baseAmount, {
+    decimals,
+    currency,
+  });
 
   // Generate tooltip using the centralized hook function
   const baseTooltipValue = formatTooltipValue(amount, currency);

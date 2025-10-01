@@ -46,6 +46,9 @@ export function useCurrencyConversion() {
    * - Handles symbol positioning (prefix for fiat, suffix for crypto)
    *
    * @param value - The numeric value to format (in base currency)
+   * @param options - Optional formatting overrides
+   * @param options.decimals - Override number of decimal places
+   * @param options.currency - Override currency (bypasses conversion)
    * @returns Formatted currency string with appropriate symbol and decimal places
    *
    * @example
@@ -53,9 +56,41 @@ export function useCurrencyConversion() {
    * formatCurrencyValue(100) // Returns "$100.00" if USD is selected
    * formatCurrencyValue(0.0001) // Returns "0.0₄1 ETH" if ETH is selected
    * formatCurrencyValue(1500) // Returns "¥1,500" if JPY is selected
+   * formatCurrencyValue(100, { decimals: 4, currency: "ETH" }) // Returns "100.0000 ETH"
    * ```
    */
-  const formatCurrencyValue = (value: number): string => {
+  const formatCurrencyValue = (
+    value: number,
+    options?: { decimals?: number; currency?: string },
+  ): string => {
+    const overrideCurrency = options?.currency;
+    const overrideDecimals = options?.decimals;
+
+    // Custom currency provided - bypass conversion and use simple formatting
+    if (overrideCurrency) {
+      const decimalsToUse =
+        overrideDecimals !== undefined
+          ? overrideDecimals
+          : overrideCurrency === "B3"
+            ? 0
+            : 2;
+
+      const formatted = formatDisplayNumber(value, {
+        fractionDigits: decimalsToUse,
+        showSubscripts: false,
+      });
+      return `${formatted} ${overrideCurrency}`;
+    }
+
+    // Custom decimals for base currency without conversion
+    if (overrideDecimals !== undefined && selectedCurrency === baseCurrency) {
+      const formatted = formatDisplayNumber(value, {
+        fractionDigits: overrideDecimals,
+        showSubscripts: false,
+      });
+      return `${formatted} ${baseCurrency}`;
+    }
+
     // If no exchange rate available, show base currency to prevent showing
     // incorrect values with wrong currency symbols during rate fetching
     if (selectedCurrency === baseCurrency || !exchangeRate) {
