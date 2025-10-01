@@ -4,8 +4,15 @@ import { useAuthStore, useSiwe } from "@b3dotfun/sdk/global-account/react";
 import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { b3MainnetThirdWeb } from "@b3dotfun/sdk/shared/constants/chains/supported";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
-import { useCallback } from "react";
-import { useActiveWallet, useConnectedWallets, useDisconnect, useSetActiveWallet } from "thirdweb/react";
+import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
+import { useCallback, useEffect, useRef } from "react";
+import {
+  useActiveWallet,
+  useAutoConnect,
+  useConnectedWallets,
+  useDisconnect,
+  useSetActiveWallet,
+} from "thirdweb/react";
 import { ecosystemWallet, Wallet } from "thirdweb/wallets";
 import { preAuthenticate } from "thirdweb/wallets/in-app";
 import { useConnect } from "./useConnect";
@@ -26,8 +33,10 @@ export function useAuthentication(partnerId: string) {
   const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
   const setHasStartedConnecting = useAuthStore(state => state.setHasStartedConnecting);
   const setActiveWallet = useSetActiveWallet();
+  const hasStartedConnecting = useAuthStore(state => state.hasStartedConnecting);
   const { authenticate } = useSiwe();
   const { user, setUser } = useUserQuery();
+  const useAutoConnectLoadingPrevious = useRef(false);
 
   const { connect } = useConnect(partnerId, b3MainnetThirdWeb);
 
@@ -37,6 +46,8 @@ export function useAuthentication(partnerId: string) {
 
   const authenticateUser = useCallback(
     async (wallet?: Wallet) => {
+      setHasStartedConnecting(true);
+
       const account = wallet ? wallet.getAccount() : activeWallet?.getAccount();
       if (!account) {
         throw new Error("No account found during auto-connect");
@@ -75,7 +86,7 @@ export function useAuthentication(partnerId: string) {
 
   const onConnect = useCallback(
     async (wallet: Wallet) => {
-      debug("@@wagmi:onConnect", { wallet });
+      debug("@@useAuthentication:onConnect", { wallet });
 
       try {
         setHasStartedConnecting(true);
@@ -84,7 +95,7 @@ export function useAuthentication(partnerId: string) {
         await setActiveWallet(wallet);
         await authenticateUser(wallet);
       } catch (error) {
-        debug("@@wagmi:onConnect:failed", { error });
+        debug("@@useAuthentication:onConnect:failed", { error });
         setIsAuthenticated(false);
         setUser(undefined);
       } finally {
@@ -140,6 +151,22 @@ export function useAuthentication(partnerId: string) {
     setUser();
     callback?.();
   };
+
+  const { isLoading: useAutoConnectLoading } = useAutoConnect({
+    client,
+    wallets: [wallet],
+    onConnect: onConnect,
+  });
+
+  /**
+   * useAutoConnectLoading starts as false
+   */
+  useEffect(() => {
+    if (!useAutoConnectLoading && useAutoConnectLoadingPrevious.current && !hasStartedConnecting) {
+      setIsAuthenticating(false);
+    }
+    useAutoConnectLoadingPrevious.current = useAutoConnectLoading;
+  }, [useAutoConnectLoading, hasStartedConnecting, setIsAuthenticating]);
 
   const isReady = isAuthenticated && !isAuthenticating;
 

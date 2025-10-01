@@ -20,7 +20,7 @@ import {
   useSetActiveWallet,
 } from "thirdweb/react";
 import { Account, Wallet } from "thirdweb/wallets";
-import { useAccount, WagmiProvider } from "wagmi";
+import { WagmiProvider } from "wagmi";
 import { ClientType, setClientType } from "../../../client-manager";
 import { StyleRoot } from "../StyleRoot";
 import { B3Context, B3ContextType } from "./types";
@@ -190,7 +190,7 @@ export function InnerProvider({
             setUser,
             refetchUser,
             initialized: true,
-            ready: !!effectiveAccount && wagmiConfig.state.status !== "connecting",
+            ready: !!effectiveAccount,
             automaticallySetFirstEoa,
             environment,
             defaultPermissions,
@@ -199,21 +199,13 @@ export function InnerProvider({
             partnerId: partnerId,
           }}
         >
-          <InnerProvider2>{children}</InnerProvider2>
+          <InnerProvider2 partnerId={partnerId}>{children}</InnerProvider2>
         </B3Context.Provider>
       </QueryClientProvider>
     </WagmiProvider>
   );
 }
 
-const InnerProvider2 = ({ children }: { children: React.ReactNode }) => {
-  const account = useAccount();
-  const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
-
-  useEffect(() => {
-    if (account.isDisconnected) {
-      setIsAuthenticating(false);
-    }
-  }, [account, setIsAuthenticating]);
+const InnerProvider2 = ({ children, partnerId }: { children: React.ReactNode; partnerId: string }) => {
   return <>{children}</>;
 };

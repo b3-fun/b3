@@ -5,11 +5,8 @@ import { inAppWalletConnector } from "@thirdweb-dev/wagmi-adapter";
 import { useMemo } from "react";
 import { http } from "viem";
 import { createConfig } from "wagmi";
-import { useAuthentication } from "./useAuthentication";
 
 export function useWagmiConfig(partnerId: string, rpcUrls?: Record<number, string>) {
-  const { onConnect } = useAuthentication(partnerId);
-
   // Stringify rpcUrls for stable comparison to prevent wagmiConfig recreation
   // when parent component passes new object references with same content
   const rpcUrlsString = useMemo(() => (rpcUrls ? JSON.stringify(rpcUrls) : undefined), [rpcUrls]);
@@ -36,13 +33,12 @@ export function useWagmiConfig(partnerId: string, rpcUrls?: Record<number, strin
         inAppWalletConnector({
           ...ecocystemConfig,
           client,
-          onConnect,
         }),
         // injected(),
         // coinbaseWallet({ appName: "HypeDuel" }),
       ],
     });
-  }, [rpcUrlsString, ecocystemConfig, onConnect]);
+  }, [rpcUrlsString, ecocystemConfig]);
 
   return wagmiConfig;
 }
