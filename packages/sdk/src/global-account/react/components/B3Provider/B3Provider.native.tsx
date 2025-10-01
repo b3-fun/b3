@@ -31,12 +31,14 @@ export function B3Provider({
   accountOverride,
   environment,
   clientType = "socket",
+  partnerId,
 }: {
   theme: "light" | "dark";
   children: React.ReactNode;
   accountOverride?: Account;
   environment: B3ContextType["environment"];
   clientType?: ClientType;
+  partnerId: string;
 }) {
   return (
     <QueryClientProvider client={queryClient}>
@@ -46,6 +48,7 @@ export function B3Provider({
           environment={environment}
           theme={theme}
           clientType={clientType}
+          partnerId={partnerId}
         >
           {/* <RelayKitProviderWrapper> */}
           {children}
