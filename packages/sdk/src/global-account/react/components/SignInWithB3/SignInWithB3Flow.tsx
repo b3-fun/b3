@@ -5,7 +5,6 @@ import {
   useB3,
   useGetAllTWSigners,
   useModalStore,
-  useSiwe,
 } from "@b3dotfun/sdk/global-account/react";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { useCallback, useEffect, useState } from "react";
@@ -34,15 +33,13 @@ export function SignInWithB3Flow({
   source = "signInWithB3Button",
   signersEnabled = false,
 }: SignInWithB3ModalProps) {
-  const { setUser, automaticallySetFirstEoa } = useB3();
+  const { automaticallySetFirstEoa } = useB3();
   const [step, setStep] = useState<"login" | "permissions" | null>(source === "requestPermissions" ? null : "login");
   const [sessionKeyAdded, setSessionKeyAdded] = useState(source === "requestPermissions" ? true : false);
   const { setB3ModalContentType, setB3ModalOpen, isOpen } = useModalStore();
   const account = useActiveAccount();
-  const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
   const isAuthenticating = useAuthStore(state => state.isAuthenticating);
   const isConnected = useAuthStore(state => state.isConnected);
-  const setIsConnected = useAuthStore(state => state.setIsConnected);
   const [refetchCount, setRefetchCount] = useState(0);
   const [refetchError, setRefetchError] = useState<string | null>(null);
   const {
@@ -56,7 +53,6 @@ export function SignInWithB3Flow({
       enabled: signersEnabled,
     },
   });
-  const { authenticate } = useSiwe();
   const [refetchQueued, setRefetchQueued] = useState(false);
 
   // Enhanced refetchSigners function that tracks number of attempts
