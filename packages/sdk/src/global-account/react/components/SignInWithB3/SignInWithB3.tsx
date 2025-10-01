@@ -2,7 +2,7 @@ import {
   Button,
   SignInWithB3ModalProps,
   StyleRoot,
-  useAuthentication,
+  useAuthStore,
   useB3,
   useIsMobile,
   useModalStore,
@@ -21,7 +21,7 @@ export type SignInWithB3Props = Omit<SignInWithB3ModalProps, "type" | "showBackB
 export function SignInWithB3(props: SignInWithB3Props) {
   const { setB3ModalOpen, setB3ModalContentType, setEcoSystemAccountAddress } = useModalStore();
   const { account } = useB3();
-  const { isAuthenticating, isAuthenticated } = useAuthentication();
+  const { isAuthenticating, isAuthenticated } = useAuthStore();
   const isMobile = useIsMobile();
 
   useEffect(() => {
