@@ -5,7 +5,9 @@ import { Account } from "thirdweb/wallets";
 
 import { ClientType } from "../../../client-manager";
 
+import { WagmiProvider } from "wagmi";
 import { useOnConnect } from "../../hooks/useOnConnect";
+import { useWagmiConfig } from "../../hooks/useWagmiConfig";
 import { B3Context, B3ContextType } from "./types";
 
 /**
@@ -31,6 +33,7 @@ export function B3Provider({
   environment,
   clientType = "socket",
   partnerId,
+  rpcUrls,
 }: {
   theme: "light" | "dark";
   children: React.ReactNode;
@@ -38,23 +41,23 @@ export function B3Provider({
   environment: B3ContextType["environment"];
   clientType?: ClientType;
   partnerId: string;
+  rpcUrls?: Record<number, string>;
 }) {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThirdwebProvider>
-        <InnerProvider
-          accountOverride={accountOverride}
-          environment={environment}
-          theme={theme}
-          clientType={clientType}
-          partnerId={partnerId}
-        >
-          {/* <RelayKitProviderWrapper> */}
-          {children}
-          {/* </RelayKitProviderWrapper> */}
-        </InnerProvider>
-      </ThirdwebProvider>
-    </QueryClientProvider>
+    <ThirdwebProvider>
+      <InnerProvider
+        accountOverride={accountOverride}
+        environment={environment}
+        theme={theme}
+        clientType={clientType}
+        partnerId={partnerId}
+        rpcUrls={rpcUrls}
+      >
+        {/* <RelayKitProviderWrapper> */}
+        {children}
+        {/* </RelayKitProviderWrapper> */}
+      </InnerProvider>
+    </ThirdwebProvider>
   );
 }
 
@@ -69,6 +72,7 @@ export function InnerProvider({
   theme = "light",
   clientType = "socket",
   partnerId,
+  rpcUrls,
 }: {
   children: React.ReactNode;
   accountOverride?: Account;
@@ -77,33 +81,39 @@ export function InnerProvider({
   theme: "light" | "dark";
   clientType?: ClientType;
   partnerId: string;
+  rpcUrls?: Record<number, string>;
 }) {
   const activeAccount = useActiveAccount();
   const { user, setUser, refetchUser } = useOnConnect(partnerId);
+  const wagmiConfig = useWagmiConfig(partnerId, rpcUrls);
 
   // Use given accountOverride or activeAccount from thirdweb
   const effectiveAccount = accountOverride || activeAccount;
 
   return (
-    <B3Context.Provider
-      value={{
-        account: effectiveAccount,
-        automaticallySetFirstEoa: false,
-        setWallet: () => {},
-        wallet: undefined,
-        user,
-        setUser,
-        initialized: true,
-        ready: !!effectiveAccount,
-        environment,
-        defaultPermissions,
-        theme,
-        clientType,
-        partnerId,
-        refetchUser,
-      }}
-    >
-      {children}
-    </B3Context.Provider>
+    <WagmiProvider config={wagmiConfig}>
+      <QueryClientProvider client={queryClient}>
+        <B3Context.Provider
+          value={{
+            account: effectiveAccount,
+            automaticallySetFirstEoa: false,
+            setWallet: () => {},
+            wallet: undefined,
+            user,
+            setUser,
+            initialized: true,
+            ready: !!effectiveAccount,
+            environment,
+            defaultPermissions,
+            theme,
+            clientType,
+            partnerId,
+            refetchUser,
+          }}
+        >
+          {children}
+        </B3Context.Provider>
+      </QueryClientProvider>
+    </WagmiProvider>
   );
 }
