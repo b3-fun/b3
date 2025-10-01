@@ -31,7 +31,6 @@ export function SignInWithB3Flow({
   sessionKeyAddress,
   partnerId,
   closeAfterLogin = false,
-  loginWithSiwe = false,
   source = "signInWithB3Button",
   signersEnabled = false,
 }: SignInWithB3ModalProps) {
@@ -175,13 +174,11 @@ export function SignInWithB3Flow({
       sessionKeyAddress,
       partnerId,
       closeAfterLogin,
-      loginWithSiwe,
       source: "requestPermissions",
     });
   }, [
     chain,
     closeAfterLogin,
-    loginWithSiwe,
     onError,
     onLoginSuccess,
     onSessionKeySuccess,
@@ -193,20 +190,9 @@ export function SignInWithB3Flow({
 
   const handleLoginSuccess = useCallback(
     async (account: Account) => {
-      debug("Authenticating with B3 via SIWE");
-      setIsConnected(true);
-      if (loginWithSiwe) {
-        debug("setIsAuthenticating:true:1");
-        setIsAuthenticating(true);
-        const userAuth = await authenticate(account, partnerId);
-        setUser(userAuth.user);
-      }
-      debug("handleLoginSuccess:account", account);
       onLoginSuccess?.(account);
-      debug("setIsAuthenticating:false:1");
-      setIsAuthenticating(false);
     },
-    [loginWithSiwe, onLoginSuccess, authenticate, partnerId, setUser, setIsConnected, setIsAuthenticating],
+    [onLoginSuccess],
   );
 
   useEffect(() => {
