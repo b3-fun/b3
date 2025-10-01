@@ -255,6 +255,9 @@ function AnySpendCustomInner({
 
   const [orderId, setOrderId] = useState<string | undefined>(loadOrder);
 
+  // Track if onSuccess has been called for the current order
+  const onSuccessCalled = React.useRef(false);
+
   const [srcChainId, setSrcChainId] = useState<number>(base.id);
 
   // Get token list for token balance check
@@ -390,12 +393,18 @@ function AnySpendCustomInner({
     useGeoOnrampOptions(srcFiatAmount);
 
   useEffect(() => {
-    if (oat?.data?.order.status === "executed") {
+    if (oat?.data?.order.status === "executed" && !onSuccessCalled.current) {
       console.log("Calling onSuccess");
       const txHash = oat?.data?.executeTx?.txHash;
       onSuccess?.(txHash);
+      onSuccessCalled.current = true;
     }
-  }, [oat?.data?.executeTx?.txHash, oat?.data?.order.status, onSuccess]);
+  }, [oat?.data?.order.status, oat?.data?.executeTx?.txHash, onSuccess]);
+
+  // Reset flag when orderId changes
+  useEffect(() => {
+    onSuccessCalled.current = false;
+  }, [orderId]);
 
   const { createOrder: createRegularOrder, isCreatingOrder: isCreatingRegularOrder } = useAnyspendCreateOrder({
     onSuccess: data => {
