@@ -179,7 +179,7 @@ export function InnerProvider({
   }, [automaticallySetFirstEoa, isAuthenticated, setWallet, wallets]);
 
   return (
-    <WagmiProvider config={wagmiConfig}>
+    <WagmiProvider config={wagmiConfig} reconnectOnMount={false}>
       <QueryClientProvider client={queryClient}>
         <B3Context.Provider
           value={{
@@ -199,13 +199,13 @@ export function InnerProvider({
             partnerId: partnerId,
           }}
         >
-          <InnerProvider2 partnerId={partnerId}>{children}</InnerProvider2>
+          <InnerProvider2>{children}</InnerProvider2>
         </B3Context.Provider>
       </QueryClientProvider>
     </WagmiProvider>
   );
 }
 
-const InnerProvider2 = ({ children, partnerId }: { children: React.ReactNode; partnerId: string }) => {
+const InnerProvider2 = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
