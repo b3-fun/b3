@@ -88,26 +88,30 @@ export function B3Provider({
     };
   }, [partnerId]);
 
+  // Stringify rpcUrls for stable comparison to prevent wagmiConfig recreation
+  // when parent component passes new object references with same content
+  const rpcUrlsString = useMemo(() => (rpcUrls ? JSON.stringify(rpcUrls) : undefined), [rpcUrls]);
+
   /**
    * Creates wagmi config with optional custom RPC URLs
    * @param rpcUrls - Optional mapping of chain IDs to RPC URLs
    */
-  const wagmiConfig = useMemo(
-    () =>
-      createConfig({
-        chains: [supportedChains[0], ...supportedChains.slice(1)],
-        transports: Object.fromEntries(supportedChains.map(chain => [chain.id, http(rpcUrls?.[chain.id])])) as any,
-        connectors: [
-          inAppWalletConnector({
-            ...(ecocystemConfig || {}),
-            client,
-          }),
-          // injected(),
-          // coinbaseWallet({ appName: "HypeDuel" }),
-        ],
-      }),
-    [ecocystemConfig, rpcUrls],
-  );
+  const wagmiConfig = useMemo(() => {
+    const parsedRpcUrls = rpcUrlsString ? JSON.parse(rpcUrlsString) : undefined;
+
+    return createConfig({
+      chains: [supportedChains[0], ...supportedChains.slice(1)],
+      transports: Object.fromEntries(supportedChains.map(chain => [chain.id, http(parsedRpcUrls?.[chain.id])])),
+      connectors: [
+        inAppWalletConnector({
+          ...(ecocystemConfig || {}),
+          client,
+        }),
+        // injected(),
+        // coinbaseWallet({ appName: "HypeDuel" }),
+      ],
+    });
+  }, [ecocystemConfig, rpcUrlsString]);
 
   return (
     <ThirdwebProvider>
