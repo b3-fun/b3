@@ -157,15 +157,17 @@ export function useAnyspendFlow({
   };
 
   // Get quote
-  const activeInputAmountInWei = parseUnits(srcAmount.replace(/,/g, ""), selectedSrcToken.decimals).toString();
+  // For fiat payments, always use USDC decimals (6) regardless of selectedSrcToken
+  const effectiveDecimals = paymentType === "fiat" ? USDC_BASE.decimals : selectedSrcToken.decimals;
+  const activeInputAmountInWei = parseUnits(srcAmount.replace(/,/g, ""), effectiveDecimals).toString();
   const { anyspendQuote, isLoadingAnyspendQuote, getAnyspendQuoteError } = useAnyspendQuote({
     srcChain: paymentType === "fiat" ? base.id : selectedSrcChainId,
     dstChain: isDepositMode ? base.id : selectedDstChainId, // For deposits, always Base; for swaps, use selected destination
     srcTokenAddress: paymentType === "fiat" ? USDC_BASE.address : selectedSrcToken.address,
     dstTokenAddress: isDepositMode ? B3_TOKEN.address : selectedSrcToken.address, // For deposits, always B3
-    type: "swap",
-    tradeType: "EXACT_INPUT",
+    type: "hype_duel",
     amount: activeInputAmountInWei,
+    recipientAddress: selectedRecipientAddress,
     onrampVendor: paymentType === "fiat" ? getOnrampVendor(selectedFiatPaymentMethod) : undefined,
   });
 

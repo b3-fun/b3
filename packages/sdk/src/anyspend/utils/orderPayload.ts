@@ -18,6 +18,7 @@ export const buildPayload = (orderType: components["schemas"]["Order"]["type"], 
       return {
         expectedDstAmount,
         actualDstAmount: null,
+        amountInAfterFee: null,
       };
     case "mint_nft":
       if (nft?.type === "erc1155") {
@@ -53,6 +54,7 @@ export const buildPayload = (orderType: components["schemas"]["Order"]["type"], 
       return {
         expectedDstAmount,
         actualDstAmount: null,
+        amountInAfterFee: null,
       };
     default:
       throw new Error(`Invalid order type: ${orderType}`);
