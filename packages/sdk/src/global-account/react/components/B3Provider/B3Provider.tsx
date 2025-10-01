@@ -1,15 +1,12 @@
 import { RelayKitProviderWrapper, TooltipProvider, useAuthStore } from "@b3dotfun/sdk/global-account/react";
 import { useOnConnect } from "@b3dotfun/sdk/global-account/react/hooks/useOnConnect";
+import { useWagmiConfig } from "@b3dotfun/sdk/global-account/react/hooks/useWagmiConfig";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { loadGA4Script } from "@b3dotfun/sdk/global-account/utils/analytics";
-import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
-import { supportedChains } from "@b3dotfun/sdk/shared/constants/chains/supported";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
-import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import "@reservoir0x/relay-kit-ui/styles.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { inAppWalletConnector } from "@thirdweb-dev/wagmi-adapter";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Toaster } from "sonner";
 import {
   getLastAuthProvider,
@@ -19,7 +16,7 @@ import {
   useSetActiveWallet,
 } from "thirdweb/react";
 import { Account, Wallet } from "thirdweb/wallets";
-import { createConfig, http, useAccount, WagmiProvider } from "wagmi";
+import { useAccount, WagmiProvider } from "wagmi";
 import { ClientType, setClientType } from "../../../client-manager";
 import { StyleRoot } from "../StyleRoot";
 import { B3Context, B3ContextType } from "./types";
@@ -132,41 +129,12 @@ export function InnerProvider({
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
   const isConnected = useAuthStore(state => state.isConnected);
   const setActiveWallet = useSetActiveWallet();
-  const { user, onConnect, setUser, refetchUser } = useOnConnect(partnerId);
+  const { user, setUser, refetchUser } = useOnConnect(partnerId);
+  const wagmiConfig = useWagmiConfig(partnerId, rpcUrls);
 
   debug("@@B3Provider:isConnected", isConnected);
   debug("@@wallets", wallets);
   debug("@@B3Provider:user", user);
-
-  const ecocystemConfig = useMemo(() => {
-    return {
-      ecosystemId: ecosystemWalletId,
-      partnerId: partnerId,
-      client,
-    };
-  }, [partnerId]);
-
-  /**
-   * Creates wagmi config with optional custom RPC URLs
-   * @param rpcUrls - Optional mapping of chain IDs to RPC URLs
-   */
-  const wagmiConfig = useMemo(
-    () =>
-      createConfig({
-        chains: [supportedChains[0], ...supportedChains.slice(1)],
-        transports: Object.fromEntries(supportedChains.map(chain => [chain.id, http(rpcUrls?.[chain.id])])) as any,
-        connectors: [
-          inAppWalletConnector({
-            ...ecocystemConfig,
-            client,
-            onConnect,
-          }),
-          // injected(),
-          // coinbaseWallet({ appName: "HypeDuel" }),
-        ],
-      }),
-    [partnerId],
-  );
 
   // Use given accountOverride or activeAccount from thirdweb
   const effectiveAccount = isAuthenticated ? accountOverride || activeAccount : undefined;
