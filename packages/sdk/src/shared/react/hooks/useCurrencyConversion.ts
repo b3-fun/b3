@@ -2,18 +2,28 @@ import { useQuery } from "@tanstack/react-query";
 import { formatDisplayNumber } from "@b3dotfun/sdk/shared/utils/number";
 import { CURRENCY_SYMBOLS, useCurrencyStore } from "../stores/currencyStore";
 
+const COINBASE_API_URL = "https://api.coinbase.com/v2/exchange-rates";
+const REFETCH_INTERVAL_MS = 30000;
+
+interface CoinbaseExchangeRatesResponse {
+  data: {
+    currency: string;
+    rates: Record<string, string>;
+  };
+}
+
 /**
  * Fetches all exchange rates for a given base currency from Coinbase API.
  */
 async function fetchAllExchangeRates(baseCurrency: string): Promise<Record<string, number>> {
-  const response = await fetch(`https://api.coinbase.com/v2/exchange-rates?currency=${baseCurrency}`);
+  const response = await fetch(`${COINBASE_API_URL}?currency=${baseCurrency}`);
   if (!response.ok) {
-    throw new Error("Failed to fetch exchange rates");
+    throw new Error(`Failed to fetch exchange rates for ${baseCurrency}: ${response.status}`);
   }
-  const data = await response.json();
+  const data: CoinbaseExchangeRatesResponse = await response.json();
   const rates: Record<string, number> = {};
   for (const [currency, rate] of Object.entries(data.data.rates)) {
-    rates[currency] = parseFloat(rate as string);
+    rates[currency] = parseFloat(rate);
   }
   return rates;
 }
@@ -42,10 +52,10 @@ export function useCurrencyConversion() {
   const { data: exchangeRates } = useQuery({
     queryKey: ["exchangeRates", baseCurrency],
     queryFn: () => fetchAllExchangeRates(baseCurrency),
-    refetchInterval: 30000, // Refresh every 30 seconds
-    staleTime: 15000, // Consider data stale after 15 seconds
+    refetchInterval: REFETCH_INTERVAL_MS,
+    staleTime: REFETCH_INTERVAL_MS / 2,
     retry: 3,
-    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, REFETCH_INTERVAL_MS),
   });
 
   // Extract specific rates from the full rates object
