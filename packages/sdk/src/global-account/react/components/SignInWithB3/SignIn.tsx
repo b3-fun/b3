@@ -159,13 +159,8 @@ export function SignIn(props: SignInWithB3Props) {
 
                   <button className="mb-2 w-full space-y-1" onClick={onDisconnect}>
                     <div className="hover:bg-b3-react-background group flex h-12 items-center rounded-xl px-4 transition-colors">
-                      <Icon
-                        className="fill-b3-react-background group-hover:fill-b3-react-primary mr-4 shrink-0 transition-colors"
-                        name="logout"
-                      />
-                      <div className="text-b3-react-background group-hover:text-b3-react-primary mr-auto transition-colors">
-                        Disconnect
-                      </div>
+                      <Icon className="fill-b3-react-primary mr-4 shrink-0 transition-colors" name="logout" />
+                      <div className="text-b3-react-primary mr-auto transition-colors">Disconnect</div>
                     </div>
                   </button>
                 </div>

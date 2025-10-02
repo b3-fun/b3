@@ -79,6 +79,7 @@ export function AnySpend(props: {
    */
   onTokenSelect?: (token: components["schemas"]["Token"], event: { preventDefault: () => void }) => void;
   onSuccess?: (txHash?: string) => void;
+  customUsdInputValues?: string[];
 }) {
   const fingerprintConfig = getFingerprintConfig();
 
@@ -99,6 +100,7 @@ function AnySpendInner({
   recipientAddress: recipientAddressFromProps,
   onTokenSelect,
   onSuccess,
+  customUsdInputValues,
 }: {
   destinationTokenAddress?: string;
   destinationTokenChainId?: number;
@@ -109,6 +111,7 @@ function AnySpendInner({
   recipientAddress?: string;
   onTokenSelect?: (token: components["schemas"]["Token"], event: { preventDefault: () => void }) => void;
   onSuccess?: (txHash?: string) => void;
+  customUsdInputValues?: string[];
 }) {
   const searchParams = useSearchParamsSSR();
   const router = useRouter();
@@ -924,6 +927,7 @@ function AnySpendInner({
               hideDstToken={isBuyMode}
               anyspendQuote={anyspendQuote}
               onShowPointsDetail={() => setActivePanel(PanelView.POINTS_DETAIL)}
+              customUsdInputValues={customUsdInputValues}
             />
           </motion.div>
         )}
