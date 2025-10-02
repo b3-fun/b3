@@ -1124,11 +1124,6 @@ export interface components {
        * @example 990000
        */
       actualDstAmount: string | null;
-      /**
-       * @description Amount in after fee
-       * @example 990000
-       */
-      amountInAfterFee: string | null;
     };
     /** @description HypeDuel-specific payload */
     HypeDuelPayload: {
@@ -1142,11 +1137,6 @@ export interface components {
        * @example 990000
        */
       actualDstAmount: string | null;
-      /**
-       * @description Amount in after fee
-       * @example 990000
-       */
-      amountInAfterFee: string | null;
     };
     /** @description Custom execution payload */
     CustomPayload: {
@@ -1324,6 +1314,8 @@ export interface components {
        * @example 1752506694679
        */
       expiredAt: number;
+      /** @description Timestamp when the order was filled/executed */
+      filledAt: number | null;
       /**
        * @description Optional creator address
        * @example 0xb34facb90a200251318e8841c05102366f2158cf
