@@ -18,13 +18,7 @@ export function OrderHistoryItem({ order, onSelectOrder, mode }: OrderHistoryIte
   const tournament =
     order.type === "join_tournament" || order.type === "fund_tournament" ? order.metadata.tournament : undefined;
   const dstToken = order.metadata.dstToken;
-  const actualDstAmount =
-    order.type === "mint_nft" ||
-    order.type === "join_tournament" ||
-    order.type === "fund_tournament" ||
-    order.type === "custom"
-      ? undefined
-      : order.payload.actualDstAmount;
+  const actualDstAmount = order.settlement?.actualDstAmount;
   const expectedDstAmount =
     order.type === "mint_nft" ||
     order.type === "join_tournament" ||
