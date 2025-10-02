@@ -30,6 +30,7 @@ export function PanelOnramp({
   hideDstToken = false,
   anyspendQuote,
   onShowPointsDetail,
+  customUsdInputValues = ["5", "10", "20", "25"],
 }: {
   srcAmountOnRamp: string;
   setSrcAmountOnRamp: (amount: string) => void;
@@ -47,6 +48,7 @@ export function PanelOnramp({
   hideDstToken?: boolean;
   anyspendQuote?: GetQuoteResponse;
   onShowPointsDetail?: () => void;
+  customUsdInputValues?: string[];
 }) {
   const featureFlags = useFeatureFlags();
   // Get geo-based onramp options to access fee information
@@ -166,7 +168,7 @@ export function PanelOnramp({
               value={srcAmountOnRamp}
               onChange={handleAmountChange}
               placeholder="5"
-              className="text-as-primary placeholder:text-as-primary/50 h-auto min-w-[70px] border-0 bg-transparent p-0 px-3 pt-1 text-4xl font-bold focus-visible:ring-0 focus-visible:ring-offset-0"
+              className="text-as-primary placeholder:text-as-primary/50 h-auto min-w-[70px] border-0 bg-transparent p-0 px-1 pt-1 text-4xl font-bold focus-visible:ring-0 focus-visible:ring-offset-0"
               style={{
                 width: `${Math.max(50, srcAmountOnRamp.length * 34)}px`,
               }}
@@ -175,8 +177,8 @@ export function PanelOnramp({
         </div>
 
         {/* Quick Amount Buttons */}
-        <div className={cn("mx-auto mb-6 inline-grid grid-cols-4 gap-2", hideDstToken && "mb-0")}>
-          {["5", "10", "20", "25"].map(value => (
+        <div className={cn("mx-auto mb-6 flex justify-center gap-2", hideDstToken && "mb-0")}>
+          {customUsdInputValues.map(value => (
             <button
               key={value}
               onClick={() => handleQuickAmount(value)}

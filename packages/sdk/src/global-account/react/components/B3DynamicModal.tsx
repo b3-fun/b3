@@ -84,7 +84,7 @@ export function B3DynamicModal() {
       case "manageAccount":
         return <ManageAccount {...contentType} />;
       case "anySpend":
-        return <AnySpend mode="modal" {...contentType} />;
+        return <AnySpend mode="modal" {...contentType} customUsdInputValues={contentType.customUsdInputValues} />;
       case "anyspendOrderDetails":
         return <AnySpend mode="modal" loadOrder={contentType.orderId} />;
       case "anySpendNft":
@@ -106,7 +106,9 @@ export function B3DynamicModal() {
       case "linkAccount":
         return <LinkAccount {...contentType} />;
       case "anySpendDepositHype":
-        return <AnySpendDepositHype {...contentType} mode="modal" />;
+        return (
+          <AnySpendDepositHype {...contentType} mode="modal" customUsdInputValues={contentType.customUsdInputValues} />
+        );
       case "avatarEditor":
         return <AvatarEditor onSetAvatar={contentType.onSuccess} />;
       // Add other modal types here
