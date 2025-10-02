@@ -468,7 +468,7 @@ function AnySpendInner({
     ? parseUnits(srcAmount.replace(/,/g, ""), selectedSrcToken.decimals).toString()
     : parseUnits(dstAmount.replace(/,/g, ""), selectedDstToken.decimals).toString();
   const srcAmountOnrampInWei = parseUnits(srcAmountOnRamp.replace(/,/g, ""), USDC_BASE.decimals).toString();
-  const { anyspendQuote, isLoadingAnyspendQuote, getAnyspendQuoteError } = useAnyspendQuote(
+  const { anyspendQuote, isLoadingAnyspendQuote } = useAnyspendQuote(
     activeTab === "crypto"
       ? {
           srcChain: selectedSrcChainId,

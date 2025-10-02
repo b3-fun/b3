@@ -91,7 +91,6 @@ function AnySpendDepositHypeInner({
     globalAddress,
     anyspendQuote,
     isLoadingAnyspendQuote,
-    getAnyspendQuoteError,
     activeInputAmountInWei,
     geoData,
     coinbaseAvailablePaymentMethods,
