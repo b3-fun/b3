@@ -1,3 +1,4 @@
+import { getAuthToken } from "@b3dotfun/sdk/shared/utils/auth-token";
 import type {
   NotificationHistory,
   NotificationPreferences,
@@ -9,20 +10,14 @@ import type {
 
 const DEFAULT_API_URL = "https://notifications.b3.fun";
 
-// Optional: Set JWT token for authenticated requests
-let jwtToken: string | null = null;
 let apiUrl: string = DEFAULT_API_URL;
-
-export function setAuthToken(token: string) {
-  jwtToken = token;
-}
-
-export function clearAuthToken() {
-  jwtToken = null;
-}
 
 export function setApiUrl(url: string) {
   apiUrl = url;
+}
+
+export function getApiUrl(): string {
+  return apiUrl;
 }
 
 function getHeaders(includeAuth = false): HeadersInit {
@@ -30,8 +25,11 @@ function getHeaders(includeAuth = false): HeadersInit {
     "Content-Type": "application/json",
   };
 
-  if (includeAuth && jwtToken) {
-    headers["Authorization"] = `Bearer ${jwtToken}`;
+  if (includeAuth) {
+    const token = getAuthToken();
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
   }
 
   return headers;

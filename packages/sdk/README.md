@@ -342,17 +342,9 @@ B3 Notifications provides multi-channel notification management for your users w
 
 ```tsx
 import { useNotifications } from "@b3dotfun/sdk/notifications/react";
-import { setAuthToken } from "@b3dotfun/sdk/notifications";
-import { useEffect } from "react";
 
 function NotificationSettings() {
   const { user, loading, connectEmail, connectTelegram, isEmailConnected } = useNotifications();
-
-  // Set auth token from your B3 authentication
-  useEffect(() => {
-    const token = "your-jwt-token"; // Get from your auth system
-    setAuthToken(token);
-  }, []);
 
   if (loading) return <div>Loading...</div>;
 
@@ -389,14 +381,18 @@ const {
 
 ### Authentication
 
+The notifications API automatically uses the B3 auth token from cookies. The token is managed by the B3 Global Account authentication system - you don't need to set it manually.
+
 ```typescript
-import { setAuthToken, clearAuthToken, notificationsAPI } from "@b3dotfun/sdk/notifications";
+import { getAuthToken, notificationsAPI } from "@b3dotfun/sdk/notifications";
+// Or import from shared utils
+// import { getAuthToken } from "@b3dotfun/sdk/shared/utils";
 
-// Set JWT token (call after user logs in)
-setAuthToken("your-jwt-token");
+// Get the current auth token (from b3-auth cookie)
+const token = getAuthToken();
 
-// Clear token (call on logout)
-clearAuthToken();
+// API calls automatically use the auth token
+const userData = await notificationsAPI.getUser();
 ```
 
 ### User Management
@@ -514,20 +510,10 @@ interface UserData {
 ```tsx
 "use client";
 
-import { useEffect } from "react";
-import { setAuthToken, useNotifications } from "@b3dotfun/sdk/notifications/react";
-import { useB3 } from "@b3dotfun/sdk/global-account/react";
+import { useNotifications } from "@b3dotfun/sdk/notifications/react";
 
 export default function NotificationsPage() {
-  const { jwt } = useB3(); // Get JWT from B3 authentication
   const { user, loading, connectEmail, connectTelegram, isEmailConnected, isTelegramConnected } = useNotifications();
-
-  // Set auth token when available
-  useEffect(() => {
-    if (jwt) {
-      setAuthToken(jwt);
-    }
-  }, [jwt]);
 
   if (loading) {
     return <div>Loading notification settings...</div>;
@@ -573,6 +559,25 @@ console.log(supportedChains);
 // Use B3 chain configuration
 console.log(b3Chain);
 ```
+
+## Authentication Token Management
+
+Read-only access to the B3 authentication token. The token is managed by the B3 Global Account authentication system.
+
+```typescript
+import { getAuthToken } from "@b3dotfun/sdk/shared/utils";
+
+// Get the current auth token from the b3-auth cookie
+const token = getAuthToken();
+
+if (token) {
+  console.log("User is authenticated");
+} else {
+  console.log("User is not authenticated");
+}
+```
+
+The auth token is automatically set by the B3 Global Account authentication system (see the Global Accounts section above). All SDK modules that require authentication will automatically use this token.
 
 ## Utility Functions
 
