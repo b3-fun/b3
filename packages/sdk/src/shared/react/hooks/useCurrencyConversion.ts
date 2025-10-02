@@ -1,6 +1,22 @@
-import { useExchangeRate } from "@b3dotfun/sdk/global-account/react";
+import { useQuery } from "@tanstack/react-query";
 import { formatDisplayNumber } from "@b3dotfun/sdk/shared/utils/number";
 import { CURRENCY_SYMBOLS, useCurrencyStore } from "../stores/currencyStore";
+
+/**
+ * Fetches all exchange rates for a given base currency from Coinbase API.
+ */
+async function fetchAllExchangeRates(baseCurrency: string): Promise<Record<string, number>> {
+  const response = await fetch(`https://api.coinbase.com/v2/exchange-rates?currency=${baseCurrency}`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch exchange rates");
+  }
+  const data = await response.json();
+  const rates: Record<string, number> = {};
+  for (const [currency, rate] of Object.entries(data.data.rates)) {
+    rates[currency] = parseFloat(rate as string);
+  }
+  return rates;
+}
 
 /**
  * Hook for currency conversion and formatting with real-time exchange rates.
@@ -22,17 +38,19 @@ export function useCurrencyConversion() {
   const selectedCurrency = useCurrencyStore(state => state.selectedCurrency);
   const baseCurrency = useCurrencyStore(state => state.baseCurrency);
 
-  // Get exchange rate for the selected currency
-  const { rate: exchangeRate } = useExchangeRate({
-    baseCurrency,
-    quoteCurrency: selectedCurrency === baseCurrency ? "USD" : selectedCurrency,
+  // Fetch all exchange rates for the base currency
+  const { data: exchangeRates } = useQuery({
+    queryKey: ["exchangeRates", baseCurrency],
+    queryFn: () => fetchAllExchangeRates(baseCurrency),
+    refetchInterval: 30000, // Refresh every 30 seconds
+    staleTime: 15000, // Consider data stale after 15 seconds
+    retry: 3,
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
-  // Always fetch USD rate for tooltip purposes
-  const { rate: usdRate } = useExchangeRate({
-    baseCurrency,
-    quoteCurrency: "USD",
-  });
+  // Extract specific rates from the full rates object
+  const exchangeRate = exchangeRates?.[selectedCurrency];
+  const usdRate = exchangeRates?.["USD"];
 
   /**
    * Formats a numeric value as a currency string with proper conversion and formatting.
@@ -83,8 +101,7 @@ export function useCurrencyConversion() {
       return `${formatted} ${baseCurrency}`;
     }
 
-    // If no exchange rate available, show base currency to prevent showing
-    // incorrect values with wrong currency symbols during rate fetching
+    // If showing base currency, no conversion needed
     if (selectedCurrency === baseCurrency || !exchangeRate) {
       const formatted = formatDisplayNumber(value, {
         significantDigits: baseCurrency === "B3" ? 6 : 8,
