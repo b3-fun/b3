@@ -1,6 +1,6 @@
 {
   "name": "@b3dotfun/sdk",
-  "version": "0.0.40",
+  "version": "0.0.41",
   "source": "src/index.ts",
   "main": "./dist/cjs/index.js",
   "react-native": "./dist/cjs/index.native.js",
@@ -169,6 +169,26 @@
       "types": "./dist/types/global-account/server.d.ts",
       "import": "./dist/esm/global-account/server.js",
       "require": "./dist/cjs/global-account/server.js"
+    },
+    "./notifications": {
+      "types": "./dist/types/notifications/index.d.ts",
+      "import": "./dist/esm/notifications/index.js",
+      "require": "./dist/cjs/notifications/index.js"
+    },
+    "./notifications/react": {
+      "types": "./dist/types/notifications/react/index.d.ts",
+      "import": "./dist/esm/notifications/react/index.js",
+      "require": "./dist/cjs/notifications/react/index.js"
+    },
+    "./notifications/services": {
+      "types": "./dist/types/notifications/services/index.d.ts",
+      "import": "./dist/esm/notifications/services/index.js",
+      "require": "./dist/cjs/notifications/services/index.js"
+    },
+    "./notifications/types": {
+      "types": "./dist/types/notifications/types/index.d.ts",
+      "import": "./dist/esm/notifications/types/index.js",
+      "require": "./dist/cjs/notifications/types/index.js"
     },
     "./shared/utils": {
       "types": "./dist/types/shared/utils/index.d.ts",
