@@ -65,7 +65,7 @@ export function OrderHistoryItem({ order, onSelectOrder, mode }: OrderHistoryIte
             {orderStatusText}
           </div>
           {isOneClickPayment && vendorName && (
-            <Badge variant="outline" className="text-as-secondary text-[10px] px-2 py-0.5">
+            <Badge variant="outline" className="text-as-secondary px-2 py-0.5 text-[10px]">
               {vendorName}
             </Badge>
           )}
