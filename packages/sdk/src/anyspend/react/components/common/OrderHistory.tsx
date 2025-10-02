@@ -17,37 +17,37 @@ export function OrderHistory({ mode, onBack, onSelectOrder }: OrderHistoryProps)
 
   return (
     <>
-      <div className="mb-6 flex w-full items-center gap-4">
-        <Button onClick={onBack} variant="ghost" size="icon">
-          <ArrowLeft className="h-4 w-4" />
+      <div className="mb-8 flex w-full items-center gap-3">
+        <Button onClick={onBack} variant="ghost" size="icon" className="hover:bg-as-surface-secondary">
+          <ArrowLeft className="h-5 w-5" />
         </Button>
         <div className="flex-1">
-          <h3 className="text-xl font-semibold">Order History</h3>
-          <p className="text-as-primary/30 text-sm">View your past transactions</p>
+          <h3 className="text-as-primary text-2xl font-bold">Order History</h3>
         </div>
         <Button
           variant="ghost"
           size="icon"
+          className="hover:bg-as-surface-secondary"
           onClick={() => {
             refetchOrderHistory();
           }}
         >
-          <RefreshCcw className="text-as-primary/30 hover:text-as-primary h-4 w-4 cursor-pointer transition-all hover:rotate-180" />
+          <RefreshCcw className="text-as-secondary hover:text-as-primary h-5 w-5 cursor-pointer transition-all hover:rotate-180" />
         </Button>
       </div>
 
       {isLoadingOrderHistory ? (
-        <div className="w-full space-y-4">
+        <div className="w-full space-y-3">
           {[1, 2, 3].map(i => (
-            <Skeleton key={i} className="h-[160px] w-full rounded-lg" />
+            <Skeleton key={i} className="h-[180px] w-full rounded-2xl" />
           ))}
         </div>
       ) : !orderHistory?.length ? (
-        <div className="bg-as-light-brand w-full rounded-lg border p-8 text-center">
-          <p className="text-b3-react-muted-foreground">No order history found</p>
+        <div className="bg-as-surface-secondary w-full rounded-2xl p-12 text-center">
+          <p className="text-as-secondary text-sm">No order history found</p>
         </div>
       ) : (
-        <div className="mb-12 w-full space-y-4">
+        <div className="mb-12 w-full space-y-3">
           {[...orderHistory]
             .sort((a, b) => b.createdAt - a.createdAt)
             .map(order => (
