@@ -1,15 +1,15 @@
-import type { Address, Hex, WalletClient, PublicClient } from "viem";
+import type { Address, Hex, PublicClient, WalletClient } from "viem";
 import {
-  parseUnits,
-  formatUnits,
-  encodeAbiParameters,
-  parseAbiParameters,
-  getContract,
   createPublicClient,
+  encodeAbiParameters,
+  formatUnits,
+  getContract,
   http,
+  parseAbiParameters,
+  parseUnits,
 } from "viem";
 import { base } from "viem/chains";
-import { UniversalRouterAddress, QuoterAddress, Permit2Address, BaseMainnetRpcUrl } from "./constants";
+import { BaseMainnetRpcUrl, Permit2Address, QuoterAddress, UniversalRouterAddress } from "./constants";
 import type { SwapQuote } from "./types";
 
 // Minimal ABIs needed for swap functionality
@@ -230,7 +230,10 @@ export class BondkitSwapService {
    */
   private async getV4Config(): Promise<V4PoolConfig> {
     await this.initializeV4Config();
-    return this.v4Config!;
+    if (!this.v4Config) {
+      throw new Error("Failed to initialize V4 configuration");
+    }
+    return this.v4Config;
   }
 
   /**

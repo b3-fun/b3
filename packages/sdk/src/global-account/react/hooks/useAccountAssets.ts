@@ -1,8 +1,9 @@
 import { fetchSimpleHashData } from "@b3dotfun/sdk/shared/utils/simplehash";
 import { useQuery } from "@tanstack/react-query";
+import invariant from "invariant";
 
-async function fetchAccountAssets(address: string) {
-  if (!address) throw new Error("Address is required");
+async function fetchAccountAssets(address: string | undefined) {
+  invariant(address, "Address is required");
 
   const [nftResponse] = await Promise.all([
     fetchSimpleHashData(`/v0/nfts/owners`, {
@@ -27,7 +28,7 @@ async function fetchAccountAssets(address: string) {
 export function useAccountAssets(address?: string) {
   return useQuery({
     queryKey: ["accountAssets", address],
-    queryFn: () => fetchAccountAssets(address!),
+    queryFn: () => fetchAccountAssets(address),
     enabled: Boolean(address),
     staleTime: 30 * 1000, // Consider data fresh for 30 seconds
     gcTime: 5 * 60 * 1000, // Keep unused data in cache for 5 minutes

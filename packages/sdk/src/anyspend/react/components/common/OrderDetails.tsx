@@ -391,13 +391,7 @@ export const OrderDetails = memo(function OrderDetails({
       : order.payload.expectedDstAmount.toString();
   const formattedExpectedDstAmount = formatTokenAmount(BigInt(expectedDstAmount), dstToken.decimals);
 
-  const actualDstAmount =
-    order.type === "mint_nft" ||
-    order.type === "join_tournament" ||
-    order.type === "fund_tournament" ||
-    order.type === "custom"
-      ? undefined
-      : order.payload.actualDstAmount;
+  const actualDstAmount = order.settlement?.actualDstAmount;
   const formattedActualDstAmount = actualDstAmount
     ? formatTokenAmount(BigInt(actualDstAmount), dstToken.decimals)
     : undefined;
@@ -987,8 +981,8 @@ export const OrderDetails = memo(function OrderDetails({
           </AccordionItem>
         </Accordion>
 
-        {/* Show payment UI when deposit is not enough and order is not expired */}
-        {!depositEnoughAmount && order.status !== "expired" && (
+        {/* Show payment UI for insufficient deposit while scanning for transaction */}
+        {depositTxs?.length > 0 && !depositEnoughAmount && order.status === "scanning_deposit_transaction" && (
           <InsufficientDepositPayment
             order={order}
             srcToken={srcToken}

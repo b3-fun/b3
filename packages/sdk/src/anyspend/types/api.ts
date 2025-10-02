@@ -435,6 +435,11 @@ export interface paths {
                 executeTx: components["schemas"]["ExecuteTx"] | null;
                 /** @description Refund transactions if order failed */
                 refundTxs: components["schemas"]["RefundTx"][];
+                /**
+                 * @description Points awarded for this order (only present when order status is executed)
+                 * @example 100
+                 */
+                points: number | null;
               };
               /** @example 200 */
               statusCode: number;
@@ -1119,16 +1124,6 @@ export interface components {
        * @example 990000
        */
       expectedDstAmount: string;
-      /**
-       * @description Actual received amount (null for new orders)
-       * @example 990000
-       */
-      actualDstAmount: string | null;
-      /**
-       * @description Amount in after fee
-       * @example 990000
-       */
-      amountInAfterFee: string | null;
     };
     /** @description HypeDuel-specific payload */
     HypeDuelPayload: {
@@ -1137,16 +1132,6 @@ export interface components {
        * @example 990000
        */
       expectedDstAmount: string;
-      /**
-       * @description Actual received amount (null for new orders)
-       * @example 990000
-       */
-      actualDstAmount: string | null;
-      /**
-       * @description Amount in after fee
-       * @example 990000
-       */
-      amountInAfterFee: string | null;
     };
     /** @description Custom execution payload */
     CustomPayload: {
@@ -1324,6 +1309,8 @@ export interface components {
        * @example 1752506694679
        */
       expiredAt: number;
+      /** @description Timestamp when the order was filled/executed */
+      filledAt: number | null;
       /**
        * @description Optional creator address
        * @example 0xb34facb90a200251318e8841c05102366f2158cf
@@ -1340,6 +1327,14 @@ export interface components {
        * @example pi_3Rko0sJnoDg53PsP0PDLsHkR
        */
       stripePaymentIntentId: string | null;
+      /** @description Settlement information for executed orders */
+      settlement: {
+        /**
+         * @description Actual received amount after execution
+         * @example 990000
+         */
+        actualDstAmount: string | null;
+      } | null;
     };
     SwapOrder: components["schemas"]["BaseOrder"] & {
       /**

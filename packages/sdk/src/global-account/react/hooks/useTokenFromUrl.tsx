@@ -69,7 +69,7 @@ export function useTokenFromUrl({ defaultToken, prefix }: UseTokenFromUrlOptions
 
   const { data: tokenInfo, isError } = useQuery({
     queryKey: ["tokenInfo", network, currencyParam],
-    queryFn: () => fetchTokenInfo(network, currencyParam!),
+    queryFn: () => fetchTokenInfo(network, currencyParam || ""),
     enabled: shouldFetchToken,
     staleTime: Infinity,
     gcTime: Infinity,
@@ -84,7 +84,7 @@ export function useTokenFromUrl({ defaultToken, prefix }: UseTokenFromUrlOptions
   if (isError || !tokenInfo) {
     return {
       ...defaultToken,
-      address: currencyParam!,
+      address: currencyParam || "",
       chainId: Number(chainIdParam),
     };
   }

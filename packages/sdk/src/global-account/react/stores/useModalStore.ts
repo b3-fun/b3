@@ -123,11 +123,13 @@ export interface AnySpendModalProps extends BaseModalProps {
   /** Whether to hide the transaction history button */
   hideTransactionHistoryButton?: boolean;
   /** Callback function called when the transaction is successful */
-  onSuccess?: () => void;
+  onSuccess?: (txHash?: string) => void;
   /** Token address of the destination token to buy (enables buy mode) */
   destinationTokenAddress?: string;
   /** Chain ID where the destination token exists (enables buy mode) */
   destinationTokenChainId?: number;
+  /** Custom USD input values for quick amount buttons in fiat onramp */
+  customUsdInputValues?: string[];
 }
 
 /**
@@ -307,6 +309,8 @@ export interface AnySpendDepositHypeProps extends BaseModalProps {
   mainFooter?: React.ReactNode;
   /** Callback function called when the deposit is successful */
   onSuccess?: (amount?: string) => void;
+  /** Custom USD input values for quick amount buttons in fiat onramp */
+  customUsdInputValues?: string[];
 }
 
 export interface AvatarEditorModalProps extends BaseModalProps {
