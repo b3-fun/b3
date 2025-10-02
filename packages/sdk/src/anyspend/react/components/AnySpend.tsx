@@ -970,7 +970,8 @@ function AnySpendInner({
               selectedPaymentMethod={selectedFiatPaymentMethod}
               setActivePanel={(panelIndex: number) => {
                 // Map panel index to navigation with direction
-                if (panelIndex === PanelView.FIAT_PAYMENT_METHOD || panelIndex === PanelView.RECIPIENT_SELECTION) {
+                const panelsWithForwardNav = [PanelView.FIAT_PAYMENT_METHOD, PanelView.RECIPIENT_SELECTION];
+                if (panelsWithForwardNav.includes(panelIndex)) {
                   navigateToPanel(panelIndex, "forward");
                 } else {
                   setActivePanel(panelIndex);
