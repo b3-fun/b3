@@ -1,3 +1,5 @@
+export * from "./currency";
+
 export const siteURL = "https://basement.fun";
 
 export const b3CoinIcon = "https://cdn.b3.fun/b3-coin-3d.png";
