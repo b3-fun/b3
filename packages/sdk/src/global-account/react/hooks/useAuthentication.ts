@@ -65,11 +65,11 @@ export function useAuthentication(partnerId: string) {
         debug("@@syncWagmi:not-connecting", connector);
       }
     });
-  }, [partnerId, wallets]);
+  }, [partnerId, wallets, wagmiConfig]);
 
   useEffect(() => {
     syncWagmi();
-  }, [wallets]);
+  }, [wallets, syncWagmi]);
 
   const authenticateUser = useCallback(
     async (wallet?: Wallet) => {
