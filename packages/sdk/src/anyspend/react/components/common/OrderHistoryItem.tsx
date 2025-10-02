@@ -2,6 +2,7 @@ import { ALL_CHAINS, getChainName, getStatusDisplay } from "@b3dotfun/sdk/anyspe
 import { Badge, Button, useIsMobile } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
+import { getVendorDisplayName } from "@b3dotfun/sdk/shared/utils/payment.utils";
 import { ArrowRight, ChevronDown } from "lucide-react";
 import TimeAgo from "react-timeago";
 import { b3 } from "viem/chains";
@@ -37,6 +38,10 @@ export function OrderHistoryItem({ order, onSelectOrder, mode }: OrderHistoryIte
 
   const isSmallView = useIsMobile() || mode === "modal";
 
+  // Check if this is a one-click payment order
+  const isOneClickPayment = !!order.oneClickBuyUrl;
+  const vendorName = order.onrampMetadata?.vendor ? getVendorDisplayName(order.onrampMetadata.vendor) : null;
+
   return (
     <div
       key={`anyspend-${order.id}`}
@@ -48,15 +53,22 @@ export function OrderHistoryItem({ order, onSelectOrder, mode }: OrderHistoryIte
     >
       {/* Header: Status and Time */}
       <div className="mb-3 flex items-center justify-between">
-        <div
-          className={cn(
-            "text-xs font-semibold",
-            orderDisplayStatus === "processing" && "text-yellow-600",
-            orderDisplayStatus === "success" && "text-green-600",
-            orderDisplayStatus === "failure" && "text-red-600",
+        <div className="flex items-center gap-2">
+          <div
+            className={cn(
+              "text-xs font-semibold",
+              orderDisplayStatus === "processing" && "text-yellow-600",
+              orderDisplayStatus === "success" && "text-green-600",
+              orderDisplayStatus === "failure" && "text-red-600",
+            )}
+          >
+            {orderStatusText}
+          </div>
+          {isOneClickPayment && vendorName && (
+            <Badge variant="outline" className="text-as-secondary text-[10px] px-2 py-0.5">
+              {vendorName}
+            </Badge>
           )}
-        >
-          {orderStatusText}
         </div>
         <div className="text-as-secondary text-[10px] font-medium uppercase tracking-wide">
           <TimeAgo date={new Date(order.createdAt)} />
