@@ -84,7 +84,7 @@ export function B3DynamicModal() {
       case "manageAccount":
         return <ManageAccount {...contentType} />;
       case "anySpend":
-        return <AnySpend mode="modal" {...contentType} customUsdInputValues={contentType.customUsdInputValues} />;
+        return <AnySpend mode="modal" {...contentType} />;
       case "anyspendOrderDetails":
         return <AnySpend mode="modal" loadOrder={contentType.orderId} />;
       case "anySpendNft":
