@@ -23,7 +23,7 @@ import {
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import invariant from "invariant";
-import { ArrowDown, HistoryIcon } from "lucide-react";
+import { ArrowDown, HistoryIcon, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -34,7 +34,6 @@ import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFing
 import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPaymentMethod";
 import { CryptoPaySection } from "./common/CryptoPaySection";
 import { CryptoReceiveSection } from "./common/CryptoReceiveSection";
-import { ErrorSection } from "./common/ErrorSection";
 import { FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaymentMethod";
 import { OrderDetails, OrderDetailsLoadingView } from "./common/OrderDetails";
 import { OrderHistory } from "./common/OrderHistory";
@@ -564,40 +563,40 @@ function AnySpendInner({
   });
 
   // Determine button state and text
-  const btnInfo: { text: string; disable: boolean; error: boolean } = useMemo(() => {
-    if (activeInputAmountInWei === "0") return { text: "Enter an amount", disable: true, error: false };
-    if (isLoadingAnyspendQuote) return { text: "Loading...", disable: true, error: false };
-    if (!recipientAddress) return { text: "Select recipient", disable: false, error: false };
-    if (isCreatingOrder || isCreatingOnrampOrder) return { text: "Creating order...", disable: true, error: false };
-    if (!anyspendQuote || !anyspendQuote.success) return { text: "Get rate error", disable: true, error: true };
+  const btnInfo: { text: string; disable: boolean; error: boolean; loading: boolean } = useMemo(() => {
+    if (activeInputAmountInWei === "0") return { text: "Enter an amount", disable: true, error: false, loading: false };
+    if (isLoadingAnyspendQuote) return { text: "Loading quote...", disable: true, error: false, loading: true };
+    if (!recipientAddress) return { text: "Select recipient", disable: false, error: false, loading: false };
+    if (isCreatingOrder || isCreatingOnrampOrder) return { text: "Creating order...", disable: true, error: false, loading: true };
+    if (!anyspendQuote || !anyspendQuote.success) return { text: "No quote found", disable: true, error: false, loading: false };
 
     if (activeTab === "crypto") {
       // If no payment method selected, show "Choose payment method"
       if (selectedCryptoPaymentMethod === CryptoPaymentMethodType.NONE) {
-        return { text: "Choose payment method", disable: false, error: false };
+        return { text: "Choose payment method", disable: false, error: false, loading: false };
       }
       // If payment method selected, show appropriate action
       if (
         selectedCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET ||
         selectedCryptoPaymentMethod === CryptoPaymentMethodType.GLOBAL_WALLET
       ) {
-        return { text: "Swap", disable: false, error: false };
+        return { text: "Swap", disable: false, error: false, loading: false };
       }
       if (selectedCryptoPaymentMethod === CryptoPaymentMethodType.TRANSFER_CRYPTO) {
-        return { text: "Continue to payment", disable: false, error: false };
+        return { text: "Continue to payment", disable: false, error: false, loading: false };
       }
     }
 
     if (activeTab === "fiat") {
       // If no fiat payment method selected, show "Select payment method"
       if (selectedFiatPaymentMethod === FiatPaymentMethod.NONE) {
-        return { text: "Select payment method", disable: false, error: false };
+        return { text: "Select payment method", disable: false, error: false, loading: false };
       }
       // If payment method is selected, show "Buy"
-      return { text: "Buy", disable: false, error: false };
+      return { text: "Buy", disable: false, error: false, loading: false };
     }
 
-    return { text: "Buy", disable: false, error: false };
+    return { text: "Buy", disable: false, error: false, loading: false };
   }, [
     activeInputAmountInWei,
     isLoadingAnyspendQuote,
@@ -967,15 +966,13 @@ function AnySpendInner({
           />
         )}
       </div>
-      {/* Error message section */}
-      <ErrorSection error={getAnyspendQuoteError} />
 
       {/* Main button section */}
       <motion.div
         initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
         animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
         transition={{ duration: 0.3, delay: 0.2, ease: "easeInOut" }}
-        className={cn("mt-4 flex w-full max-w-[460px] flex-col gap-2", getAnyspendQuoteError && "mt-0")}
+        className={cn("mt-4 flex w-full max-w-[460px] flex-col gap-2")}
       >
         <ShinyButton
           accentColor={"hsl(var(--as-brand))"}
@@ -987,8 +984,12 @@ function AnySpendInner({
           )}
           textClassName={cn(btnInfo.error ? "text-white" : btnInfo.disable ? "text-as-secondary" : "text-white")}
         >
-          {btnInfo.text}
+          <div className="flex items-center justify-center gap-2">
+            {btnInfo.loading && <Loader2 className="h-4 w-4 animate-spin" />}
+            {btnInfo.text}
+          </div>
         </ShinyButton>
+
 
         {!hideTransactionHistoryButton && (globalAddress || recipientAddress) ? (
           <Button

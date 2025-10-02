@@ -12,13 +12,12 @@ import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFing
 import { CryptoPaySection } from "./common/CryptoPaySection";
 import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPaymentMethod";
 import { CryptoReceiveSection } from "./common/CryptoReceiveSection";
-import { ErrorSection } from "./common/ErrorSection";
 import { FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaymentMethod";
 import { OrderDetails } from "./common/OrderDetails";
 import { PointsDetailPanel } from "./common/PointsDetailPanel";
 import { RecipientSelection } from "./common/RecipientSelection";
 
-import { ArrowDown } from "lucide-react";
+import { ArrowDown, Loader2 } from "lucide-react";
 import { PanelOnramp } from "./common/PanelOnramp";
 
 const SLIPPAGE_PERCENT = 3;
@@ -112,13 +111,13 @@ function AnySpendDepositHypeInner({
   });
 
   // Button state logic
-  const btnInfo: { text: string; disable: boolean; error: boolean } = useMemo(() => {
-    if (activeInputAmountInWei === "0") return { text: "Enter an amount", disable: true, error: false };
-    if (isLoadingAnyspendQuote) return { text: "Loading quote...", disable: true, error: false };
-    if (isCreatingOrder || isCreatingOnrampOrder) return { text: "Creating order...", disable: true, error: false };
-    if (!selectedRecipientAddress) return { text: "Select recipient", disable: false, error: false };
-    if (!anyspendQuote || !anyspendQuote.success) return { text: "Get quote error", disable: true, error: true };
-    if (!dstAmount) return { text: "No quote available", disable: true, error: true };
+  const btnInfo: { text: string; disable: boolean; error: boolean; loading: boolean } = useMemo(() => {
+    if (activeInputAmountInWei === "0") return { text: "Enter an amount", disable: true, error: false, loading: false };
+    if (isLoadingAnyspendQuote) return { text: "Loading quote...", disable: true, error: false, loading: true };
+    if (isCreatingOrder || isCreatingOnrampOrder) return { text: "Creating order...", disable: true, error: false, loading: true };
+    if (!selectedRecipientAddress) return { text: "Select recipient", disable: false, error: false, loading: false };
+    if (!anyspendQuote || !anyspendQuote.success) return { text: "Get quote error", disable: true, error: true, loading: false };
+    if (!dstAmount) return { text: "No quote available", disable: true, error: true, loading: false };
 
     // Check minimum deposit amount (10 HYPE)
     // Use the raw amount from the quote instead of the formatted display string
@@ -128,25 +127,25 @@ function AnySpendDepositHypeInner({
       const actualAmount = parseFloat(rawAmountInWei) / Math.pow(10, decimals);
 
       if (actualAmount < 10) {
-        return { text: "Minimum 10 HYPE deposit", disable: true, error: true };
+        return { text: "Minimum 10 HYPE deposit", disable: true, error: true, loading: false };
       }
     }
 
     if (paymentType === "crypto") {
       if (selectedCryptoPaymentMethod === CryptoPaymentMethodType.NONE) {
-        return { text: "Choose payment method", disable: false, error: false };
+        return { text: "Choose payment method", disable: false, error: false, loading: false };
       }
-      return { text: "Continue to deposit", disable: false, error: false };
+      return { text: "Continue to deposit", disable: false, error: false, loading: false };
     }
 
     if (paymentType === "fiat") {
       if (selectedFiatPaymentMethod === FiatPaymentMethod.NONE) {
-        return { text: "Select payment method", disable: false, error: false };
+        return { text: "Select payment method", disable: false, error: false, loading: false };
       }
-      return { text: "Buy", disable: false, error: false };
+      return { text: "Buy", disable: false, error: false, loading: false };
     }
 
-    return { text: "Continue to deposit", disable: false, error: false };
+    return { text: "Continue to deposit", disable: false, error: false, loading: false };
   }, [
     activeInputAmountInWei,
     isLoadingAnyspendQuote,
@@ -280,15 +279,12 @@ function AnySpendDepositHypeInner({
         </div>
       </div>
 
-      {/* Error message section */}
-      <ErrorSection error={getAnyspendQuoteError} />
-
       {/* Main button section */}
       <motion.div
         initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
         animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
         transition={{ duration: 0.3, delay: 0.2, ease: "easeInOut" }}
-        className={cn("mt-4 flex w-full max-w-[460px] flex-col gap-2", getAnyspendQuoteError && "mt-0")}
+        className={cn("mt-4 flex w-full max-w-[460px] flex-col gap-2")}
       >
         <ShinyButton
           accentColor={"hsl(var(--as-brand))"}
@@ -300,8 +296,12 @@ function AnySpendDepositHypeInner({
           )}
           textClassName={cn(btnInfo.error ? "text-white" : btnInfo.disable ? "text-as-secondary" : "text-white")}
         >
-          {btnInfo.text}
+          <div className="flex items-center justify-center gap-2">
+            {btnInfo.loading && <Loader2 className="h-4 w-4 animate-spin" />}
+            {btnInfo.text}
+          </div>
         </ShinyButton>
+
       </motion.div>
 
       {mainFooter ? mainFooter : null}
