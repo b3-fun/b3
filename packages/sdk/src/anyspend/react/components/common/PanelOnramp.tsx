@@ -178,7 +178,7 @@ export function PanelOnramp({
 
         {/* Quick Amount Buttons */}
         <div className={cn("mx-auto mb-6 flex justify-center gap-2", hideDstToken && "mb-0")}>
-          {customUsdInputValues.map(value => (
+          {customUsdInputValues.filter(v => !isNaN(Number(v))).map(value => (
             <button
               key={value}
               onClick={() => handleQuickAmount(value)}
