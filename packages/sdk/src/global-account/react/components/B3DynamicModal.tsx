@@ -106,9 +106,7 @@ export function B3DynamicModal() {
       case "linkAccount":
         return <LinkAccount {...contentType} />;
       case "anySpendDepositHype":
-        return (
-          <AnySpendDepositHype {...contentType} mode="modal" customUsdInputValues={contentType.customUsdInputValues} />
-        );
+        return <AnySpendDepositHype {...contentType} mode="modal" />;
       case "avatarEditor":
         return <AvatarEditor onSetAvatar={contentType.onSuccess} />;
       // Add other modal types here
