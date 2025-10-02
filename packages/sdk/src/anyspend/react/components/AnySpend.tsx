@@ -78,6 +78,7 @@ export function AnySpend(props: {
    * Useful for handling special cases like B3 token selection.
    */
   onTokenSelect?: (token: components["schemas"]["Token"], event: { preventDefault: () => void }) => void;
+  onSuccess?: (txHash?: string) => void;
 }) {
   const fingerprintConfig = getFingerprintConfig();
 
@@ -97,6 +98,7 @@ function AnySpendInner({
   hideTransactionHistoryButton,
   recipientAddress: recipientAddressFromProps,
   onTokenSelect,
+  onSuccess,
 }: {
   destinationTokenAddress?: string;
   destinationTokenChainId?: number;
@@ -106,6 +108,7 @@ function AnySpendInner({
   hideTransactionHistoryButton?: boolean;
   recipientAddress?: string;
   onTokenSelect?: (token: components["schemas"]["Token"], event: { preventDefault: () => void }) => void;
+  onSuccess?: (txHash?: string) => void;
 }) {
   const searchParams = useSearchParamsSSR();
   const router = useRouter();
@@ -130,6 +133,9 @@ function AnySpendInner({
     toLogo?: string;
     toAmount?: string;
   } | null>(null);
+
+  // Track if onSuccess has been called for the current order
+  const onSuccessCalled = useRef(false);
 
   const [activeTab, setActiveTab] = useState<"crypto" | "fiat">(defaultActiveTab);
 
@@ -515,6 +521,20 @@ function AnySpendInner({
       }
     }
   }, [anyspendQuote, isSrcInputDirty]);
+
+  useEffect(() => {
+    if (oat?.data?.order.status === "executed" && !onSuccessCalled.current) {
+      console.log("Calling onSuccess");
+      const txHash = oat?.data?.executeTx?.txHash;
+      onSuccess?.(txHash);
+      onSuccessCalled.current = true;
+    }
+  }, [oat?.data?.order.status, oat?.data?.executeTx?.txHash, onSuccess]);
+
+  // Reset flag when orderId changes
+  useEffect(() => {
+    onSuccessCalled.current = false;
+  }, [orderId]);
 
   const { createOrder, isCreatingOrder } = useAnyspendCreateOrder({
     onSuccess: data => {

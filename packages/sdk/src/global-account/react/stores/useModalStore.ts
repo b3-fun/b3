@@ -121,7 +121,7 @@ export interface AnySpendModalProps extends BaseModalProps {
   /** Whether to hide the transaction history button */
   hideTransactionHistoryButton?: boolean;
   /** Callback function called when the transaction is successful */
-  onSuccess?: () => void;
+  onSuccess?: (txHash?: string) => void;
   /** Token address of the destination token to buy (enables buy mode) */
   destinationTokenAddress?: string;
   /** Chain ID where the destination token exists (enables buy mode) */
