@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { notificationsAPI } from "../../services/api";
 import type { UserData } from "../../types";
 
@@ -33,9 +33,32 @@ export function useNotifications() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
+  // Refs to track polling timers for cleanup
+  const telegramPollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const telegramPollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Cleanup function for Telegram polling
+  const cleanupTelegramPolling = () => {
+    if (telegramPollIntervalRef.current) {
+      clearInterval(telegramPollIntervalRef.current);
+      telegramPollIntervalRef.current = null;
+    }
+    if (telegramPollTimeoutRef.current) {
+      clearTimeout(telegramPollTimeoutRef.current);
+      telegramPollTimeoutRef.current = null;
+    }
+  };
+
   // Load user data on mount
   useEffect(() => {
     loadUser();
+  }, []);
+
+  // Cleanup polling on unmount
+  useEffect(() => {
+    return () => {
+      cleanupTelegramPolling();
+    };
   }, []);
 
   const loadUser = async () => {
@@ -64,15 +87,18 @@ export function useNotifications() {
 
   const connectTelegram = async () => {
     try {
+      // Clear any existing polling before starting new one
+      cleanupTelegramPolling();
+
       const { deepLink } = await notificationsAPI.getTelegramLink();
       window.open(deepLink, "_blank");
 
       // Poll for connection status
-      const interval = setInterval(async () => {
+      telegramPollIntervalRef.current = setInterval(async () => {
         try {
           const { connected } = await notificationsAPI.checkTelegramStatus();
           if (connected) {
-            clearInterval(interval);
+            cleanupTelegramPolling();
             await loadUser(); // Refresh user data
           }
         } catch (err) {
@@ -81,7 +107,9 @@ export function useNotifications() {
       }, 2000);
 
       // Stop polling after 2 minutes
-      setTimeout(() => clearInterval(interval), 120000);
+      telegramPollTimeoutRef.current = setTimeout(() => {
+        cleanupTelegramPolling();
+      }, 120000);
     } catch (err) {
       console.error("Failed to connect Telegram:", err);
       throw err;

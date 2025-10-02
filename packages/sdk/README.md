@@ -476,35 +476,6 @@ await notificationsAPI.sendNotification({
 });
 ```
 
-## TypeScript Types
-
-```typescript
-import type { UserData, NotificationChannel, ChannelType } from "@b3dotfun/sdk/notifications/types";
-
-type ChannelType = "email" | "telegram" | "discord" | "sms" | "whatsapp" | "in_app";
-
-interface NotificationChannel {
-  id: number;
-  channel_type: ChannelType;
-  enabled: number;
-  channel_identifier: string;
-}
-
-interface UserData {
-  user: {
-    id: number;
-    user_id: string;
-  };
-  channels: NotificationChannel[];
-  appSettings: Array<{
-    app_id: string;
-    notification_type: string;
-    enabled: number;
-    channels: string;
-  }>;
-}
-```
-
 ## Next.js Example
 
 ```tsx
