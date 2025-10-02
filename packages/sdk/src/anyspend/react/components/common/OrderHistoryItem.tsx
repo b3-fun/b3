@@ -96,10 +96,18 @@ export function OrderHistoryItem({ order, onSelectOrder, mode }: OrderHistoryIte
         <div className={cn("flex min-w-0 flex-1 items-center", isSmallView ? "gap-1.5" : "gap-2")}>
           {nft ? (
             <>
-              <img src={nft.imageUrl} alt={nft.name} className={cn("shrink-0 rounded-full", isSmallView ? "h-7 w-7" : "h-8 w-8")} />
+              <img
+                src={nft.imageUrl}
+                alt={nft.name}
+                className={cn("shrink-0 rounded-full", isSmallView ? "h-7 w-7" : "h-8 w-8")}
+              />
               <div className="min-w-0 flex-1">
-                <div className={cn("text-as-primary truncate font-bold", isSmallView ? "text-xs" : "text-sm")}>{nft.name}</div>
-                <div className={cn("text-as-secondary flex items-center gap-1", isSmallView ? "text-[10px]" : "text-xs")}>
+                <div className={cn("text-as-primary truncate font-bold", isSmallView ? "text-xs" : "text-sm")}>
+                  {nft.name}
+                </div>
+                <div
+                  className={cn("text-as-secondary flex items-center gap-1", isSmallView ? "text-[10px]" : "text-xs")}
+                >
                   <img
                     src={ALL_CHAINS[order.dstChain]?.logoUrl}
                     alt={getChainName(order.dstChain)}
@@ -111,10 +119,18 @@ export function OrderHistoryItem({ order, onSelectOrder, mode }: OrderHistoryIte
             </>
           ) : tournament ? (
             <>
-              <img src={tournament.imageUrl} alt={tournament.name} className={cn("shrink-0 rounded-full", isSmallView ? "h-7 w-7" : "h-8 w-8")} />
+              <img
+                src={tournament.imageUrl}
+                alt={tournament.name}
+                className={cn("shrink-0 rounded-full", isSmallView ? "h-7 w-7" : "h-8 w-8")}
+              />
               <div className="min-w-0 flex-1">
-                <div className={cn("text-as-primary truncate font-bold", isSmallView ? "text-xs" : "text-sm")}>{tournament.name}</div>
-                <div className={cn("text-as-secondary flex items-center gap-1", isSmallView ? "text-[10px]" : "text-xs")}>
+                <div className={cn("text-as-primary truncate font-bold", isSmallView ? "text-xs" : "text-sm")}>
+                  {tournament.name}
+                </div>
+                <div
+                  className={cn("text-as-secondary flex items-center gap-1", isSmallView ? "text-[10px]" : "text-xs")}
+                >
                   <img
                     src={ALL_CHAINS[order.dstChain]?.logoUrl}
                     alt={getChainName(order.dstChain)}
@@ -126,7 +142,11 @@ export function OrderHistoryItem({ order, onSelectOrder, mode }: OrderHistoryIte
             </>
           ) : (
             <>
-              <img src={dstToken.metadata.logoURI} alt={dstToken.symbol} className={cn("shrink-0 rounded-full", isSmallView ? "h-7 w-7" : "h-8 w-8")} />
+              <img
+                src={dstToken.metadata.logoURI}
+                alt={dstToken.symbol}
+                className={cn("shrink-0 rounded-full", isSmallView ? "h-7 w-7" : "h-8 w-8")}
+              />
               <div className="min-w-0 flex-1">
                 <div className={cn("text-as-primary truncate font-bold", isSmallView ? "text-xs" : "text-sm")}>
                   {formatTokenAmount(
@@ -139,7 +159,9 @@ export function OrderHistoryItem({ order, onSelectOrder, mode }: OrderHistoryIte
                   )}{" "}
                   {dstToken.symbol}
                 </div>
-                <div className={cn("text-as-secondary flex items-center gap-1", isSmallView ? "text-[10px]" : "text-xs")}>
+                <div
+                  className={cn("text-as-secondary flex items-center gap-1", isSmallView ? "text-[10px]" : "text-xs")}
+                >
                   <img
                     src={ALL_CHAINS[order.dstChain]?.logoUrl}
                     alt={getChainName(order.dstChain)}
