@@ -988,7 +988,7 @@ export const OrderDetails = memo(function OrderDetails({
         </Accordion>
 
         {/* Show payment UI when deposit is not enough and order is not expired */}
-        {!depositEnoughAmount && order.status !== "expired" && (
+        {depositTxs?.length > 0 && !depositEnoughAmount && order.status === "scanning_deposit_transaction" && (
           <InsufficientDepositPayment
             order={order}
             srcToken={srcToken}
