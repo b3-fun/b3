@@ -42,6 +42,7 @@ export interface AnySpendDepositHypeProps {
    * Useful for handling special cases like B3 token selection.
    */
   onTokenSelect?: (token: components["schemas"]["Token"], event: { preventDefault: () => void }) => void;
+  customUsdInputValues?: string[];
 }
 
 export function AnySpendDepositHype(props: AnySpendDepositHypeProps) {
@@ -64,6 +65,7 @@ function AnySpendDepositHypeInner({
   onSuccess,
   mainFooter,
   onTokenSelect,
+  customUsdInputValues,
 }: AnySpendDepositHypeProps) {
   // Use shared flow hook
   const {
@@ -234,6 +236,7 @@ function AnySpendDepositHypeInner({
                 recipientSelectionPanelIndex={PanelView.RECIPIENT_SELECTION}
                 anyspendQuote={anyspendQuote}
                 onShowPointsDetail={() => setActivePanel(PanelView.POINTS_DETAIL)}
+                customUsdInputValues={customUsdInputValues}
               />
             </motion.div>
           )}
