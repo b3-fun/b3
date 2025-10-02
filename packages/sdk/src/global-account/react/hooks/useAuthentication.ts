@@ -65,7 +65,8 @@ export function useAuthentication(partnerId: string) {
         debug("@@syncWagmi:not-connecting", connector);
       }
     });
-  }, [partnerId, wallets, wagmiConfig]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps wagmi config shouldn't change
+  }, [partnerId, wallets]);
 
   useEffect(() => {
     syncWagmi();
