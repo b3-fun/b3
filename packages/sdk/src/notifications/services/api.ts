@@ -156,12 +156,14 @@ export const notificationsAPI = {
 
   /**
    * Save notification preferences for an app
+   * @param appId - The application ID
+   * @param settings - Notification preferences including channels, type, and enabled status (defaults to true)
    */
   async savePreferences(appId: string, settings: NotificationPreferences) {
     const res = await fetch(`${apiUrl}/users/me/apps/${appId}/settings`, {
       method: "POST",
       headers: getHeaders(true),
-      body: JSON.stringify({ ...settings, enabled: true }),
+      body: JSON.stringify({ enabled: true, ...settings }),
     });
     return res.json();
   },

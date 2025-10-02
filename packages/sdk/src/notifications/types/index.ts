@@ -45,6 +45,7 @@ export interface TelegramStatusResponse {
 export interface NotificationPreferences {
   notificationType: string;
   channels: string[];
+  enabled?: boolean;
 }
 
 export interface SendNotificationRequest {

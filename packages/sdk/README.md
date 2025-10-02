@@ -442,10 +442,17 @@ const { connected, chatId } = await notificationsAPI.checkTelegramStatus();
 ### App Preferences
 
 ```typescript
-// Save notification preferences for an app
+// Save notification preferences for an app (enabled by default)
 await notificationsAPI.savePreferences("my-app", {
   notificationType: "transaction",
   channels: ["email", "telegram", "in_app"],
+});
+
+// Save disabled preferences
+await notificationsAPI.savePreferences("my-app", {
+  notificationType: "transaction",
+  channels: ["email", "telegram"],
+  enabled: false,
 });
 
 // Get app settings
