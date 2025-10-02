@@ -1,11 +1,10 @@
 import { ALL_CHAINS, getChainName, getStatusDisplay } from "@b3dotfun/sdk/anyspend";
-import { Badge, Button, useIsMobile } from "@b3dotfun/sdk/global-account/react";
+import { Badge, useIsMobile } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { getVendorDisplayName } from "@b3dotfun/sdk/shared/utils/payment.utils";
-import { ArrowRight, ChevronDown } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import TimeAgo from "react-timeago";
-import { b3 } from "viem/chains";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 
 interface OrderHistoryItemProps {
@@ -70,20 +69,20 @@ export function OrderHistoryItem({ order, onSelectOrder, mode }: OrderHistoryIte
       </div>
 
       {/* Main Content: From -> To */}
-      <div className="flex items-center gap-4">
+      <div className={cn("flex items-center", isSmallView ? "gap-2" : "gap-4")}>
         {/* From Section */}
-        <div className="flex min-w-0 flex-1 items-center gap-2">
+        <div className={cn("flex min-w-0 flex-1 items-center", isSmallView ? "gap-1.5" : "gap-2")}>
           <img
             src={order.metadata.srcToken.metadata.logoURI}
             alt={order.metadata.srcToken.symbol}
-            className="h-8 w-8 shrink-0 rounded-full"
+            className={cn("shrink-0 rounded-full", isSmallView ? "h-7 w-7" : "h-8 w-8")}
           />
           <div className="min-w-0 flex-1">
-            <div className="text-as-primary truncate text-sm font-bold">
+            <div className={cn("text-as-primary truncate font-bold", isSmallView ? "text-xs" : "text-sm")}>
               {formatTokenAmount(BigInt(order.srcAmount), order.metadata.srcToken.decimals)}{" "}
               {order.metadata.srcToken.symbol}
             </div>
-            <div className="text-as-secondary flex items-center gap-1 text-xs">
+            <div className={cn("text-as-secondary flex items-center gap-1", isSmallView ? "text-[10px]" : "text-xs")}>
               <img src={ALL_CHAINS[order.srcChain]?.logoUrl} alt={getChainName(order.srcChain)} className="h-3 w-3" />
               <span className="truncate">{getChainName(order.srcChain)}</span>
             </div>
@@ -91,16 +90,24 @@ export function OrderHistoryItem({ order, onSelectOrder, mode }: OrderHistoryIte
         </div>
 
         {/* Arrow */}
-        <ArrowRight className="text-as-secondary h-5 w-5 shrink-0 opacity-30" />
+        <ArrowRight className={cn("text-as-secondary shrink-0 opacity-30", isSmallView ? "h-4 w-4" : "h-5 w-5")} />
 
         {/* To Section */}
-        <div className="flex min-w-0 flex-1 items-center gap-2">
+        <div className={cn("flex min-w-0 flex-1 items-center", isSmallView ? "gap-1.5" : "gap-2")}>
           {nft ? (
             <>
-              <img src={nft.imageUrl} alt={nft.name} className="h-8 w-8 shrink-0 rounded-full" />
+              <img
+                src={nft.imageUrl}
+                alt={nft.name}
+                className={cn("shrink-0 rounded-full", isSmallView ? "h-7 w-7" : "h-8 w-8")}
+              />
               <div className="min-w-0 flex-1">
-                <div className="text-as-primary truncate text-sm font-bold">{nft.name}</div>
-                <div className="text-as-secondary flex items-center gap-1 text-xs">
+                <div className={cn("text-as-primary truncate font-bold", isSmallView ? "text-xs" : "text-sm")}>
+                  {nft.name}
+                </div>
+                <div
+                  className={cn("text-as-secondary flex items-center gap-1", isSmallView ? "text-[10px]" : "text-xs")}
+                >
                   <img
                     src={ALL_CHAINS[order.dstChain]?.logoUrl}
                     alt={getChainName(order.dstChain)}
@@ -112,10 +119,18 @@ export function OrderHistoryItem({ order, onSelectOrder, mode }: OrderHistoryIte
             </>
           ) : tournament ? (
             <>
-              <img src={tournament.imageUrl} alt={tournament.name} className="h-8 w-8 shrink-0 rounded-full" />
+              <img
+                src={tournament.imageUrl}
+                alt={tournament.name}
+                className={cn("shrink-0 rounded-full", isSmallView ? "h-7 w-7" : "h-8 w-8")}
+              />
               <div className="min-w-0 flex-1">
-                <div className="text-as-primary truncate text-sm font-bold">{tournament.name}</div>
-                <div className="text-as-secondary flex items-center gap-1 text-xs">
+                <div className={cn("text-as-primary truncate font-bold", isSmallView ? "text-xs" : "text-sm")}>
+                  {tournament.name}
+                </div>
+                <div
+                  className={cn("text-as-secondary flex items-center gap-1", isSmallView ? "text-[10px]" : "text-xs")}
+                >
                   <img
                     src={ALL_CHAINS[order.dstChain]?.logoUrl}
                     alt={getChainName(order.dstChain)}
@@ -127,9 +142,13 @@ export function OrderHistoryItem({ order, onSelectOrder, mode }: OrderHistoryIte
             </>
           ) : (
             <>
-              <img src={dstToken.metadata.logoURI} alt={dstToken.symbol} className="h-8 w-8 shrink-0 rounded-full" />
+              <img
+                src={dstToken.metadata.logoURI}
+                alt={dstToken.symbol}
+                className={cn("shrink-0 rounded-full", isSmallView ? "h-7 w-7" : "h-8 w-8")}
+              />
               <div className="min-w-0 flex-1">
-                <div className="text-as-primary truncate text-sm font-bold">
+                <div className={cn("text-as-primary truncate font-bold", isSmallView ? "text-xs" : "text-sm")}>
                   {formatTokenAmount(
                     actualDstAmount
                       ? BigInt(actualDstAmount)
@@ -140,7 +159,9 @@ export function OrderHistoryItem({ order, onSelectOrder, mode }: OrderHistoryIte
                   )}{" "}
                   {dstToken.symbol}
                 </div>
-                <div className="text-as-secondary flex items-center gap-1 text-xs">
+                <div
+                  className={cn("text-as-secondary flex items-center gap-1", isSmallView ? "text-[10px]" : "text-xs")}
+                >
                   <img
                     src={ALL_CHAINS[order.dstChain]?.logoUrl}
                     alt={getChainName(order.dstChain)}
