@@ -46,6 +46,10 @@ export const notificationsAPI = {
       method: "POST",
       headers: getHeaders(true),
     });
+    if (!res.ok) {
+      const errorBody = await res.text().catch(() => "Could not read error body");
+      throw new Error(`API Error: ${res.status} ${res.statusText} - ${errorBody}`);
+    }
     return res.json();
   },
 
