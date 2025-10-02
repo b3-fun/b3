@@ -178,19 +178,21 @@ export function PanelOnramp({
 
         {/* Quick Amount Buttons */}
         <div className={cn("mx-auto mb-6 flex justify-center gap-2", hideDstToken && "mb-0")}>
-          {customUsdInputValues.filter(v => !isNaN(Number(v))).map(value => (
-            <button
-              key={value}
-              onClick={() => handleQuickAmount(value)}
-              className={`bg-as-surface-secondary border-as-border-secondary hover:border-as-border-secondary h-7 w-14 rounded-lg border text-sm font-medium transition-all duration-200 ${
-                srcAmountOnRamp === value
-                  ? "border-as-border-secondary bg-as-surface-secondary"
-                  : "bg-as-surface-secondary hover:bg-as-surface-secondary"
-              }`}
-            >
-              ${value}
-            </button>
-          ))}
+          {customUsdInputValues
+            .filter(v => !isNaN(Number(v)))
+            .map(value => (
+              <button
+                key={value}
+                onClick={() => handleQuickAmount(value)}
+                className={`bg-as-surface-secondary border-as-border-secondary hover:border-as-border-secondary h-7 w-14 rounded-lg border text-sm font-medium transition-all duration-200 ${
+                  srcAmountOnRamp === value
+                    ? "border-as-border-secondary bg-as-surface-secondary"
+                    : "bg-as-surface-secondary hover:bg-as-surface-secondary"
+                }`}
+              >
+                ${value}
+              </button>
+            ))}
         </div>
 
         {/* Token Display */}
