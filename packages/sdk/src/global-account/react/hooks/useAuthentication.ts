@@ -2,9 +2,9 @@ import app from "@b3dotfun/sdk/global-account/app";
 import { authenticateWithB3JWT } from "@b3dotfun/sdk/global-account/bsmnt";
 import { useAuthStore, useSiwe } from "@b3dotfun/sdk/global-account/react";
 import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
-import { b3MainnetThirdWeb } from "@b3dotfun/sdk/shared/constants/chains/supported";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
+import { getConnectors } from "@wagmi/core";
 import { useCallback, useEffect, useRef } from "react";
 import {
   useActiveWallet,
@@ -15,8 +15,8 @@ import {
 } from "thirdweb/react";
 import { ecosystemWallet, Wallet } from "thirdweb/wallets";
 import { preAuthenticate } from "thirdweb/wallets/in-app";
-import { useConnect } from "./useConnect";
 import { useUserQuery } from "./useUserQuery";
+import { useWagmiConfig } from "./useWagmiConfig";
 
 const debug = debugB3React("useAuthentication");
 
@@ -37,12 +37,39 @@ export function useAuthentication(partnerId: string) {
   const { authenticate } = useSiwe();
   const { user, setUser } = useUserQuery();
   const useAutoConnectLoadingPrevious = useRef(false);
-
-  const { connect } = useConnect(partnerId, b3MainnetThirdWeb);
+  const wagmiConfig = useWagmiConfig(partnerId);
 
   const wallet = ecosystemWallet(ecosystemWalletId, {
     partnerId: partnerId,
   });
+
+  const syncWagmi = useCallback(async () => {
+    const connectors = getConnectors(wagmiConfig);
+    debug("@@syncWagmi", {
+      connectors,
+      wallets,
+    });
+
+    // For each that matchs a TW wallet on wallets, connect to the wagmi connector
+    // or, since ecosystem wallets is separate, connect those via in-app-wallet from wagmi
+    connectors.forEach(connector => {
+      const twWallet = wallets.find(wallet => wallet.id === connector.id || connector.id === "in-app-wallet");
+      if (
+        twWallet &&
+        // If it's not an in-app wallet or it is the ecosystem wallet, connect
+        (connector.id !== "in-app-wallet" || (connector.id === "in-app-wallet" && twWallet.id === ecosystemWalletId))
+      ) {
+        debug("@@syncWagmi:connecting", { twWallet, connector });
+        connector.connect();
+      } else {
+        debug("@@syncWagmi:not-connecting", connector);
+      }
+    });
+  }, [partnerId, wallets]);
+
+  useEffect(() => {
+    syncWagmi();
+  }, [wallets]);
 
   const authenticateUser = useCallback(
     async (wallet?: Wallet) => {
@@ -178,7 +205,7 @@ export function useAuthentication(partnerId: string) {
     isConnected,
     wallet,
     preAuthenticate,
-    connect,
+    connect: onConnect,
     isAuthenticating,
     onConnect,
     user,
