@@ -435,6 +435,11 @@ export interface paths {
                 executeTx: components["schemas"]["ExecuteTx"] | null;
                 /** @description Refund transactions if order failed */
                 refundTxs: components["schemas"]["RefundTx"][];
+                /**
+                 * @description Points awarded for this order (only present when order status is executed)
+                 * @example 100
+                 */
+                points: number | null;
               };
               /** @example 200 */
               statusCode: number;
@@ -1119,11 +1124,6 @@ export interface components {
        * @example 990000
        */
       expectedDstAmount: string;
-      /**
-       * @description Actual received amount (null for new orders)
-       * @example 990000
-       */
-      actualDstAmount: string | null;
     };
     /** @description HypeDuel-specific payload */
     HypeDuelPayload: {
@@ -1132,11 +1132,6 @@ export interface components {
        * @example 990000
        */
       expectedDstAmount: string;
-      /**
-       * @description Actual received amount (null for new orders)
-       * @example 990000
-       */
-      actualDstAmount: string | null;
     };
     /** @description Custom execution payload */
     CustomPayload: {
@@ -1332,6 +1327,14 @@ export interface components {
        * @example pi_3Rko0sJnoDg53PsP0PDLsHkR
        */
       stripePaymentIntentId: string | null;
+      /** @description Settlement information for executed orders */
+      settlement: {
+        /**
+         * @description Actual received amount after execution
+         * @example 990000
+         */
+        actualDstAmount: string | null;
+      } | null;
     };
     SwapOrder: components["schemas"]["BaseOrder"] & {
       /**
