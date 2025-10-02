@@ -1,6 +1,32 @@
-import { useExchangeRate } from "@b3dotfun/sdk/global-account/react";
+import { useQuery } from "@tanstack/react-query";
 import { formatDisplayNumber } from "@b3dotfun/sdk/shared/utils/number";
 import { CURRENCY_SYMBOLS, useCurrencyStore } from "../stores/currencyStore";
+
+const COINBASE_API_URL = "https://api.coinbase.com/v2/exchange-rates";
+const REFETCH_INTERVAL_MS = 30000;
+
+interface CoinbaseExchangeRatesResponse {
+  data: {
+    currency: string;
+    rates: Record<string, string>;
+  };
+}
+
+/**
+ * Fetches all exchange rates for a given base currency from Coinbase API.
+ */
+async function fetchAllExchangeRates(baseCurrency: string): Promise<Record<string, number>> {
+  const response = await fetch(`${COINBASE_API_URL}?currency=${baseCurrency}`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch exchange rates for ${baseCurrency}: ${response.status}`);
+  }
+  const data: CoinbaseExchangeRatesResponse = await response.json();
+  const rates: Record<string, number> = {};
+  for (const [currency, rate] of Object.entries(data.data.rates)) {
+    rates[currency] = parseFloat(rate);
+  }
+  return rates;
+}
 
 /**
  * Hook for currency conversion and formatting with real-time exchange rates.
@@ -22,17 +48,19 @@ export function useCurrencyConversion() {
   const selectedCurrency = useCurrencyStore(state => state.selectedCurrency);
   const baseCurrency = useCurrencyStore(state => state.baseCurrency);
 
-  // Get exchange rate for the selected currency
-  const { rate: exchangeRate } = useExchangeRate({
-    baseCurrency,
-    quoteCurrency: selectedCurrency === baseCurrency ? "USD" : selectedCurrency,
+  // Fetch all exchange rates for the base currency
+  const { data: exchangeRates } = useQuery({
+    queryKey: ["exchangeRates", baseCurrency],
+    queryFn: () => fetchAllExchangeRates(baseCurrency),
+    refetchInterval: REFETCH_INTERVAL_MS,
+    staleTime: REFETCH_INTERVAL_MS / 2,
+    retry: 3,
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, REFETCH_INTERVAL_MS),
   });
 
-  // Always fetch USD rate for tooltip purposes
-  const { rate: usdRate } = useExchangeRate({
-    baseCurrency,
-    quoteCurrency: "USD",
-  });
+  // Extract specific rates from the full rates object
+  const exchangeRate = exchangeRates?.[selectedCurrency];
+  const usdRate = exchangeRates?.["USD"];
 
   /**
    * Formats a numeric value as a currency string with proper conversion and formatting.
@@ -83,8 +111,7 @@ export function useCurrencyConversion() {
       return `${formatted} ${baseCurrency}`;
     }
 
-    // If no exchange rate available, show base currency to prevent showing
-    // incorrect values with wrong currency symbols during rate fetching
+    // If showing base currency, no conversion needed
     if (selectedCurrency === baseCurrency || !exchangeRate) {
       const formatted = formatDisplayNumber(value, {
         significantDigits: baseCurrency === "B3" ? 6 : 8,
