@@ -74,14 +74,11 @@ export function OrderHistoryItem({ order, onSelectOrder, mode }: OrderHistoryIte
           />
           <div className="min-w-0 flex-1">
             <div className="text-as-primary truncate text-sm font-bold">
-              {formatTokenAmount(BigInt(order.srcAmount), order.metadata.srcToken.decimals)} {order.metadata.srcToken.symbol}
+              {formatTokenAmount(BigInt(order.srcAmount), order.metadata.srcToken.decimals)}{" "}
+              {order.metadata.srcToken.symbol}
             </div>
             <div className="text-as-secondary flex items-center gap-1 text-xs">
-              <img
-                src={ALL_CHAINS[order.srcChain]?.logoUrl}
-                alt={getChainName(order.srcChain)}
-                className="h-3 w-3"
-              />
+              <img src={ALL_CHAINS[order.srcChain]?.logoUrl} alt={getChainName(order.srcChain)} className="h-3 w-3" />
               <span className="truncate">{getChainName(order.srcChain)}</span>
             </div>
           </div>

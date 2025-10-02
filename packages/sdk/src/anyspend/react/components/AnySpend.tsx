@@ -567,8 +567,10 @@ function AnySpendInner({
     if (activeInputAmountInWei === "0") return { text: "Enter an amount", disable: true, error: false, loading: false };
     if (isLoadingAnyspendQuote) return { text: "Loading quote...", disable: true, error: false, loading: true };
     if (!recipientAddress) return { text: "Select recipient", disable: false, error: false, loading: false };
-    if (isCreatingOrder || isCreatingOnrampOrder) return { text: "Creating order...", disable: true, error: false, loading: true };
-    if (!anyspendQuote || !anyspendQuote.success) return { text: "No quote found", disable: true, error: false, loading: false };
+    if (isCreatingOrder || isCreatingOnrampOrder)
+      return { text: "Creating order...", disable: true, error: false, loading: true };
+    if (!anyspendQuote || !anyspendQuote.success)
+      return { text: "No quote found", disable: true, error: false, loading: false };
 
     if (activeTab === "crypto") {
       // If no payment method selected, show "Choose payment method"
@@ -989,7 +991,6 @@ function AnySpendInner({
             {btnInfo.text}
           </div>
         </ShinyButton>
-
 
         {!hideTransactionHistoryButton && (globalAddress || recipientAddress) ? (
           <Button

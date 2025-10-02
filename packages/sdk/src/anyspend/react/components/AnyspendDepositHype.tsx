@@ -114,9 +114,11 @@ function AnySpendDepositHypeInner({
   const btnInfo: { text: string; disable: boolean; error: boolean; loading: boolean } = useMemo(() => {
     if (activeInputAmountInWei === "0") return { text: "Enter an amount", disable: true, error: false, loading: false };
     if (isLoadingAnyspendQuote) return { text: "Loading quote...", disable: true, error: false, loading: true };
-    if (isCreatingOrder || isCreatingOnrampOrder) return { text: "Creating order...", disable: true, error: false, loading: true };
+    if (isCreatingOrder || isCreatingOnrampOrder)
+      return { text: "Creating order...", disable: true, error: false, loading: true };
     if (!selectedRecipientAddress) return { text: "Select recipient", disable: false, error: false, loading: false };
-    if (!anyspendQuote || !anyspendQuote.success) return { text: "Get quote error", disable: true, error: true, loading: false };
+    if (!anyspendQuote || !anyspendQuote.success)
+      return { text: "Get quote error", disable: true, error: true, loading: false };
     if (!dstAmount) return { text: "No quote available", disable: true, error: true, loading: false };
 
     // Check minimum deposit amount (10 HYPE)
@@ -301,7 +303,6 @@ function AnySpendDepositHypeInner({
             {btnInfo.text}
           </div>
         </ShinyButton>
-
       </motion.div>
 
       {mainFooter ? mainFooter : null}

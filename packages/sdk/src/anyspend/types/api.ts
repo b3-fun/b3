@@ -5,6 +5,12 @@
 
 export interface paths {
   "/chains/{chainId}/tokens": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
     /**
      * Get tokens for a chain
      * @description Retrieves available tokens for a specific blockchain
@@ -20,6 +26,7 @@ export interface paths {
           /** @description Maximum number of tokens to return */
           limit?: number;
         };
+        header?: never;
         path: {
           /**
            * @description Blockchain chain ID
@@ -27,10 +34,15 @@ export interface paths {
            */
           chainId: number;
         };
+        cookie?: never;
       };
+      requestBody?: never;
       responses: {
         /** @description Tokens retrieved successfully */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
           content: {
             "application/json": {
               /** @example true */
@@ -61,6 +73,9 @@ export interface paths {
         };
         /** @description Bad request */
         400: {
+          headers: {
+            [name: string]: unknown;
+          };
           content: {
             "application/json": {
               /** @example false */
@@ -74,8 +89,21 @@ export interface paths {
         };
       };
     };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
   };
   "/onramp/coinbase/options": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
     /**
      * Get Coinbase onramp options
      * @description Retrieves available Coinbase onramp configuration options.
@@ -108,10 +136,17 @@ export interface paths {
            */
           chainIds?: string[];
         };
+        header?: never;
+        path?: never;
+        cookie?: never;
       };
+      requestBody?: never;
       responses: {
         /** @description Coinbase options retrieved successfully */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
           content: {
             "application/json": {
               /** @example true */
@@ -214,6 +249,9 @@ export interface paths {
         };
         /** @description Bad request */
         400: {
+          headers: {
+            [name: string]: unknown;
+          };
           content: {
             "application/json": {
               /** @example false */
@@ -227,8 +265,21 @@ export interface paths {
         };
       };
     };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
   };
   "/onramp/stripe/supported": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
     /**
      * Check Stripe support
      * @description Checks if Stripe onramp and Stripe Web2 are supported based on IP address location and optional transaction amount
@@ -242,10 +293,17 @@ export interface paths {
            */
           usdAmount?: string;
         };
+        header?: never;
+        path?: never;
+        cookie?: never;
       };
+      requestBody?: never;
       responses: {
         /** @description Stripe support status retrieved successfully */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
           content: {
             "application/json": {
               /** @example true */
@@ -268,6 +326,9 @@ export interface paths {
         };
         /** @description Bad request */
         400: {
+          headers: {
+            [name: string]: unknown;
+          };
           content: {
             "application/json": {
               /** @example false */
@@ -281,8 +342,21 @@ export interface paths {
         };
       };
     };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
   };
   "/orders": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
     /**
      * Get orders by creator
      * @description Retrieves all orders created by a specific address
@@ -306,10 +380,17 @@ export interface paths {
            */
           offset?: string;
         };
+        header?: never;
+        path?: never;
+        cookie?: never;
       };
+      requestBody?: never;
       responses: {
         /** @description Orders retrieved successfully */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
           content: {
             "application/json": {
               /** @example true */
@@ -325,6 +406,9 @@ export interface paths {
         };
         /** @description Bad request */
         400: {
+          headers: {
+            [name: string]: unknown;
+          };
           content: {
             "application/json": {
               /** @example false */
@@ -338,11 +422,18 @@ export interface paths {
         };
       };
     };
+    put?: never;
     /**
      * Create a new order
      * @description Creates a new order for token transactions across chains
      */
     post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
       requestBody: {
         content: {
           "application/json": components["schemas"]["OrderRequest"];
@@ -351,6 +442,9 @@ export interface paths {
       responses: {
         /** @description Order created successfully */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
           content: {
             "application/json": {
               /** @example true */
@@ -365,6 +459,9 @@ export interface paths {
         };
         /** @description Bad request */
         400: {
+          headers: {
+            [name: string]: unknown;
+          };
           content: {
             "application/json": {
               /** @example false */
@@ -378,14 +475,27 @@ export interface paths {
         };
       };
     };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
   };
   "/orders/{orderId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
     /**
      * Get order and transactions
      * @description Retrieves order details along with associated transactions
      */
     get: {
       parameters: {
+        query?: never;
+        header?: never;
         path: {
           /**
            * @description Unique order identifier
@@ -393,10 +503,15 @@ export interface paths {
            */
           orderId: string;
         };
+        cookie?: never;
       };
+      requestBody?: never;
       responses: {
         /** @description Order and transactions retrieved successfully */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
           content: {
             "application/json": {
               /** @example true */
@@ -435,6 +550,11 @@ export interface paths {
                 executeTx: components["schemas"]["ExecuteTx"] | null;
                 /** @description Refund transactions if order failed */
                 refundTxs: components["schemas"]["RefundTx"][];
+                /**
+                 * @description Points awarded for this order (only present when order status is executed)
+                 * @example 100
+                 */
+                points: number | null;
               };
               /** @example 200 */
               statusCode: number;
@@ -443,6 +563,9 @@ export interface paths {
         };
         /** @description Bad request */
         400: {
+          headers: {
+            [name: string]: unknown;
+          };
           content: {
             "application/json": {
               /** @example false */
@@ -456,6 +579,9 @@ export interface paths {
         };
         /** @description Order not found */
         404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content: {
             "application/json": {
               /** @example false */
@@ -469,13 +595,34 @@ export interface paths {
         };
       };
     };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
   };
   "/orders/quote": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
     /**
      * Get anyspend quote
      * @description Retrieves a quote to swap, execute contract, or participate in HypeDuel
      */
     post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
       requestBody: {
         content: {
           "application/json":
@@ -675,6 +822,9 @@ export interface paths {
       responses: {
         /** @description Quote retrieved successfully */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
           content: {
             "application/json": {
               /** @example true */
@@ -853,6 +1003,9 @@ export interface paths {
         };
         /** @description Bad request */
         400: {
+          headers: {
+            [name: string]: unknown;
+          };
           content: {
             "application/json": {
               /** @example false */
@@ -866,8 +1019,19 @@ export interface paths {
         };
       };
     };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
   };
   "/stripe/clientSecret": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
     /**
      * Get Stripe client secret
      * @description Retrieves a Stripe client secret for payment processing using a payment intent ID
@@ -881,10 +1045,17 @@ export interface paths {
            */
           paymentIntentId: string;
         };
+        header?: never;
+        path?: never;
+        cookie?: never;
       };
+      requestBody?: never;
       responses: {
         /** @description Client secret retrieved successfully */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
           content: {
             "application/json": {
               /** @example true */
@@ -903,6 +1074,9 @@ export interface paths {
         };
         /** @description Bad request - PaymentIntentId is required or invalid */
         400: {
+          headers: {
+            [name: string]: unknown;
+          };
           content: {
             "application/json": {
               /** @example false */
@@ -916,6 +1090,13 @@ export interface paths {
         };
       };
     };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
   };
 }
 export type webhooks = Record<string, never>;
@@ -1119,16 +1300,6 @@ export interface components {
        * @example 990000
        */
       expectedDstAmount: string;
-      /**
-       * @description Actual received amount (null for new orders)
-       * @example 990000
-       */
-      actualDstAmount: string | null;
-      /**
-       * @description Amount in after fee
-       * @example 990000
-       */
-      amountInAfterFee: string | null;
     };
     /** @description HypeDuel-specific payload */
     HypeDuelPayload: {
@@ -1137,16 +1308,6 @@ export interface components {
        * @example 990000
        */
       expectedDstAmount: string;
-      /**
-       * @description Actual received amount (null for new orders)
-       * @example 990000
-       */
-      actualDstAmount: string | null;
-      /**
-       * @description Amount in after fee
-       * @example 990000
-       */
-      amountInAfterFee: string | null;
     };
     /** @description Custom execution payload */
     CustomPayload: {
@@ -1324,6 +1485,8 @@ export interface components {
        * @example 1752506694679
        */
       expiredAt: number;
+      /** @description Timestamp when the order was filled/executed */
+      filledAt: number | null;
       /**
        * @description Optional creator address
        * @example 0xb34facb90a200251318e8841c05102366f2158cf
@@ -1340,6 +1503,14 @@ export interface components {
        * @example pi_3Rko0sJnoDg53PsP0PDLsHkR
        */
       stripePaymentIntentId: string | null;
+      /** @description Settlement information for executed orders */
+      settlement: {
+        /**
+         * @description Actual received amount after execution
+         * @example 990000
+         */
+        actualDstAmount: string | null;
+      } | null;
     };
     SwapOrder: components["schemas"]["BaseOrder"] & {
       /**
