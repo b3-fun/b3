@@ -126,6 +126,8 @@ export interface AnySpendModalProps extends BaseModalProps {
   destinationTokenAddress?: string;
   /** Chain ID where the destination token exists (enables buy mode) */
   destinationTokenChainId?: number;
+  /** Custom USD input values for quick amount buttons in fiat onramp */
+  customUsdInputValues?: string[];
 }
 
 /**
@@ -305,6 +307,8 @@ export interface AnySpendDepositHypeProps extends BaseModalProps {
   mainFooter?: React.ReactNode;
   /** Callback function called when the deposit is successful */
   onSuccess?: (amount?: string) => void;
+  /** Custom USD input values for quick amount buttons in fiat onramp */
+  customUsdInputValues?: string[];
 }
 
 export interface AvatarEditorModalProps extends BaseModalProps {

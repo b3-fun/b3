@@ -1,6 +1,6 @@
 {
   "name": "@b3dotfun/sdk",
-  "version": "0.0.43-test.0",
+  "version": "0.0.47-test.0",
   "source": "src/index.ts",
   "main": "./dist/cjs/index.js",
   "react-native": "./dist/cjs/index.native.js",
@@ -205,6 +205,26 @@
       "import": "./dist/esm/shared/thirdweb/*.js",
       "require": "./dist/cjs/shared/thirdweb/*.js"
     },
+    "./shared/react": {
+      "types": "./dist/types/shared/react/index.d.ts",
+      "import": "./dist/esm/shared/react/index.js",
+      "require": "./dist/cjs/shared/react/index.js"
+    },
+    "./shared/react/components": {
+      "types": "./dist/types/shared/react/components/index.d.ts",
+      "import": "./dist/esm/shared/react/components/index.js",
+      "require": "./dist/cjs/shared/react/components/index.js"
+    },
+    "./shared/react/hooks": {
+      "types": "./dist/types/shared/react/hooks/index.d.ts",
+      "import": "./dist/esm/shared/react/hooks/index.js",
+      "require": "./dist/cjs/shared/react/hooks/index.js"
+    },
+    "./shared/react/stores": {
+      "types": "./dist/types/shared/react/stores/index.d.ts",
+      "import": "./dist/esm/shared/react/stores/index.js",
+      "require": "./dist/cjs/shared/react/stores/index.js"
+    },
     "./types/chain-networks": {
       "types": "./dist/types/generated/chain-networks.d.ts",
       "import": "./dist/esm/generated/chain-networks.js",
@@ -254,8 +274,11 @@
     "release:alpha": "pnpm version prerelease --preid alpha && git push --follow-tags && pnpm publish --tag alpha --no-git-checks",
     "typecheck": "tsc --noEmit",
     "generate:thirdweb": "npx @hey-api/openapi-ts --file src/thirdweb/openapi-ts.config.ts --input src/thirdweb/insight-service.json",
+    "generate:anyspend": "npx openapi-typescript https://mainnet.anyspend.com/openapi.json -o src/anyspend/types/api.ts",
     "lint": "eslint 'src/**/*.{ts,tsx}'",
-    "lint:fix": "eslint 'src/**/*.{ts,tsx}' --fix"
+    "lint:fix": "eslint 'src/**/*.{ts,tsx}' --fix",
+    "test": "vitest run",
+    "test:ui": "vitest --ui"
   },
   "dependencies": {
     "@b3dotfun/b3-api": "0.0.50",
@@ -310,6 +333,8 @@
     "@feathersjs/feathers": "5.0.33",
     "@feathersjs/socketio-client": "5.0.33",
     "@feathersjs/typebox": "5.0.33",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/react-hooks": "^8.0.1",
     "@types/big.js": "^6.2.2",
     "@types/invariant": "2.2.37",
     "@types/js-cookie": "3.0.6",
@@ -325,6 +350,7 @@
     "eslint-plugin-import": "2.x.x",
     "eslint-plugin-react-hooks": "4.6.2",
     "eslint-plugin-tailwindcss": "3.18.0",
+    "happy-dom": "^19.0.2",
     "postcss": "8.5.3",
     "postcss-cli": "11.0.1",
     "postcss-nesting": "^13.0.2",
@@ -332,7 +358,8 @@
     "tailwindcss": "3.4.1",
     "tailwindcss-animate": "^1.0.7",
     "tsc-alias": "^1.8.16",
-    "tsc-watch": "^7.1.1"
+    "tsc-watch": "^7.1.1",
+    "vitest": "^3.2.4"
   },
   "typesVersions": {
     "*": {

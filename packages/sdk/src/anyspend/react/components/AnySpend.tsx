@@ -23,7 +23,7 @@ import {
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import invariant from "invariant";
-import { ArrowDown, HistoryIcon } from "lucide-react";
+import { ArrowDown, HistoryIcon, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -34,7 +34,6 @@ import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFing
 import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPaymentMethod";
 import { CryptoPaySection } from "./common/CryptoPaySection";
 import { CryptoReceiveSection } from "./common/CryptoReceiveSection";
-import { ErrorSection } from "./common/ErrorSection";
 import { FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaymentMethod";
 import { OrderDetails, OrderDetailsLoadingView } from "./common/OrderDetails";
 import { OrderHistory } from "./common/OrderHistory";
@@ -79,6 +78,7 @@ export function AnySpend(props: {
    */
   onTokenSelect?: (token: components["schemas"]["Token"], event: { preventDefault: () => void }) => void;
   onSuccess?: (txHash?: string) => void;
+  customUsdInputValues?: string[];
 }) {
   const fingerprintConfig = getFingerprintConfig();
 
@@ -99,6 +99,7 @@ function AnySpendInner({
   recipientAddress: recipientAddressFromProps,
   onTokenSelect,
   onSuccess,
+  customUsdInputValues,
 }: {
   destinationTokenAddress?: string;
   destinationTokenChainId?: number;
@@ -109,6 +110,7 @@ function AnySpendInner({
   recipientAddress?: string;
   onTokenSelect?: (token: components["schemas"]["Token"], event: { preventDefault: () => void }) => void;
   onSuccess?: (txHash?: string) => void;
+  customUsdInputValues?: string[];
 }) {
   const searchParams = useSearchParamsSSR();
   const router = useRouter();
@@ -137,6 +139,11 @@ function AnySpendInner({
   // Track if onSuccess has been called for the current order
   const onSuccessCalled = useRef(false);
 
+  // Track animation direction for TransitionPanel
+  const animationDirection = useRef<"forward" | "back" | null>(null);
+  // Track previous panel for proper back navigation
+  const previousPanel = useRef<PanelView>(PanelView.MAIN);
+
   const [activeTab, setActiveTab] = useState<"crypto" | "fiat">(defaultActiveTab);
 
   const [orderId, setOrderId] = useState<string | undefined>(loadOrder);
@@ -144,6 +151,23 @@ function AnySpendInner({
   !!getOrderAndTransactionsError && console.log("getOrderAndTransactionsError", getOrderAndTransactionsError);
 
   const [activePanel, setActivePanel] = useState<PanelView>(loadOrder ? PanelView.ORDER_DETAILS : PanelView.MAIN);
+
+  // Helper functions to navigate with animation direction
+  const navigateToPanel = useCallback(
+    (panel: PanelView, direction: "forward" | "back" = "forward") => {
+      previousPanel.current = activePanel;
+      animationDirection.current = direction;
+      setActivePanel(panel);
+    },
+    [activePanel],
+  );
+
+  const navigateBack = useCallback(() => {
+    animationDirection.current = "back";
+    // Navigate back to previous panel or default to MAIN
+    const targetPanel = previousPanel.current !== activePanel ? previousPanel.current : PanelView.MAIN;
+    setActivePanel(targetPanel);
+  }, [activePanel]);
   const [customRecipients, setCustomRecipients] = useState<RecipientOption[]>([]);
   // Add state for selected payment method
   const [selectedCryptoPaymentMethod, setSelectedCryptoPaymentMethod] = useState<CryptoPaymentMethodType>(
@@ -444,7 +468,7 @@ function AnySpendInner({
     ? parseUnits(srcAmount.replace(/,/g, ""), selectedSrcToken.decimals).toString()
     : parseUnits(dstAmount.replace(/,/g, ""), selectedDstToken.decimals).toString();
   const srcAmountOnrampInWei = parseUnits(srcAmountOnRamp.replace(/,/g, ""), USDC_BASE.decimals).toString();
-  const { anyspendQuote, isLoadingAnyspendQuote, getAnyspendQuoteError } = useAnyspendQuote(
+  const { anyspendQuote, isLoadingAnyspendQuote } = useAnyspendQuote(
     activeTab === "crypto"
       ? {
           srcChain: selectedSrcChainId,
@@ -541,7 +565,7 @@ function AnySpendInner({
       const orderId = data.data.id;
       setOrderId(orderId);
       // setNewRecipientAddress("");
-      setActivePanel(PanelView.ORDER_DETAILS);
+      navigateToPanel(PanelView.ORDER_DETAILS, "forward");
 
       // Debug: Check payment method before setting URL
       console.log("Creating order - selectedCryptoPaymentMethod:", selectedCryptoPaymentMethod);
@@ -569,7 +593,7 @@ function AnySpendInner({
     onSuccess: data => {
       const orderId = data.data.id;
       setOrderId(orderId);
-      setActivePanel(PanelView.ORDER_DETAILS);
+      navigateToPanel(PanelView.ORDER_DETAILS, "forward");
 
       // Add orderId and payment method to URL for persistence
       const params = new URLSearchParams(searchParams.toString());
@@ -584,40 +608,42 @@ function AnySpendInner({
   });
 
   // Determine button state and text
-  const btnInfo: { text: string; disable: boolean; error: boolean } = useMemo(() => {
-    if (activeInputAmountInWei === "0") return { text: "Enter an amount", disable: true, error: false };
-    if (isLoadingAnyspendQuote) return { text: "Loading...", disable: true, error: false };
-    if (!recipientAddress) return { text: "Select recipient", disable: false, error: false };
-    if (isCreatingOrder || isCreatingOnrampOrder) return { text: "Creating order...", disable: true, error: false };
-    if (!anyspendQuote || !anyspendQuote.success) return { text: "Get rate error", disable: true, error: true };
+  const btnInfo: { text: string; disable: boolean; error: boolean; loading: boolean } = useMemo(() => {
+    if (activeInputAmountInWei === "0") return { text: "Enter an amount", disable: true, error: false, loading: false };
+    if (isLoadingAnyspendQuote) return { text: "Loading quote...", disable: true, error: false, loading: true };
+    if (!recipientAddress) return { text: "Select recipient", disable: false, error: false, loading: false };
+    if (isCreatingOrder || isCreatingOnrampOrder)
+      return { text: "Creating order...", disable: true, error: false, loading: true };
+    if (!anyspendQuote || !anyspendQuote.success)
+      return { text: "No quote found", disable: true, error: false, loading: false };
 
     if (activeTab === "crypto") {
       // If no payment method selected, show "Choose payment method"
       if (selectedCryptoPaymentMethod === CryptoPaymentMethodType.NONE) {
-        return { text: "Choose payment method", disable: false, error: false };
+        return { text: "Choose payment method", disable: false, error: false, loading: false };
       }
       // If payment method selected, show appropriate action
       if (
         selectedCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET ||
         selectedCryptoPaymentMethod === CryptoPaymentMethodType.GLOBAL_WALLET
       ) {
-        return { text: "Swap", disable: false, error: false };
+        return { text: "Swap", disable: false, error: false, loading: false };
       }
       if (selectedCryptoPaymentMethod === CryptoPaymentMethodType.TRANSFER_CRYPTO) {
-        return { text: "Continue to payment", disable: false, error: false };
+        return { text: "Continue to payment", disable: false, error: false, loading: false };
       }
     }
 
     if (activeTab === "fiat") {
       // If no fiat payment method selected, show "Select payment method"
       if (selectedFiatPaymentMethod === FiatPaymentMethod.NONE) {
-        return { text: "Select payment method", disable: false, error: false };
+        return { text: "Select payment method", disable: false, error: false, loading: false };
       }
       // If payment method is selected, show "Buy"
-      return { text: "Buy", disable: false, error: false };
+      return { text: "Buy", disable: false, error: false, loading: false };
     }
 
-    return { text: "Buy", disable: false, error: false };
+    return { text: "Buy", disable: false, error: false, loading: false };
   }, [
     activeInputAmountInWei,
     isLoadingAnyspendQuote,
@@ -635,7 +661,7 @@ function AnySpendInner({
     if (btnInfo.disable) return;
 
     if (!recipientAddress) {
-      setActivePanel(PanelView.RECIPIENT_SELECTION);
+      navigateToPanel(PanelView.RECIPIENT_SELECTION, "forward");
       return;
     }
 
@@ -646,7 +672,7 @@ function AnySpendInner({
       if (activeTab === "fiat") {
         // If no fiat payment method selected, show payment method selection
         if (selectedFiatPaymentMethod === FiatPaymentMethod.NONE) {
-          setActivePanel(PanelView.FIAT_PAYMENT_METHOD);
+          navigateToPanel(PanelView.FIAT_PAYMENT_METHOD, "forward");
           return;
         }
         // If payment method is selected, create order directly
@@ -658,7 +684,7 @@ function AnySpendInner({
         // If no payment method selected, show payment method selection
         if (selectedCryptoPaymentMethod === CryptoPaymentMethodType.NONE) {
           console.log("No payment method selected, showing selection panel");
-          setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD);
+          navigateToPanel(PanelView.CRYPTO_PAYMENT_METHOD, "forward");
           return;
         }
 
@@ -681,7 +707,7 @@ function AnySpendInner({
 
   const onClickHistory = () => {
     setOrderId(undefined);
-    setActivePanel(PanelView.HISTORY);
+    navigateToPanel(PanelView.HISTORY, "forward");
     // Remove orderId and paymentMethod from URL when going back to history
     const params = new URLSearchParams(searchParams.toString());
     params.delete("orderId");
@@ -804,8 +830,8 @@ function AnySpendInner({
   }, [searchParams, loadOrder]);
 
   const onSelectOrder = (selectedOrderId: string) => {
-    setActivePanel(PanelView.MAIN);
     setOrderId(selectedOrderId);
+    navigateToPanel(PanelView.ORDER_DETAILS, "forward");
     // Update URL with the new orderId and preserve existing parameters
     const params = new URLSearchParams(searchParams.toString());
     params.set("orderId", selectedOrderId);
@@ -827,9 +853,40 @@ function AnySpendInner({
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [activePanel]);
 
+  // Handle browser back button for recipient selection and payment method views
+  useEffect(() => {
+    // Push a new history state when navigating to specific panels
+    if (activePanel === PanelView.RECIPIENT_SELECTION) {
+      window.history.pushState({ panel: "recipient-selection" }, "");
+    } else if (activePanel === PanelView.CRYPTO_PAYMENT_METHOD) {
+      window.history.pushState({ panel: "crypto-payment-method" }, "");
+    } else if (activePanel === PanelView.FIAT_PAYMENT_METHOD) {
+      window.history.pushState({ panel: "fiat-payment-method" }, "");
+    }
+
+    // Listen for popstate event (browser back button)
+    const handlePopState = (event: PopStateEvent) => {
+      if (
+        activePanel === PanelView.RECIPIENT_SELECTION ||
+        activePanel === PanelView.CRYPTO_PAYMENT_METHOD ||
+        activePanel === PanelView.FIAT_PAYMENT_METHOD
+      ) {
+        // User pressed back while on these panels
+        event.preventDefault();
+        navigateBack();
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [activePanel, navigateBack]);
+
   const historyView = (
     <div className={"mx-auto flex w-[560px] max-w-full flex-col items-center"}>
-      <OrderHistory mode={mode} onBack={() => setActivePanel(PanelView.MAIN)} onSelectOrder={onSelectOrder} />
+      <OrderHistory mode={mode} onBack={navigateBack} onSelectOrder={onSelectOrder} />
     </div>
   );
 
@@ -848,7 +905,7 @@ function AnySpendInner({
             onPaymentMethodChange={setSelectedCryptoPaymentMethod}
             onBack={() => {
               setOrderId(undefined);
-              setActivePanel(PanelView.MAIN);
+              navigateBack();
               setSelectedCryptoPaymentMethod(CryptoPaymentMethodType.NONE); // Reset payment method when going back
             }}
           />
@@ -898,7 +955,7 @@ function AnySpendInner({
             setSrcAmount={setSrcAmount}
             setIsSrcInputDirty={setIsSrcInputDirty}
             selectedCryptoPaymentMethod={selectedCryptoPaymentMethod}
-            onSelectCryptoPaymentMethod={() => setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD)}
+            onSelectCryptoPaymentMethod={() => navigateToPanel(PanelView.CRYPTO_PAYMENT_METHOD, "forward")}
             anyspendQuote={anyspendQuote}
             onTokenSelect={onTokenSelect}
           />
@@ -912,7 +969,15 @@ function AnySpendInner({
               srcAmountOnRamp={srcAmountOnRamp}
               setSrcAmountOnRamp={setSrcAmountOnRamp}
               selectedPaymentMethod={selectedFiatPaymentMethod}
-              setActivePanel={setActivePanel}
+              setActivePanel={(panelIndex: number) => {
+                // Map panel index to navigation with direction
+                const panelsWithForwardNav = [PanelView.FIAT_PAYMENT_METHOD, PanelView.RECIPIENT_SELECTION];
+                if (panelsWithForwardNav.includes(panelIndex)) {
+                  navigateToPanel(panelIndex, "forward");
+                } else {
+                  setActivePanel(panelIndex);
+                }
+              }}
               _recipientAddress={recipientAddress}
               destinationToken={selectedDstToken}
               destinationChainId={selectedDstChainId}
@@ -923,7 +988,8 @@ function AnySpendInner({
               recipientSelectionPanelIndex={PanelView.RECIPIENT_SELECTION}
               hideDstToken={isBuyMode}
               anyspendQuote={anyspendQuote}
-              onShowPointsDetail={() => setActivePanel(PanelView.POINTS_DETAIL)}
+              onShowPointsDetail={() => navigateToPanel(PanelView.POINTS_DETAIL, "forward")}
+              customUsdInputValues={customUsdInputValues}
             />
           </motion.div>
         )}
@@ -972,7 +1038,7 @@ function AnySpendInner({
             isBuyMode={isBuyMode}
             selectedRecipientAddress={recipientAddress}
             recipientName={recipientName || undefined}
-            onSelectRecipient={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
+            onSelectRecipient={() => navigateToPanel(PanelView.RECIPIENT_SELECTION, "forward")}
             dstAmount={dstAmount}
             dstToken={selectedDstToken}
             selectedDstChainId={selectedDstChainId}
@@ -983,19 +1049,17 @@ function AnySpendInner({
               setDstAmount(value);
             }}
             anyspendQuote={anyspendQuote}
-            onShowPointsDetail={() => setActivePanel(PanelView.POINTS_DETAIL)}
+            onShowPointsDetail={() => navigateToPanel(PanelView.POINTS_DETAIL, "forward")}
           />
         )}
       </div>
-      {/* Error message section */}
-      <ErrorSection error={getAnyspendQuoteError} />
 
       {/* Main button section */}
       <motion.div
         initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
         animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
         transition={{ duration: 0.3, delay: 0.2, ease: "easeInOut" }}
-        className={cn("mt-4 flex w-full max-w-[460px] flex-col gap-2", getAnyspendQuoteError && "mt-0")}
+        className={cn("mt-4 flex w-full max-w-[460px] flex-col gap-2")}
       >
         <ShinyButton
           accentColor={"hsl(var(--as-brand))"}
@@ -1007,7 +1071,10 @@ function AnySpendInner({
           )}
           textClassName={cn(btnInfo.error ? "text-white" : btnInfo.disable ? "text-as-secondary" : "text-white")}
         >
-          {btnInfo.text}
+          <div className="flex items-center justify-center gap-2">
+            {btnInfo.loading && <Loader2 className="h-4 w-4 animate-spin" />}
+            {btnInfo.text}
+          </div>
         </ShinyButton>
 
         {!hideTransactionHistoryButton && (globalAddress || recipientAddress) ? (
@@ -1038,7 +1105,7 @@ function AnySpendInner({
       globalAddress={globalAddress}
       onOrderCreated={orderId => {
         setOrderId(orderId);
-        setActivePanel(PanelView.ORDER_DETAILS);
+        navigateToPanel(PanelView.ORDER_DETAILS, "forward");
         // Add orderId and payment method to URL for persistence
         const params = new URLSearchParams(searchParams.toString()); // Preserve existing params
         params.set("orderId", orderId);
@@ -1050,7 +1117,7 @@ function AnySpendInner({
         }
         router.push(`${window.location.pathname}?${params.toString()}`);
       }}
-      onBack={() => setActivePanel(PanelView.MAIN)}
+      onBack={navigateBack}
       recipientEnsName={globalWallet?.ensName}
       recipientImageUrl={globalWallet?.meta?.icon}
     />
@@ -1059,10 +1126,10 @@ function AnySpendInner({
   const recipientSelectionView = (
     <RecipientSelection
       initialValue={recipientAddress || ""}
-      onBack={() => setActivePanel(PanelView.MAIN)}
+      onBack={navigateBack}
       onConfirm={address => {
         setRecipientAddress(address);
-        setActivePanel(PanelView.MAIN);
+        navigateBack();
       }}
     />
   );
@@ -1074,10 +1141,10 @@ function AnySpendInner({
       selectedPaymentMethod={selectedCryptoPaymentMethod}
       setSelectedPaymentMethod={setSelectedCryptoPaymentMethod}
       isCreatingOrder={isCreatingOrder}
-      onBack={() => setActivePanel(PanelView.MAIN)}
+      onBack={navigateBack}
       onSelectPaymentMethod={(method: CryptoPaymentMethodType) => {
         setSelectedCryptoPaymentMethod(method);
-        setActivePanel(PanelView.MAIN);
+        navigateBack();
       }}
     />
   );
@@ -1086,20 +1153,17 @@ function AnySpendInner({
     <FiatPaymentMethodComponent
       selectedPaymentMethod={selectedFiatPaymentMethod}
       setSelectedPaymentMethod={setSelectedFiatPaymentMethod}
-      onBack={() => setActivePanel(PanelView.MAIN)}
+      onBack={navigateBack}
       onSelectPaymentMethod={(method: FiatPaymentMethod) => {
         setSelectedFiatPaymentMethod(method);
-        setActivePanel(PanelView.MAIN); // Go back to main panel to show updated pricing
+        navigateBack(); // Go back to main panel to show updated pricing
       }}
       srcAmountOnRamp={srcAmountOnRamp}
     />
   );
 
   const pointsDetailView = (
-    <PointsDetailPanel
-      pointsAmount={anyspendQuote?.data?.pointsAmount || 0}
-      onBack={() => setActivePanel(PanelView.MAIN)}
-    />
+    <PointsDetailPanel pointsAmount={anyspendQuote?.data?.pointsAmount || 0} onBack={navigateBack} />
   );
 
   // Add tabs to the main component when no order is loaded
@@ -1125,10 +1189,17 @@ function AnySpendInner({
           className={cn("rounded-2xl", {
             "mt-0": mode === "modal",
           })}
+          custom={animationDirection.current}
           variants={{
-            enter: { x: 300, opacity: 0 },
+            enter: direction => ({
+              x: direction === "back" ? -300 : 300,
+              opacity: 0,
+            }),
             center: { x: 0, opacity: 1 },
-            exit: { x: -300, opacity: 0 },
+            exit: direction => ({
+              x: direction === "back" ? 300 : -300,
+              opacity: 0,
+            }),
           }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
