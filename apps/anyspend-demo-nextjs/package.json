@@ -15,7 +15,7 @@
     "next": "14.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "thirdweb": "5.108.6"
+    "thirdweb": "5.108.9"
   },
   "devDependencies": {
     "@types/node": "^20.11.24",
