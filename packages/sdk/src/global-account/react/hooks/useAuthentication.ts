@@ -16,6 +16,7 @@ import {
 } from "thirdweb/react";
 import { ecosystemWallet, Wallet } from "thirdweb/wallets";
 import { preAuthenticate } from "thirdweb/wallets/in-app";
+import { useAccount, useConnect } from "wagmi";
 import { useUserQuery } from "./useUserQuery";
 import { useWagmiConfig } from "./useWagmiConfig";
 
@@ -39,38 +40,49 @@ export function useAuthentication(partnerId: string) {
   const { user, setUser } = useUserQuery();
   const useAutoConnectLoadingPrevious = useRef(false);
   const wagmiConfig = useWagmiConfig(partnerId);
+  const { connect } = useConnect();
+  const activeWagmiAccount = useAccount();
+  debug("@@activeWagmiAccount", activeWagmiAccount);
 
   const wallet = ecosystemWallet(ecosystemWalletId, {
     partnerId: partnerId,
   });
 
   const syncWagmi = useCallback(async () => {
-    const connectors = getConnectors(wagmiConfig);
-    debug("@@syncWagmi", {
-      connectors,
-      wallets,
-    });
+    async function syncWagmiFunc() {
+      const connectors = getConnectors(wagmiConfig);
+      debug("@@syncWagmi", {
+        connectors,
+        wallets,
+      });
 
-    // For each that matchs a TW wallet on wallets, connect to the wagmi connector
-    // or, since ecosystem wallets is separate, connect those via in-app-wallet from wagmi
-    connectors.forEach(connector => {
-      const twWallet = wallets.find(wallet => wallet.id === connector.id || connector.id === "in-app-wallet");
-      if (
-        twWallet &&
-        // If it's not an in-app wallet or it is the ecosystem wallet, connect
-        (connector.id !== "in-app-wallet" || (connector.id === "in-app-wallet" && twWallet.id === ecosystemWalletId))
-      ) {
-        const options = {
-          wallet, // the connected wallet
-        } satisfies ConnectionOptions;
-        debug("@@syncWagmi:connecting", { twWallet, connector });
-        connector.connect({
-          ...options,
-        });
-      } else {
-        debug("@@syncWagmi:not-connecting", connector);
-      }
-    });
+      // For each that matchs a TW wallet on wallets, connect to the wagmi connector
+      // or, since ecosystem wallets is separate, connect those via in-app-wallet from wagmi
+      connectors.forEach(async connector => {
+        const twWallet = wallets.find(wallet => wallet.id === connector.id || connector.id === "in-app-wallet");
+        if (
+          twWallet &&
+          // If it's not an in-app wallet or it is the ecosystem wallet, connect
+          (connector.id !== "in-app-wallet" || (connector.id === "in-app-wallet" && twWallet.id === ecosystemWalletId))
+        ) {
+          try {
+            const options = {
+              wallet: twWallet, // the connected wallet
+            } satisfies ConnectionOptions;
+            debug("@@syncWagmi:connecting", { twWallet, connector });
+            await connect({
+              connector,
+              ...options,
+            });
+          } catch (error) {
+            console.error("@@syncWagmi:error", error);
+          }
+        } else {
+          debug("@@syncWagmi:not-connecting", connector);
+        }
+      });
+    }
+    syncWagmiFunc();
     // eslint-disable-next-line react-hooks/exhaustive-deps wagmi config shouldn't change
   }, [partnerId, wallets]);
 
