@@ -1,6 +1,6 @@
 {
   "name": "@b3dotfun/sdk",
-  "version": "0.0.46",
+  "version": "0.0.47",
   "source": "src/index.ts",
   "main": "./dist/cjs/index.js",
   "react-native": "./dist/cjs/index.native.js",
@@ -294,6 +294,7 @@
     "release:alpha": "pnpm version prerelease --preid alpha && git push --follow-tags && pnpm publish --tag alpha --no-git-checks",
     "typecheck": "tsc --noEmit",
     "generate:thirdweb": "npx @hey-api/openapi-ts --file src/thirdweb/openapi-ts.config.ts --input src/thirdweb/insight-service.json",
+    "generate:anyspend": "npx openapi-typescript https://mainnet.anyspend.com/openapi.json -o src/anyspend/types/api.ts",
     "lint": "eslint 'src/**/*.{ts,tsx}'",
     "lint:fix": "eslint 'src/**/*.{ts,tsx}' --fix",
     "test": "vitest run",

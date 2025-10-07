@@ -395,11 +395,13 @@ function AnySpendCustomInner({
   useEffect(() => {
     if (oat?.data?.order.status === "executed" && !onSuccessCalled.current) {
       console.log("Calling onSuccess");
-      const txHash = oat?.data?.executeTx?.txHash;
+      const relayTxs = oat?.data?.relayTxs;
+      const lastRelayTxHash = relayTxs?.[relayTxs.length - 1]?.txHash;
+      const txHash = oat?.data?.executeTx?.txHash || lastRelayTxHash;
       onSuccess?.(txHash);
       onSuccessCalled.current = true;
     }
-  }, [oat?.data?.order.status, oat?.data?.executeTx?.txHash, onSuccess]);
+  }, [oat?.data?.order.status, oat?.data?.executeTx?.txHash, oat?.data?.relayTxs, onSuccess]);
 
   // Reset flag when orderId changes
   useEffect(() => {
@@ -665,7 +667,7 @@ function AnySpendCustomInner({
   const orderDetailsView = (
     <div
       className={cn(
-        "mx-auto flex w-full flex-col items-center gap-4",
+        "mx-auto flex w-full flex-col items-center gap-4 p-5",
         mode === "modal" && "bg-b3-react-background rounded-xl",
       )}
     >

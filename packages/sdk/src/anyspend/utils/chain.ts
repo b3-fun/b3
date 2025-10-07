@@ -136,10 +136,7 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     canDepositNative: true,
     defaultToken: getAvaxToken(),
     nativeToken: getAvaxToken(),
-    viem: getCustomEvmChain(
-      avalanche,
-      "https://burned-billowing-pond.avalanche-mainnet.quiknode.pro/24289978a524a18ef42e568e04fe8cad8c7b6720/ext/bc/C/rpc/",
-    ),
+    viem: getCustomEvmChain(avalanche, "https://avalanche-c-chain-rpc.publicnode.com"),
     pollingInterval: 1000, // 1 second for Avalanche
     zapperEnum: "AVALANCHE_MAINNET",
     coingeckoName: "avalanche",
