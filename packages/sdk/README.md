@@ -8,6 +8,7 @@ The SDK is organized into focused modules:
 
 - **`anyspend/`** - Cross-chain execution engine functionality
 - **`global-account/`** - B3 Global Accounts authentication and user management
+- **`notifications/`** - Multi-channel notification management
 - **`shared/`** - Common utilities, types, and components
 - **`others/`** - Additional features and utilities
 
@@ -25,6 +26,7 @@ Each module contains:
 | ----------------- | --------- | ------------ |
 | AnySpend          | ✅        | ❌           |
 | Global Accounts   | ✅        | ✅           |
+| Notifications     | ✅        | ✅           |
 | Headless Services | ✅        | ✅           |
 
 ## Installation
@@ -155,9 +157,7 @@ const order = await anyspendService.createOrder({
 import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
 
 // Get order details and transactions
-const orderDetails = await anyspendService.getOrderAndTransactions(
-  "order-id",
-);
+const orderDetails = await anyspendService.getOrderAndTransactions("order-id");
 
 // Get order history for an address
 const history = await anyspendService.getOrderHistory(
@@ -323,6 +323,206 @@ import { serverFunction } from "@b3dotfun/sdk/global-account/server";
 // (Implementation depends on your specific needs)
 ```
 
+# Notifications
+
+B3 Notifications provides multi-channel notification management for your users with support for email, Telegram, Discord, SMS, WhatsApp, and in-app notifications.
+
+## Features
+
+- ✅ **Zero Config** - Automatically uses authenticated user's ID from JWT
+- 🎯 **Type Safe** - Full TypeScript support
+- ⚡ **React Hooks** - Easy integration with `useNotifications()` hook
+- 🔐 **Secure** - JWT-based authentication
+- 📱 **Multi-Channel** - Email, Telegram, Discord, SMS, WhatsApp, In-app
+- 🚀 **Lightweight** - Minimal dependencies
+
+## React Hook
+
+### Basic Usage
+
+```tsx
+import { useNotifications } from "@b3dotfun/sdk/notifications/react";
+
+function NotificationSettings() {
+  const { user, loading, connectEmail, connectTelegram, isEmailConnected } = useNotifications();
+
+  if (loading) return <div>Loading...</div>;
+
+  return (
+    <div>
+      {!isEmailConnected && <button onClick={() => connectEmail("user@example.com")}>Connect Email</button>}
+
+      <button onClick={connectTelegram}>Connect Telegram</button>
+    </div>
+  );
+}
+```
+
+### Full Hook API
+
+```tsx
+const {
+  user, // User data with channels and settings
+  loading, // Loading state
+  error, // Error if any
+  refresh, // Manually refresh user data
+  connectEmail, // Connect email channel
+  connectTelegram, // Connect Telegram channel
+  updateChannel, // Update a channel
+  deleteChannel, // Delete a channel
+  // Convenience helpers
+  isEmailConnected,
+  isTelegramConnected,
+  isDiscordConnected,
+} = useNotifications();
+```
+
+## Headless API Client
+
+### Authentication
+
+The notifications API automatically uses the B3 auth token from cookies. The token is managed by the B3 Global Account authentication system - you don't need to set it manually.
+
+```typescript
+import { getAuthToken, notificationsAPI } from "@b3dotfun/sdk/notifications";
+// Or import from shared utils
+// import { getAuthToken } from "@b3dotfun/sdk/shared/utils";
+
+// Get the current auth token (from b3-auth cookie)
+const token = getAuthToken();
+
+// API calls automatically use the auth token
+const userData = await notificationsAPI.getUser();
+```
+
+### User Management
+
+```typescript
+import { notificationsAPI } from "@b3dotfun/sdk/notifications";
+
+// Register current user
+await notificationsAPI.registerUser();
+
+// Get current user's profile
+const userData = await notificationsAPI.getUser();
+
+// Get notification history
+const history = await notificationsAPI.getHistory("my-app-id", 50);
+```
+
+### Channel Management
+
+```typescript
+// Add any channel
+await notificationsAPI.addChannel("email", "user@example.com");
+
+// Connect email (shorthand)
+await notificationsAPI.connectEmail("user@example.com");
+
+// Update channel
+await notificationsAPI.updateChannel("channel-id", {
+  enabled: true,
+});
+
+// Delete channel
+await notificationsAPI.deleteChannel("channel-id");
+```
+
+### Telegram Integration
+
+```typescript
+// Get Telegram deep link
+const { deepLink, verificationCode, botUsername } = await notificationsAPI.getTelegramLink();
+window.open(deepLink, "_blank");
+
+// Check connection status
+const { connected, chatId } = await notificationsAPI.checkTelegramStatus();
+```
+
+### App Preferences
+
+```typescript
+// Save notification preferences for an app (enabled by default)
+await notificationsAPI.savePreferences("my-app", {
+  notificationType: "transaction",
+  channels: ["email", "telegram", "in_app"],
+});
+
+// Save disabled preferences
+await notificationsAPI.savePreferences("my-app", {
+  notificationType: "transaction",
+  channels: ["email", "telegram"],
+  enabled: false,
+});
+
+// Get app settings
+const settings = await notificationsAPI.getAppSettings("my-app");
+```
+
+### In-App Notifications
+
+```typescript
+// Get in-app notifications
+const { notifications } = await notificationsAPI.getInAppNotifications();
+
+// Mark notification as read
+await notificationsAPI.markNotificationAsRead("notification-id");
+```
+
+### Send Notifications
+
+```typescript
+// Send a notification
+await notificationsAPI.sendNotification({
+  userId: "user-123",
+  appId: "my-app",
+  notificationType: "transaction",
+  message: "Your transaction was successful!",
+  title: "Transaction Complete",
+  data: { transactionId: "tx-123" },
+});
+```
+
+## Next.js Example
+
+```tsx
+"use client";
+
+import { useNotifications } from "@b3dotfun/sdk/notifications/react";
+
+export default function NotificationsPage() {
+  const { user, loading, connectEmail, connectTelegram, isEmailConnected, isTelegramConnected } = useNotifications();
+
+  if (loading) {
+    return <div>Loading notification settings...</div>;
+  }
+
+  return (
+    <div className="space-y-4">
+      <h1>Notification Settings</h1>
+
+      <div className="rounded-lg border p-4">
+        <h2>Email</h2>
+        {isEmailConnected ? (
+          <p className="text-green-600">✓ Connected</p>
+        ) : (
+          <button onClick={() => connectEmail("user@example.com")}>Connect Email</button>
+        )}
+      </div>
+
+      <div className="rounded-lg border p-4">
+        <h2>Telegram</h2>
+        {isTelegramConnected ? (
+          <p className="text-green-600">✓ Connected</p>
+        ) : (
+          <button onClick={connectTelegram}>Connect Telegram</button>
+        )}
+      </div>
+    </div>
+  );
+}
+```
+
 # Shared Utilities
 
 ## Chain Management
@@ -337,6 +537,25 @@ console.log(supportedChains);
 // Use B3 chain configuration
 console.log(b3Chain);
 ```
+
+## Authentication Token Management
+
+Read-only access to the B3 authentication token. The token is managed by the B3 Global Account authentication system.
+
+```typescript
+import { getAuthToken } from "@b3dotfun/sdk/shared/utils";
+
+// Get the current auth token from the b3-auth cookie
+const token = getAuthToken();
+
+if (token) {
+  console.log("User is authenticated");
+} else {
+  console.log("User is not authenticated");
+}
+```
+
+The auth token is automatically set by the B3 Global Account authentication system (see the Global Accounts section above). All SDK modules that require authentication will automatically use this token.
 
 ## Utility Functions
 

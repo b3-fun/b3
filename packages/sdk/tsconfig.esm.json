@@ -8,5 +8,6 @@
       "@b3dotfun/sdk": ["./src"],
       "@b3dotfun/sdk/*": ["./src/*"]
     }
-  }
+  },
+  "exclude": ["**/__tests__/**", "**/*.test.ts", "**/*.test.tsx"]
 }
