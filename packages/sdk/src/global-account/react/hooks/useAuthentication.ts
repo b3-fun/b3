@@ -4,6 +4,7 @@ import { useAuthStore, useSiwe } from "@b3dotfun/sdk/global-account/react";
 import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
+import { ConnectionOptions } from "@thirdweb-dev/wagmi-adapter";
 import { getConnectors } from "@wagmi/core";
 import { useCallback, useEffect, useRef } from "react";
 import {
@@ -59,8 +60,13 @@ export function useAuthentication(partnerId: string) {
         // If it's not an in-app wallet or it is the ecosystem wallet, connect
         (connector.id !== "in-app-wallet" || (connector.id === "in-app-wallet" && twWallet.id === ecosystemWalletId))
       ) {
+        const options = {
+          wallet, // the connected wallet
+        } satisfies ConnectionOptions;
         debug("@@syncWagmi:connecting", { twWallet, connector });
-        connector.connect();
+        connector.connect({
+          ...options,
+        });
       } else {
         debug("@@syncWagmi:not-connecting", connector);
       }
