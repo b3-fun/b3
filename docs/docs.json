@@ -133,7 +133,7 @@
                   {
                     "group": "Profiles",
                     "openapi": {
-                      "source": "https://profiles.b3.fun/swagger.json?v=1",
+                      "source": "/profiles-swagger.json",
                       "directory": "data/profiles"
                     }
                   }
@@ -627,7 +627,7 @@
                   {
                     "group": "Profiles",
                     "openapi": {
-                      "source": "https://profiles.b3.fun/swagger.json?v=1",
+                      "source": "/profiles-swagger.json",
                       "directory": "data/profiles"
                     }
                   }
@@ -1135,7 +1135,7 @@
                   {
                     "group": "Profiles",
                     "openapi": {
-                      "source": "https://profiles.b3.fun/swagger.json?v=1",
+                      "source": "/profiles-swagger.json",
                       "directory": "data/profiles"
                     }
                   }
@@ -1643,7 +1643,7 @@
                   {
                     "group": "Profiles",
                     "openapi": {
-                      "source": "https://profiles.b3.fun/swagger.json?v=1",
+                      "source": "/profiles-swagger.json",
                       "directory": "data/profiles"
                     }
                   }
@@ -2151,7 +2151,7 @@
                   {
                     "group": "Profiles",
                     "openapi": {
-                      "source": "https://profiles.b3.fun/swagger.json?v=1",
+                      "source": "/profiles-swagger.json",
                       "directory": "data/profiles"
                     }
                   }
@@ -2641,7 +2641,7 @@
                   {
                     "group": "Profiles",
                     "openapi": {
-                      "source": "https://profiles.b3.fun/swagger.json?v=1",
+                      "source": "/profiles-swagger.json",
                       "directory": "data/profiles"
                     }
                   }
