@@ -49,7 +49,7 @@ export function useAuthentication(partnerId: string) {
   });
 
   const syncWagmi = useCallback(async () => {
-    async function syncWagmiFunc() {
+    function syncWagmiFunc() {
       const connectors = getConnectors(wagmiConfig);
       debug("@@syncWagmi", {
         connectors,
@@ -70,7 +70,7 @@ export function useAuthentication(partnerId: string) {
               wallet: twWallet, // the connected wallet
             } satisfies ConnectionOptions;
             debug("@@syncWagmi:connecting", { twWallet, connector });
-            await connect({
+            connect({
               connector,
               ...options,
             });
