@@ -92,7 +92,6 @@ export function B3Provider({
               automaticallySetFirstEoa={!!automaticallySetFirstEoa}
               clientType={clientType}
               partnerId={partnerId}
-              rpcUrls={rpcUrls}
             >
               <RelayKitProviderWrapper simDuneApiKey={simDuneApiKey}>
                 {children}
@@ -120,7 +119,6 @@ export function InnerProvider({
   theme = "light",
   clientType = "socket",
   partnerId,
-  rpcUrls,
 }: {
   children: React.ReactNode;
   accountOverride?: Account;
@@ -130,7 +128,6 @@ export function InnerProvider({
   theme: "light" | "dark";
   clientType?: ClientType;
   partnerId: string;
-  rpcUrls?: Record<number, string>;
 }) {
   const activeAccount = useActiveAccount();
   const [manuallySelectedWallet, setManuallySelectedWallet] = useState<Wallet | undefined>(undefined);

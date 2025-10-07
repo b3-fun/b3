@@ -83,7 +83,8 @@ export function useAuthentication(partnerId: string) {
       });
     }
     syncWagmiFunc();
-    // eslint-disable-next-line react-hooks/exhaustive-deps wagmi config shouldn't change
+    // wagmi config shouldn't change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [partnerId, wallets]);
 
   useEffect(() => {
