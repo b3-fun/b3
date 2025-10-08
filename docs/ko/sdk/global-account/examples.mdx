@@ -17,7 +17,7 @@ import {
 
 function AuthExample() {
   return (
-    <B3Provider environment="production">
+    <B3Provider environment="production" partnerId="your-awesome-partner-id">
       <AuthComponent />
     </B3Provider>
   );
@@ -123,7 +123,7 @@ const gameContracts = [
 
 function GameApp() {
   return (
-    <B3Provider environment="production">
+    <B3Provider environment="production" partnerId="your-awesome-partner-id">
       <GameContainer />
     </B3Provider>
   );
@@ -290,7 +290,7 @@ import {
 
 function EcommerceApp() {
   return (
-    <B3Provider environment="production">
+    <B3Provider environment="production" partnerId="your-awesome-partner-id">
       <ShopContainer />
     </B3Provider>
   );
@@ -436,7 +436,7 @@ import { B3Provider, useB3 } from '@b3dotfun/sdk/global-account/react';
 
 function App() {
   return (
-    <B3Provider environment="production">
+    <B3Provider environment="production" partnerId="your-awesome-partner-id">
       <MainScreen />
     </B3Provider>
   );
@@ -564,7 +564,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <B3Provider environment="production">
+        <B3Provider environment="production" partnerId="your-awesome-partner-id">
           {children}
         </B3Provider>
       </body>

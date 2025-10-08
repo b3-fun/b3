@@ -196,7 +196,7 @@ import { B3Provider, SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
 
 function App() {
   return (
-    <B3Provider environment="production">
+    <B3Provider environment="production" partnerId="your-awesome-partner-id">
       <SignInWithB3
         provider={{ strategy: "google" }}
         partnerId="your-partner-id"
@@ -223,7 +223,7 @@ const b3Chain = {
 
 function SessionKeyAuth() {
   return (
-    <B3Provider environment="production">
+    <B3Provider environment="production" partnerId="your-awesome-partner-id">
       <SignInWithB3
         provider={{ strategy: "google" }}
         chain={b3Chain}
@@ -587,7 +587,7 @@ import B3DynamicModal from "@b3dotfun/sdk/global-account/react/components/B3Dyna
 
 function App() {
   return (
-    <B3Provider environment="production">
+    <B3Provider environment="production" partnerId="your-awesome-partner-id">
       <YourApp />
       <B3DynamicModal />
     </B3Provider>

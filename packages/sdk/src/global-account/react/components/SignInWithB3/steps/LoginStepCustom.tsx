@@ -7,6 +7,7 @@ import {
   LoginStepContainer,
   useAuthentication,
   useAuthStore,
+  useB3,
   useConnect,
   WalletRow,
 } from "@b3dotfun/sdk/global-account/react";
@@ -21,7 +22,6 @@ interface LoginStepCustomProps {
   automaticallySetFirstEoa: boolean;
   onSuccess: (account: Account) => Promise<void>;
   onError?: (error: Error) => Promise<void>;
-  partnerId: string;
   chain: Chain;
   strategies: AllowedStrategy[];
   maxInitialWallets?: number;
@@ -32,12 +32,12 @@ const debug = debugB3React("LoginStepCustom");
 export function LoginStepCustom({
   onSuccess,
   onError,
-  partnerId,
   chain,
   strategies,
   maxInitialWallets = 2,
   automaticallySetFirstEoa,
 }: LoginStepCustomProps) {
+  const { partnerId } = useB3();
   const [isLoading, setIsLoading] = useState(false);
   const [showAllWallets, setShowAllWallets] = useState(false);
   const { connect } = useConnect(partnerId, chain);

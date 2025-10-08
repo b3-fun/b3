@@ -23,7 +23,6 @@ import { TokenBalanceRow } from "./TokenBalanceRow";
 
 interface BalanceContentProps {
   onLogout?: () => void;
-  partnerId: string;
   showDeposit?: boolean;
   showSwap?: boolean;
 }
@@ -33,14 +32,14 @@ function centerTruncate(str: string, length = 4) {
   return `${str.slice(0, length)}...${str.slice(-length)}`;
 }
 
-export function BalanceContent({ onLogout, partnerId, showDeposit = true, showSwap = true }: BalanceContentProps) {
+export function BalanceContent({ onLogout, showDeposit = true, showSwap = true }: BalanceContentProps) {
   const account = useActiveAccount();
   const { address: eoaAddress, info: eoaInfo } = useFirstEOA();
   const { data: profile } = useProfile({
     address: eoaAddress || account?.address,
     fresh: true,
   });
-  const { user } = useB3();
+  const { user, partnerId } = useB3();
   const { setB3ModalOpen, setB3ModalContentType, navigateBack } = useModalStore();
   const { logout } = useAuthentication(partnerId);
   const [logoutLoading, setLogoutLoading] = useState(false);

@@ -5,7 +5,6 @@ import {
   useB3,
   useGetAllTWSigners,
   useModalStore,
-  useSiwe,
 } from "@b3dotfun/sdk/global-account/react";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { useCallback, useEffect, useState } from "react";
@@ -31,19 +30,16 @@ export function SignInWithB3Flow({
   sessionKeyAddress,
   partnerId,
   closeAfterLogin = false,
-  loginWithSiwe = false,
   source = "signInWithB3Button",
   signersEnabled = false,
 }: SignInWithB3ModalProps) {
-  const { setUser, automaticallySetFirstEoa } = useB3();
+  const { automaticallySetFirstEoa } = useB3();
   const [step, setStep] = useState<"login" | "permissions" | null>(source === "requestPermissions" ? null : "login");
   const [sessionKeyAdded, setSessionKeyAdded] = useState(source === "requestPermissions" ? true : false);
   const { setB3ModalContentType, setB3ModalOpen, isOpen } = useModalStore();
   const account = useActiveAccount();
-  const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
   const isAuthenticating = useAuthStore(state => state.isAuthenticating);
   const isConnected = useAuthStore(state => state.isConnected);
-  const setIsConnected = useAuthStore(state => state.setIsConnected);
   const [refetchCount, setRefetchCount] = useState(0);
   const [refetchError, setRefetchError] = useState<string | null>(null);
   const {
@@ -57,7 +53,6 @@ export function SignInWithB3Flow({
       enabled: signersEnabled,
     },
   });
-  const { authenticate } = useSiwe();
   const [refetchQueued, setRefetchQueued] = useState(false);
 
   // Enhanced refetchSigners function that tracks number of attempts
@@ -175,13 +170,11 @@ export function SignInWithB3Flow({
       sessionKeyAddress,
       partnerId,
       closeAfterLogin,
-      loginWithSiwe,
       source: "requestPermissions",
     });
   }, [
     chain,
     closeAfterLogin,
-    loginWithSiwe,
     onError,
     onLoginSuccess,
     onSessionKeySuccess,
@@ -193,20 +186,9 @@ export function SignInWithB3Flow({
 
   const handleLoginSuccess = useCallback(
     async (account: Account) => {
-      debug("Authenticating with B3 via SIWE");
-      setIsConnected(true);
-      if (loginWithSiwe) {
-        debug("setIsAuthenticating:true:1");
-        setIsAuthenticating(true);
-        const userAuth = await authenticate(account, partnerId);
-        setUser(userAuth.user);
-      }
-      debug("handleLoginSuccess:account", account);
       onLoginSuccess?.(account);
-      debug("setIsAuthenticating:false:1");
-      setIsAuthenticating(false);
     },
-    [loginWithSiwe, onLoginSuccess, authenticate, partnerId, setUser, setIsConnected, setIsAuthenticating],
+    [onLoginSuccess],
   );
 
   useEffect(() => {
@@ -243,7 +225,7 @@ export function SignInWithB3Flow({
   if (step === "login") {
     // Custom strategy
     if (strategies?.[0] === "privy") {
-      return <SignInWithB3Privy onSuccess={handleLoginSuccess} partnerId={partnerId} chain={chain} />;
+      return <SignInWithB3Privy onSuccess={handleLoginSuccess} chain={chain} />;
     }
 
     // Strategies are explicitly provided
@@ -251,7 +233,6 @@ export function SignInWithB3Flow({
       return (
         <LoginStepCustom
           strategies={strategies}
-          partnerId={partnerId}
           chain={chain}
           onSuccess={handleLoginSuccess}
           onError={onError}
@@ -261,7 +242,7 @@ export function SignInWithB3Flow({
     }
 
     // Default to handle all strategies we support
-    return <LoginStep partnerId={partnerId} chain={chain} onSuccess={handleLoginSuccess} onError={onError} />;
+    return <LoginStep chain={chain} onSuccess={handleLoginSuccess} onError={onError} />;
   }
 
   return null;

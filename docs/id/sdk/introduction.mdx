@@ -89,7 +89,7 @@ import { B3Provider, SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
 
 function App() {
   return (
-    <B3Provider environment="production">
+    <B3Provider environment="production" partnerId="your-awesome-partner-id">
       <SignInWithB3
         provider={{ strategy: "google" }}
         partnerId="your-partner-id"

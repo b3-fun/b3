@@ -19,7 +19,11 @@ export function Providers({ children }: { children: ReactNode }) {
   debug("@@B3ProviderWrapper:accountOverride", accountOverride);
 
   return (
-    <B3Provider environment="production" theme="light">
+    <B3Provider
+      environment="production"
+      theme="light"
+      partnerId={String(process.env.PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID)}
+    >
       <B3DynamicModal />
       {children}
     </B3Provider>

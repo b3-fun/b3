@@ -1,15 +1,16 @@
-import { Users } from "@b3dotfun/b3-api";
-import { RelayKitProviderWrapper, TooltipProvider, useAuthStore } from "@b3dotfun/sdk/global-account/react";
+import {
+  RelayKitProviderWrapper,
+  TooltipProvider,
+  useAuthentication,
+  useAuthStore,
+} from "@b3dotfun/sdk/global-account/react";
+import { useWagmiConfig } from "@b3dotfun/sdk/global-account/react/hooks/useWagmiConfig";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { loadGA4Script } from "@b3dotfun/sdk/global-account/utils/analytics";
-import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
-import { supportedChains } from "@b3dotfun/sdk/shared/constants/chains/supported";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
-import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import "@reservoir0x/relay-kit-ui/styles.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { inAppWalletConnector } from "@thirdweb-dev/wagmi-adapter";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Toaster } from "sonner";
 import {
   getLastAuthProvider,
@@ -19,7 +20,7 @@ import {
   useSetActiveWallet,
 } from "thirdweb/react";
 import { Account, Wallet } from "thirdweb/wallets";
-import { createConfig, http, WagmiProvider } from "wagmi";
+import { WagmiProvider } from "wagmi";
 import { ClientType, setClientType } from "../../../client-manager";
 import { StyleRoot } from "../StyleRoot";
 import { B3Context, B3ContextType } from "./types";
@@ -66,7 +67,7 @@ export function B3Provider({
   };
   clientType?: ClientType;
   rpcUrls?: Record<number, string>;
-  partnerId?: string;
+  partnerId: string;
 }) {
   // Initialize Google Analytics on mount
   useEffect(() => {
@@ -77,45 +78,11 @@ export function B3Provider({
   useEffect(() => {
     setClientType(clientType);
   }, [clientType]);
-
-  const ecocystemConfig = useMemo(() => {
-    if (!partnerId) return undefined;
-
-    return {
-      ecosystemId: ecosystemWalletId,
-      partnerId: partnerId,
-      client,
-    };
-  }, [partnerId]);
-
-  // Stringify rpcUrls for stable comparison to prevent wagmiConfig recreation
-  // when parent component passes new object references with same content
-  const rpcUrlsString = useMemo(() => (rpcUrls ? JSON.stringify(rpcUrls) : undefined), [rpcUrls]);
-
-  /**
-   * Creates wagmi config with optional custom RPC URLs
-   * @param rpcUrls - Optional mapping of chain IDs to RPC URLs
-   */
-  const wagmiConfig = useMemo(() => {
-    const parsedRpcUrls = rpcUrlsString ? JSON.parse(rpcUrlsString) : undefined;
-
-    return createConfig({
-      chains: [supportedChains[0], ...supportedChains.slice(1)],
-      transports: Object.fromEntries(supportedChains.map(chain => [chain.id, http(parsedRpcUrls?.[chain.id])])),
-      connectors: [
-        inAppWalletConnector({
-          ...(ecocystemConfig || {}),
-          client,
-        }),
-        // injected(),
-        // coinbaseWallet({ appName: "HypeDuel" }),
-      ],
-    });
-  }, [ecocystemConfig, rpcUrlsString]);
+  const wagmiConfig = useWagmiConfig(partnerId, rpcUrls);
 
   return (
     <ThirdwebProvider>
-      <WagmiProvider config={wagmiConfig}>
+      <WagmiProvider config={wagmiConfig} reconnectOnMount={false}>
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
             <InnerProvider
@@ -124,6 +91,7 @@ export function B3Provider({
               theme={theme}
               automaticallySetFirstEoa={!!automaticallySetFirstEoa}
               clientType={clientType}
+              partnerId={partnerId}
             >
               <RelayKitProviderWrapper simDuneApiKey={simDuneApiKey}>
                 {children}
@@ -150,6 +118,7 @@ export function InnerProvider({
   automaticallySetFirstEoa,
   theme = "light",
   clientType = "socket",
+  partnerId,
 }: {
   children: React.ReactNode;
   accountOverride?: Account;
@@ -158,41 +127,22 @@ export function InnerProvider({
   automaticallySetFirstEoa: boolean;
   theme: "light" | "dark";
   clientType?: ClientType;
+  partnerId: string;
 }) {
   const activeAccount = useActiveAccount();
   const [manuallySelectedWallet, setManuallySelectedWallet] = useState<Wallet | undefined>(undefined);
   const wallets = useConnectedWallets();
-  const setActiveWallet = useSetActiveWallet();
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
-  debug("@@wallets", wallets);
+  const isConnected = useAuthStore(state => state.isConnected);
+  const setActiveWallet = useSetActiveWallet();
+  const { user, setUser, refetchUser } = useAuthentication(partnerId);
 
-  const [user, setUser] = useState<Users | undefined>(() => {
-    // Try to restore user from localStorage on initialization
-    if (typeof window !== "undefined") {
-      try {
-        const storedUser = localStorage.getItem("b3-user");
-        return storedUser ? JSON.parse(storedUser) : undefined;
-      } catch (error) {
-        console.warn("Failed to restore user from localStorage:", error);
-        return undefined;
-      }
-    }
-    return undefined;
-  });
+  debug("@@B3Provider:isConnected", isConnected);
+  debug("@@wallets", wallets);
+  debug("@@B3Provider:user", user);
 
   // Use given accountOverride or activeAccount from thirdweb
   const effectiveAccount = isAuthenticated ? accountOverride || activeAccount : undefined;
-
-  // Persist user to localStorage when it changes
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      if (user) {
-        localStorage.setItem("b3-user", JSON.stringify(user));
-      } else {
-        localStorage.removeItem("b3-user");
-      }
-    }
-  }, [user]);
 
   const setWallet = useCallback(
     (wallet: Wallet) => {
@@ -237,6 +187,7 @@ export function InnerProvider({
         wallet: manuallySelectedWallet,
         user,
         setUser,
+        refetchUser,
         initialized: true,
         ready: !!effectiveAccount,
         automaticallySetFirstEoa,
@@ -244,9 +195,14 @@ export function InnerProvider({
         defaultPermissions,
         theme,
         clientType,
+        partnerId: partnerId,
       }}
     >
-      {children}
+      <InnerProvider2>{children}</InnerProvider2>
     </B3Context.Provider>
   );
 }
+
+const InnerProvider2 = ({ children }: { children: React.ReactNode }) => {
+  return <>{children}</>;
+};

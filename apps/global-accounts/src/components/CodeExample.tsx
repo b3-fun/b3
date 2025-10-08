@@ -10,7 +10,7 @@ const codeExample = `import { SignInWithB3, B3Provider } from '@b3dotfun/sdk/glo
 
 function App() {
   return (
-    <B3Provider environment="production">
+    <B3Provider environment="production" partnerId="your-awesome-partner-id">
       <SignInWithB3
         onLoginSuccess={(globalAccount) => {
           console.log('User authenticated with Global Account!', globalAccount);
