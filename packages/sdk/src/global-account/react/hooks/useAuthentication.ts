@@ -16,7 +16,7 @@ import {
 } from "thirdweb/react";
 import { ecosystemWallet, Wallet } from "thirdweb/wallets";
 import { preAuthenticate } from "thirdweb/wallets/in-app";
-import { useAccount, useConnect } from "wagmi";
+import { useAccount, useConnect, useSwitchAccount } from "wagmi";
 import { useUserQuery } from "./useUserQuery";
 import { useWagmiConfig } from "./useWagmiConfig";
 
@@ -42,6 +42,7 @@ export function useAuthentication(partnerId: string) {
   const wagmiConfig = useWagmiConfig(partnerId);
   const { connect } = useConnect();
   const activeWagmiAccount = useAccount();
+  const { switchAccount } = useSwitchAccount();
   debug("@@activeWagmiAccount", activeWagmiAccount);
 
   const wallet = ecosystemWallet(ecosystemWalletId, {
@@ -60,10 +61,21 @@ export function useAuthentication(partnerId: string) {
       // or, since ecosystem wallets is separate, connect those via in-app-wallet from wagmi
       connectors.forEach(async connector => {
         const twWallet = wallets.find(wallet => wallet.id === connector.id || connector.id === "in-app-wallet");
+
+        // If no TW wallet, do not prompt the user to connect
+        if (!twWallet) {
+          return;
+        }
+
+        // Metamask will prompt to connect, we can just switch accounts here.
+        if (connector.id === "io.metamask") {
+          return switchAccount({ connector });
+        }
+
         if (
-          twWallet &&
           // If it's not an in-app wallet or it is the ecosystem wallet, connect
-          (connector.id !== "in-app-wallet" || (connector.id === "in-app-wallet" && twWallet.id === ecosystemWalletId))
+          connector.id !== "in-app-wallet" ||
+          (connector.id === "in-app-wallet" && twWallet.id === ecosystemWalletId)
         ) {
           try {
             const options = {
