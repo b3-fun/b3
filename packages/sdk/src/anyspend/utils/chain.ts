@@ -305,6 +305,11 @@ export function getChainName(chainId: number): string {
   return EVM_CHAINS[chainId] ? EVM_CHAINS[chainId].viem.name : "Solana";
 }
 
+export function getCoingeckoName(chainId: number): string | null {
+  invariant(ALL_CHAINS[chainId], `Chain ${chainId} is not supported`);
+  return ALL_CHAINS[chainId].coingeckoName;
+}
+
 export function getPaymentUrl(address: string, amount: bigint, currency: string, chainId: number, decimals?: number) {
   // Get chain type to determine URL format
   const chainType = getChainType(chainId);

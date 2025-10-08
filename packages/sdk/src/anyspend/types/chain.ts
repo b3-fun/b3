@@ -15,6 +15,7 @@ export interface IBaseChain {
   canDepositNative: boolean;
   defaultToken: components["schemas"]["Token"];
   nativeToken: components["schemas"]["Token"];
+  coingeckoName: string | null;
 }
 
 export interface IEVMChain extends IBaseChain {
@@ -22,10 +23,8 @@ export interface IEVMChain extends IBaseChain {
   viem: Chain;
   pollingInterval: number;
   zapperEnum?: string;
-  coingeckoName: string | null;
 }
 
 export interface ISolanaChain extends IBaseChain {
   type: ChainType.SOLANA;
-  coingeckoName: string;
 }
