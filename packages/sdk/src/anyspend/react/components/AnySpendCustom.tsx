@@ -22,6 +22,7 @@ import {
   TextShimmer,
   Tooltip,
   TooltipContent,
+  TooltipProvider,
   TooltipTrigger,
   TransitionPanel,
   useAccountWallet,
@@ -37,7 +38,7 @@ import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { formatTokenAmount, formatUnits } from "@b3dotfun/sdk/shared/utils/number";
 import { simpleHashChainToChainName } from "@b3dotfun/sdk/shared/utils/simplehash";
 import invariant from "invariant";
-import { ChevronRight, ChevronRightCircle, Loader2 } from "lucide-react";
+import { ChevronRight, ChevronRightCircle, Info, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -45,6 +46,7 @@ import { base } from "viem/chains";
 import { useFeatureFlags } from "../contexts/FeatureFlagsContext";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
 import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPaymentMethod";
+import { FeeBreakDown } from "./common/FeeBreakDown";
 import { FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaymentMethod";
 import { OrderDetails } from "./common/OrderDetails";
 import { OrderHistory } from "./common/OrderHistory";
@@ -960,8 +962,20 @@ function AnySpendCustomInner({
                   className="relative flex w-full items-center justify-between"
                 >
                   <div className="flex items-center gap-2">
-                    <span className="text-as-tertiarry text-sm">
+                    <span className="text-as-tertiarry flex items-center gap-1.5 text-sm">
                       Total <span className="text-as-tertiarry">(with fee)</span>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button className="text-as-primary/40 hover:text-as-primary/60 transition-colors">
+                              <Info className="h-4 w-4" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top">
+                            <FeeBreakDown />
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </span>
                     {renderPointsBadge()}
                   </div>

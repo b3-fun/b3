@@ -953,6 +953,7 @@ function AnySpendInner({
             setSelectedSrcToken={setSelectedSrcToken}
             srcAmount={srcAmount}
             setSrcAmount={setSrcAmount}
+            isSrcInputDirty={isSrcInputDirty}
             setIsSrcInputDirty={setIsSrcInputDirty}
             selectedCryptoPaymentMethod={selectedCryptoPaymentMethod}
             onSelectCryptoPaymentMethod={() => navigateToPanel(PanelView.CRYPTO_PAYMENT_METHOD, "forward")}
@@ -1044,6 +1045,7 @@ function AnySpendInner({
             selectedDstChainId={selectedDstChainId}
             setSelectedDstChainId={setSelectedDstChainId}
             setSelectedDstToken={setSelectedDstToken}
+            isSrcInputDirty={isSrcInputDirty}
             onChangeDstAmount={value => {
               setIsSrcInputDirty(false);
               setDstAmount(value);

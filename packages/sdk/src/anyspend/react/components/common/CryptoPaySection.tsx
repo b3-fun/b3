@@ -2,11 +2,18 @@ import { useAccountWallet, useProfile, useTokenData } from "@b3dotfun/sdk/global
 import { formatUsername } from "@b3dotfun/sdk/shared/utils";
 import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { formatDisplayNumber } from "@b3dotfun/sdk/shared/utils/number";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Info } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect, useRef } from "react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../../../../global-account/react/components/ui/tooltip";
 import { components } from "../../../types/api";
 import { CryptoPaymentMethodType } from "./CryptoPaymentMethod";
+import { FeeBreakDown } from "./FeeBreakDown";
 import { OrderTokenAmount } from "./OrderTokenAmount";
 import { TokenBalance } from "./TokenBalance";
 
@@ -18,6 +25,7 @@ interface CryptoPaySectionProps {
   setSelectedSrcToken: (token: components["schemas"]["Token"]) => void;
   srcAmount: string;
   setSrcAmount: (amount: string) => void;
+  isSrcInputDirty: boolean;
   setIsSrcInputDirty: (dirty: boolean) => void;
   // Payment method state
   selectedCryptoPaymentMethod: CryptoPaymentMethodType;
@@ -35,6 +43,7 @@ export function CryptoPaySection({
   setSelectedSrcToken,
   srcAmount,
   setSrcAmount,
+  isSrcInputDirty,
   setIsSrcInputDirty,
   selectedCryptoPaymentMethod,
   onSelectCryptoPaymentMethod,
@@ -89,7 +98,23 @@ export function CryptoPaySection({
       className="pay-section bg-as-surface-secondary border-as-border-secondary relative flex w-full flex-col gap-2 rounded-2xl border p-4 sm:p-6"
     >
       <div className="flex items-center justify-between">
-        <div className="text-as-primary/50 flex h-7 items-center text-sm">Pay</div>
+        <div className="text-as-primary/50 flex h-7 items-center gap-1.5 text-sm">
+          Pay
+          {!isSrcInputDirty && anyspendQuote && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button className="text-as-primary/40 hover:text-as-primary/60 transition-colors">
+                    <Info className="h-4 w-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  <FeeBreakDown />
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+        </div>
         <button
           className="text-as-tertiarry flex h-7 items-center gap-2 text-sm transition-colors focus:!outline-none"
           onClick={onSelectCryptoPaymentMethod}

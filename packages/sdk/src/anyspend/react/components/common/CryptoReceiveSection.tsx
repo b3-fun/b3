@@ -2,10 +2,17 @@ import { formatUsername } from "@b3dotfun/sdk/shared/utils";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { formatDisplayNumber } from "@b3dotfun/sdk/shared/utils/number";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Info } from "lucide-react";
 import { motion } from "motion/react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../../../../global-account/react/components/ui/tooltip";
 import { components } from "../../../types/api";
 import { useFeatureFlags } from "../../contexts/FeatureFlagsContext";
+import { FeeBreakDown } from "./FeeBreakDown";
 import { OrderTokenAmount } from "./OrderTokenAmount";
 import { PointsBadge } from "./PointsBadge";
 
@@ -23,6 +30,7 @@ interface CryptoReceiveSectionProps {
   selectedDstChainId?: number;
   setSelectedDstChainId?: (chainId: number) => void;
   setSelectedDstToken?: (token: components["schemas"]["Token"]) => void;
+  isSrcInputDirty: boolean;
   onChangeDstAmount?: (value: string) => void;
   // Quote data
   anyspendQuote?: any;
@@ -44,6 +52,7 @@ export function CryptoReceiveSection({
   selectedDstChainId,
   setSelectedDstChainId,
   setSelectedDstToken,
+  isSrcInputDirty,
   onChangeDstAmount,
   anyspendQuote,
   dstTokenSymbol,
@@ -60,7 +69,23 @@ export function CryptoReceiveSection({
       className="receive-section bg-as-surface-secondary border-as-border-secondary relative flex w-full flex-col gap-2 rounded-2xl border p-4 sm:p-6"
     >
       <div className="flex w-full items-center justify-between">
-        <div className="text-as-primary/50 flex h-7 items-center text-sm">{isDepositMode ? "Deposit" : "Receive"}</div>
+        <div className="text-as-primary/50 flex h-7 items-center gap-1.5 text-sm">
+          {isDepositMode ? "Deposit" : "Receive"}
+          {isSrcInputDirty && anyspendQuote && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button className="text-as-primary/40 hover:text-as-primary/60 transition-colors">
+                    <Info className="h-4 w-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  <FeeBreakDown />
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+        </div>
         {selectedRecipientAddress ? (
           <button
             className={cn("text-as-tertiarry flex h-7 items-center gap-2 rounded-lg")}

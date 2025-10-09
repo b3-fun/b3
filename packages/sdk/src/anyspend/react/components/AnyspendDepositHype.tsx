@@ -80,6 +80,7 @@ function AnySpendDepositHypeInner({
     srcAmount,
     setSrcAmount,
     dstAmount,
+    isSrcInputDirty,
     setIsSrcInputDirty,
     selectedCryptoPaymentMethod,
     setSelectedCryptoPaymentMethod,
@@ -207,6 +208,7 @@ function AnySpendDepositHypeInner({
               setSelectedSrcToken={setSelectedSrcToken}
               srcAmount={srcAmount}
               setSrcAmount={setSrcAmount}
+              isSrcInputDirty={isSrcInputDirty}
               setIsSrcInputDirty={setIsSrcInputDirty}
               selectedCryptoPaymentMethod={selectedCryptoPaymentMethod}
               onSelectCryptoPaymentMethod={() => setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD)}
@@ -272,6 +274,7 @@ function AnySpendDepositHypeInner({
               selectedDstChainId={base.id}
               setSelectedDstChainId={() => {}}
               setSelectedDstToken={() => {}}
+              isSrcInputDirty={isSrcInputDirty}
               onChangeDstAmount={value => {
                 setIsSrcInputDirty(false);
                 setSrcAmount(value);
