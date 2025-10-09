@@ -338,6 +338,13 @@
                 ]
               },
               {
+                "group": "Token",
+                "pages": [
+                  "anyspend/airdrop",
+                  "anyspend/tokenomics"
+                ]
+              },
+              {
                 "group": "React",
                 "pages": [
                   "anyspend/components",
@@ -351,13 +358,6 @@
                   "source": "https://mainnet.anyspend.com/openapi.json",
                   "directory": "anyspend/api-reference"
                 }
-              },
-              {
-                "group": "Tokenomics",
-                "pages": [
-                  "anyspend/airdrop",
-                  "anyspend/tokenomics"
-                ]
               },
               {
                 "group": "Advanced",
@@ -847,13 +847,6 @@
                   "source": "https://mainnet.anyspend.com/openapi.json",
                   "directory": "anyspend/api-reference"
                 }
-              },
-              {
-                "group": "Tokenomics",
-                "pages": [
-                  "anyspend/airdrop",
-                  "anyspend/tokenomics"
-                ]
               },
               {
                 "group": "Advanced",
@@ -1364,13 +1357,6 @@
                 }
               },
               {
-                "group": "Tokenomics",
-                "pages": [
-                  "anyspend/airdrop",
-                  "anyspend/tokenomics"
-                ]
-              },
-              {
                 "group": "Advanced",
                 "pages": [
                   "ko/anyspend/error-handling"
@@ -1879,13 +1865,6 @@
                 }
               },
               {
-                "group": "Tokenomics",
-                "pages": [
-                  "anyspend/airdrop",
-                  "anyspend/tokenomics"
-                ]
-              },
-              {
                 "group": "Advanced",
                 "pages": [
                   "cn/anyspend/error-handling"
@@ -2379,13 +2358,6 @@
                 ]
               },
               {
-                "group": "$ANY Token",
-                "pages": [
-                  "anyspend/airdrop",
-                  "anyspend/tokenomics"
-                ]
-              },
-              {
                 "group": "React",
                 "pages": [
                   "es/anyspend/components",
@@ -2399,13 +2371,6 @@
                   "source": "https://mainnet.anyspend.com/openapi.json",
                   "directory": "anyspend/api-reference"
                 }
-              },
-              {
-                "group": "Tokenomics",
-                "pages": [
-                  "anyspend/airdrop",
-                  "anyspend/tokenomics"
-                ]
               },
               {
                 "group": "Advanced",
@@ -2896,13 +2861,6 @@
                   "source": "https://mainnet.anyspend.com/openapi.json",
                   "directory": "anyspend/api-reference"
                 }
-              },
-              {
-                "group": "Tokenomics",
-                "pages": [
-                  "anyspend/airdrop",
-                  "anyspend/tokenomics"
-                ]
               },
               {
                 "group": "Advanced",
