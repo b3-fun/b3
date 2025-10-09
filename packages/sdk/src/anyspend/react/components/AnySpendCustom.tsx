@@ -79,6 +79,7 @@ function generateGetRelayQuoteRequest({
   contractType,
   encodedData,
   spenderAddress,
+  onrampVendor,
 }: {
   orderType: components["schemas"]["Order"]["type"];
   srcChainId: number;
@@ -92,6 +93,7 @@ function generateGetRelayQuoteRequest({
   contractType?: components["schemas"]["NftContract"]["type"];
   encodedData: string;
   spenderAddress?: string;
+  onrampVendor?: components["schemas"]["OnrampMetadata"]["vendor"];
 }): GetQuoteRequest {
   switch (orderType) {
     case "mint_nft": {
@@ -107,6 +109,7 @@ function generateGetRelayQuoteRequest({
         contractAddress: contractAddress,
         tokenId: tokenId,
         contractType: contractType,
+        onrampVendor,
       };
     }
     case "join_tournament": {
@@ -119,6 +122,7 @@ function generateGetRelayQuoteRequest({
         recipientAddress,
         price: dstAmount,
         contractAddress: contractAddress,
+        onrampVendor,
       };
     }
     case "fund_tournament": {
@@ -131,6 +135,7 @@ function generateGetRelayQuoteRequest({
         recipientAddress,
         fundAmount: dstAmount,
         contractAddress: contractAddress,
+        onrampVendor,
       };
     }
     case "custom": {
@@ -147,6 +152,7 @@ function generateGetRelayQuoteRequest({
           to: contractAddress,
           spenderAddress: spenderAddress,
         },
+        onrampVendor,
       };
     }
     default: {
@@ -338,6 +344,7 @@ function AnySpendCustomInner({
       contractType: orderType === "mint_nft" ? metadata?.nftContract?.type : undefined,
       encodedData: encodedData,
       spenderAddress: spenderAddress,
+      onrampVendor: selectedFiatPaymentMethod === FiatPaymentMethod.STRIPE ? "stripe-web2" : undefined,
     });
   }, [
     activeTab,
@@ -353,6 +360,7 @@ function AnySpendCustomInner({
     spenderAddress,
     srcChainId,
     srcToken,
+    selectedFiatPaymentMethod,
   ]);
   const { anyspendQuote, isLoadingAnyspendQuote } = useAnyspendQuote(getRelayQuoteRequest);
 
@@ -964,18 +972,20 @@ function AnySpendCustomInner({
                   <div className="flex items-center gap-2">
                     <span className="text-as-tertiarry flex items-center gap-1.5 text-sm">
                       Total <span className="text-as-tertiarry">(with fee)</span>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <button className="text-as-primary/40 hover:text-as-primary/60 transition-colors">
-                              <Info className="h-4 w-4" />
-                            </button>
-                          </TooltipTrigger>
-                          <TooltipContent side="top">
-                            <FeeBreakDown />
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                      {anyspendQuote?.data?.fee && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button className="text-as-primary/40 hover:text-as-primary/60 transition-colors">
+                                <Info className="h-4 w-4" />
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top">
+                              <FeeBreakDown fee={anyspendQuote.data.fee} />
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
                     </span>
                     {renderPointsBadge()}
                   </div>
@@ -1100,8 +1110,22 @@ function AnySpendCustomInner({
                 className="relative flex w-full items-center justify-between"
               >
                 <div className="flex items-center gap-2">
-                  <span className="text-as-tertiarry text-sm">
+                  <span className="text-as-tertiarry flex items-center gap-1.5 text-sm">
                     Total <span className="text-as-tertiarry">(USD)</span>
+                    {anyspendQuote?.data?.fee && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button className="text-as-primary/40 hover:text-as-primary/60 transition-colors">
+                              <Info className="h-4 w-4" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top">
+                            <FeeBreakDown fee={anyspendQuote.data.fee} />
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
                   </span>
                   {renderPointsBadge()}
                 </div>

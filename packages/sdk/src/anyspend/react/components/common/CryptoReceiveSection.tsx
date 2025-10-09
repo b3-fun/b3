@@ -71,7 +71,7 @@ export function CryptoReceiveSection({
       <div className="flex w-full items-center justify-between">
         <div className="text-as-primary/50 flex h-7 items-center gap-1.5 text-sm">
           {isDepositMode ? "Deposit" : "Receive"}
-          {isSrcInputDirty && anyspendQuote && (
+          {isSrcInputDirty && anyspendQuote?.data?.fee && (
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -80,7 +80,7 @@ export function CryptoReceiveSection({
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="right">
-                  <FeeBreakDown />
+                  <FeeBreakDown fee={anyspendQuote.data.fee} />
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>

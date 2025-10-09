@@ -100,7 +100,7 @@ export function CryptoPaySection({
       <div className="flex items-center justify-between">
         <div className="text-as-primary/50 flex h-7 items-center gap-1.5 text-sm">
           Pay
-          {!isSrcInputDirty && anyspendQuote && (
+          {!isSrcInputDirty && anyspendQuote?.data?.fee && (
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -109,7 +109,7 @@ export function CryptoPaySection({
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="right">
-                  <FeeBreakDown />
+                  <FeeBreakDown fee={anyspendQuote.data.fee} />
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>

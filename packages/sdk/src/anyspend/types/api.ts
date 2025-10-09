@@ -5,12 +5,6 @@
 
 export interface paths {
   "/chains/{chainId}/tokens": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
     /**
      * Get tokens for a chain
      * @description Retrieves available tokens for a specific blockchain
@@ -26,7 +20,6 @@ export interface paths {
           /** @description Maximum number of tokens to return */
           limit?: number;
         };
-        header?: never;
         path: {
           /**
            * @description Blockchain chain ID
@@ -34,15 +27,10 @@ export interface paths {
            */
           chainId: number;
         };
-        cookie?: never;
       };
-      requestBody?: never;
       responses: {
         /** @description Tokens retrieved successfully */
         200: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example true */
@@ -73,9 +61,6 @@ export interface paths {
         };
         /** @description Bad request */
         400: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example false */
@@ -89,21 +74,8 @@ export interface paths {
         };
       };
     };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
   };
   "/onramp/coinbase/options": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
     /**
      * Get Coinbase onramp options
      * @description Retrieves available Coinbase onramp configuration options.
@@ -136,17 +108,10 @@ export interface paths {
            */
           chainIds?: string[];
         };
-        header?: never;
-        path?: never;
-        cookie?: never;
       };
-      requestBody?: never;
       responses: {
         /** @description Coinbase options retrieved successfully */
         200: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example true */
@@ -249,9 +214,6 @@ export interface paths {
         };
         /** @description Bad request */
         400: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example false */
@@ -265,21 +227,8 @@ export interface paths {
         };
       };
     };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
   };
   "/onramp/stripe/supported": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
     /**
      * Check Stripe support
      * @description Checks if Stripe onramp and Stripe Web2 are supported based on IP address location and optional transaction amount
@@ -293,17 +242,10 @@ export interface paths {
            */
           usdAmount?: string;
         };
-        header?: never;
-        path?: never;
-        cookie?: never;
       };
-      requestBody?: never;
       responses: {
         /** @description Stripe support status retrieved successfully */
         200: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example true */
@@ -326,9 +268,6 @@ export interface paths {
         };
         /** @description Bad request */
         400: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example false */
@@ -342,21 +281,8 @@ export interface paths {
         };
       };
     };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
   };
   "/orders": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
     /**
      * Get orders by creator
      * @description Retrieves all orders created by a specific address
@@ -380,17 +306,10 @@ export interface paths {
            */
           offset?: string;
         };
-        header?: never;
-        path?: never;
-        cookie?: never;
       };
-      requestBody?: never;
       responses: {
         /** @description Orders retrieved successfully */
         200: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example true */
@@ -406,9 +325,6 @@ export interface paths {
         };
         /** @description Bad request */
         400: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example false */
@@ -422,18 +338,11 @@ export interface paths {
         };
       };
     };
-    put?: never;
     /**
      * Create a new order
      * @description Creates a new order for token transactions across chains
      */
     post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
       requestBody: {
         content: {
           "application/json": components["schemas"]["OrderRequest"];
@@ -442,9 +351,6 @@ export interface paths {
       responses: {
         /** @description Order created successfully */
         200: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example true */
@@ -459,9 +365,6 @@ export interface paths {
         };
         /** @description Bad request */
         400: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example false */
@@ -475,27 +378,14 @@ export interface paths {
         };
       };
     };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
   };
   "/orders/{orderId}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
     /**
      * Get order and transactions
      * @description Retrieves order details along with associated transactions
      */
     get: {
       parameters: {
-        query?: never;
-        header?: never;
         path: {
           /**
            * @description Unique order identifier
@@ -503,15 +393,10 @@ export interface paths {
            */
           orderId: string;
         };
-        cookie?: never;
       };
-      requestBody?: never;
       responses: {
         /** @description Order and transactions retrieved successfully */
         200: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example true */
@@ -563,9 +448,6 @@ export interface paths {
         };
         /** @description Bad request */
         400: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example false */
@@ -579,9 +461,6 @@ export interface paths {
         };
         /** @description Order not found */
         404: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example false */
@@ -595,34 +474,13 @@ export interface paths {
         };
       };
     };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
   };
   "/orders/quote": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
     /**
      * Get anyspend quote
      * @description Retrieves a quote to swap, execute contract, or participate in HypeDuel
      */
     post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
       requestBody: {
         content: {
           "application/json":
@@ -822,9 +680,6 @@ export interface paths {
       responses: {
         /** @description Quote retrieved successfully */
         200: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example true */
@@ -995,6 +850,8 @@ export interface paths {
                  * @example 1.5
                  */
                 pointsMultiplier?: number;
+                /** @description Fee structure including all applicable fees (Stripe and AnySpend) */
+                fee: components["schemas"]["Fee"];
               };
               /** @example 200 */
               statusCode: number;
@@ -1003,9 +860,6 @@ export interface paths {
         };
         /** @description Bad request */
         400: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example false */
@@ -1019,19 +873,8 @@ export interface paths {
         };
       };
     };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
   };
   "/stripe/clientSecret": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
     /**
      * Get Stripe client secret
      * @description Retrieves a Stripe client secret for payment processing using a payment intent ID
@@ -1045,17 +888,10 @@ export interface paths {
            */
           paymentIntentId: string;
         };
-        header?: never;
-        path?: never;
-        cookie?: never;
       };
-      requestBody?: never;
       responses: {
         /** @description Client secret retrieved successfully */
         200: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example true */
@@ -1074,9 +910,6 @@ export interface paths {
         };
         /** @description Bad request - PaymentIntentId is required or invalid */
         400: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example false */
@@ -1090,13 +923,6 @@ export interface paths {
         };
       };
     };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
   };
 }
 export type webhooks = Record<string, never>;
@@ -1487,6 +1313,8 @@ export interface components {
       expiredAt: number;
       /** @description Timestamp when the order was filled/executed */
       filledAt: number | null;
+      /** @description Timestamp when the deposit was received */
+      receivedDepositAt: number | null;
       /**
        * @description Optional creator address
        * @example 0xb34facb90a200251318e8841c05102366f2158cf
@@ -1511,6 +1339,8 @@ export interface components {
          */
         actualDstAmount: string | null;
       } | null;
+      /** @description Fee structure for the order including Stripe and AnySpend fees */
+      fee?: Omit<components["schemas"]["Fee"], "type"> | null;
     };
     SwapOrder: components["schemas"]["BaseOrder"] & {
       /**
@@ -2071,6 +1901,121 @@ export interface components {
            * @example 0.50
            */
           formattedFeeUsd: string;
+        };
+    Fee:
+      | {
+          /**
+           * @description Fee type identifier
+           * @enum {string}
+           */
+          type: "standard_fee";
+          /**
+           * @description Fee version number
+           * @example 1
+           */
+          feeVersion: number;
+          /**
+           * @description Token contract address used to check balance for whale discount (B3 token)
+           * @example 0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3
+           */
+          tokenToCheckBalance: string;
+          /**
+           * @description Recipient's B3 token balance
+           * @example 302843673392800000000000
+           */
+          recipientBalance: string;
+          /**
+           * @description AnySpend base fee in basis points before discounts
+           * @example 80
+           */
+          anyspendFeeBps: number;
+          /**
+           * @description Whale discount in basis points based on B3 balance
+           * @example 5000
+           */
+          anyspendWhaleDiscountBps: number;
+          /**
+           * @description Partner discount in basis points
+           * @example 0
+           */
+          anyspendPartnerDiscountBps: number;
+          /**
+           * @description Final fee in basis points after all discounts applied
+           * @example 40
+           */
+          finalFeeBps: number;
+        }
+      | {
+          /**
+           * @description Fee type identifier
+           * @enum {string}
+           */
+          type: "stripeweb2_fee";
+          /**
+           * @description Fee version number
+           * @example 1
+           */
+          feeVersion: number;
+          /**
+           * @description Token contract address used to check balance for whale discount (B3 token)
+           * @example 0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3
+           */
+          tokenToCheckBalance: string;
+          /**
+           * @description Recipient's B3 token balance
+           * @example 302843673392800000000000
+           */
+          recipientBalance: string;
+          /**
+           * @description Stripe fee percentage in basis points (5.4%)
+           * @example 540
+           */
+          stripeFeeBps: number;
+          /**
+           * @description Stripe fixed fee in USD
+           * @example 0.3
+           */
+          stripeFeeUsd: number;
+          /**
+           * @description AnySpend base fee in basis points before discounts
+           * @example 80
+           */
+          anyspendFeeBps: number;
+          /**
+           * @description AnySpend fixed fee in USD before discounts
+           * @example 0
+           */
+          anyspendFeeUsd: number;
+          /**
+           * @description Whale discount in basis points based on B3 balance
+           * @example 5000
+           */
+          anyspendWhaleDiscountBps: number;
+          /**
+           * @description Partner discount in basis points
+           * @example 0
+           */
+          anyspendPartnerDiscountBps: number;
+          /**
+           * @description Final combined fee percentage in basis points after all discounts
+           * @example 580
+           */
+          finalFeeBps: number;
+          /**
+           * @description Final combined fixed fee in USD after all discounts
+           * @example 0.3
+           */
+          finalFeeUsd: number;
+          /**
+           * @description Original amount before fees in USDC units (6 decimals)
+           * @example 10000000
+           */
+          originalAmount: string;
+          /**
+           * @description Final amount after applying all fees in USDC units (6 decimals)
+           * @example 9120000
+           */
+          finalAmount: string;
         };
   };
   responses: never;
