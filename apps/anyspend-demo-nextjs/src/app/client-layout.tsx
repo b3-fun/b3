@@ -7,7 +7,12 @@ import "@b3dotfun/sdk/index.css";
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   return (
-    <B3Provider environment="production" theme="light" automaticallySetFirstEoa={true}>
+    <B3Provider
+      environment="production"
+      theme="light"
+      automaticallySetFirstEoa={true}
+      partnerId={String(process.env.PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID)}
+    >
       <AnyspendProvider featureFlags={{ showPoints: true }}>
         <B3DynamicModal />
         <StyleRoot>

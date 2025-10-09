@@ -35,8 +35,6 @@ export interface SignInWithB3ModalProps extends BaseModalProps {
   sessionKeyAddress?: Address;
   /** Unique identifier for the partner application */
   partnerId: string;
-  /** Whether to authenticate with Sign In With Ethereum */
-  loginWithSiwe?: boolean;
   /** Whether to close the modal after successful login */
   closeAfterLogin?: boolean;
   /** Source of the sign-in request */

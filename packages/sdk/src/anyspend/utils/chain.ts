@@ -186,6 +186,7 @@ export const EVM_TESTNET: Record<number, IEVMChain> = {
     nativeToken: getEthToken(sepolia.id),
     viem: sepolia,
     pollingInterval: 1000, // 1 second for Sepolia
+    coingeckoName: "sepolia-testnet",
   },
   [baseSepolia.id]: {
     id: baseSepolia.id,
@@ -198,6 +199,7 @@ export const EVM_TESTNET: Record<number, IEVMChain> = {
     nativeToken: getEthToken(baseSepolia.id),
     viem: baseSepolia,
     pollingInterval: 1000, // 1 second for Base Sepolia
+    coingeckoName: null,
   },
   [b3Sepolia.id]: {
     id: b3Sepolia.id,
@@ -210,6 +212,7 @@ export const EVM_TESTNET: Record<number, IEVMChain> = {
     nativeToken: getEthToken(b3Sepolia.id),
     viem: b3Sepolia,
     pollingInterval: 1000, // 1 second for B3 Sepolia
+    coingeckoName: null,
   },
   // [b4testnet.id]: {
   //   id: b4testnet.id,
@@ -230,6 +233,7 @@ export const SOLANA_MAINNET: ISolanaChain = {
   canDepositNative: true,
   defaultToken: getSolanaToken(),
   nativeToken: getSolanaToken(),
+  coingeckoName: "solana",
 };
 
 export const EVM_CHAINS: Record<number, IEVMChain> = { ...EVM_MAINNET, ...EVM_TESTNET };
@@ -299,6 +303,11 @@ export function getDefaultToken(chainId: number): components["schemas"]["Token"]
 export function getChainName(chainId: number): string {
   invariant(ALL_CHAINS[chainId], `Chain ${chainId} is not supported`);
   return EVM_CHAINS[chainId] ? EVM_CHAINS[chainId].viem.name : "Solana";
+}
+
+export function getCoingeckoName(chainId: number): string | null {
+  invariant(ALL_CHAINS[chainId], `Chain ${chainId} is not supported`);
+  return ALL_CHAINS[chainId].coingeckoName;
 }
 
 export function getPaymentUrl(address: string, amount: bigint, currency: string, chainId: number, decimals?: number) {

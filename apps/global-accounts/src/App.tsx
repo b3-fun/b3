@@ -55,7 +55,11 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <B3Provider environment="production" theme="light">
+      <B3Provider
+        environment="production"
+        theme="light"
+        partnerId={String(process.env.PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID)}
+      >
         <BrowserRouter>
           <B3DynamicModal />
           <div className="min-h-screen bg-white">
@@ -98,7 +102,6 @@ function App() {
                         console.error("Error signing in:", error);
                       }}
                       sessionKeyAddress={wallet?.address as `0x${string}`}
-                      loginWithSiwe
                     />
                   </div>
                 </div>
