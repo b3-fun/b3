@@ -14,6 +14,7 @@ import {
   WalletClient,
 } from "viem";
 import {
+  abstract,
   arbitrum,
   avalanche,
   b3,
@@ -169,6 +170,23 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
       "https://late-dimensional-yard.b3-mainnet.quiknode.pro/461dbdbd44158cd7a7a764a58ffb01a67eef77f2/",
     ),
     pollingInterval: 1000, // 1 second for B3
+    zapperEnum: "B3_MAINNET",
+    coingeckoName: "b3",
+  },
+  [abstract.id]: {
+    id: abstract.id,
+    name: abstract.name,
+    logoUrl: "https://assets.relay.link/icons/square/2741/light.png",
+    type: ChainType.EVM,
+    nativeRequired: parseEther("0.0001"),
+    canDepositNative: true,
+    defaultToken: getEthToken(abstract.id),
+    nativeToken: getEthToken(abstract.id),
+    viem: getCustomEvmChain(
+      abstract,
+      "https://cosmopolitan-nameless-mountain.abstract-mainnet.quiknode.pro/863853304b986b582bdacf625ce3350397c560f8/",
+    ),
+    pollingInterval: 3000, // 3 seconds for Abstract
     zapperEnum: "B3_MAINNET",
     coingeckoName: "b3",
   },
