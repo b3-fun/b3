@@ -128,7 +128,7 @@ export function CryptoReceiveSection({
           {anyspendQuote?.data?.currencyIn?.amountUsd &&
             anyspendQuote?.data?.currencyOut?.amountUsd &&
             (() => {
-              const calculatePriceImpact = (inputUsd?: string | number, outputUsd?: string | number, fee?: any) => {
+              const calculatePriceImpact = (inputUsd?: string | number, outputUsd?: string | number) => {
                 if (!inputUsd || !outputUsd) {
                   return { percentage: "0.00", percentageNum: 0, isNegative: false };
                 }
@@ -158,7 +158,6 @@ export function CryptoReceiveSection({
               const { percentage, percentageNum, isNegative } = calculatePriceImpact(
                 anyspendQuote.data.currencyIn.amountUsd,
                 anyspendQuote.data.currencyOut.amountUsd,
-                anyspendQuote.data.fee,
               );
 
               // Get the fee percentage if available
@@ -168,8 +167,8 @@ export function CryptoReceiveSection({
               const actualSlippage = percentageNum - feePercent;
 
               // Show warning based on actual slippage, not total impact
-              const yellowThreshold = 5; // 5% actual slippage
-              const redThreshold = 10; // 10% actual slippage
+              const yellowThreshold = 1; // 1% actual slippage
+              const redThreshold = 2; // 2% actual slippage
 
               // Don't show if actual slippage is less than yellow threshold
               if (actualSlippage < yellowThreshold) {
