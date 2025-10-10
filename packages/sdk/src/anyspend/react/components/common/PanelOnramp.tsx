@@ -300,7 +300,8 @@ export function PanelOnramp({
 
                 // For crypto payments (standard_fee), calculate from the quote
                 if (anyspendQuote?.data?.fee?.type === "standard_fee" && anyspendQuote.data.currencyIn?.amountUsd) {
-                  const cryptoFee = (Number(anyspendQuote.data.currencyIn.amountUsd) * anyspendQuote.data.fee.finalFeeBps) / 10000;
+                  const cryptoFee =
+                    (Number(anyspendQuote.data.currencyIn.amountUsd) * anyspendQuote.data.fee.finalFeeBps) / 10000;
                   if (cryptoFee > 0) {
                     return <span className="text-as-secondary text-xs">incl. ${cryptoFee.toFixed(2)} fee</span>;
                   }

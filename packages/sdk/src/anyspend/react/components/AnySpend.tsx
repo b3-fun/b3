@@ -1177,9 +1177,7 @@ function AnySpendInner({
     <FeeDetailPanel
       fee={anyspendQuote.data.fee}
       transactionAmountUsd={
-        activeTab === "crypto"
-          ? Number(anyspendQuote.data.currencyIn?.amountUsd)
-          : parseFloat(srcAmountOnRamp)
+        activeTab === "crypto" ? Number(anyspendQuote.data.currencyIn?.amountUsd) : parseFloat(srcAmountOnRamp)
       }
       onBack={navigateBack}
     />

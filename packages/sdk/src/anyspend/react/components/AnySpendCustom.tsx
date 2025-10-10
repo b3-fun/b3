@@ -995,7 +995,12 @@ function AnySpendCustomInner({
                     </span>
                     {anyspendQuote?.data?.fee?.type === "standard_fee" && anyspendQuote.data.currencyIn?.amountUsd && (
                       <span className="text-as-secondary text-xs">
-                        incl. ${((Number(anyspendQuote.data.currencyIn.amountUsd) * anyspendQuote.data.fee.finalFeeBps) / 10000).toFixed(2)} fee
+                        incl. $
+                        {(
+                          (Number(anyspendQuote.data.currencyIn.amountUsd) * anyspendQuote.data.fee.finalFeeBps) /
+                          10000
+                        ).toFixed(2)}{" "}
+                        fee
                       </span>
                     )}
                   </div>
@@ -1140,7 +1145,12 @@ function AnySpendCustomInner({
                   <span className="text-as-primary text-xl font-semibold">${srcFiatAmount || "0.00"}</span>
                   {anyspendQuote?.data?.fee?.type === "stripeweb2_fee" && anyspendQuote.data.fee.originalAmount && (
                     <span className="text-as-secondary text-xs">
-                      incl. ${((Number(anyspendQuote.data.fee.originalAmount) - Number(anyspendQuote.data.fee.finalAmount)) / 1e6).toFixed(2)} fee
+                      incl. $
+                      {(
+                        (Number(anyspendQuote.data.fee.originalAmount) - Number(anyspendQuote.data.fee.finalAmount)) /
+                        1e6
+                      ).toFixed(2)}{" "}
+                      fee
                     </span>
                   )}
                 </div>

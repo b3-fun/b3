@@ -97,10 +97,7 @@ export function CryptoPaySection({
         <div className="text-as-primary/50 flex h-7 items-center gap-1.5 text-sm">
           Pay
           {!isSrcInputDirty && anyspendQuote?.data?.fee && onShowFeeDetail && (
-            <button
-              onClick={onShowFeeDetail}
-              className="text-as-primary/40 hover:text-as-primary/60 transition-colors"
-            >
+            <button onClick={onShowFeeDetail} className="text-as-primary/40 hover:text-as-primary/60 transition-colors">
               <Info className="h-4 w-4" />
             </button>
           )}

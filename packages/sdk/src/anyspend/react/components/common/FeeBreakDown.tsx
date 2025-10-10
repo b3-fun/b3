@@ -10,12 +10,7 @@ interface FeeBreakDownProps {
   className?: string;
 }
 
-export function FeeBreakDown({
-  fee,
-  decimals = 6,
-  showCurrency = true,
-  className = ""
-}: FeeBreakDownProps) {
+export function FeeBreakDown({ fee, decimals = 6, showCurrency = true, className = "" }: FeeBreakDownProps) {
   const isStripeFee = fee.type === "stripeweb2_fee";
 
   // Convert basis points to percentage
@@ -66,11 +61,10 @@ export function FeeBreakDown({
                 <td className="py-1 text-right">-{bpsToPercent(fee.anyspendPartnerDiscountBps)}%</td>
               </tr>
             )}
-            <tr className="border-t border-as-border-secondary">
-              <td className="py-1.5 pt-2 font-semibold text-as-primary">Total Fee</td>
-              <td className="py-1.5 pt-2 text-right font-semibold text-as-primary">
-                {bpsToPercent(fee.finalFeeBps)}%
-                {isStripeFee && ` + $${fee.finalFeeUsd.toFixed(2)}`}
+            <tr className="border-as-border-secondary border-t">
+              <td className="text-as-primary py-1.5 pt-2 font-semibold">Total Fee</td>
+              <td className="text-as-primary py-1.5 pt-2 text-right font-semibold">
+                {bpsToPercent(fee.finalFeeBps)}%{isStripeFee && ` + $${fee.finalFeeUsd.toFixed(2)}`}
               </td>
             </tr>
           </tbody>
@@ -87,9 +81,7 @@ export function FeeBreakDown({
               <tbody className="text-as-secondary text-xs">
                 <tr>
                   <td className="py-1">Original Amount</td>
-                  <td className="py-1 text-right font-medium">
-                    {formatAmount(fee.originalAmount)}
-                  </td>
+                  <td className="py-1 text-right font-medium">{formatAmount(fee.originalAmount)}</td>
                 </tr>
                 <tr>
                   <td className="py-1">Total Fee</td>
@@ -97,9 +89,9 @@ export function FeeBreakDown({
                     -{formatAmount((Number(fee.originalAmount) - Number(fee.finalAmount)).toString())}
                   </td>
                 </tr>
-                <tr className="border-t border-as-border-secondary">
-                  <td className="py-1.5 pt-2 font-semibold text-as-primary">You Receive</td>
-                  <td className="py-1.5 pt-2 text-right font-semibold text-as-primary">
+                <tr className="border-as-border-secondary border-t">
+                  <td className="text-as-primary py-1.5 pt-2 font-semibold">You Receive</td>
+                  <td className="text-as-primary py-1.5 pt-2 text-right font-semibold">
                     {formatAmount(fee.finalAmount)}
                   </td>
                 </tr>

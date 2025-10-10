@@ -203,7 +203,12 @@ function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
                 </p>
                 {anyspendQuote?.data?.fee?.type === "standard_fee" && anyspendQuote.data.currencyIn?.amountUsd && (
                   <p className="text-b3-react-foreground/60 text-xs">
-                    incl. ${((Number(anyspendQuote.data.currencyIn.amountUsd) * anyspendQuote.data.fee.finalFeeBps) / 10000).toFixed(2)} fee
+                    incl. $
+                    {(
+                      (Number(anyspendQuote.data.currencyIn.amountUsd) * anyspendQuote.data.fee.finalFeeBps) /
+                      10000
+                    ).toFixed(2)}{" "}
+                    fee
                   </p>
                 )}
               </div>
