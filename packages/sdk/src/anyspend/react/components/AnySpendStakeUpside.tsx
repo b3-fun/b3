@@ -1,4 +1,3 @@
-import { ABI_ERC20_STAKING } from "@b3dotfun/sdk/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import {
   Button,
@@ -27,14 +26,24 @@ const basePublicClient = createPublicClient({
   transport: http(PUBLIC_BASE_RPC_URL),
 });
 
-function generateEncodedDataForStaking(amount: string, beneficiary: string): string {
+function generateEncodedDataForStaking(
+  amount: string,
+  beneficiary: string,
+  token: components["schemas"]["Token"],
+): string {
   invariant(BigInt(amount) > 0, "Amount must be greater than zero");
-  const encodedData = encodeFunctionData({
-    abi: ABI_ERC20_STAKING,
-    functionName: "stake",
-    args: [BigInt(amount), beneficiary as `0x${string}`],
+  if (token.address.toLowerCase() === ETH_ADDRESS.toLowerCase()) {
+    return encodeFunctionData({
+      abi: ETH_STAKING_CONTRACT,
+      functionName: "stakeFor",
+      args: [beneficiary as `0x${string}`],
+    });
+  }
+  return encodeFunctionData({
+    abi: STAKING_CONTRACT,
+    functionName: "stakeFor",
+    args: [beneficiary as `0x${string}`, BigInt(amount)],
   });
-  return encodedData;
 }
 
 export function AnySpendStakeUpside({
@@ -265,7 +274,7 @@ export function AnySpendStakeUpside({
     );
   }
 
-  const encodedData = generateEncodedDataForStaking(stakeAmount, beneficiaryAddress);
+  const encodedData = generateEncodedDataForStaking(stakeAmount, beneficiaryAddress, token);
 
   return (
     <AnySpendCustom
