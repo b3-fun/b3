@@ -11,17 +11,6 @@ interface PointsDetailPanelProps {
 export function PointsDetailPanel({ pointsAmount = 0, onBack }: PointsDetailPanelProps) {
   return (
     <div className="mx-auto flex w-[460px] max-w-full flex-col items-center gap-4">
-      <div className="flex w-full items-center justify-between">
-        <Button
-          variant="ghost"
-          onClick={onBack}
-          className="text-as-primary/70 hover:text-as-primary flex items-center gap-2"
-        >
-          <ArrowDown className="h-4 w-4 rotate-90" />
-          Back
-        </Button>
-      </div>
-
       <div className="flex flex-col items-center gap-4 text-center">
         <h3 className="text-as-primary text-xl font-bold">Earn Points with Every Swap</h3>
         <p className="text-as-primary/70 text-balance text-sm leading-relaxed">

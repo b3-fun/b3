@@ -93,17 +93,6 @@ export function FeeDetailPanel({ fee, decimals = 6, transactionAmountUsd, onBack
 
   return (
     <div className="mx-auto flex w-[460px] max-w-full flex-col items-center gap-3">
-      <div className="flex w-full items-center justify-between">
-        <Button
-          variant="ghost"
-          onClick={onBack}
-          className="text-as-primary/70 hover:text-as-primary flex items-center gap-2"
-        >
-          <ArrowDown className="h-4 w-4 rotate-90" />
-          Back
-        </Button>
-      </div>
-
       <div className="flex w-full flex-col gap-3">
         <div className="text-center">
           <h3 className="text-as-primary text-lg font-bold">Fee Breakdown</h3>
