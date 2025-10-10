@@ -5,7 +5,7 @@ import { ALL_CHAINS } from "@b3dotfun/sdk/anyspend/utils/chain";
 import { Input, useGetGeo, useProfile } from "@b3dotfun/sdk/global-account/react";
 import { cn, formatUsername } from "@b3dotfun/sdk/shared/utils";
 import { formatAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
-import { ChevronRight, Wallet } from "lucide-react";
+import { ChevronRight, Info, Wallet } from "lucide-react";
 import { useRef } from "react";
 import { toast } from "sonner";
 import { useFeatureFlags } from "../../contexts/FeatureFlagsContext";
@@ -30,6 +30,7 @@ export function PanelOnramp({
   hideDstToken = false,
   anyspendQuote,
   onShowPointsDetail,
+  onShowFeeDetail,
   customUsdInputValues = ["5", "10", "20", "25"],
 }: {
   srcAmountOnRamp: string;
@@ -48,38 +49,47 @@ export function PanelOnramp({
   hideDstToken?: boolean;
   anyspendQuote?: GetQuoteResponse;
   onShowPointsDetail?: () => void;
+  onShowFeeDetail?: () => void;
   customUsdInputValues?: string[];
 }) {
   const featureFlags = useFeatureFlags();
   // Get geo-based onramp options to access fee information
   const { stripeWeb2Support } = useGeoOnrampOptions(srcAmountOnRamp);
 
-  // Helper function to get fees from API data
+  // Helper function to get fees from anyspend quote
   const getFeeFromApi = (paymentMethod: FiatPaymentMethod): number | null => {
+    // Try to get fee from anyspend quote first (most accurate)
+    if (anyspendQuote?.data?.fee) {
+      const fee = anyspendQuote.data.fee;
+      if (fee.type === "stripeweb2_fee") {
+        // Calculate total fee in USD from originalAmount - finalAmount
+        const originalAmount = Number(fee.originalAmount) / 1e6; // Convert from wei to USD
+        const finalAmount = Number(fee.finalAmount) / 1e6;
+        return originalAmount - finalAmount;
+      }
+    }
+
+    // Fallback to payment method defaults
     switch (paymentMethod) {
       case FiatPaymentMethod.COINBASE_PAY:
-        // Coinbase doesn't provide fee info in API, return 0
-        return 0;
+        return 0; // Coinbase has no additional fees
       case FiatPaymentMethod.STRIPE:
-        // Get fee from Stripe API response
-        if (stripeWeb2Support && "formattedFeeUsd" in stripeWeb2Support) {
-          return parseFloat(stripeWeb2Support.formattedFeeUsd) || 0;
-        }
-        return null;
+        return null; // No quote available yet
       default:
-        return null; // No fee when no payment method selected
+        return null;
     }
   };
 
   // Helper function to get total amount from API (for Stripe) or calculate it (for others)
   const getTotalAmount = (paymentMethod: FiatPaymentMethod): number => {
     const baseAmount = parseFloat(srcAmountOnRamp) || 5;
-    const fee = getFeeFromApi(paymentMethod);
 
-    if (paymentMethod === FiatPaymentMethod.STRIPE && stripeWeb2Support && "formattedTotalUsd" in stripeWeb2Support) {
-      // Use the total from Stripe API if available
-      return parseFloat(stripeWeb2Support.formattedTotalUsd) || baseAmount;
+    // Try to get from anyspend quote first (most accurate)
+    if (anyspendQuote?.data?.fee?.type === "stripeweb2_fee") {
+      return Number(anyspendQuote.data.fee.originalAmount) / 1e6; // Convert from wei to USD
     }
+
+    const fee = getFeeFromApi(paymentMethod);
 
     // For Coinbase or when fee is available, calculate manually
     if (fee !== null) {
@@ -264,6 +274,14 @@ export function PanelOnramp({
                   return fee !== null ? `Total (included $${fee.toFixed(2)} fee)` : "Total";
                 })()}
               </span>
+              {anyspendQuote?.data?.fee && onShowFeeDetail && (
+                <button
+                  onClick={onShowFeeDetail}
+                  className="text-as-primary/40 hover:text-as-primary/60 transition-colors"
+                >
+                  <Info className="h-4 w-4" />
+                </button>
+              )}
               {featureFlags.showPoints &&
                 anyspendQuote?.data?.pointsAmount &&
                 anyspendQuote?.data?.pointsAmount > 0 && (

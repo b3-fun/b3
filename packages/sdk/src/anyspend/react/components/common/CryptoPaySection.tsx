@@ -5,15 +5,8 @@ import { formatDisplayNumber } from "@b3dotfun/sdk/shared/utils/number";
 import { ChevronRight, Info } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect, useRef } from "react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "../../../../global-account/react/components/ui/tooltip";
 import { components } from "../../../types/api";
 import { CryptoPaymentMethodType } from "./CryptoPaymentMethod";
-import { FeeBreakDown } from "./FeeBreakDown";
 import { OrderTokenAmount } from "./OrderTokenAmount";
 import { TokenBalance } from "./TokenBalance";
 
@@ -34,6 +27,8 @@ interface CryptoPaySectionProps {
   anyspendQuote?: any;
   // Token selection callback
   onTokenSelect?: (token: components["schemas"]["Token"], event: { preventDefault: () => void }) => void;
+  // Fee detail callback
+  onShowFeeDetail?: () => void;
 }
 
 export function CryptoPaySection({
@@ -49,6 +44,7 @@ export function CryptoPaySection({
   onSelectCryptoPaymentMethod,
   anyspendQuote,
   onTokenSelect,
+  onShowFeeDetail,
 }: CryptoPaySectionProps) {
   const { connectedSmartWallet, connectedEOAWallet } = useAccountWallet();
   const { data: srcTokenMetadata } = useTokenData(selectedSrcToken?.chainId, selectedSrcToken?.address);
@@ -100,19 +96,13 @@ export function CryptoPaySection({
       <div className="flex items-center justify-between">
         <div className="text-as-primary/50 flex h-7 items-center gap-1.5 text-sm">
           Pay
-          {!isSrcInputDirty && anyspendQuote?.data?.fee && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button className="text-as-primary/40 hover:text-as-primary/60 transition-colors">
-                    <Info className="h-4 w-4" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="right">
-                  <FeeBreakDown fee={anyspendQuote.data.fee} />
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+          {!isSrcInputDirty && anyspendQuote?.data?.fee && onShowFeeDetail && (
+            <button
+              onClick={onShowFeeDetail}
+              className="text-as-primary/40 hover:text-as-primary/60 transition-colors"
+            >
+              <Info className="h-4 w-4" />
+            </button>
           )}
         </div>
         <button

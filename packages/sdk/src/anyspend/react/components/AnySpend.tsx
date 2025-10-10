@@ -40,6 +40,7 @@ import { OrderHistory } from "./common/OrderHistory";
 import { PanelOnramp } from "./common/PanelOnramp";
 import { PanelOnrampPayment } from "./common/PanelOnrampPayment";
 import { PointsDetailPanel } from "./common/PointsDetailPanel";
+import { FeeDetailPanel } from "./common/FeeDetailPanel";
 import { RecipientSelection } from "./common/RecipientSelection";
 import { TabSection } from "./common/TabSection";
 
@@ -60,6 +61,7 @@ export enum PanelView {
   CRYPTO_PAYMENT_METHOD,
   FIAT_PAYMENT_METHOD,
   POINTS_DETAIL,
+  FEE_DETAIL,
 }
 
 const ANYSPEND_RECIPIENTS_KEY = "anyspend_recipients";
@@ -959,6 +961,7 @@ function AnySpendInner({
             onSelectCryptoPaymentMethod={() => navigateToPanel(PanelView.CRYPTO_PAYMENT_METHOD, "forward")}
             anyspendQuote={anyspendQuote}
             onTokenSelect={onTokenSelect}
+            onShowFeeDetail={() => navigateToPanel(PanelView.FEE_DETAIL, "forward")}
           />
         ) : (
           <motion.div
@@ -990,6 +993,7 @@ function AnySpendInner({
               hideDstToken={isBuyMode}
               anyspendQuote={anyspendQuote}
               onShowPointsDetail={() => navigateToPanel(PanelView.POINTS_DETAIL, "forward")}
+              onShowFeeDetail={() => navigateToPanel(PanelView.FEE_DETAIL, "forward")}
               customUsdInputValues={customUsdInputValues}
             />
           </motion.div>
@@ -1052,6 +1056,7 @@ function AnySpendInner({
             }}
             anyspendQuote={anyspendQuote}
             onShowPointsDetail={() => navigateToPanel(PanelView.POINTS_DETAIL, "forward")}
+            onShowFeeDetail={() => navigateToPanel(PanelView.FEE_DETAIL, "forward")}
           />
         )}
       </div>
@@ -1168,6 +1173,18 @@ function AnySpendInner({
     <PointsDetailPanel pointsAmount={anyspendQuote?.data?.pointsAmount || 0} onBack={navigateBack} />
   );
 
+  const feeDetailView = anyspendQuote?.data?.fee ? (
+    <FeeDetailPanel
+      fee={anyspendQuote.data.fee}
+      transactionAmountUsd={
+        activeTab === "crypto"
+          ? Number(anyspendQuote.data.currencyIn?.amountUsd)
+          : parseFloat(srcAmountOnRamp)
+      }
+      onBack={navigateBack}
+    />
+  ) : null;
+
   // Add tabs to the main component when no order is loaded
   return (
     <StyleRoot>
@@ -1232,6 +1249,9 @@ function AnySpendInner({
             </div>,
             <div key="points-detail-view" className={cn(mode === "page" && "p-6")}>
               {pointsDetailView}
+            </div>,
+            <div key="fee-detail-view" className={cn(mode === "page" && "p-6")}>
+              {feeDetailView}
             </div>,
           ]}
         </TransitionPanel>

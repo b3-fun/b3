@@ -4,15 +4,8 @@ import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { formatDisplayNumber } from "@b3dotfun/sdk/shared/utils/number";
 import { ChevronRight, Info } from "lucide-react";
 import { motion } from "motion/react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "../../../../global-account/react/components/ui/tooltip";
 import { components } from "../../../types/api";
 import { useFeatureFlags } from "../../contexts/FeatureFlagsContext";
-import { FeeBreakDown } from "./FeeBreakDown";
 import { OrderTokenAmount } from "./OrderTokenAmount";
 import { PointsBadge } from "./PointsBadge";
 
@@ -39,6 +32,8 @@ interface CryptoReceiveSectionProps {
   dstTokenLogoURI?: string;
   // Points navigation
   onShowPointsDetail?: () => void;
+  // Fee detail navigation
+  onShowFeeDetail?: () => void;
 }
 
 export function CryptoReceiveSection({
@@ -58,6 +53,7 @@ export function CryptoReceiveSection({
   dstTokenSymbol,
   dstTokenLogoURI,
   onShowPointsDetail,
+  onShowFeeDetail,
 }: CryptoReceiveSectionProps) {
   const featureFlags = useFeatureFlags();
 
@@ -71,19 +67,13 @@ export function CryptoReceiveSection({
       <div className="flex w-full items-center justify-between">
         <div className="text-as-primary/50 flex h-7 items-center gap-1.5 text-sm">
           {isDepositMode ? "Deposit" : "Receive"}
-          {isSrcInputDirty && anyspendQuote?.data?.fee && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button className="text-as-primary/40 hover:text-as-primary/60 transition-colors">
-                    <Info className="h-4 w-4" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="right">
-                  <FeeBreakDown fee={anyspendQuote.data.fee} />
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+          {isSrcInputDirty && anyspendQuote?.data?.fee && onShowFeeDetail && (
+            <button
+              onClick={onShowFeeDetail}
+              className="text-as-primary/40 hover:text-as-primary/60 transition-colors"
+            >
+              <Info className="h-4 w-4" />
+            </button>
           )}
         </div>
         {selectedRecipientAddress ? (
