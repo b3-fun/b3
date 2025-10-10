@@ -32,6 +32,7 @@ export enum PanelView {
   ORDER_DETAILS,
   LOADING,
   POINTS_DETAIL,
+  FEE_DETAIL,
 }
 
 interface UseAnyspendFlowProps {

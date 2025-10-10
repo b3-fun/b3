@@ -25,6 +25,13 @@ const FIAT_FEE_TIERS = [
   { min: 251, max: Infinity, fee: "3%", label: "$251+" },
 ];
 
+// Whale discount tiers based on $ANY holdings
+const WHALE_DISCOUNT_TIERS = [
+  { minAny: 100000, discountPercent: 50, label: "Tier 1: 100k $ANY" },
+  { minAny: 500000, discountPercent: 75, label: "Tier 2: 500k $ANY" },
+  { minAny: 1000000, discountPercent: 100, label: "Tier 3: 1M+ $ANY" },
+];
+
 export function FeeDetailPanel({
   fee,
   decimals = 6,
@@ -65,6 +72,27 @@ export function FeeDetailPanel({
   const currentCryptoTier = getCurrentCryptoTier(transactionAmountUsd);
   const currentFiatTier = getCurrentFiatTier(transactionAmountUsd);
 
+  // The whale discount is a percentage discount on the base fee itself
+  // Example: 50% discount on 80 bps fee = 40 bps discount, final fee = 40 bps
+  // So: finalFee = baseFee - (baseFee * discountPercent / 100)
+  // Which means: discountPercent = ((baseFee - finalFee) / baseFee) * 100
+  const baseFee = fee.type === "standard_fee" ? fee.anyspendFeeBps : 0;
+
+  // The whale discount percentage (50%, 75%, or 100%)
+  const whaleDiscountPercent = baseFee > 0 && hasWhaleDiscount
+    ? Math.round(((baseFee - fee.finalFeeBps) / baseFee) * 100)
+    : 0;
+
+  // Determine which whale tier based on the discount percentage
+  const currentWhaleTier = WHALE_DISCOUNT_TIERS.find(
+    tier => Math.abs(whaleDiscountPercent - tier.discountPercent) <= 5
+  );
+
+  // Calculate partner discount percentage
+  const partnerDiscountPercent = baseFee > 0 && hasPartnerDiscount
+    ? Math.round((fee.anyspendPartnerDiscountBps / baseFee) * 100)
+    : 0;
+
   return (
     <div className="mx-auto flex w-[460px] max-w-full flex-col items-center gap-3">
       <div className="flex w-full items-center justify-between">
@@ -83,10 +111,10 @@ export function FeeDetailPanel({
           <h3 className="text-as-primary text-lg font-bold">Fee Breakdown</h3>
         </div>
 
-        {/* Fee Schedule Section */}
+        {/* Base Fee Schedule Section */}
         <div className="bg-as-surface-secondary border-as-border-secondary rounded-2xl border p-4">
           <h4 className="text-as-primary mb-3 text-sm font-semibold">
-            {isStripeFee ? "Fiat Fee Schedule" : "Crypto Fee Schedule"}
+            {isStripeFee ? "Fiat Fee Schedule" : "Base Fee Schedule"}
           </h4>
           <div className="space-y-1.5">
             {isStripeFee
@@ -125,36 +153,91 @@ export function FeeDetailPanel({
                   );
                 })}
           </div>
-          {transactionAmountUsd && (
-            <p className="text-as-secondary mt-3 text-center text-xs">
-              Your transaction of <span className="text-as-primary font-semibold">${transactionAmountUsd.toFixed(2)}</span>{" "}
+        </div>
+
+        {/* Whale Discount Tiers - Only show if user has whale discount or partner discount */}
+        {!isStripeFee && (hasWhaleDiscount || hasPartnerDiscount) && (
+          <div className="bg-as-surface-secondary border-as-border-secondary rounded-2xl border p-4">
+            <h4 className="text-as-primary mb-3 text-sm font-semibold">
+              {hasWhaleDiscount ? "Whale Discount Tiers" : "Partner Discount"}
+            </h4>
+            <div className="space-y-1.5">
+              {hasWhaleDiscount ? (
+                WHALE_DISCOUNT_TIERS.map((tier, idx) => {
+                  const isCurrentTier = currentWhaleTier?.label === tier.label;
+                  return (
+                    <div
+                      key={idx}
+                      className={cn(
+                        "flex items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors",
+                        isCurrentTier ? "bg-green-500/10 text-green-600 font-semibold" : "text-as-primary/60",
+                      )}
+                    >
+                      <span>{tier.label}</span>
+                      <span>{tier.discountPercent}% discount</span>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="bg-green-500/10 text-green-600 flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-semibold">
+                  <span>Partner Discount</span>
+                  <span>{partnerDiscountPercent}% discount</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Transaction Summary */}
+        {transactionAmountUsd && (
+          <div className="bg-as-surface-secondary border-as-border-secondary rounded-2xl border p-4">
+            <div className="text-as-secondary space-y-1 text-center text-xs">
+              <p>
+                Your transaction of <span className="text-as-primary font-semibold">${transactionAmountUsd.toFixed(2)}</span>
+              </p>
               {isStripeFee && currentFiatTier && (
-                <>
-                  qualifies for <span className="text-as-brand font-semibold">CC Fee + {currentFiatTier.fee}</span>
-                </>
+                <p>
+                  Tier: <span className="text-as-brand font-semibold">{currentFiatTier.label}</span> → CC Fee +{" "}
+                  {currentFiatTier.fee}
+                </p>
               )}
               {!isStripeFee && currentCryptoTier && (
                 <>
-                  qualifies for{" "}
-                  <span className="text-as-brand font-semibold">
-                    {bpsToPercent(currentCryptoTier.bps)}% fee ($
+                  <p>
+                    Fee Tier: <span className="text-as-brand font-semibold">{currentCryptoTier.label}</span> → Base fee{" "}
+                    {bpsToPercent(currentCryptoTier.bps)}% ($
                     {((transactionAmountUsd * currentCryptoTier.bps) / 10000).toFixed(2)})
-                  </span>
+                  </p>
+                  {hasWhaleDiscount && currentWhaleTier && (
+                    <p>
+                      Whale Tier: <span className="text-green-600 font-semibold">{currentWhaleTier.label}</span> →{" "}
+                      {currentWhaleTier.discountPercent}% discount ($
+                      {((transactionAmountUsd * baseFee * currentWhaleTier.discountPercent) / 100 / 10000).toFixed(2)})
+                    </p>
+                  )}
+                  {hasPartnerDiscount && (
+                    <p>
+                      Partner Discount:{" "}
+                      <span className="text-green-600 font-semibold">
+                        {partnerDiscountPercent}% ($
+                        {((transactionAmountUsd * baseFee * partnerDiscountPercent) / 100 / 10000).toFixed(2)})
+                      </span>
+                    </p>
+                  )}
                   {hasAnyDiscount && (
-                    <>
-                      {" "}→{" "}
+                    <p>
+                      Final fee:{" "}
                       <span className="text-as-brand font-semibold">
                         {bpsToPercent(fee.finalFeeBps)}% ($
                         {((transactionAmountUsd * fee.finalFeeBps) / 10000).toFixed(2)})
                       </span>
-                      {" "}after discounts
-                    </>
+                    </p>
                   )}
                 </>
               )}
-            </p>
-          )}
-        </div>
+            </div>
+          </div>
+        )}
 
         <ShinyButton
           accentColor={"hsl(var(--as-brand))"}
