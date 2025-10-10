@@ -114,7 +114,7 @@ export function FeeDetailPanel({ fee, transactionAmountUsd, onBack }: FeeDetailP
                       )}
                     >
                       <span>{tier.label}</span>
-                      <span>CC Fee + {tier.fee}</span>
+                      <span>Credit Card Fee + {tier.fee}</span>
                     </div>
                   );
                 })
@@ -244,11 +244,38 @@ export function FeeDetailPanel({ fee, transactionAmountUsd, onBack }: FeeDetailP
                 <span className="text-as-primary font-semibold">${transactionAmountUsd.toFixed(2)}</span>
               </div>
 
-              {isStripeFee && currentFiatTier && (
-                <div className="flex items-center justify-between">
-                  <span className="text-as-secondary">{currentFiatTier.label}</span>
-                  <span className="text-as-primary">CC Fee + {currentFiatTier.fee}</span>
-                </div>
+              {isStripeFee && (
+                <>
+                  <div className="flex items-center justify-between">
+                    <span className="text-as-secondary">
+                      Credit Card Fee ({fee.stripeFeeBps ? `${bpsToPercent(fee.stripeFeeBps)}%` : "0%"} + $
+                      {fee.stripeFeeUsd?.toFixed(2) || "0.00"})
+                    </span>
+                    <span className="text-as-primary font-medium">
+                      ${((transactionAmountUsd * (fee.stripeFeeBps || 0)) / 10000 + (fee.stripeFeeUsd || 0)).toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-as-secondary">
+                      AnySpend Fee ({fee.anyspendFeeBps ? `${bpsToPercent(fee.anyspendFeeBps)}%` : "0%"}
+                      {fee.anyspendFeeUsd && fee.anyspendFeeUsd > 0 ? ` + $${fee.anyspendFeeUsd.toFixed(2)}` : ""})
+                    </span>
+                    <span className="text-as-primary font-medium">
+                      $
+                      {((transactionAmountUsd * (fee.anyspendFeeBps || 0)) / 10000 + (fee.anyspendFeeUsd || 0)).toFixed(
+                        2,
+                      )}
+                    </span>
+                  </div>
+                  <div className="border-as-border-secondary border-t pt-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-as-primary font-semibold">Total Fee</span>
+                      <span className="text-as-brand font-semibold">
+                        ${((transactionAmountUsd * (fee.finalFeeBps || 0)) / 10000 + (fee.finalFeeUsd || 0)).toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                </>
               )}
 
               {!isStripeFee && currentCryptoTier && (

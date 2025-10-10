@@ -68,6 +68,7 @@ interface OrderDetailsProps {
   onPaymentMethodChange?: (method: CryptoPaymentMethodType) => void; // Callback for payment method switching
   onBack?: () => void;
   disableUrlParamManagement?: boolean; // When true, will not modify URL parameters
+  points?: number | undefined; // Points earned from the transaction
 }
 
 // Add this helper function near the top or just above the component
@@ -212,6 +213,7 @@ export const OrderDetails = memo(function OrderDetails({
   onPaymentMethodChange,
   onBack,
   disableUrlParamManagement = false,
+  points,
 }: OrderDetailsProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -576,6 +578,7 @@ export const OrderDetails = memo(function OrderDetails({
           nft={nft}
           recipientName={recipientName}
           formattedExpectedDstAmount={formattedExpectedDstAmount}
+          points={points}
         />
         <Accordion type="single" collapsible className="order-details-accordion w-full">
           <AccordionItem value="refund-details" className="order-details-refund-item">
@@ -654,6 +657,7 @@ export const OrderDetails = memo(function OrderDetails({
           nft={nft}
           recipientName={recipientName}
           formattedExpectedDstAmount={formattedExpectedDstAmount}
+          points={points}
         />
         <Accordion type="single" collapsible className="order-details-accordion w-full">
           <AccordionItem value="execute-details" className="order-details-execute-item">
@@ -781,6 +785,7 @@ export const OrderDetails = memo(function OrderDetails({
           nft={nft}
           recipientName={recipientName}
           formattedExpectedDstAmount={formattedExpectedDstAmount}
+          points={points}
         />
         <Accordion type="single" collapsible className="order-details-accordion w-full">
           <AccordionItem value="more-details" className="order-details-more-item">
@@ -910,6 +915,7 @@ export const OrderDetails = memo(function OrderDetails({
           nft={nft}
           recipientName={recipientName}
           formattedExpectedDstAmount={formattedExpectedDstAmount}
+          points={points}
         />
         <Accordion type="single" collapsible className="order-details-accordion w-full">
           <AccordionItem value="deposit-details" className="order-details-deposit-item">
@@ -1190,6 +1196,7 @@ export const OrderDetails = memo(function OrderDetails({
           nft={nft}
           recipientName={recipientName}
           formattedExpectedDstAmount={formattedExpectedDstAmount}
+          points={points}
         />
       )}
 

@@ -27,6 +27,7 @@ interface OrderDetailsCollapsibleProps {
   className?: string;
   showTotal?: boolean;
   totalAmount?: string;
+  points?: number;
 }
 
 export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
@@ -39,6 +40,7 @@ export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
   className,
   showTotal = false,
   totalAmount,
+  points,
 }: OrderDetailsCollapsibleProps) {
   const [showOrderDetails, setShowOrderDetails] = useState(true);
 
@@ -149,6 +151,17 @@ export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
                 </div>
               </div>
             </div>
+
+            {points && points > 0 && (
+              <>
+                <div className="order-details-divider divider w-full" />
+                {/* Points Section */}
+                <div className="order-details-points-section flex w-full justify-between gap-4">
+                  <div className="order-details-points-label text-as-tertiarry">Points</div>
+                  <div className="order-details-points-value text-as-brand font-semibold">+{points} pts</div>
+                </div>
+              </>
+            )}
 
             <div className="order-details-divider divider w-full" />
 
