@@ -9,6 +9,7 @@ import {
   OrderHistory,
 } from "@b3dotfun/sdk/anyspend/react";
 import { AnySpendDepositHype } from "@b3dotfun/sdk/anyspend/react/components/AnyspendDepositHype";
+import { AnySpendStakeUpside } from "@b3dotfun/sdk/anyspend/react/components/AnySpendStakeUpside";
 import { useIsMobile, useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
@@ -97,6 +98,8 @@ export function B3DynamicModal() {
         return <OrderHistory onBack={() => {}} mode="modal" />;
       case "anySpendStakeB3":
         return <AnySpendStakeB3 {...contentType} mode="modal" />;
+      case "anySpendStakeUpside":
+        return <AnySpendStakeUpside {...contentType} mode="modal" />;
       case "anySpendBuySpin":
         return <AnySpendBuySpin {...contentType} mode="modal" />;
       case "anySpendSignatureMint":
