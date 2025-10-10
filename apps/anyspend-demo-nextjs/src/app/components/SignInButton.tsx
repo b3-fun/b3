@@ -20,7 +20,6 @@ export function SignInButton() {
     },
     partnerId: String(process.env.PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID),
     closeAfterLogin: true,
-    loginWithSiwe: true,
     withLogo: true,
   };
 

@@ -54,7 +54,7 @@ export default defineConfig(({ command: _command, mode }) => {
     },
     optimizeDeps: {
       include: [],
-      exclude: [],
+      exclude: ["@coinbase/wallet-sdk"],
     },
     resolve: {
       alias: {

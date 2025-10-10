@@ -1,124 +1,185 @@
 import app from "@b3dotfun/sdk/global-account/app";
 import { authenticateWithB3JWT } from "@b3dotfun/sdk/global-account/bsmnt";
-import { useAuthStore, useB3 } from "@b3dotfun/sdk/global-account/react";
+import { useAuthStore, useSiwe } from "@b3dotfun/sdk/global-account/react";
 import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
-import { b3MainnetThirdWeb } from "@b3dotfun/sdk/shared/constants/chains/supported";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
-import { useEffect, useRef } from "react";
-import { useActiveWallet, useAutoConnect, useConnectedWallets, useDisconnect } from "thirdweb/react";
-import { ecosystemWallet } from "thirdweb/wallets";
+import { ConnectionOptions } from "@thirdweb-dev/wagmi-adapter";
+import { getConnectors } from "@wagmi/core";
+import { useCallback, useEffect, useRef } from "react";
+import {
+  useActiveWallet,
+  useAutoConnect,
+  useConnectedWallets,
+  useDisconnect,
+  useSetActiveWallet,
+} from "thirdweb/react";
+import { ecosystemWallet, Wallet } from "thirdweb/wallets";
 import { preAuthenticate } from "thirdweb/wallets/in-app";
-import { useConnect } from "./useConnect";
-import { useSiwe } from "./useSiwe";
+import { useAccount, useConnect, useSwitchAccount } from "wagmi";
+import { useUserQuery } from "./useUserQuery";
+import { useWagmiConfig } from "./useWagmiConfig";
 
 const debug = debugB3React("useAuthentication");
 
-export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
+export function useAuthentication(partnerId: string) {
   const { disconnect } = useDisconnect();
   const wallets = useConnectedWallets();
   const activeWallet = useActiveWallet();
-  const { authenticate } = useSiwe();
-  const { setUser } = useB3();
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
   const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
-  const setIsConnecting = useAuthStore(state => state.setIsConnecting);
   const setIsConnected = useAuthStore(state => state.setIsConnected);
   const isConnecting = useAuthStore(state => state.isConnecting);
   const isConnected = useAuthStore(state => state.isConnected);
-  const useAutoConnectLoadingPrevious = useRef(false);
-  const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
   const isAuthenticating = useAuthStore(state => state.isAuthenticating);
-  const hasStartedConnecting = useAuthStore(state => state.hasStartedConnecting);
+  const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
   const setHasStartedConnecting = useAuthStore(state => state.setHasStartedConnecting);
-  const { connect } = useConnect(partnerId, b3MainnetThirdWeb);
+  const setActiveWallet = useSetActiveWallet();
+  const hasStartedConnecting = useAuthStore(state => state.hasStartedConnecting);
+  const { authenticate } = useSiwe();
+  const { user, setUser } = useUserQuery();
+  const useAutoConnectLoadingPrevious = useRef(false);
+  const wagmiConfig = useWagmiConfig(partnerId);
+  const { connect } = useConnect();
+  const activeWagmiAccount = useAccount();
+  const { switchAccount } = useSwitchAccount();
+  debug("@@activeWagmiAccount", activeWagmiAccount);
 
   const wallet = ecosystemWallet(ecosystemWalletId, {
     partnerId: partnerId,
   });
 
-  const { isLoading: useAutoConnectLoading } = useAutoConnect({
-    client,
-    wallets: [wallet],
-    onConnect: async wallet => {
-      setHasStartedConnecting(true);
+  const syncWagmi = useCallback(async () => {
+    function syncWagmiFunc() {
+      const connectors = getConnectors(wagmiConfig);
+      debug("@@syncWagmi", {
+        connectors,
+        wallets,
+      });
 
-      try {
-        setIsConnected(true);
-        if (!loginWithSiwe) {
-          debug("Skipping SIWE login", { loginWithSiwe });
-          setIsAuthenticated(true);
+      // For each that matchs a TW wallet on wallets, connect to the wagmi connector
+      // or, since ecosystem wallets is separate, connect those via in-app-wallet from wagmi
+      connectors.forEach(async connector => {
+        const twWallet = wallets.find(wallet => wallet.id === connector.id || connector.id === "in-app-wallet");
 
-          setIsAuthenticating(false);
+        // If no TW wallet, do not prompt the user to connect
+        if (!twWallet) {
           return;
         }
-        debug("setIsAuthenticating:true:4");
-        const account = await wallet.getAccount();
-        if (!account) {
-          throw new Error("No account found during auto-connect");
+
+        // Metamask will prompt to connect, we can just switch accounts here.
+        if (connector.id === "io.metamask") {
+          return switchAccount({ connector });
         }
 
-        // Try to re-authenticate first
-        try {
-          const userAuth = await app.reAuthenticate();
-          setUser(userAuth.user);
-          setIsAuthenticated(true);
-          setIsAuthenticating(false);
-          debug("Re-authenticated successfully", { userAuth });
-
-          // Authenticate on BSMNT with B3 JWT
-          const b3Jwt = await authenticateWithB3JWT(userAuth.accessToken);
-          console.log("@@b3Jwt", b3Jwt);
-        } catch (error) {
-          // If re-authentication fails, try fresh authentication
-          debug("Re-authentication failed, attempting fresh authentication");
-          const userAuth = await authenticate(account, partnerId);
-          setUser(userAuth.user);
-          setIsAuthenticated(true);
-          setIsAuthenticating(false);
-          debug("Fresh authentication successful", { userAuth });
-
-          // Authenticate on BSMNT with B3 JWT
-          const b3Jwt = await authenticateWithB3JWT(userAuth.accessToken);
-          console.log("@@b3Jwt", b3Jwt);
+        if (
+          // If it's not an in-app wallet or it is the ecosystem wallet, connect
+          connector.id !== "in-app-wallet" ||
+          (connector.id === "in-app-wallet" && twWallet.id === ecosystemWalletId)
+        ) {
+          try {
+            const options = {
+              wallet: twWallet, // the connected wallet
+            } satisfies ConnectionOptions;
+            debug("@@syncWagmi:connecting", { twWallet, connector });
+            connect({
+              connector,
+              ...options,
+            });
+          } catch (error) {
+            console.error("@@syncWagmi:error", error);
+          }
+        } else {
+          debug("@@syncWagmi:not-connecting", connector);
         }
-      } catch (error) {
-        debug("Auto-connect authentication failed", { error });
-        setIsAuthenticated(false);
-        debug("setIsAuthenticating:false:4");
-        setUser();
+      });
+    }
+    syncWagmiFunc();
+    // wagmi config shouldn't change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [partnerId, wallets]);
+
+  useEffect(() => {
+    syncWagmi();
+  }, [wallets, syncWagmi]);
+
+  const authenticateUser = useCallback(
+    async (wallet?: Wallet) => {
+      setHasStartedConnecting(true);
+
+      const account = wallet ? wallet.getAccount() : activeWallet?.getAccount();
+      if (!account) {
+        throw new Error("No account found during auto-connect");
       }
-      setIsAuthenticating(false);
+      if (!account) {
+        throw new Error("No account found during auto-connect");
+      }
+
+      // Try to re-authenticate first
+      try {
+        const userAuth = await app.reAuthenticate();
+        setUser(userAuth.user);
+        setIsAuthenticated(true);
+        setIsAuthenticating(false);
+        debug("Re-authenticated successfully", { userAuth });
+
+        // Authenticate on BSMNT with B3 JWT
+        const b3Jwt = await authenticateWithB3JWT(userAuth.accessToken);
+        debug("@@b3Jwt", b3Jwt);
+      } catch (error) {
+        // If re-authentication fails, try fresh authentication
+        debug("Re-authentication failed, attempting fresh authentication");
+        const userAuth = await authenticate(account, partnerId);
+        setUser(userAuth.user);
+        setIsAuthenticated(true);
+        setIsAuthenticating(false);
+        debug("Fresh authentication successful", { userAuth });
+
+        // Authenticate on BSMNT with B3 JWT
+        const b3Jwt = await authenticateWithB3JWT(userAuth.accessToken);
+        debug("@@b3Jwt", b3Jwt);
+      }
     },
-  });
+    [activeWallet, partnerId, authenticate, setIsAuthenticated, setIsAuthenticating, setUser, setHasStartedConnecting],
+  );
 
-  /**
-   * useAutoConnectLoading starts as false
-   */
-  useEffect(() => {
-    if (!useAutoConnectLoading && useAutoConnectLoadingPrevious.current && !hasStartedConnecting) {
-      setIsAuthenticating(false);
-    }
-    useAutoConnectLoadingPrevious.current = useAutoConnectLoading;
-  }, [useAutoConnectLoading, hasStartedConnecting, setIsAuthenticating]);
+  const onConnect = useCallback(
+    async (wallet: Wallet) => {
+      debug("@@useAuthentication:onConnect", { wallet });
 
-  // Ensure isAuthenticating stays true until we're fully ready
-  useEffect(() => {
-    if (useAutoConnectLoading) {
-      setIsConnecting(true);
-    } else if (!isAuthenticated) {
-      // Only set isAuthenticating to false if we're not authenticated
-      // This prevents the flicker state where both isAuthenticating and isAuthenticated are false
-      const timeout = setTimeout(() => {
-        debug("setIsAuthenticating:false:5a");
-        setIsConnecting(false);
-      }, 100); // Add a small delay to prevent quick flickers
-      return () => clearTimeout(timeout);
-    } else {
-      debug("setIsAuthenticating:false:5b");
-      setIsConnecting(false);
-    }
-  }, [useAutoConnectLoading, isAuthenticated, setIsConnecting, setIsConnected]);
+      try {
+        setHasStartedConnecting(true);
+        setIsConnected(true);
+        setIsAuthenticating(true);
+        await setActiveWallet(wallet);
+        await authenticateUser(wallet);
+      } catch (error) {
+        debug("@@useAuthentication:onConnect:failed", { error });
+        setIsAuthenticated(false);
+        setUser(undefined);
+      } finally {
+        setIsAuthenticating(false);
+      }
+
+      debug({
+        isAuthenticated,
+        isAuthenticating,
+        isConnected,
+      });
+    },
+    [
+      authenticateUser,
+      isAuthenticated,
+      isAuthenticating,
+      isConnected,
+      setActiveWallet,
+      setHasStartedConnecting,
+      setIsAuthenticated,
+      setIsAuthenticating,
+      setIsConnected,
+      setUser,
+    ],
+  );
 
   const logout = async (callback?: () => void) => {
     if (activeWallet) {
@@ -150,7 +211,23 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
     callback?.();
   };
 
-  const isReady = isAuthenticated && !useAutoConnectLoading && !isAuthenticating;
+  const { isLoading: useAutoConnectLoading } = useAutoConnect({
+    client,
+    wallets: [wallet],
+    onConnect: onConnect,
+  });
+
+  /**
+   * useAutoConnectLoading starts as false
+   */
+  useEffect(() => {
+    if (!useAutoConnectLoading && useAutoConnectLoadingPrevious.current && !hasStartedConnecting) {
+      setIsAuthenticating(false);
+    }
+    useAutoConnectLoadingPrevious.current = useAutoConnectLoading;
+  }, [useAutoConnectLoading, hasStartedConnecting, setIsAuthenticating]);
+
+  const isReady = isAuthenticated && !isAuthenticating;
 
   return {
     logout,
@@ -160,7 +237,11 @@ export function useAuthentication(partnerId: string, loginWithSiwe?: boolean) {
     isConnected,
     wallet,
     preAuthenticate,
-    connect,
+    connect: onConnect,
     isAuthenticating,
+    onConnect,
+    user,
+    refetchUser: authenticateUser,
+    setUser,
   };
 }

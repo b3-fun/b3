@@ -435,6 +435,11 @@ export interface paths {
                 executeTx: components["schemas"]["ExecuteTx"] | null;
                 /** @description Refund transactions if order failed */
                 refundTxs: components["schemas"]["RefundTx"][];
+                /**
+                 * @description Points awarded for this order (only present when order status is executed)
+                 * @example 100
+                 */
+                points: number | null;
               };
               /** @example 200 */
               statusCode: number;
@@ -845,6 +850,8 @@ export interface paths {
                  * @example 1.5
                  */
                 pointsMultiplier?: number;
+                /** @description Fee structure including all applicable fees (Stripe and AnySpend) */
+                fee: components["schemas"]["Fee"];
               };
               /** @example 200 */
               statusCode: number;
@@ -1119,11 +1126,6 @@ export interface components {
        * @example 990000
        */
       expectedDstAmount: string;
-      /**
-       * @description Actual received amount (null for new orders)
-       * @example 990000
-       */
-      actualDstAmount: string | null;
     };
     /** @description HypeDuel-specific payload */
     HypeDuelPayload: {
@@ -1132,11 +1134,6 @@ export interface components {
        * @example 990000
        */
       expectedDstAmount: string;
-      /**
-       * @description Actual received amount (null for new orders)
-       * @example 990000
-       */
-      actualDstAmount: string | null;
     };
     /** @description Custom execution payload */
     CustomPayload: {
@@ -1316,6 +1313,8 @@ export interface components {
       expiredAt: number;
       /** @description Timestamp when the order was filled/executed */
       filledAt: number | null;
+      /** @description Timestamp when the deposit was received */
+      receivedDepositAt: number | null;
       /**
        * @description Optional creator address
        * @example 0xb34facb90a200251318e8841c05102366f2158cf
@@ -1332,6 +1331,16 @@ export interface components {
        * @example pi_3Rko0sJnoDg53PsP0PDLsHkR
        */
       stripePaymentIntentId: string | null;
+      /** @description Settlement information for executed orders */
+      settlement: {
+        /**
+         * @description Actual received amount after execution
+         * @example 990000
+         */
+        actualDstAmount: string | null;
+      } | null;
+      /** @description Fee structure for the order including Stripe and AnySpend fees */
+      fee?: Omit<components["schemas"]["Fee"], "type"> | null;
     };
     SwapOrder: components["schemas"]["BaseOrder"] & {
       /**
@@ -1892,6 +1901,121 @@ export interface components {
            * @example 0.50
            */
           formattedFeeUsd: string;
+        };
+    Fee:
+      | {
+          /**
+           * @description Fee type identifier
+           * @enum {string}
+           */
+          type: "standard_fee";
+          /**
+           * @description Fee version number
+           * @example 1
+           */
+          feeVersion: number;
+          /**
+           * @description Token contract address used to check balance for whale discount (B3 token)
+           * @example 0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3
+           */
+          tokenToCheckBalance: string;
+          /**
+           * @description Recipient's B3 token balance
+           * @example 302843673392800000000000
+           */
+          recipientBalance: string;
+          /**
+           * @description AnySpend base fee in basis points before discounts
+           * @example 80
+           */
+          anyspendFeeBps: number;
+          /**
+           * @description Whale discount in basis points based on B3 balance
+           * @example 5000
+           */
+          anyspendWhaleDiscountBps: number;
+          /**
+           * @description Partner discount in basis points
+           * @example 0
+           */
+          anyspendPartnerDiscountBps: number;
+          /**
+           * @description Final fee in basis points after all discounts applied
+           * @example 40
+           */
+          finalFeeBps: number;
+        }
+      | {
+          /**
+           * @description Fee type identifier
+           * @enum {string}
+           */
+          type: "stripeweb2_fee";
+          /**
+           * @description Fee version number
+           * @example 1
+           */
+          feeVersion: number;
+          /**
+           * @description Token contract address used to check balance for whale discount (B3 token)
+           * @example 0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3
+           */
+          tokenToCheckBalance: string;
+          /**
+           * @description Recipient's B3 token balance
+           * @example 302843673392800000000000
+           */
+          recipientBalance: string;
+          /**
+           * @description Stripe fee percentage in basis points (5.4%)
+           * @example 540
+           */
+          stripeFeeBps: number;
+          /**
+           * @description Stripe fixed fee in USD
+           * @example 0.3
+           */
+          stripeFeeUsd: number;
+          /**
+           * @description AnySpend base fee in basis points before discounts
+           * @example 80
+           */
+          anyspendFeeBps: number;
+          /**
+           * @description AnySpend fixed fee in USD before discounts
+           * @example 0
+           */
+          anyspendFeeUsd: number;
+          /**
+           * @description Whale discount in basis points based on B3 balance
+           * @example 5000
+           */
+          anyspendWhaleDiscountBps: number;
+          /**
+           * @description Partner discount in basis points
+           * @example 0
+           */
+          anyspendPartnerDiscountBps: number;
+          /**
+           * @description Final combined fee percentage in basis points after all discounts
+           * @example 580
+           */
+          finalFeeBps: number;
+          /**
+           * @description Final combined fixed fee in USD after all discounts
+           * @example 0.3
+           */
+          finalFeeUsd: number;
+          /**
+           * @description Original amount before fees in USDC units (6 decimals)
+           * @example 10000000
+           */
+          originalAmount: string;
+          /**
+           * @description Final amount after applying all fees in USDC units (6 decimals)
+           * @example 9120000
+           */
+          finalAmount: string;
         };
   };
   responses: never;

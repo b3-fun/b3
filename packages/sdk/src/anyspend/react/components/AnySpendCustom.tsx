@@ -22,6 +22,7 @@ import {
   TextShimmer,
   Tooltip,
   TooltipContent,
+  TooltipProvider,
   TooltipTrigger,
   TransitionPanel,
   useAccountWallet,
@@ -37,7 +38,7 @@ import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { formatTokenAmount, formatUnits } from "@b3dotfun/sdk/shared/utils/number";
 import { simpleHashChainToChainName } from "@b3dotfun/sdk/shared/utils/simplehash";
 import invariant from "invariant";
-import { ChevronRight, ChevronRightCircle, Loader2 } from "lucide-react";
+import { ChevronRight, ChevronRightCircle, Info, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -45,6 +46,7 @@ import { base } from "viem/chains";
 import { useFeatureFlags } from "../contexts/FeatureFlagsContext";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
 import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPaymentMethod";
+import { FeeBreakDown } from "./common/FeeBreakDown";
 import { FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaymentMethod";
 import { OrderDetails } from "./common/OrderDetails";
 import { OrderHistory } from "./common/OrderHistory";
@@ -77,6 +79,7 @@ function generateGetRelayQuoteRequest({
   contractType,
   encodedData,
   spenderAddress,
+  onrampVendor,
 }: {
   orderType: components["schemas"]["Order"]["type"];
   srcChainId: number;
@@ -90,6 +93,7 @@ function generateGetRelayQuoteRequest({
   contractType?: components["schemas"]["NftContract"]["type"];
   encodedData: string;
   spenderAddress?: string;
+  onrampVendor?: components["schemas"]["OnrampMetadata"]["vendor"];
 }): GetQuoteRequest {
   switch (orderType) {
     case "mint_nft": {
@@ -105,6 +109,7 @@ function generateGetRelayQuoteRequest({
         contractAddress: contractAddress,
         tokenId: tokenId,
         contractType: contractType,
+        onrampVendor,
       };
     }
     case "join_tournament": {
@@ -117,6 +122,7 @@ function generateGetRelayQuoteRequest({
         recipientAddress,
         price: dstAmount,
         contractAddress: contractAddress,
+        onrampVendor,
       };
     }
     case "fund_tournament": {
@@ -129,6 +135,7 @@ function generateGetRelayQuoteRequest({
         recipientAddress,
         fundAmount: dstAmount,
         contractAddress: contractAddress,
+        onrampVendor,
       };
     }
     case "custom": {
@@ -145,6 +152,7 @@ function generateGetRelayQuoteRequest({
           to: contractAddress,
           spenderAddress: spenderAddress,
         },
+        onrampVendor,
       };
     }
     default: {
@@ -336,6 +344,7 @@ function AnySpendCustomInner({
       contractType: orderType === "mint_nft" ? metadata?.nftContract?.type : undefined,
       encodedData: encodedData,
       spenderAddress: spenderAddress,
+      onrampVendor: selectedFiatPaymentMethod === FiatPaymentMethod.STRIPE ? "stripe-web2" : undefined,
     });
   }, [
     activeTab,
@@ -351,6 +360,7 @@ function AnySpendCustomInner({
     spenderAddress,
     srcChainId,
     srcToken,
+    selectedFiatPaymentMethod,
   ]);
   const { anyspendQuote, isLoadingAnyspendQuote } = useAnyspendQuote(getRelayQuoteRequest);
 
@@ -395,11 +405,13 @@ function AnySpendCustomInner({
   useEffect(() => {
     if (oat?.data?.order.status === "executed" && !onSuccessCalled.current) {
       console.log("Calling onSuccess");
-      const txHash = oat?.data?.executeTx?.txHash;
+      const relayTxs = oat?.data?.relayTxs;
+      const lastRelayTxHash = relayTxs?.[relayTxs.length - 1]?.txHash;
+      const txHash = oat?.data?.executeTx?.txHash || lastRelayTxHash;
       onSuccess?.(txHash);
       onSuccessCalled.current = true;
     }
-  }, [oat?.data?.order.status, oat?.data?.executeTx?.txHash, onSuccess]);
+  }, [oat?.data?.order.status, oat?.data?.executeTx?.txHash, oat?.data?.relayTxs, onSuccess]);
 
   // Reset flag when orderId changes
   useEffect(() => {
@@ -665,7 +677,7 @@ function AnySpendCustomInner({
   const orderDetailsView = (
     <div
       className={cn(
-        "mx-auto flex w-full flex-col items-center gap-4",
+        "mx-auto flex w-full flex-col items-center gap-4 p-5",
         mode === "modal" && "bg-b3-react-background rounded-xl",
       )}
     >
@@ -958,14 +970,40 @@ function AnySpendCustomInner({
                   className="relative flex w-full items-center justify-between"
                 >
                   <div className="flex items-center gap-2">
-                    <span className="text-as-tertiarry text-sm">
+                    <span className="text-as-tertiarry flex items-center gap-1.5 text-sm">
                       Total <span className="text-as-tertiarry">(with fee)</span>
+                      {anyspendQuote?.data?.fee && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button className="text-as-primary/40 hover:text-as-primary/60 transition-colors">
+                                <Info className="h-4 w-4" />
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top">
+                              <FeeBreakDown fee={anyspendQuote.data.fee} />
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
                     </span>
                     {renderPointsBadge()}
                   </div>
-                  <span className="text-as-primary font-semibold">
-                    {formattedSrcAmount || "--"} {srcToken.symbol}
-                  </span>
+                  <div className="flex flex-col items-end gap-0.5">
+                    <span className="text-as-primary font-semibold">
+                      {formattedSrcAmount || "--"} {srcToken.symbol}
+                    </span>
+                    {anyspendQuote?.data?.fee?.type === "standard_fee" && anyspendQuote.data.currencyIn?.amountUsd && (
+                      <span className="text-as-secondary text-xs">
+                        incl. $
+                        {(
+                          (Number(anyspendQuote.data.currencyIn.amountUsd) * anyspendQuote.data.fee.finalFeeBps) /
+                          10000
+                        ).toFixed(2)}{" "}
+                        fee
+                      </span>
+                    )}
+                  </div>
                 </motion.div>
               </div>
             </div>
@@ -1084,12 +1122,38 @@ function AnySpendCustomInner({
                 className="relative flex w-full items-center justify-between"
               >
                 <div className="flex items-center gap-2">
-                  <span className="text-as-tertiarry text-sm">
+                  <span className="text-as-tertiarry flex items-center gap-1.5 text-sm">
                     Total <span className="text-as-tertiarry">(USD)</span>
+                    {anyspendQuote?.data?.fee && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button className="text-as-primary/40 hover:text-as-primary/60 transition-colors">
+                              <Info className="h-4 w-4" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top">
+                            <FeeBreakDown fee={anyspendQuote.data.fee} />
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
                   </span>
                   {renderPointsBadge()}
                 </div>
-                <span className="text-as-primary text-xl font-semibold">${srcFiatAmount || "0.00"}</span>
+                <div className="flex flex-col items-end gap-0.5">
+                  <span className="text-as-primary text-xl font-semibold">${srcFiatAmount || "0.00"}</span>
+                  {anyspendQuote?.data?.fee?.type === "stripeweb2_fee" && anyspendQuote.data.fee.originalAmount && (
+                    <span className="text-as-secondary text-xs">
+                      incl. $
+                      {(
+                        (Number(anyspendQuote.data.fee.originalAmount) - Number(anyspendQuote.data.fee.finalAmount)) /
+                        1e6
+                      ).toFixed(2)}{" "}
+                      fee
+                    </span>
+                  )}
+                </div>
               </motion.div>
             </div>
 

@@ -29,7 +29,7 @@ type SignInWithB3Props = Omit<SignInWithB3ModalProps, "type" | "showBackButton">
 
 export function SignIn(props: SignInWithB3Props) {
   const { className } = props;
-  const { automaticallySetFirstEoa } = useB3();
+  const { automaticallySetFirstEoa, partnerId } = useB3();
   const {
     wallet,
     address: globalAddress,
@@ -43,7 +43,7 @@ export function SignIn(props: SignInWithB3Props) {
   } = useAccountWallet();
 
   const isMobile = useIsMobile();
-  const { logout } = useAuthentication(String(process.env.NEXT_PUBLIC_THIRDWEB_PARTNER_ID));
+  const { logout } = useAuthentication(partnerId);
   const onDisconnect = async () => {
     await logout();
   };

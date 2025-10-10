@@ -32,6 +32,7 @@ export enum PanelView {
   ORDER_DETAILS,
   LOADING,
   POINTS_DETAIL,
+  FEE_DETAIL,
 }
 
 interface UseAnyspendFlowProps {
@@ -247,8 +248,8 @@ export function useAnyspendFlow({
   // Handle order completion
   useEffect(() => {
     if (oat?.data?.order.status === "executed") {
-      // get the actualDstAmount if available from custompayload
-      const amount = (oat.data.order.payload as { actualDstAmount?: string })?.actualDstAmount;
+      // get the actualDstAmount if available from settlement
+      const amount = oat.data.order.settlement?.actualDstAmount;
       const formattedActualDstAmount = amount
         ? formatTokenAmount(BigInt(amount), oat.data.order.metadata.dstToken.decimals)
         : undefined;
@@ -256,7 +257,7 @@ export function useAnyspendFlow({
     }
   }, [
     oat?.data?.order.status,
-    oat?.data?.order.payload,
+    oat?.data?.order.settlement?.actualDstAmount,
     onTransactionSuccess,
     oat?.data?.order.metadata.dstToken.decimals,
   ]);

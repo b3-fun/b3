@@ -1,12 +1,13 @@
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useState } from "react";
 import { ThirdwebProvider, useActiveAccount } from "thirdweb/react";
 import { Account } from "thirdweb/wallets";
 
-import { Users } from "@b3dotfun/b3-api";
 import { ClientType } from "../../../client-manager";
 
+import { WagmiProvider } from "wagmi";
+import { useAuthentication } from "../../hooks/useAuthentication";
+import { useWagmiConfig } from "../../hooks/useWagmiConfig";
 import { B3Context, B3ContextType } from "./types";
 
 /**
@@ -31,28 +32,32 @@ export function B3Provider({
   accountOverride,
   environment,
   clientType = "socket",
+  partnerId,
+  rpcUrls,
 }: {
   theme: "light" | "dark";
   children: React.ReactNode;
   accountOverride?: Account;
   environment: B3ContextType["environment"];
   clientType?: ClientType;
+  partnerId: string;
+  rpcUrls?: Record<number, string>;
 }) {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThirdwebProvider>
-        <InnerProvider
-          accountOverride={accountOverride}
-          environment={environment}
-          theme={theme}
-          clientType={clientType}
-        >
-          {/* <RelayKitProviderWrapper> */}
-          {children}
-          {/* </RelayKitProviderWrapper> */}
-        </InnerProvider>
-      </ThirdwebProvider>
-    </QueryClientProvider>
+    <ThirdwebProvider>
+      <InnerProvider
+        accountOverride={accountOverride}
+        environment={environment}
+        theme={theme}
+        clientType={clientType}
+        partnerId={partnerId}
+        rpcUrls={rpcUrls}
+      >
+        {/* <RelayKitProviderWrapper> */}
+        {children}
+        {/* </RelayKitProviderWrapper> */}
+      </InnerProvider>
+    </ThirdwebProvider>
   );
 }
 
@@ -66,6 +71,8 @@ export function InnerProvider({
   defaultPermissions = DEFAULT_PERMISSIONS,
   theme = "light",
   clientType = "socket",
+  partnerId,
+  rpcUrls,
 }: {
   children: React.ReactNode;
   accountOverride?: Account;
@@ -73,31 +80,40 @@ export function InnerProvider({
   defaultPermissions?: PermissionsConfig;
   theme: "light" | "dark";
   clientType?: ClientType;
+  partnerId: string;
+  rpcUrls?: Record<number, string>;
 }) {
   const activeAccount = useActiveAccount();
-  const [user, setUser] = useState<Users | undefined>(undefined);
+  const { user, setUser, refetchUser } = useAuthentication(partnerId);
+  const wagmiConfig = useWagmiConfig(partnerId, rpcUrls);
 
   // Use given accountOverride or activeAccount from thirdweb
   const effectiveAccount = accountOverride || activeAccount;
 
   return (
-    <B3Context.Provider
-      value={{
-        account: effectiveAccount,
-        automaticallySetFirstEoa: false,
-        setWallet: () => {},
-        wallet: undefined,
-        user,
-        setUser,
-        initialized: true,
-        ready: !!effectiveAccount,
-        environment,
-        defaultPermissions,
-        theme,
-        clientType,
-      }}
-    >
-      {children}
-    </B3Context.Provider>
+    <WagmiProvider config={wagmiConfig}>
+      <QueryClientProvider client={queryClient}>
+        <B3Context.Provider
+          value={{
+            account: effectiveAccount,
+            automaticallySetFirstEoa: false,
+            setWallet: () => {},
+            wallet: undefined,
+            user,
+            setUser,
+            initialized: true,
+            ready: !!effectiveAccount,
+            environment,
+            defaultPermissions,
+            theme,
+            clientType,
+            partnerId,
+            refetchUser,
+          }}
+        >
+          {children}
+        </B3Context.Provider>
+      </QueryClientProvider>
+    </WagmiProvider>
   );
 }

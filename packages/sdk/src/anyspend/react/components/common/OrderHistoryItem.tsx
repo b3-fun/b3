@@ -1,10 +1,10 @@
 import { ALL_CHAINS, getChainName, getStatusDisplay } from "@b3dotfun/sdk/anyspend";
-import { Badge, Button, useIsMobile } from "@b3dotfun/sdk/global-account/react";
+import { Badge, useIsMobile } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
-import { ArrowRight, ChevronDown } from "lucide-react";
+import { getVendorDisplayName } from "@b3dotfun/sdk/shared/utils/payment.utils";
+import { ArrowRight } from "lucide-react";
 import TimeAgo from "react-timeago";
-import { b3 } from "viem/chains";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 
 interface OrderHistoryItemProps {
@@ -18,13 +18,7 @@ export function OrderHistoryItem({ order, onSelectOrder, mode }: OrderHistoryIte
   const tournament =
     order.type === "join_tournament" || order.type === "fund_tournament" ? order.metadata.tournament : undefined;
   const dstToken = order.metadata.dstToken;
-  const actualDstAmount =
-    order.type === "mint_nft" ||
-    order.type === "join_tournament" ||
-    order.type === "fund_tournament" ||
-    order.type === "custom"
-      ? undefined
-      : order.payload.actualDstAmount;
+  const actualDstAmount = order.settlement?.actualDstAmount;
   const expectedDstAmount =
     order.type === "mint_nft" ||
     order.type === "join_tournament" ||
@@ -37,153 +31,148 @@ export function OrderHistoryItem({ order, onSelectOrder, mode }: OrderHistoryIte
 
   const isSmallView = useIsMobile() || mode === "modal";
 
+  // Check if this is a one-click payment order
+  const isOneClickPayment = !!order.oneClickBuyUrl;
+  const vendorName = order.onrampMetadata?.vendor ? getVendorDisplayName(order.onrampMetadata.vendor) : null;
+
   return (
     <div
       key={`anyspend-${order.id}`}
       className={cn(
-        "bg-as-light-brand/20 rounded-lg border p-4",
-        onSelectOrder && "hover:bg-as-light-brand/30 hover:border-as-brand cursor-pointer transition-colors",
+        "bg-as-surface-secondary hover:bg-as-surface-tertiary rounded-xl p-4 transition-all",
+        onSelectOrder && "cursor-pointer",
       )}
       onClick={() => onSelectOrder?.(order.id)}
     >
-      <div className="flex items-center justify-between">
-        <Badge
-          className={cn(
-            "px-3 py-1 text-xs",
-            orderDisplayStatus === "processing" && "bg-yellow-500/10 text-yellow-500",
-            orderDisplayStatus === "success" && "bg-green-500/10 text-green-500",
-            orderDisplayStatus === "failure" && "bg-red-500/10 text-red-500",
-          )}
-        >
-          {orderStatusText}
-        </Badge>
-
+      {/* Header: Status and Time */}
+      <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-nano label-style text-as-primary/30">
-            <TimeAgo date={new Date(order.createdAt)} />
-          </span>
+          <div
+            className={cn(
+              "text-xs font-semibold",
+              orderDisplayStatus === "processing" && "text-yellow-600",
+              orderDisplayStatus === "success" && "text-green-600",
+              orderDisplayStatus === "failure" && "text-red-600",
+            )}
+          >
+            {orderStatusText}
+          </div>
+          {isOneClickPayment && vendorName && (
+            <Badge variant="outline" className="text-as-secondary px-2 py-0.5 text-[10px]">
+              {vendorName}
+            </Badge>
+          )}
+        </div>
+        <div className="text-as-secondary text-[10px] font-medium uppercase tracking-wide">
+          <TimeAgo date={new Date(order.createdAt)} />
         </div>
       </div>
 
-      {order.oneClickBuyUrl ? (
-        <div className="mb-3 mt-4 flex items-center gap-1">
-          <div className="bg-b3-react-background flex flex-1 flex-col gap-1 rounded-lg border p-4 px-5">
-            <h3 className="text-as-primary/50 flex items-center gap-2 text-xl font-semibold">
-              <span>
-                {"Buy "}
-                <span className="text-as-primary">
-                  ${formatTokenAmount(BigInt(order.srcAmount), order.metadata.srcToken.decimals)}
-                </span>
-                {` of`}
-              </span>
-
-              <span className="text-as-primary flex items-center gap-2">
-                {nft ? (
-                  <img src={nft.imageUrl} alt={nft.name} className="h-6 w-6" />
-                ) : tournament ? (
-                  <img src={tournament.imageUrl} alt={tournament.name} className="h-6 w-6" />
-                ) : (
-                  <img src={dstToken.metadata.logoURI} alt={dstToken.symbol} className="h-6 w-6" />
-                )}
-                {nft ? nft.name : tournament ? tournament.name : dstToken.symbol}
-              </span>
-
-              <span className="flex items-center gap-2">
-                {` on `}
-                <span className="text-as-primary flex items-center gap-2">
-                  <img src={ALL_CHAINS[order.dstChain]?.logoUrl} alt={getChainName(order.dstChain)} className="h-4" />
-                  {order.dstChain !== b3.id && getChainName(order.dstChain)}
-                </span>
-              </span>
-            </h3>
-
-            <p className="label-style text-as-primary/30 mt-1 flex items-center gap-2 text-xs">
-              Paying via{" "}
-              <img src="https://cdn.b3.fun/coinbase-wordmark-blue.svg" alt="Coinbase" className="-mt-1 h-3" />
-            </p>
+      {/* Main Content: From -> To */}
+      <div className={cn("flex items-center", isSmallView ? "gap-2" : "gap-4")}>
+        {/* From Section */}
+        <div className={cn("flex min-w-0 flex-1 items-center", isSmallView ? "gap-1.5" : "gap-2")}>
+          <img
+            src={order.metadata.srcToken.metadata.logoURI}
+            alt={order.metadata.srcToken.symbol}
+            className={cn("shrink-0 rounded-full", isSmallView ? "h-7 w-7" : "h-8 w-8")}
+          />
+          <div className="min-w-0 flex-1">
+            <div className={cn("text-as-primary truncate font-bold", isSmallView ? "text-xs" : "text-sm")}>
+              {formatTokenAmount(BigInt(order.srcAmount), order.metadata.srcToken.decimals)}{" "}
+              {order.metadata.srcToken.symbol}
+            </div>
+            <div className={cn("text-as-secondary flex items-center gap-1", isSmallView ? "text-[10px]" : "text-xs")}>
+              <img src={ALL_CHAINS[order.srcChain]?.logoUrl} alt={getChainName(order.srcChain)} className="h-3 w-3" />
+              <span className="truncate">{getChainName(order.srcChain)}</span>
+            </div>
           </div>
         </div>
-      ) : (
-        <div className={cn("mb-3 mt-4 flex items-center gap-1", isSmallView && "flex-col")}>
-          <div className="bg-b3-react-background flex w-full flex-1 flex-col gap-1 overflow-hidden rounded-lg border p-4 px-5">
-            <div className="flex items-center gap-2">
+
+        {/* Arrow */}
+        <ArrowRight className={cn("text-as-secondary shrink-0 opacity-30", isSmallView ? "h-4 w-4" : "h-5 w-5")} />
+
+        {/* To Section */}
+        <div className={cn("flex min-w-0 flex-1 items-center", isSmallView ? "gap-1.5" : "gap-2")}>
+          {nft ? (
+            <>
               <img
-                src={order.metadata.srcToken.metadata.logoURI}
-                alt={order.metadata.srcToken.symbol}
-                className="h-6 w-6 rounded-full"
+                src={nft.imageUrl}
+                alt={nft.name}
+                className={cn("shrink-0 rounded-full", isSmallView ? "h-7 w-7" : "h-8 w-8")}
               />
-              <div className="text-as-primary flex items-center gap-2 overflow-hidden text-ellipsis whitespace-nowrap text-xl font-semibold">
-                {formatTokenAmount(BigInt(order.srcAmount), order.metadata.srcToken.decimals)}{" "}
-                {order.metadata.srcToken.symbol}
+              <div className="min-w-0 flex-1">
+                <div className={cn("text-as-primary truncate font-bold", isSmallView ? "text-xs" : "text-sm")}>
+                  {nft.name}
+                </div>
+                <div
+                  className={cn("text-as-secondary flex items-center gap-1", isSmallView ? "text-[10px]" : "text-xs")}
+                >
+                  <img
+                    src={ALL_CHAINS[order.dstChain]?.logoUrl}
+                    alt={getChainName(order.dstChain)}
+                    className="h-3 w-3"
+                  />
+                  <span className="truncate">{getChainName(order.dstChain)}</span>
+                </div>
               </div>
-            </div>
-
-            <div className="label-style text-as-primary/50 flex items-center gap-2 text-sm">
-              from
+            </>
+          ) : tournament ? (
+            <>
               <img
-                src={ALL_CHAINS[order.srcChain]?.logoUrl}
-                alt={getChainName(order.srcChain)}
-                className={cn("h-4", order.srcChain !== b3.id && "w-4 rounded-full", order.srcChain === b3.id && "h-3")}
+                src={tournament.imageUrl}
+                alt={tournament.name}
+                className={cn("shrink-0 rounded-full", isSmallView ? "h-7 w-7" : "h-8 w-8")}
               />
-              {getChainName(order.srcChain)}
-            </div>
-          </div>
-
-          <div className={cn("h-8 w-8 shrink-0 -rotate-90 opacity-30", isSmallView && "rotate-0")}>
-            <ChevronDown className="h-8 w-8" />
-          </div>
-
-          <div className="bg-b3-react-background flex w-full flex-1 flex-col gap-1 overflow-hidden rounded-lg border p-4 px-5">
-            <div className="flex items-center gap-2">
-              {nft ? (
-                <>
-                  <img src={nft.imageUrl} alt={nft.name} className="h-6 w-6 rounded-full" />
-                  <div className="text-as-primary overflow-hidden text-ellipsis whitespace-nowrap text-xl font-semibold">
-                    {nft.name}
-                  </div>
-                </>
-              ) : tournament ? (
-                <>
-                  <img src={tournament.imageUrl} alt={tournament.name} className="h-6 w-6 rounded-full" />
-                  <div className="text-as-primary overflow-hidden text-ellipsis whitespace-nowrap text-xl font-semibold">
-                    {tournament.name}
-                  </div>
-                </>
-              ) : (
-                <>
-                  <img src={dstToken.metadata.logoURI} alt={dstToken.symbol} className="h-6 w-6 rounded-full" />
-                  <div className="text-as-primary overflow-hidden text-ellipsis whitespace-nowrap text-xl font-semibold">
-                    {formatTokenAmount(
-                      actualDstAmount
-                        ? BigInt(actualDstAmount)
-                        : expectedDstAmount
-                          ? BigInt(expectedDstAmount)
-                          : BigInt(0),
-                      dstToken.decimals,
-                    )}{" "}
-                    {dstToken.symbol}
-                  </div>
-                </>
-              )}
-            </div>
-            <div className="label-style text-as-primary/50 flex items-center gap-2 text-sm">
-              to
+              <div className="min-w-0 flex-1">
+                <div className={cn("text-as-primary truncate font-bold", isSmallView ? "text-xs" : "text-sm")}>
+                  {tournament.name}
+                </div>
+                <div
+                  className={cn("text-as-secondary flex items-center gap-1", isSmallView ? "text-[10px]" : "text-xs")}
+                >
+                  <img
+                    src={ALL_CHAINS[order.dstChain]?.logoUrl}
+                    alt={getChainName(order.dstChain)}
+                    className="h-3 w-3"
+                  />
+                  <span className="truncate">{getChainName(order.dstChain)}</span>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
               <img
-                src={ALL_CHAINS[order.dstChain]?.logoUrl}
-                alt={getChainName(order.dstChain)}
-                className={cn("h-4", order.dstChain !== b3.id && "w-4 rounded-full", order.dstChain === b3.id && "h-3")}
+                src={dstToken.metadata.logoURI}
+                alt={dstToken.symbol}
+                className={cn("shrink-0 rounded-full", isSmallView ? "h-7 w-7" : "h-8 w-8")}
               />
-              {getChainName(order.dstChain)}
-            </div>
-          </div>
+              <div className="min-w-0 flex-1">
+                <div className={cn("text-as-primary truncate font-bold", isSmallView ? "text-xs" : "text-sm")}>
+                  {formatTokenAmount(
+                    actualDstAmount
+                      ? BigInt(actualDstAmount)
+                      : expectedDstAmount
+                        ? BigInt(expectedDstAmount)
+                        : BigInt(0),
+                    dstToken.decimals,
+                  )}{" "}
+                  {dstToken.symbol}
+                </div>
+                <div
+                  className={cn("text-as-secondary flex items-center gap-1", isSmallView ? "text-[10px]" : "text-xs")}
+                >
+                  <img
+                    src={ALL_CHAINS[order.dstChain]?.logoUrl}
+                    alt={getChainName(order.dstChain)}
+                    className="h-3 w-3"
+                  />
+                  <span className="truncate">{getChainName(order.dstChain)}</span>
+                </div>
+              </div>
+            </>
+          )}
         </div>
-      )}
-
-      <div className="flex items-center justify-end">
-        <Button variant="link" size="sm" className="h-auto" onClick={() => onSelectOrder?.(order.id)}>
-          {orderDisplayStatus === "processing" ? "Proceed with payment" : "Details"}{" "}
-          <ArrowRight className="ml-2 h-3 w-3" />
-        </Button>
       </div>
     </div>
   );
