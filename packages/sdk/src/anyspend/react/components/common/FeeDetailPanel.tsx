@@ -1,6 +1,7 @@
 import { Button, ShinyButton } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
-import { ArrowDown } from "lucide-react";
+import { ArrowDown, ChevronDown } from "lucide-react";
+import { useState } from "react";
 import { components } from "../../../types/api";
 
 interface FeeDetailPanelProps {
@@ -32,12 +33,7 @@ const WHALE_DISCOUNT_TIERS = [
   { minAny: 1000000, discountPercent: 100, label: "Tier 3: 1M+ $ANY" },
 ];
 
-export function FeeDetailPanel({
-  fee,
-  decimals = 6,
-  transactionAmountUsd,
-  onBack,
-}: FeeDetailPanelProps) {
+export function FeeDetailPanel({ fee, decimals = 6, transactionAmountUsd, onBack }: FeeDetailPanelProps) {
   // Detect if this is a fiat onramp order (Stripe) vs regular crypto swap
   // stripeweb2_fee = Stripe/fiat onramp (uses FIAT_FEE_TIERS)
   // standard_fee = Regular crypto swap (uses CRYPTO_FEE_TIERS)
@@ -79,19 +75,21 @@ export function FeeDetailPanel({
   const baseFee = fee.type === "standard_fee" ? fee.anyspendFeeBps : 0;
 
   // The whale discount percentage (50%, 75%, or 100%)
-  const whaleDiscountPercent = baseFee > 0 && hasWhaleDiscount
-    ? Math.round(((baseFee - fee.finalFeeBps) / baseFee) * 100)
-    : 0;
+  const whaleDiscountPercent =
+    baseFee > 0 && hasWhaleDiscount ? Math.round(((baseFee - fee.finalFeeBps) / baseFee) * 100) : 0;
 
   // Determine which whale tier based on the discount percentage
   const currentWhaleTier = WHALE_DISCOUNT_TIERS.find(
-    tier => Math.abs(whaleDiscountPercent - tier.discountPercent) <= 5
+    tier => Math.abs(whaleDiscountPercent - tier.discountPercent) <= 5,
   );
 
   // Calculate partner discount percentage
-  const partnerDiscountPercent = baseFee > 0 && hasPartnerDiscount
-    ? Math.round((fee.anyspendPartnerDiscountBps / baseFee) * 100)
-    : 0;
+  const partnerDiscountPercent =
+    baseFee > 0 && hasPartnerDiscount ? Math.round((fee.anyspendPartnerDiscountBps / baseFee) * 100) : 0;
+
+  // State for expanding tier lists
+  const [showAllFeeTiers, setShowAllFeeTiers] = useState(false);
+  const [showAllDiscountTiers, setShowAllDiscountTiers] = useState(false);
 
   return (
     <div className="mx-auto flex w-[460px] max-w-full flex-col items-center gap-3">
@@ -120,14 +118,19 @@ export function FeeDetailPanel({
             {isStripeFee
               ? FIAT_FEE_TIERS.map((tier, idx) => {
                   const isCurrentTier = currentFiatTier?.label === tier.label;
+                  const currentTierIndex = FIAT_FEE_TIERS.findIndex(t => t.label === currentFiatTier?.label);
+
+                  // Show all tiers if expanded, otherwise show up to current tier
+                  if (!showAllFeeTiers && currentTierIndex !== -1 && idx > currentTierIndex) {
+                    return null;
+                  }
+
                   return (
                     <div
                       key={idx}
                       className={cn(
                         "flex items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors",
-                        isCurrentTier
-                          ? "bg-as-brand/10 text-as-brand font-semibold"
-                          : "text-as-primary/60",
+                        isCurrentTier ? "bg-as-brand/10 text-as-brand font-semibold" : "text-as-primary/60",
                       )}
                     >
                       <span>{tier.label}</span>
@@ -137,14 +140,19 @@ export function FeeDetailPanel({
                 })
               : CRYPTO_FEE_TIERS.map((tier, idx) => {
                   const isCurrentTier = currentCryptoTier?.label === tier.label;
+                  const currentTierIndex = CRYPTO_FEE_TIERS.findIndex(t => t.label === currentCryptoTier?.label);
+
+                  // Show all tiers if expanded, otherwise show up to current tier
+                  if (!showAllFeeTiers && currentTierIndex !== -1 && idx > currentTierIndex) {
+                    return null;
+                  }
+
                   return (
                     <div
                       key={idx}
                       className={cn(
                         "flex items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors",
-                        isCurrentTier
-                          ? "bg-as-brand/10 text-as-brand font-semibold"
-                          : "text-as-primary/60",
+                        isCurrentTier ? "bg-as-brand/10 text-as-brand font-semibold" : "text-as-primary/60",
                       )}
                     >
                       <span>{tier.label}</span>
@@ -153,6 +161,28 @@ export function FeeDetailPanel({
                   );
                 })}
           </div>
+
+          {/* Show expand button if there are lower tiers */}
+          {(() => {
+            const currentTierIndex = isStripeFee
+              ? FIAT_FEE_TIERS.findIndex(t => t.label === currentFiatTier?.label)
+              : CRYPTO_FEE_TIERS.findIndex(t => t.label === currentCryptoTier?.label);
+            const totalTiers = isStripeFee ? FIAT_FEE_TIERS.length : CRYPTO_FEE_TIERS.length;
+            const hasMoreTiers = currentTierIndex !== -1 && currentTierIndex < totalTiers - 1;
+
+            if (hasMoreTiers) {
+              return (
+                <button
+                  onClick={() => setShowAllFeeTiers(!showAllFeeTiers)}
+                  className="text-as-primary/60 hover:text-as-primary mt-2 flex w-full items-center justify-center gap-1 text-xs transition-colors"
+                >
+                  <span>{showAllFeeTiers ? "Show less" : "Show higher tiers"}</span>
+                  <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", showAllFeeTiers && "rotate-180")} />
+                </button>
+              );
+            }
+            return null;
+          })()}
         </div>
 
         {/* Whale Discount Tiers - Only show if user has whale discount or partner discount */}
@@ -163,23 +193,53 @@ export function FeeDetailPanel({
             </h4>
             <div className="space-y-1.5">
               {hasWhaleDiscount ? (
-                WHALE_DISCOUNT_TIERS.map((tier, idx) => {
-                  const isCurrentTier = currentWhaleTier?.label === tier.label;
-                  return (
-                    <div
-                      key={idx}
-                      className={cn(
-                        "flex items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors",
-                        isCurrentTier ? "bg-green-500/10 text-green-600 font-semibold" : "text-as-primary/60",
-                      )}
-                    >
-                      <span>{tier.label}</span>
-                      <span>{tier.discountPercent}% discount</span>
-                    </div>
-                  );
-                })
+                <>
+                  {WHALE_DISCOUNT_TIERS.map((tier, idx) => {
+                    const isCurrentTier = currentWhaleTier?.label === tier.label;
+                    const currentTierIndex = WHALE_DISCOUNT_TIERS.findIndex(t => t.label === currentWhaleTier?.label);
+
+                    // Show all tiers if expanded, otherwise show up to current tier
+                    if (!showAllDiscountTiers && currentTierIndex !== -1 && idx > currentTierIndex) {
+                      return null;
+                    }
+
+                    return (
+                      <div
+                        key={idx}
+                        className={cn(
+                          "flex items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors",
+                          isCurrentTier ? "bg-green-500/10 font-semibold text-green-600" : "text-as-primary/60",
+                        )}
+                      >
+                        <span>{tier.label}</span>
+                        <span>{tier.discountPercent}% discount</span>
+                      </div>
+                    );
+                  })}
+
+                  {/* Show expand button if there are higher discount tiers */}
+                  {(() => {
+                    const currentTierIndex = WHALE_DISCOUNT_TIERS.findIndex(t => t.label === currentWhaleTier?.label);
+                    const hasMoreTiers = currentTierIndex !== -1 && currentTierIndex < WHALE_DISCOUNT_TIERS.length - 1;
+
+                    if (hasMoreTiers) {
+                      return (
+                        <button
+                          onClick={() => setShowAllDiscountTiers(!showAllDiscountTiers)}
+                          className="text-as-primary/60 hover:text-as-primary mt-2 flex w-full items-center justify-center gap-1 text-xs transition-colors"
+                        >
+                          <span>{showAllDiscountTiers ? "Show less" : "Show higher tiers"}</span>
+                          <ChevronDown
+                            className={cn("h-3.5 w-3.5 transition-transform", showAllDiscountTiers && "rotate-180")}
+                          />
+                        </button>
+                      );
+                    }
+                    return null;
+                  })()}
+                </>
               ) : (
-                <div className="bg-green-500/10 text-green-600 flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-semibold">
+                <div className="flex items-center justify-between rounded-lg bg-green-500/10 px-3 py-2.5 text-sm font-semibold text-green-600">
                   <span>Partner Discount</span>
                   <span>{partnerDiscountPercent}% discount</span>
                 </div>
@@ -216,8 +276,9 @@ export function FeeDetailPanel({
                   {hasWhaleDiscount && currentWhaleTier && (
                     <div className="flex items-center justify-between">
                       <span className="text-green-600">Discount ({currentWhaleTier.discountPercent}% off)</span>
-                      <span className="text-green-600 font-medium">
-                        -${((transactionAmountUsd * baseFee * currentWhaleTier.discountPercent) / 100 / 10000).toFixed(2)}
+                      <span className="font-medium text-green-600">
+                        -$
+                        {((transactionAmountUsd * baseFee * currentWhaleTier.discountPercent) / 100 / 10000).toFixed(2)}
                       </span>
                     </div>
                   )}
@@ -225,7 +286,7 @@ export function FeeDetailPanel({
                   {hasPartnerDiscount && (
                     <div className="flex items-center justify-between">
                       <span className="text-green-600">Partner Discount ({partnerDiscountPercent}% off)</span>
-                      <span className="text-green-600 font-medium">
+                      <span className="font-medium text-green-600">
                         -${((transactionAmountUsd * baseFee * partnerDiscountPercent) / 100 / 10000).toFixed(2)}
                       </span>
                     </div>
