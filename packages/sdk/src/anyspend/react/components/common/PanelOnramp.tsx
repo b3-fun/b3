@@ -292,10 +292,21 @@ export function PanelOnramp({
                 ${getTotalAmount(selectedPaymentMethod || FiatPaymentMethod.NONE).toFixed(2)}
               </span>
               {(() => {
-                const fee = getFeeFromApi(selectedPaymentMethod || FiatPaymentMethod.NONE);
-                return fee !== null && fee > 0 ? (
-                  <span className="text-as-secondary text-xs">incl. ${fee.toFixed(2)} fee</span>
-                ) : null;
+                // For fiat payments, show the fee from the payment method
+                const fiatFee = getFeeFromApi(selectedPaymentMethod || FiatPaymentMethod.NONE);
+                if (fiatFee !== null && fiatFee > 0) {
+                  return <span className="text-as-secondary text-xs">incl. ${fiatFee.toFixed(2)} fee</span>;
+                }
+
+                // For crypto payments (standard_fee), calculate from the quote
+                if (anyspendQuote?.data?.fee?.type === "standard_fee" && anyspendQuote.data.currencyIn?.amountUsd) {
+                  const cryptoFee = (Number(anyspendQuote.data.currencyIn.amountUsd) * anyspendQuote.data.fee.finalFeeBps) / 10000;
+                  if (cryptoFee > 0) {
+                    return <span className="text-as-secondary text-xs">incl. ${cryptoFee.toFixed(2)} fee</span>;
+                  }
+                }
+
+                return null;
               })()}
             </div>
           </div>

@@ -194,12 +194,19 @@ function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
           <div className="border-b3-react-border border-t pt-3">
             <div className="flex items-center justify-between">
               <p className="text-b3-react-foreground font-semibold">Amount</p>
-              <p
-                className="text-b3-react-foreground hover:text-b3-react-foreground/80 cursor-pointer text-xl font-semibold transition-colors"
-                onClick={onBack}
-              >
-                ${parseFloat(srcAmountOnRamp).toFixed(2)}
-              </p>
+              <div className="flex flex-col items-end gap-0.5">
+                <p
+                  className="text-b3-react-foreground hover:text-b3-react-foreground/80 cursor-pointer text-xl font-semibold transition-colors"
+                  onClick={onBack}
+                >
+                  ${parseFloat(srcAmountOnRamp).toFixed(2)}
+                </p>
+                {anyspendQuote?.data?.fee?.type === "standard_fee" && anyspendQuote.data.currencyIn?.amountUsd && (
+                  <p className="text-b3-react-foreground/60 text-xs">
+                    incl. ${((Number(anyspendQuote.data.currencyIn.amountUsd) * anyspendQuote.data.fee.finalFeeBps) / 10000).toFixed(2)} fee
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </div>

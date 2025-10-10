@@ -135,7 +135,21 @@ export function FeeDetailPanel({
               )}
               {!isStripeFee && currentCryptoTier && (
                 <>
-                  qualifies for <span className="text-as-brand font-semibold">{bpsToPercent(currentCryptoTier.bps)}%</span> fee
+                  qualifies for{" "}
+                  <span className="text-as-brand font-semibold">
+                    {bpsToPercent(currentCryptoTier.bps)}% fee ($
+                    {((transactionAmountUsd * currentCryptoTier.bps) / 10000).toFixed(2)})
+                  </span>
+                  {hasAnyDiscount && (
+                    <>
+                      {" "}→{" "}
+                      <span className="text-as-brand font-semibold">
+                        {bpsToPercent(fee.finalFeeBps)}% ($
+                        {((transactionAmountUsd * fee.finalFeeBps) / 10000).toFixed(2)})
+                      </span>
+                      {" "}after discounts
+                    </>
+                  )}
                 </>
               )}
             </p>
