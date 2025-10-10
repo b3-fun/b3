@@ -22,6 +22,17 @@ export const B3_TOKEN: components["schemas"]["Token"] = {
   },
 };
 
+export const ANYSPEND_TOKEN: components["schemas"]["Token"] = {
+  chainId: 8453,
+  address: "0xc17dda248e2d50fc006d8febb5a406dd31972712",
+  decimals: 18,
+  name: "Anyspend",
+  symbol: "ANY",
+  metadata: {
+    logoURI: "https://cdn.b3.fun/anyspend_64x64.png",
+  },
+};
+
 export const USDC_BASE: components["schemas"]["Token"] = {
   symbol: "USDC",
   chainId: base.id,
