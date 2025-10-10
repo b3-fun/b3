@@ -12,6 +12,7 @@ import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFing
 import { CryptoPaySection } from "./common/CryptoPaySection";
 import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPaymentMethod";
 import { CryptoReceiveSection } from "./common/CryptoReceiveSection";
+import { FeeDetailPanel } from "./common/FeeDetailPanel";
 import { FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaymentMethod";
 import { OrderDetails } from "./common/OrderDetails";
 import { PointsDetailPanel } from "./common/PointsDetailPanel";
@@ -80,6 +81,7 @@ function AnySpendDepositHypeInner({
     srcAmount,
     setSrcAmount,
     dstAmount,
+    isSrcInputDirty,
     setIsSrcInputDirty,
     selectedCryptoPaymentMethod,
     setSelectedCryptoPaymentMethod,
@@ -207,6 +209,7 @@ function AnySpendDepositHypeInner({
               setSelectedSrcToken={setSelectedSrcToken}
               srcAmount={srcAmount}
               setSrcAmount={setSrcAmount}
+              isSrcInputDirty={isSrcInputDirty}
               setIsSrcInputDirty={setIsSrcInputDirty}
               selectedCryptoPaymentMethod={selectedCryptoPaymentMethod}
               onSelectCryptoPaymentMethod={() => setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD)}
@@ -236,6 +239,7 @@ function AnySpendDepositHypeInner({
                 recipientSelectionPanelIndex={PanelView.RECIPIENT_SELECTION}
                 anyspendQuote={anyspendQuote}
                 onShowPointsDetail={() => setActivePanel(PanelView.POINTS_DETAIL)}
+                onShowFeeDetail={() => setActivePanel(PanelView.FEE_DETAIL)}
                 customUsdInputValues={customUsdInputValues}
               />
             </motion.div>
@@ -272,12 +276,14 @@ function AnySpendDepositHypeInner({
               selectedDstChainId={base.id}
               setSelectedDstChainId={() => {}}
               setSelectedDstToken={() => {}}
+              isSrcInputDirty={isSrcInputDirty}
               onChangeDstAmount={value => {
                 setIsSrcInputDirty(false);
                 setSrcAmount(value);
               }}
               anyspendQuote={anyspendQuote}
               onShowPointsDetail={() => setActivePanel(PanelView.POINTS_DETAIL)}
+              onShowFeeDetail={() => setActivePanel(PanelView.FEE_DETAIL)}
             />
           )}
         </div>
@@ -470,6 +476,20 @@ function AnySpendDepositHypeInner({
     />
   );
 
+  const feeDetailView = anyspendQuote?.data?.fee ? (
+    <FeeDetailPanel
+      fee={anyspendQuote.data.fee}
+      transactionAmountUsd={
+        paymentType === "fiat"
+          ? parseFloat(srcAmount)
+          : anyspendQuote.data.currencyIn?.amountUsd
+            ? Number(anyspendQuote.data.currencyIn.amountUsd)
+            : undefined
+      }
+      onBack={() => setActivePanel(PanelView.MAIN)}
+    />
+  ) : null;
+
   // If showing token selection, render with panel transitions
   return (
     <StyleRoot>
@@ -521,6 +541,9 @@ function AnySpendDepositHypeInner({
             </div>,
             <div key="points-detail-view" className={cn(mode === "page" && "p-6")}>
               {pointsDetailView}
+            </div>,
+            <div key="fee-detail-view" className={cn(mode === "page" && "p-6")}>
+              {feeDetailView}
             </div>,
           ]}
         </TransitionPanel>
