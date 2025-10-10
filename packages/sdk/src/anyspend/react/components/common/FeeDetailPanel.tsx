@@ -252,11 +252,7 @@ export function FeeDetailPanel({ fee, transactionAmountUsd, onBack }: FeeDetailP
                       {fee.stripeFeeUsd?.toFixed(2) || "0.00"})
                     </span>
                     <span className="text-as-primary font-medium">
-                      $
-                      {(
-                        (transactionAmountUsd * (fee.stripeFeeBps || 0)) / 10000 +
-                        (fee.stripeFeeUsd || 0)
-                      ).toFixed(2)}
+                      ${((transactionAmountUsd * (fee.stripeFeeBps || 0)) / 10000 + (fee.stripeFeeUsd || 0)).toFixed(2)}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -266,21 +262,16 @@ export function FeeDetailPanel({ fee, transactionAmountUsd, onBack }: FeeDetailP
                     </span>
                     <span className="text-as-primary font-medium">
                       $
-                      {(
-                        (transactionAmountUsd * (fee.anyspendFeeBps || 0)) / 10000 +
-                        (fee.anyspendFeeUsd || 0)
-                      ).toFixed(2)}
+                      {((transactionAmountUsd * (fee.anyspendFeeBps || 0)) / 10000 + (fee.anyspendFeeUsd || 0)).toFixed(
+                        2,
+                      )}
                     </span>
                   </div>
                   <div className="border-as-border-secondary border-t pt-2">
                     <div className="flex items-center justify-between">
                       <span className="text-as-primary font-semibold">Total Fee</span>
                       <span className="text-as-brand font-semibold">
-                        $
-                        {(
-                          (transactionAmountUsd * (fee.finalFeeBps || 0)) / 10000 +
-                          (fee.finalFeeUsd || 0)
-                        ).toFixed(2)}
+                        ${((transactionAmountUsd * (fee.finalFeeBps || 0)) / 10000 + (fee.finalFeeUsd || 0)).toFixed(2)}
                       </span>
                     </div>
                   </div>

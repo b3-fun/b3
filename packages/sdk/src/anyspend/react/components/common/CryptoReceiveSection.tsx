@@ -162,9 +162,7 @@ export function CryptoReceiveSection({
               );
 
               // Get the fee percentage if available
-              const feePercent = anyspendQuote.data.fee?.finalFeeBps
-                ? anyspendQuote.data.fee.finalFeeBps / 100
-                : 0;
+              const feePercent = anyspendQuote.data.fee?.finalFeeBps ? anyspendQuote.data.fee.finalFeeBps / 100 : 0;
 
               // Calculate actual slippage (price impact minus fee)
               const actualSlippage = percentageNum - feePercent;
