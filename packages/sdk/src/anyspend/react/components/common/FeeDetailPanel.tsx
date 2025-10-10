@@ -191,48 +191,54 @@ export function FeeDetailPanel({
         {/* Transaction Summary */}
         {transactionAmountUsd && (
           <div className="bg-as-surface-secondary border-as-border-secondary rounded-2xl border p-4">
-            <div className="text-as-secondary space-y-1 text-center text-xs">
-              <p>
-                Your transaction of <span className="text-as-primary font-semibold">${transactionAmountUsd.toFixed(2)}</span>
-              </p>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-as-secondary">Transaction</span>
+                <span className="text-as-primary font-semibold">${transactionAmountUsd.toFixed(2)}</span>
+              </div>
+
               {isStripeFee && currentFiatTier && (
-                <p>
-                  Tier: <span className="text-as-brand font-semibold">{currentFiatTier.label}</span> → CC Fee +{" "}
-                  {currentFiatTier.fee}
-                </p>
+                <div className="flex items-center justify-between">
+                  <span className="text-as-secondary">{currentFiatTier.label}</span>
+                  <span className="text-as-primary">CC Fee + {currentFiatTier.fee}</span>
+                </div>
               )}
+
               {!isStripeFee && currentCryptoTier && (
                 <>
-                  <p>
-                    Fee Tier: <span className="text-as-brand font-semibold">{currentCryptoTier.label}</span> → Base fee{" "}
-                    {bpsToPercent(currentCryptoTier.bps)}% ($
-                    {((transactionAmountUsd * currentCryptoTier.bps) / 10000).toFixed(2)})
-                  </p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-as-secondary">Base Fee ({bpsToPercent(currentCryptoTier.bps)}%)</span>
+                    <span className="text-as-primary font-medium">
+                      ${((transactionAmountUsd * currentCryptoTier.bps) / 10000).toFixed(2)}
+                    </span>
+                  </div>
+
                   {hasWhaleDiscount && currentWhaleTier && (
-                    <p>
-                      Whale Tier: <span className="text-green-600 font-semibold">{currentWhaleTier.label}</span> →{" "}
-                      {currentWhaleTier.discountPercent}% discount ($
-                      {((transactionAmountUsd * baseFee * currentWhaleTier.discountPercent) / 100 / 10000).toFixed(2)})
-                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-green-600">Discount ({currentWhaleTier.discountPercent}% off)</span>
+                      <span className="text-green-600 font-medium">
+                        -${((transactionAmountUsd * baseFee * currentWhaleTier.discountPercent) / 100 / 10000).toFixed(2)}
+                      </span>
+                    </div>
                   )}
+
                   {hasPartnerDiscount && (
-                    <p>
-                      Partner Discount:{" "}
-                      <span className="text-green-600 font-semibold">
-                        {partnerDiscountPercent}% ($
-                        {((transactionAmountUsd * baseFee * partnerDiscountPercent) / 100 / 10000).toFixed(2)})
+                    <div className="flex items-center justify-between">
+                      <span className="text-green-600">Partner Discount ({partnerDiscountPercent}% off)</span>
+                      <span className="text-green-600 font-medium">
+                        -${((transactionAmountUsd * baseFee * partnerDiscountPercent) / 100 / 10000).toFixed(2)}
                       </span>
-                    </p>
+                    </div>
                   )}
-                  {hasAnyDiscount && (
-                    <p>
-                      Final fee:{" "}
+
+                  <div className="border-as-border-secondary border-t pt-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-as-primary font-semibold">Total Fee</span>
                       <span className="text-as-brand font-semibold">
-                        {bpsToPercent(fee.finalFeeBps)}% ($
-                        {((transactionAmountUsd * fee.finalFeeBps) / 10000).toFixed(2)})
+                        ${((transactionAmountUsd * fee.finalFeeBps) / 10000).toFixed(2)}
                       </span>
-                    </p>
-                  )}
+                    </div>
+                  </div>
                 </>
               )}
             </div>
