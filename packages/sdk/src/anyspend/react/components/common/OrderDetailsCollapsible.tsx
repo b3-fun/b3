@@ -5,6 +5,7 @@ import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { CopyToClipboard } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils";
 import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
+import { formatNumber } from "@b3dotfun/sdk/shared/utils/formatNumber";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { ChevronDown, Copy } from "lucide-react";
 import { motion } from "motion/react";
@@ -152,13 +153,15 @@ export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
               </div>
             </div>
 
-            {points && points > 0 && (
+            {points !== undefined && points !== null && (
               <>
                 <div className="order-details-divider divider w-full" />
                 {/* Points Section */}
                 <div className="order-details-points-section flex w-full justify-between gap-4">
                   <div className="order-details-points-label text-as-tertiarry">Points</div>
-                  <div className="order-details-points-value text-as-brand font-semibold">+{points} pts</div>
+                  <div className="order-details-points-value text-as-brand font-semibold">
+                    +{formatNumber(points)} pts
+                  </div>
                 </div>
               </>
             )}

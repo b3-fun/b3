@@ -905,6 +905,7 @@ function AnySpendInner({
             refundTxs={oat.data.refundTxs}
             selectedCryptoPaymentMethod={selectedCryptoPaymentMethod}
             onPaymentMethodChange={setSelectedCryptoPaymentMethod}
+            points={oat.data.points || undefined}
             onBack={() => {
               setOrderId(undefined);
               navigateBack();
