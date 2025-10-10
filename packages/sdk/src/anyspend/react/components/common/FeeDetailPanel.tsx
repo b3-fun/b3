@@ -83,51 +83,6 @@ export function FeeDetailPanel({
           <h3 className="text-as-primary text-lg font-bold">Fee Breakdown</h3>
         </div>
 
-        {/* Payment Summary - Simple and Clean */}
-        <div className="bg-as-surface-secondary border-as-border-secondary rounded-2xl border p-4">
-          <table className="w-full">
-            <tbody className="text-sm">
-              <tr className="border-b border-as-border-secondary">
-                <td className="py-2.5">
-                  <span className="text-as-primary font-medium">You Pay</span>
-                </td>
-                <td className="py-2.5 text-right font-semibold text-as-primary">
-                  {isStripeFee ? formatAmount(fee.originalAmount) : `${bpsToPercent(fee.finalFeeBps)}%`}
-                </td>
-              </tr>
-              <tr className="border-b border-as-border-secondary">
-                <td className="py-2.5">
-                  <span className="text-as-primary font-medium">Total Fees</span>
-                </td>
-                <td className="py-2.5 text-right font-semibold text-red-600">
-                  {isStripeFee
-                    ? `-${formatAmount((Number(fee.originalAmount) - Number(fee.finalAmount)).toString())}`
-                    : `${bpsToPercent(fee.finalFeeBps)}%`
-                  }
-                </td>
-              </tr>
-              {hasAnyDiscount && !isStripeFee && (
-                <tr className="border-b border-as-border-secondary">
-                  <td className="py-2.5">
-                    <span className="font-medium text-green-600">Discounts Applied</span>
-                  </td>
-                  <td className="py-2.5 text-right font-semibold text-green-600">
-                    -{bpsToPercent(fee.anyspendWhaleDiscountBps + fee.anyspendPartnerDiscountBps)}%
-                  </td>
-                </tr>
-              )}
-              <tr className="bg-as-surface-primary/50">
-                <td className="py-3">
-                  <span className="text-as-primary font-bold">You Receive</span>
-                </td>
-                <td className="py-3 text-right font-bold text-as-brand">
-                  {isStripeFee ? formatAmount(fee.finalAmount) : `After ${bpsToPercent(fee.finalFeeBps)}% fee`}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
         {/* Fee Schedule Section */}
         <div className="bg-as-surface-secondary border-as-border-secondary rounded-2xl border p-4">
           <h4 className="text-as-primary mb-3 text-sm font-semibold">

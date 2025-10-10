@@ -267,13 +267,8 @@ export function PanelOnramp({
 
         <div className="">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-as-tertiarry text-sm">
-                {(() => {
-                  const fee = getFeeFromApi(selectedPaymentMethod || FiatPaymentMethod.NONE);
-                  return fee !== null ? `Total (included $${fee.toFixed(2)} fee)` : "Total";
-                })()}
-              </span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-as-tertiarry text-sm">Total</span>
               {anyspendQuote?.data?.fee && onShowFeeDetail && (
                 <button
                   onClick={onShowFeeDetail}
@@ -292,9 +287,17 @@ export function PanelOnramp({
                   />
                 )}
             </div>
-            <span className="text-as-primary font-semibold">
-              ${getTotalAmount(selectedPaymentMethod || FiatPaymentMethod.NONE).toFixed(2)}
-            </span>
+            <div className="flex flex-col items-end gap-0.5">
+              <span className="text-as-primary font-semibold">
+                ${getTotalAmount(selectedPaymentMethod || FiatPaymentMethod.NONE).toFixed(2)}
+              </span>
+              {(() => {
+                const fee = getFeeFromApi(selectedPaymentMethod || FiatPaymentMethod.NONE);
+                return fee !== null && fee > 0 ? (
+                  <span className="text-as-secondary text-xs">incl. ${fee.toFixed(2)} fee</span>
+                ) : null;
+              })()}
+            </div>
           </div>
         </div>
       </div>
