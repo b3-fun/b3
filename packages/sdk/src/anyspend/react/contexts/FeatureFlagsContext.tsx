@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, ReactNode } from "react";
+import { ReactNode, createContext, useContext } from "react";
 
 export interface FeatureFlags {
   showPoints?: boolean;
@@ -18,7 +18,7 @@ interface FeatureFlagsProviderProps {
 }
 
 const defaultFeatureFlags: FeatureFlags = {
-  showPoints: false,
+  showPoints: true,
 };
 
 export function FeatureFlagsProvider({ children, featureFlags = defaultFeatureFlags }: FeatureFlagsProviderProps) {
