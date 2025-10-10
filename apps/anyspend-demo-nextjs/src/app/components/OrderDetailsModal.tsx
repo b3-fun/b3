@@ -1,11 +1,11 @@
 "use client";
 
 import { useAnyspendOrderAndTransactions } from "@b3dotfun/sdk/anyspend/react";
-import { Button, Dialog, DialogContent, Input } from "@b3dotfun/sdk/global-account/react";
-import { OrderDetails } from "@b3dotfun/sdk/anyspend/react/components/common/OrderDetails";
 import { CryptoPaymentMethodType } from "@b3dotfun/sdk/anyspend/react/components/common/CryptoPaymentMethod";
-import { useState } from "react";
+import { OrderDetails } from "@b3dotfun/sdk/anyspend/react/components/common/OrderDetails";
+import { Button, Dialog, DialogContent, Input } from "@b3dotfun/sdk/global-account/react";
 import { X } from "lucide-react";
+import { useState } from "react";
 
 interface OrderDetailsModalProps {
   isOpen: boolean;
@@ -15,7 +15,7 @@ interface OrderDetailsModalProps {
 export function OrderDetailsModal({ isOpen, onClose }: OrderDetailsModalProps) {
   const [orderId, setOrderId] = useState("");
   const [searchedOrderId, setSearchedOrderId] = useState<string | undefined>();
-  const { orderAndTransactions: oat, isLoading } = useAnyspendOrderAndTransactions(searchedOrderId);
+  const { orderAndTransactions, isLoadingOrderAndTransactions } = useAnyspendOrderAndTransactions(searchedOrderId);
 
   const handleSearch = () => {
     if (orderId.trim()) {
@@ -68,27 +68,27 @@ export function OrderDetailsModal({ isOpen, onClose }: OrderDetailsModalProps) {
                   View Order
                 </Button>
               </div>
-            ) : isLoading ? (
+            ) : isLoadingOrderAndTransactions ? (
               <div className="flex min-h-[300px] items-center justify-center">
                 <div className="text-center">
                   <div className="mb-2 text-lg font-medium">Loading order details...</div>
                   <div className="text-sm text-gray-500">Please wait</div>
                 </div>
               </div>
-            ) : oat ? (
+            ) : orderAndTransactions ? (
               <div className="relative">
                 <Button onClick={handleClear} variant="outline" className="mb-4 w-full">
                   ← Search Another Order
                 </Button>
                 <OrderDetails
                   mode="modal"
-                  order={oat.data.order}
-                  depositTxs={oat.data.depositTxs}
-                  relayTxs={oat.data.relayTxs}
-                  executeTx={oat.data.executeTx}
-                  refundTxs={oat.data.refundTxs}
+                  order={orderAndTransactions.data.order}
+                  depositTxs={orderAndTransactions.data.depositTxs}
+                  relayTxs={orderAndTransactions.data.relayTxs}
+                  executeTx={orderAndTransactions.data.executeTx}
+                  refundTxs={orderAndTransactions.data.refundTxs}
                   selectedCryptoPaymentMethod={CryptoPaymentMethodType.NONE}
-                  points={oat.data.points}
+                  points={orderAndTransactions.data.points ?? undefined}
                 />
               </div>
             ) : (
