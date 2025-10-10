@@ -185,22 +185,32 @@ export function FeeDetailPanel({ fee, decimals = 6, transactionAmountUsd, onBack
           })()}
         </div>
 
-        {/* Whale Discount Tiers - Only show if user has whale discount or partner discount */}
-        {!isStripeFee && (hasWhaleDiscount || hasPartnerDiscount) && (
+        {/* Whale Discount Tiers - Always show for crypto (not fiat) */}
+        {!isStripeFee && (
           <div className="bg-as-surface-secondary border-as-border-secondary rounded-2xl border p-4">
             <h4 className="text-as-primary mb-3 text-sm font-semibold">
-              {hasWhaleDiscount ? "Whale Discount Tiers" : "Partner Discount"}
+              {hasWhaleDiscount ? "Whale Discount Tiers" : hasPartnerDiscount ? "Partner Discount" : "Discount Tiers"}
             </h4>
             <div className="space-y-1.5">
-              {hasWhaleDiscount ? (
+              {hasPartnerDiscount && !hasWhaleDiscount ? (
+                <div className="flex items-center justify-between rounded-lg bg-green-500/10 px-3 py-2.5 text-sm font-semibold text-green-600">
+                  <span>Partner Discount</span>
+                  <span>{partnerDiscountPercent}% discount</span>
+                </div>
+              ) : (
                 <>
                   {WHALE_DISCOUNT_TIERS.map((tier, idx) => {
                     const isCurrentTier = currentWhaleTier?.label === tier.label;
                     const currentTierIndex = WHALE_DISCOUNT_TIERS.findIndex(t => t.label === currentWhaleTier?.label);
 
-                    // Show all tiers if expanded, otherwise show up to current tier
-                    if (!showAllDiscountTiers && currentTierIndex !== -1 && idx > currentTierIndex) {
-                      return null;
+                    // If no whale discount, show only first tier; otherwise show up to current tier
+                    if (!showAllDiscountTiers) {
+                      if (!hasWhaleDiscount && idx > 0) {
+                        return null;
+                      }
+                      if (hasWhaleDiscount && currentTierIndex !== -1 && idx > currentTierIndex) {
+                        return null;
+                      }
                     }
 
                     return (
@@ -217,10 +227,12 @@ export function FeeDetailPanel({ fee, decimals = 6, transactionAmountUsd, onBack
                     );
                   })}
 
-                  {/* Show expand button if there are higher discount tiers */}
+                  {/* Show expand button */}
                   {(() => {
                     const currentTierIndex = WHALE_DISCOUNT_TIERS.findIndex(t => t.label === currentWhaleTier?.label);
-                    const hasMoreTiers = currentTierIndex !== -1 && currentTierIndex < WHALE_DISCOUNT_TIERS.length - 1;
+                    const hasMoreTiers = hasWhaleDiscount
+                      ? currentTierIndex !== -1 && currentTierIndex < WHALE_DISCOUNT_TIERS.length - 1
+                      : WHALE_DISCOUNT_TIERS.length > 1;
 
                     if (hasMoreTiers) {
                       return (
@@ -228,7 +240,7 @@ export function FeeDetailPanel({ fee, decimals = 6, transactionAmountUsd, onBack
                           onClick={() => setShowAllDiscountTiers(!showAllDiscountTiers)}
                           className="text-as-primary/60 hover:text-as-primary mt-2 flex w-full items-center justify-center gap-1 text-xs transition-colors"
                         >
-                          <span>{showAllDiscountTiers ? "Show less" : "Show higher tiers"}</span>
+                          <span>{showAllDiscountTiers ? "Show less" : "Show all tiers"}</span>
                           <ChevronDown
                             className={cn("h-3.5 w-3.5 transition-transform", showAllDiscountTiers && "rotate-180")}
                           />
@@ -238,11 +250,6 @@ export function FeeDetailPanel({ fee, decimals = 6, transactionAmountUsd, onBack
                     return null;
                   })()}
                 </>
-              ) : (
-                <div className="flex items-center justify-between rounded-lg bg-green-500/10 px-3 py-2.5 text-sm font-semibold text-green-600">
-                  <span>Partner Discount</span>
-                  <span>{partnerDiscountPercent}% discount</span>
-                </div>
               )}
             </div>
           </div>
