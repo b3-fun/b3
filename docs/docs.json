@@ -337,6 +337,13 @@
                 ]
               },
               {
+                "group": "Token",
+                "pages": [
+                  "anyspend/airdrop",
+                  "anyspend/tokenomics"
+                ]
+              },
+              {
                 "group": "React",
                 "pages": [
                   "anyspend/components",
