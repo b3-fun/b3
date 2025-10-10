@@ -1,12 +1,11 @@
-import { Button, ShinyButton } from "@b3dotfun/sdk/global-account/react";
+import { ShinyButton } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
-import { ArrowDown, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { components } from "../../../types/api";
 
 interface FeeDetailPanelProps {
   fee: components["schemas"]["Fee"];
-  decimals?: number;
   transactionAmountUsd?: number;
   onBack: () => void;
 }
@@ -33,7 +32,7 @@ const WHALE_DISCOUNT_TIERS = [
   { minAny: 1000000, discountPercent: 100, label: "Tier 3: 1M+ $ANY" },
 ];
 
-export function FeeDetailPanel({ fee, decimals = 6, transactionAmountUsd, onBack }: FeeDetailPanelProps) {
+export function FeeDetailPanel({ fee, transactionAmountUsd, onBack }: FeeDetailPanelProps) {
   // Detect if this is a fiat onramp order (Stripe) vs regular crypto swap
   // stripeweb2_fee = Stripe/fiat onramp (uses FIAT_FEE_TIERS)
   // standard_fee = Regular crypto swap (uses CRYPTO_FEE_TIERS)
@@ -42,17 +41,9 @@ export function FeeDetailPanel({ fee, decimals = 6, transactionAmountUsd, onBack
   // Convert basis points to percentage
   const bpsToPercent = (bps: number) => (bps / 100).toFixed(2);
 
-  // Format amount
-  const formatAmount = (amount: string) => {
-    const divisor = Math.pow(10, decimals);
-    const formatted = (Number(amount) / divisor).toFixed(2);
-    return `$${formatted}`;
-  };
-
   // Check if discount is active
   const hasWhaleDiscount = fee.anyspendWhaleDiscountBps > 0;
   const hasPartnerDiscount = fee.anyspendPartnerDiscountBps > 0;
-  const hasAnyDiscount = hasWhaleDiscount || hasPartnerDiscount;
 
   // Find current tier based on transaction amount
   const getCurrentCryptoTier = (amount?: number) => {

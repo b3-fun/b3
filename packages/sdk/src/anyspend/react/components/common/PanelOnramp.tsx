@@ -1,4 +1,4 @@
-import { useCoinbaseOnrampOptions, useGeoOnrampOptions } from "@b3dotfun/sdk/anyspend/react";
+import { useCoinbaseOnrampOptions } from "@b3dotfun/sdk/anyspend/react";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
 import { ALL_CHAINS } from "@b3dotfun/sdk/anyspend/utils/chain";
@@ -53,8 +53,6 @@ export function PanelOnramp({
   customUsdInputValues?: string[];
 }) {
   const featureFlags = useFeatureFlags();
-  // Get geo-based onramp options to access fee information
-  const { stripeWeb2Support } = useGeoOnrampOptions(srcAmountOnRamp);
 
   // Helper function to get fees from anyspend quote
   const getFeeFromApi = (paymentMethod: FiatPaymentMethod): number | null => {

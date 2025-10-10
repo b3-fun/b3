@@ -1,6 +1,5 @@
-import { Button, ShinyButton } from "@b3dotfun/sdk/global-account/react";
+import { ShinyButton } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
-import { ArrowDown } from "lucide-react";
 import Link from "next/link";
 
 interface PointsDetailPanelProps {

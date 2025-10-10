@@ -479,7 +479,6 @@ function AnySpendDepositHypeInner({
   const feeDetailView = anyspendQuote?.data?.fee ? (
     <FeeDetailPanel
       fee={anyspendQuote.data.fee}
-      decimals={6}
       transactionAmountUsd={
         paymentType === "fiat"
           ? parseFloat(srcAmount)
