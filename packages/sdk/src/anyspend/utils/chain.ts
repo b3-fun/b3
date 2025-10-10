@@ -140,7 +140,7 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     viem: getCustomEvmChain(avalanche, "https://avalanche-c-chain-rpc.publicnode.com"),
     pollingInterval: 1000, // 1 second for Avalanche
     zapperEnum: "AVALANCHE_MAINNET",
-    coingeckoName: "avalanche",
+    coingeckoName: "avax",
   },
   [bsc.id]: {
     id: bsc.id,
@@ -187,8 +187,8 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
       "https://cosmopolitan-nameless-mountain.abstract-mainnet.quiknode.pro/863853304b986b582bdacf625ce3350397c560f8/",
     ),
     pollingInterval: 3000, // 3 seconds for Abstract
-    zapperEnum: "B3_MAINNET",
-    coingeckoName: "b3",
+    zapperEnum: "ABSTRACT_MAINNET",
+    coingeckoName: "abstract",
   },
 };
 
