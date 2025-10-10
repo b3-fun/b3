@@ -1,9 +1,9 @@
 ---
-title: Kit de Desarrollo de Software B3
+title: B3 SDK
 description: >-
   Un SDK de TypeScript completo para operaciones cross-chain de AnySpend y
-  autenticación de Cuentas Globales B3. Proporciona componentes de React para
-  una integración fácil y servicios de TypeScript sin interfaz para
+  autenticación de cuentas globales B3. Proporciona componentes de React para
+  una integración fácil y servicios TypeScript sin interfaz para
   implementaciones personalizadas.
 lang: es
 originalPath: sdk/introduction.mdx
@@ -24,24 +24,24 @@ El SDK está organizado en módulos enfocados diseñados para la máxima flexibi
 </Card>
 
 <Card title="Módulo de Cuenta Global" icon="user" href="/sdk/global-account/introduction">
-  Autenticación y gestión de usuarios de Cuentas Globales B3 con inicio de sesión social y claves de sesión.
+  Autenticación y gestión de usuarios de Cuentas Globales B3 con inicio de sesión social y llaves de sesión.
 </Card>
 
 </CardGroup>
 
 ### Estructura del Módulo
 
-Cada módulo contiene componentes organizados y construidos con un propósito específico:
+Cada módulo contiene componentes organizados y creados para un propósito específico:
 
-- **`react/`** - Componentes y hooks de React para una fácil integración
+- **`react/`** - Componentes React y hooks para una fácil integración
 - **`services/`** - Servicios TypeScript sin interfaz para implementaciones personalizadas
-- **`types/`** - Definiciones de TypeScript completas
+- **`types/`** - Definiciones TypeScript completas
 - **`utils/`** - Funciones de utilidad y ayudantes
 - **`constants/`** - Configuración y constantes
 
 ## Soporte de Plataforma
 
-| Característica      | React Web | React Native | Sin Interfaz |
+| Característica      | React Web | React Native | Sin interfaz |
 |---------------------|-----------|--------------|--------------|
 | AnySpend            | ✅         | ❌            | ✅            |
 | Cuentas Globales    | ✅         | ✅            | ✅            |
@@ -95,7 +95,7 @@ function App() {
         provider={{ strategy: "google" }}
         partnerId="your-partner-id"
         onLoginSuccess={(globalAccount) => {
-          console.log("Autenticado:", globalAccount);
+          console.log("Authenticated:", globalAccount);
         }}
       />
     </B3Provider>
@@ -112,7 +112,7 @@ function NFTMinting() {
   const nftContract = {
     address: "0x9c275ff1634519E9B5449ec79cd939B5F900564d",
     chainId: 8333,
-    name: "Colección de NFT de Ejemplo",
+    name: "Example NFT Collection",
     imageUrl: "https://example.com/nft.jpg",
     price: "1000000000000000000", // 1 ETH en wei
     currency: { symbol: "ETH", decimals: 18 }
@@ -137,15 +137,15 @@ function NFTMinting() {
 </Card>
 
 <Card title="Intercambios Entre Cadenas" icon="arrow-right-arrow-left">
-  Habilita intercambios de tokens sin fisuras a través de más de 20 blockchains soportadas con enrutamiento óptimo.
+  Habilita intercambios de tokens sin fisuras en más de 20 blockchains soportadas con enrutamiento óptimo.
 </Card>
 
 <Card title="Acuñación de NFT" icon="image">
-  Botones de acuñación de NFT de un clic que aceptan pagos en cualquier token de cualquier cadena.
+  Botones de acuñación de NFT con un clic que aceptan pagos en cualquier token de cualquier cadena.
 </Card>
 
-<Card title="Pasarelas de Fiat" icon="credit-card">
-  Pasarelas de fiat a cripto integradas para usuarios sin criptomoneda existente.
+<Card title="Rampas de Fiat" icon="credit-card">
+  Rampas de fiat a cripto integradas para usuarios sin criptomoneda existente.
 </Card>
 </CardGroup>
 
@@ -156,12 +156,12 @@ function NFTMinting() {
   Google, Discord y otros proveedores sociales con incorporación instantánea.
 </Card>
 
-<Card title="Claves de Sesión" icon="key">
+<Card title="Llaves de Sesión" icon="key">
   Gestión de sesiones segura con permisos granulares para una UX mejorada.
 </Card>
 
 <Card title="Identidad Multiplataforma" icon="globe">
-  Una identidad única que funciona en todas las aplicaciones y juegos B3.
+  Una identidad única que funciona en todas las aplicaciones y juegos de B3.
 </Card>
 
 <Card title="Cuentas Inteligentes" icon="wallet">
@@ -215,7 +215,7 @@ if (authResult) {
 
 <CardGroup cols={3}>
 <Card title="Soporte para Desarrolladores" icon="handshake" href="https://b3builders.typeform.com/bsmntdevelopers">
-  Obtén ayuda integrando el B3 SDK en tu proyecto.
+  Obtén ayuda para integrar el B3 SDK en tu proyecto.
 </Card>
 
 <Card title="Comunidad en Discord" icon="discord" href="https://discord.gg/b3dotfun">
@@ -235,4 +235,4 @@ if (authResult) {
 4. **[Explora ejemplos](/anyspend/examples)** y patrones de implementación
 5. **[Únete a la comunidad](https://discord.gg/b3dotfun)** para soporte y actualizaciones
 
-El B3 SDK proporciona todo lo que necesitas para construir la próxima generación de aplicaciones entre cadenas con experiencias de usuario sin fisuras. ¡Comienza a construir hoy!
+El B3 SDK proporciona todo lo que necesitas para construir la próxima generación de aplicaciones entre cadenas con experiencias de usuario sin fisuras. ¡Empieza a construir hoy!
