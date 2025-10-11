@@ -126,7 +126,7 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     ),
     pollingInterval: 1000, // 1 second for Polygon
     zapperEnum: "POLYGON_MAINNET",
-    coingeckoName: "polygon",
+    coingeckoName: "polygon_pos",
   },
   [avalanche.id]: {
     id: avalanche.id,
