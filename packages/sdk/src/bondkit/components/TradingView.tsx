@@ -285,7 +285,7 @@ const TradingView = ({ className, tokenAddress, tokenSymbol }: TradingViewProps)
         tvWidgetRef.current = null;
       }
     };
-  }, [librariesLoaded, currentTrade?.product_id, tradingViewDefaultInterval, tradingViewTimezone]);
+  }, [librariesLoaded, currentTrade?.product_id, tradingViewDefaultInterval, tradingViewTimezone, chartApiUrl]);
 
   useEffect(() => {
     if (
