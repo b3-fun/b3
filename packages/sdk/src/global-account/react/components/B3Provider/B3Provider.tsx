@@ -8,7 +8,7 @@ import { useWagmiConfig } from "@b3dotfun/sdk/global-account/react/hooks/useWagm
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { loadGA4Script } from "@b3dotfun/sdk/global-account/utils/analytics";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
-import "@reservoir0x/relay-kit-ui/styles.css";
+import "@relayprotocol/relay-kit-ui/styles.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
 import { Toaster } from "sonner";
