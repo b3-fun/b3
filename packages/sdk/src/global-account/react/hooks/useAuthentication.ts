@@ -45,11 +45,8 @@ export function useAuthentication(partnerId: string) {
   const { switchAccount } = useSwitchAccount();
   debug("@@activeWagmiAccount", activeWagmiAccount);
 
-  console.log("hehe", wagmiConfig);
-
   // Check localStorage version and clear if not found or mismatched
   useEffect(() => {
-    console.log("@@useEffect:localStorage", localStorage);
     if (typeof localStorage !== "undefined") {
       const version = localStorage.getItem("version");
       if (version !== "1") {
@@ -133,7 +130,6 @@ export function useAuthentication(partnerId: string) {
       // Try to re-authenticate first
       try {
         const userAuth = await app.reAuthenticate();
-        console.log("re-authenticate", userAuth);
         setUser(userAuth.user);
         setIsAuthenticated(true);
         setIsAuthenticating(false);
