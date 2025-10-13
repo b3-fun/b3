@@ -14,7 +14,7 @@ import {
   useDisconnect,
   useSetActiveWallet,
 } from "thirdweb/react";
-import { ecosystemWallet, Wallet } from "thirdweb/wallets";
+import { Wallet, ecosystemWallet } from "thirdweb/wallets";
 import { preAuthenticate } from "thirdweb/wallets/in-app";
 import { useAccount, useConnect, useSwitchAccount } from "wagmi";
 import { useUserQuery } from "./useUserQuery";
@@ -44,6 +44,18 @@ export function useAuthentication(partnerId: string) {
   const activeWagmiAccount = useAccount();
   const { switchAccount } = useSwitchAccount();
   debug("@@activeWagmiAccount", activeWagmiAccount);
+
+  // Check localStorage version and clear if not found or mismatched
+  useEffect(() => {
+    if (typeof localStorage !== "undefined") {
+      const version = localStorage.getItem("version");
+      if (version !== "1") {
+        debug("@@localStorage:clearing due to version mismatch", { version });
+        localStorage.clear();
+        localStorage.setItem("version", "1");
+      }
+    }
+  }, []);
 
   const wallet = ecosystemWallet(ecosystemWalletId, {
     partnerId: partnerId,
