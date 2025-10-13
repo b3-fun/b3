@@ -16,4 +16,4 @@ export * from "./abis";
 export { BondkitSwapService } from "./swapService";
 
 // Components
-export { default as TradingView } from "./components/TradingView";
+export * from "./components";
