@@ -2,6 +2,7 @@
 
 import { Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { getConfig } from "../config";
 import { TradingViewProps } from "./types";
 import { loadScriptFromCDN } from "./utils/cdn-loader";
 import { formatNumberSmall } from "./utils/format";
@@ -23,11 +24,15 @@ const GifLoadingOverlay = ({ className }: { className?: string }) => (
   </div>
 );
 
-const TradingView = ({ className, tokenAddress, tokenSymbol }: TradingViewProps) => {
+const TradingView = ({ className, tokenAddress, tokenSymbol, chainId = 8453 }: TradingViewProps) => {
   // Use token info for the current trade
   const currentTrade = {
     product_id: tokenAddress && tokenSymbol ? `${tokenSymbol}-${tokenAddress}` : "BONDKIT",
   };
+
+  // Get chart API endpoint from config
+  const config = getConfig(chainId);
+  const chartApiUrl = `${config.chartApiEndpoint}/udf`;
 
   const [tradingViewDefaultInterval, setTradingViewDefaultInterval] = useState<ResolutionString>("60");
   const [tradingViewTimezone, setTradingViewTimezone] = useState<string>("");
@@ -153,7 +158,7 @@ const TradingView = ({ className, tokenAddress, tokenSymbol }: TradingViewProps)
       };
     };
 
-    const datafeed = createUDFDatafeed("https://b3-udf-worker.sean-430.workers.dev/bondkit/udf");
+    const datafeed = createUDFDatafeed(chartApiUrl);
     // Calculate timeframe for last 2 days
     const currentTime = Math.floor(Date.now() / 1000);
     const twoDaysAgo = currentTime - 2 * 24 * 60 * 60; // 2 days in seconds
@@ -280,7 +285,14 @@ const TradingView = ({ className, tokenAddress, tokenSymbol }: TradingViewProps)
         tvWidgetRef.current = null;
       }
     };
-  }, [librariesLoaded, currentTrade?.product_id, tradingViewDefaultInterval, tradingViewTimezone]);
+  }, [
+    librariesLoaded,
+    currentTrade?.product_id,
+    tradingViewDefaultInterval,
+    tradingViewTimezone,
+    chartApiUrl,
+    chainId,
+  ]);
 
   useEffect(() => {
     if (

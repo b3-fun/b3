@@ -7,6 +7,7 @@ export interface Config {
   rpcUrl: string;
   factoryAddress: Address;
   apiEndpoint: string;
+  chartApiEndpoint: string;
 }
 
 export type SupportedChainId = typeof base.id;
@@ -16,6 +17,7 @@ const baseMainnetConfig: Config = {
   rpcUrl: BaseMainnetRpcUrl,
   factoryAddress: BaseBondkitTokenFactoryContractAddress,
   apiEndpoint: "https://api.b3.fun/bondkit-tokens",
+  chartApiEndpoint: "https://bondkit-chart-api.b3.fun",
 };
 
 export const getConfig = (chainId: number, rpcUrl?: string): Config => {
