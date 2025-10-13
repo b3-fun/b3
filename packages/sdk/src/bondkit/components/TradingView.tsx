@@ -24,14 +24,14 @@ const GifLoadingOverlay = ({ className }: { className?: string }) => (
   </div>
 );
 
-const TradingView = ({ className, tokenAddress, tokenSymbol }: TradingViewProps) => {
+const TradingView = ({ className, tokenAddress, tokenSymbol, chainId = 8453 }: TradingViewProps) => {
   // Use token info for the current trade
   const currentTrade = {
     product_id: tokenAddress && tokenSymbol ? `${tokenSymbol}-${tokenAddress}` : "BONDKIT",
   };
 
   // Get chart API endpoint from config
-  const config = getConfig(8453); // Base mainnet
+  const config = getConfig(chainId);
   const chartApiUrl = `${config.chartApiEndpoint}/udf`;
 
   const [tradingViewDefaultInterval, setTradingViewDefaultInterval] = useState<ResolutionString>("60");
@@ -285,7 +285,14 @@ const TradingView = ({ className, tokenAddress, tokenSymbol }: TradingViewProps)
         tvWidgetRef.current = null;
       }
     };
-  }, [librariesLoaded, currentTrade?.product_id, tradingViewDefaultInterval, tradingViewTimezone, chartApiUrl]);
+  }, [
+    librariesLoaded,
+    currentTrade?.product_id,
+    tradingViewDefaultInterval,
+    tradingViewTimezone,
+    chartApiUrl,
+    chainId,
+  ]);
 
   useEffect(() => {
     if (
