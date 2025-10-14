@@ -97,37 +97,44 @@ export function AnySpendStakeUpside({
     try {
       setIsStaking(true);
 
-      // Check current allowance
-      const allowance = await basePublicClient.readContract({
-        address: token.address as `0x${string}`,
-        abi: erc20Abi,
-        functionName: "allowance",
-        args: [address, stakingContractAddress as `0x${string}`],
-      });
+      const isETH = token.address.toLowerCase() === ETH_ADDRESS.toLowerCase();
 
-      // If allowance is insufficient, request approval first
-      if (allowance < BigInt(stakeAmount)) {
-        toast.info(`Approving ${token} spending...`);
-
-        const approvalData = encodeFunctionData({
+      // For ERC20 tokens (not ETH), check and approve if needed
+      if (!isETH) {
+        // Check current allowance
+        const allowance = await basePublicClient.readContract({
+          address: token.address as `0x${string}`,
           abi: erc20Abi,
-          functionName: "approve",
-          args: [stakingContractAddress as `0x${string}`, BigInt(stakeAmount)],
+          functionName: "allowance",
+          args: [address, stakingContractAddress as `0x${string}`],
         });
 
-        await switchChainAndExecute(base.id, {
-          to: token.address as `0x${string}`,
-          data: approvalData,
-          value: BigInt(0),
-        });
+        // If allowance is insufficient, request approval first
+        if (allowance < BigInt(stakeAmount)) {
+          toast.info(`Approving ${token.symbol} spending...`);
 
-        toast.info("Approval confirmed. Proceeding with stake...");
+          const approvalData = encodeFunctionData({
+            abi: erc20Abi,
+            functionName: "approve",
+            args: [stakingContractAddress as `0x${string}`, BigInt(stakeAmount)],
+          });
+
+          await switchChainAndExecute(base.id, {
+            to: token.address as `0x${string}`,
+            data: approvalData,
+            value: BigInt(0),
+          });
+
+          toast.info("Approval confirmed. Proceeding with stake...");
+        }
       }
 
       // Execute the stake
-      toast.info(`Staking ${token}...`);
+      toast.info(`Staking ${token.symbol}...`);
 
-      if (token.address.toLowerCase() === ETH_ADDRESS.toLowerCase()) {
+      if (isETH) {
+        // For ETH: stakeFor(address user) payable
+        // The amount is sent as msg.value
         const stakeData = encodeFunctionData({
           abi: ETH_STAKING_CONTRACT,
           functionName: "stakeFor",
@@ -145,6 +152,8 @@ export function AnySpendStakeUpside({
           toast.success("Staking transaction submitted!");
         }
       } else {
+        // For ERC20 tokens: stakeFor(address user, uint256 amount)
+        // The amount is passed as a parameter, not msg.value
         const stakeData = encodeFunctionData({
           abi: STAKING_CONTRACT,
           functionName: "stakeFor",
@@ -187,10 +196,8 @@ export function AnySpendStakeUpside({
     </>
   );
 
-  // Trigger direct staking when the component mounts with the provided inputs
-  useEffect(() => {
-    handleDirectStaking();
-  }, [handleDirectStaking]);
+  // Note: Direct staking is available via handleDirectStaking()
+  // but we're using the AnySpendCustom swap & stake flow by default
 
   // Success Modal for Direct Staking
   if (showSuccessModal) {
@@ -269,6 +276,18 @@ export function AnySpendStakeUpside({
               Done
             </Button>
           </motion.div>
+        </div>
+      </StyleRoot>
+    );
+  }
+
+  // Only generate encoded data if we have a valid beneficiary address
+  // This is used for the AnySpendCustom swap & stake flow
+  if (!beneficiaryAddress || beneficiaryAddress === "") {
+    return (
+      <StyleRoot>
+        <div className="bg-b3-react-background flex w-full flex-col items-center justify-center p-8">
+          <p className="font-medium text-yellow-600 dark:text-yellow-400">⚠️ Please connect your wallet to continue.</p>
         </div>
       </StyleRoot>
     );
