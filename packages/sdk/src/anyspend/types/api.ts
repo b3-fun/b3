@@ -1334,10 +1334,22 @@ export interface components {
       /** @description Settlement information for executed orders */
       settlement: {
         /**
-         * @description Actual received amount after execution
+         * @description Actual received amount after execution (only for swap/hypeduel orders). Optional - only present for swap/hypeduel orders.
          * @example 990000
          */
-        actualDstAmount: string | null;
+        actualDstAmount?: string;
+        /**
+         * @description Complete relay API response data. Contains transaction details, state changes, fees, and execution status. Optional - can be backfilled by querying Relay API /requests/v2 endpoint.
+         * @example {
+         *       "status": "success",
+         *       "metadata": {
+         *         "currencyOut": {
+         *           "amount": "990000"
+         *         }
+         *       }
+         *     }
+         */
+        relay?: Record<string, never>;
       } | null;
       /** @description Fee structure for the order including Stripe and AnySpend fees */
       fee?: Omit<components["schemas"]["Fee"], "type"> | null;

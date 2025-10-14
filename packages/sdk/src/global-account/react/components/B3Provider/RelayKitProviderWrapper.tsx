@@ -1,5 +1,5 @@
-import { RelayKitProvider } from "@reservoir0x/relay-kit-ui";
-import { fetchChainConfigs, MAINNET_RELAY_API, RelayChain } from "@reservoir0x/relay-sdk";
+import { RelayKitProvider } from "@relayprotocol/relay-kit-ui";
+import { fetchChainConfigs, MAINNET_RELAY_API, RelayChain } from "@relayprotocol/relay-sdk";
 import { useEffect, useState } from "react";
 
 export function RelayKitProviderWrapper({

@@ -416,6 +416,7 @@ function AnySpendDepositHypeInner({
               setActivePanel(PanelView.MAIN);
             }}
             disableUrlParamManagement
+            points={oat.data.points || undefined}
           />
         )}
       </div>

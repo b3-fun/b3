@@ -108,3 +108,22 @@ export interface SwapQuote {
   executionPrice: string;
   fee: string;
 }
+
+// Market cap chart data types
+export interface MarketCapDataPoint {
+  time: string; // ISO 8601 timestamp
+  value: string; // Market cap value as string (to handle large numbers)
+}
+
+export interface TokenInfo {
+  contractAddress: string;
+  chainId: number;
+  name: string;
+  symbol: string;
+  found: boolean;
+}
+
+export interface MarketCapChartResponse {
+  tokenInfo: TokenInfo;
+  data: MarketCapDataPoint[];
+}

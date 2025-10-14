@@ -12,13 +12,24 @@ export const SOLANA_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = "ATokenGPvbdGVxr1b2hvZ
 export const SOLANA_TOKEN_2022_PROGRAM_ID = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb";
 
 export const B3_TOKEN: components["schemas"]["Token"] = {
-  chainId: 8453,
+  chainId: base.id,
   address: "0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3",
   decimals: 18,
   name: "B3",
   symbol: "B3",
   metadata: {
     logoURI: "https://s2.coinmarketcap.com/static/img/coins/64x64/35690.png",
+  },
+};
+
+export const ANYSPEND_TOKEN: components["schemas"]["Token"] = {
+  chainId: base.id,
+  address: "0xc17dda248e2d50fc006d8febb5a406dd31972712",
+  decimals: 18,
+  name: "Anyspend",
+  symbol: "ANY",
+  metadata: {
+    logoURI: "https://cdn.b3.fun/anyspend_64x64.png",
   },
 };
 

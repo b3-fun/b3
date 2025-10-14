@@ -65,7 +65,7 @@
   {
     "_id": "66f2044afe5a3ac32a1de9ff",
     "id": 8453,
-    "name": "Base Mainnet",
+    "name": "Base",
     "rpcUrls": {
       "default": {
         "http": "https://base-rpc.publicnode.com",
@@ -524,7 +524,7 @@
     "testnet": true,
     "badge": "https://cdn.b3.fun/b4-logo.png",
     "color": "#3368ef",
-    "enabledFeatures": ["explorer"]
+    "enabledFeatures": ["explorer", "basement"]
   },
   {
     "_id": "684afdec4a478ffb44a4f83f",
@@ -620,7 +620,7 @@
     "enabledFeatures": ["explorer"]
   },
   {
-    "_id": "68a351c603e65c07b7645581",
+    "_id": "68aefec4130155af4cf50711",
     "id": 1448000,
     "name": "XRPLT",
     "rpcUrls": {
@@ -631,21 +631,54 @@
       "backups": []
     },
     "icon": {
-      "url": "https://cdn.b3.fun/xrpl_logo.svg",
+      "url": "https://cdn.b3.fun/xrpl-black.svg",
       "width": 32,
       "height": 32,
       "format": "svg"
     },
     "blockExplorers": {
-      "default": "https://xrplt.explorer.caldera.xyz/",
+      "default": "https://xrplt.explorer.caldera.xyz",
       "explorerTitle": "XRPLT Explorer"
     },
     "nativeCurrency": {
       "name": "XRP",
       "symbol": "XRP",
-      "decimals": 18
+      "decimals": 6
     },
     "testnet": true,
-    "enabledFeatures": ["xcade", "explorer"]
+    "badge": "https://cdn.b3.fun/xrpl-black.svg",
+    "color": "#000000",
+    "enabledFeatures": ["basement", "explorer"]
+  },
+  {
+    "_id": "68eabd8a234b8958b152d6e0",
+    "id": 2741,
+    "name": "Abstract",
+    "rpcUrls": {
+      "default": {
+        "http": "https://cosmopolitan-nameless-mountain.abstract-mainnet.quiknode.pro/863853304b986b582bdacf625ce3350397c560f8/",
+        "ws": "wss://cosmopolitan-nameless-mountain.abstract-mainnet.quiknode.pro/863853304b986b582bdacf625ce3350397c560f8/"
+      },
+      "backups": []
+    },
+    "icon": {
+      "url": "https://assets.relay.link/icons/square/2741/light.png",
+      "width": 261,
+      "height": 261,
+      "format": "png"
+    },
+    "blockExplorers": {
+      "default": "https://abscan.org",
+      "explorerTitle": "Abscan"
+    },
+    "nativeCurrency": {
+      "name": "ETH",
+      "symbol": "ETH",
+      "decimals": 18
+    },
+    "testnet": false,
+    "badge": "https://assets.relay.link/icons/square/2741/light.png",
+    "color": "#6eb998",
+    "enabledFeatures": ["basement"]
   }
 ]

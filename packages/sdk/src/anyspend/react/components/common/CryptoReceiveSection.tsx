@@ -130,7 +130,7 @@ export function CryptoReceiveSection({
             (() => {
               const calculatePriceImpact = (inputUsd?: string | number, outputUsd?: string | number) => {
                 if (!inputUsd || !outputUsd) {
-                  return { percentage: "0.00", isNegative: false };
+                  return { percentage: "0.00", percentageNum: 0, isNegative: false };
                 }
 
                 const input = Number(inputUsd);
@@ -138,38 +138,46 @@ export function CryptoReceiveSection({
 
                 // Handle edge cases
                 if (input === 0 || isNaN(input) || isNaN(output) || input <= output) {
-                  return { percentage: "0.00", isNegative: false };
+                  return { percentage: "0.00", percentageNum: 0, isNegative: false };
                 }
 
                 const percentageValue = ((output - input) / input) * 100;
 
                 // Handle the -0.00% case
                 if (percentageValue > -0.005 && percentageValue < 0) {
-                  return { percentage: "0.00", isNegative: false };
+                  return { percentage: "0.00", percentageNum: 0, isNegative: false };
                 }
 
                 return {
                   percentage: Math.abs(percentageValue).toFixed(2),
+                  percentageNum: Math.abs(percentageValue),
                   isNegative: percentageValue < 0,
                 };
               };
 
-              const { percentage, isNegative } = calculatePriceImpact(
+              const { percentage, percentageNum, isNegative } = calculatePriceImpact(
                 anyspendQuote.data.currencyIn.amountUsd,
                 anyspendQuote.data.currencyOut.amountUsd,
               );
 
-              // Parse the percentage as a number for comparison
-              const percentageNum = parseFloat(percentage);
+              // Get the fee percentage if available
+              const feePercent = anyspendQuote.data.fee?.finalFeeBps ? anyspendQuote.data.fee.finalFeeBps / 100 : 0;
 
-              // Don't show if less than 1%
-              if (percentageNum < 1) {
+              // Calculate actual slippage (price impact minus fee)
+              const actualSlippage = percentageNum - feePercent;
+
+              // Show warning based on actual slippage, not total impact
+              const yellowThreshold = 1; // 1% actual slippage
+              const redThreshold = 2; // 2% actual slippage
+
+              // Don't show if actual slippage is less than yellow threshold
+              if (actualSlippage < yellowThreshold) {
                 return null;
               }
 
               // Using inline style to ensure color displays
               return (
-                <span className="ml-2" style={{ color: percentageNum >= 10 ? "red" : "#FFD700" }}>
+                <span className="ml-2" style={{ color: actualSlippage >= redThreshold ? "red" : "#FFD700" }}>
                   ({isNegative ? "-" : ""}
                   {percentage}%)
                 </span>

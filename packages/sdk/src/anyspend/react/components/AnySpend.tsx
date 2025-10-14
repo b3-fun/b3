@@ -609,9 +609,20 @@ function AnySpendInner({
     },
   });
 
+  // Check if it's a same-chain same-token swap
+  const isSameChainSameToken = useMemo(() => {
+    return (
+      activeTab === "crypto" &&
+      selectedSrcChainId === selectedDstChainId &&
+      selectedSrcToken.address.toLowerCase() === selectedDstToken.address.toLowerCase()
+    );
+  }, [activeTab, selectedSrcChainId, selectedDstChainId, selectedSrcToken.address, selectedDstToken.address]);
+
   // Determine button state and text
   const btnInfo: { text: string; disable: boolean; error: boolean; loading: boolean } = useMemo(() => {
     if (activeInputAmountInWei === "0") return { text: "Enter an amount", disable: true, error: false, loading: false };
+    if (isSameChainSameToken)
+      return { text: "Select a different token or chain", disable: true, error: false, loading: false };
     if (isLoadingAnyspendQuote) return { text: "Loading quote...", disable: true, error: false, loading: true };
     if (!recipientAddress) return { text: "Select recipient", disable: false, error: false, loading: false };
     if (isCreatingOrder || isCreatingOnrampOrder)
@@ -648,6 +659,7 @@ function AnySpendInner({
     return { text: "Buy", disable: false, error: false, loading: false };
   }, [
     activeInputAmountInWei,
+    isSameChainSameToken,
     isLoadingAnyspendQuote,
     recipientAddress,
     isCreatingOrder,
@@ -905,6 +917,7 @@ function AnySpendInner({
             refundTxs={oat.data.refundTxs}
             selectedCryptoPaymentMethod={selectedCryptoPaymentMethod}
             onPaymentMethodChange={setSelectedCryptoPaymentMethod}
+            points={oat.data.points || undefined}
             onBack={() => {
               setOrderId(undefined);
               navigateBack();
