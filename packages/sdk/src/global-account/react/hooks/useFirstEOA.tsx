@@ -43,7 +43,6 @@ export function useFirstEOA() {
   }, [isConnected, wallets]);
 
   const walletClient = useMemo(() => {
-    console.log("[MITCH] Creating wallet client for", firstEOA?.id);
     if (!firstEOA) return undefined;
     try {
       const viemClientWallet = viemAdapter.wallet.toViem({
@@ -51,8 +50,6 @@ export function useFirstEOA() {
         chain: { id: base.id, name: base.name, rpc: base.rpcUrls.default.http[0] },
         wallet: firstEOA,
       });
-
-      console.log("[MITCH] Created wallet client for", firstEOA?.id, viemClientWallet);
       return viemClientWallet;
     } catch (err) {
       console.error("Error setting wallet client", err);
