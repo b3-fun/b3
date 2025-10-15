@@ -113,7 +113,7 @@ export class BondkitToken {
 
       this.publicClient = createPublicClient({
         chain: this.chain,
-        transport,
+        transport: http(this.rpcUrl),
       });
 
       this.contract = getContract({
@@ -161,7 +161,7 @@ export class BondkitToken {
 
       this.publicClient = createPublicClient({
         chain: this.chain,
-        transport,
+        transport: http(this.rpcUrl),
       });
 
       this.contract = getContract({
