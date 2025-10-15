@@ -325,7 +325,7 @@
     "@solana/web3.js": "^1.98.2",
     "@stripe/react-stripe-js": "^3.7.0",
     "@stripe/stripe-js": "^7.3.1",
-    "@thirdweb-dev/wagmi-adapter": "0.2.159",
+    "@thirdweb-dev/wagmi-adapter": "0.2.165",
     "@web3icons/react": "3.16.0",
     "big.js": "^7.0.1",
     "class-variance-authority": "0.7.0",
