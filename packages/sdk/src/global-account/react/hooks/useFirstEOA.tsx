@@ -1,8 +1,11 @@
 import { useAuthStore } from "@b3dotfun/sdk/global-account/react";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
-import { useEffect, useState } from "react";
+import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
+import { useEffect, useMemo, useState } from "react";
+import { viemAdapter } from "thirdweb/adapters/viem";
 import { useConnectedWallets, useWalletInfo } from "thirdweb/react";
 import { Wallet } from "thirdweb/wallets";
+import { base } from "viem/chains";
 
 const debug = debugB3React("useFirstEOA");
 
@@ -39,9 +42,27 @@ export function useFirstEOA() {
     autoSelectFirstEOAWallet();
   }, [isConnected, wallets]);
 
+  const walletClient = useMemo(() => {
+    console.log("[MITCH] Creating wallet client for", firstEOA?.id);
+    if (!firstEOA) return undefined;
+    try {
+      const viemClientWallet = viemAdapter.wallet.toViem({
+        client,
+        chain: { id: base.id, name: base.name, rpc: base.rpcUrls.default.http[0] },
+        wallet: firstEOA,
+      });
+
+      console.log("[MITCH] Created wallet client for", firstEOA?.id, viemClientWallet);
+      return viemClientWallet;
+    } catch (err) {
+      console.error("Error setting wallet client", err);
+    }
+  }, [firstEOA]);
+
   return {
     account: firstEOA,
     address,
     info: walletInfo,
+    walletClient,
   };
 }
