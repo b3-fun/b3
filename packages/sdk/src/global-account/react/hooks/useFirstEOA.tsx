@@ -5,11 +5,10 @@ import { useEffect, useMemo, useState } from "react";
 import { viemAdapter } from "thirdweb/adapters/viem";
 import { useConnectedWallets, useWalletInfo } from "thirdweb/react";
 import { Wallet } from "thirdweb/wallets";
-import { base } from "viem/chains";
 
 const debug = debugB3React("useFirstEOA");
 
-export function useFirstEOA() {
+export function useFirstEOA(chain: { id: number; name: string; rpcUrls: { default: { http: string[] } } }) {
   const wallets = useConnectedWallets();
   const isConnected = useAuthStore(state => state.isConnected);
   const [firstEOA, setFirstEOA] = useState<Wallet | undefined>(undefined);
@@ -47,7 +46,7 @@ export function useFirstEOA() {
     try {
       const viemClientWallet = viemAdapter.wallet.toViem({
         client,
-        chain: { id: base.id, name: base.name, rpc: base.rpcUrls.default.http[0] },
+        chain: { id: chain.id, name: chain.name, rpc: chain.rpcUrls.default.http[0] },
         wallet: firstEOA,
       });
       return viemClientWallet;
