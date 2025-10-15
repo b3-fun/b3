@@ -19,7 +19,7 @@ import { useAccount, useWaitForTransactionReceipt } from "wagmi";
 import { ETH_STAKING_CONTRACT, STAKING_CONTRACT } from "../../abis/upsideStaking";
 import { AnySpendCustom } from "./AnySpendCustom";
 
-const ETH_ADDRESS = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
+const ETH_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 const basePublicClient = createPublicClient({
   chain: base,
@@ -197,7 +197,7 @@ export function AnySpendStakeUpside({
   );
 
   // Note: Direct staking is available via handleDirectStaking()
-  // but we're using the AnySpendCustom swap & stake flow by default
+  // but we're forcing all flows through AnySpendCustom
 
   // Success Modal for Direct Staking
   if (showSuccessModal) {

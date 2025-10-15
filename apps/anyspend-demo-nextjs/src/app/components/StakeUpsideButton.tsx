@@ -22,7 +22,7 @@ export function StakeUpsideButton() {
       stakingContractAddress: isB3 ? B3_STAKING_CONTRACT : ETH_STAKING_CONTRACT,
       token: {
         chainId: 8453, // Base
-        address: isB3 ? B3_TOKEN_ADDRESS : "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+        address: isB3 ? B3_TOKEN_ADDRESS : "0x0000000000000000000000000000000000000000",
         symbol: isB3 ? "B3" : "ETH",
         name: isB3 ? "B3" : "Ethereum",
         decimals: 18,
