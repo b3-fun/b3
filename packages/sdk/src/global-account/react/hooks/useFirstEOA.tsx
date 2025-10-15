@@ -8,7 +8,7 @@ import { Wallet } from "thirdweb/wallets";
 
 const debug = debugB3React("useFirstEOA");
 
-export function useFirstEOA(chain?: { id: number; name: string; rpcUrls: { default: { http: string[] } } }) {
+export function useFirstEOA(chain?: { id: number; name: string; rpc: string }) {
   const wallets = useConnectedWallets();
   const isConnected = useAuthStore(state => state.isConnected);
   const [firstEOA, setFirstEOA] = useState<Wallet | undefined>(undefined);
@@ -47,7 +47,7 @@ export function useFirstEOA(chain?: { id: number; name: string; rpcUrls: { defau
     try {
       const viemClientWallet = viemAdapter.wallet.toViem({
         client,
-        chain: { id: chain.id, name: chain.name, rpc: chain.rpcUrls.default.http[0] },
+        chain,
         wallet: firstEOA,
       });
       return viemClientWallet;
