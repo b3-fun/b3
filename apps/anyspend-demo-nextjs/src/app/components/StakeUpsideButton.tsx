@@ -27,9 +27,9 @@ export function StakeUpsideButton() {
         name: isB3 ? "B3" : "Ethereum",
         decimals: 18,
         metadata: {
-          logoURI: isB3 ? "https://cdn.b3.fun/b3-logo.png" : "https://cdn.b3.fun/eth-logo.png"
-        }
-      }
+          logoURI: isB3 ? "https://cdn.b3.fun/b3-logo.png" : "https://cdn.b3.fun/eth-logo.png",
+        },
+      },
     });
   };
 
