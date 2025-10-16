@@ -129,12 +129,6 @@ export function useAuthentication(partnerId: string) {
         throw new Error("No account found during auto-connect");
       }
 
-      const authToken = wallet?.getAuthToken?.();
-      console.log("@@authToken", authToken);
-      if (!authToken) {
-        throw new Error("No auth token found during auto-connect");
-      }
-
       // Try to re-authenticate first
       try {
         const userAuth = await app.reAuthenticate();
