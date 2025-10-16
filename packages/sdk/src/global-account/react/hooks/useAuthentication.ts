@@ -193,35 +193,39 @@ export function useAuthentication(partnerId: string) {
     ],
   );
 
-  const logout = async (callback?: () => void) => {
-    if (activeWallet) {
-      debug("@@logout:activeWallet", activeWallet);
-      disconnect(activeWallet);
-      debug("@@logout:activeWallet", activeWallet);
-    }
+  const logout = useCallback(
+    async (callback?: () => void) => {
+      if (activeWallet) {
+        debug("@@logout:activeWallet", activeWallet);
+        disconnect(activeWallet);
+        debug("@@logout:activeWallet", activeWallet);
+      }
 
-    // Log out of each wallet
-    wallets.forEach(wallet => {
-      console.log("@@logging out", wallet);
-      disconnect(wallet);
-    });
+      // Log out of each wallet
+      wallets.forEach(wallet => {
+        console.log("@@logging out", wallet);
+        disconnect(wallet);
+      });
 
-    // Delete localStorage thirdweb:connected-wallet-ids
-    // https://npc-labs.slack.com/archives/C070E6HNG85/p1750185115273099
-    if (typeof localStorage !== "undefined") {
-      localStorage.removeItem("thirdweb:connected-wallet-ids");
-      localStorage.removeItem("wagmi.store");
-      localStorage.removeItem("lastAuthProvider");
-    }
+      // Delete localStorage thirdweb:connected-wallet-ids
+      // https://npc-labs.slack.com/archives/C070E6HNG85/p1750185115273099
+      if (typeof localStorage !== "undefined") {
+        localStorage.removeItem("thirdweb:connected-wallet-ids");
+        localStorage.removeItem("wagmi.store");
+        localStorage.removeItem("lastAuthProvider");
+        localStorage.removeItem("b3-user");
+      }
 
-    app.logout();
-    debug("@@logout:loggedOut");
+      app.logout();
+      debug("@@logout:loggedOut");
 
-    setIsAuthenticated(false);
-    setIsConnected(false);
-    setUser();
-    callback?.();
-  };
+      setIsAuthenticated(false);
+      setIsConnected(false);
+      setUser();
+      callback?.();
+    },
+    [activeWallet, disconnect, wallets, setIsAuthenticated, setUser, setIsConnected],
+  );
 
   const { isLoading: useAutoConnectLoading } = useAutoConnect({
     client,
