@@ -1,6 +1,6 @@
 ---
 title: Ejemplos
-description: Ejemplos completos y patrones de integración para Cuentas Globales B3
+description: Ejemplos completos y patrones de integración para B3 Global Accounts
 lang: es
 originalPath: sdk/global-account/examples.mdx
 ---
@@ -53,7 +53,7 @@ function AuthComponent() {
         </div>
       ) : (
         <div className="sign-in-container">
-          <h2>Inicia sesión en B3</h2>
+          <h2>Iniciar sesión en B3</h2>
           
           <SignInWithB3
             provider={{ strategy: "google" }}
@@ -167,7 +167,7 @@ function AuthenticationStep() {
   return (
     <div className="setup-step">
       <h2>🔐 Iniciar Sesión</h2>
-      <p>Conecta tu Cuenta Global B3 para empezar a jugar</p>
+      <p>Conecta tu Cuenta Global B3 para comenzar a jugar</p>
       
       <div className="auth-options">
         <SignInWithB3
@@ -214,13 +214,13 @@ function PermissionStep() {
 
   return (
     <div className="setup-step">
-      <h2>🛡️ Otorgar Permisos al Juego</h2>
+      <h2>🛡️ Otorgar Permisos de Juego</h2>
       <p>Permite que el juego realice acciones en tu nombre</p>
       
       <div className="permission-details">
         <h3>Esto permitirá al juego:</h3>
         <ul>
-          <li>✅ Interactuar con contratos del juego</li>
+          <li>✅ Interactuar con contratos de juego</li>
           <li>✅ Comerciar NFTs en tu nombre</li>
           <li>✅ Gastar hasta 0.001 ETH por transacción</li>
           <li>✅ Válido por 7 días</li>
@@ -232,7 +232,7 @@ function PermissionStep() {
         sessionKeyAddress="0x..." // Tu dirección de clave de sesión
         permissions={gamePermissions}
         onSuccess={() => {
-          console.log("¡Permisos del juego otorgados! Iniciando juego...");
+          console.log("¡Permisos de juego otorgados! Iniciando juego...");
         }}
         onError={(error) => {
           console.error("Fallo al otorgar permisos:", error);
@@ -265,7 +265,7 @@ function GameReadyState() {
       </div>
       
       <div className="game-actions">
-        <button className="play-btn">Empezar a Jugar</button>
+        <button className="play-btn">Comenzar a Jugar</button>
         <button className="inventory-btn">Ver Inventario</button>
         <button className="marketplace-btn">Mercado</button>
       </div>
@@ -380,13 +380,13 @@ function GuestShop() {
     <div className="guest-shop">
       <section className="hero">
         <h2>Descubre NFTs Increíbles</h2>
-        <p>Inicia sesión para empezar a coleccionar e intercambiar</p>
+        <p>Inicia sesión para empezar a coleccionar y comerciar</p>
         
         <SignInWithB3
           provider={{ strategy: "google" }}
           partnerId="nft-marketplace"
           onLoginSuccess={() => {
-            console.log("¡Usuario unido al mercado!");
+            console.log("¡Usuario se unió al mercado!");
           }}
         />
       </section>
@@ -400,11 +400,11 @@ function GuestShop() {
 }
 
 function MarketplaceGrid() {
-  // Artículos simulados del mercado
+  // Elementos simulados del mercado
   const items = [
     { id: 1, name: "Cool NFT #1", price: "0.1 ETH", image: "/nft1.jpg" },
     { id: 2, name: "Artículo Raro #42", price: "0.5 ETH", image: "/nft2.jpg" },
-    // ... más artículos
+    // ... más elementos
   ];
 
   return (
@@ -467,7 +467,7 @@ function MainScreen() {
 function SignInView() {
   return (
     <View style={styles.signInContainer}>
-      <Text style={styles.title}>Bienvenido a B3 Móvil</Text>
+      <Text style={styles.title}>Bienvenido a B3 Mobile</Text>
       
       {/* La implementación en React Native usaría flujos de autenticación nativos */}
       <TouchableOpacity style={styles.signInButton}>
@@ -650,10 +650,3 @@ function useB3GameState() {
     player: {
       id: account?.id,
       name: account?.displayName,
-      avatar: account?.avatarUrl,
-      email: account?.email,
-    },
-    wallet: {
-      address: wallet?.address,
-      balance: wallet?.balance,
-      chainId: wallet?.

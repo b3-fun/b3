@@ -12,12 +12,12 @@ npm install @b3dotfun/sdk
 
 ## Configuración Básica
 
-```tsx title="Importar Componentes del SDK" icon="react"
+```tsx title="Importar Componentes SDK" icon="react"
 import "@b3dotfun/sdk/index.css";
 import { AnyspendProvider, B3Provider } from "@b3dotfun/sdk";
 ```
 
-## Componente de Compra de NFT
+## Componente de Compra NFT
 
 ```tsx title="Ejemplo de Botón NFT" icon="shopping-cart" lines
 import { AnySpendNFTButton } from "@b3dotfun/sdk/anyspend/react";
@@ -40,7 +40,7 @@ function NFTCard() {
 
 ## Intercambio Entre Cadenas
 
-```tsx title="Modo Página de AnySpend" icon="arrows-rotate" highlight={6-8}
+```tsx title="Modo Página AnySpend" icon="arrows-rotate" highlight={6-8}
 import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
 
 function CrossChainSwap() {
@@ -60,7 +60,7 @@ function App() {
         provider={{ strategy: "google" }}
         partnerId="your-partner-id"
         onLoginSuccess={globalAccount => {
-          console.log("Authenticated:", globalAccount);
+          console.log("Autenticado:", globalAccount);
         }}
       />
     </B3Provider>
@@ -83,7 +83,7 @@ function WalletButton() {
         rpcUrl: "https://mainnet-rpc.b3.fun",
       });
     } catch (error) {
-      console.error("Connection failed:", error);
+      console.error("Conexión fallida:", error);
     }
   };
 
