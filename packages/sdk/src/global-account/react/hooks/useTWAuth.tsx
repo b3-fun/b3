@@ -19,6 +19,8 @@ export function useTWAuth() {
       const response = await app.authenticate({
         strategy: "thirdweb-jwt",
         accessToken: authToken,
+        // http://localhost:5173/?referralCode=GIO2
+        referralCode,
         partnerId: partnerId,
       });
       debug("@@useTWSignIn:response", response);
