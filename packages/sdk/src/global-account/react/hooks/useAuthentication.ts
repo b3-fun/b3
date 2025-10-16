@@ -1,6 +1,6 @@
 import app from "@b3dotfun/sdk/global-account/app";
 import { authenticateWithB3JWT } from "@b3dotfun/sdk/global-account/bsmnt";
-import { useAuthStore, useSiwe } from "@b3dotfun/sdk/global-account/react";
+import { useAuthStore } from "@b3dotfun/sdk/global-account/react";
 import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
@@ -17,6 +17,7 @@ import {
 import { Wallet, ecosystemWallet } from "thirdweb/wallets";
 import { preAuthenticate } from "thirdweb/wallets/in-app";
 import { useAccount, useConnect, useSwitchAccount } from "wagmi";
+import { useTWAuth } from "./useTWAuth";
 import { useUserQuery } from "./useUserQuery";
 import { useWagmiConfig } from "./useWagmiConfig";
 
@@ -36,7 +37,7 @@ export function useAuthentication(partnerId: string) {
   const setHasStartedConnecting = useAuthStore(state => state.setHasStartedConnecting);
   const setActiveWallet = useSetActiveWallet();
   const hasStartedConnecting = useAuthStore(state => state.hasStartedConnecting);
-  const { authenticate } = useSiwe();
+  const { authenticate } = useTWAuth();
   const { user, setUser } = useUserQuery();
   const useAutoConnectLoadingPrevious = useRef(false);
   const wagmiConfig = useWagmiConfig(partnerId);
@@ -119,12 +120,19 @@ export function useAuthentication(partnerId: string) {
     async (wallet?: Wallet) => {
       setHasStartedConnecting(true);
 
+      if (!wallet) {
+        throw new Error("No wallet found during auto-connect");
+      }
+
       const account = wallet ? wallet.getAccount() : activeWallet?.getAccount();
       if (!account) {
         throw new Error("No account found during auto-connect");
       }
-      if (!account) {
-        throw new Error("No account found during auto-connect");
+
+      const authToken = wallet?.getAuthToken?.();
+      console.log("@@authToken", authToken);
+      if (!authToken) {
+        throw new Error("No auth token found during auto-connect");
       }
 
       // Try to re-authenticate first
@@ -141,7 +149,7 @@ export function useAuthentication(partnerId: string) {
       } catch (error) {
         // If re-authentication fails, try fresh authentication
         debug("Re-authentication failed, attempting fresh authentication");
-        const userAuth = await authenticate(account, partnerId);
+        const userAuth = await authenticate(wallet, partnerId);
         setUser(userAuth.user);
         setIsAuthenticated(true);
         setIsAuthenticating(false);
