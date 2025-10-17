@@ -4,6 +4,7 @@ import {
   useAuthentication,
   useB3,
   useB3BalanceFromAddresses,
+  useGlobalAccount,
   useModalStore,
   useNativeBalance,
   useProfile,
@@ -34,6 +35,7 @@ function centerTruncate(str: string, length = 4) {
 
 export function BalanceContent({ onLogout, showDeposit = true, showSwap = true }: BalanceContentProps) {
   const account = useActiveAccount();
+  const globalAccount = useGlobalAccount();
   const { address: eoaAddress, info: eoaInfo } = useFirstEOA();
   const { data: profile } = useProfile({
     address: eoaAddress || account?.address,
@@ -62,12 +64,13 @@ export function BalanceContent({ onLogout, showDeposit = true, showSwap = true }
 
   console.log("eoaAddress", eoaAddress);
   console.log("account?.address", account?.address);
+  console.log("globalAccount", globalAccount);
 
   // Balance data fetching
   const { data: eoaNativeBalance, isLoading: eoaNativeLoading } = useNativeBalance(eoaAddress);
   const { data: eoaB3Balance, isLoading: eoaB3Loading } = useB3BalanceFromAddresses(eoaAddress);
-  const { data: b3Balance, isLoading: b3Loading } = useB3BalanceFromAddresses(account?.address);
-  const { data: nativeBalance, isLoading: nativeLoading } = useNativeBalance(account?.address);
+  const { data: b3Balance, isLoading: b3Loading } = useB3BalanceFromAddresses(globalAccount?.address);
+  const { data: nativeBalance, isLoading: nativeLoading } = useNativeBalance(globalAccount?.address);
 
   // Calculate total USD values for comparison
   const globalAccountTotalUsd = (b3Balance?.balanceUsd || 0) + (nativeBalance?.totalUsd || 0);
