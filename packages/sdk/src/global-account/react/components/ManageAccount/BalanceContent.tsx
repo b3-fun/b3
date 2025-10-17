@@ -187,7 +187,7 @@ export function BalanceContent({ onLogout, showDeposit = true, showSwap = true }
         {/* Global Account Balance Section */}
         <AccordionItem value="global-account" className="border-none">
           <AccordionTrigger className="text-b3-grey font-neue-montreal-semibold py-2 hover:no-underline">
-            <span>Global Account Balance</span>
+            <span>Smart Account Balance</span>
           </AccordionTrigger>
           <AccordionContent className="space-y-4">
             <TokenBalanceRow
