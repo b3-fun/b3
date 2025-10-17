@@ -17,6 +17,7 @@ import { BondkitSwapService } from "./swapService";
 import type {
   BondkitTokenInitializationConfig,
   GetTransactionHistoryOptions,
+  MarketCapChartResponse,
   SwapQuote,
   TokenDetails,
   TransactionResponse,
@@ -52,6 +53,7 @@ export class BondkitToken {
   private walletKey?: Hex;
   private rpcUrl: string;
   private apiEndpoint: string;
+  private chartApiEndpoint: string;
   private walletClientInstance: WalletClient;
   private connectedProvider?: EIP1193Provider;
   private tradingToken?: Address;
@@ -62,6 +64,7 @@ export class BondkitToken {
     this.chain = sdkConfig.chain;
     this.rpcUrl = sdkConfig.rpcUrl;
     this.apiEndpoint = sdkConfig.apiEndpoint;
+    this.chartApiEndpoint = sdkConfig.chartApiEndpoint;
 
     if (walletKey && !walletKey.startsWith("0x")) {
       this.walletKey = `0x${walletKey}` as Hex;
@@ -110,7 +113,7 @@ export class BondkitToken {
 
       this.publicClient = createPublicClient({
         chain: this.chain,
-        transport,
+        transport: http(this.rpcUrl),
       });
 
       this.contract = getContract({
@@ -158,7 +161,7 @@ export class BondkitToken {
 
       this.publicClient = createPublicClient({
         chain: this.chain,
-        transport,
+        transport: http(this.rpcUrl),
       });
 
       this.contract = getContract({
@@ -455,6 +458,27 @@ export class BondkitToken {
       return result;
     } catch (e) {
       console.warn("Error fetching transaction history:", e);
+      return undefined;
+    }
+  }
+
+  // --- Market Cap Chart Data --- //
+  public async getMarketCapChartData(): Promise<MarketCapChartResponse | undefined> {
+    try {
+      const url = new URL("/recent_marketcap", this.chartApiEndpoint);
+      url.searchParams.set("contractAddress", this.contractAddress);
+      url.searchParams.set("chainId", this.chain.id.toString());
+
+      const response = await fetch(url.toString());
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result: MarketCapChartResponse = await response.json();
+      return result;
+    } catch (e) {
+      console.warn("Error fetching market cap chart data:", e);
       return undefined;
     }
   }

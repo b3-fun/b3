@@ -1,6 +1,6 @@
 import app from "@b3dotfun/sdk/global-account/app";
 import { authenticateWithB3JWT } from "@b3dotfun/sdk/global-account/bsmnt";
-import { useAuthStore, useSiwe } from "@b3dotfun/sdk/global-account/react";
+import { useAuthStore } from "@b3dotfun/sdk/global-account/react";
 import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
@@ -14,9 +14,10 @@ import {
   useDisconnect,
   useSetActiveWallet,
 } from "thirdweb/react";
-import { ecosystemWallet, Wallet } from "thirdweb/wallets";
+import { Wallet, ecosystemWallet } from "thirdweb/wallets";
 import { preAuthenticate } from "thirdweb/wallets/in-app";
 import { useAccount, useConnect, useSwitchAccount } from "wagmi";
+import { useTWAuth } from "./useTWAuth";
 import { useUserQuery } from "./useUserQuery";
 import { useWagmiConfig } from "./useWagmiConfig";
 
@@ -36,7 +37,7 @@ export function useAuthentication(partnerId: string) {
   const setHasStartedConnecting = useAuthStore(state => state.setHasStartedConnecting);
   const setActiveWallet = useSetActiveWallet();
   const hasStartedConnecting = useAuthStore(state => state.hasStartedConnecting);
-  const { authenticate } = useSiwe();
+  const { authenticate } = useTWAuth();
   const { user, setUser } = useUserQuery();
   const useAutoConnectLoadingPrevious = useRef(false);
   const wagmiConfig = useWagmiConfig(partnerId);
@@ -44,6 +45,18 @@ export function useAuthentication(partnerId: string) {
   const activeWagmiAccount = useAccount();
   const { switchAccount } = useSwitchAccount();
   debug("@@activeWagmiAccount", activeWagmiAccount);
+
+  // Check localStorage version and clear if not found or mismatched
+  useEffect(() => {
+    if (typeof localStorage !== "undefined") {
+      const version = localStorage.getItem("version");
+      if (version !== "1") {
+        debug("@@localStorage:clearing due to version mismatch", { version });
+        localStorage.clear();
+        localStorage.setItem("version", "1");
+      }
+    }
+  }, []);
 
   const wallet = ecosystemWallet(ecosystemWalletId, {
     partnerId: partnerId,
@@ -107,10 +120,11 @@ export function useAuthentication(partnerId: string) {
     async (wallet?: Wallet) => {
       setHasStartedConnecting(true);
 
-      const account = wallet ? wallet.getAccount() : activeWallet?.getAccount();
-      if (!account) {
-        throw new Error("No account found during auto-connect");
+      if (!wallet) {
+        throw new Error("No wallet found during auto-connect");
       }
+
+      const account = wallet ? wallet.getAccount() : activeWallet?.getAccount();
       if (!account) {
         throw new Error("No account found during auto-connect");
       }
@@ -129,7 +143,7 @@ export function useAuthentication(partnerId: string) {
       } catch (error) {
         // If re-authentication fails, try fresh authentication
         debug("Re-authentication failed, attempting fresh authentication");
-        const userAuth = await authenticate(account, partnerId);
+        const userAuth = await authenticate(wallet, partnerId);
         setUser(userAuth.user);
         setIsAuthenticated(true);
         setIsAuthenticating(false);
@@ -181,35 +195,39 @@ export function useAuthentication(partnerId: string) {
     ],
   );
 
-  const logout = async (callback?: () => void) => {
-    if (activeWallet) {
-      debug("@@logout:activeWallet", activeWallet);
-      disconnect(activeWallet);
-      debug("@@logout:activeWallet", activeWallet);
-    }
+  const logout = useCallback(
+    async (callback?: () => void) => {
+      if (activeWallet) {
+        debug("@@logout:activeWallet", activeWallet);
+        disconnect(activeWallet);
+        debug("@@logout:activeWallet", activeWallet);
+      }
 
-    // Log out of each wallet
-    wallets.forEach(wallet => {
-      console.log("@@logging out", wallet);
-      disconnect(wallet);
-    });
+      // Log out of each wallet
+      wallets.forEach(wallet => {
+        console.log("@@logging out", wallet);
+        disconnect(wallet);
+      });
 
-    // Delete localStorage thirdweb:connected-wallet-ids
-    // https://npc-labs.slack.com/archives/C070E6HNG85/p1750185115273099
-    if (typeof localStorage !== "undefined") {
-      localStorage.removeItem("thirdweb:connected-wallet-ids");
-      localStorage.removeItem("wagmi.store");
-      localStorage.removeItem("lastAuthProvider");
-    }
+      // Delete localStorage thirdweb:connected-wallet-ids
+      // https://npc-labs.slack.com/archives/C070E6HNG85/p1750185115273099
+      if (typeof localStorage !== "undefined") {
+        localStorage.removeItem("thirdweb:connected-wallet-ids");
+        localStorage.removeItem("wagmi.store");
+        localStorage.removeItem("lastAuthProvider");
+        localStorage.removeItem("b3-user");
+      }
 
-    app.logout();
-    debug("@@logout:loggedOut");
+      app.logout();
+      debug("@@logout:loggedOut");
 
-    setIsAuthenticated(false);
-    setIsConnected(false);
-    setUser();
-    callback?.();
-  };
+      setIsAuthenticated(false);
+      setIsConnected(false);
+      setUser();
+      callback?.();
+    },
+    [activeWallet, disconnect, wallets, setIsAuthenticated, setUser, setIsConnected],
+  );
 
   const { isLoading: useAutoConnectLoading } = useAutoConnect({
     client,

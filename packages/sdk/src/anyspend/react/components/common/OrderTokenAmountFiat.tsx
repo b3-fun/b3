@@ -7,7 +7,7 @@ import { NumericFormat } from "react-number-format";
 import { ALL_CHAINS, RELAY_SOLANA_MAINNET_CHAIN_ID } from "@b3dotfun/sdk/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { cn } from "@b3dotfun/sdk/shared/utils";
-import { TokenSelector } from "@reservoir0x/relay-kit-ui";
+import { TokenSelector } from "@relayprotocol/relay-kit-ui";
 import { ChainTokenIcon } from "./ChainTokenIcon";
 
 export function OrderTokenAmountFiat({
