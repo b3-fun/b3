@@ -56,7 +56,10 @@ export class BondkitTokenFactory {
     this.contract = getContract({
       address: this.contractAddress,
       abi: BondkitTokenFactoryABI,
-      client: this.walletClientInstance,
+      client: {
+        public: this.publicClient,
+        wallet: this.walletClientInstance,
+      },
     });
   }
 
@@ -75,7 +78,10 @@ export class BondkitTokenFactory {
       this.contract = getContract({
         address: this.contractAddress,
         abi: BondkitTokenFactoryABI,
-        client: this.walletClientInstance,
+        client: {
+          public: this.publicClient,
+          wallet: this.walletClientInstance,
+        },
       });
 
       this.publicClient = createPublicClient({
@@ -127,7 +133,10 @@ export class BondkitTokenFactory {
       this.contract = getContract({
         address: this.contractAddress,
         abi: BondkitTokenFactoryABI,
-        client: this.walletClientInstance,
+        client: {
+          public: this.publicClient,
+          wallet: this.walletClientInstance,
+        },
       });
 
       return true;
@@ -157,7 +166,10 @@ export class BondkitTokenFactory {
         this.contract = getContract({
           address: this.contractAddress,
           abi: BondkitTokenFactoryABI,
-          client: this.walletClientInstance,
+          client: {
+            public: this.publicClient,
+            wallet: this.walletClientInstance,
+          },
         });
       }
     } catch (_) {}
@@ -201,7 +213,6 @@ export class BondkitTokenFactory {
         chain: this.chain,
       });
 
-      console.log("hash", hash);
       const receipt: TransactionReceipt = await this.publicClient.waitForTransactionReceipt({ hash });
 
       for (const log of receipt.logs) {
