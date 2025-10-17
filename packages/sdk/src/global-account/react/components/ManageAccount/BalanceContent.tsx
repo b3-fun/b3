@@ -212,7 +212,7 @@ export function BalanceContent({ onLogout, showDeposit = true, showSwap = true }
           <AccordionItem value="eoa-account" className="border-none">
             <AccordionTrigger className="text-b3-grey font-neue-montreal-semibold py-2 hover:no-underline">
               <div className="flex items-center gap-3">
-                <span>Connected {eoaInfo?.data?.name || "Wallet"}</span>
+                <span>{eoaInfo?.data?.name || "Wallet"}</span>
                 <div className="address-button border-b3-line bg-b3-line/20 hover:bg-b3-line/40 flex w-fit items-center gap-2 rounded-full border px-3 py-1 transition-colors">
                   <span className="text-b3-foreground-muted font-mono text-xs">{centerTruncate(eoaAddress, 6)}</span>
                   <CopyToClipboard text={eoaAddress} />
