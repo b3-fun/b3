@@ -224,6 +224,27 @@ export interface AnySpendStakeB3Props extends BaseModalProps {
 }
 
 /**
+ * Props for the AnySpend Stake Contract modal
+ * Handles token staking operations to a given contract
+ */
+export interface AnySpendStakeUpsideProps extends BaseModalProps {
+  /** Modal type identifier */
+  type: "anySpendStakeUpside";
+  /** Recipient address to stake B3 for */
+  beneficiaryAddress: string;
+  /** Stake amount */
+  stakeAmount: string;
+  /** Staking contract address */
+  stakingContractAddress: string;
+  /** Pool type for staking */
+  poolType: "b3" | "weth";
+  /** Token address to stake */
+  token: components["schemas"]["Token"];
+  /** Callback function called when the stake is successful */
+  onSuccess?: () => void;
+}
+
+/**
  * Props for the AnySpend Buy Spin modal
  * Handles spin wheel entry purchases
  */
@@ -332,6 +353,7 @@ export type ModalContentType =
   | AnySpendFundTournamentProps
   | AnySpendOrderHistoryProps
   | AnySpendStakeB3Props
+  | AnySpendStakeUpsideProps
   | AnySpendBuySpinProps
   | AnySpendSignatureMintProps
   | AnySpendBondKitProps
