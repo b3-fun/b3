@@ -21,6 +21,7 @@ export function StakeUpsideButton() {
       beneficiaryAddress: currentWallet.address || "",
       stakeAmount: isB3 ? "50000000000000000000" : "10000000000000", // 50 B3 or 0.00001 ETH (18 decimals)
       stakingContractAddress: isB3 ? B3_STAKING_CONTRACT : WETH_STAKING_CONTRACT,
+      poolType: isB3 ? "b3" : "weth",
       token: {
         chainId: 8453, // Base
         address: isB3 ? B3_TOKEN_ADDRESS : (WETH_TOKEN_ADDRESS as `0x${string}`),
