@@ -91,12 +91,21 @@ export class BondkitToken {
     this.contract = getContract({
       address: this.contractAddress,
       abi: BondkitTokenABI,
-      client: this.walletClientInstance,
+      client: {
+        public: this.publicClient,
+        wallet: this.walletClientInstance,
+      },
     });
 
-    this.contract.read.tradingToken().then(tradingToken => {
-      this.tradingToken = tradingToken as Address;
-    });
+    getContract({
+      address: this.contractAddress,
+      abi: BondkitTokenABI,
+      client: this.publicClient, // Use public client for read operations
+    })
+      .read.tradingToken()
+      .then(tradingToken => {
+        this.tradingToken = tradingToken as Address;
+      });
   }
 
   public connect(provider?: EIP1193Provider): boolean {
@@ -119,7 +128,10 @@ export class BondkitToken {
       this.contract = getContract({
         address: this.contractAddress,
         abi: BondkitTokenABI,
-        client: this.walletClientInstance,
+        client: {
+          public: this.publicClient,
+          wallet: this.walletClientInstance,
+        },
       });
       return true;
     } catch (error) {
@@ -167,7 +179,10 @@ export class BondkitToken {
       this.contract = getContract({
         address: this.contractAddress,
         abi: BondkitTokenABI,
-        client: this.walletClientInstance,
+        client: {
+          public: this.publicClient,
+          wallet: this.walletClientInstance,
+        },
       });
 
       return true;
@@ -505,13 +520,27 @@ export class BondkitToken {
             this.contract = getContract({
               address: this.contractAddress,
               abi: BondkitTokenABI,
-              client: this.walletClientInstance,
+              client: {
+                public: this.publicClient,
+                wallet: this.walletClientInstance,
+              },
             });
           }
         } catch (_) {}
       }
       if (!this.walletClientInstance.account && !this.walletKey) {
         throw new Error("Wallet key not set or client not connected for write operation.");
+      }
+    }
+
+    if (this.walletClientInstance) {
+      const walletChainId = await this.walletClientInstance.getChainId();
+      if (walletChainId !== this.chain.id) {
+        try {
+          await this.walletClientInstance.switchChain({ id: this.chain.id });
+        } catch (switchErr) {
+          throw new Error(`Please switch your wallet to ${this.chain.name} (${this.chain.id}).`);
+        }
       }
     }
     const accountToUse = this.walletKey ? privateKeyToAccount(this.walletKey) : this.walletClientInstance.account;
@@ -624,7 +653,10 @@ export class BondkitToken {
       const tradingTokenContract = getContract({
         address: this.tradingToken as Address,
         abi: erc20Abi,
-        client: this.walletClientInstance,
+        client: {
+          public: this.publicClient,
+          wallet: this.walletClientInstance,
+        },
       });
 
       const currentAllowance = await tradingTokenContract.read.allowance([
