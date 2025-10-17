@@ -16,7 +16,7 @@ import { toast } from "sonner";
 import { createPublicClient, encodeFunctionData, erc20Abi, http } from "viem";
 import { base } from "viem/chains";
 import { useAccount, useWaitForTransactionReceipt } from "wagmi";
-import { ETH_STAKING_CONTRACT, STAKING_CONTRACT } from "../../abis/upsideStaking";
+import { B3_STAKING_CONTRACT, WETH_STAKING_CONTRACT } from "../../abis/upsideStaking";
 import { AnySpendCustom } from "./AnySpendCustom";
 
 const ETH_ADDRESS = "0x0000000000000000000000000000000000000000";
@@ -26,24 +26,22 @@ const basePublicClient = createPublicClient({
   transport: http(PUBLIC_BASE_RPC_URL),
 });
 
-function generateEncodedDataForStaking(
-  amount: string,
-  beneficiary: string,
-  token: components["schemas"]["Token"],
-): string {
+function generateEncodedDataForStaking(amount: string, beneficiary: string, poolType: "b3" | "weth"): string {
   invariant(BigInt(amount) > 0, "Amount must be greater than zero");
-  if (token.address.toLowerCase() === ETH_ADDRESS.toLowerCase()) {
+  if (poolType === "weth") {
     return encodeFunctionData({
-      abi: ETH_STAKING_CONTRACT,
+      abi: WETH_STAKING_CONTRACT,
       functionName: "stakeFor",
-      args: [beneficiary as `0x${string}`],
+      args: [beneficiary as `0x${string}`, BigInt(amount)],
+    });
+  } else if (poolType === "b3") {
+    return encodeFunctionData({
+      abi: B3_STAKING_CONTRACT,
+      functionName: "stakeFor",
+      args: [beneficiary as `0x${string}`, BigInt(amount)],
     });
   }
-  return encodeFunctionData({
-    abi: STAKING_CONTRACT,
-    functionName: "stakeFor",
-    args: [beneficiary as `0x${string}`, BigInt(amount)],
-  });
+  throw new Error("Unsupported pool type");
 }
 
 export function AnySpendStakeUpside({
@@ -53,6 +51,7 @@ export function AnySpendStakeUpside({
   stakeAmount,
   stakingContractAddress,
   token,
+  poolType,
   onSuccess,
 }: {
   loadOrder?: string;
@@ -61,6 +60,7 @@ export function AnySpendStakeUpside({
   stakeAmount: string;
   stakingContractAddress: string;
   token: components["schemas"]["Token"];
+  poolType: "b3" | "weth";
   onSuccess?: () => void;
 }) {
   const hasMounted = useHasMounted();
@@ -132,13 +132,13 @@ export function AnySpendStakeUpside({
       // Execute the stake
       toast.info(`Staking ${token.symbol}...`);
 
-      if (isETH) {
+      if (poolType === "weth") {
         // For ETH: stakeFor(address user) payable
         // The amount is sent as msg.value
         const stakeData = encodeFunctionData({
-          abi: ETH_STAKING_CONTRACT,
+          abi: WETH_STAKING_CONTRACT,
           functionName: "stakeFor",
-          args: [beneficiaryAddress as `0x${string}`],
+          args: [beneficiaryAddress as `0x${string}`, BigInt(stakeAmount)],
         });
 
         const stakeHash = await switchChainAndExecute(base.id, {
@@ -151,11 +151,11 @@ export function AnySpendStakeUpside({
           setStakingTxHash(stakeHash);
           toast.success("Staking transaction submitted!");
         }
-      } else {
+      } else if (poolType === "b3") {
         // For ERC20 tokens: stakeFor(address user, uint256 amount)
         // The amount is passed as a parameter, not msg.value
         const stakeData = encodeFunctionData({
-          abi: STAKING_CONTRACT,
+          abi: B3_STAKING_CONTRACT,
           functionName: "stakeFor",
           args: [beneficiaryAddress as `0x${string}`, BigInt(stakeAmount)],
         });
@@ -178,7 +178,7 @@ export function AnySpendStakeUpside({
     } finally {
       setIsStaking(false);
     }
-  }, [address, beneficiaryAddress, stakeAmount, stakingContractAddress, switchChainAndExecute, token]);
+  }, [address, beneficiaryAddress, stakeAmount, stakingContractAddress, switchChainAndExecute, token, poolType]);
 
   const header = () => (
     <>
@@ -293,7 +293,7 @@ export function AnySpendStakeUpside({
     );
   }
 
-  const encodedData = generateEncodedDataForStaking(stakeAmount, beneficiaryAddress, token);
+  const encodedData = generateEncodedDataForStaking(stakeAmount, beneficiaryAddress, poolType);
 
   return (
     <AnySpendCustom

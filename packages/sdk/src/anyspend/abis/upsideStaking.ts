@@ -1,4 +1,4 @@
-export const STAKING_CONTRACT = [
+export const WETH_STAKING_CONTRACT = [
   { inputs: [{ internalType: "address", name: "target", type: "address" }], name: "AddressEmptyCode", type: "error" },
   {
     inputs: [{ internalType: "address", name: "implementation", type: "address" }],
@@ -33,10 +33,11 @@ export const STAKING_CONTRACT = [
     anonymous: false,
     inputs: [
       { indexed: true, internalType: "address", name: "user", type: "address" },
+      { indexed: true, internalType: "address", name: "to", type: "address" },
       { indexed: false, internalType: "uint256", name: "amount", type: "uint256" },
       { indexed: false, internalType: "uint256", name: "requestIndex", type: "uint256" },
       { indexed: false, internalType: "uint256", name: "timestamp", type: "uint256" },
-      { indexed: true, internalType: "uint256", name: "nonce", type: "uint256" },
+      { indexed: false, internalType: "uint256", name: "nonce", type: "uint256" },
     ],
     name: "DelayedUnstakeClaimed",
     type: "event",
@@ -45,6 +46,7 @@ export const STAKING_CONTRACT = [
     anonymous: false,
     inputs: [
       { indexed: true, internalType: "address", name: "user", type: "address" },
+      { indexed: true, internalType: "address", name: "to", type: "address" },
       { indexed: false, internalType: "uint256", name: "amount", type: "uint256" },
       { indexed: false, internalType: "uint256", name: "newTotal", type: "uint256" },
       { indexed: false, internalType: "uint256", name: "requestTime", type: "uint256" },
@@ -92,6 +94,7 @@ export const STAKING_CONTRACT = [
     anonymous: false,
     inputs: [
       { indexed: true, internalType: "address", name: "user", type: "address" },
+      { indexed: true, internalType: "address", name: "to", type: "address" },
       { indexed: false, internalType: "uint256", name: "amount", type: "uint256" },
       { indexed: false, internalType: "uint256", name: "fee", type: "uint256" },
       { indexed: false, internalType: "uint256", name: "netAmount", type: "uint256" },
@@ -121,11 +124,12 @@ export const STAKING_CONTRACT = [
   {
     anonymous: false,
     inputs: [
+      { indexed: true, internalType: "address", name: "staker", type: "address" },
       { indexed: true, internalType: "address", name: "user", type: "address" },
       { indexed: false, internalType: "uint256", name: "amount", type: "uint256" },
       { indexed: false, internalType: "uint256", name: "newTotal", type: "uint256" },
       { indexed: false, internalType: "uint256", name: "timestamp", type: "uint256" },
-      { indexed: true, internalType: "uint256", name: "nonce", type: "uint256" },
+      { indexed: false, internalType: "uint256", name: "nonce", type: "uint256" },
     ],
     name: "Staked",
     type: "event",
@@ -149,9 +153,11 @@ export const STAKING_CONTRACT = [
     anonymous: false,
     inputs: [
       { indexed: true, internalType: "address", name: "user", type: "address" },
+      { indexed: true, internalType: "address", name: "to", type: "address" },
       { indexed: true, internalType: "uint256", name: "requestIndex", type: "uint256" },
       { indexed: false, internalType: "uint256", name: "amount", type: "uint256" },
-      { indexed: true, internalType: "uint256", name: "nonce", type: "uint256" },
+      { indexed: false, internalType: "uint256", name: "newTotal", type: "uint256" },
+      { indexed: false, internalType: "uint256", name: "nonce", type: "uint256" },
     ],
     name: "UnstakeCancelled",
     type: "event",
@@ -198,16 +204,6 @@ export const STAKING_CONTRACT = [
       { internalType: "uint256[]", name: "requestIndices", type: "uint256[]" },
     ],
     name: "batchClaimDelayedUnstakesFor",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      { internalType: "address[]", name: "users", type: "address[]" },
-      { internalType: "uint256[]", name: "amounts", type: "uint256[]" },
-    ],
-    name: "batchProcessUnstakeWithdrawals",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -358,9 +354,20 @@ export const STAKING_CONTRACT = [
   {
     inputs: [
       { internalType: "address", name: "user", type: "address" },
+      { internalType: "address", name: "to", type: "address" },
       { internalType: "uint256", name: "amount", type: "uint256" },
     ],
     name: "instantUnstakeFor",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "uint256", name: "amount", type: "uint256" },
+      { internalType: "address", name: "to", type: "address" },
+    ],
+    name: "instantUnstakeTo",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -388,16 +395,6 @@ export const STAKING_CONTRACT = [
     type: "function",
   },
   {
-    inputs: [
-      { internalType: "address", name: "user", type: "address" },
-      { internalType: "uint256", name: "amount", type: "uint256" },
-    ],
-    name: "processDelayedUnstakeWithdrawal",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
     inputs: [],
     name: "proxiableUUID",
     outputs: [{ internalType: "bytes32", name: "", type: "bytes32" }],
@@ -418,6 +415,16 @@ export const STAKING_CONTRACT = [
       { internalType: "uint256", name: "amount", type: "uint256" },
     ],
     name: "requestDelayedUnstakeFor",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "uint256", name: "amount", type: "uint256" },
+      { internalType: "address", name: "to", type: "address" },
+    ],
+    name: "requestDelayedUnstakeTo",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -501,6 +508,16 @@ export const STAKING_CONTRACT = [
       { internalType: "address", name: "", type: "address" },
       { internalType: "uint256", name: "", type: "uint256" },
     ],
+    name: "unstakeRequestRecipients",
+    outputs: [{ internalType: "address", name: "", type: "address" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "address", name: "", type: "address" },
+      { internalType: "uint256", name: "", type: "uint256" },
+    ],
     name: "unstakeRequests",
     outputs: [
       { internalType: "uint256", name: "amount", type: "uint256" },
@@ -550,7 +567,7 @@ export const STAKING_CONTRACT = [
   },
 ] as const;
 
-export const ETH_STAKING_CONTRACT = [
+export const B3_STAKING_CONTRACT = [
   { inputs: [{ internalType: "address", name: "target", type: "address" }], name: "AddressEmptyCode", type: "error" },
   {
     inputs: [{ internalType: "address", name: "implementation", type: "address" }],
@@ -570,6 +587,11 @@ export const ETH_STAKING_CONTRACT = [
     type: "error",
   },
   { inputs: [], name: "ReentrancyGuardReentrantCall", type: "error" },
+  {
+    inputs: [{ internalType: "address", name: "token", type: "address" }],
+    name: "SafeERC20FailedOperation",
+    type: "error",
+  },
   { inputs: [], name: "UUPSUnauthorizedCallContext", type: "error" },
   {
     inputs: [{ internalType: "bytes32", name: "slot", type: "bytes32" }],
@@ -580,10 +602,11 @@ export const ETH_STAKING_CONTRACT = [
     anonymous: false,
     inputs: [
       { indexed: true, internalType: "address", name: "user", type: "address" },
+      { indexed: true, internalType: "address", name: "to", type: "address" },
       { indexed: false, internalType: "uint256", name: "amount", type: "uint256" },
       { indexed: false, internalType: "uint256", name: "requestIndex", type: "uint256" },
       { indexed: false, internalType: "uint256", name: "timestamp", type: "uint256" },
-      { indexed: true, internalType: "uint256", name: "nonce", type: "uint256" },
+      { indexed: false, internalType: "uint256", name: "nonce", type: "uint256" },
     ],
     name: "DelayedUnstakeClaimed",
     type: "event",
@@ -592,6 +615,7 @@ export const ETH_STAKING_CONTRACT = [
     anonymous: false,
     inputs: [
       { indexed: true, internalType: "address", name: "user", type: "address" },
+      { indexed: true, internalType: "address", name: "to", type: "address" },
       { indexed: false, internalType: "uint256", name: "amount", type: "uint256" },
       { indexed: false, internalType: "uint256", name: "newTotal", type: "uint256" },
       { indexed: false, internalType: "uint256", name: "requestTime", type: "uint256" },
@@ -604,7 +628,10 @@ export const ETH_STAKING_CONTRACT = [
   },
   {
     anonymous: false,
-    inputs: [{ indexed: false, internalType: "uint256", name: "amount", type: "uint256" }],
+    inputs: [
+      { indexed: true, internalType: "address", name: "token", type: "address" },
+      { indexed: false, internalType: "uint256", name: "amount", type: "uint256" },
+    ],
     name: "EmergencyWithdraw",
     type: "event",
   },
@@ -636,6 +663,7 @@ export const ETH_STAKING_CONTRACT = [
     anonymous: false,
     inputs: [
       { indexed: true, internalType: "address", name: "user", type: "address" },
+      { indexed: true, internalType: "address", name: "to", type: "address" },
       { indexed: false, internalType: "uint256", name: "amount", type: "uint256" },
       { indexed: false, internalType: "uint256", name: "fee", type: "uint256" },
       { indexed: false, internalType: "uint256", name: "netAmount", type: "uint256" },
@@ -665,11 +693,12 @@ export const ETH_STAKING_CONTRACT = [
   {
     anonymous: false,
     inputs: [
+      { indexed: true, internalType: "address", name: "staker", type: "address" },
       { indexed: true, internalType: "address", name: "user", type: "address" },
       { indexed: false, internalType: "uint256", name: "amount", type: "uint256" },
       { indexed: false, internalType: "uint256", name: "newTotal", type: "uint256" },
       { indexed: false, internalType: "uint256", name: "timestamp", type: "uint256" },
-      { indexed: true, internalType: "uint256", name: "nonce", type: "uint256" },
+      { indexed: false, internalType: "uint256", name: "nonce", type: "uint256" },
     ],
     name: "Staked",
     type: "event",
@@ -693,9 +722,11 @@ export const ETH_STAKING_CONTRACT = [
     anonymous: false,
     inputs: [
       { indexed: true, internalType: "address", name: "user", type: "address" },
+      { indexed: true, internalType: "address", name: "to", type: "address" },
       { indexed: true, internalType: "uint256", name: "requestIndex", type: "uint256" },
       { indexed: false, internalType: "uint256", name: "amount", type: "uint256" },
-      { indexed: true, internalType: "uint256", name: "nonce", type: "uint256" },
+      { indexed: false, internalType: "uint256", name: "newTotal", type: "uint256" },
+      { indexed: false, internalType: "uint256", name: "nonce", type: "uint256" },
     ],
     name: "UnstakeCancelled",
     type: "event",
@@ -742,16 +773,6 @@ export const ETH_STAKING_CONTRACT = [
       { internalType: "uint256[]", name: "requestIndices", type: "uint256[]" },
     ],
     name: "batchClaimDelayedUnstakesFor",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      { internalType: "address payable[]", name: "users", type: "address[]" },
-      { internalType: "uint256[]", name: "amounts", type: "uint256[]" },
-    ],
-    name: "batchProcessUnstakeWithdrawals",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -804,7 +825,7 @@ export const ETH_STAKING_CONTRACT = [
   {
     inputs: [],
     name: "feeRecipient",
-    outputs: [{ internalType: "address payable", name: "", type: "address" }],
+    outputs: [{ internalType: "address", name: "", type: "address" }],
     stateMutability: "view",
     type: "function",
   },
@@ -842,7 +863,7 @@ export const ETH_STAKING_CONTRACT = [
           { internalType: "uint256", name: "requestTime", type: "uint256" },
           { internalType: "bool", name: "claimed", type: "bool" },
         ],
-        internalType: "struct ETHStakingUpgradeable.UnstakeRequest",
+        internalType: "struct ERC20StakingUpgradeableV3.UnstakeRequest",
         name: "",
         type: "tuple",
       },
@@ -862,7 +883,7 @@ export const ETH_STAKING_CONTRACT = [
           { internalType: "uint256", name: "requestTime", type: "uint256" },
           { internalType: "bool", name: "claimed", type: "bool" },
         ],
-        internalType: "struct ETHStakingUpgradeable.UnstakeRequest[]",
+        internalType: "struct ERC20StakingUpgradeableV3.UnstakeRequest[]",
         name: "requests",
         type: "tuple[]",
       },
@@ -876,8 +897,9 @@ export const ETH_STAKING_CONTRACT = [
   {
     inputs: [
       { internalType: "address", name: "initialOwner", type: "address" },
-      { internalType: "address payable", name: "_treasuryWallet", type: "address" },
-      { internalType: "address payable", name: "_feeRecipient", type: "address" },
+      { internalType: "contract IERC20", name: "_stakingToken", type: "address" },
+      { internalType: "address", name: "_treasuryWallet", type: "address" },
+      { internalType: "address", name: "_feeRecipient", type: "address" },
     ],
     name: "initialize",
     outputs: [],
@@ -901,9 +923,20 @@ export const ETH_STAKING_CONTRACT = [
   {
     inputs: [
       { internalType: "address", name: "user", type: "address" },
+      { internalType: "address", name: "to", type: "address" },
       { internalType: "uint256", name: "amount", type: "uint256" },
     ],
     name: "instantUnstakeFor",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "uint256", name: "amount", type: "uint256" },
+      { internalType: "address", name: "to", type: "address" },
+    ],
+    name: "instantUnstakeTo",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -931,16 +964,6 @@ export const ETH_STAKING_CONTRACT = [
     type: "function",
   },
   {
-    inputs: [
-      { internalType: "address payable", name: "user", type: "address" },
-      { internalType: "uint256", name: "amount", type: "uint256" },
-    ],
-    name: "processDelayedUnstakeWithdrawal",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
     inputs: [],
     name: "proxiableUUID",
     outputs: [{ internalType: "bytes32", name: "", type: "bytes32" }],
@@ -965,12 +988,31 @@ export const ETH_STAKING_CONTRACT = [
     stateMutability: "nonpayable",
     type: "function",
   },
-  { inputs: [], name: "stake", outputs: [], stateMutability: "payable", type: "function" },
   {
-    inputs: [{ internalType: "address", name: "user", type: "address" }],
+    inputs: [
+      { internalType: "uint256", name: "amount", type: "uint256" },
+      { internalType: "address", name: "to", type: "address" },
+    ],
+    name: "requestDelayedUnstakeTo",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "amount", type: "uint256" }],
+    name: "stake",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "address", name: "user", type: "address" },
+      { internalType: "uint256", name: "amount", type: "uint256" },
+    ],
     name: "stakeFor",
     outputs: [],
-    stateMutability: "payable",
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -984,6 +1026,13 @@ export const ETH_STAKING_CONTRACT = [
     inputs: [{ internalType: "address", name: "", type: "address" }],
     name: "stakedAmounts",
     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "stakingToken",
+    outputs: [{ internalType: "contract IERC20", name: "", type: "address" }],
     stateMutability: "view",
     type: "function",
   },
@@ -1011,7 +1060,7 @@ export const ETH_STAKING_CONTRACT = [
   {
     inputs: [],
     name: "treasuryWallet",
-    outputs: [{ internalType: "address payable", name: "", type: "address" }],
+    outputs: [{ internalType: "address", name: "", type: "address" }],
     stateMutability: "view",
     type: "function",
   },
@@ -1020,6 +1069,16 @@ export const ETH_STAKING_CONTRACT = [
     inputs: [],
     name: "unstakeDelay",
     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "address", name: "", type: "address" },
+      { internalType: "uint256", name: "", type: "uint256" },
+    ],
+    name: "unstakeRequestRecipients",
+    outputs: [{ internalType: "address", name: "", type: "address" }],
     stateMutability: "view",
     type: "function",
   },
@@ -1038,7 +1097,7 @@ export const ETH_STAKING_CONTRACT = [
     type: "function",
   },
   {
-    inputs: [{ internalType: "address payable", name: "_newFeeRecipient", type: "address" }],
+    inputs: [{ internalType: "address", name: "_newFeeRecipient", type: "address" }],
     name: "updateFeeRecipient",
     outputs: [],
     stateMutability: "nonpayable",
@@ -1052,7 +1111,7 @@ export const ETH_STAKING_CONTRACT = [
     type: "function",
   },
   {
-    inputs: [{ internalType: "address payable", name: "_newTreasuryWallet", type: "address" }],
+    inputs: [{ internalType: "address", name: "_newTreasuryWallet", type: "address" }],
     name: "updateTreasuryWallet",
     outputs: [],
     stateMutability: "nonpayable",
@@ -1075,5 +1134,4 @@ export const ETH_STAKING_CONTRACT = [
     stateMutability: "payable",
     type: "function",
   },
-  { stateMutability: "payable", type: "receive" },
 ] as const;
