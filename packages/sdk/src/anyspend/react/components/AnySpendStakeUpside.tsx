@@ -11,9 +11,8 @@ import { PUBLIC_BASE_RPC_URL } from "@b3dotfun/sdk/shared/constants";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import invariant from "invariant";
 import { motion } from "motion/react";
-import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
-import { createPublicClient, encodeFunctionData, erc20Abi, http } from "viem";
+import { useEffect, useState } from "react";
+import { createPublicClient, encodeFunctionData, http } from "viem";
 import { base } from "viem/chains";
 import { useAccount, useWaitForTransactionReceipt } from "wagmi";
 import { B3_STAKING_CONTRACT, WETH_STAKING_CONTRACT } from "../../abis/upsideStaking";
@@ -68,10 +67,9 @@ export function AnySpendStakeUpside({
 
   // Wagmi hooks for direct staking
   const { address } = useAccount();
-  const { switchChainAndExecute, isSwitchingOrExecuting } = useUnifiedChainSwitchAndExecute();
+  const { switchChainAndExecute } = useUnifiedChainSwitchAndExecute();
 
   // State for direct staking flow
-  const [isStaking, setIsStaking] = useState(false);
   const [stakingTxHash, setStakingTxHash] = useState<string>("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
@@ -87,98 +85,8 @@ export function AnySpendStakeUpside({
   useEffect(() => {
     if (isTxSuccess && stakingTxHash) {
       setShowSuccessModal(true);
-      setIsStaking(false);
     }
   }, [isTxSuccess, stakingTxHash]);
-
-  const handleDirectStaking = useCallback(async () => {
-    if (!address || !basePublicClient || !stakeAmount) return;
-
-    try {
-      setIsStaking(true);
-
-      const isETH = token.address.toLowerCase() === ETH_ADDRESS.toLowerCase();
-
-      // For ERC20 tokens (not ETH), check and approve if needed
-      if (!isETH) {
-        // Check current allowance
-        const allowance = await basePublicClient.readContract({
-          address: token.address as `0x${string}`,
-          abi: erc20Abi,
-          functionName: "allowance",
-          args: [address, stakingContractAddress as `0x${string}`],
-        });
-
-        // If allowance is insufficient, request approval first
-        if (allowance < BigInt(stakeAmount)) {
-          toast.info(`Approving ${token.symbol} spending...`);
-
-          const approvalData = encodeFunctionData({
-            abi: erc20Abi,
-            functionName: "approve",
-            args: [stakingContractAddress as `0x${string}`, BigInt(stakeAmount)],
-          });
-
-          await switchChainAndExecute(base.id, {
-            to: token.address as `0x${string}`,
-            data: approvalData,
-            value: BigInt(0),
-          });
-
-          toast.info("Approval confirmed. Proceeding with stake...");
-        }
-      }
-
-      // Execute the stake
-      toast.info(`Staking ${token.symbol}...`);
-
-      if (poolType === "weth") {
-        // For ETH: stakeFor(address user) payable
-        // The amount is sent as msg.value
-        const stakeData = encodeFunctionData({
-          abi: WETH_STAKING_CONTRACT,
-          functionName: "stakeFor",
-          args: [beneficiaryAddress as `0x${string}`, BigInt(stakeAmount)],
-        });
-
-        const stakeHash = await switchChainAndExecute(base.id, {
-          to: stakingContractAddress as `0x${string}`,
-          data: stakeData,
-          value: BigInt(stakeAmount),
-        });
-
-        if (stakeHash) {
-          setStakingTxHash(stakeHash);
-          toast.success("Staking transaction submitted!");
-        }
-      } else if (poolType === "b3") {
-        // For ERC20 tokens: stakeFor(address user, uint256 amount)
-        // The amount is passed as a parameter, not msg.value
-        const stakeData = encodeFunctionData({
-          abi: B3_STAKING_CONTRACT,
-          functionName: "stakeFor",
-          args: [beneficiaryAddress as `0x${string}`, BigInt(stakeAmount)],
-        });
-
-        const stakeHash = await switchChainAndExecute(base.id, {
-          to: stakingContractAddress as `0x${string}`,
-          data: stakeData,
-          value: BigInt(0),
-        });
-
-        if (stakeHash) {
-          setStakingTxHash(stakeHash);
-          toast.success("Staking transaction submitted!");
-        }
-      }
-    } catch (error) {
-      console.error("@@b3-stake:error:", error);
-      toast.error("Staking failed. Please try again.");
-      setShowSuccessModal(false); // Ensure modal doesn't show on error
-    } finally {
-      setIsStaking(false);
-    }
-  }, [address, beneficiaryAddress, stakeAmount, stakingContractAddress, switchChainAndExecute, token, poolType]);
 
   const header = () => (
     <>
