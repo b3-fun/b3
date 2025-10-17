@@ -533,7 +533,9 @@ export class BondkitToken {
       }
     }
 
-    if (this.walletClientInstance) {
+    // Only attempt chain switching for browser wallet providers
+    // Private key users cannot switch chains programmatically
+    if (this.connectedProvider && this.walletClientInstance.account) {
       const walletChainId = await this.walletClientInstance.getChainId();
       if (walletChainId !== this.chain.id) {
         try {
