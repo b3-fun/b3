@@ -22,6 +22,7 @@ export interface IEVMChain extends IBaseChain {
   type: ChainType.EVM;
   viem: Chain;
   pollingInterval: number;
+  wethAddress: string;
   zapperEnum?: string;
 }
 
