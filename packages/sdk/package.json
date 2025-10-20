@@ -325,7 +325,7 @@
     "@solana/web3.js": "^1.98.2",
     "@stripe/react-stripe-js": "^3.7.0",
     "@stripe/stripe-js": "^7.3.1",
-    "@thirdweb-dev/wagmi-adapter": "0.2.159",
+    "@thirdweb-dev/wagmi-adapter": "0.2.165",
     "@web3icons/react": "3.16.0",
     "big.js": "^7.0.1",
     "class-variance-authority": "0.7.0",
@@ -398,10 +398,11 @@
     "react": "^18.0.0 || ^19.0.0",
     "react-dom": "^18.0.0 || ^19.0.0",
     "react-native-mmkv": "^3.2.0",
-    "thirdweb": "5.108.9",
+    "thirdweb": "5.108.14",
     "three": "^0.175.0",
-    "viem": "^2.28.1",
-    "wagmi": "^2.14.15"
+    "viem": "2.37.9",
+    "wagmi": "2.16.9",
+    "@wagmi/core": "2.20.3"
   },
   "peerDependenciesMeta": {
     "@react-three/postprocessing": {
