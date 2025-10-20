@@ -9,6 +9,7 @@ export function useSiwe() {
 
   const authenticate = useCallback(
     async (account: Account, partnerId: string) => {
+      console.warn("@@useSiwe is deprecated, use useTWAuth instead");
       if (!account || !account.signMessage) throw new Error("Account not found");
 
       console.log("@@useAuthenticate:referralCode", referralCode);

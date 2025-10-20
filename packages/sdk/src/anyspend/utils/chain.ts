@@ -13,20 +13,7 @@ import {
   Transport,
   WalletClient,
 } from "viem";
-import {
-  abstract,
-  arbitrum,
-  avalanche,
-  b3,
-  b3Sepolia,
-  base,
-  baseSepolia,
-  bsc,
-  mainnet,
-  optimism,
-  polygon,
-  sepolia,
-} from "viem/chains";
+import { abstract, arbitrum, avalanche, b3, base, bsc, mainnet, optimism, polygon } from "viem/chains";
 import { ChainType, IBaseChain, IEVMChain, ISolanaChain } from "../types/chain";
 import { getAvaxToken, getBnbToken, getEthToken, getPolToken, getSolanaToken } from "./token";
 
@@ -59,6 +46,7 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     pollingInterval: 4000, // 4 seconds for Ethereum mainnet
     zapperEnum: "ETHEREUM_MAINNET",
     coingeckoName: "eth",
+    wethAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
   },
   [arbitrum.id]: {
     id: arbitrum.id,
@@ -76,6 +64,7 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     pollingInterval: 500, // 500ms for Arbitrum's fast blocks
     zapperEnum: "ARBITRUM_MAINNET",
     coingeckoName: "arbitrum",
+    wethAddress: "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
   },
   [base.id]: {
     id: base.id,
@@ -93,6 +82,7 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     pollingInterval: 1000, // 1 second for Base
     zapperEnum: "BASE_MAINNET",
     coingeckoName: "base",
+    wethAddress: "0x4200000000000000000000000000000000000006",
   },
   [optimism.id]: {
     id: optimism.id,
@@ -110,6 +100,7 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     pollingInterval: 1000, // 1 second for Optimism
     zapperEnum: "OPTIMISM_MAINNET",
     coingeckoName: "optimism",
+    wethAddress: "0x4200000000000000000000000000000000000006",
   },
   [polygon.id]: {
     id: polygon.id,
@@ -127,6 +118,7 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     pollingInterval: 1000, // 1 second for Polygon
     zapperEnum: "POLYGON_MAINNET",
     coingeckoName: "polygon_pos",
+    wethAddress: "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270",
   },
   [avalanche.id]: {
     id: avalanche.id,
@@ -141,6 +133,7 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     pollingInterval: 1000, // 1 second for Avalanche
     zapperEnum: "AVALANCHE_MAINNET",
     coingeckoName: "avax",
+    wethAddress: "0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7",
   },
   [bsc.id]: {
     id: bsc.id,
@@ -155,6 +148,7 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     pollingInterval: 1000, // 1 second for BSC
     zapperEnum: "BSC_MAINNET",
     coingeckoName: "bsc",
+    wethAddress: "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c",
   },
   [b3.id]: {
     id: b3.id,
@@ -172,6 +166,7 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     pollingInterval: 1000, // 1 second for B3
     zapperEnum: "B3_MAINNET",
     coingeckoName: "b3",
+    wethAddress: "0x4200000000000000000000000000000000000006",
   },
   [abstract.id]: {
     id: abstract.id,
@@ -189,49 +184,50 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     pollingInterval: 3000, // 3 seconds for Abstract
     zapperEnum: "ABSTRACT_MAINNET",
     coingeckoName: "abstract",
+    wethAddress: "0x3439153eb7af838ad19d56e1571fbd09333c2809",
   },
 };
 
 export const EVM_TESTNET: Record<number, IEVMChain> = {
-  [sepolia.id]: {
-    id: sepolia.id,
-    name: sepolia.name,
-    logoUrl: "https://assets.relay.link/icons/square/1/light.png",
-    type: ChainType.EVM,
-    nativeRequired: parseEther("0.00001"),
-    canDepositNative: true,
-    defaultToken: getEthToken(sepolia.id),
-    nativeToken: getEthToken(sepolia.id),
-    viem: sepolia,
-    pollingInterval: 1000, // 1 second for Sepolia
-    coingeckoName: "sepolia-testnet",
-  },
-  [baseSepolia.id]: {
-    id: baseSepolia.id,
-    name: baseSepolia.name,
-    logoUrl: "https://assets.relay.link/icons/square/8453/light.png",
-    type: ChainType.EVM,
-    nativeRequired: parseEther("0.00001"),
-    canDepositNative: true,
-    defaultToken: getEthToken(baseSepolia.id),
-    nativeToken: getEthToken(baseSepolia.id),
-    viem: baseSepolia,
-    pollingInterval: 1000, // 1 second for Base Sepolia
-    coingeckoName: null,
-  },
-  [b3Sepolia.id]: {
-    id: b3Sepolia.id,
-    name: b3Sepolia.name,
-    logoUrl: "https://assets.relay.link/icons/square/8333/light.png",
-    type: ChainType.EVM,
-    nativeRequired: parseEther("0.00001"),
-    canDepositNative: true,
-    defaultToken: getEthToken(b3Sepolia.id),
-    nativeToken: getEthToken(b3Sepolia.id),
-    viem: b3Sepolia,
-    pollingInterval: 1000, // 1 second for B3 Sepolia
-    coingeckoName: null,
-  },
+  // [sepolia.id]: {
+  //   id: sepolia.id,
+  //   name: sepolia.name,
+  //   logoUrl: "https://assets.relay.link/icons/square/1/light.png",
+  //   type: ChainType.EVM,
+  //   nativeRequired: parseEther("0.00001"),
+  //   canDepositNative: true,
+  //   defaultToken: getEthToken(sepolia.id),
+  //   nativeToken: getEthToken(sepolia.id),
+  //   viem: sepolia,
+  //   pollingInterval: 1000, // 1 second for Sepolia
+  //   coingeckoName: "sepolia-testnet",
+  // },
+  // [baseSepolia.id]: {
+  //   id: baseSepolia.id,
+  //   name: baseSepolia.name,
+  //   logoUrl: "https://assets.relay.link/icons/square/8453/light.png",
+  //   type: ChainType.EVM,
+  //   nativeRequired: parseEther("0.00001"),
+  //   canDepositNative: true,
+  //   defaultToken: getEthToken(baseSepolia.id),
+  //   nativeToken: getEthToken(baseSepolia.id),
+  //   viem: baseSepolia,
+  //   pollingInterval: 1000, // 1 second for Base Sepolia
+  //   coingeckoName: null,
+  // },
+  // [b3Sepolia.id]: {
+  //   id: b3Sepolia.id,
+  //   name: b3Sepolia.name,
+  //   logoUrl: "https://assets.relay.link/icons/square/8333/light.png",
+  //   type: ChainType.EVM,
+  //   nativeRequired: parseEther("0.00001"),
+  //   canDepositNative: true,
+  //   defaultToken: getEthToken(b3Sepolia.id),
+  //   nativeToken: getEthToken(b3Sepolia.id),
+  //   viem: b3Sepolia,
+  //   pollingInterval: 1000, // 1 second for B3 Sepolia
+  //   coingeckoName: null,
+  // },
   // [b4testnet.id]: {
   //   id: b4testnet.id,
   //   logoUrl: "https://cdn.b3.fun/b4-logo.png",

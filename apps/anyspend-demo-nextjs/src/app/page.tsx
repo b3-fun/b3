@@ -11,6 +11,7 @@ import { SignInButton } from "./components/SignInButton";
 import { SignatureMintButton } from "./components/SignatureMintButton";
 import { SignatureMintModal } from "./components/SignatureMintModal";
 import { StakeB3Button } from "./components/StakeB3Button";
+import { StakeUpsideButton } from "./components/StakeUpsideButton";
 import { SwapTokensButton } from "./components/SwapTokensButton";
 
 export default function Home() {
@@ -43,6 +44,7 @@ export default function Home() {
             <MintNftButton />
             <GetB3TokenButton />
             <StakeB3Button />
+            <StakeUpsideButton />
             <SignatureMintButton onClick={() => setIsSignatureMintOpen(true)} />
             <BondKitButton />
             <DepositHypeButton />

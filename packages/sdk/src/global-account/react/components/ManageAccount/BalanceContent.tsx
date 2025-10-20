@@ -4,6 +4,7 @@ import {
   useAuthentication,
   useB3,
   useB3BalanceFromAddresses,
+  useGlobalAccount,
   useModalStore,
   useNativeBalance,
   useProfile,
@@ -34,6 +35,7 @@ function centerTruncate(str: string, length = 4) {
 
 export function BalanceContent({ onLogout, showDeposit = true, showSwap = true }: BalanceContentProps) {
   const account = useActiveAccount();
+  const globalAccount = useGlobalAccount();
   const { address: eoaAddress, info: eoaInfo } = useFirstEOA();
   const { data: profile } = useProfile({
     address: eoaAddress || account?.address,
@@ -62,12 +64,13 @@ export function BalanceContent({ onLogout, showDeposit = true, showSwap = true }
 
   console.log("eoaAddress", eoaAddress);
   console.log("account?.address", account?.address);
+  console.log("globalAccount", globalAccount);
 
   // Balance data fetching
   const { data: eoaNativeBalance, isLoading: eoaNativeLoading } = useNativeBalance(eoaAddress);
   const { data: eoaB3Balance, isLoading: eoaB3Loading } = useB3BalanceFromAddresses(eoaAddress);
-  const { data: b3Balance, isLoading: b3Loading } = useB3BalanceFromAddresses(account?.address);
-  const { data: nativeBalance, isLoading: nativeLoading } = useNativeBalance(account?.address);
+  const { data: b3Balance, isLoading: b3Loading } = useB3BalanceFromAddresses(globalAccount?.address);
+  const { data: nativeBalance, isLoading: nativeLoading } = useNativeBalance(globalAccount?.address);
 
   // Calculate total USD values for comparison
   const globalAccountTotalUsd = (b3Balance?.balanceUsd || 0) + (nativeBalance?.totalUsd || 0);
@@ -184,7 +187,7 @@ export function BalanceContent({ onLogout, showDeposit = true, showSwap = true }
         {/* Global Account Balance Section */}
         <AccordionItem value="global-account" className="border-none">
           <AccordionTrigger className="text-b3-grey font-neue-montreal-semibold py-2 hover:no-underline">
-            <span>Balance</span>
+            <span>Smart Account Balance</span>
           </AccordionTrigger>
           <AccordionContent className="space-y-4">
             <TokenBalanceRow
@@ -209,7 +212,7 @@ export function BalanceContent({ onLogout, showDeposit = true, showSwap = true }
           <AccordionItem value="eoa-account" className="border-none">
             <AccordionTrigger className="text-b3-grey font-neue-montreal-semibold py-2 hover:no-underline">
               <div className="flex items-center gap-3">
-                <span>Connected {eoaInfo?.data?.name || "Wallet"}</span>
+                <span>{eoaInfo?.data?.name || "Wallet"}</span>
                 <div className="address-button border-b3-line bg-b3-line/20 hover:bg-b3-line/40 flex w-fit items-center gap-2 rounded-full border px-3 py-1 transition-colors">
                   <span className="text-b3-foreground-muted font-mono text-xs">{centerTruncate(eoaAddress, 6)}</span>
                   <CopyToClipboard text={eoaAddress} />
