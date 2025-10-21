@@ -1,7 +1,7 @@
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThirdwebProvider, useActiveAccount } from "thirdweb/react";
-import { Account } from "thirdweb/wallets";
+import { Account, Wallet } from "thirdweb/wallets";
 
 import { ClientType } from "../../../client-manager";
 
