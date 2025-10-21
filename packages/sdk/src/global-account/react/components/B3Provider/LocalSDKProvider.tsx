@@ -21,7 +21,7 @@ export function LocalSDKProvider({
   onConnectCallback,
 }: {
   children: React.ReactNode;
-  onConnectCallback?: (wallet: Wallet, b3Jwt: string) => void;
+  onConnectCallback?: (wallet: Wallet, b3Jwt: string) => void | Promise<void>;
 }) {
   return (
     <LocalSDKContext.Provider

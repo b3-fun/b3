@@ -173,7 +173,10 @@ export function useAuthentication(partnerId: string) {
         setIsAuthenticating(true);
         await setActiveWallet(wallet);
         const userAuth = await authenticateUser(wallet);
-        userAuth && (await onConnectCallback?.(wallet, userAuth.accessToken));
+
+        if (userAuth && onConnectCallback) {
+          await onConnectCallback(wallet, userAuth.accessToken);
+        }
       } catch (error) {
         debug("@@useAuthentication:onConnect:failed", { error });
         setIsAuthenticated(false);
