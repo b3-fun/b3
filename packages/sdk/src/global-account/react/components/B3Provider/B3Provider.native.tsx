@@ -8,6 +8,7 @@ import { ClientType } from "../../../client-manager";
 import { WagmiProvider } from "wagmi";
 import { useAuthentication } from "../../hooks/useAuthentication";
 import { useWagmiConfig } from "../../hooks/useWagmiConfig";
+import { LocalSDKProvider } from "./LocalSDKProvider";
 import { B3Context, B3ContextType } from "./types";
 
 /**
@@ -34,6 +35,7 @@ export function B3Provider({
   clientType = "socket",
   partnerId,
   rpcUrls,
+  onConnect,
 }: {
   theme: "light" | "dark";
   children: React.ReactNode;
@@ -42,21 +44,24 @@ export function B3Provider({
   clientType?: ClientType;
   partnerId: string;
   rpcUrls?: Record<number, string>;
+  onConnect?: (wallet: Wallet, b3Jwt: string) => void;
 }) {
   return (
     <ThirdwebProvider>
-      <InnerProvider
-        accountOverride={accountOverride}
-        environment={environment}
-        theme={theme}
-        clientType={clientType}
-        partnerId={partnerId}
-        rpcUrls={rpcUrls}
-      >
-        {/* <RelayKitProviderWrapper> */}
-        {children}
-        {/* </RelayKitProviderWrapper> */}
-      </InnerProvider>
+      <LocalSDKProvider onConnectCallback={onConnect}>
+        <InnerProvider
+          accountOverride={accountOverride}
+          environment={environment}
+          theme={theme}
+          clientType={clientType}
+          partnerId={partnerId}
+          rpcUrls={rpcUrls}
+        >
+          {/* <RelayKitProviderWrapper> */}
+          {children}
+          {/* </RelayKitProviderWrapper> */}
+        </InnerProvider>
+      </LocalSDKProvider>
     </ThirdwebProvider>
   );
 }

@@ -23,6 +23,7 @@ import { Account, Wallet } from "thirdweb/wallets";
 import { WagmiProvider } from "wagmi";
 import { ClientType, setClientType } from "../../../client-manager";
 import { StyleRoot } from "../StyleRoot";
+import { LocalSDKProvider } from "./LocalSDKProvider";
 import { B3Context, B3ContextType } from "./types";
 
 const debug = debugB3React("B3Provider");
@@ -54,6 +55,7 @@ export function B3Provider({
   clientType = "rest",
   rpcUrls,
   partnerId,
+  onConnect,
 }: {
   theme: "light" | "dark";
   children: React.ReactNode;
@@ -68,6 +70,7 @@ export function B3Provider({
   clientType?: ClientType;
   rpcUrls?: Record<number, string>;
   partnerId: string;
+  onConnect?: (wallet: Wallet, b3Jwt: string) => void;
 }) {
   // Initialize Google Analytics on mount
   useEffect(() => {
@@ -85,21 +88,23 @@ export function B3Provider({
       <WagmiProvider config={wagmiConfig} reconnectOnMount={false}>
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
-            <InnerProvider
-              accountOverride={accountOverride}
-              environment={environment}
-              theme={theme}
-              automaticallySetFirstEoa={!!automaticallySetFirstEoa}
-              clientType={clientType}
-              partnerId={partnerId}
-            >
-              <RelayKitProviderWrapper simDuneApiKey={simDuneApiKey}>
-                {children}
-                {/* For the modal https://github.com/b3-fun/b3/blob/main/packages/sdk/src/global-account/react/components/ui/dialog.tsx#L46 */}
-                <StyleRoot id="b3-root" />
-                <Toaster theme={theme} position={toaster?.position} style={toaster?.style} />
-              </RelayKitProviderWrapper>
-            </InnerProvider>
+            <LocalSDKProvider onConnectCallback={onConnect}>
+              <InnerProvider
+                accountOverride={accountOverride}
+                environment={environment}
+                theme={theme}
+                automaticallySetFirstEoa={!!automaticallySetFirstEoa}
+                clientType={clientType}
+                partnerId={partnerId}
+              >
+                <RelayKitProviderWrapper simDuneApiKey={simDuneApiKey}>
+                  {children}
+                  {/* For the modal https://github.com/b3-fun/b3/blob/main/packages/sdk/src/global-account/react/components/ui/dialog.tsx#L46 */}
+                  <StyleRoot id="b3-root" />
+                  <Toaster theme={theme} position={toaster?.position} style={toaster?.style} />
+                </RelayKitProviderWrapper>
+              </InnerProvider>
+            </LocalSDKProvider>
           </TooltipProvider>
         </QueryClientProvider>
       </WagmiProvider>
@@ -136,7 +141,6 @@ export function InnerProvider({
   const isConnected = useAuthStore(state => state.isConnected);
   const setActiveWallet = useSetActiveWallet();
   const { user, setUser, refetchUser } = useAuthentication(partnerId);
-
   debug("@@B3Provider:isConnected", isConnected);
   debug("@@wallets", wallets);
   debug("@@B3Provider:user", user);
