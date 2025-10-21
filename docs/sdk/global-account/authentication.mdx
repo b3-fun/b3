@@ -3,20 +3,16 @@ title: "Authentication"
 description: "Learn how to implement authentication with B3 Global Accounts"
 ---
 
+import { AuthPreview, GoogleAuthPreview, AllStrategiesPreview } from "/snippets/auth-preview";
+
 ## Interactive Preview
 
-Experience B3 authentication in action. Try signing in with different providers:
+Experience B3 authentication in action with the actual SDK component:
 
-<iframe
-  src="https://login-minimal-b3.vercel.app/"
-  width="100%"
-  height="600px"
-  style={{ border: "1px solid #e5e7eb", borderRadius: "8px" }}
-  title="B3 Authentication Demo"
-/>
+<AuthPreview />
 
 <Note>
-  This is a live demo showing the SignInWithB3 component. Try signing in with Google, Discord, or other providers to see how it works.
+  This is a **live, interactive component** using the real B3 SDK - not an iframe or mockup. Click the button above to authenticate with your preferred provider and see the component in action.
 </Note>
 
 ## Authentication Strategies
@@ -26,6 +22,8 @@ B3 Global Accounts support multiple authentication strategies to fit your applic
 ## Social Login
 
 ### Google Authentication
+
+<GoogleAuthPreview />
 
 ```tsx
 import { SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
@@ -87,6 +85,8 @@ function DiscordAuth() {
 
 You can allow users to choose from multiple authentication providers:
 
+<AllStrategiesPreview />
+
 ```tsx
 import { SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
 
@@ -112,7 +112,7 @@ function MultipleAuthOptions() {
 ```
 
 <Note>
-  When you don't specify `strategies`, the SignInWithB3 component will display all available authentication options.
+  When you don't specify `strategies`, the SignInWithB3 component will display all available authentication options as shown in the preview above.
 </Note>
 
 ## Session Key Authentication
