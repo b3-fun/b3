@@ -45,11 +45,6 @@ export function LoginStepContainer({ children, partnerId }: LoginStepContainerPr
         <img src={partnerLogo} alt="Partner Logo" className="partner-logo mb-6 h-12 w-auto object-contain" />
       )}
       {children}
-      <h2 className="mt-6 flex items-center gap-2 text-lg font-bold">
-        Powered by
-        <img alt="B3 Logo" className="h-5" src="https://cdn.b3.fun/b3_logo.svg" />
-        Connect
-      </h2>
     </div>
   );
 }
