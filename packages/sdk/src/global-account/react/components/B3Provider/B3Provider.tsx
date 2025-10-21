@@ -70,7 +70,7 @@ export function B3Provider({
   clientType?: ClientType;
   rpcUrls?: Record<number, string>;
   partnerId: string;
-  onConnect?: (wallet: Wallet, b3Jwt: string) => void;
+  onConnect?: (wallet: Wallet, b3Jwt: string) => void | Promise<void>;
 }) {
   // Initialize Google Analytics on mount
   useEffect(() => {

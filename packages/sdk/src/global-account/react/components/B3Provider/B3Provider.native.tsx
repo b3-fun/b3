@@ -44,7 +44,7 @@ export function B3Provider({
   clientType?: ClientType;
   partnerId: string;
   rpcUrls?: Record<number, string>;
-  onConnect?: (wallet: Wallet, b3Jwt: string) => void;
+  onConnect?: (wallet: Wallet, b3Jwt: string) => void | Promise<void>;
 }) {
   return (
     <ThirdwebProvider>

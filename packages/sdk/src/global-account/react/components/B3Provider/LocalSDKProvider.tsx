@@ -6,7 +6,7 @@ import { Wallet } from "thirdweb/wallets";
  * This context is separate from B3Context and is available before B3Context.Provider is instantiated
  */
 export interface LocalSDKContextType {
-  onConnectCallback?: (wallet: Wallet, b3Jwt: string) => void;
+  onConnectCallback?: (wallet: Wallet, b3Jwt: string) => void | Promise<void>;
 }
 
 export const LocalSDKContext = createContext<LocalSDKContextType>({
