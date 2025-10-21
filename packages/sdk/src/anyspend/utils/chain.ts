@@ -144,7 +144,7 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     canDepositNative: true,
     defaultToken: getBnbToken(),
     nativeToken: getBnbToken(),
-    viem: getCustomEvmChain(bsc, "https://bsc-rpc.publicnode.com"),
+    viem: getCustomEvmChain(bsc, "https://methodical-divine-flower.bsc.quiknode.pro/9fc7efd3c34cc016cceacc27ee95850629b7cd21/"),
     pollingInterval: 1000, // 1 second for BSC
     zapperEnum: "BSC_MAINNET",
     coingeckoName: "bsc",
