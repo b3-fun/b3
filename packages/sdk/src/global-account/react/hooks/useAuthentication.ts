@@ -6,7 +6,7 @@ import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { ConnectionOptions } from "@thirdweb-dev/wagmi-adapter";
 import { getConnectors } from "@wagmi/core";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useContext, useEffect, useRef } from "react";
 import {
   useActiveWallet,
   useAutoConnect,
@@ -17,6 +17,7 @@ import {
 import { Wallet, ecosystemWallet } from "thirdweb/wallets";
 import { preAuthenticate } from "thirdweb/wallets/in-app";
 import { useAccount, useConnect, useSwitchAccount } from "wagmi";
+import { LocalSDKContext } from "../components/B3Provider/LocalSDKProvider";
 import { useTWAuth } from "./useTWAuth";
 import { useUserQuery } from "./useUserQuery";
 import { useWagmiConfig } from "./useWagmiConfig";
@@ -24,6 +25,7 @@ import { useWagmiConfig } from "./useWagmiConfig";
 const debug = debugB3React("useAuthentication");
 
 export function useAuthentication(partnerId: string) {
+  const { onConnectCallback } = useContext(LocalSDKContext);
   const { disconnect } = useDisconnect();
   const wallets = useConnectedWallets();
   const activeWallet = useActiveWallet();
@@ -140,6 +142,8 @@ export function useAuthentication(partnerId: string) {
         // Authenticate on BSMNT with B3 JWT
         const b3Jwt = await authenticateWithB3JWT(userAuth.accessToken);
         debug("@@b3Jwt", b3Jwt);
+
+        return userAuth;
       } catch (error) {
         // If re-authentication fails, try fresh authentication
         debug("Re-authentication failed, attempting fresh authentication");
@@ -152,6 +156,8 @@ export function useAuthentication(partnerId: string) {
         // Authenticate on BSMNT with B3 JWT
         const b3Jwt = await authenticateWithB3JWT(userAuth.accessToken);
         debug("@@b3Jwt", b3Jwt);
+
+        return userAuth;
       }
     },
     [activeWallet, partnerId, authenticate, setIsAuthenticated, setIsAuthenticating, setUser, setHasStartedConnecting],
@@ -166,7 +172,8 @@ export function useAuthentication(partnerId: string) {
         setIsConnected(true);
         setIsAuthenticating(true);
         await setActiveWallet(wallet);
-        await authenticateUser(wallet);
+        const userAuth = await authenticateUser(wallet);
+        userAuth && (await onConnectCallback?.(wallet, userAuth.accessToken));
       } catch (error) {
         debug("@@useAuthentication:onConnect:failed", { error });
         setIsAuthenticated(false);
@@ -182,6 +189,7 @@ export function useAuthentication(partnerId: string) {
       });
     },
     [
+      onConnectCallback,
       authenticateUser,
       isAuthenticated,
       isAuthenticating,
