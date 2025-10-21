@@ -59,6 +59,9 @@ function App() {
         environment="production"
         theme="light"
         partnerId={String(process.env.PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID)}
+        onConnect={(wallet, b3Jwt) => {
+          console.log("@@App.tsx:onConnect", wallet, b3Jwt);
+        }}
       >
         <BrowserRouter>
           <B3DynamicModal />
