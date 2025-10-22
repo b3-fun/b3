@@ -7,55 +7,62 @@ export function Demos() {
   const { isAuthenticating } = useAuthStore();
   const [authMessage, setAuthMessage] = useState("");
 
-  return (
-    <div className="min-h-screen bg-white pt-24">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-b from-gray-50 to-white py-16">
-        <div className="container mx-auto px-4">
-          <div className="mx-auto max-w-4xl text-center">
-            <h1 className="mb-4 text-5xl font-bold text-gray-900">Authentication Demos</h1>
-            <p className="text-lg text-gray-600">
-              Interactive examples of B3 Global Accounts authentication with live components
-            </p>
-          </div>
-        </div>
-      </div>
+  // Check if embedded mode (for iframes)
+  const isEmbedded = new URLSearchParams(window.location.search).get("embedded") === "true";
 
-      {/* Quick Navigation */}
-      <div className="sticky top-16 z-40 border-b border-gray-200 bg-white py-6">
-        <div className="container mx-auto px-4">
-          <div className="mx-auto max-w-4xl">
-            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-700">Jump to Section</h3>
-            <div className="flex flex-wrap gap-2">
-              <a
-                href="#auth-full"
-                className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-900 transition-colors hover:bg-blue-50 hover:text-blue-600"
-              >
-                Full Auth Demo
-              </a>
-              <a
-                href="#auth-google"
-                className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-900 transition-colors hover:bg-blue-50 hover:text-blue-600"
-              >
-                Google Only
-              </a>
-              <a
-                href="#auth-all"
-                className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-900 transition-colors hover:bg-blue-50 hover:text-blue-600"
-              >
-                All Strategies
-              </a>
+  return (
+    <div className="min-h-screen bg-white">
+      {/* Hero Section - Hide in embedded mode */}
+      {!isEmbedded && (
+        <div className="bg-gradient-to-b from-gray-50 to-white py-16">
+          <div className="container mx-auto px-4">
+            <div className="mx-auto max-w-4xl text-center">
+              <h1 className="mb-4 text-5xl font-bold text-gray-900">Authentication Demos</h1>
+              <p className="text-lg text-gray-600">
+                Interactive examples of B3 Global Accounts authentication with live components
+              </p>
             </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Quick Navigation - Hide in embedded mode */}
+      {!isEmbedded && (
+        <div className="sticky top-16 z-40 border-b border-gray-200 bg-white py-6">
+          <div className="container mx-auto px-4">
+            <div className="mx-auto max-w-4xl">
+              <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-700">Jump to Section</h3>
+              <div className="flex flex-wrap gap-2">
+                <a
+                  href="#auth-full"
+                  className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-900 transition-colors hover:bg-blue-50 hover:text-blue-600"
+                >
+                  Full Auth Demo
+                </a>
+                <a
+                  href="#auth-google"
+                  className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-900 transition-colors hover:bg-blue-50 hover:text-blue-600"
+                >
+                  Google Only
+                </a>
+                <a
+                  href="#auth-all"
+                  className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-900 transition-colors hover:bg-blue-50 hover:text-blue-600"
+                >
+                  All Strategies
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Demo Sections */}
       <div className="bg-gray-50 py-16">
         <div className="container mx-auto px-4">
           <div className="mx-auto max-w-4xl space-y-12">
             {/* Full Authentication Demo */}
-            <div id="auth-full" className="scroll-mt-48 rounded-2xl bg-white p-8 shadow-sm">
+            <div id="auth-full" className="rounded-2xl bg-white p-8 shadow-sm">
               <h2 className="mb-4 text-3xl font-bold text-gray-900">Authentication Demo</h2>
               <p className="mb-6 text-gray-600">
                 Try B3 authentication with multiple providers. This is a live, interactive component using the actual B3
@@ -130,7 +137,7 @@ export function Demos() {
             </div>
 
             {/* Google Only Authentication */}
-            <div id="auth-google" className="scroll-mt-48 rounded-2xl bg-white p-8 shadow-sm">
+            <div id="auth-google" className="rounded-2xl bg-white p-8 shadow-sm">
               <h2 className="mb-4 text-3xl font-bold text-gray-900">Google Authentication Only</h2>
               <p className="mb-6 text-gray-600">
                 Single authentication provider example showing Google OAuth integration.
@@ -153,7 +160,7 @@ export function Demos() {
             </div>
 
             {/* All Strategies Authentication */}
-            <div id="auth-all" className="scroll-mt-48 rounded-2xl bg-white p-8 shadow-sm">
+            <div id="auth-all" className="rounded-2xl bg-white p-8 shadow-sm">
               <h2 className="mb-4 text-3xl font-bold text-gray-900">All Authentication Options</h2>
               <p className="mb-6 text-gray-600">
                 When you don't specify strategies, all available authentication options are displayed.
