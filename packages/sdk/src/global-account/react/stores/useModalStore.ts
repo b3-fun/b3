@@ -240,6 +240,8 @@ export interface AnySpendStakeUpsideProps extends BaseModalProps {
   poolType: "b3" | "weth";
   /** Token address to stake */
   token: components["schemas"]["Token"];
+  /** Active tab for the modal */
+  activeTab?: "crypto" | "fiat";
   /** Callback function called when the stake is successful */
   onSuccess?: () => void;
 }

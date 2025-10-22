@@ -34,6 +34,7 @@ export function AnySpendStakeUpside({
   token,
   poolType,
   onSuccess,
+  activeTab,
 }: {
   loadOrder?: string;
   mode?: "modal" | "page";
@@ -43,12 +44,10 @@ export function AnySpendStakeUpside({
   token: components["schemas"]["Token"];
   poolType: "b3" | "weth";
   onSuccess?: () => void;
+  activeTab?: "crypto" | "fiat";
 }) {
   const header = () => (
     <>
-      <div className="relative mx-auto size-32">
-        <img alt="token" className="size-full" src={token.metadata.logoURI || "https://cdn.b3.fun/b3-coin-3d.png"} />
-      </div>
       <div className="from-b3-react-background to-as-on-surface-1 mt-[-60px] w-full rounded-t-lg bg-gradient-to-t">
         <div className="h-[60px] w-full" />
         <div className="mb-1 flex w-full flex-col items-center gap-2 p-5">
@@ -91,6 +90,7 @@ export function AnySpendStakeUpside({
       header={header}
       onSuccess={onSuccess}
       showRecipient={true}
+      activeTab={activeTab}
     />
   );
 }
