@@ -79,7 +79,6 @@ export interface paths {
     /**
      * Get Coinbase onramp options
      * @description Retrieves available Coinbase onramp configuration options.
-     *
      */
     get: {
       parameters: {
@@ -289,12 +288,12 @@ export interface paths {
      */
     get: {
       parameters: {
-        query?: {
+        query: {
           /**
-           * @description Optional address of the order creator (if not provided, returns all orders)
+           * @description Address of the order creator
            * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
            */
-          creatorAddress?: string;
+          creatorAddress: string;
           /**
            * @description Maximum number of orders to return
            * @example 20
