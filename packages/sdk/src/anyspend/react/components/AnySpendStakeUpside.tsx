@@ -34,6 +34,7 @@ export function AnySpendStakeUpside({
   token,
   poolType,
   onSuccess,
+  activeTab,
 }: {
   loadOrder?: string;
   mode?: "modal" | "page";
@@ -43,6 +44,7 @@ export function AnySpendStakeUpside({
   token: components["schemas"]["Token"];
   poolType: "b3" | "weth";
   onSuccess?: () => void;
+  activeTab?: "crypto" | "fiat";
 }) {
   const header = () => (
     <>
@@ -91,6 +93,7 @@ export function AnySpendStakeUpside({
       header={header}
       onSuccess={onSuccess}
       showRecipient={true}
+      activeTab={activeTab}
     />
   );
 }
