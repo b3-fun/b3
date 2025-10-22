@@ -587,11 +587,11 @@ importers:
         specifier: 6.10.0
         version: 6.10.0(f2c3bc36c33e8277f7e88cb935f8f37a)
       '@relayprotocol/relay-kit-ui':
-        specifier: 5.0.3
-        version: 5.0.3(@emotion/is-prop-valid@1.3.1)(@pandacss/dev@1.0.1(typescript@5.8.2))(@radix-ui/colors@0.1.9)(@tanstack/react-query@5.55.0(react@19.1.0))(debug@4.4.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(viem@2.37.9(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))(wagmi@2.16.9(@tanstack/query-core@5.54.1)(@tanstack/react-query@5.55.0(react@19.1.0))(@types/react@19.1.0)(bufferutil@4.0.9)(encoding@0.1.13)(ioredis@5.7.0)(react@19.1.0)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.37.9(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))(zod@3.25.75))
+        specifier: 5.0.6
+        version: 5.0.6(@emotion/is-prop-valid@1.3.1)(@pandacss/dev@1.0.1(typescript@5.8.2))(@radix-ui/colors@0.1.9)(@tanstack/react-query@5.55.0(react@19.1.0))(debug@4.4.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(viem@2.37.9(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))(wagmi@2.16.9(@tanstack/query-core@5.54.1)(@tanstack/react-query@5.55.0(react@19.1.0))(@types/react@19.1.0)(bufferutil@4.0.9)(encoding@0.1.13)(ioredis@5.7.0)(react@19.1.0)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.37.9(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))(zod@3.25.75))
       '@relayprotocol/relay-sdk':
-        specifier: 3.0.0
-        version: 3.0.0(debug@4.4.1)(viem@2.37.9(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))
+        specifier: 3.0.1
+        version: 3.0.1(debug@4.4.1)(viem@2.37.9(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))
       '@solana/spl-token':
         specifier: ^0.4.13
         version: 0.4.13(@solana/web3.js@1.98.4(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.2)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.2)(utf-8-validate@5.0.10)
@@ -4297,16 +4297,16 @@ packages:
   '@relayprotocol/relay-design-system@1.0.0':
     resolution: {integrity: sha512-X1NnXYKFAn2iAvJyQ0WIR+CO/Rdj+bx0Nlew+XwOSCI35OZ3GZkG0nzyZMgt6X550GMqZr5XqNosdro4CNhXgw==}
 
-  '@relayprotocol/relay-kit-hooks@2.0.6':
-    resolution: {integrity: sha512-mxnkwZM3ZzxXhsxzMBozFcbeVUYfSrL+k6nDwNToqv1fxCxY0/BNjyPw/UWik9uc3jwD2hlaLBCafiUF7fG88w==}
+  '@relayprotocol/relay-kit-hooks@2.0.7':
+    resolution: {integrity: sha512-369HUE9JaZjGDbkdI0TKfpaLnlYCnn/B1nVuRlpUMadM8TLZ61pwNQ0Q/OpB5S+mQxoaBV72szsBObFIcMZBSA==}
     peerDependencies:
       '@tanstack/react-query': 5.55.0
       react: 19.1.0
       react-dom: 19.1.0
       viem: 2.37.9
 
-  '@relayprotocol/relay-kit-ui@5.0.3':
-    resolution: {integrity: sha512-WpyPupuDTVWv1ajFLUAIRs6lnJvN67PHF8rWglsc4KeNjuxTL9rpVxPwF5FcBgqJjGMtseVtP0fx5HysXud/Sw==}
+  '@relayprotocol/relay-kit-ui@5.0.6':
+    resolution: {integrity: sha512-9eenTpCNYg6WUCWcVcqk3WvWnIsdnoR8D0z4U8ZFqsu/XrdyoeyTYF7KCAdCyz8OeC1nhj+Vkli9LFRLsFlifA==}
     peerDependencies:
       '@moonpay/moonpay-react': ^1.8.3
       '@tanstack/react-query': 5.55.0
@@ -4318,8 +4318,8 @@ packages:
       '@moonpay/moonpay-react':
         optional: true
 
-  '@relayprotocol/relay-sdk@3.0.0':
-    resolution: {integrity: sha512-exuoL6q+Q8CsDGWVc2Vwiyuhis8HERCDG7RI4f+OS+GoNEHNT5iW5jC8f1h7gRjU0AF8lZkHDXJnMJgEXFaKrA==}
+  '@relayprotocol/relay-sdk@3.0.1':
+    resolution: {integrity: sha512-9f+MmhR6Bc+B9J0uFMXsCxixlNjbOHsuPoAnu3M6lBoApio6fe2MkixpGR+jkoFiX0Hs29vr7iKkBZl04/AMBQ==}
     peerDependencies:
       viem: 2.37.9
 
@@ -18468,9 +18468,9 @@ snapshots:
 
   '@relayprotocol/relay-design-system@1.0.0': {}
 
-  '@relayprotocol/relay-kit-hooks@2.0.6(@tanstack/react-query@5.55.0(react@19.1.0))(debug@4.4.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(viem@2.37.9(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))':
+  '@relayprotocol/relay-kit-hooks@2.0.7(@tanstack/react-query@5.55.0(react@19.1.0))(debug@4.4.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(viem@2.37.9(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))':
     dependencies:
-      '@relayprotocol/relay-sdk': 3.0.0(debug@4.4.1)(viem@2.37.9(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))
+      '@relayprotocol/relay-sdk': 3.0.1(debug@4.4.1)(viem@2.37.9(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))
       '@tanstack/react-query': 5.55.0(react@19.1.0)
       '@types/react': 19.1.0
       '@types/react-dom': 19.1.1(@types/react@19.1.0)
@@ -18481,7 +18481,7 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  '@relayprotocol/relay-kit-ui@5.0.3(@emotion/is-prop-valid@1.3.1)(@pandacss/dev@1.0.1(typescript@5.8.2))(@radix-ui/colors@0.1.9)(@tanstack/react-query@5.55.0(react@19.1.0))(debug@4.4.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(viem@2.37.9(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))(wagmi@2.16.9(@tanstack/query-core@5.54.1)(@tanstack/react-query@5.55.0(react@19.1.0))(@types/react@19.1.0)(bufferutil@4.0.9)(encoding@0.1.13)(ioredis@5.7.0)(react@19.1.0)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.37.9(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))(zod@3.25.75))':
+  '@relayprotocol/relay-kit-ui@5.0.6(@emotion/is-prop-valid@1.3.1)(@pandacss/dev@1.0.1(typescript@5.8.2))(@radix-ui/colors@0.1.9)(@tanstack/react-query@5.55.0(react@19.1.0))(debug@4.4.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(viem@2.37.9(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))(wagmi@2.16.9(@tanstack/query-core@5.54.1)(@tanstack/react-query@5.55.0(react@19.1.0))(@types/react@19.1.0)(bufferutil@4.0.9)(encoding@0.1.13)(ioredis@5.7.0)(react@19.1.0)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.37.9(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))(zod@3.25.75))':
     dependencies:
       '@fortawesome/fontawesome-svg-core': 6.7.2
       '@fortawesome/free-solid-svg-icons': 6.7.2
@@ -18497,8 +18497,8 @@ snapshots:
       '@radix-ui/react-tooltip': 1.1.8(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@radix-ui/react-visually-hidden': 1.2.3(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@relayprotocol/relay-design-system': 1.0.0
-      '@relayprotocol/relay-kit-hooks': 2.0.6(@tanstack/react-query@5.55.0(react@19.1.0))(debug@4.4.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(viem@2.37.9(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))
-      '@relayprotocol/relay-sdk': 3.0.0(debug@4.4.1)(viem@2.37.9(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))
+      '@relayprotocol/relay-kit-hooks': 2.0.7(@tanstack/react-query@5.55.0(react@19.1.0))(debug@4.4.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(viem@2.37.9(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))
+      '@relayprotocol/relay-sdk': 3.0.1(debug@4.4.1)(viem@2.37.9(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))
       '@tanstack/react-query': 5.55.0(react@19.1.0)
       '@types/react': 19.1.0
       '@types/react-dom': 19.1.1(@types/react@19.1.0)
@@ -18519,7 +18519,7 @@ snapshots:
       - '@radix-ui/colors'
       - debug
 
-  '@relayprotocol/relay-sdk@3.0.0(debug@4.4.1)(viem@2.37.9(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))':
+  '@relayprotocol/relay-sdk@3.0.1(debug@4.4.1)(viem@2.37.9(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75))':
     dependencies:
       axios: 1.11.0(debug@4.4.1)
       viem: 2.37.9(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.25.75)
