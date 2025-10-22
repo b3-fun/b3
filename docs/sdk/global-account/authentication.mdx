@@ -3,16 +3,29 @@ title: "Authentication"
 description: "Learn how to implement authentication with B3 Global Accounts"
 ---
 
-import { AuthPreview, GoogleAuthPreview, AllStrategiesPreview } from "/snippets/auth-preview";
+<Tip>
+  **For Developers**: All demos are hosted in the [global-accounts app](https://github.com/b3-fun/b3/tree/main/apps/global-accounts). To test locally, run `pnpm dev` in the global-accounts directory and access demos at `http://localhost:5173/demos`.
+</Tip>
 
-## Interactive Preview
+## Interactive Demo
 
-Experience B3 authentication in action with the actual SDK component:
+Experience B3 authentication in action with a live, interactive component:
 
-<AuthPreview />
+<iframe
+  src="https://global.b3.fun/demos#auth-full"
+  style={{
+    width: '100%',
+    height: '700px',
+    border: '1px solid #e5e7eb',
+    borderRadius: '8px',
+    marginTop: '16px',
+    marginBottom: '16px'
+  }}
+  title="B3 Authentication Demo"
+/>
 
 <Note>
-  This is a **live, interactive component** using the real B3 SDK - not an iframe or mockup. Click the button above to authenticate with your preferred provider and see the component in action.
+  This is a **live, interactive demo** using the actual B3 SDK. Try authenticating with different providers and see real-time results. View the [full demo page](https://global.b3.fun/demos) for more examples.
 </Note>
 
 ## Authentication Strategies
@@ -23,7 +36,18 @@ B3 Global Accounts support multiple authentication strategies to fit your applic
 
 ### Google Authentication
 
-<GoogleAuthPreview />
+<iframe
+  src="https://global.b3.fun/demos#auth-google"
+  style={{
+    width: '100%',
+    height: '400px',
+    border: '1px solid #e5e7eb',
+    borderRadius: '8px',
+    marginTop: '16px',
+    marginBottom: '16px'
+  }}
+  title="Google Authentication Demo"
+/>
 
 ```tsx
 import { SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
@@ -85,7 +109,18 @@ function DiscordAuth() {
 
 You can allow users to choose from multiple authentication providers:
 
-<AllStrategiesPreview />
+<iframe
+  src="https://global.b3.fun/demos#auth-all"
+  style={{
+    width: '100%',
+    height: '500px',
+    border: '1px solid #e5e7eb',
+    borderRadius: '8px',
+    marginTop: '16px',
+    marginBottom: '16px'
+  }}
+  title="All Authentication Strategies Demo"
+/>
 
 ```tsx
 import { SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
@@ -114,84 +149,6 @@ function MultipleAuthOptions() {
 <Note>
   When you don't specify `strategies`, the SignInWithB3 component will display all available authentication options as shown in the preview above.
 </Note>
-
-## Session Key Authentication
-
-Session keys provide enhanced security and allow for granular permissions. This is particularly useful for games and applications that need to perform actions on behalf of users.
-
-### Basic Session Key Setup
-
-```tsx
-import { SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
-
-const b3Chain = {
-  id: 8333,
-  name: "B3",
-  nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
-  rpc: "https://mainnet-rpc.b3.fun",
-};
-
-function SessionKeyAuth() {
-  return (
-    <SignInWithB3
-      strategies={["google"]}
-      chain={b3Chain}
-      partnerId="your-partner-id"
-      sessionKeyAddress="0x..." // MetaMask or other wallet address
-      onLoginSuccess={(globalAccount) => {
-        console.log("Session key authenticated:", globalAccount);
-      }}
-    />
-  );
-}
-```
-
-### Custom Session Key Configuration
-
-For advanced use cases, you can configure session keys with specific permissions using the `RequestPermissionsButton` component:
-
-```tsx
-import { 
-  SignInWithB3, 
-  RequestPermissionsButton 
-} from "@b3dotfun/sdk/global-account/react";
-
-function AdvancedSessionAuth() {
-  const [sessionKeyAddress, setSessionKeyAddress] = useState<`0x${string}`>();
-
-  const sessionKeyPermissions = {
-    approvedTargets: ["0x..."], // Specific contract addresses
-    startDate: new Date(),
-    endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
-    nativeTokenLimitPerTransaction: 0.0001, // ETH limit per transaction
-  };
-
-  return (
-    <div>
-      <SignInWithB3
-        strategies={["google"]}
-        chain={b3Chain}
-        partnerId="your-partner-id"
-        sessionKeyAddress={sessionKeyAddress}
-        onLoginSuccess={(globalAccount) => {
-          console.log("Authenticated:", globalAccount);
-        }}
-      />
-      
-      {sessionKeyAddress && (
-        <RequestPermissionsButton
-          chain={b3Chain}
-          sessionKeyAddress={sessionKeyAddress}
-          permissions={sessionKeyPermissions}
-          onSuccess={() => {
-            console.log("Permissions granted!");
-          }}
-        />
-      )}
-    </div>
-  );
-}
-```
 
 ## Headless Authentication
 
@@ -365,16 +322,8 @@ The main authentication button component.
   Your unique partner ID for B3 Global Accounts.
 </ParamField>
 
-<ParamField path="sessionKeyAddress" type="Address">
-  Optional session key address for enhanced permissions.
-</ParamField>
-
 <ParamField path="onLoginSuccess" type="(account: Account) => void">
   Callback function called when authentication succeeds.
-</ParamField>
-
-<ParamField path="onSessionKeySuccess" type="() => void">
-  Callback function called when session key is successfully added.
 </ParamField>
 
 <ParamField path="onError" type="(error: Error) => Promise<void>">
