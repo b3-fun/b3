@@ -7,7 +7,6 @@ import { CodeExample } from "./components/CodeExample";
 import { Features } from "./components/Features";
 import { Hero } from "./components/Hero";
 import { NFTMintingExample } from "./components/NFTMintingExample";
-import { PasswordGate } from "./components/PasswordGate";
 import { RequestPermissionsExample } from "./components/RequestPermissionsExample";
 import { b3Chain } from "./constants/b3Chain";
 import { Debug } from "./pages/Debug";
@@ -29,10 +28,6 @@ function MainContent({ wallet }: { wallet: Wallet }) {
 }
 
 function App() {
-  const [isAuthorized, setIsAuthorized] = useState(() => {
-    return localStorage.getItem("b3_docs_authorized") === "true";
-  });
-
   const [wallet, setWallet] = useState<Wallet | null>(null);
 
   useEffect(() => {
@@ -42,17 +37,6 @@ function App() {
     };
     generateLocalWallet();
   }, []);
-
-  if (!isAuthorized) {
-    return (
-      <PasswordGate
-        onAuthorized={() => {
-          setIsAuthorized(true);
-          localStorage.setItem("b3_docs_authorized", "true");
-        }}
-      />
-    );
-  }
 
   return (
     <QueryClientProvider client={queryClient}>
