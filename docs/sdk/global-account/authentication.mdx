@@ -15,7 +15,7 @@ Experience B3 authentication in action with a live, interactive component:
   src="https://global.b3.fun/demos?embedded=true#auth-full"
   style={{
     width: '100%',
-    height: '500px',
+    height: '300px',
     border: '1px solid #e5e7eb',
     borderRadius: '8px',
     marginTop: '16px',
@@ -311,7 +311,9 @@ The main authentication button component.
 #### Props
 
 <ParamField path="strategies" type="AllowedStrategy[]">
-  Array of authentication strategies to display. Options include: `"google"`, `"discord"`, `"x"`, `"apple"`, `"walletConnect"`, `"io.metamask"`, `"com.coinbase.wallet"`. Leave undefined to show all options.
+  Array of authentication strategies to display. Options include: `"google"`, `"discord"`, `"x"`, `"apple"`, `"walletConnect"`, `"io.metamask"`, `"com.coinbase.wallet"`. 
+  
+  Leave undefined to show all options.
 </ParamField>
 
 <ParamField path="chain" type="Chain" required>
