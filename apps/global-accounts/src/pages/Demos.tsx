@@ -1,5 +1,5 @@
 import { SignInWithB3, useAuthStore, useB3 } from "@b3dotfun/sdk/global-account/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { b3Chain } from "../constants/b3Chain";
 
 export function Demos() {
@@ -9,6 +9,19 @@ export function Demos() {
 
   // Check if embedded mode (for iframes)
   const isEmbedded = new URLSearchParams(window.location.search).get("embedded") === "true";
+
+  // Handle hash scrolling after content renders
+  useEffect(() => {
+    if (window.location.hash) {
+      // Small delay to ensure content is rendered
+      setTimeout(() => {
+        const element = document.querySelector(window.location.hash);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 100);
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-white">
