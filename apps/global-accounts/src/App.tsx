@@ -11,6 +11,7 @@ import { PasswordGate } from "./components/PasswordGate";
 import { RequestPermissionsExample } from "./components/RequestPermissionsExample";
 import { b3Chain } from "./constants/b3Chain";
 import { Debug } from "./pages/Debug";
+import { Demos } from "./pages/Demos";
 import { queryClient } from "./utils/queryClient";
 import type { Wallet } from "./utils/wallet";
 import { generateWallet } from "./utils/wallet";
@@ -71,6 +72,9 @@ function App() {
                   </Link>
                 </div>
                 <div className="flex items-center gap-8">
+                  <Link to="/demos" className="text-b3-grey hover:text-b3-blue font-neue-montreal transition-colors">
+                    Demos
+                  </Link>
                   <Link to="/debug" className="text-b3-grey hover:text-b3-blue font-neue-montreal transition-colors">
                     Debug
                   </Link>
@@ -110,6 +114,7 @@ function App() {
 
             <Routes>
               <Route path="/" element={wallet && <MainContent wallet={wallet} />} />
+              <Route path="/demos" element={<Demos />} />
               <Route path="/debug" element={wallet && <Debug />} />
             </Routes>
           </div>
