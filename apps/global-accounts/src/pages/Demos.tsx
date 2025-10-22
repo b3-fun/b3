@@ -18,7 +18,7 @@ export function Demos() {
         const element = document.querySelector(window.location.hash);
         if (element) {
           // Use block: "nearest" to prevent scrolling the parent page when in iframe
-          element.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+          //   element.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
         }
       }, 100);
     }
