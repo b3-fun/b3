@@ -132,6 +132,7 @@ export function B3DynamicModal() {
           contentClass,
           "rounded-2xl bg-white shadow-xl dark:bg-gray-900",
           "border border-gray-200 dark:border-gray-800",
+          contentType?.type === "manageAccount" && "p-0",
           // Remove default width classes for avatar editor
           contentType?.type === "avatarEditor"
             ? "!w-[90vw] !max-w-none" // Use !important to override default styles
