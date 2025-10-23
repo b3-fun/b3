@@ -1,6 +1,6 @@
 ---
 title: Ejemplos
-description: Ejemplos completos y patrones de integración para Cuentas Globales B3
+description: Ejemplos completos y patrones de integración para B3 Global Accounts
 lang: es
 originalPath: sdk/global-account/examples.mdx
 ---
@@ -31,7 +31,7 @@ function AuthComponent() {
     return (
       <div className="loading-container">
         <div className="spinner" />
-        <p>Cargando tu cuenta...</p>
+        <p>Loading your account...</p>
       </div>
     );
   }
@@ -42,29 +42,29 @@ function AuthComponent() {
         <div className="user-profile">
           <img 
             src={account?.avatarUrl} 
-            alt="Perfil" 
+            alt="Profile" 
             className="avatar"
           />
-          <h2>¡Bienvenido, {account?.displayName}!</h2>
+          <h2>Welcome, {account?.displayName}!</h2>
           <p>Email: {account?.email}</p>
           <button onClick={signOut} className="sign-out-btn">
-            Cerrar sesión
+            Sign Out
           </button>
         </div>
       ) : (
         <div className="sign-in-container">
-          <h2>Inicia sesión en B3</h2>
+          <h2>Sign in to B3</h2>
           
           <SignInWithB3
             provider={{ strategy: "google" }}
             partnerId="your-partner-id"
             onLoginSuccess={(globalAccount) => {
               setAuthError(null);
-              console.log("Autenticación exitosa:", globalAccount);
+              console.log("Authentication successful:", globalAccount);
             }}
             onLoginError={(error) => {
               setAuthError(error.message);
-              console.error("Autenticación fallida:", error);
+              console.error("Authentication failed:", error);
             }}
           />
 
@@ -73,7 +73,7 @@ function AuthComponent() {
             partnerId="your-partner-id"
             onLoginSuccess={(globalAccount) => {
               setAuthError(null);
-              console.log("Autenticación de Discord exitosa:", globalAccount);
+              console.log("Discord auth successful:", globalAccount);
             }}
             onLoginError={(error) => {
               setAuthError(error.message);
@@ -82,7 +82,7 @@ function AuthComponent() {
 
           {authError && (
             <div className="error-message">
-              <p>Autenticación fallida: {authError}</p>
+              <p>Authentication failed: {authError}</p>
             </div>
           )}
         </div>
@@ -139,7 +139,7 @@ function GameContainer() {
   return (
     <div className="game-container">
       <header className="game-header">
-        <h1>🎮 Épico Juego B3</h1>
+        <h1>🎮 Epic B3 Game</h1>
         {isAuthenticated && (
           <div className="user-info">
             <img src={account?.avatarUrl} alt="Avatar" className="small-avatar" />
@@ -166,15 +166,15 @@ function GameContainer() {
 function AuthenticationStep() {
   return (
     <div className="setup-step">
-      <h2>🔐 Iniciar Sesión</h2>
-      <p>Conecta tu Cuenta Global B3 para empezar a jugar</p>
+      <h2>🔐 Sign In</h2>
+      <p>Connect your B3 Global Account to start playing</p>
       
       <div className="auth-options">
         <SignInWithB3
           provider={{ strategy: "google" }}
           partnerId="epic-game-studio"
           onLoginSuccess={(account) => {
-            console.log("Bienvenido al juego:", account.displayName);
+            console.log("Welcome to the game:", account.displayName);
           }}
         />
         
@@ -182,7 +182,7 @@ function AuthenticationStep() {
           provider={{ strategy: "discord" }}
           partnerId="epic-game-studio"
           onLoginSuccess={(account) => {
-            console.log("Jugador de Discord unido:", account.displayName);
+            console.log("Discord player joined:", account.displayName);
           }}
         />
       </div>
@@ -195,10 +195,10 @@ function WalletConnectionStep() {
 
   return (
     <div className="setup-step">
-      <h2>👛 Conectar Cartera</h2>
-      <p>Conecta tu cartera para interactuar con el juego</p>
+      <h2>👛 Connect Wallet</h2>
+      <p>Connect your wallet to interact with the game</p>
       <button onClick={connect} className="connect-wallet-btn">
-        Conectar Cartera
+        Connect Wallet
       </button>
     </div>
   );
@@ -209,21 +209,21 @@ function PermissionStep() {
     approvedTargets: gameContracts,
     startDate: new Date(),
     endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 días
-    nativeTokenLimitPerTransaction: 0.001, // Pequeño límite de ETH para gas
+    nativeTokenLimitPerTransaction: 0.001, // Límite pequeño de ETH para gas
   };
 
   return (
     <div className="setup-step">
-      <h2>🛡️ Otorgar Permisos al Juego</h2>
-      <p>Permite que el juego realice acciones en tu nombre</p>
+      <h2>🛡️ Grant Game Permissions</h2>
+      <p>Allow the game to perform actions on your behalf</p>
       
       <div className="permission-details">
-        <h3>Esto permitirá al juego:</h3>
+        <h3>This will allow the game to:</h3>
         <ul>
-          <li>✅ Interactuar con contratos del juego</li>
-          <li>✅ Comerciar NFTs en tu nombre</li>
-          <li>✅ Gastar hasta 0.001 ETH por transacción</li>
-          <li>✅ Válido por 7 días</li>
+          <li>✅ Interact with game contracts</li>
+          <li>✅ Trade NFTs on your behalf</li>
+          <li>✅ Spend up to 0.001 ETH per transaction</li>
+          <li>✅ Valid for 7 days</li>
         </ul>
       </div>
 
@@ -232,10 +232,10 @@ function PermissionStep() {
         sessionKeyAddress="0x..." // Tu dirección de clave de sesión
         permissions={gamePermissions}
         onSuccess={() => {
-          console.log("¡Permisos del juego otorgados! Iniciando juego...");
+          console.log("Game permissions granted! Starting game...");
         }}
         onError={(error) => {
-          console.error("Fallo al otorgar permisos:", error);
+          console.error("Permission grant failed:", error);
         }}
       />
     </div>
@@ -248,26 +248,26 @@ function GameReadyState() {
   
   return (
     <div className="game-ready">
-      <h2>🎯 ¡Juego Listo!</h2>
+      <h2>🎯 Game Ready!</h2>
       <div className="player-stats">
         <div className="stat">
-          <label>Jugador:</label>
+          <label>Player:</label>
           <span>{account?.displayName}</span>
         </div>
         <div className="stat">
-          <label>Cartera:</label>
+          <label>Wallet:</label>
           <span>{wallet?.address?.substring(0, 6)}...{wallet?.address?.substring(-4)}</span>
         </div>
         <div className="stat">
-          <label>Saldo:</label>
+          <label>Balance:</label>
           <span>{wallet?.balance} ETH</span>
         </div>
       </div>
       
       <div className="game-actions">
-        <button className="play-btn">Empezar a Jugar</button>
-        <button className="inventory-btn">Ver Inventario</button>
-        <button className="marketplace-btn">Mercado</button>
+        <button className="play-btn">Start Playing</button>
+        <button className="inventory-btn">View Inventory</button>
+        <button className="marketplace-btn">Marketplace</button>
       </div>
     </div>
   );
@@ -276,9 +276,9 @@ function GameReadyState() {
 export default GameApp;
 ```
 
-## Ejemplo de Aplicación de Comercio Electrónico
+## Ejemplo de Aplicación de E-commerce
 
-Ejemplo que muestra la integración de Cuentas Globales B3 en un contexto de comercio electrónico.
+Ejemplo mostrando la integración de Cuentas Globales B3 en un contexto de e-commerce.
 
 ```tsx
 import {
@@ -302,7 +302,7 @@ function ShopContainer() {
   return (
     <div className="shop-container">
       <header className="shop-header">
-        <h1>🛍️ Mercado NFT B3</h1>
+        <h1>🛍️ B3 NFT Marketplace</h1>
         <UserSection />
       </header>
 
@@ -324,13 +324,13 @@ function UserSection() {
     <div className="user-section">
       {isAuthenticated ? (
         <div className="user-menu">
-          <img src={account?.avatarUrl} alt="Perfil" className="avatar" />
+          <img src={account?.avatarUrl} alt="Profile" className="avatar" />
           <div className="dropdown">
             <span>{account?.displayName}</span>
             <div className="dropdown-content">
-              <button>Mi Colección</button>
-              <button>Historial de Compras</button>
-              <button onClick={signOut}>Cerrar Sesión</button>
+              <button>My Collection</button>
+              <button>Purchase History</button>
+              <button onClick={signOut}>Sign Out</button>
             </div>
           </div>
         </div>
@@ -340,7 +340,7 @@ function UserSection() {
             provider={{ strategy: "google" }}
             partnerId="nft-marketplace"
             onLoginSuccess={(account) => {
-              console.log("¡Bienvenido al mercado:", account.displayName);
+              console.log("Welcome to the marketplace:", account.displayName);
             }}
           />
         </div>
@@ -355,7 +355,7 @@ function AuthenticatedShop() {
   return (
     <div className="authenticated-shop">
       <section className="user-collection">
-        <h2>Tu Colección</h2>
+        <h2>Your Collection</h2>
         <div className="asset-grid">
           {assets?.map((asset) => (
             <div key={asset.id} className="asset-card">
@@ -368,7 +368,7 @@ function AuthenticatedShop() {
       </section>
 
       <section className="marketplace">
-        <h2>Mercado</h2>
+        <h2>Marketplace</h2>
         <MarketplaceGrid />
       </section>
     </div>
@@ -379,20 +379,20 @@ function GuestShop() {
   return (
     <div className="guest-shop">
       <section className="hero">
-        <h2>Descubre NFTs Increíbles</h2>
-        <p>Inicia sesión para empezar a coleccionar e intercambiar</p>
+        <h2>Discover Amazing NFTs</h2>
+        <p>Sign in to start collecting and trading</p>
         
         <SignInWithB3
           provider={{ strategy: "google" }}
           partnerId="nft-marketplace"
           onLoginSuccess={() => {
-            console.log("¡Usuario unido al mercado!");
+            console.log("User joined the marketplace!");
           }}
         />
       </section>
 
       <section className="featured">
-        <h2>Colecciones Destacadas</h2>
+        <h2>Featured Collections</h2>
         <MarketplaceGrid />
       </section>
     </div>
@@ -400,11 +400,11 @@ function GuestShop() {
 }
 
 function MarketplaceGrid() {
-  // Artículos simulados del mercado
+  // Elementos simulados del mercado
   const items = [
     { id: 1, name: "Cool NFT #1", price: "0.1 ETH", image: "/nft1.jpg" },
-    { id: 2, name: "Artículo Raro #42", price: "0.5 ETH", image: "/nft2.jpg" },
-    // ... más artículos
+    { id: 2, name: "Rare Item #42", price: "0.5 ETH", image: "/nft2.jpg" },
+    // ... más elementos
   ];
 
   return (
@@ -414,7 +414,7 @@ function MarketplaceGrid() {
           <img src={item.image} alt={item.name} />
           <h3>{item.name}</h3>
           <p className="price">{item.price}</p>
-          <button className="buy-btn">Comprar Ahora</button>
+          <button className="buy-btn">Buy Now</button>
         </div>
       ))}
     </div>
@@ -448,7 +448,7 @@ function MainScreen() {
   if (isLoading) {
     return (
       <View style={styles.container}>
-        <Text>Cargando...</Text>
+        <Text>Loading...</Text>
       </View>
     );
   }
@@ -467,15 +467,15 @@ function MainScreen() {
 function SignInView() {
   return (
     <View style={styles.signInContainer}>
-      <Text style={styles.title}>Bienvenido a B3 Móvil</Text>
+      <Text style={styles.title}>Welcome to B3 Mobile</Text>
       
       {/* La implementación en React Native usaría flujos de autenticación nativos */}
       <TouchableOpacity style={styles.signInButton}>
-        <Text style={styles.buttonText}>Iniciar Sesión con Google</Text>
+        <Text style={styles.buttonText}>Sign In with Google</Text>
       </TouchableOpacity>
       
       <TouchableOpacity style={styles.signInButton}>
-        <Text style={styles.buttonText}>Iniciar Sesión con Discord</Text>
+        <Text style={styles.buttonText}>Sign In with Discord</Text>
       </TouchableOpacity>
     </View>
   );
@@ -487,14 +487,14 @@ function AuthenticatedView({ account }) {
   return (
     <View style={styles.authenticatedContainer}>
       <Text style={styles.welcomeText}>
-        ¡Bienvenido, {account?.displayName}!
+        Welcome, {account?.displayName}!
       </Text>
       
       <TouchableOpacity 
         style={styles.signOutButton}
         onPress={signOut}
       >
-        <Text style={styles.buttonText}>Cerrar Sesión</Text>
+        <Text style={styles.buttonText}>Sign Out</Text>
       </TouchableOpacity>
     </View>
   );
@@ -547,7 +547,7 @@ const styles = StyleSheet.create({
 export default App;
 ```
 
-## Ejemplo de Enrutador de Aplicación Next.js
+## Ejemplo de Router de App en Next.js
 
 Ejemplo para Next.js 13+ App Router.
 
@@ -583,7 +583,7 @@ export default function HomePage() {
   const { isAuthenticated, isLoading } = useB3();
 
   if (isLoading) {
-    return <div>Cargando...</div>;
+    return <div>Loading...</div>;
   }
 
   return (
@@ -601,13 +601,13 @@ import { SignInWithB3 } from '@b3dotfun/sdk/global-account/react';
 export default function AuthComponent() {
   return (
     <div className="auth-container">
-      <h1>Bienvenido a la App B3</h1>
+      <h1>Welcome to B3 App</h1>
       
       <SignInWithB3
         provider={{ strategy: "google" }}
         partnerId="nextjs-app"
         onLoginSuccess={(account) => {
-          console.log("Éxito de autenticación en Next.js:", account);
+          console.log("Next.js auth success:", account);
         }}
       />
     </div>
@@ -656,4 +656,21 @@ function useB3GameState() {
     wallet: {
       address: wallet?.address,
       balance: wallet?.balance,
-      chainId: wallet?.
+      chainId: wallet?.chainId,
+    },
+    permissions: {
+      active: hasPermissions && !isExpired,
+      expires: permissions?.endDate,
+      contracts: permissions?.approvedTargets || [],
+    },
+    assets: {
+      items: gameAssets,
+      count: gameAssets.length,
+      totalValue: totalGameValue,
+    },
+    status: {
+      authenticated: isAuthenticated,
+      connected: isConnected,
+      authorized: hasPermissions && !isExpired,
+      ready: isGameReady,
+    }

@@ -1,0 +1,470 @@
+---
+title: 完整的Token生命周期
+description: 端到端指南：从代币创建、通过绑定阶段，到完整的 DEX 交易和去中心化。
+lang: cn
+originalPath: bondkit/guides/token-lifecycle.mdx
+---
+## 概览
+
+本指南将带您了解Bondkit令牌的完整生命周期，从初始创建到完全去中心化。理解这一流程对于成功的令牌启动和管理至关重要。
+
+```mermaid
+flowchart TD
+    A[部署令牌] --> B[债券阶段]
+    B --> C{目标达成?}
+    C -->|否| D[继续交易]
+    D --> C
+    C -->|是| E[迁移就绪]
+    E --> F[迁移到DEX]
+    F --> G[DEX阶段]
+    G --> H[完全去中心化]
+    
+    style A fill:#4CAF50,stroke:#2E7D32,color:#fff
+    style B fill:#FF9800,stroke:#F57C00,color:#fff
+    style E fill:#9C27B0,stroke:#6A1B9A,color:#fff
+    style F fill:#2196F3,stroke:#1565C0,color:#fff
+    style G fill:#00BCD4,stroke:#00838F,color:#fff
+    style H fill:#4CAF50,stroke:#2E7D32,color:#fff
+```
+
+## 阶段1：令牌创建
+
+### 预部署规划
+
+<AccordionGroup>
+  <Accordion title="选择您的参数">
+    **关键决策:**
+    
+    | 参数 | 影响 | 建议 |
+    |-----------|---------|----------------|
+    | **finalTokenSupply** | 总共创建的令牌数量 | 通常为1M-100M令牌 |
+    | **aggressivenessFactor** | 价格曲线陡峭度 | 30-60用于平衡启动 |
+    | **targetAmount** | 迁移阈值 | 5-50交易令牌 |
+    | **tradingToken** | 用户支付什么 | 使用B3用于Base主网 |
+    
+    **示例配置:**
+    ```typescript
+    const tokenConfig = {
+      name: "MyToken",
+      symbol: "MTK",
+      finalTokenSupply: parseEther("10000000"), // 10M令牌
+      aggressivenessFactor: 45, // 中等曲线
+      targetAmount: parseEther("20"), // 20 B3令牌
+      tradingToken: "0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3"
+    };
+    ```
+  </Accordion>
+  
+  <Accordion title="设置费用结构">
+    **费用分配策略:**
+    
+    ```typescript
+    const feeConfig = {
+      feeRecipient: "0x...", // 您的财政/团队地址
+      lpSplitRatioFeeRecipientBps: 2000n, // 20%给费用接收者
+      // 剩余80%在迁移后成为LP令牌
+    };
+    ```
+    
+    **费用流程:**
+    - **债券阶段**: 所有交易的5% → `feeRecipient`
+    - **迁移后**: 0.3%交易费 → LP提供者
+  </Accordion>
+</AccordionGroup>
+
+### 部署执行
+
+```typescript
+import { BondkitTokenFactory } from "@b3dotfun/sdk/bondkit";
+import { base } from "viem/chains";
+
+// 1. 初始化工厂
+const factory = new BondkitTokenFactory(
+  base.id,
+  process.env.WALLET_PRIVATE_KEY
+);
+
+// 2. 使用完整配置部署
+const tokenAddress = await factory.deployBondkitToken({
+  // 令牌元数据
+  name: "MyToken",
+  symbol: "MTK",
+  
+  // 经济学
+  finalTokenSupply: parseEther("10000000"),
+  aggressivenessFactor: 45,
+  targetAmount: parseEther("20"),
+  
+  // 费用结构  
+  feeRecipient: process.env.TREASURY_ADDRESS,
+  lpSplitRatioFeeRecipientBps: 2000n,
+  
+  // 管理员 & 迁移
+  migrationAdminAddress: process.env.ADMIN_ADDRESS,
+  
+  // Uniswap V4配置
+  bondingPhaseSplitter: "0x2AB69e0d9D20D3700466153D84a6574128154Fd2",
+  v4PoolManager: "0x498581fF718922c3f8e6A244956aF099B2652b2b",
+  v4Hook: "0xB36f4A2FB18b745ef8eD31452781a463d2B3f0cC",
+  v4PoolFee: 3000,
+  v4TickSpacing: 60,
+  tradingToken: "0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3"
+});
+
+console.log(`✅ 令牌部署成功: ${tokenAddress}`);
+```
+
+## 阶段2：债券阶段管理
+
+### 启动策略
+
+<Tabs>
+  <Tab title="社区建设">
+    **启动前清单:**
+    - [ ] 在Basescan上验证令牌合约
+    - [ ] 建立社区渠道（Discord/Telegram）  
+    - [ ] 准备营销材料
+    - [ ] 规划初始购买策略
+    - [ ] 准备价格跟踪仪表板
+    
+    **启动日:**
+    ```typescript
+    // 连接到您的令牌
+    const token = new BondkitToken(tokenAddress, privateKey);
+    
+    // 初始购买以确定价格
+    await token.buy(parseEther("1"), 0n); // 1 B3令牌
+    
+    // 用真实数据宣布启动
+    const price = await token.getCurrentPrice();
+    const progress = await token.getBondingProgress();
+    
+    console.log(`🚀 现在以 ${formatEther(price)} B3每令牌上线`);
+    console.log(`🎯 达到迁移的${(progress.progress * 100).toFixed(1)}%`);
+    ```
+  </Tab>
+  
+  <Tab title="进度监控">
+    **关键指标仪表板:**
+    ```typescript
+    async function getDashboardData(token) {
+      const [
+        tokenDetails,
+        currentPrice, 
+        progress,
+        totalSupply,
+        status
+      ] = await Promise.all([
+        token.getTokenDetails(),
+        token.getCurrentPrice(),
+        token.getBondingProgress(), 
+        token.getTotalSupply(),
+        token.currentStatus()
+      ]);
+      
+      return {
+        // 令牌信息
+        name: tokenDetails.name,
+        symbol: tokenDetails.symbol,
+        
+        // 经济学
+        currentPrice: formatEther(currentPrice),
+        progress: (progress.progress * 100).toFixed(2) + '%',
+        raised: formatEther(progress.raised),
+        target: formatEther(progress.threshold),
+        remaining: formatEther(progress.threshold - progress.raised),
+        
+        // 供应
+        circulatingSupply: formatEther(totalSupply),
+        
+        // 状态
+        phase: status === 1 ? '债券' : status === 2 ? 'DEX' : '其他'
+      };
+    }
+    
+    // 在您的仪表板中使用
+    const data = await getDashboardData(token);
+    ```
+  </Tab>
+  
+  <Tab title="社区参与">
+    **实时更新:**
+    ```typescript
+    // 设置事件监控以进行社区更新
+    token.onBuy((event) => {
+      const announcement = `
+        🟢 新购买: ${formatEther(event.tokensOut)} ${symbol}
+        💰 花费: ${formatEther(event.ethIn)} B3
+        👤 买家: ${event.buyer}
+      `;
+      
+      // 发布到Discord/Telegram机器人
+      postToDiscord(announcement);
+    });
+    
+    token.onSell((event) => {
+      const announcement = `
+        🔴 出售: ${formatEther(event.tokensIn)} ${symbol}
+        💰 收到: ${formatEther(event.ethOut)} B3  
+        👤 卖家: ${event.seller}
+      `;
+      
+      postToDiscord(announcement);
+    });
+    
+    // 进度里程碑
+    const progress = await token.getBondingProgress();
+    if (progress.progress >= 0.5 && progress.progress < 0.6) {
+      postToDiscord("🎯 50%资金到位！迁移半途！");
+    } else if (progress.progress >= 0.9) {
+      postToDiscord("🔥 90%资金到位！迁移迫在眉睫！");
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### 管理债券曲线
+
+**健康债券阶段指标:**
+- 稳定的交易量
+- 不断增长的持有者基础  
+- 积极的社区参与
+- 朝着目标前进（但不是太快）
+- 最小化大规模卖出
+
+**警告信号:**
+- 24小时内无交易活动
+- 单一鲸鱼控制大比例
+- 社区没有迅速达成目标
+- 机器人引起的过度波动
+
+## 阶段3：迁移准备
+
+### 迁移前清单
+
+```typescript
+async function checkMigrationReadiness(token) {
+  const [canMigrate, progress, status] = await Promise.all([
+    token.canMigrate(),
+    token.getBondingProgress(),
+    token.currentStatus()
+  ]);
+  
+  const checks = {
+    targetReached: canMigrate,
+    progressComplete: progress.progress >= 1.0,
+    stillBondingPhase: status === 1,
+    communityReady: await checkCommunityConsensus(), // 您的逻辑
+    liquidityPlan: await checkPostMigrationPlan()     // 您的逻辑
+  };
+  
+  const allReady = Object.values(checks).every(Boolean);
+  
+  return {
+    ready: allReady,
+    checks,
+    recommendation: allReady ? 
+      "✅ 准备迁移！" : 
+      "⏳ 在迁移前解决问题"
+  };
+}
+```
+
+### 迁移时间策略
+
+<AccordionGroup>
+  <Accordion title="最佳时机">
+    **最佳实践:**
+    - 提前24-48小时宣布迁移
+    - 选择您的社区高活跃时间
+    - 确保充分的社区共识
+    - 准备迁移后的营销
+    
+    **迁移前公告:**
+    ```typescript
+    const migrationData = await token.getMigrationData();
+    
+    const announcement = `
+      🚀 迁移已安排
+      
+      📊 最终债券统计:
+      • 筹集: ${formatEther(progress.raised)} B3
+      • 分发令牌: ${formatEther(totalSupply)}
+      
+      🔄 迁移将创建:
+      • 初始LP: ${formatEther(migrationData.ethForLp)} B3 + 令牌
+      • 开盘价格: ~${calculateOpeningPrice(migrationData)} B3/令牌
+      
+      ⏰ 24小时内迁移！
+    `;
+    ```
+  </Accordion>
+  
+  <Accordion title="迁移执行">
+    **迁移过程:**
+    ```typescript
+    // 最终检查
+    const readiness = await checkMigrationReadiness(token);
+    if (!readiness.ready) {
+      throw new Error(`未准备好: ${JSON.stringify(readiness.checks)}`);
+    }
+    
+    // 执行迁移
+    console.log("🔄 开始迁移到Uniswap V4...");
+    const migrationTx = await token.migrateToDex();
+    
+    // 等待确认
+    const receipt = await token.waitForTransaction(migrationTx);
+    
+    if (receipt.status === 'success') {
+      console.log("✅ 迁移成功！");
+      
+      // 验证新状态
+      const newStatus = await token.currentStatus();
+      console.log(`状态: ${newStatus === 2 ? 'DEX阶段' : '未知'}`);
+      
+      // 向社区宣布
+      const announcement = `
+        🎉 迁移完成！
+        
+        📍 现在在Uniswap V4上交易
+        🔗 交易: ${migrationTx}
+        💫 令牌现在完全去中心化！
+      `;
+      
+      postToDiscord(announcement);
+    }
+    ```
+  </Accordion>
+</Tabs>
+
+## 阶段4：DEX阶段操作
+
+### 迁移后立即（首24小时）
+
+```typescript
+// 初始化DEX交易工具
+import { BondkitSwapService } from "@b3dotfun/sdk/bondkit";
+
+const swapService = new BondkitSwapService(tokenAddress);
+
+// 验证DEX功能
+const isSwapAvailable = await token.isSwapAvailable();
+if (isSwapAvailable) {
+  console.log("✅ DEX交易活跃");
+  
+  // 测试交换报价
+  const quote = await swapService.getSwapQuote({
+    tokenIn: "0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3",
+    tokenOut: tokenAddress,
+    amountIn: "1",
+    tokenInDecimals: 18,
+    tokenOutDecimals: 18,
+    slippageTolerance: 0.005,
+    recipient: testAddress
+  });
+  
+  console.log(`DEX价格: ${quote.executionPrice} B3每令牌`);
+}
+```
+
+### 长期DEX策略
+
+<Tabs>
+  <Tab title="流动性管理">
+    **初始流动性分析:**
+    ```typescript
+    async function analyzeLiquidity() {
+      // 获取池信息（实现取决于您的设置）
+      const poolData = await getUniswapV4PoolData(tokenAddress);
+      
+      return {
+        totalValueLocked: poolData.tvl,
+        tradingVolume24h: poolData.volume24h,
+        priceImpactFor1k: await calculatePriceImpact(1000),
+        liquidityUtilization: poolData.utilization,
+        
+        recommendations: {
+          needsMoreLiquidity: poolData.tvl < minimumTVL,
+          shouldIncentivize: poolData.utilization > 0.8,
+          healthyTrading: poolData.volume24h > minimumVolume
+        }
+      };
+    }
+    ```
+    
+    **流动性激励计划:**
+    ```typescript
+    // 示例LP奖励结构
+    const lpIncentives = {
+      rewardToken: tokenAddress,
+      dailyRewards: parseEther("1000"), // 每天1000令牌
+      minimumLPTime: 7 * 24 * 3600, // 最少7天
+      bonusMultipliers: {
+        week1: 2.0,  // 第一周2倍奖励
+        month1: 1.5, // 第一个月1.5倍奖励
+        longTerm: 1.0 // 之后标准奖励
+      }
+    };
+    ```
+  </Tab>
+  
+  <Tab title="社区过渡">
+    **教育内容:**
+    ```typescript
+    const migrationGuideForUsers = {
+      trading: {
+        before: "使用token.buy()和token.sell()",
+        after: "使用DEX界面或swapService.executeSwap()",
+        walletSetup: "将令牌添加到MetaMask，使用Uniswap界面"
+      },
+      
+      benefits: {
+        moreFeatures: "限价单，高级交易工具",
+        composability: "与其他DeFi协议一起使用", 
+        decentralization: "没有剩余的管理员控制"
+      },
+      
+      risks: {
+        priceVolatility: "市场驱动定价，可能波动",
+        liquidityRisk: "大额交易可能会影响价格",
+        smartContractRisk: "标准DeFi风险适用"
+      }
+    };
+    ```
+    
+    **社区资源:**
+    - 更新的文档
+    - 交易教程视频  
+    - DEX界面集成指南
+    - 提供流动性教程
+  </Tab>
+  
+  <Tab title="监控与分析">
+    **DEX阶段仪表板:**
+    ```typescript
+    async function getDEXPhaseMetrics(tokenAddress) {
+      return {
+        // 价格 & 成交量
+        currentPrice: await getCurrentDEXPrice(tokenAddress),
+        volume24h: await get24hVolume(tokenAddress),
+        priceChange24h: await getPriceChange24h(tokenAddress),
+        
+        // 流动性
+        totalLiquidity: await getTotalLiquidity(tokenAddress),
+        lpTokenHolders: await getLPHolderCount(tokenAddress),
+        
+        // 交易
+        transactions24h: await getTransactionCount24h(tokenAddress),
+        uniqueTraders24h: await getUniqueTraders24h(tokenAddress),
+        avgTradeSize: await getAvgTradeSize(tokenAddress),
+        
+        // 健康指标
+        liquidityUtilization: await getLiquidityUtilization(tokenAddress),
+        priceImpact1k: await getPriceImpact(tokenAddress, 1000),
+        holderDistribution: await getHolderDistribution(tokenAddress)
+      };
+    }
+    ```
+    
+    **自动

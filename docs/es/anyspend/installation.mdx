@@ -1,6 +1,6 @@
 ---
-title: Instalación y Configuración
-description: 'Comienza con AnySpend - instalación, configuración básica y verificación'
+title: Instalación y configuración
+description: 'Comience con AnySpend - instalación, configuración básica y verificación'
 lang: es
 originalPath: anyspend/installation.mdx
 ---
@@ -16,7 +16,7 @@ originalPath: anyspend/installation.mdx
     Versión 18 o 19
   </Card>
   <Card title="TypeScript" icon="code">
-    Recomendado para una mejor DX
+    Recomendado para un mejor DX
   </Card>
 </CardGroup>
 
@@ -50,7 +50,7 @@ import "@b3dotfun/sdk/index.css";
 
 function App() {
   return (
-    <B3Provider theme="light" environment="production">
+    <B3Provider theme="light" environment="production" partnerId="your-awesome-partner-id">
       <AnyspendProvider>{/* Tus componentes de la aplicación */}</AnyspendProvider>
     </B3Provider>
   );
@@ -79,7 +79,7 @@ export default App;
 ### 3. Configuración de TypeScript (Opcional pero Recomendado)
 
 <Note>
-  Si estás usando TypeScript, asegúrate de que tu `tsconfig.json` incluya estas configuraciones para una compatibilidad óptima:
+  Si estás utilizando TypeScript, asegúrate de que tu `tsconfig.json` incluya estas configuraciones para una compatibilidad óptima:
 </Note>
 
 ```json tsconfig.json icon=settings
@@ -114,7 +114,7 @@ function TestComponent() {
     Descubre hooks de React para construir flujos de pago personalizados
   </Card>
   <Card title="Ver Ejemplos" icon="code" href="/anyspend/examples">
-    Explora ejemplos de implementación del mundo real
+    Explora ejemplos de implementaciones del mundo real
   </Card>
 </CardGroup>
 
@@ -122,12 +122,12 @@ function TestComponent() {
 
 <AccordionGroup>
   <Accordion title="Errores de Importación">
-    Asegúrate de haber instalado el SDK correctamente e importado el archivo CSS. El SDK requiere React 18\+ y puede tener problemas de compatibilidad con versiones anteriores.
+    Asegúrate de haber instalado correctamente el SDK e importado el archivo CSS. El SDK requiere React 18\+ y puede tener problemas de compatibilidad con versiones anteriores.
   </Accordion>
   <Accordion title="Proveedor No Encontrado">
-    Asegúrate de tener `B3Provider` y `AnyspendProvider` colocados en lo alto de tu árbol de componentes, típicamente en tu componente principal App.
+    Asegúrate de tener `B3Provider` y `AnyspendProvider` colocados en lo alto de tu árbol de componentes, típicamente en tu componente principal de la aplicación.
   </Accordion>
   <Accordion title="Errores de TypeScript">
-    Si estás viendo errores de TypeScript, verifica que tu `tsconfig.json` incluya las configuraciones recomendadas arriba.
+    Si estás viendo errores de TypeScript, verifica que tu `tsconfig.json` incluya las configuraciones recomendadas anteriormente.
   </Accordion>
 </AccordionGroup>

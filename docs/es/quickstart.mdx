@@ -6,9 +6,9 @@ description: >-
 lang: es
 originalPath: quickstart.mdx
 ---
-### Paso 1: Instala el SDK de B3
+### Paso 1: Instalar el SDK de B3
 <Steps>
-  <Step title="Instala el paquete del SDK">
+  <Step title="Instalar el paquete SDK">
     Elige tu gestor de paquetes preferido para instalar el SDK de B3:
 
     <CodeGroup>
@@ -23,10 +23,10 @@ originalPath: quickstart.mdx
     ```
     </CodeGroup>
 
-    <Tip>¡El SDK de B3 incluye definiciones de TypeScript de manera predeterminada!</Tip>
+    <Tip>¡El SDK de B3 incluye definiciones de TypeScript de serie!</Tip>
   </Step>
 
-  <Step title="Importa los estilos CSS">
+  <Step title="Importar estilos CSS">
     Importa los estilos predeterminados en tu aplicación:
 
     ```typescript
@@ -35,7 +35,7 @@ originalPath: quickstart.mdx
   </Step>
 </Steps>
 
-### Paso 2: Añade B3Provider
+### Paso 2: Añadir B3Provider
 Envuelve el B3Provider alrededor de la raíz de tu aplicación:
 
 ```tsx
@@ -51,7 +51,7 @@ function App() {
 ```
 
 
-### Paso 3: Usa el SDK de B3
+### Paso 3: Usar el SDK de B3
 <AccordionGroup>
  <Accordion icon="swap" title="Cuentas Instantáneas">
     Habilita la autenticación de cuentas globales con B3:
@@ -64,7 +64,7 @@ function App() {
         <B3Provider environment="production" partnerId="your-awesome-partner-id">
           <SignInWithB3
             provider={{ strategy: "google" }}
-            partnerId="tu-id-de-socio"
+            partnerId="your-partner-id"
             onLoginSuccess={(globalAccount) => {
               console.log("Autenticado:", globalAccount);
             }}
@@ -74,7 +74,7 @@ function App() {
     }
     ```
   </Accordion>
-  <Accordion icon="swap" title="Accede a Liquidez">
+  <Accordion icon="swap" title="Acceder a Liquidez">
     Habilita intercambios entre cadenas y personalizaciones con AnySpend:
 
     ```tsx
@@ -87,20 +87,20 @@ function App() {
   </Accordion>
 </AccordionGroup>
 
-### Paso 4: Explora el Ecosistema
+### Paso 4: Explorar el Ecosistema
 
-<Card title="Descubre el Ecosistema de B3" icon="globe" href="/ecosystem/introduction">
+<Card title="Descubrir el Ecosistema B3" icon="globe" href="/ecosystem/introduction">
   Aprende sobre el ecosistema completo de B3, herramientas y recursos disponibles para constructores.
 </Card>
 
 ## ¿Qué sigue?
 
-Ahora que has instalado el SDK de B3, explora estas poderosas características:
+Ahora que has instalado el SDK de B3, explora estas potentes características:
 
 <CardGroup cols={2}>
 
 <Card title="Cuentas Globales" icon="user" href="/sdk/global-account/introduction">
-  Autenticación y gestión de usuarios sin interrupciones a través del ecosistema de B3.
+  Autenticación sin fisuras y gestión de usuarios a través del ecosistema B3.
 </Card>
 
 <Card title="API de Datos" icon="user" href="/data/api-reference/introduction">
