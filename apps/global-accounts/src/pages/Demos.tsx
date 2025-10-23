@@ -17,8 +17,12 @@ export function Demos() {
       setTimeout(() => {
         const element = document.querySelector(window.location.hash);
         if (element) {
-          // Use block: "nearest" to prevent scrolling the parent page when in iframe
-          //   element.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+          // Use scrollTop to control internal scrolling without affecting parent
+          const elementTop = element.getBoundingClientRect().top + window.scrollY;
+          window.scrollTo({
+            top: elementTop,
+            behavior: "smooth",
+          });
         }
       }, 100);
     }
