@@ -491,7 +491,8 @@
                   {
                     "group": "Overview",
                     "pages": [
-                      "sdk/introduction"
+                      "sdk/introduction",
+                      "sdk/api-key-request"
                     ]
                   },
                   {
