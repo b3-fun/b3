@@ -82,9 +82,9 @@ export interface ManageAccountModalProps extends BaseModalProps {
   /** Partner ID */
   partnerId: string;
   /** Active Tab */
-  activeTab?: "overview" | "tokens" | "nfts" | "apps" | "settings";
+  activeTab?: "home" | "tokens" | "nfts" | "apps" | "settings";
   /** Function to set the active tab */
-  setActiveTab?: (tab: "overview" | "tokens" | "nfts" | "apps" | "settings") => void;
+  setActiveTab?: (tab: "home" | "tokens" | "nfts" | "apps" | "settings") => void;
   /** Whether to show the referral information */
   showReferralInfo?: boolean;
   /** Whether to show the swap button */
