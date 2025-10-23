@@ -3,7 +3,11 @@ title: "B3 SDK"
 description: "A comprehensive TypeScript SDK for AnySpend cross-chain operations and B3 Global Accounts authentication. Provides both React components for easy integration and headless TypeScript services for custom implementations."
 ---
 
-<img src="/images/b3-banner.png" alt="B3 SDK" className="w-full rounded-xl" />
+<img
+  src="/images/b3-banner.png"
+  alt="B3 SDK"
+  className="w-full rounded-xl"
+/>
 
 ## What is the B3 SDK?
 
@@ -14,14 +18,12 @@ The B3 SDK (`@b3dotfun/sdk`) is a unified TypeScript SDK that provides everythin
 The SDK is organized into focused modules designed for maximum flexibility and ease of use:
 
 <CardGroup cols={2}>
-<Card title="AnySpend Module" icon="arrows-right-left" href="/anyspend/introduction">
-  Cross-chain execution engine for payments, swaps, and NFT minting across multiple blockchains.
-</Card>
-
-<Card title="Global Account Module" icon="user" href="/sdk/global-account/introduction">
-  B3 Global Accounts authentication and user management with social login and session keys.
-</Card>
-
+  <Card title="AnySpend Module" icon="arrows-right-left" href="/anyspend/introduction">
+    Cross-chain execution engine for payments, swaps, and NFT minting across multiple blockchains.
+  </Card>
+  <Card title="Global Account Module" icon="user" href="/sdk/global-account/introduction">
+    B3 Global Accounts authentication and user management with social login and session keys.
+  </Card>
 </CardGroup>
 
 ### Module Structure
@@ -36,26 +38,30 @@ Each module contains organized, purpose-built components:
 
 ## Platform Support
 
-| Feature           | React Web | React Native | Headless |
-|-------------------|-----------|--------------|----------|
-| AnySpend          | ✅         | ❌            | ✅        |
-| Global Accounts   | ✅         | ✅            | ✅        |
-| Shared Utils      | ✅         | ✅            | ✅        |
+| Feature         | React Web | React Native | Headless |
+| --------------- | --------- | ------------ | -------- |
+| AnySpend        | ✅         | ❌            | ✅        |
+| Global Accounts | ✅         | ✅            | ✅        |
+| Shared Utils    | ✅         | ✅            | ✅        |
 
 ## Installation
 
 <CodeGroup>
+
 ```bash npm
 npm install @b3dotfun/sdk
 ```
+
 
 ```bash yarn
 yarn add @b3dotfun/sdk
 ```
 
+
 ```bash pnpm
 pnpm add @b3dotfun/sdk
 ```
+
 </CodeGroup>
 
 ### CSS Styles
@@ -127,41 +133,35 @@ function NFTMinting() {
 ### Universal Payment Infrastructure
 
 <CardGroup cols={2}>
-<Card title="Any Token Payments" icon="coins">
-  Accept payments in any cryptocurrency with automatic conversion to your preferred token.
-</Card>
-
-<Card title="Cross-Chain Swaps" icon="arrow-right-arrow-left">
-  Enable seamless token swaps across 20+ supported blockchains with optimal routing.
-</Card>
-
-<Card title="NFT Minting" icon="image">
-  One-click NFT minting buttons that accept payments in any token from any chain.
-</Card>
-
-<Card title="Fiat Onramps" icon="credit-card">
-  Integrated fiat-to-crypto onramps for users without existing cryptocurrency.
-</Card>
+  <Card title="Any Token Payments" icon="coins">
+    Accept payments in any cryptocurrency with automatic conversion to your preferred token.
+  </Card>
+  <Card title="Cross-Chain Swaps" icon="arrow-right-arrow-left">
+    Enable seamless token swaps across 20+ supported blockchains with optimal routing.
+  </Card>
+  <Card title="NFT Minting" icon="image">
+    One-click NFT minting buttons that accept payments in any token from any chain.
+  </Card>
+  <Card title="Fiat Onramps" icon="credit-card">
+    Integrated fiat-to-crypto onramps for users without existing cryptocurrency.
+  </Card>
 </CardGroup>
 
 ### Seamless Authentication
 
 <CardGroup cols={2}>
-<Card title="Social Login" icon="users">
-  Google, Discord, and other social providers with instant onboarding.
-</Card>
-
-<Card title="Session Keys" icon="key">
-  Secure session management with granular permissions for enhanced UX.
-</Card>
-
-<Card title="Cross-Platform Identity" icon="globe">
-  Single identity that works across all B3 applications and games.
-</Card>
-
-<Card title="Smart Accounts" icon="wallet">
-  Built-in smart account abstraction for gasless transactions.
-</Card>
+  <Card title="Social Login" icon="users">
+    Google, Discord, and other social providers with instant onboarding.
+  </Card>
+  <Card title="Session Keys" icon="key">
+    Secure session management with granular permissions for enhanced UX.
+  </Card>
+  <Card title="Cross-Platform Identity" icon="globe">
+    Single identity that works across all B3 applications and games.
+  </Card>
+  <Card title="Smart Accounts" icon="wallet">
+    Built-in smart account abstraction for gasless transactions.
+  </Card>
 </CardGroup>
 
 ## Headless TypeScript Services
@@ -209,25 +209,23 @@ if (authResult) {
 ## Support & Community
 
 <CardGroup cols={3}>
-<Card title="Developer Support" icon="handshake" href="https://b3builders.typeform.com/bsmntdevelopers">
-  Get help integrating the B3 SDK into your project.
-</Card>
-
-<Card title="Discord Community" icon="discord" href="https://discord.gg/b3dotfun">
-  Join the B3 developer community for support and discussions.
-</Card>
-
-<Card title="GitHub" icon="github" href="https://github.com/b3-fun/b3">
-  View source code, report issues, and contribute to the SDK.
-</Card>
+  <Card title="Developer Support" icon="handshake" href="https://b3builders.typeform.com/bsmntdevelopers">
+    Get help integrating the B3 SDK into your project.
+  </Card>
+  <Card title="Discord Community" icon="discord" href="https://discord.gg/b3dotfun">
+    Join the B3 developer community for support and discussions.
+  </Card>
+  <Card title="GitHub" icon="github" href="https://github.com/b3-fun/b3">
+    View source code, report issues, and contribute to the SDK.
+  </Card>
 </CardGroup>
 
 ## What's Next?
 
-1. **[Install the SDK](#installation)** and import the styles
-2. **[Set up AnySpend](/anyspend/introduction)** for cross-chain payments
-3. **[Configure Global Accounts](/sdk/global-account/authentication)** for user authentication
-4. **[Explore examples](/anyspend/examples)** and implementation patterns
-5. **[Join the community](https://discord.gg/b3dotfun)** for support and updates
+1. [**Install the SDK**](#installation) and import the styles
+2. [**Set up AnySpend**](/anyspend/introduction) for cross-chain payments
+3. [**Configure Global Accounts**](/sdk/global-account/authentication) for user authentication
+4. [**Explore examples**](/anyspend/examples) and implementation patterns
+5. [**Join the community**](https://discord.gg/b3dotfun) for support and updates
 
 The B3 SDK provides everything you need to build the next generation of cross-chain applications with seamless user experiences. Start building today!
