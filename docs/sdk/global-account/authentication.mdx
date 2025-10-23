@@ -9,13 +9,13 @@ description: "Learn how to implement authentication with B3 Global Accounts"
 
 ## Interactive Demo
 
-Experience B3 authentication in action with a live, interactive component:
+Experience B3 authentication in action with all available providers:
 
 <iframe
-  src="https://global.b3.fun/demos?embedded=true#auth-full"
+  src="https://global.b3.fun/demos?embedded=true#auth-all"
   style={{
     width: '100%',
-    height: '300px',
+    height: '400px',
     border: '1px solid #e5e7eb',
     borderRadius: '8px',
     marginTop: '16px',
@@ -26,7 +26,7 @@ Experience B3 authentication in action with a live, interactive component:
 />
 
 <Note>
-  This is a **live, interactive demo** using the actual B3 SDK. Try authenticating with different providers and see real-time results. View the [full demo page](https://global.b3.fun/demos) for more examples.
+  This is a **live, interactive demo** using the actual B3 SDK. When you don't specify `strategies`, all available authentication options are displayed. View the [full demo page](https://global.b3.fun/demos) for more examples.
 </Note>
 
 ## Authentication Strategies
@@ -107,22 +107,22 @@ function DiscordAuth() {
 }
 ```
 
-## Multiple Authentication Options
+## Multiple Specific Strategies
 
-You can allow users to choose from multiple authentication providers:
+You can allow users to choose from multiple specific authentication providers:
 
 <iframe
-  src="https://global.b3.fun/demos?embedded=true#auth-all"
+  src="https://global.b3.fun/demos?embedded=true#auth-full"
   style={{
     width: '100%',
-    height: '400px',
+    height: '300px',
     border: '1px solid #e5e7eb',
     borderRadius: '8px',
     marginTop: '16px',
     marginBottom: '16px',
     overscrollBehavior: 'contain' 
   }}
-  title="All Authentication Strategies Demo"
+  title="Multiple Authentication Strategies Demo"
 />
 
 ```tsx
@@ -138,7 +138,7 @@ const b3Chain = {
 function MultipleAuthOptions() {
   return (
     <SignInWithB3
-      strategies={["google", "discord", "x", "apple"]}
+      strategies={["google", "discord", "x"]}
       chain={b3Chain}
       partnerId="your-partner-id"
       onLoginSuccess={(globalAccount) => {
@@ -150,7 +150,7 @@ function MultipleAuthOptions() {
 ```
 
 <Note>
-  When you don't specify `strategies`, the SignInWithB3 component will display all available authentication options as shown in the preview above.
+  Specify an array of strategies to show only those authentication options to your users.
 </Note>
 
 ## Headless Authentication
