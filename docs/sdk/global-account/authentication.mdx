@@ -3,6 +3,32 @@ title: "Authentication"
 description: "Learn how to implement authentication with B3 Global Accounts"
 ---
 
+<Tip>
+  **For Developers**: All demos are hosted in the [global-accounts app](https://github.com/b3-fun/b3/tree/main/apps/global-accounts). To test locally, run `pnpm dev` in the global-accounts directory and access demos at `http://localhost:5173/demos`.
+</Tip>
+
+## Interactive Demo
+
+Experience B3 authentication in action with all available providers:
+
+<iframe
+  src="https://global.b3.fun/demos?embedded=true#auth-all"
+  style={{
+    width: '100%',
+    height: '500px',
+    border: '1px solid #e5e7eb',
+    borderRadius: '8px',
+    marginTop: '16px',
+    marginBottom: '16px',
+    overscrollBehavior: 'contain' 
+  }}
+  title="B3 Authentication Demo"
+/>
+
+<Note>
+  This is a **live, interactive demo** using the actual B3 SDK. When you don't specify `strategies`, all available authentication options are displayed. View the [full demo page](https://global.b3.fun/demos) for more examples.
+</Note>
+
 ## Authentication Strategies
 
 B3 Global Accounts support multiple authentication strategies to fit your application's needs.
@@ -11,18 +37,40 @@ B3 Global Accounts support multiple authentication strategies to fit your applic
 
 ### Google Authentication
 
+<iframe
+  src="https://global.b3.fun/demos?embedded=true#auth-google"
+  style={{
+    width: '100%',
+    height: '300px',
+    border: '1px solid #e5e7eb',
+    borderRadius: '8px',
+    marginTop: '16px',
+    marginBottom: '16px',
+    overscrollBehavior: 'contain' 
+  }}
+  title="Google Authentication Demo"
+/>
+
 ```tsx
 import { SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
+
+const b3Chain = {
+  id: 8333,
+  name: "B3",
+  nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+  rpc: "https://mainnet-rpc.b3.fun",
+};
 
 function GoogleAuth() {
   return (
     <SignInWithB3
-      provider={{ strategy: "google" }}
+      strategies={["google"]}
+      chain={b3Chain}
       partnerId="your-partner-id"
       onLoginSuccess={(globalAccount) => {
         console.log("Google auth successful:", globalAccount);
       }}
-      onLoginError={(error) => {
+      onError={async (error) => {
         console.error("Authentication failed:", error);
       }}
     />
@@ -35,24 +83,47 @@ function GoogleAuth() {
 ```tsx
 import { SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
 
+const b3Chain = {
+  id: 8333,
+  name: "B3",
+  nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+  rpc: "https://mainnet-rpc.b3.fun",
+};
+
 function DiscordAuth() {
   return (
     <SignInWithB3
-      provider={{ strategy: "discord" }}
+      strategies={["discord"]}
+      chain={b3Chain}
       partnerId="your-partner-id"
       onLoginSuccess={(globalAccount) => {
         console.log("Discord auth successful:", globalAccount);
+      }}
+      onError={async (error) => {
+        console.error("Authentication failed:", error);
       }}
     />
   );
 }
 ```
 
-## Session Key Authentication
+## Multiple Specific Strategies
 
-Session keys provide enhanced security and allow for granular permissions. This is particularly useful for games and applications that need to perform actions on behalf of users.
+You can allow users to choose from multiple specific authentication providers:
 
-### Basic Session Key Setup
+<iframe
+  src="https://global.b3.fun/demos?embedded=true#auth-full"
+  style={{
+    width: '100%',
+    height: '300px',
+    border: '1px solid #e5e7eb',
+    borderRadius: '8px',
+    marginTop: '16px',
+    marginBottom: '16px',
+    overscrollBehavior: 'contain' 
+  }}
+  title="Multiple Authentication Strategies Demo"
+/>
 
 ```tsx
 import { SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
@@ -64,48 +135,23 @@ const b3Chain = {
   rpc: "https://mainnet-rpc.b3.fun",
 };
 
-function SessionKeyAuth() {
+function MultipleAuthOptions() {
   return (
     <SignInWithB3
-      provider={{ strategy: "google" }}
+      strategies={["google", "discord", "x"]}
       chain={b3Chain}
       partnerId="your-partner-id"
-      sessionKeyAddress="0x..." // MetaMask or other wallet address
       onLoginSuccess={(globalAccount) => {
-        console.log("Session key authenticated:", globalAccount);
+        console.log("Auth successful:", globalAccount);
       }}
     />
   );
 }
 ```
 
-### Custom Session Key Configuration
-
-```tsx
-function AdvancedSessionAuth() {
-  const sessionKeyConfig = {
-    permissions: {
-      approvedTargets: ["0x..."], // Specific contract addresses
-      startDate: new Date(),
-      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
-      nativeTokenLimitPerTransaction: 0.0001, // ETH limit per transaction
-    }
-  };
-
-  return (
-    <SignInWithB3
-      provider={{ strategy: "google" }}
-      chain={b3Chain}
-      partnerId="your-partner-id"
-      sessionKeyAddress="0x..."
-      sessionKeyConfig={sessionKeyConfig}
-      onLoginSuccess={(globalAccount) => {
-        console.log("Advanced session key setup:", globalAccount);
-      }}
-    />
-  );
-}
-```
+<Note>
+  Specify an array of strategies to show only those authentication options to your users.
+</Note>
 
 ## Headless Authentication
 
@@ -158,21 +204,14 @@ The primary hook for accessing authentication state:
 import { useB3 } from "@b3dotfun/sdk/global-account/react";
 
 function AuthStatus() {
-  const { 
-    account, 
-    isAuthenticated, 
-    isLoading,
-    signOut 
-  } = useB3();
-
-  if (isLoading) return <div>Loading...</div>;
+  const { account, user } = useB3();
 
   return (
     <div>
-      {isAuthenticated ? (
+      {account ? (
         <div>
-          <p>Welcome, {account?.displayName}!</p>
-          <button onClick={signOut}>Sign Out</button>
+          <p>Welcome, {user?.displayName}!</p>
+          <p>Account Address: {account.address}</p>
         </div>
       ) : (
         <p>Please sign in</p>
@@ -182,22 +221,27 @@ function AuthStatus() {
 }
 ```
 
+<Note>
+  The `useB3` hook provides access to the authenticated `account` (wallet account) and `user` (user profile data). Use `useAuthStore` to access loading and authentication states.
+</Note>
+
 ### useAccountWallet Hook
 
-Access wallet information:
+Access wallet information and connection status:
 
 ```tsx
 import { useAccountWallet } from "@b3dotfun/sdk/global-account/react";
 
 function WalletInfo() {
-  const { wallet, isConnected } = useAccountWallet();
+  const { wallet, address, ensName } = useAccountWallet();
 
   return (
     <div>
-      {isConnected && (
+      {address && (
         <div>
-          <p>Wallet Address: {wallet?.address}</p>
-          <p>Chain ID: {wallet?.chainId}</p>
+          <p>Wallet Address: {address}</p>
+          {ensName && <p>ENS: {ensName}</p>}
+          {wallet?.meta?.icon && <img src={wallet.meta.icon} alt="Wallet icon" />}
         </div>
       )}
     </div>
@@ -216,13 +260,14 @@ function AuthWithErrorHandling() {
   return (
     <div>
       <SignInWithB3
-        provider={{ strategy: "google" }}
+        strategies={["google", "discord"]}
+        chain={b3Chain}
         partnerId="your-partner-id"
         onLoginSuccess={(globalAccount) => {
           setAuthError(null);
           console.log("Success:", globalAccount);
         }}
-        onLoginError={(error) => {
+        onError={async (error) => {
           setAuthError(error.message);
           console.error("Auth error:", error);
         }}
@@ -260,13 +305,107 @@ function AuthWithErrorHandling() {
 
 </CardGroup>
 
+## Component API Reference
+
+### SignInWithB3
+
+The main authentication button component.
+
+#### Props
+
+<ParamField path="strategies" type="AllowedStrategy[]">
+  Array of authentication strategies to display. Options include: `"google"`, `"discord"`, `"x"`, `"apple"`, `"walletConnect"`, `"io.metamask"`, `"com.coinbase.wallet"`. 
+  
+  Leave undefined to show all options.
+</ParamField>
+
+<ParamField path="chain" type="Chain" required>
+  Blockchain chain configuration object with `id`, `name`, `nativeCurrency`, and `rpc`.
+</ParamField>
+
+<ParamField path="partnerId" type="string" required>
+  Your unique partner ID for B3 Global Accounts.
+</ParamField>
+
+<ParamField path="onLoginSuccess" type="(account: Account) => void">
+  Callback function called when authentication succeeds.
+</ParamField>
+
+<ParamField path="onError" type="(error: Error) => Promise<void>">
+  Async callback function called when an error occurs.
+</ParamField>
+
+<ParamField path="closeAfterLogin" type="boolean" default="false">
+  Whether to close the modal after successful login.
+</ParamField>
+
+<ParamField path="buttonText" type="string | ReactNode">
+  Custom text or component for the sign-in button.
+</ParamField>
+
+<ParamField path="withLogo" type="boolean" default="true">
+  Whether to show the B3 logo in the button.
+</ParamField>
+
+## Available Authentication Strategies
+
+B3 Global Accounts supports the following authentication methods:
+
+<table>
+  <thead>
+    <tr>
+      <th>Strategy</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>`"google"`</td>
+      <td>Social</td>
+      <td>Google OAuth authentication</td>
+    </tr>
+    <tr>
+      <td>`"discord"`</td>
+      <td>Social</td>
+      <td>Discord OAuth authentication</td>
+    </tr>
+    <tr>
+      <td>`"x"`</td>
+      <td>Social</td>
+      <td>X (formerly Twitter) authentication</td>
+    </tr>
+    <tr>
+      <td>`"apple"`</td>
+      <td>Social</td>
+      <td>Apple Sign In</td>
+    </tr>
+    <tr>
+      <td>`"guest"`</td>
+      <td>Passwordless</td>
+      <td>Guest authentication without signup</td>
+    </tr>
+    <tr>
+      <td>`"walletConnect"`</td>
+      <td>Wallet</td>
+      <td>WalletConnect protocol</td>
+    </tr>
+    <tr>
+      <td>`"io.metamask"`</td>
+      <td>Wallet</td>
+      <td>MetaMask browser extension</td>
+    </tr>
+    <tr>
+      <td>`"com.coinbase.wallet"`</td>
+      <td>Wallet</td>
+      <td>Coinbase Wallet</td>
+    </tr>
+  </tbody>
+</table>
+
 ## Next Steps
 
 <CardGroup cols={2}>
-
-<Card title="Permissions" icon="lock" href="/sdk/global-account/permissions">
-  Learn about managing permissions and session keys.
-</Card>
 
 <Card title="Hooks Reference" icon="react" href="/sdk/global-account/hooks">
   Explore all available React hooks.
@@ -274,6 +413,10 @@ function AuthWithErrorHandling() {
 
 <Card title="Examples" icon="code" href="/sdk/global-account/examples">
   See complete integration examples.
+</Card>
+
+<Card title="Try the Demo" icon="play" href="https://login-minimal-b3.vercel.app/">
+  Interactive authentication demo application.
 </Card>
 
 </CardGroup>

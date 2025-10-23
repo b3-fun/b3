@@ -97,7 +97,7 @@ export function LoginStepCustom({
     <LoginStepContainer partnerId={partnerId}>
       {/* Auth Strategies */}
       {authStrategies.length > 0 && (
-        <div className="mb-6 grid w-full grid-cols-4 gap-4">
+        <div className={`mb-6 w-full ${authStrategies.length <= 3 ? "space-y-3 px-3" : "grid grid-cols-4 gap-4"}`}>
           {authStrategies.map(strategy => {
             console.log("strategy", strategy);
             return (
