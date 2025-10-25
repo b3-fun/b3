@@ -176,7 +176,7 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     name: abstract.name,
     logoUrl: "https://assets.relay.link/icons/square/2741/light.png",
     type: ChainType.EVM,
-    nativeRequired: parseEther("0.0001"),
+    nativeRequired: parseEther("0.0002"),
     canDepositNative: true,
     defaultToken: getEthToken(abstract.id),
     nativeToken: getEthToken(abstract.id),
