@@ -4,17 +4,13 @@ import {
   TabsListPrimitive,
   TabsPrimitive,
   TabTriggerPrimitive,
-  useAccountAssets,
   useModalStore,
 } from "@b3dotfun/sdk/global-account/react";
 import { Chain } from "thirdweb";
-import { useActiveAccount } from "thirdweb/react";
 
-import { AccountAssets } from "../AccountAssets/AccountAssets";
 import { ContentTokens } from "./ContentTokens";
 
-import AppsContent from "./AppsContent";
-import { BalanceContent } from "./BalanceContent";
+import { HomeContent } from "./HomeContent";
 import SettingsContent from "./SettingsContent";
 
 type TabValue = "home" | "tokens" | "nfts" | "apps" | "settings";
@@ -80,9 +76,6 @@ export function ManageAccount({
   showSwap,
   showDeposit,
 }: ManageAccountProps) {
-  const account = useActiveAccount();
-  const { data: nfts, isLoading } = useAccountAssets(account?.address);
-
   const contentType = useModalStore(state => state.contentType);
   const { activeTab = "home", setActiveTab } = contentType as ManageAccountModalProps;
 
@@ -98,36 +91,25 @@ export function ManageAccount({
             }
           }}
         >
-          <div className="pb-20">
-            <TabsContentPrimitive value="home" className="px-4 pb-4 pt-2">
-              <BalanceContent onLogout={onLogout} showDeposit={showDeposit} showSwap={showSwap} />
+          <div className="p-0">
+            <TabsContentPrimitive value="home" className="px-0 pb-4 pt-2">
+              <HomeContent showDeposit={showDeposit} showSwap={showSwap} />
             </TabsContentPrimitive>
 
-            <TabsContentPrimitive value="tokens" className="px-4 pb-4 pt-2">
+            <TabsContentPrimitive value="tokens" className="px-0 pb-4 pt-2">
               <ContentTokens activeTab={activeTab} />
             </TabsContentPrimitive>
 
-            <TabsContentPrimitive value="nfts" className="px-4 pb-4 pt-2">
-              <div className="grid grid-cols-3 gap-4">
-                {nfts?.nftResponse ? (
-                  <AccountAssets nfts={nfts.nftResponse} isLoading={isLoading} />
-                ) : (
-                  <div className="col-span-3 py-12 text-center text-gray-500">No NFTs found</div>
-                )}
-              </div>
-            </TabsContentPrimitive>
-
-            <TabsContentPrimitive value="apps" className="px-4 pb-4 pt-2">
+            {/* <TabsContentPrimitive value="apps" className="px-4 pb-4 pt-2">
               <AppsContent chain={chain} partnerId={partnerId} />
-            </TabsContentPrimitive>
+            </TabsContentPrimitive> */}
 
             <TabsContentPrimitive value="settings" className="px-4 pb-4 pt-2">
               <SettingsContent partnerId={partnerId} onLogout={onLogout} chain={chain} />
             </TabsContentPrimitive>
           </div>
-
           <div className="sticky bottom-0 left-0 flex w-full items-center justify-center border-t border-gray-200 bg-[#FAFAFA] shadow-[0px_-3px_10.8px_0px_rgba(92,98,96,0.11)]">
-            <TabsListPrimitive className="justify-space-around flex h-[68px] w-full max-w-md items-center gap-4 rounded-none border-none bg-[#FAFAFA]">
+            <TabsListPrimitive className="border-b3-react-border bg-b3-react-background justify-space-around flex h-[68px] w-full max-w-md items-center justify-center gap-4 rounded-none border border-none bg-[#FAFAFA]">
               <TabTriggerPrimitive
                 value="home"
                 className="data-[state=active]:border-b3-primary-blue group flex flex-initial flex-col items-center gap-1 border-r-0 border-t-0 px-6 pb-2 pt-2.5 text-[#a0a0ab] data-[state=active]:border-t-4 data-[state=active]:text-[#18181B]"
