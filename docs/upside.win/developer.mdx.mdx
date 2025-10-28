@@ -137,7 +137,7 @@ function GameContent() {
 - `useCustomModal()`: Function to show custom modals
 - `useAuthenticatedFetch()`: Fetch function with automatic Bearer token header
 
-**Return Values from `useParent()`:**
+**`Return Values from useParent():`**
 
 - `token` (string | null): JWT authentication token for backend calls
 - `balance` (number | null): Current WIN token balance in wei
@@ -183,7 +183,7 @@ function GameComponent() {
 }
 ```
 
-**How `useAuthenticatedFetch()` Works:**
+**`How useAuthenticatedFetch() Works:`**
 
 - Automatically includes `Authorization: Bearer {token}` header
 - Sets `Content-Type: application/json` by default
@@ -222,8 +222,7 @@ app.post("/api/game/play", async c => {
 
 - B3Client instance with authentication automatically configured from the Authorization header
 
-**Authentication:**
-The Authorization header is automatically extracted from the incoming request:
+**Authentication:** The Authorization header is automatically extracted from the incoming request:
 
 ```
 Authorization: Bearer {player_token}
@@ -291,7 +290,7 @@ Different localhost URLs:
 
 ### Development Workflow
 
-1. **Create game code** - Write your React frontend and Node backend
+1. **Create game code** - Write your React frontend and Cloudflare Hono backend
 2. **Start locally** - Run `npm run dev` on localhost
 3. **Generate test URL** - Base64 encode your localhost address
 4. **Test on Upside** - Visit `https://upside.win/test/games/<BASE64>`
@@ -303,26 +302,6 @@ Different localhost URLs:
 
 - **Use same machine**: Keep localhost running while testing
 - **Check CORS**: Ensure your backend allows requests from upside.win domains
-- **Use staging API**: Test with `environment: "staging"` first
-
-```javascript
-const b3Client = createB3Client({
-  apiKey: process.env.STAGING_API_KEY,
-  environment: "staging", // Use staging for development
-});
-```
-
-- **Enable debug logging**:
-
-```javascript
-const b3Client = createB3Client({
-  apiKey: process.env.UPSIDE_API_KEY,
-  environment: "staging",
-  debug: true, // See all API calls
-});
-```
-
-- **Hot reload**: Your code changes will be reflected on page refresh
 
 ### Troubleshooting Local Testing
 
@@ -333,16 +312,6 @@ const b3Client = createB3Client({
 **Problem**: CORS errors
 
 - **Solution**: Your backend needs to accept requests from upside.win domain
-
-```javascript
-// Express example
-app.use(
-  cors({
-    origin: ["https://upside.win", "http://localhost:3000"],
-    credentials: true,
-  }),
-);
-```
 
 **Problem**: JWT errors during testing
 
@@ -533,40 +502,27 @@ function CoinFlipContent() {
 }
 ```
 
-### Backend (Node.js/Express)
+### Backend (Hono + Cloudflare Workers)
 
 ```javascript
-import express from "express";
+import { Hono } from "hono";
 import { createB3Client } from "@b3dotfun/upside-sdk/server";
 
-const app = express();
-app.use(express.json());
+const app = new Hono();
 
-const b3Client = createB3Client({
-  apiKey: process.env.UPSIDE_API_KEY,
-});
-
-// Middleware to verify JWT from frontend
-const verifyToken = (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) return res.status(401).json({ error: "No token" });
-
-  // Verify token with Upside (or your auth provider)
-  req.token = token;
-  next();
-};
-
-// Game endpoint
-app.post("/api/game/coin-flip", verifyToken, async (req, res) => {
-  const { playerId, prediction, betAmount } = req.body;
-  const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+app.post("/api/game/coin-flip", async c => {
+  const { prediction, betAmount } = await c.req.json();
 
   try {
-    // Step 1: Place the bet (amounts in wei)
+    // Create B3Client from Hono context
+    // Automatically extracts auth token from Authorization header
+    const b3Client = createB3Client(c);
+
+    // Step 1: Place the bet (amount in wei)
     const betResult = await b3Client.placeBet("coin-flip", betAmount);
 
     if (!betResult.sessionId) {
-      return res.status(400).json({ error: "Failed to place bet" });
+      return c.json({ error: "Failed to place bet" }, 400);
     }
 
     // Step 2: Game logic - flip coin
@@ -575,17 +531,11 @@ app.post("/api/game/coin-flip", verifyToken, async (req, res) => {
     // Calculate payout: 50% profit on win (betAmount * 1.5, in wei)
     const payout = isWin ? (BigInt(betAmount) * BigInt(150)) / BigInt(100) : "0";
 
-    // Step 3: Store game in your DB (for history, analytics, etc.)
-    await saveGameToDatabase({
-      sessionId: betResult.sessionId,
-      playerId,
-      gameType: "coin-flip",
-      prediction,
-      result: coin,
-      betAmount,
-      payout: payout.toString(),
-      outcome: isWin ? "win" : "loss",
-    });
+    // Step 3: Store game in your database (D1, etc.)
+    // await db.execute(
+    //   "INSERT INTO games (sessionId, prediction, result, betAmount, payout) VALUES (?, ?, ?, ?, ?)",
+    //   [betResult.sessionId, prediction, coin, betAmount, payout.toString()]
+    // );
 
     // Step 4: Process payout
     const payoutResult = await b3Client.processPayout("coin-flip", betResult.sessionId, payout.toString(), {
@@ -595,7 +545,7 @@ app.post("/api/game/coin-flip", verifyToken, async (req, res) => {
     });
 
     // Step 5: Return result to frontend
-    res.json({
+    return c.json({
       sessionId: betResult.sessionId,
       prediction,
       result: coin,
@@ -605,11 +555,32 @@ app.post("/api/game/coin-flip", verifyToken, async (req, res) => {
     });
   } catch (error) {
     console.error("Game error:", error);
-    res.status(500).json({ error: error.message });
+    return c.json({ error: error.message }, 500);
   }
 });
 
-app.listen(3000, () => console.log("Game server running on port 3000"));
+export default app;
+```
+
+**Key Differences from Express:**
+
+- Uses `Hono` framework instead of Express
+- `createB3Client(c)` extracts auth automatically from Hono context
+- Runs on Cloudflare Workers (serverless)
+- No need for manual middleware - Hono context handles everything
+- Response uses `c.json()` instead of `res.json()`
+
+**Environment Setup (wrangler.toml):**
+
+```toml
+[env.production]
+name = "upside-games"
+route = "example.com/api/*"
+zone_id = "..."
+account_id = "..."
+
+[[env.production.env.vars]]
+# Add any environment variables here
 ```
 
 ## Best Practices
@@ -638,7 +609,6 @@ app.listen(3000, () => console.log("Game server running on port 3000"));
 
 - **Verify tokens**: Always validate JWT in every backend request
 - **Use HTTPS**: All communication must be encrypted
-- **Never expose API keys**: Keep `UPSIDE_API_KEY` server-side only
 - **Validate game types**: Only allow known, approved game types
 - **Rate limit**: Implement rate limiting to prevent abuse
 
@@ -712,47 +682,39 @@ async function safePlayGame(gameType, betAmount) {
 ## What Can You Build?
 
 <CardGroup cols={2}>
-<Card title="Prediction Games" icon="crystal-ball">
-  Coin flips, roulette, choice prediction
-</Card>
-
-<Card title="Skill Games" icon="brain">
-  Puzzles, quizzes, memory games with progressive difficulty
-</Card>
-
-<Card title="Chance Games" icon="dice">
-  Dice rolls, card draws, number generation
-</Card>
-
-<Card title="Tournament Games" icon="trophy">
-  Ranked competitions, brackets, seasonal events
-</Card>
-
-<Card title="Hybrid Games" icon="gamepad">
-  Mix of skill and chance for engagement
-</Card>
-
-<Card title="Multiplayer Games" icon="users">
-  Head-to-head or team-based competitions
-</Card>
+  <Card title="Prediction Games" icon="crystal-ball">
+    Coin flips, roulette, choice prediction
+  </Card>
+  <Card title="Skill Games" icon="brain">
+    Puzzles, quizzes, memory games with progressive difficulty
+  </Card>
+  <Card title="Chance Games" icon="dice">
+    Dice rolls, card draws, number generation
+  </Card>
+  <Card title="Tournament Games" icon="trophy">
+    Ranked competitions, brackets, seasonal events
+  </Card>
+  <Card title="Hybrid Games" icon="gamepad">
+    Mix of skill and chance for engagement
+  </Card>
+  <Card title="Multiplayer Games" icon="users">
+    Head-to-head or team-based competitions
+  </Card>
 </CardGroup>
 
 ## Support
 
 <CardGroup cols={2}>
-<Card title="SDK Documentation" icon="book" href="https://docs.upside.win/sdk">
-  Complete SDK API reference
-</Card>
-
-<Card title="Discord Community" icon="discord" href="https://discord.gg/upside">
-  Get help from the team and other developers
-</Card>
-
-<Card title="GitHub Examples" icon="github" href="https://github.com/upside-games">
-  Complete game implementations
-</Card>
-
-<Card title="API Endpoints" icon="code" href="/upside/api">
-  Full API reference documentation
-</Card>
+  <Card title="SDK Documentation" icon="book" href="https://docs.upside.win/sdk">
+    Complete SDK API reference
+  </Card>
+  <Card title="Discord Community" icon="discord" href="https://discord.gg/upside">
+    Get help from the team and other developers
+  </Card>
+  <Card title="GitHub Examples" icon="github" href="https://github.com/upside-games">
+    Complete game implementations
+  </Card>
+  <Card title="API Endpoints" icon="code" href="/upside/api">
+    Full API reference documentation
+  </Card>
 </CardGroup>
