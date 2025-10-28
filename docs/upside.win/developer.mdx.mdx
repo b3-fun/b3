@@ -12,81 +12,74 @@ Integrating with Upside.win is simple. Your game runs in an iframe on our platfo
 ## Integration Flow
 
 <Steps>
-<Step title="Contact B3 Team">
-  Reach out to get your game approved and configured on Upside.
-  
-  ```text
-  Contact: developers@upside.win
-  Include: Game name, description, game type, and your backend URL
-  ```
-</Step>
+  <Step title="Contact B3 Team">
+    Reach out to get your game approved and configured on Upside.
 
-<Step title="Game Loads in Iframe">
-  Players launch your game, which loads inside an iframe on upside.win. Your game receives: - JWT token for the player -
-  Player authentication context - Access to the Upside SDK
-</Step>
+    ```text
+    Contact: developers@upside.win
+    Include: Game name, description, game type, and your backend URL
+    ```
+  </Step>
+  <Step title="Game Loads in Iframe">
+    Players launch your game, which loads inside an iframe on upside.win. Your game receives: - JWT token for the player - Player authentication context - Access to the Upside SDK
+  </Step>
+  <Step title="Frontend: Receive JWT">
+    Wrap your game with `ParentProvider` from the Upside SDK to receive the JWT.
 
-<Step title="Frontend: Receive JWT">
-  Wrap your game with `ParentProvider` from the Upside SDK to receive the JWT.
-  
-  ```javascript
-  import { ParentProvider } from "@b3dotfun/upside-sdk";
-  
-  export default function GameApp() {
-    return (
-      <ParentProvider>
-        <YourGameComponent />
-      </ParentProvider>
-    );
-  }
-  ```
-</Step>
-
-<Step title="Backend: Place Bet">
-  When a player starts playing, your backend calls `placeBet` to lock in their wager. 
-
-  ```javascript
- { createB3Client } from "@b3dotfun/upside-sdk/server"; 
- 
- const b3Client = createB3Client(); 
- const betResult = await
-  b3Client.placeBet(
-    "coin-flip", // gameType 
-    "100000000000000000" // betAmount in wei (1 token = 10^18 wei) 
-  ); 
-  ```
-</Step>
-
-<Step title="Backend: Handle Game Logic">
-  Your backend: - Determines game outcome (coin lands on heads/tails) - Stores game state in your database - Calculates
-  payout amount - Prepares outcome data (player choice, result, outcome)
-</Step>
-
-<Step title="Backend: Process Payout">
-  When game ends, send the result to Upside to credit the player's WIN balance.
-  
-  ```javascript
-  const payoutResult = await b3Client.processPayout(
-    "coin-flip",      // gameType
-    sessionId,        // unique game session ID
-    payoutAmount,     // WIN tokens to award (0 if loss)
-    {
-      playerChoice: "heads",
-      result: "heads",
-      outcome: "win"
+    ```javascript
+    import { ParentProvider } from "@b3dotfun/upside-sdk";
+    
+    export default function GameApp() {
+      return (
+        <ParentProvider>
+          <YourGameComponent />
+        </ParentProvider>
+      );
     }
-  );
-  ```
-</Step>
+    ```
+  </Step>
+  <Step title="Backend: Place Bet">
+    When a player starts playing, your backend calls `placeBet` to lock in their wager.
 
-<Step title="Frontend: Show Result">
-  Your game displays the outcome to the player.
-  
-  The Upside platform automatically:
-  - Updates the player's WIN balance
-  - Adds the win/loss to leaderboards
-  - Sends notifications
-</Step>
+    ```javascript
+    { createB3Client } from "@b3dotfun/upside-sdk/server"; 
+    
+    const b3Client = createB3Client(); 
+    const betResult = await
+    b3Client.placeBet(
+      "coin-flip", // gameType 
+      "100000000000000000" // betAmount in wei (1 token = 10^18 wei) 
+    ); 
+    ```
+  </Step>
+  <Step title="Backend: Handle Game Logic">
+    Your backend: - Determines game outcome (coin lands on heads/tails) - Stores game state in your database - Calculates payout amount - Prepares outcome data (player choice, result, outcome)
+  </Step>
+  <Step title="Backend: Process Payout">
+    When game ends, send the result to Upside to credit the player's WIN balance.
+
+    ```javascript
+    const payoutResult = await b3Client.processPayout(
+      "coin-flip",      // gameType
+      sessionId,        // unique game session ID
+      payoutAmount,     // WIN tokens to award (0 if loss)
+      {
+        playerChoice: "heads",
+        result: "heads",
+        outcome: "win"
+      }
+    );
+    ```
+  </Step>
+  <Step title="Frontend: Show Result">
+    Your game displays the outcome to the player.
+
+    The Upside platform automatically:
+
+    - Updates the player's WIN balance
+    - Adds the win/loss to leaderboards
+    - Sends notifications
+  </Step>
 </Steps>
 
 ## SDK Setup
@@ -96,9 +89,9 @@ Integrating with Upside.win is simple. Your game runs in an iframe on our platfo
 ```bash
 npm install @b3dotfun/upside-sdk
 # or
-yarn add @b3dotfun/upside-sdk
-# or
 pnpm add @b3dotfun/upside-sdk
+# or
+bun install @b3dotfun/upside-sdk
 ```
 
 ### Frontend: ParentProvider
@@ -136,14 +129,38 @@ function GameContent() {
 
 Initialize the B3 client in your backend to interact with Upside's API.
 
+**Framework Support**: Currently supports **Hono** with **Cloudflare Workers**.
+
 ```javascript
 import { createB3Client } from "@b3dotfun/upside-sdk/server";
 
-const b3Client = createB3Client({
-  apiKey: process.env.UPSIDE_API_KEY,
-  environment: "production", // or "staging"
-  baseUrl: "https://api.upside.win", // optional, defaults to production
+// In your Hono route handler
+app.post("/api/game/play", async c => {
+  // Create B3Client from Hono context
+  // Automatically extracts auth token from Authorization header
+  const b3Client = createB3Client(c);
+
+  // Now use b3Client for game operations
+  const betResult = await b3Client.placeBet("coin-flip", "1000000000000000000");
+
+  return c.json({ success: true, sessionId: betResult.sessionId });
 });
+```
+
+**Parameters:**
+
+- `context` (Hono Context): The Hono context object containing:
+  - `req.header(name: string)`: Method to extract request headers
+  - `env` (optional): Cloudflare Workers environment
+
+**Returns:**
+
+- B3Client instance with authentication automatically configured from the Authorization header
+
+**Authentication:** The Authorization header is automatically extracted from the incoming request:
+
+```
+Authorization: Bearer {player_token}
 ```
 
 ## Testing on Localhost
@@ -629,47 +646,39 @@ async function safePlayGame(gameType, betAmount) {
 ## What Can You Build?
 
 <CardGroup cols={2}>
-<Card title="Prediction Games" icon="crystal-ball">
-  Coin flips, roulette, choice prediction
-</Card>
-
-<Card title="Skill Games" icon="brain">
-  Puzzles, quizzes, memory games with progressive difficulty
-</Card>
-
-<Card title="Chance Games" icon="dice">
-  Dice rolls, card draws, number generation
-</Card>
-
-<Card title="Tournament Games" icon="trophy">
-  Ranked competitions, brackets, seasonal events
-</Card>
-
-<Card title="Hybrid Games" icon="gamepad">
-  Mix of skill and chance for engagement
-</Card>
-
-<Card title="Multiplayer Games" icon="users">
-  Head-to-head or team-based competitions
-</Card>
+  <Card title="Prediction Games" icon="crystal-ball">
+    Coin flips, roulette, choice prediction
+  </Card>
+  <Card title="Skill Games" icon="brain">
+    Puzzles, quizzes, memory games with progressive difficulty
+  </Card>
+  <Card title="Chance Games" icon="dice">
+    Dice rolls, card draws, number generation
+  </Card>
+  <Card title="Tournament Games" icon="trophy">
+    Ranked competitions, brackets, seasonal events
+  </Card>
+  <Card title="Hybrid Games" icon="gamepad">
+    Mix of skill and chance for engagement
+  </Card>
+  <Card title="Multiplayer Games" icon="users">
+    Head-to-head or team-based competitions
+  </Card>
 </CardGroup>
 
 ## Support
 
 <CardGroup cols={2}>
-<Card title="SDK Documentation" icon="book" href="https://docs.upside.win/sdk">
-  Complete SDK API reference
-</Card>
-
-<Card title="Discord Community" icon="discord" href="https://discord.gg/upside">
-  Get help from the team and other developers
-</Card>
-
-<Card title="GitHub Examples" icon="github" href="https://github.com/upside-games">
-  Complete game implementations
-</Card>
-
-<Card title="API Endpoints" icon="code" href="/upside/api">
-  Full API reference documentation
-</Card>
+  <Card title="SDK Documentation" icon="book" href="https://docs.upside.win/sdk">
+    Complete SDK API reference
+  </Card>
+  <Card title="Discord Community" icon="discord" href="https://discord.gg/upside">
+    Get help from the team and other developers
+  </Card>
+  <Card title="GitHub Examples" icon="github" href="https://github.com/upside-games">
+    Complete game implementations
+  </Card>
+  <Card title="API Endpoints" icon="code" href="/upside/api">
+    Full API reference documentation
+  </Card>
 </CardGroup>
