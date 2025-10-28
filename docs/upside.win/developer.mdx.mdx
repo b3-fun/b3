@@ -46,8 +46,14 @@ Integrating with Upside.win is simple. Your game runs in an iframe on our platfo
   When a player starts playing, your backend calls `placeBet` to lock in their wager. 
 
   ```javascript
- {createB3Client} from "@b3dotfun/upside-sdk/server"; const b3Client = createB3Client(); const betResult = await
-  b3Client.placeBet( "coin-flip", // gameType "100000000000000000" // betAmount in wei (1 token = 10^18 wei) ); 
+ { createB3Client } from "@b3dotfun/upside-sdk/server"; 
+ 
+ const b3Client = createB3Client(); 
+ const betResult = await
+  b3Client.placeBet(
+    "coin-flip", // gameType 
+    "100000000000000000" // betAmount in wei (1 token = 10^18 wei) 
+  ); 
   ```
 </Step>
 
