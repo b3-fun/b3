@@ -1,0 +1,274 @@
+---
+title: "Testing & Examples"
+description: "Test your game integration locally, review complete examples, and troubleshoot common issues."
+---
+
+## Testing on Localhost
+
+### Quick Testing Setup
+
+You can test your game running on localhost directly in the Upside.win test environment without deploying.
+
+**How it works:**
+
+1. Run your game backend on `http://localhost:3000` (or any port)
+2. Base64 encode your localhost URL
+3. Navigate to the test URL on upside.win
+
+### Step-by-Step
+
+**Step 1: Start your game backend**
+
+```bash
+npm run dev
+# Game running at http://localhost:3000
+```
+
+**Step 2: Base64 encode your URL**
+
+Using Node.js:
+
+```javascript
+const url = "http://localhost:3000";
+const encoded = Buffer.from(url).toString("base64");
+console.log(encoded); // aHR0cDovL2xvY2FsaG9zdDozMDAw
+```
+
+Using command line:
+
+```bash
+echo -n "http://localhost:3000" | base64
+# aHR0cDovL2xvY2FsaG9zdDozMDAw
+```
+
+Online: Use any base64 encoder at https://www.base64encode.org/
+
+**Step 3: Test in Upside.win**
+
+Visit the test URL:
+
+```
+https://upside.win/test/games/aHR0cDovL2xvY2FsaG9zdDozMDAw
+```
+
+Replace `aHR0cDovL2xvY2FsaG9zdDozMDAw` with your encoded URL.
+
+### Examples
+
+Different localhost URLs:
+
+| URL                     | Base64                         | Test Link                                                    |
+| ----------------------- | ------------------------------ | ------------------------------------------------------------ |
+| `http://localhost:3000` | `aHR0cDovL2xvY2FsaG9zdDozMDAw` | `https://upside.win/test/games/aHR0cDovL2xvY2FsaG9zdDozMDAw` |
+| `http://localhost:5000` | `aHR0cDovL2xvY2FsaG9zdDo1MDOw` | `https://upside.win/test/games/aHR0cDovL2xvY2FsaG9zdDo1MDOw` |
+| `http://127.0.0.1:3000` | `aHR0cDovLzEyNy4wLjAuMTozMDAw` | `https://upside.win/test/games/aHR0cDovLzEyNy4wLjAuMTozMDAw` |
+
+### Development Workflow
+
+1. **Create game code** - Write your React frontend and Cloudflare Hono backend
+2. **Start locally** - Run `npm run dev` on localhost
+3. **Generate test URL** - Base64 encode your localhost address
+4. **Test on Upside** - Visit `https://upside.win/test/games/<BASE64>`
+5. **Get JWT & test** - Game loads with real JWT for testing
+6. **Iterate** - Make changes locally and refresh the test URL
+7. **Deploy** - When ready, deploy backend and update game URL
+
+### Tips for Local Testing
+
+- **Use same machine**: Keep localhost running while testing
+- **Check CORS**: Ensure your backend allows requests from upside.win domains
+
+### Troubleshooting Local Testing
+
+**Problem**: "Game not found" or 404
+
+- **Solution**: Verify localhost URL is correct and encoding is accurate
+
+**Problem**: CORS errors
+
+- **Solution**: Your backend needs to accept requests from upside.win domain
+
+**Problem**: JWT errors during testing
+
+- **Solution**: Make sure you're using staging API key, not production
+
+**Problem**: Network requests failing
+
+- **Solution**: Check that localhost is running and firewall allows requests
+
+## Complete Example: Coin Flip Game
+
+### Frontend (React)
+
+```javascript
+import { ParentProvider, useParentContext } from "@b3dotfun/upside-sdk";
+
+export default function CoinFlipGame() {
+  return (
+    <ParentProvider>
+      <CoinFlipContent />
+    </ParentProvider>
+  );
+}
+
+function CoinFlipContent() {
+  const { token, balance, playerId } = useParentContext();
+  const [gameState, setGameState] = useState("ready"); // ready, playing, won, lost
+  const [prediction, setPrediction] = useState(null);
+  const [result, setResult] = useState(null);
+  const [earnings, setEarnings] = useState(0);
+
+  const playGame = async playerPrediction => {
+    setPrediction(playerPrediction);
+    setGameState("playing");
+
+    try {
+      // Call your backend
+      const response = await fetch("/api/game/coin-flip", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          playerId,
+          prediction: playerPrediction,
+          betAmount: "100000000000000000", // 1 token in wei
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.outcome === "win") {
+        setGameState("won");
+        setEarnings(data.payout);
+      } else {
+        setGameState("lost");
+        setEarnings(0);
+      }
+
+      setResult(data.result);
+    } catch (error) {
+      console.error("Game error:", error);
+      setGameState("error");
+    }
+  };
+
+  return (
+    <div style={{ textAlign: "center", padding: "40px" }}>
+      <h1>Coin Flip</h1>
+      <p>Balance: {(balance / 1e18).toFixed(2)} WIN</p>
+
+      {gameState === "ready" && (
+        <div>
+          <button onClick={() => playGame("heads")}>Predict Heads</button>
+          <button onClick={() => playGame("tails")}>Predict Tails</button>
+        </div>
+      )}
+
+      {gameState === "playing" && <p>Flipping...</p>}
+
+      {gameState === "won" && (
+        <div>
+          <p>🎉 You won! Coin landed on {result}</p>
+          <p>+{(earnings / 1e18).toFixed(2)} WIN</p>
+        </div>
+      )}
+
+      {gameState === "lost" && (
+        <div>
+          <p>❌ You lost! Coin landed on {result}</p>
+          <p>Better luck next time</p>
+        </div>
+      )}
+
+      {gameState !== "ready" && <button onClick={() => setGameState("ready")}>Play Again</button>}
+    </div>
+  );
+}
+```
+
+### Backend (Hono + Cloudflare Workers)
+
+```javascript
+import { Hono } from "hono";
+import { createB3Client } from "@b3dotfun/upside-sdk/server";
+
+const app = new Hono();
+
+app.post("/api/game/coin-flip", async c => {
+  const { prediction, betAmount } = await c.req.json();
+
+  try {
+    // Create B3Client from Hono context
+    // Automatically extracts auth token from Authorization header
+    const b3Client = createB3Client(c);
+
+    // Step 1: Place the bet (amount in wei)
+    const betResult = await b3Client.placeBet("coin-flip", betAmount);
+
+    if (!betResult.sessionId) {
+      return c.json({ error: "Failed to place bet" }, 400);
+    }
+
+    // Step 2: Game logic - flip coin
+    const coin = Math.random() < 0.5 ? "heads" : "tails";
+    const isWin = coin === prediction;
+    // Calculate payout: 50% profit on win (betAmount * 1.5, in wei)
+    const payout = isWin ? (BigInt(betAmount) * BigInt(150)) / BigInt(100) : "0";
+
+    // Step 3: Store game in your database (D1, etc.)
+    // await db.execute(
+    //   "INSERT INTO games (sessionId, prediction, result, betAmount, payout) VALUES (?, ?, ?, ?, ?)",
+    //   [betResult.sessionId, prediction, coin, betAmount, payout.toString()]
+    // );
+
+    // Step 4: Process payout
+    const payoutResult = await b3Client.processPayout("coin-flip", betResult.sessionId, payout.toString(), {
+      playerChoice: prediction,
+      result: coin,
+      outcome: isWin ? "win" : "loss",
+    });
+
+    // Step 5: Return result to frontend
+    return c.json({
+      sessionId: betResult.sessionId,
+      prediction,
+      result: coin,
+      outcome: isWin ? "win" : "loss",
+      payout: isWin ? payout.toString() : "0",
+      newBalance: payoutResult.newBalance,
+    });
+  } catch (error) {
+    console.error("Game error:", error);
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+export default app;
+```
+
+## Troubleshooting
+
+### Common Issues
+
+**Problem**: `placeBet` fails with "Insufficient balance"
+
+- **Solution**: Check player balance before placing bet, or increase bet amount display in UI
+
+**Problem**: `processPayout` returns "session not found"
+
+- **Solution**: Verify sessionId matches bet response, check for typos
+
+**Problem**: Duplicate game sessions or bets
+
+- **Solution**: Use same sessionId for retries, implement idempotency on your end
+
+**Problem**: JWT expires during gameplay
+
+- **Solution**: Refresh token before game starts, handle token expiration gracefully
+
+**Problem**: Game logic runs on client, leading to cheating
+
+- **Solution**: Move ALL game logic to backend, client only displays results
+

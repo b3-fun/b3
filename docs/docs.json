@@ -386,6 +386,35 @@
             }
           },
           {
+            "icon": "dice",
+            "tab": "Upside.win",
+            "groups": [
+              {
+                "group": "Getting Started",
+                "pages": [
+                  "upside/introduction",
+                  "upside/frontend-integration",
+                  "upside/backend-integration",
+                  "upside/testing-and-examples"
+                ]
+              }
+            ],
+            "global": {
+              "anchors": [
+                {
+                  "anchor": "Visit upside.win",
+                  "href": "https://upside.win",
+                  "icon": "globe"
+                },
+                {
+                  "anchor": "Discord",
+                  "href": "https://discord.gg/b3dotfun",
+                  "icon": "discord"
+                }
+              ]
+            }
+          },
+          {
             "icon": "code",
             "tab": "Developer SDKs",
             "menu": [

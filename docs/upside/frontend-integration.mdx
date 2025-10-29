@@ -1,0 +1,227 @@
+---
+title: "Frontend Integration"
+description: "Set up the ParentProvider and use hooks to access player authentication, balance, and UI controls in your game frontend."
+---
+
+## ParentProvider
+
+The `ParentProvider` component connects your game frontend to the Upside platform and provides authentication.
+
+```javascript
+import { ParentProvider, useParent, useBalance, useToken, useAuthenticatedFetch } from "@b3dotfun/upside-sdk";
+
+export default function CoinFlipGame() {
+  return (
+    <ParentProvider>
+      <GameContent />
+    </ParentProvider>
+  );
+}
+
+function GameContent() {
+  const { token, balance, showWinModal, showLossModal, refetchBalance } = useParent();
+
+  // Or use individual hooks:
+  const balance = useBalance(); // number | null
+  const token = useToken(); // string | null
+  const authFetch = useAuthenticatedFetch(); // fetch with Authorization header
+
+  return (
+    <div>
+      <h1>Coin Flip</h1>
+      <p>Balance: {(balance / 1e18).toFixed(2)} WIN</p>
+      <button onClick={() => playGame(token)}>Play</button>
+    </div>
+  );
+}
+```
+
+## Available Hooks
+
+### useParent()
+
+Access full context (token, balance, showWinModal, showLossModal, etc.)
+
+**Return Values:**
+
+- `token` (string | null): JWT authentication token for backend calls
+- `balance` (number | null): Current WIN token balance in wei
+- `showWinModal(wins: string)`: Show win modal
+- `showLossModal(loss: string)`: Show loss modal
+- `showToast(options)`: Show toast notification
+- `showCustomModal(content)`: Show custom modal
+- `refetchBalance()`: Request balance refresh from platform
+
+### useBalance()
+
+Get player balance (number | null)
+
+```javascript
+const balance = useBalance();
+```
+
+### useToken()
+
+Get authentication token (string | null)
+
+```javascript
+const token = useToken();
+```
+
+### useRefetchBalance()
+
+Function to request balance refresh
+
+```javascript
+const refetchBalance = useRefetchBalance();
+```
+
+### useCustomModal()
+
+Function to show custom modals
+
+```javascript
+const showCustomModal = useCustomModal();
+```
+
+### useAuthenticatedFetch()
+
+Fetch function with automatic Bearer token header
+
+```javascript
+const authFetch = useAuthenticatedFetch();
+```
+
+## Making API Calls
+
+Use the `useAuthenticatedFetch()` hook to make authenticated requests:
+
+```javascript
+import { useAuthenticatedFetch, useBalance, useToken } from "@b3dotfun/upside-sdk";
+
+function GameComponent() {
+  const authFetch = useAuthenticatedFetch();
+  const balance = useBalance();
+  const token = useToken();
+
+  const playGame = async prediction => {
+    // Authorization header is automatically added
+    const response = await authFetch("/api/game/coin-flip", {
+      method: "POST",
+      body: JSON.stringify({
+        playerId: "player-id",
+        prediction,
+        betAmount: "1000000000000000000", // 1 WIN in wei
+      }),
+    });
+
+    const data = await response.json();
+    return data;
+  };
+
+  return (
+    <div>
+      <p>Balance: {(balance / 1e18).toFixed(2)} WIN</p>
+      <button onClick={() => playGame("heads")}>Predict Heads</button>
+    </div>
+  );
+}
+```
+
+**How useAuthenticatedFetch() Works:**
+
+- Automatically includes `Authorization: Bearer {token}` header
+- Sets `Content-Type: application/json` by default
+- Merges additional headers you provide
+- Handles token from `useToken()` automatically
+
+## Frontend Example
+
+```javascript
+import { ParentProvider, useParentContext } from "@b3dotfun/upside-sdk";
+
+export default function CoinFlipGame() {
+  return (
+    <ParentProvider>
+      <CoinFlipContent />
+    </ParentProvider>
+  );
+}
+
+function CoinFlipContent() {
+  const { token, balance, playerId } = useParentContext();
+  const [gameState, setGameState] = useState("ready"); // ready, playing, won, lost
+  const [prediction, setPrediction] = useState(null);
+  const [result, setResult] = useState(null);
+  const [earnings, setEarnings] = useState(0);
+
+  const playGame = async playerPrediction => {
+    setPrediction(playerPrediction);
+    setGameState("playing");
+
+    try {
+      // Call your backend
+      const response = await fetch("/api/game/coin-flip", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          playerId,
+          prediction: playerPrediction,
+          betAmount: "100000000000000000", // 1 token in wei
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.outcome === "win") {
+        setGameState("won");
+        setEarnings(data.payout);
+      } else {
+        setGameState("lost");
+        setEarnings(0);
+      }
+
+      setResult(data.result);
+    } catch (error) {
+      console.error("Game error:", error);
+      setGameState("error");
+    }
+  };
+
+  return (
+    <div style={{ textAlign: "center", padding: "40px" }}>
+      <h1>Coin Flip</h1>
+      <p>Balance: {(balance / 1e18).toFixed(2)} WIN</p>
+
+      {gameState === "ready" && (
+        <div>
+          <button onClick={() => playGame("heads")}>Predict Heads</button>
+          <button onClick={() => playGame("tails")}>Predict Tails</button>
+        </div>
+      )}
+
+      {gameState === "playing" && <p>Flipping...</p>}
+
+      {gameState === "won" && (
+        <div>
+          <p>🎉 You won! Coin landed on {result}</p>
+          <p>+{(earnings / 1e18).toFixed(2)} WIN</p>
+        </div>
+      )}
+
+      {gameState === "lost" && (
+        <div>
+          <p>❌ You lost! Coin landed on {result}</p>
+          <p>Better luck next time</p>
+        </div>
+      )}
+
+      {gameState !== "ready" && <button onClick={() => setGameState("ready")}>Play Again</button>}
+    </div>
+  );
+}
+```
+
