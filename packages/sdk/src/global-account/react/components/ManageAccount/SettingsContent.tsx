@@ -17,6 +17,8 @@ const SettingsContent = ({
 }) => {
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
+  const contentType = useModalStore(state => state.contentType);
+  console.log("contentType :", contentType);
 
   const handleNavigate = (type: "home" | "swap" | "linkAccount" | "avatarEditor") => {
     if (type === "home") {

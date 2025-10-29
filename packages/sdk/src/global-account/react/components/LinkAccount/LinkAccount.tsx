@@ -1,138 +1,69 @@
 import app from "@b3dotfun/sdk/global-account/app";
-import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
-import { thirdwebB3Mainnet } from "@b3dotfun/sdk/shared/constants/chains/b3Chain";
+import { Button, ManageAccountModalProps, useB3, useModalStore, useQueryB3 } from "@b3dotfun/sdk/global-account/react";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
-import { Loader2, Mail, Phone, WalletIcon } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { truncateAddress } from "@b3dotfun/sdk/shared/utils/truncateAddress";
+import { Copy, Loader2, Pencil, UnlinkIcon } from "lucide-react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { useLinkProfile, useProfiles } from "thirdweb/react";
-import { createWallet, preAuthenticate, WalletId } from "thirdweb/wallets";
-import { WalletRow } from "../..";
-import { LinkAccountModalProps, useModalStore } from "../../stores/useModalStore";
+import { useProfiles, useUnlinkProfile } from "thirdweb/react";
+
+import { Chain } from "thirdweb";
 import { getProfileDisplayInfo } from "../../utils/profileDisplay";
-import { useB3 } from "../B3Provider/useB3";
-import { AppleIcon } from "../icons/AppleIcon";
-import { DiscordIcon } from "../icons/DiscordIcon";
-import { FarcasterIcon } from "../icons/FarcasterIcon";
-import { GoogleIcon } from "../icons/GoogleIcon";
-import { XIcon } from "../icons/XIcon";
-import { Button } from "../ui/button";
-type OTPStrategy = "email" | "phone";
-type SocialStrategy = "google" | "x" | "discord" | "apple" | "farcaster";
-type Strategy = OTPStrategy | SocialStrategy | "wallet";
 
-interface AuthMethod {
-  id: Strategy;
-  label: string;
-  enabled: boolean;
-  icon: React.ReactNode;
-  walletType?: WalletId;
-}
+// Helper function to check if a string is a wallet address and format it
+const formatProfileTitle = (title: string): { displayTitle: string; isAddress: boolean } => {
+  // Check if title looks like an Ethereum address (0x followed by 40 hex characters)
+  const isEthereumAddress = /^0x[a-fA-F0-9]{40}$/.test(title);
 
-const AUTH_METHODS: AuthMethod[] = [
-  { id: "email", label: "Email", enabled: true, icon: <Mail className="text-b3-primary-blue size-6" /> },
-  { id: "phone", label: "Phone", enabled: true, icon: <Phone className="text-b3-primary-blue size-6" /> },
-  { id: "google", label: "Google", enabled: true, icon: <GoogleIcon className="size-6" /> },
-  { id: "x", label: "X (Twitter)", enabled: true, icon: <XIcon className="size-6" /> },
-  { id: "discord", label: "Discord", enabled: true, icon: <DiscordIcon className="size-6" /> },
-  { id: "apple", label: "Apple", enabled: true, icon: <AppleIcon className="size-6" /> },
-  {
-    id: "farcaster",
-    label: "Farcaster",
-    enabled: true,
-    icon: <FarcasterIcon className="size-6" />,
-  },
-];
-
-const WALLET_METHODS: AuthMethod[] = [
-  {
-    id: "wallet",
-    label: "Wallet",
-    enabled: true,
-    icon: <WalletIcon className="size-6" />,
-    walletType: "com.coinbase.wallet",
-  },
-  { id: "wallet", label: "Wallet", enabled: true, icon: <WalletIcon className="size-6" />, walletType: "io.metamask" },
-  {
-    id: "wallet",
-    label: "Wallet",
-    enabled: true,
-    icon: <WalletIcon className="size-6" />,
-    walletType: "me.rainbow",
-  },
-  {
-    id: "wallet",
-    label: "Wallet",
-    enabled: true,
-    icon: <WalletIcon className="size-6" />,
-    walletType: "app.phantom",
-  },
-  { id: "wallet", label: "Wallet", enabled: true, icon: <WalletIcon className="size-6" />, walletType: "io.rabby" },
-  {
-    id: "wallet",
-    label: "Wallet",
-    enabled: true,
-    icon: <WalletIcon className="size-6" />,
-    walletType: "walletConnect",
-  },
-];
-
-export function LinkAccount({
-  onSuccess: onSuccessCallback,
-  onError,
-  onClose,
-  chain,
-  partnerId,
-  className,
-}: LinkAccountModalProps & { className?: string }) {
-  const { isLinking, linkingMethod, setLinkingState, navigateBack, setB3ModalContentType } = useModalStore();
-  const [selectedMethod, setSelectedMethod] = useState<Strategy | null>(null);
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [otp, setOtp] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const { data: profilesRaw = [] } = useProfiles({ client });
-
-  // Get connected auth methods
-  const connectedAuthMethods = profilesRaw
-    .filter((profile: any) => !["custom_auth_endpoint"].includes(profile.type))
-    .map((profile: any) => profile.type as Strategy);
-
-  // Filter available auth methods
-  const availableAuthMethods = AUTH_METHODS.filter(
-    method => !connectedAuthMethods.includes(method.id) && method.enabled,
-  );
-
-  const profiles = profilesRaw
-    .filter((profile: any) => !["custom_auth_endpoint"].includes(profile.type))
-    .map((profile: any) => ({
-      ...getProfileDisplayInfo(profile),
-      originalProfile: profile,
-    }));
-
-  const { account } = useB3();
-  const { mutate: linkProfile } = useLinkProfile();
-
-  const onSuccess = useCallback(async () => {
-    await onSuccessCallback?.();
-  }, [onSuccessCallback]);
-
-  // Reset linking state when component unmounts
-  useEffect(() => {
-    return () => {
-      if (isLinking) {
-        setLinkingState(false);
-      }
+  if (isEthereumAddress) {
+    return {
+      displayTitle: truncateAddress(title),
+      isAddress: true,
     };
-  }, [isLinking, setLinkingState]);
+  }
+
+  return {
+    displayTitle: title,
+    isAddress: false,
+  };
+};
+
+import { Referrals, Users } from "@b3dotfun/b3-api";
+
+export const LinkAccount = ({
+  partnerId,
+  onLogout,
+  chain,
+}: {
+  partnerId: string;
+  onLogout?: () => void;
+  chain: Chain;
+}) => {
+  const [unlinkingAccountId, setUnlinkingAccountId] = useState<string | null>(null);
+  const { data: profilesRaw = [], isLoading: isLoadingProfiles } = useProfiles({ client });
+  console.log("11111 profilesRaw :", profilesRaw);
+  const { mutate: unlinkProfile, isPending: isUnlinking } = useUnlinkProfile();
+  const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
+  const isLinking = useModalStore(state => state.isLinking);
+  const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
+  const contentType = useModalStore(state => state.contentType);
+  const { user, setUser } = useB3();
+  const [isUpdatingCode, setIsUpdatingCode] = useState(false);
+  const [newReferralCode, setNewReferralCode] = useState("");
+  const [isEditingCode, setIsEditingCode] = useState(false);
+  const referallCodeRef = useRef<HTMLInputElement>(null);
+  const { data: referrals, isLoading: isLoadingReferrals } = useQueryB3(
+    "referrals",
+    "find",
+    { query: { referrerId: user?.userId } },
+    !!user?.userId,
+  );
+  const showReferralInfo = (contentType as ManageAccountModalProps)?.showReferralInfo ?? false;
 
   const mutationOptions = {
     onError: (error: Error) => {
-      console.error("Error linking account:", error);
+      console.error("Error Unlinking account:", error);
       toast.error(error.message);
-      setLinkingState(false);
-      onError?.(error);
     },
     onSuccess: async (data: any) => {
       console.log("Raw Link Account Data:", data);
@@ -145,348 +76,292 @@ export function LinkAccount({
     },
   };
 
-  const validateInput = () => {
-    if (selectedMethod === "email") {
-      if (!email) {
-        setError("Please enter your email address");
-        return false;
-      }
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        setError("Please enter a valid email address");
-        return false;
-      }
-    } else if (selectedMethod === "phone") {
-      if (!phone) {
-        setError("Please enter your phone number");
-        return false;
-      }
-      if (!/^\+?[\d\s-]{10,}$/.test(phone)) {
-        setError("Please enter a valid phone number");
-        return false;
-      }
-    }
-    setError(null);
-    return true;
-  };
+  // Fetch referred users
+  const currentReferralCode = user?.referralCode || user?.userId || "";
 
-  const handleSendOTP = async () => {
-    if (!validateInput()) return;
-
+  const handleCopyCode = async () => {
     try {
-      setLinkingState(true, selectedMethod);
-      setError(null);
-
-      if (selectedMethod === "email") {
-        await preAuthenticate({
-          client,
-          strategy: "email",
-          email,
-          ecosystem: {
-            id: ecosystemWalletId,
-            partnerId: partnerId,
-          },
-        });
-      } else if (selectedMethod === "phone") {
-        await preAuthenticate({
-          client,
-          strategy: "phone",
-          phoneNumber: phone,
-          ecosystem: {
-            id: ecosystemWalletId,
-            partnerId: partnerId,
-          },
-        });
-      }
-
-      setOtpSent(true);
+      await navigator.clipboard.writeText(currentReferralCode);
+      toast.success("Referral code copied to clipboard!");
     } catch (error) {
-      console.error("Error sending OTP:", error);
-      setError(error instanceof Error ? error.message : "Failed to send OTP");
-      onError?.(error as Error);
-      setLinkingState(false);
+      toast.error("Failed to copy referral code");
     }
   };
 
-  const handleLinkAccount = async () => {
-    if (!otp) {
-      console.error("No OTP entered");
-      setError("Please enter the verification code");
-      return;
-    }
+  const handleUpdateReferralCode = async () => {
+    if (!newReferralCode) return;
 
+    setIsUpdatingCode(true);
     try {
-      setOtpSent(false);
-      setLinkingState(true, selectedMethod);
-      setError(null);
-
-      if (selectedMethod === "email") {
-        await linkProfile(
-          {
-            client,
-            strategy: "email",
-            email,
-            verificationCode: otp,
-          },
-          mutationOptions,
-        );
-      } else if (selectedMethod === "phone") {
-        await linkProfile(
-          {
-            client,
-            strategy: "phone",
-            phoneNumber: phone,
-            verificationCode: otp,
-          },
-          mutationOptions,
-        );
-      }
-    } catch (error) {
-      console.error("Error linking account:", error);
-      setError(error instanceof Error ? error.message : "Failed to link account");
-      onError?.(error as Error);
-    }
-  };
-
-  const handleLinkWallet = async (walletType: WalletId) => {
-    setLinkingState(true, "wallet");
-    console.log("selectedMethod", walletType);
-    try {
-      if (!walletType) {
-        throw new Error("Wallet type not found");
-      }
-      await linkProfile(
-        {
-          client,
-          strategy: "wallet",
-          wallet: createWallet(walletType),
-          chain: thirdwebB3Mainnet,
-        },
-        mutationOptions,
-      );
-    } catch (error) {
-      console.error("Error linking account:", error);
-      setError(error instanceof Error ? error.message : "Failed to link account");
-      onError?.(error as Error);
-    }
-  };
-
-  const handleSocialLink = async (strategy: SocialStrategy) => {
-    try {
-      console.log("handleSocialLink", strategy);
-      setLinkingState(true, strategy);
-      setError(null);
-
-      const result = await linkProfile(
-        {
-          client,
-          strategy,
-        },
-        mutationOptions,
-      );
-
-      console.log("result", result);
-
-      // Don't close the modal yet, wait for auth to complete
-      onSuccess?.();
-    } catch (error) {
-      console.error("Error linking with social:", error);
-      setError(error instanceof Error ? error.message : "Failed to link social account");
-      onError?.(error as Error);
-      setLinkingState(false);
-    }
-  };
-
-  // Add effect to handle social auth completion
-  useEffect(() => {
-    if (isLinking && linkingMethod && !selectedMethod) {
-      // This means we're in a social auth flow
-      const checkAuthStatus = async () => {
-        try {
-          // Wait a bit to ensure auth is complete
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          onClose?.();
-        } catch (error) {
-          console.error("Error checking auth status:", error);
-          setLinkingState(false);
-        }
-      };
-
-      checkAuthStatus();
-    }
-  }, [isLinking, linkingMethod, selectedMethod, onClose, setLinkingState]);
-
-  const handleBack = useCallback(() => {
-    if (isLinking) return;
-    setSelectedMethod(null);
-    setEmail("");
-    setPhone("");
-    setOtp("");
-    setOtpSent(false);
-    setError(null);
-    setLinkingState(false);
-  }, [isLinking, setSelectedMethod, setEmail, setPhone, setOtp, setOtpSent, setError, setLinkingState]);
-
-  const handleFinishedLinking = useCallback(
-    (success: boolean) => {
-      if (success) {
-        onSuccess?.();
-        onClose?.();
-      }
-
-      setLinkingState(false);
-      navigateBack();
-      setB3ModalContentType({
-        type: "manageAccount",
-        activeTab: "settings",
-        setActiveTab: () => {},
-        chain,
-        partnerId,
+      // @ts-expect-error - setReferralCode is not typed for some reason
+      const newUser = await app.service("users").setReferralCode({
+        userId: user?.userId,
+        referralCode: newReferralCode,
       });
-    },
-    [chain, navigateBack, partnerId, setB3ModalContentType, setLinkingState, onSuccess, onClose],
-  );
-
-  useEffect(() => {
-    if (isLinking) {
-      handleFinishedLinking(true);
+      setUser(newUser as unknown as Users);
+      toast.success("Referral code updated successfully!");
+      setIsEditingCode(false);
+      setNewReferralCode("");
+    } catch (error) {
+      toast.error("Failed to update referral code");
+    } finally {
+      setIsUpdatingCode(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profiles.length]);
+  };
 
-  if (!account) {
-    return <div className="text-b3-foreground-muted py-8 text-center">Please connect your account first</div>;
-  }
+  const profiles = profilesRaw
+    .filter((profile: any) => !["custom_auth_endpoint"].includes(profile.type))
+    .map((profile: any) => ({
+      ...getProfileDisplayInfo(profile),
+      originalProfile: profile,
+    }));
+  console.log("profiles :", profiles);
+
+  const handleUnlink = async (profile: any) => {
+    setUnlinkingAccountId(profile.title);
+    try {
+      unlinkProfile({ client, profileToUnlink: profile.originalProfile }, mutationOptions);
+    } catch (error) {
+      console.error("Error unlinking account:", error);
+    } finally {
+      setUnlinkingAccountId(null);
+    }
+  };
+
+  const handleOpenLinkModal = () => {
+    setB3ModalOpen(true);
+    setB3ModalContentType({
+      type: "linkAccount",
+      showBackButton: true,
+      partnerId,
+      chain,
+      onSuccess: async () => {
+        // Let the LinkAccount component handle modal closing
+      },
+      onError: () => {
+        // Let the LinkAccount component handle errors
+      },
+      onClose: () => {
+        // Let the LinkAccount component handle closing
+      },
+    });
+  };
+
+  console.log("@@profiles", profiles);
 
   return (
-    <div className={`b3-link-account space-y-6 p-6 ${className || ""}`} data-testid="link-account">
-      <div className="b3-link-account-header flex items-center justify-between">
-        <h2 className="b3-link-account-title text-b3-grey font-neue-montreal-semibold text-2xl">Link New Account</h2>
-        {selectedMethod && (
-          <Button variant="ghost" className="text-b3-grey hover:text-b3-grey/80" onClick={handleBack}>
-            Backs
-          </Button>
+    <div className="linked-accounts-settings space-y-8">
+      {/* Linked Accounts Section */}
+      <div className="linked-accounts-section space-y-4">
+        {isLoadingProfiles ? (
+          <div className="linked-accounts-loading flex justify-center py-8">
+            <Loader2 className="text-b3-grey animate-spin" />
+          </div>
+        ) : profiles.length > 0 ? (
+          <div className="linked-accounts-list space-y-4">
+            {profiles.map(profile => (
+              <div
+                key={profile.title}
+                className="linked-account-item bg-b3-line group flex items-center justify-between rounded-xl p-4"
+              >
+                <div className="linked-account-info flex items-center gap-3">
+                  {profile.imageUrl ? (
+                    <img
+                      src={profile.imageUrl}
+                      alt={profile.title}
+                      className="linked-account-avatar linked-account-avatar-image size-10 rounded-full"
+                    />
+                  ) : (
+                    <div className="linked-account-avatar linked-account-avatar-placeholder bg-b3-primary-wash flex h-10 w-10 items-center justify-center rounded-full">
+                      <span className="linked-account-initial text-b3-grey font-neue-montreal-semibold text-sm uppercase">
+                        {profile.initial}
+                      </span>
+                    </div>
+                  )}
+                  <div className="linked-account-details">
+                    <div className="linked-account-title-row flex items-center gap-2">
+                      {(() => {
+                        const { displayTitle, isAddress } = formatProfileTitle(profile.title);
+
+                        const handleCopyAddress = async (e: React.MouseEvent) => {
+                          e.stopPropagation();
+                          try {
+                            await navigator.clipboard.writeText(profile.title);
+                            toast.success("Address copied to clipboard!");
+                          } catch (error) {
+                            toast.error("Failed to copy address");
+                          }
+                        };
+
+                        return (
+                          <div className="flex items-center gap-1">
+                            <span
+                              className={`linked-account-title text-b3-grey font-neue-montreal-semibold ${
+                                isAddress
+                                  ? "font-mono text-sm" // Use monospace font for addresses
+                                  : "break-words" // Use break-words for emails/names (better than break-all)
+                              }`}
+                              title={isAddress ? profile.title : undefined} // Show full address on hover
+                            >
+                              {displayTitle}
+                            </span>
+                            {isAddress && (
+                              <button
+                                onClick={handleCopyAddress}
+                                className="linked-account-copy-button ml-1 rounded p-1 opacity-0 transition-opacity hover:bg-gray-100 group-hover:opacity-100"
+                                title="Copy full address"
+                              >
+                                <Copy size={12} className="text-gray-500 hover:text-gray-700" />
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })()}
+                      <span className="linked-account-type text-b3-foreground-muted font-neue-montreal-medium bg-b3-primary-wash rounded px-2 py-0.5 text-xs">
+                        {profile.type.toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="linked-account-subtitle text-b3-foreground-muted font-neue-montreal-medium text-sm">
+                      {profile.subtitle}
+                    </div>
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="linked-account-unlink-button text-b3-grey hover:text-b3-negative"
+                  onClick={() => handleUnlink(profile)}
+                  disabled={unlinkingAccountId === profile.title || isUnlinking}
+                >
+                  {unlinkingAccountId === profile.title || isUnlinking ? (
+                    <Loader2 className="linked-account-unlink-loading animate-spin" />
+                  ) : (
+                    <UnlinkIcon size={16} className="linked-account-unlink-icon" />
+                  )}
+                </Button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="linked-accounts-empty text-b3-foreground-muted py-8 text-center">
+            No linked accounts found
+          </div>
         )}
       </div>
 
-      {!selectedMethod ? (
-        <div className="b3-link-account-methods grid gap-3">
-          {availableAuthMethods.map(method => (
-            <Button
-              key={method.id}
-              variant="outline"
-              className="b3-link-account-method-button border-b3-line hover:border-b3-primary-blue/30 hover:bg-b3-primary-blue/5 text-b3-grey font-neue-montreal-medium h-14 justify-start bg-transparent px-6 text-base transition-all duration-200"
-              data-method={method.id}
-              onClick={() => {
-                if (method.id === "email" || method.id === "phone") {
-                  setSelectedMethod(method.id);
-                } else {
-                  handleSocialLink(method.id as SocialStrategy);
-                }
-              }}
-              disabled={linkingMethod === method.id}
-            >
-              {isLinking && linkingMethod === method.id ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <div className="b3-link-account-method-content flex items-center gap-4">
-                  <div className="b3-link-account-method-icon flex items-center justify-center rounded-full">
-                    {method.icon}
+      {showReferralInfo && (
+        /* Referral Section */
+        <div className="referrals-section space-y-4">
+          <h3 className="referrals-title text-b3-grey font-neue-montreal-semibold text-xl">Referrals</h3>
+
+          {/* Referral Code */}
+          <div className="referral-code-container bg-b3-line rounded-xl p-4">
+            {isEditingCode && (
+              <div className="referral-code-header-editing">
+                <div className="referral-code-title text-b3-grey font-neue-montreal-semibold">Your Referral Code</div>
+                <div className="referral-code-description text-b3-foreground-muted font-neue-montreal-medium text-sm">
+                  Share this code with friends to earn rewards
+                </div>
+              </div>
+            )}
+            <div className="referral-code-content flex items-center justify-between">
+              {!isEditingCode && (
+                <div className="referral-code-header">
+                  <div className="referral-code-title text-b3-grey font-neue-montreal-semibold">Your Referral Code</div>
+                  <div className="referral-code-description text-b3-foreground-muted font-neue-montreal-medium text-sm">
+                    Share this code with friends to earn rewards
                   </div>
-                  <span className="b3-link-account-method-label font-medium">{method.label}</span>
                 </div>
               )}
-            </Button>
-          ))}
-          {WALLET_METHODS.map(method => {
-            if (!method.walletType) {
-              return null;
-            }
-
-            return (
-              <WalletRow
-                key={method.walletType}
-                walletId={method.walletType as WalletId}
-                onClick={() => handleLinkWallet(method.walletType as WalletId)}
-                isLoading={isLinking}
-              />
-            );
-          })}
-          {availableAuthMethods.length === 0 && (
-            <div className="text-b3-foreground-muted py-8 text-center">
-              All available authentication methods have been connected
+              <div className="referral-code-actions flex items-center gap-2">
+                {isEditingCode ? (
+                  <div className="referral-code-edit-form flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={newReferralCode}
+                      onChange={e => setNewReferralCode(e.target.value)}
+                      className="referral-code-input rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm"
+                      placeholder="Enter new code"
+                      ref={referallCodeRef}
+                    />
+                    <Button
+                      size="sm"
+                      className="referral-code-save-button"
+                      onClick={handleUpdateReferralCode}
+                      disabled={isUpdatingCode || !newReferralCode}
+                    >
+                      {isUpdatingCode ? (
+                        <Loader2 className="referral-code-save-loading h-4 w-4 animate-spin" />
+                      ) : (
+                        "Save"
+                      )}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="referral-code-cancel-button"
+                      onClick={() => {
+                        setIsEditingCode(false);
+                        setNewReferralCode("");
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="referral-code-display rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm">
+                      {currentReferralCode}
+                    </div>
+                    <Button size="icon" variant="ghost" className="referral-code-copy-button" onClick={handleCopyCode}>
+                      <Copy className="referral-code-copy-icon h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="referral-code-edit-button"
+                      onClick={() => {
+                        setIsEditingCode(true);
+                        setTimeout(() => {
+                          referallCodeRef.current?.focus();
+                        }, 100);
+                      }}
+                    >
+                      <Pencil className="referral-code-edit-icon h-4 w-4" />
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
-          )}
-        </div>
-      ) : (
-        <div className="b3-link-account-form space-y-4">
-          {selectedMethod === "email" && (
-            <div className="space-y-2">
-              <label className="text-b3-grey font-neue-montreal-medium text-sm">Email Address</label>
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="bg-b3-line text-b3-grey font-neue-montreal-medium focus:ring-b3-primary-blue/20 w-full rounded-xl p-4 focus:outline-none focus:ring-2"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                disabled={otpSent || (isLinking && linkingMethod === "email")}
-              />
-            </div>
-          )}
+          </div>
 
-          {selectedMethod === "phone" && (
-            <div className="space-y-2">
-              <label className="text-b3-grey font-neue-montreal-medium text-sm">Phone Number</label>
-              <input
-                type="tel"
-                placeholder="Enter your phone number"
-                className="bg-b3-line text-b3-grey font-neue-montreal-medium focus:ring-b3-primary-blue/20 w-full rounded-xl p-4 focus:outline-none focus:ring-2"
-                value={phone}
-                onChange={e => setPhone(e.target.value)}
-                disabled={otpSent || (isLinking && linkingMethod === "phone")}
-              />
-              <p className="text-b3-foreground-muted font-neue-montreal-medium text-sm">
-                Include country code (e.g., +1 for US)
-              </p>
-            </div>
-          )}
-
-          {error && <div className="text-b3-negative font-neue-montreal-medium py-2 text-sm">{error}</div>}
-
-          {(selectedMethod === "email" || selectedMethod === "phone") &&
-            (otpSent ? (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-b3-grey font-neue-montreal-medium text-sm">Verification Code</label>
-                  <input
-                    type="text"
-                    placeholder="Enter verification code"
-                    className="bg-b3-line text-b3-grey font-neue-montreal-medium focus:ring-b3-primary-blue/20 w-full rounded-xl p-4 focus:outline-none focus:ring-2"
-                    value={otp}
-                    onChange={e => setOtp(e.target.value)}
-                  />
-                </div>
-                <Button
-                  className="bg-b3-primary-blue hover:bg-b3-primary-blue/90 font-neue-montreal-semibold h-12 w-full text-white"
-                  onClick={handleLinkAccount}
-                >
-                  Link Account
-                </Button>
+          {/* Referred Users */}
+          <div className="referred-users-container bg-b3-line rounded-xl p-4">
+            <div className="referred-users-title text-b3-grey font-neue-montreal-semibold mb-4">Referred Users</div>
+            {isLoadingReferrals ? (
+              <div className="referred-users-loading flex justify-center py-4">
+                <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+              </div>
+            ) : referrals?.data?.length ? (
+              <div className="referred-users-list space-y-3">
+                {referrals.data.map((referral: Referrals) => (
+                  <div
+                    key={String(referral._id)}
+                    className="referred-user-item flex items-center justify-between rounded-lg bg-white p-3"
+                  >
+                    <div className="referred-user-id text-sm font-medium">{referral.referreeId}</div>
+                    <div className="referred-user-date text-sm text-gray-500">
+                      {new Date(referral.createdAt).toLocaleDateString()}
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : (
-              <Button
-                className="bg-b3-primary-blue hover:bg-b3-primary-blue/90 font-neue-montreal-semibold h-12 w-full text-white"
-                onClick={handleSendOTP}
-                disabled={(!email && !phone) || (isLinking && linkingMethod === selectedMethod)}
-              >
-                {isLinking && linkingMethod === selectedMethod ? (
-                  <Loader2 className="animate-spin" />
-                ) : (
-                  "Send Verification Code"
-                )}
-              </Button>
-            ))}
+              <div className="referred-users-empty py-4 text-center text-gray-500">No referred users yet</div>
+            )}
+          </div>
         </div>
       )}
     </div>
   );
-}
+};

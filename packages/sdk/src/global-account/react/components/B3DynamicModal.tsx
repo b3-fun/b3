@@ -25,7 +25,11 @@ import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "./ui/draw
 const debug = debugB3React("B3DynamicModal");
 
 export function B3DynamicModal() {
-  const { isOpen, setB3ModalOpen, contentType, history, navigateBack } = useModalStore();
+  const isOpen = useModalStore(state => state.isOpen);
+  const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
+  const contentType = useModalStore(state => state.contentType);
+  const history = useModalStore(state => state.history);
+  const navigateBack = useModalStore(state => state.navigateBack);
   const { theme } = useB3();
   const isMobile = useIsMobile();
 
