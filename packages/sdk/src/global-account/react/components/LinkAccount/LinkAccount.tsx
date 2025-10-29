@@ -131,7 +131,7 @@ export const LinkAccount = ({
   const handleOpenLinkModal = () => {
     setB3ModalOpen(true);
     setB3ModalContentType({
-      type: "linkAccount",
+      type: "linkNewAccount",
       showBackButton: true,
       partnerId,
       chain,
@@ -162,7 +162,7 @@ export const LinkAccount = ({
             {profiles.map(profile => (
               <div
                 key={profile.title}
-                className="linked-account-item bg-b3-line group flex items-center justify-between rounded-xl p-4"
+                className="linked-account-item hover:bg-b3-line group flex cursor-pointer items-center justify-between rounded-xl p-4 transition-colors"
               >
                 <div className="linked-account-info flex items-center gap-3">
                   {profile.imageUrl ? (
@@ -247,6 +247,33 @@ export const LinkAccount = ({
             No linked accounts found
           </div>
         )}
+
+        {/* Link New Account Button */}
+        <Button
+          onClick={handleOpenLinkModal}
+          disabled={isLinking}
+          className="bg-b3-primary-blue hover:bg-b3-primary-blue/90 border-white/12 group relative h-12 w-full rounded-xl border-2 px-[18px] text-base font-semibold text-white shadow-[inset_0px_0px_0px_1px_rgba(10,13,18,0.18),inset_0px_-2px_0px_0px_rgba(10,13,18,0.05)] transition-all"
+        >
+          <div className="flex items-center justify-center gap-1.5">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="shrink-0"
+            >
+              <path
+                d="M10.0001 13.3333V6.66667M6.66675 10H13.3334M18.3334 10C18.3334 14.6024 14.6025 18.3333 10.0001 18.3333C5.39771 18.3333 1.66675 14.6024 1.66675 10C1.66675 5.39763 5.39771 1.66667 10.0001 1.66667C14.6025 1.66667 18.3334 5.39763 18.3334 10Z"
+                stroke="currentColor"
+                strokeWidth="1.67"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <span>Link new account</span>
+          </div>
+        </Button>
       </div>
 
       {showReferralInfo && (

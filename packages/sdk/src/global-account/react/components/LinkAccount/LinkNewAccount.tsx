@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { useLinkProfile, useProfiles } from "thirdweb/react";
 import { createWallet, preAuthenticate, WalletId } from "thirdweb/wallets";
 import { WalletRow } from "../..";
-import { LinkAccountModalProps, useModalStore } from "../../stores/useModalStore";
+import { LinkNewAccountModalProps, useModalStore } from "../../stores/useModalStore";
 import { getProfileDisplayInfo } from "../../utils/profileDisplay";
 import { useB3 } from "../B3Provider/useB3";
 import { AppleIcon } from "../icons/AppleIcon";
@@ -77,15 +77,19 @@ const WALLET_METHODS: AuthMethod[] = [
   },
 ];
 
-export function LinkAccount({
+export function LinkNewAccount({
   onSuccess: onSuccessCallback,
   onError,
   onClose,
   chain,
   partnerId,
   className,
-}: LinkAccountModalProps & { className?: string }) {
-  const { isLinking, linkingMethod, setLinkingState, navigateBack, setB3ModalContentType } = useModalStore();
+}: LinkNewAccountModalProps & { className?: string }) {
+  const isLinking = useModalStore(state => state.isLinking);
+  const linkingMethod = useModalStore(state => state.linkingMethod);
+  const setLinkingState = useModalStore(state => state.setLinkingState);
+  const navigateBack = useModalStore(state => state.navigateBack);
+  const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
   const [selectedMethod, setSelectedMethod] = useState<Strategy | null>(null);
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");

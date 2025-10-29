@@ -16,6 +16,7 @@ import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { AvatarEditor } from "./AvatarEditor/AvatarEditor";
 import { useB3 } from "./B3Provider/useB3";
 import { LinkAccount } from "./LinkAccount/LinkAccount";
+import { LinkNewAccount } from "./LinkAccount/LinkNewAccount";
 import { ManageAccount } from "./ManageAccount/ManageAccount";
 import { RequestPermissions } from "./RequestPermissions/RequestPermissions";
 import { SignInWithB3Flow } from "./SignInWithB3/SignInWithB3Flow";
@@ -47,6 +48,7 @@ export function B3DynamicModal() {
     "anySpendSignatureMint",
     "anySpendBondKit",
     "linkAccount",
+    "linkNewAccount",
     "avatarEditor",
   ];
 
@@ -114,6 +116,8 @@ export function B3DynamicModal() {
         return <AnySpendBondKit {...contentType} />;
       case "linkAccount":
         return <LinkAccount {...contentType} />;
+      case "linkNewAccount":
+        return <LinkNewAccount {...contentType} />;
       case "anySpendDepositHype":
         return <AnySpendDepositHype {...contentType} mode="modal" />;
       case "avatarEditor":

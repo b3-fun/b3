@@ -315,6 +315,16 @@ export interface LinkAccountModalProps extends BaseModalProps {
   chain: Chain;
 }
 
+export interface LinkNewAccountModalProps extends BaseModalProps {
+  type: "linkNewAccount";
+  showBackButton?: boolean;
+  onSuccess?: () => void;
+  onError?: (error: Error) => void;
+  onClose?: () => void;
+  partnerId: string;
+  chain: Chain;
+}
+
 export interface AnySpendDepositHypeProps extends BaseModalProps {
   /** Modal type identifier */
   type: "anySpendDepositHype";
@@ -360,6 +370,7 @@ export type ModalContentType =
   | AnySpendSignatureMintProps
   | AnySpendBondKitProps
   | LinkAccountModalProps
+  | LinkNewAccountModalProps
   | AnySpendDepositHypeProps
   | AvatarEditorModalProps;
 // Add other modal types here like: | OtherModalProps | AnotherModalProps
