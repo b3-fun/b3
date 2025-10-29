@@ -1,0 +1,286 @@
+---
+title: Integración de Backend
+description: >-
+  Inicializa el cliente B3 en tu backend para manejar la colocación de apuestas,
+  la lógica del juego y el procesamiento de pagos.
+lang: es
+originalPath: upside/backend-integration.mdx
+---
+## createB3Client
+
+Inicializa el cliente B3 en tu backend para interactuar con la API de Upside.
+
+**Soporte de Framework**: Actualmente soporta **Hono** con **Cloudflare Workers**.
+
+```javascript
+import { createB3Client } from "@b3dotfun/upside-sdk/server";
+
+// En tu manejador de ruta Hono
+app.post("/api/game/play", async c => {
+  // Crea B3Client desde el contexto de Hono
+  // Extrae automáticamente el token de autenticación del encabezado Authorization
+  const b3Client = createB3Client(c);
+
+  // Ahora usa b3Client para operaciones de juego
+  const betResult = await b3Client.placeBet("coin-flip", "1000000000000000000");
+
+  return c.json({ success: true, sessionId: betResult.sessionId });
+});
+```
+
+**Parámetros:**
+
+- `context` (Contexto de Hono): El objeto de contexto de Hono que contiene:
+  - `req.header(name: string)`: Método para extraer encabezados de solicitud
+  - `env` (opcional): Entorno de Cloudflare Workers
+
+**Devuelve:**
+
+- Instancia de B3Client con autenticación configurada automáticamente desde el encabezado Authorization
+
+**Autenticación:** El encabezado Authorization se extrae automáticamente de la solicitud entrante:
+
+```
+Authorization: Bearer {player_token}
+```
+
+## Funciones Principales
+
+### placeBet
+
+Inicia una sesión de juego colocando una apuesta. Esto bloquea la apuesta y crea una sesión de juego.
+
+```javascript
+const betResult = await b3Client.placeBet(
+  gameType, // string: "coin-flip", "dice", etc.
+  betAmount, // string: apuesta en wei (por ejemplo, "100000000000000000" = 1 token)
+);
+
+// Respuesta:
+// {
+//   sessionId: "session_abc123",
+//   gameId: "game_xyz789",
+//   status: "active",
+//   createdAt: "2024-01-15T10:30:00Z"
+// }
+```
+
+**Parámetros:**
+
+- `gameType` (string): Identificador de tu juego (por ejemplo, "coin-flip", "dice-roll")
+- `betAmount` (string): Cantidad de la apuesta en wei (1 token = 10^18 wei, por ejemplo, "100000000000000000")
+
+**Devuelve:**
+
+- `sessionId`: Identificador único para esta sesión de juego
+- `gameId`: Identificador del registro del juego
+- `status`: Estado actual de la sesión ("active", "completed", "failed")
+- `createdAt`: Marca de tiempo ISO de la creación de la apuesta
+
+**Errores:**
+
+- Saldo del jugador insuficiente
+- Tipo de juego inválido
+- Juego no activo/habilitado
+- Cantidad de apuesta inválida
+
+### processPayout
+
+Completa el juego y acredita las ganancias del jugador.
+
+```javascript
+const payoutResult = await b3Client.processPayout(
+  gameType, // string: "coin-flip", etc.
+  sessionId, // string: de la respuesta de placeBet
+  payoutAmount, // string: WIN a otorgar en wei (0 para pérdida)
+  {
+    playerChoice: "heads", // lo que el jugador eligió/predijo
+    result: "heads", // resultado real del juego
+    outcome: "win", // "win" o "loss"
+  },
+);
+
+// Respuesta:
+// {
+//   status: "completed",
+//   payoutAmount: "150000000000000000",
+//   newBalance: "1350000000000000000",
+//   updatedAt: "2024-01-15T10:30:30Z"
+// }
+```
+
+**Parámetros:**
+
+- `gameType` (string): Mismo tipo de juego de placeBet
+- `sessionId` (string): ID de sesión de la respuesta de placeBet
+- `payoutAmount` (string): Tokens WIN a acreditar en wei (0 para pérdidas, por ejemplo, "150000000000000000" = 1.5 tokens)
+- `metadata` (objeto):
+  - `playerChoice`: Lo que el jugador eligió/predijo
+  - `result`: El resultado real del juego
+  - `outcome`: "win" o "loss"
+
+**Devuelve:**
+
+- `status`: "completed", "failed", etc.
+- `payoutAmount`: Cantidad acreditada en wei
+- `newBalance`: Saldo WIN actualizado del jugador en wei
+- `updatedAt`: Marca de tiempo ISO de la finalización
+
+**Errores:**
+
+- Sesión no encontrada
+- Sesión ya completada (solicitud duplicada)
+- El pago excede los límites del fondo
+- Formato de cantidad de apuesta inválido
+
+## Ejemplo de Backend
+
+```javascript
+import { Hono } from "hono";
+import { createB3Client } from "@b3dotfun/upside-sdk/server";
+
+const app = new Hono();
+
+app.post("/api/game/coin-flip", async c => {
+  const { prediction, betAmount } = await c.req.json();
+
+  try {
+    // Crea B3Client desde el contexto de Hono
+    // Extrae automáticamente el token de autenticación del encabezado Authorization
+    const b3Client = createB3Client(c);
+
+    // Paso 1: Colocar la apuesta (cantidad en wei)
+    const betResult = await b3Client.placeBet("coin-flip", betAmount);
+
+    if (!betResult.sessionId) {
+      return c.json({ error: "Failed to place bet" }, 400);
+    }
+
+    // Paso 2: Lógica del juego - lanzar moneda
+    const coin = Math.random() < 0.5 ? "heads" : "tails";
+    const isWin = coin === prediction;
+    // Calcular pago: 50% de ganancia en caso de victoria (betAmount * 1.5, en wei)
+    const payout = isWin ? (BigInt(betAmount) * BigInt(150)) / BigInt(100) : "0";
+
+    // Paso 3: Almacenar juego en tu base de datos (D1, etc.)
+    // await db.execute(
+    //   "INSERT INTO games (sessionId, prediction, result, betAmount, payout) VALUES (?, ?, ?, ?, ?)",
+    //   [betResult.sessionId, prediction, coin, betAmount, payout.toString()]
+    // );
+
+    // Paso 4: Procesar pago
+    const payoutResult = await b3Client.processPayout("coin-flip", betResult.sessionId, payout.toString(), {
+      playerChoice: prediction,
+      result: coin,
+      outcome: isWin ? "win" : "loss",
+    });
+
+    // Paso 5: Devolver resultado al frontend
+    return c.json({
+      sessionId: betResult.sessionId,
+      prediction,
+      result: coin,
+      outcome: isWin ? "win" : "loss",
+      payout: isWin ? payout.toString() : "0",
+      newBalance: payoutResult.newBalance,
+    });
+  } catch (error) {
+    console.error("Error en el juego:", error);
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+export default app;
+```
+
+**Diferencias clave con Express:**
+
+- `createB3Client(c)` extrae la autenticación automáticamente del contexto de Hono
+- Se ejecuta en Cloudflare Workers (sin servidor)
+- No es necesario middleware manual - El contexto de Hono maneja todo
+- La respuesta utiliza `c.json()` en lugar de `res.json()`
+
+**Configuración del Entorno (wrangler.toml):**
+
+```toml
+[env.production]
+name = "upside-games"
+route = "example.com/api/*"
+zone_id = "..."
+account_id = "..."
+
+[[env.production.env.vars]]
+# Añade aquí cualquier variable de entorno
+```
+
+## Mejores Prácticas
+
+### Colocación de Apuestas
+
+- **Valida siempre las cantidades**: Verifica que la apuesta esté dentro del saldo del jugador
+- **Usa idempotencia**: Reintenta llamadas `placeBet` fallidas con el mismo sessionId
+- **Bloquea inmediatamente**: Una vez que `placeBet` tiene éxito, impide que el jugador realice otra apuesta
+
+### Lógica del Juego
+
+- **El backend es la fuente de verdad**: Nunca confíes en los resultados del lado del cliente
+- **Almacena todo**: Registra todos los eventos del juego para auditorías y disputas
+- **Valida resultados**: Asegura que el resultado del juego coincida con el rango esperado
+- **Juegos con tiempo límite**: Cancela apuestas si no se procesa el pago dentro de 5 minutos
+
+### Procesamiento de Pagos
+
+- **Procesa una vez**: Solo llama a `processPayout` una vez por sesión de juego
+- **Usa cantidades correctas**: Verifica el cálculo del pago antes de enviar
+- **Maneja duplicados**: Si `processPayout` devuelve "ya completado", está bien
+- **Maneja fallos**: Reintenta pagos fallidos, pero verifica si ya se pagó primero
+
+### Seguridad
+
+- **Verifica tokens**: Valida siempre el JWT en cada solicitud de backend
+- **Usa HTTPS**: Toda la comunicación debe estar encriptada
+- **Valida tipos de juego**: Solo permite tipos de juego conocidos y aprobados
+- **Limita la tasa**: Implementa limitación de tasa para prevenir abusos
+
+### Manejo de Errores
+
+```javascript
+async function safePlayGame(gameType, betAmount) {
+  try {
+    // Colocar apuesta
+    let betResult;
+    try {
+      betResult = await b3Client.placeBet(gameType, betAmount);
+    } catch (error) {
+      if (error.message.includes("Insufficient balance")) {
+        return { error: "Saldo del jugador demasiado bajo" };
+      }
+      throw error;
+    }
+
+    // Ejecutar lógica del juego
+    const outcome = await runGameLogic();
+
+    // Procesar pago
+    try {
+      const payout = outcome.isWin ? betAmount * 1.5 : "0";
+      await b3Client.processPayout(gameType, betResult.sessionId, payout, {
+        playerChoice: outcome.choice,
+        result: outcome.result,
+        outcome: outcome.isWin ? "win" : "loss",
+      });
+    } catch (error) {
+      if (error.message.includes("already completed")) {
+        console.log("Pago ya procesado para la sesión");
+      } else {
+        throw error;
+      }
+    }
+
+    return outcome;
+  } catch (error) {
+    console.error("Error en el juego:", error);
+    throw error;
+  }
+}
+```

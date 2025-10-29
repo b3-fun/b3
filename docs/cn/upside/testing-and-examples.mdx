@@ -1,0 +1,274 @@
+---
+title: 测试与示例
+description: 在本地测试您的游戏集成，查看完整示例，并排查常见问题。
+lang: cn
+originalPath: upside/testing-and-examples.mdx
+---
+## 在 Localhost 上测试
+
+### 快速测试设置
+
+您可以直接在 Upside.win 的测试环境中测试您的游戏，无需部署即可在 localhost 上运行。
+
+**工作原理：**
+
+1. 在 `http://localhost:3000`（或任何端口）上运行您的游戏后端
+2. 对您的 localhost URL 进行 Base64 编码
+3. 导航到 upside.win 上的测试 URL
+
+### 逐步操作
+
+**步骤 1：启动您的游戏后端**
+
+```bash
+npm run dev
+# 游戏运行在 http://localhost:3000
+```
+
+**步骤 2：对您的 URL 进行 Base64 编码**
+
+使用 Node.js：
+
+```javascript
+const url = "http://localhost:3000";
+const encoded = Buffer.from(url).toString("base64");
+console.log(encoded); // aHR0cDovL2xvY2FsaG9zdDozMDAw
+```
+
+使用命令行：
+
+```bash
+echo -n "http://localhost:3000" | base64
+# aHR0cDovL2xvY2FsaG9zdDozMDAw
+```
+
+在线使用：使用任何 base64 编码器，例如 https://www.base64encode.org/
+
+**步骤 3：在 Upside.win 上测试**
+
+访问测试 URL：
+
+```
+https://upside.win/test/games/aHR0cDovL2xvY2FsaG9zdDozMDAw
+```
+
+将 `aHR0cDovL2xvY2FsaG9zdDozMDAw` 替换为您编码后的 URL。
+
+### 示例
+
+不同的 localhost URLs：
+
+| URL                     | Base64                         | 测试链接                                                    |
+| ----------------------- | ------------------------------ | ------------------------------------------------------------ |
+| `http://localhost:3000` | `aHR0cDovL2xvY2FsaG9zdDozMDAw` | `https://upside.win/test/games/aHR0cDovL2xvY2FsaG9zdDozMDAw` |
+| `http://localhost:5000` | `aHR0cDovL2xvY2FsaG9zdDo1MDOw` | `https://upside.win/test/games/aHR0cDovL2xvY2FsaG9zdDo1MDOw` |
+| `http://127.0.0.1:3000` | `aHR0cDovLzEyNy4wLjAuMTozMDAw` | `https://upside.win/test/games/aHR0cDovLzEyNy4wLjAuMTozMDAw` |
+
+### 开发工作流程
+
+1. **创建游戏代码** - 编写您的 React 前端和 Cloudflare Hono 后端
+2. **本地启动** - 在 localhost 上运行 `npm run dev`
+3. **生成测试 URL** - 对您的 localhost 地址进行 Base64 编码
+4. **在 Upside 上测试** - 访问 `https://upside.win/test/games/<BASE64>`
+5. **获取 JWT 并测试** - 游戏加载时使用真实的 JWT 进行测试
+6. **迭代** - 本地进行更改并刷新测试 URL
+7. **部署** - 准备就绪时，部署后端并更新游戏 URL
+
+### 本地测试的提示
+
+- **使用同一台机器**：测试时保持 localhost 运行
+- **检查 CORS**：确保您的后端允许来自 upside.win 域的请求
+
+### 本地测试的故障排除
+
+**问题**："游戏未找到" 或 404
+
+- **解决方案**：验证 localhost URL 是否正确且编码准确
+
+**问题**：CORS 错误
+
+- **解决方案**：您的后端需要接受来自 upside.win 域的请求
+
+**问题**：测试时出现 JWT 错误
+
+- **解决方案**：确保您使用的是测试 API 密钥，而不是生产密钥
+
+**问题**：网络请求失败
+
+- **解决方案**：检查 localhost 是否在运行且防火墙允许请求
+
+## 完整示例：硬币翻转游戏
+
+### 前端（React）
+
+```javascript
+import { ParentProvider, useParentContext } from "@b3dotfun/upside-sdk";
+
+export default function CoinFlipGame() {
+  return (
+    <ParentProvider>
+      <CoinFlipContent />
+    </ParentProvider>
+  );
+}
+
+function CoinFlipContent() {
+  const { token, balance, playerId } = useParentContext();
+  const [gameState, setGameState] = useState("ready"); // ready, playing, won, lost
+  const [prediction, setPrediction] = useState(null);
+  const [result, setResult] = useState(null);
+  const [earnings, setEarnings] = useState(0);
+
+  const playGame = async playerPrediction => {
+    setPrediction(playerPrediction);
+    setGameState("playing");
+
+    try {
+      // 调用您的后端
+      const response = await fetch("/api/game/coin-flip", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          playerId,
+          prediction: playerPrediction,
+          betAmount: "100000000000000000", // 1 token in wei
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.outcome === "win") {
+        setGameState("won");
+        setEarnings(data.payout);
+      } else {
+        setGameState("lost");
+        setEarnings(0);
+      }
+
+      setResult(data.result);
+    } catch (error) {
+      console.error("Game error:", error);
+      setGameState("error");
+    }
+  };
+
+  return (
+    <div style={{ textAlign: "center", padding: "40px" }}>
+      <h1>Coin Flip</h1>
+      <p>Balance: {(balance / 1e18).toFixed(2)} WIN</p>
+
+      {gameState === "ready" && (
+        <div>
+          <button onClick={() => playGame("heads")}>预测正面</button>
+          <button onClick={() => playGame("tails")}>预测反面</button>
+        </div>
+      )}
+
+      {gameState === "playing" && <p>翻转中...</p>}
+
+      {gameState === "won" && (
+        <div>
+          <p>🎉 你赢了！硬币落在了 {result}</p>
+          <p>+{(earnings / 1e18).toFixed(2)} WIN</p>
+        </div>
+      )}
+
+      {gameState === "lost" && (
+        <div>
+          <p>❌ 你输了！硬币落在了 {result}</p>
+          <p>祝你下次好运</p>
+        </div>
+      )}
+
+      {gameState !== "ready" && <button onClick={() => setGameState("ready")}>再玩一次</button>}
+    </div>
+  );
+}
+```
+
+### 后端（Hono + Cloudflare Workers）
+
+```javascript
+import { Hono } from "hono";
+import { createB3Client } from "@b3dotfun/upside-sdk/server";
+
+const app = new Hono();
+
+app.post("/api/game/coin-flip", async c => {
+  const { prediction, betAmount } = await c.req.json();
+
+  try {
+    // 从 Hono 上下文创建 B3Client
+    // 自动从 Authorization 头部提取 auth token
+    const b3Client = createB3Client(c);
+
+    // 步骤 1: 下注（金额以 wei 为单位）
+    const betResult = await b3Client.placeBet("coin-flip", betAmount);
+
+    if (!betResult.sessionId) {
+      return c.json({ error: "下注失败" }, 400);
+    }
+
+    // 步骤 2: 游戏逻辑 - 翻转硬币
+    const coin = Math.random() < 0.5 ? "heads" : "tails";
+    const isWin = coin === prediction;
+    // 计算赔付：赢得时 50% 的利润（下注金额 * 1.5，以 wei 为单位）
+    const payout = isWin ? (BigInt(betAmount) * BigInt(150)) / BigInt(100) : "0";
+
+    // 步骤 3: 在您的数据库中存储游戏（D1 等）
+    // await db.execute(
+    //   "INSERT INTO games (sessionId, prediction, result, betAmount, payout) VALUES (?, ?, ?, ?, ?)",
+    //   [betResult.sessionId, prediction, coin, betAmount, payout.toString()]
+    // );
+
+    // 步骤 4: 处理赔付
+    const payoutResult = await b3Client.processPayout("coin-flip", betResult.sessionId, payout.toString(), {
+      playerChoice: prediction,
+      result: coin,
+      outcome: isWin ? "win" : "loss",
+    });
+
+    // 步骤 5: 将结果返回给前端
+    return c.json({
+      sessionId: betResult.sessionId,
+      prediction,
+      result: coin,
+      outcome: isWin ? "win" : "loss",
+      payout: isWin ? payout.toString() : "0",
+      newBalance: payoutResult.newBalance,
+    });
+  } catch (error) {
+    console.error("Game error:", error);
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+export default app;
+```
+
+## 故障排除
+
+### 常见问题
+
+**问题**：`placeBet` 由于 "余额不足" 而失败
+
+- **解决方案**：下注前检查玩家余额，或在 UI 中增加下注金额显示
+
+**问题**：`processPayout` 返回 "会话未找到"
+
+- **解决方案**：验证 sessionId 与下注响应匹配，检查是否有拼写错误
+
+**问题**：游戏会话或下注重复
+
+- **解决方案**：对重试使用相同的 sessionId，实现您端的幂等性
+
+**问题**：游戏进行中 JWT 过期
+
+- **解决方案**：游戏开始前刷新令牌，优雅处理令牌过期
+
+**问题**：游戏逻辑在客户端运行，导致作弊
+
+- **解决方案**：将所有游戏逻辑移至后端，客户端仅显示结果

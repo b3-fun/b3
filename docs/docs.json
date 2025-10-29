@@ -822,8 +822,7 @@
               {
                 "group": "Developers",
                 "pages": [
-                  "id/hypeduel/developers",
-                  "id/hypeduel/training-your-agent"
+                  "id/hypeduel/developers"
                 ]
               },
               {
@@ -1330,8 +1329,7 @@
               {
                 "group": "Developers",
                 "pages": [
-                  "ko/hypeduel/developers",
-                  "ko/hypeduel/training-your-agent"
+                  "ko/hypeduel/developers"
                 ]
               },
               {
@@ -1838,8 +1836,7 @@
               {
                 "group": "Developers",
                 "pages": [
-                  "cn/hypeduel/developers",
-                  "cn/hypeduel/training-your-agent"
+                  "cn/hypeduel/developers"
                 ]
               },
               {
@@ -2346,8 +2343,7 @@
               {
                 "group": "Developers",
                 "pages": [
-                  "es/hypeduel/developers",
-                  "es/hypeduel/training-your-agent"
+                  "es/hypeduel/developers"
                 ]
               },
               {
@@ -2836,8 +2832,7 @@
               {
                 "group": "Developers",
                 "pages": [
-                  "pt-BR/hypeduel/developers",
-                  "pt-BR/hypeduel/training-your-agent"
+                  "pt-BR/hypeduel/developers"
                 ]
               },
               {
