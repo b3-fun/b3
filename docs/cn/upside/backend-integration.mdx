@@ -1,0 +1,284 @@
+---
+title: 后端集成
+description: 在您的后端初始化 B3 客户端，以处理投注下注、游戏逻辑和赔付处理。
+lang: cn
+originalPath: upside/backend-integration.mdx
+---
+## createB3Client
+
+在您的后端初始化 B3 客户端以与 Upside 的 API 进行交互。
+
+**框架支持**：目前支持 **Hono** 与 **Cloudflare Workers**。
+
+```javascript
+import { createB3Client } from "@b3dotfun/upside-sdk/server";
+
+// 在您的 Hono 路由处理器中
+app.post("/api/game/play", async c => {
+  // 从 Hono 上下文创建 B3Client
+  // 自动从 Authorization 头部提取认证令牌
+  const b3Client = createB3Client(c);
+
+  // 现在使用 b3Client 进行游戏操作
+  const betResult = await b3Client.placeBet("coin-flip", "1000000000000000000");
+
+  return c.json({ success: true, sessionId: betResult.sessionId });
+});
+```
+
+**参数：**
+
+- `context` (Hono Context): 包含以下内容的 Hono 上下文对象：
+  - `req.header(name: string)`: 提取请求头部的方法
+  - `env` (可选): Cloudflare Workers 环境
+
+**返回：**
+
+- 自动从 Authorization 头部配置认证的 B3Client 实例
+
+**认证：** Authorization 头部会自动从传入请求中提取：
+
+```
+Authorization: Bearer {player_token}
+```
+
+## 核心功能
+
+### placeBet
+
+通过下注开始一个游戏会话。这将锁定赌注并创建一个游戏会话。
+
+```javascript
+const betResult = await b3Client.placeBet(
+  gameType, // string: "coin-flip", "dice", 等。
+  betAmount, // string: 以 wei 为单位的赌注 (例如, "100000000000000000" = 1 代币)
+);
+
+// 响应：
+// {
+//   sessionId: "session_abc123",
+//   gameId: "game_xyz789",
+//   status: "active",
+//   createdAt: "2024-01-15T10:30:00Z"
+// }
+```
+
+**参数：**
+
+- `gameType` (string): 您游戏的标识符 (例如, "coin-flip", "dice-roll")
+- `betAmount` (string): 以 wei 为单位的赌注金额 (1 代币 = 10^18 wei, 例如, "100000000000000000")
+
+**返回：**
+
+- `sessionId`: 此游戏会话的唯一标识符
+- `gameId`: 游戏记录标识符
+- `status`: 当前会话状态 ("active", "completed", "failed")
+- `createdAt`: 下注创建的 ISO 时间戳
+
+**错误：**
+
+- 玩家余额不足
+- 无效的游戏类型
+- 游戏未激活/未启用
+- 无效的赌注金额
+
+### processPayout
+
+完成游戏并将玩家的赢利记入账户。
+
+```javascript
+const payoutResult = await b3Client.processPayout(
+  gameType, // string: "coin-flip", 等。
+  sessionId, // string: 来自 placeBet 响应的
+  payoutAmount, // string: 以 wei 为单位的赢利金额 (输了则为 0)
+  {
+    playerChoice: "heads", // 玩家选择/预测的
+    result: "heads", // 实际游戏结果
+    outcome: "win", // "win" 或 "loss"
+  },
+);
+
+// 响应：
+// {
+//   status: "completed",
+//   payoutAmount: "150000000000000000",
+//   newBalance: "1350000000000000000",
+//   updatedAt: "2024-01-15T10:30:30Z"
+// }
+```
+
+**参数：**
+
+- `gameType` (string): 与 placeBet 相同的游戏类型
+- `sessionId` (string): 来自 placeBet 响应的会话 ID
+- `payoutAmount` (string): 以 wei 为单位记入的 WIN 代币 (输了则为 0, 例如, "150000000000000000" = 1.5 代币)
+- `metadata` (object):
+  - `playerChoice`: 玩家选择/预测的
+  - `result`: 实际游戏结果
+  - `outcome`: "win" 或 "loss"
+
+**返回：**
+
+- `status`: "completed", "failed", 等。
+- `payoutAmount`: 以 wei 为单位记入的金额
+- `newBalance`: 玩家更新后的 WIN 余额，以 wei 为单位
+- `updatedAt`: 完成的 ISO 时间戳
+
+**错误：**
+
+- 会话未找到
+- 会话已完成（重复请求）
+- 赔付超出池限制
+- 无效的赌注金额格式
+
+## 后端示例
+
+```javascript
+import { Hono } from "hono";
+import { createB3Client } from "@b3dotfun/upside-sdk/server";
+
+const app = new Hono();
+
+app.post("/api/game/coin-flip", async c => {
+  const { prediction, betAmount } = await c.req.json();
+
+  try {
+    // 从 Hono 上下文创建 B3Client
+    // 自动从 Authorization 头部提取认证令牌
+    const b3Client = createB3Client(c);
+
+    // 第 1 步：下注（金额以 wei 为单位）
+    const betResult = await b3Client.placeBet("coin-flip", betAmount);
+
+    if (!betResult.sessionId) {
+      return c.json({ error: "Failed to place bet" }, 400);
+    }
+
+    // 第 2 步：游戏逻辑 - 抛硬币
+    const coin = Math.random() < 0.5 ? "heads" : "tails";
+    const isWin = coin === prediction;
+    // 计算赔付：赢了获得 50% 利润（赌注金额 * 1.5, 以 wei 为单位）
+    const payout = isWin ? (BigInt(betAmount) * BigInt(150)) / BigInt(100) : "0";
+
+    // 第 3 步：将游戏存储在您的数据库中（D1, 等。）
+    // await db.execute(
+    //   "INSERT INTO games (sessionId, prediction, result, betAmount, payout) VALUES (?, ?, ?, ?, ?)",
+    //   [betResult.sessionId, prediction, coin, betAmount, payout.toString()]
+    // );
+
+    // 第 4 步：处理赔付
+    const payoutResult = await b3Client.processPayout("coin-flip", betResult.sessionId, payout.toString(), {
+      playerChoice: prediction,
+      result: coin,
+      outcome: isWin ? "win" : "loss",
+    });
+
+    // 第 5 步：将结果返回给前端
+    return c.json({
+      sessionId: betResult.sessionId,
+      prediction,
+      result: coin,
+      outcome: isWin ? "win" : "loss",
+      payout: isWin ? payout.toString() : "0",
+      newBalance: payoutResult.newBalance,
+    });
+  } catch (error) {
+    console.error("Game error:", error);
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+export default app;
+```
+
+**与 Express 的主要区别：**
+
+- `createB3Client(c)` 从 Hono 上下文自动提取认证
+- 在 Cloudflare Workers（无服务器）上运行
+- 无需手动中间件 - Hono 上下文处理一切
+- 响应使用 `c.json()` 而不是 `res.json()`
+
+**环境设置 (wrangler.toml)：**
+
+```toml
+[env.production]
+name = "upside-games"
+route = "example.com/api/*"
+zone_id = "..."
+account_id = "..."
+
+[[env.production.env.vars]]
+# 在此处添加任何环境变量
+```
+
+## 最佳实践
+
+### 下注
+
+- **始终验证金额**：检查赌注是否在玩家余额范围内
+- **使用幂等性**：使用相同的 sessionId 重试失败的 `placeBet` 调用
+- **立即锁定**：一旦 `placeBet` 成功，防止玩家再次下注
+
+### 游戏逻辑
+
+- **后端是真理的来源**：永远不要信任客户端的游戏结果
+- **存储一切**：记录所有游戏事件以供审计和争议
+- **验证结果**：确保游戏结果符合预期范围
+- **超时游戏**：如果在 5 分钟内未处理赔付，则取消赌注
+
+### 赔付处理
+
+- **一次处理**：每个游戏会话只调用一次 `processPayout`
+- **使用正确的金额**：发送前验证赔付计算
+- **处理重复**：如果 `processPayout` 返回 "已完成"，那没问题
+- **处理失败**：重试失败的赔付，但首先检查是否已支付
+
+### 安全性
+
+- **验证令牌**：始终在每个后端请求中验证 JWT
+- **使用 HTTPS**：所有通信必须加密
+- **验证游戏类型**：只允许已知、批准的游戏类型
+- **限制速率**：实施速率限制以防止滥用
+
+### 错误处理
+
+```javascript
+async function safePlayGame(gameType, betAmount) {
+  try {
+    // 下注
+    let betResult;
+    try {
+      betResult = await b3Client.placeBet(gameType, betAmount);
+    } catch (error) {
+      if (error.message.includes("Insufficient balance")) {
+        return { error: "Player balance too low" };
+      }
+      throw error;
+    }
+
+    // 运行游戏逻辑
+    const outcome = await runGameLogic();
+
+    // 处理赔付
+    try {
+      const payout = outcome.isWin ? betAmount * 1.5 : "0";
+      await b3Client.processPayout(gameType, betResult.sessionId, payout, {
+        playerChoice: outcome.choice,
+        result: outcome.result,
+        outcome: outcome.isWin ? "win" : "loss",
+      });
+    } catch (error) {
+      if (error.message.includes("already completed")) {
+        console.log("Payout already processed for session");
+      } else {
+        throw error;
+      }
+    }
+
+    return outcome;
+  } catch (error) {
+    console.error("Game error:", error);
+    throw error;
+  }
+}
+```

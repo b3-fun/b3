@@ -1,0 +1,276 @@
+---
+title: Pruebas y Ejemplos
+description: >-
+  Prueba la integración de tu juego localmente, revisa ejemplos completos y
+  soluciona problemas comunes.
+lang: es
+originalPath: upside/testing-and-examples.mdx
+---
+## Pruebas en Localhost
+
+### Configuración Rápida de Pruebas
+
+Puedes probar tu juego ejecutándose en localhost directamente en el entorno de prueba de Upside.win sin necesidad de desplegarlo.
+
+**Cómo funciona:**
+
+1. Ejecuta tu backend de juego en `http://localhost:3000` (o cualquier puerto)
+2. Codifica en Base64 tu URL de localhost
+3. Navega a la URL de prueba en upside.win
+
+### Paso a Paso
+
+**Paso 1: Inicia tu backend de juego**
+
+```bash
+npm run dev
+# Juego ejecutándose en http://localhost:3000
+```
+
+**Paso 2: Codifica tu URL en Base64**
+
+Usando Node.js:
+
+```javascript
+const url = "http://localhost:3000";
+const encoded = Buffer.from(url).toString("base64");
+console.log(encoded); // aHR0cDovL2xvY2FsaG9zdDozMDAw
+```
+
+Usando la línea de comandos:
+
+```bash
+echo -n "http://localhost:3000" | base64
+# aHR0cDovL2xvY2FsaG9zdDozMDAw
+```
+
+En línea: Usa cualquier codificador base64 en https://www.base64encode.org/
+
+**Paso 3: Prueba en Upside.win**
+
+Visita la URL de prueba:
+
+```
+https://upside.win/test/games/aHR0cDovL2xvY2FsaG9zdDozMDAw
+```
+
+Reemplaza `aHR0cDovL2xvY2FsaG9zdDozMDAw` con tu URL codificada.
+
+### Ejemplos
+
+Diferentes URLs de localhost:
+
+| URL                     | Base64                         | Enlace de Prueba                                             |
+| ----------------------- | ------------------------------ | ------------------------------------------------------------ |
+| `http://localhost:3000` | `aHR0cDovL2xvY2FsaG9zdDozMDAw` | `https://upside.win/test/games/aHR0cDovL2xvY2FsaG9zdDozMDAw` |
+| `http://localhost:5000` | `aHR0cDovL2xvY2FsaG9zdDo1MDOw` | `https://upside.win/test/games/aHR0cDovL2xvY2FsaG9zdDo1MDOw` |
+| `http://127.0.0.1:3000` | `aHR0cDovLzEyNy4wLjAuMTozMDAw` | `https://upside.win/test/games/aHR0cDovLzEyNy4wLjAuMTozMDAw` |
+
+### Flujo de Desarrollo
+
+1. **Crea el código del juego** - Escribe tu frontend de React y backend de Cloudflare Hono
+2. **Inicia localmente** - Ejecuta `npm run dev` en localhost
+3. **Genera la URL de prueba** - Codifica en Base64 tu dirección de localhost
+4. **Prueba en Upside** - Visita `https://upside.win/test/games/<BASE64>`
+5. **Obtén JWT y prueba** - El juego se carga con un JWT real para pruebas
+6. **Itera** - Haz cambios localmente y actualiza la URL de prueba
+7. **Despliega** - Cuando estés listo, despliega el backend y actualiza la URL del juego
+
+### Consejos para Pruebas Locales
+
+- **Usa la misma máquina**: Mantén localhost ejecutándose mientras pruebas
+- **Revisa CORS**: Asegúrate de que tu backend permite solicitudes desde dominios de upside.win
+
+### Solución de Problemas en Pruebas Locales
+
+**Problema**: "Juego no encontrado" o 404
+
+- **Solución**: Verifica que la URL de localhost sea correcta y la codificación sea precisa
+
+**Problema**: Errores de CORS
+
+- **Solución**: Tu backend necesita aceptar solicitudes desde el dominio de upside.win
+
+**Problema**: Errores de JWT durante las pruebas
+
+- **Solución**: Asegúrate de estar usando la clave API de staging, no de producción
+
+**Problema**: Solicitudes de red fallando
+
+- **Solución**: Verifica que localhost esté ejecutándose y el firewall permita solicitudes
+
+## Ejemplo Completo: Juego de Volado
+
+### Frontend (React)
+
+```javascript
+import { ParentProvider, useParentContext } from "@b3dotfun/upside-sdk";
+
+export default function CoinFlipGame() {
+  return (
+    <ParentProvider>
+      <CoinFlipContent />
+    </ParentProvider>
+  );
+}
+
+function CoinFlipContent() {
+  const { token, balance, playerId } = useParentContext();
+  const [gameState, setGameState] = useState("ready"); // ready, playing, won, lost
+  const [prediction, setPrediction] = useState(null);
+  const [result, setResult] = useState(null);
+  const [earnings, setEarnings] = useState(0);
+
+  const playGame = async playerPrediction => {
+    setPrediction(playerPrediction);
+    setGameState("playing");
+
+    try {
+      // Llama a tu backend
+      const response = await fetch("/api/game/coin-flip", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          playerId,
+          prediction: playerPrediction,
+          betAmount: "100000000000000000", // 1 token en wei
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.outcome === "win") {
+        setGameState("won");
+        setEarnings(data.payout);
+      } else {
+        setGameState("lost");
+        setEarnings(0);
+      }
+
+      setResult(data.result);
+    } catch (error) {
+      console.error("Error del juego:", error);
+      setGameState("error");
+    }
+  };
+
+  return (
+    <div style={{ textAlign: "center", padding: "40px" }}>
+      <h1>Volado</h1>
+      <p>Saldo: {(balance / 1e18).toFixed(2)} WIN</p>
+
+      {gameState === "ready" && (
+        <div>
+          <button onClick={() => playGame("heads")}>Predecir Cara</button>
+          <button onClick={() => playGame("tails")}>Predecir Cruz</button>
+        </div>
+      )}
+
+      {gameState === "playing" && <p>Volteando...</p>}
+
+      {gameState === "won" && (
+        <div>
+          <p>🎉 ¡Ganaste! La moneda cayó en {result}</p>
+          <p>+{(earnings / 1e18).toFixed(2)} WIN</p>
+        </div>
+      )}
+
+      {gameState === "lost" && (
+        <div>
+          <p>❌ ¡Perdiste! La moneda cayó en {result}</p>
+          <p>Mejor suerte la próxima vez</p>
+        </div>
+      )}
+
+      {gameState !== "ready" && <button onClick={() => setGameState("ready")}>Jugar de Nuevo</button>}
+    </div>
+  );
+}
+```
+
+### Backend (Hono + Cloudflare Workers)
+
+```javascript
+import { Hono } from "hono";
+import { createB3Client } from "@b3dotfun/upside-sdk/server";
+
+const app = new Hono();
+
+app.post("/api/game/coin-flip", async c => {
+  const { prediction, betAmount } = await c.req.json();
+
+  try {
+    // Crea B3Client desde el contexto de Hono
+    // Extrae automáticamente el token de autenticación del encabezado Authorization
+    const b3Client = createB3Client(c);
+
+    // Paso 1: Coloca la apuesta (cantidad en wei)
+    const betResult = await b3Client.placeBet("coin-flip", betAmount);
+
+    if (!betResult.sessionId) {
+      return c.json({ error: "Falló al colocar la apuesta" }, 400);
+    }
+
+    // Paso 2: Lógica del juego - voltea la moneda
+    const coin = Math.random() < 0.5 ? "heads" : "tails";
+    const isWin = coin === prediction;
+    // Calcula el pago: 50% de ganancia en caso de victoria (betAmount * 1.5, en wei)
+    const payout = isWin ? (BigInt(betAmount) * BigInt(150)) / BigInt(100) : "0";
+
+    // Paso 3: Almacena el juego en tu base de datos (D1, etc.)
+    // await db.execute(
+    //   "INSERT INTO games (sessionId, prediction, result, betAmount, payout) VALUES (?, ?, ?, ?, ?)",
+    //   [betResult.sessionId, prediction, coin, betAmount, payout.toString()]
+    // );
+
+    // Paso 4: Procesa el pago
+    const payoutResult = await b3Client.processPayout("coin-flip", betResult.sessionId, payout.toString(), {
+      playerChoice: prediction,
+      result: coin,
+      outcome: isWin ? "win" : "loss",
+    });
+
+    // Paso 5: Devuelve el resultado al frontend
+    return c.json({
+      sessionId: betResult.sessionId,
+      prediction,
+      result: coin,
+      outcome: isWin ? "win" : "loss",
+      payout: isWin ? payout.toString() : "0",
+      newBalance: payoutResult.newBalance,
+    });
+  } catch (error) {
+    console.error("Error del juego:", error);
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+export default app;
+```
+
+## Solución de Problemas
+
+### Problemas Comunes
+
+**Problema**: `placeBet` falla con "Saldo insuficiente"
+
+- **Solución**: Verifica el saldo del jugador antes de colocar la apuesta, o aumenta la cantidad de la apuesta mostrada en la UI
+
+**Problema**: `processPayout` devuelve "sesión no encontrada"
+
+- **Solución**: Verifica que el sessionId coincida con la respuesta de la apuesta, revisa si hay errores tipográficos
+
+**Problema**: Sesiones de juego o apuestas duplicadas
+
+- **Solución**: Usa el mismo sessionId para reintentos, implementa idempotencia en tu lado
+
+**Problema**: JWT expira durante el juego
+
+- **Solución**: Refresca el token antes de que comience el juego, maneja la expiración del token de manera elegante
+
+**Problema**: La lógica del juego se ejecuta en el cliente, lo que lleva a trampas
+
+- **Solución**: Mueve TODA la lógica del juego al backend, el cliente solo muestra resultados

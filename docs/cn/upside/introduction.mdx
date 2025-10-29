@@ -1,0 +1,109 @@
+---
+title: 介绍
+description: 了解如何使用 Upside SDK 将您的游戏与 Upside.win 集成。在您的后端处理游戏逻辑，同时由 Upside 管理 WIN 代币奖励。
+lang: cn
+originalPath: upside/introduction.mdx
+---
+## 概览
+
+与 Upside.win 的集成非常简单。您的游戏在我们平台上的一个 iframe 中运行，通过 JWT 接收玩家认证，并通过我们的 SDK 与 Upside 后端进行交互，以处理下注和支付处理。
+
+**关键原则**：您的后端处理游戏逻辑和状态（卡片、获胜者、结果），而 Upside 处理所有 WIN 代币交易。
+
+## 集成流程
+
+<Steps>
+  <Step title="联系 B3 团队">
+    联系我们以获得您的游戏的批准和配置在 Upside 上。
+
+    ```text
+    联系方式: contact@npclabs.org
+    包括: 游戏名称、描述、游戏类型和您的后端 URL
+    ```
+  </Step>
+  <Step title="游戏在 Iframe 中加载">
+    玩家启动您的游戏，它将在 upside.win 的一个 iframe 中加载。您的游戏接收：- 玩家的 JWT 令牌 - 玩家认证上下文 - 访问 Upside SDK 的权限
+  </Step>
+  <Step title="前端：接收 JWT">
+    使用 Upside SDK 中的 `ParentProvider` 包装您的游戏以接收 JWT。
+
+    ```javascript
+    import { ParentProvider } from "@b3dotfun/upside-sdk";
+    
+    export default function GameApp() {
+      return (
+        <ParentProvider>
+          <YourGameComponent />
+        </ParentProvider>
+      );
+    }
+    ```
+  </Step>
+  <Step title="后端：下注">
+    当玩家开始游戏时，您的后端调用 `placeBet` 来锁定他们的赌注。
+
+    ```javascript
+    { createB3Client } from "@b3dotfun/upside-sdk/server"; 
+    
+    const b3Client = createB3Client(); 
+    const betResult = await
+    b3Client.placeBet(
+      "coin-flip", // 游戏类型 
+      "100000000000000000" // 下注金额（以 wei 为单位，1 代币 = 10^18 wei） 
+    ); 
+    ```
+  </Step>
+  <Step title="后端：处理游戏逻辑">
+    您的后端：- 确定游戏结果（硬币落在正面/反面）- 在您的数据库中存储游戏状态 - 计算支付金额 - 准备结果数据（玩家选择、结果、结果）
+  </Step>
+  <Step title="后端：处理支付">
+    游戏结束时，将结果发送给 Upside 以记入玩家的 WIN 余额。
+
+    ```javascript
+    const payoutResult = await b3Client.processPayout(
+      "coin-flip",      // 游戏类型
+      sessionId,        // 唯一的游戏会话 ID
+      payoutAmount,     // 要奖励的 WIN 代币（如果输了则为 0）
+      // 游戏数据
+      {
+        playerChoice: "heads",
+        result: "heads",
+        outcome: "win"
+      }
+    );
+    ```
+  </Step>
+  <Step title="前端：显示结果">
+    您的游戏向玩家显示结果。
+
+    Upside 平台自动：
+
+    - 更新玩家的 WIN 余额
+    - 将胜/负添加到排行榜
+    - 发送通知
+  </Step>
+</Steps>
+
+## 安装
+
+```bash
+npm install @b3dotfun/upside-sdk
+# 或
+pnpm add @b3dotfun/upside-sdk
+# 或
+bun install @b3dotfun/upside-sdk
+```
+
+## 下一步
+
+<CardGroup cols={2}>
+  <Card title="前端集成" icon="browser" href="/upside/frontend-integration">
+    设置 ParentProvider 并使用钩子访问玩家数据
+  </Card>
+  <Card title="后端集成" icon="server" href="/upside/backend-integration">
+    初始化 B3 客户端并实现游戏逻辑
+  </Card>
+  <Card title="测试与示例" icon="flask" href="/upside/testing-and-examples">
+    在本地测试您的游戏并查看完整示例
+  </Card>
+</CardGroup>

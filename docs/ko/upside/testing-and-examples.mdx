@@ -1,0 +1,274 @@
+---
+title: 테스팅 & 예시
+description: '게임 통합을 로컬에서 테스트하고, 완전한 예제를 검토하며, 일반적인 문제를 해결하세요.'
+lang: ko
+originalPath: upside/testing-and-examples.mdx
+---
+## 로컬호스트에서 테스트하기
+
+### 빠른 테스트 설정
+
+배포하지 않고도 Upside.win 테스트 환경에서 직접 로컬호스트에서 실행 중인 게임을 테스트할 수 있습니다.
+
+**작동 방식:**
+
+1. `http://localhost:3000` (또는 다른 포트)에서 게임 백엔드를 실행합니다.
+2. 로컬호스트 URL을 Base64로 인코딩합니다.
+3. Upside.win의 테스트 URL로 이동합니다.
+
+### 단계별 안내
+
+**1단계: 게임 백엔드 시작하기**
+
+```bash
+npm run dev
+# 게임이 http://localhost:3000에서 실행 중입니다.
+```
+
+**2단계: URL을 Base64로 인코딩하기**
+
+Node.js 사용:
+
+```javascript
+const url = "http://localhost:3000";
+const encoded = Buffer.from(url).toString("base64");
+console.log(encoded); // aHR0cDovL2xvY2FsaG9zdDozMDAw
+```
+
+명령줄 사용:
+
+```bash
+echo -n "http://localhost:3000" | base64
+# aHR0cDovL2xvY2FsaG9zdDozMDAw
+```
+
+온라인: https://www.base64encode.org/ 에서 아무 base64 인코더를 사용하세요.
+
+**3단계: Upside.win에서 테스트하기**
+
+테스트 URL 방문:
+
+```
+https://upside.win/test/games/aHR0cDovL2xvY2FsaG9zdDozMDAw
+```
+
+`aHR0cDovL2xvY2FsaG9zdDozMDAw`을 인코딩된 URL로 교체하세요.
+
+### 예시
+
+다른 로컬호스트 URL들:
+
+| URL                     | Base64                         | 테스트 링크                                                    |
+| ----------------------- | ------------------------------ | ------------------------------------------------------------ |
+| `http://localhost:3000` | `aHR0cDovL2xvY2FsaG9zdDozMDAw` | `https://upside.win/test/games/aHR0cDovL2xvY2FsaG9zdDozMDAw` |
+| `http://localhost:5000` | `aHR0cDovL2xvY2FsaG9zdDo1MDOw` | `https://upside.win/test/games/aHR0cDovL2xvY2FsaG9zdDo1MDOw` |
+| `http://127.0.0.1:3000` | `aHR0cDovLzEyNy4wLjAuMTozMDAw` | `https://upside.win/test/games/aHR0cDovLzEyNy4wLjAuMTozMDAw` |
+
+### 개발 워크플로우
+
+1. **게임 코드 생성** - React 프론트엔드와 Cloudflare Hono 백엔드를 작성합니다.
+2. **로컬에서 시작** - 로컬호스트에서 `npm run dev`를 실행합니다.
+3. **테스트 URL 생성** - 로컬호스트 주소를 Base64로 인코딩합니다.
+4. **Upside에서 테스트** - `https://upside.win/test/games/<BASE64>`를 방문합니다.
+5. **JWT 받고 테스트** - 게임이 실제 JWT로 로딩되어 테스트됩니다.
+6. **반복** - 로컬에서 변경사항을 만들고 테스트 URL을 새로고침합니다.
+7. **배포** - 준비가 되면 백엔드를 배포하고 게임 URL을 업데이트합니다.
+
+### 로컬 테스트를 위한 팁
+
+- **동일한 기기 사용**: 테스트하는 동안 로컬호스트를 계속 실행하세요.
+- **CORS 확인**: 백엔드가 upside.win 도메인에서의 요청을 허용하는지 확인하세요.
+
+### 로컬 테스트 문제 해결
+
+**문제**: "게임을 찾을 수 없음" 또는 404
+
+- **해결책**: 로컬호스트 URL이 정확하고 인코딩이 정확한지 확인하세요.
+
+**문제**: CORS 오류
+
+- **해결책**: 백엔드가 upside.win 도메인에서의 요청을 허용해야 합니다.
+
+**문제**: 테스트 중 JWT 오류
+
+- **해결책**: 프로덕션 API 키가 아닌 스테이징 API 키를 사용하세요.
+
+**문제**: 네트워크 요청 실패
+
+- **해결책**: 로컬호스트가 실행 중이고 방화벽이 요청을 허용하는지 확인하세요.
+
+## 완전한 예시: 동전 던지기 게임
+
+### 프론트엔드 (React)
+
+```javascript
+import { ParentProvider, useParentContext } from "@b3dotfun/upside-sdk";
+
+export default function CoinFlipGame() {
+  return (
+    <ParentProvider>
+      <CoinFlipContent />
+    </ParentProvider>
+  );
+}
+
+function CoinFlipContent() {
+  const { token, balance, playerId } = useParentContext();
+  const [gameState, setGameState] = useState("ready"); // ready, playing, won, lost
+  const [prediction, setPrediction] = useState(null);
+  const [result, setResult] = useState(null);
+  const [earnings, setEarnings] = useState(0);
+
+  const playGame = async playerPrediction => {
+    setPrediction(playerPrediction);
+    setGameState("playing");
+
+    try {
+      // 백엔드 호출
+      const response = await fetch("/api/game/coin-flip", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          playerId,
+          prediction: playerPrediction,
+          betAmount: "100000000000000000", // 1 토큰 in wei
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.outcome === "win") {
+        setGameState("won");
+        setEarnings(data.payout);
+      } else {
+        setGameState("lost");
+        setEarnings(0);
+      }
+
+      setResult(data.result);
+    } catch (error) {
+      console.error("게임 오류:", error);
+      setGameState("error");
+    }
+  };
+
+  return (
+    <div style={{ textAlign: "center", padding: "40px" }}>
+      <h1>동전 던지기</h1>
+      <p>잔액: {(balance / 1e18).toFixed(2)} WIN</p>
+
+      {gameState === "ready" && (
+        <div>
+          <button onClick={() => playGame("heads")}>앞면 예측</button>
+          <button onClick={() => playGame("tails")}>뒷면 예측</button>
+        </div>
+      )}
+
+      {gameState === "playing" && <p>던지는 중...</p>}
+
+      {gameState === "won" && (
+        <div>
+          <p>🎉 이겼습니다! 동전은 {result}에 착지했습니다</p>
+          <p>+{(earnings / 1e18).toFixed(2)} WIN</p>
+        </div>
+      )}
+
+      {gameState === "lost" && (
+        <div>
+          <p>❌ 졌습니다! 동전은 {result}에 착지했습니다</p>
+          <p>다음 번에 행운을 빕니다</p>
+        </div>
+      )}
+
+      {gameState !== "ready" && <button onClick={() => setGameState("ready")}>다시 플레이</button>}
+    </div>
+  );
+}
+```
+
+### 백엔드 (Hono + Cloudflare Workers)
+
+```javascript
+import { Hono } from "hono";
+import { createB3Client } from "@b3dotfun/upside-sdk/server";
+
+const app = new Hono();
+
+app.post("/api/game/coin-flip", async c => {
+  const { prediction, betAmount } = await c.req.json();
+
+  try {
+    // Hono 컨텍스트에서 B3Client 생성
+    // Authorization 헤더에서 자동으로 인증 토큰 추출
+    const b3Client = createB3Client(c);
+
+    // 1단계: 베팅하기 (금액 in wei)
+    const betResult = await b3Client.placeBet("coin-flip", betAmount);
+
+    if (!betResult.sessionId) {
+      return c.json({ error: "베팅 실패" }, 400);
+    }
+
+    // 2단계: 게임 로직 - 동전 던지기
+    const coin = Math.random() < 0.5 ? "heads" : "tails";
+    const isWin = coin === prediction;
+    // 지불금 계산: 승리 시 50% 이익 (betAmount * 1.5, in wei)
+    const payout = isWin ? (BigInt(betAmount) * BigInt(150)) / BigInt(100) : "0";
+
+    // 3단계: 데이터베이스에 게임 저장 (D1 등)
+    // await db.execute(
+    //   "INSERT INTO games (sessionId, prediction, result, betAmount, payout) VALUES (?, ?, ?, ?, ?)",
+    //   [betResult.sessionId, prediction, coin, betAmount, payout.toString()]
+    // );
+
+    // 4단계: 지불금 처리
+    const payoutResult = await b3Client.processPayout("coin-flip", betResult.sessionId, payout.toString(), {
+      playerChoice: prediction,
+      result: coin,
+      outcome: isWin ? "win" : "loss",
+    });
+
+    // 5단계: 프론트엔드에 결과 반환
+    return c.json({
+      sessionId: betResult.sessionId,
+      prediction,
+      result: coin,
+      outcome: isWin ? "win" : "loss",
+      payout: isWin ? payout.toString() : "0",
+      newBalance: payoutResult.newBalance,
+    });
+  } catch (error) {
+    console.error("게임 오류:", error);
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+export default app;
+```
+
+## 문제 해결
+
+### 일반적인 문제
+
+**문제**: `placeBet`이 "잔액 부족"으로 실패함
+
+- **해결책**: 베팅을 하기 전에 플레이어 잔액을 확인하거나 UI에서 베팅 금액을 증가시키세요.
+
+**문제**: `processPayout`이 "세션을 찾을 수 없음"을 반환함
+
+- **해결책**: sessionId가 베팅 응답과 일치하는지 확인하고 오타를 확인하세요.
+
+**문제**: 중복된 게임 세션 또는 베팅
+
+- **해결책**: 재시도에 동일한 sessionId를 사용하고, 서버 측에서 멱등성을 구현하세요.
+
+**문제**: 게임 플레이 중 JWT 만료
+
+- **해결책**: 게임 시작 전에 토큰을 새로 고치고, 토큰 만료를 우아하게 처리하세요.
+
+**문제**: 게임 로직이 클라이언트에서 실행되어 부정 행위 발생
+
+- **해결책**: 모든 게임 로직을 백엔드로 이동시키고, 클라이언트는 결과만 표시하세요.

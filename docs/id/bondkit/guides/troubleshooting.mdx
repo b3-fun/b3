@@ -1,0 +1,496 @@
+---
+title: Panduan Pemecahan Masalah
+description: >-
+  Solusi untuk masalah umum Bondkit SDK, masalah dompet, dan tantangan
+  integrasi.
+lang: id
+originalPath: bondkit/guides/troubleshooting.mdx
+---
+## Diagnostik Cepat
+
+Mulai di sini untuk identifikasi masalah cepat:
+
+```typescript
+import { BondkitToken, BondkitTokenFactory } from "@b3dotfun/sdk/bondkit";
+
+// Fungsi pengecekan kesehatan cepat
+async function bondkitHealthCheck() {
+  try {
+    // Tes koneksi pabrik
+    const factory = new BondkitTokenFactory(8453); // Base mainnet
+    const implementationAddress = await factory.getImplementationAddress();
+    
+    if (!implementationAddress) {
+      return { status: "error", issue: "Koneksi pabrik gagal" };
+    }
+    
+    // Tes konektivitas RPC
+    const deployedTokens = await factory.getDeployedBondkitTokens();
+    
+    return {
+      status: "success", 
+      factory: implementationAddress,
+      deployedTokens: deployedTokens.length,
+      rpc: "Terkoneksi"
+    };
+  } catch (error) {
+    return { status: "error", issue: error.message };
+  }
+}
+
+// Jalankan diagnostik
+const health = await bondkitHealthCheck();
+console.log(health);
+```
+
+## Pesan Kesalahan Umum
+
+### Kesalahan Deployment
+
+<AccordionGroup>
+  <Accordion title="Error: 'Invalid contract address is required for BondkitToken'">
+    **Penyebab:** Alamat token hilang, tidak valid, atau tidak checksummed.
+    
+    **Solusi:**
+    ```typescript
+    // ❌ Salah
+    const token = new BondkitToken(""); // Alamat kosong
+    const token = new BondkitToken("0x123"); // Terlalu pendek
+    
+    // ✅ Benar
+    const token = new BondkitToken("0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1");
+    
+    // ✅ Validasi alamat terlebih dahulu
+    import { isAddress } from "viem";
+    
+    const tokenAddress = "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1";
+    if (!isAddress(tokenAddress)) {
+      throw new Error("Alamat token tidak valid");
+    }
+    const token = new BondkitToken(tokenAddress);
+    ```
+  </Accordion>
+  
+  <Accordion title="Error: 'Unsupported chainId: X. This SDK is configured for Base only'">
+    **Penyebab:** Mencoba menggunakan chain ID selain Base.
+    
+    **Solusi:**
+    ```typescript
+    import { base } from "viem/chains";
+    
+    // ❌ Salah
+    const factory = new BondkitTokenFactory(1); // Ethereum mainnet
+    const factory = new BondkitTokenFactory(137); // Polygon
+    
+    // ✅ Benar - Gunakan Base mainnet
+    const factory = new BondkitTokenFactory(base.id); // 8453
+    const factory = new BondkitTokenFactory(8453); // ID Base eksplisit
+    ```
+  </Accordion>
+  
+  <Accordion title="Error: 'DeployBondkitToken: execution reverted'">
+    **Penyebab:** Parameter deployment tidak valid atau izin tidak cukup.
+    
+    **Solusi:**
+    ```typescript
+    // Periksa masalah parameter umum
+    const config = {
+      name: "MyToken",
+      symbol: "MTK", // Harus 1-11 karakter
+      feeRecipient: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1", // Alamat valid
+      finalTokenSupply: parseEther("1000000"), // Harus > 0
+      aggressivenessFactor: 45, // Harus 0-100
+      lpSplitRatioFeeRecipientBps: 1000n, // Harus 0-10000 (basis points)
+      targetAmount: parseEther("10"), // Harus > 0
+      migrationAdminAddress: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1", // Alamat valid
+      
+      // Konfigurasi V4 - semua diperlukan
+      bondingPhaseSplitter: "0x2AB69e0d9D20D3700466153D84a6574128154Fd2",
+      v4PoolManager: "0x498581fF718922c3f8e6A244956aF099B2652b2b", 
+      v4Hook: "0xB36f4A2FB18b745ef8eD31452781a463d2B3f0cC",
+      v4PoolFee: 3000, // 500, 3000, atau 10000
+      v4TickSpacing: 60, // Harus cocok dengan tingkat biaya
+      tradingToken: "0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3"
+    };
+    
+    // Pembantu validasi
+    function validateConfig(config) {
+      const errors = [];
+      
+      if (!config.symbol || config.symbol.length > 11) {
+        errors.push("Simbol harus 1-11 karakter");
+      }
+      
+      if (config.aggressivenessFactor < 0 || config.aggressivenessFactor > 100) {
+        errors.push("Agresivitas harus 0-100");
+      }
+      
+      if (config.lpSplitRatioFeeRecipientBps > 10000n) {
+        errors.push("Rasio pembagian LP tidak boleh melebihi 100% (10000 bps)");
+      }
+      
+      return errors;
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Kesalahan Trading  
+
+<AccordionGroup>
+  <Accordion title="Error: 'Buy: execution reverted' atau 'Sell: execution reverted'">
+    **Penyebab:** Berbagai masalah trading selama fase bonding.
+    
+    **Solusi:**
+    ```typescript
+    // Periksa status token terlebih dahulu
+    const status = await token.currentStatus();
+    if (status !== 1) {
+      throw new Error("Token tidak dalam fase bonding - gunakan metode DEX");
+    }
+    
+    // Untuk kesalahan Buy:
+    async function diagnoseBuyError(token, amount, minTokensOut) {
+      const progress = await token.getBondingProgress();
+      
+      if (progress.progress >= 1.0) {
+        return "Target tercapai - migrasi tersedia, tidak dapat membeli lagi";
+      }
+      
+      const tradingTokenAddress = await token.getTradingTokenAddress();
+      if (tradingTokenAddress !== "0x0000000000000000000000000000000000000000") {
+        // Token trading ERC20 - periksa izin dan saldo
+        const balance = await token.getTradingTokenBalanceOf(userAddress);
+        const required = typeof amount === "string" ? parseEther(amount) : amount;
+        
+        if (balance < required) {
+          return `Saldo ${await token.getTradingTokenSymbol()} tidak cukup. Butuh: ${formatEther(required)}, Punya: ${formatEther(balance)}`;
+        }
+      }
+      
+      return "Kesalahan buy tidak diketahui - periksa detail transaksi";
+    }
+    
+    // Untuk kesalahan Sell:
+    async function diagnoseSellError(token, tokenAmount) {
+      const balance = await token.balanceOf(userAddress);
+      if (balance < tokenAmount) {
+        return `Saldo token tidak cukup. Butuh: ${formatEther(tokenAmount)}, Punya: ${formatEther(balance)}`;
+      }
+      
+      const progress = await token.getBondingProgress();
+      if (progress.raised === 0n) {
+        return "Tidak ada likuiditas tersedia - tidak dapat menjual saat tidak ada yang terkumpul";
+      }
+      
+      return "Kesalahan sell tidak diketahui - periksa detail transaksi";
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Error: 'Alamat token trading tidak tersedia'">
+    **Penyebab:** Token belum sepenuhnya diinisialisasi atau masalah jaringan.
+    
+    **Solusi:**
+    ```typescript
+    // Paksa segarkan info token trading
+    const tradingTokenAddress = await token.getTradingTokenAddress();
+    if (!tradingTokenAddress) {
+      // Coba lagi dengan jeda
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      const retryAddress = await token.getTradingTokenAddress();
+      
+      if (!retryAddress) {
+        throw new Error("Kontrak token mungkin tidak diinisialisasi dengan benar");
+      }
+    }
+    
+    // Periksa apakah kontrak token valid
+    try {
+      const tokenDetails = await token.getTokenDetails();
+      console.log(`Terkoneksi ke: ${tokenDetails.name} (${tokenDetails.symbol})`);
+    } catch (error) {
+      throw new Error("Kontrak token tidak valid atau masalah jaringan");
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Error: 'BondingPhaseEnded' atau masalah trading DEX">
+    **Penyebab:** Token bermigrasi ke fase DEX, tetapi masih menggunakan metode bonding.
+    
+    **Solusi:**
+    ```typescript
+    // Deteksi fase dan gunakan metode yang tepat
+    async function getOptimalTradingMethod(tokenAddress) {
+      const token = new BondkitToken(tokenAddress);
+      const status = await token.currentStatus();
+      
+      switch (status) {
+        case 1: // Fase bonding
+          return {
+            phase: "bonding",
+            buyMethod: (amount, minOut) => token.buy(amount, minOut),
+            sellMethod: (amount, minOut) => token.sell(amount, minOut),
+            quoteMethod: (amount) => token.getAmountOfTokensToBuy(amount)
+          };
+          
+        case 2: // Fase DEX
+          const swapService = new BondkitSwapService(tokenAddress);
+          return {
+            phase: "dex",
+            buyMethod: async (amount, minOut, wallet) => {
+              const params = {
+                tokenIn: await token.getTradingTokenAddress(),
+                tokenOut: tokenAddress,
+                amountIn: typeof amount === "string" ? amount : formatEther(amount),
+                tokenInDecimals: 18,
+                tokenOutDecimals: 18,
+                slippageTolerance: 0.005,
+                recipient: wallet.account.address
+              };
+              return swapService.executeSwap(params, wallet);
+            },
+            quoteMethod: async (amount) => {
+              const params = {
+                tokenIn: await token.getTradingTokenAddress(),
+                tokenOut: tokenAddress,
+                amountIn: typeof amount === "string" ? amount : formatEther(amount),
+                tokenInDecimals: 18,
+                tokenOutDecimals: 18,
+                slippageTolerance: 0.005,
+                recipient: "0x0000000000000000000000000000000000000000" // Dummy untuk kutipan
+              };
+              return swapService.getSwapQuote(params);
+            }
+          };
+          
+        default:
+          throw new Error(`Status token tidak diketahui: ${status}`);
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Masalah Integrasi Dompet
+
+<AccordionGroup>
+  <Accordion title="Error: 'Akun untuk transaksi tidak dapat ditentukan'">
+    **Penyebab:** Dompet tidak terhubung atau dikonfigurasi dengan benar.
+    
+    **Solusi:**
+    ```typescript
+    // Opsi 1: Gunakan kunci pribadi (hanya server)
+    const token = new BondkitToken(
+      tokenAddress,
+      process.env.WALLET_PRIVATE_KEY
+    );
+    
+    // Opsi 2: Hubungkan dengan penyedia (browser)
+    const token = new BondkitToken(tokenAddress);
+    const connected = await token.connect(window.ethereum);
+    
+    if (!connected) {
+      throw new Error("Gagal menghubungkan dompet");
+    }
+    
+    // Opsi 3: Verifikasi koneksi sebelum transaksi
+    async function ensureWalletConnected(token) {
+      if (!window.ethereum) {
+        throw new Error("Tidak ada penyedia dompet ditemukan - pasang MetaMask atau serupa");
+      }
+      
+      // Minta akses akun
+      const accounts = await window.ethereum.request({
+        method: 'eth_requestAccounts'
+      });
+      
+      if (accounts.length === 0) {
+        throw new Error("Tidak ada akun tersedia - hubungkan dompet terlebih dahulu");
+      }
+      
+      // Hubungkan ke token
+      const connected = await token.connect(window.ethereum);
+      if (!connected) {
+        throw new Error("Gagal menghubungkan token ke dompet");
+      }
+      
+      return accounts[0];
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Error: 'Waktu konfirmasi transaksi habis'">
+    **Penyebab:** Jaringan lambat, gas rendah, atau masalah dompet OKX.
+    
+    **Solusi:**
+    ```typescript
+    // Tingkatkan gas untuk konfirmasi lebih cepat
+    const options = {
+      gas: 300000n, // Tingkatkan dari default
+      maxFeePerGas: parseGwei("20"), // Biaya lebih tinggi untuk inklusi lebih cepat
+      maxPriorityFeePerGas: parseGwei("2")
+    };
+    
+    await token.buy(parseEther("10"), 0n, options);
+    
+    // Menunggu transaksi manual dengan batas waktu
+    async function waitForTransactionWithTimeout(token, hash, timeoutMs = 300000) {
+      const start = Date.now();
+      
+      while (Date.now() - start < timeoutMs) {
+        try {
+          const receipt = await token.waitForTransaction(hash);
+          return receipt;
+        } catch (error) {
+          if (error.message.includes("TransactionReceiptNotFoundError")) {
+            // Masih tertunda, tunggu lebih lama
+            await new Promise(resolve => setTimeout(resolve, 5000));
+            continue;
+          }
+          throw error; // Kesalahan lain, lempar ulang
+        }
+      }
+      
+      throw new Error(`Transaksi ${hash} habis waktu setelah ${timeoutMs}ms`);
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Masalah spesifik MetaMask/Dompet">
+    **Masalah Dompet Umum:**
+    
+    ```typescript
+    // Pergantian jaringan untuk MetaMask
+    async function ensureBaseNetwork() {
+      if (!window.ethereum) return false;
+      
+      try {
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: '0x2105' }], // Base mainnet
+        });
+        return true;
+      } catch (switchError) {
+        // Jaringan tidak ditambahkan, tambahkan
+        if (switchError.code === 4902) {
+          try {
+            await window.ethereum.request({
+              method: 'wallet_addEthereumChain',
+              params: [{
+                chainId: '0x2105',
+                chainName: 'Base',
+                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                rpcUrls: ['https://base-rpc.publicnode.com'],
+                blockExplorerUrls: ['https://basescan.org/']
+              }]
+            });
+            return true;
+          } catch (addError) {
+            console.error('Gagal menambahkan jaringan Base', addError);
+            return false;
+          }
+        }
+        return false;
+      }
+    }
+    
+    // Pembantu impor token
+    async function addTokenToWallet(tokenAddress, symbol, decimals = 18) {
+      try {
+        await window.ethereum.request({
+          method: 'wallet_watchAsset',
+          params: {
+            type: 'ERC20',
+            options: {
+              address: tokenAddress,
+              symbol: symbol,
+              decimals: decimals
+            }
+          }
+        });
+        console.log(`${symbol} ditambahkan ke dompet`);
+      } catch (error) {
+        console.error('Gagal menambahkan token ke dompet:', error);
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Masalah Jaringan & RPC
+
+<AccordionGroup>
+  <Accordion title="Masalah Koneksi RPC">
+    **Gejala:** Respons lambat, waktu habis, atau kesalahan koneksi.
+    
+    **Solusi:**
+    ```typescript
+    // Tes kesehatan RPC
+    async function testRPCHealth() {
+      const rpcUrls = [
+        "https://base-rpc.publicnode.com",
+        "https://base-mainnet.g.alchemy.com/v2/demo",
+        "https://mainnet.base.org",
+        "https://base.gateway.fm"
+      ];
+      
+      for (const rpcUrl of rpcUrls) {
+        try {
+          const client = createPublicClient({
+            chain: base,
+            transport: http(rpcUrl)
+          });
+          
+          const blockNumber = await client.getBlockNumber();
+          console.log(`✅ ${rpcUrl}: Blok ${blockNumber}`);
+          
+          return rpcUrl; // Kembalikan RPC pertama yang berfungsi
+        } catch (error) {
+          console.log(`❌ ${rpcUrl}: ${error.message}`);
+        }
+      }
+      
+      throw new Error("Semua titik akhir RPC gagal");
+    }
+    
+    // Gunakan RPC kustom dengan cadangan
+    const workingRPC = await testRPCHealth();
+    
+    // Timpa RPC SDK jika diperlukan
+    const factory = new BondkitTokenFactory(8453);
+    factory.publicClient = createPublicClient({
+      chain: base,
+      transport: http(workingRPC)
+    });
+    ```
+  </Accordion>
+  
+  <Accordion title="Masalah Estimasi Gas">
+    **Masalah:** Transaksi gagal dengan "out of gas" atau kesalahan estimasi gas.
+    
+    **Solusi:**
+    ```typescript
+    // Pembantu estimasi gas
+    async function estimateGasWithBuffer(contract, method, args, buffer = 1.2) {
+      try {
+        const estimated = await contract.estimateGas[method](args);
+        const withBuffer = BigInt(Math.floor(Number(estimated) * buffer));
+        return withBuffer;
+      } catch (error) {
+        // Batas gas cadangan
+        const fallbackGas = {
+          'deployBondkitToken': 2000000n,
+          'buy': 300000n,
+          'sell': 250000n,
+          'migrateToDex': 500000n,
+          'approve': 50000n
+        };
+        
+        return fallbackGas[method] || 200000n;
+      }
+    }
+    
+    // Penggunaan dengan gas manual
+    const gasLimit = await estimateGasWithBuffer(
+      token.contract

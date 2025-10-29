@@ -1,0 +1,112 @@
+---
+title: Pendahuluan
+description: >-
+  Pelajari cara mengintegrasikan game Anda dengan Upside.win menggunakan Upside
+  SDK. Kelola logika game di backend Anda sementara Upside mengelola hadiah
+  token WIN.
+lang: id
+originalPath: upside/introduction.mdx
+---
+## Tinjauan Umum
+
+Mengintegrasikan dengan Upside.win itu sederhana. Game Anda berjalan dalam sebuah iframe di platform kami, menerima autentikasi pemain melalui JWT, dan berinteraksi dengan backend Upside melalui SDK kami untuk penempatan taruhan dan pemrosesan pembayaran.
+
+**Prinsip kunci**: Backend Anda menangani logika dan status game (kartu, pemenang, hasil), sementara Upside menangani semua transaksi token WIN.
+
+## Alur Integrasi
+
+<Steps>
+  <Step title="Hubungi Tim B3">
+    Hubungi kami untuk mendapatkan game Anda disetujui dan dikonfigurasi di Upside.
+
+    ```text
+    Kontak: contact@npclabs.org
+    Sertakan: Nama game, deskripsi, tipe game, dan URL backend Anda
+    ```
+  </Step>
+  <Step title="Game Dimuat di Iframe">
+    Pemain meluncurkan game Anda, yang dimuat di dalam sebuah iframe di upside.win. Game Anda menerima: - Token JWT untuk pemain - Konteks autentikasi pemain - Akses ke SDK Upside
+  </Step>
+  <Step title="Frontend: Terima JWT">
+    Bungkus game Anda dengan `ParentProvider` dari SDK Upside untuk menerima JWT.
+
+    ```javascript
+    import { ParentProvider } from "@b3dotfun/upside-sdk";
+    
+    export default function GameApp() {
+      return (
+        <ParentProvider>
+          <YourGameComponent />
+        </ParentProvider>
+      );
+    }
+    ```
+  </Step>
+  <Step title="Backend: Pasang Taruhan">
+    Ketika pemain mulai bermain, backend Anda memanggil `placeBet` untuk mengunci taruhan mereka.
+
+    ```javascript
+    { createB3Client } from "@b3dotfun/upside-sdk/server"; 
+    
+    const b3Client = createB3Client(); 
+    const betResult = await
+    b3Client.placeBet(
+      "coin-flip", // tipeGame 
+      "100000000000000000" // jumlahTaruh dalam wei (1 token = 10^18 wei) 
+    ); 
+    ```
+  </Step>
+  <Step title="Backend: Tangani Logika Game">
+    Backend Anda: - Menentukan hasil game (koin mendarat di kepala/ekor) - Menyimpan status game di database Anda - Menghitung jumlah pembayaran - Menyiapkan data hasil (pilihan pemain, hasil, keluaran)
+  </Step>
+  <Step title="Backend: Proses Pembayaran">
+    Ketika game berakhir, kirim hasilnya ke Upside untuk mengkredit saldo WIN pemain.
+
+    ```javascript
+    const payoutResult = await b3Client.processPayout(
+      "coin-flip",      // tipeGame
+      sessionId,        // ID sesi game unik
+      payoutAmount,     // token WIN yang akan diberikan (0 jika kalah)
+      // dataGame
+      {
+        playerChoice: "heads",
+        result: "heads",
+        outcome: "win"
+      }
+    );
+    ```
+  </Step>
+  <Step title="Frontend: Tampilkan Hasil">
+    Game Anda menampilkan hasilnya kepada pemain.
+
+    Platform Upside secara otomatis:
+
+    - Memperbarui saldo WIN pemain
+    - Menambahkan kemenangan/kekalahan ke papan peringkat
+    - Mengirim notifikasi
+  </Step>
+</Steps>
+
+## Instalasi
+
+```bash
+npm install @b3dotfun/upside-sdk
+# atau
+pnpm add @b3dotfun/upside-sdk
+# atau
+bun install @b3dotfun/upside-sdk
+```
+
+## Langkah Selanjutnya
+
+<CardGroup cols={2}>
+  <Card title="Integrasi Frontend" icon="browser" href="/upside/frontend-integration">
+    Siapkan ParentProvider dan gunakan hook untuk mengakses data pemain
+  </Card>
+  <Card title="Integrasi Backend" icon="server" href="/upside/backend-integration">
+    Inisialisasi klien B3 dan implementasikan logika game
+  </Card>
+  <Card title="Pengujian & Contoh" icon="flask" href="/upside/testing-and-examples">
+    Uji game Anda secara lokal dan lihat contoh lengkap
+  </Card>
+</CardGroup>

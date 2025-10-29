@@ -1,0 +1,111 @@
+---
+title: 소개
+description: >-
+  Upside SDK를 사용하여 게임을 Upside.win과 통합하는 방법을 배우세요. 게임 로직은 백엔드에서 처리하고 Upside가 WIN
+  토큰 보상을 관리합니다.
+lang: ko
+originalPath: upside/introduction.mdx
+---
+## 개요
+
+Upside.win과의 통합은 간단합니다. 귀하의 게임은 우리 플랫폼에서 iframe 안에서 실행되며, JWT를 통해 플레이어 인증을 받고, 베팅 배치 및 지급 처리를 위해 Upside 백엔드와 SDK를 통해 상호 작용합니다.
+
+**핵심 원칙**: 귀하의 백엔드는 게임 로직과 상태(카드, 승자, 결과)를 처리하는 반면, Upside는 모든 WIN 토큰 거래를 처리합니다.
+
+## 통합 흐름
+
+<Steps>
+  <Step title="B3 팀에 연락하기">
+    귀하의 게임이 Upside에서 승인되고 구성되도록 연락하세요.
+
+    ```text
+    연락처: contact@npclabs.org
+    포함: 게임 이름, 설명, 게임 유형, 백엔드 URL
+    ```
+  </Step>
+  <Step title="Iframe에서 게임 로드">
+    플레이어가 귀하의 게임을 시작하면, 그것은 upside.win의 iframe 안에서 로드됩니다. 귀하의 게임은 다음을 받습니다: - 플레이어를 위한 JWT 토큰 - 플레이어 인증 컨텍스트 - Upside SDK에 대한 접근
+  </Step>
+  <Step title="프론트엔드: JWT 받기">
+    Upside SDK에서 `ParentProvider`로 귀하의 게임을 감싸 JWT를 받습니다.
+
+    ```javascript
+    import { ParentProvider } from "@b3dotfun/upside-sdk";
+    
+    export default function GameApp() {
+      return (
+        <ParentProvider>
+          <YourGameComponent />
+        </ParentProvider>
+      );
+    }
+    ```
+  </Step>
+  <Step title="백엔드: 베팅하기">
+    플레이어가 게임을 시작할 때, 귀하의 백엔드는 `placeBet`을 호출하여 그들의 베팅을 확정합니다.
+
+    ```javascript
+    { createB3Client } from "@b3dotfun/upside-sdk/server"; 
+    
+    const b3Client = createB3Client(); 
+    const betResult = await
+    b3Client.placeBet(
+      "coin-flip", // gameType 
+      "100000000000000000" // 베팅 금액 in wei (1 토큰 = 10^18 wei) 
+    ); 
+    ```
+  </Step>
+  <Step title="백엔드: 게임 로직 처리">
+    귀하의 백엔드는: - 게임 결과 결정(동전이 앞면/뒷면에 떨어짐) - 귀하의 데이터베이스에 게임 상태 저장 - 지급 금액 계산 - 결과 데이터 준비(플레이어 선택, 결과, 결과)
+  </Step>
+  <Step title="백엔드: 지급 처리">
+    게임이 끝나면, 결과를 Upside에 보내 플레이어의 WIN 잔액을 크레딧합니다.
+
+    ```javascript
+    const payoutResult = await b3Client.processPayout(
+      "coin-flip",      // gameType
+      sessionId,        // 고유한 게임 세션 ID
+      payoutAmount,     // 수여할 WIN 토큰 (패배시 0)
+      // gameData
+      {
+        playerChoice: "heads",
+        result: "heads",
+        outcome: "win"
+      }
+    );
+    ```
+  </Step>
+  <Step title="프론트엔드: 결과 보여주기">
+    귀하의 게임은 플레이어에게 결과를 표시합니다.
+
+    Upside 플랫폼은 자동으로:
+
+    - 플레이어의 WIN 잔액 업데이트
+    - 리더보드에 승/패 추가
+    - 알림 전송
+  </Step>
+</Steps>
+
+## 설치
+
+```bash
+npm install @b3dotfun/upside-sdk
+# 또는
+pnpm add @b3dotfun/upside-sdk
+# 또는
+bun install @b3dotfun/upside-sdk
+```
+
+## 다음 단계
+
+<CardGroup cols={2}>
+  <Card title="프론트엔드 통합" icon="browser" href="/upside/frontend-integration">
+    ParentProvider를 설정하고 플레이어 데이터에 접근하기 위한 훅 사용
+  </Card>
+  <Card title="백엔드 통합" icon="server" href="/upside/backend-integration">
+    B3 클라이언트를 초기화하고 게임 로직 구현
+  </Card>
+  <Card title="테스팅 & 예제" icon="flask" href="/upside/testing-and-examples">
+    귀하의 게임을 로컬에서 테스트하고 완전한 예제를 확인
+  </Card>
+</CardGroup>
