@@ -5,7 +5,7 @@ description: "Understanding gasless payment signatures - EIP-2612 Permit and EIP
 
 ## Overview
 
-AnySpend X402 uses cryptographic signatures instead of traditional token approvals, enabling **gasless payments** for users. The facilitator pays all gas fees while users simply sign authorization messages.
+AnySpend x402 uses cryptographic signatures instead of traditional token approvals, enabling **gasless payments** for users. The facilitator pays all gas fees while users simply sign authorization messages.
 
 There are two main signature standards supported, each optimized for different token types:
 
@@ -248,7 +248,7 @@ const hasDomainSeparator = await token.read.DOMAIN_SEPARATOR !== undefined;
 - Legacy ERC-20 tokens
 
 <Note>
-The AnySpend X402 client automatically detects which signature method to use based on the token contract. You don't need to specify this manually.
+The AnySpend x402 client automatically detects which signature method to use based on the token contract. You don't need to specify this manually.
 </Note>
 
 ## Nonce Management
@@ -362,7 +362,7 @@ if (recoveredAddress !== expectedSigner) {
 
 ## Client SDK Integration
 
-The AnySpend X402 client handles all signature complexity automatically:
+The AnySpend x402 client handles all signature complexity automatically:
 
 ```typescript
 import { X402Client } from 'anyspend-x402-client';
