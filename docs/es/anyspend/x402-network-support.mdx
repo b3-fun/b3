@@ -1,0 +1,298 @@
+---
+title: Soporte de Red & Token
+description: >-
+  Cadenas de bloques, tokens y direcciones de contrato soportados para pagos
+  AnySpend x402
+lang: es
+originalPath: anyspend/x402-network-support.mdx
+---
+## Resumen
+
+AnySpend x402 soporta pagos a través de múltiples redes blockchain incluyendo cadenas compatibles con EVM y Solana (SVM). Esta página proporciona la referencia completa de redes, tokens y sus direcciones de contrato soportadas.
+
+## Redes EVM Mainnet
+
+AnySpend x402 soporta las siguientes cadenas mainnet EVM:
+
+| Red | Identificador | Chain ID | Tipo |
+|---------|-----------|----------|------|
+| Abstract | `abstract` | 2741 | L2 |
+| Arbitrum One | `arbitrum` | 42161 | L2 - Optimistic Rollup |
+| Avalanche C-Chain | `avalanche` | 43114 | L1 |
+| B3 | `b3` | 8333 | L2 |
+| Base | `base` | 8453 | L2 - Optimistic Rollup |
+| BNB Smart Chain | `bsc` | 56 | L1 |
+| Ethereum | `ethereum` | 1 | L1 |
+| IoTeX | `iotex` | 4689 | L1 |
+| Optimism | `optimism` | 10 | L2 - Optimistic Rollup |
+| Peaq | `peaq` | 3338 | L1 |
+| Polygon PoS | `polygon` | 137 | Sidechain |
+| Sei | `sei` | 1329 | L1 |
+
+<Note>
+**Cadenas recomendadas para producción:** Base (bajas tarifas, rápido), Ethereum (máxima liquidez), Arbitrum (equilibrado)
+</Note>
+
+## Redes EVM Testnet
+
+Para desarrollo y pruebas, AnySpend soporta estos testnets:
+
+| Red | Identificador | Chain ID | Grifo |
+|---------|-----------|----------|--------|
+| Abstract Testnet | `abstract-testnet` | 11124 | [Grifo de Abstract](https://portal.testnet.abs.xyz/) |
+| Avalanche Fuji | `avalanche-fuji` | 43113 | [Grifo de Fuji](https://faucet.avax.network/) |
+| Base Sepolia | `base-sepolia` | 84532 | [Grifo de Coinbase](https://portal.cdp.coinbase.com/products/faucet) |
+| Polygon Amoy | `polygon-amoy` | 80002 | [Grifo de Polygon](https://faucet.polygon.technology/) |
+| Sei Testnet | `sei-testnet` | 1328 | [Grifo de Sei](https://atlantic-2.app.sei.io/faucet) |
+
+## Redes SVM (Solana)
+
+AnySpend también soporta redes de Máquina Virtual Solana (SVM):
+
+| Red | Identificador | Chain ID | Tipo |
+|---------|-----------|----------|------|
+| Solana Mainnet | `solana` | 101 | Mainnet |
+| Solana Devnet | `solana-devnet` | 103 | Testnet |
+
+<Info>
+El soporte de Solana permite pagos cruzados de VM - los usuarios pueden pagar con tokens SOL o SPL mientras que los servidores de recursos reciben stablecoins en cadenas EVM.
+</Info>
+
+## Tokens Soportados
+
+### USDC (Circle)
+
+USDC es soportado de forma nativa en todas las redes usando **EIP-3009 transferWithAuthorization**.
+
+| Red | Dirección del Contrato | Decimales | Método de Firma |
+|---------|-----------------|----------|------------------|
+| Base | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` | 6 | transferWithAuthorization |
+| Ethereum | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | 6 | transferWithAuthorization |
+| Arbitrum | `0xaf88d065e77c8cC2239327C5EDb3A432268e5831` | 6 | transferWithAuthorization |
+| Optimism | `0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85` | 6 | transferWithAuthorization |
+| Polygon | `0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359` | 6 | transferWithAuthorization |
+| Base Sepolia | `0x036CbD53842c5426634e7929541eC2318f3dCF7e` | 6 | transferWithAuthorization |
+
+**Uso:**
+```typescript
+const usdcAddress = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'; // Base
+```
+
+### DAI (Stablecoin)
+
+DAI soporta **EIP-2612 permit**.
+
+| Red | Dirección del Contrato | Decimales | Método de Firma |
+|---------|-----------------|----------|------------------|
+| Base | `0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb` | 18 | permit (EIP-2612) |
+| Ethereum | `0x6B175474E89094C44Da98b954EedeAC495271d0F` | 18 | permit (EIP-2612) |
+| Arbitrum | `0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1` | 18 | permit (EIP-2612) |
+| Optimism | `0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1` | 18 | permit (EIP-2612) |
+| Polygon | `0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063` | 18 | permit (EIP-2612) |
+
+**Uso:**
+```typescript
+const daiAddress = '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb'; // Base
+```
+
+### USDT (Tether)
+
+El soporte de USDT varía según la red. Algunas implementaciones soportan permit, otras no.
+
+| Red | Dirección del Contrato | Decimales | Método de Firma |
+|---------|-----------------|----------|------------------|
+| Base | `0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2` | 6 | permit (EIP-2612) |
+| Ethereum | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | 6 | ⚠️ Sin soporte de permit |
+| Arbitrum | `0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9` | 6 | permit (EIP-2612) |
+| Optimism | `0x94b008aA00579c1307B0EF2c499aD98a8ce58e58` | 6 | permit (EIP-2612) |
+| Polygon | `0xc2132D05D31c914a87C6611C10748AEb04B58e8F` | 6 | ⚠️ Sin soporte de permit |
+
+<Warning>
+USDT en Ethereum y Polygon **no** soporta permit EIP-2612. Usa el flujo tradicional de `approve()` + `transferFrom()` o elige un token diferente.
+</Warning>
+
+### Otros Tokens ERC-20
+
+Cualquier token ERC-20 que implemente **EIP-2612 permit** es soportado:
+
+- **cbBTC** (Coinbase Wrapped Bitcoin)
+- **LINK** (Chainlink)
+- **UNI** (Uniswap)
+- **AAVE** (Aave)
+- Y muchos más...
+
+**Verificar si un token soporta permit:**
+```typescript
+// Verificar si el token tiene la función permit
+const hasPermit = await token.read.permit !== undefined;
+
+// O verificar DOMAIN_SEPARATOR (requerido para EIP-712)
+const hasDomainSeparator = await token.read.DOMAIN_SEPARATOR !== undefined;
+```
+
+<Info>
+Para información detallada sobre firmas sin gas, consulta la guía [Permit vs TransferWithAuthorization](/anyspend/x402-signature-methods).
+</Info>
+
+## Configuración de Tokens
+
+### Lado del Cliente (Pagando)
+
+Especifica tu token de pago preferido:
+
+```typescript
+import { X402Client } from 'anyspend-x402-client';
+
+const client = new X402Client({
+  walletClient,
+  preferredToken: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb', // DAI en Base
+  network: 'base-mainnet'
+});
+```
+
+O por solicitud:
+
+```typescript
+const response = await client.request('https://api.example.com/data', {
+  preferredToken: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb' // DAI en Base
+});
+```
+
+### Lado del Servidor (Recibiendo)
+
+Configura los tokens aceptados y la moneda de liquidación:
+
+```typescript
+import { paymentMiddleware, facilitator } from '@b3dotfun/anyspend-x402';
+
+const endpointConfig = {
+  '/api/data': {
+    amount: '1.00',        // $1 en cualquier token
+    asset: 'USD',          // Dejar que el cliente elija el token
+    network: 'base-mainnet'
+  }
+};
+
+app.use(paymentMiddleware(
+  '0xYourUSDCAddress...',  // Recibir USDC
+  endpointConfig,
+  facilitator
+));
+```
+
+## Soporte Cross-Chain
+
+AnySpend puede facilitar pagos donde el **token del cliente** está en una cadena diferente a la **liquidación del servidor de recursos**.
+
+**Ejemplo:**
+```typescript
+// El cliente paga con DAI en Ethereum
+const clientPayment = {
+  token: '0x6B175474E89094C44Da98b954EedeAC495271d0F', // DAI en Ethereum
+  network: 'ethereum-mainnet',
+  amount: '1.0'
+};
+
+// El servidor de recursos recibe USDC en Base
+const serverSettlement = {
+  token: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC en Base
+  network: 'base-mainnet',
+  amount: '1.00'
+};
+
+// AnySpend maneja:
+// 1. Recibir DAI en Ethereum
+// 2. Puente DAI de Ethereum → Base
+// 3. Intercambiar DAI → USDC en Base
+// 4. Liquidar USDC al servidor de recursos
+```
+
+**Rutas Cross-Chain Soportadas:**
+AnySpend soporta enrutamiento cross-chain entre cualquiera de las redes EVM soportadas, incluyendo:
+- Ethereum ↔ Base, Arbitrum, Optimism, Polygon, Avalanche
+- Base ↔ Arbitrum, Optimism, Polygon
+- L1 ↔ L2 bridging a través de todas las cadenas soportadas
+- Cross-VM: Solana ↔ cadenas EVM (experimental)
+
+<Info>
+Los pagos cross-chain tardan más (2-5 minutos) debido al tiempo de puenteo e incurren en tarifas adicionales (~0.5% total). Se recomiendan pagos en la misma cadena para la mejor experiencia de usuario.
+</Info>
+
+## Comparación de Tarifas de Gas
+
+Costos estimados de gas por pago x402 (a partir de 2025):
+
+| Red | Pago en USDC | Pago con Intercambio de Token | Pago Cross-Chain |
+|---------|-------------|-------------------|---------------------|
+| Base | ~$0.001 | ~$0.003 | ~$0.01 - $0.05 |
+| B3 | ~$0.001 | ~$0.003 | ~$0.01 - $0.05 |
+| Arbitrum | ~$0.01 | ~$0.05 | ~$0.1 - $1 |
+| Optimism | ~$0.01 | ~$0.05 | ~$0.1 - $1 |
+| Polygon | ~$0.0001 | ~$0.001 | ~$0.01 - $0.1 |
+| BSC | ~$0.01 | ~$0.03 | ~$0.1 - $0.5 |
+| Avalanche | ~$0.02 | ~$0.05 | ~$0.1 - $1 |
+| Abstract | ~$0.001 | ~$0.003 | ~$0.01 - $0.05 |
+| Ethereum | ~$5 - $50 | ~$10 - $100 | ~$20 - $200 |
+| Solana | ~$0.0001 | ~$0.001 | ~$0.5 - $2 |
+
+<Note>
+Las tarifas de gas son **pagadas por el facilitador** e incluidas en la tarifa de AnySpend del 0.25% - 0.35%. Los clientes y servidores de recursos no pagan gas directamente.
+</Note>
+
+## Pruebas y Desarrollo
+
+AnySpend soporta múltiples testnets para desarrollo y pruebas. Consulta la sección [Redes EVM Testnet](#evm-testnet-networks) arriba para la lista completa de testnets soportados y sus grifos.
+
+### Testnets Recomendados
+
+**Para desarrollo general:**
+- **Base Sepolia** (Chain ID: 84532) - Mejor experiencia de testnet, rápido y fiable
+- **Solana Devnet** (Chain ID: 103) - Para pruebas de Solana/SVM
+
+**Para pruebas de red específicas:**
+- Usa el testnet respectivo que coincida con tu mainnet objetivo
+- Consulta la tabla de Redes EVM Testnet arriba para enlaces de grifos
+
+### Direcciones de Tokens de Prueba
+
+Contacta al equipo de AnySpend para direcciones de tokens de prueba en redes específicas, o usa grifos de testnet estándar para obtener tokens nativos para pruebas.
+
+## Recursos Adicionales
+
+<CardGroup cols={2}>
+<Card title="Chainlist" icon="link" href="https://chainlist.org">
+  Puntos finales de RPC y metadatos de cadena
+</Card>
+
+<Card title="Listas de Tokens" icon="list" href="https://tokenlists.org">
+  Direcciones de tokens verificadas a través de cadenas
+</Card>
+
+<Card title="Grifo de Coinbase" icon="faucet" href="https://portal.cdp.coinbase.com/products/faucet">
+  Obtén tokens de testnet para desarrollo
+</Card>
+
+<Card title="Facilitador de AnySpend" icon="arrows-turn-right" href="https://mainnet.anyspend.com/x402">
+  Punto final de API de facilitador de producción
+</Card>
+</CardGroup>
+
+## ¿Qué sigue?
+
+<CardGroup cols={2}>
+<Card title="Inicio Rápido para Compradores" icon="wallet" href="/anyspend/x402-quickstart-buyers">
+  Comienza a usar estos tokens para pagar servicios
+</Card>
+
+<Card title="Inicio Rápido para Vendedores" icon="money-bill" href="/anyspend/x402-quickstart-sellers">
+  Configura tu API para aceptar estos tokens
+</Card>
+</CardGroup>
+
+## Obtener Ayuda
+
+Si necesitas un token o red específicos soportados:
+
+- **Discord**: Solicítalo en [#anyspend-support](https://discord.gg/b3dotfun)
+- **GitHub**: Abre un issue en [github.com/b3-fun/anyspend-x402](https://github.com/b3-fun/anyspend-x402)
+- **Correo electrónico**: support@b3.fun

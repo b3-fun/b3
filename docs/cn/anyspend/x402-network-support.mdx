@@ -1,0 +1,296 @@
+---
+title: 网络 & 代币支持
+description: 支持的区块链、代币和合约地址，用于 AnySpend x402 支付
+lang: cn
+originalPath: anyspend/x402-network-support.mdx
+---
+## 概览
+
+AnySpend x402 支持跨多个区块链网络的支付，包括兼容 EVM 的链和 Solana (SVM)。本页面提供了支持的网络、代币及其合约地址的完整参考。
+
+## EVM 主网网络
+
+AnySpend x402 支持以下 EVM 主网链：
+
+| 网络 | 标识符 | 链 ID | 类型 |
+|---------|-----------|----------|------|
+| Abstract | `abstract` | 2741 | L2 |
+| Arbitrum One | `arbitrum` | 42161 | L2 - 乐观卷积 |
+| Avalanche C-Chain | `avalanche` | 43114 | L1 |
+| B3 | `b3` | 8333 | L2 |
+| Base | `base` | 8453 | L2 - 乐观卷积 |
+| BNB 智能链 | `bsc` | 56 | L1 |
+| Ethereum | `ethereum` | 1 | L1 |
+| IoTeX | `iotex` | 4689 | L1 |
+| Optimism | `optimism` | 10 | L2 - 乐观卷积 |
+| Peaq | `peaq` | 3338 | L1 |
+| Polygon PoS | `polygon` | 137 | 侧链 |
+| Sei | `sei` | 1329 | L1 |
+
+<Note>
+**推荐用于生产的链：** Base（低费用，快速）、Ethereum（最大流动性）、Arbitrum（平衡）
+</Note>
+
+## EVM 测试网网络
+
+用于开发和测试，AnySpend 支持以下测试网：
+
+| 网络 | 标识符 | 链 ID | 水龙头 |
+|---------|-----------|----------|--------|
+| Abstract 测试网 | `abstract-testnet` | 11124 | [Abstract 水龙头](https://portal.testnet.abs.xyz/) |
+| Avalanche Fuji | `avalanche-fuji` | 43113 | [Fuji 水龙头](https://faucet.avax.network/) |
+| Base Sepolia | `base-sepolia` | 84532 | [Coinbase 水龙头](https://portal.cdp.coinbase.com/products/faucet) |
+| Polygon Amoy | `polygon-amoy` | 80002 | [Polygon 水龙头](https://faucet.polygon.technology/) |
+| Sei 测试网 | `sei-testnet` | 1328 | [Sei 水龙头](https://atlantic-2.app.sei.io/faucet) |
+
+## SVM 网络 (Solana)
+
+AnySpend 也支持 Solana 虚拟机 (SVM) 网络：
+
+| 网络 | 标识符 | 链 ID | 类型 |
+|---------|-----------|----------|------|
+| Solana 主网 | `solana` | 101 | 主网 |
+| Solana Devnet | `solana-devnet` | 103 | 测试网 |
+
+<Info>
+Solana 支持实现跨 VM 支付 - 用户可以使用 SOL 或 SPL 代币支付，而资源服务器在 EVM 链上接收稳定币。
+</Info>
+
+## 支持的代币
+
+### USDC (Circle)
+
+USDC 在所有网络上均支持 **EIP-3009 transferWithAuthorization**。
+
+| 网络 | 合约地址 | 小数位 | 签名方法 |
+|---------|-----------------|----------|------------------|
+| Base | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` | 6 | transferWithAuthorization |
+| Ethereum | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | 6 | transferWithAuthorization |
+| Arbitrum | `0xaf88d065e77c8cC2239327C5EDb3A432268e5831` | 6 | transferWithAuthorization |
+| Optimism | `0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85` | 6 | transferWithAuthorization |
+| Polygon | `0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359` | 6 | transferWithAuthorization |
+| Base Sepolia | `0x036CbD53842c5426634e7929541eC2318f3dCF7e` | 6 | transferWithAuthorization |
+
+**使用方法：**
+```typescript
+const usdcAddress = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'; // Base
+```
+
+### DAI (稳定币)
+
+DAI 支持 **EIP-2612 permit**。
+
+| 网络 | 合约地址 | 小数位 | 签名方法 |
+|---------|-----------------|----------|------------------|
+| Base | `0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb` | 18 | permit (EIP-2612) |
+| Ethereum | `0x6B175474E89094C44Da98b954EedeAC495271d0F` | 18 | permit (EIP-2612) |
+| Arbitrum | `0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1` | 18 | permit (EIP-2612) |
+| Optimism | `0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1` | 18 | permit (EIP-2612) |
+| Polygon | `0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063` | 18 | permit (EIP-2612) |
+
+**使用方法：**
+```typescript
+const daiAddress = '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb'; // Base
+```
+
+### USDT (Tether)
+
+USDT 的支持因网络而异。一些实现支持 permit，其他则不支持。
+
+| 网络 | 合约地址 | 小数位 | 签名方法 |
+|---------|-----------------|----------|------------------|
+| Base | `0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2` | 6 | permit (EIP-2612) |
+| Ethereum | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | 6 | ⚠️ 不支持 permit |
+| Arbitrum | `0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9` | 6 | permit (EIP-2612) |
+| Optimism | `0x94b008aA00579c1307B0EF2c499aD98a8ce58e58` | 6 | permit (EIP-2612) |
+| Polygon | `0xc2132D05D31c914a87C6611C10748AEb04B58e8F` | 6 | ⚠️ 不支持 permit |
+
+<Warning>
+Ethereum 和 Polygon 上的 USDT **不** 支持 EIP-2612 permit。使用传统的 `approve()` + `transferFrom()` 流程或选择其他代币。
+</Warning>
+
+### 其他 ERC-20 代币
+
+支持任何实现 **EIP-2612 permit** 的 ERC-20 代币：
+
+- **cbBTC** (Coinbase 包装的比特币)
+- **LINK** (Chainlink)
+- **UNI** (Uniswap)
+- **AAVE** (Aave)
+- 等等...
+
+**检查代币是否支持 permit：**
+```typescript
+// 检查代币是否有 permit 函数
+const hasPermit = await token.read.permit !== undefined;
+
+// 或检查 DOMAIN_SEPARATOR（EIP-712 所需）
+const hasDomainSeparator = await token.read.DOMAIN_SEPARATOR !== undefined;
+```
+
+<Info>
+有关无燃料签名的详细信息，请参阅 [Permit vs TransferWithAuthorization](/anyspend/x402-signature-methods) 指南。
+</Info>
+
+## 代币配置
+
+### 客户端（支付）
+
+指定首选的支付代币：
+
+```typescript
+import { X402Client } from 'anyspend-x402-client';
+
+const client = new X402Client({
+  walletClient,
+  preferredToken: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb', // Base 上的 DAI
+  network: 'base-mainnet'
+});
+```
+
+或按请求指定：
+
+```typescript
+const response = await client.request('https://api.example.com/data', {
+  preferredToken: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb' // Base 上的 DAI
+});
+```
+
+### 服务器端（接收）
+
+配置接受的代币和结算货币：
+
+```typescript
+import { paymentMiddleware, facilitator } from '@b3dotfun/anyspend-x402';
+
+const endpointConfig = {
+  '/api/data': {
+    amount: '1.00',        // 任何代币价值 1 美元
+    asset: 'USD',          // 让客户选择代币
+    network: 'base-mainnet'
+  }
+};
+
+app.use(paymentMiddleware(
+  '0xYourUSDCAddress...',  // 接收 USDC
+  endpointConfig,
+  facilitator
+));
+```
+
+## 跨链支持
+
+AnySpend 可以促成 **客户的代币** 与 **资源服务器的结算** 在不同链上的支付。
+
+**示例：**
+```typescript
+// 客户使用 Ethereum 上的 DAI 支付
+const clientPayment = {
+  token: '0x6B175474E89094C44Da98b954EedeAC495271d0F', // Ethereum 上的 DAI
+  network: 'ethereum-mainnet',
+  amount: '1.0'
+};
+
+// 资源服务器在 Base 上接收 USDC
+const serverSettlement = {
+  token: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // Base 上的 USDC
+  network: 'base-mainnet',
+  amount: '1.00'
+};
+
+// AnySpend 处理：
+// 1. 在 Ethereum 上接收 DAI
+// 2. 将 DAI 从 Ethereum → Base 桥接
+// 3. 在 Base 上将 DAI → USDC 兑换
+// 4. 将 USDC 结算给资源服务器
+```
+
+**支持的跨链路由：**
+AnySpend 支持在任何支持的 EVM 网络之间的跨链路由，包括：
+- Ethereum ↔ Base, Arbitrum, Optimism, Polygon, Avalanche
+- Base ↔ Arbitrum, Optimism, Polygon
+- L1 ↔ L2 在所有支持的链上桥接
+- 跨 VM：Solana ↔ EVM 链（实验性）
+
+<Info>
+跨链支付需要更长时间（2-5 分钟）因为桥接时间，并且会产生额外费用（总计约 0.5%）。为了最佳用户体验，推荐使用同链支付。
+</Info>
+
+## 燃气费用比较
+
+预计的 x402 支付燃气费用（截至 2025 年）：
+
+| 网络 | USDC 支付 | 代币兑换支付 | 跨链支付 |
+|---------|-------------|-------------------|---------------------|
+| Base | ~$0.001 | ~$0.003 | ~$0.01 - $0.05 |
+| B3 | ~$0.001 | ~$0.003 | ~$0.01 - $0.05 |
+| Arbitrum | ~$0.01 | ~$0.05 | ~$0.1 - $1 |
+| Optimism | ~$0.01 | ~$0.05 | ~$0.1 - $1 |
+| Polygon | ~$0.0001 | ~$0.001 | ~$0.01 - $0.1 |
+| BSC | ~$0.01 | ~$0.03 | ~$0.1 - $0.5 |
+| Avalanche | ~$0.02 | ~$0.05 | ~$0.1 - $1 |
+| Abstract | ~$0.001 | ~$0.003 | ~$0.01 - $0.05 |
+| Ethereum | ~$5 - $50 | ~$10 - $100 | ~$20 - $200 |
+| Solana | ~$0.0001 | ~$0.001 | ~$0.5 - $2 |
+
+<Note>
+燃气费由 **协调者** 支付，并包含在 AnySpend 的 0.25% - 0.35% 费用中。客户和资源服务器不直接支付燃气费。
+</Note>
+
+## 测试与开发
+
+AnySpend 支持多个测试网用于开发和测试。请参阅上面的 [EVM 测试网网络](#evm-testnet-networks) 部分，了解支持的测试网及其水龙头的完整列表。
+
+### 推荐的测试网
+
+**通用开发：**
+- **Base Sepolia** (链 ID: 84532) - 最佳测试网体验，快速且可靠
+- **Solana Devnet** (链 ID: 103) - 用于 Solana/SVM 测试
+
+**特定网络测试：**
+- 使用与目标主网匹配的相应测试网
+- 请参阅上面的 EVM 测试网网络表格以获取水龙头链接
+
+### 测试代币地址
+
+联系 AnySpend 团队以获取特定网络上的测试代币地址，或使用标准测试网水龙头获取测试代币。
+
+## 额外资源
+
+<CardGroup cols={2}>
+<Card title="Chainlist" icon="link" href="https://chainlist.org">
+  RPC 端点和链元数据
+</Card>
+
+<Card title="Token Lists" icon="list" href="https://tokenlists.org">
+  跨链的验证代币地址
+</Card>
+
+<Card title="Coinbase 水龙头" icon="faucet" href="https://portal.cdp.coinbase.com/products/faucet">
+  获取开发用的测试网代币
+</Card>
+
+<Card title="AnySpend 协调者" icon="arrows-turn-right" href="https://mainnet.anyspend.com/x402">
+  生产协调者 API 端点
+</Card>
+</CardGroup>
+
+## 下一步是什么？
+
+<CardGroup cols={2}>
+<Card title="买家快速入门" icon="wallet" href="/anyspend/x402-quickstart-buyers">
+  开始使用这些代币支付服务
+</Card>
+
+<Card title="卖家快速入门" icon="money-bill" href="/anyspend/x402-quickstart-sellers">
+  配置您的 API 以接受这些代币
+</Card>
+</CardGroup>
+
+## 获取帮助
+
+如果您需要支持特定的代币或网络：
+
+- **Discord**：在 [#anyspend-support](https://discord.gg/b3dotfun) 请求
+- **GitHub**：在 [github.com/b3-fun/anyspend-x402](https://github.com/b3-fun/anyspend-x402) 开启一个问题
+- **电子邮件**：support@b3.fun

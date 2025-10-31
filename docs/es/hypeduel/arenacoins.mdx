@@ -1,12 +1,14 @@
 ---
 title: ArenaCoins
 description: >-
-  Tokens específicos de arena con precios de curva de vinculación que te
-  permiten poseer una parte de los entornos de batalla de IA
+  Tokens específicos de arena con precios de curva de enlace que te permiten
+  poseer una parte de los entornos de batalla de IA
 lang: es
 originalPath: hypeduel/arenacoins.mdx
 ---
-**ArenaCoins** son los tokens nativos para cada entorno de batalla en HypeDuel — una forma revolucionaria de poseer una parte de la acción en la primera arena de entretenimiento AI vs AI del mundo. Cada arena tiene su propio token único que se aprecia con el éxito de la arena.
+<img src="/images/hypeduel-arenacoins-tokenomics.png" className="w-full rounded-xl mb-6" />
+
+**ArenaCoins** son los tokens nativos para cada ambiente de batalla en HypeDuel — una forma revolucionaria de poseer una parte de la acción en la primera arena de entretenimiento AI vs AI del mundo. Cada arena tiene su propio token único que se aprecia con el éxito de la arena.
 
 ## Concepto Principal
 
@@ -25,7 +27,7 @@ graph TD
 
     subgraph "Crecimiento de Arena"
         ES --> LB[Comienzan Batallas en Vivo]
-        LB --> BF[Apuestas & Tarifas Generan]
+        LB --> BF[Apuestas y Tarifas Generan]
         BF --> RS[Reparto de Ingresos]
     end
 
@@ -57,11 +59,11 @@ graph TD
 ### Qué Hace Únicos a los ArenaCoins
 
 <Card title="Uno Por Arena" icon="building">
-  Cada entorno de batalla tiene su propio ArenaCoin único ($COMBAT, $RACING, etc.)
+  Cada ambiente de batalla tiene su propio ArenaCoin único ($COMBAT, $RACING, etc.)
 </Card>
 
 <Card title="Precios de Curva de Vinculación" icon="trending-up">
-  Descubrimiento de precios justo a través de curvas matemáticas, sin posibilidad de front-running
+  Descubrimiento de precio justo a través de curvas matemáticas, sin posibilidad de front-running
 </Card>
 
 <Card title="Reparto de Ingresos" icon="coins">
@@ -69,17 +71,17 @@ graph TD
 </Card>
 
 <Card title="Gobernanza Comunitaria" icon="users">
-  Los poseedores de ArenaCoin votan sobre mejoras de la arena y cambios de reglas
+  Los poseedores de ArenaCoin votan sobre mejoras en la arena y cambios de reglas
 </Card>
 
 ## Ciclo de Vida de ArenaCoin
 
-### Fase 1: Creación de Arena & Vinculación
+### Fase 1: Creación de Arena y Vinculación
 
 Cuando se lanza una nueva arena, entra en la **fase de vinculación**:
 
 <Steps>
-  <Step title="Lanzamiento de Arena">El creador despliega un nuevo entorno de batalla con jugabilidad única</Step>
+  <Step title="Lanzamiento de Arena">El creador despliega un nuevo ambiente de batalla con jugabilidad única</Step>
   <Step title="Apertura de Vinculación">Los jugadores pueden vincular $B3 para recibir ArenaCoins a precios de curva</Step>
   <Step title="Construcción de Comunidad">Los primeros soportes acumulan tokens y construyen la comunidad inicial</Step>
   <Step title="Criterios de Graduación">La arena alcanza los objetivos de vinculación (liquidez + tamaño de la comunidad)</Step>
@@ -98,7 +100,7 @@ Después de una vinculación exitosa, los ArenaCoins se gradúan a comercio comp
 
 ### Fundamento Matemático
 
-Los ArenaCoins utilizan una **curva de vinculación cuadrática** para el descubrimiento de precios justo:
+Los ArenaCoins utilizan una **curva de vinculación cuadrática** para el descubrimiento de precio justo:
 
 ```typescript
 // Fórmula de precios de curva de vinculación
@@ -107,8 +109,8 @@ function calculatePrice(supply: number, bondingConstant: number): number {
 }
 
 // Ejemplo con arena $COMBAT
-const bondingConstant = 1000000; // 1M de tokens a ratio 1:1
-const currentSupply = 250000; // 250k de tokens acuñados
+const bondingConstant = 1000000; // 1M tokens a razón de 1:1
+const currentSupply = 250000; // 250k tokens acuñados
 
 const pricePerToken = (250000 / 1000000) ** 2;
 // = 0.25^2 = 0.0625 $B3 por ArenaCoin
@@ -118,8 +120,8 @@ const pricePerToken = (250000 / 1000000) ** 2;
 
 <Tabs>
   <Tab title="Lanzamiento Justo">
-    - Sin preventa o asignaciones internas - El precio aumenta con la demanda - Los primeros soportes obtienen mejores precios -
-    Descubrimiento de precios matemático
+    - Sin preventa ni asignaciones internas - El precio aumenta con la demanda - Los primeros soportes obtienen mejores precios -
+    Descubrimiento de precio matemático
   </Tab>
 
 <Tab title="Liquidez Garantizada">
@@ -127,7 +129,7 @@ const pricePerToken = (250000 / 1000000) ** 2;
 </Tab>
 
   <Tab title="Anti-Manipulación">
-    - Sin front-running posible - Las compras grandes tienen impacto en el precio - La curva disuade naturalmente las infladas - Algoritmo de precios transparente
+    - Sin front-running posible - Las compras grandes tienen impacto en el precio - La curva disuade naturalmente las manipulaciones - Algoritmo de precios transparente
   </Tab>
 </Tabs>
 
@@ -175,7 +177,7 @@ graph LR
     subgraph "Acciones del Tesoro"
         T --> G[Recompras de ArenaCoin]
         T --> H[Quemas de Token]
-        T --> I[Soporte de Liquidez]
+        T --> I[Apoyo de Liquidez]
     end
 
     subgraph "Impacto en Valor"
@@ -202,10 +204,10 @@ graph LR
 
 <Tabs>
   <Tab title="Tarifas de Apuestas">
-    **10% de todos los pools de apuestas** - Recaudado de cada batalla - Proporcional al volumen de apuestas - Se acumula en el tesoro de la arena - Usado para recompras de token *Ejemplo: pool de apuestas de 10,000 HYPES = 1,000 HYPES al tesoro*
+    **10% de todos los pozos de apuestas** - Recaudado de cada batalla - Proporcional al volumen de apuestas - Se acumula en el tesoro de la arena - Utilizado para recompras de tokens *Ejemplo: pozo de apuestas de 10,000 HYPES = 1,000 HYPES al tesoro*
   </Tab>
 
-<Tab title="Ingresos de Impulsos">
+<Tab title="Ingresos por Impulsos">
   **50% de las compras de impulsos** - Ingresos en tiempo real de características interactivas - Mayor compromiso = más ingresos - Escala con la popularidad de la arena - Impacto inmediato en el tesoro *Ejemplo: 500 HYPES en impulsos = 250 HYPES al tesoro*
 </Tab>
 

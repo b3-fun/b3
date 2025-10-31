@@ -1,0 +1,285 @@
+---
+title: 네트워크 & 토큰 지원
+description: 'AnySpend x402 결제를 위한 지원되는 블록체인, 토큰 및 계약 주소'
+lang: ko
+originalPath: anyspend/x402-network-support.mdx
+---
+## 개요
+
+AnySpend x402는 EVM 호환 체인과 Solana (SVM)을 포함한 여러 블록체인 네트워크에서의 결제를 지원합니다. 이 페이지는 지원되는 네트워크, 토큰 및 그들의 계약 주소에 대한 완전한 참조를 제공합니다.
+
+## EVM 메인넷 네트워크
+
+AnySpend x402는 다음 EVM 메인넷 체인을 지원합니다:
+
+| 네트워크 | 식별자 | 체인 ID | 유형 |
+|---------|-----------|----------|------|
+| Abstract | `abstract` | 2741 | L2 |
+| Arbitrum One | `arbitrum` | 42161 | L2 - Optimistic Rollup |
+| Avalanche C-Chain | `avalanche` | 43114 | L1 |
+| B3 | `b3` | 8333 | L2 |
+| Base | `base` | 8453 | L2 - Optimistic Rollup |
+| BNB Smart Chain | `bsc` | 56 | L1 |
+| Ethereum | `ethereum` | 1 | L1 |
+| IoTeX | `iotex` | 4689 | L1 |
+| Optimism | `optimism` | 10 | L2 - Optimistic Rollup |
+| Peaq | `peaq` | 3338 | L1 |
+| Polygon PoS | `polygon` | 137 | 사이드체인 |
+| Sei | `sei` | 1329 | L1 |
+
+<Note>
+**생산을 위해 권장되는 체인:** Base (낮은 수수료, 빠름), Ethereum (최대 유동성), Arbitrum (균형잡힘)
+</Note>
+
+## EVM 테스트넷 네트워크
+
+개발 및 테스트를 위해, AnySpend는 다음 테스트넷을 지원합니다:
+
+| 네트워크 | 식별자 | 체인 ID | 수도꼭지 |
+|---------|-----------|----------|--------|
+| Abstract Testnet | `abstract-testnet` | 11124 | [Abstract Faucet](https://portal.testnet.abs.xyz/) |
+| Avalanche Fuji | `avalanche-fuji` | 43113 | [Fuji Faucet](https://faucet.avax.network/) |
+| Base Sepolia | `base-sepolia` | 84532 | [Coinbase Faucet](https://portal.cdp.coinbase.com/products/faucet) |
+| Polygon Amoy | `polygon-amoy` | 80002 | [Polygon Faucet](https://faucet.polygon.technology/) |
+| Sei Testnet | `sei-testnet` | 1328 | [Sei Faucet](https://atlantic-2.app.sei.io/faucet) |
+
+## SVM 네트워크 (Solana)
+
+AnySpend는 또한 Solana Virtual Machine (SVM) 네트워크를 지원합니다:
+
+| 네트워크 | 식별자 | 체인 ID | 유형 |
+|---------|-----------|----------|------|
+| Solana Mainnet | `solana` | 101 | 메인넷 |
+| Solana Devnet | `solana-devnet` | 103 | 테스트넷 |
+
+<Info>
+Solana 지원은 VM 간 결제를 가능하게 합니다 - 사용자는 SOL 또는 SPL 토큰으로 결제할 수 있으며 리소스 서버는 EVM 체인에서 스테이블코인을 받습니다.
+</Info>
+
+## 지원되는 토큰
+
+### USDC (Circle)
+
+USDC는 **EIP-3009 transferWithAuthorization**을 사용하여 모든 네트워크에서 기본적으로 지원됩니다.
+
+| 네트워크 | 계약 주소 | 소수점 | 서명 방법 |
+|---------|-----------------|----------|------------------|
+| Base | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` | 6 | transferWithAuthorization |
+| Ethereum | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | 6 | transferWithAuthorization |
+| Arbitrum | `0xaf88d065e77c8cC2239327C5EDb3A432268e5831` | 6 | transferWithAuthorization |
+| Optimism | `0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85` | 6 | transferWithAuthorization |
+| Polygon | `0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359` | 6 | transferWithAuthorization |
+| Base Sepolia | `0x036CbD53842c5426634e7929541eC2318f3dCF7e` | 6 | transferWithAuthorization |
+
+**사용법:**
+```typescript
+const usdcAddress = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'; // Base
+```
+
+### DAI (스테이블코인)
+
+DAI는 **EIP-2612 permit**을 지원합니다.
+
+| 네트워크 | 계약 주소 | 소수점 | 서명 방법 |
+|---------|-----------------|----------|------------------|
+| Base | `0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb` | 18 | permit (EIP-2612) |
+| Ethereum | `0x6B175474E89094C44Da98b954EedeAC495271d0F` | 18 | permit (EIP-2612) |
+| Arbitrum | `0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1` | 18 | permit (EIP-2612) |
+| Optimism | `0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1` | 18 | permit (EIP-2612) |
+| Polygon | `0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063` | 18 | permit (EIP-2612) |
+
+**사용법:**
+```typescript
+const daiAddress = '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb'; // Base
+```
+
+### USDT (Tether)
+
+USDT 지원은 네트워크에 따라 다릅니다. 일부 구현은 permit을 지원하고, 다른 일부는 지원하지 않습니다.
+
+| 네트워크 | 계약 주소 | 소수점 | 서명 방법 |
+|---------|-----------------|----------|------------------|
+| Base | `0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2` | 6 | permit (EIP-2612) |
+| Ethereum | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | 6 | ⚠️ permit 지원 없음 |
+| Arbitrum | `0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9` | 6 | permit (EIP-2612) |
+| Optimism | `0x94b008aA00579c1307B0EF2c499aD98a8ce58e58` | 6 | permit (EIP-2612) |
+| Polygon | `0xc2132D05D31c914a87C6611C10748AEb04B58e8F` | 6 | ⚠️ permit 지원 없음 |
+
+<Warning>
+Ethereum과 Polygon의 USDT는 **EIP-2612 permit**을 지원하지 않습니다. 전통적인 `approve()` + `transferFrom()` 흐름을 사용하거나 다른 토큰을 선택하세요.
+</Warning>
+
+### 기타 ERC-20 토큰
+
+**EIP-2612 permit**을 구현하는 모든 ERC-20 토큰이 지원됩니다:
+
+- **cbBTC** (Coinbase Wrapped Bitcoin)
+- **LINK** (Chainlink)
+- **UNI** (Uniswap)
+- **AAVE** (Aave)
+- 그 외 많은 토큰...
+
+**토큰이 permit을 지원하는지 확인:**
+```typescript
+// 토큰에 permit 함수가 있는지 확인
+const hasPermit = await token.read.permit !== undefined;
+
+// 또는 DOMAIN_SEPARATOR 확인 (EIP-712에 필요)
+const hasDomainSeparator = await token.read.DOMAIN_SEPARATOR !== undefined;
+```
+
+<Info>
+가스 없는 서명에 대한 자세한 정보는 [Permit vs TransferWithAuthorization](/anyspend/x402-signature-methods) 가이드를 참조하세요.
+</Info>
+
+## 토큰 구성
+
+### 클라이언트 측 (지불)
+
+선호하는 결제 토큰을 지정하세요:
+
+```typescript
+import { X402Client } from 'anyspend-x402-client';
+
+const client = new X402Client({
+  walletClient,
+  preferredToken: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb', // Base의 DAI
+  network: 'base-mainnet'
+});
+```
+
+또는 요청별로:
+
+```typescript
+const response = await client.request('https://api.example.com/data', {
+  preferredToken: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb' // Base의 DAI
+});
+```
+
+### 서버 측 (수신)
+
+허용된 토큰과 결제 통화를 구성하세요:
+
+```typescript
+import { paymentMiddleware, facilitator } from '@b3dotfun/anyspend-x402';
+
+const endpointConfig = {
+  '/api/data': {
+    amount: '1.00',        // 어떤 토큰의 $1 가치
+    asset: 'USD',          // 클라이언트가 토큰 선택
+    network: 'base-mainnet'
+  }
+};
+
+app.use(paymentMiddleware(
+  '0xYourUSDCAddress...',  // USDC 수신
+  endpointConfig,
+  facilitator
+));
+```
+
+## 크로스 체인 지원
+
+AnySpend는 **클라이언트의 토큰**이 **리소스 서버의 결제**와 다른 체인에 있을 때 결제를 용이하게 합니다.
+
+**예시:**
+```typescript
+// 클라이언트는 Ethereum에서 DAI로 결제
+const clientPayment = {
+  token: '0x6B175474E89094C44Da98b954EedeAC495271d0F', // Ethereum의 DAI
+  network: 'ethereum-mainnet',
+  amount: '1.0'
+};
+
+// 리소스 서버는 Base에서 USDC를 수신
+const serverSettlement = {
+  token: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // Base의 USDC
+  network: 'base-mainnet',
+  amount: '1.00'
+};
+
+// AnySpend 처리:
+// 1. Ethereum에서 DAI 수신
+// 2. DAI를 Ethereum → Base로 브리징
+// 3. Base에서 DAI → USDC로 스왑
+// 4. 리소스 서버에게 USDC 결제
+```
+
+**지원되는 크로스 체인 경로:**
+AnySpend는 지원되는 모든 EVM 네트워크 간의 크로스 체인 라우팅을 지원합니다, 포함:
+- Ethereum ↔ Base, Arbitrum, Optimism, Polygon, Avalanche
+- Base ↔ Arbitrum, Optimism, Polygon
+- 모든 지원 체인 간의 L1 ↔ L2 브리징
+- 크로스 VM: Solana ↔ EVM 체인 (실험적)
+
+<Info>
+크로스 체인 결제는 브리징 시간으로 인해 더 오래 걸립니다 (2-5분) 및 추가 수수료가 발생합니다 (~0.5% 총). 최상의 사용자 경험을 위해 동일 체인 결제를 권장합니다.
+</Info>
+
+## 가스 수수료 비교
+
+2025년 기준 x402 결제당 예상 가스 비용:
+
+| 네트워크 | USDC 결제 | 토큰 스왑 결제 | 크로스 체인 결제 |
+|---------|-------------|-------------------|---------------------|
+| Base | ~$0.001 | ~$0.003 | ~$0.01 - $0.05 |
+| B3 | ~$0.001 | ~$0.003 | ~$0.01 - $0.05 |
+| Arbitrum | ~$0.01 | ~$0.05 | ~$0.1 - $1 |
+| Optimism | ~$0.01 | ~$0.05 | ~$0.1 - $1 |
+| Polygon | ~$0.0001 | ~$0.001 | ~$0.01 - $0.1 |
+| BSC | ~$0.01 | ~$0.03 | ~$0.1 - $0.5 |
+| Avalanche | ~$0.02 | ~$0.05 | ~$0.1 - $1 |
+| Abstract | ~$0.001 | ~$0.003 | ~$0.01 - $0.05 |
+| Ethereum | ~$5 - $50 | ~$10 - $100 | ~$20 - $200 |
+| Solana | ~$0.0001 | ~$0.001 | ~$0.5 - $2 |
+
+<Note>
+가스 수수료는 **중개자에 의해 지불**되며 0.25% - 0.35% AnySpend 수수료에 포함됩니다. 클라이언트와 리소스 서버는 직접 가스를 지불하지 않습니다.
+</Note>
+
+## 테스트 및 개발
+
+AnySpend는 개발 및 테스트를 위해 여러 테스트넷을 지원합니다. 지원되는 테스트넷의 전체 목록과 그들의 수도꼭지에 대해서는 위의 [EVM 테스트넷 네트워크](#evm-testnet-networks) 섹션을 참조하세요.
+
+### 권장 테스트넷
+
+**일반 개발을 위해:**
+- **Base Sepolia** (체인 ID: 84532) - 최고의 테스트넷 경험, 빠르고 신뢰할 수 있음
+- **Solana Devnet** (체인 ID: 103) - Solana/SVM 테스트를 위해
+
+**특정 네트워크 테스트를 위해:**
+- 대상 메인넷과 일치하는 해당 테스트넷을 사용하세요
+- 수도꼭지 링크에 대해서는 위의 EVM 테스트넷 네트워크 표를 참조하세요
+
+### 테스트 토큰 주소
+
+특정 네트워크에서의 테스트 토큰 주소에 대해 AnySpend 팀에 문의하거나, 테스트를 위해 표준 테스트넷 수도꼭지를 사용하여 네이티브 토큰을 받으세요.
+
+## 추가 자료
+
+<CardGroup cols={2}>
+<Card title="Chainlist" icon="link" href="https://chainlist.org">
+  RPC 엔드포인트 및 체인 메타데이터
+</Card>
+
+<Card title="Token Lists" icon="list" href="https://tokenlists.org">
+  체인별로 검증된 토큰 주소
+</Card>
+
+<Card title="Coinbase Faucet" icon="faucet" href="https://portal.cdp.coinbase.com/products/faucet">
+  개발을 위한 테스트넷 토큰 받기
+</Card>
+
+<Card title="AnySpend Facilitator" icon="arrows-turn-right" href="https://mainnet.anyspend.com/x402">
+  생산용 중개자 API 엔드포인트
+</Card>
+</CardGroup>
+
+## 다음 단계는?
+
+<CardGroup cols={2}>
+<Card title="구매자를 위한 빠른 시작" icon="wallet" href="/anyspend/x402-quickstart-buyers">
+  이 토큰들을 사용하여 서비스를 결제하는 방법 시작하기
+</Card>
+
+<Card title="판매자를 위한 빠른 시작" icon="money-bill" href="/anyspend/x402-quick

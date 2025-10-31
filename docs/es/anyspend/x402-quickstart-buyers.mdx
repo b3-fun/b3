@@ -1,0 +1,550 @@
+---
+title: Guía rápida para compradores
+description: >-
+  Paga por APIs y servicios con muro de pago utilizando cualquier token con el
+  AnySpend x402 Client SDK
+lang: es
+originalPath: anyspend/x402-quickstart-buyers.mdx
+---
+## Visión General
+
+Esta guía te muestra cómo usar el **AnySpend x402 Client SDK** para pagar recursos con muro de pago usando cualquier criptomoneda que poseas. El SDK maneja todo el flujo de pago automáticamente, incluyendo la generación de firmas y la lógica de reintento.
+
+La belleza de x402 es que puedes usar este mismo cliente para pagar por **cualquier servicio habilitado para x402**, no solo aquellos que usan AnySpend.
+
+## Prerrequisitos
+
+Antes de comenzar, asegúrate de tener:
+
+- **Node.js 18+** o un entorno de ejecución de JavaScript compatible
+- **Una cartera de criptomonedas** con algunos tokens (ETH, USDC, DAI, etc.)
+- **Una biblioteca de cartera** como [viem](https://viem.sh) o [ethers.js](https://docs.ethers.org)
+- **Acceso a un servicio habilitado para x402** (como una API con muro de pago)
+
+## Instalación
+
+Instala el SDK del cliente x402:
+
+<CodeGroup>
+```bash npm
+npm install anyspend-x402-client viem
+```
+
+```bash yarn
+yarn add anyspend-x402-client viem
+```
+
+```bash pnpm
+pnpm add anyspend-x402-client viem
+```
+</CodeGroup>
+
+El SDK utiliza [viem](https://viem.sh) para operaciones de cartera y generación de firmas.
+
+## Uso Básico
+
+### 1. Crear un Cliente de Cartera
+
+Primero, configura tu cliente de cartera usando viem:
+
+```typescript
+import { createWalletClient, custom } from 'viem';
+import { base } from 'viem/chains';
+
+// Para navegador con MetaMask u otra extensión de cartera
+const walletClient = createWalletClient({
+  chain: base,
+  transport: custom(window.ethereum)
+});
+
+// Obtener la dirección del usuario
+const [address] = await walletClient.getAddresses();
+```
+
+### 2. Inicializar el Cliente x402
+
+Crea una instancia del cliente x402:
+
+```typescript
+import { X402Client } from 'anyspend-x402-client';
+
+const x402Client = new X402Client({
+  walletClient,           // Tu cliente de cartera viem
+  preferredToken: '0x...', // Opcional: token predeterminado para pagar
+  autoRetry: true          // Manejo automático de respuestas 402 (predeterminado: true)
+});
+```
+
+### 3. Realizar una Solicitud de Pago
+
+Usa el cliente para acceder a recursos con muro de pago:
+
+```typescript
+try {
+  const response = await x402Client.request(
+    'https://api.example.com/premium-data',
+    {
+      method: 'GET',
+    }
+  );
+
+  console.log('Datos:', response.data);
+  console.log('TX de Pago:', response.paymentResponse?.txHash);
+} catch (error) {
+  console.error('Pago fallido:', error);
+}
+```
+
+**Lo que sucede:**
+
+1. El cliente realiza la solicitud inicial
+2. La API devuelve `402 Payment Required` con detalles de pago
+3. X402Client firma automáticamente la autorización de pago
+4. El cliente reintenta la solicitud con el pago
+5. La API verifica y liquida el pago
+6. El cliente recibe los datos solicitados
+
+## Uso Avanzado
+
+### Especificar Token de Pago
+
+Hay dos formas de especificar con qué token quieres pagar:
+
+#### Opción 1: Usando X402Client
+
+Paga con un token específico estableciendo `preferredToken`:
+
+```typescript
+const response = await x402Client.request(
+  'https://ai-agent-api.com/inference',
+  {
+    method: 'POST',
+    body: { prompt: 'Generar una imagen de un gato' },
+    preferredToken: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb' // DAI en Base
+  }
+);
+```
+
+#### Opción 2: Usando wrapFetchWithPayment (Avanzado)
+
+Para un control más detallado, usa la función `wrapFetchWithPayment` de nivel inferior:
+
+```typescript
+import { wrapFetchWithPayment } from 'anyspend-x402-client';
+
+const tokenAddress = '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb'; // DAI en Base
+const selectedChain = 8453; // Base
+
+const paymentPreferences = {
+  preferredToken: tokenAddress,
+  preferredNetwork: 'base' as const, // o usa getNetworkName(selectedChain)
+};
+
+console.log(`💡 Usando token preferido: ${tokenAddress} en base`);
+
+// Envolver fetch con manejo automático de pago
+const fetchWithPayment = wrapFetchWithPayment(
+  fetch,
+  walletClient,
+  '1000000', // Valor máximo de pago (1 USDC en 6 decimales)
+  undefined, // Usar selector de requisitos de pago predeterminado
+  undefined, // Usar configuración predeterminada
+  paymentPreferences, // Especificar tu token y red preferidos
+);
+
+// Usar el fetch envuelto como un fetch normal
+const response = await fetchWithPayment('https://api.example.com/premium-data');
+const data = await response.json();
+```
+
+**Beneficios de `wrapFetchWithPayment`:**
+- Funciona con cualquier código basado en `fetch`
+- Control más granular sobre el comportamiento de pago
+- Puede especificar el valor máximo de pago
+- Selector de requisitos de pago personalizado
+- Soporta firmantes de múltiples redes
+
+Si el servidor de recursos soporta middleware AnySpend, pagarás el monto equivalente en tu token preferido en lugar de USDC.
+
+### Solicitudes POST con Cuerpo
+
+Realiza solicitudes POST pagadas:
+
+```typescript
+const response = await x402Client.request(
+  'https://api.example.com/compute',
+  {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: {
+      model: 'gpt-4',
+      messages: [{ role: 'user', content: '¡Hola!' }]
+    }
+  }
+);
+```
+
+### Flujo de Pago Manual
+
+Para un control más detallado, maneja el flujo de pago manualmente:
+
+```typescript
+// 1. Realizar solicitud inicial
+const initialResponse = await fetch('https://api.example.com/premium-data');
+
+if (initialResponse.status === 402) {
+  // 2. Analizar requisitos de pago
+  const paymentRequired = await initialResponse.json();
+  const requirements = paymentRequired.requirements[0];
+
+  console.log('Pago requerido:', {
+    amount: requirements.amount,
+    token: requirements.asset,
+    recipient: requirements.recipient
+  });
+
+  // 3. Firmar autorización de pago
+  const paymentHeader = await x402Client.signPayment(requirements);
+
+  // 4. Reintentar con pago
+  const paidResponse = await fetch('https://api.example.com/premium-data', {
+    headers: {
+      'X-PAYMENT': paymentHeader
+    }
+  });
+
+  const data = await paidResponse.json();
+  const paymentResponse = paidResponse.headers.get('X-PAYMENT-RESPONSE');
+
+  console.log('¡Pago exitoso!', JSON.parse(atob(paymentResponse)));
+}
+```
+
+## Opciones de Configuración
+
+### X402ClientOptions
+
+```typescript
+interface X402ClientOptions {
+  walletClient: WalletClient;        // cliente de cartera viem (obligatorio)
+  network?: string;                   // Red predeterminada (p. ej., 'base-mainnet')
+  preferredToken?: string;            // Dirección del token de pago preferido
+  autoRetry?: boolean;                // Reintentar automáticamente en 402 (predeterminado: true)
+  timeout?: number;                   // Tiempo de espera de la solicitud en ms (predeterminado: 30000)
+}
+```
+
+### RequestOptions
+
+```typescript
+interface RequestOptions {
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  headers?: Record<string, string>;
+  body?: any;                         // Cuerpo de la solicitud (serializado automáticamente a JSON)
+  preferredToken?: string;            // Sobrescribir el token preferido predeterminado
+}
+```
+
+### Parámetros de wrapFetchWithPayment
+
+Para casos de uso avanzados, `wrapFetchWithPayment` proporciona un control de nivel inferior:
+
+```typescript
+function wrapFetchWithPayment(
+  fetchFn: typeof fetch,              // Función fetch para envolver
+  signer: Signer | MultiNetworkSigner, // Cliente de cartera para firmar
+  maxPaymentValue: string,             // Máximo pago en unidad más pequeña (p. ej., '1000000' para 1 USDC)
+  selectPaymentRequirements?: Function, // Selector de requisitos personalizado
+  config?: {
+    timeout?: number;                  // Tiempo de espera de la solicitud en ms
+    maxRetries?: number;               // Máximo de intentos de reintento de pago
+  },
+  paymentPreferences?: {
+    preferredToken?: string;           // Dirección del token para pagar
+    preferredNetwork?: string;         // Identificador de la red (p. ej., 'base', 'ethereum')
+  }
+): typeof fetch
+```
+
+**Ejemplo con todos los parámetros:**
+
+```typescript
+import { wrapFetchWithPayment } from 'anyspend-x402-client';
+
+const fetchWithPayment = wrapFetchWithPayment(
+  fetch,
+  walletClient,
+  '5000000', // Máx 5 USDC
+  undefined, // Selector de requisitos predeterminado
+  {
+    timeout: 60000,    // Tiempo de espera de 60 segundos
+    maxRetries: 3      // Reintentar hasta 3 veces
+  },
+  {
+    preferredToken: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb', // DAI
+    preferredNetwork: 'base'
+  }
+);
+```
+
+## Tokens Soportados
+
+El cliente x402 puede pagar con cualquier token que soporte **EIP-2612 permit** o sea **USDC** (que utiliza EIP-3009 transferWithAuthorization).
+
+Tokens comunes soportados:
+
+- **USDC** - Soporte nativo en todas las cadenas
+- **DAI** - Stablecoin con soporte de permit
+- **USDT** - En cadenas donde implementa permit
+
+Consulta [Soporte de Red](/anyspend/x402-network-support) para direcciones de tokens detalladas por cadena.
+
+## Ejemplos
+
+### Componente React (Usando X402Client)
+
+```tsx
+import { X402Client } from 'anyspend-x402-client';
+import { useWalletClient } from 'wagmi';
+import { useState } from 'react';
+
+export function PremiumDataFetcher() {
+  const { data: walletClient } = useWalletClient();
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const fetchPremiumData = async () => {
+    if (!walletClient) return;
+
+    setLoading(true);
+    try {
+      const client = new X402Client({
+        walletClient,
+        preferredToken: '0x...' // DAI u otro token
+      });
+
+      const response = await client.request(
+        'https://api.example.com/premium-data'
+      );
+
+      setData(response.data);
+      console.log('Pagado con TX:', response.paymentResponse?.txHash);
+    } catch (error) {
+      console.error('Pago fallido:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      <button onClick={fetchPremiumData} disabled={loading}>
+        {loading ? 'Pagando...' : 'Obtener Datos Premium (Cuesta 1 USDC)'}
+      </button>
+      {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
+    </div>
+  );
+}
+```
+
+### Componente React (Usando wrapFetchWithPayment)
+
+Para aplicaciones que necesitan más control o usan código basado en fetch existente:
+
+```tsx
+import { wrapFetchWithPayment } from 'anyspend-x402-client';
+import { useWalletClient, useChainId } from 'wagmi';
+import { useState } from 'react';
+
+// Ayudante para obtener el nombre de la red a partir del ID de la cadena
+const getNetworkName = (chainId: number): string => {
+  const networks: Record<number, string> = {
+    8453: 'base',
+    1: 'ethereum',
+    42161: 'arbitrum',
+    10: 'optimism',
+    137: 'polygon',
+  };
+  return networks[chainId] || 'base';
+};
+
+export function PremiumDataFetcherAdvanced() {
+  const { data: walletClient } = useWalletClient();
+  const selectedChain = useChainId();
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [log, setLog] = useState<string[]>([]);
+
+  // Direcciones de tokens por cadena
+  const tokenAddresses: Record<number, string> = {
+    8453: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb', // DAI en Base
+    1: '0x6B175474E89094C44Da98b954EedeAC495271d0F', // DAI en Ethereum
+  };
+
+  const fetchPremiumData = async () => {
+    if (!walletClient) return;
+
+    setLoading(true);
+    setLog([]);
+
+    try {
+      const tokenAddress = tokenAddresses[selectedChain];
+
+      const paymentPreferences = {
+        preferredToken: tokenAddress,
+        preferredNetwork: getNetworkName(selectedChain) as any,
+      };
+
+      setLog(prev => [...prev,
+        `💡 Usando token preferido: ${tokenAddress} en ${getNetworkName(selectedChain)}`
+      ]);
+
+      // Envolver fetch con manejo automático de pago
+      const fetchWithPayment = wrapFetchWithPayment(
+        fetch,
+        walletClient as any,
+        '1000000', // Máx 1 USDC
+        undefined, // Usar selector de requisitos de pago predeterminado
+        undefined, // Usar configuración predeterminada
+        paymentPreferences,
+      );
+
+      setLog(prev => [...prev, '🔄 Realizando solicitud...']);
+
+      const response = await fetchWithPayment('https://api.example.com/premium-data');
+      const result = await response.json();
+
+      setData(result);
+      setLog(prev => [...prev, '✅ ¡Pago exitoso!']);
+    } catch (error) {
+      console.error('Pago fallido:', error);
+      setLog(prev => [...prev, `❌ Error: ${error.message}`]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      <button onClick={fetchPremiumData} disabled={loading}>
+        {loading ? 'Procesando Pago...' : 'Obtener Datos Premium'}
+      </button>
+
+      {log.length > 0 && (
+        <div style={{ marginTop: '1rem', fontFamily: 'monospace' }}>
+          {log.map((entry, i) => <div key={i}>{entry}</div>)}
+        </div>
+      )}
+
+      {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
+    </div>
+  );
+}
+```
+
+### Script Node.js
+
+```typescript
+import { X402Client } from 'anyspend-x402-client';
+import { createWalletClient, http } from 'viem';
+import { privateKeyToAccount } from 'viem/accounts';
+import { base } from 'viem/chains';
+
+// Cargar clave privada del entorno
+const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`);
+
+const walletClient = createWalletClient({
+  account,
+  chain: base,
+  transport: http()
+});
+
+const x402Client = new X402Client({
+  walletClient,
+  preferredToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' // USDC en Base
+});
+
+async function main() {
+  const response = await x402Client.request(
+    'https://api.example.com/ai-inference',
+    {
+      method: 'POST',
+      body: { prompt: 'Analizar estos datos...' }
+    }
+  );
+
+  console.log('Resultado:', response.data);
+  console.log('TX de Pago:', response.paymentResponse?.txHash);
+}
+
+main();
+```
+
+## Manejo de Errores
+
+El SDK lanza errores tipificados para escenarios comunes de fallo:
+
+```typescript
+import { X402Error } from 'anyspend-x402-client';
+
+try {
+  const response = await x402Client.request('https://api.example.com/data');
+} catch (error) {
+  if (error instanceof X402Error) {
+    switch (error.code) {
+      case 'INSUFFICIENT_BALANCE':
+        console.error('No hay suficientes tokens en la cartera');
+        break;
+      case 'SIGNATURE_REJECTED':
+        console.error('El usuario rechazó la solicitud de firma');
+        break;
+      case 'PAYMENT_EXPIRED':
+        console.error('El plazo de pago expiró, intenta de nuevo');
+        break;
+      case 'SETTLEMENT_FAILED':
+        console.error('La verificación de pago falló:', error.message);
+        break;
+      default:
+        console.error('Error de pago:', error.message);
+    }
+  }
+}
+```
+
+## Pruebas
+
+Prueba tu integración contra un servidor de recursos de prueba:
+
+```typescript
+const testClient = new X402Client({
+  walletClient,
+  network: 'base-sepolia', // Usa testnet
+  preferredToken: '0x036CbD53842c5426634e7929541eC2318f3dCF7e' // USDC en Sepolia
+});
+
+const response = await testClient.request(
+  'https://test-api.anyspend.com/echo'
+);
+```
+
+Obtén USDC de testnet de [Coinbase Faucet](https://portal.cdp.coinbase.com/products/faucet).
+
+## Mejores Prácticas
+
+<AccordionGroup>
+<Accordion title="Usar Variables de Entorno para Claves">
+Nunca codifiques claves privadas en tu aplicación:
+
+```typescript
+const account = privateKeyToAccount(
+  process.env.PRIVATE_KEY as `0x${string}`
+);
+```
+</Accordion>
+
+<Accordion title="Mostrar Vista Previa de Pago a los Usuarios">
+Antes de iniciar el pago, muestra a los usuarios:
+- La cantidad exacta que pagarán
+- El token
