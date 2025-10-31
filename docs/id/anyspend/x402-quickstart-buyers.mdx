@@ -1,0 +1,537 @@
+---
+title: Panduan Cepat untuk Pembeli
+description: >-
+  Bayar untuk API dan layanan berbayar menggunakan token apa pun dengan AnySpend
+  x402 Client SDK
+lang: id
+originalPath: anyspend/x402-quickstart-buyers.mdx
+---
+## Ikhtisar
+
+Panduan ini menunjukkan cara menggunakan **AnySpend x402 Client SDK** untuk membayar sumber daya berbayar menggunakan cryptocurrency apa pun yang Anda miliki. SDK menangani seluruh alur pembayaran secara otomatis, termasuk generasi tanda tangan dan logika pengulangan.
+
+Keindahan dari x402 adalah Anda dapat menggunakan klien yang sama untuk membayar **layanan yang diaktifkan x402 apa pun**, tidak hanya yang menggunakan AnySpend.
+
+## Prasyarat
+
+Sebelum Anda mulai, pastikan Anda memiliki:
+
+- **Node.js 18+** atau runtime JavaScript yang kompatibel
+- **Dompet kripto** dengan beberapa token (ETH, USDC, DAI, dll.)
+- **Perpustakaan dompet** seperti [viem](https://viem.sh) atau [ethers.js](https://docs.ethers.org)
+- **Akses ke layanan yang diaktifkan x402** (seperti API berbayar)
+
+## Instalasi
+
+Instal x402 client SDK:
+
+<CodeGroup>
+```bash npm
+npm install anyspend-x402-client viem
+```
+
+```bash yarn
+yarn add anyspend-x402-client viem
+```
+
+```bash pnpm
+pnpm add anyspend-x402-client viem
+```
+</CodeGroup>
+
+SDK menggunakan [viem](https://viem.sh) untuk operasi dompet dan generasi tanda tangan.
+
+## Penggunaan Dasar
+
+### 1. Buat Klien Dompet
+
+Pertama, siapkan klien dompet Anda menggunakan viem:
+
+```typescript
+import { createWalletClient, custom } from 'viem';
+import { base } from 'viem/chains';
+
+// Untuk browser dengan MetaMask atau ekstensi dompet lainnya
+const walletClient = createWalletClient({
+  chain: base,
+  transport: custom(window.ethereum)
+});
+
+// Dapatkan alamat pengguna
+const [address] = await walletClient.getAddresses();
+```
+
+### 2. Inisialisasi Klien x402
+
+Buat sebuah instansi dari klien x402:
+
+```typescript
+import { X402Client } from 'anyspend-x402-client';
+
+const x402Client = new X402Client({
+  walletClient,           // Klien dompet viem Anda
+  preferredToken: '0x...', // Opsional: token default untuk pembayaran
+  autoRetry: true          // Otomatis menangani respons 402 (default: true)
+});
+```
+
+### 3. Lakukan Permintaan Berbayar
+
+Gunakan klien untuk mengakses sumber daya berbayar:
+
+```typescript
+try {
+  const response = await x402Client.request(
+    'https://api.example.com/premium-data',
+    {
+      method: 'GET',
+    }
+  );
+
+  console.log('Data:', response.data);
+  console.log('Pembayaran TX:', response.paymentResponse?.txHash);
+} catch (error) {
+  console.error('Pembayaran gagal:', error);
+}
+```
+
+**Apa yang terjadi:**
+
+1. Klien membuat permintaan awal
+2. API mengembalikan `402 Pembayaran Diperlukan` dengan detail pembayaran
+3. X402Client secara otomatis menandatangani otorisasi pembayaran
+4. Klien mencoba permintaan lagi dengan pembayaran
+5. API memverifikasi dan menyelesaikan pembayaran
+6. Klien menerima data yang diminta
+
+## Penggunaan Lanjutan
+
+### Tentukan Token Pembayaran
+
+Ada dua cara untuk menentukan token yang ingin Anda bayarkan:
+
+#### Opsi 1: Menggunakan X402Client
+
+Bayar dengan token tertentu dengan mengatur `preferredToken`:
+
+```typescript
+const response = await x402Client.request(
+  'https://ai-agent-api.com/inference',
+  {
+    method: 'POST',
+    body: { prompt: 'Generate an image of a cat' },
+    preferredToken: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb' // DAI di Base
+  }
+);
+```
+
+#### Opsi 2: Menggunakan wrapFetchWithPayment (Lanjutan)
+
+Untuk kontrol lebih, gunakan fungsi `wrapFetchWithPayment` yang lebih rendah:
+
+```typescript
+import { wrapFetchWithPayment } from 'anyspend-x402-client';
+
+const tokenAddress = '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb'; // DAI di Base
+const selectedChain = 8453; // Base
+
+const paymentPreferences = {
+  preferredToken: tokenAddress,
+  preferredNetwork: 'base' as const, // atau gunakan getNetworkName(selectedChain)
+};
+
+console.log(`💡 Menggunakan token yang disukai: ${tokenAddress} di base`);
+
+// Bungkus fetch dengan penanganan pembayaran otomatis
+const fetchWithPayment = wrapFetchWithPayment(
+  fetch,
+  walletClient,
+  '1000000', // Nilai pembayaran maksimal (1 USDC dalam 6 desimal)
+  undefined, // Gunakan pemilih persyaratan pembayaran default
+  undefined, // Gunakan konfigurasi default
+  paymentPreferences, // Tentukan token dan jaringan yang disukai Anda
+);
+
+// Gunakan fetch yang dibungkus seperti fetch biasa
+const response = await fetchWithPayment('https://api.example.com/premium-data');
+const data = await response.json();
+```
+
+**Manfaat dari `wrapFetchWithPayment`:**
+- Bekerja dengan kode berbasis `fetch` yang ada
+- Kontrol lebih granular atas perilaku pembayaran
+- Dapat menentukan nilai pembayaran maksimal
+- Pemilih persyaratan pembayaran khusus
+- Mendukung penandatangan multi-jaringan
+
+Jika server sumber daya mendukung middleware AnySpend, Anda akan membayar jumlah yang setara dalam token yang disukai Anda, bukan USDC.
+
+### Permintaan POST dengan Body
+
+Buat permintaan POST berbayar:
+
+```typescript
+const response = await x402Client.request(
+  'https://api.example.com/compute',
+  {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: {
+      model: 'gpt-4',
+      messages: [{ role: 'user', content: 'Hello!' }]
+    }
+  }
+);
+```
+
+### Alur Pembayaran Manual
+
+Untuk kontrol lebih, tangani alur pembayaran secara manual:
+
+```typescript
+// 1. Lakukan permintaan awal
+const initialResponse = await fetch('https://api.example.com/premium-data');
+
+if (initialResponse.status === 402) {
+  // 2. Parse persyaratan pembayaran
+  const paymentRequired = await initialResponse.json();
+  const requirements = paymentRequired.requirements[0];
+
+  console.log('Pembayaran diperlukan:', {
+    amount: requirements.amount,
+    token: requirements.asset,
+    penerima: requirements.recipient
+  });
+
+  // 3. Tandatangani otorisasi pembayaran
+  const paymentHeader = await x402Client.signPayment(requirements);
+
+  // 4. Coba lagi dengan pembayaran
+  const paidResponse = await fetch('https://api.example.com/premium-data', {
+    headers: {
+      'X-PAYMENT': paymentHeader
+    }
+  });
+
+  const data = await paidResponse.json();
+  const paymentResponse = paidResponse.headers.get('X-PAYMENT-RESPONSE');
+
+  console.log('Pembayaran berhasil!', JSON.parse(atob(paymentResponse)));
+}
+```
+
+## Opsi Konfigurasi
+
+### X402ClientOptions
+
+```typescript
+interface X402ClientOptions {
+  walletClient: WalletClient;        // klien dompet viem (wajib)
+  network?: string;                   // Jaringan default (mis., 'base-mainnet')
+  preferredToken?: string;            // Alamat token pembayaran yang disukai
+  autoRetry?: boolean;                // Otomatis mengulangi pada 402 (default: true)
+  timeout?: number;                   // Waktu habis permintaan dalam ms (default: 30000)
+}
+```
+
+### RequestOptions
+
+```typescript
+interface RequestOptions {
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  headers?: Record<string, string>;
+  body?: any;                         // Isi permintaan (otomatis diserialisasi ke JSON)
+  preferredToken?: string;            // Timpa token yang disukai default
+}
+```
+
+### Parameter wrapFetchWithPayment
+
+Untuk kasus penggunaan lanjutan, `wrapFetchWithPayment` memberikan kontrol tingkat rendah:
+
+```typescript
+function wrapFetchWithPayment(
+  fetchFn: typeof fetch,              // Fungsi fetch untuk dibungkus
+  signer: Signer | MultiNetworkSigner, // Klien dompet untuk penandatanganan
+  maxPaymentValue: string,             // Pembayaran maks dalam unit terkecil (mis., '1000000' untuk 1 USDC)
+  selectPaymentRequirements?: Function, // Pemilih persyaratan khusus
+  config?: {
+    timeout?: number;                  // Waktu habis permintaan dalam ms
+    maxRetries?: number;               // Maks percobaan pengulangan pembayaran
+  },
+  paymentPreferences?: {
+    preferredToken?: string;           // Alamat token untuk pembayaran
+    preferredNetwork?: string;         // Pengenal jaringan (mis., 'base', 'ethereum')
+  }
+): typeof fetch
+```
+
+**Contoh dengan semua parameter:**
+
+```typescript
+import { wrapFetchWithPayment } from 'anyspend-x402-client';
+
+const fetchWithPayment = wrapFetchWithPayment(
+  fetch,
+  walletClient,
+  '5000000', // Maks 5 USDC
+  undefined, // Pemilih persyaratan default
+  {
+    timeout: 60000,    // Waktu habis 60 detik
+    maxRetries: 3      // Coba ulang hingga 3 kali
+  },
+  {
+    preferredToken: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb', // DAI
+    preferredNetwork: 'base'
+  }
+);
+```
+
+## Token yang Didukung
+
+Klien x402 dapat membayar dengan token apa pun yang mendukung **EIP-2612 permit** atau adalah **USDC** (yang menggunakan EIP-3009 transferWithAuthorization).
+
+Token yang umum didukung:
+
+- **USDC** - Dukungan asli di semua jaringan
+- **DAI** - Stablecoin dengan dukungan permit
+- **USDT** - Di jaringan di mana implementasi permit
+
+Lihat [Dukungan Jaringan](/anyspend/x402-network-support) untuk alamat token rinci per jaringan.
+
+## Contoh
+
+### Komponen React (Menggunakan X402Client)
+
+```tsx
+import { X402Client } from 'anyspend-x402-client';
+import { useWalletClient } from 'wagmi';
+import { useState } from 'react';
+
+export function PremiumDataFetcher() {
+  const { data: walletClient } = useWalletClient();
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const fetchPremiumData = async () => {
+    if (!walletClient) return;
+
+    setLoading(true);
+    try {
+      const client = new X402Client({
+        walletClient,
+        preferredToken: '0x...' // DAI atau token lain
+      });
+
+      const response = await client.request(
+        'https://api.example.com/premium-data'
+      );
+
+      setData(response.data);
+      console.log('Dibayar dengan TX:', response.paymentResponse?.txHash);
+    } catch (error) {
+      console.error('Pembayaran gagal:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      <button onClick={fetchPremiumData} disabled={loading}>
+        {loading ? 'Membayar...' : 'Dapatkan Data Premium (Biaya 1 USDC)'}
+      </button>
+      {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
+    </div>
+  );
+}
+```
+
+### Komponen React (Menggunakan wrapFetchWithPayment)
+
+Untuk aplikasi yang membutuhkan kontrol lebih atau menggunakan kode berbasis fetch yang ada:
+
+```tsx
+import { wrapFetchWithPayment } from 'anyspend-x402-client';
+import { useWalletClient, useChainId } from 'wagmi';
+import { useState } from 'react';
+
+// Pembantu untuk mendapatkan nama jaringan dari ID rantai
+const getNetworkName = (chainId: number): string => {
+  const networks: Record<number, string> = {
+    8453: 'base',
+    1: 'ethereum',
+    42161: 'arbitrum',
+    10: 'optimism',
+    137: 'polygon',
+  };
+  return networks[chainId] || 'base';
+};
+
+export function PremiumDataFetcherAdvanced() {
+  const { data: walletClient } = useWalletClient();
+  const selectedChain = useChainId();
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [log, setLog] = useState<string[]>([]);
+
+  // Alamat token berdasarkan rantai
+  const tokenAddresses: Record<number, string> = {
+    8453: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb', // DAI di Base
+    1: '0x6B175474E89094C44Da98b954EedeAC495271d0F', // DAI di Ethereum
+  };
+
+  const fetchPremiumData = async () => {
+    if (!walletClient) return;
+
+    setLoading(true);
+    setLog([]);
+
+    try {
+      const tokenAddress = tokenAddresses[selectedChain];
+
+      const paymentPreferences = {
+        preferredToken: tokenAddress,
+        preferredNetwork: getNetworkName(selectedChain) as any,
+      };
+
+      setLog(prev => [...prev,
+        `💡 Menggunakan token yang disukai: ${tokenAddress} di ${getNetworkName(selectedChain)}`
+      ]);
+
+      // Bungkus fetch dengan penanganan pembayaran otomatis
+      const fetchWithPayment = wrapFetchWithPayment(
+        fetch,
+        walletClient as any,
+        '1000000', // Maks 1 USDC
+        undefined, // Gunakan pemilih persyaratan pembayaran default
+        undefined, // Gunakan konfigurasi default
+        paymentPreferences,
+      );
+
+      setLog(prev => [...prev, '🔄 Melakukan permintaan...']);
+
+      const response = await fetchWithPayment('https://api.example.com/premium-data');
+      const result = await response.json();
+
+      setData(result);
+      setLog(prev => [...prev, '✅ Pembayaran berhasil!']);
+    } catch (error) {
+      console.error('Pembayaran gagal:', error);
+      setLog(prev => [...prev, `❌ Kesalahan: ${error.message}`]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      <button onClick={fetchPremiumData} disabled={loading}>
+        {loading ? 'Memproses Pembayaran...' : 'Dapatkan Data Premium'}
+      </button>
+
+      {log.length > 0 && (
+        <div style={{ marginTop: '1rem', fontFamily: 'monospace' }}>
+          {log.map((entry, i) => <div key={i}>{entry}</div>)}
+        </div>
+      )}
+
+      {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
+    </div>
+  );
+}
+```
+
+### Skrip Node.js
+
+```typescript
+import { X402Client } from 'anyspend-x402-client';
+import { createWalletClient, http } from 'viem';
+import { privateKeyToAccount } from 'viem/accounts';
+import { base } from 'viem/chains';
+
+// Muat kunci pribadi dari lingkungan
+const account = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`);
+
+const walletClient = createWalletClient({
+  account,
+  chain: base,
+  transport: http()
+});
+
+const x402Client = new X402Client({
+  walletClient,
+  preferredToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' // USDC di Base
+});
+
+async function main() {
+  const response = await x402Client.request(
+    'https://api.example.com/ai-inference',
+    {
+      method: 'POST',
+      body: { prompt: 'Analyze this data...' }
+    }
+  );
+
+  console.log('Hasil:', response.data);
+  console.log('Pembayaran TX:', response.paymentResponse?.txHash);
+}
+
+main();
+```
+
+## Penanganan Kesalahan
+
+SDK melempar kesalahan bertipe untuk skenario kegagalan umum:
+
+```typescript
+import { X402Error } from 'anyspend-x402-client';
+
+try {
+  const response = await x402Client.request('https://api.example.com/data');
+} catch (error) {
+  if (error instanceof X402Error) {
+    switch (error.code) {
+      case 'INSUFFICIENT_BALANCE':
+        console.error('Saldo token di dompet tidak cukup');
+        break;
+      case 'SIGNATURE_REJECTED':
+        console.error('Pengguna menolak permintaan tanda tangan');
+        break;
+      case 'PAYMENT_EXPIRED':
+        console.error('Batas waktu pembayaran telah berakhir, coba lagi');
+        break;
+      case 'SETTLEMENT_FAILED':
+        console.error('Verifikasi pembayaran gagal:', error.message);
+        break;
+      default:
+        console.error('Kesalahan pembayaran:', error.message);
+    }
+  }
+}
+```
+
+## Pengujian
+
+Uji integrasi Anda terhadap server sumber daya uji:
+
+```typescript
+const testClient = new X402Client({
+  walletClient,
+  network: 'base-sepolia', // Gunakan testnet
+  preferredToken: '0x036CbD53842c5426634e7929541eC2318f3dCF7e' // USDC di Sepolia
+});
+
+const response = await testClient.request(
+  'https://test-api.anyspend.com/echo'
+);
+```
+
+Dapatkan USDC testnet dari [Coinbase Faucet](https://portal.cdp.coinbase.com/products/faucet).
+
+## Praktik Terbaik
+
+<AccordionGroup>
+<Accordion title="Gunakan Variabel Lingkungan untuk

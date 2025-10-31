@@ -1,0 +1,298 @@
+---
+title: Dukungan Jaringan & Token
+description: >-
+  Blockchain, token, dan alamat kontrak yang didukung untuk pembayaran AnySpend
+  x402
+lang: id
+originalPath: anyspend/x402-network-support.mdx
+---
+## Ikhtisar
+
+AnySpend x402 mendukung pembayaran lintas berbagai jaringan blockchain termasuk rantai yang kompatibel dengan EVM dan Solana (SVM). Halaman ini menyediakan referensi lengkap dari jaringan yang didukung, token, dan alamat kontrak mereka.
+
+## Jaringan EVM Mainnet
+
+AnySpend x402 mendukung rantai mainnet EVM berikut:
+
+| Jaringan | Pengenal | Chain ID | Tipe |
+|---------|-----------|----------|------|
+| Abstract | `abstract` | 2741 | L2 |
+| Arbitrum One | `arbitrum` | 42161 | L2 - Optimistic Rollup |
+| Avalanche C-Chain | `avalanche` | 43114 | L1 |
+| B3 | `b3` | 8333 | L2 |
+| Base | `base` | 8453 | L2 - Optimistic Rollup |
+| BNB Smart Chain | `bsc` | 56 | L1 |
+| Ethereum | `ethereum` | 1 | L1 |
+| IoTeX | `iotex` | 4689 | L1 |
+| Optimism | `optimism` | 10 | L2 - Optimistic Rollup |
+| Peaq | `peaq` | 3338 | L1 |
+| Polygon PoS | `polygon` | 137 | Sidechain |
+| Sei | `sei` | 1329 | L1 |
+
+<Note>
+**Rantai yang direkomendasikan untuk produksi:** Base (biaya rendah, cepat), Ethereum (likuiditas maksimum), Arbitrum (seimbang)
+</Note>
+
+## Jaringan EVM Testnet
+
+Untuk pengembangan dan pengujian, AnySpend mendukung testnet berikut:
+
+| Jaringan | Pengenal | Chain ID | Faucet |
+|---------|-----------|----------|--------|
+| Abstract Testnet | `abstract-testnet` | 11124 | [Abstract Faucet](https://portal.testnet.abs.xyz/) |
+| Avalanche Fuji | `avalanche-fuji` | 43113 | [Fuji Faucet](https://faucet.avax.network/) |
+| Base Sepolia | `base-sepolia` | 84532 | [Coinbase Faucet](https://portal.cdp.coinbase.com/products/faucet) |
+| Polygon Amoy | `polygon-amoy` | 80002 | [Polygon Faucet](https://faucet.polygon.technology/) |
+| Sei Testnet | `sei-testnet` | 1328 | [Sei Faucet](https://atlantic-2.app.sei.io/faucet) |
+
+## Jaringan SVM (Solana)
+
+AnySpend juga mendukung jaringan Solana Virtual Machine (SVM):
+
+| Jaringan | Pengenal | Chain ID | Tipe |
+|---------|-----------|----------|------|
+| Solana Mainnet | `solana` | 101 | Mainnet |
+| Solana Devnet | `solana-devnet` | 103 | Testnet |
+
+<Info>
+Dukungan Solana memungkinkan pembayaran lintas-VM - pengguna dapat membayar dengan SOL atau token SPL sementara server sumber menerima stablecoin di rantai EVM.
+</Info>
+
+## Token yang Didukung
+
+### USDC (Circle)
+
+USDC didukung secara native di semua jaringan menggunakan **EIP-3009 transferWithAuthorization**.
+
+| Jaringan | Alamat Kontrak | Desimal | Metode Tanda Tangan |
+|---------|-----------------|----------|------------------|
+| Base | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` | 6 | transferWithAuthorization |
+| Ethereum | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | 6 | transferWithAuthorization |
+| Arbitrum | `0xaf88d065e77c8cC2239327C5EDb3A432268e5831` | 6 | transferWithAuthorization |
+| Optimism | `0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85` | 6 | transferWithAuthorization |
+| Polygon | `0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359` | 6 | transferWithAuthorization |
+| Base Sepolia | `0x036CbD53842c5426634e7929541eC2318f3dCF7e` | 6 | transferWithAuthorization |
+
+**Penggunaan:**
+```typescript
+const usdcAddress = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'; // Base
+```
+
+### DAI (Stablecoin)
+
+DAI mendukung **EIP-2612 permit**.
+
+| Jaringan | Alamat Kontrak | Desimal | Metode Tanda Tangan |
+|---------|-----------------|----------|------------------|
+| Base | `0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb` | 18 | permit (EIP-2612) |
+| Ethereum | `0x6B175474E89094C44Da98b954EedeAC495271d0F` | 18 | permit (EIP-2612) |
+| Arbitrum | `0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1` | 18 | permit (EIP-2612) |
+| Optimism | `0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1` | 18 | permit (EIP-2612) |
+| Polygon | `0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063` | 18 | permit (EIP-2612) |
+
+**Penggunaan:**
+```typescript
+const daiAddress = '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb'; // Base
+```
+
+### USDT (Tether)
+
+Dukungan USDT bervariasi berdasarkan jaringan. Beberapa implementasi mendukung permit, yang lain tidak.
+
+| Jaringan | Alamat Kontrak | Desimal | Metode Tanda Tangan |
+|---------|-----------------|----------|------------------|
+| Base | `0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2` | 6 | permit (EIP-2612) |
+| Ethereum | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | 6 | ⚠️ Tidak mendukung permit |
+| Arbitrum | `0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9` | 6 | permit (EIP-2612) |
+| Optimism | `0x94b008aA00579c1307B0EF2c499aD98a8ce58e58` | 6 | permit (EIP-2612) |
+| Polygon | `0xc2132D05D31c914a87C6611C10748AEb04B58e8F` | 6 | ⚠️ Tidak mendukung permit |
+
+<Warning>
+USDT di Ethereum dan Polygon **tidak** mendukung EIP-2612 permit. Gunakan alur `approve()` + `transferFrom()` tradisional atau pilih token lain.
+</Warning>
+
+### Token ERC-20 Lainnya
+
+Setiap token ERC-20 yang mengimplementasikan **EIP-2612 permit** didukung:
+
+- **cbBTC** (Coinbase Wrapped Bitcoin)
+- **LINK** (Chainlink)
+- **UNI** (Uniswap)
+- **AAVE** (Aave)
+- Dan banyak lagi...
+
+**Periksa apakah token mendukung permit:**
+```typescript
+// Periksa apakah token memiliki fungsi permit
+const hasPermit = await token.read.permit !== undefined;
+
+// Atau periksa untuk DOMAIN_SEPARATOR (diperlukan untuk EIP-712)
+const hasDomainSeparator = await token.read.DOMAIN_SEPARATOR !== undefined;
+```
+
+<Info>
+Untuk informasi terperinci tentang tanda tangan tanpa gas, lihat panduan [Permit vs TransferWithAuthorization](/anyspend/x402-signature-methods).
+</Info>
+
+## Konfigurasi Token
+
+### Sisi Klien (Membayar)
+
+Tentukan token pembayaran pilihan Anda:
+
+```typescript
+import { X402Client } from 'anyspend-x402-client';
+
+const client = new X402Client({
+  walletClient,
+  preferredToken: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb', // DAI di Base
+  network: 'base-mainnet'
+});
+```
+
+Atau per-permintaan:
+
+```typescript
+const response = await client.request('https://api.example.com/data', {
+  preferredToken: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb' // DAI di Base
+});
+```
+
+### Sisi Server (Menerima)
+
+Konfigurasikan token yang diterima dan mata uang penyelesaian:
+
+```typescript
+import { paymentMiddleware, facilitator } from '@b3dotfun/anyspend-x402';
+
+const endpointConfig = {
+  '/api/data': {
+    amount: '1.00',        // $1 nilai dari token apa pun
+    asset: 'USD',          // Biarkan klien memilih token
+    network: 'base-mainnet'
+  }
+};
+
+app.use(paymentMiddleware(
+  '0xYourUSDCAddress...',  // Terima USDC
+  endpointConfig,
+  facilitator
+));
+```
+
+## Dukungan Lintas-Rantai
+
+AnySpend dapat memfasilitasi pembayaran di mana **token klien** berada di rantai yang berbeda dari **penyelesaian server sumber**.
+
+**Contoh:**
+```typescript
+// Klien membayar dengan DAI di Ethereum
+const clientPayment = {
+  token: '0x6B175474E89094C44Da98b954EedeAC495271d0F', // DAI di Ethereum
+  network: 'ethereum-mainnet',
+  amount: '1.0'
+};
+
+// Server sumber menerima USDC di Base
+const serverSettlement = {
+  token: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC di Base
+  network: 'base-mainnet',
+  amount: '1.00'
+};
+
+// AnySpend menangani:
+// 1. Terima DAI di Ethereum
+// 2. Jembatani DAI dari Ethereum → Base
+// 3. Tukar DAI → USDC di Base
+// 4. Penyelesaian USDC ke server sumber
+```
+
+**Rute Lintas-Rantai yang Didukung:**
+AnySpend mendukung rute lintas-rantai antara semua jaringan EVM yang didukung, termasuk:
+- Ethereum ↔ Base, Arbitrum, Optimism, Polygon, Avalanche
+- Base ↔ Arbitrum, Optimism, Polygon
+- L1 ↔ L2 bridging lintas semua rantai yang didukung
+- Lintas-VM: Solana ↔ rantai EVM (eksperimental)
+
+<Info>
+Pembayaran lintas-rantai membutuhkan waktu lebih lama (2-5 menit) karena waktu bridging dan memerlukan biaya tambahan (~0,5% total). Pembayaran lintas-rantai disarankan untuk pengalaman pengguna terbaik.
+</Info>
+
+## Perbandingan Biaya Gas
+
+Biaya gas perkiraan per pembayaran x402 (per 2025):
+
+| Jaringan | Pembayaran USDC | Pembayaran Tukar Token | Pembayaran Lintas-Rantai |
+|---------|-------------|-------------------|---------------------|
+| Base | ~$0.001 | ~$0.003 | ~$0.01 - $0.05 |
+| B3 | ~$0.001 | ~$0.003 | ~$0.01 - $0.05 |
+| Arbitrum | ~$0.01 | ~$0.05 | ~$0.1 - $1 |
+| Optimism | ~$0.01 | ~$0.05 | ~$0.1 - $1 |
+| Polygon | ~$0.0001 | ~$0.001 | ~$0.01 - $0.1 |
+| BSC | ~$0.01 | ~$0.03 | ~$0.1 - $0.5 |
+| Avalanche | ~$0.02 | ~$0.05 | ~$0.1 - $1 |
+| Abstract | ~$0.001 | ~$0.003 | ~$0.01 - $0.05 |
+| Ethereum | ~$5 - $50 | ~$10 - $100 | ~$20 - $200 |
+| Solana | ~$0.0001 | ~$0.001 | ~$0.5 - $2 |
+
+<Note>
+Biaya gas **dibayar oleh fasilitator** dan termasuk dalam biaya AnySpend 0,25% - 0,35%. Klien dan server sumber tidak membayar gas secara langsung.
+</Note>
+
+## Pengujian & Pengembangan
+
+AnySpend mendukung beberapa testnet untuk pengembangan dan pengujian. Lihat bagian [Jaringan EVM Testnet](#evm-testnet-networks) di atas untuk daftar lengkap testnet yang didukung dan faucet mereka.
+
+### Testnet yang Direkomendasikan
+
+**Untuk pengembangan umum:**
+- **Base Sepolia** (Chain ID: 84532) - Pengalaman testnet terbaik, cepat dan andal
+- **Solana Devnet** (Chain ID: 103) - Untuk pengujian Solana/SVM
+
+**Untuk pengujian jaringan spesifik:**
+- Gunakan testnet yang sesuai dengan target mainnet Anda
+- Lihat tabel Jaringan EVM Testnet di atas untuk tautan faucet
+
+### Alamat Token Uji
+
+Hubungi tim AnySpend untuk alamat token uji di jaringan tertentu, atau gunakan faucet testnet standar untuk mendapatkan token asli untuk pengujian.
+
+## Sumber Daya Tambahan
+
+<CardGroup cols={2}>
+<Card title="Chainlist" icon="link" href="https://chainlist.org">
+  Endpoint RPC dan metadata rantai
+</Card>
+
+<Card title="Token Lists" icon="list" href="https://tokenlists.org">
+  Alamat token yang diverifikasi lintas rantai
+</Card>
+
+<Card title="Coinbase Faucet" icon="faucet" href="https://portal.cdp.coinbase.com/products/faucet">
+  Dapatkan token testnet untuk pengembangan
+</Card>
+
+<Card title="AnySpend Facilitator" icon="arrows-turn-right" href="https://mainnet.anyspend.com/x402">
+  Endpoint API fasilitator produksi
+</Card>
+</CardGroup>
+
+## Apa Selanjutnya?
+
+<CardGroup cols={2}>
+<Card title="Panduan Cepat untuk Pembeli" icon="wallet" href="/anyspend/x402-quickstart-buyers">
+  Mulai menggunakan token ini untuk membayar layanan
+</Card>
+
+<Card title="Panduan Cepat untuk Penjual" icon="money-bill" href="/anyspend/x402-quickstart-sellers">
+  Konfigurasikan API Anda untuk menerima token ini
+</Card>
+</CardGroup>
+
+## Mendapatkan Bantuan
+
+Jika Anda memerlukan dukungan token atau jaringan tertentu:
+
+- **Discord**: Permintaan di [#anyspend-support](https://discord.gg/b3dotfun)
+- **GitHub**: Buka masalah di [github.com/b3-fun/anyspend-x402](https://github.com/b3-fun/anyspend-x402)
+- **Email**: support@b3.fun

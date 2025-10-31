@@ -23,12 +23,12 @@ originalPath: bondkit/sdk/reference.mdx
   </Tab>
   <Tab title="Desarrollo">
     ```bash
-    # Clonar el monorepositorio
+    # Clonar el monorepo
     git clone https://github.com/b3dotfun/b3-monorepo.git
     cd b3-monorepo
     pnpm install
     
-    # Construir SDK
+    # Construir el SDK
     pnpm --filter @b3dotfun/sdk build
     ```
   </Tab>
@@ -38,14 +38,14 @@ originalPath: bondkit/sdk/reference.mdx
 
 ### BondkitTokenFactory
 
-La clase de fábrica maneja el despliegue de nuevos tokens de bono y la consulta de tokens desplegados.
+La clase de fábrica maneja el despliegue de nuevos tokens de bonos y la consulta de tokens desplegados.
 
 ```typescript
 import { BondkitTokenFactory } from "@b3dotfun/sdk/bondkit";
 import { base } from "viem/chains";
 
 const factory = new BondkitTokenFactory(
-  base.id,                    // ID de cadena (Base mainnet)
+  base.id,                    // ID de la cadena (Base mainnet)
   process.env.WALLET_KEY      // Opcional: clave privada para escrituras
 );
 ```
@@ -61,7 +61,7 @@ constructor(
 
 | Parámetro | Tipo | Requerido | Descripción |
 |-----------|------|----------|-------------|
-| `chainId` | `number` | Sí | ID de cadena (actualmente solo Base: 8453) |
+| `chainId` | `number` | Sí | ID de la cadena (actualmente solo Base: 8453) |
 | `walletKey` | `string` | No | Clave privada para operaciones de escritura |
 
 #### Métodos
@@ -81,13 +81,18 @@ constructor(
     interface BondkitTokenConfig {
       name: string;                      // Nombre del token
       symbol: string;                    // Símbolo del token
-      feeRecipient: Address;            // Recibe las comisiones de trading
+      feeRecipient: Address;            // Recibe las tarifas de comercio
       finalTokenSupply: bigint;         // Suministro total (18 decimales)
       aggressivenessFactor: number;     // 0-100 inclinación de la curva
-      lpSplitRatioFeeRecipientBps: bigint; // Participación en comisiones de LP (puntos básicos)
-      targetEth: bigint;                // Objetivo de migración (18 decimales)
-      uniswapV2RouterAddress: Address;  // Dirección del router
+      lpSplitRatioFeeRecipientBps: bigint; // Participación de tarifa de LP (puntos básicos)
+      targetAmount: bigint;             // Cantidad objetivo en token de comercio (18 decimales)
       migrationAdminAddress: Address;   // Puede activar la migración
+      bondingPhaseSplitter: Address;    // Divisor de tarifas de la fase de bonificación
+      v4PoolManager: Address;           // Administrador del pool de Uniswap V4
+      v4Hook: Address;                  // Gancho personalizado de Uniswap V4
+      v4PoolFee: number;                // Nivel de tarifa del pool (3000 = 0.3%)
+      v4TickSpacing: number;            // Espaciado de ticks para el pool
+      tradingToken: Address;            // Token utilizado para comerciar (B3/ETH/etc)
     }
     ```
     
@@ -100,9 +105,14 @@ constructor(
       finalTokenSupply: parseEther("1000000"),
       aggressivenessFactor: 50,
       lpSplitRatioFeeRecipientBps: 1000n, // 10%
-      targetEth: parseEther("10"),
-      uniswapV2RouterAddress: "0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24",
-      migrationAdminAddress: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1"
+      targetAmount: parseEther("10"),
+      migrationAdminAddress: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1",
+      bondingPhaseSplitter: "0x2AB69e0d9D20D3700466153D84a6574128154Fd2",
+      v4PoolManager: "0x498581fF718922c3f8e6A244956aF099B2652b2b",
+      v4Hook: "0xB36f4A2FB18b745ef8eD31452781a463d2B3f0cC",
+      v4PoolFee: 3000,
+      v4TickSpacing: 60,
+      tradingToken: "0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3"
     });
     ```
   </Accordion>
@@ -114,7 +124,7 @@ constructor(
     async getDeployedBondkitTokens(): Promise<Address[]>
     ```
     
-    **Devuelve:** Array de direcciones de token
+    **Devuelve:** Array de direcciones de tokens
     
     **Ejemplo:**
     ```typescript
@@ -156,7 +166,7 @@ constructor(
   </Accordion>
   
   <Accordion title="connect">
-    **Conectar proveedor de wallet**
+    **Conectar proveedor de billetera**
     
     ```typescript
     connect(provider?: EIP1193Provider): boolean
@@ -226,29 +236,29 @@ constructor(
     ```
   </Accordion>
   
-  <Accordion title="Métodos de Curva de Bonos">
+  <Accordion title="Métodos de Curva de Bonificación">
     ```typescript
     // Precio actual por token
     async getCurrentBondingCurvePricePerToken(): Promise<bigint>
     
-    // Precio actual en ETH
+    // Precio actual en token de comercio
     async getCurrentPrice(): Promise<bigint>
     
     // Cotización para comprar
     async getAmountOfTokensToBuy(
-      ethAmount: bigint
+      tradingTokenAmount: bigint | string
     ): Promise<bigint>
     
     // Cotización para vender
-    async getAmountOfEthToReceive(
+    async getAmountOfTradingTokensToSell(
       tokenAmount: bigint
     ): Promise<bigint>
     
     // Progreso de bonificación
     async getBondingProgress(): Promise<{
       progress: number;      // 0-1 (porcentaje)
-      raised: bigint;       // Monto recaudado
-      threshold: bigint;    // Monto objetivo
+      raised: number;        // Monto recaudado (convertido a número)
+      threshold: number;     // Monto objetivo (convertido a número)
     }>
     
     // Ejemplo
@@ -284,7 +294,7 @@ constructor(
     ```
   </Accordion>
   
-  <Accordion title="Métodos Analíticos">
+  <Accordion title="Métodos de Análisis">
     ```typescript
     // Titulares de tokens
     async getPaginatedHolders(
@@ -304,8 +314,8 @@ constructor(
     interface GetTransactionHistoryOptions {
       userAddress?: Address;
       type?: "buy" | "sell";
-      from?: number;        // Marca de tiempo
-      to?: number;          // Marca de tiempo
+      from?: number;        // Timestamp
+      to?: number;          // Timestamp
       limit?: number;       // 1-100
       offset?: number;
     }
@@ -317,53 +327,155 @@ constructor(
     });
     ```
   </Accordion>
+  
+  <Accordion title="Métodos de Token de Comercio">
+    **Métodos para interactuar con el token de comercio**
+    
+    ```typescript
+    // Obtener dirección del token de comercio (B3/ETH/etc)
+    async getTradingTokenAddress(): Promise<Address>
+    
+    // Obtener símbolo del token de comercio  
+    async getTradingTokenSymbol(): Promise<string>
+    
+    // Obtener balance del token de comercio del usuario
+    async getTradingTokenBalanceOf(account: Address): Promise<bigint>
+    
+    // Verificar estado/fase actual del token
+    async currentStatus(): Promise<TokenStatus>
+    async getCurrentPhase(): Promise<string>
+    
+    // Verificar si el intercambio DEX está disponible
+    async isSwapAvailable(): Promise<boolean>
+    ```
+    
+    **Ejemplo:**
+    ```typescript
+    // Verificar qué token de comercio se utiliza
+    const tradingTokenAddress = await token.getTradingTokenAddress();
+    const tradingTokenSymbol = await token.getTradingTokenSymbol();
+    console.log(`Comerciando con: ${tradingTokenSymbol} (${tradingTokenAddress})`);
+    
+    // Verificar balance del token de comercio del usuario
+    const tradingBalance = await token.getTradingTokenBalanceOf(userAddress);
+    console.log(`Balance del token de comercio: ${formatEther(tradingBalance)}`);
+    
+    // Verificar fase actual
+    const status = await token.currentStatus();
+    if (status === TokenStatus.Dex) {
+      console.log("El token está en fase de comercio DEX");
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Métodos de Intercambio de Fase DEX">
+    **Métodos de intercambio integrados para comercio en fase DEX**
+    
+    ```typescript
+    // Obtener cotizaciones de intercambio
+    async getSwapQuoteForBondkitToken(
+      amountTradingTokenIn: string,
+      slippageTolerance?: number
+    ): Promise<SwapQuote | null>
+    
+    async getSwapQuoteForTradingToken(
+      amountBondkitTokenIn: string, 
+      slippageTolerance?: number
+    ): Promise<SwapQuote | null>
+    
+    // Ejecutar intercambios
+    async swapTradingTokenForBondkitToken(
+      amountTradingTokenIn: string,
+      slippageTolerance?: number,
+      walletClient: WalletClient
+    ): Promise<string | null>
+    
+    async swapBondkitTokenForTradingToken(
+      amountBondkitTokenIn: string,
+      slippageTolerance?: number, 
+      walletClient: WalletClient
+    ): Promise<string | null>
+    ```
+    
+    **Ejemplo:**
+    ```typescript
+    // Verificar si el intercambio está disponible (solo fase DEX)
+    const canSwap = await token.isSwapAvailable();
+    if (!canSwap) {
+      console.log("Aún en fase de bonificación - usar buy()/sell()");
+      return;
+    }
+    
+    // Obtener cotización para intercambiar 100 tokens B3 → tokens bondkit
+    const quote = await token.getSwapQuoteForBondkitToken(
+      "100",      // 100 tokens de comercio
+      0.005       // 0.5% de tolerancia de deslizamiento
+    );
+    
+    if (quote) {
+      console.log(`Recibirá: ${quote.amountOut} tokens bondkit`);
+      console.log(`Impacto de precio: ${quote.priceImpact}%`);
+      
+      // Ejecutar el intercambio
+      const txHash = await token.swapTradingTokenForBondkitToken(
+        "100",
+        0.005,
+        walletClient
+      );
+      console.log(`Intercambio completado: ${txHash}`);
+    }
+    ```
+  </Accordion>
 </AccordionGroup>
 
 #### Métodos de Escritura
 
 <AccordionGroup>
   <Accordion title="buy">
-    **Comprar tokens con ETH**
+    **Comprar tokens con token de comercio**
     
     ```typescript
     async buy(
-      minTokensOut: bigint,
-      ethAmount: string | bigint
+      amount: bigint | string,
+      minTokensOut: bigint
     ): Promise<Hex>
     ```
     
     **Parámetros:**
+    - `amount`: Cantidad de token de comercio a gastar (como string o bigint) 
     - `minTokensOut`: Mínimo de tokens a recibir (protección contra deslizamiento)
-    - `ethAmount`: ETH a gastar (como cadena o bigint)
     
     **Ejemplo:**
     ```typescript
     // Obtener cotización primero
     const quote = await token.getAmountOfTokensToBuy(
-      parseEther("1")
+      parseEther("100") // 100 tokens de comercio
     );
     
-    // Comprar con tolerancia al deslizamiento del 5%
+    // Comprar con 5% de tolerancia de deslizamiento
     const minTokens = quote * 95n / 100n;
-    const txHash = await token.buy(minTokens, "1");
+    const txHash = await token.buy(
+      parseEther("100"), // amount: 100 tokens de comercio
+      minTokens          // minTokensOut: protección contra deslizamiento
+    );
     
     console.log(`Transacción: ${txHash}`);
     ```
   </Accordion>
   
   <Accordion title="sell">
-    **Vender tokens por ETH**
+    **Vender tokens por token de comercio**
     
     ```typescript
     async sell(
       tokenAmount: bigint,
-      minEthOut: bigint
+      minTradingTokenOut: bigint
     ): Promise<Hex>
     ```
     
     **Parámetros:**
     - `tokenAmount`: Cantidad de tokens a vender
-    - `minEthOut`: Mínimo de ETH a recibir (protección contra deslizamiento)
+    - `minTradingTokenOut`: Mínimo de token de comercio a recibir (protección contra deslizamiento)
     
     **Ejemplo:**
     ```typescript
@@ -371,11 +483,11 @@ constructor(
     const sellAmount = parseEther("1000");
     
     // Obtener cotización
-    const quote = await token.getAmountOfEthToReceive(sellAmount);
+    const quote = await token.getAmountOfTradingTokensToSell(sellAmount);
     
     // Vender con protección contra deslizamiento
-    const minEth = quote * 95n / 100n;
-    const txHash = await token.sell(sellAmount, minEth);
+    const minTradingTokenOut = quote * 95n / 100n;
+    const txHash = await token.sell(sellAmount, minTradingTokenOut);
     ```
   </Accordion>
   
@@ -399,6 +511,34 @@ constructor(
     ```
   </Accordion>
   
+  <Accordion title="Métodos de Propiedad">
+    **Transferir o renunciar a la propiedad del token**
+    
+    ```typescript
+    // Transferir propiedad a nueva dirección
+    async transferTokenOwnership(
+      newOwner: Address
+    ): Promise<Hex>
+    
+    // Renunciar a la propiedad (irreversible)
+    async renounceTokenOwnership(): Promise<Hex>
+    ```
+    
+    **Ejemplo:**
+    ```typescript
+    // Transferir propiedad a multisig
+    const multisig = "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1";
+    await token.transferTokenOwnership(multisig);
+    
+    // O renunciar completamente a la propiedad (¡ten cuidado!)
+    await token.renounceTokenOwnership();
+    ```
+    
+    <Warning>
+      **Importante**: Renunciar a la propiedad es irreversible y elimina todas las capacidades de administración. Solo haz esto después de la migración o si deseas hacer el token completamente descentralizado.
+    </Warning>
+  </Accordion>
+  
   <Accordion title="Métodos de Escritura ERC20">
     ```typescript
     // Transferencias estándar
@@ -413,235 +553,3 @@ constructor(
       amount: bigint
     ): Promise<Hex>
     
-    // Aprobaciones
-    async approve(
-      spender: Address,
-      amount: bigint
-    ): Promise<Hex>
-    
-    // Ejemplo
-    await token.approve(
-      spenderAddress,
-      parseEther("1000")
-    );
-    ```
-  </Accordion>
-</AccordionGroup>
-
-#### Oyentes de Eventos
-
-```typescript
-// Escuchar eventos de compra
-token.onBuy((event: BoughtEventArgs) => {
-  console.log("Compra:", {
-    buyer: event.buyer,
-    ethIn: formatEther(event.ethIn),
-    tokensOut: formatEther(event.tokensOut),
-    fee: formatEther(event.feeRecipientFee)
-  });
-});
-
-// Escuchar eventos de venta
-token.onSell((event: SoldEventArgs) => {
-  console.log("Venta:", {
-    seller: event.seller,
-    tokensIn: formatEther(event.tokensIn),
-    ethOut: formatEther(event.ethOut),
-    fee: formatEther(event.feeRecipientFee)
-  });
-});
-
-// Escuchar migración
-token.onMigration((event: DexMigrationEventArgs) => {
-  console.log("Migrado:", {
-    ethForLp: formatEther(event.ethForLp),
-    tokensForLp: formatEther(event.tokensForLp)
-  });
-});
-```
-
-## Definiciones de Tipos
-
-### Tipos Principales
-
-```typescript
-// Configuración del token
-interface BondkitTokenConfig {
-  name: string;
-  symbol: string;
-  feeRecipient: Address;
-  finalTokenSupply: bigint;
-  aggressivenessFactor: number;
-  lpSplitRatioFeeRecipientBps: bigint;
-  targetEth: bigint;
-  uniswapV2RouterAddress: Address;
-  migrationAdminAddress: Address;
-}
-
-// Enum de estado del token
-enum TokenStatus {
-  Inactivo = 0,
-  Fase de Bonificación = 1,
-  Fase Dex = 2,
-  Migrado = 3
-}
-
-// Detalles del token
-interface TokenDetails {
-  name: string;
-  symbol: string;
-  decimals: number;
-  totalSupply: bigint;
-  owner: Address;
-}
-```
-
-### Tipos de Eventos
-
-```typescript
-// Evento de compra
-interface BoughtEventArgs {
-  buyer: Address;
-  ethIn: bigint;
-  tokensOut: bigint;
-  feeRecipientFee: bigint;
-}
-
-// Evento de venta
-interface SoldEventArgs {
-  seller: Address;
-  tokensIn: bigint;
-  ethOut: bigint;
-  feeRecipientFee: bigint;
-}
-
-// Evento de migración
-interface DexMigrationEventArgs {
-  ethForLp: bigint;
-  tokensForLp: bigint;
-  ethForFeeRecipient: bigint;
-}
-
-// Evento de creación de fábrica
-interface BondkitTokenCreatedEventArgs {
-  tokenAddress: Address;
-  implementationAddress: Address;
-  name: string;
-  symbol: string;
-  feeRecipient: Address;
-  migrationAdmin: Address;
-}
-```
-
-### Tipos de Transacciones
-
-```typescript
-// Historial de transacciones
-interface Transaction {
-  timestamp: number;
-  price: number;
-  amount: string;
-  type: "buy" | "sell";
-  userAddress: Address;
-  txHash: Hex;
-  chainId: number;
-  blockNumber?: number;
-  totalRaisedBonding?: string;
-  value?: string;
-}
-
-// Respuesta de la API
-interface TransactionResponse {
-  total: number;
-  limit: number;
-  skip: number;
-  data: Transaction[];
-}
-```
-
-## Configuración
-
-### Soporte de Redes
-
-```typescript
-import { getConfig } from "@b3dotfun/sdk/bondkit";
-import { base } from "viem/chains";
-
-const config = getConfig(base.id);
-
-console.log({
-  cadena: config.chain.name,           // "Base"
-  factoryAddress: config.factoryAddress,
-  rpcUrl: config.rpcUrl,
-  apiEndpoint: config.apiEndpoint
-});
-```
-
-### Cadenas Soportadas
-
-| Cadena | Chain ID | Estado |
-|-------|----------|--------|
-| Base Mainnet | 8453 | ✅ Soportado |
-| Base Sepolia | 84532 | 🚧 Próximamente |
-
-## Manejo de Errores
-
-```typescript
-try {
-  const txHash = await token.buy(minTokens, "1");
-} catch (error) {
-  if (error.message.includes("fondos insuficientes")) {
-    console.error("No hay suficiente ETH");
-  } else if (error.message.includes("deslizamiento")) {
-    console.error("El precio se movió, intenta de nuevo");
-  } else if (error.message.includes("objetivo superado")) {
-    console.error("Se superaría el objetivo de migración");
-  } else {
-    console.error("Transacción fallida:", error);
-  }
-}
-```
-
-## Ejemplos Completos
-
-### Desplegar y Comerciar
-
-```typescript
-import { 
-  BondkitTokenFactory, 
-  BondkitToken 
-} from "@b3dotfun/sdk/bondkit";
-import { parseEther, formatEther } from "viem";
-import { base } from "viem/chains";
-
-async function deployAndTrade() {
-  // 1. Desplegar token
-  const factory = new BondkitTokenFactory(
-    base.id,
-    process.env.WALLET_KEY
-  );
-  
-  const tokenAddress = await factory.deployBondkitToken({
-    name: "Token de Prueba",
-    symbol: "TEST",
-    finalTokenSupply: parseEther("1000000"),
-    aggressivenessFactor: 50,
-    targetEth: parseEther("10"),
-    feeRecipient: process.env.WALLET_ADDRESS,
-    lpSplitRatioFeeRecipientBps: 1000n,
-    migrationAdminAddress: process.env.WALLET_ADDRESS,
-    uniswapV2RouterAddress: "0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24"
-  });
-  
-  // 2. Inicializar cliente de token
-  const token = new BondkitToken(
-    tokenAddress,
-    process.env.WALLET_KEY
-  );
-  
-  // 3. Comprar tokens
-  const buyAmount = parseEther("0.5");
-  const expectedTokens = await token.getAmountOfTokensToBuy(buyAmount);
-  await token.buy(expectedTokens * 95n / 100n, "0.5");
-  
-  //
