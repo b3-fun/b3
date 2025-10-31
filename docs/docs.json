@@ -344,6 +344,17 @@
                 ]
               },
               {
+                "group": "X402",
+                "pages": [
+                  "anyspend/x402-overview",
+                  "anyspend/x402-facilitator",
+                  "anyspend/x402-quickstart-buyers",
+                  "anyspend/x402-quickstart-sellers",
+                  "anyspend/x402-network-support",
+                  "anyspend/x402-signature-methods"
+                ]
+              },
+              {
                 "group": "React",
                 "pages": [
                   "anyspend/components",
