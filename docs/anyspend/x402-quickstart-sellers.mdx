@@ -3,11 +3,25 @@ title: "Quickstart for Sellers"
 description: "Accept payments in any token for your APIs and services using AnySpend X402 middleware"
 ---
 
+<CardGroup cols={2}>
+<Card title="GitHub Repository" icon="github" href="https://github.com/b3-fun/anyspend-x402">
+  View source code and examples
+</Card>
+
+<Card title="npm Package" icon="npm" href="https://www.npmjs.com/package/@b3dotfun/anyspend-x402">
+  @b3dotfun/anyspend-x402
+</Card>
+</CardGroup>
+
 ## Overview
 
-This guide shows you how to add **AnySpend X402** payment support to your Express API, enabling you to accept payments in any token while receiving USDC. With just a few lines of code, your API can monetize endpoints and handle automatic payment verification and settlement.
+This guide shows you how to add **AnySpend X402** payment support to your Express API, enabling you to accept payments in any token while receiving the token of your choice. With just a few lines of code, your API can monetize endpoints and handle automatic payment verification and settlement.
 
-Your customers can pay with ETH, DAI, or any ERC-20 token, while you receive USDC - no blockchain infrastructure required.
+**Key Benefits:**
+- **Buyers** can pay with any token they hold (ETH, DAI, USDC, etc.)
+- **Sellers** can receive any token they prefer (USDC, B3, DAI, custom tokens, etc.)
+- AnySpend automatically handles all token conversions
+- No blockchain infrastructure or wallet management required
 
 ## Prerequisites
 
@@ -99,6 +113,63 @@ app.listen(3000, () => {
 4. AnySpend facilitator converts to USDC and settles to your wallet
 5. Your route handler executes and returns data
 
+---
+
+### 2. Receive Custom Tokens (e.g., B3)
+
+You can configure your API to receive any token, not just USDC:
+
+```typescript
+import express from 'express';
+import { paymentMiddleware, facilitator } from '@b3dotfun/anyspend-x402';
+import { Address } from 'viem';
+
+const app = express();
+const PAYTO_ADDRESS = '0xYourWalletAddress...' as Address;
+const NETWORK = 'base' as const;
+
+// Configure to receive B3 tokens
+const endpointConfig = {
+  'POST /api/premium': {
+    price: {
+      amount: '100000000000000000000', // 100 B3 tokens (18 decimals)
+      asset: {
+        address: '0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3' as Address,
+        decimals: 18,
+        eip712: {
+          name: 'B3',
+          version: '1',
+        },
+      },
+    },
+    network: NETWORK,
+    config: {
+      description: 'Premium data access',
+      mimeType: 'application/json',
+    },
+  }
+};
+
+app.use(paymentMiddleware(PAYTO_ADDRESS, endpointConfig, facilitator));
+
+app.post('/api/premium', (req, res) => {
+  // Payment verified - you received 100 B3 tokens!
+  res.json({
+    data: 'Premium ETH price history',
+    paymentReceived: '100 B3 tokens'
+  });
+});
+
+app.listen(3000);
+```
+
+**What's different:**
+
+- Buyers can still pay with **any token** (ETH, USDC, DAI, etc.)
+- AnySpend converts their payment to **B3 tokens**
+- You receive exactly **100 B3 tokens** in your wallet
+- Complete flexibility for both buyers and sellers!
+
 ## Configuration
 
 ### Facilitator URL
@@ -146,7 +217,9 @@ const endpointConfig = {
 
 #### Method 2: Specific Token Requirements
 
-Require specific tokens on specific networks:
+Require specific tokens on specific networks. You can receive **any token**, not just USDC!
+
+**Example 1: Receive USDC (Stablecoin)**
 
 ```typescript
 const endpointConfig = {
@@ -156,6 +229,170 @@ const endpointConfig = {
     network: 'base-mainnet'
   }
 };
+```
+
+**Example 2: Receive B3 Tokens (Custom Token)**
+
+```typescript
+import { Address } from 'viem';
+
+const PAYTO_ADDRESS = '0xYourWalletAddress...' as Address;
+const NETWORK = 'base' as const;
+
+const endpointConfig = {
+  'POST /api/premium': {
+    price: {
+      amount: '100000000000000000000', // 100 B3 tokens (100 * 10^18)
+      asset: {
+        address: '0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3' as Address,
+        decimals: 18,
+        eip712: {
+          name: 'B3',
+          version: '1',
+        },
+      },
+    },
+    network: NETWORK,
+    config: {
+      description: 'Access to premium ETH price history data from CoinGecko',
+      mimeType: 'application/json',
+    },
+  }
+};
+
+app.use(paymentMiddleware(PAYTO_ADDRESS, endpointConfig, facilitator));
+```
+
+**Example 3: Receive DAI (Stablecoin)**
+
+```typescript
+const endpointConfig = {
+  '/api/ai-inference': {
+    amount: '1000000000000000000', // 1 DAI (18 decimals)
+    asset: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb', // DAI on Base
+    network: 'base-mainnet'
+  }
+};
+```
+
+**Example 4: Receive Native ETH**
+
+```typescript
+const endpointConfig = {
+  '/api/compute': {
+    amount: '500000000000000', // 0.0005 ETH (18 decimals)
+    asset: '0x0000000000000000000000000000000000000000', // Native ETH
+    network: 'base-mainnet'
+  }
+};
+```
+
+**Example 5: Receive Custom ERC-20 Token**
+
+For any ERC-20 token with permit support:
+
+```typescript
+const endpointConfig = {
+  '/api/data': {
+    price: {
+      amount: '1000000000000000000', // 1 token (adjust decimals)
+      asset: {
+        address: '0xYourTokenAddress...' as Address,
+        decimals: 18, // Your token's decimals
+        eip712: {
+          name: 'YourTokenName', // From token contract
+          version: '1',          // EIP-712 version
+        },
+      },
+    },
+    network: 'base-mainnet',
+    config: {
+      description: 'Your API endpoint description',
+      mimeType: 'application/json',
+    },
+  }
+};
+```
+
+<Note>
+**Key Points:**
+- Buyers can still pay with **any token** they hold
+- AnySpend automatically converts their token to the one you want to receive
+- You receive exactly the token you specified in your configuration
+- Both buyer and seller flexibility are maintained
+</Note>
+
+### Finding Token Details
+
+To configure a custom token, you need to know its EIP-712 parameters. Here's how to find them:
+
+**Method 1: Check Token Contract**
+
+Use a blockchain explorer like [Basescan](https://basescan.org):
+
+```typescript
+// Read from the token contract
+const name = await token.read.name();      // e.g., "B3"
+const version = await token.read.version(); // e.g., "1"
+const decimals = await token.read.decimals(); // e.g., 18
+```
+
+**Method 2: Common Tokens**
+
+| Token | Name | Version | Decimals | Base Address |
+|-------|------|---------|----------|--------------|
+| USDC | USD Coin | 2 | 6 | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` |
+| DAI | Dai Stablecoin | 1 | 18 | `0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb` |
+| B3 | B3 | 1 | 18 | `0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3` |
+
+**Method 3: Use Viem**
+
+```typescript
+import { createPublicClient, http } from 'viem';
+import { base } from 'viem/chains';
+
+const client = createPublicClient({
+  chain: base,
+  transport: http()
+});
+
+const [name, version, decimals] = await Promise.all([
+  client.readContract({
+    address: tokenAddress,
+    abi: [{
+      name: 'name',
+      type: 'function',
+      stateMutability: 'view',
+      inputs: [],
+      outputs: [{ type: 'string' }]
+    }],
+    functionName: 'name'
+  }),
+  client.readContract({
+    address: tokenAddress,
+    abi: [{
+      name: 'version',
+      type: 'function',
+      stateMutability: 'view',
+      inputs: [],
+      outputs: [{ type: 'string' }]
+    }],
+    functionName: 'version'
+  }),
+  client.readContract({
+    address: tokenAddress,
+    abi: [{
+      name: 'decimals',
+      type: 'function',
+      stateMutability: 'view',
+      inputs: [],
+      outputs: [{ type: 'uint8' }]
+    }],
+    functionName: 'decimals'
+  })
+]);
+
+console.log({ name, version, decimals });
 ```
 
 #### Method 3: Flexible (Let Client Choose)
@@ -584,23 +821,11 @@ const facilitatorUrl = process.env.NODE_ENV === 'production'
 </Accordion>
 </AccordionGroup>
 
-## Supported Networks
-
-AnySpend X402 supports payments on:
-
-- **Base** (recommended) - Fast and low cost
-- **Ethereum** - Maximum liquidity
-- **Arbitrum** - Low gas fees
-- **Optimism** - Fast finality
-- **Polygon** - Very low fees
-
-See [Network Support](/anyspend/x402-network-support) for detailed information.
-
 ## What's Next?
 
 <CardGroup cols={2}>
-<Card title="Core Concepts" icon="book" href="/anyspend/x402-core-concepts">
-  Understand how X402 payments work under the hood
+<Card title="Overview" icon="book" href="/anyspend/x402-overview">
+  Understand how AnySpend X402 works
 </Card>
 
 <Card title="Network Support" icon="globe" href="/anyspend/x402-network-support">

@@ -5,79 +5,55 @@ description: "Supported blockchains, tokens, and contract addresses for AnySpend
 
 ## Overview
 
-AnySpend X402 supports payments across multiple EVM-compatible blockchains and a wide variety of ERC-20 tokens. This page provides the complete reference of supported networks, tokens, and their contract addresses.
+AnySpend X402 supports payments across multiple blockchain networks including EVM-compatible chains and Solana (SVM). This page provides the complete reference of supported networks, tokens, and their contract addresses.
 
-## Supported Networks
+## EVM Mainnet Networks
 
-AnySpend X402 currently supports the following blockchain networks:
+AnySpend X402 supports the following EVM mainnet chains:
 
-<CardGroup cols={2}>
-<Card title="Base" icon="layer-group">
-  **Recommended** - Fast, low-cost L2
+| Network | Identifier | Chain ID | Type |
+|---------|-----------|----------|------|
+| Abstract | `abstract` | 2741 | L2 |
+| Arbitrum One | `arbitrum` | 42161 | L2 - Optimistic Rollup |
+| Avalanche C-Chain | `avalanche` | 43114 | L1 |
+| B3 | `b3` | 8333 | L2 |
+| Base | `base` | 8453 | L2 - Optimistic Rollup |
+| BNB Smart Chain | `bsc` | 56 | L1 |
+| Ethereum | `ethereum` | 1 | L1 |
+| IoTeX | `iotex` | 4689 | L1 |
+| Optimism | `optimism` | 10 | L2 - Optimistic Rollup |
+| Peaq | `peaq` | 3338 | L1 |
+| Polygon PoS | `polygon` | 137 | Sidechain |
+| Sei | `sei` | 1329 | L1 |
 
-  - Chain ID: 8453
-  - Network Identifier: `base-mainnet`
-  - Block Time: ~2 seconds
-  - Gas Costs: Very low
-</Card>
+<Note>
+**Recommended chains for production:** Base (low fees, fast), Ethereum (maximum liquidity), Arbitrum (balanced)
+</Note>
 
-<Card title="Ethereum" icon="ethereum">
-  **Maximum Liquidity** - Mainnet
+## EVM Testnet Networks
 
-  - Chain ID: 1
-  - Network Identifier: `ethereum-mainnet`
-  - Block Time: ~12 seconds
-  - Gas Costs: Higher
-</Card>
+For development and testing, AnySpend supports these testnets:
 
-<Card title="Arbitrum One" icon="network-wired">
-  **Low Fees** - Optimistic Rollup
+| Network | Identifier | Chain ID | Faucet |
+|---------|-----------|----------|--------|
+| Abstract Testnet | `abstract-testnet` | 11124 | [Abstract Faucet](https://portal.testnet.abs.xyz/) |
+| Avalanche Fuji | `avalanche-fuji` | 43113 | [Fuji Faucet](https://faucet.avax.network/) |
+| Base Sepolia | `base-sepolia` | 84532 | [Coinbase Faucet](https://portal.cdp.coinbase.com/products/faucet) |
+| Polygon Amoy | `polygon-amoy` | 80002 | [Polygon Faucet](https://faucet.polygon.technology/) |
+| Sei Testnet | `sei-testnet` | 1328 | [Sei Faucet](https://atlantic-2.app.sei.io/faucet) |
 
-  - Chain ID: 42161
-  - Network Identifier: `arbitrum-mainnet`
-  - Block Time: ~0.25 seconds
-  - Gas Costs: Very low
-</Card>
+## SVM Networks (Solana)
 
-<Card title="Optimism" icon="circle-nodes">
-  **Fast Finality** - Optimistic Rollup
+AnySpend also supports Solana Virtual Machine (SVM) networks:
 
-  - Chain ID: 10
-  - Network Identifier: `optimism-mainnet`
-  - Block Time: ~2 seconds
-  - Gas Costs: Low
-</Card>
+| Network | Identifier | Chain ID | Type |
+|---------|-----------|----------|------|
+| Solana Mainnet | `solana` | 101 | Mainnet |
+| Solana Devnet | `solana-devnet` | 103 | Testnet |
 
-<Card title="Polygon PoS" icon="shapes">
-  **Lowest Fees** - Sidechain
-
-  - Chain ID: 137
-  - Network Identifier: `polygon-mainnet`
-  - Block Time: ~2 seconds
-  - Gas Costs: Extremely low
-</Card>
-
-<Card title="Base Sepolia" icon="flask">
-  **Testnet** - For development
-
-  - Chain ID: 84532
-  - Network Identifier: `base-sepolia`
-  - Get testnet USDC from [Coinbase Faucet](https://portal.cdp.coinbase.com/products/faucet)
-</Card>
-</CardGroup>
-
-## Network Identifiers
-
-Use these identifiers when configuring AnySpend X402:
-
-| Network | Identifier | Chain ID | RPC URL |
-|---------|-----------|----------|---------|
-| Base Mainnet | `base-mainnet` | 8453 | `https://mainnet.base.org` |
-| Ethereum Mainnet | `ethereum-mainnet` | 1 | `https://eth.llamarpc.com` |
-| Arbitrum One | `arbitrum-mainnet` | 42161 | `https://arb1.arbitrum.io/rpc` |
-| Optimism | `optimism-mainnet` | 10 | `https://mainnet.optimism.io` |
-| Polygon PoS | `polygon-mainnet` | 137 | `https://polygon-rpc.com` |
-| Base Sepolia | `base-sepolia` | 84532 | `https://sepolia.base.org` |
+<Info>
+Solana support enables cross-VM payments - users can pay with SOL or SPL tokens while resource servers receive stablecoins on EVM chains.
+</Info>
 
 ## Supported Tokens
 
@@ -97,23 +73,6 @@ USDC is natively supported on all networks using **EIP-3009 transferWithAuthoriz
 **Usage:**
 ```typescript
 const usdcAddress = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'; // Base
-```
-
-### WETH (Wrapped Ether)
-
-WETH supports **EIP-2612 permit** on most networks.
-
-| Network | Contract Address | Decimals | Signature Method |
-|---------|-----------------|----------|------------------|
-| Base | `0x4200000000000000000000000000000000000006` | 18 | permit (EIP-2612) |
-| Ethereum | `0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2` | 18 | permit (EIP-2612) |
-| Arbitrum | `0x82aF49447D8a07e3bd95BD0d56f35241523fBab1` | 18 | permit (EIP-2612) |
-| Optimism | `0x4200000000000000000000000000000000000006` | 18 | permit (EIP-2612) |
-| Polygon | `0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619` | 18 | permit (EIP-2612) |
-
-**Usage:**
-```typescript
-const wethAddress = '0x4200000000000000000000000000000000000006'; // Base
 ```
 
 ### DAI (Stablecoin)
@@ -168,80 +127,9 @@ const hasPermit = await token.read.permit !== undefined;
 const hasDomainSeparator = await token.read.DOMAIN_SEPARATOR !== undefined;
 ```
 
-## Signature Methods
-
-### EIP-3009: transferWithAuthorization
-
-**Used by:** USDC (all networks)
-
-**Advantages:**
-- ✅ One-time use signature
-- ✅ Gasless for payer
-- ✅ Immediate execution (no approval needed)
-- ✅ Random nonce (no sequential dependency)
-
-**Message Structure:**
-```solidity
-transferWithAuthorization(
-    address from,
-    address to,
-    uint256 value,
-    uint256 validAfter,   // 0 (valid now)
-    uint256 validBefore,  // deadline
-    bytes32 nonce,        // random nonce
-    bytes signature
-)
-```
-
-**Example:**
-```typescript
-import { signTransferWithAuthorization } from 'anyspend-x402-client';
-
-const signature = await signTransferWithAuthorization({
-  from: payerAddress,
-  to: recipientAddress,
-  value: '1000000',              // 1 USDC
-  validBefore: deadline,
-  nonce: randomBytes32()
-});
-```
-
-### EIP-2612: Permit
-
-**Used by:** WETH, DAI, most modern ERC-20s
-
-**Advantages:**
-- ✅ Standard across many tokens
-- ✅ Time-limited approvals
-- ✅ Widely implemented
-- ✅ Gasless for payer
-
-**Message Structure:**
-```solidity
-permit(
-    address owner,
-    address spender,
-    uint256 value,
-    uint256 deadline,
-    uint8 v, bytes32 r, bytes32 s
-)
-```
-
-**Example:**
-```typescript
-import { signPermit } from 'anyspend-x402-client';
-
-const nonce = await token.nonces(ownerAddress);
-
-const signature = await signPermit({
-  token: tokenAddress,
-  owner: ownerAddress,
-  spender: facilitatorAddress,
-  value: '1000000000000000000',  // 1 DAI
-  deadline: deadline,
-  nonce: nonce
-});
-```
+<Info>
+For detailed information about gasless signatures, see the [Permit vs TransferWithAuthorization](/anyspend/x402-signature-methods) guide.
+</Info>
 
 ## Token Configuration
 
@@ -254,7 +142,7 @@ import { X402Client } from 'anyspend-x402-client';
 
 const client = new X402Client({
   walletClient,
-  preferredToken: '0x4200000000000000000000000000000000000006', // WETH on Base
+  preferredToken: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb', // DAI on Base
   network: 'base-mainnet'
 });
 ```
@@ -295,11 +183,11 @@ AnySpend can facilitate payments where the **client's token** is on a different 
 
 **Example:**
 ```typescript
-// Client pays with WETH on Ethereum
+// Client pays with DAI on Ethereum
 const clientPayment = {
-  token: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', // WETH on Ethereum
+  token: '0x6B175474E89094C44Da98b954EedeAC495271d0F', // DAI on Ethereum
   network: 'ethereum-mainnet',
-  amount: '0.0003'
+  amount: '1.0'
 };
 
 // Resource server receives USDC on Base
@@ -310,122 +198,39 @@ const serverSettlement = {
 };
 
 // AnySpend handles:
-// 1. Receive WETH on Ethereum
-// 2. Bridge WETH from Ethereum → Base
-// 3. Swap WETH → USDC on Base
+// 1. Receive DAI on Ethereum
+// 2. Bridge DAI from Ethereum → Base
+// 3. Swap DAI → USDC on Base
 // 4. Settle USDC to resource server
 ```
 
 **Supported Cross-Chain Routes:**
-- Ethereum ↔ Base
-- Ethereum ↔ Arbitrum
-- Ethereum ↔ Optimism
-- Ethereum ↔ Polygon
-- Base ↔ Arbitrum
-- And more...
+AnySpend supports cross-chain routing between any of the supported EVM networks, including:
+- Ethereum ↔ Base, Arbitrum, Optimism, Polygon, Avalanche
+- Base ↔ Arbitrum, Optimism, Polygon
+- L1 ↔ L2 bridging across all supported chains
+- Cross-VM: Solana ↔ EVM chains (experimental)
 
 <Info>
-Cross-chain payments take longer (2-5 minutes) due to bridging time and incur additional fees (~0.5% total).
+Cross-chain payments take longer (2-5 minutes) due to bridging time and incur additional fees (~0.5% total). Same-chain payments are recommended for the best user experience.
 </Info>
-
-## Network Selection Guide
-
-### Base (Recommended)
-
-**Best for:**
-- High-frequency micropayments
-- Low-value transactions ($0.01 - $10)
-- Real-time APIs and services
-
-**Pros:**
-- Extremely low gas fees (~$0.001 per transaction)
-- Fast block times (~2 seconds)
-- Growing ecosystem
-- Coinbase-backed security
-
-**Cons:**
-- Smaller liquidity than Ethereum mainnet
-- Newer chain with less battle-testing
-
-### Ethereum Mainnet
-
-**Best for:**
-- High-value transactions ($100+)
-- Maximum security requirements
-- Largest token selection
-
-**Pros:**
-- Maximum liquidity
-- Most secure and battle-tested
-- Widest token support
-- Industry standard
-
-**Cons:**
-- High gas fees ($5-50 per transaction)
-- Slower block times (~12 seconds)
-- Not economical for micropayments
-
-### Arbitrum One
-
-**Best for:**
-- Medium-value transactions ($1-100)
-- DeFi integrations
-- Balance of cost and security
-
-**Pros:**
-- Very low gas fees
-- Fast finality
-- Good liquidity
-- Ethereum-equivalent security
-
-**Cons:**
-- Withdrawal delays (7 days to mainnet)
-- Less mainstream than Base
-
-### Optimism
-
-**Best for:**
-- Similar use cases as Arbitrum
-- Projects already on OP Stack
-
-**Pros:**
-- Low fees
-- Fast transactions
-- Ethereum-aligned roadmap
-- Growing ecosystem
-
-**Cons:**
-- Similar limitations to Arbitrum
-
-### Polygon PoS
-
-**Best for:**
-- Ultra-low-cost transactions
-- Gaming and NFT use cases
-- Emerging markets
-
-**Pros:**
-- Extremely low fees (~$0.0001 per tx)
-- Fast transactions
-- Large user base
-- Mature ecosystem
-
-**Cons:**
-- Different security model (not L2)
-- Bridge concerns
-- MATIC token required for gas
 
 ## Gas Fees Comparison
 
-Estimated gas costs per X402 payment (as of 2024):
+Estimated gas costs per X402 payment (as of 2025):
 
 | Network | USDC Payment | Token Swap Payment | Cross-Chain Payment |
 |---------|-------------|-------------------|---------------------|
 | Base | ~$0.001 | ~$0.003 | ~$0.01 - $0.05 |
-| Ethereum | ~$5 - $50 | ~$10 - $100 | ~$20 - $200 |
+| B3 | ~$0.001 | ~$0.003 | ~$0.01 - $0.05 |
 | Arbitrum | ~$0.01 | ~$0.05 | ~$0.1 - $1 |
 | Optimism | ~$0.01 | ~$0.05 | ~$0.1 - $1 |
 | Polygon | ~$0.0001 | ~$0.001 | ~$0.01 - $0.1 |
+| BSC | ~$0.01 | ~$0.03 | ~$0.1 - $0.5 |
+| Avalanche | ~$0.02 | ~$0.05 | ~$0.1 - $1 |
+| Abstract | ~$0.001 | ~$0.003 | ~$0.01 - $0.05 |
+| Ethereum | ~$5 - $50 | ~$10 - $100 | ~$20 - $200 |
+| Solana | ~$0.0001 | ~$0.001 | ~$0.5 - $2 |
 
 <Note>
 Gas fees are **paid by the facilitator** and included in the 0.25% - 0.35% AnySpend fee. Clients and resource servers don't pay gas directly.
@@ -433,23 +238,21 @@ Gas fees are **paid by the facilitator** and included in the 0.25% - 0.35% AnySp
 
 ## Testing & Development
 
-### Testnets
+AnySpend supports multiple testnets for development and testing. See the [EVM Testnet Networks](#evm-testnet-networks) section above for the complete list of supported testnets and their faucets.
 
-Use these testnets for development:
+### Recommended Testnets
 
-| Network | Chain ID | Faucet |
-|---------|----------|--------|
-| Base Sepolia | 84532 | [Coinbase Faucet](https://portal.cdp.coinbase.com/products/faucet) |
-| Ethereum Sepolia | 11155111 | [Sepolia Faucet](https://sepoliafaucet.com) |
-| Arbitrum Sepolia | 421614 | [Arbitrum Faucet](https://faucet.quicknode.com/arbitrum/sepolia) |
+**For general development:**
+- **Base Sepolia** (Chain ID: 84532) - Best testnet experience, fast and reliable
+- **Solana Devnet** (Chain ID: 103) - For Solana/SVM testing
 
-### Test USDC Addresses
+**For specific network testing:**
+- Use the respective testnet that matches your target mainnet
+- See the EVM Testnet Networks table above for faucet links
 
-| Network | USDC Contract Address |
-|---------|---------------------|
-| Base Sepolia | `0x036CbD53842c5426634e7929541eC2318f3dCF7e` |
-| Ethereum Sepolia | `0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238` |
-| Arbitrum Sepolia | `0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d` |
+### Test Token Addresses
+
+Contact the AnySpend team for test token addresses on specific networks, or use standard testnet faucets to get native tokens for testing.
 
 ## Additional Resources
 
@@ -466,8 +269,8 @@ Use these testnets for development:
   Get testnet tokens for development
 </Card>
 
-<Card title="Relay Protocol" icon="arrows-turn-right" href="https://relay.link">
-  Cross-chain swap and bridge details
+<Card title="AnySpend Facilitator" icon="arrows-turn-right" href="https://mainnet.anyspend.com/x402">
+  Production facilitator API endpoint
 </Card>
 </CardGroup>
 

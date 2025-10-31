@@ -105,6 +105,10 @@ try {
 
 ### Specify Payment Token
 
+There are two ways to specify which token you want to pay with:
+
+#### Option 1: Using X402Client
+
 Pay with a specific token by setting `preferredToken`:
 
 ```typescript
@@ -113,12 +117,51 @@ const response = await x402Client.request(
   {
     method: 'POST',
     body: { prompt: 'Generate an image of a cat' },
-    preferredToken: '0x4200000000000000000000000000000000000006' // WETH on Base
+    preferredToken: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb' // DAI on Base
   }
 );
 ```
 
-If the resource server supports AnySpend middleware, you'll pay the equivalent amount in WETH instead of USDC.
+#### Option 2: Using wrapFetchWithPayment (Advanced)
+
+For more control, use the lower-level `wrapFetchWithPayment` function:
+
+```typescript
+import { wrapFetchWithPayment } from 'anyspend-x402-client';
+
+const tokenAddress = '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb'; // DAI on Base
+const selectedChain = 8453; // Base
+
+const paymentPreferences = {
+  preferredToken: tokenAddress,
+  preferredNetwork: 'base' as const, // or use getNetworkName(selectedChain)
+};
+
+console.log(`💡 Using preferred token: ${tokenAddress} on base`);
+
+// Wrap fetch with automatic payment handling
+const fetchWithPayment = wrapFetchWithPayment(
+  fetch,
+  walletClient,
+  '1000000', // Max payment value (1 USDC in 6 decimals)
+  undefined, // Use default payment requirements selector
+  undefined, // Use default config
+  paymentPreferences, // Specify your preferred token and network
+);
+
+// Use the wrapped fetch like normal fetch
+const response = await fetchWithPayment('https://api.example.com/premium-data');
+const data = await response.json();
+```
+
+**Benefits of `wrapFetchWithPayment`:**
+- Works with any existing `fetch`-based code
+- More granular control over payment behavior
+- Can specify max payment value
+- Custom payment requirements selector
+- Supports multi-network signers
+
+If the resource server supports AnySpend middleware, you'll pay the equivalent amount in your preferred token instead of USDC.
 
 ### POST Requests with Body
 
@@ -201,6 +244,48 @@ interface RequestOptions {
 }
 ```
 
+### wrapFetchWithPayment Parameters
+
+For advanced use cases, `wrapFetchWithPayment` provides lower-level control:
+
+```typescript
+function wrapFetchWithPayment(
+  fetchFn: typeof fetch,              // Fetch function to wrap
+  signer: Signer | MultiNetworkSigner, // Wallet client for signing
+  maxPaymentValue: string,             // Max payment in smallest unit (e.g., '1000000' for 1 USDC)
+  selectPaymentRequirements?: Function, // Custom requirements selector
+  config?: {
+    timeout?: number;                  // Request timeout in ms
+    maxRetries?: number;               // Max payment retry attempts
+  },
+  paymentPreferences?: {
+    preferredToken?: string;           // Token address to pay with
+    preferredNetwork?: string;         // Network identifier (e.g., 'base', 'ethereum')
+  }
+): typeof fetch
+```
+
+**Example with all parameters:**
+
+```typescript
+import { wrapFetchWithPayment } from 'anyspend-x402-client';
+
+const fetchWithPayment = wrapFetchWithPayment(
+  fetch,
+  walletClient,
+  '5000000', // Max 5 USDC
+  undefined, // Default requirements selector
+  {
+    timeout: 60000,    // 60 second timeout
+    maxRetries: 3      // Retry up to 3 times
+  },
+  {
+    preferredToken: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb', // DAI
+    preferredNetwork: 'base'
+  }
+);
+```
+
 ## Supported Tokens
 
 The X402 client can pay with any token that supports **EIP-2612 permit** or is **USDC** (which uses EIP-3009 transferWithAuthorization).
@@ -208,7 +293,6 @@ The X402 client can pay with any token that supports **EIP-2612 permit** or is *
 Common supported tokens:
 
 - **USDC** - Native support on all chains
-- **WETH** - Wrapped ETH with permit support
 - **DAI** - Stablecoin with permit support
 - **USDT** - On chains where it implements permit
 
@@ -216,7 +300,7 @@ See [Network Support](/anyspend/x402-network-support) for detailed token address
 
 ## Examples
 
-### React Component
+### React Component (Using X402Client)
 
 ```tsx
 import { X402Client } from 'anyspend-x402-client';
@@ -235,7 +319,7 @@ export function PremiumDataFetcher() {
     try {
       const client = new X402Client({
         walletClient,
-        preferredToken: '0x...' // WETH or other token
+        preferredToken: '0x...' // DAI or other token
       });
 
       const response = await client.request(
@@ -256,6 +340,101 @@ export function PremiumDataFetcher() {
       <button onClick={fetchPremiumData} disabled={loading}>
         {loading ? 'Paying...' : 'Get Premium Data (Costs 1 USDC)'}
       </button>
+      {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
+    </div>
+  );
+}
+```
+
+### React Component (Using wrapFetchWithPayment)
+
+For applications that need more control or use existing fetch-based code:
+
+```tsx
+import { wrapFetchWithPayment } from 'anyspend-x402-client';
+import { useWalletClient, useChainId } from 'wagmi';
+import { useState } from 'react';
+
+// Helper to get network name from chain ID
+const getNetworkName = (chainId: number): string => {
+  const networks: Record<number, string> = {
+    8453: 'base',
+    1: 'ethereum',
+    42161: 'arbitrum',
+    10: 'optimism',
+    137: 'polygon',
+  };
+  return networks[chainId] || 'base';
+};
+
+export function PremiumDataFetcherAdvanced() {
+  const { data: walletClient } = useWalletClient();
+  const selectedChain = useChainId();
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [log, setLog] = useState<string[]>([]);
+
+  // Token addresses by chain
+  const tokenAddresses: Record<number, string> = {
+    8453: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb', // DAI on Base
+    1: '0x6B175474E89094C44Da98b954EedeAC495271d0F', // DAI on Ethereum
+  };
+
+  const fetchPremiumData = async () => {
+    if (!walletClient) return;
+
+    setLoading(true);
+    setLog([]);
+
+    try {
+      const tokenAddress = tokenAddresses[selectedChain];
+
+      const paymentPreferences = {
+        preferredToken: tokenAddress,
+        preferredNetwork: getNetworkName(selectedChain) as any,
+      };
+
+      setLog(prev => [...prev,
+        `💡 Using preferred token: ${tokenAddress} on ${getNetworkName(selectedChain)}`
+      ]);
+
+      // Wrap fetch with automatic payment handling
+      const fetchWithPayment = wrapFetchWithPayment(
+        fetch,
+        walletClient as any,
+        '1000000', // Max 1 USDC
+        undefined, // Use default payment requirements selector
+        undefined, // Use default config
+        paymentPreferences,
+      );
+
+      setLog(prev => [...prev, '🔄 Making request...']);
+
+      const response = await fetchWithPayment('https://api.example.com/premium-data');
+      const result = await response.json();
+
+      setData(result);
+      setLog(prev => [...prev, '✅ Payment successful!']);
+    } catch (error) {
+      console.error('Payment failed:', error);
+      setLog(prev => [...prev, `❌ Error: ${error.message}`]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      <button onClick={fetchPremiumData} disabled={loading}>
+        {loading ? 'Processing Payment...' : 'Get Premium Data'}
+      </button>
+
+      {log.length > 0 && (
+        <div style={{ marginTop: '1rem', fontFamily: 'monospace' }}>
+          {log.map((entry, i) => <div key={i}>{entry}</div>)}
+        </div>
+      )}
+
       {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
     </div>
   );
@@ -401,8 +580,8 @@ await new X402Client({ walletClient }).request('...');
 ## What's Next?
 
 <CardGroup cols={2}>
-<Card title="Core Concepts" icon="book" href="/anyspend/x402-core-concepts">
-  Learn how X402 payments work under the hood
+<Card title="Overview" icon="book" href="/anyspend/x402-overview">
+  Learn how AnySpend X402 works
 </Card>
 
 <Card title="Network Support" icon="globe" href="/anyspend/x402-network-support">
