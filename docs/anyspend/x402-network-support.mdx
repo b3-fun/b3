@@ -1,0 +1,492 @@
+---
+title: "Network & Token Support"
+description: "Supported blockchains, tokens, and contract addresses for AnySpend X402 payments"
+---
+
+## Overview
+
+AnySpend X402 supports payments across multiple EVM-compatible blockchains and a wide variety of ERC-20 tokens. This page provides the complete reference of supported networks, tokens, and their contract addresses.
+
+## Supported Networks
+
+AnySpend X402 currently supports the following blockchain networks:
+
+<CardGroup cols={2}>
+<Card title="Base" icon="layer-group">
+  **Recommended** - Fast, low-cost L2
+
+  - Chain ID: 8453
+  - Network Identifier: `base-mainnet`
+  - Block Time: ~2 seconds
+  - Gas Costs: Very low
+</Card>
+
+<Card title="Ethereum" icon="ethereum">
+  **Maximum Liquidity** - Mainnet
+
+  - Chain ID: 1
+  - Network Identifier: `ethereum-mainnet`
+  - Block Time: ~12 seconds
+  - Gas Costs: Higher
+</Card>
+
+<Card title="Arbitrum One" icon="network-wired">
+  **Low Fees** - Optimistic Rollup
+
+  - Chain ID: 42161
+  - Network Identifier: `arbitrum-mainnet`
+  - Block Time: ~0.25 seconds
+  - Gas Costs: Very low
+</Card>
+
+<Card title="Optimism" icon="circle-nodes">
+  **Fast Finality** - Optimistic Rollup
+
+  - Chain ID: 10
+  - Network Identifier: `optimism-mainnet`
+  - Block Time: ~2 seconds
+  - Gas Costs: Low
+</Card>
+
+<Card title="Polygon PoS" icon="shapes">
+  **Lowest Fees** - Sidechain
+
+  - Chain ID: 137
+  - Network Identifier: `polygon-mainnet`
+  - Block Time: ~2 seconds
+  - Gas Costs: Extremely low
+</Card>
+
+<Card title="Base Sepolia" icon="flask">
+  **Testnet** - For development
+
+  - Chain ID: 84532
+  - Network Identifier: `base-sepolia`
+  - Get testnet USDC from [Coinbase Faucet](https://portal.cdp.coinbase.com/products/faucet)
+</Card>
+</CardGroup>
+
+## Network Identifiers
+
+Use these identifiers when configuring AnySpend X402:
+
+| Network | Identifier | Chain ID | RPC URL |
+|---------|-----------|----------|---------|
+| Base Mainnet | `base-mainnet` | 8453 | `https://mainnet.base.org` |
+| Ethereum Mainnet | `ethereum-mainnet` | 1 | `https://eth.llamarpc.com` |
+| Arbitrum One | `arbitrum-mainnet` | 42161 | `https://arb1.arbitrum.io/rpc` |
+| Optimism | `optimism-mainnet` | 10 | `https://mainnet.optimism.io` |
+| Polygon PoS | `polygon-mainnet` | 137 | `https://polygon-rpc.com` |
+| Base Sepolia | `base-sepolia` | 84532 | `https://sepolia.base.org` |
+
+## Supported Tokens
+
+### USDC (Circle)
+
+USDC is natively supported on all networks using **EIP-3009 transferWithAuthorization**.
+
+| Network | Contract Address | Decimals | Signature Method |
+|---------|-----------------|----------|------------------|
+| Base | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` | 6 | transferWithAuthorization |
+| Ethereum | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | 6 | transferWithAuthorization |
+| Arbitrum | `0xaf88d065e77c8cC2239327C5EDb3A432268e5831` | 6 | transferWithAuthorization |
+| Optimism | `0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85` | 6 | transferWithAuthorization |
+| Polygon | `0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359` | 6 | transferWithAuthorization |
+| Base Sepolia | `0x036CbD53842c5426634e7929541eC2318f3dCF7e` | 6 | transferWithAuthorization |
+
+**Usage:**
+```typescript
+const usdcAddress = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'; // Base
+```
+
+### WETH (Wrapped Ether)
+
+WETH supports **EIP-2612 permit** on most networks.
+
+| Network | Contract Address | Decimals | Signature Method |
+|---------|-----------------|----------|------------------|
+| Base | `0x4200000000000000000000000000000000000006` | 18 | permit (EIP-2612) |
+| Ethereum | `0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2` | 18 | permit (EIP-2612) |
+| Arbitrum | `0x82aF49447D8a07e3bd95BD0d56f35241523fBab1` | 18 | permit (EIP-2612) |
+| Optimism | `0x4200000000000000000000000000000000000006` | 18 | permit (EIP-2612) |
+| Polygon | `0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619` | 18 | permit (EIP-2612) |
+
+**Usage:**
+```typescript
+const wethAddress = '0x4200000000000000000000000000000000000006'; // Base
+```
+
+### DAI (Stablecoin)
+
+DAI supports **EIP-2612 permit**.
+
+| Network | Contract Address | Decimals | Signature Method |
+|---------|-----------------|----------|------------------|
+| Base | `0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb` | 18 | permit (EIP-2612) |
+| Ethereum | `0x6B175474E89094C44Da98b954EedeAC495271d0F` | 18 | permit (EIP-2612) |
+| Arbitrum | `0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1` | 18 | permit (EIP-2612) |
+| Optimism | `0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1` | 18 | permit (EIP-2612) |
+| Polygon | `0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063` | 18 | permit (EIP-2612) |
+
+**Usage:**
+```typescript
+const daiAddress = '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb'; // Base
+```
+
+### USDT (Tether)
+
+USDT support varies by network. Some implementations support permit, others don't.
+
+| Network | Contract Address | Decimals | Signature Method |
+|---------|-----------------|----------|------------------|
+| Base | `0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2` | 6 | permit (EIP-2612) |
+| Ethereum | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | 6 | ⚠️ No permit support |
+| Arbitrum | `0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9` | 6 | permit (EIP-2612) |
+| Optimism | `0x94b008aA00579c1307B0EF2c499aD98a8ce58e58` | 6 | permit (EIP-2612) |
+| Polygon | `0xc2132D05D31c914a87C6611C10748AEb04B58e8F` | 6 | ⚠️ No permit support |
+
+<Warning>
+USDT on Ethereum and Polygon does **not** support EIP-2612 permit. Use traditional `approve()` + `transferFrom()` flow or choose a different token.
+</Warning>
+
+### Other ERC-20 Tokens
+
+Any ERC-20 token that implements **EIP-2612 permit** is supported:
+
+- **cbBTC** (Coinbase Wrapped Bitcoin)
+- **LINK** (Chainlink)
+- **UNI** (Uniswap)
+- **AAVE** (Aave)
+- And many more...
+
+**Check if a token supports permit:**
+```typescript
+// Check if token has permit function
+const hasPermit = await token.read.permit !== undefined;
+
+// Or check for DOMAIN_SEPARATOR (required for EIP-712)
+const hasDomainSeparator = await token.read.DOMAIN_SEPARATOR !== undefined;
+```
+
+## Signature Methods
+
+### EIP-3009: transferWithAuthorization
+
+**Used by:** USDC (all networks)
+
+**Advantages:**
+- ✅ One-time use signature
+- ✅ Gasless for payer
+- ✅ Immediate execution (no approval needed)
+- ✅ Random nonce (no sequential dependency)
+
+**Message Structure:**
+```solidity
+transferWithAuthorization(
+    address from,
+    address to,
+    uint256 value,
+    uint256 validAfter,   // 0 (valid now)
+    uint256 validBefore,  // deadline
+    bytes32 nonce,        // random nonce
+    bytes signature
+)
+```
+
+**Example:**
+```typescript
+import { signTransferWithAuthorization } from 'anyspend-x402-client';
+
+const signature = await signTransferWithAuthorization({
+  from: payerAddress,
+  to: recipientAddress,
+  value: '1000000',              // 1 USDC
+  validBefore: deadline,
+  nonce: randomBytes32()
+});
+```
+
+### EIP-2612: Permit
+
+**Used by:** WETH, DAI, most modern ERC-20s
+
+**Advantages:**
+- ✅ Standard across many tokens
+- ✅ Time-limited approvals
+- ✅ Widely implemented
+- ✅ Gasless for payer
+
+**Message Structure:**
+```solidity
+permit(
+    address owner,
+    address spender,
+    uint256 value,
+    uint256 deadline,
+    uint8 v, bytes32 r, bytes32 s
+)
+```
+
+**Example:**
+```typescript
+import { signPermit } from 'anyspend-x402-client';
+
+const nonce = await token.nonces(ownerAddress);
+
+const signature = await signPermit({
+  token: tokenAddress,
+  owner: ownerAddress,
+  spender: facilitatorAddress,
+  value: '1000000000000000000',  // 1 DAI
+  deadline: deadline,
+  nonce: nonce
+});
+```
+
+## Token Configuration
+
+### Client-Side (Paying)
+
+Specify your preferred payment token:
+
+```typescript
+import { X402Client } from 'anyspend-x402-client';
+
+const client = new X402Client({
+  walletClient,
+  preferredToken: '0x4200000000000000000000000000000000000006', // WETH on Base
+  network: 'base-mainnet'
+});
+```
+
+Or per-request:
+
+```typescript
+const response = await client.request('https://api.example.com/data', {
+  preferredToken: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb' // DAI on Base
+});
+```
+
+### Server-Side (Receiving)
+
+Configure accepted tokens and settlement currency:
+
+```typescript
+import { paymentMiddleware, facilitator } from '@b3dotfun/anyspend-x402';
+
+const endpointConfig = {
+  '/api/data': {
+    amount: '1.00',        // $1 worth of any token
+    asset: 'USD',          // Let client choose token
+    network: 'base-mainnet'
+  }
+};
+
+app.use(paymentMiddleware(
+  '0xYourUSDCAddress...',  // Receive USDC
+  endpointConfig,
+  facilitator
+));
+```
+
+## Cross-Chain Support
+
+AnySpend can facilitate payments where the **client's token** is on a different chain than the **resource server's settlement**.
+
+**Example:**
+```typescript
+// Client pays with WETH on Ethereum
+const clientPayment = {
+  token: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', // WETH on Ethereum
+  network: 'ethereum-mainnet',
+  amount: '0.0003'
+};
+
+// Resource server receives USDC on Base
+const serverSettlement = {
+  token: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC on Base
+  network: 'base-mainnet',
+  amount: '1.00'
+};
+
+// AnySpend handles:
+// 1. Receive WETH on Ethereum
+// 2. Bridge WETH from Ethereum → Base
+// 3. Swap WETH → USDC on Base
+// 4. Settle USDC to resource server
+```
+
+**Supported Cross-Chain Routes:**
+- Ethereum ↔ Base
+- Ethereum ↔ Arbitrum
+- Ethereum ↔ Optimism
+- Ethereum ↔ Polygon
+- Base ↔ Arbitrum
+- And more...
+
+<Info>
+Cross-chain payments take longer (2-5 minutes) due to bridging time and incur additional fees (~0.5% total).
+</Info>
+
+## Network Selection Guide
+
+### Base (Recommended)
+
+**Best for:**
+- High-frequency micropayments
+- Low-value transactions ($0.01 - $10)
+- Real-time APIs and services
+
+**Pros:**
+- Extremely low gas fees (~$0.001 per transaction)
+- Fast block times (~2 seconds)
+- Growing ecosystem
+- Coinbase-backed security
+
+**Cons:**
+- Smaller liquidity than Ethereum mainnet
+- Newer chain with less battle-testing
+
+### Ethereum Mainnet
+
+**Best for:**
+- High-value transactions ($100+)
+- Maximum security requirements
+- Largest token selection
+
+**Pros:**
+- Maximum liquidity
+- Most secure and battle-tested
+- Widest token support
+- Industry standard
+
+**Cons:**
+- High gas fees ($5-50 per transaction)
+- Slower block times (~12 seconds)
+- Not economical for micropayments
+
+### Arbitrum One
+
+**Best for:**
+- Medium-value transactions ($1-100)
+- DeFi integrations
+- Balance of cost and security
+
+**Pros:**
+- Very low gas fees
+- Fast finality
+- Good liquidity
+- Ethereum-equivalent security
+
+**Cons:**
+- Withdrawal delays (7 days to mainnet)
+- Less mainstream than Base
+
+### Optimism
+
+**Best for:**
+- Similar use cases as Arbitrum
+- Projects already on OP Stack
+
+**Pros:**
+- Low fees
+- Fast transactions
+- Ethereum-aligned roadmap
+- Growing ecosystem
+
+**Cons:**
+- Similar limitations to Arbitrum
+
+### Polygon PoS
+
+**Best for:**
+- Ultra-low-cost transactions
+- Gaming and NFT use cases
+- Emerging markets
+
+**Pros:**
+- Extremely low fees (~$0.0001 per tx)
+- Fast transactions
+- Large user base
+- Mature ecosystem
+
+**Cons:**
+- Different security model (not L2)
+- Bridge concerns
+- MATIC token required for gas
+
+## Gas Fees Comparison
+
+Estimated gas costs per X402 payment (as of 2024):
+
+| Network | USDC Payment | Token Swap Payment | Cross-Chain Payment |
+|---------|-------------|-------------------|---------------------|
+| Base | ~$0.001 | ~$0.003 | ~$0.01 - $0.05 |
+| Ethereum | ~$5 - $50 | ~$10 - $100 | ~$20 - $200 |
+| Arbitrum | ~$0.01 | ~$0.05 | ~$0.1 - $1 |
+| Optimism | ~$0.01 | ~$0.05 | ~$0.1 - $1 |
+| Polygon | ~$0.0001 | ~$0.001 | ~$0.01 - $0.1 |
+
+<Note>
+Gas fees are **paid by the facilitator** and included in the 0.25% - 0.35% AnySpend fee. Clients and resource servers don't pay gas directly.
+</Note>
+
+## Testing & Development
+
+### Testnets
+
+Use these testnets for development:
+
+| Network | Chain ID | Faucet |
+|---------|----------|--------|
+| Base Sepolia | 84532 | [Coinbase Faucet](https://portal.cdp.coinbase.com/products/faucet) |
+| Ethereum Sepolia | 11155111 | [Sepolia Faucet](https://sepoliafaucet.com) |
+| Arbitrum Sepolia | 421614 | [Arbitrum Faucet](https://faucet.quicknode.com/arbitrum/sepolia) |
+
+### Test USDC Addresses
+
+| Network | USDC Contract Address |
+|---------|---------------------|
+| Base Sepolia | `0x036CbD53842c5426634e7929541eC2318f3dCF7e` |
+| Ethereum Sepolia | `0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238` |
+| Arbitrum Sepolia | `0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d` |
+
+## Additional Resources
+
+<CardGroup cols={2}>
+<Card title="Chainlist" icon="link" href="https://chainlist.org">
+  RPC endpoints and chain metadata
+</Card>
+
+<Card title="Token Lists" icon="list" href="https://tokenlists.org">
+  Verified token addresses across chains
+</Card>
+
+<Card title="Coinbase Faucet" icon="faucet" href="https://portal.cdp.coinbase.com/products/faucet">
+  Get testnet tokens for development
+</Card>
+
+<Card title="Relay Protocol" icon="arrows-turn-right" href="https://relay.link">
+  Cross-chain swap and bridge details
+</Card>
+</CardGroup>
+
+## What's Next?
+
+<CardGroup cols={2}>
+<Card title="Quickstart for Buyers" icon="wallet" href="/anyspend/x402-quickstart-buyers">
+  Start using these tokens to pay for services
+</Card>
+
+<Card title="Quickstart for Sellers" icon="money-bill" href="/anyspend/x402-quickstart-sellers">
+  Configure your API to accept these tokens
+</Card>
+</CardGroup>
+
+## Getting Help
+
+If you need a specific token or network supported:
+
+- **Discord**: Request in [#anyspend-support](https://discord.gg/b3dotfun)
+- **GitHub**: Open an issue at [github.com/b3-fun/anyspend-x402](https://github.com/b3-fun/anyspend-x402)
+- **Email**: support@b3.fun

@@ -1,0 +1,232 @@
+---
+title: "AnySpend X402 Overview"
+description: "Pay for paywalled APIs and services with any token - powered by the X402 open payment protocol"
+---
+
+## What is AnySpend X402?
+
+AnySpend X402 is B3's implementation of the **X402 payment protocol** that enables instant, automatic cryptocurrency payments directly over HTTP. Unlike traditional X402 facilitators that only support USDC, **AnySpend allows you to pay with any token** while resource servers receive USDC.
+
+The X402 protocol modernizes the HTTP `402 Payment Required` status code, turning it into a practical solution for machine-to-machine micropayments, paywalled APIs, and autonomous agent interactions.
+
+## For Buyers (Payers)
+
+Pay for paywalled resources using any cryptocurrency you hold:
+
+- **Pay with any token**: Use ETH, WETH, DAI, or any ERC-20 token - not just USDC
+- **Standard protocol**: Works with any X402-enabled service using standard HTTP
+- **No manual swaps**: AnySpend automatically converts your token to what the seller needs
+- **Simple integration**: One SDK works across all X402 services
+
+**Use Cases:**
+- Access premium APIs and AI agent services
+- Pay for computational resources and data feeds
+- Enable autonomous agent-to-agent payments
+- Consume paywalled content programmatically
+
+## For Sellers (Resource Servers)
+
+Accept payments in USDC while your customers pay with their preferred token:
+
+- **Receive USDC**: Get paid in USDC regardless of what token the customer uses
+- **Express middleware**: Add payments to your API with just a few lines of code
+- **No blockchain infrastructure**: AnySpend handles all on-chain complexity
+- **Instant settlement**: Payments are verified and settled automatically
+
+**Use Cases:**
+- Monetize premium APIs and data services
+- Build paid AI agent workflows
+- Create paywalled content and tools
+- Accept crypto payments without crypto expertise
+
+## How It Works
+
+<Steps>
+<Step title="Client Requests Resource">
+User's application makes a standard HTTP request to your API
+</Step>
+
+<Step title="Payment Required">
+Your API returns `402 Payment Required` with payment details
+</Step>
+
+<Step title="Token Preference">
+Client specifies their preferred payment token (ETH, DAI, etc.)
+</Step>
+
+<Step title="AnySpend Quotes">
+AnySpend calculates the equivalent amount in the client's chosen token
+</Step>
+
+<Step title="Client Signs Payment">
+User signs a cryptographic authorization for their token
+</Step>
+
+<Step title="Automatic Settlement">
+AnySpend swaps the token to USDC and settles to your wallet
+</Step>
+
+<Step title="Resource Delivered">
+Your API receives payment confirmation and returns the requested resource
+</Step>
+</Steps>
+
+## Key Differentiators
+
+### Multi-Token Support
+
+**Standard X402**: Resource servers and clients must both use USDC
+
+**AnySpend X402**: Clients pay with **any token** they hold. AnySpend handles the conversion.
+
+```
+Client pays 0.0003 ETH → AnySpend swaps to 1 USDC → Seller receives 1 USDC
+```
+
+### No Infrastructure Required
+
+Resource servers don't need to:
+- Run blockchain nodes
+- Manage wallets or private keys
+- Handle token swaps or bridging
+- Monitor transaction status
+
+AnySpend's facilitator handles all blockchain operations and provides simple HTTP endpoints for verification and settlement.
+
+### Standard Protocol Compliance
+
+Clients using AnySpend have **zero awareness** they're using a special facilitator. The entire flow uses standard X402 protocol messages - the multi-token magic happens transparently on the resource server side through middleware.
+
+## Triple Package Delivery
+
+AnySpend X402 consists of three packages:
+
+<CardGroup cols={3}>
+<Card title="Facilitator" icon="server">
+  **anyspend-x402-facilitator**
+
+  Server-side payment processor that handles verification, settlement, and token swaps
+</Card>
+
+<Card title="Middleware" icon="plug">
+  **anyspend-x402-middleware-express**
+
+  Express middleware for resource servers to easily accept multi-token payments
+</Card>
+
+<Card title="Client SDK" icon="code">
+  **anyspend-x402-client**
+
+  TypeScript SDK for clients to make payments with signature helpers
+</Card>
+</CardGroup>
+
+## Supported Networks
+
+AnySpend X402 supports payments across multiple EVM chains:
+
+- Base (recommended)
+- Ethereum
+- Arbitrum
+- Optimism
+- Polygon
+
+See [Network Support](/anyspend/x402-network-support) for detailed token and network information.
+
+## Fee Structure
+
+<AccordionGroup>
+<Accordion title="Direct USDC Payments">
+**0.25%** fee (minimum $0.01)
+
+When clients pay directly in USDC, no token swap is required.
+</Accordion>
+
+<Accordion title="Multi-Token Payments">
+**0.35%** total fee (minimum $0.01)
+
+- AnySpend fee: 0.25%
+- Relay Protocol swap fee: 0.10%
+
+Applies when clients pay with tokens other than USDC (ETH, DAI, etc.)
+</Accordion>
+</AccordionGroup>
+
+Fees are automatically deducted from the settlement amount.
+
+## Quick Start
+
+Choose your path:
+
+<CardGroup cols={2}>
+<Card title="I want to pay for services" icon="wallet" href="/anyspend/x402-quickstart-buyers">
+  **For Buyers**: Learn how to use the X402 client SDK to pay for paywalled resources with any token
+</Card>
+
+<Card title="I want to accept payments" icon="cash-register" href="/anyspend/x402-quickstart-sellers">
+  **For Sellers**: Add the Express middleware to your API and start accepting multi-token payments
+</Card>
+</CardGroup>
+
+## Architecture Overview
+
+```
+┌─────────────────┐
+│     Client      │  Pays with any token (ETH, DAI, etc.)
+│  (X402 Client)  │
+└────────┬────────┘
+         │ Standard X402 Protocol
+         │
+┌────────▼────────┐
+│ Resource Server │  Uses AnySpend middleware
+│  (Your API)     │  Receives USDC
+└────────┬────────┘
+         │
+┌────────▼────────┐
+│    AnySpend     │  Handles swaps & settlement
+│   Facilitator   │  /verify, /settle endpoints
+└────────┬────────┘
+         │
+┌────────▼────────┐
+│   Blockchain    │  USDC settlement
+│  (Base, etc.)   │  Token swaps via Relay
+└─────────────────┘
+```
+
+## Security & Trust
+
+AnySpend X402 is designed with security at its core:
+
+- **No vault transfers**: Uses cryptographic signatures (EIP-2612 permit, EIP-3009 transferWithAuthorization)
+- **Nonce-based protection**: Prevents signature replay attacks
+- **Deadline enforcement**: Time-limited payment authorizations
+- **Exact amounts**: No unlimited token approvals
+- **Open source**: Auditable code and transparent operations
+
+See [Core Concepts](/anyspend/x402-core-concepts) for detailed security architecture.
+
+## What's Next?
+
+<CardGroup cols={3}>
+<Card title="Quickstart for Buyers" icon="rocket" href="/anyspend/x402-quickstart-buyers">
+  Start paying for services with any token
+</Card>
+
+<Card title="Quickstart for Sellers" icon="money-bill" href="/anyspend/x402-quickstart-sellers">
+  Accept payments in your Express API
+</Card>
+
+<Card title="Core Concepts" icon="book" href="/anyspend/x402-core-concepts">
+  Understand how AnySpend X402 works
+</Card>
+</CardGroup>
+
+## Getting Help
+
+- **Discord**: Join our [Discord community](https://discord.gg/b3dotfun) for support
+- **GitHub**: Report issues at [github.com/b3-fun/anyspend-x402](https://github.com/b3-fun/anyspend-x402)
+- **Documentation**: Comprehensive guides and API references
+
+## About X402
+
+X402 is an open payment protocol developed by Coinbase that enables programmatic cryptocurrency payments over HTTP. Learn more at [x402.org](https://www.x402.org) and [Coinbase CDP X402 docs](https://docs.cdp.coinbase.com/x402/welcome).
