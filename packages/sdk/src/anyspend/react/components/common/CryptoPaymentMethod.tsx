@@ -1,15 +1,16 @@
 "use client";
 
+import { useGlobalWalletState } from "@b3dotfun/sdk/anyspend/utils";
 import { useAccountWallet } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { WalletCoinbase, WalletMetamask, WalletPhantom, WalletRainbow, WalletWalletConnect } from "@web3icons/react";
 import { ChevronLeft, ChevronRightCircle, Wallet, X, ZapIcon } from "lucide-react";
-import { useState } from "react";
+import { act, use, useState } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
-import { useSetActiveWallet, useWalletInfo } from "thirdweb/react";
+import { useActiveWallet, useSetActiveWallet, useWalletInfo } from "thirdweb/react";
 import { WalletId, createWallet } from "thirdweb/wallets";
 import { useAccount, useConnect, useDisconnect, useWalletClient } from "wagmi";
 
@@ -51,9 +52,11 @@ export function CryptoPaymentMethod({
   const { disconnect } = useDisconnect();
   const { data: walletClient } = useWalletClient();
   const [showWalletModal, setShowWalletModal] = useState(false);
-
   const setActiveWallet = useSetActiveWallet();
   const { data: eoaWalletInfo } = useWalletInfo(connectedEOAWallet?.id);
+
+  const activeWallet = useActiveWallet();
+  const setGlobalAccountWallet = useGlobalWalletState(state => state.setGlobalAccountWallet);
 
   const isConnected = !!connectedEOAWallet;
   const globalAddress = connectedSmartWallet?.getAccount()?.address;
@@ -233,6 +236,7 @@ export function CryptoPaymentMethod({
                     onClick={() => {
                       setSelectedPaymentMethod(CryptoPaymentMethodType.CONNECT_WALLET);
                       onSelectPaymentMethod(CryptoPaymentMethodType.CONNECT_WALLET);
+                      setGlobalAccountWallet(activeWallet);
                       setActiveWallet(connectedEOAWallet);
                       toast.success(`Selected ${eoaWalletInfo?.name || connector?.name || "wallet"}`);
                     }}
