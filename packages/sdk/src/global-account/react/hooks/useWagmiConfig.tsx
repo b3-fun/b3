@@ -35,7 +35,7 @@ export function useWagmiConfig(partnerId: string, rpcUrls?: Record<number, strin
           ...ecocystemConfig,
           client,
         }),
-        miniAppConnector(),
+...(isFarcasterMiniApp() ? [miniAppConnector()] : []),
         // injected(),
         // coinbaseWallet({ appName: "HypeDuel" }),
       ],
