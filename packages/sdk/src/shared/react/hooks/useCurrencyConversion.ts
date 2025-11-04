@@ -1,10 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { formatDisplayNumber } from "@b3dotfun/sdk/shared/utils/number";
-import {
-  useCurrencyStore,
-  getCurrencySymbol,
-  getCurrencyMetadata,
-} from "../stores/currencyStore";
+import { useCurrencyStore, getCurrencySymbol, getCurrencyMetadata } from "../stores/currencyStore";
 
 const COINBASE_API_URL = "https://api.coinbase.com/v2/exchange-rates";
 const REFETCH_INTERVAL_MS = 30000;
@@ -67,7 +63,7 @@ export function useCurrencyConversion() {
   /**
    * Get exchange rate between two currencies, checking custom rates first, then API rates.
    * Supports chaining through base currency for custom currencies.
-   * 
+   *
    * Examples:
    * - WIN → USD: Checks WIN→USD custom rate, then chains WIN→B3→USD
    * - BTC → EUR: Checks BTC→EUR custom rate, then chains BTC→B3→EUR
@@ -75,18 +71,18 @@ export function useCurrencyConversion() {
   const getExchangeRate = (from: string, to: string): number | undefined => {
     // If same currency, rate is 1
     if (from === to) return 1;
-    
+
     // 1. Check direct custom exchange rate first
     const directCustomRate = getCustomExchangeRate(from, to);
     if (directCustomRate !== undefined) {
       return directCustomRate;
     }
-    
+
     // 2. Check direct API rate (from base currency)
     if (from === baseCurrency && apiExchangeRates) {
       return apiExchangeRates[to];
     }
-    
+
     // 3. Try to chain through base currency using custom rates
     // e.g., WIN → B3 → USD (where WIN→B3 is custom, B3→USD is API)
     const customFromToBase = getCustomExchangeRate(from, baseCurrency);
@@ -98,7 +94,7 @@ export function useCurrencyConversion() {
         return customFromToBase * baseToTo;
       }
     }
-    
+
     // 4. Try reverse: chain from base currency through custom rate
     // e.g., USD → B3 → WIN (where B3→WIN is custom)
     const customBaseToTo = getCustomExchangeRate(baseCurrency, to);
@@ -110,7 +106,7 @@ export function useCurrencyConversion() {
         return fromToBase * customBaseToTo;
       }
     }
-    
+
     // 5. Fall back to pure API conversion through base
     // e.g., EUR to GBP = (EUR to B3) * (B3 to GBP)
     if (apiExchangeRates) {
@@ -120,7 +116,7 @@ export function useCurrencyConversion() {
         return baseToTo / fromToBase;
       }
     }
-    
+
     return undefined;
   };
 
@@ -154,19 +150,13 @@ export function useCurrencyConversion() {
    * formatCurrencyValue(50, "USD") // Returns "€45.50" (converts USD→EUR)
    * ```
    */
-  const formatCurrencyValue = (
-    value: number,
-    sourceCurrency: string,
-    options?: { decimals?: number }
-  ): string => {
+  const formatCurrencyValue = (value: number, sourceCurrency: string, options?: { decimals?: number }): string => {
     const overrideDecimals = options?.decimals;
 
     // If source and display currency are the same, no conversion needed
     if (sourceCurrency === selectedCurrency) {
       const customMetadata = getCurrencyMetadata(sourceCurrency);
-      const decimalsToUse = overrideDecimals !== undefined
-        ? overrideDecimals
-        : customMetadata?.decimals;
+      const decimalsToUse = overrideDecimals !== undefined ? overrideDecimals : customMetadata?.decimals;
 
       const formatted = formatDisplayNumber(value, {
         fractionDigits: decimalsToUse,
