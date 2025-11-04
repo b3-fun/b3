@@ -146,8 +146,23 @@ export const useCurrencyStore = create<CurrencyState>()(
       
       removeCurrency: code => {
         set(state => {
+          // Remove the currency
           const { [code]: _removed, ...remaining } = state.customCurrencies;
-          return { customCurrencies: remaining };
+          
+          // Remove all exchange rates involving this currency
+          const filteredRates: Record<string, number> = {};
+          for (const [key, rate] of Object.entries(state.customExchangeRates)) {
+            // Key format is "FROM-TO", skip if either matches the removed code
+            const [from, to] = key.split('-');
+            if (from !== code && to !== code) {
+              filteredRates[key] = rate;
+            }
+          }
+          
+          return { 
+            customCurrencies: remaining,
+            customExchangeRates: filteredRates,
+          };
         });
       },
       
@@ -155,12 +170,19 @@ export const useCurrencyStore = create<CurrencyState>()(
         set(state => {
           const key = `${from}-${to}`;
           const inverseKey = `${to}-${from}`;
+          
+          // Only set inverse rate if rate is not 0 (to avoid Infinity)
+          const newRates: Record<string, number> = {
+            ...state.customExchangeRates,
+            [key]: rate,
+          };
+          
+          if (rate !== 0) {
+            newRates[inverseKey] = 1 / rate;
+          }
+          
           return {
-            customExchangeRates: {
-              ...state.customExchangeRates,
-              [key]: rate,
-              [inverseKey]: 1 / rate, // Automatically add inverse rate
-            },
+            customExchangeRates: newRates,
           };
         });
       },
@@ -229,4 +251,38 @@ export function getCurrencyName(currency: string): string {
 export function getCurrencyMetadata(currency: string): CurrencyMetadata | undefined {
   const customCurrencies = useCurrencyStore.getState().customCurrencies;
   return customCurrencies[currency];
+}
+
+/**
+ * Get the number of decimal places for a currency (for converting from smallest unit).
+ * Used when parsing amounts from wei/smallest unit format.
+ * 
+ * @param currency - Currency code
+ * @returns Number of decimal places (e.g., 18 for ETH/wei, 2 for USD cents, 0 for JPY)
+ */
+export function getCurrencyDecimalPlaces(currency: string): number {
+  // Check custom currencies first
+  const customCurrencies = useCurrencyStore.getState().customCurrencies;
+  const customMetadata = customCurrencies[currency];
+  if (customMetadata?.decimals !== undefined) {
+    return customMetadata.decimals;
+  }
+  
+  // Built-in currencies with 18 decimals (wei-like)
+  if (currency === "WIN" || currency === "ETH" || currency === "SOL" || currency === "B3") {
+    return 18;
+  }
+  
+  // Fiat currencies with cent-like decimals
+  if (currency === "USD" || currency === "EUR" || currency === "GBP" || currency === "CAD" || currency === "AUD") {
+    return 2;
+  }
+  
+  // Currencies without fractional units
+  if (currency === "JPY" || currency === "KRW") {
+    return 0;
+  }
+  
+  // Default to 18 decimals (wei-like)
+  return 18;
 }

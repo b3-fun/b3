@@ -5,6 +5,7 @@ import { cn } from "@b3dotfun/sdk/shared/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../../global-account/react/components/ui/tooltip";
 import { useCurrencyConversion } from "../hooks/useCurrencyConversion";
 import { useCurrencyModalStore } from "../stores/currencyModalStore";
+import { getCurrencyDecimalPlaces } from "../stores/currencyStore";
 
 interface FormattedCurrencyProps {
   amount: string; // Wei amount as string (will be divided by 1e18)
@@ -27,46 +28,23 @@ export function FormattedCurrency({
   clickable = true,
   decimals,
 }: FormattedCurrencyProps) {
-  const { formatCurrencyValue, formatTooltipValue, selectedCurrency, baseCurrency, customCurrencies } = useCurrencyConversion();
+  const { formatCurrencyValue, formatTooltipValue, selectedCurrency, baseCurrency } = useCurrencyConversion();
   const { openModal } = useCurrencyModalStore();
 
-  // Get the number of decimals for this currency to convert from smallest unit
-  const getDecimalPlaces = (currency: string): number => {
-    // Check custom currencies first
-    const customMetadata = customCurrencies[currency];
-    if (customMetadata?.decimals !== undefined) {
-      return customMetadata.decimals;
-    }
-
-    // Default decimal places for built-in currencies
-    if (currency === "WIN" || currency === "ETH" || currency === "SOL" || currency === "B3") {
-      return 18;
-    }
-    if (currency === "USD" || currency === "EUR" || currency === "GBP" || currency === "CAD" || currency === "AUD") {
-      return 2;
-    }
-    if (currency === "JPY" || currency === "KRW") {
-      return 0;
-    }
-    return 18; // Default to 18 decimals (wei)
-  };
-
   // Convert from smallest unit to human-readable using currency's decimal places
-  const decimalPlaces = getDecimalPlaces(sourceCurrency);
+  const decimalPlaces = getCurrencyDecimalPlaces(sourceCurrency);
   const divisor = Math.pow(10, decimalPlaces);
-  
+
   // Parse amount - handle both string and numeric inputs, including negatives
   let parsedAmount: number;
-  if (typeof amount === 'string') {
+  if (typeof amount === "string") {
     // Handle BigInt strings and negative values
-    const numericAmount = amount.startsWith('-') 
-      ? -Math.abs(parseFloat(amount.replace('-', '')))
-      : parseFloat(amount);
+    const numericAmount = amount.startsWith("-") ? -Math.abs(parseFloat(amount.replace("-", ""))) : parseFloat(amount);
     parsedAmount = numericAmount / divisor;
   } else {
     parsedAmount = amount / divisor;
   }
-  
+
   const isPositive = parsedAmount >= 0;
 
   // Always format with absolute value, we'll add the sign separately

@@ -35,8 +35,6 @@ export function CurrencySelector({ labelClassName, buttonVariant = "dark", label
   const customCurrencyCodes = Object.keys(customCurrencies);
   const hasCustomCurrencies = customCurrencyCodes.length > 0;
 
-  console.log("[MITCH] Rendering CurrencySelector with selectedCurrency:", customCurrencyCodes, hasCustomCurrencies);
-
   return (
     <div className="flex items-center gap-2">
       <DropdownMenu>
