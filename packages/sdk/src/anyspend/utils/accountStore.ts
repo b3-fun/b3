@@ -8,9 +8,5 @@ interface GlobalWalletState {
 
 export const useGlobalWalletState = create<GlobalWalletState>(set => ({
   globalAccountWallet: undefined,
-  setGlobalAccountWallet: account =>
-    set(state => ({
-      ...state,
-      globalAccountWallet: account,
-    })),
+  setGlobalAccountWallet: account => set({ globalAccountWallet: account }),
 }));

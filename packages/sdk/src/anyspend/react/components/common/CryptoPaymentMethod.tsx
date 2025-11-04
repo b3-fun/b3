@@ -7,7 +7,7 @@ import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { WalletCoinbase, WalletMetamask, WalletPhantom, WalletRainbow, WalletWalletConnect } from "@web3icons/react";
 import { ChevronLeft, ChevronRightCircle, Wallet, X, ZapIcon } from "lucide-react";
-import { act, use, useState } from "react";
+import { useState } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import { useActiveWallet, useSetActiveWallet, useWalletInfo } from "thirdweb/react";

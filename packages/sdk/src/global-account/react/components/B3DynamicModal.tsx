@@ -34,18 +34,20 @@ export function B3DynamicModal() {
   const prevIsOpenRef = useRef(isOpen);
 
   const globalAccountWallet = useGlobalWalletState(state => state.globalAccountWallet);
+  const setGlobalAccountWallet = useGlobalWalletState(state => state.setGlobalAccountWallet);
   const setActiveWallet = useSetActiveWallet();
 
-  // anyspend cleanup global account achnages by setting account back
+  // anyspend cleanup global account chnages by setting account back
   useEffect(() => {
     if (prevIsOpenRef.current && !isOpen) {
       if (globalAccountWallet) {
         setActiveWallet(globalAccountWallet);
+        setGlobalAccountWallet(undefined);
       }
     }
 
     prevIsOpenRef.current = isOpen;
-  }, [isOpen, globalAccountWallet, setActiveWallet]);
+  }, [isOpen, globalAccountWallet, setActiveWallet, setGlobalAccountWallet]);
 
   // Define arrays for different modal type groups
   const fullWidthTypes = [
