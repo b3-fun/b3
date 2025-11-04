@@ -1,6 +1,6 @@
 {
   "name": "@b3dotfun/sdk",
-  "version": "0.0.56",
+  "version": "0.0.58",
   "source": "src/index.ts",
   "main": "./dist/cjs/index.js",
   "react-native": "./dist/cjs/index.native.js",
@@ -301,7 +301,7 @@
     "test:ui": "vitest --ui"
   },
   "dependencies": {
-    "@b3dotfun/b3-api": "0.0.66",
+    "@b3dotfun/b3-api": "0.0.77",
     "@b3dotfun/basement-api": "0.0.11",
     "@feathersjs/authentication-client": "5.0.33",
     "@feathersjs/feathers": "5.0.33",

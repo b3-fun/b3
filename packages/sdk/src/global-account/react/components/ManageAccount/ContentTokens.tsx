@@ -8,6 +8,7 @@ import {
   useUnifiedChainSwitchAndExecute,
 } from "@b3dotfun/sdk/global-account/react";
 import { formatDisplayNumber, formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
+import invariant from "invariant";
 import { ArrowLeft, CircleHelp, Copy, Loader2, Send } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { NumericFormat } from "react-number-format";
@@ -15,7 +16,6 @@ import { toast } from "sonner";
 import { useActiveAccount } from "thirdweb/react";
 import { encodeFunctionData, erc20Abi, isAddress, parseUnits } from "viem";
 import { SimBalanceItem } from "../../hooks/useSimBalance";
-import invariant from "invariant";
 
 // Panel view enum for managing navigation between token list and send form
 enum TokenPanelView {
@@ -156,13 +156,15 @@ export function ContentTokens({ activeTab }: ContentTokensProps) {
 
     // Execute token transfer transaction
     const handleSend = async () => {
-      if (!displayToken || !recipientAddress || !sendAmount || parseFloat(sendAmount) <= 0) {
+      const sendAmountWithoutCommas = sendAmount.replace(/,/g, "");
+
+      if (!displayToken || !recipientAddress || !sendAmount || parseFloat(sendAmountWithoutCommas) <= 0) {
         return;
       }
 
       setIsSending(true);
 
-      const amountInWei = parseUnits(sendAmount, displayToken.decimals);
+      const amountInWei = parseUnits(sendAmountWithoutCommas, displayToken.decimals);
 
       // Prepare analytics event data
       const analyticsData = {
