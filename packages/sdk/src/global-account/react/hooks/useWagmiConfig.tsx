@@ -1,6 +1,7 @@
 import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { supportedChains } from "@b3dotfun/sdk/shared/constants/chains/supported";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
+import { farcasterMiniApp as miniAppConnector } from "@farcaster/miniapp-wagmi-connector";
 import { inAppWalletConnector } from "@thirdweb-dev/wagmi-adapter";
 import { useMemo } from "react";
 import { http } from "viem";
@@ -34,6 +35,7 @@ export function useWagmiConfig(partnerId: string, rpcUrls?: Record<number, strin
           ...ecocystemConfig,
           client,
         }),
+        miniAppConnector(),
         // injected(),
         // coinbaseWallet({ appName: "HypeDuel" }),
       ],
