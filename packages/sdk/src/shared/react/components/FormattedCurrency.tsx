@@ -54,14 +54,26 @@ export function FormattedCurrency({
   // Convert from smallest unit to human-readable using currency's decimal places
   const decimalPlaces = getDecimalPlaces(sourceCurrency);
   const divisor = Math.pow(10, decimalPlaces);
-  const parsedAmount = parseFloat(amount) / divisor;
+  
+  // Parse amount - handle both string and numeric inputs, including negatives
+  let parsedAmount: number;
+  if (typeof amount === 'string') {
+    // Handle BigInt strings and negative values
+    const numericAmount = amount.startsWith('-') 
+      ? -Math.abs(parseFloat(amount.replace('-', '')))
+      : parseFloat(amount);
+    parsedAmount = numericAmount / divisor;
+  } else {
+    parsedAmount = amount / divisor;
+  }
+  
   const isPositive = parsedAmount >= 0;
 
-  // Get the formatted value (using absolute value for negative numbers when showing change)
-  const baseAmount = showChange ? Math.abs(parsedAmount) : parsedAmount;
+  // Always format with absolute value, we'll add the sign separately
+  const absoluteAmount = Math.abs(parsedAmount);
 
   // Format value with automatic conversion from source to display currency
-  const formattedValue = formatCurrencyValue(baseAmount, sourceCurrency, { decimals });
+  const formattedValue = formatCurrencyValue(absoluteAmount, sourceCurrency, { decimals });
 
   // Generate tooltip using the centralized hook function
   const baseTooltipValue = formatTooltipValue(parsedAmount, sourceCurrency);
@@ -79,14 +91,14 @@ export function FormattedCurrency({
     }
   }
 
-  // Add change indicator
+  // Build display value with appropriate sign
   let displayValue = formattedValue;
   if (showChange) {
-    if (isPositive) {
-      displayValue = `+${formattedValue}`;
-    } else {
-      displayValue = `-${formattedValue}`;
-    }
+    // Add +/- prefix for change indicators
+    displayValue = `${isPositive ? "+" : "-"}${formattedValue}`;
+  } else if (!isPositive) {
+    // Add minus sign for negative values
+    displayValue = `-${formattedValue}`;
   }
 
   const handleClick = () => {

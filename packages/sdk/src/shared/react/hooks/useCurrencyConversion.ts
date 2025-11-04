@@ -66,23 +66,52 @@ export function useCurrencyConversion() {
 
   /**
    * Get exchange rate between two currencies, checking custom rates first, then API rates.
+   * Supports chaining through base currency for custom currencies.
+   * 
+   * Examples:
+   * - WIN → USD: Checks WIN→USD custom rate, then chains WIN→B3→USD
+   * - BTC → EUR: Checks BTC→EUR custom rate, then chains BTC→B3→EUR
    */
   const getExchangeRate = (from: string, to: string): number | undefined => {
     // If same currency, rate is 1
     if (from === to) return 1;
     
-    // Check custom exchange rates first
-    const customRate = getCustomExchangeRate(from, to);
-    if (customRate !== undefined) {
-      return customRate;
+    // 1. Check direct custom exchange rate first
+    const directCustomRate = getCustomExchangeRate(from, to);
+    if (directCustomRate !== undefined) {
+      return directCustomRate;
     }
     
-    // Fall back to API rates
+    // 2. Check direct API rate (from base currency)
     if (from === baseCurrency && apiExchangeRates) {
       return apiExchangeRates[to];
     }
     
-    // Convert through base currency if needed
+    // 3. Try to chain through base currency using custom rates
+    // e.g., WIN → B3 → USD (where WIN→B3 is custom, B3→USD is API)
+    const customFromToBase = getCustomExchangeRate(from, baseCurrency);
+    if (customFromToBase !== undefined) {
+      // We have a custom rate from 'from' to base
+      // Now get rate from base to 'to'
+      const baseToTo = apiExchangeRates?.[to] ?? getCustomExchangeRate(baseCurrency, to);
+      if (baseToTo !== undefined) {
+        return customFromToBase * baseToTo;
+      }
+    }
+    
+    // 4. Try reverse: chain from base currency through custom rate
+    // e.g., USD → B3 → WIN (where B3→WIN is custom)
+    const customBaseToTo = getCustomExchangeRate(baseCurrency, to);
+    if (customBaseToTo !== undefined && apiExchangeRates) {
+      // We have a custom rate from base to 'to'
+      // Now get rate from 'from' to base
+      const fromToBase = apiExchangeRates[from];
+      if (fromToBase !== undefined && fromToBase !== 0) {
+        return fromToBase * customBaseToTo;
+      }
+    }
+    
+    // 5. Fall back to pure API conversion through base
     // e.g., EUR to GBP = (EUR to B3) * (B3 to GBP)
     if (apiExchangeRates) {
       const fromToBase = apiExchangeRates[from];
