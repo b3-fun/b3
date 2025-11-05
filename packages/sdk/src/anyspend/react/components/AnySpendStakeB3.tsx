@@ -207,13 +207,26 @@ export function AnySpendStakeB3({
           args: [ERC20Staking as `0x${string}`, BigInt(userStakeAmount)],
         });
 
-        await switchChainAndExecute(base.id, {
+        const approvalHash = await switchChainAndExecute(base.id, {
           to: B3_TOKEN.address as `0x${string}`,
           data: approvalData,
           value: BigInt(0),
         });
 
-        toast.info("Approval confirmed. Proceeding with stake...");
+        if (!approvalHash) {
+          toast.error("Approval failed. Please try again.");
+          return;
+        }
+
+        const approvalReceipt = await basePublicClient.waitForTransactionReceipt({
+          hash: approvalHash as `0x${string}`,
+          confirmations: 1,
+        });
+
+        if (approvalReceipt?.status !== "success") {
+          toast.error("Approval failed. Please try again.");
+          return;
+        }
       }
 
       // Execute the stake
