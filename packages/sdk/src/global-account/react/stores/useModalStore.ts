@@ -330,6 +330,8 @@ export interface AnySpendDepositHypeProps extends BaseModalProps {
   onSuccess?: (amount?: string) => void;
   /** Custom USD input values for quick amount buttons in fiat onramp */
   customUsdInputValues?: string[];
+  /** prefer eoa wallet */
+  preferEoa?: boolean;
 }
 
 export interface AvatarEditorModalProps extends BaseModalProps {
