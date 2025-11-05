@@ -308,7 +308,6 @@
   "dependencies": {
     "@b3dotfun/b3-api": "0.0.77",
     "@b3dotfun/basement-api": "0.0.11",
-    "@farcaster/miniapp-wagmi-connector": "^1.1.0",
     "@feathersjs/authentication-client": "5.0.33",
     "@feathersjs/feathers": "5.0.33",
     "@feathersjs/rest-client": "5.0.33",
