@@ -15,18 +15,22 @@ description: "Pay for paywalled APIs and services with any token - powered by th
 
 ## What is AnySpend x402?
 
-AnySpend x402 is B3's implementation of the **x402 payment protocol** that enables instant, automatic cryptocurrency payments directly over HTTP. Unlike traditional x402 facilitators that only support USDC, **AnySpend allows you to pay with any token** while resource servers receive any token they prefer.
+AnySpend x402 is B3's implementation of the **x402 payment protocol** that enables instant, automatic cryptocurrency payments directly over HTTP. Unlike traditional x402 facilitators that only support USDC, **AnySpend allows you to pay with any compatible token** (EIP-2612 or EIP-3009) while resource servers receive any token they prefer.
 
 The x402 protocol modernizes the HTTP `402 Payment Required` status code, turning it into a practical solution for machine-to-machine micropayments, paywalled APIs, and autonomous agent interactions.
 
 ## For Buyers (Payers)
 
-Pay for paywalled resources using any cryptocurrency you hold:
+Pay for paywalled resources using any compatible token you hold:
 
-- **Pay with any token**: Use ETH, DAI, or any ERC-20 token - not just USDC
+- **Pay with compatible tokens**: Use any token with EIP-2612 or EIP-3009 support for gasless payments
 - **Standard protocol**: Works with any x402-enabled service using standard HTTP
 - **No manual swaps**: AnySpend automatically converts your token to what the seller needs
 - **Simple integration**: One SDK works across all x402 services
+
+<Card title="Token Compatibility Checker" icon="check-circle" href="https://anyspend.com/x402-tokens">
+  Browse compatible tokens with EIP-2612 or EIP-3009 support across 19+ networks
+</Card>
 
 **Use Cases:**
 - Access premium APIs and AI agent services
@@ -102,10 +106,10 @@ Your API receives payment confirmation and returns the requested resource
 
 **Standard x402**: Resource servers and clients must both use USDC
 
-**AnySpend x402**: Clients pay with **any token** they hold. AnySpend handles the conversion.
+**AnySpend x402**: Clients pay with **any compatible token** (EIP-2612 or EIP-3009 support required) they hold. AnySpend handles the conversion.
 
 ```
-Client pays 0.0003 ETH → AnySpend swaps to 1 USDC → Seller receives 1 USDC
+Client pays with DAI (EIP-2612) → AnySpend swaps to 1 USDC → Seller receives 1 USDC
 ```
 
 ### No Infrastructure Required
