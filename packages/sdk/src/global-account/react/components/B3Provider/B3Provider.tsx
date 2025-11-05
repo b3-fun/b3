@@ -57,6 +57,7 @@ export function B3Provider({
   partnerId,
   onConnect,
   connectors,
+  overrideDefaultConnectors = false,
 }: {
   theme: "light" | "dark";
   children: React.ReactNode;
@@ -73,6 +74,7 @@ export function B3Provider({
   partnerId: string;
   onConnect?: (wallet: Wallet, b3Jwt: string) => void | Promise<void>;
   connectors?: CreateConnectorFn[];
+  overrideDefaultConnectors?: boolean;
 }) {
   // Initialize Google Analytics on mount
   useEffect(() => {
@@ -83,7 +85,7 @@ export function B3Provider({
   useEffect(() => {
     setClientType(clientType);
   }, [clientType]);
-  const wagmiConfig = createWagmiConfig({ partnerId, rpcUrls, connectors });
+  const wagmiConfig = createWagmiConfig({ partnerId, rpcUrls, connectors, overrideDefaultConnectors });
 
   return (
     <ThirdwebProvider>
