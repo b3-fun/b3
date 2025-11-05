@@ -4,7 +4,7 @@ import { Button, ShinyButton, StyleRoot, TransitionPanel, useAccountWallet } fro
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import invariant from "invariant";
 import { motion } from "motion/react";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { base } from "viem/chains";
 import { PanelView, useAnyspendFlow } from "../hooks/useAnyspendFlow";
@@ -122,7 +122,7 @@ function AnySpendDepositHypeInner({
   const activeWallet = useActiveWallet();
   const setGlobalAccountWallet = useGlobalWalletState(state => state.setGlobalAccountWallet);
 
-  useMemo(() => {
+  useEffect(() => {
     if (preferEoa) {
       if (connectedEOAWallet) {
         setGlobalAccountWallet(activeWallet);
