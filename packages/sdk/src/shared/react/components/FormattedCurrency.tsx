@@ -5,47 +5,56 @@ import { cn } from "@b3dotfun/sdk/shared/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../../global-account/react/components/ui/tooltip";
 import { useCurrencyConversion } from "../hooks/useCurrencyConversion";
 import { useCurrencyModalStore } from "../stores/currencyModalStore";
+import { getCurrencyDecimalPlaces } from "../stores/currencyStore";
 
 interface FormattedCurrencyProps {
-  amount: number;
+  amount: string; // Wei amount as string (will be divided by 1e18)
+  sourceCurrency: string; // The currency the amount is in (e.g., "WIN", "B3", "USD")
   showChange?: boolean;
   showColor?: boolean;
   className?: string;
   subB3Icon?: boolean;
   clickable?: boolean;
   decimals?: number;
-  currency?: string; // Override currency (e.g., "ETH", "USDC", "B3")
 }
 
 export function FormattedCurrency({
   amount,
+  sourceCurrency,
   showChange = false,
   showColor = false,
   className,
   subB3Icon = true,
   clickable = true,
   decimals,
-  currency,
 }: FormattedCurrencyProps) {
   const { formatCurrencyValue, formatTooltipValue, selectedCurrency, baseCurrency } = useCurrencyConversion();
   const { openModal } = useCurrencyModalStore();
 
-  // Use passed currency or fall back to selected currency
-  const activeCurrency = currency || selectedCurrency;
+  // Convert from smallest unit to human-readable using currency's decimal places
+  const decimalPlaces = getCurrencyDecimalPlaces(sourceCurrency);
+  const divisor = Math.pow(10, decimalPlaces);
 
-  const isPositive = amount >= 0;
+  // Parse amount - handle both string and numeric inputs, including negatives
+  let parsedAmount: number;
+  if (typeof amount === "string") {
+    // Handle BigInt strings and negative values
+    const numericAmount = amount.startsWith("-") ? -Math.abs(parseFloat(amount.replace("-", ""))) : parseFloat(amount);
+    parsedAmount = numericAmount / divisor;
+  } else {
+    parsedAmount = amount / divisor;
+  }
 
-  // Get the formatted value (using absolute value for negative numbers when showing change)
-  const baseAmount = showChange ? Math.abs(amount) : amount;
+  const isPositive = parsedAmount >= 0;
 
-  // Use centralized formatting from hook with optional overrides
-  const formattedValue = formatCurrencyValue(baseAmount, {
-    decimals,
-    currency,
-  });
+  // Always format with absolute value, we'll add the sign separately
+  const absoluteAmount = Math.abs(parsedAmount);
+
+  // Format value with automatic conversion from source to display currency
+  const formattedValue = formatCurrencyValue(absoluteAmount, sourceCurrency, { decimals });
 
   // Generate tooltip using the centralized hook function
-  const baseTooltipValue = formatTooltipValue(amount, currency);
+  const baseTooltipValue = formatTooltipValue(parsedAmount, sourceCurrency);
 
   // Add change indicator if needed
   const tooltipValue = showChange ? `${isPositive ? "+" : "-"}${baseTooltipValue}` : baseTooltipValue;
@@ -60,14 +69,14 @@ export function FormattedCurrency({
     }
   }
 
-  // Add change indicator
+  // Build display value with appropriate sign
   let displayValue = formattedValue;
   if (showChange) {
-    if (isPositive) {
-      displayValue = `+${formattedValue}`;
-    } else {
-      displayValue = `-${formattedValue}`;
-    }
+    // Add +/- prefix for change indicators
+    displayValue = `${isPositive ? "+" : "-"}${formattedValue}`;
+  } else if (!isPositive) {
+    // Add minus sign for negative values
+    displayValue = `-${formattedValue}`;
   }
 
   const handleClick = () => {
@@ -75,6 +84,9 @@ export function FormattedCurrency({
       openModal();
     }
   };
+
+  // Check if we should show B3 icon (when displaying in B3 and baseCurrency is B3)
+  const shouldShowB3Icon = subB3Icon && selectedCurrency === "B3" && baseCurrency === "B3";
 
   return (
     <Tooltip>
@@ -88,16 +100,10 @@ export function FormattedCurrency({
             clickable && "cursor-pointer transition-opacity hover:opacity-80",
           )}
         >
-          {subB3Icon &&
-          (currency === baseCurrency || (!currency && activeCurrency === baseCurrency)) &&
-          baseCurrency === "B3"
-            ? displayValue.split(" ")[0]
-            : displayValue}
-          {subB3Icon &&
-            (currency === baseCurrency || (!currency && activeCurrency === baseCurrency)) &&
-            baseCurrency === "B3" && (
-              <img src={B3_COIN_IMAGE_URL} className="inline-block h-4 w-4 align-middle" alt="B3 coin" />
-            )}
+          {shouldShowB3Icon ? displayValue.split(" ")[0] : displayValue}
+          {shouldShowB3Icon && (
+            <img src={B3_COIN_IMAGE_URL} className="inline-block h-4 w-4 align-middle" alt="B3 coin" />
+          )}
         </span>
       </TooltipTrigger>
       <TooltipContent>{tooltipValue}</TooltipContent>

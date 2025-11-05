@@ -236,8 +236,6 @@ export interface AnySpendStakeUpsideProps extends BaseModalProps {
   stakeAmount: string;
   /** Staking contract address */
   stakingContractAddress: string;
-  /** Pool type for staking */
-  poolType: "b3" | "weth";
   /** Token address to stake */
   token: components["schemas"]["Token"];
   /** Active tab for the modal */

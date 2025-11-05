@@ -67,7 +67,7 @@ describe("useCurrencyConversion", () => {
       mockStoreState.baseCurrency = "B3";
 
       const { result } = renderHook(() => useCurrencyConversion());
-      const formatted = result.current.formatCurrencyValue(100);
+      const formatted = result.current.formatCurrencyValue(100, "B3");
 
       expect(formatted).toContain("B3");
       expect(formatted).toContain("100");
@@ -79,7 +79,7 @@ describe("useCurrencyConversion", () => {
       mockStoreState.baseCurrency = "B3";
 
       const { result } = renderHook(() => useCurrencyConversion());
-      const formatted = result.current.formatCurrencyValue(100);
+      const formatted = result.current.formatCurrencyValue(100, "B3");
 
       expect(formatted).toContain("B3");
       expect(formatted).not.toContain("$");
@@ -91,7 +91,7 @@ describe("useCurrencyConversion", () => {
       mockStoreState.baseCurrency = "B3";
 
       const { result } = renderHook(() => useCurrencyConversion());
-      const formatted = result.current.formatCurrencyValue(100);
+      const formatted = result.current.formatCurrencyValue(100, "B3");
 
       expect(formatted).toMatch(/^\$/);
       expect(formatted).toContain("200");
@@ -104,7 +104,7 @@ describe("useCurrencyConversion", () => {
       mockStoreState.baseCurrency = "B3";
 
       const { result } = renderHook(() => useCurrencyConversion());
-      const formatted = result.current.formatCurrencyValue(100);
+      const formatted = result.current.formatCurrencyValue(100, "B3");
 
       expect(formatted).toMatch(/^€/);
     });
@@ -116,7 +116,7 @@ describe("useCurrencyConversion", () => {
       mockStoreState.baseCurrency = "B3";
 
       const { result } = renderHook(() => useCurrencyConversion());
-      const formatted = result.current.formatCurrencyValue(100);
+      const formatted = result.current.formatCurrencyValue(100, "B3");
 
       expect(formatted).toContain("¥");
       expect(formatted).not.toContain(".");
@@ -129,7 +129,7 @@ describe("useCurrencyConversion", () => {
       mockStoreState.baseCurrency = "B3";
 
       const { result } = renderHook(() => useCurrencyConversion());
-      const formatted = result.current.formatCurrencyValue(100);
+      const formatted = result.current.formatCurrencyValue(100, "B3");
 
       expect(formatted).toContain("₩");
       expect(formatted).not.toContain(".");
@@ -142,7 +142,7 @@ describe("useCurrencyConversion", () => {
       mockStoreState.baseCurrency = "B3";
 
       const { result } = renderHook(() => useCurrencyConversion());
-      const formatted = result.current.formatCurrencyValue(100);
+      const formatted = result.current.formatCurrencyValue(100, "B3");
 
       expect(formatted).toContain("ETH");
       expect(formatted).not.toMatch(/^ETH/);
@@ -155,7 +155,7 @@ describe("useCurrencyConversion", () => {
       mockStoreState.baseCurrency = "B3";
 
       const { result } = renderHook(() => useCurrencyConversion());
-      const formatted = result.current.formatCurrencyValue(100);
+      const formatted = result.current.formatCurrencyValue(100, "B3");
 
       expect(formatted).toContain("SOL");
       expect(formatted).not.toMatch(/^SOL/);
@@ -167,7 +167,7 @@ describe("useCurrencyConversion", () => {
       mockStoreState.baseCurrency = "B3";
 
       const { result } = renderHook(() => useCurrencyConversion());
-      const formatted = result.current.formatCurrencyValue(10);
+      const formatted = result.current.formatCurrencyValue(10, "B3");
 
       // 10 * 1.5 = 15
       expect(formatted).toMatch(/^\$/);
@@ -182,7 +182,7 @@ describe("useCurrencyConversion", () => {
 
       const { result } = renderHook(() => useCurrencyConversion());
       const inputValue = 100;
-      const formatted = result.current.formatCurrencyValue(inputValue);
+      const formatted = result.current.formatCurrencyValue(inputValue, "B3");
 
       expect(formatted).toContain("350");
     });
@@ -236,7 +236,7 @@ describe("useCurrencyConversion", () => {
       mockStoreState.baseCurrency = "B3";
 
       const { result } = renderHook(() => useCurrencyConversion());
-      const tooltip = result.current.formatTooltipValue(100);
+      const tooltip = result.current.formatTooltipValue(100, "B3");
 
       expect(tooltip).toContain("USD");
       expect(tooltip).toContain("150");
@@ -249,7 +249,7 @@ describe("useCurrencyConversion", () => {
       mockStoreState.baseCurrency = "B3";
 
       const { result } = renderHook(() => useCurrencyConversion());
-      const tooltip = result.current.formatTooltipValue(100);
+      const tooltip = result.current.formatTooltipValue(100, "B3");
 
       expect(tooltip).toContain("B3");
       expect(tooltip).toContain("100");
@@ -286,7 +286,7 @@ describe("useCurrencyConversion", () => {
       mockStoreState.baseCurrency = "B3";
 
       const { result } = renderHook(() => useCurrencyConversion());
-      const tooltip = result.current.formatTooltipValue(-100);
+      const tooltip = result.current.formatTooltipValue(-100, "B3");
 
       expect(tooltip).toContain("USD");
       expect(tooltip).toContain("150");
@@ -299,7 +299,7 @@ describe("useCurrencyConversion", () => {
       mockStoreState.baseCurrency = "B3";
 
       const { result } = renderHook(() => useCurrencyConversion());
-      const tooltip = result.current.formatTooltipValue(100);
+      const tooltip = result.current.formatTooltipValue(100, "B3");
 
       expect(tooltip).toContain("USD");
       expect(tooltip).toContain("100");
