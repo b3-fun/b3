@@ -7,7 +7,7 @@ import { ClientType } from "../../../client-manager";
 
 import { WagmiProvider } from "wagmi";
 import { useAuthentication } from "../../hooks/useAuthentication";
-import { useWagmiConfig } from "../../hooks/useWagmiConfig";
+import { createWagmiConfig } from "../../utils/createWagmiConfig";
 import { LocalSDKProvider } from "./LocalSDKProvider";
 import { B3Context, B3ContextType } from "./types";
 
@@ -90,7 +90,7 @@ export function InnerProvider({
 }) {
   const activeAccount = useActiveAccount();
   const { user, setUser, refetchUser } = useAuthentication(partnerId);
-  const wagmiConfig = useWagmiConfig(partnerId, rpcUrls);
+  const wagmiConfig = createWagmiConfig({ partnerId, rpcUrls });
 
   // Use given accountOverride or activeAccount from thirdweb
   const effectiveAccount = accountOverride || activeAccount;

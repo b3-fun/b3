@@ -4,7 +4,7 @@ import {
   useAuthentication,
   useAuthStore,
 } from "@b3dotfun/sdk/global-account/react";
-import { useWagmiConfig } from "@b3dotfun/sdk/global-account/react/hooks/useWagmiConfig";
+import { createWagmiConfig } from "@b3dotfun/sdk/global-account/react/utils/createWagmiConfig";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { loadGA4Script } from "@b3dotfun/sdk/global-account/utils/analytics";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
@@ -20,7 +20,7 @@ import {
   useSetActiveWallet,
 } from "thirdweb/react";
 import { Account, Wallet } from "thirdweb/wallets";
-import { WagmiProvider } from "wagmi";
+import { CreateConnectorFn, WagmiProvider } from "wagmi";
 import { ClientType, setClientType } from "../../../client-manager";
 import { StyleRoot } from "../StyleRoot";
 import { LocalSDKProvider } from "./LocalSDKProvider";
@@ -56,6 +56,7 @@ export function B3Provider({
   rpcUrls,
   partnerId,
   onConnect,
+  connectors,
 }: {
   theme: "light" | "dark";
   children: React.ReactNode;
@@ -71,6 +72,7 @@ export function B3Provider({
   rpcUrls?: Record<number, string>;
   partnerId: string;
   onConnect?: (wallet: Wallet, b3Jwt: string) => void | Promise<void>;
+  connectors?: CreateConnectorFn[];
 }) {
   // Initialize Google Analytics on mount
   useEffect(() => {
@@ -81,7 +83,7 @@ export function B3Provider({
   useEffect(() => {
     setClientType(clientType);
   }, [clientType]);
-  const wagmiConfig = useWagmiConfig(partnerId, rpcUrls);
+  const wagmiConfig = createWagmiConfig({ partnerId, rpcUrls, connectors });
 
   return (
     <ThirdwebProvider>
