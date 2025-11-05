@@ -136,6 +136,11 @@
       "import": "./dist/esm/global-account/types.js",
       "require": "./dist/cjs/global-account/types.js"
     },
+    "./global-account/client-manager": {
+      "types": "./dist/types/global-account/client-manager.d.ts",
+      "import": "./dist/esm/global-account/client-manager.js",
+      "require": "./dist/cjs/global-account/client-manager.js"
+    },
     "./global-account/types/*": {
       "types": "./dist/types/global-account/types/*.d.ts",
       "import": "./dist/esm/global-account/types/*.js",
