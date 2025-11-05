@@ -3,12 +3,12 @@ import { supportedChains } from "@b3dotfun/sdk/shared/constants/chains/supported
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { inAppWalletConnector } from "@thirdweb-dev/wagmi-adapter";
 import { http } from "viem";
-import { createConfig } from "wagmi";
+import { createConfig, type CreateConnectorFn } from "wagmi";
 
 export interface CreateWagmiConfigOptions {
   partnerId: string;
   rpcUrls?: Record<number, string>;
-  connectors?: any[];
+  connectors?: CreateConnectorFn[];
   overrideDefaultConnectors?: boolean;
 }
 
