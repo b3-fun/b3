@@ -104,6 +104,7 @@ export function useB3BalanceFromAddresses(
     enabled: (options?.enabled ?? true) && normalizedAddresses.length > 0,
     refetchInterval: options?.refetchInterval ?? 30000, // Default 30s refresh
     staleTime: 10000, // Consider data stale after 10s
+    structuralSharing: false, // Disable structural sharing because data contains BigInt values
   });
 }
 

@@ -1,3 +1,4 @@
+import { useGlobalWalletState } from "@b3dotfun/sdk/anyspend/utils/accountStore";
 import {
   CopyToClipboard,
   ManageAccountModalProps,
@@ -5,6 +6,7 @@ import {
   useModalStore,
 } from "@b3dotfun/sdk/global-account/react";
 import * as AccordionPrimitive from "@radix-ui/react-accordion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useActiveWallet, useConnectedWallets, useSetActiveWallet, useWalletImage } from "thirdweb/react";
@@ -88,10 +90,14 @@ export function Header({ onLogout }: { onLogout?: () => void }) {
   const contentType = useModalStore(state => state.contentType) as ManageAccountModalProps;
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
+  const setGlobalAccountWallet = useGlobalWalletState(state => state.setGlobalAccountWallet);
+  const globalAccountWallet = useGlobalWalletState(state => state.globalAccountWallet);
+  console.log("globalAccountWallet :", globalAccountWallet);
   const partnerId = contentType?.partnerId;
 
   const { logout } = useAuthentication(partnerId);
   const [logoutLoading, setLogoutLoading] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const account = activeWallet?.getAccount();
   const address = account?.address || "";
@@ -106,6 +112,7 @@ export function Header({ onLogout }: { onLogout?: () => void }) {
 
   const handleWalletSwitch = (wallet: Wallet) => {
     setActiveWallet(wallet);
+    setGlobalAccountWallet(wallet);
   };
 
   const handleLinkWallet = () => {
@@ -121,7 +128,12 @@ export function Header({ onLogout }: { onLogout?: () => void }) {
   };
 
   return (
-    <AccordionPrimitive.Root type="single" collapsible className="bg-b3-background border-b3-line border-b">
+    <AccordionPrimitive.Root
+      type="single"
+      collapsible
+      className="bg-b3-background border-b3-line relative border-b"
+      onValueChange={(value: string) => setIsExpanded(value === "wallet-switcher")}
+    >
       <AccordionPrimitive.Item value="wallet-switcher" className="border-none">
         <AccordionPrimitive.Trigger className="group flex w-full items-center justify-between border-none bg-transparent px-5 py-3 outline-none">
           <div className="flex items-center gap-2">
@@ -139,51 +151,61 @@ export function Header({ onLogout }: { onLogout?: () => void }) {
           <ChevronDownIcon className="text-b3-grey transition-transform duration-200 group-data-[state=open]:rotate-180" />
         </AccordionPrimitive.Trigger>
 
-        <AccordionPrimitive.Content className="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down overflow-hidden">
-          <div className="flex flex-col gap-3 rounded-bl-3xl rounded-br-3xl bg-white px-2 pb-5 pt-3 shadow-[0px_32px_64px_-12px_rgba(10,13,18,0.14),0px_5px_5px_-2.5px_rgba(10,13,18,0.04)]">
-            {/* Connected Wallets */}
-            <div className="flex flex-col gap-3">
-              {connectedWallets.map(wallet => (
-                <WalletItem
-                  key={wallet.id}
-                  wallet={wallet}
-                  isActive={activeWallet?.id === wallet.id}
-                  onClick={() => handleWalletSwitch(wallet)}
-                />
-              ))}
-
-              {/* Link Another Wallet */}
-              <div
-                className="hover:bg-b3-line/50 box-border flex cursor-pointer items-center gap-2 rounded-xl px-3 py-2 transition-colors"
-                onClick={handleLinkWallet}
+        <AnimatePresence>
+          {isExpanded && (
+            <AccordionPrimitive.Content forceMount className="absolute left-0 right-0 top-full z-50 overflow-visible">
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2, ease: "easeInOut" }}
+                className="flex flex-col gap-3 rounded-bl-3xl rounded-br-3xl bg-white px-2 pb-5 pt-3 shadow-[0px_32px_64px_-12px_rgba(10,13,18,0.14),0px_5px_5px_-2.5px_rgba(10,13,18,0.04)]"
               >
-                <div className="bg-b3-line flex size-10 shrink-0 items-center justify-center rounded-full">
-                  <LinkIcon className="text-b3-grey" />
-                </div>
-                <div className="flex flex-1 flex-col">
-                  <p className="text-b3-grey font-neue-montreal-semibold text-sm">Link another wallet</p>
-                </div>
-              </div>
-            </div>
+                {/* Connected Wallets */}
+                <div className="flex flex-col gap-3">
+                  {connectedWallets.map(wallet => (
+                    <WalletItem
+                      key={wallet.id}
+                      wallet={wallet}
+                      isActive={activeWallet?.id === wallet.id}
+                      onClick={() => handleWalletSwitch(wallet)}
+                    />
+                  ))}
 
-            {/* Sign Out Button */}
-            <button
-              className="border-b3-line hover:bg-b3-line bg-b3-background flex items-center justify-center gap-1.5 rounded-xl border border-solid p-2.5 transition-colors"
-              onClick={onLogoutEnhanced}
-              disabled={logoutLoading}
-              style={{
-                boxShadow: "inset 0px 0px 0px 1px rgba(10,13,18,0.18), inset 0px -2px 0px 0px rgba(10,13,18,0.05)",
-              }}
-            >
-              {logoutLoading ? (
-                <Loader2 className="animate-spin" size={20} />
-              ) : (
-                <SignOutIcon size={20} className="text-b3-grey" />
-              )}
-              <p className="text-b3-grey font-neue-montreal-semibold text-base">Sign out</p>
-            </button>
-          </div>
-        </AccordionPrimitive.Content>
+                  {/* Link Another Wallet */}
+                  <div
+                    className="hover:bg-b3-line/50 box-border flex cursor-pointer items-center gap-2 rounded-xl px-3 py-2 transition-colors"
+                    onClick={handleLinkWallet}
+                  >
+                    <div className="bg-b3-line flex size-10 shrink-0 items-center justify-center rounded-full">
+                      <LinkIcon className="text-b3-grey" />
+                    </div>
+                    <div className="flex flex-1 flex-col">
+                      <p className="text-b3-grey font-neue-montreal-semibold text-sm">Link another wallet</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sign Out Button */}
+                <button
+                  className="border-b3-line hover:bg-b3-line bg-b3-background flex items-center justify-center gap-1.5 rounded-xl border border-solid p-2.5 transition-colors"
+                  onClick={onLogoutEnhanced}
+                  disabled={logoutLoading}
+                  style={{
+                    boxShadow: "inset 0px 0px 0px 1px rgba(10,13,18,0.18), inset 0px -2px 0px 0px rgba(10,13,18,0.05)",
+                  }}
+                >
+                  {logoutLoading ? (
+                    <Loader2 className="animate-spin" size={20} />
+                  ) : (
+                    <SignOutIcon size={20} className="text-b3-grey" />
+                  )}
+                  <p className="text-b3-grey font-neue-montreal-semibold text-base">Sign out</p>
+                </button>
+              </motion.div>
+            </AccordionPrimitive.Content>
+          )}
+        </AnimatePresence>
       </AccordionPrimitive.Item>
     </AccordionPrimitive.Root>
   );
