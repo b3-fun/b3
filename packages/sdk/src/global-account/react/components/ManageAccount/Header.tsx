@@ -41,6 +41,9 @@ function WalletItem({ wallet, isActive, onClick }: { wallet: Wallet; isActive: b
   const address = account?.address || "";
   const { data: walletImage } = useWalletImage(wallet.id);
 
+  // Check if this is a global account (ecosystem wallet)
+  const isGlobalAccount = wallet.id.includes("ecosystem");
+
   // Get wallet name from wallet metadata
   const walletName = wallet.id.includes("coinbase")
     ? "Coinbase Wallet"
@@ -50,20 +53,24 @@ function WalletItem({ wallet, isActive, onClick }: { wallet: Wallet; isActive: b
         ? "Phantom Wallet"
         : wallet.id.includes("walletConnect")
           ? "WalletConnect"
-          : wallet.id.includes("ecosystem")
+          : isGlobalAccount
             ? "Smart Wallet"
             : "Wallet";
 
   return (
     <div
       className={`box-border flex cursor-pointer items-center gap-2 rounded-xl px-3 py-2 transition-colors ${
-        isActive ? "bg-b3-line" : "hover:bg-b3-line/50"
+        isActive ? "bg-[#F4F4F5]" : "hover:bg-b3-line/50"
       }`}
       onClick={onClick}
     >
-      <div className="bg-b3-line relative size-10 shrink-0 overflow-clip rounded-full">
-        {walletImage ? (
-          <img src={walletImage} alt={walletName} className="size-full object-cover" />
+      <div className="relative size-10 shrink-0 overflow-clip rounded-full">
+        {isGlobalAccount ? (
+          <div className="flex size-full items-center justify-center p-1">
+            <img src="https://cdn.b3.fun/b3_logo.svg" alt="B3" className="size-full object-contain" />
+          </div>
+        ) : walletImage ? (
+          <img src={walletImage} alt={walletName} className="size-full object-contain p-1" />
         ) : (
           <div className="flex size-full items-center justify-center">
             <WalletIcon />
@@ -101,6 +108,8 @@ export function Header({ onLogout }: { onLogout?: () => void }) {
 
   const account = activeWallet?.getAccount();
   const address = account?.address || "";
+  const { data: activeWalletImage } = useWalletImage(activeWallet?.id);
+  const isActiveGlobalAccount = activeWallet?.id.includes("ecosystem");
 
   const onLogoutEnhanced = async () => {
     setLogoutLoading(true);
@@ -137,7 +146,19 @@ export function Header({ onLogout }: { onLogout?: () => void }) {
       <AccordionPrimitive.Item value="wallet-switcher" className="border-none">
         <AccordionPrimitive.Trigger className="group flex w-full items-center justify-between border-none bg-transparent px-5 py-3 outline-none">
           <div className="flex items-center gap-2">
-            <WalletIcon />
+            <div className="relative size-10 shrink-0 overflow-clip rounded-full">
+              {isActiveGlobalAccount ? (
+                <div className="flex size-full items-center justify-center p-1">
+                  <img src="https://cdn.b3.fun/b3_logo.svg" alt="B3" className="size-full object-contain" />
+                </div>
+              ) : activeWalletImage ? (
+                <img src={activeWalletImage} alt="Active Wallet" className="size-full object-contain p-1" />
+              ) : (
+                <div className="flex size-full items-center justify-center">
+                  <WalletIcon />
+                </div>
+              )}
+            </div>
             <div className="flex flex-col gap-0.5">
               <p className="text-b3-grey font-neue-montreal-semibold text-sm">Active Wallet</p>
               <div className="flex items-center gap-1">
