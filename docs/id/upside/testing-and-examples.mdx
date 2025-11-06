@@ -1,0 +1,276 @@
+---
+title: Pengujian & Contoh
+description: >-
+  Uji integrasi game Anda secara lokal, tinjau contoh lengkap, dan atasi masalah
+  umum.
+lang: id
+originalPath: upside/testing-and-examples.mdx
+---
+## Pengujian di Localhost
+
+### Pengaturan Pengujian Cepat
+
+Anda dapat menguji game Anda yang berjalan di localhost langsung di lingkungan tes Upside.win tanpa melakukan deploy.
+
+**Cara kerjanya:**
+
+1. Jalankan backend game Anda di `http://localhost:3000` (atau port apa pun)
+2. Enkode URL localhost Anda ke Base64
+3. Navigasi ke URL tes di upside.win
+
+### Langkah demi Langkah
+
+**Langkah 1: Mulai backend game Anda**
+
+```bash
+npm run dev
+# Game berjalan di http://localhost:3000
+```
+
+**Langkah 2: Enkode URL Anda ke Base64**
+
+Menggunakan Node.js:
+
+```javascript
+const url = "http://localhost:3000";
+const encoded = Buffer.from(url).toString("base64");
+console.log(encoded); // aHR0cDovL2xvY2FsaG9zdDozMDAw
+```
+
+Menggunakan baris perintah:
+
+```bash
+echo -n "http://localhost:3000" | base64
+# aHR0cDovL2xvY2FsaG9zdDozMDAw
+```
+
+Online: Gunakan enkoder base64 apa pun di https://www.base64encode.org/
+
+**Langkah 3: Tes di Upside.win**
+
+Kunjungi URL tes:
+
+```
+https://upside.win/test/games/aHR0cDovL2xvY2FsaG9zdDozMDAw
+```
+
+Ganti `aHR0cDovL2xvY2FsaG9zdDozMDAw` dengan URL yang telah Anda enkode.
+
+### Contoh
+
+URL localhost yang berbeda:
+
+| URL                     | Base64                         | Tautan Tes                                                   |
+| ----------------------- | ------------------------------ | ------------------------------------------------------------ |
+| `http://localhost:3000` | `aHR0cDovL2xvY2FsaG9zdDozMDAw` | `https://upside.win/test/games/aHR0cDovL2xvY2FsaG9zdDozMDAw` |
+| `http://localhost:5000` | `aHR0cDovL2xvY2FsaG9zdDo1MDOw` | `https://upside.win/test/games/aHR0cDovL2xvY2FsaG9zdDo1MDOw` |
+| `http://127.0.0.1:3000` | `aHR0cDovLzEyNy4wLjAuMTozMDAw` | `https://upside.win/test/games/aHR0cDovLzEyNy4wLjAuMTozMDAw` |
+
+### Alur Kerja Pengembangan
+
+1. **Buat kode game** - Tulis frontend React dan backend Cloudflare Hono Anda
+2. **Mulai secara lokal** - Jalankan `npm run dev` di localhost
+3. **Hasilkan URL tes** - Enkode alamat localhost Anda ke Base64
+4. **Tes di Upside** - Kunjungi `https://upside.win/test/games/<BASE64>`
+5. **Dapatkan JWT & tes** - Game dimuat dengan JWT asli untuk pengujian
+6. **Iterasi** - Lakukan perubahan secara lokal dan segarkan URL tes
+7. **Deploy** - Ketika siap, deploy backend dan perbarui URL game
+
+### Tips untuk Pengujian Lokal
+
+- **Gunakan mesin yang sama**: Pertahankan localhost berjalan saat pengujian
+- **Periksa CORS**: Pastikan backend Anda mengizinkan permintaan dari domain upside.win
+
+### Pemecahan Masalah Pengujian Lokal
+
+**Masalah**: "Game tidak ditemukan" atau 404
+
+- **Solusi**: Verifikasi URL localhost benar dan enkodingnya akurat
+
+**Masalah**: Kesalahan CORS
+
+- **Solusi**: Backend Anda perlu menerima permintaan dari domain upside.win
+
+**Masalah**: Kesalahan JWT selama pengujian
+
+- **Solusi**: Pastikan Anda menggunakan kunci API staging, bukan produksi
+
+**Masalah**: Permintaan jaringan gagal
+
+- **Solusi**: Periksa bahwa localhost berjalan dan firewall mengizinkan permintaan
+
+## Contoh Lengkap: Game Coin Flip
+
+### Frontend (React)
+
+```javascript
+import { ParentProvider, useParentContext } from "@b3dotfun/upside-sdk";
+
+export default function CoinFlipGame() {
+  return (
+    <ParentProvider>
+      <CoinFlipContent />
+    </ParentProvider>
+  );
+}
+
+function CoinFlipContent() {
+  const { token, balance, playerId } = useParentContext();
+  const [gameState, setGameState] = useState("ready"); // ready, playing, won, lost
+  const [prediction, setPrediction] = useState(null);
+  const [result, setResult] = useState(null);
+  const [earnings, setEarnings] = useState(0);
+
+  const playGame = async playerPrediction => {
+    setPrediction(playerPrediction);
+    setGameState("playing");
+
+    try {
+      // Panggil backend Anda
+      const response = await fetch("/api/game/coin-flip", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          playerId,
+          prediction: playerPrediction,
+          betAmount: "100000000000000000", // 1 token dalam wei
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.outcome === "win") {
+        setGameState("won");
+        setEarnings(data.payout);
+      } else {
+        setGameState("lost");
+        setEarnings(0);
+      }
+
+      setResult(data.result);
+    } catch (error) {
+      console.error("Game error:", error);
+      setGameState("error");
+    }
+  };
+
+  return (
+    <div style={{ textAlign: "center", padding: "40px" }}>
+      <h1>Coin Flip</h1>
+      <p>Saldo: {(balance / 1e18).toFixed(2)} WIN</p>
+
+      {gameState === "ready" && (
+        <div>
+          <button onClick={() => playGame("heads")}>Prediksi Kepala</button>
+          <button onClick={() => playGame("tails")}>Prediksi Ekor</button>
+        </div>
+      )}
+
+      {gameState === "playing" && <p>Melakukan flip...</p>}
+
+      {gameState === "won" && (
+        <div>
+          <p>🎉 Anda menang! Koin mendarat di {result}</p>
+          <p>+{(earnings / 1e18).toFixed(2)} WIN</p>
+        </div>
+      )}
+
+      {gameState === "lost" && (
+        <div>
+          <p>❌ Anda kalah! Koin mendarat di {result}</p>
+          <p>Lebih beruntung lain waktu</p>
+        </div>
+      )}
+
+      {gameState !== "ready" && <button onClick={() => setGameState("ready")}>Main Lagi</button>}
+    </div>
+  );
+}
+```
+
+### Backend (Hono + Cloudflare Workers)
+
+```javascript
+import { Hono } from "hono";
+import { createB3Client } from "@b3dotfun/upside-sdk/server";
+
+const app = new Hono();
+
+app.post("/api/game/coin-flip", async c => {
+  const { prediction, betAmount } = await c.req.json();
+
+  try {
+    // Buat B3Client dari konteks Hono
+    // Secara otomatis mengekstrak token auth dari header Authorization
+    const b3Client = createB3Client(c);
+
+    // Langkah 1: Tempatkan taruhan (jumlah dalam wei)
+    const betResult = await b3Client.placeBet("coin-flip", betAmount);
+
+    if (!betResult.sessionId) {
+      return c.json({ error: "Gagal menempatkan taruhan" }, 400);
+    }
+
+    // Langkah 2: Logika game - flip koin
+    const coin = Math.random() < 0.5 ? "heads" : "tails";
+    const isWin = coin === prediction;
+    // Hitung pembayaran: 50% keuntungan saat menang (betAmount * 1.5, dalam wei)
+    const payout = isWin ? (BigInt(betAmount) * BigInt(150)) / BigInt(100) : "0";
+
+    // Langkah 3: Simpan game di database Anda (D1, dll.)
+    // await db.execute(
+    //   "INSERT INTO games (sessionId, prediction, result, betAmount, payout) VALUES (?, ?, ?, ?, ?)",
+    //   [betResult.sessionId, prediction, coin, betAmount, payout.toString()]
+    // );
+
+    // Langkah 4: Proses pembayaran
+    const payoutResult = await b3Client.processPayout("coin-flip", betResult.sessionId, payout.toString(), {
+      playerChoice: prediction,
+      result: coin,
+      outcome: isWin ? "win" : "loss",
+    });
+
+    // Langkah 5: Kembalikan hasil ke frontend
+    return c.json({
+      sessionId: betResult.sessionId,
+      prediction,
+      result: coin,
+      outcome: isWin ? "win" : "loss",
+      payout: isWin ? payout.toString() : "0",
+      newBalance: payoutResult.newBalance,
+    });
+  } catch (error) {
+    console.error("Game error:", error);
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+export default app;
+```
+
+## Pemecahan Masalah
+
+### Masalah Umum
+
+**Masalah**: `placeBet` gagal dengan "Saldo tidak cukup"
+
+- **Solusi**: Periksa saldo pemain sebelum menempatkan taruhan, atau tingkatkan jumlah taruhan yang ditampilkan di UI
+
+**Masalah**: `processPayout` mengembalikan "sesi tidak ditemukan"
+
+- **Solusi**: Verifikasi sessionId cocok dengan respons taruhan, periksa typo
+
+**Masalah**: Sesi game atau taruhan duplikat
+
+- **Solusi**: Gunakan sessionId yang sama untuk percobaan ulang, implementasikan idempotensi di akhir Anda
+
+**Masalah**: JWT kedaluwarsa selama gameplay
+
+- **Solusi**: Perbarui token sebelum game dimulai, tangani kedaluwarsa token dengan anggun
+
+**Masalah**: Logika game berjalan di klien, mengakibatkan kecurangan
+
+- **Solusi**: Pindahkan SELURUH logika game ke backend, klien hanya menampilkan hasil

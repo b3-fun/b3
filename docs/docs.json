@@ -344,6 +344,17 @@
                 ]
               },
               {
+                "group": "x402",
+                "pages": [
+                  "anyspend/x402-overview",
+                  "anyspend/x402-facilitator",
+                  "anyspend/x402-quickstart-buyers",
+                  "anyspend/x402-quickstart-sellers",
+                  "anyspend/x402-network-support",
+                  "anyspend/x402-signature-methods"
+                ]
+              },
+              {
                 "group": "React",
                 "pages": [
                   "anyspend/components",
@@ -381,6 +392,35 @@
                   "anchor": "Follow @anyspend",
                   "href": "https://x.com/anyspend",
                   "icon": "twitter"
+                }
+              ]
+            }
+          },
+          {
+            "icon": "dice",
+            "tab": "Upside.win",
+            "groups": [
+              {
+                "group": "Getting Started",
+                "pages": [
+                  "upside/introduction",
+                  "upside/frontend-integration",
+                  "upside/backend-integration",
+                  "upside/testing-and-examples"
+                ]
+              }
+            ],
+            "global": {
+              "anchors": [
+                {
+                  "anchor": "Visit upside.win",
+                  "href": "https://upside.win",
+                  "icon": "globe"
+                },
+                {
+                  "anchor": "Discord",
+                  "href": "https://discord.gg/b3dotfun",
+                  "icon": "discord"
                 }
               ]
             }
@@ -793,8 +833,7 @@
               {
                 "group": "Developers",
                 "pages": [
-                  "id/hypeduel/developers",
-                  "id/hypeduel/training-your-agent"
+                  "id/hypeduel/developers"
                 ]
               },
               {
@@ -1301,8 +1340,7 @@
               {
                 "group": "Developers",
                 "pages": [
-                  "ko/hypeduel/developers",
-                  "ko/hypeduel/training-your-agent"
+                  "ko/hypeduel/developers"
                 ]
               },
               {
@@ -1809,8 +1847,7 @@
               {
                 "group": "Developers",
                 "pages": [
-                  "cn/hypeduel/developers",
-                  "cn/hypeduel/training-your-agent"
+                  "cn/hypeduel/developers"
                 ]
               },
               {
@@ -2317,8 +2354,7 @@
               {
                 "group": "Developers",
                 "pages": [
-                  "es/hypeduel/developers",
-                  "es/hypeduel/training-your-agent"
+                  "es/hypeduel/developers"
                 ]
               },
               {
@@ -2807,8 +2843,7 @@
               {
                 "group": "Developers",
                 "pages": [
-                  "pt-BR/hypeduel/developers",
-                  "pt-BR/hypeduel/training-your-agent"
+                  "pt-BR/hypeduel/developers"
                 ]
               },
               {

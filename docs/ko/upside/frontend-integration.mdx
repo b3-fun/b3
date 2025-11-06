@@ -1,0 +1,227 @@
+---
+title: 프론트엔드 통합
+description: '게임 프론트엔드에서 플레이어 인증, 잔액 및 UI 컨트롤에 접근하기 위해 ParentProvider를 설정하고 훅을 사용하세요.'
+lang: ko
+originalPath: upside/frontend-integration.mdx
+---
+## ParentProvider
+
+`ParentProvider` 컴포넌트는 게임 프론트엔드를 Upside 플랫폼에 연결하고 인증을 제공합니다.
+
+```javascript
+import { ParentProvider, useParent, useBalance, useToken, useAuthenticatedFetch } from "@b3dotfun/upside-sdk";
+
+export default function CoinFlipGame() {
+  return (
+    <ParentProvider>
+      <GameContent />
+    </ParentProvider>
+  );
+}
+
+function GameContent() {
+  const { token, balance, showWinModal, showLossModal, refetchBalance } = useParent();
+
+  // 또는 개별 훅을 사용하세요:
+  const balance = useBalance(); // number | null
+  const token = useToken(); // string | null
+  const authFetch = useAuthenticatedFetch(); // Authorization 헤더가 포함된 fetch
+
+  return (
+    <div>
+      <h1>Coin Flip</h1>
+      <p>잔액: {(balance / 1e18).toFixed(2)} WIN</p>
+      <button onClick={() => playGame(token)}>플레이</button>
+    </div>
+  );
+}
+```
+
+## 사용 가능한 훅
+
+### useParent()
+
+전체 컨텍스트 접근 (token, balance, showWinModal, showLossModal 등)
+
+**반환 값:**
+
+- `token` (string | null): 백엔드 호출을 위한 JWT 인증 토큰
+- `balance` (number | null): 현재 WIN 토큰 잔액(wei 단위)
+- `showWinModal(wins: string)`: 승리 모달 표시
+- `showLossModal(loss: string)`: 패배 모달 표시
+- `showToast(options)`: 토스트 알림 표시
+- `showCustomModal(content)`: 커스텀 모달 표시
+- `refetchBalance()`: 플랫폼에서 잔액 새로고침 요청
+
+### useBalance()
+
+플레이어 잔액 가져오기 (number | null)
+
+```javascript
+const balance = useBalance();
+```
+
+### useToken()
+
+인증 토큰 가져오기 (string | null)
+
+```javascript
+const token = useToken();
+```
+
+### useRefetchBalance()
+
+잔액 새로고침 요청 함수
+
+```javascript
+const refetchBalance = useRefetchBalance();
+```
+
+### useCustomModal()
+
+커스텀 모달 표시 함수
+
+```javascript
+const showCustomModal = useCustomModal();
+```
+
+### useAuthenticatedFetch()
+
+Bearer 토큰 헤더가 자동으로 포함된 Fetch 함수
+
+```javascript
+const authFetch = useAuthenticatedFetch();
+```
+
+## API 호출하기
+
+인증된 요청을 만들기 위해 `useAuthenticatedFetch()` 훅을 사용하세요:
+
+```javascript
+import { useAuthenticatedFetch, useBalance, useToken } from "@b3dotfun/upside-sdk";
+
+function GameComponent() {
+  const authFetch = useAuthenticatedFetch();
+  const balance = useBalance();
+  const token = useToken();
+
+  const playGame = async prediction => {
+    // Authorization 헤더가 자동으로 추가됩니다
+    const response = await authFetch("/api/game/coin-flip", {
+      method: "POST",
+      body: JSON.stringify({
+        playerId: "player-id",
+        prediction,
+        betAmount: "1000000000000000000", // 1 WIN in wei
+      }),
+    });
+
+    const data = await response.json();
+    return data;
+  };
+
+  return (
+    <div>
+      <p>잔액: {(balance / 1e18).toFixed(2)} WIN</p>
+      <button onClick={() => playGame("heads")}>앞면 예측</button>
+    </div>
+  );
+}
+```
+
+**useAuthenticatedFetch() 작동 방식:**
+
+- 자동으로 `Authorization: Bearer {token}` 헤더 포함
+- 기본적으로 `Content-Type: application/json` 설정
+- 제공하는 추가 헤더를 병합
+- `useToken()`에서 자동으로 토큰 처리
+
+## 프론트엔드 예제
+
+```javascript
+import { ParentProvider, useParentContext } from "@b3dotfun/upside-sdk";
+
+export default function CoinFlipGame() {
+  return (
+    <ParentProvider>
+      <CoinFlipContent />
+    </ParentProvider>
+  );
+}
+
+function CoinFlipContent() {
+  const { token, balance, playerId } = useParentContext();
+  const [gameState, setGameState] = useState("ready"); // ready, playing, won, lost
+  const [prediction, setPrediction] = useState(null);
+  const [result, setResult] = useState(null);
+  const [earnings, setEarnings] = useState(0);
+
+  const playGame = async playerPrediction => {
+    setPrediction(playerPrediction);
+    setGameState("playing");
+
+    try {
+      // 백엔드 호출
+      const response = await fetch("/api/game/coin-flip", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          playerId,
+          prediction: playerPrediction,
+          betAmount: "100000000000000000", // 1 token in wei
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.outcome === "win") {
+        setGameState("won");
+        setEarnings(data.payout);
+      } else {
+        setGameState("lost");
+        setEarnings(0);
+      }
+
+      setResult(data.result);
+    } catch (error) {
+      console.error("게임 오류:", error);
+      setGameState("error");
+    }
+  };
+
+  return (
+    <div style={{ textAlign: "center", padding: "40px" }}>
+      <h1>Coin Flip</h1>
+      <p>잔액: {(balance / 1e18).toFixed(2)} WIN</p>
+
+      {gameState === "ready" && (
+        <div>
+          <button onClick={() => playGame("heads")}>앞면 예측</button>
+          <button onClick={() => playGame("tails")}>뒷면 예측</button>
+        </div>
+      )}
+
+      {gameState === "playing" && <p>플립 중...</p>}
+
+      {gameState === "won" && (
+        <div>
+          <p>🎉 승리했습니다! 동전은 {result}에 착지했습니다</p>
+          <p>+{(earnings / 1e18).toFixed(2)} WIN</p>
+        </div>
+      )}
+
+      {gameState === "lost" && (
+        <div>
+          <p>❌ 패배했습니다! 동전은 {result}에 착지했습니다</p>
+          <p>다음 번에 더 좋은 운을</p>
+        </div>
+      )}
+
+      {gameState !== "ready" && <button onClick={() => setGameState("ready")}>다시 플레이</button>}
+    </div>
+  );
+}
+```

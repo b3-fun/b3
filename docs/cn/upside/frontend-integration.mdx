@@ -1,0 +1,227 @@
+---
+title: 前端集成
+description: 在您的游戏前端设置 ParentProvider 并使用 hooks 来访问玩家认证、余额和 UI 控制。
+lang: cn
+originalPath: upside/frontend-integration.mdx
+---
+## ParentProvider
+
+`ParentProvider` 组件将您的游戏前端连接到 Upside 平台，并提供认证。
+
+```javascript
+import { ParentProvider, useParent, useBalance, useToken, useAuthenticatedFetch } from "@b3dotfun/upside-sdk";
+
+export default function CoinFlipGame() {
+  return (
+    <ParentProvider>
+      <GameContent />
+    </ParentProvider>
+  );
+}
+
+function GameContent() {
+  const { token, balance, showWinModal, showLossModal, refetchBalance } = useParent();
+
+  // 或使用单独的 hooks:
+  const balance = useBalance(); // number | null
+  const token = useToken(); // string | null
+  const authFetch = useAuthenticatedFetch(); // 带有 Authorization 头的 fetch
+
+  return (
+    <div>
+      <h1>Coin Flip</h1>
+      <p>余额: {(balance / 1e18).toFixed(2)} WIN</p>
+      <button onClick={() => playGame(token)}>玩游戏</button>
+    </div>
+  );
+}
+```
+
+## 可用的 Hooks
+
+### useParent()
+
+访问完整上下文（token, balance, showWinModal, showLossModal 等）
+
+**返回值:**
+
+- `token` (string | null): 用于后端调用的 JWT 认证令牌
+- `balance` (number | null): 当前 WIN 代币余额（以 wei 为单位）
+- `showWinModal(wins: string)`: 显示赢得模态框
+- `showLossModal(loss: string)`: 显示输掉模态框
+- `showToast(options)`: 显示吐司通知
+- `showCustomModal(content)`: 显示自定义模态框
+- `refetchBalance()`: 从平台请求余额刷新
+
+### useBalance()
+
+获取玩家余额（number | null）
+
+```javascript
+const balance = useBalance();
+```
+
+### useToken()
+
+获取认证令牌（string | null）
+
+```javascript
+const token = useToken();
+```
+
+### useRefetchBalance()
+
+请求余额刷新的函数
+
+```javascript
+const refetchBalance = useRefetchBalance();
+```
+
+### useCustomModal()
+
+显示自定义模态框的函数
+
+```javascript
+const showCustomModal = useCustomModal();
+```
+
+### useAuthenticatedFetch()
+
+带有自动 Bearer 令牌头的 Fetch 函数
+
+```javascript
+const authFetch = useAuthenticatedFetch();
+```
+
+## 发起 API 调用
+
+使用 `useAuthenticatedFetch()` hook 发起认证请求：
+
+```javascript
+import { useAuthenticatedFetch, useBalance, useToken } from "@b3dotfun/upside-sdk";
+
+function GameComponent() {
+  const authFetch = useAuthenticatedFetch();
+  const balance = useBalance();
+  const token = useToken();
+
+  const playGame = async prediction => {
+    // 自动添加 Authorization 头
+    const response = await authFetch("/api/game/coin-flip", {
+      method: "POST",
+      body: JSON.stringify({
+        playerId: "player-id",
+        prediction,
+        betAmount: "1000000000000000000", // 1 WIN in wei
+      }),
+    });
+
+    const data = await response.json();
+    return data;
+  };
+
+  return (
+    <div>
+      <p>余额: {(balance / 1e18).toFixed(2)} WIN</p>
+      <button onClick={() => playGame("heads")}>预测正面</button>
+    </div>
+  );
+}
+```
+
+**useAuthenticatedFetch() 如何工作:**
+
+- 自动包含 `Authorization: Bearer {token}` 头
+- 默认设置 `Content-Type: application/json`
+- 合并您提供的额外头
+- 自动处理来自 `useToken()` 的令牌
+
+## 前端示例
+
+```javascript
+import { ParentProvider, useParentContext } from "@b3dotfun/upside-sdk";
+
+export default function CoinFlipGame() {
+  return (
+    <ParentProvider>
+      <CoinFlipContent />
+    </ParentProvider>
+  );
+}
+
+function CoinFlipContent() {
+  const { token, balance, playerId } = useParentContext();
+  const [gameState, setGameState] = useState("ready"); // ready, playing, won, lost
+  const [prediction, setPrediction] = useState(null);
+  const [result, setResult] = useState(null);
+  const [earnings, setEarnings] = useState(0);
+
+  const playGame = async playerPrediction => {
+    setPrediction(playerPrediction);
+    setGameState("playing");
+
+    try {
+      // 调用您的后端
+      const response = await fetch("/api/game/coin-flip", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          playerId,
+          prediction: playerPrediction,
+          betAmount: "100000000000000000", // 1 token in wei
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.outcome === "win") {
+        setGameState("won");
+        setEarnings(data.payout);
+      } else {
+        setGameState("lost");
+        setEarnings(0);
+      }
+
+      setResult(data.result);
+    } catch (error) {
+      console.error("游戏错误:", error);
+      setGameState("error");
+    }
+  };
+
+  return (
+    <div style={{ textAlign: "center", padding: "40px" }}>
+      <h1>Coin Flip</h1>
+      <p>余额: {(balance / 1e18).toFixed(2)} WIN</p>
+
+      {gameState === "ready" && (
+        <div>
+          <button onClick={() => playGame("heads")}>预测正面</button>
+          <button onClick={() => playGame("tails")}>预测反面</button>
+        </div>
+      )}
+
+      {gameState === "playing" && <p>正在翻转...</p>}
+
+      {gameState === "won" && (
+        <div>
+          <p>🎉 你赢了！硬币落在了 {result}</p>
+          <p>+{(earnings / 1e18).toFixed(2)} WIN</p>
+        </div>
+      )}
+
+      {gameState === "lost" && (
+        <div>
+          <p>❌ 你输了！硬币落在了 {result}</p>
+          <p>祝你下次好运</p>
+        </div>
+      )}
+
+      {gameState !== "ready" && <button onClick={() => setGameState("ready")}>再玩一次</button>}
+    </div>
+  );
+}
+```

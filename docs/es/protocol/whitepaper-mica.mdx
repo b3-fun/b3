@@ -1,0 +1,188 @@
+---
+title: B3 MiCAR Libro Blanco
+description: Versión Final 1 - 2025-08-11
+lang: es
+originalPath: protocol/whitepaper-mica.mdx
+---
+## **Índice de Contenidos**
+
+ 1. [1. Divulgaciones Regulatorias](#regulatory-disclosures)
+ 2. [2. Resumen](#summary)
+ 3. [3. A. Información sobre la Persona que Busca la Admisión a Negociación](#section-1)
+     1. [A.1. Nombre](#Template_A1)
+     2. [A.2. Forma Legal](#Template_A2)
+     3. [A.3. Dirección Registrada](#Template_A3)
+     4. [A.4. Oficina Principal](#Template_A4)
+     5. [A.5. Fecha de Registro](#Template_A5)
+     6. [A.6. Identificador de entidad legal](#Template_A6)
+     7. [A.7. Otro identificador requerido según la ley nacional aplicable](#Template_A7)
+     8. [A.8. Número de teléfono de contacto](#Template_A8)
+     9. [A.9. Dirección de correo electrónico](#Template_A9)
+    10. [A.10. Tiempo de Respuesta (Días)](#Template_A10)
+    11. [A.11. Empresa Matriz](#Template_A11)
+    12. [A.12. Miembros del Órgano de Gestión](#Template_A12)
+    13. [A.13. Actividad Comercial](#Template_A13)
+    14. [A.14. Actividad Comercial de la Empresa Matriz](#Template_A14)
+    15. [A.15. Recién Establecida](#Template_A15)
+    16. [A.16. Condición Financiera de los últimos tres años](#Template_A16)
+    17. [A.17. Condición Financiera desde el registro](#Template_A17)
+ 4. [4. B. Información sobre el Emisor](#section-2)
+     1. [B.1. Emisor diferente del oferente o persona que busca la admisión a negociación](#Template_B1)
+     2. [B.2. Nombre](#Template_B2)
+     3. [3. B.3. Forma Legal](#Template_B3)
+     4. [B.4. Dirección Registrada](#Template_B4)
+     5. [B.5. Oficina Principal](#Template_B5)
+     6. [B.6. Fecha de Registro](#Template_B6)
+     7. [B.7. Identificador de entidad legal](#Template_B7)
+     8. [B.8. Otro identificador requerido según la ley nacional aplicable](#Template_B8)
+     9. [B.9. Empresa matriz](#Template_B9)
+    10. [B.10. Miembros del Órgano de Gestión](#Template_B10)
+    11. [B.11. Actividad Comercial](#Template_B11)
+    12. [B.12. Actividad Comercial de la Empresa Matriz](#Template_B12)
+ 5. [5. C. Información sobre el operador de la plataforma de negociación](#section-c)
+ 6. [6. D. Información sobre el Proyecto de Criptoactivo](#section-3)
+     1. [D.1. Nombre del proyecto de criptoactivo](#Template_D1)
+     2. [D.2. Nombre de los criptoactivos](#Template_D2)
+     3. [D.3. Abreviatura](#Template_D3)
+     4. [D.4. Descripción del proyecto de criptoactivo](#Template_D4)
+     5. [D.5. Detalles de todas las personas físicas o jurídicas involucradas en la implementación del proyecto de criptoactivo](#Template_D5)
+     6. [D.6. Clasificación de Token de Utilidad](#Template_D6)
+     7. [D.7. Características Clave de Bienes/Servicios para Proyectos de Token de Utilidad](#Template_D7)
+     8. [D.8. Planes para el token](#Template_D8)
+     9. [D.9. Asignación de Recursos](#Template_D9)
+    10. [D.10. Uso Planificado de los Fondos o Criptoactivos Recaudados](#Template_D10)
+ 7. [7. E. Información sobre la Admisión a Negociación](#section-4)
+     1. [E.1. Oferta Pública o Admisión a negociación](#Template_E1)
+     2. [E.2. Razones para la Oferta Pública o Admisión a negociación](#Template_E2)
+     3. [E.3. Objetivo de Recaudación](#Template_E3)
+     4. [E.4. Objetivos de Suscripción Mínima](#Template_E4)
+     5. [E.5. Objetivo de Suscripción Máxima](#Template_E5)
+     6. [E.6. Aceptación de Sobresuscripción](#Template_E6)
+     7. [E.7. Asignación de Sobresuscripción](#Template_E7)
+     8. [E.8. Precio de Emisión](#Template_E8)
+     9. [E.9. Moneda oficial o cualquier otro criptoactivo que determine el precio de emisión](#Template_E9)
+    10. [E.10. Tarifa de suscripción](#Template_E10)
+    11. [E.11. Método de Determinación del Precio de Oferta](#Template_E11)
+    12. [E.12. Número Total de Criptoactivos Ofrecidos/Negociados](#Template_E12)
+    13. [E.13. Titulares Objetivo](#Template_E13)
+    14. [E.14. Restricciones para los Titulares](#Template_E14)
+    15. [E.15. Aviso de Reembolso](#Template_E15)
+    16. [E.16. Mecanismo de Reembolso](#Template_E16)
+    17. [E.17. Cronograma de Reembolso](#Template_E17)
+    18. [E.18. Fases de la Oferta](#Template_E18)
+    19. [E.19. Descuento por Compra Anticipada](#Template_E19)
+    20. [E.20. Oferta Limitada por Tiempo](#Template_E20)
+    21. [E.21. Comienzo del período de suscripción](#Template_E21)
+    22. [E.22. Fin del período de suscripción](#Template_E22)
+    23. [E.23. Arreglos de Salvaguardia para los Criptoactivos Ofrecidos](#Template_E23)
+    24. [E.24. Métodos de Pago para la Compra de Criptoactivos](#Template_E24)
+    25. [E.25. Métodos de Transferencia de Valor para el Reembolso](#Template_E25)
+    26. [E.26. Derecho de Retirada](#Template_E26)
+    27. [E.27. Transferencia de Criptoactivos Comprados](#Template_E27)
+    28. [E.28. Cronograma de Transferencia](#Template_E28)
+    29. [E.29. Requisitos Técnicos del Comprador](#Template_E29)
+    30. [E.32. Forma de colocación](#Template_E32)
+    31. [E.33. Nombre de las Plataformas de Negociación](#Template_E33)
+    32. [E.34. Código Identificador de Mercado (MIC) de las Plataformas de Negociación](#Template_E34)
+    33. [E.35. Acceso a las Plataformas de Negociación](#Template_E35)
+    34. [E.36. Costos Involucrados](#Template_E36)
+    35. [E.38. Conflictos de Interés](#Template_E38)
+    36. [E.39. Ley Aplicable](#Template_E39)
+    37. [E.40. Tribunal Competente](#Template_E40)
+ 8. [8. F. Información sobre el Criptoactivo](#section-5)
+     1. [F.1. Tipo de Criptoactivo](#Template_F1)
+     2. [F.2. Funcionalidad del Criptoactivo](#Template_F2)
+     3. [F.3. Aplicación Planeada de las Funcionalidades](#Template_F3)
+     4. [F.4. Tipo de white paper](#Template_F4)
+     5. [F.5. Tipo de presentación](#Template_F5)
+     6. [F.6. Características del Criptoactivo](#Template_F6)
+     7. [F.7. Nombre comercial o nombre de marca](#Template_F7)
+     8. [F.8. Sitio web del emisor](#Template_F8)
+     9. [F.9. Fecha de inicio de la oferta al público o admisión a negociación](#Template_F9)
+    10. [F.10. Fecha de publicación](#Template_F10)
+    11. [F.11. Otros servicios proporcionados por el emisor](#Template_F11)
+    12. [F.12. Idioma o idiomas del white paper](#Template_F12)
+    13. [F.13. Código Identificador de Token Digital utilizado para identificar de manera única el criptoactivo o cada uno de los varios criptoactivos a los que se refiere el white paper, donde esté disponible](#Template_F13)
+    14. [F.14. Identificador de Grupo de Token Digital Funcionalmente Fungible, donde esté disponible](#Template_F14)
+    15. [F.15. Bandera de datos voluntarios](#Template_F15)
+    16. [16. F.16. Bandera de datos personales](#Template_F16)
+    17. [F.17. Elegibilidad LEI](#Template_F17)
+    18. [F.18. Estado Miembro de Origen](#Template_F18)
+    19. [F.19. Estados Miembros Anfitriones](#Template_F19)
+ 9. [9. G. Derechos y Obligaciones](#section-6)
+     1. [G.1. Derechos y Obligaciones del Comprador](#Template_G1)
+     2. [G.2. Ejercicio de Derechos y obligaciones](#Template_G2)
+     3. [G.3. Condiciones para modificaciones de derechos y obligaciones](#Template_G3)
+     4. [G.4. Ofertas Públicas Futuras](#Template_G4)
+     5. [G.5. Criptoactivos Retenidos por el Emisor](#Template_G5)
+     6. [G.6. Clasificación de Token de Utilidad](#Template_G6)
+     7. [G.7. Características Clave de Bienes/Servicios de Tokens de Utilidad](#Template_G7)
+     8. [G.8. Redención de Tokens de Utilidad](#Template_G8)
+     9. [G.9. Solicitud de No Negociación](#Template_G9)
+    10. [G.10. Modalidades de compra o venta de Criptoactivos](#Template_G10)
+    11. [G.11. Restricciones de Transferencia de Criptoactivos](#Template_G11)
+    12. [G.12. Protocolos de Ajuste de Suministro](#Template_G12)
+    13. [G.13. Mecanismos de Ajuste de Suministro](#Template_G13)
+    14. [G.14. Esquemas de Protección del Valor del Token](#Template_G14)
+    15. [G.15. Descripción de los esquemas de protección del valor del token](#Template_G15)
+    16. [G.16. Esquemas de Compensación](#Template_G16)
+    17. [G.17. Descripción de los esquemas de compensación](#Template_G17)
+    18. [G.18. Ley Aplicable](#Template_G18)
+    19. [G.19. Tribunal Competente](#Template_G19)
+10. [10. H. Información sobre la Tecnología Subyacente](#section-7)
+    1. [H.1. Tecnología de registro distribuido](#Template_H1)
+    2. [H.2. Protocolos y estándares técnicos](#Template_H2)
+    3. [H.3. Tecnología Utilizada](#Template_H3)
+    4. [H.4. Mecanismo de Consenso](#Template_H4)
+    5. [H.5. Mecanismos de Incentivo y Tarifas Aplicables](#Template_H5)
+    6. [H.6. Uso de Tecnología de Registro Distribuido](#Template_H6)
+    7. [H.7. Descripción de la funcionalidad DLT](#Template_H7)
+    8. [H.8. Auditoría](#Template_H8)
+    9. [H.9. Resultado de la Auditoría](#Template_H9)
+11. [11. I. Información sobre Riesgos](#section-8)
+    1. [I.1. Riesgos Relacionados con la Oferta](#Template_I1)
+    2. [I.2. Riesgos Relacionados con el Emisor](#Template_I2)
+    3. [ I.3. Riesgos Relacionados con los Criptoactivos](#Template_I3)
+    4. [I.4. Riesgos Relacionados con la Implementación del Proyecto](#Template_I4)
+    5. [I.5. Riesgos Relacionados con la Tecnología](#Template_I5)
+    6. [I.6. Medidas de Mitigación](#Template_I6)
+12. [12. S. Información sobre Indicadores de Sostenibilidad](#section-9)
+    1. [S.1. Nombre](#Template_S1)
+    2. [S.2. Identificador de entidad legal relevante](#Template_S2)
+    3. [S.3. Nombre del criptoactivo](#Template_S3)
+    4. [S.4. Mecanismo de Consenso](#Template_S4)
+    5. [S.5. Mecanismos de Incentivo y Tarifas](#Template_S5)
+    6. [S.6. Comienzo del período al que se refiere la divulgación](#Template_S6)
+    7. [S.7. Fin del período al que se refiere la divulgación](#Template_S7)
+    8. [S.8. Consumo de energía](#Template_S8)
+    9. [S.9. Fuentes y metodologías del consumo de energía](#Template_S9)
+
+Fecha de Notificación: 11-08-2025
+
+## **Divulgaciones Regulatorias**
+
+**02. Declaración de conformidad con el Artículo 6(3):**
+
+Este white paper de criptoactivo no ha sido aprobado por ninguna autoridad competente en ningún Estado miembro de la Unión Europea. La persona que busca la admisión a negociación del criptoactivo es la única responsable del contenido de este white paper de criptoactivo.
+
+**03. Declaración de conformidad con el Artículo 6(6):**
+
+Este white paper de criptoactivo cumple con el Título II del Reglamento (UE) 2023/1114 y, al mejor conocimiento del órgano de gestión, la información presentada en el white paper de criptoactivo es justa, clara y no engañosa y el white paper de criptoactivo no omite nada que pueda afectar su importancia.
+
+**04. Declaración de conformidad con el Artículo 6(5), puntos (a), (b), (c):**
+
+El criptoactivo mencionado en este white paper puede perder todo o parte de su valor, puede no ser siempre transferible y puede no ser líquido.
+
+**05. Declaración de conformidad con el Artículo 6(5), punto (d):**
+
+El token de utilidad mencionado en este white paper puede no ser intercambiable por el bien o servicio prometido en el white paper de criptoactivo, especialmente en caso de fallo o discontinuación del proyecto de criptoactivo.
+
+**06. Declaración de conformidad con el Artículo 6(5), puntos (e) y (f):**
+
+El criptoactivo mencionado en este white paper no está cubierto por los esquemas de compensación de inversores bajo la Directiva 97/9/CE del Parlamento Europeo y del Consejo o los esquemas de garantía de depósitos bajo la Directiva 2014/49/UE del Parlamento Europeo y del Consejo.
+
+## **Resumen**
+
+**07. Advertencia**
+
+Este resumen debe leerse como una introducción al white paper de criptoactivo. El posible titular debe basar cualquier decisión de compra de este criptoactivo en el contenido del white paper de criptoactivo en su totalidad y no solo en el resumen. La oferta al público de este criptoactivo no constituye una oferta o solicitud de compra de instrumentos financieros y cualquier oferta o solicitud de este tipo solo puede hacerse mediante un prospecto u otros documentos de oferta de acuerdo con la ley nacional aplicable. Este white paper de cripto

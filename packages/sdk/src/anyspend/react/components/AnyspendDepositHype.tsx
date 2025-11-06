@@ -1,10 +1,10 @@
 import { B3_TOKEN } from "@b3dotfun/sdk/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
-import { Button, ShinyButton, StyleRoot, TransitionPanel } from "@b3dotfun/sdk/global-account/react";
+import { Button, ShinyButton, StyleRoot, TransitionPanel, useAccountWallet } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import invariant from "invariant";
 import { motion } from "motion/react";
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { toast } from "sonner";
 import { base } from "viem/chains";
 import { PanelView, useAnyspendFlow } from "../hooks/useAnyspendFlow";
@@ -17,9 +17,11 @@ import { FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaym
 import { OrderDetails } from "./common/OrderDetails";
 import { PointsDetailPanel } from "./common/PointsDetailPanel";
 import { RecipientSelection } from "./common/RecipientSelection";
+import { useActiveWallet, useSetActiveWallet } from "thirdweb/react";
 
 import { ArrowDown, Loader2 } from "lucide-react";
 import { PanelOnramp } from "./common/PanelOnramp";
+import { useGlobalWalletState } from "../../utils";
 
 const SLIPPAGE_PERCENT = 3;
 
@@ -43,6 +45,7 @@ export interface AnySpendDepositHypeProps {
    */
   onTokenSelect?: (token: components["schemas"]["Token"], event: { preventDefault: () => void }) => void;
   customUsdInputValues?: string[];
+  preferEoa?: boolean;
 }
 
 export function AnySpendDepositHype(props: AnySpendDepositHypeProps) {
@@ -66,6 +69,7 @@ function AnySpendDepositHypeInner({
   mainFooter,
   onTokenSelect,
   customUsdInputValues,
+  preferEoa,
 }: AnySpendDepositHypeProps) {
   // Use shared flow hook
   const {
@@ -112,6 +116,22 @@ function AnySpendDepositHypeInner({
     slippage: SLIPPAGE_PERCENT,
     disableUrlParamManagement: true,
   });
+
+  const { connectedEOAWallet: connectedEOAWallet } = useAccountWallet();
+  const setActiveWallet = useSetActiveWallet();
+  const activeWallet = useActiveWallet();
+  const setGlobalAccountWallet = useGlobalWalletState(state => state.setGlobalAccountWallet);
+  const appliedPreferEoa = useRef(false);
+
+  useEffect(() => {
+    if (preferEoa && !appliedPreferEoa.current) {
+      if (connectedEOAWallet) {
+        appliedPreferEoa.current = true;
+        setGlobalAccountWallet(activeWallet);
+        setActiveWallet(connectedEOAWallet);
+      }
+    }
+  }, [preferEoa, connectedEOAWallet, setActiveWallet, activeWallet, setGlobalAccountWallet]);
 
   // Button state logic
   const btnInfo: { text: string; disable: boolean; error: boolean; loading: boolean } = useMemo(() => {

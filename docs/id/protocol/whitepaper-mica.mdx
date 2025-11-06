@@ -1,0 +1,188 @@
+---
+title: B3 MiCAR Makalah Putih
+description: Versi Final 1 - 2025-08-11
+lang: id
+originalPath: protocol/whitepaper-mica.mdx
+---
+## **Daftar Isi**
+
+ 1. [1. Pengungkapan Regulasi](#regulatory-disclosures)
+ 2. [2. Ringkasan](#summary)
+ 3. [3. A. Informasi tentang Orang yang Mencari Persetujuan untuk Perdagangan](#section-1)
+     1. [A.1. Nama](#Template_A1)
+     2. [A.2. Bentuk Hukum](#Template_A2)
+     3. [A.3. Alamat Terdaftar](#Template_A3)
+     4. [A.4. Kantor Pusat](#Template_A4)
+     5. [A.5. Tanggal Pendaftaran](#Template_A5)
+     6. [A.6. Pengidentifikasi entitas hukum](#Template_A6)
+     7. [A.7. Pengidentifikasi lain yang diperlukan menurut hukum nasional yang berlaku](#Template_A7)
+     8. [A.8. Nomor telepon kontak](#Template_A8)
+     9. [A.9. Alamat email](#Template_A9)
+    10. [A.10. Waktu Respon (Hari)](#Template_A10)
+    11. [A.11. Perusahaan Induk](#Template_A11)
+    12. [A.12. Anggota Badan Manajemen](#Template_A12)
+    13. [A.13. Kegiatan Bisnis](#Template_A13)
+    14. [A.14. Kegiatan Bisnis Perusahaan Induk](#Template_A14)
+    15. [A.15. Baru Didirikan](#Template_A15)
+    16. [A.16. Kondisi keuangan selama tiga tahun terakhir](#Template_A16)
+    17. [A.17. Kondisi keuangan sejak pendaftaran](#Template_A17)
+ 4. [4. B. Informasi tentang Penerbit](#section-2)
+     1. [B.1. Penerbit berbeda dari penawar atau orang yang mencari persetujuan untuk perdagangan](#Template_B1)
+     2. [B.2. Nama](#Template_B2)
+     3. [3. B.3. Bentuk Hukum](#Template_B3)
+     4. [B.4. Alamat Terdaftar](#Template_B4)
+     5. [B.5. Kantor Pusat](#Template_B5)
+     6. [B.6. Tanggal Pendaftaran](#Template_B6)
+     7. [B.7. Pengidentifikasi entitas hukum](#Template_B7)
+     8. [B.8. Pengidentifikasi lain yang diperlukan menurut hukum nasional yang berlaku](#Template_B8)
+     9. [B.9. Perusahaan induk](#Template_B9)
+    10. [B.10. Anggota Badan Manajemen](#Template_B10)
+    11. [B.11. Kegiatan Bisnis](#Template_B11)
+    12. [B.12. Kegiatan bisnis perusahaan induk](#Template_B12)
+ 5. [5. C. Informasi tentang operator platform perdagangan](#section-c)
+ 6. [6. D. Informasi tentang Proyek Aset Kripto](#section-3)
+     1. [D.1. Nama proyek aset kripto](#Template_D1)
+     2. [D.2. Nama aset kripto](#Template_D2)
+     3. [D.3. Singkatan](#Template_D3)
+     4. [D.4. Deskripsi proyek aset kripto](#Template_D4)
+     5. [D.5. Detail semua orang alami atau badan hukum yang terlibat dalam pelaksanaan proyek aset kripto](#Template_D5)
+     6. [D.6. Klasifikasi Token Utilitas](#Template_D6)
+     7. [D.7. Fitur Utama Barang/Layanan untuk Proyek Token Utilitas](#Template_D7)
+     8. [D.8. Rencana untuk token](#Template_D8)
+     9. [D.9. Alokasi Sumber Daya](#Template_D9)
+    10. [D.10. Penggunaan Dana atau Aset Kripto yang Dikumpulkan yang Direncanakan](#Template_D10)
+ 7. [7. E. Informasi tentang Persetujuan untuk Perdagangan](#section-4)
+     1. [E.1. Penawaran Publik atau Persetujuan untuk perdagangan](#Template_E1)
+     2. [E.2. Alasan untuk Penawaran Publik atau Persetujuan untuk perdagangan](#Template_E2)
+     3. [E.3. Target Penggalangan Dana](#Template_E3)
+     4. [E.4. Tujuan Langganan Minimum](#Template_E4)
+     5. [E.5. Tujuan Langganan Maksimum](#Template_E5)
+     6. [E.6. Penerimaan Kelebihan Langganan](#Template_E6)
+     7. [E.7. Alokasi Kelebihan Langganan](#Template_E7)
+     8. [E.8. Harga Emisi](#Template_E8)
+     9. [E.9. Mata uang resmi atau aset kripto lainnya yang menentukan harga emisi](#Template_E9)
+    10. [E.10. Biaya langganan](#Template_E10)
+    11. [E.11. Metode Penentuan Harga Penawaran](#Template_E11)
+    12. [E.12. Jumlah Total Aset Kripto yang Ditawarkan/Diperdagangkan](#Template_E12)
+    13. [E.13. Pemegang Sasaran](#Template_E13)
+    14. [E.14. Pembatasan pemegang](#Template_E14)
+    15. [E.15. Pemberitahuan Pengembalian Dana](#Template_E15)
+    16. [E.16. Mekanisme Pengembalian Dana](#Template_E16)
+    17. [E.17. Jadwal Pengembalian Dana](#Template_E17)
+    18. [E.18. Fase Penawaran](#Template_E18)
+    19. [E.19. Diskon Pembelian Awal](#Template_E19)
+    20. [E.20. Penawaran Terbatas Waktu](#Template_E20)
+    21. [E.21. Awal periode langganan](#Template_E21)
+    22. [E.22. Akhir periode langganan](#Template_E22)
+    23. [E.23. Pengaturan Pengamanan untuk Aset Kripto yang Ditawarkan](#Template_E23)
+    24. [E.24. Metode Pembayaran untuk Pembelian Aset Kripto](#Template_E24)
+    25. [E.25. Metode Transfer Nilai untuk Pengembalian Dana](#Template_E25)
+    26. [E.26. Hak Penarikan](#Template_E26)
+    27. [E.27. Transfer Aset Kripto yang Dibeli](#Template_E27)
+    28. [E.28. Jadwal Waktu Transfer](#Template_E28)
+    29. [E.29. Persyaratan Teknis Pembeli](#Template_E29)
+    30. [E.32. Bentuk Penempatan](#Template_E32)
+    31. [E.33. Nama Platform Perdagangan](#Template_E33)
+    32. [E.34. Kode Pengidentifikasi Pasar (MIC) Platform Perdagangan](#Template_E34)
+    33. [E.35. Akses Platform Perdagangan](#Template_E35)
+    34. [E.36. Biaya yang Terlibat](#Template_E36)
+    35. [E.38. Konflik Kepentingan](#Template_E38)
+    36. [E.39. Hukum yang Berlaku](#Template_E39)
+    37. [E.40. Pengadilan yang Berwenang](#Template_E40)
+ 8. [8. F. Informasi tentang Aset Kripto](#section-5)
+     1. [F.1. Tipe Aset Kripto](#Template_F1)
+     2. [F.2. Fungsionalitas Aset Kripto](#Template_F2)
+     3. [F.3. Aplikasi Fungsionalitas yang Direncanakan](#Template_F3)
+     4. [F.4. Tipe white paper](#Template_F4)
+     5. [F.5. Tipe pengajuan](#Template_F5)
+     6. [F.6. Karakteristik Aset Kripto](#Template_F6)
+     7. [F.7. Nama komersial atau nama dagang](#Template_F7)
+     8. [F.8. Situs web penerbit](#Template_F8)
+     9. [F.9. Tanggal mulai penawaran ke publik atau persetujuan untuk perdagangan](#Template_F9)
+    10. [F.10. Tanggal publikasi](#Template_F10)
+    11. [F.11. Layanan lain yang disediakan oleh penerbit](#Template_F11)
+    12. [F.12. Bahasa atau bahasa dari white paper](#Template_F12)
+    13. [F.13. Kode Pengidentifikasi Token Digital yang digunakan untuk mengidentifikasi secara unik aset kripto atau masing-masing dari beberapa aset kripto yang terkait dengan white paper, jika tersedia](#Template_F13)
+    14. [F.14. Pengidentifikasi Token Digital Grup Fungsional Fungible, jika tersedia](#Template_F14)
+    15. [F.15. Bendera data sukarela](#Template_F15)
+    16. [16. F.16. Bendera data pribadi](#Template_F16)
+    17. [F.17. Kelayakan LEI](#Template_F17)
+    18. [F.18. Negara Anggota Rumah](#Template_F18)
+    19. [F.19. Negara Anggota Tuan Rumah](#Template_F19)
+ 9. [9. G. Hak dan Kewajiban](#section-6)
+     1. [G.1. Hak dan Kewajiban Pembeli](#Template_G1)
+     2. [G.2. Pelaksanaan Hak dan kewajiban](#Template_G2)
+     3. [G.3. Kondisi untuk modifikasi hak dan kewajiban](#Template_G3)
+     4. [G.4. Penawaran Publik di Masa Depan](#Template_G4)
+     5. [G.5. Aset Kripto yang Dipegang Penerbit](#Template_G5)
+     6. [G.6. Klasifikasi Token Utilitas](#Template_G6)
+     7. [G.7. Fitur Utama Barang/Layanan dari Token Utilitas](#Template_G7)
+     8. [G.8. Penebusan Token Utilitas](#Template_G8)
+     9. [G.9. Permintaan Non-Perdagangan](#Template_G9)
+    10. [G.10. Modalitas pembelian atau penjualan Aset Kripto](#Template_G10)
+    11. [G.11. Pembatasan Transfer Aset Kripto](#Template_G11)
+    12. [G.12. Protokol Penyesuaian Pasokan](#Template_G12)
+    13. [G.13. Mekanisme Penyesuaian Pasokan](#Template_G13)
+    14. [G.14. Skema Perlindungan Nilai Token](#Template_G14)
+    15. [G.15. Deskripsi skema perlindungan nilai token](#Template_G15)
+    16. [G.16. Skema Kompensasi](#Template_G16)
+    17. [G.17. Deskripsi skema kompensasi](#Template_G17)
+    18. [G.18. Hukum yang Berlaku](#Template_G18)
+    19. [G.19. Pengadilan yang Berwenang](#Template_G19)
+10. [10. H. Informasi tentang Teknologi yang Mendasari](#section-7)
+    1. [H.1. Teknologi buku besar terdistribusi](#Template_H1)
+    2. [H.2. Protokol dan standar teknis](#Template_H2)
+    3. [H.3. Teknologi yang Digunakan](#Template_H3)
+    4. [H.4. Mekanisme Konsensus](#Template_H4)
+    5. [H.5. Mekanisme Insentif dan Biaya yang Berlaku](#Template_H5)
+    6. [H.6. Penggunaan Teknologi Buku Besar Terdistribusi](#Template_H6)
+    7. [H.7. Deskripsi fungsionalitas DLT](#Template_H7)
+    8. [H.8. Audit](#Template_H8)
+    9. [H.9. Hasil Audit](#Template_H9)
+11. [11. I. Informasi tentang Risiko](#section-8)
+    1. [I.1. Risiko Terkait Penawaran](#Template_I1)
+    2. [I.2. Risiko Terkait Penerbit](#Template_I2)
+    3. [ I.3. Risiko Terkait Aset Kripto](#Template_I3)
+    4. [I.4. Risiko Terkait Pelaksanaan Proyek](#Template_I4)
+    5. [I.5. Risiko Terkait Teknologi](#Template_I5)
+    6. [I.6. Langkah-langkah Mitigasi](#Template_I6)
+12. [12. S. Informasi tentang Indikator Keberlanjutan](#section-9)
+    1. [S.1. Nama](#Template_S1)
+    2. [S.2. Pengidentifikasi entitas hukum yang relevan](#Template_S2)
+    3. [S.3. Nama aset kripto](#Template_S3)
+    4. [S.4. Mekanisme Konsensus](#Template_S4)
+    5. [S.5. Mekanisme Insentif dan Biaya](#Template_S5)
+    6. [S.6. Awal periode yang terkait dengan pengungkapan](#Template_S6)
+    7. [S.7. Akhir periode yang terkait dengan pengungkapan](#Template_S7)
+    8. [S.8. Konsumsi energi](#Template_S8)
+    9. [S.9. Sumber dan metodologi konsumsi energi](#Template_S9)
+
+Tanggal Pemberitahuan: 2025-08-11
+
+## **Pengungkapan Regulasi**
+
+**02. Pernyataan sesuai dengan Pasal 6(3):**
+
+White paper aset kripto ini tidak disetujui oleh otoritas yang kompeten di Negara Anggota Uni Eropa manapun. Orang yang mencari persetujuan untuk perdagangan aset kripto bertanggung jawab sepenuhnya atas isi white paper aset kripto ini.
+
+**03. Pernyataan sesuai dengan Pasal 6(6):**
+
+White paper aset kripto ini mematuhi Bagian II dari Peraturan (EU) 2023/1114 dan, sepengetahuan badan manajemen, informasi yang disajikan dalam white paper aset kripto ini adil, jelas dan tidak menyesatkan dan white paper aset kripto tidak membuat penghilangan yang mungkin mempengaruhi importnya.
+
+**04. Pernyataan sesuai dengan Pasal 6(5), poin (a), (b), (c):**
+
+Aset kripto yang disebutkan dalam white paper ini dapat kehilangan nilai sebagian atau seluruhnya, mungkin tidak selalu dapat ditransfer dan mungkin tidak likuid.
+
+**05. Pernyataan sesuai dengan Pasal 6(5), poin (d):**
+
+Token utilitas yang disebutkan dalam white paper ini mungkin tidak dapat ditukar dengan barang atau layanan yang dijanjikan dalam white paper aset kripto, terutama dalam kasus kegagalan atau penghentian proyek aset kripto.
+
+**06. Pernyataan sesuai dengan Pasal 6(5), poin (e) dan (f):**
+
+Aset kripto yang disebutkan dalam white paper ini tidak tercakup oleh skema kompensasi investor di bawah Direktif 97/9/EC dari Parlemen Eropa dan Dewan atau skema jaminan simpanan di bawah Direktif 2014/49/EU dari Parlemen Eropa dan Dewan.
+
+## **Ringkasan**
+
+**07. Peringatan**
+
+Ringkasan ini harus dibaca sebagai pengantar ke white paper aset kripto. Calon pemegang harus memut

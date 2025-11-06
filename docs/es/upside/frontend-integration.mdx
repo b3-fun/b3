@@ -1,0 +1,230 @@
+---
+title: Integración de Frontend
+description: >-
+  Configura el ParentProvider y usa hooks para acceder a la autenticación del
+  jugador, el saldo y los controles de la interfaz de usuario en el frontend de
+  tu juego.
+lang: es
+originalPath: upside/frontend-integration.mdx
+---
+## ParentProvider
+
+El componente `ParentProvider` conecta tu frontend de juego con la plataforma Upside y proporciona autenticación.
+
+```javascript
+import { ParentProvider, useParent, useBalance, useToken, useAuthenticatedFetch } from "@b3dotfun/upside-sdk";
+
+export default function CoinFlipGame() {
+  return (
+    <ParentProvider>
+      <GameContent />
+    </ParentProvider>
+  );
+}
+
+function GameContent() {
+  const { token, balance, showWinModal, showLossModal, refetchBalance } = useParent();
+
+  // O usa hooks individuales:
+  const balance = useBalance(); // number | null
+  const token = useToken(); // string | null
+  const authFetch = useAuthenticatedFetch(); // fetch con encabezado Authorization
+
+  return (
+    <div>
+      <h1>Coin Flip</h1>
+      <p>Balance: {(balance / 1e18).toFixed(2)} WIN</p>
+      <button onClick={() => playGame(token)}>Jugar</button>
+    </div>
+  );
+}
+```
+
+## Hooks Disponibles
+
+### useParent()
+
+Accede al contexto completo (token, balance, showWinModal, showLossModal, etc.)
+
+**Valores de Retorno:**
+
+- `token` (string | null): Token de autenticación JWT para llamadas al backend
+- `balance` (number | null): Saldo actual de tokens WIN en wei
+- `showWinModal(wins: string)`: Muestra el modal de victoria
+- `showLossModal(loss: string)`: Muestra el modal de derrota
+- `showToast(options)`: Muestra una notificación tipo toast
+- `showCustomModal(content)`: Muestra un modal personalizado
+- `refetchBalance()`: Solicita la actualización del saldo desde la plataforma
+
+### useBalance()
+
+Obtiene el saldo del jugador (number | null)
+
+```javascript
+const balance = useBalance();
+```
+
+### useToken()
+
+Obtiene el token de autenticación (string | null)
+
+```javascript
+const token = useToken();
+```
+
+### useRefetchBalance()
+
+Función para solicitar la actualización del saldo
+
+```javascript
+const refetchBalance = useRefetchBalance();
+```
+
+### useCustomModal()
+
+Función para mostrar modales personalizados
+
+```javascript
+const showCustomModal = useCustomModal();
+```
+
+### useAuthenticatedFetch()
+
+Función fetch con encabezado de token Bearer automático
+
+```javascript
+const authFetch = useAuthenticatedFetch();
+```
+
+## Realizando Llamadas a la API
+
+Usa el hook `useAuthenticatedFetch()` para hacer solicitudes autenticadas:
+
+```javascript
+import { useAuthenticatedFetch, useBalance, useToken } from "@b3dotfun/upside-sdk";
+
+function GameComponent() {
+  const authFetch = useAuthenticatedFetch();
+  const balance = useBalance();
+  const token = useToken();
+
+  const playGame = async prediction => {
+    // El encabezado Authorization se añade automáticamente
+    const response = await authFetch("/api/game/coin-flip", {
+      method: "POST",
+      body: JSON.stringify({
+        playerId: "player-id",
+        prediction,
+        betAmount: "1000000000000000000", // 1 WIN en wei
+      }),
+    });
+
+    const data = await response.json();
+    return data;
+  };
+
+  return (
+    <div>
+      <p>Balance: {(balance / 1e18).toFixed(2)} WIN</p>
+      <button onClick={() => playGame("heads")}>Predecir Cara</button>
+    </div>
+  );
+}
+```
+
+**Cómo Funciona useAuthenticatedFetch():**
+
+- Incluye automáticamente el encabezado `Authorization: Bearer {token}`
+- Establece `Content-Type: application/json` por defecto
+- Fusiona encabezados adicionales que proporciones
+- Maneja el token de `useToken()` automáticamente
+
+## Ejemplo de Frontend
+
+```javascript
+import { ParentProvider, useParentContext } from "@b3dotfun/upside-sdk";
+
+export default function CoinFlipGame() {
+  return (
+    <ParentProvider>
+      <CoinFlipContent />
+    </ParentProvider>
+  );
+}
+
+function CoinFlipContent() {
+  const { token, balance, playerId } = useParentContext();
+  const [gameState, setGameState] = useState("ready"); // ready, playing, won, lost
+  const [prediction, setPrediction] = useState(null);
+  const [result, setResult] = useState(null);
+  const [earnings, setEarnings] = useState(0);
+
+  const playGame = async playerPrediction => {
+    setPrediction(playerPrediction);
+    setGameState("playing");
+
+    try {
+      // Llama a tu backend
+      const response = await fetch("/api/game/coin-flip", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          playerId,
+          prediction: playerPrediction,
+          betAmount: "100000000000000000", // 1 token en wei
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.outcome === "win") {
+        setGameState("won");
+        setEarnings(data.payout);
+      } else {
+        setGameState("lost");
+        setEarnings(0);
+      }
+
+      setResult(data.result);
+    } catch (error) {
+      console.error("Error en el juego:", error);
+      setGameState("error");
+    }
+  };
+
+  return (
+    <div style={{ textAlign: "center", padding: "40px" }}>
+      <h1>Coin Flip</h1>
+      <p>Balance: {(balance / 1e18).toFixed(2)} WIN</p>
+
+      {gameState === "ready" && (
+        <div>
+          <button onClick={() => playGame("heads")}>Predecir Cara</button>
+          <button onClick={() => playGame("tails")}>Predecir Cruz</button>
+        </div>
+      )}
+
+      {gameState === "playing" && <p>Volteando...</p>}
+
+      {gameState === "won" && (
+        <div>
+          <p>🎉 ¡Has ganado! La moneda cayó en {result}</p>
+          <p>+{(earnings / 1e18).toFixed(2)} WIN</p>
+        </div>
+      )}
+
+      {gameState === "lost" && (
+        <div>
+          <p>❌ ¡Has perdido! La moneda cayó en {result}</p>
+          <p>Mejor suerte la próxima vez</p>
+        </div>
+      )}
+
+      {gameState !== "ready" && <button onClick={() => setGameState("ready")}>Jugar de Nuevo</button>}
+    </div>
+  );
+}
+```

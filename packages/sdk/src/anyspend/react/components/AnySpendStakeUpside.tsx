@@ -4,25 +4,16 @@ import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import invariant from "invariant";
 import { encodeFunctionData } from "viem";
 import { base } from "viem/chains";
-import { B3_STAKING_CONTRACT, WETH_STAKING_CONTRACT } from "../../abis/upsideStaking";
+import { STAKING_CONTRACT } from "../../abis/upsideStaking";
 import { AnySpendCustom } from "./AnySpendCustom";
 
-function generateEncodedDataForStaking(amount: string, beneficiary: string, poolType: "b3" | "weth"): string {
+function generateEncodedDataForStaking(amount: string, beneficiary: string): string {
   invariant(BigInt(amount) > 0, "Amount must be greater than zero");
-  if (poolType === "weth") {
-    return encodeFunctionData({
-      abi: WETH_STAKING_CONTRACT,
-      functionName: "stakeFor",
-      args: [beneficiary as `0x${string}`, BigInt(amount)],
-    });
-  } else if (poolType === "b3") {
-    return encodeFunctionData({
-      abi: B3_STAKING_CONTRACT,
-      functionName: "stakeFor",
-      args: [beneficiary as `0x${string}`, BigInt(amount)],
-    });
-  }
-  throw new Error("Unsupported pool type");
+  return encodeFunctionData({
+    abi: STAKING_CONTRACT,
+    functionName: "stakeFor",
+    args: [beneficiary as `0x${string}`, BigInt(amount)],
+  });
 }
 
 export function AnySpendStakeUpside({
@@ -32,7 +23,6 @@ export function AnySpendStakeUpside({
   stakeAmount,
   stakingContractAddress,
   token,
-  poolType,
   onSuccess,
   activeTab,
 }: {
@@ -42,7 +32,6 @@ export function AnySpendStakeUpside({
   stakeAmount: string;
   stakingContractAddress: string;
   token: components["schemas"]["Token"];
-  poolType: "b3" | "weth";
   onSuccess?: () => void;
   activeTab?: "crypto" | "fiat";
 }) {
@@ -71,7 +60,7 @@ export function AnySpendStakeUpside({
     );
   }
 
-  const encodedData = generateEncodedDataForStaking(stakeAmount, beneficiaryAddress, poolType);
+  const encodedData = generateEncodedDataForStaking(stakeAmount, beneficiaryAddress);
 
   return (
     <AnySpendCustom

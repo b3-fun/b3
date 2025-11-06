@@ -9,9 +9,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../../../global-account/react/components/ui/dropdown-menu";
-import { CURRENCY_NAMES, CURRENCY_SYMBOLS, SupportedCurrency, useCurrencyStore } from "../stores/currencyStore";
+import {
+  CURRENCY_NAMES,
+  CURRENCY_SYMBOLS,
+  SupportedCurrency,
+  useCurrencyStore,
+  getCurrencyName,
+  getCurrencySymbol,
+} from "../stores/currencyStore";
 
-const currencies: SupportedCurrency[] = ["B3", "ETH", "SOL", "USD", "EUR", "GBP", "KRW", "JPY", "CAD", "AUD"];
+const builtInCurrencies: SupportedCurrency[] = ["B3", "ETH", "SOL", "USD", "EUR", "GBP", "KRW", "JPY", "CAD", "AUD"];
 
 interface CurrencySelectorProps {
   labelClassName?: string;
@@ -20,7 +27,13 @@ interface CurrencySelectorProps {
 }
 
 export function CurrencySelector({ labelClassName, buttonVariant = "dark", label }: CurrencySelectorProps) {
-  const { selectedCurrency, setSelectedCurrency } = useCurrencyStore();
+  const selectedCurrency = useCurrencyStore(state => state.selectedCurrency);
+  const setSelectedCurrency = useCurrencyStore(state => state.setSelectedCurrency);
+  const customCurrencies = useCurrencyStore(state => state.customCurrencies);
+
+  // Separate built-in and custom for better organization
+  const customCurrencyCodes = Object.keys(customCurrencies);
+  const hasCustomCurrencies = customCurrencyCodes.length > 0;
 
   return (
     <div className="flex items-center gap-2">
@@ -38,7 +51,7 @@ export function CurrencySelector({ labelClassName, buttonVariant = "dark", label
               </span>
             )}
             <Button variant={buttonVariant as any} className="flex items-center gap-2">
-              <span className="text-sm font-medium">{CURRENCY_NAMES[selectedCurrency]}</span>
+              <span className="text-sm font-medium">{getCurrencyName(selectedCurrency)}</span>
               <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
                 <path
                   fillRule="evenodd"
@@ -50,7 +63,7 @@ export function CurrencySelector({ labelClassName, buttonVariant = "dark", label
           </div>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="z-[100] min-w-[200px]">
-          {currencies.map(currency => (
+          {builtInCurrencies.map(currency => (
             <div key={currency}>
               <DropdownMenuItem
                 onClick={() => setSelectedCurrency(currency)}
@@ -64,6 +77,24 @@ export function CurrencySelector({ labelClassName, buttonVariant = "dark", label
               {currency === "SOL" && <DropdownMenuSeparator key="separator" className="bg-border my-1" />}
             </div>
           ))}
+
+          {hasCustomCurrencies && (
+            <>
+              <DropdownMenuSeparator className="bg-border my-1" />
+              {customCurrencyCodes.map(currency => (
+                <DropdownMenuItem
+                  key={currency}
+                  onClick={() => setSelectedCurrency(currency)}
+                  className={`flex cursor-pointer items-center justify-between gap-3 px-3 py-2.5 transition-colors ${
+                    selectedCurrency === currency ? "bg-accent" : "hover:bg-accent/50"
+                  }`}
+                >
+                  <span className="text-foreground text-sm font-medium">{getCurrencyName(currency)}</span>
+                  <span className="text-muted-foreground text-xs font-medium">{getCurrencySymbol(currency)}</span>
+                </DropdownMenuItem>
+              ))}
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

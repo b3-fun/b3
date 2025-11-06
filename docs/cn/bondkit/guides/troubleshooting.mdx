@@ -1,0 +1,472 @@
+---
+title: 故障排除指南
+description: 常见的Bondkit SDK问题、钱包问题和集成挑战的解决方案。
+lang: cn
+originalPath: bondkit/guides/troubleshooting.mdx
+---
+## 快速诊断
+
+从这里开始快速识别问题：
+
+```typescript
+import { BondkitToken, BondkitTokenFactory } from "@b3dotfun/sdk/bondkit";
+
+// 快速健康检查函数
+async function bondkitHealthCheck() {
+  try {
+    // 测试工厂连接
+    const factory = new BondkitTokenFactory(8453); // 基础主网
+    const implementationAddress = await factory.getImplementationAddress();
+    
+    if (!implementationAddress) {
+      return { status: "error", issue: "工厂连接失败" };
+    }
+    
+    // 测试 RPC 连接性
+    const deployedTokens = await factory.getDeployedBondkitTokens();
+    
+    return {
+      status: "success", 
+      factory: implementationAddress,
+      deployedTokens: deployedTokens.length,
+      rpc: "已连接"
+    };
+  } catch (error) {
+    return { status: "error", issue: error.message };
+  }
+}
+
+// 运行诊断
+const health = await bondkitHealthCheck();
+console.log(health);
+```
+
+## 常见错误信息
+
+### 部署错误
+
+<AccordionGroup>
+  <Accordion title="错误：'无效的合约地址是 BondkitToken 所需的'">
+    **原因：** 令牌地址缺失、无效或未校验。
+    
+    **解决方案：**
+    ```typescript
+    // ❌ 错误
+    const token = new BondkitToken(""); // 空地址
+    const token = new BondkitToken("0x123"); // 太短
+    
+    // ✅ 正确
+    const token = new BondkitToken("0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1");
+    
+    // ✅ 首先验证地址
+    import { isAddress } from "viem";
+    
+    const tokenAddress = "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1";
+    if (!isAddress(tokenAddress)) {
+      throw new Error("无效的令牌地址");
+    }
+    const token = new BondkitToken(tokenAddress);
+    ```
+  </Accordion>
+  
+  <Accordion title="错误：'不支持的 chainId: X。此 SDK 仅配置为 Base'">
+    **原因：** 尝试使用非 Base 链 ID。
+    
+    **解决方案：**
+    ```typescript
+    import { base } from "viem/chains";
+    
+    // ❌ 错误
+    const factory = new BondkitTokenFactory(1); // 以太坊主网
+    const factory = new BondkitTokenFactory(137); // Polygon
+    
+    // ✅ 正确 - 使用 Base 主网
+    const factory = new BondkitTokenFactory(base.id); // 8453
+    const factory = new BondkitTokenFactory(8453); // 明确的 Base ID
+    ```
+  </Accordion>
+  
+  <Accordion title="错误：'DeployBondkitToken: 执行回滚'">
+    **原因：** 无效的部署参数或权限不足。
+    
+    **解决方案：**
+    ```typescript
+    // 检查常见参数问题
+    const config = {
+      name: "MyToken",
+      symbol: "MTK", // 必须为 1-11 个字符
+      feeRecipient: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1", // 有效地址
+      finalTokenSupply: parseEther("1000000"), // 必须 > 0
+      aggressivenessFactor: 45, // 必须为 0-100
+      lpSplitRatioFeeRecipientBps: 1000n, // 必须为 0-10000（基点）
+      targetAmount: parseEther("10"), // 必须 > 0
+      migrationAdminAddress: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1", // 有效地址
+      
+      // V4 配置 - 全部必需
+      bondingPhaseSplitter: "0x2AB69e0d9D20D3700466153D84a6574128154Fd2",
+      v4PoolManager: "0x498581fF718922c3f8e6A244956aF099B2652b2b", 
+      v4Hook: "0xB36f4A2FB18b745ef8eD31452781a463d2B3f0cC",
+      v4PoolFee: 3000, // 500、3000 或 10000
+      v4TickSpacing: 60, // 必须与费用层匹配
+      tradingToken: "0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3"
+    };
+    
+    // 验证助手
+    function validateConfig(config) {
+      const errors = [];
+      
+      if (!config.symbol || config.symbol.length > 11) {
+        errors.push("符号必须为 1-11 个字符");
+      }
+      
+      if (config.aggressivenessFactor < 0 || config.aggressivenessFactor > 100) {
+        errors.push("侵略性必须为 0-100");
+      }
+      
+      if (config.lpSplitRatioFeeRecipientBps > 10000n) {
+        errors.push("LP 分割比例不能超过 100%（10000 bps）");
+      }
+      
+      return errors;
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### 交易错误  
+
+<AccordionGroup>
+  <Accordion title="错误：'Buy: 执行回滚' 或 'Sell: 执行回滚'">
+    **原因：** 在债券阶段期间各种交易问题。
+    
+    **解决方案：**
+    ```typescript
+    // 首先检查令牌状态
+    const status = await token.currentStatus();
+    if (status !== 1) {
+      throw new Error("令牌不在债券阶段 - 改用 DEX 方法");
+    }
+    
+    // 对于购买错误：
+    async function diagnoseBuyError(token, amount, minTokensOut) {
+      const progress = await token.getBondingProgress();
+      
+      if (progress.progress >= 1.0) {
+        return "目标已达成 - 可用于迁移，不能再购买";
+      }
+      
+      const tradingTokenAddress = await token.getTradingTokenAddress();
+      if (tradingTokenAddress !== "0x0000000000000000000000000000000000000000") {
+        // ERC20 交易令牌 - 检查许可和余额
+        const balance = await token.getTradingTokenBalanceOf(userAddress);
+        const required = typeof amount === "string" ? parseEther(amount) : amount;
+        
+        if (balance < required) {
+          return `余额不足 ${await token.getTradingTokenSymbol()}。需要：${formatEther(required)}，拥有：${formatEther(balance)}`;
+        }
+      }
+      
+      return "未知购买错误 - 检查交易详情";
+    }
+    
+    // 对于卖出错误：
+    async function diagnoseSellError(token, tokenAmount) {
+      const balance = await token.balanceOf(userAddress);
+      if (balance < tokenAmount) {
+        return `令牌余额不足。需要：${formatEther(tokenAmount)}，拥有：${formatEther(balance)}`;
+      }
+      
+      const progress = await token.getBondingProgress();
+      if (progress.raised === 0n) {
+        return "无流动性可用 - 当无资金时不能卖出";
+      }
+      
+      return "未知卖出错误 - 检查交易详情";
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="错误：'交易令牌地址不可用'">
+    **原因：** 令牌未完全初始化或网络问题。
+    
+    **解决方案：**
+    ```typescript
+    // 强制刷新交易令牌信息
+    const tradingTokenAddress = await token.getTradingTokenAddress();
+    if (!tradingTokenAddress) {
+      // 延迟重试
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      const retryAddress = await token.getTradingTokenAddress();
+      
+      if (!retryAddress) {
+        throw new Error("令牌合约可能未正确初始化");
+      }
+    }
+    
+    // 检查令牌合约是否有效
+    try {
+      const tokenDetails = await token.getTokenDetails();
+      console.log(`已连接到：${tokenDetails.name} (${tokenDetails.symbol})`);
+    } catch (error) {
+      throw new Error("无效的令牌合约或网络问题");
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="错误：'BondingPhaseEnded' 或 DEX 交易问题">
+    **原因：** 令牌迁移到 DEX 阶段，但仍使用债券方法。
+    
+    **解决方案：**
+    ```typescript
+    // 检测阶段并使用适当方法
+    async function getOptimalTradingMethod(tokenAddress) {
+      const token = new BondkitToken(tokenAddress);
+      const status = await token.currentStatus();
+      
+      switch (status) {
+        case 1: // 债券阶段
+          return {
+            phase: "bonding",
+            buyMethod: (amount, minOut) => token.buy(amount, minOut),
+            sellMethod: (amount, minOut) => token.sell(amount, minOut),
+            quoteMethod: (amount) => token.getAmountOfTokensToBuy(amount)
+          };
+          
+        case 2: // DEX 阶段
+          const swapService = new BondkitSwapService(tokenAddress);
+          return {
+            phase: "dex",
+            buyMethod: async (amount, minOut, wallet) => {
+              const params = {
+                tokenIn: await token.getTradingTokenAddress(),
+                tokenOut: tokenAddress,
+                amountIn: typeof amount === "string" ? amount : formatEther(amount),
+                tokenInDecimals: 18,
+                tokenOutDecimals: 18,
+                slippageTolerance: 0.005,
+                recipient: wallet.account.address
+              };
+              return swapService.executeSwap(params, wallet);
+            },
+            quoteMethod: async (amount) => {
+              const params = {
+                tokenIn: await token.getTradingTokenAddress(),
+                tokenOut: tokenAddress,
+                amountIn: typeof amount === "string" ? amount : formatEther(amount),
+                tokenInDecimals: 18,
+                tokenOutDecimals: 18,
+                slippageTolerance: 0.005,
+                recipient: "0x0000000000000000000000000000000000000000" // 报价用虚拟地址
+              };
+              return swapService.getSwapQuote(params);
+            }
+          };
+          
+        default:
+          throw new Error(`未知的令牌状态：${status}`);
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### 钱包集成问题
+
+<AccordionGroup>
+  <Accordion title="错误：'无法确定交易的账户'">
+    **原因：** 钱包未正确连接或配置。
+    
+    **解决方案：**
+    ```typescript
+    // 选项 1：使用私钥（仅限服务器端）
+    const token = new BondkitToken(
+      tokenAddress,
+      process.env.WALLET_PRIVATE_KEY
+    );
+    
+    // 选项 2：使用提供者连接（浏览器）
+    const token = new BondkitToken(tokenAddress);
+    const connected = await token.connect(window.ethereum);
+    
+    if (!connected) {
+      throw new Error("钱包连接失败");
+    }
+    
+    // 选项 3：交易前验证连接
+    async function ensureWalletConnected(token) {
+      if (!window.ethereum) {
+        throw new Error("未找到钱包提供者 - 安装 MetaMask 或类似软件");
+      }
+      
+      // 请求账户访问
+      const accounts = await window.ethereum.request({
+        method: 'eth_requestAccounts'
+      });
+      
+      if (accounts.length === 0) {
+        throw new Error("没有可用账户 - 首先连接钱包");
+      }
+      
+      // 连接到令牌
+      const connected = await token.connect(window.ethereum);
+      if (!connected) {
+        throw new Error("令牌连接到钱包失败");
+      }
+      
+      return accounts[0];
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="错误：'交易确认超时'">
+    **原因：** 网络缓慢、燃气费低或 OKX 钱包问题。
+    
+    **解决方案：**
+    ```typescript
+    // 增加燃气费用以加快确认速度
+    const options = {
+      gas: 300000n, // 从默认值增加
+      maxFeePerGas: parseGwei("20"), // 更高的费用以加快包含速度
+      maxPriorityFeePerGas: parseGwei("2")
+    };
+    
+    await token.buy(parseEther("10"), 0n, options);
+    
+    // 手动交易等待带超时
+    async function waitForTransactionWithTimeout(token, hash, timeoutMs = 300000) {
+      const start = Date.now();
+      
+      while (Date.now() - start < timeoutMs) {
+        try {
+          const receipt = await token.waitForTransaction(hash);
+          return receipt;
+        } catch (error) {
+          if (error.message.includes("TransactionReceiptNotFoundError")) {
+            // 仍在等待，继续等待
+            await new Promise(resolve => setTimeout(resolve, 5000));
+            continue;
+          }
+          throw error; // 其他错误，重新抛出
+        }
+      }
+      
+      throw new Error(`交易 ${hash} 在 ${timeoutMs}ms 后超时`);
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="MetaMask/钱包特定问题">
+    **常见钱包问题：**
+    
+    ```typescript
+    // MetaMask 网络切换
+    async function ensureBaseNetwork() {
+      if (!window.ethereum) return false;
+      
+      try {
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: '0x2105' }], // Base 主网
+        });
+        return true;
+      } catch (switchError) {
+        // 网络未添加，添加它
+        if (switchError.code === 4902) {
+          try {
+            await window.ethereum.request({
+              method: 'wallet_addEthereumChain',
+              params: [{
+                chainId: '0x2105',
+                chainName: 'Base',
+                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                rpcUrls: ['https://base-rpc.publicnode.com'],
+                blockExplorerUrls: ['https://basescan.org/']
+              }]
+            });
+            return true;
+          } catch (addError) {
+            console.error('添加 Base 网络失败', addError);
+            return false;
+          }
+        }
+        return false;
+      }
+    }
+    
+    // 令牌导入助手
+    async function addTokenToWallet(tokenAddress, symbol, decimals = 18) {
+      try {
+        await window.ethereum.request({
+          method: 'wallet_watchAsset',
+          params: {
+            type: 'ERC20',
+            options: {
+              address: tokenAddress,
+              symbol: symbol,
+              decimals: decimals
+            }
+          }
+        });
+        console.log(`${symbol} 已添加到钱包`);
+      } catch (error) {
+        console.error('将令牌添加到钱包失败：', error);
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## 网络和 RPC 问题
+
+<AccordionGroup>
+  <Accordion title="RPC 连接问题">
+    **症状：** 响应缓慢、超时或连接错误。
+    
+    **解决方案：**
+    ```typescript
+    // 测试 RPC 健康状况
+    async function testRPCHealth() {
+      const rpcUrls = [
+        "https://base-rpc.publicnode.com",
+        "https://base-mainnet.g.alchemy.com/v2/demo",
+        "https://mainnet.base.org",
+        "https://base.gateway.fm"
+      ];
+      
+      for (const rpcUrl of rpcUrls) {
+        try {
+          const client = createPublicClient({
+            chain: base,
+            transport: http(rpcUrl)
+          });
+          
+          const blockNumber = await client.getBlockNumber();
+          console.log(`✅ ${rpcUrl}: 区块 ${blockNumber}`);
+          
+          return rpcUrl; // 返回第一个工作的 RPC
+        } catch (error) {
+          console.log(`❌ ${rpcUrl}: ${error.message}`);
+        }
+      }
+      
+      throw new Error("所有 RPC 端点失败");
+    }
+    
+    // 使用带有回退的自定义 RPC
+    const workingRPC = await testRPCHealth();
+    
+    // 如有必要，覆盖 SDK RPC
+    const factory = new BondkitTokenFactory(8453);
+    factory.publicClient = createPublicClient({
+      chain: base,
+      transport: http(workingRPC)
+    });
+    ```
+  </Accordion>
+  
+  <Accordion title="燃气估算问题">
+    **问题：** 交易因“燃气不足”或燃气估算错误而失败。
+    
+    **解决方案：**
+    ```typescript
+    // 燃气估算助

@@ -1,0 +1,873 @@
+---
+title: "Quickstart for Sellers"
+description: "Accept payments in any token for your APIs and services using AnySpend x402 middleware"
+---
+
+<CardGroup cols={2}>
+<Card title="GitHub Repository" icon="github" href="https://github.com/b3-fun/anyspend-x402">
+  View source code and examples
+</Card>
+
+<Card title="npm Package" icon="npm" href="https://www.npmjs.com/package/@b3dotfun/anyspend-x402">
+  @b3dotfun/anyspend-x402
+</Card>
+</CardGroup>
+
+## Overview
+
+This guide shows you how to add **AnySpend x402** payment support to your Express API, enabling you to accept payments in any token while receiving the token of your choice. With just a few lines of code, your API can monetize endpoints and handle automatic payment verification and settlement.
+
+**Key Benefits:**
+- **Buyers** can pay with any token they hold (ETH, DAI, USDC, etc.)
+- **Sellers** can receive any token they prefer (USDC, B3, DAI, custom tokens, etc.)
+- AnySpend automatically handles all token conversions
+- No blockchain infrastructure or wallet management required
+
+## Prerequisites
+
+Before you begin, make sure you have:
+
+- **Node.js 18+** installed
+- **An Express.js API** (or willingness to create one)
+- **A wallet address** to receive USDC payments
+- **Basic knowledge** of Express middleware
+
+## Installation
+
+Install the AnySpend x402 package:
+
+<CodeGroup>
+```bash npm
+npm install @b3dotfun/anyspend-x402
+```
+
+```bash yarn
+yarn add @b3dotfun/anyspend-x402
+```
+
+```bash pnpm
+pnpm add @b3dotfun/anyspend-x402
+```
+</CodeGroup>
+
+## Quick Start
+
+### 1. Basic Integration
+
+The simplest way to add payments to your Express API:
+
+```typescript
+import express from 'express';
+import { paymentMiddleware, facilitator } from '@b3dotfun/anyspend-x402';
+
+const app = express();
+
+// Define your payment routes and prices
+const endpointConfig = {
+  '/api/premium-data': {
+    amount: '1.00',        // $1.00 in USDC
+    asset: 'USD'           // Will be converted to USDC
+  },
+  '/api/ai-inference': {
+    amount: '0.50',        // $0.50 in USDC
+    asset: 'USD'
+  }
+};
+
+// Your USDC receiving address
+const recipientAddress = '0xYourWalletAddress...';
+
+// Apply payment middleware
+app.use(paymentMiddleware(
+  recipientAddress,
+  endpointConfig,
+  facilitator                    // Pre-configured Anyspend facilitator
+));
+
+// Define your protected routes
+app.get('/api/premium-data', (req, res) => {
+  // This only runs after successful payment
+  res.json({
+    data: 'Your premium data here',
+    message: 'Payment successful!'
+  });
+});
+
+app.get('/api/ai-inference', (req, res) => {
+  res.json({
+    result: 'AI inference result',
+    model: 'gpt-4'
+  });
+});
+
+app.listen(3000, () => {
+  console.log('API with x402 payments running on port 3000');
+});
+```
+
+**What this does:**
+
+1. Clients request your API endpoint
+2. Middleware returns `402 Payment Required` with payment details
+3. Client pays with their preferred token (ETH, DAI, etc.)
+4. AnySpend facilitator converts to USDC and settles to your wallet
+5. Your route handler executes and returns data
+
+---
+
+### 2. Receive Custom Tokens (e.g., B3)
+
+You can configure your API to receive any token, not just USDC:
+
+```typescript
+import express from 'express';
+import { paymentMiddleware, facilitator } from '@b3dotfun/anyspend-x402';
+import { Address } from 'viem';
+
+const app = express();
+const PAYTO_ADDRESS = '0xYourWalletAddress...' as Address;
+const NETWORK = 'base' as const;
+
+// Configure to receive B3 tokens
+const endpointConfig = {
+  'POST /api/premium': {
+    price: {
+      amount: '100000000000000000000', // 100 B3 tokens (18 decimals)
+      asset: {
+        address: '0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3' as Address,
+        decimals: 18,
+        eip712: {
+          name: 'B3',
+          version: '1',
+        },
+      },
+    },
+    network: NETWORK,
+    config: {
+      description: 'Premium data access',
+      mimeType: 'application/json',
+    },
+  }
+};
+
+app.use(paymentMiddleware(PAYTO_ADDRESS, endpointConfig, facilitator));
+
+app.post('/api/premium', (req, res) => {
+  // Payment verified - you received 100 B3 tokens!
+  res.json({
+    data: 'Premium ETH price history',
+    paymentReceived: '100 B3 tokens'
+  });
+});
+
+app.listen(3000);
+```
+
+**What's different:**
+
+- Buyers can still pay with **any token** (ETH, USDC, DAI, etc.)
+- AnySpend converts their payment to **B3 tokens**
+- You receive exactly **100 B3 tokens** in your wallet
+- Complete flexibility for both buyers and sellers!
+
+## Configuration
+
+### Facilitator URL
+
+The AnySpend facilitator is hosted at:
+
+```
+https://mainnet.anyspend.com/x402
+```
+
+The `@b3dotfun/anyspend-x402` package includes a pre-configured facilitator instance:
+
+```typescript
+import { facilitator } from '@b3dotfun/anyspend-x402';
+
+// Pre-configured to use mainnet.anyspend.com/x402
+app.use(paymentMiddleware(recipientAddress, endpointConfig, facilitator));
+```
+
+### Endpoint Configuration
+
+You have three methods to configure payment requirements:
+
+#### Method 1: Simple Dollar Amounts (Recommended)
+
+Let AnySpend handle token conversion automatically:
+
+```typescript
+const endpointConfig = {
+  '/api/data': {
+    amount: '1.00',      // $1.00 worth of any token
+    asset: 'USD'
+  },
+  '/api/compute': {
+    amount: '2.50',
+    asset: 'USD'
+  }
+};
+```
+
+**Benefits:**
+- Clients can pay with any supported token
+- AnySpend converts to USDC automatically
+- You always receive USDC
+
+#### Method 2: Specific Token Requirements
+
+Require specific tokens on specific networks. You can receive **any token**, not just USDC!
+
+**Example 1: Receive USDC (Stablecoin)**
+
+```typescript
+const endpointConfig = {
+  '/api/data': {
+    amount: '1000000',   // 1 USDC (6 decimals)
+    asset: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC on Base
+    network: 'base-mainnet'
+  }
+};
+```
+
+**Example 2: Receive B3 Tokens (Custom Token)**
+
+```typescript
+import { Address } from 'viem';
+
+const PAYTO_ADDRESS = '0xYourWalletAddress...' as Address;
+const NETWORK = 'base' as const;
+
+const endpointConfig = {
+  'POST /api/premium': {
+    price: {
+      amount: '100000000000000000000', // 100 B3 tokens (100 * 10^18)
+      asset: {
+        address: '0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3' as Address,
+        decimals: 18,
+        eip712: {
+          name: 'B3',
+          version: '1',
+        },
+      },
+    },
+    network: NETWORK,
+    config: {
+      description: 'Access to premium ETH price history data from CoinGecko',
+      mimeType: 'application/json',
+    },
+  }
+};
+
+app.use(paymentMiddleware(PAYTO_ADDRESS, endpointConfig, facilitator));
+```
+
+**Example 3: Receive DAI (Stablecoin)**
+
+```typescript
+const endpointConfig = {
+  '/api/ai-inference': {
+    amount: '1000000000000000000', // 1 DAI (18 decimals)
+    asset: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb', // DAI on Base
+    network: 'base-mainnet'
+  }
+};
+```
+
+**Example 4: Receive Native ETH**
+
+```typescript
+const endpointConfig = {
+  '/api/compute': {
+    amount: '500000000000000', // 0.0005 ETH (18 decimals)
+    asset: '0x0000000000000000000000000000000000000000', // Native ETH
+    network: 'base-mainnet'
+  }
+};
+```
+
+**Example 5: Receive Custom ERC-20 Token**
+
+For any ERC-20 token with permit support:
+
+```typescript
+const endpointConfig = {
+  '/api/data': {
+    price: {
+      amount: '1000000000000000000', // 1 token (adjust decimals)
+      asset: {
+        address: '0xYourTokenAddress...' as Address,
+        decimals: 18, // Your token's decimals
+        eip712: {
+          name: 'YourTokenName', // From token contract
+          version: '1',          // EIP-712 version
+        },
+      },
+    },
+    network: 'base-mainnet',
+    config: {
+      description: 'Your API endpoint description',
+      mimeType: 'application/json',
+    },
+  }
+};
+```
+
+<Note>
+**Key Points:**
+- Buyers can still pay with **any token** they hold
+- AnySpend automatically converts their token to the one you want to receive
+- You receive exactly the token you specified in your configuration
+- Both buyer and seller flexibility are maintained
+</Note>
+
+### Finding Token Details
+
+To configure a custom token, you need to know its EIP-712 parameters. Here's how to find them:
+
+**Method 1: Check Token Contract**
+
+Use a blockchain explorer like [Basescan](https://basescan.org):
+
+```typescript
+// Read from the token contract
+const name = await token.read.name();      // e.g., "B3"
+const version = await token.read.version(); // e.g., "1"
+const decimals = await token.read.decimals(); // e.g., 18
+```
+
+**Method 2: Common Tokens**
+
+| Token | Name | Version | Decimals | Base Address |
+|-------|------|---------|----------|--------------|
+| USDC | USD Coin | 2 | 6 | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` |
+| DAI | Dai Stablecoin | 1 | 18 | `0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb` |
+| B3 | B3 | 1 | 18 | `0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3` |
+
+**Method 3: Use Viem**
+
+```typescript
+import { createPublicClient, http } from 'viem';
+import { base } from 'viem/chains';
+
+const client = createPublicClient({
+  chain: base,
+  transport: http()
+});
+
+const [name, version, decimals] = await Promise.all([
+  client.readContract({
+    address: tokenAddress,
+    abi: [{
+      name: 'name',
+      type: 'function',
+      stateMutability: 'view',
+      inputs: [],
+      outputs: [{ type: 'string' }]
+    }],
+    functionName: 'name'
+  }),
+  client.readContract({
+    address: tokenAddress,
+    abi: [{
+      name: 'version',
+      type: 'function',
+      stateMutability: 'view',
+      inputs: [],
+      outputs: [{ type: 'string' }]
+    }],
+    functionName: 'version'
+  }),
+  client.readContract({
+    address: tokenAddress,
+    abi: [{
+      name: 'decimals',
+      type: 'function',
+      stateMutability: 'view',
+      inputs: [],
+      outputs: [{ type: 'uint8' }]
+    }],
+    functionName: 'decimals'
+  })
+]);
+
+console.log({ name, version, decimals });
+```
+
+#### Method 3: Flexible (Let Client Choose)
+
+Allow clients to specify their preferred payment token:
+
+```typescript
+const endpointConfig = {
+  '/api/data': {
+    amount: '1.00',
+    asset: 'USD',
+    flexible: true       // Accept X-PREFERRED-TOKEN header
+  }
+};
+```
+
+Clients can then specify their token preference:
+
+```bash
+curl https://api.example.com/data \
+  -H "X-PREFERRED-TOKEN: 0x4200000000000000000000000000000000000006" \
+  -H "X-PREFERRED-NETWORK: base-mainnet"
+```
+
+## Advanced Configuration
+
+### Dynamic Pricing
+
+Calculate prices based on request parameters:
+
+```typescript
+import { paymentMiddleware, facilitator } from '@b3dotfun/anyspend-x402';
+
+app.use('/api/compute', (req, res, next) => {
+  // Calculate price based on compute units requested
+  const units = parseInt(req.query.units as string) || 1;
+  const pricePerUnit = 0.10; // $0.10 per unit
+  const totalPrice = (units * pricePerUnit).toFixed(2);
+
+  // Attach dynamic config to request
+  req.x402Config = {
+    amount: totalPrice,
+    asset: 'USD'
+  };
+
+  next();
+}, paymentMiddleware(recipientAddress, {
+  '/api/compute': (req) => req.x402Config // Dynamic config
+}, facilitator));
+
+app.get('/api/compute', (req, res) => {
+  const units = parseInt(req.query.units as string) || 1;
+  res.json({
+    result: `Computed ${units} units`,
+    cost: req.x402Config.amount
+  });
+});
+```
+
+### Custom Facilitator Configuration
+
+If you need custom facilitator settings:
+
+```typescript
+import { Facilitator } from '@b3dotfun/anyspend-x402';
+
+const customFacilitator = new Facilitator({
+  baseUrl: 'https://mainnet.anyspend.com/x402',
+  apiKey: process.env.CDP_API_KEY_ID,        // Optional: Coinbase CDP
+  apiSecret: process.env.CDP_API_KEY_SECRET,
+  timeout: 30000,                             // 30s timeout
+  retries: 3                                  // Retry failed requests
+});
+
+app.use(paymentMiddleware(
+  recipientAddress,
+  endpointConfig,
+  customFacilitator
+));
+```
+
+### Multiple Recipients
+
+Route payments to different wallets based on endpoint:
+
+```typescript
+const endpointConfig = {
+  '/api/service-a': {
+    amount: '1.00',
+    asset: 'USD',
+    recipient: '0xWalletA...'
+  },
+  '/api/service-b': {
+    amount: '2.00',
+    asset: 'USD',
+    recipient: '0xWalletB...'
+  }
+};
+
+// Pass null as recipient, use per-endpoint recipients
+app.use(paymentMiddleware(null, endpointConfig, facilitator));
+```
+
+## Protected Routes
+
+### Protect Specific Routes
+
+Only protect endpoints that require payment:
+
+```typescript
+// Public route - no payment required
+app.get('/api/public', (req, res) => {
+  res.json({ message: 'This is free!' });
+});
+
+// Protected route - payment required
+app.use('/api/premium', paymentMiddleware(
+  recipientAddress,
+  {
+    '/api/premium': { amount: '1.00', asset: 'USD' }
+  },
+  facilitator
+));
+
+app.get('/api/premium', (req, res) => {
+  res.json({ message: 'This cost money!' });
+});
+```
+
+### Route-Specific Middleware
+
+Apply different payment configs to different route groups:
+
+```typescript
+// Basic tier - $0.50
+app.use('/api/basic', paymentMiddleware(
+  recipientAddress,
+  {
+    '/api/basic/*': { amount: '0.50', asset: 'USD' }
+  },
+  facilitator
+));
+
+// Premium tier - $2.00
+app.use('/api/premium', paymentMiddleware(
+  recipientAddress,
+  {
+    '/api/premium/*': { amount: '2.00', asset: 'USD' }
+  },
+  facilitator
+));
+```
+
+## Testing
+
+### Local Development
+
+Test your API locally with testnet USDC:
+
+```typescript
+import { Facilitator } from '@b3dotfun/anyspend-x402';
+
+const testFacilitator = new Facilitator({
+  baseUrl: 'https://testnet.anyspend.com/x402', // Testnet facilitator
+});
+
+const endpointConfig = {
+  '/api/test': {
+    amount: '0.01',
+    asset: 'USD',
+    network: 'base-sepolia' // Use testnet
+  }
+};
+
+app.use(paymentMiddleware(
+  '0xYourTestWallet...',
+  endpointConfig,
+  testFacilitator
+));
+```
+
+Get testnet USDC from the [Coinbase Faucet](https://portal.cdp.coinbase.com/products/faucet).
+
+### Test Client Request
+
+Test with curl:
+
+```bash
+# 1. Get payment requirements
+curl https://your-api.com/api/premium-data
+
+# Response: 402 Payment Required
+# {
+#   "x402": "0.2",
+#   "requirements": [{
+#     "scheme": "exact",
+#     "network": "base-mainnet",
+#     "amount": "1000000",
+#     "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+#     "recipient": "0xYourWallet..."
+#   }]
+# }
+
+# 2. Make payment with X-PAYMENT header (requires signed payload)
+curl https://your-api.com/api/premium-data \
+  -H "X-PAYMENT: eyJ4NDAyIjoi..." \
+  -H "Content-Type: application/json"
+```
+
+Or use the x402 client SDK (see [Quickstart for Buyers](/anyspend/x402-quickstart-buyers)).
+
+## Monitoring Payments
+
+### Access Payment Metadata
+
+The middleware attaches payment information to the request:
+
+```typescript
+app.get('/api/premium', (req, res) => {
+  // Access payment details
+  const payment = req.x402Payment;
+
+  console.log('Payment received:', {
+    txHash: payment.txHash,
+    network: payment.network,
+    amount: payment.amount,
+    token: payment.token,
+    from: payment.from
+  });
+
+  res.json({
+    data: 'Your premium data',
+    paymentTx: payment.txHash
+  });
+});
+```
+
+### Webhook Notifications
+
+Get notified when payments are settled:
+
+```typescript
+import { paymentMiddleware, facilitator } from '@b3dotfun/anyspend-x402';
+
+app.use(paymentMiddleware(
+  recipientAddress,
+  endpointConfig,
+  facilitator,
+  {
+    onPaymentSettled: async (payment) => {
+      console.log('Payment settled:', payment);
+
+      // Log to database
+      await db.payments.create({
+        txHash: payment.txHash,
+        amount: payment.amount,
+        from: payment.from,
+        timestamp: new Date()
+      });
+
+      // Send notification
+      await sendEmail({
+        to: 'admin@example.com',
+        subject: 'Payment Received',
+        body: `Received ${payment.amount} USDC from ${payment.from}`
+      });
+    }
+  }
+));
+```
+
+## Examples
+
+### AI Agent API
+
+```typescript
+import express from 'express';
+import { paymentMiddleware, facilitator } from '@b3dotfun/anyspend-x402';
+
+const app = express();
+app.use(express.json());
+
+const endpointConfig = {
+  '/api/chat': {
+    amount: '0.10',     // $0.10 per request
+    asset: 'USD'
+  },
+  '/api/image': {
+    amount: '0.50',     // $0.50 per image
+    asset: 'USD'
+  }
+};
+
+app.use(paymentMiddleware(
+  process.env.USDC_WALLET_ADDRESS,
+  endpointConfig,
+  facilitator
+));
+
+app.post('/api/chat', async (req, res) => {
+  const { message } = req.body;
+
+  // Call your AI service
+  const response = await openai.chat.completions.create({
+    model: 'gpt-4',
+    messages: [{ role: 'user', content: message }]
+  });
+
+  res.json({
+    response: response.choices[0].message.content,
+    payment: req.x402Payment.txHash
+  });
+});
+
+app.post('/api/image', async (req, res) => {
+  const { prompt } = req.body;
+
+  const image = await openai.images.generate({
+    model: 'dall-e-3',
+    prompt
+  });
+
+  res.json({
+    imageUrl: image.data[0].url,
+    payment: req.x402Payment.txHash
+  });
+});
+
+app.listen(3000);
+```
+
+### Data API with Rate Limiting
+
+```typescript
+const endpointConfig = {
+  '/api/data/basic': {
+    amount: '0.01',      // $0.01 per request
+    asset: 'USD'
+  },
+  '/api/data/premium': {
+    amount: '0.10',      // $0.10 per request
+    asset: 'USD'
+  }
+};
+
+// Track usage per payer
+const usage = new Map();
+
+app.use(paymentMiddleware(
+  recipientAddress,
+  endpointConfig,
+  facilitator,
+  {
+    onPaymentSettled: (payment) => {
+      const count = usage.get(payment.from) || 0;
+      usage.set(payment.from, count + 1);
+    }
+  }
+));
+
+app.get('/api/data/premium', (req, res) => {
+  const payer = req.x402Payment.from;
+  const requests = usage.get(payer) || 0;
+
+  res.json({
+    data: getPremiumData(),
+    requestCount: requests,
+    discount: requests > 100 ? '10%' : 'none'
+  });
+});
+```
+
+## Best Practices
+
+<AccordionGroup>
+<Accordion title="Use Environment Variables">
+Store sensitive data in environment variables:
+
+```typescript
+const recipientAddress = process.env.USDC_WALLET_ADDRESS;
+const apiKey = process.env.CDP_API_KEY_ID;
+```
+</Accordion>
+
+<Accordion title="Implement Logging">
+Log all payment events for debugging and analytics:
+
+```typescript
+{
+  onPaymentSettled: (payment) => {
+    logger.info('Payment received', {
+      txHash: payment.txHash,
+      amount: payment.amount,
+      from: payment.from,
+      endpoint: payment.endpoint
+    });
+  }
+}
+```
+</Accordion>
+
+<Accordion title="Handle Errors Gracefully">
+Provide clear error messages when payments fail:
+
+```typescript
+app.use((err, req, res, next) => {
+  if (err.code === 'X402_PAYMENT_FAILED') {
+    res.status(402).json({
+      error: 'Payment verification failed',
+      message: 'Please try again with a valid payment'
+    });
+  }
+  next(err);
+});
+```
+</Accordion>
+
+<Accordion title="Test Thoroughly">
+Always test with testnet before deploying to production:
+
+```typescript
+const facilitatorUrl = process.env.NODE_ENV === 'production'
+  ? 'https://mainnet.anyspend.com/x402'
+  : 'https://testnet.anyspend.com/x402';
+```
+</Accordion>
+</AccordionGroup>
+
+## What's Next?
+
+<CardGroup cols={2}>
+<Card title="Overview" icon="book" href="/anyspend/x402-overview">
+  Understand how AnySpend x402 works
+</Card>
+
+<Card title="Network Support" icon="globe" href="/anyspend/x402-network-support">
+  See supported chains, tokens, and addresses
+</Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+<Accordion title="Payment verification fails">
+Check that:
+- Your facilitator URL is correct: `https://mainnet.anyspend.com/x402`
+- Your recipient address is valid
+- The network configuration matches the client's network
+</Accordion>
+
+<Accordion title="Clients can't pay with preferred token">
+Make sure your endpoint config allows flexible payments:
+
+```typescript
+{
+  '/api/endpoint': {
+    amount: '1.00',
+    asset: 'USD',
+    flexible: true  // Allow any token
+  }
+}
+```
+</Accordion>
+
+<Accordion title="USDC not arriving">
+Verify:
+- Your recipient address is correct
+- You're checking the correct network
+- Payment was settled (check `req.x402Payment.txHash`)
+</Accordion>
+</AccordionGroup>
+
+## Getting Help
+
+- **Discord**: Join our [Discord community](https://discord.gg/b3dotfun)
+- **GitHub**: [github.com/b3-fun/anyspend-x402](https://github.com/b3-fun/anyspend-x402)
+- **Documentation**: [x402.org/docs](https://x402.org/docs)
+- **Examples**: See full examples in the [repository](https://github.com/b3-fun/anyspend-x402/tree/main/examples)

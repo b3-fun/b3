@@ -1,6 +1,6 @@
 {
   "name": "@b3dotfun/sdk",
-  "version": "0.0.56",
+  "version": "0.0.62",
   "source": "src/index.ts",
   "main": "./dist/cjs/index.js",
   "react-native": "./dist/cjs/index.native.js",
@@ -135,6 +135,11 @@
       "types": "./dist/types/global-account/types.d.ts",
       "import": "./dist/esm/global-account/types.js",
       "require": "./dist/cjs/global-account/types.js"
+    },
+    "./global-account/client-manager": {
+      "types": "./dist/types/global-account/client-manager.d.ts",
+      "import": "./dist/esm/global-account/client-manager.js",
+      "require": "./dist/cjs/global-account/client-manager.js"
     },
     "./global-account/types/*": {
       "types": "./dist/types/global-account/types/*.d.ts",
@@ -301,7 +306,7 @@
     "test:ui": "vitest --ui"
   },
   "dependencies": {
-    "@b3dotfun/b3-api": "0.0.66",
+    "@b3dotfun/b3-api": "0.0.77",
     "@b3dotfun/basement-api": "0.0.11",
     "@feathersjs/authentication-client": "5.0.33",
     "@feathersjs/feathers": "5.0.33",
@@ -377,6 +382,7 @@
     "postcss-prefix-selector": "^2.1.1",
     "tailwindcss": "3.4.1",
     "tailwindcss-animate": "^1.0.7",
+    "thirdweb": "5.111.3",
     "tsc-alias": "^1.8.16",
     "tsc-watch": "^7.1.1",
     "vitest": "^3.2.4"
@@ -395,14 +401,14 @@
     "@readyplayerme/react-avatar-creator": "0.5.0",
     "@readyplayerme/visage": "6.10.0",
     "@tanstack/react-query": "5.55.0",
+    "@wagmi/core": "2.20.3",
     "react": "^18.0.0 || ^19.0.0",
     "react-dom": "^18.0.0 || ^19.0.0",
     "react-native-mmkv": "^3.2.0",
-    "thirdweb": "5.108.14",
+    "thirdweb": "5.111.3",
     "three": "^0.175.0",
     "viem": "2.37.9",
-    "wagmi": "2.16.9",
-    "@wagmi/core": "2.20.3"
+    "wagmi": "2.16.9"
   },
   "peerDependenciesMeta": {
     "@react-three/postprocessing": {

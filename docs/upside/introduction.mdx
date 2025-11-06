@@ -1,0 +1,109 @@
+---
+title: "Introduction"
+description: "Learn how to integrate your games with Upside.win using the Upside SDK. Handle game logic in your backend while Upside manages WIN token rewards."
+---
+
+## Overview
+
+Integrating with Upside.win is simple. Your game runs in an iframe on our platform, receives player authentication via JWT, and interacts with the Upside backend through our SDK for bet placement and payout processing.
+
+**Key principle**: Your backend handles game logic and state (cards, winners, outcomes), while Upside handles all WIN token transactions.
+
+## Integration Flow
+
+<Steps>
+  <Step title="Contact B3 Team">
+    Reach out to get your game approved and configured on Upside.
+
+    ```text
+    Contact: contact@npclabs.org
+    Include: Game name, description, game type, and your backend URL
+    ```
+  </Step>
+  <Step title="Game Loads in Iframe">
+    Players launch your game, which loads inside an iframe on upside.win. Your game receives: - JWT token for the player - Player authentication context - Access to the Upside SDK
+  </Step>
+  <Step title="Frontend: Receive JWT">
+    Wrap your game with `ParentProvider` from the Upside SDK to receive the JWT.
+
+    ```javascript
+    import { ParentProvider } from "@b3dotfun/upside-sdk";
+    
+    export default function GameApp() {
+      return (
+        <ParentProvider>
+          <YourGameComponent />
+        </ParentProvider>
+      );
+    }
+    ```
+  </Step>
+  <Step title="Backend: Place Bet">
+    When a player starts playing, your backend calls `placeBet` to lock in their wager.
+
+    ```javascript
+    { createB3Client } from "@b3dotfun/upside-sdk/server"; 
+    
+    const b3Client = createB3Client(); 
+    const betResult = await
+    b3Client.placeBet(
+      "coin-flip", // gameType 
+      "100000000000000000" // betAmount in wei (1 token = 10^18 wei) 
+    ); 
+    ```
+  </Step>
+  <Step title="Backend: Handle Game Logic">
+    Your backend: - Determines game outcome (coin lands on heads/tails) - Stores game state in your database - Calculates payout amount - Prepares outcome data (player choice, result, outcome)
+  </Step>
+  <Step title="Backend: Process Payout">
+    When game ends, send the result to Upside to credit the player's WIN balance.
+
+    ```javascript
+    const payoutResult = await b3Client.processPayout(
+      "coin-flip",      // gameType
+      sessionId,        // unique game session ID
+      payoutAmount,     // WIN tokens to award (0 if loss)
+      // gameData
+      {
+        playerChoice: "heads",
+        result: "heads",
+        outcome: "win"
+      }
+    );
+    ```
+  </Step>
+  <Step title="Frontend: Show Result">
+    Your game displays the outcome to the player.
+
+    The Upside platform automatically:
+
+    - Updates the player's WIN balance
+    - Adds the win/loss to leaderboards
+    - Sends notifications
+  </Step>
+</Steps>
+
+## Installation
+
+```bash
+npm install @b3dotfun/upside-sdk
+# or
+pnpm add @b3dotfun/upside-sdk
+# or
+bun install @b3dotfun/upside-sdk
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Frontend Integration" icon="browser" href="/upside/frontend-integration">
+    Set up the ParentProvider and use hooks to access player data
+  </Card>
+  <Card title="Backend Integration" icon="server" href="/upside/backend-integration">
+    Initialize the B3 client and implement game logic
+  </Card>
+  <Card title="Testing & Examples" icon="flask" href="/upside/testing-and-examples">
+    Test your game locally and see complete examples
+  </Card>
+</CardGroup>
+

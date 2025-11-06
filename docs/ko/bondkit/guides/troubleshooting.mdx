@@ -1,0 +1,414 @@
+---
+title: 문제 해결 가이드
+description: 'Bondkit SDK의 일반적인 문제, 지갑 문제 및 통합 과제에 대한 해결책.'
+lang: ko
+originalPath: bondkit/guides/troubleshooting.mdx
+---
+## 빠른 진단
+
+빠른 문제 식별을 위해 여기서 시작하세요:
+
+```typescript
+import { BondkitToken, BondkitTokenFactory } from "@b3dotfun/sdk/bondkit";
+
+// 빠른 건강 검진 함수
+async function bondkitHealthCheck() {
+  try {
+    // 팩토리 연결 테스트
+    const factory = new BondkitTokenFactory(8453); // Base 메인넷
+    const implementationAddress = await factory.getImplementationAddress();
+    
+    if (!implementationAddress) {
+      return { status: "error", issue: "팩토리 연결 실패" };
+    }
+    
+    // RPC 연결성 테스트
+    const deployedTokens = await factory.getDeployedBondkitTokens();
+    
+    return {
+      status: "success", 
+      factory: implementationAddress,
+      deployedTokens: deployedTokens.length,
+      rpc: "연결됨"
+    };
+  } catch (error) {
+    return { status: "error", issue: error.message };
+  }
+}
+
+// 진단 실행
+const health = await bondkitHealthCheck();
+console.log(health);
+```
+
+## 일반적인 오류 메시지
+
+### 배포 오류
+
+<AccordionGroup>
+  <Accordion title="오류: 'BondkitToken에 유효한 계약 주소가 필요합니다'">
+    **원인:** 토큰 주소가 누락되었거나 유효하지 않거나 체크섬이 안 되어 있습니다.
+    
+    **해결책:**
+    ```typescript
+    // ❌ 잘못됨
+    const token = new BondkitToken(""); // 빈 주소
+    const token = new BondkitToken("0x123"); // 너무 짧음
+    
+    // ✅ 올바름
+    const token = new BondkitToken("0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1");
+    
+    // ✅ 먼저 주소를 확인
+    import { isAddress } from "viem";
+    
+    const tokenAddress = "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1";
+    if (!isAddress(tokenAddress)) {
+      throw new Error("유효하지 않은 토큰 주소");
+    }
+    const token = new BondkitToken(tokenAddress);
+    ```
+  </Accordion>
+  
+  <Accordion title="오류: '지원되지 않는 chainId: X. 이 SDK는 Base만을 위해 구성되었습니다'">
+    **원인:** Base가 아닌 체인 ID를 사용하려고 합니다.
+    
+    **해결책:**
+    ```typescript
+    import { base } from "viem/chains";
+    
+    // ❌ 잘못됨
+    const factory = new BondkitTokenFactory(1); // 이더리움 메인넷
+    const factory = new BondkitTokenFactory(137); // 폴리곤
+    
+    // ✅ 올바름 - Base 메인넷 사용
+    const factory = new BondkitTokenFactory(base.id); // 8453
+    const factory = new BondkitTokenFactory(8453); // 명시적 Base ID
+    ```
+  </Accordion>
+  
+  <Accordion title="오류: 'DeployBondkitToken: 실행이 되돌아왔습니다'">
+    **원인:** 유효하지 않은 배포 매개변수 또는 권한 부족.
+    
+    **해결책:**
+    ```typescript
+    // 일반적인 매개변수 문제 확인
+    const config = {
+      name: "MyToken",
+      symbol: "MTK", // 1-11자여야 함
+      feeRecipient: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1", // 유효한 주소
+      finalTokenSupply: parseEther("1000000"), // 0보다 커야 함
+      aggressivenessFactor: 45, // 0-100이어야 함
+      lpSplitRatioFeeRecipientBps: 1000n, // 0-10000(basis points)이어야 함
+      targetAmount: parseEther("10"), // 0보다 커야 함
+      migrationAdminAddress: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1", // 유효한 주소
+      
+      // V4 구성 - 모두 필요
+      bondingPhaseSplitter: "0x2AB69e0d9D20D3700466153D84a6574128154Fd2",
+      v4PoolManager: "0x498581fF718922c3f8e6A244956aF099B2652b2b", 
+      v4Hook: "0xB36f4A2FB18b745ef8eD31452781a463d2B3f0cC",
+      v4PoolFee: 3000, // 500, 3000, 또는 10000
+      v4TickSpacing: 60, // 수수료 계층과 일치해야 함
+      tradingToken: "0xB3B32F9f8827D4634fE7d973Fa1034Ec9fdDB3B3"
+    };
+    
+    // 유효성 검사 도우미
+    function validateConfig(config) {
+      const errors = [];
+      
+      if (!config.symbol || config.symbol.length > 11) {
+        errors.push("심볼은 1-11자여야 합니다");
+      }
+      
+      if (config.aggressivenessFactor < 0 || config.aggressivenessFactor > 100) {
+        errors.push("공격성은 0-100이어야 합니다");
+      }
+      
+      if (config.lpSplitRatioFeeRecipientBps > 10000n) {
+        errors.push("LP 분할 비율은 100% (10000 bps)를 초과할 수 없습니다");
+      }
+      
+      return errors;
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### 거래 오류  
+
+<AccordionGroup>
+  <Accordion title="오류: '구매: 실행이 되돌아왔습니다' 또는 '판매: 실행이 되돌아왔습니다'">
+    **원인:** 본딩 단계 동안 다양한 거래 문제.
+    
+    **해결책:**
+    ```typescript
+    // 먼저 토큰 상태 확인
+    const status = await token.currentStatus();
+    if (status !== 1) {
+      throw new Error("토큰이 본딩 단계에 있지 않습니다 - 대신 DEX 방법을 사용하세요");
+    }
+    
+    // 구매 오류에 대한 진단:
+    async function diagnoseBuyError(token, amount, minTokensOut) {
+      const progress = await token.getBondingProgress();
+      
+      if (progress.progress >= 1.0) {
+        return "목표 도달 - 이주 가능, 더 이상 구매할 수 없음";
+      }
+      
+      const tradingTokenAddress = await token.getTradingTokenAddress();
+      if (tradingTokenAddress !== "0x0000000000000000000000000000000000000000") {
+        // ERC20 거래 토큰 - 허용량 및 잔액 확인
+        const balance = await token.getTradingTokenBalanceOf(userAddress);
+        const required = typeof amount === "string" ? parseEther(amount) : amount;
+        
+        if (balance < required) {
+          return `부족한 ${await token.getTradingTokenSymbol()} 잔액. 필요: ${formatEther(required)}, 보유: ${formatEther(balance)}`;
+        }
+      }
+      
+      return "알 수 없는 구매 오류 - 거래 세부 정보 확인";
+    }
+    
+    // 판매 오류에 대한 진단:
+    async function diagnoseSellError(token, tokenAmount) {
+      const balance = await token.balanceOf(userAddress);
+      if (balance < tokenAmount) {
+        return `부족한 토큰 잔액. 필요: ${formatEther(tokenAmount)}, 보유: ${formatEther(balance)}`;
+      }
+      
+      const progress = await token.getBondingProgress();
+      if (progress.raised === 0n) {
+        return "사용 가능한 유동성 없음 - 모금액이 없을 때는 판매할 수 없음";
+      }
+      
+      return "알 수 없는 판매 오류 - 거래 세부 정보 확인";
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="오류: '거래 토큰 주소를 사용할 수 없습니다'">
+    **원인:** 토큰이 완전히 초기화되지 않았거나 네트워크 문제가 있습니다.
+    
+    **해결책:**
+    ```typescript
+    // 거래 토큰 정보 강제 새로고침
+    const tradingTokenAddress = await token.getTradingTokenAddress();
+    if (!tradingTokenAddress) {
+      // 지연 후 재시도
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      const retryAddress = await token.getTradingTokenAddress();
+      
+      if (!retryAddress) {
+        throw new Error("토큰 계약이 제대로 초기화되지 않았을 수 있습니다");
+      }
+    }
+    
+    // 토큰 계약이 유효한지 확인
+    try {
+      const tokenDetails = await token.getTokenDetails();
+      console.log(`연결됨: ${tokenDetails.name} (${tokenDetails.symbol})`);
+    } catch (error) {
+      throw new Error("유효하지 않은 토큰 계약 또는 네트워크 문제");
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="오류: 'BondingPhaseEnded' 또는 DEX 거래 문제">
+    **원인:** 토큰이 DEX 단계로 이주되었지만 여전히 본딩 방법을 사용하고 있습니다.
+    
+    **해결책:**
+    ```typescript
+    // 단계 감지 및 적절한 방법 사용
+    async function getOptimalTradingMethod(tokenAddress) {
+      const token = new BondkitToken(tokenAddress);
+      const status = await token.currentStatus();
+      
+      switch (status) {
+        case 1: // 본딩 단계
+          return {
+            phase: "본딩",
+            buyMethod: (amount, minOut) => token.buy(amount, minOut),
+            sellMethod: (amount, minOut) => token.sell(amount, minOut),
+            quoteMethod: (amount) => token.getAmountOfTokensToBuy(amount)
+          };
+          
+        case 2: // DEX 단계
+          const swapService = new BondkitSwapService(tokenAddress);
+          return {
+            phase: "dex",
+            buyMethod: async (amount, minOut, wallet) => {
+              const params = {
+                tokenIn: await token.getTradingTokenAddress(),
+                tokenOut: tokenAddress,
+                amountIn: typeof amount === "string" ? amount : formatEther(amount),
+                tokenInDecimals: 18,
+                tokenOutDecimals: 18,
+                slippageTolerance: 0.005,
+                recipient: wallet.account.address
+              };
+              return swapService.executeSwap(params, wallet);
+            },
+            quoteMethod: async (amount) => {
+              const params = {
+                tokenIn: await token.getTradingTokenAddress(),
+                tokenOut: tokenAddress,
+                amountIn: typeof amount === "string" ? amount : formatEther(amount),
+                tokenInDecimals: 18,
+                tokenOutDecimals: 18,
+                slippageTolerance: 0.005,
+                recipient: "0x0000000000000000000000000000000000000000" // 견적용 더미
+              };
+              return swapService.getSwapQuote(params);
+            }
+          };
+          
+        default:
+          throw new Error(`알 수 없는 토큰 상태: ${status}`);
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### 지갑 통합 문제
+
+<AccordionGroup>
+  <Accordion title="오류: '거래에 사용할 계정을 결정할 수 없습니다'">
+    **원인:** 지갑이 제대로 연결되거나 구성되지 않았습니다.
+    
+    **해결책:**
+    ```typescript
+    // 옵션 1: 개인 키 사용 (서버 측에서만)
+    const token = new BondkitToken(
+      tokenAddress,
+      process.env.WALLET_PRIVATE_KEY
+    );
+    
+    // 옵션 2: 제공자와 연결 (브라우저)
+    const token = new BondkitToken(tokenAddress);
+    const connected = await token.connect(window.ethereum);
+    
+    if (!connected) {
+      throw new Error("지갑 연결 실패");
+    }
+    
+    // 옵션 3: 거래 전 연결 확인
+    async function ensureWalletConnected(token) {
+      if (!window.ethereum) {
+        throw new Error("지갑 제공자를 찾을 수 없습니다 - MetaMask 또는 유사한 것을 설치하세요");
+      }
+      
+      // 계정 액세스 요청
+      const accounts = await window.ethereum.request({
+        method: 'eth_requestAccounts'
+      });
+      
+      if (accounts.length === 0) {
+        throw new Error("사용 가능한 계정이 없습니다 - 먼저 지갑을 연결하세요");
+      }
+      
+      // 토큰에 연결
+      const connected = await token.connect(window.ethereum);
+      if (!connected) {
+        throw new Error("지갑을 토큰에 연결하지 못했습니다");
+      }
+      
+      return accounts[0];
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="오류: '거래 확인 시간 초과'">
+    **원인:** 네트워크가 느리거나 가스가 낮거나 OKX 지갑 문제가 있습니다.
+    
+    **해결책:**
+    ```typescript
+    // 더 빠른 확인을 위해 가스 증가
+    const options = {
+      gas: 300000n, // 기본값에서 증가
+      maxFeePerGas: parseGwei("20"), // 더 빠른 포함을 위한 더 높은 수수료
+      maxPriorityFeePerGas: parseGwei("2")
+    };
+    
+    await token.buy(parseEther("10"), 0n, options);
+    
+    // 타임아웃이 있는 수동 거래 대기
+    async function waitForTransactionWithTimeout(token, hash, timeoutMs = 300000) {
+      const start = Date.now();
+      
+      while (Date.now() - start < timeoutMs) {
+        try {
+          const receipt = await token.waitForTransaction(hash);
+          return receipt;
+        } catch (error) {
+          if (error.message.includes("TransactionReceiptNotFoundError")) {
+            // 여전히 대기 중, 더 기다림
+            await new Promise(resolve => setTimeout(resolve, 5000));
+            continue;
+          }
+          throw error; // 다른 오류, 다시 던짐
+        }
+      }
+      
+      throw new Error(`거래 ${hash} 시간 초과 ${timeoutMs}ms 후`);
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="MetaMask/지갑 특정 문제">
+    **일반적인 지갑 문제:**
+    
+    ```typescript
+    // MetaMask 네트워크 전환
+    async function ensureBaseNetwork() {
+      if (!window.ethereum) return false;
+      
+      try {
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: '0x2105' }], // Base 메인넷
+        });
+        return true;
+      } catch (switchError) {
+        // 네트워크가 추가되지 않음, 추가
+        if (switchError.code === 4902) {
+          try {
+            await window.ethereum.request({
+              method: 'wallet_addEthereumChain',
+              params: [{
+                chainId: '0x2105',
+                chainName: 'Base',
+                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                rpcUrls: ['https://base-rpc.publicnode.com'],
+                blockExplorerUrls: ['https://basescan.org/']
+              }]
+            });
+            return true;
+          } catch (addError) {
+            console.error('Base 네트워크 추가 실패', addError);
+            return false;
+          }
+        }
+        return false;
+      }
+    }
+    
+    // 토큰 가져오기 도우미
+    async function addTokenToWallet(tokenAddress, symbol, decimals = 18) {
+      try {
+        await window.ethereum.request({
+          method: 'wallet_watchAsset',
+          params: {
+            type: 'ERC20',
+            options: {
+              address: tokenAddress,
+              symbol: symbol,
+              decimals: decimals
+            }
+          }
+        });
+        console.log(`${symbol} 지갑에 추가됨`);
+      } catch (error) {
+        console.error('지갑에 토큰 추가 실패:', error);
+      }
+    }
