@@ -32,7 +32,7 @@ function centerTruncate(str: string, length = 4) {
   if (str.length <= length * 2) return str;
   return `${str.slice(0, length)}...${str.slice(-length)}`;
 }
-
+// Deprecated
 export function BalanceContent({ onLogout, showDeposit = true, showSwap = true }: BalanceContentProps) {
   const account = useActiveAccount();
   const globalAccount = useGlobalAccount();

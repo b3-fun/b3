@@ -1,27 +1,21 @@
+import { useGlobalWalletState } from "@b3dotfun/sdk/anyspend/utils/accountStore";
 import { useB3BalanceFromAddresses, useNativeBalance } from "@b3dotfun/sdk/global-account/react";
-import { useFirstEOA } from "../../hooks/useFirstEOA";
+import { useActiveWallet } from "thirdweb/react";
 import { B3TokenIcon, EthereumTokenIcon } from "../TokenIcon";
 import { TokenBalanceRow } from "./TokenBalanceRow";
 
 const TokenContent = () => {
-  //const globalAccount = useGlobalAccount();
-  const { address: eoaAddress } = useFirstEOA();
+  // Get active wallet state
+  const activeWallet = useActiveWallet();
+  const globalAccountWallet = useGlobalWalletState(state => state.globalAccountWallet);
+  const activeAccount = activeWallet?.getAccount();
+  const activeAddress = activeAccount?.address;
 
-  // Balance data fetching
-  const { data: eoaNativeBalance, isLoading: eoaNativeLoading } = useNativeBalance(eoaAddress);
-  const { data: eoaB3Balance, isLoading: eoaB3Loading } = useB3BalanceFromAddresses(eoaAddress);
-  // const { data: b3Balance, isLoading: b3Loading } = useB3BalanceFromAddresses(globalAccount?.address);
-  // const { data: nativeBalance, isLoading: nativeLoading } = useNativeBalance(globalAccount?.address);
+  // Balance data fetching - use active wallet address
+  const { data: activeNativeBalance, isLoading: activeNativeLoading } = useNativeBalance(activeAddress);
+  const { data: activeB3Balance, isLoading: activeB3Loading } = useB3BalanceFromAddresses(activeAddress);
 
-  // const globalAccountTotalUsd = (b3Balance?.balanceUsd || 0) + (nativeBalance?.totalUsd || 0);
-  // const eoaTotalUsd = (eoaB3Balance?.balanceUsd || 0) + (eoaNativeBalance?.totalUsd || 0);
-
-  // // Check if both data sets are ready (not loading and have data)
-  // const isGlobalDataReady = !b3Loading && !nativeLoading && b3Balance !== undefined && nativeBalance !== undefined;
-  // const isEoaDataReady =
-  //   !eoaAddress || (!eoaB3Loading && !eoaNativeLoading && eoaB3Balance !== undefined && eoaNativeBalance !== undefined);
-
-  if (!eoaAddress) {
+  if (!activeAddress) {
     return <div className="col-span-3 py-12 text-center text-gray-500">No tokens found</div>;
   }
 
@@ -30,16 +24,16 @@ const TokenContent = () => {
       <TokenBalanceRow
         icon={<B3TokenIcon className="size-10" />}
         name="B3"
-        balance={`${eoaB3Balance?.formattedTotal || "0.00"} B3`}
-        usdValue={eoaB3Balance?.balanceUsdFormatted || "0.00"}
-        priceChange={eoaB3Balance?.priceChange24h}
+        balance={`${activeB3Balance?.formattedTotal || "0.00"} B3`}
+        usdValue={activeB3Balance?.balanceUsdFormatted || "0.00"}
+        priceChange={activeB3Balance?.priceChange24h}
       />
       <TokenBalanceRow
         icon={<EthereumTokenIcon className="size-10" />}
         name="Ethereum"
-        balance={`${eoaNativeBalance?.formattedTotal || "0.00"} ETH`}
-        usdValue={eoaNativeBalance?.formattedTotalUsd || "0.00"}
-        priceChange={eoaNativeBalance?.priceChange24h}
+        balance={`${activeNativeBalance?.formattedTotal || "0.00"} ETH`}
+        usdValue={activeNativeBalance?.formattedTotalUsd || "0.00"}
+        priceChange={activeNativeBalance?.priceChange24h}
       />
     </div>
   );

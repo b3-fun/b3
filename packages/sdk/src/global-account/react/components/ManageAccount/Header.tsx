@@ -92,6 +92,7 @@ function WalletItem({ wallet, isActive, onClick }: { wallet: Wallet; isActive: b
 
 export function Header({ onLogout }: { onLogout?: () => void }) {
   const activeWallet = useActiveWallet();
+  console.log("activeWallet :", activeWallet);
   const connectedWallets = useConnectedWallets();
   const setActiveWallet = useSetActiveWallet();
   const contentType = useModalStore(state => state.contentType) as ManageAccountModalProps;
@@ -99,7 +100,6 @@ export function Header({ onLogout }: { onLogout?: () => void }) {
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
   const setGlobalAccountWallet = useGlobalWalletState(state => state.setGlobalAccountWallet);
   const globalAccountWallet = useGlobalWalletState(state => state.globalAccountWallet);
-  console.log("globalAccountWallet :", globalAccountWallet);
   const partnerId = contentType?.partnerId;
 
   const { logout } = useAuthentication(partnerId);
@@ -122,6 +122,7 @@ export function Header({ onLogout }: { onLogout?: () => void }) {
   const handleWalletSwitch = (wallet: Wallet) => {
     setActiveWallet(wallet);
     setGlobalAccountWallet(wallet);
+    setIsExpanded(false);
   };
 
   const handleLinkWallet = () => {
@@ -140,6 +141,7 @@ export function Header({ onLogout }: { onLogout?: () => void }) {
     <AccordionPrimitive.Root
       type="single"
       collapsible
+      value={isExpanded ? "wallet-switcher" : ""}
       className="bg-b3-background border-b3-line relative border-b"
       onValueChange={(value: string) => setIsExpanded(value === "wallet-switcher")}
     >
