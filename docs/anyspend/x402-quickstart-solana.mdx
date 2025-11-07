@@ -1,0 +1,431 @@
+---
+title: "Quickstart for Solana"
+description: "Accept and make payments on Solana using AnySpend X402 with USDC and SPL tokens"
+---
+
+<Note>
+**Try it live!** Experience X402 on Solana at [x402-demo.anyspend.com](https://x402-demo.anyspend.com/) or explore the [source code on GitHub](https://github.com/b3-fun/anyspend-x402-demo).
+</Note>
+
+<CardGroup cols={3}>
+<Card title="GitHub Repository" icon="github" href="https://github.com/b3-fun/anyspend-x402">
+  View source code and examples
+</Card>
+
+<Card title="npm Package" icon="npm" href="https://www.npmjs.com/package/@b3dotfun/anyspend-x402">
+  @b3dotfun/anyspend-x402
+</Card>
+
+<Card title="Live Demo" icon="rocket" href="https://github.com/b3-fun/anyspend-x402-demo">
+  Full working Solana demo app
+</Card>
+</CardGroup>
+
+## Overview
+
+This guide shows you how to use **AnySpend X402** on **Solana** for both server (accepting payments) and client (making payments) applications. AnySpend X402 on Solana enables gasless SPL token payments using transaction signatures, making it perfect for paywalled APIs, AI agents, and premium services.
+
+**Key Features:**
+- **Gasless transactions** - Facilitator sponsors all transaction fees
+- **SPL token support** - Pay with USDC and other SPL tokens on Solana
+- **Browser wallet integration** - Works with Phantom, Solflare, Ledger, and more
+- **AI agent friendly** - Simple fetch wrapper for autonomous payments
+
+## Prerequisites
+
+- **Node.js 18+** installed
+- **Solana wallet** with some USDC (for testing)
+- **Basic knowledge** of Solana or Express.js (depending on your use case)
+
+## Server Setup
+
+Accept Solana USDC payments with just a few lines of code.
+
+### Installation
+
+<CodeGroup>
+```bash npm
+npm install @b3dotfun/anyspend-x402
+```
+
+```bash yarn
+yarn add @b3dotfun/anyspend-x402
+```
+
+```bash pnpm
+pnpm add @b3dotfun/anyspend-x402
+```
+</CodeGroup>
+
+### Basic Server Example
+
+```typescript
+import express from 'express';
+import { paymentMiddleware } from '@b3dotfun/anyspend-x402';
+
+const app = express();
+const FACILITATOR_URL = 'https://mainnet.anyspend.com/x402';
+
+// Your Solana wallet address
+const SOLANA_PAYTO_ADDRESS = 'YourSolanaWalletAddress...';
+
+// Configure payment endpoints
+app.use(
+  paymentMiddleware(
+    SOLANA_PAYTO_ADDRESS,
+    {
+      "POST /api/solana/premium": {
+        price: {
+          amount: '10000', // 0.01 USDC (6 decimals)
+          asset: {
+            address: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', // USDC on Solana
+            decimals: 6,
+          },
+        },
+        network: 'solana',
+        config: {
+          description: 'Access to premium data via USDC payment',
+          mimeType: 'application/json',
+        },
+      },
+    },
+    {
+      url: FACILITATOR_URL,
+    },
+  ),
+);
+
+// Your protected route
+app.post('/api/solana/premium', (req, res) => {
+  res.json({
+    message: 'Payment successful!',
+    data: 'Your premium Solana data here',
+  });
+});
+
+app.listen(3001, () => {
+  console.log('Solana X402 server running on port 3001');
+});
+```
+
+**What this does:**
+1. Client requests the endpoint
+2. Middleware returns `402 Payment Required` with Solana payment details
+3. Client signs a Solana transaction with USDC transfer
+4. Facilitator verifies and submits the transaction (gasless)
+5. Your route handler executes after payment confirmation
+
+---
+
+## Client Setup
+
+There are two ways to make payments on Solana depending on your use case.
+
+### Option 1: Using Fetch (AI Agents & Backend)
+
+Perfect for Node.js scripts, AI agents, and server-side applications.
+
+#### Installation
+
+<CodeGroup>
+```bash npm
+npm install @b3dotfun/anyspend-x402-fetch
+```
+
+```bash yarn
+yarn add @b3dotfun/anyspend-x402-fetch
+```
+
+```bash pnpm
+pnpm add @b3dotfun/anyspend-x402-fetch
+```
+</CodeGroup>
+
+#### Example Script
+
+```typescript
+import {
+  createSigner,
+  wrapFetchWithPayment,
+} from "@b3dotfun/anyspend-x402-fetch";
+
+const privateKey = process.env.SOLANA_PRIVATE_KEY; // Base58 private key
+const url = "https://api.example.com/api/solana/premium";
+
+async function main() {
+  // Create Solana signer from private key
+  const signer = await createSigner("solana", privateKey);
+
+  // Wrap fetch with payment support
+  const fetchWithPayment = wrapFetchWithPayment(fetch, signer);
+
+  // Make the payment request
+  const response = await fetchWithPayment(url, { method: "POST" });
+  const data = await response.json();
+
+  // Check payment response
+  const paymentHeader = response.headers.get("x-payment-response");
+  if (paymentHeader) {
+    const payment = JSON.parse(atob(paymentHeader));
+    // Transaction available at: https://solscan.io/tx/${payment.transaction}
+  }
+}
+
+main();
+```
+
+**Key Points:**
+- Use base58-encoded private key (from Solana keypair)
+- Automatically handles 402 responses and payment flow
+- Returns transaction hash in `x-payment-response` header
+
+---
+
+### Option 2: Using Browser Wallets (React/Next.js)
+
+For web applications using Phantom, Solflare, Ledger, or other Solana wallets.
+
+#### Installation
+
+<CodeGroup>
+```bash npm
+npm install @b3dotfun/anyspend-x402-solana-wallet-adapter @b3dotfun/anyspend-x402-fetch
+```
+
+```bash yarn
+yarn add @b3dotfun/anyspend-x402-solana-wallet-adapter @b3dotfun/anyspend-x402-fetch
+```
+
+```bash pnpm
+pnpm add @b3dotfun/anyspend-x402-solana-wallet-adapter @b3dotfun/anyspend-x402-fetch
+```
+</CodeGroup>
+
+#### React Component Example
+
+```tsx
+import {
+  createWalletAdapterSigner,
+  useWallet,
+  WalletMultiButton,
+} from "@b3dotfun/anyspend-x402-solana-wallet-adapter";
+import { wrapFetchWithPayment } from "@b3dotfun/anyspend-x402-fetch";
+
+function PremiumDataFetcher() {
+  const { publicKey, signAllTransactions, connected } = useWallet();
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const fetchPremiumData = async () => {
+    if (!connected || !publicKey) return;
+
+    setLoading(true);
+    try {
+      // Create signer from wallet adapter
+      const signer = createWalletAdapterSigner(
+        publicKey.toBase58(),
+        signAllTransactions
+      );
+
+      // Wrap fetch with payment support
+      const fetchWithPayment = wrapFetchWithPayment(fetch, signer);
+
+      // Make paid request
+      const response = await fetchWithPayment(
+        "https://api.example.com/api/solana/premium",
+        { method: "POST" }
+      );
+
+      const result = await response.json();
+      setData(result);
+
+      // Get transaction hash
+      const paymentHeader = response.headers.get("x-payment-response");
+      if (paymentHeader) {
+        const payment = JSON.parse(atob(paymentHeader));
+        // Transaction available at: https://solscan.io/tx/${payment.transaction}
+      }
+    } catch (error) {
+      // Handle payment error
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      <WalletMultiButton />
+      <button onClick={fetchPremiumData} disabled={!connected || loading}>
+        {loading ? "Processing..." : "Get Premium Data (0.01 USDC)"}
+      </button>
+      {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
+    </div>
+  );
+}
+```
+
+#### App Wrapper Setup
+
+Wrap your app with wallet providers:
+
+```tsx
+import { WalletProvider } from "@b3dotfun/anyspend-x402-solana-wallet-adapter";
+import { clusterApiUrl } from "@solana/web3.js";
+
+function App() {
+  const endpoint = clusterApiUrl("mainnet-beta");
+
+  return (
+    <WalletProvider endpoint={endpoint} autoConnect>
+      <PremiumDataFetcher />
+    </WalletProvider>
+  );
+}
+```
+
+**Key Points:**
+- Works with Phantom, Solflare, Ledger, Trust Wallet, and more
+- Prompts user to approve transaction signature
+- Fully gasless - users only sign, facilitator pays fees
+- Bridges Solana Wallet Adapter v1 with X402 v2 signatures
+
+---
+
+## Configuration
+
+### Supported Networks
+
+- **`solana`** - Solana mainnet-beta
+- **`solana-devnet`** - Solana devnet (for testing)
+
+### Token Configuration
+
+The most common SPL token on Solana is USDC:
+
+```typescript
+{
+  address: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', // USDC mint
+  decimals: 6,
+}
+```
+
+For other SPL tokens, specify the mint address and decimals.
+
+### Facilitator URL
+
+Production: `https://mainnet.anyspend.com/x402`
+
+The facilitator handles:
+- Transaction verification
+- On-chain submission
+- Gas fee sponsorship
+- Payment settlement
+
+---
+
+## Testing
+
+### Get Test USDC
+
+For Solana devnet testing:
+
+1. Get devnet SOL from [Solana Faucet](https://faucet.solana.com/)
+2. Use devnet USDC mint: `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU`
+3. Set network to `solana-devnet` in your config
+
+### Test Your Integration
+
+```typescript
+// Server - use devnet
+network: 'solana-devnet'
+
+// Client - use devnet RPC
+const endpoint = 'https://api.devnet.solana.com';
+```
+
+---
+
+## Common Token Addresses
+
+| Token | Mint Address | Decimals | Network |
+|-------|--------------|----------|---------|
+| USDC | `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v` | 6 | mainnet-beta |
+| USDC | `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU` | 6 | devnet |
+
+---
+
+## Error Handling
+
+```typescript
+try {
+  const response = await fetchWithPayment(url, { method: "POST" });
+  const data = await response.json();
+} catch (error) {
+  if (error.message.includes("Insufficient funds")) {
+    // Not enough USDC in wallet
+  } else if (error.message.includes("User rejected")) {
+    // User cancelled transaction
+  } else {
+    // Handle payment error
+  }
+}
+```
+
+---
+
+## What's Next?
+
+<CardGroup cols={2}>
+<Card title="X402 Overview" icon="book" href="/anyspend/x402-overview">
+  Learn how AnySpend X402 works
+</Card>
+
+<Card title="Network Support" icon="globe" href="/anyspend/x402-network-support">
+  See all supported chains and tokens
+</Card>
+
+<Card title="Signature Methods" icon="signature" href="/anyspend/x402-signature-methods">
+  Deep dive into Solana transaction signatures
+</Card>
+
+<Card title="Buyers Guide" icon="wallet" href="/anyspend/x402-quickstart-buyers">
+  EVM client setup guide
+</Card>
+</CardGroup>
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+<Accordion title="Transaction signature verification failed">
+Check that:
+- Your wallet has enough USDC for the payment
+- You're on the correct network (mainnet vs devnet)
+- The facilitator URL is correct
+</Accordion>
+
+<Accordion title="Wallet adapter not working">
+Make sure:
+- You've wrapped your app with `WalletProvider`
+- The wallet extension is installed (Phantom, Solflare, etc.)
+- You're using the correct RPC endpoint
+</Accordion>
+
+<Accordion title="Payment succeeded but data not returned">
+Verify:
+- The server endpoint is configured correctly
+- The payment amount matches server expectations
+- Check server logs for errors
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Getting Help
+
+- **Live Demo**: Try it yourself at [x402-demo.anyspend.com](https://x402-demo.anyspend.com/)
+- **Demo Source Code**: [github.com/b3-fun/anyspend-x402-demo](https://github.com/b3-fun/anyspend-x402-demo)
+- **Discord**: Join our [Discord community](https://discord.gg/b3dotfun)
+- **GitHub**: [github.com/b3-fun/anyspend-x402](https://github.com/b3-fun/anyspend-x402)
+- **Examples**: See full examples in the [repository](https://github.com/b3-fun/anyspend-x402/tree/main/examples/typescript)

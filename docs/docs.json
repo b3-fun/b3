@@ -350,6 +350,7 @@
                   "anyspend/x402-facilitator",
                   "anyspend/x402-quickstart-buyers",
                   "anyspend/x402-quickstart-sellers",
+                  "anyspend/x402-quickstart-solana",
                   "anyspend/x402-network-support",
                   "anyspend/x402-signature-methods"
                 ]
