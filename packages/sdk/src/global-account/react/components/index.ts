@@ -19,6 +19,12 @@ export { getConnectOptionsFromStrategy, isWalletType, type AllowedStrategy } fro
 // ManageAccount Components
 export { ManageAccount } from "./ManageAccount/ManageAccount";
 
+// Deposit Components
+export { Deposit } from "./Deposit/Deposit";
+
+// Send Components
+export { Send } from "./Send/Send";
+
 // RequestPermissions Components
 export { RequestPermissions } from "./RequestPermissions/RequestPermissions";
 export { RequestPermissionsButton } from "./RequestPermissions/RequestPermissionsButton";

@@ -10,7 +10,7 @@ interface HomeContentProps {
   showSwap?: boolean;
 }
 
-export function HomeContent({ showDeposit = true, showSwap = true }: HomeContentProps) {
+export function HomeContent({ showDeposit = false, showSwap = true }: HomeContentProps) {
   return (
     <div className="flex flex-col">
       <Header />

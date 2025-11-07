@@ -15,16 +15,18 @@ import { useIsMobile, useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { useEffect, useRef } from "react";
+import { useSetActiveWallet } from "thirdweb/react";
 import { AvatarEditor } from "./AvatarEditor/AvatarEditor";
 import { useB3 } from "./B3Provider/useB3";
+import { Deposit } from "./Deposit/Deposit";
 import { LinkAccount } from "./LinkAccount/LinkAccount";
 import { LinkNewAccount } from "./LinkAccount/LinkNewAccount";
 import { ManageAccount } from "./ManageAccount/ManageAccount";
 import { RequestPermissions } from "./RequestPermissions/RequestPermissions";
+import { Send } from "./Send/Send";
 import { SignInWithB3Flow } from "./SignInWithB3/SignInWithB3Flow";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "./ui/dialog";
 import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "./ui/drawer";
-import { useSetActiveWallet } from "thirdweb/react";
 
 const debug = debugB3React("B3DynamicModal");
 
@@ -70,6 +72,8 @@ export function B3DynamicModal() {
     "linkAccount",
     "linkNewAccount",
     "avatarEditor",
+    "deposit",
+    "send",
   ];
 
   const freestyleTypes = [
@@ -83,9 +87,13 @@ export function B3DynamicModal() {
     "anySpendBondKit",
   ];
 
+  // Types that have their own custom header with close button
+  const customHeaderTypes = ["deposit", "send"];
+
   // Check if current content type is in freestyle types
   const isFreestyleType = freestyleTypes.includes(contentType?.type as string);
-  const hideCloseButton = isFreestyleType;
+  const hasCustomHeader = customHeaderTypes.includes(contentType?.type as string);
+  const hideCloseButton = isFreestyleType || hasCustomHeader;
 
   // Build content class using cn utility
   // eslint-disable-next-line tailwindcss/no-custom-classname
@@ -142,6 +150,10 @@ export function B3DynamicModal() {
         return <AnySpendDepositHype {...contentType} mode="modal" />;
       case "avatarEditor":
         return <AvatarEditor onSetAvatar={contentType.onSuccess} />;
+      case "deposit":
+        return <Deposit />;
+      case "send":
+        return <Send {...contentType} />;
       // Add other modal types here
       default:
         return null;
@@ -160,7 +172,8 @@ export function B3DynamicModal() {
           contentClass,
           "rounded-2xl bg-white shadow-xl dark:bg-gray-900",
           "border border-gray-200 dark:border-gray-800",
-          contentType?.type === "manageAccount" && "p-0",
+          (contentType?.type === "manageAccount" || contentType?.type === "deposit" || contentType?.type === "send") &&
+            "p-0",
           // Remove default width classes for avatar editor
           contentType?.type === "avatarEditor"
             ? "!w-[90vw] !max-w-none" // Use !important to override default styles
@@ -171,30 +184,32 @@ export function B3DynamicModal() {
         <ModalTitle className="sr-only hidden">{contentType?.type || "Modal"}</ModalTitle>
         <ModalDescription className="sr-only hidden">{contentType?.type || "Modal Body"}</ModalDescription>
         <div className={cn("no-scrollbar max-h-[90dvh] overflow-auto sm:max-h-[80dvh]")}>
-          {history.length > 0 && contentType?.showBackButton && (
-            <button
-              onClick={navigateBack}
-              className="flex items-center gap-2 px-6 py-4 text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-            >
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M15.8337 10H4.16699"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M10.0003 15.8334L4.16699 10L10.0003 4.16669"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              <span className="text-sm font-medium">Back</span>
-            </button>
-          )}
+          {history.length > 0 &&
+            contentType?.showBackButton &&
+            (contentType?.type === "deposit" || contentType?.type === "send" ? null : (
+              <button
+                onClick={navigateBack}
+                className="flex items-center gap-2 px-6 py-4 text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    d="M15.8337 10H4.16699"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M10.0003 15.8334L4.16699 10L10.0003 4.16669"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <span className="text-sm font-medium">Back</span>
+              </button>
+            ))}
           {renderContent()}
         </div>
       </ModalContent>

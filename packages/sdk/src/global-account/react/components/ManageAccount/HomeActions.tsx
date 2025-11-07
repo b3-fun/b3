@@ -38,8 +38,7 @@ const HomeActions = ({ showDeposit, showSwap }: { showDeposit: boolean; showSwap
           onClick={() => {
             setB3ModalOpen(true);
             setB3ModalContentType({
-              type: "anySpend",
-              defaultActiveTab: "fiat",
+              type: "deposit",
               showBackButton: true,
             });
           }}
@@ -49,11 +48,11 @@ const HomeActions = ({ showDeposit, showSwap }: { showDeposit: boolean; showSwap
         </Button>
       )}
       <Button
-        className="manage-account-swap bg-b3-primary-wash hover:bg-b3-primary-wash/70 border-b3-primary-blue flex h-[84px] w-full flex-col items-center justify-center gap-2 rounded-2xl border-[1.5px]"
+        className="manage-account-send bg-b3-primary-wash hover:bg-b3-primary-wash/70 border-b3-primary-blue flex h-[84px] w-full flex-col items-center justify-center gap-2 rounded-2xl border-[1.5px]"
         onClick={() => {
           setB3ModalOpen(true);
           setB3ModalContentType({
-            type: "anySpend",
+            type: "send",
             showBackButton: true,
           });
         }}

@@ -352,6 +352,30 @@ export interface AvatarEditorModalProps extends BaseModalProps {
 }
 
 /**
+ * Props for the Deposit modal
+ * Allows users to deposit tokens into their global account
+ */
+export interface DepositModalProps extends BaseModalProps {
+  /** Modal type identifier */
+  type: "deposit";
+  /** Callback function called when deposit is successful */
+  onSuccess?: () => void;
+}
+
+/**
+ * Props for the Send modal
+ * Allows users to send tokens from their global account to another address
+ */
+export interface SendModalProps extends BaseModalProps {
+  /** Modal type identifier */
+  type: "send";
+  /** Pre-filled recipient address (optional) */
+  recipientAddress?: string;
+  /** Callback function called when send is successful */
+  onSuccess?: (txHash?: string) => void;
+}
+
+/**
  * Union type of all possible modal content types
  */
 export type ModalContentType =
@@ -372,7 +396,9 @@ export type ModalContentType =
   | LinkAccountModalProps
   | LinkNewAccountModalProps
   | AnySpendDepositHypeProps
-  | AvatarEditorModalProps;
+  | AvatarEditorModalProps
+  | DepositModalProps
+  | SendModalProps;
 // Add other modal types here like: | OtherModalProps | AnotherModalProps
 
 /**
