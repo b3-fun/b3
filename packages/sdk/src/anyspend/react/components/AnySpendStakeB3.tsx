@@ -66,7 +66,7 @@ export function AnySpendStakeB3({
   const { data: simBalance, isLoading: isBalanceLoading } = useSimBalance(address, [base.id]);
   const b3RawBalanceStr = simBalance?.balances.find(b => eqci(b.address, B3_TOKEN.address))?.amount || "0";
   const b3RawBalance = BigInt(b3RawBalanceStr);
-  const b3Balance = formatTokenAmount(BigInt(b3RawBalance), 18);
+  const b3Balance = formatTokenAmount(b3RawBalance, B3_TOKEN.decimals);
 
   // State for direct staking flow
   const [isStaking, setIsStaking] = useState(false);

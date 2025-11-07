@@ -47,7 +47,7 @@ async function fetchSimBalance(address: string, chainIdsParam: number[]): Promis
 
 export function useSimBalance(address?: string, chainIdsParam?: number[]) {
   return useQuery({
-    queryKey: ["simBalance", address],
+    queryKey: ["simBalance", address, chainIdsParam],
     queryFn: () => {
       if (!address) throw new Error("Address is required");
       return fetchSimBalance(address, chainIdsParam || []);
