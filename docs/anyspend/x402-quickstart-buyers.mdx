@@ -125,7 +125,7 @@ const response = await x402Client.request(
   {
     method: 'POST',
     body: { prompt: 'Generate an image of a cat' },
-    preferredToken: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb' // DAI on Base
+    preferredToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' // USDC on Base
   }
 );
 ```
@@ -137,15 +137,13 @@ For more control, use the lower-level `wrapFetchWithPayment` function:
 ```typescript
 import { wrapFetchWithPayment } from 'anyspend-x402-client';
 
-const tokenAddress = '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb'; // DAI on Base
+const tokenAddress = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'; // USDC on Base
 const selectedChain = 8453; // Base
 
 const paymentPreferences = {
   preferredToken: tokenAddress,
   preferredNetwork: 'base' as const, // or use getNetworkName(selectedChain)
 };
-
-console.log(`💡 Using preferred token: ${tokenAddress} on base`);
 
 // Wrap fetch with automatic payment handling
 const fetchWithPayment = wrapFetchWithPayment(
@@ -170,6 +168,66 @@ const data = await response.json();
 - Supports multi-network signers
 
 If the resource server supports AnySpend middleware, you'll pay the equivalent amount in your preferred token instead of USDC.
+
+### Using HTTP Headers for Payment Preferences
+
+<Note>
+**New in X402**: You can now specify payment preferences using HTTP headers, which is particularly useful when making direct HTTP requests or when integrating with existing HTTP clients.
+</Note>
+
+When making requests to X402-enabled services, you can specify your preferred payment token and network using these HTTP headers:
+
+```bash
+curl -X GET https://api.example.com/premium-data \
+  -H "X-PREFERRED-TOKEN: 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" \
+  -H "X-PREFERRED-NETWORK: base-mainnet"
+```
+
+**Common Token Addresses:**
+- **USDC on Base**: `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`
+- **USDT on Base**: `0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2`
+
+**Network Identifiers:**
+- `base-mainnet` - Base Mainnet
+- `ethereum-mainnet` - Ethereum Mainnet
+- `arbitrum-mainnet` - Arbitrum One
+- `optimism-mainnet` - Optimism Mainnet
+- `polygon-mainnet` - Polygon PoS
+
+These headers work with any HTTP client and are automatically respected by X402-enabled resource servers using AnySpend middleware. If no headers are provided, the server will default to USDC.
+
+#### Using Headers with X402Client
+
+The X402Client automatically adds these headers based on your configuration:
+
+```typescript
+const x402Client = new X402Client({
+  walletClient,
+  preferredToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC
+  network: 'base-mainnet'
+});
+
+// Headers are automatically added to all requests
+const response = await x402Client.request('https://api.example.com/data');
+```
+
+#### Using Headers with fetch
+
+You can also add these headers manually when using the native `fetch` API or other HTTP clients:
+
+```typescript
+const response = await fetch('https://api.example.com/premium-data', {
+  headers: {
+    'X-PREFERRED-TOKEN': '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+    'X-PREFERRED-NETWORK': 'base-mainnet'
+  }
+});
+
+// Then handle the 402 response if needed
+if (response.status === 402) {
+  // Process payment using X402Client or wrapFetchWithPayment
+}
+```
 
 ### POST Requests with Body
 
@@ -303,10 +361,10 @@ const fetchWithPayment = wrapFetchWithPayment(
 - **EIP-2612 (Permit)**: Allows gasless token approvals via off-chain signatures
 - **EIP-3009 (TransferWithAuthorization)**: Enables gasless transfers via off-chain signatures (used by USDC)
 
+
 ### Common Compatible Tokens
 
 - **USDC** - EIP-3009 support on all chains
-- **DAI** - EIP-2612 permit support
 - **B3** - EIP-2612 permit support
 - **Many other tokens** - Check compatibility using the tool below
 
@@ -337,7 +395,7 @@ export function PremiumDataFetcher() {
     try {
       const client = new X402Client({
         walletClient,
-        preferredToken: '0x...' // DAI or other token
+        preferredToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' // USDC on Base
       });
 
       const response = await client.request(
@@ -394,8 +452,8 @@ export function PremiumDataFetcherAdvanced() {
 
   // Token addresses by chain
   const tokenAddresses: Record<number, string> = {
-    8453: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb', // DAI on Base
-    1: '0x6B175474E89094C44Da98b954EedeAC495271d0F', // DAI on Ethereum
+    8453: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC on Base
+    1: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // USDC on Ethereum
   };
 
   const fetchPremiumData = async () => {

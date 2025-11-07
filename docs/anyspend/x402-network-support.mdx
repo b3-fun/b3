@@ -55,154 +55,67 @@ AnySpend also supports Solana Virtual Machine (SVM) networks:
 Solana support enables cross-VM payments - users can pay with SOL or SPL tokens while resource servers receive stablecoins on EVM chains.
 </Info>
 
-## Supported Tokens
+## Token Compatibility
 
-### USDC (Circle)
+<Note>
+To use a token with X402, it must implement either **EIP-3009** (`transferWithAuthorization`) or **EIP-2612** (`permit`) for gasless signatures.
+</Note>
 
-USDC is natively supported on all networks using **EIP-3009 transferWithAuthorization**.
+Rather than maintaining a static list of supported tokens, we've built tools to help you verify any token's compatibility in real-time.
 
-| Network | Contract Address | Decimals | Signature Method |
-|---------|-----------------|----------|------------------|
-| Base | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` | 6 | transferWithAuthorization |
-| Ethereum | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | 6 | transferWithAuthorization |
-| Arbitrum | `0xaf88d065e77c8cC2239327C5EDb3A432268e5831` | 6 | transferWithAuthorization |
-| Optimism | `0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85` | 6 | transferWithAuthorization |
-| Polygon | `0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359` | 6 | transferWithAuthorization |
-| Base Sepolia | `0x036CbD53842c5426634e7929541eC2318f3dCF7e` | 6 | transferWithAuthorization |
+## X402 Token Compatibility Checker
+
+<Note>
+**New Tool Available**: Verify if any ERC-20 token is compatible with X402 payments before integration.
+</Note>
+
+For a token to be compatible with X402, it must implement either:
+- **EIP-3009** (`transferWithAuthorization`) - Used by USDC
+- **EIP-2612** (`permit`) - Used by USDT (on some chains) and many other modern ERC-20 tokens
+
+### Using the Public Checker
+
+Check any ERC-20 token on AnySpend-supported chains:
+
+**🌐 Web Interface**: [https://anyspend.com/x402-tokens](https://anyspend.com/x402-tokens)
+
+Simply enter a token address and select the network to instantly verify X402 compatibility.
+
+**🔗 Direct API**: You can also query the API directly:
+
+```bash
+curl https://tokens.anyspend.com/metadata/base/0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3
+```
+
+This returns the token metadata and compatibility information in JSON format.
+
+### Using the NPM Package
+
+For developers integrating token compatibility checks into their applications:
+
+**📦 NPM Package**: [@b3dotfun/anyspend-x402-token-compat](https://www.npmjs.com/package/@b3dotfun/anyspend-x402-token-compat)
+
+```bash
+npm install @b3dotfun/anyspend-x402-token-compat
+```
 
 **Usage:**
 ```typescript
-const usdcAddress = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'; // Base
+import { TokenCompatClient } from '@b3dotfun/anyspend-x402-token-compat';
+
+const client = new TokenCompatClient();
+
+// Get token metadata and compatibility
+const metadata = await client.getTokenMetadata('base', '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913');
+console.log(metadata.supportsEip2612); // true - supports permit
+console.log(metadata.supportsEip3009); // true - supports transferWithAuth
+
+// Quick compatibility check
+const hasPermit = await client.supportsEip2612('base', tokenAddress);
 ```
 
-### DAI (Stablecoin)
 
-DAI supports **EIP-2612 permit**.
-
-| Network | Contract Address | Decimals | Signature Method |
-|---------|-----------------|----------|------------------|
-| Base | `0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb` | 18 | permit (EIP-2612) |
-| Ethereum | `0x6B175474E89094C44Da98b954EedeAC495271d0F` | 18 | permit (EIP-2612) |
-| Arbitrum | `0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1` | 18 | permit (EIP-2612) |
-| Optimism | `0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1` | 18 | permit (EIP-2612) |
-| Polygon | `0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063` | 18 | permit (EIP-2612) |
-
-**Usage:**
-```typescript
-const daiAddress = '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb'; // Base
-```
-
-### USDT (Tether)
-
-USDT support varies by network. Some implementations support permit, others don't.
-
-| Network | Contract Address | Decimals | Signature Method |
-|---------|-----------------|----------|------------------|
-| Base | `0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2` | 6 | permit (EIP-2612) |
-| Ethereum | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | 6 | ⚠️ No permit support |
-| Arbitrum | `0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9` | 6 | permit (EIP-2612) |
-| Optimism | `0x94b008aA00579c1307B0EF2c499aD98a8ce58e58` | 6 | permit (EIP-2612) |
-| Polygon | `0xc2132D05D31c914a87C6611C10748AEb04B58e8F` | 6 | ⚠️ No permit support |
-
-<Warning>
-USDT on Ethereum and Polygon does **not** support EIP-2612 permit. Use traditional `approve()` + `transferFrom()` flow or choose a different token.
-</Warning>
-
-### Other ERC-20 Tokens
-
-Any ERC-20 token that implements **EIP-2612 permit** is supported:
-
-- **cbBTC** (Coinbase Wrapped Bitcoin)
-- **LINK** (Chainlink)
-- **UNI** (Uniswap)
-- **AAVE** (Aave)
-- And many more...
-
-**Check if a token supports permit:**
-```typescript
-// Check if token has permit function
-const hasPermit = await token.read.permit !== undefined;
-
-// Or check for DOMAIN_SEPARATOR (required for EIP-712)
-const hasDomainSeparator = await token.read.DOMAIN_SEPARATOR !== undefined;
-```
-
-<Info>
-For detailed information about gasless signatures, see the [Permit vs TransferWithAuthorization](/anyspend/x402-signature-methods) guide.
-</Info>
-
-## Token Configuration
-
-### Client-Side (Paying)
-
-Specify your preferred payment token:
-
-```typescript
-import { X402Client } from 'anyspend-x402-client';
-
-const client = new X402Client({
-  walletClient,
-  preferredToken: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb', // DAI on Base
-  network: 'base-mainnet'
-});
-```
-
-Or per-request:
-
-```typescript
-const response = await client.request('https://api.example.com/data', {
-  preferredToken: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb' // DAI on Base
-});
-```
-
-### Server-Side (Receiving)
-
-Configure accepted tokens and settlement currency:
-
-```typescript
-import { paymentMiddleware, facilitator } from '@b3dotfun/anyspend-x402';
-
-const endpointConfig = {
-  '/api/data': {
-    amount: '1.00',        // $1 worth of any token
-    asset: 'USD',          // Let client choose token
-    network: 'base-mainnet'
-  }
-};
-
-app.use(paymentMiddleware(
-  '0xYourUSDCAddress...',  // Receive USDC
-  endpointConfig,
-  facilitator
-));
-```
-
-## Cross-Chain Support
-
-AnySpend can facilitate payments where the **client's token** is on a different chain than the **resource server's settlement**.
-
-**Example:**
-```typescript
-// Client pays with DAI on Ethereum
-const clientPayment = {
-  token: '0x6B175474E89094C44Da98b954EedeAC495271d0F', // DAI on Ethereum
-  network: 'ethereum-mainnet',
-  amount: '1.0'
-};
-
-// Resource server receives USDC on Base
-const serverSettlement = {
-  token: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC on Base
-  network: 'base-mainnet',
-  amount: '1.00'
-};
-
-// AnySpend handles:
-// 1. Receive DAI on Ethereum
-// 2. Bridge DAI from Ethereum → Base
-// 3. Swap DAI → USDC on Base
-// 4. Settle USDC to resource server
-```
+### How It Works
 
 **Supported Cross-Chain Routes:**
 AnySpend supports cross-chain routing between any of the supported EVM networks, including:
@@ -215,44 +128,31 @@ AnySpend supports cross-chain routing between any of the supported EVM networks,
 Cross-chain payments take longer (2-5 minutes) due to bridging time and incur additional fees (~0.5% total). Same-chain payments are recommended for the best user experience.
 </Info>
 
-## Gas Fees Comparison
-
-Estimated gas costs per x402 payment (as of 2025):
-
-| Network | USDC Payment | Token Swap Payment | Cross-Chain Payment |
-|---------|-------------|-------------------|---------------------|
-| Base | ~$0.001 | ~$0.003 | ~$0.01 - $0.05 |
-| B3 | ~$0.001 | ~$0.003 | ~$0.01 - $0.05 |
-| Arbitrum | ~$0.01 | ~$0.05 | ~$0.1 - $1 |
-| Optimism | ~$0.01 | ~$0.05 | ~$0.1 - $1 |
-| Polygon | ~$0.0001 | ~$0.001 | ~$0.01 - $0.1 |
-| BSC | ~$0.01 | ~$0.03 | ~$0.1 - $0.5 |
-| Avalanche | ~$0.02 | ~$0.05 | ~$0.1 - $1 |
-| Abstract | ~$0.001 | ~$0.003 | ~$0.01 - $0.05 |
-| Ethereum | ~$5 - $50 | ~$10 - $100 | ~$20 - $200 |
-| Solana | ~$0.0001 | ~$0.001 | ~$0.5 - $2 |
 
 <Note>
-Gas fees are **paid by the facilitator** and included in the 0.25% - 0.35% AnySpend fee. Clients and resource servers don't pay gas directly.
+Built on Cloudflare's global infrastructure with intelligent caching for instant results.
 </Note>
 
-## Testing & Development
+The checker combines real-time on-chain verification with a growing database of verified tokens:
 
-AnySpend supports multiple testnets for development and testing. See the [EVM Testnet Networks](#evm-testnet-networks) section above for the complete list of supported testnets and their faucets.
+- **⚡ Lightning Fast**: Millisecond-level response times through smart caching
+- **📊 Crowdsourced**: Database grows automatically as more tokens are checked
+- **🔄 Always Fresh**: On-chain verification for uncached tokens
+- **🌍 Global**: Powered by Cloudflare Workers for low-latency worldwide access
 
-### Recommended Testnets
+### Integration in X402
 
-**For general development:**
-- **Base Sepolia** (Chain ID: 84532) - Best testnet experience, fast and reliable
-- **Solana Devnet** (Chain ID: 103) - For Solana/SVM testing
+The token compatibility checker is already integrated into the AnySpend X402 SDK:
 
-**For specific network testing:**
-- Use the respective testnet that matches your target mainnet
-- See the EVM Testnet Networks table above for faucet links
+- Validates token compatibility upfront before payment
+- Returns clear, actionable errors for unsupported tokens
+- Prevents failed transactions due to incompatible tokens
 
-### Test Token Addresses
+**Try it live**: [https://x402-demo.anyspend.com/](https://x402-demo.anyspend.com/)
 
-Contact the AnySpend team for test token addresses on specific networks, or use standard testnet faucets to get native tokens for testing.
+<Warning>
+**Important**: Always verify token compatibility before integrating a new token into your payment flow. Incompatible tokens will result in failed payment signatures.
+</Warning>
 
 ## Additional Resources
 

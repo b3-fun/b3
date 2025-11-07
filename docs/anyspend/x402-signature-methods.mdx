@@ -10,13 +10,13 @@ AnySpend x402 uses cryptographic signatures instead of traditional token approva
 There are two main signature standards supported, each optimized for different token types:
 
 - **EIP-3009 (transferWithAuthorization)** - Used by USDC, one-step direct transfers
-- **EIP-2612 (permit)** - Used by DAI and most modern ERC-20 tokens, two-step approval + transfer
+- **EIP-2612 (permit)** - Used by most modern ERC-20 tokens, two-step approval + transfer
 
 ## Quick Comparison
 
 | Feature | EIP-2612 (Permit) | EIP-3009 (transferWithAuthorization) |
 |---------|-------------------|--------------------------------------|
-| **Used by** | DAI, most modern ERC-20s | USDC (all networks) |
+| **Used by** | Most modern ERC-20s | USDC (all networks) |
 | **Execution** | Two-step: approve + transfer | One-step: direct transfer |
 | **Nonce Type** | Sequential (auto-increments) | Random bytes32 |
 | **Dependency** | Must wait for previous nonce | No ordering required |
@@ -127,7 +127,7 @@ const typedData = {
 
 Signature-based approval that sets an allowance, followed by a separate `transferFrom()` call. This is the standard method for most modern ERC-20 tokens.
 
-**Used by:** DAI, and most modern ERC-20 tokens with permit support
+**Used by:** Most modern ERC-20 tokens with permit support
 
 ### Key Advantages
 
@@ -160,7 +160,7 @@ const signature = await signPermit({
   token: tokenAddress,
   owner: ownerAddress,
   spender: facilitatorAddress,
-  value: '1000000000000000000',  // 1 DAI (18 decimals)
+  value: '1000000',  // 1 USDC (6 decimals)
   deadline: deadline,
   nonce: nonce                    // Sequential nonce
 });
@@ -237,10 +237,10 @@ const hasDomainSeparator = await token.read.DOMAIN_SEPARATOR !== undefined;
 - USDC.e (bridged versions)
 
 **EIP-2612 (permit):**
-- DAI (all chains)
 - Most modern ERC-20s
 - USDT (on some chains - Base, Arbitrum, Optimism)
 - Many DeFi tokens
+- Check compatibility: [anyspend.com/x402-tokens](https://anyspend.com/x402-tokens)
 
 **No Gasless Support:**
 - USDT on Ethereum mainnet (no permit)
@@ -369,7 +369,7 @@ import { X402Client } from 'anyspend-x402-client';
 
 const client = new X402Client({
   walletClient,
-  preferredToken: tokenAddress // USDC or DAI
+  preferredToken: tokenAddress // USDC or any compatible token
 });
 
 // Client automatically:
