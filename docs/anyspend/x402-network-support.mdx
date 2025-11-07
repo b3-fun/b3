@@ -1,15 +1,15 @@
 ---
 title: "Network & Token Support"
-description: "Supported blockchains, tokens, and contract addresses for AnySpend X402 payments"
+description: "Supported blockchains, tokens, and contract addresses for AnySpend x402 payments"
 ---
 
 ## Overview
 
-AnySpend X402 supports payments across multiple blockchain networks including EVM-compatible chains and Solana (SVM). This page provides the complete reference of supported networks, tokens, and their contract addresses.
+AnySpend x402 supports payments across multiple blockchain networks including EVM-compatible chains and Solana (SVM). This page provides the complete reference of supported networks, tokens, and their contract addresses.
 
 ## EVM Mainnet Networks
 
-AnySpend X402 supports the following EVM mainnet chains:
+AnySpend x402 supports the following EVM mainnet chains:
 
 | Network | Identifier | Chain ID | Type |
 |---------|-----------|----------|------|
@@ -114,7 +114,20 @@ console.log(metadata.supportsEip3009); // true - supports transferWithAuth
 const hasPermit = await client.supportsEip2612('base', tokenAddress);
 ```
 
+
 ### How It Works
+
+**Supported Cross-Chain Routes:**
+AnySpend supports cross-chain routing between any of the supported EVM networks, including:
+- Ethereum ↔ Base, Arbitrum, Optimism, Polygon, Avalanche
+- Base ↔ Arbitrum, Optimism, Polygon
+- L1 ↔ L2 bridging across all supported chains
+- Cross-VM: Solana ↔ EVM chains (experimental)
+
+<Info>
+Cross-chain payments take longer (2-5 minutes) due to bridging time and incur additional fees (~0.5% total). Same-chain payments are recommended for the best user experience.
+</Info>
+
 
 <Note>
 Built on Cloudflare's global infrastructure with intelligent caching for instant results.

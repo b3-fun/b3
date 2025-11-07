@@ -10,9 +10,11 @@ import {
 } from "@b3dotfun/sdk/anyspend/react";
 import { AnySpendDepositHype } from "@b3dotfun/sdk/anyspend/react/components/AnyspendDepositHype";
 import { AnySpendStakeUpside } from "@b3dotfun/sdk/anyspend/react/components/AnySpendStakeUpside";
+import { useGlobalWalletState } from "@b3dotfun/sdk/anyspend/utils";
 import { useIsMobile, useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
+import { useEffect, useRef } from "react";
 import { AvatarEditor } from "./AvatarEditor/AvatarEditor";
 import { useB3 } from "./B3Provider/useB3";
 import { LinkAccount } from "./LinkAccount/LinkAccount";
@@ -21,6 +23,7 @@ import { RequestPermissions } from "./RequestPermissions/RequestPermissions";
 import { SignInWithB3Flow } from "./SignInWithB3/SignInWithB3Flow";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "./ui/dialog";
 import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "./ui/drawer";
+import { useSetActiveWallet } from "thirdweb/react";
 
 const debug = debugB3React("B3DynamicModal");
 
@@ -28,6 +31,23 @@ export function B3DynamicModal() {
   const { isOpen, setB3ModalOpen, contentType, history, navigateBack } = useModalStore();
   const { theme } = useB3();
   const isMobile = useIsMobile();
+  const prevIsOpenRef = useRef(isOpen);
+
+  const globalAccountWallet = useGlobalWalletState(state => state.globalAccountWallet);
+  const setGlobalAccountWallet = useGlobalWalletState(state => state.setGlobalAccountWallet);
+  const setActiveWallet = useSetActiveWallet();
+
+  // anyspend cleanup global account chnages by setting account back
+  useEffect(() => {
+    if (prevIsOpenRef.current && !isOpen) {
+      if (globalAccountWallet) {
+        setActiveWallet(globalAccountWallet);
+        setGlobalAccountWallet(undefined);
+      }
+    }
+
+    prevIsOpenRef.current = isOpen;
+  }, [isOpen, globalAccountWallet, setActiveWallet, setGlobalAccountWallet]);
 
   // Define arrays for different modal type groups
   const fullWidthTypes = [

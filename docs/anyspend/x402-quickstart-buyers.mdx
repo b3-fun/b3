@@ -1,26 +1,34 @@
 ---
 title: "Quickstart for Buyers"
-description: "Pay for paywalled APIs and services using any token with the AnySpend X402 Client SDK"
+description: "Pay for paywalled APIs and services using any token with the AnySpend x402 Client SDK"
 ---
 
 ## Overview
 
-This guide shows you how to use the **AnySpend X402 Client SDK** to pay for paywalled resources using any cryptocurrency you hold. The SDK handles the entire payment flow automatically, including signature generation and retry logic.
+This guide shows you how to use the **AnySpend x402 Client SDK** to pay for paywalled resources using compatible tokens with EIP-2612 or EIP-3009 support. The SDK handles the entire payment flow automatically, including signature generation and retry logic.
 
-The beauty of X402 is that you can use this same client to pay for **any X402-enabled service**, not just those using AnySpend.
+The beauty of x402 is that you can use this same client to pay for **any x402-enabled service**, not just those using AnySpend.
+
+<Card title="Token Compatibility Checker" icon="check-circle" href="https://anyspend.com/x402-tokens">
+  Browse compatible tokens with EIP-2612 or EIP-3009 support across 19+ networks
+</Card>
 
 ## Prerequisites
 
 Before you begin, make sure you have:
 
 - **Node.js 18+** or compatible JavaScript runtime
-- **A crypto wallet** with some tokens (ETH, USDC, etc.)
+- **A crypto wallet** with compatible tokens (USDC, DAI, or other EIP-2612/EIP-3009 tokens)
 - **A wallet library** like [viem](https://viem.sh) or [ethers.js](https://docs.ethers.org)
-- **Access to an X402-enabled service** (like a paywalled API)
+- **Access to an x402-enabled service** (like a paywalled API)
+
+<Note>
+**Important**: Only tokens with EIP-2612 (Permit) or EIP-3009 (TransferWithAuthorization) support are compatible with AnySpend x402 for gasless payments. Use the [Token Compatibility Checker](https://anyspend.com/x402-tokens) to verify your token is supported.
+</Note>
 
 ## Installation
 
-Install the X402 client SDK:
+Install the x402 client SDK:
 
 <CodeGroup>
 ```bash npm
@@ -58,9 +66,9 @@ const walletClient = createWalletClient({
 const [address] = await walletClient.getAddresses();
 ```
 
-### 2. Initialize the X402 Client
+### 2. Initialize the x402 Client
 
-Create an instance of the X402 client:
+Create an instance of the x402 client:
 
 ```typescript
 import { X402Client } from 'anyspend-x402-client';
@@ -346,13 +354,23 @@ const fetchWithPayment = wrapFetchWithPayment(
 
 ## Supported Tokens
 
-The X402 client can pay with any token that supports **EIP-2612 permit** or is **USDC** (which uses EIP-3009 transferWithAuthorization).
+**Only tokens with EIP-2612 or EIP-3009 support are compatible** with AnySpend x402 for gasless payments.
 
-Common supported tokens:
+### What are EIP-2612 and EIP-3009?
 
-- **USDC** - Native support on all chains
-- **USDT** - On chains where it implements permit
-- **Any ERC-20 with EIP-2612 or EIP-3009** - Use the [Token Compatibility Checker](https://anyspend.com/x402-tokens) to verify
+- **EIP-2612 (Permit)**: Allows gasless token approvals via off-chain signatures
+- **EIP-3009 (TransferWithAuthorization)**: Enables gasless transfers via off-chain signatures (used by USDC)
+
+
+### Common Compatible Tokens
+
+- **USDC** - EIP-3009 support on all chains
+- **B3** - EIP-2612 permit support
+- **Many other tokens** - Check compatibility using the tool below
+
+<Card title="Token Compatibility Checker" icon="check-circle" href="https://anyspend.com/x402-tokens">
+  Browse all compatible tokens with EIP-2612 or EIP-3009 support across 19+ networks
+</Card>
 
 See [Network Support](/anyspend/x402-network-support) for detailed token addresses per chain.
 
@@ -639,7 +657,7 @@ await new X402Client({ walletClient }).request('...');
 
 <CardGroup cols={2}>
 <Card title="Overview" icon="book" href="/anyspend/x402-overview">
-  Learn how AnySpend X402 works
+  Learn how AnySpend x402 works
 </Card>
 
 <Card title="Network Support" icon="globe" href="/anyspend/x402-network-support">

@@ -12,6 +12,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       theme="light"
       automaticallySetFirstEoa={true}
       partnerId={String(process.env.PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID)}
+      simDuneApiKey={process.env.NEXT_PUBLIC_SIM_DUNE_API_KEY}
     >
       <AnyspendProvider featureFlags={{ showPoints: true }}>
         <B3DynamicModal />
