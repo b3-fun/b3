@@ -25,7 +25,7 @@ The AnySpend X402 Facilitator is a production-grade payment infrastructure that 
 
 Accept payments in any ERC-20 token that supports EIP-2612 (permit) or EIP-3009 (transferWithAuthorization):
 
-- **Stablecoins**: USDC, DAI, USDT (on supported chains)
+- **Stablecoins**: USDC, USDT (on supported chains)
 - **Native tokens**: ETH, SOL, BNB, MATIC
 - **Custom tokens**: Any token with permit support, including project tokens like B3
 - **19+ Networks**: Support across EVM chains (Base, Ethereum, Arbitrum, etc.) and SVM (Solana)
@@ -85,7 +85,7 @@ Fully compatible with any X402 implementation:
 ```
 ┌──────────────┐
 │    Client    │  Signs payment authorization
-│  (Any Token) │  preferredToken: DAI
+│  (Any Token) │  preferredToken: USDT
 └──────┬───────┘
        │
        │ X-PAYMENT header
@@ -230,7 +230,7 @@ Get token conversion rate for multi-token payments.
 ```json
 {
   "usdcAmount": "1000000",        // Target amount (1 USDC)
-  "paymentToken": "0x50c5...",    // DAI address
+  "paymentToken": "0xfde4...",    // USDT address
   "network": "base-mainnet"
 }
 ```
@@ -238,13 +238,13 @@ Get token conversion rate for multi-token payments.
 **Response:**
 ```json
 {
-  "tokenAmount": "1000000000000000000",  // 1.0 DAI needed
+  "tokenAmount": "1000000",  // 1.0 USDT needed
   "exchangeRate": "1.0",
   "deadline": 1730000000,
   "route": {
-    "srcToken": "0x50c5...",
+    "srcToken": "0xfde4...",
     "dstToken": "0x8335...",
-    "path": ["DAI", "USDC"]
+    "path": ["USDT", "USDC"]
   }
 }
 ```

@@ -23,7 +23,7 @@ The X402 protocol modernizes the HTTP `402 Payment Required` status code, turnin
 
 Pay for paywalled resources using any cryptocurrency you hold:
 
-- **Pay with any token**: Use ETH, DAI, or any ERC-20 token - not just USDC
+- **Pay with any token**: Use USDC, USDT, or any ERC-20 token with EIP-2612/EIP-3009 support
 - **Standard protocol**: Works with any X402-enabled service using standard HTTP
 - **No manual swaps**: AnySpend automatically converts your token to what the seller needs
 - **Simple integration**: One SDK works across all X402 services
@@ -76,7 +76,7 @@ Your API returns `402 Payment Required` with payment details
 </Step>
 
 <Step title="Token Preference">
-Client specifies their preferred payment token (ETH, DAI, etc.)
+Client specifies their preferred payment token (USDC, USDT, etc.)
 </Step>
 
 <Step title="AnySpend Quotes">
