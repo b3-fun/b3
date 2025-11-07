@@ -1,4 +1,4 @@
-import { ABI_ERC20_STAKING, B3_TOKEN } from "@b3dotfun/sdk/anyspend";
+import { ABI_ERC20_STAKING, B3_TOKEN, eqci } from "@b3dotfun/sdk/anyspend";
 import {
   Button,
   GlareCardRounded,
@@ -7,7 +7,7 @@ import {
   TextLoop,
   useHasMounted,
   useModalStore,
-  useTokenBalance,
+  useSimBalance,
   useUnifiedChainSwitchAndExecute,
 } from "@b3dotfun/sdk/global-account/react";
 import { PUBLIC_BASE_RPC_URL } from "@b3dotfun/sdk/shared/constants";
@@ -58,18 +58,15 @@ export function AnySpendStakeB3({
   const hasMounted = useHasMounted();
   const { setB3ModalOpen } = useModalStore();
 
-  // Fetch B3 token balance
-  const {
-    formattedBalance: b3Balance,
-    isLoading: isBalanceLoading,
-    rawBalance: b3RawBalance,
-  } = useTokenBalance({
-    token: B3_TOKEN,
-  });
-
   // Wagmi hooks for direct staking
   const { address } = useAccount();
   const { switchChainAndExecute, isSwitchingOrExecuting } = useUnifiedChainSwitchAndExecute();
+
+  // Fetch B3 token balance
+  const { data: simBalance, isLoading: isBalanceLoading } = useSimBalance(address, [base.id]);
+  const b3RawBalanceStr = simBalance?.balances.find(b => eqci(b.address, B3_TOKEN.address))?.amount || "0";
+  const b3RawBalance = BigInt(b3RawBalanceStr);
+  const b3Balance = formatTokenAmount(BigInt(b3RawBalance), 18);
 
   // State for direct staking flow
   const [isStaking, setIsStaking] = useState(false);
