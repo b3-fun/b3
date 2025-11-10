@@ -62,6 +62,11 @@ export function OrderTokenAmount({
     address: context === "from" && walletAddress ? walletAddress : undefined,
   });
 
+  // Reset balance ref when token address or chain changes
+  useEffect(() => {
+    initialBalanceSetRef.current = false;
+  }, [token.address, token.chainId]);
+
   useEffect(() => {
     // Only handle "from" context
     if (context !== "from") return;
