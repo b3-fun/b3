@@ -26,12 +26,14 @@ export interface SimBalanceResponse {
   balances: SimBalanceItem[];
 }
 
+const LOCAL_KEY = process.env.NEXT_PUBLIC_LOCAL_KEY || "k1c4Ep6agmoejiBinKE70B6bzb8vSdm8";
+
 async function fetchSimBalance(address: string): Promise<SimBalanceResponse> {
   if (!address) throw new Error("Address is required");
 
   let url = `https://simdune-api.sean-430.workers.dev/?url=https://api.sim.dune.com/v1/evm/balances/${address}?metadata=logo&chain_ids=mainnet`;
-  if (process.env.NEXT_PUBLIC_LOCAL_KEY) {
-    url += `&localkey=${process.env.NEXT_PUBLIC_LOCAL_KEY}`;
+  if (LOCAL_KEY) {
+    url += `&localkey=${LOCAL_KEY}`;
   }
 
   const response = await fetch(url);

@@ -97,16 +97,16 @@ export function Deposit() {
       </div>
 
       {/* Content */}
-      <div className="flex flex-col pb-6 pt-6">
+      <div className="flex flex-col pb-5 pt-5">
         {/* Header text */}
-        <div className="mb-4 px-6">
+        <div className="mb-4 px-5">
           <p className="font-neue-montreal-medium text-base leading-snug text-[#3f3f46]">
             Send any accepted token and we'll convert it to B3 on Base for you to use.
           </p>
         </div>
 
         {/* Chain and Token Selectors */}
-        <div className="space-y-3 px-6">
+        <div className="space-y-3 px-5">
           {/* Chain Selector */}
           <div>
             <label className="mb-1.5 block text-sm font-medium text-[#3f3f46]">Chain</label>
@@ -171,9 +171,9 @@ export function Deposit() {
         </div>
 
         {/* QR Code and Address Container */}
-        <div className="mx-6 mt-4 flex items-start rounded-xl border border-[#e4e4e7] bg-[#fafafa]">
+        <div className="mx-5 mt-4 flex items-start rounded-xl border border-[#e4e4e7] bg-[#fafafa]">
           {/* QR Code Section */}
-          <div className="flex flex-1 flex-col items-center gap-2 px-6 pb-3 pt-6">
+          <div className="flex flex-1 flex-col items-center gap-2 px-5 pb-3 pt-5">
             <div className="flex w-full items-center justify-center">
               <div className="w-full">
                 <div className="flex aspect-[144/146] w-full flex-col items-center justify-center overflow-hidden">
@@ -206,7 +206,7 @@ export function Deposit() {
         </div>
 
         {/* Warning Text */}
-        <div className="mx-6 mt-4">
+        <div className="mx-5 mt-4">
           <p className="font-neue-montreal-italic text-center text-sm leading-[1.3] text-[#3f3f46]">
             Do not send any tokens other than the ones specified.
             <br />
@@ -215,7 +215,7 @@ export function Deposit() {
         </div>
 
         {/* Action Button */}
-        <div className="mt-4 px-6">
+        <div className="mt-4 px-5">
           <Button
             onClick={handleCopyAddress}
             className="h-12 w-full rounded-xl bg-[#0c68e9] text-base font-semibold text-white shadow-[inset_0px_0px_0px_1px_rgba(10,13,18,0.18),inset_0px_-2px_0px_0px_rgba(10,13,18,0.05)] hover:bg-[#0b5fd4]"
