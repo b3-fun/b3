@@ -1,13 +1,16 @@
-import { useB3, useModalStore, useProfile } from "@b3dotfun/sdk/global-account/react";
+import { useAccountWallet, useB3, useModalStore, useProfile, useSimBalance } from "@b3dotfun/sdk/global-account/react";
 import { formatUsername } from "@b3dotfun/sdk/shared/utils";
 import { getIpfsUrl } from "@b3dotfun/sdk/shared/utils/ipfs";
+import { formatDisplayNumber } from "@b3dotfun/sdk/shared/utils/number";
 import { Pencil } from "lucide-react";
+import { useMemo } from "react";
 import { useActiveAccount } from "thirdweb/react";
 import { useFirstEOA } from "../../hooks/useFirstEOA";
 
 const ProfileSection = () => {
   const account = useActiveAccount();
   const { address: eoaAddress } = useFirstEOA();
+  const { address: smartWalletAddress } = useAccountWallet();
   const { data: profile } = useProfile({
     address: eoaAddress || account?.address,
     fresh: true,
@@ -16,6 +19,14 @@ const ProfileSection = () => {
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
   const navigateBack = useModalStore(state => state.navigateBack);
+
+  const { data: simBalance } = useSimBalance(smartWalletAddress);
+
+  // Calculate total balance in USD
+  const totalBalanceUsd = useMemo(() => {
+    if (!simBalance?.balances) return 0;
+    return simBalance.balances.reduce((sum, token) => sum + (token.value_usd || 0), 0);
+  }, [simBalance]);
 
   const avatarUrl = user?.avatar ? getIpfsUrl(user?.avatar) : profile?.avatar;
 
@@ -48,8 +59,12 @@ const ProfileSection = () => {
           </button>
         </div>
         <div className="global-account-profile-info">
-          <h2 className="text-b3-grey text-xl font-semibold">balance</h2>
-          <div className="py-1 text-[#0B57C2]">{profile?.displayName || formatUsername(profile?.name || "")} </div>
+          <h2 className="text-b3-grey text-xl font-semibold">
+            {formatDisplayNumber(totalBalanceUsd, { style: "currency", fractionDigits: 2 })}
+          </h2>
+          <div className="font-neue-montreal-semibold py-1 text-base leading-none text-[#0B57C2]">
+            {profile?.displayName || formatUsername(profile?.name || "")}
+          </div>
         </div>
       </div>
     </div>

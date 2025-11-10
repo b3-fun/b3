@@ -1,4 +1,5 @@
 import {
+  B3GlobalBrandingWrapper,
   ManageAccountModalProps,
   TabsContentPrimitive,
   TabsListPrimitive,
@@ -81,8 +82,8 @@ export function ManageAccount({
   const { activeTab = "home", setActiveTab } = contentType as ManageAccountModalProps;
 
   return (
-    <div className="b3-manage-account bg-b3-background flex flex-col rounded-xl">
-      <div className="flex-1">
+    <B3GlobalBrandingWrapper>
+      <div className="b3-manage-account flex-1">
         <TabsPrimitive
           defaultValue={activeTab}
           onValueChange={value => {
@@ -102,15 +103,15 @@ export function ManageAccount({
             </TabsContentPrimitive>
 
             {/* <TabsContentPrimitive value="apps" className="px-4 pb-4 pt-2">
-              <AppsContent chain={chain} partnerId={partnerId} />
-            </TabsContentPrimitive> */}
+            <AppsContent chain={chain} partnerId={partnerId} />
+          </TabsContentPrimitive> */}
 
             <TabsContentPrimitive value="settings" className="px-4 pb-4 pt-2">
               <SettingsContent partnerId={partnerId} onLogout={onLogout} chain={chain} />
             </TabsContentPrimitive>
           </div>
-          <div className="sticky bottom-0 left-0 flex w-full items-center justify-center border-t border-gray-200 bg-[#FAFAFA] shadow-[0px_-3px_10.8px_0px_rgba(92,98,96,0.11)]">
-            <TabsListPrimitive className="border-b3-react-border justify-space-around flex h-[68px] w-full max-w-md items-center justify-center gap-4 rounded-none border border-none bg-[#FAFAFA]">
+          <div className="sticky bottom-0 left-0 flex w-full items-center justify-center rounded-b-xl border-t border-gray-200 bg-[#FAFAFA] shadow-[0px_-3px_10.8px_0px_rgba(92,98,96,0.11)]">
+            <TabsListPrimitive className="flex h-[68px] w-full max-w-md items-center justify-center gap-4 rounded-b-xl border-none bg-[#FAFAFA]">
               <TabTriggerPrimitive
                 value="home"
                 className="data-[state=active]:border-b3-primary-blue group flex flex-initial flex-col items-center gap-1 border-r-0 border-t-0 px-6 pb-2 pt-2.5 text-[#a0a0ab] data-[state=active]:border-t-4 data-[state=active]:text-[#18181B]"
@@ -141,6 +142,6 @@ export function ManageAccount({
           </div>
         </TabsPrimitive>
       </div>
-    </div>
+    </B3GlobalBrandingWrapper>
   );
 }

@@ -25,6 +25,9 @@ export { Deposit } from "./Deposit/Deposit";
 // Send Components
 export { Send } from "./Send/Send";
 
+// B3 Global Branding Wrapper
+export { B3GlobalBrandingWrapper } from "./B3GlobalBrandingWrapper";
+
 // RequestPermissions Components
 export { RequestPermissions } from "./RequestPermissions/RequestPermissions";
 export { RequestPermissionsButton } from "./RequestPermissions/RequestPermissionsButton";

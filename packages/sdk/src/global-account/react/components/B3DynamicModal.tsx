@@ -17,6 +17,7 @@ import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { useEffect, useRef } from "react";
 import { useSetActiveWallet } from "thirdweb/react";
 import { AvatarEditor } from "./AvatarEditor/AvatarEditor";
+import { B3GlobalBrandingWrapper } from "./B3GlobalBrandingWrapper";
 import { useB3 } from "./B3Provider/useB3";
 import { Deposit } from "./Deposit/Deposit";
 import { LinkAccount } from "./LinkAccount/LinkAccount";
@@ -30,7 +31,7 @@ import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "./ui/draw
 
 const debug = debugB3React("B3DynamicModal");
 
-export function B3DynamicModal() {
+export function B3DynamicModal({ hasB3GlobalBranding = false }: { hasB3GlobalBranding?: boolean }) {
   const isOpen = useModalStore(state => state.isOpen);
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
   const contentType = useModalStore(state => state.contentType);
@@ -88,7 +89,7 @@ export function B3DynamicModal() {
   ];
 
   // Types that have their own custom header with close button
-  const customHeaderTypes = ["deposit", "send"];
+  const customHeaderTypes = ["deposit", "send", "manageAccount"];
 
   // Check if current content type is in freestyle types
   const isFreestyleType = freestyleTypes.includes(contentType?.type as string);
@@ -120,8 +121,14 @@ export function B3DynamicModal() {
         return <RequestPermissions {...contentType} />;
       case "manageAccount":
         return <ManageAccount {...contentType} />;
-      case "anySpend":
-        return <AnySpend mode="modal" {...contentType} />;
+      case "anySpend": {
+        const anySpendContent = <AnySpend mode="modal" {...contentType} />;
+        return hasB3GlobalBranding ? (
+          <B3GlobalBrandingWrapper>{anySpendContent}</B3GlobalBrandingWrapper>
+        ) : (
+          anySpendContent
+        );
+      }
       case "anyspendOrderDetails":
         return <AnySpend mode="modal" loadOrder={contentType.orderId} />;
       case "anySpendNft":
@@ -183,36 +190,38 @@ export function B3DynamicModal() {
       >
         <ModalTitle className="sr-only hidden">{contentType?.type || "Modal"}</ModalTitle>
         <ModalDescription className="sr-only hidden">{contentType?.type || "Modal Body"}</ModalDescription>
+
         <div className={cn("no-scrollbar max-h-[90dvh] overflow-auto sm:max-h-[80dvh]")}>
           {history.length > 0 &&
             contentType?.showBackButton &&
             (contentType?.type === "deposit" || contentType?.type === "send" ? null : (
-            <button
-              onClick={navigateBack}
-              className="flex items-center gap-2 px-6 py-4 text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-            >
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M15.8337 10H4.16699"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M10.0003 15.8334L4.16699 10L10.0003 4.16669"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              <span className="text-sm font-medium">Back</span>
-            </button>
+              <button
+                onClick={navigateBack}
+                className="flex items-center gap-2 px-6 py-4 text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    d="M15.8337 10H4.16699"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M10.0003 15.8334L4.16699 10L10.0003 4.16669"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <span className="text-sm font-medium">Back</span>
+              </button>
             ))}
           {renderContent()}
         </div>
       </ModalContent>
+
       {contentType?.type === "avatarEditor" && (
         <button
           onClick={() => setB3ModalOpen(false)}

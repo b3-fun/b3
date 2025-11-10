@@ -92,7 +92,7 @@ function WalletItem({ wallet, isActive, onClick }: { wallet: Wallet; isActive: b
 
 export function Header({ onLogout }: { onLogout?: () => void }) {
   const activeWallet = useActiveWallet();
-  console.log("activeWallet :", activeWallet);
+
   const connectedWallets = useConnectedWallets();
   const setActiveWallet = useSetActiveWallet();
   const contentType = useModalStore(state => state.contentType) as ManageAccountModalProps;

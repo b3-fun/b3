@@ -52,7 +52,7 @@ function App() {
         }}
       >
         <BrowserRouter>
-          <B3DynamicModal />
+          <B3DynamicModal hasB3GlobalBranding={true} />
           <div className="min-h-screen bg-white">
             {!isEmbedded && (
               <header className="fixed top-0 z-50 w-full border-b border-gray-100 bg-white/80 backdrop-blur-sm">
