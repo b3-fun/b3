@@ -6,6 +6,7 @@ import invariant from "invariant";
 import { motion } from "motion/react";
 import { useEffect, useMemo, useRef } from "react";
 import { toast } from "sonner";
+import { useActiveWallet, useSetActiveWallet } from "thirdweb/react";
 import { base } from "viem/chains";
 import { PanelView, useAnyspendFlow } from "../hooks/useAnyspendFlow";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
@@ -17,11 +18,10 @@ import { FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaym
 import { OrderDetails } from "./common/OrderDetails";
 import { PointsDetailPanel } from "./common/PointsDetailPanel";
 import { RecipientSelection } from "./common/RecipientSelection";
-import { useActiveWallet, useSetActiveWallet } from "thirdweb/react";
 
 import { ArrowDown, Loader2 } from "lucide-react";
-import { PanelOnramp } from "./common/PanelOnramp";
 import { useGlobalWalletState } from "../../utils";
+import { PanelOnramp } from "./common/PanelOnramp";
 
 const SLIPPAGE_PERCENT = 3;
 
@@ -286,9 +286,12 @@ function AnySpendDepositHypeInner({
             <CryptoReceiveSection
               isDepositMode={false}
               isBuyMode={true}
-              selectedRecipientAddress={recipientAddress}
+              selectedRecipientAddress={selectedRecipientAddress}
               recipientName={recipientName || undefined}
               onSelectRecipient={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
+              setRecipientAddress={setSelectedRecipientAddress}
+              recipientAddressFromProps={recipientAddress}
+              globalAddress={globalAddress}
               dstAmount={dstAmount}
               dstToken={B3_TOKEN}
               dstTokenSymbol={HYPE_TOKEN_DETAILS.SYMBOL}
@@ -304,6 +307,7 @@ function AnySpendDepositHypeInner({
               anyspendQuote={anyspendQuote}
               onShowPointsDetail={() => setActivePanel(PanelView.POINTS_DETAIL)}
               onShowFeeDetail={() => setActivePanel(PanelView.FEE_DETAIL)}
+              selectedCryptoPaymentMethod={selectedCryptoPaymentMethod}
             />
           )}
         </div>
