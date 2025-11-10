@@ -187,28 +187,28 @@ export function B3DynamicModal() {
           {history.length > 0 &&
             contentType?.showBackButton &&
             (contentType?.type === "deposit" || contentType?.type === "send" ? null : (
-              <button
-                onClick={navigateBack}
-                className="flex items-center gap-2 px-6 py-4 text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-              >
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path
-                    d="M15.8337 10H4.16699"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M10.0003 15.8334L4.16699 10L10.0003 4.16669"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                <span className="text-sm font-medium">Back</span>
-              </button>
+            <button
+              onClick={navigateBack}
+              className="flex items-center gap-2 px-6 py-4 text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M15.8337 10H4.16699"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M10.0003 15.8334L4.16699 10L10.0003 4.16669"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span className="text-sm font-medium">Back</span>
+            </button>
             ))}
           {renderContent()}
         </div>

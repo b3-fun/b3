@@ -77,6 +77,7 @@ export function ManageAccount({
   showDeposit,
 }: ManageAccountProps) {
   const contentType = useModalStore(state => state.contentType);
+  const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
   const { activeTab = "home", setActiveTab } = contentType as ManageAccountModalProps;
 
   return (
@@ -117,13 +118,18 @@ export function ManageAccount({
                 <HomeIcon />
                 <span className="text-b3-grey font-neue-montreal-semibold text-xs">Home</span>
               </TabTriggerPrimitive>
-              <TabTriggerPrimitive
-                value="tokens"
-                className="data-[state=active]:border-b3-primary-blue group flex flex-initial flex-col items-center gap-1 border-r-0 border-t-0 px-6 pb-2 pt-2.5 text-[#a0a0ab] data-[state=active]:border-t-4 data-[state=active]:text-[#18181B]"
+              <button
+                className="group flex flex-initial flex-col items-center gap-1 border-r-0 border-t-0 px-6 pb-2 pt-2.5 text-[#a0a0ab] transition-colors hover:text-[#18181B]"
+                onClick={() => {
+                  setB3ModalContentType({
+                    type: "anySpend",
+                    showBackButton: true,
+                  });
+                }}
               >
                 <SwapIcon />
                 <span className="text-b3-grey font-neue-montreal-semibold text-xs">Swap</span>
-              </TabTriggerPrimitive>
+              </button>
               <TabTriggerPrimitive
                 value="settings"
                 className="data-[state=active]:border-b3-primary-blue group flex flex-initial flex-col items-center gap-1 border-r-0 border-t-0 px-6 pb-2 pt-2.5 text-[#a0a0ab] data-[state=active]:border-t-4 data-[state=active]:text-[#18181B]"
