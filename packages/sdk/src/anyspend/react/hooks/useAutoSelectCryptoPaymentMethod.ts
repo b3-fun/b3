@@ -18,7 +18,7 @@ interface UseAutoSelectCryptoPaymentMethodParams {
 /**
  * Custom hook to automatically select appropriate crypto payment method
  * based on available wallets and balance.
- * 
+ *
  * Auto-selection logic:
  * - Only auto-selects when payment method is NONE (doesn't override user choices)
  * - If EOA/Wagmi wallet connected + has balance → CONNECT_WALLET
@@ -70,4 +70,3 @@ export function useAutoSelectCryptoPaymentMethod({
     setSelectedCryptoPaymentMethod,
   ]);
 }
-

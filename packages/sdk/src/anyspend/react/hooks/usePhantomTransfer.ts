@@ -60,29 +60,26 @@ export function usePhantomTransfer({ rpcEndpoint }: UsePhantomTransferParams = {
   /**
    * Calculate optimal priority fee based on recent network activity
    */
-  const calculatePriorityFee = useCallback(
-    async (connection: Connection, fromPubkey: PublicKey): Promise<number> => {
-      let priorityFee = 10000; // Default fallback (10,000 micro-lamports)
+  const calculatePriorityFee = useCallback(async (connection: Connection, fromPubkey: PublicKey): Promise<number> => {
+    let priorityFee = 10000; // Default fallback (10,000 micro-lamports)
 
-      try {
-        const recentFees = await connection.getRecentPrioritizationFees({
-          lockedWritableAccounts: [fromPubkey],
-        });
+    try {
+      const recentFees = await connection.getRecentPrioritizationFees({
+        lockedWritableAccounts: [fromPubkey],
+      });
 
-        if (recentFees && recentFees.length > 0) {
-          // Use 75th percentile of recent fees for good priority
-          const sortedFees = recentFees.map(fee => fee.prioritizationFee).sort((a, b) => a - b);
-          const percentile75Index = Math.floor(sortedFees.length * 0.75);
-          priorityFee = Math.max(sortedFees[percentile75Index] || 10000, 10000);
-        }
-      } catch (feeError) {
-        console.warn("Failed to fetch recent priority fees, using default:", feeError);
+      if (recentFees && recentFees.length > 0) {
+        // Use 75th percentile of recent fees for good priority
+        const sortedFees = recentFees.map(fee => fee.prioritizationFee).sort((a, b) => a - b);
+        const percentile75Index = Math.floor(sortedFees.length * 0.75);
+        priorityFee = Math.max(sortedFees[percentile75Index] || 10000, 10000);
       }
+    } catch (feeError) {
+      console.warn("Failed to fetch recent priority fees, using default:", feeError);
+    }
 
-      return priorityFee;
-    },
-    [],
-  );
+    return priorityFee;
+  }, []);
 
   /**
    * Create a native SOL transfer transaction with priority fees
@@ -302,4 +299,3 @@ export function usePhantomTransfer({ rpcEndpoint }: UsePhantomTransferParams = {
     getConnectedAddress,
   };
 }
-
