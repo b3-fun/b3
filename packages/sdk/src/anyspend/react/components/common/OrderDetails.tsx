@@ -247,6 +247,8 @@ export const OrderDetails = memo(function OrderDetails({
 
   // Track if auto-payment was attempted to avoid re-triggering
   const autoPaymentAttempted = useRef(false);
+  // Track if component is ready for auto-payment (all data loaded)
+  const [isComponentReady, setIsComponentReady] = useState(false);
 
   const roundedUpSrcAmount = useMemo(() => {
     // Display the full transfer amount without rounding since users need to see the exact value they're transferring.
@@ -379,15 +381,11 @@ export const OrderDetails = memo(function OrderDetails({
   // Calculate status display before using it
   const { text: statusText, status: statusDisplay } = getStatusDisplay(order);
 
-  // Auto-trigger payment on first visit if order is in payable state
-  useEffect(() => {
-    // Only run once
-    if (autoPaymentAttempted.current) return;
-
+  // Memoize the payable state calculation to avoid recalculating on every render
+  const isPayableState = useMemo(() => {
     const waitingForDeposit = new URLSearchParams(window.location.search).get("waitingForDeposit") === "true";
 
-    // Check if order is in payable state
-    const isPayableState =
+    return (
       refundTxs.length === 0 &&
       !executeTx &&
       !(relayTxs.length > 0 && relayTxs.every(tx => tx.status === "success")) &&
@@ -396,27 +394,38 @@ export const OrderDetails = memo(function OrderDetails({
       statusDisplay === "processing" &&
       !order.onrampMetadata &&
       (effectiveCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET ||
-        effectiveCryptoPaymentMethod === CryptoPaymentMethodType.GLOBAL_WALLET);
-
-    if (isPayableState) {
-      autoPaymentAttempted.current = true;
-      // Small delay to ensure UI is ready
-      setTimeout(() => {
-        handlePayment();
-      }, 100);
-    }
+        effectiveCryptoPaymentMethod === CryptoPaymentMethodType.GLOBAL_WALLET)
+    );
   }, [
-    order,
-    depositTxs,
-    relayTxs,
+    refundTxs.length,
     executeTx,
-    refundTxs,
+    relayTxs,
+    depositTxs?.length,
     statusDisplay,
+    order.onrampMetadata,
     effectiveCryptoPaymentMethod,
-    account?.address,
-    phantomWalletAddress,
-    handlePayment,
   ]);
+
+  // Mark component as ready once all critical data is available
+  // This ensures we don't trigger payment before the component has fully initialized
+  useEffect(() => {
+    if (!isComponentReady && srcToken && dstToken && statusDisplay) {
+      setIsComponentReady(true);
+    }
+  }, [isComponentReady, srcToken, dstToken, statusDisplay]);
+
+  // Auto-trigger payment when component is ready and order is in payable state
+  // This effect only runs when isPayableState or isComponentReady changes
+  useEffect(() => {
+    // Only trigger payment if:
+    // 1. We haven't attempted payment yet
+    // 2. Component is fully ready (all data loaded)
+    // 3. Order is in a payable state
+    if (!autoPaymentAttempted.current && isComponentReady && isPayableState) {
+      autoPaymentAttempted.current = true;
+      handlePayment();
+    }
+  }, [isPayableState, isComponentReady, handlePayment]);
 
   if (!srcToken || !dstToken) {
     return <div>Loading...</div>;
