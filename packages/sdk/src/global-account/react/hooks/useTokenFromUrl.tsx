@@ -1,9 +1,9 @@
 "use client";
 
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { getCoingeckoChainInfo } from "@b3dotfun/sdk/shared/constants/chains/supported";
 import { useSearchParams } from "@b3dotfun/sdk/shared/react/hooks";
 import { useQuery } from "@tanstack/react-query";
-import { components } from "@b3dotfun/sdk/anyspend/types/api";
 
 interface UseTokenFromUrlOptions {
   /**
@@ -59,13 +59,14 @@ export function useTokenFromUrl({ defaultToken, prefix }: UseTokenFromUrlOptions
   const currencyParam = searchParams.get(`${prefix}Currency`);
   const chainIdParam = searchParams.get(`${prefix}ChainId`);
 
+  // Determine network based on chainId
+  const chainInfo = chainIdParam ? getCoingeckoChainInfo(Number(chainIdParam)) : null;
+  const network = chainInfo?.coingecko_id || "";
+
   // Determine if we should fetch token info
   const shouldFetchToken = Boolean(
-    currencyParam && chainIdParam && currencyParam.toLowerCase() !== defaultToken.address.toLowerCase(),
+    currencyParam && chainIdParam && chainInfo && currencyParam.toLowerCase() !== defaultToken.address.toLowerCase(),
   );
-
-  // Determine network based on chainId
-  const network = chainIdParam ? getCoingeckoChainInfo(Number(chainIdParam)).coingecko_id : "";
 
   const { data: tokenInfo, isError } = useQuery({
     queryKey: ["tokenInfo", network, currencyParam],
