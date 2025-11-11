@@ -5,6 +5,7 @@ import {
   AnySpendNFT,
   AnyspendSignatureMint,
   AnySpendStakeB3,
+  AnySpendStakeB3ExactIn,
   AnySpendTournament,
   OrderHistory,
 } from "@b3dotfun/sdk/anyspend/react";
@@ -15,6 +16,7 @@ import { useIsMobile, useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { useEffect, useRef } from "react";
+import { useSetActiveWallet } from "thirdweb/react";
 import { AvatarEditor } from "./AvatarEditor/AvatarEditor";
 import { useB3 } from "./B3Provider/useB3";
 import { LinkAccount } from "./LinkAccount/LinkAccount";
@@ -23,7 +25,6 @@ import { RequestPermissions } from "./RequestPermissions/RequestPermissions";
 import { SignInWithB3Flow } from "./SignInWithB3/SignInWithB3Flow";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "./ui/dialog";
 import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "./ui/drawer";
-import { useSetActiveWallet } from "thirdweb/react";
 
 const debug = debugB3React("B3DynamicModal");
 
@@ -56,6 +57,7 @@ export function B3DynamicModal() {
     "anySpendJoinTournament",
     "anySpendFundTournament",
     "anySpendStakeB3",
+    "anySpendStakeB3ExactIn",
     "anySpendStakeUpside",
     "anySpendBuySpin",
     "anySpendOrderHistory",
@@ -71,6 +73,7 @@ export function B3DynamicModal() {
     "anySpendJoinTournament",
     "anySpendFundTournament",
     "anySpendStakeB3",
+    "anySpendStakeB3ExactIn",
     "anySpendStakeUpside",
     "anySpendBuySpin",
     "anySpendSignatureMint",
@@ -120,6 +123,8 @@ export function B3DynamicModal() {
         return <OrderHistory onBack={() => {}} mode="modal" />;
       case "anySpendStakeB3":
         return <AnySpendStakeB3 {...contentType} mode="modal" />;
+      case "anySpendStakeB3ExactIn":
+        return <AnySpendStakeB3ExactIn {...contentType} mode="modal" />;
       case "anySpendStakeUpside":
         return <AnySpendStakeUpside {...contentType} mode="modal" />;
       case "anySpendBuySpin":

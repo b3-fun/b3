@@ -111,6 +111,12 @@ function getOrderSuccessText({
     case "custom":
       actionText = order.metadata.action || `executed contract`;
       return `Successfully ${actionText}`;
+    case "x402_swap":
+      actionText = `sent ${formattedActualDstAmount || "--"} ${dstToken.symbol}`;
+      return `Successfully ${actionText} to ${recipient}`;
+    case "custom_exact_in":
+      actionText = `executed contract`;
+      return `Successfully ${actionText}`;
     default:
       throw new Error("Invalid order type");
   }
@@ -827,7 +833,7 @@ export const OrderDetails = memo(function OrderDetails({
                 {order.status === "executing" && (
                   <TransactionDetails
                     title={
-                      order.type === "swap"
+                      order.type === "swap" || order.type === "x402_swap"
                         ? "Processing Swap"
                         : order.type === "mint_nft"
                           ? "Minting NFT"
@@ -837,7 +843,9 @@ export const OrderDetails = memo(function OrderDetails({
                               ? "Funding Tournament"
                               : order.type === "hype_duel"
                                 ? "Depositing Hype Duel"
-                                : "Processing Bridge"
+                                : order.type === "custom" || order.type === "custom_exact_in"
+                                  ? "Executing Contract"
+                                  : "Processing Bridge"
                     }
                     chainId={order.dstChain}
                     isProcessing={true}

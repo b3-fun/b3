@@ -46,8 +46,10 @@ interface UseAnyspendFlowProps {
   sourceTokenChainId?: number;
   slippage?: number;
   disableUrlParamManagement?: boolean;
+  orderType?: "hype_duel" | "custom_exact_in";
 }
 
+// This hook serves for order hype_duel and custom_exact_in
 export function useAnyspendFlow({
   paymentType = "crypto",
   recipientAddress,
@@ -59,6 +61,7 @@ export function useAnyspendFlow({
   sourceTokenChainId,
   slippage = 0,
   disableUrlParamManagement = false,
+  orderType = "hype_duel",
 }: UseAnyspendFlowProps) {
   const searchParams = useSearchParamsSSR();
   const router = useRouter();
@@ -165,8 +168,9 @@ export function useAnyspendFlow({
     srcChain: paymentType === "fiat" ? base.id : selectedSrcChainId,
     dstChain: isDepositMode ? base.id : selectedDstChainId, // For deposits, always Base; for swaps, use selected destination
     srcTokenAddress: paymentType === "fiat" ? USDC_BASE.address : selectedSrcToken.address,
+    // TODO: For custom_exact_in, it isn't B3_TOKEN.address
     dstTokenAddress: isDepositMode ? B3_TOKEN.address : selectedSrcToken.address, // For deposits, always B3
-    type: "hype_duel",
+    type: orderType,
     amount: activeInputAmountInWei,
     recipientAddress: selectedRecipientAddress,
     onrampVendor: paymentType === "fiat" ? getOnrampVendor(selectedFiatPaymentMethod) : undefined,
