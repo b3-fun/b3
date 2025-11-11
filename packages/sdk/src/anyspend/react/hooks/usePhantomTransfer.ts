@@ -86,7 +86,7 @@ export function usePhantomTransfer({ rpcEndpoint }: UsePhantomTransferParams = {
    */
   const createNativeTransferTransaction = useCallback(
     async (
-      connection: Connection,
+      _connection: Connection,
       fromPubkey: PublicKey,
       toPubkey: PublicKey,
       amount: bigint,
