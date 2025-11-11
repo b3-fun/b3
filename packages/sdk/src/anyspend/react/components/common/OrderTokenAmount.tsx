@@ -3,10 +3,13 @@
 import { ChevronsUpDown } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { NumericFormat } from "react-number-format";
+import { formatUnits } from "viem";
 
 import { ALL_CHAINS, RELAY_SOLANA_MAINNET_CHAIN_ID } from "@b3dotfun/sdk/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
-import { Button } from "@b3dotfun/sdk/global-account/react";
+import { getNativeRequired } from "@b3dotfun/sdk/anyspend/utils/chain";
+import { isNativeToken } from "@b3dotfun/sdk/anyspend/utils/token";
+import { Button, useTokenBalance } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils";
 import { TokenSelector } from "@relayprotocol/relay-kit-ui";
 import { ChainTokenIcon } from "./ChainTokenIcon";
@@ -28,6 +31,7 @@ export function OrderTokenAmount({
   amountClassName,
   tokenSelectClassName,
   onTokenSelect,
+  walletAddress,
 }: {
   disabled?: boolean;
   inputValue: string;
@@ -45,25 +49,57 @@ export function OrderTokenAmount({
   amountClassName?: string;
   tokenSelectClassName?: string;
   onTokenSelect?: (token: components["schemas"]["Token"], event: { preventDefault: () => void }) => void;
+  walletAddress?: string | undefined;
 }) {
   // Track previous token to detect changes
   const prevTokenRef = useRef<string>(token.address);
+  // Track if initial balance has been set
+  const initialBalanceSetRef = useRef(false);
+
+  // Only get token balance when context is "from" (for setting max amount)
+  const { rawBalance } = useTokenBalance({
+    token,
+    address: context === "from" && walletAddress ? walletAddress : undefined,
+  });
+
+  // Reset balance ref when token address or chain changes
+  useEffect(() => {
+    initialBalanceSetRef.current = false;
+  }, [token.address, token.chainId]);
 
   useEffect(() => {
-    // Only trigger when token actually changes
-    if (prevTokenRef.current !== token.address) {
-      console.log(`Token changed from ${prevTokenRef.current} to ${token.address}`);
+    // Only handle "from" context
+    if (context !== "from") return;
 
-      // For "from" context, reset to default value when token changes
-      if (context === "from") {
-        // Reset input to default for new token
-        onChangeInput("0.01");
+    // Check if token changed or if this is the initial load with balance
+    const isTokenChanged = prevTokenRef.current !== token.address;
+    const isInitialLoad = !initialBalanceSetRef.current && rawBalance;
+
+    if ((isTokenChanged || isInitialLoad) && rawBalance) {
+      console.log(
+        `Setting max balance - Token: ${token.address}, Changed: ${isTokenChanged}, Initial: ${isInitialLoad}`,
+      );
+
+      // Calculate max amount with gas reserve for native tokens
+      let maxAmount: bigint;
+
+      if (isNativeToken(token.address)) {
+        const gasReserve = getNativeRequired(token.chainId);
+        // Ensure we don't go negative
+        maxAmount = rawBalance > gasReserve ? rawBalance - gasReserve : BigInt(0);
+      } else {
+        // For ERC20 tokens, use full balance
+        maxAmount = rawBalance;
       }
 
-      // Update ref to current token
+      // Set the max amount as input value
+      onChangeInput(formatUnits(maxAmount, token.decimals));
+
+      // Update refs
       prevTokenRef.current = token.address;
+      initialBalanceSetRef.current = true;
     }
-  }, [token.address, chainId, context, onChangeInput]);
+  }, [token.address, token.chainId, token.decimals, chainId, context, onChangeInput, rawBalance]);
 
   const handleTokenSelect = (newToken: any) => {
     const token: components["schemas"]["Token"] = {
@@ -97,13 +133,8 @@ export function OrderTokenAmount({
     // Set the chain ID first
     setChainId(newToken.chainId);
 
-    // Then set the new token
+    // Then set the new token - the useEffect will handle setting the max balance
     setToken(token);
-
-    // If this is the source token, reset the amount immediately
-    if (context === "from") {
-      onChangeInput("0.01");
-    }
   };
 
   return (

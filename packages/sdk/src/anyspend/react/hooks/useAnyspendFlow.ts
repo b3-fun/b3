@@ -23,6 +23,8 @@ import { useAccount } from "wagmi";
 import { components } from "../../types/api";
 import { CryptoPaymentMethodType } from "../components/common/CryptoPaymentMethod";
 import { FiatPaymentMethod } from "../components/common/FiatPaymentMethod";
+import { useAutoSelectCryptoPaymentMethod } from "./useAutoSelectCryptoPaymentMethod";
+import { useAutoSetActiveWalletFromWagmi } from "./useAutoSetActiveWalletFromWagmi";
 
 export enum PanelView {
   MAIN,
@@ -92,6 +94,9 @@ export function useAnyspendFlow({
   const recipientProfile = useProfile({ address: selectedRecipientAddress, fresh: true });
   const recipientName = recipientProfile.data?.name;
 
+  // Auto-set active wallet from wagmi
+  useAutoSetActiveWalletFromWagmi();
+
   // Set default recipient address when wallet changes
   useEffect(() => {
     if (!selectedRecipientAddress && globalAddress) {
@@ -116,16 +121,14 @@ export function useAnyspendFlow({
     }
   }, [rawBalance, srcAmount, selectedSrcToken.decimals, isBalanceLoading, paymentType]);
 
-  // Auto-set crypto payment method based on balance
-  useEffect(() => {
-    if (paymentType === "crypto" && !isBalanceLoading) {
-      if (hasEnoughBalance) {
-        setSelectedCryptoPaymentMethod(CryptoPaymentMethodType.CONNECT_WALLET);
-      } else {
-        setSelectedCryptoPaymentMethod(CryptoPaymentMethodType.TRANSFER_CRYPTO);
-      }
-    }
-  }, [paymentType, hasEnoughBalance, isBalanceLoading]);
+  // Auto-select crypto payment method based on available wallets and balance
+  useAutoSelectCryptoPaymentMethod({
+    paymentType,
+    selectedCryptoPaymentMethod,
+    setSelectedCryptoPaymentMethod,
+    hasEnoughBalance,
+    isBalanceLoading,
+  });
 
   // Fetch specific token when sourceTokenAddress and sourceTokenChainId are provided
   useEffect(() => {

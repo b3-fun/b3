@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { useActiveWallet, useSetActiveWallet, useWalletInfo } from "thirdweb/react";
 import { WalletId, createWallet } from "thirdweb/wallets";
 import { useAccount, useConnect, useDisconnect, useWalletClient } from "wagmi";
+import { useConnectedWalletDisplay } from "../../hooks/useConnectedWalletDisplay";
 
 export enum CryptoPaymentMethodType {
   NONE = "none",
@@ -47,7 +48,7 @@ export function CryptoPaymentMethod({
     connectedEOAWallet: connectedEOAWallet,
     connectedSmartWallet: connectedSmartWallet,
   } = useAccountWallet();
-  const { connector, address, isConnected: wagmiWalletIsConnected } = useAccount();
+  const { connector, address } = useAccount();
   const { connect, connectors, isPending } = useConnect();
   const { disconnect } = useDisconnect();
   const { data: walletClient } = useWalletClient();
@@ -61,20 +62,8 @@ export function CryptoPaymentMethod({
   const isConnected = !!connectedEOAWallet;
   const globalAddress = connectedSmartWallet?.getAccount()?.address;
 
-  // Helper function to check if two addresses are the same
-  const isSameAddress = (addr1?: string, addr2?: string): boolean => {
-    if (!addr1 || !addr2) return false;
-    return addr1.toLowerCase() === addr2.toLowerCase();
-  };
-
-  // Check if connectedEOAWallet and wagmi wallet represent the same wallet
-  const connectedEOAAddress = connectedEOAWallet?.getAccount()?.address;
-  const wagmiAddress = address;
-  const isWalletDuplicated = isSameAddress(connectedEOAAddress, wagmiAddress);
-
-  // Determine which wallet to show (prefer connectedEOAWallet if both exist and are the same)
-  const shouldShowConnectedEOA = !!connectedEOAWallet;
-  const shouldShowWagmiWallet = wagmiWalletIsConnected && (!isWalletDuplicated || !connectedEOAWallet);
+  // Use custom hook to determine wallet display logic
+  const { shouldShowConnectedEOA, shouldShowWagmiWallet } = useConnectedWalletDisplay(selectedPaymentMethod);
 
   // Map wagmi connector names to thirdweb wallet IDs
   const getThirdwebWalletId = (connectorName: string): WalletId | null => {
@@ -237,11 +226,13 @@ export function CryptoPaymentMethod({
                       setSelectedPaymentMethod(CryptoPaymentMethodType.CONNECT_WALLET);
                       onSelectPaymentMethod(CryptoPaymentMethodType.CONNECT_WALLET);
                       setGlobalAccountWallet(activeWallet);
-                      setActiveWallet(connectedEOAWallet);
+                      if (connectedEOAWallet) {
+                        setActiveWallet(connectedEOAWallet);
+                      }
                       toast.success(`Selected ${eoaWalletInfo?.name || connector?.name || "wallet"}`);
                     }}
                     className={cn(
-                      "crypto-payment-method-connect-wallet w-full rounded-xl border p-4 text-left transition-all hover:shadow-md",
+                      "crypto-payment-method-connect-wallet eoa-wallet w-full rounded-xl border p-4 text-left transition-all hover:shadow-md",
                       selectedPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET
                         ? "connected-wallet border-as-brand bg-as-brand/5"
                         : "border-as-border-secondary bg-as-surface-primary hover:border-as-secondary/80",
@@ -300,7 +291,7 @@ export function CryptoPaymentMethod({
                       toast.success(`Selected ${connector?.name || "wallet"}`);
                     }}
                     className={cn(
-                      "crypto-payment-method-connect-wallet w-full rounded-xl border p-4 text-left transition-all hover:shadow-md",
+                      "crypto-payment-method-connect-wallet wagmi-wallet w-full rounded-xl border p-4 text-left transition-all hover:shadow-md",
                       selectedPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET
                         ? "connected-wallet border-as-brand bg-as-brand/5"
                         : "border-as-border-secondary bg-as-surface-primary hover:border-as-secondary/80",

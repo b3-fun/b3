@@ -1,7 +1,7 @@
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { getNativeRequired } from "@b3dotfun/sdk/anyspend/utils/chain";
 import { isNativeToken } from "@b3dotfun/sdk/anyspend/utils/token";
-import { useTokenBalance } from "@b3dotfun/sdk/global-account/react";
+import { useTokenBalanceDirect } from "@b3dotfun/sdk/global-account/react";
 import { formatUnits } from "viem";
 
 export function TokenBalance({
@@ -13,7 +13,7 @@ export function TokenBalance({
   walletAddress: string | undefined;
   onChangeInput: (value: string) => void;
 }) {
-  const { rawBalance, formattedBalance, isLoading } = useTokenBalance({
+  const { rawBalance, formattedBalance, isLoading } = useTokenBalanceDirect({
     token,
     address: walletAddress,
   });

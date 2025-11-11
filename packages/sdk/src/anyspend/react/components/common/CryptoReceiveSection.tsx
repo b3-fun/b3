@@ -4,8 +4,11 @@ import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { formatDisplayNumber } from "@b3dotfun/sdk/shared/utils/number";
 import { ChevronRight, Info } from "lucide-react";
 import { motion } from "motion/react";
+import { useEffect } from "react";
 import { components } from "../../../types/api";
 import { useFeatureFlags } from "../../contexts/FeatureFlagsContext";
+import { useConnectedWalletDisplay } from "../../hooks/useConnectedWalletDisplay";
+import { CryptoPaymentMethodType } from "./CryptoPaymentMethod";
 import { OrderTokenAmount } from "./OrderTokenAmount";
 import { PointsBadge } from "./PointsBadge";
 
@@ -16,6 +19,9 @@ interface CryptoReceiveSectionProps {
   selectedRecipientAddress?: string;
   recipientName?: string;
   onSelectRecipient: () => void;
+  setRecipientAddress?: (address: string | undefined) => void;
+  recipientAddressFromProps?: string;
+  globalAddress?: string;
   // Token data
   dstAmount: string;
   dstToken: components["schemas"]["Token"];
@@ -34,6 +40,8 @@ interface CryptoReceiveSectionProps {
   onShowPointsDetail?: () => void;
   // Fee detail navigation
   onShowFeeDetail?: () => void;
+  // Payment method for wallet tracking
+  selectedCryptoPaymentMethod?: CryptoPaymentMethodType;
 }
 
 export function CryptoReceiveSection({
@@ -42,6 +50,9 @@ export function CryptoReceiveSection({
   selectedRecipientAddress,
   recipientName,
   onSelectRecipient,
+  setRecipientAddress,
+  recipientAddressFromProps,
+  globalAddress,
   dstAmount,
   dstToken,
   selectedDstChainId,
@@ -54,8 +65,19 @@ export function CryptoReceiveSection({
   dstTokenLogoURI,
   onShowPointsDetail,
   onShowFeeDetail,
+  selectedCryptoPaymentMethod,
 }: CryptoReceiveSectionProps) {
   const featureFlags = useFeatureFlags();
+
+  // Get wallet address based on selected payment method
+  const { walletAddress } = useConnectedWalletDisplay(selectedCryptoPaymentMethod);
+
+  // Set default recipient address when wallet changes
+  useEffect(() => {
+    if (setRecipientAddress) {
+      setRecipientAddress(recipientAddressFromProps || walletAddress || globalAddress);
+    }
+  }, [recipientAddressFromProps, walletAddress, globalAddress, setRecipientAddress]);
 
   return (
     <motion.div
