@@ -42,7 +42,7 @@ type DialogContentProps = React.ComponentPropsWithoutRef<typeof DialogPrimitive.
 
 const DialogContent: React.ForwardRefExoticComponent<DialogContentProps & React.RefAttributes<DialogContentElement>> =
   React.forwardRef<DialogContentElement, DialogContentProps>(
-    ({ className, children, hideCloseButton = false, closeBtnClassName, ...props }, ref) => {
+    ({ className, children, hideCloseButton = true, closeBtnClassName, ...props }, ref) => {
       const container = typeof window !== "undefined" ? document.getElementById("b3-root") : null;
       return (
         <DialogPortal container={container}>

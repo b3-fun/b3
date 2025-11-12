@@ -752,6 +752,10 @@ function AnySpendInner({
   const onClickHistory = () => {
     setOrderId(undefined);
     navigateToPanel(PanelView.HISTORY, "forward");
+    setB3ModalContentType({
+      type: "anySpendOrderHistory",
+      showBackButton: false,
+    });
     // Remove orderId and paymentMethod from URL when going back to history
     const params = new URLSearchParams(searchParams.toString());
     params.delete("orderId");
@@ -935,7 +939,7 @@ function AnySpendInner({
   );
 
   const orderDetailsView = (
-    <div className={"mx-auto w-[460px] max-w-full"}>
+    <div className={"mx-auto w-[460px] max-w-full px-5"}>
       <div className="relative flex flex-col gap-4">
         {oat && (
           <OrderDetails
@@ -962,7 +966,7 @@ function AnySpendInner({
 
   const mainView = (
     <div className={"mx-auto flex w-[460px] max-w-full flex-col items-center gap-2"}>
-      <div className={"mx-auto flex max-w-full flex-col items-center gap-2 px-5"}>
+      <div className={"flex w-full max-w-full flex-col items-center gap-2 px-5"}>
         {/* Token Header - Show when in buy mode */}
         {isBuyMode && (
           <div className="mb-4 flex flex-col items-center gap-3 text-center">
@@ -1154,7 +1158,6 @@ function AnySpendInner({
             } else if (value === "swap") {
               setB3ModalContentType({
                 type: "anySpend",
-                showBackButton: true,
               });
             }
           }}

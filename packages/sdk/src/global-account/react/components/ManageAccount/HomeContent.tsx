@@ -14,17 +14,21 @@ export function HomeContent({ showDeposit = false, showSwap = true }: HomeConten
   return (
     <div className="flex flex-col">
       <Header />
-      <div className="flex flex-col gap-6 p-6">
+      <div className="flex flex-col">
         <ProfileSection />
 
         <HomeActions showDeposit={showDeposit} showSwap={showSwap} />
-        <div className="space-y-2">
-          <Tabs defaultValue={"tokens"}>
+        <div className="space-y-2 p-5">
+          <Tabs defaultValue={"balance"}>
             <TabsList>
-              <TabTrigger value="tokens">Tokens</TabTrigger>
-              <TabTrigger value="nfts">NFTs</TabTrigger>
+              <TabTrigger value="balance" className="font-neue-montreal-semibold p-0 pr-3">
+                Balance
+              </TabTrigger>
+              <TabTrigger value="nfts" className="font-neue-montreal-semibold p-0 pr-3">
+                NFTs
+              </TabTrigger>
             </TabsList>
-            <TabsContent value="tokens" className="px-0 pb-4 pt-2">
+            <TabsContent value="balance" className="px-0 pb-4 pt-2">
               <TokenContent />
             </TabsContent>
             <TabsContent value="nfts" className="px-0 pb-4 pt-2">

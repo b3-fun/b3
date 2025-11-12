@@ -1,4 +1,3 @@
-import { useGlobalWalletState } from "@b3dotfun/sdk/anyspend/utils/accountStore";
 import { useB3BalanceFromAddresses, useNativeBalance } from "@b3dotfun/sdk/global-account/react";
 import { useActiveWallet } from "thirdweb/react";
 import { B3TokenIcon, EthereumTokenIcon } from "../TokenIcon";
@@ -7,13 +6,15 @@ import { TokenBalanceRow } from "./TokenBalanceRow";
 const TokenContent = () => {
   // Get active wallet state
   const activeWallet = useActiveWallet();
-  const globalAccountWallet = useGlobalWalletState(state => state.globalAccountWallet);
+  //const globalAccountWallet = useGlobalWalletState(state => state.globalAccountWallet);
   const activeAccount = activeWallet?.getAccount();
   const activeAddress = activeAccount?.address;
 
   // Balance data fetching - use active wallet address
-  const { data: activeNativeBalance, isLoading: activeNativeLoading } = useNativeBalance(activeAddress);
-  const { data: activeB3Balance, isLoading: activeB3Loading } = useB3BalanceFromAddresses(activeAddress);
+  const { data: activeNativeBalance } = useNativeBalance(activeAddress);
+  console.log("activeNativeBalance :", activeNativeBalance);
+  const { data: activeB3Balance } = useB3BalanceFromAddresses(activeAddress);
+  console.log("activeB3Balance :", activeB3Balance);
 
   if (!activeAddress) {
     return <div className="col-span-3 py-12 text-center text-gray-500">No tokens found</div>;

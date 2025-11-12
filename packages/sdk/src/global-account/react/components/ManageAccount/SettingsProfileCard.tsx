@@ -41,13 +41,9 @@ const SettingsProfileCard = () => {
       {/* Avatar with edit badge */}
       <div className="relative shrink-0">
         {avatarUrl ? (
-          <img 
-            src={avatarUrl} 
-            alt="Profile" 
-            className="size-14 rounded-full border border-black/8 object-cover" 
-          />
+          <img src={avatarUrl} alt="Profile" className="border-black/8 size-14 rounded-full border object-cover" />
         ) : (
-          <div className="bg-b3-primary-wash size-14 rounded-full border border-black/8" />
+          <div className="bg-b3-primary-wash border-black/8 size-14 rounded-full border" />
         )}
         <button
           onClick={handleEditAvatar}
@@ -69,9 +65,7 @@ const SettingsProfileCard = () => {
           onClick={handleEditUsername}
           className="flex items-center justify-center gap-1 text-left transition-opacity hover:opacity-80"
         >
-          <p className="font-inter-semibold text-sm leading-5 text-[#51525C]">
-            Edit Username
-          </p>
+          <p className="font-inter text-sm font-semibold leading-5 text-[#51525C]">Edit Username</p>
         </button>
       </div>
     </div>
@@ -79,4 +73,3 @@ const SettingsProfileCard = () => {
 };
 
 export default SettingsProfileCard;
-

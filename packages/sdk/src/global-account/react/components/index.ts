@@ -26,7 +26,6 @@ export { Deposit } from "./Deposit/Deposit";
 export { Send } from "./Send/Send";
 
 // B3 Global Branding Wrapper
-export { B3GlobalBrandingWrapper } from "./B3GlobalBrandingWrapper";
 
 // RequestPermissions Components
 export { RequestPermissions } from "./RequestPermissions/RequestPermissions";
@@ -105,12 +104,12 @@ export { ScrollArea, ScrollBar } from "./ui/scroll-area";
 export { ShinyButton } from "./ui/ShinyButton";
 export { Skeleton } from "./ui/skeleton";
 export {
-  TabTrigger as TabTriggerPrimitive,
   TabsContent as TabsContentPrimitive,
   TabsList as TabsListPrimitive,
   Tabs as TabsPrimitive,
+  TabTrigger as TabTriggerPrimitive,
 } from "./ui/Tabs";
-export { TabTrigger, Tabs, TabsContent, TabsList, TabsTransitionWrapper } from "./ui/TabSystem";
+export { Tabs, TabsContent, TabsList, TabsTransitionWrapper, TabTrigger } from "./ui/TabSystem";
 export { TextLoop } from "./ui/text-loop";
 export { TextShimmer } from "./ui/text-shimmer";
 export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";

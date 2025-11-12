@@ -660,7 +660,7 @@ function AnySpendCustomInner({
   const historyView = (
     <div
       className={cn(
-        "mx-auto flex w-full max-w-2xl flex-col items-center p-5",
+        "mx-auto flex w-full max-w-2xl flex-col items-center",
         mode === "modal" && "bg-b3-react-background",
       )}
     >

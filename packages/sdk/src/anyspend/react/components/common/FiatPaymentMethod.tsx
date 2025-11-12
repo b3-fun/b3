@@ -77,11 +77,12 @@ export function FiatPaymentMethodComponent({
       available: true,
     });
   }
+  console.log("isLoadingGeoOnramp :", isLoadingGeoOnramp);
 
   // Show loading state while checking geo availability
   if (isLoadingGeoOnramp) {
     return (
-      <div className="fiat-payment-method mx-auto w-[460px] max-w-full">
+      <div className="fiat-payment-method mx-auto w-[460px] max-w-full px-5">
         <div className="flex flex-col gap-6">
           <div className="flex items-center gap-4">
             <button
@@ -104,7 +105,7 @@ export function FiatPaymentMethodComponent({
   }
 
   return (
-    <div className="fiat-payment-method mx-auto w-[460px] max-w-full">
+    <div className="fiat-payment-method mx-auto w-[460px] max-w-full px-5">
       <div className="flex flex-col gap-6">
         {/* Header */}
         <div className="flex items-center gap-4">

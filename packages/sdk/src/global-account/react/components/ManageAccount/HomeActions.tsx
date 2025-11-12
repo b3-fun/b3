@@ -1,6 +1,7 @@
 import { Button, useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { BankIcon } from "@b3dotfun/sdk/global-account/react/components/icons/BankIcon";
 import { SwapIcon } from "@b3dotfun/sdk/global-account/react/components/icons/SwapIcon";
+import { cn } from "@b3dotfun/sdk/shared/utils";
 
 const SendIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -26,15 +27,42 @@ const BuyIcon = () => (
   </svg>
 );
 
+const HomeActionButton = ({
+  customClass,
+  icon,
+  label,
+  onClick,
+}: {
+  customClass: string;
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+}) => {
+  return (
+    <Button
+      className={cn(
+        "border-b3-line hover:border-b3-primary-blue flex h-[84px] w-full flex-col items-center justify-center gap-2 rounded-2xl border-[1.5px] bg-[#FAFAFA] hover:bg-[#FAFAFA]",
+        customClass,
+      )}
+      onClick={onClick}
+    >
+      {icon}
+      <div className="text-b3-grey font-neue-montreal-semibold">{label}</div>
+    </Button>
+  );
+};
+
 const HomeActions = ({ showDeposit, showSwap }: { showDeposit: boolean; showSwap: boolean }) => {
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
 
   return (
-    <div className="grid grid-cols-4 gap-3">
+    <div className="border-b3-line grid grid-cols-4 gap-3 border-b px-5 pb-6">
       {showDeposit && (
-        <Button
-          className="manage-account-deposit bg-b3-primary-wash hover:bg-b3-primary-wash/70 border-b3-primary-blue h-[84px] w-full flex-col items-center justify-center gap-2 rounded-2xl border-[1.5px]"
+        <HomeActionButton
+          customClass="manage-account-deposit"
+          icon={<BankIcon size={24} className="text-b3-primary-blue shrink-0" />}
+          label="Deposit"
           onClick={() => {
             setB3ModalOpen(true);
             setB3ModalContentType({
@@ -42,13 +70,12 @@ const HomeActions = ({ showDeposit, showSwap }: { showDeposit: boolean; showSwap
               showBackButton: true,
             });
           }}
-        >
-          <BankIcon size={24} className="text-b3-primary-blue shrink-0" />
-          <div className="text-b3-grey font-neue-montreal-semibold">Deposit</div>
-        </Button>
+        />
       )}
-      <Button
-        className="manage-account-send bg-b3-primary-wash hover:bg-b3-primary-wash/70 border-b3-primary-blue flex h-[84px] w-full flex-col items-center justify-center gap-2 rounded-2xl border-[1.5px]"
+      <HomeActionButton
+        customClass="manage-account-send"
+        icon={<SendIcon />}
+        label="Send"
         onClick={() => {
           setB3ModalOpen(true);
           setB3ModalContentType({
@@ -56,13 +83,12 @@ const HomeActions = ({ showDeposit, showSwap }: { showDeposit: boolean; showSwap
             showBackButton: true,
           });
         }}
-      >
-        <SendIcon />
-        <div className="text-b3-grey font-neue-montreal-semibold">Send</div>
-      </Button>
+      />
       {showSwap && (
-        <Button
-          className="manage-account-swap bg-b3-primary-wash hover:bg-b3-primary-wash/70 border-b3-primary-blue flex h-[84px] w-full flex-col items-center justify-center gap-2 rounded-2xl border-[1.5px]"
+        <HomeActionButton
+          customClass="manage-account-swap"
+          icon={<SwapIcon size={24} className="text-b3-primary-blue" />}
+          label="Swap"
           onClick={() => {
             setB3ModalOpen(true);
             setB3ModalContentType({
@@ -70,13 +96,12 @@ const HomeActions = ({ showDeposit, showSwap }: { showDeposit: boolean; showSwap
               showBackButton: true,
             });
           }}
-        >
-          <SwapIcon size={24} className="text-b3-primary-blue" />
-          <div className="text-b3-grey font-neue-montreal-semibold">Swap</div>
-        </Button>
+        />
       )}
-      <Button
-        className="manage-account-swap bg-b3-primary-wash hover:bg-b3-primary-wash/70 border-b3-primary-blue flex h-[84px] w-full flex-col items-center justify-center gap-2 rounded-2xl border-[1.5px]"
+      <HomeActionButton
+        customClass="manage-account-buy "
+        icon={<BuyIcon />}
+        label="Buy"
         onClick={() => {
           setB3ModalOpen(true);
           setB3ModalContentType({
@@ -85,10 +110,7 @@ const HomeActions = ({ showDeposit, showSwap }: { showDeposit: boolean; showSwap
             showBackButton: true,
           });
         }}
-      >
-        <BuyIcon />
-        <div className="text-b3-grey font-neue-montreal-semibold">Buy</div>
-      </Button>
+      />
     </div>
   );
 };

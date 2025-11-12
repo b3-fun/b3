@@ -1,4 +1,3 @@
-import { useGlobalWalletState } from "@b3dotfun/sdk/anyspend/utils/accountStore";
 import { useActiveWallet } from "thirdweb/react";
 import { AccountAssets } from "..";
 import { useAccountAssets } from "../../hooks";
@@ -6,11 +5,11 @@ import { useAccountAssets } from "../../hooks";
 const NFTContent = () => {
   // Get active wallet state
   const activeWallet = useActiveWallet();
-  const globalAccountWallet = useGlobalWalletState(state => state.globalAccountWallet);
   const activeAccount = activeWallet?.getAccount();
   const activeAddress = activeAccount?.address;
 
   const { data: nfts, isLoading } = useAccountAssets(activeAddress);
+  console.log("nfts :", nfts);
 
   return (
     <div className="grid grid-cols-3 gap-4" style={{ minHeight: "100px" }}>

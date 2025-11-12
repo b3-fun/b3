@@ -16,6 +16,7 @@ import { DiscordIcon } from "../icons/DiscordIcon";
 import { FarcasterIcon } from "../icons/FarcasterIcon";
 import { GoogleIcon } from "../icons/GoogleIcon";
 import { XIcon } from "../icons/XIcon";
+import ModalHeader from "../ModalHeader/ModalHeader";
 import { Button } from "../ui/button";
 type OTPStrategy = "email" | "phone";
 type SocialStrategy = "google" | "x" | "discord" | "apple" | "farcaster";
@@ -364,18 +365,11 @@ export function LinkNewAccount({
   }
 
   return (
-    <div className={`b3-link-account space-y-6 p-6 ${className || ""}`} data-testid="link-account">
-      <div className="b3-link-account-header flex items-center justify-between">
-        <h2 className="b3-link-account-title text-b3-grey font-neue-montreal-semibold text-2xl">Link New Account</h2>
-        {selectedMethod && (
-          <Button variant="ghost" className="text-b3-grey hover:text-b3-grey/80" onClick={handleBack}>
-            Backs
-          </Button>
-        )}
-      </div>
+    <div className={`b3-link-account space-y-6 ${className || ""}`} data-testid="link-account">
+      <ModalHeader title="Link New Account" />
 
       {!selectedMethod ? (
-        <div className="b3-link-account-methods grid gap-3">
+        <div className="b3-link-account-methods grid gap-3 px-5">
           {availableAuthMethods.map(method => (
             <Button
               key={method.id}
@@ -424,7 +418,7 @@ export function LinkNewAccount({
           )}
         </div>
       ) : (
-        <div className="b3-link-account-form space-y-4">
+        <div className="b3-link-account-form space-y-4 px-5">
           {selectedMethod === "email" && (
             <div className="space-y-2">
               <label className="text-b3-grey font-neue-montreal-medium text-sm">Email Address</label>

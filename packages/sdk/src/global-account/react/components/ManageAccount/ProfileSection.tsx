@@ -43,7 +43,7 @@ const ProfileSection = () => {
   };
 
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between px-5 py-6">
       <div className="global-account-profile flex items-center gap-4">
         <div className="global-account-profile-avatar relative">
           {avatarUrl ? (
@@ -58,11 +58,12 @@ const ProfileSection = () => {
             <Pencil size={10} className="text-b3-background" />
           </button>
         </div>
-        <div className="global-account-profile-info">
-          <h2 className="text-b3-grey text-xl font-semibold">
-            {formatDisplayNumber(totalBalanceUsd, { style: "currency", fractionDigits: 2 })}
+        <div className="global-account-profile-info flex flex-col gap-1">
+          <h2 className="text-b3-grey font-neue-montreal-semibold flex h-[38px] items-center gap-1 text-xl">
+            <div className="text-b3-foreground-muted"> $</div>
+            <div className="text-[30px]">{formatDisplayNumber(totalBalanceUsd, { fractionDigits: 2 })}</div>
           </h2>
-          <div className="font-neue-montreal-semibold py-1 text-base leading-none text-[#0B57C2]">
+          <div className="font-neue-montreal-semibold text-base leading-none text-[#0B57C2]">
             {profile?.displayName || formatUsername(profile?.name || "")}
           </div>
         </div>

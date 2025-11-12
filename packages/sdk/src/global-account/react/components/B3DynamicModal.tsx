@@ -34,7 +34,6 @@ export function B3DynamicModal({ hasB3GlobalBranding = false }: { hasB3GlobalBra
   const isOpen = useModalStore(state => state.isOpen);
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
   const contentType = useModalStore(state => state.contentType);
-  const history = useModalStore(state => state.history);
   const navigateBack = useModalStore(state => state.navigateBack);
   const { theme } = useB3();
   const isMobile = useIsMobile();
@@ -87,13 +86,9 @@ export function B3DynamicModal({ hasB3GlobalBranding = false }: { hasB3GlobalBra
     "anySpendBondKit",
   ];
 
-  // Types that have their own custom header with close button
-  const customHeaderTypes = ["deposit", "send", "manageAccount"];
-
   // Check if current content type is in freestyle types
   const isFreestyleType = freestyleTypes.includes(contentType?.type as string);
-  const hasCustomHeader = customHeaderTypes.includes(contentType?.type as string);
-  const hideCloseButton = isFreestyleType || hasCustomHeader;
+  const hideCloseButton = true;
 
   // Build content class using cn utility
   // eslint-disable-next-line tailwindcss/no-custom-classname
@@ -131,7 +126,7 @@ export function B3DynamicModal({ hasB3GlobalBranding = false }: { hasB3GlobalBra
       case "anySpendFundTournament":
         return <AnySpendTournament {...contentType} mode="modal" action="fund" />;
       case "anySpendOrderHistory":
-        return <OrderHistory onBack={() => {}} mode="modal" />;
+        return <OrderHistory {...contentType} mode="modal" />;
       case "anySpendStakeB3":
         return <AnySpendStakeB3 {...contentType} mode="modal" />;
       case "anySpendStakeUpside":
@@ -185,32 +180,30 @@ export function B3DynamicModal({ hasB3GlobalBranding = false }: { hasB3GlobalBra
         <ModalDescription className="sr-only hidden">{contentType?.type || "Modal Body"}</ModalDescription>
 
         <div className={cn("no-scrollbar max-h-[90dvh] overflow-auto sm:max-h-[80dvh]")}>
-          {history.length > 0 &&
-            contentType?.showBackButton &&
-            (contentType?.type === "deposit" || contentType?.type === "send" ? null : (
-              <button
-                onClick={navigateBack}
-                className="flex items-center gap-2 px-6 py-4 text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-              >
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path
-                    d="M15.8337 10H4.16699"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M10.0003 15.8334L4.16699 10L10.0003 4.16669"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                <span className="text-sm font-medium">Back</span>
-              </button>
-            ))}
+          {(!hideCloseButton || contentType?.showBackButton) && (
+            <button
+              onClick={navigateBack}
+              className="flex items-center gap-2 px-6 py-4 text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M15.8337 10H4.16699"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M10.0003 15.8334L4.16699 10L10.0003 4.16669"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span className="text-sm font-medium">Back</span>
+            </button>
+          )}
           {renderContent()}
         </div>
       </ModalContent>

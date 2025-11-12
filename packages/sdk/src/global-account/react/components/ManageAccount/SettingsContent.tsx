@@ -1,6 +1,7 @@
 import { useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { Chain } from "thirdweb";
 import LinkIcon from "../icons/LinkIcon";
+import ModalHeader from "../ModalHeader/ModalHeader";
 import SettingsMenuItem from "./SettingsMenuItem";
 import SettingsProfileCard from "./SettingsProfileCard";
 
@@ -15,13 +16,11 @@ const SettingsContent = ({
 }) => {
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
-  const contentType = useModalStore(state => state.contentType);
 
   const handleNavigate = (type: "home" | "swap" | "linkAccount" | "avatarEditor") => {
     if (type === "home") {
       setB3ModalContentType({
         type: "manageAccount",
-        showBackButton: true,
         chain,
         partnerId,
         onLogout,
@@ -30,7 +29,6 @@ const SettingsContent = ({
     } else if (type === "swap") {
       setB3ModalContentType({
         type: "manageAccount",
-        showBackButton: true,
         chain,
         partnerId,
         onLogout,
@@ -39,14 +37,12 @@ const SettingsContent = ({
     } else if (type === "linkAccount") {
       setB3ModalContentType({
         type: "linkAccount",
-        showBackButton: true,
         chain,
         partnerId,
       });
     } else {
       setB3ModalContentType({
         type: "avatarEditor",
-        showBackButton: true,
       });
     }
     setB3ModalOpen(true);
@@ -54,10 +50,7 @@ const SettingsContent = ({
 
   return (
     <div className="flex h-[470px] flex-col">
-      {/* Header */}
-      <div className="flex h-16 items-center justify-between border-b border-[#e4e4e7] bg-white px-5 py-3">
-        <p className="font-inter text-lg font-semibold leading-7 text-[#18181b]">Settings</p>
-      </div>
+      <ModalHeader title="Settings" />
 
       {/* Profile Section */}
       <div className="p-5">
