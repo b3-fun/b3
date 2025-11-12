@@ -12,11 +12,11 @@ const NFTContent = () => {
   console.log("nfts :", nfts);
 
   return (
-    <div className="grid grid-cols-3 gap-4" style={{ minHeight: "100px" }}>
+    <div style={{ minHeight: "100px" }}>
       {nfts?.nftResponse ? (
         <AccountAssets nfts={nfts.nftResponse} isLoading={isLoading} />
       ) : (
-        <div className="col-span-3 py-12 text-center text-gray-500">No NFTs found</div>
+        <div className="py-12 text-center text-gray-500">No NFTs found</div>
       )}
     </div>
   );
