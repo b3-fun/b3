@@ -248,7 +248,7 @@ export function useAuthentication(partnerId: string) {
     }
     console.log("@@globalAccountWallet", globalAccountWallet);
     onConnect(globalAccountWallet);
-  }, [wallets]);
+  }, [wallets, onConnect]);
 
   const { isLoading: useAutoConnectLoading } = useAutoConnect({
     client,
