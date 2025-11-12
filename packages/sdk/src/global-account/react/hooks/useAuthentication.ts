@@ -9,6 +9,7 @@ import { getConnectors } from "@wagmi/core";
 import { useCallback, useContext, useEffect, useRef } from "react";
 import {
   useActiveWallet,
+  useAuthToken,
   useAutoConnect,
   useConnectedWallets,
   useDisconnect,
@@ -46,6 +47,7 @@ export function useAuthentication(partnerId: string) {
   const { connect } = useConnect();
   const activeWagmiAccount = useAccount();
   const { switchAccount } = useSwitchAccount();
+  const authToken = useAuthToken();
   debug("@@activeWagmiAccount", activeWagmiAccount);
 
   // Check localStorage version and clear if not found or mismatched
@@ -240,10 +242,24 @@ export function useAuthentication(partnerId: string) {
     [activeWallet, disconnect, wallets, setIsAuthenticated, setUser, setIsConnected],
   );
 
+  useEffect(() => {
+    console.log("@@useEffect:authToken", {
+      authToken,
+      wallets,
+    });
+    if (authToken) {
+      const globalAccountWallet = wallets.find(wallet => wallet.id.startsWith("ecosystem."));
+      if (!globalAccountWallet) {
+        return;
+      }
+      console.log("@@globalAccountWallet", globalAccountWallet);
+      onConnect(globalAccountWallet);
+    }
+  }, [authToken, wallets]);
+
   const { isLoading: useAutoConnectLoading } = useAutoConnect({
     client,
     wallets: [wallet],
-    onConnect: onConnect,
   });
 
   /**
