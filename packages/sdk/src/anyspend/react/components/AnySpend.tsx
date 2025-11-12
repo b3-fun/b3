@@ -9,65 +9,42 @@ import {
   useGeoOnrampOptions,
 } from "@b3dotfun/sdk/anyspend/react";
 import {
-  Button,
-  ShinyButton,
   StyleRoot,
-  TabsPrimitive,
   TransitionPanel,
   useAccountWallet,
-  useB3,
-  useModalStore,
   useProfile,
   useRouter,
   useSearchParamsSSR,
   useTokenData,
   useTokenFromUrl,
 } from "@b3dotfun/sdk/global-account/react";
-import BottomNavigation from "@b3dotfun/sdk/global-account/react/components/ManageAccount/BottomNavigation";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import invariant from "invariant";
-import { ArrowDown, HistoryIcon, Loader2 } from "lucide-react";
-import { motion } from "motion/react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { toast } from "sonner";
-import { defineChain } from "thirdweb";
 import { parseUnits } from "viem";
 import { base, mainnet } from "viem/chains";
 import { components } from "../../types/api";
+import { useAnyspendOrderStore } from "../stores/useAnyspendOrderStore";
+import { useAnyspendPaymentStore } from "../stores/useAnyspendPaymentStore";
+import { useAnyspendRecipientStore } from "../stores/useAnyspendRecipientStore";
+import { useAnyspendSwapStore } from "../stores/useAnyspendSwapStore";
+import { PanelView, useAnyspendUIStore } from "../stores/useAnyspendUIStore";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
+import { AnyspendMainView } from "./AnyspendMainView";
 import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPaymentMethod";
-import { CryptoPaySection } from "./common/CryptoPaySection";
-import { CryptoReceiveSection } from "./common/CryptoReceiveSection";
 import { FeeDetailPanel } from "./common/FeeDetailPanel";
 import { FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaymentMethod";
 import { OrderDetails, OrderDetailsLoadingView } from "./common/OrderDetails";
 import { OrderHistory } from "./common/OrderHistory";
-import { PanelOnramp } from "./common/PanelOnramp";
 import { PanelOnrampPayment } from "./common/PanelOnrampPayment";
 import { PointsDetailPanel } from "./common/PointsDetailPanel";
 import { RecipientSelection } from "./common/RecipientSelection";
-import { TabSection } from "./common/TabSection";
 
-export interface RecipientOption {
-  address: string;
-  icon?: string;
-  label: string;
-  ensName?: string;
-}
-
-export enum PanelView {
-  MAIN,
-  HISTORY,
-  ORDER_DETAILS,
-  LOADING,
-  FIAT_PAYMENT,
-  RECIPIENT_SELECTION,
-  CRYPTO_PAYMENT_METHOD,
-  FIAT_PAYMENT_METHOD,
-  POINTS_DETAIL,
-  FEE_DETAIL,
-}
+// Re-export from stores for backward compatibility
+export type { RecipientOption } from "../stores/useAnyspendRecipientStore";
+export { PanelView } from "../stores/useAnyspendUIStore";
 
 const ANYSPEND_RECIPIENTS_KEY = "anyspend_recipients";
 
@@ -122,31 +99,6 @@ function AnySpendInner({
   const searchParams = useSearchParamsSSR();
   const router = useRouter();
 
-  const { partnerId } = useB3();
-  const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
-
-  // Define base chain with RPC for modal props
-  const baseChain = useMemo(
-    () =>
-      defineChain({
-        id: 8453,
-        name: "Base",
-        nativeCurrency: {
-          name: "Ether",
-          symbol: "ETH",
-          decimals: 18,
-        },
-        rpc: "https://mainnet.base.org",
-        blockExplorers: [
-          {
-            name: "Basescan",
-            url: "https://basescan.org",
-          },
-        ],
-      }),
-    [],
-  );
-
   // Determine if we're in "buy mode" based on whether destination token props are provided
   const isBuyMode = !!(destinationTokenAddress && destinationTokenChainId);
 
@@ -171,42 +123,28 @@ function AnySpendInner({
   // Track if onSuccess has been called for the current order
   const onSuccessCalled = useRef(false);
 
-  // Track animation direction for TransitionPanel
-  const animationDirection = useRef<"forward" | "back" | null>(null);
-  // Track previous panel for proper back navigation
-  const previousPanel = useRef<PanelView>(PanelView.MAIN);
+  // Use Zustand stores - single selectors per repo rules
+  const activeTab = useAnyspendUIStore(state => state.activeTab);
+  const setActiveTab = useAnyspendUIStore(state => state.setActiveTab);
+  const activePanel = useAnyspendUIStore(state => state.activePanel);
+  const setActivePanel = useAnyspendUIStore(state => state.setActivePanel);
+  const animationDirection = useAnyspendUIStore(state => state.animationDirection);
+  const navigateToPanel = useAnyspendUIStore(state => state.navigateToPanel);
+  const navigateBack = useAnyspendUIStore(state => state.navigateBack);
 
-  const [activeTab, setActiveTab] = useState<"crypto" | "fiat">(defaultActiveTab);
+  const orderId = useAnyspendOrderStore(state => state.orderId);
+  const setOrderId = useAnyspendOrderStore(state => state.setOrderId);
 
-  const [orderId, setOrderId] = useState<string | undefined>(loadOrder);
+  const selectedCryptoPaymentMethod = useAnyspendPaymentStore(state => state.selectedCryptoPaymentMethod);
+  const setSelectedCryptoPaymentMethod = useAnyspendPaymentStore(state => state.setSelectedCryptoPaymentMethod);
+  const selectedFiatPaymentMethod = useAnyspendPaymentStore(state => state.selectedFiatPaymentMethod);
+  const setSelectedFiatPaymentMethod = useAnyspendPaymentStore(state => state.setSelectedFiatPaymentMethod);
+
+  const customRecipients = useAnyspendRecipientStore(state => state.customRecipients);
+  const setCustomRecipients = useAnyspendRecipientStore(state => state.setCustomRecipients);
+
   const { orderAndTransactions: oat, getOrderAndTransactionsError } = useAnyspendOrderAndTransactions(orderId);
   !!getOrderAndTransactionsError && console.log("getOrderAndTransactionsError", getOrderAndTransactionsError);
-
-  const [activePanel, setActivePanel] = useState<PanelView>(loadOrder ? PanelView.ORDER_DETAILS : PanelView.MAIN);
-
-  // Helper functions to navigate with animation direction
-  const navigateToPanel = useCallback(
-    (panel: PanelView, direction: "forward" | "back" = "forward") => {
-      previousPanel.current = activePanel;
-      animationDirection.current = direction;
-      setActivePanel(panel);
-    },
-    [activePanel],
-  );
-
-  const navigateBack = useCallback(() => {
-    animationDirection.current = "back";
-    // Navigate back to previous panel or default to MAIN
-    const targetPanel = previousPanel.current !== activePanel ? previousPanel.current : PanelView.MAIN;
-    setActivePanel(targetPanel);
-  }, [activePanel]);
-  const [customRecipients, setCustomRecipients] = useState<RecipientOption[]>([]);
-  // Add state for selected payment method
-  const [selectedCryptoPaymentMethod, setSelectedCryptoPaymentMethod] = useState<CryptoPaymentMethodType>(
-    CryptoPaymentMethodType.NONE,
-  );
-  // Add state for selected fiat payment method
-  const [selectedFiatPaymentMethod, setSelectedFiatPaymentMethod] = useState<FiatPaymentMethod>(FiatPaymentMethod.NONE);
   // const [newRecipientAddress, setNewRecipientAddress] = useState("");
   // const recipientInputRef = useRef<HTMLInputElement>(null);
 
@@ -215,46 +153,76 @@ function AnySpendInner({
   const initialDstChainId =
     parseInt(searchParams.get("toChainId") || "0") || (isBuyMode ? destinationTokenChainId : base.id);
 
-  // State for source chain/token selection
-  const [selectedSrcChainId, setSelectedSrcChainId] = useState<number>(initialSrcChainId);
-  const defaultSrcToken = getDefaultToken(selectedSrcChainId);
+  // Use swap store - single selectors per repo rules
+  const selectedSrcChainId = useAnyspendSwapStore(state => state.selectedSrcChainId);
+  const setSelectedSrcChainId = useAnyspendSwapStore(state => state.setSelectedSrcChainId);
+  const selectedSrcToken = useAnyspendSwapStore(state => state.selectedSrcToken);
+  const setSelectedSrcToken = useAnyspendSwapStore(state => state.setSelectedSrcToken);
+  const srcAmount = useAnyspendSwapStore(state => state.srcAmount);
+  const setSrcAmount = useAnyspendSwapStore(state => state.setSrcAmount);
+  const srcAmountOnRamp = useAnyspendSwapStore(state => state.srcAmountOnRamp);
+  const setSrcAmountOnRamp = useAnyspendSwapStore(state => state.setSrcAmountOnRamp);
+
+  const selectedDstChainId = useAnyspendSwapStore(state => state.selectedDstChainId);
+  const setSelectedDstChainId = useAnyspendSwapStore(state => state.setSelectedDstChainId);
+  const selectedDstToken = useAnyspendSwapStore(state => state.selectedDstToken);
+  const setSelectedDstToken = useAnyspendSwapStore(state => state.setSelectedDstToken);
+  const dstAmount = useAnyspendSwapStore(state => state.dstAmount);
+  const setDstAmount = useAnyspendSwapStore(state => state.setDstAmount);
+  const isSrcInputDirty = useAnyspendSwapStore(state => state.isSrcInputDirty);
+  const setIsSrcInputDirty = useAnyspendSwapStore(state => state.setIsSrcInputDirty);
+
+  // Memoize tokens to match original behavior - these update when chain selection changes
+  const defaultSrcToken = useMemo(() => getDefaultToken(selectedSrcChainId), [selectedSrcChainId]);
   const srcTokenFromUrl = useTokenFromUrl({
     defaultToken: defaultSrcToken,
     prefix: "from",
   });
-  const [selectedSrcToken, setSelectedSrcToken] = useState<components["schemas"]["Token"]>(srcTokenFromUrl);
-  const { data: srcTokenMetadata } = useTokenData(selectedSrcToken?.chainId, selectedSrcToken?.address);
-  const [srcAmount, setSrcAmount] = useState<string>(searchParams.get("fromAmount") || "0.01");
-
-  // State for onramp amount
-  const [srcAmountOnRamp, setSrcAmountOnRamp] = useState<string>(searchParams.get("fromAmount") || "5");
-
-  // State for destination chain/token selection
-  const [selectedDstChainId, setSelectedDstChainId] = useState<number>(initialDstChainId);
-  const defaultDstToken = isBuyMode
-    ? {
-        symbol: "",
-        chainId: destinationTokenChainId,
-        address: destinationTokenAddress,
-        name: "",
-        decimals: 18,
-        metadata: {},
-      }
-    : getDefaultToken(selectedDstChainId);
+  const defaultDstToken = useMemo(
+    () =>
+      isBuyMode
+        ? {
+            symbol: "",
+            chainId: destinationTokenChainId,
+            address: destinationTokenAddress,
+            name: "",
+            decimals: 18,
+            metadata: {},
+          }
+        : getDefaultToken(selectedDstChainId),
+    [isBuyMode, destinationTokenChainId, destinationTokenAddress, selectedDstChainId],
+  );
   const dstTokenFromUrl = useTokenFromUrl({
     defaultToken: defaultDstToken,
     prefix: "to",
   });
-  const [selectedDstToken, setSelectedDstToken] = useState<components["schemas"]["Token"]>(
-    isBuyMode ? defaultDstToken : dstTokenFromUrl,
-  );
-  const { data: dstTokenMetadata } = useTokenData(selectedDstToken?.chainId, selectedDstToken?.address);
-  const [dstAmount, setDstAmount] = useState<string>(searchParams.get("toAmount") || "");
 
-  const [isSrcInputDirty, setIsSrcInputDirty] = useState(true);
+  const { data: srcTokenMetadata } = useTokenData(selectedSrcToken?.chainId, selectedSrcToken?.address);
+  const { data: dstTokenMetadata } = useTokenData(selectedDstToken?.chainId, selectedDstToken?.address);
   // Add refs to track if we've applied metadata
   const appliedSrcMetadataRef = useRef(false);
   const appliedDstMetadataRef = useRef(false);
+
+  // Initialize stores from URL/props on mount
+  useEffect(() => {
+    // Initialize UI store
+    setActiveTab(defaultActiveTab);
+    if (loadOrder) {
+      setActivePanel(PanelView.ORDER_DETAILS);
+      setOrderId(loadOrder);
+    }
+
+    // Initialize swap store from URL/props
+    setSelectedSrcChainId(initialSrcChainId);
+    setSelectedSrcToken(srcTokenFromUrl);
+    setSrcAmount(searchParams.get("fromAmount") || "0.01");
+    setSrcAmountOnRamp(searchParams.get("fromAmount") || "5");
+
+    setSelectedDstChainId(initialDstChainId);
+    setSelectedDstToken(isBuyMode ? defaultDstToken : dstTokenFromUrl);
+    setDstAmount(searchParams.get("toAmount") || "");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
 
   // Update source token with metadata
   useEffect(() => {
@@ -464,8 +432,9 @@ function AnySpendInner({
   //   [selectedDstChainId, newRecipientAddress, resolvedAddress]
   // );
 
-  // State for recipient selection
-  const [recipientAddress, setRecipientAddress] = useState<string | undefined>();
+  // Use recipient store - single selectors per repo rules
+  const recipientAddress = useAnyspendRecipientStore(state => state.recipientAddress);
+  const setRecipientAddress = useAnyspendRecipientStore(state => state.setRecipientAddress);
 
   const { address: globalAddress, wallet: globalWallet } = useAccountWallet();
   const recipientProfile = useProfile({ address: recipientAddress, fresh: true });
@@ -474,7 +443,7 @@ function AnySpendInner({
   // Set default recipient address when wallet changes
   useEffect(() => {
     setRecipientAddress(recipientAddressFromProps || globalAddress);
-  }, [recipientAddressFromProps, globalAddress]);
+  }, [recipientAddressFromProps, globalAddress, setRecipientAddress]);
 
   // Get geo-based onramp options for fiat payments
   const { geoData, coinbaseAvailablePaymentMethods, stripeWeb2Support } = useGeoOnrampOptions(srcAmountOnRamp);
@@ -960,211 +929,6 @@ function AnySpendInner({
     </div>
   );
 
-  const mainView = (
-    <div className={"mx-auto flex w-[460px] max-w-full flex-col items-center gap-2"}>
-      <div className={"mx-auto flex max-w-full flex-col items-center gap-2 px-5"}>
-        {/* Token Header - Show when in buy mode */}
-        {isBuyMode && (
-          <div className="mb-4 flex flex-col items-center gap-3 text-center">
-            {selectedDstToken.metadata?.logoURI && (
-              <div className="relative">
-                <img
-                  src={selectedDstToken.metadata.logoURI}
-                  alt={selectedDstToken.symbol}
-                  className="border-as-stroke h-12 w-12 rounded-full border-2 shadow-md"
-                />
-              </div>
-            )}
-            <div>
-              <h1 className="text-as-primary text-xl font-bold">Buy {selectedDstToken.symbol}</h1>
-            </div>
-          </div>
-        )}
-
-        {/* Tab section */}
-        <TabSection
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          setSelectedCryptoPaymentMethod={setSelectedCryptoPaymentMethod}
-          setSelectedFiatPaymentMethod={setSelectedFiatPaymentMethod}
-        />
-
-        <div className="relative flex w-full max-w-[calc(100vw-32px)] flex-col gap-2">
-          {/* Send section */}
-          {activeTab === "crypto" ? (
-            <CryptoPaySection
-              selectedSrcChainId={selectedSrcChainId}
-              setSelectedSrcChainId={setSelectedSrcChainId}
-              selectedSrcToken={selectedSrcToken}
-              setSelectedSrcToken={setSelectedSrcToken}
-              srcAmount={srcAmount}
-              setSrcAmount={setSrcAmount}
-              isSrcInputDirty={isSrcInputDirty}
-              setIsSrcInputDirty={setIsSrcInputDirty}
-              selectedCryptoPaymentMethod={selectedCryptoPaymentMethod}
-              onSelectCryptoPaymentMethod={() => navigateToPanel(PanelView.CRYPTO_PAYMENT_METHOD, "forward")}
-              anyspendQuote={anyspendQuote}
-              onTokenSelect={onTokenSelect}
-              onShowFeeDetail={() => navigateToPanel(PanelView.FEE_DETAIL, "forward")}
-            />
-          ) : (
-            <motion.div
-              initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              transition={{ duration: 0.3, delay: 0, ease: "easeInOut" }}
-            >
-              <PanelOnramp
-                srcAmountOnRamp={srcAmountOnRamp}
-                setSrcAmountOnRamp={setSrcAmountOnRamp}
-                selectedPaymentMethod={selectedFiatPaymentMethod}
-                setActivePanel={(panelIndex: number) => {
-                  // Map panel index to navigation with direction
-                  const panelsWithForwardNav = [PanelView.FIAT_PAYMENT_METHOD, PanelView.RECIPIENT_SELECTION];
-                  if (panelsWithForwardNav.includes(panelIndex)) {
-                    navigateToPanel(panelIndex, "forward");
-                  } else {
-                    setActivePanel(panelIndex);
-                  }
-                }}
-                _recipientAddress={recipientAddress}
-                destinationToken={selectedDstToken}
-                destinationChainId={selectedDstChainId}
-                destinationAmount={dstAmount}
-                onDestinationTokenChange={setSelectedDstToken}
-                onDestinationChainChange={setSelectedDstChainId}
-                fiatPaymentMethodIndex={PanelView.FIAT_PAYMENT_METHOD}
-                recipientSelectionPanelIndex={PanelView.RECIPIENT_SELECTION}
-                hideDstToken={isBuyMode}
-                anyspendQuote={anyspendQuote}
-                onShowPointsDetail={() => navigateToPanel(PanelView.POINTS_DETAIL, "forward")}
-                onShowFeeDetail={() => navigateToPanel(PanelView.FEE_DETAIL, "forward")}
-                customUsdInputValues={customUsdInputValues}
-              />
-            </motion.div>
-          )}
-
-          {/* Reverse swap direction section */}
-          <Button
-            variant="ghost"
-            className={cn(
-              "border-as-stroke bg-as-surface-primary absolute left-1/2 top-1/2 z-10 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-xl border-2 sm:h-8 sm:w-8 sm:rounded-xl",
-              isBuyMode && "top-[calc(50%+56px)] cursor-default",
-              activeTab === "fiat" && "hidden",
-            )}
-            onClick={() => {
-              if (activeTab === "fiat" || isBuyMode) {
-                return;
-              }
-
-              // Swap chain selections
-              const tempSrcChainId = selectedSrcChainId;
-              const tempDstChainId = selectedDstChainId;
-              setSelectedSrcChainId(tempDstChainId);
-              setSelectedDstChainId(tempSrcChainId);
-
-              // Swap token selections
-              const tempSrcToken = selectedSrcToken;
-              const tempDstToken = selectedDstToken;
-              setSelectedSrcToken(tempDstToken);
-              setSelectedDstToken(tempSrcToken);
-
-              // Swap amounts
-              const tempSrcAmount = srcAmount;
-              const tempDstAmount = dstAmount;
-              setSrcAmount(tempDstAmount);
-              setDstAmount(tempSrcAmount);
-            }}
-          >
-            <div className="relative flex items-center justify-center transition-opacity">
-              <ArrowDown className="text-as-primary/50 h-5 w-5" />
-            </div>
-          </Button>
-
-          {/* Receive section - Hidden when fiat tab is active */}
-          {activeTab === "crypto" && (
-            <CryptoReceiveSection
-              isDepositMode={false}
-              isBuyMode={isBuyMode}
-              selectedRecipientAddress={recipientAddress}
-              recipientName={recipientName || undefined}
-              onSelectRecipient={() => navigateToPanel(PanelView.RECIPIENT_SELECTION, "forward")}
-              dstAmount={dstAmount}
-              dstToken={selectedDstToken}
-              selectedDstChainId={selectedDstChainId}
-              setSelectedDstChainId={setSelectedDstChainId}
-              setSelectedDstToken={setSelectedDstToken}
-              isSrcInputDirty={isSrcInputDirty}
-              onChangeDstAmount={value => {
-                setIsSrcInputDirty(false);
-                setDstAmount(value);
-              }}
-              anyspendQuote={anyspendQuote}
-              onShowPointsDetail={() => navigateToPanel(PanelView.POINTS_DETAIL, "forward")}
-              onShowFeeDetail={() => navigateToPanel(PanelView.FEE_DETAIL, "forward")}
-            />
-          )}
-        </div>
-
-        {/* Main button section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          transition={{ duration: 0.3, delay: 0.2, ease: "easeInOut" }}
-          className={cn("mt-4 flex w-full max-w-[460px] flex-col gap-2")}
-        >
-          <ShinyButton
-            accentColor={"hsl(var(--as-brand))"}
-            disabled={btnInfo.disable}
-            onClick={onMainButtonClick}
-            className={cn(
-              "as-main-button relative w-full",
-              btnInfo.error ? "!bg-as-red" : btnInfo.disable ? "!bg-as-on-surface-2" : "!bg-as-brand",
-            )}
-            textClassName={cn(btnInfo.error ? "text-white" : btnInfo.disable ? "text-as-secondary" : "text-white")}
-          >
-            <div className="flex items-center justify-center gap-2">
-              {btnInfo.loading && <Loader2 className="h-4 w-4 animate-spin" />}
-              {btnInfo.text}
-            </div>
-          </ShinyButton>
-
-          {!hideTransactionHistoryButton && (globalAddress || recipientAddress) ? (
-            <Button
-              variant="link"
-              onClick={onClickHistory}
-              className="text-as-primary/50 hover:text-as-primary flex items-center gap-1 transition-colors"
-            >
-              <HistoryIcon className="h-4 w-4" /> <span className="pr-4">Transaction History</span>
-            </Button>
-          ) : null}
-        </motion.div>
-      </div>
-      <div className="w-full">
-        <TabsPrimitive
-          defaultValue="swap"
-          onValueChange={value => {
-            if (value === "settings" || value === "home") {
-              setB3ModalContentType({
-                type: "manageAccount",
-                activeTab: value,
-                setActiveTab: () => {},
-                chain: baseChain,
-                partnerId,
-              });
-            } else if (value === "swap") {
-              setB3ModalContentType({
-                type: "anySpend",
-                showBackButton: true,
-              });
-            }
-          }}
-        >
-          <BottomNavigation />
-        </TabsPrimitive>
-      </div>
-    </div>
-  );
-
   const onrampPaymentView = (
     <PanelOnrampPayment
       srcAmountOnRamp={srcAmountOnRamp}
@@ -1274,7 +1038,7 @@ function AnySpendInner({
           className={cn("rounded-2xl", {
             "mt-0": mode === "modal",
           })}
-          custom={animationDirection.current}
+          custom={animationDirection}
           variants={{
             enter: direction => ({
               x: direction === "back" ? -300 : 300,
@@ -1290,7 +1054,20 @@ function AnySpendInner({
         >
           {[
             <div key="main-view" className={cn(mode === "page" && "p-6")}>
-              {mainView}
+              <AnyspendMainView
+                mode={mode}
+                isBuyMode={isBuyMode}
+                destinationTokenAddress={destinationTokenAddress}
+                destinationTokenChainId={destinationTokenChainId}
+                hideTransactionHistoryButton={hideTransactionHistoryButton}
+                onTokenSelect={onTokenSelect}
+                customUsdInputValues={customUsdInputValues}
+                btnInfo={btnInfo}
+                onMainButtonClick={onMainButtonClick}
+                onClickHistory={onClickHistory}
+                anyspendQuote={anyspendQuote}
+                isLoadingAnyspendQuote={isLoadingAnyspendQuote}
+              />
             </div>,
             <div key="history-view" className={cn(mode === "page" && "p-6")}>
               {historyView}
