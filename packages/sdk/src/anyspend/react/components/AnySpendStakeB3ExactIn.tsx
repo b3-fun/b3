@@ -506,6 +506,8 @@ export function AnySpendStakeB3ExactIn({
       loadOrder={loadOrder}
       mode={mode}
       recipientAddress={recipientAddress}
+      destinationToken={B3_TOKEN}
+      destinationChainId={base.id}
       customExactInConfig={customExactInConfig}
       header={header}
       onSuccess={onSuccess}

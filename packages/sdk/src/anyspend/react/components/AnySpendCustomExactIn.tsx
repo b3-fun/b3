@@ -1,6 +1,3 @@
-// TODO: Change destination token from fixed B3_TOKEN to dynamic based on props
-
-import { B3_TOKEN } from "@b3dotfun/sdk/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
 import { normalizeAddress } from "@b3dotfun/sdk/anyspend/utils";
@@ -12,7 +9,6 @@ import { motion } from "motion/react";
 import { useEffect, useMemo, useRef } from "react";
 import { toast } from "sonner";
 import { useActiveWallet, useSetActiveWallet } from "thirdweb/react";
-import { base } from "viem/chains";
 import { useGlobalWalletState } from "../../utils";
 import { PanelView, useAnyspendFlow } from "../hooks/useAnyspendFlow";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
@@ -27,11 +23,6 @@ import { PointsDetailPanel } from "./common/PointsDetailPanel";
 import { RecipientSelection } from "./common/RecipientSelection";
 
 const SLIPPAGE_PERCENT = 3;
-
-const DESTINATION_TOKEN_DETAILS = {
-  SYMBOL: B3_TOKEN.symbol ?? "B3",
-  LOGO_URI: "https://cdn.b3.fun/b3-coin-3d.png",
-};
 
 type CustomExactInConfig = {
   functionAbi: string;
@@ -49,6 +40,8 @@ export interface AnySpendCustomExactInProps {
   paymentType?: "crypto" | "fiat";
   sourceTokenAddress?: string;
   sourceTokenChainId?: number;
+  destinationToken: components["schemas"]["Token"];
+  destinationChainId: number;
   onSuccess?: () => void;
   mainFooter?: React.ReactNode;
   onTokenSelect?: (token: components["schemas"]["Token"], event: { preventDefault: () => void }) => void;
@@ -81,6 +74,8 @@ function AnySpendCustomExactInInner({
   paymentType = "crypto",
   sourceTokenAddress,
   sourceTokenChainId,
+  destinationToken,
+  destinationChainId,
   onSuccess,
   mainFooter,
   onTokenSelect,
@@ -90,6 +85,11 @@ function AnySpendCustomExactInInner({
   header,
 }: AnySpendCustomExactInProps) {
   const actionLabel = customExactInConfig.action ?? "Custom Execution";
+
+  const DESTINATION_TOKEN_DETAILS = {
+    SYMBOL: destinationToken.symbol ?? "TOKEN",
+    LOGO_URI: destinationToken.metadata?.logoURI ?? "",
+  };
 
   const {
     activePanel,
@@ -287,8 +287,8 @@ function AnySpendCustomExactInInner({
                 selectedPaymentMethod={selectedFiatPaymentMethod}
                 setActivePanel={setActivePanel}
                 _recipientAddress={selectedRecipientOrDefault}
-                destinationToken={B3_TOKEN}
-                destinationChainId={base.id}
+                destinationToken={destinationToken}
+                destinationChainId={destinationChainId}
                 dstTokenSymbol={DESTINATION_TOKEN_DETAILS.SYMBOL}
                 hideDstToken
                 destinationAmount={dstAmount}
@@ -327,10 +327,10 @@ function AnySpendCustomExactInInner({
               recipientName={recipientName || undefined}
               onSelectRecipient={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
               dstAmount={dstAmount}
-              dstToken={B3_TOKEN}
+              dstToken={destinationToken}
               dstTokenSymbol={DESTINATION_TOKEN_DETAILS.SYMBOL}
               dstTokenLogoURI={DESTINATION_TOKEN_DETAILS.LOGO_URI}
-              selectedDstChainId={base.id}
+              selectedDstChainId={destinationChainId}
               setSelectedDstChainId={() => {}}
               setSelectedDstToken={() => {}}
               isSrcInputDirty={isSrcInputDirty}
@@ -385,9 +385,9 @@ function AnySpendCustomExactInInner({
         recipientAddress: selectedRecipientOrDefault,
         orderType: "custom_exact_in",
         srcChain: selectedSrcChainId,
-        dstChain: base.id,
+        dstChain: destinationChainId,
         srcToken: selectedSrcToken,
-        dstToken: B3_TOKEN,
+        dstToken: destinationToken,
         srcAmount: srcAmountBigInt.toString(),
         expectedDstAmount: expectedDstAmountRaw,
         creatorAddress: globalAddress,
@@ -435,8 +435,8 @@ function AnySpendCustomExactInInner({
       createOnrampOrder({
         recipientAddress: selectedRecipientOrDefault,
         orderType: "custom_exact_in",
-        dstChain: base.id,
-        dstToken: B3_TOKEN,
+        dstChain: destinationChainId,
+        dstToken: destinationToken,
         srcFiatAmount: srcAmount,
         onramp: {
           vendor,
