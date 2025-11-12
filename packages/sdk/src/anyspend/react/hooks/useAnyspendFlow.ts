@@ -46,10 +46,14 @@ interface UseAnyspendFlowProps {
   onTransactionSuccess?: (amount?: string) => void;
   sourceTokenAddress?: string;
   sourceTokenChainId?: number;
+  destinationTokenAddress?: string;
+  destinationTokenChainId?: number;
   slippage?: number;
   disableUrlParamManagement?: boolean;
+  orderType?: "hype_duel" | "custom_exact_in";
 }
 
+// This hook serves for order hype_duel and custom_exact_in
 export function useAnyspendFlow({
   paymentType = "crypto",
   recipientAddress,
@@ -59,8 +63,11 @@ export function useAnyspendFlow({
   onTransactionSuccess,
   sourceTokenAddress,
   sourceTokenChainId,
+  destinationTokenAddress,
+  destinationTokenChainId,
   slippage = 0,
   disableUrlParamManagement = false,
+  orderType = "hype_duel",
 }: UseAnyspendFlowProps) {
   const searchParams = useSearchParamsSSR();
   const router = useRouter();
@@ -70,16 +77,20 @@ export function useAnyspendFlow({
   const [orderId, setOrderId] = useState<string | undefined>(loadOrder);
   const { orderAndTransactions: oat } = useAnyspendOrderAndTransactions(orderId);
 
-  // Token selection state - use provided sourceTokenChainId if available
+  // Token selection state - use provided sourceTokenChainId and destinationTokenChainId if available
   const [selectedSrcChainId, setSelectedSrcChainId] = useState<number>(
     sourceTokenChainId || (paymentType === "fiat" ? base.id : mainnet.id),
   );
-  const [selectedDstChainId, setSelectedDstChainId] = useState<number>(base.id); // Default to Base for cross-chain swaps
   const defaultSrcToken = paymentType === "fiat" ? USDC_BASE : getDefaultToken(selectedSrcChainId);
+  const defaultDstToken = B3_TOKEN; // Default destination token
   const [selectedSrcToken, setSelectedSrcToken] = useState<components["schemas"]["Token"]>(defaultSrcToken);
+  const [selectedDstToken, setSelectedDstToken] = useState<components["schemas"]["Token"]>(defaultDstToken);
   const [srcAmount, setSrcAmount] = useState<string>(paymentType === "fiat" ? "5" : "0.1");
   const [dstAmount, setDstAmount] = useState<string>("");
   const [isSrcInputDirty, setIsSrcInputDirty] = useState(true);
+
+  // Derive destination chain ID from token or prop (cannot change)
+  const selectedDstChainId = destinationTokenChainId || selectedDstToken.chainId;
 
   // Payment method state
   const [selectedCryptoPaymentMethod, setSelectedCryptoPaymentMethod] = useState<CryptoPaymentMethodType>(
@@ -148,6 +159,24 @@ export function useAnyspendFlow({
     fetchSourceToken();
   }, [sourceTokenAddress, sourceTokenChainId]);
 
+  // Fetch specific token when destinationTokenAddress and destinationTokenChainId are provided
+  useEffect(() => {
+    const fetchDestinationToken = async () => {
+      if (destinationTokenAddress && destinationTokenChainId) {
+        try {
+          const token = await anyspendService.getToken(destinationTokenChainId, destinationTokenAddress);
+          setSelectedDstToken(token);
+        } catch (error) {
+          console.error("Failed to fetch destination token:", error);
+          toast.error(`Failed to load token ${destinationTokenAddress} on chain ${destinationTokenChainId}`);
+          // Keep the default token on error
+        }
+      }
+    };
+
+    fetchDestinationToken();
+  }, [destinationTokenAddress, destinationTokenChainId]);
+
   // Helper function for onramp vendor mapping
   const getOnrampVendor = (paymentMethod: FiatPaymentMethod): "coinbase" | "stripe" | "stripe-web2" | undefined => {
     switch (paymentMethod) {
@@ -168,8 +197,8 @@ export function useAnyspendFlow({
     srcChain: paymentType === "fiat" ? base.id : selectedSrcChainId,
     dstChain: isDepositMode ? base.id : selectedDstChainId, // For deposits, always Base; for swaps, use selected destination
     srcTokenAddress: paymentType === "fiat" ? USDC_BASE.address : selectedSrcToken.address,
-    dstTokenAddress: isDepositMode ? B3_TOKEN.address : selectedSrcToken.address, // For deposits, always B3
-    type: "hype_duel",
+    dstTokenAddress: selectedDstToken.address,
+    type: orderType,
     amount: activeInputAmountInWei,
     recipientAddress: selectedRecipientAddress,
     onrampVendor: paymentType === "fiat" ? getOnrampVendor(selectedFiatPaymentMethod) : undefined,
@@ -275,10 +304,11 @@ export function useAnyspendFlow({
     // Token state
     selectedSrcChainId,
     setSelectedSrcChainId,
-    selectedDstChainId,
-    setSelectedDstChainId,
+    selectedDstChainId, // Derived, not stateful
     selectedSrcToken,
     setSelectedSrcToken,
+    selectedDstToken,
+    setSelectedDstToken,
     srcAmount,
     setSrcAmount,
     dstAmount,

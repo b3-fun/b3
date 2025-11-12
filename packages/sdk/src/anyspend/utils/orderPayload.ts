@@ -1,5 +1,5 @@
-import { normalizeAddress } from "@b3dotfun/sdk/anyspend/utils";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
+import { normalizeAddress } from "@b3dotfun/sdk/anyspend/utils";
 
 export type OrderParams = {
   orderType: components["schemas"]["Order"]["type"];
@@ -48,6 +48,8 @@ export const buildPayload = (orderType: components["schemas"]["Order"]["type"], 
       };
     case "custom":
       return { ...payload };
+    case "custom_exact_in":
+      return { ...payload, expectedDstAmount };
     case "hype_duel":
       return {
         expectedDstAmount,
@@ -72,6 +74,8 @@ export const buildMetadata = (orderType: components["schemas"]["Order"]["type"],
     case "fund_tournament":
       return { ...baseMetadata, tournament };
     case "custom":
+      return { ...baseMetadata, action: payload.action };
+    case "custom_exact_in":
       return { ...baseMetadata, action: payload.action };
     case "hype_duel":
       return { ...baseMetadata };

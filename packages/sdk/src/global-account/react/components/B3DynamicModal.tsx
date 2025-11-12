@@ -5,16 +5,19 @@ import {
   AnySpendNFT,
   AnyspendSignatureMint,
   AnySpendStakeB3,
+  AnySpendStakeB3ExactIn,
   AnySpendTournament,
   OrderHistory,
 } from "@b3dotfun/sdk/anyspend/react";
 import { AnySpendDepositHype } from "@b3dotfun/sdk/anyspend/react/components/AnyspendDepositHype";
 import { AnySpendStakeUpside } from "@b3dotfun/sdk/anyspend/react/components/AnySpendStakeUpside";
+import { AnySpendStakeUpsideExactIn } from "@b3dotfun/sdk/anyspend/react/components/AnySpendStakeUpsideExactIn";
 import { useGlobalWalletState } from "@b3dotfun/sdk/anyspend/utils";
 import { useIsMobile, useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { useEffect, useRef } from "react";
+import { useSetActiveWallet } from "thirdweb/react";
 import { AvatarEditor } from "./AvatarEditor/AvatarEditor";
 import { useB3 } from "./B3Provider/useB3";
 import { LinkAccount } from "./LinkAccount/LinkAccount";
@@ -23,7 +26,6 @@ import { RequestPermissions } from "./RequestPermissions/RequestPermissions";
 import { SignInWithB3Flow } from "./SignInWithB3/SignInWithB3Flow";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "./ui/dialog";
 import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "./ui/drawer";
-import { useSetActiveWallet } from "thirdweb/react";
 
 const debug = debugB3React("B3DynamicModal");
 
@@ -56,7 +58,9 @@ export function B3DynamicModal() {
     "anySpendJoinTournament",
     "anySpendFundTournament",
     "anySpendStakeB3",
+    "anySpendStakeB3ExactIn",
     "anySpendStakeUpside",
+    "anySpendStakeUpsideExactIn",
     "anySpendBuySpin",
     "anySpendOrderHistory",
     "signInWithB3",
@@ -71,7 +75,9 @@ export function B3DynamicModal() {
     "anySpendJoinTournament",
     "anySpendFundTournament",
     "anySpendStakeB3",
+    "anySpendStakeB3ExactIn",
     "anySpendStakeUpside",
+    "anySpendStakeUpsideExactIn",
     "anySpendBuySpin",
     "anySpendSignatureMint",
     "anySpendBondKit",
@@ -120,8 +126,12 @@ export function B3DynamicModal() {
         return <OrderHistory onBack={() => {}} mode="modal" />;
       case "anySpendStakeB3":
         return <AnySpendStakeB3 {...contentType} mode="modal" />;
+      case "anySpendStakeB3ExactIn":
+        return <AnySpendStakeB3ExactIn {...contentType} mode="modal" />;
       case "anySpendStakeUpside":
         return <AnySpendStakeUpside {...contentType} mode="modal" />;
+      case "anySpendStakeUpsideExactIn":
+        return <AnySpendStakeUpsideExactIn {...contentType} mode="modal" />;
       case "anySpendBuySpin":
         return <AnySpendBuySpin {...contentType} mode="modal" />;
       case "anySpendSignatureMint":
