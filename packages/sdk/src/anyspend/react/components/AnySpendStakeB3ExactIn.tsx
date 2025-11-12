@@ -121,7 +121,7 @@ export function AnySpendStakeB3ExactIn({
     }
   }, [stakeAmount]);
 
-  if (!recipientAddress) return null
+  if (!recipientAddress) return null;
 
   const validateAndSetAmount = (value: string) => {
     // Allow decimal input by validating against a pattern
