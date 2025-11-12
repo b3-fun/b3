@@ -27,7 +27,7 @@ export function useAnyspendQuote(req: GetQuoteRequest): UseAnyspendQuoteResult {
         req.srcTokenAddress &&
         req.dstTokenAddress &&
         BigInt(
-          req.type === "swap" || req.type === "hype_duel"
+          req.type === "swap" || req.type === "hype_duel" || req.type === "x402_swap" || req.type === "custom_exact_in"
             ? req.amount
             : req.type === "mint_nft"
               ? req.price

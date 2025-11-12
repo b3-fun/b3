@@ -1,4 +1,4 @@
-import { useAccountWallet, useProfile, useTokenData } from "@b3dotfun/sdk/global-account/react";
+import { useProfile, useTokenData } from "@b3dotfun/sdk/global-account/react";
 import { formatUsername } from "@b3dotfun/sdk/shared/utils";
 import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { formatDisplayNumber } from "@b3dotfun/sdk/shared/utils/number";
@@ -6,6 +6,7 @@ import { ChevronRight, Info } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect, useRef } from "react";
 import { components } from "../../../types/api";
+import { useConnectedWalletDisplay } from "../../hooks/useConnectedWalletDisplay";
 import { CryptoPaymentMethodType } from "./CryptoPaymentMethod";
 import { OrderTokenAmount } from "./OrderTokenAmount";
 import { TokenBalance } from "./TokenBalance";
@@ -46,14 +47,10 @@ export function CryptoPaySection({
   onTokenSelect,
   onShowFeeDetail,
 }: CryptoPaySectionProps) {
-  const { connectedSmartWallet, connectedEOAWallet } = useAccountWallet();
   const { data: srcTokenMetadata } = useTokenData(selectedSrcToken?.chainId, selectedSrcToken?.address);
 
-  // Determine which address to use based on payment method
-  const walletAddress =
-    selectedCryptoPaymentMethod === CryptoPaymentMethodType.GLOBAL_WALLET
-      ? connectedSmartWallet?.getAccount()?.address
-      : connectedEOAWallet?.getAccount()?.address;
+  // Use custom hook to determine wallet address based on payment method
+  const { walletAddress } = useConnectedWalletDisplay(selectedCryptoPaymentMethod);
 
   const { data: profileData } = useProfile({ address: walletAddress });
   const connectedName = profileData?.displayName;
@@ -137,6 +134,7 @@ export function CryptoPaySection({
       </div>
       <OrderTokenAmount
         address={walletAddress}
+        walletAddress={walletAddress}
         context="from"
         inputValue={srcAmount}
         onChangeInput={value => {

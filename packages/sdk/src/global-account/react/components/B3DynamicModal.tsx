@@ -5,11 +5,13 @@ import {
   AnySpendNFT,
   AnyspendSignatureMint,
   AnySpendStakeB3,
+  AnySpendStakeB3ExactIn,
   AnySpendTournament,
   OrderHistory,
 } from "@b3dotfun/sdk/anyspend/react";
 import { AnySpendDepositHype } from "@b3dotfun/sdk/anyspend/react/components/AnyspendDepositHype";
 import { AnySpendStakeUpside } from "@b3dotfun/sdk/anyspend/react/components/AnySpendStakeUpside";
+import { AnySpendStakeUpsideExactIn } from "@b3dotfun/sdk/anyspend/react/components/AnySpendStakeUpsideExactIn";
 import { useGlobalWalletState } from "@b3dotfun/sdk/anyspend/utils";
 import { useIsMobile, useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
@@ -62,7 +64,9 @@ export function B3DynamicModal() {
     "anySpendJoinTournament",
     "anySpendFundTournament",
     "anySpendStakeB3",
+    "anySpendStakeB3ExactIn",
     "anySpendStakeUpside",
+    "anySpendStakeUpsideExactIn",
     "anySpendBuySpin",
     "anySpendOrderHistory",
     "signInWithB3",
@@ -80,7 +84,9 @@ export function B3DynamicModal() {
     "anySpendJoinTournament",
     "anySpendFundTournament",
     "anySpendStakeB3",
+    "anySpendStakeB3ExactIn",
     "anySpendStakeUpside",
+    "anySpendStakeUpsideExactIn",
     "anySpendBuySpin",
     "anySpendSignatureMint",
     "anySpendBondKit",
@@ -129,8 +135,12 @@ export function B3DynamicModal() {
         return <OrderHistory {...contentType} mode="modal" />;
       case "anySpendStakeB3":
         return <AnySpendStakeB3 {...contentType} mode="modal" />;
+      case "anySpendStakeB3ExactIn":
+        return <AnySpendStakeB3ExactIn {...contentType} mode="modal" />;
       case "anySpendStakeUpside":
         return <AnySpendStakeUpside {...contentType} mode="modal" />;
+      case "anySpendStakeUpsideExactIn":
+        return <AnySpendStakeUpsideExactIn {...contentType} mode="modal" />;
       case "anySpendBuySpin":
         return <AnySpendBuySpin {...contentType} mode="modal" />;
       case "anySpendSignatureMint":

@@ -50,8 +50,7 @@ export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
     order.type === "mint_nft" ||
     order.type === "join_tournament" ||
     order.type === "fund_tournament" ||
-    order.type === "custom" ||
-    order.type === "hype_duel"
+    order.type === "custom"
       ? "0"
       : order.payload.expectedDstAmount.toString();
 
@@ -104,7 +103,7 @@ export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
                     ? "Join tournament"
                     : order.type === "fund_tournament"
                       ? "Fund tournament"
-                      : order.type === "custom"
+                      : order.type === "custom" || order.type === "custom_exact_in"
                         ? order.metadata.action
                           ? capitalizeFirstLetter(order.metadata.action)
                           : "Contract execution"

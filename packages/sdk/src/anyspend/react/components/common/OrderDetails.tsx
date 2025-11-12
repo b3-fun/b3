@@ -31,22 +31,17 @@ import { cn } from "@b3dotfun/sdk/shared/utils";
 import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 
-import {
-  createAssociatedTokenAccountInstruction,
-  createTransferCheckedInstruction,
-  getAssociatedTokenAddressSync,
-} from "@solana/spl-token";
-import { ComputeBudgetProgram, Connection, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { WalletCoinbase, WalletMetamask, WalletPhantom, WalletTrust, WalletWalletConnect } from "@web3icons/react";
 import { CheckIcon, ChevronRight, Copy, ExternalLink, Home, Loader2, RefreshCcw } from "lucide-react";
 import { motion } from "motion/react";
 import { QRCodeSVG } from "qrcode.react";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import TimeAgo from "react-timeago";
 import { toast } from "sonner";
 import { encodeFunctionData, erc20Abi } from "viem";
 import { b3 } from "viem/chains";
 import { useWaitForTransactionReceipt, useWalletClient } from "wagmi";
+import { usePhantomTransfer } from "../../hooks/usePhantomTransfer";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./Accordion";
 import ConnectWalletPayment from "./ConnectWalletPayment";
 import { CryptoPaymentMethodType } from "./CryptoPaymentMethod";
@@ -110,6 +105,12 @@ function getOrderSuccessText({
       return `Successfully ${actionText} to ${recipient}`;
     case "custom":
       actionText = order.metadata.action || `executed contract`;
+      return `Successfully ${actionText}`;
+    case "x402_swap":
+      actionText = `sent ${formattedActualDstAmount || "--"} ${dstToken.symbol}`;
+      return `Successfully ${actionText} to ${recipient}`;
+    case "custom_exact_in":
+      actionText = `executed contract`;
       return `Successfully ${actionText}`;
     default:
       throw new Error("Invalid order type");
@@ -250,6 +251,11 @@ export const OrderDetails = memo(function OrderDetails({
   const { switchChainAndExecuteWithEOA, switchChainAndExecute, isSwitchingOrExecuting } =
     useUnifiedChainSwitchAndExecute();
 
+  // Track if auto-payment was attempted to avoid re-triggering
+  const autoPaymentAttempted = useRef(false);
+  // Track if component is ready for auto-payment (all data loaded)
+  const [isComponentReady, setIsComponentReady] = useState(false);
+
   const roundedUpSrcAmount = useMemo(() => {
     // Display the full transfer amount without rounding since users need to see the exact value they're transferring.
     // Use 21 significant digits (max allowed by Intl.NumberFormat)
@@ -314,18 +320,25 @@ export const OrderDetails = memo(function OrderDetails({
     }
   }, [order, switchChainAndExecuteWithEOA, switchChainAndExecute, depositDeficit, effectiveCryptoPaymentMethod]);
 
+  // Use Phantom transfer hook for Solana payments
+  const { initiateTransfer: initiatePhantomTransfer, getConnectedAddress: getPhantomAddress } = usePhantomTransfer();
+
   // Main payment handler that triggers chain switch and payment
-  const handlePayment = async () => {
+  const handlePayment = useCallback(async () => {
     console.log("Initiating payment process. Target chain:", order.srcChain, "Current chain:", walletClient?.chain?.id);
     if (order.srcChain === RELAY_SOLANA_MAINNET_CHAIN_ID) {
       // Use the existing depositDeficit calculation to determine amount to send
       const amountToSend = depositDeficit > BigInt(0) ? depositDeficit.toString() : order.srcAmount;
-      await initiatePhantomTransfer(amountToSend, order.srcTokenAddress, order.globalAddress);
+      await initiatePhantomTransfer({
+        amountLamports: amountToSend,
+        tokenAddress: order.srcTokenAddress,
+        recipientAddress: order.globalAddress,
+      });
     } else {
       // Use unified payment process for both EOA and AA wallets
       await handleUnifiedPaymentProcess();
     }
-  };
+  }, [order, walletClient?.chain?.id, depositDeficit, handleUnifiedPaymentProcess, initiatePhantomTransfer]);
 
   // When waitingForDeposit is true, we show a message to the user to wait for the deposit to be processed.
   const setWaitingForDeposit = useCallback(() => {
@@ -368,17 +381,57 @@ export const OrderDetails = memo(function OrderDetails({
     }
   }, [setWaitingForDeposit, txSuccess]);
 
-  const isPhantomMobile = useMemo(() => navigator.userAgent.includes("Phantom"), []);
-  const isPhantomBrowser = useMemo(() => (window as any).phantom?.solana?.isPhantom, []);
-
   // Get connected Phantom wallet address if available
-  const phantomWalletAddress = useMemo(() => {
-    const phantom = (window as any).phantom?.solana;
-    if (phantom?.isConnected && phantom?.publicKey) {
-      return phantom.publicKey.toString();
+  const phantomWalletAddress = useMemo(() => getPhantomAddress(), [getPhantomAddress]);
+
+  // Calculate status display before using it
+  const { text: statusText, status: statusDisplay } = getStatusDisplay(order);
+
+  // Memoize the payable state calculation to avoid recalculating on every render
+  const isPayableState = useMemo(() => {
+    const waitingForDeposit = new URLSearchParams(window.location.search).get("waitingForDeposit") === "true";
+
+    return (
+      refundTxs.length === 0 &&
+      !executeTx &&
+      !(relayTxs.length > 0 && relayTxs.every(tx => tx.status === "success")) &&
+      !depositTxs?.length &&
+      !waitingForDeposit &&
+      statusDisplay === "processing" &&
+      !order.onrampMetadata &&
+      (effectiveCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET ||
+        effectiveCryptoPaymentMethod === CryptoPaymentMethodType.GLOBAL_WALLET)
+    );
+  }, [
+    refundTxs.length,
+    executeTx,
+    relayTxs,
+    depositTxs?.length,
+    statusDisplay,
+    order.onrampMetadata,
+    effectiveCryptoPaymentMethod,
+  ]);
+
+  // Mark component as ready once all critical data is available
+  // This ensures we don't trigger payment before the component has fully initialized
+  useEffect(() => {
+    if (!isComponentReady && srcToken && dstToken && statusDisplay) {
+      setIsComponentReady(true);
     }
-    return null;
-  }, []);
+  }, [isComponentReady, srcToken, dstToken, statusDisplay]);
+
+  // Auto-trigger payment when component is ready and order is in payable state
+  // This effect only runs when isPayableState or isComponentReady changes
+  useEffect(() => {
+    // Only trigger payment if:
+    // 1. We haven't attempted payment yet
+    // 2. Component is fully ready (all data loaded)
+    // 3. Order is in a payable state
+    if (!autoPaymentAttempted.current && isComponentReady && isPayableState) {
+      autoPaymentAttempted.current = true;
+      handlePayment();
+    }
+  }, [isPayableState, isComponentReady, handlePayment]);
 
   if (!srcToken || !dstToken) {
     return <div>Loading...</div>;
@@ -397,175 +450,6 @@ export const OrderDetails = memo(function OrderDetails({
   const formattedActualDstAmount = actualDstAmount
     ? formatTokenAmount(BigInt(actualDstAmount), dstToken.decimals)
     : undefined;
-
-  const { text: statusText, status: statusDisplay } = getStatusDisplay(order);
-
-  const initiatePhantomTransfer = async (amountLamports: string, tokenAddress: string, recipientAddress: string) => {
-    try {
-      if (!isPhantomBrowser && !isPhantomMobile) {
-        toast.error("Phantom wallet not installed. Please install Phantom wallet to continue.");
-        return;
-      }
-
-      // Step 2: Ensure Phantom is connected/unlocked
-      const phantom = (window as any).phantom?.solana;
-      if (!phantom) {
-        toast.error("Phantom wallet not accessible");
-        return;
-      }
-
-      // Connect and unlock wallet if needed
-      let publicKey;
-      try {
-        const connection = await phantom.connect();
-        publicKey = connection.publicKey;
-      } catch (connectError) {
-        toast.error("Failed to connect to Phantom wallet");
-        return;
-      }
-
-      // Step 3: Create transaction with priority fees
-      const connection = new Connection("https://mainnet.helius-rpc.com/?api-key=efafd9b3-1807-4cf8-8aa4-3d984f56d8fb");
-
-      const fromPubkey = new PublicKey(publicKey.toString());
-      const toPubkey = new PublicKey(recipientAddress);
-      const amount = BigInt(amountLamports);
-
-      // Step 4: Get recent priority fees to determine optimal pricing
-      let priorityFee = 10000; // Default fallback (10,000 micro-lamports)
-      try {
-        const recentFees = await connection.getRecentPrioritizationFees({
-          lockedWritableAccounts: [fromPubkey],
-        });
-
-        if (recentFees && recentFees.length > 0) {
-          // Use 75th percentile of recent fees for good priority
-          const sortedFees = recentFees.map(fee => fee.prioritizationFee).sort((a, b) => a - b);
-          const percentile75Index = Math.floor(sortedFees.length * 0.75);
-          priorityFee = Math.max(sortedFees[percentile75Index] || 10000, 10000);
-        }
-      } catch (feeError) {
-        console.warn("Failed to fetch recent priority fees, using default:", feeError);
-      }
-
-      let transaction: any;
-
-      // Check if this is native SOL transfer
-      if (tokenAddress === "11111111111111111111111111111111") {
-        // Native SOL transfer with priority fees
-        const computeUnitLimit = 1000; // SOL transfer + compute budget instructions need ~600-800 CU
-        const computeUnitPrice = Math.min(priorityFee, 100000); // Cap at 100k micro-lamports for safety
-
-        transaction = new Transaction()
-          .add(
-            // Set compute unit limit first (must come before other instructions)
-            ComputeBudgetProgram.setComputeUnitLimit({
-              units: computeUnitLimit,
-            }),
-          )
-          .add(
-            // Set priority fee
-            ComputeBudgetProgram.setComputeUnitPrice({
-              microLamports: computeUnitPrice,
-            }),
-          )
-          .add(
-            // Actual transfer instruction
-            SystemProgram.transfer({
-              fromPubkey,
-              toPubkey,
-              lamports: Number(amount),
-            }),
-          );
-
-        console.log(`Using priority fee: ${computeUnitPrice} micro-lamports per CU, limit: ${computeUnitLimit} CU`);
-      } else {
-        // SPL Token transfer with priority fees
-        const mintPubkey = new PublicKey(tokenAddress);
-
-        // Get associated token accounts
-        const fromTokenAccount = getAssociatedTokenAddressSync(mintPubkey, fromPubkey);
-        const toTokenAccount = getAssociatedTokenAddressSync(mintPubkey, toPubkey);
-
-        // Check if destination token account exists
-        const toTokenAccountInfo = await connection.getAccountInfo(toTokenAccount);
-        const needsDestinationAccount = !toTokenAccountInfo;
-
-        // Get mint info to determine decimals
-        const mintInfo = await connection.getParsedAccountInfo(mintPubkey);
-        const decimals = (mintInfo.value?.data as any)?.parsed?.info?.decimals || 9;
-
-        // SPL transfers need more compute units than SOL transfers
-        // Add extra CU if we need to create destination account
-        const computeUnitLimit = needsDestinationAccount ? 40000 : 20000;
-        const computeUnitPrice = Math.min(priorityFee, 100000);
-
-        // Create transfer instruction
-        const transferInstruction = createTransferCheckedInstruction(
-          fromTokenAccount,
-          mintPubkey,
-          toTokenAccount,
-          fromPubkey,
-          Number(amount),
-          decimals,
-        );
-
-        transaction = new Transaction()
-          .add(
-            ComputeBudgetProgram.setComputeUnitLimit({
-              units: computeUnitLimit,
-            }),
-          )
-          .add(
-            ComputeBudgetProgram.setComputeUnitPrice({
-              microLamports: computeUnitPrice,
-            }),
-          );
-
-        // Add create destination account instruction if needed
-        if (needsDestinationAccount) {
-          transaction.add(
-            createAssociatedTokenAccountInstruction(
-              fromPubkey, // payer
-              toTokenAccount, // ata
-              toPubkey, // owner
-              mintPubkey, // mint
-            ),
-          );
-        }
-
-        // Add the transfer instruction
-        transaction.add(transferInstruction);
-
-        console.log(
-          `SPL Token transfer: ${computeUnitPrice} micro-lamports per CU, limit: ${computeUnitLimit} CU, creating destination: ${needsDestinationAccount}`,
-        );
-      }
-
-      // Step 5: Get latest blockhash and simulate transaction to verify
-      const { blockhash } = await connection.getLatestBlockhash("confirmed");
-      transaction.recentBlockhash = blockhash;
-      transaction.feePayer = fromPubkey;
-
-      // Step 6: Sign and send transaction with priority fees
-      const signedTransaction = await phantom.signAndSendTransaction(transaction);
-
-      toast.success(`Transaction successful! Signature: ${signedTransaction.signature}`);
-      console.log("Transaction sent with priority fees. Signature:", signedTransaction.signature);
-    } catch (error: unknown) {
-      console.error("Transfer error:", error);
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      if (errorMessage.includes("User rejected")) {
-        toast.error("Transaction was cancelled by user");
-      } else if (errorMessage.includes("insufficient")) {
-        toast.error("Insufficient balance for this transaction");
-      } else if (errorMessage.includes("blockhash not found")) {
-        toast.error("Network congestion detected. Please try again in a moment.");
-      } else {
-        toast.error(`Transfer failed: ${errorMessage}`);
-      }
-    }
-  };
 
   if (refundTxs.length > 0) {
     return (
@@ -827,7 +711,7 @@ export const OrderDetails = memo(function OrderDetails({
                 {order.status === "executing" && (
                   <TransactionDetails
                     title={
-                      order.type === "swap"
+                      order.type === "swap" || order.type === "x402_swap"
                         ? "Processing Swap"
                         : order.type === "mint_nft"
                           ? "Minting NFT"
@@ -837,7 +721,9 @@ export const OrderDetails = memo(function OrderDetails({
                               ? "Funding Tournament"
                               : order.type === "hype_duel"
                                 ? "Depositing Hype Duel"
-                                : "Processing Bridge"
+                                : order.type === "custom" || order.type === "custom_exact_in"
+                                  ? "Executing Contract"
+                                  : "Processing Bridge"
                     }
                     chainId={order.dstChain}
                     isProcessing={true}

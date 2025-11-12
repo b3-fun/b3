@@ -20,6 +20,7 @@ import {
   useProfile,
   useRouter,
   useSearchParamsSSR,
+  useTokenBalanceDirect,
   useTokenData,
   useTokenFromUrl,
 } from "@b3dotfun/sdk/global-account/react";
@@ -35,6 +36,8 @@ import { defineChain } from "thirdweb";
 import { parseUnits } from "viem";
 import { base, mainnet } from "viem/chains";
 import { components } from "../../types/api";
+import { useAutoSelectCryptoPaymentMethod } from "../hooks/useAutoSelectCryptoPaymentMethod";
+import { useAutoSetActiveWalletFromWagmi } from "../hooks/useAutoSetActiveWalletFromWagmi";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
 import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPaymentMethod";
 import { CryptoPaySection } from "./common/CryptoPaySection";
@@ -467,14 +470,38 @@ function AnySpendInner({
   // State for recipient selection
   const [recipientAddress, setRecipientAddress] = useState<string | undefined>();
 
-  const { address: globalAddress, wallet: globalWallet } = useAccountWallet();
+  const { address: globalAddress, wallet: globalWallet, connectedEOAWallet } = useAccountWallet();
   const recipientProfile = useProfile({ address: recipientAddress, fresh: true });
   const recipientName = recipientProfile.data?.name;
 
-  // Set default recipient address when wallet changes
-  useEffect(() => {
-    setRecipientAddress(recipientAddressFromProps || globalAddress);
-  }, [recipientAddressFromProps, globalAddress]);
+  // Auto-set active wallet from wagmi
+  useAutoSetActiveWalletFromWagmi();
+
+  // Check token balance for crypto payments
+  const { rawBalance, isLoading: isBalanceLoading } = useTokenBalanceDirect({
+    token: selectedSrcToken,
+    address: connectedEOAWallet?.getAccount()?.address,
+  });
+
+  // Check if user has enough balanceuseAutoSetActiveWalletFromWagmi
+  const hasEnoughBalance = useMemo(() => {
+    if (!rawBalance || isBalanceLoading || activeTab !== "crypto") return false;
+    try {
+      const requiredAmount = parseUnits(srcAmount.replace(/,/g, ""), selectedSrcToken.decimals);
+      return rawBalance >= requiredAmount;
+    } catch {
+      return false;
+    }
+  }, [rawBalance, srcAmount, selectedSrcToken.decimals, isBalanceLoading, activeTab]);
+
+  // Auto-select crypto payment method based on available wallets and balance
+  useAutoSelectCryptoPaymentMethod({
+    paymentType: activeTab,
+    selectedCryptoPaymentMethod,
+    setSelectedCryptoPaymentMethod,
+    hasEnoughBalance,
+    isBalanceLoading,
+  });
 
   // Get geo-based onramp options for fiat payments
   const { geoData, coinbaseAvailablePaymentMethods, stripeWeb2Support } = useGeoOnrampOptions(srcAmountOnRamp);
@@ -654,17 +681,34 @@ function AnySpendInner({
     if (isSameChainSameToken)
       return { text: "Select a different token or chain", disable: true, error: false, loading: false };
     if (isLoadingAnyspendQuote) return { text: "Loading quote...", disable: true, error: false, loading: true };
-    if (!recipientAddress) return { text: "Select recipient", disable: false, error: false, loading: false };
     if (isCreatingOrder || isCreatingOnrampOrder)
       return { text: "Creating order...", disable: true, error: false, loading: true };
     if (!anyspendQuote || !anyspendQuote.success)
       return { text: "No quote found", disable: true, error: false, loading: false };
 
+    if (activeTab === "fiat") {
+      // For fiat: check recipient first, then payment method
+      if (!recipientAddress) return { text: "Select recipient", disable: false, error: false, loading: false };
+
+      // If no fiat payment method selected, show "Select payment method"
+      if (selectedFiatPaymentMethod === FiatPaymentMethod.NONE) {
+        return { text: "Select payment method", disable: false, error: false, loading: false };
+      }
+      // If payment method is selected, show "Buy"
+      return { text: "Buy", disable: false, error: false, loading: false };
+    }
+
     if (activeTab === "crypto") {
+      // For crypto: check payment method first, then recipient
+
       // If no payment method selected, show "Choose payment method"
       if (selectedCryptoPaymentMethod === CryptoPaymentMethodType.NONE) {
         return { text: "Choose payment method", disable: false, error: false, loading: false };
       }
+
+      // Check recipient after payment method
+      if (!recipientAddress) return { text: "Select recipient", disable: false, error: false, loading: false };
+
       // If payment method selected, show appropriate action
       if (
         selectedCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET ||
@@ -675,15 +719,6 @@ function AnySpendInner({
       if (selectedCryptoPaymentMethod === CryptoPaymentMethodType.TRANSFER_CRYPTO) {
         return { text: "Continue to payment", disable: false, error: false, loading: false };
       }
-    }
-
-    if (activeTab === "fiat") {
-      // If no fiat payment method selected, show "Select payment method"
-      if (selectedFiatPaymentMethod === FiatPaymentMethod.NONE) {
-        return { text: "Select payment method", disable: false, error: false, loading: false };
-      }
-      // If payment method is selected, show "Buy"
-      return { text: "Buy", disable: false, error: false, loading: false };
     }
 
     return { text: "Buy", disable: false, error: false, loading: false };
@@ -704,16 +739,18 @@ function AnySpendInner({
   const onMainButtonClick = async () => {
     if (btnInfo.disable) return;
 
-    if (!recipientAddress) {
-      navigateToPanel(PanelView.RECIPIENT_SELECTION, "forward");
-      return;
-    }
-
     try {
       invariant(anyspendQuote, "Relay price is not found");
-      invariant(recipientAddress, "Recipient address is not found");
 
       if (activeTab === "fiat") {
+        // For fiat: check recipient first
+        if (!recipientAddress) {
+          navigateToPanel(PanelView.RECIPIENT_SELECTION, "forward");
+          return;
+        }
+
+        invariant(recipientAddress, "Recipient address is not found");
+
         // If no fiat payment method selected, show payment method selection
         if (selectedFiatPaymentMethod === FiatPaymentMethod.NONE) {
           navigateToPanel(PanelView.FIAT_PAYMENT_METHOD, "forward");
@@ -725,12 +762,22 @@ function AnySpendInner({
       }
 
       if (activeTab === "crypto") {
+        // For crypto: check payment method first, then recipient
+
         // If no payment method selected, show payment method selection
         if (selectedCryptoPaymentMethod === CryptoPaymentMethodType.NONE) {
           console.log("No payment method selected, showing selection panel");
           navigateToPanel(PanelView.CRYPTO_PAYMENT_METHOD, "forward");
           return;
         }
+
+        // Check recipient after payment method
+        if (!recipientAddress) {
+          navigateToPanel(PanelView.RECIPIENT_SELECTION, "forward");
+          return;
+        }
+
+        invariant(recipientAddress, "Recipient address is not found");
 
         // If payment method is selected, create order with payment method info
         if (
@@ -1092,6 +1139,9 @@ function AnySpendInner({
               selectedRecipientAddress={recipientAddress}
               recipientName={recipientName || undefined}
               onSelectRecipient={() => navigateToPanel(PanelView.RECIPIENT_SELECTION, "forward")}
+              setRecipientAddress={setRecipientAddress}
+              recipientAddressFromProps={recipientAddressFromProps}
+              globalAddress={globalAddress}
               dstAmount={dstAmount}
               dstToken={selectedDstToken}
               selectedDstChainId={selectedDstChainId}
@@ -1105,6 +1155,7 @@ function AnySpendInner({
               anyspendQuote={anyspendQuote}
               onShowPointsDetail={() => navigateToPanel(PanelView.POINTS_DETAIL, "forward")}
               onShowFeeDetail={() => navigateToPanel(PanelView.FEE_DETAIL, "forward")}
+              selectedCryptoPaymentMethod={selectedCryptoPaymentMethod}
             />
           )}
         </div>

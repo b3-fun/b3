@@ -1,4 +1,5 @@
 import { ABI_ERC20_STAKING, B3_TOKEN, eqci } from "@b3dotfun/sdk/anyspend";
+import { normalizeAddress } from "@b3dotfun/sdk/anyspend/utils";
 import {
   Button,
   GlareCardRounded,
@@ -12,7 +13,6 @@ import {
 } from "@b3dotfun/sdk/global-account/react";
 import { PUBLIC_BASE_RPC_URL } from "@b3dotfun/sdk/shared/constants";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
-import invariant from "invariant";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
@@ -20,7 +20,7 @@ import { toast } from "sonner";
 import { createPublicClient, encodeFunctionData, erc20Abi, http } from "viem";
 import { base } from "viem/chains";
 import { useAccount, useWaitForTransactionReceipt } from "wagmi";
-import { AnySpendCustom } from "./AnySpendCustom";
+import { AnySpendCustomExactIn } from "./AnySpendCustomExactIn";
 import { EthIcon } from "./icons/EthIcon";
 import { SolIcon } from "./icons/SolIcon";
 import { UsdcIcon } from "./icons/USDCIcon";
@@ -32,28 +32,35 @@ const basePublicClient = createPublicClient({
 
 const ERC20Staking = "0xbf04200be3cbf371467a539706393c81c470f523";
 
-function generateEncodedDataForStakingB3(amount: string, beneficiary: string): string {
-  invariant(BigInt(amount) > 0, "Amount must be greater than zero");
-  const encodedData = encodeFunctionData({
-    abi: ABI_ERC20_STAKING,
-    functionName: "stake",
-    args: [BigInt(amount), beneficiary as `0x${string}`],
-  });
-  return encodedData;
-}
+const STAKE_FUNCTION_ABI = JSON.stringify([
+  {
+    name: "stake",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "amount", type: "uint256" },
+      { name: "beneficiary", type: "address" },
+    ],
+    outputs: [],
+  },
+]);
 
-export function AnySpendStakeB3({
+export function AnySpendStakeB3ExactIn({
   loadOrder,
   mode = "modal",
+  sourceTokenAddress,
+  sourceTokenChainId,
   recipientAddress,
   stakeAmount,
   onSuccess,
 }: {
   loadOrder?: string;
   mode?: "modal" | "page";
+  sourceTokenAddress?: string;
+  sourceTokenChainId?: number;
   recipientAddress: string;
   stakeAmount?: string;
-  onSuccess?: () => void;
+  onSuccess?: (amount: string) => void;
 }) {
   const hasMounted = useHasMounted();
   const { setB3ModalOpen } = useModalStore();
@@ -117,6 +124,8 @@ export function AnySpendStakeB3({
       setIsAmountValid(true);
     }
   }, [stakeAmount]);
+
+  if (!recipientAddress) return null;
 
   const validateAndSetAmount = (value: string) => {
     // Allow decimal input by validating against a pattern
@@ -246,7 +255,7 @@ export function AnySpendStakeB3({
         toast.success("Staking transaction submitted!");
       }
     } catch (error) {
-      console.error("@@b3-stake:error:", error);
+      console.error("@@b3-stake-custom-exact-in:error:", error);
       toast.error("Staking failed. Please try again.");
       setShowSuccessModal(false); // Ensure modal doesn't show on error
     } finally {
@@ -281,7 +290,7 @@ export function AnySpendStakeB3({
         <div className="h-[60px] w-full" />
         <div className="mb-1 flex w-full flex-col items-center gap-2 p-5">
           <span className="font-sf-rounded text-2xl font-semibold">
-            Swap & Staked {userStakeAmount ? formatTokenAmount(BigInt(userStakeAmount), 18) : ""} B3
+            Swap & Stake {userStakeAmount ? formatTokenAmount(BigInt(userStakeAmount), 18) : ""} B3 (Exact In)
           </span>
         </div>
       </div>
@@ -291,6 +300,15 @@ export function AnySpendStakeB3({
   const onFocusStakeAmountInput = () => {
     window.scrollTo(0, 0);
     document.body.scrollTop = 0;
+  };
+
+  const customExactInConfig = {
+    functionAbi: STAKE_FUNCTION_ABI,
+    functionName: "stake",
+    functionArgs: ["{{amount_out}}", normalizeAddress(recipientAddress)],
+    to: ERC20Staking,
+    spenderAddress: ERC20Staking,
+    action: "stake B3",
   };
 
   // Render amount input prompt if no stake amount is provided
@@ -475,7 +493,7 @@ export function AnySpendStakeB3({
             <Button
               onClick={() => {
                 setB3ModalOpen(false);
-                onSuccess?.();
+                onSuccess?.(formatTokenAmount(BigInt(userStakeAmount), 18) ?? "");
               }}
               className="bg-as-brand hover:bg-as-brand/90 text-as-primary h-14 w-full rounded-xl text-lg font-medium"
             >
@@ -487,25 +505,18 @@ export function AnySpendStakeB3({
     );
   }
 
-  const encodedData = generateEncodedDataForStakingB3(userStakeAmount, recipientAddress);
-
   return (
-    <AnySpendCustom
+    <AnySpendCustomExactIn
       loadOrder={loadOrder}
       mode={mode}
       recipientAddress={recipientAddress}
-      orderType={"custom"}
-      dstChainId={base.id}
-      dstToken={B3_TOKEN}
-      dstAmount={userStakeAmount}
-      contractAddress={ERC20Staking}
-      encodedData={encodedData}
-      metadata={{
-        action: "stake B3",
-      }}
+      sourceTokenAddress={sourceTokenAddress}
+      sourceTokenChainId={sourceTokenChainId}
+      destinationToken={B3_TOKEN}
+      destinationChainId={base.id}
+      customExactInConfig={customExactInConfig}
       header={header}
       onSuccess={onSuccess}
-      showRecipient={true}
     />
   );
 }

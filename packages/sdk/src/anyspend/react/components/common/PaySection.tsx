@@ -116,6 +116,7 @@ export function CryptoPaySection({
       </div>
       <OrderTokenAmount
         address={connectedAddress}
+        walletAddress={connectedAddress}
         context="from"
         inputValue={srcAmount}
         onChangeInput={value => {

@@ -44,6 +44,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { base } from "viem/chains";
 import { useFeatureFlags } from "../contexts/FeatureFlagsContext";
+import { useAutoSetActiveWalletFromWagmi } from "../hooks/useAutoSetActiveWalletFromWagmi";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
 import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPaymentMethod";
 import { FeeBreakDown } from "./common/FeeBreakDown";
@@ -240,6 +241,9 @@ function AnySpendCustomInner({
 
   const searchParams = useSearchParamsSSR();
   const router = useRouter();
+
+  // Auto-set active wallet from wagmi
+  useAutoSetActiveWalletFromWagmi();
 
   const [activePanel, setActivePanel] = useState<PanelView>(
     loadOrder ? PanelView.ORDER_DETAILS : PanelView.CONFIRM_ORDER,

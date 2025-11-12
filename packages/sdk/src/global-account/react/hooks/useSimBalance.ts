@@ -26,14 +26,13 @@ export interface SimBalanceResponse {
   balances: SimBalanceItem[];
 }
 
-const LOCAL_KEY = process.env.NEXT_PUBLIC_LOCAL_KEY || "k1c4Ep6agmoejiBinKE70B6bzb8vSdm8"; // REMOVE THIS BEFORE PUSHING
-
-async function fetchSimBalance(address: string): Promise<SimBalanceResponse> {
+async function fetchSimBalance(address: string, chainIdsParam: number[]): Promise<SimBalanceResponse> {
   if (!address) throw new Error("Address is required");
 
-  let url = `https://simdune-api.sean-430.workers.dev/?url=https://api.sim.dune.com/v1/evm/balances/${address}?metadata=logo&chain_ids=mainnet`;
-  if (LOCAL_KEY) {
-    url += `&localkey=${LOCAL_KEY}`;
+  const chainIds = chainIdsParam.length === 0 ? "mainnet" : chainIdsParam.join(",");
+  let url = `https://simdune-api.sean-430.workers.dev/?url=https://api.sim.dune.com/v1/evm/balances/${address}?metadata=logo&chain_ids=${chainIds}`;
+  if (process.env.NEXT_PUBLIC_LOCAL_KEY) {
+    url += `&localkey=${process.env.NEXT_PUBLIC_LOCAL_KEY}`;
   }
 
   const response = await fetch(url);
@@ -46,12 +45,12 @@ async function fetchSimBalance(address: string): Promise<SimBalanceResponse> {
   return balanceData;
 }
 
-export function useSimBalance(address?: string) {
+export function useSimBalance(address?: string, chainIdsParam?: number[]) {
   return useQuery({
-    queryKey: ["simBalance", address],
+    queryKey: ["simBalance", address, chainIdsParam],
     queryFn: () => {
       if (!address) throw new Error("Address is required");
-      return fetchSimBalance(address);
+      return fetchSimBalance(address, chainIdsParam || []);
     },
     enabled: Boolean(address),
   });

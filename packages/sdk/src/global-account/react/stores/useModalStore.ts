@@ -224,6 +224,21 @@ export interface AnySpendStakeB3Props extends BaseModalProps {
 }
 
 /**
+ * Props for the AnySpend Stake B3 (Custom Exact In) modal
+ * Handles B3 token staking operations using the custom exact in flow
+ */
+export interface AnySpendStakeB3ExactInProps extends BaseModalProps {
+  /** Modal type identifier */
+  type: "anySpendStakeB3ExactIn";
+  /** Recipient address to stake B3 for */
+  recipientAddress: string;
+  /** Stake amount */
+  stakeAmount?: string;
+  /** Callback function called when the stake is successful */
+  onSuccess?: () => void;
+}
+
+/**
  * Props for the AnySpend Stake Contract modal
  * Handles token staking operations to a given contract
  */
@@ -240,6 +255,23 @@ export interface AnySpendStakeUpsideProps extends BaseModalProps {
   token: components["schemas"]["Token"];
   /** Active tab for the modal */
   activeTab?: "crypto" | "fiat";
+  /** Callback function called when the stake is successful */
+  onSuccess?: () => void;
+}
+
+/**
+ * Props for the AnySpend Stake Upside (Exact In) modal
+ * Handles token staking operations using the custom exact in flow
+ */
+export interface AnySpendStakeUpsideExactInProps extends BaseModalProps {
+  /** Modal type identifier */
+  type: "anySpendStakeUpsideExactIn";
+  /** Recipient address to stake tokens for */
+  recipientAddress: string;
+  /** Staking contract address */
+  stakingContractAddress: string;
+  /** Token to stake */
+  token: components["schemas"]["Token"];
   /** Callback function called when the stake is successful */
   onSuccess?: () => void;
 }
@@ -389,7 +421,9 @@ export type ModalContentType =
   | AnySpendFundTournamentProps
   | AnySpendOrderHistoryProps
   | AnySpendStakeB3Props
+  | AnySpendStakeB3ExactInProps
   | AnySpendStakeUpsideProps
+  | AnySpendStakeUpsideExactInProps
   | AnySpendBuySpinProps
   | AnySpendSignatureMintProps
   | AnySpendBondKitProps

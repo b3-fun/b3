@@ -1,13 +1,15 @@
-import { B3_TOKEN } from "@b3dotfun/sdk/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
+import { GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
+import { normalizeAddress } from "@b3dotfun/sdk/anyspend/utils";
 import { Button, ShinyButton, StyleRoot, TransitionPanel, useAccountWallet } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import invariant from "invariant";
+import { ArrowDown, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect, useMemo, useRef } from "react";
 import { toast } from "sonner";
 import { useActiveWallet, useSetActiveWallet } from "thirdweb/react";
-import { base } from "viem/chains";
+import { useGlobalWalletState } from "../../utils";
 import { PanelView, useAnyspendFlow } from "../hooks/useAnyspendFlow";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
 import { CryptoPaySection } from "./common/CryptoPaySection";
@@ -16,62 +18,79 @@ import { CryptoReceiveSection } from "./common/CryptoReceiveSection";
 import { FeeDetailPanel } from "./common/FeeDetailPanel";
 import { FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaymentMethod";
 import { OrderDetails } from "./common/OrderDetails";
+import { PanelOnramp } from "./common/PanelOnramp";
 import { PointsDetailPanel } from "./common/PointsDetailPanel";
 import { RecipientSelection } from "./common/RecipientSelection";
 
-import { ArrowDown, Loader2 } from "lucide-react";
-import { useGlobalWalletState } from "../../utils";
-import { PanelOnramp } from "./common/PanelOnramp";
-
 const SLIPPAGE_PERCENT = 3;
 
-export const HYPE_TOKEN_DETAILS = {
-  SYMBOL: "HYPE",
-  LOGO_URI: "https://cdn.hypeduel.com/hypes-coin.svg",
+type CustomExactInConfig = {
+  functionAbi: string;
+  functionName: string;
+  functionArgs: string[];
+  to: string;
+  spenderAddress?: string;
+  action?: string;
 };
 
-export interface AnySpendDepositHypeProps {
+export interface AnySpendCustomExactInProps {
   loadOrder?: string;
   mode?: "modal" | "page";
   recipientAddress: string;
   paymentType?: "crypto" | "fiat";
   sourceTokenAddress?: string;
   sourceTokenChainId?: number;
-  onSuccess?: () => void;
+  destinationToken: components["schemas"]["Token"];
+  destinationChainId: number;
+  onSuccess?: (amount: string) => void;
   mainFooter?: React.ReactNode;
-  /**
-   * Called when a token is selected. Call event.preventDefault() to prevent default token selection behavior.
-   * Useful for handling special cases like B3 token selection.
-   */
   onTokenSelect?: (token: components["schemas"]["Token"], event: { preventDefault: () => void }) => void;
   customUsdInputValues?: string[];
   preferEoa?: boolean;
+  customExactInConfig: CustomExactInConfig;
+  header?: ({
+    anyspendPrice,
+    isLoadingAnyspendPrice,
+  }: {
+    anyspendPrice: GetQuoteResponse | undefined;
+    isLoadingAnyspendPrice: boolean;
+  }) => React.JSX.Element;
 }
 
-export function AnySpendDepositHype(props: AnySpendDepositHypeProps) {
+export function AnySpendCustomExactIn(props: AnySpendCustomExactInProps) {
   const fingerprintConfig = getFingerprintConfig();
 
   return (
     <AnySpendFingerprintWrapper fingerprint={fingerprintConfig}>
-      <AnySpendDepositHypeInner {...props} />
+      <AnySpendCustomExactInInner {...props} />
     </AnySpendFingerprintWrapper>
   );
 }
 
-function AnySpendDepositHypeInner({
+function AnySpendCustomExactInInner({
   loadOrder,
   mode = "modal",
   recipientAddress,
   paymentType = "crypto",
   sourceTokenAddress,
   sourceTokenChainId,
+  destinationToken,
+  destinationChainId,
   onSuccess,
   mainFooter,
   onTokenSelect,
   customUsdInputValues,
   preferEoa,
-}: AnySpendDepositHypeProps) {
-  // Use shared flow hook
+  customExactInConfig,
+  header,
+}: AnySpendCustomExactInProps) {
+  const actionLabel = customExactInConfig.action ?? "Custom Execution";
+
+  const DESTINATION_TOKEN_DETAILS = {
+    SYMBOL: destinationToken.symbol ?? "TOKEN",
+    LOGO_URI: destinationToken.metadata?.logoURI ?? "",
+  };
+
   const {
     activePanel,
     setActivePanel,
@@ -82,6 +101,8 @@ function AnySpendDepositHypeInner({
     setSelectedSrcChainId,
     selectedSrcToken,
     setSelectedSrcToken,
+    selectedDstToken,
+    selectedDstChainId,
     srcAmount,
     setSrcAmount,
     dstAmount,
@@ -95,6 +116,8 @@ function AnySpendDepositHypeInner({
     setSelectedRecipientAddress,
     recipientName,
     globalAddress,
+    hasEnoughBalance,
+    isBalanceLoading,
     anyspendQuote,
     isLoadingAnyspendQuote,
     activeInputAmountInWei,
@@ -113,11 +136,14 @@ function AnySpendDepositHypeInner({
     onTransactionSuccess: onSuccess,
     sourceTokenAddress,
     sourceTokenChainId,
+    destinationTokenAddress: destinationToken.address,
+    destinationTokenChainId: destinationChainId,
     slippage: SLIPPAGE_PERCENT,
     disableUrlParamManagement: true,
+    orderType: "custom_exact_in",
   });
 
-  const { connectedEOAWallet: connectedEOAWallet } = useAccountWallet();
+  const { connectedEOAWallet } = useAccountWallet();
   const setActiveWallet = useSetActiveWallet();
   const activeWallet = useActiveWallet();
   const setGlobalAccountWallet = useGlobalWalletState(state => state.setGlobalAccountWallet);
@@ -133,34 +159,46 @@ function AnySpendDepositHypeInner({
     }
   }, [preferEoa, connectedEOAWallet, setActiveWallet, activeWallet, setGlobalAccountWallet]);
 
-  // Button state logic
+  const selectedRecipientOrDefault = selectedRecipientAddress ?? recipientAddress;
+
+  const expectedDstAmountRaw = anyspendQuote?.data?.currencyOut?.amount ?? "0";
+
+  const buildCustomPayload = (_recipient: string | undefined) => {
+    return {
+      amount: expectedDstAmountRaw,
+      expectedDstAmount: expectedDstAmountRaw,
+      functionAbi: customExactInConfig.functionAbi,
+      functionName: customExactInConfig.functionName,
+      functionArgs: customExactInConfig.functionArgs,
+      to: normalizeAddress(customExactInConfig.to),
+      spenderAddress: customExactInConfig.spenderAddress
+        ? normalizeAddress(customExactInConfig.spenderAddress)
+        : undefined,
+      action: customExactInConfig.action,
+    };
+  };
+
   const btnInfo: { text: string; disable: boolean; error: boolean; loading: boolean } = useMemo(() => {
     if (activeInputAmountInWei === "0") return { text: "Enter an amount", disable: true, error: false, loading: false };
     if (isLoadingAnyspendQuote) return { text: "Loading quote...", disable: true, error: false, loading: true };
     if (isCreatingOrder || isCreatingOnrampOrder)
       return { text: "Creating order...", disable: true, error: false, loading: true };
-    if (!selectedRecipientAddress) return { text: "Select recipient", disable: false, error: false, loading: false };
+    if (!selectedRecipientOrDefault) return { text: "Select recipient", disable: false, error: false, loading: false };
     if (!anyspendQuote || !anyspendQuote.success)
       return { text: "Get quote error", disable: true, error: true, loading: false };
-    if (!dstAmount) return { text: "No quote available", disable: true, error: true, loading: false };
-
-    // Check minimum deposit amount (10 HYPE)
-    // Use the raw amount from the quote instead of the formatted display string
-    if (anyspendQuote.data?.currencyOut?.amount && anyspendQuote.data.currencyOut.currency?.decimals) {
-      const rawAmountInWei = anyspendQuote.data.currencyOut.amount;
-      const decimals = anyspendQuote.data.currencyOut.currency.decimals;
-      const actualAmount = parseFloat(rawAmountInWei) / Math.pow(10, decimals);
-
-      if (actualAmount < 10) {
-        return { text: "Minimum 10 HYPE deposit", disable: true, error: true, loading: false };
-      }
-    }
 
     if (paymentType === "crypto") {
       if (selectedCryptoPaymentMethod === CryptoPaymentMethodType.NONE) {
         return { text: "Choose payment method", disable: false, error: false, loading: false };
       }
-      return { text: "Continue to deposit", disable: false, error: false, loading: false };
+      if (
+        !hasEnoughBalance &&
+        !isBalanceLoading &&
+        selectedCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET
+      ) {
+        return { text: "Insufficient balance", disable: true, error: true, loading: false };
+      }
+      return { text: `Execute ${actionLabel}`, disable: false, error: false, loading: false };
     }
 
     if (paymentType === "fiat") {
@@ -170,24 +208,26 @@ function AnySpendDepositHypeInner({
       return { text: "Buy", disable: false, error: false, loading: false };
     }
 
-    return { text: "Continue to deposit", disable: false, error: false, loading: false };
+    return { text: "Continue", disable: false, error: false, loading: false };
   }, [
     activeInputAmountInWei,
     isLoadingAnyspendQuote,
     isCreatingOrder,
     isCreatingOnrampOrder,
-    selectedRecipientAddress,
+    selectedRecipientOrDefault,
     anyspendQuote,
-    dstAmount,
     paymentType,
     selectedCryptoPaymentMethod,
     selectedFiatPaymentMethod,
+    hasEnoughBalance,
+    isBalanceLoading,
+    actionLabel,
   ]);
 
   const onMainButtonClick = async () => {
     if (btnInfo.disable) return;
 
-    if (!selectedRecipientAddress) {
+    if (!selectedRecipientOrDefault) {
       setActivePanel(PanelView.RECIPIENT_SELECTION);
       return;
     }
@@ -207,20 +247,23 @@ function AnySpendDepositHypeInner({
     }
   };
 
+  const headerContent = header ? (
+    header({ anyspendPrice: anyspendQuote, isLoadingAnyspendPrice: isLoadingAnyspendQuote })
+  ) : (
+    <div className="mb-4 flex flex-col items-center gap-3 text-center">
+      <div>
+        <h1 className="text-as-primary text-xl font-bold">{actionLabel}</h1>
+        <p className="text-as-secondary text-sm">Pay from any token to execute a custom exact-in transaction.</p>
+      </div>
+    </div>
+  );
+
   const mainView = (
     <div className="mx-auto flex w-[460px] max-w-full flex-col items-center gap-2">
-      {/* Header */}
-      <div className="mb-4 flex flex-col items-center gap-3 text-center">
-        <div>
-          <h1 className="text-as-primary text-xl font-bold">
-            {paymentType === "crypto" ? "Deposit Crypto" : "Fund with Fiat"}
-          </h1>
-        </div>
-      </div>
+      {headerContent}
 
       <div className="relative flex w-full max-w-[calc(100vw-32px)] flex-col gap-2">
         <div className="relative flex w-full max-w-[calc(100vw-32px)] flex-col gap-2">
-          {/* Send section */}
           {paymentType === "crypto" ? (
             <CryptoPaySection
               selectedSrcChainId={selectedSrcChainId}
@@ -247,10 +290,10 @@ function AnySpendDepositHypeInner({
                 setSrcAmountOnRamp={setSrcAmount}
                 selectedPaymentMethod={selectedFiatPaymentMethod}
                 setActivePanel={setActivePanel}
-                _recipientAddress={recipientAddress}
-                destinationToken={B3_TOKEN}
-                destinationChainId={base.id}
-                dstTokenSymbol={HYPE_TOKEN_DETAILS.SYMBOL}
+                _recipientAddress={selectedRecipientOrDefault}
+                destinationToken={selectedDstToken}
+                destinationChainId={selectedDstChainId}
+                dstTokenSymbol={DESTINATION_TOKEN_DETAILS.SYMBOL}
                 hideDstToken
                 destinationAmount={dstAmount}
                 onDestinationTokenChange={() => {}}
@@ -265,7 +308,6 @@ function AnySpendDepositHypeInner({
             </motion.div>
           )}
 
-          {/* Reverse swap direction section */}
           <div
             className={cn("relative -my-1 flex h-0 items-center justify-center", paymentType === "fiat" && "hidden")}
           >
@@ -281,22 +323,18 @@ function AnySpendDepositHypeInner({
             </Button>
           </div>
 
-          {/* Receive section - Hidden when fiat tab is active */}
           {paymentType === "crypto" && (
             <CryptoReceiveSection
               isDepositMode={false}
               isBuyMode={true}
-              selectedRecipientAddress={selectedRecipientAddress}
+              selectedRecipientAddress={selectedRecipientOrDefault}
               recipientName={recipientName || undefined}
               onSelectRecipient={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
-              setRecipientAddress={setSelectedRecipientAddress}
-              recipientAddressFromProps={recipientAddress}
-              globalAddress={globalAddress}
               dstAmount={dstAmount}
-              dstToken={B3_TOKEN}
-              dstTokenSymbol={HYPE_TOKEN_DETAILS.SYMBOL}
-              dstTokenLogoURI={HYPE_TOKEN_DETAILS.LOGO_URI}
-              selectedDstChainId={base.id}
+              dstToken={selectedDstToken}
+              dstTokenSymbol={DESTINATION_TOKEN_DETAILS.SYMBOL}
+              dstTokenLogoURI={DESTINATION_TOKEN_DETAILS.LOGO_URI}
+              selectedDstChainId={selectedDstChainId}
               setSelectedDstChainId={() => {}}
               setSelectedDstToken={() => {}}
               isSrcInputDirty={isSrcInputDirty}
@@ -307,13 +345,11 @@ function AnySpendDepositHypeInner({
               anyspendQuote={anyspendQuote}
               onShowPointsDetail={() => setActivePanel(PanelView.POINTS_DETAIL)}
               onShowFeeDetail={() => setActivePanel(PanelView.FEE_DETAIL)}
-              selectedCryptoPaymentMethod={selectedCryptoPaymentMethod}
             />
           )}
         </div>
       </div>
 
-      {/* Main button section */}
       <motion.div
         initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
         animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
@@ -341,23 +377,25 @@ function AnySpendDepositHypeInner({
     </div>
   );
 
-  // Handle crypto order creation
   const handleCryptoOrder = async () => {
     try {
       invariant(anyspendQuote, "Relay price is not found");
-      invariant(selectedRecipientAddress, "Recipient address is not found");
+      invariant(selectedRecipientOrDefault, "Recipient address is not found");
 
       const srcAmountBigInt = BigInt(activeInputAmountInWei);
+      const payload = buildCustomPayload(selectedRecipientOrDefault);
+
       createOrder({
-        recipientAddress: selectedRecipientAddress,
-        orderType: "hype_duel",
+        recipientAddress: selectedRecipientOrDefault,
+        orderType: "custom_exact_in",
         srcChain: selectedSrcChainId,
-        dstChain: base.id,
+        dstChain: selectedDstChainId,
         srcToken: selectedSrcToken,
-        dstToken: B3_TOKEN,
+        dstToken: selectedDstToken,
         srcAmount: srcAmountBigInt.toString(),
-        expectedDstAmount: anyspendQuote?.data?.currencyOut?.amount?.toString() || "0",
+        expectedDstAmount: expectedDstAmountRaw,
         creatorAddress: globalAddress,
+        payload,
       });
     } catch (err: any) {
       console.error(err);
@@ -365,18 +403,16 @@ function AnySpendDepositHypeInner({
     }
   };
 
-  // Handle fiat order creation
   const handleFiatOrder = async () => {
     try {
       invariant(anyspendQuote, "Relay price is not found");
-      invariant(selectedRecipientAddress, "Recipient address is not found");
+      invariant(selectedRecipientOrDefault, "Recipient address is not found");
 
       if (!srcAmount || parseFloat(srcAmount) <= 0) {
         toast.error("Please enter a valid amount");
         return;
       }
 
-      // Determine vendor and payment method string
       let vendor: "coinbase" | "stripe" | "stripe-web2";
       let paymentMethodString = "";
 
@@ -393,26 +429,28 @@ function AnySpendDepositHypeInner({
           return;
         }
         vendor = "stripe-web2";
-        paymentMethodString = "";
       } else {
         toast.error("Please select a payment method");
         return;
       }
 
+      const payload = buildCustomPayload(selectedRecipientOrDefault);
+
       createOnrampOrder({
-        recipientAddress: selectedRecipientAddress,
-        orderType: "hype_duel",
-        dstChain: base.id,
-        dstToken: B3_TOKEN,
+        recipientAddress: selectedRecipientOrDefault,
+        orderType: "custom_exact_in",
+        dstChain: selectedDstChainId,
+        dstToken: selectedDstToken,
         srcFiatAmount: srcAmount,
         onramp: {
-          vendor: vendor,
+          vendor,
           paymentMethod: paymentMethodString,
           country: geoData?.country || "US",
           redirectUrl: window.location.origin,
         },
-        expectedDstAmount: anyspendQuote?.data?.currencyOut?.amount?.toString() || "0",
+        expectedDstAmount: expectedDstAmountRaw,
         creatorAddress: globalAddress,
+        payload,
       });
     } catch (err: any) {
       console.error(err);
@@ -420,7 +458,6 @@ function AnySpendDepositHypeInner({
     }
   };
 
-  // Order details view
   const orderDetailsView = (
     <div className={"mx-auto w-[460px] max-w-full"}>
       <div className="relative flex flex-col gap-4">
@@ -447,17 +484,15 @@ function AnySpendDepositHypeInner({
     </div>
   );
 
-  // Loading view
   const loadingView = (
     <div className="mx-auto flex w-full flex-col items-center gap-4 p-5">
       <div className="text-as-primary">Loading order details...</div>
     </div>
   );
 
-  // Panel views
   const recipientSelectionView = (
     <RecipientSelection
-      initialValue={selectedRecipientAddress || ""}
+      initialValue={selectedRecipientOrDefault || ""}
       onBack={() => setActivePanel(PanelView.MAIN)}
       onConfirm={address => {
         setSelectedRecipientAddress(address);
@@ -515,14 +550,12 @@ function AnySpendDepositHypeInner({
     />
   ) : null;
 
-  // If showing token selection, render with panel transitions
   return (
     <StyleRoot>
       <div
         className={cn(
-          "anyspend-container font-inter mx-auto w-full max-w-[460px]",
-          mode === "page" &&
-            "bg-as-surface-primary border-as-border-secondary overflow-hidden rounded-2xl border shadow-xl",
+          "anyspend-container font-inter bg-as-surface-primary mx-auto w-full max-w-[460px] p-6",
+          mode === "page" && "border-as-border-secondary overflow-hidden rounded-2xl border shadow-xl",
         )}
       >
         <TransitionPanel
@@ -546,30 +579,14 @@ function AnySpendDepositHypeInner({
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
           {[
-            <div key="main-view" className={cn(mode === "page" && "p-6")}>
-              {mainView}
-            </div>,
-            <div key="crypto-payment-method-view" className={cn(mode === "page" && "p-6")}>
-              {cryptoPaymentMethodView}
-            </div>,
-            <div key="fiat-payment-method-view" className={cn(mode === "page" && "p-6")}>
-              {fiatPaymentMethodView}
-            </div>,
-            <div key="recipient-selection-view" className={cn(mode === "page" && "p-6")}>
-              {recipientSelectionView}
-            </div>,
-            <div key="order-details-view" className={cn(mode === "page" && "p-6")}>
-              {orderDetailsView}
-            </div>,
-            <div key="loading-view" className={cn(mode === "page" && "p-6")}>
-              {loadingView}
-            </div>,
-            <div key="points-detail-view" className={cn(mode === "page" && "p-6")}>
-              {pointsDetailView}
-            </div>,
-            <div key="fee-detail-view" className={cn(mode === "page" && "p-6")}>
-              {feeDetailView}
-            </div>,
+            <div key="main-view">{mainView}</div>,
+            <div key="crypto-payment-method-view">{cryptoPaymentMethodView}</div>,
+            <div key="fiat-payment-method-view">{fiatPaymentMethodView}</div>,
+            <div key="recipient-selection-view">{recipientSelectionView}</div>,
+            <div key="order-details-view">{orderDetailsView}</div>,
+            <div key="loading-view">{loadingView}</div>,
+            <div key="points-detail-view">{pointsDetailView}</div>,
+            <div key="fee-detail-view">{feeDetailView}</div>,
           ]}
         </TransitionPanel>
       </div>
