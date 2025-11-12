@@ -1,6 +1,5 @@
 "use client";
 
-import { useGlobalWalletState } from "@b3dotfun/sdk/anyspend/utils";
 import { useAccountWallet } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
@@ -57,7 +56,6 @@ export function CryptoPaymentMethod({
   const { data: eoaWalletInfo } = useWalletInfo(connectedEOAWallet?.id);
 
   const activeWallet = useActiveWallet();
-  const setGlobalAccountWallet = useGlobalWalletState(state => state.setGlobalAccountWallet);
 
   const isConnected = !!connectedEOAWallet;
   const globalAddress = connectedSmartWallet?.getAccount()?.address;
@@ -225,7 +223,6 @@ export function CryptoPaymentMethod({
                     onClick={() => {
                       setSelectedPaymentMethod(CryptoPaymentMethodType.CONNECT_WALLET);
                       onSelectPaymentMethod(CryptoPaymentMethodType.CONNECT_WALLET);
-                      setGlobalAccountWallet(activeWallet);
                       if (connectedEOAWallet) {
                         setActiveWallet(connectedEOAWallet);
                       }
