@@ -164,10 +164,10 @@ export function useAuthentication(partnerId: string) {
   );
 
   const onConnect = useCallback(
-    async (_walleAutoConnectedWith: Wallet, otherWallets: Wallet[]) => {
-      debug("@@useAuthentication:onConnect", { _walleAutoConnectedWith, otherWallets });
+    async (_walleAutoConnectedWith: Wallet, allConnectedWallets: Wallet[]) => {
+      debug("@@useAuthentication:onConnect", { _walleAutoConnectedWith, allConnectedWallets });
 
-      const wallet = otherWallets.find(wallet => wallet.id.startsWith("ecosystem."));
+      const wallet = allConnectedWallets.find(wallet => wallet.id.startsWith("ecosystem."));
 
       if (!wallet) {
         throw new Error("No smart wallet found during auto-connect");
