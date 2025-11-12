@@ -5,16 +5,21 @@ export function StakeB3ExactInButton() {
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
   const currentWallet = useAccountWallet();
 
+  const hasAddress = !!currentWallet.address;
+
   return (
     <button
       onClick={() => {
+        if (!currentWallet.address) return;
+
         setB3ModalOpen(true);
         setB3ModalContentType({
           type: "anySpendStakeB3ExactIn",
-          recipientAddress: currentWallet.address || "",
+          recipientAddress: currentWallet.address,
         });
       }}
-      className="group flex h-40 flex-col justify-between overflow-hidden rounded-lg border border-gray-100 bg-white p-6 text-left shadow-sm transition-all hover:border-purple-100 hover:shadow-md"
+      disabled={!hasAddress}
+      className="group flex h-40 flex-col justify-between overflow-hidden rounded-lg border border-gray-100 bg-white p-6 text-left shadow-sm transition-all hover:border-purple-100 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-gray-100 disabled:hover:shadow-sm"
     >
       <div>
         <h3 className="text-lg font-medium text-gray-900">Stake B3 (Exact In)</h3>
