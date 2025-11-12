@@ -23,7 +23,6 @@ const SettingsProfileCard = () => {
     setB3ModalOpen(true);
     setB3ModalContentType({
       type: "avatarEditor",
-      showBackButton: true,
       onSuccess: () => {
         // navigate back on success
         navigateBack();

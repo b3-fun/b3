@@ -54,7 +54,6 @@ export function BalanceContent({ onLogout, showDeposit = true, showSwap = true }
     setB3ModalOpen(true);
     setB3ModalContentType({
       type: "avatarEditor",
-      showBackButton: true,
       onSuccess: () => {
         // navigate back on success
         navigateBack();

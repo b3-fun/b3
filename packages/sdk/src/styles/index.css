@@ -282,8 +282,11 @@ html[data-theme="dark"] .b3-root,
   border: 1px solid var(--border);
   overflow: hidden;
   outline: none;
-  background: #e4e4e7;
   padding: 10px;
+
+  @media (min-width: 768px) {
+    background: #e4e4e7;
+  }
 }
 
 .b3-modal-freestyle {

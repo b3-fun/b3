@@ -146,7 +146,7 @@ export const LinkAccount = ({
   };
 
   return (
-    <div className="linked-accounts-settings space-y-8">
+    <div className="linked-accounts-settings">
       <ModalHeader title="Linked Accounts" />
       {/* Linked Accounts Section */}
       <div className="linked-accounts-section space-y-4 p-5">
