@@ -8,7 +8,7 @@ import { ArrowDown, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect, useMemo, useRef } from "react";
 import { toast } from "sonner";
-import { useActiveWallet, useSetActiveWallet } from "thirdweb/react";
+import { useSetActiveWallet } from "thirdweb/react";
 import { PanelView, useAnyspendFlow } from "../hooks/useAnyspendFlow";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
 import { CryptoPaySection } from "./common/CryptoPaySection";
@@ -144,7 +144,6 @@ function AnySpendCustomExactInInner({
 
   const { connectedEOAWallet } = useAccountWallet();
   const setActiveWallet = useSetActiveWallet();
-  const activeWallet = useActiveWallet();
   const appliedPreferEoa = useRef(false);
 
   useEffect(() => {
@@ -154,7 +153,7 @@ function AnySpendCustomExactInInner({
         setActiveWallet(connectedEOAWallet);
       }
     }
-  }, [preferEoa, connectedEOAWallet, setActiveWallet, activeWallet]);
+  }, [preferEoa, connectedEOAWallet, setActiveWallet]);
 
   const selectedRecipientOrDefault = selectedRecipientAddress ?? recipientAddress;
 

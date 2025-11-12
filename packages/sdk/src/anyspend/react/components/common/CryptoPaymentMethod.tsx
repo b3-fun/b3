@@ -9,7 +9,7 @@ import { ChevronLeft, ChevronRightCircle, Wallet, X, ZapIcon } from "lucide-reac
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
-import { useActiveWallet, useSetActiveWallet, useWalletInfo } from "thirdweb/react";
+import { useSetActiveWallet, useWalletInfo } from "thirdweb/react";
 import { WalletId, createWallet } from "thirdweb/wallets";
 import { useAccount, useConnect, useDisconnect, useWalletClient } from "wagmi";
 import { useConnectedWalletDisplay } from "../../hooks/useConnectedWalletDisplay";
@@ -54,8 +54,6 @@ export function CryptoPaymentMethod({
   const [showWalletModal, setShowWalletModal] = useState(false);
   const setActiveWallet = useSetActiveWallet();
   const { data: eoaWalletInfo } = useWalletInfo(connectedEOAWallet?.id);
-
-  const activeWallet = useActiveWallet();
 
   const isConnected = !!connectedEOAWallet;
   const globalAddress = connectedSmartWallet?.getAccount()?.address;
