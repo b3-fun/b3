@@ -243,12 +243,12 @@ export function useAuthentication(partnerId: string) {
   // Only connect once a smart account is available
   useEffect(() => {
     const globalAccountWallet = wallets.find(wallet => wallet.id.startsWith("ecosystem."));
-    if (!globalAccountWallet) {
+    if (!globalAccountWallet || isAuthenticated || isAuthenticating) {
       return;
     }
     console.log("@@globalAccountWallet", globalAccountWallet);
     onConnect(globalAccountWallet);
-  }, [wallets, onConnect]);
+  }, [wallets, onConnect, isAuthenticated, isAuthenticating]);
 
   const { isLoading: useAutoConnectLoading } = useAutoConnect({
     client,
