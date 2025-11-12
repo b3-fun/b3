@@ -60,7 +60,7 @@ export function AnySpendStakeB3ExactIn({
   sourceTokenChainId?: number;
   recipientAddress: string;
   stakeAmount?: string;
-  onSuccess?: () => void;
+  onSuccess?: (amount: string) => void;
 }) {
   const hasMounted = useHasMounted();
   const { setB3ModalOpen } = useModalStore();

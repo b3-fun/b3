@@ -33,7 +33,7 @@ export function AnySpendStakeUpsideExactIn({
   sourceTokenChainId?: number;
   stakingContractAddress: string;
   token: components["schemas"]["Token"];
-  onSuccess?: () => void;
+  onSuccess?: (amount: string) => void;
 }) {
   if (!recipientAddress) return null;
 
