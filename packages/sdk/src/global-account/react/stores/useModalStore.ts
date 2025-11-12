@@ -260,6 +260,23 @@ export interface AnySpendStakeUpsideProps extends BaseModalProps {
 }
 
 /**
+ * Props for the AnySpend Stake Upside (Exact In) modal
+ * Handles token staking operations using the custom exact in flow
+ */
+export interface AnySpendStakeUpsideExactInProps extends BaseModalProps {
+  /** Modal type identifier */
+  type: "anySpendStakeUpsideExactIn";
+  /** Recipient address to stake tokens for */
+  recipientAddress: string;
+  /** Staking contract address */
+  stakingContractAddress: string;
+  /** Token to stake */
+  token: components["schemas"]["Token"];
+  /** Callback function called when the stake is successful */
+  onSuccess?: () => void;
+}
+
+/**
  * Props for the AnySpend Buy Spin modal
  * Handles spin wheel entry purchases
  */
@@ -372,6 +389,7 @@ export type ModalContentType =
   | AnySpendStakeB3Props
   | AnySpendStakeB3ExactInProps
   | AnySpendStakeUpsideProps
+  | AnySpendStakeUpsideExactInProps
   | AnySpendBuySpinProps
   | AnySpendSignatureMintProps
   | AnySpendBondKitProps

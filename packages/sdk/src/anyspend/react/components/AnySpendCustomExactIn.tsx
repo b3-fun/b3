@@ -101,6 +101,8 @@ function AnySpendCustomExactInInner({
     setSelectedSrcChainId,
     selectedSrcToken,
     setSelectedSrcToken,
+    selectedDstToken,
+    selectedDstChainId,
     srcAmount,
     setSrcAmount,
     dstAmount,
@@ -134,6 +136,8 @@ function AnySpendCustomExactInInner({
     onTransactionSuccess: onSuccess,
     sourceTokenAddress,
     sourceTokenChainId,
+    destinationTokenAddress: destinationToken.address,
+    destinationTokenChainId: destinationChainId,
     slippage: SLIPPAGE_PERCENT,
     disableUrlParamManagement: true,
     orderType: "custom_exact_in",
@@ -165,7 +169,7 @@ function AnySpendCustomExactInInner({
       expectedDstAmount: expectedDstAmountRaw,
       functionAbi: customExactInConfig.functionAbi,
       functionName: customExactInConfig.functionName,
-      functionArgs: ["{{amount_out}}", recipientAddress],
+      functionArgs: customExactInConfig.functionArgs,
       to: normalizeAddress(customExactInConfig.to),
       spenderAddress: customExactInConfig.spenderAddress
         ? normalizeAddress(customExactInConfig.spenderAddress)
@@ -287,8 +291,8 @@ function AnySpendCustomExactInInner({
                 selectedPaymentMethod={selectedFiatPaymentMethod}
                 setActivePanel={setActivePanel}
                 _recipientAddress={selectedRecipientOrDefault}
-                destinationToken={destinationToken}
-                destinationChainId={destinationChainId}
+                destinationToken={selectedDstToken}
+                destinationChainId={selectedDstChainId}
                 dstTokenSymbol={DESTINATION_TOKEN_DETAILS.SYMBOL}
                 hideDstToken
                 destinationAmount={dstAmount}
@@ -327,10 +331,10 @@ function AnySpendCustomExactInInner({
               recipientName={recipientName || undefined}
               onSelectRecipient={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
               dstAmount={dstAmount}
-              dstToken={destinationToken}
+              dstToken={selectedDstToken}
               dstTokenSymbol={DESTINATION_TOKEN_DETAILS.SYMBOL}
               dstTokenLogoURI={DESTINATION_TOKEN_DETAILS.LOGO_URI}
-              selectedDstChainId={destinationChainId}
+              selectedDstChainId={selectedDstChainId}
               setSelectedDstChainId={() => {}}
               setSelectedDstToken={() => {}}
               isSrcInputDirty={isSrcInputDirty}
@@ -385,9 +389,9 @@ function AnySpendCustomExactInInner({
         recipientAddress: selectedRecipientOrDefault,
         orderType: "custom_exact_in",
         srcChain: selectedSrcChainId,
-        dstChain: destinationChainId,
+        dstChain: selectedDstChainId,
         srcToken: selectedSrcToken,
-        dstToken: destinationToken,
+        dstToken: selectedDstToken,
         srcAmount: srcAmountBigInt.toString(),
         expectedDstAmount: expectedDstAmountRaw,
         creatorAddress: globalAddress,
@@ -435,8 +439,8 @@ function AnySpendCustomExactInInner({
       createOnrampOrder({
         recipientAddress: selectedRecipientOrDefault,
         orderType: "custom_exact_in",
-        dstChain: destinationChainId,
-        dstToken: destinationToken,
+        dstChain: selectedDstChainId,
+        dstToken: selectedDstToken,
         srcFiatAmount: srcAmount,
         onramp: {
           vendor,
@@ -550,7 +554,7 @@ function AnySpendCustomExactInInner({
     <StyleRoot>
       <div
         className={cn(
-          "anyspend-container font-inter mx-auto w-full max-w-[460px]",
+          "anyspend-container font-inter mx-auto w-full max-w-[460px] bg-white p-6",
           mode === "page" &&
             "bg-as-surface-primary border-as-border-secondary overflow-hidden rounded-2xl border shadow-xl",
         )}
@@ -576,30 +580,14 @@ function AnySpendCustomExactInInner({
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
           {[
-            <div key="main-view" className={cn(mode === "page" && "p-6")}>
-              {mainView}
-            </div>,
-            <div key="crypto-payment-method-view" className={cn(mode === "page" && "p-6")}>
-              {cryptoPaymentMethodView}
-            </div>,
-            <div key="fiat-payment-method-view" className={cn(mode === "page" && "p-6")}>
-              {fiatPaymentMethodView}
-            </div>,
-            <div key="recipient-selection-view" className={cn(mode === "page" && "p-6")}>
-              {recipientSelectionView}
-            </div>,
-            <div key="order-details-view" className={cn(mode === "page" && "p-6")}>
-              {orderDetailsView}
-            </div>,
-            <div key="loading-view" className={cn(mode === "page" && "p-6")}>
-              {loadingView}
-            </div>,
-            <div key="points-detail-view" className={cn(mode === "page" && "p-6")}>
-              {pointsDetailView}
-            </div>,
-            <div key="fee-detail-view" className={cn(mode === "page" && "p-6")}>
-              {feeDetailView}
-            </div>,
+            <div key="main-view">{mainView}</div>,
+            <div key="crypto-payment-method-view">{cryptoPaymentMethodView}</div>,
+            <div key="fiat-payment-method-view">{fiatPaymentMethodView}</div>,
+            <div key="recipient-selection-view">{recipientSelectionView}</div>,
+            <div key="order-details-view">{orderDetailsView}</div>,
+            <div key="loading-view">{loadingView}</div>,
+            <div key="points-detail-view">{pointsDetailView}</div>,
+            <div key="fee-detail-view">{feeDetailView}</div>,
           ]}
         </TransitionPanel>
       </div>

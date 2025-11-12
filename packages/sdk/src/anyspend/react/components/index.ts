@@ -9,6 +9,8 @@ export { AnySpendNFT } from "./AnySpendNFT";
 export { AnyspendSignatureMint } from "./AnyspendSignatureMint";
 export { AnySpendStakeB3 } from "./AnySpendStakeB3";
 export { AnySpendStakeB3ExactIn } from "./AnySpendStakeB3ExactIn";
+export { AnySpendStakeUpside } from "./AnySpendStakeUpside";
+export { AnySpendStakeUpsideExactIn } from "./AnySpendStakeUpsideExactIn";
 export { AnySpendTournament } from "./AnySpendTournament";
 export { AnySpendNFTButton } from "./common/AnySpendNFTButton";
 
