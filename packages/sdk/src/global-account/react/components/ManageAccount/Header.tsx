@@ -128,7 +128,6 @@ export function Header({ onLogout }: { onLogout?: () => void }) {
   const handleLinkWallet = () => {
     setB3ModalContentType({
       type: "linkNewAccount",
-      showBackButton: true,
       partnerId,
       chain: contentType?.chain,
       onSuccess: async () => {

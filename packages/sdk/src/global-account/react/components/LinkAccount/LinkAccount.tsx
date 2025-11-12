@@ -29,6 +29,7 @@ const formatProfileTitle = (title: string): { displayTitle: string; isAddress: b
 };
 
 import { Referrals, Users } from "@b3dotfun/b3-api";
+import ModalHeader from "../ModalHeader/ModalHeader";
 
 export const LinkAccount = ({
   partnerId,
@@ -41,7 +42,6 @@ export const LinkAccount = ({
 }) => {
   const [unlinkingAccountId, setUnlinkingAccountId] = useState<string | null>(null);
   const { data: profilesRaw = [], isLoading: isLoadingProfiles } = useProfiles({ client });
-  console.log("11111 profilesRaw :", profilesRaw);
   const { mutate: unlinkProfile, isPending: isUnlinking } = useUnlinkProfile();
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
   const isLinking = useModalStore(state => state.isLinking);
@@ -115,7 +115,6 @@ export const LinkAccount = ({
       ...getProfileDisplayInfo(profile),
       originalProfile: profile,
     }));
-  console.log("profiles :", profiles);
 
   const handleUnlink = async (profile: any) => {
     setUnlinkingAccountId(profile.title);
@@ -132,7 +131,6 @@ export const LinkAccount = ({
     setB3ModalOpen(true);
     setB3ModalContentType({
       type: "linkNewAccount",
-      showBackButton: true,
       partnerId,
       chain,
       onSuccess: async () => {
@@ -147,12 +145,11 @@ export const LinkAccount = ({
     });
   };
 
-  console.log("@@profiles", profiles);
-
   return (
     <div className="linked-accounts-settings space-y-8">
+      <ModalHeader title="Linked Accounts" />
       {/* Linked Accounts Section */}
-      <div className="linked-accounts-section space-y-4">
+      <div className="linked-accounts-section space-y-4 p-5">
         {isLoadingProfiles ? (
           <div className="linked-accounts-loading flex justify-center py-8">
             <Loader2 className="text-b3-grey animate-spin" />

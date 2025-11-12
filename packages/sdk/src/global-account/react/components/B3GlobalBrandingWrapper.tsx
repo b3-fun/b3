@@ -7,7 +7,7 @@ interface B3GlobalBrandingWrapperProps {
 export function B3GlobalBrandingWrapper({ children }: B3GlobalBrandingWrapperProps) {
   console.log("B3GlobalBrandingWrapper", children);
   return (
-    <div className="b3-global-account-wrapper bg-[#E4E4E7] p-[10px]">
+    <div className="">
       <div className="flex flex-1 flex-col overflow-hidden rounded-xl border border-[#D1D1D6] bg-white shadow-[0_20px_24px_-4px_rgba(10,13,18,0.08),0_8px_8px_-4px_rgba(10,13,18,0.03),0_3px_3px_-1.5px_rgba(10,13,18,0.04)]">
         {children}
       </div>

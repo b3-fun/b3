@@ -278,10 +278,12 @@ html[data-theme="dark"] .b3-root,
 
 /* Custom component styles */
 .b3-modal {
-  @apply bg-b3-react-background text-b3-react-foreground rounded-2xl border;
+  @apply text-b3-react-foreground rounded-2xl border;
   border: 1px solid var(--border);
   overflow: hidden;
   outline: none;
+  background: #e4e4e7;
+  padding: 10px;
 }
 
 .b3-modal-freestyle {

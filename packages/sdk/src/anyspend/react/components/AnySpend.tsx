@@ -12,14 +12,18 @@ import {
   Button,
   ShinyButton,
   StyleRoot,
+  TabsPrimitive,
   TransitionPanel,
   useAccountWallet,
+  useB3,
+  useModalStore,
   useProfile,
   useRouter,
   useSearchParamsSSR,
   useTokenData,
   useTokenFromUrl,
 } from "@b3dotfun/sdk/global-account/react";
+import BottomNavigation from "@b3dotfun/sdk/global-account/react/components/ManageAccount/BottomNavigation";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import invariant from "invariant";
@@ -27,6 +31,7 @@ import { ArrowDown, HistoryIcon, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { defineChain } from "thirdweb";
 import { parseUnits } from "viem";
 import { base, mainnet } from "viem/chains";
 import { components } from "../../types/api";
@@ -116,6 +121,31 @@ function AnySpendInner({
 }) {
   const searchParams = useSearchParamsSSR();
   const router = useRouter();
+
+  const { partnerId } = useB3();
+  const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
+
+  // Define base chain with RPC for modal props
+  const baseChain = useMemo(
+    () =>
+      defineChain({
+        id: 8453,
+        name: "Base",
+        nativeCurrency: {
+          name: "Ether",
+          symbol: "ETH",
+          decimals: 18,
+        },
+        rpc: "https://mainnet.base.org",
+        blockExplorers: [
+          {
+            name: "Basescan",
+            url: "https://basescan.org",
+          },
+        ],
+      }),
+    [],
+  );
 
   // Determine if we're in "buy mode" based on whether destination token props are provided
   const isBuyMode = !!(destinationTokenAddress && destinationTokenChainId);
@@ -932,181 +962,206 @@ function AnySpendInner({
 
   const mainView = (
     <div className={"mx-auto flex w-[460px] max-w-full flex-col items-center gap-2"}>
-      {/* Token Header - Show when in buy mode */}
-      {isBuyMode && (
-        <div className="mb-4 flex flex-col items-center gap-3 text-center">
-          {selectedDstToken.metadata?.logoURI && (
-            <div className="relative">
-              <img
-                src={selectedDstToken.metadata.logoURI}
-                alt={selectedDstToken.symbol}
-                className="border-as-stroke h-12 w-12 rounded-full border-2 shadow-md"
-              />
+      <div className={"mx-auto flex max-w-full flex-col items-center gap-2 px-5"}>
+        {/* Token Header - Show when in buy mode */}
+        {isBuyMode && (
+          <div className="mb-4 flex flex-col items-center gap-3 text-center">
+            {selectedDstToken.metadata?.logoURI && (
+              <div className="relative">
+                <img
+                  src={selectedDstToken.metadata.logoURI}
+                  alt={selectedDstToken.symbol}
+                  className="border-as-stroke h-12 w-12 rounded-full border-2 shadow-md"
+                />
+              </div>
+            )}
+            <div>
+              <h1 className="text-as-primary text-xl font-bold">Buy {selectedDstToken.symbol}</h1>
             </div>
-          )}
-          <div>
-            <h1 className="text-as-primary text-xl font-bold">Buy {selectedDstToken.symbol}</h1>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Tab section */}
-      <TabSection
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        setSelectedCryptoPaymentMethod={setSelectedCryptoPaymentMethod}
-        setSelectedFiatPaymentMethod={setSelectedFiatPaymentMethod}
-      />
+        {/* Tab section */}
+        <TabSection
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          setSelectedCryptoPaymentMethod={setSelectedCryptoPaymentMethod}
+          setSelectedFiatPaymentMethod={setSelectedFiatPaymentMethod}
+        />
 
-      <div className="relative flex w-full max-w-[calc(100vw-32px)] flex-col gap-2">
-        {/* Send section */}
-        {activeTab === "crypto" ? (
-          <CryptoPaySection
-            selectedSrcChainId={selectedSrcChainId}
-            setSelectedSrcChainId={setSelectedSrcChainId}
-            selectedSrcToken={selectedSrcToken}
-            setSelectedSrcToken={setSelectedSrcToken}
-            srcAmount={srcAmount}
-            setSrcAmount={setSrcAmount}
-            isSrcInputDirty={isSrcInputDirty}
-            setIsSrcInputDirty={setIsSrcInputDirty}
-            selectedCryptoPaymentMethod={selectedCryptoPaymentMethod}
-            onSelectCryptoPaymentMethod={() => navigateToPanel(PanelView.CRYPTO_PAYMENT_METHOD, "forward")}
-            anyspendQuote={anyspendQuote}
-            onTokenSelect={onTokenSelect}
-            onShowFeeDetail={() => navigateToPanel(PanelView.FEE_DETAIL, "forward")}
-          />
-        ) : (
-          <motion.div
-            initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            transition={{ duration: 0.3, delay: 0, ease: "easeInOut" }}
+        <div className="relative flex w-full max-w-[calc(100vw-32px)] flex-col gap-2">
+          {/* Send section */}
+          {activeTab === "crypto" ? (
+            <CryptoPaySection
+              selectedSrcChainId={selectedSrcChainId}
+              setSelectedSrcChainId={setSelectedSrcChainId}
+              selectedSrcToken={selectedSrcToken}
+              setSelectedSrcToken={setSelectedSrcToken}
+              srcAmount={srcAmount}
+              setSrcAmount={setSrcAmount}
+              isSrcInputDirty={isSrcInputDirty}
+              setIsSrcInputDirty={setIsSrcInputDirty}
+              selectedCryptoPaymentMethod={selectedCryptoPaymentMethod}
+              onSelectCryptoPaymentMethod={() => navigateToPanel(PanelView.CRYPTO_PAYMENT_METHOD, "forward")}
+              anyspendQuote={anyspendQuote}
+              onTokenSelect={onTokenSelect}
+              onShowFeeDetail={() => navigateToPanel(PanelView.FEE_DETAIL, "forward")}
+            />
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              transition={{ duration: 0.3, delay: 0, ease: "easeInOut" }}
+            >
+              <PanelOnramp
+                srcAmountOnRamp={srcAmountOnRamp}
+                setSrcAmountOnRamp={setSrcAmountOnRamp}
+                selectedPaymentMethod={selectedFiatPaymentMethod}
+                setActivePanel={(panelIndex: number) => {
+                  // Map panel index to navigation with direction
+                  const panelsWithForwardNav = [PanelView.FIAT_PAYMENT_METHOD, PanelView.RECIPIENT_SELECTION];
+                  if (panelsWithForwardNav.includes(panelIndex)) {
+                    navigateToPanel(panelIndex, "forward");
+                  } else {
+                    setActivePanel(panelIndex);
+                  }
+                }}
+                _recipientAddress={recipientAddress}
+                destinationToken={selectedDstToken}
+                destinationChainId={selectedDstChainId}
+                destinationAmount={dstAmount}
+                onDestinationTokenChange={setSelectedDstToken}
+                onDestinationChainChange={setSelectedDstChainId}
+                fiatPaymentMethodIndex={PanelView.FIAT_PAYMENT_METHOD}
+                recipientSelectionPanelIndex={PanelView.RECIPIENT_SELECTION}
+                hideDstToken={isBuyMode}
+                anyspendQuote={anyspendQuote}
+                onShowPointsDetail={() => navigateToPanel(PanelView.POINTS_DETAIL, "forward")}
+                onShowFeeDetail={() => navigateToPanel(PanelView.FEE_DETAIL, "forward")}
+                customUsdInputValues={customUsdInputValues}
+              />
+            </motion.div>
+          )}
+
+          {/* Reverse swap direction section */}
+          <Button
+            variant="ghost"
+            className={cn(
+              "border-as-stroke bg-as-surface-primary absolute left-1/2 top-1/2 z-10 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-xl border-2 sm:h-8 sm:w-8 sm:rounded-xl",
+              isBuyMode && "top-[calc(50%+56px)] cursor-default",
+              activeTab === "fiat" && "hidden",
+            )}
+            onClick={() => {
+              if (activeTab === "fiat" || isBuyMode) {
+                return;
+              }
+
+              // Swap chain selections
+              const tempSrcChainId = selectedSrcChainId;
+              const tempDstChainId = selectedDstChainId;
+              setSelectedSrcChainId(tempDstChainId);
+              setSelectedDstChainId(tempSrcChainId);
+
+              // Swap token selections
+              const tempSrcToken = selectedSrcToken;
+              const tempDstToken = selectedDstToken;
+              setSelectedSrcToken(tempDstToken);
+              setSelectedDstToken(tempSrcToken);
+
+              // Swap amounts
+              const tempSrcAmount = srcAmount;
+              const tempDstAmount = dstAmount;
+              setSrcAmount(tempDstAmount);
+              setDstAmount(tempSrcAmount);
+            }}
           >
-            <PanelOnramp
-              srcAmountOnRamp={srcAmountOnRamp}
-              setSrcAmountOnRamp={setSrcAmountOnRamp}
-              selectedPaymentMethod={selectedFiatPaymentMethod}
-              setActivePanel={(panelIndex: number) => {
-                // Map panel index to navigation with direction
-                const panelsWithForwardNav = [PanelView.FIAT_PAYMENT_METHOD, PanelView.RECIPIENT_SELECTION];
-                if (panelsWithForwardNav.includes(panelIndex)) {
-                  navigateToPanel(panelIndex, "forward");
-                } else {
-                  setActivePanel(panelIndex);
-                }
+            <div className="relative flex items-center justify-center transition-opacity">
+              <ArrowDown className="text-as-primary/50 h-5 w-5" />
+            </div>
+          </Button>
+
+          {/* Receive section - Hidden when fiat tab is active */}
+          {activeTab === "crypto" && (
+            <CryptoReceiveSection
+              isDepositMode={false}
+              isBuyMode={isBuyMode}
+              selectedRecipientAddress={recipientAddress}
+              recipientName={recipientName || undefined}
+              onSelectRecipient={() => navigateToPanel(PanelView.RECIPIENT_SELECTION, "forward")}
+              dstAmount={dstAmount}
+              dstToken={selectedDstToken}
+              selectedDstChainId={selectedDstChainId}
+              setSelectedDstChainId={setSelectedDstChainId}
+              setSelectedDstToken={setSelectedDstToken}
+              isSrcInputDirty={isSrcInputDirty}
+              onChangeDstAmount={value => {
+                setIsSrcInputDirty(false);
+                setDstAmount(value);
               }}
-              _recipientAddress={recipientAddress}
-              destinationToken={selectedDstToken}
-              destinationChainId={selectedDstChainId}
-              destinationAmount={dstAmount}
-              onDestinationTokenChange={setSelectedDstToken}
-              onDestinationChainChange={setSelectedDstChainId}
-              fiatPaymentMethodIndex={PanelView.FIAT_PAYMENT_METHOD}
-              recipientSelectionPanelIndex={PanelView.RECIPIENT_SELECTION}
-              hideDstToken={isBuyMode}
               anyspendQuote={anyspendQuote}
               onShowPointsDetail={() => navigateToPanel(PanelView.POINTS_DETAIL, "forward")}
               onShowFeeDetail={() => navigateToPanel(PanelView.FEE_DETAIL, "forward")}
-              customUsdInputValues={customUsdInputValues}
             />
-          </motion.div>
-        )}
-
-        {/* Reverse swap direction section */}
-        <Button
-          variant="ghost"
-          className={cn(
-            "border-as-stroke bg-as-surface-primary absolute left-1/2 top-1/2 z-10 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-xl border-2 sm:h-8 sm:w-8 sm:rounded-xl",
-            isBuyMode && "top-[calc(50%+56px)] cursor-default",
-            activeTab === "fiat" && "hidden",
           )}
-          onClick={() => {
-            if (activeTab === "fiat" || isBuyMode) {
-              return;
+        </div>
+
+        {/* Main button section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
+          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          transition={{ duration: 0.3, delay: 0.2, ease: "easeInOut" }}
+          className={cn("mt-4 flex w-full max-w-[460px] flex-col gap-2")}
+        >
+          <ShinyButton
+            accentColor={"hsl(var(--as-brand))"}
+            disabled={btnInfo.disable}
+            onClick={onMainButtonClick}
+            className={cn(
+              "as-main-button relative w-full",
+              btnInfo.error ? "!bg-as-red" : btnInfo.disable ? "!bg-as-on-surface-2" : "!bg-as-brand",
+            )}
+            textClassName={cn(btnInfo.error ? "text-white" : btnInfo.disable ? "text-as-secondary" : "text-white")}
+          >
+            <div className="flex items-center justify-center gap-2">
+              {btnInfo.loading && <Loader2 className="h-4 w-4 animate-spin" />}
+              {btnInfo.text}
+            </div>
+          </ShinyButton>
+
+          {!hideTransactionHistoryButton && (globalAddress || recipientAddress) ? (
+            <Button
+              variant="link"
+              onClick={onClickHistory}
+              className="text-as-primary/50 hover:text-as-primary flex items-center gap-1 transition-colors"
+            >
+              <HistoryIcon className="h-4 w-4" /> <span className="pr-4">Transaction History</span>
+            </Button>
+          ) : null}
+        </motion.div>
+      </div>
+      <div className="w-full">
+        <TabsPrimitive
+          defaultValue="swap"
+          onValueChange={value => {
+            if (value === "settings" || value === "home") {
+              setB3ModalContentType({
+                type: "manageAccount",
+                activeTab: value,
+                setActiveTab: () => {},
+                chain: baseChain,
+                partnerId,
+              });
+            } else if (value === "swap") {
+              setB3ModalContentType({
+                type: "anySpend",
+                showBackButton: true,
+              });
             }
-
-            // Swap chain selections
-            const tempSrcChainId = selectedSrcChainId;
-            const tempDstChainId = selectedDstChainId;
-            setSelectedSrcChainId(tempDstChainId);
-            setSelectedDstChainId(tempSrcChainId);
-
-            // Swap token selections
-            const tempSrcToken = selectedSrcToken;
-            const tempDstToken = selectedDstToken;
-            setSelectedSrcToken(tempDstToken);
-            setSelectedDstToken(tempSrcToken);
-
-            // Swap amounts
-            const tempSrcAmount = srcAmount;
-            const tempDstAmount = dstAmount;
-            setSrcAmount(tempDstAmount);
-            setDstAmount(tempSrcAmount);
           }}
         >
-          <div className="relative flex items-center justify-center transition-opacity">
-            <ArrowDown className="text-as-primary/50 h-5 w-5" />
-          </div>
-        </Button>
-
-        {/* Receive section - Hidden when fiat tab is active */}
-        {activeTab === "crypto" && (
-          <CryptoReceiveSection
-            isDepositMode={false}
-            isBuyMode={isBuyMode}
-            selectedRecipientAddress={recipientAddress}
-            recipientName={recipientName || undefined}
-            onSelectRecipient={() => navigateToPanel(PanelView.RECIPIENT_SELECTION, "forward")}
-            dstAmount={dstAmount}
-            dstToken={selectedDstToken}
-            selectedDstChainId={selectedDstChainId}
-            setSelectedDstChainId={setSelectedDstChainId}
-            setSelectedDstToken={setSelectedDstToken}
-            isSrcInputDirty={isSrcInputDirty}
-            onChangeDstAmount={value => {
-              setIsSrcInputDirty(false);
-              setDstAmount(value);
-            }}
-            anyspendQuote={anyspendQuote}
-            onShowPointsDetail={() => navigateToPanel(PanelView.POINTS_DETAIL, "forward")}
-            onShowFeeDetail={() => navigateToPanel(PanelView.FEE_DETAIL, "forward")}
-          />
-        )}
+          <BottomNavigation />
+        </TabsPrimitive>
       </div>
-
-      {/* Main button section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-        transition={{ duration: 0.3, delay: 0.2, ease: "easeInOut" }}
-        className={cn("mt-4 flex w-full max-w-[460px] flex-col gap-2")}
-      >
-        <ShinyButton
-          accentColor={"hsl(var(--as-brand))"}
-          disabled={btnInfo.disable}
-          onClick={onMainButtonClick}
-          className={cn(
-            "as-main-button relative w-full",
-            btnInfo.error ? "!bg-as-red" : btnInfo.disable ? "!bg-as-on-surface-2" : "!bg-as-brand",
-          )}
-          textClassName={cn(btnInfo.error ? "text-white" : btnInfo.disable ? "text-as-secondary" : "text-white")}
-        >
-          <div className="flex items-center justify-center gap-2">
-            {btnInfo.loading && <Loader2 className="h-4 w-4 animate-spin" />}
-            {btnInfo.text}
-          </div>
-        </ShinyButton>
-
-        {!hideTransactionHistoryButton && (globalAddress || recipientAddress) ? (
-          <Button
-            variant="link"
-            onClick={onClickHistory}
-            className="text-as-primary/50 hover:text-as-primary flex items-center gap-1 transition-colors"
-          >
-            <HistoryIcon className="h-4 w-4" /> <span className="pr-4">Transaction History</span>
-          </Button>
-        ) : null}
-      </motion.div>
     </div>
   );
 

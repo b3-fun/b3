@@ -9,13 +9,14 @@ import {
 } from "@b3dotfun/sdk/global-account/react";
 import { formatDisplayNumber, formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import invariant from "invariant";
-import { ChevronDown, CircleHelp, Clock, Loader2, Send as SendIcon, Wallet, X } from "lucide-react";
+import { CircleHelp, Clock, Loader2, Send as SendIcon, Wallet } from "lucide-react";
 import { useState } from "react";
 import { NumericFormat } from "react-number-format";
 import { toast } from "sonner";
 import { encodeFunctionData, erc20Abi, isAddress, parseUnits } from "viem";
 import type { SimBalanceItem } from "../../hooks/useSimBalance";
 import { useRecentAddressesStore } from "../../stores/useRecentAddressesStore";
+import ModalHeader from "../ModalHeader/ModalHeader";
 import { Button } from "../ui/button";
 
 export interface SendModalProps {
@@ -29,7 +30,6 @@ export function Send({ recipientAddress: initialRecipient, onSuccess }: SendModa
   const { address } = useAccountWallet();
   const navigateBack = useModalStore(state => state.navigateBack);
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
-  const history = useModalStore(state => state.history);
 
   // Wizard state
   const [step, setStep] = useState<SendStep>("recipient");
@@ -87,18 +87,6 @@ export function Send({ recipientAddress: initialRecipient, onSuccess }: SendModa
     if (recipientAddress && isAddress(recipientAddress)) {
       addRecentAddress(recipientAddress);
       setStep("token");
-    }
-  };
-
-  // Go to next step
-  const handleNext = () => {
-    if (step === "recipient" && recipientAddress && isAddress(recipientAddress)) {
-      addRecentAddress(recipientAddress);
-      setStep("token");
-    } else if (step === "token" && selectedToken) {
-      setStep("amount");
-    } else if (step === "amount" && sendAmount && parseFloat(sendAmount) > 0) {
-      setStep("confirm");
     }
   };
 
@@ -217,22 +205,7 @@ export function Send({ recipientAddress: initialRecipient, onSuccess }: SendModa
 
   return (
     <div className="flex h-[600px] w-full flex-col bg-white">
-      {/* Header - 64px height, 20px padding */}
-      <div className="flex h-16 items-center justify-between border-b border-[#e4e4e7] bg-white px-5 py-3">
-        <button
-          onClick={handleBack}
-          className="flex h-6 w-6 items-center justify-center transition-opacity hover:opacity-70"
-        >
-          <ChevronDown className="h-6 w-6 rotate-90 text-[#51525c]" />
-        </button>
-        <p className="font-inter text-lg font-semibold leading-7 text-[#18181b]">{getStepTitle()}</p>
-        <button
-          onClick={() => setB3ModalOpen(false)}
-          className="flex h-6 w-6 items-center justify-center transition-opacity hover:opacity-70"
-        >
-          <X className="h-6 w-6 text-[#51525c]" />
-        </button>
-      </div>
+      <ModalHeader handleBack={handleBack} title={getStepTitle()} />
 
       {/* Content - 20px padding */}
       <div className="flex-1 overflow-y-auto">

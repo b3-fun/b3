@@ -17,7 +17,6 @@ import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { useEffect, useRef } from "react";
 import { useSetActiveWallet } from "thirdweb/react";
 import { AvatarEditor } from "./AvatarEditor/AvatarEditor";
-import { B3GlobalBrandingWrapper } from "./B3GlobalBrandingWrapper";
 import { useB3 } from "./B3Provider/useB3";
 import { Deposit } from "./Deposit/Deposit";
 import { LinkAccount } from "./LinkAccount/LinkAccount";
@@ -121,14 +120,8 @@ export function B3DynamicModal({ hasB3GlobalBranding = false }: { hasB3GlobalBra
         return <RequestPermissions {...contentType} />;
       case "manageAccount":
         return <ManageAccount {...contentType} />;
-      case "anySpend": {
-        const anySpendContent = <AnySpend mode="modal" {...contentType} />;
-        return hasB3GlobalBranding ? (
-          <B3GlobalBrandingWrapper>{anySpendContent}</B3GlobalBrandingWrapper>
-        ) : (
-          anySpendContent
-        );
-      }
+      case "anySpend":
+        return <AnySpend mode="modal" {...contentType} />;
       case "anyspendOrderDetails":
         return <AnySpend mode="modal" loadOrder={contentType.orderId} />;
       case "anySpendNft":

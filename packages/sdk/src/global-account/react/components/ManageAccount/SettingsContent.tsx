@@ -1,10 +1,8 @@
 import { useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { Chain } from "thirdweb";
-import BellIcon from "../icons/BellIcon";
 import LinkIcon from "../icons/LinkIcon";
-import LockIcon from "../icons/LockIcon";
-import ProfileSection from "./ProfileSection";
 import SettingsMenuItem from "./SettingsMenuItem";
+import SettingsProfileCard from "./SettingsProfileCard";
 
 const SettingsContent = ({
   partnerId,
@@ -18,7 +16,6 @@ const SettingsContent = ({
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
   const contentType = useModalStore(state => state.contentType);
-  console.log("contentType :", contentType);
 
   const handleNavigate = (type: "home" | "swap" | "linkAccount" | "avatarEditor") => {
     if (type === "home") {
@@ -56,16 +53,16 @@ const SettingsContent = ({
   };
 
   return (
-    <div className="flex flex-col">
+    <div className="flex h-[470px] flex-col">
       {/* Header */}
-      <div className="border-b3-border border-b px-5 py-3">
-        <h1 className="text-b3-grey-900 text-lg font-semibold">Settings</h1>
+      <div className="flex h-16 items-center justify-between border-b border-[#e4e4e7] bg-white px-5 py-3">
+        <p className="font-inter text-lg font-semibold leading-7 text-[#18181b]">Settings</p>
       </div>
 
       {/* Profile Section */}
       <div className="p-5">
-        <div className="bg-b3-primary-wash rounded-xl p-4">
-          <ProfileSection />
+        <div className="flex items-center rounded-xl border border-[#e4e4e7] bg-[#f4f4f5] p-4">
+          <SettingsProfileCard />
         </div>
       </div>
 
@@ -77,7 +74,7 @@ const SettingsContent = ({
           subtitle="3 connected accounts"
           onClick={() => handleNavigate("linkAccount")}
         />
-        <SettingsMenuItem
+        {/* <SettingsMenuItem
           icon={<BellIcon className="text-b3-grey-500" />}
           title="Notifications"
           subtitle="Manage your notifications"
@@ -88,7 +85,7 @@ const SettingsContent = ({
           title="Permissions"
           subtitle="Security & apps"
           onClick={() => handleNavigate("avatarEditor")}
-        />
+        /> */}
       </div>
     </div>
   );
