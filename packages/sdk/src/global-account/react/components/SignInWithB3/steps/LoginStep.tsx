@@ -3,13 +3,11 @@ import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { Chain } from "thirdweb";
 import { ConnectEmbed, darkTheme, lightTheme } from "thirdweb/react";
-import { Account, ecosystemWallet, SingleStepAuthArgsType } from "thirdweb/wallets";
+import { ecosystemWallet, SingleStepAuthArgsType } from "thirdweb/wallets";
 /**
  * Props for the LoginStep component
  */
 interface LoginStepProps {
-  /** Callback function called when login is successful */
-  onSuccess: (account: Account) => Promise<void>;
   /** Optional callback function called when an error occurs */
   onError?: (error: Error) => Promise<void>;
   /** Partner ID used for authentication */
@@ -49,7 +47,7 @@ export function LoginStepContainer({ children, partnerId }: LoginStepContainerPr
   );
 }
 
-export function LoginStep({ onSuccess, chain }: LoginStepProps) {
+export function LoginStep({ chain }: LoginStepProps) {
   const { partnerId, theme } = useB3();
   const wallet = ecosystemWallet(ecosystemWalletId, {
     partnerId: partnerId,
