@@ -1,13 +1,15 @@
-import { useB3, useQueryB3 } from "@b3dotfun/sdk/global-account/react";
+import { useAuthentication, useB3, useQueryB3 } from "@b3dotfun/sdk/global-account/react";
 import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { Chain } from "thirdweb";
 import { ConnectEmbed, darkTheme, lightTheme } from "thirdweb/react";
-import { ecosystemWallet, SingleStepAuthArgsType } from "thirdweb/wallets";
+import { Account, ecosystemWallet, SingleStepAuthArgsType } from "thirdweb/wallets";
 /**
  * Props for the LoginStep component
  */
 interface LoginStepProps {
+  /** Callback function called when login is successful */
+  onSuccess: (account: Account) => Promise<void>;
   /** Optional callback function called when an error occurs */
   onError?: (error: Error) => Promise<void>;
   /** Partner ID used for authentication */
@@ -47,11 +49,12 @@ export function LoginStepContainer({ children, partnerId }: LoginStepContainerPr
   );
 }
 
-export function LoginStep({ chain }: LoginStepProps) {
+export function LoginStep({ onSuccess, chain }: LoginStepProps) {
   const { partnerId, theme } = useB3();
   const wallet = ecosystemWallet(ecosystemWalletId, {
     partnerId: partnerId,
   });
+  const { onConnect } = useAuthentication(partnerId);
 
   return (
     <LoginStepContainer partnerId={partnerId}>
@@ -83,6 +86,12 @@ export function LoginStep({ chain }: LoginStepProps) {
           titleIcon: "https://cdn.b3.fun/b3_logo.svg",
         }}
         className="b3-login-step"
+        onConnect={async (wallet, allConnectedWallets) => {
+          await onConnect(wallet, allConnectedWallets);
+          const account = wallet.getAccount();
+          if (!account) throw new Error("No account found");
+          await onSuccess(account);
+        }}
       />
     </LoginStepContainer>
   );
