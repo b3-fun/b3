@@ -77,7 +77,6 @@ export function FiatPaymentMethodComponent({
       available: true,
     });
   }
-  console.log("isLoadingGeoOnramp :", isLoadingGeoOnramp);
 
   // Show loading state while checking geo availability
   if (isLoadingGeoOnramp) {

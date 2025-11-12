@@ -12,9 +12,7 @@ const TokenContent = () => {
 
   // Balance data fetching - use active wallet address
   const { data: activeNativeBalance } = useNativeBalance(activeAddress);
-  console.log("activeNativeBalance :", activeNativeBalance);
   const { data: activeB3Balance } = useB3BalanceFromAddresses(activeAddress);
-  console.log("activeB3Balance :", activeB3Balance);
 
   if (!activeAddress) {
     return <div className="col-span-3 py-12 text-center text-gray-500">No tokens found</div>;

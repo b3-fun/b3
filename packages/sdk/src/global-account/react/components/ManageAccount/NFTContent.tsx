@@ -9,7 +9,6 @@ const NFTContent = () => {
   const activeAddress = activeAccount?.address;
 
   const { data: nfts, isLoading } = useAccountAssets(activeAddress);
-  console.log("nfts :", nfts);
 
   return (
     <div style={{ minHeight: "100px" }}>

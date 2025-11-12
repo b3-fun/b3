@@ -116,9 +116,7 @@ export function LinkNewAccount({
       originalProfile: profile,
     }));
 
-  const { account, user } = useB3();
-  console.log("user :", user);
-  console.log("account :", account);
+  const { account } = useB3();
   const { mutate: linkProfile } = useLinkProfile();
 
   const onSuccess = useCallback(async () => {
