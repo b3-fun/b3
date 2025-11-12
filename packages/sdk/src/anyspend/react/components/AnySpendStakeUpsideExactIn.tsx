@@ -20,6 +20,8 @@ export function AnySpendStakeUpsideExactIn({
   loadOrder,
   mode = "modal",
   recipientAddress,
+  sourceTokenAddress,
+  sourceTokenChainId,
   stakingContractAddress,
   token,
   onSuccess,
@@ -27,6 +29,8 @@ export function AnySpendStakeUpsideExactIn({
   loadOrder?: string;
   mode?: "modal" | "page";
   recipientAddress: string;
+  sourceTokenAddress?: string;
+  sourceTokenChainId?: number;
   stakingContractAddress: string;
   token: components["schemas"]["Token"];
   onSuccess?: () => void;
@@ -57,6 +61,8 @@ export function AnySpendStakeUpsideExactIn({
       loadOrder={loadOrder}
       mode={mode}
       recipientAddress={recipientAddress}
+      sourceTokenAddress={sourceTokenAddress}
+      sourceTokenChainId={sourceTokenChainId}
       destinationToken={token}
       destinationChainId={base.id}
       customExactInConfig={customExactInConfig}

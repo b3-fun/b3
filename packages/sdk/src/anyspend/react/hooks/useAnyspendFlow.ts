@@ -43,7 +43,7 @@ interface UseAnyspendFlowProps {
   loadOrder?: string;
   isDepositMode?: boolean;
   onOrderSuccess?: (orderId: string) => void;
-  onTransactionSuccess?: (amount?: string) => void;
+  onTransactionSuccess?: (amount: string) => void;
   sourceTokenAddress?: string;
   sourceTokenChainId?: number;
   destinationTokenAddress?: string;
@@ -285,7 +285,7 @@ export function useAnyspendFlow({
       const formattedActualDstAmount = amount
         ? formatTokenAmount(BigInt(amount), oat.data.order.metadata.dstToken.decimals)
         : undefined;
-      onTransactionSuccess?.(formattedActualDstAmount);
+      onTransactionSuccess?.(formattedActualDstAmount ?? "");
     }
   }, [
     oat?.data?.order.status,

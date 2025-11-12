@@ -48,12 +48,16 @@ const STAKE_FUNCTION_ABI = JSON.stringify([
 export function AnySpendStakeB3ExactIn({
   loadOrder,
   mode = "modal",
+  sourceTokenAddress,
+  sourceTokenChainId,
   recipientAddress,
   stakeAmount,
   onSuccess,
 }: {
   loadOrder?: string;
   mode?: "modal" | "page";
+  sourceTokenAddress?: string;
+  sourceTokenChainId?: number;
   recipientAddress: string;
   stakeAmount?: string;
   onSuccess?: () => void;
@@ -506,6 +510,8 @@ export function AnySpendStakeB3ExactIn({
       loadOrder={loadOrder}
       mode={mode}
       recipientAddress={recipientAddress}
+      sourceTokenAddress={sourceTokenAddress}
+      sourceTokenChainId={sourceTokenChainId}
       destinationToken={B3_TOKEN}
       destinationChainId={base.id}
       customExactInConfig={customExactInConfig}
