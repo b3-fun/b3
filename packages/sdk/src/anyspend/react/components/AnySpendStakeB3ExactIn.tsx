@@ -493,7 +493,7 @@ export function AnySpendStakeB3ExactIn({
             <Button
               onClick={() => {
                 setB3ModalOpen(false);
-                onSuccess?.();
+                onSuccess?.(formatTokenAmount(BigInt(userStakeAmount), 18) ?? "");
               }}
               className="bg-as-brand hover:bg-as-brand/90 text-as-primary h-14 w-full rounded-xl text-lg font-medium"
             >
