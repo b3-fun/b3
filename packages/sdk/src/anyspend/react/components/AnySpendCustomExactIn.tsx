@@ -42,7 +42,7 @@ export interface AnySpendCustomExactInProps {
   sourceTokenChainId?: number;
   destinationToken: components["schemas"]["Token"];
   destinationChainId: number;
-  onSuccess?: () => void;
+  onSuccess?: (amount: string) => void;
   mainFooter?: React.ReactNode;
   onTokenSelect?: (token: components["schemas"]["Token"], event: { preventDefault: () => void }) => void;
   customUsdInputValues?: string[];
@@ -554,9 +554,8 @@ function AnySpendCustomExactInInner({
     <StyleRoot>
       <div
         className={cn(
-          "anyspend-container font-inter mx-auto w-full max-w-[460px] bg-white p-6",
-          mode === "page" &&
-            "bg-as-surface-primary border-as-border-secondary overflow-hidden rounded-2xl border shadow-xl",
+          "anyspend-container font-inter bg-as-surface-primary mx-auto w-full max-w-[460px] p-6",
+          mode === "page" && "border-as-border-secondary overflow-hidden rounded-2xl border shadow-xl",
         )}
       >
         <TransitionPanel
