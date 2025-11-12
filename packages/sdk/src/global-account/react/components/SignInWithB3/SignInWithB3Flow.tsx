@@ -39,6 +39,7 @@ export function SignInWithB3Flow({
   const { setB3ModalContentType, setB3ModalOpen, isOpen } = useModalStore();
   const account = useActiveAccount();
   const isAuthenticating = useAuthStore(state => state.isAuthenticating);
+  const isAuthenticated = useAuthStore(state => state.isAuthenticated);
   const isConnected = useAuthStore(state => state.isConnected);
   const [refetchCount, setRefetchCount] = useState(0);
   const [refetchError, setRefetchError] = useState<string | null>(null);
@@ -92,7 +93,7 @@ export function SignInWithB3Flow({
       source,
     });
 
-    if (isConnected) {
+    if (isConnected && isAuthenticated) {
       // Check if we already have a signer for this partner
       const hasExistingSigner = signers?.some(signer => signer.partner.id === partnerId);
       if (hasExistingSigner) {
@@ -139,6 +140,7 @@ export function SignInWithB3Flow({
     signersEnabled,
     isConnected,
     isAuthenticating,
+    isAuthenticated,
     isOpen,
   ]);
 
