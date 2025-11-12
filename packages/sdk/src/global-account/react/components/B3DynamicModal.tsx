@@ -201,7 +201,7 @@ export function B3DynamicModal() {
                   strokeLinejoin="round"
                 />
               </svg>
-              <span className="text-sm font-medium">Back</span>
+              <span className="font-inter text-sm font-semibold">Back</span>
             </button>
           )}
           {renderContent()}
