@@ -1,4 +1,4 @@
-import { useAuthentication, useB3, useQueryB3 } from "@b3dotfun/sdk/global-account/react";
+import { useB3, useQueryB3 } from "@b3dotfun/sdk/global-account/react";
 import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { Chain } from "thirdweb";
@@ -54,7 +54,6 @@ export function LoginStep({ onSuccess, chain }: LoginStepProps) {
   const wallet = ecosystemWallet(ecosystemWalletId, {
     partnerId: partnerId,
   });
-  const { onConnect } = useAuthentication(partnerId);
 
   return (
     <LoginStepContainer partnerId={partnerId}>
@@ -86,12 +85,6 @@ export function LoginStep({ onSuccess, chain }: LoginStepProps) {
           titleIcon: "https://cdn.b3.fun/b3_logo.svg",
         }}
         className="b3-login-step"
-        onConnect={async wallet => {
-          await onConnect(wallet);
-          const account = wallet.getAccount();
-          if (!account) throw new Error("No account found");
-          await onSuccess(account);
-        }}
       />
     </LoginStepContainer>
   );
