@@ -27,7 +27,7 @@
     "react-syntax-highlighter": "^15.5.0",
     "tailwind-merge": "2.6.0",
     "tailwindcss-animate": "^1.0.7",
-    "thirdweb": "5.108.9",
+    "thirdweb": "5.111.10",
     "viem": "2.28.1"
   },
   "devDependencies": {
