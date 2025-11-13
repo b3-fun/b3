@@ -1,4 +1,3 @@
-import { useGlobalWalletState } from "@b3dotfun/sdk/anyspend/utils/accountStore";
 import {
   CopyToClipboard,
   ManageAccountModalProps,
@@ -98,8 +97,6 @@ export function Header({ onLogout }: { onLogout?: () => void }) {
   const contentType = useModalStore(state => state.contentType) as ManageAccountModalProps;
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
-  const setGlobalAccountWallet = useGlobalWalletState(state => state.setGlobalAccountWallet);
-  const globalAccountWallet = useGlobalWalletState(state => state.globalAccountWallet);
   const partnerId = contentType?.partnerId;
 
   const { logout } = useAuthentication(partnerId);
@@ -121,7 +118,6 @@ export function Header({ onLogout }: { onLogout?: () => void }) {
 
   const handleWalletSwitch = (wallet: Wallet) => {
     setActiveWallet(wallet);
-    setGlobalAccountWallet(wallet);
     setIsExpanded(false);
   };
 
