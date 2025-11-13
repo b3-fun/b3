@@ -12,8 +12,7 @@ import {
 import { AnySpendDepositHype } from "@b3dotfun/sdk/anyspend/react/components/AnyspendDepositHype";
 import { AnySpendStakeUpside } from "@b3dotfun/sdk/anyspend/react/components/AnySpendStakeUpside";
 import { AnySpendStakeUpsideExactIn } from "@b3dotfun/sdk/anyspend/react/components/AnySpendStakeUpsideExactIn";
-import { useGlobalWalletState } from "@b3dotfun/sdk/anyspend/utils";
-import { useIsMobile, useModalStore } from "@b3dotfun/sdk/global-account/react";
+import { useGlobalAccount, useIsMobile, useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { useEffect, useRef } from "react";
@@ -35,22 +34,19 @@ export function B3DynamicModal() {
   const { theme } = useB3();
   const isMobile = useIsMobile();
   const prevIsOpenRef = useRef(isOpen);
-
-  const globalAccountWallet = useGlobalWalletState(state => state.globalAccountWallet);
-  const setGlobalAccountWallet = useGlobalWalletState(state => state.setGlobalAccountWallet);
+  const { wallet } = useGlobalAccount();
   const setActiveWallet = useSetActiveWallet();
 
   // anyspend cleanup global account chnages by setting account back
   useEffect(() => {
     if (prevIsOpenRef.current && !isOpen) {
-      if (globalAccountWallet) {
-        setActiveWallet(globalAccountWallet);
-        setGlobalAccountWallet(undefined);
+      if (wallet) {
+        setActiveWallet(wallet);
       }
     }
 
     prevIsOpenRef.current = isOpen;
-  }, [isOpen, globalAccountWallet, setActiveWallet, setGlobalAccountWallet]);
+  }, [isOpen, wallet, setActiveWallet]);
 
   // Define arrays for different modal type groups
   const fullWidthTypes = [

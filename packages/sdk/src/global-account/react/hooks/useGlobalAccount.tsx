@@ -10,6 +10,7 @@ export function useGlobalAccount() {
   const wallets = useConnectedWallets();
   const isConnected = useAuthStore(state => state.isConnected);
   const [globalAccount, setGlobalAccount] = useState<Wallet | undefined>(undefined);
+  const [globalAccountWallet, setGlobalAccountWallet] = useState<Wallet | undefined>(undefined);
   const [address, setAddress] = useState<string | undefined>(undefined);
   const walletInfo = useWalletInfo(globalAccount?.id);
 
@@ -22,7 +23,7 @@ export function useGlobalAccount() {
     }
 
     const globalAccountWallet = wallets.find(wallet => wallet.id.startsWith("ecosystem."));
-
+    setGlobalAccountWallet(globalAccountWallet);
     const account = globalAccountWallet?.getAccount();
     setGlobalAccount(globalAccountWallet);
     setAddress(account?.address);
@@ -32,5 +33,6 @@ export function useGlobalAccount() {
     account: globalAccount,
     address,
     info: walletInfo,
+    wallet: globalAccountWallet,
   };
 }
