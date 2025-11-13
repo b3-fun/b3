@@ -25,6 +25,7 @@ import {
   useTokenFromUrl,
 } from "@b3dotfun/sdk/global-account/react";
 import BottomNavigation from "@b3dotfun/sdk/global-account/react/components/ManageAccount/BottomNavigation";
+import { useAccountWalletImage } from "@b3dotfun/sdk/global-account/react/hooks/useAccountWallet";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import invariant from "invariant";
@@ -473,6 +474,8 @@ function AnySpendInner({
   const { address: globalAddress, wallet: globalWallet, connectedEOAWallet } = useAccountWallet();
   const recipientProfile = useProfile({ address: recipientAddress, fresh: true });
   const recipientName = recipientProfile.data?.name;
+
+  const globalWalletImage = useAccountWalletImage();
 
   // Auto-set active wallet from wagmi
   useAutoSetActiveWalletFromWagmi();
@@ -1248,7 +1251,7 @@ function AnySpendInner({
       }}
       onBack={navigateBack}
       recipientEnsName={globalWallet?.ensName}
-      recipientImageUrl={globalWallet?.meta?.icon}
+      recipientImageUrl={globalWalletImage}
     />
   );
 
@@ -1265,8 +1268,6 @@ function AnySpendInner({
 
   const cryptoPaymentMethodView = (
     <CryptoPaymentMethod
-      globalAddress={globalAddress}
-      globalWallet={globalWallet}
       selectedPaymentMethod={selectedCryptoPaymentMethod}
       setSelectedPaymentMethod={setSelectedCryptoPaymentMethod}
       isCreatingOrder={isCreatingOrder}

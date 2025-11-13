@@ -13,11 +13,11 @@ import { BankIcon } from "@b3dotfun/sdk/global-account/react/components/icons/Ba
 import { SignOutIcon } from "@b3dotfun/sdk/global-account/react/components/icons/SignOutIcon";
 import { SwapIcon } from "@b3dotfun/sdk/global-account/react/components/icons/SwapIcon";
 import { formatUsername } from "@b3dotfun/sdk/shared/utils";
-import { getIpfsUrl } from "@b3dotfun/sdk/shared/utils/ipfs";
 import { Loader2, Pencil } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useActiveAccount } from "thirdweb/react";
 import { useFirstEOA } from "../../hooks/useFirstEOA";
+import { IPFSMediaRenderer } from "../IPFSMediaRenderer/IPFSMediaRenderer";
 import { B3TokenIcon, EthereumTokenIcon } from "../TokenIcon";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
 import { TokenBalanceRow } from "./TokenBalanceRow";
@@ -48,7 +48,8 @@ export function BalanceContent({ onLogout, showDeposit = true, showSwap = true }
   const [openAccordions, setOpenAccordions] = useState<string[]>([]);
   const hasExpandedRef = useRef(false);
 
-  const avatarUrl = user?.avatar ? getIpfsUrl(user?.avatar) : profile?.avatar;
+  // IPFSMediaRenderer will handle IPFS URL conversion and validation
+  const avatarSrc = user?.avatar || profile?.avatar;
 
   const handleEditProfile = () => {
     setB3ModalOpen(true);
@@ -118,11 +119,7 @@ export function BalanceContent({ onLogout, showDeposit = true, showSwap = true }
       <div className="flex items-center justify-between">
         <div className="global-account-profile flex items-center gap-4">
           <div className="global-account-profile-avatar relative">
-            {avatarUrl ? (
-              <img src={avatarUrl} alt="Profile" className="size-24 rounded-full" />
-            ) : (
-              <div className="bg-b3-primary-wash size-24 rounded-full" />
-            )}
+            <IPFSMediaRenderer src={avatarSrc} alt="Profile" className="size-24 rounded-full" />
             <button
               onClick={handleEditProfile}
               className="bg-b3-grey border-b3-background hover:bg-b3-grey/80 absolute -bottom-1 -right-1 flex size-8 items-center justify-center rounded-full border-4 transition-colors"

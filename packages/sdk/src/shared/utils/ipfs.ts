@@ -1,7 +1,14 @@
+/**
+ * List of IPFS gateways to use for converting ipfs:// URLs to HTTP URLs
+ * These gateways must match the allowed list in profileDisplay.ts validateImageUrl()
+ */
 const IPFS_GATEWAYS = [
-  "https://cloudflare-ipfs.com/ipfs",
-  "https://ipfs.io/ipfs",
-  // Can add more gateways as needed
+  "https://cloudflare-ipfs.com/ipfs", // Primary gateway - fast and reliable
+  "https://ipfs.io/ipfs", // Fallback gateway
+  "https://gateway.pinata.cloud/ipfs", // Additional option
+  "https://dweb.link/ipfs", // Additional option
+  "https://nftstorage.link/ipfs", // Additional option
+  "https://w3s.link/ipfs", // Additional option
 ] as const;
 
 /**

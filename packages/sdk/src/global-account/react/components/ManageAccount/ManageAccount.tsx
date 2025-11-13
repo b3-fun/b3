@@ -93,7 +93,7 @@ export function ManageAccount({
         }}
       >
         <div className="p-0">
-          <TabsContentPrimitive value="home" className="px-0 pb-4 pt-2">
+          <TabsContentPrimitive value="home" className="m-0 p-0 pb-2">
             <HomeContent showDeposit={showDeposit} showSwap={showSwap} />
           </TabsContentPrimitive>
 
@@ -108,7 +108,7 @@ export function ManageAccount({
           {/* Swap tab content is handled by modal, so this is empty */}
           <TabsContentPrimitive value="swap" className="hidden" />
 
-          <TabsContentPrimitive value="settings" className="pb-4 pt-2">
+          <TabsContentPrimitive value="settings" className="m-0 p-0 pb-2">
             <SettingsContent partnerId={partnerId} onLogout={onLogout} chain={chain} />
           </TabsContentPrimitive>
         </div>

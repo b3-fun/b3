@@ -1,3 +1,4 @@
+// TODO woj: Barrel file for all components, this might be reason of bundle size issues
 // Core Components
 export { B3DynamicModal } from "./B3DynamicModal";
 export { B3Provider, InnerProvider } from "./B3Provider/B3Provider";
@@ -29,6 +30,9 @@ export { Send } from "./Send/Send";
 // Profile Components
 export { AvatarEditor } from "./AvatarEditor/AvatarEditor";
 export { ProfileEditor } from "./ProfileEditor/ProfileEditor";
+
+// Media Components
+export { IPFSMediaRenderer } from "./IPFSMediaRenderer/IPFSMediaRenderer";
 
 // RequestPermissions Components
 export { RequestPermissions } from "./RequestPermissions/RequestPermissions";

@@ -1,8 +1,8 @@
 import { useB3, useModalStore, useProfile } from "@b3dotfun/sdk/global-account/react";
 import { formatUsername } from "@b3dotfun/sdk/shared/utils";
-import { getIpfsUrl } from "@b3dotfun/sdk/shared/utils/ipfs";
 import { Pencil } from "lucide-react";
 import { useActiveAccount } from "thirdweb/react";
+import { IPFSMediaRenderer } from "../IPFSMediaRenderer/IPFSMediaRenderer";
 import { useFirstEOA } from "../../hooks/useFirstEOA";
 
 const SettingsProfileCard = () => {
@@ -17,7 +17,8 @@ const SettingsProfileCard = () => {
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
   const navigateBack = useModalStore(state => state.navigateBack);
 
-  const avatarUrl = user?.avatar ? getIpfsUrl(user?.avatar) : profile?.avatar;
+  // IPFSMediaRenderer will handle IPFS URL conversion and validation
+  const avatarSrc = user?.avatar || profile?.avatar;
 
   const handleEditAvatar = () => {
     setB3ModalOpen(true);
@@ -31,19 +32,25 @@ const SettingsProfileCard = () => {
   };
 
   const handleEditUsername = () => {
-    // TODO: Implement edit username functionality
-    console.log("Edit username clicked");
+    setB3ModalOpen(true);
+    setB3ModalContentType({
+      type: "profileEditor",
+      onSuccess: () => {
+        // navigate back on success
+        navigateBack();
+      },
+    });
   };
 
   return (
     <div className="flex w-full items-center gap-3">
       {/* Avatar with edit badge */}
       <div className="relative shrink-0">
-        {avatarUrl ? (
-          <img src={avatarUrl} alt="Profile" className="border-black/8 size-14 rounded-full border object-cover" />
-        ) : (
-          <div className="bg-b3-primary-wash border-black/8 size-14 rounded-full border" />
-        )}
+        <IPFSMediaRenderer
+          src={avatarSrc}
+          alt="Profile"
+          className="border-black/8 size-14 rounded-full border object-cover"
+        />
         <button
           onClick={handleEditAvatar}
           className="absolute -bottom-0.5 -right-0.5 flex size-[18px] items-center justify-center rounded-full border-[1.5px] border-white bg-[#a0a0ab] transition-colors hover:bg-[#a0a0ab]/80"

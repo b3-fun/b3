@@ -1,6 +1,7 @@
 "use client";
 
 import { useAccountWallet } from "@b3dotfun/sdk/global-account/react";
+import { useAccountWalletImage } from "@b3dotfun/sdk/global-account/react/hooks/useAccountWallet";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
@@ -22,12 +23,6 @@ export enum CryptoPaymentMethodType {
 }
 
 interface CryptoPaymentMethodProps {
-  globalAddress?: string;
-  globalWallet?: {
-    meta?: {
-      icon?: string;
-    };
-  };
   selectedPaymentMethod: CryptoPaymentMethodType;
   setSelectedPaymentMethod: (method: CryptoPaymentMethodType) => void;
   isCreatingOrder: boolean;
@@ -42,11 +37,7 @@ export function CryptoPaymentMethod({
   onBack,
   onSelectPaymentMethod,
 }: CryptoPaymentMethodProps) {
-  const {
-    wallet: globalWallet,
-    connectedEOAWallet: connectedEOAWallet,
-    connectedSmartWallet: connectedSmartWallet,
-  } = useAccountWallet();
+  const { connectedEOAWallet: connectedEOAWallet, connectedSmartWallet: connectedSmartWallet } = useAccountWallet();
   const { connector, address } = useAccount();
   const { connect, connectors, isPending } = useConnect();
   const { disconnect } = useDisconnect();
@@ -57,6 +48,8 @@ export function CryptoPaymentMethod({
 
   const isConnected = !!connectedEOAWallet;
   const globalAddress = connectedSmartWallet?.getAccount()?.address;
+
+  const walletImage = useAccountWalletImage();
 
   // Use custom hook to determine wallet display logic
   const { shouldShowConnectedEOA, shouldShowWagmiWallet } = useConnectedWalletDisplay(selectedPaymentMethod);
@@ -341,8 +334,8 @@ export function CryptoPaymentMethod({
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        {globalWallet?.meta?.icon ? (
-                          <img src={globalWallet.meta.icon} alt="Global Account" className="h-10 w-10 rounded-full" />
+                        {walletImage ? (
+                          <img src={walletImage} alt="Global Account" className="h-10 w-10 rounded-full" />
                         ) : (
                           <div className="wallet-icon flex h-10 w-10 items-center justify-center rounded-full bg-purple-100">
                             <Wallet className="h-5 w-5 text-purple-600" />
