@@ -14,6 +14,11 @@ interface GroupedNFTs {
 }
 
 export function AccountAssets({ nfts, isLoading }: AccountAssetsProps) {
+  // Initialize with all collections expanded
+  const [expandedCollections, setExpandedCollections] = useState<Set<string>>(
+    () => new Set(collections.map(c => c.collection_id)),
+  );
+
   if (isLoading) {
     return (
       <div className="flex flex-col gap-3">
@@ -53,11 +58,6 @@ export function AccountAssets({ nfts, isLoading }: AccountAssetsProps) {
   );
 
   const collections = Object.values(groupedNFTs);
-
-  // Initialize with all collections expanded
-  const [expandedCollections, setExpandedCollections] = useState<Set<string>>(
-    () => new Set(collections.map(c => c.collection_id)),
-  );
 
   const toggleCollection = (collectionId: string) => {
     setExpandedCollections(prev => {

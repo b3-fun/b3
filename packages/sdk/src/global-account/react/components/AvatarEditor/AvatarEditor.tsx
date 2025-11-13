@@ -238,7 +238,7 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
       ?.filter(p => p.avatar)
       .map(p => ({
         type: p.type,
-        avatar: getIpfsUrl(p.avatar!),
+        avatar: getIpfsUrl(p?.avatar || ""),
         name: p.name || p.type,
       })) || [];
 
