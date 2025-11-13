@@ -7,7 +7,10 @@ import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { Loader2, Upload, X } from "lucide-react";
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
+import type { Area } from "react-easy-crop";
+import Cropper from "react-easy-crop";
+import "react-easy-crop/react-easy-crop.css";
 import { toast } from "sonner";
 import { useActiveAccount } from "thirdweb/react";
 import { upload } from "thirdweb/storage";
@@ -16,6 +19,16 @@ import { useModalStore } from "../../stores";
 import ModalHeader from "../ModalHeader/ModalHeader";
 
 const debug = debugB3React("AvatarEditor");
+
+// Helper function to create an image element from a URL
+const createImage = (url: string): Promise<HTMLImageElement> =>
+  new Promise((resolve, reject) => {
+    const image = new Image();
+    image.addEventListener("load", () => resolve(image));
+    image.addEventListener("error", error => reject(error));
+    image.setAttribute("crossOrigin", "anonymous");
+    image.src = url;
+  });
 
 interface AvatarEditorProps {
   onSetAvatar?: () => void;
@@ -33,6 +46,9 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { setUser, user, partnerId } = useB3();
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
@@ -49,6 +65,48 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
   const rawCurrentAvatar = user?.avatar || profile?.avatar;
   const currentAvatar = validateImageUrl(rawCurrentAvatar);
   const safePreviewUrl = validateImageUrl(previewUrl);
+
+  const onCropComplete = useCallback((_croppedArea: Area, croppedAreaPixels: Area) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  }, []);
+
+  const createCroppedImage = async (imageSrc: string, pixelCrop: Area): Promise<Blob> => {
+    const image = await createImage(imageSrc);
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
+    if (!ctx) {
+      throw new Error("Failed to get canvas context");
+    }
+
+    // Set canvas size to the crop area
+    canvas.width = pixelCrop.width;
+    canvas.height = pixelCrop.height;
+
+    // Draw the cropped image
+    ctx.drawImage(
+      image,
+      pixelCrop.x,
+      pixelCrop.y,
+      pixelCrop.width,
+      pixelCrop.height,
+      0,
+      0,
+      pixelCrop.width,
+      pixelCrop.height,
+    );
+
+    // Return as blob
+    return new Promise((resolve, reject) => {
+      canvas.toBlob(blob => {
+        if (!blob) {
+          reject(new Error("Canvas is empty"));
+          return;
+        }
+        resolve(blob);
+      }, "image/jpeg");
+    });
+  };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -87,6 +145,10 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+    // Reset crop state
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    setCroppedAreaPixels(null);
   };
 
   const handleSaveChanges = async () => {
@@ -99,8 +161,20 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
     try {
       let fileToUpload: File | null = null;
 
-      // If user uploaded a new file
-      if (selectedFile) {
+      // If user uploaded a new file and cropped it
+      if (selectedFile && previewUrl && croppedAreaPixels) {
+        try {
+          const croppedBlob = await createCroppedImage(previewUrl, croppedAreaPixels);
+          const extension = selectedFile.name.split(".").pop() || "jpg";
+          fileToUpload = new File([croppedBlob], `avatar-cropped.${extension}`, { type: "image/jpeg" });
+        } catch (error) {
+          debug("Error cropping image:", error);
+          toast.error("Failed to crop image. Please try again.");
+          setIsSaving(false);
+          return;
+        }
+      } else if (selectedFile) {
+        // Fallback if no crop was made
         fileToUpload = selectedFile;
       } else if (selectedProfileType && selectedAvatar) {
         // User selected from existing profile avatars
@@ -419,13 +493,56 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
               </div>
             ) : (
               <div className="mb-6 w-full">
-                <div className="aspect-square w-full overflow-hidden rounded-xl bg-[#f4f4f5]">
+                <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-[#f4f4f5]">
                   {safePreviewUrl ? (
-                    <img src={safePreviewUrl} alt="Preview" className="h-full w-full object-cover" />
+                    <>
+                      <Cropper
+                        image={safePreviewUrl}
+                        crop={crop}
+                        zoom={zoom}
+                        aspect={1}
+                        onCropChange={setCrop}
+                        onCropComplete={onCropComplete}
+                        onZoomChange={setZoom}
+                        cropShape="rect"
+                        showGrid={false}
+                        style={{
+                          containerStyle: {
+                            width: "100%",
+                            height: "100%",
+                            backgroundColor: "#f4f4f5",
+                          },
+                          cropAreaStyle: {
+                            border: "2px solid #3368ef",
+                            borderRadius: "0px",
+                          },
+                        }}
+                      />
+                      <button
+                        onClick={handleRemovePreview}
+                        className="absolute right-4 top-4 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-[#51525c] text-white transition-colors hover:bg-[#71717a]"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </>
                   ) : (
                     <div className="bg-b3-primary-wash h-full w-full" />
                   )}
                 </div>
+                {safePreviewUrl && (
+                  <div className="mt-4 flex items-center gap-3">
+                    <label className="flex-shrink-0 text-sm font-semibold text-[#475467]">Zoom</label>
+                    <input
+                      type="range"
+                      min={1}
+                      max={3}
+                      step={0.1}
+                      value={zoom}
+                      onChange={e => setZoom(Number(e.target.value))}
+                      className="flex-1 accent-[#3368ef]"
+                    />
+                  </div>
+                )}
               </div>
             )}
           </>

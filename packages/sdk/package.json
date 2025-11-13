@@ -343,6 +343,7 @@
     "lucide-react": "0.424.0",
     "motion": "^12.23.11",
     "qrcode.react": "4.2.0",
+    "react-easy-crop": "^5.5.3",
     "react-intersection-observer": "9.16.0",
     "react-number-format": "5.4.3",
     "react-timeago": "8.2.0",
