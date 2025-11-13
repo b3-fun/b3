@@ -17,20 +17,45 @@ export function validateImageUrl(url: string | null | undefined): string | null 
       return url;
     }
 
-    // For IPFS URLs (various formats)
-    if (url.startsWith("ipfs://") || url.includes("ipfs.io") || url.includes("gateway.pinata.cloud")) {
+    // For IPFS protocol URLs
+    if (url.startsWith("ipfs://")) {
       return url;
     }
 
-    // For standard HTTP(S) URLs
+    // Parse URL to validate protocol and hostname
     const parsedUrl = new URL(url);
-    if (parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:") {
+
+    // Only allow http and https protocols
+    if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
+      debug("Rejected unsafe protocol:", parsedUrl.protocol, url);
+      return null;
+    }
+
+    // Whitelist of allowed IPFS gateway hostnames
+    const allowedIpfsGateways = [
+      "ipfs.io",
+      "gateway.pinata.cloud",
+      "cloudflare-ipfs.com",
+      "dweb.link",
+      "nftstorage.link",
+      "w3s.link",
+    ];
+
+    // Check if hostname matches allowed IPFS gateways
+    const hostname = parsedUrl.hostname.toLowerCase();
+    const isAllowedIpfsGateway = allowedIpfsGateways.some(gateway => {
+      // Exact match or subdomain of the gateway
+      return hostname === gateway || hostname.endsWith(`.${gateway}`);
+    });
+
+    if (isAllowedIpfsGateway) {
       return url;
     }
 
-    // Reject anything else (javascript:, data:, etc.)
-    debug("Rejected unsafe image URL:", url);
-    return null;
+    // For standard HTTP(S) URLs from trusted sources
+    // Add additional hostname validation here if needed
+    // For now, allow all HTTP(S) URLs (can be restricted further if needed)
+    return url;
   } catch (error) {
     // Invalid URL format
     debug("Invalid image URL format:", url, error);
