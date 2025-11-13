@@ -3,6 +3,7 @@
 import { Users } from "@b3dotfun/b3-api";
 import app from "@b3dotfun/sdk/global-account/app";
 import { Button, useB3, useProfile } from "@b3dotfun/sdk/global-account/react";
+import { validateImageUrl } from "@b3dotfun/sdk/global-account/react/utils/profileDisplay";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { getIpfsUrl } from "@b3dotfun/sdk/shared/utils/ipfs";
@@ -35,7 +36,9 @@ export function ProfileEditor({ onSuccess, className }: ProfileEditorProps) {
     fresh: true,
   });
 
-  const avatarUrl = user?.avatar ? getIpfsUrl(user?.avatar) : profile?.avatar;
+  const rawAvatarUrl = user?.avatar ? getIpfsUrl(user?.avatar) : profile?.avatar;
+  const avatarUrl = validateImageUrl(rawAvatarUrl);
+  const safePreviewUrl = validateImageUrl(previewUrl);
   const hasAvatar = !!avatarUrl;
   const currentUsername = user?.username || "";
 
@@ -174,16 +177,16 @@ export function ProfileEditor({ onSuccess, className }: ProfileEditorProps) {
 
           {/* Current/Preview Avatar */}
           <div className="flex justify-center">
-            {previewUrl || avatarUrl ? (
+            {safePreviewUrl || avatarUrl ? (
               <div className="relative">
                 <div className="border-b3-primary-blue h-32 w-32 overflow-hidden rounded-full border-4">
                   <img
-                    src={previewUrl || avatarUrl}
-                    alt={previewUrl ? "Preview" : "Current avatar"}
+                    src={safePreviewUrl || avatarUrl || ""}
+                    alt={safePreviewUrl ? "Preview" : "Current avatar"}
                     className="h-full w-full object-cover"
                   />
                 </div>
-                {previewUrl && (
+                {safePreviewUrl && (
                   <button
                     onClick={handleRemoveFile}
                     className="bg-b3-negative absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full text-white transition-colors hover:bg-red-600"

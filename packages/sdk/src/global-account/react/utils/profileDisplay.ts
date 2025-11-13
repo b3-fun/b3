@@ -1,4 +1,42 @@
+import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { type Profile } from "thirdweb/wallets";
+
+const debug = debugB3React("profileDisplay");
+
+/**
+ * Validates that an image URL uses an allowed schema
+ * @param url - The URL to validate
+ * @returns The URL if valid, null otherwise
+ */
+export function validateImageUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+
+  try {
+    // For blob URLs (from createObjectURL)
+    if (url.startsWith("blob:")) {
+      return url;
+    }
+
+    // For IPFS URLs (various formats)
+    if (url.startsWith("ipfs://") || url.includes("ipfs.io") || url.includes("gateway.pinata.cloud")) {
+      return url;
+    }
+
+    // For standard HTTP(S) URLs
+    const parsedUrl = new URL(url);
+    if (parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:") {
+      return url;
+    }
+
+    // Reject anything else (javascript:, data:, etc.)
+    debug("Rejected unsafe image URL:", url);
+    return null;
+  } catch (error) {
+    // Invalid URL format
+    debug("Invalid image URL format:", url, error);
+    return null;
+  }
+}
 
 export interface ExtendedProfileDetails {
   id?: string;
@@ -40,7 +78,7 @@ export function getProfileDisplayInfo(profile: ExtendedProfile): ProfileDisplayI
       displayInfo = {
         title: details.name || details.username || "Unknown",
         subtitle: details.username ? `@${details.username}` : "X Account",
-        imageUrl: details.profileImageUrl || null,
+        imageUrl: validateImageUrl(details.profileImageUrl),
         initial: "X",
         type,
       };
@@ -49,7 +87,7 @@ export function getProfileDisplayInfo(profile: ExtendedProfile): ProfileDisplayI
       displayInfo = {
         title: details.name || details.username || "Unknown",
         subtitle: details.username ? `@${details.username}` : "Farcaster Account",
-        imageUrl: details.profileImageUrl || null,
+        imageUrl: validateImageUrl(details.profileImageUrl),
         initial: "F",
         type,
       };
@@ -58,7 +96,7 @@ export function getProfileDisplayInfo(profile: ExtendedProfile): ProfileDisplayI
       displayInfo = {
         title: details.name || details.email || "Unknown",
         subtitle: details.email || "Google Account",
-        imageUrl: details.profileImageUrl || null,
+        imageUrl: validateImageUrl(details.profileImageUrl),
         initial: "G",
         type,
       };
@@ -67,7 +105,7 @@ export function getProfileDisplayInfo(profile: ExtendedProfile): ProfileDisplayI
       displayInfo = {
         title: details.username || details.name || "Unknown",
         subtitle: "Discord Account",
-        imageUrl: details.profileImageUrl || null,
+        imageUrl: validateImageUrl(details.profileImageUrl),
         initial: "D",
         type,
       };
