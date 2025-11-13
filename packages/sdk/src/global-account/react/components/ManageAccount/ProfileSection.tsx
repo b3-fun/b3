@@ -42,6 +42,9 @@ const ProfileSection = () => {
   // IPFSMediaRenderer will handle IPFS URL conversion and validation
   const avatarSrc = user?.avatar || profile?.avatar;
 
+  // Get current username - prioritize user.username, fallback to profile data
+  const currentUsername = user?.username || profile?.displayName || formatUsername(profile?.name || "");
+
   return (
     <div className="flex items-center justify-between px-5 py-6">
       <div className="global-account-profile flex items-center gap-4">
@@ -59,9 +62,7 @@ const ProfileSection = () => {
             <div className="text-b3-foreground-muted"> $</div>
             <div className="text-[30px]">{formatDisplayNumber(totalBalanceUsd, { fractionDigits: 2 })}</div>
           </h2>
-          <div className="font-neue-montreal-semibold text-base leading-none text-[#0B57C2]">
-            {profile?.displayName || formatUsername(profile?.name || "")}
-          </div>
+          <div className="font-neue-montreal-semibold text-base leading-none text-[#0B57C2]">{currentUsername}</div>
         </div>
       </div>
     </div>

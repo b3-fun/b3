@@ -23,7 +23,6 @@ import { Deposit } from "./Deposit/Deposit";
 import { LinkAccount } from "./LinkAccount/LinkAccount";
 import { LinkNewAccount } from "./LinkAccount/LinkNewAccount";
 import { ManageAccount } from "./ManageAccount/ManageAccount";
-import { ProfileEditor } from "./ProfileEditor/ProfileEditor";
 import { RequestPermissions } from "./RequestPermissions/RequestPermissions";
 import { Send } from "./Send/Send";
 import { SignInWithB3Flow } from "./SignInWithB3/SignInWithB3Flow";
@@ -74,7 +73,6 @@ export function B3DynamicModal() {
     "avatarEditor",
     "deposit",
     "send",
-    "profileEditor",
   ];
 
   const freestyleTypes = [
@@ -157,8 +155,6 @@ export function B3DynamicModal() {
         return <Deposit />;
       case "send":
         return <Send {...contentType} />;
-      case "profileEditor":
-        return <ProfileEditor onSuccess={contentType.onSuccess} />;
       // Add other modal types here
       default:
         return null;
@@ -217,7 +213,7 @@ export function B3DynamicModal() {
           {renderContent()}
         </div>
       </ModalContent>
-      {(contentType?.type === "avatarEditor" || contentType?.type === "profileEditor") && (
+      {contentType?.type === "avatarEditor" && (
         <button
           onClick={() => setB3ModalOpen(false)}
           className="fixed right-5 top-5 z-[100] cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"

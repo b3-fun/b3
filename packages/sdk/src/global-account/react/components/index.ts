@@ -26,11 +26,6 @@ export { Deposit } from "./Deposit/Deposit";
 // Send Components
 export { Send } from "./Send/Send";
 
-// B3 Global Branding Wrapper
-// Profile Components
-export { AvatarEditor } from "./AvatarEditor/AvatarEditor";
-export { ProfileEditor } from "./ProfileEditor/ProfileEditor";
-
 // Media Components
 export { IPFSMediaRenderer } from "./IPFSMediaRenderer/IPFSMediaRenderer";
 
