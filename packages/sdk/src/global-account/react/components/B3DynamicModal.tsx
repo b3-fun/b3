@@ -21,6 +21,7 @@ import { useSetActiveWallet } from "thirdweb/react";
 import { AvatarEditor } from "./AvatarEditor/AvatarEditor";
 import { useB3 } from "./B3Provider/useB3";
 import { LinkAccount } from "./LinkAccount/LinkAccount";
+import { ProfileEditor } from "./ProfileEditor/ProfileEditor";
 import { ManageAccount } from "./ManageAccount/ManageAccount";
 import { RequestPermissions } from "./RequestPermissions/RequestPermissions";
 import { SignInWithB3Flow } from "./SignInWithB3/SignInWithB3Flow";
@@ -68,6 +69,7 @@ export function B3DynamicModal() {
     "anySpendBondKit",
     "linkAccount",
     "avatarEditor",
+    "profileEditor",
   ];
 
   const freestyleTypes = [
@@ -144,6 +146,8 @@ export function B3DynamicModal() {
         return <AnySpendDepositHype {...contentType} mode="modal" />;
       case "avatarEditor":
         return <AvatarEditor onSetAvatar={contentType.onSuccess} />;
+      case "profileEditor":
+        return <ProfileEditor onSuccess={contentType.onSuccess} />;
       // Add other modal types here
       default:
         return null;
@@ -162,8 +166,8 @@ export function B3DynamicModal() {
           contentClass,
           "rounded-2xl bg-white shadow-xl dark:bg-gray-900",
           "border border-gray-200 dark:border-gray-800",
-          // Remove default width classes for avatar editor
-          contentType?.type === "avatarEditor"
+          // Remove default width classes for avatar editor and profile editor
+          contentType?.type === "avatarEditor" || contentType?.type === "profileEditor"
             ? "!w-[90vw] !max-w-none" // Use !important to override default styles
             : "mx-auto w-full max-w-md sm:max-w-lg",
         )}
@@ -199,7 +203,7 @@ export function B3DynamicModal() {
           {renderContent()}
         </div>
       </ModalContent>
-      {contentType?.type === "avatarEditor" && (
+      {(contentType?.type === "avatarEditor" || contentType?.type === "profileEditor") && (
         <button
           onClick={() => setB3ModalOpen(false)}
           className="fixed right-5 top-5 z-[100] cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"

@@ -19,6 +19,10 @@ export { getConnectOptionsFromStrategy, isWalletType, type AllowedStrategy } fro
 // ManageAccount Components
 export { ManageAccount } from "./ManageAccount/ManageAccount";
 
+// Profile Components
+export { AvatarEditor } from "./AvatarEditor/AvatarEditor";
+export { ProfileEditor } from "./ProfileEditor/ProfileEditor";
+
 // RequestPermissions Components
 export { RequestPermissions } from "./RequestPermissions/RequestPermissions";
 export { RequestPermissionsButton } from "./RequestPermissions/RequestPermissionsButton";
