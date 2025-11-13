@@ -182,11 +182,7 @@ export function B3DynamicModal() {
             contentType?.type === "send" ||
             contentType?.type === "avatarEditor") &&
             "p-0",
-          "mx-auto w-full max-w-md sm:max-w-lg", // TODO CHECK THIS
-          // Remove default width classes for avatar editor and profile editor
-          contentType?.type === "avatarEditor" || contentType?.type === "profileEditor"
-            ? "!w-[90vw] !max-w-none" // Use !important to override default styles
-            : "mx-auto w-full max-w-md sm:max-w-lg",
+          "mx-auto w-full max-w-md sm:max-w-lg",
         )}
         hideCloseButton={hideCloseButton}
       >
