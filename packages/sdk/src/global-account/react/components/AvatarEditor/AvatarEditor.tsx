@@ -1,10 +1,10 @@
 "use client";
 
 import app from "@b3dotfun/sdk/global-account/app";
-import { Button, useB3, useProfile } from "@b3dotfun/sdk/global-account/react";
+import { Button, IPFSMediaRenderer, useB3, useProfile } from "@b3dotfun/sdk/global-account/react";
+import { validateImageUrl } from "@b3dotfun/sdk/global-account/react/utils/profileDisplay";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
-import { getIpfsUrl } from "@b3dotfun/sdk/shared/utils/ipfs";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { Loader2, Upload, X } from "lucide-react";
 import { useRef, useState } from "react";
@@ -27,16 +27,15 @@ type ViewStep = "select" | "upload";
 export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
   const [viewStep, setViewStep] = useState<ViewStep>("select");
   const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null);
+  const [selectedProfileType, setSelectedProfileType] = useState<string | null>(null); // Track which profile was selected
   const [hoveredProfile, setHoveredProfile] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { setUser, user, partnerId } = useB3();
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
-  const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
   const contentType = useModalStore(state => state.contentType);
   const { setPreference } = useProfileSettings();
 
@@ -46,11 +45,10 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
     fresh: true,
   });
 
-  const currentAvatar = user?.avatar
-    ? getIpfsUrl(user?.avatar)
-    : profile?.avatar
-      ? getIpfsUrl(profile.avatar)
-      : undefined;
+  // Get raw avatar URLs, convert IPFS URLs, and validate them
+  const rawCurrentAvatar = user?.avatar || profile?.avatar;
+  const currentAvatar = validateImageUrl(rawCurrentAvatar);
+  const safePreviewUrl = validateImageUrl(previewUrl);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -68,6 +66,8 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
       }
 
       setSelectedFile(file);
+      // Clear profile type selection when uploading a new file
+      setSelectedProfileType(null);
 
       // Create preview URL
       const url = URL.createObjectURL(file);
@@ -78,6 +78,7 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
 
   const handleRemovePreview = () => {
     setSelectedAvatar(currentAvatar || null);
+    setSelectedProfileType(null);
     setSelectedFile(null);
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl);
@@ -96,14 +97,58 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
 
     setIsSaving(true);
     try {
+      let fileToUpload: File | null = null;
+
       // If user uploaded a new file
       if (selectedFile) {
-        debug("Starting upload to IPFS", selectedFile);
+        fileToUpload = selectedFile;
+      } else if (selectedProfileType && selectedAvatar) {
+        // User selected from existing profile avatars
+        // Fetch the image from the URL and convert to blob
+        debug("Fetching image from social profile:", selectedAvatar);
+
+        try {
+          const response = await fetch(selectedAvatar);
+          if (!response.ok) {
+            throw new Error("Failed to fetch image");
+          }
+
+          const blob = await response.blob();
+          debug("Fetched blob with type:", blob.type);
+
+          // Determine the correct extension from the blob's MIME type
+          // This handles URLs without extensions (like Farcaster images)
+          const mimeToExtension: Record<string, string> = {
+            "image/jpeg": "jpg",
+            "image/jpg": "jpg",
+            "image/png": "png",
+            "image/gif": "gif",
+            "image/webp": "webp",
+            "image/svg+xml": "svg",
+          };
+
+          const extension = blob.type ? mimeToExtension[blob.type.toLowerCase()] || "jpg" : "jpg";
+          const mimeType = blob.type || `image/${extension}`;
+
+          fileToUpload = new File([blob], `avatar-${selectedProfileType}.${extension}`, { type: mimeType });
+
+          debug("Successfully converted social profile image to file with extension:", extension);
+        } catch (fetchError) {
+          debug("Error fetching social profile image:", fetchError);
+          toast.error("Failed to fetch profile image. Please try uploading manually.");
+          setIsSaving(false);
+          return;
+        }
+      }
+
+      // Upload to IPFS if we have a file
+      if (fileToUpload) {
+        debug("Starting upload to IPFS", fileToUpload);
 
         // Upload to IPFS using Thirdweb
         const ipfsUrl = await upload({
           client,
-          files: [selectedFile],
+          files: [fileToUpload],
         });
 
         debug("Upload successful", ipfsUrl);
@@ -121,23 +166,6 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
         setUser(user);
 
         toast.success("Looks great! Your avatar has been saved!");
-      } else if (selectedAvatar && selectedAvatar !== currentAvatar) {
-        // User selected from existing profile avatars
-        // Find the profile that matches the selected avatar
-        const selectedProfile = profile?.profiles?.find(p => p.avatar === selectedAvatar);
-
-        if (selectedProfile && selectedProfile.type) {
-          debug("Setting profile preference to:", selectedProfile.type);
-
-          // Set preference for this profile type
-          await setPreference(account.address, selectedProfile.type, account.address, async (message: string) => {
-            // Sign the message using the active account
-            const signature = await account.signMessage({ message });
-            return signature;
-          });
-
-          toast.success("Avatar updated successfully!");
-        }
       }
 
       // Refresh profile to get updated avatar
@@ -165,8 +193,15 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
     }
   };
 
-  const handleProfileAvatarSelect = (avatarUrl: string) => {
+  const handleProfileAvatarSelect = (avatarUrl: string, profileType: string) => {
     setSelectedAvatar(avatarUrl);
+    setSelectedProfileType(profileType);
+    // Clear any selected file since we're selecting from profile
+    setSelectedFile(null);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
   };
 
   const handleUploadImageClick = () => {
@@ -214,6 +249,8 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
       }
 
       setSelectedFile(file);
+      // Clear profile type selection when uploading a new file
+      setSelectedProfileType(null);
 
       // Create preview URL
       const url = URL.createObjectURL(file);
@@ -230,17 +267,22 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
     });
   };
 
-  const isLoading = isUploading || isSaving;
+  const isLoading = isSaving;
 
-  // Get profile avatars
+  // Get profile avatars with validated URLs
   const profileAvatars =
     profile?.profiles
       ?.filter(p => p.avatar)
-      .map(p => ({
-        type: p.type,
-        avatar: getIpfsUrl(p?.avatar || ""),
-        name: p.name || p.type,
-      })) || [];
+      .map(p => {
+        const rawAvatarUrl = p?.avatar || "";
+        const validatedUrl = validateImageUrl(rawAvatarUrl);
+        return {
+          type: p.type,
+          avatar: validatedUrl,
+          name: p.name || p.type,
+        };
+      })
+      .filter(p => p.avatar !== null) || []; // Filter out profiles with invalid avatars
 
   return (
     <div className={cn("flex w-full max-w-md flex-col bg-white", className)}>
@@ -254,13 +296,17 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
             {/* Avatar Preview */}
             <div className="relative mb-6">
               <div className="h-32 w-32 overflow-hidden rounded-full">
-                <img
-                  src={selectedAvatar || currentAvatar || "https://via.placeholder.com/128"}
-                  alt="Avatar preview"
-                  className="h-full w-full object-cover"
-                />
+                {safePreviewUrl || selectedAvatar || currentAvatar ? (
+                  <IPFSMediaRenderer
+                    src={safePreviewUrl || selectedAvatar || currentAvatar || ""}
+                    alt="Avatar preview"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="bg-b3-primary-wash h-full w-full" />
+                )}
               </div>
-              {selectedAvatar && (
+              {(selectedAvatar !== currentAvatar || selectedFile) && (
                 <button
                   onClick={handleRemovePreview}
                   className="absolute -right-1 -top-1 flex h-8 w-8 items-center justify-center rounded-full bg-[#51525c] text-white transition-colors hover:bg-[#71717a]"
@@ -288,37 +334,42 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
 
               {/* Profile Avatars */}
               <div className="mb-4 flex gap-3">
-                {profileAvatars.map((profileAvatar, index) => (
-                  <div
-                    key={index}
-                    className="relative"
-                    onMouseEnter={() => setHoveredProfile(profileAvatar.type)}
-                    onMouseLeave={() => setHoveredProfile(null)}
-                  >
-                    <button
-                      onClick={() => handleProfileAvatarSelect(profileAvatar.avatar)}
-                      className={cn(
-                        "h-16 w-16 overflow-hidden rounded-full border-2 transition-all",
-                        selectedAvatar === profileAvatar.avatar
-                          ? "border-[#3368ef] ring-2 ring-[#3368ef]/20"
-                          : "border-transparent hover:border-[#e4e4e7]",
-                      )}
-                    >
-                      <img
-                        src={profileAvatar.avatar}
-                        alt={`${profileAvatar.type} avatar`}
-                        className="h-full w-full object-cover"
-                      />
-                    </button>
+                {profileAvatars.map((profileAvatar, index) => {
+                  // Skip if avatar is null (should not happen due to filter, but TypeScript doesn't know that)
+                  if (!profileAvatar.avatar) return null;
 
-                    {/* Tooltip */}
-                    {hoveredProfile === profileAvatar.type && (
-                      <div className="absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#18181b] px-3 py-1.5 text-xs text-white">
-                        {profileAvatar.name}
-                      </div>
-                    )}
-                  </div>
-                ))}
+                  return (
+                    <div
+                      key={index}
+                      className="relative"
+                      onMouseEnter={() => setHoveredProfile(profileAvatar.type)}
+                      onMouseLeave={() => setHoveredProfile(null)}
+                    >
+                      <button
+                        onClick={() => handleProfileAvatarSelect(profileAvatar.avatar!, profileAvatar.type)}
+                        className={cn(
+                          "h-16 w-16 overflow-hidden rounded-full border-2 transition-all",
+                          selectedProfileType === profileAvatar.type
+                            ? "border-[#3368ef] ring-2 ring-[#3368ef]/20"
+                            : "border-transparent hover:border-[#e4e4e7]",
+                        )}
+                      >
+                        <img
+                          src={profileAvatar.avatar}
+                          alt={`${profileAvatar.type} avatar`}
+                          className="h-full w-full object-cover"
+                        />
+                      </button>
+
+                      {/* Tooltip */}
+                      {hoveredProfile === profileAvatar.type && (
+                        <div className="absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#18181b] px-3 py-1.5 text-xs text-white">
+                          {profileAvatar.name}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
 
               {/* Link More Account */}
@@ -369,7 +420,11 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
             ) : (
               <div className="mb-6 w-full">
                 <div className="aspect-square w-full overflow-hidden rounded-xl bg-[#f4f4f5]">
-                  <img src={previewUrl || ""} alt="Preview" className="h-full w-full object-cover" />
+                  {safePreviewUrl ? (
+                    <img src={safePreviewUrl} alt="Preview" className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="bg-b3-primary-wash h-full w-full" />
+                  )}
                 </div>
               </div>
             )}
@@ -392,7 +447,7 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
         </Button>
         <Button
           onClick={handleSaveChanges}
-          disabled={isLoading || !selectedAvatar}
+          disabled={isLoading || (!selectedFile && !selectedProfileType)}
           className="flex-1 rounded-xl bg-[#3368ef] text-white hover:bg-[#2952cc]"
         >
           {isLoading ? (
