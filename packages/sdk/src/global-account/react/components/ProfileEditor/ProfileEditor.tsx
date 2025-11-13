@@ -1,11 +1,12 @@
 "use client";
 
+import { Users } from "@b3dotfun/b3-api";
 import app from "@b3dotfun/sdk/global-account/app";
 import { Button, useB3, useProfile } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
-import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { getIpfsUrl } from "@b3dotfun/sdk/shared/utils/ipfs";
+import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { Check, Loader2, Upload, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
@@ -101,11 +102,12 @@ export function ProfileEditor({ onSuccess, className }: ProfileEditorProps) {
       }
 
       // Update user profile
-      let updatedUser = user;
+      let updatedUser = user as Users | undefined;
 
       // If both avatar and username need updating, do them sequentially
       // Update avatar first if uploaded
       if (ipfsUrl) {
+        // @ts-expect-error this resolved fine, look into why expect-error needed
         updatedUser = await app.service("users").setAvatar(
           {
             avatar: ipfsUrl,
@@ -116,19 +118,16 @@ export function ProfileEditor({ onSuccess, className }: ProfileEditorProps) {
       }
 
       // Update username if changed (this will use the updated user from avatar change if both were updated)
-      if (hasUsernameChange) {
-        updatedUser = await app.service("users").patch(
-          updatedUser?.userId || user?.userId,
-          {
-            username: username.trim(),
-          },
+      if (hasUsernameChange && user?._id) {
+        // @ts-expect-error this resolved fine, look into why expect-error needed
+        updatedUser = await app.service("users").registerUsername(
+          { username: username },
           // @ts-expect-error - our typed client is expecting context even though it's set elsewhere
           {},
         );
       }
 
       // Update user state
-      // @ts-expect-error this resolved fine, look into why expect-error needed
       setUser(updatedUser);
 
       // Refresh profile to get updated data
