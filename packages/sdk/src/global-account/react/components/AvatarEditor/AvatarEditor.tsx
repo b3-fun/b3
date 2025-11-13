@@ -346,7 +346,7 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
                       onMouseLeave={() => setHoveredProfile(null)}
                     >
                       <button
-                        onClick={() => handleProfileAvatarSelect(profileAvatar.avatar!, profileAvatar.type)}
+                        onClick={() => handleProfileAvatarSelect(profileAvatar.avatar || "", profileAvatar.type || "")}
                         className={cn(
                           "h-16 w-16 overflow-hidden rounded-full border-2 transition-all",
                           selectedProfileType === profileAvatar.type

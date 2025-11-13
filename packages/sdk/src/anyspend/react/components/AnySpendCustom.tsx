@@ -1237,8 +1237,6 @@ function AnySpendCustomInner({
   const cryptoPaymentMethodView = (
     <div className={cn("bg-as-surface-primary mx-auto w-[460px] max-w-full rounded-xl p-4")}>
       <CryptoPaymentMethod
-        globalAddress={currentWallet?.wallet?.address}
-        globalWallet={currentWallet?.wallet}
         selectedPaymentMethod={selectedCryptoPaymentMethod}
         setSelectedPaymentMethod={setSelectedCryptoPaymentMethod}
         isCreatingOrder={isCreatingOrder}

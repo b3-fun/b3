@@ -499,8 +499,6 @@ function AnySpendCustomExactInInner({
 
   const cryptoPaymentMethodView = (
     <CryptoPaymentMethod
-      globalAddress={globalAddress}
-      globalWallet={undefined}
       selectedPaymentMethod={selectedCryptoPaymentMethod}
       setSelectedPaymentMethod={setSelectedCryptoPaymentMethod}
       isCreatingOrder={isCreatingOrder}

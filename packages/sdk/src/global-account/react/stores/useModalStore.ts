@@ -432,8 +432,7 @@ export type ModalContentType =
   | AnySpendDepositHypeProps
   | AvatarEditorModalProps
   | DepositModalProps
-  | SendModalProps
-  | ProfileEditorModalProps;
+  | SendModalProps;
 // Add other modal types here like: | OtherModalProps | AnotherModalProps
 
 /**
