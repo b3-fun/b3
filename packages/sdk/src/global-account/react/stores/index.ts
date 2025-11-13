@@ -1,5 +1,6 @@
 export { useAuthStore } from "./useAuthStore";
 export { useModalStore } from "./useModalStore";
+export { useRecentAddressesStore } from "./useRecentAddressesStore";
 
 export type {
   AnySpendBuySpinProps,

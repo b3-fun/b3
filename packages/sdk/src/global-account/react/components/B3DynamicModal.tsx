@@ -19,10 +19,13 @@ import { useEffect, useRef } from "react";
 import { useSetActiveWallet } from "thirdweb/react";
 import { AvatarEditor } from "./AvatarEditor/AvatarEditor";
 import { useB3 } from "./B3Provider/useB3";
+import { Deposit } from "./Deposit/Deposit";
 import { LinkAccount } from "./LinkAccount/LinkAccount";
-import { ProfileEditor } from "./ProfileEditor/ProfileEditor";
+import { LinkNewAccount } from "./LinkAccount/LinkNewAccount";
 import { ManageAccount } from "./ManageAccount/ManageAccount";
+import { ProfileEditor } from "./ProfileEditor/ProfileEditor";
 import { RequestPermissions } from "./RequestPermissions/RequestPermissions";
+import { Send } from "./Send/Send";
 import { SignInWithB3Flow } from "./SignInWithB3/SignInWithB3Flow";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "./ui/dialog";
 import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "./ui/drawer";
@@ -30,7 +33,10 @@ import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "./ui/draw
 const debug = debugB3React("B3DynamicModal");
 
 export function B3DynamicModal() {
-  const { isOpen, setB3ModalOpen, contentType, history, navigateBack } = useModalStore();
+  const isOpen = useModalStore(state => state.isOpen);
+  const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
+  const contentType = useModalStore(state => state.contentType);
+  const navigateBack = useModalStore(state => state.navigateBack);
   const { theme } = useB3();
   const isMobile = useIsMobile();
   const prevIsOpenRef = useRef(isOpen);
@@ -64,7 +70,10 @@ export function B3DynamicModal() {
     "anySpendSignatureMint",
     "anySpendBondKit",
     "linkAccount",
+    "linkNewAccount",
     "avatarEditor",
+    "deposit",
+    "send",
     "profileEditor",
   ];
 
@@ -83,7 +92,7 @@ export function B3DynamicModal() {
 
   // Check if current content type is in freestyle types
   const isFreestyleType = freestyleTypes.includes(contentType?.type as string);
-  const hideCloseButton = isFreestyleType;
+  const hideCloseButton = true;
 
   // Build content class using cn utility
   // eslint-disable-next-line tailwindcss/no-custom-classname
@@ -121,7 +130,7 @@ export function B3DynamicModal() {
       case "anySpendFundTournament":
         return <AnySpendTournament {...contentType} mode="modal" action="fund" />;
       case "anySpendOrderHistory":
-        return <OrderHistory onBack={() => {}} mode="modal" />;
+        return <OrderHistory {...contentType} mode="modal" />;
       case "anySpendStakeB3":
         return <AnySpendStakeB3 {...contentType} mode="modal" />;
       case "anySpendStakeB3ExactIn":
@@ -138,10 +147,16 @@ export function B3DynamicModal() {
         return <AnySpendBondKit {...contentType} />;
       case "linkAccount":
         return <LinkAccount {...contentType} />;
+      case "linkNewAccount":
+        return <LinkNewAccount {...contentType} />;
       case "anySpendDepositHype":
         return <AnySpendDepositHype {...contentType} mode="modal" />;
       case "avatarEditor":
         return <AvatarEditor onSetAvatar={contentType.onSuccess} />;
+      case "deposit":
+        return <Deposit />;
+      case "send":
+        return <Send {...contentType} />;
       case "profileEditor":
         return <ProfileEditor onSuccess={contentType.onSuccess} />;
       // Add other modal types here
@@ -162,6 +177,12 @@ export function B3DynamicModal() {
           contentClass,
           "rounded-2xl bg-white shadow-xl dark:bg-gray-900",
           "border border-gray-200 dark:border-gray-800",
+          (contentType?.type === "manageAccount" ||
+            contentType?.type === "deposit" ||
+            contentType?.type === "send" ||
+            contentType?.type === "avatarEditor") &&
+            "p-0",
+          "mx-auto w-full max-w-md sm:max-w-lg", // TODO CHECK THIS
           // Remove default width classes for avatar editor and profile editor
           contentType?.type === "avatarEditor" || contentType?.type === "profileEditor"
             ? "!w-[90vw] !max-w-none" // Use !important to override default styles
@@ -171,8 +192,9 @@ export function B3DynamicModal() {
       >
         <ModalTitle className="sr-only hidden">{contentType?.type || "Modal"}</ModalTitle>
         <ModalDescription className="sr-only hidden">{contentType?.type || "Modal Body"}</ModalDescription>
+
         <div className={cn("no-scrollbar max-h-[90dvh] overflow-auto sm:max-h-[80dvh]")}>
-          {history.length > 0 && contentType?.showBackButton && (
+          {(!hideCloseButton || contentType?.showBackButton) && (
             <button
               onClick={navigateBack}
               className="flex items-center gap-2 px-6 py-4 text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
@@ -193,7 +215,7 @@ export function B3DynamicModal() {
                   strokeLinejoin="round"
                 />
               </svg>
-              <span className="text-sm font-medium">Back</span>
+              <span className="font-inter text-sm font-semibold">Back</span>
             </button>
           )}
           {renderContent()}

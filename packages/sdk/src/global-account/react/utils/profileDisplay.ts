@@ -71,6 +71,8 @@ export interface ExtendedProfileDetails {
   name?: string;
   username?: string;
   profileImageUrl?: string;
+  picture?: string; // Google OAuth uses 'picture' field
+  pfpUrl?: string; // Farcaster uses 'pfpUrl' field
 }
 
 export interface ExtendedProfile extends Omit<Profile, "details"> {
@@ -112,7 +114,7 @@ export function getProfileDisplayInfo(profile: ExtendedProfile): ProfileDisplayI
       displayInfo = {
         title: details.name || details.username || "Unknown",
         subtitle: details.username ? `@${details.username}` : "Farcaster Account",
-        imageUrl: validateImageUrl(details.profileImageUrl),
+        imageUrl: validateImageUrl(details.pfpUrl || details.profileImageUrl),
         initial: "F",
         type,
       };
@@ -121,7 +123,7 @@ export function getProfileDisplayInfo(profile: ExtendedProfile): ProfileDisplayI
       displayInfo = {
         title: details.name || details.email || "Unknown",
         subtitle: details.email || "Google Account",
-        imageUrl: validateImageUrl(details.profileImageUrl),
+        imageUrl: validateImageUrl(details.picture || details.profileImageUrl),
         initial: "G",
         type,
       };

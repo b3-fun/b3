@@ -1,4 +1,3 @@
-import { useB3 } from "@b3dotfun/sdk/global-account/react";
 import { motion } from "framer-motion";
 import { CreditCard, Shield, UserCircle, Wallet as WalletIcon } from "lucide-react";
 import type { Wallet } from "../utils/wallet";
@@ -25,9 +24,6 @@ const features = [
 ];
 
 export function Hero({ wallet }: { wallet: Wallet }) {
-  const { user } = useB3();
-  console.log("@@b3User", user);
-
   return (
     <>
       <Background />

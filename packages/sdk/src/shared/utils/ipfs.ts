@@ -1,6 +1,6 @@
 const IPFS_GATEWAYS = [
-  "https://ipfs.io/ipfs",
   "https://cloudflare-ipfs.com/ipfs",
+  "https://ipfs.io/ipfs",
   // Can add more gateways as needed
 ] as const;
 

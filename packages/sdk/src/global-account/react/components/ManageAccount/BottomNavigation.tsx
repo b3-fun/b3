@@ -1,18 +1,6 @@
-import {
-  ManageAccountModalProps,
-  TabsContentPrimitive,
-  TabsPrimitive,
-  useModalStore,
-} from "@b3dotfun/sdk/global-account/react";
-import { Chain } from "thirdweb";
+import { TabsListPrimitive, TabTriggerPrimitive, useModalStore } from "@b3dotfun/sdk/global-account/react";
 
-import BottomNavigation from "./BottomNavigation";
-import { HomeContent } from "./HomeContent";
-import SettingsContent from "./SettingsContent";
-
-type TabValue = "home" | "tokens" | "nfts" | "apps" | "settings" | "swap";
-
-const HomeIcon = ({ className, size = 24 }: { className?: string; size?: number }) => {
+const HomeIcon = () => {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path
@@ -25,7 +13,7 @@ const HomeIcon = ({ className, size = 24 }: { className?: string; size?: number 
   );
 };
 
-const SwapIcon = ({ className, size = 24 }: { className?: string; size?: number }) => {
+const SwapIcon = () => {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path
@@ -39,7 +27,7 @@ const SwapIcon = ({ className, size = 24 }: { className?: string; size?: number 
   );
 };
 
-const SettingsIcon = ({ className, size = 24 }: { className?: string; size?: number }) => {
+const SettingsIcon = () => {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path
@@ -52,68 +40,44 @@ const SettingsIcon = ({ className, size = 24 }: { className?: string; size?: num
   );
 };
 
-interface ManageAccountProps {
-  onLogout?: () => void;
-  onSwap?: () => void;
-  onDeposit?: () => void;
-  onViewProfile?: () => void;
-  chain: Chain;
-  partnerId: string;
-  containerClassName?: string;
-  showSwap?: boolean;
-  showDeposit?: boolean;
-}
-
-export function ManageAccount({
-  onLogout,
-  onSwap: _onSwap,
-  onDeposit: _onDeposit,
-  chain,
-  partnerId,
-  showSwap,
-  showDeposit,
-}: ManageAccountProps) {
-  const contentType = useModalStore(state => state.contentType);
-  const { activeTab = "home", setActiveTab } = contentType as ManageAccountModalProps;
+const BottomNavigation = () => {
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
+
   return (
-    <div className="b3-manage-account flex-1">
-      <TabsPrimitive
-        defaultValue={activeTab}
-        onValueChange={value => {
-          const tab = value as TabValue;
-          if (tab === "swap") {
+    <div className="sticky bottom-0 left-0 w-full rounded-b-xl border-t border-gray-200 bg-[#FAFAFA]">
+      <TabsListPrimitive className="flex h-[68px] w-full items-center justify-center gap-4 border-none bg-transparent">
+        <TabTriggerPrimitive
+          value="home"
+          className="data-[state=active]:border-b3-primary-blue group flex flex-initial flex-col items-center gap-1 border-r-0 border-t-0 px-6 pb-2 pt-2.5 text-[#a0a0ab] data-[state=active]:border-t-4 data-[state=active]:text-[#18181B]"
+        >
+          <HomeIcon />
+          <span className="text-b3-grey font-neue-montreal-semibold text-xs">Home</span>
+        </TabTriggerPrimitive>
+
+        <TabTriggerPrimitive
+          value="swap"
+          className="data-[state=active]:border-b3-primary-blue group flex flex-initial flex-col items-center gap-1 border-r-0 border-t-0 px-6 pb-2 pt-2.5 text-[#a0a0ab] data-[state=active]:border-t-4 data-[state=active]:text-[#18181B]"
+          onClick={() => {
             setB3ModalContentType({
               type: "anySpend",
               showBackButton: true,
             });
-          } else if (["home", "tokens", "nfts", "apps", "settings"].includes(tab)) {
-            setActiveTab?.(tab);
-          }
-        }}
-      >
-        <div className="p-0">
-          <TabsContentPrimitive value="home" className="px-0 pb-4 pt-2">
-            <HomeContent showDeposit={showDeposit} showSwap={showSwap} />
-          </TabsContentPrimitive>
+          }}
+        >
+          <SwapIcon />
+          <span className="text-b3-grey font-neue-montreal-semibold text-xs">Swap</span>
+        </TabTriggerPrimitive>
 
-          {/* <TabsContentPrimitive value="tokens" className="px-0 pb-4 pt-2">
-            <ContentTokens activeTab={activeTab} />
-          </TabsContentPrimitive> */}
-
-          {/* <TabsContentPrimitive value="apps" className="px-4 pb-4 pt-2">
-            <AppsContent chain={chain} partnerId={partnerId} />
-          </TabsContentPrimitive> */}
-
-          {/* Swap tab content is handled by modal, so this is empty */}
-          <TabsContentPrimitive value="swap" className="hidden" />
-
-          <TabsContentPrimitive value="settings" className="pb-4 pt-2">
-            <SettingsContent partnerId={partnerId} onLogout={onLogout} chain={chain} />
-          </TabsContentPrimitive>
-        </div>
-        <BottomNavigation />
-      </TabsPrimitive>
+        <TabTriggerPrimitive
+          value="settings"
+          className="data-[state=active]:border-b3-primary-blue group flex flex-initial flex-col items-center gap-1 border-r-0 border-t-0 px-6 pb-2 pt-2.5 text-[#a0a0ab] data-[state=active]:border-t-4 data-[state=active]:text-[#18181B]"
+        >
+          <SettingsIcon />
+          <span className="text-b3-grey font-neue-montreal-semibold text-xs">Settings</span>
+        </TabTriggerPrimitive>
+      </TabsListPrimitive>
     </div>
   );
-}
+};
+
+export default BottomNavigation;

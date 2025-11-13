@@ -82,9 +82,9 @@ export interface ManageAccountModalProps extends BaseModalProps {
   /** Partner ID */
   partnerId: string;
   /** Active Tab */
-  activeTab?: "overview" | "tokens" | "nfts" | "apps" | "settings";
+  activeTab?: "home" | "tokens" | "nfts" | "apps" | "settings" | "swap";
   /** Function to set the active tab */
-  setActiveTab?: (tab: "overview" | "tokens" | "nfts" | "apps" | "settings") => void;
+  setActiveTab?: (tab: "home" | "tokens" | "nfts" | "apps" | "settings" | "swap") => void;
   /** Whether to show the referral information */
   showReferralInfo?: boolean;
   /** Whether to show the swap button */
@@ -345,6 +345,16 @@ export interface LinkAccountModalProps extends BaseModalProps {
   chain: Chain;
 }
 
+export interface LinkNewAccountModalProps extends BaseModalProps {
+  type: "linkNewAccount";
+  showBackButton?: boolean;
+  onSuccess?: () => void;
+  onError?: (error: Error) => void;
+  onClose?: () => void;
+  partnerId: string;
+  chain: Chain;
+}
+
 export interface AnySpendDepositHypeProps extends BaseModalProps {
   /** Modal type identifier */
   type: "anySpendDepositHype";
@@ -381,6 +391,30 @@ export interface ProfileEditorModalProps extends BaseModalProps {
 }
 
 /**
+ * Props for the Deposit modal
+ * Allows users to deposit tokens into their global account
+ */
+export interface DepositModalProps extends BaseModalProps {
+  /** Modal type identifier */
+  type: "deposit";
+  /** Callback function called when deposit is successful */
+  onSuccess?: () => void;
+}
+
+/**
+ * Props for the Send modal
+ * Allows users to send tokens from their global account to another address
+ */
+export interface SendModalProps extends BaseModalProps {
+  /** Modal type identifier */
+  type: "send";
+  /** Pre-filled recipient address (optional) */
+  recipientAddress?: string;
+  /** Callback function called when send is successful */
+  onSuccess?: (txHash?: string) => void;
+}
+
+/**
  * Union type of all possible modal content types
  */
 export type ModalContentType =
@@ -401,8 +435,11 @@ export type ModalContentType =
   | AnySpendSignatureMintProps
   | AnySpendBondKitProps
   | LinkAccountModalProps
+  | LinkNewAccountModalProps
   | AnySpendDepositHypeProps
   | AvatarEditorModalProps
+  | DepositModalProps
+  | SendModalProps
   | ProfileEditorModalProps;
 // Add other modal types here like: | OtherModalProps | AnotherModalProps
 

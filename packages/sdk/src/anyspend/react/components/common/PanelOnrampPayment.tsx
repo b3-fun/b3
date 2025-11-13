@@ -150,7 +150,7 @@ function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-[460px] flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-[460px] flex-col gap-6 px-5">
       {/* Order Summary Section */}
       <>
         <h2 className="-mb-3 text-lg font-semibold">Order summary</h2>
