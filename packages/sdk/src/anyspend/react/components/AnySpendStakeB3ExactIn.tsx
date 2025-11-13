@@ -48,15 +48,19 @@ const STAKE_FUNCTION_ABI = JSON.stringify([
 export function AnySpendStakeB3ExactIn({
   loadOrder,
   mode = "modal",
+  sourceTokenAddress,
+  sourceTokenChainId,
   recipientAddress,
   stakeAmount,
   onSuccess,
 }: {
   loadOrder?: string;
   mode?: "modal" | "page";
+  sourceTokenAddress?: string;
+  sourceTokenChainId?: number;
   recipientAddress: string;
   stakeAmount?: string;
-  onSuccess?: () => void;
+  onSuccess?: (amount: string) => void;
 }) {
   const hasMounted = useHasMounted();
   const { setB3ModalOpen } = useModalStore();
@@ -489,7 +493,7 @@ export function AnySpendStakeB3ExactIn({
             <Button
               onClick={() => {
                 setB3ModalOpen(false);
-                onSuccess?.();
+                onSuccess?.(formatTokenAmount(BigInt(userStakeAmount), 18) ?? "");
               }}
               className="bg-as-brand hover:bg-as-brand/90 text-as-primary h-14 w-full rounded-xl text-lg font-medium"
             >
@@ -506,6 +510,8 @@ export function AnySpendStakeB3ExactIn({
       loadOrder={loadOrder}
       mode={mode}
       recipientAddress={recipientAddress}
+      sourceTokenAddress={sourceTokenAddress}
+      sourceTokenChainId={sourceTokenChainId}
       destinationToken={B3_TOKEN}
       destinationChainId={base.id}
       customExactInConfig={customExactInConfig}

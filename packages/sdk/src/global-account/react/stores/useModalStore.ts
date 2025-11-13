@@ -373,6 +373,13 @@ export interface AvatarEditorModalProps extends BaseModalProps {
   onSuccess?: () => void;
 }
 
+export interface ProfileEditorModalProps extends BaseModalProps {
+  /** Modal type identifier */
+  type: "profileEditor";
+  /** Callback function called when profile is successfully updated */
+  onSuccess?: () => void;
+}
+
 /**
  * Union type of all possible modal content types
  */
@@ -395,7 +402,8 @@ export type ModalContentType =
   | AnySpendBondKitProps
   | LinkAccountModalProps
   | AnySpendDepositHypeProps
-  | AvatarEditorModalProps;
+  | AvatarEditorModalProps
+  | ProfileEditorModalProps;
 // Add other modal types here like: | OtherModalProps | AnotherModalProps
 
 /**

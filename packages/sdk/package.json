@@ -1,6 +1,6 @@
 {
   "name": "@b3dotfun/sdk",
-  "version": "0.0.62",
+  "version": "0.0.64",
   "source": "src/index.ts",
   "main": "./dist/cjs/index.js",
   "react-native": "./dist/cjs/index.native.js",
@@ -306,7 +306,7 @@
     "test:ui": "vitest --ui"
   },
   "dependencies": {
-    "@b3dotfun/b3-api": "0.0.77",
+    "@b3dotfun/b3-api": "0.0.84",
     "@b3dotfun/basement-api": "0.0.11",
     "@feathersjs/authentication-client": "5.0.33",
     "@feathersjs/feathers": "5.0.33",
@@ -382,7 +382,7 @@
     "postcss-prefix-selector": "^2.1.1",
     "tailwindcss": "3.4.1",
     "tailwindcss-animate": "^1.0.7",
-    "thirdweb": "5.111.3",
+    "thirdweb": "5.112.0",
     "tsc-alias": "^1.8.16",
     "tsc-watch": "^7.1.1",
     "vitest": "^3.2.4"
@@ -405,7 +405,7 @@
     "react": "^18.0.0 || ^19.0.0",
     "react-dom": "^18.0.0 || ^19.0.0",
     "react-native-mmkv": "^3.2.0",
-    "thirdweb": "5.111.3",
+    "thirdweb": "5.112.0",
     "three": "^0.175.0",
     "viem": "2.37.9",
     "wagmi": "2.16.9"
