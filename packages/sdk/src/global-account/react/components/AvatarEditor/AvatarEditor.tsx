@@ -37,6 +37,7 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
     fresh: true,
   });
 
+  // Thirdweb upload function
   const hasAvatar = profile?.avatar;
   const trimmedUsername = usernameState.value.trim();
   const hasUsernameChange = trimmedUsername !== usernameState.original.trim();
@@ -227,10 +228,6 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
       if (shouldUpdateUsername) {
         usernameUpdated = await updateUsername(normalizedUsername);
         if (!usernameUpdated) {
-          if (avatarUpdated) {
-            await refreshProfile();
-            onSetAvatar?.();
-          }
           return;
         }
       }
