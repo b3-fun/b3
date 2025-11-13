@@ -50,7 +50,7 @@ export function BalanceContent({ onLogout, showDeposit = true, showSwap = true }
 
   const avatarUrl = user?.avatar ? getIpfsUrl(user?.avatar) : profile?.avatar;
 
-  const handleEditAvatar = () => {
+  const handleEditProfile = () => {
     setB3ModalOpen(true);
     setB3ModalContentType({
       type: "avatarEditor",
@@ -125,7 +125,7 @@ export function BalanceContent({ onLogout, showDeposit = true, showSwap = true }
               <div className="bg-b3-primary-wash size-24 rounded-full" />
             )}
             <button
-              onClick={handleEditAvatar}
+                onClick={handleEditProfile}
               className="bg-b3-grey border-b3-background hover:bg-b3-grey/80 absolute -bottom-1 -right-1 flex size-8 items-center justify-center rounded-full border-4 transition-colors"
             >
               <Pencil size={16} className="text-b3-background" />
