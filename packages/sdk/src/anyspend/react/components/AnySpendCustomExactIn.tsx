@@ -8,8 +8,7 @@ import { ArrowDown, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect, useMemo, useRef } from "react";
 import { toast } from "sonner";
-import { useActiveWallet, useSetActiveWallet } from "thirdweb/react";
-import { useGlobalWalletState } from "../../utils";
+import { useSetActiveWallet } from "thirdweb/react";
 import { PanelView, useAnyspendFlow } from "../hooks/useAnyspendFlow";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
 import { CryptoPaySection } from "./common/CryptoPaySection";
@@ -145,19 +144,16 @@ function AnySpendCustomExactInInner({
 
   const { connectedEOAWallet } = useAccountWallet();
   const setActiveWallet = useSetActiveWallet();
-  const activeWallet = useActiveWallet();
-  const setGlobalAccountWallet = useGlobalWalletState(state => state.setGlobalAccountWallet);
   const appliedPreferEoa = useRef(false);
 
   useEffect(() => {
     if (preferEoa && !appliedPreferEoa.current) {
       if (connectedEOAWallet) {
         appliedPreferEoa.current = true;
-        setGlobalAccountWallet(activeWallet);
         setActiveWallet(connectedEOAWallet);
       }
     }
-  }, [preferEoa, connectedEOAWallet, setActiveWallet, activeWallet, setGlobalAccountWallet]);
+  }, [preferEoa, connectedEOAWallet, setActiveWallet]);
 
   const selectedRecipientOrDefault = selectedRecipientAddress ?? recipientAddress;
 

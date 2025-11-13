@@ -48,18 +48,6 @@ export function useAuthentication(partnerId: string) {
   const { switchAccount } = useSwitchAccount();
   debug("@@activeWagmiAccount", activeWagmiAccount);
 
-  // Check localStorage version and clear if not found or mismatched
-  useEffect(() => {
-    if (typeof localStorage !== "undefined") {
-      const version = localStorage.getItem("version");
-      if (version !== "1") {
-        debug("@@localStorage:clearing due to version mismatch", { version });
-        localStorage.clear();
-        localStorage.setItem("version", "1");
-      }
-    }
-  }, []);
-
   const wallet = ecosystemWallet(ecosystemWalletId, {
     partnerId: partnerId,
   });

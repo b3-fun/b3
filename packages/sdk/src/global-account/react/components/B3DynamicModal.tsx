@@ -12,8 +12,7 @@ import {
 import { AnySpendDepositHype } from "@b3dotfun/sdk/anyspend/react/components/AnyspendDepositHype";
 import { AnySpendStakeUpside } from "@b3dotfun/sdk/anyspend/react/components/AnySpendStakeUpside";
 import { AnySpendStakeUpsideExactIn } from "@b3dotfun/sdk/anyspend/react/components/AnySpendStakeUpsideExactIn";
-import { useGlobalWalletState } from "@b3dotfun/sdk/anyspend/utils";
-import { useIsMobile, useModalStore } from "@b3dotfun/sdk/global-account/react";
+import { useGlobalAccount, useIsMobile, useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { useEffect, useRef } from "react";
@@ -24,6 +23,7 @@ import { Deposit } from "./Deposit/Deposit";
 import { LinkAccount } from "./LinkAccount/LinkAccount";
 import { LinkNewAccount } from "./LinkAccount/LinkNewAccount";
 import { ManageAccount } from "./ManageAccount/ManageAccount";
+import { ProfileEditor } from "./ProfileEditor/ProfileEditor";
 import { RequestPermissions } from "./RequestPermissions/RequestPermissions";
 import { Send } from "./Send/Send";
 import { SignInWithB3Flow } from "./SignInWithB3/SignInWithB3Flow";
@@ -40,22 +40,19 @@ export function B3DynamicModal() {
   const { theme } = useB3();
   const isMobile = useIsMobile();
   const prevIsOpenRef = useRef(isOpen);
-
-  const globalAccountWallet = useGlobalWalletState(state => state.globalAccountWallet);
-  const setGlobalAccountWallet = useGlobalWalletState(state => state.setGlobalAccountWallet);
+  const { wallet } = useGlobalAccount();
   const setActiveWallet = useSetActiveWallet();
 
   // anyspend cleanup global account chnages by setting account back
   useEffect(() => {
     if (prevIsOpenRef.current && !isOpen) {
-      if (globalAccountWallet) {
-        setActiveWallet(globalAccountWallet);
-        setGlobalAccountWallet(undefined);
+      if (wallet) {
+        setActiveWallet(wallet);
       }
     }
 
     prevIsOpenRef.current = isOpen;
-  }, [isOpen, globalAccountWallet, setActiveWallet, setGlobalAccountWallet]);
+  }, [isOpen, wallet, setActiveWallet]);
 
   // Define arrays for different modal type groups
   const fullWidthTypes = [
@@ -77,6 +74,7 @@ export function B3DynamicModal() {
     "avatarEditor",
     "deposit",
     "send",
+    "profileEditor",
   ];
 
   const freestyleTypes = [
@@ -159,6 +157,8 @@ export function B3DynamicModal() {
         return <Deposit />;
       case "send":
         return <Send {...contentType} />;
+      case "profileEditor":
+        return <ProfileEditor onSuccess={contentType.onSuccess} />;
       // Add other modal types here
       default:
         return null;
@@ -182,7 +182,11 @@ export function B3DynamicModal() {
             contentType?.type === "send" ||
             contentType?.type === "avatarEditor") &&
             "p-0",
-          "mx-auto w-full max-w-md sm:max-w-lg",
+          "mx-auto w-full max-w-md sm:max-w-lg", // TODO CHECK THIS
+          // Remove default width classes for avatar editor and profile editor
+          contentType?.type === "avatarEditor" || contentType?.type === "profileEditor"
+            ? "!w-[90vw] !max-w-none" // Use !important to override default styles
+            : "mx-auto w-full max-w-md sm:max-w-lg",
         )}
         hideCloseButton={hideCloseButton}
       >
@@ -217,8 +221,7 @@ export function B3DynamicModal() {
           {renderContent()}
         </div>
       </ModalContent>
-
-      {contentType?.type === "avatarEditor" && (
+      {(contentType?.type === "avatarEditor" || contentType?.type === "profileEditor") && (
         <button
           onClick={() => setB3ModalOpen(false)}
           className="fixed right-5 top-5 z-[100] cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"

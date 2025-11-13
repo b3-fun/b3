@@ -383,6 +383,13 @@ export interface AvatarEditorModalProps extends BaseModalProps {
   onSuccess?: () => void;
 }
 
+export interface ProfileEditorModalProps extends BaseModalProps {
+  /** Modal type identifier */
+  type: "profileEditor";
+  /** Callback function called when profile is successfully updated */
+  onSuccess?: () => void;
+}
+
 /**
  * Props for the Deposit modal
  * Allows users to deposit tokens into their global account
@@ -432,7 +439,8 @@ export type ModalContentType =
   | AnySpendDepositHypeProps
   | AvatarEditorModalProps
   | DepositModalProps
-  | SendModalProps;
+  | SendModalProps
+  | ProfileEditorModalProps;
 // Add other modal types here like: | OtherModalProps | AnotherModalProps
 
 /**

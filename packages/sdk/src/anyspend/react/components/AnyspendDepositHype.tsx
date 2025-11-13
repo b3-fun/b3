@@ -6,7 +6,7 @@ import invariant from "invariant";
 import { motion } from "motion/react";
 import { useEffect, useMemo, useRef } from "react";
 import { toast } from "sonner";
-import { useActiveWallet, useSetActiveWallet } from "thirdweb/react";
+import { useSetActiveWallet } from "thirdweb/react";
 import { base } from "viem/chains";
 import { PanelView, useAnyspendFlow } from "../hooks/useAnyspendFlow";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
@@ -20,7 +20,6 @@ import { PointsDetailPanel } from "./common/PointsDetailPanel";
 import { RecipientSelection } from "./common/RecipientSelection";
 
 import { ArrowDown, Loader2 } from "lucide-react";
-import { useGlobalWalletState } from "../../utils";
 import { PanelOnramp } from "./common/PanelOnramp";
 
 const SLIPPAGE_PERCENT = 3;
@@ -119,19 +118,16 @@ function AnySpendDepositHypeInner({
 
   const { connectedEOAWallet: connectedEOAWallet } = useAccountWallet();
   const setActiveWallet = useSetActiveWallet();
-  const activeWallet = useActiveWallet();
-  const setGlobalAccountWallet = useGlobalWalletState(state => state.setGlobalAccountWallet);
   const appliedPreferEoa = useRef(false);
 
   useEffect(() => {
     if (preferEoa && !appliedPreferEoa.current) {
       if (connectedEOAWallet) {
         appliedPreferEoa.current = true;
-        setGlobalAccountWallet(activeWallet);
         setActiveWallet(connectedEOAWallet);
       }
     }
-  }, [preferEoa, connectedEOAWallet, setActiveWallet, activeWallet, setGlobalAccountWallet]);
+  }, [preferEoa, connectedEOAWallet, setActiveWallet]);
 
   // Button state logic
   const btnInfo: { text: string; disable: boolean; error: boolean; loading: boolean } = useMemo(() => {

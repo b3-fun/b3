@@ -1,4 +1,67 @@
+import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { type Profile } from "thirdweb/wallets";
+
+const debug = debugB3React("profileDisplay");
+
+/**
+ * Validates that an image URL uses an allowed schema
+ * @param url - The URL to validate
+ * @returns The URL if valid, null otherwise
+ */
+export function validateImageUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+
+  try {
+    // For blob URLs (from createObjectURL)
+    if (url.startsWith("blob:")) {
+      return url;
+    }
+
+    // For IPFS protocol URLs
+    if (url.startsWith("ipfs://")) {
+      return url;
+    }
+
+    // Parse URL to validate protocol and hostname
+    const parsedUrl = new URL(url);
+
+    // Only allow http and https protocols
+    if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
+      debug("Rejected unsafe protocol:", parsedUrl.protocol, url);
+      return null;
+    }
+
+    // Whitelist of allowed IPFS gateway hostnames
+    const allowedIpfsGateways = [
+      "ipfs.io",
+      "gateway.pinata.cloud",
+      "cloudflare-ipfs.com",
+      "dweb.link",
+      "nftstorage.link",
+      "w3s.link",
+    ];
+
+    // Check if hostname matches allowed IPFS gateways
+    const hostname = parsedUrl.hostname.toLowerCase();
+    const isAllowedIpfsGateway = allowedIpfsGateways.some(gateway => {
+      // Exact match or subdomain of the gateway
+      return hostname === gateway || hostname.endsWith(`.${gateway}`);
+    });
+
+    if (isAllowedIpfsGateway) {
+      return url;
+    }
+
+    // For standard HTTP(S) URLs from trusted sources
+    // Add additional hostname validation here if needed
+    // For now, allow all HTTP(S) URLs (can be restricted further if needed)
+    return url;
+  } catch (error) {
+    // Invalid URL format
+    debug("Invalid image URL format:", url, error);
+    return null;
+  }
+}
 
 export interface ExtendedProfileDetails {
   id?: string;
@@ -42,7 +105,7 @@ export function getProfileDisplayInfo(profile: ExtendedProfile): ProfileDisplayI
       displayInfo = {
         title: details.name || details.username || "Unknown",
         subtitle: details.username ? `@${details.username}` : "X Account",
-        imageUrl: details.profileImageUrl || null,
+        imageUrl: validateImageUrl(details.profileImageUrl),
         initial: "X",
         type,
       };
@@ -51,7 +114,7 @@ export function getProfileDisplayInfo(profile: ExtendedProfile): ProfileDisplayI
       displayInfo = {
         title: details.name || details.username || "Unknown",
         subtitle: details.username ? `@${details.username}` : "Farcaster Account",
-        imageUrl: details.pfpUrl || details.profileImageUrl || null,
+        imageUrl: validateImageUrl(details.pfpUrl || details.profileImageUrl),
         initial: "F",
         type,
       };
@@ -60,7 +123,7 @@ export function getProfileDisplayInfo(profile: ExtendedProfile): ProfileDisplayI
       displayInfo = {
         title: details.name || details.email || "Unknown",
         subtitle: details.email || "Google Account",
-        imageUrl: details.picture || details.profileImageUrl || null,
+        imageUrl: validateImageUrl(details.picture || details.profileImageUrl),
         initial: "G",
         type,
       };
@@ -69,7 +132,7 @@ export function getProfileDisplayInfo(profile: ExtendedProfile): ProfileDisplayI
       displayInfo = {
         title: details.username || details.name || "Unknown",
         subtitle: "Discord Account",
-        imageUrl: details.profileImageUrl || null,
+        imageUrl: validateImageUrl(details.profileImageUrl),
         initial: "D",
         type,
       };

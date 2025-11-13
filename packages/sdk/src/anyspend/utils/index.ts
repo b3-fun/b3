@@ -1,4 +1,3 @@
-export * from "./accountStore";
 export * from "./address";
 export * from "./chain";
 export * from "./format";
