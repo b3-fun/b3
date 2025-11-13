@@ -165,25 +165,23 @@ export function ProfileEditor({ onSuccess, className }: ProfileEditorProps) {
     <div className={cn("flex flex-col items-center justify-center space-y-6 p-8", className)}>
       <div className="space-y-2 text-center">
         <h2 className="font-neue-montreal-semibold text-b3-grey text-2xl">Edit Your Profile</h2>
-        <p className="text-b3-foreground-muted font-neue-montreal-medium">
-          Update your avatar and username
-        </p>
+        <p className="text-b3-foreground-muted font-neue-montreal-medium">Update your avatar and username</p>
       </div>
 
       {/* Avatar Section */}
       <div className="w-full max-w-md space-y-4">
         <div className="space-y-2">
           <label className="text-b3-grey font-neue-montreal-semibold text-sm">Avatar</label>
-          
+
           {/* Current/Preview Avatar */}
           <div className="flex justify-center">
             {previewUrl || avatarUrl ? (
               <div className="relative">
                 <div className="border-b3-primary-blue h-32 w-32 overflow-hidden rounded-full border-4">
-                  <img 
-                    src={previewUrl || avatarUrl} 
-                    alt={previewUrl ? "Preview" : "Current avatar"} 
-                    className="h-full w-full object-cover" 
+                  <img
+                    src={previewUrl || avatarUrl}
+                    alt={previewUrl ? "Preview" : "Current avatar"}
+                    className="h-full w-full object-cover"
                   />
                 </div>
                 {previewUrl && (
@@ -203,25 +201,14 @@ export function ProfileEditor({ onSuccess, className }: ProfileEditorProps) {
 
           {/* Upload Button */}
           {!selectedFile && (
-            <Button
-              variant="outline"
-              onClick={handleFileInputClick}
-              disabled={isLoading}
-              className="w-full"
-            >
+            <Button variant="outline" onClick={handleFileInputClick} disabled={isLoading} className="w-full">
               <Upload className="mr-2 h-4 w-4" />
               {hasAvatar ? "Change Avatar" : "Upload Avatar"}
             </Button>
           )}
 
           {/* Hidden file input */}
-          <input 
-            ref={fileInputRef} 
-            type="file" 
-            accept="image/*" 
-            onChange={handleFileSelect} 
-            className="hidden" 
-          />
+          <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
         </div>
 
         {/* Username Section */}
@@ -233,15 +220,13 @@ export function ProfileEditor({ onSuccess, className }: ProfileEditorProps) {
             id="username"
             type="text"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={e => setUsername(e.target.value)}
             placeholder={currentUsername || "Enter username"}
-            className="border-b3-line bg-b3-background text-b3-grey placeholder:text-b3-foreground-muted w-full rounded-lg border px-4 py-3 font-neue-montreal-medium transition-colors focus:border-b3-primary-blue focus:outline-none"
+            className="border-b3-line bg-b3-background text-b3-grey placeholder:text-b3-foreground-muted font-neue-montreal-medium focus:border-b3-primary-blue w-full rounded-lg border px-4 py-3 transition-colors focus:outline-none"
             disabled={isLoading}
           />
           {currentUsername && (
-            <p className="text-b3-foreground-muted font-neue-montreal-medium text-xs">
-              Current: {currentUsername}
-            </p>
+            <p className="text-b3-foreground-muted font-neue-montreal-medium text-xs">Current: {currentUsername}</p>
           )}
         </div>
       </div>
