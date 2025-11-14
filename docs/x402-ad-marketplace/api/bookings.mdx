@@ -1,0 +1,245 @@
+---
+title: Your Ad Campaigns
+description: 'Track your bookings and see what time slots are available'
+---
+
+## View Your Campaigns
+
+See all your ad bookings and track performance.
+
+### API Endpoint
+
+```
+GET https://x402.anyspend.com/ads/bookings/buyer/:address
+```
+
+Replace `:address` with your wallet address.
+
+### Try It
+
+```bash
+curl "https://x402.anyspend.com/ads/bookings/buyer/0xYourWalletAddress"
+```
+
+### Example Response
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "bookingId": "booking_xyz789",
+      "siteId": "abc123",
+      "slotType": "banner",
+      "startTime": "2024-02-01T10:00:00.000Z",
+      "endTime": "2024-02-01T13:00:00.000Z",
+      "adContent": {
+        "imageUrl": "https://mysite.com/ad.png",
+        "linkUrl": "https://mysite.com/landing",
+        "altText": "My Product"
+      },
+      "totalPrice": "3000000",
+      "status": "active",
+      "paymentTxHash": "0xabcdef...",
+      "createdAt": "2024-01-22T16:30:00.000Z"
+    }
+  ]
+}
+```
+
+## Campaign Status
+
+Your ads can have these statuses:
+
+<Tabs>
+  <Tab title="Active">
+    **Currently Running** ✅
+    
+    Your ad is live and being displayed right now.
+    
+    `startTime <= now < endTime`
+  </Tab>
+  
+  <Tab title="Pending">
+    **Scheduled** 🕐
+    
+    Your ad is booked and will go live at the scheduled time.
+    
+    `startTime > now`
+  </Tab>
+  
+  <Tab title="Completed">
+    **Finished** ✔️
+    
+    Your ad campaign has ended.
+    
+    `endTime <= now`
+  </Tab>
+</Tabs>
+
+## Check Slot Availability
+
+Before booking, see what time slots are already taken.
+
+### API Endpoint
+
+```
+GET https://x402.anyspend.com/ads/bookings/slot/:slotId
+```
+
+### Try It
+
+```bash
+curl "https://x402.anyspend.com/ads/bookings/slot/slot_banner_abc123"
+```
+
+This shows **all bookings** for that slot - past, present, and future.
+
+### Use This To:
+
+- ✅ See when a slot is available
+- ✅ Avoid booking conflicts
+- ✅ Plan your campaign timing
+- ✅ Check competitor activity
+
+## Understanding Your Booking
+
+Each booking includes:
+
+### Basic Info
+- **Booking ID** - Your unique campaign identifier
+- **Site** - Where your ad appears
+- **Slot Type** - Banner, Sidebar, or Leaderboard
+- **Status** - Active, Pending, or Completed
+
+### Timing
+- **Start Time** - When ad goes live (UTC timezone)
+- **End Time** - When ad campaign ends
+- **Duration** - Total hours booked
+
+### Ad Content
+- **Image URL** - Your ad creative
+- **Link URL** - Where clicks go
+- **Alt Text** - Description (optional)
+
+### Payment
+- **Total Price** - Amount paid in USDC
+- **Transaction Hash** - Blockchain proof of payment
+- **Payment Network** - Base L2
+
+## Campaign Dashboard
+
+In the [marketplace app](https://explorer.b3.fun/apps/x402-ad-marketplace), go to the **"My Ads Bookings"** tab to see:
+
+- 📊 All your campaigns in one place
+- 🕐 Active vs scheduled vs completed
+- 🔗 Quick links to your landing pages
+- 💰 Total spend across all campaigns
+- 📍 Sites where you're advertising
+
+## Tips for Managing Campaigns
+
+<AccordionGroup>
+  <Accordion title="Track Your Bookings">
+    Save your booking IDs and transaction hashes for your records.
+  </Accordion>
+  
+  <Accordion title="Plan Ahead">
+    Check availability before your preferred times get booked by others.
+  </Accordion>
+  
+  <Accordion title="Monitor Performance">
+    Use UTM parameters in your link URL to track clicks:
+    
+    ```
+    https://yoursite.com/landing?utm_source=cryptonews&utm_medium=banner
+    ```
+  </Accordion>
+  
+  <Accordion title="Stagger Your Ads">
+    Instead of running 24 hours straight, try running at peak times across multiple days.
+  </Accordion>
+</AccordionGroup>
+
+## Calculate Your ROI
+
+Track these metrics to measure success:
+
+1. **Total Spend** - Sum of all booking costs
+2. **Clicks** - Use UTM tracking in your URLs
+3. **Conversions** - Sign-ups, purchases, etc.
+4. **Cost Per Click** - Total spend ÷ clicks
+5. **Cost Per Acquisition** - Total spend ÷ conversions
+
+### Example
+
+```
+Campaign: DeFi protocol banner ad
+Duration: 12 hours
+Cost: 12 USDC (12 × 1 USDC)
+Clicks: 450
+Signups: 45
+
+Cost per click: 12 ÷ 450 = $0.027
+Cost per signup: 12 ÷ 45 = $0.27
+```
+
+## Common Questions
+
+<AccordionGroup>
+  <Accordion title="Can I cancel a booking?">
+    Currently, bookings cannot be cancelled or refunded. Make sure your ad is ready and tested before booking.
+  </Accordion>
+  
+  <Accordion title="Can I edit my ad after booking?">
+    No, ad content is locked at time of booking. You'll need to make a new booking to change the creative.
+  </Accordion>
+  
+  <Accordion title="What if my ad doesn't display?">
+    This is very rare. If your ad doesn't appear, check:
+    - Your image URL is working (test in browser)
+    - Start time has passed
+    - You're checking the correct site
+    
+    Contact support if issues persist.
+  </Accordion>
+  
+  <Accordion title="How do I know my ad is running?">
+    Visit the site during your booking time! Your ad will be displayed. You can also query the `/current-ad` endpoint.
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Launch New Campaign"
+    icon="rocket"
+    href="/x402-ad-marketplace/quickstart"
+  >
+    Start a new ad campaign
+  </Card>
+  <Card
+    title="Browse Sites"
+    icon="globe"
+    href="/x402-ad-marketplace/api/sites"
+  >
+    Find more places to advertise
+  </Card>
+  <Card
+    title="Check Ad Formats"
+    icon="image"
+    href="/x402-ad-marketplace/api/slots"
+  >
+    See pricing and formats
+  </Card>
+  <Card
+    title="Learn x402"
+    icon="bolt"
+    href="/x402-ad-marketplace/x402/overview"
+  >
+    How gasless payments work
+  </Card>
+</CardGroup>
+
+---

@@ -427,6 +427,47 @@
             }
           },
           {
+            "icon": "megaphone",
+            "tab": "x402 Ad Marketplace",
+            "groups": [
+              {
+                "group": "Getting Started",
+                "pages": [
+                  "x402-ad-marketplace/introduction",
+                  "x402-ad-marketplace/quickstart"
+                ]
+              },
+              {
+                "group": "Marketplace APIs",
+                "pages": [
+                  "x402-ad-marketplace/api/sites",
+                  "x402-ad-marketplace/api/slots",
+                  "x402-ad-marketplace/api/bookings"
+                ]
+              },
+              {
+                "group": "About x402",
+                "pages": [
+                  "x402-ad-marketplace/x402/overview"
+                ]
+              }
+            ],
+            "global": {
+              "anchors": [
+                {
+                  "anchor": "Launch campaign",
+                  "href": "https://explorer.b3.fun/apps/x402-ad-marketplace",
+                  "icon": "sparkles"
+                },
+                {
+                  "anchor": "View on x402scan",
+                  "href": "https://www.x402scan.com/server/ff37cb5f-7976-42bb-a161-e5e360d8cd42",
+                  "icon": "chart-line"
+                }
+              ]
+            }
+          },
+          {
             "icon": "code",
             "tab": "Developer SDKs",
             "menu": [
