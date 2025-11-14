@@ -230,7 +230,7 @@ function AnySpendCustomExactInInner({
     }
 
     if (paymentType === "crypto") {
-      if (selectedCryptoPaymentMethod === CryptoPaymentMethodType.NONE) {
+      if (effectiveCryptoPaymentMethod === CryptoPaymentMethodType.NONE) {
         setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD);
         return;
       }

@@ -86,7 +86,7 @@ export function useAnyspendFlow({
   const defaultDstToken = B3_TOKEN; // Default destination token
   const [selectedSrcToken, setSelectedSrcToken] = useState<components["schemas"]["Token"]>(defaultSrcToken);
   const [selectedDstToken, setSelectedDstToken] = useState<components["schemas"]["Token"]>(defaultDstToken);
-  const [srcAmount, setSrcAmount] = useState<string>(paymentType === "fiat" ? "5" : "0.1");
+  const [srcAmount, setSrcAmount] = useState<string>(paymentType === "fiat" ? "5" : "0");
   const [dstAmount, setDstAmount] = useState<string>("");
   const [isSrcInputDirty, setIsSrcInputDirty] = useState(true);
 

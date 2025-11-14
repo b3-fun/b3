@@ -6,7 +6,6 @@ import invariant from "invariant";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { prepareTransaction, sendTransaction as twSendTransaction } from "thirdweb";
-import { useActiveWallet } from "thirdweb/react";
 import { isAddress } from "viem";
 import { useSwitchChain } from "wagmi";
 import { useB3 } from "../components";
@@ -29,7 +28,6 @@ invariant(partnerId, "Partner ID is required");
 export function useUnifiedChainSwitchAndExecute() {
   const { switchChainAsync } = useSwitchChain();
   const [isSwitchingOrExecuting, setIsSwitchingOrExecuting] = useState(false);
-  const activeWallet = useActiveWallet();
 
   const { isActiveSmartWallet, isActiveEOAWallet, connectedEOAWallet } = useAccountWallet();
   const { account: aaAccount } = useB3();
@@ -49,12 +47,12 @@ export function useUnifiedChainSwitchAndExecute() {
         return;
       }
 
-      const currentChainId = activeWallet?.getChain()?.id;
+      const currentChainId = connectedEOAWallet?.getChain()?.id;
       const onCorrectChain = currentChainId === targetChainId;
 
       // Helper function to execute the transaction
       const executeTransaction = async (): Promise<string> => {
-        const signer = activeWallet?.getAccount();
+        const signer = connectedEOAWallet?.getAccount();
         if (!signer) {
           throw new Error("No account connected");
         }
@@ -62,7 +60,7 @@ export function useUnifiedChainSwitchAndExecute() {
         // Coinbase Smart Wallet specific chain switching (different behavior from other wallets)
         const walletChain = connectedEOAWallet.getChain();
         if (walletChain?.id !== targetChainId) {
-          activeWallet?.switchChain(getThirdwebChain(targetChainId));
+          connectedEOAWallet?.switchChain(getThirdwebChain(targetChainId));
         }
 
         invariant(isAddress(params.to), "params.to is not a valid address");
@@ -121,7 +119,7 @@ export function useUnifiedChainSwitchAndExecute() {
         setIsSwitchingOrExecuting(false);
       }
     },
-    [connectedEOAWallet, activeWallet, switchChainAsync],
+    [connectedEOAWallet, switchChainAsync],
   );
 
   // Handle AA wallet transaction (no chain switch needed for AA)
@@ -186,14 +184,10 @@ export function useUnifiedChainSwitchAndExecute() {
       // Check which wallet type is active
       if (isActiveSmartWallet) {
         return handleAASendTransaction(targetChainId, params);
-      } else if (isActiveEOAWallet) {
-        return handleEOASwitchChainAndSendTransaction(targetChainId, params);
-      } else {
-        toast.error("No wallet connected");
-        return undefined;
       }
+      return handleEOASwitchChainAndSendTransaction(targetChainId, params);
     },
-    [isActiveSmartWallet, isActiveEOAWallet, handleAASendTransaction, handleEOASwitchChainAndSendTransaction],
+    [isActiveSmartWallet, handleAASendTransaction, handleEOASwitchChainAndSendTransaction],
   );
 
   return {

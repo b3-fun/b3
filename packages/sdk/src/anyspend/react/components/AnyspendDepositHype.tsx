@@ -87,6 +87,7 @@ function AnySpendDepositHypeInner({
     isSrcInputDirty,
     setIsSrcInputDirty,
     selectedCryptoPaymentMethod,
+    effectiveCryptoPaymentMethod,
     setSelectedCryptoPaymentMethod,
     selectedFiatPaymentMethod,
     setSelectedFiatPaymentMethod,
@@ -153,7 +154,7 @@ function AnySpendDepositHypeInner({
     }
 
     if (paymentType === "crypto") {
-      if (selectedCryptoPaymentMethod === CryptoPaymentMethodType.NONE) {
+      if (effectiveCryptoPaymentMethod === CryptoPaymentMethodType.NONE) {
         return { text: "Choose payment method", disable: false, error: false, loading: false };
       }
       return { text: "Continue to deposit", disable: false, error: false, loading: false };
@@ -169,6 +170,7 @@ function AnySpendDepositHypeInner({
     return { text: "Continue to deposit", disable: false, error: false, loading: false };
   }, [
     activeInputAmountInWei,
+    effectiveCryptoPaymentMethod,
     isLoadingAnyspendQuote,
     isCreatingOrder,
     isCreatingOnrampOrder,
@@ -176,7 +178,6 @@ function AnySpendDepositHypeInner({
     anyspendQuote,
     dstAmount,
     paymentType,
-    selectedCryptoPaymentMethod,
     selectedFiatPaymentMethod,
   ]);
 
@@ -189,7 +190,7 @@ function AnySpendDepositHypeInner({
     }
 
     if (paymentType === "crypto") {
-      if (selectedCryptoPaymentMethod === CryptoPaymentMethodType.NONE) {
+      if (effectiveCryptoPaymentMethod === CryptoPaymentMethodType.NONE) {
         setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD);
         return;
       }
@@ -227,7 +228,7 @@ function AnySpendDepositHypeInner({
               setSrcAmount={setSrcAmount}
               isSrcInputDirty={isSrcInputDirty}
               setIsSrcInputDirty={setIsSrcInputDirty}
-              selectedCryptoPaymentMethod={selectedCryptoPaymentMethod}
+              selectedCryptoPaymentMethod={effectiveCryptoPaymentMethod}
               onSelectCryptoPaymentMethod={() => setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD)}
               anyspendQuote={anyspendQuote}
               onTokenSelect={onTokenSelect}
