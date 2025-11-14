@@ -6,11 +6,11 @@ description: >-
 lang: es
 originalPath: anyspend/introduction.mdx
 ---
-<img src="/images/anyspend-example-banner.jpg" alt="Banner de AnySpend" className="w-full rounded-xl" />
+<img src="/images/anyspend-example-banner.jpg" alt="AnySpend Banner" className="w-full rounded-xl" />
 
 ## ¿Qué es AnySpend?
 
-AnySpend es la infraestructura de pagos integral de B3 que permite transacciones cripto sin interrupciones a través de múltiples blockchains. Ya sea que estés construyendo una aplicación DeFi, un mercado de NFT o una plataforma de juegos, AnySpend proporciona los componentes y las API que necesitas para aceptar pagos en cualquier token.
+AnySpend es la infraestructura de pagos integral de B3 que permite transacciones cripto sin interrupciones a través de múltiples blockchains. Ya sea que estés construyendo una aplicación DeFi, un mercado de NFT o una plataforma de juegos, AnySpend proporciona los componentes y APIs que necesitas para aceptar pagos en cualquier token.
 
 [Prueba AnySpend en tu navegador](https://anyspend.com/swap)
 
@@ -32,7 +32,7 @@ AnySpend es la infraestructura de pagos integral de B3 que permite transacciones
 <Card href="/anyspend/examples">
   <img src="/images/customize-for-defi.png" className="w-full h-48 object-cover rounded-xl mb-4" />
   <h3 className="text-lg font-semibold text-primary block mb-1">DeFi</h3>
-  Ejecuta cualquier llamada a contrato onchain, con usos para staking, mercados de predicción, curvas de bonificación y más.
+  Ejecuta cualquier llamada a contrato onchain, con usos para staking, mercados de predicción, curvas de bonos y más.
 </Card>
 
 <Card href="/anyspend/examples">
@@ -49,12 +49,12 @@ AnySpend es la infraestructura de pagos integral de B3 que permite transacciones
 El usuario hace clic en un botón de pago o interactúa con tu interfaz, eligiendo su token preferido
 </Step>
 
-<Step title="Cotizaciones de AnySpend">
+<Step title="AnySpend Cotiza">
 Nuestro motor de enrutamiento encuentra la mejor ruta para convertir su token al token de destino requerido
 </Step>
 
 <Step title="Ejecución Cross-Chain">
-Si es necesario, los tokens se transfieren a través de cadenas usando infraestructura segura y probada en batalla
+Si es necesario, los tokens se transfieren a través de cadenas utilizando infraestructura segura y probada en batalla
 </Step>
 
 <Step title="Entrega Final">
@@ -63,19 +63,19 @@ Los tokens llegan a la dirección de destino, ejecutan cualquier lógica persona
 </Steps>
 
 ## Casos de Uso
-<img src="/images/anyspend-onramp-anyone.png" alt="Banner de AnySpend" className="w-full rounded-xl" />
+<img src="/images/anyspend-onramp-anyone.png" alt="AnySpend Banner" className="w-full rounded-xl" />
 
 <AccordionGroup>
 <Accordion title="Aplicaciones DeFi">
 Habilita intercambios de tokens, proporciona liquidez y facilita el farming de rendimiento a través de múltiples cadenas con enrutamiento automático y tarifas competitivas.
 </Accordion>
 
-<Accordion title="Mercados de NFT">
+<Accordion title="Mercados NFT">
 Permite a los usuarios comprar NFTs con cualquier token que posean, eliminando barreras y aumentando las tasas de conversión al soportar sus métodos de pago preferidos.
 </Accordion>
 
 <Accordion title="Plataformas de Juegos">
-Acepta pagos por activos dentro del juego, entradas a torneos y características premium usando cualquier criptomoneda o métodos de pago fiat.
+Acepta pagos por activos en juegos, entradas a torneos y características premium usando cualquier criptomoneda o métodos de pago fiat.
 </Accordion>
 
 <Accordion title="E-commerce">
@@ -99,7 +99,7 @@ import "@b3dotfun/sdk/index.css";
 
 function App() {
   return (
-    <B3Provider theme="light" environment="production">
+    <B3Provider theme="light" environment="production" partnerId="your-awesome-partner-id">
       <AnyspendProvider>
         <AnySpend />
       </AnyspendProvider>

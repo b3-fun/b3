@@ -10,12 +10,12 @@ originalPath: bondkit/how-it-works.mdx
 
 ```mermaid
 graph TB
-    subgraph "Capa Frontend"
+    subgraph "Capa de Frontend"
         UI["Aplicación Web"]
         SDK["BondKit SDK"]
     end
     
-    subgraph "Capa de Contrato Inteligente"
+    subgraph "Capa de Smart Contract"
         Factory["Contrato de Fábrica"]
         Impl["Contrato de Implementación"]
         Token1["Clon de Token 1"]
@@ -23,14 +23,14 @@ graph TB
         TokenN["Clon de Token N"]
     end
     
-    subgraph "Capa DEX"
+    subgraph "Capa de DEX"
         V4["Uniswap v4"]
         Pool1["Pool 1"]
         Pool2["Pool 2"]
     end
     
-    subgraph "Servicios Backend"
-        API["API de Analíticas"]
+    subgraph "Servicios de Backend"
+        API["API de Análisis"]
         DB["Base de Datos"]
         Indexer["Indexador de Eventos"]
     end
@@ -67,23 +67,23 @@ graph TB
     - El usuario llama a `deployBondkitToken()` en el contrato de Fábrica
     - La Fábrica clona el contrato de Implementación usando el patrón de proxy mínimo
     - El nuevo token se inicializa con parámetros personalizados
-    - El token entra automáticamente en la fase de bonding
+    - El token entra automáticamente en la fase de vinculación
     
-    **Costo de Gas:** ~200,000 gas (90% más barato que el despliegue completo)
+    **Costo de Gas:** ~200,000 gas (90% más barato que un despliegue completo)
     **Tiempo:** ~15 segundos
   </Step>
   
-  <Step title="Fase 2: Trading en la Curva de Bonding">
+  <Step title="Fase 2: Comercio en Curva de Vinculación">
     **Qué sucede:**
     - Los usuarios compran/venden tokens directamente del contrato
-    - El precio sigue una curva de bonding algorítmica: `S = S_final × (R/R_objetivo)^exponente`
-    - Comisión del 5% en todos los trades va al destinatario de la comisión
+    - El precio sigue una curva de vinculación algorítmica: `S = S_final × (R/R_objetivo)^exponente`
+    - Comisión del 5% en todos los comercios va al destinatario de la comisión
     - El contrato acumula activos de cotización (ETH/B3) hacia el objetivo
     - El backend indexa todas las transacciones para análisis
     
-    **Mecánica de Trading:**
-    - Comprar: Enviar ETH/B3, recibir tokens al precio actual de la curva
-    - Vender: Enviar tokens, recibir ETH/B3 menos comisiones
+    **Mecánica de comercio:**
+    - Comprar: Envía ETH/B3, recibe tokens al precio actual de la curva
+    - Vender: Envía tokens, recibe ETH/B3 menos comisiones
     - Reembolsos automáticos si la compra excediera el objetivo
     
     **Duración:** Hasta que se alcance el objetivo (horas a semanas)
@@ -96,12 +96,12 @@ graph TB
     - Crea e inicializa el pool de Uniswap v4
     - Transfiere la liquidez acumulada al pool
     - Renuncia a la propiedad a la dirección cero
-    - El token se convierte en un ERC20 estándar con trading en DEX
+    - El token se convierte en un ERC20 estándar con comercio en DEX
     
     **Post-migración:**
-    - Curva de bonding permanentemente deshabilitada
-    - Todo el trading a través de Uniswap v4
-    - No quedan controles de administrador
+    - Curva de vinculación deshabilitada permanentemente
+    - Todo el comercio a través de Uniswap v4
+    - No quedan controles de administración
     - Se logra la descentralización completa
     
     **Costo de Gas:** ~500,000 gas
@@ -111,11 +111,11 @@ graph TB
 
 ## Componentes del Sistema
 
-### Contratos Inteligentes
+### Smart Contracts
 
 <AccordionGroup>
   <Accordion title="🏭 Contrato de Fábrica">
-    **Propósito:** Despliega nuevos tokens de bono de manera eficiente
+    **Propósito:** Despliega nuevos tokens de bonos de manera eficiente
     
     **Funciones Clave:**
     - `deployBondkitToken()` - Crea un nuevo clon de token
@@ -124,22 +124,22 @@ graph TB
     
     **Optimización de Gas:**
     - Utiliza el patrón de proxy mínimo EIP-1167
-    - Comparte lógica a través de todos los tokens
+    - Comparte lógica en todos los tokens
     - ~90% de ahorro de gas vs despliegues individuales
   </Accordion>
   
   <Accordion title="📜 Contrato de Implementación">
-    **Propósito:** Plantilla para todos los tokens de bono
+    **Propósito:** Plantilla para todos los tokens de bonos
     
     **Características Principales:**
     - Cumplimiento del estándar ERC20
-    - Matemáticas de la curva de bonding
+    - Matemáticas de curva de vinculación
     - Lógica de migración a Uniswap v4
     - Sistema de distribución de comisiones
     
     **Transiciones de Estado:**
-    1. No inicializado → Fase de Bonding
-    2. Fase de Bonding → Listo para Migración
+    1. No inicializado → Fase de Vinculación
+    2. Fase de Vinculación → Listo para Migración
     3. Listo para Migración → Fase DEX
   </Accordion>
   
@@ -147,20 +147,20 @@ graph TB
     **Propósito:** Instancias individuales de token
     
     **Ciclo de Vida:**
-    - Creado vía fábrica
+    - Creado a través de la fábrica
     - Inicializado con parámetros únicos
-    - Gestiona su propia curva de bonding
+    - Gestiona su propia curva de vinculación
     - Se auto-migra a Uniswap v4
     
     **Almacenamiento:**
     - Metadatos del token (nombre, símbolo)
     - Suministro y distribución
-    - Estado de la curva de bonding
+    - Estado de la curva de vinculación
     - Parámetros de migración
   </Accordion>
 </AccordionGroup>
 
-### Servicios Backend
+### Servicios de Backend
 
 <AccordionGroup>
   <Accordion title="🔍 Indexador de Eventos">
@@ -174,12 +174,12 @@ graph TB
     
     **Tecnología:**
     - Escaneo de blockchain en tiempo real
-    - Procesamiento de logs de eventos
-    - Sincronización con la base de datos
+    - Procesamiento de registros de eventos
+    - Sincronización de base de datos
   </Accordion>
   
-  <Accordion title="📊 Motor de Analíticas">
-    **Propósito:** Procesa datos crudos en insights
+  <Accordion title="📊 Motor de Análisis">
+    **Propósito:** Procesa datos brutos en perspectivas
     
     **Genera:**
     - Datos de velas OHLCV
@@ -197,9 +197,9 @@ graph TB
     **Endpoints:**
     - `/tokens` - Lista todos los tokens
     - `/tokens/{address}` - Detalles del token
-    - `/tokens/{address}/transactions` - Historial de trades
+    - `/tokens/{address}/transactions` - Historial de comercio
     - `/tokens/{address}/ohlcv` - Datos para gráficos
-    - `/users/{address}/portfolio` - Tenencias del usuario
+    - `/users/{address}/portfolio` - Posesiones del usuario
     
     **Formato:** JSON con paginación
   </Accordion>
@@ -210,16 +210,16 @@ graph TB
 | Rol | Responsabilidades | Permisos |
 |------|-----------------|-------------|
 | **Creador** | Desplegar token, establecer parámetros, iniciar migración | Control total hasta la migración |
-| **Traders** | Comprar/vender durante el bonding, comerciar en DEX | Derechos de trading estándar |
-| **Destinatario de Comisiones** | Recibir comisiones de trading | Solo ingresos pasivos |
-| **Admin de Migración** | Ejecutar migración cuando esté listo | Derecho de migración única |
-| **Proveedores de LP** | (Post-migración) Agregar liquidez a Uniswap | Derechos estándar de LP |
+| **Comerciantes** | Comprar/vender durante la vinculación, comerciar en DEX | Derechos de comercio estándar |
+| **Destinatario de Comisiones** | Recibir comisiones de comercio | Solo ingresos pasivos |
+| **Administrador de Migración** | Ejecutar migración cuando esté listo | Derecho de migración única |
+| **Proveedores de LP** | (Post-migración) Añadir liquidez a Uniswap | Derechos estándar de LP |
 
 ## Inmersión Técnica
 
-### Matemáticas de la Curva de Bonding
+### Matemáticas de la Curva de Vinculación
 
-La curva de bonding determina el precio del token basado en la oferta:
+La curva de vinculación determina el precio del token basado en la oferta:
 
 ```
 Fórmula de Precio:
@@ -247,13 +247,13 @@ Donde:
 
 Al migrar a Uniswap v4, el contrato:
 
-1. **Calcula el precio de salida** de la curva de bonding
+1. **Calcula el precio de salida** de la curva de vinculación
 2. **Convierte a formato sqrtPriceX96**:
    ```
    sqrtPriceX96 = sqrt(precio) × 2^96
    ```
 3. **Inicializa el pool** con este precio
-4. **Agrega liquidez** usando los fondos acumulados
+4. **Añade liquidez** usando los fondos acumulados
 
 ### Técnicas de Optimización de Gas
 
@@ -274,7 +274,7 @@ Al migrar a Uniswap v4, el contrato:
 | Parámetro | Tipo | Rango/Formato | Impacto |
 |-----------|------|--------------|--------|
 | `name` | string | 1-50 caracteres | Nombre de visualización del token |
-| `symbol` | string | 2-10 caracteres | Símbolo de trading |
+| `symbol` | string | 2-10 caracteres | Símbolo de comercio |
 | `finalTokenSupply` | uint256 | > 0 | Total de tokens acuñables |
 | `aggressivenessFactor` | uint8 | 0-100 | Inclinación de la curva |
 | `targetEth` | uint256 | > 0 | Umbral de migración |
@@ -294,9 +294,9 @@ Al migrar a Uniswap v4, el contrato:
 
 | Constante | Valor | Descripción |
 |----------|-------|-------------|
-| Comisión de Trading | 5% | Aplicada a todos los trades |
+| Comisión de Comercio | 5% | Aplicada a todos los comercios |
 | Decimales | 18 | Decimales estándar ERC20 |
-| Mínimo Objetivo | 0.1 ETH | Objetivo viable mínimo |
+| Min Objetivo | 0.1 ETH | Objetivo viable mínimo |
 | Máxima Agresividad | 100 | Factor máximo de la curva |
 
 ## Consideraciones de Seguridad
@@ -318,19 +318,19 @@ Al migrar a Uniswap v4, el contrato:
 | Escenario | Respuesta del Sistema |
 |----------|----------------|
 | Compra excede el objetivo | Relleno parcial, reembolso del exceso |
-| Liquidez insuficiente para vender | Transacción revertida |
-| Migración antes del objetivo | Transacción revertida |
-| Intento de migración por no-admin | Transacción revertida |
-| Intento de doble migración | Transacción revertida |
-| Operaciones con dirección cero | Transacción revertida |
+| Liquidez insuficiente para vender | La transacción se revierte |
+| Migración antes del objetivo | La transacción se revierte |
+| Intento de migración por no-admin | La transacción se revierte |
+| Intento de doble migración | La transacción se revierte |
+| Operaciones de dirección cero | La transacción se revierte |
 
 ## Próximos Pasos
 
 <CardGroup cols={2}>
   <Card title="Mecánica de Precios" icon="chart-line" href="/bondkit/concepts/pricing">
-    Entender la matemática de la curva de bonding
+    Entender las matemáticas de la curva de vinculación
   </Card>
-  <Card title="Guía de Migración" icon="rocket" href="/bondkit/guides/migration">
+  <Card title="Ciclo de Vida del Token" icon="rocket" href="/bondkit/guides/token-lifecycle">
     Aprender el proceso de migración
   </Card>
 </CardGroup>
