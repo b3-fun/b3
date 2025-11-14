@@ -45,6 +45,7 @@ import { toast } from "sonner";
 import { base } from "viem/chains";
 import { useFeatureFlags } from "../contexts/FeatureFlagsContext";
 import { useAutoSetActiveWalletFromWagmi } from "../hooks/useAutoSetActiveWalletFromWagmi";
+import { useCryptoPaymentMethodState } from "../hooks/useCryptoPaymentMethodState";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
 import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPaymentMethod";
 import { FeeBreakDown } from "./common/FeeBreakDown";
@@ -250,10 +251,11 @@ function AnySpendCustomInner({
   );
   const [activeTab, setActiveTab] = useState<"crypto" | "fiat">(activeTabProps);
 
-  // Add state for selected payment methods
-  const [selectedCryptoPaymentMethod, setSelectedCryptoPaymentMethod] = useState<CryptoPaymentMethodType>(
-    CryptoPaymentMethodType.NONE,
-  );
+  // Payment method state with dual-state system (auto + explicit user selection)
+  // Note: AnySpendCustom doesn't use auto-selection, only explicit user selection
+  const { setSelectedCryptoPaymentMethod, effectiveCryptoPaymentMethod, resetPaymentMethods } =
+    useCryptoPaymentMethodState();
+
   const [selectedFiatPaymentMethod, setSelectedFiatPaymentMethod] = useState<FiatPaymentMethod>(FiatPaymentMethod.NONE);
 
   // Get current user's wallet
@@ -550,7 +552,7 @@ function AnySpendCustomInner({
     }
 
     // Check payment method selection for crypto tab
-    if (activeTab === "crypto" && selectedCryptoPaymentMethod === CryptoPaymentMethodType.NONE) {
+    if (activeTab === "crypto" && effectiveCryptoPaymentMethod === CryptoPaymentMethodType.NONE) {
       setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD);
       return;
     }
@@ -693,12 +695,17 @@ function AnySpendCustomInner({
           relayTxs={oat.data.relayTxs}
           executeTx={oat.data.executeTx}
           refundTxs={oat.data.refundTxs}
-          cryptoPaymentMethod={activeTab === "fiat" ? CryptoPaymentMethodType.NONE : selectedCryptoPaymentMethod}
-          selectedCryptoPaymentMethod={selectedCryptoPaymentMethod}
-          onPaymentMethodChange={setSelectedCryptoPaymentMethod}
+          cryptoPaymentMethod={activeTab === "fiat" ? CryptoPaymentMethodType.NONE : effectiveCryptoPaymentMethod}
+          selectedCryptoPaymentMethod={effectiveCryptoPaymentMethod}
+          onPaymentMethodChange={method => {
+            // When user explicitly changes payment method, set it as selected
+            setSelectedCryptoPaymentMethod(method);
+          }}
           onBack={() => {
             setOrderId(undefined);
             setActivePanel(PanelView.CONFIRM_ORDER);
+            // Reset payment methods when going back
+            resetPaymentMethods();
             // Remove orderId from URL when canceling
             const params = new URLSearchParams(searchParams.toString());
             params.delete("orderId");
@@ -832,7 +839,8 @@ function AnySpendCustomInner({
               )}
               onClick={() => {
                 setActiveTab("crypto");
-                setSelectedCryptoPaymentMethod(CryptoPaymentMethodType.NONE);
+                // Reset payment methods when switching tabs
+                resetPaymentMethods();
                 setSelectedFiatPaymentMethod(FiatPaymentMethod.NONE);
               }}
             >
@@ -846,7 +854,8 @@ function AnySpendCustomInner({
                 )}
                 onClick={() => {
                   setActiveTab("fiat");
-                  setSelectedCryptoPaymentMethod(CryptoPaymentMethodType.NONE);
+                  // Reset payment methods when switching tabs
+                  resetPaymentMethods();
                   setSelectedFiatPaymentMethod(FiatPaymentMethod.NONE);
                 }}
               >
@@ -902,7 +911,7 @@ function AnySpendCustomInner({
                   className="text-as-tertiarry flex h-7 items-center gap-2 text-sm transition-colors hover:text-blue-700"
                   onClick={() => setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD)}
                 >
-                  {selectedCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET ? (
+                  {effectiveCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET ? (
                     <>
                       {connectedAddress ? (
                         <>
@@ -915,7 +924,7 @@ function AnySpendCustomInner({
                       )}
                       <ChevronRight className="h-4 w-4" />
                     </>
-                  ) : selectedCryptoPaymentMethod === CryptoPaymentMethodType.TRANSFER_CRYPTO ? (
+                  ) : effectiveCryptoPaymentMethod === CryptoPaymentMethodType.TRANSFER_CRYPTO ? (
                     <>
                       Transfer crypto
                       <ChevronRight className="h-4 w-4" />
@@ -1043,7 +1052,7 @@ function AnySpendCustomInner({
                     </div>
                   ) : !recipientAddress ? (
                     "Select recipient"
-                  ) : selectedCryptoPaymentMethod === CryptoPaymentMethodType.NONE ? (
+                  ) : effectiveCryptoPaymentMethod === CryptoPaymentMethodType.NONE ? (
                     "Choose payment method"
                   ) : anyspendQuote ? (
                     <>
@@ -1239,11 +1248,15 @@ function AnySpendCustomInner({
       <CryptoPaymentMethod
         globalAddress={currentWallet?.wallet?.address}
         globalWallet={currentWallet?.wallet}
-        selectedPaymentMethod={selectedCryptoPaymentMethod}
-        setSelectedPaymentMethod={setSelectedCryptoPaymentMethod}
+        selectedPaymentMethod={effectiveCryptoPaymentMethod}
+        setSelectedPaymentMethod={method => {
+          // When user explicitly selects a payment method, save it
+          setSelectedCryptoPaymentMethod(method);
+        }}
         isCreatingOrder={isCreatingOrder}
         onBack={() => setActivePanel(PanelView.CONFIRM_ORDER)}
         onSelectPaymentMethod={(method: CryptoPaymentMethodType) => {
+          // When user explicitly selects a payment method, save it and go back
           setSelectedCryptoPaymentMethod(method);
           setActivePanel(PanelView.CONFIRM_ORDER);
         }}
