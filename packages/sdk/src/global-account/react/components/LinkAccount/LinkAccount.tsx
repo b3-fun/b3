@@ -249,7 +249,7 @@ export const LinkAccount = ({
         <Button
           onClick={handleOpenLinkModal}
           disabled={isLinking}
-          className="bg-b3-primary-blue hover:bg-b3-primary-blue/90 border-white/12 group relative h-12 w-full rounded-xl border-2 px-[18px] text-base font-semibold text-white shadow-[inset_0px_0px_0px_1px_rgba(10,13,18,0.18),inset_0px_-2px_0px_0px_rgba(10,13,18,0.05)] transition-all"
+          className="b3-modal-link-new-account-button bg-b3-primary-blue hover:bg-b3-primary-blue/90 border-white/12 group relative h-12 w-full rounded-xl border-2 px-[18px] text-base font-semibold text-white shadow-[inset_0px_0px_0px_1px_rgba(10,13,18,0.18),inset_0px_-2px_0px_0px_rgba(10,13,18,0.05)] transition-all"
         >
           <div className="flex items-center justify-center gap-1.5">
             <svg

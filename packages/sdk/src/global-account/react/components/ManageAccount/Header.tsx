@@ -58,9 +58,9 @@ function WalletItem({ wallet, isActive, onClick }: { wallet: Wallet; isActive: b
 
   return (
     <div
-      className={`box-border flex cursor-pointer items-center gap-2 rounded-xl px-3 py-2 transition-colors ${
-        isActive ? "bg-[#F4F4F5]" : "hover:bg-b3-line/50"
-      }`}
+      className={`b3-modal-wallet-item ${
+        isActive ? "b3-modal-wallet-item-active bg-[#F4F4F5]" : "hover:bg-b3-line/50"
+      } box-border flex cursor-pointer items-center gap-2 rounded-xl px-3 py-2 transition-colors`}
       onClick={onClick}
     >
       <div className="relative size-10 shrink-0 overflow-clip rounded-full">
@@ -137,11 +137,11 @@ export function Header({ onLogout }: { onLogout?: () => void }) {
       type="single"
       collapsible
       value={isExpanded ? "wallet-switcher" : ""}
-      className="bg-b3-background border-b3-line relative border-b"
+      className="b3-modal-wallet-switcher bg-b3-background border-b3-line relative border-b"
       onValueChange={(value: string) => setIsExpanded(value === "wallet-switcher")}
     >
       <AccordionPrimitive.Item value="wallet-switcher" className="border-none">
-        <AccordionPrimitive.Trigger className="group flex w-full items-center justify-between border-none bg-transparent px-5 py-3 outline-none">
+        <AccordionPrimitive.Trigger className="b3-modal-wallet-switcher-trigger group flex w-full items-center justify-between border-none bg-transparent px-5 py-3 outline-none">
           <div className="flex items-center gap-2">
             <div className="relative size-10 shrink-0 overflow-clip rounded-full">
               {isActiveGlobalAccount ? (
@@ -166,7 +166,7 @@ export function Header({ onLogout }: { onLogout?: () => void }) {
               </div>
             </div>
           </div>
-          <ChevronDownIcon className="text-b3-grey transition-transform duration-200 group-data-[state=open]:rotate-180" />
+          <ChevronDownIcon className="b3-modal-wallet-switcher-chevron text-b3-grey transition-transform duration-200 group-data-[state=open]:rotate-180" />
         </AccordionPrimitive.Trigger>
 
         <AnimatePresence>
@@ -177,7 +177,7 @@ export function Header({ onLogout }: { onLogout?: () => void }) {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2, ease: "easeInOut" }}
-                className="flex flex-col gap-3 rounded-bl-3xl rounded-br-3xl bg-white px-2 pb-5 pt-3 shadow-[0px_32px_64px_-12px_rgba(10,13,18,0.14),0px_5px_5px_-2.5px_rgba(10,13,18,0.04)]"
+                className="b3-modal-wallet-switcher-content flex flex-col gap-3 rounded-bl-3xl rounded-br-3xl bg-white px-2 pb-5 pt-3 shadow-[0px_32px_64px_-12px_rgba(10,13,18,0.14),0px_5px_5px_-2.5px_rgba(10,13,18,0.04)]"
               >
                 {/* Connected Wallets */}
                 <div className="flex flex-col gap-3">
@@ -192,7 +192,7 @@ export function Header({ onLogout }: { onLogout?: () => void }) {
 
                   {/* Link Another Wallet */}
                   <div
-                    className="hover:bg-b3-line/50 box-border flex cursor-pointer items-center gap-2 rounded-xl px-3 py-2 transition-colors"
+                    className="b3-modal-link-another-wallet hover:bg-b3-line/50 box-border flex cursor-pointer items-center gap-2 rounded-xl px-3 py-2 transition-colors"
                     onClick={handleLinkWallet}
                   >
                     <div className="bg-b3-line flex size-10 shrink-0 items-center justify-center rounded-full">
@@ -206,7 +206,7 @@ export function Header({ onLogout }: { onLogout?: () => void }) {
 
                 {/* Sign Out Button */}
                 <button
-                  className="border-b3-line hover:bg-b3-line bg-b3-background flex items-center justify-center gap-1.5 rounded-xl border border-solid p-2.5 transition-colors"
+                  className="b3-modal-sign-out-button border-b3-line hover:bg-b3-line bg-b3-background flex items-center justify-center gap-1.5 rounded-xl border border-solid p-2.5 transition-colors"
                   onClick={onLogoutEnhanced}
                   disabled={logoutLoading}
                   style={{

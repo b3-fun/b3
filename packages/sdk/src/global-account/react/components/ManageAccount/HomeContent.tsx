@@ -18,9 +18,9 @@ export function HomeContent({ showDeposit = false, showSwap = true }: HomeConten
         <ProfileSection />
 
         <HomeActions showDeposit={showDeposit} showSwap={showSwap} />
-        <div className="space-y-2 p-5">
+        <div className="b3-modal-balance-content space-y-2 p-5">
           <Tabs defaultValue={"balance"}>
-            <TabsList>
+            <TabsList className="b3-modal-balance-tabs-list">
               <TabTrigger value="balance" className="font-neue-montreal-semibold p-0 pr-3">
                 Balance
               </TabTrigger>

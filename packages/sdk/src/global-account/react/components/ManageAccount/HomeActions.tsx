@@ -57,7 +57,7 @@ const HomeActions = ({ showDeposit, showSwap }: { showDeposit: boolean; showSwap
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
 
   return (
-    <div className="border-b3-line grid grid-cols-4 gap-3 border-b px-5 pb-6">
+    <div className="b3-modal-home-actions border-b3-line grid grid-cols-4 gap-3 border-b px-5 pb-6">
       {showDeposit && (
         <HomeActionButton
           customClass="manage-account-deposit"

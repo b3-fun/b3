@@ -12,7 +12,7 @@ const SettingsMenuItem = ({ icon, title, subtitle, onClick }: SettingsMenuItemPr
   return (
     <button
       onClick={onClick}
-      className="flex w-full items-center gap-2 rounded-xl px-3 py-2 transition-colors hover:bg-[#f4f4f5]"
+      className="b3-modal-settings-menu-item flex w-full items-center gap-2 rounded-xl px-3 py-2 transition-colors hover:bg-[#f4f4f5]"
     >
       <div className="flex size-10 items-center justify-center rounded-full bg-[#f4f4f5]">{icon}</div>
       <div className="flex flex-1 flex-col items-start gap-1 text-left">

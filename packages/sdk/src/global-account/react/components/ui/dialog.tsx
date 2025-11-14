@@ -60,7 +60,7 @@ const DialogContent: React.ForwardRefExoticComponent<DialogContentProps & React.
             )}
             {...props}
           >
-            <div className="flex flex-1 flex-col overflow-hidden rounded-xl border border-[#D1D1D6] bg-white shadow-[0_20px_24px_-4px_rgba(10,13,18,0.08),0_8px_8px_-4px_rgba(10,13,18,0.03),0_3px_3px_-1.5px_rgba(10,13,18,0.04)]">
+            <div className="modal-inner-content flex flex-1 flex-col overflow-hidden rounded-xl border border-[#D1D1D6] bg-white shadow-[0_20px_24px_-4px_rgba(10,13,18,0.08),0_8px_8px_-4px_rgba(10,13,18,0.03),0_3px_3px_-1.5px_rgba(10,13,18,0.04)]">
               {children}
               {!hideCloseButton && (
                 <DialogPrimitive.Close
@@ -75,7 +75,7 @@ const DialogContent: React.ForwardRefExoticComponent<DialogContentProps & React.
               )}
             </div>
             {/* Global Account Footer */}
-            <div className="flex items-center justify-center gap-1.5 pt-[10px]">
+            <div className="b3-modal-ga-branding flex items-center justify-center gap-1.5 pt-[10px]">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M2 4.66667C2 3.19391 3.19391 2 4.66667 2H11.3333C12.8061 2 14 3.19391 14 4.66667V11.3333C14 12.8061 12.8061 14 11.3333 14H4.66667C3.19391 14 2 12.8061 2 11.3333V4.66667Z"

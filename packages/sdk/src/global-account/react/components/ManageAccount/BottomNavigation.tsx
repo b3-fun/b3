@@ -44,7 +44,7 @@ const BottomNavigation = () => {
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
 
   return (
-    <div className="sticky bottom-0 left-0 w-full rounded-b-xl border-t border-gray-200 bg-[#FAFAFA]">
+    <div className="b3-modal-bottom-navigation sticky bottom-0 left-0 w-full rounded-b-xl border-t border-gray-200 bg-[#FAFAFA]">
       <TabsListPrimitive className="flex h-[68px] w-full items-center justify-center gap-4 border-none bg-transparent">
         <TabTriggerPrimitive
           value="home"

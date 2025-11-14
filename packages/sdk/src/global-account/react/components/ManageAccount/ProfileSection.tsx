@@ -67,7 +67,9 @@ const ProfileSection = () => {
             <div className="text-b3-foreground-muted"> $</div>
             <div className="text-[30px]">{formatDisplayNumber(totalBalanceUsd, { fractionDigits: 2 })}</div>
           </h2>
-          <div className="font-neue-montreal-semibold text-base leading-none text-[#0B57C2]">{currentUsername}</div>
+          <div className="b3-modal-username font-neue-montreal-semibold text-base leading-none text-[#0B57C2]">
+            {currentUsername}
+          </div>
         </div>
       </div>
     </div>

@@ -162,7 +162,9 @@ const SettingsProfileCard = () => {
           /* Display mode */
           <>
             <div className="flex items-center gap-1">
-              <p className="font-neue-montreal-semibold text-lg leading-none text-[#0B57C2]">{currentUsername}</p>
+              <p className="b3-modal-username font-neue-montreal-semibold text-lg leading-none text-[#0B57C2]">
+                {currentUsername}
+              </p>
             </div>
             <button
               onClick={handleEditUsername}

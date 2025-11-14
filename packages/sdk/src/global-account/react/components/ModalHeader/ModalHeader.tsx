@@ -1,5 +1,5 @@
 import { cn } from "@b3dotfun/sdk/shared/utils";
-import { ChevronDown, X } from "lucide-react";
+import { ChevronLeft, X } from "lucide-react";
 import { useModalStore } from "../../stores";
 
 const ModalHeader = ({
@@ -26,14 +26,17 @@ const ModalHeader = ({
 
   return (
     <div
-      className={cn("flex h-16 items-center justify-between border-b border-[#e4e4e7] bg-white px-5 py-3", className)}
+      className={cn(
+        "b3-modal-header flex h-16 items-center justify-between border-b border-[#e4e4e7] bg-white px-5 py-3",
+        className,
+      )}
     >
       {showBackButton ? (
         <button
           onClick={handleBack || navigateBack}
           className="flex h-6 w-6 items-center justify-center transition-opacity hover:opacity-70"
         >
-          <ChevronDown className="h-6 w-6 rotate-90 text-[#51525c]" />
+          <ChevronLeft className="h-6 w-6 text-[#51525c]" />
           {showBackWord && <span className="text-sm font-medium">Back</span>}
         </button>
       ) : (

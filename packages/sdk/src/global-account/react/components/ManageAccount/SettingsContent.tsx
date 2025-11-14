@@ -54,7 +54,7 @@ const SettingsContent = ({
 
       {/* Profile Section */}
       <div className="p-5">
-        <div className="flex items-center rounded-xl border border-[#e4e4e7] bg-[#f4f4f5] p-4">
+        <div className="b3-modal-settings-profile-card flex items-center rounded-xl border border-[#e4e4e7] bg-[#f4f4f5] p-4">
           <SettingsProfileCard />
         </div>
       </div>
