@@ -1,0 +1,222 @@
+---
+title: Ad Marketplace
+description: 'Advertise on crypto sites with zero gas fees using x402'
+---
+
+# x402 Ad Marketplace
+
+Buy advertising space on 100+ crypto content sites using USDC with **zero gas fees** thanks to x402 gasless payments.
+
+<CardGroup cols={2}>
+  <Card title="No Gas Fees" icon="gas-pump">
+    Pay only the ad price - zero transaction fees
+  </Card>
+  <Card title="Instant Booking" icon="bolt">
+    One signature and you're live
+  </Card>
+  <Card title="100+ Sites" icon="globe">
+    Choose from crypto news, DeFi, NFT sites
+  </Card>
+  <Card title="Real Analytics" icon="chart-line">
+    See traffic data before you buy
+  </Card>
+</CardGroup>
+
+## Quick Start
+
+<Steps>
+  <Step title="Connect Wallet">
+    Visit [x402 Ad Marketplace](https://explorer.b3.fun/apps/x402-ad-marketplace) and connect your wallet on Base network
+  </Step>
+  <Step title="Browse Sites">
+    Explore sites with traffic stats, pick your target audience
+  </Step>
+  <Step title="Choose Format & Time">
+    Select ad format (Banner/Sidebar/Leaderboard) and time slot
+  </Step>
+  <Step title="Upload Ad">
+    Provide image URL and landing page
+  </Step>
+  <Step title="Sign & Pay">
+    One signature with USDC - zero gas fees - instant confirmation
+  </Step>
+</Steps>
+
+<Note>
+  Need USDC on Base? Bridge from Ethereum using [Base Bridge](https://bridge.base.org)
+</Note>
+
+## Ad Formats & Pricing
+
+<Tabs>
+  <Tab title="Banner">
+    **970×250 pixels** - Wide banner format
+    
+    **Price:** 1 USDC/hour
+    
+    Best for cost-effective campaigns with good visibility
+  </Tab>
+  <Tab title="Sidebar">
+    **300×600 pixels** - Vertical side placement
+    
+    **Price:** 2 USDC/hour
+    
+    Best for persistent visibility as users scroll
+  </Tab>
+  <Tab title="Leaderboard">
+    **728×90 pixels** - Top banner position
+    
+    **Price:** 3 USDC/hour
+    
+    Best for maximum visibility and brand awareness
+  </Tab>
+</Tabs>
+
+**Duration:** 1 hour minimum, 7 days (168 hours) maximum
+
+## API Reference
+
+### Browse Sites
+
+```bash
+GET https://x402.anyspend.com/ads/sites
+```
+
+Query parameters:
+- `page` - Page number (default: 1)
+- `limit` - Results per page (default: 20, max: 100)
+- `search` - Search by name/domain/keywords
+
+<CodeGroup>
+```bash cURL
+curl "https://x402.anyspend.com/ads/sites?search=defi&limit=10"
+```
+
+```javascript JavaScript
+const sites = await fetch('https://x402.anyspend.com/ads/sites?page=1&limit=20')
+  .then(r => r.json());
+```
+</CodeGroup>
+
+### Check Slot Availability
+
+```bash
+GET https://x402.anyspend.com/ads/slots/:slotId
+```
+
+See available ad slots and current pricing. Check what's currently running:
+
+```bash
+GET https://x402.anyspend.com/ads/slots/:slotId/current-ad
+```
+
+### View Your Campaigns
+
+```bash
+GET https://x402.anyspend.com/ads/bookings/buyer/:address
+```
+
+Track all your ad bookings - active, pending, and completed.
+
+<Info>
+  Prices in API responses are in USDC wei (6 decimals). Divide by 1,000,000 to get USDC amount.
+</Info>
+
+## Zero Gas with x402
+
+x402 is the payment protocol that makes crypto payments feel like web2.
+
+**Traditional crypto payments:**
+- ❌ Multiple transactions (approve + transfer)
+- ❌ $5-15 in gas fees
+- ❌ 30-60 second wait times
+- ❌ Complex multi-step flows
+
+**With x402:**
+- ✅ One signature - no transactions
+- ✅ Zero gas fees
+- ✅ Instant settlement
+- ✅ Simple one-click purchase
+
+### How It Works
+
+1. You sign a payment authorization message (not a transaction)
+2. x402 facilitator submits the transaction for you
+3. Facilitator pays the gas
+4. You pay only the ad price
+
+<Warning>
+  Always verify the amount and recipient before signing!
+</Warning>
+
+### Security
+
+- ✅ You control the signature
+- ✅ Signatures expire (can't be replayed)
+- ✅ One-time use with unique nonce
+- ✅ Amount is locked (can't charge more)
+
+## Tips for Success
+
+<AccordionGroup>
+  <Accordion title="Design Eye-Catching Ads">
+    - Use high contrast colors
+    - Keep text large and readable
+    - Include a clear call-to-action
+    - Test image URL before booking
+  </Accordion>
+  
+  <Accordion title="Target the Right Audience">
+    - Match sites to your target market
+    - Check traffic stats before booking
+    - Consider multiple smaller sites vs one large site
+  </Accordion>
+  
+  <Accordion title="Track Performance">
+    Use UTM parameters in your landing page URL:
+    ```
+    https://yoursite.com?utm_source=sitename&utm_medium=banner
+    ```
+  </Accordion>
+  
+  <Accordion title="Start Small & Scale">
+    - Book 1-2 hours first to test
+    - Monitor click-through rates
+    - Scale up what works
+  </Accordion>
+</AccordionGroup>
+
+## Common Issues
+
+<AccordionGroup>
+  <Accordion title="'Insufficient balance' error">
+    You need USDC on Base network. Check that:
+    - You're connected to Base (Chain ID: 8453)
+    - You have enough USDC for the total cost
+  </Accordion>
+  
+  <Accordion title="'Time slot unavailable' error">
+    Someone just booked that slot. Refresh and choose a different time.
+  </Accordion>
+  
+  <Accordion title="Can I cancel a booking?">
+    Currently, bookings cannot be cancelled or refunded. Make sure your ad is ready before booking.
+  </Accordion>
+  
+  <Accordion title="Can I edit my ad after booking?">
+    No, ad content is locked at booking time. You'll need to make a new booking to change it.
+  </Accordion>
+</AccordionGroup>
+
+<Card
+  title="Launch Your Campaign"
+  icon="rocket"
+  href="https://explorer.b3.fun/apps/x402-ad-marketplace"
+>
+  Start advertising on crypto sites in 5 minutes
+</Card>
+
+---
+
+**View on x402scan:** [See live data →](https://www.x402scan.com/server/ff37cb5f-7976-42bb-a161-e5e360d8cd42)
+
