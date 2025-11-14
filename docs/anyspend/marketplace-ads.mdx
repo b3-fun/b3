@@ -98,19 +98,104 @@ curl "https://x402.anyspend.com/ads/sites?search=defi&limit=10"
 const sites = await fetch('https://x402.anyspend.com/ads/sites?page=1&limit=20')
   .then(r => r.json());
 ```
+
+```json Response
+{
+  "success": true,
+  "data": [
+    {
+      "siteId": "abc123",
+      "siteName": "Crypto News Daily",
+      "siteUrl": "https://cryptonews.example.com",
+      "siteDomain": "cryptonews.com",
+      "description": "Daily crypto news and analysis",
+      "keywords": ["crypto", "bitcoin", "defi"],
+      "availableSlots": ["leaderboard", "sidebar", "banner"],
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 156,
+    "hasNext": true
+  }
+}
+```
 </CodeGroup>
 
-### Check Slot Availability
+### Get Slot Details
 
 ```bash
 GET https://x402.anyspend.com/ads/slots/:slotId
 ```
 
-See available ad slots and current pricing. Check what's currently running:
+Returns static slot information including pricing, format, and associated site details.
+
+<CodeGroup>
+```bash cURL
+curl "https://x402.anyspend.com/ads/slots/slot_banner_abc123"
+```
+
+```json Response
+{
+  "success": true,
+  "data": {
+    "slot": {
+      "slotId": "slot_banner_abc123",
+      "siteId": "abc123",
+      "slotType": "banner",
+      "pricePerHour": "1000000",
+      "available": true
+    },
+    "site": {
+      "siteName": "Crypto News Daily",
+      "siteUrl": "https://cryptonews.example.com"
+    }
+  }
+}
+```
+</CodeGroup>
+
+### Check Current Ad
 
 ```bash
 GET https://x402.anyspend.com/ads/slots/:slotId/current-ad
 ```
+
+Returns the ad currently running in this slot, or indicates if the slot is available.
+
+<CodeGroup>
+```bash cURL
+curl "https://x402.anyspend.com/ads/slots/slot_banner_abc123/current-ad"
+```
+
+```json Ad Running
+{
+  "success": true,
+  "data": {
+    "type": "paid",
+    "ad": {
+      "imageUrl": "https://example.com/ad.png",
+      "linkUrl": "https://example.com/landing"
+    },
+    "booking": {
+      "bookingId": "booking_xyz789",
+      "startTime": "2024-02-01T10:00:00.000Z",
+      "endTime": "2024-02-01T13:00:00.000Z"
+    }
+  }
+}
+```
+
+```json Slot Available
+{
+  "success": true,
+  "data": {
+    "type": "empty"
+  }
+}
+```
+</CodeGroup>
 
 ### View Your Campaigns
 
@@ -119,6 +204,40 @@ GET https://x402.anyspend.com/ads/bookings/buyer/:address
 ```
 
 Track all your ad bookings - active, pending, and completed.
+
+<CodeGroup>
+```bash cURL
+curl "https://x402.anyspend.com/ads/bookings/buyer/0xYourAddress"
+```
+
+```json Response
+{
+  "success": true,
+  "data": [
+    {
+      "bookingId": "booking_xyz789",
+      "siteId": "abc123",
+      "slotType": "banner",
+      "startTime": "2024-02-01T10:00:00.000Z",
+      "endTime": "2024-02-01T13:00:00.000Z",
+      "adContent": {
+        "imageUrl": "https://mysite.com/ad.png",
+        "linkUrl": "https://mysite.com/landing"
+      },
+      "totalPrice": "3000000",
+      "status": "active",
+      "paymentTxHash": "0xabcdef...",
+      "createdAt": "2024-01-22T16:30:00.000Z"
+    }
+  ]
+}
+```
+</CodeGroup>
+
+**Status values:**
+- `active` - Currently running
+- `pending` - Scheduled for future
+- `completed` - Campaign ended
 
 <Info>
   Prices in API responses are in USDC wei (6 decimals). Divide by 1,000,000 to get USDC amount.
