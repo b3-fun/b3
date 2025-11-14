@@ -481,4 +481,10 @@ if (isSwapAvailable) {
       
       actions: {
         onLowLiquidity: () => announceIncentiveProgram(),
-        onHighVolatility: () => checkFor
+        onHighVolatility: () => checkForManipulation(),
+        onTradingHalt: () => investigateIssues()
+      }
+    };
+    ```
+  </Tab>
+</Tabs>

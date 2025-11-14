@@ -491,4 +491,14 @@ console.log(health);
       }
     }
     
-    // U
+    // Uso con gas manual
+    const gasLimit = await estimateGasWithBuffer(
+      token.contract, 
+      'buy', 
+      [parseEther("1"), 0n]
+    );
+    
+    await token.buy(parseEther("1"), 0n, { gas: gasLimit });
+    ```
+  </Accordion>
+</AccordionGroup>

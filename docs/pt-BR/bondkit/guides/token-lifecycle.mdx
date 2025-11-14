@@ -464,4 +464,27 @@ if (isSwapAvailable) {
         // Métricas de Saúde
         utilizaçãoLiquidez: await getLiquidityUtilization(tokenAddress),
         impactoPreço1k: await getPriceImpact(tokenAddress, 1000),
-        distribuiçãoDetentores
+        distribuiçãoDetentores: await getHolderDistribution(tokenAddress)
+      };
+    }
+    ```
+    
+    **Monitoramento Automatizado:**
+    ```typescript
+    // Configurar alertas para eventos importantes
+    const monitoringConfig = {
+      priceAlerts: {
+        change24h: 20, // Alerta se mudança de preço >20%
+        volume: 10000, // Alerta se o volume exceder o limite
+        liquidity: 5000 // Alerta se o TVL cair abaixo do limite
+      },
+      
+      actions: {
+        onLowLiquidity: () => announceIncentiveProgram(),
+        onHighVolatility: () => checkForManipulation(),
+        onTradingHalt: () => investigateIssues()
+      }
+    };
+    ```
+  </Tab>
+</Tabs>

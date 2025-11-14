@@ -469,4 +469,34 @@ console.log(health);
     
     **解决方案：**
     ```typescript
-    // 燃气估算助
+    // 燃气估算助手
+    async function estimateGasWithBuffer(contract, method, args, buffer = 1.2) {
+      try {
+        const estimated = await contract.estimateGas[method](args);
+        const withBuffer = BigInt(Math.floor(Number(estimated) * buffer));
+        return withBuffer;
+      } catch (error) {
+        // 后备燃气限制
+        const fallbackGas = {
+          'deployBondkitToken': 2000000n,
+          'buy': 300000n,
+          'sell': 250000n,
+          'migrateToDex': 500000n,
+          'approve': 50000n
+        };
+        
+        return fallbackGas[method] || 200000n;
+      }
+    }
+    
+    // 使用手动燃气
+    const gasLimit = await estimateGasWithBuffer(
+      token.contract, 
+      'buy', 
+      [parseEther("1"), 0n]
+    );
+    
+    await token.buy(parseEther("1"), 0n, { gas: gasLimit });
+    ```
+  </Accordion>
+</AccordionGroup>
