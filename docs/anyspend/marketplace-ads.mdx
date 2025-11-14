@@ -1,5 +1,5 @@
 ---
-title: Ad Marketplace
+title: x402 Crypto Ads
 description: 'Advertise on crypto sites with zero gas fees using x402'
 ---
 
@@ -19,30 +19,62 @@ Buy advertising space on 100+ crypto content sites using USDC with **zero gas fe
   <Card title="100+ Sites" icon="globe">
     Choose from crypto news, DeFi, NFT sites
   </Card>
+  <Card title="AI-Powered Content" icon="brain">
+    Submit articles with AI validation and generation
+  </Card>
   <Card title="Real Analytics" icon="chart-line">
     See traffic data before you buy
+  </Card>
+  <Card title="Track Everything" icon="list-check">
+    Monitor your ads and article requests in real-time
   </Card>
 </CardGroup>
 
 ## Quick Start
 
-<Steps>
-  <Step title="Connect Wallet">
-    Visit [x402 Ad Marketplace](https://explorer.b3.fun/apps/x402-ad-marketplace) and connect your wallet on Base network
-  </Step>
-  <Step title="Browse Sites">
-    Explore sites with traffic stats, pick your target audience
-  </Step>
-  <Step title="Choose Format & Time">
-    Select ad format (Banner/Sidebar/Leaderboard) and time slot
-  </Step>
-  <Step title="Upload Ad">
-    Provide image URL and landing page
-  </Step>
-  <Step title="Sign & Pay">
-    One signature with USDC - zero gas fees - instant confirmation
-  </Step>
-</Steps>
+<Tabs>
+  <Tab title="Display Ads">
+    <Steps>
+      <Step title="Connect Wallet">
+        Visit [x402 Ad Marketplace](https://explorer.b3.fun/apps/x402-ad-marketplace) and connect your wallet on Base network
+      </Step>
+      <Step title="Browse Sites">
+        Explore sites with traffic stats, pick your target audience
+      </Step>
+      <Step title="Choose Format & Time">
+        Select ad format (Banner/Sidebar/Leaderboard) and time slot
+      </Step>
+      <Step title="Upload Ad">
+        Provide image URL and landing page
+      </Step>
+      <Step title="Sign & Pay">
+        One signature with USDC - zero gas fees - instant confirmation
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Article Submissions">
+    <Steps>
+      <Step title="Connect Wallet">
+        Visit [x402 Ad Marketplace](https://explorer.b3.fun/apps/x402-ad-marketplace) and connect your wallet on Base network
+      </Step>
+      <Step title="Select Target Site">
+        Choose from crypto news sites that accept article submissions
+      </Step>
+      <Step title="Submit Your Idea">
+        Provide a tweet URL, topic, or complete article title
+      </Step>
+      <Step title="AI Validation">
+        Get instant AI feedback with score (0-100) and suggestions
+      </Step>
+      <Step title="Review & Submit">
+        If approved (score ≥70), submit with one x402 signature
+      </Step>
+      <Step title="Track Progress">
+        Monitor status and get notified when published
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
 
 <Note>
   Need USDC on Base? Bridge from Ethereum using [Base Bridge](https://bridge.base.org)
@@ -76,13 +108,176 @@ Buy advertising space on 100+ crypto content sites using USDC with **zero gas fe
 
 **Duration:** 1 hour minimum, 7 days (168 hours) maximum
 
+## Article Submissions
+
+Submit article ideas to crypto content sites. AI validates your topic and generates optimized titles and descriptions.
+
+### How It Works
+
+<Steps>
+  <Step title="Submit Topic or Tweet">
+    Provide a tweet URL, topic idea, or complete article title
+  </Step>
+  <Step title="AI Validation (Free)">
+    AI scores your content (0-100) and generates suggestions if needed
+  </Step>
+  <Step title="Get Approval">
+    - **Score ≥90:** Your input is perfect, accepted as-is
+    - **Score 70-89:** Approved with AI-improved suggestions
+    - **Score &lt;70:** Rejected - try a different topic
+  </Step>
+  <Step title="Submit & Pay">
+    One x402 signature to submit your article request
+  </Step>
+  <Step title="Publication">
+    Site publishes your article and you receive the live URL
+  </Step>
+</Steps>
+
+### Pricing
+
+Prices vary by site, typically **$10-50 USDC** per article. Each site sets their own rate based on traffic and audience.
+
+<Note>
+  Validation is free! You can validate as many ideas as you want before committing to payment.
+</Note>
+
 ## API Reference
 
-### Browse Sites
+### Network & Payment Details
+
+<ParamField path="Network" type="Base">
+  Chain ID: 8453
+</ParamField>
+
+<ParamField path="Payment Token" type="USDC">
+  6 decimals
+</ParamField>
+
+<ParamField path="Protocol" type="x402">
+  ERC-20 Permit signatures
+</ParamField>
+
+<ParamField path="Max Price" type="$1000">
+  Maximum price per booking
+</ParamField>
+
+### Purchase Ad Slot (x402 Payment)
+
+```bash
+POST https://x402.anyspend.com/ads/buy
+```
+
+Programmatically purchase ad slots using x402 gasless payments. This endpoint requires x402 payment authorization.
+
+**Request Body:**
+
+<CodeGroup>
+```json Request
+{
+  "productId": "slot_abc123",
+  "buyerAddress": "0x742d35Cc6...",
+  "startTime": "2025-01-15T14:00:00Z",
+  "endTime": "2025-01-15T18:00:00Z",
+  "adContent": {
+    "imageUrl": "https://...",
+    "linkUrl": "https://...",
+    "altText": "Alt text",
+    "title": "Ad title",
+    "description": "Description"
+  }
+}
+```
+
+```json Success Response (200)
+{
+  "success": true,
+  "data": {
+    "purchaseId": "purch_123...",
+    "bookingId": "booking_456...",
+    "totalPrice": "5000000",
+    "status": "confirmed"
+  }
+}
+```
+
+```json Error Response (400)
+{
+  "success": false,
+  "error": "Slot already booked during this time"
+}
+```
+</CodeGroup>
+
+**Parameters:**
+- `productId` (required) - The ad slot ID from `/ads/slots`
+- `buyerAddress` (required) - Your wallet address
+- `startTime` (required) - Start time in ISO 8601 format
+- `endTime` (required) - End time in ISO 8601 format
+- `adContent.imageUrl` (required) - Direct URL to ad image
+- `adContent.linkUrl` (required) - Landing page URL
+- `adContent.altText` (required) - Image alt text
+- `adContent.title` (optional) - Ad title
+- `adContent.description` (optional) - Ad description
+
+**JavaScript/TypeScript Example:**
+
+```typescript
+import { wrapFetchWithPayment } from '@b3dotfun/anyspend-x402-fetch';
+import { createWalletClient, custom, publicActions } from 'viem';
+import { base } from 'viem/chains';
+
+// Create wallet client
+const walletClient = createWalletClient({
+  account: '0x742d35Cc6...',
+  chain: base,
+  transport: custom(window.ethereum),
+}).extend(publicActions);
+
+// Wrap fetch with x402 payment
+const fetchWithPayment = wrapFetchWithPayment(
+  fetch,
+  walletClient,
+  BigInt(1000 * 10 ** 6) // Max 1000 USDC
+);
+
+// Purchase ad slot
+const response = await fetchWithPayment(
+  'https://x402.anyspend.com/ads/buy',
+  {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      productId: 'slot_abc123',
+      buyerAddress: '0x742d35Cc6...',
+      startTime: '2025-01-15T14:00:00Z',
+      endTime: '2025-01-15T18:00:00Z',
+      adContent: {
+        imageUrl: 'https://example.com/ad.jpg',
+        linkUrl: 'https://example.com',
+        altText: 'My ad',
+        title: 'Check out our product!',
+        description: 'Limited offer'
+      }
+    })
+  }
+);
+
+const result = await response.json();
+console.log('Booking ID:', result.data.bookingId);
+```
+
+<Note>
+  See [x402 SDK documentation](/anyspend/x402-overview) for more details on using `wrapFetchWithPayment`.
+</Note>
+
+### Browse Sites (Free)
 
 ```bash
 GET https://x402.anyspend.com/ads/sites
 ```
+
+List all available sites with pagination. This endpoint is free to call.
 
 Query parameters:
 - `page` - Page number (default: 1)
@@ -123,13 +318,46 @@ const sites = await fetch('https://x402.anyspend.com/ads/sites?page=1&limit=20')
 ```
 </CodeGroup>
 
-### Get Slot Details
+### List All Slots (Free)
+
+```bash
+GET https://x402.anyspend.com/ads/slots
+```
+
+List all available ad slots across all sites. This endpoint is free to call.
+
+<CodeGroup>
+```bash cURL
+curl "https://x402.anyspend.com/ads/slots"
+```
+
+```javascript JavaScript
+const slots = await fetch('https://x402.anyspend.com/ads/slots')
+  .then(r => r.json());
+```
+
+```json Response
+{
+  "success": true,
+  "data": [
+    {
+      "slotId": "slot_abc123",
+      "siteId": "site_123",
+      "slotType": "leaderboard",
+      "pricePerHour": "5000000"
+    }
+  ]
+}
+```
+</CodeGroup>
+
+### Get Slot Details (Free)
 
 ```bash
 GET https://x402.anyspend.com/ads/slots/:slotId
 ```
 
-Returns static slot information including pricing, format, and associated site details.
+Returns static slot information including pricing, format, and associated site details. This endpoint is free to call.
 
 <CodeGroup>
 ```bash cURL
@@ -156,13 +384,13 @@ curl "https://x402.anyspend.com/ads/slots/slot_banner_abc123"
 ```
 </CodeGroup>
 
-### Check Current Ad
+### Check Current Ad (Free)
 
 ```bash
 GET https://x402.anyspend.com/ads/slots/:slotId/current-ad
 ```
 
-Returns the ad currently running in this slot, or indicates if the slot is available.
+Returns the ad currently running in this slot, or indicates if the slot is available. This endpoint is free to call.
 
 <CodeGroup>
 ```bash cURL
@@ -197,13 +425,13 @@ curl "https://x402.anyspend.com/ads/slots/slot_banner_abc123/current-ad"
 ```
 </CodeGroup>
 
-### View Your Campaigns
+### View Your Campaigns (Free)
 
 ```bash
 GET https://x402.anyspend.com/ads/bookings/buyer/:address
 ```
 
-Track all your ad bookings - active, pending, and completed.
+Track all your ad bookings - active, pending, and completed. This endpoint is free to call.
 
 <CodeGroup>
 ```bash cURL
@@ -242,6 +470,216 @@ curl "https://x402.anyspend.com/ads/bookings/buyer/0xYourAddress"
 <Info>
   Prices in API responses are in USDC wei (6 decimals). Divide by 1,000,000 to get USDC amount.
 </Info>
+
+---
+
+## Article Submission Endpoints
+
+### Validate Article Idea (Free)
+
+```bash
+POST https://x402.anyspend.com/articles/validate
+```
+
+Validate an article idea and get AI-generated title and description. This endpoint is free to call - no payment required.
+
+**Request Body:**
+
+<CodeGroup>
+```json Request
+{
+  "siteDomain": "baseradar.com",
+  "userInput": "How to Use Base Pay for Creators in Your DApp"
+}
+```
+
+```json Approved Response (Score ≥70)
+{
+  "success": true,
+  "data": {
+    "approved": true,
+    "score": 92,
+    "reasoning": "Excellent topic match for Base ecosystem content",
+    "estimatedPrice": "15000000",
+    "suggestedTitle": "How to Use Base Pay for Creators in Your DApp",
+    "suggestedDescription": "Learn how to integrate Base Pay...",
+    "userProvidedTitle": true,
+    "message": "Your input is approved as-is"
+  }
+}
+```
+
+```json Rejected Response (Score <70)
+{
+  "success": false,
+  "data": {
+    "approved": false,
+    "score": 45,
+    "reasoning": "Topic doesn't align with site's focus on Base ecosystem",
+    "estimatedPrice": "15000000",
+    "message": "Content doesn't fit the site's focus"
+  }
+}
+```
+</CodeGroup>
+
+**Parameters:**
+- `siteDomain` (required) - Target site domain (e.g., "baseradar.com", "solanaecho.com")
+- `userInput` (required) - Can be:
+  - Complete article title (10-200 characters)
+  - Tweet URL (e.g., "https://x.com/username/status/...")
+  - Topic or idea (e.g., "base pay for creators")
+
+**AI Scoring:**
+- **Score ≥90:** Your input is perfect! Used as-is
+- **Score 70-89:** Good content, AI provides improved suggestions
+- **Score &lt;70:** Rejected - topic doesn't fit the site
+
+**JavaScript Example:**
+
+```javascript
+const response = await fetch('https://x402.anyspend.com/articles/validate', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    siteDomain: 'baseradar.com',
+    userInput: 'How to bridge assets to Base chain'
+  })
+});
+
+const result = await response.json();
+console.log('Approved:', result.data.approved);
+console.log('Score:', result.data.score);
+console.log('Title:', result.data.suggestedTitle);
+```
+
+### Submit Article Request (x402 Payment)
+
+```bash
+POST https://x402.anyspend.com/articles/buy
+```
+
+Submit an article request with x402 gasless payment. Requires prior validation approval.
+
+**Request Body:**
+
+<CodeGroup>
+```json Request
+{
+  "buyerAddress": "0x742d35Cc6...",
+  "siteDomain": "baseradar.com",
+  "title": "How to Use Base Pay for Creators in Your DApp",
+  "description": "Learn how to integrate Base Pay into your decentralized application..."
+}
+```
+
+```json Success Response (200)
+{
+  "success": true,
+  "data": {
+    "requestId": "req_abc123...",
+    "productSpecificId": "req_abc123...",
+    "totalPrice": "15000000",
+    "status": "pending"
+  }
+}
+```
+
+```json Error Response (400)
+{
+  "success": false,
+  "error": "Title is required and must be 10-200 characters"
+}
+```
+</CodeGroup>
+
+**Parameters:**
+- `buyerAddress` (required) - Your wallet address
+- `siteDomain` (required) - Target site domain
+- `title` (required) - Article title (10-200 characters)
+- `description` (required) - Article description/summary
+
+**JavaScript/TypeScript Example:**
+
+```typescript
+import { wrapFetchWithPayment } from '@b3dotfun/anyspend-x402-fetch';
+import { createWalletClient, custom, publicActions } from 'viem';
+import { base } from 'viem/chains';
+
+// Create wallet client
+const walletClient = createWalletClient({
+  account: '0x742d35Cc6...',
+  chain: base,
+  transport: custom(window.ethereum),
+}).extend(publicActions);
+
+// Wrap fetch with x402 payment
+const fetchWithPayment = wrapFetchWithPayment(
+  fetch,
+  walletClient,
+  BigInt(1000 * 10 ** 6) // Max 1000 USDC
+);
+
+// Submit article request
+const response = await fetchWithPayment(
+  'https://x402.anyspend.com/articles/buy',
+  {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      buyerAddress: '0x742d35Cc6...',
+      siteDomain: 'baseradar.com',
+      title: 'How to Use Base Pay for Creators in Your DApp',
+      description: 'Learn how to integrate Base Pay into your decentralized application for seamless creator payments.'
+    })
+  }
+);
+
+const result = await response.json();
+console.log('Request ID:', result.data.requestId);
+```
+
+### View Your Article Requests (Free)
+
+```bash
+GET https://x402.anyspend.com/articles/requests/buyer/:address
+```
+
+Track all your article requests - pending, in progress, and published. This endpoint is free to call.
+
+<CodeGroup>
+```bash cURL
+curl "https://x402.anyspend.com/articles/requests/buyer/0xYourAddress"
+```
+
+```json Response
+{
+  "success": true,
+  "data": [
+    {
+      "requestId": "req_abc123",
+      "siteName": "Base Radar",
+      "siteDomain": "baseradar.com",
+      "title": "How to Use Base Pay for Creators",
+      "description": "Learn how to integrate Base Pay...",
+      "totalPrice": "15000000",
+      "status": "published",
+      "publishedUrl": "https://baseradar.com/articles/base-pay-creators",
+      "createdAt": "2025-01-15T10:00:00.000Z",
+      "updatedAt": "2025-01-16T15:30:00.000Z"
+    }
+  ]
+}
+```
+</CodeGroup>
+
+**Status values:**
+- `pending` - Waiting for site to write article
+- `in_progress` - Article is being written
+- `published` - Article is live (includes `publishedUrl`)
+- `rejected` - Article request was declined
+
+---
 
 ## Zero Gas with x402
 
@@ -305,6 +743,29 @@ x402 is the payment protocol that makes crypto payments feel like web2.
     - Monitor click-through rates
     - Scale up what works
   </Accordion>
+  
+  <Accordion title="Writing Effective Article Titles">
+    - Keep titles between 10-200 characters
+    - Be specific and descriptive
+    - Match the site's content focus
+    - Use keywords relevant to the site's audience
+    - If you have a great title, submit it directly (10+ chars)
+  </Accordion>
+  
+  <Accordion title="Maximize Article Approval">
+    - Research the site before submitting
+    - Check recent articles for tone and topics
+    - Tweet URLs work great - AI extracts context
+    - Validate multiple ideas before paying
+    - Score ≥70 required for approval
+  </Accordion>
+  
+  <Accordion title="Leverage AI Suggestions">
+    - If score is 70-89, review AI improvements
+    - AI optimizes for SEO and engagement
+    - Suggested descriptions enhance your submission
+    - Use validation to refine your pitch
+  </Accordion>
 </AccordionGroup>
 
 ## Common Issues
@@ -339,5 +800,5 @@ x402 is the payment protocol that makes crypto payments feel like web2.
 
 ---
 
-**View on x402scan:** [See live data →](https://www.x402scan.com/server/ff37cb5f-7976-42bb-a161-e5e360d8cd42)
+**Related:** [Article Submission Marketplace](/anyspend/marketplace-articles) • [x402 Overview](/anyspend/x402-overview) • [x402scan →](https://www.x402scan.com/server/ff37cb5f-7976-42bb-a161-e5e360d8cd42)
 

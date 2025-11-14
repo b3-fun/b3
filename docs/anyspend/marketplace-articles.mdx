@@ -1,0 +1,530 @@
+---
+title: x402 Article Placement
+description: 'Publish articles on crypto content sites with our AI crypto writer and get visibility'
+---
+
+[Check out the x402 Article Marketplace (UI)](https://explorer.b3.fun/apps/x402-ad-marketplace)
+
+<CardGroup cols={2}>
+  <Card title="AI Validation" icon="brain">
+    AI scores your content and generates optimized titles
+  </Card>
+  <Card title="No Gas Fees" icon="gas-pump">
+    Pay only the article price - zero transaction fees
+  </Card>
+  <Card title="100+ Sites" icon="globe">
+    Submit to crypto news, DeFi, NFT sites
+  </Card>
+  <Card title="Instant Submission" icon="bolt">
+    One signature and your pitch is sent
+  </Card>
+</CardGroup>
+
+## How It Works
+
+<Steps>
+  <Step title="Connect Wallet">
+    Visit [x402 Article Marketplace](https://explorer.b3.fun/apps/x402-article-marketplace) and connect your wallet on Base network
+  </Step>
+  <Step title="Choose Target Site">
+    Select a crypto content site that matches your article topic
+  </Step>
+  <Step title="Provide Your Idea">
+    Enter a tweet URL, topic idea, or complete article title
+  </Step>
+  <Step title="Review & Approve">
+    See AI suggestions and approval score before paying
+  </Step>
+  <Step title="Submit & Pay">
+    One signature with USDC - zero gas fees - instant submission to publisher
+  </Step>
+</Steps>
+
+## AI Validation Rules
+
+The AI validation endpoint scores your article idea and either approves it as-is, suggests improvements, or rejects it.
+
+<Tabs>
+  <Tab title="✅ Score ≥90">
+    **Perfect!** Your input is approved as-is.
+    
+    Your provided title or topic is excellent and fits the site's focus. No changes needed - we'll submit it exactly as you wrote it.
+    
+    **Example:** "How to Use Base Pay for Creators in Your DApp"
+  </Tab>
+  <Tab title="⚠️ Score 70-89">
+    **Good with Suggestions!** AI provides an improved version.
+    
+    Your content is relevant but could be optimized. AI generates a better title and description while keeping your core idea.
+    
+    **Example Input:** "base pay for creators"
+    
+    **AI Output:** "Integrating Base Pay: A Complete Guide for Content Creators"
+  </Tab>
+  <Tab title="❌ Score <70">
+    **Rejected.** Content doesn't fit the site's focus.
+    
+    Your topic is off-topic for this site. Try a different topic or choose a different site that better matches your content.
+    
+    **Example:** Submitting a cooking recipe to a crypto news site
+  </Tab>
+</Tabs>
+
+## Pricing
+
+Article submission prices vary by site based on their traffic and authority.
+
+**Typical Ranges:**
+- Small/emerging sites: $10-50 USDC per submission
+- Mid-tier sites: $50-200 USDC per submission
+- Premium sites: $200-500 USDC per submission
+
+<Note>
+  Prices are set by individual publishers. Check the site details before submitting.
+</Note>
+
+## API Reference
+
+### Network & Payment Details
+
+<ParamField path="Network" type="Base">
+  Chain ID: 8453
+</ParamField>
+
+<ParamField path="Payment Token" type="USDC">
+  6 decimals
+</ParamField>
+
+<ParamField path="Protocol" type="x402">
+  ERC-20 Permit signatures
+</ParamField>
+
+<ParamField path="Max Price" type="$1000">
+  Maximum price per submission
+</ParamField>
+
+### Validate Article Idea (Free)
+
+```bash
+POST https://x402.anyspend.com/articles/validate
+```
+
+Free endpoint to validate your article idea. AI generates a title, description, and approval score.
+
+**Request Body:**
+
+<CodeGroup>
+```json Request
+{
+  "siteDomain": "baseradar.com",
+  "userInput": "How to use Base Pay for creators"
+}
+```
+
+```json Success Response (200) - Approved
+{
+  "success": true,
+  "data": {
+    "approved": true,
+    "score": 85,
+    "reasoning": "Good topic for Base-focused site. AI optimized the title for better engagement.",
+    "suggestedTitle": "Integrating Base Pay: A Complete Guide for Content Creators",
+    "suggestedDescription": "Learn how to implement Base Pay in your creator platform with step-by-step examples and best practices.",
+    "estimatedPrice": "50000000",
+    "userProvidedTitle": false,
+    "message": "Content approved with AI suggestions"
+  }
+}
+```
+
+```json Success Response (200) - Perfect Score
+{
+  "success": true,
+  "data": {
+    "approved": true,
+    "score": 95,
+    "reasoning": "Excellent title! Clear, specific, and highly relevant to the site's audience.",
+    "suggestedTitle": "How to Use Base Pay for Creators in Your DApp",
+    "suggestedDescription": "Complete implementation guide for Base Pay",
+    "estimatedPrice": "50000000",
+    "userProvidedTitle": true,
+    "message": "Content approved as-is"
+  }
+}
+```
+
+```json Rejection Response (200) - Score Too Low
+{
+  "success": true,
+  "data": {
+    "approved": false,
+    "score": 45,
+    "reasoning": "Topic doesn't align with site's focus on Base ecosystem and DeFi. Consider submitting to a different site or adjusting your topic.",
+    "estimatedPrice": "50000000",
+    "message": "Content rejected - score too low"
+  }
+}
+```
+</CodeGroup>
+
+**Parameters:**
+- `siteDomain` (required) - Target site domain (e.g., "baseradar.com")
+- `userInput` (required) - Tweet URL, topic idea, or complete title (10-200 characters)
+
+**Input Options:**
+
+<AccordionGroup>
+  <Accordion title="Option 1: Complete Title">
+    Provide a ready-to-use article title.
+    
+    ```json
+    {
+      "siteDomain": "baseradar.com",
+      "userInput": "How to Build a DEX on Base with Uniswap V3"
+    }
+    ```
+    
+    If approved (score ≥90), your title is used as-is.
+  </Accordion>
+  
+  <Accordion title="Option 2: Tweet URL">
+    Provide a tweet URL with relevant content.
+    
+    ```json
+    {
+      "siteDomain": "solanaecho.com",
+      "userInput": "https://x.com/BuildOnBase/status/1234567890"
+    }
+    ```
+    
+    AI extracts the topic and generates a title/description.
+  </Accordion>
+  
+  <Accordion title="Option 3: Topic/Idea">
+    Provide a short topic or idea.
+    
+    ```json
+    {
+      "siteDomain": "baseradar.com",
+      "userInput": "base pay for creators"
+    }
+    ```
+    
+    AI generates a complete title and description.
+  </Accordion>
+</AccordionGroup>
+
+### Submit Article Request (x402 Payment)
+
+```bash
+POST https://x402.anyspend.com/articles/buy
+```
+
+Submit an article request with x402 payment. You must validate your content first and receive approval.
+
+**Request Body:**
+
+<CodeGroup>
+```json Request
+{
+  "buyerAddress": "0x742d35Cc6...",
+  "siteDomain": "baseradar.com",
+  "title": "Integrating Base Pay: A Complete Guide for Content Creators",
+  "description": "Learn how to implement Base Pay in your creator platform with step-by-step examples and best practices."
+}
+```
+
+```json Success Response (200)
+{
+  "success": true,
+  "data": {
+    "requestId": "req_789...",
+    "productSpecificId": "req_789...",
+    "totalPrice": "50000000",
+    "status": "pending"
+  }
+}
+```
+
+```json Error Response (400)
+{
+  "success": false,
+  "error": "Content validation required before submission"
+}
+```
+</CodeGroup>
+
+**Parameters:**
+- `buyerAddress` (required) - Your wallet address
+- `siteDomain` (required) - Target site domain
+- `title` (required) - Article title (from validation or your own if score ≥90)
+- `description` (required) - Article description (from validation or your own)
+
+**JavaScript/TypeScript Example:**
+
+```typescript
+import { wrapFetchWithPayment } from '@b3dotfun/anyspend-x402-fetch';
+import { createWalletClient, custom, publicActions } from 'viem';
+import { base } from 'viem/chains';
+
+// Step 1: Validate your content (FREE)
+const validateResponse = await fetch('https://x402.anyspend.com/articles/validate', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    siteDomain: 'baseradar.com',
+    userInput: 'How to use Base Pay for creators'
+  })
+});
+
+const validation = await validateResponse.json();
+
+if (!validation.data.approved) {
+  console.error('Content rejected:', validation.data.reasoning);
+  process.exit(1);
+}
+
+console.log('✅ Approved! Score:', validation.data.score);
+console.log('Title:', validation.data.suggestedTitle);
+
+// Step 2: Submit with payment (x402)
+const walletClient = createWalletClient({
+  account: '0x742d35Cc6...',
+  chain: base,
+  transport: custom(window.ethereum),
+}).extend(publicActions);
+
+const fetchWithPayment = wrapFetchWithPayment(
+  fetch,
+  walletClient,
+  BigInt(1000 * 10 ** 6) // Max 1000 USDC
+);
+
+const response = await fetchWithPayment(
+  'https://x402.anyspend.com/articles/buy',
+  {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      buyerAddress: '0x742d35Cc6...',
+      siteDomain: 'baseradar.com',
+      title: validation.data.suggestedTitle,
+      description: validation.data.suggestedDescription
+    })
+  }
+);
+
+const result = await response.json();
+console.log('🎉 Article submitted! Request ID:', result.data.requestId);
+```
+
+<Note>
+  See [x402 SDK documentation](/anyspend/x402-overview) for more details on using `wrapFetchWithPayment`.
+</Note>
+
+### View Your Submissions (Free)
+
+```bash
+GET https://x402.anyspend.com/articles/requests/buyer/:address
+```
+
+Track all your article submissions - pending, accepted, and published.
+
+<CodeGroup>
+```bash cURL
+curl "https://x402.anyspend.com/articles/requests/buyer/0xYourAddress"
+```
+
+```json Response
+{
+  "success": true,
+  "data": [
+    {
+      "requestId": "req_789...",
+      "siteId": "site_123",
+      "siteName": "Base Radar",
+      "siteDomain": "baseradar.com",
+      "title": "Integrating Base Pay: A Complete Guide for Content Creators",
+      "description": "Learn how to implement Base Pay in your creator platform...",
+      "status": "published",
+      "totalPrice": "50000000",
+      "publishedUrl": "https://baseradar.com/articles/integrating-base-pay",
+      "createdAt": "2025-01-15T10:00:00.000Z",
+      "publishedAt": "2025-01-18T14:30:00.000Z"
+    },
+    {
+      "requestId": "req_790...",
+      "siteId": "site_456",
+      "siteName": "Solana Echo",
+      "siteDomain": "solanaecho.com",
+      "title": "Cross-Chain NFT Bridging: Solana to Base",
+      "description": "Technical guide on bridging NFTs between Solana and Base",
+      "status": "pending",
+      "totalPrice": "75000000",
+      "createdAt": "2025-01-20T08:15:00.000Z"
+    }
+  ]
+}
+```
+</CodeGroup>
+
+**Status values:**
+- `pending` - Submitted to publisher, awaiting review
+- `accepted` - Publisher accepted, article in production
+- `published` - Article is live (includes `publishedUrl`)
+- `rejected` - Publisher declined (rare, usually pre-validated)
+
+<Info>
+  Prices in API responses are in USDC wei (6 decimals). Divide by 1,000,000 to get USDC amount.
+</Info>
+
+### Browse Sites (Free)
+
+```bash
+GET https://x402.anyspend.com/ads/sites
+```
+
+List all sites accepting article submissions. Same endpoint as ad marketplace - sites support both ads and articles.
+
+<CodeGroup>
+```bash cURL
+curl "https://x402.anyspend.com/ads/sites?limit=20"
+```
+
+```json Response
+{
+  "success": true,
+  "data": [
+    {
+      "siteId": "site_123",
+      "siteName": "Base Radar",
+      "siteUrl": "https://baseradar.com",
+      "siteDomain": "baseradar.com",
+      "description": "News and analysis for the Base ecosystem",
+      "keywords": ["base", "defi", "nft", "gaming"],
+      "articlePrice": "50000000"
+    },
+    {
+      "siteId": "site_456",
+      "siteName": "Solana Echo",
+      "siteUrl": "https://solanaecho.com",
+      "siteDomain": "solanaecho.com",
+      "description": "Solana ecosystem news and tutorials",
+      "keywords": ["solana", "defi", "nft"],
+      "articlePrice": "75000000"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 156,
+    "hasNext": true
+  }
+}
+```
+</CodeGroup>
+
+## AI Validation Tips
+
+<AccordionGroup>
+  <Accordion title="Write Clear, Specific Titles">
+    **Good:** "How to Build a DEX on Base with Uniswap V3"
+    
+    **Bad:** "DeFi stuff"
+    
+    Specific titles score higher and are more likely to be approved.
+  </Accordion>
+  
+  <Accordion title="Match Site Focus">
+    Check site keywords and description before submitting. A Base-focused article won't score well on a Solana-only site.
+  </Accordion>
+  
+  <Accordion title="Use Complete Sentences for Titles">
+    **Good:** "How to Use Base Pay for Creators in Your DApp"
+    
+    **Bad:** "base pay creators"
+    
+    Complete titles (10-200 chars) get higher scores.
+  </Accordion>
+  
+  <Accordion title="Leverage Tweet URLs">
+    If you have a viral tweet about your topic, use the URL! AI extracts context and generates a relevant title.
+  </Accordion>
+</AccordionGroup>
+
+## Common Issues
+
+<AccordionGroup>
+  <Accordion title="'Content rejected' with low score">
+    Your topic doesn't fit the site's focus. Options:
+    - Choose a different site that matches your topic better
+    - Adjust your topic to align with the site's keywords
+    - Provide a more specific, detailed title
+  </Accordion>
+  
+  <Accordion title="'Content validation required' error">
+    You must call `/articles/validate` first and get approval before calling `/articles/buy`.
+  </Accordion>
+  
+  <Accordion title="'Insufficient balance' error">
+    You need USDC on Base network. Check that:
+    - You're connected to Base (Chain ID: 8453)
+    - You have enough USDC for the article price
+  </Accordion>
+  
+  <Accordion title="What happens after I submit?">
+    1. Your request goes to the publisher for review
+    2. Publisher evaluates your pitch (typically 1-7 days)
+    3. If accepted, they'll write/publish the article
+    4. You'll receive the published URL once live
+    
+    Track status via `/articles/requests/buyer/:address`
+  </Accordion>
+  
+  <Accordion title="Can I edit my submission after paying?">
+    No, submissions are locked after payment. Make sure your content is correct before submitting.
+  </Accordion>
+  
+  <Accordion title="What if the publisher rejects my article?">
+    Publishers rarely reject pre-validated content, but if they do, the status will show "rejected". Refunds are handled case-by-case - contact the publisher directly.
+  </Accordion>
+</AccordionGroup>
+
+## Zero Gas with x402
+
+x402 is the payment protocol that makes crypto payments feel like web2.
+
+**Traditional crypto payments:**
+- ❌ Multiple transactions (approve + transfer)
+- ❌ $5-15 in gas fees
+- ❌ 30-60 second wait times
+- ❌ Complex multi-step flows
+
+**With x402:**
+- ✅ One signature - no transactions
+- ✅ Zero gas fees
+- ✅ Instant settlement
+- ✅ Simple one-click submission
+
+### How It Works
+
+1. You sign a payment authorization message (not a transaction)
+2. x402 facilitator submits the transaction for you
+3. Facilitator pays the gas
+4. You pay only the article price
+
+<Warning>
+  Always verify the amount and recipient before signing!
+</Warning>
+
+### Security
+
+- ✅ You control the signature
+- ✅ Signatures expire (can't be replayed)
+- ✅ One-time use with unique nonce
+- ✅ Amount is locked (can't charge more)
+
+---
+
+**Related:** [Ad Marketplace](/anyspend/marketplace-ads) • [x402 Overview](/anyspend/x402-overview) • [x402scan →](https://www.x402scan.com/server/ff37cb5f-7976-42bb-a161-e5e360d8cd42)
+
