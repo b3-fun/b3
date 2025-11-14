@@ -1,0 +1,468 @@
+---
+title: x402 文章布局
+description: 使用我们的AI加密作家在加密内容网站上发布文章，获得曝光
+lang: cn
+originalPath: anyspend/marketplace-articles.mdx
+---
+[查看 x402 文章市场（UI）](https://explorer.b3.fun/apps/x402-ad-marketplace)
+
+<CardGroup cols={2}>
+  <Card title="AI 验证" icon="brain">
+    AI 为您的内容打分并生成优化的标题
+  </Card>
+  <Card title="无 Gas 费用" icon="gas-pump">
+    仅支付文章价格 - 零交易费
+  </Card>
+  <Card title="100+ 网站" icon="globe">
+    提交至加密新闻、DeFi、NFT 网站
+  </Card>
+  <Card title="即时提交" icon="bolt">
+    一次签名，您的提案即被发送
+  </Card>
+</CardGroup>
+
+## 如何操作
+
+<Steps>
+  <Step title="连接钱包">
+    访问 [x402 文章市场](https://explorer.b3.fun/apps/x402-article-marketplace) 并在 Base 网络上连接您的钱包
+  </Step>
+  <Step title="选择目标网站">
+    选择与您文章主题相匹配的加密内容网站
+  </Step>
+  <Step title="提供您的想法">
+    输入推文 URL、主题想法或完整文章标题
+  </Step>
+  <Step title="审查并批准">
+    在支付前查看 AI 建议和批准分数
+  </Step>
+  <Step title="提交并支付">
+    使用 USDC 一次签名 - 零 Gas 费用 - 即时提交给发布者
+  </Step>
+</Steps>
+
+## AI 验证规则
+
+AI 验证端点对您的文章想法进行评分，并根据情况批准、建议改进或拒绝。
+
+<Tabs>
+  <Tab title="✅ 分数 ≥90">
+    **完美！** 您的输入按原样获得批准。
+    
+    您提供的标题或主题非常优秀，符合网站的重点。无需更改 - 我们将按照您所写的内容提交。
+    
+    **示例：** "如何在您的 DApp 中使用 Base Pay 为创作者付款"
+  </Tab>
+  <Tab title="⚠️ 分数 70-89">
+    **有建议的好！** AI 提供了改进的版本。
+    
+    您的内容相关但可以优化。AI 在保留您的核心思想的同时生成更好的标题和描述。
+    
+    **示例输入：** "为创作者提供 base pay"
+    
+    **AI 输出：** "整合 Base Pay：内容创作者的完整指南"
+  </Tab>
+  <Tab title="❌ 分数 <70">
+    **被拒绝。** 内容不符合网站的重点。
+    
+    您的主题与该网站的主题不符。尝试不同的主题或选择更适合您内容的不同网站。
+    
+    **示例：** 向加密新闻网站提交烹饪食谱
+  </Tab>
+</Tabs>
+
+## 定价
+
+文章提交价格根据网站的流量和权威度而有所不同。
+
+**典型范围：**
+- 小型/新兴网站：每次提交 $10-50 USDC
+- 中等网站：每次提交 $50-200 USDC
+- 高级网站：每次提交 $200-500 USDC
+
+<Note>
+  价格由各个发布者设定。提交前请检查网站详情。
+</Note>
+
+## API 参考
+
+### 网络和支付详情
+
+<ParamField path="Network" type="Base">
+  Chain ID: 8453
+</ParamField>
+
+<ParamField path="Payment Token" type="USDC">
+  6 小数位
+</ParamField>
+
+<ParamField path="Protocol" type="x402">
+  ERC-20 Permit 签名
+</ParamField>
+
+<ParamField path="Max Price" type="$1000">
+  每次提交的最高价格
+</ParamField>
+
+### 验证文章想法（免费）
+
+```bash
+POST https://x402.anyspend.com/articles/validate
+```
+
+免费端点，用于验证您的文章想法。AI 生成标题、描述和批准分数。
+
+**请求正文：**
+
+<CodeGroup>
+```json 请求
+{
+  "siteDomain": "baseradar.com",
+  "userInput": "如何为创作者使用 Base Pay"
+}
+```
+
+```json 成功响应（200）- 已批准
+{
+  "success": true,
+  "data": {
+    "approved": true,
+    "score": 85,
+    "reasoning": "适合 Base 专注网站的好主题。AI 优化了标题以获得更好的参与度。",
+    "suggestedTitle": "整合 Base Pay：内容创作者的完整指南",
+    "suggestedDescription": "通过逐步示例和最佳实践学习如何在您的创作者平台中实施 Base Pay。",
+    "estimatedPrice": "50000000",
+    "userProvidedTitle": false,
+    "message": "内容获得 AI 建议的批准"
+  }
+}
+```
+
+```json 成功响应（200）- 完美分数
+{
+  "success": true,
+  "data": {
+    "approved": true,
+    "score": 95,
+    "reasoning": "标题优秀！清晰、具体且高度相关于网站受众。",
+    "suggestedTitle": "如何在您的 DApp 中使用 Base Pay 为创作者付款",
+    "suggestedDescription": "Base Pay 完整实施指南",
+    "estimatedPrice": "50000000",
+    "userProvidedTitle": true,
+    "message": "内容按原样获得批准"
+  }
+}
+```
+
+```json 拒绝响应（200）- 分数过低
+{
+  "success": true,
+  "data": {
+    "approved": false,
+    "score": 45,
+    "reasoning": "主题与网站对 Base 生态系统和 DeFi 的关注不符。考虑提交给不同的网站或调整您的主题。",
+    "estimatedPrice": "50000000",
+    "message": "内容被拒绝 - 分数过低"
+  }
+}
+```
+</CodeGroup>
+
+**参数：**
+- `siteDomain`（必需）- 目标网站域名（例如，“baseradar.com”）
+- `userInput`（必需）- 推文 URL、主题想法或完整标题（10-200 字符）
+
+**输入选项：**
+
+<AccordionGroup>
+  <Accordion title="选项 1：完整标题">
+    提供一个现成的文章标题。
+    
+    ```json
+    {
+      "siteDomain": "baseradar.com",
+      "userInput": "如何在 Base 上使用 Uniswap V3 构建 DEX"
+    }
+    ```
+    
+    如果获得批准（分数 ≥90），您的标题将按原样使用。
+  </Accordion>
+  
+  <Accordion title="选项 2：推文 URL">
+    提供一个包含相关内容的推文 URL。
+    
+    ```json
+    {
+      "siteDomain": "solanaecho.com",
+      "userInput": "https://x.com/BuildOnBase/status/1234567890"
+    }
+    ```
+    
+    AI 提取主题并生成标题/描述。
+  </Accordion>
+  
+  <Accordion title="选项 3：主题/想法">
+    提供一个简短的主题或想法。
+    
+    ```json
+    {
+      "siteDomain": "baseradar.com",
+      "userInput": "为创作者提供 base pay"
+    }
+    ```
+    
+    AI 生成完整的标题和描述。
+  </Accordion>
+</AccordionGroup>
+
+### 提交文章请求（x402 支付）
+
+```bash
+POST https://x402.anyspend.com/articles/buy
+```
+
+使用 x402 支付提交文章请求。您必须先验证您的内容并获得批准。
+
+**请求正文：**
+
+<CodeGroup>
+```json 请求
+{
+  "buyerAddress": "0x742d35Cc6...",
+  "siteDomain": "baseradar.com",
+  "title": "整合 Base Pay：内容创作者的完整指南",
+  "description": "通过逐步示例和最佳实践学习如何在您的创作者平台中实施 Base Pay。"
+}
+```
+
+```json 成功响应（200）
+{
+  "success": true,
+  "data": {
+    "requestId": "req_789...",
+    "productSpecificId": "req_789...",
+    "totalPrice": "50000000",
+    "status": "pending"
+  }
+}
+```
+
+```json 错误响应（400）
+{
+  "success": false,
+  "error": "提交前需要进行内容验证"
+}
+```
+</CodeGroup>
+
+**参数：**
+- `buyerAddress`（必需）- 您的钱包地址
+- `siteDomain`（必需）- 目标网站域名
+- `title`（必需）- 文章标题（来自验证或您自己的，如果分数 ≥90）
+- `description`（必需）- 文章描述（来自验证或您自己的）
+
+**JavaScript/TypeScript 示例：**
+
+```typescript
+import { wrapFetchWithPayment } from '@b3dotfun/anyspend-x402-fetch';
+import { createWalletClient, custom, publicActions } from 'viem';
+import { base } from 'viem/chains';
+
+// 第 1 步：验证您的内容（免费）
+const validateResponse = await fetch('https://x402.anyspend.com/articles/validate', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    siteDomain: 'baseradar.com',
+    userInput: '如何为创作者使用 Base Pay'
+  })
+});
+
+const validation = await validateResponse.json();
+
+if (!validation.data.approved) {
+  console.error('内容被拒绝：', validation.data.reasoning);
+  process.exit(1);
+}
+
+console.log('✅ 获得批准！分数：', validation.data.score);
+console.log('标题：', validation.data.suggestedTitle);
+
+// 第 2 步：使用支付提交（x402）
+const walletClient = createWalletClient({
+  account: '0x742d35Cc6...',
+  chain: base,
+  transport: custom(window.ethereum),
+}).extend(publicActions);
+
+const fetchWithPayment = wrapFetchWithPayment(
+  fetch,
+  walletClient,
+  BigInt(1000 * 10 ** 6) // 最多 1000 USDC
+);
+
+const response = await fetchWithPayment(
+  'https://x402.anyspend.com/articles/buy',
+  {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      buyerAddress: '0x742d35Cc6...',
+      siteDomain: 'baseradar.com',
+      title: validation.data.suggestedTitle,
+      description: validation.data.suggestedDescription
+    })
+  }
+);
+
+const result = await response.json();
+console.log('🎉 文章提交成功！请求 ID：', result.data.requestId);
+```
+
+<Note>
+  有关使用 `wrapFetchWithPayment` 的更多详情，请参见 [x402 SDK 文档](/anyspend/x402-overview)。
+</Note>
+
+### 查看您的提交（免费）
+
+```bash
+GET https://x402.anyspend.com/articles/requests/buyer/:address
+```
+
+跟踪您所有的文章提交 - 待处理、已接受和已发布。
+
+<CodeGroup>
+```bash cURL
+curl "https://x402.anyspend.com/articles/requests/buyer/0xYourAddress"
+```
+
+```json 响应
+{
+  "success": true,
+  "data": [
+    {
+      "requestId": "req_789...",
+      "siteId": "site_123",
+      "siteName": "Base Radar",
+      "siteDomain": "baseradar.com",
+      "title": "整合 Base Pay：内容创作者的完整指南",
+      "description": "通过逐步示例和最佳实践学习如何在您的创作者平台中实施 Base Pay...",
+      "status": "published",
+      "totalPrice": "50000000",
+      "publishedUrl": "https://baseradar.com/articles/integrating-base-pay",
+      "createdAt": "2025-01-15T10:00:00.000Z",
+      "publishedAt": "2025-01-18T14:30:00.000Z"
+    },
+    {
+      "requestId": "req_790...",
+      "siteId": "site_456",
+      "siteName": "Solana Echo",
+      "siteDomain": "solanaecho.com",
+      "title": "Solana 到 Base 的跨链 NFT 桥接",
+      "description": "在 Solana 和 Base 之间桥接 NFT 的技术指南",
+      "status": "pending",
+      "totalPrice": "75000000",
+      "createdAt": "2025-01-20T08:15:00.000Z"
+    }
+  ]
+}
+```
+</CodeGroup>
+
+**状态值：**
+- `pending` - 已提交给发布者，等待审核
+- `accepted` - 发布者接受，文章在制作中
+- `published` - 文章已发布（包括 `publishedUrl`）
+- `rejected` - 发布者拒绝（罕见，通常预先验证）
+
+<Info>
+  API 响应中的价格以 USDC wei（6 小数位）表示。除以 1,000,000 以获得 USDC 金额。
+</Info>
+
+### 浏览网站（免费）
+
+```bash
+GET https://x402.anyspend.com/ads/sites
+```
+
+列出所有接受文章提交的网站。与广告市场相同的端点 - 网站支持广告和文章。
+
+<CodeGroup>
+```bash cURL
+curl "https://x402.anyspend.com/ads/sites?limit=20"
+```
+
+```json 响应
+{
+  "success": true,
+  "data": [
+    {
+      "siteId": "site_123",
+      "siteName": "Base Radar",
+      "siteUrl": "https://baseradar.com",
+      "siteDomain": "baseradar.com",
+      "description": "Base 生态系统的新闻和分析",
+      "keywords": ["base", "defi", "nft", "gaming"],
+      "articlePrice": "50000000"
+    },
+    {
+      "siteId": "site_456",
+      "siteName": "Solana Echo",
+      "siteUrl": "https://solanaecho.com",
+      "siteDomain": "solanaecho.com",
+      "description": "Solana 生态系统新闻和教程",
+      "keywords": ["solana", "defi", "nft"],
+      "articlePrice": "75000000"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 156,
+    "hasNext": true
+  }
+}
+```
+</CodeGroup>
+
+## AI 验证技巧
+
+<AccordionGroup>
+  <Accordion title="撰写清晰、具体的标题">
+    **好：** "如何在 Base 上使用 Uniswap V3 构建 DEX"
+    
+    **坏：** "DeFi 东西"
+    
+    具体的标题得分更高，更有可能获得批准。
+  </Accordion>
+  
+  <Accordion title="匹配网站重点">
+    提交前检查网站关键词和描述。一个专注于 Base 的文章在仅限 Solana 的网站上不会得分高。
+  </Accordion>
+  
+  <Accordion title="使用完整句子作为标题">
+    **好：** "如何在您的 DApp 中使用 Base Pay 为创作者付款"
+    
+    **坏：** "base pay 创作者"
+    
+    完整的标题（10-200 字符）获得更高的分数。
+  </Accordion>
+  
+  <Accordion title="利用推文 URL">
+    如果您有关于您的主题的热门推文，请使用 URL！AI 提取上下文并生成相关标题。
+  </Accordion>
+</AccordionGroup>
+
+## 常见问题
+
+<AccordionGroup>
+  <Accordion title="'内容被拒绝' 低分">
+    您的主题不符合网站的重点。选项：
+    - 选择更适合您主题的不同网站
+    - 调整您的主题以符合网站的关键词
+    - 提供更具体、详细的标题
+  </Accordion>
+  
+  <Accordion title="'需要内容验证' 错误">
+    您必须先调用 `/articles/validate` 并获得批准，然后才能调用 `/articles/buy`。
+  </

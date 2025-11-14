@@ -1,0 +1,478 @@
+---
+title: Colocação do Artigo x402
+description: >-
+  Publique artigos em sites de conteúdo sobre cripto com nosso escritor de
+  cripto AI e ganhe visibilidade
+lang: pt-BR
+originalPath: anyspend/marketplace-articles.mdx
+---
+[Confira o x402 Article Marketplace (UI)](https://explorer.b3.fun/apps/x402-ad-marketplace)
+
+<CardGroup cols={2}>
+  <Card title="Validação por IA" icon="brain">
+    IA avalia seu conteúdo e gera títulos otimizados
+  </Card>
+  <Card title="Sem Taxas de Gás" icon="gas-pump">
+    Pague apenas o preço do artigo - zero taxas de transação
+  </Card>
+  <Card title="Mais de 100 Sites" icon="globe">
+    Envie para sites de notícias sobre cripto, DeFi, NFT
+  </Card>
+  <Card title="Submissão Instantânea" icon="bolt">
+    Uma assinatura e seu pitch é enviado
+  </Card>
+</CardGroup>
+
+## Como Funciona
+
+<Steps>
+  <Step title="Conectar Carteira">
+    Visite o [x402 Article Marketplace](https://explorer.b3.fun/apps/x402-article-marketplace) e conecte sua carteira na rede Base
+  </Step>
+  <Step title="Escolher Site Alvo">
+    Selecione um site de conteúdo cripto que combine com o tema do seu artigo
+  </Step>
+  <Step title="Fornecer Sua Ideia">
+    Insira uma URL de tweet, ideia de tema ou título completo do artigo
+  </Step>
+  <Step title="Revisar & Aprovar">
+    Veja sugestões da IA e pontuação de aprovação antes de pagar
+  </Step>
+  <Step title="Submeter & Pagar">
+    Uma assinatura com USDC - zero taxas de gás - submissão instantânea ao editor
+  </Step>
+</Steps>
+
+## Regras de Validação por IA
+
+O endpoint de validação por IA pontua sua ideia de artigo e a aprova como está, sugere melhorias ou a rejeita.
+
+<Tabs>
+  <Tab title="✅ Pontuação ≥90">
+    **Perfeito!** Sua entrada é aprovada como está.
+    
+    Seu título ou tema fornecido é excelente e se encaixa no foco do site. Nenhuma mudança necessária - vamos submetê-lo exatamente como você escreveu.
+    
+    **Exemplo:** "Como Usar o Base Pay para Criadores no Seu DApp"
+  </Tab>
+  <Tab title="⚠️ Pontuação 70-89">
+    **Bom com Sugestões!** IA fornece uma versão melhorada.
+    
+    Seu conteúdo é relevante, mas poderia ser otimizado. IA gera um título e descrição melhores, mantendo sua ideia central.
+    
+    **Entrada de Exemplo:** "base pay para criadores"
+    
+    **Saída da IA:** "Integrando o Base Pay: Um Guia Completo para Criadores de Conteúdo"
+  </Tab>
+  <Tab title="❌ Pontuação <70">
+    **Rejeitado.** O conteúdo não se encaixa no foco do site.
+    
+    Seu tema está fora do tópico para este site. Tente um tema diferente ou escolha um site diferente que combine melhor com seu conteúdo.
+    
+    **Exemplo:** Enviando uma receita de cozinha para um site de notícias cripto
+  </Tab>
+</Tabs>
+
+## Preços
+
+Os preços de submissão de artigos variam por site com base em seu tráfego e autoridade.
+
+**Faixas Típicas:**
+- Sites pequenos/emergentes: $10-50 USDC por submissão
+- Sites de médio porte: $50-200 USDC por submissão
+- Sites premium: $200-500 USDC por submissão
+
+<Note>
+  Os preços são definidos por editores individuais. Verifique os detalhes do site antes de submeter.
+</Note>
+
+## Referência da API
+
+### Detalhes da Rede & Pagamento
+
+<ParamField path="Network" type="Base">
+  Chain ID: 8453
+</ParamField>
+
+<ParamField path="Payment Token" type="USDC">
+  6 decimais
+</ParamField>
+
+<ParamField path="Protocol" type="x402">
+  Assinaturas de Permissão ERC-20
+</ParamField>
+
+<ParamField path="Max Price" type="$1000">
+  Preço máximo por submissão
+</ParamField>
+
+### Validar Ideia de Artigo (Grátis)
+
+```bash
+POST https://x402.anyspend.com/articles/validate
+```
+
+Endpoint gratuito para validar sua ideia de artigo. IA gera um título, descrição e pontuação de aprovação.
+
+**Corpo da Requisição:**
+
+<CodeGroup>
+```json Request
+{
+  "siteDomain": "baseradar.com",
+  "userInput": "How to use Base Pay for creators"
+}
+```
+
+```json Success Response (200) - Approved
+{
+  "success": true,
+  "data": {
+    "approved": true,
+    "score": 85,
+    "reasoning": "Bom tópico para site focado em Base. IA otimizou o título para melhor engajamento.",
+    "suggestedTitle": "Integrando o Base Pay: Um Guia Completo para Criadores de Conteúdo",
+    "suggestedDescription": "Aprenda como implementar o Base Pay na sua plataforma de criadores com exemplos passo a passo e melhores práticas.",
+    "estimatedPrice": "50000000",
+    "userProvidedTitle": false,
+    "message": "Conteúdo aprovado com sugestões da IA"
+  }
+}
+```
+
+```json Success Response (200) - Perfect Score
+{
+  "success": true,
+  "data": {
+    "approved": true,
+    "score": 95,
+    "reasoning": "Título excelente! Claro, específico e altamente relevante para o público do site.",
+    "suggestedTitle": "Como Usar o Base Pay para Criadores no Seu DApp",
+    "suggestedDescription": "Guia completo de implementação do Base Pay",
+    "estimatedPrice": "50000000",
+    "userProvidedTitle": true,
+    "message": "Conteúdo aprovado como está"
+  }
+}
+```
+
+```json Rejection Response (200) - Score Too Low
+{
+  "success": true,
+  "data": {
+    "approved": false,
+    "score": 45,
+    "reasoning": "Tópico não se alinha com o foco do site no ecossistema Base e DeFi. Considere submeter a um site diferente ou ajustar seu tópico.",
+    "estimatedPrice": "50000000",
+    "message": "Conteúdo rejeitado - pontuação muito baixa"
+  }
+}
+```
+</CodeGroup>
+
+**Parâmetros:**
+- `siteDomain` (obrigatório) - Domínio do site alvo (ex., "baseradar.com")
+- `userInput` (obrigatório) - URL de tweet, ideia de tópico ou título completo (10-200 caracteres)
+
+**Opções de Entrada:**
+
+<AccordionGroup>
+  <Accordion title="Opção 1: Título Completo">
+    Forneça um título de artigo pronto para uso.
+    
+    ```json
+    {
+      "siteDomain": "baseradar.com",
+      "userInput": "How to Build a DEX on Base with Uniswap V3"
+    }
+    ```
+    
+    Se aprovado (pontuação ≥90), seu título é usado como está.
+  </Accordion>
+  
+  <Accordion title="Opção 2: URL de Tweet">
+    Forneça uma URL de tweet com conteúdo relevante.
+    
+    ```json
+    {
+      "siteDomain": "solanaecho.com",
+      "userInput": "https://x.com/BuildOnBase/status/1234567890"
+    }
+    ```
+    
+    IA extrai o tópico e gera um título/descrição.
+  </Accordion>
+  
+  <Accordion title="Opção 3: Tópico/Ideia">
+    Forneça um tópico ou ideia curta.
+    
+    ```json
+    {
+      "siteDomain": "baseradar.com",
+      "userInput": "base pay para criadores"
+    }
+    ```
+    
+    IA gera um título e descrição completos.
+  </Accordion>
+</AccordionGroup>
+
+### Submeter Pedido de Artigo (Pagamento x402)
+
+```bash
+POST https://x402.anyspend.com/articles/buy
+```
+
+Submeta um pedido de artigo com pagamento x402. Você deve validar seu conteúdo primeiro e receber aprovação.
+
+**Corpo da Requisição:**
+
+<CodeGroup>
+```json Request
+{
+  "buyerAddress": "0x742d35Cc6...",
+  "siteDomain": "baseradar.com",
+  "title": "Integrando o Base Pay: Um Guia Completo para Criadores de Conteúdo",
+  "description": "Aprenda como implementar o Base Pay na sua plataforma de criadores com exemplos passo a passo e melhores práticas."
+}
+```
+
+```json Success Response (200)
+{
+  "success": true,
+  "data": {
+    "requestId": "req_789...",
+    "productSpecificId": "req_789...",
+    "totalPrice": "50000000",
+    "status": "pending"
+  }
+}
+```
+
+```json Error Response (400)
+{
+  "success": false,
+  "error": "Validação de conteúdo necessária antes da submissão"
+}
+```
+</CodeGroup>
+
+**Parâmetros:**
+- `buyerAddress` (obrigatório) - Seu endereço de carteira
+- `siteDomain` (obrigatório) - Domínio do site alvo
+- `title` (obrigatório) - Título do artigo (da validação ou o seu próprio se pontuação ≥90)
+- `description` (obrigatório) - Descrição do artigo (da validação ou a sua própria)
+
+**Exemplo em JavaScript/TypeScript:**
+
+```typescript
+import { wrapFetchWithPayment } from '@b3dotfun/anyspend-x402-fetch';
+import { createWalletClient, custom, publicActions } from 'viem';
+import { base } from 'viem/chains';
+
+// Passo 1: Valide seu conteúdo (GRÁTIS)
+const validateResponse = await fetch('https://x402.anyspend.com/articles/validate', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    siteDomain: 'baseradar.com',
+    userInput: 'How to use Base Pay for creators'
+  })
+});
+
+const validation = await validateResponse.json();
+
+if (!validation.data.approved) {
+  console.error('Conteúdo rejeitado:', validation.data.reasoning);
+  process.exit(1);
+}
+
+console.log('✅ Aprovado! Pontuação:', validation.data.score);
+console.log('Título:', validation.data.suggestedTitle);
+
+// Passo 2: Submeter com pagamento (x402)
+const walletClient = createWalletClient({
+  account: '0x742d35Cc6...',
+  chain: base,
+  transport: custom(window.ethereum),
+}).extend(publicActions);
+
+const fetchWithPayment = wrapFetchWithPayment(
+  fetch,
+  walletClient,
+  BigInt(1000 * 10 ** 6) // Máximo de 1000 USDC
+);
+
+const response = await fetchWithPayment(
+  'https://x402.anyspend.com/articles/buy',
+  {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      buyerAddress: '0x742d35Cc6...',
+      siteDomain: 'baseradar.com',
+      title: validation.data.suggestedTitle,
+      description: validation.data.suggestedDescription
+    })
+  }
+);
+
+const result = await response.json();
+console.log('🎉 Artigo submetido! ID do Pedido:', result.data.requestId);
+```
+
+<Note>
+  Veja a [documentação do SDK x402](/anyspend/x402-overview) para mais detalhes sobre o uso de `wrapFetchWithPayment`.
+</Note>
+
+### Visualizar Suas Submissões (Grátis)
+
+```bash
+GET https://x402.anyspend.com/articles/requests/buyer/:address
+```
+
+Acompanhe todas as suas submissões de artigos - pendentes, aceitas e publicadas.
+
+<CodeGroup>
+```bash cURL
+curl "https://x402.anyspend.com/articles/requests/buyer/0xYourAddress"
+```
+
+```json Response
+{
+  "success": true,
+  "data": [
+    {
+      "requestId": "req_789...",
+      "siteId": "site_123",
+      "siteName": "Base Radar",
+      "siteDomain": "baseradar.com",
+      "title": "Integrando o Base Pay: Um Guia Completo para Criadores de Conteúdo",
+      "description": "Aprenda como implementar o Base Pay na sua plataforma de criadores...",
+      "status": "published",
+      "totalPrice": "50000000",
+      "publishedUrl": "https://baseradar.com/articles/integrando-base-pay",
+      "createdAt": "2025-01-15T10:00:00.000Z",
+      "publishedAt": "2025-01-18T14:30:00.000Z"
+    },
+    {
+      "requestId": "req_790...",
+      "siteId": "site_456",
+      "siteName": "Solana Echo",
+      "siteDomain": "solanaecho.com",
+      "title": "Bridging de NFT Cross-Chain: Solana para Base",
+      "description": "Guia técnico sobre bridging de NFTs entre Solana e Base",
+      "status": "pending",
+      "totalPrice": "75000000",
+      "createdAt": "2025-01-20T08:15:00.000Z"
+    }
+  ]
+}
+```
+</CodeGroup>
+
+**Valores de status:**
+- `pending` - Submetido ao editor, aguardando revisão
+- `accepted` - Editor aceitou, artigo em produção
+- `published` - Artigo está ao vivo (inclui `publishedUrl`)
+- `rejected` - Editor recusou (raro, geralmente pré-validado)
+
+<Info>
+  Os preços nas respostas da API estão em USDC wei (6 decimais). Divida por 1.000.000 para obter o valor em USDC.
+</Info>
+
+### Navegar pelos Sites (Grátis)
+
+```bash
+GET https://x402.anyspend.com/ads/sites
+```
+
+Lista todos os sites que aceitam submissões de artigos. Mesmo endpoint do marketplace de anúncios - sites suportam tanto anúncios quanto artigos.
+
+<CodeGroup>
+```bash cURL
+curl "https://x402.anyspend.com/ads/sites?limit=20"
+```
+
+```json Response
+{
+  "success": true,
+  "data": [
+    {
+      "siteId": "site_123",
+      "siteName": "Base Radar",
+      "siteUrl": "https://baseradar.com",
+      "siteDomain": "baseradar.com",
+      "description": "Notícias e análises para o ecossistema Base",
+      "keywords": ["base", "defi", "nft", "gaming"],
+      "articlePrice": "50000000"
+    },
+    {
+      "siteId": "site_456",
+      "siteName": "Solana Echo",
+      "siteUrl": "https://solanaecho.com",
+      "siteDomain": "solanaecho.com",
+      "description": "Notícias e tutoriais do ecossistema Solana",
+      "keywords": ["solana", "defi", "nft"],
+      "articlePrice": "75000000"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 156,
+    "hasNext": true
+  }
+}
+```
+</CodeGroup>
+
+## Dicas de Validação por IA
+
+<AccordionGroup>
+  <Accordion title="Escreva Títulos Claros e Específicos">
+    **Bom:** "Como Construir um DEX no Base com Uniswap V3"
+    
+    **Ruim:** "Coisas de DeFi"
+    
+    Títulos específicos pontuam mais alto e têm mais chances de serem aprovados.
+  </Accordion>
+  
+  <Accordion title="Combine com o Foco do Site">
+    Verifique as palavras-chave e descrição do site antes de submeter. Um artigo focado em Base não pontuará bem em um site exclusivo de Solana.
+  </Accordion>
+  
+  <Accordion title="Use Frases Completas para Títulos">
+    **Bom:** "Como Usar o Base Pay para Criadores no Seu DApp"
+    
+    **Ruim:** "base pay criadores"
+    
+    Títulos completos (10-200 caracteres) obtêm pontuações mais altas.
+  </Accordion>
+  
+  <Accordion title="Aproveite URLs de Tweets">
+    Se você tem um tweet viral sobre seu tópico, use a URL! IA extrai o contexto e gera um título relevante.
+  </Accordion>
+</AccordionGroup>
+
+## Problemas Comuns
+
+<AccordionGroup>
+  <Accordion title="'Conteúdo rejeitado' com pontuação baixa">
+    Seu tópico não se encaixa no foco do site. Opções:
+    - Escolha um site diferente que combine melhor com seu tópico
+    - Ajuste seu tópico para alinhar com as palavras-chave do site
+    - Forneça um título mais específico e detalhado
+  </Accordion>
+  
+  <Accordion title="Erro 'Validação de conteúdo necessária'">
+    Você deve chamar `/articles/validate` primeiro e obter aprovação antes de chamar `/articles/buy`.
+  </Accordion>
+  
+  <Accordion title="Erro 'Saldo insuficiente'">
+    Você precisa de USDC na rede Base. Verifique se:
+    - Você está conectado à Base (Chain ID: 8453)
+    - Você tem USDC suficiente para o preço do artigo
+  </Accordion>
+  
+  <Accordion title="O

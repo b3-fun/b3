@@ -1,33 +1,33 @@
 ---
 title: Introducción a BondKit
 description: >-
-  Producto para lanzar tokens de bonos ERC20 en Base con una fase de vinculación
+  Producto para lanzar tokens de bono ERC20 en Base con una fase de vinculación
   y migración sin problemas a Uniswap v4.
 lang: es
 originalPath: bondkit/introduction.mdx
 ---
 ## ¿Qué es BondKit?
 
-BondKit es una plataforma completa de lanzamiento de tokens para crear "tokens de bono" ERC20 en Base mainnet. Proporciona una solución de principio a fin que maneja todo desde la creación inicial del token hasta el comercio con curva de bonos y finalmente la migración a Uniswap v4 para un comercio descentralizado completo.
+BondKit es una plataforma completa de lanzamiento de tokens para crear "tokens de bono" ERC20 en Base mainnet. Proporciona una solución de principio a fin que maneja todo, desde la creación inicial del token hasta el comercio con curva de bonificación y finalmente la migración a Uniswap v4 para un comercio descentralizado completo.
 
 ### Componentes Clave
 
 <Tabs>
-  <Tab title="Contratos Inteligentes">
-    **Infraestructura En Cadena Auditada**
+  <Tab title="Smart Contracts">
+    **Infraestructura On-Chain Auditada**
     - Contrato de fábrica para desplegar nuevos tokens
-    - Implementación de ERC20 con lógica de curva de bonos
+    - Implementación de ERC20 con lógica de curva de bonificación
     - Inicialización automática del pool de Uniswap v4
     - Patrón de proxy mínimo optimizado para gas
   </Tab>
-  <Tab title="SDK de TypeScript">
+  <Tab title="TypeScript SDK">
     **Herramientas Amigables para Desarrolladores**
     - API simple para todas las interacciones con contratos
     - Interfaces seguras de tipo con soporte completo de TypeScript
     - Gestión de transacciones integrada
     - Suscripciones a eventos y monitoreo
   </Tab>
-  <Tab title="Backend de Analítica">
+  <Tab title="Analytics Backend">
     **Servicios de Datos en Tiempo Real**
     - Seguimiento del historial de transacciones
     - Generación de datos de gráficos OHLCV
@@ -40,10 +40,10 @@ BondKit es una plataforma completa de lanzamiento de tokens para crear "tokens d
 
 ```mermaid
 graph LR
-    A[Crear Token] --> B[Fase de Bonificación]
-    B --> C[Meta Alcanzada]
-    C --> D[Migrar a DEX]
-    D --> E[Comercio en Uniswap v4]
+    A[Create Token] --> B[Bonding Phase]
+    B --> C[Target Reached]
+    C --> D[Migrate to DEX]
+    D --> E[Uniswap v4 Trading]
     
     style A fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff
     style B fill:#FF9800,stroke:#F57C00,stroke-width:2px,color:#fff
@@ -55,44 +55,44 @@ graph LR
 ### El Ciclo de Vida de Tres Fases
 
 1. **Fase de Creación**: Despliega tu token con parámetros personalizados
-2. **Fase de Bonificación**: Creación de mercado automatizada vía curva de bonos
+2. **Fase de Bonificación**: Creación de mercado automatizada a través de curva de bonificación
 3. **Fase DEX**: Comercio descentralizado completo en Uniswap v4
 
 ## Características Principales
 
 <AccordionGroup>
   <Accordion title="🏭 Despliegue de Patrón de Fábrica">
-    - **Clones Eficientes en Gas**: Usa el patrón de proxy mínimo para reducir los costos de despliegue en ~90%
+    - **Clones Eficientes en Gas**: Utiliza el patrón de proxy mínimo para reducir los costos de despliegue en ~90%
     - **Implementación Estandarizada**: Todos los tokens comparten la misma lógica probada en batalla
-    - **Despliegue con Un Clic**: Llamada a función simple para crear un nuevo token
+    - **Despliegue con Un Clic**: Llamada de función simple para crear un nuevo token
   </Accordion>
   
-  <Accordion title="📈 Curva de Bonos Dinámica">
+  <Accordion title="📈 Curva de Bonificación Dinámica">
     - **Agresividad Configurable**: Factor de 0-100 controla la progresión del precio
     - **Descubrimiento Automático de Precios**: Precios impulsados por el mercado durante la fase de bonificación
     - **Soporte de Compra y Venta**: Comercio bidireccional completo durante la bonificación
-    - **Tarifa de Comercio del 5%**: Aplicada a compras y ventas, distribuida al receptor de tarifas
+    - **Tarifa de Comercio del 5%**: Aplicada a compras y ventas, distribuida al receptor de la tarifa
   </Accordion>
   
   <Accordion title="🎯 Migración Basada en Objetivos">
     - **Objetivos Personalizables**: Establece tu meta de financiación en ETH o ERC20 permitidos
-    - **Detección Automática del Umbral**: El contrato rastrea el progreso hacia el objetivo
+    - **Detección Automática de Umbrales**: El contrato rastrea el progreso hacia el objetivo
     - **Migración con Un Clic**: Llamada simple a `migrateToDex()` cuando estés listo
-    - **Cálculo de Precios**: `sqrtPriceX96` calculado en cadena para una fijación de precios justa inicial
+    - **Cálculo de Precios**: `sqrtPriceX96` calculado on-chain para una fijación de precios justa inicial
   </Accordion>
   
   <Accordion title="🔄 Integración con Uniswap v4">
-    - **Creación Automática del Pool**: Pool inicializado con el precio de salida de la curva de bonos
+    - **Creación Automática del Pool**: Pool inicializado con precio de salida de la curva de bonificación
     - **Provisión de Liquidez**: Los fondos acumulados se convierten en liquidez inicial
     - **Renuncia de Propiedad**: El contrato se vuelve completamente descentralizado después de la migración
     - **Transición Sin Problemas**: No se requiere intervención manual
   </Accordion>
   
-  <Accordion title="📊 Analítica y Monitoreo">
+  <Accordion title="📊 Análisis y Monitoreo">
     - **Indexación en Tiempo Real**: Todas las transacciones grabadas y procesadas
-    - **Datos OHLCV**: Gráficos de trading profesionales disponibles vía API
+    - **Datos OHLCV**: Gráficos de trading profesionales disponibles a través de API
     - **Historial de Transacciones**: Rastro de auditoría completo para cada token
-    - **Seguimiento de Portafolio**: Monitorea múltiples tokens y posiciones
+    - **Seguimiento de Cartera**: Monitorea múltiples tokens y posiciones
   </Accordion>
 </AccordionGroup>
 
@@ -104,10 +104,10 @@ graph LR
     - Mecanismos de lanzamiento justos
     - Descubrimiento de precios impulsado por la comunidad
     - No se requiere liquidez inicial
-    - Protección incorporada contra bots
+    - Protección integrada contra bots
   </Card>
   
-  <Card title="🎮 Gaming y NFTs" icon="gamepad">
+  <Card title="🎮 Juegos y NFTs" icon="gamepad">
     **Para Proyectos de GameFi**
     - Lanzamientos de moneda en juegos
     - Tokens de proyectos NFT
@@ -119,18 +119,18 @@ graph LR
     **Para Desarrolladores**
     - Creación programática de tokens
     - Soluciones de marca blanca
-    - Integración de frontend personalizada
+    - Integración de frontend personalizado
     - Automatización impulsada por API
   </Card>
 </CardGroup>
 
 ## Capacidades Técnicas
 
-### Características de Contratos Inteligentes
+### Características de Smart Contract
 - ✅ Tokens de bono compatibles con ERC20 con funcionalidad extendida
 - ✅ Patrón de fábrica para despliegues eficientes en gas
 - ✅ Parámetros configurables (suministro, objetivo, agresividad)
-- ✅ Mecanismo de distribución de tarifas incorporado
+- ✅ Mecanismo de distribución de tarifas integrado
 - ✅ Migración automática a Uniswap v4
 
 ### Características del SDK
@@ -140,12 +140,12 @@ graph LR
 - ✅ Manejo de recibos de transacción
 - ✅ Manejo de errores y lógica de reintento
 
-### Características de Analítica
+### Características de Análisis
 - ✅ Seguimiento de precios en tiempo real
 - ✅ Métricas de volumen y liquidez
 - ✅ Datos históricos de transacciones
 - ✅ Datos de velas OHLCV
-- ✅ Seguimiento de portafolio de usuarios
+- ✅ Seguimiento de cartera de usuarios
 
 ## Comenzar
 
@@ -162,13 +162,13 @@ graph LR
 ## Terminología Clave
 
 <Tabs>
-  <Tab title="Conceptos Básicos">
+  <Tab title="Conceptos Clave">
     | Término | Definición |
     |------|------------|
-    | **Fase de Bonificación** | Periodo inicial de comercio con precios algorítmicos vía curva de bonos |
-    | **Token de Bono** | Token ERC20 con mecánicas de curva de bonos incorporadas |
-    | **Cantidad Objetivo** | Meta de financiación que activa la elegibilidad para migración |
-    | **Migración** | Transición de la curva de bonos a Uniswap v4 |
+    | **Fase de Bonificación** | Periodo inicial de comercio con precios algorítmicos a través de la curva de bonificación |
+    | **Token de Bono** | Token ERC20 con mecánicas integradas de curva de bonificación |
+    | **Cantidad Objetivo** | Meta de financiación que activa la elegibilidad para la migración |
+    | **Migración** | Transición de la curva de bonificación a Uniswap v4 |
     | **Activo de Cotización** | La moneda utilizada para comprar tokens (ETH o ERC20 permitidos) |
   </Tab>
   
@@ -176,10 +176,10 @@ graph LR
     | Término | Definición |
     |------|------------|
     | **Proxy Mínimo** | Patrón de clonación de contratos eficiente en gas |
-    | **Factor de Agresividad** | Parámetro (0-100) que controla la pendiente de la curva de precios |
+    | **Factor de Agresividad** | Parámetro (0-100) que controla la inclinación de la curva de precios |
     | **sqrtPriceX96** | Formato de precio de Uniswap v4 para la inicialización del pool |
     | **Receptor de Tarifas** | Dirección que recibe las tarifas de comercio durante la bonificación |
-    | **Relación de División de LP** | Porcentaje de tarifa de proveedor de liquidez en puntos básicos |
+    | **Ratio de División de LP** | Porcentaje de tarifa de proveedor de liquidez en puntos básicos |
   </Tab>
   
   <Tab title="Términos del SDK">
@@ -187,8 +187,8 @@ graph LR
     |------|------------|
     | **Contrato de Fábrica** | Contrato principal para desplegar nuevos tokens de bono |
     | **Implementación** | Contrato plantilla clonado para cada token |
-    | **Cliente Público** | Conexión a blockchain solo de lectura |
-    | **Cliente de Cartera** | Conexión a blockchain con capacidad de escritura |
+    | **Cliente Público** | Conexión blockchain solo lectura |
+    | **Cliente de Cartera** | Conexión blockchain con capacidad de escritura |
     | **Proveedor** | Interfaz de conexión Web3 (p. ej., MetaMask) |
   </Tab>
 </Tabs>
@@ -198,14 +198,14 @@ graph LR
 <Note>
   **Red Actual**: Solo Base Mainnet
   
-  **Activos de Cotización Permitidos**: 
-  - Token B3 (actualmente activo)
-  - ETH (próximamente)
-  - Se pueden autorizar tokens adicionales
+  **Tokens de Comercio Soportados**: 
+  - Token B3 (primario en Base mainnet)
+  - ETH (cuando se configura como dirección cero)
+  - Se pueden autorizar tokens ERC20 adicionales
   
   **Estructura de Tarifas**:
-  - 5% en todas las operaciones de la fase de bonificación
-  - Relación de división de LP personalizable para la migración
+  - 5% en todas las transacciones de la fase de bonificación
+  - Ratio de división de LP personalizable para la migración
   
   **Seguridad**:
   - Contratos inteligentes auditados
