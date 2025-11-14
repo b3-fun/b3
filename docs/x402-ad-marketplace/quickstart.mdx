@@ -1,0 +1,256 @@
+---
+title: Quickstart
+description: 'Launch your first ad campaign in 5 minutes'
+---
+
+## What You'll Need
+
+- **MetaMask** or any Web3 wallet
+- **USDC on Base** network (minimum 1 USDC)
+- **Your ad creative** (image URL and landing page)
+
+<Note>
+  Don't have USDC on Base? Bridge from Ethereum using [Base Bridge](https://bridge.base.org)
+</Note>
+
+## Step 1: Connect Your Wallet
+
+1. Go to [x402 Ad Marketplace](https://explorer.b3.fun/apps/x402-ad-marketplace)
+2. Click **"Connect Wallet"** in the top right
+3. Choose MetaMask (or your preferred wallet)
+4. Approve the connection
+
+<Warning>
+  The marketplace only works on **Base network**. You'll be prompted to switch if you're on a different network.
+</Warning>
+
+## Step 2: Browse Available Sites
+
+Scroll through the available sites or use the **"Available Sites"** tab. Each site shows:
+
+- Site name and URL
+- Monthly visitors
+- Traffic by country
+- Available ad formats
+- Hourly pricing
+
+Click **"View Details"** on any site to see more information.
+
+## Step 3: Choose Your Ad Format
+
+Select one of three ad formats:
+
+<Tabs>
+  <Tab title="Banner (Recommended)">
+    **970×250 pixels** - Wide banner format
+    
+    **Price:** 1 USDC per hour
+    
+    Best for: Cost-effective campaigns with good visibility
+  </Tab>
+  <Tab title="Sidebar">
+    **300×600 pixels** - Vertical side placement
+    
+    **Price:** 2 USDC per hour
+    
+    Best for: Persistent visibility as users scroll
+  </Tab>
+  <Tab title="Leaderboard">
+    **728×90 pixels** - Top banner position
+    
+    **Price:** 3 USDC per hour
+    
+    Best for: Maximum visibility and brand awareness
+  </Tab>
+</Tabs>
+
+## Step 4: Select Time & Duration
+
+Use the calendar to pick:
+
+1. **Start date** - When your ad goes live
+2. **Start time** - Hour to start (shown in your timezone)
+3. **Duration** - How many hours to run (1-168 hours)
+
+The calendar shows:
+- ✅ **Green** = Available slots
+- 🔴 **Red** = Already booked
+- ⚪ **Gray** = Past time
+
+<Info>
+  Minimum booking: 1 hour. Maximum: 7 days (168 hours)
+</Info>
+
+## Step 5: Upload Your Ad
+
+Provide your ad details:
+
+```json
+{
+  "imageUrl": "https://yourdomain.com/ad-banner.png",  // Required
+  "linkUrl": "https://yourdomain.com/landing-page",    // Required
+  "altText": "Your tagline or description"             // Optional
+}
+```
+
+**Image Requirements:**
+- Must be HTTPS URL
+- Match the slot dimensions exactly
+- Supported: PNG, JPG, WebP, SVG
+- Max size: 2MB recommended
+- Make sure image loads fast
+
+<Warning>
+  Test your image URL before submitting! Broken images cannot be refunded.
+</Warning>
+
+## Step 6: Review & Confirm
+
+Review your booking:
+
+- **Site:** Where your ad appears
+- **Format:** Banner / Sidebar / Leaderboard
+- **Duration:** Start and end time
+- **Total Cost:** Hours × hourly rate
+
+Example: 3 hours × 1 USDC = **3 USDC total**
+
+Click **"Purchase Ad Slot"** when ready.
+
+## Step 7: Approve Payment
+
+MetaMask will pop up asking you to **sign a message** (NOT a transaction).
+
+This is the x402 gasless payment:
+- ✅ No transaction fee
+- ✅ No gas cost
+- ✅ Just one signature
+- ✅ Instant settlement
+
+Click **"Sign"** to complete your purchase.
+
+<Info>
+  This is a cryptographic signature for payment authorization - it's NOT a blockchain transaction, so there's no gas fee!
+</Info>
+
+## Step 8: Success!
+
+You'll see:
+
+```
+🎉 Successfully purchased ad slot! 
+Booking ID: abc123xyz
+```
+
+Your ad will:
+- ✅ Go live at your scheduled start time
+- ✅ Run for your selected duration
+- ✅ Appear in "My Ads Bookings" tab
+
+## View Your Campaign
+
+Click the **"My Ads Bookings"** tab to see:
+
+- All your active and scheduled ads
+- Start and end times
+- Sites where ads are running
+- Payment transaction details
+
+## Tips for Best Results
+
+<AccordionGroup>
+  <Accordion title="Design Eye-Catching Ads">
+    - Use high contrast colors
+    - Keep text large and readable
+    - Include a clear call-to-action
+    - Show your product/logo prominently
+  </Accordion>
+  
+  <Accordion title="Choose Peak Times">
+    - Check site analytics before booking
+    - Target times with highest traffic
+    - Consider audience timezone
+  </Accordion>
+  
+  <Accordion title="Test Your Landing Page">
+    - Make sure your link works
+    - Optimize for mobile
+    - Have a clear conversion goal
+    - Track your clicks with UTM parameters
+  </Accordion>
+  
+  <Accordion title="Start Small">
+    - Book 1-2 hours first to test
+    - Monitor performance
+    - Scale up what works
+  </Accordion>
+</AccordionGroup>
+
+## Common Issues
+
+<AccordionGroup>
+  <Accordion title="'Insufficient balance' error">
+    You need USDC on Base network. Check that:
+    - You're connected to Base (not Ethereum mainnet)
+    - You have enough USDC for the total cost
+    - USDC contract: `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`
+  </Accordion>
+  
+  <Accordion title="'Time slot unavailable' error">
+    Someone just booked that slot. Try:
+    - Refreshing the calendar
+    - Choosing a different time
+    - Picking a different site
+  </Accordion>
+  
+  <Accordion title="MetaMask doesn't pop up">
+    - Make sure MetaMask is unlocked
+    - Check you're on the marketplace tab
+    - Try refreshing the page and reconnecting
+  </Accordion>
+  
+  <Accordion title="Wrong network error">
+    - Click "Switch Network" in the error message
+    - Or manually switch to Base in MetaMask
+    - Chain ID: 8453
+  </Accordion>
+</AccordionGroup>
+
+## What's Next?
+
+<CardGroup cols={2}>
+  <Card
+    title="Browse All Sites"
+    icon="magnifying-glass"
+    href="/x402-ad-marketplace/api/sites"
+  >
+    See all available advertising sites
+  </Card>
+  <Card
+    title="Check Availability"
+    icon="calendar"
+    href="/x402-ad-marketplace/api/slots"
+  >
+    Query slots and availability
+  </Card>
+  <Card
+    title="Learn About x402"
+    icon="bolt"
+    href="/x402-ad-marketplace/x402/overview"
+  >
+    How gasless payments work
+  </Card>
+  <Card
+    title="View Your Bookings"
+    icon="list"
+    href="/x402-ad-marketplace/api/bookings"
+  >
+    Track your ad campaigns
+  </Card>
+</CardGroup>
+
+<Check>
+  **Congratulations!** You've launched your first gasless web3 ad campaign! 🎉
+</Check>
+
+---
