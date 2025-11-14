@@ -108,6 +108,7 @@ function AnySpendCustomExactInInner({
     isSrcInputDirty,
     setIsSrcInputDirty,
     selectedCryptoPaymentMethod,
+    effectiveCryptoPaymentMethod,
     setSelectedCryptoPaymentMethod,
     selectedFiatPaymentMethod,
     setSelectedFiatPaymentMethod,
@@ -184,13 +185,13 @@ function AnySpendCustomExactInInner({
       return { text: "Get quote error", disable: true, error: true, loading: false };
 
     if (paymentType === "crypto") {
-      if (selectedCryptoPaymentMethod === CryptoPaymentMethodType.NONE) {
+      if (effectiveCryptoPaymentMethod === CryptoPaymentMethodType.NONE) {
         return { text: "Choose payment method", disable: false, error: false, loading: false };
       }
       if (
         !hasEnoughBalance &&
         !isBalanceLoading &&
-        selectedCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET
+        effectiveCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET
       ) {
         return { text: "Insufficient balance", disable: true, error: true, loading: false };
       }
@@ -213,7 +214,7 @@ function AnySpendCustomExactInInner({
     selectedRecipientOrDefault,
     anyspendQuote,
     paymentType,
-    selectedCryptoPaymentMethod,
+    effectiveCryptoPaymentMethod,
     selectedFiatPaymentMethod,
     hasEnoughBalance,
     isBalanceLoading,
@@ -270,7 +271,7 @@ function AnySpendCustomExactInInner({
               setSrcAmount={setSrcAmount}
               isSrcInputDirty={isSrcInputDirty}
               setIsSrcInputDirty={setIsSrcInputDirty}
-              selectedCryptoPaymentMethod={selectedCryptoPaymentMethod}
+              selectedCryptoPaymentMethod={effectiveCryptoPaymentMethod}
               onSelectCryptoPaymentMethod={() => setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD)}
               anyspendQuote={anyspendQuote}
               onTokenSelect={onTokenSelect}
@@ -465,8 +466,8 @@ function AnySpendCustomExactInInner({
             relayTxs={oat.data.relayTxs}
             executeTx={oat.data.executeTx}
             refundTxs={oat.data.refundTxs}
-            cryptoPaymentMethod={paymentType === "fiat" ? CryptoPaymentMethodType.NONE : selectedCryptoPaymentMethod}
-            selectedCryptoPaymentMethod={selectedCryptoPaymentMethod}
+            cryptoPaymentMethod={paymentType === "fiat" ? CryptoPaymentMethodType.NONE : effectiveCryptoPaymentMethod}
+            selectedCryptoPaymentMethod={effectiveCryptoPaymentMethod}
             onPaymentMethodChange={setSelectedCryptoPaymentMethod}
             onBack={() => {
               setOrderId(undefined);
