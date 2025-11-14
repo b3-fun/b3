@@ -204,7 +204,7 @@ function AnySpendInner({
   });
   const [selectedSrcToken, setSelectedSrcToken] = useState<components["schemas"]["Token"]>(srcTokenFromUrl);
   const { data: srcTokenMetadata } = useTokenData(selectedSrcToken?.chainId, selectedSrcToken?.address);
-  const [srcAmount, setSrcAmount] = useState<string>(searchParams.get("fromAmount") || "0.01");
+  const [srcAmount, setSrcAmount] = useState<string>(searchParams.get("fromAmount") || "0");
 
   // State for onramp amount
   const [srcAmountOnRamp, setSrcAmountOnRamp] = useState<string>(searchParams.get("fromAmount") || "5");
