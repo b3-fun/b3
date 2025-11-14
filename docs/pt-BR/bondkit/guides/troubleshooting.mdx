@@ -486,3 +486,19 @@ console.log(health);
           'migrateToDex': 500000n,
           'approve': 50000n
         };
+        
+        return fallbackGas[method] || 200000n;
+      }
+    }
+    
+    // Uso com gás manual
+    const gasLimit = await estimateGasWithBuffer(
+      token.contract, 
+      'buy', 
+      [parseEther("1"), 0n]
+    );
+    
+    await token.buy(parseEther("1"), 0n, { gas: gasLimit });
+    ```
+  </Accordion>
+</AccordionGroup>

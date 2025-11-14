@@ -427,4 +427,62 @@ if (isSwapAvailable) {
       
       risks: {
         priceVolatility: "시장 주도 가격, 변동성 있을 수 있음",
-        liquidityRisk: "큰 거래는
+        liquidityRisk: "큰 거래는 가격에 영향을 줄 수 있음",
+        smartContractRisk: "표준 DeFi 위험 적용"
+      }
+    };
+    ```
+    
+    **커뮤니티 리소스:**
+    - 업데이트된 문서
+    - 거래 튜토리얼 비디오  
+    - DEX 인터페이스 통합 가이드
+    - 유동성 제공 튜토리얼
+  </Tab>
+  
+  <Tab title="모니터링 및 분석">
+    **DEX 단계 대시보드:**
+    ```typescript
+    async function getDEXPhaseMetrics(tokenAddress) {
+      return {
+        // 가격 및 거래량
+        currentPrice: await getCurrentDEXPrice(tokenAddress),
+        volume24h: await get24hVolume(tokenAddress),
+        priceChange24h: await getPriceChange24h(tokenAddress),
+        
+        // 유동성
+        totalLiquidity: await getTotalLiquidity(tokenAddress),
+        lpTokenHolders: await getLPHolderCount(tokenAddress),
+        
+        // 거래
+        transactions24h: await getTransactionCount24h(tokenAddress),
+        uniqueTraders24h: await getUniqueTraders24h(tokenAddress),
+        avgTradeSize: await getAvgTradeSize(tokenAddress),
+        
+        // 건강 지표
+        liquidityUtilization: await getLiquidityUtilization(tokenAddress),
+        priceImpact1k: await getPriceImpact(tokenAddress, 1000),
+        holderDistribution: await getHolderDistribution(tokenAddress)
+      };
+    }
+    ```
+    
+    **자동화된 모니터링:**
+    ```typescript
+    // 중요 이벤트에 대한 알림 설정
+    const monitoringConfig = {
+      priceAlerts: {
+        change24h: 20, // 가격 변화 >20% 시 알림
+        volume: 10000, // 거래량이 임계값을 초과하면 알림
+        liquidity: 5000 // TVL이 임계값 아래로 떨어지면 알림
+      },
+      
+      actions: {
+        onLowLiquidity: () => announceIncentiveProgram(),
+        onHighVolatility: () => checkForManipulation(),
+        onTradingHalt: () => investigateIssues()
+      }
+    };
+    ```
+  </Tab>
+</Tabs>
