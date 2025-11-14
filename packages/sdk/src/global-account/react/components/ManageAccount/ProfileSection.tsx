@@ -49,7 +49,12 @@ const ProfileSection = () => {
     <div className="flex items-center justify-between px-5 py-6">
       <div className="global-account-profile flex items-center gap-4">
         <div className="global-account-profile-avatar relative">
-          <IPFSMediaRenderer src={avatarSrc} alt="Profile Avatar" className="size-14 rounded-full" />
+          <IPFSMediaRenderer
+            src={avatarSrc}
+            alt="Profile Avatar"
+            className="border-b3-line border-1 bg-b3-primary-wash size-14 rounded-full border"
+          />
+
           <button
             onClick={handleEditAvatar}
             className="border-b3-background hover:bg-b3-grey/80 absolute -bottom-1 -right-1 flex size-6 items-center justify-center rounded-full border-4 bg-[#a0a0ab] transition-colors"

@@ -41,7 +41,7 @@ const HomeActionButton = ({
   return (
     <Button
       className={cn(
-        "border-b3-line hover:border-b3-primary-blue shadow-xs flex h-[84px] w-full flex-col items-center justify-center gap-2 rounded-2xl border-[1.5px] bg-[#FAFAFA] hover:bg-[#FAFAFA]",
+        "border-b3-line hover:border-b3-primary-blue flex h-[84px] w-full flex-col items-center justify-center gap-2 rounded-2xl border-[1.5px] bg-[#FAFAFA] shadow-[0_0_0_1px_rgba(10,13,18,0.18)_inset,0_-2px_0_0_rgba(10,13,18,0.05)_inset,0_1px_2px_0_rgba(10,13,18,0.05)] hover:bg-[#FAFAFA]",
         customClass,
       )}
       onClick={onClick}

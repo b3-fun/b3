@@ -50,7 +50,7 @@ const SettingsContent = ({
 
   return (
     <div className="flex h-[470px] flex-col">
-      <ModalHeader title="Settings" />
+      <ModalHeader showBackButton={false} showCloseButton={false} title="Settings" />
 
       {/* Profile Section */}
       <div className="p-5">

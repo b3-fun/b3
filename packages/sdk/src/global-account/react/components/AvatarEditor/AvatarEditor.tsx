@@ -393,7 +393,7 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
             {/* Upload Image Button */}
             <button
               onClick={handleUploadImageClick}
-              className="font-inter shadow-xs mb-6 flex w-full items-center justify-center gap-2 rounded-xl border border-[#e4e4e7] bg-white px-4 py-3 text-sm font-semibold text-[#18181b] transition-colors hover:bg-[#f4f4f5]"
+              className="font-inter mb-6 flex w-full items-center justify-center gap-2 rounded-xl border border-[#e4e4e7] bg-white px-4 py-3 text-sm font-semibold text-[#18181b] shadow-sm transition-colors hover:bg-[#f4f4f5]"
             >
               <Upload className="h-4 w-4" />
               Upload image

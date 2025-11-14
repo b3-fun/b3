@@ -185,7 +185,7 @@ export function CryptoPaymentMethod({
   };
 
   return (
-    <div className="crypto-payment-method mx-auto h-fit w-[460px] max-w-full px-5 pb-5 sm:p-0">
+    <div className="crypto-payment-method mx-auto h-fit w-[460px] max-w-full px-5 pb-5 pt-5 sm:px-0 sm:pt-5">
       <div className={cn("relative flex flex-col gap-10")}>
         {/* Header */}
         <button

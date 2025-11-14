@@ -1015,7 +1015,7 @@ function AnySpendInner({
   );
 
   const mainView = (
-    <div className={"mx-auto flex w-[460px] max-w-full flex-col items-center gap-2"}>
+    <div className={"mx-auto flex w-[460px] max-w-full flex-col items-center gap-2 pt-5"}>
       <div className={"flex w-full max-w-full flex-col items-center gap-2 px-5"}>
         {/* Token Header - Show when in buy mode */}
         {isBuyMode && (

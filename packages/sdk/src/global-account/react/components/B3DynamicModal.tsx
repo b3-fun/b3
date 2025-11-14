@@ -186,7 +186,7 @@ export function B3DynamicModal() {
         <ModalDescription className="sr-only hidden">{contentType?.type || "Modal Body"}</ModalDescription>
 
         <div className={cn("no-scrollbar max-h-[90dvh] overflow-auto sm:max-h-[80dvh]")}>
-          {(!hideCloseButton || contentType?.showBackButton) && (
+          {!hideCloseButton && (
             <button
               onClick={navigateBack}
               className="flex items-center gap-2 px-6 py-4 text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
