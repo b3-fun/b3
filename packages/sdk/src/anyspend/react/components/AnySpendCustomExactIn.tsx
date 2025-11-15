@@ -3,6 +3,7 @@ import { GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
 import { normalizeAddress } from "@b3dotfun/sdk/anyspend/utils";
 import { Button, ShinyButton, StyleRoot, TransitionPanel, useAccountWallet } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
+import { formatUnits } from "@b3dotfun/sdk/shared/utils/number";
 import invariant from "invariant";
 import { ArrowDown, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
@@ -46,7 +47,9 @@ export interface AnySpendCustomExactInProps {
   onTokenSelect?: (token: components["schemas"]["Token"], event: { preventDefault: () => void }) => void;
   customUsdInputValues?: string[];
   preferEoa?: boolean;
-  customExactInConfig: CustomExactInConfig;
+  customExactInConfig?: CustomExactInConfig;
+  orderType?: "hype_duel" | "custom_exact_in";
+  minDestinationAmount?: number;
   header?: ({
     anyspendPrice,
     isLoadingAnyspendPrice,
@@ -81,9 +84,11 @@ function AnySpendCustomExactInInner({
   customUsdInputValues,
   preferEoa,
   customExactInConfig,
+  orderType = "custom_exact_in",
+  minDestinationAmount,
   header,
 }: AnySpendCustomExactInProps) {
-  const actionLabel = customExactInConfig.action ?? "Custom Execution";
+  const actionLabel = customExactInConfig?.action ?? "Custom Execution";
 
   const DESTINATION_TOKEN_DETAILS = {
     SYMBOL: destinationToken.symbol ?? "TOKEN",
@@ -140,7 +145,7 @@ function AnySpendCustomExactInInner({
     destinationTokenChainId: destinationChainId,
     slippage: SLIPPAGE_PERCENT,
     disableUrlParamManagement: true,
-    orderType: "custom_exact_in",
+    orderType,
   });
 
   const { connectedEOAWallet } = useAccountWallet();
@@ -161,6 +166,14 @@ function AnySpendCustomExactInInner({
   const expectedDstAmountRaw = anyspendQuote?.data?.currencyOut?.amount ?? "0";
 
   const buildCustomPayload = (_recipient: string | undefined) => {
+    if (!customExactInConfig) {
+      // For hype_duel or other simple order types
+      return {
+        expectedDstAmount: expectedDstAmountRaw,
+      };
+    }
+
+    // For custom_exact_in with custom config
     return {
       amount: expectedDstAmountRaw,
       expectedDstAmount: expectedDstAmountRaw,
@@ -184,6 +197,28 @@ function AnySpendCustomExactInInner({
     if (!anyspendQuote || !anyspendQuote.success)
       return { text: "Get quote error", disable: true, error: true, loading: false };
 
+    // Check minimum destination amount if specified
+    // Check minimum destination amount if specified
+    if (
+      minDestinationAmount &&
+      anyspendQuote.data?.currencyOut?.amount &&
+      anyspendQuote.data.currencyOut.currency &&
+      anyspendQuote.data.currencyOut.currency.decimals != null
+    ) {
+      const rawAmountInWei = BigInt(anyspendQuote.data.currencyOut.amount);
+      const decimals = anyspendQuote.data.currencyOut.currency.decimals;
+      const actualAmount = parseFloat(formatUnits(rawAmountInWei.toString(), decimals));
+
+      if (actualAmount < minDestinationAmount) {
+        return {
+          text: `Minimum ${minDestinationAmount} ${DESTINATION_TOKEN_DETAILS.SYMBOL} deposit`,
+          disable: true,
+          error: true,
+          loading: false,
+        };
+      }
+    }
+
     if (paymentType === "crypto") {
       if (effectiveCryptoPaymentMethod === CryptoPaymentMethodType.NONE) {
         return { text: "Choose payment method", disable: false, error: false, loading: false };
@@ -195,7 +230,9 @@ function AnySpendCustomExactInInner({
       ) {
         return { text: "Insufficient balance", disable: true, error: true, loading: false };
       }
-      return { text: `Execute ${actionLabel}`, disable: false, error: false, loading: false };
+      // Use different text based on order type
+      const buttonText = orderType === "hype_duel" ? "Continue to deposit" : `Execute ${actionLabel}`;
+      return { text: buttonText, disable: false, error: false, loading: false };
     }
 
     if (paymentType === "fiat") {
@@ -219,6 +256,9 @@ function AnySpendCustomExactInInner({
     hasEnoughBalance,
     isBalanceLoading,
     actionLabel,
+    minDestinationAmount,
+    DESTINATION_TOKEN_DETAILS.SYMBOL,
+    orderType,
   ]);
 
   const onMainButtonClick = async () => {
@@ -384,7 +424,7 @@ function AnySpendCustomExactInInner({
 
       createOrder({
         recipientAddress: selectedRecipientOrDefault,
-        orderType: "custom_exact_in",
+        orderType,
         srcChain: selectedSrcChainId,
         dstChain: selectedDstChainId,
         srcToken: selectedSrcToken,
@@ -435,7 +475,7 @@ function AnySpendCustomExactInInner({
 
       createOnrampOrder({
         recipientAddress: selectedRecipientOrDefault,
-        orderType: "custom_exact_in",
+        orderType,
         dstChain: selectedDstChainId,
         dstToken: selectedDstToken,
         srcFiatAmount: srcAmount,
