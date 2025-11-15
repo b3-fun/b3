@@ -145,7 +145,7 @@ function AnySpendCustomExactInInner({
     destinationTokenChainId: destinationChainId,
     slippage: SLIPPAGE_PERCENT,
     disableUrlParamManagement: true,
-    orderType: orderType,
+    orderType,
   });
 
   const { connectedEOAWallet } = useAccountWallet();
@@ -475,7 +475,7 @@ function AnySpendCustomExactInInner({
 
       createOnrampOrder({
         recipientAddress: selectedRecipientOrDefault,
-        orderType: orderType,
+        orderType,
         dstChain: selectedDstChainId,
         dstToken: selectedDstToken,
         srcFiatAmount: srcAmount,
