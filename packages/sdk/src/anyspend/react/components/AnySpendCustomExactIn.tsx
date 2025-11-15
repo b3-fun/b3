@@ -424,7 +424,7 @@ function AnySpendCustomExactInInner({
 
       createOrder({
         recipientAddress: selectedRecipientOrDefault,
-        orderType: orderType,
+        orderType,
         srcChain: selectedSrcChainId,
         dstChain: selectedDstChainId,
         srcToken: selectedSrcToken,
