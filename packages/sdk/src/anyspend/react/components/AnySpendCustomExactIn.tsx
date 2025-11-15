@@ -3,6 +3,7 @@ import { GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
 import { normalizeAddress } from "@b3dotfun/sdk/anyspend/utils";
 import { Button, ShinyButton, StyleRoot, TransitionPanel, useAccountWallet } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
+import { formatUnits } from "@b3dotfun/sdk/shared/utils/number";
 import invariant from "invariant";
 import { ArrowDown, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
@@ -197,14 +198,16 @@ function AnySpendCustomExactInInner({
       return { text: "Get quote error", disable: true, error: true, loading: false };
 
     // Check minimum destination amount if specified
+    // Check minimum destination amount if specified
     if (
       minDestinationAmount &&
       anyspendQuote.data?.currencyOut?.amount &&
-      anyspendQuote.data.currencyOut.currency?.decimals
+      anyspendQuote.data.currencyOut.currency &&
+      anyspendQuote.data.currencyOut.currency.decimals != null
     ) {
-      const rawAmountInWei = anyspendQuote.data.currencyOut.amount;
+      const rawAmountInWei = BigInt(anyspendQuote.data.currencyOut.amount);
       const decimals = anyspendQuote.data.currencyOut.currency.decimals;
-      const actualAmount = parseFloat(rawAmountInWei) / Math.pow(10, decimals);
+      const actualAmount = parseFloat(formatUnits(rawAmountInWei.toString(), decimals));
 
       if (actualAmount < minDestinationAmount) {
         return {
