@@ -4,6 +4,7 @@ export { AnySpendBondKit } from "./AnySpendBondKit";
 export { AnySpendBuySpin } from "./AnySpendBuySpin";
 export { AnySpendCustom } from "./AnySpendCustom";
 export { AnySpendCustomExactIn } from "./AnySpendCustomExactIn";
+export { AnySpendDepositHype, HYPE_TOKEN_DETAILS } from "./AnyspendDepositHype";
 export * from "./AnySpendFingerprintWrapper";
 export { AnySpendNFT } from "./AnySpendNFT";
 export { AnyspendSignatureMint } from "./AnyspendSignatureMint";
