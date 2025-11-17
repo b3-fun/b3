@@ -59,7 +59,7 @@ export function IPFSMediaRenderer({
   if (!src) {
     return (
       <div className={className} style={style} aria-label={alt}>
-        <div className="bg-b3-primary-wash flex h-full w-full items-center justify-center">
+        <div className="bg-b3-primary-wash flex h-full w-full items-center justify-center rounded-full">
           <span className="text-b3-grey font-neue-montreal-semibold text-xs">{alt.charAt(0).toUpperCase()}</span>
         </div>
       </div>

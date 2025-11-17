@@ -90,6 +90,7 @@ export function B3DynamicModal() {
 
   // Check if current content type is in freestyle types
   const isFreestyleType = freestyleTypes.includes(contentType?.type as string);
+  console.log("contentType :", contentType);
   const hideCloseButton = true;
 
   // Build content class using cn utility
@@ -100,7 +101,10 @@ export function B3DynamicModal() {
     fullWidthTypes.includes(contentType?.type as string) && "w-full",
     isFreestyleType && "b3-modal-freestyle",
     contentType?.type === "signInWithB3" && "p-0",
-    contentType?.type === "anySpend" && "md:px-6",
+    contentType?.type === "anySpend" && "md:p-0",
+    contentType?.type === "send" && "p-0",
+    contentType?.type === "manageAccount" && " md:p-0 md:pt-2",
+    contentType?.type === "linkAccount" && "md:p-0",
     // Add specific styles for avatar editor
     // contentType?.type === "avatarEditor_disabled" &&
     //   "h-[90dvh] w-[90vw] bg-black p-0 overflow-y-auto overflow-x-hidden max-md:-mt-8 max-md:rounded-t-xl",

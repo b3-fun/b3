@@ -76,16 +76,7 @@ const DialogContent: React.ForwardRefExoticComponent<DialogContentProps & React.
             </div>
             {/* Global Account Footer */}
             <div className="b3-modal-ga-branding flex items-center justify-center gap-1.5 pt-[10px]">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M2 4.66667C2 3.19391 3.19391 2 4.66667 2H11.3333C12.8061 2 14 3.19391 14 4.66667V11.3333C14 12.8061 12.8061 14 11.3333 14H4.66667C3.19391 14 2 12.8061 2 11.3333V4.66667Z"
-                  fill="#0B57C2"
-                />
-                <path
-                  d="M5.33333 6C5.33333 5.63181 5.63181 5.33333 6 5.33333H10C10.3682 5.33333 10.6667 5.63181 10.6667 6V10C10.6667 10.3682 10.3682 10.6667 10 10.6667H6C5.63181 10.6667 5.33333 10.3682 5.33333 10V6Z"
-                  fill="white"
-                />
-              </svg>
+              <img src="https://cdn.b3.fun/b3_logo.svg" alt="B3" className="h-4 w-4" />
               <span className="font-neue-montreal-semibold text-xs uppercase leading-none tracking-[0.72px] text-[#0B57C2]">
                 Global Account
               </span>

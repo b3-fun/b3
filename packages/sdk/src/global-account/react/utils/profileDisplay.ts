@@ -64,6 +64,7 @@ export function validateImageUrl(url: string | null | undefined): string | null 
 }
 
 export interface ExtendedProfileDetails {
+  fid?: string;
   id?: string;
   email?: string;
   phone?: string;
@@ -112,7 +113,7 @@ export function getProfileDisplayInfo(profile: ExtendedProfile): ProfileDisplayI
       break;
     case "farcaster":
       displayInfo = {
-        title: details.name || details.username || "Unknown",
+        title: details.name || details.username || "FID:" + details?.fid || "Unknown",
         subtitle: details.username ? `@${details.username}` : "Farcaster Account",
         imageUrl: validateImageUrl(details.pfpUrl || details.profileImageUrl),
         initial: "F",

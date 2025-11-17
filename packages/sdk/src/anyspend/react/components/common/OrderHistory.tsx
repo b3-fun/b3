@@ -42,7 +42,7 @@ export function OrderHistory({ mode, onBack, onSelectOrder }: OrderHistoryProps)
           <p className="text-as-secondary text-sm">No order history found</p>
         </div>
       ) : (
-        <div className="mb-12 w-full space-y-3 px-5 pt-5">
+        <div className="mb-12 w-full px-5 pt-5">
           {[...orderHistory]
             .sort((a, b) => b.createdAt - a.createdAt)
             .map(order => (

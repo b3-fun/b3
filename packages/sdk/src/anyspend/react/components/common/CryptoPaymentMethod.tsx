@@ -1,6 +1,6 @@
 "use client";
 
-import { useAccountWallet } from "@b3dotfun/sdk/global-account/react";
+import { IPFSMediaRenderer, useAccountWallet } from "@b3dotfun/sdk/global-account/react";
 import { useAccountWalletImage } from "@b3dotfun/sdk/global-account/react/hooks/useAccountWallet";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
@@ -53,6 +53,7 @@ export function CryptoPaymentMethod({
 
   // Use custom hook to determine wallet display logic
   const { shouldShowConnectedEOA, shouldShowWagmiWallet } = useConnectedWalletDisplay(selectedPaymentMethod);
+  console.log("shouldShowWagmiWallet :", shouldShowWagmiWallet);
 
   // Map wagmi connector names to thirdweb wallet IDs
   const getThirdwebWalletId = (connectorName: string): WalletId | null => {
@@ -335,7 +336,11 @@ export function CryptoPaymentMethod({
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         {walletImage ? (
-                          <img src={walletImage} alt="Global Account" className="h-10 w-10 rounded-full" />
+                          <IPFSMediaRenderer
+                            src={walletImage}
+                            alt="Global Account"
+                            className="h-10 w-10 rounded-full"
+                          />
                         ) : (
                           <div className="wallet-icon flex h-10 w-10 items-center justify-center rounded-full bg-purple-100">
                             <Wallet className="h-5 w-5 text-purple-600" />

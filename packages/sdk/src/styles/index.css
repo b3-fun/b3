@@ -390,6 +390,8 @@ Dark version
 }
 
 .b3-login-step {
+  padding-bottom: 10px;
+
   & > div > div > div > div > div > div > div > img {
     display: none;
   }
@@ -661,4 +663,8 @@ Dark version
 
 .animate-accordion-up {
   animation: accordion-up 0.2s ease-out;
+}
+
+.tw-header {
+  display: none !important; /* Hide the TW "BSMNT" header */
 }

@@ -124,7 +124,7 @@ export function SignIn(props: SignInWithB3Props) {
                         <div className="ml-4 grow">
                           {ensName && <div>{ensName}</div>}
                           <div>{truncateAddress(globalAddress)}</div>
-                          <div>{walletInfo?.name}</div>
+                          {/* <div>{walletInfo?.name}</div> */}
                         </div>
                       </div>
                       {isActiveEOAWallet && <Icon className="fill-b3-react-primary" name="check" />}

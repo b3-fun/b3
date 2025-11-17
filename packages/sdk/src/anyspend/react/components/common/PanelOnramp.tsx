@@ -13,6 +13,8 @@ import { FiatPaymentMethod } from "./FiatPaymentMethod";
 import { OrderTokenAmountFiat } from "./OrderTokenAmountFiat";
 import { PointsBadge } from "./PointsBadge";
 
+const ONE_CHAR_WIDTH = 30;
+
 export function PanelOnramp({
   srcAmountOnRamp,
   setSrcAmountOnRamp,
@@ -126,6 +128,7 @@ export function PanelOnramp({
   const handleQuickAmount = (value: string) => {
     setSrcAmountOnRamp(value);
   };
+  console.log("srcAmountOnRamp :", srcAmountOnRamp.length);
 
   return (
     <div className="panel-onramp bg-as-surface-primary flex w-full flex-col">
@@ -176,9 +179,9 @@ export function PanelOnramp({
               value={srcAmountOnRamp}
               onChange={handleAmountChange}
               placeholder="5"
-              className="text-as-primary placeholder:text-as-primary/50 h-auto min-w-[70px] border-0 bg-transparent p-0 px-1 pt-1 text-4xl font-bold focus-visible:ring-0 focus-visible:ring-offset-0"
+              className="text-as-primary placeholder:text-as-primary/50 h-auto border-0 bg-transparent p-0 px-1 pt-1 text-4xl font-bold focus-visible:ring-0 focus-visible:ring-offset-0"
               style={{
-                width: `${Math.max(50, srcAmountOnRamp.length * 34)}px`,
+                width: `${Math.max(ONE_CHAR_WIDTH, srcAmountOnRamp.length * ONE_CHAR_WIDTH)}px`,
               }}
             />
           </div>

@@ -1,11 +1,11 @@
 import { ALL_CHAINS, getChainName, getStatusDisplay } from "@b3dotfun/sdk/anyspend";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { Badge, useIsMobile } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { getVendorDisplayName } from "@b3dotfun/sdk/shared/utils/payment.utils";
 import { ArrowRight } from "lucide-react";
 import TimeAgo from "react-timeago";
-import { components } from "@b3dotfun/sdk/anyspend/types/api";
 
 interface OrderHistoryItemProps {
   order: components["schemas"]["Order"];
@@ -39,8 +39,8 @@ export function OrderHistoryItem({ order, onSelectOrder, mode }: OrderHistoryIte
     <div
       key={`anyspend-${order.id}`}
       className={cn(
-        "bg-as-surface-secondary hover:bg-as-surface-tertiary rounded-xl p-4 transition-all",
-        onSelectOrder && "cursor-pointer",
+        "font-inter border-as-border-secondary border-b py-5 font-medium transition-all last:border-b-0",
+        onSelectOrder && "hover:bg-as-surface-secondary/50 cursor-pointer",
       )}
       onClick={() => onSelectOrder?.(order.id)}
     >
@@ -49,7 +49,7 @@ export function OrderHistoryItem({ order, onSelectOrder, mode }: OrderHistoryIte
         <div className="flex items-center gap-2">
           <div
             className={cn(
-              "text-xs font-semibold",
+              "text-xs",
               orderDisplayStatus === "processing" && "text-yellow-600",
               orderDisplayStatus === "success" && "text-green-600",
               orderDisplayStatus === "failure" && "text-red-600",

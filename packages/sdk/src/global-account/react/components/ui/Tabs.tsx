@@ -25,7 +25,7 @@ export function TabTrigger({ className, ...props }: React.ComponentProps<typeof 
       className={cn(
         "text-md inline-flex h-full items-center justify-center whitespace-nowrap px-3 font-semibold transition-all",
         "focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
-        "data-[state=active]:text-b3-react-primary data-[state=active]:font-bold",
+        "data-[state=active]:font-bold data-[state=active]:text-[#0B57C2]",
         "hover:text-b3-react-foreground data-[state=inactive]:text-b3-react-muted-foreground",
         "flex-1",
         className,

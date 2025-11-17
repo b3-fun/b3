@@ -3,7 +3,7 @@ import { Button, ManageAccountModalProps, useB3, useModalStore, useQueryB3 } fro
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { truncateAddress } from "@b3dotfun/sdk/shared/utils/truncateAddress";
 import { Copy, Loader2, Pencil, UnlinkIcon } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useProfiles, useUnlinkProfile } from "thirdweb/react";
 
@@ -41,6 +41,7 @@ export const LinkAccount = ({
   chain: Chain;
 }) => {
   const [unlinkingAccountId, setUnlinkingAccountId] = useState<string | null>(null);
+  const [profileToUnlink, setProfileToUnlink] = useState<any>(null);
   const { data: profilesRaw = [], isLoading: isLoadingProfiles } = useProfiles({ client });
   const { mutate: unlinkProfile, isPending: isUnlinking } = useUnlinkProfile();
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
@@ -115,15 +116,33 @@ export const LinkAccount = ({
       ...getProfileDisplayInfo(profile),
       originalProfile: profile,
     }));
+  console.log("profiles :", profiles);
 
-  const handleUnlink = async (profile: any) => {
-    setUnlinkingAccountId(profile.title);
-    try {
-      unlinkProfile({ client, profileToUnlink: profile.originalProfile }, mutationOptions);
-    } catch (error) {
-      console.error("Error unlinking account:", error);
-    } finally {
-      setUnlinkingAccountId(null);
+  // Reset confirmation state after 3 seconds
+  useEffect(() => {
+    if (profileToUnlink) {
+      const timer = setTimeout(() => {
+        setProfileToUnlink(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [profileToUnlink]);
+
+  const handleUnlinkClick = (profile: any) => {
+    // If this profile is already pending confirmation, perform the unlink
+    if (profileToUnlink?.title === profile.title) {
+      setUnlinkingAccountId(profile.title);
+      try {
+        unlinkProfile({ client, profileToUnlink: profile.originalProfile }, mutationOptions);
+      } catch (error) {
+        console.error("Error unlinking account:", error);
+      } finally {
+        setUnlinkingAccountId(null);
+        setProfileToUnlink(null);
+      }
+    } else {
+      // First click - set pending confirmation
+      setProfileToUnlink(profile);
     }
   };
 
@@ -225,13 +244,22 @@ export const LinkAccount = ({
                 </div>
                 <Button
                   variant="ghost"
-                  size="icon"
-                  className="linked-account-unlink-button text-b3-grey hover:text-b3-negative"
-                  onClick={() => handleUnlink(profile)}
+                  size={profileToUnlink?.title === profile.title ? "sm" : "icon"}
+                  className={`linked-account-unlink-button transition-all ${
+                    profileToUnlink?.title === profile.title
+                      ? "bg-b3-negative hover:bg-b3-negative/90 text-white"
+                      : "text-b3-grey hover:text-b3-negative"
+                  }`}
+                  onClick={() => handleUnlinkClick(profile)}
                   disabled={unlinkingAccountId === profile.title || isUnlinking}
                 >
                   {unlinkingAccountId === profile.title || isUnlinking ? (
-                    <Loader2 className="linked-account-unlink-loading animate-spin" />
+                    <Loader2 className="linked-account-unlink-loading h-4 w-4 animate-spin" />
+                  ) : profileToUnlink?.title === profile.title ? (
+                    <div className="flex items-center gap-1.5">
+                      <UnlinkIcon size={14} className="linked-account-unlink-icon" />
+                      <span className="text-xs font-semibold">Unlink</span>
+                    </div>
                   ) : (
                     <UnlinkIcon size={16} className="linked-account-unlink-icon" />
                   )}
@@ -240,7 +268,7 @@ export const LinkAccount = ({
             ))}
           </div>
         ) : (
-          <div className="linked-accounts-empty text-b3-foreground-muted py-8 text-center">
+          <div className="linked-accounts-empty font-neue-montreal-medium text-b3-foreground-muted py-8 text-center">
             No linked accounts found
           </div>
         )}

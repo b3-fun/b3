@@ -15,6 +15,26 @@ interface GroupedNFTs {
 
 export function AccountAssets({ nfts, isLoading }: AccountAssetsProps) {
   // Initialize with all collections expanded
+  // Group NFTs by collection
+  const groupedNFTs = nfts?.nfts?.reduce(
+    (acc, nft) => {
+      const collectionId = nft.collection?.collection_id || "unknown";
+      if (!acc[collectionId]) {
+        acc[collectionId] = {
+          collection_id: collectionId,
+          collection_name: nft.collection?.name || "Unknown Collection",
+          collection_image: nft.collection?.image_url || nft.previews?.image_small_url || "",
+          nfts: [],
+        };
+      }
+      acc[collectionId].nfts.push(nft);
+      return acc;
+    },
+    {} as Record<string, GroupedNFTs>,
+  );
+
+  const collections = Object.values(groupedNFTs || {});
+
   const [expandedCollections, setExpandedCollections] = useState<Set<string>>(
     () => new Set(collections.map(c => c.collection_id)),
   );
@@ -38,26 +58,6 @@ export function AccountAssets({ nfts, isLoading }: AccountAssetsProps) {
   if (!nfts?.nfts?.length) {
     return <div className="text-b3-react-muted-foreground py-8 text-center">No NFTs found</div>;
   }
-
-  // Group NFTs by collection
-  const groupedNFTs = nfts.nfts.reduce(
-    (acc, nft) => {
-      const collectionId = nft.collection?.collection_id || "unknown";
-      if (!acc[collectionId]) {
-        acc[collectionId] = {
-          collection_id: collectionId,
-          collection_name: nft.collection?.name || "Unknown Collection",
-          collection_image: nft.collection?.image_url || nft.previews?.image_small_url || "",
-          nfts: [],
-        };
-      }
-      acc[collectionId].nfts.push(nft);
-      return acc;
-    },
-    {} as Record<string, GroupedNFTs>,
-  );
-
-  const collections = Object.values(groupedNFTs);
 
   const toggleCollection = (collectionId: string) => {
     setExpandedCollections(prev => {

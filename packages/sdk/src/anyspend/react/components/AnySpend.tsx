@@ -989,7 +989,7 @@ function AnySpendInner({
   );
 
   const orderDetailsView = (
-    <div className={"mx-auto w-[460px] max-w-full px-5"}>
+    <div className={"mx-auto w-[460px] max-w-full p-5"}>
       <div className="relative flex flex-col gap-4">
         {oat && (
           <OrderDetails

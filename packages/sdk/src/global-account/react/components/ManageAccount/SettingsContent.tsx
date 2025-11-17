@@ -1,5 +1,7 @@
 import { useModalStore } from "@b3dotfun/sdk/global-account/react";
+import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { Chain } from "thirdweb";
+import { useProfiles } from "thirdweb/react";
 import LinkIcon from "../icons/LinkIcon";
 import ModalHeader from "../ModalHeader/ModalHeader";
 import SettingsMenuItem from "./SettingsMenuItem";
@@ -16,6 +18,10 @@ const SettingsContent = ({
 }) => {
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
+
+  const { data: profilesRaw = [] } = useProfiles({ client });
+
+  const profiles = profilesRaw.filter((profile: any) => !["custom_auth_endpoint"].includes(profile.type));
 
   const handleNavigate = (type: "home" | "swap" | "linkAccount" | "avatarEditor") => {
     if (type === "home") {
@@ -64,7 +70,7 @@ const SettingsContent = ({
         <SettingsMenuItem
           icon={<LinkIcon className="text-b3-grey-500" />}
           title="Linked Accounts"
-          subtitle="3 connected accounts"
+          subtitle={`${profiles.length} connected account${profiles.length > 1 ? "s" : ""}`}
           onClick={() => handleNavigate("linkAccount")}
         />
         {/* <SettingsMenuItem

@@ -157,7 +157,7 @@ export function Header({ onLogout }: { onLogout?: () => void }) {
               )}
             </div>
             <div className="flex flex-col gap-0.5">
-              <p className="text-b3-grey font-neue-montreal-semibold text-sm">Active Wallet</p>
+              <p className="text-b3-grey font-neue-montreal-semibold text-left text-sm">Active Wallet</p>
               <div className="flex items-center gap-1">
                 <p className="text-b3-foreground-muted font-neue-montreal-medium text-sm">
                   {centerTruncate(address, 4)}

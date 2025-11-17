@@ -359,7 +359,7 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
       .filter(p => p.avatar !== null) || []; // Filter out profiles with invalid avatars
 
   return (
-    <div className={cn("flex w-full max-w-md flex-col bg-white", className)}>
+    <div className={cn("b3-modal-avatar-editor flex w-full max-w-md flex-col bg-white", className)}>
       {/* Header */}
       {viewStep === "upload" && <ModalHeader title="Upload Image" />}
 
@@ -449,7 +449,7 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
               {/* Link More Account */}
               <button
                 onClick={handleLinkMoreAccount}
-                className="font-inter flex items-center gap-2 text-sm font-semibold text-[#3368ef] hover:underline"
+                className="b3-modal-link-more-account font-inter flex items-center gap-2 text-sm font-semibold text-[#3368ef] hover:underline"
               >
                 <svg
                   width="16"
@@ -479,7 +479,7 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
                 className={cn(
-                  "mb-6 flex w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-16 transition-colors",
+                  "b3-modal-upload-view mb-6 flex w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-16 transition-colors",
                   isDragging
                     ? "border-[#3368ef] bg-[#f0f5ff]"
                     : "border-[#e4e4e7] hover:border-[#3368ef] hover:bg-[#f0f5ff]",
@@ -565,7 +565,7 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
         <Button
           onClick={handleSaveChanges}
           disabled={isLoading || (!selectedFile && !selectedProfileType)}
-          className="flex-1 rounded-xl bg-[#3368ef] text-white hover:bg-[#2952cc]"
+          className="b3-modal-save-button flex-1 rounded-xl bg-[#3368ef] text-white hover:bg-[#2952cc]"
         >
           {isLoading ? (
             <>
