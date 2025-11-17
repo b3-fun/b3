@@ -1,0 +1,388 @@
+---
+title: x402 기사 배치
+description: 우리의 AI 암호화폐 작가와 함께 암호화폐 콘텐츠 사이트에 기사를 게시하고 가시성을 얻으세요
+lang: ko
+originalPath: anyspend/marketplace-articles.mdx
+---
+[x402 기사 마켓플레이스(UI) 확인하기](https://explorer.b3.fun/apps/x402-ad-marketplace)
+
+<CardGroup cols={2}>
+  <Card title="AI 검증" icon="brain">
+    AI가 귀하의 콘텐츠를 평가하고 최적화된 제목을 생성합니다
+  </Card>
+  <Card title="가스 비용 없음" icon="gas-pump">
+    기사 가격만 지불 - 거래 수수료 제로
+  </Card>
+  <Card title="100+ 사이트" icon="globe">
+    암호화폐 뉴스, DeFi, NFT 사이트에 제출
+  </Card>
+  <Card title="즉시 제출" icon="bolt">
+    한 번의 서명으로 귀하의 제안이 전송됩니다
+  </Card>
+</CardGroup>
+
+## 작동 방식
+
+<Steps>
+  <Step title="지갑 연결">
+    [x402 기사 마켓플레이스](https://explorer.b3.fun/apps/x402-article-marketplace) 방문하여 Base 네트워크에서 지갑 연결
+  </Step>
+  <Step title="대상 사이트 선택">
+    귀하의 기사 주제와 일치하는 암호화폐 콘텐츠 사이트 선택
+  </Step>
+  <Step title="아이디어 제공">
+    트윗 URL, 주제 아이디어 또는 완성된 기사 제목 입력
+  </Step>
+  <Step title="검토 및 승인">
+    지불하기 전에 AI 제안 및 승인 점수 확인
+  </Step>
+  <Step title="제출 및 지불">
+    USDC로 한 번의 서명 - 가스 비용 없음 - 출판사에 즉시 제출
+  </Step>
+</Steps>
+
+## AI 검증 규칙
+
+AI 검증 엔드포인트는 귀하의 기사 아이디어를 평가하고 그대로 승인하거나 개선을 제안하거나 거절합니다.
+
+<Tabs>
+  <Tab title="✅ 점수 ≥80">
+    **완벽합니다!** 귀하의 입력은 그대로 승인되었습니다.
+    
+    제공된 제목 또는 주제가 사이트의 초점과 훌륭하게 맞으며 변경할 필요가 없습니다. 귀하가 작성한 대로 정확히 제출하겠습니다.
+    
+    **예시:** "DApp에서 크리에이터를 위한 Base Pay 사용 방법"
+  </Tab>
+  <Tab title="⚠️ 점수 70-79">
+    **제안이 있는 좋음!** AI가 개선된 버전을 제공합니다.
+    
+    귀하의 콘텐츠는 관련이 있지만 최적화될 수 있습니다. AI가 귀하의 핵심 아이디어를 유지하면서 더 나은 제목과 설명을 생성합니다.
+    
+    **입력 예시:** "크리에이터를 위한 base pay"
+    
+    **AI 출력:** "콘텐츠 크리에이터를 위한 Base Pay 통합: 완벽 가이드"
+  </Tab>
+  <Tab title="❌ 점수 <70">
+    **거절됨.** 콘텐츠가 사이트의 초점에 맞지 않습니다.
+    
+    귀하의 주제는 이 사이트의 주제와 관련이 없습니다. 다른 주제를 시도하거나 귀하의 콘텐츠와 더 잘 맞는 다른 사이트를 선택하세요.
+    
+    **예시:** 암호화폐 뉴스 사이트에 요리 레시피 제출
+  </Tab>
+</Tabs>
+
+## 가격
+
+기사 제출 가격은 사이트의 트래픽과 권위에 따라 다릅니다.
+
+**일반적인 범위:**
+- 소규모/신생 사이트: 제출당 $3-50 USDC
+- 중간 규모 사이트: 제출당 $50-200 USDC
+- 프리미엄 사이트: 제출당 $200-500 USDC
+
+<Note>
+  가격은 개별 출판사가 설정합니다. 제출하기 전에 사이트 세부 정보를 확인하세요.
+</Note>
+
+## API 참조
+
+### 네트워크 및 결제 세부 정보
+
+<ParamField path="Network" type="Base">
+  체인 ID: 8453
+</ParamField>
+
+<ParamField path="Payment Token" type="USDC">
+  6자리 소수점
+</ParamField>
+
+<ParamField path="Protocol" type="x402">
+  ERC-20 Permit 서명
+</ParamField>
+
+<ParamField path="Max Price" type="$1000">
+  제출당 최대 가격
+</ParamField>
+
+### 기사 아이디어 검증 (무료)
+
+```bash
+POST https://x402.anyspend.com/articles/validate
+```
+
+귀하의 기사 아이디어를 검증하는 무료 엔드포인트입니다. AI가 제목, 설명 및 승인 점수를 생성합니다.
+
+**요청 본문:**
+
+<CodeGroup>
+```json Request
+{
+  "siteDomain": "baseradar.com",
+  "userInput": "크리에이터를 위한 Base Pay 사용 방법"
+}
+```
+
+```json Success Response (200) - Approved
+{
+  "success": true,
+  "data": {
+    "approved": true,
+    "score": 85,
+    "reasoning": "Base 중심 사이트에 좋은 주제. 더 나은 참여를 위해 AI가 제목을 최적화했습니다.",
+    "suggestedTitle": "콘텐츠 크리에이터를 위한 Base Pay 통합: 완벽 가이드",
+    "suggestedDescription": "단계별 예시와 모범 사례를 통해 귀하의 크리에이터 플랫폼에서 Base Pay를 구현하는 방법을 배웁니다.",
+    "estimatedPrice": "50000000",
+    "userProvidedTitle": false,
+    "message": "AI 제안으로 콘텐츠 승인됨"
+  }
+}
+```
+
+```json Success Response (200) - Perfect Score
+{
+  "success": true,
+  "data": {
+    "approved": true,
+    "score": 95,
+    "reasoning": "훌륭한 제목! 명확하고 구체적이며 사이트의 청중에게 매우 관련이 있습니다.",
+    "suggestedTitle": "DApp에서 크리에이터를 위한 Base Pay 사용 방법",
+    "suggestedDescription": "Base Pay 구현 가이드 완성",
+    "estimatedPrice": "50000000",
+    "userProvidedTitle": true,
+    "message": "콘텐츠 그대로 승인됨"
+  }
+}
+```
+
+```json Rejection Response (200) - Score Too Low
+{
+  "success": true,
+  "data": {
+    "approved": false,
+    "score": 45,
+    "reasoning": "주제가 Base 생태계 및 DeFi에 초점을 맞춘 사이트의 초점과 일치하지 않습니다. 다른 사이트에 제출하거나 주제를 조정하세요.",
+    "estimatedPrice": "50000000",
+    "message": "점수가 너무 낮아 콘텐츠 거절됨"
+  }
+}
+```
+</CodeGroup>
+
+**매개변수:**
+- `siteDomain` (필수) - 대상 사이트 도메인 (예: "baseradar.com")
+- `userInput` (필수) - 트윗 URL, 주제 아이디어 또는 완성된 제목 (10-200자)
+
+**입력 옵션:**
+
+<AccordionGroup>
+  <Accordion title="옵션 1: 완성된 제목">
+    사용할 준비가 된 기사 제목을 제공합니다.
+    
+    ```json
+    {
+      "siteDomain": "baseradar.com",
+      "userInput": "Uniswap V3로 Base에서 DEX 구축 방법"
+    }
+    ```
+    
+    승인될 경우(점수 ≥90), 귀하의 제목이 그대로 사용됩니다.
+  </Accordion>
+  
+  <Accordion title="옵션 2: 트윗 URL">
+    관련 콘텐츠가 있는 트윗 URL을 제공합니다.
+    
+    ```json
+    {
+      "siteDomain": "solanaecho.com",
+      "userInput": "https://x.com/BuildOnBase/status/1234567890"
+    }
+    ```
+    
+    AI가 주제를 추출하고 관련 제목/설명을 생성합니다.
+  </Accordion>
+  
+  <Accordion title="옵션 3: 주제/아이디어">
+    짧은 주제나 아이디어를 제공합니다.
+    
+    ```json
+    {
+      "siteDomain": "baseradar.com",
+      "userInput": "크리에이터를 위한 base pay"
+    }
+    ```
+    
+    AI가 완성된 제목과 설명을 생성합니다.
+  </Accordion>
+</AccordionGroup>
+
+### 기사 요청 제출 (x402 결제)
+
+```bash
+POST https://x402.anyspend.com/articles/buy
+```
+
+x402 결제로 기사 요청을 제출합니다. 먼저 귀하의 콘텐츠를 검증받고 승인을 받아야 합니다.
+
+**요청 본문:**
+
+<CodeGroup>
+```json Request
+{
+  "buyerAddress": "0x742d35Cc6...",
+  "siteDomain": "baseradar.com",
+  "title": "콘텐츠 크리에이터를 위한 Base Pay 통합: 완벽 가이드",
+  "description": "단계별 예시와 모범 사례를 통해 귀하의 크리에이터 플랫폼에서 Base Pay를 구현하는 방법을 배웁니다."
+}
+```
+
+```json Success Response (200)
+{
+  "success": true,
+  "data": {
+    "requestId": "req_789...",
+    "productSpecificId": "req_789...",
+    "totalPrice": "50000000",
+    "status": "pending"
+  }
+}
+```
+
+```json Error Response (400)
+{
+  "success": false,
+  "error": "제출 전에 '/articles/validate'를 호출하고 승인을 받아야 합니다"
+}
+```
+</CodeGroup>
+
+**매개변수:**
+- `buyerAddress` (필수) - 귀하의 지갑 주소
+- `siteDomain` (필수) - 대상 사이트 도메인
+- `title` (필수) - 기사 제목 (검증에서 얻은 것 또는 점수 ≥90인 경우 귀하의 것)
+- `description` (필수) - 기사 설명 (검증에서 얻은 것 또는 귀하의 것)
+
+**JavaScript/TypeScript 예시:**
+
+```typescript
+import { wrapFetchWithPayment } from '@b3dotfun/anyspend-x402-fetch';
+import { createWalletClient, custom, publicActions } from 'viem';
+import { base } from 'viem/chains';
+
+// 1단계: 콘텐츠 검증 (무료)
+const validateResponse = await fetch('https://x402.anyspend.com/articles/validate', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    siteDomain: 'baseradar.com',
+    userInput: '크리에이터를 위한 Base Pay 사용 방법'
+  })
+});
+
+const validation = await validateResponse.json();
+
+if (!validation.data.approved) {
+  console.error('콘텐츠 거절됨:', validation.data.reasoning);
+  process.exit(1);
+}
+
+console.log('✅ 승인됨! 점수:', validation.data.score);
+console.log('제목:', validation.data.suggestedTitle);
+
+// 2단계: 결제로 제출 (x402)
+const walletClient = createWalletClient({
+  account: '0x742d35Cc6...',
+  chain: base,
+  transport: custom(window.ethereum),
+}).extend(publicActions);
+
+const fetchWithPayment = wrapFetchWithPayment(
+  fetch,
+  walletClient,
+  BigInt(1000 * 10 ** 6) // 최대 1000 USDC
+);
+
+const response = await fetchWithPayment(
+  'https://x402.anyspend.com/articles/buy',
+  {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      buyerAddress: '0x742d35Cc6...',
+      siteDomain: 'baseradar.com',
+      title: validation.data.suggestedTitle,
+      description: validation.data.suggestedDescription
+    })
+  }
+);
+
+const result = await response.json();
+console.log('🎉 기사 제출됨! 요청 ID:', result.data.requestId);
+```
+
+<Note>
+  `wrapFetchWithPayment` 사용에 대한 자세한 내용은 [x402 SDK 문서](/anyspend/x402-overview)를 참조하세요.
+</Note>
+
+### 제출물 보기 (무료)
+
+```bash
+GET https://x402.anyspend.com/articles/requests/buyer/:address
+```
+
+귀하의 모든 기사 제출물 - 대기 중, 승인됨, 게시됨 - 을 추적합니다.
+
+<CodeGroup>
+```bash cURL
+curl "https://x402.anyspend.com/articles/requests/buyer/0xYourAddress"
+```
+
+```json Response
+{
+  "success": true,
+  "data": [
+    {
+      "requestId": "req_789...",
+      "siteId": "site_123",
+      "siteName": "Base Radar",
+      "siteDomain": "baseradar.com",
+      "title": "콘텐츠 크리에이터를 위한 Base Pay 통합: 완벽 가이드",
+      "description": "귀하의 크리에이터 플랫폼에서 Base Pay를 구현하는 방법을 배우세요...",
+      "status": "published",
+      "totalPrice": "50000000",
+      "publishedUrl": "https://baseradar.com/articles/integrating-base-pay",
+      "createdAt": "2025-01-15T10:00:00.000Z",
+      "publishedAt": "2025-01-18T14:30:00.000Z"
+    },
+    {
+      "requestId": "req_790...",
+      "siteId": "site_456",
+      "siteName": "Solana Echo",
+      "siteDomain": "solanaecho.com",
+      "title": "Solana에서 Base로의 크로스체인 NFT 브리징",
+      "description": "Solana와 Base 사이의 NFT를 브리징하는 기술 가이드",
+      "status": "pending",
+      "totalPrice": "75000000",
+      "createdAt": "2025-01-20T08:15:00.000Z"
+    }
+  ]
+}
+```
+</CodeGroup>
+
+**상태 값:**
+- `pending` - 출판사에 제출됨, 검토 대기 중
+- `accepted` - 출판사가 수락함, 기사 제작 중
+- `published` - 기사가 라이브 상태 (`publishedUrl` 포함)
+- `rejected` - 출판사가 거절함 (드물게 발생, 보통 사전 검증됨)
+
+<Info>
+  API 응답의 가격은 USDC wei(6자리 소수점)입니다. USDC 금액을 얻으려면 1,000,000으로 나누세요.
+</Info>
+
+### 사이트 탐색 (무료)
+
+```bash
+GET https://x402.anyspend.com/ads/sites
+```
+
+기사 제출을 수락하는 모든 사이트를 나열합니다. 광고 마켓플레이스와 동일한 엔드포인트 - 사이트는
