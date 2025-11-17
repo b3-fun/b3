@@ -291,7 +291,7 @@ export interface AnySpendDepositUpsideProps extends BaseModalProps {
   recipientAddress: string;
   /** Deposit contract address */
   depositContractAddress: string;
-  /** Token to stake */
+  /** Token to deposit */
   token: components["schemas"]["Token"];
   /** Callback function called when the deposit is successful */
   onSuccess?: () => void;
