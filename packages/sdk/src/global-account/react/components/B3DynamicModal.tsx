@@ -26,6 +26,7 @@ import { RequestPermissions } from "./RequestPermissions/RequestPermissions";
 import { SignInWithB3Flow } from "./SignInWithB3/SignInWithB3Flow";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "./ui/dialog";
 import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "./ui/drawer";
+import { AnySpendDepositUpside } from "@b3dotfun/sdk/anyspend/react/components/AnySpendDepositUpside";
 
 const debug = debugB3React("B3DynamicModal");
 
@@ -130,6 +131,8 @@ export function B3DynamicModal() {
         return <AnySpendStakeUpside {...contentType} mode="modal" />;
       case "anySpendStakeUpsideExactIn":
         return <AnySpendStakeUpsideExactIn {...contentType} mode="modal" />;
+      case "anySpendDepositUpside":
+        return <AnySpendDepositUpside {...contentType} mode="modal" />;
       case "anySpendBuySpin":
         return <AnySpendBuySpin {...contentType} mode="modal" />;
       case "anySpendSignatureMint":
