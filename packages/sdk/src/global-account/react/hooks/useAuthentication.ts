@@ -241,7 +241,9 @@ export function useAuthentication(partnerId: string) {
     wallets: [wallet],
     onConnect,
     onTimeout: () => {
-      logout();
+      logout().catch(error => {
+        debug("@@useAuthentication:logout on timeout failed", { error });
+      });
     },
   });
 
