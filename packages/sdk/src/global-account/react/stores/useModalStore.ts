@@ -277,6 +277,27 @@ export interface AnySpendStakeUpsideExactInProps extends BaseModalProps {
 }
 
 /**
+ * Props for the AnySpend Deposit Upside (Exact In) modal
+ * Handles token deposit operations using the custom exact in flow
+ */
+export interface AnySpendDepositUpsideProps extends BaseModalProps {
+  /** Modal type identifier */
+  type: "anySpendDepositUpside";
+  /**	Source token address */
+  sourceTokenAddress?: string;
+  /** Source token address */
+  sourceTokenChainId?: number;
+  /** Recipient address to deposit tokens for */
+  recipientAddress: string;
+  /** Deposit contract address */
+  depositContractAddress: string;
+  /** Token to deposit */
+  token: components["schemas"]["Token"];
+  /** Callback function called when the deposit is successful */
+  onSuccess?: () => void;
+}
+
+/**
  * Props for the AnySpend Buy Spin modal
  * Handles spin wheel entry purchases
  */
@@ -397,6 +418,7 @@ export type ModalContentType =
   | AnySpendStakeB3ExactInProps
   | AnySpendStakeUpsideProps
   | AnySpendStakeUpsideExactInProps
+  | AnySpendDepositUpsideProps
   | AnySpendBuySpinProps
   | AnySpendSignatureMintProps
   | AnySpendBondKitProps
