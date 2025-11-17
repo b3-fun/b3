@@ -364,7 +364,7 @@ function AnySpendCustomExactInInner({
             <CryptoReceiveSection
               isDepositMode={false}
               isBuyMode={true}
-              selectedRecipientAddress={selectedRecipientOrDefault}
+              effectiveRecipientAddress={selectedRecipientOrDefault}
               recipientName={recipientName || undefined}
               onSelectRecipient={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
               dstAmount={dstAmount}

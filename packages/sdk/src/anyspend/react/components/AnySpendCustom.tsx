@@ -46,6 +46,7 @@ import { base } from "viem/chains";
 import { useFeatureFlags } from "../contexts/FeatureFlagsContext";
 import { useAutoSetActiveWalletFromWagmi } from "../hooks/useAutoSetActiveWalletFromWagmi";
 import { useCryptoPaymentMethodState } from "../hooks/useCryptoPaymentMethodState";
+import { useRecipientAddressState } from "../hooks/useRecipientAddressState";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
 import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPaymentMethod";
 import { FeeBreakDown } from "./common/FeeBreakDown";
@@ -261,11 +262,12 @@ function AnySpendCustomInner({
   // Get current user's wallet
   const currentWallet = useAccountWallet();
 
-  // Add state for custom recipient
-  const [customRecipientAddress, setCustomRecipientAddress] = useState<string | undefined>(recipientAddressProps);
-
-  // Update recipient logic to use custom recipient
-  const recipientAddress = customRecipientAddress || currentWallet.address;
+  // Recipient address state with dual-state system (auto + explicit user selection)
+  // The hook automatically manages priority: props > user selection > global address
+  const { setSelectedRecipientAddress, effectiveRecipientAddress: recipientAddress } = useRecipientAddressState({
+    recipientAddressFromProps: recipientAddressProps,
+    globalAddress: currentWallet.address,
+  });
 
   const [orderId, setOrderId] = useState<string | undefined>(loadOrder);
 
@@ -1230,12 +1232,13 @@ function AnySpendCustomInner({
   const recipientSelectionView = (
     <div className={cn("bg-as-surface-primary mx-auto w-[460px] max-w-full rounded-xl p-4")}>
       <RecipientSelection
-        initialValue={customRecipientAddress || ""}
+        initialValue={recipientAddress || ""}
         title="Add recipient address or ENS"
         description="Send tokens to another address"
         onBack={() => setActivePanel(PanelView.CONFIRM_ORDER)}
         onConfirm={address => {
-          setCustomRecipientAddress(address);
+          // User manually selected a recipient
+          setSelectedRecipientAddress(address);
           setActivePanel(PanelView.CONFIRM_ORDER);
         }}
       />
