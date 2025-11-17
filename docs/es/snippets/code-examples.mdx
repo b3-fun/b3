@@ -60,7 +60,7 @@ function App() {
         provider={{ strategy: "google" }}
         partnerId="your-partner-id"
         onLoginSuccess={globalAccount => {
-          console.log("Authenticated:", globalAccount);
+          console.log("Autenticado:", globalAccount);
         }}
       />
     </B3Provider>
@@ -83,7 +83,7 @@ function WalletButton() {
         rpcUrl: "https://mainnet-rpc.b3.fun",
       });
     } catch (error) {
-      console.error("Connection failed:", error);
+      console.error("Conexión fallida:", error);
     }
   };
 
