@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 interface UseRecipientAddressStateProps {
   /** Fixed recipient address from props (highest priority) */
@@ -32,7 +32,7 @@ interface UseRecipientAddressStateResult {
  * - Automatically manages recipient address based on priority
  * - Preserves user's manual selections
  * - Updates automatically when wallet/global address changes (if no manual selection)
- * - Self-contained logic - no need for useEffect in parent components
+ * - Derived value approach - no useEffect needed, no stale state bugs
  *
  * @example
  * ```tsx
@@ -57,32 +57,15 @@ export function useRecipientAddressState({
   walletAddress,
   globalAddress,
 }: UseRecipientAddressStateProps = {}): UseRecipientAddressStateResult {
-  // recipientAddress: auto-selected based on wallet/global address
-  const [recipientAddress, setRecipientAddress] = useState<string | undefined>(undefined);
-
   // selectedRecipientAddress: explicitly selected by user (undefined means no explicit selection)
   const [selectedRecipientAddress, setSelectedRecipientAddress] = useState<string | undefined>(undefined);
 
-  // Auto-update recipient address from wallet/global when no manual selection exists
-  useEffect(() => {
-    // Don't auto-update if user has made an explicit selection
-    if (selectedRecipientAddress) {
-      return;
-    }
+  // The effective recipient address, derived on each render, respecting priority.
+  const effectiveRecipientAddress =
+    recipientAddressFromProps || selectedRecipientAddress || walletAddress || globalAddress;
 
-    // Auto-set from wallet or global address
-    const autoRecipient = walletAddress || globalAddress;
-    if (autoRecipient) {
-      setRecipientAddress(autoRecipient);
-    }
-  }, [selectedRecipientAddress, walletAddress, globalAddress]);
-
-  // The effective recipient address (user selection takes priority over auto-selection)
-  const effectiveRecipientAddress = recipientAddressFromProps || selectedRecipientAddress || recipientAddress;
-
-  // Helper function to reset both states
+  // Helper function to reset user's manual selection.
   const resetRecipientAddress = () => {
-    setRecipientAddress(undefined);
     setSelectedRecipientAddress(undefined);
   };
 
