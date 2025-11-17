@@ -240,6 +240,9 @@ export function useAuthentication(partnerId: string) {
     client,
     wallets: [wallet],
     onConnect,
+    onTimeout: () => {
+      logout();
+    },
   });
 
   /**
