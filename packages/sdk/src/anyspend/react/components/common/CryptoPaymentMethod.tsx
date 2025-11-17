@@ -4,7 +4,7 @@ import { useAccountWallet } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
-import { WalletCoinbase, WalletMetamask, WalletPhantom, WalletRainbow, WalletWalletConnect } from "@web3icons/react";
+import { WalletCoinbase, WalletMetamask, WalletRainbow, WalletWalletConnect } from "@web3icons/react";
 import { ChevronLeft, ChevronRightCircle, Wallet, X, ZapIcon } from "lucide-react";
 import { useState } from "react";
 import { createPortal } from "react-dom";
@@ -126,13 +126,6 @@ export function CryptoPaymentMethod({
       icon: <WalletWalletConnect size={48} />,
       description: "Connect using WalletConnect protocol",
       connector: availableConnectors.find(c => c.name === "WalletConnect"),
-    },
-    {
-      id: "phantom",
-      name: "Phantom",
-      icon: <WalletPhantom size={48} />,
-      description: "Connect using Phantom wallet",
-      connector: availableConnectors.find(c => c.name === "Phantom"),
     },
   ].filter(wallet => wallet.connector); // Only show wallets that have available connectors
 
