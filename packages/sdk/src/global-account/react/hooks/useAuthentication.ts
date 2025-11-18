@@ -239,7 +239,7 @@ export function useAuthentication(partnerId: string) {
   const { isLoading: useAutoConnectLoading } = useAutoConnect({
     client,
     wallets: [wallet],
-    onConnect: (connectedWallet) => {
+    onConnect: connectedWallet => {
       // Wrap to match the expected signature
       onConnect(connectedWallet, [connectedWallet]);
     },

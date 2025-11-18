@@ -86,7 +86,7 @@ export function LoginStep({ onSuccess, chain }: LoginStepProps) {
           titleIcon: "https://cdn.b3.fun/b3_logo.svg",
         }}
         className="b3-login-step"
-        onConnect={async (wallet) => {
+        onConnect={async wallet => {
           await onConnect(wallet, []);
           const account = wallet.getAccount();
           if (!account) throw new Error("No account found");
