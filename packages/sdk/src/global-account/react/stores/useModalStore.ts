@@ -402,6 +402,27 @@ export interface ProfileEditorModalProps extends BaseModalProps {
 }
 
 /**
+ * Props for the AnySpend Collector Club Purchase modal
+ * Handles Collector Club pack purchases
+ */
+export interface AnySpendCollectorClubPurchaseProps extends BaseModalProps {
+  /** Modal type identifier */
+  type: "anySpendCollectorClubPurchase";
+  /** The pack ID to purchase */
+  packId: number;
+  /** The number of packs to purchase */
+  packAmount: number;
+  /** Price per pack in wei (e.g., "10000" for 0.01 USDC with 6 decimals) */
+  pricePerPack: string;
+  /** Recipient address to receive the packs */
+  recipientAddress: string;
+  /** Payment type - crypto or fiat */
+  paymentType?: "crypto" | "fiat";
+  /** Callback function called when the purchase is successful */
+  onSuccess?: (txHash?: string) => void;
+}
+
+/**
  * Union type of all possible modal content types
  */
 export type ModalContentType =
@@ -425,7 +446,8 @@ export type ModalContentType =
   | LinkAccountModalProps
   | AnySpendDepositHypeProps
   | AvatarEditorModalProps
-  | ProfileEditorModalProps;
+  | ProfileEditorModalProps
+  | AnySpendCollectorClubPurchaseProps;
 // Add other modal types here like: | OtherModalProps | AnotherModalProps
 
 /**

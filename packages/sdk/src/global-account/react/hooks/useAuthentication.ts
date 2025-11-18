@@ -239,7 +239,10 @@ export function useAuthentication(partnerId: string) {
   const { isLoading: useAutoConnectLoading } = useAutoConnect({
     client,
     wallets: [wallet],
-    onConnect,
+    onConnect: (connectedWallet) => {
+      // Wrap to match the expected signature
+      onConnect(connectedWallet, [connectedWallet]);
+    },
     onTimeout: () => {
       logout().catch(error => {
         debug("@@useAuthentication:logout on timeout failed", { error });

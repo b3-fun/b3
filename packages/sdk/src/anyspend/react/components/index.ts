@@ -2,6 +2,7 @@
 export { AnySpend } from "./AnySpend";
 export { AnySpendBondKit } from "./AnySpendBondKit";
 export { AnySpendBuySpin } from "./AnySpendBuySpin";
+export { AnySpendCollectorClubPurchase } from "./AnySpendCollectorClubPurchase";
 export { AnySpendCustom } from "./AnySpendCustom";
 export { AnySpendCustomExactIn } from "./AnySpendCustomExactIn";
 export { AnySpendDepositHype, HYPE_TOKEN_DETAILS } from "./AnyspendDepositHype";

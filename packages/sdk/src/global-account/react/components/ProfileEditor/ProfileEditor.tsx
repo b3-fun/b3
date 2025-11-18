@@ -125,7 +125,6 @@ export function ProfileEditor({ onSuccess, className }: ProfileEditorProps) {
         // @ts-expect-error this resolved fine, look into why expect-error needed
         updatedUser = await app.service("users").registerUsername(
           { username: username },
-          // @ts-expect-error - our typed client is expecting context even though it's set elsewhere
           {},
         );
       }
