@@ -27,7 +27,7 @@
 import { USDC_BASE } from "@b3dotfun/sdk/anyspend/constants";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
-import React from "react";
+import React, { useMemo } from "react";
 import { encodeFunctionData } from "viem";
 import { AnySpendCustom } from "./AnySpendCustom";
 
@@ -117,14 +117,28 @@ export function AnySpendCollectorClubPurchase({
   showRecipient = true,
 }: AnySpendCollectorClubPurchaseProps) {
   // Calculate total amount needed (pricePerPack * packAmount)
-  const totalAmount = (BigInt(pricePerPack) * BigInt(packAmount)).toString();
+  const totalAmount = useMemo(() => {
+    try {
+      return (BigInt(pricePerPack) * BigInt(packAmount)).toString();
+    } catch (error) {
+      console.error("Failed to calculate total amount from props", { pricePerPack, packAmount, error });
+      return "0";
+    }
+  }, [pricePerPack, packAmount]);
 
   // Encode the buyPacksFor function call
-  const encodedData = encodeFunctionData({
-    abi: [BUY_PACKS_FOR_ABI],
-    functionName: "buyPacksFor",
-    args: [recipientAddress as `0x${string}`, BigInt(packId), BigInt(packAmount)],
-  });
+  const encodedData = useMemo(() => {
+    try {
+      return encodeFunctionData({
+        abi: [BUY_PACKS_FOR_ABI],
+        functionName: "buyPacksFor",
+        args: [recipientAddress as `0x${string}`, BigInt(packId), BigInt(packAmount)],
+      });
+    } catch (error) {
+      console.error("Failed to encode function data", { recipientAddress, packId, packAmount, error });
+      return "0x";
+    }
+  }, [recipientAddress, packId, packAmount]);
 
   // Default header if not provided
   const defaultHeader = () => (
