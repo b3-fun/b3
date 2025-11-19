@@ -127,15 +127,21 @@ export function ProfileEditor({ onSuccess, className }: ProfileEditorProps) {
         const b3Username = `${sanitizedUsername}.b3.fun`;
         const usernameSignMessage = `Register "${b3Username}"`;
         const usernameSignature = await account?.signMessage({ message: usernameSignMessage });
-        console.log("@@usernameSignature", usernameSignature);
-        // TODO: same signed message to registerUsername, for ENS setting
 
-        // @ts-expect-error this resolved fine, look into why expect-error needed
-        updatedUser = await app.service("users").registerUsername(
-          { username: username },
-          // @ts-expect-error - our typed client is expecting context even though it's set elsewhere
-          {},
-        );
+        if (!usernameSignature) {
+          throw new Error("Failed to sign username registration message");
+        }
+
+        console.log("@@usernameSignature", usernameSignature);
+
+        // Register username with ENS
+        // Note: Type assertion needed until @b3dotfun/b3-api package is updated with RegisterUsername type
+        updatedUser = (await app
+          .service("users")
+          .registerUsername(
+            { username, message: usernameSignMessage, hash: usernameSignature } as any,
+            {} as any,
+          )) as unknown as Users;
       }
 
       // Update user state
