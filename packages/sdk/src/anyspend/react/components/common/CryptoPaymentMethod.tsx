@@ -1,6 +1,6 @@
 "use client";
 
-import { IPFSMediaRenderer, useAccountWallet } from "@b3dotfun/sdk/global-account/react";
+import { IPFSMediaRenderer, toast, useAccountWallet } from "@b3dotfun/sdk/global-account/react";
 import { useAccountWalletImage } from "@b3dotfun/sdk/global-account/react/hooks/useAccountWallet";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
@@ -9,7 +9,6 @@ import { WalletCoinbase, WalletMetamask, WalletPhantom, WalletRainbow, WalletWal
 import { ChevronLeft, ChevronRightCircle, Wallet, X, ZapIcon } from "lucide-react";
 import { useState } from "react";
 import { createPortal } from "react-dom";
-import { toast } from "sonner";
 import { useSetActiveWallet, useWalletInfo } from "thirdweb/react";
 import { WalletId, createWallet } from "thirdweb/wallets";
 import { useAccount, useConnect, useDisconnect, useWalletClient } from "wagmi";
@@ -200,6 +199,49 @@ export function CryptoPaymentMethod({
             <h2 className="text-as-primary text-lg font-semibold">Select a payment method</h2>
           </div>
         </div>
+
+        {/* Toast Testing Section - Remove this after testing */}
+        {process.env.NODE_ENV === "development" && (
+          <div className="rounded-lg border border-yellow-500/50 bg-yellow-50 p-3 dark:bg-yellow-950/20">
+            <p className="mb-2 text-xs font-semibold text-yellow-800 dark:text-yellow-300">🧪 Toast Test (Dev Only)</p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => toast.success("Success! Transaction completed")}
+                className="rounded bg-green-600 px-2 py-1 text-xs font-medium text-white hover:bg-green-700"
+              >
+                Success
+              </button>
+              <button
+                onClick={() => toast.error("Error! Transaction failed")}
+                className="rounded bg-red-600 px-2 py-1 text-xs font-medium text-white hover:bg-red-700"
+              >
+                Error
+              </button>
+              <button
+                onClick={() => toast.info("Info: Processing your request...")}
+                className="rounded bg-blue-600 px-2 py-1 text-xs font-medium text-white hover:bg-blue-700"
+              >
+                Info
+              </button>
+              <button
+                onClick={() => toast.warning("Warning: Low balance detected")}
+                className="rounded bg-yellow-600 px-2 py-1 text-xs font-medium text-white hover:bg-yellow-700"
+              >
+                Warning
+              </button>
+              <button
+                onClick={() => {
+                  toast.success("Multiple test 1");
+                  setTimeout(() => toast.info("Multiple test 2"), 200);
+                  setTimeout(() => toast.warning("Multiple test 3"), 400);
+                }}
+                className="rounded bg-purple-600 px-2 py-1 text-xs font-medium text-white hover:bg-purple-700"
+              >
+                Multiple
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Payment Methods */}
         <div className="crypto-payment-methods flex flex-col gap-4">

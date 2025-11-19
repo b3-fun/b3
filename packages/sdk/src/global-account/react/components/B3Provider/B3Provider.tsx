@@ -23,6 +23,7 @@ import { Account, Wallet } from "thirdweb/wallets";
 import { CreateConnectorFn, WagmiProvider } from "wagmi";
 import { ClientType, setClientType } from "../../../client-manager";
 import { StyleRoot } from "../StyleRoot";
+import { setToastContext, ToastProvider, useToastContext } from "../Toast/index";
 import { LocalSDKProvider } from "./LocalSDKProvider";
 import { B3Context, B3ContextType } from "./types";
 
@@ -92,23 +93,26 @@ export function B3Provider({
       <WagmiProvider config={wagmiConfig} reconnectOnMount={false}>
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
-            <LocalSDKProvider onConnectCallback={onConnect}>
-              <InnerProvider
-                accountOverride={accountOverride}
-                environment={environment}
-                theme={theme}
-                automaticallySetFirstEoa={!!automaticallySetFirstEoa}
-                clientType={clientType}
-                partnerId={partnerId}
-              >
-                <RelayKitProviderWrapper simDuneApiKey={simDuneApiKey}>
-                  {children}
-                  {/* For the modal https://github.com/b3-fun/b3/blob/main/packages/sdk/src/global-account/react/components/ui/dialog.tsx#L46 */}
-                  <StyleRoot id="b3-root" />
-                  <Toaster theme={theme} position={toaster?.position} style={toaster?.style} />
-                </RelayKitProviderWrapper>
-              </InnerProvider>
-            </LocalSDKProvider>
+            <ToastProvider>
+              <LocalSDKProvider onConnectCallback={onConnect}>
+                <InnerProvider
+                  accountOverride={accountOverride}
+                  environment={environment}
+                  theme={theme}
+                  automaticallySetFirstEoa={!!automaticallySetFirstEoa}
+                  clientType={clientType}
+                  partnerId={partnerId}
+                >
+                  <ToastContextConnector />
+                  <RelayKitProviderWrapper simDuneApiKey={simDuneApiKey}>
+                    {children}
+                    {/* For the modal https://github.com/b3-fun/b3/blob/main/packages/sdk/src/global-account/react/components/ui/dialog.tsx#L46 */}
+                    <StyleRoot id="b3-root" />
+                    <Toaster theme={theme} position={toaster?.position} style={toaster?.style} />
+                  </RelayKitProviderWrapper>
+                </InnerProvider>
+              </LocalSDKProvider>
+            </ToastProvider>
           </TooltipProvider>
         </QueryClientProvider>
       </WagmiProvider>
@@ -214,3 +218,20 @@ export function InnerProvider({
 const InnerProvider2 = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
+
+/**
+ * Component to connect the toast context to the global toast API
+ */
+function ToastContextConnector() {
+  const toastContext = useToastContext();
+
+  useEffect(() => {
+    setToastContext({
+      addToast: toastContext.addToast,
+      removeToast: toastContext.removeToast,
+      clearAll: toastContext.clearAll,
+    });
+  }, [toastContext]);
+
+  return null;
+}

@@ -15,6 +15,7 @@ import { AnySpendStakeUpsideExactIn } from "@b3dotfun/sdk/anyspend/react/compone
 import { useGlobalAccount, useIsMobile, useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
+import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef } from "react";
 import { useSetActiveWallet } from "thirdweb/react";
 import { AvatarEditor } from "./AvatarEditor/AvatarEditor";
@@ -26,6 +27,7 @@ import { ManageAccount } from "./ManageAccount/ManageAccount";
 import { RequestPermissions } from "./RequestPermissions/RequestPermissions";
 import { Send } from "./Send/Send";
 import { SignInWithB3Flow } from "./SignInWithB3/SignInWithB3Flow";
+import { ToastContainer, useToastContext } from "./Toast/index";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "./ui/dialog";
 import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "./ui/drawer";
 
@@ -41,6 +43,7 @@ export function B3DynamicModal() {
   const prevIsOpenRef = useRef(isOpen);
   const { wallet } = useGlobalAccount();
   const setActiveWallet = useSetActiveWallet();
+  const { toasts, removeToast } = useToastContext();
 
   // anyspend cleanup global account chnages by setting account back
   useEffect(() => {
@@ -189,7 +192,7 @@ export function B3DynamicModal() {
         <ModalTitle className="sr-only hidden">{contentType?.type || "Modal"}</ModalTitle>
         <ModalDescription className="sr-only hidden">{contentType?.type || "Modal Body"}</ModalDescription>
 
-        <div className={cn("no-scrollbar max-h-[90dvh] overflow-auto sm:max-h-[80dvh]")}>
+        <div className={cn("no-scrollbar flex max-h-[90dvh] flex-col overflow-auto sm:max-h-[80dvh]")}>
           {!hideCloseButton && (
             <button
               onClick={navigateBack}
@@ -214,9 +217,43 @@ export function B3DynamicModal() {
               <span className="font-inter text-sm font-semibold">Back</span>
             </button>
           )}
-          {renderContent()}
+          <div className="flex-1">{renderContent()}</div>
+
+          {/* Toast Container - Part of modal-inner-content layer */}
+          <AnimatePresence>
+            {toasts.length > 0 && (
+              <motion.div
+                initial={{ height: 0 }}
+                animate={{ height: "auto" }}
+                exit={{ height: 0 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                className="toast-section relative z-10 overflow-hidden bg-white dark:border-gray-800 dark:bg-gray-900"
+              >
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2, delay: 0.1 }}
+                  className="p-4 pt-0"
+                >
+                  <ToastContainer toasts={toasts} onDismiss={removeToast} theme={theme} />
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </ModalContent>
+
+      {/* Animate inner container margin to cover branding when toasts appear */}
+      {isOpen && (
+        <style>{`
+          .modal-inner-content {
+            transition: margin-bottom 0.3s ease-in-out;
+            margin-bottom: ${toasts.length > 0 ? "0px" : "23px"} !important;
+          }
+        `}</style>
+      )}
+
       {contentType?.type === "avatarEditor" && (
         <button
           onClick={() => setB3ModalOpen(false)}

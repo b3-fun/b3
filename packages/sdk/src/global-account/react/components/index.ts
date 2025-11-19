@@ -106,12 +106,12 @@ export { ScrollArea, ScrollBar } from "./ui/scroll-area";
 export { ShinyButton } from "./ui/ShinyButton";
 export { Skeleton } from "./ui/skeleton";
 export {
+  TabTrigger as TabTriggerPrimitive,
   TabsContent as TabsContentPrimitive,
   TabsList as TabsListPrimitive,
   Tabs as TabsPrimitive,
-  TabTrigger as TabTriggerPrimitive,
 } from "./ui/Tabs";
-export { Tabs, TabsContent, TabsList, TabsTransitionWrapper, TabTrigger } from "./ui/TabSystem";
+export { TabTrigger, Tabs, TabsContent, TabsList, TabsTransitionWrapper } from "./ui/TabSystem";
 export { TextLoop } from "./ui/text-loop";
 export { TextShimmer } from "./ui/text-shimmer";
 export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
@@ -119,3 +119,9 @@ export { TransitionPanel } from "./ui/transition-panel";
 
 // Magic UI Components
 export { AnimatedLottie } from "./magicui/AnimatedLottie";
+
+// Toast Components
+export { toast } from "./Toast/toastApi";
+export { Toast, ToastContainer } from "./Toast/ToastComponents";
+export { ToastProvider, useToastContext } from "./Toast/ToastContext";
+export type { ToastItem, ToastType } from "./Toast/ToastContext";
