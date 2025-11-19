@@ -1,6 +1,6 @@
 "use client";
 
-import { useProfile } from "@b3dotfun/sdk/global-account/react";
+import { toast, useProfile } from "@b3dotfun/sdk/global-account/react";
 import { useRPMToken } from "@b3dotfun/sdk/global-account/react/hooks/useRPMToken";
 import { updateAvatar } from "@b3dotfun/sdk/global-account/react/utils/updateAvatar";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
@@ -11,7 +11,7 @@ import {
   AvatarExportedEvent,
 } from "@readyplayerme/react-avatar-creator";
 import { useState } from "react";
-import { toast } from "sonner";
+
 import { useActiveAccount } from "thirdweb/react";
 
 const debug = debugB3React("AvatarCreator");

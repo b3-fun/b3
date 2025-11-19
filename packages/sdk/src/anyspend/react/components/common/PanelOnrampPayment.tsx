@@ -1,12 +1,12 @@
 import { useAnyspendCreateOnrampOrder, useGeoOnrampOptions } from "@b3dotfun/sdk/anyspend/react";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
-import { Button } from "@b3dotfun/sdk/global-account/react";
+import { Button, toast } from "@b3dotfun/sdk/global-account/react";
 import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
 import invariant from "invariant";
 import { ChevronLeft, ChevronRight, Landmark, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
-import { toast } from "sonner";
+
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "../AnySpendFingerprintWrapper";
 
 interface PanelOnrampPaymentProps {

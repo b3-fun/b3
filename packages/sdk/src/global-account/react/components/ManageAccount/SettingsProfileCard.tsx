@@ -1,9 +1,9 @@
 import app from "@b3dotfun/sdk/global-account/app";
-import { useB3, useModalStore, useProfile } from "@b3dotfun/sdk/global-account/react";
+import { toast, useB3, useModalStore, useProfile } from "@b3dotfun/sdk/global-account/react";
 import { formatUsername } from "@b3dotfun/sdk/shared/utils";
 import { Check, Loader2, Pencil, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
+
 import { useActiveAccount } from "thirdweb/react";
 import { useFirstEOA } from "../../hooks/useFirstEOA";
 import { IPFSMediaRenderer } from "../IPFSMediaRenderer/IPFSMediaRenderer";

@@ -1,7 +1,7 @@
 "use client";
 
 import app from "@b3dotfun/sdk/global-account/app";
-import { Button, IPFSMediaRenderer, useB3, useProfile } from "@b3dotfun/sdk/global-account/react";
+import { Button, IPFSMediaRenderer, toast, useB3, useProfile } from "@b3dotfun/sdk/global-account/react";
 import { validateImageUrl } from "@b3dotfun/sdk/global-account/react/utils/profileDisplay";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
@@ -11,7 +11,7 @@ import { useCallback, useRef, useState } from "react";
 import type { Area } from "react-easy-crop";
 import Cropper from "react-easy-crop";
 import "react-easy-crop/react-easy-crop.css";
-import { toast } from "sonner";
+
 import { useActiveAccount } from "thirdweb/react";
 import { upload } from "thirdweb/storage";
 import { useProfileSettings } from "../../hooks/useProfile";

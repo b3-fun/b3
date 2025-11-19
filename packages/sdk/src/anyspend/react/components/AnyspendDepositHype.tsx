@@ -1,11 +1,18 @@
 import { B3_TOKEN } from "@b3dotfun/sdk/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
-import { Button, ShinyButton, StyleRoot, TransitionPanel, useAccountWallet } from "@b3dotfun/sdk/global-account/react";
+import {
+  Button,
+  ShinyButton,
+  StyleRoot,
+  toast,
+  TransitionPanel,
+  useAccountWallet,
+} from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import invariant from "invariant";
 import { motion } from "motion/react";
 import { useEffect, useMemo, useRef } from "react";
-import { toast } from "sonner";
+
 import { useSetActiveWallet } from "thirdweb/react";
 import { base } from "viem/chains";
 import { PanelView, useAnyspendFlow } from "../hooks/useAnyspendFlow";

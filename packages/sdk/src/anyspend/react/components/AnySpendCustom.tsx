@@ -34,6 +34,7 @@ import {
 } from "@b3dotfun/sdk/global-account/react";
 import { cn, formatUsername } from "@b3dotfun/sdk/shared/utils";
 
+import { toast } from "@b3dotfun/sdk/global-account/react";
 import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { formatTokenAmount, formatUnits } from "@b3dotfun/sdk/shared/utils/number";
 import { simpleHashChainToChainName } from "@b3dotfun/sdk/shared/utils/simplehash";
@@ -41,7 +42,7 @@ import invariant from "invariant";
 import { ChevronRight, ChevronRightCircle, Info, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
+
 import { base } from "viem/chains";
 import { useFeatureFlags } from "../contexts/FeatureFlagsContext";
 import { useAutoSetActiveWalletFromWagmi } from "../hooks/useAutoSetActiveWalletFromWagmi";
@@ -566,7 +567,7 @@ function AnySpendCustomInner({
         await handleCreateOrder(recipientAddress, onramp);
       } catch (err) {
         console.error("Error creating order:", err);
-        toast(`Error creating order: ${err instanceof Error ? err.message : err}`);
+        toast.error(`Error creating order: ${err instanceof Error ? err.message : err}`);
       }
     }
   };

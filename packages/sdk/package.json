@@ -348,7 +348,6 @@
     "react-number-format": "5.4.3",
     "react-timeago": "8.2.0",
     "socket.io-client": "4.7.5",
-    "sonner": "1.7.4",
     "tailwind-merge": "2.6.0",
     "typescript": "5.8.2",
     "vaul": "^1.1.2",

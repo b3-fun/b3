@@ -57,6 +57,7 @@ toast.dismiss();
 ### Components
 
 #### `ToastProvider`
+
 Wraps the application to provide toast context. Already integrated into `B3Provider`.
 
 ```typescript
@@ -68,14 +69,17 @@ import { ToastProvider } from "@b3dotfun/sdk/global-account/react";
 ```
 
 #### `Toast`
+
 Renders a single toast notification with type-specific styling and icons.
 
 #### `ToastContainer`
+
 Renders a list of toasts with animations. Used internally by `B3DynamicModal`.
 
 ### Context
 
 #### `useToastContext()`
+
 Access toast context directly in components.
 
 ```typescript
@@ -83,7 +87,7 @@ import { useToastContext } from "@b3dotfun/sdk/global-account/react";
 
 function MyComponent() {
   const { toasts, addToast, removeToast, clearAll } = useToastContext();
-  
+
   return <div>Active toasts: {toasts.length}</div>;
 }
 ```
@@ -91,26 +95,29 @@ function MyComponent() {
 ### Global API
 
 #### `toast`
+
 Global singleton API matching Sonner's interface.
 
 **Methods:**
+
 - `toast.success(message, options?)` - Show success toast
-- `toast.error(message, options?)` - Show error toast  
+- `toast.error(message, options?)` - Show error toast
 - `toast.info(message, options?)` - Show info toast
 - `toast.warning(message, options?)` - Show warning toast
 - `toast.dismiss(toastId?)` - Dismiss toast(s)
 
 **Options:**
+
 - `duration?: number` - Auto-dismiss duration in ms (default: 4000)
 
 ## Toast Types
 
-| Type | Color | Icon | Usage |
-|------|-------|------|-------|
-| `success` | Green | Checkmark | Successful operations |
-| `error` | Red | X | Failed operations |
-| `info` | Blue | Info | Informational messages |
-| `warning` | Yellow | Warning | Warnings |
+| Type      | Color  | Icon      | Usage                  |
+| --------- | ------ | --------- | ---------------------- |
+| `success` | Green  | Checkmark | Successful operations  |
+| `error`   | Red    | X         | Failed operations      |
+| `info`    | Blue   | Info      | Informational messages |
+| `warning` | Yellow | Warning   | Warnings               |
 
 ## Theming
 
@@ -123,11 +130,13 @@ Toasts automatically adapt to the theme set in `B3Provider`:
 ```
 
 **Light Theme:**
+
 - Lighter backgrounds
 - Darker text
 - Softer borders
 
 **Dark Theme:**
+
 - Darker backgrounds
 - Lighter text
 - Glowing borders
@@ -155,6 +164,7 @@ The modal automatically expands to accommodate toasts.
 ### Position
 
 Toasts are positioned:
+
 - At the bottom of the modal
 - Above the modal border
 - Below main content
@@ -180,7 +190,7 @@ const handleTransaction = async () => {
 ```typescript
 const handleLongOperation = async () => {
   const toastId = toast.info("Processing...", { duration: Infinity });
-  
+
   try {
     await longOperation();
     toast.dismiss(toastId);
@@ -206,7 +216,7 @@ toast.warning("Complete your profile");
 ### Before
 
 ```typescript
-import { toast } from "sonner";
+import { toast } from "@b3dotfun/sdk/global-account/react";
 
 toast.success("Success!");
 ```
@@ -238,9 +248,9 @@ test("shows toast notification", async () => {
       <MyComponent />
     </ToastProvider>
   );
-  
+
   toast.success("Test message");
-  
+
   // Toast will be visible in the component tree
 });
 ```
@@ -258,6 +268,7 @@ See `__tests__/toast.test.tsx` for more examples.
 ### Toasts appearing outside modal
 
 If toasts appear outside the modal, you may be:
+
 1. Using Sonner directly instead of our toast API
 2. Missing the `ToastProvider` wrapper
 
@@ -337,4 +348,3 @@ function useToastContext(): {
 - [ ] ARIA live regions for accessibility
 - [ ] Custom toast components
 - [ ] Position variants (top, bottom, etc.)
-

@@ -1,10 +1,11 @@
 import app from "@b3dotfun/sdk/global-account/app";
+import { toast } from "@b3dotfun/sdk/global-account/react";
 import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { thirdwebB3Mainnet } from "@b3dotfun/sdk/shared/constants/chains/b3Chain";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { Loader2, Mail, Phone, WalletIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
+
 import { useLinkProfile, useProfiles } from "thirdweb/react";
 import { createWallet, preAuthenticate, WalletId } from "thirdweb/wallets";
 import { WalletRow } from "../..";

@@ -2,12 +2,12 @@ import { useCoinbaseOnrampOptions } from "@b3dotfun/sdk/anyspend/react";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
 import { ALL_CHAINS } from "@b3dotfun/sdk/anyspend/utils/chain";
-import { Input, useGetGeo, useProfile } from "@b3dotfun/sdk/global-account/react";
+import { Input, toast, useGetGeo, useProfile } from "@b3dotfun/sdk/global-account/react";
 import { cn, formatUsername } from "@b3dotfun/sdk/shared/utils";
 import { formatAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { ChevronRight, Info, Wallet } from "lucide-react";
 import { useRef } from "react";
-import { toast } from "sonner";
+
 import { useFeatureFlags } from "../../contexts/FeatureFlagsContext";
 import { FiatPaymentMethod } from "./FiatPaymentMethod";
 import { OrderTokenAmountFiat } from "./OrderTokenAmountFiat";

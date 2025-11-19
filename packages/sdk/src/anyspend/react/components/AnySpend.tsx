@@ -13,6 +13,7 @@ import {
   ShinyButton,
   StyleRoot,
   TabsPrimitive,
+  toast,
   TransitionPanel,
   useAccountWallet,
   useB3,
@@ -32,7 +33,7 @@ import invariant from "invariant";
 import { ArrowDown, HistoryIcon, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { toast } from "sonner";
+
 import { defineChain } from "thirdweb";
 import { parseUnits } from "viem";
 import { base, mainnet } from "viem/chains";

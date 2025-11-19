@@ -2,7 +2,7 @@
 
 import { ALL_CHAINS, capitalizeFirstLetter, getChainName } from "@b3dotfun/sdk/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
-import { CopyToClipboard } from "@b3dotfun/sdk/global-account/react";
+import { CopyToClipboard, toast } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils";
 import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
 import { formatNumber } from "@b3dotfun/sdk/shared/utils/formatNumber";
@@ -10,7 +10,7 @@ import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { ChevronDown, Copy } from "lucide-react";
 import { motion } from "motion/react";
 import { memo, useState } from "react";
-import { toast } from "sonner";
+
 import { b3 } from "viem/chains";
 
 type Order = components["schemas"]["Order"];

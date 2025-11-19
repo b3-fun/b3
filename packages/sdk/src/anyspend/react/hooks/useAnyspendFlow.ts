@@ -8,6 +8,7 @@ import {
 } from "@b3dotfun/sdk/anyspend/react";
 import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
 import {
+  toast,
   useAccountWallet,
   useProfile,
   useRouter,
@@ -16,7 +17,7 @@ import {
 } from "@b3dotfun/sdk/global-account/react";
 import { formatTokenAmount, formatUnits } from "@b3dotfun/sdk/shared/utils/number";
 import { useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
+
 import { parseUnits } from "viem";
 import { base, mainnet } from "viem/chains";
 import { useAccount } from "wagmi";

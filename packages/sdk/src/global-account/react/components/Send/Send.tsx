@@ -1,6 +1,7 @@
 import { ALL_CHAINS, getExplorerTxUrl } from "@b3dotfun/sdk/anyspend";
 import { ChainTokenIcon } from "@b3dotfun/sdk/anyspend/react/components/common/ChainTokenIcon";
 import {
+  toast,
   useAccountWallet,
   useAnalytics,
   useModalStore,
@@ -12,7 +13,7 @@ import invariant from "invariant";
 import { CircleHelp, Clock, Loader2, Send as SendIcon, Wallet } from "lucide-react";
 import { useState } from "react";
 import { NumericFormat } from "react-number-format";
-import { toast } from "sonner";
+
 import { encodeFunctionData, erc20Abi, isAddress, parseUnits } from "viem";
 import type { SimBalanceItem } from "../../hooks/useSimBalance";
 import { useRecentAddressesStore } from "../../stores/useRecentAddressesStore";

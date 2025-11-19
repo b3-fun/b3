@@ -1,8 +1,9 @@
 import { getChainName, getNativeToken } from "@b3dotfun/sdk/anyspend";
+import { toast } from "@b3dotfun/sdk/global-account/react";
 import { supportedChains } from "@b3dotfun/sdk/shared/constants/chains/supported";
 import invariant from "invariant";
 import { useCallback, useState } from "react";
-import { toast } from "sonner";
+
 import { useSwitchChain, useWalletClient } from "wagmi";
 
 export function useChainSwitchWithAction() {
@@ -65,7 +66,7 @@ export function useChainSwitchWithAction() {
       } catch (e: any) {
         if (e?.code === -32603 || e?.message?.includes("f is not a function")) {
           // This is a workaround for a bug in the wallet provider.
-          toast(`Switched to ${getChainName(targetChainId)}. Executing…`);
+          toast.success(`Switched to ${getChainName(targetChainId)}. Executing…`);
           await switchChainAndExecute(targetChainId, action);
         } else {
           toast.error(e?.message ?? "Unexpected error");

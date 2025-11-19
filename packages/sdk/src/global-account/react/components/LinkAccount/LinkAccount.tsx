@@ -1,10 +1,17 @@
 import app from "@b3dotfun/sdk/global-account/app";
-import { Button, ManageAccountModalProps, useB3, useModalStore, useQueryB3 } from "@b3dotfun/sdk/global-account/react";
+import {
+  Button,
+  ManageAccountModalProps,
+  toast,
+  useB3,
+  useModalStore,
+  useQueryB3,
+} from "@b3dotfun/sdk/global-account/react";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { truncateAddress } from "@b3dotfun/sdk/shared/utils/truncateAddress";
 import { Copy, Loader2, Pencil, UnlinkIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
+
 import { useProfiles, useUnlinkProfile } from "thirdweb/react";
 
 import { Chain } from "thirdweb";

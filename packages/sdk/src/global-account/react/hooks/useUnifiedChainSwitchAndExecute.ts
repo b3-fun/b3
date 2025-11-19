@@ -1,10 +1,11 @@
 import { getChainName, getNativeToken } from "@b3dotfun/sdk/anyspend";
 import app from "@b3dotfun/sdk/global-account/app";
+import { toast } from "@b3dotfun/sdk/global-account/react";
 import { getThirdwebChain, supportedChains } from "@b3dotfun/sdk/shared/constants/chains/supported";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import invariant from "invariant";
 import { useCallback, useState } from "react";
-import { toast } from "sonner";
+
 import { prepareTransaction, sendTransaction as twSendTransaction } from "thirdweb";
 import { useActiveWallet } from "thirdweb/react";
 import { isAddress } from "viem";
@@ -110,7 +111,7 @@ export function useUnifiedChainSwitchAndExecute() {
       } catch (e: any) {
         if (e?.code === -32603 || e?.message?.includes("f is not a function")) {
           // This is a workaround for a bug in the wallet provider.
-          toast(`Switched to ${getChainName(targetChainId)}. Executing…`);
+          toast.success(`Switched to ${getChainName(targetChainId)}. Executing…`);
           return await handleEOASwitchChainAndSendTransaction(targetChainId, params);
         } else {
           console.error(e);

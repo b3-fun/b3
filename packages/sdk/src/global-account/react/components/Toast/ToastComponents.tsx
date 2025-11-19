@@ -70,9 +70,7 @@ const getToastStyles = (type: ToastType, theme: "light" | "dark" = "light") => {
     case "success":
       return cn(
         baseStyles,
-        isDark
-          ? "bg-green-950/50 border-green-800/50 text-green-100"
-          : "bg-green-50 border-green-200 text-green-900",
+        isDark ? "bg-green-950/50 border-green-800/50 text-green-100" : "bg-green-50 border-green-200 text-green-900",
       );
     case "error":
       return cn(
@@ -118,10 +116,8 @@ export function Toast({ toast, onDismiss, theme = "light" }: ToastProps) {
       transition={{ duration: 0.2 }}
       className={getToastStyles(toast.type, theme)}
     >
-      <div className={cn("mt-0.5 flex-shrink-0", getIconColorClass(toast.type, theme))}>
-        {getToastIcon(toast.type)}
-      </div>
-      <p className="flex-1 text-sm font-medium">{toast.message}</p>
+      <div className={cn("mt-0.5 flex-shrink-0", getIconColorClass(toast.type, theme))}>{getToastIcon(toast.type)}</div>
+      <p className="font-inter flex-1 text-sm font-medium">{toast.message}</p>
       <button
         onClick={() => onDismiss(toast.id)}
         className={cn(
@@ -161,4 +157,3 @@ export function ToastContainer({ toasts, onDismiss, theme = "light", className }
     </div>
   );
 }
-

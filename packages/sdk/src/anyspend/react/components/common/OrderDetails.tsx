@@ -31,13 +31,14 @@ import { cn } from "@b3dotfun/sdk/shared/utils";
 import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 
+import { toast } from "@b3dotfun/sdk/global-account/react";
 import { WalletCoinbase, WalletMetamask, WalletPhantom, WalletTrust, WalletWalletConnect } from "@web3icons/react";
 import { CheckIcon, ChevronRight, Copy, ExternalLink, Home, Loader2, RefreshCcw } from "lucide-react";
 import { motion } from "motion/react";
 import { QRCodeSVG } from "qrcode.react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import TimeAgo from "react-timeago";
-import { toast } from "sonner";
+
 import { encodeFunctionData, erc20Abi } from "viem";
 import { b3 } from "viem/chains";
 import { useWaitForTransactionReceipt, useWalletClient } from "wagmi";

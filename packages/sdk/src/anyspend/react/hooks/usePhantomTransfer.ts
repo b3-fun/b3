@@ -1,3 +1,4 @@
+import { toast } from "@b3dotfun/sdk/global-account/react";
 import {
   createAssociatedTokenAccountInstruction,
   createTransferCheckedInstruction,
@@ -5,7 +6,6 @@ import {
 } from "@solana/spl-token";
 import { ComputeBudgetProgram, Connection, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { useCallback, useMemo } from "react";
-import { toast } from "sonner";
 
 interface UsePhantomTransferParams {
   /** RPC endpoint URL for Solana network */

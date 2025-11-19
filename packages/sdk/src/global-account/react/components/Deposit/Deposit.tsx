@@ -1,12 +1,12 @@
 import { RELAY_SOLANA_MAINNET_CHAIN_ID } from "@b3dotfun/sdk/anyspend/constants";
 import type { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { ALL_CHAINS } from "@b3dotfun/sdk/anyspend/utils/chain";
-import { useAccountWallet, useModalStore } from "@b3dotfun/sdk/global-account/react";
+import { toast, useAccountWallet, useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { TokenSelector } from "@relayprotocol/relay-kit-ui";
 import { ChevronDown, Copy } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { useMemo, useState } from "react";
-import { toast } from "sonner";
+
 import { base } from "thirdweb/chains";
 import ModalHeader from "../ModalHeader/ModalHeader";
 import { Button } from "../ui/button";
