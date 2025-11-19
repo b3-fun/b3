@@ -48,14 +48,12 @@ export function AnySpendStakeB3({
   recipientAddress,
   stakeAmount,
   onSuccess,
-  clientReferenceId,
 }: {
   loadOrder?: string;
   mode?: "modal" | "page";
   recipientAddress: string;
   stakeAmount?: string;
   onSuccess?: () => void;
-  clientReferenceId?: string;
 }) {
   const hasMounted = useHasMounted();
   const { setB3ModalOpen } = useModalStore();
@@ -508,7 +506,6 @@ export function AnySpendStakeB3({
       header={header}
       onSuccess={onSuccess}
       showRecipient={true}
-      clientReferenceId={clientReferenceId}
     />
   );
 }

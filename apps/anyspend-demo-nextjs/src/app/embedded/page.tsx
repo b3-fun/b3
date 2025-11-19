@@ -37,7 +37,6 @@ export default function NFTDemoPage() {
         <AnySpendNFT
           nftContract={nftContract}
           mode="modal"
-          clientReferenceId="demo-nft-mint"
           onSuccess={txHash => {
             console.log("Success!", txHash);
           }}
@@ -49,11 +48,10 @@ export default function NFTDemoPage() {
           destinationTokenAddress="0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3"
           destinationTokenChainId={base.id}
           defaultActiveTab="fiat"
-          clientReferenceId="demo-buy-b3-fiat"
         />
       </div>
       <div className="w-[380px] overflow-hidden rounded-3xl bg-white shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)]">
-        <AnySpend mode="modal" defaultActiveTab="crypto" clientReferenceId="demo-swap-crypto" />
+        <AnySpend mode="modal" defaultActiveTab="crypto" />
       </div>
     </div>
   );

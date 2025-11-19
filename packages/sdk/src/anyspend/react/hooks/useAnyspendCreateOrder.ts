@@ -5,6 +5,7 @@ import { buildMetadata, buildPayload, normalizeAddress } from "@b3dotfun/sdk/any
 import { useVisitorData } from "@fingerprintjs/fingerprintjs-pro-react";
 import { useMutation } from "@tanstack/react-query";
 import { useMemo } from "react";
+import { useValidatedClientReferenceId } from "./useValidatedClientReferenceId";
 
 export type CreateOrderParams = {
   recipientAddress: string;
@@ -20,7 +21,6 @@ export type CreateOrderParams = {
   creatorAddress?: string;
   payload?: any;
   partnerId?: string;
-  clientReferenceId?: string;
 };
 
 export type UseAnyspendCreateOrderProps = {
@@ -34,6 +34,9 @@ export type UseAnyspendCreateOrderProps = {
  * For onramp orders, use useAnyspendCreateOnrampOrder instead.
  */
 export function useAnyspendCreateOrder({ onSuccess, onError }: UseAnyspendCreateOrderProps = {}) {
+  // Get validated client reference ID from B3 context
+  const validatedClientReferenceId = useValidatedClientReferenceId();
+
   // Get fingerprint data
   const { data: fpData } = useVisitorData({ extendedResult: true }, { immediate: true });
   const visitorData: VisitorData | undefined = fpData && {
@@ -42,17 +45,7 @@ export function useAnyspendCreateOrder({ onSuccess, onError }: UseAnyspendCreate
   };
   const { mutate: createOrder, isPending } = useMutation({
     mutationFn: async (params: CreateOrderParams) => {
-      const {
-        recipientAddress,
-        orderType,
-        srcChain,
-        dstChain,
-        srcToken,
-        dstToken,
-        srcAmount,
-        creatorAddress,
-        clientReferenceId,
-      } = params;
+      const { recipientAddress, orderType, srcChain, dstChain, srcToken, dstToken, srcAmount, creatorAddress } = params;
 
       try {
         return await anyspendService.createOrder({
@@ -86,7 +79,7 @@ export function useAnyspendCreateOrder({ onSuccess, onError }: UseAnyspendCreate
             },
           }),
           creatorAddress: creatorAddress ? normalizeAddress(creatorAddress) : undefined,
-          clientReferenceId,
+          clientReferenceId: validatedClientReferenceId,
           visitorData,
         });
       } catch (error: any) {

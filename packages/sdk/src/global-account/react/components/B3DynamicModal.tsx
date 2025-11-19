@@ -2,6 +2,7 @@ import {
   AnySpend,
   AnySpendBondKit,
   AnySpendBuySpin,
+  AnySpendCollectorClubPurchase,
   AnySpendNFT,
   AnyspendSignatureMint,
   AnySpendStakeB3,
@@ -143,6 +144,8 @@ export function B3DynamicModal() {
         return <LinkAccount {...contentType} />;
       case "anySpendDepositHype":
         return <AnySpendDepositHype {...contentType} mode="modal" />;
+      case "anySpendCollectorClubPurchase":
+        return <AnySpendCollectorClubPurchase {...contentType} mode="modal" />;
       case "avatarEditor":
         return <AvatarEditor onSetAvatar={contentType.onSuccess} />;
       case "profileEditor":

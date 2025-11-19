@@ -10,6 +10,7 @@ import { useMemo } from "react";
 import { parseUnits } from "viem";
 import { base } from "viem/chains";
 import { CreateOrderParams } from "./useAnyspendCreateOrder";
+import { useValidatedClientReferenceId } from "./useValidatedClientReferenceId";
 
 export type OnrampOptions = {
   vendor: components["schemas"]["OnrampMetadata"]["vendor"];
@@ -33,6 +34,9 @@ export type UseAnyspendCreateOnrampOrderProps = {
  * Specifically handles orders that involve fiat-to-crypto onramp functionality
  */
 export function useAnyspendCreateOnrampOrder({ onSuccess, onError }: UseAnyspendCreateOnrampOrderProps = {}) {
+  // Get validated client reference ID from B3 context
+  const validatedClientReferenceId = useValidatedClientReferenceId();
+
   // Get fingerprint data
   const { data: fpData } = useVisitorData({ extendedResult: true }, { immediate: true });
   const visitorData: VisitorData | undefined = fpData && {
@@ -55,7 +59,6 @@ export function useAnyspendCreateOnrampOrder({ onSuccess, onError }: UseAnyspend
         tournament,
         payload,
         partnerId,
-        clientReferenceId,
       } = params;
 
       try {
@@ -103,7 +106,7 @@ export function useAnyspendCreateOnrampOrder({ onSuccess, onError }: UseAnyspend
           }),
           creatorAddress: creatorAddress ? normalizeAddress(creatorAddress) : undefined,
           partnerId,
-          clientReferenceId,
+          clientReferenceId: validatedClientReferenceId,
           visitorData,
         });
       } catch (error: any) {

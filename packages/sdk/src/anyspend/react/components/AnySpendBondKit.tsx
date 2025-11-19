@@ -38,8 +38,7 @@ export function AnySpendBondKit({
   imageUrl,
   b3Amount: initialB3Amount,
   onSuccess,
-  clientReferenceId,
-}: AnySpendBondKitProps & { clientReferenceId?: string }) {
+}: AnySpendBondKitProps) {
   const hasMounted = useHasMounted();
   const [showAmountPrompt, setShowAmountPrompt] = useState(!initialB3Amount);
   const [b3Amount, setB3Amount] = useState(initialB3Amount || "");
@@ -372,7 +371,6 @@ export function AnySpendBondKit({
       header={header}
       onSuccess={onSuccess}
       showRecipient={true}
-      clientReferenceId={clientReferenceId}
     />
   );
 }

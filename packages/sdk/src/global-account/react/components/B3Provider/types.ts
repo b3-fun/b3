@@ -22,6 +22,7 @@ export interface B3ContextType {
   theme: "light" | "dark";
   clientType: ClientType;
   partnerId: string;
+  createClientReferenceId?: () => string;
 }
 
 /**
@@ -41,4 +42,5 @@ export const B3Context = createContext<B3ContextType>({
   theme: "light",
   clientType: "rest",
   partnerId: "",
+  createClientReferenceId: undefined,
 });
