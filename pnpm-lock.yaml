@@ -524,8 +524,8 @@ importers:
         specifier: 1.11.1
         version: 1.11.1
       '@b3dotfun/b3-api':
-        specifier: 0.0.84
-        version: 0.0.84(@hey-api/openapi-ts@0.64.13(typescript@5.8.2))(@solana/sysvars@2.3.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.2))(@tanstack/query-core@5.54.1)(@types/node@22.14.0)(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(bufferutil@4.0.9)(debug@4.4.1)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(h3@1.15.4)(hono@4.9.9)(next@14.1.0(@babel/core@7.28.0)(@opentelemetry/api@1.8.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react-native@0.80.2(@babel/core@7.28.0)(@types/react@19.1.0)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)(socks@2.8.7)(typescript@5.8.2)(utf-8-validate@5.0.10)(ws@8.18.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.75)
+        specifier: 0.0.87
+        version: 0.0.87(@hey-api/openapi-ts@0.64.13(typescript@5.8.2))(@solana/sysvars@2.3.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.2))(@tanstack/query-core@5.54.1)(@types/node@22.14.0)(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(bufferutil@4.0.9)(debug@4.4.1)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(h3@1.15.4)(hono@4.9.9)(next@14.1.0(@babel/core@7.28.0)(@opentelemetry/api@1.8.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react-native@0.80.2(@babel/core@7.28.0)(@types/react@19.1.0)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)(socks@2.8.7)(typescript@5.8.2)(utf-8-validate@5.0.10)(ws@8.18.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.75)
       '@b3dotfun/basement-api':
         specifier: 0.0.11
         version: 0.0.11(bufferutil@4.0.9)(debug@4.4.1)(encoding@0.1.13)(ethers@6.15.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(express@4.21.2)(graphql@16.11.0)(h3@1.15.4)(hono@4.9.9)(koa@3.0.1)(next@14.1.0(@babel/core@7.28.0)(@opentelemetry/api@1.8.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(socks@2.8.7)(typescript@5.8.2)(utf-8-validate@5.0.10)(ws@8.18.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.75)
@@ -1009,8 +1009,8 @@ packages:
     resolution: {integrity: sha512-6Ed0kmC1NMbuFTEgNmamAUU1h5gShgxL1hBVLbEzUa3trX5aJBz1vU4bXaBTvOYUAnOHtiy1Ml4AMStd6hJnFA==}
     engines: {node: '>=18.0.0'}
 
-  '@b3dotfun/b3-api@0.0.84':
-    resolution: {integrity: sha512-voggcA8zKlXjFiSf4ewGhWL0io5Y7+ft1ux3S858mUwzH3dVB+h9ggRLnpRPilEprFT8X3ycbGls0+Cqa9Ijcg==}
+  '@b3dotfun/b3-api@0.0.87':
+    resolution: {integrity: sha512-QW3T9fAI7KEELKiH3UkpLJdF3NDk6FYXpjrGir95XM1BgrA9h5VwLunxqjPORrEyAxXGInNHn1p2L5Qqb0sz8Q==}
     engines: {node: '>= 20.15.0'}
 
   '@b3dotfun/basement-api@0.0.11':
@@ -13419,7 +13419,7 @@ snapshots:
       '@smithy/types': 4.3.2
       tslib: 2.8.1
 
-  '@b3dotfun/b3-api@0.0.84(@hey-api/openapi-ts@0.64.13(typescript@5.8.2))(@solana/sysvars@2.3.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.2))(@tanstack/query-core@5.54.1)(@types/node@22.14.0)(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(bufferutil@4.0.9)(debug@4.4.1)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(h3@1.15.4)(hono@4.9.9)(next@14.1.0(@babel/core@7.28.0)(@opentelemetry/api@1.8.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react-native@0.80.2(@babel/core@7.28.0)(@types/react@19.1.0)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)(socks@2.8.7)(typescript@5.8.2)(utf-8-validate@5.0.10)(ws@8.18.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.75)':
+  '@b3dotfun/b3-api@0.0.87(@hey-api/openapi-ts@0.64.13(typescript@5.8.2))(@solana/sysvars@2.3.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.2))(@tanstack/query-core@5.54.1)(@types/node@22.14.0)(@types/react-dom@19.1.1(@types/react@19.1.0))(@types/react@19.1.0)(bufferutil@4.0.9)(debug@4.4.1)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(h3@1.15.4)(hono@4.9.9)(next@14.1.0(@babel/core@7.28.0)(@opentelemetry/api@1.8.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react-native@0.80.2(@babel/core@7.28.0)(@types/react@19.1.0)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)(socks@2.8.7)(typescript@5.8.2)(utf-8-validate@5.0.10)(ws@8.18.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.75)':
     dependencies:
       '@apollo/client': 3.13.9(@types/react@19.1.0)(graphql@16.11.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@feathersjs/adapter-commons': 5.0.34
