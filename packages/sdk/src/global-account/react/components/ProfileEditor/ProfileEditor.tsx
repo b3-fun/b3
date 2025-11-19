@@ -123,7 +123,11 @@ export function ProfileEditor({ onSuccess, className }: ProfileEditorProps) {
       // Update username if changed (this will use the updated user from avatar change if both were updated)
       if (hasUsernameChange && user?._id) {
         // @ts-expect-error this resolved fine, look into why expect-error needed
-        updatedUser = await app.service("users").registerUsername({ username: username }, {});
+        updatedUser = await app.service("users").registerUsername(
+          { username: username },
+          // @ts-expect-error - our typed client is expecting context even though it's set elsewhere
+          {},
+        );
       }
 
       // Update user state
