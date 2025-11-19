@@ -114,7 +114,7 @@ export const ValidationPatterns = {
 export const Validators = {
   /**
    * Validates client reference IDs (alphanumeric + safe chars)
-   * Auto-generates UUID if not provided
+   * Returns undefined if not provided
    */
   clientReferenceId: (value?: string) =>
     validateString(value, {
@@ -122,7 +122,6 @@ export const Validators = {
       maxLength: 255,
       pattern: ValidationPatterns.SAFE_IDENTIFIER,
       patternErrorMessage: "Only letters, numbers, hyphens, underscores, and dots allowed",
-      defaultValue: () => crypto.randomUUID(),
       trim: true,
       customValidator: val => {
         // Additional security checks

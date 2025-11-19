@@ -137,9 +137,9 @@ function AnySpendInner({
     const validation = Validators.clientReferenceId(clientReferenceIdFromProps);
     if (!validation.isValid) {
       console.error(
-        `[AnySpend] Invalid clientReferenceId: ${validation.error || "Validation failed"}. A new UUID will be generated.`,
+        `[AnySpend] Invalid clientReferenceId: ${validation.error || "Validation failed"}. Will be set to undefined.`,
       );
-      return Validators.clientReferenceId(undefined).cleaned!;
+      return undefined;
     }
     return validation.cleaned;
   }, [clientReferenceIdFromProps]);
