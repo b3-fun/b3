@@ -94,11 +94,6 @@ export function AnySpend(props: {
    * Auto-generates UUID if not provided.
    */
   clientReferenceId?: string;
-  /**
-   * Called when an order is created with the orderId and clientReferenceId.
-   * Useful for registering webhooks or tracking order creation.
-   */
-  onOrderCreated?: (orderId: string, clientReferenceId: string) => void;
 }) {
   const fingerprintConfig = getFingerprintConfig();
 
@@ -121,7 +116,6 @@ function AnySpendInner({
   onSuccess,
   customUsdInputValues,
   clientReferenceId: clientReferenceIdFromProps,
-  onOrderCreated,
 }: {
   destinationTokenAddress?: string;
   destinationTokenChainId?: number;
@@ -134,7 +128,6 @@ function AnySpendInner({
   onSuccess?: (txHash?: string) => void;
   customUsdInputValues?: string[];
   clientReferenceId?: string;
-  onOrderCreated?: (orderId: string, clientReferenceId: string) => void;
 }) {
   const searchParams = useSearchParamsSSR();
   const router = useRouter();
@@ -142,9 +135,11 @@ function AnySpendInner({
   // Validate and clean clientReferenceId
   const validatedClientReferenceId = useMemo(() => {
     const validation = Validators.clientReferenceId(clientReferenceIdFromProps);
-    if (!validation.isValid || !validation.cleaned) {
-      console.error("[AnySpend] Invalid clientReferenceId:", validation.error);
-      throw new Error(`Invalid clientReferenceId: ${validation.error || "Validation failed"}`);
+    if (!validation.isValid) {
+      console.error(
+        `[AnySpend] Invalid clientReferenceId: ${validation.error || "Validation failed"}. A new UUID will be generated.`,
+      );
+      return Validators.clientReferenceId(undefined).cleaned!;
     }
     return validation.cleaned;
   }, [clientReferenceIdFromProps]);
@@ -645,9 +640,6 @@ function AnySpendInner({
       // setNewRecipientAddress("");
       navigateToPanel(PanelView.ORDER_DETAILS, "forward");
 
-      // Call onOrderCreated callback with orderId and clientReferenceId
-      onOrderCreated?.(orderId, validatedClientReferenceId);
-
       // Debug: Check payment method before setting URL
       console.log("Creating order - selectedCryptoPaymentMethod:", selectedCryptoPaymentMethod);
 
@@ -675,9 +667,6 @@ function AnySpendInner({
       const orderId = data.data.id;
       setOrderId(orderId);
       navigateToPanel(PanelView.ORDER_DETAILS, "forward");
-
-      // Call onOrderCreated callback with orderId and clientReferenceId
-      onOrderCreated?.(orderId, validatedClientReferenceId);
 
       // Add orderId and payment method to URL for persistence
       const params = new URLSearchParams(searchParams.toString());

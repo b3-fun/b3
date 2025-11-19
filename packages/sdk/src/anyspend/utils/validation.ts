@@ -100,10 +100,10 @@ export function validateString(value: string | undefined, options: StringValidat
 export const ValidationPatterns = {
   ALPHANUMERIC: /^[a-zA-Z0-9]+$/,
   ALPHANUMERIC_WITH_DASH_UNDERSCORE: /^[a-zA-Z0-9_-]+$/,
-  ALPHANUMERIC_WITH_SAFE_CHARS: /^[a-zA-Z0-9_.-]+$/,
-  SAFE_IDENTIFIER: /^[a-zA-Z0-9_.-]+$/, // For IDs, references
+  ALPHANUMERIC_WITH_SAFE_CHARS: /^[a-zA-Z0-9_.\-]+$/,
+  SAFE_IDENTIFIER: /^[a-zA-Z0-9_.\-]+$/, // For IDs, references
   NO_CONTROL_CHARS: /^[^\x00-\x1F\x7F]+$/,
-  URL_SAFE: /^[a-zA-Z0-9_.-~]+$/,
+  URL_SAFE: /^[a-zA-Z0-9_.\-~]+$/,
   NUMERIC: /^\d+$/,
   HEX: /^[0-9a-fA-F]+$/,
 } as const;
@@ -124,6 +124,17 @@ export const Validators = {
       patternErrorMessage: "Only letters, numbers, hyphens, underscores, and dots allowed",
       defaultValue: () => crypto.randomUUID(),
       trim: true,
+      customValidator: val => {
+        // Additional security checks
+        const dangerous = /('|"|;|--|\/\*|\*\/|<|>|script)/i;
+        if (dangerous.test(val)) {
+          return {
+            valid: false,
+            error: "Contains potentially dangerous characters",
+          };
+        }
+        return { valid: true };
+      },
     }),
 
   /**
