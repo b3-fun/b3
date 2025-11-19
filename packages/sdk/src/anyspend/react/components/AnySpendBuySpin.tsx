@@ -129,6 +129,7 @@ export function AnySpendBuySpin({
   recipientAddress,
   prefillQuantity,
   onSuccess,
+  clientReferenceId,
 }: {
   loadOrder?: string;
   mode?: "modal" | "page";
@@ -137,6 +138,7 @@ export function AnySpendBuySpin({
   recipientAddress: string;
   prefillQuantity?: string;
   onSuccess?: (txHash?: string) => void;
+  clientReferenceId?: string;
 }) {
   const hasMounted = useHasMounted();
   const { setB3ModalOpen } = useModalStore();
@@ -680,6 +682,7 @@ export function AnySpendBuySpin({
       header={header}
       onSuccess={txHash => onSuccess?.(txHash)}
       showRecipient={false}
+      clientReferenceId={clientReferenceId}
     />
   );
 }

@@ -67,6 +67,7 @@ export const anyspendService = {
     metadata,
     creatorAddress,
     partnerId,
+    clientReferenceId,
     visitorData,
   }: {
     recipientAddress: string;
@@ -81,6 +82,7 @@ export const anyspendService = {
     metadata: Record<string, any>;
     creatorAddress?: string;
     partnerId?: string;
+    clientReferenceId?: string;
     visitorData?: VisitorData;
   }) => {
     const response = await fetch(`${ANYSPEND_MAINNET_BASE_URL}/orders`, {
@@ -103,6 +105,7 @@ export const anyspendService = {
         metadata,
         creatorAddress,
         partnerId,
+        ...(clientReferenceId && { clientReferenceId }),
       }),
     });
     const data: CreateOrderResponse = await response.json();

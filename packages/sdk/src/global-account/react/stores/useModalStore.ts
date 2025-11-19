@@ -128,6 +128,8 @@ export interface AnySpendModalProps extends BaseModalProps {
   destinationTokenChainId?: number;
   /** Custom USD input values for quick amount buttons in fiat onramp */
   customUsdInputValues?: string[];
+  /** Client-provided reference ID for tracking orders */
+  clientReferenceId?: string;
 }
 
 /**
@@ -143,6 +145,8 @@ export interface AnySpendNftProps extends BaseModalProps {
   recipientAddress?: string;
   /** Callback function called when the NFT is successfully transferred */
   onSuccess?: (txHash?: string) => void;
+  /** Client-provided reference ID for tracking orders */
+  clientReferenceId?: string;
 }
 
 /**

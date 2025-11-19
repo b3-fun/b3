@@ -55,6 +55,7 @@ export function useAnyspendCreateOnrampOrder({ onSuccess, onError }: UseAnyspend
         tournament,
         payload,
         partnerId,
+        clientReferenceId,
       } = params;
 
       try {
@@ -102,6 +103,7 @@ export function useAnyspendCreateOnrampOrder({ onSuccess, onError }: UseAnyspend
           }),
           creatorAddress: creatorAddress ? normalizeAddress(creatorAddress) : undefined,
           partnerId,
+          clientReferenceId,
           visitorData,
         });
       } catch (error: any) {
