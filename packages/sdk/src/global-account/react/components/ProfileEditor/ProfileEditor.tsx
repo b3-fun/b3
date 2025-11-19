@@ -139,7 +139,7 @@ export function ProfileEditor({ onSuccess, className }: ProfileEditorProps) {
         updatedUser = (await app
           .service("users")
           .registerUsername(
-            { username, message: usernameSignMessage, hash: usernameSignature } as any,
+            { username, message: usernameSignMessage, hash: usernameSignature },
             {} as any,
           )) as unknown as Users;
       }
