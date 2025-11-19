@@ -53,11 +53,7 @@ export default function NFTDemoPage() {
         />
       </div>
       <div className="w-[380px] overflow-hidden rounded-3xl bg-white shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)]">
-        <AnySpend
-          mode="modal"
-          defaultActiveTab="crypto"
-          clientReferenceId="demo-swap-crypto"
-        />
+        <AnySpend mode="modal" defaultActiveTab="crypto" clientReferenceId="demo-swap-crypto" />
       </div>
     </div>
   );
