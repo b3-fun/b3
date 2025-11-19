@@ -144,7 +144,7 @@ function AnySpendInner({
     const validation = Validators.clientReferenceId(clientReferenceIdFromProps);
     if (!validation.isValid || !validation.cleaned) {
       console.error("[AnySpend] Invalid clientReferenceId:", validation.error);
-      throw new Error(`Invalid clientReferenceId: ${validation.error || 'Validation failed'}`);
+      throw new Error(`Invalid clientReferenceId: ${validation.error || "Validation failed"}`);
     }
     return validation.cleaned;
   }, [clientReferenceIdFromProps]);

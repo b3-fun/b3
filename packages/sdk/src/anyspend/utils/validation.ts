@@ -29,10 +29,7 @@ export interface StringValidationOptions {
 /**
  * Generic string validator with configurable rules
  */
-export function validateString(
-  value: string | undefined,
-  options: StringValidationOptions
-): ValidationResult {
+export function validateString(value: string | undefined, options: StringValidationOptions): ValidationResult {
   const {
     required = false,
     defaultValue,
@@ -47,9 +44,9 @@ export function validateString(
   } = options;
 
   // Handle empty/undefined
-  if (!value || (trim && value.trim() === '')) {
+  if (!value || (trim && value.trim() === "")) {
     if (required && !defaultValue) {
-      return { isValid: false, error: 'This field is required' };
+      return { isValid: false, error: "This field is required" };
     }
     if (defaultValue) {
       return { isValid: true, cleaned: defaultValue() };
@@ -82,7 +79,7 @@ export function validateString(
   if (pattern && !pattern.test(cleaned)) {
     return {
       isValid: false,
-      error: patternErrorMessage || 'Invalid format',
+      error: patternErrorMessage || "Invalid format",
     };
   }
 
@@ -124,8 +121,7 @@ export const Validators = {
       required: false,
       maxLength: 255,
       pattern: ValidationPatterns.SAFE_IDENTIFIER,
-      patternErrorMessage:
-        'Only letters, numbers, hyphens, underscores, and dots allowed',
+      patternErrorMessage: "Only letters, numbers, hyphens, underscores, and dots allowed",
       defaultValue: () => crypto.randomUUID(),
       trim: true,
     }),
@@ -137,7 +133,7 @@ export const Validators = {
     validateString(value, {
       required,
       pattern: ValidationPatterns.ALPHANUMERIC,
-      patternErrorMessage: 'Only letters and numbers allowed',
+      patternErrorMessage: "Only letters and numbers allowed",
       trim: true,
     }),
 
@@ -150,7 +146,7 @@ export const Validators = {
       minLength: 42,
       maxLength: 42,
       pattern: /^0x[a-fA-F0-9]{40}$/,
-      patternErrorMessage: 'Invalid wallet address format',
+      patternErrorMessage: "Invalid wallet address format",
       trim: true,
       toLowerCase: true,
     }),
@@ -161,9 +157,8 @@ export const Validators = {
   orderId: (value?: string) =>
     validateString(value, {
       required: false,
-      pattern:
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
-      patternErrorMessage: 'Invalid order ID format',
+      pattern: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+      patternErrorMessage: "Invalid order ID format",
       trim: true,
       toLowerCase: true,
     }),
@@ -175,7 +170,7 @@ export const Validators = {
     validateString(value, {
       maxLength,
       pattern: ValidationPatterns.URL_SAFE,
-      patternErrorMessage: 'Contains invalid URL characters',
+      patternErrorMessage: "Contains invalid URL characters",
       trim: true,
     }),
 
@@ -187,14 +182,14 @@ export const Validators = {
       required,
       maxLength: 255,
       pattern: ValidationPatterns.SAFE_IDENTIFIER,
-      patternErrorMessage: 'Invalid identifier format',
-      customValidator: (val) => {
+      patternErrorMessage: "Invalid identifier format",
+      customValidator: val => {
         // Additional security checks
         const dangerous = /('|"|;|--|\/\*|\*\/|<|>|script)/i;
         if (dangerous.test(val)) {
           return {
             valid: false,
-            error: 'Contains potentially dangerous characters',
+            error: "Contains potentially dangerous characters",
           };
         }
         return { valid: true };
