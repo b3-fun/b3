@@ -21,6 +21,7 @@ export type CreateOrderParams = {
   creatorAddress?: string;
   payload?: any;
   partnerId?: string;
+  clientReferenceId?: string;
 };
 
 export type UseAnyspendCreateOrderProps = {
@@ -45,7 +46,17 @@ export function useAnyspendCreateOrder({ onSuccess, onError }: UseAnyspendCreate
   };
   const { mutate: createOrder, isPending } = useMutation({
     mutationFn: async (params: CreateOrderParams) => {
-      const { recipientAddress, orderType, srcChain, dstChain, srcToken, dstToken, srcAmount, creatorAddress } = params;
+      const {
+        recipientAddress,
+        orderType,
+        srcChain,
+        dstChain,
+        srcToken,
+        dstToken,
+        srcAmount,
+        creatorAddress,
+        clientReferenceId,
+      } = params;
 
       try {
         return await anyspendService.createOrder({

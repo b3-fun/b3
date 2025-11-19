@@ -187,6 +187,7 @@ export function AnySpendCustom(props: {
   onSuccess?: (txHash?: string) => void;
   showRecipient?: boolean;
   onShowPointsDetail?: () => void;
+  clientReferenceId?: string;
 }) {
   const fingerprintConfig = getFingerprintConfig();
 
@@ -214,6 +215,7 @@ function AnySpendCustomInner({
   onSuccess,
   showRecipient = true,
   onShowPointsDetail,
+  clientReferenceId,
 }: {
   loadOrder?: string;
   mode?: "modal" | "page";
@@ -237,6 +239,7 @@ function AnySpendCustomInner({
   onSuccess?: (txHash?: string) => void;
   showRecipient?: boolean;
   onShowPointsDetail?: () => void;
+  clientReferenceId?: string;
 }) {
   const hasMounted = useHasMounted();
   const featureFlags = useFeatureFlags();
@@ -532,6 +535,7 @@ function AnySpendCustomInner({
                 : window.location.origin,
           },
           expectedDstAmount: anyspendQuote?.data?.currencyOut?.amount?.toString() || "0",
+          clientReferenceId: clientReferenceId,
         });
       } else {
         void createRegularOrder({
