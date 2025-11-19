@@ -382,7 +382,7 @@
     "postcss-prefix-selector": "^2.1.1",
     "tailwindcss": "3.4.1",
     "tailwindcss-animate": "^1.0.7",
-    "thirdweb": "5.112.0",
+    "thirdweb": "5.112.3",
     "tsc-alias": "^1.8.16",
     "tsc-watch": "^7.1.1",
     "vitest": "^3.2.4"
@@ -405,7 +405,7 @@
     "react": "^18.0.0 || ^19.0.0",
     "react-dom": "^18.0.0 || ^19.0.0",
     "react-native-mmkv": "^3.2.0",
-    "thirdweb": "5.112.0",
+    "thirdweb": "5.112.3",
     "three": "^0.175.0",
     "viem": "2.37.9",
     "wagmi": "2.16.9"
