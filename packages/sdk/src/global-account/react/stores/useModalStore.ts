@@ -424,6 +424,8 @@ export interface AnySpendCollectorClubPurchaseProps extends BaseModalProps {
   paymentType?: "crypto" | "fiat";
   /** Callback function called when the purchase is successful */
   onSuccess?: (txHash?: string) => void;
+  /** Client-provided reference ID for tracking orders */
+  clientReferenceId?: string;
 }
 
 /**
