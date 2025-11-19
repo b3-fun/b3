@@ -47,14 +47,12 @@ export function AnyspendSignatureMint({
   signatureData,
   imageUrl,
   onSuccess,
-  clientReferenceId,
 }: {
   loadOrder?: string;
   mode?: "modal" | "page";
   signatureData: GenerateSigMintResponse;
   imageUrl?: string;
   onSuccess?: (txHash?: string) => void;
-  clientReferenceId?: string;
 }) {
   // Get token data
   const {
@@ -151,7 +149,6 @@ export function AnyspendSignatureMint({
       header={header}
       onSuccess={onSuccess}
       showRecipient={true}
-      clientReferenceId={clientReferenceId}
     />
   );
 }

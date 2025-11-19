@@ -100,10 +100,6 @@ export interface AnySpendCollectorClubPurchaseProps {
    * Show recipient selection (default: true)
    */
   showRecipient?: boolean;
-  /**
-   * Client-provided reference ID for tracking orders
-   */
-  clientReferenceId?: string;
 }
 
 export function AnySpendCollectorClubPurchase({
@@ -119,7 +115,6 @@ export function AnySpendCollectorClubPurchase({
   onSuccess,
   header,
   showRecipient = true,
-  clientReferenceId,
 }: AnySpendCollectorClubPurchaseProps) {
   // Calculate total amount needed (pricePerPack * packAmount)
   const totalAmount = useMemo(() => {
@@ -178,7 +173,6 @@ export function AnySpendCollectorClubPurchase({
       header={header || defaultHeader}
       onSuccess={onSuccess}
       showRecipient={showRecipient}
-      clientReferenceId={clientReferenceId}
     />
   );
 }

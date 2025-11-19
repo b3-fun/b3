@@ -53,7 +53,6 @@ export function AnySpendStakeB3ExactIn({
   recipientAddress,
   stakeAmount,
   onSuccess,
-  clientReferenceId,
 }: {
   loadOrder?: string;
   mode?: "modal" | "page";
@@ -62,7 +61,6 @@ export function AnySpendStakeB3ExactIn({
   recipientAddress: string;
   stakeAmount?: string;
   onSuccess?: (amount: string) => void;
-  clientReferenceId?: string;
 }) {
   const hasMounted = useHasMounted();
   const { setB3ModalOpen } = useModalStore();
@@ -519,7 +517,6 @@ export function AnySpendStakeB3ExactIn({
       customExactInConfig={customExactInConfig}
       header={header}
       onSuccess={onSuccess}
-      clientReferenceId={clientReferenceId}
     />
   );
 }
