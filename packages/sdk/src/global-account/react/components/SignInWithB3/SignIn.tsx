@@ -13,7 +13,7 @@ import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { cn, truncateAddress } from "@b3dotfun/sdk/shared/utils";
 import { Menu, MenuButton, MenuItems, Transition } from "@headlessui/react";
 import { ReactNode, useEffect } from "react";
-import { useConnectedWallets, useSetActiveWallet, useWalletInfo } from "thirdweb/react";
+import { useConnectedWallets, useSetActiveWallet } from "thirdweb/react";
 import { useAccountWalletImage } from "../../hooks/useAccountWallet";
 import { ManageAccountButton } from "../custom/ManageAccountButton";
 
@@ -33,7 +33,6 @@ export function SignIn(props: SignInWithB3Props) {
   const { className } = props;
   const { automaticallySetFirstEoa, partnerId } = useB3();
   const {
-    wallet,
     address: globalAddress,
     ensName,
     connectedSmartWallet,
@@ -51,8 +50,6 @@ export function SignIn(props: SignInWithB3Props) {
   };
 
   const connectedWallets = useConnectedWallets();
-
-  const { data: walletInfo } = useWalletInfo(isActiveSmartWallet ? connectedSmartWallet?.id : connectedEOAWallet?.id);
 
   const setActiveWallet = useSetActiveWallet();
 

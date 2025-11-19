@@ -116,12 +116,12 @@ export function Toast({ toast, onDismiss, theme = "light" }: ToastProps) {
       transition={{ duration: 0.2 }}
       className={getToastStyles(toast.type, theme)}
     >
-      <div className={cn("mt-0.5 flex-shrink-0", getIconColorClass(toast.type, theme))}>{getToastIcon(toast.type)}</div>
+      <div className={cn("mt-0.5 shrink-0", getIconColorClass(toast.type, theme))}>{getToastIcon(toast.type)}</div>
       <p className="font-inter flex-1 text-sm font-medium">{toast.message}</p>
       <button
         onClick={() => onDismiss(toast.id)}
         className={cn(
-          "flex-shrink-0 transition-opacity hover:opacity-70",
+          "shrink-0 transition-opacity hover:opacity-70",
           theme === "dark" ? "text-gray-400" : "text-gray-500",
         )}
       >

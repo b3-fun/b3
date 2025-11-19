@@ -63,7 +63,7 @@ function WalletItem({ wallet, isActive, onClick }: { wallet: Wallet; isActive: b
       } box-border flex cursor-pointer items-center gap-2 rounded-xl px-3 py-2 transition-colors`}
       onClick={onClick}
     >
-      <div className="relative size-10 shrink-0 overflow-clip rounded-full">
+      <div className="relative size-10 shrink-0 text-clip rounded-full">
         {isGlobalAccount ? (
           <div className="flex size-full items-center justify-center p-1">
             <img src="https://cdn.b3.fun/b3_logo.svg" alt="B3" className="size-full object-contain" />
@@ -143,7 +143,7 @@ export function Header({ onLogout }: { onLogout?: () => void }) {
       <AccordionPrimitive.Item value="wallet-switcher" className="border-none">
         <AccordionPrimitive.Trigger className="b3-modal-wallet-switcher-trigger group flex w-full items-center justify-between border-none bg-transparent px-5 py-3 outline-none">
           <div className="flex items-center gap-2">
-            <div className="relative size-10 shrink-0 overflow-clip rounded-full">
+            <div className="relative size-10 shrink-0 text-clip rounded-full">
               {isActiveGlobalAccount ? (
                 <div className="flex size-full items-center justify-center p-1">
                   <img src="https://cdn.b3.fun/b3_logo.svg" alt="B3" className="size-full object-contain" />

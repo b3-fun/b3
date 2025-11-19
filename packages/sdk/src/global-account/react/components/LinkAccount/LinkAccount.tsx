@@ -40,7 +40,7 @@ import ModalHeader from "../ModalHeader/ModalHeader";
 
 export const LinkAccount = ({
   partnerId,
-  onLogout,
+  onLogout: _onLogout,
   chain,
 }: {
   partnerId: string;

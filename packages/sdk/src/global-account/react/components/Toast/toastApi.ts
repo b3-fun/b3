@@ -24,6 +24,7 @@ export const toast = {
     console.warn("Toast context not initialized. Using fallback.");
     // Fallback to sonner if context not available
     try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const sonner = require("sonner");
       return sonner.toast.success(message, options);
     } catch {
@@ -38,6 +39,7 @@ export const toast = {
     }
     console.warn("Toast context not initialized. Using fallback.");
     try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const sonner = require("sonner");
       return sonner.toast.error(message, options);
     } catch {
@@ -52,6 +54,7 @@ export const toast = {
     }
     console.warn("Toast context not initialized. Using fallback.");
     try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const sonner = require("sonner");
       return sonner.toast.info(message, options);
     } catch {
@@ -66,6 +69,7 @@ export const toast = {
     }
     console.warn("Toast context not initialized. Using fallback.");
     try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const sonner = require("sonner");
       return sonner.toast.warning(message, options);
     } catch {
@@ -83,6 +87,7 @@ export const toast = {
       }
     } else {
       try {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
         const sonner = require("sonner");
         sonner.toast.dismiss(toastId);
       } catch {

@@ -10,7 +10,7 @@ import { Chain } from "thirdweb";
 import { useActiveAccount } from "thirdweb/react";
 import { formatUnits } from "viem";
 
-const AppsContent = ({ chain, partnerId }: { chain: Chain; partnerId: string }) => {
+const AppsContent = ({ chain, partnerId: _partnerId }: { chain: Chain; partnerId: string }) => {
   const [revokingSignerId, setRevokingSignerId] = useState<string | null>(null);
   const account = useActiveAccount();
 

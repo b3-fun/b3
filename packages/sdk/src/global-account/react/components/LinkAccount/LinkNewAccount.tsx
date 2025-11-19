@@ -321,17 +321,6 @@ export function LinkNewAccount({
     }
   }, [isLinking, linkingMethod, selectedMethod, onClose, setLinkingState]);
 
-  const handleBack = useCallback(() => {
-    if (isLinking) return;
-    setSelectedMethod(null);
-    setEmail("");
-    setPhone("");
-    setOtp("");
-    setOtpSent(false);
-    setError(null);
-    setLinkingState(false);
-  }, [isLinking, setSelectedMethod, setEmail, setPhone, setOtp, setOtpSent, setError, setLinkingState]);
-
   const handleFinishedLinking = useCallback(
     (success: boolean) => {
       if (success) {

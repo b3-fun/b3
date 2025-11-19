@@ -14,7 +14,6 @@ import "react-easy-crop/react-easy-crop.css";
 
 import { useActiveAccount } from "thirdweb/react";
 import { upload } from "thirdweb/storage";
-import { useProfileSettings } from "../../hooks/useProfile";
 import { useModalStore } from "../../stores";
 import ModalHeader from "../ModalHeader/ModalHeader";
 
@@ -53,7 +52,6 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
   const { setUser, user, partnerId } = useB3();
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
   const contentType = useModalStore(state => state.contentType);
-  const { setPreference } = useProfileSettings();
 
   const account = useActiveAccount();
   const { data: profile, refetch: refreshProfile } = useProfile({
@@ -531,7 +529,7 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
                 </div>
                 {safePreviewUrl && (
                   <div className="mt-4 flex items-center gap-3">
-                    <label className="flex-shrink-0 text-sm font-semibold text-[#475467]">Zoom</label>
+                    <label className="shrink-0 text-sm font-semibold text-[#475467]">Zoom</label>
                     <input
                       type="range"
                       min={1}

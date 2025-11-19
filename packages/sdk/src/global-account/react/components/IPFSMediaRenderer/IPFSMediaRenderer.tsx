@@ -6,7 +6,7 @@ import { MediaRenderer } from "thirdweb/react";
 
 // Primary IPFS gateway URL - matches our allowed list in profileDisplay.ts
 // Note: MediaRenderer expects the base gateway URL without /ipfs path
-const IPFS_GATEWAY_URL = "https://cloudflare-ipfs.com";
+// const IPFS_GATEWAY_URL = "https://cloudflare-ipfs.com";
 
 interface IPFSMediaRendererProps {
   /** The source URL - can be IPFS URL (ipfs://...) or HTTP URL */

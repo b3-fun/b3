@@ -18,7 +18,7 @@ export function useConnectedWalletDisplay(
   selectedCryptoPaymentMethod?: CryptoPaymentMethodType,
 ): UseConnectedWalletDisplayResult {
   const { connectedEOAWallet, connectedSmartWallet } = useAccountWallet();
-  const { address: wagmiAddress, isConnected: wagmiWalletIsConnected } = useAccount();
+  const { address: wagmiAddress } = useAccount();
 
   // Helper function to check if two addresses are the same
   const isSameAddress = (addr1?: string, addr2?: string): boolean => {

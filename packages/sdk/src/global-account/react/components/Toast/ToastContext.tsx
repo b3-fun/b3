@@ -35,7 +35,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const addToast = useCallback(
-    (type: ToastType, message: string, duration: number = 4000): string => {
+    (type: ToastType, message: string, duration = 4000) => {
       const id = `toast-${Date.now()}-${globalToastCounter++}`;
       const newToast: ToastItem = {
         id,
@@ -67,9 +67,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
   // Cleanup on unmount
   useEffect(() => {
+    const timeouts = timeoutsRef.current;
     return () => {
-      timeoutsRef.current.forEach(timeout => clearTimeout(timeout));
-      timeoutsRef.current.clear();
+      timeouts.forEach(timeout => clearTimeout(timeout));
+      timeouts.clear();
     };
   }, []);
 
@@ -83,4 +84,3 @@ export function useToastContext() {
   }
   return context;
 }
-

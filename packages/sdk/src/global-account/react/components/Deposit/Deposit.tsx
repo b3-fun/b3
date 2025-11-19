@@ -1,7 +1,7 @@
 import { RELAY_SOLANA_MAINNET_CHAIN_ID } from "@b3dotfun/sdk/anyspend/constants";
 import type { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { ALL_CHAINS } from "@b3dotfun/sdk/anyspend/utils/chain";
-import { toast, useAccountWallet, useModalStore } from "@b3dotfun/sdk/global-account/react";
+import { toast, useAccountWallet } from "@b3dotfun/sdk/global-account/react";
 import { TokenSelector } from "@relayprotocol/relay-kit-ui";
 import { ChevronDown, Copy } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
@@ -28,9 +28,6 @@ const CoinbaseLogo = () => (
 
 export function Deposit() {
   const { address } = useAccountWallet();
-  const navigateBack = useModalStore(state => state.navigateBack);
-  const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
-  const history = useModalStore(state => state.history);
 
   const [selectedChainId, setSelectedChainId] = useState(base.id);
   const [selectedToken, setSelectedToken] = useState<components["schemas"]["Token"]>({

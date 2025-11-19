@@ -51,7 +51,7 @@ export function B3Provider({
   environment,
   automaticallySetFirstEoa,
   simDuneApiKey,
-  toaster,
+  toaster: _toaster,
   clientType = "rest",
   rpcUrls,
   partnerId,
