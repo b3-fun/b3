@@ -1,5 +1,6 @@
 "use client";
 
+import { ens_normalize } from "@adraffy/ens-normalize";
 import { Users } from "@b3dotfun/b3-api";
 import app from "@b3dotfun/sdk/global-account/app";
 import { Button, useB3, useProfile } from "@b3dotfun/sdk/global-account/react";
@@ -122,12 +123,25 @@ export function ProfileEditor({ onSuccess, className }: ProfileEditorProps) {
 
       // Update username if changed (this will use the updated user from avatar change if both were updated)
       if (hasUsernameChange && user?._id) {
-        // @ts-expect-error this resolved fine, look into why expect-error needed
-        updatedUser = await app.service("users").registerUsername(
-          { username: username },
-          // @ts-expect-error - our typed client is expecting context even though it's set elsewhere
-          {},
-        );
+        const sanitizedUsername = ens_normalize(username);
+        const b3Username = `${sanitizedUsername}.b3.fun`;
+        const usernameSignMessage = `Register "${b3Username}"`;
+        const usernameSignature = await account?.signMessage({ message: usernameSignMessage });
+
+        if (!usernameSignature) {
+          throw new Error("Failed to sign username registration message");
+        }
+
+        console.log("@@usernameSignature", usernameSignature);
+
+        // Register username with ENS
+        // Note: Type assertion needed until @b3dotfun/b3-api package is updated with RegisterUsername type
+        updatedUser = (await app
+          .service("users")
+          .registerUsername(
+            { username, message: usernameSignMessage, hash: usernameSignature },
+            {} as any,
+          )) as unknown as Users;
       }
 
       // Update user state
