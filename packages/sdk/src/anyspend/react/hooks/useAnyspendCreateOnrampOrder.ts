@@ -59,7 +59,6 @@ export function useAnyspendCreateOnrampOrder({ onSuccess, onError }: UseAnyspend
         tournament,
         payload,
         partnerId,
-        clientReferenceId,
       } = params;
 
       try {

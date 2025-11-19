@@ -25,7 +25,6 @@ export function AnySpendStakeUpside({
   token,
   onSuccess,
   activeTab,
-  clientReferenceId,
 }: {
   loadOrder?: string;
   mode?: "modal" | "page";
@@ -35,7 +34,6 @@ export function AnySpendStakeUpside({
   token: components["schemas"]["Token"];
   onSuccess?: () => void;
   activeTab?: "crypto" | "fiat";
-  clientReferenceId?: string;
 }) {
   const header = () => (
     <>
@@ -82,7 +80,6 @@ export function AnySpendStakeUpside({
       onSuccess={onSuccess}
       showRecipient={true}
       activeTab={activeTab}
-      clientReferenceId={clientReferenceId}
     />
   );
 }
