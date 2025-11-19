@@ -17,6 +17,7 @@ type AnySpendTournamentProps =
       tournamentEntryToken: components["schemas"]["Token"];
       tournamentEntryFee: string;
       onSuccess?: () => void;
+      clientReferenceId?: string;
     }
   | {
       mode?: "modal" | "page";
@@ -28,6 +29,7 @@ type AnySpendTournamentProps =
       tournamentFundToken: components["schemas"]["Token"];
       tournamentFundAmount: string;
       onSuccess?: () => void;
+      clientReferenceId?: string;
     };
 
 export function AnySpendTournament(props: AnySpendTournamentProps) {
@@ -104,6 +106,7 @@ export function AnySpendTournament(props: AnySpendTournamentProps) {
       header={header}
       onSuccess={onSuccess}
       showRecipient={action === "join"}
+      clientReferenceId={props.clientReferenceId}
     />
   );
 }

@@ -33,6 +33,7 @@ export function AnySpendDepositUpside({
   depositContractAddress,
   token,
   onSuccess,
+  clientReferenceId,
 }: {
   loadOrder?: string;
   mode?: "modal" | "page";
@@ -42,6 +43,7 @@ export function AnySpendDepositUpside({
   depositContractAddress: string;
   token: components["schemas"]["Token"];
   onSuccess?: (amount: string) => void;
+  clientReferenceId?: string;
 }) {
   if (!recipientAddress) return null;
 
@@ -76,6 +78,7 @@ export function AnySpendDepositUpside({
       customExactInConfig={customExactInConfig}
       header={header}
       onSuccess={onSuccess}
+      clientReferenceId={clientReferenceId}
     />
   );
 }

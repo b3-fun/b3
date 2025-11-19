@@ -57,6 +57,7 @@ export interface AnySpendCustomExactInProps {
     anyspendPrice: GetQuoteResponse | undefined;
     isLoadingAnyspendPrice: boolean;
   }) => React.JSX.Element;
+  clientReferenceId?: string;
 }
 
 export function AnySpendCustomExactIn(props: AnySpendCustomExactInProps) {
@@ -87,6 +88,7 @@ function AnySpendCustomExactInInner({
   orderType = "custom_exact_in",
   minDestinationAmount,
   header,
+  clientReferenceId,
 }: AnySpendCustomExactInProps) {
   const actionLabel = customExactInConfig?.action ?? "Custom Execution";
 
@@ -433,6 +435,7 @@ function AnySpendCustomExactInInner({
         expectedDstAmount: expectedDstAmountRaw,
         creatorAddress: globalAddress,
         payload,
+        clientReferenceId: clientReferenceId,
       });
     } catch (err: any) {
       console.error(err);
@@ -488,6 +491,7 @@ function AnySpendCustomExactInInner({
         expectedDstAmount: expectedDstAmountRaw,
         creatorAddress: globalAddress,
         payload,
+        clientReferenceId: clientReferenceId,
       });
     } catch (err: any) {
       console.error(err);

@@ -25,6 +25,7 @@ export function AnySpendStakeUpsideExactIn({
   stakingContractAddress,
   token,
   onSuccess,
+  clientReferenceId,
 }: {
   loadOrder?: string;
   mode?: "modal" | "page";
@@ -34,6 +35,7 @@ export function AnySpendStakeUpsideExactIn({
   stakingContractAddress: string;
   token: components["schemas"]["Token"];
   onSuccess?: (amount: string) => void;
+  clientReferenceId?: string;
 }) {
   if (!recipientAddress) return null;
 
@@ -68,6 +70,7 @@ export function AnySpendStakeUpsideExactIn({
       customExactInConfig={customExactInConfig}
       header={header}
       onSuccess={onSuccess}
+      clientReferenceId={clientReferenceId}
     />
   );
 }

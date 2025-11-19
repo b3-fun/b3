@@ -24,6 +24,7 @@ export interface AnySpendDepositHypeProps {
   onTokenSelect?: (token: components["schemas"]["Token"], event: { preventDefault: () => void }) => void;
   customUsdInputValues?: string[];
   preferEoa?: boolean;
+  clientReferenceId?: string;
 }
 
 export function AnySpendDepositHype({
@@ -38,6 +39,7 @@ export function AnySpendDepositHype({
   onTokenSelect,
   customUsdInputValues,
   preferEoa,
+  clientReferenceId,
 }: AnySpendDepositHypeProps) {
   if (!recipientAddress) return null;
 
@@ -79,6 +81,7 @@ export function AnySpendDepositHype({
       onTokenSelect={onTokenSelect}
       customUsdInputValues={customUsdInputValues}
       preferEoa={preferEoa}
+      clientReferenceId={clientReferenceId}
     />
   );
 }
