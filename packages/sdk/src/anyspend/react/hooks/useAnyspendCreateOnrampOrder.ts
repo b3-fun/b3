@@ -39,7 +39,7 @@ export function useAnyspendCreateOnrampOrder({ onSuccess, onError }: UseAnyspend
   const { partnerId } = useB3();
 
   // Get validated client reference ID from B3 context
-  const validatedClientReferenceId = useValidatedClientReferenceId();
+  const createValidatedClientReferenceId = useValidatedClientReferenceId();
 
   // Get fingerprint data
   const { data: fpData } = useVisitorData({ extendedResult: true }, { immediate: true });
@@ -63,6 +63,8 @@ export function useAnyspendCreateOnrampOrder({ onSuccess, onError }: UseAnyspend
         tournament,
         payload,
       } = params;
+
+      const clientReferenceId = await createValidatedClientReferenceId(params);
 
       try {
         // Validate required onramp fields
@@ -109,7 +111,7 @@ export function useAnyspendCreateOnrampOrder({ onSuccess, onError }: UseAnyspend
           }),
           creatorAddress: creatorAddress ? normalizeAddress(creatorAddress) : undefined,
           partnerId,
-          clientReferenceId: validatedClientReferenceId,
+          clientReferenceId,
           visitorData,
         });
       } catch (error: any) {

@@ -1,3 +1,5 @@
+import { CreateOnrampOrderParams } from "@b3dotfun/sdk/anyspend/react/hooks/useAnyspendCreateOnrampOrder";
+import { CreateOrderParams } from "@b3dotfun/sdk/anyspend/react/hooks/useAnyspendCreateOrder";
 import {
   RelayKitProviderWrapper,
   TooltipProvider,
@@ -76,7 +78,7 @@ export function B3Provider({
   onConnect?: (wallet: Wallet, b3Jwt: string) => void | Promise<void>;
   connectors?: CreateConnectorFn[];
   overrideDefaultConnectors?: boolean;
-  createClientReferenceId?: () => string;
+  createClientReferenceId?: (params: CreateOrderParams | CreateOnrampOrderParams) => Promise<string>;
 }) {
   // Initialize Google Analytics on mount
   useEffect(() => {
@@ -141,7 +143,7 @@ export function InnerProvider({
   theme: "light" | "dark";
   clientType?: ClientType;
   partnerId: string;
-  createClientReferenceId?: () => string;
+  createClientReferenceId?: (params: CreateOrderParams | CreateOnrampOrderParams) => Promise<string>;
 }) {
   const activeAccount = useActiveAccount();
   const [manuallySelectedWallet, setManuallySelectedWallet] = useState<Wallet | undefined>(undefined);

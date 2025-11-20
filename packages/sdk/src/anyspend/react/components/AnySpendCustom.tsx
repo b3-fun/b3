@@ -509,6 +509,7 @@ function AnySpendCustomInner({
                 to: contractAddress,
               }
             : undefined,
+        metadata,
       } as CreateOrderParams;
 
       if (onramp) {
