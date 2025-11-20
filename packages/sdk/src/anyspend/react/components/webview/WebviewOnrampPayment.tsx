@@ -157,7 +157,6 @@ function WebviewOnrampPaymentInner({
   anyspendQuote,
   onPaymentSuccess,
   userId,
-  partnerId,
 }: WebviewOnrampPaymentProps) {
   const [createdOrder, setCreatedOrder] = useState<components["schemas"]["Order"] | null>(null);
   const orderCreationAttempted = useRef(false);
@@ -214,7 +213,6 @@ function WebviewOnrampPaymentInner({
               redirectUrl: `${window.location.origin}${userId ? `?userId=${userId}` : ""}`,
             },
             expectedDstAmount: anyspendQuote.data?.currencyOut?.amount?.toString() || "0",
-            partnerId,
           });
         } catch (err: any) {
           console.error(err);
@@ -232,7 +230,6 @@ function WebviewOnrampPaymentInner({
     createOrder,
     destinationToken,
     userId,
-    partnerId,
     stripeWeb2Support.isSupport,
   ]);
 
