@@ -24,6 +24,7 @@ import { Deposit } from "./Deposit/Deposit";
 import { LinkAccount } from "./LinkAccount/LinkAccount";
 import { LinkNewAccount } from "./LinkAccount/LinkNewAccount";
 import { ManageAccount } from "./ManageAccount/ManageAccount";
+import NotificationsContent from "./ManageAccount/NotificationsContent";
 import { RequestPermissions } from "./RequestPermissions/RequestPermissions";
 import { Send } from "./Send/Send";
 import { SignInWithB3Flow } from "./SignInWithB3/SignInWithB3Flow";
@@ -76,6 +77,7 @@ export function B3DynamicModal() {
     "avatarEditor",
     "deposit",
     "send",
+    "notifications",
   ];
 
   const freestyleTypes = [
@@ -162,6 +164,8 @@ export function B3DynamicModal() {
         return <Deposit />;
       case "send":
         return <Send {...contentType} />;
+      case "notifications":
+        return <NotificationsContent {...contentType} />;
       // Add other modal types here
       default:
         return null;
@@ -183,7 +187,8 @@ export function B3DynamicModal() {
           (contentType?.type === "manageAccount" ||
             contentType?.type === "deposit" ||
             contentType?.type === "send" ||
-            contentType?.type === "avatarEditor") &&
+            contentType?.type === "avatarEditor" ||
+            contentType?.type === "notifications") &&
             "p-0",
           "mx-auto w-full max-w-md sm:max-w-lg",
         )}

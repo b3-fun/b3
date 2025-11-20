@@ -50,3 +50,4 @@ export { useTokenPriceWithFallback } from "./useTokenPriceWithFallback";
 export { useTokensFromAddress } from "./useTokensFromAddress";
 export { useURLParams } from "./useURLParams";
 export { useUnifiedChainSwitchAndExecute } from "./useUnifiedChainSwitchAndExecute";
+export { useNotifications, type UseNotificationsReturn } from "./useNotifications";

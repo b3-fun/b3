@@ -2,6 +2,7 @@ import { useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { Chain } from "thirdweb";
 import { useProfiles } from "thirdweb/react";
+import BellIcon from "../icons/BellIcon";
 import LinkIcon from "../icons/LinkIcon";
 import ModalHeader from "../ModalHeader/ModalHeader";
 import SettingsMenuItem from "./SettingsMenuItem";
@@ -23,7 +24,7 @@ const SettingsContent = ({
 
   const profiles = profilesRaw.filter((profile: any) => !["custom_auth_endpoint"].includes(profile.type));
 
-  const handleNavigate = (type: "home" | "swap" | "linkAccount" | "avatarEditor") => {
+  const handleNavigate = (type: "home" | "swap" | "linkAccount" | "avatarEditor" | "notifications") => {
     if (type === "home") {
       setB3ModalContentType({
         type: "manageAccount",
@@ -43,6 +44,12 @@ const SettingsContent = ({
     } else if (type === "linkAccount") {
       setB3ModalContentType({
         type: "linkAccount",
+        chain,
+        partnerId,
+      });
+    } else if (type === "notifications") {
+      setB3ModalContentType({
+        type: "notifications",
         chain,
         partnerId,
       });
@@ -73,18 +80,12 @@ const SettingsContent = ({
           subtitle={`${profiles.length} connected account${profiles.length > 1 ? "s" : ""}`}
           onClick={() => handleNavigate("linkAccount")}
         />
-        {/* <SettingsMenuItem
+        <SettingsMenuItem
           icon={<BellIcon className="text-b3-grey-500" />}
           title="Notifications"
           subtitle="Manage your notifications"
-          onClick={() => handleNavigate("avatarEditor")}
+          onClick={() => handleNavigate("notifications")}
         />
-        <SettingsMenuItem
-          icon={<LockIcon className="text-b3-grey-500" />}
-          title="Permissions"
-          subtitle="Security & apps"
-          onClick={() => handleNavigate("avatarEditor")}
-        /> */}
       </div>
     </div>
   );

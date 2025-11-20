@@ -408,6 +408,21 @@ export interface SendModalProps extends BaseModalProps {
 }
 
 /**
+ * Props for the Notifications modal
+ * Allows users to manage notification settings and channels
+ */
+export interface NotificationsModalProps extends BaseModalProps {
+  /** Modal type identifier */
+  type: "notifications";
+  /** Partner ID */
+  partnerId: string;
+  /** Blockchain chain information */
+  chain: Chain;
+  /** Callback function called when settings are successfully saved */
+  onSuccess?: () => void;
+}
+
+/**
  * Union type of all possible modal content types
  */
 export type ModalContentType =
@@ -432,7 +447,8 @@ export type ModalContentType =
   | AnySpendDepositHypeProps
   | AvatarEditorModalProps
   | DepositModalProps
-  | SendModalProps;
+  | SendModalProps
+  | NotificationsModalProps;
 // Add other modal types here like: | OtherModalProps | AnotherModalProps
 
 /**
