@@ -1,7 +1,7 @@
 import { useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { getAuthToken } from "@b3dotfun/sdk/shared/utils/auth-token";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Chain } from "thirdweb";
 import { useUserQuery } from "../../hooks/useUserQuery";
 import { notificationsAPI, UserData } from "../../utils/notificationsAPI";
@@ -34,37 +34,40 @@ const NotificationsContent = ({ partnerId, chain, onSuccess }: NotificationsCont
   const userId = (user as any)?.userId;
   const jwtToken = getAuthToken();
 
-  const fetchUserData = async (showLoading = true) => {
-    if (!userId || !jwtToken) {
-      if (showLoading) setLoading(false);
-      return;
-    }
+  const fetchUserData = useCallback(
+    async (showLoading = true) => {
+      if (!userId || !jwtToken) {
+        if (showLoading) setLoading(false);
+        return;
+      }
 
-    try {
-      if (showLoading) setLoading(true);
-      const data = await notificationsAPI.getUser(userId, jwtToken);
-      setUserData(data);
-      setError(null);
-    } catch (err: any) {
-      debug("Error loading user data:", err);
-      // Try to register the user if they don't exist
       try {
-        await notificationsAPI.registerUser(jwtToken);
+        if (showLoading) setLoading(true);
         const data = await notificationsAPI.getUser(userId, jwtToken);
         setUserData(data);
         setError(null);
-      } catch (registerErr: any) {
-        debug("Error registering user:", registerErr);
-        setError("Failed to load notification settings");
+      } catch (err: any) {
+        debug("Error loading user data:", err);
+        // Try to register the user if they don't exist
+        try {
+          await notificationsAPI.registerUser(jwtToken);
+          const data = await notificationsAPI.getUser(userId, jwtToken);
+          setUserData(data);
+          setError(null);
+        } catch (registerErr: any) {
+          debug("Error registering user:", registerErr);
+          setError("Failed to load notification settings");
+        }
+      } finally {
+        if (showLoading) setLoading(false);
       }
-    } finally {
-      if (showLoading) setLoading(false);
-    }
-  };
+    },
+    [userId, jwtToken],
+  );
 
   useEffect(() => {
     fetchUserData(true);
-  }, [userId, jwtToken]);
+  }, [fetchUserData]);
 
   const handleConnectionChange = () => {
     fetchUserData(false); // Refresh without showing loading screen

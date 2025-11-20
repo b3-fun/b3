@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
-import { NotificationChannel } from "../NotificationChannel";
-import { toast } from "../../Toast/toastApi";
-import { notificationsAPI } from "../../../utils/notificationsAPI";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
+import { useState } from "react";
+import { notificationsAPI } from "../../../utils/notificationsAPI";
+import { toast } from "../../Toast/toastApi";
+import { NotificationChannel } from "../NotificationChannel";
 
 const debug = debugB3React("TelegramChannel");
 
@@ -27,7 +27,7 @@ export const TelegramChannel = ({
 }: TelegramChannelProps) => {
   const [isConnecting, setIsConnecting] = useState(false);
   const [status, setStatus] = useState<"idle" | "pending" | "connected">("idle");
-  
+
   // Detect if we're disconnecting
   const isDisconnecting = isConnected && !isOptimisticallyConnected;
 
@@ -137,4 +137,3 @@ export const TelegramChannel = ({
     />
   );
 };
-

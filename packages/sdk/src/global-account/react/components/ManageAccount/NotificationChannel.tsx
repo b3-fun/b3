@@ -6,7 +6,7 @@ interface NotificationChannelProps {
   isConnected: boolean;
   isConnecting: boolean;
   isDisconnecting: boolean;
-  connectedInfo?: string;
+  connectedInfo?: ReactNode;
   inputSection?: ReactNode;
   onToggle: () => void;
   showBorder?: boolean;
@@ -78,11 +78,10 @@ const ToggleSwitch = ({
       aria-checked={enabled}
     >
       <span
-        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+        className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
           enabled ? "translate-x-4" : "translate-x-0"
         }`}
       />
     </button>
   );
 };
-
