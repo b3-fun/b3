@@ -3,6 +3,7 @@ import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { VisitorData } from "@b3dotfun/sdk/anyspend/types/fingerprint";
 import { buildMetadata, buildPayload, normalizeAddress } from "@b3dotfun/sdk/anyspend/utils";
+import { useB3 } from "@b3dotfun/sdk/global-account/react";
 import { useVisitorData } from "@fingerprintjs/fingerprintjs-pro-react";
 import { useMutation } from "@tanstack/react-query";
 import { useMemo } from "react";
@@ -34,6 +35,9 @@ export type UseAnyspendCreateOnrampOrderProps = {
  * Specifically handles orders that involve fiat-to-crypto onramp functionality
  */
 export function useAnyspendCreateOnrampOrder({ onSuccess, onError }: UseAnyspendCreateOnrampOrderProps = {}) {
+  // Get B3 context values
+  const { partnerId } = useB3();
+
   // Get validated client reference ID from B3 context
   const validatedClientReferenceId = useValidatedClientReferenceId();
 
@@ -58,7 +62,6 @@ export function useAnyspendCreateOnrampOrder({ onSuccess, onError }: UseAnyspend
         nft,
         tournament,
         payload,
-        partnerId,
       } = params;
 
       try {
