@@ -426,6 +426,8 @@ export interface AnySpendCollectorClubPurchaseProps extends BaseModalProps {
   onSuccess?: (txHash?: string) => void;
   /** Client-provided reference ID for tracking orders */
   clientReferenceId?: string;
+  /** The vending machine ID */
+  vendingMachineId: string;
 }
 
 /**
