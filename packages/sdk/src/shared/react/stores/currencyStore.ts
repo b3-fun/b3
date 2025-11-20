@@ -147,7 +147,9 @@ export const useCurrencyStore = create<CurrencyState>()(
       removeCurrency: code => {
         set(state => {
           // Remove the currency
-          const { [code]: _removed, ...remaining } = state.customCurrencies;
+          const customCurrencies = state.customCurrencies;
+
+          const remaining = Object.fromEntries(Object.entries(customCurrencies).filter(([key]) => key !== code));
 
           // Remove all exchange rates involving this currency
           const filteredRates: Record<string, number> = {};
