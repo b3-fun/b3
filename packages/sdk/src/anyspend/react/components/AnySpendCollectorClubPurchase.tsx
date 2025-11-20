@@ -104,6 +104,10 @@ export interface AnySpendCollectorClubPurchaseProps {
    * The vending machine ID
    */
   vendingMachineId: string;
+  /**
+   * The partner ID
+   */
+  packType: string;
 }
 
 export function AnySpendCollectorClubPurchase({
@@ -120,6 +124,7 @@ export function AnySpendCollectorClubPurchase({
   header,
   showRecipient = true,
   vendingMachineId,
+  packType,
 }: AnySpendCollectorClubPurchaseProps) {
   // Calculate total amount needed (pricePerPack * packAmount)
   const totalAmount = useMemo(() => {
@@ -175,6 +180,7 @@ export function AnySpendCollectorClubPurchase({
         packAmount,
         pricePerPack,
         vendingMachineId,
+        packType,
       }}
       header={header || defaultHeader}
       onSuccess={onSuccess}

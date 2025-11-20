@@ -21,6 +21,7 @@ export function CollectorClubPurchaseButton() {
           recipientAddress: currentWallet.address,
           paymentType: "crypto",
           vendingMachineId: "1",
+          packType: "1",
         });
       }}
       disabled={!hasAddress}

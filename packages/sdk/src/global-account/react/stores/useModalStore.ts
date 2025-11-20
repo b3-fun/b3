@@ -428,6 +428,8 @@ export interface AnySpendCollectorClubPurchaseProps extends BaseModalProps {
   clientReferenceId?: string;
   /** The vending machine ID */
   vendingMachineId: string;
+  /** The pack type */
+  packType: string;
 }
 
 /**
