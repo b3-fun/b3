@@ -507,6 +507,7 @@ function AnySpendCustomInner({
                 data: encodedData,
                 spenderAddress: spenderAddress,
                 to: contractAddress,
+                ...metadata,
               }
             : undefined,
       } as CreateOrderParams;
