@@ -21,6 +21,7 @@ export type CreateOrderParams = {
   tournament?: components["schemas"]["Tournament"] & { contractAddress: string; entryPriceOrFundAmount: string };
   creatorAddress?: string;
   payload?: any;
+  metadata?: Record<string, any>;
 };
 
 export type UseAnyspendCreateOrderProps = {
