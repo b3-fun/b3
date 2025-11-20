@@ -20,6 +20,8 @@ export function useConnectedWalletDisplay(
   const { connectedEOAWallet, connectedSmartWallet } = useAccountWallet();
   const { address: wagmiAddress, isConnected: wagmiWalletIsConnected } = useAccount();
 
+  const globalWalletAddress = connectedSmartWallet?.getAccount()?.address;
+
   // Helper function to check if two addresses are the same
   const isSameAddress = (addr1?: string, addr2?: string): boolean => {
     if (!addr1 || !addr2) return false;
@@ -28,7 +30,8 @@ export function useConnectedWalletDisplay(
 
   // Check if connectedEOAWallet and wagmi wallet represent the same wallet
   const connectedEOAAddress = connectedEOAWallet?.getAccount()?.address;
-  const isWalletDuplicated = isSameAddress(connectedEOAAddress, wagmiAddress);
+  const isWalletDuplicated =
+    isSameAddress(connectedEOAAddress, wagmiAddress) || isSameAddress(globalWalletAddress, wagmiAddress);
 
   // Determine which wallet to show (prefer connectedEOAWallet if both exist and are the same)
   const shouldShowConnectedEOA = !!connectedEOAWallet;

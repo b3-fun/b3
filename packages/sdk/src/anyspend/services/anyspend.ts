@@ -1,6 +1,7 @@
 import { ANYSPEND_MAINNET_BASE_URL } from "@b3dotfun/sdk/anyspend/constants";
 import { OnrampOptions } from "@b3dotfun/sdk/anyspend/react";
 import { getNativeToken, isNativeToken } from "@b3dotfun/sdk/anyspend/utils";
+import app from "@b3dotfun/sdk/global-account/app";
 import invariant from "invariant";
 import { components } from "../types/api";
 import {
@@ -67,6 +68,7 @@ export const anyspendService = {
     metadata,
     creatorAddress,
     partnerId,
+    clientReferenceId,
     visitorData,
   }: {
     recipientAddress: string;
@@ -81,14 +83,17 @@ export const anyspendService = {
     metadata: Record<string, any>;
     creatorAddress?: string;
     partnerId?: string;
+    clientReferenceId?: string;
     visitorData?: VisitorData;
   }) => {
+    const accessToken = await app.authentication.getAccessToken();
     const response = await fetch(`${ANYSPEND_MAINNET_BASE_URL}/orders`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         ...(visitorData?.requestId && { "X-Fingerprint-Request-Id": visitorData.requestId }),
         ...(visitorData?.visitorId && { "X-Fingerprint-Visitor-Id": visitorData.visitorId }),
+        ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
       },
       body: JSON.stringify({
         recipientAddress,
@@ -103,6 +108,7 @@ export const anyspendService = {
         metadata,
         creatorAddress,
         partnerId,
+        ...(clientReferenceId && { clientReferenceId }),
       }),
     });
     const data: CreateOrderResponse = await response.json();

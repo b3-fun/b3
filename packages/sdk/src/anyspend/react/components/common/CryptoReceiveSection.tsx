@@ -4,11 +4,8 @@ import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { formatDisplayNumber } from "@b3dotfun/sdk/shared/utils/number";
 import { ChevronRight, Info } from "lucide-react";
 import { motion } from "motion/react";
-import { useEffect } from "react";
 import { components } from "../../../types/api";
 import { useFeatureFlags } from "../../contexts/FeatureFlagsContext";
-import { useConnectedWalletDisplay } from "../../hooks/useConnectedWalletDisplay";
-import { CryptoPaymentMethodType } from "./CryptoPaymentMethod";
 import { OrderTokenAmount } from "./OrderTokenAmount";
 import { PointsBadge } from "./PointsBadge";
 
@@ -16,12 +13,9 @@ interface CryptoReceiveSectionProps {
   isDepositMode?: boolean;
   isBuyMode?: boolean;
   // Recipient data
-  selectedRecipientAddress?: string;
+  effectiveRecipientAddress?: string;
   recipientName?: string;
   onSelectRecipient: () => void;
-  setRecipientAddress?: (address: string | undefined) => void;
-  recipientAddressFromProps?: string;
-  globalAddress?: string;
   // Token data
   dstAmount: string;
   dstToken: components["schemas"]["Token"];
@@ -40,19 +34,14 @@ interface CryptoReceiveSectionProps {
   onShowPointsDetail?: () => void;
   // Fee detail navigation
   onShowFeeDetail?: () => void;
-  // Payment method for wallet tracking
-  selectedCryptoPaymentMethod?: CryptoPaymentMethodType;
 }
 
 export function CryptoReceiveSection({
   isDepositMode = false,
   isBuyMode = false,
-  selectedRecipientAddress,
+  effectiveRecipientAddress,
   recipientName,
   onSelectRecipient,
-  setRecipientAddress,
-  recipientAddressFromProps,
-  globalAddress,
   dstAmount,
   dstToken,
   selectedDstChainId,
@@ -65,19 +54,8 @@ export function CryptoReceiveSection({
   dstTokenLogoURI,
   onShowPointsDetail,
   onShowFeeDetail,
-  selectedCryptoPaymentMethod,
 }: CryptoReceiveSectionProps) {
   const featureFlags = useFeatureFlags();
-
-  // Get wallet address based on selected payment method
-  const { walletAddress } = useConnectedWalletDisplay(selectedCryptoPaymentMethod);
-
-  // Set default recipient address when wallet changes
-  useEffect(() => {
-    if (setRecipientAddress) {
-      setRecipientAddress(recipientAddressFromProps || walletAddress || globalAddress);
-    }
-  }, [recipientAddressFromProps, walletAddress, globalAddress, setRecipientAddress]);
 
   return (
     <motion.div
@@ -95,14 +73,14 @@ export function CryptoReceiveSection({
             </button>
           )}
         </div>
-        {selectedRecipientAddress ? (
+        {effectiveRecipientAddress ? (
           <button
             className={cn("text-as-tertiarry flex h-7 items-center gap-2 rounded-lg")}
             onClick={onSelectRecipient}
           >
             <>
               <span className="text-as-tertiarry flex items-center gap-1 text-sm">
-                {recipientName ? formatUsername(recipientName) : shortenAddress(selectedRecipientAddress || "")}
+                {recipientName ? formatUsername(recipientName) : shortenAddress(effectiveRecipientAddress || "")}
               </span>
               <ChevronRight className="h-4 w-4" />
             </>
@@ -131,7 +109,7 @@ export function CryptoReceiveSection({
       ) : (
         // Token selection for regular swap mode
         <OrderTokenAmount
-          address={selectedRecipientAddress}
+          address={effectiveRecipientAddress}
           context="to"
           inputValue={dstAmount}
           onChangeInput={onChangeDstAmount || (() => {})}

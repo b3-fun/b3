@@ -13,6 +13,7 @@ export function GetB3TokenButton() {
           type: "anySpend",
           destinationTokenAddress: B3_TOKEN.address,
           destinationTokenChainId: B3_TOKEN.chainId,
+          clientReferenceId: "demo-get-b3-token",
         });
       }}
       className="group flex h-40 flex-col justify-between overflow-hidden rounded-lg border border-gray-100 bg-white p-6 text-left shadow-sm transition-all hover:border-indigo-100 hover:shadow-md"

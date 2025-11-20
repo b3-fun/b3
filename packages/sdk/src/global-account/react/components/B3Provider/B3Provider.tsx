@@ -58,6 +58,7 @@ export function B3Provider({
   onConnect,
   connectors,
   overrideDefaultConnectors = false,
+  createClientReferenceId,
 }: {
   theme: "light" | "dark";
   children: React.ReactNode;
@@ -75,6 +76,7 @@ export function B3Provider({
   onConnect?: (wallet: Wallet, b3Jwt: string) => void | Promise<void>;
   connectors?: CreateConnectorFn[];
   overrideDefaultConnectors?: boolean;
+  createClientReferenceId?: () => string;
 }) {
   // Initialize Google Analytics on mount
   useEffect(() => {
@@ -100,6 +102,7 @@ export function B3Provider({
                 automaticallySetFirstEoa={!!automaticallySetFirstEoa}
                 clientType={clientType}
                 partnerId={partnerId}
+                createClientReferenceId={createClientReferenceId}
               >
                 <RelayKitProviderWrapper simDuneApiKey={simDuneApiKey}>
                   {children}
@@ -128,6 +131,7 @@ export function InnerProvider({
   theme = "light",
   clientType = "socket",
   partnerId,
+  createClientReferenceId,
 }: {
   children: React.ReactNode;
   accountOverride?: Account;
@@ -137,6 +141,7 @@ export function InnerProvider({
   theme: "light" | "dark";
   clientType?: ClientType;
   partnerId: string;
+  createClientReferenceId?: () => string;
 }) {
   const activeAccount = useActiveAccount();
   const [manuallySelectedWallet, setManuallySelectedWallet] = useState<Wallet | undefined>(undefined);
@@ -204,6 +209,7 @@ export function InnerProvider({
         theme,
         clientType,
         partnerId: partnerId,
+        createClientReferenceId,
       }}
     >
       <InnerProvider2>{children}</InnerProvider2>

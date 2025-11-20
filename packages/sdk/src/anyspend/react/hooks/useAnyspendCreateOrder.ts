@@ -2,9 +2,11 @@ import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { VisitorData } from "@b3dotfun/sdk/anyspend/types/fingerprint";
 import { buildMetadata, buildPayload, normalizeAddress } from "@b3dotfun/sdk/anyspend/utils";
+import { useB3 } from "@b3dotfun/sdk/global-account/react";
 import { useVisitorData } from "@fingerprintjs/fingerprintjs-pro-react";
 import { useMutation } from "@tanstack/react-query";
 import { useMemo } from "react";
+import { useValidatedClientReferenceId } from "./useValidatedClientReferenceId";
 
 export type CreateOrderParams = {
   recipientAddress: string;
@@ -19,7 +21,6 @@ export type CreateOrderParams = {
   tournament?: components["schemas"]["Tournament"] & { contractAddress: string; entryPriceOrFundAmount: string };
   creatorAddress?: string;
   payload?: any;
-  partnerId?: string;
 };
 
 export type UseAnyspendCreateOrderProps = {
@@ -33,6 +34,12 @@ export type UseAnyspendCreateOrderProps = {
  * For onramp orders, use useAnyspendCreateOnrampOrder instead.
  */
 export function useAnyspendCreateOrder({ onSuccess, onError }: UseAnyspendCreateOrderProps = {}) {
+  // Get B3 context values
+  const { partnerId } = useB3();
+
+  // Get validated client reference ID from B3 context
+  const validatedClientReferenceId = useValidatedClientReferenceId();
+
   // Get fingerprint data
   const { data: fpData } = useVisitorData({ extendedResult: true }, { immediate: true });
   const visitorData: VisitorData | undefined = fpData && {
@@ -75,6 +82,8 @@ export function useAnyspendCreateOrder({ onSuccess, onError }: UseAnyspendCreate
             },
           }),
           creatorAddress: creatorAddress ? normalizeAddress(creatorAddress) : undefined,
+          partnerId,
+          clientReferenceId: validatedClientReferenceId,
           visitorData,
         });
       } catch (error: any) {

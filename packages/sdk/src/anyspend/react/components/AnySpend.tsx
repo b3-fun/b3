@@ -33,7 +33,9 @@ import { base, mainnet } from "viem/chains";
 import { components } from "../../types/api";
 import { useAutoSelectCryptoPaymentMethod } from "../hooks/useAutoSelectCryptoPaymentMethod";
 import { useAutoSetActiveWalletFromWagmi } from "../hooks/useAutoSetActiveWalletFromWagmi";
+import { useConnectedWalletDisplay } from "../hooks/useConnectedWalletDisplay";
 import { useCryptoPaymentMethodState } from "../hooks/useCryptoPaymentMethodState";
+import { useRecipientAddressState } from "../hooks/useRecipientAddressState";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
 import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPaymentMethod";
 import { CryptoPaySection } from "./common/CryptoPaySection";
@@ -444,15 +446,28 @@ function AnySpendInner({
   //   [selectedDstChainId, newRecipientAddress, resolvedAddress]
   // );
 
-  // State for recipient selection
-  const [recipientAddress, setRecipientAddress] = useState<string | undefined>();
-
   const { address: globalAddress, wallet: globalWallet, connectedEOAWallet } = useAccountWallet();
-  const recipientProfile = useProfile({ address: recipientAddress, fresh: true });
-  const recipientName = recipientProfile.data?.name;
 
   // Auto-set active wallet from wagmi
   useAutoSetActiveWalletFromWagmi();
+
+  // Get wallet address based on selected payment method
+  const { walletAddress } = useConnectedWalletDisplay(effectiveCryptoPaymentMethod);
+
+  // Recipient address state with dual-state system (auto + explicit user selection)
+  // The hook automatically manages priority: props > user selection > wallet/global
+  const {
+    setSelectedRecipientAddress,
+    effectiveRecipientAddress,
+    // resetRecipientAddress, // Not used yet, but available for future use
+  } = useRecipientAddressState({
+    recipientAddressFromProps,
+    walletAddress,
+    globalAddress,
+  });
+
+  const recipientProfile = useProfile({ address: effectiveRecipientAddress, fresh: true });
+  const recipientName = recipientProfile.data?.name;
 
   // Check token balance for crypto payments
   const { rawBalance, isLoading: isBalanceLoading } = useTokenBalanceDirect({
@@ -515,7 +530,7 @@ function AnySpendInner({
           type: "swap",
           tradeType: isSrcInputDirty ? "EXACT_INPUT" : "EXACT_OUTPUT",
           amount: activeInputAmountInWei,
-          recipientAddress,
+          recipientAddress: effectiveRecipientAddress,
         }
       : {
           srcChain: base.id,
@@ -525,7 +540,7 @@ function AnySpendInner({
           type: "swap",
           tradeType: "EXACT_INPUT",
           amount: srcAmountOnrampInWei,
-          recipientAddress,
+          recipientAddress: effectiveRecipientAddress,
           onrampVendor: getOnrampVendor(selectedFiatPaymentMethod),
         },
   );
@@ -546,15 +561,15 @@ function AnySpendInner({
         setCustomRecipients(parsedRecipients);
 
         // If no wallet is connected and no recipient is selected, select the first recipient
-        if (!globalAddress && !recipientAddress && parsedRecipients.length > 0) {
-          setRecipientAddress(parsedRecipients[0].address);
+        if (!globalAddress && !effectiveRecipientAddress && parsedRecipients.length > 0) {
+          setSelectedRecipientAddress(parsedRecipients[0].address);
         }
       }
     } catch (err) {
       console.error("Error loading recipients from local storage:", err);
     }
     // Only run this effect once on mount
-  }, [globalAddress, recipientAddress, customRecipients.length]);
+  }, [globalAddress, effectiveRecipientAddress, customRecipients.length, setSelectedRecipientAddress]);
 
   // Update dependent amount when relay price changes
   useEffect(() => {
@@ -666,7 +681,7 @@ function AnySpendInner({
 
     if (activeTab === "fiat") {
       // For fiat: check recipient first, then payment method
-      if (!recipientAddress) return { text: "Select recipient", disable: false, error: false, loading: false };
+      if (!effectiveRecipientAddress) return { text: "Select recipient", disable: false, error: false, loading: false };
 
       // If no fiat payment method selected, show "Select payment method"
       if (selectedFiatPaymentMethod === FiatPaymentMethod.NONE) {
@@ -685,7 +700,7 @@ function AnySpendInner({
       }
 
       // Check recipient after payment method
-      if (!recipientAddress) return { text: "Select recipient", disable: false, error: false, loading: false };
+      if (!effectiveRecipientAddress) return { text: "Select recipient", disable: false, error: false, loading: false };
 
       // If payment method selected, show appropriate action
       if (
@@ -704,7 +719,7 @@ function AnySpendInner({
     activeInputAmountInWei,
     isSameChainSameToken,
     isLoadingAnyspendQuote,
-    recipientAddress,
+    effectiveRecipientAddress,
     isCreatingOrder,
     isCreatingOnrampOrder,
     anyspendQuote,
@@ -722,12 +737,12 @@ function AnySpendInner({
 
       if (activeTab === "fiat") {
         // For fiat: check recipient first
-        if (!recipientAddress) {
+        if (!effectiveRecipientAddress) {
           navigateToPanel(PanelView.RECIPIENT_SELECTION, "forward");
           return;
         }
 
-        invariant(recipientAddress, "Recipient address is not found");
+        invariant(effectiveRecipientAddress, "Recipient address is not found");
 
         // If no fiat payment method selected, show payment method selection
         if (selectedFiatPaymentMethod === FiatPaymentMethod.NONE) {
@@ -750,12 +765,12 @@ function AnySpendInner({
         }
 
         // Check recipient after payment method
-        if (!recipientAddress) {
+        if (!effectiveRecipientAddress) {
           navigateToPanel(PanelView.RECIPIENT_SELECTION, "forward");
           return;
         }
 
-        invariant(recipientAddress, "Recipient address is not found");
+        invariant(effectiveRecipientAddress, "Recipient address is not found");
 
         // If payment method is selected, create order with payment method info
         if (
@@ -788,7 +803,7 @@ function AnySpendInner({
   const handleCryptoSwap = async (method: CryptoPaymentMethodType) => {
     try {
       invariant(anyspendQuote, "Relay price is not found");
-      invariant(recipientAddress, "Recipient address is not found");
+      invariant(effectiveRecipientAddress, "Recipient address is not found");
 
       // Debug: Check payment method values
       console.log("handleCryptoSwap - method parameter:", method);
@@ -797,7 +812,7 @@ function AnySpendInner({
       const srcAmountBigInt = parseUnits(srcAmount.replace(/,/g, ""), selectedSrcToken.decimals);
 
       createOrder({
-        recipientAddress,
+        recipientAddress: effectiveRecipientAddress,
         orderType: "swap",
         srcChain: selectedSrcChainId,
         dstChain: isBuyMode ? destinationTokenChainId : selectedDstChainId,
@@ -819,7 +834,7 @@ function AnySpendInner({
   const handleFiatOrder = async (paymentMethod: FiatPaymentMethod) => {
     try {
       invariant(anyspendQuote, "Relay price is not found");
-      invariant(recipientAddress, "Recipient address is not found");
+      invariant(effectiveRecipientAddress, "Recipient address is not found");
 
       if (!srcAmountOnRamp || parseFloat(srcAmountOnRamp) <= 0) {
         toast.error("Please enter a valid amount");
@@ -862,7 +877,7 @@ function AnySpendInner({
       };
 
       createOnrampOrder({
-        recipientAddress,
+        recipientAddress: effectiveRecipientAddress,
         orderType: "swap",
         dstChain: getDstToken().chainId,
         dstToken: getDstToken(),
@@ -1059,7 +1074,7 @@ function AnySpendInner({
                   setActivePanel(panelIndex);
                 }
               }}
-              _recipientAddress={recipientAddress}
+              _recipientAddress={effectiveRecipientAddress}
               destinationToken={selectedDstToken}
               destinationChainId={selectedDstChainId}
               destinationAmount={dstAmount}
@@ -1118,12 +1133,9 @@ function AnySpendInner({
           <CryptoReceiveSection
             isDepositMode={false}
             isBuyMode={isBuyMode}
-            selectedRecipientAddress={recipientAddress}
+            effectiveRecipientAddress={effectiveRecipientAddress}
             recipientName={recipientName || undefined}
             onSelectRecipient={() => navigateToPanel(PanelView.RECIPIENT_SELECTION, "forward")}
-            setRecipientAddress={setRecipientAddress}
-            recipientAddressFromProps={recipientAddressFromProps}
-            globalAddress={globalAddress}
             dstAmount={dstAmount}
             dstToken={selectedDstToken}
             selectedDstChainId={selectedDstChainId}
@@ -1137,7 +1149,6 @@ function AnySpendInner({
             anyspendQuote={anyspendQuote}
             onShowPointsDetail={() => navigateToPanel(PanelView.POINTS_DETAIL, "forward")}
             onShowFeeDetail={() => navigateToPanel(PanelView.FEE_DETAIL, "forward")}
-            selectedCryptoPaymentMethod={effectiveCryptoPaymentMethod}
           />
         )}
       </div>
@@ -1165,7 +1176,7 @@ function AnySpendInner({
           </div>
         </ShinyButton>
 
-        {!hideTransactionHistoryButton && (globalAddress || recipientAddress) ? (
+        {!hideTransactionHistoryButton && (globalAddress || effectiveRecipientAddress) ? (
           <Button
             variant="link"
             onClick={onClickHistory}
@@ -1182,7 +1193,7 @@ function AnySpendInner({
     <PanelOnrampPayment
       srcAmountOnRamp={srcAmountOnRamp}
       recipientName={recipientName || undefined}
-      recipientAddress={recipientAddress}
+      recipientAddress={effectiveRecipientAddress}
       isBuyMode={isBuyMode}
       destinationTokenChainId={destinationTokenChainId}
       destinationTokenAddress={destinationTokenAddress}
@@ -1213,10 +1224,11 @@ function AnySpendInner({
 
   const recipientSelectionView = (
     <RecipientSelection
-      initialValue={recipientAddress || ""}
+      initialValue={effectiveRecipientAddress || ""}
       onBack={navigateBack}
       onConfirm={address => {
-        setRecipientAddress(address);
+        // User manually selected a recipient
+        setSelectedRecipientAddress(address);
         navigateBack();
       }}
     />

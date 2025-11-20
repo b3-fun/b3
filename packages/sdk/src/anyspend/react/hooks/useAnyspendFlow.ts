@@ -26,6 +26,7 @@ import { useAutoSelectCryptoPaymentMethod } from "./useAutoSelectCryptoPaymentMe
 import { useAutoSetActiveWalletFromWagmi } from "./useAutoSetActiveWalletFromWagmi";
 import { useConnectedWalletDisplay } from "./useConnectedWalletDisplay";
 import { useCryptoPaymentMethodState } from "./useCryptoPaymentMethodState";
+import { useRecipientAddressState } from "./useRecipientAddressState";
 
 export enum PanelView {
   MAIN,
@@ -105,22 +106,22 @@ export function useAnyspendFlow({
 
   const [selectedFiatPaymentMethod, setSelectedFiatPaymentMethod] = useState<FiatPaymentMethod>(FiatPaymentMethod.NONE);
 
-  // Recipient state
+  // Recipient state with dual-state system (auto + explicit user selection)
   const { address: globalAddress } = useAccountWallet();
   const { walletAddress } = useConnectedWalletDisplay(effectiveCryptoPaymentMethod);
-  const [selectedRecipientAddress, setSelectedRecipientAddress] = useState<string | undefined>(recipientAddress);
-  const recipientProfile = useProfile({ address: selectedRecipientAddress, fresh: true });
-  const recipientName = recipientProfile.data?.name;
 
   // Auto-set active wallet from wagmi
   useAutoSetActiveWalletFromWagmi();
 
-  // Set default recipient address when wallet changes
-  useEffect(() => {
-    if (!selectedRecipientAddress && globalAddress) {
-      setSelectedRecipientAddress(globalAddress);
-    }
-  }, [selectedRecipientAddress, globalAddress]);
+  // Recipient address state - hook automatically manages priority: props > user selection > wallet/global
+  const { setSelectedRecipientAddress, effectiveRecipientAddress } = useRecipientAddressState({
+    recipientAddressFromProps: recipientAddress,
+    walletAddress,
+    globalAddress,
+  });
+
+  const recipientProfile = useProfile({ address: effectiveRecipientAddress, fresh: true });
+  const recipientName = recipientProfile.data?.name;
 
   // Check token balance for crypto payments
   const { rawBalance, isLoading: isBalanceLoading } = useTokenBalance({
@@ -208,7 +209,7 @@ export function useAnyspendFlow({
     dstTokenAddress: selectedDstToken.address,
     type: orderType,
     amount: activeInputAmountInWei,
-    recipientAddress: selectedRecipientAddress,
+    recipientAddress: effectiveRecipientAddress,
     onrampVendor: paymentType === "fiat" ? getOnrampVendor(selectedFiatPaymentMethod) : undefined,
   });
 
@@ -333,7 +334,7 @@ export function useAnyspendFlow({
     selectedFiatPaymentMethod,
     setSelectedFiatPaymentMethod,
     // Recipient
-    selectedRecipientAddress,
+    selectedRecipientAddress: effectiveRecipientAddress,
     setSelectedRecipientAddress,
     recipientName,
     globalAddress,
