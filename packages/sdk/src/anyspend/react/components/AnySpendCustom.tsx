@@ -643,27 +643,27 @@ function AnySpendCustomInner({
               ? "Join for"
               : "Recipient"}
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center justify-end gap-x-2 gap-y-1">
         {recipientAddress ? (
           <button
-            className={cn("text-as-tertiarry flex h-7 items-center gap-2 rounded-lg")}
+            className={cn("text-as-tertiarry flex items-center gap-2 rounded-lg")}
             onClick={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
           >
-            <>
-              <div className="text-as-tertiarry flex items-center gap-1 text-sm">
-                <span>{recipientName ? formatUsername(recipientName) : shortenAddress(recipientAddress)}</span>
-              </div>
-            </>
+            <div className="text-as-tertiarry flex items-center gap-1 text-sm">
+              <span className="whitespace-nowrap">
+                {recipientName ? formatUsername(recipientName) : shortenAddress(recipientAddress)}
+              </span>
+            </div>
           </button>
         ) : (
           <button
             className="text-as-primary/70 flex items-center gap-1 rounded-lg"
             onClick={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
           >
-            <div className="text-sm font-medium">Select recipient</div>
+            <div className="whitespace-nowrap text-sm font-medium">Select recipient</div>
           </button>
         )}
-        <ChevronRight className="h-4 w-4" />
+        <ChevronRight className="h-4 w-4 shrink-0" />
       </div>
     </motion.div>
   ) : null;
@@ -913,31 +913,29 @@ function AnySpendCustomInner({
               >
                 <div className="text-as-tertiarry flex h-7 items-center text-sm">Pay</div>
                 <button
-                  className="text-as-tertiarry flex h-7 items-center gap-2 text-sm transition-colors hover:text-blue-700"
+                  className="text-as-tertiarry flex flex-wrap items-center justify-end gap-x-2 gap-y-1 text-sm transition-colors hover:text-blue-700"
                   onClick={() => setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD)}
                 >
                   {effectiveCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET ? (
                     <>
                       {connectedAddress ? (
-                        <>
-                          <span className="text-as-tertiarry flex items-center gap-1">
-                            {connectedName ? formatUsername(connectedName) : shortenAddress(connectedAddress || "")}
-                          </span>
-                        </>
+                        <span className="text-as-tertiarry whitespace-nowrap">
+                          {connectedName ? formatUsername(connectedName) : shortenAddress(connectedAddress || "")}
+                        </span>
                       ) : (
-                        "Connect wallet"
+                        <span className="whitespace-nowrap">Connect wallet</span>
                       )}
-                      <ChevronRight className="h-4 w-4" />
+                      <ChevronRight className="h-4 w-4 shrink-0" />
                     </>
                   ) : effectiveCryptoPaymentMethod === CryptoPaymentMethodType.TRANSFER_CRYPTO ? (
                     <>
-                      Transfer crypto
-                      <ChevronRight className="h-4 w-4" />
+                      <span className="whitespace-nowrap">Transfer crypto</span>
+                      <ChevronRight className="h-4 w-4 shrink-0" />
                     </>
                   ) : (
                     <>
-                      Select payment method
-                      <ChevronRight className="h-4 w-4" />
+                      <span className="whitespace-nowrap">Select payment method</span>
+                      <ChevronRight className="h-4 w-4 shrink-0" />
                     </>
                   )}
                 </button>
@@ -985,32 +983,34 @@ function AnySpendCustomInner({
                     filter: hasMounted ? "blur(0px)" : "blur(10px)",
                   }}
                   transition={{ duration: 0.3, delay: 0.1, ease: "easeInOut" }}
-                  className="relative flex w-full items-center justify-between"
+                  className="relative flex w-full items-center justify-between gap-4"
                 >
-                  <div className="flex items-center gap-2">
-                    <span className="text-as-tertiarry flex items-center gap-1.5 text-sm">
+                  <span className="text-as-tertiarry flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm">
+                    <span className="whitespace-nowrap">
                       Total <span className="text-as-tertiarry">(with fee)</span>
-                      {anyspendQuote?.data?.fee && (
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <button className="text-as-primary/40 hover:text-as-primary/60 transition-colors">
-                                <Info className="h-4 w-4" />
-                              </button>
-                            </TooltipTrigger>
-                            <TooltipContent side="top">
-                              <FeeBreakDown fee={anyspendQuote.data.fee} />
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      )}
                     </span>
-                    {renderPointsBadge()}
-                  </div>
+                    {anyspendQuote?.data?.fee && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button className="text-as-primary/40 hover:text-as-primary/60 transition-colors">
+                              <Info className="h-4 w-4" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top">
+                            <FeeBreakDown fee={anyspendQuote.data.fee} />
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                  </span>
                   <div className="flex flex-col items-end gap-0.5">
-                    <span className="text-as-primary font-semibold">
-                      {formattedSrcAmount || "--"} {srcToken.symbol}
-                    </span>
+                    <div className="flex flex-wrap items-center justify-end gap-x-2 gap-y-1">
+                      {renderPointsBadge()}
+                      <span className="text-as-primary whitespace-nowrap font-semibold">
+                        {formattedSrcAmount || "--"} {srcToken.symbol}
+                      </span>
+                    </div>
                     {anyspendQuote?.data?.fee?.type === "standard_fee" && anyspendQuote.data.currencyIn?.amountUsd && (
                       <span className="text-as-secondary text-xs">
                         incl. $
@@ -1090,33 +1090,33 @@ function AnySpendCustomInner({
               >
                 <div className="text-as-tertiarry flex h-7 items-center text-sm">Pay with</div>
                 <button
-                  className="text-as-tertiarry flex h-7 items-center gap-1 text-sm transition-colors hover:text-blue-700"
+                  className="text-as-tertiarry flex flex-wrap items-center justify-end gap-x-2 gap-y-1 text-sm transition-colors hover:text-blue-700"
                   onClick={() => setActivePanel(PanelView.FIAT_PAYMENT_METHOD)}
                 >
                   {selectedFiatPaymentMethod === FiatPaymentMethod.COINBASE_PAY ? (
                     <>
-                      <div className="flex items-center gap-2">
-                        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600">
+                      <div className="flex items-center gap-2 whitespace-nowrap">
+                        <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-600">
                           <span className="text-xs font-bold text-white">C</span>
                         </div>
                         Coinbase Pay
                       </div>
-                      <ChevronRight className="h-4 w-4" />
+                      <ChevronRight className="h-4 w-4 shrink-0" />
                     </>
                   ) : selectedFiatPaymentMethod === FiatPaymentMethod.STRIPE ? (
                     <>
-                      <div className="flex items-center gap-2">
-                        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600">
+                      <div className="flex items-center gap-2 whitespace-nowrap">
+                        <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-600">
                           <span className="text-xs font-bold text-white">S</span>
                         </div>
                         Credit/Debit Card
                       </div>
-                      <ChevronRight className="h-4 w-4" />
+                      <ChevronRight className="h-4 w-4 shrink-0" />
                     </>
                   ) : (
                     <>
-                      Select payment method
-                      <ChevronRight className="h-4 w-4" />
+                      <span className="whitespace-nowrap">Select payment method</span>
+                      <ChevronRight className="h-4 w-4 shrink-0" />
                     </>
                   )}
                 </button>
@@ -1137,30 +1137,34 @@ function AnySpendCustomInner({
                   filter: hasMounted ? "blur(0px)" : "blur(10px)",
                 }}
                 transition={{ duration: 0.3, delay: 0.1, ease: "easeInOut" }}
-                className="relative flex w-full items-center justify-between"
+                className="relative flex w-full items-center justify-between gap-4"
               >
-                <div className="flex items-center gap-2">
-                  <span className="text-as-tertiarry flex items-center gap-1.5 text-sm">
+                <span className="text-as-tertiarry flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm">
+                  <span className="whitespace-nowrap">
                     Total <span className="text-as-tertiarry">(USD)</span>
-                    {anyspendQuote?.data?.fee && (
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <button className="text-as-primary/40 hover:text-as-primary/60 transition-colors">
-                              <Info className="h-4 w-4" />
-                            </button>
-                          </TooltipTrigger>
-                          <TooltipContent side="top">
-                            <FeeBreakDown fee={anyspendQuote.data.fee} />
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    )}
                   </span>
-                  {renderPointsBadge()}
-                </div>
+                  {anyspendQuote?.data?.fee && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button className="text-as-primary/40 hover:text-as-primary/60 transition-colors">
+                            <Info className="h-4 w-4" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top">
+                          <FeeBreakDown fee={anyspendQuote.data.fee} />
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                </span>
                 <div className="flex flex-col items-end gap-0.5">
-                  <span className="text-as-primary text-xl font-semibold">${srcFiatAmount || "0.00"}</span>
+                  <div className="flex flex-wrap items-center justify-end gap-x-2 gap-y-1">
+                    {renderPointsBadge()}
+                    <span className="text-as-primary whitespace-nowrap text-xl font-semibold">
+                      ${srcFiatAmount || "0.00"}
+                    </span>
+                  </div>
                   {anyspendQuote?.data?.fee?.type === "stripeweb2_fee" && anyspendQuote.data.fee.originalAmount && (
                     <span className="text-as-secondary text-xs">
                       incl. $
