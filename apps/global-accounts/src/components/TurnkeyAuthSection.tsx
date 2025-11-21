@@ -1,29 +1,92 @@
 import app from "@b3dotfun/sdk/global-account/app";
 import { useAuthStore, useB3 } from "@b3dotfun/sdk/global-account/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { TurnkeyAuthModal } from "./TurnkeyAuthModal";
 
 export function TurnkeyAuthSection() {
-  const { user } = useB3();
-  const { isAuthenticated } = useAuthStore();
+  const { user, setUser } = useB3();
+  const isAuthenticated = useAuthStore(state => state.isAuthenticated);
+  const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
+  const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [turnkeyWalletAddress, setTurnkeyWalletAddress] = useState<string | null>(null);
+  const [turnkeyWalletAddresses, setTurnkeyWalletAddresses] = useState<string[]>([]);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
-  const handleLoginSuccess = (authenticatedUser: any, walletAddress: string) => {
+  // Auto-reAuthenticate on mount (restore session from JWT in cookies)
+  useEffect(() => {
+    const restoreSession = async () => {
+      try {
+        console.log("[TurnkeyAuthSection] Checking for existing session...");
+        setIsAuthenticating(true);
+
+        // Try to reAuthenticate using JWT from cookies
+        const authResult = await app.reAuthenticate();
+
+        console.log("[TurnkeyAuthSection] Session restored!", authResult);
+
+        // IMPORTANT: Update SDK's user state
+        if (authResult.user) {
+          setUser(authResult.user);
+        }
+
+        setIsAuthenticated(true);
+
+        // Extract Turnkey wallet addresses from user if available
+        if (authResult.user?.turnkeyAccounts) {
+          const addresses = authResult.user.turnkeyAccounts.map((acc: any) => acc.address);
+          setTurnkeyWalletAddresses(addresses);
+        }
+      } catch (error) {
+        console.log("[TurnkeyAuthSection] No existing session found");
+        setIsAuthenticated(false);
+      } finally {
+        setIsAuthenticating(false);
+        setIsCheckingAuth(false);
+      }
+    };
+
+    restoreSession();
+    // Hey Gio, if I put setUser in the dependency array, it will cause a infinite loop.
+    // How can I fix this?
+    // }, [setIsAuthenticated, setIsAuthenticating, setUser]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setIsAuthenticated, setIsAuthenticating]);
+
+  const handleLoginSuccess = (authenticatedUser: any, walletAddresses: string[]) => {
     console.log("Turnkey login successful!", authenticatedUser);
-    setTurnkeyWalletAddress(walletAddress);
+
+    // IMPORTANT: Update SDK's user state
+    if (authenticatedUser) {
+      setUser(authenticatedUser);
+    }
+
+    setTurnkeyWalletAddresses(walletAddresses);
     setIsModalOpen(false);
   };
 
   const handleLogout = async () => {
     try {
       await app.logout();
-      setTurnkeyWalletAddress(null);
+      setIsAuthenticated(false);
+      setUser(undefined); // Clear SDK user state
+      setTurnkeyWalletAddresses([]);
       console.log("Logged out successfully");
     } catch (error) {
       console.error("Failed to logout:", error);
     }
   };
+
+  // Show loading state while checking for existing session
+  if (isCheckingAuth) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="flex items-center gap-3">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
+          <span className="text-sm text-gray-600">Checking authentication...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -53,11 +116,11 @@ export function TurnkeyAuthSection() {
                   <span className="text-gray-900">{user.email}</span>
                 </div>
               )}
-              {turnkeyWalletAddress && (
+              {turnkeyWalletAddresses.length > 0 && (
                 <div className="flex items-start gap-2">
                   <span className="font-medium text-gray-700">Turnkey Wallet:</span>
                   <code className="flex-1 break-all rounded bg-white px-2 py-1 font-mono text-xs text-gray-900">
-                    {turnkeyWalletAddress}
+                    {turnkeyWalletAddresses.join(", ")}
                   </code>
                 </div>
               )}

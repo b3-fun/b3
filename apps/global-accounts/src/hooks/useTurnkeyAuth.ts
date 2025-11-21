@@ -5,7 +5,7 @@ import { useState } from "react";
 interface TurnkeyInitResponse {
   otpId: string;
   subOrgId: string;
-  turnkeyWalletAddress: string;
+  turnkeyAddresses: string[];
   requiresOtp: boolean;
   isNewUser: boolean;
 }
@@ -33,7 +33,8 @@ interface UseTurnkeyAuthReturn {
 export function useTurnkeyAuth(): UseTurnkeyAuthReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { setIsAuthenticating } = useAuthStore();
+  const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
+  const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
 
   /**
    * Step 1: Initiate login with email
@@ -99,6 +100,9 @@ export function useTurnkeyAuth(): UseTurnkeyAuthReturn {
 
       console.log(`[useTurnkeyAuth] Successfully authenticated with b3-api!`, authResult);
 
+      // Update auth store to reflect authenticated state
+      setIsAuthenticated(true);
+
       // Return user data
       return {
         user: authResult.user,
@@ -107,6 +111,7 @@ export function useTurnkeyAuth(): UseTurnkeyAuthReturn {
       console.error("[useTurnkeyAuth] Error verifying OTP:", err);
       const errorMessage = err.message || "Failed to verify OTP. Please try again.";
       setError(errorMessage);
+      setIsAuthenticated(false);
       throw err;
     } finally {
       setIsLoading(false);

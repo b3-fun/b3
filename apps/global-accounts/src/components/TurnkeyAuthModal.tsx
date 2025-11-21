@@ -7,7 +7,7 @@ type ModalStep = "email" | "otp" | "success";
 interface TurnkeyAuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: (_user: any, _walletAddress: string) => void;
+  onSuccess: (_user: any, _walletAddresses: string[]) => void;
 }
 
 export function TurnkeyAuthModal({ isOpen, onClose, onSuccess }: TurnkeyAuthModalProps) {
@@ -16,7 +16,7 @@ export function TurnkeyAuthModal({ isOpen, onClose, onSuccess }: TurnkeyAuthModa
   const [otpCode, setOtpCode] = useState("");
   const [otpId, setOtpId] = useState("");
   const [subOrgId, setSubOrgId] = useState("");
-  const [walletAddress, setWalletAddress] = useState("");
+  const [turnkeyAddresses, setTurnkeyAddresses] = useState<string[]>([]);
 
   const { initiateLogin, verifyOtp, isLoading, error, clearError } = useTurnkeyAuth();
 
@@ -27,7 +27,7 @@ export function TurnkeyAuthModal({ isOpen, onClose, onSuccess }: TurnkeyAuthModa
       const result = await initiateLogin(email);
       setOtpId(result.otpId);
       setSubOrgId(result.subOrgId);
-      setWalletAddress(result.turnkeyWalletAddress);
+      setTurnkeyAddresses(result.turnkeyAddresses);
       setStep("otp");
     } catch (err) {
       // Error is handled by the hook
@@ -44,7 +44,7 @@ export function TurnkeyAuthModal({ isOpen, onClose, onSuccess }: TurnkeyAuthModa
 
       // Auto-close after success and notify parent
       setTimeout(() => {
-        onSuccess(result.user, walletAddress);
+        onSuccess(result.user, turnkeyAddresses);
         handleClose();
       }, 1500);
     } catch (err) {
@@ -60,7 +60,7 @@ export function TurnkeyAuthModal({ isOpen, onClose, onSuccess }: TurnkeyAuthModa
     setOtpCode("");
     setOtpId("");
     setSubOrgId("");
-    setWalletAddress("");
+    setTurnkeyAddresses([]);
     clearError();
     onClose();
   };
