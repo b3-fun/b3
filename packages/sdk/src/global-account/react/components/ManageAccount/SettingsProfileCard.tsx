@@ -1,3 +1,4 @@
+import { ens_normalize } from "@adraffy/ens-normalize";
 import app from "@b3dotfun/sdk/global-account/app";
 import { toast, useB3, useModalStore, useProfile } from "@b3dotfun/sdk/global-account/react";
 import { formatUsername } from "@b3dotfun/sdk/shared/utils";
@@ -75,11 +76,25 @@ const SettingsProfileCard = () => {
 
     setIsSaving(true);
     try {
-      const updatedUser = await app.service("users").registerUsername(
-        { username: editedUsername.trim() },
-        // @ts-expect-error - our typed client is expecting context even though it's set elsewhere
-        {},
-      );
+      const sanitizedUsername = ens_normalize(editedUsername.trim());
+      const b3Username = `${sanitizedUsername}.b3.fun`;
+      const usernameSignMessage = `Register "${b3Username}"`;
+      const usernameSignature = await account?.signMessage({ message: usernameSignMessage });
+
+      if (!usernameSignature) {
+        throw new Error("Failed to sign username registration message");
+      }
+
+      console.log("@@usernameSignature", usernameSignature);
+
+      // Register username with ENS
+      // Note: Type assertion needed until @b3dotfun/b3-api package is updated with RegisterUsername type
+      const updatedUser = (await app
+        .service("users")
+        .registerUsername(
+          { username, message: usernameSignMessage, hash: usernameSignature },
+          {} as any,
+        )) as unknown as Users;
 
       // Update user state - registerUsername returns an array with single user
       setUser(Array.isArray(updatedUser) ? updatedUser[0] : updatedUser);
@@ -136,7 +151,7 @@ const SettingsProfileCard = () => {
               onChange={e => setEditedUsername(e.target.value)}
               onKeyDown={handleKeyDown}
               disabled={isSaving}
-              className="border-b3-line bg-b3-background text-b3-grey placeholder:text-b3-foreground-muted font-neue-montreal-semibold focus:border-b3-primary-blue w-full rounded-md border px-2 py-1 text-lg leading-none transition-colors focus:outline-none disabled:opacity-50"
+              className="border-b3-line bg-b3-background text-b3-grey placeholder:text-b3-foreground-muted font-neue-montreal-medium focus:border-b3-primary-blue text-md w-full rounded-md border px-2 py-1 leading-none transition-colors focus:outline-none disabled:opacity-50"
               placeholder="Enter username"
             />
             <div className="flex items-center gap-1">
