@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { NotificationChannel } from "../NotificationChannel";
-import { toast } from "../../Toast/toastApi";
-import { notificationsAPI } from "../../../utils/notificationsAPI";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
+import { useState } from "react";
+import { notificationsAPI } from "../../../utils/notificationsAPI";
+import { toast } from "../../Toast/toastApi";
+import { NotificationChannel } from "../NotificationChannel";
 
 const debug = debugB3React("PhoneChannel");
 
@@ -34,11 +34,10 @@ export const PhoneChannel = ({
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isConnectingSMS, setIsConnectingSMS] = useState(false);
   const [isConnectingWhatsApp, setIsConnectingWhatsApp] = useState(false);
-  
+
   // Detect if we're disconnecting
-  const isDisconnecting = 
-    (isSMSConnected && !isOptimisticallySMSConnected) || 
-    (isWhatsAppConnected && !isOptimisticallyWhatsAppConnected);
+  const isDisconnecting =
+    (isSMSConnected && !isOptimisticallySMSConnected) || (isWhatsAppConnected && !isOptimisticallyWhatsAppConnected);
 
   const handleConnectSMS = async () => {
     if (!phoneNumber || !userId || !jwtToken) return;
@@ -168,14 +167,17 @@ export const PhoneChannel = ({
   return (
     <NotificationChannel
       icon={icon}
-      title="SMS/Whatapps"
+      title="SMS/WhatsApp"
       isConnected={isOptimisticallySMSConnected || isOptimisticallyWhatsAppConnected}
       isConnecting={isConnectingSMS || isConnectingWhatsApp}
       isDisconnecting={isDisconnecting}
-      connectedInfo={isSMSConnected || isWhatsAppConnected ? <div className="mt-1 flex flex-col gap-1">{connectedInfo}</div> : undefined}
+      connectedInfo={
+        isSMSConnected || isWhatsAppConnected ? (
+          <div className="mt-1 flex flex-col gap-1">{connectedInfo}</div>
+        ) : undefined
+      }
       inputSection={inputSection}
       onToggle={handleToggle}
     />
   );
 };
-
