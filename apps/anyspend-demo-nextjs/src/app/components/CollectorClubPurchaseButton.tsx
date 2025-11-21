@@ -20,6 +20,8 @@ export function CollectorClubPurchaseButton() {
           pricePerPack: "10000", // 0.01 USDC in wei (6 decimals)
           recipientAddress: currentWallet.address,
           paymentType: "crypto",
+          vendingMachineId: "1",
+          packType: "1",
         });
       }}
       disabled={!hasAddress}

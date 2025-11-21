@@ -21,6 +21,7 @@ export type CreateOrderParams = {
   tournament?: components["schemas"]["Tournament"] & { contractAddress: string; entryPriceOrFundAmount: string };
   creatorAddress?: string;
   payload?: any;
+  metadata?: Record<string, any>;
 };
 
 export type UseAnyspendCreateOrderProps = {
@@ -38,7 +39,7 @@ export function useAnyspendCreateOrder({ onSuccess, onError }: UseAnyspendCreate
   const { partnerId } = useB3();
 
   // Get validated client reference ID from B3 context
-  const validatedClientReferenceId = useValidatedClientReferenceId();
+  const createValidatedClientReferenceId = useValidatedClientReferenceId();
 
   // Get fingerprint data
   const { data: fpData } = useVisitorData({ extendedResult: true }, { immediate: true });
@@ -49,6 +50,7 @@ export function useAnyspendCreateOrder({ onSuccess, onError }: UseAnyspendCreate
   const { mutate: createOrder, isPending } = useMutation({
     mutationFn: async (params: CreateOrderParams) => {
       const { recipientAddress, orderType, srcChain, dstChain, srcToken, dstToken, srcAmount, creatorAddress } = params;
+      const clientReferenceId = await createValidatedClientReferenceId(params);
 
       try {
         return await anyspendService.createOrder({
@@ -83,7 +85,7 @@ export function useAnyspendCreateOrder({ onSuccess, onError }: UseAnyspendCreate
           }),
           creatorAddress: creatorAddress ? normalizeAddress(creatorAddress) : undefined,
           partnerId,
-          clientReferenceId: validatedClientReferenceId,
+          clientReferenceId,
           visitorData,
         });
       } catch (error: any) {
