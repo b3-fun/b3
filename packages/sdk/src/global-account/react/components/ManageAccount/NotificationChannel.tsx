@@ -1,3 +1,4 @@
+import { cn } from "@b3dotfun/sdk/shared/utils";
 import { ReactNode } from "react";
 
 interface NotificationChannelProps {
@@ -8,6 +9,7 @@ interface NotificationChannelProps {
   isDisconnecting: boolean;
   connectedInfo?: ReactNode;
   inputSection?: ReactNode;
+  iconClassName?: string;
   onToggle: () => void;
   showBorder?: boolean;
 }
@@ -20,12 +22,13 @@ export const NotificationChannel = ({
   isDisconnecting,
   connectedInfo,
   inputSection,
+  iconClassName,
   onToggle,
   showBorder = true,
 }: NotificationChannelProps) => {
   return (
     <div className={`flex items-start gap-3 p-[15px] ${showBorder ? "border-b border-[#e4e4e7]" : ""}`}>
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">{icon}</div>
+      <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center", iconClassName)}>{icon}</div>
       <div className="flex-1">
         <p className="font-['PP_Neue_Montreal','PP_Neue_Montreal_Fallback',sans-serif] text-[14px] font-semibold leading-[20px] text-[#3f3f46]">
           {title}

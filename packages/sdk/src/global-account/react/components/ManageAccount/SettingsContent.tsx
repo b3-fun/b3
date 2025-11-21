@@ -2,8 +2,6 @@ import { useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { Chain } from "thirdweb";
 import { useProfiles } from "thirdweb/react";
-import BellIcon from "../icons/BellIcon";
-import LinkIcon from "../icons/LinkIcon";
 import ModalHeader from "../ModalHeader/ModalHeader";
 import SettingsMenuItem from "./SettingsMenuItem";
 import SettingsProfileCard from "./SettingsProfileCard";
@@ -75,13 +73,27 @@ const SettingsContent = ({
       {/* Menu Items */}
       <div className="space-y-3 px-5">
         <SettingsMenuItem
-          icon={<LinkIcon className="text-b3-grey-500" />}
+          icon={
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M0 12C0 5.37258 5.37258 0 12 0H28C34.6274 0 40 5.37258 40 12V28C40 34.6274 34.6274 40 28 40H12C5.37258 40 0 34.6274 0 28V12Z"
+                fill="#F4F4F5"
+              />
+            </svg>
+          }
           title="Linked Accounts"
           subtitle={`${profiles.length} connected account${profiles.length > 1 ? "s" : ""}`}
           onClick={() => handleNavigate("linkAccount")}
         />
         <SettingsMenuItem
-          icon={<BellIcon className="text-b3-grey-500" />}
+          icon={
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M0 12C0 5.37258 5.37258 0 12 0H28C34.6274 0 40 5.37258 40 12V28C40 34.6274 34.6274 40 28 40H12C5.37258 40 0 34.6274 0 28V12Z"
+                fill="#F4F4F5"
+              />
+            </svg>
+          }
           title="Notifications"
           subtitle="Manage your notifications"
           onClick={() => handleNavigate("notifications")}

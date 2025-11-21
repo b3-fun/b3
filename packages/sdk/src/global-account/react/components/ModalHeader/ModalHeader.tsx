@@ -50,9 +50,9 @@ const ModalHeader = ({
         >
           <X className="h-6 w-6 text-[#51525c]" />
         </button>
-      ) : (
+      ) : !children ? (
         <div className="w-2" />
-      )}
+      ) : undefined}
       {children}
     </div>
   );

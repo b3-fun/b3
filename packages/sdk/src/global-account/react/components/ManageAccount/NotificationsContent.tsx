@@ -182,25 +182,6 @@ const NotificationsContent = ({ partnerId, chain, onSuccess }: NotificationsCont
 
       <div className="flex-1 space-y-2 overflow-y-auto px-5 py-6">
         {/* Header */}
-        <div className="mb-2 flex items-center justify-between">
-          <p className="font-['PP_Neue_Montreal','PP_Neue_Montreal_Fallback',sans-serif] text-[16px] font-semibold leading-none text-[#3f3f46]">
-            Push notifications
-          </p>
-          {/* <button className="flex items-center gap-1">
-            <span className="font-['Inter',sans-serif] text-[14px] font-semibold leading-[20px] text-[#0b57c2]">
-              Manage All
-            </span>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path
-                d="M7.5 15L12.5 10L7.5 5"
-                stroke="#0c68e9"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button> */}
-        </div>
 
         {error && (
           <div className="mb-3 rounded-lg bg-red-50 p-3 font-['PP_Neue_Montreal','PP_Neue_Montreal_Fallback',sans-serif] text-[14px] leading-[20px] text-red-600 dark:bg-red-900/20 dark:text-red-400">
