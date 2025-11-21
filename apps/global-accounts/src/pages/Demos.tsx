@@ -1,5 +1,6 @@
 import { SignInWithB3, useAuthStore, useB3 } from "@b3dotfun/sdk/global-account/react";
 import { useEffect, useState } from "react";
+import { TurnkeyAuthSection } from "../components/TurnkeyAuthSection";
 import { b3Chain } from "../constants/b3Chain";
 
 export function Demos() {
@@ -77,6 +78,12 @@ export function Demos() {
                   className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-900 transition-colors hover:bg-blue-50 hover:text-blue-600"
                 >
                   All Strategies
+                </a>
+                <a
+                  href="#auth-turnkey"
+                  className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-900 transition-colors hover:bg-blue-50 hover:text-blue-600"
+                >
+                  Turnkey Only
                 </a>
               </div>
             </div>
@@ -209,6 +216,22 @@ export function Demos() {
                     <strong>Usage:</strong> Omit the{" "}
                     <code className="rounded bg-white px-1 py-0.5 font-mono text-xs">strategies</code> prop to show all
                     available authentication methods including social logins and wallet connections.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Turnkey Authentication */}
+            {shouldShowSection("auth-turnkey") && (
+              <div id="auth-turnkey" className="rounded-2xl bg-white p-8 shadow-sm">
+                <h2 className="mb-4 text-3xl font-bold text-gray-900">Turnkey Authentication Only</h2>
+                <p className="mb-6 text-gray-600">
+                  Email-based authentication using Turnkey infrastructure. Login with OTP verification.
+                </p>
+                <TurnkeyAuthSection />
+                <div className="mt-6 rounded-md border border-gray-200 bg-gray-50 p-4">
+                  <p className="text-xs text-gray-700">
+                    <strong>Usage:</strong> Turnkey provides email-based authentication with automatic wallet creation.
                   </p>
                 </div>
               </div>
