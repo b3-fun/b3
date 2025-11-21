@@ -5,6 +5,7 @@ import { Button, IPFSMediaRenderer, toast, useB3, useProfile } from "@b3dotfun/s
 import { validateImageUrl } from "@b3dotfun/sdk/global-account/react/utils/profileDisplay";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
+import { getIpfsUrl } from "@b3dotfun/sdk/shared/utils/ipfs";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { Loader2, Upload, X } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
@@ -137,7 +138,10 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
     setSelectedProfileType(null);
     setSelectedFile(null);
     if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
+      // Only revoke blob URLs (from file uploads), not regular URLs (from social profiles)
+      if (previewUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(previewUrl);
+      }
       setPreviewUrl(null);
     }
     if (fileInputRef.current) {
@@ -174,13 +178,29 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
       } else if (selectedFile) {
         // Fallback if no crop was made
         fileToUpload = selectedFile;
+      } else if (selectedProfileType && previewUrl && croppedAreaPixels) {
+        // User selected from social profile and cropped it
+        debug("Cropping social profile image:", previewUrl);
+
+        try {
+          const croppedBlob = await createCroppedImage(previewUrl, croppedAreaPixels);
+          fileToUpload = new File([croppedBlob], `avatar-${selectedProfileType}-cropped.jpg`, { type: "image/jpeg" });
+          debug("Successfully cropped social profile image");
+        } catch (error) {
+          debug("Error cropping social profile image:", error);
+          toast.error("Failed to crop image. Please try again.");
+          setIsSaving(false);
+          return;
+        }
       } else if (selectedProfileType && selectedAvatar) {
-        // User selected from existing profile avatars
+        // User selected from existing profile avatars without cropping
         // Fetch the image from the URL and convert to blob
         debug("Fetching image from social profile:", selectedAvatar);
 
         try {
-          const response = await fetch(selectedAvatar);
+          // Convert IPFS URLs to gateway URLs for fetching
+          const httpUrl = getIpfsUrl(selectedAvatar);
+          const response = await fetch(httpUrl);
           if (!response.ok) {
             throw new Error("Failed to fetch image");
           }
@@ -268,12 +288,14 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
   const handleProfileAvatarSelect = (avatarUrl: string, profileType: string) => {
     setSelectedAvatar(avatarUrl);
     setSelectedProfileType(profileType);
+    // Convert IPFS URLs to gateway URLs so the cropper can load them
+    const httpUrl = getIpfsUrl(avatarUrl, 1);
+    // Set preview URL to the avatar so it shows in the cropper
+    setPreviewUrl(httpUrl);
     // Clear any selected file since we're selecting from profile
     setSelectedFile(null);
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-      setPreviewUrl(null);
-    }
+    // Move to upload/crop view
+    setViewStep("upload");
   };
 
   const handleUploadImageClick = () => {
@@ -426,8 +448,8 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
                             : "border-transparent hover:border-[#e4e4e7]",
                         )}
                       >
-                        <img
-                          src={profileAvatar.avatar}
+                        <IPFSMediaRenderer
+                          src={profileAvatar.avatar || ""}
                           alt={`${profileAvatar.type} avatar`}
                           className="h-full w-full object-cover"
                         />
@@ -462,14 +484,14 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
                     fill="currentColor"
                   />
                 </svg>
-                Link more account
+                Link more accounts
               </button>
             </div>
           </>
         ) : (
           <>
             {/* Upload View */}
-            {!selectedFile ? (
+            {!selectedFile && !previewUrl ? (
               <div
                 onClick={handleOpenFilePicker}
                 onDragEnter={handleDragEnter}
