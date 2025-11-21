@@ -643,7 +643,7 @@ function AnySpendCustomInner({
               ? "Join for"
               : "Recipient"}
       </div>
-      <div className="flex flex-wrap items-center justify-end gap-x-2 gap-y-1">
+      <div className="flex flex-wrap items-center justify-end gap-2">
         {recipientAddress ? (
           <button
             className={cn("text-as-tertiarry flex items-center gap-2 rounded-lg")}
@@ -913,7 +913,7 @@ function AnySpendCustomInner({
               >
                 <div className="text-as-tertiarry flex h-7 items-center text-sm">Pay</div>
                 <button
-                  className="text-as-tertiarry flex flex-wrap items-center justify-end gap-x-2 gap-y-1 text-sm transition-colors hover:text-blue-700"
+                  className="text-as-tertiarry flex flex-wrap items-center justify-end gap-2 text-sm transition-colors hover:text-blue-700"
                   onClick={() => setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD)}
                 >
                   {effectiveCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET ? (
@@ -985,7 +985,7 @@ function AnySpendCustomInner({
                   transition={{ duration: 0.3, delay: 0.1, ease: "easeInOut" }}
                   className="relative flex w-full items-center justify-between gap-4"
                 >
-                  <span className="text-as-tertiarry flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm">
+                  <span className="text-as-tertiarry flex flex-wrap items-center gap-1.5 text-sm">
                     <span className="whitespace-nowrap">
                       Total <span className="text-as-tertiarry">(with fee)</span>
                     </span>
@@ -1005,7 +1005,7 @@ function AnySpendCustomInner({
                     )}
                   </span>
                   <div className="flex flex-col items-end gap-0.5">
-                    <div className="flex flex-wrap items-center justify-end gap-x-2 gap-y-1">
+                    <div className="flex flex-wrap items-center justify-end gap-2">
                       {renderPointsBadge()}
                       <span className="text-as-primary whitespace-nowrap font-semibold">
                         {formattedSrcAmount || "--"} {srcToken.symbol}
@@ -1090,7 +1090,7 @@ function AnySpendCustomInner({
               >
                 <div className="text-as-tertiarry flex h-7 items-center text-sm">Pay with</div>
                 <button
-                  className="text-as-tertiarry flex flex-wrap items-center justify-end gap-x-2 gap-y-1 text-sm transition-colors hover:text-blue-700"
+                  className="text-as-tertiarry flex flex-wrap items-center justify-end gap-2 text-sm transition-colors hover:text-blue-700"
                   onClick={() => setActivePanel(PanelView.FIAT_PAYMENT_METHOD)}
                 >
                   {selectedFiatPaymentMethod === FiatPaymentMethod.COINBASE_PAY ? (
@@ -1139,7 +1139,7 @@ function AnySpendCustomInner({
                 transition={{ duration: 0.3, delay: 0.1, ease: "easeInOut" }}
                 className="relative flex w-full items-center justify-between gap-4"
               >
-                <span className="text-as-tertiarry flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm">
+                <span className="text-as-tertiarry flex flex-wrap items-center gap-1.5 text-sm">
                   <span className="whitespace-nowrap">
                     Total <span className="text-as-tertiarry">(USD)</span>
                   </span>
@@ -1159,7 +1159,7 @@ function AnySpendCustomInner({
                   )}
                 </span>
                 <div className="flex flex-col items-end gap-0.5">
-                  <div className="flex flex-wrap items-center justify-end gap-x-2 gap-y-1">
+                  <div className="flex flex-wrap items-center justify-end gap-2">
                     {renderPointsBadge()}
                     <span className="text-as-primary whitespace-nowrap text-xl font-semibold">
                       ${srcFiatAmount || "0.00"}
