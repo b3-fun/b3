@@ -15,6 +15,7 @@ import { useState } from "react";
 import { NumericFormat } from "react-number-format";
 
 import { encodeFunctionData, erc20Abi, isAddress, parseUnits } from "viem";
+import { useB3Profile } from "../../hooks/useB3Profile";
 import type { SimBalanceItem } from "../../hooks/useSimBalance";
 import { useRecentAddressesStore } from "../../stores/useRecentAddressesStore";
 import ModalHeader from "../ModalHeader/ModalHeader";
@@ -26,6 +27,34 @@ export interface SendModalProps {
 }
 
 type SendStep = "recipient" | "token" | "amount" | "confirm" | "success";
+
+// Component for displaying a recent address with profile data
+function RecentAddressItem({ address, onClick }: { address: string; onClick: () => void }) {
+  const { data: profileData } = useB3Profile(address);
+
+  return (
+    <button
+      onClick={onClick}
+      className="flex items-center gap-2 rounded-xl px-3 py-2 transition-colors hover:bg-[#fafafa]"
+    >
+      {/* Avatar */}
+      {profileData?.avatar ? (
+        <img src={profileData.avatar} alt={profileData.name || address} className="h-10 w-10 rounded-full" />
+      ) : (
+        <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#e4e4e7] bg-[#f4f4f5]">
+          <Wallet className="h-5 w-5 text-[#a0a0ab]" />
+        </div>
+      )}
+      {/* Address and Name */}
+      <div className="flex flex-col items-start">
+        <span className="font-neue-montreal-medium text-base tracking-[-0.32px] text-[#70707b]">
+          {address.slice(0, 6)}...{address.slice(-4)}
+          {profileData?.name && ` (${profileData.name})`}
+        </span>
+      </div>
+    </button>
+  );
+}
 
 export function Send({ recipientAddress: initialRecipient, onSuccess }: SendModalProps) {
   const { address } = useAccountWallet();
@@ -49,6 +78,11 @@ export function Send({ recipientAddress: initialRecipient, onSuccess }: SendModa
   // Recent addresses store
   const recentAddresses = useRecentAddressesStore(state => state.recentAddresses);
   const addRecentAddress = useRecentAddressesStore(state => state.addRecentAddress);
+
+  // Fetch profile data for validated address
+  const { data: validatedProfileData } = useB3Profile(
+    showValidatedResult && recipientAddress && isAddress(recipientAddress) ? recipientAddress : undefined,
+  );
 
   // Address validation
   const handleRecipientAddressChange = (value: string) => {
@@ -255,12 +289,21 @@ export function Send({ recipientAddress: initialRecipient, onSuccess }: SendModa
                   className="flex items-center gap-2 rounded-xl bg-[#f4f4f5] px-3 py-2 transition-colors hover:bg-[#e4e4e7]"
                 >
                   {/* Avatar */}
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#e4e4e7] bg-[#f4f4f5]">
-                    <Wallet className="h-5 w-5 text-[#a0a0ab]" />
-                  </div>
-                  {/* Address */}
+                  {validatedProfileData?.avatar ? (
+                    <img
+                      src={validatedProfileData.avatar}
+                      alt={validatedProfileData.name || recipientAddress}
+                      className="h-10 w-10 rounded-full"
+                    />
+                  ) : (
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#e4e4e7] bg-[#f4f4f5]">
+                      <Wallet className="h-5 w-5 text-[#a0a0ab]" />
+                    </div>
+                  )}
+                  {/* Address and Name */}
                   <span className="font-neue-montreal-medium text-base tracking-[-0.32px] text-[#70707b]">
                     {recipientAddress.slice(0, 6)}...{recipientAddress.slice(-4)}
+                    {validatedProfileData?.name && ` (${validatedProfileData.name})`}
                   </span>
                 </button>
               </div>
@@ -280,23 +323,14 @@ export function Send({ recipientAddress: initialRecipient, onSuccess }: SendModa
                 {/* Recent addresses list */}
                 <div className="flex flex-col">
                   {recentAddresses.map((recent, index) => (
-                    <button
+                    <RecentAddressItem
                       key={index}
+                      address={recent.address}
                       onClick={() => {
                         // Just fill the input and show validation - don't auto-proceed
                         handleRecipientAddressChange(recent.address);
                       }}
-                      className="flex items-center gap-2 rounded-xl px-3 py-2 transition-colors hover:bg-[#fafafa]"
-                    >
-                      {/* Avatar */}
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#e4e4e7] bg-[#f4f4f5]">
-                        <Wallet className="h-5 w-5 text-[#a0a0ab]" />
-                      </div>
-                      {/* Address */}
-                      <span className="font-neue-montreal-medium text-base tracking-[-0.32px] text-[#70707b]">
-                        {recent.address.slice(0, 6)}...{recent.address.slice(-4)}
-                      </span>
-                    </button>
+                    />
                   ))}
                 </div>
               </div>

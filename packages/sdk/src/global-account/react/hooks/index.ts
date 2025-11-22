@@ -39,6 +39,7 @@ export { useRemoveSessionKey } from "./useRemoveSessionKey";
 export { useRouter } from "./useRouter";
 export { useSearchParamsSSR } from "./useSearchParamsSSR";
 export { useSimBalance } from "./useSimBalance";
+export { useB3Profile, type B3ProfileData } from "./useB3Profile";
 export { useSiwe } from "./useSiwe";
 export { useTokenBalance } from "./useTokenBalance";
 export { useTokenBalanceDirect } from "./useTokenBalanceDirect";

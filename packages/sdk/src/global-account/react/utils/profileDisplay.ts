@@ -89,7 +89,12 @@ export interface ProfileDisplayInfo {
 }
 
 export function getProfileDisplayInfo(profile: ExtendedProfile): ProfileDisplayInfo {
-  const { type, details } = profile;
+  const { type: originalType, details } = profile;
+
+  let type = originalType as Profile["type"];
+  if (originalType === ("siwe" as any)) {
+    type = "EOA" as Profile["type"];
+  }
 
   // Default display info
   let displayInfo: ProfileDisplayInfo = {
