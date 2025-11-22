@@ -95,7 +95,6 @@ export function B3DynamicModal() {
 
   // Check if current content type is in freestyle types
   const isFreestyleType = freestyleTypes.includes(contentType?.type as string);
-  console.log("contentType :", contentType);
   const hideCloseButton = true;
 
   // Build content class using cn utility

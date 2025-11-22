@@ -400,14 +400,6 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
                   <div className="bg-b3-primary-wash h-full w-full" />
                 )}
               </div>
-              {(selectedAvatar !== currentAvatar || selectedFile) && (
-                <button
-                  onClick={handleRemovePreview}
-                  className="absolute -right-1 -top-1 flex h-8 w-8 items-center justify-center rounded-full bg-[#51525c] text-white transition-colors hover:bg-[#71717a]"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
             </div>
 
             {/* Upload Image Button */}
@@ -434,7 +426,7 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
 
                   return (
                     <div
-                      key={index}
+                      key={profileAvatar.type + "-" + index}
                       className="relative"
                       onMouseEnter={() => setHoveredProfile(profileAvatar.type)}
                       onMouseLeave={() => setHoveredProfile(null)}
