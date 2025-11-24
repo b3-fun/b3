@@ -8,7 +8,6 @@ import {
   useQueryB3,
 } from "@b3dotfun/sdk/global-account/react";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
-import { truncateAddress } from "@b3dotfun/sdk/shared/utils/truncateAddress";
 import { Copy, Loader2, Pencil } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -16,24 +15,6 @@ import { useProfiles, useUnlinkProfile } from "thirdweb/react";
 
 import { Chain } from "thirdweb";
 import { getProfileDisplayInfo } from "../../utils/profileDisplay";
-
-// Helper function to check if a string is a wallet address and format it
-const formatProfileTitle = (title: string): { displayTitle: string; isAddress: boolean } => {
-  // Check if title looks like an Ethereum address (0x followed by 40 hex characters)
-  const isEthereumAddress = /^0x[a-fA-F0-9]{40}$/.test(title);
-
-  if (isEthereumAddress) {
-    return {
-      displayTitle: truncateAddress(title),
-      isAddress: true,
-    };
-  }
-
-  return {
-    displayTitle: title,
-    isAddress: false,
-  };
-};
 
 import { Referrals, Users } from "@b3dotfun/b3-api";
 import ModalHeader from "../ModalHeader/ModalHeader";

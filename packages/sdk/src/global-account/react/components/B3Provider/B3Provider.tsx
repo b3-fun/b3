@@ -105,6 +105,7 @@ export function B3Provider({
                   automaticallySetFirstEoa={!!automaticallySetFirstEoa}
                   clientType={clientType}
                   partnerId={partnerId}
+                  createClientReferenceId={createClientReferenceId}
                 >
                   <ToastContextConnector />
                   <RelayKitProviderWrapper simDuneApiKey={simDuneApiKey}>

@@ -137,5 +137,3 @@ export const TelegramChannel = ({
     />
   );
 };
-
-const TekegraChannelIcon = () => {};

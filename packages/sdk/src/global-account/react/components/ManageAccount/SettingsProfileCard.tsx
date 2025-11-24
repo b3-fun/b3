@@ -5,6 +5,7 @@ import { formatUsername } from "@b3dotfun/sdk/shared/utils";
 import { Check, Loader2, Pencil, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
+import { Users } from "@b3dotfun/b3-api";
 import { useActiveAccount } from "thirdweb/react";
 import { useFirstEOA } from "../../hooks/useFirstEOA";
 import { IPFSMediaRenderer } from "../IPFSMediaRenderer/IPFSMediaRenderer";
@@ -92,10 +93,9 @@ const SettingsProfileCard = () => {
       const updatedUser = (await app
         .service("users")
         .registerUsername(
-          { username, message: usernameSignMessage, hash: usernameSignature },
+          { username: b3Username, message: usernameSignMessage, hash: usernameSignature },
           {} as any,
         )) as unknown as Users;
-
       // Update user state - registerUsername returns an array with single user
       setUser(Array.isArray(updatedUser) ? updatedUser[0] : updatedUser);
 
