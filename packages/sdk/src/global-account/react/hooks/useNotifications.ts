@@ -106,7 +106,7 @@ export function useNotifications(): UseNotificationsReturn {
     } catch (err) {
       debug("Error creating default notification settings:", err);
     }
-  }, [userId, jwtToken]);
+  }, [userId, jwtToken, partnerId]);
 
   const connectEmail = useCallback(
     async (email: string) => {
