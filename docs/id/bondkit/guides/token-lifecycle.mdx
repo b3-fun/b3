@@ -479,3 +479,12 @@ if (isSwapAvailable) {
         liquidity: 5000 // Peringatan jika TVL turun di bawah ambang batas
       },
       
+      actions: {
+        onLowLiquidity: () => announceIncentiveProgram(),
+        onHighVolatility: () => checkForManipulation(),
+        onTradingHalt: () => investigateIssues()
+      }
+    };
+    ```
+  </Tab>
+</Tabs>

@@ -46,6 +46,8 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { base } from "viem/chains";
 import { useFeatureFlags } from "../contexts/FeatureFlagsContext";
 import { useAutoSetActiveWalletFromWagmi } from "../hooks/useAutoSetActiveWalletFromWagmi";
+import { useCryptoPaymentMethodState } from "../hooks/useCryptoPaymentMethodState";
+import { useRecipientAddressState } from "../hooks/useRecipientAddressState";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
 import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPaymentMethod";
 import { FeeBreakDown } from "./common/FeeBreakDown";
@@ -251,20 +253,22 @@ function AnySpendCustomInner({
   );
   const [activeTab, setActiveTab] = useState<"crypto" | "fiat">(activeTabProps);
 
-  // Add state for selected payment methods
-  const [selectedCryptoPaymentMethod, setSelectedCryptoPaymentMethod] = useState<CryptoPaymentMethodType>(
-    CryptoPaymentMethodType.NONE,
-  );
+  // Payment method state with dual-state system (auto + explicit user selection)
+  // Note: AnySpendCustom doesn't use auto-selection, only explicit user selection
+  const { setSelectedCryptoPaymentMethod, effectiveCryptoPaymentMethod, resetPaymentMethods } =
+    useCryptoPaymentMethodState();
+
   const [selectedFiatPaymentMethod, setSelectedFiatPaymentMethod] = useState<FiatPaymentMethod>(FiatPaymentMethod.NONE);
 
   // Get current user's wallet
   const currentWallet = useAccountWallet();
 
-  // Add state for custom recipient
-  const [customRecipientAddress, setCustomRecipientAddress] = useState<string | undefined>(recipientAddressProps);
-
-  // Update recipient logic to use custom recipient
-  const recipientAddress = customRecipientAddress || currentWallet.address;
+  // Recipient address state with dual-state system (auto + explicit user selection)
+  // The hook automatically manages priority: props > user selection > global address
+  const { setSelectedRecipientAddress, effectiveRecipientAddress: recipientAddress } = useRecipientAddressState({
+    recipientAddressFromProps: recipientAddressProps,
+    globalAddress: currentWallet.address,
+  });
 
   const [orderId, setOrderId] = useState<string | undefined>(loadOrder);
 
@@ -506,6 +510,7 @@ function AnySpendCustomInner({
                 to: contractAddress,
               }
             : undefined,
+        metadata,
       } as CreateOrderParams;
 
       if (onramp) {
@@ -531,7 +536,9 @@ function AnySpendCustomInner({
           expectedDstAmount: anyspendQuote?.data?.currencyOut?.amount?.toString() || "0",
         });
       } else {
-        void createRegularOrder(createOrderParams);
+        void createRegularOrder({
+          ...createOrderParams,
+        });
       }
     } catch (err) {
       console.error(err);
@@ -551,7 +558,7 @@ function AnySpendCustomInner({
     }
 
     // Check payment method selection for crypto tab
-    if (activeTab === "crypto" && selectedCryptoPaymentMethod === CryptoPaymentMethodType.NONE) {
+    if (activeTab === "crypto" && effectiveCryptoPaymentMethod === CryptoPaymentMethodType.NONE) {
       setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD);
       return;
     }
@@ -637,27 +644,27 @@ function AnySpendCustomInner({
               ? "Join for"
               : "Recipient"}
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center justify-end gap-2">
         {recipientAddress ? (
           <button
-            className={cn("text-as-tertiarry flex h-7 items-center gap-2 rounded-lg")}
+            className={cn("text-as-tertiarry flex items-center gap-2 rounded-lg")}
             onClick={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
           >
-            <>
-              <div className="text-as-tertiarry flex items-center gap-1 text-sm">
-                <span>{recipientName ? formatUsername(recipientName) : shortenAddress(recipientAddress)}</span>
-              </div>
-            </>
+            <div className="text-as-tertiarry flex items-center gap-1 text-sm">
+              <span className="whitespace-nowrap">
+                {recipientName ? formatUsername(recipientName) : shortenAddress(recipientAddress)}
+              </span>
+            </div>
           </button>
         ) : (
           <button
             className="text-as-primary/70 flex items-center gap-1 rounded-lg"
             onClick={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
           >
-            <div className="text-sm font-medium">Select recipient</div>
+            <div className="whitespace-nowrap text-sm font-medium">Select recipient</div>
           </button>
         )}
-        <ChevronRight className="h-4 w-4" />
+        <ChevronRight className="h-4 w-4 shrink-0" />
       </div>
     </motion.div>
   ) : null;
@@ -694,12 +701,17 @@ function AnySpendCustomInner({
           relayTxs={oat.data.relayTxs}
           executeTx={oat.data.executeTx}
           refundTxs={oat.data.refundTxs}
-          cryptoPaymentMethod={activeTab === "fiat" ? CryptoPaymentMethodType.NONE : selectedCryptoPaymentMethod}
-          selectedCryptoPaymentMethod={selectedCryptoPaymentMethod}
-          onPaymentMethodChange={setSelectedCryptoPaymentMethod}
+          cryptoPaymentMethod={activeTab === "fiat" ? CryptoPaymentMethodType.NONE : effectiveCryptoPaymentMethod}
+          selectedCryptoPaymentMethod={effectiveCryptoPaymentMethod}
+          onPaymentMethodChange={method => {
+            // When user explicitly changes payment method, set it as selected
+            setSelectedCryptoPaymentMethod(method);
+          }}
           onBack={() => {
             setOrderId(undefined);
             setActivePanel(PanelView.CONFIRM_ORDER);
+            // Reset payment methods when going back
+            resetPaymentMethods();
             // Remove orderId from URL when canceling
             const params = new URLSearchParams(searchParams.toString());
             params.delete("orderId");
@@ -833,7 +845,8 @@ function AnySpendCustomInner({
               )}
               onClick={() => {
                 setActiveTab("crypto");
-                setSelectedCryptoPaymentMethod(CryptoPaymentMethodType.NONE);
+                // Reset payment methods when switching tabs
+                resetPaymentMethods();
                 setSelectedFiatPaymentMethod(FiatPaymentMethod.NONE);
               }}
             >
@@ -847,7 +860,8 @@ function AnySpendCustomInner({
                 )}
                 onClick={() => {
                   setActiveTab("fiat");
-                  setSelectedCryptoPaymentMethod(CryptoPaymentMethodType.NONE);
+                  // Reset payment methods when switching tabs
+                  resetPaymentMethods();
                   setSelectedFiatPaymentMethod(FiatPaymentMethod.NONE);
                 }}
               >
@@ -900,31 +914,29 @@ function AnySpendCustomInner({
               >
                 <div className="text-as-tertiarry flex h-7 items-center text-sm">Pay</div>
                 <button
-                  className="text-as-tertiarry flex h-7 items-center gap-2 text-sm transition-colors hover:text-blue-700"
+                  className="text-as-tertiarry flex flex-wrap items-center justify-end gap-2 text-sm transition-colors hover:text-blue-700"
                   onClick={() => setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD)}
                 >
-                  {selectedCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET ? (
+                  {effectiveCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET ? (
                     <>
                       {connectedAddress ? (
-                        <>
-                          <span className="text-as-tertiarry flex items-center gap-1">
-                            {connectedName ? formatUsername(connectedName) : shortenAddress(connectedAddress || "")}
-                          </span>
-                        </>
+                        <span className="text-as-tertiarry whitespace-nowrap">
+                          {connectedName ? formatUsername(connectedName) : shortenAddress(connectedAddress || "")}
+                        </span>
                       ) : (
-                        "Connect wallet"
+                        <span className="whitespace-nowrap">Connect wallet</span>
                       )}
-                      <ChevronRight className="h-4 w-4" />
+                      <ChevronRight className="h-4 w-4 shrink-0" />
                     </>
-                  ) : selectedCryptoPaymentMethod === CryptoPaymentMethodType.TRANSFER_CRYPTO ? (
+                  ) : effectiveCryptoPaymentMethod === CryptoPaymentMethodType.TRANSFER_CRYPTO ? (
                     <>
-                      Transfer crypto
-                      <ChevronRight className="h-4 w-4" />
+                      <span className="whitespace-nowrap">Transfer crypto</span>
+                      <ChevronRight className="h-4 w-4 shrink-0" />
                     </>
                   ) : (
                     <>
-                      Select payment method
-                      <ChevronRight className="h-4 w-4" />
+                      <span className="whitespace-nowrap">Select payment method</span>
+                      <ChevronRight className="h-4 w-4 shrink-0" />
                     </>
                   )}
                 </button>
@@ -972,32 +984,34 @@ function AnySpendCustomInner({
                     filter: hasMounted ? "blur(0px)" : "blur(10px)",
                   }}
                   transition={{ duration: 0.3, delay: 0.1, ease: "easeInOut" }}
-                  className="relative flex w-full items-center justify-between"
+                  className="relative flex w-full items-center justify-between gap-4"
                 >
-                  <div className="flex items-center gap-2">
-                    <span className="text-as-tertiarry flex items-center gap-1.5 text-sm">
+                  <span className="text-as-tertiarry flex flex-wrap items-center gap-1.5 text-sm">
+                    <span className="whitespace-nowrap">
                       Total <span className="text-as-tertiarry">(with fee)</span>
-                      {anyspendQuote?.data?.fee && (
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <button className="text-as-primary/40 hover:text-as-primary/60 transition-colors">
-                                <Info className="h-4 w-4" />
-                              </button>
-                            </TooltipTrigger>
-                            <TooltipContent side="top">
-                              <FeeBreakDown fee={anyspendQuote.data.fee} />
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      )}
                     </span>
-                    {renderPointsBadge()}
-                  </div>
+                    {anyspendQuote?.data?.fee && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button className="text-as-primary/40 hover:text-as-primary/60 transition-colors">
+                              <Info className="h-4 w-4" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top">
+                            <FeeBreakDown fee={anyspendQuote.data.fee} />
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                  </span>
                   <div className="flex flex-col items-end gap-0.5">
-                    <span className="text-as-primary font-semibold">
-                      {formattedSrcAmount || "--"} {srcToken.symbol}
-                    </span>
+                    <div className="flex flex-wrap items-center justify-end gap-2">
+                      {renderPointsBadge()}
+                      <span className="text-as-primary whitespace-nowrap font-semibold">
+                        {formattedSrcAmount || "--"} {srcToken.symbol}
+                      </span>
+                    </div>
                     {anyspendQuote?.data?.fee?.type === "standard_fee" && anyspendQuote.data.currencyIn?.amountUsd && (
                       <span className="text-as-secondary text-xs">
                         incl. $
@@ -1044,7 +1058,7 @@ function AnySpendCustomInner({
                     </div>
                   ) : !recipientAddress ? (
                     "Select recipient"
-                  ) : selectedCryptoPaymentMethod === CryptoPaymentMethodType.NONE ? (
+                  ) : effectiveCryptoPaymentMethod === CryptoPaymentMethodType.NONE ? (
                     "Choose payment method"
                   ) : anyspendQuote ? (
                     <>
@@ -1077,33 +1091,33 @@ function AnySpendCustomInner({
               >
                 <div className="text-as-tertiarry flex h-7 items-center text-sm">Pay with</div>
                 <button
-                  className="text-as-tertiarry flex h-7 items-center gap-1 text-sm transition-colors hover:text-blue-700"
+                  className="text-as-tertiarry flex flex-wrap items-center justify-end gap-2 text-sm transition-colors hover:text-blue-700"
                   onClick={() => setActivePanel(PanelView.FIAT_PAYMENT_METHOD)}
                 >
                   {selectedFiatPaymentMethod === FiatPaymentMethod.COINBASE_PAY ? (
                     <>
-                      <div className="flex items-center gap-2">
-                        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600">
+                      <div className="flex items-center gap-2 whitespace-nowrap">
+                        <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-600">
                           <span className="text-xs font-bold text-white">C</span>
                         </div>
                         Coinbase Pay
                       </div>
-                      <ChevronRight className="h-4 w-4" />
+                      <ChevronRight className="h-4 w-4 shrink-0" />
                     </>
                   ) : selectedFiatPaymentMethod === FiatPaymentMethod.STRIPE ? (
                     <>
-                      <div className="flex items-center gap-2">
-                        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600">
+                      <div className="flex items-center gap-2 whitespace-nowrap">
+                        <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-600">
                           <span className="text-xs font-bold text-white">S</span>
                         </div>
                         Credit/Debit Card
                       </div>
-                      <ChevronRight className="h-4 w-4" />
+                      <ChevronRight className="h-4 w-4 shrink-0" />
                     </>
                   ) : (
                     <>
-                      Select payment method
-                      <ChevronRight className="h-4 w-4" />
+                      <span className="whitespace-nowrap">Select payment method</span>
+                      <ChevronRight className="h-4 w-4 shrink-0" />
                     </>
                   )}
                 </button>
@@ -1124,30 +1138,34 @@ function AnySpendCustomInner({
                   filter: hasMounted ? "blur(0px)" : "blur(10px)",
                 }}
                 transition={{ duration: 0.3, delay: 0.1, ease: "easeInOut" }}
-                className="relative flex w-full items-center justify-between"
+                className="relative flex w-full items-center justify-between gap-4"
               >
-                <div className="flex items-center gap-2">
-                  <span className="text-as-tertiarry flex items-center gap-1.5 text-sm">
+                <span className="text-as-tertiarry flex flex-wrap items-center gap-1.5 text-sm">
+                  <span className="whitespace-nowrap">
                     Total <span className="text-as-tertiarry">(USD)</span>
-                    {anyspendQuote?.data?.fee && (
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <button className="text-as-primary/40 hover:text-as-primary/60 transition-colors">
-                              <Info className="h-4 w-4" />
-                            </button>
-                          </TooltipTrigger>
-                          <TooltipContent side="top">
-                            <FeeBreakDown fee={anyspendQuote.data.fee} />
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    )}
                   </span>
-                  {renderPointsBadge()}
-                </div>
+                  {anyspendQuote?.data?.fee && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button className="text-as-primary/40 hover:text-as-primary/60 transition-colors">
+                            <Info className="h-4 w-4" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top">
+                          <FeeBreakDown fee={anyspendQuote.data.fee} />
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                </span>
                 <div className="flex flex-col items-end gap-0.5">
-                  <span className="text-as-primary text-xl font-semibold">${srcFiatAmount || "0.00"}</span>
+                  <div className="flex flex-wrap items-center justify-end gap-2">
+                    {renderPointsBadge()}
+                    <span className="text-as-primary whitespace-nowrap text-xl font-semibold">
+                      ${srcFiatAmount || "0.00"}
+                    </span>
+                  </div>
                   {anyspendQuote?.data?.fee?.type === "stripeweb2_fee" && anyspendQuote.data.fee.originalAmount && (
                     <span className="text-as-secondary text-xs">
                       incl. $
@@ -1222,12 +1240,13 @@ function AnySpendCustomInner({
   const recipientSelectionView = (
     <div className={cn("bg-as-surface-primary mx-auto w-[460px] max-w-full rounded-xl p-4")}>
       <RecipientSelection
-        initialValue={customRecipientAddress || ""}
+        initialValue={recipientAddress || ""}
         title="Add recipient address or ENS"
         description="Send tokens to another address"
         onBack={() => setActivePanel(PanelView.CONFIRM_ORDER)}
         onConfirm={address => {
-          setCustomRecipientAddress(address);
+          // User manually selected a recipient
+          setSelectedRecipientAddress(address);
           setActivePanel(PanelView.CONFIRM_ORDER);
         }}
       />
@@ -1238,11 +1257,15 @@ function AnySpendCustomInner({
   const cryptoPaymentMethodView = (
     <div className={cn("bg-as-surface-primary mx-auto w-[460px] max-w-full rounded-xl p-4")}>
       <CryptoPaymentMethod
-        selectedPaymentMethod={selectedCryptoPaymentMethod}
-        setSelectedPaymentMethod={setSelectedCryptoPaymentMethod}
+        selectedPaymentMethod={effectiveCryptoPaymentMethod}
+        setSelectedPaymentMethod={method => {
+          // When user explicitly selects a payment method, save it
+          setSelectedCryptoPaymentMethod(method);
+        }}
         isCreatingOrder={isCreatingOrder}
         onBack={() => setActivePanel(PanelView.CONFIRM_ORDER)}
         onSelectPaymentMethod={(method: CryptoPaymentMethodType) => {
+          // When user explicitly selects a payment method, save it and go back
           setSelectedCryptoPaymentMethod(method);
           setActivePanel(PanelView.CONFIRM_ORDER);
         }}

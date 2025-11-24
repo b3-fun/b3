@@ -128,6 +128,8 @@ export interface AnySpendModalProps extends BaseModalProps {
   destinationTokenChainId?: number;
   /** Custom USD input values for quick amount buttons in fiat onramp */
   customUsdInputValues?: string[];
+  /** Client-provided reference ID for tracking orders */
+  clientReferenceId?: string;
 }
 
 /**
@@ -143,6 +145,8 @@ export interface AnySpendNftProps extends BaseModalProps {
   recipientAddress?: string;
   /** Callback function called when the NFT is successfully transferred */
   onSuccess?: (txHash?: string) => void;
+  /** Client-provided reference ID for tracking orders */
+  clientReferenceId?: string;
 }
 
 /**
@@ -277,6 +281,27 @@ export interface AnySpendStakeUpsideExactInProps extends BaseModalProps {
 }
 
 /**
+ * Props for the AnySpend Deposit Upside (Exact In) modal
+ * Handles token deposit operations using the custom exact in flow
+ */
+export interface AnySpendDepositUpsideProps extends BaseModalProps {
+  /** Modal type identifier */
+  type: "anySpendDepositUpside";
+  /**	Source token address */
+  sourceTokenAddress?: string;
+  /** Source token address */
+  sourceTokenChainId?: number;
+  /** Recipient address to deposit tokens for */
+  recipientAddress: string;
+  /** Deposit contract address */
+  depositContractAddress: string;
+  /** Token to deposit */
+  token: components["schemas"]["Token"];
+  /** Callback function called when the deposit is successful */
+  onSuccess?: () => void;
+}
+
+/**
  * Props for the AnySpend Buy Spin modal
  * Handles spin wheel entry purchases
  */
@@ -370,6 +395,8 @@ export interface AnySpendDepositHypeProps extends BaseModalProps {
   mainFooter?: React.ReactNode;
   /** Callback function called when the deposit is successful */
   onSuccess?: (amount?: string) => void;
+  /** Callback function trigger open custom modal */
+  onOpenCustomModal?: () => void;
   /** Custom USD input values for quick amount buttons in fiat onramp */
   customUsdInputValues?: string[];
   /** prefer eoa wallet */
@@ -423,6 +450,33 @@ export interface NotificationsModalProps extends BaseModalProps {
 }
 
 /**
+ * Props for the AnySpend Collector Club Purchase modal
+ * Handles Collector Club pack purchases
+ */
+export interface AnySpendCollectorClubPurchaseProps extends BaseModalProps {
+  /** Modal type identifier */
+  type: "anySpendCollectorClubPurchase";
+  /** The pack ID to purchase */
+  packId: number;
+  /** The number of packs to purchase */
+  packAmount: number;
+  /** Price per pack in wei (e.g., "10000" for 0.01 USDC with 6 decimals) */
+  pricePerPack: string;
+  /** Recipient address to receive the packs */
+  recipientAddress: string;
+  /** Payment type - crypto or fiat */
+  paymentType?: "crypto" | "fiat";
+  /** Callback function called when the purchase is successful */
+  onSuccess?: (txHash?: string) => void;
+  /** Client-provided reference ID for tracking orders */
+  clientReferenceId?: string;
+  /** The vending machine ID */
+  vendingMachineId: string;
+  /** The pack type */
+  packType: string;
+}
+
+/**
  * Union type of all possible modal content types
  */
 export type ModalContentType =
@@ -439,6 +493,7 @@ export type ModalContentType =
   | AnySpendStakeB3ExactInProps
   | AnySpendStakeUpsideProps
   | AnySpendStakeUpsideExactInProps
+  | AnySpendDepositUpsideProps
   | AnySpendBuySpinProps
   | AnySpendSignatureMintProps
   | AnySpendBondKitProps
@@ -448,7 +503,8 @@ export type ModalContentType =
   | AvatarEditorModalProps
   | DepositModalProps
   | SendModalProps
-  | NotificationsModalProps;
+  | NotificationsModalProps
+  | AnySpendCollectorClubPurchaseProps;
 // Add other modal types here like: | OtherModalProps | AnotherModalProps
 
 /**

@@ -637,6 +637,14 @@ Dark version
       font-size: 16px !important;
     }
   }
+
+  input[placeholder="Search Wallet"] {
+    padding-left: 48px !important;
+  }
+
+  li[style="list-style: none;"] {
+    margin-bottom: 12px !important;
+  }
 }
 /* Radix UI Accordion animations */
 @keyframes accordion-down {

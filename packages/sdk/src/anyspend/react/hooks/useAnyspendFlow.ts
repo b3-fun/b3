@@ -20,12 +20,14 @@ import { useEffect, useMemo, useState } from "react";
 
 import { parseUnits } from "viem";
 import { base, mainnet } from "viem/chains";
-import { useAccount } from "wagmi";
 import { components } from "../../types/api";
 import { CryptoPaymentMethodType } from "../components/common/CryptoPaymentMethod";
 import { FiatPaymentMethod } from "../components/common/FiatPaymentMethod";
 import { useAutoSelectCryptoPaymentMethod } from "./useAutoSelectCryptoPaymentMethod";
 import { useAutoSetActiveWalletFromWagmi } from "./useAutoSetActiveWalletFromWagmi";
+import { useConnectedWalletDisplay } from "./useConnectedWalletDisplay";
+import { useCryptoPaymentMethodState } from "./useCryptoPaymentMethodState";
+import { useRecipientAddressState } from "./useRecipientAddressState";
 
 export enum PanelView {
   MAIN,
@@ -86,40 +88,46 @@ export function useAnyspendFlow({
   const defaultDstToken = B3_TOKEN; // Default destination token
   const [selectedSrcToken, setSelectedSrcToken] = useState<components["schemas"]["Token"]>(defaultSrcToken);
   const [selectedDstToken, setSelectedDstToken] = useState<components["schemas"]["Token"]>(defaultDstToken);
-  const [srcAmount, setSrcAmount] = useState<string>(paymentType === "fiat" ? "5" : "0.1");
+  const [srcAmount, setSrcAmount] = useState<string>(paymentType === "fiat" ? "5" : "0");
   const [dstAmount, setDstAmount] = useState<string>("");
   const [isSrcInputDirty, setIsSrcInputDirty] = useState(true);
 
   // Derive destination chain ID from token or prop (cannot change)
   const selectedDstChainId = destinationTokenChainId || selectedDstToken.chainId;
 
-  // Payment method state
-  const [selectedCryptoPaymentMethod, setSelectedCryptoPaymentMethod] = useState<CryptoPaymentMethodType>(
-    CryptoPaymentMethodType.NONE,
-  );
+  // Payment method state with dual-state system (auto + explicit user selection)
+  const {
+    cryptoPaymentMethod,
+    setCryptoPaymentMethod,
+    selectedCryptoPaymentMethod,
+    setSelectedCryptoPaymentMethod,
+    effectiveCryptoPaymentMethod,
+    resetPaymentMethods,
+  } = useCryptoPaymentMethodState();
+
   const [selectedFiatPaymentMethod, setSelectedFiatPaymentMethod] = useState<FiatPaymentMethod>(FiatPaymentMethod.NONE);
 
-  // Recipient state
+  // Recipient state with dual-state system (auto + explicit user selection)
   const { address: globalAddress } = useAccountWallet();
-  const { address: wagmiAddress } = useAccount();
-  const [selectedRecipientAddress, setSelectedRecipientAddress] = useState<string | undefined>(recipientAddress);
-  const recipientProfile = useProfile({ address: selectedRecipientAddress, fresh: true });
-  const recipientName = recipientProfile.data?.name;
+  const { walletAddress } = useConnectedWalletDisplay(effectiveCryptoPaymentMethod);
 
   // Auto-set active wallet from wagmi
   useAutoSetActiveWalletFromWagmi();
 
-  // Set default recipient address when wallet changes
-  useEffect(() => {
-    if (!selectedRecipientAddress && globalAddress) {
-      setSelectedRecipientAddress(globalAddress);
-    }
-  }, [selectedRecipientAddress, globalAddress]);
+  // Recipient address state - hook automatically manages priority: props > user selection > wallet/global
+  const { setSelectedRecipientAddress, effectiveRecipientAddress } = useRecipientAddressState({
+    recipientAddressFromProps: recipientAddress,
+    walletAddress,
+    globalAddress,
+  });
+
+  const recipientProfile = useProfile({ address: effectiveRecipientAddress, fresh: true });
+  const recipientName = recipientProfile.data?.name;
 
   // Check token balance for crypto payments
   const { rawBalance, isLoading: isBalanceLoading } = useTokenBalance({
     token: selectedSrcToken,
-    address: wagmiAddress,
+    address: walletAddress,
   });
 
   // Check if user has enough balance
@@ -136,8 +144,9 @@ export function useAnyspendFlow({
   // Auto-select crypto payment method based on available wallets and balance
   useAutoSelectCryptoPaymentMethod({
     paymentType,
+    cryptoPaymentMethod,
+    setCryptoPaymentMethod,
     selectedCryptoPaymentMethod,
-    setSelectedCryptoPaymentMethod,
     hasEnoughBalance,
     isBalanceLoading,
   });
@@ -201,7 +210,7 @@ export function useAnyspendFlow({
     dstTokenAddress: selectedDstToken.address,
     type: orderType,
     amount: activeInputAmountInWei,
-    recipientAddress: selectedRecipientAddress,
+    recipientAddress: effectiveRecipientAddress,
     onrampVendor: paymentType === "fiat" ? getOnrampVendor(selectedFiatPaymentMethod) : undefined,
   });
 
@@ -249,9 +258,9 @@ export function useAnyspendFlow({
       if (!disableUrlParamManagement) {
         const params = new URLSearchParams(searchParams.toString()); // Preserve existing params
         params.set("orderId", newOrderId);
-        if (selectedCryptoPaymentMethod !== CryptoPaymentMethodType.NONE) {
-          console.log("Setting cryptoPaymentMethod in URL:", selectedCryptoPaymentMethod);
-          params.set("cryptoPaymentMethod", selectedCryptoPaymentMethod);
+        if (effectiveCryptoPaymentMethod !== CryptoPaymentMethodType.NONE) {
+          console.log("Setting cryptoPaymentMethod in URL:", effectiveCryptoPaymentMethod);
+          params.set("cryptoPaymentMethod", effectiveCryptoPaymentMethod);
         } else {
           console.log("Payment method is NONE, not setting in URL");
         }
@@ -317,12 +326,16 @@ export function useAnyspendFlow({
     isSrcInputDirty,
     setIsSrcInputDirty,
     // Payment methods
+    cryptoPaymentMethod,
+    setCryptoPaymentMethod,
     selectedCryptoPaymentMethod,
     setSelectedCryptoPaymentMethod,
+    effectiveCryptoPaymentMethod,
+    resetPaymentMethods,
     selectedFiatPaymentMethod,
     setSelectedFiatPaymentMethod,
     // Recipient
-    selectedRecipientAddress,
+    selectedRecipientAddress: effectiveRecipientAddress,
     setSelectedRecipientAddress,
     recipientName,
     globalAddress,

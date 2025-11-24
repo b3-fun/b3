@@ -147,8 +147,9 @@ export const useCurrencyStore = create<CurrencyState>()(
       removeCurrency: code => {
         set(state => {
           // Remove the currency
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { [code]: _, ...remaining } = state.customCurrencies;
+          const customCurrencies = state.customCurrencies;
+
+          const remaining = Object.fromEntries(Object.entries(customCurrencies).filter(([key]) => key !== code));
 
           // Remove all exchange rates involving this currency
           const filteredRates: Record<string, number> = {};

@@ -40,6 +40,9 @@ import { base, mainnet } from "viem/chains";
 import { components } from "../../types/api";
 import { useAutoSelectCryptoPaymentMethod } from "../hooks/useAutoSelectCryptoPaymentMethod";
 import { useAutoSetActiveWalletFromWagmi } from "../hooks/useAutoSetActiveWalletFromWagmi";
+import { useConnectedWalletDisplay } from "../hooks/useConnectedWalletDisplay";
+import { useCryptoPaymentMethodState } from "../hooks/useCryptoPaymentMethodState";
+import { useRecipientAddressState } from "../hooks/useRecipientAddressState";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
 import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPaymentMethod";
 import { CryptoPaySection } from "./common/CryptoPaySection";
@@ -206,11 +209,17 @@ function AnySpendInner({
     setActivePanel(targetPanel);
   }, [activePanel]);
   const [customRecipients, setCustomRecipients] = useState<RecipientOption[]>([]);
-  // Add state for selected payment method
-  const [selectedCryptoPaymentMethod, setSelectedCryptoPaymentMethod] = useState<CryptoPaymentMethodType>(
-    CryptoPaymentMethodType.NONE,
-  );
-  // Add state for selected fiat payment method
+
+  // Payment method state with dual-state system (auto + explicit user selection)
+  const {
+    cryptoPaymentMethod,
+    setCryptoPaymentMethod,
+    selectedCryptoPaymentMethod,
+    setSelectedCryptoPaymentMethod,
+    effectiveCryptoPaymentMethod,
+    resetPaymentMethods,
+  } = useCryptoPaymentMethodState();
+
   const [selectedFiatPaymentMethod, setSelectedFiatPaymentMethod] = useState<FiatPaymentMethod>(FiatPaymentMethod.NONE);
   // const [newRecipientAddress, setNewRecipientAddress] = useState("");
   // const recipientInputRef = useRef<HTMLInputElement>(null);
@@ -229,7 +238,7 @@ function AnySpendInner({
   });
   const [selectedSrcToken, setSelectedSrcToken] = useState<components["schemas"]["Token"]>(srcTokenFromUrl);
   const { data: srcTokenMetadata } = useTokenData(selectedSrcToken?.chainId, selectedSrcToken?.address);
-  const [srcAmount, setSrcAmount] = useState<string>(searchParams.get("fromAmount") || "0.01");
+  const [srcAmount, setSrcAmount] = useState<string>(searchParams.get("fromAmount") || "0");
 
   // State for onramp amount
   const [srcAmountOnRamp, setSrcAmountOnRamp] = useState<string>(searchParams.get("fromAmount") || "5");
@@ -469,17 +478,30 @@ function AnySpendInner({
   //   [selectedDstChainId, newRecipientAddress, resolvedAddress]
   // );
 
-  // State for recipient selection
-  const [recipientAddress, setRecipientAddress] = useState<string | undefined>();
-
   const { address: globalAddress, wallet: globalWallet, connectedEOAWallet } = useAccountWallet();
-  const recipientProfile = useProfile({ address: recipientAddress, fresh: true });
-  const recipientName = recipientProfile.data?.name;
 
   const globalWalletImage = useAccountWalletImage();
 
   // Auto-set active wallet from wagmi
   useAutoSetActiveWalletFromWagmi();
+
+  // Get wallet address based on selected payment method
+  const { walletAddress } = useConnectedWalletDisplay(effectiveCryptoPaymentMethod);
+
+  // Recipient address state with dual-state system (auto + explicit user selection)
+  // The hook automatically manages priority: props > user selection > wallet/global
+  const {
+    setSelectedRecipientAddress,
+    effectiveRecipientAddress,
+    // resetRecipientAddress, // Not used yet, but available for future use
+  } = useRecipientAddressState({
+    recipientAddressFromProps,
+    walletAddress,
+    globalAddress,
+  });
+
+  const recipientProfile = useProfile({ address: effectiveRecipientAddress, fresh: true });
+  const recipientName = recipientProfile.data?.name;
 
   // Check token balance for crypto payments
   const { rawBalance, isLoading: isBalanceLoading } = useTokenBalanceDirect({
@@ -501,8 +523,9 @@ function AnySpendInner({
   // Auto-select crypto payment method based on available wallets and balance
   useAutoSelectCryptoPaymentMethod({
     paymentType: activeTab,
+    cryptoPaymentMethod,
+    setCryptoPaymentMethod,
     selectedCryptoPaymentMethod,
-    setSelectedCryptoPaymentMethod,
     hasEnoughBalance,
     isBalanceLoading,
   });
@@ -541,7 +564,7 @@ function AnySpendInner({
           type: "swap",
           tradeType: isSrcInputDirty ? "EXACT_INPUT" : "EXACT_OUTPUT",
           amount: activeInputAmountInWei,
-          recipientAddress,
+          recipientAddress: effectiveRecipientAddress,
         }
       : {
           srcChain: base.id,
@@ -551,7 +574,7 @@ function AnySpendInner({
           type: "swap",
           tradeType: "EXACT_INPUT",
           amount: srcAmountOnrampInWei,
-          recipientAddress,
+          recipientAddress: effectiveRecipientAddress,
           onrampVendor: getOnrampVendor(selectedFiatPaymentMethod),
         },
   );
@@ -572,15 +595,15 @@ function AnySpendInner({
         setCustomRecipients(parsedRecipients);
 
         // If no wallet is connected and no recipient is selected, select the first recipient
-        if (!globalAddress && !recipientAddress && parsedRecipients.length > 0) {
-          setRecipientAddress(parsedRecipients[0].address);
+        if (!globalAddress && !effectiveRecipientAddress && parsedRecipients.length > 0) {
+          setSelectedRecipientAddress(parsedRecipients[0].address);
         }
       }
     } catch (err) {
       console.error("Error loading recipients from local storage:", err);
     }
     // Only run this effect once on mount
-  }, [globalAddress, recipientAddress, customRecipients.length]);
+  }, [globalAddress, effectiveRecipientAddress, customRecipients.length, setSelectedRecipientAddress]);
 
   // Update dependent amount when relay price changes
   useEffect(() => {
@@ -636,9 +659,9 @@ function AnySpendInner({
       // Add orderId and payment method to URL for persistence
       const params = new URLSearchParams(searchParams.toString()); // Preserve existing params
       params.set("orderId", orderId);
-      if (selectedCryptoPaymentMethod !== CryptoPaymentMethodType.NONE) {
-        console.log("Setting cryptoPaymentMethod in URL:", selectedCryptoPaymentMethod);
-        params.set("cryptoPaymentMethod", selectedCryptoPaymentMethod);
+      if (effectiveCryptoPaymentMethod !== CryptoPaymentMethodType.NONE) {
+        console.log("Setting cryptoPaymentMethod in URL:", effectiveCryptoPaymentMethod);
+        params.set("cryptoPaymentMethod", effectiveCryptoPaymentMethod);
       } else {
         console.log("Payment method is NONE, not setting in URL");
       }
@@ -692,7 +715,7 @@ function AnySpendInner({
 
     if (activeTab === "fiat") {
       // For fiat: check recipient first, then payment method
-      if (!recipientAddress) return { text: "Select recipient", disable: false, error: false, loading: false };
+      if (!effectiveRecipientAddress) return { text: "Select recipient", disable: false, error: false, loading: false };
 
       // If no fiat payment method selected, show "Select payment method"
       if (selectedFiatPaymentMethod === FiatPaymentMethod.NONE) {
@@ -706,21 +729,21 @@ function AnySpendInner({
       // For crypto: check payment method first, then recipient
 
       // If no payment method selected, show "Choose payment method"
-      if (selectedCryptoPaymentMethod === CryptoPaymentMethodType.NONE) {
+      if (effectiveCryptoPaymentMethod === CryptoPaymentMethodType.NONE) {
         return { text: "Choose payment method", disable: false, error: false, loading: false };
       }
 
       // Check recipient after payment method
-      if (!recipientAddress) return { text: "Select recipient", disable: false, error: false, loading: false };
+      if (!effectiveRecipientAddress) return { text: "Select recipient", disable: false, error: false, loading: false };
 
       // If payment method selected, show appropriate action
       if (
-        selectedCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET ||
-        selectedCryptoPaymentMethod === CryptoPaymentMethodType.GLOBAL_WALLET
+        effectiveCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET ||
+        effectiveCryptoPaymentMethod === CryptoPaymentMethodType.GLOBAL_WALLET
       ) {
         return { text: "Swap", disable: false, error: false, loading: false };
       }
-      if (selectedCryptoPaymentMethod === CryptoPaymentMethodType.TRANSFER_CRYPTO) {
+      if (effectiveCryptoPaymentMethod === CryptoPaymentMethodType.TRANSFER_CRYPTO) {
         return { text: "Continue to payment", disable: false, error: false, loading: false };
       }
     }
@@ -730,12 +753,12 @@ function AnySpendInner({
     activeInputAmountInWei,
     isSameChainSameToken,
     isLoadingAnyspendQuote,
-    recipientAddress,
+    effectiveRecipientAddress,
     isCreatingOrder,
     isCreatingOnrampOrder,
     anyspendQuote,
     activeTab,
-    selectedCryptoPaymentMethod,
+    effectiveCryptoPaymentMethod,
     selectedFiatPaymentMethod,
   ]);
 
@@ -748,12 +771,12 @@ function AnySpendInner({
 
       if (activeTab === "fiat") {
         // For fiat: check recipient first
-        if (!recipientAddress) {
+        if (!effectiveRecipientAddress) {
           navigateToPanel(PanelView.RECIPIENT_SELECTION, "forward");
           return;
         }
 
-        invariant(recipientAddress, "Recipient address is not found");
+        invariant(effectiveRecipientAddress, "Recipient address is not found");
 
         // If no fiat payment method selected, show payment method selection
         if (selectedFiatPaymentMethod === FiatPaymentMethod.NONE) {
@@ -769,28 +792,28 @@ function AnySpendInner({
         // For crypto: check payment method first, then recipient
 
         // If no payment method selected, show payment method selection
-        if (selectedCryptoPaymentMethod === CryptoPaymentMethodType.NONE) {
+        if (effectiveCryptoPaymentMethod === CryptoPaymentMethodType.NONE) {
           console.log("No payment method selected, showing selection panel");
           navigateToPanel(PanelView.CRYPTO_PAYMENT_METHOD, "forward");
           return;
         }
 
         // Check recipient after payment method
-        if (!recipientAddress) {
+        if (!effectiveRecipientAddress) {
           navigateToPanel(PanelView.RECIPIENT_SELECTION, "forward");
           return;
         }
 
-        invariant(recipientAddress, "Recipient address is not found");
+        invariant(effectiveRecipientAddress, "Recipient address is not found");
 
         // If payment method is selected, create order with payment method info
         if (
-          selectedCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET ||
-          selectedCryptoPaymentMethod === CryptoPaymentMethodType.GLOBAL_WALLET ||
-          selectedCryptoPaymentMethod === CryptoPaymentMethodType.TRANSFER_CRYPTO
+          effectiveCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET ||
+          effectiveCryptoPaymentMethod === CryptoPaymentMethodType.GLOBAL_WALLET ||
+          effectiveCryptoPaymentMethod === CryptoPaymentMethodType.TRANSFER_CRYPTO
         ) {
-          console.log("Creating crypto order with payment method:", selectedCryptoPaymentMethod);
-          await handleCryptoSwap(selectedCryptoPaymentMethod);
+          console.log("Creating crypto order with payment method:", effectiveCryptoPaymentMethod);
+          await handleCryptoSwap(effectiveCryptoPaymentMethod);
           return;
         }
       }
@@ -818,7 +841,7 @@ function AnySpendInner({
   const handleCryptoSwap = async (method: CryptoPaymentMethodType) => {
     try {
       invariant(anyspendQuote, "Relay price is not found");
-      invariant(recipientAddress, "Recipient address is not found");
+      invariant(effectiveRecipientAddress, "Recipient address is not found");
 
       // Debug: Check payment method values
       console.log("handleCryptoSwap - method parameter:", method);
@@ -827,7 +850,7 @@ function AnySpendInner({
       const srcAmountBigInt = parseUnits(srcAmount.replace(/,/g, ""), selectedSrcToken.decimals);
 
       createOrder({
-        recipientAddress,
+        recipientAddress: effectiveRecipientAddress,
         orderType: "swap",
         srcChain: selectedSrcChainId,
         dstChain: isBuyMode ? destinationTokenChainId : selectedDstChainId,
@@ -849,7 +872,7 @@ function AnySpendInner({
   const handleFiatOrder = async (paymentMethod: FiatPaymentMethod) => {
     try {
       invariant(anyspendQuote, "Relay price is not found");
-      invariant(recipientAddress, "Recipient address is not found");
+      invariant(effectiveRecipientAddress, "Recipient address is not found");
 
       if (!srcAmountOnRamp || parseFloat(srcAmountOnRamp) <= 0) {
         toast.error("Please enter a valid amount");
@@ -892,7 +915,7 @@ function AnySpendInner({
       };
 
       createOnrampOrder({
-        recipientAddress,
+        recipientAddress: effectiveRecipientAddress,
         orderType: "swap",
         dstChain: getDstToken().chainId,
         dstToken: getDstToken(),
@@ -1000,13 +1023,17 @@ function AnySpendInner({
             relayTxs={oat.data.relayTxs}
             executeTx={oat.data.executeTx}
             refundTxs={oat.data.refundTxs}
-            selectedCryptoPaymentMethod={selectedCryptoPaymentMethod}
-            onPaymentMethodChange={setSelectedCryptoPaymentMethod}
+            selectedCryptoPaymentMethod={effectiveCryptoPaymentMethod}
+            onPaymentMethodChange={method => {
+              // When user explicitly changes payment method, set it as selected
+              setSelectedCryptoPaymentMethod(method);
+            }}
             points={oat.data.points || undefined}
             onBack={() => {
               setOrderId(undefined);
               navigateBack();
-              setSelectedCryptoPaymentMethod(CryptoPaymentMethodType.NONE); // Reset payment method when going back
+              // Reset payment methods when going back
+              resetPaymentMethods();
             }}
           />
         )}
@@ -1039,7 +1066,12 @@ function AnySpendInner({
         {/* Tab section */}
         <TabSection
           activeTab={activeTab}
-          setActiveTab={setActiveTab}
+          setActiveTab={tab => {
+            setActiveTab(tab);
+            // Reset payment methods when switching tabs
+            resetPaymentMethods();
+            setSelectedFiatPaymentMethod(FiatPaymentMethod.NONE);
+          }}
           setSelectedCryptoPaymentMethod={setSelectedCryptoPaymentMethod}
           setSelectedFiatPaymentMethod={setSelectedFiatPaymentMethod}
         />
@@ -1056,7 +1088,7 @@ function AnySpendInner({
               setSrcAmount={setSrcAmount}
               isSrcInputDirty={isSrcInputDirty}
               setIsSrcInputDirty={setIsSrcInputDirty}
-              selectedCryptoPaymentMethod={selectedCryptoPaymentMethod}
+              selectedCryptoPaymentMethod={effectiveCryptoPaymentMethod}
               onSelectCryptoPaymentMethod={() => navigateToPanel(PanelView.CRYPTO_PAYMENT_METHOD, "forward")}
               anyspendQuote={anyspendQuote}
               onTokenSelect={onTokenSelect}
@@ -1081,7 +1113,7 @@ function AnySpendInner({
                     setActivePanel(panelIndex);
                   }
                 }}
-                _recipientAddress={recipientAddress}
+                _recipientAddress={effectiveRecipientAddress}
                 destinationToken={selectedDstToken}
                 destinationChainId={selectedDstChainId}
                 destinationAmount={dstAmount}
@@ -1136,16 +1168,14 @@ function AnySpendInner({
           </Button>
 
           {/* Receive section - Hidden when fiat tab is active */}
+          {/* Receive section - Hidden when fiat tab is active */}
           {activeTab === "crypto" && (
             <CryptoReceiveSection
               isDepositMode={false}
               isBuyMode={isBuyMode}
-              selectedRecipientAddress={recipientAddress}
+              effectiveRecipientAddress={effectiveRecipientAddress}
               recipientName={recipientName || undefined}
               onSelectRecipient={() => navigateToPanel(PanelView.RECIPIENT_SELECTION, "forward")}
-              setRecipientAddress={setRecipientAddress}
-              recipientAddressFromProps={recipientAddressFromProps}
-              globalAddress={globalAddress}
               dstAmount={dstAmount}
               dstToken={selectedDstToken}
               selectedDstChainId={selectedDstChainId}
@@ -1159,7 +1189,6 @@ function AnySpendInner({
               anyspendQuote={anyspendQuote}
               onShowPointsDetail={() => navigateToPanel(PanelView.POINTS_DETAIL, "forward")}
               onShowFeeDetail={() => navigateToPanel(PanelView.FEE_DETAIL, "forward")}
-              selectedCryptoPaymentMethod={selectedCryptoPaymentMethod}
             />
           )}
         </div>
@@ -1187,7 +1216,7 @@ function AnySpendInner({
             </div>
           </ShinyButton>
 
-          {!hideTransactionHistoryButton && (globalAddress || recipientAddress) ? (
+          {!hideTransactionHistoryButton && (globalAddress || effectiveRecipientAddress) ? (
             <Button
               variant="link"
               onClick={onClickHistory}
@@ -1227,7 +1256,7 @@ function AnySpendInner({
     <PanelOnrampPayment
       srcAmountOnRamp={srcAmountOnRamp}
       recipientName={recipientName || undefined}
-      recipientAddress={recipientAddress}
+      recipientAddress={effectiveRecipientAddress}
       isBuyMode={isBuyMode}
       destinationTokenChainId={destinationTokenChainId}
       destinationTokenAddress={destinationTokenAddress}
@@ -1258,10 +1287,11 @@ function AnySpendInner({
 
   const recipientSelectionView = (
     <RecipientSelection
-      initialValue={recipientAddress || ""}
+      initialValue={effectiveRecipientAddress || ""}
       onBack={navigateBack}
       onConfirm={address => {
-        setRecipientAddress(address);
+        // User manually selected a recipient
+        setSelectedRecipientAddress(address);
         navigateBack();
       }}
     />
@@ -1269,11 +1299,15 @@ function AnySpendInner({
 
   const cryptoPaymentMethodView = (
     <CryptoPaymentMethod
-      selectedPaymentMethod={selectedCryptoPaymentMethod}
-      setSelectedPaymentMethod={setSelectedCryptoPaymentMethod}
+      selectedPaymentMethod={effectiveCryptoPaymentMethod}
+      setSelectedPaymentMethod={method => {
+        // When user explicitly selects a payment method, save it
+        setSelectedCryptoPaymentMethod(method);
+      }}
       isCreatingOrder={isCreatingOrder}
       onBack={navigateBack}
       onSelectPaymentMethod={(method: CryptoPaymentMethodType) => {
+        // When user explicitly selects a payment method, save it and go back
         setSelectedCryptoPaymentMethod(method);
         navigateBack();
       }}

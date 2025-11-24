@@ -1,4 +1,6 @@
 import { Users } from "@b3dotfun/b3-api";
+import { CreateOnrampOrderParams } from "@b3dotfun/sdk/anyspend/react/hooks/useAnyspendCreateOnrampOrder";
+import { CreateOrderParams } from "@b3dotfun/sdk/anyspend/react/hooks/useAnyspendCreateOrder";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { createContext } from "react";
 import { Account, Wallet } from "thirdweb/wallets";
@@ -22,6 +24,7 @@ export interface B3ContextType {
   theme: "light" | "dark";
   clientType: ClientType;
   partnerId: string;
+  createClientReferenceId?: (params: CreateOrderParams | CreateOnrampOrderParams) => Promise<string>;
 }
 
 /**
@@ -41,4 +44,5 @@ export const B3Context = createContext<B3ContextType>({
   theme: "light",
   clientType: "rest",
   partnerId: "",
+  createClientReferenceId: undefined,
 });

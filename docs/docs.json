@@ -352,7 +352,14 @@
                   "anyspend/x402-quickstart-sellers",
                   "anyspend/x402-quickstart-solana",
                   "anyspend/x402-network-support",
-                  "anyspend/x402-signature-methods"
+                  "anyspend/x402-signature-methods",
+                  {
+                    "group": "Marketplace",
+                    "pages": [
+                      "anyspend/marketplace-ads",
+                      "anyspend/marketplace-articles"
+                    ]
+                  }
                 ]
               },
               {

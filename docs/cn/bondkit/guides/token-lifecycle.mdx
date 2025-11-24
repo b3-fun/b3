@@ -460,4 +460,29 @@ if (isSwapAvailable) {
         avgTradeSize: await getAvgTradeSize(tokenAddress),
         
         // 健康指标
-        liquidityUtilization: await getLiquidity
+        liquidityUtilization: await getLiquidityUtilization(tokenAddress),
+        priceImpact1k: await getPriceImpact(tokenAddress, 1000),
+        holderDistribution: await getHolderDistribution(tokenAddress)
+      };
+    }
+    ```
+    
+    **自动化监控:**
+    ```typescript
+    // 设置重要事件的警报
+    const monitoringConfig = {
+      priceAlerts: {
+        change24h: 20, // 价格变化 >20% 时发出警报
+        volume: 10000, // 交易量超过阈值时发出警报
+        liquidity: 5000 // TVL 低于阈值时发出警报
+      },
+      
+      actions: {
+        onLowLiquidity: () => announceIncentiveProgram(),
+        onHighVolatility: () => checkForManipulation(),
+        onTradingHalt: () => investigateIssues()
+      }
+    };
+    ```
+  </Tab>
+</Tabs>

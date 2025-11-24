@@ -53,8 +53,6 @@ export function OrderTokenAmount({
 }) {
   // Track previous token to detect changes
   const prevTokenRef = useRef<string>(token.address);
-  // Track if initial balance has been set
-  const initialBalanceSetRef = useRef(false);
 
   // Only get token balance when context is "from" (for setting max amount)
   const { rawBalance } = useTokenBalance({
@@ -62,23 +60,15 @@ export function OrderTokenAmount({
     address: context === "from" && walletAddress ? walletAddress : undefined,
   });
 
-  // Reset balance ref when token address or chain changes
-  useEffect(() => {
-    initialBalanceSetRef.current = false;
-  }, [token.address, token.chainId]);
-
   useEffect(() => {
     // Only handle "from" context
     if (context !== "from") return;
 
     // Check if token changed or if this is the initial load with balance
     const isTokenChanged = prevTokenRef.current !== token.address;
-    const isInitialLoad = !initialBalanceSetRef.current && rawBalance;
 
-    if ((isTokenChanged || isInitialLoad) && rawBalance) {
-      console.log(
-        `Setting max balance - Token: ${token.address}, Changed: ${isTokenChanged}, Initial: ${isInitialLoad}`,
-      );
+    if (isTokenChanged && rawBalance) {
+      console.log(`Setting max balance - Token: ${token.address}, Changed: ${isTokenChanged}`);
 
       // Calculate max amount with gas reserve for native tokens
       let maxAmount: bigint;
@@ -97,7 +87,6 @@ export function OrderTokenAmount({
 
       // Update refs
       prevTokenRef.current = token.address;
-      initialBalanceSetRef.current = true;
     }
   }, [token.address, token.chainId, token.decimals, chainId, context, onChangeInput, rawBalance]);
 

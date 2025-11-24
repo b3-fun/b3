@@ -10,12 +10,14 @@ import {
   useAccountWallet,
 } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
+import { formatUnits } from "@b3dotfun/sdk/shared/utils/number";
 import invariant from "invariant";
 import { ArrowDown, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect, useMemo, useRef } from "react";
 
 import { useSetActiveWallet } from "thirdweb/react";
+import { B3_TOKEN } from "../../constants";
 import { PanelView, useAnyspendFlow } from "../hooks/useAnyspendFlow";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
 import { CryptoPaySection } from "./common/CryptoPaySection";
@@ -49,11 +51,14 @@ export interface AnySpendCustomExactInProps {
   destinationToken: components["schemas"]["Token"];
   destinationChainId: number;
   onSuccess?: (amount: string) => void;
+  onOpenCustomModal?: () => void;
   mainFooter?: React.ReactNode;
   onTokenSelect?: (token: components["schemas"]["Token"], event: { preventDefault: () => void }) => void;
   customUsdInputValues?: string[];
   preferEoa?: boolean;
-  customExactInConfig: CustomExactInConfig;
+  customExactInConfig?: CustomExactInConfig;
+  orderType?: "hype_duel" | "custom_exact_in";
+  minDestinationAmount?: number;
   header?: ({
     anyspendPrice,
     isLoadingAnyspendPrice,
@@ -83,14 +88,17 @@ function AnySpendCustomExactInInner({
   destinationToken,
   destinationChainId,
   onSuccess,
+  onOpenCustomModal,
   mainFooter,
   onTokenSelect,
   customUsdInputValues,
   preferEoa,
   customExactInConfig,
+  orderType = "custom_exact_in",
+  minDestinationAmount,
   header,
 }: AnySpendCustomExactInProps) {
-  const actionLabel = customExactInConfig.action ?? "Custom Execution";
+  const actionLabel = customExactInConfig?.action ?? "Custom Execution";
 
   const DESTINATION_TOKEN_DETAILS = {
     SYMBOL: destinationToken.symbol ?? "TOKEN",
@@ -115,6 +123,7 @@ function AnySpendCustomExactInInner({
     isSrcInputDirty,
     setIsSrcInputDirty,
     selectedCryptoPaymentMethod,
+    effectiveCryptoPaymentMethod,
     setSelectedCryptoPaymentMethod,
     selectedFiatPaymentMethod,
     setSelectedFiatPaymentMethod,
@@ -146,7 +155,7 @@ function AnySpendCustomExactInInner({
     destinationTokenChainId: destinationChainId,
     slippage: SLIPPAGE_PERCENT,
     disableUrlParamManagement: true,
-    orderType: "custom_exact_in",
+    orderType,
   });
 
   const { connectedEOAWallet } = useAccountWallet();
@@ -167,6 +176,14 @@ function AnySpendCustomExactInInner({
   const expectedDstAmountRaw = anyspendQuote?.data?.currencyOut?.amount ?? "0";
 
   const buildCustomPayload = (_recipient: string | undefined) => {
+    if (!customExactInConfig) {
+      // For hype_duel or other simple order types
+      return {
+        expectedDstAmount: expectedDstAmountRaw,
+      };
+    }
+
+    // For custom_exact_in with custom config
     return {
       amount: expectedDstAmountRaw,
       expectedDstAmount: expectedDstAmountRaw,
@@ -183,6 +200,9 @@ function AnySpendCustomExactInInner({
 
   const btnInfo: { text: string; disable: boolean; error: boolean; loading: boolean } = useMemo(() => {
     if (activeInputAmountInWei === "0") return { text: "Enter an amount", disable: true, error: false, loading: false };
+    if (orderType === "hype_duel" && selectedSrcToken?.address?.toLowerCase() === B3_TOKEN.address.toLowerCase()) {
+      return { text: "Convert to HYPE using B3", disable: false, error: false, loading: false };
+    }
     if (isLoadingAnyspendQuote) return { text: "Loading quote...", disable: true, error: false, loading: true };
     if (isCreatingOrder || isCreatingOnrampOrder)
       return { text: "Creating order...", disable: true, error: false, loading: true };
@@ -190,18 +210,42 @@ function AnySpendCustomExactInInner({
     if (!anyspendQuote || !anyspendQuote.success)
       return { text: "Get quote error", disable: true, error: true, loading: false };
 
+    // Check minimum destination amount if specified
+    // Check minimum destination amount if specified
+    if (
+      minDestinationAmount &&
+      anyspendQuote.data?.currencyOut?.amount &&
+      anyspendQuote.data.currencyOut.currency &&
+      anyspendQuote.data.currencyOut.currency.decimals != null
+    ) {
+      const rawAmountInWei = BigInt(anyspendQuote.data.currencyOut.amount);
+      const decimals = anyspendQuote.data.currencyOut.currency.decimals;
+      const actualAmount = parseFloat(formatUnits(rawAmountInWei.toString(), decimals));
+
+      if (actualAmount < minDestinationAmount) {
+        return {
+          text: `Minimum ${minDestinationAmount} ${DESTINATION_TOKEN_DETAILS.SYMBOL} deposit`,
+          disable: true,
+          error: true,
+          loading: false,
+        };
+      }
+    }
+
     if (paymentType === "crypto") {
-      if (selectedCryptoPaymentMethod === CryptoPaymentMethodType.NONE) {
+      if (effectiveCryptoPaymentMethod === CryptoPaymentMethodType.NONE) {
         return { text: "Choose payment method", disable: false, error: false, loading: false };
       }
       if (
         !hasEnoughBalance &&
         !isBalanceLoading &&
-        selectedCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET
+        effectiveCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET
       ) {
         return { text: "Insufficient balance", disable: true, error: true, loading: false };
       }
-      return { text: `Execute ${actionLabel}`, disable: false, error: false, loading: false };
+      // Use different text based on order type
+      const buttonText = orderType === "hype_duel" ? "Continue to deposit" : `Execute ${actionLabel}`;
+      return { text: buttonText, disable: false, error: false, loading: false };
     }
 
     if (paymentType === "fiat") {
@@ -220,14 +264,22 @@ function AnySpendCustomExactInInner({
     selectedRecipientOrDefault,
     anyspendQuote,
     paymentType,
-    selectedCryptoPaymentMethod,
+    effectiveCryptoPaymentMethod,
     selectedFiatPaymentMethod,
     hasEnoughBalance,
     isBalanceLoading,
     actionLabel,
+    minDestinationAmount,
+    DESTINATION_TOKEN_DETAILS.SYMBOL,
+    orderType,
+    selectedSrcToken,
   ]);
 
   const onMainButtonClick = async () => {
+    if (orderType === "hype_duel" && selectedSrcToken?.address?.toLowerCase() === B3_TOKEN.address.toLowerCase()) {
+      onOpenCustomModal?.();
+      return;
+    }
     if (btnInfo.disable) return;
 
     if (!selectedRecipientOrDefault) {
@@ -236,7 +288,7 @@ function AnySpendCustomExactInInner({
     }
 
     if (paymentType === "crypto") {
-      if (selectedCryptoPaymentMethod === CryptoPaymentMethodType.NONE) {
+      if (effectiveCryptoPaymentMethod === CryptoPaymentMethodType.NONE) {
         setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD);
         return;
       }
@@ -277,7 +329,7 @@ function AnySpendCustomExactInInner({
               setSrcAmount={setSrcAmount}
               isSrcInputDirty={isSrcInputDirty}
               setIsSrcInputDirty={setIsSrcInputDirty}
-              selectedCryptoPaymentMethod={selectedCryptoPaymentMethod}
+              selectedCryptoPaymentMethod={effectiveCryptoPaymentMethod}
               onSelectCryptoPaymentMethod={() => setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD)}
               anyspendQuote={anyspendQuote}
               onTokenSelect={onTokenSelect}
@@ -330,7 +382,7 @@ function AnySpendCustomExactInInner({
             <CryptoReceiveSection
               isDepositMode={false}
               isBuyMode={true}
-              selectedRecipientAddress={selectedRecipientOrDefault}
+              effectiveRecipientAddress={selectedRecipientOrDefault}
               recipientName={recipientName || undefined}
               onSelectRecipient={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
               dstAmount={dstAmount}
@@ -390,7 +442,7 @@ function AnySpendCustomExactInInner({
 
       createOrder({
         recipientAddress: selectedRecipientOrDefault,
-        orderType: "custom_exact_in",
+        orderType,
         srcChain: selectedSrcChainId,
         dstChain: selectedDstChainId,
         srcToken: selectedSrcToken,
@@ -441,7 +493,7 @@ function AnySpendCustomExactInInner({
 
       createOnrampOrder({
         recipientAddress: selectedRecipientOrDefault,
-        orderType: "custom_exact_in",
+        orderType,
         dstChain: selectedDstChainId,
         dstToken: selectedDstToken,
         srcFiatAmount: srcAmount,
@@ -472,8 +524,8 @@ function AnySpendCustomExactInInner({
             relayTxs={oat.data.relayTxs}
             executeTx={oat.data.executeTx}
             refundTxs={oat.data.refundTxs}
-            cryptoPaymentMethod={paymentType === "fiat" ? CryptoPaymentMethodType.NONE : selectedCryptoPaymentMethod}
-            selectedCryptoPaymentMethod={selectedCryptoPaymentMethod}
+            cryptoPaymentMethod={paymentType === "fiat" ? CryptoPaymentMethodType.NONE : effectiveCryptoPaymentMethod}
+            selectedCryptoPaymentMethod={effectiveCryptoPaymentMethod}
             onPaymentMethodChange={setSelectedCryptoPaymentMethod}
             onBack={() => {
               setOrderId(undefined);
