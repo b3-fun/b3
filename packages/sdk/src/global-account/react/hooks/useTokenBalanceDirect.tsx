@@ -17,6 +17,7 @@ export interface TokenBalanceResult {
   rawBalance: bigint | null;
   formattedBalance: string;
   isLoading: boolean;
+  refetch: () => void;
 }
 
 export function useTokenBalanceDirect({ token, address }: UseTokenBalanceProps): TokenBalanceResult {
@@ -80,5 +81,6 @@ export function useTokenBalanceDirect({ token, address }: UseTokenBalanceProps):
     rawBalance: tokenBalance?.raw || BigInt(0),
     formattedBalance: tokenBalance?.formatted || "0",
     isLoading: isActuallyLoading,
+    refetch,
   };
 }

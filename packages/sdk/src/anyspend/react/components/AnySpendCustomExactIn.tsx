@@ -10,6 +10,7 @@ import { motion } from "motion/react";
 import { useEffect, useMemo, useRef } from "react";
 import { toast } from "sonner";
 import { useSetActiveWallet } from "thirdweb/react";
+import { B3_TOKEN } from "../../constants";
 import { PanelView, useAnyspendFlow } from "../hooks/useAnyspendFlow";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
 import { CryptoPaySection } from "./common/CryptoPaySection";
@@ -43,6 +44,7 @@ export interface AnySpendCustomExactInProps {
   destinationToken: components["schemas"]["Token"];
   destinationChainId: number;
   onSuccess?: (amount: string) => void;
+  onOpenCustomModal?: () => void;
   mainFooter?: React.ReactNode;
   onTokenSelect?: (token: components["schemas"]["Token"], event: { preventDefault: () => void }) => void;
   customUsdInputValues?: string[];
@@ -79,6 +81,7 @@ function AnySpendCustomExactInInner({
   destinationToken,
   destinationChainId,
   onSuccess,
+  onOpenCustomModal,
   mainFooter,
   onTokenSelect,
   customUsdInputValues,
@@ -190,6 +193,9 @@ function AnySpendCustomExactInInner({
 
   const btnInfo: { text: string; disable: boolean; error: boolean; loading: boolean } = useMemo(() => {
     if (activeInputAmountInWei === "0") return { text: "Enter an amount", disable: true, error: false, loading: false };
+    if (orderType === "hype_duel" && selectedSrcToken?.address?.toLowerCase() === B3_TOKEN.address.toLowerCase()) {
+      return { text: "Convert to HYPE using B3", disable: false, error: false, loading: false };
+    }
     if (isLoadingAnyspendQuote) return { text: "Loading quote...", disable: true, error: false, loading: true };
     if (isCreatingOrder || isCreatingOnrampOrder)
       return { text: "Creating order...", disable: true, error: false, loading: true };
@@ -259,9 +265,14 @@ function AnySpendCustomExactInInner({
     minDestinationAmount,
     DESTINATION_TOKEN_DETAILS.SYMBOL,
     orderType,
+    selectedSrcToken,
   ]);
 
   const onMainButtonClick = async () => {
+    if (orderType === "hype_duel" && selectedSrcToken?.address?.toLowerCase() === B3_TOKEN.address.toLowerCase()) {
+      onOpenCustomModal?.();
+      return;
+    }
     if (btnInfo.disable) return;
 
     if (!selectedRecipientOrDefault) {
