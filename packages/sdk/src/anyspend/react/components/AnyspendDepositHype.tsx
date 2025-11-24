@@ -16,6 +16,7 @@ export interface AnySpendDepositHypeProps {
   sourceTokenAddress?: string;
   sourceTokenChainId?: number;
   onSuccess?: () => void;
+  onOpenCustomModal?: () => void;
   mainFooter?: React.ReactNode;
   /**
    * Called when a token is selected. Call event.preventDefault() to prevent default token selection behavior.
@@ -34,6 +35,7 @@ export function AnySpendDepositHype({
   sourceTokenAddress,
   sourceTokenChainId,
   onSuccess,
+  onOpenCustomModal,
   mainFooter,
   onTokenSelect,
   customUsdInputValues,
@@ -75,6 +77,7 @@ export function AnySpendDepositHype({
       minDestinationAmount={10}
       header={header}
       onSuccess={onSuccess}
+      onOpenCustomModal={onOpenCustomModal}
       mainFooter={mainFooter}
       onTokenSelect={onTokenSelect}
       customUsdInputValues={customUsdInputValues}
