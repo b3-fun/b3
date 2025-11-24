@@ -1,6 +1,7 @@
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { useState } from "react";
 import { notificationsAPI } from "../../../utils/notificationsAPI";
+import { useB3 } from "../../B3Provider/useB3";
 import { toast } from "../../Toast/toastApi";
 import { NotificationChannel } from "../NotificationChannel";
 
@@ -30,9 +31,12 @@ export const EmailChannel = ({
   onConnectionChange,
   onToggle,
 }: EmailChannelProps) => {
+  const { partnerId } = useB3();
+
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [showInput, setShowInput] = useState(false);
 
   // Detect if we're disconnecting by comparing real vs optimistic state
   const isDisconnecting = isConnected && !isOptimisticallyConnected;
@@ -50,9 +54,10 @@ export const EmailChannel = ({
       setEmailError(null);
 
       await notificationsAPI.connectEmail(userId, email, jwtToken);
-      await notificationsAPI.ensureNotificationSettings(userId, "test-app", "test", jwtToken);
+      await notificationsAPI.ensureNotificationSettings(userId, partnerId, "general", jwtToken);
 
       setEmail("");
+      setShowInput(false);
       toast.success("Email connected successfully!");
       onConnectionChange();
     } catch (err: any) {
@@ -64,6 +69,9 @@ export const EmailChannel = ({
   };
 
   const handleToggle = () => {
+    if (isConnected) {
+      setShowInput(false);
+    }
     onToggle(isConnected); // Pass current state - parent will handle disconnect if true
   };
 
@@ -80,7 +88,24 @@ export const EmailChannel = ({
     </svg>
   );
 
-  const inputSection = (
+  const addButtonSection = (
+    <button onClick={() => setShowInput(true)} className="mt-1 flex items-center gap-1">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path
+          d="M8 3.33333V12.6667M3.33333 8H12.6667"
+          stroke="#0c68e9"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+      <span className="font-['Inter',sans-serif] text-[11px] font-semibold leading-[16px] text-[#0b57c2]">
+        Add Email
+      </span>
+    </button>
+  );
+
+  const inputSection = showInput ? (
     <div className="mt-1 space-y-2">
       <div>
         <input
@@ -125,7 +150,7 @@ export const EmailChannel = ({
         </span>
       </button>
     </div>
-  );
+  ) : null;
 
   return (
     <NotificationChannel
@@ -136,6 +161,7 @@ export const EmailChannel = ({
       isDisconnecting={isDisconnecting}
       connectedInfo={emailChannel?.channel_identifier}
       inputSection={inputSection}
+      addButtonSection={addButtonSection}
       onToggle={handleToggle}
     />
   );

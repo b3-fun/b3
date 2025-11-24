@@ -9,6 +9,7 @@ interface NotificationChannelProps {
   isDisconnecting: boolean;
   connectedInfo?: ReactNode;
   inputSection?: ReactNode;
+  addButtonSection?: ReactNode;
   iconClassName?: string;
   onToggle: () => void;
   showBorder?: boolean;
@@ -22,6 +23,7 @@ export const NotificationChannel = ({
   isDisconnecting,
   connectedInfo,
   inputSection,
+  addButtonSection,
   iconClassName,
   onToggle,
   showBorder = true,
@@ -51,8 +53,10 @@ export const NotificationChannel = ({
               {connectedInfo}
             </p>
           </div>
-        ) : (
+        ) : inputSection ? (
           inputSection
+        ) : (
+          addButtonSection
         )}
       </div>
       <ToggleSwitch enabled={isConnected} onChange={onToggle} />

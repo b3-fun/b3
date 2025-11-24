@@ -1,6 +1,7 @@
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { useState } from "react";
 import { notificationsAPI } from "../../../utils/notificationsAPI";
+import { useB3 } from "../../B3Provider/useB3";
 import { toast } from "../../Toast/toastApi";
 import { NotificationChannel } from "../NotificationChannel";
 
@@ -25,8 +26,11 @@ export const TelegramChannel = ({
   onConnectionChange,
   onToggle,
 }: TelegramChannelProps) => {
+  const { partnerId } = useB3();
+
   const [isConnecting, setIsConnecting] = useState(false);
   const [status, setStatus] = useState<"idle" | "pending" | "connected">("idle");
+  const [showInput, setShowInput] = useState(false);
 
   // Detect if we're disconnecting
   const isDisconnecting = isConnected && !isOptimisticallyConnected;
@@ -47,7 +51,8 @@ export const TelegramChannel = ({
           if (connected) {
             clearInterval(interval);
             setStatus("connected");
-            await notificationsAPI.ensureNotificationSettings(userId, "test-app", "test", jwtToken);
+            setShowInput(false);
+            await notificationsAPI.ensureNotificationSettings(userId, partnerId, "general", jwtToken);
             toast.success("Telegram connected successfully!");
             onConnectionChange();
           }
@@ -74,6 +79,7 @@ export const TelegramChannel = ({
   const handleToggle = () => {
     if (isConnected) {
       setStatus("idle");
+      setShowInput(false);
       onToggle(true);
     } else {
       handleConnect();

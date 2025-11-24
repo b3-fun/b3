@@ -1,6 +1,7 @@
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { useState } from "react";
 import { notificationsAPI } from "../../../utils/notificationsAPI";
+import { useB3 } from "../../B3Provider/useB3";
 import { toast } from "../../Toast/toastApi";
 import { NotificationChannel } from "../NotificationChannel";
 
@@ -25,6 +26,8 @@ export const DiscordChannel = ({
   onConnectionChange,
   onToggle,
 }: DiscordChannelProps) => {
+  const { partnerId } = useB3();
+
   const [discordId, setDiscordId] = useState("");
   const [isConnecting, setIsConnecting] = useState(false);
 
@@ -37,7 +40,7 @@ export const DiscordChannel = ({
     try {
       setIsConnecting(true);
       await notificationsAPI.connectDiscord(userId, discordId, jwtToken);
-      await notificationsAPI.ensureNotificationSettings(userId, "test-app", "test", jwtToken);
+      await notificationsAPI.ensureNotificationSettings(userId, partnerId, "general", jwtToken);
 
       setDiscordId("");
       toast.success("Discord connected successfully!");

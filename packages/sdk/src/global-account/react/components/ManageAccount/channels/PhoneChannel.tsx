@@ -1,6 +1,7 @@
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { useState } from "react";
 import { notificationsAPI } from "../../../utils/notificationsAPI";
+import { useB3 } from "../../B3Provider/useB3";
 import { toast } from "../../Toast/toastApi";
 import { NotificationChannel } from "../NotificationChannel";
 
@@ -31,9 +32,12 @@ export const PhoneChannel = ({
   onConnectionChange,
   onToggle,
 }: PhoneChannelProps) => {
+  const { partnerId } = useB3();
+
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isConnectingSMS, setIsConnectingSMS] = useState(false);
   const [isConnectingWhatsApp, setIsConnectingWhatsApp] = useState(false);
+  const [showInput, setShowInput] = useState(false);
 
   // Detect if we're disconnecting
   const isDisconnecting =
@@ -45,9 +49,10 @@ export const PhoneChannel = ({
     try {
       setIsConnectingSMS(true);
       await notificationsAPI.connectSMS(userId, phoneNumber, jwtToken);
-      await notificationsAPI.ensureNotificationSettings(userId, "test-app", "test", jwtToken);
+      await notificationsAPI.ensureNotificationSettings(userId, partnerId, "general", jwtToken);
 
       setPhoneNumber("");
+      setShowInput(false);
       toast.success("SMS connected successfully!");
       onConnectionChange();
     } catch (err: any) {
@@ -64,9 +69,10 @@ export const PhoneChannel = ({
     try {
       setIsConnectingWhatsApp(true);
       await notificationsAPI.connectWhatsApp(userId, phoneNumber, jwtToken);
-      await notificationsAPI.ensureNotificationSettings(userId, "test-app", "test", jwtToken);
+      await notificationsAPI.ensureNotificationSettings(userId, partnerId, "general", jwtToken);
 
       setPhoneNumber("");
+      setShowInput(false);
       toast.success("WhatsApp connected successfully!");
       onConnectionChange();
     } catch (err: any) {
@@ -78,6 +84,9 @@ export const PhoneChannel = ({
   };
 
   const handleToggle = () => {
+    if (isSMSConnected || isWhatsAppConnected) {
+      setShowInput(false);
+    }
     if (isSMSConnected) onToggle("sms", true);
     if (isWhatsAppConnected) onToggle("whatsapp", true);
   };
@@ -93,8 +102,42 @@ export const PhoneChannel = ({
     </svg>
   );
 
-  const inputSection = (
-    <div className="space-y-2">
+  const addButtonSection = (
+    <div className="mt-1 flex gap-2">
+      <button onClick={() => setShowInput(true)} className="flex items-center gap-1">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path
+            d="M8 3.33333V12.6667M3.33333 8H12.6667"
+            stroke="#0c68e9"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        <span className="font-['Inter',sans-serif] text-[11px] font-semibold leading-[16px] text-[#0b57c2]">
+          Add SMS
+        </span>
+      </button>
+      <span className="text-[11px] text-gray-400">|</span>
+      <button onClick={() => setShowInput(true)} className="flex items-center gap-1">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path
+            d="M8 3.33333V12.6667M3.33333 8H12.6667"
+            stroke="#0c68e9"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        <span className="font-['Inter',sans-serif] text-[11px] font-semibold leading-[16px] text-[#0b57c2]">
+          Add WhatsApp
+        </span>
+      </button>
+    </div>
+  );
+
+  const inputSection = showInput ? (
+    <div className="mt-1 space-y-2">
       <input
         type="tel"
         value={phoneNumber}
@@ -147,7 +190,7 @@ export const PhoneChannel = ({
         </button>
       </div>
     </div>
-  );
+  ) : null;
 
   const connectedInfo = (
     <>
@@ -177,6 +220,7 @@ export const PhoneChannel = ({
         ) : undefined
       }
       inputSection={inputSection}
+      addButtonSection={addButtonSection}
       onToggle={handleToggle}
     />
   );
