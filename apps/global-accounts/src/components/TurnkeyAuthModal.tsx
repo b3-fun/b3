@@ -4,6 +4,26 @@ import { useTurnkeyAuth } from "../hooks/useTurnkeyAuth";
 
 type ModalStep = "email" | "otp" | "success";
 
+interface TurnkeyWalletAccount {
+  walletAccountId: string;
+  organizationId: string;
+  walletId: string;
+  curve: string;
+  pathFormat: string;
+  path: string;
+  addressFormat: string;
+  address: string;
+  createdAt?: { seconds: string; nanos: number | string };
+  updatedAt?: { seconds: string; nanos: number | string };
+  publicKey?: string;
+}
+
+interface TurnkeySubOrg {
+  subOrgId: string;
+  accounts: TurnkeyWalletAccount[];
+  hasDelegatedUser?: boolean;
+}
+
 interface TurnkeyAuthModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -16,7 +36,7 @@ export function TurnkeyAuthModal({ isOpen, onClose, onSuccess }: TurnkeyAuthModa
   const [otpCode, setOtpCode] = useState("");
   const [otpId, setOtpId] = useState("");
   const [subOrgId, setSubOrgId] = useState("");
-  const [turnkeyAddresses, setTurnkeyAddresses] = useState<string[]>([]);
+  const [turnkeySubOrgs, setTurnkeySubOrgs] = useState<TurnkeySubOrg[]>([]);
 
   const { initiateLogin, verifyOtp, isLoading, error, clearError } = useTurnkeyAuth();
 
@@ -27,7 +47,7 @@ export function TurnkeyAuthModal({ isOpen, onClose, onSuccess }: TurnkeyAuthModa
       const result = await initiateLogin(email);
       setOtpId(result.otpId);
       setSubOrgId(result.subOrgId);
-      setTurnkeyAddresses(result.turnkeyAddresses);
+      setTurnkeySubOrgs(result.turnkeySubOrgs);
       setStep("otp");
     } catch (err) {
       // Error is handled by the hook
@@ -43,8 +63,10 @@ export function TurnkeyAuthModal({ isOpen, onClose, onSuccess }: TurnkeyAuthModa
       setStep("success");
 
       // Auto-close after success and notify parent
+      // Extract all addresses from turnkeySubOrgs for backward compatibility
+      const allAddresses = turnkeySubOrgs.flatMap(subOrg => subOrg.accounts.map(account => account.address));
       setTimeout(() => {
-        onSuccess(result.user, turnkeyAddresses);
+        onSuccess(result.user, allAddresses);
         handleClose();
       }, 1500);
     } catch (err) {
@@ -60,7 +82,7 @@ export function TurnkeyAuthModal({ isOpen, onClose, onSuccess }: TurnkeyAuthModa
     setOtpCode("");
     setOtpId("");
     setSubOrgId("");
-    setTurnkeyAddresses([]);
+    setTurnkeySubOrgs([]);
     clearError();
     onClose();
   };

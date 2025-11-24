@@ -3,13 +3,19 @@ import { useAuthStore, useB3 } from "@b3dotfun/sdk/global-account/react";
 import { useEffect, useState } from "react";
 import { TurnkeyAuthModal } from "./TurnkeyAuthModal";
 
+interface TurnkeySubOrg {
+  subOrgId: string;
+  accounts: Array<{ address: string; [key: string]: unknown }>;
+  hasDelegatedUser?: boolean;
+}
+
 export function TurnkeyAuthSection() {
   const { user, setUser } = useB3();
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
   const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
   const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [turnkeyWalletAddresses, setTurnkeyWalletAddresses] = useState<string[]>([]);
+  const [turnkeySubOrgs, setTurnkeySubOrgs] = useState<TurnkeySubOrg[]>([]);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   // Auto-reAuthenticate on mount (restore session from JWT in cookies)
@@ -31,10 +37,9 @@ export function TurnkeyAuthSection() {
 
         setIsAuthenticated(true);
 
-        // Extract Turnkey wallet addresses from user if available
-        if (authResult.user?.turnkeyAccounts) {
-          const addresses = authResult.user.turnkeyAccounts.map((acc: any) => acc.address);
-          setTurnkeyWalletAddresses(addresses);
+        // Store Turnkey sub-orgs with delegated access info
+        if (authResult.user?.turnkeySubOrgs) {
+          setTurnkeySubOrgs(authResult.user.turnkeySubOrgs as TurnkeySubOrg[]);
         }
       } catch (error) {
         console.log("[TurnkeyAuthSection] No existing session found");
@@ -52,15 +57,18 @@ export function TurnkeyAuthSection() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setIsAuthenticated, setIsAuthenticating]);
 
-  const handleLoginSuccess = (authenticatedUser: any, walletAddresses: string[]) => {
+  const handleLoginSuccess = (authenticatedUser: any, _walletAddresses: string[]) => {
     console.log("Turnkey login successful!", authenticatedUser);
 
     // IMPORTANT: Update SDK's user state
     if (authenticatedUser) {
       setUser(authenticatedUser);
+      // Extract turnkeySubOrgs from user object
+      if (authenticatedUser.turnkeySubOrgs) {
+        setTurnkeySubOrgs(authenticatedUser.turnkeySubOrgs as TurnkeySubOrg[]);
+      }
     }
 
-    setTurnkeyWalletAddresses(walletAddresses);
     setIsModalOpen(false);
   };
 
@@ -69,7 +77,7 @@ export function TurnkeyAuthSection() {
       await app.logout();
       setIsAuthenticated(false);
       setUser(undefined); // Clear SDK user state
-      setTurnkeyWalletAddresses([]);
+      setTurnkeySubOrgs([]);
       console.log("Logged out successfully");
     } catch (error) {
       console.error("Failed to logout:", error);
@@ -116,12 +124,39 @@ export function TurnkeyAuthSection() {
                   <span className="text-gray-900">{user.email}</span>
                 </div>
               )}
-              {turnkeyWalletAddresses.length > 0 && (
-                <div className="flex items-start gap-2">
-                  <span className="font-medium text-gray-700">Turnkey Wallet:</span>
-                  <code className="flex-1 break-all rounded bg-white px-2 py-1 font-mono text-xs text-gray-900">
-                    {turnkeyWalletAddresses.join(", ")}
-                  </code>
+              {turnkeySubOrgs.length > 0 && (
+                <div className="space-y-3">
+                  <span className="font-medium text-gray-700">Turnkey Wallets:</span>
+                  <div className="space-y-2">
+                    {turnkeySubOrgs.map((subOrg, index) => (
+                      <div key={subOrg.subOrgId || index} className="rounded bg-white p-3">
+                        <div className="mb-2 flex items-center justify-between">
+                          <span className="text-xs font-medium text-gray-600">Sub-Org {index + 1}</span>
+                          {subOrg.hasDelegatedUser !== undefined && (
+                            <span
+                              className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                                subOrg.hasDelegatedUser
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-yellow-100 text-yellow-800"
+                              }`}
+                            >
+                              {subOrg.hasDelegatedUser ? "✅ Delegated" : "⚠️ No Delegation"}
+                            </span>
+                          )}
+                        </div>
+                        <div className="space-y-1">
+                          {subOrg.accounts.map((account, accIndex) => (
+                            <code
+                              key={account.address || accIndex}
+                              className="block break-all rounded bg-gray-50 px-2 py-1 font-mono text-xs text-gray-900"
+                            >
+                              {account.address}
+                            </code>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
               {user?.smartAccountAddress && (

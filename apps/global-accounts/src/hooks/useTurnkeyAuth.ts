@@ -2,11 +2,31 @@ import app from "@b3dotfun/sdk/global-account/app";
 import { useAuthStore } from "@b3dotfun/sdk/global-account/react";
 import { useState } from "react";
 
+interface TurnkeyWalletAccount {
+  walletAccountId: string;
+  organizationId: string;
+  walletId: string;
+  curve: string;
+  pathFormat: string;
+  path: string;
+  addressFormat: string;
+  address: string;
+  createdAt?: { seconds: string; nanos: number | string };
+  updatedAt?: { seconds: string; nanos: number | string };
+  publicKey?: string;
+}
+
+interface TurnkeySubOrg {
+  subOrgId: string;
+  accounts: TurnkeyWalletAccount[];
+  hasDelegatedUser?: boolean;
+}
+
 interface TurnkeyInitResponse {
   otpId: string;
   subOrgId: string;
-  turnkeyAddresses: string[];
-  requiresOtp: boolean;
+  turnkeySubOrgs: TurnkeySubOrg[];
+  requiresOtp: true;
   isNewUser: boolean;
 }
 
@@ -50,7 +70,7 @@ export function useTurnkeyAuth(): UseTurnkeyAuthReturn {
       console.log(`[useTurnkeyAuth] Initiating login for: ${email}`);
 
       // Call FeathersJS service to initialize OTP
-      const data: TurnkeyInitResponse = await app.service("turnkey-auth").init({ email });
+      const data = (await app.service("turnkey-auth").init({ email })) as TurnkeyInitResponse;
 
       console.log(`[useTurnkeyAuth] OTP initialized successfully. OtpId: ${data.otpId}`);
 
