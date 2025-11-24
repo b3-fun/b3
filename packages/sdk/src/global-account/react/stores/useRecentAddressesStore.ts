@@ -52,4 +52,3 @@ export const useRecentAddressesStore = create<RecentAddressesStore>()(
     },
   ),
 );
-

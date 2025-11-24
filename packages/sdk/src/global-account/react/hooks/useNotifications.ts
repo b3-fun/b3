@@ -35,7 +35,7 @@ export interface UseNotificationsReturn {
 
 /**
  * Hook for managing user notification settings and channels
- * 
+ *
  * @example
  * ```typescript
  * const {
@@ -45,10 +45,10 @@ export interface UseNotificationsReturn {
  *   connectEmail,
  *   sendTestNotification
  * } = useNotifications();
- * 
+ *
  * // Connect email
  * await connectEmail('user@example.com');
- * 
+ *
  * // Send test
  * await sendTestNotification();
  * ```
@@ -97,7 +97,7 @@ export function useNotifications(): UseNotificationsReturn {
 
   const createDefaultNotificationSettings = useCallback(async () => {
     if (!userId || !jwtToken) return;
-    
+
     try {
       // Create settings for test notifications only
       await notificationsAPI.ensureNotificationSettings(userId, "test-app", "test", jwtToken);
@@ -217,4 +217,3 @@ export function useNotifications(): UseNotificationsReturn {
     telegramStatus,
   };
 }
-

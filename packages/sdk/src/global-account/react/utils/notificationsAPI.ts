@@ -159,7 +159,7 @@ export const notificationsAPI = {
     // First, get user data to find the channel ID
     const userData = await this.getUser(userId, jwtToken);
     const channel = userData.channels.find((c: NotificationChannel) => c.channel_type === channelType);
-    
+
     if (!channel) {
       throw new Error(`Channel ${channelType} not found`);
     }
