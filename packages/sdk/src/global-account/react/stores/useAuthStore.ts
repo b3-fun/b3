@@ -29,6 +29,8 @@ interface AuthState {
   setIsAuthenticating: (isAuthenticating: boolean) => void;
   hasStartedConnecting: boolean;
   setHasStartedConnecting: (hasStartedConnecting: boolean) => void;
+  justCompletedLogin: boolean;
+  setJustCompletedLogin: (justCompletedLogin: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>(set => ({
@@ -73,4 +75,6 @@ export const useAuthStore = create<AuthState>(set => ({
   setIsAuthenticating: isAuthenticating => set({ isAuthenticating: isAuthenticating }),
   hasStartedConnecting: false,
   setHasStartedConnecting: hasStartedConnecting => set({ hasStartedConnecting }),
+  justCompletedLogin: false,
+  setJustCompletedLogin: justCompletedLogin => set({ justCompletedLogin }),
 }));

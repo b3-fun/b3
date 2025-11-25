@@ -25,6 +25,7 @@ export interface B3ContextType {
   clientType: ClientType;
   partnerId: string;
   createClientReferenceId?: (params: CreateOrderParams | CreateOnrampOrderParams) => Promise<string>;
+  enableTurnkey?: boolean;
 }
 
 /**
@@ -45,4 +46,5 @@ export const B3Context = createContext<B3ContextType>({
   clientType: "rest",
   partnerId: "",
   createClientReferenceId: undefined,
+  enableTurnkey: false,
 });

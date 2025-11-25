@@ -45,5 +45,6 @@ export { useTokenFromUrl } from "./useTokenFromUrl";
 export { useTokenPrice } from "./useTokenPrice";
 export { useTokenPriceWithFallback } from "./useTokenPriceWithFallback";
 export { useTokensFromAddress } from "./useTokensFromAddress";
+export { useTurnkeyAuth } from "./useTurnkeyAuth";
 export { useURLParams } from "./useURLParams";
 export { useUnifiedChainSwitchAndExecute } from "./useUnifiedChainSwitchAndExecute";

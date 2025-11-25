@@ -25,6 +25,7 @@ import { ProfileEditor } from "./ProfileEditor/ProfileEditor";
 import { ManageAccount } from "./ManageAccount/ManageAccount";
 import { RequestPermissions } from "./RequestPermissions/RequestPermissions";
 import { SignInWithB3Flow } from "./SignInWithB3/SignInWithB3Flow";
+import { TurnkeyAuthModal } from "./TurnkeyAuthModal";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "./ui/dialog";
 import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "./ui/drawer";
 import { AnySpendDepositUpside } from "@b3dotfun/sdk/anyspend/react/components/AnySpendDepositUpside";
@@ -63,6 +64,7 @@ export function B3DynamicModal() {
     "anySpendBuySpin",
     "anySpendOrderHistory",
     "signInWithB3",
+    "turnkeyAuth",
     "anySpendSignatureMint",
     "anySpendBondKit",
     "linkAccount",
@@ -85,7 +87,9 @@ export function B3DynamicModal() {
 
   // Check if current content type is in freestyle types
   const isFreestyleType = freestyleTypes.includes(contentType?.type as string);
-  const hideCloseButton = isFreestyleType;
+  // Determine if modal should be closable - defaults to true unless explicitly set to false
+  const isClosable = contentType?.closable !== false;
+  const hideCloseButton = isFreestyleType || !isClosable;
 
   // Build content class using cn utility
   // eslint-disable-next-line tailwindcss/no-custom-classname
@@ -95,6 +99,7 @@ export function B3DynamicModal() {
     fullWidthTypes.includes(contentType?.type as string) && "w-full",
     isFreestyleType && "b3-modal-freestyle",
     contentType?.type === "signInWithB3" && "p-0",
+    contentType?.type === "turnkeyAuth" && "p-0",
     contentType?.type === "anySpend" && "md:px-6",
     // Add specific styles for avatar editor
     // contentType?.type === "avatarEditor_disabled" &&
@@ -108,6 +113,8 @@ export function B3DynamicModal() {
     switch (contentType.type) {
       case "signInWithB3":
         return <SignInWithB3Flow {...contentType} />;
+      case "turnkeyAuth":
+        return <TurnkeyAuthModal {...contentType} />;
       case "requestPermissions":
         return <RequestPermissions {...contentType} />;
       case "manageAccount":
@@ -161,8 +168,17 @@ export function B3DynamicModal() {
   const ModalTitle = isMobile ? DrawerTitle : DialogTitle;
   const ModalDescription = isMobile ? DrawerDescription : DialogDescription;
 
+  // Create a wrapper for onOpenChange that respects closable property
+  const handleOpenChange = (open: boolean) => {
+    // Only allow closing if the modal is closable
+    if (!open && !isClosable) {
+      return;
+    }
+    setB3ModalOpen(open);
+  };
+
   return (
-    <ModalComponent open={isOpen} onOpenChange={setB3ModalOpen}>
+    <ModalComponent open={isOpen} onOpenChange={handleOpenChange}>
       <ModalContent
         className={cn(
           contentClass,
@@ -174,6 +190,9 @@ export function B3DynamicModal() {
             : "mx-auto w-full max-w-md sm:max-w-lg",
         )}
         hideCloseButton={hideCloseButton}
+        onEscapeKeyDown={!isClosable ? (e) => e.preventDefault() : undefined}
+        onPointerDownOutside={!isClosable ? (e) => e.preventDefault() : undefined}
+        onInteractOutside={!isClosable ? (e) => e.preventDefault() : undefined}
       >
         <ModalTitle className="sr-only hidden">{contentType?.type || "Modal"}</ModalTitle>
         <ModalDescription className="sr-only hidden">{contentType?.type || "Modal Body"}</ModalDescription>
