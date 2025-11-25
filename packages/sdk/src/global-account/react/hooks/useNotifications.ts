@@ -196,7 +196,7 @@ export function useNotifications(): UseNotificationsReturn {
       debug("Error sending test notification:", err);
       throw new Error("Failed to send test notification");
     }
-  }, [userId, jwtToken]);
+  }, [userId, jwtToken, partnerId]);
 
   const emailChannel = userData?.channels?.find(c => c.channel_type === "email");
   const telegramChannel = userData?.channels?.find(c => c.channel_type === "telegram");
