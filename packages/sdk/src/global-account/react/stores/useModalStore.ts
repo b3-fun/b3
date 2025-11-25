@@ -406,6 +406,8 @@ export interface AnySpendDepositHypeProps extends BaseModalProps {
   mainFooter?: React.ReactNode;
   /** Callback function called when the deposit is successful */
   onSuccess?: (amount?: string) => void;
+  /** Callback function trigger open custom modal */
+  onOpenCustomModal?: () => void;
   /** Custom USD input values for quick amount buttons in fiat onramp */
   customUsdInputValues?: string[];
   /** prefer eoa wallet */
