@@ -53,6 +53,7 @@ export function B3Provider({
   environment,
   automaticallySetFirstEoa,
   simDuneApiKey,
+  // deprecated since v0.0.87
   toaster: _toaster,
   clientType = "rest",
   rpcUrls,

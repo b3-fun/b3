@@ -136,33 +136,41 @@ export function useNotifications(): UseNotificationsReturn {
       window.open(deepLink, "_blank");
       setTelegramStatus("pending");
 
-      // Poll for connection
-      const interval = setInterval(async () => {
+      // Poll for connection using nested timeouts to avoid overlapping requests
+      const startTime = Date.now();
+      const maxDuration = 120000; // 2 minutes
+      let timeoutId: NodeJS.Timeout | null = null;
+
+      const pollStatus = async () => {
         try {
           const { connected } = await notificationsAPI.checkTelegramStatus(userId, jwtToken);
           if (connected) {
-            clearInterval(interval);
+            if (timeoutId) clearTimeout(timeoutId);
             setTelegramStatus("connected");
             await createDefaultNotificationSettings();
             await loadUserData();
+            return;
           }
         } catch (err) {
           debug("Error checking Telegram status:", err);
         }
-      }, 2000);
 
-      // Stop after 2 minutes
-      setTimeout(() => {
-        clearInterval(interval);
-        if (telegramStatus === "pending") {
+        // Check if we've exceeded max duration
+        if (Date.now() - startTime < maxDuration) {
+          // Schedule next check after previous one completes
+          timeoutId = setTimeout(pollStatus, 2000);
+        } else {
           setTelegramStatus("idle");
         }
-      }, 120000);
+      };
+
+      // Start polling
+      timeoutId = setTimeout(pollStatus, 2000);
     } catch (err: any) {
       debug("Error connecting Telegram:", err);
       throw new Error("Failed to connect Telegram");
     }
-  }, [userId, jwtToken, loadUserData, telegramStatus, createDefaultNotificationSettings]);
+  }, [userId, jwtToken, loadUserData, createDefaultNotificationSettings]);
 
   const disconnectChannel = useCallback(
     async (channelType: string) => {

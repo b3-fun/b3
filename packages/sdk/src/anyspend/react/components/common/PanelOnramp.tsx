@@ -128,7 +128,6 @@ export function PanelOnramp({
   const handleQuickAmount = (value: string) => {
     setSrcAmountOnRamp(value);
   };
-  console.log("srcAmountOnRamp :", srcAmountOnRamp.length);
 
   return (
     <div className="panel-onramp bg-as-surface-primary flex w-full flex-col">

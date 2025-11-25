@@ -48,7 +48,7 @@ export function Deposit() {
   const supportedChains = useMemo(() => Object.values(ALL_CHAINS), []);
 
   // The deposit address is the user's active wallet address
-  const depositAddress = address || "0x0000000000000000000000000000000000000000";
+  const depositAddress = address;
 
   const handleTokenSelect = (token: any) => {
     setSelectedChainId(token.chainId);
@@ -64,7 +64,7 @@ export function Deposit() {
 
   const handleCopyAddress = async () => {
     try {
-      await navigator.clipboard.writeText(depositAddress);
+      await navigator.clipboard.writeText(depositAddress || "");
       toast.success("Address copied to clipboard");
     } catch (error) {
       toast.error("Failed to copy address");
@@ -156,7 +156,7 @@ export function Deposit() {
             <div className="flex w-full items-center justify-center">
               <div className="w-full">
                 <div className="flex aspect-[144/146] w-full flex-col items-center justify-center overflow-hidden">
-                  <QRCodeSVG value={depositAddress} size={144} level="M" />
+                  <QRCodeSVG value={depositAddress || ""} size={144} level="M" />
                 </div>
               </div>
             </div>
