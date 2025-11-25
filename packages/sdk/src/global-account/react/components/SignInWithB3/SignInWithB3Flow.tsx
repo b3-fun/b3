@@ -143,8 +143,8 @@ export function SignInWithB3Flow({
 
   // Define handleTurnkeySuccess before the useEffect that uses it
   const handleTurnkeySuccess = useCallback(
-    async (user: any, walletAddresses: string[]) => {
-      debug("Turnkey authentication successful - setting completed flag", { user, walletAddresses });
+    async (user: any) => {
+      debug("Turnkey authentication successful - setting completed flag", { user });
 
       // Set completed flag FIRST before any async operations
       setTurnkeyAuthCompleted(true);

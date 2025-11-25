@@ -5,7 +5,7 @@ type ModalStep = "email" | "otp" | "success";
 
 interface TurnkeyAuthModalProps {
   onClose: () => void;
-  onSuccess: (_user: any, _walletAddresses: string[]) => void;
+  onSuccess: (_user: any) => void;
   initialEmail?: string;
   skipToOtp?: boolean;
 }
@@ -15,8 +15,6 @@ export function TurnkeyAuthModal({ onClose, onSuccess, initialEmail = "", skipTo
   const [email, setEmail] = useState(initialEmail);
   const [otpCode, setOtpCode] = useState("");
   const [otpId, setOtpId] = useState("");
-  const [subOrgId, setSubOrgId] = useState("");
-  const [turnkeyAddresses, setTurnkeyAddresses] = useState<string[]>([]);
   const autoSubmitTriggeredRef = useRef(false);
 
   const { initiateLogin, verifyOtp, isLoading, error, clearError } = useTurnkeyAuth();
@@ -36,8 +34,6 @@ export function TurnkeyAuthModal({ onClose, onSuccess, initialEmail = "", skipTo
       initiateLogin(email)
         .then(result => {
           setOtpId(result.otpId);
-          setSubOrgId(result.subOrgId);
-          setTurnkeyAddresses(result.turnkeyAddresses);
         })
         .catch(err => {
           console.error("Failed to initiate login:", err);
@@ -52,8 +48,6 @@ export function TurnkeyAuthModal({ onClose, onSuccess, initialEmail = "", skipTo
     try {
       const result = await initiateLogin(email);
       setOtpId(result.otpId);
-      setSubOrgId(result.subOrgId);
-      setTurnkeyAddresses(result.turnkeyAddresses);
       setStep("otp");
     } catch (err) {
       // Error is handled by the hook
@@ -70,7 +64,7 @@ export function TurnkeyAuthModal({ onClose, onSuccess, initialEmail = "", skipTo
 
       // Auto-close after success and notify parent
       setTimeout(() => {
-        onSuccess(result.user, turnkeyAddresses);
+        onSuccess(result.user);
         handleClose();
       }, 1500);
     } catch (err) {
@@ -85,8 +79,6 @@ export function TurnkeyAuthModal({ onClose, onSuccess, initialEmail = "", skipTo
     setEmail("");
     setOtpCode("");
     setOtpId("");
-    setSubOrgId("");
-    setTurnkeyAddresses([]);
     autoSubmitTriggeredRef.current = false;
     clearError();
     onClose();

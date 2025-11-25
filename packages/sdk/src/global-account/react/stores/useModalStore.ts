@@ -53,7 +53,7 @@ export interface TurnkeyAuthModalProps extends BaseModalProps {
   /** Modal type identifier */
   type: "turnkeyAuth";
   /** Callback function called when authentication is successful */
-  onSuccess: (_user: any, _walletAddresses: string[]) => void;
+  onSuccess: (_user: any) => void;
   /** Callback function called when modal is closed */
   onClose: () => void;
   /** Initial email to pre-fill */
