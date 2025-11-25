@@ -25,7 +25,6 @@ import { Account, Wallet } from "thirdweb/wallets";
 import { CreateConnectorFn, WagmiProvider } from "wagmi";
 import { ClientType, setClientType } from "../../../client-manager";
 import { StyleRoot } from "../StyleRoot";
-import { TurnkeyAuthModal } from "../TurnkeyAuthModal";
 import { LocalSDKProvider } from "./LocalSDKProvider";
 import { B3Context, B3ContextType } from "./types";
 
@@ -157,19 +156,13 @@ export function InnerProvider({
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
   const isConnected = useAuthStore(state => state.isConnected);
   const justCompletedLogin = useAuthStore(state => state.justCompletedLogin);
-  const setJustCompletedLogin = useAuthStore(state => state.setJustCompletedLogin);
   const setActiveWallet = useSetActiveWallet();
   const { user, setUser, refetchUser } = useAuthentication(partnerId);
-  const [isTurnkeyModalOpen, setIsTurnkeyModalOpen] = useState(false);
 
   debug("@@B3Provider:isConnected", isConnected);
   debug("@@wallets", wallets);
   debug("@@B3Provider:user", user);
   debug("@@B3Provider:justCompletedLogin", justCompletedLogin);
-
-  // Extract email from user object - check twProfiles first, then user.email
-  const userEmail =
-    user?.twProfiles?.find((profile: any) => profile.details?.email)?.details?.email || user?.email || undefined;
 
   // Use given accountOverride or activeAccount from thirdweb
   const effectiveAccount = isAuthenticated ? accountOverride || activeAccount : undefined;

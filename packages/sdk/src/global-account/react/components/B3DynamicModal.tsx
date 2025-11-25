@@ -190,9 +190,9 @@ export function B3DynamicModal() {
             : "mx-auto w-full max-w-md sm:max-w-lg",
         )}
         hideCloseButton={hideCloseButton}
-        onEscapeKeyDown={!isClosable ? (e) => e.preventDefault() : undefined}
-        onPointerDownOutside={!isClosable ? (e) => e.preventDefault() : undefined}
-        onInteractOutside={!isClosable ? (e) => e.preventDefault() : undefined}
+        onEscapeKeyDown={!isClosable ? e => e.preventDefault() : undefined}
+        onPointerDownOutside={!isClosable ? e => e.preventDefault() : undefined}
+        onInteractOutside={!isClosable ? e => e.preventDefault() : undefined}
       >
         <ModalTitle className="sr-only hidden">{contentType?.type || "Modal"}</ModalTitle>
         <ModalDescription className="sr-only hidden">{contentType?.type || "Modal Body"}</ModalDescription>

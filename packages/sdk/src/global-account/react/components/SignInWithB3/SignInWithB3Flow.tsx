@@ -92,6 +92,7 @@ export function SignInWithB3Flow({
     const hasExistingSigner = signers?.some(signer => signer.partner.id === partnerId);
 
     if (hasExistingSigner) {
+      // Path 1: User already has a signer for this partner
       setSessionKeyAdded(true);
       onSessionKeySuccess?.();
       if (closeAfterLogin) {
@@ -103,23 +104,29 @@ export function SignInWithB3Flow({
           partnerId,
         });
       }
-    } else if (source !== "requestPermissions") {
-      if (signersEnabled) setStep("permissions");
+    } else if (signersEnabled) {
+      // Path 2: No existing signer, but signers are enabled
+      if (source !== "requestPermissions") {
+        // Navigate to permissions step to request new signer
+        setStep("permissions");
+      } else {
+        // Already in request permissions flow, retry fetching signers
+        handleRefetchSigners();
+      }
     } else {
-      if (signersEnabled) handleRefetchSigners();
+      // Path 3: No existing signer and signers are not enabled
+      // Default handling for when no signer exists and signers are not enabled
+      if (closeAfterLogin) {
+        setB3ModalOpen(false);
+      } else {
+        // if not closed, default to manage account
+        setB3ModalContentType({
+          type: "manageAccount",
+          chain,
+          partnerId,
+        });
+      }
     }
-
-    // Default handling
-    if (closeAfterLogin) {
-      setB3ModalOpen(false);
-    }
-
-    // if not closed, always default to manage account
-    setB3ModalContentType({
-      type: "manageAccount",
-      chain,
-      partnerId,
-    });
   }, [
     signers,
     partnerId,

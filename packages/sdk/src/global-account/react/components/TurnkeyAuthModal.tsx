@@ -31,7 +31,6 @@ export function TurnkeyAuthModal({ onClose, onSuccess, initialEmail = "", skipTo
   // Auto-submit email form if skipToOtp is true - triggers on mount when skipToOtp=true
   useEffect(() => {
     if (skipToOtp && email && step === "otp" && !otpId && !isLoading && !autoSubmitTriggeredRef.current) {
-      console.log("[TurnkeyAuthModal] Auto-submitting email to get OTP", { email, skipToOtp });
       autoSubmitTriggeredRef.current = true;
       // Call initiateLogin directly to get OTP
       initiateLogin(email)
@@ -66,7 +65,7 @@ export function TurnkeyAuthModal({ onClose, onSuccess, initialEmail = "", skipTo
     e.preventDefault();
 
     try {
-      const result = await verifyOtp(otpId, otpCode, email, subOrgId);
+      const result = await verifyOtp(otpId, otpCode);
       setStep("success");
 
       // Auto-close after success and notify parent
@@ -137,7 +136,11 @@ export function TurnkeyAuthModal({ onClose, onSuccess, initialEmail = "", skipTo
               />
             </div>
 
-            {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-400">{error}</div>}
+            {error && (
+              <div className="rounded-md bg-red-50 p-3 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-400">
+                {error}
+              </div>
+            )}
 
             <button
               type="submit"
@@ -160,9 +163,7 @@ export function TurnkeyAuthModal({ onClose, onSuccess, initialEmail = "", skipTo
       {/* OTP Step */}
       {step === "otp" && (
         <>
-          <h2 className="mb-4 text-center text-2xl font-bold text-gray-900 dark:text-white">
-            2FA Security
-          </h2>
+          <h2 className="mb-4 text-center text-2xl font-bold text-gray-900 dark:text-white">2FA Security</h2>
           <div className="mb-6 space-y-3 text-center text-sm text-gray-600 dark:text-gray-400">
             <p>
               AnySpend uses a secure,
@@ -188,7 +189,11 @@ export function TurnkeyAuthModal({ onClose, onSuccess, initialEmail = "", skipTo
               />
             </div>
 
-            {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-400">{error}</div>}
+            {error && (
+              <div className="rounded-md bg-red-50 p-3 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-400">
+                {error}
+              </div>
+            )}
 
             <div className="flex flex-col gap-2">
               <button
@@ -224,14 +229,17 @@ export function TurnkeyAuthModal({ onClose, onSuccess, initialEmail = "", skipTo
         <div className="text-center">
           <div className="mb-6 flex items-center justify-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/20">
-              <svg className="h-8 w-8 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg
+                className="h-8 w-8 text-green-600 dark:text-green-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
           </div>
-          <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
-            Successfully Authenticated!
-          </h2>
+          <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">Successfully Authenticated!</h2>
           <p className="text-sm text-gray-600 dark:text-gray-400">Redirecting...</p>
         </div>
       )}
