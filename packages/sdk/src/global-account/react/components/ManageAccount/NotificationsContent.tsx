@@ -110,7 +110,7 @@ const NotificationsContent = ({ partnerId, chain, onSuccess }: NotificationsCont
     try {
       setIsSendingTest(true);
       setTestSuccess(false);
-      await notificationsAPI.sendTestNotification(userId, jwtToken);
+      await notificationsAPI.sendTestNotification(userId, partnerId, jwtToken);
       setTestSuccess(true);
       setTimeout(() => setTestSuccess(false), 5000);
     } catch (err: any) {

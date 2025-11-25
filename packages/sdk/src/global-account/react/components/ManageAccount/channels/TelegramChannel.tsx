@@ -30,7 +30,6 @@ export const TelegramChannel = ({
 
   const [isConnecting, setIsConnecting] = useState(false);
   const [status, setStatus] = useState<"idle" | "pending" | "connected">("idle");
-  const [showInput, setShowInput] = useState(false);
 
   // Detect if we're disconnecting
   const isDisconnecting = isConnected && !isOptimisticallyConnected;
@@ -51,7 +50,6 @@ export const TelegramChannel = ({
           if (connected) {
             clearInterval(interval);
             setStatus("connected");
-            setShowInput(false);
             await notificationsAPI.ensureNotificationSettings(userId, partnerId, "general", jwtToken);
             toast.success("Telegram connected successfully!");
             onConnectionChange();
@@ -79,7 +77,6 @@ export const TelegramChannel = ({
   const handleToggle = () => {
     if (isConnected) {
       setStatus("idle");
-      setShowInput(false);
       onToggle(true);
     } else {
       handleConnect();

@@ -274,10 +274,10 @@ export const notificationsAPI = {
    * Send a test notification (requires JWT)
    * Automatically creates settings if they don't exist
    */
-  async sendTestNotification(userId: string, jwtToken: string): Promise<any> {
+  async sendTestNotification(userId: string, appId: string, jwtToken: string): Promise<any> {
     // Ensure settings exist for test notifications
     try {
-      await this.ensureNotificationSettings(userId, "test-app", "test", jwtToken);
+      await this.ensureNotificationSettings(userId, appId, "general", jwtToken);
     } catch (err: any) {
       debug("Failed to ensure settings, trying to send anyway:", err);
     }
@@ -290,8 +290,8 @@ export const notificationsAPI = {
       },
       body: JSON.stringify({
         userId,
-        appId: "test-app",
-        notificationType: "test",
+        appId,
+        notificationType: "general",
         title: "Test Notification",
         message:
           "This is a test notification from B3. If you received this, your notifications are working correctly! 🎉",

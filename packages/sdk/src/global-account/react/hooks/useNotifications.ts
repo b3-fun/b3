@@ -191,7 +191,7 @@ export function useNotifications(): UseNotificationsReturn {
 
     try {
       // The API method now handles ensuring settings exist
-      await notificationsAPI.sendTestNotification(userId, jwtToken);
+      await notificationsAPI.sendTestNotification(userId, partnerId, jwtToken);
     } catch (err: any) {
       debug("Error sending test notification:", err);
       throw new Error("Failed to send test notification");
