@@ -1,16 +1,10 @@
 import { useSimBalance } from "@b3dotfun/sdk/global-account/react";
+import { getChainLogo } from "@b3dotfun/sdk/shared/constants/chains/supported";
 import { useActiveWallet } from "thirdweb/react";
 import { TokenBalanceRow } from "./TokenBalanceRow";
 
 // Chain logo URLs mapping
-const CHAIN_LOGOS: Record<number, string> = {
-  1: "https://ethereum-optimism.github.io/data/ETH/logo.svg", // Ethereum
-  8453: "https://avatars.githubusercontent.com/u/108554348?s=280&v=4", // Base
-  8333: "https://cdn.b3.fun/b3-logo-white-circle.svg", // B3
-};
-
-// Native token logos (ETH across chains)
-const ETH_LOGO = "https://ethereum-optimism.github.io/data/ETH/logo.svg";
+const CHAIN_LOGOS: Record<number, string> = [1, 8453, 8333].map(chainId => getChainLogo(chainId));
 
 const TokenContent = () => {
   // Get active wallet state
@@ -50,7 +44,7 @@ const TokenContent = () => {
         // For native tokens, use ETH logo instead of chain logo
         let tokenLogo = token.token_metadata?.logo || "";
         if (token.address === "native" && token.symbol === "ETH") {
-          tokenLogo = ETH_LOGO;
+          tokenLogo = CHAIN_LOGOS[0];
         }
 
         return (

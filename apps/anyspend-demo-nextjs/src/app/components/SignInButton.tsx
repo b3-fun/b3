@@ -1,11 +1,11 @@
 "use client";
 
 import {
-  IPFSMediaRenderer,
   SignInWithB3,
   useAccountWallet,
   useModalStore,
   useProfile,
+  WalletImage,
 } from "@b3dotfun/sdk/global-account/react";
 import { useAccountWalletImage } from "@b3dotfun/sdk/global-account/react/hooks/useAccountWallet";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
@@ -53,13 +53,14 @@ export function SignInButton() {
             )}
           >
             <div className="relative flex items-center gap-2">
-              {walletImage ? (
-                <IPFSMediaRenderer src={walletImage} alt="Profile" className="h-6 w-6 rounded-full" />
-              ) : (
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-500">
-                  <span className="text-xs font-medium text-white">{address.slice(2, 4).toUpperCase()}</span>
-                </div>
-              )}
+              <WalletImage
+                fallback={
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-500">
+                    <span className="text-xs font-medium text-white">{address.slice(2, 4).toUpperCase()}</span>
+                  </div>
+                }
+              />
+
               <span className="relative z-10 min-w-[80px] text-white">{ensName || shortenAddress(address)}</span>
             </div>
           </button>

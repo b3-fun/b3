@@ -5,6 +5,7 @@ import {
   useAccountWallet,
   useAnalytics,
   useModalStore,
+  useProfile,
   useSimBalance,
   useUnifiedChainSwitchAndExecute,
 } from "@b3dotfun/sdk/global-account/react";
@@ -15,7 +16,7 @@ import { useState } from "react";
 import { NumericFormat } from "react-number-format";
 
 import { encodeFunctionData, erc20Abi, isAddress, parseUnits } from "viem";
-import { useB3Profile } from "../../hooks/useB3Profile";
+
 import type { SimBalanceItem } from "../../hooks/useSimBalance";
 import { useRecentAddressesStore } from "../../stores/useRecentAddressesStore";
 import ModalHeader from "../ModalHeader/ModalHeader";
@@ -30,7 +31,7 @@ type SendStep = "recipient" | "token" | "amount" | "confirm" | "success";
 
 // Component for displaying a recent address with profile data
 function RecentAddressItem({ address, onClick }: { address: string; onClick: () => void }) {
-  const { data: profileData } = useB3Profile(address);
+  const { data: profileData } = useProfile({ address });
 
   return (
     <button
@@ -80,9 +81,9 @@ export function Send({ recipientAddress: initialRecipient, onSuccess }: SendModa
   const addRecentAddress = useRecentAddressesStore(state => state.addRecentAddress);
 
   // Fetch profile data for validated address
-  const { data: validatedProfileData } = useB3Profile(
-    showValidatedResult && recipientAddress && isAddress(recipientAddress) ? recipientAddress : undefined,
-  );
+  const { data: validatedProfileData } = useProfile({
+    address: showValidatedResult && recipientAddress && isAddress(recipientAddress) ? recipientAddress : undefined,
+  });
 
   // Address validation
   const handleRecipientAddressChange = (value: string) => {

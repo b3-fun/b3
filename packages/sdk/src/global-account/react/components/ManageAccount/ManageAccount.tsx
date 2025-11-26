@@ -98,14 +98,6 @@ export function ManageAccount({
             <HomeContent showDeposit={showDeposit} showSwap={showSwap} />
           </TabsContentPrimitive>
 
-          {/* <TabsContentPrimitive value="tokens" className="px-0 pb-4 pt-2">
-            <ContentTokens activeTab={activeTab} />
-          </TabsContentPrimitive> */}
-
-          {/* <TabsContentPrimitive value="apps" className="px-4 pb-4 pt-2">
-            <AppsContent chain={chain} partnerId={partnerId} />
-          </TabsContentPrimitive> */}
-
           {/* Swap tab content is handled by modal, so this is empty */}
           <TabsContentPrimitive value="swap" className="hidden" />
 

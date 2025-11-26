@@ -77,3 +77,7 @@ export function getThirdwebChain(chainId: number): ThirdwebChain {
   }
   return chain;
 }
+
+export function getChainLogo(chainId: number): string {
+  return getThirdwebChain(chainId)?.icon?.url || "";
+}

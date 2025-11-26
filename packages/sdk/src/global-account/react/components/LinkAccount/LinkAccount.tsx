@@ -18,7 +18,7 @@ import { getProfileDisplayInfo } from "../../utils/profileDisplay";
 
 import { Referrals, Users } from "@b3dotfun/b3-api";
 import ModalHeader from "../ModalHeader/ModalHeader";
-import LinkAccountItem from "./LinkAccountItem";
+import LinkedAccountItem from "./LinkedAccountItem";
 
 export const LinkAccount = ({
   partnerId,
@@ -165,7 +165,7 @@ export const LinkAccount = ({
         ) : profiles.length > 0 ? (
           <div className="linked-accounts-list space-y-4">
             {profiles.map(profile => (
-              <LinkAccountItem
+              <LinkedAccountItem
                 key={profile.title}
                 profile={profile}
                 profileToUnlink={profileToUnlink}

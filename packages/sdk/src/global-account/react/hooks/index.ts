@@ -22,16 +22,17 @@ export { useIsMobile } from "./useIsMobile";
 export { useIsomorphicLayoutEffect } from "./useIsomorphicLayoutEffect";
 export { useMediaQuery } from "./useMediaQuery";
 export { useNativeBalance, useNativeBalanceFromRPC } from "./useNativeBalance";
+export { useNotifications, type UseNotificationsReturn } from "./useNotifications";
 export { useOneBalance } from "./useOneBalance";
 export {
+  useDisplayName,
   useProfile,
   useProfilePreference,
   useProfileSettings,
-  useDisplayName,
   type CombinedProfile,
+  type DisplayNameRequestBody,
   type PreferenceRequestBody,
   type Profile,
-  type DisplayNameRequestBody,
 } from "./useProfile";
 export { useQueryB3 } from "./useQueryB3";
 export { useQueryBSMNT } from "./useQueryBSMNT";
@@ -39,7 +40,6 @@ export { useRemoveSessionKey } from "./useRemoveSessionKey";
 export { useRouter } from "./useRouter";
 export { useSearchParamsSSR } from "./useSearchParamsSSR";
 export { useSimBalance } from "./useSimBalance";
-export { useB3Profile, type B3ProfileData } from "./useB3Profile";
 export { useSiwe } from "./useSiwe";
 export { useTokenBalance } from "./useTokenBalance";
 export { useTokenBalanceDirect } from "./useTokenBalanceDirect";
@@ -49,6 +49,5 @@ export { useTokenFromUrl } from "./useTokenFromUrl";
 export { useTokenPrice } from "./useTokenPrice";
 export { useTokenPriceWithFallback } from "./useTokenPriceWithFallback";
 export { useTokensFromAddress } from "./useTokensFromAddress";
-export { useURLParams } from "./useURLParams";
 export { useUnifiedChainSwitchAndExecute } from "./useUnifiedChainSwitchAndExecute";
-export { useNotifications, type UseNotificationsReturn } from "./useNotifications";
+export { useURLParams } from "./useURLParams";

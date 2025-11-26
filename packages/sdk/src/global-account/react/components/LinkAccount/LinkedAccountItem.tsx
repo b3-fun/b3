@@ -1,7 +1,6 @@
-import { Button, toast } from "@b3dotfun/sdk/global-account/react";
+import { Button, toast, useProfile } from "@b3dotfun/sdk/global-account/react";
 import { truncateAddress } from "@b3dotfun/sdk/shared/utils/truncateAddress";
 import { Copy, Loader2, UnlinkIcon } from "lucide-react";
-import { useB3Profile } from "../../hooks/useB3Profile";
 
 // Helper function to check if a string is a wallet address and format it
 const formatProfileTitle = (title: string): { displayTitle: string; isAddress: boolean } => {
@@ -21,7 +20,7 @@ const formatProfileTitle = (title: string): { displayTitle: string; isAddress: b
   };
 };
 
-interface LinkAccountItemProps {
+interface LinkedAccountItemProps {
   profile: {
     title: string;
     imageUrl?: string | null;
@@ -36,15 +35,15 @@ interface LinkAccountItemProps {
   onUnlinkClick: (profile: any) => void;
 }
 
-const LinkAccountItem = ({
+const LinkedAccountItem = ({
   profile,
   profileToUnlink,
   unlinkingAccountId,
   isUnlinking,
   onUnlinkClick,
-}: LinkAccountItemProps) => {
+}: LinkedAccountItemProps) => {
   const { displayTitle, isAddress } = formatProfileTitle(profile.title);
-  const { data: profileData } = useB3Profile(profile.title);
+  const { data: profileData } = useProfile({ address: profile.title });
 
   const handleCopyAddress = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -133,4 +132,4 @@ const LinkAccountItem = ({
   );
 };
 
-export default LinkAccountItem;
+export default LinkedAccountItem;

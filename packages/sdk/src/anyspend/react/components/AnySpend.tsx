@@ -27,14 +27,13 @@ import {
 } from "@b3dotfun/sdk/global-account/react";
 import BottomNavigation from "@b3dotfun/sdk/global-account/react/components/ManageAccount/BottomNavigation";
 import { useAccountWalletImage } from "@b3dotfun/sdk/global-account/react/hooks/useAccountWallet";
+import { getThirdwebChain } from "@b3dotfun/sdk/shared/constants/chains/supported";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import invariant from "invariant";
 import { ArrowDown, HistoryIcon, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-
-import { defineChain } from "thirdweb";
 import { parseUnits } from "viem";
 import { base, mainnet } from "viem/chains";
 import { components } from "../../types/api";
@@ -56,6 +55,8 @@ import { PanelOnrampPayment } from "./common/PanelOnrampPayment";
 import { PointsDetailPanel } from "./common/PointsDetailPanel";
 import { RecipientSelection } from "./common/RecipientSelection";
 import { TabSection } from "./common/TabSection";
+
+const baseChain = getThirdwebChain(8453);
 
 export interface RecipientOption {
   address: string;
@@ -132,28 +133,6 @@ function AnySpendInner({
 
   const { partnerId } = useB3();
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
-
-  // Define base chain with RPC for modal props
-  const baseChain = useMemo(
-    () =>
-      defineChain({
-        id: 8453,
-        name: "Base",
-        nativeCurrency: {
-          name: "Ether",
-          symbol: "ETH",
-          decimals: 18,
-        },
-        rpc: "https://mainnet.base.org",
-        blockExplorers: [
-          {
-            name: "Basescan",
-            url: "https://basescan.org",
-          },
-        ],
-      }),
-    [],
-  );
 
   // Determine if we're in "buy mode" based on whether destination token props are provided
   const isBuyMode = !!(destinationTokenAddress && destinationTokenChainId);

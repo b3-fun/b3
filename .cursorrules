@@ -45,7 +45,7 @@ const handleNavigation = () => {
 
 **Design Verification Process**
 
-- After implementing any UI component, if user linked Figma design link, always take a screenshot and compare it to the Figma design
+- If user linked Figma design through MCP integration, use all provided measures from Figma to make the UI component pixel perfect, then take a screenshot and compare it to the Figma design.
 - List specific differences between implementation and design
 - Iterate until pixel-perfect match is achieved
 - Never ask for permission to continue fixing - just fix until correct

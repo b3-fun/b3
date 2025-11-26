@@ -1,7 +1,6 @@
 "use client";
 
-import { IPFSMediaRenderer, toast, useAccountWallet } from "@b3dotfun/sdk/global-account/react";
-import { useAccountWalletImage } from "@b3dotfun/sdk/global-account/react/hooks/useAccountWallet";
+import { toast, useAccountWallet, WalletImage } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
@@ -10,7 +9,7 @@ import { ChevronLeft, ChevronRightCircle, Wallet, X, ZapIcon } from "lucide-reac
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { useSetActiveWallet, useWalletInfo } from "thirdweb/react";
-import { WalletId, createWallet } from "thirdweb/wallets";
+import { createWallet, WalletId } from "thirdweb/wallets";
 import { useAccount, useConnect, useDisconnect, useWalletClient } from "wagmi";
 import { useConnectedWalletDisplay } from "../../hooks/useConnectedWalletDisplay";
 
@@ -47,8 +46,6 @@ export function CryptoPaymentMethod({
 
   const isConnected = !!connectedEOAWallet;
   const globalAddress = connectedSmartWallet?.getAccount()?.address;
-
-  const walletImage = useAccountWalletImage();
 
   // Use custom hook to determine wallet display logic
   const { shouldShowConnectedEOA, shouldShowWagmiWallet } = useConnectedWalletDisplay(selectedPaymentMethod);
@@ -370,17 +367,14 @@ export function CryptoPaymentMethod({
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        {walletImage ? (
-                          <IPFSMediaRenderer
-                            src={walletImage}
-                            alt="Global Account"
-                            className="h-10 w-10 rounded-full"
-                          />
-                        ) : (
-                          <div className="wallet-icon flex h-10 w-10 items-center justify-center rounded-full bg-purple-100">
-                            <Wallet className="h-5 w-5 text-purple-600" />
-                          </div>
-                        )}
+                        <WalletImage
+                          fallback={
+                            <div className="wallet-icon flex h-10 w-10 items-center justify-center rounded-full bg-purple-100">
+                              <Wallet className="h-5 w-5 text-purple-600" />
+                            </div>
+                          }
+                        />
+
                         <div className="flex flex-col">
                           <span className="text-as-primary font-semibold">Global Account</span>
                           <span className="text-as-primary/60 text-sm">{shortenAddress(globalAddress || "")}</span>
