@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:all": "pnpm widget:build && pnpm build",
     "preview": "vite preview",
     "start": "vite preview --host",
     "widget:build": "bash ./scripts/dev-widget.sh",
