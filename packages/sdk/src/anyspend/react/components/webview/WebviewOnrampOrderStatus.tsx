@@ -1,10 +1,10 @@
 import { getChainName } from "@b3dotfun/sdk/anyspend";
-import { Badge, useTokenData } from "@b3dotfun/sdk/global-account/react";
+import { Badge, toast, useTokenData } from "@b3dotfun/sdk/global-account/react";
 import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
 import { CheckIcon, Copy, ExternalLink, Loader2 } from "lucide-react";
-import { toast } from "sonner";
-import { formatUnits } from "viem";
+
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
+import { formatUnits } from "viem";
 
 interface WebviewOnrampOrderStatusProps {
   order: components["schemas"]["Order"];

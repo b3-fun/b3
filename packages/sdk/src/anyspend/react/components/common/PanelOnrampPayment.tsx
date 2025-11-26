@@ -1,12 +1,12 @@
 import { useAnyspendCreateOnrampOrder, useGeoOnrampOptions } from "@b3dotfun/sdk/anyspend/react";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
-import { Button } from "@b3dotfun/sdk/global-account/react";
+import { Button, toast } from "@b3dotfun/sdk/global-account/react";
 import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
 import invariant from "invariant";
 import { ChevronLeft, ChevronRight, Landmark, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
-import { toast } from "sonner";
+
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "../AnySpendFingerprintWrapper";
 
 interface PanelOnrampPaymentProps {
@@ -150,7 +150,7 @@ function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-[460px] flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-[460px] flex-col gap-6 px-5 pt-5">
       {/* Order Summary Section */}
       <>
         <h2 className="-mb-3 text-lg font-semibold">Order summary</h2>

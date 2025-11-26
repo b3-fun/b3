@@ -1,15 +1,23 @@
 "use client";
 
-import { SignInWithB3, useAccountWallet, useModalStore, useProfile } from "@b3dotfun/sdk/global-account/react";
+import {
+  SignInWithB3,
+  useAccountWallet,
+  useModalStore,
+  useProfile,
+  WalletImage,
+} from "@b3dotfun/sdk/global-account/react";
+import { useAccountWalletImage } from "@b3dotfun/sdk/global-account/react/hooks/useAccountWallet";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { b3 } from "viem/chains";
 
 export function SignInButton() {
-  const { address, wallet } = useAccountWallet();
+  const { address } = useAccountWallet();
   const profile = useProfile({ address });
   const ensName = profile.data?.name?.replace(/\.b3\.fun/g, "");
   const { setB3ModalOpen, setB3ModalContentType } = useModalStore();
+  const walletImage = useAccountWalletImage();
 
   const b3Config = {
     chain: {
@@ -45,13 +53,14 @@ export function SignInButton() {
             )}
           >
             <div className="relative flex items-center gap-2">
-              {wallet?.meta?.icon ? (
-                <img src={wallet.meta.icon} alt="Profile" className="h-6 w-6 rounded-full" />
-              ) : (
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-500">
-                  <span className="text-xs font-medium text-white">{address.slice(2, 4).toUpperCase()}</span>
-                </div>
-              )}
+              <WalletImage
+                fallback={
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-500">
+                    <span className="text-xs font-medium text-white">{address.slice(2, 4).toUpperCase()}</span>
+                  </div>
+                }
+              />
+
               <span className="relative z-10 min-w-[80px] text-white">{ensName || shortenAddress(address)}</span>
             </div>
           </button>

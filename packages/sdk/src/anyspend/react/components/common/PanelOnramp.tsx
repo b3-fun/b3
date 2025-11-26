@@ -2,16 +2,18 @@ import { useCoinbaseOnrampOptions } from "@b3dotfun/sdk/anyspend/react";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
 import { ALL_CHAINS } from "@b3dotfun/sdk/anyspend/utils/chain";
-import { Input, useGetGeo, useProfile } from "@b3dotfun/sdk/global-account/react";
+import { Input, toast, useGetGeo, useProfile } from "@b3dotfun/sdk/global-account/react";
 import { cn, formatUsername } from "@b3dotfun/sdk/shared/utils";
 import { formatAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { ChevronRight, Info, Wallet } from "lucide-react";
 import { useRef } from "react";
-import { toast } from "sonner";
+
 import { useFeatureFlags } from "../../contexts/FeatureFlagsContext";
 import { FiatPaymentMethod } from "./FiatPaymentMethod";
 import { OrderTokenAmountFiat } from "./OrderTokenAmountFiat";
 import { PointsBadge } from "./PointsBadge";
+
+const ONE_CHAR_WIDTH = 30;
 
 export function PanelOnramp({
   srcAmountOnRamp,
@@ -176,9 +178,9 @@ export function PanelOnramp({
               value={srcAmountOnRamp}
               onChange={handleAmountChange}
               placeholder="5"
-              className="text-as-primary placeholder:text-as-primary/50 h-auto min-w-[70px] border-0 bg-transparent p-0 px-1 pt-1 text-4xl font-bold focus-visible:ring-0 focus-visible:ring-offset-0"
+              className="text-as-primary placeholder:text-as-primary/50 h-auto border-0 bg-transparent p-0 px-1 pt-1 text-4xl font-bold focus-visible:ring-0 focus-visible:ring-offset-0"
               style={{
-                width: `${Math.max(50, srcAmountOnRamp.length * 34)}px`,
+                width: `${Math.max(ONE_CHAR_WIDTH, srcAmountOnRamp.length * ONE_CHAR_WIDTH)}px`,
               }}
             />
           </div>

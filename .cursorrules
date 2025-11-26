@@ -43,6 +43,13 @@ const handleNavigation = () => {
 >
 ```
 
+**Design Verification Process**
+
+- If user linked Figma design through MCP integration, use all provided measures from Figma to make the UI component pixel perfect, then take a screenshot and compare it to the Figma design.
+- List specific differences between implementation and design
+- Iterate until pixel-perfect match is achieved
+- Never ask for permission to continue fixing - just fix until correct
+
 ### Key Principles
 
 1. **Stable DOM structure**: Use consistent keys and wrapper elements
@@ -50,3 +57,10 @@ const handleNavigation = () => {
 3. **Render functions not components**: Avoid creating component instances
 4. **Memoize variants**: Prevent unwanted re-renders
 5. **Reset direction on unmount**: Clean up animation state
+6. **Always use single selectors instead of destructuring the entire store when using Zustand.**:
+   Example:
+   - Instead of:
+     - const { isOpen, setModalOpen } = useModalStore();
+   - Use:
+     - const isOpen = useModalStore(state => state.isOpen);
+     - const setModalOpen = useModalStore(state => state.setModalOpen);

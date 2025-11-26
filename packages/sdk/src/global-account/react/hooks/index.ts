@@ -22,11 +22,15 @@ export { useIsMobile } from "./useIsMobile";
 export { useIsomorphicLayoutEffect } from "./useIsomorphicLayoutEffect";
 export { useMediaQuery } from "./useMediaQuery";
 export { useNativeBalance, useNativeBalanceFromRPC } from "./useNativeBalance";
+export { useNotifications, type UseNotificationsReturn } from "./useNotifications";
 export { useOneBalance } from "./useOneBalance";
 export {
+  useDisplayName,
   useProfile,
   useProfilePreference,
+  useProfileSettings,
   type CombinedProfile,
+  type DisplayNameRequestBody,
   type PreferenceRequestBody,
   type Profile,
 } from "./useProfile";
@@ -46,5 +50,5 @@ export { useTokenPrice } from "./useTokenPrice";
 export { useTokenPriceWithFallback } from "./useTokenPriceWithFallback";
 export { useTokensFromAddress } from "./useTokensFromAddress";
 export { useTurnkeyAuth } from "./useTurnkeyAuth";
-export { useURLParams } from "./useURLParams";
 export { useUnifiedChainSwitchAndExecute } from "./useUnifiedChainSwitchAndExecute";
+export { useURLParams } from "./useURLParams";

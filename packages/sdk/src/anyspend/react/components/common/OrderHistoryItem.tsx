@@ -1,11 +1,11 @@
 import { ALL_CHAINS, getChainName, getStatusDisplay } from "@b3dotfun/sdk/anyspend";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { Badge, useIsMobile } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { getVendorDisplayName } from "@b3dotfun/sdk/shared/utils/payment.utils";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Coins, Image } from "lucide-react";
 import TimeAgo from "react-timeago";
-import { components } from "@b3dotfun/sdk/anyspend/types/api";
 
 interface OrderHistoryItemProps {
   order: components["schemas"]["Order"];
@@ -39,8 +39,8 @@ export function OrderHistoryItem({ order, onSelectOrder, mode }: OrderHistoryIte
     <div
       key={`anyspend-${order.id}`}
       className={cn(
-        "bg-as-surface-secondary hover:bg-as-surface-tertiary rounded-xl p-4 transition-all",
-        onSelectOrder && "cursor-pointer",
+        "font-inter border-as-border-secondary border-b py-5 font-medium transition-all last:border-b-0",
+        onSelectOrder && "hover:bg-as-surface-secondary/50 cursor-pointer",
       )}
       onClick={() => onSelectOrder?.(order.id)}
     >
@@ -49,7 +49,7 @@ export function OrderHistoryItem({ order, onSelectOrder, mode }: OrderHistoryIte
         <div className="flex items-center gap-2">
           <div
             className={cn(
-              "text-xs font-semibold",
+              "text-xs",
               orderDisplayStatus === "processing" && "text-yellow-600",
               orderDisplayStatus === "success" && "text-green-600",
               orderDisplayStatus === "failure" && "text-red-600",
@@ -72,11 +72,22 @@ export function OrderHistoryItem({ order, onSelectOrder, mode }: OrderHistoryIte
       <div className={cn("flex items-center", isSmallView ? "gap-2" : "gap-4")}>
         {/* From Section */}
         <div className={cn("flex min-w-0 flex-1 items-center", isSmallView ? "gap-1.5" : "gap-2")}>
-          <img
-            src={order.metadata.srcToken.metadata.logoURI}
-            alt={order.metadata.srcToken.symbol}
-            className={cn("shrink-0 rounded-full", isSmallView ? "h-7 w-7" : "h-8 w-8")}
-          />
+          {order.metadata.srcToken.metadata.logoURI ? (
+            <img
+              src={order.metadata.srcToken.metadata.logoURI}
+              alt={order.metadata.srcToken.symbol}
+              className={cn("shrink-0 rounded-full", isSmallView ? "h-7 w-7" : "h-8 w-8")}
+            />
+          ) : (
+            <div
+              className={cn(
+                "flex shrink-0 items-center justify-center rounded-full bg-gray-200",
+                isSmallView ? "h-7 w-7" : "h-8 w-8",
+              )}
+            >
+              <Coins className={cn("text-gray-400", isSmallView ? "h-3.5 w-3.5" : "h-4 w-4")} />
+            </div>
+          )}
           <div className="min-w-0 flex-1">
             <div className={cn("text-as-primary truncate font-bold", isSmallView ? "text-xs" : "text-sm")}>
               {formatTokenAmount(BigInt(order.srcAmount), order.metadata.srcToken.decimals)}{" "}
@@ -96,11 +107,22 @@ export function OrderHistoryItem({ order, onSelectOrder, mode }: OrderHistoryIte
         <div className={cn("flex min-w-0 flex-1 items-center", isSmallView ? "gap-1.5" : "gap-2")}>
           {nft ? (
             <>
-              <img
-                src={nft.imageUrl}
-                alt={nft.name}
-                className={cn("shrink-0 rounded-full", isSmallView ? "h-7 w-7" : "h-8 w-8")}
-              />
+              {nft.imageUrl ? (
+                <img
+                  src={nft.imageUrl}
+                  alt={nft.name}
+                  className={cn("shrink-0 rounded-full", isSmallView ? "h-7 w-7" : "h-8 w-8")}
+                />
+              ) : (
+                <div
+                  className={cn(
+                    "flex shrink-0 items-center justify-center rounded-full bg-gray-200",
+                    isSmallView ? "h-7 w-7" : "h-8 w-8",
+                  )}
+                >
+                  <Image className={cn("text-gray-400", isSmallView ? "h-3.5 w-3.5" : "h-4 w-4")} />
+                </div>
+              )}
               <div className="min-w-0 flex-1">
                 <div className={cn("text-as-primary truncate font-bold", isSmallView ? "text-xs" : "text-sm")}>
                   {nft.name}
@@ -119,11 +141,22 @@ export function OrderHistoryItem({ order, onSelectOrder, mode }: OrderHistoryIte
             </>
           ) : tournament ? (
             <>
-              <img
-                src={tournament.imageUrl}
-                alt={tournament.name}
-                className={cn("shrink-0 rounded-full", isSmallView ? "h-7 w-7" : "h-8 w-8")}
-              />
+              {tournament.imageUrl ? (
+                <img
+                  src={tournament.imageUrl}
+                  alt={tournament.name}
+                  className={cn("shrink-0 rounded-full", isSmallView ? "h-7 w-7" : "h-8 w-8")}
+                />
+              ) : (
+                <div
+                  className={cn(
+                    "flex shrink-0 items-center justify-center rounded-full bg-gray-200",
+                    isSmallView ? "h-7 w-7" : "h-8 w-8",
+                  )}
+                >
+                  <Image className={cn("text-gray-400", isSmallView ? "h-3.5 w-3.5" : "h-4 w-4")} />
+                </div>
+              )}
               <div className="min-w-0 flex-1">
                 <div className={cn("text-as-primary truncate font-bold", isSmallView ? "text-xs" : "text-sm")}>
                   {tournament.name}
@@ -142,11 +175,22 @@ export function OrderHistoryItem({ order, onSelectOrder, mode }: OrderHistoryIte
             </>
           ) : (
             <>
-              <img
-                src={dstToken.metadata.logoURI}
-                alt={dstToken.symbol}
-                className={cn("shrink-0 rounded-full", isSmallView ? "h-7 w-7" : "h-8 w-8")}
-              />
+              {dstToken.metadata.logoURI ? (
+                <img
+                  src={dstToken.metadata.logoURI}
+                  alt={dstToken.symbol}
+                  className={cn("shrink-0 rounded-full", isSmallView ? "h-7 w-7" : "h-8 w-8")}
+                />
+              ) : (
+                <div
+                  className={cn(
+                    "flex shrink-0 items-center justify-center rounded-full bg-gray-200",
+                    isSmallView ? "h-7 w-7" : "h-8 w-8",
+                  )}
+                >
+                  <Coins className={cn("text-gray-400", isSmallView ? "h-3.5 w-3.5" : "h-4 w-4")} />
+                </div>
+              )}
               <div className="min-w-0 flex-1">
                 <div className={cn("text-as-primary truncate font-bold", isSmallView ? "text-xs" : "text-sm")}>
                   {formatTokenAmount(

@@ -343,7 +343,7 @@ export function SignInWithB3Flow({
   } else if (isAuthenticating || (isFetchingSigners && step === "login") || source === "requestPermissions") {
     content = (
       <LoginStepContainer partnerId={partnerId}>
-        <div className="mt-8 flex items-center justify-center">
+        <div className="my-8 flex min-h-[350px] items-center justify-center">
           <Loading variant="white" size="lg" />
         </div>
       </LoginStepContainer>

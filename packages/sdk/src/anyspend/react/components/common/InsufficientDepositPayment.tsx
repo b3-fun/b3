@@ -12,12 +12,12 @@ import { Badge, CopyToClipboard, ShinyButton, TextLoop } from "@b3dotfun/sdk/glo
 import { cn } from "@b3dotfun/sdk/shared/utils";
 import { b3 } from "viem/chains";
 
+import { toast } from "@b3dotfun/sdk/global-account/react";
 import { formatUnits } from "@b3dotfun/sdk/shared/utils/number";
 import { WalletCoinbase, WalletMetamask, WalletPhantom, WalletTrust } from "@web3icons/react";
 import { ChevronRight, Copy, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import { QRCodeSVG } from "qrcode.react";
-import { toast } from "sonner";
 
 interface InsufficientDepositPaymentProps {
   order: components["schemas"]["Order"];

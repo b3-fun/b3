@@ -64,6 +64,7 @@ export function validateImageUrl(url: string | null | undefined): string | null 
 }
 
 export interface ExtendedProfileDetails {
+  fid?: string;
   id?: string;
   email?: string;
   phone?: string;
@@ -71,6 +72,8 @@ export interface ExtendedProfileDetails {
   name?: string;
   username?: string;
   profileImageUrl?: string;
+  picture?: string; // Google OAuth uses 'picture' field
+  pfpUrl?: string; // Farcaster uses 'pfpUrl' field
 }
 
 export interface ExtendedProfile extends Omit<Profile, "details"> {
@@ -86,7 +89,12 @@ export interface ProfileDisplayInfo {
 }
 
 export function getProfileDisplayInfo(profile: ExtendedProfile): ProfileDisplayInfo {
-  const { type, details } = profile;
+  const { type: originalType, details } = profile;
+
+  let type = originalType as Profile["type"];
+  if (originalType === ("siwe" as any)) {
+    type = "EOA" as Profile["type"];
+  }
 
   // Default display info
   let displayInfo: ProfileDisplayInfo = {
@@ -110,9 +118,9 @@ export function getProfileDisplayInfo(profile: ExtendedProfile): ProfileDisplayI
       break;
     case "farcaster":
       displayInfo = {
-        title: details.name || details.username || "Unknown",
+        title: details.name || details.username || "FID:" + details?.fid || "Unknown",
         subtitle: details.username ? `@${details.username}` : "Farcaster Account",
-        imageUrl: validateImageUrl(details.profileImageUrl),
+        imageUrl: validateImageUrl(details.pfpUrl || details.profileImageUrl),
         initial: "F",
         type,
       };
@@ -121,7 +129,7 @@ export function getProfileDisplayInfo(profile: ExtendedProfile): ProfileDisplayI
       displayInfo = {
         title: details.name || details.email || "Unknown",
         subtitle: details.email || "Google Account",
-        imageUrl: validateImageUrl(details.profileImageUrl),
+        imageUrl: validateImageUrl(details.picture || details.profileImageUrl),
         initial: "G",
         type,
       };

@@ -5,6 +5,7 @@ import {
   Input,
   StyleRoot,
   TextLoop,
+  toast,
   useHasMounted,
   useModalStore,
   useTokenBalance,
@@ -16,7 +17,7 @@ import invariant from "invariant";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
+
 import { createPublicClient, encodeFunctionData, erc20Abi, formatUnits, http } from "viem";
 import { useAccount, useWaitForTransactionReceipt } from "wagmi";
 import { AnySpendCustom } from "./AnySpendCustom";

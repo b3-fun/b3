@@ -1,19 +1,34 @@
-import { Triangle } from "lucide-react";
-import { ReactNode } from "react";
+import { Coins, Triangle } from "lucide-react";
 
 interface TokenBalanceRowProps {
-  icon: ReactNode;
+  tokenLogo: string;
+  chainLogo: string;
   name: string;
   balance: string;
   usdValue: string;
   priceChange?: number | null;
 }
 
-export function TokenBalanceRow({ icon, name, balance, usdValue, priceChange }: TokenBalanceRowProps) {
+export function TokenBalanceRow({ tokenLogo, chainLogo, name, balance, usdValue, priceChange }: TokenBalanceRowProps) {
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full">{icon}</div>
+        <div className="relative flex h-10 w-10 items-center justify-center">
+          {/* Token logo */}
+          {tokenLogo ? (
+            <img src={tokenLogo} alt={name} className="h-full w-full rounded-full object-cover" />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center rounded-full bg-gray-200">
+              <Coins className="h-5 w-5 text-gray-400" />
+            </div>
+          )}
+          {/* Chain logo badge */}
+          {chainLogo && (
+            <div className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full border-2 border-white bg-white">
+              <img src={chainLogo} alt="chain" className="h-full w-full rounded-full object-cover" />
+            </div>
+          )}
+        </div>
         <div>
           <div className="flex items-center gap-2">
             <span className="text-b3-grey font-neue-montreal-semibold">{name}</span>

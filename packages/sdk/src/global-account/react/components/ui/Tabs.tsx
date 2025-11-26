@@ -16,26 +16,18 @@ export const Tabs = ({
 );
 
 export function TabsList({ className, ...props }: React.ComponentProps<typeof TabsPrimitive.List>) {
-  return (
-    <TabsPrimitive.List
-      className={cn(
-        "border-b3-react-border bg-b3-react-background inline-flex h-12 w-full items-center justify-center rounded-lg border",
-        className,
-      )}
-      {...props}
-    />
-  );
+  return <TabsPrimitive.List className={cn("", className)} {...props} />;
 }
 
 export function TabTrigger({ className, ...props }: React.ComponentProps<typeof TabsPrimitive.Trigger>) {
   return (
     <TabsPrimitive.Trigger
       className={cn(
-        "inline-flex h-full items-center justify-center whitespace-nowrap px-3 text-sm font-medium transition-all",
+        "text-md inline-flex h-full items-center justify-center whitespace-nowrap px-3 font-semibold transition-all",
         "focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
-        "data-[state=active]:bg-b3-react-subtle data-[state=active]:text-b3-react-primary data-[state=active]:font-bold",
-        "border-b3-react-border hover:text-b3-react-foreground data-[state=inactive]:border-b3-react-border data-[state=inactive]:text-b3-react-muted-foreground",
-        "flex-1 border-r",
+        "data-[state=active]:font-bold data-[state=active]:text-[#0B57C2]",
+        "hover:text-b3-react-foreground data-[state=inactive]:text-b3-react-muted-foreground",
+        "flex-1",
         className,
       )}
       {...props}
