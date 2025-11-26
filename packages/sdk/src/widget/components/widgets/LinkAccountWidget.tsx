@@ -35,9 +35,7 @@ export function LinkAccountWidget({ instance }: { instance: WidgetInstance }) {
   if (!isAuthenticated) {
     return (
       <div className="b3-widget-link-account">
-        <p style={{ padding: "1rem", color: "#666" }}>
-          Please sign in first to link accounts
-        </p>
+        <p style={{ padding: "1rem", color: "#666" }}>Please sign in first to link accounts</p>
       </div>
     );
   }
@@ -54,4 +52,3 @@ export function LinkAccountWidget({ instance }: { instance: WidgetInstance }) {
     </div>
   );
 }
-

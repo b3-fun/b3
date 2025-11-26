@@ -81,7 +81,7 @@ export interface B3WidgetConfig {
   // Widget settings
   automaticallySetFirstEoa?: boolean;
   simDuneApiKey?: string;
-  
+
   // Toaster configuration
   toaster?: {
     position?: "top-center" | "top-right" | "bottom-center" | "bottom-right";
@@ -167,4 +167,3 @@ declare global {
     };
   }
 }
-

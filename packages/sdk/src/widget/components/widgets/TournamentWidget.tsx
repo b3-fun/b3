@@ -16,9 +16,7 @@ export function TournamentWidget({ instance }: { instance: WidgetInstance }) {
   if (!isAuthenticated) {
     return (
       <div className="b3-widget-tournament">
-        <p style={{ padding: "1rem", color: "#666" }}>
-          Please sign in first
-        </p>
+        <p style={{ padding: "1rem", color: "#666" }}>Please sign in first</p>
       </div>
     );
   }
@@ -35,4 +33,3 @@ export function TournamentWidget({ instance }: { instance: WidgetInstance }) {
     </div>
   );
 }
-

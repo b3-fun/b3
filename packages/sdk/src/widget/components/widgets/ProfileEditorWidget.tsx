@@ -23,9 +23,7 @@ export function ProfileEditorWidget({ instance }: { instance: WidgetInstance }) 
   if (!isAuthenticated) {
     return (
       <div className="b3-widget-profile-editor">
-        <p style={{ padding: "1rem", color: "#666" }}>
-          Please sign in first
-        </p>
+        <p style={{ padding: "1rem", color: "#666" }}>Please sign in first</p>
       </div>
     );
   }
@@ -42,4 +40,3 @@ export function ProfileEditorWidget({ instance }: { instance: WidgetInstance }) 
     </div>
   );
 }
-

@@ -21,9 +21,7 @@ export function NFTWidget({ instance }: { instance: WidgetInstance }) {
   if (!isAuthenticated) {
     return (
       <div className="b3-widget-nft">
-        <p style={{ padding: "1rem", color: "#666" }}>
-          Please sign in first to purchase NFT
-        </p>
+        <p style={{ padding: "1rem", color: "#666" }}>Please sign in first to purchase NFT</p>
       </div>
     );
   }
@@ -40,4 +38,3 @@ export function NFTWidget({ instance }: { instance: WidgetInstance }) {
     </div>
   );
 }
-

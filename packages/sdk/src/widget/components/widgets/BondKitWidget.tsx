@@ -16,9 +16,7 @@ export function BondKitWidget({ instance }: { instance: WidgetInstance }) {
   if (!isAuthenticated) {
     return (
       <div className="b3-widget-bondkit">
-        <p style={{ padding: "1rem", color: "#666" }}>
-          Please sign in first
-        </p>
+        <p style={{ padding: "1rem", color: "#666" }}>Please sign in first</p>
       </div>
     );
   }
@@ -35,4 +33,3 @@ export function BondKitWidget({ instance }: { instance: WidgetInstance }) {
     </div>
   );
 }
-

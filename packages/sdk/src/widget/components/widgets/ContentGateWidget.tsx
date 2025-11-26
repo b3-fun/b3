@@ -1,4 +1,4 @@
-import { useAuthStore, useB3, useModalStore } from "@b3dotfun/sdk/global-account/react";
+import { useAuthStore, useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { Button } from "@b3dotfun/sdk/global-account/react/components/ui/button";
 import { useCallback, useEffect, useState } from "react";
 import { widgetManager } from "../../manager";

@@ -20,9 +20,7 @@ export function OrderHistoryWidget({ instance }: { instance: WidgetInstance }) {
   if (!isAuthenticated) {
     return (
       <div className="b3-widget-order-history">
-        <p style={{ padding: "1rem", color: "#666" }}>
-          Please sign in to view order history
-        </p>
+        <p style={{ padding: "1rem", color: "#666" }}>Please sign in to view order history</p>
       </div>
     );
   }
@@ -39,4 +37,3 @@ export function OrderHistoryWidget({ instance }: { instance: WidgetInstance }) {
     </div>
   );
 }
-

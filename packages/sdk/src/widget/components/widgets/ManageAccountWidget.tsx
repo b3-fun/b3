@@ -48,4 +48,3 @@ export function ManageAccountWidget({ instance: _instance }: { instance: WidgetI
     </div>
   );
 }
-

@@ -17,9 +17,7 @@ export function AnySpendWidget({ instance }: { instance: WidgetInstance }) {
       recipientAddress: instance.config.sellerId || undefined,
       destinationAmount: instance.config.price || undefined,
       destinationTokenAddress: instance.config.tokenAddress || undefined,
-      destinationTokenChainId: instance.config.chainId
-        ? parseInt(instance.config.chainId, 10)
-        : undefined,
+      destinationTokenChainId: instance.config.chainId ? parseInt(instance.config.chainId, 10) : undefined,
       onSuccess: txHash => {
         widgetManager.emit({
           type: "payment-success",
@@ -42,9 +40,7 @@ export function AnySpendWidget({ instance }: { instance: WidgetInstance }) {
   if (!isAuthenticated) {
     return (
       <div className="b3-widget-anyspend">
-        <p style={{ padding: "1rem", color: "#666" }}>
-          Please sign in first to make a payment
-        </p>
+        <p style={{ padding: "1rem", color: "#666" }}>Please sign in first to make a payment</p>
       </div>
     );
   }
@@ -56,11 +52,8 @@ export function AnySpendWidget({ instance }: { instance: WidgetInstance }) {
         style={{ backgroundColor: "#3368ef" }}
         className="flex items-center gap-2 text-white"
       >
-        {instance.config.productName
-          ? `Buy ${instance.config.productName}`
-          : "Make Payment"}
+        {instance.config.productName ? `Buy ${instance.config.productName}` : "Make Payment"}
       </Button>
     </div>
   );
 }
-

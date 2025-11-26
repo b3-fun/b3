@@ -1,5 +1,5 @@
 /**
- * B3 Widget SDK - Entry Point  
+ * B3 Widget SDK - Entry Point
  * Super simple approach - just initialize widgets
  */
 

@@ -38,9 +38,7 @@ export function StakeB3Widget({ instance }: { instance: WidgetInstance }) {
   if (!isAuthenticated) {
     return (
       <div className="b3-widget-stake-b3">
-        <p style={{ padding: "1rem", color: "#666" }}>
-          Please sign in first to stake B3
-        </p>
+        <p style={{ padding: "1rem", color: "#666" }}>Please sign in first to stake B3</p>
       </div>
     );
   }
@@ -57,4 +55,3 @@ export function StakeB3Widget({ instance }: { instance: WidgetInstance }) {
     </div>
   );
 }
-

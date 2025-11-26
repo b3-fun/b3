@@ -73,7 +73,7 @@ export function WidgetWrapper({ instance }: { instance: WidgetInstance }) {
       connectors={config.connectors}
       overrideDefaultConnectors={config.overrideDefaultConnectors}
       createClientReferenceId={config.createClientReferenceId}
-      onConnect={(wallet) => {
+      onConnect={wallet => {
         console.log("[WidgetWrapper] Wallet connected", wallet);
         widgetManager.emit({
           type: "wallet-connected",

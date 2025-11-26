@@ -56,4 +56,3 @@ export function SignInWidget({ instance }: { instance: WidgetInstance }) {
     </div>
   );
 }
-

@@ -16,4 +16,3 @@ export function DebugModal() {
 
   return <B3DynamicModal />;
 }
-
