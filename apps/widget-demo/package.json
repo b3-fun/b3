@@ -1,0 +1,20 @@
+{
+  "name": "@b3dotfun/widget-demo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "vite preview --port $PORT --host 0.0.0.0",
+    "widget:build": "bash ./scripts/dev-widget.sh",
+    "widget:watch": "node ./scripts/watch-bundle.js",
+    "dev:widget": "pnpm widget:build && concurrently --names 'SDK,COPY,DEMO' -c 'blue,yellow,green' 'pnpm --filter @b3dotfun/sdk dev:widget' 'pnpm widget:watch' 'pnpm dev'",
+    "dev:full": "pnpm widget:build && pnpm dev"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "vite": "^6.0.11"
+  }
+}

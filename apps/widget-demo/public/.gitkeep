@@ -1,0 +1,3 @@
+# This folder will contain the built widget bundle for local development
+# Copy from ../../packages/sdk/bundles/widget/ when testing locally
+

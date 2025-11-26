@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>B3 Widget - Basic Example</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        max-width: 800px;
+        margin: 40px auto;
+        padding: 20px;
+        line-height: 1.6;
+      }
+      h1 {
+        color: #3368ef;
+      }
+      .example {
+        margin: 30px 0;
+        padding: 20px;
+        background: #f5f5f5;
+        border-radius: 8px;
+      }
+      code {
+        background: #e0e0e0;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 0.9em;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🚀 B3 Widget - Basic Example</h1>
+    
+    <p>This is the simplest possible implementation of B3 widgets.</p>
+
+    <div class="example">
+      <h2>Sign In Widget</h2>
+      <p>Click the button below to authenticate:</p>
+      <div data-b3-widget="sign-in"></div>
+    </div>
+
+    <div class="example">
+      <h2>How This Works</h2>
+      <p>Just 3 steps:</p>
+      <ol>
+        <li>Include the B3 Widget SDK (CSS + JS)</li>
+        <li>Initialize with your <code>partnerId</code></li>
+        <li>Add <code>data-b3-widget="sign-in"</code> to any div</li>
+      </ol>
+      <p>That's it! The widget system handles everything else.</p>
+    </div>
+
+    <div class="example">
+      <h2>Code</h2>
+      <pre><code>&lt;!-- 1. Include SDK --&gt;
+&lt;link href="https://cdn.b3.fun/widget/v1/b3-widget.css" rel="stylesheet" /&gt;
+&lt;script src="https://cdn.b3.fun/widget/v1/b3-widget.js"&gt;&lt;/script&gt;
+
+&lt;!-- 2. Initialize --&gt;
+&lt;script&gt;
+  window.B3Widget.init({
+    partnerId: 'your-partner-id'
+  });
+&lt;/script&gt;
+
+&lt;!-- 3. Add Widget --&gt;
+&lt;div data-b3-widget="sign-in"&gt;&lt;/div&gt;</code></pre>
+    </div>
+
+    <!-- Include B3 Widget SDK -->
+    <!-- In production, use: https://cdn.b3.fun/widget/v1/b3-widget.js -->
+    <!-- For dev, we'll use a placeholder that points to local build -->
+    <link href="https://cdn.b3.fun/widget/v1/b3-widget.css" rel="stylesheet" />
+    <script src="https://cdn.b3.fun/widget/v1/b3-widget.js"></script>
+
+    <!-- Initialize -->
+    <script>
+      // Check if B3Widget is available (it won't be until built and deployed)
+      if (window.B3Widget) {
+        window.B3Widget.init({
+          partnerId: 'demo-partner-id',
+          environment: 'development',
+          theme: 'light',
+          onSignIn: (data) => {
+            console.log('✅ Signed in!', data);
+            alert(`Signed in with address: ${data.address}`);
+          },
+        });
+      } else {
+        console.warn('B3 Widget SDK not loaded. Build the SDK first with: pnpm build:widget');
+      }
+    </script>
+  </body>
+</html>
+

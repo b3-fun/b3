@@ -26,3 +26,6 @@ doppler.yaml
 .env*
 
 CURRENT_WORK.md
+
+
+.parcel-cache

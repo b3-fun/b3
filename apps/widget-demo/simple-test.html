@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>B3 Widget - Simple Test</title>
+    <link rel="stylesheet" href="/widget/b3-widget.css?v=simple" />
+  </head>
+  <body>
+    <h1>B3 Widget - Simple Test</h1>
+
+    <!-- Just a div with a class - that's it! -->
+    <div class="b3-sign-in-widget"></div>
+
+    <!-- Load the bundle -->
+    <script src="/widget/b3-widget.js?v=simple"></script>
+
+    <!-- Initialize -->
+    <script>
+      console.log("Testing B3Widget:", window.B3Widget);
+
+      if (window.B3Widget) {
+        window.B3Widget.init({
+          partnerId: "test-partner",
+          environment: "development",
+          theme: "light",
+          onWalletConnected: wallet => {
+            console.log("✅ Wallet connected!", wallet);
+          },
+        });
+      } else {
+        console.error("❌ B3Widget not found on window");
+      }
+    </script>
+  </body>
+</html>
