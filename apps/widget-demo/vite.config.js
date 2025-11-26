@@ -1,5 +1,5 @@
-import { defineConfig } from "vite";
 import { resolve } from "path";
+import { defineConfig } from "vite";
 
 export default defineConfig({
   root: ".",
@@ -21,5 +21,6 @@ export default defineConfig({
   preview: {
     port: process.env.PORT || 3000,
     host: "0.0.0.0",
+    allowedHosts: ["static-sdk-content-gated-production.up.railway.app"],
   },
 });
