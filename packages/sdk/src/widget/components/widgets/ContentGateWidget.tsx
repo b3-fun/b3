@@ -1,12 +1,12 @@
 import { useAuthStore, useB3, useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { Button } from "@b3dotfun/sdk/global-account/react/components/ui/button";
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { widgetManager } from "../../manager";
 import { WidgetInstance } from "../../types";
 
 /**
  * Content Gate Widget - Gates content behind sign-in or payment
- * 
+ *
  * Features:
  * - Finds content by CSS selector or class
  * - Hides content after threshold (e.g., 3 paragraphs)
@@ -17,7 +17,6 @@ import { WidgetInstance } from "../../types";
  */
 export function ContentGateWidget({ instance }: { instance: WidgetInstance }) {
   const { isAuthenticated } = useAuthStore();
-  const { account } = useB3();
   const { setB3ModalOpen, setB3ModalContentType } = useModalStore();
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [contentElement, setContentElement] = useState<HTMLElement | null>(null);
@@ -87,7 +86,7 @@ export function ContentGateWidget({ instance }: { instance: WidgetInstance }) {
         contentElement.style.overflow = originalOverflow;
         contentElement.style.height = originalHeight;
         contentElement.style.position = originalPosition;
-        
+
         // Remove content gate overlay
         const overlay = contentElement.querySelector(".b3-content-gate-overlay");
         if (overlay) {
@@ -95,11 +94,21 @@ export function ContentGateWidget({ instance }: { instance: WidgetInstance }) {
         }
       }
     };
-  }, [contentElement, isUnlocked, gateThreshold, gateBlurAmount, gateHeight, gateSelector, gateClass, instance.id, instance.type]);
+  }, [
+    contentElement,
+    isUnlocked,
+    gateThreshold,
+    gateBlurAmount,
+    gateHeight,
+    gateSelector,
+    gateClass,
+    instance.id,
+    instance.type,
+  ]);
 
   const handleUnlock = useCallback(() => {
     setIsUnlocked(true);
-    
+
     // Remove blur and overlay
     if (contentElement) {
       removeContentGateEffect(contentElement);
@@ -131,7 +140,7 @@ export function ContentGateWidget({ instance }: { instance: WidgetInstance }) {
       chain: undefined as any,
       partnerId: widgetManager.getConfig().partnerId,
       onLoginSuccess: () => {
-        if (!paywallRequirePayment) {
+        if (!gateRequirePayment) {
           handleUnlock();
         }
       },
@@ -162,17 +171,20 @@ export function ContentGateWidget({ instance }: { instance: WidgetInstance }) {
 
   // Render unlock UI
   return (
-    <div className="b3-widget-content-gate" style={{
-      position: "fixed",
-      bottom: "2rem",
-      right: "2rem",
-      zIndex: 9999,
-      backgroundColor: "white",
-      padding: "1.5rem",
-      borderRadius: "0.75rem",
-      boxShadow: "0 10px 40px rgba(0,0,0,0.2)",
-      maxWidth: "320px",
-    }}>
+    <div
+      className="b3-widget-content-gate"
+      style={{
+        position: "fixed",
+        bottom: "2rem",
+        right: "2rem",
+        zIndex: 9999,
+        backgroundColor: "white",
+        padding: "1.5rem",
+        borderRadius: "0.75rem",
+        boxShadow: "0 10px 40px rgba(0,0,0,0.2)",
+        maxWidth: "320px",
+      }}
+    >
       <div style={{ marginBottom: "1rem" }}>
         <h3 style={{ margin: 0, fontSize: "1.125rem", fontWeight: 600, marginBottom: "0.5rem" }}>
           {gateUnlockMessage}
@@ -206,12 +218,10 @@ export function ContentGateWidget({ instance }: { instance: WidgetInstance }) {
  */
 function applyContentGateEffect(
   element: HTMLElement,
-  options: { threshold: number; blurAmount: string; height: string }
+  options: { threshold: number; blurAmount: string; height: string },
 ) {
   // Find paragraphs and similar content elements
-  const contentElements = Array.from(
-    element.querySelectorAll<HTMLElement>("p, li, div:not(.b3-content-gate-overlay)")
-  );
+  const contentElements = Array.from(element.querySelectorAll<HTMLElement>("p, li, div:not(.b3-content-gate-overlay)"));
 
   // Calculate where to start blurring (skip first N elements based on threshold)
   const hiddenElements = contentElements.slice(options.threshold);
@@ -250,13 +260,13 @@ function applyContentGateEffect(
 function removeContentGateEffect(element: HTMLElement) {
   // Add transition for smooth animation
   element.style.transition = "max-height 0.8s ease-out";
-  
+
   // Fade out overlay first
   const overlay = element.querySelector<HTMLElement>(".b3-content-gate-overlay");
   if (overlay) {
     overlay.style.transition = "opacity 0.5s ease-out";
     overlay.style.opacity = "0";
-    
+
     // Remove after animation
     setTimeout(() => overlay.remove(), 500);
   }
@@ -266,7 +276,7 @@ function removeContentGateEffect(element: HTMLElement) {
   blurredElements.forEach(el => {
     el.style.transition = "filter 0.6s ease-out";
     el.style.filter = "blur(0px)";
-    
+
     // Remove blur style after animation
     setTimeout(() => {
       el.style.filter = "";
@@ -279,15 +289,15 @@ function removeContentGateEffect(element: HTMLElement) {
   // Expand height with animation
   const currentHeight = element.scrollHeight;
   element.style.maxHeight = `${currentHeight}px`;
-  
+
   // Trigger reflow
   element.offsetHeight;
-  
+
   // Expand to full height
   setTimeout(() => {
     element.style.maxHeight = "none";
     element.style.overflow = "visible";
-    
+
     // Clean up after animation
     setTimeout(() => {
       element.style.transition = "";
@@ -295,4 +305,3 @@ function removeContentGateEffect(element: HTMLElement) {
     }, 800);
   }, 50);
 }
-

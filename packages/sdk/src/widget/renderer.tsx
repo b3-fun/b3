@@ -3,9 +3,9 @@
  */
 
 import React from "react";
-import { createRoot, Root } from "react-dom/client";
-import { B3Provider, B3DynamicModal } from "../global-account/react";
-import { SignInWithB3 } from "../global-account/react/authentication/SignInWithB3";
+import { createRoot } from "react-dom/client";
+import { B3DynamicModal, B3Provider, SignInWithB3 } from "../global-account/react";
+import { b3MainnetThirdWeb } from "../shared/constants/chains/supported";
 
 console.log("[B3Widget] Script loaded!");
 
@@ -13,12 +13,12 @@ console.log("[B3Widget] Script loaded!");
 const B3Widget = {
   init(config: any) {
     console.log("[B3Widget.init] Called with:", config);
-    
+
     // Find all sign-in widgets
     const signInDivs = document.querySelectorAll('[data-b3-widget="sign-in"]');
     console.log("[B3Widget] Found", signInDivs.length, "sign-in widget(s)");
-    
-    signInDivs.forEach((div) => {
+
+    signInDivs.forEach(div => {
       const root = createRoot(div);
       root.render(
         <React.StrictMode>
@@ -27,21 +27,18 @@ const B3Widget = {
             environment={config.environment || "production"}
             partnerId={config.partnerId || ""}
             automaticallySetFirstEoa={config.automaticallySetFirstEoa}
-            onConnect={(wallet, jwt) => {
-              console.log("[B3Widget] Wallet connected:", wallet.address);
+            onConnect={wallet => {
+              console.log("[B3Widget] Wallet connected:", wallet);
               config.onWalletConnected?.(wallet);
             }}
           >
-            <SignInWithB3 
-              partnerId={config.partnerId || ""}
-              chain={undefined}
-            />
+            <SignInWithB3 partnerId={config.partnerId || ""} chain={b3MainnetThirdWeb} />
             <B3DynamicModal />
           </B3Provider>
-        </React.StrictMode>
+        </React.StrictMode>,
       );
     });
-    
+
     console.log("[B3Widget] Initialization complete");
   },
 };

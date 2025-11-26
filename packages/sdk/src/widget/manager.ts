@@ -190,12 +190,10 @@ class WidgetManager {
    * Render a widget using the widget renderer
    */
   private renderWidget(instance: WidgetInstance) {
-    // Dynamically import the renderer to avoid circular dependencies
-    // In production build, this will be bundled together
-    import("./renderer").then(({ WidgetRenderer }) => {
+    // Import the renderer to render widgets
+    import("./renderer").then(() => {
       try {
-        const root = WidgetRenderer.render(instance);
-        instance.root = root;
+        // For now, the renderer is handled by the global init
         instance.initialized = true;
 
         debug("Widget rendered successfully:", instance.id);

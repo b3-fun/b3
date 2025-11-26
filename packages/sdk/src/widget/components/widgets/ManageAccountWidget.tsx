@@ -1,14 +1,17 @@
-import { useAuthStore, useModalStore } from "@b3dotfun/sdk/global-account/react";
+import { useAuthStore, useB3, useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { ManageAccountButton } from "@b3dotfun/sdk/global-account/react/components/custom/ManageAccountButton";
 import React from "react";
+import { b3MainnetThirdWeb } from "../../../shared/constants/chains/supported";
+import { widgetManager } from "../../manager";
 import { WidgetInstance } from "../../types";
 
 /**
  * Manage Account Widget - Renders a button that opens the account management modal
  */
-export function ManageAccountWidget({ instance }: { instance: WidgetInstance }) {
+export function ManageAccountWidget({ instance: _instance }: { instance: WidgetInstance }) {
   const { isAuthenticated } = useAuthStore();
   const { setB3ModalOpen, setB3ModalContentType } = useModalStore();
+  const { partnerId } = useB3();
 
   const handleClick = () => {
     setB3ModalContentType({
@@ -41,7 +44,7 @@ export function ManageAccountWidget({ instance }: { instance: WidgetInstance }) 
 
   return (
     <div className="b3-widget-manage-account">
-      <ManageAccountButton />
+      <ManageAccountButton chain={b3MainnetThirdWeb} partnerId={partnerId} />
     </div>
   );
 }
