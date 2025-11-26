@@ -199,9 +199,6 @@ export function SignInWithB3Flow({
     });
 
     if (isConnected && isAuthenticated && user) {
-      // Check if we already have a signer for this partner
-      const hasExistingSigner = signers?.some(signer => signer.partner.id === partnerId);
-
       // Mark that login just completed BEFORE opening manage account or closing modal
       // This allows Turnkey modal to show (if enableTurnkey is true)
       if (closeAfterLogin) {
