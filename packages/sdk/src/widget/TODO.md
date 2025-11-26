@@ -1,104 +1,118 @@
-# B3 Widget System - Development TODO
+# 🎯 B3 Widget System - TODO
 
-## Core Infrastructure ✅ COMPLETED
-- [x] Create widget types and configuration system
-- [x] Create widget manager for detection and lifecycle
-- [x] Create widget renderer with React root management
-- [x] Create widget entry point (index.ts)
-- [x] Set up Vite build configuration for widget bundle
-- [x] Add widget build scripts to package.json
+> **Current Status**: Sign-in and content gate widgets are functional. Testing and additional examples needed.
 
-## Priority: Sign-In & Paywall 🚀 IN PROGRESS
+---
+
+## ✅ Completed
+
+### Core Infrastructure
+- [x] Widget types and configuration system
+- [x] Widget manager for detection and lifecycle
+- [x] React root renderer
+- [x] Vite build configuration
+- [x] Widget entry point (index.tsx)
+- [x] Build scripts
 
 ### Sign-In Widget
 - [x] Basic SignInWidget component
-- [ ] Test sign-in flow with all strategies
-- [ ] Verify JWT token is accessible after sign-in
-- [ ] Test callbacks fire correctly
-- [ ] Verify sign-in state persists across page refresh
+- [x] Integration with B3DynamicModal
+- [x] Sign-in callbacks
+- [x] State management with auth store
 
-### Paywall Widget
-- [x] Basic PaywallWidget component with blur effect
-- [x] Content detection by selector/class
-- [x] Blur effect after threshold paragraphs
-- [x] Unlock UI overlay
-- [x] Integration with sign-in state
-- [ ] Test with various content structures (articles, blogs, etc.)
-- [ ] Handle edge cases (scripts, tables, complex layouts)
-- [ ] Add smooth transitions for unlock animation
-- [ ] Test paywall with payment requirement (optional)
-- [ ] Add customizable messaging
+### Content Gate Widget
+- [x] Basic ContentGateWidget component
+- [x] Blur effect with threshold
+- [x] Auto-unlock on sign-in
+- [x] Smooth unlock animation
+- [x] Event callbacks
 
-### Event System & Callbacks
-- [x] Core event emission infrastructure
-- [x] Sign-in success/error callbacks
-- [x] Paywall locked/unlocked callbacks
-- [x] Wallet connected/disconnected callbacks
-- [ ] Test all callback scenarios
-- [ ] Document callback API
-- [ ] Add TypeScript examples for callbacks
+### Demo & Tooling
+- [x] HTML demo with examples
+- [x] Hot-reload development setup
+- [x] Git ignore for bundles
+- [x] Basic documentation
 
-## Documentation & Testing 📚 PENDING
+---
+
+## 🚧 In Progress
+
+### Testing & Validation
+- [ ] Test sign-in with all auth strategies (social, wallet, email)
+- [ ] Verify JWT token accessible after sign-in
+- [ ] Test content gate with various HTML structures
+- [ ] Test multiple widgets on same page
+- [ ] Verify widget doesn't break existing SDK usage
+- [ ] Browser compatibility (Chrome, Firefox, Safari, Edge)
+- [ ] Mobile testing (iOS Safari, Chrome Android)
 
 ### Documentation
-- [ ] Create comprehensive README.md for widgets
-- [ ] CDN usage guide with examples
-- [ ] Sign-in widget API documentation
-- [ ] Paywall widget API documentation
-- [ ] Configuration options reference
-- [ ] Callback/event system guide
-- [ ] Migration guide for existing SDK users
+- [ ] Add JSDoc comments to widget components
+- [ ] Document all configuration options
+- [ ] Create TypeScript examples for callbacks
+- [ ] Add troubleshooting guide
+- [ ] Document bundle size optimizations
 
-### Demo & Testing
-- [ ] Create HTML demo page (sign-in + paywall)
-- [ ] Test on plain HTML site
-- [ ] Test on WordPress site
-- [ ] Test on Webflow site
-- [ ] Test multiple widgets on same page
-- [ ] Test widget doesn't break existing SDK functionality
-- [ ] Performance testing (bundle size, load time)
-- [ ] Browser compatibility testing
+---
 
-## Future Modal Support 🔮 FUTURE
+## 📋 Backlog
 
-These modal types are stubbed but not priority:
-- [ ] Manage Account Widget
-- [ ] Link Account Widget
-- [ ] AnySpend Payment Widget
-- [ ] Order History Widget
-- [ ] Stake B3 Widget
-- [ ] NFT Purchase Widget
-- [ ] Tournament Widget
-- [ ] BondKit Widget
-- [ ] Signature Mint Widget
-- [ ] Buy Spin Widget
-- [ ] Avatar Editor Widget
-- [ ] Profile Editor Widget
-- [ ] Deposit Widgets (Hype, Upside)
-- [ ] Collector Club Widget
+### Additional Widget Examples
+Priority order for new examples:
 
-## Build & Deployment 🚀 PENDING
+1. **NFT Gate** - Require specific NFT ownership
+2. **Token Gate** - Require X tokens to unlock
+3. **Subscription Widget** - Recurring payment content
+4. **Tipping Widget** - One-click creator tips
+5. **Tournament Entry** - Quick tournament registration
+6. **Collectible Purchase** - Inline NFT mint/buy
+7. **Profile Card** - Display user profile inline
+8. **Leaderboard** - Show rankings widget
 
-- [ ] Build widget bundle with `pnpm build:widget`
-- [ ] Test bundle in browser (file:// protocol)
-- [ ] Optimize bundle size (code splitting, tree shaking)
-- [ ] Generate source maps for debugging
+### Future Modal Support
+All 22 modal types are stubbed but not implemented:
+- Manage Account, Link Account, Profile Editor
+- AnySpend, Order History, Stake B3
+- NFT Purchase, Signature Mint, Buy Spin
+- Avatar Editor, Tournament
+- Deposit (Hype, Upside), Collector Club
+- BondKit
+
+### Build & Deployment
+- [ ] Optimize bundle size (currently ~25MB uncompressed)
 - [ ] Set up CDN deployment process
-- [ ] Create versioned CDN URLs (v1, v2, etc.)
-- [ ] Set up automated releases
+- [ ] Create versioned CDN URLs (v1/, v2/, latest/)
+- [ ] Automated release pipeline
+- [ ] Source map hosting
 
-## Open Questions ❓
+### Developer Experience
+- [ ] Framework wrappers (Vue, Svelte, Angular)
+- [ ] TypeScript strict mode support
+- [ ] Custom theming API
+- [ ] Analytics integration guide
+- [ ] Multi-language support
 
-1. Should paywall support partial payments (micropayments)?
-2. Should we add analytics/tracking to widgets?
-3. Should widgets support custom styling/theming?
-4. Should we provide framework-specific wrappers (Vue, Svelte, Angular)?
-5. How should we handle multi-language support?
+---
 
-## Notes
+## 🔮 Open Questions
 
-- Widget system is designed to not affect existing SDK functionality
-- All widgets are isolated with their own React roots
-- B3Provider wraps each widget instance independently
-- Paywall automatically unlocks when user signs in (unless payment required)
+1. Should we support custom styling/theming?
+2. Should widgets include built-in analytics?
+3. Should we provide React/Vue wrappers or keep vanilla?
+4. How to handle versioning when breaking changes needed?
+5. Should content gate support partial payment/micropayments?
 
+---
+
+## 📞 Next Immediate Steps
+
+1. **Complete testing checklist** - Verify all auth strategies
+2. **Add 2-3 new widget examples** - NFT gate, token gate, tipping
+3. **Optimize bundle size** - Tree shake unused code
+4. **Deploy to staging CDN** - Test real-world usage
+5. **User feedback** - Get feedback from real website integrations
+
+---
+
+**Last Updated**: Nov 25, 2025
+**Mainnet Ready**: ✅ Yes (B3 Mainnet chain configured)
