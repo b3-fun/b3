@@ -31,7 +31,7 @@
   </head>
   <body>
     <h1>🚀 B3 Widget - Basic Example</h1>
-    
+
     <p>This is the simplest possible implementation of B3 widgets.</p>
 
     <div class="example">
@@ -79,18 +79,17 @@
       // Check if B3Widget is available (it won't be until built and deployed)
       if (window.B3Widget) {
         window.B3Widget.init({
-          partnerId: 'demo-partner-id',
-          environment: 'development',
-          theme: 'light',
-          onSignIn: (data) => {
-            console.log('✅ Signed in!', data);
+          partnerId: "dbcd5e9b-564e-4ba0-91a0-becf0edabb61",
+          environment: "development",
+          theme: "light",
+          onSignIn: data => {
+            console.log("✅ Signed in!", data);
             alert(`Signed in with address: ${data.address}`);
           },
         });
       } else {
-        console.warn('B3 Widget SDK not loaded. Build the SDK first with: pnpm build:widget');
+        console.warn("B3 Widget SDK not loaded. Build the SDK first with: pnpm build:widget");
       }
     </script>
   </body>
 </html>
-

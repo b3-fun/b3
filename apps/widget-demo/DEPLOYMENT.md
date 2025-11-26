@@ -191,6 +191,7 @@ That's it! No React, no framework dependencies.
 **Symptom**: "B3 Widget SDK not loaded" error in console
 
 **Solutions**:
+
 1. For dev: Run `pnpm copy-widget` to copy SDK bundle
 2. For production: Ensure CDN URLs are correct
 3. Check browser console for 404 errors
@@ -200,6 +201,7 @@ That's it! No React, no framework dependencies.
 **Symptom**: Railway build fails
 
 **Solutions**:
+
 1. Ensure `pnpm-lock.yaml` is committed
 2. Check Railway build logs
 3. Verify `railway.json` is present
@@ -209,6 +211,7 @@ That's it! No React, no framework dependencies.
 **Symptom**: Port 3000 already in use
 
 **Solution**:
+
 ```bash
 # Use different port
 vite --port 3001
@@ -220,7 +223,7 @@ None needed! The demo is a static site with no backend.
 
 However, you may want to configure:
 
-- **Partner ID**: Hardcoded in HTML as `'demo-partner-id'`
+- **Partner ID**: Hardcoded in HTML as `'dbcd5e9b-564e-4ba0-91a0-becf0edabb61'`
 - Update in `index.html`, `examples/basic.html`, etc. before deploying
 
 ## 🎨 Customization
@@ -231,7 +234,7 @@ Find and replace in HTML files:
 
 ```javascript
 window.B3Widget.init({
-  partnerId: 'your-actual-partner-id', // ← Change this
+  partnerId: "your-actual-partner-id", // ← Change this
   // ...
 });
 ```
@@ -240,14 +243,15 @@ window.B3Widget.init({
 
 ```javascript
 window.B3Widget.init({
-  partnerId: 'your-id',
-  theme: 'dark', // or 'light'
+  partnerId: "your-id",
+  theme: "dark", // or 'light'
 });
 ```
 
 ### Modify Examples
 
 All examples are standalone HTML files. Edit directly:
+
 - `index.html` - Full featured demo
 - `examples/basic.html` - Minimal example
 - `examples/content-gate.html` - Article with gate
@@ -257,12 +261,14 @@ All examples are standalone HTML files. Edit directly:
 ### Update Widget SDK
 
 1. Build new SDK version:
+
 ```bash
 cd ../../packages/sdk
 pnpm build:widget
 ```
 
 2. Copy to demo (for local dev):
+
 ```bash
 cd ../../apps/widget-demo
 pnpm copy-widget
@@ -275,6 +281,7 @@ pnpm copy-widget
 Railway auto-deploys on git push to main branch.
 
 Or manually:
+
 ```bash
 railway up
 ```
@@ -297,6 +304,7 @@ railway up
 ## 🎉 Success!
 
 Once deployed, share these URLs:
+
 - Main demo for full documentation
 - Basic example for quick start
 - Content gate example for content creators
@@ -304,4 +312,3 @@ Once deployed, share these URLs:
 ---
 
 **Last Updated**: Nov 25, 2025
-
