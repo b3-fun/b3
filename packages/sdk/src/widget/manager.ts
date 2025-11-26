@@ -339,7 +339,10 @@ class WidgetManager {
       this.eventHandlers.set(eventType, new Set());
     }
 
-    this.eventHandlers.get(eventType)!.add(handler);
+    const handlers = this.eventHandlers.get(eventType);
+    if (handlers) {
+      handlers.add(handler);
+    }
 
     // Return unsubscribe function
     return () => {
