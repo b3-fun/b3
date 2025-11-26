@@ -31,13 +31,14 @@ import { cn } from "@b3dotfun/sdk/shared/utils";
 import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 
+import { toast } from "@b3dotfun/sdk/global-account/react";
 import { WalletCoinbase, WalletMetamask, WalletPhantom, WalletTrust, WalletWalletConnect } from "@web3icons/react";
 import { CheckIcon, ChevronRight, Copy, ExternalLink, Home, Loader2, RefreshCcw } from "lucide-react";
 import { motion } from "motion/react";
 import { QRCodeSVG } from "qrcode.react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import TimeAgo from "react-timeago";
-import { toast } from "sonner";
+
 import { encodeFunctionData, erc20Abi } from "viem";
 import { b3 } from "viem/chains";
 import { useWaitForTransactionReceipt, useWalletClient } from "wagmi";
@@ -1086,7 +1087,10 @@ export const OrderDetails = memo(function OrderDetails({
         />
       )}
 
-      <button className="order-details-cancel-btn flex w-full items-center justify-center gap-2" onClick={handleBack}>
+      <button
+        className="text-b3-primary-blue hover:text-b3-primary-blue/50 order-details-cancel-btn flex w-full items-center justify-center gap-2 underline"
+        onClick={handleBack}
+      >
         <RefreshCcw className="ml-2 h-4 w-4" /> Cancel and start over
       </button>
 

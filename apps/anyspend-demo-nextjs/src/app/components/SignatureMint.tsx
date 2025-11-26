@@ -5,11 +5,10 @@ import {
   useIsMintEligible,
   useSigMintCollection,
 } from "@b3dotfun/sdk/anyspend/react/hooks/useSigMint";
-import { useAccountWallet } from "@b3dotfun/sdk/global-account/react";
+import { toast, useAccountWallet } from "@b3dotfun/sdk/global-account/react";
 import { Button } from "@b3dotfun/sdk/global-account/react/components/custom/Button";
 import { useModalStore } from "@b3dotfun/sdk/global-account/react/stores/useModalStore";
 import { useRef, useState } from "react";
-import { toast } from "sonner";
 
 export function SignatureMint() {
   const { wallet } = useAccountWallet();

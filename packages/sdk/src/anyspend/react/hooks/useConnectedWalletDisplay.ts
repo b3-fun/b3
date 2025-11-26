@@ -18,7 +18,7 @@ export function useConnectedWalletDisplay(
   selectedCryptoPaymentMethod?: CryptoPaymentMethodType,
 ): UseConnectedWalletDisplayResult {
   const { connectedEOAWallet, connectedSmartWallet } = useAccountWallet();
-  const { address: wagmiAddress, isConnected: wagmiWalletIsConnected } = useAccount();
+  const { address: wagmiAddress } = useAccount();
 
   const globalWalletAddress = connectedSmartWallet?.getAccount()?.address;
 
@@ -35,7 +35,8 @@ export function useConnectedWalletDisplay(
 
   // Determine which wallet to show (prefer connectedEOAWallet if both exist and are the same)
   const shouldShowConnectedEOA = !!connectedEOAWallet;
-  const shouldShowWagmiWallet = wagmiWalletIsConnected && (!isWalletDuplicated || !connectedEOAWallet);
+  // this is disabled because we don't want to display In-App Wallet as a payment method
+  const shouldShowWagmiWallet = false; // wagmiWalletIsConnected && (!isWalletDuplicated || !connectedEOAWallet);
 
   // Determine which address to use based on payment method
   let walletAddress: string | undefined;

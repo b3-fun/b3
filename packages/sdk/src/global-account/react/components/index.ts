@@ -1,3 +1,4 @@
+// TODO woj: Barrel file for all components, this might be reason of bundle size issues
 // Core Components
 export { B3DynamicModal } from "./B3DynamicModal";
 export { B3Provider, InnerProvider } from "./B3Provider/B3Provider";
@@ -19,9 +20,14 @@ export { getConnectOptionsFromStrategy, isWalletType, type AllowedStrategy } fro
 // ManageAccount Components
 export { ManageAccount } from "./ManageAccount/ManageAccount";
 
-// Profile Components
-export { AvatarEditor } from "./AvatarEditor/AvatarEditor";
-export { ProfileEditor } from "./ProfileEditor/ProfileEditor";
+// Deposit Components
+export { Deposit } from "./Deposit/Deposit";
+
+// Send Components
+export { Send } from "./Send/Send";
+
+// Media Components
+export { IPFSMediaRenderer } from "./IPFSMediaRenderer/IPFSMediaRenderer";
 
 // RequestPermissions Components
 export { RequestPermissions } from "./RequestPermissions/RequestPermissions";
@@ -100,12 +106,12 @@ export { ScrollArea, ScrollBar } from "./ui/scroll-area";
 export { ShinyButton } from "./ui/ShinyButton";
 export { Skeleton } from "./ui/skeleton";
 export {
-  TabTrigger as TabTriggerPrimitive,
   TabsContent as TabsContentPrimitive,
   TabsList as TabsListPrimitive,
   Tabs as TabsPrimitive,
+  TabTrigger as TabTriggerPrimitive,
 } from "./ui/Tabs";
-export { TabTrigger, Tabs, TabsContent, TabsList, TabsTransitionWrapper } from "./ui/TabSystem";
+export { Tabs, TabsContent, TabsList, TabsTransitionWrapper, TabTrigger } from "./ui/TabSystem";
 export { TextLoop } from "./ui/text-loop";
 export { TextShimmer } from "./ui/text-shimmer";
 export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
@@ -113,3 +119,11 @@ export { TransitionPanel } from "./ui/transition-panel";
 
 // Magic UI Components
 export { AnimatedLottie } from "./magicui/AnimatedLottie";
+
+// Toast Components
+export { toast } from "./Toast/toastApi";
+export { Toast, ToastContainer } from "./Toast/ToastComponents";
+export { ToastProvider, useToastContext } from "./Toast/ToastContext";
+export type { ToastItem, ToastType } from "./Toast/ToastContext";
+
+export { default as WalletImage } from "./WalletImage/WalletImage";

@@ -1,8 +1,9 @@
+import { toast } from "@b3dotfun/sdk/global-account/react";
 import { PUBLIC_BASE_RPC_URL } from "@b3dotfun/sdk/shared/constants";
 import { b3Mainnet, b3Testnet } from "@b3dotfun/sdk/shared/constants/chains/supported";
 import { formatNumber } from "@b3dotfun/sdk/shared/utils/formatNumber";
 import { useQuery } from "@tanstack/react-query";
-import { toast } from "sonner";
+
 import { createPublicClient, formatEther, formatUnits, http } from "viem";
 import { fetchNativeTokenPriceWithChange } from "./useTokenPrice";
 interface NativeBalanceResponse {

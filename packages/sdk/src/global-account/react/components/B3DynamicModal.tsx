@@ -16,15 +16,20 @@ import { AnySpendStakeUpsideExactIn } from "@b3dotfun/sdk/anyspend/react/compone
 import { useGlobalAccount, useIsMobile, useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
+import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef } from "react";
 import { useSetActiveWallet } from "thirdweb/react";
 import { AvatarEditor } from "./AvatarEditor/AvatarEditor";
 import { useB3 } from "./B3Provider/useB3";
+import { Deposit } from "./Deposit/Deposit";
 import { LinkAccount } from "./LinkAccount/LinkAccount";
-import { ProfileEditor } from "./ProfileEditor/ProfileEditor";
+import { LinkNewAccount } from "./LinkAccount/LinkNewAccount";
 import { ManageAccount } from "./ManageAccount/ManageAccount";
+import NotificationsContent from "./ManageAccount/NotificationsContent";
 import { RequestPermissions } from "./RequestPermissions/RequestPermissions";
+import { Send } from "./Send/Send";
 import { SignInWithB3Flow } from "./SignInWithB3/SignInWithB3Flow";
+import { ToastContainer, useToastContext } from "./Toast/index";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "./ui/dialog";
 import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "./ui/drawer";
 import { AnySpendDepositUpside } from "@b3dotfun/sdk/anyspend/react/components/AnySpendDepositUpside";
@@ -32,12 +37,16 @@ import { AnySpendDepositUpside } from "@b3dotfun/sdk/anyspend/react/components/A
 const debug = debugB3React("B3DynamicModal");
 
 export function B3DynamicModal() {
-  const { isOpen, setB3ModalOpen, contentType, history, navigateBack } = useModalStore();
+  const isOpen = useModalStore(state => state.isOpen);
+  const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
+  const contentType = useModalStore(state => state.contentType);
+  const navigateBack = useModalStore(state => state.navigateBack);
   const { theme } = useB3();
   const isMobile = useIsMobile();
   const prevIsOpenRef = useRef(isOpen);
   const { wallet } = useGlobalAccount();
   const setActiveWallet = useSetActiveWallet();
+  const { toasts, removeToast } = useToastContext();
 
   // anyspend cleanup global account chnages by setting account back
   useEffect(() => {
@@ -66,8 +75,11 @@ export function B3DynamicModal() {
     "anySpendSignatureMint",
     "anySpendBondKit",
     "linkAccount",
+    "linkNewAccount",
     "avatarEditor",
-    "profileEditor",
+    "deposit",
+    "send",
+    "notifications",
   ];
 
   const freestyleTypes = [
@@ -85,7 +97,7 @@ export function B3DynamicModal() {
 
   // Check if current content type is in freestyle types
   const isFreestyleType = freestyleTypes.includes(contentType?.type as string);
-  const hideCloseButton = isFreestyleType;
+  const hideCloseButton = true;
 
   // Build content class using cn utility
   // eslint-disable-next-line tailwindcss/no-custom-classname
@@ -95,7 +107,10 @@ export function B3DynamicModal() {
     fullWidthTypes.includes(contentType?.type as string) && "w-full",
     isFreestyleType && "b3-modal-freestyle",
     contentType?.type === "signInWithB3" && "p-0",
-    contentType?.type === "anySpend" && "md:px-6",
+    contentType?.type === "anySpend" && "md:p-0",
+    contentType?.type === "send" && "p-0",
+    contentType?.type === "manageAccount" && " md:p-0 md:pt-2",
+    contentType?.type === "linkAccount" && "md:p-0",
     // Add specific styles for avatar editor
     // contentType?.type === "avatarEditor_disabled" &&
     //   "h-[90dvh] w-[90vw] bg-black p-0 overflow-y-auto overflow-x-hidden max-md:-mt-8 max-md:rounded-t-xl",
@@ -123,7 +138,7 @@ export function B3DynamicModal() {
       case "anySpendFundTournament":
         return <AnySpendTournament {...contentType} mode="modal" action="fund" />;
       case "anySpendOrderHistory":
-        return <OrderHistory onBack={() => {}} mode="modal" />;
+        return <OrderHistory {...contentType} mode="modal" />;
       case "anySpendStakeB3":
         return <AnySpendStakeB3 {...contentType} mode="modal" />;
       case "anySpendStakeB3ExactIn":
@@ -142,14 +157,20 @@ export function B3DynamicModal() {
         return <AnySpendBondKit {...contentType} />;
       case "linkAccount":
         return <LinkAccount {...contentType} />;
+      case "linkNewAccount":
+        return <LinkNewAccount {...contentType} />;
       case "anySpendDepositHype":
         return <AnySpendDepositHype {...contentType} mode="modal" />;
       case "anySpendCollectorClubPurchase":
         return <AnySpendCollectorClubPurchase {...contentType} mode="modal" />;
       case "avatarEditor":
         return <AvatarEditor onSetAvatar={contentType.onSuccess} />;
-      case "profileEditor":
-        return <ProfileEditor onSuccess={contentType.onSuccess} />;
+      case "deposit":
+        return <Deposit />;
+      case "send":
+        return <Send {...contentType} />;
+      case "notifications":
+        return <NotificationsContent {...contentType} />;
       // Add other modal types here
       default:
         return null;
@@ -168,17 +189,21 @@ export function B3DynamicModal() {
           contentClass,
           "rounded-2xl bg-white shadow-xl dark:bg-gray-900",
           "border border-gray-200 dark:border-gray-800",
-          // Remove default width classes for avatar editor and profile editor
-          contentType?.type === "avatarEditor" || contentType?.type === "profileEditor"
-            ? "!w-[90vw] !max-w-none" // Use !important to override default styles
-            : "mx-auto w-full max-w-md sm:max-w-lg",
+          (contentType?.type === "manageAccount" ||
+            contentType?.type === "deposit" ||
+            contentType?.type === "send" ||
+            contentType?.type === "avatarEditor" ||
+            contentType?.type === "notifications") &&
+            "p-0",
+          "mx-auto w-full max-w-md sm:max-w-lg",
         )}
         hideCloseButton={hideCloseButton}
       >
         <ModalTitle className="sr-only hidden">{contentType?.type || "Modal"}</ModalTitle>
         <ModalDescription className="sr-only hidden">{contentType?.type || "Modal Body"}</ModalDescription>
-        <div className={cn("no-scrollbar max-h-[90dvh] overflow-auto sm:max-h-[80dvh]")}>
-          {history.length > 0 && contentType?.showBackButton && (
+
+        <div className={cn("no-scrollbar flex max-h-[90dvh] flex-col overflow-auto sm:max-h-[80dvh]")}>
+          {!hideCloseButton && (
             <button
               onClick={navigateBack}
               className="flex items-center gap-2 px-6 py-4 text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
@@ -199,13 +224,47 @@ export function B3DynamicModal() {
                   strokeLinejoin="round"
                 />
               </svg>
-              <span className="text-sm font-medium">Back</span>
+              <span className="font-inter text-sm font-semibold">Back</span>
             </button>
           )}
-          {renderContent()}
+          <div className="flex-1">{renderContent()}</div>
+
+          {/* Toast Container - Part of modal-inner-content layer */}
+          <AnimatePresence>
+            {toasts.length > 0 && (
+              <motion.div
+                initial={{ height: 0 }}
+                animate={{ height: "auto" }}
+                exit={{ height: 0 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                className="toast-section relative z-10 overflow-hidden bg-white dark:border-gray-800 dark:bg-gray-900"
+              >
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2, delay: 0.1 }}
+                  className="p-4 pt-0"
+                >
+                  <ToastContainer toasts={toasts} onDismiss={removeToast} theme={theme} />
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </ModalContent>
-      {(contentType?.type === "avatarEditor" || contentType?.type === "profileEditor") && (
+
+      {/* Animate inner container margin to cover branding when toasts appear */}
+      {isOpen && (
+        <style>{`
+          .modal-inner-content {
+            transition: margin-bottom 0.3s ease-in-out;
+            margin-bottom: ${toasts.length > 0 ? "0px" : "23px"} !important;
+          }
+        `}</style>
+      )}
+
+      {contentType?.type === "avatarEditor" && (
         <button
           onClick={() => setB3ModalOpen(false)}
           className="fixed right-5 top-5 z-[100] cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"

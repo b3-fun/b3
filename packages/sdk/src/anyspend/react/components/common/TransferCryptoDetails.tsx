@@ -2,14 +2,14 @@
 
 import { ALL_CHAINS, getChainName, getPaymentUrl, RELAY_ETH_ADDRESS } from "@b3dotfun/sdk/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
-import { CopyToClipboard, ShinyButton, TextLoop } from "@b3dotfun/sdk/global-account/react";
+import { CopyToClipboard, ShinyButton, TextLoop, toast } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { WalletCoinbase, WalletMetamask, WalletPhantom, WalletTrust } from "@web3icons/react";
 import { ChevronLeft, Copy } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { memo, useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
+
 import { b3 } from "viem/chains";
 import { CryptoPaymentMethodType } from "./CryptoPaymentMethod";
 import { OrderDetailsCollapsible } from "./OrderDetailsCollapsible";

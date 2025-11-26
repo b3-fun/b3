@@ -112,3 +112,29 @@ export function useAccountWallet(): {
 
   return res;
 }
+
+export function useAccountWalletImage(): string {
+  const { account, user } = useB3();
+
+  const activeWallet = useActiveWallet();
+  const connectedWallets = useConnectedWallets();
+
+  const connectedSmartWallet = connectedWallets.find(wallet => wallet.id === ecosystemWalletId);
+  const connectedEOAWallet = connectedWallets.find(wallet => wallet.id !== ecosystemWalletId);
+  const isActiveSmartWallet = activeWallet?.id === connectedSmartWallet?.id;
+
+  const { data: walletImage } = useWalletImage(connectedEOAWallet?.id);
+
+  // If not EOA sign in, then we need to show the smart wallet icon
+  const lastAuthProvider = useLastAuthProvider();
+
+  const smartWalletIcon =
+    lastAuthProvider && !connectedEOAWallet
+      ? socialIcons[lastAuthProvider as keyof typeof socialIcons]
+      : "https://gradvatar.com/0x0000000000000000000000000000000000000000"; // show smart wallet of eoa wallet is gradvatar
+
+  const { data: profileData } = useProfile({ address: account?.address });
+  const avatarUrl = user?.avatar || profileData?.avatar;
+
+  return avatarUrl || (isActiveSmartWallet ? smartWalletIcon : walletImage) || "";
+}

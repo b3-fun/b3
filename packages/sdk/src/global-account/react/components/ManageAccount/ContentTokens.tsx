@@ -2,6 +2,7 @@ import { ALL_CHAINS, getExplorerTxUrl } from "@b3dotfun/sdk/anyspend";
 import { ChainTokenIcon } from "@b3dotfun/sdk/anyspend/react/components/common/ChainTokenIcon";
 import {
   Button,
+  toast,
   TransitionPanel,
   useAnalytics,
   useSimBalance,
@@ -12,7 +13,7 @@ import invariant from "invariant";
 import { ArrowLeft, CircleHelp, Copy, Loader2, Send } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { NumericFormat } from "react-number-format";
-import { toast } from "sonner";
+
 import { useActiveAccount } from "thirdweb/react";
 import { encodeFunctionData, erc20Abi, isAddress, parseUnits } from "viem";
 import { SimBalanceItem } from "../../hooks/useSimBalance";

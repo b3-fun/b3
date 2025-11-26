@@ -1,4 +1,5 @@
 import {
+  IPFSMediaRenderer,
   SignInWithB3,
   SignInWithB3ModalProps,
   StyleRoot,
@@ -12,7 +13,8 @@ import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { cn, truncateAddress } from "@b3dotfun/sdk/shared/utils";
 import { Menu, MenuButton, MenuItems, Transition } from "@headlessui/react";
 import { ReactNode, useEffect } from "react";
-import { useConnectedWallets, useSetActiveWallet, useWalletInfo } from "thirdweb/react";
+import { useConnectedWallets, useSetActiveWallet } from "thirdweb/react";
+import { useAccountWalletImage } from "../../hooks/useAccountWallet";
 import { ManageAccountButton } from "../custom/ManageAccountButton";
 
 type SignInProps = {
@@ -31,7 +33,6 @@ export function SignIn(props: SignInWithB3Props) {
   const { className } = props;
   const { automaticallySetFirstEoa, partnerId } = useB3();
   const {
-    wallet,
     address: globalAddress,
     ensName,
     connectedSmartWallet,
@@ -44,13 +45,11 @@ export function SignIn(props: SignInWithB3Props) {
 
   const isMobile = useIsMobile();
   const { logout } = useAuthentication(partnerId);
-  const onDisconnect = async () => {
+  const onDisconnect = async (): Promise<void> => {
     await logout();
   };
 
   const connectedWallets = useConnectedWallets();
-
-  const { data: walletInfo } = useWalletInfo(isActiveSmartWallet ? connectedSmartWallet?.id : connectedEOAWallet?.id);
 
   const setActiveWallet = useSetActiveWallet();
 
@@ -73,17 +72,19 @@ export function SignIn(props: SignInWithB3Props) {
     }
   }, [connectedEOAWallet, isActiveEOAWallet, setActiveWallet, automaticallySetFirstEoa]);
 
+  const walletImage = useAccountWalletImage();
+
   // Desktop version - original dropdown menu
   return (
     <StyleRoot>
       <Menu className={`relative flex items-center ${className || ""}`} as="div">
         {globalAddress ? (
           <>
-            <MenuButton className="bg-b3-react-background group flex h-10 items-center gap-1 rounded-xl px-3">
-              {!!wallet.meta?.icon && (
-                <img
-                  src={wallet.meta.icon}
-                  alt={wallet.meta.icon}
+            <MenuButton className="bg-b3-react-background group flex h-10 items-center gap-1 rounded-xl px-3 focus:outline-none">
+              {!!walletImage && (
+                <IPFSMediaRenderer
+                  src={walletImage}
+                  alt="Wallet Image"
                   className="bg-b3-react-primary h-6 w-6 rounded-full object-cover opacity-100"
                 />
               )}
@@ -98,7 +99,7 @@ export function SignIn(props: SignInWithB3Props) {
               leaveTo="scale-95 opacity-0"
             >
               <MenuItems
-                className="b3-root absolute -right-4 top-full min-w-64 rounded-2xl border lg:right-0"
+                className="b3-root absolute -right-4 top-full min-w-64 rounded-2xl border focus:outline-none lg:right-0"
                 modal={false}
                 // TODO: Figure out why setting anchor on mobile causes z-index issues where it appears under elements
                 anchor={isMobile ? "top end" : undefined}
@@ -120,7 +121,7 @@ export function SignIn(props: SignInWithB3Props) {
                         <div className="ml-4 grow">
                           {ensName && <div>{ensName}</div>}
                           <div>{truncateAddress(globalAddress)}</div>
-                          <div>{walletInfo?.name}</div>
+                          {/* <div>{walletInfo?.name}</div> */}
                         </div>
                       </div>
                       {isActiveEOAWallet && <Icon className="fill-b3-react-primary" name="check" />}
