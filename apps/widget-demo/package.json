@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "start": "vite preview --port $PORT --host 0.0.0.0",
+    "start": "vite preview --host",
     "widget:build": "bash ./scripts/dev-widget.sh",
     "widget:watch": "node ./scripts/watch-bundle.js",
     "dev:widget": "pnpm widget:build && concurrently --names 'SDK,COPY,DEMO' -c 'blue,yellow,green' 'pnpm --filter @b3dotfun/sdk dev:widget' 'pnpm widget:watch' 'pnpm dev'",
