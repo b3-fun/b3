@@ -10,27 +10,46 @@ export default defineConfig(({ command: _command, mode }) => {
   // Load env vars from .env files
   const env = loadEnv(mode, process.cwd(), "");
 
-  // Define default values based on command (serve vs build)
-  const defaults =
-    _command === "serve"
-      ? {
-          PUBLIC_B3_API: "http://localhost:3031",
-          PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID: "ceba2f84-45ff-4717-b3e9-0acf0d062abd", // Local dev
-          NEXT_PUBLIC_THIRDWEB_CLIENT_ID: "eb17a5ec4314526d42fc567821aeb9a6",
-          NEXT_PUBLIC_DEVMODE_SHARED_SECRET: "k1c4Ep6agmoejiBinKE70B6bzb8vSdm8",
-          NEXT_PUBLIC_LOCAL_KEY: "k1c4Ep6agmoejiBinKE70B6bzb8vSdm8", // same as above
-          NEXT_PUBLIC_TRANSAK_API_KEY: "d1f4e8be-cacb-4cfa-b2cd-c591084b5ef6",
-          NEXT_PUBLIC_THIRDWEB_ECOSYSTEM_ID: "ecosystem.b3dotfun",
-        }
-      : {
-          PUBLIC_B3_API: "https://api.b3.fun",
-          PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID: "dbcd5e9b-564e-4ba0-91a0-becf0edabb61",
-          NEXT_PUBLIC_THIRDWEB_CLIENT_ID: "f393c7eb287696dc4db76d980cc68328",
-          NEXT_PUBLIC_DEVMODE_SHARED_SECRET: "k1c4Ep6agmoejiBinKE70B6bzb8vSdm8",
-          NEXT_PUBLIC_LOCAL_KEY: "k1c4Ep6agmoejiBinKE70B6bzb8vSdm8", // same as above
-          NEXT_PUBLIC_TRANSAK_API_KEY: "d1f4e8be-cacb-4cfa-b2cd-c591084b5ef6",
-          NEXT_PUBLIC_THIRDWEB_ECOSYSTEM_ID: "ecosystem.b3-open-gaming",
-        };
+  // Define default values based on command (serve vs build) -- incorporate preview support
+  let defaults;
+  if (_command === "serve") {
+    defaults = {
+      PUBLIC_B3_API: "http://localhost:3031",
+      PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID: "ceba2f84-45ff-4717-b3e9-0acf0d062abd", // Local dev
+      NEXT_PUBLIC_THIRDWEB_CLIENT_ID: "eb17a5ec4314526d42fc567821aeb9a6",
+      NEXT_PUBLIC_DEVMODE_SHARED_SECRET: "k1c4Ep6agmoejiBinKE70B6bzb8vSdm8",
+      NEXT_PUBLIC_LOCAL_KEY: "k1c4Ep6agmoejiBinKE70B6bzb8vSdm8", // same as above
+      NEXT_PUBLIC_TRANSAK_API_KEY: "d1f4e8be-cacb-4cfa-b2cd-c591084b5ef6",
+      NEXT_PUBLIC_THIRDWEB_ECOSYSTEM_ID: "ecosystem.b3dotfun",
+    };
+  } else {
+    // Try to use .env* or system env for preview, fallback to prod defaults
+    defaults = {
+      PUBLIC_B3_API: env.PUBLIC_B3_API || process.env.PUBLIC_B3_API || "https://api.b3.fun",
+      PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID:
+        env.PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID ||
+        process.env.PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID ||
+        "dbcd5e9b-564e-4ba0-91a0-becf0edabb61",
+      NEXT_PUBLIC_THIRDWEB_CLIENT_ID:
+        env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID ||
+        process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID ||
+        "f393c7eb287696dc4db76d980cc68328",
+      NEXT_PUBLIC_DEVMODE_SHARED_SECRET:
+        env.NEXT_PUBLIC_DEVMODE_SHARED_SECRET ||
+        process.env.NEXT_PUBLIC_DEVMODE_SHARED_SECRET ||
+        "k1c4Ep6agmoejiBinKE70B6bzb8vSdm8",
+      NEXT_PUBLIC_LOCAL_KEY:
+        env.NEXT_PUBLIC_LOCAL_KEY || process.env.NEXT_PUBLIC_LOCAL_KEY || "k1c4Ep6agmoejiBinKE70B6bzb8vSdm8",
+      NEXT_PUBLIC_TRANSAK_API_KEY:
+        env.NEXT_PUBLIC_TRANSAK_API_KEY ||
+        process.env.NEXT_PUBLIC_TRANSAK_API_KEY ||
+        "d1f4e8be-cacb-4cfa-b2cd-c591084b5ef6",
+      NEXT_PUBLIC_THIRDWEB_ECOSYSTEM_ID:
+        env.NEXT_PUBLIC_THIRDWEB_ECOSYSTEM_ID ||
+        process.env.NEXT_PUBLIC_THIRDWEB_ECOSYSTEM_ID ||
+        "ecosystem.b3-open-gaming",
+    };
+  }
 
   // Merge env vars with defaults (.env takes precedence)
   const finalEnv = {
