@@ -24,7 +24,7 @@ export function WidgetWrapper({ instance }: { instance: WidgetInstance }) {
       widgetType: instance.type,
       config,
     });
-  }, []);
+  }, [config, instance.id, instance.type]);
 
   // Emit ready event on mount
   useEffect(() => {
@@ -73,7 +73,7 @@ export function WidgetWrapper({ instance }: { instance: WidgetInstance }) {
       connectors={config.connectors}
       overrideDefaultConnectors={config.overrideDefaultConnectors}
       createClientReferenceId={config.createClientReferenceId}
-      onConnect={(wallet, jwt) => {
+      onConnect={(wallet) => {
         console.log("[WidgetWrapper] Wallet connected", wallet);
         widgetManager.emit({
           type: "wallet-connected",

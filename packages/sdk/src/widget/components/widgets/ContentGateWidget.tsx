@@ -1,6 +1,6 @@
 import { useAuthStore, useB3, useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { Button } from "@b3dotfun/sdk/global-account/react/components/ui/button";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { widgetManager } from "../../manager";
 import { WidgetInstance } from "../../types";
 
@@ -97,14 +97,7 @@ export function ContentGateWidget({ instance }: { instance: WidgetInstance }) {
     };
   }, [contentElement, isUnlocked, gateThreshold, gateBlurAmount, gateHeight, gateSelector, gateClass, instance.id, instance.type]);
 
-  // Handle authentication state change
-  useEffect(() => {
-    if (isAuthenticated && !gateRequirePayment) {
-      handleUnlock();
-    }
-  }, [isAuthenticated, gateRequirePayment]);
-
-  const handleUnlock = () => {
+  const handleUnlock = useCallback(() => {
     setIsUnlocked(true);
     
     // Remove blur and overlay
@@ -123,7 +116,14 @@ export function ContentGateWidget({ instance }: { instance: WidgetInstance }) {
       },
       timestamp: Date.now(),
     });
-  };
+  }, [contentElement, instance.id, instance.type, gateSelector, gateClass]);
+
+  // Handle authentication state change
+  useEffect(() => {
+    if (isAuthenticated && !gateRequirePayment) {
+      handleUnlock();
+    }
+  }, [isAuthenticated, gateRequirePayment, handleUnlock]);
 
   const handleSignIn = () => {
     setB3ModalContentType({
@@ -213,8 +213,7 @@ function applyContentGateEffect(
     element.querySelectorAll<HTMLElement>("p, li, div:not(.b3-content-gate-overlay)")
   );
 
-  // Calculate where to start blurring
-  const visibleElements = contentElements.slice(0, options.threshold);
+  // Calculate where to start blurring (skip first N elements based on threshold)
   const hiddenElements = contentElements.slice(options.threshold);
 
   // Apply blur to hidden elements
