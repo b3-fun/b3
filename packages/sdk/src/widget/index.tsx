@@ -9,8 +9,8 @@ import "./styles.css";
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { B3Provider, SignInWithB3 } from "../global-account/react";
+import { b3MainnetThirdWeb, b3TestnetThirdWeb } from "../shared/constants/chains/supported";
 import { DebugModal } from "./DebugModal";
-import { b3TestnetThirdWeb, b3MainnetThirdWeb } from "../shared/constants/chains/supported";
 
 console.log("[B3Widget] Loaded");
 
@@ -24,10 +24,10 @@ function init(config: any = {}) {
   // Inject our React App into each
   widgetDivs.forEach((div, index) => {
     console.log(`[B3Widget] Rendering widget ${index + 1}`);
-    
+
     // Use appropriate chain based on environment
     const chain = config.environment === "production" ? b3MainnetThirdWeb : b3TestnetThirdWeb;
-    
+
     const root = createRoot(div);
     root.render(
       <React.StrictMode>
@@ -36,16 +36,12 @@ function init(config: any = {}) {
           environment={config.environment || "development"}
           theme={config.theme || "light"}
           automaticallySetFirstEoa={true}
-          onConnect={(wallet) => {
+          onConnect={wallet => {
             console.log("[B3Widget] Wallet connected:", wallet);
             config.onWalletConnected?.(wallet);
           }}
         >
-          <SignInWithB3 
-            partnerId={config.partnerId || ""} 
-            chain={chain}
-            buttonText="Sign in with B3"
-          />
+          <SignInWithB3 partnerId={config.partnerId || ""} chain={chain} buttonText="Sign in with B3" />
           <DebugModal />
         </B3Provider>
       </React.StrictMode>,
