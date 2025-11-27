@@ -1225,7 +1225,7 @@ function AnySpendInner({
             }
           }}
         >
-          {mode == "page" && <BottomNavigation />}
+          {mode !== "page" && <BottomNavigation />}
         </TabsPrimitive>
       </div>
     </div>

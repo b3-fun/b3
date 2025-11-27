@@ -31,8 +31,8 @@ async function fetchSimBalance(address: string, chainIdsParam: number[]): Promis
 
   const chainIds = chainIdsParam.length === 0 ? "mainnet" : chainIdsParam.join(",");
   let url = `https://simdune-api.sean-430.workers.dev/?url=https://api.sim.dune.com/v1/evm/balances/${address}?metadata=logo&chain_ids=${chainIds}&exclude_spam_tokens=true`;
-  if (process.env.NEXT_PUBLIC_SIMDUNE_LOCAL_KEY) {
-    url += `&localkey=${process.env.NEXT_PUBLIC_SIMDUNE_LOCAL_KEY}`;
+  if (process.env.NEXT_PUBLIC_DEVMODE_SHARED_SECRET) {
+    url += `&localkey=${process.env.NEXT_PUBLIC_DEVMODE_SHARED_SECRET}`;
   }
 
   const response = await fetch(url);

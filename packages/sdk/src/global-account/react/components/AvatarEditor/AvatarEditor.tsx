@@ -379,7 +379,9 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
       .filter(p => p.avatar !== null) || []; // Filter out profiles with invalid avatars
 
   return (
-    <div className={cn("b3-modal-avatar-editor flex w-full max-w-md flex-col bg-white", className)}>
+    <div
+      className={cn("b3-modal-avatar-editor dark:bg-b3-background flex w-full max-w-md flex-col bg-white", className)}
+    >
       {/* Header */}
       {viewStep === "upload" && <ModalHeader title="Upload Image" />}
 
@@ -405,7 +407,7 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
             {/* Upload Image Button */}
             <button
               onClick={handleUploadImageClick}
-              className="font-inter mb-6 flex w-full items-center justify-center gap-2 rounded-xl border border-[#e4e4e7] bg-white px-4 py-3 text-sm font-semibold text-[#18181b] shadow-sm transition-colors hover:bg-[#f4f4f5]"
+              className="font-inter dark:border-b3-line dark:bg-b3-react-primary mb-6 flex w-full items-center justify-center gap-2 rounded-xl border border-[#e4e4e7] bg-white px-4 py-3 text-sm font-semibold text-[#18181b] shadow-sm transition-colors hover:bg-[#f4f4f5] dark:text-white"
             >
               <Upload className="h-4 w-4" />
               Upload image
@@ -493,15 +495,15 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
                 className={cn(
                   "b3-modal-upload-view mb-6 flex w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-16 transition-colors",
                   isDragging
-                    ? "border-[#3368ef] bg-[#f0f5ff]"
-                    : "border-[#e4e4e7] hover:border-[#3368ef] hover:bg-[#f0f5ff]",
+                    ? "dark:border-b3-line dark:bg-b3-react-primary border-[#3368ef] bg-[#f0f5ff]"
+                    : "dark:border-b3-line dark:bg-b3-background border-[#e4e4e7] hover:border-[#3368ef] hover:bg-[#f0f5ff]",
                 )}
               >
                 <p className="font-inter mb-1 text-sm">
-                  <span className="font-semibold text-[#3368ef]">Click to upload</span>
+                  <span className="font-semibold text-[#3368ef] dark:text-white">Click to upload</span>
                   <span className="text-[#71717a]"> or drag and drop</span>
                 </p>
-                <p className="text-xs text-[#71717a]">PNG, JPG or GIF (up to 5MB)</p>
+                <p className="text-xs text-[#71717a] dark:text-white">PNG, JPG or GIF (up to 5MB)</p>
               </div>
             ) : (
               <div className="mb-6 w-full">
@@ -570,7 +572,7 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
           onClick={handleCancel}
           variant="outline"
           disabled={isLoading}
-          className="flex-1 rounded-xl border-[#e4e4e7] text-[#18181b] hover:bg-[#f4f4f5]"
+          className="dark:border-b3-line dark:bg-b3-background flex-1 rounded-xl border-[#e4e4e7] text-[#18181b] hover:bg-[#f4f4f5] dark:text-white"
         >
           Cancel
         </Button>

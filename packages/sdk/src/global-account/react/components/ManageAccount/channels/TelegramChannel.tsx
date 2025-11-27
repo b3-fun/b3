@@ -106,10 +106,10 @@ export const TelegramChannel = ({
   const inputSection =
     status === "pending" ? (
       <div className="mt-1">
-        <p className="font-['PP_Neue_Montreal','PP_Neue_Montreal_Fallback',sans-serif] text-[14px] leading-[20px] text-yellow-700">
+        <p className="font-['PP_Neue_Montreal','PP_Neue_Montreal_Fallback',sans-serif] text-[14px] leading-[20px] text-yellow-700 dark:text-white">
           Waiting for connection...
         </p>
-        <p className="font-['PP_Neue_Montreal','PP_Neue_Montreal_Fallback',sans-serif] text-[12px] text-yellow-600">
+        <p className="font-['PP_Neue_Montreal','PP_Neue_Montreal_Fallback',sans-serif] text-[12px] text-yellow-600 dark:text-white">
           Send /start to @b3_notifications_bot
         </p>
       </div>

@@ -191,7 +191,7 @@ const NotificationsContent = ({ partnerId, chain, onSuccess }: NotificationsCont
 
         {/* Notification Channels Container */}
         {userId && jwtToken && (
-          <div className="rounded-[20px] bg-[#f4f4f5]">
+          <div className="b3-modal-notifications-channels dark:bg-b3-background rounded-[20px] bg-[#f4f4f5]">
             <PhoneChannel
               userId={userId}
               jwtToken={jwtToken}

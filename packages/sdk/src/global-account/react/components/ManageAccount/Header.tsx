@@ -59,7 +59,7 @@ function WalletItem({ wallet, isActive, onClick }: { wallet: Wallet; isActive: b
   return (
     <div
       className={`b3-modal-wallet-item ${
-        isActive ? "b3-modal-wallet-item-active bg-[#F4F4F5]" : "hover:bg-b3-line/50"
+        isActive ? "b3-modal-wallet-item-active dark:bg-b3-line bg-[#F4F4F5]" : "hover:bg-b3-line/50"
       } box-border flex cursor-pointer items-center gap-2 rounded-xl px-3 py-2 transition-colors`}
       onClick={onClick}
     >
@@ -177,7 +177,7 @@ export function Header({ onLogout }: { onLogout?: () => void }) {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2, ease: "easeInOut" }}
-                className="b3-modal-wallet-switcher-content flex flex-col gap-3 rounded-bl-3xl rounded-br-3xl bg-white px-2 pb-5 pt-3 shadow-[0px_32px_64px_-12px_rgba(10,13,18,0.14),0px_5px_5px_-2.5px_rgba(10,13,18,0.04)]"
+                className="b3-modal-wallet-switcher-content dark:bg-b3-background flex flex-col gap-3 rounded-bl-3xl rounded-br-3xl bg-white px-2 pb-5 pt-3 shadow-[0px_32px_64px_-12px_rgba(10,13,18,0.14),0px_5px_5px_-2.5px_rgba(10,13,18,0.04)]"
               >
                 {/* Connected Wallets */}
                 <div className="flex flex-col gap-3">

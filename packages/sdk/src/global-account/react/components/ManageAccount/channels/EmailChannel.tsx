@@ -121,7 +121,7 @@ export const EmailChannel = ({
             }
           }}
           placeholder="your@email.com"
-          className={`w-full rounded-lg border px-2 py-1.5 font-['Inter',sans-serif] text-sm focus:outline-none ${
+          className={`dark:border-b3-line dark:bg-b3-background w-full rounded-lg border px-2 py-1.5 font-['Inter',sans-serif] text-sm focus:outline-none dark:text-white ${
             emailError ? "border-red-500 focus:border-red-500" : "border-gray-300 focus:border-blue-500"
           }`}
         />
