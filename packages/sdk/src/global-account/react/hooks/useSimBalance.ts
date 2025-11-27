@@ -90,8 +90,8 @@ async function fetchSimSvmBalance(address: string, chains?: string[], limit?: nu
   if (queryParams.toString()) {
     url += `?${queryParams.toString()}`;
   }
-  if (process.env.NEXT_PUBLIC_SIMDUNE_LOCAL_KEY) {
-    url += `${queryParams.toString() ? "&" : "?"}localkey=${process.env.NEXT_PUBLIC_SIMDUNE_LOCAL_KEY}`;
+  if (process.env.NEXT_PUBLIC_LOCAL_SIMDUNE_KEY) {
+    url += `${queryParams.toString() ? "&" : "?"}localkey=${process.env.NEXT_PUBLIC_LOCAL_SIMDUNE_KEY}`;
   }
 
   const response = await fetch(url);
