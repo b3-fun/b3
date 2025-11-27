@@ -289,6 +289,31 @@ html[data-theme="dark"] .b3-root,
   }
 }
 
+.b3-root[data-theme="dark"] .b3-modal {
+  @media (min-width: 768px) {
+    background: hsl(var(--b3-react-background));
+  }
+
+  .modal-inner-content {
+    background: hsl(var(--b3-background));
+    border: 1px solid hsl(var(--b3-line));
+  }
+
+  .b3-modal-home-actions > button {
+    background: hsl(var(--b3-background));
+  }
+
+  .b3-modal-bottom-navigation {
+    background: hsl(var(--b3-background));
+    border-top: 1px solid hsl(var(--b3-line));
+  }
+  .b3-modal-header {
+    background: hsl(var(--b3-background));
+    border-bottom: 1px solid hsl(var(--b3-line));
+    color: white;
+  }
+}
+
 .b3-modal-freestyle {
   background: transparent !important;
   padding: 0 !important;

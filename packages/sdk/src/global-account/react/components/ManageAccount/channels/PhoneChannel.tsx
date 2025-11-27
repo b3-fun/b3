@@ -148,7 +148,7 @@ export const PhoneChannel = ({
           }
         }}
         placeholder="+1 (555) 123-4567"
-        className="w-full rounded-lg border border-gray-300 px-2 py-1.5 font-['Inter',sans-serif] text-sm focus:border-blue-500 focus:outline-none"
+        className="dark:border-b3-line dark:bg-b3-background w-full rounded-lg border border-gray-300 px-2 py-1.5 font-['Inter',sans-serif] text-sm focus:border-blue-500 focus:outline-none dark:text-white"
       />
       <div className="flex gap-2">
         <button
@@ -165,7 +165,7 @@ export const PhoneChannel = ({
               strokeLinejoin="round"
             />
           </svg>
-          <span className="font-['Inter',sans-serif] text-[11px] font-semibold leading-[16px] text-[#0b57c2]">
+          <span className="font-['Inter',sans-serif] text-[11px] font-semibold leading-[16px] text-[#0b57c2] dark:text-white">
             {isConnectingSMS ? "Connecting..." : "Add SMS"}
           </span>
         </button>
@@ -195,12 +195,12 @@ export const PhoneChannel = ({
   const connectedInfo = (
     <>
       {isSMSConnected && (
-        <p className="font-['PP_Neue_Montreal','PP_Neue_Montreal_Fallback',sans-serif] text-[14px] leading-[20px] text-[#51525c]">
+        <p className="font-['PP_Neue_Montreal','PP_Neue_Montreal_Fallback',sans-serif] text-[14px] leading-[20px] text-[#51525c] dark:text-white">
           {smsChannel?.channel_identifier}
         </p>
       )}
       {isWhatsAppConnected && (
-        <p className="font-['PP_Neue_Montreal','PP_Neue_Montreal_Fallback',sans-serif] text-[14px] leading-[20px] text-[#51525c]">
+        <p className="font-['PP_Neue_Montreal','PP_Neue_Montreal_Fallback',sans-serif] text-[14px] leading-[20px] text-[#51525c] dark:text-white">
           {whatsappChannel?.channel_identifier}
         </p>
       )}

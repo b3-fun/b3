@@ -29,29 +29,31 @@ export const NotificationChannel = ({
   showBorder = true,
 }: NotificationChannelProps) => {
   return (
-    <div className={`flex items-start gap-3 p-[15px] ${showBorder ? "border-b border-[#e4e4e7]" : ""}`}>
+    <div
+      className={`b3-modal-notifications-channels-item dark:border-b3-line flex items-start gap-3 p-[15px] ${showBorder ? "border-b border-[#e4e4e7]" : ""}`}
+    >
       <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center", iconClassName)}>{icon}</div>
       <div className="flex-1">
-        <p className="font-['PP_Neue_Montreal','PP_Neue_Montreal_Fallback',sans-serif] text-[14px] font-semibold leading-[20px] text-[#3f3f46]">
+        <p className="font-['PP_Neue_Montreal','PP_Neue_Montreal_Fallback',sans-serif] text-[14px] font-semibold leading-[20px] text-[#3f3f46] dark:text-white">
           {title}
         </p>
         {isConnecting ? (
           <div className="mt-1">
-            <p className="font-['PP_Neue_Montreal','PP_Neue_Montreal_Fallback',sans-serif] text-[14px] leading-[20px] text-[#51525c]">
+            <p className="font-['PP_Neue_Montreal','PP_Neue_Montreal_Fallback',sans-serif] text-[14px] leading-[20px] text-[#51525c] dark:text-white">
               Connecting...
             </p>
           </div>
         ) : isDisconnecting ? (
           <div className="mt-1">
-            <p className="font-['PP_Neue_Montreal','PP_Neue_Montreal_Fallback',sans-serif] text-[14px] leading-[20px] text-[#51525c]">
+            <p className="font-['PP_Neue_Montreal','PP_Neue_Montreal_Fallback',sans-serif] text-[14px] leading-[20px] text-[#51525c] dark:text-white">
               Disconnecting...
             </p>
           </div>
         ) : isConnected && connectedInfo ? (
           <div className="mt-1">
-            <p className="font-['PP_Neue_Montreal','PP_Neue_Montreal_Fallback',sans-serif] text-[14px] leading-[20px] text-[#51525c]">
+            <div className="font-['PP_Neue_Montreal','PP_Neue_Montreal_Fallback',sans-serif] text-[14px] leading-[20px] text-[#51525c] dark:text-white">
               {connectedInfo}
-            </p>
+            </div>
           </div>
         ) : inputSection ? (
           inputSection

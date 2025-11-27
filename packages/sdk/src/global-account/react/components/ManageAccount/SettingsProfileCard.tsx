@@ -128,11 +128,11 @@ const SettingsProfileCard = () => {
         <IPFSMediaRenderer
           src={avatarSrc}
           alt="Profile"
-          className="border-black/8 size-14 rounded-full border object-cover"
+          className="border-b3-line dark:border-white/8 size-14 rounded-full border object-cover"
         />
         <button
           onClick={handleEditAvatar}
-          className="absolute -bottom-0.5 -right-0.5 flex size-[18px] items-center justify-center rounded-full border-[1.5px] border-white bg-[#a0a0ab] transition-colors hover:bg-[#a0a0ab]/80"
+          className="border-b3-line absolute -bottom-0.5 -right-0.5 flex size-[18px] items-center justify-center rounded-full border-[1.5px] bg-[#a0a0ab] transition-colors hover:bg-[#a0a0ab]/80 dark:border-white"
           aria-label="Edit avatar"
         >
           <Pencil size={10} className="text-white" strokeWidth={2.5} />
@@ -185,7 +185,7 @@ const SettingsProfileCard = () => {
               onClick={handleEditUsername}
               className="flex items-center justify-center gap-1 text-left transition-opacity hover:opacity-80"
             >
-              <p className="font-inter text-sm font-semibold leading-5 text-[#51525C]">Edit Username</p>
+              <p className="font-inter text-sm font-semibold leading-5 text-[#51525C] dark:text-white">Edit Username</p>
             </button>
           </>
         )}
