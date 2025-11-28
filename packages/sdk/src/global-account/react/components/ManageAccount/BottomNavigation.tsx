@@ -48,7 +48,7 @@ const BottomNavigation = () => {
       <TabsListPrimitive className="flex h-[68px] w-full items-center justify-center gap-4 border-none bg-transparent">
         <TabTriggerPrimitive
           value="home"
-          className="data-[state=active]:border-b3-primary-blue group flex flex-initial flex-col items-center gap-1 border-r-0 border-t-0 px-6 pb-2 pt-2.5 text-[#a0a0ab] data-[state=active]:border-t-4 data-[state=active]:text-[#18181B]"
+          className="data-[state=active]:border-b3-primary-blue group flex flex-initial flex-col items-center gap-1 border-r-0 border-t-0 px-6 pb-2 pt-2.5 text-[#a0a0ab] data-[state=active]:border-t-4 data-[state=active]:text-[#18181B] dark:data-[state=active]:text-white"
         >
           <HomeIcon />
           <span className="text-b3-grey font-neue-montreal-semibold text-xs">Home</span>
@@ -56,7 +56,7 @@ const BottomNavigation = () => {
 
         <TabTriggerPrimitive
           value="swap"
-          className="data-[state=active]:border-b3-primary-blue group flex flex-initial flex-col items-center gap-1 border-r-0 border-t-0 px-6 pb-2 pt-2.5 text-[#a0a0ab] data-[state=active]:border-t-4 data-[state=active]:text-[#18181B]"
+          className="data-[state=active]:border-b3-primary-blue group flex flex-initial flex-col items-center gap-1 border-r-0 border-t-0 px-6 pb-2 pt-2.5 text-[#a0a0ab] data-[state=active]:border-t-4 data-[state=active]:text-[#18181B] dark:data-[state=active]:text-white"
           onClick={() => {
             setB3ModalContentType({
               type: "anySpend",
@@ -70,7 +70,7 @@ const BottomNavigation = () => {
 
         <TabTriggerPrimitive
           value="settings"
-          className="data-[state=active]:border-b3-primary-blue group flex flex-initial flex-col items-center gap-1 border-r-0 border-t-0 px-6 pb-2 pt-2.5 text-[#a0a0ab] data-[state=active]:border-t-4 data-[state=active]:text-[#18181B]"
+          className="data-[state=active]:border-b3-primary-blue group flex flex-initial flex-col items-center gap-1 border-r-0 border-t-0 px-6 pb-2 pt-2.5 text-[#a0a0ab] data-[state=active]:border-t-4 data-[state=active]:text-[#18181B] dark:data-[state=active]:text-white"
         >
           <SettingsIcon />
           <span className="text-b3-grey font-neue-montreal-semibold text-xs">Settings</span>

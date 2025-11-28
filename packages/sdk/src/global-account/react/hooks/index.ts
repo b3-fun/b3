@@ -39,7 +39,7 @@ export { useQueryBSMNT } from "./useQueryBSMNT";
 export { useRemoveSessionKey } from "./useRemoveSessionKey";
 export { useRouter } from "./useRouter";
 export { useSearchParamsSSR } from "./useSearchParamsSSR";
-export { useSimBalance } from "./useSimBalance";
+export { useSimBalance, useSimSvmBalance } from "./useSimBalance";
 export { useSiwe } from "./useSiwe";
 export { useTokenBalance } from "./useTokenBalance";
 export { useTokenBalanceDirect } from "./useTokenBalanceDirect";

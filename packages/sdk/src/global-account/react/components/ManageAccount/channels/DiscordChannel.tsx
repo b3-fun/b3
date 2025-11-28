@@ -30,6 +30,7 @@ export const DiscordChannel = ({
 
   const [discordId, setDiscordId] = useState("");
   const [isConnecting, setIsConnecting] = useState(false);
+  const [showInput, setShowInput] = useState(false);
 
   // Detect if we're disconnecting
   const isDisconnecting = isConnected && !isOptimisticallyConnected;
@@ -43,6 +44,7 @@ export const DiscordChannel = ({
       await notificationsAPI.ensureNotificationSettings(userId, partnerId, "general", jwtToken);
 
       setDiscordId("");
+      setShowInput(false);
       toast.success("Discord connected successfully!");
       onConnectionChange();
     } catch (err: any) {
@@ -54,6 +56,9 @@ export const DiscordChannel = ({
   };
 
   const handleToggle = () => {
+    if (isConnected) {
+      setShowInput(false);
+    }
     onToggle(isConnected);
   };
 
@@ -67,7 +72,24 @@ export const DiscordChannel = ({
     </svg>
   );
 
-  const inputSection = (
+  const addButtonSection = (
+    <button onClick={() => setShowInput(true)} className="mt-1 flex items-center gap-1">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path
+          d="M8 3.33333V12.6667M3.33333 8H12.6667"
+          stroke="#0c68e9"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+      <span className="font-['Inter',sans-serif] text-[11px] font-semibold leading-[16px] text-[#0b57c2]">
+        Add Discord
+      </span>
+    </button>
+  );
+
+  const inputSection = showInput ? (
     <div className="mt-1 space-y-2">
       <input
         type="text"
@@ -100,7 +122,7 @@ export const DiscordChannel = ({
         </span>
       </button>
     </div>
-  );
+  ) : null;
 
   return (
     <NotificationChannel
@@ -112,6 +134,7 @@ export const DiscordChannel = ({
       isDisconnecting={isDisconnecting}
       connectedInfo={discordChannel?.channel_identifier}
       inputSection={inputSection}
+      addButtonSection={addButtonSection}
       onToggle={handleToggle}
       showBorder={false}
     />

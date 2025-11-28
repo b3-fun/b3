@@ -36,19 +36,19 @@ const ModalHeader = ({
           onClick={handleBack || navigateBack}
           className="flex h-6 w-6 items-center justify-center transition-opacity hover:opacity-70"
         >
-          <ChevronLeft className="h-6 w-6 text-[#51525c]" />
+          <ChevronLeft className="h-6 w-6 text-[#51525c] dark:text-white" />
           {showBackWord && <span className="text-sm font-medium">Back</span>}
         </button>
       ) : (
         <div className="w-2" />
       )}
-      <p className="font-inter text-lg font-semibold leading-7 text-[#18181b]">{title}</p>
+      <p className="font-inter text-lg font-semibold leading-7 text-[#18181b] dark:text-white">{title}</p>
       {showCloseButton ? (
         <button
           onClick={handleClose || (() => setB3ModalOpen(false))}
           className="flex h-6 w-6 items-center justify-center transition-opacity hover:opacity-70"
         >
-          <X className="h-6 w-6 text-[#51525c]" />
+          <X className="h-6 w-6 text-[#51525c] dark:text-white" />
         </button>
       ) : !children ? (
         <div className="w-2" />

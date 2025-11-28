@@ -240,7 +240,7 @@ export function Send({ recipientAddress: initialRecipient, onSuccess }: SendModa
   };
 
   return (
-    <div className="flex h-[600px] w-full flex-col bg-white">
+    <div className="dark:bg-b3-background flex h-[600px] w-full flex-col bg-white">
       <ModalHeader handleBack={handleBack} title={getStepTitle()} />
 
       {/* Content - 20px padding */}
@@ -248,10 +248,10 @@ export function Send({ recipientAddress: initialRecipient, onSuccess }: SendModa
         {step === "recipient" && (
           <div className="flex flex-col gap-6 p-5">
             {/* Input field - 48px height */}
-            <div className="flex h-12 w-full items-stretch overflow-hidden rounded-lg border border-[#d1d1d6] bg-white">
+            <div className="dark:border-b3-line dark:bg-b3-background flex h-12 w-full items-stretch overflow-hidden rounded-lg border border-[#d1d1d6] bg-white">
               {/* "To" addon - 48px width */}
               <div className="flex w-12 items-center justify-center bg-transparent px-3 py-2">
-                <span className="font-neue-montreal-medium text-base text-[#3f3f46]">To</span>
+                <span className="font-neue-montreal-medium text-base text-[#3f3f46] dark:text-white">To</span>
               </div>
               {/* Input */}
               <div className="flex flex-1 items-center border-l border-[#d1d1d6] px-3 py-2">
@@ -260,7 +260,7 @@ export function Send({ recipientAddress: initialRecipient, onSuccess }: SendModa
                   value={recipientAddress}
                   onChange={e => handleRecipientAddressChange(e.target.value)}
                   placeholder="ENS or Address"
-                  className="font-neue-montreal-medium flex-1 text-base text-[#70707b] outline-none placeholder:text-[#70707b]"
+                  className="font-neue-montreal-medium dark:bg-b3-background flex-1 text-base text-[#70707b] outline-none placeholder:text-[#70707b] dark:text-white dark:placeholder:text-white"
                 />
                 {/* Paste badge */}
                 <button
@@ -287,7 +287,7 @@ export function Send({ recipientAddress: initialRecipient, onSuccess }: SendModa
                 {/* Validated Address Card */}
                 <button
                   onClick={handleSelectValidatedAddress}
-                  className="flex items-center gap-2 rounded-xl bg-[#f4f4f5] px-3 py-2 transition-colors hover:bg-[#e4e4e7]"
+                  className="dark:bg-b3-background dark:border-b3-line flex items-center gap-2 rounded-xl bg-[#f4f4f5] px-3 py-2 transition-colors hover:bg-[#e4e4e7]"
                 >
                   {/* Avatar */}
                   {validatedProfileData?.avatar ? (
@@ -297,12 +297,12 @@ export function Send({ recipientAddress: initialRecipient, onSuccess }: SendModa
                       className="h-10 w-10 rounded-full"
                     />
                   ) : (
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#e4e4e7] bg-[#f4f4f5]">
-                      <Wallet className="h-5 w-5 text-[#a0a0ab]" />
+                    <div className="dark:border-b3-line dark:bg-b3-background flex h-10 w-10 items-center justify-center rounded-full border border-[#e4e4e7] bg-[#f4f4f5]">
+                      <Wallet className="h-5 w-5 text-[#a0a0ab] dark:text-white" />
                     </div>
                   )}
                   {/* Address and Name */}
-                  <span className="font-neue-montreal-medium text-base tracking-[-0.32px] text-[#70707b]">
+                  <span className="font-neue-montreal-medium text-base tracking-[-0.32px] text-[#70707b] dark:text-white">
                     {recipientAddress.slice(0, 6)}...{recipientAddress.slice(-4)}
                     {validatedProfileData?.name && ` (${validatedProfileData.name})`}
                   </span>
@@ -420,7 +420,7 @@ export function Send({ recipientAddress: initialRecipient, onSuccess }: SendModa
         {step === "amount" && selectedToken && (
           <div className="flex flex-col gap-6 p-5">
             {/* Selected Token Display */}
-            <div className="flex items-center justify-between rounded-xl border border-[#d1d1d6] bg-[#fafafa] p-3">
+            <div className="dark:border-b3-line dark:bg-b3-background flex items-center justify-between rounded-xl border border-[#d1d1d6] bg-[#fafafa] p-3">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center">
                   {ALL_CHAINS[selectedToken.chain_id]?.logoUrl ? (
@@ -434,15 +434,17 @@ export function Send({ recipientAddress: initialRecipient, onSuccess }: SendModa
                   )}
                 </div>
                 <div>
-                  <div className="font-neue-montreal-semibold text-base text-[#18181b]">{selectedToken.symbol}</div>
-                  <div className="font-neue-montreal-medium text-sm text-[#70707b]">
+                  <div className="font-neue-montreal-semibold text-base text-[#18181b] dark:text-white">
+                    {selectedToken.symbol}
+                  </div>
+                  <div className="font-neue-montreal-medium text-sm text-[#70707b] dark:text-white">
                     {formatTokenAmount(BigInt(selectedToken.amount), selectedToken.decimals)}
                   </div>
                 </div>
               </div>
               <button
                 onClick={() => setStep("token")}
-                className="text-b3-primary-blue font-neue-montreal-semibold hover:text-b3-primary-blue/80 text-sm transition-colors"
+                className="text-b3-primary-blue font-neue-montreal-semibold hover:text-b3-primary-blue/80 text-sm transition-colors dark:text-white"
               >
                 Change
               </button>
@@ -462,7 +464,7 @@ export function Send({ recipientAddress: initialRecipient, onSuccess }: SendModa
                 minLength={1}
                 maxLength={30}
                 spellCheck="false"
-                className="font-neue-montreal-medium placeholder:text-b3-foreground-muted w-full rounded-lg border border-[#d1d1d6] bg-white px-3 py-2 text-base text-[#18181b] outline-none focus:border-[#0c68e9]"
+                className="font-neue-montreal-medium placeholder:text-b3-foreground-muted dark:border-b3-line dark:bg-b3-background w-full rounded-lg border border-[#d1d1d6] bg-white px-3 py-2 text-base text-[#18181b] outline-none focus:border-[#0c68e9] dark:text-white"
                 pattern="^[0-9]*[.,]?[0-9]*$"
                 disabled={isSending}
                 value={sendAmount}
@@ -477,7 +479,7 @@ export function Send({ recipientAddress: initialRecipient, onSuccess }: SendModa
                     key={percentage}
                     variant="outline"
                     onClick={() => handlePercentageClick(percentage)}
-                    className="font-neue-montreal-medium border-[#d1d1d6] text-sm text-[#18181b] hover:bg-[#fafafa]"
+                    className="font-neue-montreal-medium dark:border-b3-line dark:bg-b3-background border-[#d1d1d6] text-sm text-[#18181b] hover:bg-[#fafafa] dark:text-white"
                     disabled={isSending}
                   >
                     {percentage}%
@@ -508,16 +510,16 @@ export function Send({ recipientAddress: initialRecipient, onSuccess }: SendModa
             {/* Top section with icon and amount */}
             <div className="flex flex-col items-center gap-4 px-5 pb-0 pt-6">
               {/* Send icon */}
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#d5e5fd]">
+              <div className="dark:bg-b3-line flex h-14 w-14 items-center justify-center rounded-full bg-[#d5e5fd]">
                 <SendIcon className="h-7 w-7 text-[#0c68e9]" />
               </div>
 
               {/* Amount */}
               <div className="flex items-center gap-1">
-                <span className="font-neue-montreal-semibold text-[30px] leading-[38px] text-[#18181b]">
+                <span className="font-neue-montreal-semibold text-[30px] leading-[38px] text-[#18181b] dark:text-white">
                   {sendAmount}
                 </span>
-                <span className="font-neue-montreal-semibold text-[30px] leading-[38px] text-[#70707b]">
+                <span className="font-neue-montreal-semibold text-[30px] leading-[38px] text-[#70707b] dark:text-white">
                   {selectedToken.symbol}
                 </span>
               </div>
@@ -528,21 +530,23 @@ export function Send({ recipientAddress: initialRecipient, onSuccess }: SendModa
 
             {/* Transaction details */}
             <div className="flex flex-col gap-3 px-5">
-              <div className="rounded-xl border border-[#e4e4e7] bg-[#fafafa] p-4">
+              <div className="dark:border-b3-line dark:bg-b3-background rounded-xl border border-[#e4e4e7] bg-[#fafafa] p-4">
                 <div className="flex flex-col gap-3">
                   {/* To */}
-                  <div className="flex items-center justify-between border-b border-[#e4e4e7] pb-3">
-                    <span className="font-inter text-sm font-normal leading-5 text-[#51525c]">To</span>
-                    <span className="font-inter text-sm font-normal leading-5 text-[#18181b]">
+                  <div className="dark:border-b3-line flex items-center justify-between border-b border-[#e4e4e7] pb-3">
+                    <span className="font-inter text-sm font-normal leading-5 text-[#51525c] dark:text-white">To</span>
+                    <span className="font-inter text-sm font-normal leading-5 text-[#18181b] dark:text-white">
                       Wallet ({recipientAddress.slice(0, 6)}...{recipientAddress.slice(-4)})
                     </span>
                   </div>
 
                   {/* Network */}
-                  <div className="flex items-center justify-between border-b border-[#e4e4e7] pb-3">
-                    <span className="font-inter text-sm font-normal leading-5 text-[#51525c]">Network</span>
+                  <div className="dark:border-b3-line flex items-center justify-between border-b border-[#e4e4e7] pb-3">
+                    <span className="font-inter text-sm font-normal leading-5 text-[#51525c] dark:text-white">
+                      Network
+                    </span>
                     <div className="flex items-center gap-1.5">
-                      <span className="font-inter text-sm font-normal leading-5 text-[#51525c]">
+                      <span className="font-inter text-sm font-normal leading-5 text-[#51525c] dark:text-white">
                         {ALL_CHAINS[selectedToken.chain_id]?.name || "Unknown"}
                       </span>
                       {ALL_CHAINS[selectedToken.chain_id]?.logoUrl && (
@@ -557,8 +561,12 @@ export function Send({ recipientAddress: initialRecipient, onSuccess }: SendModa
 
                   {/* Network fee */}
                   <div className="flex items-center justify-between">
-                    <span className="font-inter text-sm font-normal leading-5 text-[#51525c]">Network fee</span>
-                    <span className="font-inter text-sm font-normal leading-5 text-[#18181b]">$0.1</span>
+                    <span className="font-inter text-sm font-normal leading-5 text-[#51525c] dark:text-white">
+                      Network fee
+                    </span>
+                    <span className="font-inter text-sm font-normal leading-5 text-[#18181b] dark:text-white">
+                      $0.1
+                    </span>
                   </div>
                 </div>
               </div>
@@ -568,7 +576,7 @@ export function Send({ recipientAddress: initialRecipient, onSuccess }: SendModa
             <div className="flex-1" />
 
             {/* Bottom buttons */}
-            <div className="flex gap-4 border-t border-[#e4e4e7] bg-[#fafafa] p-4">
+            <div className="dark:border-b3-line dark:bg-b3-background flex gap-4 border-t border-[#e4e4e7] bg-[#fafafa] p-4">
               <Button
                 onClick={handleBack}
                 disabled={isSending}

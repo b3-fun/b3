@@ -11,6 +11,7 @@ import {
   OrderHistory,
 } from "@b3dotfun/sdk/anyspend/react";
 import { AnySpendDepositHype } from "@b3dotfun/sdk/anyspend/react/components/AnyspendDepositHype";
+import { AnySpendDepositUpside } from "@b3dotfun/sdk/anyspend/react/components/AnySpendDepositUpside";
 import { AnySpendStakeUpside } from "@b3dotfun/sdk/anyspend/react/components/AnySpendStakeUpside";
 import { AnySpendStakeUpsideExactIn } from "@b3dotfun/sdk/anyspend/react/components/AnySpendStakeUpsideExactIn";
 import { useGlobalAccount, useIsMobile, useModalStore } from "@b3dotfun/sdk/global-account/react";
@@ -33,7 +34,6 @@ import { TurnkeyAuthModal } from "./TurnkeyAuthModal";
 import { ToastContainer, useToastContext } from "./Toast/index";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "./ui/dialog";
 import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "./ui/drawer";
-import { AnySpendDepositUpside } from "@b3dotfun/sdk/anyspend/react/components/AnySpendDepositUpside";
 
 const debug = debugB3React("B3DynamicModal");
 
@@ -221,7 +221,11 @@ export function B3DynamicModal() {
         <ModalTitle className="sr-only hidden">{contentType?.type || "Modal"}</ModalTitle>
         <ModalDescription className="sr-only hidden">{contentType?.type || "Modal Body"}</ModalDescription>
 
-        <div className={cn("no-scrollbar flex max-h-[90dvh] flex-col overflow-auto sm:max-h-[80dvh]")}>
+        <div
+          className={cn(
+            "b3-modal-content no-scrollbar dark:bg-b3-background flex max-h-[90dvh] flex-col overflow-auto sm:max-h-[80dvh]",
+          )}
+        >
           {!hideCloseButton && (
             <button
               onClick={navigateBack}
