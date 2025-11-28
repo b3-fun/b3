@@ -26,3 +26,12 @@ doppler.yaml
 .env*
 
 CURRENT_WORK.md
+
+
+.parcel-cache
+
+# Widget bundles (generated in CI/CD)
+packages/sdk/bundles/
+apps/widget-demo/public/widget/*.js
+apps/widget-demo/public/widget/*.css
+apps/widget-demo/public/widget/*.map

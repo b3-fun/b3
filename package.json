@@ -31,9 +31,11 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@parcel/transformer-typescript-types": "2.16.1",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "ts-node": "^10.9.2",
-    "turbo": "^2.5.6"
+    "turbo": "^2.5.6",
+    "typescript": "^5.8.2"
   },
   "pnpm": {
     "overrides": {

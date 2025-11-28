@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>B3 Widget - Content Gate Example</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        max-width: 800px;
+        margin: 40px auto;
+        padding: 20px;
+        line-height: 1.8;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 0;
+        border-bottom: 2px solid #eee;
+        margin-bottom: 30px;
+      }
+      h1 {
+        color: #3368ef;
+        font-size: 1.5rem;
+        margin: 0;
+      }
+      article {
+        margin: 30px 0;
+      }
+      article h2 {
+        color: #333;
+        margin-bottom: 20px;
+      }
+      article p {
+        color: #555;
+        margin-bottom: 20px;
+      }
+      .demo-note {
+        background: #e3f2fd;
+        border-left: 4px solid #2196f3;
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>📰 The Tech Journal</h1>
+      <div data-b3-widget="sign-in" data-b3-button-text="Sign In"></div>
+    </header>
+
+    <div class="demo-note">
+      <strong>👀 Try this:</strong> Scroll down to see the paywall blur effect. Sign in to unlock the full article!
+    </div>
+
+    <article id="premium-article">
+      <h2>The Future of Decentralized Identity</h2>
+
+      <p>
+        In the rapidly evolving landscape of Web3, decentralized identity is emerging as a cornerstone technology that
+        promises to revolutionize how we interact online. Unlike traditional identity systems that rely on centralized
+        authorities, decentralized identity puts users in control of their own data.
+      </p>
+
+      <p>
+        The concept is simple yet powerful: instead of creating separate accounts for each service, users maintain a
+        single, portable identity that works across the entire web. This identity is secured by cryptographic keys that
+        only the user controls, ensuring both privacy and security.
+      </p>
+
+      <p>
+        Major tech companies and governments are starting to recognize the potential of this technology. From financial
+        services to healthcare, the applications are virtually limitless. But what makes decentralized identity truly
+        revolutionary is its ability to empower individuals.
+      </p>
+
+      <p>
+        🔒 <strong>This content is premium.</strong> The remaining paragraphs are restricted. Sign in with your B3
+        account to continue reading this article and access our entire archive of premium content. It's free and takes
+        less than 30 seconds!
+      </p>
+
+      <p>
+        The technical implementation of decentralized identity relies on several key technologies. At its core are
+        Decentralized Identifiers (DIDs), which provide a new type of identifier that enables verifiable, self-sovereign
+        digital identity. These DIDs are created, owned, and controlled by the identity owner, not by any central
+        authority.
+      </p>
+
+      <p>
+        Verifiable Credentials (VCs) are another crucial component. These are cryptographically secure, tamper-proof
+        credentials that can be presented to verify claims about the identity holder. Think of them as digital versions
+        of your driver's license or passport, but with far more flexibility and security.
+      </p>
+
+      <p>
+        The implications for privacy are profound. With decentralized identity, you can prove you're over 18 without
+        revealing your exact birthdate. You can prove you're a licensed professional without sharing your personal
+        details. This selective disclosure is a game-changer for online privacy.
+      </p>
+
+      <p>
+        Looking ahead, we can expect to see decentralized identity become the standard for online authentication. The
+        technology is maturing rapidly, and the ecosystem of tools and services is expanding. For users, this means more
+        control, better privacy, and a more seamless experience across the web.
+      </p>
+
+      <p>
+        The B3 platform is at the forefront of this revolution, providing the infrastructure needed to make
+        decentralized identity accessible to everyone. By combining cutting-edge cryptography with intuitive user
+        experiences, B3 is helping to build the future of online identity.
+      </p>
+    </article>
+
+    <!-- Content Gate Widget -->
+    <div
+      data-b3-widget="content-gate"
+      data-b3-gate-selector="#premium-article"
+      data-b3-gate-threshold="3"
+      data-b3-gate-blur="10px"
+      data-b3-gate-height="450px"
+      data-b3-gate-message="Unlock this premium article"
+      data-b3-gate-button-text="Sign In to Continue Reading"
+    ></div>
+
+    <!-- Include B3 Widget SDK -->
+    <link href="https://cdn.b3.fun/widget/v1/b3-widget.css" rel="stylesheet" />
+    <script src="https://cdn.b3.fun/widget/v1/b3-widget.js"></script>
+
+    <!-- Initialize -->
+    <script>
+      if (window.B3Widget) {
+        window.B3Widget.init({
+          partnerId: "dbcd5e9b-564e-4ba0-91a0-becf0edabb61",
+          environment: "development",
+          theme: "light",
+
+          onSignIn: data => {
+            console.log("✅ User signed in:", data.address);
+          },
+
+          onContentLocked: data => {
+            console.log("🔒 Content locked:", data.contentId);
+          },
+
+          onContentUnlocked: data => {
+            console.log("🔓 Content unlocked:", data.contentId);
+          },
+        });
+      } else {
+        console.warn("B3 Widget SDK not loaded. Build the SDK first with: pnpm build:widget");
+      }
+    </script>
+  </body>
+</html>
