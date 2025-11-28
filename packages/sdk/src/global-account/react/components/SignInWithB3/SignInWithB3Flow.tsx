@@ -33,16 +33,18 @@ export function SignInWithB3Flow({
   source = "signInWithB3Button",
   signersEnabled = false,
 }: SignInWithB3ModalProps) {
-  const { automaticallySetFirstEoa } = useB3();
+  const { automaticallySetFirstEoa, user, refetchUser, enableTurnkey } = useB3();
   const [step, setStep] = useState<"login" | "permissions" | null>(source === "requestPermissions" ? null : "login");
   const [sessionKeyAdded, setSessionKeyAdded] = useState(source === "requestPermissions" ? true : false);
-  const { setB3ModalContentType, setB3ModalOpen, isOpen } = useModalStore();
+  const { setB3ModalContentType, setB3ModalOpen, isOpen, contentType } = useModalStore();
   const account = useActiveAccount();
   const isAuthenticating = useAuthStore(state => state.isAuthenticating);
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
   const isConnected = useAuthStore(state => state.isConnected);
+  const setJustCompletedLogin = useAuthStore(state => state.setJustCompletedLogin);
   const [refetchCount, setRefetchCount] = useState(0);
   const [refetchError, setRefetchError] = useState<string | null>(null);
+  const [turnkeyAuthCompleted, setTurnkeyAuthCompleted] = useState(false);
   const {
     data: signers,
     refetch: refetchSigners,
@@ -82,6 +84,109 @@ export function SignInWithB3Flow({
     }, backoffDelay);
   }, [refetchCount, refetchSigners, onError, setRefetchQueued, refetchQueued]);
 
+  // Extract the completion flow logic to be reused
+  const handlePostTurnkeyFlow = useCallback(() => {
+    debug("Running post-Turnkey flow logic");
+
+    // Check if we already have a signer for this partner
+    const hasExistingSigner = signers?.some(signer => signer.partner.id === partnerId);
+
+    if (hasExistingSigner) {
+      // Path 1: User already has a signer for this partner
+      setSessionKeyAdded(true);
+      onSessionKeySuccess?.();
+      if (closeAfterLogin) {
+        setB3ModalOpen(false);
+      } else {
+        setB3ModalContentType({
+          type: "manageAccount",
+          chain,
+          partnerId,
+        });
+      }
+    } else if (signersEnabled) {
+      // Path 2: No existing signer, but signers are enabled
+      if (source !== "requestPermissions") {
+        // Navigate to permissions step to request new signer
+        setStep("permissions");
+      } else {
+        // Already in request permissions flow, retry fetching signers
+        handleRefetchSigners();
+      }
+    } else {
+      // Path 3: No existing signer and signers are not enabled
+      // Default handling for when no signer exists and signers are not enabled
+      if (closeAfterLogin) {
+        setB3ModalOpen(false);
+      } else {
+        // if not closed, default to manage account
+        setB3ModalContentType({
+          type: "manageAccount",
+          chain,
+          partnerId,
+        });
+      }
+    }
+  }, [
+    signers,
+    partnerId,
+    onSessionKeySuccess,
+    closeAfterLogin,
+    setB3ModalOpen,
+    setB3ModalContentType,
+    chain,
+    source,
+    signersEnabled,
+    handleRefetchSigners,
+    setSessionKeyAdded,
+  ]);
+
+  // Define handleTurnkeySuccess before the useEffect that uses it
+  const handleTurnkeySuccess = useCallback(
+    async (user: any) => {
+      debug("Turnkey authentication successful - setting completed flag", { user });
+
+      // Set completed flag FIRST before any async operations
+      setTurnkeyAuthCompleted(true);
+
+      // Refetch user to update the user state with Turnkey ID
+      debug("Refetching user after Turnkey success...");
+      await refetchUser();
+      debug("User refetched successfully");
+
+      // After user data is refreshed, close Turnkey modal and go back to sign-in flow
+      debug("Switching back to signInWithB3 modal");
+      setB3ModalContentType({
+        type: "signInWithB3",
+        strategies,
+        onLoginSuccess,
+        onSessionKeySuccess,
+        onError,
+        chain,
+        sessionKeyAddress,
+        partnerId,
+        closeAfterLogin,
+        source,
+        signersEnabled,
+      });
+      // The useEffect will re-run with updated user data to complete the sign-in process
+    },
+    [
+      refetchUser,
+      setB3ModalContentType,
+      strategies,
+      onLoginSuccess,
+      onSessionKeySuccess,
+      onError,
+      chain,
+      sessionKeyAddress,
+      partnerId,
+      closeAfterLogin,
+      source,
+      signersEnabled,
+    ],
+  );
+
   // Handle post-login flow after signers are loaded
   useEffect(() => {
     debug("@@SignInWithB3Flow:useEffect", {
@@ -93,38 +198,51 @@ export function SignInWithB3Flow({
       source,
     });
 
-    if (isConnected && isAuthenticated) {
-      // Check if we already have a signer for this partner
-      const hasExistingSigner = signers?.some(signer => signer.partner.id === partnerId);
-      if (hasExistingSigner) {
-        setSessionKeyAdded(true);
-        onSessionKeySuccess?.();
-        if (closeAfterLogin) {
-          setB3ModalOpen(false);
-        } else {
-          setB3ModalContentType({
-            type: "manageAccount",
-            chain,
-            partnerId,
-          });
-        }
-      } else if (source !== "requestPermissions") {
-        if (signersEnabled) setStep("permissions");
-      } else {
-        if (signersEnabled) handleRefetchSigners();
-      }
-
-      // Default handling
+    if (isConnected && isAuthenticated && user) {
+      // Mark that login just completed BEFORE opening manage account or closing modal
+      // This allows Turnkey modal to show (if enableTurnkey is true)
       if (closeAfterLogin) {
-        setB3ModalOpen(false);
+        setJustCompletedLogin(true);
       }
 
-      // if not closed, always default to manage account
-      setB3ModalContentType({
-        type: "manageAccount",
-        chain,
-        partnerId,
-      });
+      // Check if we should show Turnkey login form
+      // Show if enableTurnkey is true AND user just logged in AND hasn't completed Turnkey auth in this session
+      // For new users (!turnkeyId): Show email form
+      // For returning users (turnkeyId && turnkeyEmail): Auto-skip to OTP
+      // Also check that we're not already showing the Turnkey modal
+      const hasTurnkeyId = user?.partnerIds?.turnkeyId;
+      const hasTurnkeyEmail = !!user?.email;
+      const isTurnkeyModalCurrentlyOpen = contentType?.type === "turnkeyAuth";
+      const shouldShowTurnkeyModal =
+        enableTurnkey &&
+        user &&
+        !turnkeyAuthCompleted &&
+        !isTurnkeyModalCurrentlyOpen &&
+        (!hasTurnkeyId || (hasTurnkeyId && hasTurnkeyEmail));
+
+      if (shouldShowTurnkeyModal) {
+        // Extract email from user object - check partnerIds.turnkeyEmail first, then twProfiles, then user.email
+        const email = user?.email || user?.twProfiles?.find((profile: any) => profile.details?.email)?.details?.email;
+
+        // Open Turnkey modal through the modal store
+        setB3ModalContentType({
+          type: "turnkeyAuth",
+          onSuccess: handleTurnkeySuccess,
+          onClose: () => {
+            // After closing Turnkey modal, continue with the rest of the flow
+            setTurnkeyAuthCompleted(true);
+            debug("Turnkey modal closed, running post-Turnkey flow");
+            handlePostTurnkeyFlow();
+          },
+          initialEmail: email,
+          skipToOtp: !!(hasTurnkeyId && hasTurnkeyEmail),
+          closable: false, // Turnkey modal cannot be closed until auth is complete
+        });
+        return;
+      }
+
+      // Normal flow continues after Turnkey auth is complete (or if not needed)
+      handlePostTurnkeyFlow();
     }
   }, [
     signers,
@@ -142,6 +260,13 @@ export function SignInWithB3Flow({
     isAuthenticating,
     isAuthenticated,
     isOpen,
+    setJustCompletedLogin,
+    user,
+    enableTurnkey,
+    turnkeyAuthCompleted,
+    handleTurnkeySuccess,
+    contentType,
+    handlePostTurnkeyFlow,
   ]);
 
   debug("render", {
@@ -205,34 +330,31 @@ export function SignInWithB3Flow({
     }
   }, [chain, onError, onSessionKeySuccessEnhanced, sessionKeyAddress, setB3ModalContentType, step]);
 
+  // Render content based on current step/state
+  let content = null;
+
   // Display error if refetch limit exceeded
   if (refetchError) {
-    return (
+    content = (
       <LoginStepContainer partnerId={partnerId}>
         <div className="p-4 text-center text-red-500">{refetchError}</div>
       </LoginStepContainer>
     );
-  }
-
-  if (isAuthenticating || (isFetchingSigners && step === "login") || source === "requestPermissions") {
-    return (
+  } else if (isAuthenticating || (isFetchingSigners && step === "login") || source === "requestPermissions") {
+    content = (
       <LoginStepContainer partnerId={partnerId}>
         <div className="my-8 flex min-h-[350px] items-center justify-center">
           <Loading variant="white" size="lg" />
         </div>
       </LoginStepContainer>
     );
-  }
-
-  if (step === "login") {
+  } else if (step === "login") {
     // Custom strategy
     if (strategies?.[0] === "privy") {
-      return <SignInWithB3Privy onSuccess={handleLoginSuccess} chain={chain} />;
-    }
-
-    // Strategies are explicitly provided
-    if (strategies) {
-      return (
+      content = <SignInWithB3Privy onSuccess={handleLoginSuccess} chain={chain} />;
+    } else if (strategies) {
+      // Strategies are explicitly provided
+      content = (
         <LoginStepCustom
           strategies={strategies}
           chain={chain}
@@ -241,11 +363,11 @@ export function SignInWithB3Flow({
           automaticallySetFirstEoa={!!automaticallySetFirstEoa}
         />
       );
+    } else {
+      // Default to handle all strategies we support
+      content = <LoginStep chain={chain} onSuccess={handleLoginSuccess} onError={onError} />;
     }
-
-    // Default to handle all strategies we support
-    return <LoginStep chain={chain} onSuccess={handleLoginSuccess} onError={onError} />;
   }
 
-  return null;
+  return content;
 }

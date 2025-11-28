@@ -12,6 +12,8 @@ import { create } from "zustand";
 interface BaseModalProps {
   /** Whether to show a back button in the modal header */
   showBackButton?: boolean;
+  /** Whether the modal can be closed by clicking outside or pressing escape. Defaults to true */
+  closable?: boolean;
 }
 
 /**
@@ -41,6 +43,25 @@ export interface SignInWithB3ModalProps extends BaseModalProps {
   source?: "signInWithB3Button" | "requestPermissions";
   /** Whether to show the signers enabled modal */
   signersEnabled?: boolean;
+}
+
+/**
+ * Props for the Turnkey Authentication modal
+ * Handles Turnkey email/OTP authentication flow
+ */
+export interface TurnkeyAuthModalProps extends BaseModalProps {
+  /** Modal type identifier */
+  type: "turnkeyAuth";
+  /** Callback function called when authentication is successful */
+  onSuccess: (_user: any) => void;
+  /** Callback function called when modal is closed */
+  onClose: () => void;
+  /** Initial email to pre-fill */
+  initialEmail?: string;
+  /** Whether to skip directly to OTP step */
+  skipToOtp?: boolean;
+  /** Whether the modal can be closed - defaults to false for Turnkey */
+  closable?: boolean;
 }
 
 /**
@@ -481,6 +502,7 @@ export interface AnySpendCollectorClubPurchaseProps extends BaseModalProps {
  */
 export type ModalContentType =
   | SignInWithB3ModalProps
+  | TurnkeyAuthModalProps
   | RequestPermissionsModalProps
   | ManageAccountModalProps
   | AnySpendModalProps

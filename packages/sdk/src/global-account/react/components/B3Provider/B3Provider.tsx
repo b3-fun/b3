@@ -62,6 +62,7 @@ export function B3Provider({
   connectors,
   overrideDefaultConnectors = false,
   createClientReferenceId,
+  enableTurnkey = false,
 }: {
   theme: "light" | "dark";
   children: React.ReactNode;
@@ -80,6 +81,7 @@ export function B3Provider({
   connectors?: CreateConnectorFn[];
   overrideDefaultConnectors?: boolean;
   createClientReferenceId?: (params: CreateOrderParams | CreateOnrampOrderParams) => Promise<string>;
+  enableTurnkey?: boolean;
 }) {
   // Initialize Google Analytics on mount
   useEffect(() => {
@@ -107,6 +109,7 @@ export function B3Provider({
                   clientType={clientType}
                   partnerId={partnerId}
                   createClientReferenceId={createClientReferenceId}
+                  enableTurnkey={enableTurnkey}
                 >
                   <ToastContextConnector />
                   <RelayKitProviderWrapper simDuneApiKey={simDuneApiKey}>
@@ -137,6 +140,7 @@ export function InnerProvider({
   clientType = "socket",
   partnerId,
   createClientReferenceId,
+  enableTurnkey,
 }: {
   children: React.ReactNode;
   accountOverride?: Account;
@@ -147,17 +151,21 @@ export function InnerProvider({
   clientType?: ClientType;
   partnerId: string;
   createClientReferenceId?: (params: CreateOrderParams | CreateOnrampOrderParams) => Promise<string>;
+  enableTurnkey?: boolean;
 }) {
   const activeAccount = useActiveAccount();
   const [manuallySelectedWallet, setManuallySelectedWallet] = useState<Wallet | undefined>(undefined);
   const wallets = useConnectedWallets();
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
   const isConnected = useAuthStore(state => state.isConnected);
+  const justCompletedLogin = useAuthStore(state => state.justCompletedLogin);
   const setActiveWallet = useSetActiveWallet();
   const { user, setUser, refetchUser } = useAuthentication(partnerId);
+
   debug("@@B3Provider:isConnected", isConnected);
   debug("@@wallets", wallets);
   debug("@@B3Provider:user", user);
+  debug("@@B3Provider:justCompletedLogin", justCompletedLogin);
 
   // Use given accountOverride or activeAccount from thirdweb
   const effectiveAccount = isAuthenticated ? accountOverride || activeAccount : undefined;
@@ -215,6 +223,7 @@ export function InnerProvider({
         clientType,
         partnerId: partnerId,
         createClientReferenceId,
+        enableTurnkey,
       }}
     >
       <InnerProvider2>{children}</InnerProvider2>
