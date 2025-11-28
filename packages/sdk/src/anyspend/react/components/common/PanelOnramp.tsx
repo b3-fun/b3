@@ -248,18 +248,20 @@ export function PanelOnramp({
 
         <div className="divider w-full" />
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4">
           <span className="text-as-tertiarry text-sm">Expected to receive</span>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-1">
             <span className="text-as-primary font-semibold">
               {destinationAmount || "0"} {dstTokenSymbol || destinationToken?.symbol || ""}
             </span>
-            <span className="text-as-tertiarry text-sm">
-              on {destinationChainId ? ALL_CHAINS[destinationChainId]?.name : ""}
-            </span>
-            {destinationToken && destinationChainId && destinationToken.metadata?.logoURI && (
-              <img src={ALL_CHAINS[destinationChainId]?.logoUrl} alt="Chain" className="h-4 w-4 rounded-full" />
-            )}
+            <div className="flex items-center gap-1">
+              <span className="text-as-tertiarry text-sm">
+                on {destinationChainId ? ALL_CHAINS[destinationChainId]?.name : ""}
+              </span>
+              {destinationToken && destinationChainId && destinationToken.metadata?.logoURI && (
+                <img src={ALL_CHAINS[destinationChainId]?.logoUrl} alt="Chain" className="h-4 w-4 rounded-full" />
+              )}
+            </div>
           </div>
         </div>
 
