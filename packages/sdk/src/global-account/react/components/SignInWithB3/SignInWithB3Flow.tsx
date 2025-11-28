@@ -198,7 +198,7 @@ export function SignInWithB3Flow({
       source,
     });
 
-    if (isConnected && isAuthenticated && user) {
+    if (isConnected && isAuthenticated) {
       // Mark that login just completed BEFORE opening manage account or closing modal
       // This allows Turnkey modal to show (if enableTurnkey is true)
       if (closeAfterLogin) {
