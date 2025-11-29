@@ -884,8 +884,8 @@ function AnySpendInner({
         paymentMethodString = "";
       } else if (paymentMethod === FiatPaymentMethod.STRIPE_WEB2) {
         // Stripe embedded payment form
-        if (!stripeWeb2Support || !stripeWeb2Support.isSupport) {
-          toast.error("Quick Pay not available");
+        if (!stripeWeb2Support.isSupport) {
+          toast.error("Pay with Card not available");
           return;
         }
         vendor = "stripe-web2";

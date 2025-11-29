@@ -50,7 +50,7 @@ import { useRecipientAddressState } from "../hooks/useRecipientAddressState";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
 import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPaymentMethod";
 import { FeeBreakDown } from "./common/FeeBreakDown";
-import { FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaymentMethod";
+import { FIAT_PAYMENT_METHOD_DISPLAY, FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaymentMethod";
 import { OrderDetails } from "./common/OrderDetails";
 import { OrderHistory } from "./common/OrderHistory";
 import { OrderToken } from "./common/OrderToken";
@@ -1132,42 +1132,28 @@ function AnySpendCustomInner({
                   className="text-as-tertiarry flex flex-wrap items-center justify-end gap-2 text-sm transition-colors hover:text-blue-700"
                   onClick={() => setActivePanel(PanelView.FIAT_PAYMENT_METHOD)}
                 >
-                  {selectedFiatPaymentMethod === FiatPaymentMethod.COINBASE_PAY ? (
-                    <>
-                      <div className="flex items-center gap-2 whitespace-nowrap">
-                        <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-600">
-                          <span className="text-xs font-bold text-white">C</span>
-                        </div>
-                        Coinbase Pay
-                      </div>
-                      <ChevronRight className="h-4 w-4 shrink-0" />
-                    </>
-                  ) : selectedFiatPaymentMethod === FiatPaymentMethod.STRIPE ? (
-                    <>
-                      <div className="flex items-center gap-2 whitespace-nowrap">
-                        <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-600">
-                          <span className="text-xs font-bold text-white">S</span>
-                        </div>
-                        Pay via Stripe
-                      </div>
-                      <ChevronRight className="h-4 w-4 shrink-0" />
-                    </>
-                  ) : selectedFiatPaymentMethod === FiatPaymentMethod.STRIPE_WEB2 ? (
-                    <>
-                      <div className="flex items-center gap-2 whitespace-nowrap">
-                        <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-600">
-                          <span className="text-xs font-bold text-white">S</span>
-                        </div>
-                        Pay with Card
-                      </div>
-                      <ChevronRight className="h-4 w-4 shrink-0" />
-                    </>
-                  ) : (
-                    <>
-                      <span className="whitespace-nowrap">Select payment method</span>
-                      <ChevronRight className="h-4 w-4 shrink-0" />
-                    </>
-                  )}
+                  {(() => {
+                    const config = FIAT_PAYMENT_METHOD_DISPLAY[selectedFiatPaymentMethod];
+                    if (config) {
+                      return (
+                        <>
+                          <div className="flex items-center gap-2 whitespace-nowrap">
+                            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-600">
+                              <span className="text-xs font-bold text-white">{config.icon}</span>
+                            </div>
+                            {config.label}
+                          </div>
+                          <ChevronRight className="h-4 w-4 shrink-0" />
+                        </>
+                      );
+                    }
+                    return (
+                      <>
+                        <span className="whitespace-nowrap">Select payment method</span>
+                        <ChevronRight className="h-4 w-4 shrink-0" />
+                      </>
+                    );
+                  })()}
                 </button>
               </motion.div>
 

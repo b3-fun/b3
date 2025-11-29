@@ -11,6 +11,14 @@ export enum FiatPaymentMethod {
   STRIPE_WEB2 = "stripe_web2", // Stripe embedded payment
 }
 
+// Shared display config for fiat payment methods
+export const FIAT_PAYMENT_METHOD_DISPLAY: Record<FiatPaymentMethod, { icon: string; label: string } | null> = {
+  [FiatPaymentMethod.COINBASE_PAY]: { icon: "C", label: "Coinbase Pay" },
+  [FiatPaymentMethod.STRIPE]: { icon: "S", label: "Pay via Stripe" },
+  [FiatPaymentMethod.STRIPE_WEB2]: { icon: "S", label: "Pay with Card" },
+  [FiatPaymentMethod.NONE]: null,
+};
+
 interface FiatPaymentMethodProps {
   selectedPaymentMethod: FiatPaymentMethod;
   setSelectedPaymentMethod: (method: FiatPaymentMethod) => void;
