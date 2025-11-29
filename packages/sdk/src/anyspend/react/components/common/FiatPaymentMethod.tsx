@@ -7,7 +7,8 @@ import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 export enum FiatPaymentMethod {
   NONE = "none",
   COINBASE_PAY = "coinbase_pay",
-  STRIPE = "stripe",
+  STRIPE = "stripe", // Stripe redirect (one-click buy URL)
+  STRIPE_WEB2 = "stripe_web2", // Stripe embedded payment
 }
 
 interface FiatPaymentMethodProps {
@@ -25,23 +26,6 @@ export function FiatPaymentMethodComponent({
   onSelectPaymentMethod,
   srcAmountOnRamp,
 }: FiatPaymentMethodProps) {
-  // Helper function to get fees from API data
-  const getFeeFromApi = (paymentMethod: FiatPaymentMethod): string | null => {
-    switch (paymentMethod) {
-      case FiatPaymentMethod.COINBASE_PAY:
-        // Coinbase doesn't provide fee info in API, return null
-        return null;
-      case FiatPaymentMethod.STRIPE:
-        // Get fee from Stripe API response
-        if (stripeWeb2Support && "formattedFeeUsd" in stripeWeb2Support) {
-          return stripeWeb2Support.formattedFeeUsd;
-        }
-        return null;
-      default:
-        return null; // No fee when no payment method selected
-    }
-  };
-
   // Load geo-based onramp options like in PanelOnramp
   const {
     coinbaseAvailablePaymentMethods,
@@ -49,6 +33,26 @@ export function FiatPaymentMethodComponent({
     stripeWeb2Support,
     isLoading: isLoadingGeoOnramp,
   } = useGeoOnrampOptions(srcAmountOnRamp);
+
+  // Helper function to get fees from API data
+  const getFeeFromApi = (paymentMethod: FiatPaymentMethod): string | null => {
+    switch (paymentMethod) {
+      case FiatPaymentMethod.COINBASE_PAY:
+        // Coinbase doesn't provide fee info in API, return null
+        return null;
+      case FiatPaymentMethod.STRIPE_WEB2:
+        // Get fee from Stripe Web2 API response
+        if (stripeWeb2Support && "formattedFeeUsd" in stripeWeb2Support) {
+          return stripeWeb2Support.formattedFeeUsd;
+        }
+        return null;
+      case FiatPaymentMethod.STRIPE:
+        // Stripe redirect doesn't have fee info from API
+        return null;
+      default:
+        return null; // No fee when no payment method selected
+    }
+  };
 
   // Generate payment methods based on geo availability (like in PanelOnrampPayment)
   const availablePaymentMethods = [];
@@ -66,14 +70,26 @@ export function FiatPaymentMethodComponent({
     });
   }
 
-  // Add Stripe if available (either stripeOnramp or stripeWeb2)
-  if (stripeOnrampSupport || (stripeWeb2Support && stripeWeb2Support.isSupport)) {
-    const stripeFee = getFeeFromApi(FiatPaymentMethod.STRIPE);
+  // Add Stripe Web2 (embedded) if available
+  if (stripeWeb2Support && stripeWeb2Support.isSupport) {
+    const stripeFee = getFeeFromApi(FiatPaymentMethod.STRIPE_WEB2);
+    availablePaymentMethods.push({
+      id: FiatPaymentMethod.STRIPE_WEB2,
+      name: "Stripe",
+      description: "Embedded card payment",
+      badge: stripeFee ? `$${Number(stripeFee).toFixed(2)} fee` : "Standard Fee",
+      badgeColor: "bg-yellow-100 text-yellow-800",
+      available: true,
+    });
+  }
+
+  // Add Stripe redirect (one-click) if available
+  if (stripeOnrampSupport) {
     availablePaymentMethods.push({
       id: FiatPaymentMethod.STRIPE,
-      name: "Stripe",
-      description: "Credit or debit card payment",
-      badge: stripeFee ? `$${Number(stripeFee).toFixed(2)} fee` : "Standard Fee",
+      name: "Credit/Debit Card",
+      description: "Pay with card via Stripe",
+      badge: "Standard Fee",
       badgeColor: "bg-yellow-100 text-yellow-800",
       available: true,
     });
@@ -145,7 +161,11 @@ export function FiatPaymentMethodComponent({
               >
                 {/* Icon - matching PanelOnramp style */}
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-2xl text-white">
-                  {method.id === FiatPaymentMethod.COINBASE_PAY ? "C" : "S"}
+                  {method.id === FiatPaymentMethod.COINBASE_PAY
+                    ? "C"
+                    : method.id === FiatPaymentMethod.STRIPE || method.id === FiatPaymentMethod.STRIPE_WEB2
+                      ? "S"
+                      : "?"}
                 </div>
 
                 {/* Content */}

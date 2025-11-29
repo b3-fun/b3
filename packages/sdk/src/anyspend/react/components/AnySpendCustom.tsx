@@ -625,17 +625,21 @@ function AnySpendCustomInner({
         }
         vendor = "coinbase";
         paymentMethodString = coinbaseAvailablePaymentMethods[0]?.id || "";
-      } else if (paymentMethod === FiatPaymentMethod.STRIPE) {
-        // Check if either Stripe onramp or Stripe web2 is available
-        const isStripeWeb2Available = stripeWeb2Support && stripeWeb2Support.isSupport;
-        const isStripeOnrampAvailable = stripeOnrampSupport;
-
-        if (!isStripeWeb2Available && !isStripeOnrampAvailable) {
-          toast.error("Stripe not available");
+      } else if (paymentMethod === FiatPaymentMethod.STRIPE_WEB2) {
+        // Stripe Web2 embedded payment
+        if (!stripeWeb2Support || !stripeWeb2Support.isSupport) {
+          toast.error("Stripe embedded payment not available");
           return;
         }
-        // Prefer stripe-web2 if available, otherwise use regular stripe
-        vendor = isStripeWeb2Available ? "stripe-web2" : "stripe";
+        vendor = "stripe-web2";
+        paymentMethodString = "";
+      } else if (paymentMethod === FiatPaymentMethod.STRIPE) {
+        // Stripe redirect (one-click buy URL)
+        if (!stripeOnrampSupport) {
+          toast.error("Stripe redirect payment not available");
+          return;
+        }
+        vendor = "stripe";
         paymentMethodString = "";
       } else {
         toast.error("Please select a payment method");
