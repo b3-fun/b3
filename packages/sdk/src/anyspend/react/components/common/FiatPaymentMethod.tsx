@@ -97,7 +97,7 @@ export function FiatPaymentMethodComponent({
     availablePaymentMethods.push({
       id: FiatPaymentMethod.STRIPE_WEB2,
       name: "Pay with Card",
-      description: "Enter card details here",
+      description: "Fast checkout",
       badge: stripeFee ? `$${Number(stripeFee).toFixed(2)} fee` : undefined,
       badgeColor: "bg-gray-100 text-gray-800",
       available: true,
