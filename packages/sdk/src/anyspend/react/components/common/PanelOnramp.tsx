@@ -157,7 +157,17 @@ export function PanelOnramp({
                   <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600">
                     <span className="text-xs font-bold text-white">S</span>
                   </div>
-                  Stripe
+                  Pay via Stripe
+                </div>
+                <ChevronRight className="h-4 w-4" />
+              </>
+            ) : selectedPaymentMethod === FiatPaymentMethod.STRIPE_WEB2 ? (
+              <>
+                <div className="flex items-center gap-2">
+                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600">
+                    <span className="text-xs font-bold text-white">S</span>
+                  </div>
+                  Pay with Card
                 </div>
                 <ChevronRight className="h-4 w-4" />
               </>

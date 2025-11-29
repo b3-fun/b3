@@ -355,7 +355,12 @@ function AnySpendCustomInner({
       contractType: orderType === "mint_nft" ? metadata?.nftContract?.type : undefined,
       encodedData: encodedData,
       spenderAddress: spenderAddress,
-      onrampVendor: selectedFiatPaymentMethod === FiatPaymentMethod.STRIPE ? "stripe-web2" : undefined,
+      onrampVendor:
+        selectedFiatPaymentMethod === FiatPaymentMethod.STRIPE
+          ? "stripe"
+          : selectedFiatPaymentMethod === FiatPaymentMethod.STRIPE_WEB2
+            ? "stripe-web2"
+            : undefined,
     });
   }, [
     activeTab,
@@ -1143,7 +1148,17 @@ function AnySpendCustomInner({
                         <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-600">
                           <span className="text-xs font-bold text-white">S</span>
                         </div>
-                        Credit/Debit Card
+                        Pay via Stripe
+                      </div>
+                      <ChevronRight className="h-4 w-4 shrink-0" />
+                    </>
+                  ) : selectedFiatPaymentMethod === FiatPaymentMethod.STRIPE_WEB2 ? (
+                    <>
+                      <div className="flex items-center gap-2 whitespace-nowrap">
+                        <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-600">
+                          <span className="text-xs font-bold text-white">S</span>
+                        </div>
+                        Pay with Card
                       </div>
                       <ChevronRight className="h-4 w-4 shrink-0" />
                     </>
@@ -1318,17 +1333,25 @@ function AnySpendCustomInner({
     </div>
   );
 
+  // Stable callback for fiat payment method selection
+  const handleFiatPaymentMethodSelect = useCallback((method: FiatPaymentMethod) => {
+    setSelectedFiatPaymentMethod(method);
+    setActivePanel(PanelView.CONFIRM_ORDER);
+  }, []);
+
+  // Stable callback for navigating back to confirm order
+  const handleBackToConfirmOrder = useCallback(() => {
+    setActivePanel(PanelView.CONFIRM_ORDER);
+  }, []);
+
   // Fiat payment method view
   const fiatPaymentMethodView = (
     <div className={cn("bg-as-surface-primary mx-auto w-[460px] max-w-full rounded-xl p-4")}>
       <FiatPaymentMethodComponent
         selectedPaymentMethod={selectedFiatPaymentMethod}
         setSelectedPaymentMethod={setSelectedFiatPaymentMethod}
-        onBack={() => setActivePanel(PanelView.CONFIRM_ORDER)}
-        onSelectPaymentMethod={(method: FiatPaymentMethod) => {
-          setSelectedFiatPaymentMethod(method);
-          setActivePanel(PanelView.CONFIRM_ORDER);
-        }}
+        onBack={handleBackToConfirmOrder}
+        onSelectPaymentMethod={handleFiatPaymentMethodSelect}
         srcAmountOnRamp={srcFiatAmount}
       />
     </div>
