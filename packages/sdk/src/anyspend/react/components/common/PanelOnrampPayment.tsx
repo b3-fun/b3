@@ -314,33 +314,7 @@ function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
                 );
               })()}
 
-            {/* Stripe Web2 Option - Embedded payment */}
-            {stripeWeb2Support.isSupport && (
-              <button
-                onClick={() => handlePaymentMethodClick("stripe-web2")}
-                className="bg-b3-react-background border-b3-react-border hover:border-as-brand group flex w-full items-center justify-between gap-4 rounded-xl border p-5 transition-all duration-200 hover:shadow-md"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-50">
-                    <img
-                      src="https://raw.githubusercontent.com/stripe/stripe.github.io/455f506a628dc3f6c505e3001db45a64e29e9fc3/images/stripe-logo.svg"
-                      alt="Stripe"
-                      className="h-5"
-                    />
-                  </div>
-                  <div className="flex flex-col items-start text-left">
-                    <h4 className="text-b3-react-foreground text-lg font-semibold">Stripe</h4>
-                    <p className="text-b3-react-foreground/60 text-sm">Embedded card payment</p>
-                    <div className="mt-1 flex items-center gap-1">
-                      <span className="text-xs font-medium text-orange-600">Fee Applied</span>
-                    </div>
-                  </div>
-                </div>
-                <ChevronRight className="text-b3-react-foreground/40 group-hover:text-b3-react-foreground/60 h-5 w-5 transition-colors" />
-              </button>
-            )}
-
-            {/* Stripe Redirect Option - One-click buy URL */}
+            {/* Stripe Redirect Option - Primary option */}
             {stripeOnrampSupport && (
               <button
                 onClick={() => handlePaymentMethodClick("stripe")}
@@ -356,10 +330,40 @@ function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
                   </div>
                   <div className="flex flex-col items-start text-left">
                     <h4 className="text-b3-react-foreground text-lg font-semibold">Credit/Debit Card</h4>
-                    <p className="text-b3-react-foreground/60 text-sm">Pay with card via Stripe</p>
-                    <div className="mt-1 flex items-center gap-1">
-                      <span className="text-xs font-medium text-orange-600">Fee Applied</span>
-                    </div>
+                    <p className="text-b3-react-foreground/60 text-sm">Pay via Stripe checkout</p>
+                    {stripeWeb2Support?.formattedFeeUsd && (
+                      <div className="mt-1">
+                        <span className="text-xs text-gray-500">${Number(stripeWeb2Support.formattedFeeUsd).toFixed(2)} fee</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <ChevronRight className="text-b3-react-foreground/40 group-hover:text-b3-react-foreground/60 h-5 w-5 transition-colors" />
+              </button>
+            )}
+
+            {/* Stripe Web2 Option - Embedded payment (secondary) */}
+            {stripeWeb2Support.isSupport && (
+              <button
+                onClick={() => handlePaymentMethodClick("stripe-web2")}
+                className="bg-b3-react-background border-b3-react-border hover:border-as-brand group flex w-full items-center justify-between gap-4 rounded-xl border p-5 transition-all duration-200 hover:shadow-md"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-50">
+                    <img
+                      src="https://raw.githubusercontent.com/stripe/stripe.github.io/455f506a628dc3f6c505e3001db45a64e29e9fc3/images/stripe-logo.svg"
+                      alt="Stripe"
+                      className="h-5"
+                    />
+                  </div>
+                  <div className="flex flex-col items-start text-left">
+                    <h4 className="text-b3-react-foreground text-lg font-semibold">Quick Pay</h4>
+                    <p className="text-b3-react-foreground/60 text-sm">Credit or debit card</p>
+                    {stripeWeb2Support?.formattedFeeUsd && (
+                      <div className="mt-1">
+                        <span className="text-xs text-gray-500">${Number(stripeWeb2Support.formattedFeeUsd).toFixed(2)} fee</span>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <ChevronRight className="text-b3-react-foreground/40 group-hover:text-b3-react-foreground/60 h-5 w-5 transition-colors" />

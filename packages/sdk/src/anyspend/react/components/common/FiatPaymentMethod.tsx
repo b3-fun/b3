@@ -70,27 +70,28 @@ export function FiatPaymentMethodComponent({
     });
   }
 
-  // Add Stripe Web2 (embedded) if available
-  if (stripeWeb2Support && stripeWeb2Support.isSupport) {
-    const stripeFee = getFeeFromApi(FiatPaymentMethod.STRIPE_WEB2);
+  // Add Stripe redirect (one-click) if available - primary option
+  if (stripeOnrampSupport) {
+    const stripeFee = getFeeFromApi(FiatPaymentMethod.STRIPE_WEB2); // Use same fee estimate
     availablePaymentMethods.push({
-      id: FiatPaymentMethod.STRIPE_WEB2,
-      name: "Stripe",
-      description: "Embedded card payment",
-      badge: stripeFee ? `$${Number(stripeFee).toFixed(2)} fee` : "Standard Fee",
-      badgeColor: "bg-yellow-100 text-yellow-800",
+      id: FiatPaymentMethod.STRIPE,
+      name: "Credit/Debit Card",
+      description: "Pay via Stripe checkout",
+      badge: stripeFee ? `$${Number(stripeFee).toFixed(2)} fee` : undefined,
+      badgeColor: "bg-gray-100 text-gray-800",
       available: true,
     });
   }
 
-  // Add Stripe redirect (one-click) if available
-  if (stripeOnrampSupport) {
+  // Add Stripe Web2 (embedded) if available - secondary option
+  if (stripeWeb2Support && stripeWeb2Support.isSupport) {
+    const stripeFee = getFeeFromApi(FiatPaymentMethod.STRIPE_WEB2);
     availablePaymentMethods.push({
-      id: FiatPaymentMethod.STRIPE,
-      name: "Credit/Debit Card",
-      description: "Pay with card via Stripe",
-      badge: "Standard Fee",
-      badgeColor: "bg-yellow-100 text-yellow-800",
+      id: FiatPaymentMethod.STRIPE_WEB2,
+      name: "Quick Pay",
+      description: "Credit or debit card",
+      badge: stripeFee ? `$${Number(stripeFee).toFixed(2)} fee` : undefined,
+      badgeColor: "bg-gray-100 text-gray-800",
       available: true,
     });
   }
@@ -172,9 +173,11 @@ export function FiatPaymentMethodComponent({
                 <div className="flex flex-1 flex-col items-start text-left">
                   <div className="flex items-center gap-2">
                     <span className="text-as-primary text-base font-semibold">{method.name}</span>
-                    <span className={cn("rounded-full px-2 py-1 text-xs font-medium", method.badgeColor)}>
-                      {method.badge}
-                    </span>
+                    {method.badge && (
+                      <span className={cn("rounded-full px-2 py-1 text-xs font-medium", method.badgeColor)}>
+                        {method.badge}
+                      </span>
+                    )}
                   </div>
                   <span className="text-as-primary/60 text-sm">{method.description}</span>
                 </div>
