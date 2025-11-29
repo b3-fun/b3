@@ -12,6 +12,7 @@ export function useStripeSupport(usdAmount?: string, visitorData?: VisitorData, 
 
   return useMemo(
     () => ({
+      stripeOnrampSupport: data?.stripeOnramp || false,
       stripeWeb2Support: data?.stripeWeb2 || { isSupport: false },
       isLoadingStripeSupport: isLoading,
       stripeSupportError: error,

@@ -15,9 +15,9 @@ export function CollectorClubPurchaseButton() {
         setB3ModalOpen(true);
         setB3ModalContentType({
           type: "anySpendCollectorClubPurchase",
-          packId: 1,
-          packAmount: 5,
-          pricePerPack: "10000", // 0.01 USDC in wei (6 decimals)
+          packId: 3,
+          packAmount: 2,
+          pricePerPack: "1000000", // 1 USDC in wei (6 decimals)
           recipientAddress: currentWallet.address,
           paymentType: "crypto",
           vendingMachineId: "1",
@@ -29,7 +29,7 @@ export function CollectorClubPurchaseButton() {
     >
       <div>
         <h3 className="text-lg font-medium text-gray-900">Collector Club Packs</h3>
-        <p className="mt-1 text-sm text-gray-500">Buy 5 packs at 0.01 USDC each using any token</p>
+        <p className="mt-1 text-sm text-gray-500">Buy 1 pack at 0.01 USDC each using any token</p>
       </div>
     </button>
   );

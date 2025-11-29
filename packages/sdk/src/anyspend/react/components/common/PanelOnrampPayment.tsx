@@ -65,6 +65,7 @@ function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
     geoData,
     coinbaseOnrampOptions,
     coinbaseAvailablePaymentMethods,
+    stripeOnrampSupport,
     stripeWeb2Support,
     isLoading: isLoadingGeoOnramp,
   } = useGeoOnrampOptions(srcAmountOnRamp);
@@ -102,7 +103,7 @@ function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
         return;
       }
 
-      if (vendor === "stripe-web2" && !stripeWeb2Support.isSupport) {
+      if (vendor === "stripe-web2" && !stripeWeb2Support.isSupport && !stripeOnrampSupport) {
         toast.error("Stripe credit card not available");
         return;
       }
@@ -201,16 +202,18 @@ function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
                 >
                   ${parseFloat(srcAmountOnRamp).toFixed(2)}
                 </p>
-                {anyspendQuote?.data?.fee?.type === "standard_fee" && anyspendQuote.data.currencyIn?.amountUsd && (
-                  <p className="text-b3-react-foreground/60 text-xs">
-                    incl. $
-                    {(
-                      (Number(anyspendQuote.data.currencyIn.amountUsd) * anyspendQuote.data.fee.finalFeeBps) /
-                      10000
-                    ).toFixed(2)}{" "}
-                    fee
-                  </p>
-                )}
+                {anyspendQuote?.data?.fee?.type === "standard_fee" &&
+                  anyspendQuote.data.currencyIn?.amountUsd &&
+                  anyspendQuote.data.fee.finalFeeBps > 0 && (
+                    <p className="text-b3-react-foreground/60 text-xs">
+                      incl. $
+                      {(
+                        (Number(anyspendQuote.data.currencyIn.amountUsd) * anyspendQuote.data.fee.finalFeeBps) /
+                        10000
+                      ).toFixed(2)}{" "}
+                      fee
+                    </p>
+                  )}
               </div>
             </div>
           </div>
@@ -311,10 +314,12 @@ function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
                 );
               })()}
 
-            {/* Stripe Option - Show if supported */}
-            {stripeWeb2Support.isSupport && (
+            {/* Stripe Option - Show if supported (either stripeOnramp or stripeWeb2) */}
+            {(stripeOnrampSupport || stripeWeb2Support.isSupport) && (
               <button
-                onClick={() => handlePaymentMethodClick("stripe-web2")}
+                onClick={() =>
+                  handlePaymentMethodClick(stripeWeb2Support.isSupport ? "stripe-web2" : "stripe")
+                }
                 className="bg-b3-react-background border-b3-react-border hover:border-as-brand group flex w-full items-center justify-between gap-4 rounded-xl border p-5 transition-all duration-200 hover:shadow-md"
               >
                 <div className="flex items-center gap-4">

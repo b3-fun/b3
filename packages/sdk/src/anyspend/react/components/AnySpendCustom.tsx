@@ -44,7 +44,6 @@ import { motion } from "motion/react";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import { base } from "viem/chains";
-import { useFeatureFlags } from "../contexts/FeatureFlagsContext";
 import { useAutoSetActiveWalletFromWagmi } from "../hooks/useAutoSetActiveWalletFromWagmi";
 import { useCryptoPaymentMethodState } from "../hooks/useCryptoPaymentMethodState";
 import { useRecipientAddressState } from "../hooks/useRecipientAddressState";
@@ -188,6 +187,8 @@ export function AnySpendCustom(props: {
   onSuccess?: (txHash?: string) => void;
   showRecipient?: boolean;
   onShowPointsDetail?: () => void;
+  /** Fiat amount in USD for fiat payments */
+  srcFiatAmount?: string;
 }) {
   const fingerprintConfig = getFingerprintConfig();
 
@@ -215,6 +216,7 @@ function AnySpendCustomInner({
   onSuccess,
   showRecipient = true,
   onShowPointsDetail,
+  srcFiatAmount: srcFiatAmountProps,
 }: {
   loadOrder?: string;
   mode?: "modal" | "page";
@@ -238,9 +240,9 @@ function AnySpendCustomInner({
   onSuccess?: (txHash?: string) => void;
   showRecipient?: boolean;
   onShowPointsDetail?: () => void;
+  srcFiatAmount?: string;
 }) {
   const hasMounted = useHasMounted();
-  const featureFlags = useFeatureFlags();
 
   const searchParams = useSearchParamsSSR();
   const router = useRouter();
@@ -402,14 +404,31 @@ function AnySpendCustomInner({
     }
   }, [activeTab, anyspendQuote?.data]);
   const formattedSrcAmount = srcAmount ? formatTokenAmount(srcAmount, srcToken.decimals, 6, false) : null;
-  const srcFiatAmount = useMemo(
-    () => (activeTab === "fiat" && srcAmount ? formatUnits(srcAmount.toString(), USDC_BASE.decimals) : "0"),
-    [activeTab, srcAmount],
-  );
+  // Calculate fiat amount for geo check (regardless of activeTab) to determine tab availability
+  const srcFiatAmountForGeoCheck = useMemo(() => {
+    // Use prop if provided
+    if (srcFiatAmountProps) {
+      return srcFiatAmountProps;
+    }
+    // Fallback to dstAmount if destination token is USDC
+    if (dstAmount && dstToken.address.toLowerCase() === USDC_BASE.address.toLowerCase()) {
+      return formatUnits(dstAmount, USDC_BASE.decimals);
+    }
+    // Use srcAmount if available (from quote)
+    if (srcAmount) {
+      return formatUnits(srcAmount.toString(), USDC_BASE.decimals);
+    }
+    return "0";
+  }, [srcAmount, srcFiatAmountProps, dstAmount, dstToken.address]);
 
-  // Get geo data and onramp options (after quote is available)
-  const { geoData, isOnrampSupported, coinbaseAvailablePaymentMethods, stripeWeb2Support } =
-    useGeoOnrampOptions(srcFiatAmount);
+  const srcFiatAmount = useMemo(() => {
+    if (activeTab !== "fiat") return "0";
+    return srcFiatAmountForGeoCheck;
+  }, [activeTab, srcFiatAmountForGeoCheck]);
+
+  // Get geo data and onramp options (use srcFiatAmountForGeoCheck to check availability regardless of activeTab)
+  const { geoData, isOnrampSupported, coinbaseAvailablePaymentMethods, stripeOnrampSupport, stripeWeb2Support } =
+    useGeoOnrampOptions(srcFiatAmountForGeoCheck);
 
   useEffect(() => {
     if (oat?.data?.order.status === "executed" && !onSuccessCalled.current) {
@@ -521,9 +540,14 @@ function AnySpendCustomInner({
         // Get the current geo data from the hook
         const currentGeoData = geoData;
 
+        // Use total amount from quote (includes fees) for onramp, fallback to srcFiatAmount
+        const onrampAmount = anyspendQuote?.data?.currencyIn?.amountUsd
+          ? anyspendQuote.data.currencyIn.amountUsd.toString()
+          : srcFiatAmount;
+
         void createOnrampOrder({
           ...createOrderParams,
-          srcFiatAmount: srcFiatAmount,
+          srcFiatAmount: onrampAmount,
           onramp: {
             vendor: onramp.vendor,
             paymentMethod: onramp.paymentMethod,
@@ -602,11 +626,16 @@ function AnySpendCustomInner({
         vendor = "coinbase";
         paymentMethodString = coinbaseAvailablePaymentMethods[0]?.id || "";
       } else if (paymentMethod === FiatPaymentMethod.STRIPE) {
-        if (!stripeWeb2Support || !stripeWeb2Support.isSupport) {
+        // Check if either Stripe onramp or Stripe web2 is available
+        const isStripeWeb2Available = stripeWeb2Support && stripeWeb2Support.isSupport;
+        const isStripeOnrampAvailable = stripeOnrampSupport;
+
+        if (!isStripeWeb2Available && !isStripeOnrampAvailable) {
           toast.error("Stripe not available");
           return;
         }
-        vendor = stripeWeb2Support && stripeWeb2Support.isSupport ? "stripe-web2" : "stripe";
+        // Prefer stripe-web2 if available, otherwise use regular stripe
+        vendor = isStripeWeb2Available ? "stripe-web2" : "stripe";
         paymentMethodString = "";
       } else {
         toast.error("Please select a payment method");
@@ -803,7 +832,7 @@ function AnySpendCustomInner({
 
   // Render points badge if conditions are met
   const renderPointsBadge = () => {
-    if (featureFlags.showPoints && anyspendQuote?.data?.pointsAmount && anyspendQuote.data.pointsAmount > 0) {
+    if (anyspendQuote?.data?.pointsAmount && anyspendQuote.data.pointsAmount > 0) {
       return (
         <PointsBadge
           pointsAmount={anyspendQuote.data.pointsAmount}
@@ -1162,20 +1191,36 @@ function AnySpendCustomInner({
                 <div className="flex flex-col items-end gap-0.5">
                   <div className="flex flex-wrap items-center justify-end gap-2">
                     {renderPointsBadge()}
-                    <span className="text-as-primary whitespace-nowrap text-xl font-semibold">
-                      ${srcFiatAmount || "0.00"}
-                    </span>
+                    {isLoadingAnyspendQuote ? (
+                      <div className="bg-as-surface-secondary h-7 w-16 animate-pulse rounded" />
+                    ) : (
+                      <span className="text-as-primary whitespace-nowrap text-xl font-semibold">
+                        {anyspendQuote?.data?.currencyIn?.amountUsd ? (
+                          `$${Number(anyspendQuote.data.currencyIn.amountUsd).toFixed(2)}`
+                        ) : (
+                          <>
+                            ${parseFloat(srcFiatAmount || "0").toFixed(2)}
+                            <span className="text-as-tertiarry text-base">+</span>
+                          </>
+                        )}
+                      </span>
+                    )}
                   </div>
-                  {anyspendQuote?.data?.fee?.type === "stripeweb2_fee" && anyspendQuote.data.fee.originalAmount && (
-                    <span className="text-as-secondary text-xs">
-                      incl. $
-                      {(
+                  {(() => {
+                    if (anyspendQuote?.data?.fee?.type === "stripeweb2_fee" && anyspendQuote.data.fee.originalAmount) {
+                      const fee =
                         (Number(anyspendQuote.data.fee.originalAmount) - Number(anyspendQuote.data.fee.finalAmount)) /
-                        1e6
-                      ).toFixed(2)}{" "}
-                      fee
-                    </span>
-                  )}
+                        1e6;
+                      if (fee > 0) {
+                        return (
+                          <span className="text-as-secondary text-xs">
+                            incl. ${fee.toFixed(2)} fee
+                          </span>
+                        );
+                      }
+                    }
+                    return null;
+                  })()}
                 </div>
               </motion.div>
             </div>

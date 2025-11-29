@@ -27,12 +27,13 @@
 import { USDC_BASE } from "@b3dotfun/sdk/anyspend/constants";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
+import { formatUnits } from "@b3dotfun/sdk/shared/utils/number";
 import React, { useMemo } from "react";
 import { encodeFunctionData } from "viem";
 import { AnySpendCustom } from "./AnySpendCustom";
 
 // Collector Club Shop contract on Base
-const CC_SHOP_ADDRESS = "0x23887D10c81118A9a2E3Af59C423e2f4ee4Cc7Cf";
+const CC_SHOP_ADDRESS = "0x4eE0190e37E8A13740c4777D1c9de65E79D8f751";
 const BASE_CHAIN_ID = 8453;
 
 // ABI for buyPacksFor function only
@@ -136,6 +137,12 @@ export function AnySpendCollectorClubPurchase({
     }
   }, [pricePerPack, packAmount]);
 
+  // Calculate fiat amount (totalAmount in USD, assuming USDC with 6 decimals)
+  const srcFiatAmount = useMemo(() => {
+    if (!totalAmount || totalAmount === "0") return "0";
+    return formatUnits(totalAmount, USDC_BASE.decimals);
+  }, [totalAmount]);
+
   // Encode the buyPacksFor function call
   const encodedData = useMemo(() => {
     try {
@@ -185,6 +192,7 @@ export function AnySpendCollectorClubPurchase({
       header={header || defaultHeader}
       onSuccess={onSuccess}
       showRecipient={showRecipient}
+      srcFiatAmount={srcFiatAmount}
     />
   );
 }

@@ -45,6 +45,7 @@ export function FiatPaymentMethodComponent({
   // Load geo-based onramp options like in PanelOnramp
   const {
     coinbaseAvailablePaymentMethods,
+    stripeOnrampSupport,
     stripeWeb2Support,
     isLoading: isLoadingGeoOnramp,
   } = useGeoOnrampOptions(srcAmountOnRamp);
@@ -65,8 +66,8 @@ export function FiatPaymentMethodComponent({
     });
   }
 
-  // Add Stripe if available
-  if (stripeWeb2Support && stripeWeb2Support.isSupport) {
+  // Add Stripe if available (either stripeOnramp or stripeWeb2)
+  if (stripeOnrampSupport || (stripeWeb2Support && stripeWeb2Support.isSupport)) {
     const stripeFee = getFeeFromApi(FiatPaymentMethod.STRIPE);
     availablePaymentMethods.push({
       id: FiatPaymentMethod.STRIPE,

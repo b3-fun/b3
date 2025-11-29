@@ -8,7 +8,6 @@ import { formatAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { ChevronRight, Info, Wallet } from "lucide-react";
 import { useRef } from "react";
 
-import { useFeatureFlags } from "../../contexts/FeatureFlagsContext";
 import { FiatPaymentMethod } from "./FiatPaymentMethod";
 import { OrderTokenAmountFiat } from "./OrderTokenAmountFiat";
 import { PointsBadge } from "./PointsBadge";
@@ -54,8 +53,6 @@ export function PanelOnramp({
   onShowFeeDetail?: () => void;
   customUsdInputValues?: string[];
 }) {
-  const featureFlags = useFeatureFlags();
-
   // Helper function to get fees from anyspend quote
   const getFeeFromApi = (paymentMethod: FiatPaymentMethod): number | null => {
     // Try to get fee from anyspend quote first (most accurate)
@@ -84,9 +81,14 @@ export function PanelOnramp({
   const getTotalAmount = (paymentMethod: FiatPaymentMethod): number => {
     const baseAmount = parseFloat(srcAmountOnRamp) || 5;
 
-    // Try to get from anyspend quote first (most accurate)
+    // For stripeweb2_fee, use the originalAmount
     if (anyspendQuote?.data?.fee?.type === "stripeweb2_fee") {
       return Number(anyspendQuote.data.fee.originalAmount) / 1e6; // Convert from wei to USD
+    }
+
+    // Use currencyIn.amountUsd from quote when available (includes fees, most accurate for custom orders)
+    if (anyspendQuote?.data?.currencyIn?.amountUsd) {
+      return Number(anyspendQuote.data.currencyIn.amountUsd);
     }
 
     const fee = getFeeFromApi(paymentMethod);
@@ -279,15 +281,13 @@ export function PanelOnramp({
                   <Info className="h-4 w-4" />
                 </button>
               )}
-              {featureFlags.showPoints &&
-                anyspendQuote?.data?.pointsAmount &&
-                anyspendQuote?.data?.pointsAmount > 0 && (
-                  <PointsBadge
-                    pointsAmount={anyspendQuote.data.pointsAmount}
-                    pointsMultiplier={anyspendQuote.data.pointsMultiplier}
-                    onClick={() => onShowPointsDetail?.()}
-                  />
-                )}
+              {anyspendQuote?.data?.pointsAmount && anyspendQuote?.data?.pointsAmount > 0 && (
+                <PointsBadge
+                  pointsAmount={anyspendQuote.data.pointsAmount}
+                  pointsMultiplier={anyspendQuote.data.pointsMultiplier}
+                  onClick={() => onShowPointsDetail?.()}
+                />
+              )}
             </div>
             <div className="flex flex-col items-end gap-0.5">
               <span className="text-as-primary font-semibold">
