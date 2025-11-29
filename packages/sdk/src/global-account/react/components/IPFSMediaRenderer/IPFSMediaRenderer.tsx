@@ -1,12 +1,9 @@
 "use client";
 
+import { getIpfsUrl } from "@b3dotfun/sdk/shared/utils/ipfs";
 import { client as defaultClient } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import type { ThirdwebClient } from "thirdweb";
 import { MediaRenderer } from "thirdweb/react";
-
-// Primary IPFS gateway URL - matches our allowed list in profileDisplay.ts
-// Note: MediaRenderer expects the base gateway URL without /ipfs path
-// const IPFS_GATEWAY_URL = "https://cloudflare-ipfs.com";
 
 interface IPFSMediaRendererProps {
   /** The source URL - can be IPFS URL (ipfs://...) or HTTP URL */
@@ -66,12 +63,13 @@ export function IPFSMediaRenderer({
     );
   }
 
-  // Convert IPFS URLs to HTTP gateway URLs if needed
-  // This handles both ipfs:// URLs and existing HTTP gateway URLs
+  // Convert IPFS URLs to HTTP gateway URLs using our preferred gateway
+  // This avoids Thirdweb's default cloudflare-ipfs.com which can be unreliable
+  const resolvedSrc = src.startsWith("ipfs://") ? getIpfsUrl(src) : src;
 
   return (
     <MediaRenderer
-      src={src}
+      src={resolvedSrc}
       client={client}
       alt={alt}
       className={className}

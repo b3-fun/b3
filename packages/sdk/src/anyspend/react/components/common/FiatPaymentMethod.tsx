@@ -7,7 +7,8 @@ import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 export enum FiatPaymentMethod {
   NONE = "none",
   COINBASE_PAY = "coinbase_pay",
-  STRIPE = "stripe",
+  STRIPE = "stripe", // Stripe redirect (one-click buy URL)
+  STRIPE_WEB2 = "stripe_web2", // Stripe embedded payment
 }
 
 interface FiatPaymentMethodProps {
@@ -25,29 +26,33 @@ export function FiatPaymentMethodComponent({
   onSelectPaymentMethod,
   srcAmountOnRamp,
 }: FiatPaymentMethodProps) {
+  // Load geo-based onramp options like in PanelOnramp
+  const {
+    coinbaseAvailablePaymentMethods,
+    stripeOnrampSupport,
+    stripeWeb2Support,
+    isLoading: isLoadingGeoOnramp,
+  } = useGeoOnrampOptions(srcAmountOnRamp);
+
   // Helper function to get fees from API data
   const getFeeFromApi = (paymentMethod: FiatPaymentMethod): string | null => {
     switch (paymentMethod) {
       case FiatPaymentMethod.COINBASE_PAY:
         // Coinbase doesn't provide fee info in API, return null
         return null;
-      case FiatPaymentMethod.STRIPE:
-        // Get fee from Stripe API response
+      case FiatPaymentMethod.STRIPE_WEB2:
+        // Get fee from Stripe Web2 API response
         if (stripeWeb2Support && "formattedFeeUsd" in stripeWeb2Support) {
           return stripeWeb2Support.formattedFeeUsd;
         }
+        return null;
+      case FiatPaymentMethod.STRIPE:
+        // Stripe redirect doesn't have fee info from API
         return null;
       default:
         return null; // No fee when no payment method selected
     }
   };
-
-  // Load geo-based onramp options like in PanelOnramp
-  const {
-    coinbaseAvailablePaymentMethods,
-    stripeWeb2Support,
-    isLoading: isLoadingGeoOnramp,
-  } = useGeoOnrampOptions(srcAmountOnRamp);
 
   // Generate payment methods based on geo availability (like in PanelOnrampPayment)
   const availablePaymentMethods = [];
@@ -65,15 +70,28 @@ export function FiatPaymentMethodComponent({
     });
   }
 
-  // Add Stripe if available
-  if (stripeWeb2Support && stripeWeb2Support.isSupport) {
-    const stripeFee = getFeeFromApi(FiatPaymentMethod.STRIPE);
+  // Add Stripe redirect (one-click) if available - primary option
+  if (stripeOnrampSupport) {
+    const stripeFee = getFeeFromApi(FiatPaymentMethod.STRIPE_WEB2); // Use same fee estimate
     availablePaymentMethods.push({
       id: FiatPaymentMethod.STRIPE,
-      name: "Stripe",
-      description: "Credit or debit card payment",
-      badge: stripeFee ? `$${Number(stripeFee).toFixed(2)} fee` : "Standard Fee",
-      badgeColor: "bg-yellow-100 text-yellow-800",
+      name: "Credit/Debit Card",
+      description: "Pay via Stripe checkout",
+      badge: stripeFee ? `$${Number(stripeFee).toFixed(2)} fee` : undefined,
+      badgeColor: "bg-gray-100 text-gray-800",
+      available: true,
+    });
+  }
+
+  // Add Stripe Web2 (embedded) if available - secondary option
+  if (stripeWeb2Support && stripeWeb2Support.isSupport) {
+    const stripeFee = getFeeFromApi(FiatPaymentMethod.STRIPE_WEB2);
+    availablePaymentMethods.push({
+      id: FiatPaymentMethod.STRIPE_WEB2,
+      name: "Quick Pay",
+      description: "Credit or debit card",
+      badge: stripeFee ? `$${Number(stripeFee).toFixed(2)} fee` : undefined,
+      badgeColor: "bg-gray-100 text-gray-800",
       available: true,
     });
   }
@@ -144,16 +162,22 @@ export function FiatPaymentMethodComponent({
               >
                 {/* Icon - matching PanelOnramp style */}
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-2xl text-white">
-                  {method.id === FiatPaymentMethod.COINBASE_PAY ? "C" : "S"}
+                  {method.id === FiatPaymentMethod.COINBASE_PAY
+                    ? "C"
+                    : method.id === FiatPaymentMethod.STRIPE || method.id === FiatPaymentMethod.STRIPE_WEB2
+                      ? "S"
+                      : "?"}
                 </div>
 
                 {/* Content */}
                 <div className="flex flex-1 flex-col items-start text-left">
                   <div className="flex items-center gap-2">
                     <span className="text-as-primary text-base font-semibold">{method.name}</span>
-                    <span className={cn("rounded-full px-2 py-1 text-xs font-medium", method.badgeColor)}>
-                      {method.badge}
-                    </span>
+                    {method.badge && (
+                      <span className={cn("rounded-full px-2 py-1 text-xs font-medium", method.badgeColor)}>
+                        {method.badge}
+                      </span>
+                    )}
                   </div>
                   <span className="text-as-primary/60 text-sm">{method.description}</span>
                 </div>

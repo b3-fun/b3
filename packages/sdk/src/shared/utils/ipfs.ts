@@ -3,23 +3,23 @@
  * These gateways must match the allowed list in profileDisplay.ts validateImageUrl()
  */
 const IPFS_GATEWAYS = [
-  "https://cloudflare-ipfs.com/ipfs", // Primary gateway - fast and reliable
+  "https://dweb.link/ipfs", // Primary gateway - Protocol Labs maintained
+  "https://w3s.link/ipfs", // web3.storage gateway - reliable
+  "https://nftstorage.link/ipfs", // NFT.storage gateway
+  "https://gateway.pinata.cloud/ipfs", // Pinata gateway
   "https://ipfs.io/ipfs", // Fallback gateway
-  "https://gateway.pinata.cloud/ipfs", // Additional option
-  "https://dweb.link/ipfs", // Additional option
-  "https://nftstorage.link/ipfs", // Additional option
-  "https://w3s.link/ipfs", // Additional option
+  "https://cloudflare-ipfs.com/ipfs", // Cloudflare gateway (can be slow/unreliable)
 ] as const;
 
 /**
  * Converts an IPFS URL to a gateway URL
  * @param ipfsUrl - URL in format ipfs://CID/path or just the CID
- * @param gatewayIndex - Optional index to specify which gateway to use (0: Cloudflare, 1: ipfs.io)
+ * @param gatewayIndex - Optional index to specify which gateway to use (0: dweb.link, 1: w3s.link, etc.)
  * @returns HTTP URL using the specified IPFS gateway
  * @example
- * // returns 'https://cloudflare-ipfs.com/ipfs/QmUbJ4p.../2.png'
+ * // returns 'https://dweb.link/ipfs/QmUbJ4p.../2.png'
  * getIpfsUrl('ipfs://QmUbJ4pnHMNXGeWWhBFFSEqCGuc6cEtDyz35wQfv7k2TXy/2.png')
- * // returns 'https://ipfs.io/ipfs/QmUbJ4p.../2.png'
+ * // returns 'https://w3s.link/ipfs/QmUbJ4p.../2.png'
  * getIpfsUrl('ipfs://QmUbJ4pnHMNXGeWWhBFFSEqCGuc6cEtDyz35wQfv7k2TXy/2.png', 1)
  */
 export function getIpfsUrl(ipfsUrl: string, gatewayIndex = 0): string {

@@ -7,7 +7,7 @@ import { getIpfsUrl } from "@b3dotfun/sdk/shared/utils/ipfs";
 import { formatDisplayNumber, formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { MoreVertical } from "lucide-react";
 import { AnimatePresence } from "motion/react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { b3 } from "viem/chains";
 import { GetQuoteResponse } from "../../types/api_req_res";
 import { AnySpendCustom } from "./AnySpendCustom";
@@ -46,19 +46,19 @@ export function AnySpendNFT({
   onShowPointsDetail?: () => void;
 }) {
   const [imageUrlWithFallback, setFallbackImageUrl] = useState<string | null>(nftContract.imageUrl);
-  const [isLoadingFallback, setIsLoadingFallback] = useState(false);
+  const hasFetchedRef = useRef(false);
 
   // Fetch contract metadata when imageUrl is empty
   useEffect(() => {
     async function fetchContractMetadata() {
       // fetch image Uri if not provided
-      if (nftContract.imageUrl || isLoadingFallback) {
+      if (nftContract.imageUrl || hasFetchedRef.current) {
         return;
       }
 
-      try {
-        setIsLoadingFallback(true);
+      hasFetchedRef.current = true;
 
+      try {
         // Use the chainIdToPublicClient utility function
         const publicClient = chainIdToPublicClient(nftContract.chainId);
 
@@ -96,56 +96,57 @@ export function AnySpendNFT({
         }
       } catch (error) {
         console.error("Error fetching contract metadata:", error);
-      } finally {
-        setIsLoadingFallback(false);
       }
     }
 
     fetchContractMetadata();
-  }, [nftContract.contractAddress, nftContract.chainId, nftContract.imageUrl, nftContract.tokenId, isLoadingFallback]);
+  }, [nftContract.contractAddress, nftContract.chainId, nftContract.imageUrl, nftContract.tokenId]);
 
-  const header = ({
-    anyspendPrice,
-    isLoadingAnyspendPrice,
-  }: {
-    anyspendPrice: GetQuoteResponse | undefined;
-    isLoadingAnyspendPrice: boolean;
-  }) => (
-    <>
-      <div className="relative size-[200px]">
-        <div className="absolute inset-0 scale-95 bg-black/30 blur-md"></div>
-        <GlareCard className="overflow-hidden">
-          {imageUrlWithFallback && (
-            <img src={imageUrlWithFallback} alt={nftContract.name} className="size-full object-cover" />
-          )}
-          <div className="absolute inset-0 rounded-xl border border-white/10"></div>
-        </GlareCard>
-
-        <DropdownMenu nftContract={nftContract} />
-      </div>
-      <div className="from-b3-react-background to-as-on-surface-1 -mb-5 mt-[-100px] w-full rounded-t-lg bg-gradient-to-t">
-        <div className="h-[100px] w-full" />
-        <div className="mb-1 flex w-full flex-col items-center gap-2 p-5">
-          <span className="font-sf-rounded text-2xl font-semibold">{nftContract.name}</span>
-
-          <div className="flex w-fit items-center gap-1">
-            {anyspendPrice ? (
-              <AnimatePresence mode="wait">
-                <div
-                  className={cn("text-as-primary group flex items-center text-3xl font-semibold transition-all", {
-                    "opacity-0": isLoadingAnyspendPrice,
-                  })}
-                >
-                  {formatDisplayNumber(anyspendPrice?.data?.currencyIn?.amountUsd, { style: "currency" })}
-                </div>
-              </AnimatePresence>
-            ) : (
-              <div className="h-[36px] w-full" />
+  const header = useCallback(
+    ({
+      anyspendPrice,
+      isLoadingAnyspendPrice,
+    }: {
+      anyspendPrice: GetQuoteResponse | undefined;
+      isLoadingAnyspendPrice: boolean;
+    }) => (
+      <>
+        <div className="relative size-[200px]">
+          <div className="absolute inset-0 scale-95 bg-black/30 blur-md"></div>
+          <GlareCard className="overflow-hidden">
+            {imageUrlWithFallback && (
+              <img src={imageUrlWithFallback} alt={nftContract.name} className="size-full object-cover" />
             )}
+            <div className="absolute inset-0 rounded-xl border border-white/10"></div>
+          </GlareCard>
+
+          <DropdownMenu nftContract={nftContract} />
+        </div>
+        <div className="from-b3-react-background to-as-on-surface-1 -mb-5 mt-[-100px] w-full rounded-t-lg bg-gradient-to-t">
+          <div className="h-[100px] w-full" />
+          <div className="mb-1 flex w-full flex-col items-center gap-2 p-5">
+            <span className="font-sf-rounded text-2xl font-semibold">{nftContract.name}</span>
+
+            <div className="flex w-fit items-center gap-1">
+              {anyspendPrice ? (
+                <AnimatePresence mode="wait">
+                  <div
+                    className={cn("text-as-primary group flex items-center text-3xl font-semibold transition-all", {
+                      "opacity-0": isLoadingAnyspendPrice,
+                    })}
+                  >
+                    {formatDisplayNumber(anyspendPrice?.data?.currencyIn?.amountUsd, { style: "currency" })}
+                  </div>
+                </AnimatePresence>
+              ) : (
+                <div className="h-[36px] w-full" />
+              )}
+            </div>
           </div>
         </div>
-      </div>
-    </>
+      </>
+    ),
+    [imageUrlWithFallback, nftContract],
   );
 
   return (

@@ -5,7 +5,6 @@ import { formatDisplayNumber } from "@b3dotfun/sdk/shared/utils/number";
 import { ChevronRight, Info } from "lucide-react";
 import { motion } from "motion/react";
 import { components } from "../../../types/api";
-import { useFeatureFlags } from "../../contexts/FeatureFlagsContext";
 import { OrderTokenAmount } from "./OrderTokenAmount";
 import { PointsBadge } from "./PointsBadge";
 
@@ -55,8 +54,6 @@ export function CryptoReceiveSection({
   onShowPointsDetail,
   onShowFeeDetail,
 }: CryptoReceiveSectionProps) {
-  const featureFlags = useFeatureFlags();
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
@@ -184,7 +181,7 @@ export function CryptoReceiveSection({
               );
             })()}
         </div>
-        {featureFlags.showPoints && anyspendQuote?.data?.pointsAmount > 0 && (
+        {anyspendQuote?.data?.pointsAmount > 0 && (
           <PointsBadge
             pointsAmount={anyspendQuote.data.pointsAmount}
             pointsMultiplier={anyspendQuote.data.pointsMultiplier}

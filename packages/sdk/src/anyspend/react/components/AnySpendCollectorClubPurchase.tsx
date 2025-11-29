@@ -27,6 +27,7 @@
 import { USDC_BASE } from "@b3dotfun/sdk/anyspend/constants";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
+import { formatUnits } from "@b3dotfun/sdk/shared/utils/number";
 import React, { useMemo } from "react";
 import { encodeFunctionData } from "viem";
 import { AnySpendCustom } from "./AnySpendCustom";
@@ -136,6 +137,12 @@ export function AnySpendCollectorClubPurchase({
     }
   }, [pricePerPack, packAmount]);
 
+  // Calculate fiat amount (totalAmount in USD, assuming USDC with 6 decimals)
+  const srcFiatAmount = useMemo(() => {
+    if (!totalAmount || totalAmount === "0") return "0";
+    return formatUnits(totalAmount, USDC_BASE.decimals);
+  }, [totalAmount]);
+
   // Encode the buyPacksFor function call
   const encodedData = useMemo(() => {
     try {
@@ -185,6 +192,7 @@ export function AnySpendCollectorClubPurchase({
       header={header || defaultHeader}
       onSuccess={onSuccess}
       showRecipient={showRecipient}
+      srcFiatAmount={srcFiatAmount}
     />
   );
 }
