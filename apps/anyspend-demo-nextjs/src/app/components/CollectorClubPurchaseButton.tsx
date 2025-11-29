@@ -29,7 +29,7 @@ export function CollectorClubPurchaseButton() {
     >
       <div>
         <h3 className="text-lg font-medium text-gray-900">Collector Club Packs</h3>
-        <p className="mt-1 text-sm text-gray-500">Buy 1 pack at 1 USDC each using any token</p>
+        <p className="mt-1 text-sm text-gray-500">Buy 2 packs at 1 USDC each using any token</p>
       </div>
     </button>
   );

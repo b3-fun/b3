@@ -103,7 +103,7 @@ function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
         return;
       }
 
-      if (vendor === "stripe-web2" && !stripeWeb2Support.isSupport && !stripeOnrampSupport) {
+      if (vendor === "stripe-web2" && !stripeWeb2Support.isSupport) {
         toast.error("Stripe credit card not available");
         return;
       }

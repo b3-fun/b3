@@ -46,7 +46,7 @@ export function useGeoOnrampOptions(srcFiatAmount: string) {
       stripeOnrampSupport,
       stripeWeb2Support,
       isOnrampSupported:
-        coinbaseAvailablePaymentMethods.length > 0 || stripeOnrampSupport || stripeWeb2Support?.isSupport,
+        coinbaseAvailablePaymentMethods.length > 0 || stripeOnrampSupport || stripeWeb2Support.isSupport,
       isLoading: isLoadingGeo || isLoadingCoinbaseOnrampOptions || isLoadingStripeSupport || isLoadingVisitorData,
       isLoadingGeo,
       isLoadingCoinbaseOnrampOptions,
