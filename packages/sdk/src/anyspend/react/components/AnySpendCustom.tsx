@@ -1212,11 +1212,7 @@ function AnySpendCustomInner({
                         (Number(anyspendQuote.data.fee.originalAmount) - Number(anyspendQuote.data.fee.finalAmount)) /
                         1e6;
                       if (fee > 0) {
-                        return (
-                          <span className="text-as-secondary text-xs">
-                            incl. ${fee.toFixed(2)} fee
-                          </span>
-                        );
+                        return <span className="text-as-secondary text-xs">incl. ${fee.toFixed(2)} fee</span>;
                       }
                     }
                     return null;

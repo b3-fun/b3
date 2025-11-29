@@ -317,9 +317,7 @@ function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
             {/* Stripe Option - Show if supported (either stripeOnramp or stripeWeb2) */}
             {(stripeOnrampSupport || stripeWeb2Support.isSupport) && (
               <button
-                onClick={() =>
-                  handlePaymentMethodClick(stripeWeb2Support.isSupport ? "stripe-web2" : "stripe")
-                }
+                onClick={() => handlePaymentMethodClick(stripeWeb2Support.isSupport ? "stripe-web2" : "stripe")}
                 className="bg-b3-react-background border-b3-react-border hover:border-as-brand group flex w-full items-center justify-between gap-4 rounded-xl border p-5 transition-all duration-200 hover:shadow-md"
               >
                 <div className="flex items-center gap-4">
