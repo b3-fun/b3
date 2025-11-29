@@ -11,6 +11,14 @@ export enum FiatPaymentMethod {
   STRIPE_WEB2 = "stripe_web2", // Stripe embedded payment
 }
 
+// Shared display config for fiat payment methods
+export const FIAT_PAYMENT_METHOD_DISPLAY: Record<FiatPaymentMethod, { icon: string; label: string } | null> = {
+  [FiatPaymentMethod.COINBASE_PAY]: { icon: "C", label: "Coinbase Pay" },
+  [FiatPaymentMethod.STRIPE]: { icon: "S", label: "Pay via Stripe" },
+  [FiatPaymentMethod.STRIPE_WEB2]: { icon: "S", label: "Pay with Card" },
+  [FiatPaymentMethod.NONE]: null,
+};
+
 interface FiatPaymentMethodProps {
   selectedPaymentMethod: FiatPaymentMethod;
   setSelectedPaymentMethod: (method: FiatPaymentMethod) => void;
@@ -70,26 +78,26 @@ export function FiatPaymentMethodComponent({
     });
   }
 
-  // Add Stripe redirect (one-click) if available - primary option
+  // Add Stripe redirect (one-click) if available - redirects to Stripe checkout
   if (stripeOnrampSupport) {
     const stripeFee = getFeeFromApi(FiatPaymentMethod.STRIPE_WEB2); // Use same fee estimate
     availablePaymentMethods.push({
       id: FiatPaymentMethod.STRIPE,
-      name: "Credit/Debit Card",
-      description: "Pay via Stripe checkout",
+      name: "Pay via Stripe",
+      description: "Redirects to Stripe checkout",
       badge: stripeFee ? `$${Number(stripeFee).toFixed(2)} fee` : undefined,
       badgeColor: "bg-gray-100 text-gray-800",
       available: true,
     });
   }
 
-  // Add Stripe Web2 (embedded) if available - secondary option
+  // Add Stripe Web2 (embedded) if available - embedded card form
   if (stripeWeb2Support && stripeWeb2Support.isSupport) {
     const stripeFee = getFeeFromApi(FiatPaymentMethod.STRIPE_WEB2);
     availablePaymentMethods.push({
       id: FiatPaymentMethod.STRIPE_WEB2,
-      name: "Quick Pay",
-      description: "Credit or debit card",
+      name: "Pay with Card",
+      description: "Fast checkout",
       badge: stripeFee ? `$${Number(stripeFee).toFixed(2)} fee` : undefined,
       badgeColor: "bg-gray-100 text-gray-800",
       available: true,

@@ -8,7 +8,7 @@ import { formatAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { ChevronRight, Info, Wallet } from "lucide-react";
 import { useRef } from "react";
 
-import { FiatPaymentMethod } from "./FiatPaymentMethod";
+import { FIAT_PAYMENT_METHOD_DISPLAY, FiatPaymentMethod } from "./FiatPaymentMethod";
 import { OrderTokenAmountFiat } from "./OrderTokenAmountFiat";
 import { PointsBadge } from "./PointsBadge";
 
@@ -141,32 +141,28 @@ export function PanelOnramp({
             className="text-as-tertiarry flex h-7 items-center gap-1 text-sm"
             onClick={() => setActivePanel(fiatPaymentMethodIndex)} // PanelView.FIAT_PAYMENT_METHOD
           >
-            {selectedPaymentMethod === FiatPaymentMethod.COINBASE_PAY ? (
-              <>
-                <div className="flex items-center gap-2">
-                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600">
-                    <span className="text-xs font-bold text-white">C</span>
-                  </div>
-                  Coinbase Pay
-                </div>
-                <ChevronRight className="h-4 w-4" />
-              </>
-            ) : selectedPaymentMethod === FiatPaymentMethod.STRIPE ? (
-              <>
-                <div className="flex items-center gap-2">
-                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600">
-                    <span className="text-xs font-bold text-white">S</span>
-                  </div>
-                  Stripe
-                </div>
-                <ChevronRight className="h-4 w-4" />
-              </>
-            ) : (
-              <>
-                Select payment method
-                <ChevronRight className="h-4 w-4" />
-              </>
-            )}
+            {(() => {
+              const config = selectedPaymentMethod ? FIAT_PAYMENT_METHOD_DISPLAY[selectedPaymentMethod] : null;
+              if (config) {
+                return (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600">
+                        <span className="text-xs font-bold text-white">{config.icon}</span>
+                      </div>
+                      {config.label}
+                    </div>
+                    <ChevronRight className="h-4 w-4" />
+                  </>
+                );
+              }
+              return (
+                <>
+                  Select payment method
+                  <ChevronRight className="h-4 w-4" />
+                </>
+              );
+            })()}
           </button>
         </div>
 

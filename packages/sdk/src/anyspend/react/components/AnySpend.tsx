@@ -510,7 +510,8 @@ function AnySpendInner({
   });
 
   // Get geo-based onramp options for fiat payments
-  const { geoData, coinbaseAvailablePaymentMethods, stripeWeb2Support } = useGeoOnrampOptions(srcAmountOnRamp);
+  const { geoData, coinbaseAvailablePaymentMethods, stripeOnrampSupport, stripeWeb2Support } =
+    useGeoOnrampOptions(srcAmountOnRamp);
 
   // Helper function to map payment method to onramp vendor
   const getOnrampVendor = (paymentMethod: FiatPaymentMethod): "coinbase" | "stripe" | "stripe-web2" | undefined => {
@@ -518,11 +519,11 @@ function AnySpendInner({
       case FiatPaymentMethod.COINBASE_PAY:
         return "coinbase";
       case FiatPaymentMethod.STRIPE:
-        // Determine if it's stripe onramp or stripe-web2 based on support
-        if (stripeWeb2Support?.isSupport) {
-          return "stripe-web2";
-        }
-        return undefined;
+        // Stripe redirect flow (one-click URL)
+        return stripeOnrampSupport ? "stripe" : undefined;
+      case FiatPaymentMethod.STRIPE_WEB2:
+        // Stripe embedded payment form
+        return stripeWeb2Support?.isSupport ? "stripe-web2" : undefined;
       default:
         return undefined;
     }
@@ -683,7 +684,10 @@ function AnySpendInner({
 
   // Determine button state and text
   const btnInfo: { text: string; disable: boolean; error: boolean; loading: boolean } = useMemo(() => {
-    if (activeInputAmountInWei === "0") return { text: "Enter an amount", disable: true, error: false, loading: false };
+    // For fiat tab, check srcAmountOnRamp; for crypto tab, check activeInputAmountInWei
+    const hasAmount =
+      activeTab === "fiat" ? srcAmountOnRamp && parseFloat(srcAmountOnRamp) > 0 : activeInputAmountInWei !== "0";
+    if (!hasAmount) return { text: "Enter an amount", disable: true, error: false, loading: false };
     if (isSameChainSameToken)
       return { text: "Select a different token or chain", disable: true, error: false, loading: false };
     if (isLoadingAnyspendQuote) return { text: "Loading quote...", disable: true, error: false, loading: true };
@@ -739,6 +743,7 @@ function AnySpendInner({
     activeTab,
     effectiveCryptoPaymentMethod,
     selectedFiatPaymentMethod,
+    srcAmountOnRamp,
   ]);
 
   // Handle main button click
@@ -870,11 +875,20 @@ function AnySpendInner({
         vendor = "coinbase";
         paymentMethodString = coinbaseAvailablePaymentMethods[0]?.id || ""; // Use first available payment method ID
       } else if (paymentMethod === FiatPaymentMethod.STRIPE) {
-        if (!stripeWeb2Support || !stripeWeb2Support.isSupport) {
-          toast.error("Stripe not available");
+        // Stripe redirect flow (one-click URL)
+        if (!stripeOnrampSupport) {
+          toast.error("Credit/Debit Card not available");
           return;
         }
-        vendor = stripeWeb2Support && stripeWeb2Support.isSupport ? "stripe-web2" : "stripe";
+        vendor = "stripe";
+        paymentMethodString = "";
+      } else if (paymentMethod === FiatPaymentMethod.STRIPE_WEB2) {
+        // Stripe embedded payment form
+        if (!stripeWeb2Support.isSupport) {
+          toast.error("Pay with Card not available");
+          return;
+        }
+        vendor = "stripe-web2";
         paymentMethodString = "";
       } else {
         toast.error("Please select a payment method");
