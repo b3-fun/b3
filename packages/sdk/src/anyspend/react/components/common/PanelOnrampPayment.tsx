@@ -333,7 +333,9 @@ function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
                     <p className="text-b3-react-foreground/60 text-sm">Pay via Stripe checkout</p>
                     {stripeWeb2Support?.formattedFeeUsd && (
                       <div className="mt-1">
-                        <span className="text-xs text-gray-500">${Number(stripeWeb2Support.formattedFeeUsd).toFixed(2)} fee</span>
+                        <span className="text-xs text-gray-500">
+                          ${Number(stripeWeb2Support.formattedFeeUsd).toFixed(2)} fee
+                        </span>
                       </div>
                     )}
                   </div>
@@ -361,7 +363,9 @@ function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
                     <p className="text-b3-react-foreground/60 text-sm">Credit or debit card</p>
                     {stripeWeb2Support?.formattedFeeUsd && (
                       <div className="mt-1">
-                        <span className="text-xs text-gray-500">${Number(stripeWeb2Support.formattedFeeUsd).toFixed(2)} fee</span>
+                        <span className="text-xs text-gray-500">
+                          ${Number(stripeWeb2Support.formattedFeeUsd).toFixed(2)} fee
+                        </span>
                       </div>
                     )}
                   </div>
