@@ -187,9 +187,13 @@ export function SignInWithB3Flow({
     ],
   );
 
-  // Handle post-login flow after signers are loaded
+  // Handle post-login flow for normal flow (enableTurnkey = false)
   useEffect(() => {
-    debug("@@SignInWithB3Flow:useEffect", {
+    if (enableTurnkey) {
+      return; // Skip this effect when Turnkey is enabled
+    }
+
+    debug("@@SignInWithB3Flow:useEffect (normal flow)", {
       isConnected,
       isAuthenticating,
       isFetchingSigners,
@@ -197,6 +201,58 @@ export function SignInWithB3Flow({
       isOpen,
       source,
     });
+
+    if (isConnected && isAuthenticated) {
+      // Mark that login just completed BEFORE opening manage account or closing modal
+      if (closeAfterLogin) {
+        setJustCompletedLogin(true);
+      }
+
+      // Normal flow continues
+      handlePostTurnkeyFlow();
+    }
+  }, [
+    signers,
+    isFetchingSigners,
+    partnerId,
+    handleRefetchSigners,
+    source,
+    closeAfterLogin,
+    setB3ModalContentType,
+    chain,
+    onSessionKeySuccess,
+    setB3ModalOpen,
+    signersEnabled,
+    isConnected,
+    isAuthenticating,
+    isAuthenticated,
+    isOpen,
+    setJustCompletedLogin,
+    user,
+    enableTurnkey,
+    handlePostTurnkeyFlow,
+  ]);
+
+  // Handle post-login flow for Turnkey flow (enableTurnkey = true)
+  useEffect(() => {
+    if (!enableTurnkey) {
+      return; // Skip this effect when Turnkey is disabled
+    }
+
+    debug("@@SignInWithB3Flow:useEffect (Turnkey flow)", {
+      isConnected,
+      isAuthenticating,
+      isFetchingSigners,
+      closeAfterLogin,
+      isOpen,
+      source,
+      user: !!user,
+    });
+
+    // Wait until user is defined before proceeding
+    if (!user) {
+      return;
+    }
 
     if (isConnected && isAuthenticated) {
       // Mark that login just completed BEFORE opening manage account or closing modal
@@ -214,11 +270,7 @@ export function SignInWithB3Flow({
       const hasTurnkeyEmail = !!user?.email;
       const isTurnkeyModalCurrentlyOpen = contentType?.type === "turnkeyAuth";
       const shouldShowTurnkeyModal =
-        enableTurnkey &&
-        user &&
-        !turnkeyAuthCompleted &&
-        !isTurnkeyModalCurrentlyOpen &&
-        (!hasTurnkeyId || (hasTurnkeyId && hasTurnkeyEmail));
+        !turnkeyAuthCompleted && !isTurnkeyModalCurrentlyOpen && (!hasTurnkeyId || (hasTurnkeyId && hasTurnkeyEmail));
 
       if (shouldShowTurnkeyModal) {
         // Extract email from user object - check partnerIds.turnkeyEmail first, then twProfiles, then user.email
