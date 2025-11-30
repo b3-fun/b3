@@ -1,6 +1,6 @@
 import { Users } from "@b3dotfun/b3-api";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
 
 const debug = debugB3React("useUserQuery");
 
@@ -38,46 +38,67 @@ function saveUserToStorage(user: Users | null) {
   }
 }
 
+// Event emitter for cross-component synchronization
+const userUpdateListeners = new Set<() => void>();
+
+function notifyUserUpdate() {
+  userUpdateListeners.forEach(listener => listener());
+}
+
 /**
  * NOTE: THIS IS ONLY MEANT FOR INTERNAL USE, from useOnConnect
  *
- * Custom hook to manage user state with react-query
+ * Custom hook to manage user state with plain React
  * This allows for invalidation and refetching of user data
  */
 export function useUserQuery() {
-  const queryClient = useQueryClient();
-
-  // Query to get user data (primarily from cache/localStorage)
-  const { data: user } = useQuery<Users | null>({
-    queryKey: USER_QUERY_KEY,
-    queryFn: getUserFromStorage,
-    staleTime: Infinity, // User data doesn't go stale automatically
-    gcTime: Infinity, // Keep in cache indefinitely
-    initialData: getUserFromStorage,
+  const [user, setUserState] = useState<Users | undefined>(() => {
+    const storedUser = getUserFromStorage();
+    return storedUser ?? undefined;
   });
 
-  // Mutation to update user
-  const setUserMutation = useMutation({
-    mutationFn: async (newUser: Users | undefined) => {
-      const userToSave = newUser ?? null;
-      saveUserToStorage(userToSave);
-      return userToSave;
-    },
-    onSuccess: data => {
-      queryClient.setQueryData(USER_QUERY_KEY, data);
-      debug("User updated", data);
-    },
-  });
+  const listenerRef = useRef<(() => void) | undefined>(undefined);
 
-  // Helper function to set user (maintains backward compatibility)
+  // Sync with localStorage changes from other components
+  useEffect(() => {
+    listenerRef.current = () => {
+      const storedUser = getUserFromStorage();
+      setUserState(storedUser ?? undefined);
+    };
+
+    userUpdateListeners.add(listenerRef.current);
+
+    // Listen for storage events from other tabs/windows
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "b3-user") {
+        listenerRef.current?.();
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      if (listenerRef.current) {
+        userUpdateListeners.delete(listenerRef.current);
+      }
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
+
+  // Helper function to set user
   const setUser = (newUser?: Users) => {
-    setUserMutation.mutate(newUser);
+    const userToSave = newUser ?? null;
+    saveUserToStorage(userToSave);
+    setUserState(newUser ?? undefined);
+    notifyUserUpdate();
+    debug("User updated", userToSave);
   };
 
   // Helper function to invalidate and refetch user
   const refetchUser = async () => {
-    await queryClient.invalidateQueries({ queryKey: USER_QUERY_KEY });
-    return queryClient.refetchQueries({ queryKey: USER_QUERY_KEY });
+    const storedUser = getUserFromStorage();
+    setUserState(storedUser ?? undefined);
+    return Promise.resolve(storedUser ?? undefined);
   };
 
   // Helper function to clear user
