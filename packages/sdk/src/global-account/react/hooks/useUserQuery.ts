@@ -1,88 +1,116 @@
 import { Users } from "@b3dotfun/b3-api";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 const debug = debugB3React("useUserQuery");
 
 const USER_QUERY_KEY = ["b3-user"];
 
-/**
- * Retrieves the user from localStorage
- */
-function getUserFromStorage(): Users | null {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  try {
-    const storedUser = localStorage.getItem("b3-user");
-    return storedUser ? JSON.parse(storedUser) : null;
-  } catch (error) {
-    console.warn("Failed to restore user from localStorage:", error);
-    return null;
-  }
+interface UserStore {
+  user: Users | null;
+  setUser: (user: Users | undefined) => void;
+  clearUser: () => void;
 }
 
 /**
- * Saves user to localStorage
+ * Zustand store for managing user state
+ * Persists user data to localStorage
  */
-function saveUserToStorage(user: Users | null) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  if (user) {
-    localStorage.setItem("b3-user", JSON.stringify(user));
-  } else {
-    localStorage.removeItem("b3-user");
-  }
-}
+const useUserStore = create<UserStore>()(
+  persist(
+    set => ({
+      user: null,
+      setUser: (newUser: Users | undefined) => {
+        const userToSave = newUser ?? null;
+        set({ user: userToSave });
+        debug("User updated", userToSave);
+      },
+      clearUser: () => {
+        set({ user: null });
+        debug("User cleared");
+      },
+    }),
+    {
+      name: "b3-user",
+      onRehydrateStorage: () => (_, error) => {
+        if (error) {
+          console.warn("Failed to rehydrate user store:", error);
+        }
+      },
+    },
+  ),
+);
 
 /**
  * NOTE: THIS IS ONLY MEANT FOR INTERNAL USE, from useOnConnect
  *
- * Custom hook to manage user state with react-query
+ * Custom hook to manage user state with Zustand
  * This allows for invalidation and refetching of user data
  */
 export function useUserQuery() {
-  const queryClient = useQueryClient();
+  const user = useUserStore(state => state.user);
+  const setUserStore = useUserStore(state => state.setUser);
+  const clearUserStore = useUserStore(state => state.clearUser);
 
-  // Query to get user data (primarily from cache/localStorage)
-  const { data: user } = useQuery<Users | null>({
-    queryKey: USER_QUERY_KEY,
-    queryFn: getUserFromStorage,
-    staleTime: Infinity, // User data doesn't go stale automatically
-    gcTime: Infinity, // Keep in cache indefinitely
-    initialData: getUserFromStorage,
-  });
+  // Listen for storage events from other tabs/windows
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "b3-user") {
+        // Sync with changes from other tabs/windows
+        const stored = e.newValue;
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            // Zustand persist format: { state: { user: ... }, version: ... }
+            const userData = parsed?.state?.user ?? parsed?.user ?? null;
+            useUserStore.setState({ user: userData });
+          } catch (error) {
+            console.warn("Failed to parse user from storage event:", error);
+          }
+        } else {
+          useUserStore.setState({ user: null });
+        }
+      }
+    };
 
-  // Mutation to update user
-  const setUserMutation = useMutation({
-    mutationFn: async (newUser: Users | undefined) => {
-      const userToSave = newUser ?? null;
-      saveUserToStorage(userToSave);
-      return userToSave;
-    },
-    onSuccess: data => {
-      queryClient.setQueryData(USER_QUERY_KEY, data);
-      debug("User updated", data);
-    },
-  });
+    window.addEventListener("storage", handleStorageChange);
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
 
   // Helper function to set user (maintains backward compatibility)
   const setUser = (newUser?: Users) => {
-    setUserMutation.mutate(newUser);
+    setUserStore(newUser);
   };
 
   // Helper function to invalidate and refetch user
   const refetchUser = async () => {
-    await queryClient.invalidateQueries({ queryKey: USER_QUERY_KEY });
-    return queryClient.refetchQueries({ queryKey: USER_QUERY_KEY });
+    // Re-read from localStorage and update store
+    // Zustand persist stores data as { state: { user: ... }, version: ... }
+    const stored = localStorage.getItem("b3-user");
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        // Zustand persist format: { state: { user: ... }, version: ... }
+        const userData = parsed?.state?.user ?? parsed?.user ?? null;
+        useUserStore.setState({ user: userData });
+        return userData ?? undefined;
+      } catch (error) {
+        console.warn("Failed to refetch user from localStorage:", error);
+        // Fallback to current store state
+        return useUserStore.getState().user ?? undefined;
+      }
+    }
+    useUserStore.setState({ user: null });
+    return undefined;
   };
 
   // Helper function to clear user
   const clearUser = () => {
-    setUser(undefined);
+    clearUserStore();
   };
 
   return {
