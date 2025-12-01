@@ -34,7 +34,7 @@ const useUserStore = create<UserStore>()(
     }),
     {
       name: "b3-user",
-      onRehydrateStorage: () => (state, error) => {
+      onRehydrateStorage: () => (_, error) => {
         if (error) {
           console.warn("Failed to rehydrate user store:", error);
         }
