@@ -166,7 +166,7 @@ export function useAuthentication(partnerId: string) {
         // Try to authenticate user (will use re-authenticate if session exists)
         // If no session exists, authentication will need to happen via Turnkey flow
         try {
-          const userAuth = await authenticateUser(wallet);
+          const userAuth = await authenticateUser();
 
           if (userAuth && onConnectCallback) {
             await onConnectCallback(wallet, userAuth.accessToken);
