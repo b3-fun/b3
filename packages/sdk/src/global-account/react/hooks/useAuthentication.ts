@@ -192,7 +192,7 @@ export function useAuthentication(partnerId: string) {
         const wallet = allConnectedWallets.find(wallet => wallet.id.startsWith("ecosystem."));
 
         if (!wallet) {
-          throw new Error("No ok smart wallet found during auto-connect");
+          throw new Error("No smart wallet found during auto-connect");
         }
 
         debug("@@useAuthentication:onConnect", { wallet });
@@ -210,7 +210,7 @@ export function useAuthentication(partnerId: string) {
         setIsAuthenticated(false);
         setUser(undefined);
 
-        logout();
+        await logout();
       } finally {
         setIsAuthenticating(false);
       }
