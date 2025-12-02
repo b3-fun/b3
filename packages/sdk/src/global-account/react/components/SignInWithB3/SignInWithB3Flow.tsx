@@ -46,6 +46,7 @@ export function SignInWithB3Flow({
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
   const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
   const isConnected = useAuthStore(state => state.isConnected);
+  const setIsConnected = useAuthStore(state => state.setIsConnected);
   const setJustCompletedLogin = useAuthStore(state => state.setJustCompletedLogin);
   const [refetchCount, setRefetchCount] = useState(0);
   const [refetchError, setRefetchError] = useState<string | null>(null);
@@ -159,6 +160,11 @@ export function SignInWithB3Flow({
       await refetchUser();
       debug("User refetched successfully");
 
+      // Set authentication and connection state so UI updates properly
+      setIsAuthenticated(true);
+      setIsConnected(true);
+      setJustCompletedLogin(true);
+
       // After user data is refreshed, close Turnkey modal and go back to sign-in flow
       debug("Switching back to signInWithB3 modal");
       setB3ModalContentType({
@@ -189,6 +195,9 @@ export function SignInWithB3Flow({
       closeAfterLogin,
       source,
       signersEnabled,
+      setIsAuthenticated,
+      setIsConnected,
+      setJustCompletedLogin,
     ],
   );
 
@@ -368,8 +377,11 @@ export function SignInWithB3Flow({
               // After Turnkey auth, refetch user to get the full user object
               await refetchUser();
               // User is now authenticated via Turnkey
+              // Set both isAuthenticated and isConnected to true so UI updates properly
               // Wallet connection is optional and can happen later for signing transactions
               setIsAuthenticated(true);
+              setIsConnected(true);
+              setJustCompletedLogin(true);
               // Call the login success callback
               onLoginSuccess?.({} as Account);
             }}
