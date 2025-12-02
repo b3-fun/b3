@@ -3,6 +3,7 @@ export { useAccountAssets } from "./useAccountAssets";
 export { useAccountWallet } from "./useAccountWallet";
 export { useAddTWSessionKey } from "./useAddTWSessionKey";
 export { useAnalytics } from "./useAnalytics";
+export { useAuth } from "./useAuth";
 export { useAuthentication } from "./useAuthentication";
 export { useB3BalanceFromAddresses } from "./useB3BalanceFromAddresses";
 export { useB3EnsName } from "./useB3EnsName";
