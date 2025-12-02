@@ -1,10 +1,20 @@
+/**
+ * @deprecated This hook is deprecated. Use useAuth() with Turnkey authentication instead.
+ * This file is kept for backward compatibility but should not be used in new code.
+ */
 import app from "@b3dotfun/sdk/global-account/app";
 import debug from "@b3dotfun/sdk/shared/utils/debug";
 import { useCallback } from "react";
 import { Wallet } from "thirdweb/wallets";
 import { useSearchParam } from "./useSearchParamsSSR";
 
+/**
+ * @deprecated Use useAuth() with Turnkey authentication instead
+ */
 export function useTWAuth() {
+  console.warn(
+    "useTWAuth is deprecated. Please migrate to useAuth() with Turnkey authentication. See useTurnkeyAuth.ts for the new implementation.",
+  );
   const referralCode = useSearchParam("referralCode");
 
   const authenticate = useCallback(

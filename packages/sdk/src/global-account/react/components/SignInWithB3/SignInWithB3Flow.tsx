@@ -11,6 +11,7 @@ import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { useCallback, useEffect, useState } from "react";
 import { useActiveAccount } from "thirdweb/react";
 import { Account } from "thirdweb/wallets";
+import { TurnkeyAuthModal } from "../TurnkeyAuthModal";
 import { SignInWithB3Privy } from "./SignInWithB3Privy";
 import { LoginStep, LoginStepContainer } from "./steps/LoginStep";
 import { LoginStepCustom } from "./steps/LoginStepCustom";
@@ -43,6 +44,7 @@ export function SignInWithB3Flow({
   const account = useActiveAccount();
   const isAuthenticating = useAuthStore(state => state.isAuthenticating);
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
+  const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
   const isConnected = useAuthStore(state => state.isConnected);
   const setJustCompletedLogin = useAuthStore(state => state.setJustCompletedLogin);
   const [refetchCount, setRefetchCount] = useState(0);
@@ -343,32 +345,73 @@ export function SignInWithB3Flow({
         <div className="p-4 text-center text-red-500">{refetchError}</div>
       </LoginStepContainer>
     );
-  } else if (isAuthenticating || (isFetchingSigners && step === "login") || source === "requestPermissions") {
-    content = (
-      <LoginStepContainer partnerId={partnerId}>
-        <div className="my-8 flex min-h-[350px] items-center justify-center">
-          <Loading variant="white" size="lg" />
-        </div>
-      </LoginStepContainer>
-    );
   } else if (step === "login") {
-    // Custom strategy
-    if (strategies?.[0] === "privy") {
-      content = <SignInWithB3Privy onSuccess={handleLoginSuccess} chain={chain} />;
-    } else if (strategies) {
-      // Strategies are explicitly provided
+    // PRIORITY: If Turnkey is enabled, show Turnkey modal FIRST as the primary authentication option
+    // Show Turnkey when enabled and not already completed in this session
+    const shouldShowTurnkeyFirst = enableTurnkey && !turnkeyAuthCompleted;
+
+    if (shouldShowTurnkeyFirst) {
+      // Don't show loading spinner for Turnkey - let the modal handle its own loading state
+      // This prevents the infinite loop where isAuthenticating causes the modal to be replaced
+      debug("Showing Turnkey as primary authentication option", {
+        enableTurnkey,
+        turnkeyAuthCompleted,
+        isAuthenticated,
+      });
+      // Show Turnkey authentication as primary option
       content = (
-        <LoginStepCustom
-          strategies={strategies}
-          chain={chain}
-          onSuccess={handleLoginSuccess}
-          onError={onError}
-          automaticallySetFirstEoa={!!automaticallySetFirstEoa}
-        />
+        <LoginStepContainer partnerId={partnerId}>
+          <TurnkeyAuthModal
+            onSuccess={async (authenticatedUser: any) => {
+              debug("Turnkey authentication successful in primary flow", { authenticatedUser });
+              setTurnkeyAuthCompleted(true);
+              // After Turnkey auth, refetch user to get the full user object
+              await refetchUser();
+              // User is now authenticated via Turnkey
+              // Wallet connection is optional and can happen later for signing transactions
+              setIsAuthenticated(true);
+              // Call the login success callback
+              onLoginSuccess?.({} as Account);
+            }}
+            onClose={() => {
+              // If user closes Turnkey modal, they can still use wallet connection as fallback
+              setTurnkeyAuthCompleted(true);
+            }}
+            initialEmail=""
+            skipToOtp={false}
+          />
+        </LoginStepContainer>
       );
     } else {
-      // Default to handle all strategies we support
-      content = <LoginStep chain={chain} onSuccess={handleLoginSuccess} onError={onError} />;
+      // Show loading spinner only if not in Turnkey flow
+      if (isAuthenticating || (isFetchingSigners && step === "login") || source === "requestPermissions") {
+        content = (
+          <LoginStepContainer partnerId={partnerId}>
+            <div className="my-8 flex min-h-[350px] items-center justify-center">
+              <Loading variant="white" size="lg" />
+            </div>
+          </LoginStepContainer>
+        );
+      } else {
+        // Custom strategy
+        if (strategies?.[0] === "privy") {
+          content = <SignInWithB3Privy onSuccess={handleLoginSuccess} chain={chain} />;
+        } else if (strategies) {
+          // Strategies are explicitly provided
+          content = (
+            <LoginStepCustom
+              strategies={strategies}
+              chain={chain}
+              onSuccess={handleLoginSuccess}
+              onError={onError}
+              automaticallySetFirstEoa={!!automaticallySetFirstEoa}
+            />
+          );
+        } else {
+          // Default to handle all strategies we support
+          content = <LoginStep chain={chain} onSuccess={handleLoginSuccess} onError={onError} />;
+        }
+      }
     }
   }
 
