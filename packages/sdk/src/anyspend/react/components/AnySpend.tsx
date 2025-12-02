@@ -38,7 +38,6 @@ import { parseUnits } from "viem";
 import { base, mainnet } from "viem/chains";
 import { components } from "../../types/api";
 import { useAutoSelectCryptoPaymentMethod } from "../hooks/useAutoSelectCryptoPaymentMethod";
-import { useAutoSetActiveWalletFromWagmi } from "../hooks/useAutoSetActiveWalletFromWagmi";
 import { useConnectedWalletDisplay } from "../hooks/useConnectedWalletDisplay";
 import { useCryptoPaymentMethodState } from "../hooks/useCryptoPaymentMethodState";
 import { useRecipientAddressState } from "../hooks/useRecipientAddressState";
@@ -460,9 +459,6 @@ function AnySpendInner({
   const { address: globalAddress, wallet: globalWallet, connectedEOAWallet } = useAccountWallet();
 
   const globalWalletImage = useAccountWalletImage();
-
-  // Auto-set active wallet from wagmi
-  useAutoSetActiveWalletFromWagmi();
 
   // Get wallet address based on selected payment method
   const { walletAddress } = useConnectedWalletDisplay(effectiveCryptoPaymentMethod);
