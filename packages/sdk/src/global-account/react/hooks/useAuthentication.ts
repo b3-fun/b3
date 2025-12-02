@@ -19,7 +19,7 @@ import { preAuthenticate } from "thirdweb/wallets/in-app";
 import { useAccount, useConnect, useSwitchAccount } from "wagmi";
 import { LocalSDKContext } from "../components/B3Provider/LocalSDKProvider";
 import { createWagmiConfig } from "../utils/createWagmiConfig";
-import { useTWAuth } from "./useTWAuth";
+import { useAuth } from "./useAuth";
 import { useUserQuery } from "./useUserQuery";
 
 const debug = debugB3React("useAuthentication");
@@ -39,7 +39,7 @@ export function useAuthentication(partnerId: string) {
   const setHasStartedConnecting = useAuthStore(state => state.setHasStartedConnecting);
   const setActiveWallet = useSetActiveWallet();
   const hasStartedConnecting = useAuthStore(state => state.hasStartedConnecting);
-  const { authenticate } = useTWAuth();
+  const { reAuthenticate } = useAuth();
   const { user, setUser } = useUserQuery();
   const useAutoConnectLoadingPrevious = useRef(false);
   const wagmiConfig = createWagmiConfig({ partnerId });
@@ -106,51 +106,45 @@ export function useAuthentication(partnerId: string) {
     syncWagmi();
   }, [wallets, syncWagmi]);
 
-  const authenticateUser = useCallback(
-    async (wallet?: Wallet) => {
-      setHasStartedConnecting(true);
+  /**
+   * Authenticate user using Turnkey
+   * Note: This no longer requires a wallet for authentication.
+   * Wallets are still used for signing transactions, but authentication is done via Turnkey email OTP.
+   *
+   * For backward compatibility, this function still accepts a wallet parameter,
+   * but it's not used for authentication anymore.
+   */
+  const authenticateUser = useCallback(async () => {
+    setHasStartedConnecting(true);
 
-      if (!wallet) {
-        throw new Error("No wallet found during auto-connect");
-      }
+    // Try to re-authenticate first
+    try {
+      const userAuth = await reAuthenticate();
+      setUser(userAuth.user);
+      setIsAuthenticated(true);
+      setIsAuthenticating(false);
+      debug("Re-authenticated successfully", { userAuth });
 
-      const account = wallet ? wallet.getAccount() : activeWallet?.getAccount();
-      if (!account) {
-        throw new Error("No account found during auto-connect");
-      }
+      // Authenticate on BSMNT with B3 JWT
+      const b3Jwt = await authenticateWithB3JWT(userAuth.accessToken);
+      debug("@@b3Jwt", b3Jwt);
 
-      // Try to re-authenticate first
-      try {
-        const userAuth = await app.reAuthenticate();
-        setUser(userAuth.user);
-        setIsAuthenticated(true);
-        setIsAuthenticating(false);
-        debug("Re-authenticated successfully", { userAuth });
+      return userAuth;
+    } catch (error) {
+      // If re-authentication fails, user needs to authenticate via Turnkey
+      // This should be handled by the Turnkey auth modal/flow
+      debug("Re-authentication failed. User needs to authenticate via Turnkey.", error);
+      setIsAuthenticated(false);
+      setIsAuthenticating(false);
+      throw new Error("Authentication required. Please authenticate via Turnkey.");
+    }
+  }, [reAuthenticate, setIsAuthenticated, setIsAuthenticating, setUser, setHasStartedConnecting]);
 
-        // Authenticate on BSMNT with B3 JWT
-        const b3Jwt = await authenticateWithB3JWT(userAuth.accessToken);
-        debug("@@b3Jwt", b3Jwt);
-
-        return userAuth;
-      } catch (error) {
-        // If re-authentication fails, try fresh authentication
-        debug("Re-authentication failed, attempting fresh authentication");
-        const userAuth = await authenticate(wallet, partnerId);
-        setUser(userAuth.user);
-        setIsAuthenticated(true);
-        setIsAuthenticating(false);
-        debug("Fresh authentication successful", { userAuth });
-
-        // Authenticate on BSMNT with B3 JWT
-        const b3Jwt = await authenticateWithB3JWT(userAuth.accessToken);
-        debug("@@b3Jwt", b3Jwt);
-
-        return userAuth;
-      }
-    },
-    [activeWallet, partnerId, authenticate, setIsAuthenticated, setIsAuthenticating, setUser, setHasStartedConnecting],
-  );
-
+  /**
+   * Handle wallet connection
+   * Note: With Turnkey migration, wallet connection is primarily for signing transactions,
+   * not for authentication. Authentication should be done separately via Turnkey email OTP.
+   */
   const onConnect = useCallback(
     async (_walleAutoConnectedWith: Wallet, allConnectedWallets: Wallet[]) => {
       debug("@@useAuthentication:onConnect", { _walleAutoConnectedWith, allConnectedWallets });
@@ -168,10 +162,20 @@ export function useAuthentication(partnerId: string) {
         setIsConnected(true);
         setIsAuthenticating(true);
         await setActiveWallet(wallet);
-        const userAuth = await authenticateUser(wallet);
 
-        if (userAuth && onConnectCallback) {
-          await onConnectCallback(wallet, userAuth.accessToken);
+        // Try to authenticate user (will use re-authenticate if session exists)
+        // If no session exists, authentication will need to happen via Turnkey flow
+        try {
+          const userAuth = await authenticateUser();
+
+          if (userAuth && onConnectCallback) {
+            await onConnectCallback(wallet, userAuth.accessToken);
+          }
+        } catch (authError) {
+          // Authentication failed - this is expected if user hasn't authenticated via Turnkey yet
+          // The Turnkey auth modal should handle this
+          debug("@@useAuthentication:onConnect:authFailed", { authError });
+          // Don't set isAuthenticated to false here - let the Turnkey flow handle it
         }
       } catch (error) {
         debug("@@useAuthentication:onConnect:failed", { error });
