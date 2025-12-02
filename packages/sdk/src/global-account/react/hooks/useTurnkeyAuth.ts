@@ -33,7 +33,7 @@ export function useTurnkeyAuth(): UseTurnkeyAuthReturn {
   const [error, setError] = useState<string | null>(null);
   const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
   const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
-  const { user, partnerId } = useB3();
+  const { partnerId } = useB3();
   const { authenticate } = useAuth();
 
   /**
