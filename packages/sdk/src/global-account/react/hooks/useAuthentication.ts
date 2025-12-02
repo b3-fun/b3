@@ -151,57 +151,6 @@ export function useAuthentication(partnerId: string) {
     [activeWallet, partnerId, authenticate, setIsAuthenticated, setIsAuthenticating, setUser, setHasStartedConnecting],
   );
 
-  const onConnect = useCallback(
-    async (_walleAutoConnectedWith: Wallet, allConnectedWallets: Wallet[]) => {
-      debug("@@useAuthentication:onConnect", { _walleAutoConnectedWith, allConnectedWallets });
-
-      const wallet = allConnectedWallets.find(wallet => wallet.id.startsWith("ecosystem."));
-
-      if (!wallet) {
-        throw new Error("No smart wallet found during auto-connect");
-      }
-
-      debug("@@useAuthentication:onConnect", { wallet });
-
-      try {
-        setHasStartedConnecting(true);
-        setIsConnected(true);
-        setIsAuthenticating(true);
-        await setActiveWallet(wallet);
-        const userAuth = await authenticateUser(wallet);
-
-        if (userAuth && onConnectCallback) {
-          await onConnectCallback(wallet, userAuth.accessToken);
-        }
-      } catch (error) {
-        debug("@@useAuthentication:onConnect:failed", { error });
-        setIsAuthenticated(false);
-        setUser(undefined);
-      } finally {
-        setIsAuthenticating(false);
-      }
-
-      debug({
-        isAuthenticated,
-        isAuthenticating,
-        isConnected,
-      });
-    },
-    [
-      onConnectCallback,
-      authenticateUser,
-      isAuthenticated,
-      isAuthenticating,
-      isConnected,
-      setActiveWallet,
-      setHasStartedConnecting,
-      setIsAuthenticated,
-      setIsAuthenticating,
-      setIsConnected,
-      setUser,
-    ],
-  );
-
   const logout = useCallback(
     async (callback?: () => void) => {
       if (activeWallet) {
@@ -234,6 +183,58 @@ export function useAuthentication(partnerId: string) {
       callback?.();
     },
     [activeWallet, disconnect, wallets, setIsAuthenticated, setUser, setIsConnected],
+  );
+
+  const onConnect = useCallback(
+    async (_walleAutoConnectedWith: Wallet, allConnectedWallets: Wallet[]) => {
+      debug("@@useAuthentication:onConnect", { _walleAutoConnectedWith, allConnectedWallets });
+      try {
+        const wallet = allConnectedWallets.find(wallet => wallet.id.startsWith("ecosystem."));
+
+        if (!wallet) {
+          throw new Error("No smart wallet found during auto-connect");
+        }
+
+        debug("@@useAuthentication:onConnect", { wallet });
+        setHasStartedConnecting(true);
+        setIsConnected(true);
+        setIsAuthenticating(true);
+        await setActiveWallet(wallet);
+        const userAuth = await authenticateUser(wallet);
+
+        if (userAuth && onConnectCallback) {
+          await onConnectCallback(wallet, userAuth.accessToken);
+        }
+      } catch (error) {
+        debug("@@useAuthentication:onConnect:failed", { error });
+        setIsAuthenticated(false);
+        setUser(undefined);
+
+        await logout();
+      } finally {
+        setIsAuthenticating(false);
+      }
+
+      debug({
+        isAuthenticated,
+        isAuthenticating,
+        isConnected,
+      });
+    },
+    [
+      isAuthenticated,
+      isAuthenticating,
+      isConnected,
+      setHasStartedConnecting,
+      setIsConnected,
+      setIsAuthenticating,
+      setActiveWallet,
+      authenticateUser,
+      onConnectCallback,
+      setIsAuthenticated,
+      setUser,
+      logout,
+    ],
   );
 
   const { isLoading: useAutoConnectLoading } = useAutoConnect({
