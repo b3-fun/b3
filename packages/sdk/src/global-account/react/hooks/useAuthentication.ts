@@ -114,34 +114,31 @@ export function useAuthentication(partnerId: string) {
    * For backward compatibility, this function still accepts a wallet parameter,
    * but it's not used for authentication anymore.
    */
-  const authenticateUser = useCallback(
-    async (wallet?: Wallet) => {
-      setHasStartedConnecting(true);
+  const authenticateUser = useCallback(async () => {
+    setHasStartedConnecting(true);
 
-      // Try to re-authenticate first
-      try {
-        const userAuth = await reAuthenticate();
-        setUser(userAuth.user);
-        setIsAuthenticated(true);
-        setIsAuthenticating(false);
-        debug("Re-authenticated successfully", { userAuth });
+    // Try to re-authenticate first
+    try {
+      const userAuth = await reAuthenticate();
+      setUser(userAuth.user);
+      setIsAuthenticated(true);
+      setIsAuthenticating(false);
+      debug("Re-authenticated successfully", { userAuth });
 
-        // Authenticate on BSMNT with B3 JWT
-        const b3Jwt = await authenticateWithB3JWT(userAuth.accessToken);
-        debug("@@b3Jwt", b3Jwt);
+      // Authenticate on BSMNT with B3 JWT
+      const b3Jwt = await authenticateWithB3JWT(userAuth.accessToken);
+      debug("@@b3Jwt", b3Jwt);
 
-        return userAuth;
-      } catch (error) {
-        // If re-authentication fails, user needs to authenticate via Turnkey
-        // This should be handled by the Turnkey auth modal/flow
-        debug("Re-authentication failed. User needs to authenticate via Turnkey.", error);
-        setIsAuthenticated(false);
-        setIsAuthenticating(false);
-        throw new Error("Authentication required. Please authenticate via Turnkey.");
-      }
-    },
-    [reAuthenticate, setIsAuthenticated, setIsAuthenticating, setUser, setHasStartedConnecting],
-  );
+      return userAuth;
+    } catch (error) {
+      // If re-authentication fails, user needs to authenticate via Turnkey
+      // This should be handled by the Turnkey auth modal/flow
+      debug("Re-authentication failed. User needs to authenticate via Turnkey.", error);
+      setIsAuthenticated(false);
+      setIsAuthenticating(false);
+      throw new Error("Authentication required. Please authenticate via Turnkey.");
+    }
+  }, [reAuthenticate, setIsAuthenticated, setIsAuthenticating, setUser, setHasStartedConnecting]);
 
   /**
    * Handle wallet connection
