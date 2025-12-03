@@ -45,7 +45,7 @@ export function CryptoPaymentMethod({
     try {
       // Disconnect current wallet before connecting a new one
       if (connectedEOAWallet) {
-        disconnect(connectedEOAWallet);
+        await disconnect(connectedEOAWallet);
       }
       const wallet = await openConnectModal({ client, setActive: false });
       if (wallet) {
