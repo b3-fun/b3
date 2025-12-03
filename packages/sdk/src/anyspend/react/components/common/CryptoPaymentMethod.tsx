@@ -5,8 +5,7 @@ import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { ChevronLeft, ChevronRightCircle, Wallet, X, ZapIcon } from "lucide-react";
-import { useConnectModal, useSetActiveWallet, useWalletInfo } from "thirdweb/react";
-import { useAccount, useDisconnect } from "wagmi";
+import { useConnectModal, useDisconnect, useWalletInfo } from "thirdweb/react";
 import { useConnectedWalletDisplay } from "../../hooks/useConnectedWalletDisplay";
 
 export enum CryptoPaymentMethodType {
@@ -31,21 +30,23 @@ export function CryptoPaymentMethod({
   onBack,
   onSelectPaymentMethod,
 }: CryptoPaymentMethodProps) {
-  const { connectedEOAWallet: connectedEOAWallet, connectedSmartWallet: connectedSmartWallet } = useAccountWallet();
-  const { connector, address } = useAccount();
+  const { connectedEOAWallet, connectedSmartWallet } = useAccountWallet();
   const { disconnect } = useDisconnect();
   const { connect: openConnectModal } = useConnectModal();
-  const setActiveWallet = useSetActiveWallet();
   const { data: eoaWalletInfo } = useWalletInfo(connectedEOAWallet?.id);
 
   const globalAddress = connectedSmartWallet?.getAccount()?.address;
 
   // Use custom hook to determine wallet display logic
-  const { shouldShowConnectedEOA, shouldShowWagmiWallet } = useConnectedWalletDisplay(selectedPaymentMethod);
+  const { shouldShowConnectedEOA } = useConnectedWalletDisplay(selectedPaymentMethod);
 
   // Handle wallet connection using thirdweb modal
   const handleConnectWallet = async () => {
     try {
+      // Disconnect current wallet before connecting a new one
+      if (connectedEOAWallet) {
+        disconnect(connectedEOAWallet);
+      }
       const wallet = await openConnectModal({ client, setActive: false });
       if (wallet) {
         // setActiveWallet(wallet);
@@ -132,7 +133,7 @@ export function CryptoPaymentMethod({
         {/* Payment Methods */}
         <div className="crypto-payment-methods flex flex-col gap-4">
           {/* Installed Wallets Section */}
-          {(shouldShowConnectedEOA || shouldShowWagmiWallet || globalAddress) && (
+          {(shouldShowConnectedEOA || globalAddress) && (
             <div className="installed-wallets">
               <h3 className="text-as-primary/80 mb-3 text-sm font-medium">Connected wallets</h3>
               <div className="space-y-2">
@@ -143,10 +144,7 @@ export function CryptoPaymentMethod({
                     onClick={() => {
                       setSelectedPaymentMethod(CryptoPaymentMethodType.CONNECT_WALLET);
                       onSelectPaymentMethod(CryptoPaymentMethodType.CONNECT_WALLET);
-                      if (connectedEOAWallet) {
-                        setActiveWallet(connectedEOAWallet);
-                      }
-                      toast.success(`Selected ${eoaWalletInfo?.name || connector?.name || "wallet"}`);
+                      toast.success(`Selected ${eoaWalletInfo?.name || "wallet"}`);
                     }}
                     className={cn(
                       "crypto-payment-method-connect-wallet eoa-wallet w-full rounded-xl border p-4 text-left transition-all hover:shadow-md",
@@ -162,7 +160,7 @@ export function CryptoPaymentMethod({
                         </div>
                         <div className="flex flex-col">
                           <span className="text-as-primary font-semibold">
-                            {eoaWalletInfo?.name || connector?.name || "Connected Wallet"}
+                            {eoaWalletInfo?.name || "Connected Wallet"}
                           </span>
                           <span className="text-as-primary/60 text-sm">
                             {shortenAddress(connectedEOAWallet?.getAccount()?.address || "")}
@@ -176,53 +174,9 @@ export function CryptoPaymentMethod({
                         <button
                           onClick={e => {
                             e.stopPropagation();
-                            disconnect();
-                            toast.success("Wallet disconnected");
-                            if (selectedPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET) {
-                              setSelectedPaymentMethod(CryptoPaymentMethodType.NONE);
+                            if (connectedEOAWallet) {
+                              disconnect(connectedEOAWallet);
                             }
-                          }}
-                          className="text-as-primary/60 hover:text-as-primary/80 rounded-lg p-1.5 transition-colors"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                  </button>
-                )}
-
-                {shouldShowWagmiWallet && (
-                  <button
-                    onClick={() => {
-                      setSelectedPaymentMethod(CryptoPaymentMethodType.CONNECT_WALLET);
-                      onSelectPaymentMethod(CryptoPaymentMethodType.CONNECT_WALLET);
-                      toast.success(`Selected ${connector?.name || "wallet"}`);
-                    }}
-                    className={cn(
-                      "crypto-payment-method-connect-wallet wagmi-wallet w-full rounded-xl border p-4 text-left transition-all hover:shadow-md",
-                      selectedPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET
-                        ? "connected-wallet border-as-brand bg-as-brand/5"
-                        : "border-as-border-secondary bg-as-surface-primary hover:border-as-secondary/80",
-                    )}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="wallet-icon flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
-                          <Wallet className="h-5 w-5 text-blue-600" />
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="text-as-primary font-semibold">{connector?.name || "Connected Wallet"}</span>
-                          <span className="text-as-primary/60 text-sm">{shortenAddress(address || "")}</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {selectedPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET && (
-                          <div className="h-2 w-2 rounded-full bg-green-500"></div>
-                        )}
-                        <button
-                          onClick={e => {
-                            e.stopPropagation();
-                            disconnect();
                             toast.success("Wallet disconnected");
                             if (selectedPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET) {
                               setSelectedPaymentMethod(CryptoPaymentMethodType.NONE);
