@@ -24,7 +24,6 @@ import { components } from "../../types/api";
 import { CryptoPaymentMethodType } from "../components/common/CryptoPaymentMethod";
 import { FiatPaymentMethod } from "../components/common/FiatPaymentMethod";
 import { useAutoSelectCryptoPaymentMethod } from "./useAutoSelectCryptoPaymentMethod";
-import { useAutoSetActiveWalletFromWagmi } from "./useAutoSetActiveWalletFromWagmi";
 import { useConnectedWalletDisplay } from "./useConnectedWalletDisplay";
 import { useCryptoPaymentMethodState } from "./useCryptoPaymentMethodState";
 import { useRecipientAddressState } from "./useRecipientAddressState";
@@ -110,9 +109,6 @@ export function useAnyspendFlow({
   // Recipient state with dual-state system (auto + explicit user selection)
   const { address: globalAddress } = useAccountWallet();
   const { walletAddress } = useConnectedWalletDisplay(effectiveCryptoPaymentMethod);
-
-  // Auto-set active wallet from wagmi
-  useAutoSetActiveWalletFromWagmi();
 
   // Recipient address state - hook automatically manages priority: props > user selection > wallet/global
   const { setSelectedRecipientAddress, effectiveRecipientAddress } = useRecipientAddressState({

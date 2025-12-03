@@ -44,7 +44,6 @@ import { motion } from "motion/react";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import { base } from "viem/chains";
-import { useAutoSetActiveWalletFromWagmi } from "../hooks/useAutoSetActiveWalletFromWagmi";
 import { useCryptoPaymentMethodState } from "../hooks/useCryptoPaymentMethodState";
 import { useRecipientAddressState } from "../hooks/useRecipientAddressState";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
@@ -246,9 +245,6 @@ function AnySpendCustomInner({
 
   const searchParams = useSearchParamsSSR();
   const router = useRouter();
-
-  // Auto-set active wallet from wagmi
-  useAutoSetActiveWalletFromWagmi();
 
   const [activePanel, setActivePanel] = useState<PanelView>(
     loadOrder ? PanelView.ORDER_DETAILS : PanelView.CONFIRM_ORDER,
