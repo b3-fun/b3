@@ -61,8 +61,6 @@ export function useAccountWallet(): {
   debug("isActiveSmartWallet", isActiveSmartWallet);
   debug("isActiveEOAWallet", isActiveEOAWallet);
 
-  const { data: walletImage } = useWalletImage(connectedEOAWallet?.id);
-
   // If not EOA sign in, then we need to show the smart wallet icon
   const lastAuthProvider = useLastAuthProvider();
 
@@ -81,7 +79,7 @@ export function useAccountWallet(): {
         ...account,
         ensName,
         meta: {
-          icon: avatarUrl || (isActiveSmartWallet ? smartWalletIcon : walletImage) || "",
+          icon: "", // deprecated
         },
       },
 
@@ -95,7 +93,7 @@ export function useAccountWallet(): {
       isActiveEOAWallet: isActiveEOAWallet,
 
       smartWalletIcon: smartWalletIcon,
-      eoaWalletIcon: walletImage,
+      eoaWalletIcon: "", // deprecated
     }),
     [
       account,
@@ -106,7 +104,6 @@ export function useAccountWallet(): {
       isActiveEOAWallet,
       isActiveSmartWallet,
       smartWalletIcon,
-      walletImage,
     ],
   );
 
