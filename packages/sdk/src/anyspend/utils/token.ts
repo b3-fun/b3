@@ -2,6 +2,8 @@ import { avalanche, bsc, polygon } from "viem/chains";
 import { RELAY_ETH_ADDRESS, RELAY_SOL_ADDRESS, RELAY_SOLANA_MAINNET_CHAIN_ID } from "@b3dotfun/sdk/anyspend/constants";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 
+const HYPERLIQUID_CHAIN_ID = 1337;
+
 export function isNativeToken(address: string): boolean {
   return address.toLowerCase() === RELAY_ETH_ADDRESS || address.toLowerCase() === RELAY_SOL_ADDRESS;
 }
@@ -67,6 +69,19 @@ export function getAvaxToken(): components["schemas"]["Token"] {
     decimals: 18,
     metadata: {
       logoURI: "https://s2.coinmarketcap.com/static/img/coins/64x64/5805.png",
+    },
+  };
+}
+
+export function getHypeToken(): components["schemas"]["Token"] {
+  return {
+    chainId: HYPERLIQUID_CHAIN_ID,
+    address: RELAY_ETH_ADDRESS,
+    symbol: "HYPE",
+    name: "Hyperliquid",
+    decimals: 18,
+    metadata: {
+      logoURI: "https://s2.coinmarketcap.com/static/img/coins/64x64/32196.png",
     },
   };
 }
