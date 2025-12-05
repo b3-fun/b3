@@ -44,7 +44,13 @@ export function useAccountWallet(): {
   eoaWalletIcon?: string;
   smartWalletIcon?: string;
 } {
-  const { account, user } = useB3();
+  // WOJ: --------------------
+  //  values from in useB3:
+  //  const activeAccount = useActiveAccount();
+  // const effectiveAccount = isAuthenticated ? accountOverride || activeAccount : undefined;
+  // can we possibly just use useActiveAccount here?
+  // --------------------
+  const { account } = useB3();
 
   const activeWallet = useActiveWallet();
   const connectedWallets = useConnectedWallets();
@@ -61,8 +67,6 @@ export function useAccountWallet(): {
   debug("isActiveSmartWallet", isActiveSmartWallet);
   debug("isActiveEOAWallet", isActiveEOAWallet);
 
-  const { data: walletImage } = useWalletImage(connectedEOAWallet?.id);
-
   // If not EOA sign in, then we need to show the smart wallet icon
   const lastAuthProvider = useLastAuthProvider();
 
@@ -73,7 +77,6 @@ export function useAccountWallet(): {
 
   const { data: profileData } = useProfile({ address: account?.address });
   const ensName = profileData?.displayName?.replace(/\.b3\.fun/g, "");
-  const avatarUrl = user?.avatar ? getIpfsUrl(user?.avatar) : profileData?.avatar;
 
   const res = useMemo(
     () => ({
@@ -81,7 +84,7 @@ export function useAccountWallet(): {
         ...account,
         ensName,
         meta: {
-          icon: avatarUrl || (isActiveSmartWallet ? smartWalletIcon : walletImage) || "",
+          icon: "", // deprecated
         },
       },
 
@@ -95,18 +98,16 @@ export function useAccountWallet(): {
       isActiveEOAWallet: isActiveEOAWallet,
 
       smartWalletIcon: smartWalletIcon,
-      eoaWalletIcon: walletImage,
+      eoaWalletIcon: "", // deprecated
     }),
     [
       account,
-      avatarUrl,
       connectedEOAWallet,
       connectedSmartWallet,
       ensName,
       isActiveEOAWallet,
       isActiveSmartWallet,
       smartWalletIcon,
-      walletImage,
     ],
   );
 
@@ -134,7 +135,8 @@ export function useAccountWalletImage(): string {
       : "https://gradvatar.com/0x0000000000000000000000000000000000000000"; // show smart wallet of eoa wallet is gradvatar
 
   const { data: profileData } = useProfile({ address: account?.address });
-  const avatarUrl = user?.avatar || profileData?.avatar;
+
+  const avatarUrl = user?.avatar ? getIpfsUrl(user?.avatar) : profileData?.avatar;
 
   return avatarUrl || (isActiveSmartWallet ? smartWalletIcon : walletImage) || "";
 }
