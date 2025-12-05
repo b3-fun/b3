@@ -1,9 +1,8 @@
+import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import styled from "styled-components";
-import { motion } from "framer-motion";
-import { generateWallet } from "../utils/wallet";
 import { Account } from "thirdweb/wallets";
-import { useB3 } from "@b3dotfun/sdk/global-account/react";
+import { generateWallet } from "../utils/wallet";
 
 const Container = styled.div`
   background: #2a2a2a;
@@ -89,8 +88,6 @@ export function LocalWallet({
   const [copied, setCopied] = useState<"address" | "privateKey" | null>(null);
   const [wallet, setWallet] = useState<{ account: Account; address: string; privateKey: string } | null>(null);
 
-  const b3 = useB3();
-  console.log("b32", b3);
   useEffect(() => {
     const generateLocalWallet = async () => {
       const wallet = await generateWallet();
