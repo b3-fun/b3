@@ -21,12 +21,12 @@ function getCustomEvmChain(chain: Chain, rpcUrl: string): Chain {
   return defineChain({ ...chain, rpcUrls: { default: { http: [rpcUrl] } } });
 }
 
-export const hyperliquidEVM = defineChain({
-  id: 1337,
-  name: "Hyperliquid EVM",
-  nativeCurrency: { name: "Hyperliquid", symbol: "HYPE", decimals: 18 },
+export const hyperEVM = defineChain({
+  id: 999,
+  name: "HyperEVM",
+  nativeCurrency: { name: "HyperEVM", symbol: "HYPE", decimals: 18 },
   rpcUrls: { default: { http: ["https://rpc.hyperliquid.xyz/evm"] } },
-  blockExplorers: { default: { name: "Hyperliquid Explorer", url: "https://explorer.hyperliquid.xyz" } },
+  blockExplorers: { default: { name: "HyperEVM Explorer", url: "https://hyperevmscan.io/" } },
 });
 
 // export const b4testnet = defineChain({
@@ -197,19 +197,19 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     coingeckoName: "abstract",
     wethAddress: "0x3439153eb7af838ad19d56e1571fbd09333c2809",
   },
-  [hyperliquidEVM.id]: {
-    id: hyperliquidEVM.id,
-    name: hyperliquidEVM.name,
+  [hyperEVM.id]: {
+    id: hyperEVM.id,
+    name: hyperEVM.name,
     logoUrl: "https://s2.coinmarketcap.com/static/img/coins/64x64/32196.png",
     type: ChainType.EVM,
     nativeRequired: parseEther("0.01"),
     canDepositNative: true,
     defaultToken: getHypeToken(),
     nativeToken: getHypeToken(),
-    viem: getCustomEvmChain(hyperliquidEVM, "https://rpc.hyperliquid.xyz/evm"),
+    viem: hyperEVM,
     pollingInterval: 1000, // 1 second for Hyperliquid
-    coingeckoName: "hyperliquid",
-    wethAddress: "0x0000000000000000000000000000000000000000", // TODO: Update with actual WHYPE address
+    coingeckoName: "hyperevm",
+    wethAddress: "0x5555555555555555555555555555555555555555",
   },
 };
 
