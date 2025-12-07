@@ -15,14 +15,22 @@ import {
 } from "viem";
 import { abstract, arbitrum, avalanche, b3, base, bsc, mainnet, optimism, polygon } from "viem/chains";
 import { ChainType, IBaseChain, IEVMChain, ISolanaChain } from "../types/chain";
-import { getAvaxToken, getBnbToken, getEthToken, getHypeToken, getPolToken, getSolanaToken } from "./token";
+import {
+  getAvaxToken,
+  getBnbToken,
+  getEthToken,
+  getHyperEVMNativeToken,
+  getPolToken,
+  getSolanaToken,
+  HYPEREVM_CHAIN_ID,
+} from "./token";
 
 function getCustomEvmChain(chain: Chain, rpcUrl: string): Chain {
   return defineChain({ ...chain, rpcUrls: { default: { http: [rpcUrl] } } });
 }
 
 export const hyperEVM = defineChain({
-  id: 999,
+  id: HYPEREVM_CHAIN_ID,
   name: "HyperEVM",
   nativeCurrency: { name: "HyperEVM", symbol: "HYPE", decimals: 18 },
   rpcUrls: { default: { http: ["https://rpc.hyperliquid.xyz/evm"] } },
@@ -204,8 +212,8 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     type: ChainType.EVM,
     nativeRequired: parseEther("0.01"),
     canDepositNative: true,
-    defaultToken: getHypeToken(),
-    nativeToken: getHypeToken(),
+    defaultToken: getHyperEVMNativeToken(),
+    nativeToken: getHyperEVMNativeToken(),
     viem: hyperEVM,
     pollingInterval: 1000, // 1 second for Hyperliquid
     coingeckoName: "hyperevm",
