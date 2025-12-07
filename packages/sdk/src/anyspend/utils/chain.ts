@@ -15,11 +15,27 @@ import {
 } from "viem";
 import { abstract, arbitrum, avalanche, b3, base, bsc, mainnet, optimism, polygon } from "viem/chains";
 import { ChainType, IBaseChain, IEVMChain, ISolanaChain } from "../types/chain";
-import { getAvaxToken, getBnbToken, getEthToken, getPolToken, getSolanaToken } from "./token";
+import {
+  getAvaxToken,
+  getBnbToken,
+  getEthToken,
+  getHyperEVMNativeToken,
+  getPolToken,
+  getSolanaToken,
+  HYPEREVM_CHAIN_ID,
+} from "./token";
 
 function getCustomEvmChain(chain: Chain, rpcUrl: string): Chain {
   return defineChain({ ...chain, rpcUrls: { default: { http: [rpcUrl] } } });
 }
+
+export const hyperEVM = defineChain({
+  id: HYPEREVM_CHAIN_ID,
+  name: "HyperEVM",
+  nativeCurrency: { name: "HyperEVM", symbol: "HYPE", decimals: 18 },
+  rpcUrls: { default: { http: ["https://rpc.hyperliquid.xyz/evm"] } },
+  blockExplorers: { default: { name: "HyperEVM Explorer", url: "https://hyperevmscan.io/" } },
+});
 
 // export const b4testnet = defineChain({
 //   id: 19934,
@@ -188,6 +204,20 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     zapperEnum: "ABSTRACT_MAINNET",
     coingeckoName: "abstract",
     wethAddress: "0x3439153eb7af838ad19d56e1571fbd09333c2809",
+  },
+  [hyperEVM.id]: {
+    id: hyperEVM.id,
+    name: hyperEVM.name,
+    logoUrl: "https://s2.coinmarketcap.com/static/img/coins/64x64/32196.png",
+    type: ChainType.EVM,
+    nativeRequired: parseEther("0.01"),
+    canDepositNative: true,
+    defaultToken: getHyperEVMNativeToken(),
+    nativeToken: getHyperEVMNativeToken(),
+    viem: hyperEVM,
+    pollingInterval: 1000, // 1 second for Hyperliquid
+    coingeckoName: "hyperevm",
+    wethAddress: "0x5555555555555555555555555555555555555555",
   },
 };
 
