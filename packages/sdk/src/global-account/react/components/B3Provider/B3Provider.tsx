@@ -12,7 +12,7 @@ import { loadGA4Script } from "@b3dotfun/sdk/global-account/utils/analytics";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import "@relayprotocol/relay-kit-ui/styles.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   getLastAuthProvider,
   ThirdwebProvider,
@@ -92,7 +92,11 @@ export function B3Provider({
   useEffect(() => {
     setClientType(clientType);
   }, [clientType]);
-  const wagmiConfig = createWagmiConfig({ partnerId, rpcUrls, connectors, overrideDefaultConnectors });
+
+  const wagmiConfig = useMemo(
+    () => createWagmiConfig({ partnerId, rpcUrls, connectors, overrideDefaultConnectors }),
+    [partnerId, rpcUrls, connectors, overrideDefaultConnectors],
+  );
 
   return (
     <ThirdwebProvider>
