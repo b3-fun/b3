@@ -10,16 +10,6 @@ interface AnyspendProviderProps {
   featureFlags?: FeatureFlags;
 }
 
-const defaultQueryClientConfig = {
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-      retry: false,
-      staleTime: 30000,
-    },
-  },
-} as const;
-
 /**
  * AnyspendProvider is a top-level provider that wraps your application to provide
  * query caching and state management for all Anyspend hooks.
