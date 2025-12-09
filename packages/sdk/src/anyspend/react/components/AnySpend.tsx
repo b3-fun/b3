@@ -330,13 +330,59 @@ function AnySpendInner({
           console.error("Invalid fromAmount in URL", error);
         }
       }
+
+      // Sync destination chain and token from URL if different from current state
+      // This handles cases where URL params weren't available on initial render (SSR hydration)
+      const toChainIdParam = searchParams.get("toChainId");
+      const toCurrencyParam = searchParams.get("toCurrency");
+
+      if (toChainIdParam && !isBuyMode) {
+        const urlDstChainId = parseInt(toChainIdParam);
+        if (urlDstChainId && urlDstChainId !== selectedDstChainId) {
+          setSelectedDstChainId(urlDstChainId);
+
+          // Get the default token for this chain
+          const chainDefaultToken = getDefaultToken(urlDstChainId);
+
+          // If URL currency matches the default token address (like zero address for native tokens),
+          // use the full default token with all metadata
+          if (
+            toCurrencyParam &&
+            toCurrencyParam.toLowerCase() === chainDefaultToken.address.toLowerCase()
+          ) {
+            setSelectedDstToken(chainDefaultToken);
+          }
+        }
+      }
+
+      // Sync source chain and token from URL if different from current state
+      const fromChainIdParam = searchParams.get("fromChainId");
+      const fromCurrencyParam = searchParams.get("fromCurrency");
+
+      if (fromChainIdParam && tabParam !== "fiat") {
+        const urlSrcChainId = parseInt(fromChainIdParam);
+        if (urlSrcChainId && urlSrcChainId !== selectedSrcChainId) {
+          setSelectedSrcChainId(urlSrcChainId);
+
+          // Get the default token for this chain
+          const chainDefaultToken = getDefaultToken(urlSrcChainId);
+
+          // If URL currency matches the default token address, use the full default token
+          if (
+            fromCurrencyParam &&
+            fromCurrencyParam.toLowerCase() === chainDefaultToken.address.toLowerCase()
+          ) {
+            setSelectedSrcToken(chainDefaultToken);
+          }
+        }
+      }
     } catch (error) {
       console.error("Error processing URL parameters", error);
     }
 
     // Mark that we've processed the initial URL
     initialUrlProcessed.current = true;
-  }, [searchParams, loadOrder]);
+  }, [searchParams, loadOrder, isBuyMode, selectedDstChainId, selectedSrcChainId]);
 
   // Update URL when swap configuration changes - but not on initial load
   const updateSwapParamsInURL = useCallback(() => {
