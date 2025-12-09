@@ -4,6 +4,7 @@ import { B3Context } from "./types";
 /**
  * Hook to access the B3 context
  * @throws Error if used outside a B3Provider
+ * @deprecated Use useB3Config or useB3Account instead
  */
 export function useB3() {
   const context = useContext(B3Context);

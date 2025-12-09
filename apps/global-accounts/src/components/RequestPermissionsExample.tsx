@@ -1,14 +1,14 @@
 import React from "react";
 
-import { useB3 } from "@b3dotfun/sdk/global-account/react";
+import { RequestPermissionsButton } from "@b3dotfun/sdk/global-account/react";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import tsx from "react-syntax-highlighter/dist/cjs/languages/prism/tsx";
 import SyntaxHighlighter from "react-syntax-highlighter/dist/cjs/prism-light";
 import { oneDark } from "react-syntax-highlighter/dist/cjs/styles/prism";
-import { RequestPermissionsButton } from "@b3dotfun/sdk/global-account/react";
 import { defineChain } from "thirdweb";
 // Import the wallet generator function
+import { useB3Account } from "@b3dotfun/sdk/global-account/react/components/B3Provider/useB3Account";
 import type { Wallet } from "../utils/wallet";
 
 // Register the language
@@ -28,7 +28,7 @@ const b3Chain = defineChain({
 
 // Add interactive test component
 function InteractiveDemo({ wallet }: { wallet: Wallet }) {
-  const { account: b3Account } = useB3();
+  const b3Account = useB3Account();
   const [approvedTargets, setApprovedTargets] = useState(
     "0xa8e42121e318e3D3BeD7f5969AF6D360045317DD,0x06012c8cf97BEaD5deAe237070F9587f8E7A266d",
   );

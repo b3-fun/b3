@@ -5,6 +5,8 @@ export { B3Provider, InnerProvider } from "./B3Provider/B3Provider";
 export { RelayKitProviderWrapper } from "./B3Provider/RelayKitProviderWrapper";
 export { B3Context, type B3ContextType } from "./B3Provider/types";
 export { useB3 } from "./B3Provider/useB3";
+export { useB3Account } from "./B3Provider/useB3Account";
+export { useB3Config } from "./B3Provider/useB3Config";
 export { StyleRoot } from "./StyleRoot";
 
 // SignInWithB3 Components

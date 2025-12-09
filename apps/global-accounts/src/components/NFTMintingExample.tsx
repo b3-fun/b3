@@ -1,5 +1,5 @@
 import { AnySpendNFTButton } from "@b3dotfun/sdk/anyspend/react";
-import { useB3 } from "@b3dotfun/sdk/global-account/react";
+import { useB3Account } from "@b3dotfun/sdk/global-account/react/components/B3Provider/useB3Account";
 
 // Define an example NFT contract (type inference should work)
 const exampleNFT = {
@@ -25,7 +25,7 @@ const exampleNFT = {
 };
 
 export function NFTMintingExample() {
-  const { account } = useB3();
+  const account = useB3Account();
 
   return (
     <section className="bg-gray-50 py-12">

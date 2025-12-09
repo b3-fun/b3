@@ -1,7 +1,8 @@
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
-import { useEffect } from "react";
-import { getLastAuthProvider, useConnectedWallets } from "thirdweb/react";
+import { useCallback, useEffect } from "react";
+import { getLastAuthProvider, useConnectedWallets, useSetActiveWallet } from "thirdweb/react";
 import { Wallet } from "thirdweb/wallets";
+import { useAuthStore } from "../stores";
 
 const debug = debugB3React("useAutoSelectWallet");
 
@@ -9,16 +10,18 @@ const debug = debugB3React("useAutoSelectWallet");
  * Hook to automatically select the first EOA wallet when user is authenticated
  * Only auto-selects if the last auth was via wallet or no previous auth provider
  */
-export function useAutoSelectWallet({
-  enabled,
-  isAuthenticated,
-  onSelectWallet,
-}: {
-  enabled: boolean;
-  isAuthenticated: boolean;
-  onSelectWallet: (wallet: Wallet) => void;
-}) {
+export function useAutoSelectWallet({ enabled }: { enabled: boolean }) {
+  const isAuthenticated = useAuthStore(state => state.isAuthenticated);
   const wallets = useConnectedWallets();
+  const setActiveWallet = useSetActiveWallet();
+
+  const setWallet = useCallback(
+    (wallet: Wallet) => {
+      debug("@@setWallet", wallet.id, wallet.getAccount()?.address);
+      setActiveWallet(wallet);
+    },
+    [setActiveWallet],
+  );
 
   useEffect(() => {
     const autoSelectFirstEOAWallet = async () => {
@@ -38,12 +41,11 @@ export function useAutoSelectWallet({
 
         if (shouldAutoSelect) {
           debug("Auto-selecting first EOA wallet", firstEOAWallet.id);
-          onSelectWallet(firstEOAWallet);
+          setWallet(firstEOAWallet);
         }
       }
     };
 
     autoSelectFirstEOAWallet();
-  }, [enabled, isAuthenticated, onSelectWallet, wallets]);
+  }, [enabled, isAuthenticated, setWallet, wallets]);
 }
-

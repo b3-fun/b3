@@ -1,20 +1,14 @@
 import { CreateOnrampOrderParams } from "@b3dotfun/sdk/anyspend/react/hooks/useAnyspendCreateOnrampOrder";
 import { CreateOrderParams } from "@b3dotfun/sdk/anyspend/react/hooks/useAnyspendCreateOrder";
-import {
-  RelayKitProviderWrapper,
-  TooltipProvider,
-  useAuthentication,
-  useAuthStore,
-} from "@b3dotfun/sdk/global-account/react";
+import { RelayKitProviderWrapper, TooltipProvider, useAuthStore } from "@b3dotfun/sdk/global-account/react";
 import { useAutoSelectWallet } from "@b3dotfun/sdk/global-account/react/hooks/useAutoSelectWallet";
 import { createWagmiConfig } from "@b3dotfun/sdk/global-account/react/utils/createWagmiConfig";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { loadGA4Script } from "@b3dotfun/sdk/global-account/utils/analytics";
-import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import "@relayprotocol/relay-kit-ui/styles.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useCallback, useEffect } from "react";
-import { ThirdwebProvider, useActiveAccount, useSetActiveWallet } from "thirdweb/react";
+import { useEffect } from "react";
+import { ThirdwebProvider, useActiveAccount } from "thirdweb/react";
 import { Account, Wallet } from "thirdweb/wallets";
 import { CreateConnectorFn, WagmiProvider } from "wagmi";
 import { ClientType, setClientType } from "../../../client-manager";
@@ -22,8 +16,6 @@ import { StyleRoot } from "../StyleRoot";
 import { setToastContext, ToastProvider, useToastContext } from "../Toast/index";
 import { LocalSDKProvider } from "./LocalSDKProvider";
 import { B3Context, B3ContextType } from "./types";
-
-const debug = debugB3React("B3Provider");
 
 /**
  * Default permissions configuration for B3 provider
@@ -150,14 +142,8 @@ export function InnerProvider({
 }) {
   const activeAccount = useActiveAccount();
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
-  const isConnected = useAuthStore(state => state.isConnected);
-  const justCompletedLogin = useAuthStore(state => state.justCompletedLogin);
-  const setActiveWallet = useSetActiveWallet();
-  const { user, setUser, refetchUser } = useAuthentication(partnerId);
-
-  debug("@@B3Provider:isConnected", isConnected);
-  debug("@@B3Provider:user", user);
-  debug("@@B3Provider:justCompletedLogin", justCompletedLogin);
+  //const isConnected = useAuthStore(state => state.isConnected);
+  //const justCompletedLogin = useAuthStore(state => state.justCompletedLogin);
 
   // Use given accountOverride or activeAccount from thirdweb
   // WOJ: why if isAuthenticated is false, we don't use activeAccount, which should be undefined?
@@ -166,30 +152,21 @@ export function InnerProvider({
 
   // Wrapper to set active wallet via thirdweb
   // Note: `wallet` in context is deprecated - use useActiveWallet() from thirdweb/react instead
-  const setWallet = useCallback(
-    (wallet: Wallet) => {
-      debug("@@setWallet", wallet.id, wallet.getAccount()?.address);
-      setActiveWallet(wallet);
-    },
-    [setActiveWallet],
-  );
 
   // Auto-select first EOA wallet when enabled
   useAutoSelectWallet({
     enabled: automaticallySetFirstEoa,
-    isAuthenticated,
-    onSelectWallet: setWallet,
   });
 
   return (
     <B3Context.Provider
       value={{
         account: effectiveAccount,
-        setWallet,
-        wallet: undefined, // Deprecated: use useActiveWallet() from thirdweb/react instead
-        user,
-        setUser,
-        refetchUser,
+        // setWallet,
+        //wallet: undefined, // Deprecated: use useActiveWallet() from thirdweb/react instead
+        //user,
+        //setUser,
+        //refetchUser,
         initialized: true,
         ready: !!effectiveAccount,
         automaticallySetFirstEoa,

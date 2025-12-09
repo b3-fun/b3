@@ -335,8 +335,6 @@ function AnySpendCustomInner({
     }
   }, [srcChainId, tokenList, getTokenWithBalance, nativeTokens, fungibleTokens, dirtySelectSrcToken, dstToken.address]);
 
-  // const { account: isAuthenticated } = useB3();
-
   const getRelayQuoteRequest = useMemo(() => {
     return generateGetRelayQuoteRequest({
       orderType: orderType,

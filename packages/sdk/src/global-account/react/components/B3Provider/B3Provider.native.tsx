@@ -6,7 +6,6 @@ import { Account, Wallet } from "thirdweb/wallets";
 import { ClientType } from "../../../client-manager";
 
 import { WagmiProvider } from "wagmi";
-import { useAuthentication } from "../../hooks/useAuthentication";
 import { createWagmiConfig } from "../../utils/createWagmiConfig";
 import { LocalSDKProvider } from "./LocalSDKProvider";
 import { B3Context, B3ContextType } from "./types";
@@ -89,7 +88,7 @@ export function InnerProvider({
   rpcUrls?: Record<number, string>;
 }) {
   const activeAccount = useActiveAccount();
-  const { user, setUser, refetchUser } = useAuthentication(partnerId);
+  //const { user, setUser, refetchUser } = useAuthentication(partnerId);
   const wagmiConfig = createWagmiConfig({ partnerId, rpcUrls });
 
   // Use given accountOverride or activeAccount from thirdweb
@@ -100,12 +99,12 @@ export function InnerProvider({
       <QueryClientProvider client={queryClient}>
         <B3Context.Provider
           value={{
-            account: effectiveAccount,
+            //account: effectiveAccount,
             automaticallySetFirstEoa: false,
-            setWallet: () => {},
+            //setWallet: () => {},
             wallet: undefined,
-            user,
-            setUser,
+            //user,
+            //setUser,
             initialized: true,
             ready: !!effectiveAccount,
             environment,
@@ -113,7 +112,7 @@ export function InnerProvider({
             theme,
             clientType,
             partnerId,
-            refetchUser,
+            //refetchUser,
           }}
         >
           {children}

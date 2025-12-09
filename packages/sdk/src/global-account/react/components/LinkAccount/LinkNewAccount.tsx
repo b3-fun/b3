@@ -1,5 +1,5 @@
 import app from "@b3dotfun/sdk/global-account/app";
-import { toast } from "@b3dotfun/sdk/global-account/react";
+import { toast, useB3Account } from "@b3dotfun/sdk/global-account/react";
 import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { thirdwebB3Mainnet } from "@b3dotfun/sdk/shared/constants/chains/b3Chain";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
@@ -11,7 +11,6 @@ import { createWallet, preAuthenticate, WalletId } from "thirdweb/wallets";
 import { WalletRow } from "../..";
 import { LinkNewAccountModalProps, useModalStore } from "../../stores/useModalStore";
 import { getProfileDisplayInfo } from "../../utils/profileDisplay";
-import { useB3 } from "../B3Provider/useB3";
 import { AppleIcon } from "../icons/AppleIcon";
 import { DiscordIcon } from "../icons/DiscordIcon";
 import { FarcasterIcon } from "../icons/FarcasterIcon";
@@ -117,7 +116,7 @@ export function LinkNewAccount({
       originalProfile: profile,
     }));
 
-  const { account } = useB3();
+  const account = useB3Account();
   const { mutate: linkProfile } = useLinkProfile();
 
   const onSuccess = useCallback(async () => {

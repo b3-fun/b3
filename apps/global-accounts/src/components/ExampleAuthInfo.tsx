@@ -1,4 +1,4 @@
-import { useB3 } from "@b3dotfun/sdk/global-account";
+import { useB3 } from "@b3dotfun/sdk/global-account/react";
 
 export function ExampleAuthInfo() {
   const b3 = useB3();
