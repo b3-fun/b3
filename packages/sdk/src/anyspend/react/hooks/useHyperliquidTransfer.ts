@@ -14,6 +14,17 @@ interface HyperliquidTransferParams {
 }
 
 /**
+ * @deprecated This hook is NOT USED in production.
+ *
+ * Hyperliquid is only supported as DESTINATION CHAIN (not source chain).
+ * Users cannot send FROM Hyperliquid in our flow, so EIP-712 signing is not needed.
+ *
+ * This hook was created during initial planning but is kept for:
+ * - Reference if we need to support source chain in the future
+ * - Understanding how Hyperliquid EIP-712 transfers work
+ *
+ * DO NOT USE THIS HOOK IN PRODUCTION CODE.
+ *
  * Custom hook for handling Hyperliquid transfers via EIP-712 signature.
  * Based on Relay SDK's Hyperliquid implementation.
  *
@@ -49,7 +60,6 @@ export function useHyperliquidTransfer() {
 
       try {
         const currentTime = new Date().getTime();
-        const userAddress = walletClient.account.address;
 
         // Convert amount from smallest unit (6 decimals) to display format.
         // e.g., "11151533" -> "11.151533"

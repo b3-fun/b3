@@ -7,7 +7,6 @@ import {
   getExplorerTxUrl,
   getPaymentUrl,
   getStatusDisplay,
-  isHyperliquidChain,
   isNativeToken,
   RELAY_SOLANA_MAINNET_CHAIN_ID,
   ZERO_ADDRESS,
@@ -43,7 +42,6 @@ import TimeAgo from "react-timeago";
 import { encodeFunctionData, erc20Abi } from "viem";
 import { b3 } from "viem/chains";
 import { useWaitForTransactionReceipt, useWalletClient } from "wagmi";
-import { useHyperliquidTransfer } from "../../hooks/useHyperliquidTransfer";
 import { usePhantomTransfer } from "../../hooks/usePhantomTransfer";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./Accordion";
 import ConnectWalletPayment from "./ConnectWalletPayment";
@@ -326,9 +324,6 @@ export const OrderDetails = memo(function OrderDetails({
   // Use Phantom transfer hook for Solana payments
   const { initiateTransfer: initiatePhantomTransfer, getConnectedAddress: getPhantomAddress } = usePhantomTransfer();
 
-  // Use Hyperliquid transfer hook for Hyperliquid payments
-  const { initiateTransfer: initiateHyperliquidTransfer } = useHyperliquidTransfer();
-
   // Main payment handler that triggers chain switch and payment
   const handlePayment = useCallback(async () => {
     console.log("Initiating payment process. Target chain:", order.srcChain, "Current chain:", walletClient?.chain?.id);
@@ -340,24 +335,12 @@ export const OrderDetails = memo(function OrderDetails({
         tokenAddress: order.srcTokenAddress,
         recipientAddress: order.globalAddress,
       });
-    } else if (isHyperliquidChain(order.srcChain)) {
-      // Hyperliquid payment flow (EIP-712 signature)
-      await initiateHyperliquidTransfer({
-        amount: amountToSend,
-        destination: order.globalAddress,
-      });
     } else {
       // EVM payment flow (EOA and AA wallets)
+      // Note: Hyperliquid is NOT supported as source chain, only as destination chain
       await handleUnifiedPaymentProcess();
     }
-  }, [
-    order,
-    walletClient?.chain?.id,
-    depositDeficit,
-    handleUnifiedPaymentProcess,
-    initiatePhantomTransfer,
-    initiateHyperliquidTransfer,
-  ]);
+  }, [order, walletClient?.chain?.id, depositDeficit, handleUnifiedPaymentProcess, initiatePhantomTransfer]);
 
   // When waitingForDeposit is true, we show a message to the user to wait for the deposit to be processed.
   const setWaitingForDeposit = useCallback(() => {

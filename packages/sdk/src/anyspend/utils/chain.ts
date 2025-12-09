@@ -543,8 +543,9 @@ export function getPaymentUrl(address: string, amount: bigint, currency: string,
     }
 
     case ChainType.HYPERLIQUID: {
-      // TODO: Hyperliquid does not have a public payment URL format specification.
-      // Return address as fallback until official format is documented.
+      // NOTE: Hyperliquid is only supported as destination chain (not source chain).
+      // Payment URLs are not needed since users cannot send FROM Hyperliquid in our flow.
+      // Return address as placeholder (this code path should not be reached).
       return address;
     }
 
