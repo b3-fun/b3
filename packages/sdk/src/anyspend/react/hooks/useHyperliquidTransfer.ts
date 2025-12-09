@@ -1,4 +1,4 @@
-import { HYPERLIQUID_CHAIN_ID } from "@b3dotfun/sdk/anyspend";
+import { HYPERLIQUID_CHAIN_ID, HYPERLIQUID_MAINNET } from "@b3dotfun/sdk/anyspend";
 import { toast } from "@b3dotfun/sdk/global-account/react";
 import { formatUnits } from "@b3dotfun/sdk/shared/utils/number";
 import axios from "axios";
@@ -101,7 +101,7 @@ export function useHyperliquidTransfer() {
         toast.info("Sending transaction to Hyperliquid...");
 
         // Send signature to Hyperliquid API.
-        const response = await axios.post("https://api.hyperliquid.xyz/exchange", {
+        const response = await axios.post(HYPERLIQUID_MAINNET.apiUrl + "/exchange", {
           signature: {
             r,
             s,

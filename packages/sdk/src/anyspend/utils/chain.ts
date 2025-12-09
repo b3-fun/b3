@@ -375,12 +375,8 @@ export function getChainName(chainId: number): string {
   invariant(ALL_CHAINS[chainId], `Chain ${chainId} is not supported`);
   const chain = ALL_CHAINS[chainId];
 
-  if (EVM_CHAINS[chainId]) {
-    return EVM_CHAINS[chainId].viem.name;
-  } else if (SOLANA_CHAINS[chainId]) {
-    return "Solana";
-  } else if (HYPERLIQUID_CHAINS[chainId]) {
-    return "Hyperliquid";
+  if (isEvmChain(chainId)) {
+    return (chain as IEVMChain).viem.name;
   }
 
   return chain.name;
