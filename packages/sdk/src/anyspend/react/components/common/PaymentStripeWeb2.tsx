@@ -1,18 +1,16 @@
-import { STRIPE_CONFIG } from "@b3dotfun/sdk/anyspend/constants";
+import { getStripePromise } from "@b3dotfun/sdk/shared/utils/payment.utils";
 import { OrderDetailsCollapsible, useStripeClientSecret } from "@b3dotfun/sdk/anyspend/react";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { ShinyButton, useB3, useModalStore, useProfile } from "@b3dotfun/sdk/global-account/react";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { formatStripeAmount } from "@b3dotfun/sdk/shared/utils/payment.utils";
 import { AddressElement, Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
-import { loadStripe, PaymentIntentResult, StripePaymentElementOptions } from "@stripe/stripe-js";
+import { PaymentIntentResult, StripePaymentElementOptions } from "@stripe/stripe-js";
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "../AnySpendFingerprintWrapper";
 import HowItWorks from "./HowItWorks";
 import PaymentMethodIcons from "./PaymentMethodIcons";
-
-const stripePromise = loadStripe(STRIPE_CONFIG.publishableKey);
 
 interface PaymentStripeWeb2Props {
   order: components["schemas"]["Order"];
@@ -38,7 +36,7 @@ export default function PaymentStripeWeb2({ order, stripePaymentIntentId, onPaym
   return (
     <AnySpendFingerprintWrapper fingerprint={fingerprintConfig}>
       <Elements
-        stripe={stripePromise}
+        stripe={getStripePromise()}
         options={{
           clientSecret: clientSecret || undefined,
           appearance: { theme: theme === "light" ? "stripe" : "night" },

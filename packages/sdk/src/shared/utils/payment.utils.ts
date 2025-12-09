@@ -1,5 +1,17 @@
-import { VENDOR_DISPLAY_NAMES } from "@b3dotfun/sdk/anyspend/constants";
+import { STRIPE_CONFIG, VENDOR_DISPLAY_NAMES } from "@b3dotfun/sdk/anyspend/constants";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
+import type { loadStripe as LoadStripeType } from "@stripe/stripe-js";
+
+// Lazy load Stripe to prevent EIP-6963 wallet detection events at module load time.
+// This ensures loadStripe() only runs when actually needed for payment flows.
+let stripePromise: ReturnType<typeof LoadStripeType> | null = null;
+export async function getStripePromise() {
+  if (!stripePromise) {
+    const { loadStripe } = await import("@stripe/stripe-js");
+    stripePromise = loadStripe(STRIPE_CONFIG.publishableKey);
+  }
+  return stripePromise;
+}
 
 export function getVendorDisplayName(vendor?: components["schemas"]["OnrampMetadata"]["vendor"]): string {
   switch (vendor) {
