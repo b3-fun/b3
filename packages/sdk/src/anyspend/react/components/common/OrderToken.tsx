@@ -1,6 +1,7 @@
 "use client";
 
-import { ALL_CHAINS, RELAY_ETH_ADDRESS, RELAY_SOLANA_MAINNET_CHAIN_ID } from "@b3dotfun/sdk/anyspend";
+import { ALL_CHAINS, RELAY_SOLANA_MAINNET_CHAIN_ID, ZERO_ADDRESS } from "@b3dotfun/sdk/anyspend";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { Button, useAccountWallet, useTokenBalancesByChain } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
@@ -9,7 +10,6 @@ import { TokenSelector } from "@relayprotocol/relay-kit-ui";
 import { CheckCircle2, ChevronsUpDown } from "lucide-react";
 import { useMemo } from "react";
 import { ChainTokenIcon } from "./ChainTokenIcon";
-import { components } from "@b3dotfun/sdk/anyspend/types/api";
 
 export function OrderToken({
   context,
@@ -44,7 +44,7 @@ export function OrderToken({
     // Get balance for the selected token
     let balance: bigint | null = null;
     if (token && wallet?.address) {
-      if (token.address === RELAY_ETH_ADDRESS) {
+      if (token.address === ZERO_ADDRESS) {
         // Native token
         const nativeToken = nativeTokens?.find(t => t.chainId === chainId);
         balance = nativeToken?.value ?? null;

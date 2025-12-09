@@ -1,9 +1,10 @@
-import { Chain } from "viem";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
+import { Chain } from "viem";
 
 export enum ChainType {
   EVM = "evm",
   SOLANA = "solana",
+  HYPERLIQUID = "hyperliquid",
 }
 
 export interface IBaseChain {
@@ -28,4 +29,9 @@ export interface IEVMChain extends IBaseChain {
 
 export interface ISolanaChain extends IBaseChain {
   type: ChainType.SOLANA;
+}
+
+export interface IHyperliquidChain extends IBaseChain {
+  type: ChainType.HYPERLIQUID;
+  apiUrl?: string;
 }

@@ -1,5 +1,5 @@
 import { eqci, getDefaultToken, roundUpUSDCBaseAmountToNearest } from "@b3dotfun/sdk/anyspend";
-import { RELAY_ETH_ADDRESS, USDC_BASE } from "@b3dotfun/sdk/anyspend/constants";
+import { USDC_BASE, ZERO_ADDRESS } from "@b3dotfun/sdk/anyspend/constants";
 import {
   CreateOrderParams,
   useAnyspendCreateOnrampOrder,
@@ -295,7 +295,7 @@ function AnySpendCustomInner({
     // First check native tokens (ETH, etc.)
     const nativeToken = nativeTokens?.find(t => t.chainId === srcChainId && Number(t.displayValue) > 0);
     if (nativeToken) {
-      const matchingToken = tokenList.find(t => t.address === RELAY_ETH_ADDRESS);
+      const matchingToken = tokenList.find(t => t.address === ZERO_ADDRESS);
       if (matchingToken) return matchingToken;
     }
 

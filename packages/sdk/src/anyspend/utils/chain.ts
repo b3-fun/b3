@@ -14,15 +14,17 @@ import {
   WalletClient,
 } from "viem";
 import { abstract, arbitrum, avalanche, b3, base, bsc, mainnet, optimism, polygon } from "viem/chains";
-import { ChainType, IBaseChain, IEVMChain, ISolanaChain } from "../types/chain";
+import { ChainType, IBaseChain, IEVMChain, IHyperliquidChain, ISolanaChain } from "../types/chain";
 import {
   getAvaxToken,
   getBnbToken,
   getEthToken,
   getHyperEVMNativeToken,
+  getHyperliquidUSDCToken,
   getPolToken,
   getSolanaToken,
   HYPEREVM_CHAIN_ID,
+  HYPERLIQUID_CHAIN_ID,
 } from "./token";
 
 function getCustomEvmChain(chain: Chain, rpcUrl: string): Chain {
@@ -283,11 +285,28 @@ export const SOLANA_MAINNET: ISolanaChain = {
   coingeckoName: "solana",
 };
 
+export const HYPERLIQUID_MAINNET: IHyperliquidChain = {
+  id: HYPERLIQUID_CHAIN_ID,
+  name: "Hyperliquid",
+  type: ChainType.HYPERLIQUID,
+  logoUrl: "https://s2.coinmarketcap.com/static/img/coins/64x64/32196.png",
+  nativeRequired: BigInt(0), // No native transfer needed - using Relay's useDepositAddress flow (USDC is native)
+  canDepositNative: true, // Can deposit USDC (native token)
+  defaultToken: getHyperliquidUSDCToken(),
+  nativeToken: getHyperliquidUSDCToken(),
+  coingeckoName: null,
+  apiUrl: "https://api.hyperliquid.xyz",
+};
+
 export const EVM_CHAINS: Record<number, IEVMChain> = { ...EVM_MAINNET, ...EVM_TESTNET };
 
 export const SOLANA_CHAINS: Record<number, ISolanaChain> = { [RELAY_SOLANA_MAINNET_CHAIN_ID]: SOLANA_MAINNET };
 
-export const ALL_CHAINS: Record<number, IBaseChain> = { ...EVM_CHAINS, ...SOLANA_CHAINS };
+export const HYPERLIQUID_CHAINS: Record<number, IHyperliquidChain> = {
+  [HYPERLIQUID_CHAIN_ID]: HYPERLIQUID_MAINNET,
+};
+
+export const ALL_CHAINS: Record<number, IBaseChain> = { ...EVM_CHAINS, ...SOLANA_CHAINS, ...HYPERLIQUID_CHAINS };
 
 export function getSolanaChains(network: "mainnet" | "testnet"): ISolanaChain {
   invariant(network === "mainnet", "Solana chain is only supported on mainnet");
@@ -335,7 +354,9 @@ export function canDepositNative(chainId: number): boolean {
 }
 
 export function isMainnet(chainId: number): boolean {
-  return EVM_MAINNET[chainId] !== undefined || RELAY_SOLANA_MAINNET_CHAIN_ID === chainId;
+  return (
+    EVM_MAINNET[chainId] !== undefined || RELAY_SOLANA_MAINNET_CHAIN_ID === chainId || HYPERLIQUID_CHAIN_ID === chainId
+  );
 }
 
 export function isTestnet(chainId: number): boolean {
@@ -349,7 +370,17 @@ export function getDefaultToken(chainId: number): components["schemas"]["Token"]
 
 export function getChainName(chainId: number): string {
   invariant(ALL_CHAINS[chainId], `Chain ${chainId} is not supported`);
-  return EVM_CHAINS[chainId] ? EVM_CHAINS[chainId].viem.name : "Solana";
+  const chain = ALL_CHAINS[chainId];
+
+  if (EVM_CHAINS[chainId]) {
+    return EVM_CHAINS[chainId].viem.name;
+  } else if (SOLANA_CHAINS[chainId]) {
+    return "Solana";
+  } else if (HYPERLIQUID_CHAINS[chainId]) {
+    return "Hyperliquid";
+  }
+
+  return chain.name;
 }
 
 export function getCoingeckoName(chainId: number): string | null {
@@ -511,6 +542,12 @@ export function getPaymentUrl(address: string, amount: bigint, currency: string,
       return url;
     }
 
+    case ChainType.HYPERLIQUID: {
+      // TODO: Hyperliquid does not have a public payment URL format specification.
+      // Return address as fallback until official format is documented.
+      return address;
+    }
+
     default:
       // Fallback to just the address if chain type is unknown
       return address;
@@ -549,4 +586,13 @@ export function getNativeToken(chainId: number): components["schemas"]["Token"] 
 
 export function isEvmChain(chainId: number): boolean {
   return Boolean(EVM_CHAINS[chainId]);
+}
+
+export function isHyperliquidChain(chainId: number): boolean {
+  return HYPERLIQUID_CHAINS[chainId] !== undefined;
+}
+
+export function getHyperliquidChain(chainId: number): IHyperliquidChain {
+  invariant(HYPERLIQUID_CHAINS[chainId], `Chain ${chainId} is not a Hyperliquid chain`);
+  return HYPERLIQUID_CHAINS[chainId];
 }
