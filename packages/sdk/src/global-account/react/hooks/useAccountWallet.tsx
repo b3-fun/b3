@@ -1,7 +1,6 @@
 import { useB3, useProfile } from "@b3dotfun/sdk/global-account/react";
 import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
-import { getIpfsUrl } from "@b3dotfun/sdk/shared/utils/ipfs";
 import { useEffect, useMemo, useState } from "react";
 import { getLastAuthProvider, useActiveWallet, useConnectedWallets, useWalletImage } from "thirdweb/react";
 import { Account, Wallet } from "thirdweb/wallets";
@@ -115,7 +114,7 @@ export function useAccountWallet(): {
 }
 
 export function useAccountWalletImage(): string {
-  const { account, user } = useB3();
+  const { account } = useB3();
 
   const activeWallet = useActiveWallet();
   const connectedWallets = useConnectedWallets();
@@ -136,7 +135,7 @@ export function useAccountWalletImage(): string {
 
   const { data: profileData } = useProfile({ address: account?.address });
 
-  const avatarUrl = user?.avatar ? getIpfsUrl(user?.avatar) : profileData?.avatar;
+  const avatarUrl = profileData?.avatar;
 
   return avatarUrl || (isActiveSmartWallet ? smartWalletIcon : walletImage) || "";
 }
