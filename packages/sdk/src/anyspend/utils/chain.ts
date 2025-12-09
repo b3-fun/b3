@@ -608,3 +608,29 @@ export function getHyperliquidChain(chainId: number): IHyperliquidChain {
   invariant(HYPERLIQUID_CHAINS[chainId], `Chain ${chainId} is not a Hyperliquid chain`);
   return HYPERLIQUID_CHAINS[chainId];
 }
+
+/**
+ * Get available chain IDs for AnySpend based on context (source or destination).
+ * Filters out chains that shouldn't be available for the given context.
+ *
+ * @param context - "from" for source chains, "to" for destination chains
+ * @returns Array of available chain IDs
+ *
+ * @example
+ * // Get source chains (excludes Hyperliquid)
+ * const sourceChains = getAvailableChainIds("from") // [1, 8453, 137, ...]
+ *
+ * // Get destination chains (includes Hyperliquid)
+ * const destChains = getAvailableChainIds("to") // [1, 8453, 137, ..., 1337]
+ */
+export function getAvailableChainIds(context: "from" | "to"): number[] {
+  const allChainIds = Object.values(ALL_CHAINS).map(chain => chain.id);
+
+  if (context === "from") {
+    // Hyperliquid is only supported as destination chain, not source chain
+    return allChainIds.filter(chainId => chainId !== HYPERLIQUID_CHAIN_ID);
+  }
+
+  // For destination ("to"), all chains are available including Hyperliquid
+  return allChainIds;
+}
