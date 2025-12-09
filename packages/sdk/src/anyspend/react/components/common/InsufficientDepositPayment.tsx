@@ -4,8 +4,8 @@ import {
   ALL_CHAINS,
   getChainName,
   getPaymentUrl,
-  RELAY_ETH_ADDRESS,
   RELAY_SOLANA_MAINNET_CHAIN_ID,
+  ZERO_ADDRESS,
 } from "@b3dotfun/sdk/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { Badge, CopyToClipboard, ShinyButton, TextLoop } from "@b3dotfun/sdk/global-account/react";
@@ -121,7 +121,7 @@ export function InsufficientDepositPayment({
               value={getPaymentUrl(
                 order.globalAddress,
                 BigInt(depositDeficit),
-                order.srcTokenAddress === RELAY_ETH_ADDRESS ? srcToken?.symbol || "ETH" : order.srcTokenAddress,
+                order.srcTokenAddress === ZERO_ADDRESS ? srcToken?.symbol || "ETH" : order.srcTokenAddress,
                 order.srcChain,
                 srcToken?.decimals,
               )}

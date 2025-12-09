@@ -1,6 +1,6 @@
 "use client";
 
-import { getDefaultToken, USDC_BASE } from "@b3dotfun/sdk/anyspend";
+import { getDefaultToken, HYPERLIQUID_CHAIN_ID, USDC_BASE } from "@b3dotfun/sdk/anyspend";
 import {
   useAnyspendCreateOnrampOrder,
   useAnyspendCreateOrder,
@@ -1126,9 +1126,15 @@ function AnySpendInner({
               "border-as-stroke bg-as-surface-primary absolute left-1/2 top-1/2 z-10 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-xl border-2 sm:h-8 sm:w-8 sm:rounded-xl",
               isBuyMode && "top-[calc(50%+56px)] cursor-default",
               activeTab === "fiat" && "hidden",
+              selectedDstChainId === HYPERLIQUID_CHAIN_ID && "cursor-not-allowed opacity-50",
             )}
             onClick={() => {
               if (activeTab === "fiat" || isBuyMode) {
+                return;
+              }
+
+              // Prevent swapping if destination is Hyperliquid (only supported as destination, not source)
+              if (selectedDstChainId === HYPERLIQUID_CHAIN_ID) {
                 return;
               }
 

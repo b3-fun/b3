@@ -8,8 +8,8 @@ import {
   getPaymentUrl,
   getStatusDisplay,
   isNativeToken,
-  RELAY_ETH_ADDRESS,
   RELAY_SOLANA_MAINNET_CHAIN_ID,
+  ZERO_ADDRESS,
 } from "@b3dotfun/sdk/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import {
@@ -327,16 +327,17 @@ export const OrderDetails = memo(function OrderDetails({
   // Main payment handler that triggers chain switch and payment
   const handlePayment = useCallback(async () => {
     console.log("Initiating payment process. Target chain:", order.srcChain, "Current chain:", walletClient?.chain?.id);
+    const amountToSend = depositDeficit > BigInt(0) ? depositDeficit.toString() : order.srcAmount;
     if (order.srcChain === RELAY_SOLANA_MAINNET_CHAIN_ID) {
-      // Use the existing depositDeficit calculation to determine amount to send
-      const amountToSend = depositDeficit > BigInt(0) ? depositDeficit.toString() : order.srcAmount;
+      // Solana payment flow
       await initiatePhantomTransfer({
         amountLamports: amountToSend,
         tokenAddress: order.srcTokenAddress,
         recipientAddress: order.globalAddress,
       });
     } else {
-      // Use unified payment process for both EOA and AA wallets
+      // EVM payment flow (EOA and AA wallets)
+      // Note: Hyperliquid is NOT supported as source chain, only as destination chain
       await handleUnifiedPaymentProcess();
     }
   }, [order, walletClient?.chain?.id, depositDeficit, handleUnifiedPaymentProcess, initiatePhantomTransfer]);
@@ -1039,7 +1040,7 @@ export const OrderDetails = memo(function OrderDetails({
                       value={getPaymentUrl(
                         order.globalAddress,
                         BigInt(order.srcAmount),
-                        order.srcTokenAddress === RELAY_ETH_ADDRESS ? srcToken?.symbol || "ETH" : order.srcTokenAddress,
+                        order.srcTokenAddress === ZERO_ADDRESS ? srcToken?.symbol || "ETH" : order.srcTokenAddress,
                         order.srcChain,
                         srcToken?.decimals,
                       )}
