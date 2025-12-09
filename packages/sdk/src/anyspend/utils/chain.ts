@@ -296,6 +296,9 @@ export const HYPERLIQUID_MAINNET: IHyperliquidChain = {
   nativeToken: getHyperliquidUSDCToken(),
   coingeckoName: null,
   apiUrl: "https://api.hyperliquid.xyz",
+  blockExplorer: {
+    url: "https://app.hyperliquid.xyz/explorer",
+  },
 };
 
 export const EVM_CHAINS: Record<number, IEVMChain> = { ...EVM_MAINNET, ...EVM_TESTNET };
@@ -562,6 +565,10 @@ export function getExplorerTxUrl(chainId: number, txHash: string) {
   if (EVM_CHAINS[chainId]) {
     return EVM_CHAINS[chainId].viem.blockExplorers?.default.url + "/tx/" + txHash;
   }
+  if (HYPERLIQUID_CHAINS[chainId]) {
+    return HYPERLIQUID_CHAINS[chainId].blockExplorer.url + "/tx/" + txHash;
+  }
+  // Default to Solscan for Solana transactions
   return "https://solscan.io/tx/" + txHash;
 }
 
@@ -569,6 +576,10 @@ export function getExplorerAddressUrl(chainId: number, address: string) {
   if (EVM_CHAINS[chainId]) {
     return EVM_CHAINS[chainId].viem.blockExplorers?.default.url + "/address/" + address;
   }
+  if (HYPERLIQUID_CHAINS[chainId]) {
+    return HYPERLIQUID_CHAINS[chainId].blockExplorer.url + "/address/" + address;
+  }
+  // Default to Solscan for Solana addresses
   return "https://solscan.io/account/" + address;
 }
 

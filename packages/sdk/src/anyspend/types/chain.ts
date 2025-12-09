@@ -33,5 +33,8 @@ export interface ISolanaChain extends IBaseChain {
 
 export interface IHyperliquidChain extends IBaseChain {
   type: ChainType.HYPERLIQUID;
-  apiUrl?: string;
+  apiUrl: string;
+  blockExplorer: {
+    url: string;
+  };
 }

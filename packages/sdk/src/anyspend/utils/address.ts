@@ -1,4 +1,5 @@
 import { isAddress } from "viem";
+import { HYPERLIQUID_CHAIN_ID } from "./token";
 
 export function isSolanaAddress(address: string): boolean {
   // Solana addresses are 32-byte base58 strings (usually 32-44 characters)
@@ -8,6 +9,20 @@ export function isSolanaAddress(address: string): boolean {
 
 export function isEvmOrSolanaAddress(address: string): boolean {
   return isAddress(address) || isSolanaAddress(address);
+}
+
+/**
+ * Check if an address is Hyperliquid's special USDC address.
+ * Hyperliquid USDC uses a special 34-character format (0x + 32 hex digits)
+ * instead of the standard 42-character Ethereum address format.
+ * This is required by Relay SDK for Hyperliquid integration.
+ *
+ * @param chainId - The chain ID to check
+ * @param address - The token address to validate
+ * @returns true if the address is Hyperliquid USDC's special format
+ */
+export function isHyperliquidUSDC(chainId: number, address: string): boolean {
+  return chainId === HYPERLIQUID_CHAIN_ID && address.toLowerCase() === "0x00000000000000000000000000000000";
 }
 
 export function normalizeAddress(address: string): string {
