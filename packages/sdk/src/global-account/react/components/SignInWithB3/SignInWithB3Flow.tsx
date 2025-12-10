@@ -1,8 +1,9 @@
 import {
   Loading,
   SignInWithB3ModalProps,
+  useAuthentication,
   useAuthStore,
-  useB3,
+  useB3Config,
   useGetAllTWSigners,
   useModalStore,
 } from "@b3dotfun/sdk/global-account/react";
@@ -33,7 +34,9 @@ export function SignInWithB3Flow({
   source = "signInWithB3Button",
   signersEnabled = false,
 }: SignInWithB3ModalProps) {
-  const { automaticallySetFirstEoa, user, refetchUser, enableTurnkey } = useB3();
+  const { automaticallySetFirstEoa, enableTurnkey } = useB3Config();
+  const { user, refetchUser } = useAuthentication(partnerId);
+
   const [step, setStep] = useState<"login" | "permissions" | null>(source === "requestPermissions" ? null : "login");
   const [sessionKeyAdded, setSessionKeyAdded] = useState(source === "requestPermissions" ? true : false);
   const { setB3ModalContentType, setB3ModalOpen, isOpen, contentType } = useModalStore();

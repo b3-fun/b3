@@ -13,8 +13,7 @@ import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { cn, truncateAddress } from "@b3dotfun/sdk/shared/utils";
 import { Menu, MenuButton, MenuItems, Transition } from "@headlessui/react";
 import { ReactNode, useEffect } from "react";
-import { useConnectedWallets, useSetActiveWallet } from "thirdweb/react";
-import { useAccountWalletImage } from "../../hooks/useAccountWallet";
+import { useConnectedWallets, useSetActiveWallet, useWalletImage } from "thirdweb/react";
 import { ManageAccountButton } from "../custom/ManageAccountButton";
 
 type SignInProps = {
@@ -40,8 +39,9 @@ export function SignIn(props: SignInWithB3Props) {
     isActiveSmartWallet,
     isActiveEOAWallet,
     smartWalletIcon,
-    eoaWalletIcon,
   } = useAccountWallet();
+
+  const { data: walletImage } = useWalletImage(connectedEOAWallet?.id);
 
   const isMobile = useIsMobile();
   const { logout } = useAuthentication(partnerId);
@@ -71,8 +71,6 @@ export function SignIn(props: SignInWithB3Props) {
       setActiveWallet(connectedEOAWallet);
     }
   }, [connectedEOAWallet, isActiveEOAWallet, setActiveWallet, automaticallySetFirstEoa]);
-
-  const walletImage = useAccountWalletImage();
 
   // Desktop version - original dropdown menu
   return (
@@ -115,7 +113,7 @@ export function SignIn(props: SignInWithB3Props) {
                       <div className="flex items-center">
                         <img
                           className="bg-b3-react-primary h-16 w-16 rounded-full opacity-100"
-                          src={eoaWalletIcon}
+                          src={walletImage}
                           alt={connectedEOAWallet?.id}
                         />
                         <div className="ml-4 grow">

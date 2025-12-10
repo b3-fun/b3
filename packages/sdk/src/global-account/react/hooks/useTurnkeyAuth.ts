@@ -1,9 +1,10 @@
-import app from "../../app";
-import { useAuthStore } from "../stores";
-import { useCallback, useState } from "react";
-import { useB3 } from "../components/B3Provider/useB3";
 import { TurnkeyAuthInitResponse } from "@b3dotfun/b3-api";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
+import { useCallback, useState } from "react";
+import app from "../../app";
+import { useB3Config } from "../components";
+import { useAuthStore } from "../stores";
+import { useAuthentication } from "./useAuthentication";
 
 const debug = debugB3React("useTurnkeyAuth");
 
@@ -32,7 +33,8 @@ export function useTurnkeyAuth(): UseTurnkeyAuthReturn {
   const [error, setError] = useState<string | null>(null);
   const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
   const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
-  const { user } = useB3();
+  const { partnerId } = useB3Config();
+  const { user } = useAuthentication(partnerId);
 
   /**
    * Step 1: Initiate login with email

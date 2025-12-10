@@ -267,7 +267,8 @@ function PermissionsExample() {
 import { useB3 } from "@b3dotfun/sdk/global-account/react";
 
 function AccountStatus() {
-  const { account, isAuthenticated } = useB3();
+  const isAuthenticated = useAuthStore(state => state.isAuthenticated);
+  const account = useB3Account();
 
   return <div>{isAuthenticated ? <p>Welcome, {account?.displayName}!</p> : <p>Please sign in</p>}</div>;
 }

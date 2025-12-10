@@ -6,7 +6,6 @@ export { useAnalytics } from "./useAnalytics";
 export { useAuthentication } from "./useAuthentication";
 export { useB3BalanceFromAddresses } from "./useB3BalanceFromAddresses";
 export { useB3EnsName } from "./useB3EnsName";
-export { useBestTransactionPath } from "./useBestTransactionPath";
 export { useChainSwitchWithAction } from "./useChainSwitchWithAction";
 export * from "./useClaim";
 export { useClient } from "./useClient";

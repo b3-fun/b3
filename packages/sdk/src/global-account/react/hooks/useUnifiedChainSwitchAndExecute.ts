@@ -9,7 +9,7 @@ import { useCallback, useState } from "react";
 import { prepareTransaction, sendTransaction as twSendTransaction } from "thirdweb";
 import { isAddress } from "viem";
 import { useSwitchChain } from "wagmi";
-import { useB3 } from "../components";
+import { useB3Account } from "../components/B3Provider/useB3Account";
 import { useAccountWallet } from "./useAccountWallet";
 
 export interface UnifiedTransactionParams {
@@ -31,7 +31,7 @@ export function useUnifiedChainSwitchAndExecute() {
   const [isSwitchingOrExecuting, setIsSwitchingOrExecuting] = useState(false);
 
   const { isActiveSmartWallet, isActiveEOAWallet, connectedEOAWallet } = useAccountWallet();
-  const { account: aaAccount } = useB3();
+  const aaAccount = useB3Account();
 
   // Handle EOA wallet chain switch and execute transaction
   const handleEOASwitchChainAndSendTransaction = useCallback(

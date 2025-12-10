@@ -1,4 +1,4 @@
-import { useB3, useProfile } from "@b3dotfun/sdk/global-account/react";
+import { useAuthentication, useProfile } from "@b3dotfun/sdk/global-account/react";
 import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { getIpfsUrl } from "@b3dotfun/sdk/shared/utils/ipfs";
@@ -6,6 +6,8 @@ import { useEffect, useMemo, useState } from "react";
 import { getLastAuthProvider, useActiveWallet, useConnectedWallets, useWalletImage } from "thirdweb/react";
 import { Account, Wallet } from "thirdweb/wallets";
 import { socialIcons } from "thirdweb/wallets/in-app";
+import { useB3Account } from "../components/B3Provider/useB3Account";
+import { useB3Config } from "../components/B3Provider/useB3Config";
 
 const debug = debugB3React("useAccountWallet");
 
@@ -44,7 +46,13 @@ export function useAccountWallet(): {
   eoaWalletIcon?: string;
   smartWalletIcon?: string;
 } {
-  const { account, user } = useB3();
+  // WOJ: --------------------
+  //  values from in useB3:
+  //  const activeAccount = useActiveAccount();
+  // const effectiveAccount = isAuthenticated ? accountOverride || activeAccount : undefined;
+  // can we possibly just use useActiveAccount here?
+  // --------------------
+  const account = useB3Account();
 
   const activeWallet = useActiveWallet();
   const connectedWallets = useConnectedWallets();
@@ -61,8 +69,6 @@ export function useAccountWallet(): {
   debug("isActiveSmartWallet", isActiveSmartWallet);
   debug("isActiveEOAWallet", isActiveEOAWallet);
 
-  const { data: walletImage } = useWalletImage(connectedEOAWallet?.id);
-
   // If not EOA sign in, then we need to show the smart wallet icon
   const lastAuthProvider = useLastAuthProvider();
 
@@ -73,7 +79,6 @@ export function useAccountWallet(): {
 
   const { data: profileData } = useProfile({ address: account?.address });
   const ensName = profileData?.displayName?.replace(/\.b3\.fun/g, "");
-  const avatarUrl = user?.avatar ? getIpfsUrl(user?.avatar) : profileData?.avatar;
 
   const res = useMemo(
     () => ({
@@ -81,7 +86,7 @@ export function useAccountWallet(): {
         ...account,
         ensName,
         meta: {
-          icon: avatarUrl || (isActiveSmartWallet ? smartWalletIcon : walletImage) || "",
+          icon: "", // deprecated
         },
       },
 
@@ -95,18 +100,16 @@ export function useAccountWallet(): {
       isActiveEOAWallet: isActiveEOAWallet,
 
       smartWalletIcon: smartWalletIcon,
-      eoaWalletIcon: walletImage,
+      eoaWalletIcon: "", // deprecated
     }),
     [
       account,
-      avatarUrl,
       connectedEOAWallet,
       connectedSmartWallet,
       ensName,
       isActiveEOAWallet,
       isActiveSmartWallet,
       smartWalletIcon,
-      walletImage,
     ],
   );
 
@@ -114,7 +117,9 @@ export function useAccountWallet(): {
 }
 
 export function useAccountWalletImage(): string {
-  const { account, user } = useB3();
+  const { partnerId } = useB3Config();
+  const account = useB3Account();
+  const { user } = useAuthentication(partnerId);
 
   const activeWallet = useActiveWallet();
   const connectedWallets = useConnectedWallets();
@@ -134,7 +139,8 @@ export function useAccountWalletImage(): string {
       : "https://gradvatar.com/0x0000000000000000000000000000000000000000"; // show smart wallet of eoa wallet is gradvatar
 
   const { data: profileData } = useProfile({ address: account?.address });
-  const avatarUrl = user?.avatar || profileData?.avatar;
+
+  const avatarUrl = user?.avatar ? getIpfsUrl(user?.avatar) : profileData?.avatar;
 
   return avatarUrl || (isActiveSmartWallet ? smartWalletIcon : walletImage) || "";
 }
