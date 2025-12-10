@@ -5,8 +5,6 @@ import { CryptoPaymentMethodType } from "../components/common/CryptoPaymentMetho
 interface UseConnectedWalletDisplayResult {
   walletAddress: string | undefined;
   shouldShowConnectedEOA: boolean;
-  shouldShowWagmiWallet: boolean;
-  isWalletDuplicated: boolean;
   suggestedPaymentMethod: CryptoPaymentMethodType;
 }
 
@@ -22,27 +20,18 @@ export function useConnectedWalletDisplay(
 
   const globalWalletAddress = connectedSmartWallet?.getAccount()?.address;
 
-  // Helper function to check if two addresses are the same
-  const isSameAddress = (addr1?: string, addr2?: string): boolean => {
-    if (!addr1 || !addr2) return false;
-    return addr1.toLowerCase() === addr2.toLowerCase();
-  };
-
   // Check if connectedEOAWallet and wagmi wallet represent the same wallet
   const connectedEOAAddress = connectedEOAWallet?.getAccount()?.address;
-  const isWalletDuplicated =
-    isSameAddress(connectedEOAAddress, wagmiAddress) || isSameAddress(globalWalletAddress, wagmiAddress);
 
   // Determine which wallet to show (prefer connectedEOAWallet if both exist and are the same)
   const shouldShowConnectedEOA = !!connectedEOAWallet;
   // this is disabled because we don't want to display In-App Wallet as a payment method
-  const shouldShowWagmiWallet = false; // wagmiWalletIsConnected && (!isWalletDuplicated || !connectedEOAWallet);
 
   // Determine which address to use based on payment method
   let walletAddress: string | undefined;
 
   if (selectedCryptoPaymentMethod === CryptoPaymentMethodType.GLOBAL_WALLET) {
-    walletAddress = connectedSmartWallet?.getAccount()?.address;
+    walletAddress = globalWalletAddress;
   } else if (selectedCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET) {
     // Prefer connectedEOAWallet, fallback to wagmi wallet
     walletAddress = connectedEOAAddress || wagmiAddress;
@@ -58,7 +47,7 @@ export function useConnectedWalletDisplay(
   if (connectedEOAAddress || wagmiAddress) {
     // If there's a connected EOA or wagmi wallet, suggest CONNECT_WALLET
     suggestedPaymentMethod = CryptoPaymentMethodType.CONNECT_WALLET;
-  } else if (connectedSmartWallet?.getAccount()?.address) {
+  } else if (globalWalletAddress) {
     // If only global wallet is available, suggest that
     suggestedPaymentMethod = CryptoPaymentMethodType.GLOBAL_WALLET;
   }
@@ -66,8 +55,6 @@ export function useConnectedWalletDisplay(
   return {
     walletAddress,
     shouldShowConnectedEOA,
-    shouldShowWagmiWallet,
-    isWalletDuplicated,
     suggestedPaymentMethod,
   };
 }
