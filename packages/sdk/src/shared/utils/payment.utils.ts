@@ -1,5 +1,14 @@
-import { VENDOR_DISPLAY_NAMES } from "@b3dotfun/sdk/anyspend/constants";
+import { STRIPE_CONFIG, VENDOR_DISPLAY_NAMES } from "@b3dotfun/sdk/anyspend/constants";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
+import { loadStripe } from "@stripe/stripe-js";
+
+let stripePromise: ReturnType<typeof loadStripe> | null = null;
+export function getStripePromise() {
+  if (!stripePromise) {
+    stripePromise = loadStripe(STRIPE_CONFIG.publishableKey);
+  }
+  return stripePromise;
+}
 
 export function getVendorDisplayName(vendor?: components["schemas"]["OnrampMetadata"]["vendor"]): string {
   switch (vendor) {
