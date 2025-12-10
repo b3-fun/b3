@@ -105,7 +105,7 @@ export function useHyperliquidTransfer() {
           signature: {
             r,
             s,
-            v: Number(v ?? 0n),
+            v: Number(v ?? BigInt(0)),
           },
           nonce: currentTime,
           action: {
