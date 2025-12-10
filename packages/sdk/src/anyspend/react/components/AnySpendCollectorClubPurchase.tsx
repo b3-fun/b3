@@ -33,7 +33,7 @@ import { encodeFunctionData } from "viem";
 import { AnySpendCustom } from "./AnySpendCustom";
 
 // Collector Club Shop contract on Base
-const CC_SHOP_ADDRESS = "0x23887D10c81118A9a2E3Af59C423e2f4ee4Cc7Cf";
+const CC_SHOP_ADDRESS = "0x47366E64E4917dd4DdC04Fb9DC507c1dD2b87294";
 const BASE_CHAIN_ID = 8453;
 
 // ABI for buyPacksFor function only

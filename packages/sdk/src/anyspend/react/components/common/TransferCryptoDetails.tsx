@@ -1,6 +1,6 @@
 "use client";
 
-import { ALL_CHAINS, getChainName, getPaymentUrl, RELAY_ETH_ADDRESS } from "@b3dotfun/sdk/anyspend";
+import { ALL_CHAINS, getChainName, getPaymentUrl, ZERO_ADDRESS } from "@b3dotfun/sdk/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { CopyToClipboard, ShinyButton, TextLoop, toast } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils";
@@ -206,7 +206,7 @@ export const TransferCryptoDetails = memo(function TransferCryptoDetails({
                   value={getPaymentUrl(
                     order.globalAddress,
                     BigInt(order.srcAmount),
-                    order.srcTokenAddress === RELAY_ETH_ADDRESS ? "ETH" : order.srcTokenAddress,
+                    order.srcTokenAddress === ZERO_ADDRESS ? "ETH" : order.srcTokenAddress,
                     order.srcChain,
                     srcToken?.decimals,
                   )}

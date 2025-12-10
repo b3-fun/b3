@@ -1,5 +1,5 @@
 import { eqci, getDefaultToken, roundUpUSDCBaseAmountToNearest } from "@b3dotfun/sdk/anyspend";
-import { RELAY_ETH_ADDRESS, USDC_BASE } from "@b3dotfun/sdk/anyspend/constants";
+import { USDC_BASE, ZERO_ADDRESS } from "@b3dotfun/sdk/anyspend/constants";
 import {
   CreateOrderParams,
   useAnyspendCreateOnrampOrder,
@@ -48,6 +48,7 @@ import { useCryptoPaymentMethodState } from "../hooks/useCryptoPaymentMethodStat
 import { useRecipientAddressState } from "../hooks/useRecipientAddressState";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
 import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPaymentMethod";
+import { CryptoPaymentMethodDisplay } from "./common/CryptoPaymentMethodDisplay";
 import { FeeBreakDown } from "./common/FeeBreakDown";
 import { FIAT_PAYMENT_METHOD_DISPLAY, FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaymentMethod";
 import { OrderDetails } from "./common/OrderDetails";
@@ -295,7 +296,7 @@ function AnySpendCustomInner({
     // First check native tokens (ETH, etc.)
     const nativeToken = nativeTokens?.find(t => t.chainId === srcChainId && Number(t.displayValue) > 0);
     if (nativeToken) {
-      const matchingToken = tokenList.find(t => t.address === RELAY_ETH_ADDRESS);
+      const matchingToken = tokenList.find(t => t.address === ZERO_ADDRESS);
       if (matchingToken) return matchingToken;
     }
 
@@ -467,7 +468,7 @@ function AnySpendCustomInner({
 
   const isCreatingOrder = isCreatingRegularOrder || isCreatingOnrampOrder;
 
-  const { address: connectedAddress, name: connectedName } = useConnectedUserProfile();
+  const { address: connectedAddress, name: connectedName } = useConnectedUserProfile(effectiveCryptoPaymentMethod);
   const recipientProfile = useProfile({ address: recipientAddress });
   const recipientName = recipientProfile.data?.name;
 
@@ -949,28 +950,11 @@ function AnySpendCustomInner({
                   className="text-as-tertiarry flex flex-wrap items-center justify-end gap-2 text-sm transition-colors hover:text-blue-700"
                   onClick={() => setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD)}
                 >
-                  {effectiveCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET ? (
-                    <>
-                      {connectedAddress ? (
-                        <span className="text-as-tertiarry whitespace-nowrap">
-                          {connectedName ? formatUsername(connectedName) : shortenAddress(connectedAddress || "")}
-                        </span>
-                      ) : (
-                        <span className="whitespace-nowrap">Connect wallet</span>
-                      )}
-                      <ChevronRight className="h-4 w-4 shrink-0" />
-                    </>
-                  ) : effectiveCryptoPaymentMethod === CryptoPaymentMethodType.TRANSFER_CRYPTO ? (
-                    <>
-                      <span className="whitespace-nowrap">Transfer crypto</span>
-                      <ChevronRight className="h-4 w-4 shrink-0" />
-                    </>
-                  ) : (
-                    <>
-                      <span className="whitespace-nowrap">Select payment method</span>
-                      <ChevronRight className="h-4 w-4 shrink-0" />
-                    </>
-                  )}
+                  <CryptoPaymentMethodDisplay
+                    paymentMethod={effectiveCryptoPaymentMethod}
+                    connectedAddress={connectedAddress}
+                    connectedName={connectedName}
+                  />
                 </button>
               </motion.div>
 

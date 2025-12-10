@@ -14,12 +14,30 @@ import {
   WalletClient,
 } from "viem";
 import { abstract, arbitrum, avalanche, b3, base, bsc, mainnet, optimism, polygon } from "viem/chains";
-import { ChainType, IBaseChain, IEVMChain, ISolanaChain } from "../types/chain";
-import { getAvaxToken, getBnbToken, getEthToken, getPolToken, getSolanaToken } from "./token";
+import { ChainType, IBaseChain, IEVMChain, IHyperliquidChain, ISolanaChain } from "../types/chain";
+import {
+  getAvaxToken,
+  getBnbToken,
+  getEthToken,
+  getHyperEVMNativeToken,
+  getHyperliquidUSDCToken,
+  getPolToken,
+  getSolanaToken,
+  HYPEREVM_CHAIN_ID,
+  HYPERLIQUID_CHAIN_ID,
+} from "./token";
 
 function getCustomEvmChain(chain: Chain, rpcUrl: string): Chain {
   return defineChain({ ...chain, rpcUrls: { default: { http: [rpcUrl] } } });
 }
+
+export const hyperEVM = defineChain({
+  id: HYPEREVM_CHAIN_ID,
+  name: "HyperEVM",
+  nativeCurrency: { name: "HyperEVM", symbol: "HYPE", decimals: 18 },
+  rpcUrls: { default: { http: ["https://rpc.hyperliquid.xyz/evm"] } },
+  blockExplorers: { default: { name: "HyperEVM Explorer", url: "https://hyperevmscan.io/" } },
+});
 
 // export const b4testnet = defineChain({
 //   id: 19934,
@@ -189,6 +207,20 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     coingeckoName: "abstract",
     wethAddress: "0x3439153eb7af838ad19d56e1571fbd09333c2809",
   },
+  [hyperEVM.id]: {
+    id: hyperEVM.id,
+    name: hyperEVM.name,
+    logoUrl: "https://s2.coinmarketcap.com/static/img/coins/64x64/32196.png",
+    type: ChainType.EVM,
+    nativeRequired: parseEther("0.01"),
+    canDepositNative: true,
+    defaultToken: getHyperEVMNativeToken(),
+    nativeToken: getHyperEVMNativeToken(),
+    viem: hyperEVM,
+    pollingInterval: 1000, // 1 second for Hyperliquid
+    coingeckoName: "hyperevm",
+    wethAddress: "0x5555555555555555555555555555555555555555",
+  },
 };
 
 export const EVM_TESTNET: Record<number, IEVMChain> = {
@@ -253,11 +285,31 @@ export const SOLANA_MAINNET: ISolanaChain = {
   coingeckoName: "solana",
 };
 
+export const HYPERLIQUID_MAINNET: IHyperliquidChain = {
+  id: HYPERLIQUID_CHAIN_ID,
+  name: "Hyperliquid",
+  type: ChainType.HYPERLIQUID,
+  logoUrl: "https://s2.coinmarketcap.com/static/img/coins/64x64/32196.png",
+  nativeRequired: BigInt(0), // No native transfer needed - using Relay's useDepositAddress flow (USDC is native)
+  canDepositNative: true, // Can deposit USDC (native token)
+  defaultToken: getHyperliquidUSDCToken(),
+  nativeToken: getHyperliquidUSDCToken(),
+  coingeckoName: null,
+  apiUrl: "https://api.hyperliquid.xyz",
+  blockExplorer: {
+    url: "https://app.hyperliquid.xyz/explorer",
+  },
+};
+
 export const EVM_CHAINS: Record<number, IEVMChain> = { ...EVM_MAINNET, ...EVM_TESTNET };
 
 export const SOLANA_CHAINS: Record<number, ISolanaChain> = { [RELAY_SOLANA_MAINNET_CHAIN_ID]: SOLANA_MAINNET };
 
-export const ALL_CHAINS: Record<number, IBaseChain> = { ...EVM_CHAINS, ...SOLANA_CHAINS };
+export const HYPERLIQUID_CHAINS: Record<number, IHyperliquidChain> = {
+  [HYPERLIQUID_CHAIN_ID]: HYPERLIQUID_MAINNET,
+};
+
+export const ALL_CHAINS: Record<number, IBaseChain> = { ...EVM_CHAINS, ...SOLANA_CHAINS, ...HYPERLIQUID_CHAINS };
 
 export function getSolanaChains(network: "mainnet" | "testnet"): ISolanaChain {
   invariant(network === "mainnet", "Solana chain is only supported on mainnet");
@@ -305,7 +357,9 @@ export function canDepositNative(chainId: number): boolean {
 }
 
 export function isMainnet(chainId: number): boolean {
-  return EVM_MAINNET[chainId] !== undefined || RELAY_SOLANA_MAINNET_CHAIN_ID === chainId;
+  return (
+    EVM_MAINNET[chainId] !== undefined || RELAY_SOLANA_MAINNET_CHAIN_ID === chainId || HYPERLIQUID_CHAIN_ID === chainId
+  );
 }
 
 export function isTestnet(chainId: number): boolean {
@@ -319,7 +373,13 @@ export function getDefaultToken(chainId: number): components["schemas"]["Token"]
 
 export function getChainName(chainId: number): string {
   invariant(ALL_CHAINS[chainId], `Chain ${chainId} is not supported`);
-  return EVM_CHAINS[chainId] ? EVM_CHAINS[chainId].viem.name : "Solana";
+  const chain = ALL_CHAINS[chainId];
+
+  if (isEvmChain(chainId)) {
+    return (chain as IEVMChain).viem.name;
+  }
+
+  return chain.name;
 }
 
 export function getCoingeckoName(chainId: number): string | null {
@@ -481,6 +541,13 @@ export function getPaymentUrl(address: string, amount: bigint, currency: string,
       return url;
     }
 
+    case ChainType.HYPERLIQUID: {
+      // NOTE: Hyperliquid is only supported as destination chain (not source chain).
+      // Payment URLs are not needed since users cannot send FROM Hyperliquid in our flow.
+      // Return address as placeholder (this code path should not be reached).
+      return address;
+    }
+
     default:
       // Fallback to just the address if chain type is unknown
       return address;
@@ -494,6 +561,10 @@ export function getExplorerTxUrl(chainId: number, txHash: string) {
   if (EVM_CHAINS[chainId]) {
     return EVM_CHAINS[chainId].viem.blockExplorers?.default.url + "/tx/" + txHash;
   }
+  if (HYPERLIQUID_CHAINS[chainId]) {
+    return HYPERLIQUID_CHAINS[chainId].blockExplorer.url + "/tx/" + txHash;
+  }
+  // Default to Solscan for Solana transactions
   return "https://solscan.io/tx/" + txHash;
 }
 
@@ -501,6 +572,10 @@ export function getExplorerAddressUrl(chainId: number, address: string) {
   if (EVM_CHAINS[chainId]) {
     return EVM_CHAINS[chainId].viem.blockExplorers?.default.url + "/address/" + address;
   }
+  if (HYPERLIQUID_CHAINS[chainId]) {
+    return HYPERLIQUID_CHAINS[chainId].blockExplorer.url + "/address/" + address;
+  }
+  // Default to Solscan for Solana addresses
   return "https://solscan.io/account/" + address;
 }
 
@@ -519,4 +594,39 @@ export function getNativeToken(chainId: number): components["schemas"]["Token"] 
 
 export function isEvmChain(chainId: number): boolean {
   return Boolean(EVM_CHAINS[chainId]);
+}
+
+export function isHyperliquidChain(chainId: number): boolean {
+  return HYPERLIQUID_CHAINS[chainId] !== undefined;
+}
+
+export function getHyperliquidChain(chainId: number): IHyperliquidChain {
+  invariant(HYPERLIQUID_CHAINS[chainId], `Chain ${chainId} is not a Hyperliquid chain`);
+  return HYPERLIQUID_CHAINS[chainId];
+}
+
+/**
+ * Get available chain IDs for AnySpend based on context (source or destination).
+ * Filters out chains that shouldn't be available for the given context.
+ *
+ * @param context - "from" for source chains, "to" for destination chains
+ * @returns Array of available chain IDs
+ *
+ * @example
+ * // Get source chains (excludes Hyperliquid)
+ * const sourceChains = getAvailableChainIds("from") // [1, 8453, 137, ...]
+ *
+ * // Get destination chains (includes Hyperliquid)
+ * const destChains = getAvailableChainIds("to") // [1, 8453, 137, ..., 1337]
+ */
+export function getAvailableChainIds(context: "from" | "to"): number[] {
+  const allChainIds = Object.values(ALL_CHAINS).map(chain => chain.id);
+
+  if (context === "from") {
+    // Hyperliquid is only supported as destination chain, not source chain
+    return allChainIds.filter(chainId => chainId !== HYPERLIQUID_CHAIN_ID);
+  }
+
+  // For destination ("to"), all chains are available including Hyperliquid
+  return allChainIds;
 }

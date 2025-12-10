@@ -7,7 +7,7 @@ import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permission
 import { loadGA4Script } from "@b3dotfun/sdk/global-account/utils/analytics";
 import "@relayprotocol/relay-kit-ui/styles.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { ThirdwebProvider, useActiveAccount } from "thirdweb/react";
 import { Account, Wallet } from "thirdweb/wallets";
 import { CreateConnectorFn, WagmiProvider } from "wagmi";
@@ -79,7 +79,11 @@ export function B3Provider({
   useEffect(() => {
     setClientType(clientType);
   }, [clientType]);
-  const wagmiConfig = createWagmiConfig({ partnerId, rpcUrls, connectors, overrideDefaultConnectors });
+
+  const wagmiConfig = useMemo(
+    () => createWagmiConfig({ partnerId, rpcUrls, connectors, overrideDefaultConnectors }),
+    [partnerId, rpcUrls, connectors, overrideDefaultConnectors],
+  );
 
   return (
     <ThirdwebProvider>

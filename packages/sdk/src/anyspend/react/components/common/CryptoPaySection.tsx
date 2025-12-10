@@ -1,13 +1,12 @@
 import { useProfile, useTokenData } from "@b3dotfun/sdk/global-account/react";
-import { formatUsername } from "@b3dotfun/sdk/shared/utils";
-import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { formatDisplayNumber } from "@b3dotfun/sdk/shared/utils/number";
-import { ChevronRight, Info } from "lucide-react";
+import { Info } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect, useRef } from "react";
 import { components } from "../../../types/api";
 import { useConnectedWalletDisplay } from "../../hooks/useConnectedWalletDisplay";
 import { CryptoPaymentMethodType } from "./CryptoPaymentMethod";
+import { CryptoPaymentMethodDisplay } from "./CryptoPaymentMethodDisplay";
 import { OrderTokenAmount } from "./OrderTokenAmount";
 import { TokenBalance } from "./TokenBalance";
 
@@ -103,33 +102,11 @@ export function CryptoPaySection({
           className="text-as-tertiarry flex h-7 items-center gap-2 text-sm transition-colors focus:!outline-none"
           onClick={onSelectCryptoPaymentMethod}
         >
-          {selectedCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET ? (
-            <>
-              {walletAddress ? (
-                <div className="flex items-center gap-1">
-                  {connectedName ? formatUsername(connectedName) : shortenAddress(walletAddress || "")}
-                </div>
-              ) : (
-                "Connect wallet"
-              )}
-              <ChevronRight className="h-4 w-4" />
-            </>
-          ) : selectedCryptoPaymentMethod === CryptoPaymentMethodType.GLOBAL_WALLET ? (
-            <>
-              Global Account
-              <ChevronRight className="h-4 w-4" />
-            </>
-          ) : selectedCryptoPaymentMethod === CryptoPaymentMethodType.TRANSFER_CRYPTO ? (
-            <>
-              Transfer crypto
-              <ChevronRight className="h-4 w-4" />
-            </>
-          ) : (
-            <>
-              Select payment method
-              <ChevronRight className="h-4 w-4" />
-            </>
-          )}
+          <CryptoPaymentMethodDisplay
+            paymentMethod={selectedCryptoPaymentMethod}
+            connectedAddress={walletAddress}
+            connectedName={connectedName}
+          />
         </button>
       </div>
       <OrderTokenAmount
