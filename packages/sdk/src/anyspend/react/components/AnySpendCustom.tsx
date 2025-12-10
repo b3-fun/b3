@@ -469,7 +469,7 @@ function AnySpendCustomInner({
 
   const isCreatingOrder = isCreatingRegularOrder || isCreatingOnrampOrder;
 
-  const { address: connectedAddress, name: connectedName } = useConnectedUserProfile();
+  const { address: connectedAddress, name: connectedName } = useConnectedUserProfile(effectiveCryptoPaymentMethod);
   const recipientProfile = useProfile({ address: recipientAddress });
   const recipientName = recipientProfile.data?.name;
 
