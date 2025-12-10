@@ -48,6 +48,7 @@ import { useCryptoPaymentMethodState } from "../hooks/useCryptoPaymentMethodStat
 import { useRecipientAddressState } from "../hooks/useRecipientAddressState";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
 import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPaymentMethod";
+import { CryptoPaymentMethodDisplay } from "./common/CryptoPaymentMethodDisplay";
 import { FeeBreakDown } from "./common/FeeBreakDown";
 import { FIAT_PAYMENT_METHOD_DISPLAY, FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaymentMethod";
 import { OrderDetails } from "./common/OrderDetails";
@@ -951,28 +952,11 @@ function AnySpendCustomInner({
                   className="text-as-tertiarry flex flex-wrap items-center justify-end gap-2 text-sm transition-colors hover:text-blue-700"
                   onClick={() => setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD)}
                 >
-                  {effectiveCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET ? (
-                    <>
-                      {connectedAddress ? (
-                        <span className="text-as-tertiarry whitespace-nowrap">
-                          {connectedName ? formatUsername(connectedName) : shortenAddress(connectedAddress || "")}
-                        </span>
-                      ) : (
-                        <span className="whitespace-nowrap">Connect wallet</span>
-                      )}
-                      <ChevronRight className="h-4 w-4 shrink-0" />
-                    </>
-                  ) : effectiveCryptoPaymentMethod === CryptoPaymentMethodType.TRANSFER_CRYPTO ? (
-                    <>
-                      <span className="whitespace-nowrap">Transfer crypto</span>
-                      <ChevronRight className="h-4 w-4 shrink-0" />
-                    </>
-                  ) : (
-                    <>
-                      <span className="whitespace-nowrap">Select payment method</span>
-                      <ChevronRight className="h-4 w-4 shrink-0" />
-                    </>
-                  )}
+                  <CryptoPaymentMethodDisplay
+                    paymentMethod={effectiveCryptoPaymentMethod}
+                    connectedAddress={connectedAddress}
+                    connectedName={connectedName}
+                  />
                 </button>
               </motion.div>
 
