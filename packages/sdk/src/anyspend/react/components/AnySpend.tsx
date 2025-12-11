@@ -288,10 +288,7 @@ function AnySpendInner({
   useEffect(() => {
     if (selectedDstToken && dstTokenMetadata && !appliedDstMetadataRef.current) {
       // Skip metadata enhancement for Hyperliquid USDC - we already have correct metadata from getHyperliquidUSDCToken()
-      if (
-        selectedDstToken.chainId === HYPERLIQUID_CHAIN_ID &&
-        eqci(selectedDstToken.address, ZERO_ADDRESS)
-      ) {
+      if (selectedDstToken.chainId === HYPERLIQUID_CHAIN_ID && eqci(selectedDstToken.address, ZERO_ADDRESS)) {
         appliedDstMetadataRef.current = true;
         return;
       }
