@@ -1,6 +1,13 @@
 "use client";
 
-import { getDefaultToken, HYPERLIQUID_CHAIN_ID, USDC_BASE } from "@b3dotfun/sdk/anyspend";
+import {
+  eqci,
+  getDefaultToken,
+  getHyperliquidUSDCToken,
+  HYPERLIQUID_CHAIN_ID,
+  USDC_BASE,
+  ZERO_ADDRESS,
+} from "@b3dotfun/sdk/anyspend";
 import {
   useAnyspendCreateOnrampOrder,
   useAnyspendCreateOrder,
@@ -224,14 +231,17 @@ function AnySpendInner({
   // State for destination chain/token selection
   const [selectedDstChainId, setSelectedDstChainId] = useState<number>(initialDstChainId);
   const defaultDstToken = isBuyMode
-    ? {
-        symbol: "",
-        chainId: destinationTokenChainId,
-        address: destinationTokenAddress,
-        name: "",
-        decimals: 18,
-        metadata: {},
-      }
+    ? // Special case: Hyperliquid uses zero address for USDC
+      destinationTokenChainId === HYPERLIQUID_CHAIN_ID && eqci(destinationTokenAddress, ZERO_ADDRESS)
+      ? getHyperliquidUSDCToken()
+      : {
+          symbol: "",
+          chainId: destinationTokenChainId,
+          address: destinationTokenAddress,
+          name: "",
+          decimals: 18,
+          metadata: {},
+        }
     : getDefaultToken(selectedDstChainId);
   const dstTokenFromUrl = useTokenFromUrl({
     defaultToken: defaultDstToken,
@@ -277,6 +287,12 @@ function AnySpendInner({
   // Update destination token with metadata
   useEffect(() => {
     if (selectedDstToken && dstTokenMetadata && !appliedDstMetadataRef.current) {
+      // Skip metadata enhancement for Hyperliquid USDC - we already have correct metadata from getHyperliquidUSDCToken()
+      if (selectedDstToken.chainId === HYPERLIQUID_CHAIN_ID && eqci(selectedDstToken.address, ZERO_ADDRESS)) {
+        appliedDstMetadataRef.current = true;
+        return;
+      }
+
       // Mark as applied
       appliedDstMetadataRef.current = true;
 
