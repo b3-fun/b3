@@ -1,6 +1,12 @@
 "use client";
 
-import { getDefaultToken, HYPERLIQUID_CHAIN_ID, USDC_BASE } from "@b3dotfun/sdk/anyspend";
+import {
+  getDefaultToken,
+  getHyperliquidUSDCToken,
+  HYPERLIQUID_CHAIN_ID,
+  USDC_BASE,
+  ZERO_ADDRESS,
+} from "@b3dotfun/sdk/anyspend";
 import {
   useAnyspendCreateOnrampOrder,
   useAnyspendCreateOrder,
@@ -224,14 +230,18 @@ function AnySpendInner({
   // State for destination chain/token selection
   const [selectedDstChainId, setSelectedDstChainId] = useState<number>(initialDstChainId);
   const defaultDstToken = isBuyMode
-    ? {
-        symbol: "",
-        chainId: destinationTokenChainId,
-        address: destinationTokenAddress,
-        name: "",
-        decimals: 18,
-        metadata: {},
-      }
+    ? // Special case: Hyperliquid uses zero address for USDC
+      destinationTokenChainId === HYPERLIQUID_CHAIN_ID &&
+      destinationTokenAddress?.toLowerCase() === ZERO_ADDRESS.toLowerCase()
+      ? getHyperliquidUSDCToken()
+      : {
+          symbol: "",
+          chainId: destinationTokenChainId,
+          address: destinationTokenAddress,
+          name: "",
+          decimals: 18,
+          metadata: {},
+        }
     : getDefaultToken(selectedDstChainId);
   const dstTokenFromUrl = useTokenFromUrl({
     defaultToken: defaultDstToken,
