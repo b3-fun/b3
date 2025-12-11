@@ -100,7 +100,7 @@ export function getHyperliquidUSDCToken(): components["schemas"]["Token"] {
     address: HYPERLIQUID_USDC_ADDRESS,
     symbol: "USDC",
     name: "USD Coin",
-    decimals: 6,
+    decimals: 8, // Hyperliquid USDC uses 8 decimals, not 6
     metadata: {
       logoURI: "https://ethereum-optimism.github.io/data/USDC/logo.png",
     },
