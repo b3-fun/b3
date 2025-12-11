@@ -11,7 +11,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       environment="production"
       theme="light"
       automaticallySetFirstEoa={true}
-      partnerId={String(process.env.PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID)}
+      partnerId={String(process.env.NEXT_PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID)}
+      stripePublishableKey={process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}
       simDuneApiKey={process.env.NEXT_PUBLIC_SIM_DUNE_API_KEY}
     >
       <AnyspendProvider featureFlags={{ showPoints: true }}>

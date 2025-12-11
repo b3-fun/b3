@@ -18,6 +18,8 @@ interface WebviewOnrampPaymentProps {
   recipientAddress?: string;
   destinationToken: components["schemas"]["Token"];
   partnerId?: string;
+  /** Partner-specific Stripe publishable key. If not provided, uses default B3 Stripe account. */
+  stripePublishableKey?: string;
   anyspendQuote: GetQuoteResponse | undefined;
   onPaymentSuccess: (orderId: string) => void;
   userId?: string;
@@ -153,6 +155,7 @@ function WebviewOnrampPaymentInner({
   srcAmountOnRamp,
   recipientAddress,
   destinationToken,
+  stripePublishableKey,
   anyspendQuote,
   onPaymentSuccess,
   userId,
@@ -307,7 +310,7 @@ function WebviewOnrampPaymentInner({
 
         {/* Stripe Elements */}
         <Elements
-          stripe={getStripePromise()}
+          stripe={getStripePromise(stripePublishableKey)}
           options={{
             clientSecret,
             appearance: {
