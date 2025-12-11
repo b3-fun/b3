@@ -1,9 +1,6 @@
-import { useAccountWallet, useModalStore } from "@b3dotfun/sdk/global-account/react";
+import { HYPERLIQUID_CHAIN_ID, HYPERLIQUID_USDC_ADDRESS } from "@b3dotfun/sdk/anyspend";
+import { toast, useAccountWallet, useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { useState } from "react";
-
-// Hyperliquid uses a special 34-character USDC address format
-const HYPERLIQUID_CHAIN_ID = 1337;
-const HYPERLIQUID_USDC_ADDRESS = "0x00000000000000000000000000000000";
 
 export function BuyHyperliquidUSDCButton() {
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
@@ -20,7 +17,7 @@ export function BuyHyperliquidUSDCButton() {
 
   const handleSubmit = () => {
     if (!recipientAddress) {
-      alert("Please enter recipient address");
+      toast.error("Please enter recipient address");
       return;
     }
 
@@ -32,7 +29,7 @@ export function BuyHyperliquidUSDCButton() {
       destinationTokenAddress: HYPERLIQUID_USDC_ADDRESS,
       recipientAddress,
       onSuccess: () => {
-        alert("Buy USDC on Hyperliquid success!");
+        toast.success("Buy USDC on Hyperliquid success!");
       },
     });
   };
