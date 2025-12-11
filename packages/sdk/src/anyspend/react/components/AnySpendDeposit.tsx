@@ -11,9 +11,10 @@ import {
   NetworkOptimism,
   NetworkPolygonPos,
 } from "@web3icons/react";
-import { ChevronRight, CreditCard, Wallet } from "lucide-react";
+import { ChevronRight, CreditCard, QrCode, Wallet } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AnySpendCustomExactIn } from "./AnySpendCustomExactIn";
+import { QRDeposit } from "./QRDeposit";
 
 export interface DepositContractConfig {
   /** The contract address to deposit to */
@@ -127,7 +128,7 @@ const DEFAULT_DEPOSIT_FOR_ABI = JSON.stringify([
 // Minimum pool size to filter out low liquidity tokens
 const DEFAULT_MIN_POOL_SIZE = 1_000_000;
 
-type DepositStep = "select-chain" | "deposit";
+type DepositStep = "select-chain" | "deposit" | "qr-deposit";
 
 function formatUsd(value: number): string {
   return new Intl.NumberFormat("en-US", {
@@ -338,6 +339,10 @@ export function AnySpendDeposit({
     setSelectedChainId(undefined);
   };
 
+  const handleSelectQrDeposit = () => {
+    setStep("qr-deposit");
+  };
+
   // Chain selection view
   if (step === "select-chain") {
     return (
@@ -428,9 +433,41 @@ export function AnySpendDeposit({
               </div>
               <ChevronRight className="text-as-secondary h-5 w-5" />
             </button>
+
+            {/* Deposit with QR Code */}
+            <button
+              onClick={handleSelectQrDeposit}
+              className="border-as-stroke hover:border-as-brand hover:bg-as-surface-secondary flex w-full items-center justify-between rounded-xl border p-4 text-left transition-all"
+            >
+              <div className="flex items-center gap-3">
+                <div className="bg-as-surface-secondary flex h-6 w-6 items-center justify-center rounded-full">
+                  <QrCode className="text-as-primary h-4 w-4" />
+                </div>
+                <div>
+                  <span className="text-as-primary font-medium">Deposit with QR Code</span>
+                  <p className="text-as-secondary text-xs">Send tokens directly to deposit address</p>
+                </div>
+              </div>
+              <ChevronRight className="text-as-secondary h-5 w-5" />
+            </button>
           </div>
         </div>
       </div>
+    );
+  }
+
+  // QR Deposit view
+  if (step === "qr-deposit") {
+    return (
+      <QRDeposit
+        mode={mode}
+        recipientAddress={recipientAddress}
+        destinationToken={destinationToken}
+        destinationChainId={destinationChainId}
+        supportedChains={supportedChains}
+        onBack={handleBack}
+        onClose={handleBack}
+      />
     );
   }
 

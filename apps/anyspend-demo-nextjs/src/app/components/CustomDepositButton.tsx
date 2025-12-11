@@ -1,6 +1,7 @@
 "use client";
 
 import { AnySpendDeposit } from "@b3dotfun/sdk/anyspend/react";
+import { normalizeAddress } from "@b3dotfun/sdk/anyspend/utils";
 import { useAccountWallet } from "@b3dotfun/sdk/global-account/react";
 import { useState } from "react";
 import { base } from "viem/chains";
@@ -16,6 +17,27 @@ const USDC_TOKEN = {
     logoURI: "https://assets.coingecko.com/coins/images/6319/standard/usdc.png",
   },
 };
+
+const DEPOSIT_FOR_FUNCTION_ABI = JSON.stringify([
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "user",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+    ],
+    name: "depositFor",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+]);
 
 // Example custom deposit contract (replace with your actual contract)
 const EXAMPLE_DEPOSIT_CONTRACT = "0x0000000000000000000000000000000000000000";
@@ -41,26 +63,22 @@ export function CustomDepositButton() {
     handleClose();
   };
 
+  const depositConfig = {
+    contractAddress: EXAMPLE_DEPOSIT_CONTRACT,
+    functionAbi: DEPOSIT_FOR_FUNCTION_ABI,
+    functionName: "depositFor",
+    functionArgs: [normalizeAddress(address || ""), "{{amount_out}}"],
+  };
+
   return (
     <>
       <div className="space-y-4">
-        <button
-          onClick={() => handleOpenModal("simple")}
-          className="group flex h-40 w-full flex-col justify-between overflow-hidden rounded-lg border border-gray-100 bg-white p-6 text-left shadow-sm transition-all hover:border-indigo-100 hover:shadow-md"
-        >
-          <div>
-            <h3 className="text-lg font-medium text-gray-900">Custom Deposit (Simple)</h3>
-            <p className="mt-1 text-sm text-gray-500">Demo of AnySpendDeposit component with chain selection</p>
-          </div>
-          <span className="text-xs text-indigo-500">Shows balances sorted by value</span>
-        </button>
-
         <button
           onClick={() => handleOpenModal("contract")}
           className="group flex h-40 w-full flex-col justify-between overflow-hidden rounded-lg border border-gray-100 bg-white p-6 text-left shadow-sm transition-all hover:border-purple-100 hover:shadow-md"
         >
           <div>
-            <h3 className="text-lg font-medium text-gray-900">Custom Deposit (Contract)</h3>
+            <h3 className="text-lg font-medium text-gray-900">Anyspend Deposit</h3>
             <p className="mt-1 text-sm text-gray-500">Demo with custom deposit contract configuration</p>
           </div>
           <span className="text-xs text-purple-500">With depositContractConfig</span>
@@ -84,17 +102,6 @@ export function CustomDepositButton() {
                   <p className="text-yellow-800">Please sign in first to use the deposit feature.</p>
                 </div>
               </div>
-            ) : depositType === "simple" ? (
-              <AnySpendDeposit
-                mode="modal"
-                recipientAddress={address}
-                destinationToken={USDC_TOKEN}
-                destinationChainId={base.id}
-                onSuccess={handleSuccess}
-                minDestinationAmount={0.1}
-                chainSelectionTitle="Deposit USDC"
-                chainSelectionDescription="Select a chain to swap tokens from"
-              />
             ) : (
               <AnySpendDeposit
                 mode="modal"
@@ -102,10 +109,7 @@ export function CustomDepositButton() {
                 destinationToken={USDC_TOKEN}
                 destinationChainId={base.id}
                 onSuccess={handleSuccess}
-                depositContractConfig={{
-                  contractAddress: EXAMPLE_DEPOSIT_CONTRACT,
-                  functionName: "depositFor",
-                }}
+                depositContractConfig={depositConfig}
                 actionLabel="deposit USDC"
                 chainSelectionTitle="Deposit to Contract"
                 chainSelectionDescription="Select a chain to swap and deposit to contract"
