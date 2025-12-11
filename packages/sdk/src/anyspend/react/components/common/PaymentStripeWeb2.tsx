@@ -19,7 +19,7 @@ interface PaymentStripeWeb2Props {
 }
 
 export default function PaymentStripeWeb2({ order, stripePaymentIntentId, onPaymentSuccess }: PaymentStripeWeb2Props) {
-  const { theme } = useB3();
+  const { theme, stripePublishableKey } = useB3();
   const fingerprintConfig = getFingerprintConfig();
 
   const { clientSecret, isLoadingStripeClientSecret, stripeClientSecretError } =
@@ -36,7 +36,7 @@ export default function PaymentStripeWeb2({ order, stripePaymentIntentId, onPaym
   return (
     <AnySpendFingerprintWrapper fingerprint={fingerprintConfig}>
       <Elements
-        stripe={getStripePromise()}
+        stripe={getStripePromise(stripePublishableKey)}
         options={{
           clientSecret: clientSecret || undefined,
           appearance: { theme: theme === "light" ? "stripe" : "night" },
