@@ -17,8 +17,8 @@
     "@b3dotfun/sdk": "workspace:*",
     "@tanstack/react-query": "5.55.0",
     "framer-motion": "^12.6.2",
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
+    "react": "19.1.3",
+    "react-dom": "19.1.3",
     "styled-components": "^6.1.15",
     "thirdweb": "5.112.3"
   },
