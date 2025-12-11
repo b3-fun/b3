@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  eqci,
   getDefaultToken,
   getHyperliquidUSDCToken,
   HYPERLIQUID_CHAIN_ID,
@@ -231,8 +232,7 @@ function AnySpendInner({
   const [selectedDstChainId, setSelectedDstChainId] = useState<number>(initialDstChainId);
   const defaultDstToken = isBuyMode
     ? // Special case: Hyperliquid uses zero address for USDC
-      destinationTokenChainId === HYPERLIQUID_CHAIN_ID &&
-      destinationTokenAddress?.toLowerCase() === ZERO_ADDRESS.toLowerCase()
+      destinationTokenChainId === HYPERLIQUID_CHAIN_ID && eqci(destinationTokenAddress, ZERO_ADDRESS)
       ? getHyperliquidUSDCToken()
       : {
           symbol: "",
