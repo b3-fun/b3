@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { BondKitButton } from "./components/BondKitButton";
+import { BuyHyperliquidUSDCButton } from "./components/BuyHyperliquidUSDCButton";
 import { BuyWithFiatButton } from "./components/BuyWithFiatButton";
 import { CollectorClubPurchaseButton } from "./components/CollectorClubPurchaseButton";
 import { DepositHypeButton } from "./components/DepositHypeButton";
@@ -53,6 +54,7 @@ export default function Home() {
             <SignatureMintButton onClick={() => setIsSignatureMintOpen(true)} />
             <BondKitButton />
             <DepositHypeButton />
+            <BuyHyperliquidUSDCButton />
             <CollectorClubPurchaseButton />
             <OrderDetailsButton />
           </div>
