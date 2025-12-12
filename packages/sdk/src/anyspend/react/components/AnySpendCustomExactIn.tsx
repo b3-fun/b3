@@ -57,7 +57,7 @@ export interface AnySpendCustomExactInProps {
   customUsdInputValues?: string[];
   preferEoa?: boolean;
   customExactInConfig?: CustomExactInConfig;
-  orderType?: "hype_duel" | "custom_exact_in";
+  orderType?: "hype_duel" | "custom_exact_in" | "swap";
   minDestinationAmount?: number;
   header?: ({
     anyspendPrice,
@@ -147,7 +147,6 @@ function AnySpendCustomExactInInner({
     paymentType,
     recipientAddress,
     loadOrder,
-    isDepositMode: true,
     onTransactionSuccess: onSuccess,
     sourceTokenAddress,
     sourceTokenChainId,

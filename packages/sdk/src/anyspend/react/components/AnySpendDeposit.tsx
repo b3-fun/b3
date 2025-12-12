@@ -1,3 +1,4 @@
+import { HYPERLIQUID_CHAIN_ID } from "@b3dotfun/sdk/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
 import { Skeleton, useAccountWallet, useSimBalance } from "@b3dotfun/sdk/global-account/react";
@@ -12,6 +13,7 @@ import {
 } from "@web3icons/react";
 import { ChevronRight, CreditCard, QrCode, Wallet } from "lucide-react";
 import { useMemo, useState } from "react";
+import { AnySpend } from "./AnySpend";
 import { AnySpendCustomExactIn } from "./AnySpendCustomExactIn";
 import { QRDeposit } from "./QRDeposit";
 
@@ -79,7 +81,7 @@ export interface AnySpendDepositProps {
     isLoadingAnyspendPrice: boolean;
   }) => React.JSX.Element;
   /** Order type for the deposit */
-  orderType?: "hype_duel" | "custom_exact_in";
+  orderType?: "hype_duel" | "custom_exact_in" | "swap";
   /** Custom action label displayed on buttons */
   actionLabel?: string;
   /** Configuration for depositing to a custom contract.
@@ -118,6 +120,15 @@ type DepositStep = "select-chain" | "deposit" | "qr-deposit";
 
 function formatUsd(value: number): string {
   return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: value >= 100 ? 0 : 2,
+  }).format(value);
+}
+
+function formatDecimal(value: number): string {
+  return new Intl.NumberFormat("en-US", {
     style: "decimal",
     minimumFractionDigits: 0,
     maximumFractionDigits: value >= 100 ? 0 : 2,
@@ -125,8 +136,22 @@ function formatUsd(value: number): string {
 }
 
 // Chain icon component
-function ChainIcon({ chainId, className }: { chainId: number; className?: string }) {
-  const iconProps = { className: cn("anyspend-deposit-chain-icon h-5 w-5", className) };
+function ChainIcon({
+  chainId,
+  variant = "default",
+  className,
+}: {
+  chainId: number;
+  variant?: "branded" | "default";
+  className?: string;
+}) {
+  const iconProps = {
+    className: cn(
+      "anyspend-deposit-chain-icon h-5 w-5",
+      variant === "branded" && "bg-as-surface-secondary rounded-full p-1",
+      className,
+    ),
+  };
 
   switch (chainId) {
     case 1:
@@ -329,7 +354,7 @@ export function AnySpendDeposit({
             <div className="anyspend-deposit-balance">
               <p className="anyspend-deposit-balance-label text-as-secondary text-sm">Your Balance</p>
               <p className="anyspend-deposit-balance-value text-as-primary text-2xl font-semibold">
-                {formatUsd(totalBalance)} <span className="text-as-secondary text-sm">USD</span>
+                {formatDecimal(totalBalance)} <span className="text-as-secondary text-sm">USD</span>
               </p>
             </div>
           )}
@@ -340,7 +365,7 @@ export function AnySpendDeposit({
             </div>
           )}
         </div>
-        <div className="anyspend-deposit-options flex flex-col gap-4 p-6">
+        <div className="anyspend-deposit-options flex flex-col gap-2 p-6">
           {/* Loading state */}
           {isBalanceLoading && (
             <div className="anyspend-deposit-chains-skeleton flex flex-col gap-2">
@@ -369,7 +394,7 @@ export function AnySpendDeposit({
                   className="anyspend-deposit-chain-button border-as-stroke hover:border-as-brand hover:bg-as-surface-secondary flex w-full items-center justify-between rounded-xl border p-4 text-left shadow-sm transition-all"
                 >
                   <div className="anyspend-deposit-chain-content flex items-center gap-3">
-                    <ChainIcon chainId={chain.id} className="anyspend-deposit-chain-icon h-6 w-6" />
+                    <ChainIcon chainId={chain.id} variant="branded" className="anyspend-deposit-chain-icon h-6 w-6" />
                     <div className="anyspend-deposit-chain-info">
                       <span className="anyspend-deposit-chain-name text-as-primary font-medium">
                         Deposit from {chain.name}
@@ -472,6 +497,9 @@ export function AnySpendDeposit({
     );
   }
 
+  // Check if destination is Hyperliquid
+  const isHyperliquidDeposit = destinationChainId === HYPERLIQUID_CHAIN_ID;
+
   // Deposit view
   return (
     <div className="anyspend-deposit anyspend-deposit-form relative">
@@ -489,26 +517,39 @@ export function AnySpendDeposit({
       )}
 
       <div className={cn("anyspend-deposit-form-content", shouldShowChainSelection && "pt-8")}>
-        <AnySpendCustomExactIn
-          loadOrder={loadOrder}
-          mode={mode}
-          recipientAddress={recipientAddress}
-          paymentType={paymentType}
-          sourceTokenAddress={sourceTokenAddress}
-          sourceTokenChainId={selectedChainId}
-          destinationToken={destinationToken}
-          destinationChainId={destinationChainId}
-          orderType={effectiveOrderType}
-          minDestinationAmount={minDestinationAmount}
-          header={header ?? defaultHeader}
-          onSuccess={onSuccess}
-          onOpenCustomModal={onOpenCustomModal}
-          mainFooter={mainFooter}
-          onTokenSelect={onTokenSelect}
-          customUsdInputValues={customUsdInputValues}
-          preferEoa={preferEoa}
-          customExactInConfig={depositContractConfig}
-        />
+        {isHyperliquidDeposit ? (
+          <AnySpend
+            loadOrder={loadOrder}
+            mode={mode}
+            recipientAddress={recipientAddress}
+            destinationTokenAddress={destinationToken.address}
+            destinationTokenChainId={destinationChainId}
+            onSuccess={txHash => onSuccess?.(txHash ?? "")}
+            onTokenSelect={onTokenSelect}
+            customUsdInputValues={customUsdInputValues}
+          />
+        ) : (
+          <AnySpendCustomExactIn
+            loadOrder={loadOrder}
+            mode={mode}
+            recipientAddress={recipientAddress}
+            paymentType={paymentType}
+            sourceTokenAddress={sourceTokenAddress}
+            sourceTokenChainId={selectedChainId}
+            destinationToken={destinationToken}
+            destinationChainId={destinationChainId}
+            orderType={effectiveOrderType}
+            minDestinationAmount={minDestinationAmount}
+            header={header ?? defaultHeader}
+            onSuccess={onSuccess}
+            onOpenCustomModal={onOpenCustomModal}
+            mainFooter={mainFooter}
+            onTokenSelect={onTokenSelect}
+            customUsdInputValues={customUsdInputValues}
+            preferEoa={preferEoa}
+            customExactInConfig={depositContractConfig}
+          />
+        )}
       </div>
     </div>
   );
