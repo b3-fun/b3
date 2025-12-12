@@ -18,29 +18,21 @@ const USDC_TOKEN = {
   },
 };
 
-const DEPOSIT_FOR_FUNCTION_ABI = JSON.stringify([
+const STAKE_FOR_FUNCTION_ABI = JSON.stringify([
   {
-    inputs: [
-      {
-        internalType: "address",
-        name: "user",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-    ],
-    name: "depositFor",
-    outputs: [],
-    stateMutability: "nonpayable",
+    name: "stakeFor",
     type: "function",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "user", type: "address" },
+      { name: "amount", type: "uint256" },
+    ],
+    outputs: [],
   },
 ]);
 
 // Example custom deposit contract (replace with your actual contract)
-const EXAMPLE_DEPOSIT_CONTRACT = "0x0000000000000000000000000000000000000000";
+const STAKING_CONTRACT = "0xEf80AafFbf4cF5c8a5e1D4c61838987D5973DAab";
 
 type DepositType = "simple" | "contract";
 
@@ -63,11 +55,13 @@ export function CustomDepositButton() {
     handleClose();
   };
 
-  const depositConfig = {
-    contractAddress: EXAMPLE_DEPOSIT_CONTRACT,
-    functionAbi: DEPOSIT_FOR_FUNCTION_ABI,
-    functionName: "depositFor",
+  const customExactInConfig = {
+    functionAbi: STAKE_FOR_FUNCTION_ABI,
+    functionName: "stakeFor",
     functionArgs: [normalizeAddress(address || ""), "{{amount_out}}"],
+    to: STAKING_CONTRACT,
+    spenderAddress: STAKING_CONTRACT,
+    action: `stake USDC`,
   };
 
   return (
@@ -109,7 +103,7 @@ export function CustomDepositButton() {
                 destinationToken={USDC_TOKEN}
                 destinationChainId={base.id}
                 onSuccess={handleSuccess}
-                depositContractConfig={depositConfig}
+                depositContractConfig={customExactInConfig}
                 actionLabel="deposit USDC"
                 chainSelectionTitle="Deposit to Contract"
                 chainSelectionDescription="Select a chain to swap and deposit to contract"

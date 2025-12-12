@@ -1,84 +1,179 @@
+import { ALL_CHAINS, getAvailableChainIds } from "@b3dotfun/sdk/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
+import { Button, toast } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
-import {
-  NetworkArbitrumOne,
-  NetworkBase,
-  NetworkBinanceSmartChain,
-  NetworkEthereum,
-  NetworkOptimism,
-  NetworkPolygonPos,
-} from "@web3icons/react";
-import { Check, ChevronDown, Copy } from "lucide-react";
+import { TokenSelector } from "@relayprotocol/relay-kit-ui";
+import { Check, ChevronsUpDown, Copy, Loader2 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
-import { useState } from "react";
-import { ChainConfig } from "./AnySpendDeposit";
+import { useEffect, useRef, useState } from "react";
+import { useAnyspendOrderAndTransactions } from "../hooks/useAnyspendOrderAndTransactions";
+import { useCreateDepositFirstOrder } from "../hooks/useCreateDepositFirstOrder";
+import { DepositContractConfig } from "./AnySpendDeposit";
+import { ChainTokenIcon } from "./common/ChainTokenIcon";
+import { OrderStatus } from "./common/OrderStatus";
 
 export interface QRDepositProps {
   /** Display mode */
   mode?: "modal" | "page";
-  /** The recipient/deposit address */
+  /** The recipient address (user's wallet) */
   recipientAddress: string;
+  /** The source token to deposit (defaults to ETH on Base) */
+  sourceToken?: components["schemas"]["Token"];
+  /** The source chain ID (defaults to Base) */
+  sourceChainId?: number;
   /** The destination token to receive */
   destinationToken: components["schemas"]["Token"];
   /** The destination chain ID */
   destinationChainId: number;
-  /** List of supported chains */
-  supportedChains: ChainConfig[];
+  /** Creator address (optional) */
+  creatorAddress?: string;
+  /** Contract config for custom execution after deposit */
+  depositContractConfig?: DepositContractConfig;
   /** Callback when back button is clicked */
   onBack?: () => void;
   /** Callback when close button is clicked */
   onClose?: () => void;
+  /** Callback when order is created successfully */
+  onOrderCreated?: (orderId: string) => void;
+  /** Callback when deposit is completed */
+  onSuccess?: (txHash?: string) => void;
 }
 
-// Chain icon component
-function ChainIcon({ chainId, className }: { chainId: number; className?: string }) {
-  const iconProps = { className: cn("h-5 w-5", className) };
-
-  switch (chainId) {
-    case 1:
-      return <NetworkEthereum {...iconProps} />;
-    case 8453:
-      return <NetworkBase {...iconProps} />;
-    case 137:
-      return <NetworkPolygonPos {...iconProps} />;
-    case 42161:
-      return <NetworkArbitrumOne {...iconProps} />;
-    case 10:
-      return <NetworkOptimism {...iconProps} />;
-    case 56:
-      return <NetworkBinanceSmartChain {...iconProps} />;
-    default:
-      return null;
-  }
-}
+// Default source token: ETH on Base
+const DEFAULT_ETH_ON_BASE: components["schemas"]["Token"] = {
+  chainId: 8453,
+  address: "0x0000000000000000000000000000000000000000",
+  symbol: "ETH",
+  name: "Ethereum",
+  decimals: 18,
+  metadata: {
+    logoURI: "https://assets.relay.link/icons/1/light.png",
+  },
+};
 
 /**
  * A component for displaying QR code deposit functionality.
- * Shows a QR code that can be scanned to deposit tokens directly.
+ * Creates a deposit_first order on mount and shows a QR code that can be scanned to deposit tokens.
+ * Users can change the source token/chain using the TokenSelector.
  *
  * @example
  * <QRDeposit
  *   recipientAddress={userAddress}
- *   destinationToken={usdcToken}
- *   destinationChainId={8453}
- *   supportedChains={chains}
+ *   destinationToken={usdcArbitrumToken}
+ *   destinationChainId={42161}
  *   onBack={() => setStep("select-chain")}
+ *   onSuccess={(txHash) => console.log("Deposit complete:", txHash)}
  * />
  */
 export function QRDeposit({
   mode = "modal",
   recipientAddress,
+  sourceToken: sourceTokenProp,
+  sourceChainId: sourceChainIdProp,
   destinationToken,
   destinationChainId,
-  supportedChains,
+  creatorAddress,
+  depositContractConfig,
   onBack,
   onClose,
+  onOrderCreated,
+  onSuccess,
 }: QRDepositProps) {
   const [copied, setCopied] = useState(false);
+  const [orderId, setOrderId] = useState<string | undefined>();
+  const [globalAddress, setGlobalAddress] = useState<string | undefined>();
+  const orderCreatedRef = useRef(false);
+  const onSuccessCalled = useRef(false);
+
+  // Source token/chain as state (can be changed by user)
+  const [sourceChainId, setSourceChainId] = useState(sourceChainIdProp ?? 8453);
+  const [sourceToken, setSourceToken] = useState<components["schemas"]["Token"]>(
+    sourceTokenProp ?? DEFAULT_ETH_ON_BASE,
+  );
+
+  // Handle token selection from TokenSelector
+  const handleTokenSelect = (newToken: any) => {
+    const token: components["schemas"]["Token"] = {
+      address: newToken.address,
+      chainId: newToken.chainId,
+      decimals: newToken.decimals,
+      metadata: { logoURI: newToken.logoURI },
+      name: newToken.name,
+      symbol: newToken.symbol,
+    };
+
+    // Reset order state when token changes
+    setOrderId(undefined);
+    setGlobalAddress(undefined);
+    orderCreatedRef.current = false;
+
+    // Update token and chain
+    setSourceChainId(newToken.chainId);
+    setSourceToken(token);
+  };
+
+  // Create order hook
+  const { createOrder, isCreatingOrder } = useCreateDepositFirstOrder({
+    onSuccess: data => {
+      const newOrderId = data.data.id;
+      const newGlobalAddress = data.data.globalAddress;
+      setOrderId(newOrderId);
+      setGlobalAddress(newGlobalAddress);
+      onOrderCreated?.(newOrderId);
+    },
+    onError: error => {
+      console.error("Failed to create deposit order:", error);
+      toast.error("Failed to create deposit order: " + error.message);
+    },
+  });
+
+  // Fetch order status
+  const { orderAndTransactions: oat } = useAnyspendOrderAndTransactions(orderId);
+
+  // Create order on mount
+  useEffect(() => {
+    if (orderCreatedRef.current) return;
+    orderCreatedRef.current = true;
+
+    createOrder({
+      recipientAddress,
+      srcChain: sourceChainId,
+      dstChain: destinationChainId,
+      srcToken: sourceToken,
+      dstToken: destinationToken,
+      creatorAddress,
+      contractConfig: depositContractConfig,
+    });
+  }, [
+    recipientAddress,
+    sourceChainId,
+    destinationChainId,
+    sourceToken,
+    destinationToken,
+    creatorAddress,
+    depositContractConfig,
+    createOrder,
+  ]);
+
+  // Call onSuccess when order is executed
+  useEffect(() => {
+    if (oat?.data?.order.status === "executed" && !onSuccessCalled.current) {
+      const txHash = oat?.data?.executeTx?.txHash;
+      onSuccess?.(txHash);
+      onSuccessCalled.current = true;
+    }
+  }, [oat?.data?.order.status, oat?.data?.executeTx?.txHash, onSuccess]);
+
+  // Reset onSuccess flag when orderId changes
+  useEffect(() => {
+    onSuccessCalled.current = false;
+  }, [orderId]);
+
+  const displayAddress = globalAddress || recipientAddress;
 
   const handleCopyAddress = async () => {
-    if (recipientAddress) {
-      await navigator.clipboard.writeText(recipientAddress);
+    if (displayAddress) {
+      await navigator.clipboard.writeText(displayAddress);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
@@ -93,6 +188,49 @@ export function QRDeposit({
     setCopied(false);
     onClose?.();
   };
+
+  // Show order status if order has deposits or is being processed
+  if (oat?.data && oat.data.depositTxs && oat.data.depositTxs.length > 0) {
+    return (
+      <div
+        className={cn(
+          "anyspend-container font-inter bg-as-surface-primary mx-auto w-full max-w-[460px] p-6",
+          mode === "page" && "border-as-border-secondary overflow-hidden rounded-2xl border shadow-xl",
+        )}
+      >
+        <div className="flex flex-col gap-4">
+          {/* Header with back button */}
+          <div className="flex items-center justify-between">
+            <button onClick={handleBack} className="text-as-secondary hover:text-as-primary">
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <h2 className="text-as-primary text-base font-semibold">Deposit Status</h2>
+            <div></div>
+          </div>
+          <OrderStatus order={oat.data.order} />
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading state while creating order (but not if we already have an orderId)
+  if (isCreatingOrder && !orderId) {
+    return (
+      <div
+        className={cn(
+          "anyspend-container font-inter bg-as-surface-primary mx-auto w-full max-w-[460px] p-6",
+          mode === "page" && "border-as-border-secondary overflow-hidden rounded-2xl border shadow-xl",
+        )}
+      >
+        <div className="flex flex-col items-center justify-center gap-4 py-12">
+          <Loader2 className="text-as-brand h-8 w-8 animate-spin" />
+          <p className="text-as-secondary text-sm">Creating deposit order...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -113,36 +251,45 @@ export function QRDeposit({
           <div></div>
         </div>
 
-        {/* Asset selector */}
+        {/* Token selector */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-as-secondary text-sm">Asset</label>
-          <div className="border-as-stroke flex items-center justify-between rounded-lg border px-3 py-2.5">
-            <div className="flex items-center gap-2">
-              {destinationToken.metadata?.logoURI && (
-                <img
-                  src={destinationToken.metadata.logoURI}
-                  alt={destinationToken.symbol}
-                  className="h-5 w-5 rounded-full"
-                />
-              )}
-              <span className="text-as-primary text-sm font-medium">{destinationToken.symbol}</span>
-            </div>
-            <ChevronDown className="text-as-secondary h-4 w-4" />
-          </div>
-        </div>
-
-        {/* Chain selector */}
-        <div className="flex flex-col gap-1.5">
-          <label className="text-as-secondary text-sm">Chain</label>
-          <div className="border-as-stroke flex items-center justify-between rounded-lg border px-3 py-2.5">
-            <div className="flex items-center gap-2">
-              <ChainIcon chainId={destinationChainId} className="h-5 w-5" />
-              <span className="text-as-primary text-sm font-medium">
-                {supportedChains.find(c => c.id === destinationChainId)?.name ?? "Unknown"}
-              </span>
-            </div>
-            <ChevronDown className="text-as-secondary h-4 w-4" />
-          </div>
+          <label className="text-as-secondary text-sm">Send</label>
+          <TokenSelector
+            chainIdsFilter={getAvailableChainIds("from")}
+            context="from"
+            fromChainWalletVMSupported={true}
+            isValidAddress={true}
+            lockedChainIds={getAvailableChainIds("from")}
+            multiWalletSupportEnabled={true}
+            onAnalyticEvent={undefined}
+            setToken={handleTokenSelect}
+            supportedWalletVMs={["evm"]}
+            token={undefined}
+            trigger={
+              <Button
+                variant="outline"
+                role="combobox"
+                className="border-as-stroke bg-as-surface-secondary flex h-auto w-full items-center justify-between gap-2 rounded-xl border px-3 py-2.5"
+              >
+                <div className="flex items-center gap-2">
+                  {sourceToken.metadata?.logoURI ? (
+                    <ChainTokenIcon
+                      chainUrl={ALL_CHAINS[sourceChainId]?.logoUrl}
+                      tokenUrl={sourceToken.metadata.logoURI}
+                      className="h-8 min-h-8 w-8 min-w-8"
+                    />
+                  ) : (
+                    <div className="h-8 w-8 rounded-full bg-gray-700" />
+                  )}
+                  <div className="flex flex-col items-start gap-0">
+                    <div className="text-as-primary font-semibold">{sourceToken.symbol}</div>
+                    <div className="text-as-primary/70 text-xs">{ALL_CHAINS[sourceChainId]?.name ?? "Unknown"}</div>
+                  </div>
+                </div>
+                <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-70" />
+              </Button>
+            }
+          />
         </div>
 
         {/* QR Code and Address - horizontal layout */}
@@ -150,7 +297,7 @@ export function QRDeposit({
           {/* QR Code */}
           <div className="flex flex-col items-center gap-2">
             <div className="rounded-lg bg-white p-2">
-              <QRCodeSVG value={recipientAddress} size={120} level="M" marginSize={0} />
+              <QRCodeSVG value={displayAddress} size={120} level="M" marginSize={0} />
             </div>
             <span className="text-as-secondary text-xs">
               SCAN WITH <span className="inline-block">🦊</span>
@@ -161,7 +308,7 @@ export function QRDeposit({
           <div className="flex flex-1 flex-col gap-1">
             <span className="text-as-secondary text-sm">Deposit address:</span>
             <div className="flex items-start gap-1">
-              <span className="text-as-primary break-all font-mono text-sm leading-relaxed">{recipientAddress}</span>
+              <span className="text-as-primary break-all font-mono text-sm leading-relaxed">{displayAddress}</span>
               <button onClick={handleCopyAddress} className="text-as-secondary hover:text-as-primary mt-0.5 shrink-0">
                 {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
               </button>
@@ -171,9 +318,9 @@ export function QRDeposit({
 
         {/* Warning */}
         <p className="text-center text-xs italic text-red-500">
-          Do not send any tokens other than the ones specified.
+          Only send {sourceToken.symbol} on {ALL_CHAINS[sourceChainId]?.name ?? "the specified chain"}.
           <br />
-          Tokens not accepted will not be converted.
+          Other tokens will not be converted.
         </p>
 
         {/* Copy button */}

@@ -1,6 +1,5 @@
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
-import { normalizeAddress } from "@b3dotfun/sdk/anyspend/utils";
 import { Skeleton, useAccountWallet, useSimBalance } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import {
@@ -17,18 +16,18 @@ import { AnySpendCustomExactIn } from "./AnySpendCustomExactIn";
 import { QRDeposit } from "./QRDeposit";
 
 export interface DepositContractConfig {
+  /** Custom function ABI JSON string */
+  functionAbi: string;
+  /** The function name to call */
+  functionName: string;
+  /** Custom function arguments. Use "{{amount_out}}" for the deposit amount placeholder */
+  functionArgs: string[];
   /** The contract address to deposit to */
-  contractAddress: string;
-  /** The function name to call (default: "depositFor") */
-  functionName?: string;
-  /** Custom function ABI JSON string. If not provided, uses default depositFor ABI */
-  functionAbi?: string;
-  /** Custom function arguments. Use "{{amount_out}}" for the deposit amount placeholder.
-   * Default: [recipientAddress, "{{amount_out}}"]
-   */
-  functionArgs?: string[];
+  to: string;
   /** Optional spender address if different from contract address */
   spenderAddress?: string;
+  /** Custom action label */
+  action?: string;
 }
 
 export interface ChainConfig {
@@ -111,19 +110,6 @@ const DEFAULT_SUPPORTED_CHAINS: ChainConfig[] = [
   { id: 137, name: "Polygon" },
   { id: 56, name: "BNB Chain" },
 ];
-
-const DEFAULT_DEPOSIT_FOR_ABI = JSON.stringify([
-  {
-    inputs: [
-      { internalType: "address", name: "user", type: "address" },
-      { internalType: "uint256", name: "amount", type: "uint256" },
-    ],
-    name: "depositFor",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-]);
 
 // Minimum pool size to filter out low liquidity tokens
 const DEFAULT_MIN_POOL_SIZE = 1_000_000;
@@ -286,22 +272,8 @@ export function AnySpendDeposit({
 
   const tokenSymbol = destinationToken.symbol ?? "TOKEN";
 
-  // Build custom exact-in config if deposit contract is specified
-  const customExactInConfig = depositContractConfig
-    ? {
-        functionAbi: depositContractConfig.functionAbi ?? DEFAULT_DEPOSIT_FOR_ABI,
-        functionName: depositContractConfig.functionName ?? "depositFor",
-        functionArgs: depositContractConfig.functionArgs ?? [normalizeAddress(recipientAddress), "{{amount_out}}"],
-        to: normalizeAddress(depositContractConfig.contractAddress),
-        spenderAddress: depositContractConfig.spenderAddress
-          ? normalizeAddress(depositContractConfig.spenderAddress)
-          : normalizeAddress(depositContractConfig.contractAddress),
-        action: actionLabel ?? `deposit ${tokenSymbol}`,
-      }
-    : undefined;
-
   // Determine order type based on config
-  const effectiveOrderType = orderType ?? (depositContractConfig ? "custom_exact_in" : "hype_duel");
+  const effectiveOrderType = orderType ?? "custom_exact_in";
 
   const selectedChain = supportedChains.find(c => c.id === selectedChainId);
 
@@ -464,7 +436,7 @@ export function AnySpendDeposit({
         recipientAddress={recipientAddress}
         destinationToken={destinationToken}
         destinationChainId={destinationChainId}
-        supportedChains={supportedChains}
+        depositContractConfig={depositContractConfig}
         onBack={handleBack}
         onClose={handleBack}
       />
@@ -506,7 +478,7 @@ export function AnySpendDeposit({
           onTokenSelect={onTokenSelect}
           customUsdInputValues={customUsdInputValues}
           preferEoa={preferEoa}
-          customExactInConfig={customExactInConfig}
+          customExactInConfig={depositContractConfig}
         />
       </div>
     </div>

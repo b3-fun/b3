@@ -1,5 +1,6 @@
 export * from "./useAnyspendCreateOnrampOrder";
 export * from "./useAnyspendCreateOrder";
+export * from "./useCreateDepositFirstOrder";
 export * from "./useAnyspendOrderAndTransactions";
 export * from "./useAnyspendOrderHistory";
 export * from "./useAnyspendQuote";

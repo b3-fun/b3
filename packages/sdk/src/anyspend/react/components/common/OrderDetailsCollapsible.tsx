@@ -29,6 +29,8 @@ interface OrderDetailsCollapsibleProps {
   showTotal?: boolean;
   totalAmount?: string;
   points?: number;
+  isOpen?: boolean;
+  onOpenChange?: (isOpen: boolean) => void;
 }
 
 export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
@@ -42,8 +44,14 @@ export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
   showTotal = false,
   totalAmount,
   points,
+  isOpen,
+  onOpenChange,
 }: OrderDetailsCollapsibleProps) {
-  const [showOrderDetails, setShowOrderDetails] = useState(true);
+  const [internalOpen, setInternalOpen] = useState(true);
+
+  // Use controlled mode if isOpen is provided, otherwise use internal state
+  const showOrderDetails = isOpen !== undefined ? isOpen : internalOpen;
+  const setShowOrderDetails = onOpenChange || setInternalOpen;
 
   // Calculate expected amount if not provided
   const expectedDstAmount =
