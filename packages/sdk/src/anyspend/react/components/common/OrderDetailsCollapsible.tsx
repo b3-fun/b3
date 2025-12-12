@@ -106,7 +106,10 @@ export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
             {/* Expected Amount/Action Section */}
             <div className="order-details-expected-section flex w-full items-center justify-between gap-2">
               <div className="order-details-expected-label text-as-tertiarry">
-                {order.type === "swap" || order.type === "deposit_first" || order.type === "mint_nft" || order.type === "hype_duel"
+                {order.type === "swap" ||
+                order.type === "deposit_first" ||
+                order.type === "mint_nft" ||
+                order.type === "hype_duel"
                   ? "Expected to receive"
                   : order.type === "join_tournament"
                     ? "Join tournament"

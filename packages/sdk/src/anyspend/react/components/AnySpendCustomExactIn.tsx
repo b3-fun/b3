@@ -314,7 +314,7 @@ function AnySpendCustomExactInInner({
   );
 
   const mainView = (
-    <div className="mx-auto flex w-[460px] max-w-full flex-col items-center gap-2">
+    <div className="anyspend-custom-exact-in-container mx-auto flex w-[460px] max-w-full flex-col items-center gap-2">
       {headerContent}
 
       <div className="relative flex w-full max-w-[calc(100vw-32px)] flex-col gap-2">

@@ -126,7 +126,7 @@ function formatUsd(value: number): string {
 
 // Chain icon component
 function ChainIcon({ chainId, className }: { chainId: number; className?: string }) {
-  const iconProps = { className: cn("h-5 w-5", className) };
+  const iconProps = { className: cn("anyspend-deposit-chain-icon h-5 w-5", className) };
 
   switch (chainId) {
     case 1:
@@ -278,9 +278,9 @@ export function AnySpendDeposit({
 
   // Default header if not provided
   const defaultHeader = () => (
-    <div className="mb-4 flex flex-col items-center gap-3 text-center">
+    <div className="anyspend-deposit-header mb-4 flex flex-col items-center gap-3 text-center">
       <div>
-        <h1 className="text-as-primary text-xl font-bold">
+        <h1 className="anyspend-deposit-title text-as-primary text-xl font-bold">
           {paymentType === "crypto" ? `Deposit ${tokenSymbol}` : "Fund with Fiat"}
         </h1>
       </div>
@@ -319,31 +319,31 @@ export function AnySpendDeposit({
     return (
       <div
         className={cn(
-          "anyspend-container font-inter bg-as-surface-primary mx-auto w-full max-w-[460px]",
+          "anyspend-deposit anyspend-deposit-chain-selection font-inter bg-as-surface-primary mx-auto w-full max-w-[460px]",
           mode === "page" && "border-as-border-secondary overflow-hidden rounded-2xl border shadow-xl",
         )}
       >
-        <div className="border-secondary border-b p-5">
+        <div className="anyspend-deposit-balance-header border-secondary border-b p-5">
           {/* Balance header */}
           {!isBalanceLoading && totalBalance > 0 && (
-            <div className="">
-              <p className="text-as-secondary text-sm">Your Balance</p>
-              <p className="text-as-primary text-2xl font-semibold">
+            <div className="anyspend-deposit-balance">
+              <p className="anyspend-deposit-balance-label text-as-secondary text-sm">Your Balance</p>
+              <p className="anyspend-deposit-balance-value text-as-primary text-2xl font-semibold">
                 {formatUsd(totalBalance)} <span className="text-as-secondary text-sm">USD</span>
               </p>
             </div>
           )}
           {isBalanceLoading && (
-            <div className="">
+            <div className="anyspend-deposit-balance-skeleton">
               <Skeleton className="mb-2 h-4 w-24" />
               <Skeleton className="h-8 w-32" />
             </div>
           )}
         </div>
-        <div className="flex flex-col gap-4 p-6">
+        <div className="anyspend-deposit-options flex flex-col gap-4 p-6">
           {/* Loading state */}
           {isBalanceLoading && (
-            <div className="flex flex-col gap-2">
+            <div className="anyspend-deposit-chains-skeleton flex flex-col gap-2">
               {[...Array(topChainsCount)].map((_, i) => (
                 <div key={i} className="border-as-stroke flex items-center justify-between rounded-xl border p-4">
                   <div className="flex items-center gap-3">
@@ -361,83 +361,95 @@ export function AnySpendDeposit({
 
           {/* Top chains with balance */}
           {topChainsWithBalance.length > 0 && (
-            <div className="flex flex-col gap-2">
+            <div className="anyspend-deposit-chains flex flex-col gap-2">
               {topChainsWithBalance.map(chain => (
                 <button
                   key={chain.id}
                   onClick={() => handleSelectChain(chain.id)}
-                  className="border-as-stroke hover:border-as-brand hover:bg-as-surface-secondary flex w-full items-center justify-between rounded-xl border p-4 text-left shadow-sm transition-all"
+                  className="anyspend-deposit-chain-button border-as-stroke hover:border-as-brand hover:bg-as-surface-secondary flex w-full items-center justify-between rounded-xl border p-4 text-left shadow-sm transition-all"
                 >
-                  <div className="flex items-center gap-3">
-                    <ChainIcon chainId={chain.id} className="h-6 w-6" />
-                    <div>
-                      <span className="text-as-primary font-medium">Deposit from {chain.name}</span>
-                      <p className="text-as-secondary text-xs">{formatUsd(chain.balance)} available</p>
+                  <div className="anyspend-deposit-chain-content flex items-center gap-3">
+                    <ChainIcon chainId={chain.id} className="anyspend-deposit-chain-icon h-6 w-6" />
+                    <div className="anyspend-deposit-chain-info">
+                      <span className="anyspend-deposit-chain-name text-as-primary font-medium">
+                        Deposit from {chain.name}
+                      </span>
+                      <p className="anyspend-deposit-chain-balance text-as-secondary text-xs">
+                        {formatUsd(chain.balance)} available
+                      </p>
                     </div>
                   </div>
-                  <ChevronRight className="text-as-secondary h-5 w-5" />
+                  <ChevronRight className="anyspend-deposit-chain-chevron text-as-secondary h-5 w-5" />
                 </button>
               ))}
             </div>
           )}
 
           {/* General deposit options */}
-          <div className="flex flex-col gap-2">
+          <div className="anyspend-deposit-general-options flex flex-col gap-2">
             {/* Deposit Crypto - any chain */}
             <button
               onClick={handleSelectCrypto}
-              className="border-as-stroke hover:border-as-brand hover:bg-as-surface-secondary flex w-full items-center justify-between rounded-xl border p-4 text-left shadow-sm transition-all"
+              className="anyspend-deposit-option-button anyspend-deposit-crypto-button border-as-stroke hover:border-as-brand hover:bg-as-surface-secondary flex w-full items-center justify-between rounded-xl border p-4 text-left shadow-sm transition-all"
             >
-              <div className="flex items-center gap-3">
-                <div className="bg-as-surface-secondary flex h-6 w-6 items-center justify-center rounded-full">
+              <div className="anyspend-deposit-option-content flex items-center gap-3">
+                <div className="anyspend-deposit-option-icon bg-as-surface-secondary flex h-6 w-6 items-center justify-center rounded-full">
                   <Wallet className="text-as-primary h-4 w-4" />
                 </div>
-                <div>
-                  <span className="text-as-primary font-medium">Deposit Crypto</span>
-                  <p className="text-as-secondary text-xs">Swap from any token on any chain</p>
+                <div className="anyspend-deposit-option-info">
+                  <span className="anyspend-deposit-option-title text-as-primary font-medium">Deposit Crypto</span>
+                  <p className="anyspend-deposit-option-description text-as-secondary text-xs">
+                    Swap from any token on any chain
+                  </p>
                 </div>
               </div>
-              <ChevronRight className="text-as-secondary h-5 w-5" />
+              <ChevronRight className="anyspend-deposit-option-chevron text-as-secondary h-5 w-5" />
             </button>
 
-            <div className="flex items-center gap-3">
+            <div className="anyspend-deposit-divider flex items-center gap-3">
               <div className="bg-as-stroke h-px flex-1" />
-              <span className="text-as-secondary text-sm">More options</span>
+              <span className="anyspend-deposit-divider-text text-as-secondary text-sm">More options</span>
               <div className="bg-as-stroke h-px flex-1" />
             </div>
 
             {/* Deposit with QR Code */}
             <button
               onClick={handleSelectQrDeposit}
-              className="border-as-stroke hover:border-as-brand hover:bg-as-surface-secondary flex w-full items-center justify-between rounded-xl border p-4 text-left shadow-sm transition-all"
+              className="anyspend-deposit-option-button anyspend-deposit-qr-button border-as-stroke hover:border-as-brand hover:bg-as-surface-secondary flex w-full items-center justify-between rounded-xl border p-4 text-left shadow-sm transition-all"
             >
-              <div className="flex items-center gap-3">
-                <div className="bg-as-surface-secondary flex h-6 w-6 items-center justify-center rounded-full">
+              <div className="anyspend-deposit-option-content flex items-center gap-3">
+                <div className="anyspend-deposit-option-icon bg-as-surface-secondary flex h-6 w-6 items-center justify-center rounded-full">
                   <QrCode className="text-as-primary h-4 w-4" />
                 </div>
-                <div>
-                  <span className="text-as-primary font-medium">Deposit with QR Code</span>
-                  <p className="text-as-secondary text-xs">Send tokens directly to deposit address</p>
+                <div className="anyspend-deposit-option-info">
+                  <span className="anyspend-deposit-option-title text-as-primary font-medium">
+                    Deposit with QR Code
+                  </span>
+                  <p className="anyspend-deposit-option-description text-as-secondary text-xs">
+                    Send tokens directly to deposit address
+                  </p>
                 </div>
               </div>
-              <ChevronRight className="text-as-secondary h-5 w-5" />
+              <ChevronRight className="anyspend-deposit-option-chevron text-as-secondary h-5 w-5" />
             </button>
 
             {/* Fund with Fiat */}
             <button
               onClick={handleSelectFiat}
-              className="border-as-stroke hover:border-as-brand hover:bg-as-surface-secondary flex w-full items-center justify-between rounded-xl border p-4 text-left transition-all"
+              className="anyspend-deposit-option-button anyspend-deposit-fiat-button border-as-stroke hover:border-as-brand hover:bg-as-surface-secondary flex w-full items-center justify-between rounded-xl border p-4 text-left transition-all"
             >
-              <div className="flex items-center gap-3">
-                <div className="bg-as-surface-secondary flex h-6 w-6 items-center justify-center rounded-full">
+              <div className="anyspend-deposit-option-content flex items-center gap-3">
+                <div className="anyspend-deposit-option-icon bg-as-surface-secondary flex h-6 w-6 items-center justify-center rounded-full">
                   <CreditCard className="text-as-primary h-4 w-4" />
                 </div>
-                <div>
-                  <span className="text-as-primary font-medium">Fund with Fiat</span>
-                  <p className="text-as-secondary text-xs">Pay with card or bank transfer</p>
+                <div className="anyspend-deposit-option-info">
+                  <span className="anyspend-deposit-option-title text-as-primary font-medium">Fund with Fiat</span>
+                  <p className="anyspend-deposit-option-description text-as-secondary text-xs">
+                    Pay with card or bank transfer
+                  </p>
                 </div>
               </div>
-              <ChevronRight className="text-as-secondary h-5 w-5" />
+              <ChevronRight className="anyspend-deposit-option-chevron text-as-secondary h-5 w-5" />
             </button>
           </div>
         </div>
@@ -462,21 +474,21 @@ export function AnySpendDeposit({
 
   // Deposit view
   return (
-    <div className="relative">
+    <div className="anyspend-deposit anyspend-deposit-form relative">
       {/* Back button - only show if we came from chain selection */}
       {shouldShowChainSelection && (
         <button
           onClick={handleBack}
-          className="text-as-secondary hover:text-as-primary absolute left-4 top-4 z-10 flex items-center gap-1"
+          className="anyspend-deposit-back-button text-as-secondary hover:text-as-primary absolute left-4 top-4 z-10 flex items-center gap-1"
         >
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="anyspend-deposit-back-icon h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-          <span className="text-sm">Back</span>
+          <span className="anyspend-deposit-back-text text-sm">Back</span>
         </button>
       )}
 
-      <div className={cn(shouldShowChainSelection && "pt-8")}>
+      <div className={cn("anyspend-deposit-form-content", shouldShowChainSelection && "pt-8")}>
         <AnySpendCustomExactIn
           loadOrder={loadOrder}
           mode={mode}

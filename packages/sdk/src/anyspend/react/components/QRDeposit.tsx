@@ -246,7 +246,15 @@ export function QRDeposit({
             </svg>
           </button>
           <h2 className="text-as-primary text-base font-semibold">Deposit</h2>
-          <div></div>
+          {onClose ? (
+            <button onClick={handleClose} className="text-as-secondary hover:text-as-primary">
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          ) : (
+            <div className="w-5" />
+          )}
         </div>
 
         {/* Token selector */}
