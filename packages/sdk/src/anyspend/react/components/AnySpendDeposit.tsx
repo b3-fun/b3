@@ -118,8 +118,7 @@ type DepositStep = "select-chain" | "deposit" | "qr-deposit";
 
 function formatUsd(value: number): string {
   return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
+    style: "decimal",
     minimumFractionDigits: 0,
     maximumFractionDigits: value >= 100 ? 0 : 2,
   }).format(value);
@@ -268,6 +267,11 @@ export function AnySpendDeposit({
     return sortedChains.filter(chain => chain.balance > 0).slice(0, topChainsCount);
   }, [sortedChains, topChainsCount]);
 
+  // Calculate total balance across all chains
+  const totalBalance = useMemo(() => {
+    return Object.values(chainBalances).reduce((sum, chain) => sum + chain.totalUsdValue, 0);
+  }, [chainBalances]);
+
   if (!recipientAddress) return null;
 
   const tokenSymbol = destinationToken.symbol ?? "TOKEN";
@@ -320,16 +324,28 @@ export function AnySpendDeposit({
     return (
       <div
         className={cn(
-          "anyspend-container font-inter bg-as-surface-primary mx-auto w-full max-w-[460px] p-6",
+          "anyspend-container font-inter bg-as-surface-primary mx-auto w-full max-w-[460px]",
           mode === "page" && "border-as-border-secondary overflow-hidden rounded-2xl border shadow-xl",
         )}
       >
-        <div className="flex flex-col gap-4">
-          <div>
-            <h2 className="text-as-primary text-xl font-semibold">{chainSelectionTitle}</h2>
-            <p className="text-as-secondary mt-1 text-sm">{chainSelectionDescription}</p>
-          </div>
-
+        <div className="border-secondary border-b p-5">
+          {/* Balance header */}
+          {!isBalanceLoading && totalBalance > 0 && (
+            <div className="">
+              <p className="text-as-secondary text-sm">Your Balance</p>
+              <p className="text-as-primary text-2xl font-semibold">
+                {formatUsd(totalBalance)} <span className="text-as-secondary text-sm">USD</span>
+              </p>
+            </div>
+          )}
+          {isBalanceLoading && (
+            <div className="">
+              <Skeleton className="mb-2 h-4 w-24" />
+              <Skeleton className="h-8 w-32" />
+            </div>
+          )}
+        </div>
+        <div className="flex flex-col gap-4 p-6">
           {/* Loading state */}
           {isBalanceLoading && (
             <div className="flex flex-col gap-2">
@@ -355,7 +371,7 @@ export function AnySpendDeposit({
                 <button
                   key={chain.id}
                   onClick={() => handleSelectChain(chain.id)}
-                  className="border-as-stroke hover:border-as-brand hover:bg-as-surface-secondary flex w-full items-center justify-between rounded-xl border p-4 text-left transition-all"
+                  className="border-as-stroke hover:border-as-brand hover:bg-as-surface-secondary flex w-full items-center justify-between rounded-xl border p-4 text-left shadow-sm transition-all"
                 >
                   <div className="flex items-center gap-3">
                     <ChainIcon chainId={chain.id} className="h-6 w-6" />
@@ -375,7 +391,7 @@ export function AnySpendDeposit({
             {/* Deposit Crypto - any chain */}
             <button
               onClick={handleSelectCrypto}
-              className="border-as-stroke hover:border-as-brand hover:bg-as-surface-secondary flex w-full items-center justify-between rounded-xl border p-4 text-left transition-all"
+              className="border-as-stroke hover:border-as-brand hover:bg-as-surface-secondary flex w-full items-center justify-between rounded-xl border p-4 text-left shadow-sm transition-all"
             >
               <div className="flex items-center gap-3">
                 <div className="bg-as-surface-secondary flex h-6 w-6 items-center justify-center rounded-full">
@@ -384,6 +400,29 @@ export function AnySpendDeposit({
                 <div>
                   <span className="text-as-primary font-medium">Deposit Crypto</span>
                   <p className="text-as-secondary text-xs">Swap from any token on any chain</p>
+                </div>
+              </div>
+              <ChevronRight className="text-as-secondary h-5 w-5" />
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="bg-as-stroke h-px flex-1" />
+              <span className="text-as-secondary text-sm">More options</span>
+              <div className="bg-as-stroke h-px flex-1" />
+            </div>
+
+            {/* Deposit with QR Code */}
+            <button
+              onClick={handleSelectQrDeposit}
+              className="border-as-stroke hover:border-as-brand hover:bg-as-surface-secondary flex w-full items-center justify-between rounded-xl border p-4 text-left shadow-sm transition-all"
+            >
+              <div className="flex items-center gap-3">
+                <div className="bg-as-surface-secondary flex h-6 w-6 items-center justify-center rounded-full">
+                  <QrCode className="text-as-primary h-4 w-4" />
+                </div>
+                <div>
+                  <span className="text-as-primary font-medium">Deposit with QR Code</span>
+                  <p className="text-as-secondary text-xs">Send tokens directly to deposit address</p>
                 </div>
               </div>
               <ChevronRight className="text-as-secondary h-5 w-5" />
@@ -401,23 +440,6 @@ export function AnySpendDeposit({
                 <div>
                   <span className="text-as-primary font-medium">Fund with Fiat</span>
                   <p className="text-as-secondary text-xs">Pay with card or bank transfer</p>
-                </div>
-              </div>
-              <ChevronRight className="text-as-secondary h-5 w-5" />
-            </button>
-
-            {/* Deposit with QR Code */}
-            <button
-              onClick={handleSelectQrDeposit}
-              className="border-as-stroke hover:border-as-brand hover:bg-as-surface-secondary flex w-full items-center justify-between rounded-xl border p-4 text-left transition-all"
-            >
-              <div className="flex items-center gap-3">
-                <div className="bg-as-surface-secondary flex h-6 w-6 items-center justify-center rounded-full">
-                  <QrCode className="text-as-primary h-4 w-4" />
-                </div>
-                <div>
-                  <span className="text-as-primary font-medium">Deposit with QR Code</span>
-                  <p className="text-as-secondary text-xs">Send tokens directly to deposit address</p>
                 </div>
               </div>
               <ChevronRight className="text-as-secondary h-5 w-5" />
