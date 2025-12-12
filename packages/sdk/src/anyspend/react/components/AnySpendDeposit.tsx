@@ -199,13 +199,10 @@ export function AnySpendDeposit({
   minDestinationAmount,
   header,
   orderType,
-  actionLabel,
   depositContractConfig,
   showChainSelection,
   supportedChains = DEFAULT_SUPPORTED_CHAINS,
   minPoolSize = DEFAULT_MIN_POOL_SIZE,
-  chainSelectionTitle = "Deposit",
-  chainSelectionDescription = "Choose how you want to deposit",
   topChainsCount = 3,
 }: AnySpendDepositProps) {
   const { connectedEOAWallet } = useAccountWallet();
