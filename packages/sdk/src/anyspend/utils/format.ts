@@ -59,8 +59,19 @@ export const getStatusDisplay = (
         description: "This order has failed. Please try again or contact support.",
       };
 
+    case "quoting_after_deposit": {
+      return {
+        text: "Quoting After Deposit",
+        status: "processing",
+        description: "Getting quote for the order",
+      };
+    }
+
     default:
-      throw new Error("Invalid order status");
+      return {
+        text: order.status,
+        status: "processing",
+      };
   }
 };
 
