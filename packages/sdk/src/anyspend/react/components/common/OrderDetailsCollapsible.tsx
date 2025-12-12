@@ -58,7 +58,8 @@ export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
     order.type === "mint_nft" ||
     order.type === "join_tournament" ||
     order.type === "fund_tournament" ||
-    order.type === "custom"
+    order.type === "custom" ||
+    order.type === "deposit_first"
       ? "0"
       : order.payload.expectedDstAmount.toString();
 
@@ -105,7 +106,7 @@ export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
             {/* Expected Amount/Action Section */}
             <div className="order-details-expected-section flex w-full items-center justify-between gap-2">
               <div className="order-details-expected-label text-as-tertiarry">
-                {order.type === "swap" || order.type === "mint_nft" || order.type === "hype_duel"
+                {order.type === "swap" || order.type === "deposit_first" || order.type === "mint_nft" || order.type === "hype_duel"
                   ? "Expected to receive"
                   : order.type === "join_tournament"
                     ? "Join tournament"
@@ -119,7 +120,7 @@ export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
               </div>
 
               <div className="order-details-expected-value flex items-end gap-2">
-                {order.type === "swap" ? (
+                {order.type === "swap" || order.type === "deposit_first" ? (
                   `~${finalFormattedExpectedDstAmount} ${dstToken.symbol}`
                 ) : order.type === "mint_nft" ? (
                   <div className="order-details-nft-info flex items-center gap-2">

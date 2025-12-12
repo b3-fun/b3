@@ -10,7 +10,7 @@ import { useAnyspendOrderAndTransactions } from "../hooks/useAnyspendOrderAndTra
 import { useCreateDepositFirstOrder } from "../hooks/useCreateDepositFirstOrder";
 import { DepositContractConfig } from "./AnySpendDeposit";
 import { ChainTokenIcon } from "./common/ChainTokenIcon";
-import { OrderStatus } from "./common/OrderStatus";
+import { OrderDetails } from "./common/OrderDetails";
 
 export interface QRDepositProps {
   /** Display mode */
@@ -189,7 +189,7 @@ export function QRDeposit({
     onClose?.();
   };
 
-  // Show order status if order has deposits or is being processed
+  // Show order details if order has deposits or is being processed
   if (oat?.data && oat.data.depositTxs && oat.data.depositTxs.length > 0) {
     return (
       <div
@@ -198,18 +198,16 @@ export function QRDeposit({
           mode === "page" && "border-as-border-secondary overflow-hidden rounded-2xl border shadow-xl",
         )}
       >
-        <div className="flex flex-col gap-4">
-          {/* Header with back button */}
-          <div className="flex items-center justify-between">
-            <button onClick={handleBack} className="text-as-secondary hover:text-as-primary">
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <h2 className="text-as-primary text-base font-semibold">Deposit Status</h2>
-            <div></div>
-          </div>
-          <OrderStatus order={oat.data.order} />
+        <div className="relative flex flex-col gap-4">
+          <OrderDetails
+            mode={mode}
+            order={oat.data.order}
+            depositTxs={oat.data.depositTxs}
+            relayTxs={oat.data.relayTxs}
+            executeTx={oat.data.executeTx}
+            refundTxs={oat.data.refundTxs}
+            onBack={handleBack}
+          />
         </div>
       </div>
     );

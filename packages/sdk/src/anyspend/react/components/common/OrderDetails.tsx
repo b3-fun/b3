@@ -445,7 +445,8 @@ export const OrderDetails = memo(function OrderDetails({
     order.type === "mint_nft" ||
     order.type === "join_tournament" ||
     order.type === "fund_tournament" ||
-    order.type === "custom"
+    order.type === "custom" ||
+    order.type === "deposit_first"
       ? "0"
       : order.payload.expectedDstAmount.toString();
   const formattedExpectedDstAmount = formatTokenAmount(BigInt(expectedDstAmount), dstToken.decimals);
