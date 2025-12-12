@@ -1,7 +1,7 @@
 "use client";
 
 import { AnySpendDeposit } from "@b3dotfun/sdk/anyspend/react";
-import { normalizeAddress } from "@b3dotfun/sdk/anyspend/utils";
+import { getHyperliquidUSDCToken, HYPERLIQUID_CHAIN_ID, normalizeAddress } from "@b3dotfun/sdk/anyspend/utils";
 import { useAccountWallet } from "@b3dotfun/sdk/global-account/react";
 import { useState } from "react";
 import { base } from "viem/chains";
@@ -34,7 +34,7 @@ const STAKE_FOR_FUNCTION_ABI = JSON.stringify([
 // Example custom deposit contract (replace with your actual contract)
 const STAKING_CONTRACT = "0xEf80AafFbf4cF5c8a5e1D4c61838987D5973DAab";
 
-type DepositType = "simple" | "contract";
+type DepositType = "simple" | "contract" | "hyperliquid";
 
 export function CustomDepositButton() {
   const { address } = useAccountWallet();
@@ -77,6 +77,20 @@ export function CustomDepositButton() {
           </div>
           <span className="text-xs text-purple-500">With depositContractConfig</span>
         </button>
+
+        <button
+          onClick={() => handleOpenModal("hyperliquid")}
+          className="group flex h-40 w-full flex-col justify-between overflow-hidden rounded-lg border border-gray-100 bg-white p-6 text-left shadow-sm transition-all hover:border-cyan-100 hover:shadow-md"
+        >
+          <div>
+            <h3 className="text-lg font-medium text-gray-900">Deposit to Hyperliquid</h3>
+            <p className="mt-1 text-sm text-gray-500">Swap any token to USDC on Hyperliquid</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="rounded-full bg-cyan-100 px-2 py-1 text-xs font-medium text-cyan-700">Hyperliquid</span>
+            <span className="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">USDC</span>
+          </div>
+        </button>
       </div>
 
       {/* Modal */}
@@ -96,6 +110,17 @@ export function CustomDepositButton() {
                   <p className="text-yellow-800">Please sign in first to use the deposit feature.</p>
                 </div>
               </div>
+            ) : depositType === "hyperliquid" ? (
+              <AnySpendDeposit
+                mode="modal"
+                recipientAddress={address}
+                destinationToken={getHyperliquidUSDCToken()}
+                destinationChainId={HYPERLIQUID_CHAIN_ID}
+                onSuccess={handleSuccess}
+                actionLabel="deposit to Hyperliquid"
+                chainSelectionTitle="Deposit to Hyperliquid"
+                chainSelectionDescription="Select a chain to swap any token to USDC on Hyperliquid"
+              />
             ) : (
               <AnySpendDeposit
                 mode="modal"
