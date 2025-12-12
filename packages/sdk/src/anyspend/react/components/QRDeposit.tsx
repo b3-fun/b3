@@ -316,9 +316,9 @@ export function QRDeposit({
 
         {/* Warning */}
         <p className="text-center text-xs italic text-red-500">
-          Only send {sourceToken.symbol} on {ALL_CHAINS[sourceChainId]?.name ?? "the specified chain"}.
-          <br />
-          Other tokens will not be converted.
+          Minimum deposit amount: <b>1$</b> <br />
+          Only send {sourceToken.symbol} on {ALL_CHAINS[sourceChainId]?.name ?? "the specified chain"}. Other tokens
+          will not be converted.
         </p>
 
         {/* Copy button */}
