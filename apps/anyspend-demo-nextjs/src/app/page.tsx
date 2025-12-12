@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { BondKitButton } from "./components/BondKitButton";
+import { BuyHyperliquidUSDCButton } from "./components/BuyHyperliquidUSDCButton";
 import { BuyWithFiatButton } from "./components/BuyWithFiatButton";
 import { CollectorClubPurchaseButton } from "./components/CollectorClubPurchaseButton";
 import { CustomDepositButton } from "./components/CustomDepositButton";
@@ -55,6 +56,7 @@ export default function Home() {
             <BondKitButton />
             <DepositHypeButton />
             <CustomDepositButton />
+            <BuyHyperliquidUSDCButton />
             <CollectorClubPurchaseButton />
             <OrderDetailsButton />
           </div>

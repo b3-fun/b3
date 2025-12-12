@@ -1,3 +1,4 @@
+import { ALL_CHAINS } from "@b3dotfun/sdk/anyspend";
 import { formatUsername } from "@b3dotfun/sdk/shared/utils";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
@@ -94,11 +95,21 @@ export function CryptoReceiveSection({
           <div className="text-as-primary text-2xl font-bold">{dstAmount || "0"}</div>
           <div className="bg-as-brand/10 border-as-brand/30 flex items-center gap-3 rounded-xl border px-4 py-3">
             {(dstTokenLogoURI || dstToken.metadata?.logoURI) && (
-              <img
-                src={dstTokenLogoURI || dstToken.metadata?.logoURI}
-                alt={dstTokenSymbol || dstToken.symbol}
-                className="h-8 w-8 rounded-full"
-              />
+              <div className="relative">
+                <img
+                  src={dstTokenLogoURI || dstToken.metadata?.logoURI}
+                  alt={dstTokenSymbol || dstToken.symbol}
+                  className="h-8 w-8 rounded-full"
+                />
+                {/* Chain logo overlay */}
+                {ALL_CHAINS[dstToken.chainId]?.logoUrl && (
+                  <img
+                    src={ALL_CHAINS[dstToken.chainId].logoUrl}
+                    alt="Chain"
+                    className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full border border-white"
+                  />
+                )}
+              </div>
             )}
             <span className="text-as-brand text-lg font-bold">{dstTokenSymbol || dstToken.symbol}</span>
           </div>

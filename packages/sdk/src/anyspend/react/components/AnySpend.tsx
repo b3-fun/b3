@@ -1,6 +1,14 @@
 "use client";
 
-import { getDefaultToken, HYPERLIQUID_CHAIN_ID, USDC_BASE } from "@b3dotfun/sdk/anyspend";
+import {
+  eqci,
+  getDefaultToken,
+  getHyperliquidUSDCToken,
+  HYPERLIQUID_CHAIN_ID,
+  HYPERLIQUID_USDC_ADDRESS,
+  USDC_BASE,
+  ZERO_ADDRESS,
+} from "@b3dotfun/sdk/anyspend";
 import {
   useAnyspendCreateOnrampOrder,
   useAnyspendCreateOrder,
@@ -223,15 +231,22 @@ function AnySpendInner({
 
   // State for destination chain/token selection
   const [selectedDstChainId, setSelectedDstChainId] = useState<number>(initialDstChainId);
+  // Helper to check if address is Hyperliquid USDC (supports both 34-char and 42-char formats)
+  const isHyperliquidUSDCAddress = (address?: string) =>
+    eqci(address, HYPERLIQUID_USDC_ADDRESS) || eqci(address, ZERO_ADDRESS);
+
   const defaultDstToken = isBuyMode
-    ? {
-        symbol: "",
-        chainId: destinationTokenChainId,
-        address: destinationTokenAddress,
-        name: "",
-        decimals: 18,
-        metadata: {},
-      }
+    ? // Special case: Hyperliquid uses zero address for USDC
+      destinationTokenChainId === HYPERLIQUID_CHAIN_ID && isHyperliquidUSDCAddress(destinationTokenAddress)
+      ? getHyperliquidUSDCToken()
+      : {
+          symbol: "",
+          chainId: destinationTokenChainId,
+          address: destinationTokenAddress,
+          name: "",
+          decimals: 18,
+          metadata: {},
+        }
     : getDefaultToken(selectedDstChainId);
   const dstTokenFromUrl = useTokenFromUrl({
     defaultToken: defaultDstToken,
@@ -277,6 +292,12 @@ function AnySpendInner({
   // Update destination token with metadata
   useEffect(() => {
     if (selectedDstToken && dstTokenMetadata && !appliedDstMetadataRef.current) {
+      // Skip metadata enhancement for Hyperliquid USDC - we already have correct metadata from getHyperliquidUSDCToken()
+      if (selectedDstToken.chainId === HYPERLIQUID_CHAIN_ID && isHyperliquidUSDCAddress(selectedDstToken.address)) {
+        appliedDstMetadataRef.current = true;
+        return;
+      }
+
       // Mark as applied
       appliedDstMetadataRef.current = true;
 

@@ -1,11 +1,11 @@
-import { getChainName, STRIPE_CONFIG } from "@b3dotfun/sdk/anyspend";
+import { getChainName } from "@b3dotfun/sdk/anyspend";
+import { getStripePromise } from "@b3dotfun/sdk/shared/utils/payment.utils";
 import { useAnyspendCreateOnrampOrder, useGeoOnrampOptions, useStripeClientSecret } from "@b3dotfun/sdk/anyspend/react";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
 import { toast } from "@b3dotfun/sdk/global-account/react";
 import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
 import { AddressElement, Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
-import { loadStripe } from "@stripe/stripe-js";
 import { Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
@@ -13,13 +13,13 @@ import { useEffect, useRef, useState } from "react";
 import { formatUnits } from "viem";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "../AnySpendFingerprintWrapper";
 
-const stripePromise = loadStripe(STRIPE_CONFIG.publishableKey);
-
 interface WebviewOnrampPaymentProps {
   srcAmountOnRamp: string;
   recipientAddress?: string;
   destinationToken: components["schemas"]["Token"];
   partnerId?: string;
+  /** Partner-specific Stripe publishable key. If not provided, uses default B3 Stripe account. */
+  stripePublishableKey?: string;
   anyspendQuote: GetQuoteResponse | undefined;
   onPaymentSuccess: (orderId: string) => void;
   userId?: string;
@@ -155,6 +155,7 @@ function WebviewOnrampPaymentInner({
   srcAmountOnRamp,
   recipientAddress,
   destinationToken,
+  stripePublishableKey,
   anyspendQuote,
   onPaymentSuccess,
   userId,
@@ -309,7 +310,7 @@ function WebviewOnrampPaymentInner({
 
         {/* Stripe Elements */}
         <Elements
-          stripe={stripePromise}
+          stripe={getStripePromise(stripePublishableKey)}
           options={{
             clientSecret,
             appearance: {
