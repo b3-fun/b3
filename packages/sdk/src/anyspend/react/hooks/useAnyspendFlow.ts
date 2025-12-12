@@ -21,6 +21,7 @@ import { useEffect, useMemo, useState } from "react";
 import { parseUnits } from "viem";
 import { base, mainnet } from "viem/chains";
 import { components } from "../../types/api";
+import { GetQuoteRequest } from "../../types/api_req_res";
 import { CryptoPaymentMethodType } from "../components/common/CryptoPaymentMethod";
 import { FiatPaymentMethod } from "../components/common/FiatPaymentMethod";
 import { useAutoSelectCryptoPaymentMethod } from "./useAutoSelectCryptoPaymentMethod";
@@ -52,7 +53,7 @@ interface UseAnyspendFlowProps {
   destinationTokenChainId?: number;
   slippage?: number;
   disableUrlParamManagement?: boolean;
-  orderType?: "hype_duel" | "custom_exact_in";
+  orderType?: "hype_duel" | "custom_exact_in" | "swap";
 }
 
 // This hook serves for order hype_duel and custom_exact_in
@@ -60,7 +61,6 @@ export function useAnyspendFlow({
   paymentType = "crypto",
   recipientAddress,
   loadOrder,
-  isDepositMode = false,
   onOrderSuccess,
   onTransactionSuccess,
   sourceTokenAddress,
@@ -199,16 +199,41 @@ export function useAnyspendFlow({
   // For fiat payments, always use USDC decimals (6) regardless of selectedSrcToken
   const effectiveDecimals = paymentType === "fiat" ? USDC_BASE.decimals : selectedSrcToken.decimals;
   const activeInputAmountInWei = parseUnits(srcAmount.replace(/,/g, ""), effectiveDecimals).toString();
-  const { anyspendQuote, isLoadingAnyspendQuote, getAnyspendQuoteError } = useAnyspendQuote({
-    srcChain: paymentType === "fiat" ? base.id : selectedSrcChainId,
-    dstChain: isDepositMode ? base.id : selectedDstChainId, // For deposits, always Base; for swaps, use selected destination
-    srcTokenAddress: paymentType === "fiat" ? USDC_BASE.address : selectedSrcToken.address,
-    dstTokenAddress: selectedDstToken.address,
-    type: orderType,
-    amount: activeInputAmountInWei,
-    recipientAddress: effectiveRecipientAddress,
-    onrampVendor: paymentType === "fiat" ? getOnrampVendor(selectedFiatPaymentMethod) : undefined,
-  });
+
+  // Build quote request based on order type
+  const quoteRequest: GetQuoteRequest = (() => {
+    const baseParams = {
+      srcChain: paymentType === "fiat" ? base.id : selectedSrcChainId,
+      dstChain: selectedDstChainId ?? base.id,
+      srcTokenAddress: paymentType === "fiat" ? USDC_BASE.address : selectedSrcToken.address,
+      dstTokenAddress: selectedDstToken.address,
+      recipientAddress: effectiveRecipientAddress,
+      onrampVendor: paymentType === "fiat" ? getOnrampVendor(selectedFiatPaymentMethod) : undefined,
+    };
+
+    if (orderType === "swap") {
+      return {
+        ...baseParams,
+        type: "swap" as const,
+        tradeType: "EXACT_INPUT" as const,
+        amount: activeInputAmountInWei,
+      };
+    } else if (orderType === "hype_duel") {
+      return {
+        ...baseParams,
+        type: "hype_duel" as const,
+        amount: activeInputAmountInWei,
+      };
+    } else {
+      return {
+        ...baseParams,
+        type: "custom_exact_in" as const,
+        amount: activeInputAmountInWei,
+      };
+    }
+  })();
+
+  const { anyspendQuote, isLoadingAnyspendQuote, getAnyspendQuoteError } = useAnyspendQuote(quoteRequest);
 
   // Get geo options for fiat
   const { geoData, coinbaseAvailablePaymentMethods, stripeWeb2Support } = useGeoOnrampOptions(

@@ -90,6 +90,7 @@ function getOrderSuccessText({
   let actionText = "";
   switch (order.type) {
     case "swap":
+    case "deposit_first":
       actionText = `sent ${formattedActualDstAmount || "--"} ${dstToken.symbol}`;
       return `Successfully ${actionText} to ${recipient}`;
     case "mint_nft":
@@ -247,6 +248,7 @@ export const OrderDetails = memo(function OrderDetails({
   const { data: walletClient } = useWalletClient();
   const [txHash, setTxHash] = useState<`0x${string}` | undefined>();
   const [showQRCode, setShowQRCode] = useState(false);
+  const [orderDetailsOpen, setOrderDetailsOpen] = useState(true);
   const { isLoading: txLoading, isSuccess: txSuccess } = useWaitForTransactionReceipt({ hash: txHash });
 
   const { switchChainAndExecuteWithEOA, switchChainAndExecute, isSwitchingOrExecuting } =
@@ -443,7 +445,8 @@ export const OrderDetails = memo(function OrderDetails({
     order.type === "mint_nft" ||
     order.type === "join_tournament" ||
     order.type === "fund_tournament" ||
-    order.type === "custom"
+    order.type === "custom" ||
+    order.type === "deposit_first"
       ? "0"
       : order.payload.expectedDstAmount.toString();
   const formattedExpectedDstAmount = formatTokenAmount(BigInt(expectedDstAmount), dstToken.decimals);
@@ -465,6 +468,8 @@ export const OrderDetails = memo(function OrderDetails({
           recipientName={recipientName}
           formattedExpectedDstAmount={formattedExpectedDstAmount}
           points={points}
+          isOpen={orderDetailsOpen}
+          onOpenChange={setOrderDetailsOpen}
         />
         <Accordion type="single" collapsible className="order-details-accordion w-full">
           <AccordionItem value="refund-details" className="order-details-refund-item">
@@ -544,6 +549,8 @@ export const OrderDetails = memo(function OrderDetails({
           recipientName={recipientName}
           formattedExpectedDstAmount={formattedExpectedDstAmount}
           points={points}
+          isOpen={orderDetailsOpen}
+          onOpenChange={setOrderDetailsOpen}
         />
         <Accordion type="single" collapsible className="order-details-accordion w-full">
           <AccordionItem value="execute-details" className="order-details-execute-item">
@@ -588,7 +595,7 @@ export const OrderDetails = memo(function OrderDetails({
 
                 <TransactionDetails
                   title={
-                    order.type === "swap"
+                    order.type === "swap" || order.type === "deposit_first"
                       ? "Processed Swap"
                       : order.type === "mint_nft"
                         ? "Minted NFT"
@@ -672,6 +679,8 @@ export const OrderDetails = memo(function OrderDetails({
           recipientName={recipientName}
           formattedExpectedDstAmount={formattedExpectedDstAmount}
           points={points}
+          isOpen={orderDetailsOpen}
+          onOpenChange={setOrderDetailsOpen}
         />
         <Accordion type="single" collapsible className="order-details-accordion w-full">
           <AccordionItem value="more-details" className="order-details-more-item">
@@ -713,7 +722,7 @@ export const OrderDetails = memo(function OrderDetails({
                 {order.status === "executing" && (
                   <TransactionDetails
                     title={
-                      order.type === "swap" || order.type === "x402_swap"
+                      order.type === "swap" || order.type === "x402_swap" || order.type === "deposit_first"
                         ? "Processing Swap"
                         : order.type === "mint_nft"
                           ? "Minting NFT"
@@ -804,6 +813,8 @@ export const OrderDetails = memo(function OrderDetails({
           recipientName={recipientName}
           formattedExpectedDstAmount={formattedExpectedDstAmount}
           points={points}
+          isOpen={orderDetailsOpen}
+          onOpenChange={setOrderDetailsOpen}
         />
         <Accordion type="single" collapsible className="order-details-accordion w-full">
           <AccordionItem value="deposit-details" className="order-details-deposit-item">
@@ -842,7 +853,7 @@ export const OrderDetails = memo(function OrderDetails({
                 ) : depositEnoughAmount ? (
                   <TransactionDetails
                     title={
-                      order.type === "swap"
+                      order.type === "swap" || order.type === "deposit_first"
                         ? "Processing Swap"
                         : order.type === "mint_nft"
                           ? "Minting NFT"
@@ -1085,6 +1096,8 @@ export const OrderDetails = memo(function OrderDetails({
           recipientName={recipientName}
           formattedExpectedDstAmount={formattedExpectedDstAmount}
           points={points}
+          isOpen={orderDetailsOpen}
+          onOpenChange={setOrderDetailsOpen}
         />
       )}
 
