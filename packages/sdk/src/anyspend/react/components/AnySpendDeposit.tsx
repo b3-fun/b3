@@ -276,8 +276,6 @@ export function AnySpendDeposit({
   // Determine order type based on config
   const effectiveOrderType = orderType ?? "custom_exact_in";
 
-  const selectedChain = supportedChains.find(c => c.id === selectedChainId);
-
   // Default header if not provided
   const defaultHeader = () => (
     <div className="mb-4 flex flex-col items-center gap-3 text-center">
