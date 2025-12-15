@@ -5,6 +5,7 @@ import { BondKitButton } from "./components/BondKitButton";
 import { BuyHyperliquidUSDCButton } from "./components/BuyHyperliquidUSDCButton";
 import { BuyWithFiatButton } from "./components/BuyWithFiatButton";
 import { CollectorClubPurchaseButton } from "./components/CollectorClubPurchaseButton";
+import { CustomDepositButton } from "./components/CustomDepositButton";
 import { DepositHypeButton } from "./components/DepositHypeButton";
 import { GetB3TokenButton } from "./components/GetB3TokenButton";
 import { MintNftButton } from "./components/MintNftButton";
@@ -54,6 +55,7 @@ export default function Home() {
             <SignatureMintButton onClick={() => setIsSignatureMintOpen(true)} />
             <BondKitButton />
             <DepositHypeButton />
+            <CustomDepositButton />
             <BuyHyperliquidUSDCButton />
             <CollectorClubPurchaseButton />
             <OrderDetailsButton />

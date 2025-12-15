@@ -13,7 +13,7 @@ export const OrderStatus = memo(function OrderStatus({
   order: components["schemas"]["Order"];
   selectedCryptoPaymentMethod?: CryptoPaymentMethodType;
 }) {
-  const isComplete = order.status === "executed";
+  const showCheck = order.status === "executed" || order.status === "quoting_after_deposit";
   const { text, status: displayStatus, description } = getStatusDisplay(order);
   const searchParams = useSearchParams();
   const cryptoPaymentMethod = selectedCryptoPaymentMethod || searchParams.get("cryptoPaymentMethod");
@@ -51,7 +51,7 @@ export const OrderStatus = memo(function OrderStatus({
 
   return (
     <div className="flex items-center justify-center gap-2">
-      {isComplete ? (
+      {showCheck ? (
         <div className="flex flex-col items-center">
           <div className={`bg-as-success-secondary relative flex h-10 w-10 items-center justify-center rounded-full`}>
             <Check className="text-as-content-icon-success h-6 w-6" />

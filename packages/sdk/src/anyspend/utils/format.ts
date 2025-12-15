@@ -1,14 +1,29 @@
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
+import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 
 export const getStatusDisplay = (
   order: components["schemas"]["Order"],
 ): { text: string; status: "processing" | "success" | "failure"; description?: string } => {
+  const srcToken = order.metadata?.srcToken;
+  const dstToken = order.metadata?.dstToken;
+  const formattedSrcAmount = srcToken ? formatTokenAmount(BigInt(order.srcAmount), srcToken.decimals) : undefined;
+  const actualDstAmount = order.settlement?.actualDstAmount;
+  const formattedActualDstAmount =
+    actualDstAmount && dstToken ? formatTokenAmount(BigInt(actualDstAmount), dstToken.decimals) : undefined;
+
   switch (order.status) {
-    case "scanning_deposit_transaction":
+    case "scanning_deposit_transaction": {
+      const depositText =
+        formattedSrcAmount && srcToken
+          ? `Awaiting ${formattedSrcAmount} ${srcToken.symbol}`
+          : order.onrampMetadata
+            ? "Awaiting Payment"
+            : "Awaiting Deposit";
       return {
-        text: order.onrampMetadata ? "Awaiting Payment" : "Awaiting Deposit",
+        text: depositText,
         status: "processing",
       };
+    }
     case "waiting_stripe_payment":
       return {
         text: "Awaiting Payment",
@@ -34,16 +49,18 @@ export const getStatusDisplay = (
         description: "It will take approximately one minute to complete.",
       };
     case "executed": {
+      const receivedText =
+        formattedActualDstAmount && dstToken ? `Received ${formattedActualDstAmount} ${dstToken.symbol}` : undefined;
       const { text, description } =
         order.type === "swap"
-          ? { text: "Swap Complete", description: "Your swap has been completed successfully." }
+          ? { text: receivedText || "Swap Complete", description: "Your swap has been completed successfully." }
           : order.type === "mint_nft"
             ? { text: "NFT Minted", description: "Your NFT has been minted" }
             : order.type === "join_tournament"
               ? { text: "Tournament Joined", description: "You have joined the tournament" }
               : order.type === "fund_tournament"
                 ? { text: "Tournament Funded", description: "You have funded the tournament" }
-                : { text: "Order Complete", description: "Your order has been completed" };
+                : { text: receivedText || "Order Complete", description: "Your order has been completed" };
       return { text, status: "success", description };
     }
 
@@ -59,8 +76,19 @@ export const getStatusDisplay = (
         description: "This order has failed. Please try again or contact support.",
       };
 
+    case "quoting_after_deposit": {
+      return {
+        text: "Quoting After Deposit",
+        status: "processing",
+        description: "Getting quote for the order",
+      };
+    }
+
     default:
-      throw new Error("Invalid order status");
+      return {
+        text: order.status,
+        status: "processing",
+      };
   }
 };
 

@@ -5,6 +5,8 @@ export { AnySpendBuySpin } from "./AnySpendBuySpin";
 export { AnySpendCollectorClubPurchase } from "./AnySpendCollectorClubPurchase";
 export { AnySpendCustom } from "./AnySpendCustom";
 export { AnySpendCustomExactIn } from "./AnySpendCustomExactIn";
+export { AnySpendDeposit } from "./AnySpendDeposit";
+export type { AnySpendDepositProps, ChainConfig, DepositContractConfig } from "./AnySpendDeposit";
 export { AnySpendDepositHype, HYPE_TOKEN_DETAILS } from "./AnyspendDepositHype";
 export * from "./AnySpendFingerprintWrapper";
 export { AnySpendNFT } from "./AnySpendNFT";
