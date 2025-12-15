@@ -584,7 +584,7 @@ export const OrderDetails = memo(function OrderDetails({
                   ? relayTxs.map(relayTx => (
                       <TransactionDetails
                         key={relayTx.txHash}
-                        title="Processed Transaction"
+                        title="Processed Swap"
                         chainId={relayTx.chain}
                         tx={relayTx}
                         delay={0.5}
@@ -712,7 +712,12 @@ export const OrderDetails = memo(function OrderDetails({
                   : null}
                 {relayTxs.map(relayTx => (
                   <TransactionDetails
-                    title="Processed Transaction"
+                    key={relayTx.txHash}
+                    title={
+                      relayTx.chain === order.srcChain
+                        ? `Process swap on ${getChainName(relayTx.chain)}`
+                        : `Received on ${getChainName(relayTx.chain)}`
+                    }
                     chainId={relayTx.chain}
                     isProcessing={false}
                     tx={relayTx}
@@ -723,7 +728,7 @@ export const OrderDetails = memo(function OrderDetails({
                   <TransactionDetails
                     title={
                       order.type === "swap" || order.type === "x402_swap" || order.type === "deposit_first"
-                        ? "Processing Swap"
+                        ? "Processing swap"
                         : order.type === "mint_nft"
                           ? "Minting NFT"
                           : order.type === "join_tournament"
@@ -854,7 +859,7 @@ export const OrderDetails = memo(function OrderDetails({
                   <TransactionDetails
                     title={
                       order.type === "swap" || order.type === "deposit_first"
-                        ? "Processing Swap"
+                        ? "Processing swap"
                         : order.type === "mint_nft"
                           ? "Minting NFT"
                           : order.type === "join_tournament"
