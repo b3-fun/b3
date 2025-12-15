@@ -673,12 +673,10 @@ function AnySpendInner({
         const params = new URLSearchParams(searchParams.toString()); // Preserve existing params
         params.set("orderId", orderId);
         if (effectiveCryptoPaymentMethod !== CryptoPaymentMethodType.NONE) {
-          console.log("Setting cryptoPaymentMethod in URL:", effectiveCryptoPaymentMethod);
           params.set("cryptoPaymentMethod", effectiveCryptoPaymentMethod);
         } else {
           console.log("Payment method is NONE, not setting in URL");
         }
-        console.log("Final URL params:", params.toString());
         router.push(`${window.location.pathname}?${params.toString()}`);
       }
     },
