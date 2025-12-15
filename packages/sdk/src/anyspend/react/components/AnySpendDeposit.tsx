@@ -475,6 +475,13 @@ export function AnySpendDeposit({
               <ChevronRight className="anyspend-deposit-option-chevron text-as-secondary h-5 w-5" />
             </button>
           </div>
+
+          {/* Hyperliquid minimum deposit warning */}
+          {destinationChainId === HYPERLIQUID_CHAIN_ID && (
+            <p className="anyspend-deposit-warning mt-2 text-center text-xs italic text-red-500">
+              Minimum deposit amount: <b>$1</b>
+            </p>
+          )}
         </div>
       </div>
     );
@@ -540,6 +547,7 @@ export function AnySpendDeposit({
             onTokenSelect={onTokenSelect}
             customUsdInputValues={customUsdInputValues}
             hideHeader
+            hideBottomNavigation
           />
         ) : (
           <AnySpendCustomExactIn
@@ -564,6 +572,13 @@ export function AnySpendDeposit({
           />
         )}
       </div>
+
+      {/* Hyperliquid minimum deposit warning */}
+      {isHyperliquidDeposit && (
+        <p className="anyspend-deposit-warning px-4 pb-4 text-center text-xs italic text-red-500">
+          Minimum deposit amount: <b>$1</b>
+        </p>
+      )}
     </div>
   );
 }

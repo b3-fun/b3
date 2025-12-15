@@ -1,4 +1,4 @@
-import { ALL_CHAINS, getAvailableChainIds } from "@b3dotfun/sdk/anyspend";
+import { ALL_CHAINS, getAvailableChainIds, HYPERLIQUID_CHAIN_ID } from "@b3dotfun/sdk/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { Button, toast } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
@@ -324,7 +324,11 @@ export function QRDeposit({
 
         {/* Warning */}
         <p className="text-center text-xs italic text-red-500">
-          Minimum deposit amount: <b>1$</b> <br />
+          {destinationChainId === HYPERLIQUID_CHAIN_ID && (
+            <>
+              Minimum deposit amount: <b>1$</b> <br />
+            </>
+          )}
           Only send {sourceToken.symbol} on {ALL_CHAINS[sourceChainId]?.name ?? "the specified chain"}. Other tokens
           will not be converted.
         </p>

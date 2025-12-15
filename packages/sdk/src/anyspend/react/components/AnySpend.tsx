@@ -104,6 +104,7 @@ export function AnySpend(props: {
   onSuccess?: (txHash?: string) => void;
   customUsdInputValues?: string[];
   hideHeader?: boolean;
+  hideBottomNavigation?: boolean;
 }) {
   const fingerprintConfig = getFingerprintConfig();
 
@@ -127,6 +128,7 @@ function AnySpendInner({
   onSuccess,
   customUsdInputValues,
   hideHeader,
+  hideBottomNavigation = false,
 }: {
   sourceChainId?: number;
   destinationTokenAddress?: string;
@@ -140,6 +142,7 @@ function AnySpendInner({
   onSuccess?: (txHash?: string) => void;
   customUsdInputValues?: string[];
   hideHeader?: boolean;
+  hideBottomNavigation?: boolean;
 }) {
   const searchParams = useSearchParamsSSR();
   const router = useRouter();
@@ -1268,7 +1271,7 @@ function AnySpendInner({
             }
           }}
         >
-          {mode !== "page" && <BottomNavigation />}
+          {mode !== "page" && !hideBottomNavigation && <BottomNavigation />}
         </TabsPrimitive>
       </div>
     </div>
