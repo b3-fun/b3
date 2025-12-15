@@ -42,7 +42,7 @@ export function ChainWarningText({ chainId, className }: ChainWarningTextProps) 
   if (chainId === HYPERLIQUID_CHAIN_ID) {
     return (
       <WarningText className={className}>
-        Minimum first deposit amount: <b>$1</b>
+        Minimum deposit amount: <b>$1</b>
       </WarningText>
     );
   }
