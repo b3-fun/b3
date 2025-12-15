@@ -105,6 +105,8 @@ export function AnySpend(props: {
   customUsdInputValues?: string[];
   hideHeader?: boolean;
   hideBottomNavigation?: boolean;
+  /** When true, disables URL parameter management for swap configuration */
+  disableUrlParamManagement?: boolean;
 }) {
   const fingerprintConfig = getFingerprintConfig();
 
@@ -129,6 +131,7 @@ function AnySpendInner({
   customUsdInputValues,
   hideHeader,
   hideBottomNavigation = false,
+  disableUrlParamManagement = false,
 }: {
   sourceChainId?: number;
   destinationTokenAddress?: string;
@@ -143,6 +146,7 @@ function AnySpendInner({
   customUsdInputValues?: string[];
   hideHeader?: boolean;
   hideBottomNavigation?: boolean;
+  disableUrlParamManagement?: boolean;
 }) {
   const searchParams = useSearchParamsSSR();
   const router = useRouter();
@@ -332,8 +336,8 @@ function AnySpendInner({
 
   // Load swap configuration from URL on initial render
   useEffect(() => {
-    // Skip if we've already processed the URL or if we have an order to load
-    if (initialUrlProcessed.current || loadOrder) return;
+    // Skip if we've already processed the URL, if we have an order to load, or if URL param management is disabled
+    if (initialUrlProcessed.current || loadOrder || disableUrlParamManagement) return;
 
     try {
       const tabParam = searchParams.get("tab");
@@ -366,7 +370,7 @@ function AnySpendInner({
 
     // Mark that we've processed the initial URL
     initialUrlProcessed.current = true;
-  }, [searchParams, loadOrder]);
+  }, [searchParams, loadOrder, disableUrlParamManagement]);
 
   // Update URL when swap configuration changes - but not on initial load
   const updateSwapParamsInURL = useCallback(() => {
@@ -379,7 +383,8 @@ function AnySpendInner({
       activePanel !== PanelView.MAIN ||
       !initialUrlProcessed.current ||
       searchParams.has("orderId") ||
-      mode === "modal"
+      mode === "modal" ||
+      disableUrlParamManagement
     )
       return;
 
@@ -450,6 +455,7 @@ function AnySpendInner({
     dstAmount,
     router,
     srcAmountOnRamp,
+    disableUrlParamManagement,
   ]);
 
   // Update URL when relevant state changes - but only after initial render
@@ -659,20 +665,22 @@ function AnySpendInner({
       // setNewRecipientAddress("");
       navigateToPanel(PanelView.ORDER_DETAILS, "forward");
 
-      // Debug: Check payment method before setting URL
-      console.log("Creating order - selectedCryptoPaymentMethod:", selectedCryptoPaymentMethod);
+      if (!disableUrlParamManagement) {
+        // Debug: Check payment method before setting URL
+        console.log("Creating order - selectedCryptoPaymentMethod:", selectedCryptoPaymentMethod);
 
-      // Add orderId and payment method to URL for persistence
-      const params = new URLSearchParams(searchParams.toString()); // Preserve existing params
-      params.set("orderId", orderId);
-      if (effectiveCryptoPaymentMethod !== CryptoPaymentMethodType.NONE) {
-        console.log("Setting cryptoPaymentMethod in URL:", effectiveCryptoPaymentMethod);
-        params.set("cryptoPaymentMethod", effectiveCryptoPaymentMethod);
-      } else {
-        console.log("Payment method is NONE, not setting in URL");
+        // Add orderId and payment method to URL for persistence
+        const params = new URLSearchParams(searchParams.toString()); // Preserve existing params
+        params.set("orderId", orderId);
+        if (effectiveCryptoPaymentMethod !== CryptoPaymentMethodType.NONE) {
+          console.log("Setting cryptoPaymentMethod in URL:", effectiveCryptoPaymentMethod);
+          params.set("cryptoPaymentMethod", effectiveCryptoPaymentMethod);
+        } else {
+          console.log("Payment method is NONE, not setting in URL");
+        }
+        console.log("Final URL params:", params.toString());
+        router.push(`${window.location.pathname}?${params.toString()}`);
       }
-      console.log("Final URL params:", params.toString());
-      router.push(`${window.location.pathname}?${params.toString()}`);
     },
     onError: error => {
       console.error(error);
@@ -687,11 +695,13 @@ function AnySpendInner({
       setOrderId(orderId);
       navigateToPanel(PanelView.ORDER_DETAILS, "forward");
 
-      // Add orderId and payment method to URL for persistence
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("orderId", orderId);
-      params.set("paymentMethod", "fiat");
-      router.push(`${window.location.pathname}?${params.toString()}`);
+      if (!disableUrlParamManagement) {
+        // Add orderId and payment method to URL for persistence
+        const params = new URLSearchParams(searchParams.toString());
+        params.set("orderId", orderId);
+        params.set("paymentMethod", "fiat");
+        router.push(`${window.location.pathname}?${params.toString()}`);
+      }
     },
     onError: error => {
       console.error(error);
@@ -840,11 +850,13 @@ function AnySpendInner({
       type: "anySpendOrderHistory",
       showBackButton: false,
     });
-    // Remove orderId and paymentMethod from URL when going back to history
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete("orderId");
-    params.delete("paymentMethod");
-    router.push(`${window.location.pathname}?${params.toString()}`);
+    if (!disableUrlParamManagement) {
+      // Remove orderId and paymentMethod from URL when going back to history
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("orderId");
+      params.delete("paymentMethod");
+      router.push(`${window.location.pathname}?${params.toString()}`);
+    }
   };
 
   // Handle crypto swap creation
@@ -961,23 +973,25 @@ function AnySpendInner({
 
   // Update useEffect for URL parameter to not override loadOrder
   useEffect(() => {
-    if (loadOrder) return; // Skip if we have a loadOrder
+    if (loadOrder || disableUrlParamManagement) return; // Skip if we have a loadOrder or URL param management is disabled
 
     const orderIdParam = searchParams.get("orderId");
     if (orderIdParam) {
       setOrderId(orderIdParam);
       setActivePanel(PanelView.ORDER_DETAILS);
     }
-  }, [searchParams, loadOrder]);
+  }, [searchParams, loadOrder, disableUrlParamManagement]);
 
   const onSelectOrder = (selectedOrderId: string) => {
     setOrderId(selectedOrderId);
     navigateToPanel(PanelView.ORDER_DETAILS, "forward");
-    // Update URL with the new orderId and preserve existing parameters
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("orderId", selectedOrderId);
-    // Keep existing paymentMethod if present
-    router.push(`${window.location.pathname}?${params.toString()}`);
+    if (!disableUrlParamManagement) {
+      // Update URL with the new orderId and preserve existing parameters
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("orderId", selectedOrderId);
+      // Keep existing paymentMethod if present
+      router.push(`${window.location.pathname}?${params.toString()}`);
+    }
   };
 
   // Save custom recipients to local storage when they change
@@ -1293,16 +1307,18 @@ function AnySpendInner({
       onOrderCreated={orderId => {
         setOrderId(orderId);
         navigateToPanel(PanelView.ORDER_DETAILS, "forward");
-        // Add orderId and payment method to URL for persistence
-        const params = new URLSearchParams(searchParams.toString()); // Preserve existing params
-        params.set("orderId", orderId);
-        // For fiat payments, the payment method is always fiat (but we use the active tab context)
-        if (activeTab === "fiat") {
-          params.set("paymentMethod", "fiat");
-        } else if (selectedCryptoPaymentMethod !== CryptoPaymentMethodType.NONE) {
-          params.set("paymentMethod", selectedCryptoPaymentMethod);
+        if (!disableUrlParamManagement) {
+          // Add orderId and payment method to URL for persistence
+          const params = new URLSearchParams(searchParams.toString()); // Preserve existing params
+          params.set("orderId", orderId);
+          // For fiat payments, the payment method is always fiat (but we use the active tab context)
+          if (activeTab === "fiat") {
+            params.set("paymentMethod", "fiat");
+          } else if (selectedCryptoPaymentMethod !== CryptoPaymentMethodType.NONE) {
+            params.set("paymentMethod", selectedCryptoPaymentMethod);
+          }
+          router.push(`${window.location.pathname}?${params.toString()}`);
         }
-        router.push(`${window.location.pathname}?${params.toString()}`);
       }}
       onBack={navigateBack}
       recipientEnsName={globalWallet?.ensName}

@@ -153,6 +153,8 @@ export interface AnySpendModalProps extends BaseModalProps {
   clientReferenceId?: string;
   /** Whether to hide the header */
   hideHeader?: boolean;
+  /** When true, disables URL parameter management for swap configuration */
+  disableUrlParamManagement?: boolean;
 }
 
 /**

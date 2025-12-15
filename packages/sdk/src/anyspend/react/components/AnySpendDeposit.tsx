@@ -15,6 +15,7 @@ import { ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AnySpend } from "./AnySpend";
 import { AnySpendCustomExactIn } from "./AnySpendCustomExactIn";
+import { ChainWarningText } from "./common/WarningText";
 import { CreditCardIcon } from "./icons/CreditCardIcon";
 import { QrCodeIcon } from "./icons/QrCodeIcon";
 import { QRDeposit } from "./QRDeposit";
@@ -476,12 +477,8 @@ export function AnySpendDeposit({
             </button>
           </div>
 
-          {/* Hyperliquid minimum deposit warning */}
-          {destinationChainId === HYPERLIQUID_CHAIN_ID && (
-            <p className="anyspend-deposit-warning mt-2 text-center text-xs italic text-red-500">
-              Minimum deposit amount: <b>$1</b>
-            </p>
-          )}
+          {/* Chain-specific warning */}
+          <ChainWarningText chainId={destinationChainId} className="mt-2" />
         </div>
       </div>
     );
@@ -548,6 +545,7 @@ export function AnySpendDeposit({
             customUsdInputValues={customUsdInputValues}
             hideHeader
             hideBottomNavigation
+            disableUrlParamManagement
           />
         ) : (
           <AnySpendCustomExactIn
@@ -573,12 +571,8 @@ export function AnySpendDeposit({
         )}
       </div>
 
-      {/* Hyperliquid minimum deposit warning */}
-      {isHyperliquidDeposit && (
-        <p className="anyspend-deposit-warning px-4 pb-4 text-center text-xs italic text-red-500">
-          Minimum deposit amount: <b>$1</b>
-        </p>
-      )}
+      {/* Chain-specific warning */}
+      <ChainWarningText chainId={destinationChainId} className="px-4 pb-4" />
     </div>
   );
 }

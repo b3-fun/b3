@@ -1,4 +1,4 @@
-import { ALL_CHAINS, getAvailableChainIds, HYPERLIQUID_CHAIN_ID } from "@b3dotfun/sdk/anyspend";
+import { ALL_CHAINS, getAvailableChainIds } from "@b3dotfun/sdk/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { Button, toast } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
@@ -11,6 +11,7 @@ import { useCreateDepositFirstOrder } from "../hooks/useCreateDepositFirstOrder"
 import { DepositContractConfig } from "./AnySpendDeposit";
 import { ChainTokenIcon } from "./common/ChainTokenIcon";
 import { OrderDetails } from "./common/OrderDetails";
+import { ChainWarningText, WarningText } from "./common/WarningText";
 
 export interface QRDepositProps {
   /** Display mode */
@@ -314,24 +315,25 @@ export function QRDeposit({
           <div className="anyspend-qr-address-container flex flex-1 flex-col gap-1">
             <span className="anyspend-qr-address-label text-as-secondary text-sm">Deposit address:</span>
             <div className="anyspend-qr-address-row flex items-start gap-1">
-              <span className="anyspend-qr-address text-as-primary break-all font-mono text-sm leading-relaxed">{displayAddress}</span>
-              <button onClick={handleCopyAddress} className="anyspend-qr-copy-icon text-as-secondary hover:text-as-primary mt-0.5 shrink-0">
+              <span className="anyspend-qr-address text-as-primary break-all font-mono text-sm leading-relaxed">
+                {displayAddress}
+              </span>
+              <button
+                onClick={handleCopyAddress}
+                className="anyspend-qr-copy-icon text-as-secondary hover:text-as-primary mt-0.5 shrink-0"
+              >
                 {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
               </button>
             </div>
           </div>
         </div>
 
-        {/* Warning */}
-        <p className="anyspend-qr-warning text-center text-xs italic text-red-500">
-          {destinationChainId === HYPERLIQUID_CHAIN_ID && (
-            <>
-              Minimum deposit amount: <b>1$</b> <br />
-            </>
-          )}
+        {/* Warnings */}
+        <ChainWarningText chainId={destinationChainId} />
+        <WarningText>
           Only send {sourceToken.symbol} on {ALL_CHAINS[sourceChainId]?.name ?? "the specified chain"}. Other tokens
           will not be converted.
-        </p>
+        </WarningText>
 
         {/* Copy button */}
         <button
