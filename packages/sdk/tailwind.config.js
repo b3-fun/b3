@@ -108,6 +108,7 @@ module.exports = {
         "content-primary": "var(--content-primary)",
         "content-secondary": "var(--content-secondary)",
         "content-placeholder": "var(--content-placeholder)",
+        "border-primary": "var(--border-primary)",
         "on-surface-primary-alt": "var(--on-surface-primary-alt)",
         "on-surface-btn": "var(--on-surface-btn)",
       },

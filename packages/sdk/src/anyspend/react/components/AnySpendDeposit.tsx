@@ -11,10 +11,12 @@ import {
   NetworkOptimism,
   NetworkPolygonPos,
 } from "@web3icons/react";
-import { ChevronRight, CreditCard, QrCode, Wallet } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AnySpend } from "./AnySpend";
 import { AnySpendCustomExactIn } from "./AnySpendCustomExactIn";
+import { CreditCardIcon } from "./icons/CreditCardIcon";
+import { QrCodeIcon } from "./icons/QrCodeIcon";
 import { QRDeposit } from "./QRDeposit";
 
 export interface DepositContractConfig {
@@ -136,21 +138,10 @@ function formatDecimal(value: number): string {
 }
 
 // Chain icon component
-function ChainIcon({
-  chainId,
-  variant = "default",
-  className,
-}: {
-  chainId: number;
-  variant?: "branded" | "default";
-  className?: string;
-}) {
+function ChainIcon({ chainId, className }: { chainId: number; className?: string }) {
   const iconProps = {
-    className: cn(
-      "anyspend-deposit-chain-icon h-5 w-5",
-      variant === "branded" && "bg-as-surface-secondary rounded-full p-1",
-      className,
-    ),
+    variant: "branded" as const,
+    className: cn("anyspend-deposit-chain-icon", className),
   };
 
   switch (chainId) {
@@ -370,7 +361,7 @@ export function AnySpendDeposit({
           {isBalanceLoading && (
             <div className="anyspend-deposit-chains-skeleton flex flex-col gap-2">
               {[...Array(topChainsCount)].map((_, i) => (
-                <div key={i} className="border-as-stroke flex items-center justify-between rounded-xl border p-4">
+                <div key={i} className="border-border-primary flex items-center justify-between rounded-xl border p-4">
                   <div className="flex items-center gap-3">
                     <Skeleton className="h-6 w-6 rounded-full" />
                     <div className="flex flex-col gap-1">
@@ -391,13 +382,13 @@ export function AnySpendDeposit({
                 <button
                   key={chain.id}
                   onClick={() => handleSelectChain(chain.id)}
-                  className="anyspend-deposit-chain-button border-as-stroke hover:border-as-brand hover:bg-as-surface-secondary flex w-full items-center justify-between rounded-xl border p-4 text-left shadow-sm transition-all"
+                  className="anyspend-deposit-chain-button border-border-primary hover:border-as-brand hover:bg-as-surface-secondary flex w-full items-center justify-between rounded-xl border p-4 text-left shadow-sm transition-all"
                 >
-                  <div className="anyspend-deposit-chain-content flex items-center gap-3">
-                    <ChainIcon chainId={chain.id} variant="branded" className="anyspend-deposit-chain-icon h-6 w-6" />
+                  <div className="anyspend-deposit-chain-content">
                     <div className="anyspend-deposit-chain-info">
-                      <span className="anyspend-deposit-chain-name text-as-primary font-medium">
+                      <span className="anyspend-deposit-chain-name text-as-primary flex items-center gap-1.5 font-medium">
                         Deposit from {chain.name}
+                        <ChainIcon chainId={chain.id} className="h-5 w-5" />
                       </span>
                       <p className="anyspend-deposit-chain-balance text-as-secondary text-xs">
                         {formatUsd(chain.balance)} available
@@ -415,12 +406,9 @@ export function AnySpendDeposit({
             {/* Deposit Crypto - any chain */}
             <button
               onClick={handleSelectCrypto}
-              className="anyspend-deposit-option-button anyspend-deposit-crypto-button border-as-stroke hover:border-as-brand hover:bg-as-surface-secondary flex w-full items-center justify-between rounded-xl border p-4 text-left shadow-sm transition-all"
+              className="anyspend-deposit-option-button anyspend-deposit-crypto-button border-border-primary hover:border-as-brand hover:bg-as-surface-secondary flex w-full items-center justify-between rounded-xl border p-4 text-left shadow-sm transition-all"
             >
-              <div className="anyspend-deposit-option-content flex items-center gap-3">
-                <div className="anyspend-deposit-option-icon bg-as-surface-secondary flex h-6 w-6 items-center justify-center rounded-full">
-                  <Wallet className="text-as-primary h-4 w-4" />
-                </div>
+              <div className="anyspend-deposit-option-content">
                 <div className="anyspend-deposit-option-info">
                   <span className="anyspend-deposit-option-title text-as-primary font-medium">Deposit Crypto</span>
                   <p className="anyspend-deposit-option-description text-as-secondary text-xs">
@@ -440,12 +428,10 @@ export function AnySpendDeposit({
             {/* Deposit with QR Code */}
             <button
               onClick={handleSelectQrDeposit}
-              className="anyspend-deposit-option-button anyspend-deposit-qr-button border-as-stroke hover:border-as-brand hover:bg-as-surface-secondary flex w-full items-center justify-between rounded-xl border p-4 text-left shadow-sm transition-all"
+              className="anyspend-deposit-option-button anyspend-deposit-qr-button border-border-primary hover:border-as-brand hover:bg-as-surface-secondary flex w-full items-center justify-between rounded-xl border p-4 text-left shadow-sm transition-all"
             >
               <div className="anyspend-deposit-option-content flex items-center gap-3">
-                <div className="anyspend-deposit-option-icon bg-as-surface-secondary flex h-6 w-6 items-center justify-center rounded-full">
-                  <QrCode className="text-as-primary h-4 w-4" />
-                </div>
+                <QrCodeIcon className="anyspend-deposit-option-icon h-10 w-10" />
                 <div className="anyspend-deposit-option-info">
                   <span className="anyspend-deposit-option-title text-as-primary font-medium">
                     Deposit with QR Code
@@ -461,12 +447,10 @@ export function AnySpendDeposit({
             {/* Fund with Fiat */}
             <button
               onClick={handleSelectFiat}
-              className="anyspend-deposit-option-button anyspend-deposit-fiat-button border-as-stroke hover:border-as-brand hover:bg-as-surface-secondary flex w-full items-center justify-between rounded-xl border p-4 text-left transition-all"
+              className="anyspend-deposit-option-button anyspend-deposit-fiat-button border-border-primary hover:border-as-brand hover:bg-as-surface-secondary flex w-full items-center justify-between rounded-xl border p-4 text-left transition-all"
             >
               <div className="anyspend-deposit-option-content flex items-center gap-3">
-                <div className="anyspend-deposit-option-icon bg-as-surface-secondary flex h-6 w-6 items-center justify-center rounded-full">
-                  <CreditCard className="text-as-primary h-4 w-4" />
-                </div>
+                <CreditCardIcon className="anyspend-deposit-option-icon h-10 w-10" />
                 <div className="anyspend-deposit-option-info">
                   <span className="anyspend-deposit-option-title text-as-primary font-medium">Fund with Fiat</span>
                   <p className="anyspend-deposit-option-description text-as-secondary text-xs">
@@ -521,6 +505,7 @@ export function AnySpendDeposit({
           <AnySpend
             loadOrder={loadOrder}
             mode={mode}
+            defaultActiveTab={paymentType}
             recipientAddress={recipientAddress}
             destinationTokenAddress={destinationToken.address}
             destinationTokenChainId={destinationChainId}

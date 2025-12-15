@@ -152,6 +152,7 @@
   --red-100: #fde6d7;
   --green-100: #dff9e8;
   --border-brand: #2a9fff;
+  --border-primary: #d1d1d6;
   --yellow-100: #fee6c7;
   --purple-100: #f5edfa;
   --purple-300: #ddc3ef;
@@ -249,6 +250,7 @@ html[data-theme="dark"] .b3-root,
   --red-100: #6a5550;
   --green-100: rgba(68, 90, 76, 0.57);
   --border-brand: #2a9fff;
+  --border-primary: #d1d1d6;
   --yellow-100: #957a6c;
   --purple-100: rgba(113, 88, 126, 0.38);
   --purple-300: #a375c3;
