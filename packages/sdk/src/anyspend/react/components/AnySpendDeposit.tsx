@@ -294,7 +294,7 @@ export function AnySpendDeposit({
   const tokenSymbol = destinationToken.symbol ?? "TOKEN";
 
   // Determine order type based on config
-  const effectiveOrderType = orderType ?? "custom_exact_in";
+  const effectiveOrderType = orderType ?? (depositContractConfig ? "custom_exact_in" : "swap");
 
   // Default header if not provided
   const defaultHeader = () => (
