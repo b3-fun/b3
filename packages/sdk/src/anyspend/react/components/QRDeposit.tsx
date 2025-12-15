@@ -194,11 +194,11 @@ export function QRDeposit({
     return (
       <div
         className={cn(
-          "anyspend-container font-inter bg-as-surface-primary mx-auto w-full max-w-[460px] p-6",
+          "anyspend-container anyspend-qr-order-details font-inter bg-as-surface-primary mx-auto w-full max-w-[460px] p-6",
           mode === "page" && "border-as-border-secondary overflow-hidden rounded-2xl border shadow-xl",
         )}
       >
-        <div className="relative flex flex-col gap-4">
+        <div className="anyspend-qr-order-details-content relative flex flex-col gap-4">
           <OrderDetails
             mode={mode}
             order={oat.data.order}
@@ -218,13 +218,13 @@ export function QRDeposit({
     return (
       <div
         className={cn(
-          "anyspend-container font-inter bg-as-surface-primary mx-auto w-full max-w-[460px] p-6",
+          "anyspend-container anyspend-qr-loading font-inter bg-as-surface-primary mx-auto w-full max-w-[460px] p-6",
           mode === "page" && "border-as-border-secondary overflow-hidden rounded-2xl border shadow-xl",
         )}
       >
-        <div className="flex flex-col items-center justify-center gap-4 py-12">
-          <Loader2 className="text-as-brand h-8 w-8 animate-spin" />
-          <p className="text-as-secondary text-sm">Creating deposit order...</p>
+        <div className="anyspend-qr-loading-content flex flex-col items-center justify-center gap-4 py-12">
+          <Loader2 className="anyspend-qr-loading-spinner text-as-brand h-8 w-8 animate-spin" />
+          <p className="anyspend-qr-loading-text text-as-secondary text-sm">Creating deposit order...</p>
         </div>
       </div>
     );
@@ -233,21 +233,21 @@ export function QRDeposit({
   return (
     <div
       className={cn(
-        "anyspend-container font-inter bg-as-surface-primary mx-auto w-full max-w-[460px] p-6",
+        "anyspend-container anyspend-qr-deposit font-inter bg-as-surface-primary mx-auto w-full max-w-[460px] p-6",
         mode === "page" && "border-as-border-secondary overflow-hidden rounded-2xl border shadow-xl",
       )}
     >
-      <div className="flex flex-col gap-4">
+      <div className="anyspend-qr-deposit-content flex flex-col gap-4">
         {/* Header with back button and close button */}
-        <div className="flex items-center justify-between">
-          <button onClick={handleBack} className="text-as-secondary hover:text-as-primary">
+        <div className="anyspend-qr-header flex items-center justify-between">
+          <button onClick={handleBack} className="anyspend-qr-back-button text-as-secondary hover:text-as-primary">
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <h2 className="text-as-primary text-base font-semibold">Deposit</h2>
+          <h2 className="anyspend-qr-title text-as-primary text-base font-semibold">Deposit</h2>
           {onClose ? (
-            <button onClick={handleClose} className="text-as-secondary hover:text-as-primary">
+            <button onClick={handleClose} className="anyspend-qr-close-button text-as-secondary hover:text-as-primary">
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -258,8 +258,8 @@ export function QRDeposit({
         </div>
 
         {/* Token selector */}
-        <div className="flex flex-col gap-1.5">
-          <label className="text-as-secondary text-sm">Send</label>
+        <div className="anyspend-qr-token-selector flex flex-col gap-1.5">
+          <label className="anyspend-qr-token-label text-as-secondary text-sm">Send</label>
           <TokenSelector
             chainIdsFilter={getAvailableChainIds("from")}
             context="from"
@@ -275,7 +275,7 @@ export function QRDeposit({
               <Button
                 variant="outline"
                 role="combobox"
-                className="border-as-stroke bg-as-surface-secondary flex h-auto w-full items-center justify-between gap-2 rounded-xl border px-3 py-2.5"
+                className="anyspend-qr-token-trigger border-as-stroke bg-as-surface-secondary flex h-auto w-full items-center justify-between gap-2 rounded-xl border px-3 py-2.5"
               >
                 <div className="flex items-center gap-2">
                   {sourceToken.metadata?.logoURI ? (
@@ -299,23 +299,23 @@ export function QRDeposit({
         </div>
 
         {/* QR Code and Address - horizontal layout */}
-        <div className="border-as-stroke flex items-start gap-4 rounded-xl border p-4">
+        <div className="anyspend-qr-content border-as-stroke flex items-start gap-4 rounded-xl border p-4">
           {/* QR Code */}
-          <div className="flex flex-col items-center gap-2">
-            <div className="rounded-lg bg-white p-2">
+          <div className="anyspend-qr-code-container flex flex-col items-center gap-2">
+            <div className="anyspend-qr-code rounded-lg bg-white p-2">
               <QRCodeSVG value={displayAddress} size={120} level="M" marginSize={0} />
             </div>
-            <span className="text-as-secondary text-xs">
+            <span className="anyspend-qr-scan-hint text-as-secondary text-xs">
               SCAN WITH <span className="inline-block">🦊</span>
             </span>
           </div>
 
           {/* Address info */}
-          <div className="flex flex-1 flex-col gap-1">
-            <span className="text-as-secondary text-sm">Deposit address:</span>
-            <div className="flex items-start gap-1">
-              <span className="text-as-primary break-all font-mono text-sm leading-relaxed">{displayAddress}</span>
-              <button onClick={handleCopyAddress} className="text-as-secondary hover:text-as-primary mt-0.5 shrink-0">
+          <div className="anyspend-qr-address-container flex flex-1 flex-col gap-1">
+            <span className="anyspend-qr-address-label text-as-secondary text-sm">Deposit address:</span>
+            <div className="anyspend-qr-address-row flex items-start gap-1">
+              <span className="anyspend-qr-address text-as-primary break-all font-mono text-sm leading-relaxed">{displayAddress}</span>
+              <button onClick={handleCopyAddress} className="anyspend-qr-copy-icon text-as-secondary hover:text-as-primary mt-0.5 shrink-0">
                 {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
               </button>
             </div>
@@ -323,7 +323,7 @@ export function QRDeposit({
         </div>
 
         {/* Warning */}
-        <p className="text-center text-xs italic text-red-500">
+        <p className="anyspend-qr-warning text-center text-xs italic text-red-500">
           {destinationChainId === HYPERLIQUID_CHAIN_ID && (
             <>
               Minimum deposit amount: <b>1$</b> <br />
@@ -336,7 +336,7 @@ export function QRDeposit({
         {/* Copy button */}
         <button
           onClick={handleCopyAddress}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-500 py-3.5 font-medium text-white transition-all hover:bg-blue-600"
+          className="anyspend-qr-copy-button flex w-full items-center justify-center gap-2 rounded-xl bg-blue-500 py-3.5 font-medium text-white transition-all hover:bg-blue-600"
         >
           Copy deposit address
         </button>
