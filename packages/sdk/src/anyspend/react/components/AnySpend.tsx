@@ -102,6 +102,7 @@ export function AnySpend(props: {
   onTokenSelect?: (token: components["schemas"]["Token"], event: { preventDefault: () => void }) => void;
   onSuccess?: (txHash?: string) => void;
   customUsdInputValues?: string[];
+  hideHeader?: boolean;
 }) {
   const fingerprintConfig = getFingerprintConfig();
 
@@ -123,6 +124,7 @@ function AnySpendInner({
   onTokenSelect,
   onSuccess,
   customUsdInputValues,
+  hideHeader,
 }: {
   destinationTokenAddress?: string;
   destinationTokenChainId?: number;
@@ -134,6 +136,7 @@ function AnySpendInner({
   onTokenSelect?: (token: components["schemas"]["Token"], event: { preventDefault: () => void }) => void;
   onSuccess?: (txHash?: string) => void;
   customUsdInputValues?: string[];
+  hideHeader?: boolean;
 }) {
   const searchParams = useSearchParamsSSR();
   const router = useRouter();
@@ -1056,7 +1059,7 @@ function AnySpendInner({
     <div className={"mx-auto flex w-[460px] max-w-full flex-col items-center gap-2 pt-5"}>
       <div className={"flex w-full max-w-full flex-col items-center gap-2 px-5"}>
         {/* Token Header - Show when in buy mode */}
-        {isBuyMode && (
+        {isBuyMode && !hideHeader && (
           <div className="mb-4 flex flex-col items-center gap-3 text-center">
             {selectedDstToken.metadata?.logoURI && (
               <div className="relative">

@@ -103,6 +103,8 @@ export interface AnySpendDepositProps {
   chainSelectionDescription?: string;
   /** Number of top chains to show (default: 3) */
   topChainsCount?: number;
+  /** Callback when close button is clicked */
+  onClose?: () => void;
 }
 
 // Default supported chains
@@ -220,6 +222,7 @@ export function AnySpendDeposit({
   supportedChains = DEFAULT_SUPPORTED_CHAINS,
   minPoolSize = DEFAULT_MIN_POOL_SIZE,
   topChainsCount = 3,
+  onClose,
 }: AnySpendDepositProps) {
   const { connectedEOAWallet } = useAccountWallet();
   const eoaAddress = connectedEOAWallet?.getAccount()?.address;
@@ -335,17 +338,28 @@ export function AnySpendDeposit({
     return (
       <div
         className={cn(
-          "anyspend-deposit anyspend-deposit-chain-selection font-inter bg-as-surface-primary mx-auto w-full max-w-[460px]",
+          "anyspend-deposit anyspend-deposit-chain-selection font-inter bg-as-surface-primary relative mx-auto w-full max-w-[460px]",
           mode === "page" && "border-as-border-secondary overflow-hidden rounded-2xl border shadow-xl",
         )}
       >
+        {/* Close button */}
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="anyspend-deposit-close-button text-as-secondary hover:text-as-primary absolute right-4 top-4 z-10"
+          >
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
         <div className="anyspend-deposit-balance-header border-secondary border-b p-5">
           {/* Balance header */}
           {!isBalanceLoading && totalBalance > 0 && (
             <div className="anyspend-deposit-balance">
               <p className="anyspend-deposit-balance-label text-as-secondary text-sm">Your Balance</p>
-              <p className="anyspend-deposit-balance-value text-as-primary text-2xl font-semibold">
-                {formatDecimal(totalBalance)} <span className="text-as-secondary text-sm">USD</span>
+              <p className="anyspend-deposit-balance-value text-as-primary text-3xl font-semibold">
+                {formatDecimal(totalBalance)} <span className="text-sm">USD</span>
               </p>
             </div>
           )}
@@ -476,7 +490,7 @@ export function AnySpendDeposit({
         destinationChainId={destinationChainId}
         depositContractConfig={depositContractConfig}
         onBack={handleBack}
-        onClose={handleBack}
+        onClose={onClose ?? handleBack}
       />
     );
   }
@@ -500,6 +514,18 @@ export function AnySpendDeposit({
         </button>
       )}
 
+      {/* Close button */}
+      {onClose && (
+        <button
+          onClick={onClose}
+          className="anyspend-deposit-close-button text-as-secondary hover:text-as-primary absolute right-4 top-4 z-10"
+        >
+          <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      )}
+
       <div className={cn("anyspend-deposit-form-content", shouldShowChainSelection && "pt-8")}>
         {isHyperliquidDeposit ? (
           <AnySpend
@@ -512,6 +538,7 @@ export function AnySpendDeposit({
             onSuccess={txHash => onSuccess?.(txHash ?? "")}
             onTokenSelect={onTokenSelect}
             customUsdInputValues={customUsdInputValues}
+            hideHeader
           />
         ) : (
           <AnySpendCustomExactIn

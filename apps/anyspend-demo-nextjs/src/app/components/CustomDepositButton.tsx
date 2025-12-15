@@ -97,15 +97,13 @@ export function CustomDepositButton() {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="relative w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-xl">
-            {/* Close button */}
-            <button onClick={handleClose} className="absolute right-4 top-4 z-[100] text-gray-400 hover:text-gray-600">
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-
             {!address ? (
-              <div className="p-6">
+              <div className="relative p-6">
+                <button onClick={handleClose} className="absolute right-4 top-4 text-gray-400 hover:text-gray-600">
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
                 <div className="rounded-lg bg-yellow-50 p-4 text-center">
                   <p className="text-yellow-800">Please sign in first to use the deposit feature.</p>
                 </div>
@@ -117,6 +115,7 @@ export function CustomDepositButton() {
                 destinationToken={getHyperliquidUSDCToken()}
                 destinationChainId={HYPERLIQUID_CHAIN_ID}
                 onSuccess={handleSuccess}
+                onClose={handleClose}
                 actionLabel="deposit to Hyperliquid"
                 chainSelectionTitle="Deposit to Hyperliquid"
                 chainSelectionDescription="Select a chain to swap any token to USDC on Hyperliquid"
@@ -128,6 +127,7 @@ export function CustomDepositButton() {
                 destinationToken={USDC_TOKEN}
                 destinationChainId={base.id}
                 onSuccess={handleSuccess}
+                onClose={handleClose}
                 depositContractConfig={customExactInConfig}
                 actionLabel="deposit USDC"
                 chainSelectionTitle="Deposit to Contract"
