@@ -533,6 +533,7 @@ export function AnySpendDeposit({
             mode={mode}
             defaultActiveTab={paymentType}
             recipientAddress={recipientAddress}
+            sourceChainId={selectedChainId}
             destinationTokenAddress={destinationToken.address}
             destinationTokenChainId={destinationChainId}
             onSuccess={txHash => onSuccess?.(txHash ?? "")}

@@ -90,6 +90,7 @@ const ANYSPEND_RECIPIENTS_KEY = "anyspend_recipients";
 export function AnySpend(props: {
   mode?: "page" | "modal";
   defaultActiveTab?: "crypto" | "fiat";
+  sourceChainId?: number;
   destinationTokenAddress?: string;
   destinationTokenChainId?: number;
   recipientAddress?: string;
@@ -114,6 +115,7 @@ export function AnySpend(props: {
 }
 
 function AnySpendInner({
+  sourceChainId,
   destinationTokenAddress,
   destinationTokenChainId,
   mode = "modal",
@@ -126,6 +128,7 @@ function AnySpendInner({
   customUsdInputValues,
   hideHeader,
 }: {
+  sourceChainId?: number;
   destinationTokenAddress?: string;
   destinationTokenChainId?: number;
   mode?: "page" | "modal";
@@ -214,7 +217,7 @@ function AnySpendInner({
   // const recipientInputRef = useRef<HTMLInputElement>(null);
 
   // Get initial chain IDs from URL or defaults
-  const initialSrcChainId = parseInt(searchParams.get("fromChainId") || "0") || mainnet.id;
+  const initialSrcChainId = sourceChainId || parseInt(searchParams.get("fromChainId") || "0") || mainnet.id;
   const initialDstChainId =
     parseInt(searchParams.get("toChainId") || "0") || (isBuyMode ? destinationTokenChainId : base.id);
 
