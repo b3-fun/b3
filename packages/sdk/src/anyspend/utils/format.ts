@@ -6,9 +6,7 @@ export const getStatusDisplay = (
 ): { text: string; status: "processing" | "success" | "failure"; description?: string } => {
   const srcToken = order.metadata?.srcToken;
   const dstToken = order.metadata?.dstToken;
-  const formattedSrcAmount = srcToken
-    ? formatTokenAmount(BigInt(order.srcAmount), srcToken.decimals)
-    : undefined;
+  const formattedSrcAmount = srcToken ? formatTokenAmount(BigInt(order.srcAmount), srcToken.decimals) : undefined;
   const actualDstAmount = order.settlement?.actualDstAmount;
   const formattedActualDstAmount =
     actualDstAmount && dstToken ? formatTokenAmount(BigInt(actualDstAmount), dstToken.decimals) : undefined;
