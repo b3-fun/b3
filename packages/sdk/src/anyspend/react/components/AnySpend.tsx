@@ -1182,22 +1182,16 @@ function AnySpendInner({
                   }
 
                   // Swap chain selections
-                  const tempSrcChainId = selectedSrcChainId;
-                  const tempDstChainId = selectedDstChainId;
-                  setSelectedSrcChainId(tempDstChainId);
-                  setSelectedDstChainId(tempSrcChainId);
+                  setSelectedSrcChainId(selectedDstChainId);
+                  setSelectedDstChainId(selectedSrcChainId);
 
                   // Swap token selections
-                  const tempSrcToken = selectedSrcToken;
-                  const tempDstToken = selectedDstToken;
-                  setSelectedSrcToken(tempDstToken);
-                  setSelectedDstToken(tempSrcToken);
+                  setSelectedSrcToken(selectedDstToken);
+                  setSelectedDstToken(selectedSrcToken);
 
                   // Swap amounts
-                  const tempSrcAmount = srcAmount;
-                  const tempDstAmount = dstAmount;
-                  setSrcAmount(tempDstAmount);
-                  setDstAmount(tempSrcAmount);
+                  setSrcAmount(dstAmount);
+                  setDstAmount(srcAmount);
                 }}
               >
                 <div className="relative flex items-center justify-center transition-opacity">
