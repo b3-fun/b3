@@ -219,7 +219,8 @@ export function SignInWithB3Flow({
         setJustCompletedLogin(true);
       }
 
-      // Check if we should show Turnkey login form
+      // Check if we should show Turnkey login form as SECONDARY option (after wallet connection)
+      // This only applies when NEXT_PUBLIC_TURNKEY_PRIMARY is NOT set to true
       // Show if enableTurnkey is true AND user just logged in AND hasn't completed Turnkey auth in this session
       // For new users (!turnkeyId): Show email form
       // For returning users (turnkeyId && turnkeyEmail): Auto-skip to OTP
@@ -227,8 +228,10 @@ export function SignInWithB3Flow({
       const hasTurnkeyId = user?.partnerIds?.turnkeyId;
       const hasTurnkeyEmail = !!user?.email;
       const isTurnkeyModalCurrentlyOpen = contentType?.type === "turnkeyAuth";
+      const isTurnkeyPrimary = process.env.NEXT_PUBLIC_TURNKEY_PRIMARY === "true";
       const shouldShowTurnkeyModal =
         enableTurnkey &&
+        !isTurnkeyPrimary &&
         user &&
         !turnkeyAuthCompleted &&
         !isTurnkeyModalCurrentlyOpen &&
@@ -355,9 +358,10 @@ export function SignInWithB3Flow({
       </LoginStepContainer>
     );
   } else if (step === "login") {
-    // PRIORITY: If Turnkey is enabled, show Turnkey modal FIRST as the primary authentication option
+    // PRIORITY: If Turnkey is enabled AND NEXT_PUBLIC_TURNKEY_PRIMARY is true, show Turnkey modal FIRST as the primary authentication option
     // Show Turnkey when enabled and not already completed in this session
-    const shouldShowTurnkeyFirst = enableTurnkey && !turnkeyAuthCompleted;
+    const isTurnkeyPrimary = process.env.NEXT_PUBLIC_TURNKEY_PRIMARY === "true";
+    const shouldShowTurnkeyFirst = enableTurnkey && isTurnkeyPrimary && !turnkeyAuthCompleted;
 
     if (shouldShowTurnkeyFirst) {
       // Don't show loading spinner for Turnkey - let the modal handle its own loading state
