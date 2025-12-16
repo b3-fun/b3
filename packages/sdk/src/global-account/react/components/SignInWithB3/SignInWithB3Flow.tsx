@@ -8,7 +8,7 @@ import {
   useModalStore,
 } from "@b3dotfun/sdk/global-account/react";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useActiveAccount } from "thirdweb/react";
 import { Account } from "thirdweb/wallets";
 import { TurnkeyAuthModal } from "../TurnkeyAuthModal";
@@ -51,6 +51,7 @@ export function SignInWithB3Flow({
   const [refetchCount, setRefetchCount] = useState(0);
   const [refetchError, setRefetchError] = useState<string | null>(null);
   const [turnkeyAuthCompleted, setTurnkeyAuthCompleted] = useState(false);
+  const justCompletedLoginRef = useRef(false);
   const {
     data: signers,
     refetch: refetchSigners,
@@ -195,9 +196,8 @@ export function SignInWithB3Flow({
       closeAfterLogin,
       source,
       signersEnabled,
-      setIsAuthenticated,
-      setIsConnected,
-      setJustCompletedLogin,
+      // Zustand setters are stable and don't need to be in dependencies:
+      // setIsAuthenticated, setIsConnected, setJustCompletedLogin
     ],
   );
 
@@ -215,7 +215,9 @@ export function SignInWithB3Flow({
     if (isConnected && isAuthenticated && user) {
       // Mark that login just completed BEFORE opening manage account or closing modal
       // This allows Turnkey modal to show (if enableTurnkey is true)
-      if (closeAfterLogin) {
+      // Use ref to prevent setting this multiple times and causing infinite loops
+      if (closeAfterLogin && !justCompletedLoginRef.current) {
+        justCompletedLoginRef.current = true;
         setJustCompletedLogin(true);
       }
 
@@ -270,16 +272,17 @@ export function SignInWithB3Flow({
     handleRefetchSigners,
     source,
     closeAfterLogin,
-    setB3ModalContentType,
+    // Zustand setters are stable - removed to prevent infinite loops:
+    // setB3ModalContentType,
+    // setB3ModalOpen,
+    // setJustCompletedLogin
     chain,
     onSessionKeySuccess,
-    setB3ModalOpen,
     signersEnabled,
     isConnected,
     isAuthenticating,
     isAuthenticated,
     isOpen,
-    setJustCompletedLogin,
     user,
     enableTurnkey,
     turnkeyAuthCompleted,
