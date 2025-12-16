@@ -8,7 +8,7 @@ import {
   useModalStore,
 } from "@b3dotfun/sdk/global-account/react";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useActiveAccount } from "thirdweb/react";
 import { Account } from "thirdweb/wallets";
 import { TurnkeyAuthModal } from "../TurnkeyAuthModal";
@@ -51,7 +51,6 @@ export function SignInWithB3Flow({
   const [refetchCount, setRefetchCount] = useState(0);
   const [refetchError, setRefetchError] = useState<string | null>(null);
   const [turnkeyAuthCompleted, setTurnkeyAuthCompleted] = useState(false);
-  const justCompletedLoginRef = useRef(false);
   const {
     data: signers,
     refetch: refetchSigners,
@@ -185,11 +184,8 @@ export function SignInWithB3Flow({
       });
       // The useEffect will re-run with updated user data to complete the sign-in process
     },
-    // Zustand setters are stable and don't need to be in dependencies:
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       refetchUser,
-      setB3ModalContentType,
       strategies,
       onLoginSuccess,
       onSessionKeySuccess,
@@ -200,8 +196,10 @@ export function SignInWithB3Flow({
       closeAfterLogin,
       source,
       signersEnabled,
-      // Zustand setters are stable and don't need to be in dependencies:
-      // setIsAuthenticated, setIsConnected, setJustCompletedLogin
+      setB3ModalContentType,
+      setIsAuthenticated,
+      setIsConnected,
+      setJustCompletedLogin,
     ],
   );
 
@@ -220,9 +218,7 @@ export function SignInWithB3Flow({
       if (isConnected && isAuthenticated && user) {
         // Mark that login just completed BEFORE opening manage account or closing modal
         // This allows Turnkey modal to show (if enableTurnkey is true)
-        // Use ref to prevent setting this multiple times and causing infinite loops
-        if (closeAfterLogin && !justCompletedLoginRef.current) {
-          justCompletedLoginRef.current = true;
+        if (closeAfterLogin) {
           setJustCompletedLogin(true);
         }
 
@@ -271,7 +267,6 @@ export function SignInWithB3Flow({
         handlePostTurnkeyFlow();
       }
     },
-    // handlePostTurnkeyFlow changes when its dependencies change, causing infinite loops
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       signers,
@@ -292,9 +287,9 @@ export function SignInWithB3Flow({
       user,
       enableTurnkey,
       turnkeyAuthCompleted,
-      handleTurnkeySuccess,
+      // handleTurnkeySuccess, // This is causing infinite loops
       contentType,
-      // handlePostTurnkeyFlow - removed because it changes when signers/partnerId/etc change, triggering infinite loops
+      handlePostTurnkeyFlow,
     ],
   );
 
@@ -312,7 +307,9 @@ export function SignInWithB3Flow({
     if (closeAfterLogin && sessionKeyAdded) {
       setB3ModalOpen(false);
     }
-  }, [closeAfterLogin, sessionKeyAdded, setB3ModalOpen]);
+    // setB3ModalOpen is stable
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [closeAfterLogin, sessionKeyAdded]);
 
   const onSessionKeySuccessEnhanced = useCallback(() => {
     onSessionKeySuccess?.();
