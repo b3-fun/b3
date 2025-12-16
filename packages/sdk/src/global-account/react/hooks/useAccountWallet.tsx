@@ -140,6 +140,5 @@ export function useAccountWalletImage(): string {
 
   const avatarUrl = profileData?.avatar;
 
-
   return avatarUrl || (isActiveSmartWallet ? smartWalletIcon : walletImage) || "";
 }
