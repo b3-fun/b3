@@ -1961,6 +1961,15 @@ export interface components {
        */
       fundAmount: string;
     };
+    /** @description DepositFirst payload - empty at creation time, details determined after deposit is detected */
+    DepositFirstPayload: Record<string, never>;
+    /** @description DepositFirst metadata for display purposes */
+    DepositFirstMetadata: {
+      /** @description Token accepted for deposit */
+      srcToken: components["schemas"]["Token"];
+      /** @description Token to swap to after deposit */
+      dstToken: components["schemas"]["Token"];
+    };
     /** @description Swap metadata for display purposes */
     SwapMetadata: {
       srcToken: components["schemas"]["Token"];
@@ -2051,6 +2060,7 @@ export interface components {
         | "waiting_stripe_payment"
         | "expired"
         | "sending_token_from_vault"
+        | "quoting_after_deposit"
         | "relay"
         | "executing"
         | "executed"
@@ -2186,6 +2196,15 @@ export interface components {
       payload: components["schemas"]["FundTournamentPayload"];
       metadata: components["schemas"]["TournamentMetadata"];
     };
+    DepositFirstOrder: components["schemas"]["BaseOrder"] & {
+      /**
+       * @description Order type for deposit-first flow where amount is determined after deposit
+       * @enum {string}
+       */
+      type: "deposit_first";
+      payload: components["schemas"]["DepositFirstPayload"];
+      metadata: components["schemas"]["DepositFirstMetadata"];
+    };
     Order:
       | components["schemas"]["SwapOrder"]
       | components["schemas"]["X402SwapOrder"]
@@ -2194,7 +2213,8 @@ export interface components {
       | components["schemas"]["CustomExactInOrder"]
       | components["schemas"]["MintNftOrder"]
       | components["schemas"]["JoinTournamentOrder"]
-      | components["schemas"]["FundTournamentOrder"];
+      | components["schemas"]["FundTournamentOrder"]
+      | components["schemas"]["DepositFirstOrder"];
     /** @description Swap order request */
     SwapOrderRequest: {
       /**
@@ -2595,6 +2615,50 @@ export interface components {
        */
       creatorAddress?: string;
     };
+    /** @description Deposit-first order request. The srcAmount is determined after deposit is detected, so it is not required at creation time. This flow does not support onramp - users deposit crypto directly. */
+    DepositFirstOrderRequest: {
+      /**
+       * @description Order type for deposit-first flow
+       * @enum {string}
+       */
+      type: "deposit_first";
+      /**
+       * @description Address to receive the destination tokens after swap
+       * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
+       */
+      recipientAddress: string;
+      /**
+       * @description Source chain ID where deposit will be made
+       * @example 8453
+       */
+      srcChain: number;
+      /**
+       * @description Destination chain ID for the swap
+       * @example 8453
+       */
+      dstChain: number;
+      /**
+       * @description Token contract address that will be deposited
+       * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+       */
+      srcTokenAddress: string;
+      /**
+       * @description Token contract address to receive after swap
+       * @example 0x0000000000000000000000000000000000000000
+       */
+      dstTokenAddress: string;
+      payload: components["schemas"]["DepositFirstPayload"];
+      metadata: components["schemas"]["DepositFirstMetadata"];
+      /** @description Optional partner identifier */
+      partnerId?: string;
+      /** @description Optional client reference identifier for tracking purposes (alphanumeric, hyphens, and underscores only, max 255 chars) */
+      clientReferenceId?: string;
+      /**
+       * @description Optional address of the order creator
+       * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
+       */
+      creatorAddress?: string;
+    };
     OrderRequest:
       | components["schemas"]["SwapOrderRequest"]
       | components["schemas"]["X402SwapOrderRequest"]
@@ -2603,7 +2667,8 @@ export interface components {
       | components["schemas"]["CustomExactInOrderRequest"]
       | components["schemas"]["MintNftOrderRequest"]
       | components["schemas"]["JoinTournamentOrderRequest"]
-      | components["schemas"]["FundTournamentOrderRequest"];
+      | components["schemas"]["FundTournamentOrderRequest"]
+      | components["schemas"]["DepositFirstOrderRequest"];
     /** @description Deposit transaction (payment from user) */
     DepositTx: {
       /**

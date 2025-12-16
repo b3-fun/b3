@@ -29,6 +29,8 @@ interface OrderDetailsCollapsibleProps {
   showTotal?: boolean;
   totalAmount?: string;
   points?: number;
+  isOpen?: boolean;
+  onOpenChange?: (isOpen: boolean) => void;
 }
 
 export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
@@ -42,15 +44,22 @@ export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
   showTotal = false,
   totalAmount,
   points,
+  isOpen,
+  onOpenChange,
 }: OrderDetailsCollapsibleProps) {
-  const [showOrderDetails, setShowOrderDetails] = useState(true);
+  const [internalOpen, setInternalOpen] = useState(true);
+
+  // Use controlled mode if isOpen is provided, otherwise use internal state
+  const showOrderDetails = isOpen !== undefined ? isOpen : internalOpen;
+  const setShowOrderDetails = onOpenChange || setInternalOpen;
 
   // Calculate expected amount if not provided
   const expectedDstAmount =
     order.type === "mint_nft" ||
     order.type === "join_tournament" ||
     order.type === "fund_tournament" ||
-    order.type === "custom"
+    order.type === "custom" ||
+    order.type === "deposit_first"
       ? "0"
       : order.payload.expectedDstAmount.toString();
 
@@ -95,9 +104,12 @@ export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
             <div className="order-details-divider divider w-full" />
 
             {/* Expected Amount/Action Section */}
-            <div className="order-details-expected-section flex w-full items-center justify-between gap-2">
-              <div className="order-details-expected-label text-as-tertiarry">
-                {order.type === "swap" || order.type === "mint_nft" || order.type === "hype_duel"
+            <div className="order-details-expected-section flex w-full items-start justify-between gap-2">
+              <div className="order-details-expected-label text-as-tertiarry shrink-0">
+                {order.type === "swap" ||
+                order.type === "deposit_first" ||
+                order.type === "mint_nft" ||
+                order.type === "hype_duel"
                   ? "Expected to receive"
                   : order.type === "join_tournament"
                     ? "Join tournament"
@@ -110,9 +122,9 @@ export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
                         : ""}
               </div>
 
-              <div className="order-details-expected-value flex items-end gap-2">
-                {order.type === "swap" ? (
-                  `~${finalFormattedExpectedDstAmount} ${dstToken.symbol}`
+              <div className="order-details-expected-value flex flex-wrap items-center justify-end gap-2">
+                {order.type === "swap" || order.type === "deposit_first" ? (
+                  <span className="order-details-amount-text">{`~${finalFormattedExpectedDstAmount} ${dstToken.symbol}`}</span>
                 ) : order.type === "mint_nft" ? (
                   <div className="order-details-nft-info flex items-center gap-2">
                     <img src={nft?.imageUrl} alt={nft?.name || "NFT"} className="order-details-nft-image h-5 w-5" />

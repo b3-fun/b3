@@ -23,6 +23,7 @@ export interface B3ContextType {
   theme: "light" | "dark";
   clientType: ClientType;
   partnerId: string;
+  stripePublishableKey?: string;
   createClientReferenceId?: (params: CreateOrderParams | CreateOnrampOrderParams) => Promise<string>;
   enableTurnkey?: boolean;
 }

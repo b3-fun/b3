@@ -5,6 +5,13 @@ import { avalanche, bsc, polygon } from "viem/chains";
 export const HYPERLIQUID_CHAIN_ID = 1337;
 export const HYPEREVM_CHAIN_ID = 999;
 
+/**
+ * Hyperliquid uses a special 34-character USDC address format (0x + 32 hex digits)
+ * instead of the standard 42-character EVM address format.
+ * This is required by Relay SDK for Hyperliquid integration.
+ */
+export const HYPERLIQUID_USDC_ADDRESS = "0x00000000000000000000000000000000";
+
 export function isNativeToken(address: string): boolean {
   return address.toLowerCase() === ZERO_ADDRESS || address.toLowerCase() === RELAY_SOL_ADDRESS;
 }
@@ -90,10 +97,10 @@ export function getHyperEVMNativeToken(): components["schemas"]["Token"] {
 export function getHyperliquidUSDCToken(): components["schemas"]["Token"] {
   return {
     chainId: HYPERLIQUID_CHAIN_ID,
-    address: ZERO_ADDRESS,
+    address: HYPERLIQUID_USDC_ADDRESS,
     symbol: "USDC",
     name: "USD Coin",
-    decimals: 6,
+    decimals: 8, // Hyperliquid USDC uses 8 decimals, not 6
     metadata: {
       logoURI: "https://ethereum-optimism.github.io/data/USDC/logo.png",
     },

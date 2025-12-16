@@ -86,10 +86,23 @@ export const NFT_CONTRACTS: components["schemas"]["NftContract"][] = [
 
 export const DEFAULT_NFT_CONTRACT = NFT_CONTRACTS[1];
 
+// Default B3 Stripe publishable key
 export const STRIPE_CONFIG = {
   publishableKey:
     "pk_live_51QkrBwJnoDg53PsPq7QYOxSLfnXvtCVeD9UuyZ6c136i42XtYC2Z2bl1W5xbDg6AaoGyq63ErCc0yv3C2KBX29CG002AE862CP",
 } as const;
+
+/**
+ * Get the appropriate Stripe publishable key.
+ * If a custom key is provided (via B3Provider stripePublishableKey prop), use it.
+ * Otherwise, fall back to the default B3 Stripe account.
+ */
+export function getStripePublishableKey(customKey?: string | null): string {
+  if (customKey) {
+    return customKey;
+  }
+  return STRIPE_CONFIG.publishableKey;
+}
 
 export const PAYMENT_METHOD_ICONS = {
   visa: "https://github.com/marcovoliveira/react-svg-credit-card-payment-icons/raw/main/src/icons/flat-rounded/visa.svg",

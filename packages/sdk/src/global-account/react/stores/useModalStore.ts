@@ -151,6 +151,10 @@ export interface AnySpendModalProps extends BaseModalProps {
   customUsdInputValues?: string[];
   /** Client-provided reference ID for tracking orders */
   clientReferenceId?: string;
+  /** Whether to hide the header */
+  hideHeader?: boolean;
+  /** When true, disables URL parameter management for swap configuration */
+  disableUrlParamManagement?: boolean;
 }
 
 /**

@@ -45,6 +45,7 @@ export function B3Provider({
   clientType = "rest",
   rpcUrls,
   partnerId,
+  stripePublishableKey,
   onConnect,
   connectors,
   overrideDefaultConnectors = false,
@@ -64,6 +65,8 @@ export function B3Provider({
   clientType?: ClientType;
   rpcUrls?: Record<number, string>;
   partnerId: string;
+  /** Partner-specific Stripe publishable key. If not provided, uses default B3 Stripe account. */
+  stripePublishableKey?: string;
   onConnect?: (wallet: Wallet, b3Jwt: string) => void | Promise<void>;
   connectors?: CreateConnectorFn[];
   overrideDefaultConnectors?: boolean;
@@ -99,6 +102,7 @@ export function B3Provider({
                   automaticallySetFirstEoa={!!automaticallySetFirstEoa}
                   clientType={clientType}
                   partnerId={partnerId}
+                  stripePublishableKey={stripePublishableKey}
                   createClientReferenceId={createClientReferenceId}
                   enableTurnkey={enableTurnkey}
                 >
@@ -130,6 +134,7 @@ export function InnerProvider({
   theme = "light",
   clientType = "socket",
   partnerId,
+  stripePublishableKey,
   createClientReferenceId,
   enableTurnkey,
 }: {
@@ -141,6 +146,7 @@ export function InnerProvider({
   theme: "light" | "dark";
   clientType?: ClientType;
   partnerId: string;
+  stripePublishableKey?: string;
   createClientReferenceId?: (params: CreateOrderParams | CreateOnrampOrderParams) => Promise<string>;
   enableTurnkey?: boolean;
 }) {
@@ -179,6 +185,7 @@ export function InnerProvider({
         theme,
         clientType,
         partnerId: partnerId,
+        stripePublishableKey,
         createClientReferenceId,
         enableTurnkey,
       }}
