@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useTurnkeyAuth } from "../hooks/useTurnkeyAuth";
 
 type ModalStep = "email" | "otp" | "success";
@@ -94,17 +94,20 @@ export function TurnkeyAuthModal({ onClose, onSuccess, initialEmail = "", skipTo
     }
   };
 
+  const isTurnkeyPrimary = process.env.NEXT_PUBLIC_TURNKEY_PRIMARY === "true";
+  const walletBrand = isTurnkeyPrimary ? "Smart Wallet" : "AnySpend Wallet";
+
   return (
     <div className="font-neue-montreal p-8">
       {/* Email Step */}
       {step === "email" && (
         <>
           <h2 className="mb-6 text-center text-2xl font-bold text-gray-900 dark:text-white">
-            Setup your AnySpend Wallet
+            Setup your {walletBrand}
           </h2>
           <div className="mb-6 space-y-3 text-center text-sm text-gray-600 dark:text-gray-400">
             <p>
-              AnySpend uses a secure,
+              {isTurnkeyPrimary ? "We use a secure," : "AnySpend uses a secure,"}
               <br />
               embedded wallet to fund your workflows.
             </p>
@@ -158,7 +161,7 @@ export function TurnkeyAuthModal({ onClose, onSuccess, initialEmail = "", skipTo
           <h2 className="mb-4 text-center text-2xl font-bold text-gray-900 dark:text-white">2FA Security</h2>
           <div className="mb-6 space-y-3 text-center text-sm text-gray-600 dark:text-gray-400">
             <p>
-              AnySpend uses a secure,
+              {isTurnkeyPrimary ? "We use a secure," : "AnySpend uses a secure,"}
               <br />
               embedded wallet to fund your workflows.
               <br />
