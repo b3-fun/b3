@@ -1,10 +1,11 @@
-import { useB3, useProfile } from "@b3dotfun/sdk/global-account/react";
+import { useProfile } from "@b3dotfun/sdk/global-account/react";
 import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { useEffect, useMemo, useState } from "react";
 import { getLastAuthProvider, useActiveWallet, useConnectedWallets, useWalletImage } from "thirdweb/react";
 import { Account, Wallet } from "thirdweb/wallets";
 import { socialIcons } from "thirdweb/wallets/in-app";
+import { useB3Account } from "../components/B3Provider/useB3Account";
 
 const debug = debugB3React("useAccountWallet");
 
@@ -49,7 +50,7 @@ export function useAccountWallet(): {
   // const effectiveAccount = isAuthenticated ? accountOverride || activeAccount : undefined;
   // can we possibly just use useActiveAccount here?
   // --------------------
-  const { account } = useB3();
+  const account = useB3Account();
 
   const activeWallet = useActiveWallet();
   const connectedWallets = useConnectedWallets();
@@ -114,7 +115,7 @@ export function useAccountWallet(): {
 }
 
 export function useAccountWalletImage(): string {
-  const { account } = useB3();
+  const account = useB3Account();
 
   const activeWallet = useActiveWallet();
   const connectedWallets = useConnectedWallets();

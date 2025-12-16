@@ -1,11 +1,6 @@
 import { AnySpendNFTButton } from "@b3dotfun/sdk/anyspend/react";
-import {
-  B3DynamicModal,
-  B3Provider,
-  RequestPermissionsButton,
-  SignInWithB3,
-  useB3,
-} from "@b3dotfun/sdk/global-account/react";
+import { B3DynamicModal, B3Provider, RequestPermissionsButton, SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
+import { useB3Account } from "@b3dotfun/sdk/global-account/react/components/B3Provider/useB3Account";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Account } from "thirdweb/wallets";
@@ -97,7 +92,7 @@ function App() {
 }
 
 const InnerComponent = ({ account }: { account: string }) => {
-  const { account: b3Account } = useB3();
+  const b3Account = useB3Account();
 
   console.log("b3Account", b3Account);
 

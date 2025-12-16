@@ -1,25 +1,14 @@
 import { CreateOnrampOrderParams } from "@b3dotfun/sdk/anyspend/react/hooks/useAnyspendCreateOnrampOrder";
 import { CreateOrderParams } from "@b3dotfun/sdk/anyspend/react/hooks/useAnyspendCreateOrder";
-import {
-  RelayKitProviderWrapper,
-  TooltipProvider,
-  useAuthentication,
-  useAuthStore,
-} from "@b3dotfun/sdk/global-account/react";
+import { RelayKitProviderWrapper, TooltipProvider, useAuthStore } from "@b3dotfun/sdk/global-account/react";
+import { useAutoSelectWallet } from "@b3dotfun/sdk/global-account/react/hooks/useAutoSelectWallet";
 import { createWagmiConfig } from "@b3dotfun/sdk/global-account/react/utils/createWagmiConfig";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { loadGA4Script } from "@b3dotfun/sdk/global-account/utils/analytics";
-import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import "@relayprotocol/relay-kit-ui/styles.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  getLastAuthProvider,
-  ThirdwebProvider,
-  useActiveAccount,
-  useConnectedWallets,
-  useSetActiveWallet,
-} from "thirdweb/react";
+import { useEffect, useMemo } from "react";
+import { ThirdwebProvider, useActiveAccount } from "thirdweb/react";
 import { Account, Wallet } from "thirdweb/wallets";
 import { CreateConnectorFn, WagmiProvider } from "wagmi";
 import { ClientType, setClientType } from "../../../client-manager";
@@ -27,8 +16,6 @@ import { StyleRoot } from "../StyleRoot";
 import { setToastContext, ToastProvider, useToastContext } from "../Toast/index";
 import { LocalSDKProvider } from "./LocalSDKProvider";
 import { B3Context, B3ContextType } from "./types";
-
-const debug = debugB3React("B3Provider");
 
 /**
  * Default permissions configuration for B3 provider
@@ -164,66 +151,32 @@ export function InnerProvider({
   enableTurnkey?: boolean;
 }) {
   const activeAccount = useActiveAccount();
-  const [manuallySelectedWallet, setManuallySelectedWallet] = useState<Wallet | undefined>(undefined);
-  const wallets = useConnectedWallets();
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
-  const isConnected = useAuthStore(state => state.isConnected);
-  const justCompletedLogin = useAuthStore(state => state.justCompletedLogin);
-  const setActiveWallet = useSetActiveWallet();
-  const { user, setUser, refetchUser } = useAuthentication(partnerId);
-
-  debug("@@B3Provider:isConnected", isConnected);
-  debug("@@wallets", wallets);
-  debug("@@B3Provider:user", user);
-  debug("@@B3Provider:justCompletedLogin", justCompletedLogin);
+  //const isConnected = useAuthStore(state => state.isConnected);
+  //const justCompletedLogin = useAuthStore(state => state.justCompletedLogin);
 
   // Use given accountOverride or activeAccount from thirdweb
+  // WOJ: why if isAuthenticated is false, we don't use activeAccount, which should be undefined?
+  // skip isAuthenticated check ?
   const effectiveAccount = isAuthenticated ? accountOverride || activeAccount : undefined;
 
-  const setWallet = useCallback(
-    (wallet: Wallet) => {
-      setManuallySelectedWallet(wallet);
-      const account = wallet.getAccount();
-      debug("@@setWallet", wallet.id, account?.address);
-      setActiveWallet(wallet);
-    },
-    [setManuallySelectedWallet, setActiveWallet],
-  );
+  // Wrapper to set active wallet via thirdweb
+  // Note: `wallet` in context is deprecated - use useActiveWallet() from thirdweb/react instead
 
-  useEffect(() => {
-    const autoSelectFirstEOAWallet = async () => {
-      // Only proceed if auto-selection is enabled and user is authenticated
-      if (!automaticallySetFirstEoa || !isAuthenticated) {
-        return;
-      }
-
-      // Find the first EOA wallet (excluding ecosystem wallets)
-      const isEOAWallet = (wallet: Wallet) => !wallet.id.startsWith("ecosystem.");
-      const firstEOAWallet = wallets.find(isEOAWallet);
-
-      if (firstEOAWallet) {
-        // Only auto-select if the last auth was via wallet or no previous auth provider
-        const lastAuthProvider = await getLastAuthProvider();
-        const shouldAutoSelect = lastAuthProvider === null || lastAuthProvider === "wallet";
-
-        if (shouldAutoSelect) {
-          setWallet(firstEOAWallet);
-        }
-      }
-    };
-
-    autoSelectFirstEOAWallet();
-  }, [automaticallySetFirstEoa, isAuthenticated, setWallet, wallets]);
+  // Auto-select first EOA wallet when enabled
+  useAutoSelectWallet({
+    enabled: automaticallySetFirstEoa,
+  });
 
   return (
     <B3Context.Provider
       value={{
         account: effectiveAccount,
-        setWallet,
-        wallet: manuallySelectedWallet,
-        user,
-        setUser,
-        refetchUser,
+        // setWallet,
+        //wallet: undefined, // Deprecated: use useActiveWallet() from thirdweb/react instead
+        //user,
+        //setUser,
+        //refetchUser,
         initialized: true,
         ready: !!effectiveAccount,
         automaticallySetFirstEoa,
@@ -237,14 +190,10 @@ export function InnerProvider({
         enableTurnkey,
       }}
     >
-      <InnerProvider2>{children}</InnerProvider2>
+      {children}
     </B3Context.Provider>
   );
 }
-
-const InnerProvider2 = ({ children }: { children: React.ReactNode }) => {
-  return <>{children}</>;
-};
 
 /**
  * Component to connect the toast context to the global toast API

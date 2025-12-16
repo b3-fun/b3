@@ -3,7 +3,7 @@ import {
   Button,
   ManageAccountModalProps,
   toast,
-  useB3,
+  useAuthentication,
   useModalStore,
   useQueryB3,
 } from "@b3dotfun/sdk/global-account/react";
@@ -37,7 +37,7 @@ export const LinkAccount = ({
   const isLinking = useModalStore(state => state.isLinking);
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
   const contentType = useModalStore(state => state.contentType);
-  const { user, setUser } = useB3();
+  const { user, setUser } = useAuthentication(partnerId);
   const [isUpdatingCode, setIsUpdatingCode] = useState(false);
   const [newReferralCode, setNewReferralCode] = useState("");
   const [isEditingCode, setIsEditingCode] = useState(false);

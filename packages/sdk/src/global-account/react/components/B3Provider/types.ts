@@ -1,4 +1,3 @@
-import { Users } from "@b3dotfun/b3-api";
 import { CreateOnrampOrderParams } from "@b3dotfun/sdk/anyspend/react/hooks/useAnyspendCreateOnrampOrder";
 import { CreateOrderParams } from "@b3dotfun/sdk/anyspend/react/hooks/useAnyspendCreateOrder";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
@@ -12,11 +11,11 @@ import { ClientType } from "../../../client-manager";
 export interface B3ContextType {
   account?: Account;
   automaticallySetFirstEoa: boolean;
-  user?: Users;
-  setWallet: (wallet: Wallet) => void;
+  //user?: Users;
+  //setWallet: (wallet: Wallet) => void;
   wallet?: Wallet;
-  setUser: (user?: Users) => void;
-  refetchUser: () => Promise<any>;
+  //setUser: (user?: Users) => void;
+  //refetchUser: () => Promise<any>;
   initialized: boolean;
   ready: boolean;
   environment?: "development" | "production";
@@ -35,11 +34,11 @@ export interface B3ContextType {
 export const B3Context = createContext<B3ContextType>({
   account: undefined,
   automaticallySetFirstEoa: false,
-  user: undefined,
-  setWallet: () => {},
+  //user: undefined,
+  //setWallet: () => {},
   wallet: undefined,
-  setUser: () => {},
-  refetchUser: async () => {},
+  //setUser: () => {},
+  //refetchUser: async () => {},
   initialized: false,
   ready: false,
   environment: "development",
