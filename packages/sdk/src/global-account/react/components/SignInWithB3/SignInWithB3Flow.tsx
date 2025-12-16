@@ -89,7 +89,9 @@ export function SignInWithB3Flow({
       refetchSigners();
       setRefetchQueued(false);
     }, backoffDelay);
-  }, [refetchCount, refetchSigners, onError, setRefetchQueued, refetchQueued]);
+    // State setters are stable and don't need to be in dependencies
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refetchCount, refetchSigners, onError, refetchQueued]);
 
   // Extract the completion flow logic to be reused
   const handlePostTurnkeyFlow = useCallback(() => {
@@ -269,7 +271,7 @@ export function SignInWithB3Flow({
         handlePostTurnkeyFlow();
       }
     },
-    // Zustand setters are stable and don't need to be in dependencies:
+    // handlePostTurnkeyFlow changes when its dependencies change, causing infinite loops
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       signers,
@@ -278,12 +280,10 @@ export function SignInWithB3Flow({
       handleRefetchSigners,
       source,
       closeAfterLogin,
-      // Zustand setters are stable - removed to prevent infinite loops:
-      // setB3ModalContentType,
-      // setB3ModalOpen,
-      // setJustCompletedLogin
+      setB3ModalContentType,
       chain,
       onSessionKeySuccess,
+      setB3ModalOpen,
       signersEnabled,
       isConnected,
       isAuthenticating,
@@ -294,7 +294,7 @@ export function SignInWithB3Flow({
       turnkeyAuthCompleted,
       handleTurnkeySuccess,
       contentType,
-      handlePostTurnkeyFlow,
+      // handlePostTurnkeyFlow - removed because it changes when signers/partnerId/etc change, triggering infinite loops
     ],
   );
 
