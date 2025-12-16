@@ -183,6 +183,8 @@ export function SignInWithB3Flow({
       });
       // The useEffect will re-run with updated user data to complete the sign-in process
     },
+    // Zustand setters are stable and don't need to be in dependencies:
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       refetchUser,
       setB3ModalContentType,
@@ -202,94 +204,99 @@ export function SignInWithB3Flow({
   );
 
   // Handle post-login flow after signers are loaded
-  useEffect(() => {
-    debug("@@SignInWithB3Flow:useEffect", {
+  useEffect(
+    () => {
+      debug("@@SignInWithB3Flow:useEffect", {
+        isConnected,
+        isAuthenticating,
+        isFetchingSigners,
+        closeAfterLogin,
+        isOpen,
+        source,
+      });
+
+      if (isConnected && isAuthenticated && user) {
+        // Mark that login just completed BEFORE opening manage account or closing modal
+        // This allows Turnkey modal to show (if enableTurnkey is true)
+        // Use ref to prevent setting this multiple times and causing infinite loops
+        if (closeAfterLogin && !justCompletedLoginRef.current) {
+          justCompletedLoginRef.current = true;
+          setJustCompletedLogin(true);
+        }
+
+        // Check if we should show Turnkey login form as SECONDARY option (after wallet connection)
+        // This only applies when:
+        // - enableTurnkey={true} is set on B3Provider
+        // - NEXT_PUBLIC_TURNKEY_PRIMARY is NOT set to true (otherwise Turnkey shows as primary)
+        // - User just logged in AND hasn't completed Turnkey auth in this session
+        // For new users (!turnkeyId): Show email form
+        // For returning users (turnkeyId && turnkeyEmail): Auto-skip to OTP
+        // Also check that we're not already showing the Turnkey modal
+        const hasTurnkeyId = user?.partnerIds?.turnkeyId;
+        const hasTurnkeyEmail = !!user?.email;
+        const isTurnkeyModalCurrentlyOpen = contentType?.type === "turnkeyAuth";
+        const isTurnkeyPrimary = process.env.NEXT_PUBLIC_TURNKEY_PRIMARY === "true";
+        const shouldShowTurnkeyModal =
+          enableTurnkey &&
+          !isTurnkeyPrimary &&
+          user &&
+          !turnkeyAuthCompleted &&
+          !isTurnkeyModalCurrentlyOpen &&
+          (!hasTurnkeyId || (hasTurnkeyId && hasTurnkeyEmail));
+
+        if (shouldShowTurnkeyModal) {
+          // Extract email from user object - check partnerIds.turnkeyEmail first, then twProfiles, then user.email
+          const email = user?.email || user?.twProfiles?.find((profile: any) => profile.details?.email)?.details?.email;
+
+          // Open Turnkey modal through the modal store
+          setB3ModalContentType({
+            type: "turnkeyAuth",
+            onSuccess: handleTurnkeySuccess,
+            onClose: () => {
+              // After closing Turnkey modal, continue with the rest of the flow
+              setTurnkeyAuthCompleted(true);
+              debug("Turnkey modal closed, running post-Turnkey flow");
+              handlePostTurnkeyFlow();
+            },
+            initialEmail: email,
+            skipToOtp: !!(hasTurnkeyId && hasTurnkeyEmail),
+            closable: false, // Turnkey modal cannot be closed until auth is complete
+          });
+          return;
+        }
+
+        // Normal flow continues after Turnkey auth is complete (or if not needed)
+        handlePostTurnkeyFlow();
+      }
+    },
+    // Zustand setters are stable and don't need to be in dependencies:
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      signers,
+      isFetchingSigners,
+      partnerId,
+      handleRefetchSigners,
+      source,
+      closeAfterLogin,
+      // Zustand setters are stable - removed to prevent infinite loops:
+      // setB3ModalContentType,
+      // setB3ModalOpen,
+      // setJustCompletedLogin
+      chain,
+      onSessionKeySuccess,
+      signersEnabled,
       isConnected,
       isAuthenticating,
-      isFetchingSigners,
-      closeAfterLogin,
+      isAuthenticated,
       isOpen,
-      source,
-    });
-
-    if (isConnected && isAuthenticated && user) {
-      // Mark that login just completed BEFORE opening manage account or closing modal
-      // This allows Turnkey modal to show (if enableTurnkey is true)
-      // Use ref to prevent setting this multiple times and causing infinite loops
-      if (closeAfterLogin && !justCompletedLoginRef.current) {
-        justCompletedLoginRef.current = true;
-        setJustCompletedLogin(true);
-      }
-
-      // Check if we should show Turnkey login form as SECONDARY option (after wallet connection)
-      // This only applies when:
-      // - enableTurnkey={true} is set on B3Provider
-      // - NEXT_PUBLIC_TURNKEY_PRIMARY is NOT set to true (otherwise Turnkey shows as primary)
-      // - User just logged in AND hasn't completed Turnkey auth in this session
-      // For new users (!turnkeyId): Show email form
-      // For returning users (turnkeyId && turnkeyEmail): Auto-skip to OTP
-      // Also check that we're not already showing the Turnkey modal
-      const hasTurnkeyId = user?.partnerIds?.turnkeyId;
-      const hasTurnkeyEmail = !!user?.email;
-      const isTurnkeyModalCurrentlyOpen = contentType?.type === "turnkeyAuth";
-      const isTurnkeyPrimary = process.env.NEXT_PUBLIC_TURNKEY_PRIMARY === "true";
-      const shouldShowTurnkeyModal =
-        enableTurnkey &&
-        !isTurnkeyPrimary &&
-        user &&
-        !turnkeyAuthCompleted &&
-        !isTurnkeyModalCurrentlyOpen &&
-        (!hasTurnkeyId || (hasTurnkeyId && hasTurnkeyEmail));
-
-      if (shouldShowTurnkeyModal) {
-        // Extract email from user object - check partnerIds.turnkeyEmail first, then twProfiles, then user.email
-        const email = user?.email || user?.twProfiles?.find((profile: any) => profile.details?.email)?.details?.email;
-
-        // Open Turnkey modal through the modal store
-        setB3ModalContentType({
-          type: "turnkeyAuth",
-          onSuccess: handleTurnkeySuccess,
-          onClose: () => {
-            // After closing Turnkey modal, continue with the rest of the flow
-            setTurnkeyAuthCompleted(true);
-            debug("Turnkey modal closed, running post-Turnkey flow");
-            handlePostTurnkeyFlow();
-          },
-          initialEmail: email,
-          skipToOtp: !!(hasTurnkeyId && hasTurnkeyEmail),
-          closable: false, // Turnkey modal cannot be closed until auth is complete
-        });
-        return;
-      }
-
-      // Normal flow continues after Turnkey auth is complete (or if not needed)
-      handlePostTurnkeyFlow();
-    }
-  }, [
-    signers,
-    isFetchingSigners,
-    partnerId,
-    handleRefetchSigners,
-    source,
-    closeAfterLogin,
-    // Zustand setters are stable - removed to prevent infinite loops:
-    // setB3ModalContentType,
-    // setB3ModalOpen,
-    // setJustCompletedLogin
-    chain,
-    onSessionKeySuccess,
-    signersEnabled,
-    isConnected,
-    isAuthenticating,
-    isAuthenticated,
-    isOpen,
-    user,
-    enableTurnkey,
-    turnkeyAuthCompleted,
-    handleTurnkeySuccess,
-    contentType,
-    handlePostTurnkeyFlow,
-  ]);
+      user,
+      enableTurnkey,
+      turnkeyAuthCompleted,
+      handleTurnkeySuccess,
+      contentType,
+      handlePostTurnkeyFlow,
+    ],
+  );
 
   debug("render", {
     step,
