@@ -6,7 +6,6 @@ import { getLastAuthProvider, useActiveWallet, useConnectedWallets, useWalletIma
 import { Account, Wallet } from "thirdweb/wallets";
 import { socialIcons } from "thirdweb/wallets/in-app";
 import { useB3Account } from "../components/B3Provider/useB3Account";
-import { useB3Config } from "../components/B3Provider/useB3Config";
 
 const debug = debugB3React("useAccountWallet");
 
@@ -116,7 +115,6 @@ export function useAccountWallet(): {
 }
 
 export function useAccountWalletImage(): string {
-  const { partnerId } = useB3Config();
   const account = useB3Account();
 
   const activeWallet = useActiveWallet();
