@@ -1162,47 +1162,44 @@ function AnySpendInner({
           )}
 
           {/* Reverse swap direction section */}
-          <Button
-            variant="ghost"
-            className={cn(
-              "border-as-stroke bg-as-surface-primary absolute left-1/2 top-1/2 z-10 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-xl border-2 sm:h-8 sm:w-8 sm:rounded-xl",
-              isBuyMode && "top-[calc(50%+56px)] cursor-default",
-              activeTab === "fiat" && "hidden",
-              selectedDstChainId === HYPERLIQUID_CHAIN_ID && "cursor-not-allowed opacity-50",
-            )}
-            onClick={() => {
-              if (activeTab === "fiat" || isBuyMode) {
-                return;
-              }
+          {activeTab === "crypto" && (
+            <div className="z-10 -my-6 flex justify-center">
+              <Button
+                variant="ghost"
+                className={cn(
+                  "border-as-stroke bg-as-surface-primary h-10 w-10 rounded-xl border-2 sm:h-8 sm:w-8 sm:rounded-xl",
+                  isBuyMode && "cursor-default",
+                  selectedDstChainId === HYPERLIQUID_CHAIN_ID && "cursor-not-allowed opacity-50",
+                )}
+                onClick={() => {
+                  if (isBuyMode) {
+                    return;
+                  }
 
-              // Prevent swapping if destination is Hyperliquid (only supported as destination, not source)
-              if (selectedDstChainId === HYPERLIQUID_CHAIN_ID) {
-                return;
-              }
+                  // Prevent swapping if destination is Hyperliquid (only supported as destination, not source)
+                  if (selectedDstChainId === HYPERLIQUID_CHAIN_ID) {
+                    return;
+                  }
 
-              // Swap chain selections
-              const tempSrcChainId = selectedSrcChainId;
-              const tempDstChainId = selectedDstChainId;
-              setSelectedSrcChainId(tempDstChainId);
-              setSelectedDstChainId(tempSrcChainId);
+                  // Swap chain selections
+                  setSelectedSrcChainId(selectedDstChainId);
+                  setSelectedDstChainId(selectedSrcChainId);
 
-              // Swap token selections
-              const tempSrcToken = selectedSrcToken;
-              const tempDstToken = selectedDstToken;
-              setSelectedSrcToken(tempDstToken);
-              setSelectedDstToken(tempSrcToken);
+                  // Swap token selections
+                  setSelectedSrcToken(selectedDstToken);
+                  setSelectedDstToken(selectedSrcToken);
 
-              // Swap amounts
-              const tempSrcAmount = srcAmount;
-              const tempDstAmount = dstAmount;
-              setSrcAmount(tempDstAmount);
-              setDstAmount(tempSrcAmount);
-            }}
-          >
-            <div className="relative flex items-center justify-center transition-opacity">
-              <ArrowDown className="text-as-primary/50 h-5 w-5" />
+                  // Swap amounts
+                  setSrcAmount(dstAmount);
+                  setDstAmount(srcAmount);
+                }}
+              >
+                <div className="relative flex items-center justify-center transition-opacity">
+                  <ArrowDown className="text-as-primary/50 h-5 w-5" />
+                </div>
+              </Button>
             </div>
-          </Button>
+          )}
 
           {/* Receive section - Hidden when fiat tab is active */}
           {/* Receive section - Hidden when fiat tab is active */}
