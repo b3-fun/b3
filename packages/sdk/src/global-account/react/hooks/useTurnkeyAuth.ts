@@ -4,7 +4,7 @@ import { useCallback, useState } from "react";
 import app from "../../app";
 import { useB3Config } from "../components";
 import { useAuthStore } from "../stores";
-import { useAuthentication } from "./useAuthentication";
+import { useAuth } from "./useAuth";
 
 const debug = debugB3React("useTurnkeyAuth");
 
@@ -34,12 +34,15 @@ export function useTurnkeyAuth(): UseTurnkeyAuthReturn {
   const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
   const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
   const { partnerId } = useB3Config();
-  const { user } = useAuthentication(partnerId);
+  const { authenticate } = useAuth();
 
   /**
    * Step 1: Initiate login with email
-   * - Calls backend to create sub-org (if needed) and send OTP
+   * - Calls backend turnkey-jwt strategy (init action) to create sub-org (if needed) and send OTP
    * - Returns otpId to use in verification step
+   *
+   * Note: Uses the turnkey-jwt authentication strategy, not the service directly.
+   * The turnkey-jwt strategy handles both OTP flow (init/verify) and final authentication.
    */
   const initiateLogin = useCallback(
     async (email: string): Promise<TurnkeyAuthInitResponse> => {
@@ -48,20 +51,44 @@ export function useTurnkeyAuth(): UseTurnkeyAuthReturn {
       setIsAuthenticating(true);
 
       try {
-        if (!user?.userId) {
-          throw new Error("User ID is required to initiate Turnkey login.");
-        }
         debug(`Initiating login for: ${email}`);
 
-        // Call FeathersJS service to initialize OTP
-        const data: TurnkeyAuthInitResponse = await app.service("turnkey-auth").init({ email, userId: user.userId });
+        // Use authentication service with turnkey-jwt strategy (init action)
+        // userId is resolved from authentication context on the backend (params.user.userId)
+        // Backend will get userId from _params.user?.userId if authenticated, or handle unauthenticated case
+        // So we only need to send email
+        debug(`Calling app.authenticate with turnkey-jwt strategy (init action)`, { email });
+
+        const response = await app.authenticate({
+          strategy: "turnkey-jwt",
+          action: "init",
+          email,
+        } as any);
+
+        // The strategy returns the TurnkeyAuthInitResponse directly
+        const data = response as unknown as TurnkeyAuthInitResponse;
 
         debug(`OTP initialized successfully. OtpId: ${data.otpId}`);
 
         return data;
       } catch (err: any) {
         debug("Error initiating login:", err);
-        const errorMessage = err.message || "Failed to send OTP email. Please try again.";
+
+        // Provide more detailed error information
+        let errorMessage = "Failed to send OTP email. Please try again.";
+
+        if (err.message) {
+          errorMessage = err.message;
+        } else if (err.name === "TypeError" && err.message?.includes("fetch")) {
+          errorMessage = "Network error: Unable to reach the server. Please check your connection and try again.";
+        } else if (err.code === "ECONNREFUSED" || err.code === "ENOTFOUND") {
+          errorMessage = "Connection error: Unable to reach the server. Please check your internet connection.";
+        } else if (err.response) {
+          // FeathersJS error response
+          errorMessage = err.response.message || err.message || errorMessage;
+          debug("FeathersJS error response:", err.response);
+        }
+
         setError(errorMessage);
         throw err;
       } finally {
@@ -69,13 +96,13 @@ export function useTurnkeyAuth(): UseTurnkeyAuthReturn {
         setIsAuthenticating(false);
       }
     },
-    [user, setIsAuthenticating],
+    [setIsAuthenticating],
   );
 
   /**
    * Step 2: Verify OTP and authenticate
-   * - Verifies OTP with backend
-   * - Gets Turnkey session JWT
+   * - Verifies OTP with backend via turnkey-jwt strategy (verify action)
+   * - Gets Turnkey session JWT from the verify response
    * - Authenticates with b3-api using "turnkey-jwt" strategy
    * - JWT automatically stored in cookies by SDK
    */
@@ -86,22 +113,26 @@ export function useTurnkeyAuth(): UseTurnkeyAuthReturn {
       setIsAuthenticating(true);
 
       try {
-        debug(`Verifying OTP...`, { userId: user?.userId });
+        debug(`Verifying OTP...`, { otpId });
 
-        // Step 1: Verify OTP and get Turnkey session JWT
-        const { turnkeySessionJwt }: TurnkeyVerifyResponse = await app.service("turnkey-auth").verify({
+        // Step 1: Verify OTP with backend using turnkey-jwt strategy (verify action)
+        // This returns the Turnkey session JWT
+        const response = await app.authenticate({
+          strategy: "turnkey-jwt",
+          action: "verify",
           otpId,
           otpCode,
-        });
+        } as any);
 
-        debug(`OTP verified! Authenticating with b3-api...`);
+        // The strategy returns the TurnkeyAuthVerifyResponse directly
+        const verifyResult = response as unknown as TurnkeyVerifyResponse;
+        const { turnkeySessionJwt } = verifyResult;
+
+        debug(`OTP verified! Got Turnkey session JWT. Authenticating with b3-api...`);
 
         // Step 2: Authenticate with b3-api using Turnkey JWT
-        // The SDK will automatically store the b3-api JWT in cookies
-        const authResult = await app.authenticate({
-          strategy: "turnkey-jwt",
-          accessToken: turnkeySessionJwt,
-        } as any);
+        // Use the unified useAuth hook for authentication with "turnkey-jwt" strategy
+        const authResult = await authenticate(turnkeySessionJwt, partnerId || "");
 
         debug(`Successfully authenticated with b3-api!`, authResult);
 
@@ -123,7 +154,7 @@ export function useTurnkeyAuth(): UseTurnkeyAuthReturn {
         setIsAuthenticating(false);
       }
     },
-    [user, setIsAuthenticating, setIsAuthenticated],
+    [partnerId, setIsAuthenticating, setIsAuthenticated, authenticate],
   );
 
   const clearError = useCallback(() => {
