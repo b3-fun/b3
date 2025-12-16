@@ -354,28 +354,20 @@ export function AnySpendDeposit({
             </svg>
           </button>
         )}
-        <div className="anyspend-deposit-balance-header border-secondary border-b p-5">
-          {/* Balance header */}
-          {!isBalanceLoading && totalBalance > 0 && (
-            <div className="anyspend-deposit-balance">
-              <p className="anyspend-deposit-balance-label text-as-secondary text-sm">Your Balance</p>
-              <p className="anyspend-deposit-balance-value text-as-primary text-3xl font-semibold">
-                {formatDecimal(totalBalance)} <span className="text-sm">USD</span>
-              </p>
-            </div>
-          )}
-          {isBalanceLoading && (
-            <div className="anyspend-deposit-balance-skeleton">
-              <Skeleton className="mb-2 h-4 w-24" />
-              <Skeleton className="h-8 w-32" />
-            </div>
-          )}
-        </div>
+        {/* Balance header */}
+        {!isBalanceLoading && totalBalance > 0 && (
+          <div className="anyspend-deposit-balance border-secondary border-b p-5">
+            <p className="anyspend-deposit-balance-label text-as-secondary text-sm">Your Balance</p>
+            <p className="anyspend-deposit-balance-value text-as-primary text-3xl font-semibold">
+              {formatDecimal(totalBalance)} <span className="text-sm">USD</span>
+            </p>
+          </div>
+        )}
         <div className="anyspend-deposit-options flex flex-col gap-2 p-6">
           {/* Loading state */}
           {isBalanceLoading && (
             <div className="anyspend-deposit-chains-skeleton flex flex-col gap-2">
-              {[...Array(topChainsCount)].map((_, i) => (
+              {[1, 2].map((_, i) => (
                 <div key={i} className="border-border-primary flex items-center justify-between rounded-xl border p-4">
                   <div className="flex items-center gap-3">
                     <Skeleton className="h-6 w-6 rounded-full" />
