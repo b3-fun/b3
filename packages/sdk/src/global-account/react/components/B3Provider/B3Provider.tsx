@@ -1,6 +1,11 @@
 import { CreateOnrampOrderParams } from "@b3dotfun/sdk/anyspend/react/hooks/useAnyspendCreateOnrampOrder";
 import { CreateOrderParams } from "@b3dotfun/sdk/anyspend/react/hooks/useAnyspendCreateOrder";
-import { RelayKitProviderWrapper, TooltipProvider, useAuthStore } from "@b3dotfun/sdk/global-account/react";
+import {
+  RelayKitProviderWrapper,
+  TooltipProvider,
+  useAuthentication,
+  useAuthStore,
+} from "@b3dotfun/sdk/global-account/react";
 import { useAutoSelectWallet } from "@b3dotfun/sdk/global-account/react/hooks/useAutoSelectWallet";
 import { createWagmiConfig } from "@b3dotfun/sdk/global-account/react/utils/createWagmiConfig";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
@@ -154,6 +159,12 @@ export function InnerProvider({
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
   //const isConnected = useAuthStore(state => state.isConnected);
   //const justCompletedLogin = useAuthStore(state => state.justCompletedLogin);
+
+  // Note: This fixes a bug where useAuthentication is no longer rendered on every page, as of this PR https://github.com/b3-fun/b3/pull/385/files#diff-3ef996931b8fc8e49021ba1b42ddaa97535214681610dc5fdacf63542e261af7
+  // The above PR removes useAuthentication from the overall B3Provider. useAuthentication should be everywhere the provider is, since it sets the overall auth state
+  // By just calling it manually, we fix that issue
+  // As a follow up, we should fix the SDK directly
+  useAuthentication(partnerId);
 
   // Use given accountOverride or activeAccount from thirdweb
   // WOJ: why if isAuthenticated is false, we don't use activeAccount, which should be undefined?
