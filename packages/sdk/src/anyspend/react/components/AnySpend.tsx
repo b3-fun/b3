@@ -1167,9 +1167,9 @@ function AnySpendInner({
               <Button
                 variant="ghost"
                 className={cn(
-                  "border-as-stroke h-10 w-10 rounded-xl border-2 bg-white sm:h-8 sm:w-8 sm:rounded-xl",
+                  "border-as-stroke bg-as-surface-primary h-10 w-10 rounded-xl border-2 sm:h-8 sm:w-8 sm:rounded-xl",
                   isBuyMode && "cursor-default",
-                  selectedDstChainId === HYPERLIQUID_CHAIN_ID && "cursor-not-allowed opacity-100",
+                  selectedDstChainId === HYPERLIQUID_CHAIN_ID && "cursor-not-allowed opacity-50",
                 )}
                 onClick={() => {
                   if (isBuyMode) {
