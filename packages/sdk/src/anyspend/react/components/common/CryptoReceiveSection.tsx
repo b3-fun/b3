@@ -81,7 +81,8 @@ export function CryptoReceiveSection({
           >
             <>
               <span className="text-as-tertiarry flex items-center gap-1 text-sm">
-                {customRecipientLabel || (recipientName ? formatUsername(recipientName) : shortenAddress(effectiveRecipientAddress || ""))}
+                {customRecipientLabel ||
+                  (recipientName ? formatUsername(recipientName) : shortenAddress(effectiveRecipientAddress || ""))}
               </span>
               <ChevronRight className="h-4 w-4" />
             </>

@@ -231,7 +231,8 @@ export function PanelOnramp({
               onClick={() => setActivePanel(recipientSelectionPanelIndex)} // Recipient selection panel
             >
               <span className="text-sm">
-                {customRecipientLabel || (recipientName ? formatUsername(recipientName) : formatAddress(_recipientAddress))}
+                {customRecipientLabel ||
+                  (recipientName ? formatUsername(recipientName) : formatAddress(_recipientAddress))}
               </span>
               <ChevronRight size={16} />
             </button>
