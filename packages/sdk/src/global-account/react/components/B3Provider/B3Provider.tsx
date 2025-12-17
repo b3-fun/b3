@@ -157,8 +157,6 @@ export function InnerProvider({
 }) {
   const activeAccount = useActiveAccount();
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
-  //const isConnected = useAuthStore(state => state.isConnected);
-  //const justCompletedLogin = useAuthStore(state => state.justCompletedLogin);
 
   // Note: This fixes a bug where useAuthentication is no longer rendered on every page, as of this PR https://github.com/b3-fun/b3/pull/385/files#diff-3ef996931b8fc8e49021ba1b42ddaa97535214681610dc5fdacf63542e261af7
   // The above PR removes useAuthentication from the overall B3Provider. useAuthentication should be everywhere the provider is, since it sets the overall auth state
@@ -183,11 +181,6 @@ export function InnerProvider({
     <B3Context.Provider
       value={{
         account: effectiveAccount,
-        // setWallet,
-        //wallet: undefined, // Deprecated: use useActiveWallet() from thirdweb/react instead
-        //user,
-        //setUser,
-        //refetchUser,
         initialized: true,
         ready: !!effectiveAccount,
         automaticallySetFirstEoa,

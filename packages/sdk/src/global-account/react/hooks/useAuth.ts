@@ -1,6 +1,6 @@
 import app from "@b3dotfun/sdk/global-account/app";
 import { authenticateWithB3JWT } from "@b3dotfun/sdk/global-account/bsmnt";
-import { useAuthStore } from "@b3dotfun/sdk/global-account/react";
+import { useAuthStore, useB3Config } from "@b3dotfun/sdk/global-account/react";
 import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
@@ -18,7 +18,6 @@ import { Wallet, ecosystemWallet } from "thirdweb/wallets";
 import { preAuthenticate } from "thirdweb/wallets/in-app";
 import { useAccount, useConnect, useSwitchAccount } from "wagmi";
 import { LocalSDKContext } from "../components/B3Provider/LocalSDKProvider";
-import { useB3 } from "../components/B3Provider/useB3";
 import { createWagmiConfig } from "../utils/createWagmiConfig";
 import { useSearchParam } from "./useSearchParamsSSR";
 import { useUserQuery } from "./useUserQuery";
@@ -48,7 +47,7 @@ export function useAuth() {
   const hasStartedConnecting = useAuthStore(state => state.hasStartedConnecting);
   const useAutoConnectLoadingPrevious = useRef(false);
   const referralCode = useSearchParam("referralCode");
-  const { partnerId } = useB3();
+  const { partnerId } = useB3Config();
   const wagmiConfig = createWagmiConfig({ partnerId });
   const { connect } = useConnect();
   const activeWagmiAccount = useAccount();

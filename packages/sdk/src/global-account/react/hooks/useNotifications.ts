@@ -1,7 +1,7 @@
+import { useB3Config } from "@b3dotfun/sdk/global-account/react";
 import { getAuthToken } from "@b3dotfun/sdk/shared/utils/auth-token";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { useCallback, useEffect, useState } from "react";
-import { useB3 } from "../components";
 import { notificationsAPI, UserData } from "../utils/notificationsAPI";
 import { useUserQuery } from "./useUserQuery";
 
@@ -56,7 +56,7 @@ export interface UseNotificationsReturn {
  */
 export function useNotifications(): UseNotificationsReturn {
   const { user } = useUserQuery();
-  const { partnerId } = useB3();
+  const { partnerId } = useB3Config();
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
