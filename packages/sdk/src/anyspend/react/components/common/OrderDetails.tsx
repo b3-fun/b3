@@ -905,6 +905,12 @@ export const OrderDetails = memo(function OrderDetails({
         )}
 
         {/* <DelayedSupportMessage /> */}
+        <button
+          className="text-b3-primary-blue hover:text-b3-primary-blue/50 order-details-cancel-btn flex w-full items-center justify-center gap-2 underline"
+          onClick={handleBack}
+        >
+          <RefreshCcw className="ml-2 h-4 w-4" /> Cancel and start over
+        </button>
       </>
     );
   }

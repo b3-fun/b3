@@ -356,7 +356,7 @@ export function AnySpendDeposit({
         )}
         {/* Balance header */}
         {!isBalanceLoading && totalBalance > 0 && (
-          <div className="anyspend-deposit-balance border-secondary border-b p-5">
+          <div className="anyspend-deposit-balance border-theme-border-secondary border-b p-5">
             <p className="anyspend-deposit-balance-label text-as-secondary text-sm">Your Balance</p>
             <p className="anyspend-deposit-balance-value text-as-primary text-3xl font-semibold">
               {formatDecimal(totalBalance)} <span className="text-sm">USD</span>
@@ -525,6 +525,7 @@ export function AnySpendDeposit({
       <div className={cn("anyspend-deposit-form-content", shouldShowChainSelection && "pt-8")}>
         {isHyperliquidDeposit ? (
           <AnySpend
+            key={selectedChainId}
             loadOrder={loadOrder}
             mode={mode}
             defaultActiveTab={paymentType}
@@ -541,6 +542,7 @@ export function AnySpendDeposit({
           />
         ) : (
           <AnySpendCustomExactIn
+            key={selectedChainId}
             loadOrder={loadOrder}
             mode={mode}
             recipientAddress={recipientAddress}
