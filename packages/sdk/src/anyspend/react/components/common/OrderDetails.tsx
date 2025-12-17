@@ -383,7 +383,23 @@ export const OrderDetails = memo(function OrderDetails({
   // Handle "Return to Home" click - redirects to custom URL if provided
   const handleReturnToHome = useCallback(() => {
     if (returnToHomeUrl) {
-      window.location.href = returnToHomeUrl;
+      // Validate URL to prevent Open Redirect / XSS attacks
+      try {
+        const url = new URL(returnToHomeUrl, window.location.origin);
+        // Only allow http/https protocols
+        if (url.protocol === "http:" || url.protocol === "https:") {
+          window.location.href = url.href;
+          return;
+        }
+      } catch {
+        // If URL parsing fails, check if it's a safe relative URL
+        if (returnToHomeUrl.startsWith("/") && !returnToHomeUrl.startsWith("//")) {
+          window.location.href = returnToHomeUrl;
+          return;
+        }
+      }
+      // Fallback to handleBack if URL is not safe
+      handleBack();
     } else {
       handleBack();
     }
