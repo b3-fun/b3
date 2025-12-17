@@ -6,6 +6,7 @@ import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { ChevronLeft, ChevronRightCircle, Wallet, X, ZapIcon } from "lucide-react";
 import { useConnectModal, useDisconnect, useWalletInfo } from "thirdweb/react";
+import { createWallet } from "thirdweb/wallets";
 import { useConnectedWalletDisplay } from "../../hooks/useConnectedWalletDisplay";
 
 export enum CryptoPaymentMethodType {
@@ -14,6 +15,13 @@ export enum CryptoPaymentMethodType {
   GLOBAL_WALLET = "global_wallet",
   TRANSFER_CRYPTO = "transfer_crypto",
 }
+
+const recommendWallets = [
+  createWallet("io.metamask"),
+  createWallet("com.coinbase.wallet"),
+  createWallet("me.rainbow"),
+  createWallet("io.rabby"),
+];
 
 interface CryptoPaymentMethodProps {
   selectedPaymentMethod: CryptoPaymentMethodType;
@@ -47,7 +55,13 @@ export function CryptoPaymentMethod({
       if (connectedEOAWallet) {
         await disconnect(connectedEOAWallet);
       }
-      const wallet = await openConnectModal({ client, setActive: false });
+      const wallet = await openConnectModal({
+        client,
+        setActive: false,
+        size: "compact",
+        showThirdwebBranding: false,
+        wallets: recommendWallets,
+      });
       if (wallet) {
         // setActiveWallet(wallet);
         setSelectedPaymentMethod(CryptoPaymentMethodType.CONNECT_WALLET);
