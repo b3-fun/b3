@@ -44,8 +44,6 @@ export function AnySpendDepositHype({
   onTokenSelect,
   customUsdInputValues,
   preferEoa,
-  returnToHomeUrl,
-  customRecipientLabel,
 }: AnySpendDepositHypeProps) {
   if (!recipientAddress) return null;
 
