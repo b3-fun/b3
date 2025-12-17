@@ -106,6 +106,10 @@ export interface AnySpendDepositProps {
   topChainsCount?: number;
   /** Callback when close button is clicked */
   onClose?: () => void;
+  /** Custom URL to redirect to when clicking "Return to Home" on complete order screen */
+  returnToHomeUrl?: string;
+  /** Custom label for recipient display (e.g., "OBSN Telegram Bot") */
+  customRecipientLabel?: string;
 }
 
 // Default supported chains
@@ -224,6 +228,8 @@ export function AnySpendDeposit({
   minPoolSize = DEFAULT_MIN_POOL_SIZE,
   topChainsCount = 3,
   onClose,
+  returnToHomeUrl,
+  customRecipientLabel,
 }: AnySpendDepositProps) {
   const { connectedEOAWallet } = useAccountWallet();
   const eoaAddress = connectedEOAWallet?.getAccount()?.address;
@@ -539,6 +545,8 @@ export function AnySpendDeposit({
             hideHeader
             hideBottomNavigation
             disableUrlParamManagement
+            returnToHomeUrl={returnToHomeUrl}
+            customRecipientLabel={customRecipientLabel}
           />
         ) : (
           <AnySpendCustomExactIn
@@ -561,6 +569,8 @@ export function AnySpendDeposit({
             customUsdInputValues={customUsdInputValues}
             preferEoa={preferEoa}
             customExactInConfig={depositContractConfig}
+            returnToHomeUrl={returnToHomeUrl}
+            customRecipientLabel={customRecipientLabel}
           />
         )}
       </div>

@@ -25,6 +25,10 @@ export interface AnySpendDepositHypeProps {
   onTokenSelect?: (token: components["schemas"]["Token"], event: { preventDefault: () => void }) => void;
   customUsdInputValues?: string[];
   preferEoa?: boolean;
+  /** Custom URL to redirect to when clicking "Return to Home" on complete order screen */
+  returnToHomeUrl?: string;
+  /** Custom label for recipient display (e.g., "OBSN Telegram Bot") */
+  customRecipientLabel?: string;
 }
 
 export function AnySpendDepositHype({
@@ -40,6 +44,8 @@ export function AnySpendDepositHype({
   onTokenSelect,
   customUsdInputValues,
   preferEoa,
+  returnToHomeUrl,
+  customRecipientLabel,
 }: AnySpendDepositHypeProps) {
   if (!recipientAddress) return null;
 

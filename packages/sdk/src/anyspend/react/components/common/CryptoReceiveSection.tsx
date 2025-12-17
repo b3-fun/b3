@@ -15,6 +15,8 @@ interface CryptoReceiveSectionProps {
   // Recipient data
   effectiveRecipientAddress?: string;
   recipientName?: string;
+  /** Custom label for recipient display (overrides recipientName) */
+  customRecipientLabel?: string;
   onSelectRecipient: () => void;
   // Token data
   dstAmount: string;
@@ -41,6 +43,7 @@ export function CryptoReceiveSection({
   isBuyMode = false,
   effectiveRecipientAddress,
   recipientName,
+  customRecipientLabel,
   onSelectRecipient,
   dstAmount,
   dstToken,
@@ -78,7 +81,7 @@ export function CryptoReceiveSection({
           >
             <>
               <span className="text-as-tertiarry flex items-center gap-1 text-sm">
-                {recipientName ? formatUsername(recipientName) : shortenAddress(effectiveRecipientAddress || "")}
+                {customRecipientLabel || (recipientName ? formatUsername(recipientName) : shortenAddress(effectiveRecipientAddress || ""))}
               </span>
               <ChevronRight className="h-4 w-4" />
             </>

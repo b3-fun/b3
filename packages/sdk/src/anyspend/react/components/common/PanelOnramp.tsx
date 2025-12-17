@@ -33,6 +33,7 @@ export function PanelOnramp({
   onShowPointsDetail,
   onShowFeeDetail,
   customUsdInputValues = ["5", "10", "20", "25"],
+  customRecipientLabel,
 }: {
   srcAmountOnRamp: string;
   setSrcAmountOnRamp: (amount: string) => void;
@@ -52,6 +53,8 @@ export function PanelOnramp({
   onShowPointsDetail?: () => void;
   onShowFeeDetail?: () => void;
   customUsdInputValues?: string[];
+  /** Custom label for recipient display (overrides recipientName) */
+  customRecipientLabel?: string;
 }) {
   // Helper function to get fees from anyspend quote
   const getFeeFromApi = (paymentMethod: FiatPaymentMethod): number | null => {
@@ -228,7 +231,7 @@ export function PanelOnramp({
               onClick={() => setActivePanel(recipientSelectionPanelIndex)} // Recipient selection panel
             >
               <span className="text-sm">
-                {recipientName ? formatUsername(recipientName) : formatAddress(_recipientAddress)}
+                {customRecipientLabel || (recipientName ? formatUsername(recipientName) : formatAddress(_recipientAddress))}
               </span>
               <ChevronRight size={16} />
             </button>

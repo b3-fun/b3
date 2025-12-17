@@ -65,6 +65,8 @@ interface OrderDetailsProps {
   onBack?: () => void;
   disableUrlParamManagement?: boolean; // When true, will not modify URL parameters
   points?: number | undefined; // Points earned from the transaction
+  /** Custom URL to redirect to when clicking "Return to Home" on complete order screen */
+  returnToHomeUrl?: string;
 }
 
 // Add this helper function near the top or just above the component
@@ -217,6 +219,7 @@ export const OrderDetails = memo(function OrderDetails({
   onBack,
   disableUrlParamManagement = false,
   points,
+  returnToHomeUrl,
 }: OrderDetailsProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -377,6 +380,15 @@ export const OrderDetails = memo(function OrderDetails({
     onBack?.();
   }, [cleanupUrlParams, onBack]);
 
+  // Handle "Return to Home" click - redirects to custom URL if provided
+  const handleReturnToHome = useCallback(() => {
+    if (returnToHomeUrl) {
+      window.location.href = returnToHomeUrl;
+    } else {
+      handleBack();
+    }
+  }, [returnToHomeUrl, handleBack]);
+
   useEffect(() => {
     if (txSuccess) {
       toast.success("Transaction successful! We are processing your order.", { duration: 10000 });
@@ -523,7 +535,7 @@ export const OrderDetails = memo(function OrderDetails({
         )}
         <button
           className="order-close-button order-details-close-btn bg-as-brand flex w-full items-center justify-center gap-2 rounded-lg p-2 font-semibold text-white"
-          onClick={mode === "page" ? handleBack : handleCloseModal}
+          onClick={mode === "page" ? handleReturnToHome : handleCloseModal}
         >
           {mode === "page" ? (
             <>
@@ -652,7 +664,7 @@ export const OrderDetails = memo(function OrderDetails({
         {order.status === "executed" && (
           <button
             className="order-close-button order-details-close-btn bg-as-brand flex w-full items-center justify-center gap-2 rounded-lg p-2 font-semibold text-white"
-            onClick={mode === "page" ? handleBack : handleCloseModal}
+            onClick={mode === "page" ? handleReturnToHome : handleCloseModal}
           >
             {mode === "page" ? (
               <>
@@ -789,7 +801,7 @@ export const OrderDetails = memo(function OrderDetails({
         {order.status === "executed" && (
           <button
             className="order-close-button order-details-close-btn bg-as-brand flex w-full items-center justify-center gap-2 rounded-lg p-2 font-semibold text-white"
-            onClick={mode === "page" ? handleBack : handleCloseModal}
+            onClick={mode === "page" ? handleReturnToHome : handleCloseModal}
           >
             {mode === "page" ? (
               <>
