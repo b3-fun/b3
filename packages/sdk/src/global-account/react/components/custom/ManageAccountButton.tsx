@@ -1,11 +1,10 @@
-import { Button, StyleRoot, useAuthentication, useB3, useModalStore } from "@b3dotfun/sdk/global-account/react";
+import { Button, StyleRoot, useModalStore, useUser } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils";
 import { SignInWithB3Props } from "../SignInWithB3/SignInWithB3";
 
 export function ManageAccountButton(props: SignInWithB3Props & { className?: string }) {
-  const { partnerId } = useB3();
   const { setB3ModalOpen, setB3ModalContentType } = useModalStore();
-  const { isConnected } = useAuthentication(partnerId);
+  const { isConnected } = useUser();
 
   const handleClickManageAccount = () => {
     setB3ModalContentType({

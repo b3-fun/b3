@@ -1,4 +1,5 @@
 export { useAuthStore } from "./useAuthStore";
+export { useB3ConfigStore } from "./configStore";
 export { useModalStore } from "./useModalStore";
 export { useRecentAddressesStore } from "./useRecentAddressesStore";
 

@@ -1,11 +1,5 @@
 import { getExplorerTxUrl } from "@b3dotfun/sdk/anyspend";
-import {
-  MintButton,
-  SendERC20Button,
-  SendETHButton,
-  useAuthentication,
-  useB3Config,
-} from "@b3dotfun/sdk/global-account/react";
+import { MintButton, SendERC20Button, SendETHButton, useUser } from "@b3dotfun/sdk/global-account/react";
 import { useB3Account } from "@b3dotfun/sdk/global-account/react/components/B3Provider/useB3Account";
 import { thirdwebB3Mainnet } from "@b3dotfun/sdk/shared/constants/chains/b3Chain";
 import { b3MainnetThirdWeb, getThirdwebChain } from "@b3dotfun/sdk/shared/constants/chains/supported";
@@ -32,8 +26,8 @@ const ethereum = getThirdwebChain(1);
 
 export function Debug() {
   const account = useB3Account();
-  const { partnerId } = useB3Config();
-  const { user } = useAuthentication(partnerId);
+
+  const { user } = useUser();
   const activeAccount = useActiveAccount();
   const profiles = useProfiles({ client });
   const { mutate: unlinkProfile, isPending: isUnlinkPending } = useUnlinkProfile();

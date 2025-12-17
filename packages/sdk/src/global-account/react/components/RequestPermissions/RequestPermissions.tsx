@@ -1,11 +1,11 @@
 import {
   Button,
-  useB3,
-  useAddTWSessionKey,
-  useGetAllTWSigners,
+  PermissionItem,
   RequestPermissionsModalProps,
+  useAddTWSessionKey,
+  useB3Config,
+  useGetAllTWSigners,
 } from "@b3dotfun/sdk/global-account/react";
-import { PermissionItem } from "@b3dotfun/sdk/global-account/react";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { formatAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
@@ -30,7 +30,7 @@ export function RequestPermissions({
 }: RequestPermissionsModalProps) {
   const [isApproving, setIsApproving] = useState(false);
   const account = useActiveAccount();
-  const { defaultPermissions } = useB3();
+  const { defaultPermissions } = useB3Config();
   const DEFAULT_PERMISSIONS = useMemo(
     () => permissions ?? (defaultPermissions as PermissionsConfig),
     [defaultPermissions, permissions],

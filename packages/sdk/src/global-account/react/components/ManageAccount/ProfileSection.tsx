@@ -1,10 +1,9 @@
 import {
   useAccountWallet,
-  useAuthentication,
-  useB3Config,
   useModalStore,
   useProfile,
   useSimBalance,
+  useUser,
 } from "@b3dotfun/sdk/global-account/react";
 import { formatUsername } from "@b3dotfun/sdk/shared/utils";
 import { formatDisplayNumber } from "@b3dotfun/sdk/shared/utils/number";
@@ -22,8 +21,7 @@ const ProfileSection = () => {
     address: eoaAddress || account?.address,
     fresh: true,
   });
-  const { partnerId } = useB3Config();
-  const { user } = useAuthentication(partnerId);
+  const { user } = useUser();
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
   const navigateBack = useModalStore(state => state.navigateBack);

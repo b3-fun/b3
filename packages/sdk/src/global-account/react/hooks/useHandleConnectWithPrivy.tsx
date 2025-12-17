@@ -1,4 +1,4 @@
-import { useB3, useConnect } from "@b3dotfun/sdk/global-account/react";
+import { useB3Config, useConnect } from "@b3dotfun/sdk/global-account/react";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { useIdentityToken, usePrivy } from "@privy-io/react-auth";
 import { useCallback, useRef, useState } from "react";
@@ -11,7 +11,7 @@ const debug = debugB3React("@@b3:useHandleConnectWithPrivy");
  * Currently, this is for the basement-privy strategy
  */
 export function useHandleConnectWithPrivy(chain?: Chain, onSuccess?: (account: Account) => void) {
-  const { partnerId } = useB3();
+  const { partnerId } = useB3Config();
   if (!chain) {
     throw new Error("Chain is required");
   }

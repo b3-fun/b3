@@ -1,12 +1,12 @@
 "use client";
 
 import { isNativeToken } from "@b3dotfun/sdk/anyspend";
-import { useB3, useAccountWallet } from "@b3dotfun/sdk/global-account/react";
+import { components } from "@b3dotfun/sdk/anyspend/types/api";
+import { useAccountWallet, useAuthStore } from "@b3dotfun/sdk/global-account/react";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { getERC20Balances, getNativeTokenBalance } from "@b3dotfun/sdk/shared/utils/thirdweb-insights";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { components } from "@b3dotfun/sdk/anyspend/types/api";
 
 interface UseTokenBalanceProps {
   token: components["schemas"]["Token"];
@@ -20,7 +20,8 @@ export interface TokenBalanceResult {
 }
 
 export function useTokenBalance({ token, address }: UseTokenBalanceProps): TokenBalanceResult {
-  const { ready } = useB3();
+  const isAuthenticated = useAuthStore(state => state.isAuthenticated);
+
   const account = useAccountWallet();
 
   const effectiveAddress = address || account?.address;
@@ -60,7 +61,7 @@ export function useTokenBalance({ token, address }: UseTokenBalanceProps): Token
       }
       return { formatted: "0", raw: null };
     },
-    enabled: ready && !!effectiveAddress,
+    enabled: isAuthenticated && !!effectiveAddress,
     staleTime: 30000,
     gcTime: 5 * 60 * 1000,
     retry: 2,
@@ -69,13 +70,13 @@ export function useTokenBalance({ token, address }: UseTokenBalanceProps): Token
 
   // Force a refetch when the wallet or token changes
   useEffect(() => {
-    if (ready && effectiveAddress) {
+    if (isAuthenticated && effectiveAddress) {
       refetch();
     }
-  }, [ready, effectiveAddress, token.address, token.chainId, token.symbol, refetch]);
+  }, [isAuthenticated, effectiveAddress, token.address, token.chainId, token.symbol, refetch]);
 
   // Determine if we're actually loading
-  const isActuallyLoading = !ready || !effectiveAddress || isLoading || (isFetching && !tokenBalance);
+  const isActuallyLoading = !isAuthenticated || !effectiveAddress || isLoading || (isFetching && !tokenBalance);
 
   return {
     rawBalance: tokenBalance?.raw || BigInt(0),

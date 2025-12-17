@@ -1,4 +1,4 @@
-import { useB3 } from "@b3dotfun/sdk/global-account/react";
+import { useB3Config } from "@b3dotfun/sdk/global-account/react";
 import { useCallback } from "react";
 import {
   ClientType,
@@ -13,7 +13,7 @@ import {
  * Hook to access the current FeathersJS client and client management utilities
  */
 export function useClient() {
-  const { clientType } = useB3();
+  const { clientType } = useB3Config();
 
   const getCurrentClient = useCallback(() => {
     return getClient();

@@ -1,7 +1,7 @@
+import { useB3Config } from "@b3dotfun/sdk/global-account/react";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { useState } from "react";
 import { notificationsAPI } from "../../../utils/notificationsAPI";
-import { useB3 } from "../../B3Provider/useB3";
 import { toast } from "../../Toast/toastApi";
 import { NotificationChannel } from "../NotificationChannel";
 
@@ -32,7 +32,7 @@ export const PhoneChannel = ({
   onConnectionChange,
   onToggle,
 }: PhoneChannelProps) => {
-  const { partnerId } = useB3();
+  const { partnerId } = useB3Config();
 
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isConnectingSMS, setIsConnectingSMS] = useState(false);
