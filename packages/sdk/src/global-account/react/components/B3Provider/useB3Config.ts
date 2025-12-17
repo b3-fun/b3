@@ -33,6 +33,16 @@ export const useB3Config = () => {
       stripePublishableKey,
       defaultPermissions,
     }),
-    [automaticallySetFirstEoa, environment, theme, clientType, partnerId, createClientReferenceId, enableTurnkey],
+    [
+      automaticallySetFirstEoa,
+      environment,
+      theme,
+      clientType,
+      partnerId,
+      createClientReferenceId,
+      enableTurnkey,
+      defaultPermissions,
+      stripePublishableKey,
+    ],
   );
 };
