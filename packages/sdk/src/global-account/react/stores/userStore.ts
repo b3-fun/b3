@@ -5,8 +5,6 @@ import { persist } from "zustand/middleware";
 
 const debug = debugB3React("useUserQuery");
 
-const USER_QUERY_KEY = ["b3-user"];
-
 interface UserStore {
   user: Users | null;
   setUser: (user: Users | undefined) => void;
