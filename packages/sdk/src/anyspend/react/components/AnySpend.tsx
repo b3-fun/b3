@@ -107,6 +107,12 @@ export function AnySpend(props: {
   hideBottomNavigation?: boolean;
   /** When true, disables URL parameter management for swap configuration */
   disableUrlParamManagement?: boolean;
+  /** Custom URL to redirect to when clicking "Return to Home" on complete order screen */
+  returnToHomeUrl?: string;
+  /** Custom label for recipient display (e.g., "OBSN Telegram Bot") */
+  customRecipientLabel?: string;
+  /** Custom label for the return home button (overrides "Return to Home" / "Close") */
+  returnHomeLabel?: string;
 }) {
   const fingerprintConfig = getFingerprintConfig();
 
@@ -132,6 +138,9 @@ function AnySpendInner({
   hideHeader,
   hideBottomNavigation = false,
   disableUrlParamManagement = false,
+  returnToHomeUrl,
+  customRecipientLabel,
+  returnHomeLabel,
 }: {
   sourceChainId?: number;
   destinationTokenAddress?: string;
@@ -147,6 +156,9 @@ function AnySpendInner({
   hideHeader?: boolean;
   hideBottomNavigation?: boolean;
   disableUrlParamManagement?: boolean;
+  returnToHomeUrl?: string;
+  customRecipientLabel?: string;
+  returnHomeLabel?: string;
 }) {
   const searchParams = useSearchParamsSSR();
   const router = useRouter();
@@ -1066,6 +1078,8 @@ function AnySpendInner({
               // Reset payment methods when going back
               resetPaymentMethods();
             }}
+            returnToHomeUrl={returnToHomeUrl}
+            returnHomeLabel={returnHomeLabel}
           />
         )}
         {/* {mode === "page" && <div className="h-12" />} */}
@@ -1157,6 +1171,7 @@ function AnySpendInner({
                 onShowPointsDetail={() => navigateToPanel(PanelView.POINTS_DETAIL, "forward")}
                 onShowFeeDetail={() => navigateToPanel(PanelView.FEE_DETAIL, "forward")}
                 customUsdInputValues={customUsdInputValues}
+                customRecipientLabel={customRecipientLabel}
               />
             </motion.div>
           )}
@@ -1209,6 +1224,7 @@ function AnySpendInner({
               isBuyMode={isBuyMode}
               effectiveRecipientAddress={effectiveRecipientAddress}
               recipientName={recipientName || undefined}
+              customRecipientLabel={customRecipientLabel}
               onSelectRecipient={() => navigateToPanel(PanelView.RECIPIENT_SELECTION, "forward")}
               dstAmount={dstAmount}
               dstToken={selectedDstToken}

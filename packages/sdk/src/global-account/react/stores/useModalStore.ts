@@ -426,6 +426,12 @@ export interface AnySpendDepositHypeProps extends BaseModalProps {
   customUsdInputValues?: string[];
   /** prefer eoa wallet */
   preferEoa?: boolean;
+  /** Custom URL to redirect to when clicking "Return to Home" on complete order screen */
+  returnToHomeUrl?: string;
+  /** Custom label for recipient display (e.g., "OBSN Telegram Bot") */
+  customRecipientLabel?: string;
+  /** Custom label for the return home button (overrides "Return to Home" / "Close") */
+  returnHomeLabel?: string;
 }
 
 export interface AvatarEditorModalProps extends BaseModalProps {

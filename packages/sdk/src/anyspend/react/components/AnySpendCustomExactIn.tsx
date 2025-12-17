@@ -66,6 +66,12 @@ export interface AnySpendCustomExactInProps {
     anyspendPrice: GetQuoteResponse | undefined;
     isLoadingAnyspendPrice: boolean;
   }) => React.JSX.Element;
+  /** Custom URL to redirect to when clicking "Return to Home" on complete order screen */
+  returnToHomeUrl?: string;
+  /** Custom label for recipient display (e.g., "OBSN Telegram Bot") */
+  customRecipientLabel?: string;
+  /** Custom label for the return home button (overrides "Return to Home" / "Close") */
+  returnHomeLabel?: string;
 }
 
 export function AnySpendCustomExactIn(props: AnySpendCustomExactInProps) {
@@ -97,6 +103,9 @@ function AnySpendCustomExactInInner({
   orderType = "custom_exact_in",
   minDestinationAmount,
   header,
+  returnToHomeUrl,
+  customRecipientLabel,
+  returnHomeLabel,
 }: AnySpendCustomExactInProps) {
   const actionLabel = customExactInConfig?.action ?? "Custom Execution";
 
@@ -358,6 +367,7 @@ function AnySpendCustomExactInInner({
                 onShowPointsDetail={() => setActivePanel(PanelView.POINTS_DETAIL)}
                 onShowFeeDetail={() => setActivePanel(PanelView.FEE_DETAIL)}
                 customUsdInputValues={customUsdInputValues}
+                customRecipientLabel={customRecipientLabel}
               />
             </motion.div>
           )}
@@ -383,6 +393,7 @@ function AnySpendCustomExactInInner({
               isBuyMode={true}
               effectiveRecipientAddress={selectedRecipientOrDefault}
               recipientName={recipientName || undefined}
+              customRecipientLabel={customRecipientLabel}
               onSelectRecipient={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
               dstAmount={dstAmount}
               dstToken={selectedDstToken}
@@ -532,6 +543,8 @@ function AnySpendCustomExactInInner({
             }}
             disableUrlParamManagement
             points={oat.data.points || undefined}
+            returnToHomeUrl={returnToHomeUrl}
+            returnHomeLabel={returnHomeLabel}
           />
         )}
       </div>
