@@ -65,10 +65,11 @@ export function B3Provider({
   enableTurnkey?: boolean;
   defaultPermissions?: PermissionsConfig;
 }) {
-  // Initialize config store synchronously before render
-  // Use useMemo to ensure it only updates when props change
-  useMemo(() => {
-    useB3ConfigStore.getState().setConfig({
+  const setConfig = useB3ConfigStore(state => state.setConfig);
+
+  // Initialize config store on mount - props are static and never change
+  useEffect(() => {
+    setConfig({
       accountOverride,
       environment: environment ?? "development",
       automaticallySetFirstEoa: !!automaticallySetFirstEoa,
@@ -80,18 +81,7 @@ export function B3Provider({
       enableTurnkey,
       defaultPermissions,
     });
-  }, [
-    accountOverride,
-    environment,
-    automaticallySetFirstEoa,
-    theme,
-    clientType,
-    partnerId,
-    stripePublishableKey,
-    createClientReferenceId,
-    enableTurnkey,
-    defaultPermissions,
-  ]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Initialize Google Analytics on mount
   useEffect(() => {

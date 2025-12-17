@@ -1,6 +1,6 @@
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useEffect } from "react";
 import { ThirdwebProvider } from "thirdweb/react";
 import { Account, Wallet } from "thirdweb/wallets";
 
@@ -39,9 +39,11 @@ export function B3Provider({
   onConnect?: (wallet: Wallet, b3Jwt: string) => void | Promise<void>;
   defaultPermissions?: PermissionsConfig;
 }) {
-  // Initialize config store synchronously before render
-  useMemo(() => {
-    useB3ConfigStore.getState().setConfig({
+  const setConfig = useB3ConfigStore(state => state.setConfig);
+
+  // Initialize config store on mount - props are static and never change
+  useEffect(() => {
+    setConfig({
       accountOverride,
       environment: environment ?? "development",
       automaticallySetFirstEoa: false,
@@ -50,7 +52,7 @@ export function B3Provider({
       partnerId,
       defaultPermissions,
     });
-  }, [accountOverride, environment, theme, clientType, partnerId, defaultPermissions]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <ThirdwebProvider>
@@ -86,11 +88,12 @@ export function InnerProvider({
   partnerId: string;
   rpcUrls?: Record<number, string>;
 }) {
+  const setConfig = useB3ConfigStore(state => state.setConfig);
   const wagmiConfig = createWagmiConfig({ partnerId, rpcUrls });
 
-  // Initialize config store synchronously before render
-  useMemo(() => {
-    useB3ConfigStore.getState().setConfig({
+  // Initialize config store on mount - props are static and never change
+  useEffect(() => {
+    setConfig({
       accountOverride,
       environment: environment ?? "development",
       automaticallySetFirstEoa: false,
@@ -99,7 +102,7 @@ export function InnerProvider({
       partnerId,
       defaultPermissions,
     });
-  }, [accountOverride, environment, theme, clientType, partnerId, defaultPermissions]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <WagmiProvider config={wagmiConfig}>
