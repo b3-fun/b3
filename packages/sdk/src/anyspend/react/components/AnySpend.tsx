@@ -111,6 +111,8 @@ export function AnySpend(props: {
   returnToHomeUrl?: string;
   /** Custom label for recipient display (e.g., "OBSN Telegram Bot") */
   customRecipientLabel?: string;
+  /** Custom label for the return home button (overrides "Return to Home" / "Close") */
+  returnHomeLabel?: string;
 }) {
   const fingerprintConfig = getFingerprintConfig();
 
@@ -138,6 +140,7 @@ function AnySpendInner({
   disableUrlParamManagement = false,
   returnToHomeUrl,
   customRecipientLabel,
+  returnHomeLabel,
 }: {
   sourceChainId?: number;
   destinationTokenAddress?: string;
@@ -155,6 +158,7 @@ function AnySpendInner({
   disableUrlParamManagement?: boolean;
   returnToHomeUrl?: string;
   customRecipientLabel?: string;
+  returnHomeLabel?: string;
 }) {
   const searchParams = useSearchParamsSSR();
   const router = useRouter();
@@ -1075,6 +1079,7 @@ function AnySpendInner({
               resetPaymentMethods();
             }}
             returnToHomeUrl={returnToHomeUrl}
+            returnHomeLabel={returnHomeLabel}
           />
         )}
         {/* {mode === "page" && <div className="h-12" />} */}

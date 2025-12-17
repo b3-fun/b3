@@ -67,6 +67,8 @@ interface OrderDetailsProps {
   points?: number | undefined; // Points earned from the transaction
   /** Custom URL to redirect to when clicking "Return to Home" on complete order screen */
   returnToHomeUrl?: string;
+  /** Custom label for the return home button (overrides "Return to Home" / "Close") */
+  returnHomeLabel?: string;
 }
 
 // Add this helper function near the top or just above the component
@@ -220,6 +222,7 @@ export const OrderDetails = memo(function OrderDetails({
   disableUrlParamManagement = false,
   points,
   returnToHomeUrl,
+  returnHomeLabel,
 }: OrderDetailsProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -405,6 +408,24 @@ export const OrderDetails = memo(function OrderDetails({
     }
   }, [returnToHomeUrl, handleBack]);
 
+  // Reusable "Return to Home" / "Close" button
+  const returnHomeOrCloseButton = (
+    <button
+      className="order-close-button order-details-close-btn bg-as-brand flex w-full items-center justify-center gap-2 rounded-lg p-2 font-semibold text-white"
+      onClick={returnToHomeUrl ? handleReturnToHome : mode === "page" ? handleBack : handleCloseModal}
+    >
+      {returnHomeLabel ? (
+        returnHomeLabel
+      ) : mode === "page" ? (
+        <>
+          Return to Home <Home className="ml-2 h-4 w-4" />
+        </>
+      ) : (
+        "Close"
+      )}
+    </button>
+  );
+
   useEffect(() => {
     if (txSuccess) {
       toast.success("Transaction successful! We are processing your order.", { duration: 10000 });
@@ -549,18 +570,7 @@ export const OrderDetails = memo(function OrderDetails({
             </span>
           </div>
         )}
-        <button
-          className="order-close-button order-details-close-btn bg-as-brand flex w-full items-center justify-center gap-2 rounded-lg p-2 font-semibold text-white"
-          onClick={mode === "page" ? handleReturnToHome : handleCloseModal}
-        >
-          {mode === "page" ? (
-            <>
-              Return to Home <Home className="ml-2 h-4 w-4" />
-            </>
-          ) : (
-            "Close"
-          )}
-        </button>
+        {returnHomeOrCloseButton}
       </>
     );
   }
@@ -677,20 +687,7 @@ export const OrderDetails = memo(function OrderDetails({
           </ShinyButton>
         )}
 
-        {order.status === "executed" && (
-          <button
-            className="order-close-button order-details-close-btn bg-as-brand flex w-full items-center justify-center gap-2 rounded-lg p-2 font-semibold text-white"
-            onClick={mode === "page" ? handleReturnToHome : handleCloseModal}
-          >
-            {mode === "page" ? (
-              <>
-                Return to Home <Home className="ml-2 h-4 w-4" />
-              </>
-            ) : (
-              "Close"
-            )}
-          </button>
-        )}
+        {order.status === "executed" && returnHomeOrCloseButton}
       </>
     );
   }
@@ -814,20 +811,7 @@ export const OrderDetails = memo(function OrderDetails({
           </ShinyButton>
         )}
 
-        {order.status === "executed" && (
-          <button
-            className="order-close-button order-details-close-btn bg-as-brand flex w-full items-center justify-center gap-2 rounded-lg p-2 font-semibold text-white"
-            onClick={mode === "page" ? handleReturnToHome : handleCloseModal}
-          >
-            {mode === "page" ? (
-              <>
-                Return to Home <Home className="ml-2 h-4 w-4" />
-              </>
-            ) : (
-              "Close"
-            )}
-          </button>
-        )}
+        {order.status === "executed" && returnHomeOrCloseButton}
       </>
     );
   }

@@ -110,6 +110,8 @@ export interface AnySpendDepositProps {
   returnToHomeUrl?: string;
   /** Custom label for recipient display (e.g., "OBSN Telegram Bot") */
   customRecipientLabel?: string;
+  /** Custom label for the return home button (overrides "Return to Home" / "Close") */
+  returnHomeLabel?: string;
 }
 
 // Default supported chains
@@ -230,6 +232,7 @@ export function AnySpendDeposit({
   onClose,
   returnToHomeUrl,
   customRecipientLabel,
+  returnHomeLabel,
 }: AnySpendDepositProps) {
   const { connectedEOAWallet } = useAccountWallet();
   const eoaAddress = connectedEOAWallet?.getAccount()?.address;
@@ -547,6 +550,7 @@ export function AnySpendDeposit({
             disableUrlParamManagement
             returnToHomeUrl={returnToHomeUrl}
             customRecipientLabel={customRecipientLabel}
+            returnHomeLabel={returnHomeLabel}
           />
         ) : (
           <AnySpendCustomExactIn
@@ -571,6 +575,7 @@ export function AnySpendDeposit({
             customExactInConfig={depositContractConfig}
             returnToHomeUrl={returnToHomeUrl}
             customRecipientLabel={customRecipientLabel}
+            returnHomeLabel={returnHomeLabel}
           />
         )}
       </div>

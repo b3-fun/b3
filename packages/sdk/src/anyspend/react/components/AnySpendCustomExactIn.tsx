@@ -70,6 +70,8 @@ export interface AnySpendCustomExactInProps {
   returnToHomeUrl?: string;
   /** Custom label for recipient display (e.g., "OBSN Telegram Bot") */
   customRecipientLabel?: string;
+  /** Custom label for the return home button (overrides "Return to Home" / "Close") */
+  returnHomeLabel?: string;
 }
 
 export function AnySpendCustomExactIn(props: AnySpendCustomExactInProps) {
@@ -103,6 +105,7 @@ function AnySpendCustomExactInInner({
   header,
   returnToHomeUrl,
   customRecipientLabel,
+  returnHomeLabel,
 }: AnySpendCustomExactInProps) {
   const actionLabel = customExactInConfig?.action ?? "Custom Execution";
 
@@ -541,6 +544,7 @@ function AnySpendCustomExactInInner({
             disableUrlParamManagement
             points={oat.data.points || undefined}
             returnToHomeUrl={returnToHomeUrl}
+            returnHomeLabel={returnHomeLabel}
           />
         )}
       </div>
