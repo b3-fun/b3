@@ -14,14 +14,13 @@ import { AnySpendDepositHype } from "@b3dotfun/sdk/anyspend/react/components/Any
 import { AnySpendDepositUpside } from "@b3dotfun/sdk/anyspend/react/components/AnySpendDepositUpside";
 import { AnySpendStakeUpside } from "@b3dotfun/sdk/anyspend/react/components/AnySpendStakeUpside";
 import { AnySpendStakeUpsideExactIn } from "@b3dotfun/sdk/anyspend/react/components/AnySpendStakeUpsideExactIn";
-import { useGlobalAccount, useIsMobile, useModalStore } from "@b3dotfun/sdk/global-account/react";
+import { useB3Config, useGlobalAccount, useIsMobile, useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef } from "react";
 import { useSetActiveWallet } from "thirdweb/react";
 import { AvatarEditor } from "./AvatarEditor/AvatarEditor";
-import { useB3 } from "./B3Provider/useB3";
 import { Deposit } from "./Deposit/Deposit";
 import { LinkAccount } from "./LinkAccount/LinkAccount";
 import { LinkNewAccount } from "./LinkAccount/LinkNewAccount";
@@ -30,8 +29,8 @@ import NotificationsContent from "./ManageAccount/NotificationsContent";
 import { RequestPermissions } from "./RequestPermissions/RequestPermissions";
 import { Send } from "./Send/Send";
 import { SignInWithB3Flow } from "./SignInWithB3/SignInWithB3Flow";
-import { TurnkeyAuthModal } from "./TurnkeyAuthModal";
 import { ToastContainer, useToastContext } from "./Toast/index";
+import { TurnkeyAuthModal } from "./TurnkeyAuthModal";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "./ui/dialog";
 import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "./ui/drawer";
 
@@ -42,7 +41,7 @@ export function B3DynamicModal() {
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
   const contentType = useModalStore(state => state.contentType);
   const navigateBack = useModalStore(state => state.navigateBack);
-  const { theme } = useB3();
+  const { theme } = useB3Config();
   const isMobile = useIsMobile();
   const prevIsOpenRef = useRef(isOpen);
   const { wallet } = useGlobalAccount();

@@ -1,9 +1,8 @@
-import { getStripePromise } from "@b3dotfun/sdk/shared/utils/payment.utils";
 import { OrderDetailsCollapsible, useStripeClientSecret } from "@b3dotfun/sdk/anyspend/react";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
-import { ShinyButton, useB3, useModalStore, useProfile } from "@b3dotfun/sdk/global-account/react";
+import { ShinyButton, useB3Config, useModalStore, useProfile } from "@b3dotfun/sdk/global-account/react";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
-import { formatStripeAmount } from "@b3dotfun/sdk/shared/utils/payment.utils";
+import { formatStripeAmount, getStripePromise } from "@b3dotfun/sdk/shared/utils/payment.utils";
 import { AddressElement, Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import { PaymentIntentResult, StripePaymentElementOptions } from "@stripe/stripe-js";
 import { X } from "lucide-react";
@@ -19,7 +18,7 @@ interface PaymentStripeWeb2Props {
 }
 
 export default function PaymentStripeWeb2({ order, stripePaymentIntentId, onPaymentSuccess }: PaymentStripeWeb2Props) {
-  const { theme, stripePublishableKey } = useB3();
+  const { theme, stripePublishableKey } = useB3Config();
   const fingerprintConfig = getFingerprintConfig();
 
   const { clientSecret, isLoadingStripeClientSecret, stripeClientSecretError } =

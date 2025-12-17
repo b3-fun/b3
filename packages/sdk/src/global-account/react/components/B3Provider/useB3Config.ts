@@ -16,6 +16,8 @@ export const useB3Config = () => {
     partnerId,
     createClientReferenceId,
     enableTurnkey,
+    stripePublishableKey,
+    defaultPermissions,
   } = context;
 
   // Return a stable reference
@@ -28,6 +30,8 @@ export const useB3Config = () => {
       partnerId,
       createClientReferenceId,
       enableTurnkey,
+      stripePublishableKey,
+      defaultPermissions,
     }),
     [automaticallySetFirstEoa, environment, theme, clientType, partnerId, createClientReferenceId, enableTurnkey],
   );
