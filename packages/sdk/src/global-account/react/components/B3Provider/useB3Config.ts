@@ -19,4 +19,3 @@ export const useB3Config = () => {
     accountOverride: state.accountOverride,
   }));
 };
-

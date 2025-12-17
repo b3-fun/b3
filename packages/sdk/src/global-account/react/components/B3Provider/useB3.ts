@@ -7,4 +7,3 @@ import { useB3Config } from "./useB3Config";
 export function useB3() {
   return useB3Config();
 }
-
