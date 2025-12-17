@@ -183,7 +183,7 @@ function App() {
   );
 }`;
 
-const anySpendNFTCodeExample = `import { AnySpendNFTButton, useB3, B3Provider } from '@b3dotfun/sdk';
+const anySpendNFTCodeExample = `import { AnySpendNFTButton, B3Provider } from '@b3dotfun/sdk';
 
 // Define your NFT contract details
 const nftContract = {

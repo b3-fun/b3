@@ -6,8 +6,6 @@
 
 export { B3Provider } from "./components/B3Provider/B3Provider.native";
 
-export { B3Context, type B3ContextType } from "./components/B3Provider/types";
-export { useB3 } from "./components/B3Provider/useB3";
 export { useAccountWallet } from "./hooks/useAccountWallet";
 export { useAuthentication } from "./hooks/useAuthentication";
 export { useProfile } from "./hooks/useProfile";

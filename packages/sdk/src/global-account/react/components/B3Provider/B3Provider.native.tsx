@@ -1,24 +1,16 @@
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ThirdwebProvider, useActiveAccount } from "thirdweb/react";
+import { useMemo } from "react";
+import { ThirdwebProvider } from "thirdweb/react";
 import { Account, Wallet } from "thirdweb/wallets";
 
 import { ClientType } from "../../../client-manager";
 
 import { WagmiProvider } from "wagmi";
+import { useB3ConfigStore } from "../../stores/configStore";
 import { createWagmiConfig } from "../../utils/createWagmiConfig";
+import AuthenticationProvider from "./AuthenticationProvider";
 import { LocalSDKProvider } from "./LocalSDKProvider";
-import { B3Context, B3ContextType } from "./types";
-
-/**
- * Default permissions configuration for B3 provider
- */
-const DEFAULT_PERMISSIONS = {
-  approvedTargets: ["0xa8e42121e318e3D3BeD7f5969AF6D360045317DD"], // Example contract
-  nativeTokenLimitPerTransaction: 0.1, // in ETH
-  startDate: new Date(),
-  endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365), // 1 year from now
-};
 
 // Create queryClient instance
 const queryClient = new QueryClient();
@@ -35,44 +27,51 @@ export function B3Provider({
   partnerId,
   rpcUrls,
   onConnect,
+  defaultPermissions,
 }: {
   theme: "light" | "dark";
   children: React.ReactNode;
   accountOverride?: Account;
-  environment: B3ContextType["environment"];
+  environment?: "development" | "production";
   clientType?: ClientType;
   partnerId: string;
   rpcUrls?: Record<number, string>;
   onConnect?: (wallet: Wallet, b3Jwt: string) => void | Promise<void>;
+  defaultPermissions?: PermissionsConfig;
 }) {
+  // Initialize config store synchronously before render
+  useMemo(() => {
+    useB3ConfigStore.getState().setConfig({
+      accountOverride,
+      environment: environment ?? "development",
+      automaticallySetFirstEoa: false,
+      theme,
+      clientType,
+      partnerId,
+      defaultPermissions,
+    });
+  }, [accountOverride, environment, theme, clientType, partnerId, defaultPermissions]);
+
   return (
     <ThirdwebProvider>
       <LocalSDKProvider onConnectCallback={onConnect}>
-        <InnerProvider
-          accountOverride={accountOverride}
-          environment={environment}
-          theme={theme}
-          clientType={clientType}
-          partnerId={partnerId}
-          rpcUrls={rpcUrls}
-        >
-          {/* <RelayKitProviderWrapper> */}
-          {children}
-          {/* </RelayKitProviderWrapper> */}
-        </InnerProvider>
+        {/* <RelayKitProviderWrapper> */}
+        {children}
+        <AuthenticationProvider partnerId={partnerId} automaticallySetFirstEoa={false} />
+        {/* </RelayKitProviderWrapper> */}
       </LocalSDKProvider>
     </ThirdwebProvider>
   );
 }
 
 /**
- * Inner provider component that provides the actual B3Context
+ * Inner provider component for native
  */
 export function InnerProvider({
   children,
   accountOverride,
   environment,
-  defaultPermissions = DEFAULT_PERMISSIONS,
+  defaultPermissions,
   theme = "light",
   clientType = "socket",
   partnerId,
@@ -80,44 +79,31 @@ export function InnerProvider({
 }: {
   children: React.ReactNode;
   accountOverride?: Account;
-  environment: B3ContextType["environment"];
+  environment?: "development" | "production";
   defaultPermissions?: PermissionsConfig;
   theme: "light" | "dark";
   clientType?: ClientType;
   partnerId: string;
   rpcUrls?: Record<number, string>;
 }) {
-  const activeAccount = useActiveAccount();
-  //const { user, setUser, refetchUser } = useAuthentication(partnerId);
   const wagmiConfig = createWagmiConfig({ partnerId, rpcUrls });
 
-  // Use given accountOverride or activeAccount from thirdweb
-  const effectiveAccount = accountOverride || activeAccount;
+  // Initialize config store synchronously before render
+  useMemo(() => {
+    useB3ConfigStore.getState().setConfig({
+      accountOverride,
+      environment: environment ?? "development",
+      automaticallySetFirstEoa: false,
+      theme,
+      clientType,
+      partnerId,
+      defaultPermissions,
+    });
+  }, [accountOverride, environment, theme, clientType, partnerId, defaultPermissions]);
 
   return (
     <WagmiProvider config={wagmiConfig}>
-      <QueryClientProvider client={queryClient}>
-        <B3Context.Provider
-          value={{
-            //account: effectiveAccount,
-            automaticallySetFirstEoa: false,
-            //setWallet: () => {},
-            wallet: undefined,
-            //user,
-            //setUser,
-            initialized: true,
-            ready: !!effectiveAccount,
-            environment,
-            defaultPermissions,
-            theme,
-            clientType,
-            partnerId,
-            //refetchUser,
-          }}
-        >
-          {children}
-        </B3Context.Provider>
-      </QueryClientProvider>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     </WagmiProvider>
   );
 }
