@@ -14,6 +14,7 @@ import {
   useAnyspendCreateOrder,
   useAnyspendOrderAndTransactions,
   useAnyspendQuote,
+  useGasPrice,
   useGeoOnrampOptions,
 } from "@b3dotfun/sdk/anyspend/react";
 import {
@@ -54,6 +55,7 @@ import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPay
 import { CryptoPaySection } from "./common/CryptoPaySection";
 import { CryptoReceiveSection } from "./common/CryptoReceiveSection";
 import { FeeDetailPanel } from "./common/FeeDetailPanel";
+import { GasIndicator } from "./common/GasIndicator";
 import { FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaymentMethod";
 import { OrderDetails, OrderDetailsLoadingView } from "./common/OrderDetails";
 import { OrderHistory } from "./common/OrderHistory";
@@ -556,6 +558,9 @@ function AnySpendInner({
   // Get geo-based onramp options for fiat payments
   const { geoData, coinbaseAvailablePaymentMethods, stripeOnrampSupport, stripeWeb2Support } =
     useGeoOnrampOptions(srcAmountOnRamp);
+
+  // Get gas price for source chain (where the user pays from)
+  const { gasPrice: gasPriceData, isLoading: isLoadingGas } = useGasPrice(selectedSrcChainId);
 
   // Helper function to map payment method to onramp vendor
   const getOnrampVendor = (paymentMethod: FiatPaymentMethod): "coinbase" | "stripe" | "stripe-web2" | undefined => {
@@ -1242,6 +1247,11 @@ function AnySpendInner({
             />
           )}
         </div>
+
+        {/* Gas indicator - show when source chain has gas data */}
+        {gasPriceData && !isLoadingGas && activeTab === "crypto" && (
+          <GasIndicator gasPrice={gasPriceData} className="mt-2" />
+        )}
 
         {/* Main button section */}
         <motion.div
