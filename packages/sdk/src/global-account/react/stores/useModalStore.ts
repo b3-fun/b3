@@ -505,6 +505,10 @@ export interface AnySpendCollectorClubPurchaseProps extends BaseModalProps {
   vendingMachineId: string;
   /** The pack type */
   packType: string;
+  /** Active tab */
+  activeTab?: "crypto" | "fiat";
+  /** Force fiat payment */
+  forceFiatPayment?: boolean;
 }
 
 /**
