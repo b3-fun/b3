@@ -1,4 +1,16 @@
 import { RELAY_SOLANA_MAINNET_CHAIN_ID } from "@b3dotfun/sdk/anyspend/constants";
+import {
+  ABSTRACT_PUBLIC_RPC,
+  ARBITRUM_PUBLIC_RPC,
+  AVALANCHE_PUBLIC_RPC,
+  B3_PUBLIC_RPC,
+  BASE_PUBLIC_RPC,
+  BSC_PUBLIC_RPC,
+  ETHEREUM_PUBLIC_RPC,
+  HYPEREVM_PUBLIC_RPC,
+  OPTIMISM_PUBLIC_RPC,
+  POLYGON_PUBLIC_RPC,
+} from "@b3dotfun/sdk/anyspend/constants/rpc";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import invariant from "invariant";
 import {
@@ -31,11 +43,49 @@ function getCustomEvmChain(chain: Chain, rpcUrl: string): Chain {
   return defineChain({ ...chain, rpcUrls: { default: { http: [rpcUrl] } } });
 }
 
+/**
+ * Global RPC URL overrides for EVM chains.
+ * Use setChainRpcOverrides() to configure custom RPC endpoints.
+ */
+let chainRpcOverrides: Record<number, string> = {};
+
+/**
+ * Set custom RPC URL overrides for specific chains.
+ * These overrides are used by chainIdToPublicClient and chainIdToWalletClient.
+ *
+ * @param overrides - A record mapping chain IDs to custom RPC URLs
+ *
+ * @example
+ * // Set once at app initialization using environment variables
+ * setChainRpcOverrides({
+ *   1: process.env.ETHEREUM_RPC_URL,
+ *   8453: process.env.BASE_RPC_URL,
+ *   42161: process.env.ARBITRUM_RPC_URL,
+ * });
+ */
+export function setChainRpcOverrides(overrides: Record<number, string>): void {
+  chainRpcOverrides = { ...overrides };
+}
+
+/**
+ * Get the current RPC URL overrides.
+ */
+export function getChainRpcOverrides(): Record<number, string> {
+  return { ...chainRpcOverrides };
+}
+
+/**
+ * Clear all RPC URL overrides.
+ */
+export function clearChainRpcOverrides(): void {
+  chainRpcOverrides = {};
+}
+
 export const hyperEVM = defineChain({
   id: HYPEREVM_CHAIN_ID,
   name: "HyperEVM",
   nativeCurrency: { name: "HyperEVM", symbol: "HYPE", decimals: 18 },
-  rpcUrls: { default: { http: ["https://rpc.hyperliquid.xyz/evm"] } },
+  rpcUrls: { default: { http: [HYPEREVM_PUBLIC_RPC] } },
   blockExplorers: { default: { name: "HyperEVM Explorer", url: "https://hyperevmscan.io/" } },
 });
 
@@ -57,10 +107,7 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     canDepositNative: true,
     defaultToken: getEthToken(mainnet.id),
     nativeToken: getEthToken(mainnet.id),
-    viem: getCustomEvmChain(
-      mainnet,
-      "https://quick-chaotic-film.quiknode.pro/39a7aae6a7078f9f36c435e6f34c071c641cf863/",
-    ),
+    viem: getCustomEvmChain(mainnet, ETHEREUM_PUBLIC_RPC),
     pollingInterval: 4000, // 4 seconds for Ethereum mainnet
     zapperEnum: "ETHEREUM_MAINNET",
     coingeckoName: "eth",
@@ -75,10 +122,7 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     canDepositNative: true,
     defaultToken: getEthToken(arbitrum.id),
     nativeToken: getEthToken(arbitrum.id),
-    viem: getCustomEvmChain(
-      arbitrum,
-      "https://proportionate-twilight-patina.arbitrum-mainnet.quiknode.pro/60e4825626515233a0f566f5915601af6043127b/",
-    ),
+    viem: getCustomEvmChain(arbitrum, ARBITRUM_PUBLIC_RPC),
     pollingInterval: 500, // 500ms for Arbitrum's fast blocks
     zapperEnum: "ARBITRUM_MAINNET",
     coingeckoName: "arbitrum",
@@ -93,10 +137,7 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     canDepositNative: true,
     defaultToken: getEthToken(base.id),
     nativeToken: getEthToken(base.id),
-    viem: getCustomEvmChain(
-      base,
-      "https://sly-indulgent-bird.base-mainnet.quiknode.pro/4e31fab6845eb29a2764723a43896999fe962e48/",
-    ),
+    viem: getCustomEvmChain(base, BASE_PUBLIC_RPC),
     pollingInterval: 1000, // 1 second for Base
     zapperEnum: "BASE_MAINNET",
     coingeckoName: "base",
@@ -111,10 +152,7 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     canDepositNative: true,
     defaultToken: getEthToken(optimism.id),
     nativeToken: getEthToken(optimism.id),
-    viem: getCustomEvmChain(
-      optimism,
-      "https://black-cosmopolitan-hexagon.optimism.quiknode.pro/18382925841f9d09f9e76eef954bf189aa234523/",
-    ),
+    viem: getCustomEvmChain(optimism, OPTIMISM_PUBLIC_RPC),
     pollingInterval: 1000, // 1 second for Optimism
     zapperEnum: "OPTIMISM_MAINNET",
     coingeckoName: "optimism",
@@ -129,10 +167,7 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     canDepositNative: true,
     defaultToken: getPolToken(),
     nativeToken: getPolToken(),
-    viem: getCustomEvmChain(
-      polygon,
-      "https://purple-young-field.matic.quiknode.pro/ca54f365c1a4c7f970223eb8087e0fc579feba12/",
-    ),
+    viem: getCustomEvmChain(polygon, POLYGON_PUBLIC_RPC),
     pollingInterval: 1000, // 1 second for Polygon
     zapperEnum: "POLYGON_MAINNET",
     coingeckoName: "polygon_pos",
@@ -147,7 +182,7 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     canDepositNative: true,
     defaultToken: getAvaxToken(),
     nativeToken: getAvaxToken(),
-    viem: getCustomEvmChain(avalanche, "https://avalanche-c-chain-rpc.publicnode.com"),
+    viem: getCustomEvmChain(avalanche, AVALANCHE_PUBLIC_RPC),
     pollingInterval: 1000, // 1 second for Avalanche
     zapperEnum: "AVALANCHE_MAINNET",
     coingeckoName: "avax",
@@ -162,10 +197,7 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     canDepositNative: true,
     defaultToken: getBnbToken(),
     nativeToken: getBnbToken(),
-    viem: getCustomEvmChain(
-      bsc,
-      "https://methodical-divine-flower.bsc.quiknode.pro/9fc7efd3c34cc016cceacc27ee95850629b7cd21/",
-    ),
+    viem: getCustomEvmChain(bsc, BSC_PUBLIC_RPC),
     pollingInterval: 1000, // 1 second for BSC
     zapperEnum: "BSC_MAINNET",
     coingeckoName: "bsc",
@@ -180,10 +212,7 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     canDepositNative: true,
     defaultToken: getEthToken(b3.id),
     nativeToken: getEthToken(b3.id),
-    viem: getCustomEvmChain(
-      b3,
-      "https://late-dimensional-yard.b3-mainnet.quiknode.pro/461dbdbd44158cd7a7a764a58ffb01a67eef77f2/",
-    ),
+    viem: getCustomEvmChain(b3, B3_PUBLIC_RPC),
     pollingInterval: 1000, // 1 second for B3
     zapperEnum: "B3_MAINNET",
     coingeckoName: "b3",
@@ -198,10 +227,7 @@ export const EVM_MAINNET: Record<number, IEVMChain> = {
     canDepositNative: true,
     defaultToken: getEthToken(abstract.id),
     nativeToken: getEthToken(abstract.id),
-    viem: getCustomEvmChain(
-      abstract,
-      "https://cosmopolitan-nameless-mountain.abstract-mainnet.quiknode.pro/863853304b986b582bdacf625ce3350397c560f8/",
-    ),
+    viem: getCustomEvmChain(abstract, ABSTRACT_PUBLIC_RPC),
     pollingInterval: 3000, // 3 seconds for Abstract
     zapperEnum: "ABSTRACT_MAINNET",
     coingeckoName: "abstract",
@@ -328,8 +354,12 @@ export function getChainType(chainId: number): ChainType {
 export function chainIdToPublicClient(chainId: number): PublicClient {
   invariant(EVM_CHAINS[chainId], `Chain ${chainId} is not an EVM chain`);
 
+  // Use override RPC if configured, otherwise use the default chain RPC
+  const rpcOverride = chainRpcOverrides[chainId];
+  const chain = rpcOverride ? getCustomEvmChain(EVM_CHAINS[chainId].viem, rpcOverride) : EVM_CHAINS[chainId].viem;
+
   return createPublicClient({
-    chain: EVM_CHAINS[chainId].viem,
+    chain,
     transport: http(),
     pollingInterval: EVM_CHAINS[chainId].pollingInterval,
   });
@@ -338,8 +368,12 @@ export function chainIdToPublicClient(chainId: number): PublicClient {
 export function chainIdToWalletClient(chainId: number, account?: Account): WalletClient<Transport, Chain> {
   invariant(EVM_CHAINS[chainId], `Chain ${chainId} is not an EVM chain`);
 
+  // Use override RPC if configured, otherwise use the default chain RPC
+  const rpcOverride = chainRpcOverrides[chainId];
+  const chain = rpcOverride ? getCustomEvmChain(EVM_CHAINS[chainId].viem, rpcOverride) : EVM_CHAINS[chainId].viem;
+
   return createWalletClient({
-    chain: EVM_CHAINS[chainId].viem,
+    chain,
     transport: http(),
     account,
     pollingInterval: EVM_CHAINS[chainId].pollingInterval,
