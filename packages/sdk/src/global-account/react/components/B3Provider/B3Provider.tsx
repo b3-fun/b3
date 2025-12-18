@@ -81,19 +81,8 @@ export function B3Provider({
       enableTurnkey,
       defaultPermissions,
     });
-  }, [
-    accountOverride,
-    environment,
-    automaticallySetFirstEoa,
-    theme,
-    clientType,
-    partnerId,
-    stripePublishableKey,
-    createClientReferenceId,
-    enableTurnkey,
-    defaultPermissions,
-    setConfig,
-  ]); // eslint-disable-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Initialize Google Analytics on mount
   useEffect(() => {
