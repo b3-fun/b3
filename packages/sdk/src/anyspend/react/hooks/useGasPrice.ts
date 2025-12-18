@@ -48,7 +48,7 @@ export function useGasPrice(chainId: number | undefined, options: UseGasPriceOpt
 
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["gasPrice", chainId],
-    queryFn: () => gasService.fetch(chainId!),
+    queryFn: () => gasService.fetch(chainId as number),
     enabled: queryEnabled && chainId !== undefined,
     refetchInterval,
     staleTime: 5000, // Consider data fresh for 5s
