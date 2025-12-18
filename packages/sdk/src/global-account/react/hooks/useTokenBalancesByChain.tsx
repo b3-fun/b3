@@ -83,9 +83,6 @@ export function useTokenBalancesByChain({
     staleTime: 30000, // Consider data fresh for 30 seconds
     gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
     retry: 2, // Limit retries on failure
-    // Enable structural sharing to prevent infinite loops
-    // This ensures we only get new references when data actually changes
-    structuralSharing: true,
   });
 
   return {
