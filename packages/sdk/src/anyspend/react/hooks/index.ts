@@ -7,6 +7,7 @@ export * from "./useAnyspendQuote";
 export * from "./useAnyspendTokens";
 export * from "./useCoinbaseOnrampOptions";
 export * from "./useConnectedUserProfile";
+export * from "./useGasPrice";
 export * from "./useGeoOnrampOptions";
 export * from "./useGetGeo";
 export * from "./useHyperliquidTransfer";
