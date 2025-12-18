@@ -35,7 +35,7 @@ function formatGasPrice(gweiString: string): string {
 
 export function GasIndicator({ gasPrice, className }: GasIndicatorProps) {
   // Only show when gas is high or spike
-  if (gasPrice.level !== "high" && gasPrice.level !== "spike") {
+  if (!["high", "spike"].includes(gasPrice.level)) {
     return null;
   }
 
