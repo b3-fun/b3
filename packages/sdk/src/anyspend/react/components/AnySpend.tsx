@@ -249,7 +249,11 @@ function AnySpendInner({
     defaultToken: defaultSrcToken,
     prefix: "from",
   });
-  const [selectedSrcToken, setSelectedSrcToken] = useState<components["schemas"]["Token"]>(srcTokenFromUrl);
+  // When sourceChainId prop is explicitly provided and differs from URL token's chain,
+  // use the default token for the new chain (handles chain selection in AnySpendDeposit)
+  const effectiveSrcToken =
+    sourceChainId && srcTokenFromUrl.chainId !== sourceChainId ? defaultSrcToken : srcTokenFromUrl;
+  const [selectedSrcToken, setSelectedSrcToken] = useState<components["schemas"]["Token"]>(effectiveSrcToken);
   const { data: srcTokenMetadata } = useTokenData(selectedSrcToken?.chainId, selectedSrcToken?.address);
   const [srcAmount, setSrcAmount] = useState<string>(searchParams.get("fromAmount") || "0");
 
