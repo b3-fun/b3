@@ -1,5 +1,6 @@
 // Types
 export * from "./types/api";
+export * from "./types/gas";
 
 // Utils
 export * from "./utils/address";
@@ -13,6 +14,9 @@ export * from "./utils/validation";
 
 // Constants
 export * from "./constants";
+
+// Services
+export * from "./services/gas";
 
 // Abis
 export * from "./abis/abiUsdcBase";
