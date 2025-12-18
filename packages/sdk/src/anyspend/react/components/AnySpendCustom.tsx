@@ -253,7 +253,7 @@ function AnySpendCustomInner({
   const [activePanel, setActivePanel] = useState<PanelView>(
     loadOrder ? PanelView.ORDER_DETAILS : PanelView.CONFIRM_ORDER,
   );
-  const [activeTab, setActiveTab] = useState<"crypto" | "fiat">(activeTabProps);
+  const [activeTab, setActiveTab] = useState<"crypto" | "fiat">(forceFiatPayment ? "fiat" : activeTabProps);
 
   // Payment method state with dual-state system (auto + explicit user selection)
   // Note: AnySpendCustom doesn't use auto-selection, only explicit user selection
