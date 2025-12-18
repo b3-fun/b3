@@ -109,6 +109,10 @@ export interface AnySpendCollectorClubPurchaseProps {
    * The partner ID
    */
   packType: string;
+  /**
+   * Force fiat payment
+   */
+  forceFiatPayment?: boolean;
 }
 
 export function AnySpendCollectorClubPurchase({
@@ -126,6 +130,7 @@ export function AnySpendCollectorClubPurchase({
   showRecipient = true,
   vendingMachineId,
   packType,
+  forceFiatPayment,
 }: AnySpendCollectorClubPurchaseProps) {
   // Calculate total amount needed (pricePerPack * packAmount)
   const totalAmount = useMemo(() => {
@@ -193,6 +198,7 @@ export function AnySpendCollectorClubPurchase({
       onSuccess={onSuccess}
       showRecipient={showRecipient}
       srcFiatAmount={srcFiatAmount}
+      forceFiatPayment={forceFiatPayment}
     />
   );
 }
