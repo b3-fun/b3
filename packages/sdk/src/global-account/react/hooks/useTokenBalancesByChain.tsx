@@ -6,8 +6,8 @@ import { useQuery } from "@tanstack/react-query";
 import { viemToThirdwebChain } from "@b3dotfun/sdk/shared/constants/chains/b3Chain";
 import { getChainById } from "@b3dotfun/sdk/shared/utils/chains";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
-import { getWalletBalance } from "thirdweb/wallets";
 import invariant from "invariant";
+import { getWalletBalance } from "thirdweb/wallets";
 
 type GetWalletBalanceResult = {
   value: bigint;
@@ -83,7 +83,9 @@ export function useTokenBalancesByChain({
     staleTime: 30000, // Consider data fresh for 30 seconds
     gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
     retry: 2, // Limit retries on failure
-    structuralSharing: false,
+    // Enable structural sharing to prevent infinite loops
+    // This ensures we only get new references when data actually changes
+    structuralSharing: true,
   });
 
   return {
