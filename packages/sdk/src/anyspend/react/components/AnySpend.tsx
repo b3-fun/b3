@@ -55,8 +55,8 @@ import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPay
 import { CryptoPaySection } from "./common/CryptoPaySection";
 import { CryptoReceiveSection } from "./common/CryptoReceiveSection";
 import { FeeDetailPanel } from "./common/FeeDetailPanel";
-import { GasIndicator } from "./common/GasIndicator";
 import { FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaymentMethod";
+import { GasIndicator } from "./common/GasIndicator";
 import { OrderDetails, OrderDetailsLoadingView } from "./common/OrderDetails";
 import { OrderHistory } from "./common/OrderHistory";
 import { PanelOnramp } from "./common/PanelOnramp";
@@ -1250,7 +1250,7 @@ function AnySpendInner({
 
         {/* Gas indicator - show when source chain has gas data */}
         {gasPriceData && !isLoadingGas && activeTab === "crypto" && (
-          <GasIndicator gasPrice={gasPriceData} className="mt-2" />
+          <GasIndicator gasPrice={gasPriceData} className="mt-2 w-full" />
         )}
 
         {/* Main button section */}

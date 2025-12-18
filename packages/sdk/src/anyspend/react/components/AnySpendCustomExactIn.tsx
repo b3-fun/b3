@@ -1,3 +1,4 @@
+import { useGasPrice } from "@b3dotfun/sdk/anyspend/react";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
 import { normalizeAddress } from "@b3dotfun/sdk/anyspend/utils";
@@ -25,6 +26,7 @@ import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPay
 import { CryptoReceiveSection } from "./common/CryptoReceiveSection";
 import { FeeDetailPanel } from "./common/FeeDetailPanel";
 import { FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaymentMethod";
+import { GasIndicator } from "./common/GasIndicator";
 import { OrderDetails } from "./common/OrderDetails";
 import { PanelOnramp } from "./common/PanelOnramp";
 import { PointsDetailPanel } from "./common/PointsDetailPanel";
@@ -168,6 +170,9 @@ function AnySpendCustomExactInInner({
 
   const { connectedEOAWallet } = useAccountWallet();
   const setActiveWallet = useSetActiveWallet();
+
+  // Get gas price for source chain (where the user pays from)
+  const { gasPrice: gasPriceData, isLoading: isLoadingGas } = useGasPrice(selectedSrcChainId);
   const appliedPreferEoa = useRef(false);
 
   useEffect(() => {
@@ -437,6 +442,11 @@ function AnySpendCustomExactInInner({
           </div>
         </ShinyButton>
       </motion.div>
+
+      {/* Gas indicator - show when source chain has gas data */}
+      {gasPriceData && !isLoadingGas && paymentType === "crypto" && (
+        <GasIndicator gasPrice={gasPriceData} className="mt-2 w-full" />
+      )}
 
       {mainFooter ? mainFooter : null}
     </div>
