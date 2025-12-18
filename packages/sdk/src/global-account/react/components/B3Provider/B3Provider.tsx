@@ -67,7 +67,7 @@ export function B3Provider({
 }) {
   const setConfig = useB3ConfigStore(state => state.setConfig);
 
-  // Initialize config store on mount - props are static and never change
+  // Initialize config store on mount
   useEffect(() => {
     setConfig({
       accountOverride,
@@ -81,7 +81,19 @@ export function B3Provider({
       enableTurnkey,
       defaultPermissions,
     });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [
+    accountOverride,
+    environment,
+    automaticallySetFirstEoa,
+    theme,
+    clientType,
+    partnerId,
+    stripePublishableKey,
+    createClientReferenceId,
+    enableTurnkey,
+    defaultPermissions,
+    setConfig,
+  ]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Initialize Google Analytics on mount
   useEffect(() => {
