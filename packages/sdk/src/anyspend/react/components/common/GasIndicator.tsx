@@ -31,9 +31,7 @@ export function GasIndicator({ gasPrice, className }: GasIndicatorProps) {
       className={cn("flex flex-col gap-1 rounded-lg bg-orange-500/10 px-3 py-2", className)}
     >
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-orange-500">
-          Gas is high - transaction may fail or cost more
-        </span>
+        <span className="text-xs font-medium text-orange-500">Gas is high - transaction may fail or cost more</span>
         <span className="text-xs font-medium text-orange-500">{formatGwei(gasPrice.gasPriceGwei)} Gwei</span>
       </div>
       <span className="text-as-secondary text-xs">Consider swapping later for better rates</span>
