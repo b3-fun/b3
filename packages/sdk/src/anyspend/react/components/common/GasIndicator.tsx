@@ -9,23 +9,7 @@ export interface GasIndicatorProps {
   className?: string;
 }
 
-const LEVEL_LABELS: Record<GasPriceData["level"], string> = {
-  low: "Low",
-  normal: "Normal",
-  elevated: "Elevated",
-  high: "High",
-  spike: "Spike",
-};
-
-const LEVEL_STYLES: Record<GasPriceData["level"], string> = {
-  low: "bg-green-500/20 text-green-500",
-  normal: "bg-as-surface-tertiary text-as-secondary",
-  elevated: "bg-yellow-500/20 text-yellow-600",
-  high: "bg-orange-500/20 text-orange-500",
-  spike: "bg-red-500/20 text-red-500",
-};
-
-function formatGasPrice(gweiString: string): string {
+function formatGwei(gweiString: string): string {
   const gwei = parseFloat(gweiString);
   if (gwei < 0.001) return "<0.001";
   if (gwei < 1) return gwei.toFixed(3);
@@ -34,26 +18,23 @@ function formatGasPrice(gweiString: string): string {
 }
 
 export function GasIndicator({ gasPrice, className }: GasIndicatorProps) {
+  // Only show when gas is high or spike
+  if (!["high", "spike"].includes(gasPrice.level)) {
+    return null;
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
-      className={cn(
-        "flex items-center justify-between rounded-lg px-3 py-2",
-        gasPrice.isSpike ? "bg-yellow-500/10" : "bg-as-surface-secondary",
-        className,
-      )}
+      className={cn("flex flex-col gap-1 rounded-lg bg-orange-500/10 px-3 py-2", className)}
     >
-      <div className="flex items-center gap-2">
-        <span className="text-as-secondary text-xs">Gas on {gasPrice.chainName}</span>
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-medium text-orange-500">Gas is high - transaction may fail or cost more</span>
+        <span className="text-xs font-medium text-orange-500">{formatGwei(gasPrice.gasPriceGwei)} Gwei</span>
       </div>
-      <div className="flex items-center gap-2">
-        <span className={cn("rounded px-1.5 py-0.5 text-xs font-medium", LEVEL_STYLES[gasPrice.level])}>
-          {LEVEL_LABELS[gasPrice.level]}
-        </span>
-        <span className="text-as-primary text-xs font-medium">{formatGasPrice(gasPrice.gasPriceGwei)} Gwei</span>
-      </div>
+      <span className="text-as-secondary text-xs">Consider swapping later for better rates</span>
     </motion.div>
   );
 }
