@@ -11,10 +11,10 @@ import { ThirdwebProvider } from "thirdweb/react";
 import { Account, Wallet } from "thirdweb/wallets";
 import { CreateConnectorFn, WagmiProvider } from "wagmi";
 import { ClientType, setClientType } from "../../../client-manager";
-import { useB3ConfigStore } from "../../stores/configStore";
 import { StyleRoot } from "../StyleRoot";
 import { setToastContext, ToastProvider, useToastContext } from "../Toast/index";
 import AuthenticationProvider from "./AuthenticationProvider";
+import { B3ConfigProvider } from "./B3ConfigProvider";
 import { LocalSDKProvider } from "./LocalSDKProvider";
 
 // Create queryClient instance
@@ -65,36 +65,6 @@ export function B3Provider({
   enableTurnkey?: boolean;
   defaultPermissions?: PermissionsConfig;
 }) {
-  const setConfig = useB3ConfigStore(state => state.setConfig);
-
-  // Initialize config store on mount
-  useEffect(() => {
-    setConfig({
-      accountOverride,
-      environment: environment ?? "development",
-      automaticallySetFirstEoa: !!automaticallySetFirstEoa,
-      theme,
-      clientType,
-      partnerId,
-      stripePublishableKey,
-      createClientReferenceId,
-      enableTurnkey,
-      defaultPermissions,
-    });
-  }, [
-    accountOverride,
-    environment,
-    automaticallySetFirstEoa,
-    theme,
-    clientType,
-    partnerId,
-    stripePublishableKey,
-    createClientReferenceId,
-    enableTurnkey,
-    defaultPermissions,
-    setConfig,
-  ]); // eslint-disable-line react-hooks/exhaustive-deps
-
   // Initialize Google Analytics on mount
   useEffect(() => {
     loadGA4Script();
@@ -117,13 +87,26 @@ export function B3Provider({
           <TooltipProvider>
             <ToastProvider>
               <LocalSDKProvider onConnectCallback={onConnect}>
-                <ToastContextConnector />
-                <RelayKitProviderWrapper simDuneApiKey={simDuneApiKey}>
-                  {children}
-                  {/* For the modal https://github.com/b3-fun/b3/blob/main/packages/sdk/src/global-account/react/components/ui/dialog.tsx#L46 */}
-                  <StyleRoot id="b3-root" />
-                </RelayKitProviderWrapper>
-                <AuthenticationProvider partnerId={partnerId} automaticallySetFirstEoa={!!automaticallySetFirstEoa} />
+                <B3ConfigProvider
+                  accountOverride={accountOverride}
+                  environment={environment}
+                  automaticallySetFirstEoa={!!automaticallySetFirstEoa}
+                  theme={theme}
+                  clientType={clientType}
+                  partnerId={partnerId}
+                  stripePublishableKey={stripePublishableKey}
+                  createClientReferenceId={createClientReferenceId}
+                  enableTurnkey={enableTurnkey}
+                  defaultPermissions={defaultPermissions}
+                >
+                  <ToastContextConnector />
+                  <RelayKitProviderWrapper simDuneApiKey={simDuneApiKey}>
+                    {children}
+                    {/* For the modal https://github.com/b3-fun/b3/blob/main/packages/sdk/src/global-account/react/components/ui/dialog.tsx#L46 */}
+                    <StyleRoot id="b3-root" />
+                  </RelayKitProviderWrapper>
+                  <AuthenticationProvider partnerId={partnerId} automaticallySetFirstEoa={!!automaticallySetFirstEoa} />
+                </B3ConfigProvider>
               </LocalSDKProvider>
             </ToastProvider>
           </TooltipProvider>
