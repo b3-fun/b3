@@ -4,6 +4,9 @@ import { components } from "../types/api";
 export const ANYSPEND_MAINNET_BASE_URL = process.env.NEXT_PUBLIC_ANYSPEND_BASE_URL || "https://mainnet.anyspend.com";
 
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+export const GAS_ORACLE_BASE_URL = process.env.NEXT_PUBLIC_GAS_ORACLE_URL || "https://gas-oracle.sean-430.workers.dev";
+
+export const RELAY_ETH_ADDRESS = "0x0000000000000000000000000000000000000000";
 export const RELAY_SOL_ADDRESS = "11111111111111111111111111111111";
 
 export const RELAY_SOLANA_MAINNET_CHAIN_ID = 792703809;

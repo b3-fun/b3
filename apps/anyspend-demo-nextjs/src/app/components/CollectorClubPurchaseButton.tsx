@@ -19,9 +19,11 @@ export function CollectorClubPurchaseButton() {
           packAmount: 2,
           pricePerPack: "1000000", // 1 USDC in wei (6 decimals)
           recipientAddress: currentWallet.address,
-          paymentType: "crypto",
+          paymentType: "fiat",
           vendingMachineId: "1",
           packType: "1",
+          activeTab: "fiat",
+          forceFiatPayment: true,
         });
       }}
       disabled={!hasAddress}
