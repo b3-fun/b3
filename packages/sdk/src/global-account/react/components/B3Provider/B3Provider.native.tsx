@@ -1,15 +1,14 @@
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useEffect } from "react";
 import { ThirdwebProvider } from "thirdweb/react";
 import { Account, Wallet } from "thirdweb/wallets";
 
 import { ClientType } from "../../../client-manager";
 
 import { WagmiProvider } from "wagmi";
-import { useB3ConfigStore } from "../../stores/configStore";
 import { createWagmiConfig } from "../../utils/createWagmiConfig";
 import AuthenticationProvider from "./AuthenticationProvider";
+import { B3ConfigProvider } from "./B3ConfigProvider";
 import { LocalSDKProvider } from "./LocalSDKProvider";
 
 // Create queryClient instance
@@ -39,28 +38,23 @@ export function B3Provider({
   onConnect?: (wallet: Wallet, b3Jwt: string) => void | Promise<void>;
   defaultPermissions?: PermissionsConfig;
 }) {
-  const setConfig = useB3ConfigStore(state => state.setConfig);
-
-  // Initialize config store on mount - props are static and never change
-  useEffect(() => {
-    setConfig({
-      accountOverride,
-      environment: environment ?? "development",
-      automaticallySetFirstEoa: false,
-      theme,
-      clientType,
-      partnerId,
-      defaultPermissions,
-    });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
   return (
     <ThirdwebProvider>
       <LocalSDKProvider onConnectCallback={onConnect}>
-        {/* <RelayKitProviderWrapper> */}
-        {children}
-        <AuthenticationProvider partnerId={partnerId} automaticallySetFirstEoa={false} />
-        {/* </RelayKitProviderWrapper> */}
+        <B3ConfigProvider
+          accountOverride={accountOverride}
+          environment={environment}
+          automaticallySetFirstEoa={false}
+          theme={theme}
+          clientType={clientType}
+          partnerId={partnerId}
+          defaultPermissions={defaultPermissions}
+        >
+          {/* <RelayKitProviderWrapper> */}
+          {children}
+          <AuthenticationProvider partnerId={partnerId} automaticallySetFirstEoa={false} />
+          {/* </RelayKitProviderWrapper> */}
+        </B3ConfigProvider>
       </LocalSDKProvider>
     </ThirdwebProvider>
   );
@@ -88,25 +82,23 @@ export function InnerProvider({
   partnerId: string;
   rpcUrls?: Record<number, string>;
 }) {
-  const setConfig = useB3ConfigStore(state => state.setConfig);
   const wagmiConfig = createWagmiConfig({ partnerId, rpcUrls });
-
-  // Initialize config store on mount - props are static and never change
-  useEffect(() => {
-    setConfig({
-      accountOverride,
-      environment: environment ?? "development",
-      automaticallySetFirstEoa: false,
-      theme,
-      clientType,
-      partnerId,
-      defaultPermissions,
-    });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <WagmiProvider config={wagmiConfig}>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        <B3ConfigProvider
+          accountOverride={accountOverride}
+          environment={environment}
+          automaticallySetFirstEoa={false}
+          theme={theme}
+          clientType={clientType}
+          partnerId={partnerId}
+          defaultPermissions={defaultPermissions}
+        >
+          {children}
+        </B3ConfigProvider>
+      </QueryClientProvider>
     </WagmiProvider>
   );
 }
