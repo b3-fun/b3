@@ -6,7 +6,7 @@ import { encodeFunctionData, erc20Abi, parseUnits } from "viem";
 import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
-import { ShinyButton, StyleRoot, toast } from "@b3dotfun/sdk/global-account/react";
+import { ShinyButton, StyleRoot } from "@b3dotfun/sdk/global-account/react";
 
 import {
   ORDERLY_VAULT_ABI,
@@ -94,14 +94,7 @@ export function OrderlyDeposit({
   const brokerHash = useMemo(() => computeBrokerHash(brokerId), [brokerId]);
 
   // Fetch deposit fee
-  const {
-    feeWei,
-    feeWithBufferWei,
-    feeFormatted,
-    feeWithBufferFormatted,
-    isLoading: isFeeLoading,
-    error: feeError,
-  } = useOrderlyDepositFee({
+  const { feeWithBufferWei, feeFormatted, isLoading: isFeeLoading, error: feeError } = useOrderlyDepositFee({
     walletAddress: effectiveAddress,
     brokerId,
     chainId,
@@ -109,8 +102,8 @@ export function OrderlyDeposit({
   });
 
   // Wagmi hooks
-  const { sendTransactionAsync, isPending: isSendingTx } = useSendTransaction();
-  const { isLoading: isWaitingTx, isSuccess: isTxConfirmed } = useWaitForTransactionReceipt({
+  const { sendTransactionAsync } = useSendTransaction();
+  const { isSuccess: isTxConfirmed } = useWaitForTransactionReceipt({
     hash: txHash,
   });
 
@@ -139,7 +132,16 @@ export function OrderlyDeposit({
       !isFeeLoading &&
       depositState === "idle"
     );
-  }, [effectiveAddress, accountId, brokerHash, chainConfig, isValidAmount, feeWithBufferWei, isFeeLoading, depositState]);
+  }, [
+    effectiveAddress,
+    accountId,
+    brokerHash,
+    chainConfig,
+    isValidAmount,
+    feeWithBufferWei,
+    isFeeLoading,
+    depositState,
+  ]);
 
   // Execute deposit
   const executeDeposit = useCallback(async () => {
@@ -244,19 +246,11 @@ export function OrderlyDeposit({
 
   // Error states
   if (!isChainSupported) {
-    return (
-      <div className={cn("text-red-500 text-sm", className)}>
-        Chain {chainId} is not supported by Orderly
-      </div>
-    );
+    return <div className={cn("text-sm text-red-500", className)}>Chain {chainId} is not supported by Orderly</div>;
   }
 
   if (!effectiveAddress) {
-    return (
-      <div className={cn("text-as-secondary text-sm", className)}>
-        Connect wallet to deposit
-      </div>
-    );
+    return <div className={cn("text-as-secondary text-sm", className)}>Connect wallet to deposit</div>;
   }
 
   const isProcessing = depositState !== "idle" && depositState !== "success" && depositState !== "error";
@@ -277,9 +271,7 @@ export function OrderlyDeposit({
               <div className="text-as-secondary flex items-center justify-between">
                 <span>Network</span>
                 <div className="flex items-center gap-1.5">
-                  {chainConfig?.logoUri && (
-                    <img src={chainConfig.logoUri} alt="" className="h-4 w-4 rounded-full" />
-                  )}
+                  {chainConfig?.logoUri && <img src={chainConfig.logoUri} alt="" className="h-4 w-4 rounded-full" />}
                   <span className="text-as-primary">{chainConfig?.name}</span>
                 </div>
               </div>
@@ -303,7 +295,7 @@ export function OrderlyDeposit({
 
         {/* Success state */}
         {depositState === "success" && txHash && (
-          <div className="bg-green-500/10 flex items-center gap-2 rounded-lg p-3">
+          <div className="flex items-center gap-2 rounded-lg bg-green-500/10 p-3">
             <CheckCircle2 className="h-5 w-5 text-green-500" />
             <div className="flex-1">
               <p className="text-sm font-medium text-green-600">Deposit successful!</p>
@@ -321,7 +313,7 @@ export function OrderlyDeposit({
 
         {/* Error state */}
         {depositState === "error" && errorMessage && (
-          <div className="bg-red-500/10 flex items-center gap-2 rounded-lg p-3">
+          <div className="flex items-center gap-2 rounded-lg bg-red-500/10 p-3">
             <AlertCircle className="h-5 w-5 text-red-500" />
             <p className="flex-1 text-sm text-red-600">{errorMessage}</p>
           </div>
@@ -331,10 +323,7 @@ export function OrderlyDeposit({
         <ShinyButton
           onClick={depositState === "error" ? reset : executeDeposit}
           disabled={!canDeposit && depositState !== "error"}
-          className={cn(
-            "w-full",
-            depositState === "success" && "pointer-events-none",
-          )}
+          className={cn("w-full", depositState === "success" && "pointer-events-none")}
           accentColor={
             depositState === "success"
               ? "hsl(142, 76%, 36%)"

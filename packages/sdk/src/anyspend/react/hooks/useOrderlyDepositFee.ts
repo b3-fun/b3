@@ -4,7 +4,6 @@ import { useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { createPublicClient, http, parseUnits, formatUnits } from "viem";
 import {
-  ORDERLY_CHAINS,
   ORDERLY_VAULT_ABI,
   ORDERLY_HASHES,
   ORDERLY_DEPOSIT_FEE_BUFFER,
@@ -120,7 +119,7 @@ export function useOrderlyDepositFee({
 
   // Fetch deposit fee from contract
   const fetchDepositFee = useCallback(async (): Promise<bigint> => {
-    if (!walletAddress || !accountId || !amountInUnits || !chainConfig) {
+    if (!walletAddress || !accountId || !brokerHash || !amountInUnits || !chainConfig) {
       throw new Error("Missing required parameters for fee calculation");
     }
 
@@ -128,7 +127,7 @@ export function useOrderlyDepositFee({
 
     const depositData = {
       accountId: accountId,
-      brokerHash: brokerHash!,
+      brokerHash: brokerHash,
       tokenHash: ORDERLY_HASHES.USDC_TOKEN_HASH,
       tokenAmount: amountInUnits,
     };
@@ -176,10 +175,7 @@ export function useOrderlyDepositFee({
 
   // Function to fetch fee for a specific amount on any chain
   const fetchFeeForAmount = useCallback(
-    async (
-      amountUsdc: string,
-      targetChainId?: number,
-    ): Promise<{ feeWei: bigint; feeWithBufferWei: bigint }> => {
+    async (amountUsdc: string, targetChainId?: number): Promise<{ feeWei: bigint; feeWithBufferWei: bigint }> => {
       const effectiveChainId = targetChainId ?? chainId;
       const targetChainConfig = getOrderlyChainConfig(effectiveChainId);
 
