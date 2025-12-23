@@ -38,6 +38,11 @@ export function AccountAssets({ nfts, isLoading }: AccountAssetsProps) {
   const [expandedCollections, setExpandedCollections] = useState<Set<string>>(
     () => new Set(collections.map(c => c.collection_id)),
   );
+  const [failedImages, setFailedImages] = useState<Set<string>>(() => new Set());
+
+  const handleImageError = (imageId: string) => {
+    setFailedImages(prev => new Set(prev).add(imageId));
+  };
 
   if (isLoading) {
     return (
@@ -84,14 +89,12 @@ export function AccountAssets({ nfts, isLoading }: AccountAssetsProps) {
               className="flex w-full items-center justify-between"
             >
               <div className="flex items-center gap-1">
-                {collection.collection_image && (
+                {collection.collection_image && !failedImages.has(`collection-${collection.collection_id}`) && (
                   <img
                     src={collection.collection_image}
                     alt={collection.collection_name}
                     className="h-5 w-5 shrink-0 rounded object-cover"
-                    onError={e => {
-                      e.currentTarget.style.display = "none";
-                    }}
+                    onError={() => handleImageError(`collection-${collection.collection_id}`)}
                   />
                 )}
                 <p className="font-neue-montreal-medium text-[14px] text-[#3f3f46]">
@@ -122,19 +125,19 @@ export function AccountAssets({ nfts, isLoading }: AccountAssetsProps) {
                     key={nft.nft_id}
                     className="bg-b3-react-muted relative h-[98px] w-[98px] shrink-0 overflow-hidden rounded-lg"
                   >
-                    <img
-                      src={
-                        nft.previews?.image_medium_url ||
-                        nft.extra_metadata?.image_original_url ||
-                        nft.collection?.image_url ||
-                        ""
-                      }
-                      alt={nft.name || "NFT"}
-                      className="h-full w-full object-cover"
-                      onError={e => {
-                        e.currentTarget.style.display = "none";
-                      }}
-                    />
+                    {!failedImages.has(nft.nft_id) && (
+                      <img
+                        src={
+                          nft.previews?.image_medium_url ||
+                          nft.extra_metadata?.image_original_url ||
+                          nft.collection?.image_url ||
+                          ""
+                        }
+                        alt={nft.name || "NFT"}
+                        className="h-full w-full object-cover"
+                        onError={() => handleImageError(nft.nft_id)}
+                      />
+                    )}
                   </div>
                 ))}
               </div>
