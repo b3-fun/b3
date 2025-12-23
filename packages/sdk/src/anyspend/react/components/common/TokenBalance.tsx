@@ -16,7 +16,7 @@ export function TokenBalance({
   onChangeInput: (value: string) => void;
 }) {
   const tokenAddress = isNativeToken(token.address) ? "native" : token.address;
-  const { data, isLoading } = useSimTokenBalance(walletAddress, tokenAddress, token.chainId);
+  const { data, isLoading } = useSimTokenBalance(walletAddress ?? "", tokenAddress, token.chainId);
 
   const { rawBalance, formattedBalance } = useMemo(() => {
     const balance = data?.balances?.[0];
