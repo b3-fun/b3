@@ -11,6 +11,7 @@ import { GetB3TokenButton } from "./components/GetB3TokenButton";
 import { MintNftButton } from "./components/MintNftButton";
 import { OrderDetailsButton } from "./components/OrderDetailsButton";
 import { OrderlyDepositButton } from "./components/OrderlyDepositButton";
+import { AnySpendOrderlyDepositButton } from "./components/AnySpendOrderlyDepositButton";
 import { SignInButton } from "./components/SignInButton";
 import { SignatureMintButton } from "./components/SignatureMintButton";
 import { SignatureMintModal } from "./components/SignatureMintModal";
@@ -61,6 +62,7 @@ export default function Home() {
             <CollectorClubPurchaseButton />
             <OrderDetailsButton />
             <OrderlyDepositButton />
+            <AnySpendOrderlyDepositButton />
           </div>
         </div>
       </div>

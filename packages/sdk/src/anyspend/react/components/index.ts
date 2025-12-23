@@ -10,6 +10,8 @@ export type { AnySpendDepositProps, ChainConfig, DepositContractConfig } from ".
 export { AnySpendDepositHype, HYPE_TOKEN_DETAILS } from "./AnyspendDepositHype";
 export { OrderlyDeposit } from "./OrderlyDeposit";
 export type { OrderlyDepositProps } from "./OrderlyDeposit";
+export { AnySpendOrderlyDeposit } from "./AnySpendOrderlyDeposit";
+export type { AnySpendOrderlyDepositProps } from "./AnySpendOrderlyDeposit";
 export * from "./AnySpendFingerprintWrapper";
 export { AnySpendNFT } from "./AnySpendNFT";
 export { AnyspendSignatureMint } from "./AnyspendSignatureMint";
