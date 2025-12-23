@@ -72,7 +72,7 @@ export function AccountAssets({ nfts, isLoading }: AccountAssetsProps) {
   };
 
   return (
-    <div className="flex flex-col gap-3 px-4">
+    <div className="flex flex-col gap-3">
       {collections.map(collection => {
         const isExpanded = expandedCollections.has(collection.collection_id);
 
@@ -89,6 +89,9 @@ export function AccountAssets({ nfts, isLoading }: AccountAssetsProps) {
                     src={collection.collection_image}
                     alt={collection.collection_name}
                     className="h-5 w-5 shrink-0 rounded object-cover"
+                    onError={e => {
+                      e.currentTarget.style.display = "none";
+                    }}
                   />
                 )}
                 <p className="font-neue-montreal-medium text-[14px] text-[#3f3f46]">
@@ -115,7 +118,10 @@ export function AccountAssets({ nfts, isLoading }: AccountAssetsProps) {
             {isExpanded && (
               <div className="flex gap-3 overflow-x-auto">
                 {collection.nfts.map(nft => (
-                  <div key={nft.nft_id} className="relative h-[98px] w-[98px] shrink-0 overflow-hidden rounded-lg">
+                  <div
+                    key={nft.nft_id}
+                    className="bg-b3-react-muted relative h-[98px] w-[98px] shrink-0 overflow-hidden rounded-lg"
+                  >
                     <img
                       src={
                         nft.previews?.image_medium_url ||
@@ -125,6 +131,9 @@ export function AccountAssets({ nfts, isLoading }: AccountAssetsProps) {
                       }
                       alt={nft.name || "NFT"}
                       className="h-full w-full object-cover"
+                      onError={e => {
+                        e.currentTarget.style.display = "none";
+                      }}
                     />
                   </div>
                 ))}
