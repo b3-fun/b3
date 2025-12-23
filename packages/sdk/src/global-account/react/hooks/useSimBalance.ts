@@ -75,6 +75,30 @@ async function fetchSimBalance(address: string, chainIdsParam: number[]): Promis
   return balanceData;
 }
 
+async function fetchSimTokenBalance(
+  walletAddress: string,
+  tokenAddress: string,
+  chainId: number,
+): Promise<SimBalanceResponse> {
+  if (!walletAddress) throw new Error("Wallet address is required");
+  if (!tokenAddress) throw new Error("Token address is required");
+  if (!chainId) throw new Error("Chain ID is required");
+
+  let url = `https://simdune-api.sean-430.workers.dev/?url=https://api.sim.dune.com/v1/evm/balances/${walletAddress}/token/${tokenAddress}?chain_ids=${chainId}`;
+  if (process.env.NEXT_PUBLIC_DEVMODE_SHARED_SECRET) {
+    url += `&localkey=${process.env.NEXT_PUBLIC_DEVMODE_SHARED_SECRET}`;
+  }
+
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch token balance: ${response.statusText}`);
+  }
+
+  const balanceData: SimBalanceResponse = await response.json();
+  return balanceData;
+}
+
 async function fetchSimSvmBalance(address: string, chains?: string[], limit?: number): Promise<SvmBalanceResponse> {
   if (!address) throw new Error("Address is required");
 
@@ -90,8 +114,8 @@ async function fetchSimSvmBalance(address: string, chains?: string[], limit?: nu
   if (queryParams.toString()) {
     url += `?${queryParams.toString()}`;
   }
-  if (process.env.NEXT_PUBLIC_LOCAL_SIMDUNE_KEY) {
-    url += `${queryParams.toString() ? "&" : "?"}localkey=${process.env.NEXT_PUBLIC_LOCAL_SIMDUNE_KEY}`;
+  if (process.env.NEXT_PUBLIC_DEVMODE_SHARED_SECRET) {
+    url += `${queryParams.toString() ? "&" : "?"}localkey=${process.env.NEXT_PUBLIC_DEVMODE_SHARED_SECRET}`;
   }
 
   const response = await fetch(url);
@@ -123,5 +147,24 @@ export function useSimSvmBalance(address?: string, chains?: ("solana" | "eclipse
       return fetchSimSvmBalance(address, chains, limit);
     },
     enabled: Boolean(address),
+  });
+}
+
+/**
+ * Hook to fetch a single token balance for a wallet.
+ * @param walletAddress - The wallet address to fetch balance for
+ * @param tokenAddress - The token contract address, or "native" for native token (ETH, etc.)
+ * @param chainId - Chain ID to query (defaults to 1 for Ethereum mainnet)
+ */
+export function useSimTokenBalance(walletAddress?: string, tokenAddress?: string, chainId?: number) {
+  return useQuery({
+    queryKey: ["simTokenBalance", walletAddress, tokenAddress, chainId],
+    queryFn: () => {
+      if (!walletAddress || !tokenAddress || !chainId) {
+        throw new Error("Missing required parameters");
+      }
+      return fetchSimTokenBalance(walletAddress, tokenAddress, chainId);
+    },
+    enabled: Boolean(walletAddress) && Boolean(tokenAddress),
   });
 }

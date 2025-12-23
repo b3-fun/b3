@@ -1,7 +1,9 @@
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { getNativeRequired } from "@b3dotfun/sdk/anyspend/utils/chain";
 import { isNativeToken } from "@b3dotfun/sdk/anyspend/utils/token";
-import { useTokenBalanceDirect } from "@b3dotfun/sdk/global-account/react";
+import { useSimTokenBalance } from "@b3dotfun/sdk/global-account/react";
+import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
+import { useMemo } from "react";
 import { formatUnits } from "viem";
 
 export function TokenBalance({
@@ -13,10 +15,20 @@ export function TokenBalance({
   walletAddress: string | undefined;
   onChangeInput: (value: string) => void;
 }) {
-  const { rawBalance, formattedBalance, isLoading } = useTokenBalanceDirect({
-    token,
-    address: walletAddress,
-  });
+  const tokenAddress = isNativeToken(token.address) ? "native" : token.address;
+  const { data, isLoading } = useSimTokenBalance(walletAddress, tokenAddress, token.chainId);
+
+  const { rawBalance, formattedBalance } = useMemo(() => {
+    const balance = data?.balances?.[0];
+    if (!balance?.amount) {
+      return { rawBalance: null, formattedBalance: "0" };
+    }
+    const raw = BigInt(balance.amount);
+    return {
+      rawBalance: raw,
+      formattedBalance: formatTokenAmount(raw, balance.decimals),
+    };
+  }, [data]);
 
   const handlePercentageClick = (percentage: number) => {
     if (!rawBalance) return;
