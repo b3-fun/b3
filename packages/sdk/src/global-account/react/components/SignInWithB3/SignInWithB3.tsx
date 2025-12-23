@@ -33,8 +33,8 @@ export function SignInWithB3(props: SignInWithB3Props) {
   }, [account, setEcoSystemAccountAddress]);
 
   const handleClick = async () => {
-    //  FIXME: This is a hack to force logout the user before signing in with B3
-    //  to prevent issue with setActiveWallet
+    //  FIXME: Force logout before sign-in to clear any existing wallet session.
+    //  This prevents authentication conflicts related to `setActiveWallet`.
     await logout();
     setB3ModalContentType({
       ...props,
