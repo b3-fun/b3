@@ -2,6 +2,7 @@ import {
   Button,
   SignInWithB3ModalProps,
   StyleRoot,
+  useAuthentication,
   useAuthStore,
   useIsMobile,
   useModalStore,
@@ -19,6 +20,7 @@ export type SignInWithB3Props = Omit<SignInWithB3ModalProps, "type" | "showBackB
 };
 
 export function SignInWithB3(props: SignInWithB3Props) {
+  const { logout } = useAuthentication(props.partnerId);
   const { setB3ModalOpen, setB3ModalContentType, setEcoSystemAccountAddress } = useModalStore();
   const account = useB3Account();
   const { isAuthenticating, isAuthenticated } = useAuthStore();
@@ -30,7 +32,10 @@ export function SignInWithB3(props: SignInWithB3Props) {
     }
   }, [account, setEcoSystemAccountAddress]);
 
-  const handleClick = () => {
+  const handleClick = async () => {
+    //  FIXME: This is a hack to force logout the user before signing in with B3
+    //  to prevent issue with setActiveWallet
+    await logout();
     setB3ModalContentType({
       ...props,
       type: "signInWithB3",
