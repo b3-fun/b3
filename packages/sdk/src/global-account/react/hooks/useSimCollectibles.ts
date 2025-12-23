@@ -141,7 +141,7 @@ function transformToSimpleHashFormat(data: SimCollectiblesResponse): SimpleHashN
     },
     collection: {
       collection_id: entry.contract_address,
-      name: entry.name || "Unknown Collection",
+      name: entry.symbol || "Unknown Collection",
       description: null,
       image_url: entry.image_url || "",
       image_properties: {
