@@ -82,6 +82,7 @@ async function fetchSimTokenBalance(
 ): Promise<SimBalanceResponse> {
   if (!walletAddress) throw new Error("Wallet address is required");
   if (!tokenAddress) throw new Error("Token address is required");
+  if (!chainId) throw new Error("Chain ID is required");
 
   let url = `https://simdune-api.sean-430.workers.dev/?url=https://api.sim.dune.com/v1/evm/balances/${walletAddress}/token/${tokenAddress}?chain_ids=${chainId}`;
   if (process.env.NEXT_PUBLIC_DEVMODE_SHARED_SECRET) {
@@ -155,10 +156,13 @@ export function useSimSvmBalance(address?: string, chains?: ("solana" | "eclipse
  * @param tokenAddress - The token contract address, or "native" for native token (ETH, etc.)
  * @param chainId - Chain ID to query (defaults to 1 for Ethereum mainnet)
  */
-export function useSimTokenBalance(walletAddress: string, tokenAddress: string, chainId: number) {
+export function useSimTokenBalance(walletAddress?: string, tokenAddress?: string, chainId?: number) {
   return useQuery({
     queryKey: ["simTokenBalance", walletAddress, tokenAddress, chainId],
     queryFn: () => {
+      if (!walletAddress || !tokenAddress || !chainId) {
+        throw new Error("Missing required parameters");
+      }
       return fetchSimTokenBalance(walletAddress, tokenAddress, chainId);
     },
     enabled: Boolean(walletAddress) && Boolean(tokenAddress),
