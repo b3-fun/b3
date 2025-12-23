@@ -8,6 +8,8 @@ export { AnySpendCustomExactIn } from "./AnySpendCustomExactIn";
 export { AnySpendDeposit } from "./AnySpendDeposit";
 export type { AnySpendDepositProps, ChainConfig, DepositContractConfig } from "./AnySpendDeposit";
 export { AnySpendDepositHype, HYPE_TOKEN_DETAILS } from "./AnyspendDepositHype";
+export { OrderlyDeposit } from "./OrderlyDeposit";
+export type { OrderlyDepositProps } from "./OrderlyDeposit";
 export * from "./AnySpendFingerprintWrapper";
 export { AnySpendNFT } from "./AnySpendNFT";
 export { AnyspendSignatureMint } from "./AnyspendSignatureMint";
