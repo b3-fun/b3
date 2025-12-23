@@ -2,6 +2,17 @@ import type { NFT, SimpleHashNFTResponse } from "@b3dotfun/sdk/global-account/ty
 import { useQuery } from "@tanstack/react-query";
 import { buildSimduneUrl } from "../utils/simdune";
 
+/**
+ * Safely parse a balance string to a number, capping at MAX_SAFE_INTEGER
+ * to prevent overflow issues with large ERC1155 balances.
+ */
+function safeParseBalance(balance: string | undefined): number {
+  if (!balance) return 1;
+  const parsed = parseInt(balance, 10);
+  if (Number.isNaN(parsed)) return 1;
+  return Math.min(parsed, Number.MAX_SAFE_INTEGER);
+}
+
 // Simdune Collectibles types
 export interface SimCollectibleMetadata {
   uri: string;
@@ -113,7 +124,7 @@ function transformToSimpleHashFormat(data: SimCollectiblesResponse): SimpleHashN
     owners: [
       {
         owner_address: data.address,
-        quantity: parseInt(entry.balance || "1", 10),
+        quantity: safeParseBalance(entry.balance),
         quantity_string: entry.balance || "1",
         first_acquired_date: entry.last_acquired || "",
         last_acquired_date: entry.last_acquired || "",
