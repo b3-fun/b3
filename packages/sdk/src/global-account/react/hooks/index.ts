@@ -40,6 +40,7 @@ export { useRemoveSessionKey } from "./useRemoveSessionKey";
 export { useRouter } from "./useRouter";
 export { useSearchParamsSSR } from "./useSearchParamsSSR";
 export { useSimBalance, useSimSvmBalance, useSimTokenBalance } from "./useSimBalance";
+export { useSimCollectibles } from "./useSimCollectibles";
 export { useSiwe } from "./useSiwe";
 export { useTokenBalance } from "./useTokenBalance";
 export { useTokenBalanceDirect } from "./useTokenBalanceDirect";

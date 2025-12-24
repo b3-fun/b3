@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { buildSimduneUrl } from "../utils/simdune";
 
 export interface SimTokenMetadata {
   logo?: string;
@@ -60,11 +61,12 @@ async function fetchSimBalance(address: string, chainIdsParam: number[]): Promis
   if (!address) throw new Error("Address is required");
 
   const chainIds = chainIdsParam.length === 0 ? "mainnet" : chainIdsParam.join(",");
-  let url = `https://simdune-api.sean-430.workers.dev/?url=https://api.sim.dune.com/v1/evm/balances/${address}?metadata=logo&chain_ids=${chainIds}&exclude_spam_tokens=true`;
-  if (process.env.NEXT_PUBLIC_DEVMODE_SHARED_SECRET) {
-    url += `&localkey=${process.env.NEXT_PUBLIC_DEVMODE_SHARED_SECRET}`;
-  }
+  const queryParams = new URLSearchParams();
+  queryParams.append("metadata", "logo");
+  queryParams.append("chain_ids", chainIds);
+  queryParams.append("exclude_spam_tokens", "true");
 
+  const url = buildSimduneUrl(`/v1/evm/balances/${address}`, queryParams);
   const response = await fetch(url);
 
   if (!response.ok) {
@@ -84,11 +86,10 @@ async function fetchSimTokenBalance(
   if (!tokenAddress) throw new Error("Token address is required");
   if (!chainId) throw new Error("Chain ID is required");
 
-  let url = `https://simdune-api.sean-430.workers.dev/?url=https://api.sim.dune.com/v1/evm/balances/${walletAddress}/token/${tokenAddress}?chain_ids=${chainId}`;
-  if (process.env.NEXT_PUBLIC_DEVMODE_SHARED_SECRET) {
-    url += `&localkey=${process.env.NEXT_PUBLIC_DEVMODE_SHARED_SECRET}`;
-  }
+  const queryParams = new URLSearchParams();
+  queryParams.append("chain_ids", chainId.toString());
 
+  const url = buildSimduneUrl(`/v1/evm/balances/${walletAddress}/token/${tokenAddress}`, queryParams);
   const response = await fetch(url);
 
   if (!response.ok) {
@@ -110,14 +111,7 @@ async function fetchSimSvmBalance(address: string, chains?: string[], limit?: nu
     queryParams.append("limit", limit.toString());
   }
 
-  let url = `https://simdune-api.sean-430.workers.dev/?url=https://api.sim.dune.com/beta/svm/balances/${address}`;
-  if (queryParams.toString()) {
-    url += `?${queryParams.toString()}`;
-  }
-  if (process.env.NEXT_PUBLIC_DEVMODE_SHARED_SECRET) {
-    url += `${queryParams.toString() ? "&" : "?"}localkey=${process.env.NEXT_PUBLIC_DEVMODE_SHARED_SECRET}`;
-  }
-
+  const url = buildSimduneUrl(`/beta/svm/balances/${address}`, queryParams.toString() ? queryParams : undefined);
   const response = await fetch(url);
 
   if (!response.ok) {
