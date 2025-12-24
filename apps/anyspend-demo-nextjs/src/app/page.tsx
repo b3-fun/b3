@@ -10,6 +10,8 @@ import { DepositHypeButton } from "./components/DepositHypeButton";
 import { GetB3TokenButton } from "./components/GetB3TokenButton";
 import { MintNftButton } from "./components/MintNftButton";
 import { OrderDetailsButton } from "./components/OrderDetailsButton";
+import { OrderlyDepositButton } from "./components/OrderlyDepositButton";
+import { AnySpendOrderlyDepositButton } from "./components/AnySpendOrderlyDepositButton";
 import { SignInButton } from "./components/SignInButton";
 import { SignatureMintButton } from "./components/SignatureMintButton";
 import { SignatureMintModal } from "./components/SignatureMintModal";
@@ -59,6 +61,8 @@ export default function Home() {
             <BuyHyperliquidUSDCButton />
             <CollectorClubPurchaseButton />
             <OrderDetailsButton />
+            <OrderlyDepositButton />
+            <AnySpendOrderlyDepositButton />
           </div>
         </div>
       </div>
