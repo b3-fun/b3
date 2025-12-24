@@ -1,6 +1,5 @@
 "use client";
 
-import { TooltipProvider } from "@b3dotfun/sdk/global-account/react";
 import { ReactNode } from "react";
 import { FeatureFlags, FeatureFlagsProvider } from "../contexts/FeatureFlagsContext";
 import { StripeRedirectHandler } from "./StripeRedirectHandler";
@@ -36,10 +35,8 @@ interface AnyspendProviderProps {
 export const AnyspendProvider = function AnyspendProvider({ children, featureFlags }: AnyspendProviderProps) {
   return (
     <FeatureFlagsProvider featureFlags={featureFlags}>
-      <TooltipProvider>
-        <StripeRedirectHandler />
-        {children}
-      </TooltipProvider>
+      <StripeRedirectHandler />
+      {children}
     </FeatureFlagsProvider>
   );
 };
