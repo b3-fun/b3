@@ -8,7 +8,7 @@ import {
   useModalStore,
 } from "@b3dotfun/sdk/global-account/react";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useActiveAccount } from "thirdweb/react";
 import { Account } from "thirdweb/wallets";
 import { TurnkeyAuthModal } from "../TurnkeyAuthModal";
@@ -39,14 +39,15 @@ export function SignInWithB3Flow({
   const { user, refetchUser, logout } = useAuthentication(partnerId);
 
   // FIXME Logout before login to ensure a clean state
+  const hasLoggedOutRef = useRef(false);
   useEffect(() => {
+    if (hasLoggedOutRef.current) return;
     if (source !== "requestPermissions") {
       debug("Logging out before login");
       logout();
+      hasLoggedOutRef.current = true;
     }
-    // Only run once on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [source, logout]);
 
   const [step, setStep] = useState<"login" | "permissions" | null>(source === "requestPermissions" ? null : "login");
   const [sessionKeyAdded, setSessionKeyAdded] = useState(source === "requestPermissions" ? true : false);
