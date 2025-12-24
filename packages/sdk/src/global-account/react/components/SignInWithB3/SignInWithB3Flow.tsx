@@ -36,7 +36,17 @@ export function SignInWithB3Flow({
   signersEnabled = false,
 }: SignInWithB3ModalProps) {
   const { automaticallySetFirstEoa, enableTurnkey } = useB3Config();
-  const { user, refetchUser } = useAuthentication(partnerId);
+  const { user, refetchUser, logout } = useAuthentication(partnerId);
+
+  // FIXME Logout before login to ensure a clean state
+  useEffect(() => {
+    if (source !== "requestPermissions") {
+      debug("Logging out before login");
+      logout();
+    }
+    // Only run once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [step, setStep] = useState<"login" | "permissions" | null>(source === "requestPermissions" ? null : "login");
   const [sessionKeyAdded, setSessionKeyAdded] = useState(source === "requestPermissions" ? true : false);
