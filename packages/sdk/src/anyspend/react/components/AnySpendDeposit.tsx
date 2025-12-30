@@ -1,4 +1,3 @@
-import { HYPERLIQUID_CHAIN_ID } from "@b3dotfun/sdk/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
 import { Skeleton, useAccountWallet, useSimBalance } from "@b3dotfun/sdk/global-account/react";
@@ -57,10 +56,10 @@ export interface AnySpendDepositProps {
   sourceTokenAddress?: string;
   /** Source chain ID to pre-select. If not provided, shows chain selection */
   sourceTokenChainId?: number;
-  /** The destination token to receive */
-  destinationToken: components["schemas"]["Token"];
+  /** The destination token address */
+  destinationTokenAddress: string;
   /** The destination chain ID */
-  destinationChainId: number;
+  destinationTokenChainId: number;
   /** Callback when deposit succeeds */
   onSuccess?: (amount: string) => void;
   /** Callback for opening a custom modal (e.g., for special token handling) */
@@ -112,6 +111,11 @@ export interface AnySpendDepositProps {
   customRecipientLabel?: string;
   /** Custom label for the return home button (overrides "Return to Home" / "Close") */
   returnHomeLabel?: string;
+  /** Whether the deposit requires a custom function (uses AnySpendCustomExactIn).
+   * When false, uses simple swap flow (AnySpend).
+   * Defaults to false.
+   */
+  isCustomDeposit?: boolean;
 }
 
 // Default supported chains
@@ -178,8 +182,8 @@ function ChainIcon({ chainId, className }: { chainId: number; className?: string
  * // Simple deposit with chain selection
  * <AnySpendDeposit
  *   recipientAddress={userAddress}
- *   destinationToken={myToken}
- *   destinationChainId={base.id}
+ *   destinationTokenAddress="0x..."
+ *   destinationTokenChainId={base.id}
  *   onSuccess={(amount) => console.log(`Deposited ${amount}`)}
  * />
  *
@@ -187,8 +191,8 @@ function ChainIcon({ chainId, className }: { chainId: number; className?: string
  * // Skip chain selection by providing sourceTokenChainId
  * <AnySpendDeposit
  *   recipientAddress={userAddress}
- *   destinationToken={myToken}
- *   destinationChainId={base.id}
+ *   destinationTokenAddress="0x..."
+ *   destinationTokenChainId={base.id}
  *   sourceTokenChainId={base.id}
  *   onSuccess={(amount) => console.log(`Deposited ${amount}`)}
  * />
@@ -197,8 +201,8 @@ function ChainIcon({ chainId, className }: { chainId: number; className?: string
  * // Deposit with custom contract
  * <AnySpendDeposit
  *   recipientAddress={userAddress}
- *   destinationToken={myToken}
- *   destinationChainId={base.id}
+ *   destinationTokenAddress="0x..."
+ *   destinationTokenChainId={base.id}
  *   depositContractConfig={{
  *     contractAddress: "0x...",
  *     functionName: "depositFor",
@@ -213,8 +217,8 @@ export function AnySpendDeposit({
   paymentType: initialPaymentType,
   sourceTokenAddress,
   sourceTokenChainId: initialSourceChainId,
-  destinationToken,
-  destinationChainId,
+  destinationTokenAddress,
+  destinationTokenChainId,
   onSuccess,
   onOpenCustomModal,
   mainFooter,
@@ -233,6 +237,7 @@ export function AnySpendDeposit({
   returnToHomeUrl,
   customRecipientLabel,
   returnHomeLabel,
+  isCustomDeposit = false,
 }: AnySpendDepositProps) {
   const { connectedEOAWallet } = useAccountWallet();
   const eoaAddress = connectedEOAWallet?.getAccount()?.address;
@@ -300,7 +305,7 @@ export function AnySpendDeposit({
 
   if (!recipientAddress) return null;
 
-  const tokenSymbol = destinationToken.symbol ?? "TOKEN";
+  const tokenSymbol = "TOKEN";
 
   // Determine order type based on config
   const effectiveOrderType = orderType ?? (depositContractConfig ? "custom_exact_in" : "swap");
@@ -479,7 +484,7 @@ export function AnySpendDeposit({
           </div>
 
           {/* Chain-specific warning */}
-          <ChainWarningText chainId={destinationChainId} className="mt-2" />
+          <ChainWarningText chainId={destinationTokenChainId} className="mt-2" />
         </div>
       </div>
     );
@@ -491,17 +496,21 @@ export function AnySpendDeposit({
       <QRDeposit
         mode={mode}
         recipientAddress={recipientAddress}
-        destinationToken={destinationToken}
-        destinationChainId={destinationChainId}
+        destinationToken={{
+          address: destinationTokenAddress,
+          chainId: destinationTokenChainId,
+          symbol: "",
+          name: "",
+          decimals: 18,
+          metadata: {},
+        }}
+        destinationChainId={destinationTokenChainId}
         depositContractConfig={depositContractConfig}
         onBack={handleBack}
         onClose={onClose ?? handleBack}
       />
     );
   }
-
-  // Check if destination is Hyperliquid
-  const isHyperliquidDeposit = destinationChainId === HYPERLIQUID_CHAIN_ID;
 
   // Deposit view
   return (
@@ -532,27 +541,7 @@ export function AnySpendDeposit({
       )}
 
       <div className={cn("anyspend-deposit-form-content", shouldShowChainSelection && "pt-8")}>
-        {isHyperliquidDeposit ? (
-          <AnySpend
-            key={selectedChainId}
-            loadOrder={loadOrder}
-            mode={mode}
-            defaultActiveTab={paymentType}
-            recipientAddress={recipientAddress}
-            sourceChainId={selectedChainId}
-            destinationTokenAddress={destinationToken.address}
-            destinationTokenChainId={destinationChainId}
-            onSuccess={txHash => onSuccess?.(txHash ?? "")}
-            onTokenSelect={onTokenSelect}
-            customUsdInputValues={customUsdInputValues}
-            hideHeader
-            hideBottomNavigation
-            disableUrlParamManagement
-            returnToHomeUrl={returnToHomeUrl}
-            customRecipientLabel={customRecipientLabel}
-            returnHomeLabel={returnHomeLabel}
-          />
-        ) : (
+        {isCustomDeposit ? (
           <AnySpendCustomExactIn
             key={selectedChainId}
             loadOrder={loadOrder}
@@ -561,8 +550,15 @@ export function AnySpendDeposit({
             paymentType={paymentType}
             sourceTokenAddress={sourceTokenAddress}
             sourceTokenChainId={selectedChainId}
-            destinationToken={destinationToken}
-            destinationChainId={destinationChainId}
+            destinationToken={{
+              address: destinationTokenAddress,
+              chainId: destinationTokenChainId,
+              symbol: "",
+              name: "",
+              decimals: 18,
+              metadata: {},
+            }}
+            destinationChainId={destinationTokenChainId}
             orderType={effectiveOrderType}
             minDestinationAmount={minDestinationAmount}
             header={header ?? defaultHeader}
@@ -577,11 +573,31 @@ export function AnySpendDeposit({
             customRecipientLabel={customRecipientLabel}
             returnHomeLabel={returnHomeLabel}
           />
+        ) : (
+          <AnySpend
+            key={selectedChainId}
+            loadOrder={loadOrder}
+            mode={mode}
+            defaultActiveTab={paymentType}
+            recipientAddress={recipientAddress}
+            sourceChainId={selectedChainId}
+            destinationTokenAddress={destinationTokenAddress}
+            destinationTokenChainId={destinationTokenChainId}
+            onSuccess={txHash => onSuccess?.(txHash ?? "")}
+            onTokenSelect={onTokenSelect}
+            customUsdInputValues={customUsdInputValues}
+            hideHeader
+            hideBottomNavigation
+            disableUrlParamManagement
+            returnToHomeUrl={returnToHomeUrl}
+            customRecipientLabel={customRecipientLabel}
+            returnHomeLabel={returnHomeLabel}
+          />
         )}
       </div>
 
       {/* Chain-specific warning */}
-      <ChainWarningText chainId={destinationChainId} className="px-4 pb-4" />
+      <ChainWarningText chainId={destinationTokenChainId} className="px-4 pb-4" />
     </div>
   );
 }

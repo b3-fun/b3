@@ -1,4 +1,4 @@
-import { ALL_CHAINS, getAvailableChainIds } from "@b3dotfun/sdk/anyspend";
+import { ALL_CHAINS, getAvailableChainIds, isSameChainAndToken } from "@b3dotfun/sdk/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { Button, toast } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
@@ -8,9 +8,11 @@ import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useRef, useState } from "react";
 import { useAnyspendOrderAndTransactions } from "../hooks/useAnyspendOrderAndTransactions";
 import { useCreateDepositFirstOrder } from "../hooks/useCreateDepositFirstOrder";
+import { TransferResult, useWatchTransfer } from "../hooks/useWatchTransfer";
 import { DepositContractConfig } from "./AnySpendDeposit";
 import { ChainTokenIcon } from "./common/ChainTokenIcon";
 import { OrderDetails } from "./common/OrderDetails";
+import { TransferResultScreen } from "./common/TransferResultScreen";
 import { ChainWarningText, WarningText } from "./common/WarningText";
 
 export interface QRDepositProps {
@@ -85,12 +87,35 @@ export function QRDeposit({
   const [globalAddress, setGlobalAddress] = useState<string | undefined>();
   const orderCreatedRef = useRef(false);
   const onSuccessCalled = useRef(false);
+  const [transferResult, setTransferResult] = useState<TransferResult | null>(null);
 
   // Source token/chain as state (can be changed by user)
   const [sourceChainId, setSourceChainId] = useState(sourceChainIdProp ?? 8453);
   const [sourceToken, setSourceToken] = useState<components["schemas"]["Token"]>(
     sourceTokenProp ?? DEFAULT_ETH_ON_BASE,
   );
+
+  // Check if this is a pure transfer (same chain and token)
+  const isPureTransfer = isSameChainAndToken(
+    sourceChainId,
+    sourceToken.address,
+    destinationChainId,
+    destinationToken.address,
+  );
+
+  // Watch for pure transfers (same chain and token)
+  const { isWatching: isWatchingTransfer } = useWatchTransfer({
+    address: recipientAddress,
+    chainId: sourceChainId,
+    tokenAddress: sourceToken.address,
+    tokenDecimals: sourceToken.decimals,
+    tokenSymbol: sourceToken.symbol,
+    enabled: isPureTransfer && !transferResult,
+    onTransferDetected: result => {
+      setTransferResult(result);
+      onSuccess?.();
+    },
+  });
 
   // Handle token selection from TokenSelector
   const handleTokenSelect = (newToken: any) => {
@@ -107,6 +132,7 @@ export function QRDeposit({
     setOrderId(undefined);
     setGlobalAddress(undefined);
     orderCreatedRef.current = false;
+    setTransferResult(null);
 
     // Update token and chain
     setSourceChainId(newToken.chainId);
@@ -131,9 +157,11 @@ export function QRDeposit({
   // Fetch order status
   const { orderAndTransactions: oat } = useAnyspendOrderAndTransactions(orderId);
 
-  // Create order on mount
+  // Create order on mount (skip for pure transfers)
   useEffect(() => {
     if (orderCreatedRef.current) return;
+    if (isPureTransfer) return; // Skip order creation for pure transfers
+
     orderCreatedRef.current = true;
 
     createOrder({
@@ -154,6 +182,7 @@ export function QRDeposit({
     creatorAddress,
     depositContractConfig,
     createOrder,
+    isPureTransfer,
   ]);
 
   // Call onSuccess when order is executed
@@ -170,7 +199,8 @@ export function QRDeposit({
     onSuccessCalled.current = false;
   }, [orderId]);
 
-  const displayAddress = globalAddress || recipientAddress;
+  // For pure transfers, always use recipient address; for orders, use global address
+  const displayAddress = isPureTransfer ? recipientAddress : globalAddress || recipientAddress;
 
   const handleCopyAddress = async () => {
     if (displayAddress) {
@@ -189,6 +219,21 @@ export function QRDeposit({
     setCopied(false);
     onClose?.();
   };
+
+  // Show transfer result screen for completed pure transfers
+  if (isPureTransfer && transferResult) {
+    return (
+      <TransferResultScreen
+        mode={mode}
+        transferResult={transferResult}
+        token={sourceToken}
+        chainId={sourceChainId}
+        recipientAddress={recipientAddress}
+        onBack={onBack}
+        onClose={onClose}
+      />
+    );
+  }
 
   // Show order details if order has deposits or is being processed
   if (oat?.data && oat.data.depositTxs && oat.data.depositTxs.length > 0) {
@@ -214,8 +259,8 @@ export function QRDeposit({
     );
   }
 
-  // Show loading state while creating order (but not if we already have an orderId)
-  if (isCreatingOrder && !orderId) {
+  // Show loading state while creating order (but not if we already have an orderId or for pure transfers)
+  if (isCreatingOrder && !orderId && !isPureTransfer) {
     return (
       <div
         className={cn(
@@ -334,6 +379,14 @@ export function QRDeposit({
           Only send {sourceToken.symbol} on {ALL_CHAINS[sourceChainId]?.name ?? "the specified chain"}. Other tokens
           will not be converted.
         </WarningText>
+
+        {/* Watching indicator for pure transfers */}
+        {isPureTransfer && isWatchingTransfer && (
+          <div className="anyspend-qr-watching flex items-center justify-center gap-2 rounded-lg bg-blue-500/10 p-3">
+            <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+            <span className="text-sm text-blue-500">Watching for incoming transfer...</span>
+          </div>
+        )}
 
         {/* Copy button */}
         <button

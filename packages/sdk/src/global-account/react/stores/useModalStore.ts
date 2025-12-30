@@ -512,6 +512,65 @@ export interface AnySpendCollectorClubPurchaseProps extends BaseModalProps {
 }
 
 /**
+ * Props for the AnySpend Deposit modal
+ * Flexible deposit component with optional chain selection
+ */
+export interface AnySpendDepositModalProps extends BaseModalProps {
+  /** Modal type identifier */
+  type: "anySpendDeposit";
+  /** Order ID to load an existing order */
+  loadOrder?: string;
+  /** The recipient address for the deposit */
+  recipientAddress: string;
+  /** Payment type - crypto or fiat. If not set, shows chain selection first */
+  paymentType?: "crypto" | "fiat";
+  /** Source token address to pre-select */
+  sourceTokenAddress?: string;
+  /** Source chain ID to pre-select. If not provided, shows chain selection */
+  sourceTokenChainId?: number;
+  /** The destination token address */
+  destinationTokenAddress: string;
+  /** The destination chain ID */
+  destinationTokenChainId: number;
+  /** Callback when deposit succeeds */
+  onSuccess?: (amount: string) => void;
+  /** Callback for opening a custom modal (e.g., for special token handling) */
+  onOpenCustomModal?: () => void;
+  /** Custom footer content */
+  mainFooter?: React.ReactNode;
+  /** Called when a token is selected. Call event.preventDefault() to prevent default behavior */
+  onTokenSelect?: (token: components["schemas"]["Token"], event: { preventDefault: () => void }) => void;
+  /** Custom USD input value presets for fiat payment */
+  customUsdInputValues?: string[];
+  /** Whether to prefer using connected EOA wallet */
+  preferEoa?: boolean;
+  /** Minimum destination amount required */
+  minDestinationAmount?: number;
+  /** Order type for the deposit */
+  orderType?: "hype_duel" | "custom_exact_in" | "swap";
+  /** Custom action label displayed on buttons */
+  actionLabel?: string;
+  /** Whether to show chain selection step. Defaults to true if sourceTokenChainId is not provided */
+  showChainSelection?: boolean;
+  /** Minimum pool size for filtering tokens (default: 1,000,000) */
+  minPoolSize?: number;
+  /** Custom title for chain selection step */
+  chainSelectionTitle?: string;
+  /** Custom description for chain selection step */
+  chainSelectionDescription?: string;
+  /** Number of top chains to show (default: 3) */
+  topChainsCount?: number;
+  /** Custom URL to redirect to when clicking "Return to Home" on complete order screen */
+  returnToHomeUrl?: string;
+  /** Custom label for recipient display (e.g., "OBSN Telegram Bot") */
+  customRecipientLabel?: string;
+  /** Custom label for the return home button (overrides "Return to Home" / "Close") */
+  returnHomeLabel?: string;
+  /** Whether the deposit requires a custom function (uses AnySpendCustomExactIn). Defaults to false. */
+  isCustomDeposit?: boolean;
+}
+
+/**
  * Union type of all possible modal content types
  */
 export type ModalContentType =
@@ -540,7 +599,8 @@ export type ModalContentType =
   | DepositModalProps
   | SendModalProps
   | NotificationsModalProps
-  | AnySpendCollectorClubPurchaseProps;
+  | AnySpendCollectorClubPurchaseProps
+  | AnySpendDepositModalProps;
 // Add other modal types here like: | OtherModalProps | AnotherModalProps
 
 /**
