@@ -1,6 +1,6 @@
 import app from "@b3dotfun/sdk/global-account/app";
 import { authenticateWithB3JWT } from "@b3dotfun/sdk/global-account/bsmnt";
-import { useAuthStore, useB3Config } from "@b3dotfun/sdk/global-account/react";
+import { useAuthStore, useB3 } from "@b3dotfun/sdk/global-account/react";
 import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
@@ -47,7 +47,7 @@ export function useAuth() {
   const hasStartedConnecting = useAuthStore(state => state.hasStartedConnecting);
   const useAutoConnectLoadingPrevious = useRef(false);
   const referralCode = useSearchParam("referralCode");
-  const { partnerId } = useB3Config();
+  const { partnerId } = useB3();
   const wagmiConfig = createWagmiConfig({ partnerId });
   const { connect } = useConnect();
   const activeWagmiAccount = useAccount();
@@ -330,7 +330,7 @@ export function useAuth() {
 
       setIsAuthenticated(false);
       setIsConnected(false);
-      setUser();
+      setUser(undefined);
       callback?.();
     },
     [activeWallet, disconnect, wallets, setIsAuthenticated, setUser, setIsConnected],

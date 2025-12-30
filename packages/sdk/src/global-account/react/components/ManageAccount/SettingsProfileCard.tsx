@@ -1,6 +1,6 @@
 import { ens_normalize } from "@adraffy/ens-normalize";
 import app from "@b3dotfun/sdk/global-account/app";
-import { toast, useAuthentication, useB3Config, useModalStore, useProfile } from "@b3dotfun/sdk/global-account/react";
+import { toast, useAuthentication, useB3, useModalStore, useProfile } from "@b3dotfun/sdk/global-account/react";
 import { formatUsername } from "@b3dotfun/sdk/shared/utils";
 import { Check, Loader2, Pencil, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -17,7 +17,7 @@ const SettingsProfileCard = () => {
     address: eoaAddress || account?.address,
     fresh: true,
   });
-  const { partnerId } = useB3Config();
+  const { partnerId } = useB3();
   const { user, setUser } = useAuthentication(partnerId);
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);

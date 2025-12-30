@@ -3,7 +3,7 @@ import {
   PermissionItem,
   RequestPermissionsModalProps,
   useAddTWSessionKey,
-  useB3Config,
+  useB3,
   useGetAllTWSigners,
 } from "@b3dotfun/sdk/global-account/react";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
@@ -30,7 +30,7 @@ export function RequestPermissions({
 }: RequestPermissionsModalProps) {
   const [isApproving, setIsApproving] = useState(false);
   const account = useActiveAccount();
-  const { defaultPermissions } = useB3Config();
+  const { defaultPermissions } = useB3();
   const DEFAULT_PERMISSIONS = useMemo(
     () => permissions ?? (defaultPermissions as PermissionsConfig),
     [defaultPermissions, permissions],

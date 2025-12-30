@@ -14,7 +14,7 @@ import { AnySpendDepositHype } from "@b3dotfun/sdk/anyspend/react/components/Any
 import { AnySpendDepositUpside } from "@b3dotfun/sdk/anyspend/react/components/AnySpendDepositUpside";
 import { AnySpendStakeUpside } from "@b3dotfun/sdk/anyspend/react/components/AnySpendStakeUpside";
 import { AnySpendStakeUpsideExactIn } from "@b3dotfun/sdk/anyspend/react/components/AnySpendStakeUpsideExactIn";
-import { useB3Config, useIsMobile, useModalStore } from "@b3dotfun/sdk/global-account/react";
+import { useB3, useIsMobile, useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { AnimatePresence, motion } from "framer-motion";
@@ -39,7 +39,7 @@ export function B3DynamicModal() {
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
   const contentType = useModalStore(state => state.contentType);
   const navigateBack = useModalStore(state => state.navigateBack);
-  const { theme } = useB3Config();
+  const { theme } = useB3();
   const isMobile = useIsMobile();
   const { toasts, removeToast } = useToastContext();
 

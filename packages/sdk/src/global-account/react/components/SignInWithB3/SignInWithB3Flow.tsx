@@ -3,7 +3,7 @@ import {
   SignInWithB3ModalProps,
   useAuthentication,
   useAuthStore,
-  useB3Config,
+  useB3,
   useGetAllTWSigners,
   useModalStore,
 } from "@b3dotfun/sdk/global-account/react";
@@ -35,7 +35,7 @@ export function SignInWithB3Flow({
   source = "signInWithB3Button",
   signersEnabled = false,
 }: SignInWithB3ModalProps) {
-  const { automaticallySetFirstEoa, enableTurnkey } = useB3Config();
+  const { automaticallySetFirstEoa, enableTurnkey } = useB3();
   const { user, refetchUser, logout } = useAuthentication(partnerId);
 
   // FIXME Logout before login to ensure a clean state

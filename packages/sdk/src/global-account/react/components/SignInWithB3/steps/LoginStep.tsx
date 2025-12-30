@@ -1,4 +1,4 @@
-import { useAuthentication, useB3Config, useQueryB3 } from "@b3dotfun/sdk/global-account/react";
+import { useAuthentication, useB3, useQueryB3 } from "@b3dotfun/sdk/global-account/react";
 import { ecosystemWalletId } from "@b3dotfun/sdk/shared/constants";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
 import { Chain } from "thirdweb";
@@ -50,7 +50,7 @@ export function LoginStepContainer({ children, partnerId }: LoginStepContainerPr
 }
 
 export function LoginStep({ onSuccess, chain }: LoginStepProps) {
-  const { partnerId, theme } = useB3Config();
+  const { partnerId, theme } = useB3();
   const wallet = ecosystemWallet(ecosystemWalletId, {
     partnerId: partnerId,
   });

@@ -21,7 +21,7 @@ import {
   TextLoop,
   TextShimmer,
   useAccountWallet,
-  useB3Config,
+  useB3,
   useModalStore,
   useProfile,
   useUnifiedChainSwitchAndExecute,
@@ -228,7 +228,7 @@ export const OrderDetails = memo(function OrderDetails({
   const searchParams = useSearchParams();
 
   // Get theme from B3Provider context
-  const { theme } = useB3Config();
+  const { theme } = useB3();
   const colorMode = theme || "light";
 
   // Read crypto payment method from URL parameters

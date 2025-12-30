@@ -53,4 +53,4 @@ export { useTokensFromAddress } from "./useTokensFromAddress";
 export { useTurnkeyAuth } from "./useTurnkeyAuth";
 export { useUnifiedChainSwitchAndExecute } from "./useUnifiedChainSwitchAndExecute";
 export { useURLParams } from "./useURLParams";
-export { useUser } from "./useUser";
+export { useUserQuery } from "./useUserQuery";

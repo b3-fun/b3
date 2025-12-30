@@ -179,7 +179,7 @@ export function useAuthentication(partnerId: string) {
 
       setIsAuthenticated(false);
       setIsConnected(false);
-      setUser();
+      setUser(undefined);
       callback?.();
     },
     [activeWallet, disconnect, wallets, setIsAuthenticated, setUser, setIsConnected],

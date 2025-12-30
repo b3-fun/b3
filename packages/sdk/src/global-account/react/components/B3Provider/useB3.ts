@@ -1,9 +1,17 @@
-import { useB3Config } from "./useB3Config";
+import { useContext, useMemo } from "react";
+import { B3Context } from "./types";
 
 /**
- * Hook to access the B3 configuration
- * @deprecated This is just an alias for useB3Config. Use useB3Config directly instead.
+ * Hook to access the B3 context
+ * @throws Error if used outside a B3Provider
  */
 export function useB3() {
-  return useB3Config();
+  const context = useContext(B3Context);
+
+  if (!context.initialized) {
+    throw new Error("useB3 must be used within a B3Provider");
+  }
+
+  // Return a stable reference
+  return useMemo(() => context, [context]);
 }

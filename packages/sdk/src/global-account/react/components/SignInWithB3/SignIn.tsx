@@ -5,7 +5,7 @@ import {
   StyleRoot,
   useAccountWallet,
   useAuthentication,
-  useB3Config,
+  useB3,
   useIsMobile,
 } from "@b3dotfun/sdk/global-account/react";
 import Icon from "@b3dotfun/sdk/global-account/react/components/custom/Icon";
@@ -30,7 +30,7 @@ type SignInWithB3Props = Omit<SignInWithB3ModalProps, "type" | "showBackButton">
 
 export function SignIn(props: SignInWithB3Props) {
   const { className } = props;
-  const { automaticallySetFirstEoa, partnerId } = useB3Config();
+  const { automaticallySetFirstEoa, partnerId } = useB3();
   const {
     address: globalAddress,
     ensName,

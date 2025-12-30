@@ -25,7 +25,7 @@ import {
   toast,
   TransitionPanel,
   useAccountWallet,
-  useB3Config,
+  useB3,
   useModalStore,
   useProfile,
   useRouter,
@@ -165,7 +165,7 @@ function AnySpendInner({
   const searchParams = useSearchParamsSSR();
   const router = useRouter();
 
-  const { partnerId } = useB3Config();
+  const { partnerId } = useB3();
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
 
   // Determine if we're in "buy mode" based on whether destination token props are provided
