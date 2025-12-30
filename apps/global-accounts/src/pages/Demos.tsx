@@ -1,10 +1,10 @@
-import { SignInWithB3, useAuthStore, useUser } from "@b3dotfun/sdk/global-account/react";
+import { SignInWithB3, useAuthStore, useUserQuery } from "@b3dotfun/sdk/global-account/react";
 import { useB3Account } from "@b3dotfun/sdk/global-account/react/components/B3Provider/useB3Account";
 import { useEffect, useState } from "react";
 import { b3Chain } from "../constants/b3Chain";
 
 export function Demos() {
-  const { user } = useUser();
+  const { user } = useUserQuery();
   const account = useB3Account();
   const { isAuthenticating } = useAuthStore();
   const [authMessage, setAuthMessage] = useState("");

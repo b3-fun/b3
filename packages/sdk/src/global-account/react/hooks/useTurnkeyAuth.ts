@@ -2,7 +2,7 @@ import { TurnkeyAuthInitResponse } from "@b3dotfun/b3-api";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { useCallback, useState } from "react";
 import app from "../../app";
-import { useB3Config } from "../components";
+import { useB3 } from "../components";
 import { useAuthStore } from "../stores";
 import { useAuth } from "./useAuth";
 
@@ -33,7 +33,7 @@ export function useTurnkeyAuth(): UseTurnkeyAuthReturn {
   const [error, setError] = useState<string | null>(null);
   const setIsAuthenticating = useAuthStore(state => state.setIsAuthenticating);
   const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
-  const { partnerId } = useB3Config();
+  const { partnerId } = useB3();
   const { authenticate } = useAuth();
 
   /**

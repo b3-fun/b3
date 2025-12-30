@@ -1,21 +1,36 @@
 import { CreateOnrampOrderParams } from "@b3dotfun/sdk/anyspend/react/hooks/useAnyspendCreateOnrampOrder";
 import { CreateOrderParams } from "@b3dotfun/sdk/anyspend/react/hooks/useAnyspendCreateOrder";
-import { RelayKitProviderWrapper, TooltipProvider } from "@b3dotfun/sdk/global-account/react";
+import {
+  RelayKitProviderWrapper,
+  TooltipProvider,
+  useAuthentication,
+  useAuthStore,
+} from "@b3dotfun/sdk/global-account/react";
+import { useAutoSelectWallet } from "@b3dotfun/sdk/global-account/react/hooks/useAutoSelectWallet";
 import { createWagmiConfig } from "@b3dotfun/sdk/global-account/react/utils/createWagmiConfig";
 import { PermissionsConfig } from "@b3dotfun/sdk/global-account/types/permissions";
 import { loadGA4Script } from "@b3dotfun/sdk/global-account/utils/analytics";
 import "@relayprotocol/relay-kit-ui/styles.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
-import { ThirdwebProvider } from "thirdweb/react";
+import { ThirdwebProvider, useActiveAccount } from "thirdweb/react";
 import { Account, Wallet } from "thirdweb/wallets";
 import { CreateConnectorFn, WagmiProvider } from "wagmi";
 import { ClientType, setClientType } from "../../../client-manager";
 import { StyleRoot } from "../StyleRoot";
 import { setToastContext, ToastProvider, useToastContext } from "../Toast/index";
-import AuthenticationProvider from "./AuthenticationProvider";
-import { B3ConfigProvider } from "./B3ConfigProvider";
 import { LocalSDKProvider } from "./LocalSDKProvider";
+import { B3Context, B3ContextType } from "./types";
+
+/**
+ * Default permissions configuration for B3 provider
+ */
+const DEFAULT_PERMISSIONS = {
+  approvedTargets: ["0xa8e42121e318e3D3BeD7f5969AF6D360045317DD"], // Example contract
+  nativeTokenLimitPerTransaction: 0.1, // in ETH
+  startDate: new Date(),
+  endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365), // 1 year from now
+};
 
 // Create queryClient instance
 const queryClient = new QueryClient();
@@ -41,12 +56,11 @@ export function B3Provider({
   overrideDefaultConnectors = false,
   createClientReferenceId,
   enableTurnkey = false,
-  defaultPermissions,
 }: {
   theme: "light" | "dark";
   children: React.ReactNode;
   accountOverride?: Account;
-  environment?: "development" | "production";
+  environment: B3ContextType["environment"];
   automaticallySetFirstEoa?: boolean;
   simDuneApiKey?: string;
   toaster?: {
@@ -63,7 +77,6 @@ export function B3Provider({
   overrideDefaultConnectors?: boolean;
   createClientReferenceId?: (params: CreateOrderParams | CreateOnrampOrderParams) => Promise<string>;
   enableTurnkey?: boolean;
-  defaultPermissions?: PermissionsConfig;
 }) {
   // Initialize Google Analytics on mount
   useEffect(() => {
@@ -87,17 +100,16 @@ export function B3Provider({
           <TooltipProvider>
             <ToastProvider>
               <LocalSDKProvider onConnectCallback={onConnect}>
-                <B3ConfigProvider
+                <InnerProvider
                   accountOverride={accountOverride}
                   environment={environment}
-                  automaticallySetFirstEoa={!!automaticallySetFirstEoa}
                   theme={theme}
+                  automaticallySetFirstEoa={!!automaticallySetFirstEoa}
                   clientType={clientType}
                   partnerId={partnerId}
                   stripePublishableKey={stripePublishableKey}
                   createClientReferenceId={createClientReferenceId}
                   enableTurnkey={enableTurnkey}
-                  defaultPermissions={defaultPermissions}
                 >
                   <ToastContextConnector />
                   <RelayKitProviderWrapper simDuneApiKey={simDuneApiKey}>
@@ -105,14 +117,92 @@ export function B3Provider({
                     {/* For the modal https://github.com/b3-fun/b3/blob/main/packages/sdk/src/global-account/react/components/ui/dialog.tsx#L46 */}
                     <StyleRoot id="b3-root" />
                   </RelayKitProviderWrapper>
-                  <AuthenticationProvider partnerId={partnerId} automaticallySetFirstEoa={!!automaticallySetFirstEoa} />
-                </B3ConfigProvider>
+                </InnerProvider>
               </LocalSDKProvider>
             </ToastProvider>
           </TooltipProvider>
         </QueryClientProvider>
       </WagmiProvider>
     </ThirdwebProvider>
+  );
+}
+
+/**
+ * Inner provider component that provides the actual B3Context
+ */
+export function InnerProvider({
+  children,
+  accountOverride,
+  environment,
+  defaultPermissions = DEFAULT_PERMISSIONS,
+  automaticallySetFirstEoa,
+  theme = "light",
+  clientType = "socket",
+  partnerId,
+  stripePublishableKey,
+  createClientReferenceId,
+  enableTurnkey,
+}: {
+  children: React.ReactNode;
+  accountOverride?: Account;
+  environment: B3ContextType["environment"];
+  defaultPermissions?: PermissionsConfig;
+  automaticallySetFirstEoa: boolean;
+  theme: "light" | "dark";
+  clientType?: ClientType;
+  partnerId: string;
+  stripePublishableKey?: string;
+  createClientReferenceId?: (params: CreateOrderParams | CreateOnrampOrderParams) => Promise<string>;
+  enableTurnkey?: boolean;
+}) {
+  const activeAccount = useActiveAccount();
+  const isAuthenticated = useAuthStore(state => state.isAuthenticated);
+  //const isConnected = useAuthStore(state => state.isConnected);
+  //const justCompletedLogin = useAuthStore(state => state.justCompletedLogin);
+
+  // Note: This fixes a bug where useAuthentication is no longer rendered on every page, as of this PR https://github.com/b3-fun/b3/pull/385/files#diff-3ef996931b8fc8e49021ba1b42ddaa97535214681610dc5fdacf63542e261af7
+  // The above PR removes useAuthentication from the overall B3Provider. useAuthentication should be everywhere the provider is, since it sets the overall auth state
+  // By just calling it manually, we fix that issue
+  // As a follow up, we should fix the SDK directly
+  useAuthentication(partnerId);
+
+  // Use given accountOverride or activeAccount from thirdweb
+  // WOJ: why if isAuthenticated is false, we don't use activeAccount, which should be undefined?
+  // skip isAuthenticated check ?
+  const effectiveAccount = isAuthenticated ? accountOverride || activeAccount : undefined;
+
+  // Wrapper to set active wallet via thirdweb
+  // Note: `wallet` in context is deprecated - use useActiveWallet() from thirdweb/react instead
+
+  // Auto-select first EOA wallet when enabled
+  useAutoSelectWallet({
+    enabled: automaticallySetFirstEoa,
+  });
+
+  return (
+    <B3Context.Provider
+      value={{
+        account: effectiveAccount,
+        // setWallet,
+        //wallet: undefined, // Deprecated: use useActiveWallet() from thirdweb/react instead
+        //user,
+        //setUser,
+        //refetchUser,
+        initialized: true,
+        ready: !!effectiveAccount,
+        automaticallySetFirstEoa,
+        environment,
+        defaultPermissions,
+        theme,
+        clientType,
+        partnerId: partnerId,
+        stripePublishableKey,
+        createClientReferenceId,
+        enableTurnkey,
+      }}
+    >
+      {children}
+    </B3Context.Provider>
   );
 }
 

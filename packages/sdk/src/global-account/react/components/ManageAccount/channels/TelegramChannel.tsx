@@ -1,4 +1,4 @@
-import { useB3Config } from "@b3dotfun/sdk/global-account/react";
+import { useB3 } from "@b3dotfun/sdk/global-account/react";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { useState } from "react";
 import { notificationsAPI } from "../../../utils/notificationsAPI";
@@ -26,7 +26,7 @@ export const TelegramChannel = ({
   onConnectionChange,
   onToggle,
 }: TelegramChannelProps) => {
-  const { partnerId } = useB3Config();
+  const { partnerId } = useB3();
 
   const [isConnecting, setIsConnecting] = useState(false);
   const [status, setStatus] = useState<"idle" | "pending" | "connected">("idle");

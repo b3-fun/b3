@@ -6,7 +6,7 @@ import {
   IPFSMediaRenderer,
   toast,
   useAuthentication,
-  useB3Config,
+  useB3,
   useProfile,
 } from "@b3dotfun/sdk/global-account/react";
 import { validateImageUrl } from "@b3dotfun/sdk/global-account/react/utils/profileDisplay";
@@ -57,7 +57,7 @@ export function AvatarEditor({ onSetAvatar, className }: AvatarEditorProps) {
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { partnerId } = useB3Config();
+  const { partnerId } = useB3();
   const { user, setUser } = useAuthentication(partnerId);
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
   const contentType = useModalStore(state => state.contentType);

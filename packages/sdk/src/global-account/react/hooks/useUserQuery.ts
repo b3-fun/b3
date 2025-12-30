@@ -1,84 +1,71 @@
 import { Users } from "@b3dotfun/b3-api";
+import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { useEffect } from "react";
-import { useUserStore } from "../stores/userStore";
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+
+const debug = debugB3React("useUserQuery");
 
 const USER_QUERY_KEY = ["b3-user"];
+
+interface UserStore {
+  user: Users | null;
+  setUser: (user: Users | undefined) => void;
+  clearUser: () => void;
+}
+
+/**
+ * Zustand store for managing user state
+ * Persists user data to localStorage
+ */
+const useUserStore = create<UserStore>()(
+  persist(
+    set => ({
+      user: null,
+      setUser: (newUser: Users | undefined) => {
+        const userToSave = newUser ?? null;
+        set({ user: userToSave });
+        debug("User updated", userToSave);
+      },
+      clearUser: () => {
+        set({ user: null });
+        debug("User cleared");
+      },
+    }),
+    {
+      name: "b3-user",
+      onRehydrateStorage: () => (_, error) => {
+        if (error) {
+          console.warn("Failed to rehydrate user store:", error);
+        }
+      },
+    },
+  ),
+);
 
 /**
  * NOTE: THIS IS ONLY MEANT FOR INTERNAL USE, from useOnConnect
  *
- * Custom hook to manage user state with Zustand
- * This allows for invalidation and refetching of user data
+ * Hook to query and manage user data
+ * Provides user state and methods to update it
+ * Uses Zustand store with persistence to localStorage
  */
 export function useUserQuery() {
   const user = useUserStore(state => state.user);
-  const setUserStore = useUserStore(state => state.setUser);
-  const clearUserStore = useUserStore(state => state.clearUser);
+  const setUser = useUserStore(state => state.setUser);
+  const clearUser = useUserStore(state => state.clearUser);
 
-  // Listen for storage events from other tabs/windows
   useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === "b3-user") {
-        // Sync with changes from other tabs/windows
-        const stored = e.newValue;
-        if (stored) {
-          try {
-            const parsed = JSON.parse(stored);
-            // Zustand persist format: { state: { user: ... }, version: ... }
-            const userData = parsed?.state?.user ?? parsed?.user ?? null;
-            useUserStore.setState({ user: userData });
-          } catch (error) {
-            console.warn("Failed to parse user from storage event:", error);
-          }
-        } else {
-          useUserStore.setState({ user: null });
-        }
-      }
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-    };
-  }, []);
-
-  // Helper function to set user (maintains backward compatibility)
-  const setUser = (newUser?: Users) => {
-    setUserStore(newUser);
-  };
-
-  // Helper function to invalidate and refetch user
-  const refetchUser = async () => {
-    // Re-read from localStorage and update store
-    // Zustand persist stores data as { state: { user: ... }, version: ... }
-    const stored = localStorage.getItem("b3-user");
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        // Zustand persist format: { state: { user: ... }, version: ... }
-        const userData = parsed?.state?.user ?? parsed?.user ?? null;
-        useUserStore.setState({ user: userData });
-        return userData ?? undefined;
-      } catch (error) {
-        console.warn("Failed to refetch user from localStorage:", error);
-        // Fallback to current store state
-        return useUserStore.getState().user ?? undefined;
-      }
+    if (user) {
+      debug("User loaded from store", user);
     }
-    useUserStore.setState({ user: null });
-    return undefined;
-  };
-
-  // Helper function to clear user
-  const clearUser = () => {
-    clearUserStore();
-  };
+  }, [user]);
 
   return {
-    user: user ?? undefined,
+    user,
     setUser,
-    refetchUser,
     clearUser,
-    queryKey: USER_QUERY_KEY,
   };
 }
+
+export { USER_QUERY_KEY };

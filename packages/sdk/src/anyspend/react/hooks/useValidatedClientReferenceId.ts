@@ -1,5 +1,5 @@
 import { Validators } from "@b3dotfun/sdk/anyspend/utils/validation";
-import { useB3Config } from "@b3dotfun/sdk/global-account/react";
+import { useB3 } from "@b3dotfun/sdk/global-account/react";
 import { useCallback } from "react";
 import { CreateOnrampOrderParams } from "./useAnyspendCreateOnrampOrder";
 import { CreateOrderParams } from "./useAnyspendCreateOrder";
@@ -9,7 +9,7 @@ import { CreateOrderParams } from "./useAnyspendCreateOrder";
  * Gets the createClientReferenceId function from B3 context and validates the result
  */
 export function useValidatedClientReferenceId() {
-  const { createClientReferenceId } = useB3Config();
+  const { createClientReferenceId } = useB3();
 
   const createValidatedClientReferenceId = useCallback(
     async (params: CreateOrderParams | CreateOnrampOrderParams) => {

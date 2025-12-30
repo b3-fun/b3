@@ -1,7 +1,7 @@
-import { useUser } from "@b3dotfun/sdk/global-account/react";
+import { useUserQuery } from "@b3dotfun/sdk/global-account/react/hooks/useUserQuery";
 
 export function ExampleAuthInfo() {
-  const { user } = useUser();
+  const { user } = useUserQuery();
   console.log("@@user", user);
 
   return (
