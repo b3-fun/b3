@@ -631,6 +631,8 @@ interface ModalState {
   linkingMethod: string | null;
   /** Function to set the linking state */
   setLinkingState: (isLinking: boolean, method?: string | null) => void;
+  /** Function to update closable property of current content without adding to history */
+  setClosable: (closable: boolean) => void;
 }
 
 /**
@@ -670,4 +672,8 @@ export const useModalStore = create<ModalState>(set => ({
   linkingMethod: null,
   setLinkingState: (isLinking: boolean, method: string | null = null) =>
     set({ isLinking, linkingMethod: isLinking ? method : null }),
+  setClosable: (closable: boolean) =>
+    set(state => ({
+      contentType: state.contentType ? { ...state.contentType, closable } : null,
+    })),
 }));

@@ -1,6 +1,6 @@
 "use client";
 
-import { toast, useAccountWallet, WalletImage } from "@b3dotfun/sdk/global-account/react";
+import { toast, useAccountWallet, useModalStore, WalletImage } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
@@ -48,13 +48,20 @@ export function CryptoPaymentMethod({
   // Use custom hook to determine wallet display logic
   const { shouldShowConnectedEOA } = useConnectedWalletDisplay(selectedPaymentMethod);
 
+  // Get modal store to block parent modal closing while connect modal is open
+  const setClosable = useModalStore(state => state.setClosable);
+
   // Handle wallet connection using thirdweb modal
   const handleConnectWallet = async () => {
+    // Block parent B3 modal from closing while thirdweb connect modal is open
+    setClosable(false);
+
     try {
       // Disconnect current wallet before connecting a new one
       if (connectedEOAWallet) {
-        await disconnect(connectedEOAWallet);
+        disconnect(connectedEOAWallet);
       }
+
       const wallet = await openConnectModal({
         client,
         setActive: false,
@@ -62,8 +69,8 @@ export function CryptoPaymentMethod({
         showThirdwebBranding: false,
         wallets: recommendWallets,
       });
+
       if (wallet) {
-        // setActiveWallet(wallet);
         setSelectedPaymentMethod(CryptoPaymentMethodType.CONNECT_WALLET);
         onSelectPaymentMethod(CryptoPaymentMethodType.CONNECT_WALLET);
         toast.success("Wallet connected");
@@ -82,6 +89,9 @@ export function CryptoPaymentMethod({
           toast.error("Failed to connect wallet");
         }
       }
+    } finally {
+      // Always re-enable parent modal closing when connect modal closes
+      setClosable(true);
     }
   };
 
