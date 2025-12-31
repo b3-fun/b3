@@ -94,7 +94,12 @@ export function OrderlyDeposit({
   const brokerHash = useMemo(() => computeBrokerHash(brokerId), [brokerId]);
 
   // Fetch deposit fee
-  const { feeWithBufferWei, feeFormatted, isLoading: isFeeLoading, error: feeError } = useOrderlyDepositFee({
+  const {
+    feeWithBufferWei,
+    feeFormatted,
+    isLoading: isFeeLoading,
+    error: feeError,
+  } = useOrderlyDepositFee({
     walletAddress: effectiveAddress,
     brokerId,
     chainId,

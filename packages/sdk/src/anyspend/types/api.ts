@@ -1906,6 +1906,11 @@ export interface components {
        */
       spenderAddress?: string;
       /**
+       * @description Native token value to send with the transaction (in wei)
+       * @example 1000000000000000000
+       */
+      value?: string;
+      /**
        * @description Optional action identifier used for display purposes
        * @example stake B3
        */

@@ -154,6 +154,7 @@ export function useOrderlyDepositFee({
     enabled: !!walletAddress && !!accountId && !!amountInUnits && !!chainConfig,
     staleTime: 30_000, // 30 seconds
     refetchInterval: 60_000, // Refetch every minute
+    structuralSharing: false, // BigInt can't be serialized, disable structural sharing
   });
 
   // Calculate fee with buffer
