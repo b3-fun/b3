@@ -109,7 +109,6 @@ export function QRDeposit({
     chainId: sourceChainId,
     tokenAddress: sourceToken.address,
     tokenDecimals: sourceToken.decimals,
-    tokenSymbol: sourceToken.symbol,
     enabled: isPureTransfer && !transferResult,
     onTransferDetected: result => {
       setTransferResult(result);

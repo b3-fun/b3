@@ -19,8 +19,6 @@ export interface UseWatchTransferProps {
   tokenAddress: string;
   /** Token decimals */
   tokenDecimals: number;
-  /** Token symbol */
-  tokenSymbol: string;
   /** Whether watching is enabled */
   enabled?: boolean;
   /** Callback when a transfer is detected */
@@ -36,7 +34,6 @@ export function useWatchTransfer({
   chainId,
   tokenAddress,
   tokenDecimals,
-  tokenSymbol,
   enabled = true,
   onTransferDetected,
 }: UseWatchTransferProps) {
