@@ -631,6 +631,10 @@ interface ModalState {
   linkingMethod: string | null;
   /** Function to set the linking state */
   setLinkingState: (isLinking: boolean, method?: string | null) => void;
+  /** Whether a nested modal (like thirdweb connect) is open - blocks parent modal close */
+  isNestedModalOpen: boolean;
+  /** Function to set nested modal state */
+  setNestedModalOpen: (isOpen: boolean) => void;
 }
 
 /**
@@ -670,4 +674,6 @@ export const useModalStore = create<ModalState>(set => ({
   linkingMethod: null,
   setLinkingState: (isLinking: boolean, method: string | null = null) =>
     set({ isLinking, linkingMethod: isLinking ? method : null }),
+  isNestedModalOpen: false,
+  setNestedModalOpen: (isOpen: boolean) => set({ isNestedModalOpen: isOpen }),
 }));
