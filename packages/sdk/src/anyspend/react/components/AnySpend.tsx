@@ -1089,6 +1089,7 @@ function AnySpendInner({
             }}
             returnToHomeUrl={returnToHomeUrl}
             returnHomeLabel={returnHomeLabel}
+            disableUrlParamManagement={disableUrlParamManagement}
           />
         )}
         {/* {mode === "page" && <div className="h-12" />} */}

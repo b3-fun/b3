@@ -1,6 +1,6 @@
 import { useActiveWallet } from "thirdweb/react";
 import { AccountAssets } from "..";
-import { useAccountAssets } from "../../hooks";
+import { useSimCollectibles } from "../../hooks";
 
 const NFTContent = () => {
   // Get active wallet state
@@ -8,12 +8,12 @@ const NFTContent = () => {
   const activeAccount = activeWallet?.getAccount();
   const activeAddress = activeAccount?.address;
 
-  const { data: nfts, isLoading } = useAccountAssets(activeAddress);
+  const { data: nfts, isLoading } = useSimCollectibles(activeAddress, [1, 8453], { filterSpam: true });
 
   return (
     <div style={{ minHeight: "100px" }}>
-      {nfts?.nftResponse ? (
-        <AccountAssets nfts={nfts.nftResponse} isLoading={isLoading} />
+      {nfts ? (
+        <AccountAssets nfts={nfts} isLoading={isLoading} />
       ) : (
         <div className="py-12 text-center text-gray-500">No NFTs found</div>
       )}

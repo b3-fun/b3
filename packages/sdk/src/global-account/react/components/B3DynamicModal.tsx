@@ -10,16 +10,15 @@ import {
   AnySpendTournament,
   OrderHistory,
 } from "@b3dotfun/sdk/anyspend/react";
+import { AnySpendDeposit } from "@b3dotfun/sdk/anyspend/react/components/AnySpendDeposit";
 import { AnySpendDepositHype } from "@b3dotfun/sdk/anyspend/react/components/AnyspendDepositHype";
 import { AnySpendDepositUpside } from "@b3dotfun/sdk/anyspend/react/components/AnySpendDepositUpside";
 import { AnySpendStakeUpside } from "@b3dotfun/sdk/anyspend/react/components/AnySpendStakeUpside";
 import { AnySpendStakeUpsideExactIn } from "@b3dotfun/sdk/anyspend/react/components/AnySpendStakeUpsideExactIn";
-import { useB3Config, useGlobalAccount, useIsMobile, useModalStore } from "@b3dotfun/sdk/global-account/react";
+import { useB3Config, useIsMobile, useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useRef } from "react";
-import { useSetActiveWallet } from "thirdweb/react";
 import { AvatarEditor } from "./AvatarEditor/AvatarEditor";
 import { Deposit } from "./Deposit/Deposit";
 import { LinkAccount } from "./LinkAccount/LinkAccount";
@@ -43,21 +42,7 @@ export function B3DynamicModal() {
   const navigateBack = useModalStore(state => state.navigateBack);
   const { theme } = useB3Config();
   const isMobile = useIsMobile();
-  const prevIsOpenRef = useRef(isOpen);
-  const { wallet } = useGlobalAccount();
-  const setActiveWallet = useSetActiveWallet();
   const { toasts, removeToast } = useToastContext();
-
-  // anyspend cleanup global account chnages by setting account back
-  useEffect(() => {
-    if (prevIsOpenRef.current && !isOpen) {
-      if (wallet) {
-        setActiveWallet(wallet);
-      }
-    }
-
-    prevIsOpenRef.current = isOpen;
-  }, [isOpen, wallet, setActiveWallet]);
 
   // Define arrays for different modal type groups
   const fullWidthTypes = [
@@ -81,6 +66,7 @@ export function B3DynamicModal() {
     "deposit",
     "send",
     "notifications",
+    "anySpendDeposit",
   ];
 
   const freestyleTypes = [
@@ -169,6 +155,8 @@ export function B3DynamicModal() {
         return <AnySpendDepositHype {...contentType} mode="modal" />;
       case "anySpendCollectorClubPurchase":
         return <AnySpendCollectorClubPurchase {...contentType} mode="modal" />;
+      case "anySpendDeposit":
+        return <AnySpendDeposit {...contentType} mode="modal" />;
       case "avatarEditor":
         return <AvatarEditor onSetAvatar={contentType.onSuccess} />;
       case "deposit":
