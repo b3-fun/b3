@@ -49,12 +49,12 @@ export function CryptoPaymentMethod({
   const { shouldShowConnectedEOA } = useConnectedWalletDisplay(selectedPaymentMethod);
 
   // Get modal store to block parent modal closing while connect modal is open
-  const setNestedModalOpen = useModalStore(state => state.setNestedModalOpen);
+  const setClosable = useModalStore(state => state.setClosable);
 
   // Handle wallet connection using thirdweb modal
   const handleConnectWallet = async () => {
     // Block parent B3 modal from closing while thirdweb connect modal is open
-    setNestedModalOpen(true);
+    setClosable(false);
 
     try {
       // Disconnect current wallet before connecting a new one
@@ -91,7 +91,7 @@ export function CryptoPaymentMethod({
       }
     } finally {
       // Always re-enable parent modal closing when connect modal closes
-      setNestedModalOpen(false);
+      setClosable(true);
     }
   };
 

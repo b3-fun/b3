@@ -40,7 +40,6 @@ export function B3DynamicModal() {
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
   const contentType = useModalStore(state => state.contentType);
   const navigateBack = useModalStore(state => state.navigateBack);
-  const isNestedModalOpen = useModalStore(state => state.isNestedModalOpen);
   const { theme } = useB3Config();
   const isMobile = useIsMobile();
   const { toasts, removeToast } = useToastContext();
@@ -86,8 +85,7 @@ export function B3DynamicModal() {
   // Check if current content type is in freestyle types
   const isFreestyleType = freestyleTypes.includes(contentType?.type as string);
   // Determine if modal should be closable - defaults to true unless explicitly set to false
-  // Also block closing when a nested modal (like thirdweb connect) is open
-  const isClosable = contentType?.closable !== false && !isNestedModalOpen;
+  const isClosable = contentType?.closable !== false;
   const hideCloseButton = true;
 
   // Build content class using cn utility
