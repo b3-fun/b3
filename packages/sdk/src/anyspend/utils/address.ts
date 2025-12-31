@@ -38,3 +38,16 @@ export function eqci(a: string | null | undefined, b: string | null | undefined)
   if (!a || !b) return false;
   return a.toLowerCase() === b.toLowerCase();
 }
+
+/**
+ * Check if source and destination represent the same token on the same chain.
+ * When true, this is a pure transfer (no swap/bridge needed).
+ */
+export function isSameChainAndToken(
+  sourceChainId: number,
+  sourceTokenAddress: string,
+  destinationChainId: number,
+  destinationTokenAddress: string,
+): boolean {
+  return sourceChainId === destinationChainId && eqci(sourceTokenAddress, destinationTokenAddress);
+}
