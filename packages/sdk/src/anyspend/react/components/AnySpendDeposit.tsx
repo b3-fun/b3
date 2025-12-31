@@ -1,6 +1,6 @@
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
-import { Skeleton, useAccountWallet, useSimBalance } from "@b3dotfun/sdk/global-account/react";
+import { Skeleton, useAccountWallet, useSimBalance, useTokenData } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import {
   NetworkArbitrumOne,
@@ -249,6 +249,22 @@ export function AnySpendDeposit({
   const [selectedChainId, setSelectedChainId] = useState<number | undefined>(initialSourceChainId);
   const [paymentType, setPaymentType] = useState<"crypto" | "fiat">(initialPaymentType ?? "crypto");
 
+  // Fetch destination token data
+  const { data: destinationTokenData } = useTokenData(destinationTokenChainId, destinationTokenAddress);
+
+  // Construct full destination token object
+  const destinationToken: components["schemas"]["Token"] = useMemo(
+    () => ({
+      address: destinationTokenAddress,
+      chainId: destinationTokenChainId,
+      symbol: destinationTokenData?.symbol ?? "",
+      name: destinationTokenData?.name ?? "",
+      decimals: destinationTokenData?.decimals ?? 18,
+      metadata: { logoURI: destinationTokenData?.logoURI },
+    }),
+    [destinationTokenAddress, destinationTokenChainId, destinationTokenData],
+  );
+
   // Fetch balances for EOA wallet
   const { data: balanceData, isLoading: isBalanceLoading } = useSimBalance(
     shouldShowChainSelection ? eoaAddress : undefined,
@@ -305,7 +321,7 @@ export function AnySpendDeposit({
 
   if (!recipientAddress) return null;
 
-  const tokenSymbol = "TOKEN";
+  const tokenSymbol = destinationToken.symbol || "TOKEN";
 
   // Determine order type based on config
   const effectiveOrderType = orderType ?? (depositContractConfig ? "custom_exact_in" : "swap");
@@ -496,14 +512,7 @@ export function AnySpendDeposit({
       <QRDeposit
         mode={mode}
         recipientAddress={recipientAddress}
-        destinationToken={{
-          address: destinationTokenAddress,
-          chainId: destinationTokenChainId,
-          symbol: "",
-          name: "",
-          decimals: 18,
-          metadata: {},
-        }}
+        destinationToken={destinationToken}
         destinationChainId={destinationTokenChainId}
         depositContractConfig={depositContractConfig}
         onBack={handleBack}
@@ -550,14 +559,7 @@ export function AnySpendDeposit({
             paymentType={paymentType}
             sourceTokenAddress={sourceTokenAddress}
             sourceTokenChainId={selectedChainId}
-            destinationToken={{
-              address: destinationTokenAddress,
-              chainId: destinationTokenChainId,
-              symbol: "",
-              name: "",
-              decimals: 18,
-              metadata: {},
-            }}
+            destinationToken={destinationToken}
             destinationChainId={destinationTokenChainId}
             orderType={effectiveOrderType}
             minDestinationAmount={minDestinationAmount}
