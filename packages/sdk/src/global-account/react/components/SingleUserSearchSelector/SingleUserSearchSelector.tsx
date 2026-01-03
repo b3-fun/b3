@@ -232,7 +232,7 @@ export function SingleUserSearchSelector({
     <div className={cn("relative w-full", className)} ref={dropdownRef}>
       {/* Search Input */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
         <Input
           ref={inputRef}
           type="text"
@@ -266,28 +266,28 @@ export function SingleUserSearchSelector({
             className="w-full p-4 text-left transition-colors hover:bg-gray-50"
             type="button"
           >
-            <div className="flex items-start gap-3">
+            <div className="flex items-center gap-3">
               {/* Avatar */}
               <div className="shrink-0">
                 {searchResult.avatar ? (
                   <img
                     src={searchResult.avatar}
                     alt={getDisplayName(searchResult)}
-                    className="h-10 w-10 rounded-full object-cover"
+                    className="h-12 w-12 rounded-full object-cover"
                   />
                 ) : (
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200">
-                    <User className="h-5 w-5 text-gray-500" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-200">
+                    <User className="h-6 w-6 text-gray-500" />
                   </div>
                 )}
               </div>
 
               {/* Profile Info */}
               <div className="min-w-0 flex-1">
-                <div className="font-medium text-gray-900">{getDisplayName(searchResult)}</div>
+                <div className="font-semibold text-gray-900">{getDisplayName(searchResult)}</div>
 
                 {searchResult.address && (
-                  <div className="mt-1 font-mono text-xs text-gray-500">
+                  <div className="mt-0.5 font-mono text-xs text-gray-500">
                     {searchResult.address.slice(0, 6)}...{searchResult.address.slice(-4)}
                   </div>
                 )}
@@ -295,11 +295,11 @@ export function SingleUserSearchSelector({
                 {searchResult.bio && <div className="mt-1 line-clamp-2 text-sm text-gray-600">{searchResult.bio}</div>}
 
                 {/* Profile Type Badges */}
-                <div className="mt-2 flex flex-wrap gap-1">
+                <div className="mt-2 flex flex-wrap gap-1.5">
                   {getProfileTypeBadges(searchResult.profiles).map((type, index) => (
                     <span
                       key={`${type}-${index}`}
-                      className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800"
+                      className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800"
                     >
                       {type}
                     </span>
