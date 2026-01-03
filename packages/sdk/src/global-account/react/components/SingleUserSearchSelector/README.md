@@ -4,7 +4,7 @@ A specialized React component for searching and selecting a single user profile.
 
 ## Features
 
-- 🔍 Search by address, name, or B3 Global ID
+- 🔍 Search by address or name
 - 🎯 Filter results by profile type (b3-ens, thirdweb-*, ens-data, global-account)
 - 📋 Shows a single result in a dropdown
 - ⚡ Debounced search (500ms)
@@ -132,10 +132,11 @@ function UserSearchModal({ isOpen, onClose }) {
 
 ```tsx
 import { SingleUserSearchSelector } from "@b3dotfun/sdk/global-account/react";
+import type { CombinedProfile } from "@b3dotfun/sdk/global-account/react";
 import { useState } from "react";
 
 function UserSelector() {
-  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedUser, setSelectedUser] = useState<CombinedProfile | null>(null);
 
   return (
     <div>

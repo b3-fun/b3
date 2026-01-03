@@ -1,7 +1,6 @@
 export { createWagmiConfig, type CreateWagmiConfigOptions } from "../utils/createWagmiConfig";
 export { useAccountAssets } from "./useAccountAssets";
 export { useAccountWallet } from "./useAccountWallet";
-export type { CombinedProfile, Profile } from "./useProfile";
 export { useAddTWSessionKey } from "./useAddTWSessionKey";
 export { useAnalytics } from "./useAnalytics";
 export { useAuth } from "./useAuth";

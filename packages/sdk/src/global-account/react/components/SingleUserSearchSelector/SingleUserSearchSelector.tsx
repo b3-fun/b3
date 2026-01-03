@@ -87,7 +87,7 @@ export function SingleUserSearchSelector({
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   // Fetch profile from API using shared utility
   const fetchProfile = useCallback(
