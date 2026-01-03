@@ -131,6 +131,11 @@
         "require": "./dist/cjs/global-account/react/components/*.js"
       }
     },
+    "./global-account/react/components/SingleUserSearchSelector": {
+      "types": "./dist/types/global-account/react/components/SingleUserSearchSelector/index.d.ts",
+      "import": "./dist/esm/global-account/react/components/SingleUserSearchSelector/index.js",
+      "require": "./dist/cjs/global-account/react/components/SingleUserSearchSelector/index.js"
+    },
     "./global-account/types": {
       "types": "./dist/types/global-account/types.d.ts",
       "import": "./dist/esm/global-account/types.js",
