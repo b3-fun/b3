@@ -215,7 +215,7 @@ export function Debug() {
                 Search for a single user (with profile type filter)
               </label>
               <SingleUserSearchSelector
-                onSelectUser={(profile) => {
+                onSelectUser={profile => {
                   setSelectedUser(profile);
                   console.log("Selected user:", profile);
                 }}
@@ -248,7 +248,7 @@ export function Debug() {
                     <div className="mt-1 flex flex-wrap gap-1">
                       {selectedUser.profiles.map((profile, idx) => (
                         <span
-                          key={idx}
+                          key={`${profile.type}-${idx}`}
                           className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800"
                         >
                           {profile.type}
@@ -266,7 +266,7 @@ export function Debug() {
                 Search without filter (all profile types)
               </label>
               <SingleUserSearchSelector
-                onSelectUser={(profile) => {
+                onSelectUser={profile => {
                   console.log("Selected user (no filter):", profile);
                   setSelectedUser(profile);
                 }}
@@ -381,13 +381,7 @@ export function Debug() {
                 onClick={() => setShowFindUserModal(false)}
                 className="text-gray-400 transition-colors hover:text-gray-600"
               >
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path
                     d="M18 6L6 18M6 6L18 18"
                     stroke="currentColor"
@@ -400,7 +394,7 @@ export function Debug() {
             </div>
 
             <SingleUserSearchSelector
-              onSelectUser={(profile) => {
+              onSelectUser={profile => {
                 setSelectedUser(profile);
                 setShowFindUserModal(false);
                 console.log("Selected user from modal:", profile);

@@ -51,7 +51,10 @@ export { SendERC20Button } from "./SendERC20Button/SendERC20Button";
 
 // SingleUserSearchSelector Components
 export { SingleUserSearchSelector } from "./SingleUserSearchSelector/SingleUserSearchSelector";
-export type { ProfileTypeFilter, SingleUserSearchSelectorProps } from "./SingleUserSearchSelector/SingleUserSearchSelector";
+export type {
+  ProfileTypeFilter,
+  SingleUserSearchSelectorProps,
+} from "./SingleUserSearchSelector/SingleUserSearchSelector";
 
 // Custom Components
 export { Button as CustomButton, buttonVariants as customButtonVariants } from "./custom/Button";

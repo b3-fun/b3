@@ -4,6 +4,7 @@ import { cn } from "@b3dotfun/sdk/shared/utils";
 import { Search, User, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { CombinedProfile, Profile } from "../../hooks/useProfile";
+import { fetchProfile as fetchProfileApi } from "../../utils/profileApi";
 import { Input } from "../ui/input";
 
 /**
@@ -21,49 +22,47 @@ export interface SingleUserSearchSelectorProps {
    * Returns the complete profile data including all profile types
    */
   onSelectUser: (profile: CombinedProfile) => void;
-  
+
   /**
    * Optional: Filter results to only show profiles that include specific types
    * If provided, only profiles containing at least one of these types will be shown
    */
   profileTypeFilter?: ProfileTypeFilter[];
-  
+
   /**
    * Optional: Custom placeholder text for the search input
    */
   placeholder?: string;
-  
+
   /**
    * Optional: Custom class name for the container
    */
   className?: string;
-  
+
   /**
    * Optional: Show clear button when there's input
    */
   showClearButton?: boolean;
-  
+
   /**
    * Optional: Minimum characters before triggering search
    */
   minSearchLength?: number;
 }
 
-const PROFILES_API_URL = "https://profiles.b3.fun";
-
 /**
  * SingleUserSearchSelector Component
- * 
+ *
  * A specialized component for searching and selecting a single user profile.
  * This component is designed specifically for single-user selection scenarios,
  * not for multi-user or general profile browsing.
- * 
+ *
  * Features:
- * - Search by address, name, or b3GlobalId
+ * - Search by address or name
  * - Filter results by profile type (b3-ens, thirdweb-*, ens-data, global-account)
  * - Shows a single result in a dropdown
  * - Callback with complete profile data on selection
- * 
+ *
  * @example
  * ```tsx
  * <SingleUserSearchSelector
@@ -88,58 +87,53 @@ export function SingleUserSearchSelector({
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const searchTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
-  // Fetch profile from API
-  const fetchProfile = useCallback(async (query: string): Promise<CombinedProfile | null> => {
-    if (!query || query.length < minSearchLength) {
-      return null;
-    }
-
-    try {
-      const params = new URLSearchParams();
-      
-      // Determine if query is an address (starts with 0x) or a name
-      if (query.startsWith("0x")) {
-        params.append("address", query);
-      } else {
-        params.append("name", query);
+  // Fetch profile from API using shared utility
+  const fetchProfile = useCallback(
+    async (query: string): Promise<CombinedProfile | null> => {
+      if (!query || query.length < minSearchLength) {
+        return null;
       }
 
-      const response = await fetch(`${PROFILES_API_URL}?${params.toString()}`);
+      try {
+        // Determine if query is an address (starts with 0x) or a name
+        const params = query.startsWith("0x") ? { address: query } : { name: query };
 
-      if (!response.ok) {
-        if (response.status === 404) {
+        const profile = await fetchProfileApi(params);
+        return profile;
+      } catch (err) {
+        // Return null for 404s (user not found)
+        if (err instanceof Error && err.message.includes("404")) {
           return null;
         }
-        throw new Error(`Failed to fetch profile: ${response.statusText}`);
+        console.error("Error fetching profile:", err);
+        throw err;
       }
-
-      const profile: CombinedProfile = await response.json();
-      return profile;
-    } catch (err) {
-      console.error("Error fetching profile:", err);
-      throw err;
-    }
-  }, [minSearchLength]);
+    },
+    [minSearchLength],
+  );
 
   // Filter profile by type
-  const filterProfileByType = useCallback((profile: CombinedProfile): boolean => {
-    if (!profileTypeFilter || profileTypeFilter.length === 0) {
-      return true;
-    }
+  const filterProfileByType = useCallback(
+    (profile: CombinedProfile): boolean => {
+      if (!profileTypeFilter || profileTypeFilter.length === 0) {
+        return true;
+      }
 
-    // Check if any of the profile's types match the filter
-    return profile.profiles.some(p => {
-      return profileTypeFilter.some(filter => {
-        // Handle thirdweb-* wildcard matching
-        if (filter.startsWith("thirdweb-")) {
-          return p.type.startsWith("thirdweb-");
-        }
-        return p.type === filter;
+      // Check if any of the profile's types match the filter
+      return profile.profiles.some(p => {
+        return profileTypeFilter.some(filter => {
+          // Handle thirdweb-* wildcard matching
+          if (filter.startsWith("thirdweb-")) {
+            return p.type.startsWith("thirdweb-");
+          }
+          return p.type === filter;
+        });
       });
-    });
-  }, [profileTypeFilter]);
+    },
+    [profileTypeFilter],
+  );
 
   // Handle search with debouncing
   useEffect(() => {
@@ -160,7 +154,7 @@ export function SingleUserSearchSelector({
     searchTimeoutRef.current = setTimeout(async () => {
       try {
         const result = await fetchProfile(searchQuery);
-        
+
         if (result) {
           // Apply profile type filter
           if (filterProfileByType(result)) {
@@ -205,12 +199,15 @@ export function SingleUserSearchSelector({
   }, []);
 
   // Handle user selection
-  const handleSelectUser = useCallback((profile: CombinedProfile) => {
-    onSelectUser(profile);
-    setShowDropdown(false);
-    setSearchQuery("");
-    setSearchResult(null);
-  }, [onSelectUser]);
+  const handleSelectUser = useCallback(
+    (profile: CombinedProfile) => {
+      onSelectUser(profile);
+      setShowDropdown(false);
+      setSearchQuery("");
+      setSearchResult(null);
+    },
+    [onSelectUser],
+  );
 
   // Handle clear search
   const handleClear = useCallback(() => {
@@ -240,12 +237,9 @@ export function SingleUserSearchSelector({
           ref={inputRef}
           type="text"
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={e => setSearchQuery(e.target.value)}
           placeholder={placeholder}
-          className={cn(
-            "w-full pl-10 pr-10",
-            "border-gray-300 focus:border-blue-500 focus:ring-blue-500",
-          )}
+          className={cn("w-full pl-10 pr-10", "border-gray-300 focus:border-blue-500 focus:ring-blue-500")}
         />
         {showClearButton && searchQuery && (
           <button
@@ -259,18 +253,10 @@ export function SingleUserSearchSelector({
       </div>
 
       {/* Loading State */}
-      {isSearching && (
-        <div className="mt-2 text-sm text-gray-500">
-          Searching...
-        </div>
-      )}
+      {isSearching && <div className="mt-2 text-sm text-gray-500">Searching...</div>}
 
       {/* Error State */}
-      {error && !isSearching && (
-        <div className="mt-2 text-sm text-red-500">
-          {error}
-        </div>
-      )}
+      {error && !isSearching && <div className="mt-2 text-sm text-red-500">{error}</div>}
 
       {/* Dropdown with Search Result */}
       {showDropdown && searchResult && !isSearching && (
@@ -298,27 +284,21 @@ export function SingleUserSearchSelector({
 
               {/* Profile Info */}
               <div className="min-w-0 flex-1">
-                <div className="font-medium text-gray-900">
-                  {getDisplayName(searchResult)}
-                </div>
-                
+                <div className="font-medium text-gray-900">{getDisplayName(searchResult)}</div>
+
                 {searchResult.address && (
                   <div className="mt-1 font-mono text-xs text-gray-500">
                     {searchResult.address.slice(0, 6)}...{searchResult.address.slice(-4)}
                   </div>
                 )}
 
-                {searchResult.bio && (
-                  <div className="mt-1 text-sm text-gray-600 line-clamp-2">
-                    {searchResult.bio}
-                  </div>
-                )}
+                {searchResult.bio && <div className="mt-1 line-clamp-2 text-sm text-gray-600">{searchResult.bio}</div>}
 
                 {/* Profile Type Badges */}
                 <div className="mt-2 flex flex-wrap gap-1">
                   {getProfileTypeBadges(searchResult.profiles).map((type, index) => (
                     <span
-                      key={index}
+                      key={`${type}-${index}`}
                       className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800"
                     >
                       {type}
