@@ -219,7 +219,7 @@ export function Debug() {
                   setSelectedUser(profile);
                   console.log("Selected user:", profile);
                 }}
-                profileTypeFilter={["b3-ens", "global-account"]}
+                profileTypeFilter={["global-account"]}
                 placeholder="Search by address or name..."
                 className="max-w-2xl"
               />
