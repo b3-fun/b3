@@ -1,10 +1,11 @@
 "use client";
 
 import { cn } from "@b3dotfun/sdk/shared/utils";
-import { Search, User, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { CombinedProfile, Profile } from "../../hooks/useProfile";
 import { fetchProfile as fetchProfileApi } from "../../utils/profileApi";
+import { IPFSMediaRenderer } from "../IPFSMediaRenderer/IPFSMediaRenderer";
 import { Input } from "../ui/input";
 
 /**
@@ -229,77 +230,82 @@ export function SingleUserSearchSelector({
   };
 
   return (
-    <div className={cn("relative w-full", className)} ref={dropdownRef}>
+    <div className={cn("single-user-search-selector b3-root relative w-full", className)} ref={dropdownRef}>
       {/* Search Input */}
-      <div className="relative">
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+      <div className="single-user-search-input-wrapper relative flex items-center">
+        <Search
+          className="single-user-search-icon pointer-events-none absolute text-gray-400"
+          style={{ left: "12px", width: "16px", height: "16px" }}
+        />
         <Input
           ref={inputRef}
           type="text"
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
           placeholder={placeholder}
-          className={cn("w-full pl-10 pr-10", "border-gray-300 focus:border-blue-500 focus:ring-blue-500")}
+          className={cn("single-user-search-input w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500")}
+          style={{ paddingLeft: "44px", paddingRight: "44px" }}
         />
         {showClearButton && searchQuery && (
           <button
             onClick={handleClear}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition-colors hover:text-gray-600"
+            className="single-user-search-clear-button absolute text-gray-400 transition-colors hover:text-gray-600"
+            style={{ right: "12px" }}
             type="button"
           >
-            <X className="h-4 w-4" />
+            <X style={{ width: "16px", height: "16px" }} />
           </button>
         )}
       </div>
 
       {/* Loading State */}
-      {isSearching && <div className="mt-2 text-sm text-gray-500">Searching...</div>}
+      {isSearching && <div className="single-user-search-loading mt-2 text-sm text-gray-500">Searching...</div>}
 
       {/* Error State */}
-      {error && !isSearching && <div className="mt-2 text-sm text-red-500">{error}</div>}
+      {error && !isSearching && <div className="single-user-search-error mt-2 text-sm text-red-500">{error}</div>}
 
       {/* Dropdown with Search Result */}
       {showDropdown && searchResult && !isSearching && (
-        <div className="absolute z-50 mt-2 w-full rounded-lg border border-gray-200 bg-white shadow-lg">
+        <div className="single-user-search-dropdown absolute z-50 mt-2 w-full rounded-lg border border-gray-200 bg-white shadow-lg">
           <button
             onClick={() => handleSelectUser(searchResult)}
-            className="w-full p-4 text-left transition-colors hover:bg-gray-50"
+            className="single-user-search-result-button w-full px-4 py-3 text-left transition-colors hover:bg-gray-50"
             type="button"
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-start gap-3">
               {/* Avatar */}
-              <div className="shrink-0">
-                {searchResult.avatar ? (
-                  <img
-                    src={searchResult.avatar}
-                    alt={getDisplayName(searchResult)}
-                    className="h-12 w-12 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-200">
-                    <User className="h-6 w-6 text-gray-500" />
-                  </div>
-                )}
+              <div className="single-user-search-result-avatar h-11 w-11 shrink-0">
+                <IPFSMediaRenderer
+                  src={searchResult.avatar}
+                  alt={getDisplayName(searchResult)}
+                  className="h-full w-full rounded-full object-cover"
+                />
               </div>
 
               {/* Profile Info */}
-              <div className="min-w-0 flex-1">
-                <div className="font-semibold text-gray-900">{getDisplayName(searchResult)}</div>
+              <div className="single-user-search-result-info min-w-0 flex-1 pt-0.5">
+                <div className="single-user-search-result-name text-base font-semibold text-gray-900">
+                  {getDisplayName(searchResult)}
+                </div>
 
                 {searchResult.address && (
-                  <div className="mt-0.5 font-mono text-xs text-gray-500">
+                  <div className="single-user-search-result-address mt-1 font-mono text-xs text-gray-500">
                     {searchResult.address.slice(0, 6)}...{searchResult.address.slice(-4)}
                   </div>
                 )}
 
-                {searchResult.bio && <div className="mt-1 line-clamp-2 text-sm text-gray-600">{searchResult.bio}</div>}
+                {searchResult.bio && (
+                  <div className="single-user-search-result-bio mt-1.5 line-clamp-2 text-sm text-gray-600">
+                    {searchResult.bio}
+                  </div>
+                )}
 
                 {/* Profile Type Badges */}
-                <div className="mt-2 flex flex-wrap gap-1.5">
+                <div className="single-user-search-result-badges mt-2 flex flex-wrap gap-1.5">
                   {getProfileTypeBadges(searchResult.profiles).map((type, index) => (
                     <span
                       key={`${type}-${index}`}
-                      className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800"
+                      className="single-user-search-result-badge inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800"
                     >
                       {type}
                     </span>

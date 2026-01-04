@@ -5,7 +5,7 @@ A specialized React component for searching and selecting a single user profile.
 ## Features
 
 - 🔍 Search by address or name
-- 🎯 Filter results by profile type (b3-ens, thirdweb-*, ens-data, global-account)
+- 🎯 Filter results by profile type (b3-ens, thirdweb-\*, ens-data, global-account)
 - 📋 Shows a single result in a dropdown
 - ⚡ Debounced search (500ms)
 - 🎨 Styled consistently with B3 design system
@@ -22,7 +22,7 @@ import { SingleUserSearchSelector } from "@b3dotfun/sdk/global-account/react";
 function MyComponent() {
   return (
     <SingleUserSearchSelector
-      onSelectUser={(profile) => {
+      onSelectUser={profile => {
         console.log("Selected user:", profile);
         // Handle user selection
       }}
@@ -38,7 +38,7 @@ Filter results to only show specific profile types:
 
 ```tsx
 <SingleUserSearchSelector
-  onSelectUser={(profile) => {
+  onSelectUser={profile => {
     console.log("Selected user:", profile);
   }}
   profileTypeFilter={["b3-ens", "global-account"]}
@@ -55,28 +55,118 @@ Filter results to only show specific profile types:
 
 ### Custom Styling
 
+You can apply custom styles using the `className` prop or target specific elements using CSS class names:
+
 ```tsx
 <SingleUserSearchSelector
-  onSelectUser={(profile) => {
+  onSelectUser={profile => {
     console.log("Selected user:", profile);
   }}
-  className="max-w-md mx-auto"
+  className="mx-auto max-w-md"
   placeholder="Find a user..."
   showClearButton={true}
   minSearchLength={3}
 />
 ```
 
+#### CSS Class Names for Custom Styling
+
+The component includes semantic class names for easy customization:
+
+```css
+/* Main container */
+.single-user-search-selector {
+}
+
+/* Input wrapper */
+.single-user-search-input-wrapper {
+}
+
+/* Search icon */
+.single-user-search-icon {
+}
+
+/* Input field */
+.single-user-search-input {
+}
+
+/* Clear button */
+.single-user-search-clear-button {
+}
+
+/* Loading state */
+.single-user-search-loading {
+}
+
+/* Error state */
+.single-user-search-error {
+}
+
+/* Dropdown container */
+.single-user-search-dropdown {
+}
+
+/* Result button */
+.single-user-search-result-button {
+}
+
+/* Avatar container */
+.single-user-search-result-avatar {
+}
+
+/* Profile info container */
+.single-user-search-result-info {
+}
+
+/* Display name */
+.single-user-search-result-name {
+}
+
+/* Address */
+.single-user-search-result-address {
+}
+
+/* Bio */
+.single-user-search-result-bio {
+}
+
+/* Badges container */
+.single-user-search-result-badges {
+}
+
+/* Individual badge */
+.single-user-search-result-badge {
+}
+```
+
+Example customization:
+
+```css
+/* Custom styling example */
+.single-user-search-input {
+  border-radius: 12px;
+  font-size: 16px;
+}
+
+.single-user-search-dropdown {
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+.single-user-search-result-name {
+  color: #0c68e9;
+}
+```
+
 ## Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `onSelectUser` | `(profile: CombinedProfile) => void` | **Required** | Callback function when a user is selected. Returns the complete profile data. |
-| `profileTypeFilter` | `ProfileTypeFilter[]` | `undefined` | Optional filter to only show profiles with specific types. |
-| `placeholder` | `string` | `"Search by address, name, or ID..."` | Custom placeholder text for the search input. |
-| `className` | `string` | `undefined` | Custom class name for the container. |
-| `showClearButton` | `boolean` | `true` | Show clear button when there's input. |
-| `minSearchLength` | `number` | `3` | Minimum characters before triggering search. |
+| Prop                | Type                                 | Default                               | Description                                                                   |
+| ------------------- | ------------------------------------ | ------------------------------------- | ----------------------------------------------------------------------------- |
+| `onSelectUser`      | `(profile: CombinedProfile) => void` | **Required**                          | Callback function when a user is selected. Returns the complete profile data. |
+| `profileTypeFilter` | `ProfileTypeFilter[]`                | `undefined`                           | Optional filter to only show profiles with specific types.                    |
+| `placeholder`       | `string`                             | `"Search by address, name, or ID..."` | Custom placeholder text for the search input.                                 |
+| `className`         | `string`                             | `undefined`                           | Custom class name for the container.                                          |
+| `showClearButton`   | `boolean`                            | `true`                                | Show clear button when there's input.                                         |
+| `minSearchLength`   | `number`                             | `3`                                   | Minimum characters before triggering search.                                  |
 
 ## Profile Data Structure
 
@@ -116,7 +206,7 @@ function UserSearchModal({ isOpen, onClose }) {
       <DialogContent>
         <h2>Find User</h2>
         <SingleUserSearchSelector
-          onSelectUser={(profile) => {
+          onSelectUser={profile => {
             console.log("Selected:", profile);
             onClose();
           }}
@@ -140,11 +230,8 @@ function UserSelector() {
 
   return (
     <div>
-      <SingleUserSearchSelector
-        onSelectUser={setSelectedUser}
-        profileTypeFilter={["b3-ens"]}
-      />
-      
+      <SingleUserSearchSelector onSelectUser={setSelectedUser} profileTypeFilter={["b3-ens"]} />
+
       {selectedUser && (
         <div className="mt-4">
           <h3>Selected User</h3>
