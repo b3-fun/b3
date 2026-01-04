@@ -25,7 +25,7 @@ import { useUserQuery } from "./useUserQuery";
 const debug = debugB3React("useAuthentication");
 
 export function useAuthentication(partnerId: string) {
-  const { onConnectCallback } = useContext(LocalSDKContext);
+  const { onConnectCallback, onLogoutCallback } = useContext(LocalSDKContext);
   const { disconnect } = useDisconnect();
   const wallets = useConnectedWallets();
   const activeWallet = useActiveWallet();
@@ -181,8 +181,12 @@ export function useAuthentication(partnerId: string) {
       setIsConnected(false);
       setUser();
       callback?.();
+
+      if (onLogoutCallback) {
+        await onLogoutCallback();
+      }
     },
-    [activeWallet, disconnect, wallets, setIsAuthenticated, setUser, setIsConnected],
+    [activeWallet, disconnect, wallets, setIsAuthenticated, setUser, setIsConnected, onLogoutCallback],
   );
 
   const onConnect = useCallback(
