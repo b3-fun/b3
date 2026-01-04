@@ -7,10 +7,12 @@ import { Wallet } from "thirdweb/wallets";
  */
 export interface LocalSDKContextType {
   onConnectCallback?: (wallet: Wallet, b3Jwt: string) => void | Promise<void>;
+  onLogoutCallback?: () => void | Promise<void>;
 }
 
 export const LocalSDKContext = createContext<LocalSDKContextType>({
   onConnectCallback: undefined,
+  onLogoutCallback: undefined,
 });
 
 /**
@@ -19,14 +21,17 @@ export const LocalSDKContext = createContext<LocalSDKContextType>({
 export function LocalSDKProvider({
   children,
   onConnectCallback,
+  onLogoutCallback,
 }: {
   children: React.ReactNode;
   onConnectCallback?: (wallet: Wallet, b3Jwt: string) => void | Promise<void>;
+  onLogoutCallback?: () => void | Promise<void>;
 }) {
   return (
     <LocalSDKContext.Provider
       value={{
         onConnectCallback,
+        onLogoutCallback,
       }}
     >
       {children}

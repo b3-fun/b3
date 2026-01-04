@@ -37,6 +37,7 @@ export function B3Provider({
   partnerId,
   stripePublishableKey,
   onConnect,
+  onLogout,
   connectors,
   overrideDefaultConnectors = false,
   createClientReferenceId,
@@ -59,6 +60,7 @@ export function B3Provider({
   /** Partner-specific Stripe publishable key. If not provided, uses default B3 Stripe account. */
   stripePublishableKey?: string;
   onConnect?: (wallet: Wallet, b3Jwt: string) => void | Promise<void>;
+  onLogout?: () => void | Promise<void>;
   connectors?: CreateConnectorFn[];
   overrideDefaultConnectors?: boolean;
   createClientReferenceId?: (params: CreateOrderParams | CreateOnrampOrderParams) => Promise<string>;
@@ -86,7 +88,7 @@ export function B3Provider({
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
             <ToastProvider>
-              <LocalSDKProvider onConnectCallback={onConnect}>
+              <LocalSDKProvider onConnectCallback={onConnect} onLogoutCallback={onLogout}>
                 <B3ConfigProvider
                   accountOverride={accountOverride}
                   environment={environment}
