@@ -46,6 +46,11 @@ export interface SingleUserSearchSelectorProps {
   showClearButton?: boolean;
 
   /**
+   * Optional: Show profile type badges in the result
+   */
+  showBadges?: boolean;
+
+  /**
    * Optional: Minimum characters before triggering search
    */
   minSearchLength?: number;
@@ -79,6 +84,7 @@ export function SingleUserSearchSelector({
   placeholder = "Search by address, name, or ID...",
   className,
   showClearButton = true,
+  showBadges = false,
   minSearchLength = 3,
 }: SingleUserSearchSelectorProps) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -301,16 +307,18 @@ export function SingleUserSearchSelector({
                 )}
 
                 {/* Profile Type Badges */}
-                <div className="single-user-search-result-badges mt-2 flex flex-wrap gap-1.5">
-                  {getProfileTypeBadges(searchResult.profiles).map((type, index) => (
-                    <span
-                      key={`${type}-${index}`}
-                      className="single-user-search-result-badge inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800"
-                    >
-                      {type}
-                    </span>
-                  ))}
-                </div>
+                {showBadges && (
+                  <div className="single-user-search-result-badges mt-2 flex flex-wrap gap-1.5">
+                    {getProfileTypeBadges(searchResult.profiles).map((type, index) => (
+                      <span
+                        key={`${type}-${index}`}
+                        className="single-user-search-result-badge inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800"
+                      >
+                        {type}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </button>
