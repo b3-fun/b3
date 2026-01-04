@@ -167,6 +167,7 @@ export function SingleUserSearchSelector({
           if (filterProfileByType(result)) {
             setSearchResult(result);
             setShowDropdown(true);
+            setError(null); // Clear any previous errors
           } else {
             setSearchResult(null);
             setShowDropdown(false);
