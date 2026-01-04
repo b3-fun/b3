@@ -1,3 +1,4 @@
+import { Users } from "@b3dotfun/b3-api";
 import {
   Loading,
   SignInWithB3ModalProps,
@@ -34,6 +35,7 @@ export function SignInWithB3Flow({
   closeAfterLogin = false,
   source = "signInWithB3Button",
   signersEnabled = false,
+  onTurnkeyConnect,
 }: SignInWithB3ModalProps) {
   const { automaticallySetFirstEoa, enableTurnkey } = useB3Config();
   const { user, refetchUser, logout } = useAuthentication(partnerId);
@@ -395,7 +397,7 @@ export function SignInWithB3Flow({
       content = (
         <LoginStepContainer partnerId={partnerId}>
           <TurnkeyAuthModal
-            onSuccess={async (authenticatedUser: any) => {
+            onSuccess={async (authenticatedUser: Users) => {
               debug("Turnkey authentication successful in primary flow", { authenticatedUser });
               setTurnkeyAuthCompleted(true);
               // After Turnkey auth, refetch user to get the full user object
@@ -408,6 +410,8 @@ export function SignInWithB3Flow({
               setJustCompletedLogin(true);
               // Call the login success callback
               onLoginSuccess?.({} as Account);
+              // Call the onTurnkeyConnect callback
+              onTurnkeyConnect?.(authenticatedUser);
             }}
             onClose={() => {
               // If user closes Turnkey modal, they can still use wallet connection as fallback

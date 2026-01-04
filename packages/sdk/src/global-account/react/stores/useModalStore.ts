@@ -1,3 +1,4 @@
+import { Users } from "@b3dotfun/b3-api";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { GenerateSigMintResponse } from "@b3dotfun/sdk/anyspend/types/signatureMint";
 import { AllowedStrategy } from "@b3dotfun/sdk/global-account/react";
@@ -43,6 +44,8 @@ export interface SignInWithB3ModalProps extends BaseModalProps {
   source?: "signInWithB3Button" | "requestPermissions";
   /** Whether to show the signers enabled modal */
   signersEnabled?: boolean;
+  /** Callback for turnkey auth */
+  onTurnkeyConnect?: (user: Users) => void;
 }
 
 /**
