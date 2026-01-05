@@ -320,7 +320,7 @@ export function CustomClassesDepositButton() {
             </div>
 
             <div className="space-y-4">
-              <div className="bg-purple-700">
+              <div>
                 <label htmlFor="modal-recipient-address" className="mb-1 block text-sm font-medium text-gray-700">
                   Recipient Address
                 </label>
