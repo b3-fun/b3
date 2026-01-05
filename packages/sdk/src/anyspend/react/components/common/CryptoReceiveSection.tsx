@@ -1,6 +1,5 @@
 import { ALL_CHAINS } from "@b3dotfun/sdk/anyspend";
 import { formatUsername } from "@b3dotfun/sdk/shared/utils";
-import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { formatDisplayNumber } from "@b3dotfun/sdk/shared/utils/number";
 import { ChevronRight, Info } from "lucide-react";

@@ -1,5 +1,4 @@
 import { useProfile, useTokenData } from "@b3dotfun/sdk/global-account/react";
-import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { formatDisplayNumber } from "@b3dotfun/sdk/shared/utils/number";
 import { Info } from "lucide-react";
 import { motion } from "motion/react";

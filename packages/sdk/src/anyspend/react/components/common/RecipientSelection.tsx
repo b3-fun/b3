@@ -1,6 +1,5 @@
 "use client";
 
-import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { ChevronLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { RecipientSelectionClasses } from "../types/classes";
