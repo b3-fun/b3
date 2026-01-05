@@ -8,6 +8,7 @@ import { ChevronLeft, ChevronRightCircle, Wallet, X, ZapIcon } from "lucide-reac
 import { useConnectModal, useDisconnect, useWalletInfo } from "thirdweb/react";
 import { createWallet } from "thirdweb/wallets";
 import { useConnectedWalletDisplay } from "../../hooks/useConnectedWalletDisplay";
+import type { CryptoPaymentMethodClasses } from "../types/classes";
 
 export enum CryptoPaymentMethodType {
   NONE = "none",
@@ -29,6 +30,7 @@ interface CryptoPaymentMethodProps {
   isCreatingOrder: boolean;
   onBack: () => void;
   onSelectPaymentMethod: (method: CryptoPaymentMethodType) => void;
+  classes?: CryptoPaymentMethodClasses;
 }
 
 export function CryptoPaymentMethod({
@@ -37,6 +39,7 @@ export function CryptoPaymentMethod({
   isCreatingOrder,
   onBack,
   onSelectPaymentMethod,
+  classes,
 }: CryptoPaymentMethodProps) {
   const { connectedEOAWallet, connectedSmartWallet } = useAccountWallet();
   const { disconnect } = useDisconnect();
@@ -96,16 +99,23 @@ export function CryptoPaymentMethod({
   };
 
   return (
-    <div className="crypto-payment-method mx-auto h-fit w-[460px] max-w-full px-5 pb-5 pt-5 sm:px-0 sm:pt-5">
+    <div
+      className={
+        classes?.container || "crypto-payment-method mx-auto h-fit w-[460px] max-w-full px-5 pb-5 pt-5 sm:px-0 sm:pt-5"
+      }
+    >
       <div className={cn("relative flex flex-col gap-10")}>
         {/* Header */}
         <button
           onClick={onBack}
-          className="text-as-quaternary hover:text-as-primary absolute flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
+          className={
+            classes?.backButton ||
+            "text-as-quaternary hover:text-as-primary absolute flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
+          }
         >
           <ChevronLeft className="h-6 w-6" />
         </button>
-        <div className="flex items-center justify-around gap-4">
+        <div className={classes?.header || "flex items-center justify-around gap-4"}>
           <div className="flex-1 text-center">
             <h2 className="text-as-primary text-lg font-semibold">Select a payment method</h2>
           </div>
@@ -155,7 +165,7 @@ export function CryptoPaymentMethod({
         )}
 
         {/* Payment Methods */}
-        <div className="crypto-payment-methods flex flex-col gap-4">
+        <div className={classes?.optionsList || "crypto-payment-methods flex flex-col gap-4"}>
           {/* Installed Wallets Section */}
           {(shouldShowConnectedEOA || globalAddress) && (
             <div className="installed-wallets">

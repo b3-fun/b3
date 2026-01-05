@@ -1,11 +1,11 @@
 import { HYPERLIQUID_CHAIN_ID } from "@b3dotfun/sdk/anyspend";
-import { cn } from "@b3dotfun/sdk/shared/utils/cn";
+import type { ChainWarningTextClasses, WarningTextClasses } from "../types/classes";
 
 export interface WarningTextProps {
   /** The warning message content */
   children: React.ReactNode;
-  /** Additional CSS classes */
-  className?: string;
+  /** Custom classes for styling */
+  classes?: WarningTextClasses;
 }
 
 /**
@@ -16,15 +16,15 @@ export interface WarningTextProps {
  *   Custom warning message
  * </WarningText>
  */
-export function WarningText({ children, className }: WarningTextProps) {
-  return <p className={cn("anyspend-warning text-center text-xs italic text-red-500", className)}>{children}</p>;
+export function WarningText({ children, classes }: WarningTextProps) {
+  return <p className={classes?.root || "anyspend-warning text-center text-xs italic text-red-500"}>{children}</p>;
 }
 
 export interface ChainWarningTextProps {
   /** The chain ID to display warning for */
   chainId: number;
-  /** Additional CSS classes */
-  className?: string;
+  /** Custom classes for styling */
+  classes?: ChainWarningTextClasses;
 }
 
 /**
@@ -35,13 +35,13 @@ export interface ChainWarningTextProps {
  * <ChainWarningText chainId={HYPERLIQUID_CHAIN_ID} />
  *
  * @example
- * <ChainWarningText chainId={destinationChainId} className="mt-4" />
+ * <ChainWarningText chainId={destinationChainId} classes={{ root: "my-custom-class" }} />
  */
-export function ChainWarningText({ chainId, className }: ChainWarningTextProps) {
+export function ChainWarningText({ chainId, classes }: ChainWarningTextProps) {
   // Chain-specific warning messages
   if (chainId === HYPERLIQUID_CHAIN_ID) {
     return (
-      <WarningText className={className}>
+      <WarningText classes={classes}>
         Minimum deposit amount: <b>$1</b>
       </WarningText>
     );

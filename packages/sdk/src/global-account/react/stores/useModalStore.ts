@@ -1,3 +1,4 @@
+import { AnySpendAllClasses } from "@b3dotfun/sdk/anyspend/react";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { GenerateSigMintResponse } from "@b3dotfun/sdk/anyspend/types/signatureMint";
 import { AllowedStrategy } from "@b3dotfun/sdk/global-account/react";
@@ -568,6 +569,8 @@ export interface AnySpendDepositModalProps extends BaseModalProps {
   returnHomeLabel?: string;
   /** Whether the deposit requires a custom function (uses AnySpendCustomExactIn). Defaults to false. */
   isCustomDeposit?: boolean;
+  /** Custom class names for styling specific elements */
+  classes?: AnySpendAllClasses;
 }
 
 /**

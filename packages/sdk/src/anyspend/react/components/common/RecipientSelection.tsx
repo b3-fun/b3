@@ -1,7 +1,9 @@
 "use client";
 
+import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { ChevronLeft } from "lucide-react";
 import { useEffect, useState } from "react";
+import type { RecipientSelectionClasses } from "../types/classes";
 
 export interface RecipientSelectionProps {
   /**
@@ -43,6 +45,10 @@ export interface RecipientSelectionProps {
    * @returns true if valid, false otherwise
    */
   validateAddress?: (address: string) => boolean;
+  /**
+   * Custom classes for styling
+   */
+  classes?: RecipientSelectionClasses;
 }
 
 export function RecipientSelection({
@@ -55,6 +61,7 @@ export function RecipientSelection({
   onConfirm,
   autoFocus = true,
   validateAddress,
+  classes,
 }: RecipientSelectionProps) {
   const [recipientAddress, setRecipientAddress] = useState<string>(initialValue);
 
@@ -88,13 +95,16 @@ export function RecipientSelection({
   const canConfirm = recipientAddress && isAddressValid;
 
   return (
-    <div className="recipient-selection mx-auto w-[460px] max-w-full p-5">
+    <div className={classes?.container || "recipient-selection mx-auto w-[460px] max-w-full p-5"}>
       <div className="flex flex-col gap-6">
         {/* Header */}
-        <div className="flex justify-around">
+        <div className={classes?.header || "flex justify-around"}>
           <button
             onClick={onBack}
-            className="text-as-quaternary hover:text-as-primary flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
+            className={
+              classes?.backButton ||
+              "text-as-quaternary hover:text-as-primary flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
+            }
           >
             <ChevronLeft className="h-6 w-6" />
           </button>
@@ -113,7 +123,10 @@ export function RecipientSelection({
               value={recipientAddress}
               onChange={e => setRecipientAddress(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="text-as-primary placeholder:text-as-primary/50 flex-1 bg-transparent px-4 text-base focus:outline-none"
+              className={
+                classes?.searchInput ||
+                "text-as-primary placeholder:text-as-primary/50 flex-1 bg-transparent px-4 text-base focus:outline-none"
+              }
               autoFocus={autoFocus}
             />
             <div className="border-as-border-secondary border-l">
@@ -135,7 +148,10 @@ export function RecipientSelection({
           <button
             onClick={handleConfirm}
             disabled={!canConfirm}
-            className="bg-as-brand hover:bg-as-brand/90 disabled:bg-as-on-surface-2 disabled:text-as-secondary h-12 w-full rounded-xl font-medium text-white transition-colors disabled:cursor-not-allowed"
+            className={
+              classes?.confirmButton ||
+              "bg-as-brand hover:bg-as-brand/90 disabled:bg-as-on-surface-2 disabled:text-as-secondary h-12 w-full rounded-xl font-medium text-white transition-colors disabled:cursor-not-allowed"
+            }
           >
             {confirmText}
           </button>
