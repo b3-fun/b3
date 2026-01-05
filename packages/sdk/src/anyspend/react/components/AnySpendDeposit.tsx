@@ -2,7 +2,6 @@ import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
 import { Skeleton, useAccountWallet, useSimBalance, useTokenData } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
-import type { AnySpendAllClasses } from "./types/classes";
 import {
   NetworkArbitrumOne,
   NetworkBase,
@@ -19,6 +18,7 @@ import { ChainWarningText } from "./common/WarningText";
 import { CreditCardIcon } from "./icons/CreditCardIcon";
 import { QrCodeIcon } from "./icons/QrCodeIcon";
 import { QRDeposit } from "./QRDeposit";
+import type { AnySpendAllClasses } from "./types/classes";
 
 export interface DepositContractConfig {
   /** Custom function ABI JSON string */
@@ -598,7 +598,7 @@ export function AnySpendDeposit({
           </div>
 
           {/* Chain-specific warning */}
-          <ChainWarningText chainId={destinationTokenChainId} classes={classes?.chainWarningText} />
+          <ChainWarningText chainId={destinationTokenChainId} classes={classes?.chainWarningText || { root: "mt-2" }} />
         </div>
       </div>
     );
@@ -715,7 +715,10 @@ export function AnySpendDeposit({
       </div>
 
       {/* Chain-specific warning */}
-      <ChainWarningText chainId={destinationTokenChainId} classes={classes?.chainWarningText} />
+      <ChainWarningText
+        chainId={destinationTokenChainId}
+        classes={classes?.chainWarningText || { root: "px-4 pb-4" }}
+      />
     </div>
   );
 }
