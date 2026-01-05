@@ -259,6 +259,151 @@ export interface ChainWarningTextClasses {
   root?: string;
 }
 
+/** Classes for TabSection component */
+export interface TabSectionClasses {
+  root?: string;
+  container?: string;
+  tabIndicator?: string;
+  tabButton?: string;
+  tabButtonActive?: string;
+}
+
+/** Classes for FeeDetailPanel component */
+export interface FeeDetailPanelClasses {
+  root?: string;
+  container?: string;
+  title?: string;
+  tierCard?: string;
+  tierCardTitle?: string;
+  tierRow?: string;
+  tierRowActive?: string;
+  tierLabel?: string;
+  tierValue?: string;
+  expandButton?: string;
+  summaryCard?: string;
+  summaryRow?: string;
+  summaryLabel?: string;
+  summaryValue?: string;
+  summaryDivider?: string;
+  totalRow?: string;
+  totalLabel?: string;
+  totalValue?: string;
+  backButton?: string;
+}
+
+/** Classes for PointsDetailPanel component */
+export interface PointsDetailPanelClasses {
+  root?: string;
+  container?: string;
+  title?: string;
+  description?: string;
+  highlightText?: string;
+  link?: string;
+  infoCard?: string;
+  infoCardTitle?: string;
+  infoList?: string;
+  infoListItem?: string;
+  backButton?: string;
+}
+
+/** Classes for PanelOnrampPayment component */
+export interface PanelOnrampPaymentClasses {
+  root?: string;
+  container?: string;
+  summaryTitle?: string;
+  summaryCard?: string;
+  summaryRow?: string;
+  summaryLabel?: string;
+  summaryValue?: string;
+  summaryDivider?: string;
+  amountRow?: string;
+  amountValue?: string;
+  feeText?: string;
+  loadingContainer?: string;
+  loadingSpinner?: string;
+  loadingText?: string;
+  paymentMethodTitle?: string;
+  paymentMethodIcons?: string;
+  paymentOption?: string;
+  paymentOptionIcon?: string;
+  paymentOptionContent?: string;
+  paymentOptionTitle?: string;
+  paymentOptionDescription?: string;
+  paymentOptionFee?: string;
+  paymentOptionChevron?: string;
+  backButton?: string;
+}
+
+/** Classes for OrderDetailsCollapsible component */
+export interface OrderDetailsCollapsibleClasses {
+  root?: string;
+  container?: string;
+  expandedContent?: string;
+  recipientSection?: string;
+  recipientLabel?: string;
+  recipientInfo?: string;
+  recipientName?: string;
+  recipientAddress?: string;
+  recipientCopyIcon?: string;
+  divider?: string;
+  expectedSection?: string;
+  expectedLabel?: string;
+  expectedValue?: string;
+  expectedAmount?: string;
+  chainInfo?: string;
+  chainText?: string;
+  chainLogo?: string;
+  pointsSection?: string;
+  pointsLabel?: string;
+  pointsValue?: string;
+  idSection?: string;
+  idLabel?: string;
+  idValue?: string;
+  collapsedContainer?: string;
+  collapsedButton?: string;
+  collapsedChevron?: string;
+}
+
+/** Classes for TransferCryptoDetails component */
+export interface TransferCryptoDetailsClasses {
+  root?: string;
+  container?: string;
+  header?: string;
+  backButton?: string;
+  title?: string;
+  timer?: string;
+  timerSvg?: string;
+  timerBackground?: string;
+  timerProgress?: string;
+  timerText?: string;
+  cardsContainer?: string;
+  amountCard?: string;
+  amountLabel?: string;
+  amountContainer?: string;
+  amountText?: string;
+  amountCopyIcon?: string;
+  chainCard?: string;
+  chainLabel?: string;
+  chainContainer?: string;
+  chainLogo?: string;
+  chainName?: string;
+  qrDepositCard?: string;
+  qrSection?: string;
+  qrWrapper?: string;
+  qrContainer?: string;
+  qrCode?: string;
+  walletHint?: string;
+  walletText?: string;
+  walletIcon?: string;
+  addressSection?: string;
+  addressLabel?: string;
+  addressCopyContainer?: string;
+  addressText?: string;
+  addressCopyIcon?: string;
+  actionsContainer?: string;
+  copyButton?: string;
+}
+
 /** Classes for QRDeposit component */
 export interface QRDepositClasses {
   // Root containers
@@ -322,4 +467,10 @@ export interface AnySpendAllClasses {
   qrDeposit?: QRDepositClasses;
   warningText?: WarningTextClasses;
   chainWarningText?: ChainWarningTextClasses;
+  tabSection?: TabSectionClasses;
+  feeDetailPanel?: FeeDetailPanelClasses;
+  pointsDetailPanel?: PointsDetailPanelClasses;
+  panelOnrampPayment?: PanelOnrampPaymentClasses;
+  orderDetailsCollapsible?: OrderDetailsCollapsibleClasses;
+  transferCryptoDetails?: TransferCryptoDetailsClasses;
 }
