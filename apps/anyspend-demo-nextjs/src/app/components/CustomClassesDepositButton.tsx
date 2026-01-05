@@ -345,7 +345,7 @@ export function CustomClassesDepositButton() {
                 </p>
               </div>
 
-              <div className="flex gap-2 space-x-3 pt-4">
+              <div className="flex gap-3 pt-4">
                 <button
                   onClick={handleCloseModal}
                   className="flex-1 rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-700 transition-colors hover:bg-gray-50"
