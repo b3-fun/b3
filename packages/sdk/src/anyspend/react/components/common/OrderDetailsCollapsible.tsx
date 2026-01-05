@@ -12,6 +12,7 @@ import { motion } from "motion/react";
 import { memo, useState } from "react";
 
 import { b3 } from "viem/chains";
+import type { OrderDetailsCollapsibleClasses } from "../types/classes";
 
 type Order = components["schemas"]["Order"];
 type Token = components["schemas"]["Token"];
@@ -31,6 +32,7 @@ interface OrderDetailsCollapsibleProps {
   points?: number;
   isOpen?: boolean;
   onOpenChange?: (isOpen: boolean) => void;
+  classes?: OrderDetailsCollapsibleClasses;
 }
 
 export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
@@ -46,6 +48,7 @@ export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
   points,
   isOpen,
   onOpenChange,
+  classes,
 }: OrderDetailsCollapsibleProps) {
   const [internalOpen, setInternalOpen] = useState(true);
 
@@ -69,7 +72,8 @@ export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
   return (
     <div
       className={cn(
-        "order-details-collapsible bg-as-surface-secondary border-as-border-secondary rounded-xl border px-4 py-2",
+        classes?.container ||
+          "order-details-collapsible bg-as-surface-secondary border-as-border-secondary rounded-xl border px-4 py-2",
         className,
       )}
     >

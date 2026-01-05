@@ -64,6 +64,7 @@ import { PanelOnrampPayment } from "./common/PanelOnrampPayment";
 import { PointsDetailPanel } from "./common/PointsDetailPanel";
 import { RecipientSelection } from "./common/RecipientSelection";
 import { TabSection } from "./common/TabSection";
+import type { AnySpendClasses } from "./types/classes";
 
 const baseChain = getThirdwebChain(8453);
 
@@ -115,6 +116,8 @@ export function AnySpend(props: {
   customRecipientLabel?: string;
   /** Custom label for the return home button (overrides "Return to Home" / "Close") */
   returnHomeLabel?: string;
+  /** Custom class names for styling specific elements */
+  classes?: AnySpendClasses;
 }) {
   const fingerprintConfig = getFingerprintConfig();
 
@@ -143,6 +146,7 @@ function AnySpendInner({
   returnToHomeUrl,
   customRecipientLabel,
   returnHomeLabel,
+  classes,
 }: {
   sourceChainId?: number;
   destinationTokenAddress?: string;
@@ -161,6 +165,7 @@ function AnySpendInner({
   returnToHomeUrl?: string;
   customRecipientLabel?: string;
   returnHomeLabel?: string;
+  classes?: AnySpendClasses;
 }) {
   const searchParams = useSearchParamsSSR();
   const router = useRouter();
@@ -1098,22 +1103,24 @@ function AnySpendInner({
   );
 
   const mainView = (
-    <div className={"mx-auto flex w-[460px] max-w-full flex-col items-center gap-2 pt-5"}>
+    <div className={classes?.mainContent || "mx-auto flex w-[460px] max-w-full flex-col items-center gap-2 pt-5"}>
       <div className={"flex w-full max-w-full flex-col items-center gap-2 px-5"}>
         {/* Token Header - Show when in buy mode */}
         {isBuyMode && !hideHeader && (
-          <div className="mb-4 flex flex-col items-center gap-3 text-center">
+          <div className={classes?.header || "mb-4 flex flex-col items-center gap-3 text-center"}>
             {selectedDstToken.metadata?.logoURI && (
               <div className="relative">
                 <img
                   src={selectedDstToken.metadata.logoURI}
                   alt={selectedDstToken.symbol}
-                  className="border-as-stroke h-12 w-12 rounded-full border-2 shadow-md"
+                  className={classes?.headerLogo || "border-as-stroke h-12 w-12 rounded-full border-2 shadow-md"}
                 />
               </div>
             )}
             <div>
-              <h1 className="text-as-primary text-xl font-bold">Buy {selectedDstToken.symbol}</h1>
+              <h1 className={classes?.headerTitle || "text-as-primary text-xl font-bold"}>
+                Buy {selectedDstToken.symbol}
+              </h1>
             </div>
           </div>
         )}
@@ -1191,11 +1198,14 @@ function AnySpendInner({
             <div className="z-10 -my-6 flex justify-center">
               <Button
                 variant="ghost"
-                className={cn(
-                  "border-as-stroke bg-as-surface-primary h-10 w-10 rounded-xl border-2 sm:h-8 sm:w-8 sm:rounded-xl",
-                  isBuyMode && "cursor-default",
-                  selectedDstChainId === HYPERLIQUID_CHAIN_ID && "cursor-not-allowed opacity-50",
-                )}
+                className={
+                  classes?.swapDirectionButton ||
+                  cn(
+                    "border-as-stroke bg-as-surface-primary h-10 w-10 rounded-xl border-2 sm:h-8 sm:w-8 sm:rounded-xl",
+                    isBuyMode && "cursor-default",
+                    selectedDstChainId === HYPERLIQUID_CHAIN_ID && "cursor-not-allowed opacity-50",
+                  )
+                }
                 onClick={() => {
                   if (isBuyMode) {
                     return;
@@ -1255,7 +1265,7 @@ function AnySpendInner({
 
         {/* Gas indicator - show when source chain has gas data */}
         {gasPriceData && !isLoadingGas && activeTab === "crypto" && (
-          <GasIndicator gasPrice={gasPriceData} className="mt-2 w-full" />
+          <GasIndicator gasPrice={gasPriceData} className={classes?.gasIndicator || "mt-2 w-full"} />
         )}
 
         {/* Main button section */}
@@ -1269,10 +1279,15 @@ function AnySpendInner({
             accentColor={"hsl(var(--as-brand))"}
             disabled={btnInfo.disable}
             onClick={onMainButtonClick}
-            className={cn(
-              "as-main-button relative w-full",
-              btnInfo.error ? "!bg-as-red" : btnInfo.disable ? "!bg-as-on-surface-2" : "!bg-as-brand",
-            )}
+            className={
+              (btnInfo.error && classes?.mainButtonError) ||
+              (btnInfo.disable && classes?.mainButtonDisabled) ||
+              classes?.mainButton ||
+              cn(
+                "as-main-button relative w-full",
+                btnInfo.error ? "!bg-as-red" : btnInfo.disable ? "!bg-as-on-surface-2" : "!bg-as-brand",
+              )
+            }
             textClassName={cn(btnInfo.error ? "text-white" : btnInfo.disable ? "text-as-secondary" : "text-white")}
           >
             <div className="flex items-center justify-center gap-2">
@@ -1285,7 +1300,10 @@ function AnySpendInner({
             <Button
               variant="link"
               onClick={onClickHistory}
-              className="text-as-primary/50 hover:text-as-primary flex items-center gap-1 transition-colors"
+              className={
+                classes?.historyButton ||
+                "text-as-primary/50 hover:text-as-primary flex items-center gap-1 transition-colors"
+              }
             >
               <HistoryIcon className="h-4 w-4" /> <span className="pr-4">Transaction History</span>
             </Button>
@@ -1412,11 +1430,14 @@ function AnySpendInner({
   return (
     <StyleRoot>
       <div
-        className={cn(
-          "anyspend-container font-inter mx-auto w-full max-w-[460px]",
-          mode === "page" &&
-            "bg-as-surface-primary border-as-border-secondary overflow-hidden rounded-2xl border shadow-xl",
-        )}
+        className={
+          classes?.container ||
+          cn(
+            "anyspend-container font-inter mx-auto w-full max-w-[460px]",
+            mode === "page" &&
+              "bg-as-surface-primary border-as-border-secondary overflow-hidden rounded-2xl border shadow-xl",
+          )
+        }
       >
         <TransitionPanel
           activeIndex={

@@ -8,6 +8,7 @@ import { ChevronLeft, ChevronRight, Landmark, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "../AnySpendFingerprintWrapper";
+import type { PanelOnrampPaymentClasses } from "../types/classes";
 
 interface PanelOnrampPaymentProps {
   srcAmountOnRamp: string;
@@ -28,6 +29,7 @@ interface PanelOnrampPaymentProps {
   payload?: any;
   recipientEnsName?: string;
   recipientImageUrl?: string;
+  classes?: PanelOnrampPaymentClasses;
 }
 
 export function PanelOnrampPayment(props: PanelOnrampPaymentProps) {
@@ -59,6 +61,7 @@ function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
     payload,
     recipientEnsName,
     recipientImageUrl,
+    classes,
   } = props;
 
   const {
@@ -151,11 +154,16 @@ function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-[460px] flex-col gap-6 px-5 pt-5">
+    <div className={classes?.container || "mx-auto flex w-full max-w-[460px] flex-col gap-6 px-5 pt-5"}>
       {/* Order Summary Section */}
       <>
-        <h2 className="-mb-3 text-lg font-semibold">Order summary</h2>
-        <div className="bg-b3-react-background border-b3-react-border flex flex-col gap-3 rounded-lg border p-4">
+        <h2 className={classes?.summaryTitle || "-mb-3 text-lg font-semibold"}>Order summary</h2>
+        <div
+          className={
+            classes?.summaryCard ||
+            "bg-b3-react-background border-b3-react-border flex flex-col gap-3 rounded-lg border p-4"
+          }
+        >
           {/* Recipient Section */}
           {recipientAddress && (
             <motion.div
@@ -166,9 +174,9 @@ function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
                 filter: "blur(0px)",
               }}
               transition={{ duration: 0.3, delay: 0.2, ease: "easeInOut" }}
-              className="flex items-center justify-between"
+              className={classes?.summaryRow || "flex items-center justify-between"}
             >
-              <p className="text-b3-react-foreground/60">
+              <p className={classes?.summaryLabel || "text-b3-react-foreground/60"}>
                 {orderType === "swap"
                   ? "Recipient"
                   : orderType === "mint_nft"
@@ -186,18 +194,25 @@ function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
                   />
                 )}
                 <div className="flex flex-col items-end gap-1">
-                  {recipientEnsName && <span className="text-b3-react-foreground/80">@{recipientEnsName}</span>}
-                  <span className="text-b3-react-foreground/80">{centerTruncate(recipientAddress)}</span>
+                  {recipientEnsName && (
+                    <span className={classes?.summaryValue || "text-b3-react-foreground/80"}>@{recipientEnsName}</span>
+                  )}
+                  <span className={classes?.summaryValue || "text-b3-react-foreground/80"}>
+                    {centerTruncate(recipientAddress)}
+                  </span>
                 </div>
               </div>
             </motion.div>
           )}
-          <div className="border-b3-react-border border-t pt-3">
-            <div className="flex items-center justify-between">
-              <p className="text-b3-react-foreground font-semibold">Amount</p>
+          <div className={classes?.summaryDivider || "border-b3-react-border border-t pt-3"}>
+            <div className={classes?.amountRow || "flex items-center justify-between"}>
+              <p className={classes?.summaryLabel || "text-b3-react-foreground font-semibold"}>Amount</p>
               <div className="flex flex-col items-end gap-0.5">
                 <p
-                  className="text-b3-react-foreground hover:text-b3-react-foreground/80 cursor-pointer text-xl font-semibold transition-colors"
+                  className={
+                    classes?.amountValue ||
+                    "text-b3-react-foreground hover:text-b3-react-foreground/80 cursor-pointer text-xl font-semibold transition-colors"
+                  }
                   onClick={onBack}
                 >
                   ${parseFloat(srcAmountOnRamp).toFixed(2)}
@@ -221,19 +236,29 @@ function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
       </>
 
       {isCreatingOrder ? (
-        <div className="bg-b3-react-background border-b3-react-border flex items-center justify-center gap-3 rounded-lg border p-6">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          <span className="text-as-primary/70">Creating onramp order...</span>
+        <div
+          className={
+            classes?.loadingContainer ||
+            "bg-b3-react-background border-b3-react-border flex items-center justify-center gap-3 rounded-lg border p-6"
+          }
+        >
+          <Loader2 className={classes?.loadingSpinner || "h-4 w-4 animate-spin"} />
+          <span className={classes?.loadingText || "text-as-primary/70"}>Creating onramp order...</span>
         </div>
       ) : isLoading ? (
-        <div className="bg-b3-react-background border-b3-react-border flex items-center justify-center gap-3 rounded-lg border p-6">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          <span className="text-as-primary/70">Loading payment options...</span>
+        <div
+          className={
+            classes?.loadingContainer ||
+            "bg-b3-react-background border-b3-react-border flex items-center justify-center gap-3 rounded-lg border p-6"
+          }
+        >
+          <Loader2 className={classes?.loadingSpinner || "h-4 w-4 animate-spin"} />
+          <span className={classes?.loadingText || "text-as-primary/70"}>Loading payment options...</span>
         </div>
       ) : (
         <>
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Payment method</h2>
+            <h2 className={classes?.paymentMethodTitle || "text-lg font-semibold"}>Payment method</h2>
             <div className="flex items-center gap-1">
               {coinbaseAvailablePaymentMethods.length > 0 &&
                 (() => {
@@ -290,26 +315,43 @@ function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
                   <button
                     onClick={() => handlePaymentMethodClick("coinbase", method.id)}
                     disabled={isCreatingOrder}
-                    className="bg-b3-react-background border-b3-react-border hover:border-as-brand disabled:hover:border-b3-react-border group flex w-full items-center justify-between gap-4 rounded-xl border p-5 transition-all duration-200 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+                    className={
+                      classes?.paymentOption ||
+                      "bg-b3-react-background border-b3-react-border hover:border-as-brand disabled:hover:border-b3-react-border group flex w-full items-center justify-between gap-4 rounded-xl border p-5 transition-all duration-200 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+                    }
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50">
+                    <div className={classes?.paymentOptionContent || "flex items-center gap-4"}>
+                      <div
+                        className={
+                          classes?.paymentOptionIcon ||
+                          "flex h-12 w-12 items-center justify-center rounded-full bg-blue-50"
+                        }
+                      >
                         <img src="https://cdn.b3.fun/coinbase-wordmark-blue.svg" alt="Coinbase" className="h-6" />
                       </div>
                       <div className="flex flex-col items-start text-left">
-                        <h4 className="text-b3-react-foreground text-lg font-semibold">Coinbase Pay</h4>
-                        <p className="text-b3-react-foreground/60 text-sm">
+                        <h4 className={classes?.paymentOptionTitle || "text-b3-react-foreground text-lg font-semibold"}>
+                          Coinbase Pay
+                        </h4>
+                        <p className={classes?.paymentOptionDescription || "text-b3-react-foreground/60 text-sm"}>
                           {method.id === "CARD" && "Debit card, bank account, or Coinbase Account"}
                           {method.id === "FIAT_WALLET" && "Pay with your Coinbase account balance"}
                           {method.id === "APPLE_PAY" && "Quick payment with Apple Pay"}
                           {method.id === "ACH_BANK_ACCOUNT" && "Direct bank account transfer"}
                         </p>
                         <div className="mt-1 flex items-center gap-1">
-                          <span className="text-xs font-medium text-green-600">Free</span>
+                          <span className={classes?.paymentOptionFee || "text-xs font-medium text-green-600"}>
+                            Free
+                          </span>
                         </div>
                       </div>
                     </div>
-                    <ChevronRight className="text-b3-react-foreground/40 group-hover:text-b3-react-foreground/60 h-5 w-5 transition-colors" />
+                    <ChevronRight
+                      className={
+                        classes?.paymentOptionChevron ||
+                        "text-b3-react-foreground/40 group-hover:text-b3-react-foreground/60 h-5 w-5 transition-colors"
+                      }
+                    />
                   </button>
                 );
               })()}
@@ -318,10 +360,18 @@ function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
             {stripeOnrampSupport && (
               <button
                 onClick={() => handlePaymentMethodClick("stripe")}
-                className="bg-b3-react-background border-b3-react-border hover:border-as-brand group flex w-full items-center justify-between gap-4 rounded-xl border p-5 transition-all duration-200 hover:shadow-md"
+                className={
+                  classes?.paymentOption ||
+                  "bg-b3-react-background border-b3-react-border hover:border-as-brand group flex w-full items-center justify-between gap-4 rounded-xl border p-5 transition-all duration-200 hover:shadow-md"
+                }
               >
-                <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-50">
+                <div className={classes?.paymentOptionContent || "flex items-center gap-4"}>
+                  <div
+                    className={
+                      classes?.paymentOptionIcon ||
+                      "flex h-12 w-12 items-center justify-center rounded-full bg-purple-50"
+                    }
+                  >
                     <img
                       src="https://raw.githubusercontent.com/stripe/stripe.github.io/455f506a628dc3f6c505e3001db45a64e29e9fc3/images/stripe-logo.svg"
                       alt="Stripe"
@@ -329,18 +379,27 @@ function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
                     />
                   </div>
                   <div className="flex flex-col items-start text-left">
-                    <h4 className="text-b3-react-foreground text-lg font-semibold">Credit/Debit Card</h4>
-                    <p className="text-b3-react-foreground/60 text-sm">Pay via Stripe checkout</p>
+                    <h4 className={classes?.paymentOptionTitle || "text-b3-react-foreground text-lg font-semibold"}>
+                      Credit/Debit Card
+                    </h4>
+                    <p className={classes?.paymentOptionDescription || "text-b3-react-foreground/60 text-sm"}>
+                      Pay via Stripe checkout
+                    </p>
                     {stripeWeb2Support?.isSupport && stripeWeb2Support.formattedFeeUsd && (
                       <div className="mt-1">
-                        <span className="text-xs text-gray-500">
+                        <span className={classes?.paymentOptionFee || "text-xs text-gray-500"}>
                           ${Number(stripeWeb2Support.formattedFeeUsd).toFixed(2)} fee
                         </span>
                       </div>
                     )}
                   </div>
                 </div>
-                <ChevronRight className="text-b3-react-foreground/40 group-hover:text-b3-react-foreground/60 h-5 w-5 transition-colors" />
+                <ChevronRight
+                  className={
+                    classes?.paymentOptionChevron ||
+                    "text-b3-react-foreground/40 group-hover:text-b3-react-foreground/60 h-5 w-5 transition-colors"
+                  }
+                />
               </button>
             )}
 
@@ -348,10 +407,18 @@ function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
             {stripeWeb2Support.isSupport && (
               <button
                 onClick={() => handlePaymentMethodClick("stripe-web2")}
-                className="bg-b3-react-background border-b3-react-border hover:border-as-brand group flex w-full items-center justify-between gap-4 rounded-xl border p-5 transition-all duration-200 hover:shadow-md"
+                className={
+                  classes?.paymentOption ||
+                  "bg-b3-react-background border-b3-react-border hover:border-as-brand group flex w-full items-center justify-between gap-4 rounded-xl border p-5 transition-all duration-200 hover:shadow-md"
+                }
               >
-                <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-50">
+                <div className={classes?.paymentOptionContent || "flex items-center gap-4"}>
+                  <div
+                    className={
+                      classes?.paymentOptionIcon ||
+                      "flex h-12 w-12 items-center justify-center rounded-full bg-purple-50"
+                    }
+                  >
                     <img
                       src="https://raw.githubusercontent.com/stripe/stripe.github.io/455f506a628dc3f6c505e3001db45a64e29e9fc3/images/stripe-logo.svg"
                       alt="Stripe"
@@ -359,25 +426,36 @@ function PanelOnrampPaymentInner(props: PanelOnrampPaymentProps) {
                     />
                   </div>
                   <div className="flex flex-col items-start text-left">
-                    <h4 className="text-b3-react-foreground text-lg font-semibold">Quick Pay</h4>
-                    <p className="text-b3-react-foreground/60 text-sm">Credit or debit card</p>
+                    <h4 className={classes?.paymentOptionTitle || "text-b3-react-foreground text-lg font-semibold"}>
+                      Quick Pay
+                    </h4>
+                    <p className={classes?.paymentOptionDescription || "text-b3-react-foreground/60 text-sm"}>
+                      Credit or debit card
+                    </p>
                     {stripeWeb2Support.formattedFeeUsd && (
                       <div className="mt-1">
-                        <span className="text-xs text-gray-500">
+                        <span className={classes?.paymentOptionFee || "text-xs text-gray-500"}>
                           ${Number(stripeWeb2Support.formattedFeeUsd).toFixed(2)} fee
                         </span>
                       </div>
                     )}
                   </div>
                 </div>
-                <ChevronRight className="text-b3-react-foreground/40 group-hover:text-b3-react-foreground/60 h-5 w-5 transition-colors" />
+                <ChevronRight
+                  className={
+                    classes?.paymentOptionChevron ||
+                    "text-b3-react-foreground/40 group-hover:text-b3-react-foreground/60 h-5 w-5 transition-colors"
+                  }
+                />
               </button>
             )}
 
             <Button
               variant="link"
               onClick={onBack}
-              className="text-b3-react-foreground/70 hover:text-b3-react-foreground/90 mt-2 w-full"
+              className={
+                classes?.backButton || "text-b3-react-foreground/70 hover:text-b3-react-foreground/90 mt-2 w-full"
+              }
             >
               <ChevronLeft className="mr-2 h-4 w-4" />
               Back

@@ -11,6 +11,7 @@ import { useRef } from "react";
 import { FIAT_PAYMENT_METHOD_DISPLAY, FiatPaymentMethod } from "./FiatPaymentMethod";
 import { OrderTokenAmountFiat } from "./OrderTokenAmountFiat";
 import { PointsBadge } from "./PointsBadge";
+import type { PanelOnrampClasses } from "../types/classes";
 
 const ONE_CHAR_WIDTH = 30;
 
@@ -34,6 +35,7 @@ export function PanelOnramp({
   onShowFeeDetail,
   customUsdInputValues = ["5", "10", "20", "25"],
   customRecipientLabel,
+  classes,
 }: {
   srcAmountOnRamp: string;
   setSrcAmountOnRamp: (amount: string) => void;
@@ -55,6 +57,7 @@ export function PanelOnramp({
   customUsdInputValues?: string[];
   /** Custom label for recipient display (overrides recipientName) */
   customRecipientLabel?: string;
+  classes?: PanelOnrampClasses;
 }) {
   // Helper function to get fees from anyspend quote
   const getFeeFromApi = (paymentMethod: FiatPaymentMethod): number | null => {
@@ -135,7 +138,7 @@ export function PanelOnramp({
   };
 
   return (
-    <div className="panel-onramp bg-as-surface-primary flex w-full flex-col">
+    <div className={classes?.container || "panel-onramp bg-as-surface-primary flex w-full flex-col"}>
       {/* Pay Section */}
       <div className="border-as-border-secondary bg-as-surface-secondary relative flex w-full flex-col rounded-2xl border p-4">
         <div className="flex h-7 w-full items-center justify-between">

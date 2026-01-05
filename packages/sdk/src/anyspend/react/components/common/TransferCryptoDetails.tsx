@@ -14,6 +14,7 @@ import { b3 } from "viem/chains";
 import { CryptoPaymentMethodType } from "./CryptoPaymentMethod";
 import { OrderDetailsCollapsible } from "./OrderDetailsCollapsible";
 import { PaymentMethodSwitch } from "./PaymentMethodSwitch";
+import type { TransferCryptoDetailsClasses } from "../types/classes";
 
 type Order = components["schemas"]["Order"];
 type Token = components["schemas"]["Token"];
@@ -29,6 +30,7 @@ interface TransferCryptoDetailsProps {
   onBack: () => void;
   recipientName?: string;
   onPaymentMethodChange?: (method: CryptoPaymentMethodType) => void;
+  classes?: TransferCryptoDetailsClasses;
 }
 
 export const TransferCryptoDetails = memo(function TransferCryptoDetails({
@@ -40,6 +42,7 @@ export const TransferCryptoDetails = memo(function TransferCryptoDetails({
   onBack,
   recipientName,
   onPaymentMethodChange,
+  classes,
 }: TransferCryptoDetailsProps) {
   const [timeLeft, setTimeLeft] = useState(0);
 
@@ -102,17 +105,22 @@ export const TransferCryptoDetails = memo(function TransferCryptoDetails({
   };
 
   return (
-    <div className="order-transfer-crypto flex w-full flex-col gap-6">
+    <div className={classes?.container || "order-transfer-crypto flex w-full flex-col gap-6"}>
       {/* Header */}
-      <div className="order-transfer-crypto-header flex items-center justify-between">
+      <div className={classes?.header || "order-transfer-crypto-header flex items-center justify-between"}>
         <button
           onClick={onBack}
-          className="order-transfer-crypto-back-btn text-as-primary/60 hover:text-as-primary flex h-10 w-10 items-center justify-center rounded-full transition-colors"
+          className={
+            classes?.backButton ||
+            "order-transfer-crypto-back-btn text-as-primary/60 hover:text-as-primary flex h-10 w-10 items-center justify-center rounded-full transition-colors"
+          }
         >
           <ChevronLeft size={24} className="text-as-quaternary" />
         </button>
 
-        <h2 className="order-transfer-crypto-title text-as-primary text-lg font-semibold">Transfer crypto</h2>
+        <h2 className={classes?.title || "order-transfer-crypto-title text-as-primary text-lg font-semibold"}>
+          Transfer crypto
+        </h2>
 
         {/* Countdown Timer */}
         <div className="order-transfer-crypto-timer relative flex h-11 w-11 items-center justify-center">

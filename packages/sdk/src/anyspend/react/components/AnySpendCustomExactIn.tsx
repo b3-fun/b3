@@ -12,6 +12,7 @@ import {
 } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { formatUnits } from "@b3dotfun/sdk/shared/utils/number";
+import type { AnySpendCustomExactInClasses } from "./types/classes";
 import invariant from "invariant";
 import { ArrowDown, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
@@ -74,6 +75,8 @@ export interface AnySpendCustomExactInProps {
   customRecipientLabel?: string;
   /** Custom label for the return home button (overrides "Return to Home" / "Close") */
   returnHomeLabel?: string;
+  /** Custom class names for styling specific elements */
+  classes?: AnySpendCustomExactInClasses;
 }
 
 export function AnySpendCustomExactIn(props: AnySpendCustomExactInProps) {
@@ -108,6 +111,7 @@ function AnySpendCustomExactInInner({
   returnToHomeUrl,
   customRecipientLabel,
   returnHomeLabel,
+  classes,
 }: AnySpendCustomExactInProps) {
   const actionLabel = customExactInConfig?.action ?? "Custom Execution";
 
@@ -327,7 +331,12 @@ function AnySpendCustomExactInInner({
   );
 
   const mainView = (
-    <div className="anyspend-custom-exact-in-container mx-auto flex w-[460px] max-w-full flex-col items-center gap-2">
+    <div
+      className={
+        classes?.container ||
+        "anyspend-custom-exact-in-container mx-auto flex w-[460px] max-w-full flex-col items-center gap-2"
+      }
+    >
       {headerContent}
 
       <div className="relative flex w-full max-w-[calc(100vw-32px)] flex-col gap-2">
@@ -382,9 +391,10 @@ function AnySpendCustomExactInInner({
           >
             <Button
               variant="ghost"
-              className={cn(
-                "swap-direction-button border-as-stroke bg-as-surface-primary z-10 h-10 w-10 cursor-default rounded-xl border-2 sm:h-8 sm:w-8 sm:rounded-xl",
-              )}
+              className={
+                classes?.swapDirectionButton ||
+                "swap-direction-button border-as-stroke bg-as-surface-primary z-10 h-10 w-10 cursor-default rounded-xl border-2 sm:h-8 sm:w-8 sm:rounded-xl"
+              }
             >
               <div className="relative flex items-center justify-center transition-opacity">
                 <ArrowDown className="text-as-primary/50 h-5 w-5" />
@@ -430,10 +440,15 @@ function AnySpendCustomExactInInner({
           accentColor={"hsl(var(--as-brand))"}
           disabled={btnInfo.disable}
           onClick={onMainButtonClick}
-          className={cn(
-            "as-main-button relative w-full",
-            btnInfo.error ? "!bg-as-red" : btnInfo.disable ? "!bg-as-on-surface-2" : "!bg-as-brand",
-          )}
+          className={
+            (btnInfo.error && classes?.mainButtonError) ||
+            (btnInfo.disable && classes?.mainButtonDisabled) ||
+            classes?.mainButton ||
+            cn(
+              "as-main-button relative w-full",
+              btnInfo.error ? "!bg-as-red" : btnInfo.disable ? "!bg-as-on-surface-2" : "!bg-as-brand",
+            )
+          }
           textClassName={cn(btnInfo.error ? "text-white" : btnInfo.disable ? "text-as-secondary" : "text-white")}
         >
           <div className="flex items-center justify-center gap-2">
@@ -445,7 +460,7 @@ function AnySpendCustomExactInInner({
 
       {/* Gas indicator - show when source chain has gas data */}
       {gasPriceData && !isLoadingGas && paymentType === "crypto" && (
-        <GasIndicator gasPrice={gasPriceData} className="mt-2 w-full" />
+        <GasIndicator gasPrice={gasPriceData} className={classes?.gasIndicator || "mt-2 w-full"} />
       )}
 
       {mainFooter ? mainFooter : null}
@@ -628,10 +643,13 @@ function AnySpendCustomExactInInner({
   return (
     <StyleRoot>
       <div
-        className={cn(
-          "anyspend-container font-inter bg-as-surface-primary mx-auto w-full max-w-[460px] p-6",
-          mode === "page" && "border-as-border-secondary overflow-hidden rounded-2xl border shadow-xl",
-        )}
+        className={
+          classes?.root ||
+          cn(
+            "anyspend-container font-inter bg-as-surface-primary mx-auto w-full max-w-[460px] p-6",
+            mode === "page" && "border-as-border-secondary overflow-hidden rounded-2xl border shadow-xl",
+          )
+        }
       >
         <TransitionPanel
           activeIndex={

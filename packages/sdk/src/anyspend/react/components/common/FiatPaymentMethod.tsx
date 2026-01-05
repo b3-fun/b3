@@ -3,6 +3,7 @@
 import { useGeoOnrampOptions } from "@b3dotfun/sdk/anyspend/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import type { FiatPaymentMethodClasses } from "../types/classes";
 
 export enum FiatPaymentMethod {
   NONE = "none",
@@ -25,6 +26,7 @@ interface FiatPaymentMethodProps {
   onBack: () => void;
   onSelectPaymentMethod: (method: FiatPaymentMethod) => void;
   srcAmountOnRamp: string;
+  classes?: FiatPaymentMethodClasses;
 }
 
 export function FiatPaymentMethodComponent({
@@ -33,6 +35,7 @@ export function FiatPaymentMethodComponent({
   onBack,
   onSelectPaymentMethod,
   srcAmountOnRamp,
+  classes,
 }: FiatPaymentMethodProps) {
   // Load geo-based onramp options like in PanelOnramp
   const {
@@ -107,12 +110,15 @@ export function FiatPaymentMethodComponent({
   // Show loading state while checking geo availability
   if (isLoadingGeoOnramp) {
     return (
-      <div className="fiat-payment-method mx-auto w-[460px] max-w-full p-5">
+      <div className={classes?.container || "fiat-payment-method mx-auto w-[460px] max-w-full p-5"}>
         <div className="flex flex-col gap-6">
-          <div className="flex items-center gap-4">
+          <div className={classes?.header || "flex items-center gap-4"}>
             <button
               onClick={onBack}
-              className="text-as-quaternary hover:text-as-primary flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
+              className={
+                classes?.backButton ||
+                "text-as-quaternary hover:text-as-primary flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
+              }
             >
               <ChevronLeft className="h-6 w-6" />
             </button>
@@ -130,13 +136,16 @@ export function FiatPaymentMethodComponent({
   }
 
   return (
-    <div className="fiat-payment-method mx-auto w-[460px] max-w-full p-5">
+    <div className={classes?.container || "fiat-payment-method mx-auto w-[460px] max-w-full p-5"}>
       <div className="flex flex-col gap-6">
         {/* Header */}
-        <div className="flex items-center gap-4">
+        <div className={classes?.header || "flex items-center gap-4"}>
           <button
             onClick={onBack}
-            className="text-as-quaternary hover:text-as-primary flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
+            className={
+              classes?.backButton ||
+              "text-as-quaternary hover:text-as-primary flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
+            }
           >
             <ChevronLeft className="h-6 w-6" />
           </button>
@@ -146,7 +155,7 @@ export function FiatPaymentMethodComponent({
         </div>
 
         {/* Payment Methods */}
-        <div className="flex flex-col gap-3">
+        <div className={classes?.optionsList || "flex flex-col gap-3"}>
           {availablePaymentMethods.length === 0 ? (
             <div className="fiat-payment-method-no-methods bg-as-surface-secondary border-as-border-secondary rounded-2xl border p-6 text-center">
               <p className="text-as-secondary text-sm">
@@ -161,12 +170,16 @@ export function FiatPaymentMethodComponent({
                   setSelectedPaymentMethod(method.id);
                   onSelectPaymentMethod(method.id);
                 }}
-                className={cn(
-                  "fiat-payment-method-item bg-as-surface-secondary border-as-border-secondary flex w-full items-center gap-4 rounded-2xl border p-4 transition-all duration-200",
-                  selectedPaymentMethod === method.id
-                    ? "border-as-brand bg-as-brand/10"
-                    : "hover:border-as-brand/50 hover:bg-as-brand/5",
-                )}
+                className={
+                  (selectedPaymentMethod === method.id && classes?.optionItemActive) ||
+                  classes?.optionItem ||
+                  cn(
+                    "fiat-payment-method-item bg-as-surface-secondary border-as-border-secondary flex w-full items-center gap-4 rounded-2xl border p-4 transition-all duration-200",
+                    selectedPaymentMethod === method.id
+                      ? "border-as-brand bg-as-brand/10"
+                      : "hover:border-as-brand/50 hover:bg-as-brand/5",
+                  )
+                }
               >
                 {/* Icon - matching PanelOnramp style */}
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-2xl text-white">

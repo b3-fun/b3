@@ -7,6 +7,22 @@ export { AnySpendCustom } from "./AnySpendCustom";
 export { AnySpendCustomExactIn } from "./AnySpendCustomExactIn";
 export { AnySpendDeposit } from "./AnySpendDeposit";
 export type { AnySpendDepositProps, ChainConfig, DepositContractConfig } from "./AnySpendDeposit";
+
+// Classes types for styling customization
+export type {
+  AnySpendAllClasses,
+  AnySpendClasses,
+  AnySpendCustomExactInClasses,
+  AnySpendDepositClasses,
+  CryptoPaymentMethodClasses,
+  CryptoPaySectionClasses,
+  CryptoReceiveSectionClasses,
+  FiatPaymentMethodClasses,
+  OrderDetailsClasses,
+  PanelOnrampClasses,
+  QRDepositClasses,
+  RecipientSelectionClasses,
+} from "./types/classes";
 export { AnySpendDepositHype, HYPE_TOKEN_DETAILS } from "./AnyspendDepositHype";
 export * from "./AnySpendFingerprintWrapper";
 export { AnySpendNFT } from "./AnySpendNFT";

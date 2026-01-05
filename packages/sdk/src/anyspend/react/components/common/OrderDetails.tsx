@@ -43,6 +43,7 @@ import { encodeFunctionData, erc20Abi } from "viem";
 import { b3 } from "viem/chains";
 import { useWaitForTransactionReceipt, useWalletClient } from "wagmi";
 import { usePhantomTransfer } from "../../hooks/usePhantomTransfer";
+import type { OrderDetailsClasses } from "../types/classes";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./Accordion";
 import ConnectWalletPayment from "./ConnectWalletPayment";
 import { CryptoPaymentMethodType } from "./CryptoPaymentMethod";
@@ -69,6 +70,8 @@ interface OrderDetailsProps {
   returnToHomeUrl?: string;
   /** Custom label for the return home button (overrides "Return to Home" / "Close") */
   returnHomeLabel?: string;
+  /** Custom class names for styling specific elements */
+  classes?: OrderDetailsClasses;
 }
 
 // Add this helper function near the top or just above the component
@@ -223,6 +226,7 @@ export const OrderDetails = memo(function OrderDetails({
   points,
   returnToHomeUrl,
   returnHomeLabel,
+  classes,
 }: OrderDetailsProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -411,7 +415,10 @@ export const OrderDetails = memo(function OrderDetails({
   // Reusable "Return to Home" / "Close" button
   const returnHomeOrCloseButton = (
     <button
-      className="order-close-button order-details-close-btn bg-as-brand flex w-full items-center justify-center gap-2 rounded-lg p-2 font-semibold text-white"
+      className={
+        classes?.returnButton ||
+        "order-close-button order-details-close-btn bg-as-brand flex w-full items-center justify-center gap-2 rounded-lg p-2 font-semibold text-white"
+      }
       onClick={returnToHomeUrl ? handleReturnToHome : mode === "page" ? handleBack : handleCloseModal}
     >
       {returnHomeLabel ? (
@@ -918,7 +925,10 @@ export const OrderDetails = memo(function OrderDetails({
 
         {/* <DelayedSupportMessage /> */}
         <button
-          className="text-b3-primary-blue hover:text-b3-primary-blue/50 order-details-cancel-btn flex w-full items-center justify-center gap-2 underline"
+          className={
+            classes?.backButton ||
+            "text-b3-primary-blue hover:text-b3-primary-blue/50 order-details-cancel-btn flex w-full items-center justify-center gap-2 underline"
+          }
           onClick={handleBack}
         >
           <RefreshCcw className="ml-2 h-4 w-4" /> Cancel and start over
@@ -1125,7 +1135,10 @@ export const OrderDetails = memo(function OrderDetails({
       )}
 
       <button
-        className="text-b3-primary-blue hover:text-b3-primary-blue/50 order-details-cancel-btn flex w-full items-center justify-center gap-2 underline"
+        className={
+          classes?.backButton ||
+          "text-b3-primary-blue hover:text-b3-primary-blue/50 order-details-cancel-btn flex w-full items-center justify-center gap-2 underline"
+        }
         onClick={handleBack}
       >
         <RefreshCcw className="ml-2 h-4 w-4" /> Cancel and start over
