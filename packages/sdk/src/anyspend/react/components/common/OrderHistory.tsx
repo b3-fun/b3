@@ -13,7 +13,8 @@ interface OrderHistoryProps {
 }
 
 export function OrderHistory({ mode, onBack, onSelectOrder }: OrderHistoryProps) {
-  const { address } = useAccountWallet();
+  const { connectedEOAWallet, address: smartWalletAddress } = useAccountWallet();
+  const address = connectedEOAWallet?.getAccount()?.address || smartWalletAddress;
   const { orderHistory, isLoadingOrderHistory, refetchOrderHistory } = useAnyspendOrderHistory(address);
 
   return (
