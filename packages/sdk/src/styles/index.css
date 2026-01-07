@@ -179,8 +179,7 @@
   --fg-quaternary: #a0a0ab;
 }
 
-html[data-theme="dark"] .b3-root,
-.b3-root[data-theme="dark"] {
+html.dark .b3-root {
   /* Dark theme variables */
   --b3-react-background: 0 0% 10%;
   --b3-react-foreground: 0 0% 90%;

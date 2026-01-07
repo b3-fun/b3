@@ -19,7 +19,12 @@ export function OrderHistory({ mode, onBack, onSelectOrder }: OrderHistoryProps)
 
   return (
     <>
-      <ModalHeader title="Order History" showCloseButton={false} handleBack={onBack} className="w-full">
+      <ModalHeader
+        title="Order History"
+        showCloseButton={false}
+        handleBack={onBack}
+        className="dark:bg-as-surface-primary w-full"
+      >
         <Button
           variant="ghost"
           size="icon"
