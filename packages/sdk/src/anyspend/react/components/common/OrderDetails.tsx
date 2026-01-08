@@ -498,13 +498,11 @@ export const OrderDetails = memo(function OrderDetails({
   }
 
   const expectedDstAmount =
-    order.type === "mint_nft" ||
-    order.type === "join_tournament" ||
-    order.type === "fund_tournament" ||
-    order.type === "custom" ||
-    order.type === "deposit_first"
+    order.type === "mint_nft" || order.type === "join_tournament" || order.type === "fund_tournament"
       ? "0"
-      : order.payload.expectedDstAmount.toString();
+      : order.type === "custom" || order.type === "deposit_first"
+        ? order.payload.amount?.toString() || "0"
+        : order.payload.expectedDstAmount.toString();
   const formattedExpectedDstAmount = formatTokenAmount(BigInt(expectedDstAmount), dstToken.decimals);
 
   const actualDstAmount = order.settlement?.actualDstAmount;

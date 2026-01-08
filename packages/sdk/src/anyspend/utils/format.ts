@@ -7,7 +7,12 @@ export const getStatusDisplay = (
   const srcToken = order.metadata?.srcToken;
   const dstToken = order.metadata?.dstToken;
   const formattedSrcAmount = srcToken ? formatTokenAmount(BigInt(order.srcAmount), srcToken.decimals) : undefined;
-  const actualDstAmount = order.settlement?.actualDstAmount;
+  // For custom orders, use payload.amount as fallback if actualDstAmount is not available
+  const actualDstAmount =
+    order.settlement?.actualDstAmount ||
+    (order.type === "custom" || order.type === "custom_exact_in" || order.type === "deposit_first"
+      ? order.payload.amount?.toString()
+      : undefined);
   const formattedActualDstAmount =
     actualDstAmount && dstToken ? formatTokenAmount(BigInt(actualDstAmount), dstToken.decimals) : undefined;
 
@@ -51,6 +56,7 @@ export const getStatusDisplay = (
     case "executed": {
       const receivedText =
         formattedActualDstAmount && dstToken ? `Received ${formattedActualDstAmount} ${dstToken.symbol}` : undefined;
+      const actionText = (order.metadata as { action?: string })?.action || "Order";
       const { text, description } =
         order.type === "swap"
           ? { text: receivedText || "Swap Complete", description: "Your swap has been completed successfully." }
@@ -60,7 +66,12 @@ export const getStatusDisplay = (
               ? { text: "Tournament Joined", description: "You have joined the tournament" }
               : order.type === "fund_tournament"
                 ? { text: "Tournament Funded", description: "You have funded the tournament" }
-                : { text: receivedText || "Order Complete", description: "Your order has been completed" };
+                : order.type === "custom" || order.type === "custom_exact_in"
+                  ? {
+                      text: receivedText || `${actionText} Complete`,
+                      description: "Your order has been completed successfully.",
+                    }
+                  : { text: receivedText || "Order Complete", description: "Your order has been completed" };
       return { text, status: "success", description };
     }
 
