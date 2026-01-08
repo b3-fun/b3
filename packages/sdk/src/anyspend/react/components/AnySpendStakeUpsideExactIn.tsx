@@ -22,6 +22,7 @@ export function AnySpendStakeUpsideExactIn({
   recipientAddress,
   sourceTokenAddress,
   sourceTokenChainId,
+  destinationTokenAmount,
   stakingContractAddress,
   token,
   onSuccess,
@@ -33,6 +34,7 @@ export function AnySpendStakeUpsideExactIn({
   sourceTokenChainId?: number;
   stakingContractAddress: string;
   token: components["schemas"]["Token"];
+  destinationTokenAmount?: string;
   onSuccess?: (amount: string) => void;
 }) {
   if (!recipientAddress) return null;
@@ -65,6 +67,7 @@ export function AnySpendStakeUpsideExactIn({
       sourceTokenChainId={sourceTokenChainId}
       destinationToken={token}
       destinationChainId={base.id}
+      destinationTokenAmount={destinationTokenAmount}
       customExactInConfig={customExactInConfig}
       header={header}
       onSuccess={onSuccess}

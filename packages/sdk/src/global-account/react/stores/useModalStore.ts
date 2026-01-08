@@ -323,6 +323,8 @@ export interface AnySpendDepositUpsideProps extends BaseModalProps {
   depositContractAddress: string;
   /** Token to deposit */
   token: components["schemas"]["Token"];
+  /** The exact amount of destination tokens to receive, in wei. This will pre-fill the output amount and switch to an exact output swap. */
+  destinationTokenAmount?: string;
   /** Callback function called when the deposit is successful */
   onSuccess?: () => void;
 }

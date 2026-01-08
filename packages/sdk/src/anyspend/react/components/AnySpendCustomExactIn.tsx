@@ -12,11 +12,11 @@ import {
 } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { formatUnits } from "@b3dotfun/sdk/shared/utils/number";
-import type { AnySpendCustomExactInClasses } from "./types/classes";
 import invariant from "invariant";
 import { ArrowDown, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect, useMemo, useRef } from "react";
+import type { AnySpendCustomExactInClasses } from "./types/classes";
 
 import { useSetActiveWallet } from "thirdweb/react";
 import { B3_TOKEN } from "../../constants";
@@ -53,6 +53,7 @@ export interface AnySpendCustomExactInProps {
   sourceTokenChainId?: number;
   destinationToken: components["schemas"]["Token"];
   destinationChainId: number;
+  destinationTokenAmount?: string;
   onSuccess?: (amount: string) => void;
   onOpenCustomModal?: () => void;
   mainFooter?: React.ReactNode;
@@ -105,6 +106,7 @@ function AnySpendCustomExactInInner({
   customUsdInputValues,
   preferEoa,
   customExactInConfig,
+  destinationTokenAmount,
   orderType = "custom_exact_in",
   minDestinationAmount,
   header,
@@ -193,6 +195,18 @@ function AnySpendCustomExactInInner({
       }
     }
   }, [preferEoa, connectedEOAWallet, setActiveWallet]);
+
+  // Prefill destination amount if provided (for EXACT_OUTPUT mode)
+  const appliedDestinationAmount = useRef(false);
+  useEffect(() => {
+    if (destinationTokenAmount && !appliedDestinationAmount.current) {
+      appliedDestinationAmount.current = true;
+      // Convert wei to human-readable format
+      const formattedAmount = formatUnits(destinationTokenAmount, destinationToken.decimals);
+      setDstAmountInput(formattedAmount);
+      setIsSrcInputDirty(false); // Switch to EXACT_OUTPUT mode
+    }
+  }, [destinationTokenAmount, destinationToken.decimals, setDstAmountInput, setIsSrcInputDirty]);
 
   const selectedRecipientOrDefault = selectedRecipientAddress ?? recipientAddress;
 
