@@ -61,6 +61,8 @@ export interface TurnkeyAuthModalProps extends BaseModalProps {
   initialEmail?: string;
   /** Whether to skip directly to OTP step */
   skipToOtp?: boolean;
+  /** Whether to enable wallet authentication option */
+  enableWalletAuth?: boolean;
   /** Whether the modal can be closed - defaults to false for Turnkey */
   closable?: boolean;
 }

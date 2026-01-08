@@ -277,6 +277,7 @@ export function SignInWithB3Flow({
             },
             initialEmail: email,
             skipToOtp: !!(hasTurnkeyId && hasTurnkeyEmail),
+            enableWalletAuth: true, // Enable wallet authentication option
             closable: false, // Turnkey modal cannot be closed until auth is complete
           });
           return;
@@ -427,6 +428,7 @@ export function SignInWithB3Flow({
             }}
             initialEmail=""
             skipToOtp={false}
+            enableWalletAuth={true}
           />
         </LoginStepContainer>
       );
