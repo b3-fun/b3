@@ -17,6 +17,7 @@ import invariant from "invariant";
 import { ArrowDown, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect, useMemo, useRef } from "react";
+import { encodeFunctionData } from "viem";
 
 import { useSetActiveWallet } from "thirdweb/react";
 import { B3_TOKEN } from "../../constants";
@@ -135,8 +136,11 @@ function AnySpendCustomExactInInner({
     srcAmount,
     setSrcAmount,
     dstAmount,
+    dstAmountInput,
+    setDstAmountInput,
     isSrcInputDirty,
     setIsSrcInputDirty,
+    tradeType,
     selectedCryptoPaymentMethod,
     effectiveCryptoPaymentMethod,
     setSelectedCryptoPaymentMethod,
@@ -150,7 +154,9 @@ function AnySpendCustomExactInInner({
     isBalanceLoading,
     anyspendQuote,
     isLoadingAnyspendQuote,
+    isQuoteLoading,
     activeInputAmountInWei,
+    activeOutputAmountInWei,
     geoData,
     coinbaseAvailablePaymentMethods,
     stripeWeb2Support,
@@ -170,6 +176,7 @@ function AnySpendCustomExactInInner({
     slippage: SLIPPAGE_PERCENT,
     disableUrlParamManagement: true,
     orderType,
+    customExactInConfig,
   });
 
   const { connectedEOAWallet } = useAccountWallet();
@@ -216,11 +223,15 @@ function AnySpendCustomExactInInner({
   };
 
   const btnInfo: { text: string; disable: boolean; error: boolean; loading: boolean } = useMemo(() => {
-    if (activeInputAmountInWei === "0") return { text: "Enter an amount", disable: true, error: false, loading: false };
+    // Check for empty amount based on trade type
+    const isAmountEmpty =
+      tradeType === "EXACT_OUTPUT" ? !dstAmountInput || dstAmountInput === "0" : activeInputAmountInWei === "0";
+
+    if (isAmountEmpty) return { text: "Enter an amount", disable: true, error: false, loading: false };
     if (orderType === "hype_duel" && selectedSrcToken?.address?.toLowerCase() === B3_TOKEN.address.toLowerCase()) {
       return { text: "Convert to HYPE using B3", disable: false, error: false, loading: false };
     }
-    if (isLoadingAnyspendQuote) return { text: "Loading quote...", disable: true, error: false, loading: true };
+    if (isQuoteLoading) return { text: "Loading quote...", disable: true, error: false, loading: true };
     if (isCreatingOrder || isCreatingOnrampOrder)
       return { text: "Creating order...", disable: true, error: false, loading: true };
     if (!selectedRecipientOrDefault) return { text: "Select recipient", disable: false, error: false, loading: false };
@@ -275,7 +286,7 @@ function AnySpendCustomExactInInner({
     return { text: "Continue", disable: false, error: false, loading: false };
   }, [
     activeInputAmountInWei,
-    isLoadingAnyspendQuote,
+    isQuoteLoading,
     isCreatingOrder,
     isCreatingOnrampOrder,
     selectedRecipientOrDefault,
@@ -290,6 +301,8 @@ function AnySpendCustomExactInInner({
     DESTINATION_TOKEN_DETAILS.SYMBOL,
     orderType,
     selectedSrcToken,
+    tradeType,
+    dstAmountInput,
   ]);
 
   const onMainButtonClick = async () => {
@@ -405,12 +418,12 @@ function AnySpendCustomExactInInner({
           {paymentType === "crypto" && (
             <CryptoReceiveSection
               isDepositMode={false}
-              isBuyMode={true}
+              isBuyMode={false}
               effectiveRecipientAddress={selectedRecipientOrDefault}
               recipientName={recipientName || undefined}
               customRecipientLabel={customRecipientLabel}
               onSelectRecipient={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
-              dstAmount={dstAmount}
+              dstAmount={isSrcInputDirty ? dstAmount : dstAmountInput}
               dstToken={selectedDstToken}
               dstTokenSymbol={DESTINATION_TOKEN_DETAILS.SYMBOL}
               dstTokenLogoURI={DESTINATION_TOKEN_DETAILS.LOGO_URI}
@@ -420,7 +433,7 @@ function AnySpendCustomExactInInner({
               isSrcInputDirty={isSrcInputDirty}
               onChangeDstAmount={value => {
                 setIsSrcInputDirty(false);
-                setSrcAmount(value);
+                setDstAmountInput(value);
               }}
               anyspendQuote={anyspendQuote}
               onShowPointsDetail={() => setActivePanel(PanelView.POINTS_DETAIL)}
@@ -472,21 +485,76 @@ function AnySpendCustomExactInInner({
       invariant(anyspendQuote, "Relay price is not found");
       invariant(selectedRecipientOrDefault, "Recipient address is not found");
 
-      const srcAmountBigInt = BigInt(activeInputAmountInWei);
-      const payload = buildCustomPayload(selectedRecipientOrDefault);
+      if (tradeType === "EXACT_OUTPUT") {
+        // EXACT_OUTPUT mode: create a custom order (like AnySpendStakeUpside)
+        // Source amount comes from the quote
+        const srcAmountFromQuote = anyspendQuote.data?.currencyIn?.amount;
+        invariant(srcAmountFromQuote, "Source amount from quote is not found");
 
-      createOrder({
-        recipientAddress: selectedRecipientOrDefault,
-        orderType,
-        srcChain: selectedSrcChainId,
-        dstChain: selectedDstChainId,
-        srcToken: selectedSrcToken,
-        dstToken: selectedDstToken,
-        srcAmount: srcAmountBigInt.toString(),
-        expectedDstAmount: expectedDstAmountRaw,
-        creatorAddress: globalAddress,
-        payload,
-      });
+        // Expected destination amount is what the user inputted
+        const expectedDstAmount = anyspendQuote.data?.currencyOut?.amount ?? "0";
+
+        // Generate encoded data from customExactInConfig
+        let encodedData: string | undefined;
+        if (customExactInConfig) {
+          const abi = JSON.parse(customExactInConfig.functionAbi);
+          // Process args: replace amount placeholders and convert numeric strings to BigInt
+          const processedArgs = customExactInConfig.functionArgs.map(arg => {
+            // Replace amount placeholders ({{dstAmount}}, {{amount_out}}, etc.)
+            // Use user's input amount, not quote's expectedDstAmount
+            if (arg === "{{dstAmount}}" || arg === "{{amount_out}}") {
+              return BigInt(activeOutputAmountInWei);
+            }
+            // Convert numeric strings to BigInt for uint256 args
+            if (/^\d+$/.test(arg)) {
+              return BigInt(arg);
+            }
+            return arg;
+          });
+          encodedData = encodeFunctionData({
+            abi,
+            functionName: customExactInConfig.functionName,
+            args: processedArgs,
+          });
+        }
+
+        createOrder({
+          recipientAddress: selectedRecipientOrDefault,
+          orderType: "custom",
+          srcChain: selectedSrcChainId,
+          dstChain: selectedDstChainId,
+          srcToken: selectedSrcToken,
+          dstToken: selectedDstToken,
+          srcAmount: srcAmountFromQuote,
+          expectedDstAmount,
+          creatorAddress: globalAddress,
+          payload: {
+            amount: activeOutputAmountInWei, // User's input destination amount, not quote's expectedDstAmount
+            data: encodedData,
+            to: customExactInConfig ? normalizeAddress(customExactInConfig.to) : undefined,
+            spenderAddress: customExactInConfig?.spenderAddress
+              ? normalizeAddress(customExactInConfig.spenderAddress)
+              : undefined,
+          },
+        });
+      } else {
+        // EXACT_INPUT mode: create custom_exact_in order (original behavior)
+        const srcAmountBigInt = BigInt(activeInputAmountInWei);
+        const payload = buildCustomPayload(selectedRecipientOrDefault);
+
+        createOrder({
+          recipientAddress: selectedRecipientOrDefault,
+          orderType,
+          srcChain: selectedSrcChainId,
+          dstChain: selectedDstChainId,
+          srcToken: selectedSrcToken,
+          dstToken: selectedDstToken,
+          srcAmount: srcAmountBigInt.toString(),
+          expectedDstAmount: expectedDstAmountRaw,
+          creatorAddress: globalAddress,
+          payload,
+        });
+      }
     } catch (err: any) {
       console.error(err);
       toast.error("Failed to create order: " + err.message);
@@ -524,24 +592,75 @@ function AnySpendCustomExactInInner({
         return;
       }
 
-      const payload = buildCustomPayload(selectedRecipientOrDefault);
+      const onrampOptions = {
+        vendor,
+        paymentMethod: paymentMethodString,
+        country: geoData?.country || "US",
+        redirectUrl: window.location.origin,
+      };
 
-      createOnrampOrder({
-        recipientAddress: selectedRecipientOrDefault,
-        orderType,
-        dstChain: selectedDstChainId,
-        dstToken: selectedDstToken,
-        srcFiatAmount: srcAmount,
-        onramp: {
-          vendor,
-          paymentMethod: paymentMethodString,
-          country: geoData?.country || "US",
-          redirectUrl: window.location.origin,
-        },
-        expectedDstAmount: expectedDstAmountRaw,
-        creatorAddress: globalAddress,
-        payload,
-      });
+      if (tradeType === "EXACT_OUTPUT") {
+        // EXACT_OUTPUT mode: create a custom order (like AnySpendStakeUpside)
+        const expectedDstAmount = anyspendQuote.data?.currencyOut?.amount ?? "0";
+
+        // Generate encoded data from customExactInConfig
+        let encodedData: string | undefined;
+        if (customExactInConfig) {
+          const abi = JSON.parse(customExactInConfig.functionAbi);
+          // Process args: replace amount placeholders and convert numeric strings to BigInt
+          const processedArgs = customExactInConfig.functionArgs.map(arg => {
+            // Replace amount placeholders ({{dstAmount}}, {{amount_out}}, etc.)
+            // Use user's input amount, not quote's expectedDstAmount
+            if (arg === "{{dstAmount}}" || arg === "{{amount_out}}") {
+              return BigInt(activeOutputAmountInWei);
+            }
+            // Convert numeric strings to BigInt for uint256 args
+            if (/^\d+$/.test(arg)) {
+              return BigInt(arg);
+            }
+            return arg;
+          });
+          encodedData = encodeFunctionData({
+            abi,
+            functionName: customExactInConfig.functionName,
+            args: processedArgs,
+          });
+        }
+
+        createOnrampOrder({
+          recipientAddress: selectedRecipientOrDefault,
+          orderType: "custom",
+          dstChain: selectedDstChainId,
+          dstToken: selectedDstToken,
+          srcFiatAmount: srcAmount,
+          onramp: onrampOptions,
+          expectedDstAmount,
+          creatorAddress: globalAddress,
+          payload: {
+            amount: activeOutputAmountInWei, // User's input destination amount, not quote's expectedDstAmount
+            data: encodedData,
+            to: customExactInConfig ? normalizeAddress(customExactInConfig.to) : undefined,
+            spenderAddress: customExactInConfig?.spenderAddress
+              ? normalizeAddress(customExactInConfig.spenderAddress)
+              : undefined,
+          },
+        });
+      } else {
+        // EXACT_INPUT mode: create custom_exact_in order (original behavior)
+        const payload = buildCustomPayload(selectedRecipientOrDefault);
+
+        createOnrampOrder({
+          recipientAddress: selectedRecipientOrDefault,
+          orderType,
+          dstChain: selectedDstChainId,
+          dstToken: selectedDstToken,
+          srcFiatAmount: srcAmount,
+          onramp: onrampOptions,
+          expectedDstAmount: expectedDstAmountRaw,
+          creatorAddress: globalAddress,
+          payload,
+        });
+      }
     } catch (err: any) {
       console.error(err);
       toast.error("Failed to create order: " + err.message);
