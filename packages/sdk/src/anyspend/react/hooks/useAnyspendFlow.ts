@@ -41,7 +41,7 @@ export enum PanelView {
   FEE_DETAIL,
 }
 
-type CustomExactInConfig = {
+export type CustomExactInConfig = {
   functionAbi: string;
   functionName: string;
   functionArgs: string[];
@@ -49,6 +49,50 @@ type CustomExactInConfig = {
   spenderAddress?: string;
   action?: string;
 };
+
+/**
+ * Generates encoded function data for custom contract calls.
+ * Handles amount placeholder replacement and BigInt conversion.
+ */
+export function generateEncodedData(config: CustomExactInConfig | undefined, amountInWei: string): string | undefined {
+  if (!config || !config.functionAbi || !config.functionName || !config.functionArgs) {
+    console.warn("customExactInConfig missing required fields for encoding:", {
+      hasConfig: !!config,
+      hasFunctionAbi: !!config?.functionAbi,
+      hasFunctionName: !!config?.functionName,
+      hasFunctionArgs: !!config?.functionArgs,
+    });
+    return undefined;
+  }
+
+  try {
+    const abi = JSON.parse(config.functionAbi);
+    const processedArgs = config.functionArgs.map(arg => {
+      // Replace amount placeholders ({{dstAmount}}, {{amount_out}}, etc.)
+      if (arg === "{{dstAmount}}" || arg === "{{amount_out}}") {
+        return BigInt(amountInWei);
+      }
+      // Convert numeric strings to BigInt for uint256 args
+      if (/^\d+$/.test(arg)) {
+        return BigInt(arg);
+      }
+      return arg;
+    });
+
+    return encodeFunctionData({
+      abi,
+      functionName: config.functionName,
+      args: processedArgs,
+    });
+  } catch (e) {
+    console.error("Failed to encode function data:", e, {
+      functionAbi: config.functionAbi,
+      functionName: config.functionName,
+      functionArgs: config.functionArgs,
+    });
+    return undefined;
+  }
+}
 
 interface UseAnyspendFlowProps {
   paymentType?: "crypto" | "fiat";
@@ -265,48 +309,7 @@ export function useAnyspendFlow({
     } else {
       // custom_exact_in - for EXACT_OUTPUT, use custom type to get the quote
       if (tradeType === "EXACT_OUTPUT") {
-        // Generate encoded data from customExactInConfig for the quote request
-        let encodedData: string | undefined;
-        if (
-          customExactInConfig &&
-          customExactInConfig.functionAbi &&
-          customExactInConfig.functionName &&
-          customExactInConfig.functionArgs
-        ) {
-          try {
-            const abi = JSON.parse(customExactInConfig.functionAbi);
-            // Process args: replace amount placeholders and convert numeric strings to BigInt
-            const processedArgs = customExactInConfig.functionArgs.map(arg => {
-              // Replace amount placeholders ({{dstAmount}}, {{amount_out}}, etc.)
-              if (arg === "{{dstAmount}}" || arg === "{{amount_out}}") {
-                return BigInt(activeOutputAmountInWei);
-              }
-              // Convert numeric strings to BigInt for uint256 args
-              if (/^\d+$/.test(arg)) {
-                return BigInt(arg);
-              }
-              return arg;
-            });
-            encodedData = encodeFunctionData({
-              abi,
-              functionName: customExactInConfig.functionName,
-              args: processedArgs,
-            });
-          } catch (e) {
-            console.error("Failed to encode function data for quote:", e, {
-              functionAbi: customExactInConfig.functionAbi,
-              functionName: customExactInConfig.functionName,
-              functionArgs: customExactInConfig.functionArgs,
-            });
-          }
-        } else {
-          console.warn("customExactInConfig missing required fields for encoding:", {
-            hasConfig: !!customExactInConfig,
-            hasFunctionAbi: !!customExactInConfig?.functionAbi,
-            hasFunctionName: !!customExactInConfig?.functionName,
-            hasFunctionArgs: !!customExactInConfig?.functionArgs,
-          });
-        }
+        const encodedData = generateEncodedData(customExactInConfig, activeOutputAmountInWei);
 
         return {
           ...baseParams,
@@ -367,9 +370,7 @@ export function useAnyspendFlow({
         setSrcAmount(formattedAmount);
       }
       // Also set the display destination amount from the user input
-      if (dstAmountInput) {
-        setDstAmount(dstAmountInput);
-      }
+      setDstAmount(dstAmountInput);
     }
   }, [anyspendQuote, slippage, isSrcInputDirty, dstAmountInput]);
 

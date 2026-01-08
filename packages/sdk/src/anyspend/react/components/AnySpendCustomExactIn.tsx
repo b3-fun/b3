@@ -17,11 +17,10 @@ import invariant from "invariant";
 import { ArrowDown, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect, useMemo, useRef } from "react";
-import { encodeFunctionData } from "viem";
 
 import { useSetActiveWallet } from "thirdweb/react";
 import { B3_TOKEN } from "../../constants";
-import { PanelView, useAnyspendFlow } from "../hooks/useAnyspendFlow";
+import { generateEncodedData, PanelView, useAnyspendFlow } from "../hooks/useAnyspendFlow";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
 import { CryptoPaySection } from "./common/CryptoPaySection";
 import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPaymentMethod";
@@ -487,36 +486,11 @@ function AnySpendCustomExactInInner({
 
       if (tradeType === "EXACT_OUTPUT") {
         // EXACT_OUTPUT mode: create a custom order (like AnySpendStakeUpside)
-        // Source amount comes from the quote
         const srcAmountFromQuote = anyspendQuote.data?.currencyIn?.amount;
         invariant(srcAmountFromQuote, "Source amount from quote is not found");
 
-        // Expected destination amount is what the user inputted
         const expectedDstAmount = anyspendQuote.data?.currencyOut?.amount ?? "0";
-
-        // Generate encoded data from customExactInConfig
-        let encodedData: string | undefined;
-        if (customExactInConfig) {
-          const abi = JSON.parse(customExactInConfig.functionAbi);
-          // Process args: replace amount placeholders and convert numeric strings to BigInt
-          const processedArgs = customExactInConfig.functionArgs.map(arg => {
-            // Replace amount placeholders ({{dstAmount}}, {{amount_out}}, etc.)
-            // Use user's input amount, not quote's expectedDstAmount
-            if (arg === "{{dstAmount}}" || arg === "{{amount_out}}") {
-              return BigInt(activeOutputAmountInWei);
-            }
-            // Convert numeric strings to BigInt for uint256 args
-            if (/^\d+$/.test(arg)) {
-              return BigInt(arg);
-            }
-            return arg;
-          });
-          encodedData = encodeFunctionData({
-            abi,
-            functionName: customExactInConfig.functionName,
-            args: processedArgs,
-          });
-        }
+        const encodedData = generateEncodedData(customExactInConfig, activeOutputAmountInWei);
 
         createOrder({
           recipientAddress: selectedRecipientOrDefault,
@@ -529,7 +503,7 @@ function AnySpendCustomExactInInner({
           expectedDstAmount,
           creatorAddress: globalAddress,
           payload: {
-            amount: activeOutputAmountInWei, // User's input destination amount, not quote's expectedDstAmount
+            amount: activeOutputAmountInWei,
             data: encodedData,
             to: customExactInConfig ? normalizeAddress(customExactInConfig.to) : undefined,
             spenderAddress: customExactInConfig?.spenderAddress
@@ -602,30 +576,7 @@ function AnySpendCustomExactInInner({
       if (tradeType === "EXACT_OUTPUT") {
         // EXACT_OUTPUT mode: create a custom order (like AnySpendStakeUpside)
         const expectedDstAmount = anyspendQuote.data?.currencyOut?.amount ?? "0";
-
-        // Generate encoded data from customExactInConfig
-        let encodedData: string | undefined;
-        if (customExactInConfig) {
-          const abi = JSON.parse(customExactInConfig.functionAbi);
-          // Process args: replace amount placeholders and convert numeric strings to BigInt
-          const processedArgs = customExactInConfig.functionArgs.map(arg => {
-            // Replace amount placeholders ({{dstAmount}}, {{amount_out}}, etc.)
-            // Use user's input amount, not quote's expectedDstAmount
-            if (arg === "{{dstAmount}}" || arg === "{{amount_out}}") {
-              return BigInt(activeOutputAmountInWei);
-            }
-            // Convert numeric strings to BigInt for uint256 args
-            if (/^\d+$/.test(arg)) {
-              return BigInt(arg);
-            }
-            return arg;
-          });
-          encodedData = encodeFunctionData({
-            abi,
-            functionName: customExactInConfig.functionName,
-            args: processedArgs,
-          });
-        }
+        const encodedData = generateEncodedData(customExactInConfig, activeOutputAmountInWei);
 
         createOnrampOrder({
           recipientAddress: selectedRecipientOrDefault,
@@ -637,7 +588,7 @@ function AnySpendCustomExactInInner({
           expectedDstAmount,
           creatorAddress: globalAddress,
           payload: {
-            amount: activeOutputAmountInWei, // User's input destination amount, not quote's expectedDstAmount
+            amount: activeOutputAmountInWei,
             data: encodedData,
             to: customExactInConfig ? normalizeAddress(customExactInConfig.to) : undefined,
             spenderAddress: customExactInConfig?.spenderAddress
