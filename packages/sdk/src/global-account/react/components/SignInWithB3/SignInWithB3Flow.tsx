@@ -35,7 +35,7 @@ export function SignInWithB3Flow({
   signersEnabled = false,
 }: SignInWithB3ModalProps) {
   const { automaticallySetFirstEoa } = useB3Config();
-  const { user, refetchUser, logout } = useAuthentication(partnerId);
+  const { user, logout } = useAuthentication(partnerId);
 
   // FIXME Logout before login to ensure a clean state
   const hasLoggedOutRef = useRef(false);
@@ -54,9 +54,7 @@ export function SignInWithB3Flow({
   const account = useActiveAccount();
   const isAuthenticating = useAuthStore(state => state.isAuthenticating);
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
-  const setIsAuthenticated = useAuthStore(state => state.setIsAuthenticated);
   const isConnected = useAuthStore(state => state.isConnected);
-  const setIsConnected = useAuthStore(state => state.setIsConnected);
   const setJustCompletedLogin = useAuthStore(state => state.setJustCompletedLogin);
   const [refetchCount, setRefetchCount] = useState(0);
   const [refetchError, setRefetchError] = useState<string | null>(null);
