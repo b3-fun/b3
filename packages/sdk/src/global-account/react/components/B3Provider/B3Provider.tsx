@@ -42,9 +42,7 @@ export function B3Provider({
   connectors,
   overrideDefaultConnectors = false,
   createClientReferenceId,
-  enableTurnkey = false,
   defaultPermissions,
-  onTurnkeyConnect,
 }: {
   theme: "light" | "dark";
   children: React.ReactNode;
@@ -66,9 +64,7 @@ export function B3Provider({
   connectors?: CreateConnectorFn[];
   overrideDefaultConnectors?: boolean;
   createClientReferenceId?: (params: CreateOrderParams | CreateOnrampOrderParams) => Promise<string>;
-  enableTurnkey?: boolean;
   defaultPermissions?: PermissionsConfig;
-  onTurnkeyConnect?: (user: Users) => void | Promise<void>;
 }) {
   // Initialize Google Analytics on mount
   useEffect(() => {
@@ -94,7 +90,6 @@ export function B3Provider({
               <LocalSDKProvider
                 onConnectCallback={onConnect}
                 onLogoutCallback={onLogout}
-                onTurnkeyConnect={onTurnkeyConnect}
               >
                 <B3ConfigProvider
                   accountOverride={accountOverride}
@@ -105,7 +100,6 @@ export function B3Provider({
                   partnerId={partnerId}
                   stripePublishableKey={stripePublishableKey}
                   createClientReferenceId={createClientReferenceId}
-                  enableTurnkey={enableTurnkey}
                   defaultPermissions={defaultPermissions}
                 >
                   <ToastContextConnector />

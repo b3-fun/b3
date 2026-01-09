@@ -18,9 +18,6 @@ export { SignInWithB3Privy } from "./SignInWithB3/SignInWithB3Privy";
 export { LoginStepContainer } from "./SignInWithB3/steps/LoginStep";
 export { getConnectOptionsFromStrategy, isWalletType, type AllowedStrategy } from "./SignInWithB3/utils/signInUtils";
 
-// Turnkey Components
-export { TurnkeyAuthModal } from "./TurnkeyAuthModal";
-
 // ManageAccount Components
 export { ManageAccount } from "./ManageAccount/ManageAccount";
 
