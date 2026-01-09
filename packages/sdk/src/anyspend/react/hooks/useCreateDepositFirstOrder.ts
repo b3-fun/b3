@@ -50,6 +50,7 @@ export function useCreateDepositFirstOrder({ onSuccess, onError }: UseCreateDepo
             to: normalizeAddress(contractConfig.to),
             spenderAddress: contractConfig.spenderAddress ? normalizeAddress(contractConfig.spenderAddress) : undefined,
             action: contractConfig.action,
+            value: contractConfig.value,
           }
         : {};
 

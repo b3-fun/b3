@@ -33,6 +33,8 @@ export interface DepositContractConfig {
   spenderAddress?: string;
   /** Custom action label */
   action?: string;
+  /** Native token value to send with the transaction (in wei as string) */
+  value?: string;
 }
 
 export interface ChainConfig {

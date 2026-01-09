@@ -15,4 +15,5 @@ export * from "./useRecipientAddressState";
 export * from "./useSigMint";
 export * from "./useStripeClientSecret";
 export * from "./useStripeSupport";
+export * from "./useOrderlyDepositFee";
 export * from "./useWatchTransfer";
