@@ -262,8 +262,8 @@ importers:
         specifier: 19.1.3
         version: 19.1.3(react@19.1.3)
       react-router-dom:
-        specifier: ^7.5.3
-        version: 7.8.0(react-dom@19.1.3(react@19.1.3))(react@19.1.3)
+        specifier: ^7.12.0
+        version: 7.12.0(react-dom@19.1.3(react@19.1.3))(react@19.1.3)
       tailwind-merge:
         specifier: 2.6.0
         version: 2.6.0
@@ -1922,6 +1922,7 @@ packages:
 
   '@fortawesome/react-fontawesome@0.2.3':
     resolution: {integrity: sha512-HlJco8RDY8NrzFVjy23b/7mNS4g9NegcrBG3n7jinwpc2x/AmSVk53IhWniLYM4szYLxRAFTAGwGn0EIlclDeQ==}
+    deprecated: v0.2.x is no longer supported. Unless you are still using FontAwesome 5, please update to v3.1.1 or greater.
     peerDependencies:
       '@fortawesome/fontawesome-svg-core': ~1 || ~6 || ~7
       react: 19.1.3
@@ -9785,6 +9786,7 @@ packages:
   next@14.1.0:
     resolution: {integrity: sha512-wlzrsbfeSU48YQBjZhDzOwhWhGsy+uQycR8bHAOt1LY1bn3zZEcDyHQOEoN3aWzQ8LHCAJ1nqrWCc9XF2+O45Q==}
     engines: {node: '>=18.17.0'}
+    deprecated: This version has a security vulnerability. Please upgrade to a patched version. See https://nextjs.org/blog/security-update-2025-12-11 for more details.
     hasBin: true
     peerDependencies:
       '@opentelemetry/api': ^1.1.0
@@ -11008,15 +11010,15 @@ packages:
       '@types/react':
         optional: true
 
-  react-router-dom@7.8.0:
-    resolution: {integrity: sha512-ntInsnDVnVRdtSu6ODmTQ41cbluak/ENeTif7GBce0L6eztFg6/e1hXAysFQI8X25C8ipKmT9cClbJwxx3Kaqw==}
+  react-router-dom@7.12.0:
+    resolution: {integrity: sha512-pfO9fiBcpEfX4Tx+iTYKDtPbrSLLCbwJ5EqP+SPYQu1VYCXdy79GSj0wttR0U4cikVdlImZuEZ/9ZNCgoaxwBA==}
     engines: {node: '>=20.0.0'}
     peerDependencies:
       react: 19.1.3
       react-dom: 19.1.3
 
-  react-router@7.8.0:
-    resolution: {integrity: sha512-r15M3+LHKgM4SOapNmsH3smAizWds1vJ0Z9C4mWaKnT9/wD7+d/0jYcj6LmOvonkrO4Rgdyp4KQ/29gWN2i1eg==}
+  react-router@7.12.0:
+    resolution: {integrity: sha512-kTPDYPFzDVGIIGNLS5VJykK0HfHLY5MF3b+xj0/tTyNYL1gF1qs7u67Z9jEhQk2sQ98SUaHxlG31g1JtF7IfVw==}
     engines: {node: '>=20.0.0'}
     peerDependencies:
       react: 19.1.3
@@ -28517,13 +28519,13 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.1.0
 
-  react-router-dom@7.8.0(react-dom@19.1.3(react@19.1.3))(react@19.1.3):
+  react-router-dom@7.12.0(react-dom@19.1.3(react@19.1.3))(react@19.1.3):
     dependencies:
       react: 19.1.3
       react-dom: 19.1.3(react@19.1.3)
-      react-router: 7.8.0(react-dom@19.1.3(react@19.1.3))(react@19.1.3)
+      react-router: 7.12.0(react-dom@19.1.3(react@19.1.3))(react@19.1.3)
 
-  react-router@7.8.0(react-dom@19.1.3(react@19.1.3))(react@19.1.3):
+  react-router@7.12.0(react-dom@19.1.3(react@19.1.3))(react@19.1.3):
     dependencies:
       cookie: 1.0.2
       react: 19.1.3
