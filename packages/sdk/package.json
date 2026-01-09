@@ -1,6 +1,6 @@
 {
   "name": "@b3dotfun/sdk",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "source": "src/index.ts",
   "main": "./dist/cjs/index.js",
   "react-native": "./dist/cjs/index.native.js",
@@ -130,6 +130,11 @@
         "import": "./dist/esm/global-account/react/components/*.js",
         "require": "./dist/cjs/global-account/react/components/*.js"
       }
+    },
+    "./global-account/react/components/SingleUserSearchSelector": {
+      "types": "./dist/types/global-account/react/components/SingleUserSearchSelector/index.d.ts",
+      "import": "./dist/esm/global-account/react/components/SingleUserSearchSelector/index.js",
+      "require": "./dist/cjs/global-account/react/components/SingleUserSearchSelector/index.js"
     },
     "./global-account/types": {
       "types": "./dist/types/global-account/types.d.ts",

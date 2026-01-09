@@ -3,11 +3,13 @@ import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { components } from "../../../types/api";
+import type { FeeDetailPanelClasses } from "../types/classes";
 
 interface FeeDetailPanelProps {
   fee: components["schemas"]["Fee"];
   transactionAmountUsd?: number;
   onBack: () => void;
+  classes?: FeeDetailPanelClasses;
 }
 
 // Fee tier definitions
@@ -32,7 +34,7 @@ const WHALE_DISCOUNT_TIERS = [
   { minAny: 1000000, discountPercent: 100, label: "Tier 3: 1M+ $ANY" },
 ];
 
-export function FeeDetailPanel({ fee, transactionAmountUsd, onBack }: FeeDetailPanelProps) {
+export function FeeDetailPanel({ fee, transactionAmountUsd, onBack, classes }: FeeDetailPanelProps) {
   // Detect if this is a fiat onramp order (Stripe) vs regular crypto swap
   // stripeweb2_fee = Stripe/fiat onramp (uses FIAT_FEE_TIERS)
   // standard_fee = Regular crypto swap (uses CRYPTO_FEE_TIERS)
@@ -83,15 +85,17 @@ export function FeeDetailPanel({ fee, transactionAmountUsd, onBack }: FeeDetailP
   const [showAllDiscountTiers, setShowAllDiscountTiers] = useState(false);
 
   return (
-    <div className="mx-auto flex w-[460px] max-w-full flex-col items-center gap-3 px-5">
+    <div className={classes?.container || "mx-auto flex w-[460px] max-w-full flex-col items-center gap-3 px-5"}>
       <div className="flex w-full flex-col gap-3">
         <div className="text-center">
-          <h3 className="text-as-primary text-lg font-bold">Fee Breakdown</h3>
+          <h3 className={classes?.title || "text-as-primary text-lg font-bold"}>Fee Breakdown</h3>
         </div>
 
         {/* Base Fee Schedule Section */}
-        <div className="bg-as-surface-secondary border-as-border-secondary rounded-2xl border p-4">
-          <h4 className="text-as-primary mb-3 text-sm font-semibold">
+        <div
+          className={classes?.tierCard || "bg-as-surface-secondary border-as-border-secondary rounded-2xl border p-4"}
+        >
+          <h4 className={classes?.tierCardTitle || "text-as-primary mb-3 text-sm font-semibold"}>
             {isStripeFee ? "Fiat Fee Schedule" : "Base Fee Schedule"}
           </h4>
           <div className="space-y-1.5">
@@ -109,12 +113,15 @@ export function FeeDetailPanel({ fee, transactionAmountUsd, onBack }: FeeDetailP
                     <div
                       key={idx}
                       className={cn(
-                        "flex items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors",
-                        isCurrentTier ? "bg-as-brand/10 text-as-brand font-semibold" : "text-as-primary/60",
+                        isCurrentTier
+                          ? classes?.tierRowActive ||
+                              "bg-as-brand/10 text-as-brand flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors"
+                          : classes?.tierRow ||
+                              "text-as-primary/60 flex items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors",
                       )}
                     >
-                      <span>{tier.label}</span>
-                      <span>Credit Card Fee + {tier.fee}</span>
+                      <span className={classes?.tierLabel}>{tier.label}</span>
+                      <span className={classes?.tierValue}>Credit Card Fee + {tier.fee}</span>
                     </div>
                   );
                 })
@@ -131,12 +138,15 @@ export function FeeDetailPanel({ fee, transactionAmountUsd, onBack }: FeeDetailP
                     <div
                       key={idx}
                       className={cn(
-                        "flex items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors",
-                        isCurrentTier ? "bg-as-brand/10 text-as-brand font-semibold" : "text-as-primary/60",
+                        isCurrentTier
+                          ? classes?.tierRowActive ||
+                              "bg-as-brand/10 text-as-brand flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors"
+                          : classes?.tierRow ||
+                              "text-as-primary/60 flex items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors",
                       )}
                     >
-                      <span>{tier.label}</span>
-                      <span>{bpsToPercent(tier.bps)}%</span>
+                      <span className={classes?.tierLabel}>{tier.label}</span>
+                      <span className={classes?.tierValue}>{bpsToPercent(tier.bps)}%</span>
                     </div>
                   );
                 })}
@@ -154,7 +164,10 @@ export function FeeDetailPanel({ fee, transactionAmountUsd, onBack }: FeeDetailP
               return (
                 <button
                   onClick={() => setShowAllFeeTiers(!showAllFeeTiers)}
-                  className="text-as-primary/60 hover:text-as-primary mt-2 flex w-full items-center justify-center gap-1 text-xs transition-colors"
+                  className={
+                    classes?.expandButton ||
+                    "text-as-primary/60 hover:text-as-primary mt-2 flex w-full items-center justify-center gap-1 text-xs transition-colors"
+                  }
                 >
                   <span>{showAllFeeTiers ? "Show less" : "Show higher tiers"}</span>
                   <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", showAllFeeTiers && "rotate-180")} />
@@ -237,11 +250,17 @@ export function FeeDetailPanel({ fee, transactionAmountUsd, onBack }: FeeDetailP
 
         {/* Transaction Summary */}
         {transactionAmountUsd && (
-          <div className="bg-as-surface-secondary border-as-border-secondary rounded-2xl border p-4">
+          <div
+            className={
+              classes?.summaryCard || "bg-as-surface-secondary border-as-border-secondary rounded-2xl border p-4"
+            }
+          >
             <div className="space-y-2 text-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-as-secondary">Transaction</span>
-                <span className="text-as-primary font-semibold">${transactionAmountUsd.toFixed(2)}</span>
+              <div className={classes?.summaryRow || "flex items-center justify-between"}>
+                <span className={classes?.summaryLabel || "text-as-secondary"}>Transaction</span>
+                <span className={classes?.summaryValue || "text-as-primary font-semibold"}>
+                  ${transactionAmountUsd.toFixed(2)}
+                </span>
               </div>
 
               {isStripeFee && (
@@ -267,10 +286,10 @@ export function FeeDetailPanel({ fee, transactionAmountUsd, onBack }: FeeDetailP
                       )}
                     </span>
                   </div>
-                  <div className="border-as-border-secondary border-t pt-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-as-primary font-semibold">Total Fee</span>
-                      <span className="text-as-brand font-semibold">
+                  <div className={classes?.summaryDivider || "border-as-border-secondary border-t pt-2"}>
+                    <div className={classes?.totalRow || "flex items-center justify-between"}>
+                      <span className={classes?.totalLabel || "text-as-primary font-semibold"}>Total Fee</span>
+                      <span className={classes?.totalValue || "text-as-brand font-semibold"}>
                         ${((transactionAmountUsd * (fee.finalFeeBps || 0)) / 10000 + (fee.finalFeeUsd || 0)).toFixed(2)}
                       </span>
                     </div>
@@ -280,15 +299,17 @@ export function FeeDetailPanel({ fee, transactionAmountUsd, onBack }: FeeDetailP
 
               {!isStripeFee && currentCryptoTier && (
                 <>
-                  <div className="flex items-center justify-between">
-                    <span className="text-as-secondary">Base Fee ({bpsToPercent(currentCryptoTier.bps)}%)</span>
-                    <span className="text-as-primary font-medium">
+                  <div className={classes?.summaryRow || "flex items-center justify-between"}>
+                    <span className={classes?.summaryLabel || "text-as-secondary"}>
+                      Base Fee ({bpsToPercent(currentCryptoTier.bps)}%)
+                    </span>
+                    <span className={classes?.summaryValue || "text-as-primary font-medium"}>
                       ${((transactionAmountUsd * currentCryptoTier.bps) / 10000).toFixed(2)}
                     </span>
                   </div>
 
                   {hasWhaleDiscount && currentWhaleTier && (
-                    <div className="flex items-center justify-between">
+                    <div className={classes?.summaryRow || "flex items-center justify-between"}>
                       <span className="text-green-600">Discount ({currentWhaleTier.discountPercent}% off)</span>
                       <span className="font-medium text-green-600">
                         -$
@@ -298,7 +319,7 @@ export function FeeDetailPanel({ fee, transactionAmountUsd, onBack }: FeeDetailP
                   )}
 
                   {hasPartnerDiscount && (
-                    <div className="flex items-center justify-between">
+                    <div className={classes?.summaryRow || "flex items-center justify-between"}>
                       <span className="text-green-600">Partner Discount ({partnerDiscountPercent}% off)</span>
                       <span className="font-medium text-green-600">
                         -${((transactionAmountUsd * baseFee * partnerDiscountPercent) / 100 / 10000).toFixed(2)}
@@ -306,10 +327,10 @@ export function FeeDetailPanel({ fee, transactionAmountUsd, onBack }: FeeDetailP
                     </div>
                   )}
 
-                  <div className="border-as-border-secondary border-t pt-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-as-primary font-semibold">Total Fee</span>
-                      <span className="text-as-brand font-semibold">
+                  <div className={classes?.summaryDivider || "border-as-border-secondary border-t pt-2"}>
+                    <div className={classes?.totalRow || "flex items-center justify-between"}>
+                      <span className={classes?.totalLabel || "text-as-primary font-semibold"}>Total Fee</span>
+                      <span className={classes?.totalValue || "text-as-brand font-semibold"}>
                         ${((transactionAmountUsd * fee.finalFeeBps) / 10000).toFixed(2)}
                       </span>
                     </div>
@@ -323,7 +344,7 @@ export function FeeDetailPanel({ fee, transactionAmountUsd, onBack }: FeeDetailP
         <ShinyButton
           accentColor={"hsl(var(--as-brand))"}
           onClick={onBack}
-          className={cn("as-main-button !bg-as-brand relative w-full")}
+          className={classes?.backButton || cn("as-main-button !bg-as-brand relative w-full")}
           textClassName={cn("text-white")}
         >
           Back to {isStripeFee ? "Payment" : "Swap"}

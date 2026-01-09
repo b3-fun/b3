@@ -62,7 +62,7 @@ export function useRecipientAddressState({
 
   // The effective recipient address, derived on each render, respecting priority.
   const effectiveRecipientAddress =
-    recipientAddressFromProps || selectedRecipientAddress || walletAddress || globalAddress;
+    selectedRecipientAddress || recipientAddressFromProps || walletAddress || globalAddress;
 
   // Helper function to reset user's manual selection.
   const resetRecipientAddress = () => {

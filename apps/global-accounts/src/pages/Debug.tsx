@@ -1,6 +1,8 @@
 import { getExplorerTxUrl } from "@b3dotfun/sdk/anyspend";
 import { MintButton, SendERC20Button, SendETHButton, useUser } from "@b3dotfun/sdk/global-account/react";
 import { useB3Account } from "@b3dotfun/sdk/global-account/react/components/B3Provider/useB3Account";
+import { SingleUserSearchSelector } from "@b3dotfun/sdk/global-account/react/components/SingleUserSearchSelector";
+import type { CombinedProfile } from "@b3dotfun/sdk/global-account/react/hooks/useProfile";
 import { thirdwebB3Mainnet } from "@b3dotfun/sdk/shared/constants/chains/b3Chain";
 import { b3MainnetThirdWeb, getThirdwebChain } from "@b3dotfun/sdk/shared/constants/chains/supported";
 import createDebug from "debug";
@@ -37,6 +39,8 @@ export function Debug() {
   const [linkStatus, setLinkStatus] = useState<string>("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successExplorerTxUrl, setSuccessExplorerTxUrl] = useState<string | null>(null);
+  const [selectedUser, setSelectedUser] = useState<CombinedProfile | null>(null);
+  const [showFindUserModal, setShowFindUserModal] = useState(false);
 
   useEffect(() => {
     // Update debug info when user changes
@@ -192,6 +196,87 @@ export function Debug() {
           )}
         </div>
 
+        {/* Find User Section */}
+        <div className="rounded-lg bg-white p-6 shadow-sm">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-xl font-semibold">Find User</h2>
+            <button
+              onClick={() => setShowFindUserModal(!showFindUserModal)}
+              className="rounded-lg bg-purple-500 px-4 py-2 text-sm text-white transition-colors hover:bg-purple-600"
+            >
+              {showFindUserModal ? "Hide" : "Show"} Modal View
+            </button>
+          </div>
+
+          {/* Inline Search Component */}
+          <div className="space-y-4">
+            <div>
+              <label className="mb-2 block text-sm font-medium text-gray-700">
+                Search for a single user (with profile type filter)
+              </label>
+              <SingleUserSearchSelector
+                onSelectUser={profile => {
+                  setSelectedUser(profile);
+                  console.log("Selected user:", profile);
+                }}
+                profileTypeFilter={["global-account"]}
+                placeholder="Search by address or name..."
+                className="max-w-2xl"
+              />
+            </div>
+
+            {/* Display Selected User */}
+            {selectedUser && (
+              <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                <h3 className="mb-2 font-semibold text-gray-900">Selected User:</h3>
+                <div className="space-y-2">
+                  <p className="text-sm">
+                    <span className="font-medium">Display Name:</span>{" "}
+                    {selectedUser.displayName || selectedUser.name || "N/A"}
+                  </p>
+                  <p className="text-sm">
+                    <span className="font-medium">Address:</span>{" "}
+                    <span className="font-mono">{selectedUser.address || "N/A"}</span>
+                  </p>
+                  {selectedUser.bio && (
+                    <p className="text-sm">
+                      <span className="font-medium">Bio:</span> {selectedUser.bio}
+                    </p>
+                  )}
+                  <div className="text-sm">
+                    <span className="font-medium">Profile Types:</span>
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {selectedUser.profiles.map((profile, idx) => (
+                        <span
+                          key={`${profile.type}-${idx}`}
+                          className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800"
+                        >
+                          {profile.type}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* All Profile Types Example */}
+            <div className="mt-4">
+              <label className="mb-2 block text-sm font-medium text-gray-700">
+                Search without filter (all profile types)
+              </label>
+              <SingleUserSearchSelector
+                onSelectUser={profile => {
+                  console.log("Selected user (no filter):", profile);
+                  setSelectedUser(profile);
+                }}
+                placeholder="Search any user..."
+                className="max-w-2xl"
+              />
+            </div>
+          </div>
+        </div>
+
         {/* Link New Wallet Section */}
         <div className="rounded-lg bg-white p-6 shadow-sm">
           <h2 className="mb-4 text-xl font-semibold">Link New Wallet</h2>
@@ -285,6 +370,41 @@ export function Debug() {
         explorerTxUrl={successExplorerTxUrl || undefined}
         title="Success!"
       />
+
+      {/* Find User Modal */}
+      {showFindUserModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="relative w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-xl font-semibold">Find User</h3>
+              <button
+                onClick={() => setShowFindUserModal(false)}
+                className="text-gray-400 transition-colors hover:text-gray-600"
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    d="M18 6L6 18M6 6L18 18"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <SingleUserSearchSelector
+              onSelectUser={profile => {
+                setSelectedUser(profile);
+                setShowFindUserModal(false);
+                console.log("Selected user from modal:", profile);
+              }}
+              profileTypeFilter={["b3-ens", "global-account"]}
+              placeholder="Search by address or name..."
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

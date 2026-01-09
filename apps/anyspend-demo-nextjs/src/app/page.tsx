@@ -5,6 +5,7 @@ import { BondKitButton } from "./components/BondKitButton";
 import { BuyHyperliquidUSDCButton } from "./components/BuyHyperliquidUSDCButton";
 import { BuyWithFiatButton } from "./components/BuyWithFiatButton";
 import { CollectorClubPurchaseButton } from "./components/CollectorClubPurchaseButton";
+import { CustomClassesDepositButton } from "./components/CustomClassesDepositButton";
 import { CustomDepositButton } from "./components/CustomDepositButton";
 import { DepositHypeButton } from "./components/DepositHypeButton";
 import { GetB3TokenButton } from "./components/GetB3TokenButton";
@@ -63,6 +64,7 @@ export default function Home() {
             <OrderDetailsButton />
             <OrderlyDepositButton />
             <AnySpendOrderlyDepositButton />
+            <CustomClassesDepositButton />
           </div>
         </div>
       </div>

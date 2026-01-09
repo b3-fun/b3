@@ -1,3 +1,4 @@
+import { Users } from "@b3dotfun/b3-api";
 import {
   Loading,
   SignInWithB3ModalProps,
@@ -8,9 +9,10 @@ import {
   useModalStore,
 } from "@b3dotfun/sdk/global-account/react";
 import { debugB3React } from "@b3dotfun/sdk/shared/utils/debug";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useActiveAccount } from "thirdweb/react";
 import { Account } from "thirdweb/wallets";
+import { LocalSDKContext } from "../B3Provider/LocalSDKProvider";
 import { TurnkeyAuthModal } from "../TurnkeyAuthModal";
 import { SignInWithB3Privy } from "./SignInWithB3Privy";
 import { LoginStep, LoginStepContainer } from "./steps/LoginStep";
@@ -37,6 +39,7 @@ export function SignInWithB3Flow({
 }: SignInWithB3ModalProps) {
   const { automaticallySetFirstEoa, enableTurnkey } = useB3Config();
   const { user, refetchUser, logout } = useAuthentication(partnerId);
+  const { onTurnkeyConnect } = useContext(LocalSDKContext);
 
   // FIXME Logout before login to ensure a clean state
   const hasLoggedOutRef = useRef(false);
@@ -163,13 +166,17 @@ export function SignInWithB3Flow({
   // Define handleTurnkeySuccess before the useEffect that uses it
   const handleTurnkeySuccess = useCallback(
     async (user: any) => {
-      debug("Turnkey authentication successful - setting completed flag", { user });
+      debug("Turnkey authentication successful - setting completed flag", { user, onTurnkeyConnect });
+
+      // Call the onTurnkeyConnect callback
+      onTurnkeyConnect?.(user);
 
       // Set completed flag FIRST before any async operations
       setTurnkeyAuthCompleted(true);
 
       // Refetch user to update the user state with Turnkey ID
       debug("Refetching user after Turnkey success...");
+      // TODO: See why sometimes this fails with "No wallet found during auto-connect"
       await refetchUser();
       debug("User refetched successfully");
 
@@ -196,6 +203,7 @@ export function SignInWithB3Flow({
       // The useEffect will re-run with updated user data to complete the sign-in process
     },
     [
+      onTurnkeyConnect,
       refetchUser,
       strategies,
       onLoginSuccess,
@@ -395,11 +403,9 @@ export function SignInWithB3Flow({
       content = (
         <LoginStepContainer partnerId={partnerId}>
           <TurnkeyAuthModal
-            onSuccess={async (authenticatedUser: any) => {
+            onSuccess={async (authenticatedUser: Users) => {
               debug("Turnkey authentication successful in primary flow", { authenticatedUser });
               setTurnkeyAuthCompleted(true);
-              // After Turnkey auth, refetch user to get the full user object
-              await refetchUser();
               // User is now authenticated via Turnkey
               // Set both isAuthenticated and isConnected to true so UI updates properly
               // Wallet connection is optional and can happen later for signing transactions
@@ -408,6 +414,12 @@ export function SignInWithB3Flow({
               setJustCompletedLogin(true);
               // Call the login success callback
               onLoginSuccess?.({} as Account);
+              // Call the onTurnkeyConnect callback
+              onTurnkeyConnect?.(authenticatedUser);
+
+              // After Turnkey auth, refetch user to get the full user object
+              // TODO: See why sometimes this fails with "No wallet found during auto-connect"
+              await refetchUser();
             }}
             onClose={() => {
               // If user closes Turnkey modal, they can still use wallet connection as fallback

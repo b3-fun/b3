@@ -1,3 +1,4 @@
+import { AnySpendAllClasses } from "@b3dotfun/sdk/anyspend/react";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { GenerateSigMintResponse } from "@b3dotfun/sdk/anyspend/types/signatureMint";
 import { AllowedStrategy } from "@b3dotfun/sdk/global-account/react";
@@ -322,6 +323,8 @@ export interface AnySpendDepositUpsideProps extends BaseModalProps {
   depositContractAddress: string;
   /** Token to deposit */
   token: components["schemas"]["Token"];
+  /** The exact amount of destination tokens to receive, in wei. This will pre-fill the output amount and switch to an exact output swap. */
+  destinationTokenAmount?: string;
   /** Callback function called when the deposit is successful */
   onSuccess?: () => void;
 }
@@ -568,6 +571,8 @@ export interface AnySpendDepositModalProps extends BaseModalProps {
   returnHomeLabel?: string;
   /** Whether the deposit requires a custom function (uses AnySpendCustomExactIn). Defaults to false. */
   isCustomDeposit?: boolean;
+  /** Custom class names for styling specific elements */
+  classes?: AnySpendAllClasses;
 }
 
 /**
@@ -631,6 +636,8 @@ interface ModalState {
   linkingMethod: string | null;
   /** Function to set the linking state */
   setLinkingState: (isLinking: boolean, method?: string | null) => void;
+  /** Function to update closable property of current content without adding to history */
+  setClosable: (closable: boolean) => void;
 }
 
 /**
@@ -670,4 +677,8 @@ export const useModalStore = create<ModalState>(set => ({
   linkingMethod: null,
   setLinkingState: (isLinking: boolean, method: string | null = null) =>
     set({ isLinking, linkingMethod: isLinking ? method : null }),
+  setClosable: (closable: boolean) =>
+    set(state => ({
+      contentType: state.contentType ? { ...state.contentType, closable } : null,
+    })),
 }));

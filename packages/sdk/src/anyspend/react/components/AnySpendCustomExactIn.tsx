@@ -16,10 +16,11 @@ import invariant from "invariant";
 import { ArrowDown, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect, useMemo, useRef } from "react";
+import type { AnySpendCustomExactInClasses } from "./types/classes";
 
 import { useSetActiveWallet } from "thirdweb/react";
 import { B3_TOKEN } from "../../constants";
-import { PanelView, useAnyspendFlow } from "../hooks/useAnyspendFlow";
+import { generateEncodedData, PanelView, useAnyspendFlow } from "../hooks/useAnyspendFlow";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
 import { CryptoPaySection } from "./common/CryptoPaySection";
 import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPaymentMethod";
@@ -54,6 +55,7 @@ export interface AnySpendCustomExactInProps {
   sourceTokenChainId?: number;
   destinationToken: components["schemas"]["Token"];
   destinationChainId: number;
+  destinationTokenAmount?: string;
   onSuccess?: (amount: string) => void;
   onOpenCustomModal?: () => void;
   mainFooter?: React.ReactNode;
@@ -76,6 +78,8 @@ export interface AnySpendCustomExactInProps {
   customRecipientLabel?: string;
   /** Custom label for the return home button (overrides "Return to Home" / "Close") */
   returnHomeLabel?: string;
+  /** Custom class names for styling specific elements */
+  classes?: AnySpendCustomExactInClasses;
 }
 
 export function AnySpendCustomExactIn(props: AnySpendCustomExactInProps) {
@@ -104,12 +108,14 @@ function AnySpendCustomExactInInner({
   customUsdInputValues,
   preferEoa,
   customExactInConfig,
+  destinationTokenAmount,
   orderType = "custom_exact_in",
   minDestinationAmount,
   header,
   returnToHomeUrl,
   customRecipientLabel,
   returnHomeLabel,
+  classes,
 }: AnySpendCustomExactInProps) {
   const actionLabel = customExactInConfig?.action ?? "Custom Execution";
 
@@ -133,8 +139,11 @@ function AnySpendCustomExactInInner({
     srcAmount,
     setSrcAmount,
     dstAmount,
+    dstAmountInput,
+    setDstAmountInput,
     isSrcInputDirty,
     setIsSrcInputDirty,
+    tradeType,
     selectedCryptoPaymentMethod,
     effectiveCryptoPaymentMethod,
     setSelectedCryptoPaymentMethod,
@@ -148,7 +157,9 @@ function AnySpendCustomExactInInner({
     isBalanceLoading,
     anyspendQuote,
     isLoadingAnyspendQuote,
+    isQuoteLoading,
     activeInputAmountInWei,
+    activeOutputAmountInWei,
     geoData,
     coinbaseAvailablePaymentMethods,
     stripeWeb2Support,
@@ -168,6 +179,7 @@ function AnySpendCustomExactInInner({
     slippage: SLIPPAGE_PERCENT,
     disableUrlParamManagement: true,
     orderType,
+    customExactInConfig,
   });
 
   const { connectedEOAWallet } = useAccountWallet();
@@ -185,6 +197,18 @@ function AnySpendCustomExactInInner({
       }
     }
   }, [preferEoa, connectedEOAWallet, setActiveWallet]);
+
+  // Prefill destination amount if provided (for EXACT_OUTPUT mode)
+  const appliedDestinationAmount = useRef(false);
+  useEffect(() => {
+    if (destinationTokenAmount && !appliedDestinationAmount.current) {
+      appliedDestinationAmount.current = true;
+      // Convert wei to human-readable format
+      const formattedAmount = formatUnits(destinationTokenAmount, destinationToken.decimals);
+      setDstAmountInput(formattedAmount);
+      setIsSrcInputDirty(false); // Switch to EXACT_OUTPUT mode
+    }
+  }, [destinationTokenAmount, destinationToken.decimals, setDstAmountInput, setIsSrcInputDirty]);
 
   const selectedRecipientOrDefault = selectedRecipientAddress ?? recipientAddress;
 
@@ -215,11 +239,15 @@ function AnySpendCustomExactInInner({
   };
 
   const btnInfo: { text: string; disable: boolean; error: boolean; loading: boolean } = useMemo(() => {
-    if (activeInputAmountInWei === "0") return { text: "Enter an amount", disable: true, error: false, loading: false };
+    // Check for empty amount based on trade type
+    const isAmountEmpty =
+      tradeType === "EXACT_OUTPUT" ? !dstAmountInput || dstAmountInput === "0" : activeInputAmountInWei === "0";
+
+    if (isAmountEmpty) return { text: "Enter an amount", disable: true, error: false, loading: false };
     if (orderType === "hype_duel" && selectedSrcToken?.address?.toLowerCase() === B3_TOKEN.address.toLowerCase()) {
       return { text: "Convert to HYPE using B3", disable: false, error: false, loading: false };
     }
-    if (isLoadingAnyspendQuote) return { text: "Loading quote...", disable: true, error: false, loading: true };
+    if (isQuoteLoading) return { text: "Loading quote...", disable: true, error: false, loading: true };
     if (isCreatingOrder || isCreatingOnrampOrder)
       return { text: "Creating order...", disable: true, error: false, loading: true };
     if (!selectedRecipientOrDefault) return { text: "Select recipient", disable: false, error: false, loading: false };
@@ -274,7 +302,7 @@ function AnySpendCustomExactInInner({
     return { text: "Continue", disable: false, error: false, loading: false };
   }, [
     activeInputAmountInWei,
-    isLoadingAnyspendQuote,
+    isQuoteLoading,
     isCreatingOrder,
     isCreatingOnrampOrder,
     selectedRecipientOrDefault,
@@ -289,6 +317,8 @@ function AnySpendCustomExactInInner({
     DESTINATION_TOKEN_DETAILS.SYMBOL,
     orderType,
     selectedSrcToken,
+    tradeType,
+    dstAmountInput,
   ]);
 
   const onMainButtonClick = async () => {
@@ -330,7 +360,12 @@ function AnySpendCustomExactInInner({
   );
 
   const mainView = (
-    <div className="anyspend-custom-exact-in-container mx-auto flex w-[460px] max-w-full flex-col items-center gap-2">
+    <div
+      className={
+        classes?.container ||
+        "anyspend-custom-exact-in-container mx-auto flex w-[460px] max-w-full flex-col items-center gap-2"
+      }
+    >
       {headerContent}
 
       <div className="relative flex w-full max-w-[calc(100vw-32px)] flex-col gap-2">
@@ -385,9 +420,10 @@ function AnySpendCustomExactInInner({
           >
             <Button
               variant="ghost"
-              className={cn(
-                "swap-direction-button border-as-stroke bg-as-surface-primary z-10 h-10 w-10 cursor-default rounded-xl border-2 sm:h-8 sm:w-8 sm:rounded-xl",
-              )}
+              className={
+                classes?.swapDirectionButton ||
+                "swap-direction-button border-as-stroke bg-as-surface-primary z-10 h-10 w-10 cursor-default rounded-xl border-2 sm:h-8 sm:w-8 sm:rounded-xl"
+              }
             >
               <div className="relative flex items-center justify-center transition-opacity">
                 <ArrowDown className="text-as-primary/50 h-5 w-5" />
@@ -398,12 +434,12 @@ function AnySpendCustomExactInInner({
           {paymentType === "crypto" && (
             <CryptoReceiveSection
               isDepositMode={false}
-              isBuyMode={true}
+              isBuyMode={false}
               effectiveRecipientAddress={selectedRecipientOrDefault}
               recipientName={recipientName || undefined}
               customRecipientLabel={customRecipientLabel}
               onSelectRecipient={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
-              dstAmount={dstAmount}
+              dstAmount={isSrcInputDirty ? dstAmount : dstAmountInput}
               dstToken={selectedDstToken}
               dstTokenSymbol={DESTINATION_TOKEN_DETAILS.SYMBOL}
               dstTokenLogoURI={DESTINATION_TOKEN_DETAILS.LOGO_URI}
@@ -413,7 +449,7 @@ function AnySpendCustomExactInInner({
               isSrcInputDirty={isSrcInputDirty}
               onChangeDstAmount={value => {
                 setIsSrcInputDirty(false);
-                setSrcAmount(value);
+                setDstAmountInput(value);
               }}
               anyspendQuote={anyspendQuote}
               onShowPointsDetail={() => setActivePanel(PanelView.POINTS_DETAIL)}
@@ -433,10 +469,15 @@ function AnySpendCustomExactInInner({
           accentColor={"hsl(var(--as-brand))"}
           disabled={btnInfo.disable}
           onClick={onMainButtonClick}
-          className={cn(
-            "as-main-button relative w-full",
-            btnInfo.error ? "!bg-as-red" : btnInfo.disable ? "!bg-as-on-surface-2" : "!bg-as-brand",
-          )}
+          className={
+            (btnInfo.error && classes?.mainButtonError) ||
+            (btnInfo.disable && classes?.mainButtonDisabled) ||
+            classes?.mainButton ||
+            cn(
+              "as-main-button relative w-full",
+              btnInfo.error ? "!bg-as-red" : btnInfo.disable ? "!bg-as-on-surface-2" : "!bg-as-brand",
+            )
+          }
           textClassName={cn(btnInfo.error ? "text-white" : btnInfo.disable ? "text-as-secondary" : "text-white")}
         >
           <div className="flex items-center justify-center gap-2">
@@ -448,7 +489,7 @@ function AnySpendCustomExactInInner({
 
       {/* Gas indicator - show when source chain has gas data */}
       {gasPriceData && !isLoadingGas && paymentType === "crypto" && (
-        <GasIndicator gasPrice={gasPriceData} className="mt-2 w-full" />
+        <GasIndicator gasPrice={gasPriceData} className={classes?.gasIndicator || "mt-2 w-full"} />
       )}
 
       {mainFooter ? mainFooter : null}
@@ -460,21 +501,51 @@ function AnySpendCustomExactInInner({
       invariant(anyspendQuote, "Relay price is not found");
       invariant(selectedRecipientOrDefault, "Recipient address is not found");
 
-      const srcAmountBigInt = BigInt(activeInputAmountInWei);
-      const payload = buildCustomPayload(selectedRecipientOrDefault);
+      if (tradeType === "EXACT_OUTPUT") {
+        // EXACT_OUTPUT mode: create a custom order (like AnySpendStakeUpside)
+        const srcAmountFromQuote = anyspendQuote.data?.currencyIn?.amount;
+        invariant(srcAmountFromQuote, "Source amount from quote is not found");
 
-      createOrder({
-        recipientAddress: selectedRecipientOrDefault,
-        orderType,
-        srcChain: selectedSrcChainId,
-        dstChain: selectedDstChainId,
-        srcToken: selectedSrcToken,
-        dstToken: selectedDstToken,
-        srcAmount: srcAmountBigInt.toString(),
-        expectedDstAmount: expectedDstAmountRaw,
-        creatorAddress: globalAddress,
-        payload,
-      });
+        const expectedDstAmount = anyspendQuote.data?.currencyOut?.amount ?? "0";
+        const encodedData = generateEncodedData(customExactInConfig, activeOutputAmountInWei);
+
+        createOrder({
+          recipientAddress: selectedRecipientOrDefault,
+          orderType: "custom",
+          srcChain: selectedSrcChainId,
+          dstChain: selectedDstChainId,
+          srcToken: selectedSrcToken,
+          dstToken: selectedDstToken,
+          srcAmount: srcAmountFromQuote,
+          expectedDstAmount,
+          creatorAddress: globalAddress,
+          payload: {
+            amount: activeOutputAmountInWei,
+            data: encodedData,
+            to: customExactInConfig ? normalizeAddress(customExactInConfig.to) : undefined,
+            spenderAddress: customExactInConfig?.spenderAddress
+              ? normalizeAddress(customExactInConfig.spenderAddress)
+              : undefined,
+          },
+        });
+      } else {
+        // EXACT_INPUT mode: create custom_exact_in order (original behavior)
+        const srcAmountBigInt = BigInt(activeInputAmountInWei);
+        const payload = buildCustomPayload(selectedRecipientOrDefault);
+
+        createOrder({
+          recipientAddress: selectedRecipientOrDefault,
+          orderType,
+          srcChain: selectedSrcChainId,
+          dstChain: selectedDstChainId,
+          srcToken: selectedSrcToken,
+          dstToken: selectedDstToken,
+          srcAmount: srcAmountBigInt.toString(),
+          expectedDstAmount: expectedDstAmountRaw,
+          creatorAddress: globalAddress,
+          payload,
+        });
+      }
     } catch (err: any) {
       console.error(err);
       toast.error("Failed to create order: " + err.message);
@@ -512,24 +583,52 @@ function AnySpendCustomExactInInner({
         return;
       }
 
-      const payload = buildCustomPayload(selectedRecipientOrDefault);
+      const onrampOptions = {
+        vendor,
+        paymentMethod: paymentMethodString,
+        country: geoData?.country || "US",
+        redirectUrl: window.location.origin,
+      };
 
-      createOnrampOrder({
-        recipientAddress: selectedRecipientOrDefault,
-        orderType,
-        dstChain: selectedDstChainId,
-        dstToken: selectedDstToken,
-        srcFiatAmount: srcAmount,
-        onramp: {
-          vendor,
-          paymentMethod: paymentMethodString,
-          country: geoData?.country || "US",
-          redirectUrl: window.location.origin,
-        },
-        expectedDstAmount: expectedDstAmountRaw,
-        creatorAddress: globalAddress,
-        payload,
-      });
+      if (tradeType === "EXACT_OUTPUT") {
+        // EXACT_OUTPUT mode: create a custom order (like AnySpendStakeUpside)
+        const expectedDstAmount = anyspendQuote.data?.currencyOut?.amount ?? "0";
+        const encodedData = generateEncodedData(customExactInConfig, activeOutputAmountInWei);
+
+        createOnrampOrder({
+          recipientAddress: selectedRecipientOrDefault,
+          orderType: "custom",
+          dstChain: selectedDstChainId,
+          dstToken: selectedDstToken,
+          srcFiatAmount: srcAmount,
+          onramp: onrampOptions,
+          expectedDstAmount,
+          creatorAddress: globalAddress,
+          payload: {
+            amount: activeOutputAmountInWei,
+            data: encodedData,
+            to: customExactInConfig ? normalizeAddress(customExactInConfig.to) : undefined,
+            spenderAddress: customExactInConfig?.spenderAddress
+              ? normalizeAddress(customExactInConfig.spenderAddress)
+              : undefined,
+          },
+        });
+      } else {
+        // EXACT_INPUT mode: create custom_exact_in order (original behavior)
+        const payload = buildCustomPayload(selectedRecipientOrDefault);
+
+        createOnrampOrder({
+          recipientAddress: selectedRecipientOrDefault,
+          orderType,
+          dstChain: selectedDstChainId,
+          dstToken: selectedDstToken,
+          srcFiatAmount: srcAmount,
+          onramp: onrampOptions,
+          expectedDstAmount: expectedDstAmountRaw,
+          creatorAddress: globalAddress,
+          payload,
+        });
+      }
     } catch (err: any) {
       console.error(err);
       toast.error("Failed to create order: " + err.message);
@@ -631,10 +730,13 @@ function AnySpendCustomExactInInner({
   return (
     <StyleRoot>
       <div
-        className={cn(
-          "anyspend-container font-inter bg-as-surface-primary mx-auto w-full max-w-[460px] p-6",
-          mode === "page" && "border-as-border-secondary overflow-hidden rounded-2xl border shadow-xl",
-        )}
+        className={
+          classes?.root ||
+          cn(
+            "anyspend-container font-inter bg-as-surface-primary mx-auto w-full max-w-[460px] p-6",
+            mode === "page" && "border-as-border-secondary overflow-hidden rounded-2xl border shadow-xl",
+          )
+        }
       >
         <TransitionPanel
           activeIndex={

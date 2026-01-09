@@ -7,6 +7,7 @@ import {
   useGeoOnrampOptions,
 } from "@b3dotfun/sdk/anyspend/react";
 import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
+import { normalizeAddress } from "@b3dotfun/sdk/anyspend/utils";
 import {
   toast,
   useAccountWallet,
@@ -18,7 +19,7 @@ import {
 import { formatTokenAmount, formatUnits } from "@b3dotfun/sdk/shared/utils/number";
 import { useEffect, useMemo, useState } from "react";
 
-import { parseUnits } from "viem";
+import { encodeFunctionData, parseUnits } from "viem";
 import { base, mainnet } from "viem/chains";
 import { components } from "../../types/api";
 import { GetQuoteRequest } from "../../types/api_req_res";
@@ -40,6 +41,59 @@ export enum PanelView {
   FEE_DETAIL,
 }
 
+export type CustomExactInConfig = {
+  functionAbi: string;
+  functionName: string;
+  functionArgs: string[];
+  to: string;
+  spenderAddress?: string;
+  action?: string;
+};
+
+/**
+ * Generates encoded function data for custom contract calls.
+ * Handles amount placeholder replacement and BigInt conversion.
+ */
+export function generateEncodedData(config: CustomExactInConfig | undefined, amountInWei: string): string | undefined {
+  if (!config || !config.functionAbi || !config.functionName || !config.functionArgs) {
+    console.warn("customExactInConfig missing required fields for encoding:", {
+      hasConfig: !!config,
+      hasFunctionAbi: !!config?.functionAbi,
+      hasFunctionName: !!config?.functionName,
+      hasFunctionArgs: !!config?.functionArgs,
+    });
+    return undefined;
+  }
+
+  try {
+    const abi = JSON.parse(config.functionAbi);
+    const processedArgs = config.functionArgs.map(arg => {
+      // Replace amount placeholders ({{dstAmount}}, {{amount_out}}, etc.)
+      if (arg === "{{dstAmount}}" || arg === "{{amount_out}}") {
+        return BigInt(amountInWei);
+      }
+      // Convert numeric strings to BigInt for uint256 args
+      if (/^\d+$/.test(arg)) {
+        return BigInt(arg);
+      }
+      return arg;
+    });
+
+    return encodeFunctionData({
+      abi,
+      functionName: config.functionName,
+      args: processedArgs,
+    });
+  } catch (e) {
+    console.error("Failed to encode function data:", e, {
+      functionAbi: config.functionAbi,
+      functionName: config.functionName,
+      functionArgs: config.functionArgs,
+    });
+    return undefined;
+  }
+}
+
 interface UseAnyspendFlowProps {
   paymentType?: "crypto" | "fiat";
   recipientAddress?: string;
@@ -54,6 +108,7 @@ interface UseAnyspendFlowProps {
   slippage?: number;
   disableUrlParamManagement?: boolean;
   orderType?: "hype_duel" | "custom_exact_in" | "swap";
+  customExactInConfig?: CustomExactInConfig;
 }
 
 // This hook serves for order hype_duel and custom_exact_in
@@ -70,6 +125,7 @@ export function useAnyspendFlow({
   slippage = 0,
   disableUrlParamManagement = false,
   orderType = "hype_duel",
+  customExactInConfig,
 }: UseAnyspendFlowProps) {
   const searchParams = useSearchParamsSSR();
   const router = useRouter();
@@ -89,6 +145,8 @@ export function useAnyspendFlow({
   const [selectedDstToken, setSelectedDstToken] = useState<components["schemas"]["Token"]>(defaultDstToken);
   const [srcAmount, setSrcAmount] = useState<string>(paymentType === "fiat" ? "5" : "0");
   const [dstAmount, setDstAmount] = useState<string>("");
+  const [dstAmountInput, setDstAmountInput] = useState<string>(""); // User input for destination amount (EXACT_OUTPUT mode)
+  const [debouncedDstAmountInput, setDebouncedDstAmountInput] = useState<string>(""); // Debounced version for quote requests
   const [isSrcInputDirty, setIsSrcInputDirty] = useState(true);
 
   // Derive destination chain ID from token or prop (cannot change)
@@ -183,6 +241,20 @@ export function useAnyspendFlow({
     fetchDestinationToken();
   }, [destinationTokenAddress, destinationTokenChainId]);
 
+  // Check if destination token is ready (matches the expected address from props)
+  // This is important for EXACT_OUTPUT mode where we need correct decimals
+  const isDestinationTokenReady =
+    !destinationTokenAddress || selectedDstToken.address.toLowerCase() === destinationTokenAddress.toLowerCase();
+
+  // Debounce destination amount input for quote requests (500ms delay)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedDstAmountInput(dstAmountInput);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [dstAmountInput]);
+
   // Helper function for onramp vendor mapping
   const getOnrampVendor = (paymentMethod: FiatPaymentMethod): "coinbase" | "stripe" | "stripe-web2" | undefined => {
     switch (paymentMethod) {
@@ -197,8 +269,18 @@ export function useAnyspendFlow({
 
   // Get quote
   // For fiat payments, always use USDC decimals (6) regardless of selectedSrcToken
-  const effectiveDecimals = paymentType === "fiat" ? USDC_BASE.decimals : selectedSrcToken.decimals;
-  const activeInputAmountInWei = parseUnits(srcAmount.replace(/,/g, ""), effectiveDecimals).toString();
+  const effectiveSrcDecimals = paymentType === "fiat" ? USDC_BASE.decimals : selectedSrcToken.decimals;
+  const activeInputAmountInWei = parseUnits(srcAmount.replace(/,/g, ""), effectiveSrcDecimals).toString();
+
+  // Calculate output amount in wei for EXACT_OUTPUT mode
+  // Only calculate when destination token is ready (has correct decimals)
+  // Use debounced value to reduce quote API calls
+  const activeOutputAmountInWei = isDestinationTokenReady
+    ? parseUnits(debouncedDstAmountInput.replace(/,/g, "") || "0", selectedDstToken.decimals).toString()
+    : "0";
+
+  // Determine trade type based on which input was last edited
+  const tradeType = isSrcInputDirty ? "EXACT_INPUT" : "EXACT_OUTPUT";
 
   // Build quote request based on order type
   const quoteRequest: GetQuoteRequest = (() => {
@@ -215,8 +297,8 @@ export function useAnyspendFlow({
       return {
         ...baseParams,
         type: "swap" as const,
-        tradeType: "EXACT_INPUT" as const,
-        amount: activeInputAmountInWei,
+        tradeType: tradeType as "EXACT_INPUT" | "EXACT_OUTPUT",
+        amount: tradeType === "EXACT_INPUT" ? activeInputAmountInWei : activeOutputAmountInWei,
       };
     } else if (orderType === "hype_duel") {
       return {
@@ -225,6 +307,23 @@ export function useAnyspendFlow({
         amount: activeInputAmountInWei,
       };
     } else {
+      // custom_exact_in - for EXACT_OUTPUT, use custom type to get the quote
+      if (tradeType === "EXACT_OUTPUT") {
+        const encodedData = generateEncodedData(customExactInConfig, activeOutputAmountInWei);
+
+        return {
+          ...baseParams,
+          type: "custom" as const,
+          payload: {
+            amount: activeOutputAmountInWei,
+            data: encodedData || "",
+            to: customExactInConfig ? normalizeAddress(customExactInConfig.to) : "",
+            spenderAddress: customExactInConfig?.spenderAddress
+              ? normalizeAddress(customExactInConfig.spenderAddress)
+              : undefined,
+          },
+        };
+      }
       return {
         ...baseParams,
         type: "custom_exact_in" as const,
@@ -235,26 +334,45 @@ export function useAnyspendFlow({
 
   const { anyspendQuote, isLoadingAnyspendQuote, getAnyspendQuoteError } = useAnyspendQuote(quoteRequest);
 
+  // Combined loading state: includes debounce waiting period and actual quote fetching
+  // For EXACT_OUTPUT mode, also check if we're waiting for debounce
+  const isDebouncingDstAmount = tradeType === "EXACT_OUTPUT" && dstAmountInput !== debouncedDstAmountInput;
+  const isQuoteLoading = isLoadingAnyspendQuote || isDebouncingDstAmount;
+
   // Get geo options for fiat
   const { geoData, coinbaseAvailablePaymentMethods, stripeWeb2Support } = useGeoOnrampOptions(
     paymentType === "fiat" ? formatUnits(activeInputAmountInWei, USDC_BASE.decimals) : "0",
   );
 
-  // Update destination amount when quote changes
+  // Update amounts when quote changes based on trade type
   useEffect(() => {
-    if (anyspendQuote?.data?.currencyOut?.amount && anyspendQuote.data.currencyOut.currency?.decimals) {
-      const amount = anyspendQuote.data.currencyOut.amount;
-      const decimals = anyspendQuote.data.currencyOut.currency.decimals;
+    if (isSrcInputDirty) {
+      // EXACT_INPUT mode: update destination amount from quote
+      if (anyspendQuote?.data?.currencyOut?.amount && anyspendQuote.data.currencyOut.currency?.decimals) {
+        const amount = anyspendQuote.data.currencyOut.amount;
+        const decimals = anyspendQuote.data.currencyOut.currency.decimals;
 
-      // Apply slippage (0-100) - reduce amount by slippage percentageFixed slippage value
-      const amountWithSlippage = (BigInt(amount) * BigInt(100 - slippage)) / BigInt(100);
+        // Apply slippage (0-100) - reduce amount by slippage percentage
+        const amountWithSlippage = (BigInt(amount) * BigInt(100 - slippage)) / BigInt(100);
 
-      const formattedAmount = formatTokenAmount(amountWithSlippage, decimals, 6, false);
-      setDstAmount(formattedAmount);
+        const formattedAmount = formatTokenAmount(amountWithSlippage, decimals, 6, false);
+        setDstAmount(formattedAmount);
+      } else {
+        setDstAmount("");
+      }
     } else {
-      setDstAmount("");
+      // EXACT_OUTPUT mode: update source amount from quote
+      if (anyspendQuote?.data?.currencyIn?.amount && anyspendQuote.data.currencyIn.currency?.decimals) {
+        const amount = anyspendQuote.data.currencyIn.amount;
+        const decimals = anyspendQuote.data.currencyIn.currency.decimals;
+
+        const formattedAmount = formatTokenAmount(BigInt(amount), decimals, 6, false);
+        setSrcAmount(formattedAmount);
+      }
+      // Also set the display destination amount from the user input
+      setDstAmount(dstAmountInput);
     }
-  }, [anyspendQuote, slippage]);
+  }, [anyspendQuote, slippage, isSrcInputDirty, dstAmountInput]);
 
   // Update useEffect for URL parameter to not override loadOrder
   useEffect(() => {
@@ -344,8 +462,11 @@ export function useAnyspendFlow({
     setSrcAmount,
     dstAmount,
     setDstAmount,
+    dstAmountInput,
+    setDstAmountInput,
     isSrcInputDirty,
     setIsSrcInputDirty,
+    tradeType,
     // Payment methods
     cryptoPaymentMethod,
     setCryptoPaymentMethod,
@@ -366,8 +487,10 @@ export function useAnyspendFlow({
     // Quote data
     anyspendQuote,
     isLoadingAnyspendQuote,
+    isQuoteLoading, // Combined loading state (includes debounce + quote fetching)
     getAnyspendQuoteError,
     activeInputAmountInWei,
+    activeOutputAmountInWei, // User's destination amount input in wei (for EXACT_OUTPUT mode)
     // Geo/onramp data
     geoData,
     coinbaseAvailablePaymentMethods,

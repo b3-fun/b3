@@ -12,6 +12,7 @@ import { motion } from "motion/react";
 import { memo, useState } from "react";
 
 import { b3 } from "viem/chains";
+import type { OrderDetailsCollapsibleClasses } from "../types/classes";
 
 type Order = components["schemas"]["Order"];
 type Token = components["schemas"]["Token"];
@@ -31,6 +32,7 @@ interface OrderDetailsCollapsibleProps {
   points?: number;
   isOpen?: boolean;
   onOpenChange?: (isOpen: boolean) => void;
+  classes?: OrderDetailsCollapsibleClasses;
 }
 
 export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
@@ -46,6 +48,7 @@ export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
   points,
   isOpen,
   onOpenChange,
+  classes,
 }: OrderDetailsCollapsibleProps) {
   const [internalOpen, setInternalOpen] = useState(true);
 
@@ -54,14 +57,13 @@ export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
   const setShowOrderDetails = onOpenChange || setInternalOpen;
 
   // Calculate expected amount if not provided
+  // For custom orders, use payload.amount as the expected destination amount
   const expectedDstAmount =
-    order.type === "mint_nft" ||
-    order.type === "join_tournament" ||
-    order.type === "fund_tournament" ||
-    order.type === "custom" ||
-    order.type === "deposit_first"
+    order.type === "mint_nft" || order.type === "join_tournament" || order.type === "fund_tournament"
       ? "0"
-      : order.payload.expectedDstAmount.toString();
+      : order.type === "custom" || order.type === "deposit_first"
+        ? order.payload.amount?.toString() || "0"
+        : order.payload.expectedDstAmount.toString();
 
   const finalFormattedExpectedDstAmount =
     formattedExpectedDstAmount || formatTokenAmount(BigInt(expectedDstAmount), dstToken.decimals);
@@ -69,7 +71,8 @@ export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
   return (
     <div
       className={cn(
-        "order-details-collapsible bg-as-surface-secondary border-as-border-secondary rounded-xl border px-4 py-2",
+        classes?.container ||
+          "order-details-collapsible bg-as-surface-secondary border-as-border-secondary rounded-xl border px-4 py-2",
         className,
       )}
     >
@@ -145,6 +148,8 @@ export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
                       {formatTokenAmount(BigInt(order.payload.expectedDstAmount), dstToken.decimals)} HYPE
                     </div>
                   </div>
+                ) : order.type === "custom" || order.type === "custom_exact_in" ? (
+                  <span className="order-details-amount-text">{`~${finalFormattedExpectedDstAmount} ${dstToken.symbol}`}</span>
                 ) : null}
 
                 <div className="order-details-chain-info text-as-primary/50 flex items-center gap-2">

@@ -1,6 +1,6 @@
 "use client";
 
-import { toast, useAccountWallet, WalletImage } from "@b3dotfun/sdk/global-account/react";
+import { toast, useAccountWallet, useModalStore, WalletImage } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { shortenAddress } from "@b3dotfun/sdk/shared/utils/formatAddress";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
@@ -8,6 +8,7 @@ import { ChevronLeft, ChevronRightCircle, Wallet, X, ZapIcon } from "lucide-reac
 import { useConnectModal, useDisconnect, useWalletInfo } from "thirdweb/react";
 import { createWallet } from "thirdweb/wallets";
 import { useConnectedWalletDisplay } from "../../hooks/useConnectedWalletDisplay";
+import type { CryptoPaymentMethodClasses } from "../types/classes";
 
 export enum CryptoPaymentMethodType {
   NONE = "none",
@@ -29,6 +30,7 @@ interface CryptoPaymentMethodProps {
   isCreatingOrder: boolean;
   onBack: () => void;
   onSelectPaymentMethod: (method: CryptoPaymentMethodType) => void;
+  classes?: CryptoPaymentMethodClasses;
 }
 
 export function CryptoPaymentMethod({
@@ -37,6 +39,7 @@ export function CryptoPaymentMethod({
   isCreatingOrder,
   onBack,
   onSelectPaymentMethod,
+  classes,
 }: CryptoPaymentMethodProps) {
   const { connectedEOAWallet, connectedSmartWallet } = useAccountWallet();
   const { disconnect } = useDisconnect();
@@ -48,13 +51,20 @@ export function CryptoPaymentMethod({
   // Use custom hook to determine wallet display logic
   const { shouldShowConnectedEOA } = useConnectedWalletDisplay(selectedPaymentMethod);
 
+  // Get modal store to block parent modal closing while connect modal is open
+  const setClosable = useModalStore(state => state.setClosable);
+
   // Handle wallet connection using thirdweb modal
   const handleConnectWallet = async () => {
+    // Block parent B3 modal from closing while thirdweb connect modal is open
+    setClosable(false);
+
     try {
       // Disconnect current wallet before connecting a new one
       if (connectedEOAWallet) {
-        await disconnect(connectedEOAWallet);
+        disconnect(connectedEOAWallet);
       }
+
       const wallet = await openConnectModal({
         client,
         setActive: false,
@@ -62,8 +72,8 @@ export function CryptoPaymentMethod({
         showThirdwebBranding: false,
         wallets: recommendWallets,
       });
+
       if (wallet) {
-        // setActiveWallet(wallet);
         setSelectedPaymentMethod(CryptoPaymentMethodType.CONNECT_WALLET);
         onSelectPaymentMethod(CryptoPaymentMethodType.CONNECT_WALLET);
         toast.success("Wallet connected");
@@ -82,20 +92,30 @@ export function CryptoPaymentMethod({
           toast.error("Failed to connect wallet");
         }
       }
+    } finally {
+      // Always re-enable parent modal closing when connect modal closes
+      setClosable(true);
     }
   };
 
   return (
-    <div className="crypto-payment-method mx-auto h-fit w-[460px] max-w-full px-5 pb-5 pt-5 sm:px-0 sm:pt-5">
+    <div
+      className={
+        classes?.container || "crypto-payment-method mx-auto h-fit w-[460px] max-w-full px-5 pb-5 pt-5 sm:px-0 sm:pt-5"
+      }
+    >
       <div className={cn("relative flex flex-col gap-10")}>
         {/* Header */}
         <button
           onClick={onBack}
-          className="text-as-quaternary hover:text-as-primary absolute flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
+          className={
+            classes?.backButton ||
+            "text-as-quaternary hover:text-as-primary absolute flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
+          }
         >
           <ChevronLeft className="h-6 w-6" />
         </button>
-        <div className="flex items-center justify-around gap-4">
+        <div className={classes?.header || "flex items-center justify-around gap-4"}>
           <div className="flex-1 text-center">
             <h2 className="text-as-primary text-lg font-semibold">Select a payment method</h2>
           </div>
@@ -145,7 +165,7 @@ export function CryptoPaymentMethod({
         )}
 
         {/* Payment Methods */}
-        <div className="crypto-payment-methods flex flex-col gap-4">
+        <div className={classes?.optionsList || "crypto-payment-methods flex flex-col gap-4"}>
           {/* Installed Wallets Section */}
           {(shouldShowConnectedEOA || globalAddress) && (
             <div className="installed-wallets">

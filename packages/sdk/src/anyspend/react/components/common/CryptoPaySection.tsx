@@ -5,6 +5,7 @@ import { motion } from "motion/react";
 import { useEffect, useRef } from "react";
 import { components } from "../../../types/api";
 import { useConnectedWalletDisplay } from "../../hooks/useConnectedWalletDisplay";
+import type { CryptoPaySectionClasses } from "../types/classes";
 import { CryptoPaymentMethodType } from "./CryptoPaymentMethod";
 import { CryptoPaymentMethodDisplay } from "./CryptoPaymentMethodDisplay";
 import { OrderTokenAmount } from "./OrderTokenAmount";
@@ -29,6 +30,8 @@ interface CryptoPaySectionProps {
   onTokenSelect?: (token: components["schemas"]["Token"], event: { preventDefault: () => void }) => void;
   // Fee detail callback
   onShowFeeDetail?: () => void;
+  // Custom classes for styling
+  classes?: CryptoPaySectionClasses;
 }
 
 export function CryptoPaySection({
@@ -45,6 +48,7 @@ export function CryptoPaySection({
   anyspendQuote,
   onTokenSelect,
   onShowFeeDetail,
+  classes,
 }: CryptoPaySectionProps) {
   const { data: srcTokenMetadata } = useTokenData(selectedSrcToken?.chainId, selectedSrcToken?.address);
 
@@ -87,10 +91,13 @@ export function CryptoPaySection({
       initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
       animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
       transition={{ duration: 0.3, delay: 0, ease: "easeInOut" }}
-      className="pay-section bg-as-surface-secondary border-as-border-secondary relative flex w-full flex-col gap-2 rounded-2xl border p-4 sm:p-6"
+      className={
+        classes?.container ||
+        "pay-section bg-as-surface-secondary border-as-border-secondary relative flex w-full flex-col gap-2 rounded-2xl border p-4 sm:p-6"
+      }
     >
       <div className="flex items-center justify-between">
-        <div className="text-as-primary/50 flex h-7 items-center gap-1.5 text-sm">
+        <div className={classes?.label || "text-as-primary/50 flex h-7 items-center gap-1.5 text-sm"}>
           Pay
           {!isSrcInputDirty && anyspendQuote?.data?.fee && onShowFeeDetail && (
             <button onClick={onShowFeeDetail} className="text-as-primary/40 hover:text-as-primary/60 transition-colors">
@@ -99,7 +106,10 @@ export function CryptoPaySection({
           )}
         </div>
         <button
-          className="text-as-tertiarry flex h-7 items-center gap-2 text-sm transition-colors focus:!outline-none"
+          className={
+            classes?.paymentMethodButton ||
+            "text-as-tertiarry flex h-7 items-center gap-2 text-sm transition-colors focus:!outline-none"
+          }
           onClick={onSelectCryptoPaymentMethod}
         >
           <CryptoPaymentMethodDisplay
@@ -109,22 +119,24 @@ export function CryptoPaySection({
           />
         </button>
       </div>
-      <OrderTokenAmount
-        address={walletAddress}
-        walletAddress={walletAddress}
-        context="from"
-        inputValue={srcAmount}
-        onChangeInput={value => {
-          setIsSrcInputDirty(true);
-          setSrcAmount(value);
-        }}
-        chainId={selectedSrcChainId}
-        setChainId={setSelectedSrcChainId}
-        token={selectedSrcToken}
-        setToken={setSelectedSrcToken}
-        onTokenSelect={onTokenSelect}
-      />
-      <div className="flex items-center justify-between">
+      <div className={classes?.inputContainer}>
+        <OrderTokenAmount
+          address={walletAddress}
+          walletAddress={walletAddress}
+          context="from"
+          inputValue={srcAmount}
+          onChangeInput={value => {
+            setIsSrcInputDirty(true);
+            setSrcAmount(value);
+          }}
+          chainId={selectedSrcChainId}
+          setChainId={setSelectedSrcChainId}
+          token={selectedSrcToken}
+          setToken={setSelectedSrcToken}
+          onTokenSelect={onTokenSelect}
+        />
+      </div>
+      <div className={classes?.balanceRow || "flex items-center justify-between"}>
         <div className="text-as-primary/50 flex h-5 items-center text-sm">
           {formatDisplayNumber(anyspendQuote?.data?.currencyIn?.amountUsd, {
             style: "currency",

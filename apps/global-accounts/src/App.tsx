@@ -50,6 +50,9 @@ function App() {
         onConnect={(wallet, b3Jwt) => {
           console.log("@@App.tsx:onConnect", { wallet, b3Jwt });
         }}
+        onLogout={() => {
+          console.log("@@App.tsx:onLogout");
+        }}
       >
         <BrowserRouter>
           <B3DynamicModal />
