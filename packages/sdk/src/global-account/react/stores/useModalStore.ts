@@ -47,25 +47,6 @@ export interface SignInWithB3ModalProps extends BaseModalProps {
 }
 
 /**
- * Props for the Turnkey Authentication modal
- * Handles Turnkey email/OTP authentication flow
- */
-export interface TurnkeyAuthModalProps extends BaseModalProps {
-  /** Modal type identifier */
-  type: "turnkeyAuth";
-  /** Callback function called when authentication is successful */
-  onSuccess: (_user: any) => void;
-  /** Callback function called when modal is closed */
-  onClose: () => void;
-  /** Initial email to pre-fill */
-  initialEmail?: string;
-  /** Whether to skip directly to OTP step */
-  skipToOtp?: boolean;
-  /** Whether the modal can be closed - defaults to false for Turnkey */
-  closable?: boolean;
-}
-
-/**
  * Props for the Request Permissions modal
  * Used to request permission for session keys to interact with contracts
  */
@@ -580,7 +561,6 @@ export interface AnySpendDepositModalProps extends BaseModalProps {
  */
 export type ModalContentType =
   | SignInWithB3ModalProps
-  | TurnkeyAuthModalProps
   | RequestPermissionsModalProps
   | ManageAccountModalProps
   | AnySpendModalProps

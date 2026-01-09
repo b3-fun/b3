@@ -29,7 +29,6 @@ import { RequestPermissions } from "./RequestPermissions/RequestPermissions";
 import { Send } from "./Send/Send";
 import { SignInWithB3Flow } from "./SignInWithB3/SignInWithB3Flow";
 import { ToastContainer, useToastContext } from "./Toast/index";
-import { TurnkeyAuthModal } from "./TurnkeyAuthModal";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "./ui/dialog";
 import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "./ui/drawer";
 
@@ -57,7 +56,6 @@ export function B3DynamicModal() {
     "anySpendBuySpin",
     "anySpendOrderHistory",
     "signInWithB3",
-    "turnkeyAuth",
     "anySpendSignatureMint",
     "anySpendBondKit",
     "linkAccount",
@@ -96,7 +94,6 @@ export function B3DynamicModal() {
     fullWidthTypes.includes(contentType?.type as string) && "w-full",
     isFreestyleType && "b3-modal-freestyle",
     contentType?.type === "signInWithB3" && "p-0",
-    contentType?.type === "turnkeyAuth" && "p-0",
     contentType?.type === "anySpend" && "md:p-0",
     contentType?.type === "send" && "p-0",
     contentType?.type === "manageAccount" && " md:p-0 md:pt-2",
@@ -113,8 +110,6 @@ export function B3DynamicModal() {
     switch (contentType.type) {
       case "signInWithB3":
         return <SignInWithB3Flow {...contentType} />;
-      case "turnkeyAuth":
-        return <TurnkeyAuthModal {...contentType} />;
       case "requestPermissions":
         return <RequestPermissions {...contentType} />;
       case "manageAccount":

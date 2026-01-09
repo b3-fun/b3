@@ -21,7 +21,6 @@ export default defineConfig(({ command: _command, mode }) => {
       NEXT_PUBLIC_LOCAL_KEY: "k1c4Ep6agmoejiBinKE70B6bzb8vSdm8", // same as above
       NEXT_PUBLIC_TRANSAK_API_KEY: "d1f4e8be-cacb-4cfa-b2cd-c591084b5ef6",
       NEXT_PUBLIC_THIRDWEB_ECOSYSTEM_ID: "ecosystem.b3dotfun",
-      NEXT_PUBLIC_TURNKEY_PRIMARY: "true",
     };
   } else {
     // Try to use .env* or system env for preview, fallback to prod defaults
@@ -49,7 +48,6 @@ export default defineConfig(({ command: _command, mode }) => {
         env.NEXT_PUBLIC_THIRDWEB_ECOSYSTEM_ID ||
         process.env.NEXT_PUBLIC_THIRDWEB_ECOSYSTEM_ID ||
         "ecosystem.b3-open-gaming",
-      NEXT_PUBLIC_TURNKEY_PRIMARY: "true",
     };
   }
 

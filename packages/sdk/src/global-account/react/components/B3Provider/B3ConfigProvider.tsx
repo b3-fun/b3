@@ -25,7 +25,6 @@ export interface B3ConfigContextType {
   partnerId: string;
   stripePublishableKey?: string;
   createClientReferenceId?: (params: CreateOrderParams | CreateOnrampOrderParams) => Promise<string>;
-  enableTurnkey: boolean;
 }
 
 const B3ConfigContext = createContext<B3ConfigContextType | null>(null);
@@ -41,7 +40,6 @@ export function B3ConfigProvider({
   partnerId,
   stripePublishableKey,
   createClientReferenceId,
-  enableTurnkey = false,
 }: {
   children: React.ReactNode;
   accountOverride?: Account;
@@ -53,7 +51,6 @@ export function B3ConfigProvider({
   partnerId: string;
   stripePublishableKey?: string;
   createClientReferenceId?: (params: CreateOrderParams | CreateOnrampOrderParams) => Promise<string>;
-  enableTurnkey?: boolean;
 }) {
   return (
     <B3ConfigContext.Provider
@@ -67,7 +64,6 @@ export function B3ConfigProvider({
         partnerId,
         stripePublishableKey,
         createClientReferenceId,
-        enableTurnkey,
       }}
     >
       {children}

@@ -25,8 +25,7 @@ import { useUserQuery } from "./useUserQuery";
 const debug = debugB3React("useAuth");
 
 /**
- * Unified authentication hook that uses Turnkey for authentication
- * This replaces the previous Thirdweb-based authentication
+ * Unified authentication hook for B3
  *
  * This hook provides 1:1 feature parity with useAuthentication.ts
  */
@@ -146,12 +145,8 @@ export function useAuth() {
   }, [wallets, syncWagmi]);
 
   /**
-   * Authenticate user using Turnkey
-   * Note: This no longer requires a wallet for authentication.
-   * Wallets are still used for signing transactions, but authentication is done via Turnkey email OTP.
-   *
-   * For backward compatibility, this function still accepts a wallet parameter,
-   * but it's not used for authentication anymore.
+   * Authenticate user
+   * Attempts to re-authenticate using existing session
    */
   const authenticateUser = useCallback(async () => {
     setHasStartedConnecting(true);
@@ -170,18 +165,16 @@ export function useAuth() {
 
       return userAuth;
     } catch (error) {
-      // If re-authentication fails, user needs to authenticate via Turnkey
-      // This should be handled by the Turnkey auth modal/flow
-      debug("Re-authentication failed. User needs to authenticate via Turnkey.", error);
+      // If re-authentication fails, user needs to authenticate
+      debug("Re-authentication failed. User needs to authenticate.", error);
       setIsAuthenticated(false);
       setIsAuthenticating(false);
-      throw new Error("Authentication required. Please authenticate via Turnkey.");
+      throw new Error("Authentication required. Please authenticate.");
     }
   }, [reAuthenticate, setIsAuthenticated, setIsAuthenticating, setUser, setHasStartedConnecting]);
 
   /**
-   * Authenticate with Turnkey using email OTP
-   * This is the primary authentication method, replacing Thirdweb wallet-based auth
+   * Authenticate with B3
    *
    * This function:
    * 1. Authenticates with FeathersJS (persists session via cookies)
@@ -189,18 +182,18 @@ export function useAuth() {
    * 3. Authenticates with BSMNT for basement integration
    */
   const authenticate = useCallback(
-    async (turnkeySessionJwt: string, partnerId: string) => {
-      if (!turnkeySessionJwt) {
-        throw new Error("Turnkey session JWT is required");
+    async (accessToken: string, partnerId: string, strategy = "thirdweb-jwt") => {
+      if (!accessToken) {
+        throw new Error("Access token is required");
       }
 
-      debug("Authenticating with Turnkey JWT", { referralCode, partnerId });
+      debug("Authenticating with B3", { referralCode, partnerId, strategy });
 
       try {
         // Step 1: Authenticate with FeathersJS (session persisted via cookies)
         const response = await app.authenticate({
-          strategy: "turnkey-jwt",
-          accessToken: turnkeySessionJwt,
+          strategy,
+          accessToken,
           referralCode,
           partnerId: partnerId,
         } as any);
@@ -233,13 +226,6 @@ export function useAuth() {
 
   /**
    * Handle wallet connection
-   * Note: With Turnkey migration, wallet connection is primarily for signing transactions,
-   * not for authentication. Authentication should be done separately via Turnkey email OTP.
-   */
-  /**
-   * Handle wallet connection
-   * Note: With Turnkey migration, wallet connection is primarily for signing transactions,
-   * not for authentication. Authentication should be done separately via Turnkey email OTP.
    */
   const onConnect = useCallback(
     async (_walleAutoConnectedWith: Wallet, allConnectedWallets: Wallet[]) => {
@@ -260,7 +246,6 @@ export function useAuth() {
         await setActiveWallet(wallet);
 
         // Try to authenticate user (will use re-authenticate if session exists)
-        // If no session exists, authentication will need to happen via Turnkey flow
         try {
           const userAuth = await authenticateUser();
 
@@ -268,10 +253,8 @@ export function useAuth() {
             await onConnectCallback(wallet, userAuth.accessToken);
           }
         } catch (authError) {
-          // Authentication failed - this is expected if user hasn't authenticated via Turnkey yet
-          // The Turnkey auth modal should handle this
+          // Authentication failed - user needs to authenticate
           debug("@@useAuth:onConnect:authFailed", { authError });
-          // Don't set isAuthenticated to false here - let the Turnkey flow handle it
         }
       } catch (error) {
         debug("@@useAuth:onConnect:failed", { error });

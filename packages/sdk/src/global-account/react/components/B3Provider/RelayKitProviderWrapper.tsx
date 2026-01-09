@@ -19,9 +19,6 @@ export function RelayKitProviderWrapper({
     fetchChains();
   }, []);
 
-  const isTurnkeyPrimary = process.env.NEXT_PUBLIC_TURNKEY_PRIMARY === "true";
-  const appName = isTurnkeyPrimary ? "Smart Wallet" : "AnySpend";
-
   return (
     <RelayKitProvider
       options={{
@@ -33,7 +30,7 @@ export function RelayKitProviderWrapper({
         },
         chains: relayChains,
         privateChainIds: undefined,
-        appName,
+        appName: "AnySpend",
         useGasFeeEstimations: true,
       }}
     >

@@ -1,5 +1,5 @@
 /**
- * @deprecated This hook is deprecated. Use useAuth() with Turnkey authentication instead.
+ * @deprecated This hook is deprecated. Use useAuth() instead.
  * This file is kept for backward compatibility but should not be used in new code.
  */
 import app from "@b3dotfun/sdk/global-account/app";
@@ -9,12 +9,10 @@ import { Wallet } from "thirdweb/wallets";
 import { useSearchParam } from "./useSearchParamsSSR";
 
 /**
- * @deprecated Use useAuth() with Turnkey authentication instead
+ * @deprecated Use useAuth() instead
  */
 export function useTWAuth() {
-  console.warn(
-    "useTWAuth is deprecated. Please migrate to useAuth() with Turnkey authentication. See useTurnkeyAuth.ts for the new implementation.",
-  );
+  console.warn("useTWAuth is deprecated. Please migrate to useAuth() for authentication.");
   const referralCode = useSearchParam("referralCode");
 
   const authenticate = useCallback(

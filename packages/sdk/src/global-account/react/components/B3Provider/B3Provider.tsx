@@ -1,4 +1,3 @@
-import { Users } from "@b3dotfun/b3-api";
 import { CreateOnrampOrderParams } from "@b3dotfun/sdk/anyspend/react/hooks/useAnyspendCreateOnrampOrder";
 import { CreateOrderParams } from "@b3dotfun/sdk/anyspend/react/hooks/useAnyspendCreateOrder";
 import { RelayKitProviderWrapper, TooltipProvider } from "@b3dotfun/sdk/global-account/react";
@@ -42,9 +41,7 @@ export function B3Provider({
   connectors,
   overrideDefaultConnectors = false,
   createClientReferenceId,
-  enableTurnkey = false,
   defaultPermissions,
-  onTurnkeyConnect,
 }: {
   theme: "light" | "dark";
   children: React.ReactNode;
@@ -66,9 +63,7 @@ export function B3Provider({
   connectors?: CreateConnectorFn[];
   overrideDefaultConnectors?: boolean;
   createClientReferenceId?: (params: CreateOrderParams | CreateOnrampOrderParams) => Promise<string>;
-  enableTurnkey?: boolean;
   defaultPermissions?: PermissionsConfig;
-  onTurnkeyConnect?: (user: Users) => void | Promise<void>;
 }) {
   // Initialize Google Analytics on mount
   useEffect(() => {
@@ -91,11 +86,7 @@ export function B3Provider({
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
             <ToastProvider>
-              <LocalSDKProvider
-                onConnectCallback={onConnect}
-                onLogoutCallback={onLogout}
-                onTurnkeyConnect={onTurnkeyConnect}
-              >
+              <LocalSDKProvider onConnectCallback={onConnect} onLogoutCallback={onLogout}>
                 <B3ConfigProvider
                   accountOverride={accountOverride}
                   environment={environment}
@@ -105,7 +96,6 @@ export function B3Provider({
                   partnerId={partnerId}
                   stripePublishableKey={stripePublishableKey}
                   createClientReferenceId={createClientReferenceId}
-                  enableTurnkey={enableTurnkey}
                   defaultPermissions={defaultPermissions}
                 >
                   <ToastContextConnector />
