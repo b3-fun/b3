@@ -182,7 +182,7 @@ export function useAuth() {
    * 3. Authenticates with BSMNT for basement integration
    */
   const authenticate = useCallback(
-    async (accessToken: string, partnerId: string, strategy: string = "thirdweb-jwt") => {
+    async (accessToken: string, partnerId: string, strategy = "thirdweb-jwt") => {
       if (!accessToken) {
         throw new Error("Access token is required");
       }

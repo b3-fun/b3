@@ -46,7 +46,6 @@ export interface SignInWithB3ModalProps extends BaseModalProps {
   signersEnabled?: boolean;
 }
 
-
 /**
  * Props for the Request Permissions modal
  * Used to request permission for session keys to interact with contracts

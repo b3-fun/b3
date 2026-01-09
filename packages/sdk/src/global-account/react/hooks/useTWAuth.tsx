@@ -12,9 +12,7 @@ import { useSearchParam } from "./useSearchParamsSSR";
  * @deprecated Use useAuth() instead
  */
 export function useTWAuth() {
-  console.warn(
-    "useTWAuth is deprecated. Please migrate to useAuth() for authentication.",
-  );
+  console.warn("useTWAuth is deprecated. Please migrate to useAuth() for authentication.");
   const referralCode = useSearchParam("referralCode");
 
   const authenticate = useCallback(

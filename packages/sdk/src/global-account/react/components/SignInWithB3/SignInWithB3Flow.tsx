@@ -158,7 +158,6 @@ export function SignInWithB3Flow({
     setSessionKeyAdded,
   ]);
 
-
   // Handle post-login flow after signers are loaded
   useEffect(
     () => {
@@ -280,32 +279,31 @@ export function SignInWithB3Flow({
   } else if (step === "login") {
     // Show loading spinner
     if (isAuthenticating || (isFetchingSigners && step === "login") || source === "requestPermissions") {
+      content = (
+        <LoginStepContainer partnerId={partnerId}>
+          <div className="my-8 flex min-h-[350px] items-center justify-center">
+            <Loading variant="white" size="lg" />
+          </div>
+        </LoginStepContainer>
+      );
+    } else {
+      // Custom strategy
+      if (strategies?.[0] === "privy") {
+        content = <SignInWithB3Privy onSuccess={handleLoginSuccess} chain={chain} />;
+      } else if (strategies) {
+        // Strategies are explicitly provided
         content = (
-          <LoginStepContainer partnerId={partnerId}>
-            <div className="my-8 flex min-h-[350px] items-center justify-center">
-              <Loading variant="white" size="lg" />
-            </div>
-          </LoginStepContainer>
+          <LoginStepCustom
+            strategies={strategies}
+            chain={chain}
+            onSuccess={handleLoginSuccess}
+            onError={onError}
+            automaticallySetFirstEoa={!!automaticallySetFirstEoa}
+          />
         );
       } else {
-        // Custom strategy
-        if (strategies?.[0] === "privy") {
-          content = <SignInWithB3Privy onSuccess={handleLoginSuccess} chain={chain} />;
-        } else if (strategies) {
-          // Strategies are explicitly provided
-          content = (
-            <LoginStepCustom
-              strategies={strategies}
-              chain={chain}
-              onSuccess={handleLoginSuccess}
-              onError={onError}
-              automaticallySetFirstEoa={!!automaticallySetFirstEoa}
-            />
-          );
-        } else {
-          // Default to handle all strategies we support
-          content = <LoginStep chain={chain} onSuccess={handleLoginSuccess} onError={onError} />;
-        }
+        // Default to handle all strategies we support
+        content = <LoginStep chain={chain} onSuccess={handleLoginSuccess} onError={onError} />;
       }
     }
   }

@@ -1,4 +1,3 @@
-import { Users } from "@b3dotfun/b3-api";
 import { CreateOnrampOrderParams } from "@b3dotfun/sdk/anyspend/react/hooks/useAnyspendCreateOnrampOrder";
 import { CreateOrderParams } from "@b3dotfun/sdk/anyspend/react/hooks/useAnyspendCreateOrder";
 import { RelayKitProviderWrapper, TooltipProvider } from "@b3dotfun/sdk/global-account/react";
@@ -87,10 +86,7 @@ export function B3Provider({
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
             <ToastProvider>
-              <LocalSDKProvider
-                onConnectCallback={onConnect}
-                onLogoutCallback={onLogout}
-              >
+              <LocalSDKProvider onConnectCallback={onConnect} onLogoutCallback={onLogout}>
                 <B3ConfigProvider
                   accountOverride={accountOverride}
                   environment={environment}

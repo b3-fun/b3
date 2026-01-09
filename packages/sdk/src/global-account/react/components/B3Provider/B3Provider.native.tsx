@@ -24,7 +24,7 @@ export function B3Provider({
   environment,
   clientType = "socket",
   partnerId,
-  rpcUrls,
+  rpcUrls: _rpcUrls,
   onConnect,
   defaultPermissions,
 }: {
