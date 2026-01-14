@@ -442,16 +442,18 @@ const { connected, chatId } = await notificationsAPI.checkTelegramStatus();
 
 ### App Preferences
 
+> **Note:** Currently, only `"general"` is a valid notification type. Users subscribe to the `"general"` type when connecting notification channels. See [NOTIFICATION_OPPORTUNITIES.md](../../NOTIFICATION_OPPORTUNITIES.md) for information about future notification type extensibility.
+
 ```typescript
 // Save notification preferences for an app (enabled by default)
 await notificationsAPI.savePreferences("my-app", {
-  notificationType: "transaction",
+  notificationType: "general",
   channels: ["email", "telegram", "in_app"],
 });
 
 // Save disabled preferences
 await notificationsAPI.savePreferences("my-app", {
-  notificationType: "transaction",
+  notificationType: "general",
   channels: ["email", "telegram"],
   enabled: false,
 });
@@ -477,7 +479,7 @@ await notificationsAPI.markNotificationAsRead("notification-id");
 await notificationsAPI.sendNotification({
   userId: "user-123",
   appId: "my-app",
-  notificationType: "transaction",
+  notificationType: "general",
   message: "Your transaction was successful!",
   title: "Transaction Complete",
   data: { transactionId: "tx-123" },
