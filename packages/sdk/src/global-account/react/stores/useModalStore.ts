@@ -554,6 +554,8 @@ export interface AnySpendDepositModalProps extends BaseModalProps {
   isCustomDeposit?: boolean;
   /** Custom class names for styling specific elements */
   classes?: AnySpendAllClasses;
+  /** Whether to allow direct transfer without swap */
+  allowDirectTransfer?: boolean;
 }
 
 /**

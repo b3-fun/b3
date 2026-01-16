@@ -1,3 +1,4 @@
+import { getChainName } from "@b3dotfun/sdk/anyspend";
 import { useGasPrice } from "@b3dotfun/sdk/anyspend/react";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
@@ -9,13 +10,17 @@ import {
   toast,
   TransitionPanel,
   useAccountWallet,
+  useModalStore,
+  useUnifiedChainSwitchAndExecute,
 } from "@b3dotfun/sdk/global-account/react";
+import { isNativeToken } from "@b3dotfun/sdk/anyspend/utils/token";
+import { encodeFunctionData, erc20Abi } from "viem";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { formatUnits } from "@b3dotfun/sdk/shared/utils/number";
 import invariant from "invariant";
-import { ArrowDown, Loader2 } from "lucide-react";
+import { ArrowDown, CheckCircle, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { AnySpendCustomExactInClasses } from "./types/classes";
 
 import { useSetActiveWallet } from "thirdweb/react";
@@ -78,6 +83,8 @@ export interface AnySpendCustomExactInProps {
   returnHomeLabel?: string;
   /** Custom class names for styling specific elements */
   classes?: AnySpendCustomExactInClasses;
+  /** When true, allows direct transfer without swap if source and destination token/chain are the same */
+  allowDirectTransfer?: boolean;
 }
 
 export function AnySpendCustomExactIn(props: AnySpendCustomExactInProps) {
@@ -114,8 +121,10 @@ function AnySpendCustomExactInInner({
   customRecipientLabel,
   returnHomeLabel,
   classes,
+  allowDirectTransfer = false,
 }: AnySpendCustomExactInProps) {
   const actionLabel = customExactInConfig?.action ?? "Custom Execution";
+  const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
 
   const DESTINATION_TOKEN_DETAILS = {
     SYMBOL: destinationToken.symbol ?? "TOKEN",
@@ -182,6 +191,22 @@ function AnySpendCustomExactInInner({
 
   const { connectedEOAWallet } = useAccountWallet();
   const setActiveWallet = useSetActiveWallet();
+  const { switchChainAndExecute, isSwitchingOrExecuting } = useUnifiedChainSwitchAndExecute();
+
+  // Check if source and destination are the same token on the same chain
+  const isSameChainSameToken = useMemo(() => {
+    return (
+      paymentType === "crypto" &&
+      selectedSrcChainId === selectedDstChainId &&
+      selectedSrcToken?.address?.toLowerCase() === selectedDstToken?.address?.toLowerCase()
+    );
+  }, [paymentType, selectedSrcChainId, selectedDstChainId, selectedSrcToken?.address, selectedDstToken?.address]);
+
+  // Check if this is a direct transfer
+  const isDirectTransfer = isSameChainSameToken && allowDirectTransfer;
+
+  // State for direct transfer success
+  const [directTransferTxHash, setDirectTransferTxHash] = useState<string | undefined>();
 
   // Get gas price for source chain (where the user pays from)
   const { gasPrice: gasPriceData, isLoading: isLoadingGas } = useGasPrice(selectedSrcChainId);
@@ -240,22 +265,25 @@ function AnySpendCustomExactInInner({
     const isAmountEmpty =
       tradeType === "EXACT_OUTPUT" ? !dstAmountInput || dstAmountInput === "0" : activeInputAmountInWei === "0";
 
+    const isDirectTransfer = isSameChainSameToken && allowDirectTransfer;
+
     if (isAmountEmpty) return { text: "Enter an amount", disable: true, error: false, loading: false };
     if (orderType === "hype_duel" && selectedSrcToken?.address?.toLowerCase() === B3_TOKEN.address.toLowerCase()) {
       return { text: "Convert to HYPE using B3", disable: false, error: false, loading: false };
     }
-    if (isQuoteLoading) return { text: "Loading quote...", disable: true, error: false, loading: true };
-    if (isCreatingOrder || isCreatingOnrampOrder)
-      return { text: "Creating order...", disable: true, error: false, loading: true };
+    if (isQuoteLoading && !isDirectTransfer)
+      return { text: "Loading quote...", disable: true, error: false, loading: true };
+    if (isCreatingOrder || isCreatingOnrampOrder || isSwitchingOrExecuting)
+      return { text: isSwitchingOrExecuting ? "Transferring..." : "Creating order...", disable: true, error: false, loading: true };
     if (!selectedRecipientOrDefault) return { text: "Select recipient", disable: false, error: false, loading: false };
-    if (!anyspendQuote || !anyspendQuote.success)
+    if ((!anyspendQuote || !anyspendQuote.success) && !isDirectTransfer)
       return { text: "Get quote error", disable: true, error: true, loading: false };
 
-    // Check minimum destination amount if specified
-    // Check minimum destination amount if specified
+    // Check minimum destination amount if specified (skip for direct transfers)
     if (
+      !isDirectTransfer &&
       minDestinationAmount &&
-      anyspendQuote.data?.currencyOut?.amount &&
+      anyspendQuote?.data?.currencyOut?.amount &&
       anyspendQuote.data.currencyOut.currency &&
       anyspendQuote.data.currencyOut.currency.decimals != null
     ) {
@@ -284,8 +312,12 @@ function AnySpendCustomExactInInner({
       ) {
         return { text: "Insufficient balance", disable: true, error: true, loading: false };
       }
-      // Use different text based on order type
-      const buttonText = orderType === "hype_duel" ? "Continue to deposit" : `Execute ${actionLabel}`;
+      // Use different text based on order type and whether it's a direct transfer
+      const buttonText = isDirectTransfer
+        ? "Transfer"
+        : orderType === "hype_duel"
+          ? "Continue to deposit"
+          : `Execute ${actionLabel}`;
       return { text: buttonText, disable: false, error: false, loading: false };
     }
 
@@ -302,6 +334,7 @@ function AnySpendCustomExactInInner({
     isQuoteLoading,
     isCreatingOrder,
     isCreatingOnrampOrder,
+    isSwitchingOrExecuting,
     selectedRecipientOrDefault,
     anyspendQuote,
     paymentType,
@@ -316,6 +349,8 @@ function AnySpendCustomExactInInner({
     selectedSrcToken,
     tradeType,
     dstAmountInput,
+    isSameChainSameToken,
+    allowDirectTransfer,
   ]);
 
   const onMainButtonClick = async () => {
@@ -448,9 +483,9 @@ function AnySpendCustomExactInInner({
                 setIsSrcInputDirty(false);
                 setDstAmountInput(value);
               }}
-              anyspendQuote={anyspendQuote}
-              onShowPointsDetail={() => setActivePanel(PanelView.POINTS_DETAIL)}
-              onShowFeeDetail={() => setActivePanel(PanelView.FEE_DETAIL)}
+              anyspendQuote={isDirectTransfer ? undefined : anyspendQuote}
+              onShowPointsDetail={isDirectTransfer ? undefined : () => setActivePanel(PanelView.POINTS_DETAIL)}
+              onShowFeeDetail={isDirectTransfer ? undefined : () => setActivePanel(PanelView.FEE_DETAIL)}
             />
           )}
         </div>
@@ -484,8 +519,8 @@ function AnySpendCustomExactInInner({
         </ShinyButton>
       </motion.div>
 
-      {/* Gas indicator - show when source chain has gas data */}
-      {gasPriceData && !isLoadingGas && paymentType === "crypto" && (
+      {/* Gas indicator - show when source chain has gas data, hide for direct transfers */}
+      {gasPriceData && !isLoadingGas && paymentType === "crypto" && !isDirectTransfer && (
         <GasIndicator gasPrice={gasPriceData} className={classes?.gasIndicator || "mt-2 w-full"} />
       )}
 
@@ -495,15 +530,53 @@ function AnySpendCustomExactInInner({
 
   const handleCryptoOrder = async () => {
     try {
-      invariant(anyspendQuote, "Relay price is not found");
+      const isDirectTransfer = isSameChainSameToken && allowDirectTransfer;
+
+      if (!isDirectTransfer) {
+        invariant(anyspendQuote, "Relay price is not found");
+      }
       invariant(selectedRecipientOrDefault, "Recipient address is not found");
 
+      // Handle direct transfer case (same token/chain) - bypass backend, transfer directly
+      if (isDirectTransfer) {
+        const srcAmountBigInt = BigInt(activeInputAmountInWei);
+        const isNative = isNativeToken(selectedSrcToken.address);
+
+        let txHash: string | undefined;
+        if (isNative) {
+          // Native token transfer (ETH, etc.)
+          txHash = await switchChainAndExecute(selectedSrcChainId, {
+            to: selectedRecipientOrDefault,
+            value: srcAmountBigInt,
+          });
+        } else {
+          // ERC20 token transfer
+          const transferData = encodeFunctionData({
+            abi: erc20Abi,
+            functionName: "transfer",
+            args: [selectedRecipientOrDefault as `0x${string}`, srcAmountBigInt],
+          });
+          txHash = await switchChainAndExecute(selectedSrcChainId, {
+            to: selectedSrcToken.address,
+            data: transferData,
+            value: BigInt(0),
+          });
+        }
+
+        if (txHash) {
+          setDirectTransferTxHash(txHash);
+          setActivePanel(PanelView.DIRECT_TRANSFER_SUCCESS);
+        }
+        return;
+      }
+
+      // At this point, anyspendQuote is guaranteed to be defined (invariant above ensures this)
       if (tradeType === "EXACT_OUTPUT") {
         // EXACT_OUTPUT mode: create a custom order (like AnySpendStakeUpside)
-        const srcAmountFromQuote = anyspendQuote.data?.currencyIn?.amount;
+        const srcAmountFromQuote = anyspendQuote?.data?.currencyIn?.amount;
         invariant(srcAmountFromQuote, "Source amount from quote is not found");
 
-        const expectedDstAmount = anyspendQuote.data?.currencyOut?.amount ?? "0";
+        const expectedDstAmount = anyspendQuote?.data?.currencyOut?.amount ?? "0";
         const encodedData = generateEncodedData(customExactInConfig, activeOutputAmountInWei);
 
         createOrder({
@@ -724,6 +797,50 @@ function AnySpendCustomExactInInner({
     />
   ) : null;
 
+  const directTransferSuccessView = (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="flex flex-col items-center justify-center gap-6 py-8"
+    >
+      <div className="bg-green-500/20 flex h-16 w-16 items-center justify-center rounded-full">
+        <CheckCircle className="h-10 w-10 text-green-500" />
+      </div>
+      <div className="text-center">
+        <h2 className="text-as-primary mb-2 text-xl font-bold">Transfer Complete!</h2>
+        <p className="text-as-primary/60 text-sm">
+          {srcAmount} {selectedSrcToken.symbol} sent on {getChainName(selectedSrcChainId)}
+        </p>
+        <p className="text-as-primary/60 mt-1 text-sm">
+          to {selectedRecipientOrDefault?.slice(0, 6)}...{selectedRecipientOrDefault?.slice(-4)}
+        </p>
+      </div>
+      {directTransferTxHash && (
+        <a
+          href={`https://blockscan.com/tx/${directTransferTxHash}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-as-brand text-sm underline"
+        >
+          View Transaction
+        </a>
+      )}
+      <Button
+        className="bg-as-brand hover:bg-as-brand/90 mt-4 w-full rounded-xl py-3 font-semibold text-white"
+        onClick={() => {
+          onSuccess?.(directTransferTxHash || "");
+          if (returnToHomeUrl) {
+            window.location.href = returnToHomeUrl;
+          } else {
+            setB3ModalOpen(false);
+          }
+        }}
+      >
+        {returnHomeLabel || (returnToHomeUrl ? "Return to Home" : "Done")}
+      </Button>
+    </motion.div>
+  );
+
   return (
     <StyleRoot>
       <div
@@ -764,6 +881,7 @@ function AnySpendCustomExactInInner({
             <div key="loading-view">{loadingView}</div>,
             <div key="points-detail-view">{pointsDetailView}</div>,
             <div key="fee-detail-view">{feeDetailView}</div>,
+            <div key="direct-transfer-success-view">{directTransferSuccessView}</div>,
           ]}
         </TransitionPanel>
       </div>
