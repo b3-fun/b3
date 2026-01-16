@@ -549,6 +549,7 @@ function AnySpendCustomExactInInner({
           tokenAddress: selectedSrcToken.address,
           recipientAddress: selectedRecipientOrDefault,
           amount: srcAmountBigInt,
+          method: effectiveCryptoPaymentMethod,
         });
 
         if (txHash) {
