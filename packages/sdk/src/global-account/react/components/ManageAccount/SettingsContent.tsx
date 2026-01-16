@@ -1,7 +1,10 @@
-import { useModalStore } from "@b3dotfun/sdk/global-account/react";
+import { useAuthentication, useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
+import { Loader2 } from "lucide-react";
+import { useState } from "react";
 import { Chain } from "thirdweb";
 import { useProfiles } from "thirdweb/react";
+import SignOutIcon from "../icons/SignOutIcon";
 import ModalHeader from "../ModalHeader/ModalHeader";
 import SettingsMenuItem from "./SettingsMenuItem";
 import SettingsProfileCard from "./SettingsProfileCard";
@@ -17,6 +20,8 @@ const SettingsContent = ({
 }) => {
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
+  const { logout } = useAuthentication(partnerId);
+  const [logoutLoading, setLogoutLoading] = useState(false);
 
   const { data: profilesRaw = [] } = useProfiles({ client });
 
@@ -59,6 +64,14 @@ const SettingsContent = ({
     setB3ModalOpen(true);
   };
 
+  const onLogoutEnhanced = async () => {
+    setLogoutLoading(true);
+    await logout();
+    onLogout?.();
+    setB3ModalOpen(false);
+    setLogoutLoading(false);
+  };
+
   return (
     <div className="flex h-[470px] flex-col">
       <ModalHeader showBackButton={false} showCloseButton={false} title="Settings" />
@@ -98,6 +111,25 @@ const SettingsContent = ({
           subtitle="Manage your notifications"
           onClick={() => handleNavigate("notifications")}
         />
+      </div>
+
+      {/* Logout Section */}
+      <div className="mt-auto px-5 pb-5">
+        <button
+          className="b3-modal-sign-out-button border-b3-line hover:bg-b3-line bg-b3-background dark:bg-b3-background dark:border-b3-line dark:hover:bg-b3-line/80 flex w-full items-center justify-center gap-1.5 rounded-xl border border-solid p-3 transition-colors"
+          onClick={onLogoutEnhanced}
+          disabled={logoutLoading}
+          style={{
+            boxShadow: "inset 0px 0px 0px 1px rgba(10,13,18,0.18), inset 0px -2px 0px 0px rgba(10,13,18,0.05)",
+          }}
+        >
+          {logoutLoading ? (
+            <Loader2 className="text-b3-grey animate-spin" size={20} />
+          ) : (
+            <SignOutIcon size={20} className="text-b3-grey" color="currentColor" />
+          )}
+          <p className="text-b3-grey dark:text-b3-foreground-muted font-neue-montreal-semibold text-base">Sign out</p>
+        </button>
       </div>
     </div>
   );
