@@ -17,16 +17,22 @@ interface DirectTransferParams {
  * bypassing the swap backend.
  */
 export function useDirectTransfer() {
-  const { switchChainAndExecute, switchChainAndExecuteWithEOA, isSwitchingOrExecuting } = useUnifiedChainSwitchAndExecute();
+  const { switchChainAndExecute, switchChainAndExecuteWithEOA, isSwitchingOrExecuting } =
+    useUnifiedChainSwitchAndExecute();
 
   const executeDirectTransfer = useCallback(
-    async ({ chainId, tokenAddress, recipientAddress, amount, method }: DirectTransferParams): Promise<string | undefined> => {
+    async ({
+      chainId,
+      tokenAddress,
+      recipientAddress,
+      amount,
+      method,
+    }: DirectTransferParams): Promise<string | undefined> => {
       const isNative = isNativeToken(tokenAddress);
 
       // Choose the correct execution function based on payment method
-      const execute = method === CryptoPaymentMethodType.CONNECT_WALLET
-        ? switchChainAndExecuteWithEOA
-        : switchChainAndExecute;
+      const execute =
+        method === CryptoPaymentMethodType.CONNECT_WALLET ? switchChainAndExecuteWithEOA : switchChainAndExecute;
 
       let txHash: string | undefined;
       if (isNative) {
