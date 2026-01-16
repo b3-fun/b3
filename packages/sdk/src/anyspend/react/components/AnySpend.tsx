@@ -4,6 +4,7 @@ import {
   eqci,
   getChainName,
   getDefaultToken,
+  getExplorerTxUrl,
   getHyperliquidUSDCToken,
   HYPERLIQUID_CHAIN_ID,
   HYPERLIQUID_USDC_ADDRESS,
@@ -1509,7 +1510,7 @@ function AnySpendInner({
 
       {directTransferTxHash && (
         <a
-          href={`https://basescan.org/tx/${directTransferTxHash}`}
+          href={getExplorerTxUrl(selectedSrcChainId, directTransferTxHash)}
           target="_blank"
           rel="noopener noreferrer"
           className="text-as-brand hover:text-as-brand/80 text-sm underline"

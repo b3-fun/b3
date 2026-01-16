@@ -1,4 +1,4 @@
-import { getChainName } from "@b3dotfun/sdk/anyspend";
+import { getChainName, getExplorerTxUrl } from "@b3dotfun/sdk/anyspend";
 import { useGasPrice } from "@b3dotfun/sdk/anyspend/react";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
@@ -822,7 +822,7 @@ function AnySpendCustomExactInInner({
       </div>
       {directTransferTxHash && (
         <a
-          href={`https://blockscan.com/tx/${directTransferTxHash}`}
+          href={getExplorerTxUrl(selectedSrcChainId, directTransferTxHash || "")}
           target="_blank"
           rel="noopener noreferrer"
           className="text-as-brand text-sm underline"
@@ -833,7 +833,7 @@ function AnySpendCustomExactInInner({
       <Button
         className="bg-as-brand hover:bg-as-brand/90 mt-4 w-full rounded-xl py-3 font-semibold text-white"
         onClick={() => {
-          onSuccess?.(directTransferTxHash || "");
+          onSuccess?.(srcAmount);
           if (returnToHomeUrl) {
             window.location.href = returnToHomeUrl;
           } else {
