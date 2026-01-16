@@ -2,7 +2,9 @@
 
 import {
   eqci,
+  getChainName,
   getDefaultToken,
+  getExplorerTxUrl,
   getHyperliquidUSDCToken,
   HYPERLIQUID_CHAIN_ID,
   HYPERLIQUID_USDC_ADDRESS,
@@ -40,7 +42,7 @@ import { getThirdwebChain } from "@b3dotfun/sdk/shared/constants/chains/supporte
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import invariant from "invariant";
-import { ArrowDown, HistoryIcon, Loader2 } from "lucide-react";
+import { ArrowDown, CheckCircle, HistoryIcon, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { parseUnits } from "viem";
@@ -49,6 +51,7 @@ import { components } from "../../types/api";
 import { useAutoSelectCryptoPaymentMethod } from "../hooks/useAutoSelectCryptoPaymentMethod";
 import { useConnectedWalletDisplay } from "../hooks/useConnectedWalletDisplay";
 import { useCryptoPaymentMethodState } from "../hooks/useCryptoPaymentMethodState";
+import { useDirectTransfer } from "../hooks/useDirectTransfer";
 import { useRecipientAddressState } from "../hooks/useRecipientAddressState";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
 import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPaymentMethod";
@@ -86,6 +89,7 @@ export enum PanelView {
   FIAT_PAYMENT_METHOD,
   POINTS_DETAIL,
   FEE_DETAIL,
+  DIRECT_TRANSFER_SUCCESS,
 }
 
 const ANYSPEND_RECIPIENTS_KEY = "anyspend_recipients";
@@ -118,9 +122,12 @@ export function AnySpend(props: {
   returnHomeLabel?: string;
   /** Custom class names for styling specific elements */
   classes?: AnySpendClasses;
+  /** When true, allows direct transfer without swap if source and destination token/chain are the same */
+  allowDirectTransfer?: boolean;
 }) {
   const fingerprintConfig = getFingerprintConfig();
 
+  console.log("[mitch] AnySpend rendered with fingerprintConfig:", props, fingerprintConfig);
   return (
     <AnySpendFingerprintWrapper fingerprint={fingerprintConfig}>
       <AnySpendInner {...props} />
@@ -147,6 +154,7 @@ function AnySpendInner({
   customRecipientLabel,
   returnHomeLabel,
   classes,
+  allowDirectTransfer = false,
 }: {
   sourceChainId?: number;
   destinationTokenAddress?: string;
@@ -166,12 +174,14 @@ function AnySpendInner({
   customRecipientLabel?: string;
   returnHomeLabel?: string;
   classes?: AnySpendClasses;
+  allowDirectTransfer?: boolean;
 }) {
   const searchParams = useSearchParamsSSR();
   const router = useRouter();
 
   const { partnerId } = useB3Config();
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
+  const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
 
   // Determine if we're in "buy mode" based on whether destination token props are provided
   const isBuyMode = !!(destinationTokenAddress && destinationTokenChainId);
@@ -205,6 +215,7 @@ function AnySpendInner({
   const [activeTab, setActiveTab] = useState<"crypto" | "fiat">(defaultActiveTab);
 
   const [orderId, setOrderId] = useState<string | undefined>(loadOrder);
+  const [directTransferTxHash, setDirectTransferTxHash] = useState<string | undefined>();
   const { orderAndTransactions: oat, getOrderAndTransactionsError } = useAnyspendOrderAndTransactions(orderId);
   !!getOrderAndTransactionsError && console.log("getOrderAndTransactionsError", getOrderAndTransactionsError);
 
@@ -516,6 +527,7 @@ function AnySpendInner({
   // );
 
   const { address: globalAddress, wallet: globalWallet, connectedEOAWallet } = useAccountWallet();
+  const { executeDirectTransfer, isTransferring: isSwitchingOrExecuting } = useDirectTransfer();
 
   const globalWalletImage = useAccountWalletImage();
 
@@ -742,18 +754,27 @@ function AnySpendInner({
     );
   }, [activeTab, selectedSrcChainId, selectedDstChainId, selectedSrcToken.address, selectedDstToken.address]);
 
+  // Check if this is a direct transfer (same chain/token with allowDirectTransfer enabled)
+  const isDirectTransfer = isSameChainSameToken && allowDirectTransfer;
+
   // Determine button state and text
   const btnInfo: { text: string; disable: boolean; error: boolean; loading: boolean } = useMemo(() => {
     // For fiat tab, check srcAmountOnRamp; for crypto tab, check activeInputAmountInWei
     const hasAmount =
       activeTab === "fiat" ? srcAmountOnRamp && parseFloat(srcAmountOnRamp) > 0 : activeInputAmountInWei !== "0";
     if (!hasAmount) return { text: "Enter an amount", disable: true, error: false, loading: false };
-    if (isSameChainSameToken)
+    if (isSameChainSameToken && !allowDirectTransfer)
       return { text: "Select a different token or chain", disable: true, error: false, loading: false };
-    if (isLoadingAnyspendQuote) return { text: "Loading quote...", disable: true, error: false, loading: true };
-    if (isCreatingOrder || isCreatingOnrampOrder)
-      return { text: "Creating order...", disable: true, error: false, loading: true };
-    if (!anyspendQuote || !anyspendQuote.success)
+    if (isLoadingAnyspendQuote && !isSameChainSameToken)
+      return { text: "Loading quote...", disable: true, error: false, loading: true };
+    if (isCreatingOrder || isCreatingOnrampOrder || isSwitchingOrExecuting)
+      return {
+        text: isSwitchingOrExecuting ? "Transferring..." : "Creating order...",
+        disable: true,
+        error: false,
+        loading: true,
+      };
+    if ((!anyspendQuote || !anyspendQuote.success) && !(isSameChainSameToken && allowDirectTransfer))
       return { text: "No quote found", disable: true, error: false, loading: false };
 
     if (activeTab === "fiat") {
@@ -784,7 +805,8 @@ function AnySpendInner({
         effectiveCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET ||
         effectiveCryptoPaymentMethod === CryptoPaymentMethodType.GLOBAL_WALLET
       ) {
-        return { text: "Swap", disable: false, error: false, loading: false };
+        const buttonText = isSameChainSameToken && allowDirectTransfer ? "Transfer" : "Swap";
+        return { text: buttonText, disable: false, error: false, loading: false };
       }
       if (effectiveCryptoPaymentMethod === CryptoPaymentMethodType.TRANSFER_CRYPTO) {
         return { text: "Continue to payment", disable: false, error: false, loading: false };
@@ -799,19 +821,26 @@ function AnySpendInner({
     effectiveRecipientAddress,
     isCreatingOrder,
     isCreatingOnrampOrder,
+    isSwitchingOrExecuting,
     anyspendQuote,
     activeTab,
     effectiveCryptoPaymentMethod,
     selectedFiatPaymentMethod,
     srcAmountOnRamp,
+    allowDirectTransfer,
   ]);
 
   // Handle main button click
   const onMainButtonClick = async () => {
     if (btnInfo.disable) return;
 
+    const isDirectTransfer = isSameChainSameToken && allowDirectTransfer;
+
     try {
-      invariant(anyspendQuote, "Relay price is not found");
+      // Only require quote for non-direct transfers
+      if (!isDirectTransfer) {
+        invariant(anyspendQuote, "Relay price is not found");
+      }
 
       if (activeTab === "fiat") {
         // For fiat: check recipient first
@@ -886,14 +915,35 @@ function AnySpendInner({
   // Handle crypto swap creation
   const handleCryptoSwap = async (method: CryptoPaymentMethodType) => {
     try {
-      invariant(anyspendQuote, "Relay price is not found");
+      const isDirectTransfer = isSameChainSameToken && allowDirectTransfer;
+
       invariant(effectiveRecipientAddress, "Recipient address is not found");
+
+      const srcAmountBigInt = parseUnits(srcAmount.replace(/,/g, ""), selectedSrcToken.decimals);
+
+      // Handle direct transfer (same chain/token) - bypass backend, transfer directly
+      if (isDirectTransfer) {
+        const txHash = await executeDirectTransfer({
+          chainId: selectedSrcChainId,
+          tokenAddress: selectedSrcToken.address,
+          recipientAddress: effectiveRecipientAddress,
+          amount: srcAmountBigInt,
+          method,
+        });
+
+        if (txHash) {
+          setDirectTransferTxHash(txHash);
+          navigateToPanel(PanelView.DIRECT_TRANSFER_SUCCESS, "forward");
+        }
+        return;
+      }
+
+      // Regular swap flow - use backend
+      invariant(anyspendQuote, "Relay price is not found");
 
       // Debug: Check payment method values
       console.log("handleCryptoSwap - method parameter:", method);
       console.log("handleCryptoSwap - selectedCryptoPaymentMethod state:", selectedCryptoPaymentMethod);
-
-      const srcAmountBigInt = parseUnits(srcAmount.replace(/,/g, ""), selectedSrcToken.decimals);
 
       createOrder({
         recipientAddress: effectiveRecipientAddress,
@@ -1256,15 +1306,17 @@ function AnySpendInner({
                 setIsSrcInputDirty(false);
                 setDstAmount(value);
               }}
-              anyspendQuote={anyspendQuote}
-              onShowPointsDetail={() => navigateToPanel(PanelView.POINTS_DETAIL, "forward")}
-              onShowFeeDetail={() => navigateToPanel(PanelView.FEE_DETAIL, "forward")}
+              anyspendQuote={isDirectTransfer ? undefined : anyspendQuote}
+              onShowPointsDetail={
+                isDirectTransfer ? undefined : () => navigateToPanel(PanelView.POINTS_DETAIL, "forward")
+              }
+              onShowFeeDetail={isDirectTransfer ? undefined : () => navigateToPanel(PanelView.FEE_DETAIL, "forward")}
             />
           )}
         </div>
 
-        {/* Gas indicator - show when source chain has gas data */}
-        {gasPriceData && !isLoadingGas && activeTab === "crypto" && (
+        {/* Gas indicator - show when source chain has gas data, hide for direct transfers */}
+        {gasPriceData && !isLoadingGas && activeTab === "crypto" && !isDirectTransfer && (
           <GasIndicator gasPrice={gasPriceData} className={classes?.gasIndicator || "mt-2 w-full"} />
         )}
 
@@ -1426,6 +1478,58 @@ function AnySpendInner({
     />
   ) : null;
 
+  const directTransferSuccessView = (
+    <div className="mx-auto flex w-[460px] max-w-full flex-col items-center gap-6 p-5">
+      <div className="flex flex-col items-center gap-4">
+        <div className="bg-as-brand/10 flex h-16 w-16 items-center justify-center rounded-full">
+          <CheckCircle className="text-as-brand h-8 w-8" />
+        </div>
+        <div className="text-center">
+          <h2 className="text-as-primary text-xl font-bold">Transfer Complete</h2>
+          <p className="text-as-secondary mt-1 text-sm">
+            Your {selectedSrcToken.symbol} has been sent to {effectiveRecipientAddress?.slice(0, 6)}...
+            {effectiveRecipientAddress?.slice(-4)} on {getChainName(selectedSrcChainId)}
+          </p>
+        </div>
+      </div>
+
+      {directTransferTxHash && (
+        <a
+          href={getExplorerTxUrl(selectedSrcChainId, directTransferTxHash)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-as-brand hover:text-as-brand/80 text-sm underline"
+        >
+          View transaction
+        </a>
+      )}
+
+      <div className="flex w-full flex-col gap-2">
+        {returnToHomeUrl ? (
+          <Button
+            onClick={() => {
+              window.location.href = returnToHomeUrl;
+            }}
+            className="bg-as-brand hover:bg-as-brand/90 w-full text-white"
+          >
+            {returnHomeLabel || "Return to Home"}
+          </Button>
+        ) : (
+          <Button
+            onClick={() => {
+              onSuccess?.(directTransferTxHash);
+              setDirectTransferTxHash(undefined);
+              setB3ModalOpen(false);
+            }}
+            className="bg-as-brand hover:bg-as-brand/90 w-full text-white"
+          >
+            {returnHomeLabel || "Done"}
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+
   // Add tabs to the main component when no order is loaded
   return (
     <StyleRoot>
@@ -1496,6 +1600,9 @@ function AnySpendInner({
             </div>,
             <div key="fee-detail-view" className={cn(mode === "page" && "p-6")}>
               {feeDetailView}
+            </div>,
+            <div key="direct-transfer-success-view" className={cn(mode === "page" && "p-6")}>
+              {directTransferSuccessView}
             </div>,
           ]}
         </TransitionPanel>

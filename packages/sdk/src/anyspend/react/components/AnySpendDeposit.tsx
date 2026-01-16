@@ -119,6 +119,8 @@ export interface AnySpendDepositProps {
   isCustomDeposit?: boolean;
   /** Custom class names for styling specific elements */
   classes?: AnySpendAllClasses;
+  /** When true, allows direct transfer without swap if source and destination token/chain are the same */
+  allowDirectTransfer?: boolean;
 }
 
 // Default supported chains
@@ -242,6 +244,7 @@ export function AnySpendDeposit({
   returnHomeLabel,
   isCustomDeposit = false,
   classes,
+  allowDirectTransfer = false,
 }: AnySpendDepositProps) {
   // Extract deposit-specific classes for convenience
   const depositClasses = classes?.deposit;
@@ -689,6 +692,7 @@ export function AnySpendDeposit({
             customRecipientLabel={customRecipientLabel}
             returnHomeLabel={returnHomeLabel}
             classes={classes?.customExactIn}
+            allowDirectTransfer={allowDirectTransfer}
           />
         ) : (
           <AnySpend
@@ -710,6 +714,7 @@ export function AnySpendDeposit({
             customRecipientLabel={customRecipientLabel}
             returnHomeLabel={returnHomeLabel}
             classes={classes?.anySpend}
+            allowDirectTransfer={allowDirectTransfer}
           />
         )}
       </div>

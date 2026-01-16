@@ -1,4 +1,5 @@
 import { getExplorerTxUrl } from "@b3dotfun/sdk/anyspend";
+import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
 import { MintButton, SendERC20Button, SendETHButton, useUser } from "@b3dotfun/sdk/global-account/react";
 import { useB3Account } from "@b3dotfun/sdk/global-account/react/components/B3Provider/useB3Account";
 import { SingleUserSearchSelector } from "@b3dotfun/sdk/global-account/react/components/SingleUserSearchSelector";
@@ -6,7 +7,7 @@ import type { CombinedProfile } from "@b3dotfun/sdk/global-account/react/hooks/u
 import { thirdwebB3Mainnet } from "@b3dotfun/sdk/shared/constants/chains/b3Chain";
 import { b3MainnetThirdWeb, getThirdwebChain } from "@b3dotfun/sdk/shared/constants/chains/supported";
 import createDebug from "debug";
-import { Bug, UnlinkIcon, User, Wallet } from "lucide-react";
+import { ArrowRight, Bug, UnlinkIcon, User, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useActiveAccount, useLinkProfile, useProfiles, useUnlinkProfile } from "thirdweb/react";
 import { createWallet, type Profile } from "thirdweb/wallets";
@@ -41,6 +42,8 @@ export function Debug() {
   const [successExplorerTxUrl, setSuccessExplorerTxUrl] = useState<string | null>(null);
   const [selectedUser, setSelectedUser] = useState<CombinedProfile | null>(null);
   const [showFindUserModal, setShowFindUserModal] = useState(false);
+  const [showDirectTransferModal, setShowDirectTransferModal] = useState(false);
+  const [directTransferTestCase, setDirectTransferTestCase] = useState<1 | 2 | 3 | null>(null);
 
   useEffect(() => {
     // Update debug info when user changes
@@ -362,6 +365,95 @@ export function Debug() {
             </div>
           )}
         </div>
+
+        {/* Direct Transfer Test Section */}
+        <div className="rounded-lg bg-white p-6 shadow-sm">
+          <h2 className="mb-4 text-xl font-semibold">Direct Transfer Test</h2>
+          <p className="mb-4 text-sm text-gray-600">
+            Test the new direct transfer feature that bypasses AnySpend backend for same-chain/same-token transfers
+            using viem.
+          </p>
+
+          <div className="grid gap-3">
+            <button
+              onClick={() => {
+                setDirectTransferTestCase(1);
+                setShowDirectTransferModal(true);
+              }}
+              className="flex items-center justify-between rounded-lg border border-green-200 bg-green-50 p-4 text-left transition-colors hover:bg-green-100"
+            >
+              <div>
+                <div className="mb-1 flex items-center gap-2">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-600 text-xs font-bold text-white">
+                    1
+                  </div>
+                  <h3 className="font-semibold text-green-900">Direct Transfer (Enabled)</h3>
+                </div>
+                <p className="ml-8 text-sm text-green-800">
+                  Base USDC → Base USDC with <code className="rounded bg-green-100 px-1">allowDirectTransfer=true</code>
+                </p>
+              </div>
+              <ArrowRight className="h-5 w-5 text-green-600" />
+            </button>
+
+            <button
+              onClick={() => {
+                setDirectTransferTestCase(2);
+                setShowDirectTransferModal(true);
+              }}
+              className="flex items-center justify-between rounded-lg border border-blue-200 bg-blue-50 p-4 text-left transition-colors hover:bg-blue-100"
+            >
+              <div>
+                <div className="mb-1 flex items-center gap-2">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
+                    2
+                  </div>
+                  <h3 className="font-semibold text-blue-900">Direct Transfer (Disabled - Default)</h3>
+                </div>
+                <p className="ml-8 text-sm text-blue-800">
+                  Base USDC → Base USDC with <code className="rounded bg-red-100 px-1">allowDirectTransfer=false</code>
+                </p>
+              </div>
+              <ArrowRight className="h-5 w-5 text-blue-600" />
+            </button>
+
+            <button
+              onClick={() => {
+                setDirectTransferTestCase(3);
+                setShowDirectTransferModal(true);
+              }}
+              className="flex items-center justify-between rounded-lg border border-purple-200 bg-purple-50 p-4 text-left transition-colors hover:bg-purple-100"
+            >
+              <div>
+                <div className="mb-1 flex items-center gap-2">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-600 text-xs font-bold text-white">
+                    3
+                  </div>
+                  <h3 className="font-semibold text-purple-900">Direct Native Token Transfer (ETH)</h3>
+                </div>
+                <p className="ml-8 text-sm text-purple-800">
+                  Base ETH → Base ETH with <code className="rounded bg-green-100 px-1">allowDirectTransfer=true</code>
+                </p>
+              </div>
+              <ArrowRight className="h-5 w-5 text-purple-600" />
+            </button>
+          </div>
+
+          <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
+            <h4 className="mb-2 text-sm font-semibold text-gray-900">Expected Behavior:</h4>
+            <ul className="space-y-1 pl-5 text-sm text-gray-700">
+              <li>
+                <strong>Test 1:</strong> Direct transfer using viem (no backend order)
+              </li>
+              <li>
+                <strong>Test 2:</strong> Creates AnySpend order through backend
+              </li>
+              <li>
+                <strong>Test 3:</strong> Native value transfer (no ERC20 encoding)
+              </li>
+            </ul>
+          </div>
+        </div>
       </div>
 
       <SuccessModal
@@ -402,6 +494,122 @@ export function Debug() {
               profileTypeFilter={["b3-ens", "global-account"]}
               placeholder="Search by address or name..."
             />
+          </div>
+        </div>
+      )}
+
+      {/* Direct Transfer Modal */}
+      {showDirectTransferModal && activeAccount && directTransferTestCase && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="relative w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-xl font-semibold">
+                {directTransferTestCase === 1 && "Test 1: Direct Transfer (Enabled)"}
+                {directTransferTestCase === 2 && "Test 2: Direct Transfer (Disabled)"}
+                {directTransferTestCase === 3 && "Test 3: Native Token Direct Transfer"}
+              </h3>
+              <button
+                onClick={() => {
+                  setShowDirectTransferModal(false);
+                  setDirectTransferTestCase(null);
+                }}
+                className="text-gray-400 transition-colors hover:text-gray-600"
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    d="M18 6L6 18M6 6L18 18"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            {directTransferTestCase === 1 && (
+              <AnySpend
+                recipientAddress={activeAccount.address as `0x${string}`}
+                srcChain={8453}
+                dstChain={8453}
+                srcToken={{
+                  address: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+                  symbol: "USDC",
+                  decimals: 6,
+                }}
+                dstToken={{
+                  address: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+                  symbol: "USDC",
+                  decimals: 6,
+                }}
+                amount={"10000"}
+                allowDirectTransfer={true}
+                onSuccess={(txHash, orderDetails) => {
+                  console.log("Direct transfer success:", { txHash, orderDetails });
+                  if (txHash) {
+                    setSuccessExplorerTxUrl(getExplorerTxUrl(8453, txHash));
+                    setShowSuccessModal(true);
+                    setShowDirectTransferModal(false);
+                  }
+                }}
+              />
+            )}
+
+            {directTransferTestCase === 2 && (
+              <AnySpend
+                recipientAddress={activeAccount.address as `0x${string}`}
+                srcChain={8453}
+                dstChain={8453}
+                srcToken={{
+                  address: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+                  symbol: "USDC",
+                  decimals: 6,
+                }}
+                dstToken={{
+                  address: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+                  symbol: "USDC",
+                  decimals: 6,
+                }}
+                amount={"10000"}
+                allowDirectTransfer={false}
+                onSuccess={(txHash, orderDetails) => {
+                  console.log("AnySpend order success:", { txHash, orderDetails });
+                  if (txHash) {
+                    setSuccessExplorerTxUrl(getExplorerTxUrl(8453, txHash));
+                    setShowSuccessModal(true);
+                    setShowDirectTransferModal(false);
+                  }
+                }}
+              />
+            )}
+
+            {directTransferTestCase === 3 && (
+              <AnySpend
+                recipientAddress={activeAccount.address as `0x${string}`}
+                srcChain={8453}
+                dstChain={8453}
+                srcToken={{
+                  address: "0x0000000000000000000000000000000000000000",
+                  symbol: "ETH",
+                  decimals: 18,
+                }}
+                dstToken={{
+                  address: "0x0000000000000000000000000000000000000000",
+                  symbol: "ETH",
+                  decimals: 18,
+                }}
+                amount={"1000000000000000"}
+                allowDirectTransfer={true}
+                onSuccess={(txHash, orderDetails) => {
+                  console.log("Direct native transfer success:", { txHash, orderDetails });
+                  if (txHash) {
+                    setSuccessExplorerTxUrl(getExplorerTxUrl(8453, txHash));
+                    setShowSuccessModal(true);
+                    setShowDirectTransferModal(false);
+                  }
+                }}
+              />
+            )}
           </div>
         </div>
       )}

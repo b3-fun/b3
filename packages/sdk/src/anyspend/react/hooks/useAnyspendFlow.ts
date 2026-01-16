@@ -39,6 +39,7 @@ export enum PanelView {
   LOADING,
   POINTS_DETAIL,
   FEE_DETAIL,
+  DIRECT_TRANSFER_SUCCESS,
 }
 
 export type CustomExactInConfig = {
