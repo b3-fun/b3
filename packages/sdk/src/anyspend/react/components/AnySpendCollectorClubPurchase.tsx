@@ -32,8 +32,8 @@ import React, { useMemo } from "react";
 import { encodeFunctionData } from "viem";
 import { AnySpendCustom } from "./AnySpendCustom";
 
-// Collector Club Shop contract on Base
-const CC_SHOP_ADDRESS = "0x47366E64E4917dd4DdC04Fb9DC507c1dD2b87294";
+// Default Collector Club Shop contract on Base
+const DEFAULT_CC_SHOP_ADDRESS = "0x47366E64E4917dd4DdC04Fb9DC507c1dD2b87294";
 const BASE_CHAIN_ID = 8453;
 
 // ABI for buyPacksFor function only
@@ -83,9 +83,13 @@ export interface AnySpendCollectorClubPurchaseProps {
    */
   recipientAddress: string;
   /**
-   * Optional spender address (defaults to contract address)
+   * Optional spender address (defaults to shop address)
    */
   spenderAddress?: string;
+  /**
+   * Collector Club Shop contract address (defaults to Base mainnet shop)
+   */
+  ccShopAddress?: string;
   /**
    * Success callback
    */
@@ -124,7 +128,8 @@ export function AnySpendCollectorClubPurchase({
   pricePerPack,
   paymentToken = USDC_BASE,
   recipientAddress,
-  spenderAddress = CC_SHOP_ADDRESS,
+  ccShopAddress = DEFAULT_CC_SHOP_ADDRESS,
+  spenderAddress,
   onSuccess,
   header,
   showRecipient = true,
@@ -180,12 +185,12 @@ export function AnySpendCollectorClubPurchase({
       mode={mode}
       activeTab={activeTab}
       recipientAddress={recipientAddress}
-      spenderAddress={spenderAddress}
+      spenderAddress={spenderAddress ?? ccShopAddress}
       orderType="custom"
       dstChainId={BASE_CHAIN_ID}
       dstToken={paymentToken}
       dstAmount={totalAmount}
-      contractAddress={CC_SHOP_ADDRESS}
+      contractAddress={ccShopAddress}
       encodedData={encodedData}
       metadata={{
         packId,
