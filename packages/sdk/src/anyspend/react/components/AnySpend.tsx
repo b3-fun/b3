@@ -767,7 +767,12 @@ function AnySpendInner({
     if (isLoadingAnyspendQuote && !isSameChainSameToken)
       return { text: "Loading quote...", disable: true, error: false, loading: true };
     if (isCreatingOrder || isCreatingOnrampOrder || isSwitchingOrExecuting)
-      return { text: isSwitchingOrExecuting ? "Transferring..." : "Creating order...", disable: true, error: false, loading: true };
+      return {
+        text: isSwitchingOrExecuting ? "Transferring..." : "Creating order...",
+        disable: true,
+        error: false,
+        loading: true,
+      };
     if ((!anyspendQuote || !anyspendQuote.success) && !(isSameChainSameToken && allowDirectTransfer))
       return { text: "No quote found", disable: true, error: false, loading: false };
 
@@ -1316,7 +1321,9 @@ function AnySpendInner({
                 setDstAmount(value);
               }}
               anyspendQuote={isDirectTransfer ? undefined : anyspendQuote}
-              onShowPointsDetail={isDirectTransfer ? undefined : () => navigateToPanel(PanelView.POINTS_DETAIL, "forward")}
+              onShowPointsDetail={
+                isDirectTransfer ? undefined : () => navigateToPanel(PanelView.POINTS_DETAIL, "forward")
+              }
               onShowFeeDetail={isDirectTransfer ? undefined : () => navigateToPanel(PanelView.FEE_DETAIL, "forward")}
             />
           )}

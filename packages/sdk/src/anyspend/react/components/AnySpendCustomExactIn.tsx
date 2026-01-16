@@ -274,7 +274,12 @@ function AnySpendCustomExactInInner({
     if (isQuoteLoading && !isDirectTransfer)
       return { text: "Loading quote...", disable: true, error: false, loading: true };
     if (isCreatingOrder || isCreatingOnrampOrder || isSwitchingOrExecuting)
-      return { text: isSwitchingOrExecuting ? "Transferring..." : "Creating order...", disable: true, error: false, loading: true };
+      return {
+        text: isSwitchingOrExecuting ? "Transferring..." : "Creating order...",
+        disable: true,
+        error: false,
+        loading: true,
+      };
     if (!selectedRecipientOrDefault) return { text: "Select recipient", disable: false, error: false, loading: false };
     if ((!anyspendQuote || !anyspendQuote.success) && !isDirectTransfer)
       return { text: "Get quote error", disable: true, error: true, loading: false };
@@ -803,7 +808,7 @@ function AnySpendCustomExactInInner({
       animate={{ opacity: 1, scale: 1 }}
       className="flex flex-col items-center justify-center gap-6 py-8"
     >
-      <div className="bg-green-500/20 flex h-16 w-16 items-center justify-center rounded-full">
+      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-500/20">
         <CheckCircle className="h-10 w-10 text-green-500" />
       </div>
       <div className="text-center">
