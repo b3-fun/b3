@@ -11,10 +11,7 @@ import {
   TransitionPanel,
   useAccountWallet,
   useModalStore,
-  useUnifiedChainSwitchAndExecute,
 } from "@b3dotfun/sdk/global-account/react";
-import { isNativeToken } from "@b3dotfun/sdk/anyspend/utils/token";
-import { encodeFunctionData, erc20Abi } from "viem";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { formatUnits } from "@b3dotfun/sdk/shared/utils/number";
 import invariant from "invariant";
@@ -25,6 +22,7 @@ import type { AnySpendCustomExactInClasses } from "./types/classes";
 
 import { useSetActiveWallet } from "thirdweb/react";
 import { B3_TOKEN } from "../../constants";
+import { useDirectTransfer } from "../hooks/useDirectTransfer";
 import { generateEncodedData, PanelView, useAnyspendFlow } from "../hooks/useAnyspendFlow";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
 import { CryptoPaySection } from "./common/CryptoPaySection";
@@ -191,7 +189,7 @@ function AnySpendCustomExactInInner({
 
   const { connectedEOAWallet } = useAccountWallet();
   const setActiveWallet = useSetActiveWallet();
-  const { switchChainAndExecute, isSwitchingOrExecuting } = useUnifiedChainSwitchAndExecute();
+  const { executeDirectTransfer, isTransferring: isSwitchingOrExecuting } = useDirectTransfer();
 
   // Check if source and destination are the same token on the same chain
   const isSameChainSameToken = useMemo(() => {
@@ -545,28 +543,13 @@ function AnySpendCustomExactInInner({
       // Handle direct transfer case (same token/chain) - bypass backend, transfer directly
       if (isDirectTransfer) {
         const srcAmountBigInt = BigInt(activeInputAmountInWei);
-        const isNative = isNativeToken(selectedSrcToken.address);
 
-        let txHash: string | undefined;
-        if (isNative) {
-          // Native token transfer (ETH, etc.)
-          txHash = await switchChainAndExecute(selectedSrcChainId, {
-            to: selectedRecipientOrDefault,
-            value: srcAmountBigInt,
-          });
-        } else {
-          // ERC20 token transfer
-          const transferData = encodeFunctionData({
-            abi: erc20Abi,
-            functionName: "transfer",
-            args: [selectedRecipientOrDefault as `0x${string}`, srcAmountBigInt],
-          });
-          txHash = await switchChainAndExecute(selectedSrcChainId, {
-            to: selectedSrcToken.address,
-            data: transferData,
-            value: BigInt(0),
-          });
-        }
+        const txHash = await executeDirectTransfer({
+          chainId: selectedSrcChainId,
+          tokenAddress: selectedSrcToken.address,
+          recipientAddress: selectedRecipientOrDefault,
+          amount: srcAmountBigInt,
+        });
 
         if (txHash) {
           setDirectTransferTxHash(txHash);

@@ -35,9 +35,7 @@ import {
   useTokenBalanceDirect,
   useTokenData,
   useTokenFromUrl,
-  useUnifiedChainSwitchAndExecute,
 } from "@b3dotfun/sdk/global-account/react";
-import { isNativeToken } from "@b3dotfun/sdk/anyspend/utils/token";
 import BottomNavigation from "@b3dotfun/sdk/global-account/react/components/ManageAccount/BottomNavigation";
 import { useAccountWalletImage } from "@b3dotfun/sdk/global-account/react/hooks/useAccountWallet";
 import { getThirdwebChain } from "@b3dotfun/sdk/shared/constants/chains/supported";
@@ -47,12 +45,13 @@ import invariant from "invariant";
 import { ArrowDown, CheckCircle, HistoryIcon, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { encodeFunctionData, erc20Abi, parseUnits } from "viem";
+import { parseUnits } from "viem";
 import { base, mainnet } from "viem/chains";
 import { components } from "../../types/api";
 import { useAutoSelectCryptoPaymentMethod } from "../hooks/useAutoSelectCryptoPaymentMethod";
 import { useConnectedWalletDisplay } from "../hooks/useConnectedWalletDisplay";
 import { useCryptoPaymentMethodState } from "../hooks/useCryptoPaymentMethodState";
+import { useDirectTransfer } from "../hooks/useDirectTransfer";
 import { useRecipientAddressState } from "../hooks/useRecipientAddressState";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
 import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPaymentMethod";
@@ -128,6 +127,7 @@ export function AnySpend(props: {
 }) {
   const fingerprintConfig = getFingerprintConfig();
 
+  console.log("[mitch] AnySpend rendered with fingerprintConfig:", props, fingerprintConfig);
   return (
     <AnySpendFingerprintWrapper fingerprint={fingerprintConfig}>
       <AnySpendInner {...props} />
@@ -527,7 +527,7 @@ function AnySpendInner({
   // );
 
   const { address: globalAddress, wallet: globalWallet, connectedEOAWallet } = useAccountWallet();
-  const { switchChainAndExecute, isSwitchingOrExecuting } = useUnifiedChainSwitchAndExecute();
+  const { executeDirectTransfer, isTransferring: isSwitchingOrExecuting } = useDirectTransfer();
 
   const globalWalletImage = useAccountWalletImage();
 
@@ -923,28 +923,13 @@ function AnySpendInner({
 
       // Handle direct transfer (same chain/token) - bypass backend, transfer directly
       if (isDirectTransfer) {
-        const isNative = isNativeToken(selectedSrcToken.address);
-
-        let txHash: string | undefined;
-        if (isNative) {
-          // Native token transfer (ETH, etc.)
-          txHash = await switchChainAndExecute(selectedSrcChainId, {
-            to: effectiveRecipientAddress,
-            value: srcAmountBigInt,
-          });
-        } else {
-          // ERC20 token transfer
-          const transferData = encodeFunctionData({
-            abi: erc20Abi,
-            functionName: "transfer",
-            args: [effectiveRecipientAddress as `0x${string}`, srcAmountBigInt],
-          });
-          txHash = await switchChainAndExecute(selectedSrcChainId, {
-            to: selectedSrcToken.address,
-            data: transferData,
-            value: BigInt(0),
-          });
-        }
+        const txHash = await executeDirectTransfer({
+          chainId: selectedSrcChainId,
+          tokenAddress: selectedSrcToken.address,
+          recipientAddress: effectiveRecipientAddress,
+          amount: srcAmountBigInt,
+          method,
+        });
 
         if (txHash) {
           setDirectTransferTxHash(txHash);
