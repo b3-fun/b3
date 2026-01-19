@@ -88,7 +88,17 @@ jobs:
 
       - name: Setup npm authentication
         run: |
+          # NPM 2FA Support: Use automation token that bypasses 2FA for CI/CD
+          # The NPM_TOKEN secret should be an automation token, not a publish token
+          # Generate at: https://www.npmjs.com/settings/[username]/tokens
+          # Token type: "Automation" (bypasses 2FA for automated publishing)
           echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+          # Verify token is set correctly
+          if ! npm whoami > /dev/null 2>&1; then
+            echo "❌ NPM authentication failed. Please ensure NPM_TOKEN is a valid automation token."
+            exit 1
+          fi
+          echo "✅ NPM authentication successful"
 
       - name: Publish to alpha channel
         id: publish-alpha
@@ -100,7 +110,7 @@ jobs:
           # Set the specific alpha version directly
           pnpm version "$NEXT_VERSION" --no-git-tag-version
           echo "new_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
-          # Publish to alpha channel
+          # Publish to alpha channel with automation token (2FA bypass)
           pnpm publish --tag alpha --no-git-checks
 
       - name: Tag alpha release

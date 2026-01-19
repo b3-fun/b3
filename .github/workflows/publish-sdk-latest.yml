@@ -64,7 +64,17 @@ jobs:
 
       - name: Setup npm authentication
         run: |
+          # NPM 2FA Support: Use automation token that bypasses 2FA for CI/CD
+          # The NPM_TOKEN secret should be an automation token, not a publish token
+          # Generate at: https://www.npmjs.com/settings/[username]/tokens
+          # Token type: "Automation" (bypasses 2FA for automated publishing)
           echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+          # Verify token is set correctly
+          if ! npm whoami > /dev/null 2>&1; then
+            echo "❌ NPM authentication failed. Please ensure NPM_TOKEN is a valid automation token."
+            exit 1
+          fi
+          echo "✅ NPM authentication successful"
 
       - name: Publish to latest channel
         id: publish-latest
@@ -76,7 +86,7 @@ jobs:
           echo "Publishing version to latest: $CURRENT_VERSION"
           echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
 
-          # Publish to latest channel
+          # Publish to latest channel with automation token (2FA bypass)
           pnpm publish --tag latest --no-git-checks
 
       - name: Tag latest release
