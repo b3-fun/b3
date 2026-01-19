@@ -137,6 +137,8 @@ export interface AnySpendModalProps extends BaseModalProps {
   hideHeader?: boolean;
   /** When true, disables URL parameter management for swap configuration */
   disableUrlParamManagement?: boolean;
+  /** Staging environment support */
+  isStaging?: boolean;
 }
 
 /**
