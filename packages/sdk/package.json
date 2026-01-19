@@ -1,6 +1,6 @@
 {
   "name": "@b3dotfun/sdk",
-  "version": "0.1.6-test.0",
+  "version": "0.1.6-test.1",
   "source": "src/index.ts",
   "main": "./dist/cjs/index.js",
   "react-native": "./dist/cjs/index.native.js",
