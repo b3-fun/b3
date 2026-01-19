@@ -493,6 +493,8 @@ export interface AnySpendCollectorClubPurchaseProps extends BaseModalProps {
   activeTab?: "crypto" | "fiat";
   /** Force fiat payment */
   forceFiatPayment?: boolean;
+  /** Contract address */
+  ccShopAddress?: string;
 }
 
 /**
