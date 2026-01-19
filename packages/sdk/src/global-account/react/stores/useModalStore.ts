@@ -495,6 +495,8 @@ export interface AnySpendCollectorClubPurchaseProps extends BaseModalProps {
   activeTab?: "crypto" | "fiat";
   /** Force fiat payment */
   forceFiatPayment?: boolean;
+  /** Staging environment support */
+  isStaging?: boolean;
 }
 
 /**
