@@ -40,14 +40,14 @@ export const anyspendService = {
     return token;
   },
 
-  getQuote: async (req: GetQuoteRequest): Promise<GetQuoteResponse> => {
+  getQuote: async (req: GetQuoteRequest, partnerId?: string): Promise<GetQuoteResponse> => {
     const url = `${ANYSPEND_MAINNET_BASE_URL}/orders/quote`;
     const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(req),
+      body: JSON.stringify({ ...req, partnerId }),
     });
     const data: GetQuoteResponse = await response.json();
     if (response.status !== 200) throw new Error(data.message);

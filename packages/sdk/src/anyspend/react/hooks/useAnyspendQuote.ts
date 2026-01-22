@@ -1,4 +1,5 @@
 import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
+import { useB3Config } from "@b3dotfun/sdk/global-account/react";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { GetQuoteRequest, GetQuoteResponse } from "../../types/api_req_res";
@@ -16,10 +17,12 @@ export type UseAnyspendQuoteResult = {
   refetchAnyspendQuote: () => void;
 };
 export function useAnyspendQuote(req: GetQuoteRequest): UseAnyspendQuoteResult {
+  const { partnerId } = useB3Config();
+
   const { data, isLoading, refetch, error } = useQuery({
-    queryKey: ["useAnyspendQuote", JSON.stringify(req)],
+    queryKey: ["useAnyspendQuote", JSON.stringify(req), partnerId],
     queryFn: (): Promise<GetQuoteResponse> => {
-      return anyspendService.getQuote(req);
+      return anyspendService.getQuote(req, partnerId);
     },
     enabled: Boolean(
       req.srcChain &&
