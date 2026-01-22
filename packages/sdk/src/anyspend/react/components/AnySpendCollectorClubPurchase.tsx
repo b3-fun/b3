@@ -32,8 +32,9 @@ import React, { useMemo } from "react";
 import { encodeFunctionData } from "viem";
 import { AnySpendCustom } from "./AnySpendCustom";
 
-// Default Collector Club Shop contract on Base
-const DEFAULT_CC_SHOP_ADDRESS = "0x47366E64E4917dd4DdC04Fb9DC507c1dD2b87294";
+// Collector Club Shop contract addresses on Base
+const CC_SHOP_ADDRESS = "0x47366E64E4917dd4DdC04Fb9DC507c1dD2b87294";
+const CC_SHOP_ADDRESS_STAGING = "0x8b751143342ac41eB965E55430e3F7Adf6BE01fA";
 const BASE_CHAIN_ID = 8453;
 
 // ABI for buyPacksFor function only
@@ -87,9 +88,9 @@ export interface AnySpendCollectorClubPurchaseProps {
    */
   spenderAddress?: string;
   /**
-   * Collector Club Shop contract address (defaults to Base mainnet shop)
+   * Use staging contract address instead of production
    */
-  ccShopAddress?: string;
+  isStaging?: boolean;
   /**
    * Success callback
    */
@@ -128,8 +129,8 @@ export function AnySpendCollectorClubPurchase({
   pricePerPack,
   paymentToken = USDC_BASE,
   recipientAddress,
-  ccShopAddress = DEFAULT_CC_SHOP_ADDRESS,
   spenderAddress,
+  isStaging = false,
   onSuccess,
   header,
   showRecipient = true,
@@ -137,6 +138,8 @@ export function AnySpendCollectorClubPurchase({
   packType,
   forceFiatPayment,
 }: AnySpendCollectorClubPurchaseProps) {
+  const ccShopAddress = isStaging ? CC_SHOP_ADDRESS_STAGING : CC_SHOP_ADDRESS;
+
   // Calculate total amount needed (pricePerPack * packAmount)
   const totalAmount = useMemo(() => {
     try {
