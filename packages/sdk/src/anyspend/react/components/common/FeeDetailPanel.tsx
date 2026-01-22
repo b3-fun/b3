@@ -45,7 +45,7 @@ export function FeeDetailPanel({ fee, transactionAmountUsd, onBack, classes }: F
 
   // Check if discount is active
   const hasWhaleDiscount = fee.anyspendWhaleDiscountBps > 0;
-  const hasPartnerDiscount = fee.anyspendPartnerDiscountBps > 0;
+  const hasPartnerDiscount = (fee.anyspendPartnerDiscountBps ?? 0) > 0;
 
   // Find current tier based on transaction amount
   const getCurrentCryptoTier = (amount?: number) => {
@@ -78,7 +78,7 @@ export function FeeDetailPanel({ fee, transactionAmountUsd, onBack, classes }: F
 
   // Calculate partner discount percentage
   const partnerDiscountPercent =
-    baseFee > 0 && hasPartnerDiscount ? Math.round((fee.anyspendPartnerDiscountBps / baseFee) * 100) : 0;
+    baseFee > 0 && hasPartnerDiscount ? Math.round(((fee.anyspendPartnerDiscountBps ?? 0) / baseFee) * 100) : 0;
 
   // State for expanding tier lists
   const [showAllFeeTiers, setShowAllFeeTiers] = useState(false);

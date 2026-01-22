@@ -25,7 +25,7 @@ export function FeeBreakDown({ fee, decimals = 6, showCurrency = true, className
 
   // Check if discount is active
   const hasWhaleDiscount = fee.anyspendWhaleDiscountBps > 0;
-  const hasPartnerDiscount = fee.anyspendPartnerDiscountBps > 0;
+  const hasPartnerDiscount = (fee.anyspendPartnerDiscountBps ?? 0) > 0;
 
   return (
     <div className={`min-w-[240px] ${className}`}>
@@ -58,7 +58,7 @@ export function FeeBreakDown({ fee, decimals = 6, showCurrency = true, className
             {hasPartnerDiscount && (
               <tr className="text-green-600">
                 <td className="py-1">Partner Discount</td>
-                <td className="py-1 text-right">-{bpsToPercent(fee.anyspendPartnerDiscountBps)}%</td>
+                <td className="py-1 text-right">-{bpsToPercent(fee.anyspendPartnerDiscountBps ?? 0)}%</td>
               </tr>
             )}
             <tr className="border-as-border-secondary border-t">
