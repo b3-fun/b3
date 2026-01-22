@@ -94,7 +94,7 @@ const SettingsProfileCard = () => {
       const updatedUser = (await app
         .service("users")
         .registerUsername(
-          { username: b3Username, message: usernameSignMessage, hash: usernameSignature },
+          { username: sanitizedUsername, message: usernameSignMessage, hash: usernameSignature },
           {} as any,
         )) as unknown as Users;
       // Update user state - registerUsername returns an array with single user
