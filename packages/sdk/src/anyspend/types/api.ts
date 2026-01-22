@@ -930,6 +930,8 @@ export interface paths {
                  * @enum {string}
                  */
                 onrampVendor?: "coinbase" | "stripe" | "stripe-web2";
+                /** @description Optional partner ID */
+                partnerId?: string;
               }
             | {
                 /**
@@ -972,6 +974,8 @@ export interface paths {
                  * @enum {string}
                  */
                 onrampVendor?: "coinbase" | "stripe" | "stripe-web2";
+                /** @description Optional partner ID */
+                partnerId?: string;
               }
             | {
                 /**
@@ -1020,6 +1024,8 @@ export interface paths {
                  * @enum {string}
                  */
                 onrampVendor?: "coinbase" | "stripe" | "stripe-web2";
+                /** @description Optional partner ID */
+                partnerId?: string;
               }
             | {
                 /** @enum {string} */
@@ -1035,6 +1041,8 @@ export interface paths {
                 recipientAddress?: string;
                 /** @enum {string} */
                 onrampVendor?: "coinbase" | "stripe" | "stripe-web2";
+                /** @description Optional partner ID */
+                partnerId?: string;
                 contractAddress: string;
                 tokenId?: number | null;
                 /** @enum {string} */
@@ -1055,6 +1063,8 @@ export interface paths {
                 recipientAddress?: string;
                 /** @enum {string} */
                 onrampVendor?: "coinbase" | "stripe" | "stripe-web2";
+                /** @description Optional partner ID */
+                partnerId?: string;
                 contractAddress: string;
                 price: string;
               }
@@ -1072,6 +1082,8 @@ export interface paths {
                 recipientAddress?: string;
                 /** @enum {string} */
                 onrampVendor?: "coinbase" | "stripe" | "stripe-web2";
+                /** @description Optional partner ID */
+                partnerId?: string;
                 contractAddress: string;
                 fundAmount: string;
               }
@@ -1116,6 +1128,8 @@ export interface paths {
                  * @enum {string}
                  */
                 onrampVendor?: "coinbase" | "stripe" | "stripe-web2";
+                /** @description Optional partner ID */
+                partnerId?: string;
               }
             | {
                 /**
@@ -1158,6 +1172,8 @@ export interface paths {
                  * @enum {string}
                  */
                 onrampVendor?: "coinbase" | "stripe" | "stripe-web2";
+                /** @description Optional partner ID */
+                partnerId?: string;
               };
         };
       };
@@ -2979,7 +2995,7 @@ export interface components {
            */
           anyspendWhaleDiscountBps: number;
           /**
-           * @description Partner discount in basis points
+           * @description Partner discount in basis points (deprecated, always 0)
            * @example 0
            */
           anyspendPartnerDiscountBps: number;
@@ -3036,7 +3052,7 @@ export interface components {
            */
           anyspendWhaleDiscountBps: number;
           /**
-           * @description Partner discount in basis points
+           * @description Partner discount in basis points (deprecated, always 0)
            * @example 0
            */
           anyspendPartnerDiscountBps: number;
