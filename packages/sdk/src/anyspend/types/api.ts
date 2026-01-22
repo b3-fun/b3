@@ -4,3028 +4,3069 @@
  */
 
 export interface paths {
-    "/chains/{chainId}/tokens": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+  "/chains/{chainId}/tokens": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get tokens for a chain
+     * @description Retrieves available tokens for a specific blockchain
+     */
+    get: {
+      parameters: {
+        query?: {
+          /**
+           * @description Search term to filter tokens
+           * @example USDC
+           */
+          term?: string;
+          /** @description Maximum number of tokens to return */
+          limit?: number;
         };
-        /**
-         * Get tokens for a chain
-         * @description Retrieves available tokens for a specific blockchain
-         */
-        get: {
-            parameters: {
-                query?: {
-                    /**
-                     * @description Search term to filter tokens
-                     * @example USDC
-                     */
-                    term?: string;
-                    /** @description Maximum number of tokens to return */
-                    limit?: number;
+        header?: never;
+        path: {
+          /**
+           * @description Blockchain chain ID
+           * @example 1
+           */
+          chainId: number;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Tokens retrieved successfully */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /** @example true */
+              success: boolean;
+              /** @example Tokens retrieved successfully */
+              message: string;
+              /** @description Array of tokens */
+              data: {
+                /** @description Chain ID */
+                chainId: number;
+                /** @description Token contract address */
+                address: string;
+                /** @description Token symbol */
+                symbol: string;
+                /** @description Token name */
+                name: string;
+                /** @description Token decimals */
+                decimals: number;
+                metadata: {
+                  /** @description Token logo URI */
+                  logoURI?: string;
                 };
-                header?: never;
-                path: {
+              }[];
+              /** @example 200 */
+              statusCode: number;
+            };
+          };
+        };
+        /** @description Bad request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /** @example false */
+              success: boolean;
+              /** @example Bad request */
+              message: string;
+              /** @example 400 */
+              statusCode: number;
+            };
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/onramp/coinbase/options": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get Coinbase onramp options
+     * @description Retrieves available Coinbase onramp configuration options.
+     */
+    get: {
+      parameters: {
+        query: {
+          /**
+           * @description Country code for onramp options
+           * @example US
+           */
+          country: string;
+          /**
+           * @description Optional subdivision (state/province) code
+           * @example CA
+           */
+          subdivision?: string;
+          /**
+           * @description Optional payment method filter
+           * @example USD
+           */
+          payment_method?: string;
+          /**
+           * @description Optional purchase method filter
+           * @example USDC
+           */
+          purchase_method?: string;
+          /**
+           * @description Optional array of chain IDs to filter by
+           * @example [
+           *       "1",
+           *       "8453"
+           *     ]
+           */
+          chainIds?: string[];
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Coinbase options retrieved successfully */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /** @example true */
+              success: boolean;
+              /** @example Coinbase options retrieved successfully */
+              message: string;
+              data: {
+                /** @description Available payment currencies */
+                paymentCurrencies: {
+                  /**
+                   * @description Payment currency identifier
+                   * @example USD
+                   */
+                  id?: string;
+                  /** @description Payment limits for this currency */
+                  limits?: {
                     /**
-                     * @description Blockchain chain ID
+                     * @description Payment method identifier
+                     * @example CARD
+                     */
+                    id?: string;
+                    /**
+                     * @description Minimum payment amount
+                     * @example 2
+                     */
+                    min?: string;
+                    /**
+                     * @description Maximum payment amount
+                     * @example 7500
+                     */
+                    max?: string;
+                  }[];
+                }[];
+                /** @description Available purchase currencies */
+                purchaseCurrencies: {
+                  /**
+                   * @description Currency identifier (UUID)
+                   * @example 2b92315d-eab7-5bef-84fa-089a131333f5
+                   */
+                  id: string;
+                  /**
+                   * @description Currency full name
+                   * @example USD Coin
+                   */
+                  name: string;
+                  /**
+                   * @description Currency symbol
+                   * @example USDC
+                   */
+                  symbol: string;
+                  /**
+                   * @description Currency icon URL
+                   * @example https://dynamic-assets.coinbase.com/3c15df5e2ac7d4abbe9499ed9335041f00c620f28e8de2f93474a9f432058742cdf4674bd43f309e69778a26969dbc009429d4bd59cc5b85b2c6c8a6dc0b57f1/asset_icons/80422be4be5aa1bb4deb72d9f0e9d0f33e05ce6b8fb7c24bb9e14e4adacdf20c.png
+                   */
+                  iconUrl: string;
+                  /** @description Available networks for this currency */
+                  networks: {
+                    /**
+                     * @description Network name
+                     * @example ethereum
+                     */
+                    name: string;
+                    /**
+                     * @description Network display name
+                     * @example Ethereum
+                     */
+                    displayName: string;
+                    /**
+                     * @description Token contract address on this network
+                     * @example 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
+                     */
+                    contractAddress: string;
+                    /**
+                     * @description Chain ID for this network
                      * @example 1
                      */
-                    chainId: number;
-                };
-                cookie?: never;
+                    chainId: string;
+                    /**
+                     * @description Network display name (snake_case version)
+                     * @example Ethereum
+                     */
+                    display_name: string;
+                    /**
+                     * @description Token contract address (snake_case version)
+                     * @example 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
+                     */
+                    contract_address: string;
+                    /**
+                     * @description Chain ID (snake_case version)
+                     * @example 1
+                     */
+                    chain_id: string;
+                  }[];
+                }[];
+              };
+              /** @example 200 */
+              statusCode: number;
             };
-            requestBody?: never;
-            responses: {
-                /** @description Tokens retrieved successfully */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @example true */
-                            success: boolean;
-                            /** @example Tokens retrieved successfully */
-                            message: string;
-                            /** @description Array of tokens */
-                            data: {
-                                /** @description Chain ID */
-                                chainId: number;
-                                /** @description Token contract address */
-                                address: string;
-                                /** @description Token symbol */
-                                symbol: string;
-                                /** @description Token name */
-                                name: string;
-                                /** @description Token decimals */
-                                decimals: number;
-                                metadata: {
-                                    /** @description Token logo URI */
-                                    logoURI?: string;
-                                };
-                            }[];
-                            /** @example 200 */
-                            statusCode: number;
-                        };
-                    };
-                };
-                /** @description Bad request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @example false */
-                            success: boolean;
-                            /** @example Bad request */
-                            message: string;
-                            /** @example 400 */
-                            statusCode: number;
-                        };
-                    };
-                };
-            };
+          };
         };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+        /** @description Bad request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /** @example false */
+              success: boolean;
+              /** @example Bad request */
+              message: string;
+              /** @example 400 */
+              statusCode: number;
+            };
+          };
+        };
+      };
     };
-    "/onramp/coinbase/options": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get Coinbase onramp options
-         * @description Retrieves available Coinbase onramp configuration options.
-         */
-        get: {
-            parameters: {
-                query: {
-                    /**
-                     * @description Country code for onramp options
-                     * @example US
-                     */
-                    country: string;
-                    /**
-                     * @description Optional subdivision (state/province) code
-                     * @example CA
-                     */
-                    subdivision?: string;
-                    /**
-                     * @description Optional payment method filter
-                     * @example USD
-                     */
-                    payment_method?: string;
-                    /**
-                     * @description Optional purchase method filter
-                     * @example USDC
-                     */
-                    purchase_method?: string;
-                    /**
-                     * @description Optional array of chain IDs to filter by
-                     * @example [
-                     *       "1",
-                     *       "8453"
-                     *     ]
-                     */
-                    chainIds?: string[];
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Coinbase options retrieved successfully */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @example true */
-                            success: boolean;
-                            /** @example Coinbase options retrieved successfully */
-                            message: string;
-                            data: {
-                                /** @description Available payment currencies */
-                                paymentCurrencies: {
-                                    /**
-                                     * @description Payment currency identifier
-                                     * @example USD
-                                     */
-                                    id?: string;
-                                    /** @description Payment limits for this currency */
-                                    limits?: {
-                                        /**
-                                         * @description Payment method identifier
-                                         * @example CARD
-                                         */
-                                        id?: string;
-                                        /**
-                                         * @description Minimum payment amount
-                                         * @example 2
-                                         */
-                                        min?: string;
-                                        /**
-                                         * @description Maximum payment amount
-                                         * @example 7500
-                                         */
-                                        max?: string;
-                                    }[];
-                                }[];
-                                /** @description Available purchase currencies */
-                                purchaseCurrencies: {
-                                    /**
-                                     * @description Currency identifier (UUID)
-                                     * @example 2b92315d-eab7-5bef-84fa-089a131333f5
-                                     */
-                                    id: string;
-                                    /**
-                                     * @description Currency full name
-                                     * @example USD Coin
-                                     */
-                                    name: string;
-                                    /**
-                                     * @description Currency symbol
-                                     * @example USDC
-                                     */
-                                    symbol: string;
-                                    /**
-                                     * @description Currency icon URL
-                                     * @example https://dynamic-assets.coinbase.com/3c15df5e2ac7d4abbe9499ed9335041f00c620f28e8de2f93474a9f432058742cdf4674bd43f309e69778a26969dbc009429d4bd59cc5b85b2c6c8a6dc0b57f1/asset_icons/80422be4be5aa1bb4deb72d9f0e9d0f33e05ce6b8fb7c24bb9e14e4adacdf20c.png
-                                     */
-                                    iconUrl: string;
-                                    /** @description Available networks for this currency */
-                                    networks: {
-                                        /**
-                                         * @description Network name
-                                         * @example ethereum
-                                         */
-                                        name: string;
-                                        /**
-                                         * @description Network display name
-                                         * @example Ethereum
-                                         */
-                                        displayName: string;
-                                        /**
-                                         * @description Token contract address on this network
-                                         * @example 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
-                                         */
-                                        contractAddress: string;
-                                        /**
-                                         * @description Chain ID for this network
-                                         * @example 1
-                                         */
-                                        chainId: string;
-                                        /**
-                                         * @description Network display name (snake_case version)
-                                         * @example Ethereum
-                                         */
-                                        display_name: string;
-                                        /**
-                                         * @description Token contract address (snake_case version)
-                                         * @example 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
-                                         */
-                                        contract_address: string;
-                                        /**
-                                         * @description Chain ID (snake_case version)
-                                         * @example 1
-                                         */
-                                        chain_id: string;
-                                    }[];
-                                }[];
-                            };
-                            /** @example 200 */
-                            statusCode: number;
-                        };
-                    };
-                };
-                /** @description Bad request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @example false */
-                            success: boolean;
-                            /** @example Bad request */
-                            message: string;
-                            /** @example 400 */
-                            statusCode: number;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/onramp/coinbase/session-token": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/onramp/coinbase/session-token": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    get?: never;
+    put?: never;
+    /**
+     * Create Coinbase session token
+     * @description Generates a Coinbase Onramp session token that can be reused when constructing buy URLs.
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["CoinbaseSessionTokenRequest"];
         };
-        get?: never;
-        put?: never;
-        /**
-         * Create Coinbase session token
-         * @description Generates a Coinbase Onramp session token that can be reused when constructing buy URLs.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["CoinbaseSessionTokenRequest"];
-                };
-            };
-            responses: {
-                /** @description Session token created successfully */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["CoinbaseSessionTokenResponse"];
-                    };
-                };
-                /** @description Bad request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @example false */
-                            success: boolean;
-                            /** @example Bad request */
-                            message: string;
-                            /** @example 400 */
-                            statusCode: number;
-                        };
-                    };
-                };
-            };
+      };
+      responses: {
+        /** @description Session token created successfully */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["CoinbaseSessionTokenResponse"];
+          };
         };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+        /** @description Bad request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /** @example false */
+              success: boolean;
+              /** @example Bad request */
+              message: string;
+              /** @example 400 */
+              statusCode: number;
+            };
+          };
+        };
+      };
     };
-    "/onramp/coinbase/onramp-url": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Create Coinbase onramp URL
-         * @description Creates a Coinbase Onramp buy URL and optionally returns a session token for reuse.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["CoinbaseOnrampUrlRequest"];
-                };
-            };
-            responses: {
-                /** @description Onramp URL created successfully */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["CoinbaseOnrampUrlResponse"];
-                    };
-                };
-                /** @description Bad request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @example false */
-                            success: boolean;
-                            /** @example Bad request */
-                            message: string;
-                            /** @example 400 */
-                            statusCode: number;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/onramp/coinbase/onramp-url": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/onramp/coinbase/direct-url": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    get?: never;
+    put?: never;
+    /**
+     * Create Coinbase onramp URL
+     * @description Creates a Coinbase Onramp buy URL and optionally returns a session token for reuse.
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["CoinbaseOnrampUrlRequest"];
         };
-        get?: never;
-        put?: never;
-        /**
-         * Generate direct Coinbase onramp URL
-         * @description Generates a direct Coinbase Onramp URL along with the session token backing it.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["CoinbaseDirectOnrampRequest"];
-                };
-            };
-            responses: {
-                /** @description Direct onramp URL generated successfully */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["CoinbaseDirectOnrampResponse"];
-                    };
-                };
-                /** @description Bad request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @example false */
-                            success: boolean;
-                            /** @example Bad request */
-                            message: string;
-                            /** @example 400 */
-                            statusCode: number;
-                        };
-                    };
-                };
-            };
+      };
+      responses: {
+        /** @description Onramp URL created successfully */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["CoinbaseOnrampUrlResponse"];
+          };
         };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+        /** @description Bad request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /** @example false */
+              success: boolean;
+              /** @example Bad request */
+              message: string;
+              /** @example 400 */
+              statusCode: number;
+            };
+          };
+        };
+      };
     };
-    "/onramp/stripe/supported": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Check Stripe support
-         * @description Checks if Stripe onramp and Stripe Web2 are supported based on IP address location and optional transaction amount
-         */
-        get: {
-            parameters: {
-                query?: {
-                    /**
-                     * @description Optional USD amount for transaction limit checks
-                     * @example 100.00
-                     */
-                    usdAmount?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Stripe support status retrieved successfully */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @example true */
-                            success: boolean;
-                            /** @example Stripe support status retrieved successfully */
-                            message: string;
-                            data: {
-                                /**
-                                 * @description Whether Stripe onramp is supported for this location/amount
-                                 * @example true
-                                 */
-                                stripeOnramp: boolean;
-                                /** @description Stripe Web2 support details */
-                                stripeWeb2: components["schemas"]["StripeWeb2Support"];
-                            };
-                            /** @example 200 */
-                            statusCode: number;
-                        };
-                    };
-                };
-                /** @description Bad request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @example false */
-                            success: boolean;
-                            /** @example Bad request */
-                            message: string;
-                            /** @example 400 */
-                            statusCode: number;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/onramp/coinbase/direct-url": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/orders": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    get?: never;
+    put?: never;
+    /**
+     * Generate direct Coinbase onramp URL
+     * @description Generates a direct Coinbase Onramp URL along with the session token backing it.
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["CoinbaseDirectOnrampRequest"];
         };
-        /**
-         * Get orders by creator
-         * @description Retrieves all orders created by a specific address
-         */
-        get: {
-            parameters: {
-                query: {
-                    /**
-                     * @description Address of the order creator
-                     * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
-                     */
-                    creatorAddress: string;
-                    /**
-                     * @description Maximum number of orders to return
-                     * @example 20
-                     */
-                    limit?: string;
-                    /**
-                     * @description Number of orders to skip
-                     * @example 0
-                     */
-                    offset?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Orders retrieved successfully */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @example true */
-                            success: boolean;
-                            /** @example Get orders by creator successfully */
-                            message: string;
-                            /** @description Array of orders */
-                            data: components["schemas"]["Order"][];
-                            /** @example 200 */
-                            statusCode: number;
-                        };
-                    };
-                };
-                /** @description Bad request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @example false */
-                            success: boolean;
-                            /** @example Bad request */
-                            message: string;
-                            /** @example 400 */
-                            statusCode: number;
-                        };
-                    };
-                };
-            };
+      };
+      responses: {
+        /** @description Direct onramp URL generated successfully */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["CoinbaseDirectOnrampResponse"];
+          };
         };
-        put?: never;
-        /**
-         * Create a new order
-         * @description Creates a new order for token transactions across chains
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
+        /** @description Bad request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /** @example false */
+              success: boolean;
+              /** @example Bad request */
+              message: string;
+              /** @example 400 */
+              statusCode: number;
             };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["OrderRequest"];
-                };
-            };
-            responses: {
-                /** @description Order created successfully */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @example true */
-                            success: boolean;
-                            /** @example Created order successfully */
-                            message: string;
-                            data: components["schemas"]["Order"];
-                            /** @example 200 */
-                            statusCode: number;
-                        };
-                    };
-                };
-                /** @description Bad request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @example false */
-                            success: boolean;
-                            /** @example Bad request */
-                            message: string;
-                            /** @example 400 */
-                            statusCode: number;
-                        };
-                    };
-                };
-            };
+          };
         };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+      };
     };
-    "/orders/{orderId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get order and transactions
-         * @description Retrieves order details along with associated transactions
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /**
-                     * @description Unique order identifier
-                     * @example 5392f7a7-d472-4d6b-9848-bd07117fb82d
-                     */
-                    orderId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Order and transactions retrieved successfully */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @example true */
-                            success: boolean;
-                            /** @example Get order and transactions successfully */
-                            message: string;
-                            data: {
-                                order: components["schemas"]["Order"];
-                                /**
-                                 * @description Deposit transactions (payment from user)
-                                 * @example [
-                                 *       {
-                                 *         "orderId": "5392f7a7-d472-4d6b-9848-bd07117fb82d",
-                                 *         "chain": 8453,
-                                 *         "from": "0xa7539e73700B1726aBA29526606442A491Ef5747",
-                                 *         "txHash": "0x60ece99a645201668d20db6775a6b3d30967433ff0750b356cdad46d3e13f9c8",
-                                 *         "amount": "93354000",
-                                 *         "createdAt": 1752505811105
-                                 *       }
-                                 *     ]
-                                 */
-                                depositTxs: components["schemas"]["DepositTx"][];
-                                /**
-                                 * @description Cross-chain relay transactions
-                                 * @example [
-                                 *       {
-                                 *         "orderId": "5392f7a7-d472-4d6b-9848-bd07117fb82d",
-                                 *         "chain": 8453,
-                                 *         "txHash": "0x9df917e14bb089f74763d1d2662761d75c97a5a068b8a9e411c3d384c9c40d19",
-                                 *         "status": "success",
-                                 *         "createdAt": 1752505817654
-                                 *       }
-                                 *     ]
-                                 */
-                                relayTxs: components["schemas"]["RelayTx"][];
-                                executeTx: components["schemas"]["ExecuteTx"] | null;
-                                /** @description Refund transactions if order failed */
-                                refundTxs: components["schemas"]["RefundTx"][];
-                                /**
-                                 * @description Points awarded for this order (only present when order status is executed)
-                                 * @example 100
-                                 */
-                                points: number | null;
-                            };
-                            /** @example 200 */
-                            statusCode: number;
-                        };
-                    };
-                };
-                /** @description Bad request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @example false */
-                            success: boolean;
-                            /** @example Bad request */
-                            message: string;
-                            /** @example 400 */
-                            statusCode: number;
-                        };
-                    };
-                };
-                /** @description Order not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @example false */
-                            success: boolean;
-                            /** @example Order not found */
-                            message: string;
-                            /** @example 404 */
-                            statusCode: number;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/onramp/stripe/supported": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/orders/{orderId}/comprehensive": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    /**
+     * Check Stripe support
+     * @description Checks if Stripe onramp and Stripe Web2 are supported based on IP address location and optional transaction amount
+     */
+    get: {
+      parameters: {
+        query?: {
+          /**
+           * @description Optional USD amount for transaction limit checks
+           * @example 100.00
+           */
+          usdAmount?: string;
         };
-        /**
-         * Get comprehensive order detail
-         * @description Retrieves an order with associated transactions, settlement data, and awarded points without sanitization.
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /**
-                     * @description Unique order identifier
-                     * @example 5392f7a7-d472-4d6b-9848-bd07117fb82d
-                     */
-                    orderId: string;
-                };
-                cookie?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Stripe support status retrieved successfully */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /** @example true */
+              success: boolean;
+              /** @example Stripe support status retrieved successfully */
+              message: string;
+              data: {
+                /**
+                 * @description Whether Stripe onramp is supported for this location/amount
+                 * @example true
+                 */
+                stripeOnramp: boolean;
+                /** @description Stripe Web2 support details */
+                stripeWeb2: components["schemas"]["StripeWeb2Support"];
+              };
+              /** @example 200 */
+              statusCode: number;
             };
-            requestBody?: never;
-            responses: {
-                /** @description Comprehensive order retrieved successfully */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ComprehensiveOrderResponse"];
-                    };
-                };
-                /** @description Bad request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @example false */
-                            success: boolean;
-                            /** @example Bad request */
-                            message: string;
-                            /** @example 400 */
-                            statusCode: number;
-                        };
-                    };
-                };
-                /** @description Order not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @example false */
-                            success: boolean;
-                            /** @example Order not found */
-                            message: string;
-                            /** @example 404 */
-                            statusCode: number;
-                        };
-                    };
-                };
-            };
+          };
         };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+        /** @description Bad request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /** @example false */
+              success: boolean;
+              /** @example Bad request */
+              message: string;
+              /** @example 400 */
+              statusCode: number;
+            };
+          };
+        };
+      };
     };
-    "/orders/quote": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Get anyspend quote
-         * @description Retrieves a quote to swap, execute contract, or participate in HypeDuel
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        /**
-                         * @description Order type for swap
-                         * @enum {string}
-                         */
-                        type: "swap";
-                        /**
-                         * @description Source chain ID
-                         * @example 1
-                         */
-                        srcChain: number;
-                        /**
-                         * @description Destination chain ID
-                         * @example 8453
-                         */
-                        dstChain: number;
-                        /**
-                         * @description Source token contract address
-                         * @example 0x0000000000000000000000000000000000000000
-                         */
-                        srcTokenAddress: string;
-                        /**
-                         * @description Destination token contract address
-                         * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
-                         */
-                        dstTokenAddress: string;
-                        /**
-                         * @description Recipient address
-                         * @example 0x55c71fca5e01cf246718748ae540473e608d0282
-                         */
-                        recipientAddress?: string;
-                        /**
-                         * @description Type of trade execution
-                         * @enum {string}
-                         */
-                        tradeType: "EXACT_INPUT" | "EXACT_OUTPUT";
-                        /**
-                         * @description Amount to quote
-                         * @example 1000000000000000000
-                         */
-                        amount: string;
-                        /**
-                         * @description Optional onramp vendor
-                         * @enum {string}
-                         */
-                        onrampVendor?: "coinbase" | "stripe" | "stripe-web2";
-                    } | {
-                        /**
-                         * @description Order type for X402 swap
-                         * @enum {string}
-                         */
-                        type: "x402_swap";
-                        /**
-                         * @description Source chain ID
-                         * @example 8453
-                         */
-                        srcChain: number;
-                        /**
-                         * @description Destination chain ID
-                         * @example 8453
-                         */
-                        dstChain: number;
-                        /**
-                         * @description Source token contract address
-                         * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
-                         */
-                        srcTokenAddress: string;
-                        /**
-                         * @description Destination token contract address
-                         * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
-                         */
-                        dstTokenAddress: string;
-                        /**
-                         * @description Recipient address
-                         * @example 0x55c71fca5e01cf246718748ae540473e608d0282
-                         */
-                        recipientAddress?: string;
-                        /**
-                         * @description Amount to quote
-                         * @example 1000000
-                         */
-                        amount: string;
-                        /**
-                         * @description Optional onramp vendor
-                         * @enum {string}
-                         */
-                        onrampVendor?: "coinbase" | "stripe" | "stripe-web2";
-                    } | {
-                        /**
-                         * @description Order type for custom execution
-                         * @enum {string}
-                         */
-                        type: "custom";
-                        /**
-                         * @description Source chain ID
-                         * @example 1
-                         */
-                        srcChain: number;
-                        /**
-                         * @description Destination chain ID
-                         * @example 8453
-                         */
-                        dstChain: number;
-                        /**
-                         * @description Source token contract address
-                         * @example 0x0000000000000000000000000000000000000000
-                         */
-                        srcTokenAddress: string;
-                        /**
-                         * @description Destination token contract address
-                         * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
-                         */
-                        dstTokenAddress: string;
-                        /**
-                         * @description Recipient address
-                         * @example 0x55c71fca5e01cf246718748ae540473e608d0282
-                         */
-                        recipientAddress?: string;
-                        /** @description Custom payload for execution */
-                        payload: {
-                            /** @description Encoded transaction data */
-                            data: string;
-                            /** @description Target contract address */
-                            to: string;
-                            /** @description Optional spender address for token approval */
-                            spenderAddress?: string;
-                            /** @description Amount for the custom operation */
-                            amount: string;
-                        };
-                        /**
-                         * @description Optional onramp vendor
-                         * @enum {string}
-                         */
-                        onrampVendor?: "coinbase" | "stripe" | "stripe-web2";
-                    } | {
-                        /** @enum {string} */
-                        type: "mint_nft";
-                        srcChain: number;
-                        dstChain: number;
-                        srcTokenAddress: string;
-                        dstTokenAddress: string;
-                        /**
-                         * @description Recipient address
-                         * @example 0x55c71fca5e01cf246718748ae540473e608d0282
-                         */
-                        recipientAddress?: string;
-                        /** @enum {string} */
-                        onrampVendor?: "coinbase" | "stripe" | "stripe-web2";
-                        contractAddress: string;
-                        tokenId?: number | null;
-                        /** @enum {string} */
-                        contractType: "erc721" | "erc1155";
-                        price: string;
-                    } | {
-                        /** @enum {string} */
-                        type: "join_tournament";
-                        srcChain: number;
-                        dstChain: number;
-                        srcTokenAddress: string;
-                        dstTokenAddress: string;
-                        /**
-                         * @description Recipient address
-                         * @example 0x55c71fca5e01cf246718748ae540473e608d0282
-                         */
-                        recipientAddress?: string;
-                        /** @enum {string} */
-                        onrampVendor?: "coinbase" | "stripe" | "stripe-web2";
-                        contractAddress: string;
-                        price: string;
-                    } | {
-                        /** @enum {string} */
-                        type: "fund_tournament";
-                        srcChain: number;
-                        dstChain: number;
-                        srcTokenAddress: string;
-                        dstTokenAddress: string;
-                        /**
-                         * @description Recipient address
-                         * @example 0x55c71fca5e01cf246718748ae540473e608d0282
-                         */
-                        recipientAddress?: string;
-                        /** @enum {string} */
-                        onrampVendor?: "coinbase" | "stripe" | "stripe-web2";
-                        contractAddress: string;
-                        fundAmount: string;
-                    } | {
-                        /**
-                         * @description Order type for HypeDuel
-                         * @enum {string}
-                         */
-                        type: "hype_duel";
-                        /**
-                         * @description Source chain ID
-                         * @example 1
-                         */
-                        srcChain: number;
-                        /**
-                         * @description Destination chain ID
-                         * @example 8453
-                         */
-                        dstChain: number;
-                        /**
-                         * @description Source token contract address
-                         * @example 0x0000000000000000000000000000000000000000
-                         */
-                        srcTokenAddress: string;
-                        /**
-                         * @description Destination token contract address
-                         * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
-                         */
-                        dstTokenAddress: string;
-                        /**
-                         * @description Recipient address
-                         * @example 0x55c71fca5e01cf246718748ae540473e608d0282
-                         */
-                        recipientAddress?: string;
-                        /**
-                         * @description Amount to quote
-                         * @example 1000000000000000000
-                         */
-                        amount: string;
-                        /**
-                         * @description Optional onramp vendor
-                         * @enum {string}
-                         */
-                        onrampVendor?: "coinbase" | "stripe" | "stripe-web2";
-                    } | {
-                        /**
-                         * @description Order type for custom exact in execution
-                         * @enum {string}
-                         */
-                        type: "custom_exact_in";
-                        /**
-                         * @description Source chain ID
-                         * @example 1
-                         */
-                        srcChain: number;
-                        /**
-                         * @description Destination chain ID
-                         * @example 8453
-                         */
-                        dstChain: number;
-                        /**
-                         * @description Source token contract address
-                         * @example 0x0000000000000000000000000000000000000000
-                         */
-                        srcTokenAddress: string;
-                        /**
-                         * @description Destination token contract address
-                         * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
-                         */
-                        dstTokenAddress: string;
-                        /**
-                         * @description Recipient address
-                         * @example 0x55c71fca5e01cf246718748ae540473e608d0282
-                         */
-                        recipientAddress?: string;
-                        /**
-                         * @description Destination amount for exact in execution
-                         * @example 1000000000000000000
-                         */
-                        amount: string;
-                        /**
-                         * @description Optional onramp vendor
-                         * @enum {string}
-                         */
-                        onrampVendor?: "coinbase" | "stripe" | "stripe-web2";
-                    };
-                };
-            };
-            responses: {
-                /** @description Quote retrieved successfully */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @example true */
-                            success: boolean;
-                            /** @example Get quote successfully */
-                            message: string;
-                            data: {
-                                /**
-                                 * @description Type of operation
-                                 * @example swap
-                                 */
-                                operation?: string;
-                                /**
-                                 * @description Sender address for the operation
-                                 * @example 0x15846E6A7C839A208765a0B4754C2dd15E879990
-                                 */
-                                sender?: string;
-                                /**
-                                 * @description Recipient address for the operation
-                                 * @example 0xaF1ae1B78bc767DaEBB91196Adf982E9d560AAB9
-                                 */
-                                recipient?: string;
-                                /** @description Input currency details */
-                                currencyIn?: {
-                                    currency?: {
-                                        /** @example 1 */
-                                        chainId?: number;
-                                        /** @example 0x0000000000000000000000000000000000000000 */
-                                        address?: string;
-                                        /** @example ETH */
-                                        symbol?: string;
-                                        /** @example Ether */
-                                        name?: string;
-                                        /** @example 18 */
-                                        decimals?: number;
-                                        metadata?: {
-                                            /** @example https://assets.relay.link/icons/1/light.png */
-                                            logoURI?: string;
-                                        };
-                                    };
-                                    /**
-                                     * @description Raw amount
-                                     * @example 1000000000000000000
-                                     */
-                                    amount?: string;
-                                    /**
-                                     * @description Human-readable formatted amount
-                                     * @example 1.0
-                                     */
-                                    amountFormatted?: string;
-                                    /**
-                                     * @description USD value of the amount
-                                     * @example 3229.715818
-                                     */
-                                    amountUsd?: string;
-                                    /**
-                                     * @description Minimum required amount
-                                     * @example 1000000000000000000
-                                     */
-                                    minimumAmount?: string;
-                                };
-                                /** @description Output currency details */
-                                currencyOut?: {
-                                    currency?: {
-                                        /** @example 8453 */
-                                        chainId?: number;
-                                        /** @example 0x833589fcd6edb6e08f4c7c32d4f71b54bda02913 */
-                                        address?: string;
-                                        /** @example USDC */
-                                        symbol?: string;
-                                        /** @example USD Coin */
-                                        name?: string;
-                                        /** @example 6 */
-                                        decimals?: number;
-                                        metadata?: {
-                                            /** @example https://coin-images.coingecko.com/coins/images/6319/large/usdc.png?1696506694 */
-                                            logoURI?: string;
-                                        };
-                                    };
-                                    /**
-                                     * @description Raw output amount
-                                     * @example 3224805862
-                                     */
-                                    amount?: string;
-                                    /**
-                                     * @description Human-readable formatted output amount
-                                     * @example 3224.805862
-                                     */
-                                    amountFormatted?: string;
-                                    /**
-                                     * @description USD value of output amount
-                                     * @example 3224.512405
-                                     */
-                                    amountUsd?: string;
-                                    /**
-                                     * @description Minimum guaranteed output amount
-                                     * @example 3192557803
-                                     */
-                                    minimumAmount?: string;
-                                };
-                                /** @description Total price impact of the trade */
-                                totalImpact?: {
-                                    /**
-                                     * @description USD impact amount
-                                     * @example -5.203413
-                                     */
-                                    usd?: string;
-                                    /**
-                                     * @description Percentage impact
-                                     * @example -0.16
-                                     */
-                                    percent?: string;
-                                };
-                                /** @description Price impact from the swap portion */
-                                swapImpact?: {
-                                    /**
-                                     * @description USD swap impact
-                                     * @example -4.102797
-                                     */
-                                    usd?: string;
-                                    /**
-                                     * @description Percentage swap impact
-                                     * @example -0.13
-                                     */
-                                    percent?: string;
-                                };
-                                /**
-                                 * @description Exchange rate
-                                 * @example 3224.805862
-                                 */
-                                rate?: string;
-                                /** @description Slippage tolerance settings */
-                                slippageTolerance?: {
-                                    origin?: {
-                                        /** @example 0.000000 */
-                                        usd?: string;
-                                        /** @example 0 */
-                                        value?: string;
-                                        /** @example 0.00 */
-                                        percent?: string;
-                                    };
-                                    destination?: {
-                                        /** @example 32.245124 */
-                                        usd?: string;
-                                        /** @example 32248059 */
-                                        value?: string;
-                                        /** @example 1.00 */
-                                        percent?: string;
-                                    };
-                                };
-                                /**
-                                 * @description Estimated completion time in seconds
-                                 * @example 24
-                                 */
-                                timeEstimate?: number;
-                                /**
-                                 * @description User's current balance
-                                 * @example 0
-                                 */
-                                userBalance?: string;
-                                /**
-                                 * @description Anyspend points that will be awarded for the order
-                                 * @example 100
-                                 */
-                                pointsAmount?: number;
-                                /**
-                                 * @description Multiplier applied to points that will be awarded for the order
-                                 * @example 1.5
-                                 */
-                                pointsMultiplier?: number;
-                                /** @description Fee structure including all applicable fees (Stripe and AnySpend) */
-                                fee: components["schemas"]["Fee"];
-                            };
-                            /** @example 200 */
-                            statusCode: number;
-                        };
-                    };
-                };
-                /** @description Bad request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @example false */
-                            success: boolean;
-                            /** @example Bad request */
-                            message: string;
-                            /** @example 400 */
-                            statusCode: number;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/orders": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/stripe/clientSecret": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    /**
+     * Get orders by creator
+     * @description Retrieves all orders created by a specific address
+     */
+    get: {
+      parameters: {
+        query: {
+          /**
+           * @description Address of the order creator
+           * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
+           */
+          creatorAddress: string;
+          /**
+           * @description Maximum number of orders to return
+           * @example 20
+           */
+          limit?: string;
+          /**
+           * @description Number of orders to skip
+           * @example 0
+           */
+          offset?: string;
         };
-        /**
-         * Get Stripe client secret
-         * @description Retrieves a Stripe client secret for payment processing using a payment intent ID
-         */
-        get: {
-            parameters: {
-                query: {
-                    /**
-                     * @description Stripe payment intent ID to retrieve client secret for
-                     * @example pi_3RlHbVJnoDg53PsP1349cXlR
-                     */
-                    paymentIntentId: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Orders retrieved successfully */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /** @example true */
+              success: boolean;
+              /** @example Get orders by creator successfully */
+              message: string;
+              /** @description Array of orders */
+              data: components["schemas"]["Order"][];
+              /** @example 200 */
+              statusCode: number;
             };
-            requestBody?: never;
-            responses: {
-                /** @description Client secret retrieved successfully */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @example true */
-                            success: boolean;
-                            /** @example Client secret retrieved */
-                            message: string;
-                            /**
-                             * @description Stripe client secret for the payment intent
-                             * @example pi_3RlHbVJnoDg53PsP1349cXlR_secret_084W7pxxba11lTUHWbmeZlXi0
-                             */
-                            data: string;
-                            /** @example 200 */
-                            statusCode: number;
-                        };
-                    };
-                };
-                /** @description Bad request - PaymentIntentId is required or invalid */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @example false */
-                            success: boolean;
-                            /** @example PaymentIntentId is required */
-                            message: string;
-                            /** @example 400 */
-                            statusCode: number;
-                        };
-                    };
-                };
-            };
+          };
         };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+        /** @description Bad request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /** @example false */
+              success: boolean;
+              /** @example Bad request */
+              message: string;
+              /** @example 400 */
+              statusCode: number;
+            };
+          };
+        };
+      };
     };
+    put?: never;
+    /**
+     * Create a new order
+     * @description Creates a new order for token transactions across chains
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["OrderRequest"];
+        };
+      };
+      responses: {
+        /** @description Order created successfully */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /** @example true */
+              success: boolean;
+              /** @example Created order successfully */
+              message: string;
+              data: components["schemas"]["Order"];
+              /** @example 200 */
+              statusCode: number;
+            };
+          };
+        };
+        /** @description Bad request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /** @example false */
+              success: boolean;
+              /** @example Bad request */
+              message: string;
+              /** @example 400 */
+              statusCode: number;
+            };
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/orders/{orderId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get order and transactions
+     * @description Retrieves order details along with associated transactions
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /**
+           * @description Unique order identifier
+           * @example 5392f7a7-d472-4d6b-9848-bd07117fb82d
+           */
+          orderId: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Order and transactions retrieved successfully */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /** @example true */
+              success: boolean;
+              /** @example Get order and transactions successfully */
+              message: string;
+              data: {
+                order: components["schemas"]["Order"];
+                /**
+                 * @description Deposit transactions (payment from user)
+                 * @example [
+                 *       {
+                 *         "orderId": "5392f7a7-d472-4d6b-9848-bd07117fb82d",
+                 *         "chain": 8453,
+                 *         "from": "0xa7539e73700B1726aBA29526606442A491Ef5747",
+                 *         "txHash": "0x60ece99a645201668d20db6775a6b3d30967433ff0750b356cdad46d3e13f9c8",
+                 *         "amount": "93354000",
+                 *         "createdAt": 1752505811105
+                 *       }
+                 *     ]
+                 */
+                depositTxs: components["schemas"]["DepositTx"][];
+                /**
+                 * @description Cross-chain relay transactions
+                 * @example [
+                 *       {
+                 *         "orderId": "5392f7a7-d472-4d6b-9848-bd07117fb82d",
+                 *         "chain": 8453,
+                 *         "txHash": "0x9df917e14bb089f74763d1d2662761d75c97a5a068b8a9e411c3d384c9c40d19",
+                 *         "status": "success",
+                 *         "createdAt": 1752505817654
+                 *       }
+                 *     ]
+                 */
+                relayTxs: components["schemas"]["RelayTx"][];
+                executeTx: components["schemas"]["ExecuteTx"] | null;
+                /** @description Refund transactions if order failed */
+                refundTxs: components["schemas"]["RefundTx"][];
+                /**
+                 * @description Points awarded for this order (only present when order status is executed)
+                 * @example 100
+                 */
+                points: number | null;
+              };
+              /** @example 200 */
+              statusCode: number;
+            };
+          };
+        };
+        /** @description Bad request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /** @example false */
+              success: boolean;
+              /** @example Bad request */
+              message: string;
+              /** @example 400 */
+              statusCode: number;
+            };
+          };
+        };
+        /** @description Order not found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /** @example false */
+              success: boolean;
+              /** @example Order not found */
+              message: string;
+              /** @example 404 */
+              statusCode: number;
+            };
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/orders/{orderId}/comprehensive": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get comprehensive order detail
+     * @description Retrieves an order with associated transactions, settlement data, and awarded points without sanitization.
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /**
+           * @description Unique order identifier
+           * @example 5392f7a7-d472-4d6b-9848-bd07117fb82d
+           */
+          orderId: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Comprehensive order retrieved successfully */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["ComprehensiveOrderResponse"];
+          };
+        };
+        /** @description Bad request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /** @example false */
+              success: boolean;
+              /** @example Bad request */
+              message: string;
+              /** @example 400 */
+              statusCode: number;
+            };
+          };
+        };
+        /** @description Order not found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /** @example false */
+              success: boolean;
+              /** @example Order not found */
+              message: string;
+              /** @example 404 */
+              statusCode: number;
+            };
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/orders/quote": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Get anyspend quote
+     * @description Retrieves a quote to swap, execute contract, or participate in HypeDuel
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          "application/json":
+            | {
+                /**
+                 * @description Order type for swap
+                 * @enum {string}
+                 */
+                type: "swap";
+                /**
+                 * @description Source chain ID
+                 * @example 1
+                 */
+                srcChain: number;
+                /**
+                 * @description Destination chain ID
+                 * @example 8453
+                 */
+                dstChain: number;
+                /**
+                 * @description Source token contract address
+                 * @example 0x0000000000000000000000000000000000000000
+                 */
+                srcTokenAddress: string;
+                /**
+                 * @description Destination token contract address
+                 * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+                 */
+                dstTokenAddress: string;
+                /**
+                 * @description Recipient address
+                 * @example 0x55c71fca5e01cf246718748ae540473e608d0282
+                 */
+                recipientAddress?: string;
+                /**
+                 * @description Type of trade execution
+                 * @enum {string}
+                 */
+                tradeType: "EXACT_INPUT" | "EXACT_OUTPUT";
+                /**
+                 * @description Amount to quote
+                 * @example 1000000000000000000
+                 */
+                amount: string;
+                /**
+                 * @description Optional onramp vendor
+                 * @enum {string}
+                 */
+                onrampVendor?: "coinbase" | "stripe" | "stripe-web2";
+              }
+            | {
+                /**
+                 * @description Order type for X402 swap
+                 * @enum {string}
+                 */
+                type: "x402_swap";
+                /**
+                 * @description Source chain ID
+                 * @example 8453
+                 */
+                srcChain: number;
+                /**
+                 * @description Destination chain ID
+                 * @example 8453
+                 */
+                dstChain: number;
+                /**
+                 * @description Source token contract address
+                 * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+                 */
+                srcTokenAddress: string;
+                /**
+                 * @description Destination token contract address
+                 * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+                 */
+                dstTokenAddress: string;
+                /**
+                 * @description Recipient address
+                 * @example 0x55c71fca5e01cf246718748ae540473e608d0282
+                 */
+                recipientAddress?: string;
+                /**
+                 * @description Amount to quote
+                 * @example 1000000
+                 */
+                amount: string;
+                /**
+                 * @description Optional onramp vendor
+                 * @enum {string}
+                 */
+                onrampVendor?: "coinbase" | "stripe" | "stripe-web2";
+              }
+            | {
+                /**
+                 * @description Order type for custom execution
+                 * @enum {string}
+                 */
+                type: "custom";
+                /**
+                 * @description Source chain ID
+                 * @example 1
+                 */
+                srcChain: number;
+                /**
+                 * @description Destination chain ID
+                 * @example 8453
+                 */
+                dstChain: number;
+                /**
+                 * @description Source token contract address
+                 * @example 0x0000000000000000000000000000000000000000
+                 */
+                srcTokenAddress: string;
+                /**
+                 * @description Destination token contract address
+                 * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+                 */
+                dstTokenAddress: string;
+                /**
+                 * @description Recipient address
+                 * @example 0x55c71fca5e01cf246718748ae540473e608d0282
+                 */
+                recipientAddress?: string;
+                /** @description Custom payload for execution */
+                payload: {
+                  /** @description Encoded transaction data */
+                  data: string;
+                  /** @description Target contract address */
+                  to: string;
+                  /** @description Optional spender address for token approval */
+                  spenderAddress?: string;
+                  /** @description Amount for the custom operation */
+                  amount: string;
+                };
+                /**
+                 * @description Optional onramp vendor
+                 * @enum {string}
+                 */
+                onrampVendor?: "coinbase" | "stripe" | "stripe-web2";
+              }
+            | {
+                /** @enum {string} */
+                type: "mint_nft";
+                srcChain: number;
+                dstChain: number;
+                srcTokenAddress: string;
+                dstTokenAddress: string;
+                /**
+                 * @description Recipient address
+                 * @example 0x55c71fca5e01cf246718748ae540473e608d0282
+                 */
+                recipientAddress?: string;
+                /** @enum {string} */
+                onrampVendor?: "coinbase" | "stripe" | "stripe-web2";
+                contractAddress: string;
+                tokenId?: number | null;
+                /** @enum {string} */
+                contractType: "erc721" | "erc1155";
+                price: string;
+              }
+            | {
+                /** @enum {string} */
+                type: "join_tournament";
+                srcChain: number;
+                dstChain: number;
+                srcTokenAddress: string;
+                dstTokenAddress: string;
+                /**
+                 * @description Recipient address
+                 * @example 0x55c71fca5e01cf246718748ae540473e608d0282
+                 */
+                recipientAddress?: string;
+                /** @enum {string} */
+                onrampVendor?: "coinbase" | "stripe" | "stripe-web2";
+                contractAddress: string;
+                price: string;
+              }
+            | {
+                /** @enum {string} */
+                type: "fund_tournament";
+                srcChain: number;
+                dstChain: number;
+                srcTokenAddress: string;
+                dstTokenAddress: string;
+                /**
+                 * @description Recipient address
+                 * @example 0x55c71fca5e01cf246718748ae540473e608d0282
+                 */
+                recipientAddress?: string;
+                /** @enum {string} */
+                onrampVendor?: "coinbase" | "stripe" | "stripe-web2";
+                contractAddress: string;
+                fundAmount: string;
+              }
+            | {
+                /**
+                 * @description Order type for HypeDuel
+                 * @enum {string}
+                 */
+                type: "hype_duel";
+                /**
+                 * @description Source chain ID
+                 * @example 1
+                 */
+                srcChain: number;
+                /**
+                 * @description Destination chain ID
+                 * @example 8453
+                 */
+                dstChain: number;
+                /**
+                 * @description Source token contract address
+                 * @example 0x0000000000000000000000000000000000000000
+                 */
+                srcTokenAddress: string;
+                /**
+                 * @description Destination token contract address
+                 * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+                 */
+                dstTokenAddress: string;
+                /**
+                 * @description Recipient address
+                 * @example 0x55c71fca5e01cf246718748ae540473e608d0282
+                 */
+                recipientAddress?: string;
+                /**
+                 * @description Amount to quote
+                 * @example 1000000000000000000
+                 */
+                amount: string;
+                /**
+                 * @description Optional onramp vendor
+                 * @enum {string}
+                 */
+                onrampVendor?: "coinbase" | "stripe" | "stripe-web2";
+              }
+            | {
+                /**
+                 * @description Order type for custom exact in execution
+                 * @enum {string}
+                 */
+                type: "custom_exact_in";
+                /**
+                 * @description Source chain ID
+                 * @example 1
+                 */
+                srcChain: number;
+                /**
+                 * @description Destination chain ID
+                 * @example 8453
+                 */
+                dstChain: number;
+                /**
+                 * @description Source token contract address
+                 * @example 0x0000000000000000000000000000000000000000
+                 */
+                srcTokenAddress: string;
+                /**
+                 * @description Destination token contract address
+                 * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+                 */
+                dstTokenAddress: string;
+                /**
+                 * @description Recipient address
+                 * @example 0x55c71fca5e01cf246718748ae540473e608d0282
+                 */
+                recipientAddress?: string;
+                /**
+                 * @description Destination amount for exact in execution
+                 * @example 1000000000000000000
+                 */
+                amount: string;
+                /**
+                 * @description Optional onramp vendor
+                 * @enum {string}
+                 */
+                onrampVendor?: "coinbase" | "stripe" | "stripe-web2";
+              };
+        };
+      };
+      responses: {
+        /** @description Quote retrieved successfully */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /** @example true */
+              success: boolean;
+              /** @example Get quote successfully */
+              message: string;
+              data: {
+                /**
+                 * @description Type of operation
+                 * @example swap
+                 */
+                operation?: string;
+                /**
+                 * @description Sender address for the operation
+                 * @example 0x15846E6A7C839A208765a0B4754C2dd15E879990
+                 */
+                sender?: string;
+                /**
+                 * @description Recipient address for the operation
+                 * @example 0xaF1ae1B78bc767DaEBB91196Adf982E9d560AAB9
+                 */
+                recipient?: string;
+                /** @description Input currency details */
+                currencyIn?: {
+                  currency?: {
+                    /** @example 1 */
+                    chainId?: number;
+                    /** @example 0x0000000000000000000000000000000000000000 */
+                    address?: string;
+                    /** @example ETH */
+                    symbol?: string;
+                    /** @example Ether */
+                    name?: string;
+                    /** @example 18 */
+                    decimals?: number;
+                    metadata?: {
+                      /** @example https://assets.relay.link/icons/1/light.png */
+                      logoURI?: string;
+                    };
+                  };
+                  /**
+                   * @description Raw amount
+                   * @example 1000000000000000000
+                   */
+                  amount?: string;
+                  /**
+                   * @description Human-readable formatted amount
+                   * @example 1.0
+                   */
+                  amountFormatted?: string;
+                  /**
+                   * @description USD value of the amount
+                   * @example 3229.715818
+                   */
+                  amountUsd?: string;
+                  /**
+                   * @description Minimum required amount
+                   * @example 1000000000000000000
+                   */
+                  minimumAmount?: string;
+                };
+                /** @description Output currency details */
+                currencyOut?: {
+                  currency?: {
+                    /** @example 8453 */
+                    chainId?: number;
+                    /** @example 0x833589fcd6edb6e08f4c7c32d4f71b54bda02913 */
+                    address?: string;
+                    /** @example USDC */
+                    symbol?: string;
+                    /** @example USD Coin */
+                    name?: string;
+                    /** @example 6 */
+                    decimals?: number;
+                    metadata?: {
+                      /** @example https://coin-images.coingecko.com/coins/images/6319/large/usdc.png?1696506694 */
+                      logoURI?: string;
+                    };
+                  };
+                  /**
+                   * @description Raw output amount
+                   * @example 3224805862
+                   */
+                  amount?: string;
+                  /**
+                   * @description Human-readable formatted output amount
+                   * @example 3224.805862
+                   */
+                  amountFormatted?: string;
+                  /**
+                   * @description USD value of output amount
+                   * @example 3224.512405
+                   */
+                  amountUsd?: string;
+                  /**
+                   * @description Minimum guaranteed output amount
+                   * @example 3192557803
+                   */
+                  minimumAmount?: string;
+                };
+                /** @description Total price impact of the trade */
+                totalImpact?: {
+                  /**
+                   * @description USD impact amount
+                   * @example -5.203413
+                   */
+                  usd?: string;
+                  /**
+                   * @description Percentage impact
+                   * @example -0.16
+                   */
+                  percent?: string;
+                };
+                /** @description Price impact from the swap portion */
+                swapImpact?: {
+                  /**
+                   * @description USD swap impact
+                   * @example -4.102797
+                   */
+                  usd?: string;
+                  /**
+                   * @description Percentage swap impact
+                   * @example -0.13
+                   */
+                  percent?: string;
+                };
+                /**
+                 * @description Exchange rate
+                 * @example 3224.805862
+                 */
+                rate?: string;
+                /** @description Slippage tolerance settings */
+                slippageTolerance?: {
+                  origin?: {
+                    /** @example 0.000000 */
+                    usd?: string;
+                    /** @example 0 */
+                    value?: string;
+                    /** @example 0.00 */
+                    percent?: string;
+                  };
+                  destination?: {
+                    /** @example 32.245124 */
+                    usd?: string;
+                    /** @example 32248059 */
+                    value?: string;
+                    /** @example 1.00 */
+                    percent?: string;
+                  };
+                };
+                /**
+                 * @description Estimated completion time in seconds
+                 * @example 24
+                 */
+                timeEstimate?: number;
+                /**
+                 * @description User's current balance
+                 * @example 0
+                 */
+                userBalance?: string;
+                /**
+                 * @description Anyspend points that will be awarded for the order
+                 * @example 100
+                 */
+                pointsAmount?: number;
+                /**
+                 * @description Multiplier applied to points that will be awarded for the order
+                 * @example 1.5
+                 */
+                pointsMultiplier?: number;
+                /** @description Fee structure including all applicable fees (Stripe and AnySpend) */
+                fee: components["schemas"]["Fee"];
+              };
+              /** @example 200 */
+              statusCode: number;
+            };
+          };
+        };
+        /** @description Bad request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /** @example false */
+              success: boolean;
+              /** @example Bad request */
+              message: string;
+              /** @example 400 */
+              statusCode: number;
+            };
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/stripe/clientSecret": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get Stripe client secret
+     * @description Retrieves a Stripe client secret for payment processing using a payment intent ID
+     */
+    get: {
+      parameters: {
+        query: {
+          /**
+           * @description Stripe payment intent ID to retrieve client secret for
+           * @example pi_3RlHbVJnoDg53PsP1349cXlR
+           */
+          paymentIntentId: string;
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Client secret retrieved successfully */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /** @example true */
+              success: boolean;
+              /** @example Client secret retrieved */
+              message: string;
+              /**
+               * @description Stripe client secret for the payment intent
+               * @example pi_3RlHbVJnoDg53PsP1349cXlR_secret_084W7pxxba11lTUHWbmeZlXi0
+               */
+              data: string;
+              /** @example 200 */
+              statusCode: number;
+            };
+          };
+        };
+        /** @description Bad request - PaymentIntentId is required or invalid */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /** @example false */
+              success: boolean;
+              /** @example PaymentIntentId is required */
+              message: string;
+              /** @example 400 */
+              statusCode: number;
+            };
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: {
-        /** @description Token details */
-        Token: {
-            /**
-             * @description Token chain ID
-             * @example 8453
-             */
-            chainId: number;
-            /**
-             * @description Token contract address
-             * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
-             */
-            address: string;
-            /**
-             * @description Token symbol
-             * @example USDC
-             */
-            symbol: string;
-            /**
-             * @description Token name
-             * @example USD Coin
-             */
-            name: string;
-            /**
-             * @description Token decimals
-             * @example 6
-             */
-            decimals: number;
-            metadata: {
-                /**
-                 * @description Token logo URI
-                 * @example https://polygonscan.com/token/images/usdc_32.png
-                 */
-                logoURI?: string;
-            };
-        };
-        /** @description Onramp configuration */
-        OnrampMetadata: {
-            /**
-             * @description Country code
-             * @example US
-             */
-            country: string;
-            /**
-             * @description Onramp vendor used
-             * @example stripe-web2
-             * @enum {string}
-             */
-            vendor: "coinbase" | "stripe" | "stripe-web2";
-            /**
-             * @description Payment method used
-             * @example
-             */
-            paymentMethod: string;
-            /**
-             * @description Redirect URL after payment
-             * @example https://www.anyspend.com
-             */
-            redirectUrl: string;
-            /**
-             * @description Stripe payment amount in cents
-             * @example 9900
-             */
-            stripeAmountInCents?: number;
-            /**
-             * Format: ipv4
-             * @description Optional IP address for location detection. Required for Stripe onramp requests in production and omitted from standard order responses.
-             * @example 192.168.1.1
-             */
-            ipAddress?: string;
-            /** @description Optional fingerprint data for fraud detection */
-            fingerprint?: {
-                /**
-                 * @description Fingerprint request ID
-                 * @example fp_req_12345
-                 */
-                requestId: string;
-                /**
-                 * @description Fingerprint visitor ID
-                 * @example fp_visitor_67890
-                 */
-                visitorId: string;
-            };
-        };
-        /** @description Optional onramp configuration */
-        Onramp: {
-            /**
-             * @description Onramp vendor
-             * @enum {string}
-             */
-            vendor?: "coinbase" | "stripe" | "stripe-web2";
-            /**
-             * @description Payment method for onramp
-             * @example
-             */
-            paymentMethod?: string;
-            /**
-             * @description Country code for the user
-             * @example SG
-             */
-            country?: string;
-            /**
-             * @description URL to redirect after payment
-             * @example https://www.anyspend.com
-             */
-            redirectUrl?: string;
-        };
-        /** @description Request body to create a Coinbase session token */
-        CoinbaseSessionTokenRequest: {
-            /**
-             * @description Wallet address that will receive purchased assets
-             * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
-             */
-            destinationAddress: string;
-            /**
-             * @description List of supported blockchain identifiers
-             * @example [
-             *       "base"
-             *     ]
-             */
-            blockchains: string[];
-            /**
-             * @description Optional list of asset symbols to whitelist
-             * @example [
-             *       "USDC"
-             *     ]
-             */
-            assets?: string[];
-        };
-        /** @description Coinbase session token result */
-        CoinbaseSessionTokenResponseData: {
-            /**
-             * @description Session token identifier
-             * @example token_123
-             */
-            token: string;
-            /**
-             * @description Optional session channel identifier
-             * @example channel_abc
-             */
-            channelId?: string;
-        };
-        CoinbaseSessionTokenResponse: {
-            /** @example true */
-            success: boolean;
-            /** @example Session token created successfully */
-            message: string;
-            data: components["schemas"]["CoinbaseSessionTokenResponseData"];
-            /** @example 200 */
-            statusCode: number;
-        };
-        /** @description Request body to create a Coinbase onramp URL */
-        CoinbaseOnrampUrlRequest: {
-            /**
-             * @description Preset fiat amount for purchase
-             * @example 100
-             */
-            presetFiatAmount: string;
-            /**
-             * @description Fiat currency code
-             * @example USD
-             */
-            fiatCurrency: string;
-            /**
-             * @description Default asset to purchase
-             * @example USDC
-             */
-            defaultAsset: string;
-            /**
-             * @description Default payment method identifier
-             * @example CARD
-             */
-            defaultPaymentMethod: string;
-            /**
-             * @description Destination wallet address
-             * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
-             */
-            destinationAddress: string;
-            /**
-             * @description Supported blockchains for the session
-             * @example [
-             *       "base"
-             *     ]
-             */
-            blockchains: string[];
-            /**
-             * @description ISO country code of the end user
-             * @example US
-             */
-            country: string;
-            /**
-             * @description Associated AnySpend order ID
-             * @example 5392f7a7-d472-4d6b-9848-bd07117fb82d
-             */
-            orderId: string;
-            /**
-             * @description Redirect URL after completing the purchase
-             * @example https://www.anyspend.com/orders
-             */
-            redirectUrl: string;
-            /**
-             * @description Whether to create and embed a session token automatically
-             * @default false
-             */
-            useSessionToken: boolean;
-        };
-        /** @description Coinbase onramp URL result */
-        CoinbaseOnrampUrlResponseData: {
-            /**
-             * @description Coinbase-hosted onramp URL
-             * @example https://pay.coinbase.com/buy/select-asset?...
-             */
-            url: string;
-            /**
-             * @description Optional session token created alongside the URL
-             * @example token_123
-             */
-            sessionToken?: string;
-        };
-        CoinbaseOnrampUrlResponse: {
-            /** @example true */
-            success: boolean;
-            /** @example Onramp URL created successfully */
-            message: string;
-            data: components["schemas"]["CoinbaseOnrampUrlResponseData"];
-            /** @example 200 */
-            statusCode: number;
-        };
-        /** @description Request body to generate a direct Coinbase onramp URL */
-        CoinbaseDirectOnrampRequest: {
-            /**
-             * @description Destination wallet address
-             * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
-             */
-            destinationAddress: string;
-            /**
-             * @description Supported blockchain identifiers
-             * @example [
-             *       "base"
-             *     ]
-             */
-            blockchains: string[];
-            /**
-             * @description Optional list of asset symbols to whitelist
-             * @example [
-             *       "USDC"
-             *     ]
-             */
-            assets?: string[];
-            /**
-             * @description Preset fiat amount
-             * @example 100
-             */
-            presetFiatAmount?: string;
-            /**
-             * @description Fiat currency code
-             * @example USD
-             */
-            fiatCurrency?: string;
-            /**
-             * @description Default asset to purchase
-             * @example USDC
-             */
-            defaultAsset?: string;
-            /**
-             * @description Default payment method identifier
-             * @example CARD
-             */
-            defaultPaymentMethod?: string;
-            /**
-             * @description Redirect URL after payment completion
-             * @example https://www.anyspend.com/orders
-             */
-            redirectUrl?: string;
-        };
-        /** @description Direct Coinbase onramp URL result */
-        CoinbaseDirectOnrampResponseData: {
-            /**
-             * @description Coinbase onramp URL that can be used directly
-             * @example https://pay.coinbase.com/buy/select-asset?...
-             */
-            url: string;
-            /**
-             * @description Session token bound to the generated URL
-             * @example token_123
-             */
-            sessionToken: string;
-        };
-        CoinbaseDirectOnrampResponse: {
-            /** @example true */
-            success: boolean;
-            /** @example Direct onramp URL generated successfully */
-            message: string;
-            data: components["schemas"]["CoinbaseDirectOnrampResponseData"];
-            /** @example 200 */
-            statusCode: number;
-        };
-        /** @description Tournament details */
-        Tournament: {
-            /**
-             * @description Tournament slug identifier
-             * @example summer-championship-2024
-             */
-            slug: string;
-            /**
-             * @description Tournament name
-             * @example Summer Championship 2024
-             */
-            name: string;
-            /**
-             * @description Tournament description
-             * @example The biggest tournament of the summer
-             */
-            description: string;
-            /**
-             * @description Tournament image URL
-             * @example https://example.com/tournament.png
-             */
-            imageUrl: string;
-        };
-        /** @description ERC721 NFT */
-        ERC721NFT: {
-            /**
-             * @description NFT type
-             * @enum {string}
-             */
-            type: "erc721";
-            /**
-             * @description NFT contract address
-             * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
-             */
-            contractAddress: string;
-            /**
-             * @description NFT name
-             * @example Cool NFT
-             */
-            name: string;
-            /**
-             * @description NFT description
-             * @example A very cool NFT
-             */
-            description: string;
-            /**
-             * @description NFT image URL
-             * @example https://example.com/nft.png
-             */
-            imageUrl: string;
-        };
-        /** @description ERC1155 NFT */
-        ERC1155NFT: {
-            /**
-             * @description NFT type
-             * @enum {string}
-             */
-            type: "erc1155";
-            /**
-             * @description NFT contract address
-             * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
-             */
-            contractAddress: string;
-            /**
-             * @description NFT name
-             * @example Cool NFT
-             */
-            name: string;
-            /**
-             * @description NFT description
-             * @example A very cool NFT
-             */
-            description: string;
-            /**
-             * @description NFT image URL
-             * @example https://example.com/nft.png
-             */
-            imageUrl: string;
-            /**
-             * @description Token ID for ERC1155
-             * @example 1
-             */
-            tokenId: number;
-        };
-        NFT: components["schemas"]["ERC721NFT"] | components["schemas"]["ERC1155NFT"];
-        /** @description Swap-specific payload */
-        SwapPayload: {
-            /**
-             * @description Expected amount of destination tokens
-             * @example 990000
-             */
-            expectedDstAmount: string;
-        };
-        /** @description X402 swap-specific payload */
-        X402SwapPayload: {
-            /**
-             * @description Expected amount of destination tokens
-             * @example 990000
-             */
-            expectedDstAmount: string;
-        };
-        /** @description HypeDuel-specific payload */
-        HypeDuelPayload: {
-            /**
-             * @description Expected amount of destination tokens
-             * @example 990000
-             */
-            expectedDstAmount: string;
-        };
-        /** @description Custom execution payload */
-        CustomPayload: {
-            /**
-             * @description Encoded transaction data
-             * @example 0x1234567890abcdef...
-             */
-            data: string;
-            /**
-             * @description Target contract address
-             * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
-             */
-            to: string;
-            /**
-             * @description Optional spender address for token approval
-             * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
-             */
-            spenderAddress?: string;
-            /**
-             * @description Amount for the custom operation
-             * @example 1000000
-             */
-            amount: string;
-        };
-        /** @description Custom exact in execution payload */
-        CustomExactInPayload: {
-            /**
-             * @description Amount used when executing the destination function
-             * @example 1000000000000000000
-             */
-            amount: string;
-            /**
-             * @description Expected amount of destination tokens
-             * @example 1000000000000000000
-             */
-            expectedDstAmount: string;
-            /** @description JSON stringified ABI that includes the destination function */
-            functionAbi: string;
-            /**
-             * @description Destination function name
-             * @example stake
-             */
-            functionName: string;
-            /** @description Destination function arguments (template variables allowed) */
-            functionArgs: string[];
-            /**
-             * @description Destination contract address
-             * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
-             */
-            to: string;
-            /**
-             * @description Optional spender address for token approval
-             * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
-             */
-            spenderAddress?: string;
-            /**
-             * @description Native token value to send with the transaction (in wei)
-             * @example 1000000000000000000
-             */
-            value?: string;
-            /**
-             * @description Optional action identifier used for display purposes
-             * @example stake B3
-             */
-            action?: string;
-        };
-        /** @description NFT minting payload */
-        MintNftPayload: {
-            /**
-             * @description NFT contract address
-             * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
-             */
-            contractAddress: string;
-            /**
-             * @description Token ID (for ERC1155, null for ERC721)
-             * @example 1
-             */
-            tokenId: number | null;
-            /**
-             * @description Type of NFT contract
-             * @example erc721
-             * @enum {string}
-             */
-            contractType: "erc721" | "erc1155";
-            /**
-             * @description Price to mint the NFT
-             * @example 1000000
-             */
-            nftPrice: string;
-        };
-        /** @description Tournament joining payload */
-        JoinTournamentPayload: {
-            /**
-             * @description Tournament contract address
-             * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
-             */
-            contractAddress: string;
-            /**
-             * @description Tournament entry price
-             * @example 1000000
-             */
-            entryPrice: string;
-        };
-        /** @description Tournament funding payload */
-        FundTournamentPayload: {
-            /**
-             * @description Tournament contract address
-             * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
-             */
-            contractAddress: string;
-            /**
-             * @description Amount to fund the tournament
-             * @example 1000000
-             */
-            fundAmount: string;
-        };
-        /** @description DepositFirst payload - empty at creation time, details determined after deposit is detected */
-        DepositFirstPayload: Record<string, never>;
-        /** @description DepositFirst metadata for display purposes */
-        DepositFirstMetadata: {
-            /** @description Token accepted for deposit */
-            srcToken: components["schemas"]["Token"];
-            /** @description Token to swap to after deposit */
-            dstToken: components["schemas"]["Token"];
-        };
-        /** @description Swap metadata for display purposes */
-        SwapMetadata: {
-            srcToken: components["schemas"]["Token"];
-            dstToken: components["schemas"]["Token"];
-        };
-        /** @description X402 swap metadata for display purposes */
-        X402SwapMetadata: {
-            srcToken: components["schemas"]["Token"];
-            dstToken: components["schemas"]["Token"];
-        };
-        /** @description HypeDuel metadata for display purposes */
-        HypeDuelMetadata: {
-            srcToken: components["schemas"]["Token"];
-            dstToken: components["schemas"]["Token"];
-        };
-        /** @description Custom metadata for display purposes */
-        CustomMetadata: {
-            srcToken: components["schemas"]["Token"];
-            dstToken: components["schemas"]["Token"];
-            /**
-             * @description Optional custom action identifier
-             * @example claim-reward
-             */
-            action?: string;
-        };
-        /** @description NFT metadata */
-        MintNftMetadata: {
-            srcToken: components["schemas"]["Token"];
-            dstToken: components["schemas"]["Token"];
-            nft: components["schemas"]["NFT"];
-        };
-        /** @description Tournament metadata */
-        TournamentMetadata: {
-            srcToken: components["schemas"]["Token"];
-            dstToken: components["schemas"]["Token"];
-            tournament: components["schemas"]["Tournament"];
-        };
-        /** @description Base order fields */
-        BaseOrder: {
-            /**
-             * Format: uuid
-             * @description Unique order identifier
-             * @example 5392f7a7-d472-4d6b-9848-bd07117fb82d
-             */
-            id: string;
-            /**
-             * @description Address to receive tokens/NFT/etc
-             * @example 0xb34facb90a200251318e8841c05102366f2158cf
-             */
-            recipientAddress: string;
-            /**
-             * @description Global wallet address handling the order
-             * @example 0xa640beaa78eeb64bb269f2baf8202b9a7316e123
-             */
-            globalAddress: string;
-            /**
-             * @description Source chain ID
-             * @example 8453
-             */
-            srcChain: number;
-            /**
-             * @description Destination chain ID
-             * @example 8453
-             */
-            dstChain: number;
-            /**
-             * @description Source token contract address
-             * @example 0x833589fcd6edb6e08f4c7c32d4f71b54bda02913
-             */
-            srcTokenAddress: string;
-            /**
-             * @description Destination token contract address
-             * @example 0x833589fcd6edb6e08f4c7c32d4f71b54bda02913
-             */
-            dstTokenAddress: string;
-            /**
-             * @description Source amount
-             * @example 93354000
-             */
-            srcAmount: string;
-            /**
-             * @description Current order status
-             * @example executed
-             * @enum {string}
-             */
-            status: "scanning_deposit_transaction" | "waiting_stripe_payment" | "expired" | "sending_token_from_vault" | "quoting_after_deposit" | "relay" | "executing" | "executed" | "refunding" | "refunded" | "failure";
-            /** @description Error details if order failed */
-            errorDetails: string | null;
-            /**
-             * @description Creation timestamp
-             * @example 1752505794679
-             */
-            createdAt: number;
-            /**
-             * @description Expiration timestamp
-             * @example 1752506694679
-             */
-            expiredAt: number;
-            /** @description Timestamp when the order was filled/executed */
-            filledAt: number | null;
-            /** @description Timestamp when the deposit was received */
-            receivedDepositAt: number | null;
-            /**
-             * @description Optional creator address
-             * @example 0xb34facb90a200251318e8841c05102366f2158cf
-             */
-            creatorAddress: string | null;
-            /** @description Optional partner identifier */
-            partnerId: string | null;
-            /** @description Optional client reference identifier for tracking purposes (alphanumeric, hyphens, and underscores only, max 255 chars) */
-            clientReferenceId?: string | null;
-            /** @description Onramp configuration if used */
-            onrampMetadata: components["schemas"]["OnrampMetadata"] | null;
-            /** @description Quick purchase URL if available */
-            oneClickBuyUrl: string | null;
-            /**
-             * @description Stripe payment intent ID if using Stripe
-             * @example pi_3Rko0sJnoDg53PsP0PDLsHkR
-             */
-            stripePaymentIntentId: string | null;
-            /** @description Settlement information for executed orders */
-            settlement: {
-                /**
-                 * @description Actual received amount after execution (only for swap/hypeduel orders). Optional - only present for swap/hypeduel orders.
-                 * @example 990000
-                 */
-                actualDstAmount?: string;
-                /**
-                 * @description Complete relay API response data. Contains transaction details, state changes, fees, and execution status. Optional - can be backfilled by querying Relay API /requests/v2 endpoint.
-                 * @example {
-                 *       "status": "success",
-                 *       "metadata": {
-                 *         "currencyOut": {
-                 *           "amount": "990000"
-                 *         }
-                 *       }
-                 *     }
-                 */
-                relay?: Record<string, never>;
-            } | null;
-            /** @description Fee structure for the order including Stripe and AnySpend fees */
-            fee?: Omit<components["schemas"]["Fee"], "type"> | null;
-        };
-        SwapOrder: components["schemas"]["BaseOrder"] & {
-            /**
-             * @description Order type
-             * @enum {string}
-             */
-            type: "swap";
-            payload: components["schemas"]["SwapPayload"];
-            metadata: components["schemas"]["SwapMetadata"];
-        };
-        X402SwapOrder: components["schemas"]["BaseOrder"] & {
-            /**
-             * @description Order type
-             * @enum {string}
-             */
-            type: "x402_swap";
-            payload: components["schemas"]["X402SwapPayload"];
-            metadata: components["schemas"]["X402SwapMetadata"];
-        };
-        HypeDuelOrder: components["schemas"]["BaseOrder"] & {
-            /**
-             * @description Order type
-             * @enum {string}
-             */
-            type: "hype_duel";
-            payload: components["schemas"]["HypeDuelPayload"];
-            metadata: components["schemas"]["HypeDuelMetadata"];
-        };
-        CustomOrder: components["schemas"]["BaseOrder"] & {
-            /**
-             * @description Order type
-             * @enum {string}
-             */
-            type: "custom";
-            payload: components["schemas"]["CustomPayload"];
-            metadata: components["schemas"]["CustomMetadata"];
-        };
-        CustomExactInOrder: components["schemas"]["BaseOrder"] & {
-            /**
-             * @description Order type
-             * @enum {string}
-             */
-            type: "custom_exact_in";
-            payload: components["schemas"]["CustomExactInPayload"];
-            metadata: components["schemas"]["CustomMetadata"];
-        };
-        MintNftOrder: components["schemas"]["BaseOrder"] & {
-            /**
-             * @description Order type
-             * @enum {string}
-             */
-            type: "mint_nft";
-            payload: components["schemas"]["MintNftPayload"];
-            metadata: components["schemas"]["MintNftMetadata"];
-        };
-        JoinTournamentOrder: components["schemas"]["BaseOrder"] & {
-            /**
-             * @description Order type
-             * @enum {string}
-             */
-            type: "join_tournament";
-            payload: components["schemas"]["JoinTournamentPayload"];
-            metadata: components["schemas"]["TournamentMetadata"];
-        };
-        FundTournamentOrder: components["schemas"]["BaseOrder"] & {
-            /**
-             * @description Order type
-             * @enum {string}
-             */
-            type: "fund_tournament";
-            payload: components["schemas"]["FundTournamentPayload"];
-            metadata: components["schemas"]["TournamentMetadata"];
-        };
-        DepositFirstOrder: components["schemas"]["BaseOrder"] & {
-            /**
-             * @description Order type for deposit-first flow where amount is determined after deposit
-             * @enum {string}
-             */
-            type: "deposit_first";
-            payload: components["schemas"]["DepositFirstPayload"];
-            metadata: components["schemas"]["DepositFirstMetadata"];
-        };
-        Order: components["schemas"]["SwapOrder"] | components["schemas"]["X402SwapOrder"] | components["schemas"]["HypeDuelOrder"] | components["schemas"]["CustomOrder"] | components["schemas"]["CustomExactInOrder"] | components["schemas"]["MintNftOrder"] | components["schemas"]["JoinTournamentOrder"] | components["schemas"]["FundTournamentOrder"] | components["schemas"]["DepositFirstOrder"];
-        /** @description Swap order request */
-        SwapOrderRequest: {
-            /**
-             * @description Order type
-             * @enum {string}
-             */
-            type: "swap";
-            /**
-             * @description Address to receive the destination tokens
-             * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
-             */
-            recipientAddress: string;
-            /**
-             * @description Source chain ID
-             * @example 1
-             */
-            srcChain: number;
-            /**
-             * @description Destination chain ID
-             * @example 8453
-             */
-            dstChain: number;
-            /**
-             * @description Source token contract address
-             * @example 0xA0b86a33E6441E8A91DEF8f5663ACb4C9B4a1234
-             */
-            srcTokenAddress: string;
-            /**
-             * @description Destination token contract address
-             * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
-             */
-            dstTokenAddress: string;
-            /**
-             * @description Amount of source tokens to swap
-             * @example 1000000
-             */
-            srcAmount: string;
-            payload: components["schemas"]["SwapPayload"];
-            metadata: components["schemas"]["SwapMetadata"];
-            /** @description Optional partner identifier */
-            partnerId?: string;
-            /** @description Optional client reference identifier for tracking purposes (alphanumeric, hyphens, and underscores only, max 255 chars) */
-            clientReferenceId?: string;
-            onramp?: components["schemas"]["Onramp"];
-            /**
-             * @description Optional address of the order creator
-             * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
-             */
-            creatorAddress?: string;
-        };
-        /** @description X402 swap order request */
-        X402SwapOrderRequest: {
-            /**
-             * @description Order type
-             * @enum {string}
-             */
-            type: "x402_swap";
-            /**
-             * @description Address to receive the destination tokens
-             * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
-             */
-            recipientAddress: string;
-            /**
-             * @description Source chain ID
-             * @example 8453
-             */
-            srcChain: number;
-            /**
-             * @description Destination chain ID
-             * @example 8453
-             */
-            dstChain: number;
-            /**
-             * @description Source token contract address
-             * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
-             */
-            srcTokenAddress: string;
-            /**
-             * @description Destination token contract address
-             * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
-             */
-            dstTokenAddress: string;
-            /**
-             * @description Amount of source tokens to swap
-             * @example 1000000
-             */
-            srcAmount: string;
-            payload: components["schemas"]["SwapPayload"];
-            metadata: components["schemas"]["SwapMetadata"];
-            /** @description Optional partner identifier */
-            partnerId?: string;
-            /** @description Optional client reference identifier for tracking purposes (alphanumeric, hyphens, and underscores only, max 255 chars) */
-            clientReferenceId?: string;
-            onramp?: components["schemas"]["Onramp"];
-            /**
-             * @description Optional address of the order creator
-             * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
-             */
-            creatorAddress?: string;
-        };
-        /** @description HypeDuel order request */
-        HypeDuelOrderRequest: {
-            /**
-             * @description Order type
-             * @enum {string}
-             */
-            type: "hype_duel";
-            /**
-             * @description Address to receive the destination tokens
-             * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
-             */
-            recipientAddress: string;
-            /**
-             * @description Source chain ID
-             * @example 1
-             */
-            srcChain: number;
-            /**
-             * @description Destination chain ID
-             * @example 8453
-             */
-            dstChain: number;
-            /**
-             * @description Source token contract address
-             * @example 0xA0b86a33E6441E8A91DEF8f5663ACb4C9B4a1234
-             */
-            srcTokenAddress: string;
-            /**
-             * @description Destination token contract address
-             * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
-             */
-            dstTokenAddress: string;
-            /**
-             * @description Amount of source tokens for HypeDuel
-             * @example 1000000
-             */
-            srcAmount: string;
-            payload: components["schemas"]["HypeDuelPayload"];
-            metadata: components["schemas"]["HypeDuelMetadata"];
-            /** @description Optional partner identifier */
-            partnerId?: string;
-            /** @description Optional client reference identifier for tracking purposes (alphanumeric, hyphens, and underscores only, max 255 chars) */
-            clientReferenceId?: string;
-            onramp?: components["schemas"]["Onramp"];
-            /**
-             * @description Optional address of the order creator
-             * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
-             */
-            creatorAddress?: string;
-        };
-        /** @description Custom order request */
-        CustomOrderRequest: {
-            /**
-             * @description Order type
-             * @enum {string}
-             */
-            type: "custom";
-            /**
-             * @description Address to receive any tokens or execute transaction
-             * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
-             */
-            recipientAddress: string;
-            /**
-             * @description Source chain ID for payment
-             * @example 1
-             */
-            srcChain: number;
-            /**
-             * @description Destination chain ID where custom execution will occur
-             * @example 8453
-             */
-            dstChain: number;
-            /**
-             * @description Payment token contract address
-             * @example 0xA0b86a33E6441E8A91DEF8f5663ACb4C9B4a1234
-             */
-            srcTokenAddress: string;
-            /**
-             * @description Token to be used in custom execution
-             * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
-             */
-            dstTokenAddress: string;
-            /**
-             * @description Payment amount
-             * @example 1000000
-             */
-            srcAmount: string;
-            payload: components["schemas"]["CustomPayload"];
-            metadata: components["schemas"]["CustomMetadata"];
-            /** @description Optional partner identifier */
-            partnerId?: string;
-            /** @description Optional client reference identifier for tracking purposes (alphanumeric, hyphens, and underscores only, max 255 chars) */
-            clientReferenceId?: string;
-            onramp?: components["schemas"]["Onramp"];
-            /**
-             * @description Optional address of the order creator
-             * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
-             */
-            creatorAddress?: string;
-        };
-        /** @description Custom exact in order request */
-        CustomExactInOrderRequest: {
-            /**
-             * @description Order type
-             * @enum {string}
-             */
-            type: "custom_exact_in";
-            /**
-             * @description Address to receive the destination tokens
-             * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
-             */
-            recipientAddress: string;
-            /**
-             * @description Source chain ID for payment
-             * @example 1
-             */
-            srcChain: number;
-            /**
-             * @description Destination chain ID where execution will occur
-             * @example 8453
-             */
-            dstChain: number;
-            /**
-             * @description Payment token contract address
-             * @example 0xA0b86a33E6441E8A91DEF8f5663ACb4C9B4a1234
-             */
-            srcTokenAddress: string;
-            /**
-             * @description Destination token contract address
-             * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
-             */
-            dstTokenAddress: string;
-            /**
-             * @description Payment amount
-             * @example 1000000
-             */
-            srcAmount: string;
-            payload: components["schemas"]["CustomExactInPayload"];
-            metadata: components["schemas"]["CustomMetadata"];
-            /** @description Optional partner identifier */
-            partnerId?: string;
-            /** @description Optional client reference identifier for tracking purposes (alphanumeric, hyphens, and underscores only, max 255 chars) */
-            clientReferenceId?: string;
-            onramp?: components["schemas"]["Onramp"];
-            /**
-             * @description Optional address of the order creator
-             * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
-             */
-            creatorAddress?: string;
-        };
-        /** @description Mint NFT order request */
-        MintNftOrderRequest: {
-            /**
-             * @description Order type
-             * @enum {string}
-             */
-            type: "mint_nft";
-            /**
-             * @description Address to receive the NFT
-             * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
-             */
-            recipientAddress: string;
-            /**
-             * @description Source chain ID for payment
-             * @example 1
-             */
-            srcChain: number;
-            /**
-             * @description Destination chain ID where NFT exists
-             * @example 8453
-             */
-            dstChain: number;
-            /**
-             * @description Payment token contract address
-             * @example 0xA0b86a33E6441E8A91DEF8f5663ACb4C9B4a1234
-             */
-            srcTokenAddress: string;
-            /**
-             * @description NFT contract address
-             * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
-             */
-            dstTokenAddress: string;
-            /**
-             * @description Payment amount
-             * @example 1000000
-             */
-            srcAmount: string;
-            payload: components["schemas"]["MintNftPayload"];
-            metadata: components["schemas"]["MintNftMetadata"];
-            /** @description Optional partner identifier */
-            partnerId?: string;
-            /** @description Optional client reference identifier for tracking purposes (alphanumeric, hyphens, and underscores only, max 255 chars) */
-            clientReferenceId?: string;
-            onramp?: components["schemas"]["Onramp"];
-            /**
-             * @description Optional address of the order creator
-             * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
-             */
-            creatorAddress?: string;
-        };
-        /** @description Join tournament order request */
-        JoinTournamentOrderRequest: {
-            /**
-             * @description Order type
-             * @enum {string}
-             */
-            type: "join_tournament";
-            /**
-             * @description Participant's address
-             * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
-             */
-            recipientAddress: string;
-            /**
-             * @description Source chain ID for payment
-             * @example 1
-             */
-            srcChain: number;
-            /**
-             * @description Destination chain for tournament contract
-             * @example 8453
-             */
-            dstChain: number;
-            /**
-             * @description Payment token contract address
-             * @example 0xA0b86a33E6441E8A91DEF8f5663ACb4C9B4a1234
-             */
-            srcTokenAddress: string;
-            /**
-             * @description Tournament contract address
-             * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
-             */
-            dstTokenAddress: string;
-            /**
-             * @description Entry fee amount
-             * @example 1000000
-             */
-            srcAmount: string;
-            payload: components["schemas"]["JoinTournamentPayload"];
-            metadata: components["schemas"]["TournamentMetadata"];
-            /** @description Optional partner identifier */
-            partnerId?: string;
-            /** @description Optional client reference identifier for tracking purposes (alphanumeric, hyphens, and underscores only, max 255 chars) */
-            clientReferenceId?: string;
-            onramp?: components["schemas"]["Onramp"];
-            /**
-             * @description Optional address of the order creator
-             * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
-             */
-            creatorAddress?: string;
-        };
-        /** @description Fund tournament order request */
-        FundTournamentOrderRequest: {
-            /**
-             * @description Order type
-             * @enum {string}
-             */
-            type: "fund_tournament";
-            /**
-             * @description Funder's address
-             * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
-             */
-            recipientAddress: string;
-            /**
-             * @description Source chain ID for payment
-             * @example 1
-             */
-            srcChain: number;
-            /**
-             * @description Destination chain for tournament contract
-             * @example 8453
-             */
-            dstChain: number;
-            /**
-             * @description Payment token contract address
-             * @example 0xA0b86a33E6441E8A91DEF8f5663ACb4C9B4a1234
-             */
-            srcTokenAddress: string;
-            /**
-             * @description Tournament contract address
-             * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
-             */
-            dstTokenAddress: string;
-            /**
-             * @description Funding amount
-             * @example 1000000
-             */
-            srcAmount: string;
-            payload: components["schemas"]["FundTournamentPayload"];
-            metadata: components["schemas"]["TournamentMetadata"];
-            /** @description Optional partner identifier */
-            partnerId?: string;
-            /** @description Optional client reference identifier for tracking purposes (alphanumeric, hyphens, and underscores only, max 255 chars) */
-            clientReferenceId?: string;
-            onramp?: components["schemas"]["Onramp"];
-            /**
-             * @description Optional address of the order creator
-             * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
-             */
-            creatorAddress?: string;
-        };
-        /** @description Deposit-first order request. The srcAmount is determined after deposit is detected, so it is not required at creation time. This flow does not support onramp - users deposit crypto directly. */
-        DepositFirstOrderRequest: {
-            /**
-             * @description Order type for deposit-first flow
-             * @enum {string}
-             */
-            type: "deposit_first";
-            /**
-             * @description Address to receive the destination tokens after swap
-             * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
-             */
-            recipientAddress: string;
-            /**
-             * @description Source chain ID where deposit will be made
-             * @example 8453
-             */
-            srcChain: number;
-            /**
-             * @description Destination chain ID for the swap
-             * @example 8453
-             */
-            dstChain: number;
-            /**
-             * @description Token contract address that will be deposited
-             * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
-             */
-            srcTokenAddress: string;
-            /**
-             * @description Token contract address to receive after swap
-             * @example 0x0000000000000000000000000000000000000000
-             */
-            dstTokenAddress: string;
-            payload: components["schemas"]["DepositFirstPayload"];
-            metadata: components["schemas"]["DepositFirstMetadata"];
-            /** @description Optional partner identifier */
-            partnerId?: string;
-            /** @description Optional client reference identifier for tracking purposes (alphanumeric, hyphens, and underscores only, max 255 chars) */
-            clientReferenceId?: string;
-            /**
-             * @description Optional address of the order creator
-             * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
-             */
-            creatorAddress?: string;
-        };
-        OrderRequest: components["schemas"]["SwapOrderRequest"] | components["schemas"]["X402SwapOrderRequest"] | components["schemas"]["HypeDuelOrderRequest"] | components["schemas"]["CustomOrderRequest"] | components["schemas"]["CustomExactInOrderRequest"] | components["schemas"]["MintNftOrderRequest"] | components["schemas"]["JoinTournamentOrderRequest"] | components["schemas"]["FundTournamentOrderRequest"] | components["schemas"]["DepositFirstOrderRequest"];
-        /** @description Deposit transaction (payment from user) */
-        DepositTx: {
-            /**
-             * Format: uuid
-             * @description Associated order ID
-             * @example 5392f7a7-d472-4d6b-9848-bd07117fb82d
-             */
-            orderId: string;
-            /**
-             * @description Chain where transaction occurred
-             * @example 8453
-             */
-            chain: number;
-            /**
-             * @description Sender address (can be null)
-             * @example 0xa7539e73700B1726aBA29526606442A491Ef5747
-             */
-            from?: string | null;
-            /**
-             * @description Transaction hash
-             * @example 0x60ece99a645201668d20db6775a6b3d30967433ff0750b356cdad46d3e13f9c8
-             */
-            txHash: string;
-            /**
-             * @description Transaction amount
-             * @example 93354000
-             */
-            amount: string;
-            /**
-             * @description Transaction timestamp
-             * @example 1752505811105
-             */
-            createdAt: number;
-        };
+  schemas: {
+    /** @description Token details */
+    Token: {
+      /**
+       * @description Token chain ID
+       * @example 8453
+       */
+      chainId: number;
+      /**
+       * @description Token contract address
+       * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+       */
+      address: string;
+      /**
+       * @description Token symbol
+       * @example USDC
+       */
+      symbol: string;
+      /**
+       * @description Token name
+       * @example USD Coin
+       */
+      name: string;
+      /**
+       * @description Token decimals
+       * @example 6
+       */
+      decimals: number;
+      metadata: {
         /**
-         * @description Relay transaction status
-         * @enum {string}
+         * @description Token logo URI
+         * @example https://polygonscan.com/token/images/usdc_32.png
          */
-        RelayStatus: "pending" | "success" | "failure" | "refund" | "delayed" | "waiting";
-        /** @description Cross-chain relay transaction */
-        RelayTx: {
-            /**
-             * Format: uuid
-             * @description Associated order ID
-             * @example 5392f7a7-d472-4d6b-9848-bd07117fb82d
-             */
-            orderId: string;
-            /**
-             * @description Chain where relay occurred
-             * @example 8453
-             */
-            chain: number;
-            /**
-             * @description Relay transaction hash
-             * @example 0x9df917e14bb089f74763d1d2662761d75c97a5a068b8a9e411c3d384c9c40d19
-             */
-            txHash: string;
-            /** @example success */
-            status: components["schemas"]["RelayStatus"];
-            /**
-             * @description Relay timestamp
-             * @example 1752505817654
-             */
-            createdAt: number;
-        };
-        /** @description Final execution transaction */
-        ExecuteTx: {
-            /**
-             * Format: uuid
-             * @description Associated order ID
-             * @example 5392f7a7-d472-4d6b-9848-bd07117fb82d
-             */
-            orderId: string;
-            /**
-             * @description Chain where execution occurred
-             * @example 8453
-             */
-            chain: number;
-            /**
-             * @description Execution transaction hash
-             * @example 0x1234567890abcdef1234567890abcdef12345678
-             */
-            txHash: string;
-            /**
-             * @description Execution timestamp
-             * @example 1752505820000
-             */
-            createdAt: number;
-        };
-        /** @description Refund transaction if order failed */
-        RefundTx: {
-            /**
-             * Format: uuid
-             * @description Associated order ID
-             * @example 5392f7a7-d472-4d6b-9848-bd07117fb82d
-             */
-            orderId: string;
-            /**
-             * @description Chain where refund occurred
-             * @example 8453
-             */
-            chain: number;
-            /**
-             * @description Refund transaction hash
-             * @example 0xabcdef1234567890abcdef1234567890abcdef12
-             */
-            txHash: string;
-            /**
-             * @description Refunded amount
-             * @example 93354000
-             */
-            amount: string;
-            /**
-             * @description Refund status
-             * @example success
-             * @enum {string}
-             */
-            status: "success" | "failure";
-            /**
-             * @description Refund timestamp
-             * @example 1752505825000
-             */
-            createdAt: number;
-        };
-        /** @description Points awarded for an order */
-        OrderPointsTransaction: {
-            /**
-             * @description Unique identifier for the points transaction
-             * @example points_123
-             */
-            id: string;
-            /**
-             * @description Timestamp associated with the points event
-             * @example 2025-07-12T19:23:45.000Z
-             */
-            time: string;
-            /**
-             * @description Address that received the points
-             * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
-             */
-            userAddress: string;
-            /**
-             * @description Associated order ID
-             * @example 5392f7a7-d472-4d6b-9848-bd07117fb82d
-             */
-            orderId: string;
-            /**
-             * @description USD notional used for points calculation
-             * @example 125.75
-             */
-            usdValue: number;
-            /**
-             * @description Order type associated with the points
-             * @example swap
-             */
-            orderType: string;
-            /**
-             * @description Points multiplier that was applied
-             * @example 1.5
-             */
-            multiplier: number;
-            /**
-             * @description Total points awarded
-             * @example 100
-             */
-            points: number;
-        };
-        ComprehensiveExecuteTx: components["schemas"]["ExecuteTx"] & {
-            /**
-             * @description Execution status reported by the system
-             * @example success
-             */
-            status: string;
-        };
-        /** @description Full order detail including all associated transactions and points */
-        ComprehensiveOrderDetail: {
-            order: components["schemas"]["Order"];
-            depositTxs: components["schemas"]["DepositTx"][];
-            relayTxs: components["schemas"]["RelayTx"][];
-            executeTx: components["schemas"]["ComprehensiveExecuteTx"] | null;
-            refundTxs: components["schemas"]["RefundTx"][];
-            points: components["schemas"]["OrderPointsTransaction"] | null;
-        };
-        ComprehensiveOrderResponse: {
-            /** @example true */
-            success: boolean;
-            /** @example Get comprehensive order detail successfully */
-            message: string;
-            data: components["schemas"]["ComprehensiveOrderDetail"];
-            /** @example 200 */
-            statusCode: number;
-        };
-        /** @description NFT contract details */
-        NftContract: {
-            /**
-             * @description Chain ID where the NFT contract exists
-             * @example 8453
-             */
-            chainId: number;
-            /**
-             * @description NFT contract address
-             * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
-             */
-            contractAddress: string;
-            /**
-             * @description NFT price in raw format
-             * @example 1000000
-             */
-            price: string;
-            /**
-             * @description Human-readable formatted price
-             * @example 1.0
-             */
-            priceFormatted: string;
-            currency: components["schemas"]["Token"];
-            /**
-             * @description NFT image URL
-             * @example https://example.com/nft.png
-             */
-            imageUrl: string;
-            /**
-             * @description NFT name
-             * @example Cool NFT Collection
-             */
-            name: string;
-            /**
-             * @description NFT description
-             * @example A collection of very cool NFTs
-             */
-            description: string;
-            /**
-             * @description Token ID (null for ERC721, specific ID for ERC1155)
-             * @example 1
-             */
-            tokenId: number | null;
-            /**
-             * @description NFT contract type
-             * @example erc721
-             * @enum {string}
-             */
-            type: "erc721" | "erc1155";
-        };
-        StripeWeb2Support: {
-            /**
-             * @example false
-             * @constant
-             */
-            isSupport: false;
-        } | {
-            /**
-             * @example true
-             * @constant
-             */
-            isSupport: true;
-            /**
-             * @description Total payment amount formatted in USD
-             * @example 10.00
-             */
-            formattedTotalUsd: string;
-            /**
-             * @description Onramp amount formatted in USD
-             * @example 9.50
-             */
-            formattedOnrampUsd: string;
-            /**
-             * @description Stripe fee formatted in USD
-             * @example 0.50
-             */
-            formattedFeeUsd: string;
-        };
-        Fee: {
-            /**
-             * @description Fee type identifier
-             * @enum {string}
-             */
-            type: "standard_fee";
-            /**
-             * @description Fee version number
-             * @example 1
-             */
-            feeVersion: number;
-            /**
-             * @description Token contract address used to check balance for whale discount (B3 token)
-             * @example 0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3
-             */
-            tokenToCheckBalance: string;
-            /**
-             * @description Recipient's B3 token balance
-             * @example 302843673392800000000000
-             */
-            recipientBalance: string;
-            /**
-             * @description AnySpend base fee in basis points before discounts
-             * @example 80
-             */
-            anyspendFeeBps: number;
-            /**
-             * @description Whale discount in basis points based on B3 balance
-             * @example 5000
-             */
-            anyspendWhaleDiscountBps: number;
-            /**
-             * @description Partner discount in basis points
-             * @example 0
-             */
-            anyspendPartnerDiscountBps: number;
-            /**
-             * @description Final fee in basis points after all discounts applied
-             * @example 40
-             */
-            finalFeeBps: number;
-        } | {
-            /**
-             * @description Fee type identifier
-             * @enum {string}
-             */
-            type: "stripeweb2_fee";
-            /**
-             * @description Fee version number
-             * @example 1
-             */
-            feeVersion: number;
-            /**
-             * @description Token contract address used to check balance for whale discount (B3 token)
-             * @example 0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3
-             */
-            tokenToCheckBalance: string;
-            /**
-             * @description Recipient's B3 token balance
-             * @example 302843673392800000000000
-             */
-            recipientBalance: string;
-            /**
-             * @description Stripe fee percentage in basis points (5.4%)
-             * @example 540
-             */
-            stripeFeeBps: number;
-            /**
-             * @description Stripe fixed fee in USD
-             * @example 0.3
-             */
-            stripeFeeUsd: number;
-            /**
-             * @description AnySpend base fee in basis points before discounts
-             * @example 80
-             */
-            anyspendFeeBps: number;
-            /**
-             * @description AnySpend fixed fee in USD before discounts
-             * @example 0
-             */
-            anyspendFeeUsd: number;
-            /**
-             * @description Whale discount in basis points based on B3 balance
-             * @example 5000
-             */
-            anyspendWhaleDiscountBps: number;
-            /**
-             * @description Partner discount in basis points
-             * @example 0
-             */
-            anyspendPartnerDiscountBps: number;
-            /**
-             * @description Final combined fee percentage in basis points after all discounts
-             * @example 580
-             */
-            finalFeeBps: number;
-            /**
-             * @description Final combined fixed fee in USD after all discounts
-             * @example 0.3
-             */
-            finalFeeUsd: number;
-            /**
-             * @description Original amount before fees in USDC units (6 decimals)
-             * @example 10000000
-             */
-            originalAmount: string;
-            /**
-             * @description Final amount after applying all fees in USDC units (6 decimals)
-             * @example 9120000
-             */
-            finalAmount: string;
-        };
+        logoURI?: string;
+      };
     };
-    responses: never;
-    parameters: never;
-    requestBodies: never;
-    headers: never;
-    pathItems: never;
+    /** @description Onramp configuration */
+    OnrampMetadata: {
+      /**
+       * @description Country code
+       * @example US
+       */
+      country: string;
+      /**
+       * @description Onramp vendor used
+       * @example stripe-web2
+       * @enum {string}
+       */
+      vendor: "coinbase" | "stripe" | "stripe-web2";
+      /**
+       * @description Payment method used
+       * @example
+       */
+      paymentMethod: string;
+      /**
+       * @description Redirect URL after payment
+       * @example https://www.anyspend.com
+       */
+      redirectUrl: string;
+      /**
+       * @description Stripe payment amount in cents
+       * @example 9900
+       */
+      stripeAmountInCents?: number;
+      /**
+       * Format: ipv4
+       * @description Optional IP address for location detection. Required for Stripe onramp requests in production and omitted from standard order responses.
+       * @example 192.168.1.1
+       */
+      ipAddress?: string;
+      /** @description Optional fingerprint data for fraud detection */
+      fingerprint?: {
+        /**
+         * @description Fingerprint request ID
+         * @example fp_req_12345
+         */
+        requestId: string;
+        /**
+         * @description Fingerprint visitor ID
+         * @example fp_visitor_67890
+         */
+        visitorId: string;
+      };
+    };
+    /** @description Optional onramp configuration */
+    Onramp: {
+      /**
+       * @description Onramp vendor
+       * @enum {string}
+       */
+      vendor?: "coinbase" | "stripe" | "stripe-web2";
+      /**
+       * @description Payment method for onramp
+       * @example
+       */
+      paymentMethod?: string;
+      /**
+       * @description Country code for the user
+       * @example SG
+       */
+      country?: string;
+      /**
+       * @description URL to redirect after payment
+       * @example https://www.anyspend.com
+       */
+      redirectUrl?: string;
+    };
+    /** @description Request body to create a Coinbase session token */
+    CoinbaseSessionTokenRequest: {
+      /**
+       * @description Wallet address that will receive purchased assets
+       * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
+       */
+      destinationAddress: string;
+      /**
+       * @description List of supported blockchain identifiers
+       * @example [
+       *       "base"
+       *     ]
+       */
+      blockchains: string[];
+      /**
+       * @description Optional list of asset symbols to whitelist
+       * @example [
+       *       "USDC"
+       *     ]
+       */
+      assets?: string[];
+    };
+    /** @description Coinbase session token result */
+    CoinbaseSessionTokenResponseData: {
+      /**
+       * @description Session token identifier
+       * @example token_123
+       */
+      token: string;
+      /**
+       * @description Optional session channel identifier
+       * @example channel_abc
+       */
+      channelId?: string;
+    };
+    CoinbaseSessionTokenResponse: {
+      /** @example true */
+      success: boolean;
+      /** @example Session token created successfully */
+      message: string;
+      data: components["schemas"]["CoinbaseSessionTokenResponseData"];
+      /** @example 200 */
+      statusCode: number;
+    };
+    /** @description Request body to create a Coinbase onramp URL */
+    CoinbaseOnrampUrlRequest: {
+      /**
+       * @description Preset fiat amount for purchase
+       * @example 100
+       */
+      presetFiatAmount: string;
+      /**
+       * @description Fiat currency code
+       * @example USD
+       */
+      fiatCurrency: string;
+      /**
+       * @description Default asset to purchase
+       * @example USDC
+       */
+      defaultAsset: string;
+      /**
+       * @description Default payment method identifier
+       * @example CARD
+       */
+      defaultPaymentMethod: string;
+      /**
+       * @description Destination wallet address
+       * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
+       */
+      destinationAddress: string;
+      /**
+       * @description Supported blockchains for the session
+       * @example [
+       *       "base"
+       *     ]
+       */
+      blockchains: string[];
+      /**
+       * @description ISO country code of the end user
+       * @example US
+       */
+      country: string;
+      /**
+       * @description Associated AnySpend order ID
+       * @example 5392f7a7-d472-4d6b-9848-bd07117fb82d
+       */
+      orderId: string;
+      /**
+       * @description Redirect URL after completing the purchase
+       * @example https://www.anyspend.com/orders
+       */
+      redirectUrl: string;
+      /**
+       * @description Whether to create and embed a session token automatically
+       * @default false
+       */
+      useSessionToken: boolean;
+    };
+    /** @description Coinbase onramp URL result */
+    CoinbaseOnrampUrlResponseData: {
+      /**
+       * @description Coinbase-hosted onramp URL
+       * @example https://pay.coinbase.com/buy/select-asset?...
+       */
+      url: string;
+      /**
+       * @description Optional session token created alongside the URL
+       * @example token_123
+       */
+      sessionToken?: string;
+    };
+    CoinbaseOnrampUrlResponse: {
+      /** @example true */
+      success: boolean;
+      /** @example Onramp URL created successfully */
+      message: string;
+      data: components["schemas"]["CoinbaseOnrampUrlResponseData"];
+      /** @example 200 */
+      statusCode: number;
+    };
+    /** @description Request body to generate a direct Coinbase onramp URL */
+    CoinbaseDirectOnrampRequest: {
+      /**
+       * @description Destination wallet address
+       * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
+       */
+      destinationAddress: string;
+      /**
+       * @description Supported blockchain identifiers
+       * @example [
+       *       "base"
+       *     ]
+       */
+      blockchains: string[];
+      /**
+       * @description Optional list of asset symbols to whitelist
+       * @example [
+       *       "USDC"
+       *     ]
+       */
+      assets?: string[];
+      /**
+       * @description Preset fiat amount
+       * @example 100
+       */
+      presetFiatAmount?: string;
+      /**
+       * @description Fiat currency code
+       * @example USD
+       */
+      fiatCurrency?: string;
+      /**
+       * @description Default asset to purchase
+       * @example USDC
+       */
+      defaultAsset?: string;
+      /**
+       * @description Default payment method identifier
+       * @example CARD
+       */
+      defaultPaymentMethod?: string;
+      /**
+       * @description Redirect URL after payment completion
+       * @example https://www.anyspend.com/orders
+       */
+      redirectUrl?: string;
+    };
+    /** @description Direct Coinbase onramp URL result */
+    CoinbaseDirectOnrampResponseData: {
+      /**
+       * @description Coinbase onramp URL that can be used directly
+       * @example https://pay.coinbase.com/buy/select-asset?...
+       */
+      url: string;
+      /**
+       * @description Session token bound to the generated URL
+       * @example token_123
+       */
+      sessionToken: string;
+    };
+    CoinbaseDirectOnrampResponse: {
+      /** @example true */
+      success: boolean;
+      /** @example Direct onramp URL generated successfully */
+      message: string;
+      data: components["schemas"]["CoinbaseDirectOnrampResponseData"];
+      /** @example 200 */
+      statusCode: number;
+    };
+    /** @description Tournament details */
+    Tournament: {
+      /**
+       * @description Tournament slug identifier
+       * @example summer-championship-2024
+       */
+      slug: string;
+      /**
+       * @description Tournament name
+       * @example Summer Championship 2024
+       */
+      name: string;
+      /**
+       * @description Tournament description
+       * @example The biggest tournament of the summer
+       */
+      description: string;
+      /**
+       * @description Tournament image URL
+       * @example https://example.com/tournament.png
+       */
+      imageUrl: string;
+    };
+    /** @description ERC721 NFT */
+    ERC721NFT: {
+      /**
+       * @description NFT type
+       * @enum {string}
+       */
+      type: "erc721";
+      /**
+       * @description NFT contract address
+       * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+       */
+      contractAddress: string;
+      /**
+       * @description NFT name
+       * @example Cool NFT
+       */
+      name: string;
+      /**
+       * @description NFT description
+       * @example A very cool NFT
+       */
+      description: string;
+      /**
+       * @description NFT image URL
+       * @example https://example.com/nft.png
+       */
+      imageUrl: string;
+    };
+    /** @description ERC1155 NFT */
+    ERC1155NFT: {
+      /**
+       * @description NFT type
+       * @enum {string}
+       */
+      type: "erc1155";
+      /**
+       * @description NFT contract address
+       * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+       */
+      contractAddress: string;
+      /**
+       * @description NFT name
+       * @example Cool NFT
+       */
+      name: string;
+      /**
+       * @description NFT description
+       * @example A very cool NFT
+       */
+      description: string;
+      /**
+       * @description NFT image URL
+       * @example https://example.com/nft.png
+       */
+      imageUrl: string;
+      /**
+       * @description Token ID for ERC1155
+       * @example 1
+       */
+      tokenId: number;
+    };
+    NFT: components["schemas"]["ERC721NFT"] | components["schemas"]["ERC1155NFT"];
+    /** @description Swap-specific payload */
+    SwapPayload: {
+      /**
+       * @description Expected amount of destination tokens
+       * @example 990000
+       */
+      expectedDstAmount: string;
+    };
+    /** @description X402 swap-specific payload */
+    X402SwapPayload: {
+      /**
+       * @description Expected amount of destination tokens
+       * @example 990000
+       */
+      expectedDstAmount: string;
+    };
+    /** @description HypeDuel-specific payload */
+    HypeDuelPayload: {
+      /**
+       * @description Expected amount of destination tokens
+       * @example 990000
+       */
+      expectedDstAmount: string;
+    };
+    /** @description Custom execution payload */
+    CustomPayload: {
+      /**
+       * @description Encoded transaction data
+       * @example 0x1234567890abcdef...
+       */
+      data: string;
+      /**
+       * @description Target contract address
+       * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+       */
+      to: string;
+      /**
+       * @description Optional spender address for token approval
+       * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
+       */
+      spenderAddress?: string;
+      /**
+       * @description Amount for the custom operation
+       * @example 1000000
+       */
+      amount: string;
+    };
+    /** @description Custom exact in execution payload */
+    CustomExactInPayload: {
+      /**
+       * @description Amount used when executing the destination function
+       * @example 1000000000000000000
+       */
+      amount: string;
+      /**
+       * @description Expected amount of destination tokens
+       * @example 1000000000000000000
+       */
+      expectedDstAmount: string;
+      /** @description JSON stringified ABI that includes the destination function */
+      functionAbi: string;
+      /**
+       * @description Destination function name
+       * @example stake
+       */
+      functionName: string;
+      /** @description Destination function arguments (template variables allowed) */
+      functionArgs: string[];
+      /**
+       * @description Destination contract address
+       * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+       */
+      to: string;
+      /**
+       * @description Optional spender address for token approval
+       * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
+       */
+      spenderAddress?: string;
+      /**
+       * @description Native token value to send with the transaction (in wei)
+       * @example 1000000000000000000
+       */
+      value?: string;
+      /**
+       * @description Optional action identifier used for display purposes
+       * @example stake B3
+       */
+      action?: string;
+    };
+    /** @description NFT minting payload */
+    MintNftPayload: {
+      /**
+       * @description NFT contract address
+       * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+       */
+      contractAddress: string;
+      /**
+       * @description Token ID (for ERC1155, null for ERC721)
+       * @example 1
+       */
+      tokenId: number | null;
+      /**
+       * @description Type of NFT contract
+       * @example erc721
+       * @enum {string}
+       */
+      contractType: "erc721" | "erc1155";
+      /**
+       * @description Price to mint the NFT
+       * @example 1000000
+       */
+      nftPrice: string;
+    };
+    /** @description Tournament joining payload */
+    JoinTournamentPayload: {
+      /**
+       * @description Tournament contract address
+       * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+       */
+      contractAddress: string;
+      /**
+       * @description Tournament entry price
+       * @example 1000000
+       */
+      entryPrice: string;
+    };
+    /** @description Tournament funding payload */
+    FundTournamentPayload: {
+      /**
+       * @description Tournament contract address
+       * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+       */
+      contractAddress: string;
+      /**
+       * @description Amount to fund the tournament
+       * @example 1000000
+       */
+      fundAmount: string;
+    };
+    /** @description DepositFirst payload - empty at creation time, details determined after deposit is detected */
+    DepositFirstPayload: Record<string, never>;
+    /** @description DepositFirst metadata for display purposes */
+    DepositFirstMetadata: {
+      /** @description Token accepted for deposit */
+      srcToken: components["schemas"]["Token"];
+      /** @description Token to swap to after deposit */
+      dstToken: components["schemas"]["Token"];
+    };
+    /** @description Swap metadata for display purposes */
+    SwapMetadata: {
+      srcToken: components["schemas"]["Token"];
+      dstToken: components["schemas"]["Token"];
+    };
+    /** @description X402 swap metadata for display purposes */
+    X402SwapMetadata: {
+      srcToken: components["schemas"]["Token"];
+      dstToken: components["schemas"]["Token"];
+    };
+    /** @description HypeDuel metadata for display purposes */
+    HypeDuelMetadata: {
+      srcToken: components["schemas"]["Token"];
+      dstToken: components["schemas"]["Token"];
+    };
+    /** @description Custom metadata for display purposes */
+    CustomMetadata: {
+      srcToken: components["schemas"]["Token"];
+      dstToken: components["schemas"]["Token"];
+      /**
+       * @description Optional custom action identifier
+       * @example claim-reward
+       */
+      action?: string;
+    };
+    /** @description NFT metadata */
+    MintNftMetadata: {
+      srcToken: components["schemas"]["Token"];
+      dstToken: components["schemas"]["Token"];
+      nft: components["schemas"]["NFT"];
+    };
+    /** @description Tournament metadata */
+    TournamentMetadata: {
+      srcToken: components["schemas"]["Token"];
+      dstToken: components["schemas"]["Token"];
+      tournament: components["schemas"]["Tournament"];
+    };
+    /** @description Base order fields */
+    BaseOrder: {
+      /**
+       * Format: uuid
+       * @description Unique order identifier
+       * @example 5392f7a7-d472-4d6b-9848-bd07117fb82d
+       */
+      id: string;
+      /**
+       * @description Address to receive tokens/NFT/etc
+       * @example 0xb34facb90a200251318e8841c05102366f2158cf
+       */
+      recipientAddress: string;
+      /**
+       * @description Global wallet address handling the order
+       * @example 0xa640beaa78eeb64bb269f2baf8202b9a7316e123
+       */
+      globalAddress: string;
+      /**
+       * @description Source chain ID
+       * @example 8453
+       */
+      srcChain: number;
+      /**
+       * @description Destination chain ID
+       * @example 8453
+       */
+      dstChain: number;
+      /**
+       * @description Source token contract address
+       * @example 0x833589fcd6edb6e08f4c7c32d4f71b54bda02913
+       */
+      srcTokenAddress: string;
+      /**
+       * @description Destination token contract address
+       * @example 0x833589fcd6edb6e08f4c7c32d4f71b54bda02913
+       */
+      dstTokenAddress: string;
+      /**
+       * @description Source amount
+       * @example 93354000
+       */
+      srcAmount: string;
+      /**
+       * @description Current order status
+       * @example executed
+       * @enum {string}
+       */
+      status:
+        | "scanning_deposit_transaction"
+        | "waiting_stripe_payment"
+        | "expired"
+        | "sending_token_from_vault"
+        | "quoting_after_deposit"
+        | "relay"
+        | "executing"
+        | "executed"
+        | "refunding"
+        | "refunded"
+        | "failure";
+      /** @description Error details if order failed */
+      errorDetails: string | null;
+      /**
+       * @description Creation timestamp
+       * @example 1752505794679
+       */
+      createdAt: number;
+      /**
+       * @description Expiration timestamp
+       * @example 1752506694679
+       */
+      expiredAt: number;
+      /** @description Timestamp when the order was filled/executed */
+      filledAt: number | null;
+      /** @description Timestamp when the deposit was received */
+      receivedDepositAt: number | null;
+      /**
+       * @description Optional creator address
+       * @example 0xb34facb90a200251318e8841c05102366f2158cf
+       */
+      creatorAddress: string | null;
+      /** @description Optional partner identifier */
+      partnerId: string | null;
+      /** @description Optional client reference identifier for tracking purposes (alphanumeric, hyphens, and underscores only, max 255 chars) */
+      clientReferenceId?: string | null;
+      /** @description Onramp configuration if used */
+      onrampMetadata: components["schemas"]["OnrampMetadata"] | null;
+      /** @description Quick purchase URL if available */
+      oneClickBuyUrl: string | null;
+      /**
+       * @description Stripe payment intent ID if using Stripe
+       * @example pi_3Rko0sJnoDg53PsP0PDLsHkR
+       */
+      stripePaymentIntentId: string | null;
+      /** @description Settlement information for executed orders */
+      settlement: {
+        /**
+         * @description Actual received amount after execution (only for swap/hypeduel orders). Optional - only present for swap/hypeduel orders.
+         * @example 990000
+         */
+        actualDstAmount?: string;
+        /**
+         * @description Complete relay API response data. Contains transaction details, state changes, fees, and execution status. Optional - can be backfilled by querying Relay API /requests/v2 endpoint.
+         * @example {
+         *       "status": "success",
+         *       "metadata": {
+         *         "currencyOut": {
+         *           "amount": "990000"
+         *         }
+         *       }
+         *     }
+         */
+        relay?: Record<string, never>;
+      } | null;
+      /** @description Fee structure for the order including Stripe and AnySpend fees */
+      fee?: Omit<components["schemas"]["Fee"], "type"> | null;
+    };
+    SwapOrder: components["schemas"]["BaseOrder"] & {
+      /**
+       * @description Order type
+       * @enum {string}
+       */
+      type: "swap";
+      payload: components["schemas"]["SwapPayload"];
+      metadata: components["schemas"]["SwapMetadata"];
+    };
+    X402SwapOrder: components["schemas"]["BaseOrder"] & {
+      /**
+       * @description Order type
+       * @enum {string}
+       */
+      type: "x402_swap";
+      payload: components["schemas"]["X402SwapPayload"];
+      metadata: components["schemas"]["X402SwapMetadata"];
+    };
+    HypeDuelOrder: components["schemas"]["BaseOrder"] & {
+      /**
+       * @description Order type
+       * @enum {string}
+       */
+      type: "hype_duel";
+      payload: components["schemas"]["HypeDuelPayload"];
+      metadata: components["schemas"]["HypeDuelMetadata"];
+    };
+    CustomOrder: components["schemas"]["BaseOrder"] & {
+      /**
+       * @description Order type
+       * @enum {string}
+       */
+      type: "custom";
+      payload: components["schemas"]["CustomPayload"];
+      metadata: components["schemas"]["CustomMetadata"];
+    };
+    CustomExactInOrder: components["schemas"]["BaseOrder"] & {
+      /**
+       * @description Order type
+       * @enum {string}
+       */
+      type: "custom_exact_in";
+      payload: components["schemas"]["CustomExactInPayload"];
+      metadata: components["schemas"]["CustomMetadata"];
+    };
+    MintNftOrder: components["schemas"]["BaseOrder"] & {
+      /**
+       * @description Order type
+       * @enum {string}
+       */
+      type: "mint_nft";
+      payload: components["schemas"]["MintNftPayload"];
+      metadata: components["schemas"]["MintNftMetadata"];
+    };
+    JoinTournamentOrder: components["schemas"]["BaseOrder"] & {
+      /**
+       * @description Order type
+       * @enum {string}
+       */
+      type: "join_tournament";
+      payload: components["schemas"]["JoinTournamentPayload"];
+      metadata: components["schemas"]["TournamentMetadata"];
+    };
+    FundTournamentOrder: components["schemas"]["BaseOrder"] & {
+      /**
+       * @description Order type
+       * @enum {string}
+       */
+      type: "fund_tournament";
+      payload: components["schemas"]["FundTournamentPayload"];
+      metadata: components["schemas"]["TournamentMetadata"];
+    };
+    DepositFirstOrder: components["schemas"]["BaseOrder"] & {
+      /**
+       * @description Order type for deposit-first flow where amount is determined after deposit
+       * @enum {string}
+       */
+      type: "deposit_first";
+      payload: components["schemas"]["DepositFirstPayload"];
+      metadata: components["schemas"]["DepositFirstMetadata"];
+    };
+    Order:
+      | components["schemas"]["SwapOrder"]
+      | components["schemas"]["X402SwapOrder"]
+      | components["schemas"]["HypeDuelOrder"]
+      | components["schemas"]["CustomOrder"]
+      | components["schemas"]["CustomExactInOrder"]
+      | components["schemas"]["MintNftOrder"]
+      | components["schemas"]["JoinTournamentOrder"]
+      | components["schemas"]["FundTournamentOrder"]
+      | components["schemas"]["DepositFirstOrder"];
+    /** @description Swap order request */
+    SwapOrderRequest: {
+      /**
+       * @description Order type
+       * @enum {string}
+       */
+      type: "swap";
+      /**
+       * @description Address to receive the destination tokens
+       * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
+       */
+      recipientAddress: string;
+      /**
+       * @description Source chain ID
+       * @example 1
+       */
+      srcChain: number;
+      /**
+       * @description Destination chain ID
+       * @example 8453
+       */
+      dstChain: number;
+      /**
+       * @description Source token contract address
+       * @example 0xA0b86a33E6441E8A91DEF8f5663ACb4C9B4a1234
+       */
+      srcTokenAddress: string;
+      /**
+       * @description Destination token contract address
+       * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+       */
+      dstTokenAddress: string;
+      /**
+       * @description Amount of source tokens to swap
+       * @example 1000000
+       */
+      srcAmount: string;
+      payload: components["schemas"]["SwapPayload"];
+      metadata: components["schemas"]["SwapMetadata"];
+      /** @description Optional partner identifier */
+      partnerId?: string;
+      /** @description Optional client reference identifier for tracking purposes (alphanumeric, hyphens, and underscores only, max 255 chars) */
+      clientReferenceId?: string;
+      onramp?: components["schemas"]["Onramp"];
+      /**
+       * @description Optional address of the order creator
+       * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
+       */
+      creatorAddress?: string;
+    };
+    /** @description X402 swap order request */
+    X402SwapOrderRequest: {
+      /**
+       * @description Order type
+       * @enum {string}
+       */
+      type: "x402_swap";
+      /**
+       * @description Address to receive the destination tokens
+       * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
+       */
+      recipientAddress: string;
+      /**
+       * @description Source chain ID
+       * @example 8453
+       */
+      srcChain: number;
+      /**
+       * @description Destination chain ID
+       * @example 8453
+       */
+      dstChain: number;
+      /**
+       * @description Source token contract address
+       * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+       */
+      srcTokenAddress: string;
+      /**
+       * @description Destination token contract address
+       * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+       */
+      dstTokenAddress: string;
+      /**
+       * @description Amount of source tokens to swap
+       * @example 1000000
+       */
+      srcAmount: string;
+      payload: components["schemas"]["SwapPayload"];
+      metadata: components["schemas"]["SwapMetadata"];
+      /** @description Optional partner identifier */
+      partnerId?: string;
+      /** @description Optional client reference identifier for tracking purposes (alphanumeric, hyphens, and underscores only, max 255 chars) */
+      clientReferenceId?: string;
+      onramp?: components["schemas"]["Onramp"];
+      /**
+       * @description Optional address of the order creator
+       * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
+       */
+      creatorAddress?: string;
+    };
+    /** @description HypeDuel order request */
+    HypeDuelOrderRequest: {
+      /**
+       * @description Order type
+       * @enum {string}
+       */
+      type: "hype_duel";
+      /**
+       * @description Address to receive the destination tokens
+       * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
+       */
+      recipientAddress: string;
+      /**
+       * @description Source chain ID
+       * @example 1
+       */
+      srcChain: number;
+      /**
+       * @description Destination chain ID
+       * @example 8453
+       */
+      dstChain: number;
+      /**
+       * @description Source token contract address
+       * @example 0xA0b86a33E6441E8A91DEF8f5663ACb4C9B4a1234
+       */
+      srcTokenAddress: string;
+      /**
+       * @description Destination token contract address
+       * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+       */
+      dstTokenAddress: string;
+      /**
+       * @description Amount of source tokens for HypeDuel
+       * @example 1000000
+       */
+      srcAmount: string;
+      payload: components["schemas"]["HypeDuelPayload"];
+      metadata: components["schemas"]["HypeDuelMetadata"];
+      /** @description Optional partner identifier */
+      partnerId?: string;
+      /** @description Optional client reference identifier for tracking purposes (alphanumeric, hyphens, and underscores only, max 255 chars) */
+      clientReferenceId?: string;
+      onramp?: components["schemas"]["Onramp"];
+      /**
+       * @description Optional address of the order creator
+       * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
+       */
+      creatorAddress?: string;
+    };
+    /** @description Custom order request */
+    CustomOrderRequest: {
+      /**
+       * @description Order type
+       * @enum {string}
+       */
+      type: "custom";
+      /**
+       * @description Address to receive any tokens or execute transaction
+       * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
+       */
+      recipientAddress: string;
+      /**
+       * @description Source chain ID for payment
+       * @example 1
+       */
+      srcChain: number;
+      /**
+       * @description Destination chain ID where custom execution will occur
+       * @example 8453
+       */
+      dstChain: number;
+      /**
+       * @description Payment token contract address
+       * @example 0xA0b86a33E6441E8A91DEF8f5663ACb4C9B4a1234
+       */
+      srcTokenAddress: string;
+      /**
+       * @description Token to be used in custom execution
+       * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+       */
+      dstTokenAddress: string;
+      /**
+       * @description Payment amount
+       * @example 1000000
+       */
+      srcAmount: string;
+      payload: components["schemas"]["CustomPayload"];
+      metadata: components["schemas"]["CustomMetadata"];
+      /** @description Optional partner identifier */
+      partnerId?: string;
+      /** @description Optional client reference identifier for tracking purposes (alphanumeric, hyphens, and underscores only, max 255 chars) */
+      clientReferenceId?: string;
+      onramp?: components["schemas"]["Onramp"];
+      /**
+       * @description Optional address of the order creator
+       * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
+       */
+      creatorAddress?: string;
+    };
+    /** @description Custom exact in order request */
+    CustomExactInOrderRequest: {
+      /**
+       * @description Order type
+       * @enum {string}
+       */
+      type: "custom_exact_in";
+      /**
+       * @description Address to receive the destination tokens
+       * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
+       */
+      recipientAddress: string;
+      /**
+       * @description Source chain ID for payment
+       * @example 1
+       */
+      srcChain: number;
+      /**
+       * @description Destination chain ID where execution will occur
+       * @example 8453
+       */
+      dstChain: number;
+      /**
+       * @description Payment token contract address
+       * @example 0xA0b86a33E6441E8A91DEF8f5663ACb4C9B4a1234
+       */
+      srcTokenAddress: string;
+      /**
+       * @description Destination token contract address
+       * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+       */
+      dstTokenAddress: string;
+      /**
+       * @description Payment amount
+       * @example 1000000
+       */
+      srcAmount: string;
+      payload: components["schemas"]["CustomExactInPayload"];
+      metadata: components["schemas"]["CustomMetadata"];
+      /** @description Optional partner identifier */
+      partnerId?: string;
+      /** @description Optional client reference identifier for tracking purposes (alphanumeric, hyphens, and underscores only, max 255 chars) */
+      clientReferenceId?: string;
+      onramp?: components["schemas"]["Onramp"];
+      /**
+       * @description Optional address of the order creator
+       * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
+       */
+      creatorAddress?: string;
+    };
+    /** @description Mint NFT order request */
+    MintNftOrderRequest: {
+      /**
+       * @description Order type
+       * @enum {string}
+       */
+      type: "mint_nft";
+      /**
+       * @description Address to receive the NFT
+       * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
+       */
+      recipientAddress: string;
+      /**
+       * @description Source chain ID for payment
+       * @example 1
+       */
+      srcChain: number;
+      /**
+       * @description Destination chain ID where NFT exists
+       * @example 8453
+       */
+      dstChain: number;
+      /**
+       * @description Payment token contract address
+       * @example 0xA0b86a33E6441E8A91DEF8f5663ACb4C9B4a1234
+       */
+      srcTokenAddress: string;
+      /**
+       * @description NFT contract address
+       * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+       */
+      dstTokenAddress: string;
+      /**
+       * @description Payment amount
+       * @example 1000000
+       */
+      srcAmount: string;
+      payload: components["schemas"]["MintNftPayload"];
+      metadata: components["schemas"]["MintNftMetadata"];
+      /** @description Optional partner identifier */
+      partnerId?: string;
+      /** @description Optional client reference identifier for tracking purposes (alphanumeric, hyphens, and underscores only, max 255 chars) */
+      clientReferenceId?: string;
+      onramp?: components["schemas"]["Onramp"];
+      /**
+       * @description Optional address of the order creator
+       * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
+       */
+      creatorAddress?: string;
+    };
+    /** @description Join tournament order request */
+    JoinTournamentOrderRequest: {
+      /**
+       * @description Order type
+       * @enum {string}
+       */
+      type: "join_tournament";
+      /**
+       * @description Participant's address
+       * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
+       */
+      recipientAddress: string;
+      /**
+       * @description Source chain ID for payment
+       * @example 1
+       */
+      srcChain: number;
+      /**
+       * @description Destination chain for tournament contract
+       * @example 8453
+       */
+      dstChain: number;
+      /**
+       * @description Payment token contract address
+       * @example 0xA0b86a33E6441E8A91DEF8f5663ACb4C9B4a1234
+       */
+      srcTokenAddress: string;
+      /**
+       * @description Tournament contract address
+       * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+       */
+      dstTokenAddress: string;
+      /**
+       * @description Entry fee amount
+       * @example 1000000
+       */
+      srcAmount: string;
+      payload: components["schemas"]["JoinTournamentPayload"];
+      metadata: components["schemas"]["TournamentMetadata"];
+      /** @description Optional partner identifier */
+      partnerId?: string;
+      /** @description Optional client reference identifier for tracking purposes (alphanumeric, hyphens, and underscores only, max 255 chars) */
+      clientReferenceId?: string;
+      onramp?: components["schemas"]["Onramp"];
+      /**
+       * @description Optional address of the order creator
+       * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
+       */
+      creatorAddress?: string;
+    };
+    /** @description Fund tournament order request */
+    FundTournamentOrderRequest: {
+      /**
+       * @description Order type
+       * @enum {string}
+       */
+      type: "fund_tournament";
+      /**
+       * @description Funder's address
+       * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
+       */
+      recipientAddress: string;
+      /**
+       * @description Source chain ID for payment
+       * @example 1
+       */
+      srcChain: number;
+      /**
+       * @description Destination chain for tournament contract
+       * @example 8453
+       */
+      dstChain: number;
+      /**
+       * @description Payment token contract address
+       * @example 0xA0b86a33E6441E8A91DEF8f5663ACb4C9B4a1234
+       */
+      srcTokenAddress: string;
+      /**
+       * @description Tournament contract address
+       * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+       */
+      dstTokenAddress: string;
+      /**
+       * @description Funding amount
+       * @example 1000000
+       */
+      srcAmount: string;
+      payload: components["schemas"]["FundTournamentPayload"];
+      metadata: components["schemas"]["TournamentMetadata"];
+      /** @description Optional partner identifier */
+      partnerId?: string;
+      /** @description Optional client reference identifier for tracking purposes (alphanumeric, hyphens, and underscores only, max 255 chars) */
+      clientReferenceId?: string;
+      onramp?: components["schemas"]["Onramp"];
+      /**
+       * @description Optional address of the order creator
+       * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
+       */
+      creatorAddress?: string;
+    };
+    /** @description Deposit-first order request. The srcAmount is determined after deposit is detected, so it is not required at creation time. This flow does not support onramp - users deposit crypto directly. */
+    DepositFirstOrderRequest: {
+      /**
+       * @description Order type for deposit-first flow
+       * @enum {string}
+       */
+      type: "deposit_first";
+      /**
+       * @description Address to receive the destination tokens after swap
+       * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
+       */
+      recipientAddress: string;
+      /**
+       * @description Source chain ID where deposit will be made
+       * @example 8453
+       */
+      srcChain: number;
+      /**
+       * @description Destination chain ID for the swap
+       * @example 8453
+       */
+      dstChain: number;
+      /**
+       * @description Token contract address that will be deposited
+       * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+       */
+      srcTokenAddress: string;
+      /**
+       * @description Token contract address to receive after swap
+       * @example 0x0000000000000000000000000000000000000000
+       */
+      dstTokenAddress: string;
+      payload: components["schemas"]["DepositFirstPayload"];
+      metadata: components["schemas"]["DepositFirstMetadata"];
+      /** @description Optional partner identifier */
+      partnerId?: string;
+      /** @description Optional client reference identifier for tracking purposes (alphanumeric, hyphens, and underscores only, max 255 chars) */
+      clientReferenceId?: string;
+      /**
+       * @description Optional address of the order creator
+       * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
+       */
+      creatorAddress?: string;
+    };
+    OrderRequest:
+      | components["schemas"]["SwapOrderRequest"]
+      | components["schemas"]["X402SwapOrderRequest"]
+      | components["schemas"]["HypeDuelOrderRequest"]
+      | components["schemas"]["CustomOrderRequest"]
+      | components["schemas"]["CustomExactInOrderRequest"]
+      | components["schemas"]["MintNftOrderRequest"]
+      | components["schemas"]["JoinTournamentOrderRequest"]
+      | components["schemas"]["FundTournamentOrderRequest"]
+      | components["schemas"]["DepositFirstOrderRequest"];
+    /** @description Deposit transaction (payment from user) */
+    DepositTx: {
+      /**
+       * Format: uuid
+       * @description Associated order ID
+       * @example 5392f7a7-d472-4d6b-9848-bd07117fb82d
+       */
+      orderId: string;
+      /**
+       * @description Chain where transaction occurred
+       * @example 8453
+       */
+      chain: number;
+      /**
+       * @description Sender address (can be null)
+       * @example 0xa7539e73700B1726aBA29526606442A491Ef5747
+       */
+      from?: string | null;
+      /**
+       * @description Transaction hash
+       * @example 0x60ece99a645201668d20db6775a6b3d30967433ff0750b356cdad46d3e13f9c8
+       */
+      txHash: string;
+      /**
+       * @description Transaction amount
+       * @example 93354000
+       */
+      amount: string;
+      /**
+       * @description Transaction timestamp
+       * @example 1752505811105
+       */
+      createdAt: number;
+    };
+    /**
+     * @description Relay transaction status
+     * @enum {string}
+     */
+    RelayStatus: "pending" | "success" | "failure" | "refund" | "delayed" | "waiting";
+    /** @description Cross-chain relay transaction */
+    RelayTx: {
+      /**
+       * Format: uuid
+       * @description Associated order ID
+       * @example 5392f7a7-d472-4d6b-9848-bd07117fb82d
+       */
+      orderId: string;
+      /**
+       * @description Chain where relay occurred
+       * @example 8453
+       */
+      chain: number;
+      /**
+       * @description Relay transaction hash
+       * @example 0x9df917e14bb089f74763d1d2662761d75c97a5a068b8a9e411c3d384c9c40d19
+       */
+      txHash: string;
+      /** @example success */
+      status: components["schemas"]["RelayStatus"];
+      /**
+       * @description Relay timestamp
+       * @example 1752505817654
+       */
+      createdAt: number;
+    };
+    /** @description Final execution transaction */
+    ExecuteTx: {
+      /**
+       * Format: uuid
+       * @description Associated order ID
+       * @example 5392f7a7-d472-4d6b-9848-bd07117fb82d
+       */
+      orderId: string;
+      /**
+       * @description Chain where execution occurred
+       * @example 8453
+       */
+      chain: number;
+      /**
+       * @description Execution transaction hash
+       * @example 0x1234567890abcdef1234567890abcdef12345678
+       */
+      txHash: string;
+      /**
+       * @description Execution timestamp
+       * @example 1752505820000
+       */
+      createdAt: number;
+    };
+    /** @description Refund transaction if order failed */
+    RefundTx: {
+      /**
+       * Format: uuid
+       * @description Associated order ID
+       * @example 5392f7a7-d472-4d6b-9848-bd07117fb82d
+       */
+      orderId: string;
+      /**
+       * @description Chain where refund occurred
+       * @example 8453
+       */
+      chain: number;
+      /**
+       * @description Refund transaction hash
+       * @example 0xabcdef1234567890abcdef1234567890abcdef12
+       */
+      txHash: string;
+      /**
+       * @description Refunded amount
+       * @example 93354000
+       */
+      amount: string;
+      /**
+       * @description Refund status
+       * @example success
+       * @enum {string}
+       */
+      status: "success" | "failure";
+      /**
+       * @description Refund timestamp
+       * @example 1752505825000
+       */
+      createdAt: number;
+    };
+    /** @description Points awarded for an order */
+    OrderPointsTransaction: {
+      /**
+       * @description Unique identifier for the points transaction
+       * @example points_123
+       */
+      id: string;
+      /**
+       * @description Timestamp associated with the points event
+       * @example 2025-07-12T19:23:45.000Z
+       */
+      time: string;
+      /**
+       * @description Address that received the points
+       * @example 0x58241893EF1f86C9fBd8109Cd44Ea961fDb474e1
+       */
+      userAddress: string;
+      /**
+       * @description Associated order ID
+       * @example 5392f7a7-d472-4d6b-9848-bd07117fb82d
+       */
+      orderId: string;
+      /**
+       * @description USD notional used for points calculation
+       * @example 125.75
+       */
+      usdValue: number;
+      /**
+       * @description Order type associated with the points
+       * @example swap
+       */
+      orderType: string;
+      /**
+       * @description Points multiplier that was applied
+       * @example 1.5
+       */
+      multiplier: number;
+      /**
+       * @description Total points awarded
+       * @example 100
+       */
+      points: number;
+    };
+    ComprehensiveExecuteTx: components["schemas"]["ExecuteTx"] & {
+      /**
+       * @description Execution status reported by the system
+       * @example success
+       */
+      status: string;
+    };
+    /** @description Full order detail including all associated transactions and points */
+    ComprehensiveOrderDetail: {
+      order: components["schemas"]["Order"];
+      depositTxs: components["schemas"]["DepositTx"][];
+      relayTxs: components["schemas"]["RelayTx"][];
+      executeTx: components["schemas"]["ComprehensiveExecuteTx"] | null;
+      refundTxs: components["schemas"]["RefundTx"][];
+      points: components["schemas"]["OrderPointsTransaction"] | null;
+    };
+    ComprehensiveOrderResponse: {
+      /** @example true */
+      success: boolean;
+      /** @example Get comprehensive order detail successfully */
+      message: string;
+      data: components["schemas"]["ComprehensiveOrderDetail"];
+      /** @example 200 */
+      statusCode: number;
+    };
+    /** @description NFT contract details */
+    NftContract: {
+      /**
+       * @description Chain ID where the NFT contract exists
+       * @example 8453
+       */
+      chainId: number;
+      /**
+       * @description NFT contract address
+       * @example 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+       */
+      contractAddress: string;
+      /**
+       * @description NFT price in raw format
+       * @example 1000000
+       */
+      price: string;
+      /**
+       * @description Human-readable formatted price
+       * @example 1.0
+       */
+      priceFormatted: string;
+      currency: components["schemas"]["Token"];
+      /**
+       * @description NFT image URL
+       * @example https://example.com/nft.png
+       */
+      imageUrl: string;
+      /**
+       * @description NFT name
+       * @example Cool NFT Collection
+       */
+      name: string;
+      /**
+       * @description NFT description
+       * @example A collection of very cool NFTs
+       */
+      description: string;
+      /**
+       * @description Token ID (null for ERC721, specific ID for ERC1155)
+       * @example 1
+       */
+      tokenId: number | null;
+      /**
+       * @description NFT contract type
+       * @example erc721
+       * @enum {string}
+       */
+      type: "erc721" | "erc1155";
+    };
+    StripeWeb2Support:
+      | {
+          /**
+           * @example false
+           * @constant
+           */
+          isSupport: false;
+        }
+      | {
+          /**
+           * @example true
+           * @constant
+           */
+          isSupport: true;
+          /**
+           * @description Total payment amount formatted in USD
+           * @example 10.00
+           */
+          formattedTotalUsd: string;
+          /**
+           * @description Onramp amount formatted in USD
+           * @example 9.50
+           */
+          formattedOnrampUsd: string;
+          /**
+           * @description Stripe fee formatted in USD
+           * @example 0.50
+           */
+          formattedFeeUsd: string;
+        };
+    Fee:
+      | {
+          /**
+           * @description Fee type identifier
+           * @enum {string}
+           */
+          type: "standard_fee";
+          /**
+           * @description Fee version number
+           * @example 1
+           */
+          feeVersion: number;
+          /**
+           * @description Token contract address used to check balance for whale discount (B3 token)
+           * @example 0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3
+           */
+          tokenToCheckBalance: string;
+          /**
+           * @description Recipient's B3 token balance
+           * @example 302843673392800000000000
+           */
+          recipientBalance: string;
+          /**
+           * @description AnySpend base fee in basis points before discounts
+           * @example 80
+           */
+          anyspendFeeBps: number;
+          /**
+           * @description Whale discount in basis points based on B3 balance
+           * @example 5000
+           */
+          anyspendWhaleDiscountBps: number;
+          /**
+           * @description Partner discount in basis points
+           * @example 0
+           */
+          anyspendPartnerDiscountBps: number;
+          /**
+           * @description Final fee in basis points after all discounts applied
+           * @example 40
+           */
+          finalFeeBps: number;
+        }
+      | {
+          /**
+           * @description Fee type identifier
+           * @enum {string}
+           */
+          type: "stripeweb2_fee";
+          /**
+           * @description Fee version number
+           * @example 1
+           */
+          feeVersion: number;
+          /**
+           * @description Token contract address used to check balance for whale discount (B3 token)
+           * @example 0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3
+           */
+          tokenToCheckBalance: string;
+          /**
+           * @description Recipient's B3 token balance
+           * @example 302843673392800000000000
+           */
+          recipientBalance: string;
+          /**
+           * @description Stripe fee percentage in basis points (5.4%)
+           * @example 540
+           */
+          stripeFeeBps: number;
+          /**
+           * @description Stripe fixed fee in USD
+           * @example 0.3
+           */
+          stripeFeeUsd: number;
+          /**
+           * @description AnySpend base fee in basis points before discounts
+           * @example 80
+           */
+          anyspendFeeBps: number;
+          /**
+           * @description AnySpend fixed fee in USD before discounts
+           * @example 0
+           */
+          anyspendFeeUsd: number;
+          /**
+           * @description Whale discount in basis points based on B3 balance
+           * @example 5000
+           */
+          anyspendWhaleDiscountBps: number;
+          /**
+           * @description Partner discount in basis points
+           * @example 0
+           */
+          anyspendPartnerDiscountBps: number;
+          /**
+           * @description Final combined fee percentage in basis points after all discounts
+           * @example 580
+           */
+          finalFeeBps: number;
+          /**
+           * @description Final combined fixed fee in USD after all discounts
+           * @example 0.3
+           */
+          finalFeeUsd: number;
+          /**
+           * @description Original amount before fees in USDC units (6 decimals)
+           * @example 10000000
+           */
+          originalAmount: string;
+          /**
+           * @description Final amount after applying all fees in USDC units (6 decimals)
+           * @example 9120000
+           */
+          finalAmount: string;
+        };
+  };
+  responses: never;
+  parameters: never;
+  requestBodies: never;
+  headers: never;
+  pathItems: never;
 }
 export type $defs = Record<string, never>;
 export type operations = Record<string, never>;
