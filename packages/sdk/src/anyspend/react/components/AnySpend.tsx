@@ -375,14 +375,14 @@ function AnySpendInner({
   // Prefill destination amount if provided (for fixed amount mode)
   const appliedDestinationAmount = useRef(false);
   useEffect(() => {
-    if (destinationTokenAmount && !appliedDestinationAmount.current) {
+    // Only apply when we have real metadata (not default decimals)
+    if (destinationTokenAmount && dstTokenMetadata?.decimals && !appliedDestinationAmount.current) {
       appliedDestinationAmount.current = true;
-      // Convert wei to human-readable format
-      const formattedAmount = formatUnits(BigInt(destinationTokenAmount), selectedDstToken.decimals);
+      const formattedAmount = formatUnits(BigInt(destinationTokenAmount), dstTokenMetadata.decimals);
       setDstAmount(formattedAmount);
       setIsSrcInputDirty(false); // Switch to EXACT_OUTPUT mode
     }
-  }, [destinationTokenAmount, selectedDstToken.decimals]);
+  }, [destinationTokenAmount, dstTokenMetadata?.decimals]);
 
   // Load swap configuration from URL on initial render
   useEffect(() => {
