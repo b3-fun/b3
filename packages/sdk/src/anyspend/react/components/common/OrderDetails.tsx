@@ -493,6 +493,15 @@ export const OrderDetails = memo(function OrderDetails({
     }
   }, [isPayableState, isComponentReady, handlePayment]);
 
+  // Auto-redirect to redirectUrl when order is executed (for stripe-web2 orders)
+  useEffect(() => {
+    if (order.status === "executed" && order.onrampMetadata?.redirectUrl) {
+      const redirectUrl = `${order.onrampMetadata.redirectUrl.replace(/\/$/, "")}/${order.id}`;
+      console.log("@@order-details:auto-redirect-on-executed:", redirectUrl);
+      window.location.href = redirectUrl;
+    }
+  }, [order.status, order.onrampMetadata?.redirectUrl, order.id]);
+
   if (!srcToken || !dstToken) {
     return <div>Loading...</div>;
   }
