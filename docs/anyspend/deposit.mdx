@@ -1,0 +1,139 @@
+---
+title: "Deposit"
+description: "Enable users to deposit tokens to a specific wallet address on any supported chain."
+---
+
+## What It Does
+
+The AnySpend Deposit page provides a streamlined interface for users to deposit tokens to a specific recipient wallet address. It supports cross-chain deposits, allowing users to pay with tokens from any supported chain while the recipient receives funds on their desired destination chain and token.
+
+This feature is designed for integration with dApps, bots, and services that need to receive token deposits from users.
+
+## How It Works
+
+1. **Deep Link Generation**\
+   Your application generates a deposit URL with the recipient address, destination chain, and token.
+2. **User Connects Wallet**\
+   The user connects their wallet (MetaMask, Coinbase, Rainbow, Rabby, Trust Wallet, etc.).
+3. **Token Selection**\
+   The user selects which token they want to pay with from their available balances.
+4. **Cross-Chain Execution**\
+   AnySpend handles the cross-chain routing and conversion to deliver the specified token to the recipient.
+5. **Confirmation & Redirect**\
+   After completion, users can be redirected back to your application.
+
+## URL Parameters
+
+The deposit page accepts the following URL parameters:
+
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `recipientAddress` | Yes | The wallet address to receive the deposit (valid EVM address) |
+| `toChainId` | Yes* | The destination chain ID (e.g., 8453 for Base) |
+| `toCurrency` | Yes* | The token contract address on the destination chain |
+| `amount` | No | Fixed amount in wei/smallest unit. When provided, user cannot change the amount |
+| `redirect_url` | No | HTTPS URL to redirect after completion |
+| `redirect_label` | No | Custom label for the redirect button |
+| `partner` | No | Partner ID for custom configuration |
+
+\* Not required for Hyperliquid chain where USDC is the default token.
+
+## Example URLs
+
+**Basic deposit to Base USDC:**
+```
+/deposit?recipientAddress=0x1234...&toChainId=8453&toCurrency=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+```
+
+**Fixed amount deposit:**
+```
+/deposit?recipientAddress=0x1234...&toChainId=8453&toCurrency=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&amount=1000000
+```
+
+**With redirect:**
+```
+/deposit?recipientAddress=0x1234...&toChainId=8453&toCurrency=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&redirect_url=https://yourapp.com/success&redirect_label=Return to App
+```
+
+## Supported Wallets
+
+The deposit page supports the following wallets out of the box:
+
+- MetaMask
+- Coinbase Wallet
+- Rainbow
+- Rabby
+- Trust Wallet
+
+Auto-connect is enabled for returning users who have previously connected their wallet.
+
+## Special Chain Support
+
+### Hyperliquid
+
+The deposit page includes special support for Hyperliquid chain:
+
+- USDC uses a special 34-character address format (`0x00000000000000000000000000000000`)
+- When `toChainId` is set to Hyperliquid, `toCurrency` defaults to USDC if not specified
+- Zero addresses are automatically corrected to the Hyperliquid USDC format
+
+## Partner Integration
+
+Partners can be configured with custom settings:
+
+```typescript
+interface PartnerConfig {
+  returnToHomeUrl?: string;      // Default redirect URL
+  customRecipientLabel?: string; // Custom label for the recipient
+  returnHomeLabel?: string;      // Custom label for return button
+}
+```
+
+To register as a partner, contact the AnySpend team to add your configuration.
+
+## Security
+
+The deposit page includes built-in security measures:
+
+- **Redirect URL Validation**: Only HTTPS URLs are allowed for redirects to prevent open redirect attacks
+- **Amount Validation**: Amounts must be valid positive integers (wei values)
+- **Address Validation**: Recipient and token addresses are validated before processing
+
+## Common Use Cases
+
+- **Telegram Bots**: Let users fund their bot wallets through a simple link
+- **Gaming**: Enable players to deposit tokens to game accounts
+- **Marketplaces**: Allow buyers to fund escrow addresses
+- **Subscription Services**: Collect recurring payments to a service wallet
+- **Tipping**: Enable tipping creators with a shareable deposit link
+
+## Integration Example
+
+Here's how to generate a deposit link in your application:
+
+```typescript
+function generateDepositLink({
+  recipientAddress,
+  chainId,
+  tokenAddress,
+  amount,
+  redirectUrl,
+}: {
+  recipientAddress: string;
+  chainId: number;
+  tokenAddress: string;
+  amount?: string;
+  redirectUrl?: string;
+}) {
+  const params = new URLSearchParams({
+    recipientAddress,
+    toChainId: chainId.toString(),
+    toCurrency: tokenAddress,
+  });
+
+  if (amount) params.set("amount", amount);
+  if (redirectUrl) params.set("redirect_url", redirectUrl);
+
+  return `https://anyspend.b3.fun/deposit?${params.toString()}`;
+}
+```
