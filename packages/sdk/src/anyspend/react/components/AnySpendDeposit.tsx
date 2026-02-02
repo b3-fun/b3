@@ -121,6 +121,8 @@ export interface AnySpendDepositProps {
   classes?: AnySpendAllClasses;
   /** When true, allows direct transfer without swap if source and destination token/chain are the same */
   allowDirectTransfer?: boolean;
+  /** Fixed destination token amount (in wei/smallest unit). When provided, user cannot change the amount. */
+  destinationTokenAmount?: string;
 }
 
 // Default supported chains
@@ -245,6 +247,7 @@ export function AnySpendDeposit({
   isCustomDeposit = false,
   classes,
   allowDirectTransfer = false,
+  destinationTokenAmount,
 }: AnySpendDepositProps) {
   // Extract deposit-specific classes for convenience
   const depositClasses = classes?.deposit;
@@ -693,6 +696,7 @@ export function AnySpendDeposit({
             returnHomeLabel={returnHomeLabel}
             classes={classes?.customExactIn}
             allowDirectTransfer={allowDirectTransfer}
+            destinationTokenAmount={destinationTokenAmount}
           />
         ) : (
           <AnySpend
