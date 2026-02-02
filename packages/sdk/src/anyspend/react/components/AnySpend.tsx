@@ -382,7 +382,7 @@ function AnySpendInner({
       setDstAmount(formattedAmount);
       setIsSrcInputDirty(false); // Switch to EXACT_OUTPUT mode
     }
-  }, [destinationTokenAmount, dstTokenMetadata?.decimals]);
+  }, [destinationTokenAmount, dstTokenMetadata]);
 
   // Load swap configuration from URL on initial render
   useEffect(() => {
@@ -681,9 +681,12 @@ function AnySpendInner({
       anyspendQuote.data.currencyOut?.currency?.decimals
     ) {
       if (isSrcInputDirty) {
-        const amount = anyspendQuote.data.currencyOut.amount;
-        const decimals = anyspendQuote.data.currencyOut.currency.decimals;
-        setDstAmount(formatTokenAmount(BigInt(amount), decimals, 6, false));
+        // Don't override dstAmount if we have a fixed destinationTokenAmount
+        if (!destinationTokenAmount) {
+          const amount = anyspendQuote.data.currencyOut.amount;
+          const decimals = anyspendQuote.data.currencyOut.currency.decimals;
+          setDstAmount(formatTokenAmount(BigInt(amount), decimals, 6, false));
+        }
       } else {
         const amount = anyspendQuote.data.currencyIn.amount;
         const decimals = anyspendQuote.data.currencyIn.currency.decimals;
@@ -691,12 +694,15 @@ function AnySpendInner({
       }
     } else {
       if (isSrcInputDirty) {
-        setDstAmount("");
+        // Don't reset dstAmount if we have a fixed destinationTokenAmount
+        if (!destinationTokenAmount) {
+          setDstAmount("");
+        }
       } else {
         setSrcAmount("");
       }
     }
-  }, [anyspendQuote, isSrcInputDirty]);
+  }, [anyspendQuote, isSrcInputDirty, destinationTokenAmount]);
 
   useEffect(() => {
     if (oat?.data?.order.status === "executed" && !onSuccessCalled.current) {

@@ -222,14 +222,13 @@ function AnySpendCustomExactInInner({
   // Prefill destination amount if provided (for EXACT_OUTPUT mode)
   const appliedDestinationAmount = useRef(false);
   useEffect(() => {
-    if (destinationTokenAmount && !appliedDestinationAmount.current) {
+    if (destinationTokenAmount && destinationToken?.decimals && !appliedDestinationAmount.current) {
       appliedDestinationAmount.current = true;
-      // Convert wei to human-readable format
       const formattedAmount = formatUnits(destinationTokenAmount, destinationToken.decimals);
       setDstAmountInput(formattedAmount);
       setIsSrcInputDirty(false); // Switch to EXACT_OUTPUT mode
     }
-  }, [destinationTokenAmount, destinationToken.decimals, setDstAmountInput, setIsSrcInputDirty]);
+  }, [destinationTokenAmount, destinationToken, setDstAmountInput, setIsSrcInputDirty]);
 
   const selectedRecipientOrDefault = selectedRecipientAddress ?? recipientAddress;
 
