@@ -32,6 +32,8 @@ interface CryptoPaySectionProps {
   onShowFeeDetail?: () => void;
   // Custom classes for styling
   classes?: CryptoPaySectionClasses;
+  /** When true, skip auto-setting max balance when token changes (used for fixed destination amount mode) */
+  skipAutoMaxOnTokenChange?: boolean;
 }
 
 export function CryptoPaySection({
@@ -49,6 +51,7 @@ export function CryptoPaySection({
   onTokenSelect,
   onShowFeeDetail,
   classes,
+  skipAutoMaxOnTokenChange = false,
 }: CryptoPaySectionProps) {
   const { data: srcTokenMetadata } = useTokenData(selectedSrcToken?.chainId, selectedSrcToken?.address);
 
@@ -134,6 +137,7 @@ export function CryptoPaySection({
           token={selectedSrcToken}
           setToken={setSelectedSrcToken}
           onTokenSelect={onTokenSelect}
+          skipAutoMaxOnTokenChange={skipAutoMaxOnTokenChange}
         />
       </div>
       <div className={classes?.balanceRow || "flex items-center justify-between"}>

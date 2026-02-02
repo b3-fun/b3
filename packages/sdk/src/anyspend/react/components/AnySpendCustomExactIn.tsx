@@ -418,6 +418,7 @@ function AnySpendCustomExactInInner({
               onSelectCryptoPaymentMethod={() => setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD)}
               anyspendQuote={anyspendQuote}
               onTokenSelect={onTokenSelect}
+              skipAutoMaxOnTokenChange={!!destinationTokenAmount}
             />
           ) : (
             <motion.div
