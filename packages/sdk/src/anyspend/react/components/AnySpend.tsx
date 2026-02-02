@@ -375,6 +375,7 @@ function AnySpendInner({
   // Prefill destination amount if provided (for fixed amount mode)
   const appliedDestinationAmount = useRef(false);
   useEffect(() => {
+    // Only apply when we have real metadata (not default decimals)
     if (destinationTokenAmount && dstTokenMetadata?.decimals && !appliedDestinationAmount.current) {
       appliedDestinationAmount.current = true;
       const formattedAmount = formatUnits(BigInt(destinationTokenAmount), dstTokenMetadata.decimals);
