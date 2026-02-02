@@ -486,6 +486,7 @@ function AnySpendCustomExactInInner({
                 setIsSrcInputDirty(false);
                 setDstAmountInput(value);
               }}
+              disableAmountInput={!!destinationTokenAmount}
               anyspendQuote={isDirectTransfer ? undefined : anyspendQuote}
               onShowPointsDetail={isDirectTransfer ? undefined : () => setActivePanel(PanelView.POINTS_DETAIL)}
               onShowFeeDetail={isDirectTransfer ? undefined : () => setActivePanel(PanelView.FEE_DETAIL)}

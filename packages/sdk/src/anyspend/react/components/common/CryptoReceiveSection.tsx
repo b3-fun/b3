@@ -27,6 +27,8 @@ interface CryptoReceiveSectionProps {
   setSelectedDstToken?: (token: components["schemas"]["Token"]) => void;
   isSrcInputDirty: boolean;
   onChangeDstAmount?: (value: string) => void;
+  /** Whether the destination amount input is disabled */
+  disableAmountInput?: boolean;
   // Quote data
   anyspendQuote?: any;
   // custom dst token data
@@ -54,6 +56,7 @@ export function CryptoReceiveSection({
   setSelectedDstToken,
   isSrcInputDirty,
   onChangeDstAmount,
+  disableAmountInput,
   anyspendQuote,
   dstTokenSymbol,
   dstTokenLogoURI,
@@ -148,6 +151,7 @@ export function CryptoReceiveSection({
             setChainId={setSelectedDstChainId || (() => {})}
             token={dstToken}
             setToken={setSelectedDstToken || (() => {})}
+            disabled={disableAmountInput}
           />
         </div>
       )}
