@@ -474,7 +474,7 @@ function AnySpendCustomExactInInner({
               recipientName={recipientName || undefined}
               customRecipientLabel={customRecipientLabel}
               onSelectRecipient={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
-              dstAmount={isSrcInputDirty ? dstAmount : dstAmountInput}
+              dstAmount={isSrcInputDirty && !destinationTokenAmount ? dstAmount : dstAmountInput}
               dstToken={selectedDstToken}
               dstTokenSymbol={DESTINATION_TOKEN_DETAILS.SYMBOL}
               dstTokenLogoURI={DESTINATION_TOKEN_DETAILS.LOGO_URI}
