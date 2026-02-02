@@ -32,6 +32,7 @@ export function OrderTokenAmount({
   tokenSelectClassName,
   onTokenSelect,
   walletAddress,
+  skipAutoMaxOnTokenChange = false,
 }: {
   disabled?: boolean;
   inputValue: string;
@@ -50,6 +51,8 @@ export function OrderTokenAmount({
   tokenSelectClassName?: string;
   onTokenSelect?: (token: components["schemas"]["Token"], event: { preventDefault: () => void }) => void;
   walletAddress?: string | undefined;
+  /** When true, skip auto-setting max balance when token changes (used for fixed destination amount mode) */
+  skipAutoMaxOnTokenChange?: boolean;
 }) {
   // Track previous token to detect changes
   const prevTokenRef = useRef<string>(token.address);
@@ -63,6 +66,12 @@ export function OrderTokenAmount({
   useEffect(() => {
     // Only handle "from" context
     if (context !== "from") return;
+
+    // Skip auto-max when in fixed destination amount mode
+    if (skipAutoMaxOnTokenChange) {
+      prevTokenRef.current = token.address;
+      return;
+    }
 
     // Check if token changed or if this is the initial load with balance
     const isTokenChanged = prevTokenRef.current !== token.address;
@@ -88,7 +97,16 @@ export function OrderTokenAmount({
       // Update refs
       prevTokenRef.current = token.address;
     }
-  }, [token.address, token.chainId, token.decimals, chainId, context, onChangeInput, rawBalance]);
+  }, [
+    token.address,
+    token.chainId,
+    token.decimals,
+    chainId,
+    context,
+    onChangeInput,
+    rawBalance,
+    skipAutoMaxOnTokenChange,
+  ]);
 
   const handleTokenSelect = (newToken: any) => {
     const token: components["schemas"]["Token"] = {
