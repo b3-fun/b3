@@ -45,7 +45,7 @@ import invariant from "invariant";
 import { ArrowDown, CheckCircle, HistoryIcon, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { parseUnits } from "viem";
+import { formatUnits, parseUnits } from "viem";
 import { base, mainnet } from "viem/chains";
 import { components } from "../../types/api";
 import { useAutoSelectCryptoPaymentMethod } from "../hooks/useAutoSelectCryptoPaymentMethod";
@@ -124,6 +124,8 @@ export function AnySpend(props: {
   classes?: AnySpendClasses;
   /** When true, allows direct transfer without swap if source and destination token/chain are the same */
   allowDirectTransfer?: boolean;
+  /** Fixed destination token amount (in wei/smallest unit). When provided, user cannot change the amount. */
+  destinationTokenAmount?: string;
 }) {
   const fingerprintConfig = getFingerprintConfig();
 
@@ -155,6 +157,7 @@ function AnySpendInner({
   returnHomeLabel,
   classes,
   allowDirectTransfer = false,
+  destinationTokenAmount,
 }: {
   sourceChainId?: number;
   destinationTokenAddress?: string;
@@ -175,6 +178,7 @@ function AnySpendInner({
   returnHomeLabel?: string;
   classes?: AnySpendClasses;
   allowDirectTransfer?: boolean;
+  destinationTokenAmount?: string;
 }) {
   const searchParams = useSearchParamsSSR();
   const router = useRouter();
@@ -367,6 +371,18 @@ function AnySpendInner({
   useEffect(() => {
     appliedDstMetadataRef.current = false;
   }, [selectedDstToken.address, selectedDstToken.chainId]);
+
+  // Prefill destination amount if provided (for fixed amount mode)
+  const appliedDestinationAmount = useRef(false);
+  useEffect(() => {
+    if (destinationTokenAmount && !appliedDestinationAmount.current) {
+      appliedDestinationAmount.current = true;
+      // Convert wei to human-readable format
+      const formattedAmount = formatUnits(BigInt(destinationTokenAmount), selectedDstToken.decimals);
+      setDstAmount(formattedAmount);
+      setIsSrcInputDirty(false); // Switch to EXACT_OUTPUT mode
+    }
+  }, [destinationTokenAmount, selectedDstToken.decimals]);
 
   // Load swap configuration from URL on initial render
   useEffect(() => {
@@ -1306,6 +1322,7 @@ function AnySpendInner({
                 setIsSrcInputDirty(false);
                 setDstAmount(value);
               }}
+              disableAmountInput={!!destinationTokenAmount}
               anyspendQuote={isDirectTransfer ? undefined : anyspendQuote}
               onShowPointsDetail={
                 isDirectTransfer ? undefined : () => navigateToPanel(PanelView.POINTS_DETAIL, "forward")

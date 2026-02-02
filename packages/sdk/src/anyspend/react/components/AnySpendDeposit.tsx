@@ -719,6 +719,7 @@ export function AnySpendDeposit({
             returnHomeLabel={returnHomeLabel}
             classes={classes?.anySpend}
             allowDirectTransfer={allowDirectTransfer}
+            destinationTokenAmount={destinationTokenAmount}
           />
         )}
       </div>
