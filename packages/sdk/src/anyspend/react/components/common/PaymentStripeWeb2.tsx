@@ -159,10 +159,10 @@ function StripePaymentForm({
         JSON.stringify({ orderId: order.id, paymentIntentId: result.paymentIntent.id }, null, 2),
       );
 
-      // Payment succeeded without redirect - handle success in the modal
+      // Payment succeeded
       setMessage(null);
 
-      // Add waitingForDeposit=true to query params
+      // Stay on page and show waiting state (redirect will happen in OrderDetails when order is executed)
       const currentUrl = new URL(window.location.href);
       currentUrl.searchParams.set("waitingForDeposit", "true");
       window.history.replaceState(null, "", currentUrl.toString());

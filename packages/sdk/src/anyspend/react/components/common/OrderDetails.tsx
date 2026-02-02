@@ -493,6 +493,25 @@ export const OrderDetails = memo(function OrderDetails({
     }
   }, [isPayableState, isComponentReady, handlePayment]);
 
+  // Auto-redirect to redirectUrl when order is executed (for onramp orders)
+  useEffect(() => {
+    if (order.status === "executed" && order.onrampMetadata?.redirectUrl) {
+      const baseUrl = order.onrampMetadata.redirectUrl;
+      try {
+        const url = new URL(baseUrl);
+        // Prevent Open Redirect vulnerabilities by ensuring the protocol is http or https
+        if (url.protocol !== "http:" && url.protocol !== "https:") {
+          console.error(`Attempted redirect to a URL with an invalid protocol: ${url.protocol}`);
+          return;
+        }
+        const redirectUrl = `${baseUrl.replace(/\/$/, "")}/${order.id}`;
+        window.location.href = redirectUrl;
+      } catch (error) {
+        console.error("Invalid redirect URL provided:", baseUrl, error);
+      }
+    }
+  }, [order.status, order.onrampMetadata?.redirectUrl, order.id]);
+
   if (!srcToken || !dstToken) {
     return <div>Loading...</div>;
   }
