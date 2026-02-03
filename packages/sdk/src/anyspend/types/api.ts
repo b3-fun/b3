@@ -5,12 +5,6 @@
 
 export interface paths {
   "/chains/{chainId}/tokens": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
     /**
      * Get tokens for a chain
      * @description Retrieves available tokens for a specific blockchain
@@ -26,7 +20,6 @@ export interface paths {
           /** @description Maximum number of tokens to return */
           limit?: number;
         };
-        header?: never;
         path: {
           /**
            * @description Blockchain chain ID
@@ -34,15 +27,10 @@ export interface paths {
            */
           chainId: number;
         };
-        cookie?: never;
       };
-      requestBody?: never;
       responses: {
         /** @description Tokens retrieved successfully */
         200: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example true */
@@ -73,9 +61,6 @@ export interface paths {
         };
         /** @description Bad request */
         400: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example false */
@@ -89,21 +74,8 @@ export interface paths {
         };
       };
     };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
   };
   "/onramp/coinbase/options": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
     /**
      * Get Coinbase onramp options
      * @description Retrieves available Coinbase onramp configuration options.
@@ -140,17 +112,10 @@ export interface paths {
            */
           chainIds?: string[];
         };
-        header?: never;
-        path?: never;
-        cookie?: never;
       };
-      requestBody?: never;
       responses: {
         /** @description Coinbase options retrieved successfully */
         200: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example true */
@@ -253,9 +218,6 @@ export interface paths {
         };
         /** @description Bad request */
         400: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example false */
@@ -269,34 +231,13 @@ export interface paths {
         };
       };
     };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
   };
   "/onramp/coinbase/session-token": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
     /**
      * Create Coinbase session token
      * @description Generates a Coinbase Onramp session token that can be reused when constructing buy URLs.
      */
     post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
       requestBody: {
         content: {
           "application/json": components["schemas"]["CoinbaseSessionTokenRequest"];
@@ -305,18 +246,12 @@ export interface paths {
       responses: {
         /** @description Session token created successfully */
         200: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": components["schemas"]["CoinbaseSessionTokenResponse"];
           };
         };
         /** @description Bad request */
         400: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example false */
@@ -330,32 +265,13 @@ export interface paths {
         };
       };
     };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
   };
   "/onramp/coinbase/onramp-url": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
     /**
      * Create Coinbase onramp URL
      * @description Creates a Coinbase Onramp buy URL and optionally returns a session token for reuse.
      */
     post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
       requestBody: {
         content: {
           "application/json": components["schemas"]["CoinbaseOnrampUrlRequest"];
@@ -364,18 +280,12 @@ export interface paths {
       responses: {
         /** @description Onramp URL created successfully */
         200: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": components["schemas"]["CoinbaseOnrampUrlResponse"];
           };
         };
         /** @description Bad request */
         400: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example false */
@@ -389,32 +299,13 @@ export interface paths {
         };
       };
     };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
   };
   "/onramp/coinbase/direct-url": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
     /**
      * Generate direct Coinbase onramp URL
      * @description Generates a direct Coinbase Onramp URL along with the session token backing it.
      */
     post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
       requestBody: {
         content: {
           "application/json": components["schemas"]["CoinbaseDirectOnrampRequest"];
@@ -423,18 +314,12 @@ export interface paths {
       responses: {
         /** @description Direct onramp URL generated successfully */
         200: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": components["schemas"]["CoinbaseDirectOnrampResponse"];
           };
         };
         /** @description Bad request */
         400: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example false */
@@ -448,19 +333,8 @@ export interface paths {
         };
       };
     };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
   };
   "/onramp/stripe/supported": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
     /**
      * Check Stripe support
      * @description Checks if Stripe onramp and Stripe Web2 are supported based on IP address location and optional transaction amount
@@ -474,17 +348,10 @@ export interface paths {
            */
           usdAmount?: string;
         };
-        header?: never;
-        path?: never;
-        cookie?: never;
       };
-      requestBody?: never;
       responses: {
         /** @description Stripe support status retrieved successfully */
         200: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example true */
@@ -507,9 +374,6 @@ export interface paths {
         };
         /** @description Bad request */
         400: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example false */
@@ -523,21 +387,8 @@ export interface paths {
         };
       };
     };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
   };
   "/orders": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
     /**
      * Get orders by creator
      * @description Retrieves all orders created by a specific address
@@ -561,17 +412,10 @@ export interface paths {
            */
           offset?: string;
         };
-        header?: never;
-        path?: never;
-        cookie?: never;
       };
-      requestBody?: never;
       responses: {
         /** @description Orders retrieved successfully */
         200: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example true */
@@ -587,9 +431,6 @@ export interface paths {
         };
         /** @description Bad request */
         400: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example false */
@@ -603,18 +444,11 @@ export interface paths {
         };
       };
     };
-    put?: never;
     /**
      * Create a new order
      * @description Creates a new order for token transactions across chains
      */
     post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
       requestBody: {
         content: {
           "application/json": components["schemas"]["OrderRequest"];
@@ -623,9 +457,6 @@ export interface paths {
       responses: {
         /** @description Order created successfully */
         200: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example true */
@@ -640,9 +471,6 @@ export interface paths {
         };
         /** @description Bad request */
         400: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example false */
@@ -656,27 +484,14 @@ export interface paths {
         };
       };
     };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
   };
   "/orders/{orderId}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
     /**
      * Get order and transactions
      * @description Retrieves order details along with associated transactions
      */
     get: {
       parameters: {
-        query?: never;
-        header?: never;
         path: {
           /**
            * @description Unique order identifier
@@ -684,15 +499,10 @@ export interface paths {
            */
           orderId: string;
         };
-        cookie?: never;
       };
-      requestBody?: never;
       responses: {
         /** @description Order and transactions retrieved successfully */
         200: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example true */
@@ -744,9 +554,6 @@ export interface paths {
         };
         /** @description Bad request */
         400: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example false */
@@ -760,9 +567,6 @@ export interface paths {
         };
         /** @description Order not found */
         404: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example false */
@@ -776,29 +580,14 @@ export interface paths {
         };
       };
     };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
   };
   "/orders/{orderId}/comprehensive": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
     /**
      * Get comprehensive order detail
      * @description Retrieves an order with associated transactions, settlement data, and awarded points without sanitization.
      */
     get: {
       parameters: {
-        query?: never;
-        header?: never;
         path: {
           /**
            * @description Unique order identifier
@@ -806,24 +595,16 @@ export interface paths {
            */
           orderId: string;
         };
-        cookie?: never;
       };
-      requestBody?: never;
       responses: {
         /** @description Comprehensive order retrieved successfully */
         200: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": components["schemas"]["ComprehensiveOrderResponse"];
           };
         };
         /** @description Bad request */
         400: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example false */
@@ -837,9 +618,6 @@ export interface paths {
         };
         /** @description Order not found */
         404: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example false */
@@ -853,34 +631,13 @@ export interface paths {
         };
       };
     };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
   };
   "/orders/quote": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
     /**
      * Get anyspend quote
      * @description Retrieves a quote to swap, execute contract, or participate in HypeDuel
      */
     post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
       requestBody: {
         content: {
           "application/json":
@@ -929,7 +686,7 @@ export interface paths {
                  * @description Optional onramp vendor
                  * @enum {string}
                  */
-                onrampVendor?: "coinbase" | "stripe" | "stripe-web2";
+                onrampVendor?: "coinbase" | "stripe" | "stripe-web2" | "none";
                 /** @description Optional partner ID */
                 partnerId?: string;
               }
@@ -973,7 +730,7 @@ export interface paths {
                  * @description Optional onramp vendor
                  * @enum {string}
                  */
-                onrampVendor?: "coinbase" | "stripe" | "stripe-web2";
+                onrampVendor?: "coinbase" | "stripe" | "stripe-web2" | "none";
                 /** @description Optional partner ID */
                 partnerId?: string;
               }
@@ -1023,7 +780,7 @@ export interface paths {
                  * @description Optional onramp vendor
                  * @enum {string}
                  */
-                onrampVendor?: "coinbase" | "stripe" | "stripe-web2";
+                onrampVendor?: "coinbase" | "stripe" | "stripe-web2" | "none";
                 /** @description Optional partner ID */
                 partnerId?: string;
               }
@@ -1040,7 +797,7 @@ export interface paths {
                  */
                 recipientAddress?: string;
                 /** @enum {string} */
-                onrampVendor?: "coinbase" | "stripe" | "stripe-web2";
+                onrampVendor?: "coinbase" | "stripe" | "stripe-web2" | "none";
                 /** @description Optional partner ID */
                 partnerId?: string;
                 contractAddress: string;
@@ -1062,7 +819,7 @@ export interface paths {
                  */
                 recipientAddress?: string;
                 /** @enum {string} */
-                onrampVendor?: "coinbase" | "stripe" | "stripe-web2";
+                onrampVendor?: "coinbase" | "stripe" | "stripe-web2" | "none";
                 /** @description Optional partner ID */
                 partnerId?: string;
                 contractAddress: string;
@@ -1081,7 +838,7 @@ export interface paths {
                  */
                 recipientAddress?: string;
                 /** @enum {string} */
-                onrampVendor?: "coinbase" | "stripe" | "stripe-web2";
+                onrampVendor?: "coinbase" | "stripe" | "stripe-web2" | "none";
                 /** @description Optional partner ID */
                 partnerId?: string;
                 contractAddress: string;
@@ -1127,7 +884,7 @@ export interface paths {
                  * @description Optional onramp vendor
                  * @enum {string}
                  */
-                onrampVendor?: "coinbase" | "stripe" | "stripe-web2";
+                onrampVendor?: "coinbase" | "stripe" | "stripe-web2" | "none";
                 /** @description Optional partner ID */
                 partnerId?: string;
               }
@@ -1171,7 +928,7 @@ export interface paths {
                  * @description Optional onramp vendor
                  * @enum {string}
                  */
-                onrampVendor?: "coinbase" | "stripe" | "stripe-web2";
+                onrampVendor?: "coinbase" | "stripe" | "stripe-web2" | "none";
                 /** @description Optional partner ID */
                 partnerId?: string;
               };
@@ -1180,9 +937,6 @@ export interface paths {
       responses: {
         /** @description Quote retrieved successfully */
         200: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example true */
@@ -1363,9 +1117,6 @@ export interface paths {
         };
         /** @description Bad request */
         400: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example false */
@@ -1379,19 +1130,8 @@ export interface paths {
         };
       };
     };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
   };
   "/stripe/clientSecret": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
     /**
      * Get Stripe client secret
      * @description Retrieves a Stripe client secret for payment processing using a payment intent ID
@@ -1405,17 +1145,10 @@ export interface paths {
            */
           paymentIntentId: string;
         };
-        header?: never;
-        path?: never;
-        cookie?: never;
       };
-      requestBody?: never;
       responses: {
         /** @description Client secret retrieved successfully */
         200: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example true */
@@ -1434,9 +1167,6 @@ export interface paths {
         };
         /** @description Bad request - PaymentIntentId is required or invalid */
         400: {
-          headers: {
-            [name: string]: unknown;
-          };
           content: {
             "application/json": {
               /** @example false */
@@ -1450,13 +1180,6 @@ export interface paths {
         };
       };
     };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
   };
 }
 export type webhooks = Record<string, never>;
@@ -1509,7 +1232,7 @@ export interface components {
        * @example stripe-web2
        * @enum {string}
        */
-      vendor: "coinbase" | "stripe" | "stripe-web2";
+      vendor: "coinbase" | "stripe" | "stripe-web2" | "none";
       /**
        * @description Payment method used
        * @example
@@ -1551,7 +1274,7 @@ export interface components {
        * @description Onramp vendor
        * @enum {string}
        */
-      vendor?: "coinbase" | "stripe" | "stripe-web2";
+      vendor?: "coinbase" | "stripe" | "stripe-web2" | "none";
       /**
        * @description Payment method for onramp
        * @example
