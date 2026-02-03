@@ -1,11 +1,5 @@
 import { useEffect, useRef } from "react";
-import { components } from "../../types/api";
-
-interface OrderAndTransactionsData {
-  order: components["schemas"]["Order"];
-  executeTx: components["schemas"]["ExecuteTx"] | null;
-  relayTxs: components["schemas"]["RelayTx"][];
-}
+import { GetOrderAndTxsResponse } from "../../types/api_req_res";
 
 /**
  * Hook to call onSuccess callback when an order is executed.
@@ -16,7 +10,7 @@ export function useOnOrderSuccess({
   orderId,
   onSuccess,
 }: {
-  orderData: { data: OrderAndTransactionsData } | undefined;
+  orderData: GetOrderAndTxsResponse | undefined;
   orderId: string | undefined;
   onSuccess?: (txHash?: string) => void;
 }) {
