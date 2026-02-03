@@ -959,7 +959,7 @@ export const OrderDetails = memo(function OrderDetails({
       <OrderStatus order={order} selectedCryptoPaymentMethod={effectiveCryptoPaymentMethod} />
       {statusDisplay === "processing" && (
         <>
-          {order.onrampMetadata ? (
+          {order.onrampMetadata && order.onrampMetadata.vendor !== "none" ? (
             <PaymentVendorUI order={order} dstTokenSymbol={dstToken.symbol} />
           ) : effectiveCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET ||
             effectiveCryptoPaymentMethod === CryptoPaymentMethodType.GLOBAL_WALLET ? (
