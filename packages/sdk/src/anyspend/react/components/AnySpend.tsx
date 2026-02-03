@@ -707,11 +707,13 @@ function AnySpendInner({
   useEffect(() => {
     if (oat?.data?.order.status === "executed" && !onSuccessCalled.current) {
       console.log("Calling onSuccess");
-      const txHash = oat?.data?.executeTx?.txHash;
+      // Try to get txHash from executeTx, fallback to last successful relayTx if executeTx is null
+      const txHash =
+        oat?.data?.executeTx?.txHash || oat?.data?.relayTxs?.findLast(tx => tx.status === "success")?.txHash;
       onSuccess?.(txHash);
       onSuccessCalled.current = true;
     }
-  }, [oat?.data?.order.status, oat?.data?.executeTx?.txHash, onSuccess]);
+  }, [oat?.data?.order.status, oat?.data?.executeTx?.txHash, oat?.data?.relayTxs, onSuccess]);
 
   // Reset flag when orderId changes
   useEffect(() => {
