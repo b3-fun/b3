@@ -19,9 +19,9 @@ export function useOnOrderSuccess({
   useEffect(() => {
     if (orderData?.data?.order.status === "executed" && !onSuccessCalled.current) {
       // Try to get txHash from executeTx, fallback to last successful relayTx if executeTx is null
-      const txHash =
-        orderData?.data?.executeTx?.txHash ||
-        orderData?.data?.relayTxs?.findLast(tx => tx.status === "success")?.txHash;
+      const relayTxs = orderData?.data?.relayTxs;
+      const lastSuccessfulRelayTx = relayTxs?.filter(tx => tx.status === "success").pop();
+      const txHash = orderData?.data?.executeTx?.txHash || lastSuccessfulRelayTx?.txHash;
       onSuccess?.(txHash);
       onSuccessCalled.current = true;
     }
