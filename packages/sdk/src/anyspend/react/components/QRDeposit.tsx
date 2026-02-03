@@ -8,6 +8,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useRef, useState } from "react";
 import { useAnyspendOrderAndTransactions } from "../hooks/useAnyspendOrderAndTransactions";
 import { useCreateDepositFirstOrder } from "../hooks/useCreateDepositFirstOrder";
+import { useOnOrderSuccess } from "../hooks/useOnOrderSuccess";
 import { TransferResult, useWatchTransfer } from "../hooks/useWatchTransfer";
 import { DepositContractConfig } from "./AnySpendDeposit";
 import { ChainTokenIcon } from "./common/ChainTokenIcon";
@@ -90,7 +91,6 @@ export function QRDeposit({
   const [orderId, setOrderId] = useState<string | undefined>();
   const [globalAddress, setGlobalAddress] = useState<string | undefined>();
   const orderCreatedRef = useRef(false);
-  const onSuccessCalled = useRef(false);
   const [transferResult, setTransferResult] = useState<TransferResult | null>(null);
 
   // Source token/chain as state (can be changed by user)
@@ -189,20 +189,7 @@ export function QRDeposit({
   ]);
 
   // Call onSuccess when order is executed
-  useEffect(() => {
-    if (oat?.data?.order.status === "executed" && !onSuccessCalled.current) {
-      // Try to get txHash from executeTx, fallback to last successful relayTx if executeTx is null
-      const txHash =
-        oat?.data?.executeTx?.txHash || oat?.data?.relayTxs?.findLast(tx => tx.status === "success")?.txHash;
-      onSuccess?.(txHash);
-      onSuccessCalled.current = true;
-    }
-  }, [oat?.data?.order.status, oat?.data?.executeTx?.txHash, oat?.data?.relayTxs, onSuccess]);
-
-  // Reset onSuccess flag when orderId changes
-  useEffect(() => {
-    onSuccessCalled.current = false;
-  }, [orderId]);
+  useOnOrderSuccess({ orderData: oat, orderId, onSuccess });
 
   // For pure transfers, always use recipient address; for orders, use global address
   const displayAddress = isPureTransfer ? recipientAddress : globalAddress || recipientAddress;

@@ -52,6 +52,7 @@ import { useAutoSelectCryptoPaymentMethod } from "../hooks/useAutoSelectCryptoPa
 import { useConnectedWalletDisplay } from "../hooks/useConnectedWalletDisplay";
 import { useCryptoPaymentMethodState } from "../hooks/useCryptoPaymentMethodState";
 import { useDirectTransfer } from "../hooks/useDirectTransfer";
+import { useOnOrderSuccess } from "../hooks/useOnOrderSuccess";
 import { useRecipientAddressState } from "../hooks/useRecipientAddressState";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
 import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPaymentMethod";
@@ -207,9 +208,6 @@ function AnySpendInner({
     toLogo?: string;
     toAmount?: string;
   } | null>(null);
-
-  // Track if onSuccess has been called for the current order
-  const onSuccessCalled = useRef(false);
 
   // Track animation direction for TransitionPanel
   const animationDirection = useRef<"forward" | "back" | null>(null);
@@ -704,21 +702,8 @@ function AnySpendInner({
     }
   }, [anyspendQuote, isSrcInputDirty, destinationTokenAmount]);
 
-  useEffect(() => {
-    if (oat?.data?.order.status === "executed" && !onSuccessCalled.current) {
-      console.log("Calling onSuccess");
-      // Try to get txHash from executeTx, fallback to last successful relayTx if executeTx is null
-      const txHash =
-        oat?.data?.executeTx?.txHash || oat?.data?.relayTxs?.findLast(tx => tx.status === "success")?.txHash;
-      onSuccess?.(txHash);
-      onSuccessCalled.current = true;
-    }
-  }, [oat?.data?.order.status, oat?.data?.executeTx?.txHash, oat?.data?.relayTxs, onSuccess]);
-
-  // Reset flag when orderId changes
-  useEffect(() => {
-    onSuccessCalled.current = false;
-  }, [orderId]);
+  // Call onSuccess when order is executed
+  useOnOrderSuccess({ orderData: oat, orderId, onSuccess });
 
   const { createOrder, isCreatingOrder } = useAnyspendCreateOrder({
     onSuccess: data => {

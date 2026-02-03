@@ -45,6 +45,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import { base } from "viem/chains";
 import { useCryptoPaymentMethodState } from "../hooks/useCryptoPaymentMethodState";
+import { useOnOrderSuccess } from "../hooks/useOnOrderSuccess";
 import { useRecipientAddressState } from "../hooks/useRecipientAddressState";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
 import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPaymentMethod";
@@ -274,9 +275,6 @@ function AnySpendCustomInner({
 
   const [orderId, setOrderId] = useState<string | undefined>(loadOrder);
 
-  // Track if onSuccess has been called for the current order
-  const onSuccessCalled = React.useRef(false);
-
   const [srcChainId, setSrcChainId] = useState<number>(base.id);
 
   // Get token list for token balance check
@@ -433,21 +431,8 @@ function AnySpendCustomInner({
   const { geoData, isOnrampSupported, coinbaseAvailablePaymentMethods, stripeOnrampSupport, stripeWeb2Support } =
     useGeoOnrampOptions(srcFiatAmountForGeoCheck);
 
-  useEffect(() => {
-    if (oat?.data?.order.status === "executed" && !onSuccessCalled.current) {
-      console.log("Calling onSuccess");
-      const relayTxs = oat?.data?.relayTxs;
-      const lastRelayTxHash = relayTxs?.[relayTxs.length - 1]?.txHash;
-      const txHash = oat?.data?.executeTx?.txHash || lastRelayTxHash;
-      onSuccess?.(txHash);
-      onSuccessCalled.current = true;
-    }
-  }, [oat?.data?.order.status, oat?.data?.executeTx?.txHash, oat?.data?.relayTxs, onSuccess]);
-
-  // Reset flag when orderId changes
-  useEffect(() => {
-    onSuccessCalled.current = false;
-  }, [orderId]);
+  // Call onSuccess when order is executed
+  useOnOrderSuccess({ orderData: oat, orderId, onSuccess });
 
   const { createOrder: createRegularOrder, isCreatingOrder: isCreatingRegularOrder } = useAnyspendCreateOrder({
     onSuccess: data => {

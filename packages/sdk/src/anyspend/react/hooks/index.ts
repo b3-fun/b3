@@ -12,6 +12,7 @@ export * from "./useGasPrice";
 export * from "./useGeoOnrampOptions";
 export * from "./useGetGeo";
 export * from "./useHyperliquidTransfer";
+export * from "./useOnOrderSuccess";
 export * from "./useRecipientAddressState";
 export * from "./useSigMint";
 export * from "./useStripeClientSecret";
