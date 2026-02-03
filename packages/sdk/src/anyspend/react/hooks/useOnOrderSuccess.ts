@@ -25,7 +25,7 @@ export function useOnOrderSuccess({
       onSuccess?.(txHash);
       onSuccessCalled.current = true;
     }
-  }, [orderData?.data?.order.status, orderData?.data?.executeTx?.txHash, orderData?.data?.relayTxs, onSuccess]);
+  }, [orderData, onSuccess]);
 
   // Reset flag when orderId changes
   useEffect(() => {
