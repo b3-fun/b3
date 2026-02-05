@@ -45,6 +45,8 @@ type CustomExactInConfig = {
   to: string;
   spenderAddress?: string;
   action?: string;
+  /** Native token value to send with the transaction (in wei as string) */
+  value?: string;
 };
 
 export interface AnySpendCustomExactInProps {
@@ -254,6 +256,7 @@ function AnySpendCustomExactInInner({
         ? normalizeAddress(customExactInConfig.spenderAddress)
         : undefined,
       action: customExactInConfig.action,
+      value: customExactInConfig.value,
     };
   };
 
