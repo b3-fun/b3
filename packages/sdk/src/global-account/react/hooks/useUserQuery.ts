@@ -15,6 +15,12 @@ export function useUserQuery() {
   const setUserStore = useUserStore(state => state.setUser);
   const clearUserStore = useUserStore(state => state.clearUser);
 
+  // Manually rehydrate persisted store inside useEffect to avoid
+  // updating AuthenticationProvider state during Hydrate render.
+  useEffect(() => {
+    useUserStore.persist.rehydrate();
+  }, []);
+
   // Listen for storage events from other tabs/windows
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
