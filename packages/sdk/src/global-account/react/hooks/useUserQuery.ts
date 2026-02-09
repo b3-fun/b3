@@ -21,7 +21,9 @@ export function useUserQuery() {
   // synchronous re-render before any useEffect callbacks fire, so
   // downstream effects always see the persisted user value.
   useLayoutEffect(() => {
-    useUserStore.persist.rehydrate();
+    if (!useUserStore.persist.hasHydrated()) {
+      useUserStore.persist.rehydrate();
+    }
   }, []);
 
   // Listen for storage events from other tabs/windows
