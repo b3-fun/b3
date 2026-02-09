@@ -72,6 +72,8 @@ interface OrderDetailsProps {
   returnHomeLabel?: string;
   /** Custom class names for styling specific elements */
   classes?: OrderDetailsClasses;
+  /** When true, the order was created via a checkout session — redirect URL is used as-is (no order ID appended) */
+  isCheckoutSession?: boolean;
 }
 
 // Add this helper function near the top or just above the component
@@ -227,6 +229,7 @@ export const OrderDetails = memo(function OrderDetails({
   returnToHomeUrl,
   returnHomeLabel,
   classes,
+  isCheckoutSession = false,
 }: OrderDetailsProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -504,13 +507,15 @@ export const OrderDetails = memo(function OrderDetails({
           console.error(`Attempted redirect to a URL with an invalid protocol: ${url.protocol}`);
           return;
         }
-        const redirectUrl = `${baseUrl.replace(/\/$/, "")}/${order.id}`;
+        // When using checkout sessions, the redirect URL is already fully resolved
+        // by the backend (with {SESSION_ID} replaced). Don't append order ID.
+        const redirectUrl = isCheckoutSession ? baseUrl : `${baseUrl.replace(/\/$/, "")}/${order.id}`;
         window.location.href = redirectUrl;
       } catch (error) {
         console.error("Invalid redirect URL provided:", baseUrl, error);
       }
     }
-  }, [order.status, order.onrampMetadata?.redirectUrl, order.id]);
+  }, [order.status, order.onrampMetadata?.redirectUrl, order.id, isCheckoutSession]);
 
   if (!srcToken || !dstToken) {
     return <div>Loading...</div>;

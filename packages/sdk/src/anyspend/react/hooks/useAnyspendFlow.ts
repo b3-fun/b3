@@ -1,11 +1,13 @@
 import { B3_TOKEN, getDefaultToken, USDC_BASE } from "@b3dotfun/sdk/anyspend";
 import {
+  useAnyspendCreateCheckoutSessionOrder,
   useAnyspendCreateOnrampOrder,
   useAnyspendCreateOrder,
   useAnyspendOrderAndTransactions,
   useAnyspendQuote,
   useGeoOnrampOptions,
 } from "@b3dotfun/sdk/anyspend/react";
+import type { CheckoutSessionConfig } from "./useAnyspendCreateCheckoutSessionOrder";
 import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
 import { normalizeAddress } from "@b3dotfun/sdk/anyspend/utils";
 import {
@@ -110,6 +112,7 @@ interface UseAnyspendFlowProps {
   disableUrlParamManagement?: boolean;
   orderType?: "hype_duel" | "custom_exact_in" | "swap";
   customExactInConfig?: CustomExactInConfig;
+  checkoutSession?: CheckoutSessionConfig;
 }
 
 // This hook serves for order hype_duel and custom_exact_in
@@ -127,6 +130,7 @@ export function useAnyspendFlow({
   disableUrlParamManagement = false,
   orderType = "hype_duel",
   customExactInConfig,
+  checkoutSession,
 }: UseAnyspendFlowProps) {
   const searchParams = useSearchParamsSSR();
   const router = useRouter();
@@ -134,6 +138,7 @@ export function useAnyspendFlow({
   // Panel and order state
   const [activePanel, setActivePanel] = useState<PanelView>(loadOrder ? PanelView.ORDER_DETAILS : PanelView.MAIN);
   const [orderId, setOrderId] = useState<string | undefined>(loadOrder);
+  const [isCheckoutSession, setIsCheckoutSession] = useState(false);
   const { orderAndTransactions: oat } = useAnyspendOrderAndTransactions(orderId);
 
   // Token selection state - use provided sourceTokenChainId and destinationTokenChainId if available
@@ -427,6 +432,24 @@ export function useAnyspendFlow({
     },
   });
 
+  const { createOrder: createCheckoutSessionOrder, isCreatingOrder: isCreatingCheckoutSessionOrder } =
+    useAnyspendCreateCheckoutSessionOrder({
+      checkoutSession: checkoutSession ?? {},
+      onSuccess: data => {
+        const newOrderId = data.data.order_id;
+        if (newOrderId) {
+          setOrderId(newOrderId);
+          setIsCheckoutSession(true);
+          setActivePanel(PanelView.ORDER_DETAILS);
+          onOrderSuccess?.(newOrderId);
+        }
+      },
+      onError: error => {
+        console.error(error);
+        toast.error("Failed to create order: " + error.message);
+      },
+    });
+
   // Handle order completion
   useEffect(() => {
     if (oat?.data?.order.status === "executed") {
@@ -502,5 +525,8 @@ export function useAnyspendFlow({
     isCreatingOrder,
     createOnrampOrder,
     isCreatingOnrampOrder,
+    createCheckoutSessionOrder,
+    isCreatingCheckoutSessionOrder,
+    isCheckoutSession,
   };
 }
