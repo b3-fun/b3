@@ -421,7 +421,13 @@ export function getCoingeckoName(chainId: number): string | null {
   return ALL_CHAINS[chainId].coingeckoName;
 }
 
-export function getPaymentUrl(address: string, amount: bigint, currency: string, chainId: number, decimals?: number) {
+export function getPaymentUrl(
+  address: string,
+  amount: bigint | undefined,
+  currency: string,
+  chainId: number,
+  decimals?: number,
+) {
   // Get chain type to determine URL format
   const chainType = getChainType(chainId);
   const chain = ALL_CHAINS[chainId];
@@ -433,8 +439,8 @@ export function getPaymentUrl(address: string, amount: bigint, currency: string,
       // Format: ethereum:[address]@[chainId]?value=[amount]&symbol=[symbol]
       const params = new URLSearchParams();
 
-      // Add value for native token transfers
-      if (currency === chain.nativeToken.symbol) {
+      // Add value for native token transfers (skip if amount not provided, e.g. deposit_first)
+      if (currency === chain.nativeToken.symbol && amount !== undefined) {
         params.append("value", amount.toString());
       }
 
@@ -453,28 +459,31 @@ export function getPaymentUrl(address: string, amount: bigint, currency: string,
 
         // For ERC20 tokens, convert from smallest unit to display units using decimals
         // For example: 2400623 (raw) with 6 decimals becomes "2.400623"
-        let displayAmount: string;
-        if (decimals !== undefined && currency !== chain.nativeToken.symbol) {
-          // Convert from smallest unit to display unit for ERC20 tokens
-          const divisor = BigInt(10 ** decimals);
-          const wholePart = amount / divisor;
-          const fractionalPart = amount % divisor;
+        // Skip amount if not provided (e.g. deposit_first orders)
+        if (amount !== undefined) {
+          let displayAmount: string;
+          if (decimals !== undefined && currency !== chain.nativeToken.symbol) {
+            // Convert from smallest unit to display unit for ERC20 tokens
+            const divisor = BigInt(10 ** decimals);
+            const wholePart = amount / divisor;
+            const fractionalPart = amount % divisor;
 
-          if (fractionalPart === BigInt(0)) {
-            displayAmount = wholePart.toString();
+            if (fractionalPart === BigInt(0)) {
+              displayAmount = wholePart.toString();
+            } else {
+              // Format fractional part with leading zeros if needed
+              const fractionalStr = fractionalPart.toString().padStart(decimals, "0");
+              // Remove trailing zeros
+              const trimmedFractional = fractionalStr.replace(/0+$/, "");
+              displayAmount = trimmedFractional ? `${wholePart}.${trimmedFractional}` : wholePart.toString();
+            }
           } else {
-            // Format fractional part with leading zeros if needed
-            const fractionalStr = fractionalPart.toString().padStart(decimals, "0");
-            // Remove trailing zeros
-            const trimmedFractional = fractionalStr.replace(/0+$/, "");
-            displayAmount = trimmedFractional ? `${wholePart}.${trimmedFractional}` : wholePart.toString();
+            // For native tokens or when decimals not provided, use raw amount
+            displayAmount = amount.toString();
           }
-        } else {
-          // For native tokens or when decimals not provided, use raw amount
-          displayAmount = amount.toString();
-        }
 
-        tokenParams.append("amount", displayAmount);
+          tokenParams.append("amount", displayAmount);
+        }
         tokenParams.append("address", address); // recipient address
 
         // For Arbitrum and other L2s, try a more explicit format
@@ -495,7 +504,9 @@ export function getPaymentUrl(address: string, amount: bigint, currency: string,
         // to make sure wallets recognize the correct chain
         const nativeParams = new URLSearchParams();
         nativeParams.append("chainId", chainId.toString());
-        nativeParams.append("value", amount.toString());
+        if (amount !== undefined) {
+          nativeParams.append("value", amount.toString());
+        }
         const url = `ethereum:${address}@${chainId}?${nativeParams.toString()}`;
         return url;
       } else {
@@ -517,60 +528,65 @@ export function getPaymentUrl(address: string, amount: bigint, currency: string,
 
       if (isNativeSOL) {
         // Native SOL transfers - convert from lamports to SOL
-        let displayAmount: string;
-        if (decimals !== undefined) {
-          const divisor = BigInt(10 ** decimals);
-          const wholePart = amount / divisor;
-          const fractionalPart = amount % divisor;
+        if (amount !== undefined) {
+          let displayAmount: string;
+          if (decimals !== undefined) {
+            const divisor = BigInt(10 ** decimals);
+            const wholePart = amount / divisor;
+            const fractionalPart = amount % divisor;
 
-          if (fractionalPart === BigInt(0)) {
-            displayAmount = wholePart.toString();
+            if (fractionalPart === BigInt(0)) {
+              displayAmount = wholePart.toString();
+            } else {
+              const fractionalStr = fractionalPart.toString().padStart(decimals, "0");
+              const trimmedFractional = fractionalStr.replace(/0+$/, "");
+              displayAmount = trimmedFractional ? `${wholePart}.${trimmedFractional}` : wholePart.toString();
+            }
           } else {
-            const fractionalStr = fractionalPart.toString().padStart(decimals, "0");
-            const trimmedFractional = fractionalStr.replace(/0+$/, "");
-            displayAmount = trimmedFractional ? `${wholePart}.${trimmedFractional}` : wholePart.toString();
-          }
-        } else {
-          // Fallback: assume SOL has 9 decimals
-          const divisor = BigInt(1000000000); // 1e9
-          const wholePart = amount / divisor;
-          const fractionalPart = amount % divisor;
+            // Fallback: assume SOL has 9 decimals
+            const divisor = BigInt(1000000000); // 1e9
+            const wholePart = amount / divisor;
+            const fractionalPart = amount % divisor;
 
-          if (fractionalPart === BigInt(0)) {
-            displayAmount = wholePart.toString();
-          } else {
-            const fractionalStr = fractionalPart.toString().padStart(9, "0");
-            const trimmedFractional = fractionalStr.replace(/0+$/, "");
-            displayAmount = trimmedFractional ? `${wholePart}.${trimmedFractional}` : wholePart.toString();
+            if (fractionalPart === BigInt(0)) {
+              displayAmount = wholePart.toString();
+            } else {
+              const fractionalStr = fractionalPart.toString().padStart(9, "0");
+              const trimmedFractional = fractionalStr.replace(/0+$/, "");
+              displayAmount = trimmedFractional ? `${wholePart}.${trimmedFractional}` : wholePart.toString();
+            }
           }
+
+          // For native SOL, use simple format without spl-token parameter
+          params.append("amount", displayAmount);
         }
-
-        // For native SOL, use simple format without spl-token parameter
-        params.append("amount", displayAmount);
       } else {
         // SPL token transfers
-        let displayAmount: string;
-        if (decimals !== undefined) {
-          const divisor = BigInt(10 ** decimals);
-          const wholePart = amount / divisor;
-          const fractionalPart = amount % divisor;
+        if (amount !== undefined) {
+          let displayAmount: string;
+          if (decimals !== undefined) {
+            const divisor = BigInt(10 ** decimals);
+            const wholePart = amount / divisor;
+            const fractionalPart = amount % divisor;
 
-          if (fractionalPart === BigInt(0)) {
-            displayAmount = wholePart.toString();
+            if (fractionalPart === BigInt(0)) {
+              displayAmount = wholePart.toString();
+            } else {
+              const fractionalStr = fractionalPart.toString().padStart(decimals, "0");
+              const trimmedFractional = fractionalStr.replace(/0+$/, "");
+              displayAmount = trimmedFractional ? `${wholePart}.${trimmedFractional}` : wholePart.toString();
+            }
           } else {
-            const fractionalStr = fractionalPart.toString().padStart(decimals, "0");
-            const trimmedFractional = fractionalStr.replace(/0+$/, "");
-            displayAmount = trimmedFractional ? `${wholePart}.${trimmedFractional}` : wholePart.toString();
+            displayAmount = amount.toString();
           }
-        } else {
-          displayAmount = amount.toString();
-        }
 
-        params.append("amount", displayAmount);
+          params.append("amount", displayAmount);
+        }
         params.append("spl-token", currency); // token mint address
       }
 
-      const url = `solana:${address}?${params.toString()}`;
+      const queryString = params.toString();
+      const url = queryString ? `solana:${address}?${queryString}` : `solana:${address}`;
       console.log("Solana URL (isNativeSOL:", isNativeSOL, "):", url);
       return url;
     }
