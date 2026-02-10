@@ -34,6 +34,8 @@ interface CryptoPaySectionProps {
   classes?: CryptoPaySectionClasses;
   /** When true, skip auto-setting max balance when token changes (used for fixed destination amount mode) */
   skipAutoMaxOnTokenChange?: boolean;
+  /** When true, disables the source amount input and hides the MAX button (used for fixed destination amount mode) */
+  disableAmountInput?: boolean;
 }
 
 export function CryptoPaySection({
@@ -52,6 +54,7 @@ export function CryptoPaySection({
   onShowFeeDetail,
   classes,
   skipAutoMaxOnTokenChange = false,
+  disableAmountInput = false,
 }: CryptoPaySectionProps) {
   const { data: srcTokenMetadata } = useTokenData(selectedSrcToken?.chainId, selectedSrcToken?.address);
 
@@ -138,6 +141,7 @@ export function CryptoPaySection({
           setToken={setSelectedSrcToken}
           onTokenSelect={onTokenSelect}
           skipAutoMaxOnTokenChange={skipAutoMaxOnTokenChange}
+          disabled={disableAmountInput}
         />
       </div>
       <div className={classes?.balanceRow || "flex items-center justify-between"}>
@@ -154,6 +158,7 @@ export function CryptoPaySection({
             setIsSrcInputDirty(true);
             setSrcAmount(value);
           }}
+          hideMaxButton={disableAmountInput}
         />
       </div>
     </motion.div>

@@ -49,7 +49,7 @@ const STAKING_CONTRACT = "0xEf80AafFbf4cF5c8a5e1D4c61838987D5973DAab";
 type DepositType = "simple" | "contract" | "hyperliquid" | "eth-base";
 
 export function CustomDepositButton() {
-  const { address } = useAccountWallet();
+  const { address = "0x0000000000000000000000000000000000000000" } = useAccountWallet();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [depositType, setDepositType] = useState<DepositType>("simple");
 
@@ -70,7 +70,7 @@ export function CustomDepositButton() {
   const customExactInConfig = {
     functionAbi: STAKE_FOR_FUNCTION_ABI,
     functionName: "stakeFor",
-    functionArgs: [normalizeAddress(address || ""), "{{amount_out}}"],
+    functionArgs: [normalizeAddress(address), "{{amount_out}}"],
     to: STAKING_CONTRACT,
     spenderAddress: STAKING_CONTRACT,
     action: `stake USDC`,

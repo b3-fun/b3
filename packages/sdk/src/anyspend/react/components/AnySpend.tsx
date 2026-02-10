@@ -1215,6 +1215,7 @@ function AnySpendInner({
               onTokenSelect={onTokenSelect}
               onShowFeeDetail={() => navigateToPanel(PanelView.FEE_DETAIL, "forward")}
               skipAutoMaxOnTokenChange={!!destinationTokenAmount}
+              disableAmountInput={!!destinationTokenAmount}
             />
           ) : (
             <motion.div

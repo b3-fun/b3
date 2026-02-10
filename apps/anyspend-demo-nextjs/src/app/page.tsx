@@ -8,6 +8,7 @@ import { CollectorClubPurchaseButton } from "./components/CollectorClubPurchaseB
 import { CustomClassesDepositButton } from "./components/CustomClassesDepositButton";
 import { CustomDepositButton } from "./components/CustomDepositButton";
 import { DepositHypeButton } from "./components/DepositHypeButton";
+import { FixedAmountDepositButton } from "./components/FixedAmountDepositButton";
 import { GetB3TokenButton } from "./components/GetB3TokenButton";
 import { MintNftButton } from "./components/MintNftButton";
 import { OrderDetailsButton } from "./components/OrderDetailsButton";
@@ -61,6 +62,7 @@ export default function Home() {
             <CollectorClubPurchaseButton />
             <OrderDetailsButton />
             <CustomClassesDepositButton />
+            <FixedAmountDepositButton />
           </div>
         </div>
       </div>
