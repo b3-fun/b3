@@ -1,4 +1,10 @@
-import { ALL_CHAINS, getAvailableChainIds, isSameChainAndToken, ZERO_ADDRESS } from "@b3dotfun/sdk/anyspend";
+import {
+  ALL_CHAINS,
+  getAvailableChainIds,
+  getPaymentUrl,
+  isSameChainAndToken,
+  ZERO_ADDRESS,
+} from "@b3dotfun/sdk/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { Button, toast } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
@@ -57,28 +63,6 @@ const DEFAULT_ETH_ON_BASE: components["schemas"]["Token"] = {
     logoURI: "https://assets.relay.link/icons/1/light.png",
   },
 };
-
-/**
- * Generates an EIP-681 payment URI for the QR code.
- * Unlike getPaymentUrl, this does not require an amount (deposit_first orders have no predetermined amount).
- * The URI includes chain and token info so wallets know which network/token to use when scanning.
- */
-function getDepositQrValue(depositAddress: string, tokenAddress: string, chainId: number): string {
-  const isNativeToken = tokenAddress.toLowerCase() === ZERO_ADDRESS.toLowerCase();
-
-  if (isNativeToken) {
-    // Native token (e.g. ETH): ethereum:<depositAddress>@<chainId>
-    return chainId === 1 ? `ethereum:${depositAddress}` : `ethereum:${depositAddress}@${chainId}`;
-  }
-
-  // ERC20 token: ethereum:<tokenContract>@<chainId>/transfer?address=<depositAddress>
-  const params = new URLSearchParams();
-  params.append("address", depositAddress);
-  if (chainId === 1) {
-    return `ethereum:${tokenAddress}/transfer?${params.toString()}`;
-  }
-  return `ethereum:${tokenAddress}@${chainId}/transfer?${params.toString()}`;
-}
 
 /**
  * A component for displaying QR code deposit functionality.
@@ -217,7 +201,13 @@ export function QRDeposit({
   const displayAddress = isPureTransfer ? recipientAddress : globalAddress || recipientAddress;
 
   // Generate EIP-681 payment URI for the QR code so wallets know which chain/token to use
-  const qrValue = getDepositQrValue(displayAddress, sourceToken.address, sourceChainId);
+  const qrValue = getPaymentUrl(
+    displayAddress,
+    undefined,
+    sourceToken.address === ZERO_ADDRESS ? "ETH" : sourceToken.address,
+    sourceChainId,
+    sourceToken.decimals,
+  );
 
   const handleCopyAddress = async () => {
     if (displayAddress) {
