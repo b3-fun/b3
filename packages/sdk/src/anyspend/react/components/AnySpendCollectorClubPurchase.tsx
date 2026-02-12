@@ -27,9 +27,11 @@
 import { USDC_BASE } from "@b3dotfun/sdk/anyspend/constants";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
+import { PUBLIC_BASE_RPC_URL } from "@b3dotfun/sdk/shared/constants";
 import { formatUnits } from "@b3dotfun/sdk/shared/utils/number";
-import React, { useMemo } from "react";
-import { encodeFunctionData } from "viem";
+import React, { useEffect, useMemo, useState } from "react";
+import { createPublicClient, encodeFunctionData, http } from "viem";
+import { base } from "viem/chains";
 import { AnySpendCustom } from "./AnySpendCustom";
 
 // Collector Club Shop contract addresses on Base
@@ -49,6 +51,37 @@ const BUY_PACKS_FOR_ABI = {
   stateMutability: "nonpayable",
   type: "function",
 } as const;
+
+// ABI for buyPacksForWithDiscount function (with discount code)
+const BUY_PACKS_FOR_WITH_DISCOUNT_ABI = {
+  inputs: [
+    { internalType: "address", name: "user", type: "address" },
+    { internalType: "uint256", name: "packId", type: "uint256" },
+    { internalType: "uint256", name: "amount", type: "uint256" },
+    { internalType: "string", name: "discountCode", type: "string" },
+  ],
+  name: "buyPacksForWithDiscount",
+  outputs: [],
+  stateMutability: "nonpayable",
+  type: "function",
+} as const;
+
+// ABI for isDiscountCodeValid view function
+const IS_DISCOUNT_CODE_VALID_ABI = {
+  inputs: [{ internalType: "string", name: "code", type: "string" }],
+  name: "isDiscountCodeValid",
+  outputs: [
+    { internalType: "bool", name: "isValid", type: "bool" },
+    { internalType: "uint256", name: "discountAmount", type: "uint256" },
+  ],
+  stateMutability: "view",
+  type: "function",
+} as const;
+
+const basePublicClient = createPublicClient({
+  chain: base,
+  transport: http(PUBLIC_BASE_RPC_URL),
+});
 
 export interface AnySpendCollectorClubPurchaseProps {
   /**
@@ -118,6 +151,11 @@ export interface AnySpendCollectorClubPurchaseProps {
    * Force fiat payment
    */
   forceFiatPayment?: boolean;
+  /**
+   * Optional discount code to apply to the purchase.
+   * When provided, validates on-chain and adjusts the price accordingly.
+   */
+  discountCode?: string;
 }
 
 export function AnySpendCollectorClubPurchase({
@@ -137,6 +175,7 @@ export function AnySpendCollectorClubPurchase({
   vendingMachineId,
   packType,
   forceFiatPayment,
+  discountCode,
 }: AnySpendCollectorClubPurchaseProps) {
   const ccShopAddress = isStaging ? CC_SHOP_ADDRESS_STAGING : CC_SHOP_ADDRESS;
 
@@ -150,25 +189,117 @@ export function AnySpendCollectorClubPurchase({
     }
   }, [pricePerPack, packAmount]);
 
-  // Calculate fiat amount (totalAmount in USD, assuming USDC with 6 decimals)
-  const srcFiatAmount = useMemo(() => {
-    if (!totalAmount || totalAmount === "0") return "0";
-    return formatUnits(totalAmount, USDC_BASE.decimals);
-  }, [totalAmount]);
+  // Discount code validation state
+  const [discountInfo, setDiscountInfo] = useState<{
+    isValid: boolean;
+    discountAmount: bigint;
+    isLoading: boolean;
+    error: string | null;
+  }>({
+    isValid: false,
+    discountAmount: BigInt(0),
+    isLoading: false,
+    error: null,
+  });
 
-  // Encode the buyPacksFor function call
+  // Validate discount code on-chain when provided
+  useEffect(() => {
+    if (!discountCode) {
+      setDiscountInfo({ isValid: false, discountAmount: BigInt(0), isLoading: false, error: null });
+      return;
+    }
+
+    let cancelled = false;
+
+    const validateDiscount = async () => {
+      setDiscountInfo(prev => ({ ...prev, isLoading: true, error: null }));
+
+      try {
+        const result = await basePublicClient.readContract({
+          address: ccShopAddress as `0x${string}`,
+          abi: [IS_DISCOUNT_CODE_VALID_ABI],
+          functionName: "isDiscountCodeValid",
+          args: [discountCode],
+        });
+
+        if (cancelled) return;
+
+        const [isValid, discountAmount] = result;
+
+        if (!isValid) {
+          setDiscountInfo({
+            isValid: false,
+            discountAmount: BigInt(0),
+            isLoading: false,
+            error: "Invalid or expired discount code",
+          });
+          return;
+        }
+
+        setDiscountInfo({ isValid: true, discountAmount, isLoading: false, error: null });
+      } catch (error) {
+        if (cancelled) return;
+        console.error("Failed to validate discount code", { discountCode, error });
+        setDiscountInfo({
+          isValid: false,
+          discountAmount: BigInt(0),
+          isLoading: false,
+          error: "Failed to validate discount code",
+        });
+      }
+    };
+
+    validateDiscount();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [discountCode, ccShopAddress]);
+
+  // Calculate effective dstAmount after discount
+  const effectiveDstAmount = useMemo(() => {
+    if (!discountCode || !discountInfo.isValid || discountInfo.discountAmount === BigInt(0)) {
+      return totalAmount;
+    }
+
+    const total = BigInt(totalAmount);
+    const discount = discountInfo.discountAmount;
+
+    if (discount >= total) {
+      console.error("Discount exceeds total price", { totalAmount, discountAmount: discount.toString() });
+      return "0";
+    }
+
+    return (total - discount).toString();
+  }, [totalAmount, discountCode, discountInfo.isValid, discountInfo.discountAmount]);
+
+  // Calculate fiat amount (effectiveDstAmount in USD, assuming USDC with 6 decimals)
+  const srcFiatAmount = useMemo(() => {
+    if (!effectiveDstAmount || effectiveDstAmount === "0") return "0";
+    return formatUnits(effectiveDstAmount, USDC_BASE.decimals);
+  }, [effectiveDstAmount]);
+
+  // Encode the contract function call (with or without discount)
   const encodedData = useMemo(() => {
     try {
+      if (discountCode && discountInfo.isValid) {
+        return encodeFunctionData({
+          abi: [BUY_PACKS_FOR_WITH_DISCOUNT_ABI],
+          functionName: "buyPacksForWithDiscount",
+          args: [recipientAddress as `0x${string}`, BigInt(packId), BigInt(packAmount), discountCode],
+        });
+      }
+
       return encodeFunctionData({
         abi: [BUY_PACKS_FOR_ABI],
         functionName: "buyPacksFor",
         args: [recipientAddress as `0x${string}`, BigInt(packId), BigInt(packAmount)],
       });
     } catch (error) {
-      console.error("Failed to encode function data", { recipientAddress, packId, packAmount, error });
+      console.error("Failed to encode function data", { recipientAddress, packId, packAmount, discountCode, error });
       return "0x";
     }
-  }, [recipientAddress, packId, packAmount]);
+  }, [recipientAddress, packId, packAmount, discountCode, discountInfo.isValid]);
 
   // Default header if not provided
   const defaultHeader = () => (
@@ -182,6 +313,31 @@ export function AnySpendCollectorClubPurchase({
     </div>
   );
 
+  // Don't render AnySpendCustom while discount is being validated (avoids showing wrong price)
+  if (discountCode && discountInfo.isLoading) {
+    return (
+      <div className="mb-4 flex flex-col items-center gap-3 text-center">
+        <p className="text-as-secondary text-sm">Validating discount code...</p>
+      </div>
+    );
+  }
+
+  if (discountCode && discountInfo.error) {
+    return (
+      <div className="mb-4 flex flex-col items-center gap-3 text-center">
+        <p className="text-sm text-red-500">{discountInfo.error}</p>
+      </div>
+    );
+  }
+
+  if (discountCode && discountInfo.isValid && effectiveDstAmount === "0") {
+    return (
+      <div className="mb-4 flex flex-col items-center gap-3 text-center">
+        <p className="text-sm text-red-500">Discount exceeds total price</p>
+      </div>
+    );
+  }
+
   return (
     <AnySpendCustom
       loadOrder={loadOrder}
@@ -192,7 +348,7 @@ export function AnySpendCollectorClubPurchase({
       orderType="custom"
       dstChainId={BASE_CHAIN_ID}
       dstToken={paymentToken}
-      dstAmount={totalAmount}
+      dstAmount={effectiveDstAmount}
       contractAddress={ccShopAddress}
       encodedData={encodedData}
       metadata={{
@@ -201,6 +357,9 @@ export function AnySpendCollectorClubPurchase({
         pricePerPack,
         vendingMachineId,
         packType,
+        ...(discountCode && discountInfo.isValid
+          ? { discountCode, discountAmount: discountInfo.discountAmount.toString() }
+          : {}),
       }}
       header={header || defaultHeader}
       onSuccess={onSuccess}
