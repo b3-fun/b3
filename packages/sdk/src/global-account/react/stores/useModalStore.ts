@@ -497,6 +497,8 @@ export interface AnySpendCollectorClubPurchaseProps extends BaseModalProps {
   forceFiatPayment?: boolean;
   /** Staging environment support */
   isStaging?: boolean;
+  /** Optional discount code to apply to the purchase */
+  discountCode?: string;
 }
 
 /**
