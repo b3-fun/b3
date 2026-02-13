@@ -3,6 +3,7 @@ import { useGasPrice } from "@b3dotfun/sdk/anyspend/react";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
 import { normalizeAddress } from "@b3dotfun/sdk/anyspend/utils";
+import type { CheckoutSessionConfig } from "../hooks/useAnyspendCreateCheckoutSessionOrder";
 import {
   Button,
   ShinyButton,
@@ -83,6 +84,8 @@ export interface AnySpendCustomExactInProps {
   classes?: AnySpendCustomExactInClasses;
   /** When true, allows direct transfer without swap if source and destination token/chain are the same */
   allowDirectTransfer?: boolean;
+  /** If provided, wraps fiat order creation in a checkout session for Stripe-like redirect flows */
+  checkoutSession?: CheckoutSessionConfig;
 }
 
 export function AnySpendCustomExactIn(props: AnySpendCustomExactInProps) {
@@ -120,6 +123,7 @@ function AnySpendCustomExactInInner({
   returnHomeLabel,
   classes,
   allowDirectTransfer = false,
+  checkoutSession,
 }: AnySpendCustomExactInProps) {
   const actionLabel = customExactInConfig?.action ?? "Custom Execution";
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
@@ -172,6 +176,9 @@ function AnySpendCustomExactInInner({
     isCreatingOrder,
     createOnrampOrder,
     isCreatingOnrampOrder,
+    createCheckoutSessionOrder,
+    isCreatingCheckoutSessionOrder,
+    isCheckoutSession,
   } = useAnyspendFlow({
     paymentType,
     recipientAddress,
@@ -185,6 +192,7 @@ function AnySpendCustomExactInInner({
     disableUrlParamManagement: true,
     orderType,
     customExactInConfig,
+    checkoutSession,
   });
 
   const { connectedEOAWallet } = useAccountWallet();
@@ -643,51 +651,66 @@ function AnySpendCustomExactInInner({
         return;
       }
 
-      const onrampOptions = {
-        vendor,
-        paymentMethod: paymentMethodString,
-        country: geoData?.country || "US",
-        redirectUrl: window.location.origin,
-      };
-
-      if (tradeType === "EXACT_OUTPUT") {
-        // EXACT_OUTPUT mode: create a custom order (like AnySpendStakeUpside)
-        const expectedDstAmount = anyspendQuote.data?.currencyOut?.amount ?? "0";
-        const encodedData = generateEncodedData(customExactInConfig, activeOutputAmountInWei);
-
-        createOnrampOrder({
+      if (checkoutSession) {
+        // Use checkout session flow
+        createCheckoutSessionOrder({
           recipientAddress: selectedRecipientOrDefault,
-          orderType: "custom",
           dstChain: selectedDstChainId,
-          dstToken: selectedDstToken,
+          dstTokenAddress: selectedDstToken.address,
           srcFiatAmount: srcAmount,
-          onramp: onrampOptions,
-          expectedDstAmount,
-          creatorAddress: globalAddress,
-          payload: {
-            amount: activeOutputAmountInWei,
-            data: encodedData,
-            to: customExactInConfig ? normalizeAddress(customExactInConfig.to) : undefined,
-            spenderAddress: customExactInConfig?.spenderAddress
-              ? normalizeAddress(customExactInConfig.spenderAddress)
-              : undefined,
+          onramp: {
+            vendor: vendor as "coinbase" | "stripe-web2" | "none",
+            paymentMethod: paymentMethodString,
+            country: geoData?.country || "US",
           },
         });
       } else {
-        // EXACT_INPUT mode: create custom_exact_in order (original behavior)
-        const payload = buildCustomPayload(selectedRecipientOrDefault);
+        const onrampOptions = {
+          vendor,
+          paymentMethod: paymentMethodString,
+          country: geoData?.country || "US",
+          redirectUrl: window.location.origin,
+        };
 
-        createOnrampOrder({
-          recipientAddress: selectedRecipientOrDefault,
-          orderType,
-          dstChain: selectedDstChainId,
-          dstToken: selectedDstToken,
-          srcFiatAmount: srcAmount,
-          onramp: onrampOptions,
-          expectedDstAmount: expectedDstAmountRaw,
-          creatorAddress: globalAddress,
-          payload,
-        });
+        if (tradeType === "EXACT_OUTPUT") {
+          // EXACT_OUTPUT mode: create a custom order (like AnySpendStakeUpside)
+          const expectedDstAmount = anyspendQuote.data?.currencyOut?.amount ?? "0";
+          const encodedData = generateEncodedData(customExactInConfig, activeOutputAmountInWei);
+
+          createOnrampOrder({
+            recipientAddress: selectedRecipientOrDefault,
+            orderType: "custom",
+            dstChain: selectedDstChainId,
+            dstToken: selectedDstToken,
+            srcFiatAmount: srcAmount,
+            onramp: onrampOptions,
+            expectedDstAmount,
+            creatorAddress: globalAddress,
+            payload: {
+              amount: activeOutputAmountInWei,
+              data: encodedData,
+              to: customExactInConfig ? normalizeAddress(customExactInConfig.to) : undefined,
+              spenderAddress: customExactInConfig?.spenderAddress
+                ? normalizeAddress(customExactInConfig.spenderAddress)
+                : undefined,
+            },
+          });
+        } else {
+          // EXACT_INPUT mode: create custom_exact_in order (original behavior)
+          const payload = buildCustomPayload(selectedRecipientOrDefault);
+
+          createOnrampOrder({
+            recipientAddress: selectedRecipientOrDefault,
+            orderType,
+            dstChain: selectedDstChainId,
+            dstToken: selectedDstToken,
+            srcFiatAmount: srcAmount,
+            onramp: onrampOptions,
+            expectedDstAmount: expectedDstAmountRaw,
+            creatorAddress: globalAddress,
+            payload,
+          });
+        }
       }
     } catch (err: any) {
       console.error(err);
@@ -717,6 +740,7 @@ function AnySpendCustomExactInInner({
             points={oat.data.points || undefined}
             returnToHomeUrl={returnToHomeUrl}
             returnHomeLabel={returnHomeLabel}
+            isCheckoutSession={isCheckoutSession}
           />
         )}
       </div>

@@ -1,5 +1,6 @@
 // Types
 export * from "./types/api";
+export * from "./types/checkoutSession";
 export * from "./types/gas";
 
 // Utils

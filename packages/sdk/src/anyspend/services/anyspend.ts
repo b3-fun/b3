@@ -15,6 +15,11 @@ import {
   GetStripeSupportedResponse,
   GetTokenListResponse,
 } from "../types/api_req_res";
+import type {
+  CreateCheckoutSessionRequest,
+  CreateCheckoutSessionResponse,
+  GetCheckoutSessionResponse,
+} from "../types/checkoutSession";
 import { VisitorData } from "../types/fingerprint";
 
 // Service functions
@@ -179,5 +184,30 @@ export const anyspendService = {
     const data: GetStripeClientSecret = await response.json();
     invariant(response.status === 200, "Failed to get Stripe client secret");
     return data.data;
+  },
+
+  // Checkout Sessions
+  createCheckoutSession: async (
+    params: CreateCheckoutSessionRequest,
+    options?: { partnerId?: string; accessToken?: string },
+  ): Promise<CreateCheckoutSessionResponse> => {
+    const response = await fetch(`${ANYSPEND_MAINNET_BASE_URL}/checkout-sessions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(options?.partnerId && { "x-api-key": options.partnerId }),
+        ...(options?.accessToken && { Authorization: `Bearer ${options.accessToken}` }),
+      },
+      body: JSON.stringify(params),
+    });
+    const data: CreateCheckoutSessionResponse = await response.json();
+    invariant(response.status === 200, data.message);
+    return data;
+  },
+
+  getCheckoutSession: async (sessionId: string): Promise<GetCheckoutSessionResponse> => {
+    const response = await fetch(`${ANYSPEND_MAINNET_BASE_URL}/checkout-sessions/${sessionId}`);
+    const data: GetCheckoutSessionResponse = await response.json();
+    return data;
   },
 };

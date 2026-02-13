@@ -2,6 +2,7 @@ import { eqci, getDefaultToken, roundUpUSDCBaseAmountToNearest } from "@b3dotfun
 import { USDC_BASE, ZERO_ADDRESS } from "@b3dotfun/sdk/anyspend/constants";
 import {
   CreateOrderParams,
+  useAnyspendCreateCheckoutSessionOrder,
   useAnyspendCreateOnrampOrder,
   useAnyspendCreateOrder,
   useAnyspendOrderAndTransactions,
@@ -10,6 +11,7 @@ import {
   useConnectedUserProfile,
   useGeoOnrampOptions,
 } from "@b3dotfun/sdk/anyspend/react";
+import type { CheckoutSessionConfig } from "../hooks/useAnyspendCreateCheckoutSessionOrder";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { GetQuoteRequest, GetQuoteResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
 import {
@@ -191,6 +193,8 @@ export function AnySpendCustom(props: {
   onShowPointsDetail?: () => void;
   /** Fiat amount in USD for fiat payments */
   srcFiatAmount?: string;
+  /** If provided, wraps fiat order creation in a checkout session for Stripe-like redirect flows */
+  checkoutSession?: CheckoutSessionConfig;
 }) {
   const fingerprintConfig = getFingerprintConfig();
 
@@ -220,6 +224,7 @@ function AnySpendCustomInner({
   onShowPointsDetail,
   srcFiatAmount: srcFiatAmountProps,
   forceFiatPayment,
+  checkoutSession,
 }: {
   loadOrder?: string;
   mode?: "modal" | "page";
@@ -245,6 +250,7 @@ function AnySpendCustomInner({
   onShowPointsDetail?: () => void;
   srcFiatAmount?: string;
   forceFiatPayment?: boolean;
+  checkoutSession?: CheckoutSessionConfig;
 }) {
   const hasMounted = useHasMounted();
 
@@ -274,6 +280,7 @@ function AnySpendCustomInner({
   });
 
   const [orderId, setOrderId] = useState<string | undefined>(loadOrder);
+  const [isCheckoutSession, setIsCheckoutSession] = useState(false);
 
   const [srcChainId, setSrcChainId] = useState<number>(base.id);
 
@@ -454,6 +461,22 @@ function AnySpendCustomInner({
     },
   });
 
+  const { createOrder: createCheckoutSessionOrder, isCreatingOrder: isCreatingCheckoutSessionOrder } =
+    useAnyspendCreateCheckoutSessionOrder({
+      checkoutSession: checkoutSession ?? {},
+      onSuccess: data => {
+        const orderId = data.data.order_id;
+        if (orderId) {
+          setOrderId(orderId);
+          setIsCheckoutSession(true);
+        }
+      },
+      onError: error => {
+        console.error(error);
+        toast.error("Failed to create order: " + error.message);
+      },
+    });
+
   const isCreatingOrder = isCreatingRegularOrder || isCreatingOnrampOrder;
 
   const { address: connectedAddress, name: connectedName } = useConnectedUserProfile(effectiveCryptoPaymentMethod);
@@ -533,20 +556,35 @@ function AnySpendCustomInner({
           ? anyspendQuote.data.currencyIn.amountUsd.toString()
           : srcFiatAmount;
 
-        void createOnrampOrder({
-          ...createOrderParams,
-          srcFiatAmount: onrampAmount,
-          onramp: {
-            vendor: onramp.vendor,
-            paymentMethod: onramp.paymentMethod,
-            country: currentGeoData?.country || "US",
-            redirectUrl:
-              window.location.origin === "https://basement.fun"
-                ? "https://basement.fun/deposit"
-                : window.location.origin,
-          },
-          expectedDstAmount: anyspendQuote?.data?.currencyOut?.amount?.toString() || "0",
-        });
+        if (checkoutSession) {
+          // Use checkout session flow
+          void createCheckoutSessionOrder({
+            recipientAddress: recipientAddress,
+            dstChain: dstChainId,
+            dstTokenAddress: dstToken.address,
+            srcFiatAmount: onrampAmount,
+            onramp: {
+              vendor: onramp.vendor as "coinbase" | "stripe-web2" | "none",
+              paymentMethod: onramp.paymentMethod,
+              country: currentGeoData?.country || "US",
+            },
+          });
+        } else {
+          void createOnrampOrder({
+            ...createOrderParams,
+            srcFiatAmount: onrampAmount,
+            onramp: {
+              vendor: onramp.vendor,
+              paymentMethod: onramp.paymentMethod,
+              country: currentGeoData?.country || "US",
+              redirectUrl:
+                window.location.origin === "https://basement.fun"
+                  ? "https://basement.fun/deposit"
+                  : window.location.origin,
+            },
+            expectedDstAmount: anyspendQuote?.data?.currencyOut?.amount?.toString() || "0",
+          });
+        }
       } else {
         void createRegularOrder({
           ...createOrderParams,
@@ -738,6 +776,7 @@ function AnySpendCustomInner({
             params.delete("orderId");
             router.push(`${window.location.pathname}?${params.toString()}`);
           }}
+          isCheckoutSession={isCheckoutSession}
         />
       )}
       {mode === "page" && <div className="h-12" />}

@@ -12,6 +12,7 @@ import {
   ZERO_ADDRESS,
 } from "@b3dotfun/sdk/anyspend";
 import {
+  useAnyspendCreateCheckoutSessionOrder,
   useAnyspendCreateOnrampOrder,
   useAnyspendCreateOrder,
   useAnyspendOrderAndTransactions,
@@ -19,6 +20,7 @@ import {
   useGasPrice,
   useGeoOnrampOptions,
 } from "@b3dotfun/sdk/anyspend/react";
+import type { CheckoutSessionConfig } from "../hooks/useAnyspendCreateCheckoutSessionOrder";
 import {
   Button,
   ShinyButton,
@@ -127,6 +129,8 @@ export function AnySpend(props: {
   allowDirectTransfer?: boolean;
   /** Fixed destination token amount (in wei/smallest unit). When provided, user cannot change the amount. */
   destinationTokenAmount?: string;
+  /** If provided, wraps fiat order creation in a checkout session for Stripe-like redirect flows */
+  checkoutSession?: CheckoutSessionConfig;
 }) {
   const fingerprintConfig = getFingerprintConfig();
 
@@ -159,6 +163,7 @@ function AnySpendInner({
   classes,
   allowDirectTransfer = false,
   destinationTokenAmount,
+  checkoutSession,
 }: {
   sourceChainId?: number;
   destinationTokenAddress?: string;
@@ -180,6 +185,7 @@ function AnySpendInner({
   classes?: AnySpendClasses;
   allowDirectTransfer?: boolean;
   destinationTokenAmount?: string;
+  checkoutSession?: CheckoutSessionConfig;
 }) {
   const searchParams = useSearchParamsSSR();
   const router = useRouter();
@@ -217,6 +223,7 @@ function AnySpendInner({
   const [activeTab, setActiveTab] = useState<"crypto" | "fiat">(defaultActiveTab);
 
   const [orderId, setOrderId] = useState<string | undefined>(loadOrder);
+  const [isCheckoutSession, setIsCheckoutSession] = useState(false);
   const [directTransferTxHash, setDirectTransferTxHash] = useState<string | undefined>();
   const { orderAndTransactions: oat, getOrderAndTransactionsError } = useAnyspendOrderAndTransactions(orderId);
   !!getOrderAndTransactionsError && console.log("getOrderAndTransactionsError", getOrderAndTransactionsError);
@@ -754,6 +761,31 @@ function AnySpendInner({
     },
   });
 
+  // Checkout session order creation hook (used when checkoutSession prop is set)
+  const { createOrder: createCheckoutSessionOrder, isCreatingOrder: isCreatingCheckoutSessionOrder } =
+    useAnyspendCreateCheckoutSessionOrder({
+      checkoutSession: checkoutSession ?? {},
+      onSuccess: data => {
+        const orderId = data.data.order_id;
+        if (orderId) {
+          setOrderId(orderId);
+          setIsCheckoutSession(true);
+          navigateToPanel(PanelView.ORDER_DETAILS, "forward");
+
+          if (!disableUrlParamManagement) {
+            const params = new URLSearchParams(searchParams.toString());
+            params.set("orderId", orderId);
+            params.set("paymentMethod", "fiat");
+            router.push(`${window.location.pathname}?${params.toString()}`);
+          }
+        }
+      },
+      onError: error => {
+        console.error(error);
+        toast.error("Failed to create order: " + error.message);
+      },
+    });
+
   // Check if it's a same-chain same-token swap
   const isSameChainSameToken = useMemo(() => {
     return (
@@ -1028,22 +1060,39 @@ function AnySpendInner({
         return selectedDstToken;
       };
 
-      createOnrampOrder({
-        recipientAddress: effectiveRecipientAddress,
-        orderType: "swap",
-        dstChain: getDstToken().chainId,
-        dstToken: getDstToken(),
-        srcFiatAmount: srcAmountOnRamp,
-        onramp: {
-          vendor: vendor,
-          paymentMethod: paymentMethodString,
-          country: geoData?.country || "US",
-          redirectUrl:
-            window.location.origin === "https://basement.fun" ? "https://basement.fun/deposit" : window.location.origin,
-        },
-        expectedDstAmount: anyspendQuote?.data?.currencyOut?.amount?.toString() || "0",
-        creatorAddress: globalAddress,
-      });
+      if (checkoutSession) {
+        // Use checkout session flow — creates order via POST /checkout-sessions
+        createCheckoutSessionOrder({
+          recipientAddress: effectiveRecipientAddress,
+          dstChain: getDstToken().chainId,
+          dstTokenAddress: getDstToken().address,
+          srcFiatAmount: srcAmountOnRamp,
+          onramp: {
+            vendor: vendor as "coinbase" | "stripe-web2" | "none",
+            paymentMethod: paymentMethodString,
+            country: geoData?.country || "US",
+          },
+        });
+      } else {
+        createOnrampOrder({
+          recipientAddress: effectiveRecipientAddress,
+          orderType: "swap",
+          dstChain: getDstToken().chainId,
+          dstToken: getDstToken(),
+          srcFiatAmount: srcAmountOnRamp,
+          onramp: {
+            vendor: vendor,
+            paymentMethod: paymentMethodString,
+            country: geoData?.country || "US",
+            redirectUrl:
+              window.location.origin === "https://basement.fun"
+                ? "https://basement.fun/deposit"
+                : window.location.origin,
+          },
+          expectedDstAmount: anyspendQuote?.data?.currencyOut?.amount?.toString() || "0",
+          creatorAddress: globalAddress,
+        });
+      }
     } catch (err: any) {
       console.error(err);
       toast.error("Failed to create order: " + err.message);
@@ -1154,6 +1203,7 @@ function AnySpendInner({
             returnToHomeUrl={returnToHomeUrl}
             returnHomeLabel={returnHomeLabel}
             disableUrlParamManagement={disableUrlParamManagement}
+            isCheckoutSession={isCheckoutSession}
           />
         )}
         {/* {mode === "page" && <div className="h-12" />} */}
