@@ -33,78 +33,17 @@ import React, { useEffect, useMemo, useState } from "react";
 import { createPublicClient, encodeFunctionData, http } from "viem";
 import { base } from "viem/chains";
 import { AnySpendCustom } from "./AnySpendCustom";
+import {
+  BUY_PACKS_FOR_ABI,
+  BUY_PACKS_FOR_WITH_DISCOUNT_ABI,
+  GET_DISCOUNT_CODE_ABI,
+  IS_DISCOUNT_CODE_VALID_FOR_PACK_ABI,
+} from "./ccShopAbi";
 
 // Collector Club Shop contract addresses on Base
 const CC_SHOP_ADDRESS = "0x47366E64E4917dd4DdC04Fb9DC507c1dD2b87294";
 const CC_SHOP_ADDRESS_STAGING = "0x8b751143342ac41eB965E55430e3F7Adf6BE01fA";
 const BASE_CHAIN_ID = 8453;
-
-// ABI for buyPacksFor function only
-const BUY_PACKS_FOR_ABI = {
-  inputs: [
-    { internalType: "address", name: "user", type: "address" },
-    { internalType: "uint256", name: "packId", type: "uint256" },
-    { internalType: "uint256", name: "amount", type: "uint256" },
-  ],
-  name: "buyPacksFor",
-  outputs: [],
-  stateMutability: "nonpayable",
-  type: "function",
-} as const;
-
-// ABI for buyPacksForWithDiscount function (with discount code)
-const BUY_PACKS_FOR_WITH_DISCOUNT_ABI = {
-  inputs: [
-    { internalType: "address", name: "user", type: "address" },
-    { internalType: "uint256", name: "packId", type: "uint256" },
-    { internalType: "uint256", name: "amount", type: "uint256" },
-    { internalType: "string", name: "discountCode", type: "string" },
-  ],
-  name: "buyPacksForWithDiscount",
-  outputs: [],
-  stateMutability: "nonpayable",
-  type: "function",
-} as const;
-
-// ABI for isDiscountCodeValidForPack view function (validates pack-specific restrictions)
-const IS_DISCOUNT_CODE_VALID_FOR_PACK_ABI = {
-  inputs: [
-    { internalType: "string", name: "code", type: "string" },
-    { internalType: "uint256", name: "packId", type: "uint256" },
-  ],
-  name: "isDiscountCodeValidForPack",
-  outputs: [
-    { internalType: "bool", name: "isValid", type: "bool" },
-    { internalType: "uint256", name: "discountAmount", type: "uint256" },
-  ],
-  stateMutability: "view",
-  type: "function",
-} as const;
-
-// ABI for getDiscountCode view function (full discount code details)
-const GET_DISCOUNT_CODE_ABI = {
-  inputs: [{ internalType: "string", name: "code", type: "string" }],
-  name: "getDiscountCode",
-  outputs: [
-    {
-      components: [
-        { internalType: "uint256", name: "discountAmount", type: "uint256" },
-        { internalType: "uint256", name: "expiresAt", type: "uint256" },
-        { internalType: "bool", name: "used", type: "bool" },
-        { internalType: "bool", name: "exists", type: "bool" },
-        { internalType: "uint256", name: "maxUses", type: "uint256" },
-        { internalType: "uint256", name: "usedCount", type: "uint256" },
-        { internalType: "uint256", name: "packId", type: "uint256" },
-        { internalType: "uint256", name: "minPurchaseAmount", type: "uint256" },
-      ],
-      internalType: "struct CCShop.DiscountCode",
-      name: "",
-      type: "tuple",
-    },
-  ],
-  stateMutability: "view",
-  type: "function",
-} as const;
 
 const basePublicClient = createPublicClient({
   chain: base,
