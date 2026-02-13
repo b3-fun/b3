@@ -113,6 +113,7 @@ export function useAnyspendCreateOnrampOrder({ onSuccess, onError }: UseAnyspend
           partnerId,
           clientReferenceId,
           visitorData,
+          callbackMetadata: params.callbackMetadata,
         });
       } catch (error: any) {
         // If the error has a response with message and statusCode, throw that

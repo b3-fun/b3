@@ -123,6 +123,8 @@ export interface AnySpendDepositProps {
   allowDirectTransfer?: boolean;
   /** Fixed destination token amount (in wei/smallest unit). When provided, user cannot change the amount. */
   destinationTokenAmount?: string;
+  /** Opaque metadata passed to the order for callbacks (e.g., workflow form data) */
+  callbackMetadata?: Record<string, unknown>;
 }
 
 // Default supported chains
@@ -248,6 +250,7 @@ export function AnySpendDeposit({
   classes,
   allowDirectTransfer = false,
   destinationTokenAmount,
+  callbackMetadata,
 }: AnySpendDepositProps) {
   // Extract deposit-specific classes for convenience
   const depositClasses = classes?.deposit;
@@ -697,6 +700,7 @@ export function AnySpendDeposit({
             classes={classes?.customExactIn}
             allowDirectTransfer={allowDirectTransfer}
             destinationTokenAmount={destinationTokenAmount}
+            callbackMetadata={callbackMetadata}
           />
         ) : (
           <AnySpend
@@ -720,6 +724,7 @@ export function AnySpendDeposit({
             classes={classes?.anySpend}
             allowDirectTransfer={allowDirectTransfer}
             destinationTokenAmount={destinationTokenAmount}
+            callbackMetadata={callbackMetadata}
           />
         )}
       </div>
