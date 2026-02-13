@@ -31,6 +31,7 @@ export const useUserStore = create<UserStore>()(
     }),
     {
       name: "b3-user",
+      skipHydration: true,
       onRehydrateStorage: () => (_, error) => {
         if (error) {
           console.warn("Failed to rehydrate user store:", error);

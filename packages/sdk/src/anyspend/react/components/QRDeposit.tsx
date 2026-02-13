@@ -1,4 +1,10 @@
-import { ALL_CHAINS, getAvailableChainIds, isSameChainAndToken } from "@b3dotfun/sdk/anyspend";
+import {
+  ALL_CHAINS,
+  getAvailableChainIds,
+  getPaymentUrl,
+  isSameChainAndToken,
+  ZERO_ADDRESS,
+} from "@b3dotfun/sdk/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { Button, toast } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
@@ -194,6 +200,15 @@ export function QRDeposit({
   // For pure transfers, always use recipient address; for orders, use global address
   const displayAddress = isPureTransfer ? recipientAddress : globalAddress || recipientAddress;
 
+  // Generate EIP-681 payment URI for the QR code so wallets know which chain/token to use
+  const qrValue = getPaymentUrl(
+    displayAddress,
+    undefined,
+    sourceToken.address === ZERO_ADDRESS ? "ETH" : sourceToken.address,
+    sourceChainId,
+    sourceToken.decimals,
+  );
+
   const handleCopyAddress = async () => {
     if (displayAddress) {
       await navigator.clipboard.writeText(displayAddress);
@@ -376,7 +391,7 @@ export function QRDeposit({
           {/* QR Code */}
           <div className={classes?.qrCodeContainer || "anyspend-qr-code-container flex flex-col items-center gap-2"}>
             <div className={classes?.qrCode || "anyspend-qr-code rounded-lg bg-white p-2"}>
-              <QRCodeSVG value={displayAddress} size={120} level="M" marginSize={0} />
+              <QRCodeSVG value={qrValue} size={120} level="M" marginSize={0} />
             </div>
             <span className={classes?.qrScanHint || "anyspend-qr-scan-hint text-as-secondary text-xs"}>
               SCAN WITH <span className="inline-block">🦊</span>

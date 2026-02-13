@@ -1,5 +1,5 @@
 import { Users } from "@b3dotfun/b3-api";
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import { useUserStore } from "../stores/userStore";
 
 const USER_QUERY_KEY = ["b3-user"];
@@ -14,6 +14,17 @@ export function useUserQuery() {
   const user = useUserStore(state => state.user);
   const setUserStore = useUserStore(state => state.setUser);
   const clearUserStore = useUserStore(state => state.clearUser);
+
+  // Manually rehydrate persisted store inside useLayoutEffect to avoid
+  // updating AuthenticationProvider state during Hydrate render.
+  // useLayoutEffect (not useEffect) ensures rehydration triggers a
+  // synchronous re-render before any useEffect callbacks fire, so
+  // downstream effects always see the persisted user value.
+  useLayoutEffect(() => {
+    if (!useUserStore.persist.hasHydrated()) {
+      useUserStore.persist.rehydrate();
+    }
+  }, []);
 
   // Listen for storage events from other tabs/windows
   useEffect(() => {
