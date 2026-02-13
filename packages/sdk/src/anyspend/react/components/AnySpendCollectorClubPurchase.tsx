@@ -33,50 +33,17 @@ import React, { useEffect, useMemo, useState } from "react";
 import { createPublicClient, encodeFunctionData, http } from "viem";
 import { base } from "viem/chains";
 import { AnySpendCustom } from "./AnySpendCustom";
+import {
+  BUY_PACKS_FOR_ABI,
+  BUY_PACKS_FOR_WITH_DISCOUNT_ABI,
+  GET_DISCOUNT_CODE_ABI,
+  IS_DISCOUNT_CODE_VALID_FOR_PACK_ABI,
+} from "./ccShopAbi";
 
 // Collector Club Shop contract addresses on Base
 const CC_SHOP_ADDRESS = "0x47366E64E4917dd4DdC04Fb9DC507c1dD2b87294";
 const CC_SHOP_ADDRESS_STAGING = "0x8b751143342ac41eB965E55430e3F7Adf6BE01fA";
 const BASE_CHAIN_ID = 8453;
-
-// ABI for buyPacksFor function only
-const BUY_PACKS_FOR_ABI = {
-  inputs: [
-    { internalType: "address", name: "user", type: "address" },
-    { internalType: "uint256", name: "packId", type: "uint256" },
-    { internalType: "uint256", name: "amount", type: "uint256" },
-  ],
-  name: "buyPacksFor",
-  outputs: [],
-  stateMutability: "nonpayable",
-  type: "function",
-} as const;
-
-// ABI for buyPacksForWithDiscount function (with discount code)
-const BUY_PACKS_FOR_WITH_DISCOUNT_ABI = {
-  inputs: [
-    { internalType: "address", name: "user", type: "address" },
-    { internalType: "uint256", name: "packId", type: "uint256" },
-    { internalType: "uint256", name: "amount", type: "uint256" },
-    { internalType: "string", name: "discountCode", type: "string" },
-  ],
-  name: "buyPacksForWithDiscount",
-  outputs: [],
-  stateMutability: "nonpayable",
-  type: "function",
-} as const;
-
-// ABI for isDiscountCodeValid view function
-const IS_DISCOUNT_CODE_VALID_ABI = {
-  inputs: [{ internalType: "string", name: "code", type: "string" }],
-  name: "isDiscountCodeValid",
-  outputs: [
-    { internalType: "bool", name: "isValid", type: "bool" },
-    { internalType: "uint256", name: "discountAmount", type: "uint256" },
-  ],
-  stateMutability: "view",
-  type: "function",
-} as const;
 
 const basePublicClient = createPublicClient({
   chain: base,
@@ -193,11 +160,13 @@ export function AnySpendCollectorClubPurchase({
   const [discountInfo, setDiscountInfo] = useState<{
     isValid: boolean;
     discountAmount: bigint;
+    minPurchaseAmount: bigint;
     isLoading: boolean;
     error: string | null;
   }>({
     isValid: false,
     discountAmount: BigInt(0),
+    minPurchaseAmount: BigInt(0),
     isLoading: false,
     error: null,
   });
@@ -205,7 +174,13 @@ export function AnySpendCollectorClubPurchase({
   // Validate discount code on-chain when provided
   useEffect(() => {
     if (!discountCode) {
-      setDiscountInfo({ isValid: false, discountAmount: BigInt(0), isLoading: false, error: null });
+      setDiscountInfo({
+        isValid: false,
+        discountAmount: BigInt(0),
+        minPurchaseAmount: BigInt(0),
+        isLoading: false,
+        error: null,
+      });
       return;
     }
 
@@ -215,34 +190,68 @@ export function AnySpendCollectorClubPurchase({
       setDiscountInfo(prev => ({ ...prev, isLoading: true, error: null }));
 
       try {
-        const result = await basePublicClient.readContract({
-          address: ccShopAddress as `0x${string}`,
-          abi: [IS_DISCOUNT_CODE_VALID_ABI],
-          functionName: "isDiscountCodeValid",
-          args: [discountCode],
-        });
+        // Validate against specific pack and fetch full details in parallel
+        const [validForPack, codeDetails] = await Promise.all([
+          basePublicClient.readContract({
+            address: ccShopAddress as `0x${string}`,
+            abi: [IS_DISCOUNT_CODE_VALID_FOR_PACK_ABI],
+            functionName: "isDiscountCodeValidForPack",
+            args: [discountCode, BigInt(packId)],
+          }),
+          basePublicClient.readContract({
+            address: ccShopAddress as `0x${string}`,
+            abi: [GET_DISCOUNT_CODE_ABI],
+            functionName: "getDiscountCode",
+            args: [discountCode],
+          }),
+        ]);
 
         if (cancelled) return;
 
-        const [isValid, discountAmount] = result;
+        const [isValid, discountAmount] = validForPack;
+        const { minPurchaseAmount, packId: restrictedPackId, exists } = codeDetails;
 
-        if (!isValid) {
+        if (!exists) {
           setDiscountInfo({
             isValid: false,
             discountAmount: BigInt(0),
+            minPurchaseAmount: BigInt(0),
             isLoading: false,
-            error: "Invalid or expired discount code",
+            error: "Discount code does not exist",
           });
           return;
         }
 
-        setDiscountInfo({ isValid: true, discountAmount, isLoading: false, error: null });
+        if (!isValid) {
+          // Provide specific error based on code details
+          if (restrictedPackId !== BigInt(0) && restrictedPackId !== BigInt(packId)) {
+            setDiscountInfo({
+              isValid: false,
+              discountAmount: BigInt(0),
+              minPurchaseAmount: BigInt(0),
+              isLoading: false,
+              error: "Discount code is not valid for this pack",
+            });
+          } else {
+            setDiscountInfo({
+              isValid: false,
+              discountAmount: BigInt(0),
+              minPurchaseAmount: BigInt(0),
+              isLoading: false,
+              error: "Invalid or expired discount code",
+            });
+          }
+          return;
+        }
+
+        setDiscountInfo({ isValid: true, discountAmount, minPurchaseAmount, isLoading: false, error: null });
       } catch (error) {
         if (cancelled) return;
         console.error("Failed to validate discount code", { discountCode, error });
         setDiscountInfo({
           isValid: false,
           discountAmount: BigInt(0),
+          minPurchaseAmount: BigInt(0),
           isLoading: false,
           error: "Failed to validate discount code",
         });
@@ -254,7 +263,7 @@ export function AnySpendCollectorClubPurchase({
     return () => {
       cancelled = true;
     };
-  }, [discountCode, ccShopAddress]);
+  }, [discountCode, ccShopAddress, packId]);
 
   // Calculate effective dstAmount after discount
   const effectiveDstAmount = useMemo(() => {
@@ -326,6 +335,22 @@ export function AnySpendCollectorClubPurchase({
     return (
       <div className="mb-4 flex flex-col items-center gap-3 text-center">
         <p className="text-sm text-red-500">{discountInfo.error}</p>
+      </div>
+    );
+  }
+
+  if (
+    discountCode &&
+    discountInfo.isValid &&
+    discountInfo.minPurchaseAmount > BigInt(0) &&
+    BigInt(packAmount) < discountInfo.minPurchaseAmount
+  ) {
+    return (
+      <div className="mb-4 flex flex-col items-center gap-3 text-center">
+        <p className="text-sm text-red-500">
+          Minimum purchase of {discountInfo.minPurchaseAmount.toString()} pack
+          {discountInfo.minPurchaseAmount > BigInt(1) ? "s" : ""} required for this discount code
+        </p>
       </div>
     );
   }
