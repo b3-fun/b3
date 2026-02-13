@@ -10,10 +10,12 @@ export function TokenBalance({
   token,
   walletAddress,
   onChangeInput,
+  hideMaxButton = false,
 }: {
   token: components["schemas"]["Token"];
   walletAddress: string | undefined;
   onChangeInput: (value: string) => void;
+  hideMaxButton?: boolean;
 }) {
   const tokenAddress = isNativeToken(token.address) ? "native" : token.address;
   const { data, isLoading } = useSimTokenBalance(walletAddress, tokenAddress, token.chainId);
@@ -62,7 +64,7 @@ export function TokenBalance({
             {rawBalance ? `Balance: ${formattedBalance}` : `Balance: 0`}
           </div>
 
-          {!!rawBalance && (
+          {!!rawBalance && !hideMaxButton && (
             <>
               {/* <button
                 onClick={() => handlePercentageClick(20)}

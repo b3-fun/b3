@@ -419,6 +419,7 @@ function AnySpendCustomExactInInner({
               anyspendQuote={anyspendQuote}
               onTokenSelect={onTokenSelect}
               skipAutoMaxOnTokenChange={!!destinationTokenAmount}
+              disableAmountInput={!!destinationTokenAmount}
             />
           ) : (
             <motion.div
