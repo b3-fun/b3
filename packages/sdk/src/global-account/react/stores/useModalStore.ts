@@ -562,6 +562,8 @@ export interface AnySpendDepositModalProps extends BaseModalProps {
   classes?: AnySpendAllClasses;
   /** Whether to allow direct transfer without swap */
   allowDirectTransfer?: boolean;
+  /** Opaque metadata passed to the order for callbacks (e.g., workflow form data) */
+  callbackMetadata?: Record<string, unknown>;
 }
 
 /**

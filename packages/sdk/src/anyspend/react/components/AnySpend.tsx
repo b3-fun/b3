@@ -127,6 +127,8 @@ export function AnySpend(props: {
   allowDirectTransfer?: boolean;
   /** Fixed destination token amount (in wei/smallest unit). When provided, user cannot change the amount. */
   destinationTokenAmount?: string;
+  /** Opaque metadata passed to the order for callbacks (e.g., workflow form data) */
+  callbackMetadata?: Record<string, unknown>;
 }) {
   const fingerprintConfig = getFingerprintConfig();
 
@@ -159,6 +161,7 @@ function AnySpendInner({
   classes,
   allowDirectTransfer = false,
   destinationTokenAmount,
+  callbackMetadata,
 }: {
   sourceChainId?: number;
   destinationTokenAddress?: string;
@@ -180,6 +183,7 @@ function AnySpendInner({
   classes?: AnySpendClasses;
   allowDirectTransfer?: boolean;
   destinationTokenAmount?: string;
+  callbackMetadata?: Record<string, unknown>;
 }) {
   const searchParams = useSearchParamsSSR();
   const router = useRouter();
@@ -966,6 +970,7 @@ function AnySpendInner({
         srcAmount: srcAmountBigInt.toString(),
         expectedDstAmount: anyspendQuote?.data?.currencyOut?.amount || "0",
         creatorAddress: globalAddress,
+        callbackMetadata,
       });
     } catch (err: any) {
       console.error(err);
@@ -1043,6 +1048,7 @@ function AnySpendInner({
         },
         expectedDstAmount: anyspendQuote?.data?.currencyOut?.amount?.toString() || "0",
         creatorAddress: globalAddress,
+        callbackMetadata,
       });
     } catch (err: any) {
       console.error(err);
@@ -1214,7 +1220,6 @@ function AnySpendInner({
               anyspendQuote={anyspendQuote}
               onTokenSelect={onTokenSelect}
               onShowFeeDetail={() => navigateToPanel(PanelView.FEE_DETAIL, "forward")}
-              skipAutoMaxOnTokenChange={!!destinationTokenAmount}
             />
           ) : (
             <motion.div

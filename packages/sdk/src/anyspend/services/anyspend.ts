@@ -70,6 +70,7 @@ export const anyspendService = {
     partnerId,
     clientReferenceId,
     visitorData,
+    callbackMetadata,
   }: {
     recipientAddress: string;
     type: string;
@@ -85,6 +86,7 @@ export const anyspendService = {
     partnerId?: string;
     clientReferenceId?: string;
     visitorData?: VisitorData;
+    callbackMetadata?: Record<string, unknown>;
   }) => {
     const accessToken = await app.authentication.getAccessToken();
     const response = await fetch(`${ANYSPEND_MAINNET_BASE_URL}/orders`, {
@@ -109,6 +111,7 @@ export const anyspendService = {
         creatorAddress,
         partnerId,
         ...(clientReferenceId && { clientReferenceId }),
+        ...(callbackMetadata && { callbackMetadata }),
       }),
     });
     const data: CreateOrderResponse = await response.json();

@@ -83,6 +83,8 @@ export interface AnySpendCustomExactInProps {
   classes?: AnySpendCustomExactInClasses;
   /** When true, allows direct transfer without swap if source and destination token/chain are the same */
   allowDirectTransfer?: boolean;
+  /** Opaque metadata passed to the order for callbacks (e.g., workflow form data) */
+  callbackMetadata?: Record<string, unknown>;
 }
 
 export function AnySpendCustomExactIn(props: AnySpendCustomExactInProps) {
@@ -120,6 +122,7 @@ function AnySpendCustomExactInInner({
   returnHomeLabel,
   classes,
   allowDirectTransfer = false,
+  callbackMetadata,
 }: AnySpendCustomExactInProps) {
   const actionLabel = customExactInConfig?.action ?? "Custom Execution";
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
@@ -418,7 +421,6 @@ function AnySpendCustomExactInInner({
               onSelectCryptoPaymentMethod={() => setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD)}
               anyspendQuote={anyspendQuote}
               onTokenSelect={onTokenSelect}
-              skipAutoMaxOnTokenChange={!!destinationTokenAmount}
             />
           ) : (
             <motion.div
@@ -587,6 +589,7 @@ function AnySpendCustomExactInInner({
               ? normalizeAddress(customExactInConfig.spenderAddress)
               : undefined,
           },
+          callbackMetadata,
         });
       } else {
         // EXACT_INPUT mode: create custom_exact_in order (original behavior)
@@ -604,6 +607,7 @@ function AnySpendCustomExactInInner({
           expectedDstAmount: expectedDstAmountRaw,
           creatorAddress: globalAddress,
           payload,
+          callbackMetadata,
         });
       }
     } catch (err: any) {

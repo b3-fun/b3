@@ -22,6 +22,7 @@ export type CreateOrderParams = {
   creatorAddress?: string;
   payload?: any;
   metadata?: Record<string, any>;
+  callbackMetadata?: Record<string, unknown>;
 };
 
 export type UseAnyspendCreateOrderProps = {
@@ -87,6 +88,7 @@ export function useAnyspendCreateOrder({ onSuccess, onError }: UseAnyspendCreate
           partnerId,
           clientReferenceId,
           visitorData,
+          callbackMetadata: params.callbackMetadata,
         });
       } catch (error: any) {
         // If the error has a response with message and statusCode, throw that

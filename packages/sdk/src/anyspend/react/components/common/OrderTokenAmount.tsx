@@ -1,15 +1,11 @@
 "use client";
 
 import { ChevronsUpDown } from "lucide-react";
-import { useEffect, useRef } from "react";
 import { NumericFormat } from "react-number-format";
-import { formatUnits } from "viem";
 
 import { ALL_CHAINS, RELAY_SOLANA_MAINNET_CHAIN_ID, getAvailableChainIds } from "@b3dotfun/sdk/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
-import { getNativeRequired } from "@b3dotfun/sdk/anyspend/utils/chain";
-import { isNativeToken } from "@b3dotfun/sdk/anyspend/utils/token";
-import { Button, useTokenBalance } from "@b3dotfun/sdk/global-account/react";
+import { Button } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils";
 import { TokenSelector } from "@relayprotocol/relay-kit-ui";
 import { ChainTokenIcon } from "./ChainTokenIcon";
@@ -31,8 +27,6 @@ export function OrderTokenAmount({
   amountClassName,
   tokenSelectClassName,
   onTokenSelect,
-  walletAddress,
-  skipAutoMaxOnTokenChange = false,
 }: {
   disabled?: boolean;
   inputValue: string;
@@ -50,64 +44,7 @@ export function OrderTokenAmount({
   amountClassName?: string;
   tokenSelectClassName?: string;
   onTokenSelect?: (token: components["schemas"]["Token"], event: { preventDefault: () => void }) => void;
-  walletAddress?: string | undefined;
-  /** When true, skip auto-setting max balance when token changes (used for fixed destination amount mode) */
-  skipAutoMaxOnTokenChange?: boolean;
 }) {
-  // Track previous token to detect changes
-  const prevTokenRef = useRef<string>(token.address);
-
-  // Only get token balance when context is "from" (for setting max amount)
-  const { rawBalance } = useTokenBalance({
-    token,
-    address: context === "from" && walletAddress ? walletAddress : undefined,
-  });
-
-  useEffect(() => {
-    // Only handle "from" context
-    if (context !== "from") return;
-
-    // Skip auto-max when in fixed destination amount mode
-    if (skipAutoMaxOnTokenChange) {
-      prevTokenRef.current = token.address;
-      return;
-    }
-
-    // Check if token changed or if this is the initial load with balance
-    const isTokenChanged = prevTokenRef.current !== token.address;
-
-    if (isTokenChanged && rawBalance) {
-      console.log(`Setting max balance - Token: ${token.address}, Changed: ${isTokenChanged}`);
-
-      // Calculate max amount with gas reserve for native tokens
-      let maxAmount: bigint;
-
-      if (isNativeToken(token.address)) {
-        const gasReserve = getNativeRequired(token.chainId);
-        // Ensure we don't go negative
-        maxAmount = rawBalance > gasReserve ? rawBalance - gasReserve : BigInt(0);
-      } else {
-        // For ERC20 tokens, use full balance
-        maxAmount = rawBalance;
-      }
-
-      // Set the max amount as input value
-      onChangeInput(formatUnits(maxAmount, token.decimals));
-
-      // Update refs
-      prevTokenRef.current = token.address;
-    }
-  }, [
-    token.address,
-    token.chainId,
-    token.decimals,
-    chainId,
-    context,
-    onChangeInput,
-    rawBalance,
-    skipAutoMaxOnTokenChange,
-  ]);
-
   const handleTokenSelect = (newToken: any) => {
     const token: components["schemas"]["Token"] = {
       address: newToken.address,
@@ -134,13 +71,7 @@ export function OrderTokenAmount({
       }
     }
 
-    // Mark that we're about to change tokens
-    prevTokenRef.current = "changing"; // Temporary value to force effect
-
-    // Set the chain ID first
     setChainId(newToken.chainId);
-
-    // Then set the new token - the useEffect will handle setting the max balance
     setToken(token);
   };
 
