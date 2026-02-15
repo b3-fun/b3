@@ -81,6 +81,7 @@ That's it! Your users can now purchase NFTs with any token from any supported ch
 | [🧩 Components API](./docs/components.md) | Pre-built React components for common use cases |
 | [🪝 Hooks API](./docs/hooks.md) | React hooks for custom implementations |
 | [💡 Examples & Use Cases](./docs/examples.md) | Real-world integration examples |
+| [🛒 Checkout Sessions](./docs/checkout-sessions.md) | Stripe-like checkout sessions for merchant integrations |
 | [⚠️ Error Handling](./docs/error-handling.md) | Error handling patterns and troubleshooting |
 | [🤝 Contributing](./docs/contributing.md) | How to contribute to AnySpend |
 
@@ -120,6 +121,19 @@ That's it! Your users can now purchase NFTs with any token from any supported ch
   defaultActiveTab="fiat"
   destinationTokenAddress="0x..." // USDC
   recipientAddress={userAddress}
+/>
+```
+
+### Merchant Checkout Sessions
+```tsx
+<AnySpend
+  defaultActiveTab="fiat"
+  destinationTokenAddress="0x..." // USDC
+  recipientAddress={userAddress}
+  checkoutSession={{
+    success_url: "https://myshop.com/success?session={SESSION_ID}",
+    metadata: { sku: "widget-1" },
+  }}
 />
 ```
 

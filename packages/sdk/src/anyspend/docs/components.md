@@ -207,6 +207,32 @@ const stakingCalldata = encodeFunctionData({
 />
 ```
 
+### Checkout Session Prop
+
+The `<AnySpend>`, `<AnySpendCustom>`, and `<AnySpendCustomExactIn>` components accept an optional `checkoutSession` prop for merchant checkout flows. When set, the component creates a session before the order and uses the session's redirect URLs. See [Checkout Sessions](./checkout-sessions.md) for the full guide.
+
+```tsx
+<AnySpend
+  defaultActiveTab="fiat"
+  destinationTokenAddress="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+  destinationTokenChainId={8453}
+  recipientAddress="0x..."
+  checkoutSession={{
+    success_url: "https://myshop.com/success?session={SESSION_ID}",
+    cancel_url: "https://myshop.com/cancel",
+    metadata: { sku: "widget-1" },
+  }}
+/>
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `checkoutSession.success_url` | `string` | Redirect URL on completion. Supports `{SESSION_ID}` template. |
+| `checkoutSession.cancel_url` | `string` | Redirect URL on cancellation |
+| `checkoutSession.metadata` | `Record<string, string>` | Custom metadata attached to the session |
+
+---
+
 ## Specialized Components
 
 ### `<AnySpendNFT>`

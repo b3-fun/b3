@@ -720,8 +720,66 @@ function PortfolioRebalancer() {
 }
 ```
 
+## 🛒 Checkout Sessions (Merchant Integration)
+
+### Hosted Checkout with Payment Choice
+
+Let users choose their payment method (crypto or fiat) after session creation.
+
+```tsx
+import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
+
+function MerchantCheckout({ sku, price }: { sku: string; price: string }) {
+  const [userAddress] = useWallet();
+
+  return (
+    <AnySpend
+      defaultActiveTab="fiat"
+      destinationTokenAddress="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      destinationTokenChainId={8453}
+      recipientAddress={userAddress}
+      checkoutSession={{
+        success_url: "https://myshop.com/success?session={SESSION_ID}",
+        cancel_url: "https://myshop.com/cancel",
+        metadata: { sku, price },
+      }}
+    />
+  );
+}
+```
+
+### Server-Side Session with Custom Polling
+
+```tsx
+import {
+  useCreateCheckoutSession,
+  useCheckoutSession,
+} from "@b3dotfun/sdk/anyspend";
+
+function ServerCheckout() {
+  const { mutate: createSession, data: session } = useCreateCheckoutSession();
+  const { data: sessionStatus } = useCheckoutSession(session?.data?.id);
+
+  useEffect(() => {
+    createSession({
+      success_url: "https://mysite.com/success/{SESSION_ID}",
+      metadata: { sku: "widget-1" },
+    });
+  }, []);
+
+  if (sessionStatus?.data?.status === "complete") {
+    return <div>Payment complete!</div>;
+  }
+
+  // Render order creation UI...
+}
+```
+
+See [Checkout Sessions](./checkout-sessions.md) for the full guide including API details and the session lifecycle.
+
 ## Next Steps
 
+- [Checkout Sessions →](./checkout-sessions.md)
 - [Error Handling Guide →](./error-handling.md)
 - [Components Reference →](./components.md)
 - [Hooks Reference →](./hooks.md)
