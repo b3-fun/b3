@@ -385,6 +385,38 @@ Get Stripe payment intent for credit card payments.
 const { clientSecret, isLoadingClientSecret } = useStripeClientSecret(orderData);
 ```
 
+### `useCreateCheckoutSession`
+
+Create checkout sessions for merchant integrations. See [Checkout Sessions](./checkout-sessions.md) for the full guide.
+
+```tsx
+import { useCreateCheckoutSession } from "@b3dotfun/sdk/anyspend";
+
+const { mutate: createSession, data, isPending } = useCreateCheckoutSession();
+
+createSession({
+  success_url: "https://mysite.com/success/{SESSION_ID}",
+  cancel_url: "https://mysite.com/cancel",
+  metadata: { sku: "widget-1" },
+});
+```
+
+---
+
+### `useCheckoutSession`
+
+Poll a checkout session's status. Auto-polls while the session is `open` or `processing`, and stops when `complete` or `expired`.
+
+```tsx
+import { useCheckoutSession } from "@b3dotfun/sdk/anyspend";
+
+const { data: session, isLoading } = useCheckoutSession(sessionId);
+
+// session.data.status: "open" | "processing" | "complete" | "expired"
+```
+
+---
+
 ## Hook Patterns
 
 ### Error Handling Pattern
