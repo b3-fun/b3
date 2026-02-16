@@ -1,0 +1,231 @@
+---
+title: Checkout Sessions
+description: Stripe과 유사한 결제 흐름을 위한 분리된 결제 세션 처리 방법 AnySpend
+lang: ko
+originalPath: anyspend/checkout-sessions.mdx
+---
+Stripe와 유사한 결제 세션을 AnySpend에 적용합니다. 세션은 주문과 분리되어 있습니다 — 세션을 먼저 생성한 다음, 사용자가 결제할 준비가 되었을 때 주문을 생성합니다.
+
+## 흐름
+
+```
+1. 상인이 세션 생성        POST /checkout-sessions
+                                   <- { id, status: "open" }
+
+2. 사용자가 결제 방법 선택       POST /orders { checkoutSessionId }
+                                   <- { id, globalAddress, oneClickBuyUrl }
+
+3. 사용자가 결제                       Crypto: globalAddress로 보냄
+                                   Onramp: oneClickBuyUrl로 리다이렉트
+
+4. 상인이 완료 여부를 폴링   GET /checkout-sessions/:id
+                                   <- { status: "complete", order_id }
+```
+
+### 분리된 이유는?
+
+세션 생성은 즉각적입니다(DB만, 외부 호출 없음). 주문은 사용자가 결제 방법을 확정했을 때 별도로 생성됩니다. 이는 다음을 의미합니다:
+
+- 세션 생성 시 결제 방법을 알 필요가 없음
+- 호스팅된 결제 페이지에서 사용자가 결제 방법을 선택할 수 있음
+- 외부 API 오류로 인해 세션 생성이 실패하지 않음
+
+## 세션 상태 라이프사이클
+
+```
+open --> processing --> complete
+  |
+  └--> expired
+```
+
+| 상태 | 시점 |
+|--------|------|
+| `open` | 생성됨, 주문/결제 대기 중 |
+| `processing` | 결제 수신됨, 주문 실행 중 |
+| `complete` | 주문이 성공적으로 실행됨 |
+| `expired` | TTL 만료, 결제 실패, 또는 수동으로 만료됨 |
+
+## API
+
+### `POST /checkout-sessions` — 세션 생성
+
+경량 세션을 생성합니다. 주문 없음, 외부 API 호출 없음.
+
+```json
+{
+  "success_url": "https://merchant.com/success?session_id={SESSION_ID}",
+  "cancel_url": "https://merchant.com/cancel",
+  "metadata": { "sku": "widget-1" },
+  "client_reference_id": "merchant-order-456",
+  "expires_in": 1800
+}
+```
+
+모든 필드는 선택 사항입니다. 결제 구성(금액, 토큰, 체인)은 주문에 있고 세션에는 없습니다.
+
+### `POST /orders` — 세션 연결하여 주문 생성
+
+표준 주문 생성 요청에 `checkoutSessionId`를 전달하여 세션에 주문을 연결합니다.
+
+```json
+{
+  "recipientAddress": "0x...",
+  "srcChain": 8453,
+  "dstChain": 8453,
+  "srcTokenAddress": "0x...",
+  "dstTokenAddress": "0x...",
+  "srcAmount": "1000000",
+  "type": "swap",
+  "payload": { "expectedDstAmount": "1000000" },
+  "checkoutSessionId": "550e8400-..."
+}
+```
+
+**유효성 검사:**
+- 세션이 존재해야 함 (`400` if not found)
+- 세션 상태가 `open`이어야 함 (`400` if expired/processing/complete)
+- 세션에 이미 주문이 있으면 안 됨 (`409 Conflict`)
+
+### `GET /checkout-sessions/:id` — 세션 검색
+
+현재 세션 상태를 반환합니다. 상태는 각 검색 시 기본 주문에서 동기화됩니다.
+
+| 쿼리 파라미터 | 설명 |
+|-------------|-------------|
+| `include=order` | 전체 주문 객체와 거래를 포함시킴 |
+
+### `POST /checkout-sessions/:id/expire` — 수동으로 만료
+
+`open` 상태의 세션에서만 작동합니다.
+
+## 리다이렉트 URL 템플릿
+
+`success_url` 및 `cancel_url`에 템플릿 변수 사용:
+
+| 변수 | 대체됨 |
+|----------|--------------|
+| `{SESSION_ID}` | 결제 세션 UUID |
+| `{ORDER_ID}` | 동일한 값 (별칭) |
+
+템플릿 변수가 없는 경우, 자동으로 `?sessionId=<uuid>`가 추가됩니다.
+
+## SDK 통합
+
+### 서비스 메서드
+
+```typescript
+// 결제 세션 생성
+const session = await anyspend.createCheckoutSession({
+  success_url: "https://mysite.com/success/{SESSION_ID}",
+  metadata: { sku: "widget-1" },
+});
+
+// 세션 상태 검색
+const session = await anyspend.getCheckoutSession(sessionId);
+```
+
+### React Hooks
+
+#### `useCreateCheckoutSession`
+
+세션 생성을 위한 변형 훅.
+
+```tsx
+import { useCreateCheckoutSession } from "@b3dotfun/sdk/anyspend";
+
+const { mutate: createSession, data, isPending } = useCreateCheckoutSession();
+```
+
+#### `useCheckoutSession`
+
+자동 폴링이 있는 쿼리 훅. 상태가 `complete` 또는 `expired`에 도달하면 폴링을 중단합니다.
+
+```tsx
+import { useCheckoutSession } from "@b3dotfun/sdk/anyspend";
+
+const { data: session, isLoading } = useCheckoutSession(sessionId);
+```
+
+### 컴포넌트 `checkoutSession` Prop
+
+`<AnySpend>`, `<AnySpendCustom>`, `<AnySpendCustomExactIn>` 컴포넌트는 선택적 `checkoutSession` prop을 받습니다:
+
+```tsx
+<AnySpend
+  defaultActiveTab="fiat"
+  destinationTokenAddress="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+  destinationTokenChainId={8453}
+  recipientAddress="0x..."
+  checkoutSession={{
+    success_url: "https://myshop.com/success?session={SESSION_ID}",
+    cancel_url: "https://myshop.com/cancel",
+    metadata: { sku: "widget-1" },
+  }}
+/>
+```
+
+`checkoutSession` prop이 설정되면, 컴포넌트는 자동으로 세션을 생성한 다음 주문을 생성하고, 세션의 `success_url`을 리다이렉트에 사용합니다. prop이 없으면 기존 흐름은 변경되지 않습니다.
+
+## 예시
+
+### 암호화폐 결제
+
+```typescript
+// 1. 세션 생성
+const session = await fetch("/checkout-sessions", {
+  method: "POST",
+  body: JSON.stringify({
+    success_url: "https://mysite.com/success/{SESSION_ID}",
+    metadata: { sku: "widget-1" },
+  }),
+}).then(r => r.json());
+
+// 2. 세션에 연결된 주문 생성
+const order = await fetch("/orders", {
+  method: "POST",
+  body: JSON.stringify({
+    recipientAddress: "0x...",
+    srcChain: 8453,
+    dstChain: 8453,
+    srcTokenAddress: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    dstTokenAddress: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    srcAmount: "1000000",
+    type: "swap",
+    payload: { expectedDstAmount: "1000000" },
+    checkoutSessionId: session.data.id,
+  }),
+}).then(r => r.json());
+
+// 3. 사용자가 order.data.globalAddress로 암호화폐를 보냄
+
+// 4. 세션이 완료될 때까지 폴링
+const poll = setInterval(async () => {
+  const s = await fetch(`/checkout-sessions/${session.data.id}`).then(r => r.json());
+  if (s.data.status === "complete") {
+    clearInterval(poll);
+    // success_url로 리다이렉트하거나 확인 표시
+  }
+}, 3000);
+```
+
+### 온램프 결제 (Coinbase/Stripe)
+
+```typescript
+// 1-2단계는 위와 동일하지만, 주문 생성에 온램프 구성 포함:
+const order = await fetch("/orders", {
+  method: "POST",
+  body: JSON.stringify({
+    // ... 동일한 주문 필드 ...
+    checkoutSessionId: session.data.id,
+    onramp: {
+      vendor: "coinbase",
+      payment_method: "card",
+      country: "US",
+    },
+  }),
+}).then(r => r.json());
+
+// 사용자를 벤더 결제 페이지로 리다이렉트
+window.location.href = order.data.oneClickBuyUrl;
+
+// 벤더가 리다이렉트한 후, GET /checkout-sessions/:id를 폴링하여 완료 여부 확인

@@ -1,0 +1,140 @@
+---
+title: 存款
+description: 允许用户将代币存入任何支持的链上的特定钱包地址。
+lang: cn
+originalPath: anyspend/deposit.mdx
+---
+## 它的作用
+
+AnySpend 存款页面为用户提供了一个简化的界面，允许用户将代币存入特定的接收者钱包地址。它支持跨链存款，允许用户使用任何支持的链上的代币进行支付，而接收者则在其希望的目的链和代币上收到资金。
+
+此功能旨在与需要从用户那里接收代币存款的 dApps、机器人和服务集成。
+
+## 它是如何工作的
+
+1. **深链接生成**\
+   您的应用程序生成一个带有接收者地址、目的链和代币的存款URL。
+2. **用户连接钱包**\
+   用户连接他们的钱包（MetaMask、Coinbase、Rainbow、Rabby、Trust Wallet 等）。
+3. **代币选择**\
+   用户从他们可用的余额中选择他们想要支付的代币。
+4. **跨链执行**\
+   AnySpend 处理跨链路由和转换，以将指定的代币交付给接收者。
+5. **确认 & 重定向**\
+   完成后，用户可以被重定向回您的应用程序。
+
+## URL 参数
+
+存款页面接受以下URL参数：
+
+| 参数 | 必需 | 描述 |
+|-----------|----------|-------------|
+| `recipientAddress` | 是 | 接收存款的钱包地址（有效的EVM地址） |
+| `toChainId` | 是* | 目的链ID（例如，8453代表Base） |
+| `toCurrency` | 是* | 目的链上的代币合约地址 |
+| `amount` | 否 | 以wei/最小单位的固定金额。提供时，用户无法更改金额 |
+| `redirect_url` | 否 | 完成后重定向的HTTPS URL |
+| `redirect_label` | 否 | 重定向按钮的自定义标签 |
+| `partner` | 否 | 自定义配置的合作伙伴ID |
+
+\* 对于Hyperliquid链不是必需的，其中USDC是默认代币。
+
+## 示例URLs
+
+**基础存款到Base USDC：**
+```
+/deposit?recipientAddress=0x1234...&toChainId=8453&toCurrency=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+```
+
+**固定金额存款：**
+```
+/deposit?recipientAddress=0x1234...&toChainId=8453&toCurrency=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&amount=1000000
+```
+
+**带重定向的：**
+```
+/deposit?recipientAddress=0x1234...&toChainId=8453&toCurrency=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&redirect_url=https://yourapp.com/success&redirect_label=返回应用
+```
+
+## 支持的钱包
+
+存款页面默认支持以下钱包：
+
+- MetaMask
+- Coinbase Wallet
+- Rainbow
+- Rabby
+- Trust Wallet
+
+对于之前已连接过钱包的回访用户，启用了自动连接功能。
+
+## 特殊链支持
+
+### Hyperliquid
+
+存款页面对Hyperliquid链提供特殊支持：
+
+- USDC使用特殊的34字符地址格式（`0x00000000000000000000000000000000`）
+- 当`toChainId`设置为Hyperliquid时，如果未指定`toCurrency`，默认为USDC
+- 零地址会自动更正为Hyperliquid USDC格式
+
+## 合作伙伴集成
+
+合作伙伴可以配置自定义设置：
+
+```typescript
+interface PartnerConfig {
+  returnToHomeUrl?: string;      // 默认重定向URL
+  customRecipientLabel?: string; // 接收者的自定义标签
+  returnHomeLabel?: string;      // 返回按钮的自定义标签
+}
+```
+
+要注册为合作伙伴，请联系AnySpend团队添加您的配置。
+
+## 安全性
+
+存款页面包括内置的安全措施：
+
+- **重定向URL验证**：只允许HTTPS URL用于重定向，以防止开放重定向攻击
+- **金额验证**：金额必须是有效的正整数（wei值）
+- **地址验证**：在处理前验证接收者和代币地址
+
+## 常见用例
+
+- **Telegram 机器人**：让用户通过简单的链接为他们的机器人钱包充值
+- **游戏**：使玩家能够将代币存入游戏账户
+- **市场**：允许买家为托管地址充值
+- **订阅服务**：收集对服务钱包的定期支付
+- **打赏**：通过可分享的存款链接启用对创作者的打赏
+
+## 集成示例
+
+以下是在您的应用程序中生成存款链接的方法：
+
+```typescript
+function generateDepositLink({
+  recipientAddress,
+  chainId,
+  tokenAddress,
+  amount,
+  redirectUrl,
+}: {
+  recipientAddress: string;
+  chainId: number;
+  tokenAddress: string;
+  amount?: string;
+  redirectUrl?: string;
+}) {
+  const params = new URLSearchParams({
+    recipientAddress,
+    toChainId: chainId.toString(),
+    toCurrency: tokenAddress,
+  });
+
+  if (amount) params.set("amount", amount);
+  if (redirectUrl) params.set("redirect_url", redirectUrl);
+
+  return `https://anyspend.b3.fun/deposit?${params.toString()}`;
+}
+```

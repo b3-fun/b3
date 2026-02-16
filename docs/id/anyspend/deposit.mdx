@@ -1,0 +1,142 @@
+---
+title: Deposit
+description: >-
+  Izinkan pengguna untuk mendeposit token ke alamat dompet tertentu pada rantai
+  yang didukung.
+lang: id
+originalPath: anyspend/deposit.mdx
+---
+## Apa yang Dilakukan
+
+Halaman Deposit AnySpend menyediakan antarmuka yang efisien bagi pengguna untuk mendepositkan token ke alamat dompet penerima tertentu. Ini mendukung deposit lintas-rantai, memungkinkan pengguna membayar dengan token dari rantai yang didukung manapun sementara penerima mendapatkan dana di rantai tujuan dan token yang diinginkan.
+
+Fitur ini dirancang untuk integrasi dengan dApps, bot, dan layanan yang perlu menerima deposit token dari pengguna.
+
+## Cara Kerja
+
+1. **Pembuatan Deep Link**\
+   Aplikasi Anda menghasilkan URL deposit dengan alamat penerima, rantai tujuan, dan token.
+2. **Pengguna Menghubungkan Dompet**\
+   Pengguna menghubungkan dompet mereka (MetaMask, Coinbase, Rainbow, Rabby, Trust Wallet, dll).
+3. **Pemilihan Token**\
+   Pengguna memilih token yang ingin mereka bayarkan dari saldo yang tersedia.
+4. **Eksekusi Lintas-Rantai**\
+   AnySpend menangani perutean lintas-rantai dan konversi untuk mengirimkan token yang ditentukan ke penerima.
+5. **Konfirmasi & Pengalihan**\
+   Setelah selesai, pengguna dapat dialihkan kembali ke aplikasi Anda.
+
+## Parameter URL
+
+Halaman deposit menerima parameter URL berikut:
+
+| Parameter | Diperlukan | Deskripsi |
+|-----------|----------|-------------|
+| `recipientAddress` | Ya | Alamat dompet untuk menerima deposit (alamat EVM yang valid) |
+| `toChainId` | Ya* | ID rantai tujuan (mis., 8453 untuk Base) |
+| `toCurrency` | Ya* | Alamat kontrak token di rantai tujuan |
+| `amount` | Tidak | Jumlah tetap dalam wei/unit terkecil. Ketika disediakan, pengguna tidak dapat mengubah jumlahnya |
+| `redirect_url` | Tidak | URL HTTPS untuk pengalihan setelah selesai |
+| `redirect_label` | Tidak | Label kustom untuk tombol pengalihan |
+| `partner` | Tidak | ID mitra untuk konfigurasi kustom |
+
+\* Tidak diperlukan untuk rantai Hyperliquid di mana USDC adalah token default.
+
+## Contoh URL
+
+**Deposit dasar ke Base USDC:**
+```
+/deposit?recipientAddress=0x1234...&toChainId=8453&toCurrency=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+```
+
+**Deposit jumlah tetap:**
+```
+/deposit?recipientAddress=0x1234...&toChainId=8453&toCurrency=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&amount=1000000
+```
+
+**Dengan pengalihan:**
+```
+/deposit?recipientAddress=0x1234...&toChainId=8453&toCurrency=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&redirect_url=https://yourapp.com/success&redirect_label=Kembali ke Aplikasi
+```
+
+## Dompet yang Didukung
+
+Halaman deposit mendukung dompet berikut ini langsung:
+
+- MetaMask
+- Coinbase Wallet
+- Rainbow
+- Rabby
+- Trust Wallet
+
+Auto-connect diaktifkan untuk pengguna yang kembali yang sebelumnya telah menghubungkan dompet mereka.
+
+## Dukungan Rantai Khusus
+
+### Hyperliquid
+
+Halaman deposit mencakup dukungan khusus untuk rantai Hyperliquid:
+
+- USDC menggunakan format alamat 34 karakter khusus (`0x00000000000000000000000000000000`)
+- Ketika `toChainId` diatur ke Hyperliquid, `toCurrency` secara default ke USDC jika tidak ditentukan
+- Alamat nol secara otomatis dikoreksi ke format USDC Hyperliquid
+
+## Integrasi Mitra
+
+Mitra dapat dikonfigurasi dengan pengaturan kustom:
+
+```typescript
+interface PartnerConfig {
+  returnToHomeUrl?: string;      // URL pengalihan default
+  customRecipientLabel?: string; // Label kustom untuk penerima
+  returnHomeLabel?: string;      // Label kustom untuk tombol kembali
+}
+```
+
+Untuk mendaftar sebagai mitra, hubungi tim AnySpend untuk menambahkan konfigurasi Anda.
+
+## Keamanan
+
+Halaman deposit mencakup langkah-langkah keamanan bawaan:
+
+- **Validasi URL Pengalihan**: Hanya URL HTTPS yang diizinkan untuk pengalihan untuk mencegah serangan pengalihan terbuka
+- **Validasi Jumlah**: Jumlah harus berupa bilangan bulat positif yang valid (nilai wei)
+- **Validasi Alamat**: Alamat penerima dan token divalidasi sebelum diproses
+
+## Kasus Penggunaan Umum
+
+- **Bot Telegram**: Biarkan pengguna mendanai dompet bot mereka melalui tautan sederhana
+- **Gaming**: Memungkinkan pemain untuk mendepositkan token ke akun game
+- **Marketplaces**: Memungkinkan pembeli untuk mendanai alamat escrow
+- **Layanan Berlangganan**: Mengumpulkan pembayaran berulang ke dompet layanan
+- **Tipping**: Memungkinkan tipping kepada pencipta dengan tautan deposit yang dapat dibagikan
+
+## Contoh Integrasi
+
+Berikut cara menghasilkan tautan deposit di aplikasi Anda:
+
+```typescript
+function generateDepositLink({
+  recipientAddress,
+  chainId,
+  tokenAddress,
+  amount,
+  redirectUrl,
+}: {
+  recipientAddress: string;
+  chainId: number;
+  tokenAddress: string;
+  amount?: string;
+  redirectUrl?: string;
+}) {
+  const params = new URLSearchParams({
+    recipientAddress,
+    toChainId: chainId.toString(),
+    toCurrency: tokenAddress,
+  });
+
+  if (amount) params.set("amount", amount);
+  if (redirectUrl) params.set("redirect_url", redirectUrl);
+
+  return `https://anyspend.b3.fun/deposit?${params.toString()}`;
+}
+```

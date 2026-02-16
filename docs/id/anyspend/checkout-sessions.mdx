@@ -1,0 +1,232 @@
+---
+title: Sesi Pembayaran
+description: Sesi pembayaran mirip Stripe untuk aliran pembayaran terpisah dengan AnySpend
+lang: id
+originalPath: anyspend/checkout-sessions.mdx
+---
+Sesi checkout mirip Stripe untuk AnySpend. Sesi dipisahkan dari pesanan — buat sesi terlebih dahulu, kemudian buat pesanan ketika pengguna siap untuk membayar.
+
+## Alur
+
+```
+1. Pedagang membuat sesi        POST /checkout-sessions
+                                <- { id, status: "open" }
+
+2. Pengguna memilih metode pembayaran       POST /orders { checkoutSessionId }
+                                <- { id, globalAddress, oneClickBuyUrl }
+
+3. Pengguna membayar            Crypto: kirim ke globalAddress
+                                Onramp: dialihkan ke oneClickBuyUrl
+
+4. Pedagang memeriksa penyelesaian   GET /checkout-sessions/:id
+                                <- { status: "complete", order_id }
+```
+
+### Mengapa Dipisahkan?
+
+Pembuatan sesi instan (hanya DB, tanpa panggilan API eksternal). Pesanan dibuat terpisah ketika pengguna memutuskan metode pembayaran. Ini berarti:
+
+- Metode pembayaran tidak perlu diketahui saat pembuatan sesi
+- Halaman checkout yang di-host dapat membiarkan pengguna memilih cara membayar
+- Pembuatan sesi tidak pernah gagal karena kesalahan API eksternal
+
+## Siklus Status Sesi
+
+```
+open --> processing --> complete
+  |
+  └--> expired
+```
+
+| Status | Kapan |
+|--------|------|
+| `open` | Dibuat, menunggu pesanan/pembayaran |
+| `processing` | Pembayaran diterima, pesanan sedang diproses |
+| `complete` | Pesanan berhasil diproses |
+| `expired` | TTL kedaluwarsa, pembayaran gagal, atau secara manual kedaluwarsa |
+
+## API
+
+### `POST /checkout-sessions` — Buat Sesi
+
+Membuat sesi ringan. Tidak ada pesanan, tidak ada panggilan API eksternal.
+
+```json
+{
+  "success_url": "https://merchant.com/success?session_id={SESSION_ID}",
+  "cancel_url": "https://merchant.com/cancel",
+  "metadata": { "sku": "widget-1" },
+  "client_reference_id": "merchant-order-456",
+  "expires_in": 1800
+}
+```
+
+Semua bidang bersifat opsional. Konfigurasi pembayaran (jumlah, token, rantai) berada pada pesanan, bukan sesi.
+
+### `POST /orders` — Buat Pesanan dengan Tautan Sesi
+
+Kirim `checkoutSessionId` dalam permintaan pembuatan pesanan standar untuk menautkan pesanan ke sesi.
+
+```json
+{
+  "recipientAddress": "0x...",
+  "srcChain": 8453,
+  "dstChain": 8453,
+  "srcTokenAddress": "0x...",
+  "dstTokenAddress": "0x...",
+  "srcAmount": "1000000",
+  "type": "swap",
+  "payload": { "expectedDstAmount": "1000000" },
+  "checkoutSessionId": "550e8400-..."
+}
+```
+
+**Validasi:**
+- Sesi harus ada (`400` jika tidak ditemukan)
+- Sesi harus `open` (`400` jika kedaluwarsa/processing/complete)
+- Sesi tidak boleh sudah memiliki pesanan (`409 Conflict`)
+
+### `GET /checkout-sessions/:id` — Ambil Sesi
+
+Mengembalikan status sesi saat ini. Status disinkronkan dari pesanan yang mendasarinya pada setiap pengambilan.
+
+| Query Param | Deskripsi |
+|-------------|-------------|
+| `include=order` | Menyertakan objek pesanan lengkap dengan transaksi |
+
+### `POST /checkout-sessions/:id/expire` — Kedaluwarsa Secara Manual
+
+Hanya berfungsi pada sesi dengan status `open`.
+
+## Template URL Pengalihan
+
+Gunakan variabel template di `success_url` dan `cancel_url`:
+
+| Variabel | Diganti dengan |
+|----------|--------------|
+| `{SESSION_ID}` | UUID sesi checkout |
+| `{ORDER_ID}` | Nilai yang sama (alias) |
+
+Jika tidak ada variabel template yang hadir, `?sessionId=<uuid>` ditambahkan secara otomatis.
+
+## Integrasi SDK
+
+### Metode Layanan
+
+```typescript
+// Membuat sesi checkout
+const session = await anyspend.createCheckoutSession({
+  success_url: "https://mysite.com/success/{SESSION_ID}",
+  metadata: { sku: "widget-1" },
+});
+
+// Mengambil status sesi
+const session = await anyspend.getCheckoutSession(sessionId);
+```
+
+### React Hooks
+
+#### `useCreateCheckoutSession`
+
+Mutation hook untuk membuat sesi.
+
+```tsx
+import { useCreateCheckoutSession } from "@b3dotfun/sdk/anyspend";
+
+const { mutate: createSession, data, isPending } = useCreateCheckoutSession();
+```
+
+#### `useCheckoutSession`
+
+Query hook dengan auto-polling. Berhenti polling ketika status mencapai `complete` atau `expired`.
+
+```tsx
+import { useCheckoutSession } from "@b3dotfun/sdk/anyspend";
+
+const { data: session, isLoading } = useCheckoutSession(sessionId);
+```
+
+### Prop `checkoutSession` Komponen
+
+Komponen `<AnySpend>`, `<AnySpendCustom>`, dan `<AnySpendCustomExactIn>` menerima prop `checkoutSession` opsional:
+
+```tsx
+<AnySpend
+  defaultActiveTab="fiat"
+  destinationTokenAddress="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+  destinationTokenChainId={8453}
+  recipientAddress="0x..."
+  checkoutSession={{
+    success_url: "https://myshop.com/success?session={SESSION_ID}",
+    cancel_url: "https://myshop.com/cancel",
+    metadata: { sku: "widget-1" },
+  }}
+/>
+```
+
+Ketika prop `checkoutSession` diatur, komponen secara otomatis membuat sesi sebelum membuat pesanan, dan menggunakan `success_url` sesi untuk pengalihan. Tanpa prop, alur yang ada tidak berubah.
+
+## Contoh
+
+### Pembayaran Crypto
+
+```typescript
+// 1. Membuat sesi
+const session = await fetch("/checkout-sessions", {
+  method: "POST",
+  body: JSON.stringify({
+    success_url: "https://mysite.com/success/{SESSION_ID}",
+    metadata: { sku: "widget-1" },
+  }),
+}).then(r => r.json());
+
+// 2. Membuat pesanan yang ditautkan ke sesi
+const order = await fetch("/orders", {
+  method: "POST",
+  body: JSON.stringify({
+    recipientAddress: "0x...",
+    srcChain: 8453,
+    dstChain: 8453,
+    srcTokenAddress: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    dstTokenAddress: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    srcAmount: "1000000",
+    type: "swap",
+    payload: { expectedDstAmount: "1000000" },
+    checkoutSessionId: session.data.id,
+  }),
+}).then(r => r.json());
+
+// 3. Pengguna mengirim crypto ke order.data.globalAddress
+
+// 4. Poll sesi sampai selesai
+const poll = setInterval(async () => {
+  const s = await fetch(`/checkout-sessions/${session.data.id}`).then(r => r.json());
+  if (s.data.status === "complete") {
+    clearInterval(poll);
+    // dialihkan ke success_url atau tampilkan konfirmasi
+  }
+}, 3000);
+```
+
+### Pembayaran Onramp (Coinbase/Stripe)
+
+```typescript
+// Langkah 1-2 sama seperti di atas, tetapi sertakan konfigurasi onramp dalam pembuatan pesanan:
+const order = await fetch("/orders", {
+  method: "POST",
+  body: JSON.stringify({
+    // ... bidang pesanan yang sama ...
+    checkoutSessionId: session.data.id,
+    onramp: {
+      vendor: "coinbase",
+      metode_pembayaran: "kartu",
+      negara: "US",
+    },
+  }),
+}).then(r => r.json());
+
+// Mengalihkan pengguna ke halaman checkout vendor
+window.location.href = order.data.oneClickBuyUrl;
+
+// Setelah vendor mengalihkan kembali, poll GET /checkout-sessions/:id untuk penyelesaian
+```
