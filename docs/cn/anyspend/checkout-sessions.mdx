@@ -1,0 +1,232 @@
+---
+title: 结账会话
+description: Stripe式的结账会话，用于与AnySpend分离的支付流程
+lang: cn
+originalPath: anyspend/checkout-sessions.mdx
+---
+Stripe式的结账会话用于AnySpend。会话与订单解耦 —— 首先创建会话，然后在用户准备支付时创建订单。
+
+## 流程
+
+```
+1. 商家创建会话        POST /checkout-sessions
+                                   <- { id, status: "open" }
+
+2. 用户选择支付方式       POST /orders { checkoutSessionId }
+                                   <- { id, globalAddress, oneClickBuyUrl }
+
+3. 用户支付                       加密货币: 发送至globalAddress
+                                   Onramp: 重定向至oneClickBuyUrl
+
+4. 商家轮询完成情况   GET /checkout-sessions/:id
+                                   <- { status: "complete", order_id }
+```
+
+### 为什么解耦？
+
+会话创建是即时的（仅数据库操作，无外部调用）。当用户承诺使用某种支付方式时，单独创建订单。这意味着：
+
+- 在会话创建时不需要知道支付方式
+- 托管的结账页面可以让用户选择支付方式
+- 会话创建永远不会因外部API错误而失败
+
+## 会话状态生命周期
+
+```
+open --> processing --> complete
+  |
+  └--> expired
+```
+
+| 状态 | 何时 |
+|--------|------|
+| `open` | 已创建，等待订单/支付 |
+| `processing` | 收到支付，订单执行中 |
+| `complete` | 订单成功执行 |
+| `expired` | TTL过期，支付失败，或手动过期 |
+
+## API
+
+### `POST /checkout-sessions` — 创建会话
+
+创建一个轻量级会话。无订单，无外部API调用。
+
+```json
+{
+  "success_url": "https://merchant.com/success?session_id={SESSION_ID}",
+  "cancel_url": "https://merchant.com/cancel",
+  "metadata": { "sku": "widget-1" },
+  "client_reference_id": "merchant-order-456",
+  "expires_in": 1800
+}
+```
+
+所有字段都是可选的。支付配置（金额，代币，链）存在于订单中，而不是会话中。
+
+### `POST /orders` — 通过会话链接创建订单
+
+在标准订单创建请求中传递`checkoutSessionId`以将订单链接到会话。
+
+```json
+{
+  "recipientAddress": "0x...",
+  "srcChain": 8453,
+  "dstChain": 8453,
+  "srcTokenAddress": "0x...",
+  "dstTokenAddress": "0x...",
+  "srcAmount": "1000000",
+  "type": "swap",
+  "payload": { "expectedDstAmount": "1000000" },
+  "checkoutSessionId": "550e8400-..."
+}
+```
+
+**验证：**
+- 会话必须存在（如果未找到则返回`400`）
+- 会话必须是`open`（如果过期/处理中/完成则返回`400`）
+- 会话不能已经有订单（`409 Conflict`）
+
+### `GET /checkout-sessions/:id` — 检索会话
+
+返回当前会话状态。每次检索时都会从底层订单同步状态。
+
+| 查询参数 | 描述 |
+|-------------|-------------|
+| `include=order` | 嵌入完整的订单对象及其交易 |
+
+### `POST /checkout-sessions/:id/expire` — 手动过期
+
+仅对状态为`open`的会话有效。
+
+## 重定向URL模板
+
+在`success_url`和`cancel_url`中使用模板变量：
+
+| 变量 | 替换为 |
+|----------|--------------|
+| `{SESSION_ID}` | 结账会话的UUID |
+| `{ORDER_ID}` | 相同值（别名） |
+
+如果没有模板变量，自动追加`?sessionId=<uuid>`。
+
+## SDK集成
+
+### 服务方法
+
+```typescript
+// 创建一个结账会话
+const session = await anyspend.createCheckoutSession({
+  success_url: "https://mysite.com/success/{SESSION_ID}",
+  metadata: { sku: "widget-1" },
+});
+
+// 检索会话状态
+const session = await anyspend.getCheckoutSession(sessionId);
+```
+
+### React Hooks
+
+#### `useCreateCheckoutSession`
+
+用于创建会话的Mutation hook。
+
+```tsx
+import { useCreateCheckoutSession } from "@b3dotfun/sdk/anyspend";
+
+const { mutate: createSession, data, isPending } = useCreateCheckoutSession();
+```
+
+#### `useCheckoutSession`
+
+带自动轮询的查询hook。当状态达到`complete`或`expired`时停止轮询。
+
+```tsx
+import { useCheckoutSession } from "@b3dotfun/sdk/anyspend";
+
+const { data: session, isLoading } = useCheckoutSession(sessionId);
+```
+
+### 组件 `checkoutSession` 属性
+
+`<AnySpend>`、`<AnySpendCustom>`和`<AnySpendCustomExactIn>`组件接受一个可选的`checkoutSession`属性：
+
+```tsx
+<AnySpend
+  defaultActiveTab="fiat"
+  destinationTokenAddress="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+  destinationTokenChainId={8453}
+  recipientAddress="0x..."
+  checkoutSession={{
+    success_url: "https://myshop.com/success?session={SESSION_ID}",
+    cancel_url: "https://myshop.com/cancel",
+    metadata: { sku: "widget-1" },
+  }}
+/>
+```
+
+设置`checkoutSession`属性时，组件会在创建订单前自动创建一个会话，并使用会话的`success_url`进行重定向。没有该属性时，现有流程不变。
+
+## 示例
+
+### 加密货币支付
+
+```typescript
+// 1. 创建会话
+const session = await fetch("/checkout-sessions", {
+  method: "POST",
+  body: JSON.stringify({
+    success_url: "https://mysite.com/success/{SESSION_ID}",
+    metadata: { sku: "widget-1" },
+  }),
+}).then(r => r.json());
+
+// 2. 创建链接到会话的订单
+const order = await fetch("/orders", {
+  method: "POST",
+  body: JSON.stringify({
+    recipientAddress: "0x...",
+    srcChain: 8453,
+    dstChain: 8453,
+    srcTokenAddress: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    dstTokenAddress: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    srcAmount: "1000000",
+    type: "swap",
+    payload: { expectedDstAmount: "1000000" },
+    checkoutSessionId: session.data.id,
+  }),
+}).then(r => r.json());
+
+// 3. 用户向order.data.globalAddress发送加密货币
+
+// 4. 轮询会话直到完成
+const poll = setInterval(async () => {
+  const s = await fetch(`/checkout-sessions/${session.data.id}`).then(r => r.json());
+  if (s.data.status === "complete") {
+    clearInterval(poll);
+    // 重定向至success_url或显示确认信息
+  }
+}, 3000);
+```
+
+### Onramp支付（Coinbase/Stripe）
+
+```typescript
+// 步骤1-2与上述相同，但在订单创建中包含onramp配置：
+const order = await fetch("/orders", {
+  method: "POST",
+  body: JSON.stringify({
+    // ... 相同的订单字段 ...
+    checkoutSessionId: session.data.id,
+    onramp: {
+      vendor: "coinbase",
+      payment_method: "card",
+      country: "US",
+    },
+  }),
+}).then(r => r.json());
+
+// 重定向用户至供应商结账页面
+window.location.href = order.data.oneClickBuyUrl;
+
+// 供应商重定向回来后，轮询GET /checkout-sessions/:id以检查完成情况
+```

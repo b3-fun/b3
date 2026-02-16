@@ -15,8 +15,8 @@ graph TB
         SDK["BondKit SDK"]
     end
     
-    subgraph "Capa de Contrato Inteligente"
-        Factory["Contrato de Fábrica"]
+    subgraph "Capa de Smart Contract"
+        Factory["Contrato Factory"]
         Impl["Contrato de Implementación"]
         Token1["Clon de Token 1"]
         Token2["Clon de Token 2"]
@@ -64,24 +64,24 @@ graph TB
 <Steps>
   <Step title="Fase 1: Creación de Token">
     **Qué sucede:**
-    - El usuario llama a `deployBondkitToken()` en el contrato de Fábrica
-    - La Fábrica clona el contrato de Implementación usando el patrón de proxy mínimo
+    - El usuario llama a `deployBondkitToken()` en el contrato Factory
+    - Factory clona el contrato de Implementación usando el patrón de proxy mínimo
     - El nuevo token se inicializa con parámetros personalizados
     - El token entra automáticamente en la fase de bonding
     
-    **Costo de Gas:** ~200,000 gas (90% más barato que el despliegue completo)
+    **Costo de Gas:** ~200,000 gas (90% más barato que un despliegue completo)
     **Tiempo:** ~15 segundos
   </Step>
   
-  <Step title="Fase 2: Trading en la Curva de Bonding">
+  <Step title="Fase 2: Trading en Curva de Bonding">
     **Qué sucede:**
     - Los usuarios compran/venden tokens directamente del contrato
     - El precio sigue una curva de bonding algorítmica: `S = S_final × (R/R_objetivo)^exponente`
-    - Comisión del 5% en todos los trades va al destinatario de la comisión
+    - Comisión del 5% en todas las operaciones para el destinatario de la comisión
     - El contrato acumula activos de cotización (ETH/B3) hacia el objetivo
-    - El backend indexa todas las transacciones para análisis
+    - Backend indexa todas las transacciones para análisis
     
-    **Mecánica de Trading:**
+    **Mecánica de trading:**
     - Comprar: Enviar ETH/B3, recibir tokens al precio actual de la curva
     - Vender: Enviar tokens, recibir ETH/B3 menos comisiones
     - Reembolsos automáticos si la compra excediera el objetivo
@@ -91,7 +91,7 @@ graph TB
   
   <Step title="Fase 3: Migración a DEX">
     **Qué sucede:**
-    - El administrador llama a `migrateToDex()` cuando se alcanza el objetivo
+    - El admin llama a `migrateToDex()` cuando se alcanza el objetivo
     - El contrato calcula el precio justo de mercado como `sqrtPriceX96`
     - Crea e inicializa el pool de Uniswap v4
     - Transfiere la liquidez acumulada al pool
@@ -99,9 +99,9 @@ graph TB
     - El token se convierte en un ERC20 estándar con trading en DEX
     
     **Post-migración:**
-    - Curva de bonding permanentemente deshabilitada
+    - Curva de bonding deshabilitada permanentemente
     - Todo el trading a través de Uniswap v4
-    - No quedan controles de administrador
+    - No quedan controles de admin
     - Se logra la descentralización completa
     
     **Costo de Gas:** ~500,000 gas
@@ -111,19 +111,19 @@ graph TB
 
 ## Componentes del Sistema
 
-### Contratos Inteligentes
+### Smart Contracts
 
 <AccordionGroup>
-  <Accordion title="🏭 Contrato de Fábrica">
+  <Accordion title="🏭 Contrato Factory">
     **Propósito:** Despliega nuevos tokens de bono de manera eficiente
     
     **Funciones Clave:**
     - `deployBondkitToken()` - Crea un nuevo clon de token
     - `getImplementationAddress()` - Devuelve la dirección de la plantilla
-    - `setAllowedQuoteAsset()` - Función de administrador para listar activos
+    - `setAllowedQuoteAsset()` - Función de admin para listar activos
     
     **Optimización de Gas:**
-    - Utiliza el patrón de proxy mínimo EIP-1167
+    - Usa el patrón de proxy mínimo EIP-1167
     - Comparte lógica a través de todos los tokens
     - ~90% de ahorro de gas vs despliegues individuales
   </Accordion>
@@ -133,7 +133,7 @@ graph TB
     
     **Características Principales:**
     - Cumplimiento del estándar ERC20
-    - Matemáticas de la curva de bonding
+    - Matemáticas de curva de bonding
     - Lógica de migración a Uniswap v4
     - Sistema de distribución de comisiones
     
@@ -147,7 +147,7 @@ graph TB
     **Propósito:** Instancias individuales de token
     
     **Ciclo de Vida:**
-    - Creado vía fábrica
+    - Creado vía factory
     - Inicializado con parámetros únicos
     - Gestiona su propia curva de bonding
     - Se auto-migra a Uniswap v4
@@ -174,8 +174,8 @@ graph TB
     
     **Tecnología:**
     - Escaneo de blockchain en tiempo real
-    - Procesamiento de logs de eventos
-    - Sincronización con la base de datos
+    - Procesamiento de registros de eventos
+    - Sincronización con base de datos
   </Accordion>
   
   <Accordion title="📊 Motor de Analíticas">
@@ -197,7 +197,7 @@ graph TB
     **Endpoints:**
     - `/tokens` - Lista todos los tokens
     - `/tokens/{address}` - Detalles del token
-    - `/tokens/{address}/transactions` - Historial de trades
+    - `/tokens/{address}/transactions` - Historial de comercio
     - `/tokens/{address}/ohlcv` - Datos para gráficos
     - `/users/{address}/portfolio` - Tenencias del usuario
     
@@ -210,7 +210,7 @@ graph TB
 | Rol | Responsabilidades | Permisos |
 |------|-----------------|-------------|
 | **Creador** | Desplegar token, establecer parámetros, iniciar migración | Control total hasta la migración |
-| **Traders** | Comprar/vender durante el bonding, comerciar en DEX | Derechos de trading estándar |
+| **Traders** | Comprar/vender durante el bonding, comerciar en DEX | Derechos estándar de trading |
 | **Destinatario de Comisiones** | Recibir comisiones de trading | Solo ingresos pasivos |
 | **Admin de Migración** | Ejecutar migración cuando esté listo | Derecho de migración única |
 | **Proveedores de LP** | (Post-migración) Agregar liquidez a Uniswap | Derechos estándar de LP |
@@ -226,8 +226,8 @@ Fórmula de Precio:
 S = S_final × (R / R_objetivo)^exponente
 
 Donde:
-- S = Oferta actual de token
-- S_final = Oferta final de token
+- S = Oferta actual de tokens
+- S_final = Oferta final de tokens
 - R = Monto recaudado (ETH/B3)
 - R_objetivo = Monto objetivo
 - exponente = 1 / (1 + factorDeAgresividad/100)
@@ -277,10 +277,10 @@ Al migrar a Uniswap v4, el contrato:
 | `symbol` | string | 2-10 caracteres | Símbolo de trading |
 | `finalTokenSupply` | uint256 | > 0 | Total de tokens acuñables |
 | `aggressivenessFactor` | uint8 | 0-100 | Inclinación de la curva |
-| `targetEth` | uint256 | > 0 | Umbral de migración |
+| `targetEth` | uint256 | > 0 | Umbral para la migración |
 | `feeRecipient` | address | Dirección válida | Recibe comisiones |
 | `lpSplitRatioFeeRecipientBps` | uint256 | 0-10000 | Participación de comisión de LP (puntos básicos) |
-| `migrationAdminAddress` | address | Dirección válida | Puede activar la migración |
+| `migrationAdminAddress` | address | Dirección válida | Puede disparar la migración |
 
 ### Parámetros de Ejecución
 
@@ -294,7 +294,7 @@ Al migrar a Uniswap v4, el contrato:
 
 | Constante | Valor | Descripción |
 |----------|-------|-------------|
-| Comisión de Trading | 5% | Aplicada a todos los trades |
+| Comisión de Trading | 5% | Aplicada a todas las operaciones |
 | Decimales | 18 | Decimales estándar ERC20 |
 | Mínimo Objetivo | 0.1 ETH | Objetivo viable mínimo |
 | Máxima Agresividad | 100 | Factor máximo de la curva |
@@ -330,7 +330,7 @@ Al migrar a Uniswap v4, el contrato:
   <Card title="Mecánica de Precios" icon="chart-line" href="/bondkit/concepts/pricing">
     Entender la matemática de la curva de bonding
   </Card>
-  <Card title="Guía de Migración" icon="rocket" href="/bondkit/guides/migration">
+  <Card title="Ciclo de Vida del Token" icon="rocket" href="/bondkit/guides/token-lifecycle">
     Aprender el proceso de migración
   </Card>
 </CardGroup>

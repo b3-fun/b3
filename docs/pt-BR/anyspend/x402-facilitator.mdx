@@ -1,0 +1,454 @@
+---
+title: Facilitador AnySpend
+description: >-
+  Processador de pagamentos de nível de produção para pagamentos multi-token
+  x402
+lang: pt-BR
+originalPath: anyspend/x402-facilitator.mdx
+---
+<CardGroup cols={2}>
+<Card title="Repositório GitHub" icon="github" href="https://github.com/b3-fun/anyspend-x402">
+  Veja o código-fonte, exemplos e contribua
+</Card>
+
+<Card title="Pacote npm" icon="npm" href="https://www.npmjs.com/package/@b3dotfun/anyspend-x402">
+  Instale o pacote @b3dotfun/anyspend-x402
+</Card>
+</CardGroup>
+
+## Visão Geral
+
+O Facilitador AnySpend x402 é uma infraestrutura de pagamento de nível de produção que alimenta pagamentos multi-token e cross-chain para o protocolo x402. Ele lida com toda a complexidade das trocas de tokens, pontes entre cadeias e liquidação, permitindo que desenvolvedores aceitem pagamentos em qualquer token enquanto recebem sua moeda preferida.
+
+**Endpoint de Produção:** `https://mainnet.anyspend.com/x402`
+
+## Principais Capacidades
+
+### Processamento de Pagamento Multi-Token
+
+Aceite pagamentos em qualquer token ERC-20 que suporte EIP-2612 (permit) ou EIP-3009 (transferWithAuthorization):
+
+- **Stablecoins**: USDC, USDT (em cadeias suportadas)
+- **Tokens nativos**: ETH, SOL, BNB, MATIC
+- **Tokens personalizados**: Qualquer token com suporte a permit, incluindo tokens de projetos como B3
+- **19+ Redes**: Suporte em cadeias EVM (Base, Ethereum, Arbitrum, etc.) e SVM (Solana)
+
+### Roteamento Cross-Chain
+
+Lida automaticamente com pagamentos entre diferentes redes blockchain:
+
+- **Pagamentos na mesma cadeia**: Transferências diretas de tokens com sobrecarga mínima
+- **Pagamentos cross-chain**: Ponte automática entre redes (ex.: ETH → Base)
+- **Pagamentos Cross-VM**: Suporte experimental para transferências Solana ↔ EVM
+- **Roteamento ótimo**: Seleção inteligente de rotas para melhor execução
+
+### Conversão Automática de Tokens
+
+Converte sem problemas entre quaisquer tokens suportados:
+
+- **Flexibilidade do comprador**: Usuários pagam com qualquer token que possuam
+- **Preferência do vendedor**: Comerciantes recebem sua moeda de liquidação escolhida
+- **Melhores preços**: Rotas através das fontes de liquidez DEX ótimas
+- **Proteção contra deslizamento**: Salvaguardas automáticas contra impacto no preço
+
+### Pagamentos Sem Gas
+
+Usuários nunca pagam taxas de gas:
+
+- Facilitador cobre todos os custos de gas on-chain
+- Usuários apenas assinam mensagens EIP-712
+- Não é necessário possuir tokens nativos para gas
+- Experiência suave do usuário em todas as cadeias
+
+## Conformidade com Padrões
+
+### Conforme com o Protocolo x402
+
+O Facilitador AnySpend implementa a especificação completa do x402:
+
+- ✅ **Pagamentos nativos HTTP** via status `402 Payment Required`
+- ✅ **Cabeçalhos padrão** (`X-PAYMENT`, `X-PAYMENT-RESPONSE`, `X-PREFERRED-TOKEN`)
+- ✅ **Esquema de pagamento exato** com verificação de destinatário e valor
+- ✅ **Autorização baseada em assinatura** (EIP-712, EIP-2612, EIP-3009)
+- ✅ **Verificação criptográfica** sem partes terceiras confiáveis
+
+### Substituição Direta
+
+Totalmente compatível com qualquer implementação x402:
+
+- **Compatibilidade com clientes**: Funciona com qualquer cliente compatível com x402
+- **Compatibilidade com servidores**: Pode ser usado com qualquer middleware x402
+- **Sem bloqueio de fornecedor**: APIs HTTP padrão, troque de facilitadores a qualquer momento
+- **Interoperabilidade**: Integra-se com Coinbase CDP x402, PayAI e outros
+
+## Arquitetura
+
+### Fluxo de Pagamento
+
+```
+┌──────────────┐
+│    Cliente    │  Assina autorização de pagamento
+│  (Qualquer Token) │  preferredToken: USDT
+└──────┬───────┘
+       │
+       │ Cabeçalho X-PAYMENT
+       ▼
+┌──────────────────────────┐
+│   Servidor de Recursos   │
+│   (Sua API)              │
+│                          │
+│  Middleware AnySpend     │
+│  • Intercepta requisição │
+│  • Obtém cotação         │
+│  • Retorna 402           │
+└──────┬───────────────────┘
+       │
+       │ /verify, /settle
+       ▼
+┌──────────────────────────┐
+│  Facilitador AnySpend    │
+│  mainnet.anyspend.com    │
+│                          │
+│  • Valida assinatura     │
+│  • Executa troca de token│
+│  • Liquida para vendedor │
+└──────┬───────────────────┘
+       │
+       │ Transações on-chain
+       ▼
+┌──────────────────────────┐
+│      Blockchain          │
+│  • Recebe pagamento      │
+│  • Troca tokens (se necessário) │
+│  • Liquida para comerciante│
+└──────────────────────────┘
+```
+
+### Componentes da Infraestrutura
+
+**Camada API**
+- API HTTP RESTful para verificação de pagamento e liquidação
+- Suporte WebSocket para atualizações de status de pagamento em tempo real
+- Limitação de taxa e proteção DDoS
+- SLA de 99,9% de tempo de atividade
+
+**Motor de Swap**
+- Agrega liquidez de múltiplos DEXs
+- Roteamento ótimo para melhores preços de execução
+- Proteção contra deslizamento e resistência a MEV
+- Integração de ponte cross-chain
+
+**Sistema de Liquidação**
+- Processamento de transações paralelas
+- Gerenciamento automático de nonce
+- Recuperação de transações falhas
+- Confirmação de liquidação em tempo real
+
+**Segurança**
+- Verificação de assinatura EIP-712
+- Prevenção de ataques de replay (rastreamento de nonce)
+- Cumprimento de prazo
+- Auditorias de contrato inteligente
+
+## Pontos de API
+
+### POST /verify
+
+Valida assinatura de pagamento sem executar on-chain.
+
+**Propósito:**
+- Validação rápida (menos de 100ms)
+- Verificar autenticidade da assinatura
+- Verificar se o prazo não expirou
+- Sem custos de gas
+
+**Requisição:**
+```json
+{
+  "x402Version": "0.2",
+  "paymentHeader": "base64_encoded_payment",
+  "paymentRequirements": {
+    "scheme": "exact",
+    "network": "base-mainnet",
+    "amount": "1000000",
+    "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "recipient": "0xMerchantAddress..."
+  }
+}
+```
+
+**Resposta:**
+```json
+{
+  "valid": true
+}
+```
+
+---
+
+### POST /settle
+
+Executa liquidação on-chain e retorna prova da transação.
+
+**Propósito:**
+- Executar autorização de pagamento
+- Trocar tokens se necessário (token do comprador → token do vendedor)
+- Liquidar para o servidor de recursos
+- Retornar hash da transação para verificação
+
+**Requisição:**
+```json
+{
+  "x402Version": "0.2",
+  "paymentHeader": "base64_encoded_payment",
+  "paymentRequirements": { /* ... */ }
+}
+```
+
+**Resposta:**
+```json
+{
+  "txHash": "0xabc123...",
+  "network": "base-mainnet",
+  "metadata": {
+    "receiptTxHash": "0x...",
+    "swapTxHash": "0x...",
+    "settlementTxHash": "0x..."
+  }
+}
+```
+
+---
+
+### POST /quote
+
+Obtém taxa de conversão de token para pagamentos multi-token.
+
+**Propósito:**
+- Calcular quantidade exata de token para pagamento
+- Obter taxa de câmbio atual
+- Estimar tempo de execução da troca
+
+**Requisição:**
+```json
+{
+  "usdcAmount": "1000000",        // Quantidade alvo (1 USDC)
+  "paymentToken": "0xfde4...",    // Endereço USDT
+  "network": "base-mainnet"
+}
+```
+
+**Resposta:**
+```json
+{
+  "tokenAmount": "1000000",  // 1.0 USDT necessário
+  "exchangeRate": "1.0",
+  "deadline": 1730000000,
+  "route": {
+    "srcToken": "0xfde4...",
+    "dstToken": "0x8335...",
+    "path": ["USDT", "USDC"]
+  }
+}
+```
+
+---
+
+### GET /supported
+
+Lista esquemas de pagamento e redes suportadas.
+
+**Resposta:**
+```json
+{
+  "schemes": [{
+    "scheme": "exact",
+    "networks": [
+      "base",
+      "ethereum",
+      "arbitrum",
+      "optimism",
+      "polygon",
+      "bsc",
+      "avalanche",
+      "solana"
+    ]
+  }]
+}
+```
+
+## Integração
+
+### Lado do Servidor (Express)
+
+```typescript
+import { paymentMiddleware, facilitator } from '@b3dotfun/anyspend-x402';
+
+const endpointConfig = {
+  '/api/premium': {
+    amount: '1.00',
+    asset: 'USD'
+  }
+};
+
+app.use(paymentMiddleware(
+  '0xYourAddress...',
+  endpointConfig,
+  facilitator  // Pré-configurado para mainnet.anyspend.com/x402
+));
+```
+
+### Lado do Servidor (Personalizado)
+
+```typescript
+import { X402Facilitator } from '@b3dotfun/anyspend-x402';
+
+const facilitator = new X402Facilitator({
+  url: 'https://mainnet.anyspend.com/x402',
+  apiKey: process.env.ANYSPEND_API_KEY  // Opcional
+});
+
+// Verificar pagamento
+const { valid } = await facilitator.verify(paymentHeader, requirements);
+
+// Liquidar pagamento
+const { txHash } = await facilitator.settle(paymentHeader, requirements);
+```
+
+### Lado do Cliente
+
+```typescript
+import { X402Client } from 'anyspend-x402-client';
+
+const client = new X402Client({
+  walletClient,
+  facilitatorUrl: 'https://mainnet.anyspend.com/x402'  // Opcional, usa isso por padrão
+});
+
+const response = await client.request('https://api.example.com/premium');
+```
+
+## Segurança
+
+### Verificação de Assinatura
+
+Todos os pagamentos são verificados usando assinaturas de dados tipados EIP-712:
+
+- **USDC**: EIP-3009 `transferWithAuthorization`
+- **Outros tokens**: EIP-2612 `permit`
+
+As assinaturas são validadas antes de qualquer execução on-chain.
+
+### Proteção contra Replay
+
+**Nonce Aleatório (USDC):**
+- Cada assinatura inclui um nonce único bytes32
+- O nonce só pode ser usado uma vez por endereço
+- Sem dependências de ordenação
+
+**Nonce Sequencial (Permit):**
+- Contrato de token mantém contador de nonce
+- Autoincrementa a cada execução de permit
+- Impede execução fora de ordem
+
+### Cumprimento de Prazo
+
+Todas as assinaturas incluem timestamps de expiração:
+- Padrão: 5 minutos a partir do tempo da assinatura
+- Impede autorizações de pagamento obsoletas
+- Rejeição automática de assinaturas expiradas
+
+### Sem Acesso a Chave Privada
+
+O facilitador **nunca** tem acesso às chaves privadas dos usuários:
+- Usuários assinam mensagens no lado do cliente
+- Apenas assinaturas são transmitidas
+- Arquitetura não custodial
+
+## Desempenho
+
+### Velocidade
+
+- **Verificação**: Menos de 100ms para validação de assinatura
+- **Liquidação na mesma cadeia**: Média de 2-10 segundos
+- **Liquidação cross-chain**: 2-5 minutos (depende da ponte)
+- **Geração de cotação**: Menos de 200ms
+
+### Escalabilidade
+
+- Lida com 1000+ pagamentos concorrentes
+- Escalabilidade horizontal para alta vazão
+- Processamento de transações paralelas
+- Balanceamento de carga entre múltiplos nós
+
+### Confiabilidade
+
+- Garantia de 99,9% de tempo de atividade
+- Failover automático e redundância
+- Lógica de tentativa de transações falhas
+- Monitoramento e alertas 24/7
+
+## Suporte de Rede
+
+### Redes Mainnet EVM (12)
+
+Abstract, Arbitrum, Avalanche, B3, Base, BNB Chain, Ethereum, IoTeX, Optimism, Peaq, Polygon, Sei
+
+### Testnets EVM (5)
+
+Abstract Testnet, Avalanche Fuji, Base Sepolia, Polygon Amoy, Sei Testnet
+
+### Redes SVM (2)
+
+Solana Mainnet, Solana Devnet
+
+Veja [Suporte de Rede](/anyspend/x402-network-support) para detalhes completos.
+
+## Por Que Escolher o Facilitador AnySpend?
+
+<CardGroup cols={2}>
+<Card title="Conforme com Padrões" icon="check-circle">
+  Total conformidade com o protocolo x402 - funciona com qualquer cliente ou servidor compatível
+</Card>
+
+<Card title="Pronto para Produção" icon="rocket">
+  Infraestrutura testada em batalha com confiabilidade e desempenho de nível empresarial
+</Card>
+
+<Card title="Multi-Chain" icon="globe">
+  Suporte para 19+ redes blockchain com roteamento automático cross-chain
+</Card>
+
+<Card title="Amigável para Desenvolvedores" icon="code">
+  APIs e SDKs simples para Express, Next.js, Hono e TypeScript do lado do cliente
+</Card>
+</CardGroup>
+
+## Começando
+
+<CardGroup cols={2}>
+<Card title="Início Rápido para Vendedores" icon="money-bill" href="/anyspend/x402-quickstart-sellers">
+  Comece a aceitar pagamentos multi-token na sua API
+</Card>
+
+<Card title="Início Rápido para Compradores" icon="wallet" href="/anyspend/x402-quickstart-buyers">
+  Pague com qualquer token usando o cliente AnySpend
+</Card>
+
+<Card title="Suporte de Rede" icon="network-wired" href="/anyspend/x402-network-support">
+  Veja todas as redes e tokens suportados
+</Card>
+
+<Card title="Visão Geral" icon="book" href="/anyspend/x402-overview">
+  Aprenda como o AnySpend x402 funciona
+</Card>
+</CardGroup>
+
+## Suporte
+
+Precisa de ajuda com o facilitador?
+
+- **Discord**: [discord.gg/b3dotfun](https://discord.gg/b3dotfun)
+- **GitHub**: [github.com/b3-fun/anyspend-x402](https://github.com/b3-fun/anyspend-x402)
+- **Email**: support@b3.fun
+- **Docs**: [docs.b3.fun](https://docs.b3.fun)

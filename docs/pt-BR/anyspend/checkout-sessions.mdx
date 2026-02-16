@@ -1,0 +1,234 @@
+---
+title: Sessões de Checkout
+description: >-
+  Sessões de checkout ao estilo Stripe para fluxos de pagamento desacoplados com
+  AnySpend
+lang: pt-BR
+originalPath: anyspend/checkout-sessions.mdx
+---
+Sessões de checkout ao estilo Stripe para AnySpend. As sessões são desacopladas dos pedidos — crie uma sessão primeiro, depois crie um pedido quando o usuário estiver pronto para pagar.
+
+## Fluxo
+
+```
+1. Comerciante cria sessão        POST /checkout-sessions
+                                   <- { id, status: "open" }
+
+2. Usuário escolhe método de pagamento       POST /orders { checkoutSessionId }
+                                   <- { id, globalAddress, oneClickBuyUrl }
+
+3. Usuário paga                       Crypto: enviar para globalAddress
+                                   Onramp: redirecionar para oneClickBuyUrl
+
+4. Comerciante verifica a conclusão   GET /checkout-sessions/:id
+                                   <- { status: "complete", order_id }
+```
+
+### Por que Desacoplado?
+
+A criação da sessão é instantânea (apenas DB, sem chamadas externas). O pedido é criado separadamente quando o usuário se compromete com um método de pagamento. Isso significa:
+
+- O método de pagamento não precisa ser conhecido na criação da sessão
+- Uma página de checkout hospedada pode permitir que os usuários escolham como pagar
+- A criação da sessão nunca falha devido a erros de API externa
+
+## Ciclo de Vida do Status da Sessão
+
+```
+open --> processing --> complete
+  |
+  └--> expired
+```
+
+| Status | Quando |
+|--------|------|
+| `open` | Criada, aguardando pedido/pagamento |
+| `processing` | Pagamento recebido, pedido em execução |
+| `complete` | Pedido executado com sucesso |
+| `expired` | TTL expirado, pagamento falhou ou expirado manualmente |
+
+## API
+
+### `POST /checkout-sessions` — Criar Sessão
+
+Cria uma sessão leve. Sem pedido, sem chamadas de API externas.
+
+```json
+{
+  "success_url": "https://merchant.com/success?session_id={SESSION_ID}",
+  "cancel_url": "https://merchant.com/cancel",
+  "metadata": { "sku": "widget-1" },
+  "client_reference_id": "merchant-order-456",
+  "expires_in": 1800
+}
+```
+
+Todos os campos são opcionais. A configuração de pagamento (quantidade, tokens, chains) fica no pedido, não na sessão.
+
+### `POST /orders` — Criar Pedido com Vínculo de Sessão
+
+Passe `checkoutSessionId` na solicitação padrão de criação de pedido para vincular o pedido a uma sessão.
+
+```json
+{
+  "recipientAddress": "0x...",
+  "srcChain": 8453,
+  "dstChain": 8453,
+  "srcTokenAddress": "0x...",
+  "dstTokenAddress": "0x...",
+  "srcAmount": "1000000",
+  "type": "swap",
+  "payload": { "expectedDstAmount": "1000000" },
+  "checkoutSessionId": "550e8400-..."
+}
+```
+
+**Validação:**
+- Sessão deve existir (`400` se não encontrada)
+- Sessão deve estar `open` (`400` se expirada/processing/complete)
+- Sessão não deve já ter um pedido (`409 Conflict`)
+
+### `GET /checkout-sessions/:id` — Recuperar Sessão
+
+Retorna o estado atual da sessão. O status é sincronizado do pedido subjacente a cada recuperação.
+
+| Parâmetro de Consulta | Descrição |
+|-------------|-------------|
+| `include=order` | Incorpora o objeto de pedido completo com transações |
+
+### `POST /checkout-sessions/:id/expire` — Expirar Manualmente
+
+Funciona apenas em sessões com status `open`.
+
+## Modelos de URL de Redirecionamento
+
+Use variáveis de template em `success_url` e `cancel_url`:
+
+| Variável | Substituído por |
+|----------|--------------|
+| `{SESSION_ID}` | O UUID da sessão de checkout |
+| `{ORDER_ID}` | Mesmo valor (alias) |
+
+Se nenhuma variável de template estiver presente, `?sessionId=<uuid>` é adicionado automaticamente.
+
+## Integração SDK
+
+### Métodos de Serviço
+
+```typescript
+// Criar uma sessão de checkout
+const session = await anyspend.createCheckoutSession({
+  success_url: "https://mysite.com/success/{SESSION_ID}",
+  metadata: { sku: "widget-1" },
+});
+
+// Recuperar status da sessão
+const session = await anyspend.getCheckoutSession(sessionId);
+```
+
+### React Hooks
+
+#### `useCreateCheckoutSession`
+
+Hook de mutação para criar sessões.
+
+```tsx
+import { useCreateCheckoutSession } from "@b3dotfun/sdk/anyspend";
+
+const { mutate: createSession, data, isPending } = useCreateCheckoutSession();
+```
+
+#### `useCheckoutSession`
+
+Hook de consulta com auto-polling. Para de fazer polling quando o status atinge `complete` ou `expired`.
+
+```tsx
+import { useCheckoutSession } from "@b3dotfun/sdk/anyspend";
+
+const { data: session, isLoading } = useCheckoutSession(sessionId);
+```
+
+### Propriedade `checkoutSession` do Componente
+
+Os componentes `<AnySpend>`, `<AnySpendCustom>`, e `<AnySpendCustomExactIn>` aceitam uma propriedade `checkoutSession` opcional:
+
+```tsx
+<AnySpend
+  defaultActiveTab="fiat"
+  destinationTokenAddress="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+  destinationTokenChainId={8453}
+  recipientAddress="0x..."
+  checkoutSession={{
+    success_url: "https://myshop.com/success?session={SESSION_ID}",
+    cancel_url: "https://myshop.com/cancel",
+    metadata: { sku: "widget-1" },
+  }}
+/>
+```
+
+Quando a propriedade `checkoutSession` é definida, o componente automaticamente cria uma sessão antes de criar o pedido e usa o `success_url` da sessão para redirecionamentos. Sem a propriedade, os fluxos existentes permanecem inalterados.
+
+## Exemplos
+
+### Pagamento com Cripto
+
+```typescript
+// 1. Criar sessão
+const session = await fetch("/checkout-sessions", {
+  method: "POST",
+  body: JSON.stringify({
+    success_url: "https://mysite.com/success/{SESSION_ID}",
+    metadata: { sku: "widget-1" },
+  }),
+}).then(r => r.json());
+
+// 2. Criar pedido vinculado à sessão
+const order = await fetch("/orders", {
+  method: "POST",
+  body: JSON.stringify({
+    recipientAddress: "0x...",
+    srcChain: 8453,
+    dstChain: 8453,
+    srcTokenAddress: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    dstTokenAddress: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    srcAmount: "1000000",
+    type: "swap",
+    payload: { expectedDstAmount: "1000000" },
+    checkoutSessionId: session.data.id,
+  }),
+}).then(r => r.json());
+
+// 3. Usuário envia cripto para order.data.globalAddress
+
+// 4. Fazer polling da sessão até completar
+const poll = setInterval(async () => {
+  const s = await fetch(`/checkout-sessions/${session.data.id}`).then(r => r.json());
+  if (s.data.status === "complete") {
+    clearInterval(poll);
+    // redirecionar para success_url ou mostrar confirmação
+  }
+}, 3000);
+```
+
+### Pagamento Onramp (Coinbase/Stripe)
+
+```typescript
+// Passos 1-2 como acima, mas incluir configuração onramp na criação do pedido:
+const order = await fetch("/orders", {
+  method: "POST",
+  body: JSON.stringify({
+    // ... mesmos campos do pedido ...
+    checkoutSessionId: session.data.id,
+    onramp: {
+      vendor: "coinbase",
+      payment_method: "card",
+      country: "US",
+    },
+  }),
+}).then(r => r.json());
+
+// Redirecionar usuário para a página de checkout do fornecedor
+window.location.href = order.data.oneClickBuyUrl;
+
+// Após o fornecedor redirecionar de volta, fazer polling em GET /checkout-sessions/:id para conclusão
+```
