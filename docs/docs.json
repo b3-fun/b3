@@ -334,7 +334,8 @@
                   "anyspend/introduction",
                   "anyspend/installation",
                   "anyspend/onramp",
-                  "anyspend/deposit"
+                  "anyspend/deposit",
+                  "anyspend/checkout-sessions"
                 ]
               },
               {
