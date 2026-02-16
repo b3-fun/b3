@@ -1,0 +1,185 @@
+# AnySpend SDK
+
+> Accept crypto payments and onboard users with zero friction. Users pay with any token on any chain in one seamless experience.
+
+## Overview
+
+AnySpend is a payment SDK (`@b3dotfun/sdk`) for crypto payments and fiat onramps. It provides React components, hooks, and service methods for token swaps, cross-chain transactions, NFT purchases, and merchant checkout flows.
+
+Supported networks: Ethereum, Base, B3.
+Supported platforms: React Web (full), React Native (hooks + services only), Node.js (services only).
+
+## Installation
+
+```bash
+npm install @b3dotfun/sdk
+```
+
+Wrap your app with the provider:
+
+```tsx
+import { AnySpendProvider } from "@b3dotfun/sdk/anyspend/react";
+import "@b3dotfun/sdk/index.css";
+
+function App() {
+  return <AnySpendProvider>{/* app */}</AnySpendProvider>;
+}
+```
+
+Requires Node.js v20.15.0+, React 18/19.
+
+## Components
+
+### AnySpend
+
+Primary swap/onramp interface. Supports modal or page mode.
+
+Props: `mode` ("modal"|"page"), `defaultActiveTab` ("crypto"|"fiat"), `destinationTokenAddress`, `destinationTokenChainId`, `recipientAddress`, `hideTransactionHistoryButton`, `loadOrder`, `onSuccess`, `checkoutSession`.
+
+```tsx
+<AnySpend
+  mode="page"
+  defaultActiveTab="crypto"
+  recipientAddress="0x..."
+  onSuccess={(txHash) => console.log(txHash)}
+/>
+```
+
+### AnySpendNFTButton
+
+One-click NFT purchase button.
+
+Props: `nftContract` (NFTContract), `recipientAddress`, `onSuccess`.
+
+NFTContract shape: `{ chainId, contractAddress, price (wei), priceFormatted, currency: { chainId, address, name, symbol, decimals }, name, description, imageUrl }`.
+
+### AnySpendCustom
+
+Flexible component for custom smart contract interactions (staking, gaming, DeFi).
+
+Props: `orderType` ("custom"), `dstChainId`, `dstToken`, `dstAmount`, `contractAddress`, `encodedData`, `spenderAddress`, `metadata`, `header`, `onSuccess`, `checkoutSession`.
+
+### AnySpendCustomExactIn
+
+Like AnySpendCustom but for exact-input flows. Also supports `checkoutSession` prop.
+
+### Specialized Components
+
+- `AnySpendNFT` — Enhanced NFT with marketplace features
+- `AnySpendStakeB3` — B3 token staking
+- `AnySpendBuySpin` — Gaming spin wheel purchases
+- `AnySpendTournament` — Tournament entry payments
+
+## Hooks
+
+### useAnyspendQuote(quoteRequest)
+
+Get real-time pricing. QuoteRequest: `{ srcChain, dstChain, srcTokenAddress, dstTokenAddress, type ("swap"|"custom"), tradeType ("EXACT_INPUT"|"EXACT_OUTPUT"), amount }`.
+
+Returns: `{ anyspendQuote, isLoadingAnyspendQuote, getAnyspendQuoteError, refetchAnyspendQuote }`.
+
+### useAnyspendCreateOrder(options)
+
+Create orders. Options: `{ onSuccess, onError, onSettled }`.
+
+Returns: `{ createOrder(request), isCreatingOrder, createOrderError }`.
+
+### useAnyspendOrderAndTransactions(orderId)
+
+Monitor order status and transactions in real-time.
+
+Returns: `{ orderAndTransactions: { order, depositTxs, relayTx, executeTx, refundTxs }, isLoadingOrderAndTransactions, getOrderAndTransactionsError }`.
+
+### useAnyspendOrderHistory(creatorAddress, limit, offset)
+
+Paginated order history for a user.
+
+### useAnyspendTokens(chainId, search)
+
+Get available tokens for a chain.
+
+### useCoinbaseOnrampOptions()
+
+Get Coinbase onramp config for fiat payments.
+
+### useStripeClientSecret(orderData)
+
+Get Stripe payment intent for card payments.
+
+### useCreateCheckoutSession()
+
+Mutation hook for creating checkout sessions.
+
+Returns: `{ mutate: createSession, data, isPending }`.
+
+### useCheckoutSession(sessionId)
+
+Query hook that auto-polls a checkout session. Stops on `complete` or `expired`.
+
+Returns: `{ data: session, isLoading }`.
+
+## Checkout Sessions
+
+Stripe-like checkout sessions decoupled from orders. Merchants create a session first, then create an order when the user picks a payment method.
+
+### Flow
+
+1. `POST /checkout-sessions` → Creates session (DB only, instant). Returns `{ id, status: "open" }`.
+2. `POST /orders` with `checkoutSessionId` → Creates order linked to session. Returns order with `globalAddress` or `oneClickBuyUrl`.
+3. User pays (crypto to globalAddress, or onramp redirect).
+4. `GET /checkout-sessions/:id` → Poll status. Returns `{ status: "complete", order_id }`.
+
+### Session Statuses
+
+`open` → `processing` → `complete`, or `open` → `expired`.
+
+### API Endpoints
+
+**POST /checkout-sessions** — Create session. All fields optional: `success_url`, `cancel_url`, `metadata`, `client_reference_id`, `expires_in`.
+
+**POST /orders** — Standard order creation. Add `checkoutSessionId` to link. Validates: session exists (400), session is open (400), session has no order yet (409).
+
+**GET /checkout-sessions/:id** — Retrieve session. Query `?include=order` to embed full order with transactions.
+
+**POST /checkout-sessions/:id/expire** — Manually expire an open session.
+
+### Redirect URL Templates
+
+`success_url` and `cancel_url` support `{SESSION_ID}` and `{ORDER_ID}` template variables. If no variable present, `?sessionId=<uuid>` is appended.
+
+### Component Integration
+
+Pass `checkoutSession` prop to `AnySpend`, `AnySpendCustom`, or `AnySpendCustomExactIn`:
+
+```tsx
+<AnySpend
+  checkoutSession={{
+    success_url: "https://myshop.com/success?session={SESSION_ID}",
+    cancel_url: "https://myshop.com/cancel",
+    metadata: { sku: "widget-1" },
+  }}
+/>
+```
+
+Without the prop, all existing flows are unchanged.
+
+## Order Status Lifecycle
+
+`scanning_deposit_transaction` → `obtain_token` → `sending_token_from_vault` → `relay` → `executed`
+
+Failure states: `obtain_failed`, `expired`, `refunding`, `refunded`, `failure`.
+
+For Stripe: `waiting_stripe_payment` precedes processing.
+
+## Error Codes
+
+Payment: `INSUFFICIENT_BALANCE`, `INVALID_TOKEN_ADDRESS`, `MINIMUM_AMOUNT_NOT_MET`, `MAXIMUM_AMOUNT_EXCEEDED`.
+Network: `SLIPPAGE`, `NETWORK_ERROR`, `QUOTE_EXPIRED`, `CHAIN_NOT_SUPPORTED`.
+Contract: `CONTRACT_CALL_FAILED`, `INSUFFICIENT_GAS`, `NONCE_TOO_LOW`, `TRANSACTION_REVERTED`.
+
+## Links
+
+- Docs: docs/installation.md, docs/components.md, docs/hooks.md, docs/examples.md, docs/checkout-sessions.md, docs/error-handling.md
+- Live demo: https://anyspend.com
+- Discord: https://discord.gg/b3dotfun
+- Issues: https://github.com/b3-fun/b3/issues
