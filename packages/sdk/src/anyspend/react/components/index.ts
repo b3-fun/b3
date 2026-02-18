@@ -24,6 +24,8 @@ export type {
   RecipientSelectionClasses,
 } from "./types/classes";
 export { AnySpendDepositHype, HYPE_TOKEN_DETAILS } from "./AnyspendDepositHype";
+export { AnySpendWorkflowTrigger } from "./AnySpendWorkflowTrigger";
+export type { AnySpendWorkflowTriggerProps } from "./AnySpendWorkflowTrigger";
 export * from "./AnySpendFingerprintWrapper";
 export { AnySpendNFT } from "./AnySpendNFT";
 export { AnyspendSignatureMint } from "./AnyspendSignatureMint";

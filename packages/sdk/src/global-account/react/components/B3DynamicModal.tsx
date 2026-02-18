@@ -12,6 +12,7 @@ import {
 } from "@b3dotfun/sdk/anyspend/react";
 import { AnySpendDeposit } from "@b3dotfun/sdk/anyspend/react/components/AnySpendDeposit";
 import { AnySpendDepositHype } from "@b3dotfun/sdk/anyspend/react/components/AnyspendDepositHype";
+import { AnySpendWorkflowTrigger } from "@b3dotfun/sdk/anyspend/react/components/AnySpendWorkflowTrigger";
 import { AnySpendDepositUpside } from "@b3dotfun/sdk/anyspend/react/components/AnySpendDepositUpside";
 import { AnySpendStakeUpside } from "@b3dotfun/sdk/anyspend/react/components/AnySpendStakeUpside";
 import { AnySpendStakeUpsideExactIn } from "@b3dotfun/sdk/anyspend/react/components/AnySpendStakeUpsideExactIn";
@@ -65,6 +66,7 @@ export function B3DynamicModal() {
     "send",
     "notifications",
     "anySpendDeposit",
+    "anySpendWorkflowTrigger",
   ];
 
   const freestyleTypes = [
@@ -152,6 +154,8 @@ export function B3DynamicModal() {
         return <AnySpendCollectorClubPurchase {...contentType} mode="modal" />;
       case "anySpendDeposit":
         return <AnySpendDeposit {...contentType} mode="modal" />;
+      case "anySpendWorkflowTrigger":
+        return <AnySpendWorkflowTrigger {...contentType} mode="modal" />;
       case "avatarEditor":
         return <AvatarEditor onSetAvatar={contentType.onSuccess} />;
       case "deposit":
