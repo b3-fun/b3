@@ -19,6 +19,7 @@ import { StakeB3ExactInButton } from "./components/StakeB3ExactInButton";
 import { StakeUpsideButton } from "./components/StakeUpsideButton";
 import { StakeUpsideButtonExactIn } from "./components/StakeUpsideButtonExactIn";
 import { SwapTokensButton } from "./components/SwapTokensButton";
+import { WorkflowTriggerButton } from "./components/WorkflowTriggerButton";
 
 export default function Home() {
   const [isSignatureMintOpen, setIsSignatureMintOpen] = useState(false);
@@ -61,6 +62,7 @@ export default function Home() {
             <CollectorClubPurchaseButton />
             <OrderDetailsButton />
             <CustomClassesDepositButton />
+            <WorkflowTriggerButton />
           </div>
         </div>
       </div>

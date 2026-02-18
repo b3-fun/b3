@@ -505,6 +505,39 @@ export interface AnySpendCollectorClubPurchaseProps extends BaseModalProps {
  * Props for the AnySpend Deposit modal
  * Flexible deposit component with optional chain selection
  */
+/**
+ * Props for the AnySpend Workflow Trigger modal
+ * Handles payments that trigger b3os-workflow runs
+ */
+export interface AnySpendWorkflowTriggerModalProps extends BaseModalProps {
+  /** Modal type identifier */
+  type: "anySpendWorkflowTrigger";
+  /** Payment recipient address (hex) */
+  recipientAddress: string;
+  /** Destination chain ID */
+  chainId: number;
+  /** Destination token address */
+  tokenAddress: string;
+  /** Required payment amount in token base units (wei) */
+  amount: string;
+  /** Workflow ID to trigger */
+  workflowId: string;
+  /** Organization ID that owns the workflow */
+  orgId: string;
+  /** Optional callback metadata */
+  callbackMetadata?: {
+    inputs?: Record<string, unknown>;
+  } & Record<string, unknown>;
+  /** Callback when payment succeeds */
+  onSuccess?: (amount: string) => void;
+  /** Callback when modal is closed */
+  onClose?: () => void;
+  /** Custom action label */
+  actionLabel?: string;
+  /** Custom class names */
+  classes?: AnySpendAllClasses;
+}
+
 export interface AnySpendDepositModalProps extends BaseModalProps {
   /** Modal type identifier */
   type: "anySpendDeposit";
@@ -595,8 +628,8 @@ export type ModalContentType =
   | SendModalProps
   | NotificationsModalProps
   | AnySpendCollectorClubPurchaseProps
-  | AnySpendDepositModalProps;
-// Add other modal types here like: | OtherModalProps | AnotherModalProps
+  | AnySpendDepositModalProps
+  | AnySpendWorkflowTriggerModalProps;
 
 /**
  * State interface for the modal store
