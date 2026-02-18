@@ -7,6 +7,9 @@ import { CheckoutCartPanel } from "./CheckoutCartPanel";
 import { CheckoutLayout } from "./CheckoutLayout";
 import { CheckoutPaymentPanel } from "./CheckoutPaymentPanel";
 
+export type { AnySpendCheckoutClasses } from "../types/classes";
+import type { AnySpendCheckoutClasses } from "../types/classes";
+
 export interface CheckoutItem {
   id?: string;
   name: string;
@@ -15,52 +18,6 @@ export interface CheckoutItem {
   /** Amount in wei (smallest unit of destination token) */
   amount: string;
   quantity: number;
-}
-
-export interface AnySpendCheckoutClasses {
-  // Layout
-  root?: string;
-  layout?: string;
-  paymentColumn?: string;
-  cartColumn?: string;
-
-  // Payment panel
-  paymentPanel?: string;
-  paymentTitle?: string;
-  paymentMethodSelector?: string;
-  paymentMethodButton?: string;
-
-  // Crypto panel
-  cryptoPanel?: string;
-  tokenSelector?: string;
-  quoteDisplay?: string;
-  payButton?: string;
-
-  // Fiat / Stripe panel
-  fiatPanel?: string;
-  stripeForm?: string;
-  stripeSubmitButton?: string;
-
-  // Coinbase panel
-  coinbasePanel?: string;
-
-  // Cart panel
-  cartPanel?: string;
-  cartTitle?: string;
-  cartItemRow?: string;
-  cartItemImage?: string;
-  cartItemName?: string;
-  cartItemDescription?: string;
-  cartItemPrice?: string;
-  cartSummary?: string;
-  cartTotal?: string;
-
-  // Branding
-  poweredBy?: string;
-
-  // Success
-  successPanel?: string;
-  returnButton?: string;
 }
 
 export interface AnySpendCheckoutProps {
@@ -84,7 +41,7 @@ export interface AnySpendCheckoutProps {
   themeColor?: string;
   /** Custom button text */
   buttonText?: string;
-  /** Checkout session ID */
+  /** Checkout session ID (used by pay link backend to track sessions) */
   checkoutSessionId?: string;
   /** Called on successful payment */
   onSuccess?: (result: { txHash?: string; orderId?: string }) => void;
@@ -109,7 +66,7 @@ export function AnySpendCheckout({
   organizationLogo,
   themeColor,
   buttonText = "Pay",
-  checkoutSessionId: _checkoutSessionId,
+  checkoutSessionId: _checkoutSessionId, // TODO: pass to payment panels for server-side session tracking
   onSuccess,
   onError,
   returnUrl,

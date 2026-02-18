@@ -5,7 +5,8 @@ import { useAnyspendQuote } from "@b3dotfun/sdk/anyspend/react/hooks/useAnyspend
 import { useAnyspendCreateOrder } from "@b3dotfun/sdk/anyspend/react/hooks/useAnyspendCreateOrder";
 import { useAnyspendTokenList } from "@b3dotfun/sdk/anyspend/react/hooks/useAnyspendTokens";
 import { ALL_CHAINS } from "@b3dotfun/sdk/anyspend";
-import { useAccountWallet, useSimTokenBalance, useTokenData } from "@b3dotfun/sdk/global-account/react";
+import { useAccountWallet, useB3Config, useModalStore, useSimTokenBalance, useTokenData } from "@b3dotfun/sdk/global-account/react";
+import { thirdwebB3Chain } from "@b3dotfun/sdk/shared/constants/chains/b3Chain";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { isNativeToken } from "@b3dotfun/sdk/anyspend/utils/token";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
@@ -44,8 +45,11 @@ export function CryptoCheckoutPanel({
   const [showTokenSelector, setShowTokenSelector] = useState(false);
   const [tokenSearchQuery, setTokenSearchQuery] = useState("");
 
-  // Get wallet
+  // Get wallet & modal
   const { address: walletAddress } = useAccountWallet();
+  const { partnerId } = useB3Config();
+  const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
+  const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
 
   // Get destination token data
   const { data: dstTokenData } = useTokenData(destinationTokenChainId, destinationTokenAddress);
@@ -301,30 +305,45 @@ export function CryptoCheckoutPanel({
         )}
       </AnimatePresence>
 
-      {/* Pay Button */}
-      <button
-        onClick={handlePay}
-        disabled={!canPay}
-        className={cn(
-          "anyspend-crypto-pay-btn w-full rounded-xl px-4 py-3.5 text-sm font-semibold text-white transition-all",
-          canPay
-            ? "bg-blue-600 hover:bg-blue-700 active:scale-[0.98]"
-            : "cursor-not-allowed bg-gray-300 dark:bg-gray-600",
-          classes?.payButton,
-        )}
-        style={themeColor && canPay ? { backgroundColor: themeColor } : undefined}
-      >
-        {isCreatingOrder ? (
-          <span className="flex items-center justify-center gap-2">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Processing...
-          </span>
-        ) : !walletAddress ? (
-          "Connect Wallet to Pay"
-        ) : (
-          buttonText
-        )}
-      </button>
+      {/* Pay / Connect Wallet Button */}
+      {!walletAddress ? (
+        <button
+          onClick={() => {
+            setB3ModalContentType({ type: "signInWithB3", showBackButton: false, chain: thirdwebB3Chain, partnerId });
+            setB3ModalOpen(true);
+          }}
+          className={cn(
+            "anyspend-crypto-pay-btn w-full rounded-xl px-4 py-3.5 text-sm font-semibold text-white transition-all",
+            "bg-blue-600 hover:bg-blue-700 active:scale-[0.98]",
+            classes?.payButton,
+          )}
+          style={themeColor ? { backgroundColor: themeColor } : undefined}
+        >
+          Connect Wallet to Pay
+        </button>
+      ) : (
+        <button
+          onClick={handlePay}
+          disabled={!canPay}
+          className={cn(
+            "anyspend-crypto-pay-btn w-full rounded-xl px-4 py-3.5 text-sm font-semibold text-white transition-all",
+            canPay
+              ? "bg-blue-600 hover:bg-blue-700 active:scale-[0.98]"
+              : "cursor-not-allowed bg-gray-300 dark:bg-gray-600",
+            classes?.payButton,
+          )}
+          style={themeColor && canPay ? { backgroundColor: themeColor } : undefined}
+        >
+          {isCreatingOrder ? (
+            <span className="flex items-center justify-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Processing...
+            </span>
+          ) : (
+            buttonText
+          )}
+        </button>
+      )}
     </div>
   );
 }

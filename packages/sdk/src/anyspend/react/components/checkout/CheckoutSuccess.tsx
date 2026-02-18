@@ -13,7 +13,7 @@ interface CheckoutSuccessProps {
   classes?: AnySpendCheckoutClasses;
 }
 
-export function CheckoutSuccess({ txHash, orderId: _orderId, returnUrl, returnLabel, classes }: CheckoutSuccessProps) {
+export function CheckoutSuccess({ txHash, orderId, returnUrl, returnLabel, classes }: CheckoutSuccessProps) {
   return (
     <div className={cn("anyspend-checkout-success flex flex-col items-center py-8 text-center", classes?.successPanel)}>
       {/* Animated success icon - scale + opacity entry */}
@@ -50,7 +50,7 @@ export function CheckoutSuccess({ txHash, orderId: _orderId, returnUrl, returnLa
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3, delay: 0.5, ease: "easeOut" }}
-          href={`https://basescan.org/tx/${txHash}`}
+          href={`https://explorer.b3.fun/tx/${txHash}`}
           target="_blank"
           rel="noopener noreferrer"
           className="anyspend-success-tx-link mt-4 flex items-center gap-1.5 text-sm text-blue-600 hover:underline dark:text-blue-400"
@@ -58,6 +58,17 @@ export function CheckoutSuccess({ txHash, orderId: _orderId, returnUrl, returnLa
           View Transaction
           <ExternalLink className="h-3.5 w-3.5" />
         </motion.a>
+      )}
+
+      {!txHash && orderId && (
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3, delay: 0.5, ease: "easeOut" }}
+          className="anyspend-success-order-id mt-4 text-xs text-gray-400 dark:text-gray-500"
+        >
+          Order ID: {orderId}
+        </motion.p>
       )}
 
       {returnUrl && (

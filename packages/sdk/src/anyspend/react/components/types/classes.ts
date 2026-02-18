@@ -472,8 +472,13 @@ export interface AnySpendCheckoutClasses {
   quoteDisplay?: string;
   payButton?: string;
 
-  // Fiat panel
+  // Fiat / Stripe panel
   fiatPanel?: string;
+  stripeForm?: string;
+  stripeSubmitButton?: string;
+
+  // Coinbase panel
+  coinbasePanel?: string;
 
   // Cart panel
   cartPanel?: string;
