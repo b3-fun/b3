@@ -1,8 +1,10 @@
 import { B3_TOKEN, USDC_BASE } from "@b3dotfun/sdk/anyspend";
 import { useModalStore } from "@b3dotfun/sdk/global-account/react";
+import { useNavigate } from "react-router-dom";
 import { base } from "viem/chains";
 
 export default function HomePage() {
+  const navigate = useNavigate();
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
 
@@ -87,6 +89,16 @@ export default function HomePage() {
               <div>
                 <h3 className="text-lg font-medium text-gray-900">Get B3 Token</h3>
                 <p className="mt-1 text-sm text-gray-500">Purchase B3 tokens directly through AnySpend</p>
+              </div>
+            </button>
+
+            <button
+              onClick={() => navigate("/checkout")}
+              className="group flex h-40 flex-col justify-between overflow-hidden rounded-lg border border-gray-100 bg-white p-6 text-left shadow-sm transition-all hover:border-emerald-100 hover:shadow-md sm:col-span-2"
+            >
+              <div>
+                <h3 className="text-lg font-medium text-gray-900">Checkout (New)</h3>
+                <p className="mt-1 text-sm text-gray-500">Two-column Shopify-style checkout with multi-item cart</p>
               </div>
             </button>
           </div>

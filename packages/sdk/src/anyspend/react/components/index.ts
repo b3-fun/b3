@@ -1,3 +1,7 @@
+// Checkout
+export { AnySpendCheckout } from "./checkout/AnySpendCheckout";
+export type { AnySpendCheckoutProps, CheckoutItem, AnySpendCheckoutClasses } from "./checkout/AnySpendCheckout";
+
 // Components
 export { AnySpend } from "./AnySpend";
 export { AnySpendBondKit } from "./AnySpendBondKit";
@@ -11,6 +15,7 @@ export type { AnySpendDepositProps, ChainConfig, DepositContractConfig } from ".
 // Classes types for styling customization
 export type {
   AnySpendAllClasses,
+  AnySpendCheckoutClasses as AnySpendCheckoutClassesFromTypes,
   AnySpendClasses,
   AnySpendCustomExactInClasses,
   AnySpendDepositClasses,

@@ -452,11 +452,54 @@ export interface QRDepositClasses {
   orderDetailsContent?: string;
 }
 
+/** Classes for AnySpendCheckout component */
+export interface AnySpendCheckoutClasses {
+  // Layout
+  root?: string;
+  layout?: string;
+  paymentColumn?: string;
+  cartColumn?: string;
+
+  // Payment panel
+  paymentPanel?: string;
+  paymentTitle?: string;
+  paymentMethodSelector?: string;
+  paymentMethodButton?: string;
+
+  // Crypto panel
+  cryptoPanel?: string;
+  tokenSelector?: string;
+  quoteDisplay?: string;
+  payButton?: string;
+
+  // Fiat panel
+  fiatPanel?: string;
+
+  // Cart panel
+  cartPanel?: string;
+  cartTitle?: string;
+  cartItemRow?: string;
+  cartItemImage?: string;
+  cartItemName?: string;
+  cartItemDescription?: string;
+  cartItemPrice?: string;
+  cartSummary?: string;
+  cartTotal?: string;
+
+  // Branding
+  poweredBy?: string;
+
+  // Success
+  successPanel?: string;
+  returnButton?: string;
+}
+
 /** Combined classes for all AnySpend-related components */
 export interface AnySpendAllClasses {
   deposit?: AnySpendDepositClasses;
   anySpend?: AnySpendClasses;
   customExactIn?: AnySpendCustomExactInClasses;
+  checkout?: AnySpendCheckoutClasses;
   cryptoPaySection?: CryptoPaySectionClasses;
   cryptoReceiveSection?: CryptoReceiveSectionClasses;
   panelOnramp?: PanelOnrampClasses;
