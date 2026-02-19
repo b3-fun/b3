@@ -51,7 +51,9 @@ export const clientOptions = {
       return Cookies.get(key);
     },
     setItem: (key: string, value: string) => {
-      Cookies.set(key, value);
+      Cookies.set(key, value, {
+        expires: 30,
+      });
     },
     removeItem: (key: string) => {
       Cookies.remove(key);
