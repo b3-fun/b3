@@ -36,7 +36,6 @@ export default function CheckoutPage() {
         buttonText="Pay Now"
         onSuccess={result => {
           console.log("Payment success:", result);
-          alert(`Payment successful! TX: ${result.txHash || "pending"}`);
         }}
         onError={error => {
           console.error("Payment error:", error);

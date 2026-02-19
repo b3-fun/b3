@@ -142,7 +142,7 @@ export function CheckoutPaymentPanel({
     );
 
   const expandedPanelClass = cn(
-    "anyspend-payment-method-panel border-t border-gray-100 bg-gray-50/50 px-4 py-4 dark:border-gray-800 dark:bg-gray-800/30",
+    "anyspend-payment-method-panel border-t border-gray-100 bg-white px-4 py-4 dark:border-gray-800 dark:bg-gray-900",
   );
 
   return (

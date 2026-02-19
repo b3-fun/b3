@@ -78,9 +78,10 @@ export function CheckoutSuccess({ txHash, orderId, returnUrl, returnLabel, class
           transition={{ duration: 0.3, delay: 0.6, ease: "easeOut" }}
           href={returnUrl}
           className={cn(
-            "anyspend-success-return-btn mt-6 inline-flex rounded-xl bg-gray-900 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-gray-800 active:scale-[0.98] dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200",
+            "anyspend-success-return-btn mt-6 inline-flex rounded-xl px-6 py-3 text-sm font-medium transition-colors",
             classes?.returnButton,
           )}
+          style={{ backgroundColor: "#111827", color: "#fff" }}
         >
           {returnLabel || "Return to Store"}
         </motion.a>

@@ -3,14 +3,19 @@
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { useAnyspendQuote } from "@b3dotfun/sdk/anyspend/react/hooks/useAnyspendQuote";
 import { useAnyspendCreateOrder } from "@b3dotfun/sdk/anyspend/react/hooks/useAnyspendCreateOrder";
+import { useAnyspendOrderAndTransactions } from "@b3dotfun/sdk/anyspend/react/hooks/useAnyspendOrderAndTransactions";
 import { useAnyspendTokenList } from "@b3dotfun/sdk/anyspend/react/hooks/useAnyspendTokens";
+import { useOnOrderSuccess } from "@b3dotfun/sdk/anyspend/react/hooks/useOnOrderSuccess";
 import { ALL_CHAINS } from "@b3dotfun/sdk/anyspend";
+import { EVM_MAINNET } from "@b3dotfun/sdk/anyspend/utils/chain";
 import {
   useAccountWallet,
   useB3Config,
   useModalStore,
+  useSimBalance,
   useSimTokenBalance,
   useTokenData,
+  useUnifiedChainSwitchAndExecute,
 } from "@b3dotfun/sdk/global-account/react";
 import { thirdwebB3Chain } from "@b3dotfun/sdk/shared/constants/chains/b3Chain";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
@@ -31,6 +36,7 @@ import {
   DrawerTitle,
 } from "@b3dotfun/sdk/global-account/react/components/ui/drawer";
 import { ChevronDown, Loader2, Search } from "lucide-react";
+import { encodeFunctionData, erc20Abi } from "viem";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChainTokenIcon } from "../common/ChainTokenIcon";
@@ -142,18 +148,88 @@ export function CryptoCheckoutPanel({
   // Check if user has enough balance
   const hasEnoughBalance = balance.raw >= BigInt(srcAmount || "0");
 
+  // Order tracking state
+  const [orderId, setOrderId] = useState<string | undefined>();
+  const [isSendingDeposit, setIsSendingDeposit] = useState(false);
+  const depositSentRef = useRef(false);
+
+  // Wallet transaction execution
+  const { switchChainAndExecute } = useUnifiedChainSwitchAndExecute();
+
   // Create order
   const { createOrder, isCreatingOrder } = useAnyspendCreateOrder({
     onSuccess: (data: any) => {
-      onSuccess?.({ orderId: data?.id, txHash: data?.txHash });
+      const id = data?.data?.id;
+      if (id) {
+        setOrderId(id);
+      }
     },
     onError: (error: Error) => {
+      setIsSendingDeposit(false);
       onError?.(error);
     },
   });
 
+  // Poll order status until executed
+  const { orderAndTransactions: oat } = useAnyspendOrderAndTransactions(orderId);
+
+  // Send deposit transaction once order is created and ready
+  useEffect(() => {
+    if (!oat?.data?.order || depositSentRef.current) return;
+    const order = oat.data.order;
+    if (order.status !== "scanning_deposit_transaction") return;
+    if (oat.data.depositTxs?.length) return; // Already deposited
+
+    depositSentRef.current = true;
+
+    const sendDeposit = async () => {
+      try {
+        setIsSendingDeposit(true);
+        const amount = BigInt(order.srcAmount);
+
+        if (isNativeToken(order.srcTokenAddress)) {
+          await switchChainAndExecute(order.srcChain, {
+            to: order.globalAddress as `0x${string}`,
+            value: amount,
+          });
+        } else {
+          const data = encodeFunctionData({
+            abi: erc20Abi,
+            functionName: "transfer",
+            args: [order.globalAddress as `0x${string}`, amount],
+          });
+          await switchChainAndExecute(order.srcChain, {
+            to: order.srcTokenAddress as `0x${string}`,
+            data,
+            value: BigInt(0),
+          });
+        }
+      } catch (error: any) {
+        depositSentRef.current = false;
+        onError?.(error instanceof Error ? error : new Error(error?.message || "Transaction rejected"));
+      } finally {
+        setIsSendingDeposit(false);
+      }
+    };
+
+    sendDeposit();
+  }, [oat, switchChainAndExecute, onError]);
+
+  // Only call onSuccess when order is actually executed with a real txHash
+  useOnOrderSuccess({
+    orderData: oat,
+    orderId,
+    onSuccess: (txHash?: string) => {
+      onSuccess?.({ orderId, txHash });
+    },
+  });
+
+  const isWaitingForExecution = !!orderId && oat?.data?.order.status !== "executed";
+
   const handlePay = useCallback(() => {
     if (!selectedSrcToken || !walletAddress) return;
+
+    depositSentRef.current = false;
 
     const dstToken: components["schemas"]["Token"] = {
       address: destinationTokenAddress,
@@ -197,7 +273,8 @@ export function CryptoCheckoutPanel({
   };
 
   const isLoading = isLoadingAnyspendQuote || isLoadingTokens;
-  const canPay = walletAddress && selectedSrcToken && hasEnoughBalance && !isLoading && !isCreatingOrder;
+  const isPending = isCreatingOrder || isSendingDeposit || isWaitingForExecution;
+  const canPay = walletAddress && selectedSrcToken && hasEnoughBalance && !isLoading && !isPending;
 
   return (
     <div className={cn("anyspend-crypto-panel flex flex-col gap-4", classes?.cryptoPanel)}>
@@ -240,10 +317,18 @@ export function CryptoCheckoutPanel({
           setTokenSearchQuery("");
         }}
         tokenList={tokenList}
+        isLoadingTokens={isLoadingTokens}
         tokenSearchQuery={tokenSearchQuery}
         onSearchChange={setTokenSearchQuery}
         onSelectToken={handleSelectToken}
         selectedToken={selectedSrcToken}
+        walletAddress={walletAddress}
+        chainId={selectedSrcChainId}
+        onChainChange={chainId => {
+          setSelectedSrcChainId(chainId);
+          setSelectedSrcToken(null);
+          setTokenSearchQuery("");
+        }}
       />
 
       {/* Quote Display */}
@@ -325,17 +410,19 @@ export function CryptoCheckoutPanel({
           disabled={!canPay}
           className={cn(
             "anyspend-crypto-pay-btn w-full rounded-xl px-4 py-3.5 text-sm font-semibold text-white transition-all",
-            canPay
-              ? "bg-blue-600 hover:bg-blue-700 active:scale-[0.98]"
-              : "cursor-not-allowed bg-gray-300 dark:bg-gray-600",
+            canPay ? "bg-blue-600 hover:bg-blue-700 active:scale-[0.98]" : "cursor-not-allowed bg-blue-600 opacity-50",
             classes?.payButton,
           )}
-          style={themeColor && canPay ? { backgroundColor: themeColor } : undefined}
+          style={!canPay ? undefined : themeColor ? { backgroundColor: themeColor } : undefined}
         >
-          {isCreatingOrder ? (
+          {isPending ? (
             <span className="flex items-center justify-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin" />
-              Processing...
+              {isCreatingOrder
+                ? "Creating order..."
+                : isSendingDeposit
+                  ? "Confirm in wallet..."
+                  : "Confirming transaction..."}
             </span>
           ) : (
             buttonText
@@ -354,23 +441,87 @@ interface TokenSelectorModalProps {
   open: boolean;
   onClose: () => void;
   tokenList: components["schemas"]["Token"][] | undefined;
+  isLoadingTokens: boolean;
   tokenSearchQuery: string;
   onSearchChange: (query: string) => void;
   onSelectToken: (token: components["schemas"]["Token"]) => void;
   selectedToken: components["schemas"]["Token"] | null;
+  walletAddress?: string;
+  chainId: number;
+  onChainChange: (chainId: number) => void;
 }
+
+const SOURCE_CHAINS = Object.values(EVM_MAINNET).map(c => ({ id: c.id, name: c.name, logoUrl: c.logoUrl }));
 
 function TokenSelectorModal({
   open,
   onClose,
   tokenList,
+  isLoadingTokens,
   tokenSearchQuery,
   onSearchChange,
   onSelectToken,
   selectedToken,
+  walletAddress,
+  chainId,
+  onChainChange,
 }: TokenSelectorModalProps) {
   const isMobile = useIsMobile();
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch all balances for the wallet on this chain
+  const { data: balanceData } = useSimBalance(walletAddress, [chainId]);
+
+  // Build a lookup map: lowercase token address -> balance info
+  const balanceMap = useMemo(() => {
+    const map = new Map<string, { raw: bigint; formatted: string; decimals: number }>();
+    if (!balanceData?.balances) return map;
+    for (const b of balanceData.balances) {
+      if (b.amount && BigInt(b.amount) > BigInt(0)) {
+        map.set(b.address.toLowerCase(), {
+          raw: BigInt(b.amount),
+          formatted: formatTokenAmount(BigInt(b.amount), b.decimals),
+          decimals: b.decimals,
+        });
+      }
+    }
+    return map;
+  }, [balanceData]);
+
+  // Sort tokens: tokens with balance first (sorted by balance desc), then the rest
+  const sortedTokenList = useMemo(() => {
+    if (!tokenList) return undefined;
+    const withBalance: components["schemas"]["Token"][] = [];
+    const withoutBalance: components["schemas"]["Token"][] = [];
+    for (const token of tokenList) {
+      const bal = balanceMap.get(token.address.toLowerCase());
+      if (bal) {
+        withBalance.push(token);
+      } else {
+        withoutBalance.push(token);
+      }
+    }
+    withBalance.sort((a, b) => {
+      const balA = balanceMap.get(a.address.toLowerCase())?.raw || BigInt(0);
+      const balB = balanceMap.get(b.address.toLowerCase())?.raw || BigInt(0);
+      if (balB > balA) return 1;
+      if (balB < balA) return -1;
+      return 0;
+    });
+    return [...withBalance, ...withoutBalance];
+  }, [tokenList, balanceMap]);
+
+  // Keep showing the previous list while new chain tokens are loading
+  const prevListRef = useRef<components["schemas"]["Token"][] | undefined>();
+  if (sortedTokenList && sortedTokenList.length > 0) {
+    prevListRef.current = sortedTokenList;
+  }
+  const displayList =
+    sortedTokenList && sortedTokenList.length > 0
+      ? sortedTokenList
+      : isLoadingTokens
+        ? prevListRef.current
+        : sortedTokenList;
 
   // Focus search input when modal opens
   useEffect(() => {
@@ -392,6 +543,12 @@ function TokenSelectorModal({
         if (!v) onClose();
       }}
     >
+      {/* Hide the Global Account branding footer from the SDK dialog */}
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `.anyspend-token-modal .b3-modal-ga-branding { display: none; } .anyspend-token-modal .modal-inner-content { margin-bottom: 0; }`,
+        }}
+      />
       <ModalContent className="anyspend-token-modal flex max-h-[80dvh] flex-col overflow-hidden rounded-2xl bg-white p-0 shadow-xl sm:max-h-[70dvh] dark:bg-gray-900">
         <ModalTitle className="sr-only">Select token</ModalTitle>
         <ModalDescription className="sr-only">Choose a token to pay with</ModalDescription>
@@ -402,28 +559,45 @@ function TokenSelectorModal({
             <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">Select token</h3>
           </div>
 
+          {/* Chain Selector */}
+          <div className="anyspend-chain-selector flex items-center gap-2 px-5 pb-3">
+            {SOURCE_CHAINS.map(chain => (
+              <button
+                key={chain.id}
+                onClick={() => onChainChange(chain.id)}
+                title={chain.name}
+                className="relative shrink-0 rounded-full transition-opacity"
+                style={{ opacity: chain.id === chainId ? 1 : 0.4 }}
+              >
+                <img src={chain.logoUrl} alt={chain.name} className="h-7 w-7 rounded-full" />
+                {chain.id === chainId && (
+                  <div className="absolute inset-0 rounded-full" style={{ boxShadow: "0 0 0 2px #3b82f6" }} />
+                )}
+              </button>
+            ))}
+          </div>
+
           {/* Search */}
-          <div className="anyspend-token-search border-y border-gray-100 px-5 py-3 dark:border-gray-800">
-            <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 dark:border-gray-700 dark:bg-gray-800">
-              <Search className="h-4 w-4 shrink-0 text-gray-400" />
-              <input
-                ref={searchInputRef}
-                type="text"
-                value={tokenSearchQuery}
-                onChange={e => onSearchChange(e.target.value)}
-                placeholder="Search tokens..."
-                className="anyspend-token-search-input w-full bg-transparent text-sm outline-none placeholder:text-gray-400 dark:text-gray-100"
-              />
-            </div>
+          <div className="anyspend-token-search flex items-center gap-2 border-b border-gray-100 px-5 py-2.5 dark:border-gray-800">
+            <Search className="h-4 w-4 shrink-0 text-gray-400" />
+            <input
+              ref={searchInputRef}
+              type="text"
+              value={tokenSearchQuery}
+              onChange={e => onSearchChange(e.target.value)}
+              placeholder="Search tokens..."
+              className="anyspend-token-search-input w-full bg-transparent text-sm outline-none placeholder:text-gray-400 dark:text-gray-100"
+            />
           </div>
 
           {/* Token List */}
-          <div className="anyspend-token-list flex-1 overflow-y-auto">
-            {tokenList?.map((token: components["schemas"]["Token"]) => {
+          <div className="anyspend-token-list relative flex-1 overflow-y-auto" style={{ minHeight: 300 }}>
+            {displayList?.map((token: components["schemas"]["Token"]) => {
               const isSelected =
                 selectedToken &&
                 selectedToken.address.toLowerCase() === token.address.toLowerCase() &&
                 selectedToken.chainId === token.chainId;
+              const tokenBalance = balanceMap.get(token.address.toLowerCase());
 
               return (
                 <button
@@ -443,11 +617,18 @@ function TokenSelectorModal({
                     <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{token.symbol}</p>
                     <p className="truncate text-xs text-gray-500 dark:text-gray-400">{token.name}</p>
                   </div>
-                  {isSelected && <div className="h-2 w-2 rounded-full bg-blue-600" />}
+                  <div className="flex items-center gap-2">
+                    {tokenBalance && (
+                      <span className="text-xs font-medium text-gray-600 dark:text-gray-300">
+                        {tokenBalance.formatted}
+                      </span>
+                    )}
+                    {isSelected && <div className="h-2 w-2 rounded-full bg-blue-600" />}
+                  </div>
                 </button>
               );
             })}
-            {tokenList && tokenList.length === 0 && (
+            {!isLoadingTokens && displayList && displayList.length === 0 && (
               <div className="px-5 py-8 text-center text-sm text-gray-400">No tokens found</div>
             )}
           </div>
