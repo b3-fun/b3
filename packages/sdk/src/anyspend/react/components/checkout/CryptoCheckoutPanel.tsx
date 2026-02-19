@@ -51,6 +51,7 @@ interface CryptoCheckoutPanelProps {
   themeColor?: string;
   onSuccess?: (result: { txHash?: string; orderId?: string }) => void;
   onError?: (error: Error) => void;
+  callbackMetadata?: Record<string, unknown>;
   classes?: AnySpendCheckoutClasses;
 }
 
@@ -63,6 +64,7 @@ export function CryptoCheckoutPanel({
   themeColor,
   onSuccess,
   onError,
+  callbackMetadata,
   classes,
 }: CryptoCheckoutPanelProps) {
   const [selectedSrcChainId, setSelectedSrcChainId] = useState(destinationTokenChainId);
@@ -251,6 +253,7 @@ export function CryptoCheckoutPanel({
       dstToken,
       srcAmount,
       expectedDstAmount: totalAmount,
+      callbackMetadata,
     });
   }, [
     selectedSrcToken,
@@ -262,6 +265,7 @@ export function CryptoCheckoutPanel({
     dstTokenData,
     srcAmount,
     totalAmount,
+    callbackMetadata,
     createOrder,
   ]);
 
@@ -512,7 +516,7 @@ function TokenSelectorModal({
   }, [tokenList, balanceMap]);
 
   // Keep showing the previous list while new chain tokens are loading
-  const prevListRef = useRef<components["schemas"]["Token"][] | undefined>();
+  const prevListRef = useRef<components["schemas"]["Token"][] | undefined>(undefined);
   if (sortedTokenList && sortedTokenList.length > 0) {
     prevListRef.current = sortedTokenList;
   }

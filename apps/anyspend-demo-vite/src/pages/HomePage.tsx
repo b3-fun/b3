@@ -1,6 +1,7 @@
 import { B3_TOKEN, USDC_BASE } from "@b3dotfun/sdk/anyspend";
 import { useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { useNavigate } from "react-router-dom";
+import { parseUnits } from "viem";
 import { base } from "viem/chains";
 
 export default function HomePage() {
@@ -94,11 +95,80 @@ export default function HomePage() {
 
             <button
               onClick={() => navigate("/checkout")}
-              className="group flex h-40 flex-col justify-between overflow-hidden rounded-lg border border-gray-100 bg-white p-6 text-left shadow-sm transition-all hover:border-emerald-100 hover:shadow-md sm:col-span-2"
+              className="group flex h-40 flex-col justify-between overflow-hidden rounded-lg border border-gray-100 bg-white p-6 text-left shadow-sm transition-all hover:border-emerald-100 hover:shadow-md"
             >
               <div>
-                <h3 className="text-lg font-medium text-gray-900">Checkout (New)</h3>
+                <h3 className="text-lg font-medium text-gray-900">Checkout Page</h3>
                 <p className="mt-1 text-sm text-gray-500">Two-column Shopify-style checkout with multi-item cart</p>
+              </div>
+            </button>
+
+            <button
+              onClick={() => {
+                setB3ModalOpen(true);
+                setB3ModalContentType({
+                  type: "anySpendCheckoutTrigger",
+                  recipientAddress: "0xD32b34E2E55c7005b6506370857bdE4cFD057fC4",
+                  destinationTokenAddress: B3_TOKEN.address,
+                  destinationTokenChainId: B3_TOKEN.chainId,
+                  totalAmount: parseUnits("200", 18).toString(),
+                  organizationName: "B3kemon Shop",
+                  organizationLogo: "https://cdn.b3.fun/b3kemon-card.png",
+                  buttonText: "Pay Now",
+                  workflowId: "demo-workflow-1",
+                  orgId: "demo-org-1",
+                  onSuccess: result => console.log("Checkout modal success:", result),
+                  onError: error => console.error("Checkout modal error:", error),
+                });
+              }}
+              className="group flex h-40 flex-col justify-between overflow-hidden rounded-lg border border-gray-100 bg-white p-6 text-left shadow-sm transition-all hover:border-teal-100 hover:shadow-md"
+            >
+              <div>
+                <h3 className="text-lg font-medium text-gray-900">Checkout Modal (No Items)</h3>
+                <p className="mt-1 text-sm text-gray-500">Just total + payment panel, no line items</p>
+              </div>
+            </button>
+
+            <button
+              onClick={() => {
+                setB3ModalOpen(true);
+                setB3ModalContentType({
+                  type: "anySpendCheckoutTrigger",
+                  recipientAddress: "0xD32b34E2E55c7005b6506370857bdE4cFD057fC4",
+                  destinationTokenAddress: B3_TOKEN.address,
+                  destinationTokenChainId: B3_TOKEN.chainId,
+                  items: [
+                    {
+                      id: "item-1",
+                      name: "B3kemon Starter Pack",
+                      description: "3 random B3kemon creatures",
+                      imageUrl: "https://cdn.b3.fun/b3kemon-card.png",
+                      amount: parseUnits("100", 18).toString(),
+                      quantity: 1,
+                    },
+                    {
+                      id: "item-2",
+                      name: "Rare Pokeball",
+                      description: "Increases catch rate by 2x",
+                      amount: parseUnits("50", 18).toString(),
+                      quantity: 2,
+                    },
+                  ],
+                  organizationName: "B3kemon Shop",
+                  organizationLogo: "https://cdn.b3.fun/b3kemon-card.png",
+                  buttonText: "Pay Now",
+                  workflowId: "demo-workflow-1",
+                  orgId: "demo-org-1",
+                  callbackMetadata: { inputs: { source: "demo-vite" } },
+                  onSuccess: result => console.log("Checkout modal success:", result),
+                  onError: error => console.error("Checkout modal error:", error),
+                });
+              }}
+              className="group flex h-40 flex-col justify-between overflow-hidden rounded-lg border border-gray-100 bg-white p-6 text-left shadow-sm transition-all hover:border-teal-100 hover:shadow-md"
+            >
+              <div>
+                <h3 className="text-lg font-medium text-gray-900">Checkout Modal</h3>
+                <p className="mt-1 text-sm text-gray-500">Shopify-style checkout in a modal with predefined items</p>
               </div>
             </button>
           </div>

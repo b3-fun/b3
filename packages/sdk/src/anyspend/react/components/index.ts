@@ -1,6 +1,8 @@
 // Checkout
 export { AnySpendCheckout } from "./checkout/AnySpendCheckout";
 export type { AnySpendCheckoutProps, CheckoutItem, AnySpendCheckoutClasses } from "./checkout/AnySpendCheckout";
+export { AnySpendCheckoutTrigger } from "./checkout/AnySpendCheckoutTrigger";
+export type { AnySpendCheckoutTriggerProps } from "./checkout/AnySpendCheckoutTrigger";
 
 // Components
 export { AnySpend } from "./AnySpend";

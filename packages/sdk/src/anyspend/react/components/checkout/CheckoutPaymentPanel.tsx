@@ -23,6 +23,7 @@ interface CheckoutPaymentPanelProps {
   returnLabel?: string;
   onSuccess?: (result: { txHash?: string; orderId?: string }) => void;
   onError?: (error: Error) => void;
+  callbackMetadata?: Record<string, unknown>;
   classes?: AnySpendCheckoutClasses;
 }
 
@@ -112,6 +113,7 @@ export function CheckoutPaymentPanel({
   returnLabel,
   onSuccess,
   onError,
+  callbackMetadata,
   classes,
 }: CheckoutPaymentPanelProps) {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("crypto");
@@ -193,6 +195,7 @@ export function CheckoutPaymentPanel({
                     themeColor={themeColor}
                     onSuccess={handleSuccess}
                     onError={onError}
+                    callbackMetadata={callbackMetadata}
                     classes={classes}
                   />
                 </div>
