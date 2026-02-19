@@ -1,6 +1,7 @@
 import { AnyspendProvider } from "@b3dotfun/sdk/anyspend/react";
 import React from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import CheckoutPage from "./pages/CheckoutPage";
 import HomePage from "./pages/HomePage";
 import OnrampExamplePage from "./pages/OnrampExamplePage";
 import OnrampFlowPage from "./pages/OnrampFlowPage";
@@ -18,6 +19,7 @@ function App() {
           <div className="b3-root min-h-screen bg-gray-100">
             <Routes>
               <Route path="/" element={<HomePage />} />
+              <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/onramp-example" element={<OnrampExamplePage />} />
               <Route path="/onramp" element={<OnrampFlowPage />} />
               <Route path="/onramp/status" element={<OnrampOrderStatusPage />} />

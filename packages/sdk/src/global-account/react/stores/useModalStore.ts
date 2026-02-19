@@ -509,6 +509,56 @@ export interface AnySpendCollectorClubPurchaseProps extends BaseModalProps {
  * Props for the AnySpend Workflow Trigger modal
  * Handles payments that trigger b3os-workflow runs
  */
+/**
+ * Props for the AnySpend Checkout Trigger modal
+ * Shopify-style checkout with predefined destination token and amount
+ */
+export interface AnySpendCheckoutTriggerModalProps extends BaseModalProps {
+  /** Modal type identifier */
+  type: "anySpendCheckoutTrigger";
+  /** Payment recipient address (hex) */
+  recipientAddress: string;
+  /** Destination token address */
+  destinationTokenAddress: string;
+  /** Destination chain ID */
+  destinationTokenChainId: number;
+  /** Line items to display in the cart (optional — if omitted, only the payment panel is shown) */
+  items?: Array<{
+    id?: string;
+    name: string;
+    description?: string;
+    imageUrl?: string;
+    amount: string;
+    quantity: number;
+  }>;
+  /** Total amount in wei — required when items are not provided */
+  totalAmount?: string;
+  /** Organization name */
+  organizationName?: string;
+  /** Organization logo URL */
+  organizationLogo?: string;
+  /** Theme color (hex) */
+  themeColor?: string;
+  /** Custom button text */
+  buttonText?: string;
+  /** Workflow ID to trigger on payment */
+  workflowId?: string;
+  /** Organization ID that owns the workflow */
+  orgId?: string;
+  /** Optional callback metadata merged into the order */
+  callbackMetadata?: {
+    inputs?: Record<string, unknown>;
+  } & Record<string, unknown>;
+  /** Called on successful payment */
+  onSuccess?: (result: { txHash?: string; orderId?: string }) => void;
+  /** Called on payment error */
+  onError?: (error: Error) => void;
+  /** URL to redirect to after payment */
+  returnUrl?: string;
+  /** Label for the return button */
+  returnLabel?: string;
+}
+
 export interface AnySpendWorkflowTriggerModalProps extends BaseModalProps {
   /** Modal type identifier */
   type: "anySpendWorkflowTrigger";
@@ -629,7 +679,8 @@ export type ModalContentType =
   | NotificationsModalProps
   | AnySpendCollectorClubPurchaseProps
   | AnySpendDepositModalProps
-  | AnySpendWorkflowTriggerModalProps;
+  | AnySpendWorkflowTriggerModalProps
+  | AnySpendCheckoutTriggerModalProps;
 
 /**
  * State interface for the modal store

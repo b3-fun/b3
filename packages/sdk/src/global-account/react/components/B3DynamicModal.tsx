@@ -12,6 +12,7 @@ import {
 } from "@b3dotfun/sdk/anyspend/react";
 import { AnySpendDeposit } from "@b3dotfun/sdk/anyspend/react/components/AnySpendDeposit";
 import { AnySpendDepositHype } from "@b3dotfun/sdk/anyspend/react/components/AnyspendDepositHype";
+import { AnySpendCheckoutTrigger } from "@b3dotfun/sdk/anyspend/react/components/checkout/AnySpendCheckoutTrigger";
 import { AnySpendWorkflowTrigger } from "@b3dotfun/sdk/anyspend/react/components/AnySpendWorkflowTrigger";
 import { AnySpendDepositUpside } from "@b3dotfun/sdk/anyspend/react/components/AnySpendDepositUpside";
 import { AnySpendStakeUpside } from "@b3dotfun/sdk/anyspend/react/components/AnySpendStakeUpside";
@@ -67,6 +68,7 @@ export function B3DynamicModal() {
     "notifications",
     "anySpendDeposit",
     "anySpendWorkflowTrigger",
+    "anySpendCheckoutTrigger",
   ];
 
   const freestyleTypes = [
@@ -100,6 +102,7 @@ export function B3DynamicModal() {
     contentType?.type === "send" && "p-0",
     contentType?.type === "manageAccount" && " md:p-0 md:pt-2",
     contentType?.type === "linkAccount" && "md:p-0",
+    contentType?.type === "anySpendCheckoutTrigger" && "p-0",
     // Add specific styles for avatar editor
     // contentType?.type === "avatarEditor_disabled" &&
     //   "h-[90dvh] w-[90vw] bg-black p-0 overflow-y-auto overflow-x-hidden max-md:-mt-8 max-md:rounded-t-xl",
@@ -156,6 +159,8 @@ export function B3DynamicModal() {
         return <AnySpendDeposit {...contentType} mode="modal" />;
       case "anySpendWorkflowTrigger":
         return <AnySpendWorkflowTrigger {...contentType} mode="modal" />;
+      case "anySpendCheckoutTrigger":
+        return <AnySpendCheckoutTrigger {...contentType} mode="modal" />;
       case "avatarEditor":
         return <AvatarEditor onSetAvatar={contentType.onSuccess} />;
       case "deposit":
