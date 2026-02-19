@@ -1,16 +1,17 @@
 "use client";
 
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
-import { Wallet } from "lucide-react";
+import { QrCode, Wallet } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import type { AnySpendCheckoutClasses } from "./AnySpendCheckout";
 import { CheckoutSuccess } from "./CheckoutSuccess";
+import { CoinbaseCheckoutPanel } from "./CoinbaseCheckoutPanel";
 import { CryptoCheckoutPanel } from "./CryptoCheckoutPanel";
 import { FiatCheckoutPanel } from "./FiatCheckoutPanel";
-import { CoinbaseCheckoutPanel } from "./CoinbaseCheckoutPanel";
+import { QRCheckoutPanel } from "./QRCheckoutPanel";
 
-type PaymentMethod = "crypto" | "card" | "coinbase";
+type PaymentMethod = "crypto" | "qr" | "card" | "coinbase";
 
 interface CheckoutPaymentPanelProps {
   recipientAddress: string;
@@ -192,6 +193,44 @@ export function CheckoutPaymentPanel({
                     destinationTokenChainId={destinationTokenChainId}
                     totalAmount={totalAmount}
                     buttonText={buttonText}
+                    themeColor={themeColor}
+                    onSuccess={handleSuccess}
+                    onError={onError}
+                    callbackMetadata={callbackMetadata}
+                    classes={classes}
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* QR Code */}
+        <div className="anyspend-method-qr">
+          <button
+            onClick={() => setPaymentMethod("qr")}
+            className={accordionButtonClass(paymentMethod === "qr")}
+          >
+            <RadioCircle selected={paymentMethod === "qr"} themeColor={themeColor} />
+            <QrCode className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">QR code</span>
+          </button>
+          <AnimatePresence initial={false}>
+            {paymentMethod === "qr" && (
+              <motion.div
+                key="qr-panel"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                style={{ overflow: "hidden" }}
+              >
+                <div className={expandedPanelClass}>
+                  <QRCheckoutPanel
+                    recipientAddress={recipientAddress}
+                    destinationTokenAddress={destinationTokenAddress}
+                    destinationTokenChainId={destinationTokenChainId}
+                    totalAmount={totalAmount}
                     themeColor={themeColor}
                     onSuccess={handleSuccess}
                     onError={onError}
