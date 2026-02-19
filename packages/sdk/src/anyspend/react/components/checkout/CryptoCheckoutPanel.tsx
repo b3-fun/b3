@@ -11,9 +11,12 @@ import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { isNativeToken } from "@b3dotfun/sdk/anyspend/utils/token";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { TextShimmer } from "@b3dotfun/sdk/global-account/react";
-import { ChevronDown, Loader2 } from "lucide-react";
+import { useIsMobile } from "@b3dotfun/sdk/global-account/react";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@b3dotfun/sdk/global-account/react/components/ui/dialog";
+import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "@b3dotfun/sdk/global-account/react/components/ui/drawer";
+import { ChevronDown, Loader2, Search } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChainTokenIcon } from "../common/ChainTokenIcon";
 import type { AnySpendCheckoutClasses } from "./AnySpendCheckout";
 
@@ -180,10 +183,10 @@ export function CryptoCheckoutPanel({
   return (
     <div className={cn("anyspend-crypto-panel flex flex-col gap-4", classes?.cryptoPanel)}>
       {/* Token Selector */}
-      <div className="anyspend-token-selector relative">
+      <div className="anyspend-token-selector">
         <label className="anyspend-token-label mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Pay with</label>
         <button
-          onClick={() => setShowTokenSelector(!showTokenSelector)}
+          onClick={() => setShowTokenSelector(true)}
           className={cn(
             "anyspend-token-btn flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 transition-colors hover:border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600",
             classes?.tokenSelector,
@@ -206,49 +209,18 @@ export function CryptoCheckoutPanel({
           )}
           <ChevronDown className="h-4 w-4 text-gray-400" />
         </button>
-
-        {/* Token Dropdown */}
-        <AnimatePresence>
-          {showTokenSelector && (
-            <motion.div
-              key="token-dropdown"
-              initial={{ opacity: 0, y: -8, scale: 0.97 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -8, scale: 0.97 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
-              className="anyspend-token-dropdown absolute left-0 right-0 z-50 mt-2 max-h-64 overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800"
-            >
-              <div className="anyspend-token-search sticky top-0 z-10 border-b border-gray-100 bg-white p-2 dark:border-gray-700 dark:bg-gray-800">
-                <input
-                  type="text"
-                  value={tokenSearchQuery}
-                  onChange={e => setTokenSearchQuery(e.target.value)}
-                  placeholder="Search tokens..."
-                  className="anyspend-token-search-input w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-                  autoFocus
-                />
-              </div>
-              {tokenList?.map((token: components["schemas"]["Token"]) => (
-                <button
-                  key={`${token.chainId}-${token.address}`}
-                  onClick={() => handleSelectToken(token)}
-                  className="anyspend-token-option flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
-                >
-                  <ChainTokenIcon
-                    chainUrl={ALL_CHAINS[token.chainId]?.logoUrl || ""}
-                    tokenUrl={token.metadata?.logoURI}
-                    className="h-7 w-7"
-                  />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{token.symbol}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{token.name}</p>
-                  </div>
-                </button>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
+
+      {/* Token Selector Modal */}
+      <TokenSelectorModal
+        open={showTokenSelector}
+        onClose={() => { setShowTokenSelector(false); setTokenSearchQuery(""); }}
+        tokenList={tokenList}
+        tokenSearchQuery={tokenSearchQuery}
+        onSearchChange={setTokenSearchQuery}
+        onSelectToken={handleSelectToken}
+        selectedToken={selectedSrcToken}
+      />
 
       {/* Quote Display */}
       <motion.div
@@ -345,5 +317,113 @@ export function CryptoCheckoutPanel({
         </button>
       )}
     </div>
+  );
+}
+
+// -------------------------------------------------------------------
+// Token Selector Modal
+// -------------------------------------------------------------------
+
+interface TokenSelectorModalProps {
+  open: boolean;
+  onClose: () => void;
+  tokenList: components["schemas"]["Token"][] | undefined;
+  tokenSearchQuery: string;
+  onSearchChange: (query: string) => void;
+  onSelectToken: (token: components["schemas"]["Token"]) => void;
+  selectedToken: components["schemas"]["Token"] | null;
+}
+
+function TokenSelectorModal({
+  open,
+  onClose,
+  tokenList,
+  tokenSearchQuery,
+  onSearchChange,
+  onSelectToken,
+  selectedToken,
+}: TokenSelectorModalProps) {
+  const isMobile = useIsMobile();
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Focus search input when modal opens
+  useEffect(() => {
+    if (open) {
+      const timer = setTimeout(() => searchInputRef.current?.focus(), 100);
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
+
+  const ModalComponent = isMobile ? Drawer : Dialog;
+  const ModalContent = isMobile ? DrawerContent : DialogContent;
+  const ModalTitle = isMobile ? DrawerTitle : DialogTitle;
+  const ModalDescription = isMobile ? DrawerDescription : DialogDescription;
+
+  return (
+    <ModalComponent open={open} onOpenChange={(v: boolean) => { if (!v) onClose(); }}>
+      <ModalContent className="anyspend-token-modal flex max-h-[80dvh] flex-col overflow-hidden rounded-2xl bg-white p-0 shadow-xl sm:max-h-[70dvh] dark:bg-gray-900">
+        <ModalTitle className="sr-only">Select token</ModalTitle>
+        <ModalDescription className="sr-only">Choose a token to pay with</ModalDescription>
+
+        <div className="flex min-h-0 flex-1 flex-col">
+          {/* Header */}
+          <div className="flex items-center justify-between px-5 py-4">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">Select token</h3>
+          </div>
+
+          {/* Search */}
+          <div className="anyspend-token-search border-y border-gray-100 px-5 py-3 dark:border-gray-800">
+            <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 dark:border-gray-700 dark:bg-gray-800">
+              <Search className="h-4 w-4 shrink-0 text-gray-400" />
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={tokenSearchQuery}
+                onChange={e => onSearchChange(e.target.value)}
+                placeholder="Search tokens..."
+                className="anyspend-token-search-input w-full bg-transparent text-sm outline-none placeholder:text-gray-400 dark:text-gray-100"
+              />
+            </div>
+          </div>
+
+          {/* Token List */}
+          <div className="anyspend-token-list flex-1 overflow-y-auto">
+            {tokenList?.map((token: components["schemas"]["Token"]) => {
+              const isSelected =
+                selectedToken &&
+                selectedToken.address.toLowerCase() === token.address.toLowerCase() &&
+                selectedToken.chainId === token.chainId;
+
+              return (
+                <button
+                  key={`${token.chainId}-${token.address}`}
+                  onClick={() => onSelectToken(token)}
+                  className={cn(
+                    "anyspend-token-option flex w-full items-center gap-3 px-5 py-3 text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-800",
+                    isSelected && "bg-blue-50 dark:bg-blue-900/20",
+                  )}
+                >
+                  <ChainTokenIcon
+                    chainUrl={ALL_CHAINS[token.chainId]?.logoUrl || ""}
+                    tokenUrl={token.metadata?.logoURI}
+                    className="h-8 w-8"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{token.symbol}</p>
+                    <p className="truncate text-xs text-gray-500 dark:text-gray-400">{token.name}</p>
+                  </div>
+                  {isSelected && (
+                    <div className="h-2 w-2 rounded-full bg-blue-600" />
+                  )}
+                </button>
+              );
+            })}
+            {tokenList && tokenList.length === 0 && (
+              <div className="px-5 py-8 text-center text-sm text-gray-400">No tokens found</div>
+            )}
+          </div>
+        </div>
+      </ModalContent>
+    </ModalComponent>
   );
 }
