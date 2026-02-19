@@ -29,8 +29,6 @@ export function CheckoutCartPanel({
 }: CheckoutCartPanelProps) {
   const formattedTotal = useMemo(() => formatTokenAmount(BigInt(totalAmount), tokenDecimals), [totalAmount, tokenDecimals]);
 
-  const formattedSubtotal = formattedTotal;
-
   return (
     <div className={cn("anyspend-cart-panel flex flex-col", classes?.cartPanel)}>
       <h2 className={cn("anyspend-cart-title mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100", classes?.cartTitle)}>
@@ -46,7 +44,7 @@ export function CheckoutCartPanel({
         })}
       </div>
 
-      <CartSummary subtotal={formattedSubtotal} total={formattedTotal} tokenSymbol={tokenSymbol} classes={classes} />
+      <CartSummary total={formattedTotal} tokenSymbol={tokenSymbol} classes={classes} />
 
       <PoweredByBranding
         organizationName={organizationName}
