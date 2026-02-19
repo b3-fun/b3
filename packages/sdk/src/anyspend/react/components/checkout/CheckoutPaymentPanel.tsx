@@ -207,10 +207,7 @@ export function CheckoutPaymentPanel({
 
         {/* QR Code */}
         <div className="anyspend-method-qr">
-          <button
-            onClick={() => setPaymentMethod("qr")}
-            className={accordionButtonClass(paymentMethod === "qr")}
-          >
+          <button onClick={() => setPaymentMethod("qr")} className={accordionButtonClass(paymentMethod === "qr")}>
             <RadioCircle selected={paymentMethod === "qr"} themeColor={themeColor} />
             <QrCode className="h-5 w-5 text-gray-700 dark:text-gray-300" />
             <span className="text-sm font-medium text-gray-900 dark:text-gray-100">QR code</span>

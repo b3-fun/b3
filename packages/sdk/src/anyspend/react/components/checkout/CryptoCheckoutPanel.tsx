@@ -441,7 +441,7 @@ export function CryptoCheckoutPanel({
 // Token Selector Modal
 // -------------------------------------------------------------------
 
-interface TokenSelectorModalProps {
+export interface TokenSelectorModalProps {
   open: boolean;
   onClose: () => void;
   tokenList: components["schemas"]["Token"][] | undefined;
@@ -457,7 +457,7 @@ interface TokenSelectorModalProps {
 
 const SOURCE_CHAINS = Object.values(EVM_MAINNET).map(c => ({ id: c.id, name: c.name, logoUrl: c.logoUrl }));
 
-function TokenSelectorModal({
+export function TokenSelectorModal({
   open,
   onClose,
   tokenList,

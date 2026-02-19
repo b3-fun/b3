@@ -9,34 +9,16 @@ import { useCreateDepositFirstOrder } from "@b3dotfun/sdk/anyspend/react/hooks/u
 import { useOnOrderSuccess } from "@b3dotfun/sdk/anyspend/react/hooks/useOnOrderSuccess";
 import { useAnyspendTokenList } from "@b3dotfun/sdk/anyspend/react/hooks/useAnyspendTokens";
 import { isNativeToken } from "@b3dotfun/sdk/anyspend/utils/token";
-import { EVM_MAINNET } from "@b3dotfun/sdk/anyspend/utils/chain";
-import {
-  useAccountWallet,
-  useB3Config,
-  useModalStore,
-  useIsMobile,
-  TextShimmer,
-} from "@b3dotfun/sdk/global-account/react";
+import { useAccountWallet, useB3Config, useModalStore, TextShimmer } from "@b3dotfun/sdk/global-account/react";
 import { thirdwebB3Chain } from "@b3dotfun/sdk/shared/constants/chains/b3Chain";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-} from "@b3dotfun/sdk/global-account/react/components/ui/dialog";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerTitle,
-} from "@b3dotfun/sdk/global-account/react/components/ui/drawer";
-import { Check, ChevronDown, Copy, Loader2, Search } from "lucide-react";
+import { Check, ChevronDown, Copy, Loader2 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ChainTokenIcon } from "../common/ChainTokenIcon";
 import type { AnySpendCheckoutClasses } from "./AnySpendCheckout";
+import { TokenSelectorModal } from "./CryptoCheckoutPanel";
 
 interface QRCheckoutPanelProps {
   recipientAddress: string;
@@ -60,8 +42,6 @@ const DEFAULT_ETH_ON_BASE: components["schemas"]["Token"] = {
   metadata: { logoURI: "https://assets.relay.link/icons/1/light.png" },
 };
 
-const SOURCE_CHAINS = Object.values(EVM_MAINNET).map(c => ({ id: c.id, name: c.name, logoUrl: c.logoUrl }));
-
 export function QRCheckoutPanel({
   recipientAddress,
   destinationTokenAddress,
@@ -83,6 +63,9 @@ export function QRCheckoutPanel({
   const { partnerId } = useB3Config();
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
+
+  // Token list for selector
+  const { data: tokenList, isLoading: isLoadingTokens } = useAnyspendTokenList(selectedSrcChainId, tokenSearchQuery);
 
   // Quote: how much source token is needed for the destination amount
   const isSameToken =
@@ -204,9 +187,7 @@ export function QRCheckoutPanel({
     <div className={cn("anyspend-qr-checkout-panel flex flex-col gap-4", classes?.cryptoPanel)}>
       {/* Token Selector */}
       <div className="anyspend-token-selector">
-        <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
-          Deposit token
-        </label>
+        <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Deposit token</label>
         <button
           onClick={() => setShowTokenSelector(true)}
           className={cn(
@@ -222,9 +203,7 @@ export function QRCheckoutPanel({
             />
             <div className="text-left">
               <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{selectedSrcToken.symbol}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                {ALL_CHAINS[selectedSrcChainId]?.name || ""}
-              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{ALL_CHAINS[selectedSrcChainId]?.name || ""}</p>
             </div>
           </div>
           <ChevronDown className="h-4 w-4 text-gray-400" />
@@ -232,16 +211,19 @@ export function QRCheckoutPanel({
       </div>
 
       {/* Token Selector Modal */}
-      <QRTokenSelectorModal
+      <TokenSelectorModal
         open={showTokenSelector}
         onClose={() => {
           setShowTokenSelector(false);
           setTokenSearchQuery("");
         }}
+        tokenList={tokenList}
+        isLoadingTokens={isLoadingTokens}
         tokenSearchQuery={tokenSearchQuery}
         onSearchChange={setTokenSearchQuery}
         onSelectToken={handleSelectToken}
         selectedToken={selectedSrcToken}
+        walletAddress={walletAddress}
         chainId={selectedSrcChainId}
         onChainChange={chainId => {
           setSelectedSrcChainId(chainId);
@@ -334,150 +316,5 @@ export function QRCheckoutPanel({
         </button>
       ) : null}
     </div>
-  );
-}
-
-// -------------------------------------------------------------------
-// QR Token Selector Modal (simplified — no balance fetching)
-// -------------------------------------------------------------------
-
-interface QRTokenSelectorModalProps {
-  open: boolean;
-  onClose: () => void;
-  tokenSearchQuery: string;
-  onSearchChange: (query: string) => void;
-  onSelectToken: (token: components["schemas"]["Token"]) => void;
-  selectedToken: components["schemas"]["Token"] | null;
-  chainId: number;
-  onChainChange: (chainId: number) => void;
-}
-
-function QRTokenSelectorModal({
-  open,
-  onClose,
-  tokenSearchQuery,
-  onSearchChange,
-  onSelectToken,
-  selectedToken,
-  chainId,
-  onChainChange,
-}: QRTokenSelectorModalProps) {
-  const isMobile = useIsMobile();
-  const searchInputRef = useRef<HTMLInputElement>(null);
-
-  const { data: tokenList, isLoading: isLoadingTokens } = useAnyspendTokenList(chainId, tokenSearchQuery);
-
-  const prevListRef = useRef<components["schemas"]["Token"][] | undefined>(undefined);
-  if (tokenList && tokenList.length > 0) {
-    prevListRef.current = tokenList;
-  }
-  const displayList =
-    tokenList && tokenList.length > 0
-      ? tokenList
-      : isLoadingTokens
-        ? prevListRef.current
-        : tokenList;
-
-  useEffect(() => {
-    if (open) {
-      const timer = setTimeout(() => searchInputRef.current?.focus(), 100);
-      return () => clearTimeout(timer);
-    }
-  }, [open]);
-
-  const ModalComponent = isMobile ? Drawer : Dialog;
-  const ModalContent = isMobile ? DrawerContent : DialogContent;
-  const ModalTitle = isMobile ? DrawerTitle : DialogTitle;
-  const ModalDescription = isMobile ? DrawerDescription : DialogDescription;
-
-  return (
-    <ModalComponent
-      open={open}
-      onOpenChange={(v: boolean) => {
-        if (!v) onClose();
-      }}
-    >
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `.anyspend-qr-token-modal .b3-modal-ga-branding { display: none; } .anyspend-qr-token-modal .modal-inner-content { margin-bottom: 0; }`,
-        }}
-      />
-      <ModalContent className="anyspend-qr-token-modal flex max-h-[80dvh] flex-col overflow-hidden rounded-2xl bg-white p-0 shadow-xl sm:max-h-[70dvh] dark:bg-gray-900">
-        <ModalTitle className="sr-only">Select token</ModalTitle>
-        <ModalDescription className="sr-only">Choose a token to deposit via QR</ModalDescription>
-
-        <div className="flex min-h-0 flex-1 flex-col">
-          <div className="flex items-center justify-between px-5 py-4">
-            <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">Select token</h3>
-          </div>
-
-          {/* Chain Selector */}
-          <div className="flex items-center gap-2 px-5 pb-3">
-            {SOURCE_CHAINS.map(chain => (
-              <button
-                key={chain.id}
-                onClick={() => onChainChange(chain.id)}
-                title={chain.name}
-                className="relative shrink-0 rounded-full transition-opacity"
-                style={{ opacity: chain.id === chainId ? 1 : 0.4 }}
-              >
-                <img src={chain.logoUrl} alt={chain.name} className="h-7 w-7 rounded-full" />
-                {chain.id === chainId && (
-                  <div className="absolute inset-0 rounded-full" style={{ boxShadow: "0 0 0 2px #3b82f6" }} />
-                )}
-              </button>
-            ))}
-          </div>
-
-          {/* Search */}
-          <div className="flex items-center gap-2 border-b border-gray-100 px-5 py-2.5 dark:border-gray-800">
-            <Search className="h-4 w-4 shrink-0 text-gray-400" />
-            <input
-              ref={searchInputRef}
-              type="text"
-              value={tokenSearchQuery}
-              onChange={e => onSearchChange(e.target.value)}
-              placeholder="Search tokens..."
-              className="w-full bg-transparent text-sm outline-none placeholder:text-gray-400 dark:text-gray-100"
-            />
-          </div>
-
-          {/* Token List */}
-          <div className="relative flex-1 overflow-y-auto" style={{ minHeight: 300 }}>
-            {displayList?.map((token: components["schemas"]["Token"]) => {
-              const isSelected =
-                selectedToken &&
-                selectedToken.address.toLowerCase() === token.address.toLowerCase() &&
-                selectedToken.chainId === token.chainId;
-
-              return (
-                <button
-                  key={`${token.chainId}-${token.address}`}
-                  onClick={() => onSelectToken(token)}
-                  className={cn(
-                    "flex w-full items-center gap-3 px-5 py-3 text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-800",
-                    isSelected && "bg-blue-50 dark:bg-blue-900/20",
-                  )}
-                >
-                  <ChainTokenIcon
-                    chainUrl={ALL_CHAINS[token.chainId]?.logoUrl || ""}
-                    tokenUrl={token.metadata?.logoURI}
-                    className="h-8 w-8"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{token.symbol}</p>
-                    <p className="truncate text-xs text-gray-500 dark:text-gray-400">{token.name}</p>
-                  </div>
-                  {isSelected && <div className="h-2 w-2 rounded-full bg-blue-600" />}
-                </button>
-              );
-            })}
-            {!isLoadingTokens && displayList && displayList.length === 0 && (
-              <div className="px-5 py-8 text-center text-sm text-gray-400">No tokens found</div>
-            )}
-          </div>
-        </div>
-      </ModalContent>
-    </ModalComponent>
   );
 }
