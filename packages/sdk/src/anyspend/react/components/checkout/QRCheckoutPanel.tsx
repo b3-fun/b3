@@ -171,8 +171,6 @@ export function QRCheckoutPanel({
     orderCreatedRef.current = false;
   };
 
-  const isWaiting = !!orderId && oat?.data?.order?.status !== "executed";
-
   return (
     <div className={cn("anyspend-qr-checkout-panel flex flex-col gap-4", classes?.cryptoPanel)}>
       {/* Token Selector */}
@@ -230,40 +228,29 @@ export function QRCheckoutPanel({
         </div>
       ) : displayAddress ? (
         <div className="flex flex-col items-center gap-4 rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/50">
-          {/* QR Code */}
-          <div className="rounded-lg bg-white p-3">
-            <QRCodeSVG value={qrValue} size={140} level="M" marginSize={0} />
-          </div>
-
-          {/* Address */}
-          <div className="flex w-full flex-col gap-1.5">
-            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Deposit address:</span>
-            <div className="flex items-start gap-2">
-              <span className="min-w-0 break-all font-mono text-xs leading-relaxed text-gray-900 dark:text-gray-100">
-                {displayAddress}
-              </span>
-              <button
-                onClick={handleCopyAddress}
-                className="mt-0.5 shrink-0 text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-gray-300"
-              >
-                {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
-              </button>
+          {/* QR Code + Address side by side */}
+          <div className="flex items-start gap-4">
+            <div className="shrink-0 rounded-lg bg-white p-2">
+              <QRCodeSVG value={qrValue} size={80} level="M" marginSize={0} />
+            </div>
+            <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+              <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Deposit address:</span>
+              <div className="flex items-start gap-1.5">
+                <span className="min-w-0 break-all font-mono text-xs leading-relaxed text-gray-900 dark:text-gray-100">
+                  {displayAddress}
+                </span>
+                <button
+                  onClick={handleCopyAddress}
+                  className="mt-0.5 shrink-0 text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+                </button>
+              </div>
+              <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+                Only send {selectedSrcToken.symbol} on {ALL_CHAINS[selectedSrcChainId]?.name || "the specified chain"}.
+              </p>
             </div>
           </div>
-
-          {/* Warning */}
-          <p className="text-center text-xs text-amber-600 dark:text-amber-400">
-            Only send {selectedSrcToken.symbol} on {ALL_CHAINS[selectedSrcChainId]?.name || "the specified chain"}.
-            Other tokens will not be converted.
-          </p>
-
-          {/* Watching indicator */}
-          {isWaiting && (
-            <div className="flex items-center gap-2 rounded-lg px-3 py-2" style={{ backgroundColor: "rgba(59,130,246,0.1)" }}>
-              <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
-              <span className="text-sm text-blue-600 dark:text-blue-400">Watching for deposit...</span>
-            </div>
-          )}
         </div>
       ) : null}
 
