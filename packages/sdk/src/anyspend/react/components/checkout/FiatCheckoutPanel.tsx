@@ -150,7 +150,9 @@ export function FiatCheckoutPanel({
         className={cn("anyspend-fiat-loading flex flex-col items-center gap-3 py-6", classes?.fiatPanel)}
       >
         <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
-        <TextShimmer duration={1.5} className="text-sm">Loading payment form...</TextShimmer>
+        <TextShimmer duration={1.5} className="text-sm">
+          Loading payment form...
+        </TextShimmer>
       </motion.div>
     );
   }
@@ -243,7 +245,9 @@ export function FiatCheckoutPanel({
         className={cn("anyspend-fiat-initializing flex flex-col items-center gap-3 py-6", classes?.fiatPanel)}
       >
         <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
-        <TextShimmer duration={1.5} className="text-sm">Initializing secure payment...</TextShimmer>
+        <TextShimmer duration={1.5} className="text-sm">
+          Initializing secure payment...
+        </TextShimmer>
       </motion.div>
     );
   }
@@ -332,7 +336,9 @@ function StripeCheckout({
         className="anyspend-stripe-loading flex flex-col items-center gap-3 py-6"
       >
         <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
-        <TextShimmer duration={1.5} className="text-sm">Loading payment form...</TextShimmer>
+        <TextShimmer duration={1.5} className="text-sm">
+          Loading payment form...
+        </TextShimmer>
       </motion.div>
     );
   }
@@ -460,7 +466,9 @@ function StripeCheckoutForm({ themeColor, orderId, onSuccess, onError, classes }
         className="anyspend-stripe-loading flex flex-col items-center gap-3 py-6"
       >
         <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
-        <TextShimmer duration={1.5} className="text-sm">Loading payment form...</TextShimmer>
+        <TextShimmer duration={1.5} className="text-sm">
+          Loading payment form...
+        </TextShimmer>
       </motion.div>
     );
   }

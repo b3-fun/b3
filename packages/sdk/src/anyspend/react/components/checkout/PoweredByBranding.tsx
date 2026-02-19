@@ -25,8 +25,7 @@ export function PoweredByBranding({ organizationName, organizationLogo, classes 
         <div />
       )}
       <span className="text-xs text-gray-400 dark:text-gray-500">
-        powered by{" "}
-        <span className="font-medium text-gray-500 dark:text-gray-400">anyspend</span>
+        powered by <span className="font-medium text-gray-500 dark:text-gray-400">anyspend</span>
       </span>
     </div>
   );

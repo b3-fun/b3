@@ -27,11 +27,19 @@ export function CheckoutCartPanel({
   organizationLogo,
   classes,
 }: CheckoutCartPanelProps) {
-  const formattedTotal = useMemo(() => formatTokenAmount(BigInt(totalAmount), tokenDecimals), [totalAmount, tokenDecimals]);
+  const formattedTotal = useMemo(
+    () => formatTokenAmount(BigInt(totalAmount), tokenDecimals),
+    [totalAmount, tokenDecimals],
+  );
 
   return (
     <div className={cn("anyspend-cart-panel flex flex-col", classes?.cartPanel)}>
-      <h2 className={cn("anyspend-cart-title mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100", classes?.cartTitle)}>
+      <h2
+        className={cn(
+          "anyspend-cart-title mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100",
+          classes?.cartTitle,
+        )}
+      >
         Order Summary
       </h2>
 
@@ -46,11 +54,7 @@ export function CheckoutCartPanel({
 
       <CartSummary total={formattedTotal} tokenSymbol={tokenSymbol} classes={classes} />
 
-      <PoweredByBranding
-        organizationName={organizationName}
-        organizationLogo={organizationLogo}
-        classes={classes}
-      />
+      <PoweredByBranding organizationName={organizationName} organizationLogo={organizationLogo} classes={classes} />
     </div>
   );
 }

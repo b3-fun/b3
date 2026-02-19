@@ -50,7 +50,16 @@ function VisaLogo() {
   return (
     <svg viewBox="0 0 32 20" style={{ width: 32, height: 20 }} aria-label="Visa">
       <rect width="32" height="20" rx="3" fill="#1A1F71" />
-      <text x="16" y="13.5" textAnchor="middle" fill="white" fontSize="9" fontWeight="bold" fontFamily="sans-serif" fontStyle="italic">
+      <text
+        x="16"
+        y="13.5"
+        textAnchor="middle"
+        fill="white"
+        fontSize="9"
+        fontWeight="bold"
+        fontFamily="sans-serif"
+        fontStyle="italic"
+      >
         VISA
       </text>
     </svg>
@@ -128,9 +137,7 @@ export function CheckoutPaymentPanel({
   const accordionButtonClass = (active: boolean) =>
     cn(
       "anyspend-payment-method-btn flex w-full items-center gap-3 px-4 py-4 text-left transition-colors",
-      active
-        ? "bg-white dark:bg-gray-900"
-        : "bg-white hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800",
+      active ? "bg-white dark:bg-gray-900" : "bg-white hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800",
       classes?.paymentMethodButton,
     );
 
@@ -140,7 +147,12 @@ export function CheckoutPaymentPanel({
 
   return (
     <div className={cn("anyspend-payment-panel flex flex-col gap-5", classes?.paymentPanel)}>
-      <h2 className={cn("anyspend-payment-title text-lg font-semibold text-gray-900 dark:text-gray-100", classes?.paymentTitle)}>
+      <h2
+        className={cn(
+          "anyspend-payment-title text-lg font-semibold text-gray-900 dark:text-gray-100",
+          classes?.paymentTitle,
+        )}
+      >
         Payment
       </h2>
 
@@ -153,7 +165,10 @@ export function CheckoutPaymentPanel({
       >
         {/* Crypto Wallet */}
         <div className="anyspend-method-crypto">
-          <button onClick={() => setPaymentMethod("crypto")} className={accordionButtonClass(paymentMethod === "crypto")}>
+          <button
+            onClick={() => setPaymentMethod("crypto")}
+            className={accordionButtonClass(paymentMethod === "crypto")}
+          >
             <RadioCircle selected={paymentMethod === "crypto"} themeColor={themeColor} />
             <Wallet className="h-5 w-5 text-gray-700 dark:text-gray-300" />
             <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Crypto wallet</span>
@@ -226,7 +241,10 @@ export function CheckoutPaymentPanel({
 
         {/* Coinbase Pay */}
         <div className="anyspend-method-coinbase">
-          <button onClick={() => setPaymentMethod("coinbase")} className={accordionButtonClass(paymentMethod === "coinbase")}>
+          <button
+            onClick={() => setPaymentMethod("coinbase")}
+            className={accordionButtonClass(paymentMethod === "coinbase")}
+          >
             <RadioCircle selected={paymentMethod === "coinbase"} themeColor={themeColor} />
             <CoinbaseLogo />
             <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Coinbase Pay</span>

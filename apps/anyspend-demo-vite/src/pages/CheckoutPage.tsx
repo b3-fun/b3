@@ -26,24 +26,24 @@ export default function CheckoutPage() {
   return (
     <div className="min-h-screen bg-[#FAFAFA] p-4 pt-8">
       <AnySpendCheckout
-          mode="page"
-          recipientAddress={DEMO_RECIPIENT}
-          destinationTokenAddress={B3_TOKEN.address}
-          destinationTokenChainId={B3_TOKEN.chainId}
-          items={DEMO_ITEMS}
-          organizationName="B3kemon Shop"
-          organizationLogo="https://cdn.b3.fun/b3kemon-card.png"
-          buttonText="Pay Now"
-          onSuccess={(result) => {
-            console.log("Payment success:", result);
-            alert(`Payment successful! TX: ${result.txHash || "pending"}`);
-          }}
-          onError={(error) => {
-            console.error("Payment error:", error);
-          }}
-          returnUrl="/"
-          returnLabel="Back to Home"
-        />
+        mode="page"
+        recipientAddress={DEMO_RECIPIENT}
+        destinationTokenAddress={B3_TOKEN.address}
+        destinationTokenChainId={B3_TOKEN.chainId}
+        items={DEMO_ITEMS}
+        organizationName="B3kemon Shop"
+        organizationLogo="https://cdn.b3.fun/b3kemon-card.png"
+        buttonText="Pay Now"
+        onSuccess={result => {
+          console.log("Payment success:", result);
+          alert(`Payment successful! TX: ${result.txHash || "pending"}`);
+        }}
+        onError={error => {
+          console.error("Payment error:", error);
+        }}
+        returnUrl="/"
+        returnLabel="Back to Home"
+      />
     </div>
   );
 }

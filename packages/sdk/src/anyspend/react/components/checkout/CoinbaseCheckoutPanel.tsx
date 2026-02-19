@@ -33,10 +33,7 @@ export function CoinbaseCheckoutPanel({
     return formatTokenAmount(BigInt(totalAmount), decimals);
   }, [totalAmount, tokenData]);
 
-  const {
-    coinbaseAvailablePaymentMethods,
-    isLoading,
-  } = useGeoOnrampOptions(formattedAmount);
+  const { coinbaseAvailablePaymentMethods, isLoading } = useGeoOnrampOptions(formattedAmount);
 
   if (isLoading) {
     return (
@@ -47,7 +44,9 @@ export function CoinbaseCheckoutPanel({
         className="anyspend-coinbase-loading flex items-center justify-center py-6"
       >
         <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
-        <TextShimmer duration={1.5} className="ml-2 text-sm">Checking availability...</TextShimmer>
+        <TextShimmer duration={1.5} className="ml-2 text-sm">
+          Checking availability...
+        </TextShimmer>
       </motion.div>
     );
   }

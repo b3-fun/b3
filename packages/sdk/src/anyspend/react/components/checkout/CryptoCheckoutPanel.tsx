@@ -5,15 +5,31 @@ import { useAnyspendQuote } from "@b3dotfun/sdk/anyspend/react/hooks/useAnyspend
 import { useAnyspendCreateOrder } from "@b3dotfun/sdk/anyspend/react/hooks/useAnyspendCreateOrder";
 import { useAnyspendTokenList } from "@b3dotfun/sdk/anyspend/react/hooks/useAnyspendTokens";
 import { ALL_CHAINS } from "@b3dotfun/sdk/anyspend";
-import { useAccountWallet, useB3Config, useModalStore, useSimTokenBalance, useTokenData } from "@b3dotfun/sdk/global-account/react";
+import {
+  useAccountWallet,
+  useB3Config,
+  useModalStore,
+  useSimTokenBalance,
+  useTokenData,
+} from "@b3dotfun/sdk/global-account/react";
 import { thirdwebB3Chain } from "@b3dotfun/sdk/shared/constants/chains/b3Chain";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { isNativeToken } from "@b3dotfun/sdk/anyspend/utils/token";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { TextShimmer } from "@b3dotfun/sdk/global-account/react";
 import { useIsMobile } from "@b3dotfun/sdk/global-account/react";
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@b3dotfun/sdk/global-account/react/components/ui/dialog";
-import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "@b3dotfun/sdk/global-account/react/components/ui/drawer";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@b3dotfun/sdk/global-account/react/components/ui/dialog";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerTitle,
+} from "@b3dotfun/sdk/global-account/react/components/ui/drawer";
 import { ChevronDown, Loader2, Search } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -94,7 +110,11 @@ export function CryptoCheckoutPanel({
   });
 
   // Get balance
-  const tokenAddress = selectedSrcToken ? (isNativeToken(selectedSrcToken.address) ? "native" : selectedSrcToken.address) : undefined;
+  const tokenAddress = selectedSrcToken
+    ? isNativeToken(selectedSrcToken.address)
+      ? "native"
+      : selectedSrcToken.address
+    : undefined;
   const { data: balanceData } = useSimTokenBalance(walletAddress, tokenAddress, selectedSrcChainId);
 
   const balance = useMemo(() => {
@@ -118,7 +138,6 @@ export function CryptoCheckoutPanel({
     const decimals = selectedSrcToken.decimals || 18;
     return formatTokenAmount(BigInt(srcAmount || "0"), decimals);
   }, [srcAmount, selectedSrcToken]);
-
 
   // Check if user has enough balance
   const hasEnoughBalance = balance.raw >= BigInt(srcAmount || "0");
@@ -184,7 +203,9 @@ export function CryptoCheckoutPanel({
     <div className={cn("anyspend-crypto-panel flex flex-col gap-4", classes?.cryptoPanel)}>
       {/* Token Selector */}
       <div className="anyspend-token-selector">
-        <label className="anyspend-token-label mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Pay with</label>
+        <label className="anyspend-token-label mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+          Pay with
+        </label>
         <button
           onClick={() => setShowTokenSelector(true)}
           className={cn(
@@ -214,7 +235,10 @@ export function CryptoCheckoutPanel({
       {/* Token Selector Modal */}
       <TokenSelectorModal
         open={showTokenSelector}
-        onClose={() => { setShowTokenSelector(false); setTokenSearchQuery(""); }}
+        onClose={() => {
+          setShowTokenSelector(false);
+          setTokenSearchQuery("");
+        }}
         tokenList={tokenList}
         tokenSearchQuery={tokenSearchQuery}
         onSearchChange={setTokenSearchQuery}
@@ -243,7 +267,9 @@ export function CryptoCheckoutPanel({
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.15 }}
               >
-                <TextShimmer duration={1} className="text-sm">Fetching quote...</TextShimmer>
+                <TextShimmer duration={1} className="text-sm">
+                  Fetching quote...
+                </TextShimmer>
               </motion.div>
             ) : (
               <motion.span
@@ -360,7 +386,12 @@ function TokenSelectorModal({
   const ModalDescription = isMobile ? DrawerDescription : DialogDescription;
 
   return (
-    <ModalComponent open={open} onOpenChange={(v: boolean) => { if (!v) onClose(); }}>
+    <ModalComponent
+      open={open}
+      onOpenChange={(v: boolean) => {
+        if (!v) onClose();
+      }}
+    >
       <ModalContent className="anyspend-token-modal flex max-h-[80dvh] flex-col overflow-hidden rounded-2xl bg-white p-0 shadow-xl sm:max-h-[70dvh] dark:bg-gray-900">
         <ModalTitle className="sr-only">Select token</ModalTitle>
         <ModalDescription className="sr-only">Choose a token to pay with</ModalDescription>
@@ -412,9 +443,7 @@ function TokenSelectorModal({
                     <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{token.symbol}</p>
                     <p className="truncate text-xs text-gray-500 dark:text-gray-400">{token.name}</p>
                   </div>
-                  {isSelected && (
-                    <div className="h-2 w-2 rounded-full bg-blue-600" />
-                  )}
+                  {isSelected && <div className="h-2 w-2 rounded-full bg-blue-600" />}
                 </button>
               );
             })}

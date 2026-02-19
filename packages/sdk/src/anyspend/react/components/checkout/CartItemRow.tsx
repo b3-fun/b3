@@ -32,9 +32,7 @@ export function CartItemRow({ item, formattedPrice, classes }: CartItemRowProps)
               {item.description}
             </p>
           )}
-          {item.quantity > 1 && (
-            <p className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">Qty: {item.quantity}</p>
-          )}
+          {item.quantity > 1 && <p className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">Qty: {item.quantity}</p>}
         </div>
         <p className={cn("ml-3 text-sm font-medium text-gray-900 dark:text-gray-100", classes?.cartItemPrice)}>
           {formattedPrice}
