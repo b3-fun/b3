@@ -3,6 +3,7 @@
 import { ALL_CHAINS, ZERO_ADDRESS } from "@b3dotfun/sdk/anyspend";
 import { getPaymentUrl } from "@b3dotfun/sdk/anyspend/utils/chain";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
+import { useAnyspendQuote } from "@b3dotfun/sdk/anyspend/react/hooks/useAnyspendQuote";
 import { useAnyspendOrderAndTransactions } from "@b3dotfun/sdk/anyspend/react/hooks/useAnyspendOrderAndTransactions";
 import { useCreateDepositFirstOrder } from "@b3dotfun/sdk/anyspend/react/hooks/useCreateDepositFirstOrder";
 import { useOnOrderSuccess } from "@b3dotfun/sdk/anyspend/react/hooks/useOnOrderSuccess";
@@ -14,8 +15,10 @@ import {
   useB3Config,
   useModalStore,
   useIsMobile,
+  TextShimmer,
 } from "@b3dotfun/sdk/global-account/react";
 import { thirdwebB3Chain } from "@b3dotfun/sdk/shared/constants/chains/b3Chain";
+import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import {
   Dialog,
@@ -63,7 +66,7 @@ export function QRCheckoutPanel({
   recipientAddress,
   destinationTokenAddress,
   destinationTokenChainId,
-  totalAmount: _totalAmount,
+  totalAmount,
   themeColor,
   onSuccess,
   onError,
@@ -80,6 +83,31 @@ export function QRCheckoutPanel({
   const { partnerId } = useB3Config();
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
+
+  // Quote: how much source token is needed for the destination amount
+  const isSameToken =
+    selectedSrcToken.address.toLowerCase() === destinationTokenAddress.toLowerCase() &&
+    selectedSrcToken.chainId === destinationTokenChainId;
+
+  const { anyspendQuote, isLoadingAnyspendQuote } = useAnyspendQuote({
+    type: "swap",
+    srcChain: selectedSrcChainId,
+    dstChain: destinationTokenChainId,
+    srcTokenAddress: selectedSrcToken.address,
+    dstTokenAddress: destinationTokenAddress,
+    tradeType: "EXACT_OUTPUT",
+    amount: totalAmount,
+  });
+
+  const srcAmount = useMemo(() => {
+    if (isSameToken) return totalAmount;
+    return anyspendQuote?.data?.currencyIn?.amount || "0";
+  }, [isSameToken, totalAmount, anyspendQuote]);
+
+  const srcAmountFormatted = useMemo(() => {
+    const decimals = selectedSrcToken.decimals || 18;
+    return formatTokenAmount(BigInt(srcAmount || "0"), decimals);
+  }, [srcAmount, selectedSrcToken]);
 
   // Order state
   const [orderId, setOrderId] = useState<string | undefined>();
@@ -141,11 +169,12 @@ export function QRCheckoutPanel({
 
   const displayAddress = globalAddress || "";
 
-  // Generate QR code value
+  // Generate QR code value with amount from quote
+  const qrAmount = srcAmount && srcAmount !== "0" ? BigInt(srcAmount) : undefined;
   const qrValue = displayAddress
     ? getPaymentUrl(
         displayAddress,
-        undefined,
+        qrAmount,
         isNativeToken(selectedSrcToken.address) ? "ETH" : selectedSrcToken.address,
         selectedSrcChainId,
         selectedSrcToken.decimals,
@@ -219,6 +248,27 @@ export function QRCheckoutPanel({
           setTokenSearchQuery("");
         }}
       />
+
+      {/* Quote Display */}
+      <div
+        className={cn(
+          "rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-800/50",
+          classes?.quoteDisplay,
+        )}
+      >
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-gray-500 dark:text-gray-400">You pay</span>
+          {isLoadingAnyspendQuote ? (
+            <TextShimmer duration={1} className="text-sm">
+              Fetching quote...
+            </TextShimmer>
+          ) : (
+            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+              {srcAmountFormatted} {selectedSrcToken.symbol}
+            </span>
+          )}
+        </div>
+      </div>
 
       {/* QR Code Display */}
       {isCreatingOrder && !globalAddress ? (
