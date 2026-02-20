@@ -119,9 +119,9 @@ export default function HomePage() {
                 setB3ModalContentType({
                   type: "anySpendCheckoutTrigger",
                   recipientAddress: "0xD32b34E2E55c7005b6506370857bdE4cFD057fC4",
-                  destinationTokenAddress: B3_TOKEN.address,
-                  destinationTokenChainId: B3_TOKEN.chainId,
-                  totalAmount: parseUnits("200", 18).toString(),
+                  destinationTokenAddress: USDC_BASE.address,
+                  destinationTokenChainId: USDC_BASE.chainId,
+                  totalAmount: parseUnits("2", 6).toString(),
                   organizationName: "B3kemon Shop",
                   organizationLogo: "https://cdn.b3.fun/b3kemon-card.png",
                   buttonText: "Pay Now",

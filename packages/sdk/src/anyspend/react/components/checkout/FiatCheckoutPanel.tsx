@@ -1,7 +1,6 @@
 "use client";
 
 import { useAnyspendCreateOnrampOrder, useGeoOnrampOptions, useStripeClientSecret } from "@b3dotfun/sdk/anyspend/react";
-import { USDC_BASE } from "@b3dotfun/sdk/anyspend/constants";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { getStripePromise } from "@b3dotfun/sdk/shared/utils/payment.utils";
@@ -49,15 +48,6 @@ export function FiatCheckoutPanel({
     isLoading: isLoadingGeo,
   } = useGeoOnrampOptions(formattedAmount);
 
-  // Detect if destination token is the same as the onramp source (USDC on Base)
-  // In this case, onramp order creation would fail with "Cannot swap same token on same chain"
-  const isSameAsOnrampSource = useMemo(() => {
-    return (
-      destinationTokenChainId === USDC_BASE.chainId &&
-      destinationTokenAddress.toLowerCase() === USDC_BASE.address.toLowerCase()
-    );
-  }, [destinationTokenAddress, destinationTokenChainId]);
-
   // Order state
   const [orderId, setOrderId] = useState<string | null>(null);
   const [stripePaymentIntentId, setStripePaymentIntentId] = useState<string | null>(null);
@@ -82,12 +72,10 @@ export function FiatCheckoutPanel({
   });
 
   // Auto-create onramp order when Stripe Web2 is supported and all data is ready
-  // Skip auto-creation when destination is same as source (USDC on Base)
   useEffect(() => {
     if (
       !isLoadingGeo &&
       stripeWeb2Support?.isSupport &&
-      !isSameAsOnrampSource &&
       !orderCreatedRef.current &&
       !orderId &&
       !isCreatingOrder &&
@@ -126,7 +114,6 @@ export function FiatCheckoutPanel({
   }, [
     isLoadingGeo,
     stripeWeb2Support,
-    isSameAsOnrampSource,
     orderId,
     isCreatingOrder,
     orderError,
@@ -196,42 +183,6 @@ export function FiatCheckoutPanel({
           Try again
         </button>
       </motion.div>
-    );
-  }
-
-  // Same-token fallback: USDC on Base uses Stripe redirect instead of embedded
-  if (isSameAsOnrampSource && hasStripeRedirect) {
-    return (
-      <div className={cn("anyspend-fiat-redirect flex flex-col gap-3 py-2", classes?.fiatPanel)}>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          You'll be redirected to Stripe to complete your payment securely.
-        </p>
-        <button
-          className={cn(
-            "anyspend-fiat-redirect-btn flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3.5 text-sm font-semibold text-white transition-all active:scale-[0.98]",
-            "bg-blue-600 hover:bg-blue-700",
-          )}
-          style={themeColor ? { backgroundColor: themeColor } : undefined}
-        >
-          <Lock className="h-3.5 w-3.5" />
-          Pay with Card
-        </button>
-        <p className="anyspend-fiat-secured flex items-center justify-center gap-1 text-xs text-gray-400">
-          <Lock className="h-3 w-3" />
-          Secured by Stripe
-        </p>
-      </div>
-    );
-  }
-
-  // Same-token without redirect support
-  if (isSameAsOnrampSource) {
-    return (
-      <div className={cn("anyspend-fiat-unavailable py-4 text-center", classes?.fiatPanel)}>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Card payments are not available for this token configuration.
-        </p>
-      </div>
     );
   }
 

@@ -119,10 +119,14 @@ export default function GasFundingPage() {
   const handleFundClick = useCallback(() => {
     if (addressCount === 0 || exceedsLimit) return;
 
-    const plan = buildDistributionPlan(currentAddresses, amount, randomizeAmounts, randomizeTiming, maxDelayMinutes * 60_000);
-    const amountInBaseUnits = plan
-      .reduce((sum, entry) => sum + BigInt(entry.amount), BigInt(0))
-      .toString();
+    const plan = buildDistributionPlan(
+      currentAddresses,
+      amount,
+      randomizeAmounts,
+      randomizeTiming,
+      maxDelayMinutes * 60_000,
+    );
+    const amountInBaseUnits = plan.reduce((sum, entry) => sum + BigInt(entry.amount), BigInt(0)).toString();
 
     setB3ModalContentType({
       type: "anySpendCheckoutTrigger",
@@ -297,9 +301,7 @@ export default function GasFundingPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-700">Randomize Timing</p>
-                    <p className="text-xs text-gray-400">
-                      Spread deliveries randomly over {maxDelayMinutes} min
-                    </p>
+                    <p className="text-xs text-gray-400">Spread deliveries randomly over {maxDelayMinutes} min</p>
                   </div>
                   <button
                     type="button"
