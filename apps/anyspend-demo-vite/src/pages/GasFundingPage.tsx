@@ -49,6 +49,7 @@ function buildDistributionPlan(
   baseAmount: number,
   randomizeAmounts: boolean,
   randomizeTiming: boolean,
+  maxDelayMs: number,
 ): DistributionEntry[] {
   return addresses.map(address => {
     let amt = baseAmount;
@@ -60,7 +61,7 @@ function buildDistributionPlan(
 
     let delayMs = 0;
     if (randomizeTiming) {
-      delayMs = Math.floor(Math.random() * 600_000);
+      delayMs = Math.floor(Math.random() * maxDelayMs);
     }
 
     const amount = Math.ceil(amt * 10 ** USDC_DECIMALS).toString();
@@ -76,6 +77,7 @@ export default function GasFundingPage() {
   const [amount, setAmount] = useState(1);
   const [randomizeTiming, setRandomizeTiming] = useState(false);
   const [randomizeAmounts, setRandomizeAmounts] = useState(false);
+  const [maxDelayMinutes, setMaxDelayMinutes] = useState(5);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { address: walletAddress } = useAccountWallet();
@@ -117,7 +119,7 @@ export default function GasFundingPage() {
   const handleFundClick = useCallback(() => {
     if (addressCount === 0 || exceedsLimit) return;
 
-    const plan = buildDistributionPlan(currentAddresses, amount, randomizeAmounts, randomizeTiming);
+    const plan = buildDistributionPlan(currentAddresses, amount, randomizeAmounts, randomizeTiming, maxDelayMinutes * 60_000);
     const amountInBaseUnits = plan
       .reduce((sum, entry) => sum + BigInt(entry.amount), BigInt(0))
       .toString();
@@ -148,6 +150,7 @@ export default function GasFundingPage() {
     currentAddresses,
     randomizeAmounts,
     randomizeTiming,
+    maxDelayMinutes,
     setB3ModalOpen,
     setB3ModalContentType,
   ]);
@@ -290,25 +293,53 @@ export default function GasFundingPage() {
 
             {/* Privacy toggles */}
             <div className="space-y-0 divide-y divide-gray-100 rounded-lg border border-gray-200">
-              <div className="flex items-center justify-between px-4 py-3">
-                <div>
-                  <p className="text-sm font-medium text-gray-700">Randomize Timing</p>
-                  <p className="text-xs text-gray-400">Spread deliveries randomly over 10 minutes</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setRandomizeTiming(!randomizeTiming)}
-                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${
-                    randomizeTiming ? "bg-blue-600" : "bg-gray-200"
-                  }`}
-                  aria-label="Toggle random timing"
-                >
-                  <span
-                    className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition-transform ${
-                      randomizeTiming ? "translate-x-5" : "translate-x-0"
+              <div className="px-4 py-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Randomize Timing</p>
+                    <p className="text-xs text-gray-400">
+                      Spread deliveries randomly over {maxDelayMinutes} min
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setRandomizeTiming(!randomizeTiming)}
+                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${
+                      randomizeTiming ? "bg-blue-600" : "bg-gray-200"
                     }`}
-                  />
-                </button>
+                    aria-label="Toggle random timing"
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition-transform ${
+                        randomizeTiming ? "translate-x-5" : "translate-x-0"
+                      }`}
+                    />
+                  </button>
+                </div>
+                {randomizeTiming && (
+                  <div className="mt-3">
+                    <div className="mb-1 flex items-center justify-between">
+                      <span className="text-xs text-gray-500">Max delay</span>
+                      <span className="font-mono text-xs font-semibold text-gray-700">{maxDelayMinutes} min</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="1"
+                      max="5"
+                      step="1"
+                      value={maxDelayMinutes}
+                      onChange={e => setMaxDelayMinutes(parseInt(e.target.value))}
+                      className="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-gray-200 accent-blue-600"
+                    />
+                    <div className="mt-0.5 flex justify-between text-[10px] text-gray-400">
+                      <span>1m</span>
+                      <span>2m</span>
+                      <span>3m</span>
+                      <span>4m</span>
+                      <span>5m</span>
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="flex items-center justify-between px-4 py-3">
                 <div>
