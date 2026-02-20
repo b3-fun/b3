@@ -17,6 +17,7 @@ interface CoinbaseCheckoutPanelProps {
   themeColor?: string;
   onSuccess?: (result: { txHash?: string; orderId?: string }) => void;
   onError?: (error: Error) => void;
+  callbackMetadata?: Record<string, unknown>;
   classes?: AnySpendCheckoutClasses;
 }
 

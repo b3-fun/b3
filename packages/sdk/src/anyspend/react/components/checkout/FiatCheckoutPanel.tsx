@@ -20,6 +20,7 @@ interface FiatCheckoutPanelProps {
   themeColor?: string;
   onSuccess?: (result: { txHash?: string; orderId?: string }) => void;
   onError?: (error: Error) => void;
+  callbackMetadata?: Record<string, unknown>;
   classes?: AnySpendCheckoutClasses;
 }
 
@@ -31,6 +32,7 @@ export function FiatCheckoutPanel({
   themeColor,
   onSuccess,
   onError,
+  callbackMetadata,
   classes,
 }: FiatCheckoutPanelProps) {
   const { data: tokenData } = useTokenData(destinationTokenChainId, destinationTokenAddress);
@@ -109,6 +111,7 @@ export function FiatCheckoutPanel({
           redirectUrl: window.location.origin,
         },
         expectedDstAmount: totalAmount,
+        callbackMetadata,
       });
     }
   }, [
@@ -124,6 +127,7 @@ export function FiatCheckoutPanel({
     formattedAmount,
     totalAmount,
     geoData,
+    callbackMetadata,
     createOrder,
   ]);
 

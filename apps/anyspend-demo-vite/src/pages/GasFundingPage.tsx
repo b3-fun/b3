@@ -1,5 +1,5 @@
 import { SignInWithB3, useAccountWallet, useModalStore } from "@b3dotfun/sdk/global-account/react";
-import { useCallback, useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { defineChain } from "thirdweb";
 
 const PARTNER_ID = String(process.env.PUBLIC_GLOBAL_ACCOUNTS_PARTNER_ID || "");

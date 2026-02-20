@@ -270,6 +270,7 @@ export function CheckoutPaymentPanel({
                     themeColor={themeColor}
                     onSuccess={handleSuccess}
                     onError={onError}
+                    callbackMetadata={callbackMetadata}
                     classes={classes}
                   />
                 </div>
@@ -307,6 +308,7 @@ export function CheckoutPaymentPanel({
                     themeColor={themeColor}
                     onSuccess={handleSuccess}
                     onError={onError}
+                    callbackMetadata={callbackMetadata}
                     classes={classes}
                   />
                 </div>

@@ -50,7 +50,7 @@ export function QRCheckoutPanel({
   themeColor,
   onSuccess,
   onError,
-  callbackMetadata: _callbackMetadata,
+  callbackMetadata,
   classes,
 }: QRCheckoutPanelProps) {
   const [selectedSrcChainId, setSelectedSrcChainId] = useState(8453); // Base
@@ -135,8 +135,17 @@ export function QRCheckoutPanel({
       dstChain: destinationTokenChainId,
       srcToken: selectedSrcToken,
       dstToken,
+      callbackMetadata,
     });
-  }, [recipientAddress, selectedSrcChainId, destinationTokenChainId, selectedSrcToken, dstToken, createOrder]);
+  }, [
+    recipientAddress,
+    selectedSrcChainId,
+    destinationTokenChainId,
+    selectedSrcToken,
+    dstToken,
+    callbackMetadata,
+    createOrder,
+  ]);
 
   // Poll order status
   const { orderAndTransactions: oat } = useAnyspendOrderAndTransactions(orderId);
