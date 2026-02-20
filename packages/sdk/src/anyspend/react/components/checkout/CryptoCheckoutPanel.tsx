@@ -228,7 +228,7 @@ export function CryptoCheckoutPanel({
 
   const isWaitingForExecution = !!orderId && oat?.data?.order.status !== "executed";
 
-  const handlePay = useCallback(() => {
+  const handlePay = useCallback(async () => {
     if (!selectedSrcToken || !walletAddress) return;
 
     depositSentRef.current = false;
