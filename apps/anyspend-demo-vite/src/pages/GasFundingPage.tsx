@@ -132,7 +132,6 @@ export default function GasFundingPage() {
       workflowId: GAS_FUNDING_WORKFLOW_ID,
       orgId: GAS_FUNDING_ORG_ID,
       buttonText: `Fund ${addressCount} Wallet${addressCount !== 1 ? "s" : ""} with Gas`,
-      allowDirectTransfer: true,
       callbackMetadata: {
         inputs: {
           plan,

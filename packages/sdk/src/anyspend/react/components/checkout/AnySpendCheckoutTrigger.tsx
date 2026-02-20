@@ -51,8 +51,6 @@ export interface AnySpendCheckoutTriggerProps {
   classes?: AnySpendCheckoutClasses;
   /** Display mode — set automatically when used inside B3DynamicModal */
   mode?: "modal" | "page";
-  /** When true, allows direct transfer without swap if source and destination token/chain are the same */
-  allowDirectTransfer?: boolean;
 }
 
 export function AnySpendCheckoutTrigger({
@@ -73,7 +71,6 @@ export function AnySpendCheckoutTrigger({
   returnUrl,
   returnLabel,
   classes,
-  allowDirectTransfer = false,
 }: AnySpendCheckoutTriggerProps) {
   // Merge workflowId + orgId into callbackMetadata
   const mergedMetadata = useMemo(() => {
@@ -161,7 +158,6 @@ export function AnySpendCheckoutTrigger({
             onError={onError}
             callbackMetadata={mergedMetadata}
             classes={classes}
-            allowDirectTransfer={allowDirectTransfer}
           />
         </div>
       </div>

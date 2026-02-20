@@ -26,7 +26,6 @@ interface CheckoutPaymentPanelProps {
   onError?: (error: Error) => void;
   callbackMetadata?: Record<string, unknown>;
   classes?: AnySpendCheckoutClasses;
-  allowDirectTransfer?: boolean;
 }
 
 function RadioCircle({ selected, themeColor }: { selected: boolean; themeColor?: string }) {
@@ -117,7 +116,6 @@ export function CheckoutPaymentPanel({
   onError,
   callbackMetadata,
   classes,
-  allowDirectTransfer = false,
 }: CheckoutPaymentPanelProps) {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("crypto");
   const [paymentResult, setPaymentResult] = useState<{ txHash?: string; orderId?: string } | null>(null);
@@ -200,7 +198,6 @@ export function CheckoutPaymentPanel({
                     onError={onError}
                     callbackMetadata={callbackMetadata}
                     classes={classes}
-                    allowDirectTransfer={allowDirectTransfer}
                   />
                 </div>
               </motion.div>
