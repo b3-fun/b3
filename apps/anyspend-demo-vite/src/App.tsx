@@ -2,6 +2,7 @@ import { AnyspendProvider } from "@b3dotfun/sdk/anyspend/react";
 import React from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import CheckoutPage from "./pages/CheckoutPage";
+import GasFundingPage from "./pages/GasFundingPage";
 import HomePage from "./pages/HomePage";
 import OnrampExamplePage from "./pages/OnrampExamplePage";
 import OnrampFlowPage from "./pages/OnrampFlowPage";
@@ -20,6 +21,7 @@ function App() {
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/checkout" element={<CheckoutPage />} />
+              <Route path="/gas-funding" element={<GasFundingPage />} />
               <Route path="/onramp-example" element={<OnrampExamplePage />} />
               <Route path="/onramp" element={<OnrampFlowPage />} />
               <Route path="/onramp/status" element={<OnrampOrderStatusPage />} />

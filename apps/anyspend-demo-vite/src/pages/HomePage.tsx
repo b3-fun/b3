@@ -94,6 +94,16 @@ export default function HomePage() {
             </button>
 
             <button
+              onClick={() => navigate("/gas-funding")}
+              className="group flex h-40 flex-col justify-between overflow-hidden rounded-lg border border-gray-100 bg-white p-6 text-left shadow-sm transition-all hover:border-orange-100 hover:shadow-md"
+            >
+              <div>
+                <h3 className="text-lg font-medium text-gray-900">Gas Funding</h3>
+                <p className="mt-1 text-sm text-gray-500">Fund wallets with gas on any chain via AnySpend workflow</p>
+              </div>
+            </button>
+
+            <button
               onClick={() => navigate("/checkout")}
               className="group flex h-40 flex-col justify-between overflow-hidden rounded-lg border border-gray-100 bg-white p-6 text-left shadow-sm transition-all hover:border-emerald-100 hover:shadow-md"
             >

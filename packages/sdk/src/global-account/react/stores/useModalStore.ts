@@ -557,6 +557,8 @@ export interface AnySpendCheckoutTriggerModalProps extends BaseModalProps {
   returnUrl?: string;
   /** Label for the return button */
   returnLabel?: string;
+  /** When true, allows direct transfer without swap if source and destination token/chain are the same */
+  allowDirectTransfer?: boolean;
 }
 
 export interface AnySpendWorkflowTriggerModalProps extends BaseModalProps {

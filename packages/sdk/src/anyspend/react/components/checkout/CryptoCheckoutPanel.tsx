@@ -53,6 +53,7 @@ interface CryptoCheckoutPanelProps {
   onError?: (error: Error) => void;
   callbackMetadata?: Record<string, unknown>;
   classes?: AnySpendCheckoutClasses;
+  allowDirectTransfer?: boolean;
 }
 
 export function CryptoCheckoutPanel({
@@ -66,6 +67,7 @@ export function CryptoCheckoutPanel({
   onError,
   callbackMetadata,
   classes,
+  allowDirectTransfer = false,
 }: CryptoCheckoutPanelProps) {
   const [selectedSrcChainId, setSelectedSrcChainId] = useState(destinationTokenChainId);
   const [selectedSrcToken, setSelectedSrcToken] = useState<components["schemas"]["Token"] | null>(null);
@@ -107,15 +109,19 @@ export function CryptoCheckoutPanel({
     selectedSrcToken.address.toLowerCase() === destinationTokenAddress.toLowerCase() &&
     selectedSrcToken.chainId === destinationTokenChainId;
 
-  const { anyspendQuote, isLoadingAnyspendQuote } = useAnyspendQuote({
+  const isDirectTransfer = isSameToken && allowDirectTransfer;
+
+  // Skip quote when doing a direct transfer (same chain/token) — amount is known
+  const { anyspendQuote, isLoadingAnyspendQuote: _isLoadingQuote } = useAnyspendQuote({
     type: "swap",
     srcChain: selectedSrcChainId,
-    dstChain: destinationTokenChainId,
+    dstChain: isDirectTransfer ? 0 : destinationTokenChainId, // disabled when direct transfer (0 makes `enabled` false)
     srcTokenAddress: selectedSrcToken?.address || "",
     dstTokenAddress: destinationTokenAddress,
     tradeType: "EXACT_OUTPUT",
     amount: totalAmount,
   });
+  const isLoadingAnyspendQuote = isDirectTransfer ? false : _isLoadingQuote;
 
   // Get balance
   const tokenAddress = selectedSrcToken
@@ -228,8 +234,43 @@ export function CryptoCheckoutPanel({
 
   const isWaitingForExecution = !!orderId && oat?.data?.order.status !== "executed";
 
-  const handlePay = useCallback(() => {
+  const [isDirectTransferPending, setIsDirectTransferPending] = useState(false);
+
+  const handlePay = useCallback(async () => {
     if (!selectedSrcToken || !walletAddress) return;
+
+    // Direct transfer: send tokens directly without creating an AnySpend order
+    if (isDirectTransfer) {
+      try {
+        setIsDirectTransferPending(true);
+        const amount = BigInt(totalAmount);
+
+        if (isNativeToken(selectedSrcToken.address)) {
+          const txHash = await switchChainAndExecute(selectedSrcChainId, {
+            to: recipientAddress as `0x${string}`,
+            value: amount,
+          });
+          onSuccess?.({ txHash: typeof txHash === "string" ? txHash : undefined });
+        } else {
+          const data = encodeFunctionData({
+            abi: erc20Abi,
+            functionName: "transfer",
+            args: [recipientAddress as `0x${string}`, amount],
+          });
+          const txHash = await switchChainAndExecute(selectedSrcChainId, {
+            to: selectedSrcToken.address as `0x${string}`,
+            data,
+            value: BigInt(0),
+          });
+          onSuccess?.({ txHash: typeof txHash === "string" ? txHash : undefined });
+        }
+      } catch (error: any) {
+        onError?.(error instanceof Error ? error : new Error(error?.message || "Transaction rejected"));
+      } finally {
+        setIsDirectTransferPending(false);
+      }
+      return;
+    }
 
     depositSentRef.current = false;
 
@@ -267,6 +308,10 @@ export function CryptoCheckoutPanel({
     totalAmount,
     callbackMetadata,
     createOrder,
+    isDirectTransfer,
+    switchChainAndExecute,
+    onSuccess,
+    onError,
   ]);
 
   const handleSelectToken = (token: components["schemas"]["Token"]) => {
@@ -277,7 +322,7 @@ export function CryptoCheckoutPanel({
   };
 
   const isLoading = isLoadingAnyspendQuote || isLoadingTokens;
-  const isPending = isCreatingOrder || isSendingDeposit || isWaitingForExecution;
+  const isPending = isCreatingOrder || isSendingDeposit || isWaitingForExecution || isDirectTransferPending;
   const canPay = walletAddress && selectedSrcToken && hasEnoughBalance && !isLoading && !isPending;
 
   return (
@@ -422,11 +467,13 @@ export function CryptoCheckoutPanel({
           {isPending ? (
             <span className="flex items-center justify-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin" />
-              {isCreatingOrder
-                ? "Creating order..."
-                : isSendingDeposit
-                  ? "Confirm in wallet..."
-                  : "Confirming transaction..."}
+              {isDirectTransferPending
+                ? "Confirm in wallet..."
+                : isCreatingOrder
+                  ? "Creating order..."
+                  : isSendingDeposit
+                    ? "Confirm in wallet..."
+                    : "Confirming transaction..."}
             </span>
           ) : (
             buttonText
