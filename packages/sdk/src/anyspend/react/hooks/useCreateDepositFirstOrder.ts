@@ -17,6 +17,7 @@ export type CreateDepositFirstOrderParams = {
   creatorAddress?: string;
   /** Optional contract config for custom execution after deposit */
   contractConfig?: DepositContractConfig;
+  callbackMetadata?: Record<string, unknown>;
 };
 
 export type UseCreateDepositFirstOrderProps = {
@@ -84,6 +85,7 @@ export function useCreateDepositFirstOrder({ onSuccess, onError }: UseCreateDepo
           creatorAddress: creatorAddress ? normalizeAddress(creatorAddress) : undefined,
           partnerId,
           visitorData,
+          callbackMetadata: params.callbackMetadata,
         });
       } catch (error: any) {
         if (error?.data) {
