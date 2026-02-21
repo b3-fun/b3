@@ -191,6 +191,8 @@ export function AnySpendCustom(props: {
   onShowPointsDetail?: () => void;
   /** Fiat amount in USD for fiat payments */
   srcFiatAmount?: string;
+  /** Optional sender (payer) address — pre-fills token balances when the user address is known ahead of time */
+  senderAddress?: string;
 }) {
   const fingerprintConfig = getFingerprintConfig();
 
@@ -220,6 +222,7 @@ function AnySpendCustomInner({
   onShowPointsDetail,
   srcFiatAmount: srcFiatAmountProps,
   forceFiatPayment,
+  senderAddress,
 }: {
   loadOrder?: string;
   mode?: "modal" | "page";
@@ -245,6 +248,7 @@ function AnySpendCustomInner({
   onShowPointsDetail?: () => void;
   srcFiatAmount?: string;
   forceFiatPayment?: boolean;
+  senderAddress?: string;
 }) {
   const hasMounted = useHasMounted();
 
@@ -282,15 +286,16 @@ function AnySpendCustomInner({
   const { data: tokenList } = useAnyspendTokenList(srcChainId, "");
 
   // Get token balances for the selected chain
+  const effectiveBalanceAddress = senderAddress || currentWallet?.wallet?.address || "";
   const { nativeTokens, fungibleTokens } = useTokenBalancesByChain({
-    address: currentWallet?.wallet?.address || "",
+    address: effectiveBalanceAddress,
     chainsIds: [srcChainId],
-    enabled: !!currentWallet?.wallet?.address && !!chainName,
+    enabled: !!effectiveBalanceAddress && !!chainName,
   });
 
   // Find a token with a balance, prioritizing tokens the user already owns
   const getTokenWithBalance = useCallback(() => {
-    if (!currentWallet?.wallet?.address || (!nativeTokens && !fungibleTokens) || !tokenList) {
+    if (!effectiveBalanceAddress || (!nativeTokens && !fungibleTokens) || !tokenList) {
       return getDefaultToken(srcChainId);
     }
 
@@ -321,7 +326,7 @@ function AnySpendCustomInner({
 
     // Default fallback
     return getDefaultToken(srcChainId);
-  }, [currentWallet?.wallet?.address, nativeTokens, fungibleTokens, tokenList, srcChainId]);
+  }, [effectiveBalanceAddress, nativeTokens, fungibleTokens, tokenList, srcChainId]);
 
   // Set the selected token with preference for tokens user owns
   const [srcToken, setSrcToken] = useState<components["schemas"]["Token"]>(getDefaultToken(srcChainId));
@@ -476,7 +481,7 @@ function AnySpendCustomInner({
         dstToken: dstToken,
         srcAmount: srcAmount.toString(),
         recipientAddress,
-        creatorAddress: currentWallet?.wallet?.address,
+        creatorAddress: senderAddress || currentWallet?.wallet?.address,
         nft:
           orderType === "mint_nft"
             ? metadata.nftContract.type === "erc1155"
@@ -967,7 +972,7 @@ function AnySpendCustomInner({
                 >
                   <div className="text-as-tertiarry text-sm">Pay with</div>
                   <OrderToken
-                    address={currentWallet?.wallet?.address}
+                    address={effectiveBalanceAddress || undefined}
                     context="from"
                     chainId={srcChainId}
                     setChainId={setSrcChainId}

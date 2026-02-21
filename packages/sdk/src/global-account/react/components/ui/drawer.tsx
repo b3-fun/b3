@@ -30,8 +30,8 @@ DrawerOverlay.displayName = DrawerPrimitive.Overlay.displayName;
 
 const DrawerContent = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content>
->(({ className, children, ...props }, ref) => {
+  React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content> & { hideGABranding?: boolean }
+>(({ className, children, hideGABranding: _hideGABranding, ...props }, ref) => {
   const container = typeof window !== "undefined" ? document.getElementById("b3-root") : null;
   return (
     <DrawerPortal container={container}>

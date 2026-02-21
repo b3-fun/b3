@@ -17,6 +17,8 @@ type AnySpendTournamentProps =
       tournamentEntryToken: components["schemas"]["Token"];
       tournamentEntryFee: string;
       onSuccess?: () => void;
+      /** Optional sender (payer) address — pre-fills token balances when the user address is known ahead of time */
+      senderAddress?: string;
     }
   | {
       mode?: "modal" | "page";
@@ -28,6 +30,8 @@ type AnySpendTournamentProps =
       tournamentFundToken: components["schemas"]["Token"];
       tournamentFundAmount: string;
       onSuccess?: () => void;
+      /** Optional sender (payer) address — pre-fills token balances when the user address is known ahead of time */
+      senderAddress?: string;
     };
 
 export function AnySpendTournament(props: AnySpendTournamentProps) {
@@ -39,6 +43,7 @@ export function AnySpendTournament(props: AnySpendTournamentProps) {
     tournamentContractAddress,
     tournamentMetadata,
     onSuccess,
+    senderAddress,
   } = props;
 
   const dstToken = action === "join" ? props.tournamentEntryToken : props.tournamentFundToken;
@@ -104,6 +109,7 @@ export function AnySpendTournament(props: AnySpendTournamentProps) {
       header={header}
       onSuccess={onSuccess}
       showRecipient={action === "join"}
+      senderAddress={senderAddress}
     />
   );
 }

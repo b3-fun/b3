@@ -29,6 +29,8 @@ export interface AnySpendDepositHypeProps {
   returnToHomeUrl?: string;
   /** Custom label for recipient display (e.g., "OBSN Telegram Bot") */
   customRecipientLabel?: string;
+  /** Optional sender (payer) address — pre-fills token balances when the user address is known ahead of time */
+  senderAddress?: string;
 }
 
 export function AnySpendDepositHype({
@@ -44,6 +46,7 @@ export function AnySpendDepositHype({
   onTokenSelect,
   customUsdInputValues,
   preferEoa,
+  senderAddress,
 }: AnySpendDepositHypeProps) {
   if (!recipientAddress) return null;
 
@@ -86,6 +89,7 @@ export function AnySpendDepositHype({
       onTokenSelect={onTokenSelect}
       customUsdInputValues={customUsdInputValues}
       preferEoa={preferEoa}
+      senderAddress={senderAddress}
     />
   );
 }

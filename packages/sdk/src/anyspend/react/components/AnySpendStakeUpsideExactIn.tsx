@@ -26,6 +26,7 @@ export function AnySpendStakeUpsideExactIn({
   stakingContractAddress,
   token,
   onSuccess,
+  senderAddress,
 }: {
   loadOrder?: string;
   mode?: "modal" | "page";
@@ -36,6 +37,8 @@ export function AnySpendStakeUpsideExactIn({
   token: components["schemas"]["Token"];
   destinationTokenAmount?: string;
   onSuccess?: (amount: string) => void;
+  /** Optional sender (payer) address — pre-fills token balances when the user address is known ahead of time */
+  senderAddress?: string;
 }) {
   if (!recipientAddress) return null;
 
@@ -71,6 +74,7 @@ export function AnySpendStakeUpsideExactIn({
       customExactInConfig={customExactInConfig}
       header={header}
       onSuccess={onSuccess}
+      senderAddress={senderAddress}
     />
   );
 }

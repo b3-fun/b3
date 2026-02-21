@@ -25,6 +25,7 @@ export function AnySpendStakeUpside({
   token,
   onSuccess,
   activeTab,
+  senderAddress,
 }: {
   loadOrder?: string;
   mode?: "modal" | "page";
@@ -34,6 +35,8 @@ export function AnySpendStakeUpside({
   token: components["schemas"]["Token"];
   onSuccess?: () => void;
   activeTab?: "crypto" | "fiat";
+  /** Optional sender (payer) address — pre-fills token balances when the user address is known ahead of time */
+  senderAddress?: string;
 }) {
   const header = () => (
     <>
@@ -80,6 +83,7 @@ export function AnySpendStakeUpside({
       onSuccess={onSuccess}
       showRecipient={true}
       activeTab={activeTab}
+      senderAddress={senderAddress}
     />
   );
 }

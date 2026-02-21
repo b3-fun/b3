@@ -54,6 +54,7 @@ export function AnySpendStakeB3ExactIn({
   recipientAddress,
   stakeAmount,
   onSuccess,
+  senderAddress,
 }: {
   loadOrder?: string;
   mode?: "modal" | "page";
@@ -62,6 +63,8 @@ export function AnySpendStakeB3ExactIn({
   recipientAddress: string;
   stakeAmount?: string;
   onSuccess?: (amount: string) => void;
+  /** Optional sender (payer) address — pre-fills token balances when the user address is known ahead of time */
+  senderAddress?: string;
 }) {
   const hasMounted = useHasMounted();
   const { setB3ModalOpen } = useModalStore();
@@ -518,6 +521,7 @@ export function AnySpendStakeB3ExactIn({
       customExactInConfig={customExactInConfig}
       header={header}
       onSuccess={onSuccess}
+      senderAddress={senderAddress}
     />
   );
 }

@@ -27,6 +27,7 @@ export const getStatusDisplay = (
       return {
         text: depositText,
         status: "processing",
+        description: "Waiting for your deposit to be confirmed on-chain",
       };
     }
     case "waiting_stripe_payment":
@@ -44,7 +45,7 @@ export const getStatusDisplay = (
       };
 
     case "sending_token_from_vault":
-      return { text: "Sending Token", status: "processing" };
+      return { text: "Sending Token", status: "processing", description: "Preparing your tokens for delivery" };
 
     case "relay":
     case "executing":
@@ -76,9 +77,9 @@ export const getStatusDisplay = (
     }
 
     case "refunding":
-      return { text: "Order Refunding", status: "processing" };
+      return { text: "Refunding Order", status: "processing", description: "Your funds are being returned to your wallet" };
     case "refunded":
-      return { text: "Order Refunded", status: "failure" };
+      return { text: "Order Refunded", status: "failure", description: "Your funds have been returned to your wallet." };
 
     case "failure":
       return {

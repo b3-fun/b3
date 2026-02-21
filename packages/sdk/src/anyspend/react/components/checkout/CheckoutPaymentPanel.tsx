@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
-import { Wallet } from "lucide-react";
+import { CreditCard, Wallet } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import type { AnySpendCheckoutClasses } from "./AnySpendCheckout";
@@ -27,6 +27,8 @@ interface CheckoutPaymentPanelProps {
   classes?: AnySpendCheckoutClasses;
   /** Which payment method to expand initially. Defaults to none (all collapsed). */
   defaultPaymentMethod?: PaymentMethod;
+  /** Optional sender (payer) address — pre-fills token balances in the crypto panel */
+  senderAddress?: string;
 }
 
 function RadioCircle({ selected, themeColor }: { selected: boolean; themeColor?: string }) {
@@ -118,6 +120,7 @@ export function CheckoutPaymentPanel({
   callbackMetadata,
   classes,
   defaultPaymentMethod,
+  senderAddress,
 }: CheckoutPaymentPanelProps) {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(defaultPaymentMethod ?? null);
   const [paymentResult, setPaymentResult] = useState<{ txHash?: string; orderId?: string } | null>(null);
@@ -200,6 +203,7 @@ export function CheckoutPaymentPanel({
                     onError={onError}
                     callbackMetadata={callbackMetadata}
                     classes={classes}
+                    senderAddress={senderAddress}
                   />
                 </div>
               </motion.div>
@@ -211,6 +215,7 @@ export function CheckoutPaymentPanel({
         <div className="anyspend-method-card">
           <button onClick={() => setPaymentMethod(paymentMethod === "card" ? null : "card")} className={accordionButtonClass(paymentMethod === "card")}>
             <RadioCircle selected={paymentMethod === "card"} themeColor={themeColor} />
+            <CreditCard className="h-5 w-5 text-gray-700 dark:text-gray-300" />
             <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Credit or debit card</span>
             <div className="ml-auto flex items-center gap-1">
               <VisaLogo />

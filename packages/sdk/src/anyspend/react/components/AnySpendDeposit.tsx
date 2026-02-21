@@ -125,6 +125,8 @@ export interface AnySpendDepositProps {
   destinationTokenAmount?: string;
   /** Opaque metadata passed to the order for callbacks (e.g., workflow form data) */
   callbackMetadata?: Record<string, unknown>;
+  /** Optional sender (payer) address — pre-fills token balances when the user address is known ahead of time */
+  senderAddress?: string;
 }
 
 // Default supported chains
@@ -251,6 +253,7 @@ export function AnySpendDeposit({
   allowDirectTransfer = false,
   destinationTokenAmount,
   callbackMetadata,
+  senderAddress,
 }: AnySpendDepositProps) {
   // Extract deposit-specific classes for convenience
   const depositClasses = classes?.deposit;
@@ -280,9 +283,10 @@ export function AnySpendDeposit({
     [destinationTokenAddress, destinationTokenChainId, destinationTokenData],
   );
 
-  // Fetch balances for EOA wallet
+  // Fetch balances for EOA wallet (use senderAddress as fallback for pre-filled balance display)
+  const effectiveBalanceAddress = senderAddress || eoaAddress;
   const { data: balanceData, isLoading: isBalanceLoading } = useSimBalance(
-    shouldShowChainSelection ? eoaAddress : undefined,
+    shouldShowChainSelection ? effectiveBalanceAddress : undefined,
     supportedChains.map(c => c.id),
   );
 
@@ -701,6 +705,7 @@ export function AnySpendDeposit({
             allowDirectTransfer={allowDirectTransfer}
             destinationTokenAmount={destinationTokenAmount}
             callbackMetadata={callbackMetadata}
+            senderAddress={senderAddress}
           />
         ) : (
           <AnySpend
@@ -725,6 +730,7 @@ export function AnySpendDeposit({
             allowDirectTransfer={allowDirectTransfer}
             destinationTokenAmount={destinationTokenAmount}
             callbackMetadata={callbackMetadata}
+            senderAddress={senderAddress}
           />
         )}
       </div>

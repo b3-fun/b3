@@ -1,3 +1,5 @@
+"use client";
+
 import { B3_TOKEN } from "@b3dotfun/sdk/anyspend";
 import { AnySpendCheckout, type CheckoutItem } from "@b3dotfun/sdk/anyspend/react";
 import { parseUnits } from "viem";
@@ -10,14 +12,14 @@ const DEMO_ITEMS: CheckoutItem[] = [
     name: "B3kemon Starter Pack",
     description: "3 random B3kemon creatures to start your journey",
     imageUrl: "https://cdn.b3.fun/b3kemon-card.png",
-    amount: parseUnits("100", 18).toString(), // 100 B3
+    amount: parseUnits("100", 18).toString(),
     quantity: 1,
   },
   {
     id: "item-2",
     name: "Rare Pokeball",
     description: "Increases catch rate by 2x",
-    amount: parseUnits("50", 18).toString(), // 50 B3
+    amount: parseUnits("50", 18).toString(),
     quantity: 2,
   },
 ];

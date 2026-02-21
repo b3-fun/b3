@@ -49,12 +49,15 @@ export function AnySpendStakeB3({
   recipientAddress,
   stakeAmount,
   onSuccess,
+  senderAddress,
 }: {
   loadOrder?: string;
   mode?: "modal" | "page";
   recipientAddress: string;
   stakeAmount?: string;
   onSuccess?: () => void;
+  /** Optional sender (payer) address — pre-fills token balances when the user address is known ahead of time */
+  senderAddress?: string;
 }) {
   const hasMounted = useHasMounted();
   const { setB3ModalOpen } = useModalStore();
@@ -507,6 +510,7 @@ export function AnySpendStakeB3({
       header={header}
       onSuccess={onSuccess}
       showRecipient={true}
+      senderAddress={senderAddress}
     />
   );
 }

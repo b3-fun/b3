@@ -42,7 +42,8 @@ import { getThirdwebChain } from "@b3dotfun/sdk/shared/constants/chains/supporte
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import invariant from "invariant";
-import { ArrowDown, CheckCircle, HistoryIcon, Loader2 } from "lucide-react";
+import { ArrowDown, HistoryIcon, Loader2 } from "lucide-react";
+import { AnimatedCheckmark } from "./icons/AnimatedCheckmark";
 import { motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { formatUnits, parseUnits } from "viem";
@@ -129,6 +130,8 @@ export function AnySpend(props: {
   destinationTokenAmount?: string;
   /** Opaque metadata passed to the order for callbacks (e.g., workflow form data) */
   callbackMetadata?: Record<string, unknown>;
+  /** Optional sender (payer) address — pre-fills token balances when the user address is known ahead of time */
+  senderAddress?: string;
 }) {
   const fingerprintConfig = getFingerprintConfig();
 
@@ -162,6 +165,7 @@ function AnySpendInner({
   allowDirectTransfer = false,
   destinationTokenAmount,
   callbackMetadata,
+  senderAddress,
 }: {
   sourceChainId?: number;
   destinationTokenAddress?: string;
@@ -184,6 +188,7 @@ function AnySpendInner({
   allowDirectTransfer?: boolean;
   destinationTokenAmount?: string;
   callbackMetadata?: Record<string, unknown>;
+  senderAddress?: string;
 }) {
   const searchParams = useSearchParamsSSR();
   const router = useRouter();
@@ -568,9 +573,10 @@ function AnySpendInner({
   const recipientName = recipientProfile.data?.name;
 
   // Check token balance for crypto payments
+  const effectiveBalanceAddress = senderAddress || connectedEOAWallet?.getAccount()?.address;
   const { rawBalance, isLoading: isBalanceLoading } = useTokenBalanceDirect({
     token: selectedSrcToken,
-    address: connectedEOAWallet?.getAccount()?.address,
+    address: effectiveBalanceAddress,
   });
 
   // Check if user has enough balanceuseAutoSetActiveWalletFromWagmi
@@ -969,7 +975,7 @@ function AnySpendInner({
           : selectedDstToken,
         srcAmount: srcAmountBigInt.toString(),
         expectedDstAmount: anyspendQuote?.data?.currencyOut?.amount || "0",
-        creatorAddress: globalAddress,
+        creatorAddress: senderAddress || globalAddress,
         callbackMetadata,
       });
     } catch (err: any) {
@@ -1047,7 +1053,7 @@ function AnySpendInner({
             window.location.origin === "https://basement.fun" ? "https://basement.fun/deposit" : window.location.origin,
         },
         expectedDstAmount: anyspendQuote?.data?.currencyOut?.amount?.toString() || "0",
-        creatorAddress: globalAddress,
+        creatorAddress: senderAddress || globalAddress,
         callbackMetadata,
       });
     } catch (err: any) {
@@ -1497,9 +1503,7 @@ function AnySpendInner({
   const directTransferSuccessView = (
     <div className="mx-auto flex w-[460px] max-w-full flex-col items-center gap-6 p-5">
       <div className="flex flex-col items-center gap-4">
-        <div className="bg-as-brand/10 flex h-16 w-16 items-center justify-center rounded-full">
-          <CheckCircle className="text-as-brand h-8 w-8" />
-        </div>
+        <AnimatedCheckmark className="h-16 w-16" />
         <div className="text-center">
           <h2 className="text-as-primary text-xl font-bold">Transfer Complete</h2>
           <p className="text-as-secondary mt-1 text-sm">

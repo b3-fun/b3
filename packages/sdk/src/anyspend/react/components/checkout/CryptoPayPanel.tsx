@@ -6,13 +6,13 @@ import { useAnyspendCreateOrder } from "@b3dotfun/sdk/anyspend/react/hooks/useAn
 import { useAnyspendOrderAndTransactions } from "@b3dotfun/sdk/anyspend/react/hooks/useAnyspendOrderAndTransactions";
 import { useCreateDepositFirstOrder } from "@b3dotfun/sdk/anyspend/react/hooks/useCreateDepositFirstOrder";
 import { useOnOrderSuccess } from "@b3dotfun/sdk/anyspend/react/hooks/useOnOrderSuccess";
-import { useAnyspendTokenList } from "@b3dotfun/sdk/anyspend/react/hooks/useAnyspendTokens";
-import { ALL_CHAINS } from "@b3dotfun/sdk/anyspend";
+import { ALL_CHAINS, RELAY_SOLANA_MAINNET_CHAIN_ID, getAvailableChainIds } from "@b3dotfun/sdk/anyspend";
 import { getPaymentUrl } from "@b3dotfun/sdk/anyspend/utils/chain";
 import { isNativeToken } from "@b3dotfun/sdk/anyspend/utils/token";
 import {
   useAccountWallet,
   useB3Config,
+  useIsMobile,
   useModalStore,
   useSimTokenBalance,
   useTokenData,
@@ -22,14 +22,14 @@ import { TextShimmer } from "@b3dotfun/sdk/global-account/react";
 import { thirdwebB3Chain } from "@b3dotfun/sdk/shared/constants/chains/b3Chain";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
-import { Check, ChevronDown, Copy, Loader2 } from "lucide-react";
+import { Check, ChevronDown, ChevronsUpDown, Copy, Loader2, QrCode } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { encodeFunctionData, erc20Abi } from "viem";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { TokenSelector } from "@relayprotocol/relay-kit-ui";
 import { ChainTokenIcon } from "../common/ChainTokenIcon";
 import type { AnySpendCheckoutClasses } from "./AnySpendCheckout";
-import { TokenSelectorModal } from "./CryptoCheckoutPanel";
 
 interface CryptoPayPanelProps {
   recipientAddress: string;
@@ -42,6 +42,8 @@ interface CryptoPayPanelProps {
   onError?: (error: Error) => void;
   callbackMetadata?: Record<string, unknown>;
   classes?: AnySpendCheckoutClasses;
+  /** Optional sender address for pre-fetching balances. Falls back to connected wallet. */
+  senderAddress?: string;
 }
 
 export function CryptoPayPanel({
@@ -55,34 +57,36 @@ export function CryptoPayPanel({
   onError,
   callbackMetadata,
   classes,
+  senderAddress,
 }: CryptoPayPanelProps) {
   /* ------------------------------------------------------------------ */
   /* Shared state: token selection, quote, balance                      */
   /* ------------------------------------------------------------------ */
   const [selectedSrcChainId, setSelectedSrcChainId] = useState(destinationTokenChainId);
   const [selectedSrcToken, setSelectedSrcToken] = useState<components["schemas"]["Token"] | null>(null);
-  const [showTokenSelector, setShowTokenSelector] = useState(false);
-  const [tokenSearchQuery, setTokenSearchQuery] = useState("");
   const [copied, setCopied] = useState(false);
 
   const { address: walletAddress } = useAccountWallet();
+  const effectiveAddress = senderAddress || walletAddress;
   const { partnerId } = useB3Config();
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
 
   const { data: dstTokenData } = useTokenData(destinationTokenChainId, destinationTokenAddress);
-  const { data: tokenList, isLoading: isLoadingTokens } = useAnyspendTokenList(selectedSrcChainId, tokenSearchQuery);
 
-  // Default to destination token
+  // Default to destination token data once available
   useEffect(() => {
-    if (!selectedSrcToken && tokenList && tokenList.length > 0) {
-      const match = tokenList.find(
-        (t: components["schemas"]["Token"]) =>
-          t.address.toLowerCase() === destinationTokenAddress.toLowerCase() && t.chainId === destinationTokenChainId,
-      );
-      setSelectedSrcToken(match || tokenList[0]);
+    if (!selectedSrcToken && dstTokenData) {
+      setSelectedSrcToken({
+        address: destinationTokenAddress,
+        chainId: destinationTokenChainId,
+        decimals: dstTokenData.decimals || 18,
+        symbol: dstTokenData.symbol || "",
+        name: dstTokenData.name || "",
+        metadata: { logoURI: dstTokenData.logoURI || "" },
+      });
     }
-  }, [tokenList, selectedSrcToken, destinationTokenAddress, destinationTokenChainId]);
+  }, [selectedSrcToken, dstTokenData, destinationTokenAddress, destinationTokenChainId]);
 
   const isSameToken =
     selectedSrcToken &&
@@ -104,7 +108,7 @@ export function CryptoPayPanel({
       ? "native"
       : selectedSrcToken.address
     : undefined;
-  const { data: balanceData } = useSimTokenBalance(walletAddress, tokenAddress, selectedSrcChainId);
+  const { data: balanceData } = useSimTokenBalance(effectiveAddress, tokenAddress, selectedSrcChainId);
 
   const balance = useMemo(() => {
     const b = balanceData?.balances?.[0];
@@ -166,6 +170,7 @@ export function CryptoPayPanel({
       srcToken: selectedSrcToken,
       dstToken,
       callbackMetadata,
+      creatorAddress: effectiveAddress,
     });
   }, [selectedSrcToken, selectedSrcChainId, recipientAddress, destinationTokenChainId, dstToken, callbackMetadata, createDepositOrder]);
 
@@ -270,8 +275,9 @@ export function CryptoPayPanel({
       srcAmount,
       expectedDstAmount: totalAmount,
       callbackMetadata,
+      creatorAddress: effectiveAddress,
     });
-  }, [selectedSrcToken, walletAddress, recipientAddress, selectedSrcChainId, destinationTokenChainId, dstToken, srcAmount, totalAmount, callbackMetadata, createSwapOrder]);
+  }, [selectedSrcToken, walletAddress, effectiveAddress, recipientAddress, selectedSrcChainId, destinationTokenChainId, dstToken, srcAmount, totalAmount, callbackMetadata, createSwapOrder]);
 
   /* ------------------------------------------------------------------ */
   /* Handlers                                                           */
@@ -279,8 +285,6 @@ export function CryptoPayPanel({
   const handleSelectToken = (token: components["schemas"]["Token"]) => {
     setSelectedSrcToken(token);
     setSelectedSrcChainId(token.chainId);
-    setShowTokenSelector(false);
-    setTokenSearchQuery("");
     // Reset both order flows
     setQrOrderId(undefined);
     setGlobalAddress(undefined);
@@ -302,66 +306,75 @@ export function CryptoPayPanel({
     setB3ModalOpen(true);
   };
 
-  const isLoading = isLoadingAnyspendQuote || isLoadingTokens;
+  const isLoading = isLoadingAnyspendQuote;
   const isPending = isCreatingSwapOrder || isSendingDeposit || isWaitingForExecution;
   const canPay = walletAddress && selectedSrcToken && hasEnoughBalance && !isLoading && !isPending;
 
   const chainName = ALL_CHAINS[selectedSrcChainId]?.name || "the specified chain";
+  const chainLogoUrl = ALL_CHAINS[selectedSrcChainId]?.logoUrl;
+
+  // Collapse QR on mobile when a wallet connector is available
+  const isMobile = useIsMobile();
+  const hasWalletConnector = typeof window !== "undefined" && !!(window as any).ethereum;
+  const [qrExpanded, setQrExpanded] = useState(!isMobile || !hasWalletConnector);
 
   /* ------------------------------------------------------------------ */
   /* Render                                                             */
   /* ------------------------------------------------------------------ */
   return (
     <div className={cn("anyspend-crypto-pay-panel flex flex-col gap-4", classes?.cryptoPanel)}>
-      {/* ---- Token Selector ---- */}
+      {/* ---- Token Selector (Relay SDK) ---- */}
       <div className="anyspend-token-selector">
         <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Pay with</label>
-        <button
-          onClick={() => setShowTokenSelector(true)}
-          className={cn(
-            "flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 transition-colors hover:border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600",
-            classes?.tokenSelector,
-          )}
-        >
-          {selectedSrcToken ? (
-            <div className="flex items-center gap-3">
-              <ChainTokenIcon
-                chainUrl={ALL_CHAINS[selectedSrcToken.chainId]?.logoUrl || ""}
-                tokenUrl={selectedSrcToken.metadata?.logoURI}
-                className="h-8 w-8"
-              />
-              <div className="text-left">
-                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{selectedSrcToken.symbol}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Balance: {balance.formatted}</p>
-              </div>
-            </div>
-          ) : (
-            <span className="text-sm text-gray-400">Select token</span>
-          )}
-          <ChevronDown className="h-4 w-4 text-gray-400" />
-        </button>
+        <TokenSelector
+          address={effectiveAddress}
+          chainIdsFilter={getAvailableChainIds("from")}
+          context="from"
+          fromChainWalletVMSupported={true}
+          isValidAddress={true}
+          lockedChainIds={getAvailableChainIds("from")}
+          multiWalletSupportEnabled={true}
+          onAnalyticEvent={undefined}
+          popularChainIds={[1, 8453, RELAY_SOLANA_MAINNET_CHAIN_ID]}
+          setToken={token => {
+            handleSelectToken({
+              address: token.address,
+              chainId: token.chainId,
+              decimals: token.decimals,
+              metadata: { logoURI: token.logoURI },
+              name: token.name,
+              symbol: token.symbol,
+            });
+          }}
+          supportedWalletVMs={["evm", "svm"]}
+          token={undefined}
+          trigger={
+            <button
+              className={cn(
+                "flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 transition-colors hover:border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600",
+                classes?.tokenSelector,
+              )}
+            >
+              {selectedSrcToken ? (
+                <div className="flex items-center gap-3">
+                  <ChainTokenIcon
+                    chainUrl={ALL_CHAINS[selectedSrcToken.chainId]?.logoUrl || ""}
+                    tokenUrl={selectedSrcToken.metadata?.logoURI}
+                    className="h-8 w-8"
+                  />
+                  <div className="text-left">
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{selectedSrcToken.symbol}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Balance: {balance.formatted}</p>
+                  </div>
+                </div>
+              ) : (
+                <span className="text-sm text-gray-400">Select token</span>
+              )}
+              <ChevronsUpDown className="h-4 w-4 text-gray-400" />
+            </button>
+          }
+        />
       </div>
-
-      <TokenSelectorModal
-        open={showTokenSelector}
-        onClose={() => {
-          setShowTokenSelector(false);
-          setTokenSearchQuery("");
-        }}
-        tokenList={tokenList}
-        isLoadingTokens={isLoadingTokens}
-        tokenSearchQuery={tokenSearchQuery}
-        onSearchChange={setTokenSearchQuery}
-        onSelectToken={handleSelectToken}
-        selectedToken={selectedSrcToken}
-        walletAddress={walletAddress}
-        chainId={selectedSrcChainId}
-        onChainChange={chainId => {
-          setSelectedSrcChainId(chainId);
-          setSelectedSrcToken(null);
-          setTokenSearchQuery("");
-        }}
-      />
 
       {/* ---- Quote ---- */}
       <motion.div
@@ -459,67 +472,92 @@ export function CryptoPayPanel({
         </button>
       )}
 
-      {/* ---- "or" divider ---- */}
-      <div className="flex items-center gap-3 py-1">
-        <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
-        <span className="text-xs font-medium text-gray-400 dark:text-gray-500">or send directly</span>
-        <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
-      </div>
+      {/* ---- "or" divider / accordion toggle ---- */}
+      {isMobile && hasWalletConnector ? (
+        <button
+          type="button"
+          onClick={() => setQrExpanded(prev => !prev)}
+          className="flex w-full items-center gap-3 py-1"
+        >
+          <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
+          <span className="flex items-center gap-1 text-xs font-medium text-gray-400 dark:text-gray-500">
+            {qrExpanded ? "or send directly" : <><QrCode className="h-3 w-3" /> or send with QR code</>}
+            <ChevronDown className={cn("h-3 w-3 transition-transform", qrExpanded && "rotate-180")} />
+          </span>
+          <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
+        </button>
+      ) : (
+        <div className="flex items-center gap-3 py-1">
+          <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
+          <span className="text-xs font-medium text-gray-400 dark:text-gray-500">or send directly</span>
+          <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
+        </div>
+      )}
 
       {/* ---- QR + Deposit Section ---- */}
-      {isCreatingQrOrder && !globalAddress ? (
-        <div className="flex items-center justify-center py-8">
-          <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
-          <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">Creating deposit address...</span>
-        </div>
-      ) : globalAddress ? (
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, ease: "easeOut" }}
-          className="flex gap-4"
-        >
-          {/* QR Code — left */}
-          <div className="shrink-0 rounded-xl bg-white p-2.5 shadow-sm ring-1 ring-gray-100 dark:bg-white dark:ring-gray-200">
-            <QRCodeSVG value={qrValue} size={132} level="M" marginSize={0} />
-          </div>
+      <AnimatePresence initial={false}>
+        {qrExpanded && (
+          <motion.div
+            key="qr-section"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            className="overflow-hidden"
+          >
+            {isCreatingQrOrder && !globalAddress ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+                <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">Creating deposit address...</span>
+              </div>
+            ) : globalAddress ? (
+              <div className="flex items-center gap-4">
+                {/* QR Code — left */}
+                <div className="shrink-0 rounded-xl bg-white p-2.5 shadow-sm ring-1 ring-gray-100 dark:bg-white dark:ring-gray-200">
+                  <QRCodeSVG value={qrValue} size={132} level="M" marginSize={0} />
+                </div>
 
-          {/* Info — right */}
-          <div className="flex min-w-0 flex-1 flex-col gap-2.5">
-            {/* Instruction label */}
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Send{" "}
-              <span className="font-semibold text-gray-900 dark:text-gray-100">
-                {srcAmountFormatted} {selectedSrcToken?.symbol}
-              </span>{" "}
-              on{" "}
-              <span className="font-semibold text-gray-900 dark:text-gray-100">
-                {chainName}
-              </span>{" "}
-              to:
-            </p>
+                {/* Info — right */}
+                <div className="flex min-w-0 flex-1 flex-col gap-2.5">
+                  {/* Instruction label */}
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Send{" "}
+                    <span className="font-semibold text-gray-900 dark:text-gray-100">
+                      {srcAmountFormatted} {selectedSrcToken?.symbol}
+                    </span>{" "}
+                    on{" "}
+                    <span className="font-semibold text-gray-900 dark:text-gray-100">
+                      {chainLogoUrl && <img src={chainLogoUrl} alt="" className="mb-px mr-0.5 inline h-3.5 w-3.5 rounded-full align-text-bottom" />}
+                      {chainName}
+                    </span>{" "}
+                    to:
+                  </p>
 
-            {/* Address with copy */}
-            <button
-              onClick={handleCopyAddress}
-              className="group flex items-start gap-1.5 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-left transition-colors hover:border-gray-300 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800/60 dark:hover:border-gray-600 dark:hover:bg-gray-800"
-            >
-              <span className="min-w-0 break-all font-mono text-xs leading-relaxed text-gray-800 dark:text-gray-200">
-                {globalAddress}
-              </span>
-              <span className="mt-0.5 shrink-0 text-gray-400 transition-colors group-hover:text-gray-600 dark:group-hover:text-gray-300">
-                {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
-              </span>
-            </button>
+                  {/* Address with copy */}
+                  <button
+                    onClick={handleCopyAddress}
+                    className="group flex items-start gap-1.5 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-left transition-colors hover:border-gray-300 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800/60 dark:hover:border-gray-600 dark:hover:bg-gray-800"
+                  >
+                    <span className="min-w-0 break-all font-mono text-xs leading-relaxed text-gray-800 dark:text-gray-200">
+                      {globalAddress}
+                    </span>
+                    <span className="mt-0.5 shrink-0 text-gray-400 transition-colors group-hover:text-gray-600 dark:group-hover:text-gray-300">
+                      {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+                    </span>
+                  </button>
 
-            {/* Warning */}
-            <p className="text-xs leading-snug text-orange-500/80 dark:text-orange-400/80">
-              Only send {selectedSrcToken?.symbol} on {chainName}. Sending other tokens or using a different network may
-              result in loss of funds.
-            </p>
-          </div>
-        </motion.div>
-      ) : null}
+                  {/* Warning */}
+                  <p className="text-xs leading-snug text-orange-500/80 dark:text-orange-400/80">
+                    Only send {selectedSrcToken?.symbol} on{" "}
+                    {chainLogoUrl && <img src={chainLogoUrl} alt="" className="mr-0.5 inline h-3 w-3 rounded-full align-text-bottom" />}
+                    {chainName}. Sending other tokens or using a different network may result in loss of funds.
+                  </p>
+                </div>
+              </div>
+            ) : null}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

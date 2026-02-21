@@ -33,6 +33,7 @@ export function AnySpendDepositUpside({
   depositContractAddress,
   token,
   onSuccess,
+  senderAddress,
 }: {
   loadOrder?: string;
   mode?: "modal" | "page";
@@ -42,6 +43,8 @@ export function AnySpendDepositUpside({
   depositContractAddress: string;
   token: components["schemas"]["Token"];
   onSuccess?: (amount: string) => void;
+  /** Optional sender (payer) address — pre-fills token balances when the user address is known ahead of time */
+  senderAddress?: string;
 }) {
   if (!recipientAddress) return null;
 
@@ -76,6 +79,7 @@ export function AnySpendDepositUpside({
       customExactInConfig={customExactInConfig}
       header={header}
       onSuccess={onSuccess}
+      senderAddress={senderAddress}
     />
   );
 }

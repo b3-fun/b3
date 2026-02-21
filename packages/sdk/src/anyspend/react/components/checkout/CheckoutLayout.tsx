@@ -38,7 +38,7 @@ export function CheckoutLayout({ mode, paymentPanel, cartPanel, classes }: Check
                 grid-template-columns: 1fr ${rightColumnWidth}px;
               }
               .anyspend-checkout-grid > .anyspend-payment-col { order: 1; }
-              .anyspend-checkout-grid > .anyspend-cart-col { order: 2; }
+              .anyspend-checkout-grid > .anyspend-cart-col { order: 2; position: sticky; top: 32px; align-self: start; }
             }
           `,
         }}
@@ -62,7 +62,6 @@ export function CheckoutLayout({ mode, paymentPanel, cartPanel, classes }: Check
             "rounded-2xl border border-gray-200 bg-gray-50 p-6 dark:border-gray-700 dark:bg-gray-800/50",
             classes?.cartColumn,
           )}
-          style={{ position: "sticky", top: 32, alignSelf: "start" }}
         >
           {cartPanel}
         </div>

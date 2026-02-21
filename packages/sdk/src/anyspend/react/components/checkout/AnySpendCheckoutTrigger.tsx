@@ -55,14 +55,12 @@ export interface AnySpendCheckoutTriggerProps {
   footer?: ReactNode | null;
   /** Which payment method to expand initially. Defaults to none (all collapsed). */
   defaultPaymentMethod?: PaymentMethod;
+  /** Optional sender (payer) address — pre-fills token balances in the crypto panel */
+  senderAddress?: string;
 }
 
-/** CSS overrides applied when the trigger is rendered inside the B3 modal.
- *  Uses :has() to target the branding footer and inner-content margin that
- *  live outside the trigger's own DOM subtree (they're siblings in the dialog). */
+/** CSS overrides applied when the trigger is rendered inside the B3 modal. */
 const MODAL_STYLE_OVERRIDES = `
-  .modal-inner-content:has(.anyspend-checkout-trigger) + .b3-modal-ga-branding { display: none !important; }
-  .modal-inner-content:has(.anyspend-checkout-trigger) { margin-bottom: 0 !important; }
   .anyspend-checkout-trigger .anyspend-payment-methods { border: none; border-radius: 0; }
   .anyspend-checkout-trigger .anyspend-payment-title { font-size: 0; padding-left: 0.75rem; }
   .anyspend-checkout-trigger .anyspend-payment-title::before { content: "Payment options"; font-size: 1.125rem; }
@@ -91,6 +89,7 @@ export function AnySpendCheckoutTrigger({
   classes,
   footer,
   defaultPaymentMethod,
+  senderAddress,
 }: AnySpendCheckoutTriggerProps) {
   // Merge workflowId + orgId into callbackMetadata
   const mergedMetadata = useMemo(() => {
@@ -188,6 +187,7 @@ export function AnySpendCheckoutTrigger({
             callbackMetadata={mergedMetadata}
             classes={classes}
             defaultPaymentMethod={defaultPaymentMethod}
+            senderAddress={senderAddress}
           />
         </div>
       </div>

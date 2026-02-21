@@ -15,7 +15,8 @@ import {
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { formatUnits } from "@b3dotfun/sdk/shared/utils/number";
 import invariant from "invariant";
-import { ArrowDown, CheckCircle, Loader2 } from "lucide-react";
+import { ArrowDown, Loader2 } from "lucide-react";
+import { AnimatedCheckmark } from "./icons/AnimatedCheckmark";
 import { motion } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { AnySpendCustomExactInClasses } from "./types/classes";
@@ -85,6 +86,8 @@ export interface AnySpendCustomExactInProps {
   allowDirectTransfer?: boolean;
   /** Opaque metadata passed to the order for callbacks (e.g., workflow form data) */
   callbackMetadata?: Record<string, unknown>;
+  /** Optional sender (payer) address — pre-fills token balances when the user address is known ahead of time */
+  senderAddress?: string;
 }
 
 export function AnySpendCustomExactIn(props: AnySpendCustomExactInProps) {
@@ -123,6 +126,7 @@ function AnySpendCustomExactInInner({
   classes,
   allowDirectTransfer = false,
   callbackMetadata,
+  senderAddress,
 }: AnySpendCustomExactInProps) {
   const actionLabel = customExactInConfig?.action ?? "Custom Execution";
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
@@ -188,6 +192,7 @@ function AnySpendCustomExactInInner({
     disableUrlParamManagement: true,
     orderType,
     customExactInConfig,
+    senderAddress,
   });
 
   const { connectedEOAWallet } = useAccountWallet();
@@ -580,7 +585,7 @@ function AnySpendCustomExactInInner({
           dstToken: selectedDstToken,
           srcAmount: srcAmountFromQuote,
           expectedDstAmount,
-          creatorAddress: globalAddress,
+          creatorAddress: senderAddress || globalAddress,
           payload: {
             amount: activeOutputAmountInWei,
             data: encodedData,
@@ -605,7 +610,7 @@ function AnySpendCustomExactInInner({
           dstToken: selectedDstToken,
           srcAmount: srcAmountBigInt.toString(),
           expectedDstAmount: expectedDstAmountRaw,
-          creatorAddress: globalAddress,
+          creatorAddress: senderAddress || globalAddress,
           payload,
           callbackMetadata,
         });
@@ -667,7 +672,7 @@ function AnySpendCustomExactInInner({
           srcFiatAmount: srcAmount,
           onramp: onrampOptions,
           expectedDstAmount,
-          creatorAddress: globalAddress,
+          creatorAddress: senderAddress || globalAddress,
           payload: {
             amount: activeOutputAmountInWei,
             data: encodedData,
@@ -689,7 +694,7 @@ function AnySpendCustomExactInInner({
           srcFiatAmount: srcAmount,
           onramp: onrampOptions,
           expectedDstAmount: expectedDstAmountRaw,
-          creatorAddress: globalAddress,
+          creatorAddress: senderAddress || globalAddress,
           payload,
         });
       }
@@ -797,9 +802,7 @@ function AnySpendCustomExactInInner({
       animate={{ opacity: 1, scale: 1 }}
       className="flex flex-col items-center justify-center gap-6 py-8"
     >
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-500/20">
-        <CheckCircle className="h-10 w-10 text-green-500" />
-      </div>
+      <AnimatedCheckmark className="h-16 w-16" />
       <div className="text-center">
         <h2 className="text-as-primary mb-2 text-xl font-bold">Transfer Complete!</h2>
         <p className="text-as-primary/60 text-sm">

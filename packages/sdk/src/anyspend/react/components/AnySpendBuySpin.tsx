@@ -130,6 +130,7 @@ export function AnySpendBuySpin({
   recipientAddress,
   prefillQuantity,
   onSuccess,
+  senderAddress,
 }: {
   loadOrder?: string;
   mode?: "modal" | "page";
@@ -138,6 +139,8 @@ export function AnySpendBuySpin({
   recipientAddress: string;
   prefillQuantity?: string;
   onSuccess?: (txHash?: string) => void;
+  /** Optional sender (payer) address — pre-fills token balances when the user address is known ahead of time */
+  senderAddress?: string;
 }) {
   const hasMounted = useHasMounted();
   const { setB3ModalOpen } = useModalStore();
@@ -681,6 +684,7 @@ export function AnySpendBuySpin({
       header={header}
       onSuccess={txHash => onSuccess?.(txHash)}
       showRecipient={false}
+      senderAddress={senderAddress}
     />
   );
 }

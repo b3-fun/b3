@@ -177,6 +177,19 @@ export const anyspendService = {
     return data.data;
   },
 
+  getCoinbaseOnrampUrl: async (
+    request: components["schemas"]["CoinbaseOnrampUrlRequest"],
+  ): Promise<components["schemas"]["CoinbaseOnrampUrlResponse"]> => {
+    const response = await fetch(`${ANYSPEND_MAINNET_BASE_URL}/onramp/coinbase/onramp-url`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(request),
+    });
+    const data: components["schemas"]["CoinbaseOnrampUrlResponse"] = await response.json();
+    if (!response.ok) throw new Error((data as any).message || "Failed to get Coinbase onramp URL");
+    return data;
+  },
+
   getStripeClientSecret: async (paymentIntentId: string): Promise<string | null> => {
     const response = await fetch(`${ANYSPEND_MAINNET_BASE_URL}/stripe/clientSecret?paymentIntentId=${paymentIntentId}`);
     const data: GetStripeClientSecret = await response.json();

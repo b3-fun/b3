@@ -57,6 +57,8 @@ export interface AnySpendCheckoutProps {
   footer?: ReactNode | null;
   /** Which payment method to expand initially. Defaults to none (all collapsed). */
   defaultPaymentMethod?: PaymentMethod;
+  /** Optional sender (payer) address — pre-fills token balances in the crypto panel */
+  senderAddress?: string;
 }
 
 export function AnySpendCheckout({
@@ -78,6 +80,7 @@ export function AnySpendCheckout({
   classes,
   footer,
   defaultPaymentMethod,
+  senderAddress,
 }: AnySpendCheckoutProps) {
   // Compute total from items
   const computedTotal = useMemo(() => {
@@ -114,6 +117,7 @@ export function AnySpendCheckout({
             onError={onError}
             classes={classes}
             defaultPaymentMethod={defaultPaymentMethod}
+            senderAddress={senderAddress}
           />
         }
         cartPanel={
