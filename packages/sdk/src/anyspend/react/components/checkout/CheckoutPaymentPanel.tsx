@@ -1,17 +1,16 @@
 "use client";
 
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
-import { QrCode, Wallet } from "lucide-react";
+import { Wallet } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import type { AnySpendCheckoutClasses } from "./AnySpendCheckout";
 import { CheckoutSuccess } from "./CheckoutSuccess";
 import { CoinbaseCheckoutPanel } from "./CoinbaseCheckoutPanel";
-import { CryptoCheckoutPanel } from "./CryptoCheckoutPanel";
+import { CryptoPayPanel } from "./CryptoPayPanel";
 import { FiatCheckoutPanel } from "./FiatCheckoutPanel";
-import { QRCheckoutPanel } from "./QRCheckoutPanel";
 
-type PaymentMethod = "crypto" | "qr" | "card" | "coinbase";
+export type PaymentMethod = "crypto" | "card" | "coinbase";
 
 interface CheckoutPaymentPanelProps {
   recipientAddress: string;
@@ -26,6 +25,8 @@ interface CheckoutPaymentPanelProps {
   onError?: (error: Error) => void;
   callbackMetadata?: Record<string, unknown>;
   classes?: AnySpendCheckoutClasses;
+  /** Which payment method to expand initially. Defaults to none (all collapsed). */
+  defaultPaymentMethod?: PaymentMethod;
 }
 
 function RadioCircle({ selected, themeColor }: { selected: boolean; themeColor?: string }) {
@@ -116,8 +117,9 @@ export function CheckoutPaymentPanel({
   onError,
   callbackMetadata,
   classes,
+  defaultPaymentMethod,
 }: CheckoutPaymentPanelProps) {
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("crypto");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(defaultPaymentMethod ?? null);
   const [paymentResult, setPaymentResult] = useState<{ txHash?: string; orderId?: string } | null>(null);
 
   const handleSuccess = (result: { txHash?: string; orderId?: string }) => {
@@ -166,15 +168,15 @@ export function CheckoutPaymentPanel({
           classes?.paymentMethodSelector,
         )}
       >
-        {/* Crypto Wallet */}
+        {/* Pay with crypto */}
         <div className="anyspend-method-crypto">
           <button
-            onClick={() => setPaymentMethod("crypto")}
+            onClick={() => setPaymentMethod(paymentMethod === "crypto" ? null : "crypto")}
             className={accordionButtonClass(paymentMethod === "crypto")}
           >
             <RadioCircle selected={paymentMethod === "crypto"} themeColor={themeColor} />
             <Wallet className="h-5 w-5 text-gray-700 dark:text-gray-300" />
-            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Crypto wallet</span>
+            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Pay with crypto</span>
           </button>
           <AnimatePresence initial={false}>
             {paymentMethod === "crypto" && (
@@ -187,7 +189,7 @@ export function CheckoutPaymentPanel({
                 style={{ overflow: "hidden" }}
               >
                 <div className={expandedPanelClass}>
-                  <CryptoCheckoutPanel
+                  <CryptoPayPanel
                     recipientAddress={recipientAddress}
                     destinationTokenAddress={destinationTokenAddress}
                     destinationTokenChainId={destinationTokenChainId}
@@ -205,44 +207,9 @@ export function CheckoutPaymentPanel({
           </AnimatePresence>
         </div>
 
-        {/* QR Code */}
-        <div className="anyspend-method-qr">
-          <button onClick={() => setPaymentMethod("qr")} className={accordionButtonClass(paymentMethod === "qr")}>
-            <RadioCircle selected={paymentMethod === "qr"} themeColor={themeColor} />
-            <QrCode className="h-5 w-5 text-gray-700 dark:text-gray-300" />
-            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">QR code</span>
-          </button>
-          <AnimatePresence initial={false}>
-            {paymentMethod === "qr" && (
-              <motion.div
-                key="qr-panel"
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
-                style={{ overflow: "hidden" }}
-              >
-                <div className={expandedPanelClass}>
-                  <QRCheckoutPanel
-                    recipientAddress={recipientAddress}
-                    destinationTokenAddress={destinationTokenAddress}
-                    destinationTokenChainId={destinationTokenChainId}
-                    totalAmount={totalAmount}
-                    themeColor={themeColor}
-                    onSuccess={handleSuccess}
-                    onError={onError}
-                    callbackMetadata={callbackMetadata}
-                    classes={classes}
-                  />
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
         {/* Credit or Debit Card */}
         <div className="anyspend-method-card">
-          <button onClick={() => setPaymentMethod("card")} className={accordionButtonClass(paymentMethod === "card")}>
+          <button onClick={() => setPaymentMethod(paymentMethod === "card" ? null : "card")} className={accordionButtonClass(paymentMethod === "card")}>
             <RadioCircle selected={paymentMethod === "card"} themeColor={themeColor} />
             <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Credit or debit card</span>
             <div className="ml-auto flex items-center gap-1">
@@ -282,7 +249,7 @@ export function CheckoutPaymentPanel({
         {/* Coinbase Pay */}
         <div className="anyspend-method-coinbase">
           <button
-            onClick={() => setPaymentMethod("coinbase")}
+            onClick={() => setPaymentMethod(paymentMethod === "coinbase" ? null : "coinbase")}
             className={accordionButtonClass(paymentMethod === "coinbase")}
           >
             <RadioCircle selected={paymentMethod === "coinbase"} themeColor={themeColor} />

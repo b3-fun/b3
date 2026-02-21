@@ -3,12 +3,12 @@
 import { useTokenData } from "@b3dotfun/sdk/global-account/react";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
-import { useMemo } from "react";
+import { type ReactNode, useMemo } from "react";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "../AnySpendFingerprintWrapper";
 import type { AnySpendCheckoutClasses } from "../types/classes";
 import type { CheckoutItem } from "./AnySpendCheckout";
 import { CheckoutCartPanel } from "./CheckoutCartPanel";
-import { CheckoutPaymentPanel } from "./CheckoutPaymentPanel";
+import { CheckoutPaymentPanel, type PaymentMethod } from "./CheckoutPaymentPanel";
 import { PoweredByBranding } from "./PoweredByBranding";
 
 export interface AnySpendCheckoutTriggerProps {
@@ -51,7 +51,25 @@ export interface AnySpendCheckoutTriggerProps {
   classes?: AnySpendCheckoutClasses;
   /** Display mode — set automatically when used inside B3DynamicModal */
   mode?: "modal" | "page";
+  /** Custom footer for the order summary. Pass `null` to hide, or a ReactNode to replace the default. */
+  footer?: ReactNode | null;
+  /** Which payment method to expand initially. Defaults to none (all collapsed). */
+  defaultPaymentMethod?: PaymentMethod;
 }
+
+/** CSS overrides applied when the trigger is rendered inside the B3 modal.
+ *  Uses :has() to target the branding footer and inner-content margin that
+ *  live outside the trigger's own DOM subtree (they're siblings in the dialog). */
+const MODAL_STYLE_OVERRIDES = `
+  .modal-inner-content:has(.anyspend-checkout-trigger) + .b3-modal-ga-branding { display: none !important; }
+  .modal-inner-content:has(.anyspend-checkout-trigger) { margin-bottom: 0 !important; }
+  .anyspend-checkout-trigger .anyspend-payment-methods { border: none; border-radius: 0; }
+  .anyspend-checkout-trigger .anyspend-payment-title { font-size: 0; padding-left: 0.75rem; }
+  .anyspend-checkout-trigger .anyspend-payment-title::before { content: "Payment options"; font-size: 1.125rem; }
+  .anyspend-checkout-trigger .anyspend-payment-panel { gap: 0; }
+  .anyspend-checkout-trigger .anyspend-payment-method-btn { padding-left: 0.5rem; padding-right: 0.5rem; }
+  .anyspend-checkout-trigger .anyspend-payment-method-panel { padding-left: 0.5rem; padding-right: 0.5rem; }
+`;
 
 export function AnySpendCheckoutTrigger({
   recipientAddress,
@@ -71,6 +89,8 @@ export function AnySpendCheckoutTrigger({
   returnUrl,
   returnLabel,
   classes,
+  footer,
+  defaultPaymentMethod,
 }: AnySpendCheckoutTriggerProps) {
   // Merge workflowId + orgId into callbackMetadata
   const mergedMetadata = useMemo(() => {
@@ -108,6 +128,9 @@ export function AnySpendCheckoutTrigger({
 
   return (
     <AnySpendFingerprintWrapper fingerprint={fingerprint}>
+      {/* Hide Global Account branding & flatten accordion in modal context */}
+      <style dangerouslySetInnerHTML={{ __html: MODAL_STYLE_OVERRIDES }} />
+
       <div className="anyspend-checkout-trigger flex flex-col">
         {/* Cart summary with items */}
         {hasItems && (
@@ -120,6 +143,7 @@ export function AnySpendCheckoutTrigger({
               organizationName={organizationName}
               organizationLogo={organizationLogo}
               classes={classes}
+              footer={footer}
             />
           </div>
         )}
@@ -134,17 +158,22 @@ export function AnySpendCheckoutTrigger({
                   {formattedTotal} {tokenSymbol}
                 </span>
               </div>
-              <PoweredByBranding
-                organizationName={organizationName}
-                organizationLogo={organizationLogo}
-                classes={classes}
-              />
+              {footer !== null &&
+                (footer !== undefined ? (
+                  footer
+                ) : (
+                  <PoweredByBranding
+                    organizationName={organizationName}
+                    organizationLogo={organizationLogo}
+                    classes={classes}
+                  />
+                ))}
             </div>
           </div>
         )}
 
         {/* Payment methods */}
-        <div className="p-5">
+        <div className="px-2 py-3">
           <CheckoutPaymentPanel
             recipientAddress={recipientAddress}
             destinationTokenAddress={destinationTokenAddress}
@@ -158,6 +187,7 @@ export function AnySpendCheckoutTrigger({
             onError={onError}
             callbackMetadata={mergedMetadata}
             classes={classes}
+            defaultPaymentMethod={defaultPaymentMethod}
           />
         </div>
       </div>

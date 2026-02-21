@@ -3,6 +3,7 @@ export { AnySpendCheckout } from "./checkout/AnySpendCheckout";
 export type { AnySpendCheckoutProps, CheckoutItem, AnySpendCheckoutClasses } from "./checkout/AnySpendCheckout";
 export { AnySpendCheckoutTrigger } from "./checkout/AnySpendCheckoutTrigger";
 export type { AnySpendCheckoutTriggerProps } from "./checkout/AnySpendCheckoutTrigger";
+export type { PaymentMethod } from "./checkout/CheckoutPaymentPanel";
 
 // Components
 export { AnySpend } from "./AnySpend";

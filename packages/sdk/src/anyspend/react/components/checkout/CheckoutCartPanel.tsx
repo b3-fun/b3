@@ -2,7 +2,7 @@
 
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
-import { useMemo } from "react";
+import { type ReactNode, useMemo } from "react";
 import type { CheckoutItem, AnySpendCheckoutClasses } from "./AnySpendCheckout";
 import { CartItemRow } from "./CartItemRow";
 import { CartSummary } from "./CartSummary";
@@ -16,6 +16,8 @@ interface CheckoutCartPanelProps {
   organizationName?: string;
   organizationLogo?: string;
   classes?: AnySpendCheckoutClasses;
+  /** Custom footer. Pass `null` to hide, or a ReactNode to replace the default PoweredByBranding. */
+  footer?: ReactNode | null;
 }
 
 export function CheckoutCartPanel({
@@ -26,6 +28,7 @@ export function CheckoutCartPanel({
   organizationName,
   organizationLogo,
   classes,
+  footer,
 }: CheckoutCartPanelProps) {
   const formattedTotal = useMemo(
     () => formatTokenAmount(BigInt(totalAmount), tokenDecimals),
@@ -54,7 +57,12 @@ export function CheckoutCartPanel({
 
       <CartSummary total={formattedTotal} tokenSymbol={tokenSymbol} classes={classes} />
 
-      <PoweredByBranding organizationName={organizationName} organizationLogo={organizationLogo} classes={classes} />
+      {footer !== null &&
+        (footer !== undefined ? (
+          footer
+        ) : (
+          <PoweredByBranding organizationName={organizationName} organizationLogo={organizationLogo} classes={classes} />
+        ))}
     </div>
   );
 }

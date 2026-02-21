@@ -1,11 +1,11 @@
 "use client";
 
 import { useTokenData } from "@b3dotfun/sdk/global-account/react";
-import { useMemo } from "react";
+import { type ReactNode, useMemo } from "react";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "../AnySpendFingerprintWrapper";
 import { CheckoutCartPanel } from "./CheckoutCartPanel";
 import { CheckoutLayout } from "./CheckoutLayout";
-import { CheckoutPaymentPanel } from "./CheckoutPaymentPanel";
+import { CheckoutPaymentPanel, type PaymentMethod } from "./CheckoutPaymentPanel";
 
 export type { AnySpendCheckoutClasses } from "../types/classes";
 import type { AnySpendCheckoutClasses } from "../types/classes";
@@ -53,6 +53,10 @@ export interface AnySpendCheckoutProps {
   returnLabel?: string;
   /** Custom class names */
   classes?: AnySpendCheckoutClasses;
+  /** Custom footer for the order summary. Pass `null` to hide, or a ReactNode to replace the default. */
+  footer?: ReactNode | null;
+  /** Which payment method to expand initially. Defaults to none (all collapsed). */
+  defaultPaymentMethod?: PaymentMethod;
 }
 
 export function AnySpendCheckout({
@@ -72,6 +76,8 @@ export function AnySpendCheckout({
   returnUrl,
   returnLabel,
   classes,
+  footer,
+  defaultPaymentMethod,
 }: AnySpendCheckoutProps) {
   // Compute total from items
   const computedTotal = useMemo(() => {
@@ -107,6 +113,7 @@ export function AnySpendCheckout({
             onSuccess={onSuccess}
             onError={onError}
             classes={classes}
+            defaultPaymentMethod={defaultPaymentMethod}
           />
         }
         cartPanel={
@@ -118,6 +125,7 @@ export function AnySpendCheckout({
             organizationName={organizationName}
             organizationLogo={organizationLogo}
             classes={classes}
+            footer={footer}
           />
         }
         classes={classes}
