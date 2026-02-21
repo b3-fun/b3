@@ -31,6 +31,10 @@ interface CheckoutPaymentPanelProps {
   defaultPaymentMethod?: PaymentMethod;
   /** Optional sender (payer) address — pre-fills token balances in the crypto panel */
   senderAddress?: string;
+  /** Show the points row in the order status summary. Defaults to false. */
+  showPoints?: boolean;
+  /** Show the order ID row in the order status summary. Defaults to false. */
+  showOrderId?: boolean;
 }
 
 function RadioCircle({ selected, themeColor }: { selected: boolean; themeColor?: string }) {
@@ -123,6 +127,8 @@ export function CheckoutPaymentPanel({
   classes,
   defaultPaymentMethod,
   senderAddress,
+  showPoints,
+  showOrderId,
 }: CheckoutPaymentPanelProps) {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(defaultPaymentMethod ?? null);
 
@@ -163,6 +169,8 @@ export function CheckoutPaymentPanel({
         onSuccess={onSuccess}
         onError={onError}
         onRetry={handleRetry}
+        showPoints={showPoints}
+        showOrderId={showOrderId}
         classes={classes}
       />
     );

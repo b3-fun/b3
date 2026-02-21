@@ -8,7 +8,7 @@ import { AnySpendFingerprintWrapper, getFingerprintConfig } from "../AnySpendFin
 import type { AnySpendCheckoutClasses } from "../types/classes";
 import type { AnySpendContent, AnySpendSlots, AnySpendTheme } from "../types/customization";
 import { AnySpendCustomizationProvider } from "../context/AnySpendCustomizationContext";
-import type { CheckoutItem } from "./AnySpendCheckout";
+import type { CheckoutItem, CheckoutSummaryLine } from "./AnySpendCheckout";
 import { CheckoutCartPanel } from "./CheckoutCartPanel";
 import { CheckoutPaymentPanel, type PaymentMethod } from "./CheckoutPaymentPanel";
 import { PoweredByBranding } from "./PoweredByBranding";
@@ -65,6 +65,14 @@ export interface AnySpendCheckoutTriggerProps {
   content?: AnySpendContent;
   /** Structured color/theme configuration */
   theme?: AnySpendTheme;
+  /** Shipping cost. String = amount in wei. Object = amount + custom label. */
+  shipping?: string | { amount: string; label?: string };
+  /** Tax amount. String = amount in wei. Object = amount + custom label + optional rate display. */
+  tax?: string | { amount: string; label?: string; rate?: string };
+  /** Discount amount (displayed as negative). String = amount in wei. Object = amount + label + optional code. */
+  discount?: string | { amount: string; label?: string; code?: string };
+  /** Additional summary line items (fees, tips, etc.) */
+  summaryLines?: CheckoutSummaryLine[];
 }
 
 /** CSS overrides applied when the trigger is rendered inside the B3 modal. */
@@ -101,6 +109,10 @@ export function AnySpendCheckoutTrigger({
   slots,
   content,
   theme,
+  shipping,
+  tax,
+  discount,
+  summaryLines,
 }: AnySpendCheckoutTriggerProps) {
   // Merge workflowId + orgId into callbackMetadata
   const mergedMetadata = useMemo(() => {
@@ -112,7 +124,7 @@ export function AnySpendCheckoutTrigger({
     };
   }, [workflowId, orgId, callbackMetadata]);
 
-  // Compute total from items or use override
+  // Compute total from items + adjustments or use override
   const computedTotal = useMemo(() => {
     if (totalAmountOverride) return totalAmountOverride;
     if (!items || items.length === 0) return "0";
@@ -120,8 +132,17 @@ export function AnySpendCheckoutTrigger({
     for (const item of items) {
       total += BigInt(item.amount) * BigInt(item.quantity);
     }
+    const shippingAmt = typeof shipping === "string" ? shipping : shipping?.amount;
+    if (shippingAmt) total += BigInt(shippingAmt);
+    const taxAmt = typeof tax === "string" ? tax : tax?.amount;
+    if (taxAmt) total += BigInt(taxAmt);
+    const discountAmt = typeof discount === "string" ? discount : discount?.amount;
+    if (discountAmt) total -= BigInt(discountAmt);
+    if (summaryLines) {
+      for (const line of summaryLines) total += BigInt(line.amount);
+    }
     return total.toString();
-  }, [items, totalAmountOverride]);
+  }, [items, totalAmountOverride, shipping, tax, discount, summaryLines]);
 
   // Get destination token metadata
   const { data: tokenData } = useTokenData(destinationTokenChainId, destinationTokenAddress);
@@ -155,6 +176,10 @@ export function AnySpendCheckoutTrigger({
               organizationLogo={organizationLogo}
               classes={classes}
               footer={footer}
+              shipping={typeof shipping === "string" ? { amount: shipping } : shipping}
+              tax={typeof tax === "string" ? { amount: tax } : tax}
+              discount={typeof discount === "string" ? { amount: discount } : discount}
+              summaryLines={summaryLines}
             />
           </div>
         )}

@@ -490,6 +490,14 @@ export interface AnySpendCheckoutClasses {
   cartItemPrice?: string;
   cartSummary?: string;
   cartTotal?: string;
+  cartSubtotal?: string;
+  cartSummaryLine?: string;
+  cartSummaryLineLabel?: string;
+  cartSummaryLineAmount?: string;
+  cartDiscount?: string;
+  cartItemMetadata?: string;
+  cartItemMetadataLabel?: string;
+  cartItemMetadataValue?: string;
 
   // Branding
   poweredBy?: string;

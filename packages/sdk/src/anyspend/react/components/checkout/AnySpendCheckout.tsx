@@ -20,6 +20,17 @@ export interface CheckoutItem {
   /** Amount in wei (smallest unit of destination token) */
   amount: string;
   quantity: number;
+  /** Custom metadata displayed as label: value pairs (e.g., { "Size": "Large", "Color": "Blue" }) */
+  metadata?: Record<string, string>;
+}
+
+export interface CheckoutSummaryLine {
+  /** Display label (e.g., "Platform Fee", "Service Charge") */
+  label: string;
+  /** Amount in token's smallest unit (wei). Negative values shown as deductions. */
+  amount: string;
+  /** Optional description or note */
+  description?: string;
 }
 
 export interface AnySpendCheckoutProps {
@@ -67,6 +78,18 @@ export interface AnySpendCheckoutProps {
   content?: AnySpendContent;
   /** Structured color/theme configuration */
   theme?: AnySpendTheme;
+  /** Show the points row in the order status summary. Defaults to false. */
+  showPoints?: boolean;
+  /** Show the order ID row in the order status summary. Defaults to false. */
+  showOrderId?: boolean;
+  /** Shipping cost. String = amount in wei. Object = amount + custom label. */
+  shipping?: string | { amount: string; label?: string };
+  /** Tax amount. String = amount in wei. Object = amount + custom label + optional rate display. */
+  tax?: string | { amount: string; label?: string; rate?: string };
+  /** Discount amount (displayed as negative). String = amount in wei. Object = amount + label + optional code. */
+  discount?: string | { amount: string; label?: string; code?: string };
+  /** Additional summary line items (fees, tips, etc.) */
+  summaryLines?: CheckoutSummaryLine[];
 }
 
 export function AnySpendCheckout({
@@ -92,16 +115,31 @@ export function AnySpendCheckout({
   slots,
   content,
   theme,
+  showPoints,
+  showOrderId,
+  shipping,
+  tax,
+  discount,
+  summaryLines,
 }: AnySpendCheckoutProps) {
-  // Compute total from items
+  // Compute total from items + adjustments
   const computedTotal = useMemo(() => {
     if (totalAmountOverride) return totalAmountOverride;
     let total = BigInt(0);
     for (const item of items) {
       total += BigInt(item.amount) * BigInt(item.quantity);
     }
+    const shippingAmt = typeof shipping === "string" ? shipping : shipping?.amount;
+    if (shippingAmt) total += BigInt(shippingAmt);
+    const taxAmt = typeof tax === "string" ? tax : tax?.amount;
+    if (taxAmt) total += BigInt(taxAmt);
+    const discountAmt = typeof discount === "string" ? discount : discount?.amount;
+    if (discountAmt) total -= BigInt(discountAmt);
+    if (summaryLines) {
+      for (const line of summaryLines) total += BigInt(line.amount);
+    }
     return total.toString();
-  }, [items, totalAmountOverride]);
+  }, [items, totalAmountOverride, shipping, tax, discount, summaryLines]);
 
   // Get destination token metadata
   const { data: tokenData } = useTokenData(destinationTokenChainId, destinationTokenAddress);
@@ -130,6 +168,8 @@ export function AnySpendCheckout({
               classes={classes}
               defaultPaymentMethod={defaultPaymentMethod}
               senderAddress={senderAddress}
+              showPoints={showPoints}
+              showOrderId={showOrderId}
             />
           }
           cartPanel={
@@ -142,6 +182,10 @@ export function AnySpendCheckout({
               organizationLogo={organizationLogo}
               classes={classes}
               footer={footer}
+              shipping={typeof shipping === "string" ? { amount: shipping } : shipping}
+              tax={typeof tax === "string" ? { amount: tax } : tax}
+              discount={typeof discount === "string" ? { amount: discount } : discount}
+              summaryLines={summaryLines}
             />
           }
           classes={classes}

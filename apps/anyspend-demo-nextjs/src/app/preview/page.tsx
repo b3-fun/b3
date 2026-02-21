@@ -2,13 +2,11 @@
 
 import { B3_TOKEN, USDC_BASE, getErrorDisplay, getExplorerTxUrl } from "@b3dotfun/sdk/anyspend";
 import { OrderStatus } from "@b3dotfun/sdk/anyspend/react/components";
-import { OrderDetailsCollapsible } from "@b3dotfun/sdk/anyspend/react/components/common/OrderDetailsCollapsible";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { StyleRoot } from "@b3dotfun/sdk/global-account/react";
-import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { Circle, ExternalLink, Moon, RefreshCcw, RotateCcw, Sun } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useTheme } from "../ThemeContext";
 
 const ORDER_STATUSES = [
@@ -146,31 +144,35 @@ function buildMockOrder(status: OrderStatus_, type: OrderType): components["sche
 /* but with a mock order instead of polling                            */
 /* ------------------------------------------------------------------ */
 
-function MockCheckoutOrderStatus({ order }: { order: components["schemas"]["Order"] }) {
-  const dstToken = order.metadata.dstToken;
+function MockCheckoutOrderStatus({ order, showPoints = false, showOrderId = false }: { order: components["schemas"]["Order"]; showPoints?: boolean; showOrderId?: boolean }) {
   const isExecuted = order.status === "executed";
   const isRefunding = order.status === "refunding";
-
-  const formattedExpectedDstAmount = useMemo(() => {
-    if (!dstToken) return undefined;
-    const expectedDstAmount =
-      order.type === "mint_nft" || order.type === "join_tournament" || order.type === "fund_tournament"
-        ? "0"
-        : (order as any).payload?.amount?.toString() || (order as any).payload?.expectedDstAmount?.toString() || "0";
-    return formatTokenAmount(BigInt(expectedDstAmount), dstToken.decimals);
-  }, [order, dstToken]);
 
   return (
     <div className="flex w-full max-w-[460px] flex-col items-center gap-5 py-6">
       <OrderStatus order={order} />
 
-      {dstToken && (
-        <OrderDetailsCollapsible
-          order={order}
-          dstToken={dstToken}
-          formattedExpectedDstAmount={formattedExpectedDstAmount}
-          className="w-full"
-        />
+      {/* Checkout-specific summary: order ID + points (opt-in via props) */}
+      {(showPoints || showOrderId) && (
+        <div className="bg-as-surface-secondary border-as-border-secondary w-full rounded-xl border px-4 py-3">
+          <div className="flex flex-col gap-2 text-sm">
+            {showPoints && (
+              <>
+                <div className="flex w-full justify-between">
+                  <span className="text-as-tertiary">Points</span>
+                  <span className="text-as-brand font-semibold">+1,250 pts</span>
+                </div>
+                {showOrderId && <div className="divider w-full" />}
+              </>
+            )}
+            {showOrderId && (
+              <div className="flex w-full items-center justify-between gap-3">
+                <span className="text-as-tertiary shrink-0">Order ID</span>
+                <span className="text-as-primary min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{order.id}</span>
+              </div>
+            )}
+          </div>
+        </div>
       )}
 
       {isExecuted && (
@@ -228,6 +230,8 @@ export default function StatePreviewPage() {
   const [selectedType, setSelectedType] = useState<OrderType>("swap");
   const [selectedWidget, setSelectedWidget] = useState<"order-status" | "checkout-order-status">("order-status");
   const [replayKey, setReplayKey] = useState(0);
+  const [showPoints, setShowPoints] = useState(false);
+  const [showOrderId, setShowOrderId] = useState(false);
 
   const mockOrder = buildMockOrder(selectedStatus, selectedType);
   const replay = () => setReplayKey(k => k + 1);
@@ -420,45 +424,10 @@ export default function StatePreviewPage() {
 
             {selectedWidget === "checkout-order-status" && (
               <>
-                <div className="px-4 pt-4 pb-3">
+                {/* Checkout only cares about status — order type is irrelevant */}
+                <div className="px-4 pt-4 pb-4">
                   <label className="mb-2.5 block text-[10px] font-semibold uppercase tracking-widest" style={{ color: textMuted }}>
-                    Order Type
-                  </label>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {ORDER_TYPES.map(type => (
-                      <button
-                        key={type}
-                        onClick={() => setSelectedType(type)}
-                        className="flex items-center gap-2 rounded-lg px-3 py-2 text-left text-xs transition-all"
-                        style={{
-                          background: selectedType === type
-                            ? (isDark ? "rgba(59,130,246,0.15)" : "rgba(59,130,246,0.08)")
-                            : "transparent",
-                          border: `1px solid ${selectedType === type ? (isDark ? "rgba(59,130,246,0.3)" : "rgba(59,130,246,0.25)") : "transparent"}`,
-                          color: selectedType === type ? (isDark ? "#93bbfc" : "#2563eb") : (isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)"),
-                        }}
-                      >
-                        <span
-                          className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full"
-                          style={{
-                            border: `1.5px solid ${selectedType === type ? "#3b82f6" : (isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)")}`,
-                          }}
-                        >
-                          {selectedType === type && (
-                            <span className="block h-1.5 w-1.5 rounded-full bg-blue-500" />
-                          )}
-                        </span>
-                        {ORDER_TYPE_LABELS[type]}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div style={{ height: 1, background: border }} />
-
-                <div className="px-4 pt-3 pb-4">
-                  <label className="mb-2.5 block text-[10px] font-semibold uppercase tracking-widest" style={{ color: textMuted }}>
-                    Status
+                    Order Status
                   </label>
                   <div className="flex flex-col gap-3">
                     {STATUS_GROUPS.map(group => (
@@ -529,6 +498,53 @@ export default function StatePreviewPage() {
                     ))}
                   </div>
                 </div>
+
+                <div style={{ height: 1, background: border }} />
+
+                {/* Props toggles */}
+                <div className="px-4 pt-3 pb-4">
+                  <label className="mb-2.5 block text-[10px] font-semibold uppercase tracking-widest" style={{ color: textMuted }}>
+                    Props
+                  </label>
+                  <div className="flex flex-col gap-2">
+                    {([
+                      { key: "showPoints", label: "showPoints", value: showPoints, toggle: () => setShowPoints(v => !v) },
+                      { key: "showOrderId", label: "showOrderId", value: showOrderId, toggle: () => setShowOrderId(v => !v) },
+                    ] as const).map(({ key, label, value, toggle: onToggle }) => (
+                      <button
+                        key={key}
+                        onClick={onToggle}
+                        className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-left transition-all"
+                        style={{
+                          background: value
+                            ? (isDark ? "rgba(59,130,246,0.12)" : "rgba(59,130,246,0.06)")
+                            : "transparent",
+                          border: `1px solid ${value ? (isDark ? "rgba(59,130,246,0.25)" : "rgba(59,130,246,0.2)") : (isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)")}`,
+                        }}
+                      >
+                        <span
+                          className="flex h-4 w-4 shrink-0 items-center justify-center rounded"
+                          style={{
+                            background: value ? "#3b82f6" : "transparent",
+                            border: value ? "none" : `1.5px solid ${isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.2)"}`,
+                          }}
+                        >
+                          {value && (
+                            <svg viewBox="0 0 12 12" className="h-2.5 w-2.5" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M2.5 6l2.5 2.5 4.5-5" />
+                            </svg>
+                          )}
+                        </span>
+                        <span className="font-mono text-xs" style={{ color: value ? (isDark ? "#93bbfc" : "#2563eb") : (isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)") }}>
+                          {label}
+                        </span>
+                        <span className="ml-auto font-mono text-[10px]" style={{ color: textDim }}>
+                          {value ? "true" : "false"}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </>
             )}
           </div>
@@ -539,7 +555,7 @@ export default function StatePreviewPage() {
                 <span className="font-mono text-[10px] uppercase tracking-widest" style={{ color: textDim }}>
                   {selectedWidget === "order-status"
                     ? `${selectedType} / ${selectedStatus}`
-                    : `checkout-order-status / ${selectedType} / ${selectedStatus}`}
+                    : `checkout / ${selectedStatus}`}
                 </span>
                 <div className="flex items-center gap-2">
                   <button
@@ -566,8 +582,10 @@ export default function StatePreviewPage() {
                     <OrderStatus key={`${selectedStatus}-${selectedType}-${replayKey}`} order={mockOrder} />
                   ) : (
                     <MockCheckoutOrderStatus
-                      key={`checkout-order-status-${selectedStatus}-${selectedType}-${replayKey}`}
+                      key={`checkout-order-status-${selectedStatus}-${replayKey}-${showPoints}-${showOrderId}`}
                       order={mockOrder}
+                      showPoints={showPoints}
+                      showOrderId={showOrderId}
                     />
                   )}
                 </StyleRoot>

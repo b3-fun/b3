@@ -1,18 +1,16 @@
 "use client";
 
 import { getErrorDisplay, getExplorerTxUrl, getStatusDisplay } from "@b3dotfun/sdk/anyspend";
-import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { useAnyspendOrderAndTransactions } from "@b3dotfun/sdk/anyspend/react/hooks/useAnyspendOrderAndTransactions";
 import { useOnOrderSuccess } from "@b3dotfun/sdk/anyspend/react/hooks/useOnOrderSuccess";
-import { TextShimmer, useTokenData } from "@b3dotfun/sdk/global-account/react";
+import { TextShimmer } from "@b3dotfun/sdk/global-account/react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
-import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
+import { formatNumber } from "@b3dotfun/sdk/shared/utils/formatNumber";
 import { ExternalLink, Loader2, RefreshCcw } from "lucide-react";
 import { motion } from "motion/react";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useAnySpendCustomization } from "../context/AnySpendCustomizationContext";
 import { OrderStatus } from "../common/OrderStatus";
-import { OrderDetailsCollapsible } from "../common/OrderDetailsCollapsible";
 import type { AnySpendCheckoutClasses } from "./AnySpendCheckout";
 
 interface CheckoutOrderStatusProps {
@@ -34,20 +32,24 @@ interface CheckoutOrderStatusProps {
   onError?: (error: Error) => void;
   /** Called when the user clicks "Try again" on failure */
   onRetry?: () => void;
+  /** Show the points row in the order status summary. Defaults to false. */
+  showPoints?: boolean;
+  /** Show the order ID row in the order status summary. Defaults to false. */
+  showOrderId?: boolean;
   /** Custom class names */
   classes?: AnySpendCheckoutClasses;
 }
 
 export function CheckoutOrderStatus({
   orderId,
-  destinationTokenAddress,
-  destinationTokenChainId,
   themeColor,
   returnUrl,
   returnLabel,
   onSuccess,
   onError,
   onRetry,
+  showPoints = false,
+  showOrderId = false,
   classes,
 }: CheckoutOrderStatusProps) {
   const { orderAndTransactions, isLoadingOrderAndTransactions } =
@@ -57,20 +59,6 @@ export function CheckoutOrderStatus({
   const points = orderAndTransactions?.data?.points;
 
   const { content } = useAnySpendCustomization();
-
-  const { data: dstTokenData } = useTokenData(destinationTokenChainId, destinationTokenAddress);
-
-  const dstToken: components["schemas"]["Token"] | undefined = useMemo(() => {
-    if (!dstTokenData) return undefined;
-    return {
-      address: destinationTokenAddress,
-      chainId: destinationTokenChainId,
-      decimals: dstTokenData.decimals || 18,
-      symbol: dstTokenData.symbol || "",
-      name: dstTokenData.name || "",
-      metadata: { logoURI: dstTokenData.logoURI || "" },
-    };
-  }, [destinationTokenAddress, destinationTokenChainId, dstTokenData]);
 
   // Fire onSuccess when order reaches "executed"
   useOnOrderSuccess({
@@ -115,22 +103,8 @@ export function CheckoutOrderStatus({
     );
   }
 
-  const { status: displayStatus } = getStatusDisplay(order);
-  const isTerminalFailure = ["failure", "expired", "refunded"].includes(order.status);
   const isExecuted = order.status === "executed";
   const isRefunding = order.status === "refunding";
-
-  // Formatted destination amount for collapsible
-  const formattedExpectedDstAmount = useMemo(() => {
-    if (!dstToken || !order) return undefined;
-    const expectedDstAmount =
-      order.type === "mint_nft" || order.type === "join_tournament" || order.type === "fund_tournament"
-        ? "0"
-        : order.type === "custom" || order.type === "deposit_first"
-          ? order.payload.amount?.toString() || "0"
-          : order.payload.expectedDstAmount?.toString() || "0";
-    return formatTokenAmount(BigInt(expectedDstAmount), dstToken.decimals);
-  }, [order, dstToken]);
 
   return (
     <motion.div
@@ -145,15 +119,32 @@ export function CheckoutOrderStatus({
       {/* Step progress / terminal state icon */}
       <OrderStatus order={order} />
 
-      {/* Order details collapsible */}
-      {dstToken && (
-        <OrderDetailsCollapsible
-          order={order}
-          dstToken={dstToken}
-          formattedExpectedDstAmount={formattedExpectedDstAmount}
-          points={points ?? undefined}
-          className="w-full"
-        />
+      {/* Checkout-relevant order summary: points + order ID (opt-in) */}
+      {(showPoints || showOrderId) && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25, delay: 0.15 }}
+          className="bg-as-surface-secondary border-as-border-secondary w-full rounded-xl border px-4 py-3"
+        >
+          <div className="flex flex-col gap-2 text-sm">
+            {showPoints && points != null && points > 0 && (
+              <>
+                <div className="flex w-full justify-between">
+                  <span className="text-as-tertiary">Points</span>
+                  <span className="text-as-brand font-semibold">+{formatNumber(points)} pts</span>
+                </div>
+                {showOrderId && <div className="divider w-full" />}
+              </>
+            )}
+            {showOrderId && (
+              <div className="flex w-full items-center justify-between gap-3">
+                <span className="text-as-tertiary shrink-0">Order ID</span>
+                <span className="text-as-primary min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{order.id}</span>
+              </div>
+            )}
+          </div>
+        </motion.div>
       )}
 
       {/* Transaction link for executed orders */}
