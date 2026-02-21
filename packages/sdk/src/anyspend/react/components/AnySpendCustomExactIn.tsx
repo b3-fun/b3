@@ -19,7 +19,9 @@ import { ArrowDown, Loader2 } from "lucide-react";
 import { AnimatedCheckmark } from "./icons/AnimatedCheckmark";
 import { motion } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { AnySpendCustomizationProvider, useAnySpendCustomization } from "./context/AnySpendCustomizationContext";
 import type { AnySpendCustomExactInClasses } from "./types/classes";
+import type { AnySpendContent, AnySpendSlots, AnySpendTheme } from "./types/customization";
 
 import { useSetActiveWallet } from "thirdweb/react";
 import { B3_TOKEN } from "../../constants";
@@ -88,6 +90,12 @@ export interface AnySpendCustomExactInProps {
   callbackMetadata?: Record<string, unknown>;
   /** Optional sender (payer) address — pre-fills token balances when the user address is known ahead of time */
   senderAddress?: string;
+  /** Render function overrides for replaceable UI elements */
+  slots?: AnySpendSlots;
+  /** String or ReactNode overrides for text/messages */
+  content?: AnySpendContent;
+  /** Structured color/theme configuration */
+  theme?: AnySpendTheme;
 }
 
 export function AnySpendCustomExactIn(props: AnySpendCustomExactInProps) {
@@ -95,7 +103,9 @@ export function AnySpendCustomExactIn(props: AnySpendCustomExactInProps) {
 
   return (
     <AnySpendFingerprintWrapper fingerprint={fingerprintConfig}>
-      <AnySpendCustomExactInInner {...props} />
+      <AnySpendCustomizationProvider slots={props.slots} content={props.content} theme={props.theme}>
+        <AnySpendCustomExactInInner {...props} />
+      </AnySpendCustomizationProvider>
     </AnySpendFingerprintWrapper>
   );
 }
@@ -128,6 +138,7 @@ function AnySpendCustomExactInInner({
   callbackMetadata,
   senderAddress,
 }: AnySpendCustomExactInProps) {
+  const { slots, content } = useAnySpendCustomization();
   const actionLabel = customExactInConfig?.action ?? "Custom Execution";
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
 
@@ -508,6 +519,14 @@ function AnySpendCustomExactInInner({
         transition={{ duration: 0.3, delay: 0.2, ease: "easeInOut" }}
         className={cn("mt-4 flex w-full max-w-[460px] flex-col gap-2")}
       >
+        {slots.actionButton ? (
+          slots.actionButton({
+            onClick: onMainButtonClick,
+            disabled: btnInfo.disable,
+            loading: btnInfo.loading,
+            text: btnInfo.text,
+          })
+        ) : (
         <ShinyButton
           accentColor={"hsl(var(--as-brand))"}
           disabled={btnInfo.disable}
@@ -528,6 +547,7 @@ function AnySpendCustomExactInInner({
             {btnInfo.text}
           </div>
         </ShinyButton>
+        )}
       </motion.div>
 
       {/* Gas indicator - show when source chain has gas data, hide for direct transfers */}
@@ -796,7 +816,28 @@ function AnySpendCustomExactInInner({
     />
   ) : null;
 
-  const directTransferSuccessView = (
+  const exactInSuccessTitle = content.successTitle || "Transfer Complete!";
+  const exactInSuccessDesc = content.successDescription || `${srcAmount} ${selectedSrcToken.symbol} sent on ${getChainName(selectedSrcChainId)}`;
+  const exactInReturnLabel = content.returnButtonLabel || returnHomeLabel;
+
+  const directTransferSuccessView = slots.successScreen ? (
+    <>{slots.successScreen({
+      title: typeof exactInSuccessTitle === "string" ? exactInSuccessTitle : "Transfer Complete!",
+      description: typeof exactInSuccessDesc === "string" ? exactInSuccessDesc : "",
+      txHash: directTransferTxHash,
+      explorerUrl: directTransferTxHash ? getExplorerTxUrl(selectedSrcChainId, directTransferTxHash || "") : undefined,
+      onDone: () => {
+        onSuccess?.(srcAmount);
+        if (returnToHomeUrl) {
+          window.location.href = returnToHomeUrl;
+        } else {
+          setB3ModalOpen(false);
+        }
+      },
+      returnUrl: returnToHomeUrl,
+      returnLabel: exactInReturnLabel || undefined,
+    })}</>
+  ) : (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -804,9 +845,9 @@ function AnySpendCustomExactInInner({
     >
       <AnimatedCheckmark className="h-16 w-16" />
       <div className="text-center">
-        <h2 className="text-as-primary mb-2 text-xl font-bold">Transfer Complete!</h2>
+        <h2 className="text-as-primary mb-2 text-xl font-bold">{exactInSuccessTitle}</h2>
         <p className="text-as-primary/60 text-sm">
-          {srcAmount} {selectedSrcToken.symbol} sent on {getChainName(selectedSrcChainId)}
+          {exactInSuccessDesc}
         </p>
         <p className="text-as-primary/60 mt-1 text-sm">
           to {selectedRecipientOrDefault?.slice(0, 6)}...{selectedRecipientOrDefault?.slice(-4)}
@@ -833,7 +874,7 @@ function AnySpendCustomExactInInner({
           }
         }}
       >
-        {returnHomeLabel || (returnToHomeUrl ? "Return to Home" : "Done")}
+        {exactInReturnLabel || (returnToHomeUrl ? "Return to Home" : "Done")}
       </Button>
     </motion.div>
   );

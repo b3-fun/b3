@@ -48,6 +48,8 @@ import { useCryptoPaymentMethodState } from "../hooks/useCryptoPaymentMethodStat
 import { useOnOrderSuccess } from "../hooks/useOnOrderSuccess";
 import { useRecipientAddressState } from "../hooks/useRecipientAddressState";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "./AnySpendFingerprintWrapper";
+import { AnySpendCustomizationProvider } from "./context/AnySpendCustomizationContext";
+import type { AnySpendContent, AnySpendSlots, AnySpendTheme } from "./types/customization";
 import { CryptoPaymentMethod, CryptoPaymentMethodType } from "./common/CryptoPaymentMethod";
 import { CryptoPaymentMethodDisplay } from "./common/CryptoPaymentMethodDisplay";
 import { FeeBreakDown } from "./common/FeeBreakDown";
@@ -193,12 +195,20 @@ export function AnySpendCustom(props: {
   srcFiatAmount?: string;
   /** Optional sender (payer) address — pre-fills token balances when the user address is known ahead of time */
   senderAddress?: string;
+  /** Render function overrides for replaceable UI elements */
+  slots?: AnySpendSlots;
+  /** String or ReactNode overrides for text/messages */
+  content?: AnySpendContent;
+  /** Structured color/theme configuration */
+  theme?: AnySpendTheme;
 }) {
   const fingerprintConfig = getFingerprintConfig();
 
   return (
     <AnySpendFingerprintWrapper fingerprint={fingerprintConfig}>
-      <AnySpendCustomInner {...props} />
+      <AnySpendCustomizationProvider slots={props.slots} content={props.content} theme={props.theme}>
+        <AnySpendCustomInner {...props} />
+      </AnySpendCustomizationProvider>
     </AnySpendFingerprintWrapper>
   );
 }
@@ -249,6 +259,9 @@ function AnySpendCustomInner({
   srcFiatAmount?: string;
   forceFiatPayment?: boolean;
   senderAddress?: string;
+  slots?: AnySpendSlots;
+  content?: AnySpendContent;
+  theme?: AnySpendTheme;
 }) {
   const hasMounted = useHasMounted();
 
@@ -661,7 +674,7 @@ function AnySpendCustomInner({
       transition={{ duration: 0.3, delay: 0.2, ease: "easeInOut" }}
       className="flex w-full items-center justify-between gap-4"
     >
-      <div className="text-as-tertiarry text-sm">
+      <div className="text-as-tertiary text-sm">
         {orderType === "swap"
           ? "Recipient"
           : orderType === "mint_nft"
@@ -673,10 +686,10 @@ function AnySpendCustomInner({
       <div className="flex flex-wrap items-center justify-end gap-2">
         {recipientAddress ? (
           <button
-            className={cn("text-as-tertiarry flex items-center gap-2 rounded-lg")}
+            className={cn("text-as-tertiary flex items-center gap-2 rounded-lg")}
             onClick={() => setActivePanel(PanelView.RECIPIENT_SELECTION)}
           >
-            <div className="text-as-tertiarry flex items-center gap-1 text-sm">
+            <div className="text-as-tertiary flex items-center gap-1 text-sm">
               <span className="whitespace-nowrap">
                 {recipientName ? formatUsername(recipientName) : shortenAddress(recipientAddress)}
               </span>
@@ -940,9 +953,9 @@ function AnySpendCustomInner({
                 transition={{ duration: 0.3, delay: 0, ease: "easeInOut" }}
                 className="relative flex w-full items-center justify-between"
               >
-                <div className="text-as-tertiarry flex h-7 items-center text-sm">Pay</div>
+                <div className="text-as-tertiary flex h-7 items-center text-sm">Pay</div>
                 <button
-                  className="text-as-tertiarry flex flex-wrap items-center justify-end gap-2 text-sm transition-colors hover:text-blue-700"
+                  className="text-as-tertiary flex flex-wrap items-center justify-end gap-2 text-sm transition-colors hover:text-blue-700"
                   onClick={() => setActivePanel(PanelView.CRYPTO_PAYMENT_METHOD)}
                 >
                   <CryptoPaymentMethodDisplay
@@ -970,7 +983,7 @@ function AnySpendCustomInner({
                   transition={{ duration: 0.3, delay: 0, ease: "easeInOut" }}
                   className="relative flex w-full items-center justify-between"
                 >
-                  <div className="text-as-tertiarry text-sm">Pay with</div>
+                  <div className="text-as-tertiary text-sm">Pay with</div>
                   <OrderToken
                     address={effectiveBalanceAddress || undefined}
                     context="from"
@@ -997,9 +1010,9 @@ function AnySpendCustomInner({
                   transition={{ duration: 0.3, delay: 0.1, ease: "easeInOut" }}
                   className="relative flex w-full items-center justify-between gap-4"
                 >
-                  <span className="text-as-tertiarry flex flex-wrap items-center gap-1.5 text-sm">
+                  <span className="text-as-tertiary flex flex-wrap items-center gap-1.5 text-sm">
                     <span className="whitespace-nowrap">
-                      Total <span className="text-as-tertiarry">(with fee)</span>
+                      Total <span className="text-as-tertiary">(with fee)</span>
                     </span>
                     {anyspendQuote?.data?.fee && (
                       <TooltipProvider>
@@ -1100,9 +1113,9 @@ function AnySpendCustomInner({
                 transition={{ duration: 0.3, delay: 0, ease: "easeInOut" }}
                 className="relative flex w-full items-center justify-between"
               >
-                <div className="text-as-tertiarry flex h-7 items-center text-sm">Pay with</div>
+                <div className="text-as-tertiary flex h-7 items-center text-sm">Pay with</div>
                 <button
-                  className="text-as-tertiarry flex flex-wrap items-center justify-end gap-2 text-sm transition-colors hover:text-blue-700"
+                  className="text-as-tertiary flex flex-wrap items-center justify-end gap-2 text-sm transition-colors hover:text-blue-700"
                   onClick={() => setActivePanel(PanelView.FIAT_PAYMENT_METHOD)}
                 >
                   {(() => {
@@ -1147,9 +1160,9 @@ function AnySpendCustomInner({
                 transition={{ duration: 0.3, delay: 0.1, ease: "easeInOut" }}
                 className="relative flex w-full items-center justify-between gap-4"
               >
-                <span className="text-as-tertiarry flex flex-wrap items-center gap-1.5 text-sm">
+                <span className="text-as-tertiary flex flex-wrap items-center gap-1.5 text-sm">
                   <span className="whitespace-nowrap">
-                    Total <span className="text-as-tertiarry">(USD)</span>
+                    Total <span className="text-as-tertiary">(USD)</span>
                   </span>
                   {anyspendQuote?.data?.fee && (
                     <TooltipProvider>
@@ -1178,7 +1191,7 @@ function AnySpendCustomInner({
                         ) : (
                           <>
                             ${parseFloat(srcFiatAmount || "0").toFixed(2)}
-                            <span className="text-as-tertiarry text-base">+</span>
+                            <span className="text-as-tertiary text-base">+</span>
                           </>
                         )}
                       </span>

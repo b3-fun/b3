@@ -6,6 +6,7 @@ import { encodeFunctionData } from "viem";
 import { base } from "viem/chains";
 import { STAKING_CONTRACT } from "../../abis/upsideStaking";
 import { AnySpendCustom } from "./AnySpendCustom";
+import type { AnySpendContent, AnySpendSlots, AnySpendTheme } from "./types/customization";
 
 function generateEncodedDataForStaking(amount: string, beneficiary: string): string {
   invariant(BigInt(amount) > 0, "Amount must be greater than zero");
@@ -26,6 +27,9 @@ export function AnySpendStakeUpside({
   onSuccess,
   activeTab,
   senderAddress,
+  slots,
+  content,
+  theme,
 }: {
   loadOrder?: string;
   mode?: "modal" | "page";
@@ -37,6 +41,9 @@ export function AnySpendStakeUpside({
   activeTab?: "crypto" | "fiat";
   /** Optional sender (payer) address — pre-fills token balances when the user address is known ahead of time */
   senderAddress?: string;
+  slots?: AnySpendSlots;
+  content?: AnySpendContent;
+  theme?: AnySpendTheme;
 }) {
   const header = () => (
     <>
@@ -84,6 +91,9 @@ export function AnySpendStakeUpside({
       showRecipient={true}
       activeTab={activeTab}
       senderAddress={senderAddress}
+      slots={slots}
+      content={content}
+      theme={theme}
     />
   );
 }

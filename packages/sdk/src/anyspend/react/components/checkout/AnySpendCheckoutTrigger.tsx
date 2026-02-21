@@ -6,6 +6,8 @@ import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { type ReactNode, useMemo } from "react";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "../AnySpendFingerprintWrapper";
 import type { AnySpendCheckoutClasses } from "../types/classes";
+import type { AnySpendContent, AnySpendSlots, AnySpendTheme } from "../types/customization";
+import { AnySpendCustomizationProvider } from "../context/AnySpendCustomizationContext";
 import type { CheckoutItem } from "./AnySpendCheckout";
 import { CheckoutCartPanel } from "./CheckoutCartPanel";
 import { CheckoutPaymentPanel, type PaymentMethod } from "./CheckoutPaymentPanel";
@@ -57,6 +59,12 @@ export interface AnySpendCheckoutTriggerProps {
   defaultPaymentMethod?: PaymentMethod;
   /** Optional sender (payer) address — pre-fills token balances in the crypto panel */
   senderAddress?: string;
+  /** Render function overrides for replaceable UI elements */
+  slots?: AnySpendSlots;
+  /** String or ReactNode overrides for text/messages */
+  content?: AnySpendContent;
+  /** Structured color/theme configuration */
+  theme?: AnySpendTheme;
 }
 
 /** CSS overrides applied when the trigger is rendered inside the B3 modal. */
@@ -90,6 +98,9 @@ export function AnySpendCheckoutTrigger({
   footer,
   defaultPaymentMethod,
   senderAddress,
+  slots,
+  content,
+  theme,
 }: AnySpendCheckoutTriggerProps) {
   // Merge workflowId + orgId into callbackMetadata
   const mergedMetadata = useMemo(() => {
@@ -127,6 +138,7 @@ export function AnySpendCheckoutTrigger({
 
   return (
     <AnySpendFingerprintWrapper fingerprint={fingerprint}>
+      <AnySpendCustomizationProvider slots={slots} content={content} theme={theme}>
       {/* Hide Global Account branding & flatten accordion in modal context */}
       <style dangerouslySetInnerHTML={{ __html: MODAL_STYLE_OVERRIDES }} />
 
@@ -191,6 +203,7 @@ export function AnySpendCheckoutTrigger({
           />
         </div>
       </div>
+      </AnySpendCustomizationProvider>
     </AnySpendFingerprintWrapper>
   );
 }

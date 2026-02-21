@@ -248,7 +248,7 @@ export const TransferCryptoDetails = memo(function TransferCryptoDetails({
                 {order.globalAddress}
               </div>
               <div className="order-transfer-crypto-address-copy-icon-wrapper place-self-end">
-                <Copy className="order-transfer-crypto-address-copy-icon group-hover:text-as-brand text-as-tertiarry h-4 w-4 cursor-pointer transition-all duration-200" />
+                <Copy className="order-transfer-crypto-address-copy-icon group-hover:text-as-brand text-as-tertiary h-4 w-4 cursor-pointer transition-all duration-200" />
               </div>
             </div>
           </div>

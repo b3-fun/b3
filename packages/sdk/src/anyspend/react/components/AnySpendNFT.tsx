@@ -11,6 +11,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { b3 } from "viem/chains";
 import { GetQuoteResponse } from "../../types/api_req_res";
 import { AnySpendCustom } from "./AnySpendCustom";
+import type { AnySpendContent, AnySpendSlots, AnySpendTheme } from "./types/customization";
 
 // ABI for contractURI and uri functions
 const CONTRACT_URI_ABI = [
@@ -38,6 +39,9 @@ export function AnySpendNFT({
   onSuccess,
   onShowPointsDetail,
   senderAddress,
+  slots,
+  content,
+  theme,
 }: {
   loadOrder?: string;
   mode?: "modal" | "page";
@@ -47,6 +51,9 @@ export function AnySpendNFT({
   onShowPointsDetail?: () => void;
   /** Optional sender (payer) address — pre-fills token balances when the user address is known ahead of time */
   senderAddress?: string;
+  slots?: AnySpendSlots;
+  content?: AnySpendContent;
+  theme?: AnySpendTheme;
 }) {
   const [imageUrlWithFallback, setFallbackImageUrl] = useState<string | null>(nftContract.imageUrl);
   const hasFetchedRef = useRef(false);
@@ -172,6 +179,9 @@ export function AnySpendNFT({
       onSuccess={onSuccess}
       onShowPointsDetail={onShowPointsDetail}
       senderAddress={senderAddress}
+      slots={slots}
+      content={content}
+      theme={theme}
     />
   );
 }

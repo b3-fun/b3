@@ -4,6 +4,7 @@ import { cn } from "@b3dotfun/sdk/shared/utils";
 import { formatDisplayNumber, formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { AnimatePresence } from "motion/react";
 import { AnySpendCustom } from "./AnySpendCustom";
+import type { AnySpendContent, AnySpendSlots, AnySpendTheme } from "./types/customization";
 
 type AnySpendTournamentProps =
   | {
@@ -19,6 +20,9 @@ type AnySpendTournamentProps =
       onSuccess?: () => void;
       /** Optional sender (payer) address — pre-fills token balances when the user address is known ahead of time */
       senderAddress?: string;
+      slots?: AnySpendSlots;
+      content?: AnySpendContent;
+      theme?: AnySpendTheme;
     }
   | {
       mode?: "modal" | "page";
@@ -32,6 +36,9 @@ type AnySpendTournamentProps =
       onSuccess?: () => void;
       /** Optional sender (payer) address — pre-fills token balances when the user address is known ahead of time */
       senderAddress?: string;
+      slots?: AnySpendSlots;
+      content?: AnySpendContent;
+      theme?: AnySpendTheme;
     };
 
 export function AnySpendTournament(props: AnySpendTournamentProps) {
@@ -44,6 +51,9 @@ export function AnySpendTournament(props: AnySpendTournamentProps) {
     tournamentMetadata,
     onSuccess,
     senderAddress,
+    slots,
+    content,
+    theme,
   } = props;
 
   const dstToken = action === "join" ? props.tournamentEntryToken : props.tournamentFundToken;
@@ -110,6 +120,9 @@ export function AnySpendTournament(props: AnySpendTournamentProps) {
       onSuccess={onSuccess}
       showRecipient={action === "join"}
       senderAddress={senderAddress}
+      slots={slots}
+      content={content}
+      theme={theme}
     />
   );
 }

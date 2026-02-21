@@ -497,6 +497,11 @@ export interface AnySpendCheckoutClasses {
   // Success
   successPanel?: string;
   returnButton?: string;
+
+  // Order status tracking
+  orderStatusPanel?: string;
+  retryButton?: string;
+  transactionLink?: string;
 }
 
 /** Combined classes for all AnySpend-related components */

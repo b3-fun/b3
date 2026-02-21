@@ -69,7 +69,9 @@ import { PanelOnrampPayment } from "./common/PanelOnrampPayment";
 import { PointsDetailPanel } from "./common/PointsDetailPanel";
 import { RecipientSelection } from "./common/RecipientSelection";
 import { TabSection } from "./common/TabSection";
+import { AnySpendCustomizationProvider, useAnySpendCustomization } from "./context/AnySpendCustomizationContext";
 import type { AnySpendClasses } from "./types/classes";
+import type { AnySpendContent, AnySpendSlots, AnySpendTheme } from "./types/customization";
 
 const baseChain = getThirdwebChain(8453);
 
@@ -132,13 +134,20 @@ export function AnySpend(props: {
   callbackMetadata?: Record<string, unknown>;
   /** Optional sender (payer) address — pre-fills token balances when the user address is known ahead of time */
   senderAddress?: string;
+  /** Render function overrides for replaceable UI elements */
+  slots?: AnySpendSlots;
+  /** String or ReactNode overrides for text/messages */
+  content?: AnySpendContent;
+  /** Structured color/theme configuration */
+  theme?: AnySpendTheme;
 }) {
   const fingerprintConfig = getFingerprintConfig();
 
-  console.log("[mitch] AnySpend rendered with fingerprintConfig:", props, fingerprintConfig);
   return (
     <AnySpendFingerprintWrapper fingerprint={fingerprintConfig}>
-      <AnySpendInner {...props} />
+      <AnySpendCustomizationProvider slots={props.slots} content={props.content} theme={props.theme}>
+        <AnySpendInner {...props} />
+      </AnySpendCustomizationProvider>
     </AnySpendFingerprintWrapper>
   );
 }
@@ -189,7 +198,11 @@ function AnySpendInner({
   destinationTokenAmount?: string;
   callbackMetadata?: Record<string, unknown>;
   senderAddress?: string;
+  slots?: AnySpendSlots;
+  content?: AnySpendContent;
+  theme?: AnySpendTheme;
 }) {
+  const { slots, content } = useAnySpendCustomization();
   const searchParams = useSearchParamsSSR();
   const router = useRouter();
 
@@ -1349,6 +1362,14 @@ function AnySpendInner({
           transition={{ duration: 0.3, delay: 0.2, ease: "easeInOut" }}
           className={cn("mt-4 flex w-full max-w-[460px] flex-col gap-2")}
         >
+          {slots.actionButton ? (
+            slots.actionButton({
+              onClick: onMainButtonClick,
+              disabled: btnInfo.disable,
+              loading: btnInfo.loading,
+              text: btnInfo.text,
+            })
+          ) : (
           <ShinyButton
             accentColor={"hsl(var(--as-brand))"}
             disabled={btnInfo.disable}
@@ -1369,6 +1390,7 @@ function AnySpendInner({
               {btnInfo.text}
             </div>
           </ShinyButton>
+          )}
 
           {!hideTransactionHistoryButton && (globalAddress || effectiveRecipientAddress) ? (
             <Button
@@ -1500,15 +1522,36 @@ function AnySpendInner({
     />
   ) : null;
 
-  const directTransferSuccessView = (
+  const defaultSuccessTitle = content.successTitle || "Transfer Complete";
+  const defaultSuccessDesc = content.successDescription || `Your ${selectedSrcToken.symbol} has been sent to ${effectiveRecipientAddress?.slice(0, 6)}...${effectiveRecipientAddress?.slice(-4)} on ${getChainName(selectedSrcChainId)}`;
+  const resolvedReturnLabel = content.returnButtonLabel || returnHomeLabel;
+
+  const directTransferSuccessView = slots.successScreen ? (
+    slots.successScreen({
+      title: typeof defaultSuccessTitle === "string" ? defaultSuccessTitle : "Transfer Complete",
+      description: typeof defaultSuccessDesc === "string" ? defaultSuccessDesc : "",
+      txHash: directTransferTxHash,
+      explorerUrl: directTransferTxHash ? getExplorerTxUrl(selectedSrcChainId, directTransferTxHash) : undefined,
+      onDone: () => {
+        if (returnToHomeUrl) {
+          window.location.href = returnToHomeUrl;
+        } else {
+          onSuccess?.(directTransferTxHash);
+          setDirectTransferTxHash(undefined);
+          setB3ModalOpen(false);
+        }
+      },
+      returnUrl: returnToHomeUrl,
+      returnLabel: resolvedReturnLabel || undefined,
+    })
+  ) : (
     <div className="mx-auto flex w-[460px] max-w-full flex-col items-center gap-6 p-5">
       <div className="flex flex-col items-center gap-4">
         <AnimatedCheckmark className="h-16 w-16" />
         <div className="text-center">
-          <h2 className="text-as-primary text-xl font-bold">Transfer Complete</h2>
+          <h2 className="text-as-primary text-xl font-bold">{defaultSuccessTitle}</h2>
           <p className="text-as-secondary mt-1 text-sm">
-            Your {selectedSrcToken.symbol} has been sent to {effectiveRecipientAddress?.slice(0, 6)}...
-            {effectiveRecipientAddress?.slice(-4)} on {getChainName(selectedSrcChainId)}
+            {defaultSuccessDesc}
           </p>
         </div>
       </div>
@@ -1532,7 +1575,7 @@ function AnySpendInner({
             }}
             className="bg-as-brand hover:bg-as-brand/90 w-full text-white"
           >
-            {returnHomeLabel || "Return to Home"}
+            {resolvedReturnLabel || "Return to Home"}
           </Button>
         ) : (
           <Button
@@ -1543,7 +1586,7 @@ function AnySpendInner({
             }}
             className="bg-as-brand hover:bg-as-brand/90 w-full text-white"
           >
-            {returnHomeLabel || "Done"}
+            {resolvedReturnLabel || "Done"}
           </Button>
         )}
       </div>

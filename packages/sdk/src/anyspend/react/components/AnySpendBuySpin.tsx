@@ -21,6 +21,7 @@ import { useCallback, useEffect, useState } from "react";
 import { createPublicClient, encodeFunctionData, erc20Abi, formatUnits, http } from "viem";
 import { useAccount, useWaitForTransactionReceipt } from "wagmi";
 import { AnySpendCustom } from "./AnySpendCustom";
+import type { AnySpendContent, AnySpendSlots, AnySpendTheme } from "./types/customization";
 import { EthIcon } from "./icons/EthIcon";
 import { SolIcon } from "./icons/SolIcon";
 import { UsdcIcon } from "./icons/USDCIcon";
@@ -131,6 +132,9 @@ export function AnySpendBuySpin({
   prefillQuantity,
   onSuccess,
   senderAddress,
+  slots,
+  content,
+  theme,
 }: {
   loadOrder?: string;
   mode?: "modal" | "page";
@@ -141,6 +145,9 @@ export function AnySpendBuySpin({
   onSuccess?: (txHash?: string) => void;
   /** Optional sender (payer) address — pre-fills token balances when the user address is known ahead of time */
   senderAddress?: string;
+  slots?: AnySpendSlots;
+  content?: AnySpendContent;
+  theme?: AnySpendTheme;
 }) {
   const hasMounted = useHasMounted();
   const { setB3ModalOpen } = useModalStore();
@@ -685,6 +692,9 @@ export function AnySpendBuySpin({
       onSuccess={txHash => onSuccess?.(txHash)}
       showRecipient={false}
       senderAddress={senderAddress}
+      slots={slots}
+      content={content}
+      theme={theme}
     />
   );
 }

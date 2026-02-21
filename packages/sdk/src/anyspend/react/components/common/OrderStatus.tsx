@@ -2,8 +2,9 @@ import { getStatusDisplay } from "@b3dotfun/sdk/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { useSearchParams } from "@b3dotfun/sdk/shared/react";
 import { Clock, Loader2, RotateCcw, X } from "lucide-react";
+import React, { memo, useEffect, useRef } from "react";
+import { useAnySpendCustomization } from "../context/AnySpendCustomizationContext";
 import { AnimatedCheckmark } from "../icons/AnimatedCheckmark";
-import { memo, useEffect, useRef } from "react";
 import { CryptoPaymentMethodType } from "./CryptoPaymentMethod";
 import { Step, StepProgress } from "./StepProgress";
 
@@ -21,47 +22,55 @@ export const OrderStatus = memo(function OrderStatus({
   order: components["schemas"]["Order"];
   selectedCryptoPaymentMethod?: CryptoPaymentMethodType;
 }) {
-  const { text, status: displayStatus, description } = getStatusDisplay(order);
+  const { text: defaultText, description: defaultDescription } = getStatusDisplay(order);
+  const { content, slots } = useAnySpendCustomization();
   const searchParams = useSearchParams();
   const cryptoPaymentMethod = selectedCryptoPaymentMethod || searchParams.get("cryptoPaymentMethod");
 
-  // Track previous step index to determine if the checkmark should animate or be static.
-  // When transitioning from step 0 → step 1, animate (first time seeing completed step).
-  // When staying within step 1 (e.g. relay → executing), show static (already completed).
   const currentStepIndex = getStepIndex(order.status);
   const prevStepIndexRef = useRef<number>(currentStepIndex);
-
-  // The checkmark should animate only when we just entered a new step
   const shouldAnimateCheck = currentStepIndex > prevStepIndexRef.current;
 
   useEffect(() => {
     prevStepIndexRef.current = currentStepIndex;
   }, [currentStepIndex]);
 
+  // Resolve content overrides based on order status
+  let text = defaultText;
+  let description: string | React.ReactNode = defaultDescription;
+
+  if (order.status === "executed") {
+    if (content.successTitle && typeof content.successTitle === "string") text = content.successTitle;
+    if (content.successDescription) description = content.successDescription;
+  } else if (order.status === "failure") {
+    if (content.failureTitle && typeof content.failureTitle === "string") text = content.failureTitle;
+    if (content.failureDescription) description = content.failureDescription;
+  } else if (order.status === "expired") {
+    if (content.expiredTitle && typeof content.expiredTitle === "string") text = content.expiredTitle;
+    if (content.expiredDescription) description = content.expiredDescription;
+  } else if (order.status === "refunded") {
+    if (content.refundedTitle && typeof content.refundedTitle === "string") text = content.refundedTitle;
+    if (content.refundedDescription) description = content.refundedDescription;
+  } else if (content.processingTitle || content.processingDescription) {
+    if (content.processingTitle && typeof content.processingTitle === "string") text = content.processingTitle;
+    if (content.processingDescription) description = content.processingDescription;
+  }
+
   const paymentSteps: Step[] = [
-    { id: 1, title: text, description },
-    { id: 2, title: text, description },
+    { id: 1, title: text, description: typeof description === "string" ? description : (defaultDescription || "") },
+    { id: 2, title: text, description: typeof description === "string" ? description : (defaultDescription || "") },
   ];
 
-  // Step 0: Early processing states (waiting for deposit/payment)
   if (currentStepIndex === 0) {
     if (!(order.status === "scanning_deposit_transaction" && cryptoPaymentMethod === "transfer_crypto")) {
       return <StepProgress steps={paymentSteps} currentStepIndex={0} />;
     }
   }
 
-  // Step 1: Mid-processing states (executing the order)
   if (currentStepIndex === 1) {
-    return (
-      <StepProgress
-        steps={paymentSteps}
-        currentStepIndex={1}
-        animateCompletedSteps={shouldAnimateCheck}
-      />
-    );
+    return <StepProgress steps={paymentSteps} currentStepIndex={1} animateCompletedSteps={shouldAnimateCheck} />;
   }
 
-  // Refunding: active processing state with spinner
   if (order.status === "refunding") {
     return (
       <div className="flex items-center justify-center gap-2">
@@ -80,21 +89,22 @@ export const OrderStatus = memo(function OrderStatus({
     return null;
   }
 
-  // Terminal success state — always animate (this is the big moment)
   if (order.status === "executed") {
     return (
       <div className="flex items-center justify-center gap-2">
         <div className="flex flex-col items-center">
           <AnimatedCheckmark className="h-14 w-14" />
-          <h2 className="text-as-primary mt-4 text-xl font-semibold">{text}</h2>
-          <div className="text-as-tertiary mt-1 text-center text-sm">{description}</div>
+          <h2 className="text-as-primary mt-4 text-xl font-semibold">{content.successTitle || text}</h2>
+          <div className="text-as-tertiary mt-1 text-center text-sm">{content.successDescription || description}</div>
         </div>
       </div>
     );
   }
 
-  // Expired: warning treatment (amber clock)
   if (order.status === "expired") {
+    if (slots.errorScreen) {
+      return <>{slots.errorScreen({ title: text, description: typeof description === "string" ? description : (defaultDescription || ""), errorType: "expired", orderId: order.id })}</>;
+    }
     return (
       <div className="flex items-center justify-center gap-2">
         <div className="flex flex-col items-center">
@@ -108,8 +118,10 @@ export const OrderStatus = memo(function OrderStatus({
     );
   }
 
-  // Refunded: neutral treatment (not a failure, funds returned)
   if (order.status === "refunded") {
+    if (slots.errorScreen) {
+      return <>{slots.errorScreen({ title: text, description: typeof description === "string" ? description : (defaultDescription || ""), errorType: "refunded", orderId: order.id })}</>;
+    }
     return (
       <div className="flex items-center justify-center gap-2">
         <div className="flex flex-col items-center">
@@ -123,7 +135,9 @@ export const OrderStatus = memo(function OrderStatus({
     );
   }
 
-  // Failure: red error treatment (default fallback)
+  if (slots.errorScreen) {
+    return <>{slots.errorScreen({ title: text, description: typeof description === "string" ? description : (defaultDescription || ""), errorType: "failure", orderId: order.id })}</>;
+  }
   return (
     <div className="flex items-center justify-center gap-2">
       <div className="flex flex-col items-center">

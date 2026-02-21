@@ -3,12 +3,14 @@
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { CreditCard, Wallet } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { AnySpendCheckoutClasses } from "./AnySpendCheckout";
-import { CheckoutSuccess } from "./CheckoutSuccess";
+import { CheckoutOrderStatus } from "./CheckoutOrderStatus";
 import { CoinbaseCheckoutPanel } from "./CoinbaseCheckoutPanel";
 import { CryptoPayPanel } from "./CryptoPayPanel";
 import { FiatCheckoutPanel } from "./FiatCheckoutPanel";
+
+const SESSION_STORAGE_KEY = "anyspend_checkout_orderId";
 
 export type PaymentMethod = "crypto" | "card" | "coinbase";
 
@@ -123,20 +125,44 @@ export function CheckoutPaymentPanel({
   senderAddress,
 }: CheckoutPaymentPanelProps) {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(defaultPaymentMethod ?? null);
-  const [paymentResult, setPaymentResult] = useState<{ txHash?: string; orderId?: string } | null>(null);
 
-  const handleSuccess = (result: { txHash?: string; orderId?: string }) => {
-    setPaymentResult(result);
-    onSuccess?.(result);
-  };
+  // Restore activeOrderId from sessionStorage (handles page refresh / Coinbase return)
+  const [activeOrderId, setActiveOrderId] = useState<string | null>(() => {
+    if (typeof window !== "undefined") {
+      return sessionStorage.getItem(SESSION_STORAGE_KEY) || null;
+    }
+    return null;
+  });
 
-  if (paymentResult) {
+  // Persist activeOrderId to sessionStorage
+  useEffect(() => {
+    if (activeOrderId) {
+      sessionStorage.setItem(SESSION_STORAGE_KEY, activeOrderId);
+    } else {
+      sessionStorage.removeItem(SESSION_STORAGE_KEY);
+    }
+  }, [activeOrderId]);
+
+  const handleOrderCreated = useCallback((orderId: string) => {
+    setActiveOrderId(orderId);
+  }, []);
+
+  const handleRetry = useCallback(() => {
+    setActiveOrderId(null);
+  }, []);
+
+  if (activeOrderId) {
     return (
-      <CheckoutSuccess
-        txHash={paymentResult.txHash}
-        orderId={paymentResult.orderId}
+      <CheckoutOrderStatus
+        orderId={activeOrderId}
+        destinationTokenAddress={destinationTokenAddress}
+        destinationTokenChainId={destinationTokenChainId}
+        themeColor={themeColor}
         returnUrl={returnUrl}
         returnLabel={returnLabel}
+        onSuccess={onSuccess}
+        onError={onError}
+        onRetry={handleRetry}
         classes={classes}
       />
     );
@@ -199,7 +225,7 @@ export function CheckoutPaymentPanel({
                     totalAmount={totalAmount}
                     buttonText={buttonText}
                     themeColor={themeColor}
-                    onSuccess={handleSuccess}
+                    onOrderCreated={handleOrderCreated}
                     onError={onError}
                     callbackMetadata={callbackMetadata}
                     classes={classes}
@@ -240,7 +266,7 @@ export function CheckoutPaymentPanel({
                     destinationTokenChainId={destinationTokenChainId}
                     totalAmount={totalAmount}
                     themeColor={themeColor}
-                    onSuccess={handleSuccess}
+                    onOrderCreated={handleOrderCreated}
                     onError={onError}
                     callbackMetadata={callbackMetadata}
                     classes={classes}
@@ -278,7 +304,7 @@ export function CheckoutPaymentPanel({
                     destinationTokenChainId={destinationTokenChainId}
                     totalAmount={totalAmount}
                     themeColor={themeColor}
-                    onSuccess={handleSuccess}
+                    onOrderCreated={handleOrderCreated}
                     onError={onError}
                     callbackMetadata={callbackMetadata}
                     classes={classes}

@@ -4,7 +4,7 @@ import { useAnyspendCreateOnrampOrder, useGeoOnrampOptions } from "@b3dotfun/sdk
 import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
-import { TextShimmer, useTokenData } from "@b3dotfun/sdk/global-account/react";
+import { ShinyButton, TextShimmer, useTokenData } from "@b3dotfun/sdk/global-account/react";
 import { Loader2 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -27,7 +27,10 @@ interface CoinbaseCheckoutPanelProps {
   destinationTokenChainId: number;
   totalAmount: string;
   themeColor?: string;
+  /** @deprecated Use onOrderCreated instead. Kept for backward compatibility. */
   onSuccess?: (result: { txHash?: string; orderId?: string }) => void;
+  /** Called when order is created — triggers lifecycle tracking in parent */
+  onOrderCreated?: (orderId: string) => void;
   onError?: (error: Error) => void;
   callbackMetadata?: Record<string, unknown>;
   classes?: AnySpendCheckoutClasses;
@@ -40,6 +43,7 @@ export function CoinbaseCheckoutPanel({
   totalAmount,
   themeColor,
   onSuccess,
+  onOrderCreated,
   onError,
   callbackMetadata,
 }: CoinbaseCheckoutPanelProps) {
@@ -102,7 +106,9 @@ export function CoinbaseCheckoutPanel({
       })
       .then((response) => {
         if (response.data?.url) {
-          // Call onSuccess before redirecting so the parent knows the order was created
+          // Notify parent to persist orderId before redirecting to Coinbase
+          onOrderCreated?.(orderId!);
+          // Also fire legacy callback for backward compatibility
           onSuccess?.({ orderId });
           window.location.href = response.data.url;
         } else {
@@ -124,6 +130,7 @@ export function CoinbaseCheckoutPanel({
     tokenData,
     recipientAddress,
     geoData,
+    onOrderCreated,
     onSuccess,
     onError,
   ]);
@@ -234,7 +241,8 @@ export function CoinbaseCheckoutPanel({
         )}
       </AnimatePresence>
 
-      <button
+      <ShinyButton
+        accentColor={themeColor || "#0052FF"}
         onClick={() => {
           if (error) {
             // Reset state for retry
@@ -246,25 +254,20 @@ export function CoinbaseCheckoutPanel({
           handleContinue();
         }}
         disabled={isProcessing}
-        className={cn(
-          "anyspend-coinbase-btn flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-white transition-all",
-          isProcessing
-            ? "cursor-not-allowed bg-[#0052FF]/70"
-            : "bg-[#0052FF] hover:bg-[#003ECF] active:scale-[0.98]",
-        )}
-        style={themeColor && !isProcessing ? { backgroundColor: themeColor } : undefined}
+        className="anyspend-coinbase-btn w-full"
+        textClassName="text-white"
       >
         {isProcessing ? (
-          <>
+          <span className="flex items-center justify-center gap-2">
             <Loader2 className="h-4 w-4 animate-spin" />
             {isRedirecting ? "Redirecting to Coinbase..." : "Creating order..."}
-          </>
+          </span>
         ) : error ? (
           "Try again"
         ) : (
           "Continue with Coinbase"
         )}
-      </button>
+      </ShinyButton>
     </motion.div>
   );
 }

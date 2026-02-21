@@ -82,7 +82,7 @@ export function CryptoPaySection({
       <div className="flex items-center justify-between">
         <div className="text-as-primary/50 flex h-7 items-center text-sm">Pay</div>
         <button
-          className="text-as-tertiarry flex h-7 items-center gap-2 text-sm transition-colors focus:!outline-none"
+          className="text-as-tertiary flex h-7 items-center gap-2 text-sm transition-colors focus:!outline-none"
           onClick={onSelectCryptoPaymentMethod}
         >
           {selectedCryptoPaymentMethod === CryptoPaymentMethodType.CONNECT_WALLET ? (

@@ -4,7 +4,7 @@ import { useAnyspendCreateOnrampOrder, useGeoOnrampOptions, useStripeClientSecre
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { getStripePromise } from "@b3dotfun/sdk/shared/utils/payment.utils";
-import { TextShimmer, useB3Config, useTokenData } from "@b3dotfun/sdk/global-account/react";
+import { ShinyButton, TextShimmer, useB3Config, useTokenData } from "@b3dotfun/sdk/global-account/react";
 import { AddressElement, Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import type { PaymentIntentResult, StripePaymentElementOptions } from "@stripe/stripe-js";
 import { Loader2, Lock } from "lucide-react";
@@ -18,7 +18,10 @@ interface FiatCheckoutPanelProps {
   destinationTokenChainId: number;
   totalAmount: string;
   themeColor?: string;
+  /** @deprecated Use onOrderCreated instead. Kept for backward compatibility. */
   onSuccess?: (result: { txHash?: string; orderId?: string }) => void;
+  /** Called when payment is confirmed — triggers lifecycle tracking in parent */
+  onOrderCreated?: (orderId: string) => void;
   onError?: (error: Error) => void;
   callbackMetadata?: Record<string, unknown>;
   classes?: AnySpendCheckoutClasses;
@@ -31,6 +34,7 @@ export function FiatCheckoutPanel({
   totalAmount,
   themeColor,
   onSuccess,
+  onOrderCreated,
   onError,
   callbackMetadata,
   classes,
@@ -223,6 +227,7 @@ export function FiatCheckoutPanel({
           themeColor={themeColor}
           orderId={orderId}
           onSuccess={onSuccess}
+          onOrderCreated={onOrderCreated}
           onError={onError}
           classes={classes}
         />
@@ -236,16 +241,16 @@ export function FiatCheckoutPanel({
       <p className="text-sm text-gray-600 dark:text-gray-400">
         You'll be redirected to Stripe to complete your payment securely.
       </p>
-      <button
-        className={cn(
-          "anyspend-fiat-redirect-btn flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3.5 text-sm font-semibold text-white transition-all active:scale-[0.98]",
-          "bg-blue-600 hover:bg-blue-700",
-        )}
-        style={themeColor ? { backgroundColor: themeColor } : undefined}
+      <ShinyButton
+        accentColor={themeColor || "hsl(var(--as-brand))"}
+        className="anyspend-fiat-redirect-btn w-full"
+        textClassName="text-white"
       >
-        <Lock className="h-3.5 w-3.5" />
-        Pay with Card
-      </button>
+        <span className="flex items-center justify-center gap-2">
+          <Lock className="h-3.5 w-3.5" />
+          Pay with Card
+        </span>
+      </ShinyButton>
       <p className="anyspend-fiat-secured flex items-center justify-center gap-1 text-xs text-gray-400">
         <Lock className="h-3 w-3" />
         Secured by Stripe
@@ -265,6 +270,7 @@ interface StripeCheckoutProps {
   themeColor?: string;
   orderId: string;
   onSuccess?: (result: { txHash?: string; orderId?: string }) => void;
+  onOrderCreated?: (orderId: string) => void;
   onError?: (error: Error) => void;
   classes?: AnySpendCheckoutClasses;
 }
@@ -276,6 +282,7 @@ function StripeCheckout({
   themeColor,
   orderId,
   onSuccess,
+  onOrderCreated,
   onError,
   classes,
 }: StripeCheckoutProps) {
@@ -330,6 +337,7 @@ function StripeCheckout({
         themeColor={themeColor}
         orderId={orderId}
         onSuccess={onSuccess}
+        onOrderCreated={onOrderCreated}
         onError={onError}
         classes={classes}
       />
@@ -345,11 +353,12 @@ interface StripeCheckoutFormProps {
   themeColor?: string;
   orderId: string;
   onSuccess?: (result: { txHash?: string; orderId?: string }) => void;
+  onOrderCreated?: (orderId: string) => void;
   onError?: (error: Error) => void;
   classes?: AnySpendCheckoutClasses;
 }
 
-function StripeCheckoutForm({ themeColor, orderId, onSuccess, onError, classes }: StripeCheckoutFormProps) {
+function StripeCheckoutForm({ themeColor, orderId, onSuccess, onOrderCreated, onError, classes }: StripeCheckoutFormProps) {
   const stripe = useStripe();
   const elements = useElements();
 
@@ -390,7 +399,9 @@ function StripeCheckoutForm({ themeColor, orderId, onSuccess, onError, classes }
         return;
       }
 
-      // Payment succeeded
+      // Payment succeeded — notify parent to show order lifecycle tracking
+      onOrderCreated?.(orderId);
+      // Also fire legacy callback for backward compatibility
       onSuccess?.({ orderId, txHash: undefined });
     } catch (error: any) {
       const errorMessage = error?.message || "Payment failed. Please try again.";
@@ -489,30 +500,25 @@ function StripeCheckoutForm({ themeColor, orderId, onSuccess, onError, classes }
       </AnimatePresence>
 
       {/* Submit button */}
-      <button
+      <ShinyButton
         type="submit"
+        accentColor={themeColor || "hsl(var(--as-brand))"}
         disabled={!stripe || !elements || loading}
-        className={cn(
-          "anyspend-stripe-submit flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3.5 text-sm font-semibold text-white transition-all",
-          !stripe || !elements || loading
-            ? "cursor-not-allowed bg-gray-300 dark:bg-gray-600"
-            : "bg-blue-600 hover:bg-blue-700 active:scale-[0.98]",
-          classes?.payButton,
-        )}
-        style={themeColor && !loading ? { backgroundColor: themeColor } : undefined}
+        className={cn("anyspend-stripe-submit w-full", classes?.payButton)}
+        textClassName="text-white"
       >
         {loading ? (
-          <>
+          <span className="flex items-center justify-center gap-2">
             <Loader2 className="h-4 w-4 animate-spin" />
             Processing...
-          </>
+          </span>
         ) : (
-          <>
+          <span className="flex items-center justify-center gap-2">
             <Lock className="h-3.5 w-3.5" />
             Complete Payment
-          </>
+          </span>
         )}
-      </button>
+      </ShinyButton>
 
       <p className="anyspend-fiat-secured flex items-center justify-center gap-1 text-xs text-gray-400">
         <Lock className="h-3 w-3" />

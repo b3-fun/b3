@@ -22,6 +22,7 @@ import { createPublicClient, encodeFunctionData, erc20Abi, http } from "viem";
 import { base } from "viem/chains";
 import { useAccount, useWaitForTransactionReceipt } from "wagmi";
 import { AnySpendCustom } from "./AnySpendCustom";
+import type { AnySpendContent, AnySpendSlots, AnySpendTheme } from "./types/customization";
 import { EthIcon } from "./icons/EthIcon";
 import { SolIcon } from "./icons/SolIcon";
 import { UsdcIcon } from "./icons/USDCIcon";
@@ -50,6 +51,9 @@ export function AnySpendStakeB3({
   stakeAmount,
   onSuccess,
   senderAddress,
+  slots,
+  content,
+  theme,
 }: {
   loadOrder?: string;
   mode?: "modal" | "page";
@@ -58,6 +62,9 @@ export function AnySpendStakeB3({
   onSuccess?: () => void;
   /** Optional sender (payer) address — pre-fills token balances when the user address is known ahead of time */
   senderAddress?: string;
+  slots?: AnySpendSlots;
+  content?: AnySpendContent;
+  theme?: AnySpendTheme;
 }) {
   const hasMounted = useHasMounted();
   const { setB3ModalOpen } = useModalStore();
@@ -511,6 +518,9 @@ export function AnySpendStakeB3({
       onSuccess={onSuccess}
       showRecipient={true}
       senderAddress={senderAddress}
+      slots={slots}
+      content={content}
+      theme={theme}
     />
   );
 }

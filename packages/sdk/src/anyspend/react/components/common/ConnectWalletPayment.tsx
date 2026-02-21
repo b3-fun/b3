@@ -7,6 +7,7 @@ import centerTruncate from "@b3dotfun/sdk/shared/utils/centerTruncate";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { motion } from "framer-motion";
 import { ChevronRight, Loader2 } from "lucide-react";
+import { useAnySpendCustomization } from "../context/AnySpendCustomizationContext";
 import { CryptoPaymentMethodType } from "./CryptoPaymentMethod";
 import { OrderDetailsCollapsible } from "./OrderDetailsCollapsible";
 import { PaymentMethodSwitch } from "./PaymentMethodSwitch";
@@ -46,6 +47,8 @@ export default function ConnectWalletPayment({
       ? connectedSmartWallet?.getAccount()?.address
       : connectedEOAWallet?.getAccount()?.address;
 
+  const { slots } = useAnySpendCustomization();
+
   const srcToken = order.metadata.srcToken;
   const dstToken = order.metadata.dstToken;
 
@@ -60,6 +63,31 @@ export default function ConnectWalletPayment({
 
   if (!srcToken || !dstToken) {
     return <div>Loading...</div>;
+  }
+
+  const paymentLabel =
+    order.srcChain === RELAY_SOLANA_MAINNET_CHAIN_ID && phantomWalletAddress
+      ? "Pay from Phantom Wallet"
+      : cryptoPaymentMethod === CryptoPaymentMethodType.GLOBAL_WALLET
+        ? "Pay from Global Account"
+        : "Pay from Connected Wallet";
+
+  const connectedAddress =
+    order.srcChain === RELAY_SOLANA_MAINNET_CHAIN_ID && phantomWalletAddress
+      ? phantomWalletAddress
+      : connectedEvmAddress;
+
+  if (slots.connectWalletButton) {
+    return (
+      <div className="flex w-full flex-col items-center gap-6">
+        {slots.connectWalletButton({
+          onPayment,
+          txLoading,
+          connectedAddress: connectedAddress || undefined,
+          paymentLabel,
+        })}
+      </div>
+    );
   }
 
   return (
@@ -86,11 +114,7 @@ export default function ConnectWalletPayment({
           ) : (
             <>
               <span className="whitespace-nowrap pl-4 text-lg md:text-sm">
-                {order.srcChain === RELAY_SOLANA_MAINNET_CHAIN_ID && phantomWalletAddress
-                  ? "Pay from Phantom Wallet"
-                  : cryptoPaymentMethod === CryptoPaymentMethodType.GLOBAL_WALLET
-                    ? "Pay from Global Account"
-                    : "Pay from Connected Wallet"}
+                {paymentLabel}
               </span>
               <ChevronRight className="h-4 w-4" />
             </>

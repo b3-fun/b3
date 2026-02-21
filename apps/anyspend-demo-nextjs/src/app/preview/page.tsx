@@ -1,13 +1,14 @@
 "use client";
 
-import { B3_TOKEN, USDC_BASE } from "@b3dotfun/sdk/anyspend";
+import { B3_TOKEN, USDC_BASE, getErrorDisplay, getExplorerTxUrl } from "@b3dotfun/sdk/anyspend";
 import { OrderStatus } from "@b3dotfun/sdk/anyspend/react/components";
-import { CheckoutSuccess } from "@b3dotfun/sdk/anyspend/react/components/checkout/CheckoutSuccess";
+import { OrderDetailsCollapsible } from "@b3dotfun/sdk/anyspend/react/components/common/OrderDetailsCollapsible";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { StyleRoot } from "@b3dotfun/sdk/global-account/react";
-import { Circle, Moon, RotateCcw, Sun } from "lucide-react";
+import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
+import { Circle, ExternalLink, Moon, RefreshCcw, RotateCcw, Sun } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTheme } from "../ThemeContext";
 
 const ORDER_STATUSES = [
@@ -102,7 +103,7 @@ function buildMockOrder(status: OrderStatus_, type: OrderType): components["sche
   const metadata = { srcToken: USDC_BASE, dstToken: B3_TOKEN };
 
   if (type === "swap") {
-    return { ...baseOrder, type: "swap", payload: { amount: "250000000000000000000" }, metadata } as any;
+    return { ...baseOrder, type: "swap", payload: { expectedDstAmount: "250000000000000000000" }, metadata } as any;
   }
   if (type === "mint_nft") {
     return {
@@ -140,13 +141,92 @@ function buildMockOrder(status: OrderStatus_, type: OrderType): components["sche
   } as any;
 }
 
+/* ------------------------------------------------------------------ */
+/* Mock CheckoutOrderStatus — renders same UI as the real component    */
+/* but with a mock order instead of polling                            */
+/* ------------------------------------------------------------------ */
+
+function MockCheckoutOrderStatus({ order }: { order: components["schemas"]["Order"] }) {
+  const dstToken = order.metadata.dstToken;
+  const isExecuted = order.status === "executed";
+  const isRefunding = order.status === "refunding";
+
+  const formattedExpectedDstAmount = useMemo(() => {
+    if (!dstToken) return undefined;
+    const expectedDstAmount =
+      order.type === "mint_nft" || order.type === "join_tournament" || order.type === "fund_tournament"
+        ? "0"
+        : (order as any).payload?.amount?.toString() || (order as any).payload?.expectedDstAmount?.toString() || "0";
+    return formatTokenAmount(BigInt(expectedDstAmount), dstToken.decimals);
+  }, [order, dstToken]);
+
+  return (
+    <div className="flex w-full max-w-[460px] flex-col items-center gap-5 py-6">
+      <OrderStatus order={order} />
+
+      {dstToken && (
+        <OrderDetailsCollapsible
+          order={order}
+          dstToken={dstToken}
+          formattedExpectedDstAmount={formattedExpectedDstAmount}
+          className="w-full"
+        />
+      )}
+
+      {isExecuted && (
+        <a
+          href={getExplorerTxUrl(order.dstChain, "0xabc123def456789012345678901234567890abcdef1234567890abcdef123456")}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1.5 text-sm text-blue-600 hover:underline dark:text-blue-400"
+        >
+          View Transaction
+          <ExternalLink className="h-3.5 w-3.5" />
+        </a>
+      )}
+
+      {order.status === "failure" && order.errorDetails && (
+        <p className="max-w-[40ch] text-center text-sm text-red-500 dark:text-red-400">
+          {getErrorDisplay(order.errorDetails)}
+        </p>
+      )}
+
+      {(order.status === "failure" || order.status === "expired") && (
+        <button
+          onClick={() => alert("Try Again clicked")}
+          className="flex items-center gap-2 rounded-xl bg-gray-100 px-6 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+        >
+          <RefreshCcw className="h-4 w-4" />
+          Try Again
+        </button>
+      )}
+
+      {(isExecuted || order.status === "refunded") && (
+        <a
+          href="/"
+          className="inline-flex rounded-xl px-6 py-3 text-sm font-medium text-white transition-colors"
+          style={{ backgroundColor: "#111827" }}
+        >
+          Return to Store
+        </a>
+      )}
+
+      {isRefunding && (
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Please wait while your funds are being returned.
+        </p>
+      )}
+    </div>
+  );
+}
+
 export default function StatePreviewPage() {
   const router = useRouter();
   const { theme, toggle } = useTheme();
   const isDark = theme === "dark";
   const [selectedStatus, setSelectedStatus] = useState<OrderStatus_>("executed");
   const [selectedType, setSelectedType] = useState<OrderType>("swap");
-  const [selectedWidget, setSelectedWidget] = useState<"order-status" | "checkout-success">("order-status");
+  const [selectedWidget, setSelectedWidget] = useState<"order-status" | "checkout-order-status">("order-status");
   const [replayKey, setReplayKey] = useState(0);
 
   const mockOrder = buildMockOrder(selectedStatus, selectedType);
@@ -206,7 +286,7 @@ export default function StatePreviewPage() {
               {(
                 [
                   ["order-status", "OrderStatus"],
-                  ["checkout-success", "CheckoutSuccess"],
+                  ["checkout-order-status", "CheckoutOrderStatus"],
                 ] as const
               ).map(([key, label]) => (
                 <button
@@ -338,14 +418,118 @@ export default function StatePreviewPage() {
               </>
             )}
 
-            {selectedWidget === "checkout-success" && (
-              <div className="flex flex-1 items-center justify-center px-4 py-8">
-                <p className="text-center text-xs" style={{ color: textMuted }}>
-                  No configuration needed.
-                  <br />
-                  Use the replay button to re-trigger the animation.
-                </p>
-              </div>
+            {selectedWidget === "checkout-order-status" && (
+              <>
+                <div className="px-4 pt-4 pb-3">
+                  <label className="mb-2.5 block text-[10px] font-semibold uppercase tracking-widest" style={{ color: textMuted }}>
+                    Order Type
+                  </label>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {ORDER_TYPES.map(type => (
+                      <button
+                        key={type}
+                        onClick={() => setSelectedType(type)}
+                        className="flex items-center gap-2 rounded-lg px-3 py-2 text-left text-xs transition-all"
+                        style={{
+                          background: selectedType === type
+                            ? (isDark ? "rgba(59,130,246,0.15)" : "rgba(59,130,246,0.08)")
+                            : "transparent",
+                          border: `1px solid ${selectedType === type ? (isDark ? "rgba(59,130,246,0.3)" : "rgba(59,130,246,0.25)") : "transparent"}`,
+                          color: selectedType === type ? (isDark ? "#93bbfc" : "#2563eb") : (isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)"),
+                        }}
+                      >
+                        <span
+                          className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full"
+                          style={{
+                            border: `1.5px solid ${selectedType === type ? "#3b82f6" : (isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)")}`,
+                          }}
+                        >
+                          {selectedType === type && (
+                            <span className="block h-1.5 w-1.5 rounded-full bg-blue-500" />
+                          )}
+                        </span>
+                        {ORDER_TYPE_LABELS[type]}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ height: 1, background: border }} />
+
+                <div className="px-4 pt-3 pb-4">
+                  <label className="mb-2.5 block text-[10px] font-semibold uppercase tracking-widest" style={{ color: textMuted }}>
+                    Status
+                  </label>
+                  <div className="flex flex-col gap-3">
+                    {STATUS_GROUPS.map(group => (
+                      <div key={group.kind}>
+                        <div className="mb-1 flex items-center gap-2 px-1">
+                          <span
+                            className="block h-1.5 w-1.5 rounded-full"
+                            style={{
+                              background: group.kind === "pending" ? "#f59e0b" : group.kind === "success" ? "#10b981" : "#ef4444",
+                            }}
+                          />
+                          <span className="text-[10px] font-medium" style={{ color: textMuted }}>
+                            {group.label}
+                          </span>
+                        </div>
+                        <div className="flex flex-col gap-0.5">
+                          {group.statuses.map(status => {
+                            const { label } = STATUS_META[status];
+                            const isSelected = selectedStatus === status;
+                            return (
+                              <button
+                                key={status}
+                                onClick={() => setSelectedStatus(status)}
+                                className="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-left transition-all"
+                                style={{
+                                  background: isSelected
+                                    ? (isDark ? "rgba(59,130,246,0.12)" : "rgba(59,130,246,0.06)")
+                                    : "transparent",
+                                  border: `1px solid ${isSelected ? (isDark ? "rgba(59,130,246,0.25)" : "rgba(59,130,246,0.2)") : "transparent"}`,
+                                }}
+                              >
+                                <Circle
+                                  className={`h-2 w-2 shrink-0 ${isSelected ? STATUS_DOT_COLORS[group.kind].active : ""}`}
+                                  style={{
+                                    color: isSelected
+                                      ? undefined
+                                      : (isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.12)"),
+                                  }}
+                                  fill={isSelected ? "currentColor" : "none"}
+                                  strokeWidth={isSelected ? 0 : 1.5}
+                                />
+                                <span
+                                  className="text-xs"
+                                  style={{
+                                    color: isSelected
+                                      ? (isDark ? "#fff" : "#111827")
+                                      : (isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.5)"),
+                                    fontWeight: isSelected ? 500 : 400,
+                                  }}
+                                >
+                                  {label}
+                                </span>
+                                <span
+                                  className="ml-auto font-mono text-[10px]"
+                                  style={{
+                                    color: isSelected
+                                      ? (isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.3)")
+                                      : (isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"),
+                                  }}
+                                >
+                                  {status.replace(/_/g, " ")}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
             )}
           </div>
 
@@ -355,7 +539,7 @@ export default function StatePreviewPage() {
                 <span className="font-mono text-[10px] uppercase tracking-widest" style={{ color: textDim }}>
                   {selectedWidget === "order-status"
                     ? `${selectedType} / ${selectedStatus}`
-                    : "checkout-success"}
+                    : `checkout-order-status / ${selectedType} / ${selectedStatus}`}
                 </span>
                 <div className="flex items-center gap-2">
                   <button
@@ -368,12 +552,10 @@ export default function StatePreviewPage() {
                   </button>
                   <span
                     className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 ${
-                      selectedWidget === "checkout-success"
-                        ? KIND_COLORS.success
-                        : KIND_COLORS[STATUS_META[selectedStatus].kind]
+                      KIND_COLORS[STATUS_META[selectedStatus].kind]
                     }`}
                   >
-                    {selectedWidget === "checkout-success" ? "success" : STATUS_META[selectedStatus].kind}
+                    {STATUS_META[selectedStatus].kind}
                   </span>
                 </div>
               </div>
@@ -383,28 +565,23 @@ export default function StatePreviewPage() {
                   {selectedWidget === "order-status" ? (
                     <OrderStatus key={`${selectedStatus}-${selectedType}-${replayKey}`} order={mockOrder} />
                   ) : (
-                    <CheckoutSuccess
-                      key={`checkout-success-${replayKey}`}
-                      txHash="0xabc123def456789012345678901234567890abcdef1234567890abcdef123456"
-                      orderId="preview-00000000-0000-0000-0000-000000000000"
-                      returnUrl="/"
-                      returnLabel="Return to Demo"
+                    <MockCheckoutOrderStatus
+                      key={`checkout-order-status-${selectedStatus}-${selectedType}-${replayKey}`}
+                      order={mockOrder}
                     />
                   )}
                 </StyleRoot>
               </div>
             </div>
 
-            {selectedWidget === "order-status" && (
-              <div className="rounded-lg px-4 py-3" style={{ border: `1px solid ${border}`, background: isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)" }}>
-                <p className="font-mono text-[11px]" style={{ color: textDim }}>
-                  mock: {selectedType} &middot; 5 USDC &rarr; 250 B3 &middot; status:{" "}
-                  <code className="rounded px-1.5 py-0.5" style={{ background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)", color: textMuted }}>
-                    {selectedStatus}
-                  </code>
-                </p>
-              </div>
-            )}
+            <div className="rounded-lg px-4 py-3" style={{ border: `1px solid ${border}`, background: isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)" }}>
+              <p className="font-mono text-[11px]" style={{ color: textDim }}>
+                mock: {selectedType} &middot; 5 USDC &rarr; 250 B3 &middot; status:{" "}
+                <code className="rounded px-1.5 py-0.5" style={{ background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)", color: textMuted }}>
+                  {selectedStatus}
+                </code>
+              </p>
+            </div>
           </div>
         </div>
       </main>

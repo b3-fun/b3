@@ -126,7 +126,7 @@
   --as-on-disabled: 0 0% 44%;
   --as-shadow-lg: 220 29% 5%;
   --as-quaternary: 240 6% 65%;
-  --as-tertiarry: 235 6% 34%;
+  --as-tertiary: 235 6% 50%;
   --as-success-secondary: 89 85% 89%;
   --as-content-icon-success: 95 85% 35%;
   --as-content-disabled: 220 6% 47%;
@@ -219,7 +219,7 @@ html[data-theme="dark"] .b3-root,
   --as-on-surface-disabled: 0 0% 78%;
   --as-on-disabled: 0 0% 44%;
   --as-quaternary: 240 6% 65%;
-  --as-tertiarry: 240 6% 65%;
+  --as-tertiary: 240 6% 65%;
   --as-success-secondary: 95 85% 35%;
   --as-content-icon-success: 89 85% 89%;
   --as-content-disabled: 220 6% 47%;

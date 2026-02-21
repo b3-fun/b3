@@ -9,6 +9,8 @@ import { CheckoutPaymentPanel, type PaymentMethod } from "./CheckoutPaymentPanel
 
 export type { AnySpendCheckoutClasses } from "../types/classes";
 import type { AnySpendCheckoutClasses } from "../types/classes";
+import { AnySpendCustomizationProvider } from "../context/AnySpendCustomizationContext";
+import type { AnySpendContent, AnySpendSlots, AnySpendTheme } from "../types/customization";
 
 export interface CheckoutItem {
   id?: string;
@@ -59,6 +61,12 @@ export interface AnySpendCheckoutProps {
   defaultPaymentMethod?: PaymentMethod;
   /** Optional sender (payer) address — pre-fills token balances in the crypto panel */
   senderAddress?: string;
+  /** Render function overrides for replaceable UI elements */
+  slots?: AnySpendSlots;
+  /** String or ReactNode overrides for text/messages */
+  content?: AnySpendContent;
+  /** Structured color/theme configuration */
+  theme?: AnySpendTheme;
 }
 
 export function AnySpendCheckout({
@@ -81,6 +89,9 @@ export function AnySpendCheckout({
   footer,
   defaultPaymentMethod,
   senderAddress,
+  slots,
+  content,
+  theme,
 }: AnySpendCheckoutProps) {
   // Compute total from items
   const computedTotal = useMemo(() => {
@@ -101,39 +112,41 @@ export function AnySpendCheckout({
 
   return (
     <AnySpendFingerprintWrapper fingerprint={fingerprint}>
-      <CheckoutLayout
-        mode={mode}
-        paymentPanel={
-          <CheckoutPaymentPanel
-            recipientAddress={recipientAddress}
-            destinationTokenAddress={destinationTokenAddress}
-            destinationTokenChainId={destinationTokenChainId}
-            totalAmount={computedTotal}
-            buttonText={buttonText}
-            themeColor={themeColor}
-            returnUrl={returnUrl}
-            returnLabel={returnLabel}
-            onSuccess={onSuccess}
-            onError={onError}
-            classes={classes}
-            defaultPaymentMethod={defaultPaymentMethod}
-            senderAddress={senderAddress}
-          />
-        }
-        cartPanel={
-          <CheckoutCartPanel
-            items={items}
-            totalAmount={computedTotal}
-            tokenSymbol={tokenSymbol}
-            tokenDecimals={tokenDecimals}
-            organizationName={organizationName}
-            organizationLogo={organizationLogo}
-            classes={classes}
-            footer={footer}
-          />
-        }
-        classes={classes}
-      />
+      <AnySpendCustomizationProvider slots={slots} content={content} theme={theme}>
+        <CheckoutLayout
+          mode={mode}
+          paymentPanel={
+            <CheckoutPaymentPanel
+              recipientAddress={recipientAddress}
+              destinationTokenAddress={destinationTokenAddress}
+              destinationTokenChainId={destinationTokenChainId}
+              totalAmount={computedTotal}
+              buttonText={buttonText}
+              themeColor={themeColor}
+              returnUrl={returnUrl}
+              returnLabel={returnLabel}
+              onSuccess={onSuccess}
+              onError={onError}
+              classes={classes}
+              defaultPaymentMethod={defaultPaymentMethod}
+              senderAddress={senderAddress}
+            />
+          }
+          cartPanel={
+            <CheckoutCartPanel
+              items={items}
+              totalAmount={computedTotal}
+              tokenSymbol={tokenSymbol}
+              tokenDecimals={tokenDecimals}
+              organizationName={organizationName}
+              organizationLogo={organizationLogo}
+              classes={classes}
+              footer={footer}
+            />
+          }
+          classes={classes}
+        />
+      </AnySpendCustomizationProvider>
     </AnySpendFingerprintWrapper>
   );
 }

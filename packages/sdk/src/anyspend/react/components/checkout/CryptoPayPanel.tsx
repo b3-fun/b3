@@ -18,7 +18,7 @@ import {
   useTokenData,
   useUnifiedChainSwitchAndExecute,
 } from "@b3dotfun/sdk/global-account/react";
-import { TextShimmer } from "@b3dotfun/sdk/global-account/react";
+import { ShinyButton, TextShimmer } from "@b3dotfun/sdk/global-account/react";
 import { thirdwebB3Chain } from "@b3dotfun/sdk/shared/constants/chains/b3Chain";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
@@ -38,7 +38,10 @@ interface CryptoPayPanelProps {
   totalAmount: string;
   buttonText?: string;
   themeColor?: string;
+  /** @deprecated Use onOrderCreated instead. Kept for backward compatibility. */
   onSuccess?: (result: { txHash?: string; orderId?: string }) => void;
+  /** Called when an order is created and payment committed — triggers lifecycle tracking in parent */
+  onOrderCreated?: (orderId: string) => void;
   onError?: (error: Error) => void;
   callbackMetadata?: Record<string, unknown>;
   classes?: AnySpendCheckoutClasses;
@@ -54,6 +57,7 @@ export function CryptoPayPanel({
   buttonText = "Pay",
   themeColor,
   onSuccess,
+  onOrderCreated,
   onError,
   callbackMetadata,
   classes,
@@ -181,6 +185,20 @@ export function CryptoPayPanel({
     onSuccess: (txHash?: string) => onSuccess?.({ orderId: qrOrderId, txHash }),
   });
 
+  // Notify parent when a deposit is detected on the QR/deposit-first order
+  const qrDepositNotifiedRef = useRef(false);
+  useEffect(() => {
+    if (
+      qrOrderId &&
+      !qrDepositNotifiedRef.current &&
+      qrOat?.data?.depositTxs?.length &&
+      qrOat.data.depositTxs.length > 0
+    ) {
+      qrDepositNotifiedRef.current = true;
+      onOrderCreated?.(qrOrderId);
+    }
+  }, [qrOrderId, qrOat?.data?.depositTxs?.length, onOrderCreated]);
+
   // QR code value
   const qrAmount = srcAmount && srcAmount !== "0" ? BigInt(srcAmount) : undefined;
   const qrValue =
@@ -244,6 +262,10 @@ export function CryptoPayPanel({
             value: BigInt(0),
           });
         }
+        // Deposit sent — notify parent to transition to order lifecycle tracking
+        if (walletOrderId) {
+          onOrderCreated?.(walletOrderId);
+        }
       } catch (error: any) {
         depositSentRef.current = false;
         onError?.(error instanceof Error ? error : new Error(error?.message || "Transaction rejected"));
@@ -252,7 +274,7 @@ export function CryptoPayPanel({
       }
     };
     sendDeposit();
-  }, [walletOat, switchChainAndExecute, onError]);
+  }, [walletOat, switchChainAndExecute, onError, walletOrderId, onOrderCreated]);
 
   useOnOrderSuccess({
     orderData: walletOat,
@@ -289,6 +311,7 @@ export function CryptoPayPanel({
     setQrOrderId(undefined);
     setGlobalAddress(undefined);
     qrOrderCreatedRef.current = false;
+    qrDepositNotifiedRef.current = false;
     setWalletOrderId(undefined);
     depositSentRef.current = false;
   };
@@ -435,27 +458,21 @@ export function CryptoPayPanel({
 
       {/* ---- Wallet Pay Button ---- */}
       {!walletAddress ? (
-        <button
+        <ShinyButton
+          accentColor={themeColor || "hsl(var(--as-brand))"}
           onClick={handleConnectWallet}
-          className={cn(
-            "w-full rounded-xl px-4 py-3.5 text-sm font-semibold text-white transition-all",
-            "bg-blue-600 hover:bg-blue-700 active:scale-[0.98]",
-            classes?.payButton,
-          )}
-          style={themeColor ? { backgroundColor: themeColor } : undefined}
+          className={cn("w-full", classes?.payButton)}
+          textClassName="text-white"
         >
           Connect Wallet to Pay
-        </button>
+        </ShinyButton>
       ) : (
-        <button
+        <ShinyButton
+          accentColor={themeColor || "hsl(var(--as-brand))"}
           onClick={handleWalletPay}
           disabled={!canPay}
-          className={cn(
-            "w-full rounded-xl px-4 py-3.5 text-sm font-semibold text-white transition-all",
-            canPay ? "bg-blue-600 hover:bg-blue-700 active:scale-[0.98]" : "cursor-not-allowed bg-blue-600 opacity-50",
-            classes?.payButton,
-          )}
-          style={!canPay ? undefined : themeColor ? { backgroundColor: themeColor } : undefined}
+          className={cn("w-full", classes?.payButton)}
+          textClassName={cn(!canPay ? "text-as-secondary" : "text-white")}
         >
           {isPending ? (
             <span className="flex items-center justify-center gap-2">
@@ -469,7 +486,7 @@ export function CryptoPayPanel({
           ) : (
             buttonText
           )}
-        </button>
+        </ShinyButton>
       )}
 
       {/* ---- "or" divider / accordion toggle ---- */}

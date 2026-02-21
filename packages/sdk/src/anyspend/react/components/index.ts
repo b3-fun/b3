@@ -31,6 +31,21 @@ export type {
   QRDepositClasses,
   RecipientSelectionClasses,
 } from "./types/classes";
+
+// Customization types (slots, content, theme)
+export type {
+  ActionButtonSlotProps,
+  AnySpendContent,
+  AnySpendSlots,
+  AnySpendTheme,
+  ConnectWalletButtonSlotProps,
+  ErrorScreenSlotProps,
+  SuccessScreenSlotProps,
+} from "./types/customization";
+
+// Customization context (for advanced/nested usage)
+export { AnySpendCustomizationProvider, useAnySpendCustomization } from "./context/AnySpendCustomizationContext";
+
 export { AnySpendDepositHype, HYPE_TOKEN_DETAILS } from "./AnyspendDepositHype";
 export { AnySpendWorkflowTrigger } from "./AnySpendWorkflowTrigger";
 export type { AnySpendWorkflowTriggerProps } from "./AnySpendWorkflowTrigger";
