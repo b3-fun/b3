@@ -2,7 +2,6 @@
 
 import { useAnyspendCreateOnrampOrder, useGeoOnrampOptions } from "@b3dotfun/sdk/anyspend/react";
 import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
-import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
 import { ShinyButton, TextShimmer, useTokenData } from "@b3dotfun/sdk/global-account/react";
 import { Loader2 } from "lucide-react";

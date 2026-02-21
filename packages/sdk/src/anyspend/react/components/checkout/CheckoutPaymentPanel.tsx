@@ -161,8 +161,6 @@ export function CheckoutPaymentPanel({
     return (
       <CheckoutOrderStatus
         orderId={activeOrderId}
-        destinationTokenAddress={destinationTokenAddress}
-        destinationTokenChainId={destinationTokenChainId}
         themeColor={themeColor}
         returnUrl={returnUrl}
         returnLabel={returnLabel}

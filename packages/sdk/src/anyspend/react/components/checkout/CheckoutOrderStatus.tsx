@@ -16,10 +16,6 @@ import type { AnySpendCheckoutClasses } from "./AnySpendCheckout";
 interface CheckoutOrderStatusProps {
   /** The order ID to track */
   orderId: string;
-  /** The destination token address */
-  destinationTokenAddress: string;
-  /** The destination chain ID */
-  destinationTokenChainId: number;
   /** Theme color (hex) */
   themeColor?: string;
   /** Return URL for the terminal success state */
