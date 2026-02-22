@@ -115,7 +115,7 @@ function CartEditorModal({
 }: {
   items: EditableItem[];
   adjustments: Adjustments;
-  onSave: (items: EditableItem[], adjustments: Adjustments) => void;
+  onSave: (_items: EditableItem[], _adjustments: Adjustments) => void;
   onClose: () => void;
 }) {
   const [editItems, setEditItems] = useState<EditableItem[]>(items);
