@@ -160,7 +160,13 @@ export function AnySpendCheckoutTrigger({
   return (
     <AnySpendFingerprintWrapper fingerprint={fingerprint}>
       <AnySpendCustomizationProvider slots={slots} content={content} theme={theme}>
-        {/* Hide Global Account branding & flatten accordion in modal context */}
+        {/* 
+          Apply modal-specific style overrides for checkout components.
+          Using dangerouslySetInnerHTML is necessary here to inject scoped styles that override
+          the default checkout styles when rendered in modal context. This is a static constant
+          and poses no XSS risk. Alternative approaches like CSS-in-JS or style portals would
+          add unnecessary complexity for this simple use case.
+        */}
         <style dangerouslySetInnerHTML={{ __html: MODAL_STYLE_OVERRIDES }} />
 
         <div className="anyspend-checkout-trigger flex flex-col">
@@ -194,16 +200,11 @@ export function AnySpendCheckoutTrigger({
                     {formattedTotal} {tokenSymbol}
                   </span>
                 </div>
-                {footer !== null &&
-                  (footer !== undefined ? (
-                    footer
-                  ) : (
-                    <PoweredByBranding
-                      organizationName={organizationName}
-                      organizationLogo={organizationLogo}
-                      classes={classes}
-                    />
-                  ))}
+                {footer === undefined ? (
+                  <PoweredByBranding organizationName={organizationName} organizationLogo={organizationLogo} classes={classes} />
+                ) : (
+                  footer
+                )}
               </div>
             </div>
           )}

@@ -48,6 +48,10 @@ export function CheckoutOrderStatus({
   showOrderId = false,
   classes,
 }: CheckoutOrderStatusProps) {
+  // Stable refs for callback props to avoid re-triggering effects
+  const onErrorRef = useRef(onError);
+  onErrorRef.current = onError;
+
   const { orderAndTransactions, isLoadingOrderAndTransactions } = useAnyspendOrderAndTransactions(orderId);
   const order = orderAndTransactions?.data?.order;
   const executeTx = orderAndTransactions?.data?.executeTx;
@@ -68,10 +72,10 @@ export function CheckoutOrderStatus({
     if (!order || onErrorCalled.current) return;
     if (order.status === "failure" || order.status === "expired" || order.status === "refunded") {
       const { description } = getStatusDisplay(order);
-      onError?.(new Error(description || `Order ${order.status}`));
+      onErrorRef.current?.(new Error(description || `Order ${order.status}`));
       onErrorCalled.current = true;
     }
-  }, [order, onError]);
+  }, [order]);
 
   // Reset error flag if orderId changes
   const prevOrderId = useRef(orderId);

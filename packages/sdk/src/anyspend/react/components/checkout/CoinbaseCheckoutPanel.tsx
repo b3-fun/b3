@@ -46,6 +46,14 @@ export function CoinbaseCheckoutPanel({
   onError,
   callbackMetadata,
 }: CoinbaseCheckoutPanelProps) {
+  // Stable refs for callback props to avoid re-triggering effects
+  const onSuccessRef = useRef(onSuccess);
+  onSuccessRef.current = onSuccess;
+  const onOrderCreatedRef = useRef(onOrderCreated);
+  onOrderCreatedRef.current = onOrderCreated;
+  const onErrorRef = useRef(onError);
+  onErrorRef.current = onError;
+
   const { data: tokenData } = useTokenData(destinationTokenChainId, destinationTokenAddress);
 
   const formattedAmount = useMemo(() => {
@@ -72,7 +80,7 @@ export function CoinbaseCheckoutPanel({
     },
     onError: (err: Error) => {
       setError(err.message || "Failed to create payment order.");
-      onError?.(err);
+      onErrorRef.current?.(err);
     },
   });
 
@@ -106,9 +114,9 @@ export function CoinbaseCheckoutPanel({
       .then(response => {
         if (response.data?.url) {
           // Notify parent to persist orderId before redirecting to Coinbase
-          if (orderId) onOrderCreated?.(orderId);
+          if (orderId) onOrderCreatedRef.current?.(orderId);
           // Also fire legacy callback for backward compatibility
-          onSuccess?.({ orderId });
+          onSuccessRef.current?.({ orderId });
           window.location.href = response.data.url;
         } else {
           setError("Failed to generate Coinbase Pay URL.");
@@ -118,7 +126,7 @@ export function CoinbaseCheckoutPanel({
       .catch(err => {
         setError(err.message || "Failed to generate Coinbase Pay URL.");
         setIsRedirecting(false);
-        onError?.(err instanceof Error ? err : new Error(err.message));
+        onErrorRef.current?.(err instanceof Error ? err : new Error(err.message));
       });
   }, [
     orderId,
@@ -129,9 +137,6 @@ export function CoinbaseCheckoutPanel({
     tokenData,
     recipientAddress,
     geoData,
-    onOrderCreated,
-    onSuccess,
-    onError,
   ]);
 
   const handleContinue = useCallback(() => {

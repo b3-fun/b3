@@ -84,16 +84,11 @@ export function CheckoutCartPanel({
         summaryLines={summaryLines}
       />
 
-      {footer !== null &&
-        (footer !== undefined ? (
-          footer
-        ) : (
-          <PoweredByBranding
-            organizationName={organizationName}
-            organizationLogo={organizationLogo}
-            classes={classes}
-          />
-        ))}
+      {footer === undefined ? (
+        <PoweredByBranding organizationName={organizationName} organizationLogo={organizationLogo} classes={classes} />
+      ) : (
+        footer
+      )}
     </div>
   );
 }

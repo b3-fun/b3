@@ -39,6 +39,10 @@ export function FiatCheckoutPanel({
   callbackMetadata,
   classes,
 }: FiatCheckoutPanelProps) {
+  // Stable refs for callback props to avoid re-triggering effects
+  const onErrorRef = useRef(onError);
+  onErrorRef.current = onError;
+
   const { data: tokenData } = useTokenData(destinationTokenChainId, destinationTokenAddress);
   const { theme, stripePublishableKey } = useB3Config();
 
@@ -73,7 +77,7 @@ export function FiatCheckoutPanel({
     },
     onError: (error: Error) => {
       setOrderError(error.message || "Failed to create payment order.");
-      onError?.(error);
+      onErrorRef.current?.(error);
     },
   });
 
@@ -413,7 +417,8 @@ function StripeCheckoutForm({
     } catch (error: any) {
       const errorMessage = error?.message || "Payment failed. Please try again.";
       setMessage(errorMessage);
-      onError?.(error instanceof Error ? error : new Error(errorMessage));
+      const errorObj = error instanceof Error ? error : new Error(errorMessage);
+      onError?.(errorObj);
     } finally {
       setLoading(false);
     }
