@@ -431,7 +431,11 @@ export default function HomePage() {
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <div className="flex items-center gap-5">
             <img
-              src={isDark ? "https://cdn.b3.fun/anyspend/anyspend-logo-alt.svg" : "https://cdn.b3.fun/anyspend-logo-brand.svg"}
+              src={
+                isDark
+                  ? "https://cdn.b3.fun/anyspend/anyspend-logo-alt.svg"
+                  : "https://cdn.b3.fun/anyspend-logo-brand.svg"
+              }
               alt="AnySpend"
               className="h-6"
             />
@@ -440,16 +444,10 @@ export default function HomePage() {
               style={{ width: 1, background: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)" }}
             />
             <div>
-              <h1
-                className="text-sm font-semibold tracking-tight"
-                style={{ color: isDark ? "#fff" : "#111827" }}
-              >
+              <h1 className="text-sm font-semibold tracking-tight" style={{ color: isDark ? "#fff" : "#111827" }}>
                 Widget Lab
               </h1>
-              <p
-                className="text-[11px]"
-                style={{ color: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)" }}
-              >
+              <p className="text-[11px]" style={{ color: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)" }}>
                 {sections.reduce((acc, s) => acc + s.cards.length, 0)} demos &middot; {sections.length} categories
               </p>
             </div>

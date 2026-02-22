@@ -66,7 +66,9 @@ export function TransferResultScreen({
         {/* Success message */}
         <div className="anyspend-transfer-success-message flex flex-col items-center gap-2">
           <h2 className="text-as-primary text-xl font-semibold">{content.successTitle || "Transfer Received!"}</h2>
-          <p className="text-as-secondary text-center text-sm">{content.successDescription || "Your transfer has been successfully received."}</p>
+          <p className="text-as-secondary text-center text-sm">
+            {content.successDescription || "Your transfer has been successfully received."}
+          </p>
         </div>
 
         {/* Amount display */}

@@ -67,12 +67,7 @@ export interface AnySpendCustomizationProviderProps {
   children: ReactNode;
 }
 
-export function AnySpendCustomizationProvider({
-  slots,
-  content,
-  theme,
-  children,
-}: AnySpendCustomizationProviderProps) {
+export function AnySpendCustomizationProvider({ slots, content, theme, children }: AnySpendCustomizationProviderProps) {
   const value = useMemo<AnySpendCustomizationContextValue>(
     () => ({
       slots: slots || {},
@@ -106,11 +101,7 @@ export function AnySpendCustomizationProvider({
 
   return (
     <AnySpendCustomizationContext.Provider value={value}>
-      {hasOverrides ? (
-        <div style={cssVarOverrides as React.CSSProperties}>{children}</div>
-      ) : (
-        children
-      )}
+      {hasOverrides ? <div style={cssVarOverrides as React.CSSProperties}>{children}</div> : children}
     </AnySpendCustomizationContext.Provider>
   );
 }

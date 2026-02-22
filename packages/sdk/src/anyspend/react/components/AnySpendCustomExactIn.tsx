@@ -527,26 +527,26 @@ function AnySpendCustomExactInInner({
             text: btnInfo.text,
           })
         ) : (
-        <ShinyButton
-          accentColor={"hsl(var(--as-brand))"}
-          disabled={btnInfo.disable}
-          onClick={onMainButtonClick}
-          className={
-            (btnInfo.error && classes?.mainButtonError) ||
-            (btnInfo.disable && classes?.mainButtonDisabled) ||
-            classes?.mainButton ||
-            cn(
-              "as-main-button relative w-full",
-              btnInfo.error ? "!bg-as-red" : btnInfo.disable ? "!bg-as-on-surface-2" : "!bg-as-brand",
-            )
-          }
-          textClassName={cn(btnInfo.error ? "text-white" : btnInfo.disable ? "text-as-secondary" : "text-white")}
-        >
-          <div className="flex items-center justify-center gap-2">
-            {btnInfo.loading && <Loader2 className="h-4 w-4 animate-spin" />}
-            {btnInfo.text}
-          </div>
-        </ShinyButton>
+          <ShinyButton
+            accentColor={"hsl(var(--as-brand))"}
+            disabled={btnInfo.disable}
+            onClick={onMainButtonClick}
+            className={
+              (btnInfo.error && classes?.mainButtonError) ||
+              (btnInfo.disable && classes?.mainButtonDisabled) ||
+              classes?.mainButton ||
+              cn(
+                "as-main-button relative w-full",
+                btnInfo.error ? "!bg-as-red" : btnInfo.disable ? "!bg-as-on-surface-2" : "!bg-as-brand",
+              )
+            }
+            textClassName={cn(btnInfo.error ? "text-white" : btnInfo.disable ? "text-as-secondary" : "text-white")}
+          >
+            <div className="flex items-center justify-center gap-2">
+              {btnInfo.loading && <Loader2 className="h-4 w-4 animate-spin" />}
+              {btnInfo.text}
+            </div>
+          </ShinyButton>
         )}
       </motion.div>
 
@@ -817,26 +817,31 @@ function AnySpendCustomExactInInner({
   ) : null;
 
   const exactInSuccessTitle = content.successTitle || "Transfer Complete!";
-  const exactInSuccessDesc = content.successDescription || `${srcAmount} ${selectedSrcToken.symbol} sent on ${getChainName(selectedSrcChainId)}`;
+  const exactInSuccessDesc =
+    content.successDescription || `${srcAmount} ${selectedSrcToken.symbol} sent on ${getChainName(selectedSrcChainId)}`;
   const exactInReturnLabel = content.returnButtonLabel || returnHomeLabel;
 
   const directTransferSuccessView = slots.successScreen ? (
-    <>{slots.successScreen({
-      title: typeof exactInSuccessTitle === "string" ? exactInSuccessTitle : "Transfer Complete!",
-      description: typeof exactInSuccessDesc === "string" ? exactInSuccessDesc : "",
-      txHash: directTransferTxHash,
-      explorerUrl: directTransferTxHash ? getExplorerTxUrl(selectedSrcChainId, directTransferTxHash || "") : undefined,
-      onDone: () => {
-        onSuccess?.(srcAmount);
-        if (returnToHomeUrl) {
-          window.location.href = returnToHomeUrl;
-        } else {
-          setB3ModalOpen(false);
-        }
-      },
-      returnUrl: returnToHomeUrl,
-      returnLabel: exactInReturnLabel || undefined,
-    })}</>
+    <>
+      {slots.successScreen({
+        title: typeof exactInSuccessTitle === "string" ? exactInSuccessTitle : "Transfer Complete!",
+        description: typeof exactInSuccessDesc === "string" ? exactInSuccessDesc : "",
+        txHash: directTransferTxHash,
+        explorerUrl: directTransferTxHash
+          ? getExplorerTxUrl(selectedSrcChainId, directTransferTxHash || "")
+          : undefined,
+        onDone: () => {
+          onSuccess?.(srcAmount);
+          if (returnToHomeUrl) {
+            window.location.href = returnToHomeUrl;
+          } else {
+            setB3ModalOpen(false);
+          }
+        },
+        returnUrl: returnToHomeUrl,
+        returnLabel: exactInReturnLabel || undefined,
+      })}
+    </>
   ) : (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -846,9 +851,7 @@ function AnySpendCustomExactInInner({
       <AnimatedCheckmark className="h-16 w-16" />
       <div className="text-center">
         <h2 className="text-as-primary mb-2 text-xl font-bold">{exactInSuccessTitle}</h2>
-        <p className="text-as-primary/60 text-sm">
-          {exactInSuccessDesc}
-        </p>
+        <p className="text-as-primary/60 text-sm">{exactInSuccessDesc}</p>
         <p className="text-as-primary/60 mt-1 text-sm">
           to {selectedRecipientOrDefault?.slice(0, 6)}...{selectedRecipientOrDefault?.slice(-4)}
         </p>

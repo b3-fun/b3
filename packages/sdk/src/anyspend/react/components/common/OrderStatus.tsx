@@ -57,8 +57,8 @@ export const OrderStatus = memo(function OrderStatus({
   }
 
   const paymentSteps: Step[] = [
-    { id: 1, title: text, description: typeof description === "string" ? description : (defaultDescription || "") },
-    { id: 2, title: text, description: typeof description === "string" ? description : (defaultDescription || "") },
+    { id: 1, title: text, description: typeof description === "string" ? description : defaultDescription || "" },
+    { id: 2, title: text, description: typeof description === "string" ? description : defaultDescription || "" },
   ];
 
   if (currentStepIndex === 0) {
@@ -75,7 +75,7 @@ export const OrderStatus = memo(function OrderStatus({
     return (
       <div className="flex items-center justify-center gap-2">
         <div className="flex flex-col items-center">
-          <div className="bg-amber-500/15 flex h-12 w-12 items-center justify-center rounded-full">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/15">
             <Loader2 className="h-6 w-6 animate-spin text-amber-500" />
           </div>
           <h2 className="text-as-primary mt-4 text-xl font-semibold">{text}</h2>
@@ -103,12 +103,21 @@ export const OrderStatus = memo(function OrderStatus({
 
   if (order.status === "expired") {
     if (slots.errorScreen) {
-      return <>{slots.errorScreen({ title: text, description: typeof description === "string" ? description : (defaultDescription || ""), errorType: "expired", orderId: order.id })}</>;
+      return (
+        <>
+          {slots.errorScreen({
+            title: text,
+            description: typeof description === "string" ? description : defaultDescription || "",
+            errorType: "expired",
+            orderId: order.id,
+          })}
+        </>
+      );
     }
     return (
       <div className="flex items-center justify-center gap-2">
         <div className="flex flex-col items-center">
-          <div className="bg-amber-500/15 flex h-10 w-10 items-center justify-center rounded-full">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/15">
             <Clock className="h-5 w-5 text-amber-500" />
           </div>
           <h2 className="text-as-primary mt-4 text-xl font-semibold">{text}</h2>
@@ -120,7 +129,16 @@ export const OrderStatus = memo(function OrderStatus({
 
   if (order.status === "refunded") {
     if (slots.errorScreen) {
-      return <>{slots.errorScreen({ title: text, description: typeof description === "string" ? description : (defaultDescription || ""), errorType: "refunded", orderId: order.id })}</>;
+      return (
+        <>
+          {slots.errorScreen({
+            title: text,
+            description: typeof description === "string" ? description : defaultDescription || "",
+            errorType: "refunded",
+            orderId: order.id,
+          })}
+        </>
+      );
     }
     return (
       <div className="flex items-center justify-center gap-2">
@@ -136,7 +154,16 @@ export const OrderStatus = memo(function OrderStatus({
   }
 
   if (slots.errorScreen) {
-    return <>{slots.errorScreen({ title: text, description: typeof description === "string" ? description : (defaultDescription || ""), errorType: "failure", orderId: order.id })}</>;
+    return (
+      <>
+        {slots.errorScreen({
+          title: text,
+          description: typeof description === "string" ? description : defaultDescription || "",
+          errorType: "failure",
+          orderId: order.id,
+        })}
+      </>
+    );
   }
   return (
     <div className="flex items-center justify-center gap-2">

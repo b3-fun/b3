@@ -48,8 +48,7 @@ export function CheckoutOrderStatus({
   showOrderId = false,
   classes,
 }: CheckoutOrderStatusProps) {
-  const { orderAndTransactions, isLoadingOrderAndTransactions } =
-    useAnyspendOrderAndTransactions(orderId);
+  const { orderAndTransactions, isLoadingOrderAndTransactions } = useAnyspendOrderAndTransactions(orderId);
   const order = orderAndTransactions?.data?.order;
   const executeTx = orderAndTransactions?.data?.executeTx;
   const points = orderAndTransactions?.data?.points;
@@ -67,11 +66,7 @@ export function CheckoutOrderStatus({
   const onErrorCalled = useRef(false);
   useEffect(() => {
     if (!order || onErrorCalled.current) return;
-    if (
-      order.status === "failure" ||
-      order.status === "expired" ||
-      order.status === "refunded"
-    ) {
+    if (order.status === "failure" || order.status === "expired" || order.status === "refunded") {
       const { description } = getStatusDisplay(order);
       onError?.(new Error(description || `Order ${order.status}`));
       onErrorCalled.current = true;
@@ -107,10 +102,7 @@ export function CheckoutOrderStatus({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className={cn(
-        "anyspend-checkout-order-status flex flex-col items-center gap-5 py-6",
-        classes?.orderStatusPanel,
-      )}
+      className={cn("anyspend-checkout-order-status flex flex-col items-center gap-5 py-6", classes?.orderStatusPanel)}
     >
       {/* Step progress / terminal state icon */}
       <OrderStatus order={order} />
@@ -136,7 +128,9 @@ export function CheckoutOrderStatus({
             {showOrderId && (
               <div className="flex w-full items-center justify-between gap-3">
                 <span className="text-as-tertiary shrink-0">Order ID</span>
-                <span className="text-as-primary min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{order.id}</span>
+                <span className="text-as-primary min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
+                  {order.id}
+                </span>
               </div>
             )}
           </div>
@@ -211,9 +205,7 @@ export function CheckoutOrderStatus({
 
       {/* Refunding message (transient state — no action needed) */}
       {isRefunding && (
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Please wait while your funds are being returned.
-        </p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Please wait while your funds are being returned.</p>
       )}
     </motion.div>
   );

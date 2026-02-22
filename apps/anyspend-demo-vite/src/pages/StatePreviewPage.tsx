@@ -62,7 +62,15 @@ const STATUS_GROUPS: { kind: "pending" | "success" | "error"; label: string; sta
   {
     kind: "pending",
     label: "In Progress",
-    statuses: ["scanning_deposit_transaction", "waiting_stripe_payment", "sending_token_from_vault", "quoting_after_deposit", "relay", "executing", "refunding"],
+    statuses: [
+      "scanning_deposit_transaction",
+      "waiting_stripe_payment",
+      "sending_token_from_vault",
+      "quoting_after_deposit",
+      "relay",
+      "executing",
+      "refunding",
+    ],
   },
   {
     kind: "success",
@@ -106,8 +114,7 @@ function buildMockOrder(status: OrderStatus_, type: OrderType): components["sche
     onrampMetadata: null,
     oneClickBuyUrl: null,
     stripePaymentIntentId: null,
-    settlement:
-      status === "executed" ? { actualDstAmount: "250000000000000000000" } : { actualDstAmount: undefined },
+    settlement: status === "executed" ? { actualDstAmount: "250000000000000000000" } : { actualDstAmount: undefined },
   };
 
   const metadata = { srcToken: USDC_BASE, dstToken: B3_TOKEN };
@@ -156,7 +163,15 @@ function buildMockOrder(status: OrderStatus_, type: OrderType): components["sche
 /* but with a mock order instead of polling                            */
 /* ------------------------------------------------------------------ */
 
-function MockCheckoutOrderStatus({ order, showPoints = false, showOrderId = false }: { order: components["schemas"]["Order"]; showPoints?: boolean; showOrderId?: boolean }) {
+function MockCheckoutOrderStatus({
+  order,
+  showPoints = false,
+  showOrderId = false,
+}: {
+  order: components["schemas"]["Order"];
+  showPoints?: boolean;
+  showOrderId?: boolean;
+}) {
   const isExecuted = order.status === "executed";
   const isRefunding = order.status === "refunding";
 
@@ -180,7 +195,9 @@ function MockCheckoutOrderStatus({ order, showPoints = false, showOrderId = fals
             {showOrderId && (
               <div className="flex w-full items-center justify-between gap-3">
                 <span className="text-as-tertiary shrink-0">Order ID</span>
-                <span className="text-as-primary min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{order.id}</span>
+                <span className="text-as-primary min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
+                  {order.id}
+                </span>
               </div>
             )}
           </div>
@@ -226,9 +243,7 @@ function MockCheckoutOrderStatus({ order, showPoints = false, showOrderId = fals
       )}
 
       {isRefunding && (
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Please wait while your funds are being returned.
-        </p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Please wait while your funds are being returned.</p>
       )}
     </div>
   );
@@ -282,7 +297,9 @@ export default function StatePreviewPage() {
               &larr; Back
             </button>
             <div>
-              <h1 className="text-sm font-semibold" style={{ color: textPrimary }}>State Preview</h1>
+              <h1 className="text-sm font-semibold" style={{ color: textPrimary }}>
+                State Preview
+              </h1>
               <p className="text-xs" style={{ color: textMuted }}>
                 Toggle widget states to preview success, error, and loading UI
               </p>
@@ -319,7 +336,8 @@ export default function StatePreviewPage() {
                   className="flex-1 py-3 text-xs font-medium transition-all"
                   style={{
                     color: selectedWidget === key ? (isDark ? "#fff" : "#111827") : textMuted,
-                    background: selectedWidget === key ? (isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.02)") : "transparent",
+                    background:
+                      selectedWidget === key ? (isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.02)") : "transparent",
                     borderBottom: selectedWidget === key ? "2px solid #3b82f6" : "2px solid transparent",
                   }}
                 >
@@ -331,8 +349,11 @@ export default function StatePreviewPage() {
             {selectedWidget === "order-status" && (
               <>
                 {/* Order type — radio-style list */}
-                <div className="px-4 pt-4 pb-3">
-                  <label className="mb-2.5 block text-[10px] font-semibold uppercase tracking-widest" style={{ color: textMuted }}>
+                <div className="px-4 pb-3 pt-4">
+                  <label
+                    className="mb-2.5 block text-[10px] font-semibold uppercase tracking-widest"
+                    style={{ color: textMuted }}
+                  >
                     Order Type
                   </label>
                   <div className="grid grid-cols-2 gap-1.5">
@@ -342,22 +363,30 @@ export default function StatePreviewPage() {
                         onClick={() => setSelectedType(type)}
                         className="flex items-center gap-2 rounded-lg px-3 py-2 text-left text-xs transition-all"
                         style={{
-                          background: selectedType === type
-                            ? (isDark ? "rgba(59,130,246,0.15)" : "rgba(59,130,246,0.08)")
-                            : "transparent",
+                          background:
+                            selectedType === type
+                              ? isDark
+                                ? "rgba(59,130,246,0.15)"
+                                : "rgba(59,130,246,0.08)"
+                              : "transparent",
                           border: `1px solid ${selectedType === type ? (isDark ? "rgba(59,130,246,0.3)" : "rgba(59,130,246,0.25)") : "transparent"}`,
-                          color: selectedType === type ? (isDark ? "#93bbfc" : "#2563eb") : (isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)"),
+                          color:
+                            selectedType === type
+                              ? isDark
+                                ? "#93bbfc"
+                                : "#2563eb"
+                              : isDark
+                                ? "rgba(255,255,255,0.5)"
+                                : "rgba(0,0,0,0.5)",
                         }}
                       >
                         <span
                           className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full"
                           style={{
-                            border: `1.5px solid ${selectedType === type ? "#3b82f6" : (isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)")}`,
+                            border: `1.5px solid ${selectedType === type ? "#3b82f6" : isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}`,
                           }}
                         >
-                          {selectedType === type && (
-                            <span className="block h-1.5 w-1.5 rounded-full bg-blue-500" />
-                          )}
+                          {selectedType === type && <span className="block h-1.5 w-1.5 rounded-full bg-blue-500" />}
                         </span>
                         {ORDER_TYPE_LABELS[type]}
                       </button>
@@ -368,8 +397,11 @@ export default function StatePreviewPage() {
                 <div style={{ height: 1, background: border }} />
 
                 {/* Order status — grouped by kind */}
-                <div className="px-4 pt-3 pb-4">
-                  <label className="mb-2.5 block text-[10px] font-semibold uppercase tracking-widest" style={{ color: textMuted }}>
+                <div className="px-4 pb-4 pt-3">
+                  <label
+                    className="mb-2.5 block text-[10px] font-semibold uppercase tracking-widest"
+                    style={{ color: textMuted }}
+                  >
                     Status
                   </label>
                   <div className="flex flex-col gap-3">
@@ -379,7 +411,8 @@ export default function StatePreviewPage() {
                           <span
                             className="block h-1.5 w-1.5 rounded-full"
                             style={{
-                              background: group.kind === "pending" ? "#f59e0b" : group.kind === "success" ? "#10b981" : "#ef4444",
+                              background:
+                                group.kind === "pending" ? "#f59e0b" : group.kind === "success" ? "#10b981" : "#ef4444",
                             }}
                           />
                           <span className="text-[10px] font-medium" style={{ color: textMuted }}>
@@ -397,7 +430,9 @@ export default function StatePreviewPage() {
                                 className="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-left transition-all"
                                 style={{
                                   background: isSelected
-                                    ? (isDark ? "rgba(59,130,246,0.12)" : "rgba(59,130,246,0.06)")
+                                    ? isDark
+                                      ? "rgba(59,130,246,0.12)"
+                                      : "rgba(59,130,246,0.06)"
                                     : "transparent",
                                   border: `1px solid ${isSelected ? (isDark ? "rgba(59,130,246,0.25)" : "rgba(59,130,246,0.2)") : "transparent"}`,
                                 }}
@@ -407,7 +442,9 @@ export default function StatePreviewPage() {
                                   style={{
                                     color: isSelected
                                       ? undefined
-                                      : (isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.12)"),
+                                      : isDark
+                                        ? "rgba(255,255,255,0.1)"
+                                        : "rgba(0,0,0,0.12)",
                                   }}
                                   fill={isSelected ? "currentColor" : "none"}
                                   strokeWidth={isSelected ? 0 : 1.5}
@@ -416,8 +453,12 @@ export default function StatePreviewPage() {
                                   className="text-xs"
                                   style={{
                                     color: isSelected
-                                      ? (isDark ? "#fff" : "#111827")
-                                      : (isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.5)"),
+                                      ? isDark
+                                        ? "#fff"
+                                        : "#111827"
+                                      : isDark
+                                        ? "rgba(255,255,255,0.45)"
+                                        : "rgba(0,0,0,0.5)",
                                     fontWeight: isSelected ? 500 : 400,
                                   }}
                                 >
@@ -427,8 +468,12 @@ export default function StatePreviewPage() {
                                   className="ml-auto font-mono text-[10px]"
                                   style={{
                                     color: isSelected
-                                      ? (isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.3)")
-                                      : (isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"),
+                                      ? isDark
+                                        ? "rgba(255,255,255,0.25)"
+                                        : "rgba(0,0,0,0.3)"
+                                      : isDark
+                                        ? "rgba(255,255,255,0.1)"
+                                        : "rgba(0,0,0,0.15)",
                                   }}
                                 >
                                   {status.replace(/_/g, " ")}
@@ -447,8 +492,11 @@ export default function StatePreviewPage() {
             {selectedWidget === "checkout-order-status" && (
               <>
                 {/* Checkout only cares about status — order type is irrelevant */}
-                <div className="px-4 pt-4 pb-4">
-                  <label className="mb-2.5 block text-[10px] font-semibold uppercase tracking-widest" style={{ color: textMuted }}>
+                <div className="px-4 pb-4 pt-4">
+                  <label
+                    className="mb-2.5 block text-[10px] font-semibold uppercase tracking-widest"
+                    style={{ color: textMuted }}
+                  >
                     Order Status
                   </label>
                   <div className="flex flex-col gap-3">
@@ -458,7 +506,8 @@ export default function StatePreviewPage() {
                           <span
                             className="block h-1.5 w-1.5 rounded-full"
                             style={{
-                              background: group.kind === "pending" ? "#f59e0b" : group.kind === "success" ? "#10b981" : "#ef4444",
+                              background:
+                                group.kind === "pending" ? "#f59e0b" : group.kind === "success" ? "#10b981" : "#ef4444",
                             }}
                           />
                           <span className="text-[10px] font-medium" style={{ color: textMuted }}>
@@ -476,7 +525,9 @@ export default function StatePreviewPage() {
                                 className="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-left transition-all"
                                 style={{
                                   background: isSelected
-                                    ? (isDark ? "rgba(59,130,246,0.12)" : "rgba(59,130,246,0.06)")
+                                    ? isDark
+                                      ? "rgba(59,130,246,0.12)"
+                                      : "rgba(59,130,246,0.06)"
                                     : "transparent",
                                   border: `1px solid ${isSelected ? (isDark ? "rgba(59,130,246,0.25)" : "rgba(59,130,246,0.2)") : "transparent"}`,
                                 }}
@@ -486,7 +537,9 @@ export default function StatePreviewPage() {
                                   style={{
                                     color: isSelected
                                       ? undefined
-                                      : (isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.12)"),
+                                      : isDark
+                                        ? "rgba(255,255,255,0.1)"
+                                        : "rgba(0,0,0,0.12)",
                                   }}
                                   fill={isSelected ? "currentColor" : "none"}
                                   strokeWidth={isSelected ? 0 : 1.5}
@@ -495,8 +548,12 @@ export default function StatePreviewPage() {
                                   className="text-xs"
                                   style={{
                                     color: isSelected
-                                      ? (isDark ? "#fff" : "#111827")
-                                      : (isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.5)"),
+                                      ? isDark
+                                        ? "#fff"
+                                        : "#111827"
+                                      : isDark
+                                        ? "rgba(255,255,255,0.45)"
+                                        : "rgba(0,0,0,0.5)",
                                     fontWeight: isSelected ? 500 : 400,
                                   }}
                                 >
@@ -506,8 +563,12 @@ export default function StatePreviewPage() {
                                   className="ml-auto font-mono text-[10px]"
                                   style={{
                                     color: isSelected
-                                      ? (isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.3)")
-                                      : (isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"),
+                                      ? isDark
+                                        ? "rgba(255,255,255,0.25)"
+                                        : "rgba(0,0,0,0.3)"
+                                      : isDark
+                                        ? "rgba(255,255,255,0.1)"
+                                        : "rgba(0,0,0,0.15)",
                                   }}
                                 >
                                   {status.replace(/_/g, " ")}
@@ -524,40 +585,78 @@ export default function StatePreviewPage() {
                 <div style={{ height: 1, background: border }} />
 
                 {/* Props toggles */}
-                <div className="px-4 pt-3 pb-4">
-                  <label className="mb-2.5 block text-[10px] font-semibold uppercase tracking-widest" style={{ color: textMuted }}>
+                <div className="px-4 pb-4 pt-3">
+                  <label
+                    className="mb-2.5 block text-[10px] font-semibold uppercase tracking-widest"
+                    style={{ color: textMuted }}
+                  >
                     Props
                   </label>
                   <div className="flex flex-col gap-2">
-                    {([
-                      { key: "showPoints", label: "showPoints", value: showPoints, toggle: () => setShowPoints(v => !v) },
-                      { key: "showOrderId", label: "showOrderId", value: showOrderId, toggle: () => setShowOrderId(v => !v) },
-                    ] as const).map(({ key, label, value, toggle: onToggle }) => (
+                    {(
+                      [
+                        {
+                          key: "showPoints",
+                          label: "showPoints",
+                          value: showPoints,
+                          toggle: () => setShowPoints(v => !v),
+                        },
+                        {
+                          key: "showOrderId",
+                          label: "showOrderId",
+                          value: showOrderId,
+                          toggle: () => setShowOrderId(v => !v),
+                        },
+                      ] as const
+                    ).map(({ key, label, value, toggle: onToggle }) => (
                       <button
                         key={key}
                         onClick={onToggle}
                         className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-left transition-all"
                         style={{
                           background: value
-                            ? (isDark ? "rgba(59,130,246,0.12)" : "rgba(59,130,246,0.06)")
+                            ? isDark
+                              ? "rgba(59,130,246,0.12)"
+                              : "rgba(59,130,246,0.06)"
                             : "transparent",
-                          border: `1px solid ${value ? (isDark ? "rgba(59,130,246,0.25)" : "rgba(59,130,246,0.2)") : (isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)")}`,
+                          border: `1px solid ${value ? (isDark ? "rgba(59,130,246,0.25)" : "rgba(59,130,246,0.2)") : isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)"}`,
                         }}
                       >
                         <span
                           className="flex h-4 w-4 shrink-0 items-center justify-center rounded"
                           style={{
                             background: value ? "#3b82f6" : "transparent",
-                            border: value ? "none" : `1.5px solid ${isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.2)"}`,
+                            border: value
+                              ? "none"
+                              : `1.5px solid ${isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.2)"}`,
                           }}
                         >
                           {value && (
-                            <svg viewBox="0 0 12 12" className="h-2.5 w-2.5" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <svg
+                              viewBox="0 0 12 12"
+                              className="h-2.5 w-2.5"
+                              fill="none"
+                              stroke="white"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
                               <path d="M2.5 6l2.5 2.5 4.5-5" />
                             </svg>
                           )}
                         </span>
-                        <span className="font-mono text-xs" style={{ color: value ? (isDark ? "#93bbfc" : "#2563eb") : (isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)") }}>
+                        <span
+                          className="font-mono text-xs"
+                          style={{
+                            color: value
+                              ? isDark
+                                ? "#93bbfc"
+                                : "#2563eb"
+                              : isDark
+                                ? "rgba(255,255,255,0.5)"
+                                : "rgba(0,0,0,0.5)",
+                          }}
+                        >
                           {label}
                         </span>
                         <span className="ml-auto font-mono text-[10px]" style={{ color: textDim }}>
@@ -574,7 +673,10 @@ export default function StatePreviewPage() {
           {/* ---- Preview ---- */}
           <div className="flex flex-col gap-4">
             <div className="overflow-hidden rounded-xl" style={{ border: `1px solid ${border}`, background: surface }}>
-              <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: `1px solid ${border}` }}>
+              <div
+                className="flex items-center justify-between px-5 py-3"
+                style={{ borderBottom: `1px solid ${border}` }}
+              >
                 <span className="font-mono text-[10px] uppercase tracking-widest" style={{ color: textDim }}>
                   {selectedWidget === "order-status"
                     ? `${selectedType} / ${selectedStatus}`
@@ -616,10 +718,19 @@ export default function StatePreviewPage() {
             </div>
 
             {/* Mock order info */}
-            <div className="rounded-lg px-4 py-3" style={{ border: `1px solid ${border}`, background: isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)" }}>
+            <div
+              className="rounded-lg px-4 py-3"
+              style={{
+                border: `1px solid ${border}`,
+                background: isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)",
+              }}
+            >
               <p className="font-mono text-[11px]" style={{ color: textDim }}>
                 mock: {selectedType} &middot; 5 USDC &rarr; 250 B3 &middot; status:{" "}
-                <code className="rounded px-1.5 py-0.5" style={{ background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)", color: textMuted }}>
+                <code
+                  className="rounded px-1.5 py-0.5"
+                  style={{ background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)", color: textMuted }}
+                >
                   {selectedStatus}
                 </code>
               </p>

@@ -62,7 +62,12 @@ const DialogContent: React.ForwardRefExoticComponent<DialogContentProps & React.
             )}
             {...props}
           >
-            <div className={cn("modal-inner-content flex flex-1 flex-col overflow-hidden rounded-xl border border-[#D1D1D6] bg-white shadow-[0_20px_24px_-4px_rgba(10,13,18,0.08),0_8px_8px_-4px_rgba(10,13,18,0.03),0_3px_3px_-1.5px_rgba(10,13,18,0.04)] dark:border-neutral-700 dark:bg-neutral-900", !hideGABranding && "mb-[23px]")}>
+            <div
+              className={cn(
+                "modal-inner-content flex flex-1 flex-col overflow-hidden rounded-xl border border-[#D1D1D6] bg-white shadow-[0_20px_24px_-4px_rgba(10,13,18,0.08),0_8px_8px_-4px_rgba(10,13,18,0.03),0_3px_3px_-1.5px_rgba(10,13,18,0.04)] dark:border-neutral-700 dark:bg-neutral-900",
+                !hideGABranding && "mb-[23px]",
+              )}
+            >
               {children}
               {!hideCloseButton && (
                 <DialogPrimitive.Close

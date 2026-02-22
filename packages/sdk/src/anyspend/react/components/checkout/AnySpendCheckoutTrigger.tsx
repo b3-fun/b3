@@ -160,74 +160,74 @@ export function AnySpendCheckoutTrigger({
   return (
     <AnySpendFingerprintWrapper fingerprint={fingerprint}>
       <AnySpendCustomizationProvider slots={slots} content={content} theme={theme}>
-      {/* Hide Global Account branding & flatten accordion in modal context */}
-      <style dangerouslySetInnerHTML={{ __html: MODAL_STYLE_OVERRIDES }} />
+        {/* Hide Global Account branding & flatten accordion in modal context */}
+        <style dangerouslySetInnerHTML={{ __html: MODAL_STYLE_OVERRIDES }} />
 
-      <div className="anyspend-checkout-trigger flex flex-col">
-        {/* Cart summary with items */}
-        {hasItems && (
-          <div className="border-b border-gray-200 p-5 dark:border-gray-700">
-            <CheckoutCartPanel
-              items={items}
+        <div className="anyspend-checkout-trigger flex flex-col">
+          {/* Cart summary with items */}
+          {hasItems && (
+            <div className="border-b border-gray-200 p-5 dark:border-gray-700">
+              <CheckoutCartPanel
+                items={items}
+                totalAmount={computedTotal}
+                tokenSymbol={tokenSymbol}
+                tokenDecimals={tokenDecimals}
+                organizationName={organizationName}
+                organizationLogo={organizationLogo}
+                classes={classes}
+                footer={footer}
+                shipping={typeof shipping === "string" ? { amount: shipping } : shipping}
+                tax={typeof tax === "string" ? { amount: tax } : tax}
+                discount={typeof discount === "string" ? { amount: discount } : discount}
+                summaryLines={summaryLines}
+              />
+            </div>
+          )}
+
+          {/* Total-only header when no items */}
+          {!hasItems && (
+            <div className="border-b border-gray-200 p-5 dark:border-gray-700">
+              <div className="flex flex-col gap-3">
+                <div className={cn("flex items-center justify-between", classes?.cartSummary)}>
+                  <span className="text-base font-semibold text-gray-900 dark:text-gray-100">Total</span>
+                  <span className={cn("text-base font-semibold text-gray-900 dark:text-gray-100", classes?.cartTotal)}>
+                    {formattedTotal} {tokenSymbol}
+                  </span>
+                </div>
+                {footer !== null &&
+                  (footer !== undefined ? (
+                    footer
+                  ) : (
+                    <PoweredByBranding
+                      organizationName={organizationName}
+                      organizationLogo={organizationLogo}
+                      classes={classes}
+                    />
+                  ))}
+              </div>
+            </div>
+          )}
+
+          {/* Payment methods */}
+          <div className="px-2 py-3">
+            <CheckoutPaymentPanel
+              recipientAddress={recipientAddress}
+              destinationTokenAddress={destinationTokenAddress}
+              destinationTokenChainId={destinationTokenChainId}
               totalAmount={computedTotal}
-              tokenSymbol={tokenSymbol}
-              tokenDecimals={tokenDecimals}
-              organizationName={organizationName}
-              organizationLogo={organizationLogo}
+              buttonText={buttonText}
+              themeColor={themeColor}
+              returnUrl={returnUrl}
+              returnLabel={returnLabel}
+              onSuccess={onSuccess}
+              onError={onError}
+              callbackMetadata={mergedMetadata}
               classes={classes}
-              footer={footer}
-              shipping={typeof shipping === "string" ? { amount: shipping } : shipping}
-              tax={typeof tax === "string" ? { amount: tax } : tax}
-              discount={typeof discount === "string" ? { amount: discount } : discount}
-              summaryLines={summaryLines}
+              defaultPaymentMethod={defaultPaymentMethod}
+              senderAddress={senderAddress}
             />
           </div>
-        )}
-
-        {/* Total-only header when no items */}
-        {!hasItems && (
-          <div className="border-b border-gray-200 p-5 dark:border-gray-700">
-            <div className="flex flex-col gap-3">
-              <div className={cn("flex items-center justify-between", classes?.cartSummary)}>
-                <span className="text-base font-semibold text-gray-900 dark:text-gray-100">Total</span>
-                <span className={cn("text-base font-semibold text-gray-900 dark:text-gray-100", classes?.cartTotal)}>
-                  {formattedTotal} {tokenSymbol}
-                </span>
-              </div>
-              {footer !== null &&
-                (footer !== undefined ? (
-                  footer
-                ) : (
-                  <PoweredByBranding
-                    organizationName={organizationName}
-                    organizationLogo={organizationLogo}
-                    classes={classes}
-                  />
-                ))}
-            </div>
-          </div>
-        )}
-
-        {/* Payment methods */}
-        <div className="px-2 py-3">
-          <CheckoutPaymentPanel
-            recipientAddress={recipientAddress}
-            destinationTokenAddress={destinationTokenAddress}
-            destinationTokenChainId={destinationTokenChainId}
-            totalAmount={computedTotal}
-            buttonText={buttonText}
-            themeColor={themeColor}
-            returnUrl={returnUrl}
-            returnLabel={returnLabel}
-            onSuccess={onSuccess}
-            onError={onError}
-            callbackMetadata={mergedMetadata}
-            classes={classes}
-            defaultPaymentMethod={defaultPaymentMethod}
-            senderAddress={senderAddress}
-          />
         </div>
-      </div>
       </AnySpendCustomizationProvider>
     </AnySpendFingerprintWrapper>
   );

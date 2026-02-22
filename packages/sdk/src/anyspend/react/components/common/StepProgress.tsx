@@ -41,18 +41,14 @@ export function StepProgress({
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ delay: index * 0.2 }}
                 >
-                  <AnimatedCheckmark
-                    className="h-10 w-10"
-                    strokeWidth={2.5}
-                    static={!animateCompletedSteps}
-                  />
+                  <AnimatedCheckmark className="h-10 w-10" strokeWidth={2.5} static={!animateCompletedSteps} />
                 </motion.div>
               ) : (
                 <motion.div
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ delay: index * 0.2 }}
-                  className={`relative flex h-10 w-10 items-center justify-center rounded-full border-as-border-secondary border-[3px]`}
+                  className={`border-as-border-secondary relative flex h-10 w-10 items-center justify-center rounded-full border-[3px]`}
                 >
                   {index === currentStepIndex ? (
                     // Current step - show spinning border and step number

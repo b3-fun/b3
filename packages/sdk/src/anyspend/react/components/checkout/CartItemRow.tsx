@@ -36,8 +36,14 @@ export function CartItemRow({ item, formattedPrice, classes }: CartItemRowProps)
           {item.metadata && Object.keys(item.metadata).length > 0 && (
             <div className={cn("mt-1 flex flex-wrap gap-x-3 gap-y-0.5", classes?.cartItemMetadata)}>
               {Object.entries(item.metadata).map(([key, value]) => (
-                <span key={key} className={cn("text-xs text-gray-400 dark:text-gray-500", classes?.cartItemMetadataLabel)}>
-                  {key}: <span className={cn("text-gray-600 dark:text-gray-300", classes?.cartItemMetadataValue)}>{value}</span>
+                <span
+                  key={key}
+                  className={cn("text-xs text-gray-400 dark:text-gray-500", classes?.cartItemMetadataLabel)}
+                >
+                  {key}:{" "}
+                  <span className={cn("text-gray-600 dark:text-gray-300", classes?.cartItemMetadataValue)}>
+                    {value}
+                  </span>
                 </span>
               ))}
             </div>

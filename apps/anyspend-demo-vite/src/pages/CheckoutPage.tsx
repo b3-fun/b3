@@ -146,26 +146,21 @@ function CartEditorModal({
 
   const addMetadata = useCallback((itemIndex: number) => {
     setEditItems(prev =>
-      prev.map((item, i) =>
-        i === itemIndex ? { ...item, metadata: { ...item.metadata, "": "" } } : item,
-      ),
+      prev.map((item, i) => (i === itemIndex ? { ...item, metadata: { ...item.metadata, "": "" } } : item)),
     );
   }, []);
 
-  const updateMetadata = useCallback(
-    (itemIndex: number, oldKey: string, newKey: string, value: string) => {
-      setEditItems(prev =>
-        prev.map((item, i) => {
-          if (i !== itemIndex) return item;
-          const meta = { ...item.metadata };
-          if (oldKey !== newKey) delete meta[oldKey];
-          meta[newKey] = value;
-          return { ...item, metadata: meta };
-        }),
-      );
-    },
-    [],
-  );
+  const updateMetadata = useCallback((itemIndex: number, oldKey: string, newKey: string, value: string) => {
+    setEditItems(prev =>
+      prev.map((item, i) => {
+        if (i !== itemIndex) return item;
+        const meta = { ...item.metadata };
+        if (oldKey !== newKey) delete meta[oldKey];
+        meta[newKey] = value;
+        return { ...item, metadata: meta };
+      }),
+    );
+  }, []);
 
   const removeMetadata = useCallback((itemIndex: number, key: string) => {
     setEditItems(prev =>
@@ -208,12 +203,16 @@ function CartEditorModal({
   const sectionClass = "rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800/50";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4 pt-12 pb-12">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4 pb-12 pt-12">
       <div className="w-full max-w-2xl rounded-xl border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-900">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-gray-700">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Edit Cart & Order Summary</h2>
-          <button type="button" onClick={onClose} className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800"
+          >
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -249,23 +248,51 @@ function CartEditorModal({
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className={labelClass}>Name</label>
-                      <input className={inputClass} value={item.name} onChange={e => updateItem(index, { name: e.target.value })} />
+                      <input
+                        className={inputClass}
+                        value={item.name}
+                        onChange={e => updateItem(index, { name: e.target.value })}
+                      />
                     </div>
                     <div>
                       <label className={labelClass}>Image URL</label>
-                      <input className={inputClass} value={item.imageUrl} onChange={e => updateItem(index, { imageUrl: e.target.value })} placeholder="https://..." />
+                      <input
+                        className={inputClass}
+                        value={item.imageUrl}
+                        onChange={e => updateItem(index, { imageUrl: e.target.value })}
+                        placeholder="https://..."
+                      />
                     </div>
                     <div className="col-span-2">
                       <label className={labelClass}>Description</label>
-                      <input className={inputClass} value={item.description} onChange={e => updateItem(index, { description: e.target.value })} />
+                      <input
+                        className={inputClass}
+                        value={item.description}
+                        onChange={e => updateItem(index, { description: e.target.value })}
+                      />
                     </div>
                     <div>
                       <label className={labelClass}>Amount (tokens)</label>
-                      <input className={inputClass} type="number" min="0" step="0.01" value={item.amount} onChange={e => updateItem(index, { amount: e.target.value })} />
+                      <input
+                        className={inputClass}
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={item.amount}
+                        onChange={e => updateItem(index, { amount: e.target.value })}
+                      />
                     </div>
                     <div>
                       <label className={labelClass}>Quantity</label>
-                      <input className={inputClass} type="number" min="1" value={item.quantity} onChange={e => updateItem(index, { quantity: Math.max(1, Number.parseInt(e.target.value) || 1) })} />
+                      <input
+                        className={inputClass}
+                        type="number"
+                        min="1"
+                        value={item.quantity}
+                        onChange={e =>
+                          updateItem(index, { quantity: Math.max(1, Number.parseInt(e.target.value) || 1) })
+                        }
+                      />
                     </div>
                   </div>
 
@@ -331,11 +358,23 @@ function CartEditorModal({
                   <div className="mt-2 grid grid-cols-2 gap-2">
                     <div>
                       <label className={labelClass}>Amount (tokens)</label>
-                      <input className={inputClass} type="number" min="0" step="0.01" value={adj.shippingAmount} onChange={e => setAdj(prev => ({ ...prev, shippingAmount: e.target.value }))} />
+                      <input
+                        className={inputClass}
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={adj.shippingAmount}
+                        onChange={e => setAdj(prev => ({ ...prev, shippingAmount: e.target.value }))}
+                      />
                     </div>
                     <div>
                       <label className={labelClass}>Label (optional)</label>
-                      <input className={inputClass} value={adj.shippingLabel} onChange={e => setAdj(prev => ({ ...prev, shippingLabel: e.target.value }))} placeholder="Shipping" />
+                      <input
+                        className={inputClass}
+                        value={adj.shippingLabel}
+                        onChange={e => setAdj(prev => ({ ...prev, shippingLabel: e.target.value }))}
+                        placeholder="Shipping"
+                      />
                     </div>
                   </div>
                 )}
@@ -356,15 +395,32 @@ function CartEditorModal({
                   <div className="mt-2 grid grid-cols-3 gap-2">
                     <div>
                       <label className={labelClass}>Amount (tokens)</label>
-                      <input className={inputClass} type="number" min="0" step="0.01" value={adj.taxAmount} onChange={e => setAdj(prev => ({ ...prev, taxAmount: e.target.value }))} />
+                      <input
+                        className={inputClass}
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={adj.taxAmount}
+                        onChange={e => setAdj(prev => ({ ...prev, taxAmount: e.target.value }))}
+                      />
                     </div>
                     <div>
                       <label className={labelClass}>Label (optional)</label>
-                      <input className={inputClass} value={adj.taxLabel} onChange={e => setAdj(prev => ({ ...prev, taxLabel: e.target.value }))} placeholder="Tax" />
+                      <input
+                        className={inputClass}
+                        value={adj.taxLabel}
+                        onChange={e => setAdj(prev => ({ ...prev, taxLabel: e.target.value }))}
+                        placeholder="Tax"
+                      />
                     </div>
                     <div>
                       <label className={labelClass}>Rate (optional)</label>
-                      <input className={inputClass} value={adj.taxRate} onChange={e => setAdj(prev => ({ ...prev, taxRate: e.target.value }))} placeholder="8%" />
+                      <input
+                        className={inputClass}
+                        value={adj.taxRate}
+                        onChange={e => setAdj(prev => ({ ...prev, taxRate: e.target.value }))}
+                        placeholder="8%"
+                      />
                     </div>
                   </div>
                 )}
@@ -385,15 +441,32 @@ function CartEditorModal({
                   <div className="mt-2 grid grid-cols-3 gap-2">
                     <div>
                       <label className={labelClass}>Amount (tokens)</label>
-                      <input className={inputClass} type="number" min="0" step="0.01" value={adj.discountAmount} onChange={e => setAdj(prev => ({ ...prev, discountAmount: e.target.value }))} />
+                      <input
+                        className={inputClass}
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={adj.discountAmount}
+                        onChange={e => setAdj(prev => ({ ...prev, discountAmount: e.target.value }))}
+                      />
                     </div>
                     <div>
                       <label className={labelClass}>Label (optional)</label>
-                      <input className={inputClass} value={adj.discountLabel} onChange={e => setAdj(prev => ({ ...prev, discountLabel: e.target.value }))} placeholder="Discount" />
+                      <input
+                        className={inputClass}
+                        value={adj.discountLabel}
+                        onChange={e => setAdj(prev => ({ ...prev, discountLabel: e.target.value }))}
+                        placeholder="Discount"
+                      />
                     </div>
                     <div>
                       <label className={labelClass}>Code (optional)</label>
-                      <input className={inputClass} value={adj.discountCode} onChange={e => setAdj(prev => ({ ...prev, discountCode: e.target.value }))} placeholder="SAVE10" />
+                      <input
+                        className={inputClass}
+                        value={adj.discountCode}
+                        onChange={e => setAdj(prev => ({ ...prev, discountCode: e.target.value }))}
+                        placeholder="SAVE10"
+                      />
                     </div>
                   </div>
                 )}
@@ -415,15 +488,29 @@ function CartEditorModal({
                   <div key={idx} className="mt-2 flex items-end gap-2">
                     <div className="flex-1">
                       <label className={labelClass}>Label</label>
-                      <input className={inputClass} value={line.label} onChange={e => updateSummaryLine(idx, { label: e.target.value })} />
+                      <input
+                        className={inputClass}
+                        value={line.label}
+                        onChange={e => updateSummaryLine(idx, { label: e.target.value })}
+                      />
                     </div>
                     <div className="w-24">
                       <label className={labelClass}>Amount</label>
-                      <input className={inputClass} type="number" step="0.01" value={line.amount} onChange={e => updateSummaryLine(idx, { amount: e.target.value })} />
+                      <input
+                        className={inputClass}
+                        type="number"
+                        step="0.01"
+                        value={line.amount}
+                        onChange={e => updateSummaryLine(idx, { amount: e.target.value })}
+                      />
                     </div>
                     <div className="flex-1">
                       <label className={labelClass}>Note</label>
-                      <input className={inputClass} value={line.description} onChange={e => updateSummaryLine(idx, { description: e.target.value })} />
+                      <input
+                        className={inputClass}
+                        value={line.description}
+                        onChange={e => updateSummaryLine(idx, { description: e.target.value })}
+                      />
                     </div>
                     <button
                       type="button"
@@ -497,11 +584,19 @@ export default function CheckoutPage() {
     : undefined;
 
   const tax = adjustments.taxEnabled
-    ? { amount: toWei(adjustments.taxAmount), label: adjustments.taxLabel || undefined, rate: adjustments.taxRate || undefined }
+    ? {
+        amount: toWei(adjustments.taxAmount),
+        label: adjustments.taxLabel || undefined,
+        rate: adjustments.taxRate || undefined,
+      }
     : undefined;
 
   const discount = adjustments.discountEnabled
-    ? { amount: toWei(adjustments.discountAmount), label: adjustments.discountLabel || undefined, code: adjustments.discountCode || undefined }
+    ? {
+        amount: toWei(adjustments.discountAmount),
+        label: adjustments.discountLabel || undefined,
+        code: adjustments.discountCode || undefined,
+      }
     : undefined;
 
   const summaryLines: CheckoutSummaryLine[] | undefined =

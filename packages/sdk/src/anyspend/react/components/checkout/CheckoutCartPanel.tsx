@@ -88,7 +88,11 @@ export function CheckoutCartPanel({
         (footer !== undefined ? (
           footer
         ) : (
-          <PoweredByBranding organizationName={organizationName} organizationLogo={organizationLogo} classes={classes} />
+          <PoweredByBranding
+            organizationName={organizationName}
+            organizationLogo={organizationLogo}
+            classes={classes}
+          />
         ))}
     </div>
   );

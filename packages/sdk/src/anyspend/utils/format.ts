@@ -77,9 +77,17 @@ export const getStatusDisplay = (
     }
 
     case "refunding":
-      return { text: "Refunding Order", status: "processing", description: "Your funds are being returned to your wallet" };
+      return {
+        text: "Refunding Order",
+        status: "processing",
+        description: "Your funds are being returned to your wallet",
+      };
     case "refunded":
-      return { text: "Order Refunded", status: "failure", description: "Your funds have been returned to your wallet." };
+      return {
+        text: "Order Refunded",
+        status: "failure",
+        description: "Your funds have been returned to your wallet.",
+      };
 
     case "failure":
       return {

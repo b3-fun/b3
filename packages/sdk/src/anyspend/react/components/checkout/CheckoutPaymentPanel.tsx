@@ -245,7 +245,10 @@ export function CheckoutPaymentPanel({
 
         {/* Credit or Debit Card */}
         <div className="anyspend-method-card">
-          <button onClick={() => setPaymentMethod(paymentMethod === "card" ? null : "card")} className={accordionButtonClass(paymentMethod === "card")}>
+          <button
+            onClick={() => setPaymentMethod(paymentMethod === "card" ? null : "card")}
+            className={accordionButtonClass(paymentMethod === "card")}
+          >
             <RadioCircle selected={paymentMethod === "card"} themeColor={themeColor} />
             <CreditCard className="h-5 w-5 text-gray-700 dark:text-gray-300" />
             <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Credit or debit card</span>

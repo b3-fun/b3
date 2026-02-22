@@ -61,7 +61,7 @@ export function FiatCheckoutPanel({
   const orderCreatedRef = useRef(false);
 
   const { createOrder, isCreatingOrder } = useAnyspendCreateOnrampOrder({
-    onSuccess: (data) => {
+    onSuccess: data => {
       const id = data.data?.id;
       const intentId = data.data?.stripePaymentIntentId;
       if (id && intentId) {
@@ -358,7 +358,14 @@ interface StripeCheckoutFormProps {
   classes?: AnySpendCheckoutClasses;
 }
 
-function StripeCheckoutForm({ themeColor, orderId, onSuccess, onOrderCreated, onError, classes }: StripeCheckoutFormProps) {
+function StripeCheckoutForm({
+  themeColor,
+  orderId,
+  onSuccess,
+  onOrderCreated,
+  onError,
+  classes,
+}: StripeCheckoutFormProps) {
   const stripe = useStripe();
   const elements = useElements();
 

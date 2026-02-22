@@ -113,9 +113,7 @@ export default function ConnectWalletPayment({
             </>
           ) : (
             <>
-              <span className="whitespace-nowrap pl-4 text-lg md:text-sm">
-                {paymentLabel}
-              </span>
+              <span className="whitespace-nowrap pl-4 text-lg md:text-sm">{paymentLabel}</span>
               <ChevronRight className="h-4 w-4" />
             </>
           )}

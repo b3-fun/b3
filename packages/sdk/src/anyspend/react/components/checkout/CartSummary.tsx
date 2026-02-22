@@ -51,7 +51,7 @@ export function CartSummary({
 
   const formattedSummaryLines = useMemo(
     () =>
-      summaryLines?.map((line) => ({
+      summaryLines?.map(line => ({
         ...line,
         formattedAmount: formatTokenAmount(BigInt(line.amount), tokenDecimals),
         isNegative: BigInt(line.amount) < BigInt(0),
@@ -114,7 +114,7 @@ export function CartSummary({
       )}
 
       {/* Custom summary lines */}
-      {formattedSummaryLines?.map((line) => (
+      {formattedSummaryLines?.map(line => (
         <div key={line.label} className={cn("flex items-center justify-between py-1", classes?.cartSummaryLine)}>
           <span className={cn("text-sm text-gray-500 dark:text-gray-400", classes?.cartSummaryLineLabel)}>
             {line.label}
@@ -125,9 +125,7 @@ export function CartSummary({
           <span
             className={cn(
               "text-sm",
-              line.isNegative
-                ? "font-medium text-green-600 dark:text-green-400"
-                : "text-gray-500 dark:text-gray-400",
+              line.isNegative ? "font-medium text-green-600 dark:text-green-400" : "text-gray-500 dark:text-gray-400",
               classes?.cartSummaryLineAmount,
             )}
           >

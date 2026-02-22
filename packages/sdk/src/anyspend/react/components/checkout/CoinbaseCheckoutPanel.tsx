@@ -62,7 +62,7 @@ export function CoinbaseCheckoutPanel({
   const orderCreatedRef = useRef(false);
 
   const { createOrder, isCreatingOrder } = useAnyspendCreateOnrampOrder({
-    onSuccess: (data) => {
+    onSuccess: data => {
       const id = data.data?.id;
       if (id) {
         setOrderId(id);
@@ -103,7 +103,7 @@ export function CoinbaseCheckoutPanel({
         redirectUrl: window.location.href,
         useSessionToken: false,
       })
-      .then((response) => {
+      .then(response => {
         if (response.data?.url) {
           // Notify parent to persist orderId before redirecting to Coinbase
           if (orderId) onOrderCreated?.(orderId);
@@ -115,7 +115,7 @@ export function CoinbaseCheckoutPanel({
           setIsRedirecting(false);
         }
       })
-      .catch((err) => {
+      .catch(err => {
         setError(err.message || "Failed to generate Coinbase Pay URL.");
         setIsRedirecting(false);
         onError?.(err instanceof Error ? err : new Error(err.message));

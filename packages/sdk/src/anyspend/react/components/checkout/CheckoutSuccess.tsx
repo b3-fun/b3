@@ -23,7 +23,10 @@ export function CheckoutSuccess({ txHash, orderId, returnUrl, returnLabel, class
       <>
         {slots.successScreen({
           title: typeof content.successTitle === "string" ? content.successTitle : "Payment Successful",
-          description: typeof content.successDescription === "string" ? content.successDescription : "Your payment has been processed successfully.",
+          description:
+            typeof content.successDescription === "string"
+              ? content.successDescription
+              : "Your payment has been processed successfully.",
           txHash,
           orderId,
           explorerUrl: txHash ? `https://explorer.b3.fun/tx/${txHash}` : undefined,

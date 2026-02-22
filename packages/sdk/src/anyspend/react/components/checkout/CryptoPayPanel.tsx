@@ -161,7 +161,7 @@ export function CryptoPayPanel({
   const qrOrderCreatedRef = useRef(false);
 
   const { createOrder: createDepositOrder, isCreatingOrder: isCreatingQrOrder } = useCreateDepositFirstOrder({
-    onSuccess: (data) => {
+    onSuccess: data => {
       setQrOrderId(data.data?.id);
       setGlobalAddress(data.data?.globalAddress);
     },
@@ -182,7 +182,16 @@ export function CryptoPayPanel({
       callbackMetadata,
       creatorAddress: effectiveAddress,
     });
-  }, [selectedSrcToken, selectedSrcChainId, recipientAddress, destinationTokenChainId, dstToken, callbackMetadata, createDepositOrder, effectiveAddress]);
+  }, [
+    selectedSrcToken,
+    selectedSrcChainId,
+    recipientAddress,
+    destinationTokenChainId,
+    dstToken,
+    callbackMetadata,
+    createDepositOrder,
+    effectiveAddress,
+  ]);
 
   const { orderAndTransactions: qrOat } = useAnyspendOrderAndTransactions(qrOrderId);
   useOnOrderSuccess({
@@ -227,7 +236,7 @@ export function CryptoPayPanel({
   const { switchChainAndExecute } = useUnifiedChainSwitchAndExecute();
 
   const { createOrder: createSwapOrder, isCreatingOrder: isCreatingSwapOrder } = useAnyspendCreateOrder({
-    onSuccess: (data) => {
+    onSuccess: data => {
       const id = data.data?.id;
       if (id) setWalletOrderId(id);
     },
@@ -305,7 +314,19 @@ export function CryptoPayPanel({
       callbackMetadata,
       creatorAddress: effectiveAddress,
     });
-  }, [selectedSrcToken, walletAddress, effectiveAddress, recipientAddress, selectedSrcChainId, destinationTokenChainId, dstToken, srcAmount, totalAmount, callbackMetadata, createSwapOrder]);
+  }, [
+    selectedSrcToken,
+    walletAddress,
+    effectiveAddress,
+    recipientAddress,
+    selectedSrcChainId,
+    destinationTokenChainId,
+    dstToken,
+    srcAmount,
+    totalAmount,
+    callbackMetadata,
+    createSwapOrder,
+  ]);
 
   /* ------------------------------------------------------------------ */
   /* Handlers                                                           */
@@ -504,7 +525,13 @@ export function CryptoPayPanel({
         >
           <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
           <span className="flex items-center gap-1 text-xs font-medium text-gray-400 dark:text-gray-500">
-            {qrExpanded ? "or send directly" : <><QrCode className="h-3 w-3" /> or send with QR code</>}
+            {qrExpanded ? (
+              "or send directly"
+            ) : (
+              <>
+                <QrCode className="h-3 w-3" /> or send with QR code
+              </>
+            )}
             <ChevronDown className={cn("h-3 w-3 transition-transform", qrExpanded && "rotate-180")} />
           </span>
           <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
@@ -550,7 +577,13 @@ export function CryptoPayPanel({
                     </span>{" "}
                     on{" "}
                     <span className="font-semibold text-gray-900 dark:text-gray-100">
-                      {chainLogoUrl && <img src={chainLogoUrl} alt="" className="mb-px mr-0.5 inline h-3.5 w-3.5 rounded-full align-text-bottom" />}
+                      {chainLogoUrl && (
+                        <img
+                          src={chainLogoUrl}
+                          alt=""
+                          className="mb-px mr-0.5 inline h-3.5 w-3.5 rounded-full align-text-bottom"
+                        />
+                      )}
                       {chainName}
                     </span>{" "}
                     to:
@@ -572,7 +605,9 @@ export function CryptoPayPanel({
                   {/* Warning */}
                   <p className="text-xs leading-snug text-orange-500/80 dark:text-orange-400/80">
                     Only send {selectedSrcToken?.symbol} on{" "}
-                    {chainLogoUrl && <img src={chainLogoUrl} alt="" className="mr-0.5 inline h-3 w-3 rounded-full align-text-bottom" />}
+                    {chainLogoUrl && (
+                      <img src={chainLogoUrl} alt="" className="mr-0.5 inline h-3 w-3 rounded-full align-text-bottom" />
+                    )}
                     {chainName}. Sending other tokens or using a different network may result in loss of funds.
                   </p>
                 </div>

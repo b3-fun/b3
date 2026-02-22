@@ -1370,26 +1370,26 @@ function AnySpendInner({
               text: btnInfo.text,
             })
           ) : (
-          <ShinyButton
-            accentColor={"hsl(var(--as-brand))"}
-            disabled={btnInfo.disable}
-            onClick={onMainButtonClick}
-            className={
-              (btnInfo.error && classes?.mainButtonError) ||
-              (btnInfo.disable && classes?.mainButtonDisabled) ||
-              classes?.mainButton ||
-              cn(
-                "as-main-button relative w-full",
-                btnInfo.error ? "!bg-as-red" : btnInfo.disable ? "!bg-as-on-surface-2" : "!bg-as-brand",
-              )
-            }
-            textClassName={cn(btnInfo.error ? "text-white" : btnInfo.disable ? "text-as-secondary" : "text-white")}
-          >
-            <div className="flex items-center justify-center gap-2">
-              {btnInfo.loading && <Loader2 className="h-4 w-4 animate-spin" />}
-              {btnInfo.text}
-            </div>
-          </ShinyButton>
+            <ShinyButton
+              accentColor={"hsl(var(--as-brand))"}
+              disabled={btnInfo.disable}
+              onClick={onMainButtonClick}
+              className={
+                (btnInfo.error && classes?.mainButtonError) ||
+                (btnInfo.disable && classes?.mainButtonDisabled) ||
+                classes?.mainButton ||
+                cn(
+                  "as-main-button relative w-full",
+                  btnInfo.error ? "!bg-as-red" : btnInfo.disable ? "!bg-as-on-surface-2" : "!bg-as-brand",
+                )
+              }
+              textClassName={cn(btnInfo.error ? "text-white" : btnInfo.disable ? "text-as-secondary" : "text-white")}
+            >
+              <div className="flex items-center justify-center gap-2">
+                {btnInfo.loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                {btnInfo.text}
+              </div>
+            </ShinyButton>
           )}
 
           {!hideTransactionHistoryButton && (globalAddress || effectiveRecipientAddress) ? (
@@ -1523,7 +1523,9 @@ function AnySpendInner({
   ) : null;
 
   const defaultSuccessTitle = content.successTitle || "Transfer Complete";
-  const defaultSuccessDesc = content.successDescription || `Your ${selectedSrcToken.symbol} has been sent to ${effectiveRecipientAddress?.slice(0, 6)}...${effectiveRecipientAddress?.slice(-4)} on ${getChainName(selectedSrcChainId)}`;
+  const defaultSuccessDesc =
+    content.successDescription ||
+    `Your ${selectedSrcToken.symbol} has been sent to ${effectiveRecipientAddress?.slice(0, 6)}...${effectiveRecipientAddress?.slice(-4)} on ${getChainName(selectedSrcChainId)}`;
   const resolvedReturnLabel = content.returnButtonLabel || returnHomeLabel;
 
   const directTransferSuccessView = slots.successScreen ? (
@@ -1550,9 +1552,7 @@ function AnySpendInner({
         <AnimatedCheckmark className="h-16 w-16" />
         <div className="text-center">
           <h2 className="text-as-primary text-xl font-bold">{defaultSuccessTitle}</h2>
-          <p className="text-as-secondary mt-1 text-sm">
-            {defaultSuccessDesc}
-          </p>
+          <p className="text-as-secondary mt-1 text-sm">{defaultSuccessDesc}</p>
         </div>
       </div>
 

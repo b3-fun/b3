@@ -1,15 +1,15 @@
 ---
 title: "Hooks"
-description: "React hooks for building custom payment flows and managing order lifecycles"
+description: "React hooks for building custom payment flows, managing orders, and accessing AnySpend services"
 ---
 
-## Core Hooks
+## Order Hooks
 
 ### `useAnyspendQuote`
 
-Get real-time pricing information for token swaps and cross-chain transactions.
+Get real-time pricing for token swaps and cross-chain transactions. Quotes auto-refresh every 10 seconds.
 
-```tsx title="Basic Usage" icon="quote-left"
+```tsx title="Basic Usage" icon="chart-line"
 import { useAnyspendQuote } from "@b3dotfun/sdk/anyspend";
 
 const {
@@ -26,50 +26,48 @@ const {
   Quote configuration object
 </ParamField>
 
-#### QuoteRequest Interface
-
-```typescript title="Type Definition" icon="code"
+```typescript title="QuoteRequest" icon="code"
 interface QuoteRequest {
-  srcChain: number;              // Source chain ID
-  dstChain: number;              // Destination chain ID
-  srcTokenAddress: string;       // Source token contract address
-  dstTokenAddress: string;       // Destination token contract address
-  type: "swap" | "custom";       // Order type
+  srcChain: number;         // Source chain ID
+  dstChain: number;         // Destination chain ID
+  srcTokenAddress: string;  // Source token contract address
+  dstTokenAddress: string;  // Destination token contract address
+  type: "swap" | "custom";  // Order type
   tradeType: "EXACT_INPUT" | "EXACT_OUTPUT";
-  amount: string;                // Amount in smallest unit (wei)
+  amount: string;           // Amount in smallest unit (wei)
 }
 ```
 
-#### Return Values
+#### Returns
 
 <ResponseField name="anyspendQuote" type="QuoteResponse | null">
-  Quote data with pricing and fees
+  Quote data with pricing, fees, and expected output
 </ResponseField>
 
 <ResponseField name="isLoadingAnyspendQuote" type="boolean">
-  Loading state indicator
+  Loading state
 </ResponseField>
 
 <ResponseField name="getAnyspendQuoteError" type="Error | null">
-  Error object if quote failed
+  Error if quote request failed
 </ResponseField>
 
 <ResponseField name="refetchAnyspendQuote" type="() => void">
-  Function to manually refresh quote
+  Manually refresh the quote
 </ResponseField>
 
-#### Usage Example
+#### Example
 
-```tsx title="Swap Quote Component" icon="exchange-alt" lines
+```tsx title="Swap Quote Preview" icon="exchange-alt"
 function SwapQuote() {
   const quoteRequest = {
-    srcChain: 1,           // Ethereum
-    dstChain: 8333,        // B3
-    srcTokenAddress: "0xA0b86a33E6Fb6Dd9a9B3d8B5FEb2b3C8e7D9Ff1E", // USDC
+    srcChain: 1,
+    dstChain: 8453,
+    srcTokenAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC on Ethereum
     dstTokenAddress: "0x0000000000000000000000000000000000000000", // ETH
-    type: "swap",
-    tradeType: "EXACT_INPUT",
-    amount: "1000000", // 1 USDC (6 decimals)
+    type: "swap" as const,
+    tradeType: "EXACT_INPUT" as const,
+    amount: "1000000", // 1 USDC
   };
 
   const { anyspendQuote, isLoadingAnyspendQuote, getAnyspendQuoteError } =
@@ -83,7 +81,6 @@ function SwapQuote() {
       <p>You'll receive: {anyspendQuote?.expectedOutput} ETH</p>
       <p>Network fee: ${anyspendQuote?.networkFeeUsd}</p>
       <p>Service fee: ${anyspendQuote?.serviceFeeUsd}</p>
-      <p>Total cost: ${anyspendQuote?.totalUsdCost}</p>
     </div>
   );
 }
@@ -93,96 +90,89 @@ function SwapQuote() {
 
 ### `useAnyspendCreateOrder`
 
-Create and execute AnySpend orders with comprehensive error handling.
+Create and execute AnySpend orders for crypto payments.
 
 ```tsx title="Basic Usage" icon="plus-circle"
 import { useAnyspendCreateOrder } from "@b3dotfun/sdk/anyspend";
 
-const {
-  createOrder,
-  isCreatingOrder,
-  createOrderError
-} = useAnyspendCreateOrder(options);
+const { createOrder, isCreatingOrder } = useAnyspendCreateOrder({
+  onSuccess: (data) => console.log("Order created:", data.data.id),
+  onError: (error) => console.error("Failed:", error.message),
+});
 ```
 
 #### Parameters
 
-<ParamField path="options" type="CreateOrderOptions">
-  Configuration object with callback functions
+<ParamField path="options" type="UseAnyspendCreateOrderProps">
+  Configuration with callback functions
 </ParamField>
 
-#### CreateOrderOptions Interface
-
-```typescript title="Type Definition" icon="settings"
-interface CreateOrderOptions {
-  onSuccess?: (data: OrderResponse) => void;
+```typescript title="UseAnyspendCreateOrderProps" icon="code"
+interface UseAnyspendCreateOrderProps {
+  onSuccess?: (data: CreateOrderResponse) => void;
   onError?: (error: Error) => void;
   onSettled?: () => void;
 }
 ```
 
-#### Return Values
+#### Returns
 
-<ResponseField name="createOrder" type="(request: CreateOrderRequest) => void">
-  Function to create and execute an order
+<ResponseField name="createOrder" type="(params: CreateOrderParams) => void">
+  Function to create an order
 </ResponseField>
 
 <ResponseField name="isCreatingOrder" type="boolean">
-  Loading state indicator
+  Loading state
 </ResponseField>
 
-<ResponseField name="createOrderError" type="Error | null">
-  Error object if order creation failed
-</ResponseField>
+```typescript title="CreateOrderParams" icon="code"
+interface CreateOrderParams {
+  recipientAddress: string;
+  orderType: string;          // "swap", "hype_duel", "custom_exact_in", etc.
+  srcChain: number;
+  dstChain: number;
+  srcToken: Token;
+  dstToken: Token;
+  srcAmount: string;
+  expectedDstAmount?: string;
+  creatorAddress?: string;
+  metadata?: Record<string, unknown>;
+  callbackMetadata?: Record<string, unknown>;
+  nft?: NFT & { price: string };
+  tournament?: Tournament & { contractAddress: string; entryPriceOrFundAmount: string };
+  payload?: any;
+}
+```
 
-#### Usage Example
+#### Example
 
-```tsx title="Payment Form" icon="credit-card" lines
+```tsx title="Payment Form" icon="credit-card"
 function PaymentForm() {
   const { createOrder, isCreatingOrder } = useAnyspendCreateOrder({
     onSuccess: (data) => {
-      console.log("Order created:", data.data.id);
-      // Redirect to payment or show success
       router.push(`/payment/${data.data.id}`);
     },
     onError: (error) => {
-      console.error("Order failed:", error.message);
       toast.error("Payment failed. Please try again.");
     },
   });
 
   const handlePayment = () => {
     createOrder({
-      recipientAddress: userWalletAddress,
+      recipientAddress: merchantAddress,
       orderType: "swap",
       srcChain: 1,
-      dstChain: 8333,
-      srcToken: {
-        chainId: 1,
-        address: "0xA0b86a33E6Fb6Dd9a9B3d8B5FEb2b3C8e7D9Ff1E",
-        name: "USD Coin",
-        symbol: "USDC",
-        decimals: 6,
-      },
-      dstToken: {
-        chainId: 8333,
-        address: "0x0000000000000000000000000000000000000000",
-        name: "Ether",
-        symbol: "ETH",
-        decimals: 18,
-      },
-      srcAmount: "1000000", // 1 USDC
-      expectedDstAmount: "500000000000000000", // ~0.5 ETH
-      creatorAddress: userWalletAddress,
+      dstChain: 8453,
+      srcToken: { chainId: 1, address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", name: "USD Coin", symbol: "USDC", decimals: 6 },
+      dstToken: { chainId: 8453, address: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", name: "USD Coin", symbol: "USDC", decimals: 6 },
+      srcAmount: "10000000",
+      creatorAddress: userAddress,
     });
   };
 
   return (
-    <button
-      onClick={handlePayment}
-      disabled={isCreatingOrder}
-    >
-      {isCreatingOrder ? "Processing..." : "Pay with Crypto"}
+    <button onClick={handlePayment} disabled={isCreatingOrder}>
+      {isCreatingOrder ? "Processing..." : "Pay 10 USDC"}
     </button>
   );
 }
@@ -190,11 +180,66 @@ function PaymentForm() {
 
 ---
 
+### `useAnyspendCreateOnrampOrder`
+
+Create orders for fiat onramp payments (Stripe, Coinbase Pay).
+
+```tsx title="Basic Usage" icon="credit-card"
+import { useAnyspendCreateOnrampOrder } from "@b3dotfun/sdk/anyspend";
+
+const { createOrder, isCreatingOrder } = useAnyspendCreateOnrampOrder({
+  onSuccess: (data) => {
+    // Redirect user to onramp provider
+    window.location.href = data.data.oneClickBuyUrl;
+  },
+});
+```
+
+#### Parameters
+
+```typescript title="UseAnyspendCreateOnrampOrderProps" icon="code"
+interface UseAnyspendCreateOnrampOrderProps {
+  onSuccess?: (data: CreateOrderResponse) => void;
+  onError?: (error: Error) => void;
+}
+```
+
+#### Returns
+
+<ResponseField name="createOrder" type="(params: CreateOnrampOrderParams) => void">
+  Function to create a fiat onramp order
+</ResponseField>
+
+<ResponseField name="isCreatingOrder" type="boolean">
+  Loading state
+</ResponseField>
+
+```typescript title="CreateOnrampOrderParams" icon="code"
+type CreateOnrampOrderParams = {
+  recipientAddress: string;
+  orderType: string;
+  dstChain: number;
+  dstToken: Token;
+  expectedDstAmount?: string;
+  srcFiatAmount: string;       // Fiat amount (e.g., "10.00")
+  onramp: {
+    vendor: "coinbase" | "stripe";
+    paymentMethod: string;     // e.g., "card"
+    country: string;           // ISO country code
+    redirectUrl: string;       // URL to redirect after payment
+  };
+};
+```
+
+---
+
+## Order Tracking Hooks
+
 ### `useAnyspendOrderAndTransactions`
 
 Monitor order status and track associated blockchain transactions in real-time.
 
-```tsx title="Basic Usage" icon="search"
+```tsx title="Basic Usage" icon="eye"
 import { useAnyspendOrderAndTransactions } from "@b3dotfun/sdk/anyspend";
 
 const {
@@ -207,26 +252,24 @@ const {
 #### Parameters
 
 <ParamField path="orderId" type="string" required>
-  Order ID to track and monitor
+  Order ID to track
 </ParamField>
 
-#### Return Values
+#### Returns
 
 <ResponseField name="orderAndTransactions" type="OrderWithTransactions | null">
   Complete order data with transaction details
 </ResponseField>
 
 <ResponseField name="isLoadingOrderAndTransactions" type="boolean">
-  Loading state indicator
+  Loading state
 </ResponseField>
 
 <ResponseField name="getOrderAndTransactionsError" type="Error | null">
-  Error object if fetch failed
+  Error if fetch failed
 </ResponseField>
 
-#### OrderWithTransactions Interface
-
-```typescript title="Type Definition" icon="database"
+```typescript title="OrderWithTransactions" icon="code"
 interface OrderWithTransactions {
   data: {
     order: Order;               // Order details and status
@@ -238,73 +281,25 @@ interface OrderWithTransactions {
 }
 ```
 
-#### Usage Example
+#### Example
 
-```tsx title="Order Tracker" icon="eye" lines
+```tsx title="Order Tracker" icon="eye"
 function OrderTracker({ orderId }: { orderId: string }) {
   const { orderAndTransactions, isLoadingOrderAndTransactions } =
     useAnyspendOrderAndTransactions(orderId);
 
-  if (isLoadingOrderAndTransactions) {
-    return <div>Loading order status...</div>;
-  }
+  if (isLoadingOrderAndTransactions) return <div>Loading...</div>;
 
-  if (!orderAndTransactions) {
-    return <div>Order not found</div>;
-  }
-
-  const { order, depositTxs, executeTx, refundTxs } = orderAndTransactions.data;
-
-  const getStatusMessage = (status: string) => {
-    switch (status) {
-      case "scanning_deposit_transaction":
-        return "⏳ Waiting for payment confirmation...";
-      case "relay":
-        return "🔄 Processing cross-chain transaction...";
-      case "executed":
-        return "✅ Transaction completed successfully!";
-      case "refunded":
-        return "↩️ Refund processed";
-      default:
-        return "🔄 Processing...";
-    }
-  };
+  const { order, depositTxs, executeTx } = orderAndTransactions!.data;
 
   return (
-    <div className="order-status">
+    <div>
       <h2>Order #{orderId.slice(0, 8)}</h2>
-      <p>{getStatusMessage(order.status)}</p>
-
-      {depositTxs.length > 0 && (
-        <div>
-          <h3>Payment Transaction</h3>
-          <a
-            href={`https://etherscan.io/tx/${depositTxs[0].txHash}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            View on Etherscan
-          </a>
-        </div>
-      )}
-
+      <p>Status: {order.status}</p>
       {executeTx && (
-        <div>
-          <h3>Execution Transaction</h3>
-          <a
-            href={`https://explorer.b3.fun/tx/${executeTx.txHash}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            View on B3 Explorer
-          </a>
-        </div>
-      )}
-
-      {order.errorDetails && (
-        <div className="error">
-          <strong>Error:</strong> {order.errorDetails}
-        </div>
+        <a href={`https://basescan.org/tx/${executeTx.txHash}`}>
+          View Transaction
+        </a>
       )}
     </div>
   );
@@ -317,14 +312,11 @@ function OrderTracker({ orderId }: { orderId: string }) {
 
 Retrieve paginated order history for a user address.
 
-```tsx title="Basic Usage" icon="history"
+```tsx title="Basic Usage" icon="clock-rotate-left"
 import { useAnyspendOrderHistory } from "@b3dotfun/sdk/anyspend";
 
-const {
-  orderHistory,
-  isLoadingOrderHistory,
-  getOrderHistoryError
-} = useAnyspendOrderHistory(creatorAddress, limit, offset);
+const { orderHistory, isLoadingOrderHistory } =
+  useAnyspendOrderHistory(creatorAddress, limit, offset);
 ```
 
 #### Parameters
@@ -341,90 +333,357 @@ const {
   Pagination offset
 </ParamField>
 
-#### Usage Example
+---
 
-```tsx title="Order History Component" icon="list" lines
-function OrderHistory({ userAddress }: { userAddress: string }) {
-  const [page, setPage] = useState(0);
-  const pageSize = 10;
+## Token & Chain Hooks
 
-  const { orderHistory, isLoadingOrderHistory } = useAnyspendOrderHistory(
-    userAddress,
-    pageSize,
-    page * pageSize
-  );
+### `useAnyspendTokens`
 
-  if (isLoadingOrderHistory) {
-    return <div>Loading order history...</div>;
-  }
+Fetch available tokens for a specific chain with optional search.
+
+```tsx title="Basic Usage" icon="coins"
+import { useAnyspendTokens } from "@b3dotfun/sdk/anyspend";
+
+const { tokens, isLoadingTokens } = useAnyspendTokens(chainId, searchQuery);
+```
+
+#### Parameters
+
+<ParamField path="chainId" type="number" required>
+  Chain ID to fetch tokens for
+</ParamField>
+
+<ParamField path="searchQuery" type="string">
+  Optional search filter (token name or symbol)
+</ParamField>
+
+---
+
+### `useGasPrice`
+
+Fetch real-time gas prices for a chain with spike detection.
+
+```tsx title="Basic Usage" icon="gas-pump"
+import { useGasPrice } from "@b3dotfun/sdk/anyspend";
+
+const { gasPrice, isLoading, isSpike, refetch } = useGasPrice(chainId);
+```
+
+#### Parameters
+
+<ParamField path="chainId" type="number">
+  Chain ID to fetch gas price for
+</ParamField>
+
+<ParamField path="options" type="UseGasPriceOptions">
+  Optional configuration
+</ParamField>
+
+```typescript title="UseGasPriceOptions" icon="code"
+interface UseGasPriceOptions {
+  /** Refetch interval in ms (default: 10000) */
+  refetchInterval?: number;
+  /** Enable/disable the query (default: true if chainId is supported) */
+  enabled?: boolean;
+}
+```
+
+#### Returns
+
+<ResponseField name="gasPrice" type="GasPriceData | undefined">
+  Gas price data including fast, standard, and slow estimates
+</ResponseField>
+
+<ResponseField name="isLoading" type="boolean">
+  Loading state
+</ResponseField>
+
+<ResponseField name="isSpike" type="boolean">
+  Whether gas is currently spiking above normal levels
+</ResponseField>
+
+<ResponseField name="isError" type="boolean">
+  Whether there's an error
+</ResponseField>
+
+<ResponseField name="error" type="Error | null">
+  Error object
+</ResponseField>
+
+<ResponseField name="refetch" type="() => void">
+  Manually refresh gas price
+</ResponseField>
+
+---
+
+## Payment Hooks
+
+### `useDirectTransfer`
+
+Execute direct transfers when source and destination token/chain match, bypassing the swap backend for faster, cheaper transactions.
+
+```tsx title="Basic Usage" icon="arrow-right"
+import { useDirectTransfer } from "@b3dotfun/sdk/anyspend";
+
+const { executeDirectTransfer, isTransferring } = useDirectTransfer();
+```
+
+#### Returns
+
+<ResponseField name="executeDirectTransfer" type="(params: DirectTransferParams) => Promise<string | undefined>">
+  Execute a direct transfer. Returns the transaction hash on success.
+</ResponseField>
+
+<ResponseField name="isTransferring" type="boolean">
+  Loading state
+</ResponseField>
+
+```typescript title="DirectTransferParams" icon="code"
+interface DirectTransferParams {
+  chainId: number;
+  tokenAddress: string;
+  recipientAddress: string;
+  amount: bigint;
+  method: CryptoPaymentMethodType; // "CONNECT_WALLET" | "GLOBAL_WALLET"
+}
+```
+
+#### Example
+
+```tsx title="Direct Transfer" icon="arrow-right"
+function DirectTransferButton({ token, recipient, amount }) {
+  const { executeDirectTransfer, isTransferring } = useDirectTransfer();
+
+  const handleTransfer = async () => {
+    const txHash = await executeDirectTransfer({
+      chainId: token.chainId,
+      tokenAddress: token.address,
+      recipientAddress: recipient,
+      amount: BigInt(amount),
+      method: CryptoPaymentMethodType.CONNECT_WALLET,
+    });
+
+    if (txHash) {
+      toast.success("Transfer complete!");
+    }
+  };
 
   return (
-    <div>
-      <h2>Your Orders</h2>
-      {orderHistory?.data.map((order) => (
-        <div key={order.id} className="order-item">
-          <p>Type: {order.type}</p>
-          <p>Status: {order.status}</p>
-          <p>Amount: {order.srcAmount} {order.srcToken.symbol}</p>
-          <p>Date: {new Date(order.createdAt).toLocaleDateString()}</p>
-        </div>
-      ))}
-
-      <button
-        onClick={() => setPage(page - 1)}
-        disabled={page === 0}
-      >
-        Previous
-      </button>
-      <button
-        onClick={() => setPage(page + 1)}
-        disabled={!orderHistory?.data || orderHistory.data.length < pageSize}
-      >
-        Next
-      </button>
-    </div>
+    <button onClick={handleTransfer} disabled={isTransferring}>
+      {isTransferring ? "Transferring..." : "Send Tokens"}
+    </button>
   );
 }
 ```
 
-## Additional Hooks
+---
 
-### `useAnyspendTokens`
+## Fiat & Onramp Hooks
 
-Get available tokens for a specific chain.
+### `useGeoOnrampOptions`
 
-```tsx title="Token List" icon="coins"
-const { tokens, isLoadingTokens } = useAnyspendTokens(1, "USDC");
+Get all available onramp options based on the user's geographic location. Combines geo detection, Coinbase availability, and Stripe support.
+
+```tsx title="Basic Usage" icon="globe"
+import { useGeoOnrampOptions } from "@b3dotfun/sdk/anyspend";
+
+const {
+  isOnrampSupported,
+  coinbaseOnrampOptions,
+  stripeOnrampSupport,
+  stripeWeb2Support,
+  isLoading,
+} = useGeoOnrampOptions(fiatAmount);
 ```
+
+#### Parameters
+
+<ParamField path="srcFiatAmount" type="string" required>
+  The fiat amount for the onramp (e.g., `"50"`)
+</ParamField>
+
+#### Returns
+
+<ResponseField name="isOnrampSupported" type="boolean">
+  Whether any fiat onramp is available for the user's location
+</ResponseField>
+
+<ResponseField name="coinbaseOnrampOptions" type="object">
+  Coinbase Pay configuration and available payment methods
+</ResponseField>
+
+<ResponseField name="coinbaseAvailablePaymentMethods" type="array">
+  Available Coinbase payment methods for the user's region
+</ResponseField>
+
+<ResponseField name="stripeOnrampSupport" type="boolean">
+  Whether Stripe redirect flow is supported
+</ResponseField>
+
+<ResponseField name="stripeWeb2Support" type="object">
+  Whether Stripe embedded form is supported (`{ isSupport: boolean }`)
+</ResponseField>
+
+<ResponseField name="isLoading" type="boolean">
+  Combined loading state
+</ResponseField>
+
+<ResponseField name="geoData" type="object">
+  User's detected geographic data (country, city, timezone)
+</ResponseField>
+
+---
 
 ### `useCoinbaseOnrampOptions`
 
-Get Coinbase onramp configuration for fiat payments.
+Get Coinbase Pay onramp configuration for fiat payments.
 
-```tsx title="Coinbase Onramp" icon="credit-card"
-const { coinbaseOptions, isLoadingCoinbaseOptions } = useCoinbaseOnrampOptions();
+```tsx title="Basic Usage" icon="credit-card"
+import { useCoinbaseOnrampOptions } from "@b3dotfun/sdk/anyspend";
+
+const { coinbaseOptions, isLoadingCoinbaseOptions } = useCoinbaseOnrampOptions(country);
 ```
+
+#### Parameters
+
+<ParamField path="country" type="string">
+  ISO country code (e.g., `"US"`)
+</ParamField>
+
+---
+
+### `useStripeSupport`
+
+Check Stripe payment availability based on the user's location and payment amount.
+
+```tsx title="Basic Usage" icon="stripe"
+import { useStripeSupport } from "@b3dotfun/sdk/anyspend";
+
+const {
+  stripeOnrampSupport,
+  stripeWeb2Support,
+  isLoadingStripeSupport,
+} = useStripeSupport(usdAmount, visitorData, isLoadingVisitorData);
+```
+
+#### Parameters
+
+<ParamField path="usdAmount" type="string">
+  USD amount for the payment
+</ParamField>
+
+<ParamField path="visitorData" type="VisitorData">
+  Fingerprint.js visitor data (optional, for fraud detection)
+</ParamField>
+
+<ParamField path="isLoadingVisitorData" type="boolean">
+  Whether visitor data is still loading
+</ParamField>
+
+#### Returns
+
+<ResponseField name="stripeOnrampSupport" type="boolean">
+  Whether Stripe redirect flow is available
+</ResponseField>
+
+<ResponseField name="stripeWeb2Support" type="{ isSupport: boolean }">
+  Whether Stripe embedded form is available
+</ResponseField>
+
+<ResponseField name="isLoadingStripeSupport" type="boolean">
+  Loading state
+</ResponseField>
+
+---
 
 ### `useStripeClientSecret`
 
-Get Stripe payment intent for credit card payments.
+Get a Stripe client secret for initializing the embedded Stripe payment form.
 
-```tsx title="Stripe Integration" icon="stripe"
-const { clientSecret, isLoadingClientSecret } = useStripeClientSecret(orderData);
+```tsx title="Basic Usage" icon="stripe"
+import { useStripeClientSecret } from "@b3dotfun/sdk/anyspend";
+
+const { clientSecret, isLoadingClientSecret } = useStripeClientSecret(paymentIntentId);
 ```
+
+---
+
+## Checkout Session Hooks
+
+### `useCreateCheckoutSession`
+
+Create a checkout session for backend-tracked payment flows.
+
+```tsx title="Basic Usage" icon="cart-shopping"
+import { useCreateCheckoutSession } from "@b3dotfun/sdk/anyspend";
+
+const { mutate: createSession, data, isPending } = useCreateCheckoutSession();
+
+createSession({
+  success_url: "https://mysite.com/success/{SESSION_ID}",
+  metadata: { sku: "widget-1" },
+});
+```
+
+---
+
+### `useCheckoutSession`
+
+Query a checkout session with automatic polling. Stops polling when status reaches `complete` or `expired`.
+
+```tsx title="Basic Usage" icon="eye"
+import { useCheckoutSession } from "@b3dotfun/sdk/anyspend";
+
+const { data: session, isLoading } = useCheckoutSession(sessionId);
+```
+
+#### Parameters
+
+<ParamField path="sessionId" type="string" required>
+  Checkout session ID to track
+</ParamField>
+
+#### Returns
+
+<ResponseField name="data" type="CheckoutSession">
+  Session data including `status`, `order_id`, `metadata`
+</ResponseField>
+
+<ResponseField name="isLoading" type="boolean">
+  Loading state
+</ResponseField>
+
+#### Example
+
+```tsx title="Session Tracker" icon="eye"
+function CheckoutSessionTracker({ sessionId }) {
+  const { data: session, isLoading } = useCheckoutSession(sessionId);
+
+  if (isLoading) return <div>Loading...</div>;
+
+  switch (session?.data.status) {
+    case "open":
+      return <div>Waiting for payment...</div>;
+    case "processing":
+      return <div>Payment received, processing order...</div>;
+    case "complete":
+      return <div>Order complete! Order ID: {session.data.order_id}</div>;
+    case "expired":
+      return <div>Session expired. Please create a new checkout.</div>;
+  }
+}
+```
+
+---
 
 ## Hook Patterns
 
-### Error Handling Pattern
+### Error Handling
 
-```tsx title="Error Handling" icon="shield-exclamation" lines
+```tsx title="Error Handling Pattern" icon="shield-exclamation"
 function PaymentComponent() {
   const { createOrder, isCreatingOrder } = useAnyspendCreateOrder({
     onError: (error) => {
-      // Log error for debugging
-      console.error("Payment failed:", error);
-
-      // Show user-friendly message
       switch (error.message) {
         case "INSUFFICIENT_BALANCE":
           toast.error("Insufficient balance. Please add funds.");
@@ -432,19 +691,22 @@ function PaymentComponent() {
         case "SLIPPAGE":
           toast.error("Price moved unfavorably. Please try again.");
           break;
+        case "QUOTE_EXPIRED":
+          toast.info("Getting fresh quote...");
+          break;
         default:
           toast.error("Payment failed. Please try again.");
       }
     },
   });
 
-  // Component implementation...
+  // ...
 }
 ```
 
-### Loading State Pattern
+### Loading State Composition
 
-```tsx title="Loading States" icon="spinner" lines
+```tsx title="Combined Loading States" icon="spinner"
 function SwapInterface() {
   const { anyspendQuote, isLoadingAnyspendQuote } = useAnyspendQuote(quoteRequest);
   const { createOrder, isCreatingOrder } = useAnyspendCreateOrder();
@@ -460,39 +722,20 @@ function SwapInterface() {
 }
 ```
 
-### Real-time Updates Pattern
-
-```tsx title="Real-time Updates" icon="sync-alt" lines
-function OrderStatus({ orderId }: { orderId: string }) {
-  const { orderAndTransactions } = useAnyspendOrderAndTransactions(orderId);
-
-  // Auto-refresh every 5 seconds for pending orders
-  useEffect(() => {
-    if (orderAndTransactions?.data.order.status === "relay") {
-      const interval = setInterval(() => {
-        // Refetch is handled automatically by the hook
-      }, 5000);
-
-      return () => clearInterval(interval);
-    }
-  }, [orderAndTransactions?.data.order.status]);
-
-  // Component implementation...
-}
-```
+---
 
 ## Next Steps
 
 <CardGroup cols={3}>
-<Card title="See Examples" icon="code" href="/anyspend/examples">
-  Browse real-world implementation examples
+<Card title="Components" icon="puzzle-piece" href="/anyspend/components">
+  Pre-built components using these hooks
 </Card>
 
-<Card title="Error Handling" icon="bug" href="/anyspend/error-handling">
-  Learn comprehensive error handling strategies
+<Card title="Examples" icon="code" href="/anyspend/examples">
+  Real-world implementation examples
 </Card>
 
-<Card title="Components Reference" icon="puzzle-piece" href="/anyspend/components">
-  Explore pre-built components
+<Card title="Error Handling" icon="shield-exclamation" href="/anyspend/error-handling">
+  Comprehensive error handling guide
 </Card>
 </CardGroup>
