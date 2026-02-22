@@ -2,6 +2,7 @@ import { B3_TOKEN } from "@b3dotfun/sdk/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { base } from "viem/chains";
 import { AnySpendCustomExactIn } from "./AnySpendCustomExactIn";
+import type { AnySpendContent, AnySpendSlots, AnySpendTheme } from "./types/customization";
 
 export const HYPE_TOKEN_DETAILS = {
   SYMBOL: "HYPE",
@@ -29,6 +30,11 @@ export interface AnySpendDepositHypeProps {
   returnToHomeUrl?: string;
   /** Custom label for recipient display (e.g., "OBSN Telegram Bot") */
   customRecipientLabel?: string;
+  /** Optional sender (payer) address — pre-fills token balances when the user address is known ahead of time */
+  senderAddress?: string;
+  slots?: AnySpendSlots;
+  content?: AnySpendContent;
+  theme?: AnySpendTheme;
 }
 
 export function AnySpendDepositHype({
@@ -44,6 +50,10 @@ export function AnySpendDepositHype({
   onTokenSelect,
   customUsdInputValues,
   preferEoa,
+  senderAddress,
+  slots,
+  content,
+  theme,
 }: AnySpendDepositHypeProps) {
   if (!recipientAddress) return null;
 
@@ -86,6 +96,10 @@ export function AnySpendDepositHype({
       onTokenSelect={onTokenSelect}
       customUsdInputValues={customUsdInputValues}
       preferEoa={preferEoa}
+      senderAddress={senderAddress}
+      slots={slots}
+      content={content}
+      theme={theme}
     />
   );
 }

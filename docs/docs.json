@@ -339,11 +339,21 @@
                 ]
               },
               {
-                "group": "Token",
+                "group": "React",
                 "pages": [
-                  "anyspend/airdrop",
-                  "anyspend/tokenomics"
+                  "anyspend/components",
+                  "anyspend/checkout",
+                  "anyspend/customization",
+                  "anyspend/hooks",
+                  "anyspend/examples"
                 ]
+              },
+              {
+                "group": "REST API",
+                "openapi": {
+                  "source": "https://mainnet.anyspend.com/openapi.json",
+                  "directory": "anyspend/api-reference"
+                }
               },
               {
                 "group": "x402",
@@ -365,19 +375,11 @@
                 ]
               },
               {
-                "group": "React",
+                "group": "Token",
                 "pages": [
-                  "anyspend/components",
-                  "anyspend/hooks",
-                  "anyspend/examples"
+                  "anyspend/airdrop",
+                  "anyspend/tokenomics"
                 ]
-              },
-              {
-                "group": "REST API",
-                "openapi": {
-                  "source": "https://mainnet.anyspend.com/openapi.json",
-                  "directory": "anyspend/api-reference"
-                }
               },
               {
                 "group": "Advanced",

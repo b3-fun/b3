@@ -85,11 +85,11 @@ export function CryptoReceiveSection({
         </div>
         {effectiveRecipientAddress ? (
           <button
-            className={classes?.recipientButton || "text-as-tertiarry flex h-7 items-center gap-2 rounded-lg"}
+            className={classes?.recipientButton || "text-as-tertiary flex h-7 items-center gap-2 rounded-lg"}
             onClick={onSelectRecipient}
           >
             <>
-              <span className={classes?.recipientValue || "text-as-tertiarry flex items-center gap-1 text-sm"}>
+              <span className={classes?.recipientValue || "text-as-tertiary flex items-center gap-1 text-sm"}>
                 {customRecipientLabel ||
                   (recipientName ? formatUsername(recipientName) : shortenAddress(effectiveRecipientAddress || ""))}
               </span>

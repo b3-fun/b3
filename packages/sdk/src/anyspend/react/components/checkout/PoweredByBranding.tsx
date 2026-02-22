@@ -24,8 +24,18 @@ export function PoweredByBranding({ organizationName, organizationLogo, classes 
       ) : (
         <div />
       )}
-      <span className="text-xs text-gray-400 dark:text-gray-500">
-        powered by <span className="font-medium text-gray-500 dark:text-gray-400">anyspend</span>
+      <span className="flex items-center gap-1.5 text-xs text-gray-400 opacity-40 dark:text-gray-500">
+        powered by{" "}
+        <img
+          src="https://cdn.b3.fun/anyspend-logo-brand.svg"
+          alt="AnySpend"
+          className="inline-block h-3.5 dark:hidden"
+        />
+        <img
+          src="https://cdn.b3.fun/anyspend-logo-brand-dark.svg"
+          alt="AnySpend"
+          className="hidden h-3.5 dark:inline-block"
+        />
       </span>
     </div>
   );

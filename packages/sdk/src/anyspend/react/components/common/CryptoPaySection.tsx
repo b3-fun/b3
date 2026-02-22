@@ -108,7 +108,7 @@ export function CryptoPaySection({
         <button
           className={
             classes?.paymentMethodButton ||
-            "text-as-tertiarry flex h-7 items-center gap-2 text-sm transition-colors focus:!outline-none"
+            "text-as-tertiary flex h-7 items-center gap-2 text-sm transition-colors focus:!outline-none"
           }
           onClick={onSelectCryptoPaymentMethod}
         >

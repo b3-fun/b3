@@ -15,10 +15,13 @@ import {
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { formatUnits } from "@b3dotfun/sdk/shared/utils/number";
 import invariant from "invariant";
-import { ArrowDown, CheckCircle, Loader2 } from "lucide-react";
+import { ArrowDown, Loader2 } from "lucide-react";
+import { AnimatedCheckmark } from "./icons/AnimatedCheckmark";
 import { motion } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { AnySpendCustomizationProvider, useAnySpendCustomization } from "./context/AnySpendCustomizationContext";
 import type { AnySpendCustomExactInClasses } from "./types/classes";
+import type { AnySpendContent, AnySpendSlots, AnySpendTheme } from "./types/customization";
 
 import { useSetActiveWallet } from "thirdweb/react";
 import { B3_TOKEN } from "../../constants";
@@ -85,6 +88,14 @@ export interface AnySpendCustomExactInProps {
   allowDirectTransfer?: boolean;
   /** Opaque metadata passed to the order for callbacks (e.g., workflow form data) */
   callbackMetadata?: Record<string, unknown>;
+  /** Optional sender (payer) address — pre-fills token balances when the user address is known ahead of time */
+  senderAddress?: string;
+  /** Render function overrides for replaceable UI elements */
+  slots?: AnySpendSlots;
+  /** String or ReactNode overrides for text/messages */
+  content?: AnySpendContent;
+  /** Structured color/theme configuration */
+  theme?: AnySpendTheme;
 }
 
 export function AnySpendCustomExactIn(props: AnySpendCustomExactInProps) {
@@ -92,7 +103,9 @@ export function AnySpendCustomExactIn(props: AnySpendCustomExactInProps) {
 
   return (
     <AnySpendFingerprintWrapper fingerprint={fingerprintConfig}>
-      <AnySpendCustomExactInInner {...props} />
+      <AnySpendCustomizationProvider slots={props.slots} content={props.content} theme={props.theme}>
+        <AnySpendCustomExactInInner {...props} />
+      </AnySpendCustomizationProvider>
     </AnySpendFingerprintWrapper>
   );
 }
@@ -123,7 +136,9 @@ function AnySpendCustomExactInInner({
   classes,
   allowDirectTransfer = false,
   callbackMetadata,
+  senderAddress,
 }: AnySpendCustomExactInProps) {
+  const { slots, content } = useAnySpendCustomization();
   const actionLabel = customExactInConfig?.action ?? "Custom Execution";
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
 
@@ -188,6 +203,7 @@ function AnySpendCustomExactInInner({
     disableUrlParamManagement: true,
     orderType,
     customExactInConfig,
+    senderAddress,
   });
 
   const { connectedEOAWallet } = useAccountWallet();
@@ -503,26 +519,35 @@ function AnySpendCustomExactInInner({
         transition={{ duration: 0.3, delay: 0.2, ease: "easeInOut" }}
         className={cn("mt-4 flex w-full max-w-[460px] flex-col gap-2")}
       >
-        <ShinyButton
-          accentColor={"hsl(var(--as-brand))"}
-          disabled={btnInfo.disable}
-          onClick={onMainButtonClick}
-          className={
-            (btnInfo.error && classes?.mainButtonError) ||
-            (btnInfo.disable && classes?.mainButtonDisabled) ||
-            classes?.mainButton ||
-            cn(
-              "as-main-button relative w-full",
-              btnInfo.error ? "!bg-as-red" : btnInfo.disable ? "!bg-as-on-surface-2" : "!bg-as-brand",
-            )
-          }
-          textClassName={cn(btnInfo.error ? "text-white" : btnInfo.disable ? "text-as-secondary" : "text-white")}
-        >
-          <div className="flex items-center justify-center gap-2">
-            {btnInfo.loading && <Loader2 className="h-4 w-4 animate-spin" />}
-            {btnInfo.text}
-          </div>
-        </ShinyButton>
+        {slots.actionButton ? (
+          slots.actionButton({
+            onClick: onMainButtonClick,
+            disabled: btnInfo.disable,
+            loading: btnInfo.loading,
+            text: btnInfo.text,
+          })
+        ) : (
+          <ShinyButton
+            accentColor={"hsl(var(--as-brand))"}
+            disabled={btnInfo.disable}
+            onClick={onMainButtonClick}
+            className={
+              (btnInfo.error && classes?.mainButtonError) ||
+              (btnInfo.disable && classes?.mainButtonDisabled) ||
+              classes?.mainButton ||
+              cn(
+                "as-main-button relative w-full",
+                btnInfo.error ? "!bg-as-red" : btnInfo.disable ? "!bg-as-on-surface-2" : "!bg-as-brand",
+              )
+            }
+            textClassName={cn(btnInfo.error ? "text-white" : btnInfo.disable ? "text-as-secondary" : "text-white")}
+          >
+            <div className="flex items-center justify-center gap-2">
+              {btnInfo.loading && <Loader2 className="h-4 w-4 animate-spin" />}
+              {btnInfo.text}
+            </div>
+          </ShinyButton>
+        )}
       </motion.div>
 
       {/* Gas indicator - show when source chain has gas data, hide for direct transfers */}
@@ -580,7 +605,7 @@ function AnySpendCustomExactInInner({
           dstToken: selectedDstToken,
           srcAmount: srcAmountFromQuote,
           expectedDstAmount,
-          creatorAddress: globalAddress,
+          creatorAddress: senderAddress || globalAddress,
           payload: {
             amount: activeOutputAmountInWei,
             data: encodedData,
@@ -605,7 +630,7 @@ function AnySpendCustomExactInInner({
           dstToken: selectedDstToken,
           srcAmount: srcAmountBigInt.toString(),
           expectedDstAmount: expectedDstAmountRaw,
-          creatorAddress: globalAddress,
+          creatorAddress: senderAddress || globalAddress,
           payload,
           callbackMetadata,
         });
@@ -667,7 +692,7 @@ function AnySpendCustomExactInInner({
           srcFiatAmount: srcAmount,
           onramp: onrampOptions,
           expectedDstAmount,
-          creatorAddress: globalAddress,
+          creatorAddress: senderAddress || globalAddress,
           payload: {
             amount: activeOutputAmountInWei,
             data: encodedData,
@@ -689,7 +714,7 @@ function AnySpendCustomExactInInner({
           srcFiatAmount: srcAmount,
           onramp: onrampOptions,
           expectedDstAmount: expectedDstAmountRaw,
-          creatorAddress: globalAddress,
+          creatorAddress: senderAddress || globalAddress,
           payload,
         });
       }
@@ -791,20 +816,42 @@ function AnySpendCustomExactInInner({
     />
   ) : null;
 
-  const directTransferSuccessView = (
+  const exactInSuccessTitle = content.successTitle || "Transfer Complete!";
+  const exactInSuccessDesc =
+    content.successDescription || `${srcAmount} ${selectedSrcToken.symbol} sent on ${getChainName(selectedSrcChainId)}`;
+  const exactInReturnLabel = content.returnButtonLabel || returnHomeLabel;
+
+  const directTransferSuccessView = slots.successScreen ? (
+    <>
+      {slots.successScreen({
+        title: typeof exactInSuccessTitle === "string" ? exactInSuccessTitle : "Transfer Complete!",
+        description: typeof exactInSuccessDesc === "string" ? exactInSuccessDesc : "",
+        txHash: directTransferTxHash,
+        explorerUrl: directTransferTxHash
+          ? getExplorerTxUrl(selectedSrcChainId, directTransferTxHash || "")
+          : undefined,
+        onDone: () => {
+          onSuccess?.(srcAmount);
+          if (returnToHomeUrl) {
+            window.location.href = returnToHomeUrl;
+          } else {
+            setB3ModalOpen(false);
+          }
+        },
+        returnUrl: returnToHomeUrl,
+        returnLabel: exactInReturnLabel || undefined,
+      })}
+    </>
+  ) : (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       className="flex flex-col items-center justify-center gap-6 py-8"
     >
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-500/20">
-        <CheckCircle className="h-10 w-10 text-green-500" />
-      </div>
+      <AnimatedCheckmark className="h-16 w-16" />
       <div className="text-center">
-        <h2 className="text-as-primary mb-2 text-xl font-bold">Transfer Complete!</h2>
-        <p className="text-as-primary/60 text-sm">
-          {srcAmount} {selectedSrcToken.symbol} sent on {getChainName(selectedSrcChainId)}
-        </p>
+        <h2 className="text-as-primary mb-2 text-xl font-bold">{exactInSuccessTitle}</h2>
+        <p className="text-as-primary/60 text-sm">{exactInSuccessDesc}</p>
         <p className="text-as-primary/60 mt-1 text-sm">
           to {selectedRecipientOrDefault?.slice(0, 6)}...{selectedRecipientOrDefault?.slice(-4)}
         </p>
@@ -830,7 +877,7 @@ function AnySpendCustomExactInInner({
           }
         }}
       >
-        {returnHomeLabel || (returnToHomeUrl ? "Return to Home" : "Done")}
+        {exactInReturnLabel || (returnToHomeUrl ? "Return to Home" : "Done")}
       </Button>
     </motion.div>
   );

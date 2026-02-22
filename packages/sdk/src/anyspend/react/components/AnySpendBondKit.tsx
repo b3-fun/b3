@@ -13,6 +13,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createPublicClient, encodeFunctionData, formatEther, http, parseEther } from "viem";
 import { BondkitToken, BondkitTokenABI } from "../../../bondkit";
 import { AnySpendCustom } from "./AnySpendCustom";
+import type { AnySpendContent, AnySpendSlots, AnySpendTheme } from "./types/customization";
 
 // Debounce utility function
 function debounce<T extends (...args: any[]) => any>(func: T, wait: number): (...args: Parameters<T>) => void {
@@ -38,7 +39,14 @@ export function AnySpendBondKit({
   imageUrl,
   b3Amount: initialB3Amount,
   onSuccess,
-}: AnySpendBondKitProps) {
+  slots,
+  content,
+  theme,
+}: AnySpendBondKitProps & {
+  slots?: AnySpendSlots;
+  content?: AnySpendContent;
+  theme?: AnySpendTheme;
+}) {
   const hasMounted = useHasMounted();
   const [showAmountPrompt, setShowAmountPrompt] = useState(!initialB3Amount);
   const [b3Amount, setB3Amount] = useState(initialB3Amount || "");
@@ -371,6 +379,9 @@ export function AnySpendBondKit({
       header={header}
       onSuccess={onSuccess}
       showRecipient={true}
+      slots={slots}
+      content={content}
+      theme={theme}
     />
   );
 }

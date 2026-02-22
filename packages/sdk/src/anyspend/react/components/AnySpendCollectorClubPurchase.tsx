@@ -33,6 +33,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { createPublicClient, encodeFunctionData, http } from "viem";
 import { base } from "viem/chains";
 import { AnySpendCustom } from "./AnySpendCustom";
+import type { AnySpendContent, AnySpendSlots, AnySpendTheme } from "./types/customization";
 import {
   BUY_PACKS_FOR_ABI,
   BUY_PACKS_FOR_WITH_DISCOUNT_ABI,
@@ -123,6 +124,9 @@ export interface AnySpendCollectorClubPurchaseProps {
    * When provided, validates on-chain and adjusts the price accordingly.
    */
   discountCode?: string;
+  slots?: AnySpendSlots;
+  content?: AnySpendContent;
+  theme?: AnySpendTheme;
 }
 
 export function AnySpendCollectorClubPurchase({
@@ -143,6 +147,9 @@ export function AnySpendCollectorClubPurchase({
   packType,
   forceFiatPayment,
   discountCode,
+  slots,
+  content,
+  theme,
 }: AnySpendCollectorClubPurchaseProps) {
   const ccShopAddress = isStaging ? CC_SHOP_ADDRESS_STAGING : CC_SHOP_ADDRESS;
 
@@ -391,6 +398,9 @@ export function AnySpendCollectorClubPurchase({
       showRecipient={showRecipient}
       srcFiatAmount={srcFiatAmount}
       forceFiatPayment={forceFiatPayment}
+      slots={slots}
+      content={content}
+      theme={theme}
     />
   );
 }

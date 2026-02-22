@@ -86,7 +86,7 @@ module.exports = {
         "as-on-surface-disabled": "hsl(var(--as-on-surface-disabled))",
         "as-on-disabled": "hsl(var(--as-on-disabled))",
         "as-quaternary": "hsl(var(--as-quaternary))",
-        "as-tertiarry": "hsl(var(--as-tertiarry))",
+        "as-tertiary": "hsl(var(--as-tertiary))",
         "as-success-secondary": "hsl(var(--as-success-secondary))",
         "as-content-icon-success": "hsl(var(--as-content-icon-success))",
         "as-content-disabled": "hsl(var(--as-content-disabled))",

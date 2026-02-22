@@ -2,6 +2,7 @@ import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { normalizeAddress } from "@b3dotfun/sdk/anyspend/utils";
 import { base } from "viem/chains";
 import { AnySpendCustomExactIn } from "./AnySpendCustomExactIn";
+import type { AnySpendContent, AnySpendSlots, AnySpendTheme } from "./types/customization";
 
 const DEPOSIT_FOR_FUNCTION_ABI = JSON.stringify([
   {
@@ -33,6 +34,10 @@ export function AnySpendDepositUpside({
   depositContractAddress,
   token,
   onSuccess,
+  senderAddress,
+  slots,
+  content,
+  theme,
 }: {
   loadOrder?: string;
   mode?: "modal" | "page";
@@ -42,6 +47,11 @@ export function AnySpendDepositUpside({
   depositContractAddress: string;
   token: components["schemas"]["Token"];
   onSuccess?: (amount: string) => void;
+  /** Optional sender (payer) address — pre-fills token balances when the user address is known ahead of time */
+  senderAddress?: string;
+  slots?: AnySpendSlots;
+  content?: AnySpendContent;
+  theme?: AnySpendTheme;
 }) {
   if (!recipientAddress) return null;
 
@@ -76,6 +86,10 @@ export function AnySpendDepositUpside({
       customExactInConfig={customExactInConfig}
       header={header}
       onSuccess={onSuccess}
+      senderAddress={senderAddress}
+      slots={slots}
+      content={content}
+      theme={theme}
     />
   );
 }

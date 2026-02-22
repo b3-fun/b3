@@ -25,7 +25,7 @@ export function CryptoPaymentMethodDisplay({
     return (
       <>
         {connectedAddress ? (
-          <span className="text-as-tertiarry whitespace-nowrap">
+          <span className="text-as-tertiary whitespace-nowrap">
             {connectedName ? formatUsername(connectedName) : shortenAddress(connectedAddress)}
           </span>
         ) : (

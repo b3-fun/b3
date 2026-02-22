@@ -38,11 +38,13 @@ type DialogContentElement = React.ElementRef<typeof DialogPrimitive.Content>;
 type DialogContentProps = React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
   hideCloseButton?: boolean;
   closeBtnClassName?: string;
+  /** Hide the "Global Account" branding footer below the modal */
+  hideGABranding?: boolean;
 };
 
 const DialogContent: React.ForwardRefExoticComponent<DialogContentProps & React.RefAttributes<DialogContentElement>> =
   React.forwardRef<DialogContentElement, DialogContentProps>(
-    ({ className, children, hideCloseButton = true, closeBtnClassName, ...props }, ref) => {
+    ({ className, children, hideCloseButton = true, closeBtnClassName, hideGABranding, ...props }, ref) => {
       const container = typeof window !== "undefined" ? document.getElementById("b3-root") : null;
       return (
         <DialogPortal container={container}>
@@ -60,7 +62,12 @@ const DialogContent: React.ForwardRefExoticComponent<DialogContentProps & React.
             )}
             {...props}
           >
-            <div className="modal-inner-content mb-[23px] flex flex-1 flex-col overflow-hidden rounded-xl border border-[#D1D1D6] bg-white shadow-[0_20px_24px_-4px_rgba(10,13,18,0.08),0_8px_8px_-4px_rgba(10,13,18,0.03),0_3px_3px_-1.5px_rgba(10,13,18,0.04)] dark:border-gray-700 dark:bg-gray-900">
+            <div
+              className={cn(
+                "modal-inner-content flex flex-1 flex-col overflow-hidden rounded-xl border border-[#D1D1D6] bg-white shadow-[0_20px_24px_-4px_rgba(10,13,18,0.08),0_8px_8px_-4px_rgba(10,13,18,0.03),0_3px_3px_-1.5px_rgba(10,13,18,0.04)] dark:border-neutral-700 dark:bg-neutral-900",
+                !hideGABranding && "mb-[23px]",
+              )}
+            >
               {children}
               {!hideCloseButton && (
                 <DialogPrimitive.Close
@@ -75,12 +82,14 @@ const DialogContent: React.ForwardRefExoticComponent<DialogContentProps & React.
               )}
             </div>
             {/* Global Account Footer - Absolutely positioned on outer grey layer */}
-            <div className="b3-modal-ga-branding absolute bottom-[10px] left-0 right-0 flex items-center justify-center gap-1.5 pt-[10px]">
-              <img src="https://cdn.b3.fun/b3_logo.svg" alt="B3" className="h-4 w-4" />
-              <span className="font-neue-montreal-semibold text-xs uppercase leading-none tracking-[0.72px] text-[#0B57C2]">
-                Global Account
-              </span>
-            </div>
+            {!hideGABranding && (
+              <div className="b3-modal-ga-branding absolute bottom-[10px] left-0 right-0 flex items-center justify-center gap-1.5 pt-[10px]">
+                <img src="https://cdn.b3.fun/b3_logo.svg" alt="B3" className="h-4 w-4" />
+                <span className="font-neue-montreal-semibold text-xs uppercase leading-none tracking-[0.72px] text-[#0B57C2]">
+                  Global Account
+                </span>
+              </div>
+            )}
           </DialogPrimitive.Content>
         </DialogPortal>
       );

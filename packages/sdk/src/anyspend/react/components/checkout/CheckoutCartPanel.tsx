@@ -2,8 +2,8 @@
 
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
-import { useMemo } from "react";
-import type { CheckoutItem, AnySpendCheckoutClasses } from "./AnySpendCheckout";
+import { type ReactNode, useMemo } from "react";
+import type { CheckoutItem, CheckoutSummaryLine, AnySpendCheckoutClasses } from "./AnySpendCheckout";
 import { CartItemRow } from "./CartItemRow";
 import { CartSummary } from "./CartSummary";
 import { PoweredByBranding } from "./PoweredByBranding";
@@ -16,6 +16,12 @@ interface CheckoutCartPanelProps {
   organizationName?: string;
   organizationLogo?: string;
   classes?: AnySpendCheckoutClasses;
+  /** Custom footer. Pass `null` to hide, or a ReactNode to replace the default PoweredByBranding. */
+  footer?: ReactNode | null;
+  shipping?: { amount: string; label?: string };
+  tax?: { amount: string; label?: string; rate?: string };
+  discount?: { amount: string; label?: string; code?: string };
+  summaryLines?: CheckoutSummaryLine[];
 }
 
 export function CheckoutCartPanel({
@@ -26,11 +32,25 @@ export function CheckoutCartPanel({
   organizationName,
   organizationLogo,
   classes,
+  footer,
+  shipping,
+  tax,
+  discount,
+  summaryLines,
 }: CheckoutCartPanelProps) {
   const formattedTotal = useMemo(
     () => formatTokenAmount(BigInt(totalAmount), tokenDecimals),
     [totalAmount, tokenDecimals],
   );
+
+  // Compute subtotal from items only (before adjustments)
+  const formattedSubtotal = useMemo(() => {
+    let subtotal = BigInt(0);
+    for (const item of items) {
+      subtotal += BigInt(item.amount) * BigInt(item.quantity);
+    }
+    return formatTokenAmount(subtotal, tokenDecimals);
+  }, [items, tokenDecimals]);
 
   return (
     <div className={cn("anyspend-cart-panel flex flex-col", classes?.cartPanel)}>
@@ -52,9 +72,28 @@ export function CheckoutCartPanel({
         })}
       </div>
 
-      <CartSummary total={formattedTotal} tokenSymbol={tokenSymbol} classes={classes} />
+      <CartSummary
+        total={formattedTotal}
+        tokenSymbol={tokenSymbol}
+        classes={classes}
+        subtotal={formattedSubtotal}
+        tokenDecimals={tokenDecimals}
+        shipping={shipping}
+        tax={tax}
+        discount={discount}
+        summaryLines={summaryLines}
+      />
 
-      <PoweredByBranding organizationName={organizationName} organizationLogo={organizationLogo} classes={classes} />
+      {footer !== null &&
+        (footer !== undefined ? (
+          footer
+        ) : (
+          <PoweredByBranding
+            organizationName={organizationName}
+            organizationLogo={organizationLogo}
+            classes={classes}
+          />
+        ))}
     </div>
   );
 }

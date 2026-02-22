@@ -142,9 +142,9 @@ export function PanelOnramp({
       {/* Pay Section */}
       <div className="border-as-border-secondary bg-as-surface-secondary relative flex w-full flex-col rounded-2xl border p-4">
         <div className="flex h-7 w-full items-center justify-between">
-          <span className="text-as-tertiarry flex items-center text-sm font-bold">Pay</span>
+          <span className="text-as-tertiary flex items-center text-sm font-bold">Pay</span>
           <button
-            className="text-as-tertiarry flex h-7 items-center gap-1 text-sm"
+            className="text-as-tertiary flex h-7 items-center gap-1 text-sm"
             onClick={() => setActivePanel(fiatPaymentMethodIndex)} // PanelView.FIAT_PAYMENT_METHOD
           >
             {(() => {
@@ -175,7 +175,7 @@ export function PanelOnramp({
         {/* Amount Input */}
         <div className="flex items-center justify-center pb-2 pt-8">
           <div className="flex gap-1">
-            <span className="text-as-tertiarry text-2xl font-bold">$</span>
+            <span className="text-as-tertiary text-2xl font-bold">$</span>
             <Input
               ref={amountInputRef}
               type="text"
@@ -227,10 +227,10 @@ export function PanelOnramp({
       {/* Recipient Section */}
       <div className="border-as-border-secondary bg-as-surface-secondary mt-4 flex w-full flex-col gap-3 rounded-xl border p-4">
         <div className="flex w-full items-center justify-between gap-2">
-          <span className="text-as-tertiarry flex items-center text-sm">Recipient</span>
+          <span className="text-as-tertiary flex items-center text-sm">Recipient</span>
           {_recipientAddress ? (
             <button
-              className="text-as-tertiarry flex h-7 items-center gap-1 text-sm transition-colors hover:text-blue-700"
+              className="text-as-tertiary flex h-7 items-center gap-1 text-sm transition-colors hover:text-blue-700"
               onClick={() => setActivePanel(recipientSelectionPanelIndex)} // Recipient selection panel
             >
               <span className="text-sm">
@@ -241,7 +241,7 @@ export function PanelOnramp({
             </button>
           ) : (
             <button
-              className="text-as-tertiarry flex h-7 items-center gap-1 text-sm transition-colors hover:text-blue-700"
+              className="text-as-tertiary flex h-7 items-center gap-1 text-sm transition-colors hover:text-blue-700"
               onClick={() => setActivePanel(5)} // Recipient selection panel
             >
               <Wallet className="text-as-brand" size={16} />
@@ -254,13 +254,13 @@ export function PanelOnramp({
         <div className="divider w-full" />
 
         <div className="flex items-center justify-between gap-4">
-          <span className="text-as-tertiarry text-sm">Expected to receive</span>
+          <span className="text-as-tertiary text-sm">Expected to receive</span>
           <div className="flex flex-wrap items-center justify-end gap-1">
             <span className="text-as-primary font-semibold">
               {destinationAmount || "0"} {dstTokenSymbol || destinationToken?.symbol || ""}
             </span>
             <div className="flex items-center gap-1">
-              <span className="text-as-tertiarry text-sm">
+              <span className="text-as-tertiary text-sm">
                 on {destinationChainId ? ALL_CHAINS[destinationChainId]?.name : ""}
               </span>
               {destinationToken && destinationChainId && destinationToken.metadata?.logoURI && (
@@ -275,7 +275,7 @@ export function PanelOnramp({
         <div className="">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
-              <span className="text-as-tertiarry text-sm">Total</span>
+              <span className="text-as-tertiary text-sm">Total</span>
               {anyspendQuote?.data?.fee && onShowFeeDetail && (
                 <button
                   onClick={onShowFeeDetail}

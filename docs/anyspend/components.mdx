@@ -1,25 +1,39 @@
 ---
 title: "Components"
-description: "React components for seamless crypto payments, NFT purchases, and custom smart contract interactions"
+description: "React components for cross-chain payments, checkout, deposits, NFT purchases, and custom smart contract interactions"
+---
+
+AnySpend provides a suite of React components for every payment use case — from simple swaps to full checkout flows with forms and shipping.
+
+<CardGroup cols={3}>
+<Card title="Swaps & Payments" icon="arrows-rotate" href="#anyspend">
+  Cross-chain swaps, fiat onramp, direct transfers
+</Card>
+<Card title="Checkout" icon="cart-shopping" href="#anyspendcheckout">
+  Cart, order summary, forms, shipping, discounts
+</Card>
+<Card title="Deposits" icon="arrow-down" href="#anyspenddeposit">
+  Chain selection, custom contracts, QR codes
+</Card>
+</CardGroup>
+
 ---
 
 ## Core Components
 
 ### `<AnySpend>`
 
-The primary interface component for token-to-token exchanges and fiat onramps.
+The primary interface component for token-to-token exchanges, fiat onramps, and cross-chain swaps.
 
 ```tsx title="Basic Usage" icon="react"
-// https://github.com/b3-fun/b3/blob/main/packages/sdk/src/anyspend/react/components/AnySpend.tsx
 import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
 
 <AnySpend
   mode="modal"
   defaultActiveTab="crypto"
   destinationTokenAddress="0x..."
-  destinationTokenChainId={8333}
+  destinationTokenChainId={8453}
   recipientAddress="0x..."
-  hideTransactionHistoryButton={false}
 />;
 ```
 
@@ -34,7 +48,7 @@ import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
 </ParamField>
 
 <ParamField path="destinationTokenAddress" type="string">
-  Target token address for buy mode
+  Target token contract address
 </ParamField>
 
 <ParamField path="destinationTokenChainId" type="number">
@@ -45,33 +59,136 @@ import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
   Recipient wallet address
 </ParamField>
 
-<ParamField path="hideTransactionHistoryButton" type="boolean" default="false">
-  Hide transaction history access
+<ParamField path="sourceChainId" type="number">
+  Pre-select the source chain
 </ParamField>
 
 <ParamField path="loadOrder" type="string">
-  Load specific order by ID
+  Load and display an existing order by ID
+</ParamField>
+
+<ParamField path="hideTransactionHistoryButton" type="boolean" default="false">
+  Hide the transaction history button
+</ParamField>
+
+<ParamField path="hideHeader" type="boolean">
+  Hide the component header
+</ParamField>
+
+<ParamField path="hideBottomNavigation" type="boolean">
+  Hide the bottom navigation bar
+</ParamField>
+
+<ParamField path="onTokenSelect" type="(token: Token, event: { preventDefault: () => void }) => void">
+  Called when a token is selected. Call `event.preventDefault()` to prevent default token selection behavior.
+</ParamField>
+
+<ParamField path="onSuccess" type="(txHash?: string) => void">
+  Callback fired on successful transaction
+</ParamField>
+
+<ParamField path="customUsdInputValues" type="string[]">
+  Custom fiat input presets (e.g., `["10", "25", "50", "100"]`)
+</ParamField>
+
+<ParamField path="disableUrlParamManagement" type="boolean">
+  Disable URL parameter syncing for swap configuration
+</ParamField>
+
+<ParamField path="allowDirectTransfer" type="boolean">
+  Enable direct transfers when source and destination token/chain match (skips the swap backend)
+</ParamField>
+
+<ParamField path="destinationTokenAmount" type="string">
+  Fixed destination amount in wei. When set, users cannot change the amount.
+</ParamField>
+
+<ParamField path="senderAddress" type="string">
+  Pre-fill sender address to show token balances before wallet connection
+</ParamField>
+
+<ParamField path="callbackMetadata" type="Record<string, unknown>">
+  Opaque metadata passed through to order callbacks (e.g., workflow form data)
+</ParamField>
+
+<ParamField path="returnToHomeUrl" type="string">
+  URL to redirect to from the "Return to Home" button on the completion screen
+</ParamField>
+
+<ParamField path="customRecipientLabel" type="string">
+  Custom label for the recipient display (e.g., "OBSN Telegram Bot")
+</ParamField>
+
+<ParamField path="returnHomeLabel" type="string">
+  Custom label for the return home button
+</ParamField>
+
+<ParamField path="classes" type="AnySpendClasses">
+  CSS class overrides for specific elements. See [Customization](/anyspend/customization#css-class-overrides).
+</ParamField>
+
+<ParamField path="slots" type="AnySpendSlots">
+  Render function overrides for replaceable UI elements. See [Customization](/anyspend/customization#slots).
+</ParamField>
+
+<ParamField path="content" type="AnySpendContent">
+  Text/message overrides for success, error, and processing states. See [Customization](/anyspend/customization#content).
+</ParamField>
+
+<ParamField path="theme" type="AnySpendTheme">
+  Color and theme configuration. See [Customization](/anyspend/customization#theme).
 </ParamField>
 
 #### Usage Examples
 
 <Tabs>
-<Tab title="Basic Token Swap">
+<Tab title="Basic Swap">
   ```tsx
   <AnySpend
     mode="page"
+    recipientAddress={userWalletAddress}
+    onSuccess={(txHash) => console.log("Completed:", txHash)}
+  />
+  ```
+</Tab>
+
+<Tab title="Fiat Onramp">
+  ```tsx
+  <AnySpend
+    defaultActiveTab="fiat"
+    destinationTokenAddress="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+    destinationTokenChainId={8453}
     recipientAddress={userWalletAddress}
   />
   ```
 </Tab>
 
-<Tab title="Fiat-to-Crypto Onramp">
+<Tab title="Fixed Amount">
   ```tsx
   <AnySpend
-    defaultActiveTab="fiat"
-    destinationTokenAddress="0xA0b86a33E6Fb6Dd9a9B3d8B5FEb2b3C8e7D9Ff1E"
-    destinationTokenChainId={8333}
-    recipientAddress={userWalletAddress}
+    mode="modal"
+    destinationTokenAddress="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+    destinationTokenChainId={8453}
+    destinationTokenAmount="10000000" // 10 USDC
+    recipientAddress={merchantAddress}
+    allowDirectTransfer
+  />
+  ```
+</Tab>
+
+<Tab title="Custom Branding">
+  ```tsx
+  <AnySpend
+    mode="page"
+    recipientAddress={userAddress}
+    theme={{ brandColor: "#6366f1" }}
+    content={{
+      successTitle: "Payment Received!",
+      successDescription: "Your order is being processed.",
+    }}
+    slots={{
+      footer: <PoweredByYourBrand />,
+    }}
   />
   ```
 </Tab>
@@ -79,11 +196,665 @@ import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
 
 ---
 
+### `<AnySpendDeposit>`
+
+A streamlined deposit interface supporting chain selection, crypto/fiat payments, and custom contract deposits.
+
+```tsx title="Basic Usage" icon="arrow-down"
+import { AnySpendDeposit } from "@b3dotfun/sdk/anyspend/react";
+
+<AnySpendDeposit
+  recipientAddress="0x..."
+  destinationTokenAddress="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+  destinationTokenChainId={8453}
+  onSuccess={(amount) => console.log("Deposited:", amount)}
+/>;
+```
+
+#### Props
+
+<ParamField path="recipientAddress" type="string" required>
+  The wallet address to receive the deposit
+</ParamField>
+
+<ParamField path="destinationTokenAddress" type="string" required>
+  Destination token contract address
+</ParamField>
+
+<ParamField path="destinationTokenChainId" type="number" required>
+  Destination chain ID
+</ParamField>
+
+<ParamField path="mode" type="'modal' | 'page'" default="'modal'">
+  Display mode
+</ParamField>
+
+<ParamField path="paymentType" type="'crypto' | 'fiat'">
+  Force a payment type. If not set, shows chain selection first.
+</ParamField>
+
+<ParamField path="sourceTokenAddress" type="string">
+  Pre-select the source token
+</ParamField>
+
+<ParamField path="sourceTokenChainId" type="number">
+  Pre-select the source chain. If not provided, shows chain selection step.
+</ParamField>
+
+<ParamField path="loadOrder" type="string">
+  Load an existing order by ID
+</ParamField>
+
+<ParamField path="onSuccess" type="(amount: string) => void">
+  Callback when deposit completes successfully
+</ParamField>
+
+<ParamField path="onClose" type="() => void">
+  Callback when the close button is clicked
+</ParamField>
+
+<ParamField path="onTokenSelect" type="(token: Token, event: { preventDefault: () => void }) => void">
+  Called on token selection. Call `event.preventDefault()` to override default behavior.
+</ParamField>
+
+<ParamField path="onOpenCustomModal" type="() => void">
+  Callback for opening a custom modal (e.g., for special token handling)
+</ParamField>
+
+<ParamField path="orderType" type="'hype_duel' | 'custom_exact_in' | 'swap'" default="'swap'">
+  Order type for the deposit
+</ParamField>
+
+<ParamField path="depositContractConfig" type="DepositContractConfig">
+  Configuration for depositing to a custom smart contract. Creates a `custom_exact_in` order that calls the specified contract.
+</ParamField>
+
+<ParamField path="allowDirectTransfer" type="boolean">
+  Allow direct transfers when source and destination match
+</ParamField>
+
+<ParamField path="destinationTokenAmount" type="string">
+  Fixed destination amount in wei
+</ParamField>
+
+<ParamField path="minDestinationAmount" type="number">
+  Minimum destination amount required
+</ParamField>
+
+<ParamField path="preferEoa" type="boolean">
+  Prefer using connected EOA wallet
+</ParamField>
+
+<ParamField path="showChainSelection" type="boolean">
+  Show chain selection step. Defaults to `true` if `sourceTokenChainId` is not provided.
+</ParamField>
+
+<ParamField path="supportedChains" type="ChainConfig[]">
+  Custom list of supported chains for chain selection
+</ParamField>
+
+<ParamField path="topChainsCount" type="number" default="3">
+  Number of top chains to show in chain selection
+</ParamField>
+
+<ParamField path="chainSelectionTitle" type="string">
+  Custom title for the chain selection step
+</ParamField>
+
+<ParamField path="chainSelectionDescription" type="string">
+  Custom description for the chain selection step
+</ParamField>
+
+<ParamField path="minPoolSize" type="number" default="1000000">
+  Minimum pool size for filtering tokens
+</ParamField>
+
+<ParamField path="customUsdInputValues" type="string[]">
+  Custom fiat input presets
+</ParamField>
+
+<ParamField path="actionLabel" type="string">
+  Custom label for the action button
+</ParamField>
+
+<ParamField path="header" type="(props: { anyspendPrice, isLoadingAnyspendPrice }) => JSX.Element">
+  Custom header component
+</ParamField>
+
+<ParamField path="mainFooter" type="ReactNode">
+  Custom footer content
+</ParamField>
+
+<ParamField path="returnToHomeUrl" type="string">
+  Redirect URL for the "Return to Home" button
+</ParamField>
+
+<ParamField path="customRecipientLabel" type="string">
+  Custom label for recipient display
+</ParamField>
+
+<ParamField path="returnHomeLabel" type="string">
+  Custom label for the return button
+</ParamField>
+
+<ParamField path="senderAddress" type="string">
+  Pre-fill sender address for token balance display
+</ParamField>
+
+<ParamField path="callbackMetadata" type="Record<string, unknown>">
+  Metadata passed through to order callbacks
+</ParamField>
+
+<ParamField path="isCustomDeposit" type="boolean" default="false">
+  When true, uses `AnySpendCustomExactIn` for custom function deposits
+</ParamField>
+
+<ParamField path="classes" type="AnySpendAllClasses">
+  CSS class overrides. See [Customization](/anyspend/customization#css-class-overrides).
+</ParamField>
+
+<ParamField path="slots" type="AnySpendSlots">
+  Render function overrides. See [Customization](/anyspend/customization#slots).
+</ParamField>
+
+<ParamField path="content" type="AnySpendContent">
+  Text/message overrides. See [Customization](/anyspend/customization#content).
+</ParamField>
+
+<ParamField path="theme" type="AnySpendTheme">
+  Theme configuration. See [Customization](/anyspend/customization#theme).
+</ParamField>
+
+#### DepositContractConfig
+
+Use this to configure custom contract deposits:
+
+```typescript title="Type Definition" icon="code"
+interface DepositContractConfig {
+  /** Custom function ABI JSON string */
+  functionAbi: string;
+  /** The function name to call */
+  functionName: string;
+  /** Arguments for the function. Use "{{amount_out}}" as a placeholder for the deposit amount */
+  functionArgs: string[];
+  /** Contract address to deposit to */
+  to: string;
+  /** Optional spender address if different from contract */
+  spenderAddress?: string;
+  /** Custom action label (e.g., "Stake", "Deposit") */
+  action?: string;
+}
+```
+
+#### ChainConfig
+
+```typescript title="Type Definition" icon="code"
+interface ChainConfig {
+  id: number;       // Chain ID
+  name: string;     // Display name
+  iconUrl?: string; // Optional icon URL
+}
+```
+
+#### Usage Examples
+
+<Tabs>
+<Tab title="Basic Deposit">
+  ```tsx
+  <AnySpendDeposit
+    recipientAddress={walletAddress}
+    destinationTokenAddress="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+    destinationTokenChainId={8453}
+    onSuccess={(amount) => toast.success(`Deposited ${amount}`)}
+  />
+  ```
+</Tab>
+
+<Tab title="Custom Contract Deposit">
+  ```tsx
+  <AnySpendDeposit
+    recipientAddress={contractAddress}
+    destinationTokenAddress="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+    destinationTokenChainId={8453}
+    depositContractConfig={{
+      functionAbi: JSON.stringify(stakingAbi),
+      functionName: "stake",
+      functionArgs: ["{{amount_out}}", "30"],
+      to: "0xStakingContract...",
+      action: "Stake",
+    }}
+    isCustomDeposit
+    onSuccess={(amount) => toast.success("Staked!")}
+  />
+  ```
+</Tab>
+
+<Tab title="With Chain Selection">
+  ```tsx
+  <AnySpendDeposit
+    recipientAddress={walletAddress}
+    destinationTokenAddress="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+    destinationTokenChainId={8453}
+    showChainSelection
+    supportedChains={[
+      { id: 8453, name: "Base" },
+      { id: 1, name: "Ethereum" },
+      { id: 42161, name: "Arbitrum" },
+    ]}
+    chainSelectionTitle="Where are your funds?"
+    chainSelectionDescription="Select the chain you want to deposit from"
+  />
+  ```
+</Tab>
+</Tabs>
+
+---
+
+### `<AnySpendCheckout>`
+
+A full-featured checkout component with cart display, order summary, custom forms, shipping selection, discount codes, and multi-payment-method support.
+
+```tsx title="Basic Usage" icon="cart-shopping"
+import { AnySpendCheckout } from "@b3dotfun/sdk/anyspend/react";
+
+<AnySpendCheckout
+  recipientAddress="0x..."
+  destinationTokenAddress="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+  destinationTokenChainId={8453}
+  items={[
+    { name: "Pro Plan", amount: "10000000", quantity: 1 },
+  ]}
+  organizationName="Acme Inc"
+  onSuccess={(result) => console.log("Paid:", result)}
+/>;
+```
+
+For full checkout documentation, see the [Checkout Guide](/anyspend/checkout).
+
+#### Props
+
+<ParamField path="recipientAddress" type="string" required>
+  Payment recipient wallet address
+</ParamField>
+
+<ParamField path="destinationTokenAddress" type="string" required>
+  Destination token contract address
+</ParamField>
+
+<ParamField path="destinationTokenChainId" type="number" required>
+  Destination chain ID
+</ParamField>
+
+<ParamField path="items" type="CheckoutItem[]" required>
+  Line items to display in the cart
+</ParamField>
+
+<ParamField path="mode" type="'page' | 'embedded'" default="'page'">
+  Display mode
+</ParamField>
+
+<ParamField path="totalAmount" type="string">
+  Override the computed total (in wei). Useful when the total differs from the sum of item amounts.
+</ParamField>
+
+<ParamField path="organizationName" type="string">
+  Merchant/organization name displayed in the checkout header
+</ParamField>
+
+<ParamField path="organizationLogo" type="string">
+  URL for the organization logo
+</ParamField>
+
+<ParamField path="themeColor" type="string">
+  Hex color for theming the checkout (e.g., `"#6366f1"`)
+</ParamField>
+
+<ParamField path="buttonText" type="string">
+  Custom text for the payment button
+</ParamField>
+
+<ParamField path="checkoutSessionId" type="string">
+  Link this checkout to a checkout session for backend tracking
+</ParamField>
+
+<ParamField path="onSuccess" type="(result: { txHash?: string; orderId?: string }) => void">
+  Called on successful payment
+</ParamField>
+
+<ParamField path="onError" type="(error: Error) => void">
+  Called on payment error
+</ParamField>
+
+<ParamField path="returnUrl" type="string">
+  URL to redirect to after payment
+</ParamField>
+
+<ParamField path="returnLabel" type="string">
+  Label for the return button
+</ParamField>
+
+<ParamField path="defaultPaymentMethod" type="PaymentMethod">
+  Which payment method to expand initially
+</ParamField>
+
+<ParamField path="senderAddress" type="string">
+  Pre-fill sender address for token balance display
+</ParamField>
+
+<ParamField path="footer" type="ReactNode | null">
+  Custom footer for the order summary. Pass `null` to hide the default footer.
+</ParamField>
+
+<ParamField path="showPoints" type="boolean" default="false">
+  Show points earned in the order status summary
+</ParamField>
+
+<ParamField path="showOrderId" type="boolean" default="false">
+  Show the order ID in the order status summary
+</ParamField>
+
+<ParamField path="shipping" type="string | { amount: string; label?: string }">
+  Shipping cost. String = amount in wei. Object = amount with custom label.
+</ParamField>
+
+<ParamField path="tax" type="string | { amount: string; label?: string; rate?: string }">
+  Tax amount. String = amount in wei. Object = amount with custom label and optional rate display.
+</ParamField>
+
+<ParamField path="discount" type="string | { amount: string; label?: string; code?: string }">
+  Discount amount (displayed as negative). String = amount in wei. Object = amount with label and optional code.
+</ParamField>
+
+<ParamField path="summaryLines" type="CheckoutSummaryLine[]">
+  Additional summary line items (e.g., platform fees, tips, service charges)
+</ParamField>
+
+<ParamField path="formSchema" type="CheckoutFormSchema">
+  JSON schema for collecting customer info. See [Checkout Guide](/anyspend/checkout#custom-forms).
+</ParamField>
+
+<ParamField path="formComponent" type="React.ComponentType<CheckoutFormComponentProps>">
+  Custom React form component. See [Checkout Guide](/anyspend/checkout#custom-forms).
+</ParamField>
+
+<ParamField path="onFormSubmit" type="(data: Record<string, unknown>) => void">
+  Called when form data changes
+</ParamField>
+
+<ParamField path="shippingOptions" type="ShippingOption[]">
+  Shipping options displayed as a selector. See [Checkout Guide](/anyspend/checkout#shipping-options).
+</ParamField>
+
+<ParamField path="collectShippingAddress" type="boolean">
+  Show a shipping address form
+</ParamField>
+
+<ParamField path="onShippingChange" type="(option: ShippingOption) => void">
+  Called when shipping option changes
+</ParamField>
+
+<ParamField path="enableDiscountCode" type="boolean">
+  Show a discount code input
+</ParamField>
+
+<ParamField path="validateDiscount" type="(code: string) => Promise<DiscountResult>">
+  Async discount code validation function
+</ParamField>
+
+<ParamField path="onDiscountApplied" type="(result: DiscountResult) => void">
+  Called when a discount is applied
+</ParamField>
+
+<ParamField path="classes" type="AnySpendCheckoutClasses">
+  CSS class overrides. See [Customization](/anyspend/customization#css-class-overrides).
+</ParamField>
+
+<ParamField path="slots" type="AnySpendSlots">
+  Render function overrides. See [Customization](/anyspend/customization#slots).
+</ParamField>
+
+<ParamField path="content" type="AnySpendContent">
+  Text/message overrides. See [Customization](/anyspend/customization#content).
+</ParamField>
+
+<ParamField path="theme" type="AnySpendTheme">
+  Theme configuration. See [Customization](/anyspend/customization#theme).
+</ParamField>
+
+#### CheckoutItem
+
+```typescript title="Type Definition" icon="code"
+interface CheckoutItem {
+  id?: string;
+  name: string;
+  description?: string;
+  imageUrl?: string;
+  /** Amount in wei (smallest unit of destination token) */
+  amount: string;
+  quantity: number;
+  /** Custom metadata displayed as label: value pairs */
+  metadata?: Record<string, string>;
+}
+```
+
+#### CheckoutSummaryLine
+
+```typescript title="Type Definition" icon="code"
+interface CheckoutSummaryLine {
+  /** Display label (e.g., "Platform Fee", "Service Charge") */
+  label: string;
+  /** Amount in token's smallest unit (wei). Negative values shown as deductions. */
+  amount: string;
+  /** Optional description or note */
+  description?: string;
+}
+```
+
+---
+
+### `<AnySpendCheckoutTrigger>`
+
+Extends `AnySpendCheckout` with B3 workflow integration. Automatically triggers a workflow on successful payment.
+
+```tsx title="Basic Usage" icon="bolt"
+import { AnySpendCheckoutTrigger } from "@b3dotfun/sdk/anyspend/react";
+
+<AnySpendCheckoutTrigger
+  recipientAddress="0x..."
+  destinationTokenAddress="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+  destinationTokenChainId={8453}
+  items={[{ name: "API Credits", amount: "5000000", quantity: 1 }]}
+  workflowId="wf_abc123"
+  orgId="org_xyz"
+  onSuccess={(result) => console.log("Payment & workflow triggered:", result)}
+/>;
+```
+
+#### Additional Props (beyond AnySpendCheckout)
+
+<ParamField path="workflowId" type="string">
+  B3 workflow ID to trigger on successful payment
+</ParamField>
+
+<ParamField path="orgId" type="string">
+  Organization ID that owns the workflow
+</ParamField>
+
+<ParamField path="callbackMetadata" type="object">
+  Metadata merged into the order for workflow access. The `inputs` field is accessible via `{{root.result.inputs.*}}` in workflows.
+</ParamField>
+
+```tsx title="With Workflow & Metadata" icon="bolt"
+<AnySpendCheckoutTrigger
+  recipientAddress="0x..."
+  destinationTokenAddress="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+  destinationTokenChainId={8453}
+  items={[{ name: "Pro Plan - Monthly", amount: "10000000", quantity: 1 }]}
+  workflowId="wf_provision_subscription"
+  orgId="org_acme"
+  callbackMetadata={{
+    inputs: {
+      plan: "pro",
+      userId: "user_123",
+      email: "user@example.com",
+    },
+  }}
+  onSuccess={(result) => {
+    console.log("Subscription activated:", result);
+  }}
+/>
+```
+
+---
+
+### `<AnySpendWorkflowTrigger>`
+
+A payment component designed specifically for triggering B3 workflows. Requires a fixed payment amount and workflow configuration.
+
+```tsx title="Basic Usage" icon="diagram-project"
+import { AnySpendWorkflowTrigger } from "@b3dotfun/sdk/anyspend/react";
+
+<AnySpendWorkflowTrigger
+  recipientAddress="0x..."
+  chainId={8453}
+  tokenAddress="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+  amount="5000000"
+  workflowId="wf_abc123"
+  orgId="org_xyz"
+  onSuccess={(amount) => console.log("Workflow triggered with:", amount)}
+/>;
+```
+
+#### Props
+
+<ParamField path="recipientAddress" type="string" required>
+  Payment recipient address
+</ParamField>
+
+<ParamField path="chainId" type="number" required>
+  Destination chain ID
+</ParamField>
+
+<ParamField path="tokenAddress" type="string" required>
+  Destination token address
+</ParamField>
+
+<ParamField path="amount" type="string" required>
+  Required payment amount in wei
+</ParamField>
+
+<ParamField path="workflowId" type="string" required>
+  B3 workflow ID to trigger
+</ParamField>
+
+<ParamField path="orgId" type="string" required>
+  Organization ID that owns the workflow
+</ParamField>
+
+<ParamField path="callbackMetadata" type="object">
+  Metadata for workflow access. `inputs` are accessible via `{{root.result.inputs.*}}`.
+</ParamField>
+
+<ParamField path="onSuccess" type="(amount: string) => void">
+  Callback when payment succeeds
+</ParamField>
+
+<ParamField path="onClose" type="() => void">
+  Callback when the component is closed
+</ParamField>
+
+<ParamField path="mode" type="'modal' | 'page'">
+  Display mode
+</ParamField>
+
+<ParamField path="actionLabel" type="string">
+  Custom label for the action button (e.g., "Pay & Activate")
+</ParamField>
+
+<ParamField path="classes" type="AnySpendAllClasses">
+  CSS class overrides
+</ParamField>
+
+---
+
+### `<QRDeposit>`
+
+A QR code-based deposit interface that generates a deposit address for users to send funds to.
+
+```tsx title="Basic Usage" icon="qrcode"
+import { QRDeposit } from "@b3dotfun/sdk/anyspend/react";
+
+<QRDeposit
+  recipientAddress="0x..."
+  destinationToken={usdcToken}
+  destinationChainId={8453}
+  onSuccess={(txHash) => console.log("Deposit received:", txHash)}
+/>;
+```
+
+#### Props
+
+<ParamField path="recipientAddress" type="string" required>
+  The wallet address to receive the deposit
+</ParamField>
+
+<ParamField path="destinationToken" type="Token" required>
+  The destination token to receive
+</ParamField>
+
+<ParamField path="destinationChainId" type="number" required>
+  The destination chain ID
+</ParamField>
+
+<ParamField path="mode" type="'modal' | 'page'">
+  Display mode
+</ParamField>
+
+<ParamField path="sourceToken" type="Token">
+  Source token to deposit (defaults to ETH on Base)
+</ParamField>
+
+<ParamField path="sourceChainId" type="number">
+  Source chain ID (defaults to Base)
+</ParamField>
+
+<ParamField path="creatorAddress" type="string">
+  Creator address for order tracking
+</ParamField>
+
+<ParamField path="depositContractConfig" type="DepositContractConfig">
+  Custom contract execution after deposit
+</ParamField>
+
+<ParamField path="onBack" type="() => void">
+  Callback when back button is clicked
+</ParamField>
+
+<ParamField path="onClose" type="() => void">
+  Callback when close button is clicked
+</ParamField>
+
+<ParamField path="onOrderCreated" type="(orderId: string) => void">
+  Callback when the deposit order is created
+</ParamField>
+
+<ParamField path="onSuccess" type="(txHash?: string) => void">
+  Callback when deposit is completed
+</ParamField>
+
+<ParamField path="classes" type="QRDepositClasses">
+  CSS class overrides
+</ParamField>
+
+---
+
+## Specialized Components
+
 ### `<AnySpendNFTButton>`
 
-A streamlined button component for NFT purchases with built-in payment handling.
+A streamlined button for NFT purchases with built-in payment handling.
 
-```tsx title="NFT Purchase Button" icon="shopping-cart"
+```tsx title="NFT Purchase Button" icon="cart-shopping"
 import { AnySpendNFTButton } from "@b3dotfun/sdk/anyspend/react";
 
 <AnySpendNFTButton nftContract={nftContractDetails} recipientAddress="0x..." />;
@@ -103,77 +874,43 @@ import { AnySpendNFTButton } from "@b3dotfun/sdk/anyspend/react";
 
 ```typescript title="Type Definition" icon="code"
 interface NFTContract {
-  chainId: number; // Blockchain network ID
-  contractAddress: string; // NFT contract address
-  price: string; // Price in wei
-  priceFormatted: string; // Human-readable price
+  chainId: number;
+  contractAddress: string;
+  price: string;           // Price in wei
+  priceFormatted: string;  // Human-readable price
   currency: {
     chainId: number;
-    address: string; // Token contract (0x0 for native ETH)
+    address: string;       // 0x0 for native ETH
     name: string;
     symbol: string;
     decimals: number;
-    metadata: {
-      logoURI: string;
-    };
+    metadata: { logoURI: string };
   };
-  name: string; // NFT collection name
-  description: string; // NFT description
-  imageUrl: string; // Preview image URL
-  tokenId: number | null; // Token ID (null for ERC721, specific ID for ERC1155)
-  type: "erc721" | "erc1155"; // NFT contract type
+  name: string;
+  description: string;
+  imageUrl: string;
+  tokenId: number | null;           // null for ERC721
+  type: "erc721" | "erc1155";
 }
-```
-
-#### Usage Example
-
-```tsx title="Complete NFT Integration" icon="image" lines
-const coolNFT = {
-  chainId: 8333,
-  contractAddress: "0x9c275ff1634519E9B5449ec79cd939B5F900564d",
-  price: "500000000000000000", // 0.5 ETH
-  priceFormatted: "0.5",
-  currency: {
-    chainId: 8333,
-    address: "0x0000000000000000000000000000000000000000",
-    name: "Ether",
-    symbol: "ETH",
-    decimals: 18,
-    metadata: {
-      logoURI: "https://assets.coingecko.com/coins/images/279/standard/ethereum.png?1696501628",
-    },
-  },
-  name: "Cool Art Collection",
-  description: "Unique digital artwork",
-  imageUrl: "https://example.com/nft-preview.png",
-  tokenId: null,
-  type: "erc721",
-};
-
-<AnySpendNFTButton nftContract={coolNFT} recipientAddress={userAddress} />;
 ```
 
 ---
 
 ### `<AnySpendCustom>`
 
-The most flexible component for custom smart contract interactions, including gaming, staking, and DeFi operations.
+Flexible component for custom smart contract interactions, including staking, gaming, and DeFi operations.
 
 ```tsx title="Custom Contract Interaction" icon="code"
-// https://github.com/b3-fun/b3/blob/main/packages/sdk/src/anyspend/react/components/AnySpendCustom.tsx
 import { AnySpendCustom } from "@b3dotfun/sdk/anyspend/react";
 
 <AnySpendCustom
   orderType="custom"
-  dstChainId={8333}
+  dstChainId={8453}
   dstToken={tokenDetails}
   dstAmount="1000000000000000000"
   contractAddress="0x..."
   encodedData="0x..."
-  spenderAddress="0x..."
-  metadata={customMetadata}
-  header={CustomHeaderComponent}
-  onSuccess={txHash => console.log("Custom action completed", txHash)}
+  onSuccess={(txHash) => console.log("Done:", txHash)}
 />;
 ```
 
@@ -188,11 +925,11 @@ import { AnySpendCustom } from "@b3dotfun/sdk/anyspend/react";
 </ParamField>
 
 <ParamField path="dstToken" type="Token" required>
-  Token being used for payment
+  Token used for payment
 </ParamField>
 
 <ParamField path="dstAmount" type="string" required>
-  Amount in wei/smallest unit
+  Amount in wei
 </ParamField>
 
 <ParamField path="contractAddress" type="string" required>
@@ -204,7 +941,7 @@ import { AnySpendCustom } from "@b3dotfun/sdk/anyspend/react";
 </ParamField>
 
 <ParamField path="spenderAddress" type="string">
-  Optional token spender address
+  Token spender address
 </ParamField>
 
 <ParamField path="metadata" type="object">
@@ -216,52 +953,17 @@ import { AnySpendCustom } from "@b3dotfun/sdk/anyspend/react";
 </ParamField>
 
 <ParamField path="onSuccess" type="(txHash?: string) => void">
-  Success callback with transaction hash
+  Success callback
 </ParamField>
 
-#### Usage Example - Staking
-
-```tsx title="Staking Integration" icon="coins" lines
-// Encode staking function call
-const stakeAmount = "1000000000000000000"; // 1 token
-const stakingCalldata = encodeFunctionData({
-  abi: stakingABI,
-  functionName: "stake",
-  args: [stakeAmount, 30], // 30 days
-});
-
-<AnySpendCustom
-  orderType="custom"
-  dstChainId={8333}
-  dstToken={stakingToken}
-  dstAmount={stakeAmount}
-  contractAddress="0xStakingContract..."
-  encodedData={stakingCalldata}
-  metadata={{
-    action: "stake",
-    duration: 30,
-    expectedRewards: "5.2%",
-  }}
-  header={({ anyspendPrice, isLoadingAnyspendPrice }) => (
-    <div className="staking-header">
-      <h2>Stake Tokens</h2>
-      <p>Duration: 30 days</p>
-      <p>Expected APY: 5.2%</p>
-      {!isLoadingAnyspendPrice && <p>Total Cost: ${anyspendPrice?.usdPrice}</p>}
-    </div>
-  )}
-/>;
-```
-
-## Specialized Components
+---
 
 ### `<AnySpendNFT>`
 
-Enhanced NFT component with additional marketplace features.
+Enhanced NFT purchase component with marketplace features.
 
-```tsx title="Enhanced NFT Component" icon="store"
-// https://github.com/b3-fun/b3/blob/main/packages/sdk/src/anyspend/react/components/AnySpendNFT.tsx
-<AnySpendNFT nftContract={nftDetails} recipientAddress="0x..." showMetadata={true} showPriceHistory={true} />
+```tsx title="Enhanced NFT Component" icon="image"
+<AnySpendNFT nftContract={nftDetails} recipientAddress="0x..." />
 ```
 
 ### `<AnySpendStakeB3>`
@@ -269,17 +971,15 @@ Enhanced NFT component with additional marketplace features.
 Pre-configured component for B3 token staking.
 
 ```tsx title="B3 Staking" icon="coins"
-// https://github.com/b3-fun/b3/blob/main/packages/sdk/src/anyspend/react/components/AnySpendStakeB3.tsx
-<AnySpendStakeB3 stakeAmount="1000000000000000000" stakingDuration={30} recipientAddress="0x..." />
+<AnySpendStakeB3 recipientAddress="0x..." />
 ```
 
 ### `<AnySpendBuySpin>`
 
-Gaming-specific component for purchasing spin wheels or lottery tickets.
+Gaming-specific component for purchasing spin wheel or lottery entries.
 
-```tsx title="Gaming Spin Wheel" icon="gamepad"
-// https://github.com/b3-fun/b3/blob/main/packages/sdk/src/anyspend/react/components/AnySpendBuySpin.tsx
-<AnySpendBuySpin gameContract="0x..." spinPrice="100000000000000000" recipientAddress="0x..." />
+```tsx title="Spin Wheel Purchase" icon="gamepad"
+<AnySpendBuySpin recipientAddress="0x..." />
 ```
 
 ### `<AnySpendTournament>`
@@ -287,74 +987,87 @@ Gaming-specific component for purchasing spin wheels or lottery tickets.
 Tournament entry payment component.
 
 ```tsx title="Tournament Entry" icon="trophy"
-// https://github.com/b3-fun/b3/blob/main/packages/sdk/src/anyspend/react/components/AnySpendTournament.tsx
-<AnySpendTournament tournamentId="tournament-123" entryFee="500000000000000000" recipientAddress="0x..." />
+<AnySpendTournament recipientAddress="0x..." />
 ```
 
-## Component Styling
+### `<AnySpendBondKit>`
 
-All components come with default styling that can be customized using CSS variables:
+BondKit integration for bonding curve token purchases.
 
-```css title="Custom Styling" icon="palette"
-/* Override default styles */
-.anyspend-modal {
-  --anyspend-primary: #6366f1;
-  --anyspend-secondary: #f3f4f6;
-  --anyspend-border-radius: 12px;
+```tsx title="BondKit Purchase" icon="chart-line"
+<AnySpendBondKit recipientAddress="0x..." />
+```
+
+---
+
+## Providers
+
+### `<AnyspendProvider>`
+
+Required provider that wraps all AnySpend components. Manages query client, Stripe redirect handling, and feature flags.
+
+```tsx title="Provider Setup" icon="layer-group"
+import { AnyspendProvider } from "@b3dotfun/sdk/anyspend/react";
+import { B3Provider } from "@b3dotfun/sdk/global-account/react";
+import "@b3dotfun/sdk/index.css";
+
+function App() {
+  return (
+    <B3Provider theme="light" environment="production" partnerId="your-partner-id">
+      <AnyspendProvider>
+        {/* Your app components */}
+      </AnyspendProvider>
+    </B3Provider>
+  );
 }
 ```
 
-## Platform Support
+#### Props
 
-<table>
-  <thead>
-    <tr>
-      <th>Component</th>
-      <th>React Web</th>
-      <th>React Native</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>`AnySpend`</td>
-      <td>✅</td>
-      <td>✅</td>
-    </tr>
-    <tr>
-      <td>`AnySpendNFTButton`</td>
-      <td>✅</td>
-      <td>✅</td>
-    </tr>
-    <tr>
-      <td>`AnySpendCustom`</td>
-      <td>✅</td>
-      <td>✅</td>
-    </tr>
-    <tr>
-      <td>`AnySpendNFT`</td>
-      <td>✅</td>
-      <td>✅</td>
-    </tr>
-    <tr>
-      <td>Fiat onramp features</td>
-      <td>✅</td>
-      <td>❌</td>
-    </tr>
-  </tbody>
-</table>
+<ParamField path="children" type="ReactNode" required>
+  Child components
+</ParamField>
+
+<ParamField path="featureFlags" type="FeatureFlags">
+  Optional feature flag overrides
+</ParamField>
+
+---
+
+## Payment Method Types
+
+```typescript title="Payment Method Enums" icon="code"
+// Crypto payment methods
+enum CryptoPaymentMethodType {
+  NONE = "NONE",
+  CONNECT_WALLET = "CONNECT_WALLET",     // External EOA wallet (MetaMask, etc.)
+  GLOBAL_WALLET = "GLOBAL_WALLET",       // B3 smart wallet
+  TRANSFER_CRYPTO = "TRANSFER_CRYPTO",   // Direct crypto transfer
+}
+
+// Fiat payment methods
+enum FiatPaymentMethod {
+  NONE = "NONE",
+  COINBASE_PAY = "COINBASE_PAY",   // Coinbase onramp
+  STRIPE = "STRIPE",               // Stripe redirect flow
+  STRIPE_WEB2 = "STRIPE_WEB2",    // Stripe embedded form
+}
+```
+
+---
 
 ## Next Steps
 
 <CardGroup cols={3}>
-<Card title="Learn about Hooks" icon="link" href="/anyspend/hooks">
-  Discover React hooks for custom payment flows
+<Card title="Customization" icon="palette" href="/anyspend/customization">
+  Customize slots, content, theme, and CSS classes
 </Card>
 
-<Card title="See Examples" icon="code" href="/anyspend/examples">
-  Browse real-world implementation examples
+<Card title="Checkout Guide" icon="cart-shopping" href="/anyspend/checkout">
+  Build checkout experiences with order summaries
 </Card>
 
-<Card title="Error Handling" icon="shield-exclamation" href="/anyspend/error-handling">
-  Learn how to handle errors gracefully
+<Card title="Hooks Reference" icon="link" href="/anyspend/hooks">
+  React hooks for custom payment flows
 </Card>
 </CardGroup>

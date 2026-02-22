@@ -490,6 +490,23 @@ export interface AnySpendCheckoutClasses {
   cartItemPrice?: string;
   cartSummary?: string;
   cartTotal?: string;
+  cartSubtotal?: string;
+  cartSummaryLine?: string;
+  cartSummaryLineLabel?: string;
+  cartSummaryLineAmount?: string;
+  cartDiscount?: string;
+  cartItemMetadata?: string;
+  cartItemMetadataLabel?: string;
+  cartItemMetadataValue?: string;
+
+  // Form panel
+  formPanel?: string;
+  formField?: string;
+  formFieldLabel?: string;
+  formFieldInput?: string;
+  shippingSelector?: string;
+  discountInput?: string;
+  addressForm?: string;
 
   // Branding
   poweredBy?: string;
@@ -497,6 +514,11 @@ export interface AnySpendCheckoutClasses {
   // Success
   successPanel?: string;
   returnButton?: string;
+
+  // Order status tracking
+  orderStatusPanel?: string;
+  retryButton?: string;
+  transactionLink?: string;
 }
 
 /** Combined classes for all AnySpend-related components */

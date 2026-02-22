@@ -248,7 +248,7 @@ export const TransferCryptoDetails = memo(function TransferCryptoDetails({
                 {order.globalAddress}
               </div>
               <div className="order-transfer-crypto-address-copy-icon-wrapper place-self-end">
-                <Copy className="order-transfer-crypto-address-copy-icon group-hover:text-as-brand text-as-tertiarry h-4 w-4 cursor-pointer transition-all duration-200" />
+                <Copy className="order-transfer-crypto-address-copy-icon group-hover:text-as-brand text-as-tertiary h-4 w-4 cursor-pointer transition-all duration-200" />
               </div>
             </div>
           </div>
@@ -274,14 +274,6 @@ export const TransferCryptoDetails = memo(function TransferCryptoDetails({
         >
           Copy deposit address
         </ShinyButton>
-
-        {/* <button
-          className="order-transfer-crypto-cancel-btn text-as-primary/60 hover:text-as-primary flex w-full items-center justify-center gap-2 py-2 transition-colors"
-          onClick={onBack}
-        >
-          <RefreshCcw className="h-4 w-4" />
-          Cancel and start over
-        </button> */}
 
         <PaymentMethodSwitch
           currentMethod={CryptoPaymentMethodType.TRANSFER_CRYPTO}

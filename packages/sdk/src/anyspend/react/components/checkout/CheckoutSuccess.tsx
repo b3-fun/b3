@@ -1,8 +1,10 @@
 "use client";
 
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
-import { Check, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { motion } from "motion/react";
+import { useAnySpendCustomization } from "../context/AnySpendCustomizationContext";
+import { AnimatedCheckmark } from "../icons/AnimatedCheckmark";
 import type { AnySpendCheckoutClasses } from "./AnySpendCheckout";
 
 interface CheckoutSuccessProps {
@@ -14,35 +16,52 @@ interface CheckoutSuccessProps {
 }
 
 export function CheckoutSuccess({ txHash, orderId, returnUrl, returnLabel, classes }: CheckoutSuccessProps) {
+  const { content, slots } = useAnySpendCustomization();
+
+  if (slots.successScreen) {
+    return (
+      <>
+        {slots.successScreen({
+          title: typeof content.successTitle === "string" ? content.successTitle : "Payment Successful",
+          description:
+            typeof content.successDescription === "string"
+              ? content.successDescription
+              : "Your payment has been processed successfully.",
+          txHash,
+          orderId,
+          explorerUrl: txHash ? `https://explorer.b3.fun/tx/${txHash}` : undefined,
+          onDone: () => {
+            if (returnUrl) window.location.href = returnUrl;
+          },
+          returnUrl,
+          returnLabel: content.returnButtonLabel || returnLabel,
+        })}
+      </>
+    );
+  }
+
   return (
     <div className={cn("anyspend-checkout-success flex flex-col items-center py-8 text-center", classes?.successPanel)}>
-      {/* Animated success icon - scale + opacity entry */}
-      <motion.div
-        initial={{ scale: 0.3, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-        className="anyspend-success-icon mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30"
-      >
-        <Check className="h-8 w-8 text-green-600 dark:text-green-400" />
-      </motion.div>
+      <div className="anyspend-success-icon mb-4">
+        <AnimatedCheckmark className="h-16 w-16" />
+      </div>
 
-      {/* Staggered text entry */}
       <motion.h2
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, delay: 0.2, ease: "easeOut" }}
+        transition={{ duration: 0.3, delay: 1.0, ease: "easeOut" }}
         className="anyspend-success-title text-xl font-semibold text-gray-900 dark:text-gray-100"
       >
-        Payment Successful
+        {content.successTitle || "Payment Successful"}
       </motion.h2>
 
       <motion.p
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, delay: 0.35, ease: "easeOut" }}
+        transition={{ duration: 0.3, delay: 1.15, ease: "easeOut" }}
         className="anyspend-success-description mt-2 text-sm text-gray-500 dark:text-gray-400"
       >
-        Your payment has been processed successfully.
+        {content.successDescription || "Your payment has been processed successfully."}
       </motion.p>
 
       {txHash && (
@@ -83,7 +102,7 @@ export function CheckoutSuccess({ txHash, orderId, returnUrl, returnLabel, class
           )}
           style={{ backgroundColor: "#111827", color: "#fff" }}
         >
-          {returnLabel || "Return to Store"}
+          {content.returnButtonLabel || returnLabel || "Return to Store"}
         </motion.a>
       )}
     </div>
