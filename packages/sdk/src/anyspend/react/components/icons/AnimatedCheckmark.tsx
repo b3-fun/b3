@@ -1,5 +1,6 @@
 "use client";
 
+import { useId } from "react";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 
 interface AnimatedCheckmarkProps {
@@ -32,6 +33,8 @@ export function AnimatedCheckmark({
   delay = 0,
   static: isStatic = false,
 }: AnimatedCheckmarkProps) {
+  const id = `ac-${useId().replace(/:/g, "")}`;
+
   if (isStatic) {
     return (
       <svg
@@ -62,8 +65,6 @@ export function AnimatedCheckmark({
       </svg>
     );
   }
-
-  const id = `ac-${Math.random().toString(36).slice(2, 8)}`;
 
   return (
     <>

@@ -17,12 +17,15 @@ const AnySpendCustomizationContext = createContext<AnySpendCustomizationContextV
 
 /** Convert a hex color to HSL string (e.g. "210 50% 40%") */
 function hexToHsl(hex: string): string | null {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  if (!result) return null;
-
-  let r = parseInt(result[1], 16) / 255;
-  let g = parseInt(result[2], 16) / 255;
-  let b = parseInt(result[3], 16) / 255;
+  const s = hex.replace(/^#/, "");
+  let r: number, g: number, b: number;
+  if (s.length === 3) {
+    [r, g, b] = [0, 1, 2].map(i => parseInt(s[i] + s[i], 16) / 255);
+  } else if (s.length === 6) {
+    [r, g, b] = [0, 2, 4].map(i => parseInt(s.substring(i, i + 2), 16) / 255);
+  } else {
+    return null;
+  }
 
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
@@ -86,11 +89,14 @@ export function AnySpendCustomizationProvider({ slots, content, theme, children 
       if (hsl) vars["--as-brand"] = hsl;
     }
 
-    // Apply explicit color overrides
+    // Apply explicit color overrides (hex → HSL for Tailwind compatibility)
     if (theme?.colors) {
       for (const [key, val] of Object.entries(theme.colors)) {
         const cssVar = CSS_VAR_MAP[key];
-        if (cssVar && val) vars[cssVar] = val;
+        if (cssVar && val) {
+          const hsl = hexToHsl(val);
+          if (hsl) vars[cssVar] = hsl;
+        }
       }
     }
 
@@ -101,7 +107,7 @@ export function AnySpendCustomizationProvider({ slots, content, theme, children 
 
   return (
     <AnySpendCustomizationContext.Provider value={value}>
-      {hasOverrides ? <div style={cssVarOverrides as React.CSSProperties}>{children}</div> : children}
+      {hasOverrides ? <div style={{ ...cssVarOverrides, display: "contents" } as React.CSSProperties}>{children}</div> : children}
     </AnySpendCustomizationContext.Provider>
   );
 }
