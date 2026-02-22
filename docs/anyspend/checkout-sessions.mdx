@@ -1,29 +1,32 @@
 ---
 title: "Checkout Sessions"
-description: "Stripe-like checkout sessions for decoupled payment flows with AnySpend"
+description: "Decoupled checkout sessions for flexible payment flows with AnySpend"
 ---
 
-Stripe-like checkout sessions for AnySpend. Sessions are decoupled from orders — create a session first, then create an order when the user is ready to pay.
+Decoupled checkout sessions for AnySpend. Sessions are decoupled from orders — create a session first, then create an order when the user is ready to pay.
 
 ## Flow
 
-```
-1. Merchant creates session        POST /checkout-sessions
-                                   <- { id, status: "open" }
-
-2. User picks payment method       POST /orders { checkoutSessionId }
-                                   <- { id, globalAddress, oneClickBuyUrl }
-
-3. User pays                       Crypto: send to globalAddress
-                                   Onramp: redirect to oneClickBuyUrl
-
-4. Merchant polls for completion   GET /checkout-sessions/:id
-                                   <- { status: "complete", order_id }
-```
+<Steps>
+  <Step title="Merchant creates session" icon="server">
+    `POST /checkout-sessions` returns `{ id, status: "open" }`
+  </Step>
+  <Step title="User picks payment method" icon="wallet">
+    `POST /orders { checkoutSessionId }` returns `{ id, globalAddress, oneClickBuyUrl }`
+  </Step>
+  <Step title="User pays" icon="money-bill">
+    **Crypto:** send to `globalAddress` | **Onramp:** redirect to `oneClickBuyUrl`
+  </Step>
+  <Step title="Merchant polls for completion" icon="check">
+    `GET /checkout-sessions/:id` returns `{ status: "complete", order_id }`
+  </Step>
+</Steps>
 
 ### Why Decoupled?
 
-Session creation is instant (DB-only, no external calls). The order is created separately when the user commits to a payment method. This means:
+<Info>
+Session creation is instant (DB-only, no external calls). The order is created separately when the user commits to a payment method.
+</Info>
 
 - Payment method doesn't need to be known at session creation
 - A hosted checkout page can let users choose how to pay
@@ -31,10 +34,12 @@ Session creation is instant (DB-only, no external calls). The order is created s
 
 ## Session Status Lifecycle
 
-```
-open --> processing --> complete
-  |
-  └--> expired
+```mermaid
+stateDiagram-v2
+    [*] --> open
+    open --> processing : Order created & payment received
+    processing --> complete : Order executed
+    open --> expired : TTL expired / manually expired
 ```
 
 | Status | When |

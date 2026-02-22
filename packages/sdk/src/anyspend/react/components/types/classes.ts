@@ -499,6 +499,15 @@ export interface AnySpendCheckoutClasses {
   cartItemMetadataLabel?: string;
   cartItemMetadataValue?: string;
 
+  // Form panel
+  formPanel?: string;
+  formField?: string;
+  formFieldLabel?: string;
+  formFieldInput?: string;
+  shippingSelector?: string;
+  discountInput?: string;
+  addressForm?: string;
+
   // Branding
   poweredBy?: string;
 

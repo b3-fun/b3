@@ -1,4 +1,9 @@
 import type { ReactNode } from "react";
+import type {
+  CheckoutFormComponentProps,
+  ShippingSelectorSlotProps,
+  DiscountInputSlotProps,
+} from "../../../types/forms";
 
 // === SLOT PROP INTERFACES ===
 
@@ -45,6 +50,12 @@ export interface AnySpendSlots {
   footer?: ReactNode;
   successScreen?: (props: SuccessScreenSlotProps) => ReactNode;
   errorScreen?: (props: ErrorScreenSlotProps) => ReactNode;
+  /** Replace the entire checkout form panel with a custom component */
+  checkoutForm?: (props: CheckoutFormComponentProps) => ReactNode;
+  /** Replace the shipping method selector */
+  shippingSelector?: (props: ShippingSelectorSlotProps) => ReactNode;
+  /** Replace the discount code input */
+  discountInput?: (props: DiscountInputSlotProps) => ReactNode;
 }
 
 // === CONTENT (text/message overrides) ===

@@ -1,39 +1,67 @@
 ---
 title: "Checkout"
-description: "Build Stripe-like checkout experiences with cart display, order summaries, and multi-payment support"
+description: "Build full-featured checkout experiences with cart display, order summaries, custom forms, shipping, and multi-payment support"
 ---
 
-The AnySpend checkout components provide a complete, Stripe-like payment experience with cart display, order summaries, multiple payment methods, and optional workflow integration.
+The AnySpend checkout components provide a complete payment experience with cart display, order summaries, multiple payment methods, custom form collection, shipping options, discount codes, and optional workflow integration.
 
-<Note>
+<Info>
   For the checkout **sessions REST API** (backend-driven, session-based flows), see [Checkout Sessions](/anyspend/checkout-sessions). This page covers the **React checkout components**.
-</Note>
+</Info>
+
+## How It Works
+
+```mermaid
+flowchart LR
+    A[Render Checkout] --> B{Has Form?}
+    B -- Yes --> C[Collect Info]
+    B -- No --> D[Choose Payment]
+    C --> D
+    D --> E{Crypto or Fiat?}
+    E -- Crypto --> F[Connect Wallet & Pay]
+    E -- Fiat --> G[Onramp Redirect]
+    F --> H[Order Created]
+    G --> H
+    H --> I[Success Callback]
+```
 
 ## Quick Start
 
-```tsx title="Basic Checkout" icon="cart-shopping"
-import { AnySpendCheckout } from "@b3dotfun/sdk/anyspend/react";
-
-<AnySpendCheckout
-  recipientAddress="0xMerchantAddress..."
-  destinationTokenAddress="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
-  destinationTokenChainId={8453}
-  items={[
-    {
-      name: "Pro Plan - Monthly",
-      description: "Unlimited access to all features",
-      amount: "10000000", // 10 USDC (6 decimals)
-      quantity: 1,
-    },
-  ]}
-  organizationName="Acme Inc"
-  organizationLogo="/acme-logo.svg"
-  themeColor="#4f46e5"
-  onSuccess={(result) => {
-    console.log("Payment complete:", result.orderId);
-  }}
-/>;
-```
+<Steps>
+  <Step title="Install the SDK">
+    ```bash
+    npm install @b3dotfun/sdk
+    ```
+  </Step>
+  <Step title="Import the component">
+    ```tsx
+    import { AnySpendCheckout } from "@b3dotfun/sdk/anyspend/react";
+    ```
+  </Step>
+  <Step title="Render the checkout">
+    ```tsx title="Basic Checkout" icon="cart-shopping"
+    <AnySpendCheckout
+      recipientAddress="0xMerchantAddress..."
+      destinationTokenAddress="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      destinationTokenChainId={8453}
+      items={[
+        {
+          name: "Pro Plan - Monthly",
+          description: "Unlimited access to all features",
+          amount: "10000000", // 10 USDC (6 decimals)
+          quantity: 1,
+        },
+      ]}
+      organizationName="Acme Inc"
+      organizationLogo="/acme-logo.svg"
+      themeColor="#4f46e5"
+      onSuccess={(result) => {
+        console.log("Payment complete:", result.orderId);
+      }}
+    />;
+    ```
+  </Step>
+</Steps>
 
 ---
 
@@ -41,7 +69,7 @@ import { AnySpendCheckout } from "@b3dotfun/sdk/anyspend/react";
 
 ### `<AnySpendCheckout>`
 
-The main checkout component renders a two-panel layout: an order summary/cart panel and a payment panel with crypto and fiat options.
+The main checkout component renders a two-panel layout with an order summary/cart panel and a payment panel supporting crypto and fiat options. Optionally includes a form panel for collecting customer information, shipping selection, and discount codes.
 
 #### Core Props
 
@@ -169,6 +197,50 @@ The main checkout component renders a two-panel layout: an order summary/cart pa
   CSS class overrides. See [Customization](/anyspend/customization#css-class-overrides).
 </ParamField>
 
+#### Custom Forms
+
+Collect customer information during checkout using a JSON schema or a custom React component.
+
+<ParamField path="formSchema" type="CheckoutFormSchema">
+  JSON schema defining fields to collect from the customer (email, name, address, etc.). See [CheckoutFormSchema](#checkoutformschema) below.
+</ParamField>
+
+<ParamField path="formComponent" type="React.ComponentType<CheckoutFormComponentProps>">
+  Custom React component to render as the checkout form. Use this when `formSchema` isn't flexible enough.
+</ParamField>
+
+<ParamField path="onFormSubmit" type="(data: Record<string, unknown>) => void">
+  Called when form data changes. Form data is also automatically included in the order's `callbackMetadata`.
+</ParamField>
+
+#### Shipping Options
+
+<ParamField path="shippingOptions" type="ShippingOption[]">
+  Array of shipping options to display as a radio-button selector. The selected option's amount is automatically added to the order total.
+</ParamField>
+
+<ParamField path="collectShippingAddress" type="boolean">
+  When `true`, renders a shipping address form (street, city, state, zip, country). The address is included in the order's `callbackMetadata`.
+</ParamField>
+
+<ParamField path="onShippingChange" type="(option: ShippingOption) => void">
+  Called when the user selects a shipping option
+</ParamField>
+
+#### Discount Codes
+
+<ParamField path="enableDiscountCode" type="boolean">
+  Show a discount code input field. Requires `validateDiscount` to be set.
+</ParamField>
+
+<ParamField path="validateDiscount" type="(code: string) => Promise<DiscountResult>">
+  Async function to validate a discount code against your backend. Returns a `DiscountResult` with the discount amount. The validated discount is automatically applied to the order total.
+</ParamField>
+
+<ParamField path="onDiscountApplied" type="(result: DiscountResult) => void">
+  Called when a valid discount code is applied
+</ParamField>
+
 ---
 
 ### `<AnySpendCheckoutTrigger>`
@@ -261,6 +333,114 @@ interface CheckoutSummaryLine {
   amount: string;
   /** Optional description or note */
   description?: string;
+}
+```
+
+### CheckoutFormSchema
+
+Define custom form fields using a JSON schema:
+
+```typescript title="CheckoutFormSchema" icon="code"
+interface CheckoutFormSchema {
+  fields: CheckoutFormField[];
+}
+
+interface CheckoutFormField {
+  /** Unique field identifier */
+  id: string;
+  /** Field type */
+  type: "text" | "email" | "phone" | "textarea" | "select" | "number" | "checkbox" | "address";
+  /** Display label */
+  label: string;
+  /** Placeholder text */
+  placeholder?: string;
+  /** Whether the field is required */
+  required?: boolean;
+  /** Default value */
+  defaultValue?: string;
+  /** Options for "select" type fields */
+  options?: { label: string; value: string }[];
+  /** Validation rules */
+  validation?: {
+    pattern?: string;
+    minLength?: number;
+    maxLength?: number;
+    min?: number;
+    max?: number;
+  };
+}
+```
+
+<Tip>
+  The `"address"` field type renders a full address form (street, city, state, zip, country) automatically — no need to define each sub-field.
+</Tip>
+
+### ShippingOption
+
+```typescript title="ShippingOption" icon="code"
+interface ShippingOption {
+  /** Unique option identifier */
+  id: string;
+  /** Display name (e.g., "Standard Shipping") */
+  name: string;
+  /** Optional description */
+  description?: string;
+  /** Cost in wei */
+  amount: string;
+  /** Estimated delivery time (e.g., "5-7 business days") */
+  estimated_days?: string;
+}
+```
+
+### DiscountResult
+
+Returned by your `validateDiscount` function:
+
+```typescript title="DiscountResult" icon="code"
+interface DiscountResult {
+  /** Whether the code is valid */
+  valid: boolean;
+  /** Discount type */
+  discount_type?: "percentage" | "fixed";
+  /** The discount value (e.g., "10" for 10%) */
+  discount_value?: string;
+  /** Computed discount amount in wei */
+  discount_amount?: string;
+  /** Final amount after discount in wei */
+  final_amount?: string;
+  /** Error message if invalid */
+  error?: string;
+}
+```
+
+### AddressData
+
+Structure for collected shipping addresses:
+
+```typescript title="AddressData" icon="code"
+interface AddressData {
+  street: string;
+  city: string;
+  state: string;
+  zip: string;
+  country: string;
+}
+```
+
+### CheckoutFormComponentProps
+
+Props passed to custom form components (via `formComponent` or the `checkoutForm` slot):
+
+```typescript title="CheckoutFormComponentProps" icon="code"
+interface CheckoutFormComponentProps {
+  /** Call when form values change */
+  onSubmit: (data: Record<string, unknown>) => void;
+  /** Signal whether the form is valid */
+  onValidationChange: (isValid: boolean) => void;
+  /** Current form data */
+  formData: Record<string, unknown>;
+  /** Update form data */
+  setFormData: (data: Record<string, unknown>) => void;
 }
 ```
 
@@ -401,6 +581,108 @@ function SubscriptionCheckout({ plan }) {
   workflowId="wf_process_payment"
   orgId="org_provider"
   onSuccess={(result) => console.log("Paid:", result)}
+/>
+```
+
+### Checkout with Custom Forms
+
+Collect customer info, offer shipping options, and validate discount codes — all integrated into the checkout flow:
+
+```tsx title="Full-Featured Checkout" icon="file-lines"
+function FullCheckout({ cart }) {
+  return (
+    <AnySpendCheckout
+      mode="page"
+      recipientAddress="0xMerchantWallet..."
+      destinationTokenAddress="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      destinationTokenChainId={8453}
+      items={cart}
+      organizationName="Acme Store"
+
+      // Collect customer information
+      formSchema={{
+        fields: [
+          { id: "email", type: "email", label: "Email", placeholder: "you@example.com", required: true },
+          { id: "name", type: "text", label: "Full Name", placeholder: "Jane Doe", required: true },
+          { id: "phone", type: "phone", label: "Phone", placeholder: "+1 555-1234" },
+          {
+            id: "size", type: "select", label: "T-Shirt Size",
+            options: [
+              { label: "Small", value: "S" },
+              { label: "Medium", value: "M" },
+              { label: "Large", value: "L" },
+              { label: "X-Large", value: "XL" },
+            ],
+          },
+          { id: "notes", type: "textarea", label: "Order Notes", placeholder: "Any special instructions?" },
+        ],
+      }}
+
+      // Shipping address collection
+      collectShippingAddress
+
+      // Shipping method selection
+      shippingOptions={[
+        { id: "standard", name: "Standard Shipping", amount: "2000000", estimated_days: "5-7 business days" },
+        { id: "express", name: "Express Shipping", amount: "5000000", estimated_days: "2-3 business days" },
+        { id: "overnight", name: "Overnight", amount: "10000000", estimated_days: "Next business day" },
+      ]}
+
+      // Discount codes
+      enableDiscountCode
+      validateDiscount={async (code) => {
+        const res = await fetch(`/api/discounts/validate?code=${code}`);
+        return res.json();
+      }}
+
+      // Callbacks
+      onFormSubmit={(data) => console.log("Form data:", data)}
+      onShippingChange={(option) => console.log("Shipping:", option.name)}
+      onDiscountApplied={(result) => console.log("Discount:", result)}
+      onSuccess={(result) => router.push("/order-confirmation")}
+    />
+  );
+}
+```
+
+### Checkout with Custom Form Component
+
+Use a fully custom form component when the JSON schema isn't flexible enough:
+
+```tsx title="Custom Form Component" icon="puzzle-piece"
+function MyCustomForm({ formData, setFormData, onValidationChange }) {
+  const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    onValidationChange(!!formData.email && !!formData.agree);
+  }, [formData]);
+
+  return (
+    <div className="space-y-4">
+      <input
+        type="email"
+        value={formData.email || ""}
+        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+        placeholder="Email address"
+        className="w-full border rounded-lg p-2"
+      />
+      <label className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          checked={!!formData.agree}
+          onChange={(e) => setFormData({ ...formData, agree: e.target.checked })}
+        />
+        I agree to the terms of service
+      </label>
+    </div>
+  );
+}
+
+// Usage
+<AnySpendCheckout
+  {...checkoutProps}
+  formComponent={MyCustomForm}
+  onFormSubmit={(data) => console.log("Custom form data:", data)}
 />
 ```
 

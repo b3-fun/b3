@@ -5,6 +5,11 @@ export type {
   CheckoutItem,
   CheckoutSummaryLine,
   AnySpendCheckoutClasses,
+  CheckoutFormSchema,
+  CheckoutFormComponentProps,
+  ShippingOption,
+  DiscountResult,
+  AddressData,
 } from "./checkout/AnySpendCheckout";
 export { AnySpendCheckoutTrigger } from "./checkout/AnySpendCheckoutTrigger";
 export type { AnySpendCheckoutTriggerProps } from "./checkout/AnySpendCheckoutTrigger";

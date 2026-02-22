@@ -3,7 +3,7 @@ title: "Customization"
 description: "Customize AnySpend components with slots, content overrides, themes, and CSS classes"
 ---
 
-AnySpend components support four layers of customization that can be combined for full control over appearance and behavior:
+AnySpend components support four layers of customization that can be combined for full control over appearance and behavior. Each layer targets a different concern:
 
 <CardGroup cols={2}>
 <Card title="Slots" icon="puzzle-piece">
@@ -42,8 +42,18 @@ interface AnySpendSlots {
   successScreen?: (props: SuccessScreenSlotProps) => ReactNode;
   /** Replace the error screen */
   errorScreen?: (props: ErrorScreenSlotProps) => ReactNode;
+  /** Replace the checkout form panel (checkout only) */
+  checkoutForm?: (props: CheckoutFormComponentProps) => ReactNode;
+  /** Replace the shipping method selector (checkout only) */
+  shippingSelector?: (props: ShippingSelectorSlotProps) => ReactNode;
+  /** Replace the discount code input (checkout only) */
+  discountInput?: (props: DiscountInputSlotProps) => ReactNode;
 }
 ```
+
+<Tip>
+  The `checkoutForm`, `shippingSelector`, and `discountInput` slots are only used in `<AnySpendCheckout>` and `<AnySpendCheckoutTrigger>`. See the [Checkout Guide](/anyspend/checkout) for details on form/shipping/discount features.
+</Tip>
 
 ### Slot Prop Interfaces
 
@@ -94,6 +104,38 @@ interface ErrorScreenSlotProps {
   orderId?: string;
   onRetry?: () => void;
   onDone?: () => void;
+}
+```
+</Accordion>
+
+<Accordion title="CheckoutFormComponentProps">
+```typescript
+interface CheckoutFormComponentProps {
+  onSubmit: (data: Record<string, unknown>) => void;
+  onValidationChange: (isValid: boolean) => void;
+  formData: Record<string, unknown>;
+  setFormData: (data: Record<string, unknown>) => void;
+}
+```
+</Accordion>
+
+<Accordion title="ShippingSelectorSlotProps">
+```typescript
+interface ShippingSelectorSlotProps {
+  options: ShippingOption[];
+  selectedId: string | null;
+  onSelect: (option: ShippingOption) => void;
+}
+```
+</Accordion>
+
+<Accordion title="DiscountInputSlotProps">
+```typescript
+interface DiscountInputSlotProps {
+  onApply: (code: string) => Promise<DiscountResult>;
+  appliedDiscount: DiscountResult | null;
+  onRemove: () => void;
+  loading: boolean;
 }
 ```
 </Accordion>
@@ -183,6 +225,35 @@ interface ErrorScreenSlotProps {
         ) : (
           <button onClick={onPayment}>Connect & Pay</button>
         )}
+      </div>
+    ),
+  }}
+/>
+```
+</Tab>
+
+<Tab title="Custom Checkout Form">
+```tsx
+<AnySpendCheckout
+  {...checkoutProps}
+  slots={{
+    checkoutForm: ({ formData, setFormData }) => (
+      <div className="my-custom-form">
+        <input
+          type="email"
+          value={formData.email || ""}
+          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          placeholder="Email for receipt"
+        />
+        <select
+          value={formData.size || ""}
+          onChange={(e) => setFormData({ ...formData, size: e.target.value })}
+        >
+          <option value="">Select size</option>
+          <option value="S">Small</option>
+          <option value="M">Medium</option>
+          <option value="L">Large</option>
+        </select>
       </div>
     ),
   }}
@@ -395,18 +466,88 @@ interface AnySpendClasses {
 
 Used by `<AnySpendCheckout>` and `<AnySpendCheckoutTrigger>`:
 
-```typescript title="AnySpendCheckoutClasses" icon="code"
+<AccordionGroup>
+<Accordion title="Layout & Structure" defaultOpen>
+```typescript
 interface AnySpendCheckoutClasses {
-  layout?: string;
-  paymentPanel?: string;
-  cryptoPanel?: string;
-  fiatPanel?: string;
-  cartPanel?: string;
-  branding?: string;
-  successScreen?: string;
-  orderStatus?: string;
+  root?: string;               // Root container
+  layout?: string;             // Two-panel layout wrapper
+  paymentColumn?: string;      // Left column (payment + forms)
+  cartColumn?: string;         // Right column (cart/summary)
 }
 ```
+</Accordion>
+
+<Accordion title="Payment Panel">
+```typescript
+{
+  paymentPanel?: string;            // Payment panel container
+  paymentTitle?: string;            // "Pay with" title
+  paymentMethodSelector?: string;   // Method selector container
+  paymentMethodButton?: string;     // Individual method button
+  cryptoPanel?: string;             // Crypto payment section
+  tokenSelector?: string;           // Token dropdown
+  quoteDisplay?: string;            // Quote/price display
+  payButton?: string;               // Pay button
+  fiatPanel?: string;               // Fiat payment section
+  stripeForm?: string;              // Stripe form container
+  stripeSubmitButton?: string;      // Stripe submit button
+  coinbasePanel?: string;           // Coinbase panel
+}
+```
+</Accordion>
+
+<Accordion title="Cart Panel">
+```typescript
+{
+  cartPanel?: string;               // Cart container
+  cartTitle?: string;               // Cart header
+  cartItemRow?: string;             // Individual item row
+  cartItemImage?: string;           // Item image
+  cartItemName?: string;            // Item name
+  cartItemDescription?: string;     // Item description
+  cartItemPrice?: string;           // Item price
+  cartItemMetadata?: string;        // Metadata container
+  cartItemMetadataLabel?: string;   // Metadata label
+  cartItemMetadataValue?: string;   // Metadata value
+  cartSummary?: string;             // Summary section
+  cartSubtotal?: string;            // Subtotal row
+  cartTotal?: string;               // Total row
+  cartSummaryLine?: string;         // Extra summary line
+  cartSummaryLineLabel?: string;    // Summary line label
+  cartSummaryLineAmount?: string;   // Summary line amount
+  cartDiscount?: string;            // Discount row
+}
+```
+</Accordion>
+
+<Accordion title="Form Panel">
+```typescript
+{
+  formPanel?: string;          // Form panel container
+  formField?: string;          // Individual form field
+  formFieldLabel?: string;     // Field label
+  formFieldInput?: string;     // Field input
+  shippingSelector?: string;   // Shipping option selector
+  discountInput?: string;      // Discount code input
+  addressForm?: string;        // Address form
+}
+```
+</Accordion>
+
+<Accordion title="Status & Branding">
+```typescript
+{
+  poweredBy?: string;          // "Powered by" footer
+  successPanel?: string;       // Success screen
+  returnButton?: string;       // Return/redirect button
+  orderStatusPanel?: string;   // Order status tracker
+  retryButton?: string;        // Retry button
+  transactionLink?: string;    // Transaction explorer link
+}
+```
+</Accordion>
+</AccordionGroup>
 
 ### AnySpendDepositClasses
 

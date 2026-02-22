@@ -3,6 +3,22 @@ title: "Components"
 description: "React components for cross-chain payments, checkout, deposits, NFT purchases, and custom smart contract interactions"
 ---
 
+AnySpend provides a suite of React components for every payment use case — from simple swaps to full checkout flows with forms and shipping.
+
+<CardGroup cols={3}>
+<Card title="Swaps & Payments" icon="arrows-rotate" href="#anyspend">
+  Cross-chain swaps, fiat onramp, direct transfers
+</Card>
+<Card title="Checkout" icon="cart-shopping" href="#anyspendcheckout">
+  Cart, order summary, forms, shipping, discounts
+</Card>
+<Card title="Deposits" icon="arrow-down" href="#anyspenddeposit">
+  Chain selection, custom contracts, QR codes
+</Card>
+</CardGroup>
+
+---
+
 ## Core Components
 
 ### `<AnySpend>`
@@ -436,7 +452,7 @@ interface ChainConfig {
 
 ### `<AnySpendCheckout>`
 
-A Stripe-like checkout component with cart display, order summary, and multi-payment-method support.
+A full-featured checkout component with cart display, order summary, custom forms, shipping selection, discount codes, and multi-payment-method support.
 
 ```tsx title="Basic Usage" icon="cart-shopping"
 import { AnySpendCheckout } from "@b3dotfun/sdk/anyspend/react";
@@ -551,6 +567,42 @@ For full checkout documentation, see the [Checkout Guide](/anyspend/checkout).
 
 <ParamField path="summaryLines" type="CheckoutSummaryLine[]">
   Additional summary line items (e.g., platform fees, tips, service charges)
+</ParamField>
+
+<ParamField path="formSchema" type="CheckoutFormSchema">
+  JSON schema for collecting customer info. See [Checkout Guide](/anyspend/checkout#custom-forms).
+</ParamField>
+
+<ParamField path="formComponent" type="React.ComponentType<CheckoutFormComponentProps>">
+  Custom React form component. See [Checkout Guide](/anyspend/checkout#custom-forms).
+</ParamField>
+
+<ParamField path="onFormSubmit" type="(data: Record<string, unknown>) => void">
+  Called when form data changes
+</ParamField>
+
+<ParamField path="shippingOptions" type="ShippingOption[]">
+  Shipping options displayed as a selector. See [Checkout Guide](/anyspend/checkout#shipping-options).
+</ParamField>
+
+<ParamField path="collectShippingAddress" type="boolean">
+  Show a shipping address form
+</ParamField>
+
+<ParamField path="onShippingChange" type="(option: ShippingOption) => void">
+  Called when shipping option changes
+</ParamField>
+
+<ParamField path="enableDiscountCode" type="boolean">
+  Show a discount code input
+</ParamField>
+
+<ParamField path="validateDiscount" type="(code: string) => Promise<DiscountResult>">
+  Async discount code validation function
+</ParamField>
+
+<ParamField path="onDiscountApplied" type="(result: DiscountResult) => void">
+  Called when a discount is applied
 </ParamField>
 
 <ParamField path="classes" type="AnySpendCheckoutClasses">

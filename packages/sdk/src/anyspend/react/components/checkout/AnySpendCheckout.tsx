@@ -1,9 +1,10 @@
 "use client";
 
 import { useTokenData } from "@b3dotfun/sdk/global-account/react";
-import { type ReactNode, useMemo } from "react";
+import { type ReactNode, useCallback, useMemo, useState } from "react";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "../AnySpendFingerprintWrapper";
 import { CheckoutCartPanel } from "./CheckoutCartPanel";
+import { CheckoutFormPanel } from "./CheckoutFormPanel";
 import { CheckoutLayout } from "./CheckoutLayout";
 import { CheckoutPaymentPanel, type PaymentMethod } from "./CheckoutPaymentPanel";
 
@@ -11,6 +12,15 @@ export type { AnySpendCheckoutClasses } from "../types/classes";
 import type { AnySpendCheckoutClasses } from "../types/classes";
 import { AnySpendCustomizationProvider } from "../context/AnySpendCustomizationContext";
 import type { AnySpendContent, AnySpendSlots, AnySpendTheme } from "../types/customization";
+import type {
+  CheckoutFormSchema,
+  CheckoutFormComponentProps,
+  ShippingOption,
+  DiscountResult,
+  AddressData,
+} from "../../../types/forms";
+
+export type { CheckoutFormSchema, CheckoutFormComponentProps, ShippingOption, DiscountResult, AddressData };
 
 export interface CheckoutItem {
   id?: string;
@@ -90,7 +100,36 @@ export interface AnySpendCheckoutProps {
   discount?: string | { amount: string; label?: string; code?: string };
   /** Additional summary line items (fees, tips, etc.) */
   summaryLines?: CheckoutSummaryLine[];
+
+  // ===== NEW: Custom Form Props =====
+
+  /** JSON form schema defining fields to collect from the customer */
+  formSchema?: CheckoutFormSchema | null;
+  /** Custom React component to render as the checkout form */
+  formComponent?: React.ComponentType<CheckoutFormComponentProps>;
+  /** Called when form data changes */
+  onFormSubmit?: (data: Record<string, unknown>) => void;
+
+  // ===== NEW: Shipping Props =====
+
+  /** Shipping options to display */
+  shippingOptions?: ShippingOption[] | null;
+  /** Whether to collect a shipping address */
+  collectShippingAddress?: boolean;
+  /** Called when shipping option changes */
+  onShippingChange?: (option: ShippingOption) => void;
+
+  // ===== NEW: Discount Code Props =====
+
+  /** Enable discount code input */
+  enableDiscountCode?: boolean;
+  /** Called when discount is applied */
+  onDiscountApplied?: (result: DiscountResult) => void;
+  /** Async function to validate a discount code. Returns DiscountResult. */
+  validateDiscount?: (code: string) => Promise<DiscountResult>;
 }
+
+const emptyAddress: AddressData = { street: "", city: "", state: "", zip: "", country: "" };
 
 export function AnySpendCheckout({
   mode = "page",
@@ -103,7 +142,7 @@ export function AnySpendCheckout({
   organizationLogo,
   themeColor,
   buttonText = "Pay",
-  checkoutSessionId: _checkoutSessionId, // TODO: pass to payment panels for server-side session tracking
+  checkoutSessionId,
   onSuccess,
   onError,
   returnUrl,
@@ -117,29 +156,99 @@ export function AnySpendCheckout({
   theme,
   showPoints,
   showOrderId,
-  shipping,
+  shipping: shippingProp,
   tax,
-  discount,
+  discount: discountProp,
   summaryLines,
+  // New form props
+  formSchema,
+  formComponent,
+  onFormSubmit,
+  // New shipping props
+  shippingOptions,
+  collectShippingAddress,
+  onShippingChange: onShippingChangeProp,
+  // New discount props
+  enableDiscountCode,
+  onDiscountApplied: onDiscountAppliedProp,
+  validateDiscount,
 }: AnySpendCheckoutProps) {
-  // Compute total from items + adjustments
+  // ===== Form state =====
+  const [formData, setFormData] = useState<Record<string, unknown>>({});
+  const [selectedShipping, setSelectedShipping] = useState<ShippingOption | null>(null);
+  const [appliedDiscount, setAppliedDiscount] = useState<DiscountResult | null>(null);
+  const [shippingAddress, setShippingAddress] = useState<AddressData>(emptyAddress);
+
+  const handleFormDataChange = useCallback(
+    (data: Record<string, unknown>) => {
+      setFormData(data);
+      onFormSubmit?.(data);
+    },
+    [onFormSubmit],
+  );
+
+  const handleShippingChange = useCallback(
+    (option: ShippingOption) => {
+      setSelectedShipping(option);
+      onShippingChangeProp?.(option);
+    },
+    [onShippingChangeProp],
+  );
+
+  const handleDiscountApplied = useCallback(
+    (result: DiscountResult) => {
+      setAppliedDiscount(result);
+      onDiscountAppliedProp?.(result);
+    },
+    [onDiscountAppliedProp],
+  );
+
+  const handleDiscountRemoved = useCallback(() => {
+    setAppliedDiscount(null);
+  }, []);
+
+  // Merge static shipping prop with dynamic shipping selection
+  const effectiveShipping = useMemo(() => {
+    if (selectedShipping) {
+      return { amount: selectedShipping.amount, label: selectedShipping.name };
+    }
+    if (shippingProp) {
+      return typeof shippingProp === "string" ? { amount: shippingProp } : shippingProp;
+    }
+    return undefined;
+  }, [selectedShipping, shippingProp]);
+
+  // Merge static discount prop with dynamic discount
+  const effectiveDiscount = useMemo(() => {
+    if (appliedDiscount?.valid && appliedDiscount.discount_amount) {
+      return {
+        amount: appliedDiscount.discount_amount,
+        label: appliedDiscount.discount_type === "percentage" ? `${appliedDiscount.discount_value}% off` : "Discount",
+      };
+    }
+    if (discountProp) {
+      return typeof discountProp === "string" ? { amount: discountProp } : discountProp;
+    }
+    return undefined;
+  }, [appliedDiscount, discountProp]);
+
+  // Compute total from items + adjustments (including dynamic shipping/discount)
   const computedTotal = useMemo(() => {
     if (totalAmountOverride) return totalAmountOverride;
     let total = BigInt(0);
     for (const item of items) {
       total += BigInt(item.amount) * BigInt(item.quantity);
     }
-    const shippingAmt = typeof shipping === "string" ? shipping : shipping?.amount;
-    if (shippingAmt) total += BigInt(shippingAmt);
+    if (effectiveShipping?.amount) total += BigInt(effectiveShipping.amount);
     const taxAmt = typeof tax === "string" ? tax : tax?.amount;
     if (taxAmt) total += BigInt(taxAmt);
-    const discountAmt = typeof discount === "string" ? discount : discount?.amount;
-    if (discountAmt) total -= BigInt(discountAmt);
+    if (effectiveDiscount?.amount) total -= BigInt(effectiveDiscount.amount);
     if (summaryLines) {
       for (const line of summaryLines) total += BigInt(line.amount);
     }
+    if (total < BigInt(0)) total = BigInt(0);
     return total.toString();
-  }, [items, totalAmountOverride, shipping, tax, discount, summaryLines]);
+  }, [items, totalAmountOverride, effectiveShipping, tax, effectiveDiscount, summaryLines]);
 
   // Get destination token metadata
   const { data: tokenData } = useTokenData(destinationTokenChainId, destinationTokenAddress);
@@ -148,29 +257,86 @@ export function AnySpendCheckout({
 
   const fingerprint = getFingerprintConfig();
 
+  // Build callbackMetadata to include form data with the order
+  const checkoutFormMetadata = useMemo(() => {
+    const meta: Record<string, unknown> = {};
+    if (Object.keys(formData).length > 0) meta.formData = formData;
+    if (selectedShipping) meta.shippingOptionId = selectedShipping.id;
+    if (selectedShipping) meta.shippingAmount = selectedShipping.amount;
+    if (shippingAddress.street) meta.shippingAddress = shippingAddress;
+    if (appliedDiscount?.valid) {
+      meta.discountCode = appliedDiscount.discount_value;
+      meta.discountAmount = appliedDiscount.discount_amount;
+    }
+    // Extract common fields for customer enrichment
+    if (formData.email) meta.customerEmail = formData.email;
+    if (formData.name) meta.customerName = formData.name;
+    if (checkoutSessionId) meta.checkoutSessionId = checkoutSessionId;
+    return Object.keys(meta).length > 0 ? meta : undefined;
+  }, [formData, selectedShipping, shippingAddress, appliedDiscount, checkoutSessionId]);
+
+  // Check if we have a form panel to show
+  const hasFormContent =
+    (formSchema && formSchema.fields.length > 0) ||
+    formComponent ||
+    slots?.checkoutForm ||
+    (shippingOptions && shippingOptions.length > 0) ||
+    collectShippingAddress ||
+    enableDiscountCode;
+
   return (
     <AnySpendFingerprintWrapper fingerprint={fingerprint}>
       <AnySpendCustomizationProvider slots={slots} content={content} theme={theme}>
         <CheckoutLayout
           mode={mode}
           paymentPanel={
-            <CheckoutPaymentPanel
-              recipientAddress={recipientAddress}
-              destinationTokenAddress={destinationTokenAddress}
-              destinationTokenChainId={destinationTokenChainId}
-              totalAmount={computedTotal}
-              buttonText={buttonText}
-              themeColor={themeColor}
-              returnUrl={returnUrl}
-              returnLabel={returnLabel}
-              onSuccess={onSuccess}
-              onError={onError}
-              classes={classes}
-              defaultPaymentMethod={defaultPaymentMethod}
-              senderAddress={senderAddress}
-              showPoints={showPoints}
-              showOrderId={showOrderId}
-            />
+            <>
+              {/* Form panel renders above payment panel in the left/payment column */}
+              {hasFormContent && (
+                <div className="mb-6">
+                  <CheckoutFormPanel
+                    formSchema={formSchema}
+                    formComponent={formComponent}
+                    shippingOptions={shippingOptions}
+                    collectShippingAddress={collectShippingAddress}
+                    enableDiscountCode={enableDiscountCode}
+                    validateDiscount={validateDiscount}
+                    tokenSymbol={tokenSymbol}
+                    tokenDecimals={tokenDecimals}
+                    classes={classes}
+                    formData={formData}
+                    onFormDataChange={handleFormDataChange}
+                    selectedShipping={selectedShipping}
+                    onShippingChange={handleShippingChange}
+                    appliedDiscount={appliedDiscount}
+                    onDiscountApplied={handleDiscountApplied}
+                    onDiscountRemoved={handleDiscountRemoved}
+                    shippingAddress={shippingAddress}
+                    onShippingAddressChange={setShippingAddress}
+                    checkoutFormSlot={slots?.checkoutForm}
+                  />
+                  <div className="mt-6 border-t border-gray-200 dark:border-gray-700" />
+                </div>
+              )}
+              <CheckoutPaymentPanel
+                recipientAddress={recipientAddress}
+                destinationTokenAddress={destinationTokenAddress}
+                destinationTokenChainId={destinationTokenChainId}
+                totalAmount={computedTotal}
+                buttonText={buttonText}
+                themeColor={themeColor}
+                returnUrl={returnUrl}
+                returnLabel={returnLabel}
+                onSuccess={onSuccess}
+                onError={onError}
+                classes={classes}
+                defaultPaymentMethod={defaultPaymentMethod}
+                senderAddress={senderAddress}
+                showPoints={showPoints}
+                showOrderId={showOrderId}
+                callbackMetadata={checkoutFormMetadata}
+              />
+            </>
           }
           cartPanel={
             <CheckoutCartPanel
@@ -182,9 +348,9 @@ export function AnySpendCheckout({
               organizationLogo={organizationLogo}
               classes={classes}
               footer={footer}
-              shipping={typeof shipping === "string" ? { amount: shipping } : shipping}
+              shipping={effectiveShipping}
               tax={typeof tax === "string" ? { amount: tax } : tax}
-              discount={typeof discount === "string" ? { amount: discount } : discount}
+              discount={effectiveDiscount}
               summaryLines={summaryLines}
             />
           }

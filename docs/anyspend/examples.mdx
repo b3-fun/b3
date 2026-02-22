@@ -3,140 +3,380 @@ title: "Examples & Use Cases"
 description: "Real-world implementation examples for common AnySpend integration patterns"
 ---
 
-# Examples & Use Cases
+Real-world implementation examples for common AnySpend integration patterns, from simple swaps to full checkout flows with forms, shipping, and workflow automation.
 
-Real-world implementation examples for common AnySpend integration patterns, from simple swaps to complex DeFi and gaming applications.
+<CardGroup cols={3}>
+<Card title="Swaps" icon="arrows-rotate" href="#cross-chain-token-swaps">
+  Token swaps, fixed payments, branded UIs
+</Card>
+<Card title="Checkout" icon="cart-shopping" href="#checkout-experiences">
+  E-commerce, subscriptions, forms, discounts
+</Card>
+<Card title="Deposits" icon="arrow-down" href="#deposit-flows">
+  Multi-chain, staking, QR codes
+</Card>
+<Card title="Workflows" icon="bolt" href="#workflow-triggers">
+  Payment-triggered automation
+</Card>
+<Card title="NFTs" icon="image" href="#nft-marketplace">
+  NFT purchase cards
+</Card>
+<Card title="Customization" icon="palette" href="#full-customization-example">
+  Fully themed checkout
+</Card>
+</CardGroup>
 
-## 🔄 Cross-Chain Token Swaps
+---
+
+## Cross-Chain Token Swaps
 
 ### Basic Swap Interface
-
-Perfect for DeFi applications, portfolio managers, or any app that needs token exchange functionality.
 
 ```tsx title="Simple Swap Page" icon="exchange-alt"
 import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
 
 function TokenSwapPage() {
-  const [userAddress] = useWallet(); // Your wallet hook
-
   return (
-    <div className="swap-container">
-      <h1>Swap Tokens</h1>
-      <AnySpend
-        mode="page"
-        recipientAddress={userAddress}
-        onSuccess={(txHash) => {
-          // Update user's portfolio
-          toast.success("Swap completed successfully!");
-
-          // Optional: Track analytics
-          analytics.track("swap_completed", {
-            txHash,
-            userAddress,
-          });
-
-          // Refresh user balances
-          queryClient.invalidateQueries(['user-balances', userAddress]);
-        }}
-      />
-    </div>
+    <AnySpend
+      mode="page"
+      recipientAddress={userWalletAddress}
+      onSuccess={(txHash) => {
+        toast.success("Swap completed!");
+        queryClient.invalidateQueries(["user-balances"]);
+      }}
+    />
   );
 }
 ```
 
-### Advanced Swap with Quote Preview
+### Swap with Custom Branding
 
-```tsx title="Advanced Swap Interface" icon="chart-line" lines
-import { useAnyspendQuote, AnySpend } from "@b3dotfun/sdk/anyspend/react";
+```tsx title="Branded Swap" icon="palette"
+import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
 
-function AdvancedSwapInterface() {
-  const [fromToken, setFromToken] = useState(USDC_ETHEREUM);
-  const [toToken, setToToken] = useState(ETH_B3);
-  const [amount, setAmount] = useState("100");
-  const [isSwapOpen, setIsSwapOpen] = useState(false);
-
-  const quoteRequest = useMemo(() => ({
-    srcChain: fromToken.chainId,
-    dstChain: toToken.chainId,
-    srcTokenAddress: fromToken.address,
-    dstTokenAddress: toToken.address,
-    type: "swap" as const,
-    tradeType: "EXACT_INPUT" as const,
-    amount: parseUnits(amount || "0", fromToken.decimals).toString(),
-  }), [fromToken, toToken, amount]);
-
-  const { anyspendQuote, isLoadingAnyspendQuote } = useAnyspendQuote(quoteRequest);
-
+function BrandedSwap() {
   return (
-    <div className="advanced-swap">
-      <div className="swap-form">
-        <TokenInput
-          label="From"
-          token={fromToken}
-          amount={amount}
-          onTokenChange={setFromToken}
-          onAmountChange={setAmount}
-        />
-
-        <SwapArrowButton onClick={() => {
-          setFromToken(toToken);
-          setToToken(fromToken);
-        }} />
-
-        <TokenInput
-          label="To"
-          token={toToken}
-          amount={anyspendQuote?.expectedOutput || "0"}
-          onTokenChange={setToToken}
-          readOnly
-        />
-
-        {anyspendQuote && (
-          <div className="quote-details">
-            <div>Rate: 1 {fromToken.symbol} = {anyspendQuote.rate} {toToken.symbol}</div>
-            <div>Network Fee: ${anyspendQuote.networkFeeUsd}</div>
-            <div>Service Fee: ${anyspendQuote.serviceFeeUsd}</div>
-            <div>Total: ${anyspendQuote.totalUsdCost}</div>
+    <AnySpend
+      mode="page"
+      recipientAddress={userAddress}
+      theme={{ brandColor: "#6366f1" }}
+      content={{
+        successTitle: "Exchange Complete!",
+        successDescription: "Your tokens have been swapped successfully.",
+        returnButtonLabel: "Back to Dashboard",
+      }}
+      slots={{
+        footer: (
+          <div className="text-center text-sm text-gray-400 py-3">
+            Powered by MyApp
           </div>
-        )}
-
-        <button
-          onClick={() => setIsSwapOpen(true)}
-          disabled={isLoadingAnyspendQuote || !anyspendQuote}
-          className="swap-button"
-        >
-          {isLoadingAnyspendQuote ? "Getting Quote..." : "Swap Tokens"}
-        </button>
-      </div>
-
-      {isSwapOpen && (
-        <AnySpend
-          mode="modal"
-          recipientAddress={userAddress}
-          destinationTokenAddress={toToken.address}
-          destinationTokenChainId={toToken.chainId}
-          onSuccess={() => {
-            setIsSwapOpen(false);
-            toast.success("Swap completed!");
-          }}
-        />
-      )}
-    </div>
+        ),
+      }}
+    />
   );
 }
 ```
 
-## 🖼️ NFT Marketplace Integration
+### Fixed Amount Payment
 
-### Simple NFT Purchase
+```tsx title="Fixed Amount Payment" icon="lock"
+import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
 
-```tsx title="NFT Card Component" icon="image" lines
+function FixedPayment() {
+  return (
+    <AnySpend
+      mode="modal"
+      destinationTokenAddress="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      destinationTokenChainId={8453}
+      destinationTokenAmount="10000000" // Exactly 10 USDC
+      recipientAddress={merchantAddress}
+      allowDirectTransfer
+      onSuccess={(txHash) => {
+        toast.success("Payment received!");
+      }}
+    />
+  );
+}
+```
+
+---
+
+## Checkout Experiences
+
+### E-Commerce Checkout
+
+```tsx title="Store Checkout" icon="cart-shopping"
+import { AnySpendCheckout } from "@b3dotfun/sdk/anyspend/react";
+
+function StoreCheckout({ cart }) {
+  return (
+    <AnySpendCheckout
+      mode="page"
+      recipientAddress="0xMerchantWallet..."
+      destinationTokenAddress="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      destinationTokenChainId={8453}
+      items={cart.map((item) => ({
+        name: item.name,
+        description: item.variant,
+        imageUrl: item.imageUrl,
+        amount: item.priceWei,
+        quantity: item.quantity,
+        metadata: {
+          Size: item.size,
+          Color: item.color,
+        },
+      }))}
+      shipping={{ amount: "2000000", label: "Standard Shipping" }}
+      tax={{ amount: "850000", label: "Tax", rate: "8.5%" }}
+      discount={{ amount: "5000000", label: "Promo Code", code: "SAVE10" }}
+      organizationName="Acme Store"
+      organizationLogo="/acme-logo.svg"
+      themeColor="#4f46e5"
+      onSuccess={(result) => {
+        router.push(`/order-confirmation?id=${result.orderId}`);
+      }}
+      returnUrl="/shop"
+      returnLabel="Continue Shopping"
+      content={{
+        successTitle: "Order Placed!",
+        successDescription: "Check your email for shipping confirmation.",
+      }}
+    />
+  );
+}
+```
+
+### Checkout with Forms, Shipping & Discounts
+
+```tsx title="Full-Featured Checkout" icon="file-lines"
+import { AnySpendCheckout } from "@b3dotfun/sdk/anyspend/react";
+
+function FullCheckout({ cart }) {
+  return (
+    <AnySpendCheckout
+      mode="page"
+      recipientAddress="0xMerchantWallet..."
+      destinationTokenAddress="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      destinationTokenChainId={8453}
+      items={cart}
+      organizationName="Acme Store"
+      themeColor="#4f46e5"
+
+      // Collect customer info via JSON schema
+      formSchema={{
+        fields: [
+          { id: "email", type: "email", label: "Email", required: true },
+          { id: "name", type: "text", label: "Full Name", required: true },
+          { id: "shipping", type: "address", label: "Shipping Address", required: true },
+        ],
+      }}
+
+      // Shipping options
+      shippingOptions={[
+        { id: "free", name: "Free Shipping", amount: "0", estimated_days: "7-10 business days" },
+        { id: "express", name: "Express", amount: "5000000", estimated_days: "2-3 business days" },
+      ]}
+
+      // Discount codes
+      enableDiscountCode
+      validateDiscount={async (code) => {
+        const res = await fetch(`/api/discounts/${code}`);
+        return res.json();
+      }}
+
+      onSuccess={(result) => router.push(`/confirmation?id=${result.orderId}`)}
+    />
+  );
+}
+```
+
+### Subscription with Workflow Trigger
+
+```tsx title="Subscription Payment" icon="credit-card"
+import { AnySpendCheckoutTrigger } from "@b3dotfun/sdk/anyspend/react";
+
+function SubscriptionCheckout({ plan }) {
+  return (
+    <AnySpendCheckoutTrigger
+      recipientAddress="0xTreasury..."
+      destinationTokenAddress="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      destinationTokenChainId={8453}
+      items={[
+        {
+          name: `${plan.name} Plan`,
+          description: `${plan.billingCycle} billing`,
+          amount: plan.amountWei,
+          quantity: 1,
+        },
+      ]}
+      organizationName="SaaS Co"
+      themeColor="#059669"
+
+      // Trigger workflow on successful payment
+      workflowId="wf_activate_subscription"
+      orgId="org_saas"
+      callbackMetadata={{
+        inputs: {
+          planId: plan.id,
+          userId: currentUser.id,
+          billingCycle: plan.billingCycle,
+        },
+      }}
+
+      onSuccess={() => {
+        toast.success("Subscription activated!");
+        router.push("/dashboard");
+      }}
+      content={{
+        successTitle: `Welcome to ${plan.name}!`,
+        successDescription: "Your subscription is now active.",
+        returnButtonLabel: "Go to Dashboard",
+      }}
+    />
+  );
+}
+```
+
+---
+
+## Deposit Flows
+
+### Multi-Chain Deposit
+
+```tsx title="Deposit with Chain Selection" icon="arrow-down"
+import { AnySpendDeposit } from "@b3dotfun/sdk/anyspend/react";
+
+function DepositPage() {
+  return (
+    <AnySpendDeposit
+      mode="page"
+      recipientAddress={walletAddress}
+      destinationTokenAddress="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      destinationTokenChainId={8453}
+      showChainSelection
+      supportedChains={[
+        { id: 8453, name: "Base" },
+        { id: 1, name: "Ethereum" },
+        { id: 42161, name: "Arbitrum" },
+        { id: 10, name: "Optimism" },
+        { id: 137, name: "Polygon" },
+      ]}
+      chainSelectionTitle="Where are your funds?"
+      chainSelectionDescription="Select the chain you want to deposit from"
+      onSuccess={(amount) => {
+        toast.success(`Deposited ${amount} USDC`);
+        queryClient.invalidateQueries(["balance"]);
+      }}
+    />
+  );
+}
+```
+
+### Custom Contract Deposit (Staking)
+
+```tsx title="Staking via Deposit" icon="coins"
+import { AnySpendDeposit } from "@b3dotfun/sdk/anyspend/react";
+
+function StakeDeposit({ stakingContract }) {
+  return (
+    <AnySpendDeposit
+      recipientAddress={stakingContract.address}
+      destinationTokenAddress={stakingContract.tokenAddress}
+      destinationTokenChainId={8453}
+      depositContractConfig={{
+        functionAbi: JSON.stringify(stakingContract.abi),
+        functionName: "stake",
+        functionArgs: ["{{amount_out}}", "30"], // amount placeholder + 30 days
+        to: stakingContract.address,
+        action: "Stake",
+      }}
+      isCustomDeposit
+      actionLabel="Stake Tokens"
+      onSuccess={(amount) => toast.success(`Staked ${amount}!`)}
+      content={{
+        successTitle: "Staking Successful!",
+        successDescription: "Your tokens are now staked. Rewards will accrue daily.",
+      }}
+    />
+  );
+}
+```
+
+### QR Code Deposit
+
+```tsx title="QR Code Deposit" icon="qrcode"
+import { QRDeposit } from "@b3dotfun/sdk/anyspend/react";
+
+function QRDepositPage() {
+  const usdcToken = {
+    chainId: 8453,
+    address: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    name: "USD Coin",
+    symbol: "USDC",
+    decimals: 6,
+    metadata: { logoURI: "https://..." },
+  };
+
+  return (
+    <QRDeposit
+      recipientAddress={walletAddress}
+      destinationToken={usdcToken}
+      destinationChainId={8453}
+      onOrderCreated={(orderId) => {
+        console.log("Deposit order created:", orderId);
+      }}
+      onSuccess={(txHash) => {
+        toast.success("Deposit received!");
+      }}
+    />
+  );
+}
+```
+
+---
+
+## Workflow Triggers
+
+### Payment-Triggered Automation
+
+```tsx title="Workflow Payment Trigger" icon="diagram-project"
+import { AnySpendWorkflowTrigger } from "@b3dotfun/sdk/anyspend/react";
+
+function WorkflowPayment() {
+  return (
+    <AnySpendWorkflowTrigger
+      recipientAddress="0xServiceWallet..."
+      chainId={8453}
+      tokenAddress="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      amount="5000000" // 5 USDC
+      workflowId="wf_process_order"
+      orgId="org_myapp"
+      actionLabel="Pay & Activate"
+      callbackMetadata={{
+        inputs: {
+          action: "activate_premium",
+          userId: currentUser.id,
+        },
+      }}
+      onSuccess={(amount) => {
+        toast.success("Payment processed! Workflow triggered.");
+        router.push("/dashboard");
+      }}
+    />
+  );
+}
+```
+
+---
+
+## NFT Marketplace
+
+### NFT Purchase Card
+
+```tsx title="NFT Card Component" icon="image"
 import { AnySpendNFTButton } from "@b3dotfun/sdk/anyspend/react";
 
-function NFTCard({ nft }: { nft: NFTListing }) {
-  const [userAddress] = useWallet();
-  const [isOwned, setIsOwned] = useState(false);
-
+function NFTCard({ nft }) {
   const nftContract = {
     chainId: nft.chainId,
     contractAddress: nft.contractAddress,
@@ -146,381 +386,121 @@ function NFTCard({ nft }: { nft: NFTListing }) {
     name: nft.name,
     description: nft.description,
     imageUrl: nft.imageUrl,
+    tokenId: null,
+    type: "erc721" as const,
   };
 
   return (
     <div className="nft-card">
       <img src={nft.imageUrl} alt={nft.name} />
-      <div className="nft-details">
-        <h3>{nft.name}</h3>
-        <p>{nft.description}</p>
-        <div className="price">
-          {nft.priceFormatted} {nft.currency.symbol}
-        </div>
-
-        {isOwned ? (
-          <div className="owned-badge">✅ Owned</div>
-        ) : (
-          <AnySpendNFTButton
-            nftContract={nftContract}
-            recipientAddress={userAddress}
-            onSuccess={(txHash) => {
-              setIsOwned(true);
-
-              // Update user's NFT collection
-              queryClient.invalidateQueries(['user-nfts', userAddress]);
-
-              // Show success message with explorer link
-              toast.success(
-                <div>
-                  NFT purchased successfully!
-                  <a href={`https://explorer.b3.fun/tx/${txHash}`} target="_blank">
-                    View Transaction
-                  </a>
-                </div>
-              );
-            }}
-          />
-        )}
-      </div>
+      <h3>{nft.name}</h3>
+      <p>{nft.priceFormatted} {nft.currency.symbol}</p>
+      <AnySpendNFTButton
+        nftContract={nftContract}
+        recipientAddress={userAddress}
+      />
     </div>
   );
 }
 ```
 
-### NFT Marketplace with Bulk Purchase
+---
 
-```tsx title="Bulk NFT Purchase" icon="shopping-cart" lines
-function NFTMarketplace() {
-  const [selectedNFTs, setSelectedNFTs] = useState<NFTListing[]>([]);
-  const [userAddress] = useWallet();
+## Custom Smart Contract Calls
 
-  const handleBulkPurchase = () => {
-    // For bulk purchases, create multiple orders or use batch contract
-    selectedNFTs.forEach((nft, index) => {
-      setTimeout(() => {
-        // Stagger purchases to avoid rate limiting
-        createSingleNFTPurchase(nft);
-      }, index * 1000);
-    });
-  };
+### DeFi Staking
 
-  return (
-    <div className="marketplace">
-      <div className="nft-grid">
-        {nfts.map((nft) => (
-          <NFTCard
-            key={nft.id}
-            nft={nft}
-            onSelect={(selected) => {
-              if (selected) {
-                setSelectedNFTs([...selectedNFTs, nft]);
-              } else {
-                setSelectedNFTs(selectedNFTs.filter(n => n.id !== nft.id));
-              }
-            }}
-          />
-        ))}
-      </div>
-
-      {selectedNFTs.length > 0 && (
-        <div className="bulk-purchase">
-          <p>Selected: {selectedNFTs.length} NFTs</p>
-          <p>Total: {calculateTotal(selectedNFTs)} ETH</p>
-          <button onClick={handleBulkPurchase}>
-            Purchase Selected NFTs
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
-```
-
-## 🎮 Gaming & DeFi Applications
-
-### Staking Interface
-
-```tsx title="Staking Pool Component" icon="coins" lines
+```tsx title="Staking Pool" icon="coins"
 import { AnySpendCustom } from "@b3dotfun/sdk/anyspend/react";
-import { encodeFunctionData } from "viem";
+import { encodeFunctionData, parseUnits } from "viem";
 
-function StakingPool({ pool }: { pool: StakingPool }) {
-  const [stakeAmount, setStakeAmount] = useState("");
-  const [stakingDuration, setStakingDuration] = useState(30);
-  const [userAddress] = useWallet();
+function StakingPool({ pool }) {
+  const [amount, setAmount] = useState("");
 
   const stakingCalldata = useMemo(() => {
-    if (!stakeAmount) return "0x";
-
-    const amountWei = parseUnits(stakeAmount, pool.token.decimals);
-
+    if (!amount) return "0x";
     return encodeFunctionData({
       abi: stakingPoolABI,
       functionName: "stake",
-      args: [amountWei, stakingDuration * 24 * 60 * 60], // duration in seconds
+      args: [parseUnits(amount, pool.token.decimals), 30 * 86400],
     });
-  }, [stakeAmount, stakingDuration]);
-
-  const expectedRewards = useMemo(() => {
-    if (!stakeAmount) return "0";
-    const amount = parseFloat(stakeAmount);
-    const apy = pool.apy / 100;
-    const durationInYears = stakingDuration / 365;
-    return (amount * apy * durationInYears).toFixed(4);
-  }, [stakeAmount, stakingDuration, pool.apy]);
+  }, [amount]);
 
   return (
-    <div className="staking-pool">
-      <div className="pool-info">
-        <h2>{pool.name}</h2>
-        <p>APY: {pool.apy}%</p>
-        <p>TVL: ${pool.totalValueLocked.toLocaleString()}</p>
-      </div>
-
-      <div className="stake-form">
-        <div className="input-group">
-          <label>Amount to stake</label>
-          <input
-            type="number"
-            value={stakeAmount}
-            onChange={(e) => setStakeAmount(e.target.value)}
-            placeholder="0.0"
-          />
-          <span>{pool.token.symbol}</span>
-        </div>
-
-        <div className="input-group">
-          <label>Staking Duration</label>
-          <select
-            value={stakingDuration}
-            onChange={(e) => setStakingDuration(Number(e.target.value))}
-          >
-            <option value={7}>7 days (2% APY)</option>
-            <option value={30}>30 days (5% APY)</option>
-            <option value={90}>90 days (8% APY)</option>
-            <option value={365}>1 year (12% APY)</option>
-          </select>
-        </div>
-
-        <div className="rewards-preview">
-          <p>Expected rewards: {expectedRewards} {pool.token.symbol}</p>
-        </div>
-
-        <AnySpendCustom
-          orderType="custom"
-          dstChainId={pool.chainId}
-          dstToken={pool.token}
-          dstAmount={parseUnits(stakeAmount || "0", pool.token.decimals).toString()}
-          contractAddress={pool.contractAddress}
-          encodedData={stakingCalldata}
-          metadata={{
-            action: "stake",
-            poolId: pool.id,
-            duration: stakingDuration,
-            expectedRewards,
-          }}
-          header={({ anyspendPrice, isLoadingAnyspendPrice }) => (
-            <div className="staking-header">
-              <h3>Stake {pool.token.symbol}</h3>
-              <div className="stake-summary">
-                <div>Amount: {stakeAmount} {pool.token.symbol}</div>
-                <div>Duration: {stakingDuration} days</div>
-                <div>Expected rewards: {expectedRewards} {pool.token.symbol}</div>
-                {anyspendPrice && (
-                  <div>Total cost: ${anyspendPrice.totalUsdCost}</div>
-                )}
-              </div>
-            </div>
-          )}
-          onSuccess={(txHash) => {
-            toast.success("Staking successful!");
-
-            // Update user's staking positions
-            queryClient.invalidateQueries(['staking-positions', userAddress]);
-
-            // Reset form
-            setStakeAmount("");
-          }}
-        />
-      </div>
-    </div>
-  );
-}
-```
-
-### Gaming Spin Wheel
-
-```tsx title="Spin Wheel Game" icon="gamepad" lines
-import { AnySpendBuySpin } from "@b3dotfun/sdk/anyspend/react";
-
-function SpinWheel({ game }: { game: GameConfig }) {
-  const [userAddress] = useWallet();
-  const [spinHistory, setSpinHistory] = useState<SpinResult[]>([]);
-
-  return (
-    <div className="spin-game">
-      <div className="wheel-container">
-        <SpinWheelVisual prizes={game.prizes} />
-      </div>
-
-      <div className="game-info">
-        <h2>{game.name}</h2>
-        <p>Cost per spin: {game.spinCost} {game.currency.symbol}</p>
-        <div className="prizes">
-          <h3>Possible Prizes:</h3>
-          {game.prizes.map((prize, index) => (
-            <div key={index} className="prize">
-              <span>{prize.name}</span>
-              <span>{prize.probability}% chance</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <AnySpendBuySpin
-        gameContract={game.contractAddress}
-        spinPrice={game.spinCostWei}
-        recipientAddress={userAddress}
-        onSuccess={(txHash) => {
-          // Handle spin result
-          fetchSpinResult(txHash).then((result) => {
-            setSpinHistory([result, ...spinHistory]);
-
-            if (result.isWinner) {
-              toast.success(`You won ${result.prize}! 🎉`);
-            } else {
-              toast.info("Better luck next time!");
-            }
-          });
-        }}
+    <div>
+      <input
+        type="number"
+        value={amount}
+        onChange={(e) => setAmount(e.target.value)}
+        placeholder="Amount to stake"
       />
 
-      <div className="spin-history">
-        <h3>Recent Spins</h3>
-        {spinHistory.map((spin, index) => (
-          <div key={index} className={`spin-result ${spin.isWinner ? 'winner' : ''}`}>
-            <span>{spin.prize || "No prize"}</span>
-            <span>{new Date(spin.timestamp).toLocaleTimeString()}</span>
+      <AnySpendCustom
+        orderType="custom"
+        dstChainId={pool.chainId}
+        dstToken={pool.token}
+        dstAmount={parseUnits(amount || "0", pool.token.decimals).toString()}
+        contractAddress={pool.contractAddress}
+        encodedData={stakingCalldata}
+        metadata={{ action: "stake", poolId: pool.id }}
+        header={({ anyspendPrice }) => (
+          <div>
+            <h3>Stake {pool.token.symbol}</h3>
+            {anyspendPrice && <p>Cost: ${anyspendPrice.totalUsdCost}</p>}
           </div>
-        ))}
-      </div>
+        )}
+        onSuccess={() => toast.success("Staked successfully!")}
+      />
     </div>
   );
 }
 ```
 
-### Tournament Entry
+---
 
-```tsx title="Tournament Entry" icon="trophy" lines
-import { AnySpendTournament } from "@b3dotfun/sdk/anyspend/react";
+## Fiat Onramp
 
-function TournamentEntry({ tournament }: { tournament: Tournament }) {
-  const [userAddress] = useWallet();
-  const [isRegistered, setIsRegistered] = useState(false);
+### User Onboarding with Fiat
 
-  return (
-    <div className="tournament-entry">
-      <div className="tournament-info">
-        <h2>{tournament.name}</h2>
-        <p>Prize Pool: ${tournament.prizePool.toLocaleString()}</p>
-        <p>Entry Fee: {tournament.entryFee} {tournament.currency.symbol}</p>
-        <p>Players: {tournament.currentPlayers}/{tournament.maxPlayers}</p>
-        <p>Starts: {new Date(tournament.startTime).toLocaleString()}</p>
-      </div>
+```tsx title="Fiat Onboarding" icon="credit-card"
+import { AnySpend } from "@b3dotfun/sdk/anyspend/react";
 
-      {isRegistered ? (
-        <div className="registered">
-          <span className="check-icon">✅</span>
-          <span>You're registered!</span>
-          <p>Tournament starts {formatTimeUntil(tournament.startTime)}</p>
-        </div>
-      ) : (
-        <AnySpendTournament
-          tournamentId={tournament.id}
-          entryFee={tournament.entryFeeWei}
-          recipientAddress={userAddress}
-          onSuccess={(txHash) => {
-            setIsRegistered(true);
-
-            // Update tournament player count
-            queryClient.invalidateQueries(['tournament', tournament.id]);
-
-            toast.success("Successfully registered for tournament!");
-          }}
-        />
-      )}
-
-      <div className="tournament-rules">
-        <h3>Rules</h3>
-        <ul>
-          {tournament.rules.map((rule, index) => (
-            <li key={index}>{rule}</li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  );
-}
-```
-
-## 💰 Fiat-to-Crypto Onramp
-
-### Simple Onboarding Flow
-
-```tsx title="User Onboarding" icon="credit-card" lines
-function UserOnboarding() {
+function OnboardingFlow() {
   const [step, setStep] = useState(1);
-  const [userAddress] = useWallet();
 
   return (
-    <div className="onboarding">
-      <div className="progress-bar">
-        <div className={`step ${step >= 1 ? 'active' : ''}`}>1. Connect Wallet</div>
-        <div className={`step ${step >= 2 ? 'active' : ''}`}>2. Buy Crypto</div>
-        <div className={`step ${step >= 3 ? 'active' : ''}`}>3. Start Using</div>
-      </div>
-
+    <div>
       {step === 1 && (
-        <div className="step-content">
+        <div>
           <h2>Welcome! Let's get you started</h2>
-          <p>First, connect your wallet to continue.</p>
           <WalletConnectButton onConnect={() => setStep(2)} />
         </div>
       )}
 
       {step === 2 && (
-        <div className="step-content">
+        <div>
           <h2>Buy your first crypto</h2>
-          <p>Purchase tokens with your credit card to get started.</p>
-
           <AnySpend
             mode="page"
             defaultActiveTab="fiat"
-            destinationTokenAddress="0x0000000000000000000000000000000000000000" // ETH
-            destinationTokenChainId={8333} // B3
+            destinationTokenAddress="0x0000000000000000000000000000000000000000"
+            destinationTokenChainId={8453}
             recipientAddress={userAddress}
+            customUsdInputValues={["10", "25", "50", "100"]}
             onSuccess={() => {
               setStep(3);
-              toast.success("Purchase successful! Welcome to the ecosystem!");
+              toast.success("Purchase successful!");
             }}
           />
         </div>
       )}
 
       {step === 3 && (
-        <div className="step-content">
-          <h2>You're all set! 🎉</h2>
-          <p>Your crypto purchase is complete. Here's what you can do next:</p>
-
-          <div className="next-actions">
-            <button onClick={() => router.push('/explore')}>
-              Explore the Platform
-            </button>
-            <button onClick={() => router.push('/portfolio')}>
-              View Your Portfolio
-            </button>
-          </div>
+        <div>
+          <h2>You're all set!</h2>
+          <button onClick={() => router.push("/dashboard")}>
+            Go to Dashboard
+          </button>
         </div>
       )}
     </div>
@@ -528,147 +508,133 @@ function UserOnboarding() {
 }
 ```
 
-## 🛒 E-commerce Integration
+---
 
-### Crypto Checkout
+## Full Customization Example
 
-```tsx title="Checkout Process" icon="shopping-cart" lines
-function CryptoCheckout({ cart }: { cart: CartItem[] }) {
-  const [paymentMethod, setPaymentMethod] = useState<'crypto' | 'fiat'>('crypto');
-  const [userAddress] = useWallet();
+### Fully Themed Checkout
 
-  const total = cart.reduce((sum, item) => sum + item.price, 0);
+```tsx title="Customized Checkout" icon="wand-magic-sparkles"
+import { AnySpendCheckout } from "@b3dotfun/sdk/anyspend/react";
+
+function CustomCheckout({ items }) {
+  return (
+    <AnySpendCheckout
+      mode="page"
+      recipientAddress="0xMerchant..."
+      destinationTokenAddress="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+      destinationTokenChainId={8453}
+      items={items}
+      organizationName="Premium Shop"
+      organizationLogo="/logo.svg"
+
+      // Theme
+      theme={{
+        brandColor: "#7c3aed",
+        colors: {
+          surfaceSecondary: "#faf5ff",
+        },
+      }}
+
+      // Custom messages
+      content={{
+        successTitle: "Thank you for your purchase!",
+        successDescription: "Your receipt has been sent to your email.",
+        processingTitle: "Finalizing your order...",
+        processingDescription: "This usually takes less than a minute.",
+        returnButtonLabel: "Continue Shopping",
+        retryButtonLabel: "Try Again",
+      }}
+
+      // Custom components
+      slots={{
+        footer: (
+          <div className="flex items-center justify-center gap-2 py-3 text-xs text-gray-400">
+            <LockIcon className="w-3 h-3" />
+            Secure checkout by Premium Shop
+          </div>
+        ),
+        successScreen: ({ title, description, txHash, onDone }) => (
+          <div className="text-center p-8">
+            <ConfettiAnimation />
+            <h2 className="text-2xl font-bold mt-4">{title}</h2>
+            <p className="text-gray-500 mt-2">{description}</p>
+            <button onClick={onDone} className="mt-6 btn-primary">
+              Continue Shopping
+            </button>
+          </div>
+        ),
+      }}
+
+      // CSS overrides
+      classes={{
+        layout: "max-w-5xl mx-auto",
+        cartPanel: "bg-purple-50/50 rounded-2xl",
+      }}
+
+      // Order summary
+      shipping={{ amount: "0", label: "Free Shipping" }}
+      showPoints
+      showOrderId
+
+      // Callbacks
+      onSuccess={(result) => router.push("/order-confirmation")}
+      onError={(error) => toast.error(error.message)}
+    />
+  );
+}
+```
+
+---
+
+## Direct Transfer
+
+### Same-Chain Token Transfer
+
+```tsx title="Direct Transfer" icon="arrow-right"
+import { useDirectTransfer } from "@b3dotfun/sdk/anyspend";
+
+function SendTokens() {
+  const { executeDirectTransfer, isTransferring } = useDirectTransfer();
+  const [recipient, setRecipient] = useState("");
+  const [amount, setAmount] = useState("");
+
+  const handleSend = async () => {
+    const txHash = await executeDirectTransfer({
+      chainId: 8453,
+      tokenAddress: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      recipientAddress: recipient,
+      amount: BigInt(parseUnits(amount, 6)),
+      method: "CONNECT_WALLET",
+    });
+
+    if (txHash) {
+      toast.success(`Sent! TX: ${txHash.slice(0, 10)}...`);
+    }
+  };
 
   return (
-    <div className="checkout">
-      <div className="order-summary">
-        <h2>Order Summary</h2>
-        {cart.map((item) => (
-          <div key={item.id} className="cart-item">
-            <span>{item.name}</span>
-            <span>${item.price}</span>
-          </div>
-        ))}
-        <div className="total">
-          <strong>Total: ${total}</strong>
-        </div>
-      </div>
-
-      <div className="payment-section">
-        <h2>Payment Method</h2>
-
-        <div className="payment-options">
-          <button
-            className={paymentMethod === 'crypto' ? 'active' : ''}
-            onClick={() => setPaymentMethod('crypto')}
-          >
-            Pay with Crypto
-          </button>
-          <button
-            className={paymentMethod === 'fiat' ? 'active' : ''}
-            onClick={() => setPaymentMethod('fiat')}
-          >
-            Pay with Card
-          </button>
-        </div>
-
-        <AnySpend
-          mode="page"
-          defaultActiveTab={paymentMethod}
-          destinationTokenAddress="0xA0b86a33E6Fb6Dd9a9B3d8B5FEb2b3C8e7D9Ff1E" // USDC
-          destinationTokenChainId={8333}
-          recipientAddress={MERCHANT_ADDRESS}
-          onSuccess={(txHash) => {
-            // Create order record
-            createOrder({
-              items: cart,
-              total,
-              paymentTxHash: txHash,
-              customerAddress: userAddress,
-            });
-
-            // Clear cart and redirect
-            clearCart();
-            router.push(`/order-confirmation?tx=${txHash}`);
-          }}
-        />
-      </div>
+    <div>
+      <input placeholder="Recipient" value={recipient} onChange={(e) => setRecipient(e.target.value)} />
+      <input placeholder="Amount" value={amount} onChange={(e) => setAmount(e.target.value)} />
+      <button onClick={handleSend} disabled={isTransferring}>
+        {isTransferring ? "Sending..." : "Send USDC"}
+      </button>
     </div>
   );
 }
 ```
 
-## 🎯 Advanced Patterns
-
-### Multi-Chain Portfolio Rebalancing
-
-```tsx title="Portfolio Rebalancing" icon="balance-scale" lines
-function PortfolioRebalancer() {
-  const [userAddress] = useWallet();
-  const [targetAllocations, setTargetAllocations] = useState({
-    ETH: 40,
-    USDC: 30,
-    BTC: 20,
-    OTHER: 10,
-  });
-
-  const { data: portfolio } = usePortfolioData(userAddress);
-  const rebalancingPlan = calculateRebalancing(portfolio, targetAllocations);
-
-  return (
-    <div className="portfolio-rebalancer">
-      <h2>Portfolio Rebalancing</h2>
-
-      <div className="current-allocation">
-        <h3>Current Allocation</h3>
-        <PieChart data={portfolio?.currentAllocation} />
-      </div>
-
-      <div className="target-allocation">
-        <h3>Target Allocation</h3>
-        <AllocationSliders
-          allocations={targetAllocations}
-          onChange={setTargetAllocations}
-        />
-      </div>
-
-      <div className="rebalancing-plan">
-        <h3>Rebalancing Plan</h3>
-        {rebalancingPlan.map((action, index) => (
-          <div key={index} className="rebalancing-action">
-            <span>{action.type}</span>
-            <span>{action.amount} {action.fromToken}</span>
-            <span>→</span>
-            <span>{action.expectedOutput} {action.toToken}</span>
-
-            <AnySpend
-              mode="modal"
-              destinationTokenAddress={action.toTokenAddress}
-              destinationTokenChainId={action.toChainId}
-              recipientAddress={userAddress}
-              onSuccess={() => {
-                queryClient.invalidateQueries(['portfolio', userAddress]);
-                toast.success(`Rebalanced ${action.fromToken} to ${action.toToken}`);
-              }}
-            />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-```
+---
 
 ## Getting Help
 
 <CardGroup cols={2}>
 <Card title="Error Handling Guide" icon="shield-exclamation" href="/anyspend/error-handling">
-  Learn how to handle errors gracefully and provide great UX
+  Handle errors gracefully and provide great UX
 </Card>
 
 <Card title="Discord Community" icon="discord" href="https://discord.gg/b3dotfun">
-  Get help from our community and team members
+  Get help from the B3 community and team
 </Card>
 </CardGroup>
-
-These examples showcase the flexibility and power of AnySpend for building seamless payment experiences across different types of applications. Each example can be customized to fit your specific use case and design requirements.

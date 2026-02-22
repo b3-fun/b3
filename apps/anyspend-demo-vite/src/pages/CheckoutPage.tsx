@@ -1,5 +1,12 @@
 import { B3_TOKEN } from "@b3dotfun/sdk/anyspend";
-import { AnySpendCheckout, type CheckoutItem, type CheckoutSummaryLine } from "@b3dotfun/sdk/anyspend/react";
+import {
+  AnySpendCheckout,
+  type CheckoutItem,
+  type CheckoutSummaryLine,
+  type CheckoutFormSchema,
+  type ShippingOption,
+  type DiscountResult,
+} from "@b3dotfun/sdk/anyspend/react";
 import { Pencil, Plus, Trash2, X } from "lucide-react";
 import { useCallback, useState } from "react";
 import { parseUnits, formatUnits } from "viem";
@@ -28,6 +35,18 @@ const DEFAULT_ITEMS: CheckoutItem[] = [
     quantity: 2,
     metadata: { Type: "Consumable" },
   },
+];
+
+const DEFAULT_FORM_SCHEMA: CheckoutFormSchema = {
+  fields: [
+    { id: "name", type: "text", label: "Full Name", placeholder: "John Doe", required: true },
+    { id: "email", type: "email", label: "Email", placeholder: "john@example.com", required: true },
+  ],
+};
+
+const DEFAULT_SHIPPING_OPTIONS: ShippingOption[] = [
+  { id: "standard", name: "Standard Shipping", description: "Delivered via carrier", amount: parseUnits("5", 18).toString(), estimated_days: "5-7 business days" },
+  { id: "express", name: "Express Shipping", description: "Priority delivery", amount: parseUnits("15", 18).toString(), estimated_days: "1-2 business days" },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -79,6 +98,31 @@ interface Adjustments {
   summaryLines: { label: string; amount: string; description: string }[];
 }
 
+interface FormSettings {
+  formSchemaEnabled: boolean;
+  formSchema: CheckoutFormSchema;
+  shippingOptionsEnabled: boolean;
+  shippingOptions: ShippingOption[];
+  collectShippingAddress: boolean;
+  discountCodeEnabled: boolean;
+}
+
+interface EditableFormField {
+  id: string;
+  type: string;
+  label: string;
+  placeholder: string;
+  required: boolean;
+}
+
+interface EditableShippingOption {
+  id: string;
+  name: string;
+  description: string;
+  amount: string; // human-readable
+  estimated_days: string;
+}
+
 function itemToEditable(item: CheckoutItem): EditableItem {
   return {
     id: item.id || crypto.randomUUID(),
@@ -110,16 +154,39 @@ function editableToItem(e: EditableItem): CheckoutItem {
 function CartEditorModal({
   items,
   adjustments,
+  formSettings,
   onSave,
   onClose,
 }: {
   items: EditableItem[];
   adjustments: Adjustments;
-  onSave: (_items: EditableItem[], _adjustments: Adjustments) => void;
+  formSettings: FormSettings;
+  onSave: (_items: EditableItem[], _adjustments: Adjustments, _formSettings: FormSettings) => void;
   onClose: () => void;
 }) {
   const [editItems, setEditItems] = useState<EditableItem[]>(items);
   const [adj, setAdj] = useState<Adjustments>(adjustments);
+  const [formState, setFormState] = useState<FormSettings>(formSettings);
+
+  // Editable versions of form fields and shipping options
+  const [editFormFields, setEditFormFields] = useState<EditableFormField[]>(
+    formSettings.formSchema.fields.map(f => ({
+      id: f.id,
+      type: f.type,
+      label: f.label,
+      placeholder: f.placeholder || "",
+      required: f.required || false,
+    })),
+  );
+  const [editShippingOpts, setEditShippingOpts] = useState<EditableShippingOption[]>(
+    formSettings.shippingOptions.map(o => ({
+      id: o.id,
+      name: o.name,
+      description: o.description || "",
+      amount: fromWei(o.amount),
+      estimated_days: o.estimated_days || "",
+    })),
+  );
 
   const updateItem = useCallback((index: number, patch: Partial<EditableItem>) => {
     setEditItems(prev => prev.map((item, i) => (i === index ? { ...item, ...patch } : item)));
@@ -197,6 +264,30 @@ function CartEditorModal({
     [],
   );
 
+  // Build final form settings when saving
+  const handleSave = () => {
+    const finalFormSettings: FormSettings = {
+      ...formState,
+      formSchema: {
+        fields: editFormFields.map(f => ({
+          id: f.id,
+          type: f.type as CheckoutFormSchema["fields"][number]["type"],
+          label: f.label,
+          placeholder: f.placeholder || undefined,
+          required: f.required,
+        })),
+      },
+      shippingOptions: editShippingOpts.map(o => ({
+        id: o.id,
+        name: o.name,
+        description: o.description || undefined,
+        amount: toWei(o.amount),
+        estimated_days: o.estimated_days || undefined,
+      })),
+    };
+    onSave(editItems, adj, finalFormSettings);
+  };
+
   const inputClass =
     "w-full rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-sm text-gray-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100";
   const labelClass = "text-xs font-medium text-gray-500 dark:text-gray-400";
@@ -207,7 +298,7 @@ function CartEditorModal({
       <div className="w-full max-w-2xl rounded-xl border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-900">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Edit Cart & Order Summary</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Edit Cart & Checkout Config</h2>
           <button
             type="button"
             onClick={onClose}
@@ -339,7 +430,7 @@ function CartEditorModal({
           </div>
 
           {/* ADJUSTMENTS */}
-          <div className="mb-4">
+          <div className="mb-6">
             <h3 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Order Adjustments</h3>
 
             <div className="flex flex-col gap-3">
@@ -524,6 +615,206 @@ function CartEditorModal({
               </div>
             </div>
           </div>
+
+          {/* FORM & CHECKOUT CONFIG */}
+          <div className="mb-4">
+            <h3 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Checkout Form & Options</h3>
+
+            <div className="flex flex-col gap-3">
+              {/* Form Schema */}
+              <div className={sectionClass}>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={formState.formSchemaEnabled}
+                    onChange={e => setFormState(prev => ({ ...prev, formSchemaEnabled: e.target.checked }))}
+                    className="rounded"
+                  />
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Custom Form (formSchema)</span>
+                </label>
+                {formState.formSchemaEnabled && (
+                  <div className="mt-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className={labelClass}>Form Fields</span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setEditFormFields(prev => [
+                            ...prev,
+                            { id: `field_${Date.now()}`, type: "text", label: "New Field", placeholder: "", required: false },
+                          ])
+                        }
+                        className="text-xs text-blue-500 hover:text-blue-700"
+                      >
+                        + Add Field
+                      </button>
+                    </div>
+                    {editFormFields.map((field, idx) => (
+                      <div key={field.id} className="flex items-center gap-2 rounded-md border border-gray-200 bg-white p-2 dark:border-gray-600 dark:bg-gray-800">
+                        <select
+                          value={field.type}
+                          onChange={e => {
+                            const next = [...editFormFields];
+                            next[idx] = { ...next[idx], type: e.target.value };
+                            setEditFormFields(next);
+                          }}
+                          className="rounded border border-gray-300 bg-white px-1.5 py-1 text-xs dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                        >
+                          {["text", "email", "phone", "number", "textarea", "select", "checkbox", "address"].map(t => (
+                            <option key={t} value={t}>{t}</option>
+                          ))}
+                        </select>
+                        <input
+                          className={`${inputClass} !py-1 flex-1`}
+                          value={field.label}
+                          onChange={e => {
+                            const next = [...editFormFields];
+                            next[idx] = { ...next[idx], label: e.target.value };
+                            setEditFormFields(next);
+                          }}
+                          placeholder="Label"
+                        />
+                        <input
+                          className={`${inputClass} !py-1 flex-1`}
+                          value={field.placeholder}
+                          onChange={e => {
+                            const next = [...editFormFields];
+                            next[idx] = { ...next[idx], placeholder: e.target.value };
+                            setEditFormFields(next);
+                          }}
+                          placeholder="Placeholder"
+                        />
+                        <label className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap">
+                          <input
+                            type="checkbox"
+                            checked={field.required}
+                            onChange={e => {
+                              const next = [...editFormFields];
+                              next[idx] = { ...next[idx], required: e.target.checked };
+                              setEditFormFields(next);
+                            }}
+                            className="rounded"
+                          />
+                          Req
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => setEditFormFields(prev => prev.filter((_, i) => i !== idx))}
+                          className="shrink-0 rounded p-0.5 text-red-400 hover:text-red-600"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Shipping Options */}
+              <div className={sectionClass}>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={formState.shippingOptionsEnabled}
+                    onChange={e => setFormState(prev => ({ ...prev, shippingOptionsEnabled: e.target.checked }))}
+                    className="rounded"
+                  />
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Shipping Options (shippingOptions)</span>
+                </label>
+                {formState.shippingOptionsEnabled && (
+                  <div className="mt-3 space-y-2">
+                    <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                      <input
+                        type="checkbox"
+                        checked={formState.collectShippingAddress}
+                        onChange={e => setFormState(prev => ({ ...prev, collectShippingAddress: e.target.checked }))}
+                        className="rounded"
+                      />
+                      Collect shipping address
+                    </label>
+                    {editShippingOpts.map((opt, idx) => (
+                      <div key={opt.id} className="flex items-end gap-2">
+                        <div className="flex-1">
+                          <label className={labelClass}>Name</label>
+                          <input
+                            className={inputClass}
+                            value={opt.name}
+                            onChange={e => {
+                              const next = [...editShippingOpts];
+                              next[idx] = { ...next[idx], name: e.target.value };
+                              setEditShippingOpts(next);
+                            }}
+                          />
+                        </div>
+                        <div className="w-20">
+                          <label className={labelClass}>Amount</label>
+                          <input
+                            className={inputClass}
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={opt.amount}
+                            onChange={e => {
+                              const next = [...editShippingOpts];
+                              next[idx] = { ...next[idx], amount: e.target.value };
+                              setEditShippingOpts(next);
+                            }}
+                          />
+                        </div>
+                        <div className="w-24">
+                          <label className={labelClass}>Est. Days</label>
+                          <input
+                            className={inputClass}
+                            value={opt.estimated_days}
+                            onChange={e => {
+                              const next = [...editShippingOpts];
+                              next[idx] = { ...next[idx], estimated_days: e.target.value };
+                              setEditShippingOpts(next);
+                            }}
+                            placeholder="3-5 days"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setEditShippingOpts(prev => prev.filter((_, i) => i !== idx))}
+                          className="mb-0.5 shrink-0 rounded p-1 text-red-400 hover:bg-red-50 hover:text-red-600"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setEditShippingOpts(prev => [...prev, { id: crypto.randomUUID(), name: "New Method", description: "", amount: "0", estimated_days: "" }])
+                      }
+                      className="flex items-center gap-1 text-xs text-blue-500 hover:text-blue-700"
+                    >
+                      <Plus className="h-3 w-3" /> Add Shipping Method
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Discount Code Input */}
+              <div className={sectionClass}>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={formState.discountCodeEnabled}
+                    onChange={e => setFormState(prev => ({ ...prev, discountCodeEnabled: e.target.checked }))}
+                    className="rounded"
+                  />
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Discount Code Input (enableDiscountCode)</span>
+                </label>
+                {formState.discountCodeEnabled && (
+                  <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    Enables the discount code input field. Uses a mock validator that accepts code "DEMO10" for 10% off and "FLAT5" for 5 tokens off.
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Footer */}
@@ -537,7 +828,7 @@ function CartEditorModal({
           </button>
           <button
             type="button"
-            onClick={() => onSave(editItems, adj)}
+            onClick={handleSave}
             className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
           >
             Apply Changes
@@ -546,6 +837,33 @@ function CartEditorModal({
       </div>
     </div>
   );
+}
+
+/* ------------------------------------------------------------------ */
+/* Mock Discount Validator                                             */
+/* ------------------------------------------------------------------ */
+async function mockValidateDiscount(code: string): Promise<DiscountResult> {
+  // Simulate network delay
+  await new Promise(r => setTimeout(r, 800));
+
+  const upper = code.toUpperCase();
+  if (upper === "DEMO10") {
+    return {
+      valid: true,
+      discount_type: "percentage",
+      discount_value: "10",
+      discount_amount: parseUnits("20", 18).toString(), // 10% of ~200 tokens
+    };
+  }
+  if (upper === "FLAT5") {
+    return {
+      valid: true,
+      discount_type: "fixed",
+      discount_value: "5",
+      discount_amount: parseUnits("5", 18).toString(),
+    };
+  }
+  return { valid: false, error: `Code "${code}" is not valid. Try DEMO10 or FLAT5.` };
 }
 
 /* ------------------------------------------------------------------ */
@@ -568,11 +886,20 @@ export default function CheckoutPage() {
     discountCode: "SAVE10",
     summaryLines: [],
   });
+  const [formSettings, setFormSettings] = useState<FormSettings>({
+    formSchemaEnabled: false,
+    formSchema: DEFAULT_FORM_SCHEMA,
+    shippingOptionsEnabled: false,
+    shippingOptions: DEFAULT_SHIPPING_OPTIONS,
+    collectShippingAddress: false,
+    discountCodeEnabled: false,
+  });
   const [editorOpen, setEditorOpen] = useState(false);
 
-  const handleSave = useCallback((newItems: EditableItem[], newAdj: Adjustments) => {
+  const handleSave = useCallback((newItems: EditableItem[], newAdj: Adjustments, newFormSettings: FormSettings) => {
     setItems(newItems);
     setAdjustments(newAdj);
+    setFormSettings(newFormSettings);
     setEditorOpen(false);
   }, []);
 
@@ -608,17 +935,42 @@ export default function CheckoutPage() {
         }))
       : undefined;
 
+  // Form / shipping / discount props
+  const formSchema = formSettings.formSchemaEnabled ? formSettings.formSchema : undefined;
+  const shippingOptions = formSettings.shippingOptionsEnabled ? formSettings.shippingOptions : undefined;
+  const collectShippingAddress = formSettings.shippingOptionsEnabled ? formSettings.collectShippingAddress : undefined;
+  const enableDiscountCode = formSettings.discountCodeEnabled;
+  const validateDiscount = formSettings.discountCodeEnabled ? mockValidateDiscount : undefined;
+
+  // Active features indicator
+  const activeFeatures: string[] = [];
+  if (formSettings.formSchemaEnabled) activeFeatures.push(`Form (${formSettings.formSchema.fields.length} fields)`);
+  if (formSettings.shippingOptionsEnabled) activeFeatures.push(`Shipping (${formSettings.shippingOptions.length} methods)`);
+  if (formSettings.discountCodeEnabled) activeFeatures.push("Discount Codes");
+  if (adjustments.shippingEnabled) activeFeatures.push("Static Shipping");
+  if (adjustments.taxEnabled) activeFeatures.push("Tax");
+  if (adjustments.discountEnabled) activeFeatures.push("Static Discount");
+
   return (
-    <div className="min-h-screen bg-[#FAFAFA] p-4 pt-8">
-      {/* Edit Cart button */}
-      <div className="mx-auto mb-4 flex max-w-4xl justify-end">
+    <div className="min-h-screen bg-[#FAFAFA] p-4 pt-8 dark:bg-gray-950">
+      {/* Controls bar */}
+      <div className="mx-auto mb-4 flex max-w-4xl items-center justify-between gap-3">
+        {activeFeatures.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {activeFeatures.map(f => (
+              <span key={f} className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                {f}
+              </span>
+            ))}
+          </div>
+        )}
         <button
           type="button"
           onClick={() => setEditorOpen(true)}
           className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
         >
           <Pencil className="h-4 w-4" />
-          Edit Cart
+          Edit Cart & Config
         </button>
       </div>
 
@@ -636,11 +988,25 @@ export default function CheckoutPage() {
         tax={tax}
         discount={discount}
         summaryLines={summaryLines}
+        formSchema={formSchema}
+        shippingOptions={shippingOptions}
+        collectShippingAddress={collectShippingAddress}
+        enableDiscountCode={enableDiscountCode}
+        validateDiscount={validateDiscount}
+        onFormSubmit={data => {
+          console.log("[Demo] Form submitted:", data);
+        }}
+        onShippingChange={option => {
+          console.log("[Demo] Shipping changed:", option);
+        }}
+        onDiscountApplied={result => {
+          console.log("[Demo] Discount applied:", result);
+        }}
         onSuccess={result => {
-          console.log("Payment success:", result);
+          console.log("[Demo] Payment success:", result);
         }}
         onError={error => {
-          console.error("Payment error:", error);
+          console.error("[Demo] Payment error:", error);
         }}
         returnUrl="/"
         returnLabel="Back to Home"
@@ -650,6 +1016,7 @@ export default function CheckoutPage() {
         <CartEditorModal
           items={items}
           adjustments={adjustments}
+          formSettings={formSettings}
           onSave={handleSave}
           onClose={() => setEditorOpen(false)}
         />
