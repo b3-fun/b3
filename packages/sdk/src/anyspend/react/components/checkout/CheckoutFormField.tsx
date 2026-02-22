@@ -34,7 +34,11 @@ export function CheckoutFormFieldComponent({ field, value, onChange, error, clas
             onChange={e => handleChange(e.target.value)}
             placeholder={field.placeholder}
             required={field.required}
-            className={cn("anyspend-form-input", inputBaseClass, error && "border-red-400 focus:border-red-500 focus:ring-red-500")}
+            className={cn(
+              "anyspend-form-input",
+              inputBaseClass,
+              error && "border-red-400 focus:border-red-500 focus:ring-red-500",
+            )}
             minLength={field.validation?.minLength}
             maxLength={field.validation?.maxLength}
             min={field.validation?.min}
@@ -107,7 +111,11 @@ export function CheckoutFormFieldComponent({ field, value, onChange, error, clas
   };
 
   return (
-    <div className={cn("anyspend-form-field space-y-1", className)} data-field-id={field.id} data-field-type={field.type}>
+    <div
+      className={cn("anyspend-form-field space-y-1", className)}
+      data-field-id={field.id}
+      data-field-type={field.type}
+    >
       {field.type !== "checkbox" && (
         <label className={cn("anyspend-form-label", labelClass)}>
           {field.label}

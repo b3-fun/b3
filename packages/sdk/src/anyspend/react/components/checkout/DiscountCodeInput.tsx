@@ -60,9 +60,7 @@ export function DiscountCodeInput({
   if (appliedDiscount?.valid) {
     return (
       <div className={cn("anyspend-discount anyspend-discount-applied space-y-2", className)}>
-        <div className="anyspend-discount-title text-sm font-semibold text-gray-900 dark:text-gray-100">
-          Discount
-        </div>
+        <div className="anyspend-discount-title text-sm font-semibold text-gray-900 dark:text-gray-100">Discount</div>
         <div className="anyspend-discount-badge flex items-center justify-between rounded-lg border border-green-200 bg-green-50 px-3 py-2 dark:border-green-800 dark:bg-green-900/20">
           <div className="flex items-center gap-2">
             <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
@@ -108,7 +106,7 @@ export function DiscountCodeInput({
           placeholder="Enter code"
           disabled={loading || isValidating}
           className={cn(
-            "anyspend-discount-input flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 outline-none transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500",
+            "anyspend-discount-input flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500",
             error && "border-red-400",
           )}
         />

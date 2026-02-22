@@ -45,8 +45,20 @@ const DEFAULT_FORM_SCHEMA: CheckoutFormSchema = {
 };
 
 const DEFAULT_SHIPPING_OPTIONS: ShippingOption[] = [
-  { id: "standard", name: "Standard Shipping", description: "Delivered via carrier", amount: parseUnits("5", 18).toString(), estimated_days: "5-7 business days" },
-  { id: "express", name: "Express Shipping", description: "Priority delivery", amount: parseUnits("15", 18).toString(), estimated_days: "1-2 business days" },
+  {
+    id: "standard",
+    name: "Standard Shipping",
+    description: "Delivered via carrier",
+    amount: parseUnits("5", 18).toString(),
+    estimated_days: "5-7 business days",
+  },
+  {
+    id: "express",
+    name: "Express Shipping",
+    description: "Priority delivery",
+    amount: parseUnits("15", 18).toString(),
+    estimated_days: "1-2 business days",
+  },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -641,7 +653,13 @@ function CartEditorModal({
                         onClick={() =>
                           setEditFormFields(prev => [
                             ...prev,
-                            { id: `field_${Date.now()}`, type: "text", label: "New Field", placeholder: "", required: false },
+                            {
+                              id: `field_${Date.now()}`,
+                              type: "text",
+                              label: "New Field",
+                              placeholder: "",
+                              required: false,
+                            },
                           ])
                         }
                         className="text-xs text-blue-500 hover:text-blue-700"
@@ -650,7 +668,10 @@ function CartEditorModal({
                       </button>
                     </div>
                     {editFormFields.map((field, idx) => (
-                      <div key={field.id} className="flex items-center gap-2 rounded-md border border-gray-200 bg-white p-2 dark:border-gray-600 dark:bg-gray-800">
+                      <div
+                        key={field.id}
+                        className="flex items-center gap-2 rounded-md border border-gray-200 bg-white p-2 dark:border-gray-600 dark:bg-gray-800"
+                      >
                         <select
                           value={field.type}
                           onChange={e => {
@@ -661,11 +682,13 @@ function CartEditorModal({
                           className="rounded border border-gray-300 bg-white px-1.5 py-1 text-xs dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                         >
                           {["text", "email", "phone", "number", "textarea", "select", "checkbox", "address"].map(t => (
-                            <option key={t} value={t}>{t}</option>
+                            <option key={t} value={t}>
+                              {t}
+                            </option>
                           ))}
                         </select>
                         <input
-                          className={`${inputClass} !py-1 flex-1`}
+                          className={`${inputClass} flex-1 !py-1`}
                           value={field.label}
                           onChange={e => {
                             const next = [...editFormFields];
@@ -675,7 +698,7 @@ function CartEditorModal({
                           placeholder="Label"
                         />
                         <input
-                          className={`${inputClass} !py-1 flex-1`}
+                          className={`${inputClass} flex-1 !py-1`}
                           value={field.placeholder}
                           onChange={e => {
                             const next = [...editFormFields];
@@ -684,7 +707,7 @@ function CartEditorModal({
                           }}
                           placeholder="Placeholder"
                         />
-                        <label className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap">
+                        <label className="flex items-center gap-1 whitespace-nowrap text-xs text-gray-500">
                           <input
                             type="checkbox"
                             checked={field.required}
@@ -719,7 +742,9 @@ function CartEditorModal({
                     onChange={e => setFormState(prev => ({ ...prev, shippingOptionsEnabled: e.target.checked }))}
                     className="rounded"
                   />
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Shipping Options (shippingOptions)</span>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Shipping Options (shippingOptions)
+                  </span>
                 </label>
                 {formState.shippingOptionsEnabled && (
                   <div className="mt-3 space-y-2">
@@ -786,7 +811,16 @@ function CartEditorModal({
                     <button
                       type="button"
                       onClick={() =>
-                        setEditShippingOpts(prev => [...prev, { id: crypto.randomUUID(), name: "New Method", description: "", amount: "0", estimated_days: "" }])
+                        setEditShippingOpts(prev => [
+                          ...prev,
+                          {
+                            id: crypto.randomUUID(),
+                            name: "New Method",
+                            description: "",
+                            amount: "0",
+                            estimated_days: "",
+                          },
+                        ])
                       }
                       className="flex items-center gap-1 text-xs text-blue-500 hover:text-blue-700"
                     >
@@ -805,11 +839,14 @@ function CartEditorModal({
                     onChange={e => setFormState(prev => ({ ...prev, discountCodeEnabled: e.target.checked }))}
                     className="rounded"
                   />
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Discount Code Input (enableDiscountCode)</span>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Discount Code Input (enableDiscountCode)
+                  </span>
                 </label>
                 {formState.discountCodeEnabled && (
                   <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                    Enables the discount code input field. Uses a mock validator that accepts code "DEMO10" for 10% off and "FLAT5" for 5 tokens off.
+                    Enables the discount code input field. Uses a mock validator that accepts code "DEMO10" for 10% off
+                    and "FLAT5" for 5 tokens off.
                   </p>
                 )}
               </div>
@@ -945,7 +982,8 @@ export default function CheckoutPage() {
   // Active features indicator
   const activeFeatures: string[] = [];
   if (formSettings.formSchemaEnabled) activeFeatures.push(`Form (${formSettings.formSchema.fields.length} fields)`);
-  if (formSettings.shippingOptionsEnabled) activeFeatures.push(`Shipping (${formSettings.shippingOptions.length} methods)`);
+  if (formSettings.shippingOptionsEnabled)
+    activeFeatures.push(`Shipping (${formSettings.shippingOptions.length} methods)`);
   if (formSettings.discountCodeEnabled) activeFeatures.push("Discount Codes");
   if (adjustments.shippingEnabled) activeFeatures.push("Static Shipping");
   if (adjustments.taxEnabled) activeFeatures.push("Tax");
@@ -958,7 +996,10 @@ export default function CheckoutPage() {
         {activeFeatures.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {activeFeatures.map(f => (
-              <span key={f} className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+              <span
+                key={f}
+                className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+              >
                 {f}
               </span>
             ))}

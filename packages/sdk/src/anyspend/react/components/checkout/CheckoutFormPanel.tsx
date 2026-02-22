@@ -78,7 +78,8 @@ export function CheckoutFormPanel({
 
   const hasFormFields = formSchema && formSchema.fields.length > 0;
   const hasShipping = shippingOptions && shippingOptions.length > 0;
-  const hasAnyContent = hasFormFields || FormComponent || checkoutFormSlot || hasShipping || collectShippingAddress || enableDiscountCode;
+  const hasAnyContent =
+    hasFormFields || FormComponent || checkoutFormSlot || hasShipping || collectShippingAddress || enableDiscountCode;
 
   // All hooks must be called before any early returns
   const handleFieldChange = useCallback(
@@ -210,7 +211,9 @@ export function CheckoutFormPanel({
       {/* Address fields from schema */}
       {addressFields.map(field => (
         <div key={field.id} className="anyspend-form-address space-y-2">
-          <h3 className="anyspend-form-address-title text-sm font-semibold text-gray-900 dark:text-gray-100">{field.label}</h3>
+          <h3 className="anyspend-form-address-title text-sm font-semibold text-gray-900 dark:text-gray-100">
+            {field.label}
+          </h3>
           <AddressForm
             value={(formData[field.id] as AddressData) || emptyAddress}
             onChange={addr => handleFieldChange(field.id, addr)}
@@ -222,12 +225,10 @@ export function CheckoutFormPanel({
       {/* Shipping address (from collectShippingAddress prop, not schema) */}
       {collectShippingAddress && addressFields.length === 0 && (
         <div className="anyspend-shipping-address space-y-2">
-          <h3 className="anyspend-shipping-address-title text-sm font-semibold text-gray-900 dark:text-gray-100">Shipping Address</h3>
-          <AddressForm
-            value={shippingAddress}
-            onChange={onShippingAddressChange}
-            required
-          />
+          <h3 className="anyspend-shipping-address-title text-sm font-semibold text-gray-900 dark:text-gray-100">
+            Shipping Address
+          </h3>
+          <AddressForm value={shippingAddress} onChange={onShippingAddressChange} required />
         </div>
       )}
 

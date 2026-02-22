@@ -30,9 +30,7 @@ export function ShippingSelector({
 
   return (
     <div className={cn("anyspend-shipping-selector space-y-2", className)}>
-      <div className="anyspend-shipping-title text-sm font-semibold text-gray-900 dark:text-gray-100">
-        Shipping
-      </div>
+      <div className="anyspend-shipping-title text-sm font-semibold text-gray-900 dark:text-gray-100">Shipping</div>
       <div className="anyspend-shipping-options space-y-2">
         {options.map(option => (
           <label
@@ -53,7 +51,9 @@ export function ShippingSelector({
                 className="h-4 w-4 border-gray-300 text-blue-500 focus:ring-blue-500"
               />
               <div>
-                <div className="anyspend-shipping-option-name text-sm font-medium text-gray-900 dark:text-gray-100">{option.name}</div>
+                <div className="anyspend-shipping-option-name text-sm font-medium text-gray-900 dark:text-gray-100">
+                  {option.name}
+                </div>
                 {(option.description || option.estimated_days) && (
                   <div className="anyspend-shipping-option-detail text-xs text-gray-500 dark:text-gray-400">
                     {option.description || (option.estimated_days && `${option.estimated_days}`)}
