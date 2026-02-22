@@ -61,9 +61,9 @@ export function FiatCheckoutPanel({
   const orderCreatedRef = useRef(false);
 
   const { createOrder, isCreatingOrder } = useAnyspendCreateOnrampOrder({
-    onSuccess: (data: any) => {
-      const id = data?.data?.id;
-      const intentId = data?.data?.stripePaymentIntentId;
+    onSuccess: (data) => {
+      const id = data.data?.id;
+      const intentId = data.data?.stripePaymentIntentId;
       if (id && intentId) {
         setOrderId(id);
         setStripePaymentIntentId(intentId);

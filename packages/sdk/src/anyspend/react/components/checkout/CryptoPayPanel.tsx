@@ -63,6 +63,12 @@ export function CryptoPayPanel({
   classes,
   senderAddress,
 }: CryptoPayPanelProps) {
+  // Stable refs for callback props to avoid re-triggering effects
+  const onErrorRef = useRef(onError);
+  onErrorRef.current = onError;
+  const onOrderCreatedRef = useRef(onOrderCreated);
+  onOrderCreatedRef.current = onOrderCreated;
+
   /* ------------------------------------------------------------------ */
   /* Shared state: token selection, quote, balance                      */
   /* ------------------------------------------------------------------ */
@@ -155,9 +161,9 @@ export function CryptoPayPanel({
   const qrOrderCreatedRef = useRef(false);
 
   const { createOrder: createDepositOrder, isCreatingOrder: isCreatingQrOrder } = useCreateDepositFirstOrder({
-    onSuccess: (data: any) => {
-      setQrOrderId(data?.data?.id);
-      setGlobalAddress(data?.data?.globalAddress);
+    onSuccess: (data) => {
+      setQrOrderId(data.data?.id);
+      setGlobalAddress(data.data?.globalAddress);
     },
     onError: (error: Error) => onError?.(error),
   });
@@ -176,7 +182,7 @@ export function CryptoPayPanel({
       callbackMetadata,
       creatorAddress: effectiveAddress,
     });
-  }, [selectedSrcToken, selectedSrcChainId, recipientAddress, destinationTokenChainId, dstToken, callbackMetadata, createDepositOrder]);
+  }, [selectedSrcToken, selectedSrcChainId, recipientAddress, destinationTokenChainId, dstToken, callbackMetadata, createDepositOrder, effectiveAddress]);
 
   const { orderAndTransactions: qrOat } = useAnyspendOrderAndTransactions(qrOrderId);
   useOnOrderSuccess({
@@ -195,9 +201,9 @@ export function CryptoPayPanel({
       qrOat.data.depositTxs.length > 0
     ) {
       qrDepositNotifiedRef.current = true;
-      onOrderCreated?.(qrOrderId);
+      onOrderCreatedRef.current?.(qrOrderId);
     }
-  }, [qrOrderId, qrOat?.data?.depositTxs?.length, onOrderCreated]);
+  }, [qrOrderId, qrOat?.data?.depositTxs?.length]);
 
   // QR code value
   const qrAmount = srcAmount && srcAmount !== "0" ? BigInt(srcAmount) : undefined;
@@ -221,8 +227,8 @@ export function CryptoPayPanel({
   const { switchChainAndExecute } = useUnifiedChainSwitchAndExecute();
 
   const { createOrder: createSwapOrder, isCreatingOrder: isCreatingSwapOrder } = useAnyspendCreateOrder({
-    onSuccess: (data: any) => {
-      const id = data?.data?.id;
+    onSuccess: (data) => {
+      const id = data.data?.id;
       if (id) setWalletOrderId(id);
     },
     onError: (error: Error) => {
@@ -264,17 +270,17 @@ export function CryptoPayPanel({
         }
         // Deposit sent — notify parent to transition to order lifecycle tracking
         if (walletOrderId) {
-          onOrderCreated?.(walletOrderId);
+          onOrderCreatedRef.current?.(walletOrderId);
         }
       } catch (error: any) {
         depositSentRef.current = false;
-        onError?.(error instanceof Error ? error : new Error(error?.message || "Transaction rejected"));
+        onErrorRef.current?.(error instanceof Error ? error : new Error(error?.message || "Transaction rejected"));
       } finally {
         setIsSendingDeposit(false);
       }
     };
     sendDeposit();
-  }, [walletOat, switchChainAndExecute, onError, walletOrderId, onOrderCreated]);
+  }, [walletOat, switchChainAndExecute, walletOrderId]);
 
   useOnOrderSuccess({
     orderData: walletOat,

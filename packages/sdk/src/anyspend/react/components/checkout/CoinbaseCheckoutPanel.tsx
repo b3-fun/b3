@@ -62,8 +62,8 @@ export function CoinbaseCheckoutPanel({
   const orderCreatedRef = useRef(false);
 
   const { createOrder, isCreatingOrder } = useAnyspendCreateOnrampOrder({
-    onSuccess: (data: any) => {
-      const id = data?.data?.id;
+    onSuccess: (data) => {
+      const id = data.data?.id;
       if (id) {
         setOrderId(id);
       } else {
@@ -106,7 +106,7 @@ export function CoinbaseCheckoutPanel({
       .then((response) => {
         if (response.data?.url) {
           // Notify parent to persist orderId before redirecting to Coinbase
-          onOrderCreated?.(orderId!);
+          if (orderId) onOrderCreated?.(orderId);
           // Also fire legacy callback for backward compatibility
           onSuccess?.({ orderId });
           window.location.href = response.data.url;
