@@ -201,7 +201,11 @@ export function AnySpendCheckoutTrigger({
                   </span>
                 </div>
                 {footer === undefined ? (
-                  <PoweredByBranding organizationName={organizationName} organizationLogo={organizationLogo} classes={classes} />
+                  <PoweredByBranding
+                    organizationName={organizationName}
+                    organizationLogo={organizationLogo}
+                    classes={classes}
+                  />
                 ) : (
                   footer
                 )}
