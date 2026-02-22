@@ -107,7 +107,11 @@ export function AnySpendCustomizationProvider({ slots, content, theme, children 
 
   return (
     <AnySpendCustomizationContext.Provider value={value}>
-      {hasOverrides ? <div style={{ ...cssVarOverrides, display: "contents" } as React.CSSProperties}>{children}</div> : children}
+      {hasOverrides ? (
+        <div style={{ ...cssVarOverrides, display: "contents" } as React.CSSProperties}>{children}</div>
+      ) : (
+        children
+      )}
     </AnySpendCustomizationContext.Provider>
   );
 }
