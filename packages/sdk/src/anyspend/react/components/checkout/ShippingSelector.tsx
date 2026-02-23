@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
+import { formatTokenAmount, safeBigInt } from "@b3dotfun/sdk/shared/utils/number";
 import type { ShippingOption } from "../../../types/forms";
 
 interface ShippingSelectorProps {
@@ -13,9 +14,9 @@ interface ShippingSelectorProps {
 }
 
 function formatAmount(amount: string, decimals: number, symbol: string): string {
-  const value = Number(BigInt(amount)) / 10 ** decimals;
-  if (value === 0) return "Free";
-  return `${value.toFixed(value < 0.01 ? 6 : 2)} ${symbol}`;
+  const bi = safeBigInt(amount);
+  if (bi === BigInt(0)) return "Free";
+  return `${formatTokenAmount(bi, decimals)} ${symbol}`;
 }
 
 export function ShippingSelector({

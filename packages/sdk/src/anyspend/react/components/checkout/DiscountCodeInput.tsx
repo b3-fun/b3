@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
+import { formatTokenAmount, safeBigInt } from "@b3dotfun/sdk/shared/utils/number";
 import { X, Loader2, Check } from "lucide-react";
 import { useState, useCallback } from "react";
 import type { DiscountResult } from "../../../types/forms";
@@ -16,8 +17,9 @@ interface DiscountCodeInputProps {
 }
 
 function formatAmount(amount: string, decimals: number, symbol: string): string {
-  const value = Number(BigInt(amount)) / 10 ** decimals;
-  return `${value.toFixed(value < 0.01 ? 6 : 2)} ${symbol}`;
+  const bi = safeBigInt(amount);
+  if (bi === BigInt(0)) return "Free";
+  return `${formatTokenAmount(bi, decimals)} ${symbol}`;
 }
 
 export function DiscountCodeInput({
