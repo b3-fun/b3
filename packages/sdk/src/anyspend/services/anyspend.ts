@@ -20,7 +20,8 @@ import { VisitorData } from "../types/fingerprint";
 // Service functions
 export const anyspendService = {
   getTokenList: async (chainId: number, query: string): Promise<components["schemas"]["Token"][]> => {
-    const response = await fetch(`${ANYSPEND_MAINNET_BASE_URL}/chains/${chainId}/tokens?limit=100&term=${query}`);
+    const params = new URLSearchParams({ limit: "100", term: query });
+    const response = await fetch(`${ANYSPEND_MAINNET_BASE_URL}/chains/${chainId}/tokens?${params.toString()}`);
     const body: GetTokenListResponse = await response.json();
     invariant(response.status === 200, `Failed to fetch token list for chain ${chainId}`);
     return body.data;
@@ -191,7 +192,8 @@ export const anyspendService = {
   },
 
   getStripeClientSecret: async (paymentIntentId: string): Promise<string | null> => {
-    const response = await fetch(`${ANYSPEND_MAINNET_BASE_URL}/stripe/clientSecret?paymentIntentId=${paymentIntentId}`);
+    const params = new URLSearchParams({ paymentIntentId });
+    const response = await fetch(`${ANYSPEND_MAINNET_BASE_URL}/stripe/clientSecret?${params.toString()}`);
     const data: GetStripeClientSecret = await response.json();
     invariant(response.status === 200, "Failed to get Stripe client secret");
     return data.data;
