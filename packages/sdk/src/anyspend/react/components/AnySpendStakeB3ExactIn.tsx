@@ -22,6 +22,7 @@ import { createPublicClient, encodeFunctionData, erc20Abi, http } from "viem";
 import { base } from "viem/chains";
 import { useAccount, useWaitForTransactionReceipt } from "wagmi";
 import { AnySpendCustomExactIn } from "./AnySpendCustomExactIn";
+import type { AnySpendContent, AnySpendSlots, AnySpendTheme } from "./types/customization";
 import { EthIcon } from "./icons/EthIcon";
 import { SolIcon } from "./icons/SolIcon";
 import { UsdcIcon } from "./icons/USDCIcon";
@@ -54,6 +55,10 @@ export function AnySpendStakeB3ExactIn({
   recipientAddress,
   stakeAmount,
   onSuccess,
+  senderAddress,
+  slots,
+  content,
+  theme,
 }: {
   loadOrder?: string;
   mode?: "modal" | "page";
@@ -62,6 +67,11 @@ export function AnySpendStakeB3ExactIn({
   recipientAddress: string;
   stakeAmount?: string;
   onSuccess?: (amount: string) => void;
+  /** Optional sender (payer) address — pre-fills token balances when the user address is known ahead of time */
+  senderAddress?: string;
+  slots?: AnySpendSlots;
+  content?: AnySpendContent;
+  theme?: AnySpendTheme;
 }) {
   const hasMounted = useHasMounted();
   const { setB3ModalOpen } = useModalStore();
@@ -518,6 +528,10 @@ export function AnySpendStakeB3ExactIn({
       customExactInConfig={customExactInConfig}
       header={header}
       onSuccess={onSuccess}
+      senderAddress={senderAddress}
+      slots={slots}
+      content={content}
+      theme={theme}
     />
   );
 }

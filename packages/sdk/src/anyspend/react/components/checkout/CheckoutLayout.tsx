@@ -17,38 +17,19 @@ export function CheckoutLayout({ mode, paymentPanel, cartPanel, classes }: Check
   return (
     <div
       className={cn("anyspend-checkout mx-auto w-full", classes?.root)}
-      style={mode === "page" ? { maxWidth: 1100, padding: "2rem 1rem" } : undefined}
+      style={
+        {
+          ...(mode === "page" ? { maxWidth: 1100, padding: "2rem 1rem" } : undefined),
+          "--anyspend-cart-width": `${rightColumnWidth}px`,
+        } as React.CSSProperties
+      }
     >
-      {/*
-        Use CSS Grid with inline styles to ensure 2-column layout works
-        regardless of host app's Tailwind configuration.
-        On screens < 768px: single column (cart on top, payment below).
-        On screens >= 768px: two columns (payment left, cart right).
-      */}
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-            .anyspend-checkout-grid {
-              display: grid;
-              gap: 2rem;
-              grid-template-columns: 1fr;
-            }
-            @media (min-width: 768px) {
-              .anyspend-checkout-grid {
-                grid-template-columns: 1fr ${rightColumnWidth}px;
-              }
-              .anyspend-checkout-grid > .anyspend-payment-col { order: 1; }
-              .anyspend-checkout-grid > .anyspend-cart-col { order: 2; }
-            }
-          `,
-        }}
-      />
       <div className={cn("anyspend-checkout-grid", classes?.layout)}>
         {/* LEFT: Payment Methods (appears second on mobile, first on desktop) */}
         <div
           className={cn(
             "anyspend-payment-col order-2",
-            "rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900",
+            "rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-neutral-700 dark:bg-neutral-900",
             classes?.paymentColumn,
           )}
         >
@@ -59,10 +40,9 @@ export function CheckoutLayout({ mode, paymentPanel, cartPanel, classes }: Check
         <div
           className={cn(
             "anyspend-cart-col order-1",
-            "rounded-2xl border border-gray-200 bg-gray-50 p-6 dark:border-gray-700 dark:bg-gray-800/50",
+            "rounded-2xl border border-gray-200 bg-gray-50 p-6 dark:border-neutral-700 dark:bg-neutral-800/50",
             classes?.cartColumn,
           )}
-          style={{ position: "sticky", top: 32, alignSelf: "start" }}
         >
           {cartPanel}
         </div>

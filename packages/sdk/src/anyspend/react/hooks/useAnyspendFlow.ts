@@ -110,6 +110,8 @@ interface UseAnyspendFlowProps {
   disableUrlParamManagement?: boolean;
   orderType?: "hype_duel" | "custom_exact_in" | "swap";
   customExactInConfig?: CustomExactInConfig;
+  /** Optional sender (payer) address — pre-fills token balances when the user address is known ahead of time */
+  senderAddress?: string;
 }
 
 // This hook serves for order hype_duel and custom_exact_in
@@ -127,6 +129,7 @@ export function useAnyspendFlow({
   disableUrlParamManagement = false,
   orderType = "hype_duel",
   customExactInConfig,
+  senderAddress,
 }: UseAnyspendFlowProps) {
   const searchParams = useSearchParamsSSR();
   const router = useRouter();
@@ -180,9 +183,10 @@ export function useAnyspendFlow({
   const recipientName = recipientProfile.data?.name;
 
   // Check token balance for crypto payments
+  const effectiveBalanceAddress = senderAddress || walletAddress;
   const { rawBalance, isLoading: isBalanceLoading } = useTokenBalance({
     token: selectedSrcToken,
-    address: walletAddress,
+    address: effectiveBalanceAddress,
   });
 
   // Check if user has enough balance

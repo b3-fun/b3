@@ -1,5 +1,6 @@
 import { anyspendService } from "@b3dotfun/sdk/anyspend/services/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
+import { CreateOrderResponse } from "@b3dotfun/sdk/anyspend/types/api_req_res";
 import { VisitorData } from "@b3dotfun/sdk/anyspend/types/fingerprint";
 import { normalizeAddress } from "@b3dotfun/sdk/anyspend/utils";
 import { useB3Config } from "@b3dotfun/sdk/global-account/react";
@@ -21,7 +22,7 @@ export type CreateDepositFirstOrderParams = {
 };
 
 export type UseCreateDepositFirstOrderProps = {
-  onSuccess?: (data: any) => void;
+  onSuccess?: (data: CreateOrderResponse) => void;
   onError?: (error: Error) => void;
 };
 
@@ -94,7 +95,7 @@ export function useCreateDepositFirstOrder({ onSuccess, onError }: UseCreateDepo
         throw error;
       }
     },
-    onSuccess: (data: any) => {
+    onSuccess: (data: CreateOrderResponse) => {
       onSuccess?.(data);
     },
     onError: (error: Error) => {

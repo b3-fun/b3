@@ -121,6 +121,18 @@ export const formatDisplayNumber = (
   return formatter.format(v);
 };
 
+/**
+ * Safely convert a string to BigInt, returning 0n for invalid values.
+ * Use this for consumer-provided amount strings that may not be valid wei values.
+ */
+export function safeBigInt(value: string): bigint {
+  try {
+    return BigInt(value);
+  } catch {
+    return BigInt(0);
+  }
+}
+
 export function formatUnits(value: string, decimals = 18) {
   const factor = BigInt(10) ** BigInt(decimals);
   const wholePart = BigInt(value) / factor;

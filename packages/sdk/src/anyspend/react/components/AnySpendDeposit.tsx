@@ -19,6 +19,7 @@ import { CreditCardIcon } from "./icons/CreditCardIcon";
 import { QrCodeIcon } from "./icons/QrCodeIcon";
 import { QRDeposit } from "./QRDeposit";
 import type { AnySpendAllClasses } from "./types/classes";
+import type { AnySpendContent, AnySpendSlots, AnySpendTheme } from "./types/customization";
 
 export interface DepositContractConfig {
   /** Custom function ABI JSON string */
@@ -125,6 +126,14 @@ export interface AnySpendDepositProps {
   destinationTokenAmount?: string;
   /** Opaque metadata passed to the order for callbacks (e.g., workflow form data) */
   callbackMetadata?: Record<string, unknown>;
+  /** Optional sender (payer) address — pre-fills token balances when the user address is known ahead of time */
+  senderAddress?: string;
+  /** Custom slot overrides for sub-components */
+  slots?: AnySpendSlots;
+  /** Custom content overrides for sub-components */
+  content?: AnySpendContent;
+  /** Custom theme overrides for sub-components */
+  theme?: AnySpendTheme;
 }
 
 // Default supported chains
@@ -251,6 +260,10 @@ export function AnySpendDeposit({
   allowDirectTransfer = false,
   destinationTokenAmount,
   callbackMetadata,
+  senderAddress,
+  slots,
+  content,
+  theme,
 }: AnySpendDepositProps) {
   // Extract deposit-specific classes for convenience
   const depositClasses = classes?.deposit;
@@ -280,9 +293,10 @@ export function AnySpendDeposit({
     [destinationTokenAddress, destinationTokenChainId, destinationTokenData],
   );
 
-  // Fetch balances for EOA wallet
+  // Fetch balances for EOA wallet (use senderAddress as fallback for pre-filled balance display)
+  const effectiveBalanceAddress = senderAddress || eoaAddress;
   const { data: balanceData, isLoading: isBalanceLoading } = useSimBalance(
-    shouldShowChainSelection ? eoaAddress : undefined,
+    shouldShowChainSelection ? effectiveBalanceAddress : undefined,
     supportedChains.map(c => c.id),
   );
 
@@ -701,6 +715,10 @@ export function AnySpendDeposit({
             allowDirectTransfer={allowDirectTransfer}
             destinationTokenAmount={destinationTokenAmount}
             callbackMetadata={callbackMetadata}
+            senderAddress={senderAddress}
+            slots={slots}
+            content={content}
+            theme={theme}
           />
         ) : (
           <AnySpend
@@ -725,6 +743,10 @@ export function AnySpendDeposit({
             allowDirectTransfer={allowDirectTransfer}
             destinationTokenAmount={destinationTokenAmount}
             callbackMetadata={callbackMetadata}
+            senderAddress={senderAddress}
+            slots={slots}
+            content={content}
+            theme={theme}
           />
         )}
       </div>

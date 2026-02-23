@@ -1,48 +1,1061 @@
-import { B3_TOKEN } from "@b3dotfun/sdk/anyspend";
-import { AnySpendCheckout, type CheckoutItem } from "@b3dotfun/sdk/anyspend/react";
-import { parseUnits } from "viem";
+import { ETH_BASE } from "@b3dotfun/sdk/anyspend";
+import {
+  AnySpendCheckout,
+  type CheckoutItem,
+  type CheckoutSummaryLine,
+  type CheckoutFormSchema,
+  type ShippingOption,
+  type DiscountResult,
+} from "@b3dotfun/sdk/anyspend/react";
+import { Pencil, Plus, Trash2, X } from "lucide-react";
+import { useCallback, useState } from "react";
+import { parseUnits, formatUnits } from "viem";
+import { DemoPageLayout } from "../components/DemoPageLayout";
 
 const DEMO_RECIPIENT = "0xD32b34E2E55c7005b6506370857bdE4cFD057fC4";
 
-const DEMO_ITEMS: CheckoutItem[] = [
+/* ------------------------------------------------------------------ */
+/* Default demo data                                                   */
+/* ------------------------------------------------------------------ */
+
+const DEFAULT_ITEMS: CheckoutItem[] = [
   {
     id: "item-1",
     name: "B3kemon Starter Pack",
     description: "3 random B3kemon creatures to start your journey",
     imageUrl: "https://cdn.b3.fun/b3kemon-card.png",
-    amount: parseUnits("100", 18).toString(), // 100 B3
+    amount: parseUnits("0.001", 18).toString(),
     quantity: 1,
+    metadata: { Rarity: "Common", Edition: "2025" },
   },
   {
     id: "item-2",
     name: "Rare Pokeball",
     description: "Increases catch rate by 2x",
-    amount: parseUnits("50", 18).toString(), // 50 B3
+    amount: parseUnits("0.0005", 18).toString(),
     quantity: 2,
+    metadata: { Type: "Consumable" },
   },
 ];
 
-export default function CheckoutPage() {
+const DEFAULT_FORM_SCHEMA: CheckoutFormSchema = {
+  fields: [
+    { id: "name", type: "text", label: "Full Name", placeholder: "John Doe", required: true },
+    { id: "email", type: "email", label: "Email", placeholder: "john@example.com", required: true },
+  ],
+};
+
+const DEFAULT_SHIPPING_OPTIONS: ShippingOption[] = [
+  {
+    id: "standard",
+    name: "Standard Shipping",
+    description: "Delivered via carrier",
+    amount: parseUnits("0.0002", 18).toString(),
+    estimated_days: "5-7 business days",
+  },
+  {
+    id: "express",
+    name: "Express Shipping",
+    description: "Priority delivery",
+    amount: parseUnits("0.0005", 18).toString(),
+    estimated_days: "1-2 business days",
+  },
+];
+
+/* ------------------------------------------------------------------ */
+/* Helper: convert human-readable token amount to wei string           */
+/* ------------------------------------------------------------------ */
+function toWei(value: string): string {
+  try {
+    const num = Number.parseFloat(value);
+    if (Number.isNaN(num) || num < 0) return "0";
+    return parseUnits(value, 18).toString();
+  } catch {
+    return "0";
+  }
+}
+
+function fromWei(value: string): string {
+  try {
+    return formatUnits(BigInt(value), 18);
+  } catch {
+    return "0";
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Editable state types                                                */
+/* ------------------------------------------------------------------ */
+interface EditableItem {
+  id: string;
+  name: string;
+  description: string;
+  imageUrl: string;
+  amount: string; // human-readable (e.g. "100")
+  quantity: number;
+  metadata: Record<string, string>;
+}
+
+interface Adjustments {
+  shippingEnabled: boolean;
+  shippingAmount: string;
+  shippingLabel: string;
+  taxEnabled: boolean;
+  taxAmount: string;
+  taxLabel: string;
+  taxRate: string;
+  discountEnabled: boolean;
+  discountAmount: string;
+  discountLabel: string;
+  discountCode: string;
+  summaryLines: { label: string; amount: string; description: string }[];
+}
+
+interface FormSettings {
+  formSchemaEnabled: boolean;
+  formSchema: CheckoutFormSchema;
+  shippingOptionsEnabled: boolean;
+  shippingOptions: ShippingOption[];
+  collectShippingAddress: boolean;
+  discountCodeEnabled: boolean;
+}
+
+interface EditableFormField {
+  id: string;
+  type: string;
+  label: string;
+  placeholder: string;
+  required: boolean;
+}
+
+interface EditableShippingOption {
+  id: string;
+  name: string;
+  description: string;
+  amount: string; // human-readable
+  estimated_days: string;
+}
+
+function itemToEditable(item: CheckoutItem): EditableItem {
+  return {
+    id: item.id || crypto.randomUUID(),
+    name: item.name,
+    description: item.description || "",
+    imageUrl: item.imageUrl || "",
+    amount: fromWei(item.amount),
+    quantity: item.quantity,
+    metadata: item.metadata || {},
+  };
+}
+
+function editableToItem(e: EditableItem): CheckoutItem {
+  return {
+    id: e.id,
+    name: e.name,
+    description: e.description || undefined,
+    imageUrl: e.imageUrl || undefined,
+    amount: toWei(e.amount),
+    quantity: e.quantity,
+    metadata: Object.keys(e.metadata).length > 0 ? e.metadata : undefined,
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/* Cart Editor Modal                                                   */
+/* ------------------------------------------------------------------ */
+
+function CartEditorModal({
+  items,
+  adjustments,
+  formSettings,
+  onSave,
+  onClose,
+}: {
+  items: EditableItem[];
+  adjustments: Adjustments;
+  formSettings: FormSettings;
+  onSave: (_items: EditableItem[], _adjustments: Adjustments, _formSettings: FormSettings) => void;
+  onClose: () => void;
+}) {
+  const [editItems, setEditItems] = useState<EditableItem[]>(items);
+  const [adj, setAdj] = useState<Adjustments>(adjustments);
+  const [formState, setFormState] = useState<FormSettings>(formSettings);
+
+  // Editable versions of form fields and shipping options
+  const [editFormFields, setEditFormFields] = useState<EditableFormField[]>(
+    formSettings.formSchema.fields.map(f => ({
+      id: f.id,
+      type: f.type,
+      label: f.label,
+      placeholder: f.placeholder || "",
+      required: f.required || false,
+    })),
+  );
+  const [editShippingOpts, setEditShippingOpts] = useState<EditableShippingOption[]>(
+    formSettings.shippingOptions.map(o => ({
+      id: o.id,
+      name: o.name,
+      description: o.description || "",
+      amount: fromWei(o.amount),
+      estimated_days: o.estimated_days || "",
+    })),
+  );
+
+  const updateItem = useCallback((index: number, patch: Partial<EditableItem>) => {
+    setEditItems(prev => prev.map((item, i) => (i === index ? { ...item, ...patch } : item)));
+  }, []);
+
+  const removeItem = useCallback((index: number) => {
+    setEditItems(prev => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const addItem = useCallback(() => {
+    setEditItems(prev => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        name: "New Item",
+        description: "",
+        imageUrl: "",
+        amount: "10",
+        quantity: 1,
+        metadata: {},
+      },
+    ]);
+  }, []);
+
+  const addMetadata = useCallback((itemIndex: number) => {
+    setEditItems(prev =>
+      prev.map((item, i) => (i === itemIndex ? { ...item, metadata: { ...item.metadata, "": "" } } : item)),
+    );
+  }, []);
+
+  const updateMetadata = useCallback((itemIndex: number, oldKey: string, newKey: string, value: string) => {
+    setEditItems(prev =>
+      prev.map((item, i) => {
+        if (i !== itemIndex) return item;
+        const meta = { ...item.metadata };
+        if (oldKey !== newKey) delete meta[oldKey];
+        meta[newKey] = value;
+        return { ...item, metadata: meta };
+      }),
+    );
+  }, []);
+
+  const removeMetadata = useCallback((itemIndex: number, key: string) => {
+    setEditItems(prev =>
+      prev.map((item, i) => {
+        if (i !== itemIndex) return item;
+        const meta = { ...item.metadata };
+        delete meta[key];
+        return { ...item, metadata: meta };
+      }),
+    );
+  }, []);
+
+  const addSummaryLine = useCallback(() => {
+    setAdj(prev => ({
+      ...prev,
+      summaryLines: [...prev.summaryLines, { label: "Fee", amount: "1", description: "" }],
+    }));
+  }, []);
+
+  const removeSummaryLine = useCallback((index: number) => {
+    setAdj(prev => ({
+      ...prev,
+      summaryLines: prev.summaryLines.filter((_, i) => i !== index),
+    }));
+  }, []);
+
+  const updateSummaryLine = useCallback(
+    (index: number, patch: Partial<{ label: string; amount: string; description: string }>) => {
+      setAdj(prev => ({
+        ...prev,
+        summaryLines: prev.summaryLines.map((line, i) => (i === index ? { ...line, ...patch } : line)),
+      }));
+    },
+    [],
+  );
+
+  // Build final form settings when saving
+  const handleSave = () => {
+    const finalFormSettings: FormSettings = {
+      ...formState,
+      formSchema: {
+        fields: editFormFields.map(f => ({
+          id: f.id,
+          type: f.type as CheckoutFormSchema["fields"][number]["type"],
+          label: f.label,
+          placeholder: f.placeholder || undefined,
+          required: f.required,
+        })),
+      },
+      shippingOptions: editShippingOpts.map(o => ({
+        id: o.id,
+        name: o.name,
+        description: o.description || undefined,
+        amount: toWei(o.amount),
+        estimated_days: o.estimated_days || undefined,
+      })),
+    };
+    onSave(editItems, adj, finalFormSettings);
+  };
+
+  const inputClass =
+    "w-full rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-sm text-gray-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100";
+  const labelClass = "text-xs font-medium text-gray-500 dark:text-gray-400";
+  const sectionClass = "rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800/50";
+
   return (
-    <div className="min-h-screen bg-[#FAFAFA] p-4 pt-8">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4 pb-12 pt-12">
+      <div className="w-full max-w-2xl rounded-xl border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-900">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-gray-700">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Edit Cart & Checkout Config</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="max-h-[70vh] overflow-y-auto px-5 py-4">
+          {/* LINE ITEMS */}
+          <div className="mb-6">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Line Items</h3>
+              <button
+                type="button"
+                onClick={addItem}
+                className="flex items-center gap-1 rounded-md bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50"
+              >
+                <Plus className="h-3 w-3" /> Add Item
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              {editItems.map((item, index) => (
+                <div key={item.id} className={sectionClass}>
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">Item #{index + 1}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeItem(index)}
+                      className="rounded p-0.5 text-red-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className={labelClass}>Name</label>
+                      <input
+                        className={inputClass}
+                        value={item.name}
+                        onChange={e => updateItem(index, { name: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Image URL</label>
+                      <input
+                        className={inputClass}
+                        value={item.imageUrl}
+                        onChange={e => updateItem(index, { imageUrl: e.target.value })}
+                        placeholder="https://..."
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <label className={labelClass}>Description</label>
+                      <input
+                        className={inputClass}
+                        value={item.description}
+                        onChange={e => updateItem(index, { description: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Amount (tokens)</label>
+                      <input
+                        className={inputClass}
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={item.amount}
+                        onChange={e => updateItem(index, { amount: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Quantity</label>
+                      <input
+                        className={inputClass}
+                        type="number"
+                        min="1"
+                        value={item.quantity}
+                        onChange={e =>
+                          updateItem(index, { quantity: Math.max(1, Number.parseInt(e.target.value) || 1) })
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  {/* Metadata */}
+                  <div className="mt-2">
+                    <div className="flex items-center justify-between">
+                      <label className={labelClass}>Metadata</label>
+                      <button
+                        type="button"
+                        onClick={() => addMetadata(index)}
+                        className="text-xs text-blue-500 hover:text-blue-700"
+                      >
+                        + Add
+                      </button>
+                    </div>
+                    {Object.entries(item.metadata).map(([key, value], metaIdx) => (
+                      <div key={metaIdx} className="mt-1 flex items-center gap-1.5">
+                        <input
+                          className={`${inputClass} !w-28`}
+                          placeholder="Key"
+                          value={key}
+                          onChange={e => updateMetadata(index, key, e.target.value, value)}
+                        />
+                        <span className="text-gray-400">:</span>
+                        <input
+                          className={inputClass}
+                          placeholder="Value"
+                          value={value}
+                          onChange={e => updateMetadata(index, key, key, e.target.value)}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeMetadata(index, key)}
+                          className="shrink-0 rounded p-0.5 text-gray-400 hover:text-red-500"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ADJUSTMENTS */}
+          <div className="mb-6">
+            <h3 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Order Adjustments</h3>
+
+            <div className="flex flex-col gap-3">
+              {/* Shipping */}
+              <div className={sectionClass}>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={adj.shippingEnabled}
+                    onChange={e => setAdj(prev => ({ ...prev, shippingEnabled: e.target.checked }))}
+                    className="rounded"
+                  />
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Shipping</span>
+                </label>
+                {adj.shippingEnabled && (
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    <div>
+                      <label className={labelClass}>Amount (tokens)</label>
+                      <input
+                        className={inputClass}
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={adj.shippingAmount}
+                        onChange={e => setAdj(prev => ({ ...prev, shippingAmount: e.target.value }))}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Label (optional)</label>
+                      <input
+                        className={inputClass}
+                        value={adj.shippingLabel}
+                        onChange={e => setAdj(prev => ({ ...prev, shippingLabel: e.target.value }))}
+                        placeholder="Shipping"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Tax */}
+              <div className={sectionClass}>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={adj.taxEnabled}
+                    onChange={e => setAdj(prev => ({ ...prev, taxEnabled: e.target.checked }))}
+                    className="rounded"
+                  />
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Tax</span>
+                </label>
+                {adj.taxEnabled && (
+                  <div className="mt-2 grid grid-cols-3 gap-2">
+                    <div>
+                      <label className={labelClass}>Amount (tokens)</label>
+                      <input
+                        className={inputClass}
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={adj.taxAmount}
+                        onChange={e => setAdj(prev => ({ ...prev, taxAmount: e.target.value }))}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Label (optional)</label>
+                      <input
+                        className={inputClass}
+                        value={adj.taxLabel}
+                        onChange={e => setAdj(prev => ({ ...prev, taxLabel: e.target.value }))}
+                        placeholder="Tax"
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Rate (optional)</label>
+                      <input
+                        className={inputClass}
+                        value={adj.taxRate}
+                        onChange={e => setAdj(prev => ({ ...prev, taxRate: e.target.value }))}
+                        placeholder="8%"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Discount */}
+              <div className={sectionClass}>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={adj.discountEnabled}
+                    onChange={e => setAdj(prev => ({ ...prev, discountEnabled: e.target.checked }))}
+                    className="rounded"
+                  />
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Discount</span>
+                </label>
+                {adj.discountEnabled && (
+                  <div className="mt-2 grid grid-cols-3 gap-2">
+                    <div>
+                      <label className={labelClass}>Amount (tokens)</label>
+                      <input
+                        className={inputClass}
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={adj.discountAmount}
+                        onChange={e => setAdj(prev => ({ ...prev, discountAmount: e.target.value }))}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Label (optional)</label>
+                      <input
+                        className={inputClass}
+                        value={adj.discountLabel}
+                        onChange={e => setAdj(prev => ({ ...prev, discountLabel: e.target.value }))}
+                        placeholder="Discount"
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Code (optional)</label>
+                      <input
+                        className={inputClass}
+                        value={adj.discountCode}
+                        onChange={e => setAdj(prev => ({ ...prev, discountCode: e.target.value }))}
+                        placeholder="SAVE10"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Summary Lines */}
+              <div className={sectionClass}>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Custom Summary Lines</span>
+                  <button
+                    type="button"
+                    onClick={addSummaryLine}
+                    className="flex items-center gap-1 rounded-md bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400"
+                  >
+                    <Plus className="h-3 w-3" /> Add
+                  </button>
+                </div>
+                {adj.summaryLines.map((line, idx) => (
+                  <div key={idx} className="mt-2 flex items-end gap-2">
+                    <div className="flex-1">
+                      <label className={labelClass}>Label</label>
+                      <input
+                        className={inputClass}
+                        value={line.label}
+                        onChange={e => updateSummaryLine(idx, { label: e.target.value })}
+                      />
+                    </div>
+                    <div className="w-24">
+                      <label className={labelClass}>Amount</label>
+                      <input
+                        className={inputClass}
+                        type="number"
+                        step="0.01"
+                        value={line.amount}
+                        onChange={e => updateSummaryLine(idx, { amount: e.target.value })}
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className={labelClass}>Note</label>
+                      <input
+                        className={inputClass}
+                        value={line.description}
+                        onChange={e => updateSummaryLine(idx, { description: e.target.value })}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeSummaryLine(idx)}
+                      className="mb-0.5 shrink-0 rounded p-1 text-red-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* FORM & CHECKOUT CONFIG */}
+          <div className="mb-4">
+            <h3 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Checkout Form & Options</h3>
+
+            <div className="flex flex-col gap-3">
+              {/* Form Schema */}
+              <div className={sectionClass}>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={formState.formSchemaEnabled}
+                    onChange={e => setFormState(prev => ({ ...prev, formSchemaEnabled: e.target.checked }))}
+                    className="rounded"
+                  />
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Custom Form (formSchema)</span>
+                </label>
+                {formState.formSchemaEnabled && (
+                  <div className="mt-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className={labelClass}>Form Fields</span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setEditFormFields(prev => [
+                            ...prev,
+                            {
+                              id: `field_${Date.now()}`,
+                              type: "text",
+                              label: "New Field",
+                              placeholder: "",
+                              required: false,
+                            },
+                          ])
+                        }
+                        className="text-xs text-blue-500 hover:text-blue-700"
+                      >
+                        + Add Field
+                      </button>
+                    </div>
+                    {editFormFields.map((field, idx) => (
+                      <div
+                        key={field.id}
+                        className="flex items-center gap-2 rounded-md border border-gray-200 bg-white p-2 dark:border-gray-600 dark:bg-gray-800"
+                      >
+                        <select
+                          value={field.type}
+                          onChange={e => {
+                            const next = [...editFormFields];
+                            next[idx] = { ...next[idx], type: e.target.value };
+                            setEditFormFields(next);
+                          }}
+                          className="rounded border border-gray-300 bg-white px-1.5 py-1 text-xs dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                        >
+                          {["text", "email", "phone", "number", "textarea", "select", "checkbox", "address"].map(t => (
+                            <option key={t} value={t}>
+                              {t}
+                            </option>
+                          ))}
+                        </select>
+                        <input
+                          className={`${inputClass} flex-1 !py-1`}
+                          value={field.label}
+                          onChange={e => {
+                            const next = [...editFormFields];
+                            next[idx] = { ...next[idx], label: e.target.value };
+                            setEditFormFields(next);
+                          }}
+                          placeholder="Label"
+                        />
+                        <input
+                          className={`${inputClass} flex-1 !py-1`}
+                          value={field.placeholder}
+                          onChange={e => {
+                            const next = [...editFormFields];
+                            next[idx] = { ...next[idx], placeholder: e.target.value };
+                            setEditFormFields(next);
+                          }}
+                          placeholder="Placeholder"
+                        />
+                        <label className="flex items-center gap-1 whitespace-nowrap text-xs text-gray-500">
+                          <input
+                            type="checkbox"
+                            checked={field.required}
+                            onChange={e => {
+                              const next = [...editFormFields];
+                              next[idx] = { ...next[idx], required: e.target.checked };
+                              setEditFormFields(next);
+                            }}
+                            className="rounded"
+                          />
+                          Req
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => setEditFormFields(prev => prev.filter((_, i) => i !== idx))}
+                          className="shrink-0 rounded p-0.5 text-red-400 hover:text-red-600"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Shipping Options */}
+              <div className={sectionClass}>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={formState.shippingOptionsEnabled}
+                    onChange={e => setFormState(prev => ({ ...prev, shippingOptionsEnabled: e.target.checked }))}
+                    className="rounded"
+                  />
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Shipping Options (shippingOptions)
+                  </span>
+                </label>
+                {formState.shippingOptionsEnabled && (
+                  <div className="mt-3 space-y-2">
+                    <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                      <input
+                        type="checkbox"
+                        checked={formState.collectShippingAddress}
+                        onChange={e => setFormState(prev => ({ ...prev, collectShippingAddress: e.target.checked }))}
+                        className="rounded"
+                      />
+                      Collect shipping address
+                    </label>
+                    {editShippingOpts.map((opt, idx) => (
+                      <div key={opt.id} className="flex items-end gap-2">
+                        <div className="flex-1">
+                          <label className={labelClass}>Name</label>
+                          <input
+                            className={inputClass}
+                            value={opt.name}
+                            onChange={e => {
+                              const next = [...editShippingOpts];
+                              next[idx] = { ...next[idx], name: e.target.value };
+                              setEditShippingOpts(next);
+                            }}
+                          />
+                        </div>
+                        <div className="w-20">
+                          <label className={labelClass}>Amount</label>
+                          <input
+                            className={inputClass}
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={opt.amount}
+                            onChange={e => {
+                              const next = [...editShippingOpts];
+                              next[idx] = { ...next[idx], amount: e.target.value };
+                              setEditShippingOpts(next);
+                            }}
+                          />
+                        </div>
+                        <div className="w-24">
+                          <label className={labelClass}>Est. Days</label>
+                          <input
+                            className={inputClass}
+                            value={opt.estimated_days}
+                            onChange={e => {
+                              const next = [...editShippingOpts];
+                              next[idx] = { ...next[idx], estimated_days: e.target.value };
+                              setEditShippingOpts(next);
+                            }}
+                            placeholder="3-5 days"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setEditShippingOpts(prev => prev.filter((_, i) => i !== idx))}
+                          className="mb-0.5 shrink-0 rounded p-1 text-red-400 hover:bg-red-50 hover:text-red-600"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setEditShippingOpts(prev => [
+                          ...prev,
+                          {
+                            id: crypto.randomUUID(),
+                            name: "New Method",
+                            description: "",
+                            amount: "0",
+                            estimated_days: "",
+                          },
+                        ])
+                      }
+                      className="flex items-center gap-1 text-xs text-blue-500 hover:text-blue-700"
+                    >
+                      <Plus className="h-3 w-3" /> Add Shipping Method
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Discount Code Input */}
+              <div className={sectionClass}>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={formState.discountCodeEnabled}
+                    onChange={e => setFormState(prev => ({ ...prev, discountCodeEnabled: e.target.checked }))}
+                    className="rounded"
+                  />
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Discount Code Input (enableDiscountCode)
+                  </span>
+                </label>
+                {formState.discountCodeEnabled && (
+                  <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    Enables the discount code input field. Uses a mock validator that accepts code "DEMO10" for 10% off
+                    and "FLAT5" for 5 tokens off.
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-end gap-3 border-t border-gray-200 px-5 py-3 dark:border-gray-700">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleSave}
+            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          >
+            Apply Changes
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Mock Discount Validator                                             */
+/* ------------------------------------------------------------------ */
+async function mockValidateDiscount(code: string): Promise<DiscountResult> {
+  // Simulate network delay
+  await new Promise(r => setTimeout(r, 800));
+
+  const upper = code.toUpperCase();
+  if (upper === "DEMO10") {
+    return {
+      valid: true,
+      discount_type: "percentage",
+      discount_value: "10",
+      discount_amount: parseUnits("20", 18).toString(), // 10% of ~200 tokens
+    };
+  }
+  if (upper === "FLAT5") {
+    return {
+      valid: true,
+      discount_type: "fixed",
+      discount_value: "5",
+      discount_amount: parseUnits("5", 18).toString(),
+    };
+  }
+  return { valid: false, error: `Code "${code}" is not valid. Try DEMO10 or FLAT5.` };
+}
+
+/* ------------------------------------------------------------------ */
+/* Main Page                                                           */
+/* ------------------------------------------------------------------ */
+
+export default function CheckoutPage() {
+  const [items, setItems] = useState<EditableItem[]>(DEFAULT_ITEMS.map(itemToEditable));
+  const [adjustments, setAdjustments] = useState<Adjustments>({
+    shippingEnabled: false,
+    shippingAmount: "5",
+    shippingLabel: "",
+    taxEnabled: false,
+    taxAmount: "16",
+    taxLabel: "",
+    taxRate: "8%",
+    discountEnabled: false,
+    discountAmount: "10",
+    discountLabel: "",
+    discountCode: "SAVE10",
+    summaryLines: [],
+  });
+  const [formSettings, setFormSettings] = useState<FormSettings>({
+    formSchemaEnabled: false,
+    formSchema: DEFAULT_FORM_SCHEMA,
+    shippingOptionsEnabled: false,
+    shippingOptions: DEFAULT_SHIPPING_OPTIONS,
+    collectShippingAddress: false,
+    discountCodeEnabled: false,
+  });
+  const [editorOpen, setEditorOpen] = useState(false);
+
+  const handleSave = useCallback((newItems: EditableItem[], newAdj: Adjustments, newFormSettings: FormSettings) => {
+    setItems(newItems);
+    setAdjustments(newAdj);
+    setFormSettings(newFormSettings);
+    setEditorOpen(false);
+  }, []);
+
+  // Convert to checkout props
+  const checkoutItems: CheckoutItem[] = items.map(editableToItem);
+
+  const shipping = adjustments.shippingEnabled
+    ? { amount: toWei(adjustments.shippingAmount), label: adjustments.shippingLabel || undefined }
+    : undefined;
+
+  const tax = adjustments.taxEnabled
+    ? {
+        amount: toWei(adjustments.taxAmount),
+        label: adjustments.taxLabel || undefined,
+        rate: adjustments.taxRate || undefined,
+      }
+    : undefined;
+
+  const discount = adjustments.discountEnabled
+    ? {
+        amount: toWei(adjustments.discountAmount),
+        label: adjustments.discountLabel || undefined,
+        code: adjustments.discountCode || undefined,
+      }
+    : undefined;
+
+  const summaryLines: CheckoutSummaryLine[] | undefined =
+    adjustments.summaryLines.length > 0
+      ? adjustments.summaryLines.map(l => ({
+          label: l.label,
+          amount: toWei(l.amount),
+          description: l.description || undefined,
+        }))
+      : undefined;
+
+  // Form / shipping / discount props
+  const formSchema = formSettings.formSchemaEnabled ? formSettings.formSchema : undefined;
+  const shippingOptions = formSettings.shippingOptionsEnabled ? formSettings.shippingOptions : undefined;
+  const collectShippingAddress = formSettings.shippingOptionsEnabled ? formSettings.collectShippingAddress : undefined;
+  const enableDiscountCode = formSettings.discountCodeEnabled;
+  const validateDiscount = formSettings.discountCodeEnabled ? mockValidateDiscount : undefined;
+
+  // Active features indicator
+  const activeFeatures: string[] = [];
+  if (formSettings.formSchemaEnabled) activeFeatures.push(`Form (${formSettings.formSchema.fields.length} fields)`);
+  if (formSettings.shippingOptionsEnabled)
+    activeFeatures.push(`Shipping (${formSettings.shippingOptions.length} methods)`);
+  if (formSettings.discountCodeEnabled) activeFeatures.push("Discount Codes");
+  if (adjustments.shippingEnabled) activeFeatures.push("Static Shipping");
+  if (adjustments.taxEnabled) activeFeatures.push("Tax");
+  if (adjustments.discountEnabled) activeFeatures.push("Static Discount");
+
+  return (
+    <DemoPageLayout
+      title="Checkout"
+      subtitle={activeFeatures.length > 0 ? activeFeatures.join(" · ") : "Full-page checkout layout"}
+      actions={
+        <button
+          type="button"
+          onClick={() => setEditorOpen(true)}
+          className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors"
+          style={{
+            border: "1px solid rgba(128,128,128,0.2)",
+            color: "rgba(128,128,128,0.8)",
+          }}
+        >
+          <Pencil className="h-3 w-3" />
+          Edit Cart & Config
+        </button>
+      }
+    >
       <AnySpendCheckout
         mode="page"
         recipientAddress={DEMO_RECIPIENT}
-        destinationTokenAddress={B3_TOKEN.address}
-        destinationTokenChainId={B3_TOKEN.chainId}
-        items={DEMO_ITEMS}
+        destinationTokenAddress={ETH_BASE.address}
+        destinationTokenChainId={ETH_BASE.chainId}
+        items={checkoutItems}
+        senderAddress="0x1216de6853e2c2cAEd6F5B0C2791D2E4a765D954"
         organizationName="B3kemon Shop"
         organizationLogo="https://cdn.b3.fun/b3kemon-card.png"
         buttonText="Pay Now"
+        shipping={shipping}
+        tax={tax}
+        discount={discount}
+        summaryLines={summaryLines}
+        formSchema={formSchema}
+        shippingOptions={shippingOptions}
+        collectShippingAddress={collectShippingAddress}
+        enableDiscountCode={enableDiscountCode}
+        validateDiscount={validateDiscount}
+        onFormSubmit={data => {
+          console.log("[Demo] Form submitted:", data);
+        }}
+        onShippingChange={option => {
+          console.log("[Demo] Shipping changed:", option);
+        }}
+        onDiscountApplied={result => {
+          console.log("[Demo] Discount applied:", result);
+        }}
         onSuccess={result => {
-          console.log("Payment success:", result);
+          console.log("[Demo] Payment success:", result);
         }}
         onError={error => {
-          console.error("Payment error:", error);
+          console.error("[Demo] Payment error:", error);
         }}
         returnUrl="/"
         returnLabel="Back to Home"
       />
-    </div>
+
+      {editorOpen && (
+        <CartEditorModal
+          items={items}
+          adjustments={adjustments}
+          formSettings={formSettings}
+          onSave={handleSave}
+          onClose={() => setEditorOpen(false)}
+        />
+      )}
+    </DemoPageLayout>
   );
 }

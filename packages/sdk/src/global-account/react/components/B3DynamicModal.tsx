@@ -84,6 +84,9 @@ export function B3DynamicModal() {
     "anySpendBondKit",
   ];
 
+  // AnySpend modal types should not show the "Global Account" branding footer
+  const isAnySpendType = contentType?.type?.toLowerCase().startsWith("anyspend") ?? false;
+
   // Check if current content type is in freestyle types
   const isFreestyleType = freestyleTypes.includes(contentType?.type as string);
   // Determine if modal should be closable - defaults to true unless explicitly set to false
@@ -194,8 +197,8 @@ export function B3DynamicModal() {
       <ModalContent
         className={cn(
           contentClass,
-          "rounded-2xl bg-white shadow-xl dark:bg-gray-900",
-          "border border-gray-200 dark:border-gray-800",
+          "rounded-2xl bg-white shadow-xl dark:bg-neutral-900",
+          "border border-gray-200 dark:border-neutral-800",
           (contentType?.type === "manageAccount" ||
             contentType?.type === "deposit" ||
             contentType?.type === "send" ||
@@ -205,6 +208,7 @@ export function B3DynamicModal() {
           "mx-auto w-full max-w-md sm:max-w-lg",
         )}
         hideCloseButton={hideCloseButton}
+        hideGABranding={isAnySpendType}
         onEscapeKeyDown={!isClosable ? e => e.preventDefault() : undefined}
         onPointerDownOutside={!isClosable ? e => e.preventDefault() : undefined}
         onInteractOutside={!isClosable ? e => e.preventDefault() : undefined}
@@ -251,7 +255,7 @@ export function B3DynamicModal() {
                 animate={{ height: "auto" }}
                 exit={{ height: 0 }}
                 transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="toast-section relative z-10 overflow-hidden bg-white dark:border-gray-800 dark:bg-gray-900"
+                className="toast-section relative z-10 overflow-hidden bg-white dark:border-neutral-800 dark:bg-neutral-900"
               >
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
@@ -269,7 +273,7 @@ export function B3DynamicModal() {
       </ModalContent>
 
       {/* Animate inner container margin to cover branding when toasts appear */}
-      {isOpen && (
+      {isOpen && !isAnySpendType && (
         <style>{`
           .modal-inner-content {
             transition: margin-bottom 0.3s ease-in-out;

@@ -20,7 +20,8 @@ import { VisitorData } from "../types/fingerprint";
 // Service functions
 export const anyspendService = {
   getTokenList: async (chainId: number, query: string): Promise<components["schemas"]["Token"][]> => {
-    const response = await fetch(`${ANYSPEND_MAINNET_BASE_URL}/chains/${chainId}/tokens?limit=100&term=${query}`);
+    const params = new URLSearchParams({ limit: "100", term: query });
+    const response = await fetch(`${ANYSPEND_MAINNET_BASE_URL}/chains/${chainId}/tokens?${params.toString()}`);
     const body: GetTokenListResponse = await response.json();
     invariant(response.status === 200, `Failed to fetch token list for chain ${chainId}`);
     return body.data;
@@ -123,6 +124,7 @@ export const anyspendService = {
     invariant(orderId, "orderId is required");
     const response = await fetch(`${ANYSPEND_MAINNET_BASE_URL}/orders/${orderId}`);
     const data: GetOrderAndTxsResponse = await response.json();
+    invariant(response.status === 200, (data as any).message || `Failed to fetch order ${orderId}`);
     return data;
   },
 
@@ -140,6 +142,7 @@ export const anyspendService = {
     }
     const response = await fetch(`${ANYSPEND_MAINNET_BASE_URL}/orders?${params.toString()}`);
     const data: GetOrderHistoryResponse = await response.json();
+    invariant(response.status === 200, (data as any).message || "Failed to fetch order history");
     return data;
   },
 
@@ -177,8 +180,22 @@ export const anyspendService = {
     return data.data;
   },
 
+  getCoinbaseOnrampUrl: async (
+    request: components["schemas"]["CoinbaseOnrampUrlRequest"],
+  ): Promise<components["schemas"]["CoinbaseOnrampUrlResponse"]> => {
+    const response = await fetch(`${ANYSPEND_MAINNET_BASE_URL}/onramp/coinbase/onramp-url`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(request),
+    });
+    const data: components["schemas"]["CoinbaseOnrampUrlResponse"] = await response.json();
+    if (!response.ok) throw new Error((data as any).message || "Failed to get Coinbase onramp URL");
+    return data;
+  },
+
   getStripeClientSecret: async (paymentIntentId: string): Promise<string | null> => {
-    const response = await fetch(`${ANYSPEND_MAINNET_BASE_URL}/stripe/clientSecret?paymentIntentId=${paymentIntentId}`);
+    const params = new URLSearchParams({ paymentIntentId });
+    const response = await fetch(`${ANYSPEND_MAINNET_BASE_URL}/stripe/clientSecret?${params.toString()}`);
     const data: GetStripeClientSecret = await response.json();
     invariant(response.status === 200, "Failed to get Stripe client secret");
     return data.data;

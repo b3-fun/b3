@@ -64,18 +64,6 @@ export function TokenBalance({
 
           {!!rawBalance && (
             <>
-              {/* <button
-                onClick={() => handlePercentageClick(20)}
-                className="text-as-primary/50 bg-as-on-surface-2 hover:bg-as-on-surface-3 inline-flex rounded-lg px-2 py-1 text-xs transition-colors sm:hidden"
-              >
-                20%
-              </button>
-              <button
-                onClick={() => handlePercentageClick(50)}
-                className="text-as-primary/50 bg-as-on-surface-2 hover:bg-as-on-surface-3 inline-flex rounded-lg px-2 py-1 text-xs transition-colors"
-              >
-                50%
-              </button> */}
               <button
                 onClick={() => handlePercentageClick(100)}
                 className="text-as-primary/50 bg-as-on-surface-2 hover:bg-as-on-surface-3 inline-flex cursor-pointer rounded-lg px-2 py-1 text-xs transition-colors"

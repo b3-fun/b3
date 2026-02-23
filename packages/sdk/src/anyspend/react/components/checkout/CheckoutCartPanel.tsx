@@ -1,9 +1,9 @@
 "use client";
 
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
-import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
-import { useMemo } from "react";
-import type { CheckoutItem, AnySpendCheckoutClasses } from "./AnySpendCheckout";
+import { formatTokenAmount, safeBigInt } from "@b3dotfun/sdk/shared/utils/number";
+import { type ReactNode, useMemo } from "react";
+import type { CheckoutItem, CheckoutSummaryLine, AnySpendCheckoutClasses } from "./AnySpendCheckout";
 import { CartItemRow } from "./CartItemRow";
 import { CartSummary } from "./CartSummary";
 import { PoweredByBranding } from "./PoweredByBranding";
@@ -16,6 +16,14 @@ interface CheckoutCartPanelProps {
   organizationName?: string;
   organizationLogo?: string;
   classes?: AnySpendCheckoutClasses;
+  /** Custom footer. Pass `null` to hide, or a ReactNode to replace the default PoweredByBranding. */
+  footer?: ReactNode | null;
+  shipping?: { amount: string; label?: string };
+  tax?: { amount: string; label?: string; rate?: string };
+  discount?: { amount: string; label?: string; code?: string };
+  summaryLines?: CheckoutSummaryLine[];
+  /** Formatted USD equivalent (e.g. "$5.56") — shown for non-stablecoin tokens */
+  usdEquivalent?: string | null;
 }
 
 export function CheckoutCartPanel({
@@ -26,11 +34,26 @@ export function CheckoutCartPanel({
   organizationName,
   organizationLogo,
   classes,
+  footer,
+  shipping,
+  tax,
+  discount,
+  summaryLines,
+  usdEquivalent,
 }: CheckoutCartPanelProps) {
   const formattedTotal = useMemo(
-    () => formatTokenAmount(BigInt(totalAmount), tokenDecimals),
+    () => formatTokenAmount(safeBigInt(totalAmount), tokenDecimals),
     [totalAmount, tokenDecimals],
   );
+
+  // Compute subtotal from items only (before adjustments)
+  const formattedSubtotal = useMemo(() => {
+    let subtotal = BigInt(0);
+    for (const item of items) {
+      subtotal += safeBigInt(item.amount) * BigInt(item.quantity);
+    }
+    return formatTokenAmount(subtotal, tokenDecimals);
+  }, [items, tokenDecimals]);
 
   return (
     <div className={cn("anyspend-cart-panel flex flex-col", classes?.cartPanel)}>
@@ -45,16 +68,31 @@ export function CheckoutCartPanel({
 
       <div className="anyspend-cart-items divide-y divide-gray-100 dark:divide-gray-800">
         {items.map((item, index) => {
-          const itemTotal = BigInt(item.amount) * BigInt(item.quantity);
+          const itemTotal = safeBigInt(item.amount) * BigInt(item.quantity);
           const formattedPrice = `${formatTokenAmount(itemTotal, tokenDecimals)} ${tokenSymbol}`;
 
           return <CartItemRow key={item.id || index} item={item} formattedPrice={formattedPrice} classes={classes} />;
         })}
       </div>
 
-      <CartSummary total={formattedTotal} tokenSymbol={tokenSymbol} classes={classes} />
+      <CartSummary
+        total={formattedTotal}
+        tokenSymbol={tokenSymbol}
+        classes={classes}
+        subtotal={formattedSubtotal}
+        tokenDecimals={tokenDecimals}
+        shipping={shipping}
+        tax={tax}
+        discount={discount}
+        summaryLines={summaryLines}
+        usdEquivalent={usdEquivalent}
+      />
 
-      <PoweredByBranding organizationName={organizationName} organizationLogo={organizationLogo} classes={classes} />
+      {footer === undefined ? (
+        <PoweredByBranding organizationName={organizationName} organizationLogo={organizationLogo} classes={classes} />
+      ) : (
+        footer
+      )}
     </div>
   );
 }

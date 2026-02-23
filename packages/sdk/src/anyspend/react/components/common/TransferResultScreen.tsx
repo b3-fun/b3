@@ -3,7 +3,10 @@
 import { ALL_CHAINS } from "@b3dotfun/sdk/anyspend";
 import { components } from "@b3dotfun/sdk/anyspend/types/api";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
-import { CheckCircle2, Home } from "lucide-react";
+import { ShinyButton } from "@b3dotfun/sdk/global-account/react";
+import { Home } from "lucide-react";
+import { useAnySpendCustomization } from "../context/AnySpendCustomizationContext";
+import { AnimatedCheckmark } from "../icons/AnimatedCheckmark";
 import { TransferResult } from "../../hooks/useWatchTransfer";
 import { ChainTokenIcon } from "./ChainTokenIcon";
 
@@ -37,6 +40,7 @@ export function TransferResultScreen({
   onClose,
 }: TransferResultScreenProps) {
   const chain = ALL_CHAINS[chainId];
+  const { content } = useAnySpendCustomization();
 
   const handleClose = () => {
     if (onClose) {
@@ -54,15 +58,17 @@ export function TransferResultScreen({
       )}
     >
       <div className="anyspend-transfer-result-content flex flex-col items-center gap-6">
-        {/* Success icon */}
-        <div className="anyspend-transfer-success-icon bg-as-success-secondary flex h-16 w-16 items-center justify-center rounded-full">
-          <CheckCircle2 className="text-as-content-icon-success h-10 w-10" />
+        {/* Animated success checkmark */}
+        <div className="anyspend-transfer-success-icon">
+          <AnimatedCheckmark className="h-16 w-16" />
         </div>
 
         {/* Success message */}
         <div className="anyspend-transfer-success-message flex flex-col items-center gap-2">
-          <h2 className="text-as-primary text-xl font-semibold">Transfer Received!</h2>
-          <p className="text-as-secondary text-center text-sm">Your transfer has been successfully received.</p>
+          <h2 className="text-as-primary text-xl font-semibold">{content.successTitle || "Transfer Received!"}</h2>
+          <p className="text-as-secondary text-center text-sm">
+            {content.successDescription || "Your transfer has been successfully received."}
+          </p>
         </div>
 
         {/* Amount display */}
@@ -89,18 +95,20 @@ export function TransferResultScreen({
         </div>
 
         {/* Close button */}
-        <button
+        <ShinyButton
+          accentColor="hsl(var(--as-brand))"
           onClick={handleClose}
-          className="anyspend-transfer-close-button bg-as-brand flex w-full items-center justify-center gap-2 rounded-xl py-3.5 font-medium text-white transition-all hover:opacity-90"
+          className="anyspend-transfer-close-button w-full"
+          textClassName="text-white"
         >
           {mode === "page" ? (
-            <>
+            <span className="flex items-center justify-center gap-2">
               Return to Home <Home className="ml-2 h-4 w-4" />
-            </>
+            </span>
           ) : (
             "Close"
           )}
-        </button>
+        </ShinyButton>
       </div>
     </div>
   );

@@ -63,7 +63,7 @@ export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
       ? "0"
       : order.type === "custom" || order.type === "deposit_first"
         ? order.payload.amount?.toString() || "0"
-        : order.payload.expectedDstAmount.toString();
+        : order.payload.expectedDstAmount?.toString() || "0";
 
   const finalFormattedExpectedDstAmount =
     formattedExpectedDstAmount || formatTokenAmount(BigInt(expectedDstAmount), dstToken.decimals);
@@ -86,7 +86,7 @@ export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
           <div className="order-details-content flex w-full flex-col items-center gap-3 whitespace-nowrap py-2 text-sm">
             {/* Recipient Section */}
             <div className="order-details-recipient-section flex w-full justify-between gap-4">
-              <div className="order-details-recipient-label text-as-tertiarry">Recipient</div>
+              <div className="order-details-recipient-label text-as-tertiary">Recipient</div>
               <div className="order-details-recipient-info flex flex-col items-end gap-1">
                 {recipientName && (
                   <div className="order-details-recipient-name text-as-primary font-semibold">{recipientName}</div>
@@ -108,7 +108,7 @@ export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
 
             {/* Expected Amount/Action Section */}
             <div className="order-details-expected-section flex w-full items-start justify-between gap-2">
-              <div className="order-details-expected-label text-as-tertiarry shrink-0">
+              <div className="order-details-expected-label text-as-tertiary shrink-0">
                 {order.type === "swap" ||
                 order.type === "deposit_first" ||
                 order.type === "mint_nft" ||
@@ -174,7 +174,7 @@ export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
                 <div className="order-details-divider divider w-full" />
                 {/* Points Section */}
                 <div className="order-details-points-section flex w-full justify-between gap-4">
-                  <div className="order-details-points-label text-as-tertiarry">Points</div>
+                  <div className="order-details-points-label text-as-tertiary">Points</div>
                   <div className="order-details-points-value text-as-brand font-semibold">
                     +{formatNumber(points)} pts
                   </div>
@@ -186,7 +186,7 @@ export const OrderDetailsCollapsible = memo(function OrderDetailsCollapsible({
 
             {/* Order ID / Total Section */}
             <div className="order-details-id-total-section flex w-full justify-between gap-4">
-              <div className="order-details-id-total-label text-as-tertiarry">
+              <div className="order-details-id-total-label text-as-tertiary">
                 {showTotal ? "Total (included fee)" : "Order ID"}
               </div>
               <div className="order-details-id-total-value text-as-primary overflow-hidden text-ellipsis whitespace-nowrap">

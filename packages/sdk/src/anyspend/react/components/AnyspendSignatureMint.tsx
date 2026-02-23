@@ -5,6 +5,7 @@ import { encodeFunctionData, parseEther } from "viem";
 import { ABI_SIGNATURE_MINTING } from "../../abis/signatureMinting";
 import { GenerateSigMintResponse } from "../../types/signatureMint";
 import { AnySpendCustom } from "./AnySpendCustom";
+import type { AnySpendContent, AnySpendSlots, AnySpendTheme } from "./types/customization";
 
 // Helper function to determine if URL is a video
 function isVideoURL(url: string): boolean {
@@ -47,12 +48,18 @@ export function AnyspendSignatureMint({
   signatureData,
   imageUrl,
   onSuccess,
+  slots,
+  content,
+  theme,
 }: {
   loadOrder?: string;
   mode?: "modal" | "page";
   signatureData: GenerateSigMintResponse;
   imageUrl?: string;
   onSuccess?: (txHash?: string) => void;
+  slots?: AnySpendSlots;
+  content?: AnySpendContent;
+  theme?: AnySpendTheme;
 }) {
   // Get token data
   const {
@@ -149,6 +156,9 @@ export function AnyspendSignatureMint({
       header={header}
       onSuccess={onSuccess}
       showRecipient={true}
+      slots={slots}
+      content={content}
+      theme={theme}
     />
   );
 }

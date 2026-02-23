@@ -1,10 +1,16 @@
 "use client";
 
-import { useAnyspendCreateOnrampOrder, useGeoOnrampOptions, useStripeClientSecret } from "@b3dotfun/sdk/anyspend/react";
+import {
+  useAnyspendCreateOnrampOrder,
+  useAnyspendQuote,
+  useGeoOnrampOptions,
+  useStripeClientSecret,
+} from "@b3dotfun/sdk/anyspend/react";
+import { USDC_BASE } from "@b3dotfun/sdk/anyspend/constants";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
-import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
+import { formatUnits } from "@b3dotfun/sdk/shared/utils/number";
 import { getStripePromise } from "@b3dotfun/sdk/shared/utils/payment.utils";
-import { TextShimmer, useB3Config, useTokenData } from "@b3dotfun/sdk/global-account/react";
+import { ShinyButton, TextShimmer, useB3Config, useTokenData } from "@b3dotfun/sdk/global-account/react";
 import { AddressElement, Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import type { PaymentIntentResult, StripePaymentElementOptions } from "@stripe/stripe-js";
 import { Loader2, Lock } from "lucide-react";
@@ -18,7 +24,10 @@ interface FiatCheckoutPanelProps {
   destinationTokenChainId: number;
   totalAmount: string;
   themeColor?: string;
+  /** @deprecated Use onOrderCreated instead. Kept for backward compatibility. */
   onSuccess?: (result: { txHash?: string; orderId?: string }) => void;
+  /** Called when payment is confirmed — triggers lifecycle tracking in parent */
+  onOrderCreated?: (orderId: string) => void;
   onError?: (error: Error) => void;
   callbackMetadata?: Record<string, unknown>;
   classes?: AnySpendCheckoutClasses;
@@ -31,24 +40,70 @@ export function FiatCheckoutPanel({
   totalAmount,
   themeColor,
   onSuccess,
+  onOrderCreated,
   onError,
   callbackMetadata,
   classes,
 }: FiatCheckoutPanelProps) {
+  // Stable refs for callback props to avoid re-triggering effects
+  const onErrorRef = useRef(onError);
+  onErrorRef.current = onError;
+
   const { data: tokenData } = useTokenData(destinationTokenChainId, destinationTokenAddress);
   const { theme, stripePublishableKey } = useB3Config();
 
+  // Clean decimal string for API calls (no commas, no subscripts)
   const formattedAmount = useMemo(() => {
     const decimals = tokenData?.decimals || 18;
-    return formatTokenAmount(BigInt(totalAmount), decimals);
+    return formatUnits(BigInt(totalAmount).toString(), decimals);
   }, [totalAmount, tokenData]);
+
+  // Determine if destination token is a stablecoin (amount ≈ USD)
+  const isStablecoin = useMemo(() => {
+    return [
+      "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", // USDC Base
+      "0xdAC17F958D2ee523a2206206994597C13D831ec7", // USDT Ethereum
+    ].some(addr => addr.toLowerCase() === destinationTokenAddress.toLowerCase());
+  }, [destinationTokenAddress]);
+
+  // Get USD equivalent via quote for non-stablecoin tokens
+  const { anyspendQuote, isLoadingAnyspendQuote } = useAnyspendQuote({
+    type: "swap",
+    srcChain: 8453, // Base (USDC source)
+    dstChain: destinationTokenChainId,
+    srcTokenAddress: USDC_BASE.address,
+    dstTokenAddress: destinationTokenAddress,
+    tradeType: "EXACT_OUTPUT",
+    amount: totalAmount,
+  });
+
+  // USD amount to charge: direct for stablecoins, quote-derived for others.
+  // Rounded to 2 decimals so minor quote fluctuations don't retrigger the Stripe support check.
+  const usdAmount = useMemo(() => {
+    if (isStablecoin) return formattedAmount;
+    if (!anyspendQuote?.data?.currencyIn?.amount) return null;
+    const raw = formatUnits(anyspendQuote.data.currencyIn.amount, USDC_BASE.decimals);
+    return parseFloat(raw).toFixed(2);
+  }, [isStablecoin, formattedAmount, anyspendQuote]);
+
+  // Debug: log computed values for Stripe flow diagnostics
+  useEffect(() => {
+    console.log("@@fiat-checkout:debug", {
+      totalAmount,
+      formattedAmount,
+      isStablecoin,
+      isLoadingAnyspendQuote,
+      quoteAmount: anyspendQuote?.data?.currencyIn?.amount,
+      usdAmount,
+    });
+  }, [totalAmount, formattedAmount, isStablecoin, isLoadingAnyspendQuote, anyspendQuote, usdAmount]);
 
   const {
     geoData,
     stripeOnrampSupport,
     stripeWeb2Support,
     isLoading: isLoadingGeo,
-  } = useGeoOnrampOptions(formattedAmount);
+  } = useGeoOnrampOptions(usdAmount || "0");
 
   // Order state
   const [orderId, setOrderId] = useState<string | null>(null);
@@ -57,9 +112,9 @@ export function FiatCheckoutPanel({
   const orderCreatedRef = useRef(false);
 
   const { createOrder, isCreatingOrder } = useAnyspendCreateOnrampOrder({
-    onSuccess: (data: any) => {
-      const id = data?.data?.id;
-      const intentId = data?.data?.stripePaymentIntentId;
+    onSuccess: data => {
+      const id = data.data?.id;
+      const intentId = data.data?.stripePaymentIntentId;
       if (id && intentId) {
         setOrderId(id);
         setStripePaymentIntentId(intentId);
@@ -69,7 +124,7 @@ export function FiatCheckoutPanel({
     },
     onError: (error: Error) => {
       setOrderError(error.message || "Failed to create payment order.");
-      onError?.(error);
+      onErrorRef.current?.(error);
     },
   });
 
@@ -77,6 +132,9 @@ export function FiatCheckoutPanel({
   useEffect(() => {
     if (
       !isLoadingGeo &&
+      (!isStablecoin ? !isLoadingAnyspendQuote : true) &&
+      usdAmount &&
+      parseFloat(usdAmount) > 0 &&
       stripeWeb2Support?.isSupport &&
       !orderCreatedRef.current &&
       !orderId &&
@@ -103,7 +161,7 @@ export function FiatCheckoutPanel({
         orderType: "swap",
         dstChain: destinationTokenChainId,
         dstToken,
-        srcFiatAmount: formattedAmount,
+        srcFiatAmount: usdAmount,
         onramp: {
           vendor: "stripe-web2",
           paymentMethod: "",
@@ -116,6 +174,9 @@ export function FiatCheckoutPanel({
     }
   }, [
     isLoadingGeo,
+    isStablecoin,
+    isLoadingAnyspendQuote,
+    usdAmount,
     stripeWeb2Support,
     orderId,
     isCreatingOrder,
@@ -124,15 +185,14 @@ export function FiatCheckoutPanel({
     recipientAddress,
     destinationTokenAddress,
     destinationTokenChainId,
-    formattedAmount,
     totalAmount,
     geoData,
     callbackMetadata,
     createOrder,
   ]);
 
-  // Loading geo/stripe support check
-  if (isLoadingGeo) {
+  // Loading geo/stripe support check (and quote for non-stablecoins)
+  if (isLoadingGeo || (!isStablecoin && isLoadingAnyspendQuote)) {
     return (
       <motion.div
         initial={{ opacity: 0 }}
@@ -214,8 +274,24 @@ export function FiatCheckoutPanel({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, ease: "easeOut" }}
-        className={cn("anyspend-fiat-stripe", classes?.fiatPanel)}
+        className={cn("anyspend-fiat-stripe flex flex-col gap-3", classes?.fiatPanel)}
       >
+        {usdAmount && (
+          <div className="anyspend-fiat-summary rounded-lg border border-gray-200 px-4 py-3 dark:border-gray-700">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-500 dark:text-gray-400">Total</span>
+              <span className="font-medium text-gray-900 dark:text-white">${parseFloat(usdAmount).toFixed(2)}</span>
+            </div>
+            {!isStablecoin && tokenData && (
+              <div className="mt-1 flex items-center justify-between text-xs text-gray-400 dark:text-gray-500">
+                <span>
+                  {formattedAmount} {tokenData.symbol}
+                </span>
+                <span>incl. fees</span>
+              </div>
+            )}
+          </div>
+        )}
         <StripeCheckout
           stripePaymentIntentId={stripePaymentIntentId}
           stripePublishableKey={stripePublishableKey}
@@ -223,6 +299,7 @@ export function FiatCheckoutPanel({
           themeColor={themeColor}
           orderId={orderId}
           onSuccess={onSuccess}
+          onOrderCreated={onOrderCreated}
           onError={onError}
           classes={classes}
         />
@@ -230,22 +307,23 @@ export function FiatCheckoutPanel({
     );
   }
 
-  // Fallback: Stripe redirect flow (only if web2 not available but redirect is)
+  // TODO: Dead code — Stripe onramp is disabled at backend (isStripeOnrampSupported hardcoded false).
+  // Remove this block or implement onClick if Stripe onramp is re-enabled.
   return (
     <div className={cn("anyspend-fiat-redirect flex flex-col gap-3 py-2", classes?.fiatPanel)}>
       <p className="text-sm text-gray-600 dark:text-gray-400">
         You'll be redirected to Stripe to complete your payment securely.
       </p>
-      <button
-        className={cn(
-          "anyspend-fiat-redirect-btn flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3.5 text-sm font-semibold text-white transition-all active:scale-[0.98]",
-          "bg-blue-600 hover:bg-blue-700",
-        )}
-        style={themeColor ? { backgroundColor: themeColor } : undefined}
+      <ShinyButton
+        accentColor={themeColor || "hsl(var(--as-brand))"}
+        className="anyspend-fiat-redirect-btn w-full"
+        textClassName="text-white"
       >
-        <Lock className="h-3.5 w-3.5" />
-        Pay with Card
-      </button>
+        <span className="flex items-center justify-center gap-2">
+          <Lock className="h-3.5 w-3.5" />
+          Pay with Card
+        </span>
+      </ShinyButton>
       <p className="anyspend-fiat-secured flex items-center justify-center gap-1 text-xs text-gray-400">
         <Lock className="h-3 w-3" />
         Secured by Stripe
@@ -265,6 +343,7 @@ interface StripeCheckoutProps {
   themeColor?: string;
   orderId: string;
   onSuccess?: (result: { txHash?: string; orderId?: string }) => void;
+  onOrderCreated?: (orderId: string) => void;
   onError?: (error: Error) => void;
   classes?: AnySpendCheckoutClasses;
 }
@@ -276,6 +355,7 @@ function StripeCheckout({
   themeColor,
   orderId,
   onSuccess,
+  onOrderCreated,
   onError,
   classes,
 }: StripeCheckoutProps) {
@@ -330,6 +410,7 @@ function StripeCheckout({
         themeColor={themeColor}
         orderId={orderId}
         onSuccess={onSuccess}
+        onOrderCreated={onOrderCreated}
         onError={onError}
         classes={classes}
       />
@@ -345,11 +426,19 @@ interface StripeCheckoutFormProps {
   themeColor?: string;
   orderId: string;
   onSuccess?: (result: { txHash?: string; orderId?: string }) => void;
+  onOrderCreated?: (orderId: string) => void;
   onError?: (error: Error) => void;
   classes?: AnySpendCheckoutClasses;
 }
 
-function StripeCheckoutForm({ themeColor, orderId, onSuccess, onError, classes }: StripeCheckoutFormProps) {
+function StripeCheckoutForm({
+  themeColor,
+  orderId,
+  onSuccess,
+  onOrderCreated,
+  onError,
+  classes,
+}: StripeCheckoutFormProps) {
   const stripe = useStripe();
   const elements = useElements();
 
@@ -386,16 +475,21 @@ function StripeCheckoutForm({ themeColor, orderId, onSuccess, onError, classes }
       })) as PaymentIntentResult;
 
       if (result.error) {
+        console.error("@@checkout-stripe:error:", JSON.stringify(result.error, null, 2));
         setMessage(result.error.message || "Payment failed. Please try again.");
         return;
       }
 
-      // Payment succeeded
+      console.log("@@checkout-stripe:success:", JSON.stringify({ orderId }, null, 2));
+      // Payment succeeded — notify parent to show order lifecycle tracking
+      onOrderCreated?.(orderId);
+      // Also fire legacy callback for backward compatibility
       onSuccess?.({ orderId, txHash: undefined });
     } catch (error: any) {
       const errorMessage = error?.message || "Payment failed. Please try again.";
       setMessage(errorMessage);
-      onError?.(error instanceof Error ? error : new Error(errorMessage));
+      const errorObj = error instanceof Error ? error : new Error(errorMessage);
+      onError?.(errorObj);
     } finally {
       setLoading(false);
     }
@@ -489,30 +583,25 @@ function StripeCheckoutForm({ themeColor, orderId, onSuccess, onError, classes }
       </AnimatePresence>
 
       {/* Submit button */}
-      <button
+      <ShinyButton
         type="submit"
+        accentColor={themeColor || "hsl(var(--as-brand))"}
         disabled={!stripe || !elements || loading}
-        className={cn(
-          "anyspend-stripe-submit flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3.5 text-sm font-semibold text-white transition-all",
-          !stripe || !elements || loading
-            ? "cursor-not-allowed bg-gray-300 dark:bg-gray-600"
-            : "bg-blue-600 hover:bg-blue-700 active:scale-[0.98]",
-          classes?.payButton,
-        )}
-        style={themeColor && !loading ? { backgroundColor: themeColor } : undefined}
+        className={cn("anyspend-stripe-submit w-full", classes?.payButton)}
+        textClassName="text-white"
       >
         {loading ? (
-          <>
+          <span className="flex items-center justify-center gap-2">
             <Loader2 className="h-4 w-4 animate-spin" />
             Processing...
-          </>
+          </span>
         ) : (
-          <>
+          <span className="flex items-center justify-center gap-2">
             <Lock className="h-3.5 w-3.5" />
             Complete Payment
-          </>
+          </span>
         )}
-      </button>
+      </ShinyButton>
 
       <p className="anyspend-fiat-secured flex items-center justify-center gap-1 text-xs text-gray-400">
         <Lock className="h-3 w-3" />
