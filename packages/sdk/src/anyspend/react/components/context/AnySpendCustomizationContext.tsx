@@ -17,15 +17,15 @@ const AnySpendCustomizationContext = createContext<AnySpendCustomizationContextV
 
 /** Convert a hex color to HSL string (e.g. "210 50% 40%"). Supports both 3-digit (#fff) and 6-digit (#ffffff) formats. */
 function hexToHsl(hex: string): string | null {
-  const s = hex.replace(/^#/, "");
+  const hexStr = hex.replace(/^#/, "");
   let r: number, g: number, b: number;
 
-  if (s.length === 3) {
+  if (hexStr.length === 3) {
     // 3-digit hex shorthand (e.g., #fff)
-    [r, g, b] = [0, 1, 2].map(i => parseInt(s[i] + s[i], 16) / 255);
-  } else if (s.length === 6) {
+    [r, g, b] = [0, 1, 2].map(i => parseInt(hexStr[i] + hexStr[i], 16) / 255);
+  } else if (hexStr.length === 6) {
     // 6-digit hex (e.g., #ffffff)
-    [r, g, b] = [0, 2, 4].map(i => parseInt(s.substring(i, i + 2), 16) / 255);
+    [r, g, b] = [0, 2, 4].map(i => parseInt(hexStr.substring(i, i + 2), 16) / 255);
   } else {
     return null;
   }
