@@ -481,19 +481,7 @@ export default function HomePage() {
                     <button
                       key={card.title}
                       onClick={card.onClick}
-                      className="group relative flex items-start gap-3.5 rounded-xl px-5 py-5 text-left transition-all duration-200"
-                      style={{
-                        border: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}`,
-                        background: isDark ? "rgba(255,255,255,0.03)" : "#fff",
-                      }}
-                      onMouseEnter={e => {
-                        e.currentTarget.style.borderColor = isDark ? "rgba(59,130,246,0.3)" : "rgba(59,130,246,0.4)";
-                        e.currentTarget.style.background = isDark ? "rgba(255,255,255,0.06)" : "rgba(59,130,246,0.03)";
-                      }}
-                      onMouseLeave={e => {
-                        e.currentTarget.style.borderColor = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)";
-                        e.currentTarget.style.background = isDark ? "rgba(255,255,255,0.03)" : "#fff";
-                      }}
+                      className="group relative flex items-start gap-3.5 rounded-xl border border-black/[0.08] bg-white px-5 py-5 text-left transition-all duration-200 hover:border-blue-500/40 hover:bg-blue-500/[0.03] dark:border-white/[0.06] dark:bg-white/[0.03] dark:hover:border-blue-500/30 dark:hover:bg-white/[0.06]"
                     >
                       <div
                         className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
