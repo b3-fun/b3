@@ -124,6 +124,7 @@ export const anyspendService = {
     invariant(orderId, "orderId is required");
     const response = await fetch(`${ANYSPEND_MAINNET_BASE_URL}/orders/${orderId}`);
     const data: GetOrderAndTxsResponse = await response.json();
+    invariant(response.status === 200, (data as any).message || `Failed to fetch order ${orderId}`);
     return data;
   },
 
@@ -141,6 +142,7 @@ export const anyspendService = {
     }
     const response = await fetch(`${ANYSPEND_MAINNET_BASE_URL}/orders?${params.toString()}`);
     const data: GetOrderHistoryResponse = await response.json();
+    invariant(response.status === 200, (data as any).message || "Failed to fetch order history");
     return data;
   },
 
