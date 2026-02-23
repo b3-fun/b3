@@ -139,10 +139,7 @@ export function CartSummary({
 
       {/* Total — always shown, separator when adjustments exist */}
       <div
-        className={cn(
-          "flex flex-col",
-          hasAdjustments && "mt-1 border-t border-gray-100 pt-2 dark:border-neutral-800",
-        )}
+        className={cn("flex flex-col", hasAdjustments && "mt-1 border-t border-gray-100 pt-2 dark:border-neutral-800")}
       >
         <div className="flex items-center justify-between">
           <span className="text-base font-semibold text-gray-900 dark:text-gray-100">Total</span>

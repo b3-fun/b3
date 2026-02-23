@@ -1,6 +1,11 @@
 "use client";
 
-import { useAnyspendCreateOnrampOrder, useAnyspendQuote, useGeoOnrampOptions, useStripeClientSecret } from "@b3dotfun/sdk/anyspend/react";
+import {
+  useAnyspendCreateOnrampOrder,
+  useAnyspendQuote,
+  useGeoOnrampOptions,
+  useStripeClientSecret,
+} from "@b3dotfun/sdk/anyspend/react";
 import { USDC_BASE } from "@b3dotfun/sdk/anyspend/constants";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { formatUnits } from "@b3dotfun/sdk/shared/utils/number";
@@ -275,9 +280,7 @@ export function FiatCheckoutPanel({
           <div className="anyspend-fiat-summary rounded-lg border border-gray-200 px-4 py-3 dark:border-gray-700">
             <div className="flex items-center justify-between text-sm">
               <span className="text-gray-500 dark:text-gray-400">Total</span>
-              <span className="font-medium text-gray-900 dark:text-white">
-                ${parseFloat(usdAmount).toFixed(2)}
-              </span>
+              <span className="font-medium text-gray-900 dark:text-white">${parseFloat(usdAmount).toFixed(2)}</span>
             </div>
             {!isStablecoin && tokenData && (
               <div className="mt-1 flex items-center justify-between text-xs text-gray-400 dark:text-gray-500">
