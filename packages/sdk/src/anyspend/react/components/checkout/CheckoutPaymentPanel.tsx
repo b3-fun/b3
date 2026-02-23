@@ -35,6 +35,8 @@ interface CheckoutPaymentPanelProps {
   showPoints?: boolean;
   /** Show the order ID row in the order status summary. Defaults to false. */
   showOrderId?: boolean;
+  /** Whether the checkout form is valid. When false, payment methods are disabled. */
+  isFormValid?: boolean;
 }
 
 function RadioCircle({ selected, themeColor }: { selected: boolean; themeColor?: string }) {
@@ -129,6 +131,7 @@ export function CheckoutPaymentPanel({
   senderAddress,
   showPoints,
   showOrderId,
+  isFormValid = true,
 }: CheckoutPaymentPanelProps) {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(defaultPaymentMethod ?? null);
 
@@ -196,10 +199,15 @@ export function CheckoutPaymentPanel({
         Payment
       </h2>
 
+      {!isFormValid && (
+        <p className="text-sm text-amber-600 dark:text-amber-400">Please complete the required fields above before proceeding to payment.</p>
+      )}
+
       {/* Accordion-style payment methods */}
       <div
         className={cn(
           "anyspend-payment-methods divide-y divide-gray-200 overflow-hidden rounded-xl border border-gray-200 dark:divide-gray-700 dark:border-gray-700",
+          !isFormValid && "pointer-events-none opacity-50",
           classes?.paymentMethodSelector,
         )}
       >

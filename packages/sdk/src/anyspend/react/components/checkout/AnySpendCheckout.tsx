@@ -275,6 +275,12 @@ export function AnySpendCheckout({
     return Object.keys(meta).length > 0 ? meta : undefined;
   }, [formData, selectedShipping, shippingAddress, appliedDiscount, checkoutSessionId]);
 
+  // Check if required form fields are filled
+  const isFormValid = useMemo(() => {
+    if (!formSchema) return true;
+    return formSchema.fields.filter(f => f.required).every(f => formData[f.id] != null && formData[f.id] !== "");
+  }, [formSchema, formData]);
+
   // Check if we have a form panel to show
   const hasFormContent =
     (formSchema && formSchema.fields.length > 0) ||
@@ -335,6 +341,7 @@ export function AnySpendCheckout({
                 showPoints={showPoints}
                 showOrderId={showOrderId}
                 callbackMetadata={checkoutFormMetadata}
+                isFormValid={isFormValid}
               />
             </>
           }
