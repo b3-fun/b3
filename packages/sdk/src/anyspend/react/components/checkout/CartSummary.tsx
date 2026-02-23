@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
-import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
+import { formatTokenAmount, safeBigInt } from "@b3dotfun/sdk/shared/utils/number";
 import { useMemo } from "react";
 import type { AnySpendCheckoutClasses } from "./AnySpendCheckout";
 import type { CheckoutSummaryLine } from "./AnySpendCheckout";
@@ -35,17 +35,17 @@ export function CartSummary({
     !!shipping?.amount || !!tax?.amount || !!discount?.amount || (summaryLines && summaryLines.length > 0);
 
   const formattedShipping = useMemo(
-    () => (shipping?.amount ? formatTokenAmount(BigInt(shipping.amount), tokenDecimals) : null),
+    () => (shipping?.amount ? formatTokenAmount(safeBigInt(shipping.amount), tokenDecimals) : null),
     [shipping?.amount, tokenDecimals],
   );
 
   const formattedTax = useMemo(
-    () => (tax?.amount ? formatTokenAmount(BigInt(tax.amount), tokenDecimals) : null),
+    () => (tax?.amount ? formatTokenAmount(safeBigInt(tax.amount), tokenDecimals) : null),
     [tax?.amount, tokenDecimals],
   );
 
   const formattedDiscount = useMemo(
-    () => (discount?.amount ? formatTokenAmount(BigInt(discount.amount), tokenDecimals) : null),
+    () => (discount?.amount ? formatTokenAmount(safeBigInt(discount.amount), tokenDecimals) : null),
     [discount?.amount, tokenDecimals],
   );
 
@@ -53,8 +53,8 @@ export function CartSummary({
     () =>
       summaryLines?.map(line => ({
         ...line,
-        formattedAmount: formatTokenAmount(BigInt(line.amount), tokenDecimals),
-        isNegative: BigInt(line.amount) < BigInt(0),
+        formattedAmount: formatTokenAmount(safeBigInt(line.amount), tokenDecimals),
+        isNegative: safeBigInt(line.amount) < BigInt(0),
       })),
     [summaryLines, tokenDecimals],
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
-import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
+import { formatTokenAmount, safeBigInt } from "@b3dotfun/sdk/shared/utils/number";
 import { type ReactNode, useMemo } from "react";
 import type { CheckoutItem, CheckoutSummaryLine, AnySpendCheckoutClasses } from "./AnySpendCheckout";
 import { CartItemRow } from "./CartItemRow";
@@ -39,7 +39,7 @@ export function CheckoutCartPanel({
   summaryLines,
 }: CheckoutCartPanelProps) {
   const formattedTotal = useMemo(
-    () => formatTokenAmount(BigInt(totalAmount), tokenDecimals),
+    () => formatTokenAmount(safeBigInt(totalAmount), tokenDecimals),
     [totalAmount, tokenDecimals],
   );
 
@@ -47,7 +47,7 @@ export function CheckoutCartPanel({
   const formattedSubtotal = useMemo(() => {
     let subtotal = BigInt(0);
     for (const item of items) {
-      subtotal += BigInt(item.amount) * BigInt(item.quantity);
+      subtotal += safeBigInt(item.amount) * BigInt(item.quantity);
     }
     return formatTokenAmount(subtotal, tokenDecimals);
   }, [items, tokenDecimals]);
@@ -65,7 +65,7 @@ export function CheckoutCartPanel({
 
       <div className="anyspend-cart-items divide-y divide-gray-100 dark:divide-gray-800">
         {items.map((item, index) => {
-          const itemTotal = BigInt(item.amount) * BigInt(item.quantity);
+          const itemTotal = safeBigInt(item.amount) * BigInt(item.quantity);
           const formattedPrice = `${formatTokenAmount(itemTotal, tokenDecimals)} ${tokenSymbol}`;
 
           return <CartItemRow key={item.id || index} item={item} formattedPrice={formattedPrice} classes={classes} />;

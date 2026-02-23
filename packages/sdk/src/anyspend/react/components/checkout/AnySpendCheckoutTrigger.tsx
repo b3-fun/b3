@@ -1,7 +1,7 @@
 "use client";
 
 import { useTokenData } from "@b3dotfun/sdk/global-account/react";
-import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
+import { formatTokenAmount, safeBigInt } from "@b3dotfun/sdk/shared/utils/number";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { type ReactNode, useMemo } from "react";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "../AnySpendFingerprintWrapper";
@@ -130,16 +130,16 @@ export function AnySpendCheckoutTrigger({
     if (!items || items.length === 0) return "0";
     let total = BigInt(0);
     for (const item of items) {
-      total += BigInt(item.amount) * BigInt(item.quantity);
+      total += safeBigInt(item.amount) * BigInt(item.quantity);
     }
     const shippingAmt = typeof shipping === "string" ? shipping : shipping?.amount;
-    if (shippingAmt) total += BigInt(shippingAmt);
+    if (shippingAmt) total += safeBigInt(shippingAmt);
     const taxAmt = typeof tax === "string" ? tax : tax?.amount;
-    if (taxAmt) total += BigInt(taxAmt);
+    if (taxAmt) total += safeBigInt(taxAmt);
     const discountAmt = typeof discount === "string" ? discount : discount?.amount;
-    if (discountAmt) total -= BigInt(discountAmt);
+    if (discountAmt) total -= safeBigInt(discountAmt);
     if (summaryLines) {
-      for (const line of summaryLines) total += BigInt(line.amount);
+      for (const line of summaryLines) total += safeBigInt(line.amount);
     }
     return total.toString();
   }, [items, totalAmountOverride, shipping, tax, discount, summaryLines]);
