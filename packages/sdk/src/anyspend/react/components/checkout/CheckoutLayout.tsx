@@ -17,32 +17,11 @@ export function CheckoutLayout({ mode, paymentPanel, cartPanel, classes }: Check
   return (
     <div
       className={cn("anyspend-checkout mx-auto w-full", classes?.root)}
-      style={mode === "page" ? { maxWidth: 1100, padding: "2rem 1rem" } : undefined}
+      style={{
+        ...(mode === "page" ? { maxWidth: 1100, padding: "2rem 1rem" } : undefined),
+        "--anyspend-cart-width": `${rightColumnWidth}px`,
+      } as React.CSSProperties}
     >
-      {/*
-        Use CSS Grid with inline styles to ensure 2-column layout works
-        regardless of host app's Tailwind configuration.
-        On screens < 768px: single column (cart on top, payment below).
-        On screens >= 768px: two columns (payment left, cart right).
-      */}
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-            .anyspend-checkout-grid {
-              display: grid;
-              gap: 2rem;
-              grid-template-columns: 1fr;
-            }
-            @media (min-width: 768px) {
-              .anyspend-checkout-grid {
-                grid-template-columns: 1fr ${rightColumnWidth}px;
-              }
-              .anyspend-checkout-grid > .anyspend-payment-col { order: 1; }
-              .anyspend-checkout-grid > .anyspend-cart-col { order: 2; position: sticky; top: 32px; align-self: start; }
-            }
-          `,
-        }}
-      />
       <div className={cn("anyspend-checkout-grid", classes?.layout)}>
         {/* LEFT: Payment Methods (appears second on mobile, first on desktop) */}
         <div

@@ -75,15 +75,6 @@ export interface AnySpendCheckoutTriggerProps {
   summaryLines?: CheckoutSummaryLine[];
 }
 
-/** CSS overrides applied when the trigger is rendered inside the B3 modal. */
-const MODAL_STYLE_OVERRIDES = `
-  .anyspend-checkout-trigger .anyspend-payment-methods { border: none; border-radius: 0; }
-  .anyspend-checkout-trigger .anyspend-payment-title { font-size: 0; padding-left: 0.75rem; }
-  .anyspend-checkout-trigger .anyspend-payment-title::before { content: "Payment options"; font-size: 1.125rem; }
-  .anyspend-checkout-trigger .anyspend-payment-panel { gap: 0; }
-  .anyspend-checkout-trigger .anyspend-payment-method-btn { padding-left: 0.5rem; padding-right: 0.5rem; }
-  .anyspend-checkout-trigger .anyspend-payment-method-panel { padding-left: 0.5rem; padding-right: 0.5rem; }
-`;
 
 export function AnySpendCheckoutTrigger({
   recipientAddress,
@@ -160,15 +151,6 @@ export function AnySpendCheckoutTrigger({
   return (
     <AnySpendFingerprintWrapper fingerprint={fingerprint}>
       <AnySpendCustomizationProvider slots={slots} content={content} theme={theme}>
-        {/* 
-          Apply modal-specific style overrides for checkout components.
-          Using dangerouslySetInnerHTML is necessary here to inject scoped styles that override
-          the default checkout styles when rendered in modal context. This is a static constant
-          and poses no XSS risk. Alternative approaches like CSS-in-JS or style portals would
-          add unnecessary complexity for this simple use case.
-        */}
-        <style dangerouslySetInnerHTML={{ __html: MODAL_STYLE_OVERRIDES }} />
-
         <div className="anyspend-checkout-trigger flex flex-col">
           {/* Cart summary with items */}
           {hasItems && (
