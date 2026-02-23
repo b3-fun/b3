@@ -15,14 +15,17 @@ const AnySpendCustomizationContext = createContext<AnySpendCustomizationContextV
   theme: {},
 });
 
-/** Convert a hex color to HSL string (e.g. "210 50% 40%") */
+/** Convert a hex color to HSL string (e.g. "210 50% 40%"). Supports both 3-digit (#fff) and 6-digit (#ffffff) formats. */
 function hexToHsl(hex: string): string | null {
-  const raw = hex.replace(/^#/, "");
+  const s = hex.replace(/^#/, "");
   let r: number, g: number, b: number;
-  if (raw.length === 3) {
-    [r, g, b] = [0, 1, 2].map(i => parseInt(raw[i] + raw[i], 16) / 255);
-  } else if (raw.length === 6) {
-    [r, g, b] = [0, 2, 4].map(i => parseInt(raw.substring(i, i + 2), 16) / 255);
+
+  if (s.length === 3) {
+    // 3-digit hex shorthand (e.g., #fff)
+    [r, g, b] = [0, 1, 2].map((i) => parseInt(s[i] + s[i], 16) / 255);
+  } else if (s.length === 6) {
+    // 6-digit hex (e.g., #ffffff)
+    [r, g, b] = [0, 2, 4].map((i) => parseInt(s.substring(i, i + 2), 16) / 255);
   } else {
     return null;
   }
@@ -89,7 +92,7 @@ export function AnySpendCustomizationProvider({ slots, content, theme, children 
       if (hsl) vars["--as-brand"] = hsl;
     }
 
-    // Apply explicit color overrides (hex → HSL for Tailwind compatibility)
+    // Apply explicit color overrides (convert hex to HSL)
     if (theme?.colors) {
       for (const [key, val] of Object.entries(theme.colors)) {
         const cssVar = CSS_VAR_MAP[key];
