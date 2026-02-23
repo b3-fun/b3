@@ -272,7 +272,8 @@ export function FiatCheckoutPanel({
     );
   }
 
-  // Fallback: Stripe redirect flow (only if web2 not available but redirect is)
+  // TODO: Dead code — Stripe onramp is disabled at backend (isStripeOnrampSupported hardcoded false).
+  // Remove this block or implement onClick if Stripe onramp is re-enabled.
   return (
     <div className={cn("anyspend-fiat-redirect flex flex-col gap-3 py-2", classes?.fiatPanel)}>
       <p className="text-sm text-gray-600 dark:text-gray-400">
