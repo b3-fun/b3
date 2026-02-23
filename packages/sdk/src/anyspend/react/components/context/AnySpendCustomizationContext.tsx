@@ -22,10 +22,10 @@ function hexToHsl(hex: string): string | null {
 
   if (s.length === 3) {
     // 3-digit hex shorthand (e.g., #fff)
-    [r, g, b] = [0, 1, 2].map((i) => parseInt(s[i] + s[i], 16) / 255);
+    [r, g, b] = [0, 1, 2].map(i => parseInt(s[i] + s[i], 16) / 255);
   } else if (s.length === 6) {
     // 6-digit hex (e.g., #ffffff)
-    [r, g, b] = [0, 2, 4].map((i) => parseInt(s.substring(i, i + 2), 16) / 255);
+    [r, g, b] = [0, 2, 4].map(i => parseInt(s.substring(i, i + 2), 16) / 255);
   } else {
     return null;
   }
