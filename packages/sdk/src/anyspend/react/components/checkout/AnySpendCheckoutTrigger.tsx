@@ -75,7 +75,6 @@ export interface AnySpendCheckoutTriggerProps {
   summaryLines?: CheckoutSummaryLine[];
 }
 
-
 export function AnySpendCheckoutTrigger({
   recipientAddress,
   destinationTokenAddress,

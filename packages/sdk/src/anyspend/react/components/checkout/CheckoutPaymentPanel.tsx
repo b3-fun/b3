@@ -200,7 +200,9 @@ export function CheckoutPaymentPanel({
       </h2>
 
       {!isFormValid && (
-        <p className="text-sm text-amber-600 dark:text-amber-400">Please complete the required fields above before proceeding to payment.</p>
+        <p className="text-sm text-amber-600 dark:text-amber-400">
+          Please complete the required fields above before proceeding to payment.
+        </p>
       )}
 
       {/* Accordion-style payment methods */}

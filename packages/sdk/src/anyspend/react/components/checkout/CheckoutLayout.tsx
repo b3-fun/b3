@@ -17,10 +17,12 @@ export function CheckoutLayout({ mode, paymentPanel, cartPanel, classes }: Check
   return (
     <div
       className={cn("anyspend-checkout mx-auto w-full", classes?.root)}
-      style={{
-        ...(mode === "page" ? { maxWidth: 1100, padding: "2rem 1rem" } : undefined),
-        "--anyspend-cart-width": `${rightColumnWidth}px`,
-      } as React.CSSProperties}
+      style={
+        {
+          ...(mode === "page" ? { maxWidth: 1100, padding: "2rem 1rem" } : undefined),
+          "--anyspend-cart-width": `${rightColumnWidth}px`,
+        } as React.CSSProperties
+      }
     >
       <div className={cn("anyspend-checkout-grid", classes?.layout)}>
         {/* LEFT: Payment Methods (appears second on mobile, first on desktop) */}

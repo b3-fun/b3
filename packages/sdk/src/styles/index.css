@@ -705,12 +705,29 @@ Dark version
 }
 
 /* AnySpend Checkout: modal trigger overrides */
-.anyspend-checkout-trigger .anyspend-payment-methods { border: none; border-radius: 0; }
-.anyspend-checkout-trigger .anyspend-payment-title { font-size: 0; padding-left: 0.75rem; }
-.anyspend-checkout-trigger .anyspend-payment-title::before { content: "Payment options"; font-size: 1.125rem; }
-.anyspend-checkout-trigger .anyspend-payment-panel { gap: 0; }
-.anyspend-checkout-trigger .anyspend-payment-method-btn { padding-left: 0.5rem; padding-right: 0.5rem; }
-.anyspend-checkout-trigger .anyspend-payment-method-panel { padding-left: 0.5rem; padding-right: 0.5rem; }
+.anyspend-checkout-trigger .anyspend-payment-methods {
+  border: none;
+  border-radius: 0;
+}
+.anyspend-checkout-trigger .anyspend-payment-title {
+  font-size: 0;
+  padding-left: 0.75rem;
+}
+.anyspend-checkout-trigger .anyspend-payment-title::before {
+  content: "Payment options";
+  font-size: 1.125rem;
+}
+.anyspend-checkout-trigger .anyspend-payment-panel {
+  gap: 0;
+}
+.anyspend-checkout-trigger .anyspend-payment-method-btn {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+.anyspend-checkout-trigger .anyspend-payment-method-panel {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
 
 /* AnySpend Checkout: 2-column grid layout */
 .anyspend-checkout-grid {
@@ -722,6 +739,13 @@ Dark version
   .anyspend-checkout-grid {
     grid-template-columns: 1fr var(--anyspend-cart-width, 380px);
   }
-  .anyspend-checkout-grid > .anyspend-payment-col { order: 1; }
-  .anyspend-checkout-grid > .anyspend-cart-col { order: 2; position: sticky; top: 32px; align-self: start; }
+  .anyspend-checkout-grid > .anyspend-payment-col {
+    order: 1;
+  }
+  .anyspend-checkout-grid > .anyspend-cart-col {
+    order: 2;
+    position: sticky;
+    top: 32px;
+    align-self: start;
+  }
 }
