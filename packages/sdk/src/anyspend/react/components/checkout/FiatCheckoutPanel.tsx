@@ -72,11 +72,13 @@ export function FiatCheckoutPanel({
     amount: totalAmount,
   });
 
-  // USD amount to charge: direct for stablecoins, quote-derived for others
+  // USD amount to charge: direct for stablecoins, quote-derived for others.
+  // Rounded to 2 decimals so minor quote fluctuations don't retrigger the Stripe support check.
   const usdAmount = useMemo(() => {
     if (isStablecoin) return formattedAmount;
     if (!anyspendQuote?.data?.currencyIn?.amount) return null;
-    return formatUnits(anyspendQuote.data.currencyIn.amount, USDC_BASE.decimals);
+    const raw = formatUnits(anyspendQuote.data.currencyIn.amount, USDC_BASE.decimals);
+    return parseFloat(raw).toFixed(2);
   }, [isStablecoin, formattedAmount, anyspendQuote]);
 
   // Debug: log computed values for Stripe flow diagnostics
@@ -302,7 +304,8 @@ export function FiatCheckoutPanel({
     );
   }
 
-  // Fallback: Stripe redirect flow (only if web2 not available but redirect is)
+  // TODO: Dead code — Stripe onramp is disabled at backend (isStripeOnrampSupported hardcoded false).
+  // Remove this block or implement onClick if Stripe onramp is re-enabled.
   return (
     <div className={cn("anyspend-fiat-redirect flex flex-col gap-3 py-2", classes?.fiatPanel)}>
       <p className="text-sm text-gray-600 dark:text-gray-400">
