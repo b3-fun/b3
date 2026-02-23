@@ -235,6 +235,7 @@ export function CryptoPayPanel({
   /* ------------------------------------------------------------------ */
   const [walletOrderId, setWalletOrderId] = useState<string | undefined>();
   const [isSendingDeposit, setIsSendingDeposit] = useState(false);
+  const [depositRejected, setDepositRejected] = useState(false);
   const depositSentRef = useRef(false);
   const { switchChainAndExecute } = useUnifiedChainSwitchAndExecute();
 
@@ -253,7 +254,7 @@ export function CryptoPayPanel({
 
   // Auto-send deposit tx once swap order is ready
   useEffect(() => {
-    if (!walletOat?.data?.order || depositSentRef.current) return;
+    if (!walletOat?.data?.order || depositSentRef.current || depositRejected) return;
     const order = walletOat.data.order;
     if (order.status !== "scanning_deposit_transaction") return;
     if (walletOat.data.depositTxs?.length) return;
@@ -286,13 +287,18 @@ export function CryptoPayPanel({
         }
       } catch (error: any) {
         depositSentRef.current = false;
+        const isUserRejection =
+          error?.code === 4001 || error?.message?.includes("rejected") || error?.message?.includes("denied");
+        if (isUserRejection) {
+          setDepositRejected(true);
+        }
         onErrorRef.current?.(error instanceof Error ? error : new Error(error?.message || "Transaction rejected"));
       } finally {
         setIsSendingDeposit(false);
       }
     };
     sendDeposit();
-  }, [walletOat, switchChainAndExecute, walletOrderId]);
+  }, [walletOat, switchChainAndExecute, walletOrderId, depositRejected]);
 
   useOnOrderSuccess({
     orderData: walletOat,
