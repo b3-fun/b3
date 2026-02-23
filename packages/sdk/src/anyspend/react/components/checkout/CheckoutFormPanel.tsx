@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import type {
   CheckoutFormSchema,
   CheckoutFormComponentProps,
@@ -82,18 +82,20 @@ export function CheckoutFormPanel({
     hasFormFields || FormComponent || checkoutFormSlot || hasShipping || collectShippingAddress || enableDiscountCode;
 
   // All hooks must be called before any early returns
+  const formDataRef = useRef(formData);
+  formDataRef.current = formData;
+
   const handleFieldChange = useCallback(
     (id: string, value: unknown) => {
-      onFormDataChange({ ...formData, [id]: value });
-      if (errors[id]) {
-        setErrors(prev => {
-          const next = { ...prev };
-          delete next[id];
-          return next;
-        });
-      }
+      onFormDataChange({ ...formDataRef.current, [id]: value });
+      setErrors(prev => {
+        if (!prev[id]) return prev;
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
     },
-    [formData, onFormDataChange, errors],
+    [onFormDataChange],
   );
 
   const handleFormSubmit = useCallback(
