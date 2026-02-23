@@ -29,7 +29,7 @@ export function CheckoutLayout({ mode, paymentPanel, cartPanel, classes }: Check
         <div
           className={cn(
             "anyspend-payment-col order-2",
-            "rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900",
+            "rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-neutral-700 dark:bg-neutral-900",
             classes?.paymentColumn,
           )}
         >
@@ -40,7 +40,7 @@ export function CheckoutLayout({ mode, paymentPanel, cartPanel, classes }: Check
         <div
           className={cn(
             "anyspend-cart-col order-1",
-            "rounded-2xl border border-gray-200 bg-gray-50 p-6 dark:border-gray-700 dark:bg-gray-800/50",
+            "rounded-2xl border border-gray-200 bg-gray-50 p-6 dark:border-neutral-700 dark:bg-neutral-800/50",
             classes?.cartColumn,
           )}
         >

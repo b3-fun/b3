@@ -154,7 +154,7 @@ export function AnySpendCheckoutTrigger({
         <div className="anyspend-checkout-trigger flex flex-col">
           {/* Cart summary with items */}
           {hasItems && (
-            <div className="border-b border-gray-200 p-5 dark:border-gray-700">
+            <div className="border-b border-gray-200 p-5 dark:border-neutral-700">
               <CheckoutCartPanel
                 items={items}
                 totalAmount={computedTotal}
@@ -174,7 +174,7 @@ export function AnySpendCheckoutTrigger({
 
           {/* Total-only header when no items */}
           {!hasItems && (
-            <div className="border-b border-gray-200 p-5 dark:border-gray-700">
+            <div className="border-b border-gray-200 p-5 dark:border-neutral-700">
               <div className="flex flex-col gap-3">
                 <div className={cn("flex items-center justify-between", classes?.cartSummary)}>
                   <span className="text-base font-semibold text-gray-900 dark:text-gray-100">Total</span>

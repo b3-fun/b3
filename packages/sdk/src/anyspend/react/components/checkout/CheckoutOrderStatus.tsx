@@ -87,11 +87,12 @@ export function CheckoutOrderStatus({
   }, [orderId]);
 
   // Clear persisted orderId when order reaches a terminal state
+  const orderStatus = order?.status;
   useEffect(() => {
-    if (order && ["executed", "failure", "expired", "refunded"].includes(order.status)) {
+    if (orderStatus && ["executed", "failure", "expired", "refunded"].includes(orderStatus)) {
       sessionStorage.removeItem("anyspend_checkout_orderId");
     }
-  }, [order?.status]);
+  }, [orderStatus]);
 
   // Loading state
   if (isLoadingOrderAndTransactions || !order) {
@@ -188,7 +189,7 @@ export function CheckoutOrderStatus({
           onClick={onRetry}
           className={cn(
             "flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-medium transition-colors",
-            "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700",
+            "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-neutral-800 dark:text-gray-300 dark:hover:bg-neutral-700",
             classes?.retryButton,
           )}
         >

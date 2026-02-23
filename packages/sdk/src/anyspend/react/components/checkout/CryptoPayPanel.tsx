@@ -410,7 +410,7 @@ export function CryptoPayPanel({
           trigger={
             <button
               className={cn(
-                "flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 transition-colors hover:border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600",
+                "flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 transition-colors hover:border-gray-300 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-neutral-600",
                 classes?.tokenSelector,
               )}
             >
@@ -441,7 +441,7 @@ export function CryptoPayPanel({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25, ease: "easeOut" }}
         className={cn(
-          "rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-800/50",
+          "rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-neutral-700 dark:bg-neutral-800/50",
           classes?.quoteDisplay,
         )}
       >
@@ -532,7 +532,7 @@ export function CryptoPayPanel({
           onClick={() => setQrExpanded(prev => !prev)}
           className="flex w-full items-center gap-3 py-1"
         >
-          <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
+          <div className="h-px flex-1 bg-gray-200 dark:bg-neutral-700" />
           <span className="flex items-center gap-1 text-xs font-medium text-gray-400 dark:text-gray-500">
             {qrExpanded ? (
               "or send directly"
@@ -543,13 +543,13 @@ export function CryptoPayPanel({
             )}
             <ChevronDown className={cn("h-3 w-3 transition-transform", qrExpanded && "rotate-180")} />
           </span>
-          <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
+          <div className="h-px flex-1 bg-gray-200 dark:bg-neutral-700" />
         </button>
       ) : (
         <div className="flex items-center gap-3 py-1">
-          <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
+          <div className="h-px flex-1 bg-gray-200 dark:bg-neutral-700" />
           <span className="text-xs font-medium text-gray-400 dark:text-gray-500">or send directly</span>
-          <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
+          <div className="h-px flex-1 bg-gray-200 dark:bg-neutral-700" />
         </div>
       )}
 
@@ -601,7 +601,7 @@ export function CryptoPayPanel({
                   {/* Address with copy */}
                   <button
                     onClick={handleCopyAddress}
-                    className="group flex items-start gap-1.5 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-left transition-colors hover:border-gray-300 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800/60 dark:hover:border-gray-600 dark:hover:bg-gray-800"
+                    className="group flex items-start gap-1.5 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-left transition-colors hover:border-gray-300 hover:bg-gray-100 dark:border-neutral-700 dark:bg-neutral-800/60 dark:hover:border-neutral-600 dark:hover:bg-neutral-800"
                   >
                     <span className="min-w-0 break-all font-mono text-xs leading-relaxed text-gray-800 dark:text-gray-200">
                       {globalAddress}

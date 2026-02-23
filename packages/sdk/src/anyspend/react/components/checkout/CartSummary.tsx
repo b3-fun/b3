@@ -60,7 +60,7 @@ export function CartSummary({
   );
 
   return (
-    <div className={cn("border-t border-gray-200 pt-3 dark:border-gray-700", classes?.cartSummary)}>
+    <div className={cn("border-t border-gray-200 pt-3 dark:border-neutral-700", classes?.cartSummary)}>
       {/* Subtotal — only shown when adjustments exist */}
       {hasAdjustments && subtotal && (
         <div className={cn("flex items-center justify-between py-1", classes?.cartSubtotal)}>
@@ -138,7 +138,7 @@ export function CartSummary({
       <div
         className={cn(
           "flex items-center justify-between",
-          hasAdjustments && "mt-1 border-t border-gray-100 pt-2 dark:border-gray-800",
+          hasAdjustments && "mt-1 border-t border-gray-100 pt-2 dark:border-neutral-800",
         )}
       >
         <span className="text-base font-semibold text-gray-900 dark:text-gray-100">Total</span>

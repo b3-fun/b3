@@ -10,6 +10,7 @@ import {
 import { Pencil, Plus, Trash2, X } from "lucide-react";
 import { useCallback, useState } from "react";
 import { parseUnits, formatUnits } from "viem";
+import { DemoPageLayout } from "../components/DemoPageLayout";
 
 const DEMO_RECIPIENT = "0xD32b34E2E55c7005b6506370857bdE4cFD057fC4";
 
@@ -990,31 +991,24 @@ export default function CheckoutPage() {
   if (adjustments.discountEnabled) activeFeatures.push("Static Discount");
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] p-4 pt-8 dark:bg-gray-950">
-      {/* Controls bar */}
-      <div className="mx-auto mb-4 flex max-w-4xl items-center justify-between gap-3">
-        {activeFeatures.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {activeFeatures.map(f => (
-              <span
-                key={f}
-                className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
-              >
-                {f}
-              </span>
-            ))}
-          </div>
-        )}
+    <DemoPageLayout
+      title="Checkout"
+      subtitle={activeFeatures.length > 0 ? activeFeatures.join(" · ") : "Full-page checkout layout"}
+      actions={
         <button
           type="button"
           onClick={() => setEditorOpen(true)}
-          className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+          className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors"
+          style={{
+            border: "1px solid rgba(128,128,128,0.2)",
+            color: "rgba(128,128,128,0.8)",
+          }}
         >
-          <Pencil className="h-4 w-4" />
+          <Pencil className="h-3 w-3" />
           Edit Cart & Config
         </button>
-      </div>
-
+      }
+    >
       <AnySpendCheckout
         mode="page"
         recipientAddress={DEMO_RECIPIENT}
@@ -1062,6 +1056,6 @@ export default function CheckoutPage() {
           onClose={() => setEditorOpen(false)}
         />
       )}
-    </div>
+    </DemoPageLayout>
   );
 }

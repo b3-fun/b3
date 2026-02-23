@@ -3,6 +3,7 @@
 import { B3_TOKEN } from "@b3dotfun/sdk/anyspend";
 import { AnySpendCheckout, type CheckoutItem } from "@b3dotfun/sdk/anyspend/react";
 import { parseUnits } from "viem";
+import { DemoPageLayout } from "../components/DemoPageLayout";
 
 const DEMO_RECIPIENT = "0xD32b34E2E55c7005b6506370857bdE4cFD057fC4";
 
@@ -26,7 +27,7 @@ const DEMO_ITEMS: CheckoutItem[] = [
 
 export default function CheckoutPage() {
   return (
-    <div className="min-h-screen bg-[#FAFAFA] p-4 pt-8">
+    <DemoPageLayout title="Checkout" subtitle="Full-page checkout layout">
       <AnySpendCheckout
         mode="page"
         recipientAddress={DEMO_RECIPIENT}
@@ -46,6 +47,6 @@ export default function CheckoutPage() {
         returnUrl="/"
         returnLabel="Back to Home"
       />
-    </div>
+    </DemoPageLayout>
   );
 }

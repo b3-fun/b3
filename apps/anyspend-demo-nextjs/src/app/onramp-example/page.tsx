@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { DemoPageLayout } from "../components/DemoPageLayout";
 
 export default function OnrampExamplePage() {
   const router = useRouter();
@@ -39,10 +40,12 @@ export default function OnrampExamplePage() {
   };
 
   return (
-    <div className="mx-auto max-w-[460px] pt-8">
-      <h1 className="mb-6 text-2xl font-bold">Onramp Example</h1>
-
-      <div className="space-y-4 rounded-lg bg-white p-6 shadow">
+    <DemoPageLayout
+      title="Onramp Builder"
+      subtitle="Configure and generate onramp payment URLs"
+      maxWidth="max-w-[460px]"
+    >
+      <div className="space-y-4 rounded-lg bg-white p-6 shadow dark:border dark:border-neutral-700 dark:bg-neutral-900">
         <div>
           <label className="mb-1 block text-sm font-medium text-gray-700">Amount (USD)</label>
           <input
@@ -123,6 +126,6 @@ export default function OnrampExamplePage() {
           </button>
         </div>
       </div>
-    </div>
+    </DemoPageLayout>
   );
 }

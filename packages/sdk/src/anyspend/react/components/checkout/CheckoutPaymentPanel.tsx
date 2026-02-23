@@ -44,7 +44,7 @@ function RadioCircle({ selected, themeColor }: { selected: boolean; themeColor?:
     <div
       className={cn(
         "flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border-2 transition-colors",
-        selected ? "border-blue-600" : "border-gray-300 dark:border-gray-600",
+        selected ? "border-blue-600" : "border-gray-300 dark:border-neutral-600",
       )}
       style={selected && themeColor ? { borderColor: themeColor } : undefined}
     >
@@ -180,12 +180,14 @@ export function CheckoutPaymentPanel({
   const accordionButtonClass = (active: boolean) =>
     cn(
       "anyspend-payment-method-btn flex w-full items-center gap-3 px-4 py-4 text-left transition-colors",
-      active ? "bg-white dark:bg-gray-900" : "bg-white hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800",
+      active
+        ? "bg-white dark:bg-neutral-900"
+        : "bg-white hover:bg-gray-50 dark:bg-neutral-900 dark:hover:bg-neutral-800",
       classes?.paymentMethodButton,
     );
 
   const expandedPanelClass = cn(
-    "anyspend-payment-method-panel border-t border-gray-100 bg-white px-4 py-4 dark:border-gray-800 dark:bg-gray-900",
+    "anyspend-payment-method-panel border-t border-gray-100 bg-white px-4 py-4 dark:border-neutral-800 dark:bg-neutral-900",
   );
 
   return (
@@ -208,7 +210,7 @@ export function CheckoutPaymentPanel({
       {/* Accordion-style payment methods */}
       <div
         className={cn(
-          "anyspend-payment-methods divide-y divide-gray-200 overflow-hidden rounded-xl border border-gray-200 dark:divide-gray-700 dark:border-gray-700",
+          "anyspend-payment-methods divide-y divide-gray-200 overflow-hidden rounded-xl border border-gray-200 dark:divide-neutral-700 dark:border-neutral-700",
           !isFormValid && "pointer-events-none opacity-50",
           classes?.paymentMethodSelector,
         )}

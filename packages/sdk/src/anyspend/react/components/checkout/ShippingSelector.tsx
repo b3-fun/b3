@@ -40,7 +40,7 @@ export function ShippingSelector({
               "anyspend-shipping-option flex cursor-pointer items-center justify-between rounded-lg border p-3 transition-colors",
               selectedId === option.id
                 ? "anyspend-shipping-option-selected border-blue-500 bg-blue-50 dark:border-blue-400 dark:bg-blue-900/20"
-                : "border-gray-200 bg-white hover:border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:hover:border-gray-500",
+                : "border-gray-200 bg-white hover:border-gray-300 dark:border-neutral-600 dark:bg-neutral-800 dark:hover:border-neutral-500",
             )}
           >
             <div className="flex items-center gap-3">
