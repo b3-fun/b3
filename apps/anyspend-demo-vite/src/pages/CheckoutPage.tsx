@@ -1,4 +1,4 @@
-import { B3_TOKEN } from "@b3dotfun/sdk/anyspend";
+import { ETH_BASE } from "@b3dotfun/sdk/anyspend";
 import {
   AnySpendCheckout,
   type CheckoutItem,
@@ -24,7 +24,7 @@ const DEFAULT_ITEMS: CheckoutItem[] = [
     name: "B3kemon Starter Pack",
     description: "3 random B3kemon creatures to start your journey",
     imageUrl: "https://cdn.b3.fun/b3kemon-card.png",
-    amount: parseUnits("100", 18).toString(),
+    amount: parseUnits("0.001", 18).toString(),
     quantity: 1,
     metadata: { Rarity: "Common", Edition: "2025" },
   },
@@ -32,7 +32,7 @@ const DEFAULT_ITEMS: CheckoutItem[] = [
     id: "item-2",
     name: "Rare Pokeball",
     description: "Increases catch rate by 2x",
-    amount: parseUnits("50", 18).toString(),
+    amount: parseUnits("0.0005", 18).toString(),
     quantity: 2,
     metadata: { Type: "Consumable" },
   },
@@ -50,14 +50,14 @@ const DEFAULT_SHIPPING_OPTIONS: ShippingOption[] = [
     id: "standard",
     name: "Standard Shipping",
     description: "Delivered via carrier",
-    amount: parseUnits("5", 18).toString(),
+    amount: parseUnits("0.0002", 18).toString(),
     estimated_days: "5-7 business days",
   },
   {
     id: "express",
     name: "Express Shipping",
     description: "Priority delivery",
-    amount: parseUnits("15", 18).toString(),
+    amount: parseUnits("0.0005", 18).toString(),
     estimated_days: "1-2 business days",
   },
 ];
@@ -1012,8 +1012,8 @@ export default function CheckoutPage() {
       <AnySpendCheckout
         mode="page"
         recipientAddress={DEMO_RECIPIENT}
-        destinationTokenAddress={B3_TOKEN.address}
-        destinationTokenChainId={B3_TOKEN.chainId}
+        destinationTokenAddress={ETH_BASE.address}
+        destinationTokenChainId={ETH_BASE.chainId}
         items={checkoutItems}
         senderAddress="0x1216de6853e2c2cAEd6F5B0C2791D2E4a765D954"
         organizationName="B3kemon Shop"

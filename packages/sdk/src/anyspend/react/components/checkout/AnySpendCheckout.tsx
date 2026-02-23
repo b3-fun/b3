@@ -1,7 +1,10 @@
 "use client";
 
 import { useTokenData } from "@b3dotfun/sdk/global-account/react";
+import { USDC_BASE } from "@b3dotfun/sdk/anyspend/constants";
+import { formatUnits } from "@b3dotfun/sdk/shared/utils/number";
 import { type ReactNode, useCallback, useMemo, useState } from "react";
+import { useAnyspendQuote } from "../../hooks/useAnyspendQuote";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "../AnySpendFingerprintWrapper";
 import { CheckoutCartPanel } from "./CheckoutCartPanel";
 import { CheckoutFormPanel } from "./CheckoutFormPanel";
@@ -255,6 +258,31 @@ export function AnySpendCheckout({
   const tokenSymbol = tokenData?.symbol || "";
   const tokenDecimals = tokenData?.decimals || 18;
 
+  // Resolve USD equivalent for non-stablecoin tokens (shown in cart summary)
+  const isStablecoin = useMemo(() => {
+    return [
+      "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", // USDC Base
+      "0xdAC17F958D2ee523a2206206994597C13D831ec7", // USDT Ethereum
+    ].some(addr => addr.toLowerCase() === destinationTokenAddress.toLowerCase());
+  }, [destinationTokenAddress]);
+
+  const { anyspendQuote } = useAnyspendQuote({
+    type: "swap",
+    srcChain: 8453,
+    dstChain: destinationTokenChainId,
+    srcTokenAddress: USDC_BASE.address,
+    dstTokenAddress: destinationTokenAddress,
+    tradeType: "EXACT_OUTPUT",
+    amount: computedTotal,
+  });
+
+  const usdEquivalent = useMemo(() => {
+    if (isStablecoin) return null; // stablecoins already show USD-equivalent amounts
+    if (!anyspendQuote?.data?.currencyIn?.amount) return null;
+    const raw = formatUnits(anyspendQuote.data.currencyIn.amount, USDC_BASE.decimals);
+    return `$${parseFloat(raw).toFixed(2)}`;
+  }, [isStablecoin, anyspendQuote]);
+
   const fingerprint = getFingerprintConfig();
 
   // Build callbackMetadata to include form data with the order
@@ -359,6 +387,7 @@ export function AnySpendCheckout({
               tax={typeof tax === "string" ? { amount: tax } : tax}
               discount={effectiveDiscount}
               summaryLines={summaryLines}
+              usdEquivalent={usdEquivalent}
             />
           }
           classes={classes}

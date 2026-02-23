@@ -79,6 +79,18 @@ export function FiatCheckoutPanel({
     return formatUnits(anyspendQuote.data.currencyIn.amount, USDC_BASE.decimals);
   }, [isStablecoin, formattedAmount, anyspendQuote]);
 
+  // Debug: log computed values for Stripe flow diagnostics
+  useEffect(() => {
+    console.log("@@fiat-checkout:debug", {
+      totalAmount,
+      formattedAmount,
+      isStablecoin,
+      isLoadingAnyspendQuote,
+      quoteAmount: anyspendQuote?.data?.currencyIn?.amount,
+      usdAmount,
+    });
+  }, [totalAmount, formattedAmount, isStablecoin, isLoadingAnyspendQuote, anyspendQuote, usdAmount]);
+
   const {
     geoData,
     stripeOnrampSupport,
@@ -255,8 +267,26 @@ export function FiatCheckoutPanel({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, ease: "easeOut" }}
-        className={cn("anyspend-fiat-stripe", classes?.fiatPanel)}
+        className={cn("anyspend-fiat-stripe flex flex-col gap-3", classes?.fiatPanel)}
       >
+        {usdAmount && (
+          <div className="anyspend-fiat-summary rounded-lg border border-gray-200 px-4 py-3 dark:border-gray-700">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-500 dark:text-gray-400">Total</span>
+              <span className="font-medium text-gray-900 dark:text-white">
+                ${parseFloat(usdAmount).toFixed(2)}
+              </span>
+            </div>
+            {!isStablecoin && tokenData && (
+              <div className="mt-1 flex items-center justify-between text-xs text-gray-400 dark:text-gray-500">
+                <span>
+                  {formattedAmount} {tokenData.symbol}
+                </span>
+                <span>incl. fees</span>
+              </div>
+            )}
+          </div>
+        )}
         <StripeCheckout
           stripePaymentIntentId={stripePaymentIntentId}
           stripePublishableKey={stripePublishableKey}

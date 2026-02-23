@@ -22,6 +22,8 @@ interface CheckoutCartPanelProps {
   tax?: { amount: string; label?: string; rate?: string };
   discount?: { amount: string; label?: string; code?: string };
   summaryLines?: CheckoutSummaryLine[];
+  /** Formatted USD equivalent (e.g. "$5.56") — shown for non-stablecoin tokens */
+  usdEquivalent?: string | null;
 }
 
 export function CheckoutCartPanel({
@@ -37,6 +39,7 @@ export function CheckoutCartPanel({
   tax,
   discount,
   summaryLines,
+  usdEquivalent,
 }: CheckoutCartPanelProps) {
   const formattedTotal = useMemo(
     () => formatTokenAmount(safeBigInt(totalAmount), tokenDecimals),
@@ -82,6 +85,7 @@ export function CheckoutCartPanel({
         tax={tax}
         discount={discount}
         summaryLines={summaryLines}
+        usdEquivalent={usdEquivalent}
       />
 
       {footer === undefined ? (

@@ -18,6 +18,8 @@ interface CartSummaryProps {
   tax?: { amount: string; label?: string; rate?: string };
   discount?: { amount: string; label?: string; code?: string };
   summaryLines?: CheckoutSummaryLine[];
+  /** Formatted USD equivalent (e.g. "$5.56") — shown for non-stablecoin tokens */
+  usdEquivalent?: string | null;
 }
 
 export function CartSummary({
@@ -30,6 +32,7 @@ export function CartSummary({
   tax,
   discount,
   summaryLines,
+  usdEquivalent,
 }: CartSummaryProps) {
   const hasAdjustments =
     !!shipping?.amount || !!tax?.amount || !!discount?.amount || (summaryLines && summaryLines.length > 0);
@@ -137,14 +140,21 @@ export function CartSummary({
       {/* Total — always shown, separator when adjustments exist */}
       <div
         className={cn(
-          "flex items-center justify-between",
+          "flex flex-col",
           hasAdjustments && "mt-1 border-t border-gray-100 pt-2 dark:border-neutral-800",
         )}
       >
-        <span className="text-base font-semibold text-gray-900 dark:text-gray-100">Total</span>
-        <span className={cn("text-base font-semibold text-gray-900 dark:text-gray-100", classes?.cartTotal)}>
-          {total} {tokenSymbol}
-        </span>
+        <div className="flex items-center justify-between">
+          <span className="text-base font-semibold text-gray-900 dark:text-gray-100">Total</span>
+          <span className={cn("text-base font-semibold text-gray-900 dark:text-gray-100", classes?.cartTotal)}>
+            {total} {tokenSymbol}
+          </span>
+        </div>
+        {usdEquivalent && (
+          <div className="flex justify-end">
+            <span className="text-xs text-gray-400 dark:text-gray-500">~{usdEquivalent} USD</span>
+          </div>
+        )}
       </div>
     </div>
   );

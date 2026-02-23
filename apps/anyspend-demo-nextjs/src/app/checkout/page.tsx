@@ -1,6 +1,6 @@
 "use client";
 
-import { B3_TOKEN } from "@b3dotfun/sdk/anyspend";
+import { ETH_BASE } from "@b3dotfun/sdk/anyspend";
 import { AnySpendCheckout, type CheckoutItem } from "@b3dotfun/sdk/anyspend/react";
 import { parseUnits } from "viem";
 import { DemoPageLayout } from "../components/DemoPageLayout";
@@ -13,14 +13,14 @@ const DEMO_ITEMS: CheckoutItem[] = [
     name: "B3kemon Starter Pack",
     description: "3 random B3kemon creatures to start your journey",
     imageUrl: "https://cdn.b3.fun/b3kemon-card.png",
-    amount: parseUnits("100", 18).toString(),
+    amount: parseUnits("0.001", 18).toString(),
     quantity: 1,
   },
   {
     id: "item-2",
     name: "Rare Pokeball",
     description: "Increases catch rate by 2x",
-    amount: parseUnits("50", 18).toString(),
+    amount: parseUnits("0.0005", 18).toString(),
     quantity: 2,
   },
 ];
@@ -31,8 +31,8 @@ export default function CheckoutPage() {
       <AnySpendCheckout
         mode="page"
         recipientAddress={DEMO_RECIPIENT}
-        destinationTokenAddress={B3_TOKEN.address}
-        destinationTokenChainId={B3_TOKEN.chainId}
+        destinationTokenAddress={ETH_BASE.address}
+        destinationTokenChainId={ETH_BASE.chainId}
         items={DEMO_ITEMS}
         senderAddress="0x1216de6853e2c2cAEd6F5B0C2791D2E4a765D954"
         organizationName="B3kemon Shop"
