@@ -72,11 +72,13 @@ export function FiatCheckoutPanel({
     amount: totalAmount,
   });
 
-  // USD amount to charge: direct for stablecoins, quote-derived for others
+  // USD amount to charge: direct for stablecoins, quote-derived for others.
+  // Rounded to 2 decimals so minor quote fluctuations don't retrigger the Stripe support check.
   const usdAmount = useMemo(() => {
     if (isStablecoin) return formattedAmount;
     if (!anyspendQuote?.data?.currencyIn?.amount) return null;
-    return formatUnits(anyspendQuote.data.currencyIn.amount, USDC_BASE.decimals);
+    const raw = formatUnits(anyspendQuote.data.currencyIn.amount, USDC_BASE.decimals);
+    return parseFloat(raw).toFixed(2);
   }, [isStablecoin, formattedAmount, anyspendQuote]);
 
   const {
