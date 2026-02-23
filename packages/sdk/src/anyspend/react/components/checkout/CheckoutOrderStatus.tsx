@@ -86,6 +86,13 @@ export function CheckoutOrderStatus({
     }
   }, [orderId]);
 
+  // Clear persisted orderId when order reaches a terminal state
+  useEffect(() => {
+    if (order && ["executed", "failure", "expired", "refunded"].includes(order.status)) {
+      sessionStorage.removeItem("anyspend_checkout_orderId");
+    }
+  }, [order?.status]);
+
   // Loading state
   if (isLoadingOrderAndTransactions || !order) {
     return (
