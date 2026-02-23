@@ -113,9 +113,11 @@ export function CoinbaseCheckoutPanel({
       })
       .then(response => {
         if (response.data?.url) {
-          // Notify parent to persist orderId before redirecting to Coinbase
-          if (orderId) onOrderCreatedRef.current?.(orderId);
-          // Also fire legacy callback for backward compatibility
+          // Persist orderId directly before redirect — useEffect won't run in time
+          if (orderId) {
+            sessionStorage.setItem("anyspend_checkout_orderId", orderId);
+            onOrderCreatedRef.current?.(orderId);
+          }
           onSuccessRef.current?.({ orderId });
           window.location.href = response.data.url;
         } else {
