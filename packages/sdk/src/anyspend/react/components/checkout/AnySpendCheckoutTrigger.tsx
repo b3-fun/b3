@@ -132,6 +132,7 @@ export function AnySpendCheckoutTrigger({
     if (summaryLines) {
       for (const line of summaryLines) total += safeBigInt(line.amount);
     }
+    if (total < BigInt(0)) total = BigInt(0);
     return total.toString();
   }, [items, totalAmountOverride, shipping, tax, discount, summaryLines]);
 
