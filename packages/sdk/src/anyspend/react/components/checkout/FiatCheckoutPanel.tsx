@@ -1,8 +1,9 @@
 "use client";
 
-import { useAnyspendCreateOnrampOrder, useGeoOnrampOptions, useStripeClientSecret } from "@b3dotfun/sdk/anyspend/react";
+import { useAnyspendCreateOnrampOrder, useAnyspendQuote, useGeoOnrampOptions, useStripeClientSecret } from "@b3dotfun/sdk/anyspend/react";
+import { USDC_BASE } from "@b3dotfun/sdk/anyspend/constants";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
-import { formatTokenAmount } from "@b3dotfun/sdk/shared/utils/number";
+import { formatUnits } from "@b3dotfun/sdk/shared/utils/number";
 import { getStripePromise } from "@b3dotfun/sdk/shared/utils/payment.utils";
 import { ShinyButton, TextShimmer, useB3Config, useTokenData } from "@b3dotfun/sdk/global-account/react";
 import { AddressElement, Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
@@ -46,17 +47,44 @@ export function FiatCheckoutPanel({
   const { data: tokenData } = useTokenData(destinationTokenChainId, destinationTokenAddress);
   const { theme, stripePublishableKey } = useB3Config();
 
+  // Clean decimal string for API calls (no commas, no subscripts)
   const formattedAmount = useMemo(() => {
     const decimals = tokenData?.decimals || 18;
-    return formatTokenAmount(BigInt(totalAmount), decimals);
+    return formatUnits(BigInt(totalAmount).toString(), decimals);
   }, [totalAmount, tokenData]);
+
+  // Determine if destination token is a stablecoin (amount ≈ USD)
+  const isStablecoin = useMemo(() => {
+    return [
+      "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", // USDC Base
+      "0xdAC17F958D2ee523a2206206994597C13D831ec7", // USDT Ethereum
+    ].some(addr => addr.toLowerCase() === destinationTokenAddress.toLowerCase());
+  }, [destinationTokenAddress]);
+
+  // Get USD equivalent via quote for non-stablecoin tokens
+  const { anyspendQuote, isLoadingAnyspendQuote } = useAnyspendQuote({
+    type: "swap",
+    srcChain: 8453, // Base (USDC source)
+    dstChain: destinationTokenChainId,
+    srcTokenAddress: USDC_BASE.address,
+    dstTokenAddress: destinationTokenAddress,
+    tradeType: "EXACT_OUTPUT",
+    amount: totalAmount,
+  });
+
+  // USD amount to charge: direct for stablecoins, quote-derived for others
+  const usdAmount = useMemo(() => {
+    if (isStablecoin) return formattedAmount;
+    if (!anyspendQuote?.data?.currencyIn?.amount) return null;
+    return formatUnits(anyspendQuote.data.currencyIn.amount, USDC_BASE.decimals);
+  }, [isStablecoin, formattedAmount, anyspendQuote]);
 
   const {
     geoData,
     stripeOnrampSupport,
     stripeWeb2Support,
     isLoading: isLoadingGeo,
-  } = useGeoOnrampOptions(formattedAmount);
+  } = useGeoOnrampOptions(usdAmount || "0");
 
   // Order state
   const [orderId, setOrderId] = useState<string | null>(null);
@@ -85,6 +113,9 @@ export function FiatCheckoutPanel({
   useEffect(() => {
     if (
       !isLoadingGeo &&
+      (!isStablecoin ? !isLoadingAnyspendQuote : true) &&
+      usdAmount &&
+      parseFloat(usdAmount) > 0 &&
       stripeWeb2Support?.isSupport &&
       !orderCreatedRef.current &&
       !orderId &&
@@ -111,7 +142,7 @@ export function FiatCheckoutPanel({
         orderType: "swap",
         dstChain: destinationTokenChainId,
         dstToken,
-        srcFiatAmount: formattedAmount,
+        srcFiatAmount: usdAmount,
         onramp: {
           vendor: "stripe-web2",
           paymentMethod: "",
@@ -124,6 +155,9 @@ export function FiatCheckoutPanel({
     }
   }, [
     isLoadingGeo,
+    isStablecoin,
+    isLoadingAnyspendQuote,
+    usdAmount,
     stripeWeb2Support,
     orderId,
     isCreatingOrder,
@@ -132,15 +166,14 @@ export function FiatCheckoutPanel({
     recipientAddress,
     destinationTokenAddress,
     destinationTokenChainId,
-    formattedAmount,
     totalAmount,
     geoData,
     callbackMetadata,
     createOrder,
   ]);
 
-  // Loading geo/stripe support check
-  if (isLoadingGeo) {
+  // Loading geo/stripe support check (and quote for non-stablecoins)
+  if (isLoadingGeo || (!isStablecoin && isLoadingAnyspendQuote)) {
     return (
       <motion.div
         initial={{ opacity: 0 }}
@@ -406,10 +439,12 @@ function StripeCheckoutForm({
       })) as PaymentIntentResult;
 
       if (result.error) {
+        console.error("@@checkout-stripe:error:", JSON.stringify(result.error, null, 2));
         setMessage(result.error.message || "Payment failed. Please try again.");
         return;
       }
 
+      console.log("@@checkout-stripe:success:", JSON.stringify({ orderId }, null, 2));
       // Payment succeeded — notify parent to show order lifecycle tracking
       onOrderCreated?.(orderId);
       // Also fire legacy callback for backward compatibility
