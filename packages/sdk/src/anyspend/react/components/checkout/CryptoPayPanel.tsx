@@ -165,7 +165,10 @@ export function CryptoPayPanel({
       setQrOrderId(data.data?.id);
       setGlobalAddress(data.data?.globalAddress);
     },
-    onError: (error: Error) => onErrorRef.current?.(error),
+    onError: (error: Error) => {
+      qrOrderCreatedRef.current = false;
+      onErrorRef.current?.(error);
+    },
   });
 
   // Create deposit-first order on mount and when token changes
