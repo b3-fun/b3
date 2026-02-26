@@ -193,6 +193,7 @@ export function FiatCheckoutPanel({
     geoData,
     callbackMetadata,
     createOrder,
+    feeOnTop,
   ]);
 
   // Loading geo/stripe support check (and quote for non-stablecoins)
