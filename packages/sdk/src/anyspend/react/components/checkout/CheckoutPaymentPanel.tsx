@@ -37,6 +37,8 @@ interface CheckoutPaymentPanelProps {
   showOrderId?: boolean;
   /** Whether the checkout form is valid. When false, payment methods are disabled. */
   isFormValid?: boolean;
+  /** When true, fees are added on top (payer pays more, receiver gets exact amount) */
+  feeOnTop?: boolean;
 }
 
 function RadioCircle({ selected, themeColor }: { selected: boolean; themeColor?: string }) {
@@ -132,6 +134,7 @@ export function CheckoutPaymentPanel({
   showPoints,
   showOrderId,
   isFormValid = true,
+  feeOnTop,
 }: CheckoutPaymentPanelProps) {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(defaultPaymentMethod ?? null);
 
@@ -291,6 +294,7 @@ export function CheckoutPaymentPanel({
                     onError={onError}
                     callbackMetadata={callbackMetadata}
                     classes={classes}
+                    feeOnTop={feeOnTop}
                   />
                 </div>
               </motion.div>

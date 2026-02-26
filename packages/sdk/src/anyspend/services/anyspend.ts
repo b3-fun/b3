@@ -72,6 +72,7 @@ export const anyspendService = {
     clientReferenceId,
     visitorData,
     callbackMetadata,
+    feeOnTop,
   }: {
     recipientAddress: string;
     type: string;
@@ -88,6 +89,7 @@ export const anyspendService = {
     clientReferenceId?: string;
     visitorData?: VisitorData;
     callbackMetadata?: Record<string, unknown>;
+    feeOnTop?: boolean;
   }) => {
     const accessToken = await app.authentication.getAccessToken();
     const response = await fetch(`${ANYSPEND_MAINNET_BASE_URL}/orders`, {
@@ -113,6 +115,7 @@ export const anyspendService = {
         partnerId,
         ...(clientReferenceId && { clientReferenceId }),
         ...(callbackMetadata && { callbackMetadata }),
+        ...(feeOnTop != null && { feeOnTop }),
       }),
     });
     const data: CreateOrderResponse = await response.json();
