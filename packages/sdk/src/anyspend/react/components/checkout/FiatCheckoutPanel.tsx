@@ -31,6 +31,8 @@ interface FiatCheckoutPanelProps {
   onError?: (error: Error) => void;
   callbackMetadata?: Record<string, unknown>;
   classes?: AnySpendCheckoutClasses;
+  /** When true, fees are added on top (payer pays more, receiver gets exact amount) */
+  feeOnTop?: boolean;
 }
 
 export function FiatCheckoutPanel({
@@ -44,6 +46,7 @@ export function FiatCheckoutPanel({
   onError,
   callbackMetadata,
   classes,
+  feeOnTop,
 }: FiatCheckoutPanelProps) {
   // Stable refs for callback props to avoid re-triggering effects
   const onErrorRef = useRef(onError);
@@ -170,6 +173,7 @@ export function FiatCheckoutPanel({
         },
         expectedDstAmount: totalAmount,
         callbackMetadata,
+        feeOnTop,
       });
     }
   }, [

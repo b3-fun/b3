@@ -24,6 +24,8 @@ export type OnrampOptions = {
 export type CreateOnrampOrderParams = Omit<CreateOrderParams, "srcChain" | "srcToken" | "srcAmount"> & {
   srcFiatAmount: string;
   onramp: OnrampOptions;
+  /** When true, fees are added on top of srcAmount (payer pays more, receiver gets exact amount) */
+  feeOnTop?: boolean;
 };
 
 export type UseAnyspendCreateOnrampOrderProps = {
@@ -115,6 +117,7 @@ export function useAnyspendCreateOnrampOrder({ onSuccess, onError }: UseAnyspend
           clientReferenceId,
           visitorData,
           callbackMetadata: params.callbackMetadata,
+          feeOnTop: params.feeOnTop,
         });
       } catch (error: any) {
         // If the error has a response with message and statusCode, throw that

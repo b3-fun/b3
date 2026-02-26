@@ -130,6 +130,8 @@ export interface AnySpendCheckoutProps {
   onDiscountApplied?: (result: DiscountResult) => void;
   /** Async function to validate a discount code. Returns DiscountResult. */
   validateDiscount?: (code: string) => Promise<DiscountResult>;
+  /** When true, fees are added on top of the amount (payer pays more, receiver gets exact amount) */
+  feeOnTop?: boolean;
 }
 
 const emptyAddress: AddressData = { street: "", city: "", state: "", zip: "", country: "" };
@@ -175,6 +177,7 @@ export function AnySpendCheckout({
   enableDiscountCode,
   onDiscountApplied: onDiscountAppliedProp,
   validateDiscount,
+  feeOnTop,
 }: AnySpendCheckoutProps) {
   // ===== Form state =====
   const [formData, setFormData] = useState<Record<string, unknown>>({});
@@ -370,6 +373,7 @@ export function AnySpendCheckout({
                 showOrderId={showOrderId}
                 callbackMetadata={checkoutFormMetadata}
                 isFormValid={isFormValid}
+                feeOnTop={feeOnTop}
               />
             </>
           }
