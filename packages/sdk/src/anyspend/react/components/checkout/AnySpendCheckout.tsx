@@ -57,7 +57,7 @@ export interface AnySpendCheckoutProps {
   destinationTokenAddress: string;
   /** The destination chain ID */
   destinationTokenChainId: number;
-  /** Line items */
+  /** Line items. When `variablePricing.enabled` is true, pass a single placeholder item (e.g. amount "0") — the user-entered amount overrides the total. */
   items: CheckoutItem[];
   /** Override computed total */
   totalAmount?: string;

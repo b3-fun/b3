@@ -90,9 +90,9 @@ export function VariablePricingInput({
 
   const validate = useCallback(
     (value: string): string | null => {
-      if (!value || parseFloat(value) <= 0) return "Please enter an amount";
       const parsed = parseFloat(value);
-      if (isNaN(parsed)) return "Please enter a valid number";
+      if (!value || isNaN(parsed)) return "Please enter a valid number";
+      if (parsed <= 0) return "Please enter an amount";
       if (minDisplay !== null && parsed < minDisplay) {
         const display = minDisplay % 1 === 0 ? minDisplay.toString() : minDisplay.toFixed(2);
         return `Minimum amount is ${display} ${currency}`;
@@ -173,7 +173,12 @@ export function VariablePricingInput({
 
   return (
     <div className="anyspend-variable-pricing mb-6">
-      <h2 className="mb-3 text-lg font-semibold text-gray-900 dark:text-gray-100">{config.label || "Enter amount"}</h2>
+      <label
+        htmlFor="variable-pricing-amount"
+        className="mb-3 block text-lg font-semibold text-gray-900 dark:text-gray-100"
+      >
+        {config.label || "Enter amount"}
+      </label>
 
       {/* Preset buttons */}
       {presetAmounts.length > 0 && (
@@ -202,13 +207,17 @@ export function VariablePricingInput({
       {/* Input */}
       <div className="relative">
         <input
-          type="number"
+          id="variable-pricing-amount"
+          type="text"
+          inputMode="decimal"
           value={displayValue}
-          onChange={e => handleChange(e.target.value)}
+          onChange={e => {
+            // Normalize comma decimal separators for locale compatibility
+            const normalized = e.target.value.replace(",", ".");
+            handleChange(normalized);
+          }}
           className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 pr-16 text-lg font-semibold text-gray-900 placeholder:text-gray-300 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-neutral-600 dark:bg-neutral-800 dark:text-gray-100 dark:placeholder:text-neutral-600 dark:focus:border-blue-400"
           placeholder="0.00"
-          step={(1 / Math.pow(10, Math.min(tokenDecimals, 8))).toFixed(Math.min(tokenDecimals, 8))}
-          min="0"
         />
         <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-gray-400 dark:text-gray-500">
           {currency}
