@@ -171,9 +171,7 @@ export function VariablePricingInput({
 
   return (
     <div className="anyspend-variable-pricing mb-6">
-      <h2 className="mb-3 text-lg font-semibold text-gray-900 dark:text-gray-100">
-        {config.label || "Enter amount"}
-      </h2>
+      <h2 className="mb-3 text-lg font-semibold text-gray-900 dark:text-gray-100">{config.label || "Enter amount"}</h2>
 
       {/* Preset buttons */}
       {presetAmounts.length > 0 && (
@@ -190,9 +188,7 @@ export function VariablePricingInput({
                   : "border-gray-200 text-gray-700 hover:bg-gray-50 dark:border-neutral-600 dark:text-gray-300 dark:hover:bg-neutral-800",
               )}
               style={
-                displayValue === preset.value
-                  ? { backgroundColor: themeColor || "hsl(var(--as-brand))" }
-                  : undefined
+                displayValue === preset.value ? { backgroundColor: themeColor || "hsl(var(--as-brand))" } : undefined
               }
             >
               {preset.label} {currency}
@@ -218,9 +214,7 @@ export function VariablePricingInput({
       </div>
 
       {/* Hint */}
-      {formatHint() && (
-        <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">{formatHint()}</p>
-      )}
+      {formatHint() && <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">{formatHint()}</p>}
 
       {/* Error */}
       <AnimatePresence initial={false}>
