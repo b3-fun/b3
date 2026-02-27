@@ -103,7 +103,7 @@ export function KycGate({ themeColor, classes, onStatusResolved }: KycGateProps)
             setPersonaOpen(false);
             setPersonaCancelled(true);
           },
-          onError: (error) => {
+          onError: error => {
             setPersonaOpen(false);
             setPersonaError(error?.message || "Verification encountered an error");
           },
@@ -164,7 +164,10 @@ export function KycGate({ themeColor, classes, onStatusResolved }: KycGateProps)
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25, ease: "easeOut" }}
-        className={cn("anyspend-kyc-review flex flex-col items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 p-5 dark:border-amber-800 dark:bg-amber-900/20", classes?.fiatPanel)}
+        className={cn(
+          "anyspend-kyc-review flex flex-col items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 p-5 dark:border-amber-800 dark:bg-amber-900/20",
+          classes?.fiatPanel,
+        )}
       >
         <Clock className="h-8 w-8 text-amber-500" />
         <p className="text-center text-sm font-medium text-amber-700 dark:text-amber-300">
@@ -190,7 +193,10 @@ export function KycGate({ themeColor, classes, onStatusResolved }: KycGateProps)
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25, ease: "easeOut" }}
-        className={cn("anyspend-kyc-resume flex flex-col items-center gap-4 rounded-lg border border-gray-200 bg-white p-5 dark:border-neutral-700 dark:bg-neutral-900", classes?.fiatPanel)}
+        className={cn(
+          "anyspend-kyc-resume flex flex-col items-center gap-4 rounded-lg border border-gray-200 bg-white p-5 dark:border-neutral-700 dark:bg-neutral-900",
+          classes?.fiatPanel,
+        )}
       >
         <ShieldCheck className="h-8 w-8 text-blue-500" />
         <div className="text-center">
@@ -221,7 +227,10 @@ export function KycGate({ themeColor, classes, onStatusResolved }: KycGateProps)
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
-      className={cn("anyspend-kyc-prompt flex flex-col items-center gap-4 rounded-lg border border-gray-200 bg-white p-5 dark:border-neutral-700 dark:bg-neutral-900", classes?.fiatPanel)}
+      className={cn(
+        "anyspend-kyc-prompt flex flex-col items-center gap-4 rounded-lg border border-gray-200 bg-white p-5 dark:border-neutral-700 dark:bg-neutral-900",
+        classes?.fiatPanel,
+      )}
     >
       <ShieldCheck className="h-8 w-8 text-blue-500" />
       <div className="text-center">
