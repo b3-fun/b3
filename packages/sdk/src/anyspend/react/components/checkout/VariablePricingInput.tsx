@@ -2,7 +2,7 @@
 
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { AnimatePresence, motion } from "motion/react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 export interface VariablePricingConfig {
   enabled: boolean;
@@ -145,10 +145,11 @@ export function VariablePricingInput({
   );
 
   // Notify parent with initial value on mount
-  useMemo(() => {
+  useEffect(() => {
     if (initialValue && !validate(initialValue)) {
       onChange(convertToWei(initialValue));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const formatHint = () => {

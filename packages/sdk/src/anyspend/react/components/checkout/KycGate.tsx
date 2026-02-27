@@ -86,13 +86,15 @@ export function KycGate({ themeColor, classes, onStatusResolved }: KycGateProps)
           onComplete: async ({ inquiryId }) => {
             setPersonaOpen(false);
             if (walletAddress) {
-              try {
-                const result = await verifyKyc({ walletAddress, inquiryId: inquiryId! });
-                if (result.status === "approved") {
-                  onStatusResolved(true);
+              if (inquiryId) {
+                try {
+                  const result = await verifyKyc({ walletAddress, inquiryId });
+                  if (result.status === "approved") {
+                    onStatusResolved(true);
+                  }
+                } catch {
+                  // Will be picked up by polling via refetch
                 }
-              } catch {
-                // Will be picked up by polling via refetch
               }
               refetchKycStatus();
             }
