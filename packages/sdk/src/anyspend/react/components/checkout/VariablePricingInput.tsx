@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
+import { formatUnits } from "@b3dotfun/sdk/shared/utils/number";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -34,8 +35,7 @@ export function VariablePricingInput({
   const initialValue = useMemo(() => {
     if (config.suggestedAmount) {
       try {
-        const val = Number(BigInt(config.suggestedAmount)) / Math.pow(10, tokenDecimals);
-        return val.toString();
+        return formatUnits(config.suggestedAmount, tokenDecimals);
       } catch {
         return "";
       }
@@ -50,7 +50,7 @@ export function VariablePricingInput({
   const minDisplay = useMemo(() => {
     if (!config.minAmount) return null;
     try {
-      return Number(BigInt(config.minAmount)) / Math.pow(10, tokenDecimals);
+      return parseFloat(formatUnits(config.minAmount, tokenDecimals));
     } catch {
       return null;
     }
@@ -59,7 +59,7 @@ export function VariablePricingInput({
   const maxDisplay = useMemo(() => {
     if (!config.maxAmount) return null;
     try {
-      return Number(BigInt(config.maxAmount)) / Math.pow(10, tokenDecimals);
+      return parseFloat(formatUnits(config.maxAmount, tokenDecimals));
     } catch {
       return null;
     }
@@ -71,7 +71,7 @@ export function VariablePricingInput({
 
     if (config.suggestedAmount) {
       try {
-        const suggested = Number(BigInt(config.suggestedAmount)) / Math.pow(10, tokenDecimals);
+        const suggested = parseFloat(formatUnits(config.suggestedAmount, tokenDecimals));
         const candidates = [suggested / 2, suggested, suggested * 2];
 
         for (const val of candidates) {
@@ -169,6 +169,8 @@ export function VariablePricingInput({
     return null;
   };
 
+  const hint = formatHint();
+
   return (
     <div className="anyspend-variable-pricing mb-6">
       <h2 className="mb-3 text-lg font-semibold text-gray-900 dark:text-gray-100">{config.label || "Enter amount"}</h2>
@@ -205,7 +207,7 @@ export function VariablePricingInput({
           onChange={e => handleChange(e.target.value)}
           className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 pr-16 text-lg font-semibold text-gray-900 placeholder:text-gray-300 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-neutral-600 dark:bg-neutral-800 dark:text-gray-100 dark:placeholder:text-neutral-600 dark:focus:border-blue-400"
           placeholder="0.00"
-          step="0.01"
+          step={(1 / Math.pow(10, Math.min(tokenDecimals, 8))).toFixed(Math.min(tokenDecimals, 8))}
           min="0"
         />
         <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-gray-400 dark:text-gray-500">
@@ -214,7 +216,7 @@ export function VariablePricingInput({
       </div>
 
       {/* Hint */}
-      {formatHint() && <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">{formatHint()}</p>}
+      {hint && <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">{hint}</p>}
 
       {/* Error */}
       <AnimatePresence initial={false}>

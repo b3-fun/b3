@@ -336,8 +336,19 @@ export function AnySpendCheckout({
     if (formData.email) meta.customerEmail = formData.email;
     if (formData.name) meta.customerName = formData.name;
     if (checkoutSessionId) meta.checkoutSessionId = checkoutSessionId;
+    if (isVariablePricingActive && variablePricingAmount !== "0") {
+      meta.variablePricingAmount = variablePricingAmount;
+    }
     return Object.keys(meta).length > 0 ? meta : undefined;
-  }, [formData, selectedShipping, shippingAddress, appliedDiscount, checkoutSessionId]);
+  }, [
+    formData,
+    selectedShipping,
+    shippingAddress,
+    appliedDiscount,
+    checkoutSessionId,
+    isVariablePricingActive,
+    variablePricingAmount,
+  ]);
 
   // Check if required form fields are filled and variable pricing is valid
   const isFormValid = useMemo(() => {
@@ -363,7 +374,7 @@ export function AnySpendCheckout({
           paymentPanel={
             <>
               {/* Variable pricing input renders above everything */}
-              {isVariablePricingActive && variablePricing && (
+              {isVariablePricingActive && tokenData && variablePricing && (
                 <VariablePricingInput
                   config={variablePricing}
                   tokenDecimals={tokenDecimals}
