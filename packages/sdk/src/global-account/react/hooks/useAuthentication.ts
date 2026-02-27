@@ -153,23 +153,18 @@ export function useAuthentication(partnerId: string) {
 
   const logout = useCallback(
     async (callback?: () => void) => {
-      if (activeWallet) {
-        debug("@@logout:activeWallet", activeWallet);
-        disconnect(activeWallet);
-        debug("@@logout:activeWallet", activeWallet);
-      }
-
-      // Log out of each wallet
+      // Only disconnect ecosystem/smart wallets, preserve EOA wallets (e.g. MetaMask)
+      // so they remain available after re-login
       wallets.forEach(wallet => {
-        console.log("@@logging out", wallet);
-        disconnect(wallet);
+        debug("@@logout:wallet", wallet.id);
+        if (wallet.id.startsWith("ecosystem.") || wallet.id === "smart") {
+          disconnect(wallet);
+        }
       });
 
-      // Delete localStorage thirdweb:connected-wallet-ids
-      // https://npc-labs.slack.com/archives/C070E6HNG85/p1750185115273099
+      // Clear user-specific storage but preserve wallet connection state
+      // so EOA wallets (e.g. MetaMask) can auto-reconnect on next login
       if (typeof localStorage !== "undefined") {
-        localStorage.removeItem("thirdweb:connected-wallet-ids");
-        localStorage.removeItem("wagmi.store");
         localStorage.removeItem("lastAuthProvider");
         localStorage.removeItem("b3-user");
       }
@@ -186,7 +181,7 @@ export function useAuthentication(partnerId: string) {
         await onLogoutCallback();
       }
     },
-    [activeWallet, disconnect, wallets, setIsAuthenticated, setUser, setIsConnected, onLogoutCallback],
+    [disconnect, wallets, setIsAuthenticated, setUser, setIsConnected, onLogoutCallback],
   );
 
   const onConnect = useCallback(
