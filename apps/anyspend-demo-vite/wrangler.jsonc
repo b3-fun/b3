@@ -1,0 +1,12 @@
+{
+  "name": "anyspend-sdk-demo",
+  "compatibility_date": "2025-01-01",
+  "workers_dev": true,
+  "routes": [
+    { "pattern": "sdk-demo.anyspend.com/*", "zone_name": "anyspend.com" }
+  ],
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  }
+}
