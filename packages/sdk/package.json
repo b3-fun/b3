@@ -348,7 +348,6 @@
     "js-cookie": "3.0.5",
     "lucide-react": "0.424.0",
     "motion": "^12.23.11",
-    "persona": "^6.0.0",
     "qrcode.react": "4.2.0",
     "react-easy-crop": "^5.5.3",
     "react-intersection-observer": "9.16.0",

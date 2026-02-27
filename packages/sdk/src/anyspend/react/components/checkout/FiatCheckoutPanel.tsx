@@ -17,7 +17,6 @@ import { Loader2, Lock } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { AnySpendCheckoutClasses } from "./AnySpendCheckout";
-import { KycGate } from "./KycGate";
 
 interface FiatCheckoutPanelProps {
   recipientAddress: string;
@@ -109,13 +108,6 @@ export function FiatCheckoutPanel({
     isLoading: isLoadingGeo,
   } = useGeoOnrampOptions(usdAmount || "0");
 
-  // KYC state
-  const [kycApproved, setKycApproved] = useState(false);
-
-  const handleKycResolved = useCallback((approved: boolean) => {
-    setKycApproved(approved);
-  }, []);
-
   // Order state
   const [orderId, setOrderId] = useState<string | null>(null);
   const [stripePaymentIntentId, setStripePaymentIntentId] = useState<string | null>(null);
@@ -139,7 +131,7 @@ export function FiatCheckoutPanel({
     },
   });
 
-  // Auto-create onramp order when Stripe Web2 is supported, KYC approved, and all data is ready
+  // Auto-create onramp order when Stripe Web2 is supported and all data is ready
   useEffect(() => {
     if (
       !isLoadingGeo &&
@@ -147,7 +139,6 @@ export function FiatCheckoutPanel({
       usdAmount &&
       parseFloat(usdAmount) > 0 &&
       stripeWeb2Support?.isSupport &&
-      kycApproved &&
       !orderCreatedRef.current &&
       !orderId &&
       !isCreatingOrder &&
@@ -191,7 +182,6 @@ export function FiatCheckoutPanel({
     isLoadingAnyspendQuote,
     usdAmount,
     stripeWeb2Support,
-    kycApproved,
     orderId,
     isCreatingOrder,
     orderError,
@@ -239,17 +229,6 @@ export function FiatCheckoutPanel({
           Card payments are not available in your region for this amount.
         </p>
       </motion.div>
-    );
-  }
-
-  // KYC gate — shown before order creation when verification is needed
-  if (!kycApproved) {
-    return (
-      <KycGate
-        themeColor={themeColor}
-        classes={classes}
-        onStatusResolved={handleKycResolved}
-      />
     );
   }
 
