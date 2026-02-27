@@ -447,7 +447,7 @@ export function AnySpendDeposit({
                   key={i}
                   className={
                     depositClasses?.skeletonItem ||
-                    "border-border-primary flex items-center justify-between rounded-xl border p-4"
+                    "border-border-secondary flex items-center justify-between rounded-xl border p-4"
                   }
                 >
                   <div className="flex items-center gap-3">
@@ -472,7 +472,7 @@ export function AnySpendDeposit({
                   onClick={() => handleSelectChain(chain.id)}
                   className={
                     depositClasses?.chainButton ||
-                    "anyspend-deposit-chain-button border-border-primary hover:border-as-brand hover:bg-as-surface-secondary flex w-full items-center justify-between rounded-xl border p-4 text-left shadow-sm transition-all"
+                    "anyspend-deposit-chain-button border-border-secondary hover:border-as-brand hover:bg-as-surface-secondary flex w-full items-center justify-between rounded-xl border p-4 text-left shadow-sm transition-all"
                   }
                 >
                   <div className={depositClasses?.chainContent || "anyspend-deposit-chain-content"}>
@@ -512,7 +512,7 @@ export function AnySpendDeposit({
               onClick={handleSelectCrypto}
               className={
                 depositClasses?.cryptoButton ||
-                "anyspend-deposit-option-button anyspend-deposit-crypto-button border-border-primary hover:border-as-brand hover:bg-as-surface-secondary flex w-full items-center justify-between rounded-xl border p-4 text-left shadow-sm transition-all"
+                "anyspend-deposit-option-button anyspend-deposit-crypto-button border-border-secondary hover:border-as-brand hover:bg-as-surface-secondary flex w-full items-center justify-between rounded-xl border p-4 text-left shadow-sm transition-all"
               }
             >
               <div className={depositClasses?.optionContent || "anyspend-deposit-option-content"}>
@@ -554,7 +554,7 @@ export function AnySpendDeposit({
               onClick={handleSelectQrDeposit}
               className={
                 depositClasses?.qrButton ||
-                "anyspend-deposit-option-button anyspend-deposit-qr-button border-border-primary hover:border-as-brand hover:bg-as-surface-secondary flex w-full items-center justify-between rounded-xl border p-4 text-left shadow-sm transition-all"
+                "anyspend-deposit-option-button anyspend-deposit-qr-button border-border-secondary hover:border-as-brand hover:bg-as-surface-secondary flex w-full items-center justify-between rounded-xl border p-4 text-left shadow-sm transition-all"
               }
             >
               <div
@@ -589,7 +589,7 @@ export function AnySpendDeposit({
               onClick={handleSelectFiat}
               className={
                 depositClasses?.fiatButton ||
-                "anyspend-deposit-option-button anyspend-deposit-fiat-button border-border-primary hover:border-as-brand hover:bg-as-surface-secondary flex w-full items-center justify-between rounded-xl border p-4 text-left transition-all"
+                "anyspend-deposit-option-button anyspend-deposit-fiat-button border-border-secondary hover:border-as-brand hover:bg-as-surface-secondary flex w-full items-center justify-between rounded-xl border p-4 text-left transition-all"
               }
             >
               <div
