@@ -6,7 +6,7 @@ import { Loader2, ShieldCheck, AlertTriangle, Clock } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { AnySpendCheckoutClasses } from "./AnySpendCheckout";
-import { useCreateKycInquiry, useKycStatus, useVerifyKyc, type KycStatusResponse } from "../../hooks/useKycStatus";
+import { useCreateKycInquiry, useKycStatus, useVerifyKyc } from "../../hooks/useKycStatus";
 
 interface KycGateProps {
   themeColor?: string;
@@ -38,39 +38,6 @@ export function KycGate({ themeColor, classes, onStatusResolved }: KycGateProps)
       onStatusResolved(true);
     }
   }, [kycStatus, onStatusResolved]);
-
-  const handleStartVerification = useCallback(async () => {
-    if (!walletAddress) return;
-
-    setPersonaError(null);
-    setPersonaCancelled(false);
-
-    try {
-      const { inquiryId, sessionToken } = await createInquiry(walletAddress);
-      openPersonaFlow({
-        inquiryId,
-        sessionToken,
-        templateId: kycStatus?.config?.templateId,
-        environment: kycStatus?.config?.environment,
-      });
-    } catch (error) {
-      setPersonaError(error instanceof Error ? error.message : "Failed to start verification");
-    }
-  }, [walletAddress, createInquiry, kycStatus]);
-
-  const handleResumeVerification = useCallback(() => {
-    if (!kycStatus?.inquiry) return;
-
-    setPersonaError(null);
-    setPersonaCancelled(false);
-
-    openPersonaFlow({
-      inquiryId: kycStatus.inquiry.inquiryId,
-      sessionToken: kycStatus.inquiry.sessionToken,
-      templateId: kycStatus.config?.templateId,
-      environment: kycStatus.config?.environment,
-    });
-  }, [kycStatus]);
 
   const openPersonaFlow = useCallback(
     async (config: { inquiryId: string; sessionToken: string; templateId?: string; environment?: string }) => {
@@ -116,6 +83,39 @@ export function KycGate({ themeColor, classes, onStatusResolved }: KycGateProps)
     },
     [walletAddress, verifyKyc, onStatusResolved, refetchKycStatus],
   );
+
+  const handleStartVerification = useCallback(async () => {
+    if (!walletAddress) return;
+
+    setPersonaError(null);
+    setPersonaCancelled(false);
+
+    try {
+      const { inquiryId, sessionToken } = await createInquiry(walletAddress);
+      openPersonaFlow({
+        inquiryId,
+        sessionToken,
+        templateId: kycStatus?.config?.templateId,
+        environment: kycStatus?.config?.environment,
+      });
+    } catch (error) {
+      setPersonaError(error instanceof Error ? error.message : "Failed to start verification");
+    }
+  }, [walletAddress, createInquiry, kycStatus, openPersonaFlow]);
+
+  const handleResumeVerification = useCallback(() => {
+    if (!kycStatus?.inquiry) return;
+
+    setPersonaError(null);
+    setPersonaCancelled(false);
+
+    openPersonaFlow({
+      inquiryId: kycStatus.inquiry.inquiryId,
+      sessionToken: kycStatus.inquiry.sessionToken,
+      templateId: kycStatus.config?.templateId,
+      environment: kycStatus.config?.environment,
+    });
+  }, [kycStatus, openPersonaFlow]);
 
   // Loading state
   if (isLoadingKycStatus) {

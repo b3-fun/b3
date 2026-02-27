@@ -2,7 +2,7 @@
 
 import { ANYSPEND_MAINNET_BASE_URL } from "@b3dotfun/sdk/anyspend/constants";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
 
 export interface KycStatusResponse {
   kycRequired: boolean;
@@ -60,7 +60,7 @@ async function verifyKyc(walletAddress: string, inquiryId: string): Promise<KycV
 export function useKycStatus(walletAddress: string | undefined) {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["kyc-status", walletAddress],
-    queryFn: () => fetchKycStatus(walletAddress!),
+    queryFn: () => fetchKycStatus(walletAddress as string),
     enabled: !!walletAddress,
     staleTime: 30_000,
   });
