@@ -29,7 +29,7 @@ Session creation is instant (DB-only, no external calls). The order is created s
 ## Session Status Lifecycle
 
 ```
-open --> processing --> complete
+open --> processing --> complete (verified)
   |
   └--> expired
 ```
@@ -37,9 +37,26 @@ open --> processing --> complete
 | Status | When |
 |--------|------|
 | `open` | Created, waiting for order/payment |
-| `processing` | Payment received, order executing |
-| `complete` | Order executed successfully |
+| `processing` | Client reported payment, waiting for server-side verification |
+| `complete` | Order verified on-chain by the anyspend-service callback |
 | `expired` | TTL expired, payment failed, or manually expired |
+
+## Server-Side Payment Verification
+
+Checkout sessions use server-side verification to prevent spoofed completions. The client `/complete` endpoint only transitions a session to `processing` — it does **not** trigger side effects (webhooks, customer creation, discount usage, etc.).
+
+The anyspend-service verifies the payment on-chain and sends a callback to the platform's internal endpoint, which finalizes the session to `complete` and runs all side effects. This ensures that webhooks and merchant integrations are only triggered by verified payments.
+
+```
+Client calls /complete  -->  session: "processing"
+                                  |
+anyspend-service verifies  -->  internal callback  -->  session: "complete" + side effects
+on-chain (order.executed)
+```
+
+Verified sessions include `verified_at` and `verified_by` fields in the session object, providing an audit trail of server-verified completions.
+
+**No SDK changes required** — the SDK already passes `checkoutSessionId` in `callbackMetadata` when creating orders, so the verification pipeline works automatically.
 
 ## API
 

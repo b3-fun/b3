@@ -1,29 +1,31 @@
 "use client";
 
-import { useTokenData } from "@b3dotfun/sdk/global-account/react";
 import { USDC_BASE } from "@b3dotfun/sdk/anyspend/constants";
+import { useTokenData } from "@b3dotfun/sdk/global-account/react";
 import { formatUnits, safeBigInt } from "@b3dotfun/sdk/shared/utils/number";
-import { type ReactNode, useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, type ReactNode } from "react";
+import type {
+  AddressData,
+  CheckoutFormComponentProps,
+  CheckoutFormSchema,
+  DiscountResult,
+  ShippingOption,
+} from "../../../types/forms";
 import { useAnyspendQuote } from "../../hooks/useAnyspendQuote";
 import { AnySpendFingerprintWrapper, getFingerprintConfig } from "../AnySpendFingerprintWrapper";
+import { AnySpendCustomizationProvider } from "../context/AnySpendCustomizationContext";
+import type { AnySpendCheckoutClasses } from "../types/classes";
+import type { AnySpendContent, AnySpendSlots, AnySpendTheme } from "../types/customization";
 import { CheckoutCartPanel } from "./CheckoutCartPanel";
 import { CheckoutFormPanel } from "./CheckoutFormPanel";
 import { CheckoutLayout } from "./CheckoutLayout";
 import { CheckoutPaymentPanel, type PaymentMethod } from "./CheckoutPaymentPanel";
+import { VariablePricingInput, type VariablePricingConfig } from "./VariablePricingInput";
 
 export type { AnySpendCheckoutClasses } from "../types/classes";
-import type { AnySpendCheckoutClasses } from "../types/classes";
-import { AnySpendCustomizationProvider } from "../context/AnySpendCustomizationContext";
-import type { AnySpendContent, AnySpendSlots, AnySpendTheme } from "../types/customization";
-import type {
-  CheckoutFormSchema,
-  CheckoutFormComponentProps,
-  ShippingOption,
-  DiscountResult,
-  AddressData,
-} from "../../../types/forms";
 
-export type { CheckoutFormSchema, CheckoutFormComponentProps, ShippingOption, DiscountResult, AddressData };
+export type { VariablePricingConfig } from "./VariablePricingInput";
+export type { AddressData, CheckoutFormComponentProps, CheckoutFormSchema, DiscountResult, ShippingOption };
 
 export interface CheckoutItem {
   id?: string;
@@ -55,7 +57,7 @@ export interface AnySpendCheckoutProps {
   destinationTokenAddress: string;
   /** The destination chain ID */
   destinationTokenChainId: number;
-  /** Line items */
+  /** Line items. When `variablePricing.enabled` is true, pass a single placeholder item (e.g. amount "0") — the user-entered amount overrides the total. */
   items: CheckoutItem[];
   /** Override computed total */
   totalAmount?: string;
@@ -130,6 +132,8 @@ export interface AnySpendCheckoutProps {
   onDiscountApplied?: (result: DiscountResult) => void;
   /** Async function to validate a discount code. Returns DiscountResult. */
   validateDiscount?: (code: string) => Promise<DiscountResult>;
+  /** Variable pricing / name your price config. When enabled, user enters amount before payment. */
+  variablePricing?: VariablePricingConfig;
   /** When true, fees are added on top of the amount (payer pays more, receiver gets exact amount) */
   feeOnTop?: boolean;
 }
@@ -177,8 +181,15 @@ export function AnySpendCheckout({
   enableDiscountCode,
   onDiscountApplied: onDiscountAppliedProp,
   validateDiscount,
+  // Variable pricing
+  variablePricing,
   feeOnTop,
 }: AnySpendCheckoutProps) {
+  // ===== Variable pricing state =====
+  const [variablePricingAmount, setVariablePricingAmount] = useState<string>("0");
+  const isVariablePricingActive = variablePricing?.enabled === true;
+  const isVariablePricingValid = isVariablePricingActive ? variablePricingAmount !== "0" : true;
+
   // ===== Form state =====
   const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [selectedShipping, setSelectedShipping] = useState<ShippingOption | null>(null);
@@ -239,7 +250,20 @@ export function AnySpendCheckout({
   }, [appliedDiscount, discountProp]);
 
   // Compute total from items + adjustments (including dynamic shipping/discount)
+  // Variable pricing overrides the total when active
   const computedTotal = useMemo(() => {
+    if (isVariablePricingActive && variablePricingAmount !== "0") {
+      let total = safeBigInt(variablePricingAmount);
+      if (effectiveShipping?.amount) total += safeBigInt(effectiveShipping.amount);
+      const taxAmt = typeof tax === "string" ? tax : tax?.amount;
+      if (taxAmt) total += safeBigInt(taxAmt);
+      if (effectiveDiscount?.amount) total -= safeBigInt(effectiveDiscount.amount);
+      if (summaryLines) {
+        for (const line of summaryLines) total += safeBigInt(line.amount);
+      }
+      if (total < BigInt(0)) total = BigInt(0);
+      return total.toString();
+    }
     if (totalAmountOverride) return totalAmountOverride;
     let total = BigInt(0);
     for (const item of items) {
@@ -254,7 +278,16 @@ export function AnySpendCheckout({
     }
     if (total < BigInt(0)) total = BigInt(0);
     return total.toString();
-  }, [items, totalAmountOverride, effectiveShipping, tax, effectiveDiscount, summaryLines]);
+  }, [
+    items,
+    totalAmountOverride,
+    effectiveShipping,
+    tax,
+    effectiveDiscount,
+    summaryLines,
+    isVariablePricingActive,
+    variablePricingAmount,
+  ]);
 
   // Get destination token metadata
   const { data: tokenData } = useTokenData(destinationTokenChainId, destinationTokenAddress);
@@ -303,14 +336,26 @@ export function AnySpendCheckout({
     if (formData.email) meta.customerEmail = formData.email;
     if (formData.name) meta.customerName = formData.name;
     if (checkoutSessionId) meta.checkoutSessionId = checkoutSessionId;
+    if (isVariablePricingActive && variablePricingAmount !== "0") {
+      meta.variablePricingAmount = variablePricingAmount;
+    }
     return Object.keys(meta).length > 0 ? meta : undefined;
-  }, [formData, selectedShipping, shippingAddress, appliedDiscount, checkoutSessionId]);
+  }, [
+    formData,
+    selectedShipping,
+    shippingAddress,
+    appliedDiscount,
+    checkoutSessionId,
+    isVariablePricingActive,
+    variablePricingAmount,
+  ]);
 
-  // Check if required form fields are filled
+  // Check if required form fields are filled and variable pricing is valid
   const isFormValid = useMemo(() => {
+    if (!isVariablePricingValid) return false;
     if (!formSchema) return true;
     return formSchema.fields.filter(f => f.required).every(f => formData[f.id] != null && formData[f.id] !== "");
-  }, [formSchema, formData]);
+  }, [formSchema, formData, isVariablePricingValid]);
 
   // Check if we have a form panel to show
   const hasFormContent =
@@ -328,6 +373,16 @@ export function AnySpendCheckout({
           mode={mode}
           paymentPanel={
             <>
+              {/* Variable pricing input renders above everything */}
+              {isVariablePricingActive && tokenData && variablePricing && (
+                <VariablePricingInput
+                  config={variablePricing}
+                  tokenDecimals={tokenDecimals}
+                  tokenSymbol={tokenSymbol}
+                  themeColor={themeColor}
+                  onChange={setVariablePricingAmount}
+                />
+              )}
               {/* Form panel renders above payment panel in the left/payment column */}
               {hasFormContent && (
                 <div className="mb-6">

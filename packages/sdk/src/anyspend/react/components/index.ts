@@ -10,6 +10,7 @@ export type {
   ShippingOption,
   DiscountResult,
   AddressData,
+  VariablePricingConfig,
 } from "./checkout/AnySpendCheckout";
 export { AnySpendCheckoutTrigger } from "./checkout/AnySpendCheckoutTrigger";
 export type { AnySpendCheckoutTriggerProps } from "./checkout/AnySpendCheckoutTrigger";
