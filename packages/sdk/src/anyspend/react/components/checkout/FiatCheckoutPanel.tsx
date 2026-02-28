@@ -34,6 +34,8 @@ interface FiatCheckoutPanelProps {
   classes?: AnySpendCheckoutClasses;
   /** When true, fees are added on top (payer pays more, receiver gets exact amount) */
   feeOnTop?: boolean;
+  /** When true, identity verification is required before card payment. Defaults to false. */
+  kycEnabled?: boolean;
 }
 
 export function FiatCheckoutPanel({
@@ -48,6 +50,7 @@ export function FiatCheckoutPanel({
   callbackMetadata,
   classes,
   feeOnTop,
+  kycEnabled = false,
 }: FiatCheckoutPanelProps) {
   // Stable refs for callback props to avoid re-triggering effects
   const onErrorRef = useRef(onError);
@@ -97,8 +100,8 @@ export function FiatCheckoutPanel({
     isLoading: isLoadingGeo,
   } = useGeoOnrampOptions(usdAmount || "0");
 
-  // KYC state
-  const [kycApproved, setKycApproved] = useState(false);
+  // KYC state — pre-approved when kycEnabled is false (feature flag off)
+  const [kycApproved, setKycApproved] = useState(() => !kycEnabled);
 
   const handleKycResolved = useCallback((approved: boolean) => {
     setKycApproved(approved);

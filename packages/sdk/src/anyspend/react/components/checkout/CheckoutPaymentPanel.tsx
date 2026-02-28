@@ -39,6 +39,8 @@ interface CheckoutPaymentPanelProps {
   isFormValid?: boolean;
   /** When true, fees are added on top (payer pays more, receiver gets exact amount) */
   feeOnTop?: boolean;
+  /** When true, identity verification (KYC) is required before card payment. Defaults to false. */
+  kycEnabled?: boolean;
 }
 
 function RadioCircle({ selected, themeColor }: { selected: boolean; themeColor?: string }) {
@@ -135,6 +137,7 @@ export function CheckoutPaymentPanel({
   showOrderId,
   isFormValid = true,
   feeOnTop,
+  kycEnabled = false,
 }: CheckoutPaymentPanelProps) {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(defaultPaymentMethod ?? null);
 
@@ -295,6 +298,7 @@ export function CheckoutPaymentPanel({
                     callbackMetadata={callbackMetadata}
                     classes={classes}
                     feeOnTop={feeOnTop}
+                    kycEnabled={kycEnabled}
                   />
                 </div>
               </motion.div>

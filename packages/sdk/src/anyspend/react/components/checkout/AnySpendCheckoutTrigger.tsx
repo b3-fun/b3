@@ -73,6 +73,8 @@ export interface AnySpendCheckoutTriggerProps {
   discount?: string | { amount: string; label?: string; code?: string };
   /** Additional summary line items (fees, tips, etc.) */
   summaryLines?: CheckoutSummaryLine[];
+  /** When true, identity verification (KYC) is required before card payment. Defaults to false. */
+  kycEnabled?: boolean;
 }
 
 export function AnySpendCheckoutTrigger({
@@ -103,6 +105,7 @@ export function AnySpendCheckoutTrigger({
   tax,
   discount,
   summaryLines,
+  kycEnabled = false,
 }: AnySpendCheckoutTriggerProps) {
   // Merge workflowId + orgId into callbackMetadata
   const mergedMetadata = useMemo(() => {
@@ -212,6 +215,7 @@ export function AnySpendCheckoutTrigger({
               classes={classes}
               defaultPaymentMethod={defaultPaymentMethod}
               senderAddress={senderAddress}
+              kycEnabled={kycEnabled}
             />
           </div>
         </div>
