@@ -273,10 +273,13 @@ export function B3DynamicModal() {
         </div>
       </ModalContent>
 
-      {/* Pass clicks through the backdrop to the Persona iframe when it is active */}
+      {/* When Persona is active, make the entire modal portal non-interactive so
+          clicks pass through to Persona's overlay/iframe. Persona renders at
+          body level; the AnySpend modal (overlay + content card) renders inside
+          #b3-root — setting pointer-events:none on the root disables all of it. */}
       {personaActive && (
         <style>{`
-          .b3-dialog-overlay { pointer-events: none !important; }
+          #b3-root { pointer-events: none !important; }
         `}</style>
       )}
 
