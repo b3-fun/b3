@@ -23,7 +23,10 @@ interface KycGateProps {
 export function KycGate({ themeColor, classes, enabled = false, onStatusResolved }: KycGateProps) {
   const { address } = useAccount();
   const { connect: openConnectModal } = useConnectModal();
-  const { kycStatus, isLoadingKycStatus, refetchKycStatus } = useKycStatus(enabled);
+  // Gate the status fetch behind explicit user consent so the wallet
+  // signature prompt doesn't fire automatically on tab open.
+  const [userInitiated, setUserInitiated] = useState(false);
+  const { kycStatus, isLoadingKycStatus, refetchKycStatus } = useKycStatus(enabled && userInitiated);
   const { createInquiry, isCreatingInquiry } = useCreateKycInquiry();
   const { verifyKyc, isVerifying } = useVerifyKyc();
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
@@ -164,6 +167,37 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
           <span className="flex items-center justify-center gap-2">
             <Wallet className="h-4 w-4" />
             Connect Wallet
+          </span>
+        </ShinyButton>
+      </motion.div>
+    );
+  }
+
+  // Wallet connected but user hasn't kicked off the KYC check yet
+  if (!userInitiated) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25, ease: "easeOut" }}
+        className={cn("anyspend-kyc-prompt flex flex-col items-center gap-4 py-2", classes?.fiatPanel)}
+      >
+        <ShieldCheck className="h-8 w-8 text-blue-500" />
+        <div className="text-center">
+          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Identity verification required</p>
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            Card payments require a one-time identity check. This takes about 2 minutes.
+          </p>
+        </div>
+        <ShinyButton
+          accentColor={themeColor || "hsl(var(--as-brand))"}
+          className="w-full"
+          textClassName="text-white"
+          onClick={() => setUserInitiated(true)}
+        >
+          <span className="flex items-center justify-center gap-2">
+            <ShieldCheck className="h-4 w-4" />
+            Continue to Verify
           </span>
         </ShinyButton>
       </motion.div>
