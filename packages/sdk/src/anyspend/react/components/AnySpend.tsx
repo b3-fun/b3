@@ -253,7 +253,17 @@ function AnySpendInner({
   // Track previous panel for proper back navigation
   const previousPanel = useRef<PanelView>(PanelView.MAIN);
 
-  const [activeTab, setActiveTab] = useState<"crypto" | "fiat">(defaultActiveTab);
+  const [activeTab, setActiveTab] = useState<"crypto" | "fiat">(() => {
+    if (typeof window !== "undefined") {
+      const stored = sessionStorage.getItem("anyspend_active_tab") as "crypto" | "fiat" | null;
+      if (stored === "crypto" || stored === "fiat") return stored;
+    }
+    return defaultActiveTab;
+  });
+
+  useEffect(() => {
+    sessionStorage.setItem("anyspend_active_tab", activeTab);
+  }, [activeTab]);
 
   const [orderId, setOrderId] = useState<string | undefined>(loadOrder);
   const [directTransferTxHash, setDirectTransferTxHash] = useState<string | undefined>();
@@ -314,11 +324,27 @@ function AnySpendInner({
   const { data: srcTokenMetadata } = useTokenData(selectedSrcToken?.chainId, selectedSrcToken?.address);
   const [srcAmount, setSrcAmount] = useState<string>(searchParams.get("fromAmount") || "0");
 
-  // State for onramp amount
-  const [srcAmountOnRamp, setSrcAmountOnRamp] = useState<string>(searchParams.get("fromAmount") || "5");
+  // State for onramp amount — persisted in sessionStorage so it survives Persona KYC roundtrip
+  const [srcAmountOnRamp, setSrcAmountOnRamp] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      const stored = sessionStorage.getItem("anyspend_fiat_amount");
+      if (stored) return stored;
+    }
+    return searchParams.get("fromAmount") || "5";
+  });
 
-  // State for destination chain/token selection
-  const [selectedDstChainId, setSelectedDstChainId] = useState<number>(initialDstChainId);
+  useEffect(() => {
+    sessionStorage.setItem("anyspend_fiat_amount", srcAmountOnRamp);
+  }, [srcAmountOnRamp]);
+
+  // State for destination chain/token selection (sync effects come after state declarations below) — persisted in sessionStorage for Persona KYC roundtrip
+  const [selectedDstChainId, setSelectedDstChainId] = useState<number>(() => {
+    if (!isBuyMode && typeof window !== "undefined") {
+      const stored = sessionStorage.getItem("anyspend_dst_chain_id");
+      if (stored) return parseInt(stored, 10);
+    }
+    return initialDstChainId;
+  });
   // Helper to check if address is Hyperliquid USDC (supports both 34-char and 42-char formats)
   const isHyperliquidUSDCAddress = (address?: string) =>
     eqci(address, HYPERLIQUID_USDC_ADDRESS) || eqci(address, ZERO_ADDRESS);
@@ -340,11 +366,28 @@ function AnySpendInner({
     defaultToken: defaultDstToken,
     prefix: "to",
   });
-  const [selectedDstToken, setSelectedDstToken] = useState<components["schemas"]["Token"]>(
-    isBuyMode ? defaultDstToken : dstTokenFromUrl,
-  );
+  const [selectedDstToken, setSelectedDstToken] = useState<components["schemas"]["Token"]>(() => {
+    if (!isBuyMode && typeof window !== "undefined") {
+      const stored = sessionStorage.getItem("anyspend_dst_token");
+      if (stored) {
+        try {
+          return JSON.parse(stored) as components["schemas"]["Token"];
+        } catch {}
+      }
+    }
+    return isBuyMode ? defaultDstToken : dstTokenFromUrl;
+  });
   const { data: dstTokenMetadata } = useTokenData(selectedDstToken?.chainId, selectedDstToken?.address);
   const [dstAmount, setDstAmount] = useState<string>(searchParams.get("toAmount") || "");
+
+  // Sync dst chain/token to sessionStorage so they survive Persona KYC roundtrip
+  useEffect(() => {
+    if (!isBuyMode) sessionStorage.setItem("anyspend_dst_chain_id", selectedDstChainId.toString());
+  }, [selectedDstChainId, isBuyMode]);
+
+  useEffect(() => {
+    if (!isBuyMode) sessionStorage.setItem("anyspend_dst_token", JSON.stringify(selectedDstToken));
+  }, [selectedDstToken, isBuyMode]);
 
   const [isSrcInputDirty, setIsSrcInputDirty] = useState(true);
   // Add refs to track if we've applied metadata
@@ -744,6 +787,16 @@ function AnySpendInner({
 
   // Call onSuccess when order is executed
   useOnOrderSuccess({ orderData: oat, orderId, onSuccess });
+
+  // Clear all persisted selection state once an order is submitted — next open starts fresh
+  useEffect(() => {
+    if (orderId) {
+      sessionStorage.removeItem("anyspend_fiat_amount");
+      sessionStorage.removeItem("anyspend_active_tab");
+      sessionStorage.removeItem("anyspend_dst_chain_id");
+      sessionStorage.removeItem("anyspend_dst_token");
+    }
+  }, [orderId]);
 
   const { createOrder, isCreatingOrder } = useAnyspendCreateOrder({
     onSuccess: data => {
