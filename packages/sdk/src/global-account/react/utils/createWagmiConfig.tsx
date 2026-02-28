@@ -49,8 +49,10 @@ const wagmiConfigCache = new Map<string, ReturnType<typeof createWagmiConfig>>()
  */
 export function getCachedWagmiConfig(options: CreateWagmiConfigOptions) {
   const key = options.partnerId;
-  if (!wagmiConfigCache.has(key)) {
-    wagmiConfigCache.set(key, createWagmiConfig(options));
+  let config = wagmiConfigCache.get(key);
+  if (!config) {
+    config = createWagmiConfig(options);
+    wagmiConfigCache.set(key, config);
   }
-  return wagmiConfigCache.get(key)!;
+  return config;
 }
