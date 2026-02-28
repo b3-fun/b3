@@ -1,11 +1,11 @@
 "use client";
 
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
-import { ShinyButton, TextShimmer, useAuth, useB3Config, useModalStore } from "@b3dotfun/sdk/global-account/react";
-import { thirdwebB3Chain } from "@b3dotfun/sdk/shared/constants/chains/b3Chain";
+import { ShinyButton, TextShimmer, useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { Loader2, ShieldCheck, AlertTriangle, Clock } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useAccount } from "wagmi";
 import type { AnySpendCheckoutClasses } from "./AnySpendCheckout";
 import { useCreateKycInquiry, useKycStatus, useVerifyKyc } from "../../hooks/useKycStatus";
 
@@ -19,13 +19,11 @@ interface KycGateProps {
 }
 
 export function KycGate({ themeColor, classes, enabled = false, onStatusResolved }: KycGateProps) {
-  const { isAuthenticated, isAuthenticating } = useAuth();
+  const { address } = useAccount();
   const { kycStatus, isLoadingKycStatus, refetchKycStatus } = useKycStatus(enabled);
   const { createInquiry, isCreatingInquiry } = useCreateKycInquiry();
   const { verifyKyc, isVerifying } = useVerifyKyc();
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
-  const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
-  const { partnerId } = useB3Config();
 
   const [personaOpen, setPersonaOpen] = useState(false);
   const [personaError, setPersonaError] = useState<string | null>(null);
@@ -114,11 +112,6 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
     }
   }, [createInquiry, kycStatus, openPersonaFlow]);
 
-  const handleSignIn = useCallback(() => {
-    setB3ModalContentType({ type: "signInWithB3", showBackButton: false, chain: thirdwebB3Chain, partnerId });
-    setB3ModalOpen(true);
-  }, [setB3ModalContentType, setB3ModalOpen, partnerId]);
-
   const handleResumeVerification = useCallback(() => {
     if (!kycStatus?.inquiry) return;
 
@@ -132,25 +125,8 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
     });
   }, [kycStatus, openPersonaFlow]);
 
-  // Auth loading state
-  if (isAuthenticating) {
-    return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.2, ease: "easeOut" }}
-        className={cn("anyspend-kyc-loading flex flex-col items-center gap-3 py-6", classes?.fiatPanel)}
-      >
-        <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
-        <TextShimmer duration={1.5} className="text-sm">
-          Checking authentication...
-        </TextShimmer>
-      </motion.div>
-    );
-  }
-
-  // Not authenticated — prompt to login
-  if (!isAuthenticated) {
+  // No wallet connected — cannot proceed with KYC
+  if (!address) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 8 }}
@@ -160,22 +136,11 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
       >
         <ShieldCheck className="h-8 w-8 text-gray-400" />
         <div className="text-center">
-          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Login required to pay with card</p>
+          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Wallet required to pay with card</p>
           <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            Sign in to your B3 account to complete identity verification.
+            Connect a wallet to complete identity verification for card payments.
           </p>
         </div>
-        <ShinyButton
-          accentColor={themeColor || "hsl(var(--as-brand))"}
-          className="w-full"
-          textClassName="text-white"
-          onClick={handleSignIn}
-        >
-          <span className="flex items-center justify-center gap-2">
-            <ShieldCheck className="h-4 w-4" />
-            Sign In
-          </span>
-        </ShinyButton>
       </motion.div>
     );
   }
