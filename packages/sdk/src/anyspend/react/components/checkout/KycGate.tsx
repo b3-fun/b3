@@ -25,6 +25,7 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
   const { verifyKyc, isVerifying } = useVerifyKyc();
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
+  const setClosable = useModalStore(state => state.setClosable);
   const { partnerId } = useB3Config();
 
   const [personaOpen, setPersonaOpen] = useState(false);
@@ -32,6 +33,15 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
   const [personaCancelled, setPersonaCancelled] = useState(false);
   const prevStatusRef = useRef<string | null>(null);
   const autoResumedRef = useRef(false);
+
+  // Safety: always restore closable when this component unmounts so the modal
+  // doesn't stay locked if something unexpected causes an unmount mid-KYC.
+  useEffect(() => {
+    return () => {
+      setClosable(true);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Notify parent when status resolves
   useEffect(() => {
@@ -49,6 +59,12 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
   const openPersonaFlow = useCallback(
     async (config: { inquiryId: string; sessionToken: string; templateId?: string; environment?: string }) => {
       setPersonaOpen(true);
+      // Lock the checkout modal so it stays open while Persona is running.
+      // Without this, clicking anywhere outside the Persona overlay dismisses
+      // the AnySpend modal and the order state is lost.
+      // Note: onPointerDownOutside/onInteractOutside are NOT set in B3DynamicModal
+      // for the closable=false case, so the Persona iframe itself stays interactive.
+      setClosable(false);
       try {
         // Dynamic import to keep bundle small
         const { Client } = await import("persona");
@@ -59,6 +75,7 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
           environment: (config.environment as "sandbox" | "production") || "sandbox",
           onComplete: async ({ inquiryId }) => {
             setPersonaOpen(false);
+            setClosable(true);
             if (inquiryId) {
               try {
                 const result = await verifyKyc(inquiryId);
@@ -74,19 +91,22 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
           onCancel: () => {
             setPersonaOpen(false);
             setPersonaCancelled(true);
+            setClosable(true);
           },
           onError: error => {
             setPersonaOpen(false);
             setPersonaError(error?.message || "Verification encountered an error");
+            setClosable(true);
           },
         });
         client.open();
       } catch (error) {
         setPersonaOpen(false);
+        setClosable(true);
         setPersonaError("Failed to load verification module");
       }
     },
-    [verifyKyc, onStatusResolved, refetchKycStatus],
+    [verifyKyc, onStatusResolved, refetchKycStatus, setClosable],
   );
 
   // Auto-resume Persona when the gate activates and there is an incomplete inquiry.
