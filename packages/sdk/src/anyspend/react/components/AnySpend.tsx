@@ -300,9 +300,19 @@ function AnySpendInner({
     resetPaymentMethods,
   } = useCryptoPaymentMethodState();
 
-  const [selectedFiatPaymentMethod, setSelectedFiatPaymentMethod] = useState<FiatPaymentMethod>(FiatPaymentMethod.NONE);
+  const [selectedFiatPaymentMethod, setSelectedFiatPaymentMethod] = useState<FiatPaymentMethod>(() => {
+    if (typeof window !== "undefined") {
+      const stored = sessionStorage.getItem("anyspend_fiat_method") as FiatPaymentMethod | null;
+      if (stored && Object.values(FiatPaymentMethod).includes(stored)) return stored;
+    }
+    return FiatPaymentMethod.NONE;
+  });
   // const [newRecipientAddress, setNewRecipientAddress] = useState("");
   // const recipientInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    sessionStorage.setItem("anyspend_fiat_method", selectedFiatPaymentMethod);
+  }, [selectedFiatPaymentMethod]);
 
   // Get initial chain IDs from URL or defaults
   const initialSrcChainId = sourceChainId || parseInt(searchParams.get("fromChainId") || "0") || mainnet.id;
@@ -793,6 +803,7 @@ function AnySpendInner({
     if (orderId) {
       sessionStorage.removeItem("anyspend_fiat_amount");
       sessionStorage.removeItem("anyspend_active_tab");
+      sessionStorage.removeItem("anyspend_fiat_method");
       sessionStorage.removeItem("anyspend_dst_chain_id");
       sessionStorage.removeItem("anyspend_dst_token");
     }
@@ -887,8 +898,8 @@ function AnySpendInner({
       if (selectedFiatPaymentMethod === FiatPaymentMethod.NONE) {
         return { text: "Select payment method", disable: false, error: false, loading: false };
       }
-      // If payment method is selected, show "Buy"
-      return { text: "Buy", disable: false, error: false, loading: false };
+      // If payment method is selected, show "Continue"
+      return { text: "Continue", disable: false, error: false, loading: false };
     }
 
     if (activeTab === "crypto") {
@@ -915,7 +926,7 @@ function AnySpendInner({
       }
     }
 
-    return { text: "Buy", disable: false, error: false, loading: false };
+    return { text: "Continue", disable: false, error: false, loading: false };
   }, [
     activeInputAmountInWei,
     isSameChainSameToken,
