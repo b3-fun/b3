@@ -31,6 +31,7 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
   const [personaError, setPersonaError] = useState<string | null>(null);
   const [personaCancelled, setPersonaCancelled] = useState(false);
   const prevStatusRef = useRef<string | null>(null);
+  const autoResumedRef = useRef(false);
 
   // Notify parent when status resolves
   useEffect(() => {
@@ -87,6 +88,23 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
     },
     [verifyKyc, onStatusResolved, refetchKycStatus],
   );
+
+  // Auto-resume Persona when the gate activates and there is an incomplete inquiry.
+  // This handles the case where the user accidentally closed the modal mid-KYC:
+  // they return to the FIAT_KYC panel and Persona re-opens automatically.
+  useEffect(() => {
+    if (!enabled || !kycStatus?.inquiry || personaOpen || personaCancelled || autoResumedRef.current) return;
+    if (kycStatus.status !== "pending") return;
+    autoResumedRef.current = true;
+    openPersonaFlow({
+      inquiryId: kycStatus.inquiry.inquiryId,
+      sessionToken: kycStatus.inquiry.sessionToken,
+      templateId: kycStatus.config?.templateId,
+      environment: kycStatus.config?.environment,
+    });
+  // openPersonaFlow is stable (useCallback); kycStatus changes when data loads
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enabled, kycStatus]);
 
   const handleStartVerification = useCallback(async () => {
     setPersonaError(null);

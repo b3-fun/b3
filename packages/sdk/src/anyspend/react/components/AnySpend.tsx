@@ -215,7 +215,6 @@ function AnySpendInner({
   const { partnerId } = useB3Config();
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
-  const setClosable = useModalStore(state => state.setClosable);
   const { isAuthenticated } = useAuth();
   // KYC approval is tracked per-session so we only prompt the wallet
   // signature when the user actually clicks Buy, not on panel mount.
@@ -1179,11 +1178,6 @@ function AnySpendInner({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated]);
 
-  // Lock the modal while the user is completing KYC so they cannot accidentally
-  // dismiss it by clicking outside — the Persona iframe sits on top of the modal.
-  useEffect(() => {
-    setClosable(activePanel !== PanelView.FIAT_KYC);
-  }, [activePanel, setClosable]);
 
   const historyView = (
     <div className={"mx-auto flex w-[560px] max-w-full flex-col items-center"}>
