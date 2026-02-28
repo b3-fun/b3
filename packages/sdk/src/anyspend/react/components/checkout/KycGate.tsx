@@ -237,8 +237,8 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
     );
   }
 
-  // Needs review
-  if (kycStatus.status === "needs_review") {
+  // Needs review or completed (submitted, awaiting Persona decision)
+  if (kycStatus.status === "needs_review" || kycStatus.status === "completed") {
     return (
       <motion.div
         initial={{ opacity: 0, y: 8 }}
