@@ -1,0 +1,244 @@
+---
+title: "Platform API"
+description: "Programmatic access to AnySpend - create payment links, manage products, track transactions, and more"
+---
+
+# Platform API
+
+The AnySpend Platform API gives you full programmatic control over your payment infrastructure. Build integrations, automate workflows, and let AI agents manage your commerce stack -- all through a clean, Stripe-style REST API.
+
+## Who is this for?
+
+- **Developers** building custom integrations with AnySpend
+- **AI agents** that create payment links, manage products, or pull analytics
+- **Automation platforms** orchestrating commerce workflows (Zapier, n8n, custom scripts)
+- **Backend services** that need to programmatically create checkout sessions or track transactions
+
+## Quick start
+
+Create a payment link in 3 lines:
+
+```bash
+curl -X POST https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "Authorization: Bearer asp_live_abc123..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Premium Membership",
+    "amount": "10000000",
+    "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "chain_id": 8453,
+    "recipient_address": "0xYourAddress..."
+  }'
+```
+
+The API returns a Stripe-style response with the created resource:
+
+```json
+{
+  "object": "payment_link",
+  "id": "pl_abc123def456",
+  "name": "Premium Membership",
+  "short_code": "xK9mQ2",
+  "amount": "10000000",
+  "token_address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+  "chain_id": 8453,
+  "recipient_address": "0xYourAddress...",
+  "url": "https://platform-api.anyspend.com/pay/xK9mQ2",
+  "is_active": true,
+  "items": [],
+  "created_at": 1709078400000,
+  "updated_at": 1709078400000
+}
+```
+
+## Associating payments with customers
+
+There are two patterns for linking AnySpend payments back to your users:
+
+### Pattern 1: URL parameters (simple)
+
+Append `client_reference_id` and `metadata` to your payment link URL:
+
+```
+https://anyspend.com/pay/xK9mQ2?client_reference_id=order_123&metadata[user_id]=clerk_abc
+```
+
+These values flow through to your `payment.completed` webhook automatically.
+
+### Pattern 2: Server-side sessions (enterprise)
+
+Create a checkout session on your backend with full customer context:
+
+```bash
+curl -X POST https://platform-api.anyspend.com/api/v1/checkout-sessions \
+  -H "Authorization: Bearer asp_live_abc123..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "payment_link_id": "pl_abc123def456",
+    "client_reference_id": "order_456",
+    "customer_email": "alice@example.com",
+    "customer_name": "Alice Smith",
+    "metadata": { "user_id": "clerk_abc", "plan": "pro" },
+    "success_url": "https://example.com/success?session_id={SESSION_ID}"
+  }'
+```
+
+The response includes a `url` field -- redirect your customer there to pay. All data is included in the webhook when the payment completes.
+
+<Tip>
+  See the [Webhooks Guide](/anyspend/api/webhooks-guide#reconciling-payments-with-your-system) for complete examples of reconciling payments in your webhook handler.
+</Tip>
+
+## Base URL
+
+All API requests are made to:
+
+```
+https://platform-api.anyspend.com/api/v1
+```
+
+## Authentication tiers
+
+The API uses three authentication tiers depending on the endpoint:
+
+| Tier | Auth required | Rate limit | Use case |
+|------|--------------|------------|----------|
+| **Open** | None (IP-based rate limiting) | 5 requests/min per IP | Quick Pay -- one-shot payments with no account needed |
+| **API Key** | `asp_xxx` key via header | 120 requests/min per key | All standard API operations -- CRUD on payment links, products, transactions, etc. |
+| **JWT** | Dashboard session token | Standard session limits | Dashboard-only routes (managed automatically by the web app) |
+
+Most developers will use API Key authentication. See the [Authentication](/anyspend/api/authentication) page for details on creating and managing keys.
+
+## Response format
+
+Every API response follows a consistent Stripe-style format.
+
+### Single resource
+
+```json
+{
+  "object": "payment_link",
+  "id": "pl_abc123def456",
+  "name": "Premium Membership",
+  "amount": "10000000",
+  "is_active": true,
+  "created_at": 1709078400000
+}
+```
+
+The `object` field tells you the resource type. The `id` field is a unique identifier.
+
+### List of resources
+
+```json
+{
+  "object": "list",
+  "data": [
+    { "object": "payment_link", "id": "pl_abc123...", "name": "Premium" },
+    { "object": "payment_link", "id": "pl_def456...", "name": "Basic" }
+  ],
+  "has_more": true,
+  "total_count": 142,
+  "url": "/api/v1/payment-links"
+}
+```
+
+See the [Pagination & Filtering](/anyspend/api/pagination) page for details on navigating list responses.
+
+### Error response
+
+```json
+{
+  "error": {
+    "type": "invalid_request_error",
+    "code": "missing_required_field",
+    "message": "The 'name' field is required.",
+    "param": "name"
+  }
+}
+```
+
+See the [Errors](/anyspend/api/errors) page for the full error taxonomy.
+
+### Deleted resource
+
+```json
+{
+  "object": "payment_link",
+  "id": "pl_abc123def456",
+  "deleted": true
+}
+```
+
+## Rate limits
+
+Rate limits vary by authentication tier. When you exceed the limit, the API returns a `429` status with a `rate_limit_error`:
+
+| Tier | Limit | Window |
+|------|-------|--------|
+| Open (Quick Pay) | 5 requests | 1 minute |
+| API Key | 120 requests | 1 minute |
+
+The response headers include rate limit information:
+
+```
+X-RateLimit-Limit: 120
+X-RateLimit-Remaining: 117
+X-RateLimit-Reset: 1709078460
+```
+
+## Idempotency
+
+For safe retries on `POST` and `PATCH` requests, include an `Idempotency-Key` header. Duplicate requests with the same key and body return the cached response. See the [Idempotency](/anyspend/api/idempotency) page for details.
+
+## Available resources
+
+<CardGroup cols={2}>
+<Card title="Authentication" icon="key" href="/anyspend/api/authentication">
+  Create and manage API keys, understand permission levels, and follow security best practices.
+</Card>
+
+<Card title="Payment Links" icon="link" href="/anyspend/api/payment-links">
+  Create, update, and manage payment links with items, stats, sessions, and visitor tracking.
+</Card>
+
+<Card title="Products" icon="box" href="/anyspend/api/products">
+  Manage your product catalog -- create products that can be attached to payment links.
+</Card>
+
+<Card title="Checkout Sessions" icon="credit-card" href="/anyspend/api/checkout-sessions-api">
+  Create and track checkout sessions, monitor payment status, and handle completions.
+</Card>
+
+<Card title="Transactions" icon="arrow-right-arrow-left" href="/anyspend/api/transactions">
+  Query transaction history, filter by status, and pull settlement details.
+</Card>
+
+<Card title="Customers" icon="users" href="/anyspend/api/customers">
+  Track customer wallets, view purchase history, and manage customer records.
+</Card>
+
+<Card title="Webhooks" icon="bell" href="/anyspend/api/webhooks-api">
+  Register webhook endpoints to receive real-time notifications for payment events.
+</Card>
+
+<Card title="Discount Codes" icon="tag" href="/anyspend/api/discount-codes">
+  Create and manage discount codes for your payment links.
+</Card>
+</CardGroup>
+
+## Next steps
+
+<Steps>
+<Step title="Get your API key">
+  Go to your [AnySpend Dashboard](https://anyspend.com/dashboard) under **Settings > API Keys** and create a key with the permissions you need.
+</Step>
+
+<Step title="Make your first request">
+  Use the curl example above or your preferred HTTP client to create a payment link.
+</Step>
+
+<Step title="Set up webhooks">
+  Register a webhook endpoint to receive real-time notifications when payments complete.
+</Step>
+</Steps>

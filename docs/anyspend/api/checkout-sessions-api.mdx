@@ -1,0 +1,583 @@
+---
+title: "Checkout Sessions"
+description: "Server-side checkout session management for programmatic payment flows"
+---
+
+Checkout sessions represent an individual payment attempt. You can create sessions server-side to generate unique checkout URLs for each customer, pre-fill payment details, and track conversions with your own reference IDs.
+
+<Info>
+  Checkout sessions expire after 30 minutes by default. Use the `expires_in` parameter to customize the expiration window (minimum 5 minutes, maximum 24 hours).
+</Info>
+
+## The Checkout Session object
+
+<ResponseField name="id" type="string">
+  Unique identifier for the checkout session (e.g., `cs_abc123`).
+</ResponseField>
+
+<ResponseField name="url" type="string">
+  The checkout URL to redirect the customer to.
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  Current status of the session. One of: `open`, `processing`, `completed`, `expired`, `failed`.
+</ResponseField>
+
+<ResponseField name="payment_link_id" type="string | null">
+  Associated payment link ID, if the session was created from a payment link.
+</ResponseField>
+
+<ResponseField name="product_id" type="string | null">
+  Associated product ID.
+</ResponseField>
+
+<ResponseField name="token_address" type="string">
+  Contract address of the token to receive.
+</ResponseField>
+
+<ResponseField name="chain_id" type="number">
+  Chain ID where you want to receive payment.
+</ResponseField>
+
+<ResponseField name="recipient_address" type="string">
+  Wallet address that receives the payment.
+</ResponseField>
+
+<ResponseField name="amount" type="string">
+  Payment amount in the token's smallest unit.
+</ResponseField>
+
+<ResponseField name="amount_usd" type="string | null">
+  USD equivalent at the time of session creation.
+</ResponseField>
+
+<ResponseField name="success_url" type="string | null">
+  URL the customer is redirected to after successful payment. Supports template variables.
+</ResponseField>
+
+<ResponseField name="cancel_url" type="string | null">
+  URL the customer is redirected to if they cancel.
+</ResponseField>
+
+<ResponseField name="client_reference_id" type="string | null">
+  Your internal reference ID for this session.
+</ResponseField>
+
+<ResponseField name="metadata" type="object | null">
+  Arbitrary key-value pairs passed through to webhooks and the transaction.
+</ResponseField>
+
+<ResponseField name="customer_email" type="string | null">
+  Email address of the customer. Encrypted at rest, included in webhook payloads.
+</ResponseField>
+
+<ResponseField name="customer_name" type="string | null">
+  Name of the customer. Encrypted at rest, included in webhook payloads.
+</ResponseField>
+
+<ResponseField name="payer_address" type="string | null">
+  Wallet address of the payer (populated after connection).
+</ResponseField>
+
+<ResponseField name="tx_hash" type="string | null">
+  On-chain transaction hash (populated after submission).
+</ResponseField>
+
+<ResponseField name="customer_id" type="string | null">
+  Associated customer ID (populated after payment).
+</ResponseField>
+
+<ResponseField name="form_data" type="object | null">
+  Custom form data submitted by the customer.
+</ResponseField>
+
+<ResponseField name="shipping_address" type="object | null">
+  Shipping address provided by the customer.
+</ResponseField>
+
+<ResponseField name="utm_source" type="string | null">
+  UTM source parameter for attribution.
+</ResponseField>
+
+<ResponseField name="utm_medium" type="string | null">
+  UTM medium parameter for attribution.
+</ResponseField>
+
+<ResponseField name="utm_campaign" type="string | null">
+  UTM campaign parameter for attribution.
+</ResponseField>
+
+<ResponseField name="expires_at" type="string">
+  ISO 8601 expiration timestamp.
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  ISO 8601 creation timestamp.
+</ResponseField>
+
+<ResponseField name="completed_at" type="string | null">
+  ISO 8601 completion timestamp.
+</ResponseField>
+
+### Session statuses
+
+| Status | Description |
+|--------|-------------|
+| `open` | Session is active and waiting for the customer to pay. |
+| `processing` | Customer has initiated payment; transaction is being processed on-chain. |
+| `completed` | Payment confirmed and received by the recipient. |
+| `expired` | Session expired before the customer completed payment. |
+| `failed` | Payment failed due to on-chain error or timeout. |
+
+### URL template variables
+
+The `success_url` and `cancel_url` fields support template variables that are replaced with actual values when the customer is redirected:
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `{SESSION_ID}` | The checkout session ID | `cs_abc123` |
+
+<Tip>
+  Use template variables to look up session details on your server after redirect:
+  `https://example.com/success?session_id={SESSION_ID}`
+</Tip>
+
+---
+
+## List checkout sessions
+
+Retrieve a paginated list of checkout sessions.
+
+<ParamField query="status" type="string">
+  Filter by session status: `open`, `processing`, `completed`, `expired`, `failed`.
+</ParamField>
+
+<ParamField query="payment_link_id" type="string">
+  Filter by payment link ID.
+</ParamField>
+
+<ParamField query="page" type="number" default={1}>
+  Page number for pagination.
+</ParamField>
+
+<ParamField query="limit" type="number" default={20}>
+  Number of results per page (max 100).
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/checkout-sessions?status=completed&page=1&limit=20" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+import { AnySpend } from "@b3dotfun/sdk";
+
+const anyspend = new AnySpend(process.env.ANYSPEND_API_KEY!);
+
+const { data, pagination } = await anyspend.checkoutSessions.list({
+  status: "completed",
+  page: 1,
+  limit: 20,
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "data": [
+        {
+          "id": "cs_abc123",
+          "url": "https://pay.anyspend.com/s/cs_abc123",
+          "status": "completed",
+          "payment_link_id": "pl_abc123",
+          "product_id": null,
+          "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "chain_id": 1,
+          "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+          "amount": "50000000",
+          "amount_usd": "50.00",
+          "success_url": "https://example.com/success?session_id=cs_abc123",
+          "cancel_url": "https://example.com/cancel",
+          "client_reference_id": "order_12345",
+          "metadata": {
+            "order_id": "12345"
+          },
+          "payer_address": "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+          "tx_hash": "0x9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e",
+          "customer_id": "cust_abc123",
+          "form_data": null,
+          "shipping_address": null,
+          "utm_source": "twitter",
+          "utm_medium": "social",
+          "utm_campaign": "launch_feb_2026",
+          "expires_at": "2026-02-25T08:45:00Z",
+          "created_at": "2026-02-25T08:15:00Z",
+          "completed_at": "2026-02-25T08:16:30Z"
+        }
+      ],
+      "pagination": {
+        "page": 1,
+        "limit": 20,
+        "total": 340,
+        "total_pages": 17,
+        "has_more": true
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Create a checkout session
+
+Create a server-side checkout session with a unique payment URL. Use this for programmatic integrations where you control the checkout flow from your backend.
+
+<ParamField body="payment_link_id" type="string">
+  Create the session from an existing payment link. This inherits the link's configuration. Either `payment_link_id` or the manual fields (`token_address`, `chain_id`, `recipient_address`, `amount`) are required.
+</ParamField>
+
+<ParamField body="token_address" type="string">
+  Contract address of the token to receive. Required if `payment_link_id` is not provided.
+</ParamField>
+
+<ParamField body="chain_id" type="number">
+  Chain ID where you want to receive payment. Required if `payment_link_id` is not provided.
+</ParamField>
+
+<ParamField body="recipient_address" type="string">
+  Wallet address that receives the payment. Required if `payment_link_id` is not provided.
+</ParamField>
+
+<ParamField body="amount" type="string">
+  Payment amount in the token's smallest unit. Required if `payment_link_id` is not provided.
+</ParamField>
+
+<ParamField body="product_id" type="string">
+  Associate the session with a product.
+</ParamField>
+
+<ParamField body="success_url" type="string">
+  URL to redirect the customer to after successful payment. Supports `{SESSION_ID}` template variable.
+</ParamField>
+
+<ParamField body="cancel_url" type="string">
+  URL to redirect the customer to if they cancel.
+</ParamField>
+
+<ParamField body="client_reference_id" type="string">
+  Your internal reference ID (e.g., order ID). Maximum 200 characters.
+</ParamField>
+
+<ParamField body="metadata" type="object">
+  Arbitrary key-value pairs passed through to webhooks and the resulting transaction. Up to 50 keys, 500 character values.
+</ParamField>
+
+<ParamField body="customer_email" type="string">
+  Customer email address. Encrypted at rest and included in webhook payloads for order fulfillment.
+</ParamField>
+
+<ParamField body="customer_name" type="string">
+  Customer name. Encrypted at rest and included in webhook payloads for order fulfillment.
+</ParamField>
+
+<ParamField body="expires_in" type="number" default={1800}>
+  Session expiration time in seconds. Minimum 300 (5 minutes), maximum 86400 (24 hours). Default: 1800 (30 minutes).
+</ParamField>
+
+<ParamField body="utm_source" type="string">
+  UTM source for attribution tracking.
+</ParamField>
+
+<ParamField body="utm_medium" type="string">
+  UTM medium for attribution tracking.
+</ParamField>
+
+<ParamField body="utm_campaign" type="string">
+  UTM campaign for attribution tracking.
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+# Create from a payment link
+curl -X POST "https://platform-api.anyspend.com/api/v1/checkout-sessions" \
+  -H "Authorization: Bearer asp_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "payment_link_id": "pl_abc123",
+    "success_url": "https://example.com/success?session_id={SESSION_ID}",
+    "cancel_url": "https://example.com/cancel",
+    "client_reference_id": "order_12345",
+    "metadata": {
+      "order_id": "12345"
+    },
+    "customer_email": "alice@example.com",
+    "customer_name": "Alice Smith",
+    "expires_in": 3600
+  }'
+
+# Create with manual configuration
+curl -X POST "https://platform-api.anyspend.com/api/v1/checkout-sessions" \
+  -H "Authorization: Bearer asp_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "chain_id": 1,
+    "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+    "amount": "25000000",
+    "success_url": "https://example.com/success?session_id={SESSION_ID}",
+    "cancel_url": "https://example.com/cancel",
+    "client_reference_id": "inv_67890",
+    "utm_source": "email",
+    "utm_medium": "newsletter",
+    "utm_campaign": "february_promo"
+  }'
+```
+
+```typescript SDK
+// Create from a payment link
+const session = await anyspend.checkoutSessions.create({
+  paymentLinkId: "pl_abc123",
+  successUrl: "https://example.com/success?session_id={SESSION_ID}",
+  cancelUrl: "https://example.com/cancel",
+  clientReferenceId: "order_12345",
+  metadata: {
+    order_id: "12345",
+    user_email: "alice@example.com",
+  },
+  expiresIn: 3600,
+});
+
+// Redirect the customer
+console.log(session.url);
+// => "https://pay.anyspend.com/s/cs_newSession123"
+
+// Create with manual configuration
+const manualSession = await anyspend.checkoutSessions.create({
+  tokenAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+  chainId: 1,
+  recipientAddress: "0x1234567890abcdef1234567890abcdef12345678",
+  amount: "25000000",
+  successUrl: "https://example.com/success?session_id={SESSION_ID}",
+  cancelUrl: "https://example.com/cancel",
+  clientReferenceId: "inv_67890",
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "id": "cs_newSession123",
+      "url": "https://pay.anyspend.com/s/cs_newSession123",
+      "status": "open",
+      "payment_link_id": "pl_abc123",
+      "product_id": null,
+      "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "chain_id": 1,
+      "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+      "amount": "50000000",
+      "amount_usd": "50.00",
+      "success_url": "https://example.com/success?session_id={SESSION_ID}",
+      "cancel_url": "https://example.com/cancel",
+      "client_reference_id": "order_12345",
+      "metadata": {
+        "order_id": "12345",
+        "user_email": "alice@example.com"
+      },
+      "payer_address": null,
+      "tx_hash": null,
+      "customer_id": null,
+      "form_data": null,
+      "shipping_address": null,
+      "utm_source": null,
+      "utm_medium": null,
+      "utm_campaign": null,
+      "expires_at": "2026-02-27T11:30:00Z",
+      "created_at": "2026-02-27T10:30:00Z",
+      "completed_at": null
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Retrieve a checkout session
+
+<ParamField path="id" type="string" required>
+  The checkout session ID (e.g., `cs_abc123`).
+</ParamField>
+
+<Tip>
+  Use this endpoint in your `success_url` handler to verify payment status and retrieve transaction details after the customer is redirected back to your site.
+</Tip>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/checkout-sessions/cs_abc123" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+const session = await anyspend.checkoutSessions.retrieve("cs_abc123");
+
+if (session.status === "completed") {
+  // Payment was successful
+  console.log("Transaction hash:", session.tx_hash);
+  console.log("Payer:", session.payer_address);
+}
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    Returns the full [Checkout Session object](#the-checkout-session-object).
+  </Tab>
+</Tabs>
+
+---
+
+## Expire a checkout session
+
+Manually expire an open checkout session. This is useful when the underlying order is cancelled or the payment is no longer needed.
+
+<ParamField path="id" type="string" required>
+  The checkout session ID.
+</ParamField>
+
+<Warning>
+  Only sessions with `status: "open"` can be expired. Attempting to expire a session in any other status will return a `400 Bad Request` error.
+</Warning>
+
+<CodeGroup>
+```bash cURL
+curl -X POST "https://platform-api.anyspend.com/api/v1/checkout-sessions/cs_abc123/expire" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+const expired = await anyspend.checkoutSessions.expire("cs_abc123");
+console.log(expired.status); // => "expired"
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "id": "cs_abc123",
+      "url": "https://pay.anyspend.com/s/cs_abc123",
+      "status": "expired",
+      "payment_link_id": "pl_abc123",
+      "product_id": null,
+      "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "chain_id": 1,
+      "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+      "amount": "50000000",
+      "amount_usd": "50.00",
+      "success_url": "https://example.com/success?session_id=cs_abc123",
+      "cancel_url": "https://example.com/cancel",
+      "client_reference_id": "order_12345",
+      "metadata": {
+        "order_id": "12345",
+        "user_email": "alice@example.com"
+      },
+      "payer_address": null,
+      "tx_hash": null,
+      "customer_id": null,
+      "form_data": null,
+      "shipping_address": null,
+      "utm_source": null,
+      "utm_medium": null,
+      "utm_campaign": null,
+      "expires_at": "2026-02-27T10:35:00Z",
+      "created_at": "2026-02-27T10:30:00Z",
+      "completed_at": null
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Common patterns
+
+### Server-side checkout flow
+
+A typical server-side integration creates a checkout session on your backend and redirects the customer to the session URL:
+
+```typescript
+// 1. Your server creates a session
+app.post("/create-checkout", async (req, res) => {
+  const session = await anyspend.checkoutSessions.create({
+    paymentLinkId: "pl_abc123",
+    successUrl: "https://yoursite.com/success?session_id={SESSION_ID}",
+    cancelUrl: "https://yoursite.com/cart",
+    clientReferenceId: req.body.orderId,
+    metadata: {
+      user_id: req.user.id,
+    },
+    expiresIn: 1800, // 30 minutes
+  });
+
+  // 2. Redirect customer to pay
+  res.redirect(303, session.url);
+});
+
+// 3. Handle the redirect after payment
+app.get("/success", async (req, res) => {
+  const session = await anyspend.checkoutSessions.retrieve(
+    req.query.session_id
+  );
+
+  if (session.status === "completed") {
+    // Fulfill the order
+    await fulfillOrder(session.client_reference_id, {
+      txHash: session.tx_hash,
+      payer: session.payer_address,
+    });
+  }
+
+  res.render("success", { session });
+});
+```
+
+<Warning>
+  Always verify the session status server-side after redirect. Do not rely solely on the redirect to confirm payment -- use webhooks for reliable payment confirmation.
+</Warning>
+
+### Polling for session completion
+
+If you prefer polling over webhooks, you can check the session status periodically:
+
+```typescript
+async function waitForPayment(sessionId: string, timeoutMs = 300000) {
+  const startTime = Date.now();
+
+  while (Date.now() - startTime < timeoutMs) {
+    const session = await anyspend.checkoutSessions.retrieve(sessionId);
+
+    if (session.status === "completed") {
+      return session;
+    }
+
+    if (session.status === "expired" || session.status === "failed") {
+      throw new Error(`Session ${session.status}: ${sessionId}`);
+    }
+
+    // Wait 3 seconds before polling again
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+  }
+
+  throw new Error(`Timeout waiting for payment: ${sessionId}`);
+}
+```
+
+<Tip>
+  For production use, we strongly recommend using [webhooks](/anyspend/api/webhooks) instead of polling. Webhooks provide real-time notifications and do not require keeping a connection open.
+</Tip>

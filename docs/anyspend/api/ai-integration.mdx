@@ -1,0 +1,484 @@
+---
+title: "AI & Agent Integration"
+description: "Use the AnySpend Platform API with AI agents and LLMs"
+---
+
+The AnySpend Platform API is designed with **AI-first integration** in mind. Every endpoint has a unique `operationId`, detailed JSON schemas, and consistent conventions that make it straightforward to use with LLM function calling, autonomous agents, and AI orchestration frameworks.
+
+## OpenAPI Specification
+
+The full OpenAPI 3.1 specification is available at:
+
+```
+GET /api/v1/openapi.json
+```
+
+```bash
+curl https://platform-api.anyspend.com/api/v1/openapi.json -o openapi.json
+```
+
+The spec includes:
+- A unique `operationId` for every endpoint (e.g. `createPaymentLink`, `listTransactions`)
+- Detailed request and response JSON schemas with descriptions
+- Authentication requirements
+- Error response schemas
+
+<Tip>
+  Use the OpenAPI spec to auto-generate tool definitions for your LLM. Most AI frameworks can convert OpenAPI operations into function/tool definitions programmatically.
+</Tip>
+
+## LLM Function Calling
+
+### Claude (Anthropic)
+
+Convert OpenAPI operations into Claude tool definitions. Here is an example tool definition for creating a payment link:
+
+```json
+{
+  "name": "create_payment_link",
+  "description": "Create a new payment link that can be shared with customers to collect crypto payments. Returns the payment link object including the shareable URL.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "description": "Human-readable name for the payment link (e.g. 'Pro Plan Monthly')"
+      },
+      "amount": {
+        "type": "string",
+        "description": "Payment amount in the token's smallest unit. For USDC (6 decimals), '1000000' = 1 USDC."
+      },
+      "recipient_address": {
+        "type": "string",
+        "description": "Ethereum address (0x-prefixed, 42 characters) that will receive the payment"
+      },
+      "token_address": {
+        "type": "string",
+        "description": "ERC-20 token contract address. Defaults to USDC on Base if omitted."
+      },
+      "chain_id": {
+        "type": "number",
+        "description": "Target chain ID. Defaults to 8453 (Base)."
+      },
+      "description": {
+        "type": "string",
+        "description": "Optional description shown to the payer on the checkout page"
+      }
+    },
+    "required": ["name", "amount", "recipient_address"]
+  }
+}
+```
+
+### OpenAI
+
+The equivalent function definition for OpenAI's function calling:
+
+```json
+{
+  "type": "function",
+  "function": {
+    "name": "create_payment_link",
+    "description": "Create a new payment link that can be shared with customers to collect crypto payments. Returns the payment link object including the shareable URL.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable name for the payment link"
+        },
+        "amount": {
+          "type": "string",
+          "description": "Payment amount in smallest unit (e.g. '1000000' for 1 USDC)"
+        },
+        "recipient_address": {
+          "type": "string",
+          "description": "Ethereum address to receive the payment"
+        },
+        "token_address": {
+          "type": "string",
+          "description": "ERC-20 token contract address (default: USDC on Base)"
+        },
+        "chain_id": {
+          "type": "number",
+          "description": "Target chain ID (default: 8453 / Base)"
+        },
+        "description": {
+          "type": "string",
+          "description": "Description shown on checkout page"
+        }
+      },
+      "required": ["name", "amount", "recipient_address"]
+    }
+  }
+}
+```
+
+## Example: Conversation Flow
+
+Here is how an AI assistant might use the AnySpend tools in a conversation:
+
+<Steps>
+  <Step title="User asks to create a payment link">
+    **User:** "Create a payment link for 50 USDC for the Pro plan subscription"
+
+    The AI decides to call the `create_payment_link` tool.
+  </Step>
+  <Step title="AI calls the tool">
+    ```json
+    {
+      "name": "create_payment_link",
+      "input": {
+        "name": "Pro Plan Subscription",
+        "amount": "50000000",
+        "recipient_address": "0xYourConfiguredAddress",
+        "description": "Monthly Pro plan subscription"
+      }
+    }
+    ```
+  </Step>
+  <Step title="Tool returns the result">
+    ```json
+    {
+      "id": "pl_abc123",
+      "url": "https://pay.anyspend.com/pl_abc123",
+      "name": "Pro Plan Subscription",
+      "amount": "50000000",
+      "status": "active"
+    }
+    ```
+  </Step>
+  <Step title="AI responds to the user">
+    "I've created a payment link for 50 USDC for the Pro Plan Subscription. Here's the link: https://pay.anyspend.com/pl_abc123"
+  </Step>
+</Steps>
+
+## Building an AI Payment Agent
+
+Below is a complete example of an AI agent that can manage payments using Claude and the AnySpend SDK:
+
+```typescript
+import Anthropic from "@anthropic-ai/sdk";
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+
+const anthropic = new Anthropic();
+const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!);
+
+// Define the tools the agent can use
+const tools: Anthropic.Tool[] = [
+  {
+    name: "create_payment_link",
+    description: "Create a payment link for collecting crypto payments",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        name: { type: "string", description: "Name for the link" },
+        amount: { type: "string", description: "Amount in smallest unit" },
+        recipient_address: { type: "string", description: "Recipient ETH address" },
+      },
+      required: ["name", "amount", "recipient_address"],
+    },
+  },
+  {
+    name: "list_recent_transactions",
+    description: "List recent transactions with optional status filter",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        status: { type: "string", enum: ["completed", "pending", "failed"] },
+        limit: { type: "number", description: "Max results (default 10)" },
+      },
+    },
+  },
+  {
+    name: "get_transaction_stats",
+    description: "Get aggregate transaction statistics",
+    input_schema: {
+      type: "object" as const,
+      properties: {},
+    },
+  },
+];
+
+// Validate required string fields from LLM tool input
+function requireString(input: Record<string, unknown>, key: string): string {
+  const value = input[key];
+  if (typeof value !== "string" || !value) {
+    throw new Error(`Missing or invalid field: ${key}`);
+  }
+  return value;
+}
+
+// Execute a tool call
+async function executeTool(name: string, input: Record<string, unknown>) {
+  switch (name) {
+    case "create_payment_link":
+      return await platform.paymentLinks.create({
+        name: requireString(input, "name"),
+        amount: requireString(input, "amount"),
+        recipient_address: requireString(input, "recipient_address"),
+      });
+
+    case "list_recent_transactions":
+      return await platform.transactions.list({
+        status: typeof input.status === "string" ? input.status : undefined,
+        limit: typeof input.limit === "number" ? input.limit : 10,
+      });
+
+    case "get_transaction_stats":
+      return await platform.transactions.stats();
+
+    default:
+      throw new Error(`Unknown tool: ${name}`);
+  }
+}
+
+const SYSTEM_PROMPT =
+  "You are a payment management assistant. Use the provided tools to help users create payment links, view transactions, and manage their AnySpend account. Amounts are in the token's smallest unit -- for USDC with 6 decimals, 1 USDC = 1000000.";
+
+// Run the agent loop
+async function chat(userMessage: string) {
+  const messages: Anthropic.MessageParam[] = [
+    { role: "user", content: userMessage },
+  ];
+
+  let response = await anthropic.messages.create({
+    model: "claude-opus-4-6",
+    max_tokens: 1024,
+    tools,
+    messages,
+    system: SYSTEM_PROMPT,
+  });
+
+  // Handle tool use in a loop
+  while (response.stop_reason === "tool_use") {
+    const toolUseBlocks = response.content.filter(
+      (b): b is Anthropic.ContentBlock & { type: "tool_use" } =>
+        b.type === "tool_use"
+    );
+
+    const toolResults: Anthropic.ToolResultBlockParam[] = [];
+    for (const block of toolUseBlocks) {
+      const result = await executeTool(
+        block.name,
+        block.input as Record<string, unknown>
+      );
+      toolResults.push({
+        type: "tool_result",
+        tool_use_id: block.id,
+        content: JSON.stringify(result),
+      });
+    }
+
+    messages.push({ role: "assistant", content: response.content });
+    messages.push({ role: "user", content: toolResults });
+
+    response = await anthropic.messages.create({
+      model: "claude-opus-4-6",
+      max_tokens: 1024,
+      tools,
+      messages,
+      system: SYSTEM_PROMPT,
+    });
+  }
+
+  // Extract text response
+  const textBlock = response.content.find((b) => b.type === "text");
+  return textBlock?.type === "text" ? textBlock.text : "";
+}
+
+// Usage
+const reply = await chat("Create a 25 USDC payment link for a t-shirt order");
+console.log(reply);
+```
+
+## MCP Server (Coming Soon)
+
+<Info>
+  We are building a Model Context Protocol (MCP) server that will expose the full AnySpend Platform API as MCP tools. This will allow any MCP-compatible AI client (Claude Desktop, Cursor, Windsurf, etc.) to interact with your AnySpend account directly.
+
+  Join the [waitlist](https://anyspend.com/mcp-waitlist) to get early access.
+</Info>
+
+The MCP server will support:
+- All CRUD operations for payment links, products, customers, and webhooks
+- Transaction querying and export
+- Analytics and stats
+- Checkout session management
+
+## Additional Tool Definitions
+
+Here are more tool definitions you can add to your agent for comprehensive coverage:
+
+<AccordionGroup>
+  <Accordion title="list_payment_links">
+    ```json
+    {
+      "name": "list_payment_links",
+      "description": "List all payment links, optionally filtered by status",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["active", "expired", "disabled"],
+            "description": "Filter by link status"
+          },
+          "limit": {
+            "type": "number",
+            "description": "Max results to return (default 20, max 100)"
+          }
+        }
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="get_analytics_overview">
+    ```json
+    {
+      "name": "get_analytics_overview",
+      "description": "Get high-level analytics overview including total volume, transaction count, and top payment links",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "Start date in ISO 8601 format"
+          },
+          "to": {
+            "type": "string",
+            "description": "End date in ISO 8601 format"
+          }
+        }
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="create_discount_code">
+    ```json
+    {
+      "name": "create_discount_code",
+      "description": "Create a discount code that customers can apply at checkout",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "The discount code string (e.g. 'SUMMER20')"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["percentage", "fixed"],
+            "description": "Discount type: percentage off or fixed amount off"
+          },
+          "value": {
+            "type": "string",
+            "description": "Discount value: percentage (e.g. '20' for 20%) or fixed amount in smallest unit"
+          },
+          "max_uses": {
+            "type": "number",
+            "description": "Maximum number of times this code can be used"
+          },
+          "expires_at": {
+            "type": "string",
+            "description": "Expiration date in ISO 8601 format"
+          }
+        },
+        "required": ["code", "type", "value"]
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="export_transactions">
+    ```json
+    {
+      "name": "export_transactions",
+      "description": "Export transactions as CSV or JSON for reporting and analysis",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "format": {
+            "type": "string",
+            "enum": ["csv", "json"],
+            "description": "Export format (default: csv)"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["completed", "pending", "failed"],
+            "description": "Filter by transaction status"
+          },
+          "from": {
+            "type": "string",
+            "description": "Start date in ISO 8601 format"
+          },
+          "to": {
+            "type": "string",
+            "description": "End date in ISO 8601 format"
+          }
+        }
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Use read-only keys for query agents" icon="eye">
+    AI agents that only read data (list transactions, view analytics) should use API keys with **read-only** permission. This prevents accidental mutations from hallucinated tool calls.
+  </Card>
+  <Card title="Use write keys for action agents" icon="pen">
+    Agents that need to create payment links or manage resources need **read-write** API keys. Scope them to the minimum permissions required.
+  </Card>
+  <Card title="Always validate amounts" icon="calculator">
+    LLMs can hallucinate numbers. Before executing a tool call that involves an amount, validate that the amount is reasonable. Consider adding a confirmation step for amounts above a threshold.
+  </Card>
+  <Card title="Log all tool calls" icon="file-lines">
+    Log every tool call and its result for auditability. This is especially important for agents that handle real money.
+  </Card>
+</CardGroup>
+
+<Warning>
+  **Never expose your API key in client-side code or AI prompts that are visible to end users.** Use a server-side proxy to make API calls on behalf of your AI agent. If using Claude or OpenAI function calling, the API key should only exist in your backend tool execution layer -- never in the LLM system prompt.
+</Warning>
+
+## Generating Tool Definitions from OpenAPI
+
+You can programmatically convert the OpenAPI spec into tool definitions for any LLM framework:
+
+```typescript
+// Fetch the OpenAPI spec and convert to tool definitions
+async function generateTools() {
+  const resp = await fetch(
+    "https://platform-api.anyspend.com/api/v1/openapi.json"
+  );
+  const spec = await resp.json();
+
+  const tools = [];
+
+  for (const [path, methods] of Object.entries(spec.paths)) {
+    for (const [method, operation] of Object.entries(methods as Record<string, any>)) {
+      if (!operation.operationId) continue;
+
+      const tool = {
+        name: operation.operationId,
+        description: operation.summary || operation.description || "",
+        input_schema: operation.requestBody?.content?.["application/json"]?.schema || {
+          type: "object",
+          properties: {},
+        },
+      };
+
+      tools.push(tool);
+    }
+  }
+
+  return tools;
+}
+```
+
+This approach keeps your tool definitions in sync with the API as new endpoints are added.

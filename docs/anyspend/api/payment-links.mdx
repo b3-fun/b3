@@ -1,0 +1,1012 @@
+---
+title: "Payment Links"
+description: "Create, manage, and track payment links for accepting crypto payments"
+---
+
+Payment links are shareable URLs that allow your customers to pay with any token on any supported chain. Each link can be customized with branding, forms, shipping options, and more.
+
+<Info>
+  Payment links automatically handle token routing, gas abstraction, and cross-chain swaps via the AnySpend protocol.
+</Info>
+
+## The Payment Link object
+
+<ResponseField name="id" type="string">
+  Unique identifier for the payment link (e.g., `pl_abc123`).
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  Display name shown to the customer during checkout.
+</ResponseField>
+
+<ResponseField name="url" type="string">
+  The shareable checkout URL (e.g., `https://pay.anyspend.com/pl_abc123`).
+</ResponseField>
+
+<ResponseField name="short_url" type="string">
+  Shortened URL for sharing (e.g., `https://as.pay/abc123`).
+</ResponseField>
+
+<ResponseField name="token_address" type="string">
+  The token contract address you want to receive payment in.
+</ResponseField>
+
+<ResponseField name="chain_id" type="number">
+  The chain ID where you want to receive payment.
+</ResponseField>
+
+<ResponseField name="recipient_address" type="string">
+  The wallet address that receives the payment.
+</ResponseField>
+
+<ResponseField name="amount" type="string | null">
+  Fixed payment amount in the token's smallest unit. Null for variable-amount links.
+</ResponseField>
+
+<ResponseField name="min_amount" type="string | null">
+  Minimum allowed amount for variable-amount links.
+</ResponseField>
+
+<ResponseField name="max_amount" type="string | null">
+  Maximum allowed amount for variable-amount links.
+</ResponseField>
+
+<ResponseField name="suggested_amount" type="string | null">
+  Pre-filled suggested amount for variable-amount links.
+</ResponseField>
+
+<ResponseField name="description" type="string | null">
+  Description shown on the checkout page.
+</ResponseField>
+
+<ResponseField name="product_id" type="string | null">
+  Associated product ID, if linked to a product.
+</ResponseField>
+
+<ResponseField name="image_url" type="string | null">
+  Image displayed on the checkout page.
+</ResponseField>
+
+<ResponseField name="theme_color" type="string | null">
+  Hex color code for checkout page branding (e.g., `#6366f1`).
+</ResponseField>
+
+<ResponseField name="button_text" type="string | null">
+  Custom text for the pay button (default: `"Pay"`).
+</ResponseField>
+
+<ResponseField name="max_uses" type="number | null">
+  Maximum number of completed payments allowed. Null for unlimited.
+</ResponseField>
+
+<ResponseField name="uses" type="number">
+  Number of completed payments so far.
+</ResponseField>
+
+<ResponseField name="expires_at" type="string | null">
+  ISO 8601 expiration timestamp. Null for no expiration.
+</ResponseField>
+
+<ResponseField name="active" type="boolean">
+  Whether the link is currently accepting payments.
+</ResponseField>
+
+<ResponseField name="form_schema" type="object | null">
+  Custom form fields to collect from the customer during checkout.
+  <Expandable title="form_schema properties">
+    <ResponseField name="fields" type="array">
+      Array of form field definitions.
+      <Expandable title="field properties">
+        <ResponseField name="id" type="string">Unique field identifier.</ResponseField>
+        <ResponseField name="type" type="string">Field type: `text`, `email`, `phone`, `select`, `textarea`, `number`, `checkbox`.</ResponseField>
+        <ResponseField name="label" type="string">Display label.</ResponseField>
+        <ResponseField name="required" type="boolean">Whether the field is required.</ResponseField>
+        <ResponseField name="placeholder" type="string">Placeholder text.</ResponseField>
+        <ResponseField name="options" type="array">Options for `select` fields.</ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="shipping_options" type="array | null">
+  Available shipping options for physical goods.
+  <Expandable title="shipping option properties">
+    <ResponseField name="id" type="string">Unique shipping option identifier.</ResponseField>
+    <ResponseField name="name" type="string">Display name (e.g., `"Standard Shipping"`).</ResponseField>
+    <ResponseField name="amount" type="string">Shipping cost in the token's smallest unit.</ResponseField>
+    <ResponseField name="estimated_days" type="string">Estimated delivery time (e.g., `"5-7 business days"`).</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="collect_shipping_address" type="boolean">
+  Whether to collect a shipping address during checkout.
+</ResponseField>
+
+<ResponseField name="return_url" type="string | null">
+  URL to redirect the customer to after payment.
+</ResponseField>
+
+<ResponseField name="return_label" type="string | null">
+  Label for the return button (e.g., `"Back to Store"`).
+</ResponseField>
+
+<ResponseField name="branding" type="object | null">
+  Custom branding configuration.
+  <Expandable title="branding properties">
+    <ResponseField name="logo_url" type="string">Logo image URL.</ResponseField>
+    <ResponseField name="business_name" type="string">Business name displayed on checkout.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="fee_on_top" type="boolean">
+  Whether the platform fee is added on top of the payment amount (true) or absorbed by the merchant (false).
+</ResponseField>
+
+<ResponseField name="items" type="array">
+  Line items attached to this payment link.
+  <Expandable title="item properties">
+    <ResponseField name="id" type="string">Item ID.</ResponseField>
+    <ResponseField name="name" type="string">Item name.</ResponseField>
+    <ResponseField name="amount" type="string">Item price.</ResponseField>
+    <ResponseField name="quantity" type="number">Item quantity.</ResponseField>
+    <ResponseField name="image_url" type="string | null">Item image URL.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  ISO 8601 creation timestamp.
+</ResponseField>
+
+<ResponseField name="updated_at" type="string">
+  ISO 8601 last update timestamp.
+</ResponseField>
+
+---
+
+## URL parameters
+
+When sharing a payment link URL, you can append query parameters to pre-fill session data, track attribution, and associate payments with your customers.
+
+| Parameter | Description | Example |
+|-----------|-------------|---------|
+| `client_reference_id` | Your internal reference ID (order ID, user ID, etc.) | `?client_reference_id=order_123` |
+| `metadata[key]` | Arbitrary key-value metadata (bracket notation, up to 50 keys) | `?metadata[user_id]=clerk_abc&metadata[plan]=pro` |
+| `session_id` | Use a pre-created checkout session instead of creating a new one | `?session_id=cs_abc123` |
+| `success_url` | Override the redirect URL after successful payment | `?success_url=https://example.com/thanks` |
+| `cancel_url` | Override the cancel/back URL | `?cancel_url=https://example.com/cart` |
+| `utm_source` | UTM source for attribution | `?utm_source=twitter` |
+| `utm_medium` | UTM medium for attribution | `?utm_medium=social` |
+| `utm_campaign` | UTM campaign for attribution | `?utm_campaign=launch` |
+
+### Metadata limits
+
+- Maximum 50 keys per session
+- Key length: up to 40 characters
+- Value length: up to 500 characters
+
+### Example: associating payments with your customers
+
+```
+https://anyspend.com/pay/abc123?client_reference_id=order_456&metadata[user_id]=clerk_abc&metadata[plan]=pro
+```
+
+All parameters are passed through to webhooks, so you can reconcile payments on your backend.
+
+<Tip>
+  For enterprise integrations that need full control, use the [Checkout Sessions API](/anyspend/api/checkout-sessions-api) to create sessions server-side with `customer_email`, `customer_name`, `metadata`, and `client_reference_id`, then redirect using the returned `url` or append `?session_id=` to your payment link.
+</Tip>
+
+---
+
+## List payment links
+
+<ParamField query="search" type="string">
+  Search payment links by name or description.
+</ParamField>
+
+<ParamField query="active" type="boolean">
+  Filter by active status. Omit to return all links.
+</ParamField>
+
+<ParamField query="sort" type="string" default="created_at">
+  Sort field. One of: `created_at`, `updated_at`, `name`, `uses`.
+</ParamField>
+
+<ParamField query="order" type="string" default="desc">
+  Sort order. One of: `asc`, `desc`.
+</ParamField>
+
+<ParamField query="page" type="number" default={1}>
+  Page number for pagination.
+</ParamField>
+
+<ParamField query="limit" type="number" default={20}>
+  Number of results per page (max 100).
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/payment-links?active=true&sort=created_at&order=desc&page=1&limit=20" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+import { AnySpend } from "@b3dotfun/sdk";
+
+const anyspend = new AnySpend(process.env.ANYSPEND_API_KEY!);
+
+const { data, pagination } = await anyspend.paymentLinks.list({
+  active: true,
+  sort: "created_at",
+  order: "desc",
+  page: 1,
+  limit: 20,
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "data": [
+        {
+          "id": "pl_abc123",
+          "name": "Premium Plan",
+          "url": "https://pay.anyspend.com/pl_abc123",
+          "short_url": "https://as.pay/abc123",
+          "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "chain_id": 1,
+          "recipient_address": "0x1234...abcd",
+          "amount": "50000000",
+          "description": "Premium monthly subscription",
+          "active": true,
+          "uses": 42,
+          "max_uses": null,
+          "expires_at": null,
+          "created_at": "2026-01-15T10:30:00Z",
+          "updated_at": "2026-02-20T14:22:00Z"
+        }
+      ],
+      "pagination": {
+        "page": 1,
+        "limit": 20,
+        "total": 1,
+        "total_pages": 1,
+        "has_more": false
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Create a payment link
+
+Create a new payment link with customizable checkout experience.
+
+<ParamField body="name" type="string" required>
+  Display name for the payment link.
+</ParamField>
+
+<ParamField body="token_address" type="string" required>
+  Contract address of the token you want to receive.
+</ParamField>
+
+<ParamField body="chain_id" type="number" required>
+  Chain ID where you want to receive the token.
+</ParamField>
+
+<ParamField body="recipient_address" type="string" required>
+  Wallet address that receives the payment.
+</ParamField>
+
+<ParamField body="description" type="string">
+  Description displayed on the checkout page.
+</ParamField>
+
+<ParamField body="amount" type="string">
+  Fixed payment amount in the token's smallest unit. Omit for variable-amount links.
+</ParamField>
+
+<ParamField body="min_amount" type="string">
+  Minimum amount for variable-amount links.
+</ParamField>
+
+<ParamField body="max_amount" type="string">
+  Maximum amount for variable-amount links.
+</ParamField>
+
+<ParamField body="suggested_amount" type="string">
+  Pre-filled amount for variable-amount links.
+</ParamField>
+
+<ParamField body="product_id" type="string">
+  Link to an existing product.
+</ParamField>
+
+<ParamField body="image_url" type="string">
+  URL of the image to display on the checkout page.
+</ParamField>
+
+<ParamField body="theme_color" type="string">
+  Hex color code for checkout branding (e.g., `"#6366f1"`).
+</ParamField>
+
+<ParamField body="button_text" type="string">
+  Custom pay button text.
+</ParamField>
+
+<ParamField body="max_uses" type="number">
+  Maximum number of completed payments. Omit for unlimited.
+</ParamField>
+
+<ParamField body="expires_at" type="string">
+  ISO 8601 expiration timestamp.
+</ParamField>
+
+<ParamField body="form_schema" type="object">
+  Custom form fields to collect during checkout. See the Payment Link object above for structure.
+</ParamField>
+
+<ParamField body="shipping_options" type="array">
+  Shipping options for physical goods. See the Payment Link object above for structure.
+</ParamField>
+
+<ParamField body="collect_shipping_address" type="boolean" default={false}>
+  Whether to collect a shipping address.
+</ParamField>
+
+<ParamField body="return_url" type="string">
+  URL to redirect the customer after payment.
+</ParamField>
+
+<ParamField body="return_label" type="string">
+  Label for the return button.
+</ParamField>
+
+<ParamField body="branding" type="object">
+  Custom branding configuration. See the Payment Link object above for structure.
+</ParamField>
+
+<ParamField body="fee_on_top" type="boolean" default={false}>
+  Add platform fee on top of the payment amount.
+</ParamField>
+
+<ParamField body="items" type="array">
+  Line items to display on checkout.
+  <Expandable title="item properties">
+    <ParamField body="items[].name" type="string" required>Item name.</ParamField>
+    <ParamField body="items[].amount" type="string" required>Item price in the token's smallest unit.</ParamField>
+    <ParamField body="items[].quantity" type="number" required>Quantity.</ParamField>
+    <ParamField body="items[].image_url" type="string">Item image URL.</ParamField>
+  </Expandable>
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X POST "https://platform-api.anyspend.com/api/v1/payment-links" \
+  -H "Authorization: Bearer asp_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Premium Plan",
+    "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "chain_id": 1,
+    "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+    "amount": "50000000",
+    "description": "Premium monthly subscription",
+    "image_url": "https://example.com/premium.png",
+    "theme_color": "#6366f1",
+    "button_text": "Subscribe Now",
+    "return_url": "https://example.com/thank-you",
+    "return_label": "Back to Dashboard",
+    "form_schema": {
+      "fields": [
+        {
+          "id": "company_name",
+          "type": "text",
+          "label": "Company Name",
+          "required": true,
+          "placeholder": "Acme Inc."
+        },
+        {
+          "id": "team_size",
+          "type": "select",
+          "label": "Team Size",
+          "required": true,
+          "options": ["1-10", "11-50", "51-200", "200+"]
+        }
+      ]
+    },
+    "items": [
+      {
+        "name": "Premium Plan - Monthly",
+        "amount": "50000000",
+        "quantity": 1
+      }
+    ]
+  }'
+```
+
+```typescript SDK
+import { AnySpend } from "@b3dotfun/sdk";
+
+const anyspend = new AnySpend(process.env.ANYSPEND_API_KEY!);
+
+const paymentLink = await anyspend.paymentLinks.create({
+  name: "Premium Plan",
+  tokenAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+  chainId: 1,
+  recipientAddress: "0x1234567890abcdef1234567890abcdef12345678",
+  amount: "50000000",
+  description: "Premium monthly subscription",
+  imageUrl: "https://example.com/premium.png",
+  themeColor: "#6366f1",
+  buttonText: "Subscribe Now",
+  returnUrl: "https://example.com/thank-you",
+  returnLabel: "Back to Dashboard",
+  formSchema: {
+    fields: [
+      {
+        id: "company_name",
+        type: "text",
+        label: "Company Name",
+        required: true,
+        placeholder: "Acme Inc.",
+      },
+      {
+        id: "team_size",
+        type: "select",
+        label: "Team Size",
+        required: true,
+        options: ["1-10", "11-50", "51-200", "200+"],
+      },
+    ],
+  },
+  items: [
+    {
+      name: "Premium Plan - Monthly",
+      amount: "50000000",
+      quantity: 1,
+    },
+  ],
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "id": "pl_abc123",
+      "name": "Premium Plan",
+      "url": "https://pay.anyspend.com/pl_abc123",
+      "short_url": "https://as.pay/abc123",
+      "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "chain_id": 1,
+      "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+      "amount": "50000000",
+      "min_amount": null,
+      "max_amount": null,
+      "suggested_amount": null,
+      "description": "Premium monthly subscription",
+      "product_id": null,
+      "image_url": "https://example.com/premium.png",
+      "theme_color": "#6366f1",
+      "button_text": "Subscribe Now",
+      "max_uses": null,
+      "uses": 0,
+      "expires_at": null,
+      "active": true,
+      "form_schema": {
+        "fields": [
+          {
+            "id": "company_name",
+            "type": "text",
+            "label": "Company Name",
+            "required": true,
+            "placeholder": "Acme Inc."
+          },
+          {
+            "id": "team_size",
+            "type": "select",
+            "label": "Team Size",
+            "required": true,
+            "options": ["1-10", "11-50", "51-200", "200+"]
+          }
+        ]
+      },
+      "shipping_options": null,
+      "collect_shipping_address": false,
+      "return_url": "https://example.com/thank-you",
+      "return_label": "Back to Dashboard",
+      "branding": null,
+      "fee_on_top": false,
+      "items": [
+        {
+          "id": "pli_item001",
+          "name": "Premium Plan - Monthly",
+          "amount": "50000000",
+          "quantity": 1,
+          "image_url": null
+        }
+      ],
+      "created_at": "2026-02-27T10:30:00Z",
+      "updated_at": "2026-02-27T10:30:00Z"
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Retrieve a payment link
+
+Fetch a single payment link by ID, including its line items.
+
+<ParamField path="id" type="string" required>
+  The payment link ID (e.g., `pl_abc123`).
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/payment-links/pl_abc123" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+const paymentLink = await anyspend.paymentLinks.retrieve("pl_abc123");
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    Returns the full [Payment Link object](#the-payment-link-object) including `items`.
+  </Tab>
+</Tabs>
+
+---
+
+## Update a payment link
+
+Update an existing payment link. Only the fields you include in the request body will be updated.
+
+<ParamField path="id" type="string" required>
+  The payment link ID.
+</ParamField>
+
+All body parameters from the [create endpoint](#create-a-payment-link) are accepted. Additionally:
+
+<ParamField body="active" type="boolean">
+  Set to `false` to deactivate the link.
+</ParamField>
+
+<Warning>
+  Changing `token_address`, `chain_id`, or `recipient_address` on a link that has existing sessions may cause inconsistencies. Create a new link instead if you need to change payment routing.
+</Warning>
+
+<CodeGroup>
+```bash cURL
+curl -X PATCH "https://platform-api.anyspend.com/api/v1/payment-links/pl_abc123" \
+  -H "Authorization: Bearer asp_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Premium Plan (Updated)",
+    "amount": "75000000",
+    "button_text": "Upgrade Now"
+  }'
+```
+
+```typescript SDK
+const updated = await anyspend.paymentLinks.update("pl_abc123", {
+  name: "Premium Plan (Updated)",
+  amount: "75000000",
+  buttonText: "Upgrade Now",
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    Returns the updated [Payment Link object](#the-payment-link-object).
+  </Tab>
+</Tabs>
+
+---
+
+## Delete a payment link
+
+Permanently delete a payment link. This cannot be undone. Active checkout sessions for this link will fail.
+
+<ParamField path="id" type="string" required>
+  The payment link ID.
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X DELETE "https://platform-api.anyspend.com/api/v1/payment-links/pl_abc123" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+await anyspend.paymentLinks.delete("pl_abc123");
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "id": "pl_abc123",
+      "deleted": true
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Get payment link stats
+
+Retrieve analytics and conversion metrics for a specific payment link.
+
+<ParamField path="id" type="string" required>
+  The payment link ID.
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/payment-links/pl_abc123/stats" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+const stats = await anyspend.paymentLinks.stats("pl_abc123");
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "payment_link_id": "pl_abc123",
+      "views": 1250,
+      "sessions": 340,
+      "completed": 42,
+      "conversion_rate": 0.1235,
+      "total_volume": "2100000000",
+      "utm_breakdown": {
+        "sources": {
+          "twitter": { "views": 500, "sessions": 120, "completed": 18 },
+          "email": { "views": 400, "sessions": 150, "completed": 20 },
+          "direct": { "views": 350, "sessions": 70, "completed": 4 }
+        },
+        "mediums": {
+          "social": { "views": 500, "sessions": 120, "completed": 18 },
+          "newsletter": { "views": 400, "sessions": 150, "completed": 20 },
+          "none": { "views": 350, "sessions": 70, "completed": 4 }
+        },
+        "campaigns": {
+          "launch_feb_2026": { "views": 600, "sessions": 200, "completed": 30 },
+          "none": { "views": 650, "sessions": 140, "completed": 12 }
+        }
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## List payment link sessions
+
+Retrieve checkout sessions associated with a specific payment link.
+
+<ParamField path="id" type="string" required>
+  The payment link ID.
+</ParamField>
+
+<ParamField query="status" type="string">
+  Filter by session status: `open`, `processing`, `completed`, `expired`, `failed`.
+</ParamField>
+
+<ParamField query="page" type="number" default={1}>
+  Page number.
+</ParamField>
+
+<ParamField query="limit" type="number" default={20}>
+  Results per page (max 100).
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/payment-links/pl_abc123/sessions?status=completed&page=1&limit=10" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+const { data, pagination } = await anyspend.paymentLinks.sessions("pl_abc123", {
+  status: "completed",
+  page: 1,
+  limit: 10,
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "data": [
+        {
+          "id": "cs_sess001",
+          "payment_link_id": "pl_abc123",
+          "status": "completed",
+          "amount": "50000000",
+          "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "chain_id": 1,
+          "payer_address": "0xaabb...ccdd",
+          "tx_hash": "0x9f8e...1a2b",
+          "form_data": {
+            "company_name": "Acme Inc.",
+            "team_size": "11-50"
+          },
+          "created_at": "2026-02-25T08:15:00Z",
+          "completed_at": "2026-02-25T08:16:30Z"
+        }
+      ],
+      "pagination": {
+        "page": 1,
+        "limit": 10,
+        "total": 42,
+        "total_pages": 5,
+        "has_more": true
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## List payment link visitors
+
+Retrieve visitor analytics for a specific payment link, including referrer and geographic data.
+
+<ParamField path="id" type="string" required>
+  The payment link ID.
+</ParamField>
+
+<ParamField query="page" type="number" default={1}>
+  Page number.
+</ParamField>
+
+<ParamField query="limit" type="number" default={20}>
+  Results per page (max 100).
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/payment-links/pl_abc123/visitors?page=1&limit=20" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+const { data, pagination } = await anyspend.paymentLinks.visitors("pl_abc123", {
+  page: 1,
+  limit: 20,
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "data": [
+        {
+          "id": "vis_001",
+          "payment_link_id": "pl_abc123",
+          "ip_country": "US",
+          "referrer": "https://twitter.com",
+          "user_agent": "Mozilla/5.0 ...",
+          "utm_source": "twitter",
+          "utm_medium": "social",
+          "utm_campaign": "launch_feb_2026",
+          "started_session": true,
+          "visited_at": "2026-02-25T08:10:00Z"
+        }
+      ],
+      "pagination": {
+        "page": 1,
+        "limit": 20,
+        "total": 1250,
+        "total_pages": 63,
+        "has_more": true
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Duplicate a payment link
+
+Create a copy of an existing payment link with optional field overrides.
+
+<ParamField path="id" type="string" required>
+  The payment link ID to duplicate.
+</ParamField>
+
+<ParamField body="name" type="string">
+  Override the name of the duplicated link. Defaults to `"Copy of {original name}"`.
+</ParamField>
+
+Any other fields from the [create endpoint](#create-a-payment-link) can be passed as overrides.
+
+<CodeGroup>
+```bash cURL
+curl -X POST "https://platform-api.anyspend.com/api/v1/payment-links/pl_abc123/duplicate" \
+  -H "Authorization: Bearer asp_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Premium Plan - EU",
+    "recipient_address": "0xabcdef1234567890abcdef1234567890abcdef12"
+  }'
+```
+
+```typescript SDK
+const duplicate = await anyspend.paymentLinks.duplicate("pl_abc123", {
+  name: "Premium Plan - EU",
+  recipientAddress: "0xabcdef1234567890abcdef1234567890abcdef12",
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    Returns a new [Payment Link object](#the-payment-link-object) with a new ID.
+  </Tab>
+</Tabs>
+
+---
+
+## List line items
+
+Retrieve all line items attached to a payment link.
+
+<ParamField path="id" type="string" required>
+  The payment link ID.
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/payment-links/pl_abc123/items" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+const items = await anyspend.paymentLinks.items.list("pl_abc123");
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "data": [
+        {
+          "id": "pli_item001",
+          "payment_link_id": "pl_abc123",
+          "name": "Premium Plan - Monthly",
+          "amount": "50000000",
+          "quantity": 1,
+          "image_url": null,
+          "created_at": "2026-02-27T10:30:00Z"
+        }
+      ]
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Add a line item
+
+Add a new line item to an existing payment link.
+
+<ParamField path="id" type="string" required>
+  The payment link ID.
+</ParamField>
+
+<ParamField body="name" type="string" required>
+  Item name.
+</ParamField>
+
+<ParamField body="amount" type="string" required>
+  Item price in the token's smallest unit.
+</ParamField>
+
+<ParamField body="quantity" type="number" required>
+  Quantity.
+</ParamField>
+
+<ParamField body="image_url" type="string">
+  Item image URL.
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X POST "https://platform-api.anyspend.com/api/v1/payment-links/pl_abc123/items" \
+  -H "Authorization: Bearer asp_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Add-on: Priority Support",
+    "amount": "10000000",
+    "quantity": 1
+  }'
+```
+
+```typescript SDK
+const item = await anyspend.paymentLinks.items.create("pl_abc123", {
+  name: "Add-on: Priority Support",
+  amount: "10000000",
+  quantity: 1,
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "id": "pli_item002",
+      "payment_link_id": "pl_abc123",
+      "name": "Add-on: Priority Support",
+      "amount": "10000000",
+      "quantity": 1,
+      "image_url": null,
+      "created_at": "2026-02-27T11:00:00Z"
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Remove a line item
+
+Remove a line item from a payment link.
+
+<ParamField path="id" type="string" required>
+  The payment link ID.
+</ParamField>
+
+<ParamField path="itemId" type="string" required>
+  The line item ID.
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X DELETE "https://platform-api.anyspend.com/api/v1/payment-links/pl_abc123/items/pli_item002" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+await anyspend.paymentLinks.items.delete("pl_abc123", "pli_item002");
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "id": "pli_item002",
+      "deleted": true
+    }
+    ```
+  </Tab>
+</Tabs>

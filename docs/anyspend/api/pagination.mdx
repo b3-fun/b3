@@ -1,0 +1,273 @@
+---
+title: "Pagination & Filtering"
+description: "Paginating through list endpoints and filtering results"
+---
+
+# Pagination & Filtering
+
+All list endpoints in the AnySpend Platform API return paginated responses. This page covers how to navigate large result sets, filter data, and sort results.
+
+## List response format
+
+Every list endpoint returns a consistent envelope:
+
+```json
+{
+  "object": "list",
+  "data": [
+    { "object": "payment_link", "id": "pl_abc123...", "name": "Premium Membership" },
+    { "object": "payment_link", "id": "pl_def456...", "name": "Basic Plan" }
+  ],
+  "has_more": true,
+  "total_count": 142,
+  "url": "/api/v1/payment-links"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `object` | `string` | Always `"list"` for list responses. |
+| `data` | `array` | The array of resource objects for the current page. Each item includes its own `object` type field. |
+| `has_more` | `boolean` | `true` if there are more results beyond this page. Use this to determine whether to fetch the next page. |
+| `total_count` | `number` | The total number of matching resources across all pages. |
+| `url` | `string` | The API endpoint path for this list. |
+
+## Pagination parameters
+
+Use `page` and `limit` query parameters to navigate through results.
+
+| Parameter | Type | Default | Max | Description |
+|-----------|------|---------|-----|-------------|
+| `page` | `integer` | `1` | -- | The page number to retrieve (1-indexed). |
+| `limit` | `integer` | `20` | `100` | The number of results per page. |
+
+### Basic pagination example
+
+```bash
+# First page (default: 20 results)
+curl "https://platform-api.anyspend.com/api/v1/payment-links" \
+  -H "Authorization: Bearer asp_live_abc123..."
+
+# Second page, 50 results per page
+curl "https://platform-api.anyspend.com/api/v1/payment-links?page=2&limit=50" \
+  -H "Authorization: Bearer asp_live_abc123..."
+```
+
+### Navigating pages
+
+Use the `has_more` field to determine when to stop paginating:
+
+```typescript
+async function fetchAllPaymentLinks(): Promise<PaymentLink[]> {
+  const allLinks: PaymentLink[] = [];
+  let page = 1;
+  let hasMore = true;
+
+  while (hasMore) {
+    const response = await fetch(
+      `https://platform-api.anyspend.com/api/v1/payment-links?page=${page}&limit=100`,
+      {
+        headers: {
+          "Authorization": `Bearer ${process.env.ANYSPEND_API_KEY}`,
+        },
+      }
+    );
+
+    const body = await response.json();
+    allLinks.push(...body.data);
+    hasMore = body.has_more;
+    page++;
+  }
+
+  return allLinks;
+}
+```
+
+## Filtering
+
+Most list endpoints support query parameters for filtering results. The available filters depend on the resource type.
+
+### Payment Links
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `search` | `string` | Search by name or short code (partial match). |
+| `active` | `"true"` or `"false"` | Filter by active/inactive status. |
+
+```bash
+# Search for payment links containing "premium"
+curl "https://platform-api.anyspend.com/api/v1/payment-links?search=premium" \
+  -H "Authorization: Bearer asp_live_abc123..."
+
+# Only active payment links
+curl "https://platform-api.anyspend.com/api/v1/payment-links?active=true" \
+  -H "Authorization: Bearer asp_live_abc123..."
+
+# Combine filters
+curl "https://platform-api.anyspend.com/api/v1/payment-links?search=premium&active=true&limit=10" \
+  -H "Authorization: Bearer asp_live_abc123..."
+```
+
+### Checkout Sessions
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `status` | `"active"`, `"completed"`, `"expired"` | Filter sessions by status. |
+
+```bash
+# Completed sessions for a payment link
+curl "https://platform-api.anyspend.com/api/v1/payment-links/pl_abc123/sessions?status=completed" \
+  -H "Authorization: Bearer asp_live_abc123..."
+```
+
+### Transactions
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `status` | `string` | Filter by transaction status. |
+| `chain_id` | `number` | Filter by blockchain network. |
+
+```bash
+# Transactions on Base (chain ID 8453)
+curl "https://platform-api.anyspend.com/api/v1/transactions?chain_id=8453" \
+  -H "Authorization: Bearer asp_live_abc123..."
+```
+
+## Sorting
+
+List endpoints that support sorting accept `sort` and `order` parameters.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `sort` | `string` | `created_at` | The field to sort by. Allowed values vary by resource. |
+| `order` | `"asc"` or `"desc"` | `desc` | Sort direction. |
+
+### Payment Links sort fields
+
+| Field | Description |
+|-------|-------------|
+| `created_at` | When the payment link was created (default). |
+| `updated_at` | When the payment link was last modified. |
+| `name` | Alphabetical by name. |
+| `current_uses` | Number of completed checkouts. |
+
+```bash
+# Most popular payment links first
+curl "https://platform-api.anyspend.com/api/v1/payment-links?sort=current_uses&order=desc" \
+  -H "Authorization: Bearer asp_live_abc123..."
+
+# Alphabetical by name
+curl "https://platform-api.anyspend.com/api/v1/payment-links?sort=name&order=asc" \
+  -H "Authorization: Bearer asp_live_abc123..."
+```
+
+## Auto-pagination example
+
+For convenience, you can build an async iterator that handles pagination automatically:
+
+```typescript
+async function* paginate<T>(
+  endpoint: string,
+  params: Record<string, string> = {},
+  limit = 100,
+): AsyncGenerator<T> {
+  let page = 1;
+  let hasMore = true;
+
+  while (hasMore) {
+    const queryParams = new URLSearchParams({
+      ...params,
+      page: String(page),
+      limit: String(limit),
+    });
+
+    const response = await fetch(
+      `https://platform-api.anyspend.com/api/v1/${endpoint}?${queryParams}`,
+      {
+        headers: {
+          "Authorization": `Bearer ${process.env.ANYSPEND_API_KEY}`,
+        },
+      }
+    );
+
+    const body = await response.json();
+
+    for (const item of body.data) {
+      yield item as T;
+    }
+
+    hasMore = body.has_more;
+    page++;
+  }
+}
+
+// Usage with for-await
+async function main() {
+  for await (const link of paginate<PaymentLink>("payment-links", { active: "true" })) {
+    console.log(`${link.name}: ${link.current_uses} completions`);
+  }
+}
+```
+
+## Counting results
+
+Use `total_count` from any page to get the total number of matching resources without fetching all pages:
+
+```typescript
+async function countActivePaymentLinks(): Promise<number> {
+  const response = await fetch(
+    "https://platform-api.anyspend.com/api/v1/payment-links?active=true&limit=1",
+    {
+      headers: {
+        "Authorization": `Bearer ${process.env.ANYSPEND_API_KEY}`,
+      },
+    }
+  );
+
+  const body = await response.json();
+  return body.total_count;
+}
+```
+
+Setting `limit=1` minimizes the response payload when you only need the count.
+
+## Best practices
+
+<AccordionGroup>
+<Accordion title="Use limit=100 for bulk operations">
+When you need to fetch all records (e.g., for data export or sync), use the maximum `limit=100` to minimize the number of API calls and stay within rate limits.
+</Accordion>
+
+<Accordion title="Use has_more instead of total_count for pagination loops">
+`has_more` is the authoritative signal for whether to fetch the next page. Avoid computing page counts from `total_count` as the total can change between requests.
+</Accordion>
+
+<Accordion title="Cache total_count for UI pagination controls">
+When building pagination UI (e.g., "Page 3 of 8"), fetch `total_count` once and cache it for the session. Re-fetch only when the user refreshes or applies new filters.
+</Accordion>
+
+<Accordion title="Combine filters with pagination">
+Apply filters before paginating to reduce the result set. This is more efficient than fetching all records and filtering client-side:
+
+```bash
+# Instead of fetching all links and filtering locally...
+# Filter server-side and paginate the filtered results
+curl "https://platform-api.anyspend.com/api/v1/payment-links?active=true&search=premium&limit=20" \
+  -H "Authorization: Bearer asp_live_abc123..."
+```
+</Accordion>
+
+<Accordion title="Respect rate limits during bulk fetches">
+If you are paginating through a large dataset, be mindful of the 120 requests/min rate limit. For very large datasets, add a short delay between page requests:
+
+```typescript
+async function fetchWithDelay() {
+  for await (const link of paginate("payment-links")) {
+    process.stdout.write(".");
+  }
+  // The paginate function makes at most ceil(total / 100) requests.
+  // For 10,000 records, that is 100 requests -- within the 120/min limit.
+}
+```
+</Accordion>
+</AccordionGroup>

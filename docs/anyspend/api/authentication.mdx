@@ -1,0 +1,289 @@
+---
+title: "Authentication"
+description: "API key authentication for the AnySpend Platform API"
+---
+
+# Authentication
+
+The AnySpend Platform API uses API keys for authentication. Each key is scoped to a single organization and carries a specific set of permissions.
+
+## Creating an API key
+
+<Steps>
+<Step title="Open the AnySpend Dashboard">
+  Navigate to [anyspend.com/dashboard](https://anyspend.com/dashboard) and sign in to your account.
+</Step>
+
+<Step title="Go to Settings > API Keys">
+  In the sidebar, click **Settings**, then select the **API Keys** tab.
+</Step>
+
+<Step title="Create a new key">
+  Click **Create API Key**, give it a descriptive name (e.g., "Production Backend" or "CI/CD Pipeline"), and select the permission level.
+</Step>
+
+<Step title="Copy and store the key">
+  The full key is only displayed **once** at creation time. Copy it immediately and store it in a secure location (e.g., environment variables, a secrets manager).
+</Step>
+</Steps>
+
+<Warning>
+  Your API key is shown only once when created. If you lose it, you will need to revoke the old key and create a new one.
+</Warning>
+
+## API key format
+
+All AnySpend API keys start with the prefix `asp_`:
+
+```
+asp_live_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
+```
+
+The prefix makes it easy to identify AnySpend keys in your codebase and prevents accidental use of keys from other services.
+
+## Passing your API key
+
+You can authenticate requests using either of two headers:
+
+<Tabs>
+<Tab title="Authorization header (recommended)">
+```bash
+curl https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "Authorization: Bearer asp_live_a1b2c3d4e5..."
+```
+</Tab>
+
+<Tab title="X-API-Key header">
+```bash
+curl https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "X-API-Key: asp_live_a1b2c3d4e5..."
+```
+</Tab>
+</Tabs>
+
+The `Authorization: Bearer` method is preferred as it follows standard OAuth 2.0 conventions and is supported by most HTTP clients and API testing tools.
+
+## Permission levels
+
+Each API key is assigned one or more permissions. Permissions follow a hierarchy where higher levels include all lower-level capabilities.
+
+| Permission | Grants access to | Use case |
+|-----------|-----------------|----------|
+| **read** | `GET` on all resources -- list and retrieve payment links, products, transactions, customers, analytics | Dashboards, reporting tools, read-only integrations |
+| **write** | Everything in `read` + `POST`, `PATCH`, `DELETE` on all resources -- create payment links, update products, manage webhooks | Backend services, automation, standard integrations |
+| **admin** | Everything in `write` + manage API keys, organization settings, and billing | Infrastructure management, CI/CD, admin tooling |
+
+<Info>
+  The permission hierarchy means a key with **write** permission automatically has **read** access. A key with **admin** permission has both **write** and **read** access.
+</Info>
+
+### Permission hierarchy
+
+```
+admin
+  |-- write
+  |     |-- read
+```
+
+### Example: checking permissions
+
+If a route requires `write` permission and your key only has `read`, you will receive a `403` error:
+
+```json
+{
+  "error": {
+    "type": "permission_error",
+    "code": "insufficient_permissions",
+    "message": "This API key does not have 'write' permission."
+  }
+}
+```
+
+## Creating API keys via the API
+
+If you have a key with `admin` permission, you can programmatically create new keys:
+
+```bash
+curl -X POST https://platform-api.anyspend.com/api/v1/api-keys \
+  -H "Authorization: Bearer asp_live_admin_key..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Backend Service - Production",
+    "permissions": ["read", "write"],
+    "expires_at": 1735689600000
+  }'
+```
+
+Response:
+
+```json
+{
+  "object": "api_key",
+  "id": "ak_abc123def456",
+  "name": "Backend Service - Production",
+  "key": "asp_live_x9y8z7w6v5u4t3s2r1q0...",
+  "key_prefix": "asp_live_x9y8",
+  "permissions": ["read", "write"],
+  "expires_at": 1735689600000,
+  "is_active": true,
+  "created_at": 1709078400000
+}
+```
+
+<Warning>
+  The `key` field is only returned in the creation response. Store it securely -- it cannot be retrieved again.
+</Warning>
+
+## Listing and revoking keys
+
+### List all keys
+
+```bash
+curl https://platform-api.anyspend.com/api/v1/api-keys \
+  -H "Authorization: Bearer asp_live_admin_key..."
+```
+
+The list response includes metadata but never the full key -- only the `key_prefix` for identification:
+
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "object": "api_key",
+      "id": "ak_abc123def456",
+      "name": "Backend Service - Production",
+      "key_prefix": "asp_live_x9y8",
+      "permissions": ["read", "write"],
+      "last_used_at": 1709164800000,
+      "expires_at": 1735689600000,
+      "is_active": true,
+      "created_at": 1709078400000
+    }
+  ],
+  "has_more": false,
+  "total_count": 1,
+  "url": "/api/v1/api-keys"
+}
+```
+
+### Revoke a key
+
+```bash
+curl -X DELETE https://platform-api.anyspend.com/api/v1/api-keys/ak_abc123def456 \
+  -H "Authorization: Bearer asp_live_admin_key..."
+```
+
+Response:
+
+```json
+{
+  "object": "api_key_revoked",
+  "id": "ak_abc123def456",
+  "revoked": true
+}
+```
+
+Revoked keys immediately stop working. Any in-flight requests authenticated with the revoked key will receive a `401` error.
+
+## Quick Pay -- open tier (no auth)
+
+The Quick Pay endpoint does not require authentication. It is designed for one-shot payments where you do not need an AnySpend account:
+
+```bash
+curl -X POST https://platform-api.anyspend.com/api/v1/quick-pay \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": "1000000",
+    "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "chain_id": 8453,
+    "recipient_address": "0xRecipient..."
+  }'
+```
+
+Quick Pay is rate limited to **5 requests per minute per IP address**. No API key is needed.
+
+## Key rotation best practices
+
+Rotating your API keys periodically reduces the risk of compromised credentials. Here is a recommended approach:
+
+<Steps>
+<Step title="Create a new key">
+  Use the dashboard or API to create a new key with the same permissions as the one being rotated.
+</Step>
+
+<Step title="Update your application">
+  Deploy the new key to your application's environment variables or secrets manager.
+</Step>
+
+<Step title="Verify the new key works">
+  Confirm your application is successfully making requests with the new key by checking the `last_used_at` timestamp.
+</Step>
+
+<Step title="Revoke the old key">
+  Once you are confident the new key is in use everywhere, revoke the old key.
+</Step>
+</Steps>
+
+<Tip>
+  Use the optional `expires_at` field when creating keys to enforce automatic expiration. This adds a safety net in case you forget to rotate.
+</Tip>
+
+## Security best practices
+
+<AccordionGroup>
+<Accordion title="Never expose keys in client-side code">
+API keys should only be used in server-side code (backend services, serverless functions, CI/CD pipelines). Never include them in:
+
+- Frontend JavaScript bundles
+- Mobile app source code
+- Public GitHub repositories
+- Browser-accessible configuration files
+
+If you need to interact with AnySpend from a frontend, use the [SDK components](/anyspend/components) which handle authentication through secure checkout sessions.
+</Accordion>
+
+<Accordion title="Use environment variables">
+Store your API key in an environment variable rather than hardcoding it:
+
+```bash
+# .env (never commit this file)
+ANYSPEND_API_KEY=asp_live_a1b2c3d4e5...
+```
+
+```typescript
+// server.ts
+const apiKey = process.env.ANYSPEND_API_KEY;
+```
+
+Add `.env` to your `.gitignore` to prevent accidental commits.
+</Accordion>
+
+<Accordion title="Use least-privilege permissions">
+Create keys with only the permissions they need:
+
+- A reporting dashboard only needs **read**
+- A backend that creates payment links needs **write**
+- Only infrastructure tooling should use **admin**
+</Accordion>
+
+<Accordion title="Monitor key usage">
+Regularly check `last_used_at` on your keys to identify unused keys that should be revoked. Unused active keys are a security risk.
+</Accordion>
+
+<Accordion title="Set expiration dates">
+For temporary integrations, CI/CD tokens, or contractor access, always set an `expires_at` timestamp so keys automatically become inactive.
+</Accordion>
+</AccordionGroup>
+
+## Authentication error codes
+
+| HTTP status | Code | Meaning |
+|------------|------|---------|
+| `401` | `key_missing` | No API key was provided in the request headers |
+| `401` | `key_invalid` | The API key does not match any active key |
+| `401` | `key_expired` | The API key has passed its `expires_at` timestamp |
+| `401` | `key_revoked` | The API key was explicitly revoked |
+| `403` | `insufficient_permissions` | The API key does not have the required permission level |
+
+See the [Errors](/anyspend/api/errors) page for the full error reference.

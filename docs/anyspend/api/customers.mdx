@@ -1,0 +1,466 @@
+---
+title: "Customers"
+description: "Manage customer records and payment history"
+---
+
+Customers represent the people who pay through your payment links. Customer records are automatically created when a wallet completes a checkout session, but you can also create and manage them manually via the API.
+
+<Info>
+  Customer `name` and `email` fields are **encrypted at rest** for privacy compliance. They are decrypted automatically when retrieved via the API.
+</Info>
+
+## The Customer object
+
+<ResponseField name="id" type="string">
+  Unique identifier for the customer (e.g., `cust_abc123`).
+</ResponseField>
+
+<ResponseField name="wallet_address" type="string">
+  The customer's wallet address.
+</ResponseField>
+
+<ResponseField name="name" type="string | null">
+  Customer name. Encrypted at rest.
+</ResponseField>
+
+<ResponseField name="email" type="string | null">
+  Customer email. Encrypted at rest.
+</ResponseField>
+
+<ResponseField name="metadata" type="object | null">
+  Arbitrary key-value pairs for your own use.
+</ResponseField>
+
+<ResponseField name="total_spent" type="string">
+  Total amount spent across all completed transactions (in USD equivalent).
+</ResponseField>
+
+<ResponseField name="transaction_count" type="number">
+  Total number of completed transactions.
+</ResponseField>
+
+<ResponseField name="first_seen_at" type="string">
+  ISO 8601 timestamp of the customer's first transaction.
+</ResponseField>
+
+<ResponseField name="last_seen_at" type="string">
+  ISO 8601 timestamp of the customer's most recent transaction.
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  ISO 8601 creation timestamp.
+</ResponseField>
+
+<ResponseField name="updated_at" type="string">
+  ISO 8601 last update timestamp.
+</ResponseField>
+
+---
+
+## List customers
+
+Retrieve a paginated list of customers with optional search.
+
+<ParamField query="search" type="string">
+  Search customers by wallet address, name, or email.
+</ParamField>
+
+<ParamField query="page" type="number" default={1}>
+  Page number for pagination.
+</ParamField>
+
+<ParamField query="limit" type="number" default={20}>
+  Number of results per page (max 100).
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/customers?search=acme&page=1&limit=20" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+import { AnySpend } from "@b3dotfun/sdk";
+
+const anyspend = new AnySpend(process.env.ANYSPEND_API_KEY!);
+
+const { data, pagination } = await anyspend.customers.list({
+  search: "acme",
+  page: 1,
+  limit: 20,
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "data": [
+        {
+          "id": "cust_abc123",
+          "wallet_address": "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+          "name": "Alice Johnson",
+          "email": "alice@acme.com",
+          "metadata": {
+            "company": "Acme Inc.",
+            "plan": "pro"
+          },
+          "total_spent": "250.00",
+          "transaction_count": 5,
+          "first_seen_at": "2026-01-15T10:30:00Z",
+          "last_seen_at": "2026-02-25T14:22:00Z",
+          "created_at": "2026-01-15T10:30:00Z",
+          "updated_at": "2026-02-25T14:22:00Z"
+        }
+      ],
+      "pagination": {
+        "page": 1,
+        "limit": 20,
+        "total": 1,
+        "total_pages": 1,
+        "has_more": false
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Create a customer
+
+Manually create a customer record. This is useful for pre-registering customers before they make a payment.
+
+<ParamField body="wallet_address" type="string" required>
+  The customer's wallet address.
+</ParamField>
+
+<ParamField body="name" type="string">
+  Customer name. Will be encrypted at rest.
+</ParamField>
+
+<ParamField body="email" type="string">
+  Customer email. Will be encrypted at rest.
+</ParamField>
+
+<ParamField body="metadata" type="object">
+  Arbitrary key-value pairs (e.g., `{"plan": "pro"}`). Up to 50 keys, 500 character values.
+</ParamField>
+
+<Warning>
+  If a customer with the same `wallet_address` already exists, the request will return a `409 Conflict` error. Use the update endpoint to modify existing customers.
+</Warning>
+
+<CodeGroup>
+```bash cURL
+curl -X POST "https://platform-api.anyspend.com/api/v1/customers" \
+  -H "Authorization: Bearer asp_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "wallet_address": "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+    "name": "Alice Johnson",
+    "email": "alice@acme.com",
+    "metadata": {
+      "company": "Acme Inc.",
+      "plan": "pro"
+    }
+  }'
+```
+
+```typescript SDK
+const customer = await anyspend.customers.create({
+  walletAddress: "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+  name: "Alice Johnson",
+  email: "alice@acme.com",
+  metadata: {
+    company: "Acme Inc.",
+    plan: "pro",
+  },
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "id": "cust_abc123",
+      "wallet_address": "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+      "name": "Alice Johnson",
+      "email": "alice@acme.com",
+      "metadata": {
+        "company": "Acme Inc.",
+        "plan": "pro"
+      },
+      "total_spent": "0.00",
+      "transaction_count": 0,
+      "first_seen_at": null,
+      "last_seen_at": null,
+      "created_at": "2026-02-27T10:00:00Z",
+      "updated_at": "2026-02-27T10:00:00Z"
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Retrieve a customer
+
+<ParamField path="id" type="string" required>
+  The customer ID (e.g., `cust_abc123`).
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/customers/cust_abc123" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+const customer = await anyspend.customers.retrieve("cust_abc123");
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    Returns the full [Customer object](#the-customer-object).
+  </Tab>
+</Tabs>
+
+---
+
+## Update a customer
+
+Update an existing customer. Only the fields you include in the request body will be updated.
+
+<ParamField path="id" type="string" required>
+  The customer ID.
+</ParamField>
+
+<ParamField body="name" type="string">
+  Updated customer name.
+</ParamField>
+
+<ParamField body="email" type="string">
+  Updated customer email.
+</ParamField>
+
+<ParamField body="metadata" type="object">
+  Updated metadata. This **replaces** the entire metadata object. To add a single key, include the full existing metadata plus the new key.
+</ParamField>
+
+<Tip>
+  The `wallet_address` cannot be changed after creation. To associate a customer with a different wallet, create a new customer record.
+</Tip>
+
+<CodeGroup>
+```bash cURL
+curl -X PATCH "https://platform-api.anyspend.com/api/v1/customers/cust_abc123" \
+  -H "Authorization: Bearer asp_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Alice Johnson-Smith",
+    "metadata": {
+      "company": "Acme Inc.",
+      "plan": "enterprise",
+      "upgraded_at": "2026-02-27"
+    }
+  }'
+```
+
+```typescript SDK
+const updated = await anyspend.customers.update("cust_abc123", {
+  name: "Alice Johnson-Smith",
+  metadata: {
+    company: "Acme Inc.",
+    plan: "enterprise",
+    upgraded_at: "2026-02-27",
+  },
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    Returns the updated [Customer object](#the-customer-object).
+  </Tab>
+</Tabs>
+
+---
+
+## Delete a customer
+
+Permanently delete a customer record. Transaction history associated with this customer is preserved but the customer reference will show as deleted.
+
+<ParamField path="id" type="string" required>
+  The customer ID.
+</ParamField>
+
+<Warning>
+  This action is irreversible. All personally identifiable information (name, email) will be permanently deleted.
+</Warning>
+
+<CodeGroup>
+```bash cURL
+curl -X DELETE "https://platform-api.anyspend.com/api/v1/customers/cust_abc123" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+await anyspend.customers.delete("cust_abc123");
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "id": "cust_abc123",
+      "deleted": true
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## List customer transactions
+
+Retrieve the transaction history for a specific customer.
+
+<ParamField path="id" type="string" required>
+  The customer ID.
+</ParamField>
+
+<ParamField query="status" type="string">
+  Filter by transaction status: `pending`, `confirming`, `completed`, `failed`.
+</ParamField>
+
+<ParamField query="page" type="number" default={1}>
+  Page number.
+</ParamField>
+
+<ParamField query="limit" type="number" default={20}>
+  Results per page (max 100).
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://platform-api.anyspend.com/api/v1/customers/cust_abc123/transactions?status=completed&page=1&limit=10" \
+  -H "Authorization: Bearer asp_xxx"
+```
+
+```typescript SDK
+const { data, pagination } = await anyspend.customers.transactions("cust_abc123", {
+  status: "completed",
+  page: 1,
+  limit: 10,
+});
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="Response">
+    ```json
+    {
+      "data": [
+        {
+          "id": "tx_tx001",
+          "customer_id": "cust_abc123",
+          "payment_link_id": "pl_abc123",
+          "session_id": "cs_sess001",
+          "status": "completed",
+          "amount": "50000000",
+          "amount_usd": "50.00",
+          "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "chain_id": 1,
+          "tx_hash": "0x9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e",
+          "payer_address": "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+          "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+          "created_at": "2026-02-25T08:15:00Z",
+          "completed_at": "2026-02-25T08:16:30Z"
+        }
+      ],
+      "pagination": {
+        "page": 1,
+        "limit": 10,
+        "total": 5,
+        "total_pages": 1,
+        "has_more": false
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Export customers
+
+Export your customer data in CSV or JSON format. The response is streamed as a file download.
+
+<ParamField query="format" type="string" required>
+  Export format. One of: `csv`, `json`.
+</ParamField>
+
+<ParamField query="search" type="string">
+  Filter exported customers by search term.
+</ParamField>
+
+<Info>
+  Exports are limited to 10,000 records. For larger datasets, use pagination with the list endpoint.
+</Info>
+
+<CodeGroup>
+```bash cURL
+# Download as CSV
+curl -X GET "https://platform-api.anyspend.com/api/v1/customers/export?format=csv" \
+  -H "Authorization: Bearer asp_xxx" \
+  -o customers.csv
+
+# Download as JSON
+curl -X GET "https://platform-api.anyspend.com/api/v1/customers/export?format=json" \
+  -H "Authorization: Bearer asp_xxx" \
+  -o customers.json
+```
+
+```typescript SDK
+// Get export as a ReadableStream
+const csvStream = await anyspend.customers.export({ format: "csv" });
+
+// Or get as JSON array
+const customers = await anyspend.customers.export({ format: "json" });
+```
+</CodeGroup>
+
+<Tabs>
+  <Tab title="CSV Response">
+    ```csv
+    id,wallet_address,name,email,total_spent,transaction_count,first_seen_at,last_seen_at,created_at
+    cust_abc123,0xaabb...5678,Alice Johnson,alice@acme.com,250.00,5,2026-01-15T10:30:00Z,2026-02-25T14:22:00Z,2026-01-15T10:30:00Z
+    cust_def456,0xccdd...9012,Bob Smith,bob@example.com,100.00,2,2026-02-01T09:00:00Z,2026-02-20T16:45:00Z,2026-02-01T09:00:00Z
+    ```
+  </Tab>
+  <Tab title="JSON Response">
+    ```json
+    {
+      "data": [
+        {
+          "id": "cust_abc123",
+          "wallet_address": "0xaabb1234ccdd5678eeff9900aabb1234ccdd5678",
+          "name": "Alice Johnson",
+          "email": "alice@acme.com",
+          "total_spent": "250.00",
+          "transaction_count": 5,
+          "first_seen_at": "2026-01-15T10:30:00Z",
+          "last_seen_at": "2026-02-25T14:22:00Z",
+          "created_at": "2026-01-15T10:30:00Z"
+        }
+      ],
+      "total": 2
+    }
+    ```
+  </Tab>
+</Tabs>

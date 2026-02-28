@@ -1,0 +1,152 @@
+---
+title: "Quick Pay"
+description: "Create payment links instantly without authentication"
+---
+
+Quick Pay is a single endpoint that lets you create a payment link **without requiring an API key**. It is designed for rapid prototyping, one-off invoices, tip jars, and donation pages where the overhead of creating an organization and managing API keys is unnecessary.
+
+<Info>
+  Quick Pay is rate limited to **5 requests per minute per IP address**. For higher throughput or access to analytics, webhooks, and custom forms, [create an organization](/anyspend/api/sdk-client) and use an API key.
+</Info>
+
+## Endpoint
+
+```
+POST /api/v1/quick-pay
+```
+
+No `Authorization` header is required.
+
+## Request Body
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `recipient_address` | `string` | Yes | -- | Ethereum address that will receive the payment |
+| `amount` | `string` | No | -- | Token amount in the smallest unit (e.g. `"1000000"` for 1 USDC) |
+| `token_address` | `string` | No | USDC on Base | ERC-20 token contract address |
+| `chain_id` | `number` | No | `8453` (Base) | Target chain ID |
+| `name` | `string` | No | -- | Human-readable name for the link |
+| `description` | `string` | No | -- | Description shown to the payer |
+| `expires_in` | `number` | No | `86400` (24 h) | Seconds until the link expires. Maximum is `86400`. |
+
+## Response
+
+A successful request returns a full `PaymentLink` object:
+
+```json
+{
+  "id": "pl_abc123",
+  "url": "https://pay.anyspend.com/pl_abc123",
+  "recipient_address": "0x1234...abcd",
+  "amount": "1000000",
+  "token_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+  "chain_id": 8453,
+  "name": "Coffee tip",
+  "description": null,
+  "status": "active",
+  "expires_at": "2025-06-02T12:00:00Z",
+  "created_at": "2025-06-01T12:00:00Z",
+  "org_id": "anonymous"
+}
+```
+
+Share the `url` with anyone -- they can pay from any wallet on any supported chain and the funds will be routed to the recipient via AnySpend.
+
+## Examples
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://platform-api.anyspend.com/api/v1/quick-pay \
+  -H "Content-Type: application/json" \
+  -d '{
+    "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+    "amount": "5000000",
+    "name": "Buy me a coffee",
+    "description": "Thanks for the help!"
+  }'
+```
+
+```typescript SDK
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+
+// quickPay is a static method -- no API key needed
+const link = await AnySpendPlatformClient.quickPay({
+  recipient_address: "0x1234567890abcdef1234567890abcdef12345678",
+  amount: "5000000",          // 5 USDC
+  name: "Buy me a coffee",
+  description: "Thanks for the help!",
+});
+
+console.log(link.url);
+// => https://pay.anyspend.com/pl_abc123
+```
+
+```python Python (requests)
+import requests
+
+resp = requests.post(
+    "https://platform-api.anyspend.com/api/v1/quick-pay",
+    json={
+        "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+        "amount": "5000000",
+        "name": "Buy me a coffee",
+    },
+)
+link = resp.json()
+print(link["url"])
+```
+
+</CodeGroup>
+
+## Use Cases
+
+<CardGroup cols={2}>
+  <Card title="Tip Jars" icon="hand-holding-dollar">
+    Embed a Quick Pay link on your blog or social media profile to accept tips without any setup.
+  </Card>
+  <Card title="Donation Pages" icon="heart">
+    Non-profits and open-source projects can generate links on-the-fly for one-time donations.
+  </Card>
+  <Card title="Quick Invoicing" icon="file-invoice-dollar">
+    Freelancers can send a payment link over email or chat for a single invoice.
+  </Card>
+  <Card title="Prototyping" icon="flask">
+    Test your integration flow before committing to a full API key setup.
+  </Card>
+</CardGroup>
+
+## Limitations
+
+<Warning>
+  Quick Pay links are intentionally limited. If you need any of the features below, create an organization and use authenticated endpoints.
+</Warning>
+
+| Feature | Quick Pay | Authenticated API |
+|---------|-----------|-------------------|
+| Analytics & visitor tracking | No | Yes |
+| Webhook notifications | No | Yes |
+| Custom checkout forms | No | Yes |
+| Shipping options & discount codes | No | Yes |
+| Custom expiry (> 24 h) | No | Yes |
+| Link editing after creation | No | Yes |
+| Organization branding | No | Yes |
+| Rate limit | 5 req/min/IP | 100 req/min/key |
+
+## Error Responses
+
+| Status | Code | Description |
+|--------|------|-------------|
+| `400` | `invalid_request` | Missing `recipient_address` or invalid parameter |
+| `422` | `invalid_address` | `recipient_address` is not a valid Ethereum address |
+| `429` | `rate_limit_exceeded` | More than 5 requests in the current minute window |
+
+```json
+{
+  "error": {
+    "code": "rate_limit_exceeded",
+    "message": "Rate limit exceeded. Try again in 45 seconds.",
+    "retry_after": 45
+  }
+}
+```

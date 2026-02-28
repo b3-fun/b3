@@ -1,0 +1,352 @@
+---
+title: "TypeScript SDK Client"
+description: "Headless TypeScript client for the AnySpend Platform API"
+---
+
+The AnySpend Platform SDK client is a **headless** (no React dependency) TypeScript client for the full AnySpend Platform API. It works everywhere modern JavaScript runs -- Node.js, browsers, Cloudflare Workers, Deno, and Bun.
+
+## Installation
+
+<CodeGroup>
+
+```bash npm
+npm install @b3dotfun/sdk
+```
+
+```bash pnpm
+pnpm add @b3dotfun/sdk
+```
+
+```bash yarn
+yarn add @b3dotfun/sdk
+```
+
+</CodeGroup>
+
+## Quick Start
+
+```typescript
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+
+const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!);
+
+// Create a payment link
+const link = await platform.paymentLinks.create({
+  name: "Pro Plan - Monthly",
+  amount: "29990000",  // 29.99 USDC
+  recipient_address: "0xYourAddress",
+});
+
+console.log(link.url);
+```
+
+## Initialization
+
+```typescript
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+
+const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!, {
+  // All options below are optional
+  baseUrl: "https://platform-api.anyspend.com/api/v1", // default
+  timeout: 30_000,           // request timeout in ms (default: 30s)
+  maxRetries: 3,             // auto-retry count for 5xx / network errors
+  idempotencyKeyGenerator: () => crypto.randomUUID(), // custom generator
+});
+```
+
+<Info>
+  You can obtain an API key from the [AnySpend Dashboard](https://app.anyspend.com) under **Settings > API Keys**. Keys are scoped to your organization and can have read-only or read-write permissions.
+</Info>
+
+## Available Resources
+
+The client is organized into resource namespaces, each with methods that map directly to REST endpoints.
+
+<AccordionGroup>
+  <Accordion title="paymentLinks">
+    ```typescript
+    // CRUD
+    platform.paymentLinks.create(data)
+    platform.paymentLinks.list(params?)
+    platform.paymentLinks.get(id)
+    platform.paymentLinks.update(id, data)
+    platform.paymentLinks.delete(id)
+
+    // Actions
+    platform.paymentLinks.duplicate(id)
+    platform.paymentLinks.stats(id)
+    platform.paymentLinks.sessions(id, params?)
+    platform.paymentLinks.visitors(id, params?)
+
+    // Line items
+    platform.paymentLinks.items(id)
+    platform.paymentLinks.addItem(id, itemData)
+    platform.paymentLinks.removeItem(id, itemId)
+    ```
+  </Accordion>
+
+  <Accordion title="products">
+    ```typescript
+    platform.products.create(data)
+    platform.products.list(params?)
+    platform.products.get(id)
+    platform.products.update(id, data)
+    platform.products.delete(id)
+    platform.products.generateLink(id, linkOptions?)
+    ```
+  </Accordion>
+
+  <Accordion title="customers">
+    ```typescript
+    platform.customers.create(data)
+    platform.customers.list(params?)
+    platform.customers.get(id)
+    platform.customers.update(id, data)
+    platform.customers.delete(id)
+    platform.customers.transactions(id, params?)
+    platform.customers.export(params?)
+    ```
+  </Accordion>
+
+  <Accordion title="transactions">
+    ```typescript
+    platform.transactions.list(params?)
+    platform.transactions.get(id)
+    platform.transactions.stats(params?)
+    platform.transactions.export(params?)
+    ```
+  </Accordion>
+
+  <Accordion title="checkoutSessions">
+    ```typescript
+    platform.checkoutSessions.create(data)
+    platform.checkoutSessions.list(params?)
+    platform.checkoutSessions.get(id)
+    platform.checkoutSessions.expire(id)
+    ```
+  </Accordion>
+
+  <Accordion title="webhooks">
+    ```typescript
+    platform.webhooks.create(data)
+    platform.webhooks.list(params?)
+    platform.webhooks.get(id)
+    platform.webhooks.update(id, data)
+    platform.webhooks.delete(id)
+    platform.webhooks.test(id)
+    platform.webhooks.deliveries(id, params?)
+    platform.webhooks.retry(id, deliveryId)
+    ```
+  </Accordion>
+
+  <Accordion title="discountCodes">
+    ```typescript
+    platform.discountCodes.create(data)
+    platform.discountCodes.list(params?)
+    platform.discountCodes.update(id, data)
+    platform.discountCodes.delete(id)
+    platform.discountCodes.validate(code, context?)
+    platform.discountCodes.batchCreate(codes)
+    ```
+  </Accordion>
+
+  <Accordion title="notifications">
+    ```typescript
+    platform.notifications.get()
+    platform.notifications.update(data)
+    platform.notifications.linkTelegram(chatId)
+    platform.notifications.unlinkTelegram()
+    platform.notifications.testEmail()
+    platform.notifications.testTelegram()
+    ```
+  </Accordion>
+
+  <Accordion title="widgets">
+    ```typescript
+    platform.widgets.create(data)
+    platform.widgets.list(params?)
+    platform.widgets.get(id)
+    platform.widgets.update(id, data)
+    platform.widgets.delete(id)
+    platform.widgets.stats(id)
+    ```
+  </Accordion>
+
+  <Accordion title="organization">
+    ```typescript
+    platform.organization.get()
+    platform.organization.update(data)
+    ```
+  </Accordion>
+
+  <Accordion title="analytics">
+    ```typescript
+    platform.analytics.overview(params?)
+    ```
+  </Accordion>
+
+  <Accordion title="events">
+    ```typescript
+    platform.events.list(params?)
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Pagination
+
+All `list` methods accept optional pagination parameters and return a paginated response:
+
+```typescript
+const page = await platform.transactions.list({
+  status: "completed",
+  limit: 25,
+  cursor: "cur_abc123",
+});
+
+console.log(page.data);       // Transaction[]
+console.log(page.has_more);   // boolean
+console.log(page.next_cursor); // string | null
+```
+
+### Auto-Pagination
+
+For convenience, every `list` method has a corresponding `listAutoPaginate` helper that returns an async iterator. It fetches pages behind the scenes as you consume items.
+
+```typescript
+for await (const txn of platform.transactions.listAutoPaginate({
+  status: "completed",
+})) {
+  console.log(txn.id, txn.amount);
+}
+```
+
+<Tip>
+  Auto-pagination respects rate limits automatically. If the API returns a `429`, the iterator waits for the `Retry-After` duration before fetching the next page.
+</Tip>
+
+You can also collect all results into an array:
+
+```typescript
+const allCustomers = [];
+for await (const c of platform.customers.listAutoPaginate()) {
+  allCustomers.push(c);
+}
+```
+
+## Error Handling
+
+The SDK throws typed error classes so you can handle specific failure modes:
+
+```typescript
+import {
+  ApiError,
+  AuthenticationError,
+  PermissionError,
+  RateLimitError,
+  NotFoundError,
+  IdempotencyError,
+} from "@b3dotfun/sdk/anyspend/platform";
+
+try {
+  const link = await platform.paymentLinks.get("pl_nonexistent");
+} catch (err) {
+  if (err instanceof NotFoundError) {
+    console.log("Link does not exist");
+  } else if (err instanceof AuthenticationError) {
+    console.log("Invalid or expired API key");
+  } else if (err instanceof PermissionError) {
+    console.log("API key lacks required permission");
+  } else if (err instanceof RateLimitError) {
+    console.log(`Rate limited. Retry after ${err.retryAfter} seconds`);
+  } else if (err instanceof IdempotencyError) {
+    console.log("Idempotency conflict -- request was already processed with different parameters");
+  } else if (err instanceof ApiError) {
+    // Catch-all for any API error
+    console.log(err.status, err.code, err.message);
+  }
+}
+```
+
+### Error Class Reference
+
+| Class | HTTP Status | Description |
+|-------|-------------|-------------|
+| `AuthenticationError` | `401` | Missing, invalid, or expired API key |
+| `PermissionError` | `403` | API key does not have the required scope |
+| `NotFoundError` | `404` | Resource does not exist |
+| `RateLimitError` | `429` | Too many requests. Includes `retryAfter` (seconds) |
+| `IdempotencyError` | `409` | Idempotency key was reused with different parameters |
+| `ApiError` | any | Base class for all API errors |
+
+## Auto-Retry
+
+The client automatically retries failed requests in the following cases:
+
+- **5xx server errors** -- the server had a transient failure
+- **Network errors** -- connection reset, DNS failure, timeout
+- **429 rate limit responses** -- waits for the `Retry-After` duration
+
+Retries use **exponential backoff** with jitter. The default is 3 retries, configurable via the `maxRetries` option.
+
+```typescript
+const platform = new AnySpendPlatformClient("asp_key", {
+  maxRetries: 5, // up to 5 retries
+});
+```
+
+<Warning>
+  Retries are **not** performed for `4xx` errors other than `429`, since those indicate a client-side issue that will not resolve by retrying.
+</Warning>
+
+## Idempotency
+
+All `POST` and `PATCH` requests automatically include an `Idempotency-Key` header. This ensures that if a request is retried (due to a network error, for example), the server will not process it twice.
+
+The default generator uses `crypto.randomUUID()`. You can supply your own:
+
+```typescript
+const platform = new AnySpendPlatformClient("asp_key", {
+  idempotencyKeyGenerator: () => `my-app-${Date.now()}-${Math.random()}`,
+});
+```
+
+You can also pass a specific idempotency key per-request:
+
+```typescript
+const link = await platform.paymentLinks.create(
+  { name: "Order #1234", amount: "50000000", recipient_address: "0x..." },
+  { idempotencyKey: "order-1234-link" }
+);
+```
+
+<Tip>
+  Using a deterministic idempotency key (like an order ID) is recommended for critical operations. If you accidentally send the same request twice, the second call returns the original response instead of creating a duplicate.
+</Tip>
+
+## TypeScript Types
+
+All request and response types are exported for use in your own code:
+
+```typescript
+import type {
+  PaymentLink,
+  CreatePaymentLinkRequest,
+  Transaction,
+  Customer,
+  CheckoutSession,
+  Webhook,
+  PaginatedResponse,
+} from "@b3dotfun/sdk/anyspend/platform";
+```
+
+## Runtime Compatibility
+
+| Runtime | Supported |
+|---------|-----------|
+| Node.js 18+ | Yes |
+| Browsers (ES2020+) | Yes |
+| Cloudflare Workers | Yes |
+| Deno | Yes |
+| Bun | Yes |
+
+The client uses the standard `fetch` API internally. In Node.js 18+, the built-in `fetch` is used. No polyfills are required.

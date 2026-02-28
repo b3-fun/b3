@@ -1,0 +1,1918 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AnySpend Platform API",
+    "description": "A Stripe-quality REST API for managing crypto payment links, products, customers, transactions, webhooks, and more. Built for developers, AI agents, and LLMs.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "AnySpend Support",
+      "url": "https://anyspend.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://platform-api.anyspend.com/api/v1",
+      "description": "Current server"
+    }
+  ],
+  "security": [
+    {
+      "apiKeyBearer": []
+    },
+    {
+      "apiKeyHeader": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "apiKeyBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "API key passed as Bearer token. Keys start with `asp_`."
+      },
+      "apiKeyHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "API key passed via X-API-Key header."
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "example": "invalid_request_error"
+              },
+              "code": {
+                "type": "string",
+                "example": "missing_required_field"
+              },
+              "message": {
+                "type": "string",
+                "example": "The 'name' field is required."
+              },
+              "param": {
+                "type": "string",
+                "example": "name",
+                "nullable": true
+              }
+            },
+            "required": [
+              "type",
+              "code",
+              "message"
+            ]
+          }
+        }
+      },
+      "PaymentLink": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "const": "payment_link"
+          },
+          "id": {
+            "type": "string",
+            "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+          },
+          "short_code": {
+            "type": "string",
+            "example": "abc12345"
+          },
+          "url": {
+            "type": "string",
+            "example": "https://platform.anyspend.com/pay/abc12345"
+          },
+          "name": {
+            "type": "string",
+            "example": "Summer Sale"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "amount": {
+            "type": "string",
+            "nullable": true,
+            "example": "10000000",
+            "description": "Amount in token base units (e.g., 10 USDC = 10000000)"
+          },
+          "token_address": {
+            "type": "string",
+            "example": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"
+          },
+          "chain_id": {
+            "type": "integer",
+            "example": 8453
+          },
+          "recipient_address": {
+            "type": "string",
+            "example": "0x..."
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "created_at": {
+            "type": "integer",
+            "description": "Unix timestamp in milliseconds"
+          }
+        }
+      },
+      "Product": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "const": "product"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "example": "Premium Plan"
+          },
+          "amount": {
+            "type": "string",
+            "example": "50000000"
+          },
+          "product_type": {
+            "type": "string",
+            "enum": [
+              "one_time",
+              "subscription",
+              "variable"
+            ]
+          },
+          "is_active": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Customer": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "const": "customer"
+          },
+          "id": {
+            "type": "string"
+          },
+          "wallet_address": {
+            "type": "string",
+            "example": "0x..."
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "total_paid": {
+            "type": "string",
+            "nullable": true
+          },
+          "transaction_count": {
+            "type": "integer"
+          }
+        }
+      },
+      "Transaction": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "const": "transaction"
+          },
+          "id": {
+            "type": "string"
+          },
+          "tx_hash": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "confirming",
+              "completed",
+              "failed"
+            ]
+          },
+          "amount": {
+            "type": "string"
+          },
+          "amount_usd": {
+            "type": "string",
+            "nullable": true
+          },
+          "chain_id": {
+            "type": "integer"
+          },
+          "from_address": {
+            "type": "string"
+          },
+          "to_address": {
+            "type": "string"
+          }
+        }
+      },
+      "CheckoutSession": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "const": "checkout_session"
+          },
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "processing",
+              "completed",
+              "expired",
+              "failed"
+            ]
+          },
+          "amount": {
+            "type": "string",
+            "nullable": true
+          },
+          "payment_link_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "success_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "cancel_url": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "Webhook": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "const": "webhook"
+          },
+          "id": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "example": "https://mysite.com/webhooks"
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "is_active": {
+            "type": "boolean"
+          }
+        }
+      },
+      "DiscountCode": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "const": "discount_code"
+          },
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "example": "SUMMER20"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "percentage",
+              "fixed"
+            ]
+          },
+          "value": {
+            "type": "string",
+            "example": "20"
+          },
+          "is_active": {
+            "type": "boolean"
+          }
+        }
+      },
+      "List": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "const": "list"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "total_count": {
+            "type": "integer"
+          },
+          "url": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "parameters": {
+      "page": {
+        "name": "page",
+        "in": "query",
+        "schema": {
+          "type": "integer",
+          "default": 1
+        },
+        "description": "Page number"
+      },
+      "limit": {
+        "name": "limit",
+        "in": "query",
+        "schema": {
+          "type": "integer",
+          "default": 20,
+          "maximum": 100
+        },
+        "description": "Items per page"
+      },
+      "idempotencyKey": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "schema": {
+          "type": "string"
+        },
+        "description": "Unique key for idempotent requests (24h TTL)"
+      }
+    }
+  },
+  "paths": {
+    "/quick-pay": {
+      "post": {
+        "operationId": "createQuickPay",
+        "summary": "Create a quick payment link (no auth required)",
+        "tags": [
+          "Quick Pay"
+        ],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "recipient_address"
+                ],
+                "properties": {
+                  "recipient_address": {
+                    "type": "string",
+                    "description": "Ethereum address to receive payment"
+                  },
+                  "amount": {
+                    "type": "string",
+                    "description": "Amount in token base units"
+                  },
+                  "token_address": {
+                    "type": "string",
+                    "description": "Token contract address (default: USDC on Base)"
+                  },
+                  "chain_id": {
+                    "type": "integer",
+                    "description": "Chain ID (default: 8453 Base)"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "expires_in": {
+                    "type": "integer",
+                    "description": "TTL in milliseconds (default: 24h)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Payment link created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentLink"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        }
+      }
+    },
+    "/payment-links": {
+      "get": {
+        "operationId": "listPaymentLinks",
+        "summary": "List all payment links",
+        "tags": [
+          "Payment Links"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "created_at",
+                "updated_at",
+                "name",
+                "current_uses"
+              ]
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of payment links",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/List"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createPaymentLink",
+        "summary": "Create a payment link",
+        "tags": [
+          "Payment Links"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "token_address",
+                  "chain_id",
+                  "recipient_address"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  "description": {
+                    "type": "string",
+                    "maxLength": 500
+                  },
+                  "amount": {
+                    "type": "string"
+                  },
+                  "token_address": {
+                    "type": "string"
+                  },
+                  "chain_id": {
+                    "type": "integer"
+                  },
+                  "recipient_address": {
+                    "type": "string"
+                  },
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "amount": {
+                          "type": "string"
+                        },
+                        "quantity": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  },
+                  "form_schema": {
+                    "type": "object"
+                  },
+                  "shipping_options": {
+                    "type": "array"
+                  },
+                  "branding": {
+                    "type": "object"
+                  },
+                  "max_uses": {
+                    "type": "integer"
+                  },
+                  "expires_at": {
+                    "type": "integer"
+                  },
+                  "return_url": {
+                    "type": "string"
+                  },
+                  "fee_on_top": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Payment link created"
+          }
+        }
+      }
+    },
+    "/payment-links/{id}": {
+      "get": {
+        "operationId": "getPaymentLink",
+        "summary": "Get a payment link",
+        "tags": [
+          "Payment Links"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment link details"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updatePaymentLink",
+        "summary": "Update a payment link",
+        "tags": [
+          "Payment Links"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated payment link"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deletePaymentLink",
+        "summary": "Delete a payment link",
+        "tags": [
+          "Payment Links"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deleted"
+          }
+        }
+      }
+    },
+    "/payment-links/{id}/stats": {
+      "get": {
+        "operationId": "getPaymentLinkStats",
+        "summary": "Get payment link analytics",
+        "tags": [
+          "Payment Links"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "days",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 30
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Analytics data"
+          }
+        }
+      }
+    },
+    "/payment-links/{id}/duplicate": {
+      "post": {
+        "operationId": "duplicatePaymentLink",
+        "summary": "Clone a payment link",
+        "tags": [
+          "Payment Links"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Cloned payment link"
+          }
+        }
+      }
+    },
+    "/products": {
+      "get": {
+        "operationId": "listProducts",
+        "summary": "List products",
+        "tags": [
+          "Products"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of products"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createProduct",
+        "summary": "Create a product",
+        "tags": [
+          "Products"
+        ],
+        "responses": {
+          "201": {
+            "description": "Product created"
+          }
+        }
+      }
+    },
+    "/products/{id}": {
+      "get": {
+        "operationId": "getProduct",
+        "summary": "Get a product",
+        "tags": [
+          "Products"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product details"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateProduct",
+        "summary": "Update a product",
+        "tags": [
+          "Products"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated product"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteProduct",
+        "summary": "Archive a product",
+        "tags": [
+          "Products"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Archived"
+          }
+        }
+      }
+    },
+    "/products/{id}/generate-link": {
+      "post": {
+        "operationId": "generateProductLink",
+        "summary": "Generate payment link from product",
+        "tags": [
+          "Products"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Payment link created from product"
+          }
+        }
+      }
+    },
+    "/checkout-sessions": {
+      "get": {
+        "operationId": "listCheckoutSessions",
+        "summary": "List checkout sessions",
+        "tags": [
+          "Checkout Sessions"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/limit"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of checkout sessions"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createCheckoutSession",
+        "summary": "Create a checkout session",
+        "tags": [
+          "Checkout Sessions"
+        ],
+        "responses": {
+          "201": {
+            "description": "Checkout session created"
+          }
+        }
+      }
+    },
+    "/checkout-sessions/{id}": {
+      "get": {
+        "operationId": "getCheckoutSession",
+        "summary": "Get a checkout session",
+        "tags": [
+          "Checkout Sessions"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Checkout session details"
+          }
+        }
+      }
+    },
+    "/checkout-sessions/{id}/expire": {
+      "post": {
+        "operationId": "expireCheckoutSession",
+        "summary": "Force-expire a checkout session",
+        "tags": [
+          "Checkout Sessions"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Session expired"
+          }
+        }
+      }
+    },
+    "/transactions": {
+      "get": {
+        "operationId": "listTransactions",
+        "summary": "List transactions",
+        "tags": [
+          "Transactions"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "customer_id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "payment_link_id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of transactions"
+          }
+        }
+      }
+    },
+    "/transactions/stats": {
+      "get": {
+        "operationId": "getTransactionStats",
+        "summary": "Get transaction statistics",
+        "tags": [
+          "Transactions"
+        ],
+        "responses": {
+          "200": {
+            "description": "Transaction statistics"
+          }
+        }
+      }
+    },
+    "/transactions/export": {
+      "get": {
+        "operationId": "exportTransactions",
+        "summary": "Export transactions as CSV or JSON",
+        "tags": [
+          "Transactions"
+        ],
+        "parameters": [
+          {
+            "name": "format",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "csv",
+                "json"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Export data"
+          }
+        }
+      }
+    },
+    "/transactions/{id}": {
+      "get": {
+        "operationId": "getTransaction",
+        "summary": "Get a transaction",
+        "tags": [
+          "Transactions"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transaction details"
+          }
+        }
+      }
+    },
+    "/customers": {
+      "get": {
+        "operationId": "listCustomers",
+        "summary": "List customers",
+        "tags": [
+          "Customers"
+        ],
+        "responses": {
+          "200": {
+            "description": "List of customers"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createCustomer",
+        "summary": "Create a customer",
+        "tags": [
+          "Customers"
+        ],
+        "responses": {
+          "201": {
+            "description": "Customer created"
+          }
+        }
+      }
+    },
+    "/customers/export": {
+      "get": {
+        "operationId": "exportCustomers",
+        "summary": "Export customers",
+        "tags": [
+          "Customers"
+        ],
+        "responses": {
+          "200": {
+            "description": "Export data"
+          }
+        }
+      }
+    },
+    "/customers/{id}": {
+      "get": {
+        "operationId": "getCustomer",
+        "summary": "Get a customer",
+        "tags": [
+          "Customers"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customer details"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateCustomer",
+        "summary": "Update a customer",
+        "tags": [
+          "Customers"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated customer"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteCustomer",
+        "summary": "Delete a customer",
+        "tags": [
+          "Customers"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deleted"
+          }
+        }
+      }
+    },
+    "/customers/{id}/transactions": {
+      "get": {
+        "operationId": "listCustomerTransactions",
+        "summary": "List customer transactions",
+        "tags": [
+          "Customers"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customer transactions"
+          }
+        }
+      }
+    },
+    "/webhooks": {
+      "get": {
+        "operationId": "listWebhooks",
+        "summary": "List webhooks",
+        "tags": [
+          "Webhooks"
+        ],
+        "responses": {
+          "200": {
+            "description": "List of webhooks"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createWebhook",
+        "summary": "Create a webhook",
+        "tags": [
+          "Webhooks"
+        ],
+        "responses": {
+          "201": {
+            "description": "Webhook created (secret returned once)"
+          }
+        }
+      }
+    },
+    "/webhooks/{id}": {
+      "get": {
+        "operationId": "getWebhook",
+        "summary": "Get a webhook",
+        "tags": [
+          "Webhooks"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Webhook details"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateWebhook",
+        "summary": "Update a webhook",
+        "tags": [
+          "Webhooks"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated webhook"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteWebhook",
+        "summary": "Delete a webhook",
+        "tags": [
+          "Webhooks"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deleted"
+          }
+        }
+      }
+    },
+    "/webhooks/{id}/test": {
+      "post": {
+        "operationId": "testWebhook",
+        "summary": "Send test webhook event",
+        "tags": [
+          "Webhooks"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Test sent"
+          }
+        }
+      }
+    },
+    "/webhooks/{id}/deliveries": {
+      "get": {
+        "operationId": "listWebhookDeliveries",
+        "summary": "List webhook deliveries",
+        "tags": [
+          "Webhooks"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Delivery history"
+          }
+        }
+      }
+    },
+    "/webhooks/{id}/deliveries/{did}/retry": {
+      "post": {
+        "operationId": "retryWebhookDelivery",
+        "summary": "Retry a webhook delivery",
+        "tags": [
+          "Webhooks"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "did",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retry dispatched"
+          }
+        }
+      }
+    },
+    "/discount-codes": {
+      "get": {
+        "operationId": "listDiscountCodes",
+        "summary": "List discount codes",
+        "tags": [
+          "Discount Codes"
+        ],
+        "responses": {
+          "200": {
+            "description": "List of discount codes"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createDiscountCode",
+        "summary": "Create a discount code",
+        "tags": [
+          "Discount Codes"
+        ],
+        "responses": {
+          "201": {
+            "description": "Discount code created"
+          }
+        }
+      }
+    },
+    "/discount-codes/validate": {
+      "post": {
+        "operationId": "validateDiscountCode",
+        "summary": "Validate a discount code",
+        "tags": [
+          "Discount Codes"
+        ],
+        "responses": {
+          "200": {
+            "description": "Valid code"
+          }
+        }
+      }
+    },
+    "/discount-codes/batch": {
+      "post": {
+        "operationId": "batchCreateDiscountCodes",
+        "summary": "Batch create discount codes",
+        "tags": [
+          "Discount Codes"
+        ],
+        "responses": {
+          "201": {
+            "description": "Codes created"
+          }
+        }
+      }
+    },
+    "/discount-codes/{id}": {
+      "patch": {
+        "operationId": "updateDiscountCode",
+        "summary": "Update a discount code",
+        "tags": [
+          "Discount Codes"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteDiscountCode",
+        "summary": "Delete a discount code",
+        "tags": [
+          "Discount Codes"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deleted"
+          }
+        }
+      }
+    },
+    "/notifications": {
+      "get": {
+        "operationId": "getNotificationSettings",
+        "summary": "Get notification settings",
+        "tags": [
+          "Notifications"
+        ],
+        "responses": {
+          "200": {
+            "description": "Notification settings"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateNotificationSettings",
+        "summary": "Update notification settings",
+        "tags": [
+          "Notifications"
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated"
+          }
+        }
+      }
+    },
+    "/notifications/telegram/link": {
+      "post": {
+        "operationId": "linkTelegram",
+        "summary": "Generate Telegram link code",
+        "tags": [
+          "Notifications"
+        ],
+        "responses": {
+          "201": {
+            "description": "Link code generated"
+          }
+        }
+      }
+    },
+    "/notifications/telegram": {
+      "delete": {
+        "operationId": "unlinkTelegram",
+        "summary": "Unlink Telegram",
+        "tags": [
+          "Notifications"
+        ],
+        "responses": {
+          "200": {
+            "description": "Unlinked"
+          }
+        }
+      }
+    },
+    "/notifications/test/email": {
+      "post": {
+        "operationId": "testEmailNotification",
+        "summary": "Send test email",
+        "tags": [
+          "Notifications"
+        ],
+        "responses": {
+          "200": {
+            "description": "Test sent"
+          }
+        }
+      }
+    },
+    "/notifications/test/telegram": {
+      "post": {
+        "operationId": "testTelegramNotification",
+        "summary": "Send test Telegram message",
+        "tags": [
+          "Notifications"
+        ],
+        "responses": {
+          "200": {
+            "description": "Test sent"
+          }
+        }
+      }
+    },
+    "/widgets": {
+      "get": {
+        "operationId": "listWidgets",
+        "summary": "List widget configs",
+        "tags": [
+          "Widgets"
+        ],
+        "responses": {
+          "200": {
+            "description": "List of widgets"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createWidget",
+        "summary": "Create a widget config",
+        "tags": [
+          "Widgets"
+        ],
+        "responses": {
+          "201": {
+            "description": "Widget created"
+          }
+        }
+      }
+    },
+    "/widgets/{id}": {
+      "get": {
+        "operationId": "getWidget",
+        "summary": "Get a widget config",
+        "tags": [
+          "Widgets"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Widget details"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateWidget",
+        "summary": "Update a widget config",
+        "tags": [
+          "Widgets"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteWidget",
+        "summary": "Delete a widget config",
+        "tags": [
+          "Widgets"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deleted"
+          }
+        }
+      }
+    },
+    "/widgets/{id}/stats": {
+      "get": {
+        "operationId": "getWidgetStats",
+        "summary": "Get widget view stats",
+        "tags": [
+          "Widgets"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Widget stats"
+          }
+        }
+      }
+    },
+    "/organization": {
+      "get": {
+        "operationId": "getOrganization",
+        "summary": "Get organization details",
+        "tags": [
+          "Organization"
+        ],
+        "responses": {
+          "200": {
+            "description": "Organization details"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateOrganization",
+        "summary": "Update organization",
+        "tags": [
+          "Organization"
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated"
+          }
+        }
+      }
+    },
+    "/uploads/image": {
+      "post": {
+        "operationId": "uploadImage",
+        "summary": "Upload an image",
+        "tags": [
+          "Uploads"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Image uploaded"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteImage",
+        "summary": "Delete an image",
+        "tags": [
+          "Uploads"
+        ],
+        "responses": {
+          "200": {
+            "description": "Deleted"
+          }
+        }
+      }
+    },
+    "/api-keys": {
+      "get": {
+        "operationId": "listApiKeys",
+        "summary": "List API keys",
+        "tags": [
+          "API Keys"
+        ],
+        "responses": {
+          "200": {
+            "description": "List of API keys"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createApiKey",
+        "summary": "Create an API key",
+        "tags": [
+          "API Keys"
+        ],
+        "responses": {
+          "201": {
+            "description": "API key created (key returned once)"
+          }
+        }
+      }
+    },
+    "/api-keys/{id}": {
+      "delete": {
+        "operationId": "revokeApiKey",
+        "summary": "Revoke an API key",
+        "tags": [
+          "API Keys"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Revoked"
+          }
+        }
+      }
+    },
+    "/analytics/overview": {
+      "get": {
+        "operationId": "getAnalyticsOverview",
+        "summary": "Get analytics overview",
+        "tags": [
+          "Analytics"
+        ],
+        "parameters": [
+          {
+            "name": "period",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "example": "30d"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Analytics data"
+          }
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "listEvents",
+        "summary": "List audit events",
+        "tags": [
+          "Events"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "resource_type",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of events"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Quick Pay",
+      "description": "Create payment links without authentication"
+    },
+    {
+      "name": "Payment Links",
+      "description": "Manage payment links with items, forms, and shipping"
+    },
+    {
+      "name": "Products",
+      "description": "Manage products and generate payment links from them"
+    },
+    {
+      "name": "Checkout Sessions",
+      "description": "Server-side checkout session management"
+    },
+    {
+      "name": "Transactions",
+      "description": "View and export transaction history"
+    },
+    {
+      "name": "Customers",
+      "description": "Manage customer records"
+    },
+    {
+      "name": "Webhooks",
+      "description": "Configure webhook endpoints and manage deliveries"
+    },
+    {
+      "name": "Discount Codes",
+      "description": "Create and validate discount codes"
+    },
+    {
+      "name": "Notifications",
+      "description": "Email and Telegram notification settings"
+    },
+    {
+      "name": "Widgets",
+      "description": "Embeddable widget configurations"
+    },
+    {
+      "name": "Organization",
+      "description": "Organization settings and defaults"
+    },
+    {
+      "name": "Uploads",
+      "description": "Image upload management"
+    },
+    {
+      "name": "API Keys",
+      "description": "API key self-management"
+    },
+    {
+      "name": "Analytics",
+      "description": "Revenue and conversion analytics"
+    },
+    {
+      "name": "Events",
+      "description": "API audit trail"
+    }
+  ]
+}
