@@ -90,7 +90,6 @@ export function FiatCheckoutPanel({
     return parseFloat(raw).toFixed(2);
   }, [isStablecoin, formattedAmount, anyspendQuote]);
 
-
   const {
     geoData,
     stripeOnrampSupport,
