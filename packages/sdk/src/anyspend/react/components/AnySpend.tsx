@@ -1188,7 +1188,6 @@ function AnySpendInner({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated]);
 
-
   const historyView = (
     <div className={"mx-auto flex w-[560px] max-w-full flex-col items-center"}>
       <OrderHistory mode={mode} onBack={navigateBack} onSelectOrder={onSelectOrder} />
