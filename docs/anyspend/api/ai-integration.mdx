@@ -200,20 +200,29 @@ const tools: Anthropic.Tool[] = [
   },
 ];
 
+// Validate required string fields from LLM tool input
+function requireString(input: Record<string, unknown>, key: string): string {
+  const value = input[key];
+  if (typeof value !== "string" || !value) {
+    throw new Error(`Missing or invalid field: ${key}`);
+  }
+  return value;
+}
+
 // Execute a tool call
 async function executeTool(name: string, input: Record<string, unknown>) {
   switch (name) {
     case "create_payment_link":
       return await platform.paymentLinks.create({
-        name: input.name as string,
-        amount: input.amount as string,
-        recipient_address: input.recipient_address as string,
+        name: requireString(input, "name"),
+        amount: requireString(input, "amount"),
+        recipient_address: requireString(input, "recipient_address"),
       });
 
     case "list_recent_transactions":
       return await platform.transactions.list({
-        status: input.status as string | undefined,
-        limit: (input.limit as number) || 10,
+        status: typeof input.status === "string" ? input.status : undefined,
+        limit: typeof input.limit === "number" ? input.limit : 10,
       });
 
     case "get_transaction_stats":
@@ -223,6 +232,9 @@ async function executeTool(name: string, input: Record<string, unknown>) {
       throw new Error(`Unknown tool: ${name}`);
   }
 }
+
+const SYSTEM_PROMPT =
+  "You are a payment management assistant. Use the provided tools to help users create payment links, view transactions, and manage their AnySpend account. Amounts are in the token's smallest unit -- for USDC with 6 decimals, 1 USDC = 1000000.";
 
 // Run the agent loop
 async function chat(userMessage: string) {
@@ -235,8 +247,7 @@ async function chat(userMessage: string) {
     max_tokens: 1024,
     tools,
     messages,
-    system:
-      "You are a payment management assistant. Use the provided tools to help users create payment links, view transactions, and manage their AnySpend account. Amounts are in the token's smallest unit -- for USDC with 6 decimals, 1 USDC = 1000000.",
+    system: SYSTEM_PROMPT,
   });
 
   // Handle tool use in a loop
@@ -267,8 +278,7 @@ async function chat(userMessage: string) {
       max_tokens: 1024,
       tools,
       messages,
-      system:
-        "You are a payment management assistant. Use the provided tools to help users create payment links, view transactions, and manage their AnySpend account.",
+      system: SYSTEM_PROMPT,
     });
   }
 

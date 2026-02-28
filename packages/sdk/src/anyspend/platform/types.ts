@@ -52,14 +52,14 @@ export interface PaymentLink {
   max_uses: number | null;
   current_uses: number;
   expires_at: number | null;
-  is_active: boolean | number;
+  is_active: boolean;
   form_schema: string | null;
   shipping_options: string | null;
-  collect_shipping_address: boolean | number;
+  collect_shipping_address: boolean;
   return_url: string | null;
   return_label: string | null;
   branding: string | null;
-  fee_on_top: boolean | number;
+  fee_on_top: boolean;
   items?: PaymentLinkItem[];
   created_at: number;
   updated_at: number;
@@ -160,7 +160,7 @@ export interface Product {
   chain_id: number;
   recipient_address: string | null;
   product_type: "one_time" | "subscription" | "variable";
-  is_active: boolean | number;
+  is_active: boolean;
   metadata: Record<string, unknown> | null;
   form_schema: string | null;
   shipping_options: string | null;
@@ -305,7 +305,7 @@ export interface Webhook {
   url: string;
   events: string[];
   secret?: string;
-  is_active: boolean | number;
+  is_active: boolean;
   success_count: number;
   failure_count: number;
   last_triggered_at: number | null;
@@ -337,7 +337,7 @@ export interface DiscountCode {
   current_uses: number;
   min_order_amount: string | null;
   expires_at: number | null;
-  is_active: boolean | number;
+  is_active: boolean;
   created_at: number;
   updated_at: number;
 }
@@ -367,9 +367,9 @@ export interface BatchCreateDiscountCodesParams {
 export interface NotificationSettings {
   object: "notification_settings";
   id: string;
-  email_enabled: boolean | number;
+  email_enabled: boolean;
   email_address: string | null;
-  telegram_enabled: boolean | number;
+  telegram_enabled: boolean;
   telegram_chat_id: string | null;
   enabled_events: string[];
 }
@@ -392,7 +392,7 @@ export interface WidgetConfig {
   widget_type: string;
   config: string;
   theme: string;
-  is_active: boolean | number;
+  is_active: boolean;
   current_views: number;
   created_at: number;
   updated_at: number;
