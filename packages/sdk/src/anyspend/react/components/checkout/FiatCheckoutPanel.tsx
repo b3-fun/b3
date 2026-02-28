@@ -103,11 +103,6 @@ export function FiatCheckoutPanel({
   // KYC state — pre-approved when kycEnabled is false (feature flag off)
   const [kycApproved, setKycApproved] = useState(() => !kycEnabled);
 
-  // Sync if kycEnabled changes after initial mount (e.g. parent re-render)
-  useEffect(() => {
-    if (!kycEnabled) setKycApproved(true);
-  }, [kycEnabled]);
-
   const handleKycResolved = useCallback((approved: boolean) => {
     setKycApproved(approved);
   }, []);
