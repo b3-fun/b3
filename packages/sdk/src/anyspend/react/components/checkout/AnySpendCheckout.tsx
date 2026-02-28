@@ -136,6 +136,8 @@ export interface AnySpendCheckoutProps {
   variablePricing?: VariablePricingConfig;
   /** When true, fees are added on top of the amount (payer pays more, receiver gets exact amount) */
   feeOnTop?: boolean;
+  /** When true, identity verification (KYC) is required before card payment. Defaults to false. */
+  kycEnabled?: boolean;
 }
 
 const emptyAddress: AddressData = { street: "", city: "", state: "", zip: "", country: "" };
@@ -184,6 +186,7 @@ export function AnySpendCheckout({
   // Variable pricing
   variablePricing,
   feeOnTop,
+  kycEnabled = false,
 }: AnySpendCheckoutProps) {
   // ===== Variable pricing state =====
   const [variablePricingAmount, setVariablePricingAmount] = useState<string>("0");
@@ -429,6 +432,7 @@ export function AnySpendCheckout({
                 callbackMetadata={checkoutFormMetadata}
                 isFormValid={isFormValid}
                 feeOnTop={feeOnTop}
+                kycEnabled={kycEnabled}
               />
             </>
           }
