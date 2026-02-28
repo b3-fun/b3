@@ -712,6 +712,10 @@ interface ModalState {
   setLinkingState: (isLinking: boolean, method?: string | null) => void;
   /** Function to update closable property of current content without adding to history */
   setClosable: (closable: boolean) => void;
+  /** Whether a third-party iframe (e.g. Persona KYC) is currently active over the modal */
+  personaActive: boolean;
+  /** Function to mark a third-party iframe as active/inactive */
+  setPersonaActive: (active: boolean) => void;
 }
 
 /**
@@ -755,4 +759,6 @@ export const useModalStore = create<ModalState>(set => ({
     set(state => ({
       contentType: state.contentType ? { ...state.contentType, closable } : null,
     })),
+  personaActive: false,
+  setPersonaActive: (active: boolean) => set({ personaActive: active }),
 }));

@@ -25,6 +25,7 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
   const { verifyKyc, isVerifying } = useVerifyKyc();
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
+  const setPersonaActive = useModalStore(state => state.setPersonaActive);
   const { partnerId } = useB3Config();
 
   const [personaOpen, setPersonaOpen] = useState(false);
@@ -32,6 +33,13 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
   const [personaCancelled, setPersonaCancelled] = useState(false);
   const prevStatusRef = useRef<string | null>(null);
   const autoResumedRef = useRef(false);
+
+  // Safety: always clear personaActive when this component unmounts so the
+  // modal doesn't stay in non-modal / non-dismissable mode unexpectedly.
+  useEffect(() => {
+    return () => setPersonaActive(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Notify parent when status resolves
   useEffect(() => {
@@ -49,8 +57,17 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
   const openPersonaFlow = useCallback(
     async (config: { inquiryId: string; sessionToken: string; templateId?: string; environment?: string }) => {
       setPersonaOpen(true);
+      // Disable Radix's FocusScope trap and outside-click dismissal while the
+      // Persona iframe is active. Without this, the first click on the iframe
+      // triggers Radix's outside-click handler (closing the modal) and the
+      // FocusScope steals focus back before Persona can register the click.
+      // modal={false} on Dialog removes FocusScope; onPointerDownOutside
+      // preventDefault in B3DynamicModal prevents the outside-click dismiss.
+      setPersonaActive(true);
       try {
-        // Dynamic import to keep bundle small
+        // Dynamic import to keep bundle small — the await yields to the event
+        // loop so React can flush the personaActive=true state update before
+        // client.open() renders the iframe.
         const { Client } = await import("persona");
         const client = new Client({
           inquiryId: config.inquiryId,
@@ -59,15 +76,14 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
           environment: (config.environment as "sandbox" | "production") || "sandbox",
           onComplete: async ({ inquiryId }) => {
             setPersonaOpen(false);
+            setPersonaActive(false);
             if (inquiryId) {
               try {
                 const result = await verifyKyc(inquiryId);
                 if (result.status === "approved") {
                   onStatusResolved(true);
-                  // Persona renders its iframe outside the Radix dialog DOM.
-                  // Clicking inside it triggers Radix's outside-click detection
-                  // and closes the checkout modal. If that happened, reopen it
-                  // so the user can complete their purchase without losing state.
+                  // Safety net: if the modal somehow closed during the flow,
+                  // reopen it so the user can complete their purchase.
                   if (!useModalStore.getState().isOpen) {
                     setB3ModalOpen(true);
                   }
@@ -80,20 +96,23 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
           },
           onCancel: () => {
             setPersonaOpen(false);
+            setPersonaActive(false);
             setPersonaCancelled(true);
           },
           onError: error => {
             setPersonaOpen(false);
+            setPersonaActive(false);
             setPersonaError(error?.message || "Verification encountered an error");
           },
         });
         client.open();
       } catch (error) {
         setPersonaOpen(false);
+        setPersonaActive(false);
         setPersonaError("Failed to load verification module");
       }
     },
-    [verifyKyc, onStatusResolved, refetchKycStatus, setB3ModalOpen],
+    [verifyKyc, onStatusResolved, refetchKycStatus, setB3ModalOpen, setPersonaActive],
   );
 
   // Auto-resume Persona when the gate activates and there is an incomplete inquiry.
