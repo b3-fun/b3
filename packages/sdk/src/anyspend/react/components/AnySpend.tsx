@@ -67,6 +67,7 @@ import { GasIndicator } from "./common/GasIndicator";
 import { OrderDetails, OrderDetailsLoadingView } from "./common/OrderDetails";
 import { OrderHistory } from "./common/OrderHistory";
 import { KycGate } from "./checkout/KycGate";
+import { useWalletAuthHeaders } from "../hooks/useKycStatus";
 import { LoginStep } from "@b3dotfun/sdk/global-account/react/components/SignInWithB3/steps/LoginStep";
 import { PanelOnramp } from "./common/PanelOnramp";
 import { PanelOnrampPayment } from "./common/PanelOnrampPayment";
@@ -221,6 +222,10 @@ function AnySpendInner({
   // useRef so handleFiatOrder can read the updated value synchronously
   // in the same frame that onStatusResolved sets it (setState is async).
   const kycApprovedRef = useRef(false);
+  // Pre-warm wallet auth headers inside user-gesture context (button click)
+  // so the signing prompt fires before we navigate away — browsers block
+  // wallet popups triggered from async/non-gesture contexts (React Query queryFn).
+  const { getHeaders: getKycHeaders } = useWalletAuthHeaders();
 
   // Determine if we're in "buy mode" based on whether destination token props are provided
   const isBuyMode = !!(destinationTokenAddress && destinationTokenChainId);
@@ -1048,6 +1053,11 @@ function AnySpendInner({
           return;
         }
         if (!kycApprovedRef.current) {
+          // Pre-sign the KYC auth message NOW (user-gesture context) so the
+          // result is cached before useKycStatus fires its queryFn inside the
+          // FIAT_KYC panel. Wallets/browsers block signing prompts from async
+          // (non-gesture) contexts, which is exactly what React Query uses.
+          await getKycHeaders().catch(() => {});
           navigateToPanel(PanelView.FIAT_KYC, "forward");
           return;
         }
