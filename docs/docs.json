@@ -133,7 +133,7 @@
                   {
                     "group": "Profiles",
                     "openapi": {
-                      "source": "/profiles-swagger.json",
+                      "source": "/openapi/profiles.json",
                       "directory": "data/profiles"
                     }
                   }
@@ -238,7 +238,7 @@
               {
                 "group": "API Reference",
                 "openapi": {
-                  "source": "/basement/basement-swagger.json",
+                  "source": "/openapi/basement.json",
                   "directory": "basement/api-reference"
                 }
               }
@@ -394,7 +394,7 @@
               {
                 "group": "Platform API Reference",
                 "openapi": {
-                  "source": "https://platform-api.anyspend.com/api/v1/openapi.json",
+                  "source": "/openapi/anyspend-platform.json",
                   "directory": "anyspend/platform-api-reference"
                 }
               },
@@ -729,7 +729,7 @@
                   {
                     "group": "Profiles",
                     "openapi": {
-                      "source": "/profiles-swagger.json",
+                      "source": "/openapi/profiles.json",
                       "directory": "data/profiles"
                     }
                   }
@@ -834,7 +834,7 @@
               {
                 "group": "API Reference",
                 "openapi": {
-                  "source": "/basement/basement-swagger.json",
+                  "source": "/openapi/basement.json",
                   "directory": "basement/api-reference"
                 }
               }
@@ -940,6 +940,13 @@
                 "openapi": {
                   "source": "https://mainnet.anyspend.com/openapi.json",
                   "directory": "anyspend/api-reference"
+                }
+              },
+              {
+                "group": "Platform API Reference",
+                "openapi": {
+                  "source": "/openapi/anyspend-platform.json",
+                  "directory": "anyspend/platform-api-reference"
                 }
               },
               {
@@ -1236,7 +1243,7 @@
                   {
                     "group": "Profiles",
                     "openapi": {
-                      "source": "/profiles-swagger.json",
+                      "source": "/openapi/profiles.json",
                       "directory": "data/profiles"
                     }
                   }
@@ -1341,7 +1348,7 @@
               {
                 "group": "API Reference",
                 "openapi": {
-                  "source": "/basement/basement-swagger.json",
+                  "source": "/openapi/basement.json",
                   "directory": "basement/api-reference"
                 }
               }
@@ -1447,6 +1454,13 @@
                 "openapi": {
                   "source": "https://mainnet.anyspend.com/openapi.json",
                   "directory": "anyspend/api-reference"
+                }
+              },
+              {
+                "group": "Platform API Reference",
+                "openapi": {
+                  "source": "/openapi/anyspend-platform.json",
+                  "directory": "anyspend/platform-api-reference"
                 }
               },
               {
@@ -1743,7 +1757,7 @@
                   {
                     "group": "Profiles",
                     "openapi": {
-                      "source": "/profiles-swagger.json",
+                      "source": "/openapi/profiles.json",
                       "directory": "data/profiles"
                     }
                   }
@@ -1848,7 +1862,7 @@
               {
                 "group": "API Reference",
                 "openapi": {
-                  "source": "/basement/basement-swagger.json",
+                  "source": "/openapi/basement.json",
                   "directory": "basement/api-reference"
                 }
               }
@@ -1954,6 +1968,13 @@
                 "openapi": {
                   "source": "https://mainnet.anyspend.com/openapi.json",
                   "directory": "anyspend/api-reference"
+                }
+              },
+              {
+                "group": "Platform API Reference",
+                "openapi": {
+                  "source": "/openapi/anyspend-platform.json",
+                  "directory": "anyspend/platform-api-reference"
                 }
               },
               {
@@ -2250,7 +2271,7 @@
                   {
                     "group": "Profiles",
                     "openapi": {
-                      "source": "/profiles-swagger.json",
+                      "source": "/openapi/profiles.json",
                       "directory": "data/profiles"
                     }
                   }
@@ -2355,7 +2376,7 @@
               {
                 "group": "API Reference",
                 "openapi": {
-                  "source": "/basement/basement-swagger.json",
+                  "source": "/openapi/basement.json",
                   "directory": "basement/api-reference"
                 }
               }
@@ -2461,6 +2482,13 @@
                 "openapi": {
                   "source": "https://mainnet.anyspend.com/openapi.json",
                   "directory": "anyspend/api-reference"
+                }
+              },
+              {
+                "group": "Platform API Reference",
+                "openapi": {
+                  "source": "/openapi/anyspend-platform.json",
+                  "directory": "anyspend/platform-api-reference"
                 }
               },
               {
@@ -2739,7 +2767,7 @@
                   {
                     "group": "Profiles",
                     "openapi": {
-                      "source": "/profiles-swagger.json",
+                      "source": "/openapi/profiles.json",
                       "directory": "data/profiles"
                     }
                   }
@@ -2844,7 +2872,7 @@
               {
                 "group": "API Reference",
                 "openapi": {
-                  "source": "/basement/basement-swagger.json",
+                  "source": "/openapi/basement.json",
                   "directory": "basement/api-reference"
                 }
               }
@@ -2950,6 +2978,13 @@
                 "openapi": {
                   "source": "https://mainnet.anyspend.com/openapi.json",
                   "directory": "anyspend/api-reference"
+                }
+              },
+              {
+                "group": "Platform API Reference",
+                "openapi": {
+                  "source": "/openapi/anyspend-platform.json",
+                  "directory": "anyspend/platform-api-reference"
                 }
               },
               {
