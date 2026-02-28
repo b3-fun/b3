@@ -2,7 +2,7 @@
 
 import { ANYSPEND_MAINNET_BASE_URL } from "@b3dotfun/sdk/anyspend/constants";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import { useAccount, useSignMessage } from "wagmi";
 
 export interface KycStatusResponse {
@@ -80,17 +80,16 @@ export function useKycStatus(enabled = true) {
     },
     enabled: enabled && !!address,
     staleTime: 30_000,
+    retry: 0,
+    refetchOnWindowFocus: false,
   });
 
-  return useMemo(
-    () => ({
-      kycStatus: data || null,
-      isLoadingKycStatus: isLoading,
-      kycStatusError: error,
-      refetchKycStatus: refetch,
-    }),
-    [data, isLoading, error, refetch],
-  );
+  return {
+    kycStatus: data || null,
+    isLoadingKycStatus: isLoading,
+    kycStatusError: error,
+    refetchKycStatus: refetch,
+  };
 }
 
 export function useCreateKycInquiry() {
@@ -110,13 +109,10 @@ export function useCreateKycInquiry() {
     },
   });
 
-  return useMemo(
-    () => ({
-      createInquiry: mutateAsync,
-      isCreatingInquiry: isPending,
-    }),
-    [mutateAsync, isPending],
-  );
+  return {
+    createInquiry: mutateAsync,
+    isCreatingInquiry: isPending,
+  };
 }
 
 export function useVerifyKyc() {
@@ -137,11 +133,8 @@ export function useVerifyKyc() {
     },
   });
 
-  return useMemo(
-    () => ({
-      verifyKyc: mutateAsync,
-      isVerifying: isPending,
-    }),
-    [mutateAsync, isPending],
-  );
+  return {
+    verifyKyc: mutateAsync,
+    isVerifying: isPending,
+  };
 }

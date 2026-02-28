@@ -90,17 +90,6 @@ export function FiatCheckoutPanel({
     return parseFloat(raw).toFixed(2);
   }, [isStablecoin, formattedAmount, anyspendQuote]);
 
-  // Debug: log computed values for Stripe flow diagnostics
-  useEffect(() => {
-    console.log("@@fiat-checkout:debug", {
-      totalAmount,
-      formattedAmount,
-      isStablecoin,
-      isLoadingAnyspendQuote,
-      quoteAmount: anyspendQuote?.data?.currencyIn?.amount,
-      usdAmount,
-    });
-  }, [totalAmount, formattedAmount, isStablecoin, isLoadingAnyspendQuote, anyspendQuote, usdAmount]);
 
   const {
     geoData,
@@ -244,7 +233,7 @@ export function FiatCheckoutPanel({
 
   // KYC gate — shown before order creation when verification is needed
   if (!kycApproved) {
-    return <KycGate themeColor={themeColor} classes={classes} onStatusResolved={handleKycResolved} />;
+    return <KycGate themeColor={themeColor} classes={classes} enabled onStatusResolved={handleKycResolved} />;
   }
 
   // Order creation error - show with retry

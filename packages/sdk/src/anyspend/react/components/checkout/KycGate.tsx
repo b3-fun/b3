@@ -46,7 +46,7 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
   }, [kycStatus, onStatusResolved]);
 
   const openPersonaFlow = useCallback(
-    async (config: { inquiryId: string; sessionToken: string; templateId?: string; environment?: string }) => {
+    async (config: { inquiryId: string; sessionToken: string; environment?: string }) => {
       setPersonaOpen(true);
       try {
         // Dynamic import to keep bundle small
@@ -54,8 +54,7 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
         const client = new Client({
           inquiryId: config.inquiryId,
           sessionToken: config.sessionToken,
-          // templateId is mutually exclusive with inquiryId — do not pass both
-          environment: (config.environment as "sandbox" | "production") || "sandbox",
+          environment: config.environment === "production" ? "production" : "sandbox",
           onComplete: async ({ inquiryId }) => {
             // Reopen the modal first so the user lands back in the checkout flow
             setB3ModalOpen(true);
@@ -66,8 +65,8 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
                 if (result.status === "approved") {
                   onStatusResolved(true);
                 }
-              } catch {
-                // Will be picked up by polling via refetch
+              } catch (err) {
+                setPersonaError(err instanceof Error ? err.message : "Verification check failed — please retry.");
               }
             }
             refetchKycStatus();
@@ -108,7 +107,6 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
       openPersonaFlow({
         inquiryId,
         sessionToken,
-        templateId: kycStatus?.config?.templateId,
         environment: kycStatus?.config?.environment,
       });
     } catch (error) {
@@ -130,7 +128,6 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
     openPersonaFlow({
       inquiryId: kycStatus.inquiry.inquiryId,
       sessionToken: kycStatus.inquiry.sessionToken,
-      templateId: kycStatus.config?.templateId,
       environment: kycStatus.config?.environment,
     });
   }, [kycStatus, openPersonaFlow]);
