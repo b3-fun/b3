@@ -1,0 +1,251 @@
+---
+title: "Analytics"
+description: "Revenue and conversion analytics overview"
+---
+
+The analytics endpoint provides a comprehensive overview of your payment performance, including revenue totals, customer counts, conversion rates, and breakdowns by day, payment link, token, and chain.
+
+<Info>
+  The analytics endpoint requires **read** permission.
+</Info>
+
+## Authentication
+
+```bash
+Authorization: Bearer asp_xxx
+```
+
+Base URL: `https://platform-api.anyspend.com/api/v1`
+
+## Endpoints
+
+### Get Analytics Overview
+
+<ParamField path="GET /analytics/overview" type="read">
+  Returns an aggregated analytics overview for the specified time period.
+</ParamField>
+
+<ParamField path="period" type="string" query>
+  Time period for metrics. One of: `7d`, `30d`, `90d`, `all`. Defaults to `30d`.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET "https://platform-api.anyspend.com/api/v1/analytics/overview?period=30d" \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    import { AnySpendClient } from "@b3dotfun/sdk/anyspend";
+
+    const client = new AnySpendClient({ apiKey: "asp_xxx" });
+    const analytics = await client.analytics.overview({ period: "30d" });
+    ```
+  </Tab>
+</Tabs>
+
+**Response**
+
+```json
+{
+  "success": true,
+  "data": {
+    "revenue": {
+      "period_usd": 45230.50,
+      "period_transactions": 312,
+      "all_time_usd": 182450.75,
+      "all_time_transactions": 1847
+    },
+    "customers": {
+      "total": 892,
+      "new_in_period": 156
+    },
+    "payment_links": {
+      "total": 24,
+      "active": 18
+    },
+    "conversion_rate": 0.68,
+    "daily": [
+      {
+        "date": "2026-02-27",
+        "transactions": 14,
+        "revenue_usd": 1820.00
+      },
+      {
+        "date": "2026-02-26",
+        "transactions": 18,
+        "revenue_usd": 2340.50
+      },
+      {
+        "date": "2026-02-25",
+        "transactions": 11,
+        "revenue_usd": 1450.25
+      }
+    ],
+    "top_payment_links": [
+      {
+        "id": "pl_abc123",
+        "name": "Pro Plan Monthly",
+        "revenue_usd": 12500.00,
+        "transactions": 125
+      },
+      {
+        "id": "pl_def456",
+        "name": "Enterprise Annual",
+        "revenue_usd": 9800.00,
+        "transactions": 14
+      },
+      {
+        "id": "pl_ghi789",
+        "name": "Starter Pack",
+        "revenue_usd": 7200.00,
+        "transactions": 96
+      }
+    ],
+    "top_tokens": [
+      {
+        "symbol": "USDC",
+        "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "chain_id": 8453,
+        "revenue_usd": 32100.00,
+        "transactions": 245
+      },
+      {
+        "symbol": "ETH",
+        "address": "0x0000000000000000000000000000000000000000",
+        "chain_id": 8453,
+        "revenue_usd": 8400.00,
+        "transactions": 42
+      }
+    ],
+    "top_chains": [
+      {
+        "chain_id": 8453,
+        "name": "Base",
+        "revenue_usd": 38200.00,
+        "transactions": 278
+      },
+      {
+        "chain_id": 1,
+        "name": "Ethereum",
+        "revenue_usd": 7030.50,
+        "transactions": 34
+      }
+    ]
+  }
+}
+```
+
+---
+
+## Response Fields
+
+### Revenue
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `period_usd` | `number` | Total revenue in USD for the selected period |
+| `period_transactions` | `number` | Number of completed transactions in the period |
+| `all_time_usd` | `number` | Total lifetime revenue in USD |
+| `all_time_transactions` | `number` | Total lifetime transaction count |
+
+### Customers
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `total` | `number` | Total unique customers (by wallet address) |
+| `new_in_period` | `number` | New customers acquired in the selected period |
+
+### Payment Links
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `total` | `number` | Total payment links created |
+| `active` | `number` | Currently active payment links |
+
+### Conversion Rate
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `conversion_rate` | `number` | Ratio of completed checkouts to initiated sessions (0.0 to 1.0) |
+
+### Daily Breakdown
+
+Each entry in the `daily` array contains:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `date` | `string` | Date in `YYYY-MM-DD` format |
+| `transactions` | `number` | Completed transactions on that date |
+| `revenue_usd` | `number` | Revenue in USD on that date |
+
+### Top Payment Links
+
+Ranked by revenue within the selected period:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | `string` | Payment link ID |
+| `name` | `string` | Payment link name |
+| `revenue_usd` | `number` | Revenue in USD |
+| `transactions` | `number` | Number of transactions |
+
+### Top Tokens
+
+Ranked by revenue within the selected period:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `symbol` | `string` | Token symbol (e.g., `USDC`) |
+| `address` | `string` | Token contract address |
+| `chain_id` | `number` | Chain ID where token was received |
+| `revenue_usd` | `number` | Revenue in USD |
+| `transactions` | `number` | Number of transactions |
+
+### Top Chains
+
+Ranked by revenue within the selected period:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `chain_id` | `number` | Chain ID |
+| `name` | `string` | Chain name |
+| `revenue_usd` | `number` | Revenue in USD |
+| `transactions` | `number` | Number of transactions |
+
+---
+
+## Period Options
+
+| Value | Description |
+|-------|-------------|
+| `7d` | Last 7 days |
+| `30d` | Last 30 days (default) |
+| `90d` | Last 90 days |
+| `all` | All time |
+
+<Note>
+  The `daily` array returns one entry per day for the selected period. For `all`, the daily array is capped at the most recent 90 days.
+</Note>
+
+## Example: Dashboard Chart
+
+```typescript
+const analytics = await client.analytics.overview({ period: "30d" });
+
+// Plot daily revenue
+analytics.daily.forEach(({ date, revenue_usd, transactions }) => {
+  console.log(`${date}: $${revenue_usd.toFixed(2)} (${transactions} txns)`);
+});
+
+// Display conversion rate as percentage
+console.log(`Conversion: ${(analytics.conversion_rate * 100).toFixed(1)}%`);
+
+// Show top performing payment link
+const top = analytics.top_payment_links[0];
+if (top) {
+  console.log(`Best link: ${top.name} - $${top.revenue_usd.toFixed(2)}`);
+}
+```

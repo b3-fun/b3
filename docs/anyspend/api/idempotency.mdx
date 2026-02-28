@@ -1,0 +1,331 @@
+---
+title: "Idempotency"
+description: "Safe retries with idempotency keys"
+---
+
+# Idempotency
+
+Network failures, timeouts, and retries are a reality of working with any API. Idempotency keys ensure that retrying a request never creates duplicate resources or performs an action twice.
+
+## How it works
+
+When you include an `Idempotency-Key` header on a `POST` or `PATCH` request, the API remembers the response for that key. If you send the same request again with the same key and body, the API returns the cached response instead of processing the request again.
+
+```
+POST /api/v1/payment-links
+Idempotency-Key: my-unique-key-12345
+Content-Type: application/json
+
+{ "name": "Premium Plan", ... }
+```
+
+<Steps>
+<Step title="First request">
+The API processes the request normally, creates the resource, and caches the response. The response is associated with the idempotency key and the SHA-256 hash of the request body.
+</Step>
+
+<Step title="Retry with same key + same body">
+The API detects the duplicate key, verifies the body hash matches, and returns the cached response immediately with an `Idempotent-Replayed: true` header. No new resource is created.
+</Step>
+
+<Step title="Retry with same key + different body">
+The API detects the duplicate key but the body hash does not match. It returns a `409 Conflict` error with code `idempotency_conflict`. This prevents accidental misuse of keys.
+</Step>
+</Steps>
+
+## Cache TTL
+
+Idempotency keys are cached for **24 hours** from the first request. After 24 hours, the key expires and can be reused.
+
+<Info>
+  Only successful responses (HTTP 2xx) are cached. If the original request failed with a 4xx or 5xx error, the key is not consumed and you can retry with the same key.
+</Info>
+
+## Using idempotency keys
+
+### With curl
+
+```bash
+curl -X POST https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "Authorization: Bearer asp_live_abc123..." \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: create-premium-link-20240228-001" \
+  -d '{
+    "name": "Premium Membership",
+    "amount": "10000000",
+    "token_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "chain_id": 8453,
+    "recipient_address": "0xYourAddress..."
+  }'
+```
+
+On the first request, you get the standard `201 Created` response:
+
+```
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+{
+  "object": "payment_link",
+  "id": "pl_abc123def456",
+  "name": "Premium Membership",
+  ...
+}
+```
+
+If you retry the exact same request, you get the cached response with the replay header:
+
+```
+HTTP/1.1 201 Created
+Content-Type: application/json
+Idempotent-Replayed: true
+
+{
+  "object": "payment_link",
+  "id": "pl_abc123def456",
+  "name": "Premium Membership",
+  ...
+}
+```
+
+The `id` is identical -- no duplicate was created.
+
+### With JavaScript / TypeScript
+
+```typescript
+import { randomUUID } from "crypto";
+
+async function createPaymentLinkSafe(data: PaymentLinkInput) {
+  const idempotencyKey = randomUUID();
+
+  const makeRequest = () =>
+    fetch("https://platform-api.anyspend.com/api/v1/payment-links", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.ANYSPEND_API_KEY}`,
+        "Content-Type": "application/json",
+        "Idempotency-Key": idempotencyKey,
+      },
+      body: JSON.stringify(data),
+    });
+
+  // First attempt
+  let response = await makeRequest();
+
+  // If it timed out or hit a network error, safely retry
+  if (!response.ok && response.status >= 500) {
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    response = await makeRequest(); // Same idempotency key = safe retry
+  }
+
+  const body = await response.json();
+
+  // Check if this was a replayed response
+  if (response.headers.get("Idempotent-Replayed") === "true") {
+    console.log("Response was replayed from cache (duplicate request).");
+  }
+
+  return body;
+}
+```
+
+### With Python
+
+```python
+import uuid
+import requests
+import os
+
+def create_payment_link_safe(data: dict) -> dict:
+    idempotency_key = str(uuid.uuid4())
+
+    headers = {
+        "Authorization": f"Bearer {os.environ['ANYSPEND_API_KEY']}",
+        "Content-Type": "application/json",
+        "Idempotency-Key": idempotency_key,
+    }
+
+    # Retry up to 3 times with the same idempotency key
+    for attempt in range(3):
+        try:
+            response = requests.post(
+                "https://platform-api.anyspend.com/api/v1/payment-links",
+                headers=headers,
+                json=data,
+                timeout=10,
+            )
+
+            if response.ok:
+                replayed = response.headers.get("Idempotent-Replayed") == "true"
+                if replayed:
+                    print("Response replayed from cache.")
+                return response.json()
+
+            if response.status_code < 500:
+                # Client error -- don't retry
+                raise Exception(f"API error: {response.json()}")
+
+        except requests.exceptions.Timeout:
+            print(f"Attempt {attempt + 1} timed out, retrying...")
+
+        time.sleep(2 ** attempt)  # Exponential backoff
+
+    raise Exception("All retry attempts failed")
+```
+
+## Conflict responses
+
+If you reuse an idempotency key with a **different** request body, the API returns a `409` error:
+
+```bash
+# Original request
+curl -X POST https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "Authorization: Bearer asp_live_abc123..." \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: my-key-001" \
+  -d '{ "name": "Plan A", "amount": "10000000", ... }'
+
+# Same key, different body -- CONFLICT
+curl -X POST https://platform-api.anyspend.com/api/v1/payment-links \
+  -H "Authorization: Bearer asp_live_abc123..." \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: my-key-001" \
+  -d '{ "name": "Plan B", "amount": "20000000", ... }'
+```
+
+```json
+{
+  "error": {
+    "type": "idempotency_error",
+    "code": "idempotency_conflict",
+    "message": "An idempotency key was used with a different request body."
+  }
+}
+```
+
+This is a safety mechanism. It prevents bugs where the same key is accidentally associated with two different operations.
+
+## Which methods support idempotency?
+
+| Method | Idempotency-Key supported | Notes |
+|--------|--------------------------|-------|
+| `POST` | Yes | Use for resource creation to prevent duplicates. |
+| `PATCH` | Yes | Use for updates to prevent applying the same update twice. |
+| `GET` | Not needed | GET requests are inherently idempotent (read-only). |
+| `DELETE` | Not needed | DELETE requests are inherently idempotent (deleting a non-existent resource returns a 404). |
+
+## Generating idempotency keys
+
+The idempotency key can be any string up to 256 characters. Here are some recommended approaches:
+
+<Tabs>
+<Tab title="UUID (recommended)">
+```typescript
+import { randomUUID } from "crypto";
+
+const key = randomUUID();
+// "550e8400-e29b-41d4-a716-446655440000"
+```
+
+UUIDs are globally unique and the simplest option for most use cases.
+</Tab>
+
+<Tab title="Deterministic key">
+```typescript
+// Derive the key from the operation context
+const key = `create-link-${userId}-${productId}-${Date.now()}`;
+// "create-link-usr_123-prod_456-1709078400000"
+```
+
+Deterministic keys are useful when you want the same logical operation to always use the same key -- for example, ensuring a user can only create one payment link for a specific product.
+</Tab>
+
+<Tab title="Request hash">
+```typescript
+import { createHash } from "crypto";
+
+const key = createHash("sha256")
+  .update(JSON.stringify({ endpoint: "/payment-links", body: data }))
+  .digest("hex")
+  .slice(0, 64);
+```
+
+Hashing the request ensures identical requests always produce the same key. Useful for queue-based systems where the same message might be processed multiple times.
+</Tab>
+</Tabs>
+
+## Idempotency key scoping
+
+Idempotency keys are scoped to your **organization**. Two different organizations can use the same key string without conflict. Within your organization, each key can only be used once per 24-hour window.
+
+## Best practices
+
+<AccordionGroup>
+<Accordion title="Always use idempotency keys for payment-related operations">
+Any request that creates a payment link, checkout session, or triggers a financial action should include an idempotency key. This is the most important place to prevent duplicates.
+</Accordion>
+
+<Accordion title="Generate the key before the first attempt">
+Create the idempotency key once and reuse it across all retry attempts for the same logical operation:
+
+```typescript
+// Correct: key generated once, reused on retries
+const key = randomUUID();
+for (let attempt = 0; attempt < 3; attempt++) {
+  const response = await fetch(url, {
+    headers: { "Idempotency-Key": key },
+    body: JSON.stringify(data),
+  });
+  if (response.ok) break;
+}
+
+// Wrong: new key on each retry (defeats the purpose)
+for (let attempt = 0; attempt < 3; attempt++) {
+  const response = await fetch(url, {
+    headers: { "Idempotency-Key": randomUUID() }, // Different key each time!
+    body: JSON.stringify(data),
+  });
+  if (response.ok) break;
+}
+```
+</Accordion>
+
+<Accordion title="Do not reuse keys across different operations">
+Each logical operation should have its own idempotency key. Reusing a key from a previous (different) operation will result in either a cached response from the old operation or a `409` conflict.
+</Accordion>
+
+<Accordion title="Handle 409 conflicts gracefully">
+If you receive an `idempotency_conflict` error, it means the key was already used with a different request body. Generate a new key and retry:
+
+```typescript
+if (error.code === "idempotency_conflict") {
+  // Generate a fresh key and retry
+  return createPaymentLink(data, { idempotencyKey: randomUUID() });
+}
+```
+</Accordion>
+
+<Accordion title="Check the Idempotent-Replayed header">
+When the `Idempotent-Replayed: true` header is present, the response is a cached replay. This can be useful for logging and debugging to distinguish between fresh and replayed responses.
+</Accordion>
+
+<Accordion title="Use deterministic keys for exactly-once semantics">
+If your system processes events from a queue (e.g., Kafka, SQS, BullMQ), derive the idempotency key from the event ID or message ID. This ensures that processing the same event twice never creates duplicate resources:
+
+```typescript
+async function handleOrderEvent(event: QueueEvent) {
+  const idempotencyKey = `order-event-${event.messageId}`;
+
+  await fetch("https://platform-api.anyspend.com/api/v1/payment-links", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${process.env.ANYSPEND_API_KEY}`,
+      "Content-Type": "application/json",
+      "Idempotency-Key": idempotencyKey,
+    },
+    body: JSON.stringify(eventToPaymentLink(event)),
+  });
+}
+```
+</Accordion>
+</AccordionGroup>

@@ -1,0 +1,214 @@
+---
+title: "Data Export"
+description: "Export transaction and customer data in CSV or JSON format"
+---
+
+The AnySpend Platform API provides export endpoints for downloading your transaction and customer data in bulk. Exports support CSV and JSON formats with optional filtering.
+
+<Info>
+  Both export endpoints require an API key with **read** permission.
+</Info>
+
+## Endpoints
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /api/v1/transactions/export` | Export transactions |
+| `GET /api/v1/customers/export` | Export customers |
+
+## Transaction Export
+
+Export transaction records with optional filters for status, date range, and format.
+
+### Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `format` | `string` | No | `csv` | Output format: `csv` or `json` |
+| `status` | `string` | No | all | Filter by status: `completed`, `pending`, `failed` |
+| `from` | `string` | No | -- | Start date (ISO 8601, e.g. `2025-01-01T00:00:00Z`) |
+| `to` | `string` | No | -- | End date (ISO 8601) |
+
+### CSV Output
+
+CSV exports include a header row followed by one row per transaction:
+
+```csv
+id,payment_link_id,amount,token_address,chain_id,sender_address,recipient_address,tx_hash,status,created_at,completed_at
+txn_abc123,pl_def456,50000000,0x833589...02913,8453,0xSender...,0xRecipient...,0xTxHash...,completed,2025-06-01T10:00:00Z,2025-06-01T10:00:30Z
+txn_ghi789,pl_def456,25000000,0x833589...02913,8453,0xSender2...,0xRecipient...,0xTxHash2...,completed,2025-06-01T11:00:00Z,2025-06-01T11:00:15Z
+```
+
+### JSON Output
+
+JSON exports return an array of transaction objects:
+
+```json
+[
+  {
+    "id": "txn_abc123",
+    "payment_link_id": "pl_def456",
+    "amount": "50000000",
+    "token_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "chain_id": 8453,
+    "sender_address": "0xSenderAddress",
+    "recipient_address": "0xRecipientAddress",
+    "tx_hash": "0xTransactionHash",
+    "status": "completed",
+    "created_at": "2025-06-01T10:00:00Z",
+    "completed_at": "2025-06-01T10:00:30Z"
+  }
+]
+```
+
+### Examples
+
+<CodeGroup>
+
+```bash cURL (CSV)
+curl -o transactions.csv \
+  "https://platform-api.anyspend.com/api/v1/transactions/export?format=csv&status=completed&from=2025-01-01T00:00:00Z&to=2025-06-30T23:59:59Z" \
+  -H "Authorization: Bearer asp_your_api_key"
+```
+
+```bash cURL (JSON)
+curl -o transactions.json \
+  "https://platform-api.anyspend.com/api/v1/transactions/export?format=json&status=completed" \
+  -H "Authorization: Bearer asp_your_api_key"
+```
+
+```typescript SDK (CSV)
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+import { writeFileSync } from "node:fs";
+
+const platform = new AnySpendPlatformClient("asp_your_api_key");
+
+const csv = await platform.transactions.export({
+  format: "csv",
+  status: "completed",
+  from: "2025-01-01T00:00:00Z",
+  to: "2025-06-30T23:59:59Z",
+});
+
+writeFileSync("transactions.csv", csv);
+console.log("Exported transactions to transactions.csv");
+```
+
+```typescript SDK (JSON)
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+
+const platform = new AnySpendPlatformClient("asp_your_api_key");
+
+const transactions = await platform.transactions.export({
+  format: "json",
+  status: "completed",
+  from: "2025-01-01T00:00:00Z",
+});
+
+console.log(`Exported ${transactions.length} transactions`);
+
+// Process in-memory
+for (const txn of transactions) {
+  console.log(txn.id, txn.amount, txn.completed_at);
+}
+```
+
+</CodeGroup>
+
+## Customer Export
+
+Export all customer records associated with your organization.
+
+### Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `format` | `string` | No | `csv` | Output format: `csv` or `json` |
+
+### CSV Output
+
+```csv
+id,wallet_address,email,name,total_spent,transaction_count,first_seen,last_seen
+cust_abc123,0xWalletAddress,alice@example.com,Alice,150000000,3,2025-03-15T08:00:00Z,2025-06-01T10:00:00Z
+cust_def456,0xWalletAddress2,,Bob,50000000,1,2025-05-20T14:00:00Z,2025-05-20T14:00:00Z
+```
+
+### JSON Output
+
+```json
+[
+  {
+    "id": "cust_abc123",
+    "wallet_address": "0xWalletAddress",
+    "email": "alice@example.com",
+    "name": "Alice",
+    "total_spent": "150000000",
+    "transaction_count": 3,
+    "first_seen": "2025-03-15T08:00:00Z",
+    "last_seen": "2025-06-01T10:00:00Z"
+  }
+]
+```
+
+### Examples
+
+<CodeGroup>
+
+```bash cURL (CSV)
+curl -o customers.csv \
+  "https://platform-api.anyspend.com/api/v1/customers/export?format=csv" \
+  -H "Authorization: Bearer asp_your_api_key"
+```
+
+```bash cURL (JSON)
+curl -o customers.json \
+  "https://platform-api.anyspend.com/api/v1/customers/export?format=json" \
+  -H "Authorization: Bearer asp_your_api_key"
+```
+
+```typescript SDK (CSV)
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+import { writeFileSync } from "node:fs";
+
+const platform = new AnySpendPlatformClient("asp_your_api_key");
+
+const csv = await platform.customers.export({ format: "csv" });
+writeFileSync("customers.csv", csv);
+console.log("Exported customers to customers.csv");
+```
+
+```typescript SDK (JSON)
+import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
+
+const platform = new AnySpendPlatformClient("asp_your_api_key");
+
+const customers = await platform.customers.export({ format: "json" });
+
+console.log(`Exported ${customers.length} customers`);
+for (const c of customers) {
+  console.log(c.name, c.wallet_address, c.total_spent);
+}
+```
+
+</CodeGroup>
+
+## Tips
+
+<CardGroup cols={2}>
+  <Card title="Schedule regular exports" icon="calendar">
+    Set up a cron job or scheduled function to export data daily or weekly for backup and reconciliation.
+  </Card>
+  <Card title="Use date filters for large datasets" icon="filter">
+    If you have thousands of transactions, use the `from` and `to` parameters to export in smaller date ranges to avoid timeouts.
+  </Card>
+  <Card title="CSV for spreadsheets" icon="table">
+    CSV exports open directly in Excel, Google Sheets, and other spreadsheet tools for quick analysis.
+  </Card>
+  <Card title="JSON for programmatic use" icon="code">
+    JSON exports are ideal for feeding data into analytics pipelines, databases, or custom dashboards.
+  </Card>
+</CardGroup>
+
+<Warning>
+  Exports are subject to rate limiting. Large exports (over 10,000 records) may take several seconds to generate. The request will block until the export is complete -- plan accordingly for very large datasets.
+</Warning>

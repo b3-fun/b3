@@ -349,10 +349,53 @@
                 ]
               },
               {
-                "group": "REST API",
+                "group": "Order API",
                 "openapi": {
                   "source": "https://mainnet.anyspend.com/openapi.json",
                   "directory": "anyspend/api-reference"
+                }
+              },
+              {
+                "group": "Platform API",
+                "pages": [
+                  "anyspend/api/introduction",
+                  "anyspend/api/authentication",
+                  "anyspend/api/quick-pay",
+                  "anyspend/api/sdk-client",
+                  {
+                    "group": "Resources",
+                    "pages": [
+                      "anyspend/api/payment-links",
+                      "anyspend/api/products",
+                      "anyspend/api/customers",
+                      "anyspend/api/transactions",
+                      "anyspend/api/checkout-sessions-api",
+                      "anyspend/api/webhooks-api",
+                      "anyspend/api/discount-codes",
+                      "anyspend/api/notifications-api",
+                      "anyspend/api/widgets-api",
+                      "anyspend/api/analytics",
+                      "anyspend/api/events"
+                    ]
+                  },
+                  {
+                    "group": "Guides",
+                    "pages": [
+                      "anyspend/api/webhooks-guide",
+                      "anyspend/api/pagination",
+                      "anyspend/api/idempotency",
+                      "anyspend/api/errors",
+                      "anyspend/api/export",
+                      "anyspend/api/ai-integration"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Platform API Reference",
+                "openapi": {
+                  "source": "https://platform-api.anyspend.com/api/v1/openapi.json",
+                  "directory": "anyspend/platform-api-reference"
                 }
               },
               {
@@ -893,7 +936,7 @@
                 ]
               },
               {
-                "group": "REST API",
+                "group": "Order API",
                 "openapi": {
                   "source": "https://mainnet.anyspend.com/openapi.json",
                   "directory": "anyspend/api-reference"
@@ -1400,7 +1443,7 @@
                 ]
               },
               {
-                "group": "REST API",
+                "group": "Order API",
                 "openapi": {
                   "source": "https://mainnet.anyspend.com/openapi.json",
                   "directory": "anyspend/api-reference"
@@ -1907,7 +1950,7 @@
                 ]
               },
               {
-                "group": "REST API",
+                "group": "Order API",
                 "openapi": {
                   "source": "https://mainnet.anyspend.com/openapi.json",
                   "directory": "anyspend/api-reference"
@@ -2414,7 +2457,7 @@
                 ]
               },
               {
-                "group": "REST API",
+                "group": "Order API",
                 "openapi": {
                   "source": "https://mainnet.anyspend.com/openapi.json",
                   "directory": "anyspend/api-reference"
@@ -2903,7 +2946,7 @@
                 ]
               },
               {
-                "group": "REST API",
+                "group": "Order API",
                 "openapi": {
                   "source": "https://mainnet.anyspend.com/openapi.json",
                   "directory": "anyspend/api-reference"

@@ -1,0 +1,232 @@
+---
+title: "Events"
+description: "API audit trail and event log"
+---
+
+The events endpoint provides an audit trail of all API actions taken on your account. Every create, update, and delete operation is recorded with metadata including the request method, path, IP address, and status code.
+
+<Info>
+  The events endpoint requires **read** permission.
+</Info>
+
+## Authentication
+
+```bash
+Authorization: Bearer asp_xxx
+```
+
+Base URL: `https://platform-api.anyspend.com/api/v1`
+
+## Endpoints
+
+### List Events
+
+<ParamField path="GET /events" type="read">
+  List API events with optional filtering. Results are returned in reverse chronological order (newest first).
+</ParamField>
+
+<ParamField path="type" type="string" query>
+  Filter by event type (e.g., `payment_link.created`, `webhook.updated`, `discount_code.deleted`).
+</ParamField>
+
+<ParamField path="resource_type" type="string" query>
+  Filter by resource type (e.g., `payment_link`, `webhook`, `discount_code`, `widget`, `notification`).
+</ParamField>
+
+<ParamField path="from" type="string" query>
+  ISO 8601 timestamp. Only return events created at or after this time.
+</ParamField>
+
+<ParamField path="to" type="string" query>
+  ISO 8601 timestamp. Only return events created at or before this time.
+</ParamField>
+
+<ParamField path="page" type="number" query>
+  Page number for pagination (default: `1`).
+</ParamField>
+
+<ParamField path="limit" type="number" query>
+  Results per page (default: `20`, max: `100`).
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET "https://platform-api.anyspend.com/api/v1/events?type=payment_link.created&from=2026-02-01T00:00:00Z&limit=10" \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    import { AnySpendClient } from "@b3dotfun/sdk/anyspend";
+
+    const client = new AnySpendClient({ apiKey: "asp_xxx" });
+    const events = await client.events.list({
+      type: "payment_link.created",
+      from: "2026-02-01T00:00:00Z",
+      limit: 10,
+    });
+    ```
+  </Tab>
+</Tabs>
+
+**Response**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "evt_abc123",
+      "event_type": "payment_link.created",
+      "resource_type": "payment_link",
+      "resource_id": "pl_xyz789",
+      "ip_address": "203.0.113.42",
+      "request_method": "POST",
+      "request_path": "/api/v1/payment-links",
+      "status_code": 201,
+      "created_at": "2026-02-27T10:30:00Z"
+    },
+    {
+      "id": "evt_abc124",
+      "event_type": "payment_link.created",
+      "resource_type": "payment_link",
+      "resource_id": "pl_xyz790",
+      "ip_address": "203.0.113.42",
+      "request_method": "POST",
+      "request_path": "/api/v1/payment-links",
+      "status_code": 201,
+      "created_at": "2026-02-25T14:15:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 2,
+    "total_pages": 1
+  }
+}
+```
+
+---
+
+## Event Object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | `string` | Unique event identifier (e.g., `evt_abc123`) |
+| `event_type` | `string` | The type of action that occurred (see [Event Types](#event-types)) |
+| `resource_type` | `string` | The type of resource affected |
+| `resource_id` | `string` | The ID of the affected resource |
+| `ip_address` | `string` | IP address of the API caller |
+| `request_method` | `string` | HTTP method used (`GET`, `POST`, `PATCH`, `DELETE`) |
+| `request_path` | `string` | API path that was called |
+| `status_code` | `number` | HTTP status code returned |
+| `created_at` | `string` | ISO 8601 timestamp when the event was recorded |
+
+## Event Types
+
+Events follow the pattern `{resource_type}.{action}`:
+
+| Event Type | Description |
+|------------|-------------|
+| `payment_link.created` | A payment link was created |
+| `payment_link.updated` | A payment link was updated |
+| `payment_link.deleted` | A payment link was deleted |
+| `product.created` | A product was created |
+| `product.updated` | A product was updated |
+| `product.deleted` | A product was deleted |
+| `webhook.created` | A webhook endpoint was created |
+| `webhook.updated` | A webhook endpoint was updated |
+| `webhook.deleted` | A webhook endpoint was deleted |
+| `discount_code.created` | A discount code was created |
+| `discount_code.updated` | A discount code was updated |
+| `discount_code.deleted` | A discount code was deleted |
+| `widget.created` | A widget was created |
+| `widget.updated` | A widget was updated |
+| `widget.deleted` | A widget was deleted |
+| `notification.updated` | Notification settings were updated |
+| `api_key.created` | An API key was created |
+| `api_key.revoked` | An API key was revoked |
+
+## Resource Types
+
+| Resource Type | Description |
+|---------------|-------------|
+| `payment_link` | Payment link resources |
+| `product` | Product catalog entries |
+| `webhook` | Webhook endpoint configurations |
+| `discount_code` | Discount code entries |
+| `widget` | Widget configurations |
+| `notification` | Notification settings |
+| `api_key` | API key management |
+
+---
+
+## Filtering Examples
+
+### Events for a specific date range
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET "https://platform-api.anyspend.com/api/v1/events?from=2026-02-01T00:00:00Z&to=2026-02-28T23:59:59Z" \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const events = await client.events.list({
+      from: "2026-02-01T00:00:00Z",
+      to: "2026-02-28T23:59:59Z",
+    });
+    ```
+  </Tab>
+</Tabs>
+
+### All webhook-related events
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET "https://platform-api.anyspend.com/api/v1/events?resource_type=webhook&limit=50" \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const events = await client.events.list({
+      resource_type: "webhook",
+      limit: 50,
+    });
+    ```
+  </Tab>
+</Tabs>
+
+### Deletion audit
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET "https://platform-api.anyspend.com/api/v1/events?type=payment_link.deleted" \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const deletions = await client.events.list({
+      type: "payment_link.deleted",
+    });
+
+    deletions.data.forEach((event) => {
+      console.log(
+        `${event.resource_id} deleted from ${event.ip_address} at ${event.created_at}`
+      );
+    });
+    ```
+  </Tab>
+</Tabs>
+
+<Note>
+  Events are retained for 90 days. For longer retention, export events periodically using the date range filters.
+</Note>

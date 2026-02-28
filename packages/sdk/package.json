@@ -55,6 +55,11 @@
       "import": "./dist/esm/anyspend/constants.js",
       "require": "./dist/cjs/anyspend/constants.js"
     },
+    "./anyspend/platform": {
+      "types": "./dist/types/anyspend/platform/index.d.ts",
+      "import": "./dist/esm/anyspend/platform/index.js",
+      "require": "./dist/cjs/anyspend/platform/index.js"
+    },
     "./anyspend/services/*": {
       "types": "./dist/types/anyspend/services/*.d.ts",
       "import": "./dist/esm/anyspend/services/*.js",

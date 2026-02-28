@@ -1,0 +1,369 @@
+---
+title: "Widgets"
+description: "Create and manage embeddable widget configurations"
+---
+
+Widgets are embeddable UI components that you configure once and deploy anywhere. Each widget stores its type, configuration, and theme so you can render consistent payment experiences across multiple pages or apps.
+
+<Info>
+  Widget CRUD endpoints require **write** permission. Listing and retrieving widgets (including stats) require **read** permission.
+</Info>
+
+## Authentication
+
+```bash
+Authorization: Bearer asp_xxx
+```
+
+Base URL: `https://platform-api.anyspend.com/api/v1`
+
+## Endpoints
+
+### List Widgets
+
+<ParamField path="GET /widgets" type="read">
+  List all widget configurations for your account.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET https://platform-api.anyspend.com/api/v1/widgets \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    import { AnySpendClient } from "@b3dotfun/sdk/anyspend";
+
+    const client = new AnySpendClient({ apiKey: "asp_xxx" });
+    const widgets = await client.widgets.list();
+    ```
+  </Tab>
+</Tabs>
+
+**Response**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "wgt_abc123",
+      "name": "Homepage Checkout",
+      "widget_type": "checkout",
+      "description": "Primary checkout widget for the homepage",
+      "config": {
+        "recipient_address": "0x...",
+        "destination_token": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "destination_chain_id": 8453,
+        "amount": "10000000"
+      },
+      "theme": {
+        "primary_color": "#4f46e5",
+        "border_radius": 12,
+        "font_family": "Inter"
+      },
+      "views_count": 1240,
+      "created_at": "2026-01-10T08:00:00Z",
+      "updated_at": "2026-02-20T14:30:00Z"
+    }
+  ]
+}
+```
+
+---
+
+### Create Widget
+
+<ParamField path="POST /widgets" type="write">
+  Create a new widget configuration.
+</ParamField>
+
+<ParamField path="name" type="string" required>
+  Human-readable name for the widget.
+</ParamField>
+
+<ParamField path="widget_type" type="string" required>
+  The type of widget to create. One of: `swap`, `checkout`, `nft`, `deposit`.
+</ParamField>
+
+<ParamField path="config" type="object" required>
+  Widget-specific configuration object. Contents vary by `widget_type` (see [Widget Types](#widget-types) below).
+</ParamField>
+
+<ParamField path="description" type="string">
+  Optional description for internal reference.
+</ParamField>
+
+<ParamField path="theme" type="object">
+  Visual theme overrides. See [Theme Object](#theme-object) below.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X POST https://platform-api.anyspend.com/api/v1/widgets \
+      -H "Authorization: Bearer asp_xxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "name": "Product Checkout",
+        "widget_type": "checkout",
+        "description": "Checkout widget for the product page",
+        "config": {
+          "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+          "destination_token": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "destination_chain_id": 8453,
+          "amount": "25000000"
+        },
+        "theme": {
+          "primary_color": "#2563eb",
+          "border_radius": 8
+        }
+      }'
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const widget = await client.widgets.create({
+      name: "Product Checkout",
+      widget_type: "checkout",
+      description: "Checkout widget for the product page",
+      config: {
+        recipient_address: "0x1234567890abcdef1234567890abcdef12345678",
+        destination_token: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        destination_chain_id: 8453,
+        amount: "25000000",
+      },
+      theme: {
+        primary_color: "#2563eb",
+        border_radius: 8,
+      },
+    });
+    ```
+  </Tab>
+</Tabs>
+
+**Response**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "wgt_def456",
+    "name": "Product Checkout",
+    "widget_type": "checkout",
+    "description": "Checkout widget for the product page",
+    "config": {
+      "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+      "destination_token": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "destination_chain_id": 8453,
+      "amount": "25000000"
+    },
+    "theme": {
+      "primary_color": "#2563eb",
+      "border_radius": 8
+    },
+    "views_count": 0,
+    "created_at": "2026-02-27T12:00:00Z",
+    "updated_at": "2026-02-27T12:00:00Z"
+  }
+}
+```
+
+---
+
+### Get Widget
+
+<ParamField path="GET /widgets/:id" type="read">
+  Retrieve a single widget configuration by ID.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET https://platform-api.anyspend.com/api/v1/widgets/wgt_def456 \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const widget = await client.widgets.get("wgt_def456");
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+### Update Widget
+
+<ParamField path="PATCH /widgets/:id" type="write">
+  Update an existing widget configuration. All fields are optional -- only provided fields are changed.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X PATCH https://platform-api.anyspend.com/api/v1/widgets/wgt_def456 \
+      -H "Authorization: Bearer asp_xxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "name": "Updated Checkout",
+        "config": {
+          "recipient_address": "0x1234567890abcdef1234567890abcdef12345678",
+          "destination_token": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "destination_chain_id": 8453,
+          "amount": "50000000"
+        },
+        "theme": {
+          "primary_color": "#059669"
+        }
+      }'
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const updated = await client.widgets.update("wgt_def456", {
+      name: "Updated Checkout",
+      config: {
+        recipient_address: "0x1234567890abcdef1234567890abcdef12345678",
+        destination_token: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        destination_chain_id: 8453,
+        amount: "50000000",
+      },
+      theme: {
+        primary_color: "#059669",
+      },
+    });
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+### Delete Widget
+
+<ParamField path="DELETE /widgets/:id" type="write">
+  Permanently delete a widget configuration. Existing embeds using this widget ID will stop rendering.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X DELETE https://platform-api.anyspend.com/api/v1/widgets/wgt_def456 \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    await client.widgets.delete("wgt_def456");
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+### Get Widget Stats
+
+<ParamField path="GET /widgets/:id/stats" type="read">
+  Retrieve view statistics for a widget. Includes total views and a daily breakdown.
+</ParamField>
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl -X GET https://platform-api.anyspend.com/api/v1/widgets/wgt_def456/stats \
+      -H "Authorization: Bearer asp_xxx"
+    ```
+  </Tab>
+  <Tab title="SDK">
+    ```typescript
+    const stats = await client.widgets.stats("wgt_def456");
+    ```
+  </Tab>
+</Tabs>
+
+**Response**
+
+```json
+{
+  "success": true,
+  "data": {
+    "widget_id": "wgt_def456",
+    "total_views": 1240,
+    "daily": [
+      { "date": "2026-02-27", "views": 85 },
+      { "date": "2026-02-26", "views": 102 },
+      { "date": "2026-02-25", "views": 93 }
+    ]
+  }
+}
+```
+
+---
+
+## Widget Object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | `string` | Unique widget identifier (e.g., `wgt_abc123`) |
+| `name` | `string` | Human-readable widget name |
+| `widget_type` | `string` | Widget type: `swap`, `checkout`, `nft`, or `deposit` |
+| `description` | `string \| null` | Optional description |
+| `config` | `object` | Widget-type-specific configuration |
+| `theme` | `object \| null` | Visual theme overrides |
+| `views_count` | `number` | Total number of widget renders |
+| `created_at` | `string` | ISO 8601 creation timestamp |
+| `updated_at` | `string` | ISO 8601 last update timestamp |
+
+## Widget Types
+
+<Tabs>
+  <Tab title="checkout">
+    Payment checkout widget for accepting crypto or fiat payments.
+
+    | Config Field | Type | Description |
+    |-------------|------|-------------|
+    | `recipient_address` | `string` | Merchant wallet address |
+    | `destination_token` | `string` | Token contract address to receive |
+    | `destination_chain_id` | `number` | Chain ID for destination token |
+    | `amount` | `string` | Payment amount in smallest unit |
+  </Tab>
+  <Tab title="swap">
+    Token swap widget for converting between tokens.
+
+    | Config Field | Type | Description |
+    |-------------|------|-------------|
+    | `src_token` | `string` | Source token address |
+    | `src_chain_id` | `number` | Source chain ID |
+    | `dst_token` | `string` | Destination token address |
+    | `dst_chain_id` | `number` | Destination chain ID |
+  </Tab>
+  <Tab title="nft">
+    NFT minting or purchase widget.
+
+    | Config Field | Type | Description |
+    |-------------|------|-------------|
+    | `collection_address` | `string` | NFT collection contract |
+    | `chain_id` | `number` | Chain ID |
+    | `token_id` | `string` | Specific token ID (optional) |
+  </Tab>
+  <Tab title="deposit">
+    Deposit widget for funding wallets or accounts.
+
+    | Config Field | Type | Description |
+    |-------------|------|-------------|
+    | `recipient_address` | `string` | Deposit destination address |
+    | `accepted_tokens` | `string[]` | List of accepted token addresses |
+    | `accepted_chains` | `number[]` | List of accepted chain IDs |
+  </Tab>
+</Tabs>
+
+## Theme Object
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `primary_color` | `string` | `#4f46e5` | Primary accent color (hex) |
+| `border_radius` | `number` | `12` | Border radius in pixels |
+| `font_family` | `string` | `Inter` | Font family name |
+| `dark_mode` | `boolean` | `false` | Enable dark mode rendering |
