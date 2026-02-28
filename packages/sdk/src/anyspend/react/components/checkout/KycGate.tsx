@@ -2,9 +2,11 @@
 
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { ShinyButton, TextShimmer, useModalStore } from "@b3dotfun/sdk/global-account/react";
-import { Loader2, ShieldCheck, AlertTriangle, Clock } from "lucide-react";
+import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
+import { Loader2, ShieldCheck, AlertTriangle, Clock, Wallet } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useConnectModal } from "thirdweb/react";
 import { useAccount } from "wagmi";
 import type { AnySpendCheckoutClasses } from "./AnySpendCheckout";
 import { useCreateKycInquiry, useKycStatus, useVerifyKyc } from "../../hooks/useKycStatus";
@@ -20,10 +22,12 @@ interface KycGateProps {
 
 export function KycGate({ themeColor, classes, enabled = false, onStatusResolved }: KycGateProps) {
   const { address } = useAccount();
+  const { connect: openConnectModal } = useConnectModal();
   const { kycStatus, isLoadingKycStatus, refetchKycStatus } = useKycStatus(enabled);
   const { createInquiry, isCreatingInquiry } = useCreateKycInquiry();
   const { verifyKyc, isVerifying } = useVerifyKyc();
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
+  const setClosable = useModalStore(state => state.setClosable);
 
   const [personaOpen, setPersonaOpen] = useState(false);
   const [personaError, setPersonaError] = useState<string | null>(null);
@@ -112,6 +116,16 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
     }
   }, [createInquiry, kycStatus, openPersonaFlow]);
 
+  const handleConnectWallet = useCallback(async () => {
+    setClosable(false);
+    try {
+      await openConnectModal({ client, size: "compact", showThirdwebBranding: false });
+    } finally {
+      setClosable(true);
+      setB3ModalOpen(true);
+    }
+  }, [openConnectModal, setClosable, setB3ModalOpen]);
+
   const handleResumeVerification = useCallback(() => {
     if (!kycStatus?.inquiry) return;
 
@@ -125,7 +139,7 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
     });
   }, [kycStatus, openPersonaFlow]);
 
-  // No wallet connected — cannot proceed with KYC
+  // No wallet connected — prompt to connect wallet (same pattern as crypto tab)
   if (!address) {
     return (
       <motion.div
@@ -136,11 +150,22 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
       >
         <ShieldCheck className="h-8 w-8 text-gray-400" />
         <div className="text-center">
-          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Wallet required to pay with card</p>
+          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Connect wallet to pay with card</p>
           <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            Connect a wallet to complete identity verification for card payments.
+            A wallet connection is required to complete identity verification.
           </p>
         </div>
+        <ShinyButton
+          accentColor={themeColor || "hsl(var(--as-brand))"}
+          className="w-full"
+          textClassName="text-white"
+          onClick={handleConnectWallet}
+        >
+          <span className="flex items-center justify-center gap-2">
+            <Wallet className="h-4 w-4" />
+            Connect Wallet
+          </span>
+        </ShinyButton>
       </motion.div>
     );
   }
