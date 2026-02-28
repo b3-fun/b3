@@ -147,6 +147,8 @@ export function AnySpend(props: {
   content?: AnySpendContent;
   /** Structured color/theme configuration */
   theme?: AnySpendTheme;
+  /** When true, shows a KYC gate before Stripe Web2 (credit card) payments. Default false. */
+  kycEnabled?: boolean;
 }) {
   const fingerprintConfig = getFingerprintConfig();
 
@@ -182,6 +184,7 @@ function AnySpendInner({
   destinationTokenAmount,
   callbackMetadata,
   senderAddress,
+  kycEnabled = false,
 }: {
   sourceChainId?: number;
   destinationTokenAddress?: string;
@@ -208,6 +211,7 @@ function AnySpendInner({
   slots?: AnySpendSlots;
   content?: AnySpendContent;
   theme?: AnySpendTheme;
+  kycEnabled?: boolean;
 }) {
   const { slots, content } = useAnySpendCustomization();
   const searchParams = useSearchParamsSSR();
@@ -221,7 +225,8 @@ function AnySpendInner({
   // signature when the user actually clicks Buy, not on panel mount.
   // useRef so handleFiatOrder can read the updated value synchronously
   // in the same frame that onStatusResolved sets it (setState is async).
-  const kycApprovedRef = useRef(false);
+  // When kycEnabled is false (default), pre-approve so the KYC gate is skipped.
+  const kycApprovedRef = useRef(!kycEnabled);
   // Pre-warm wallet auth headers inside user-gesture context (button click)
   // so the signing prompt fires before we navigate away — browsers block
   // wallet popups triggered from async/non-gesture contexts (React Query queryFn).
