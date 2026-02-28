@@ -273,6 +273,13 @@ export function B3DynamicModal() {
         </div>
       </ModalContent>
 
+      {/* Pass clicks through the backdrop to the Persona iframe when it is active */}
+      {personaActive && (
+        <style>{`
+          .b3-dialog-overlay { pointer-events: none !important; }
+        `}</style>
+      )}
+
       {/* Animate inner container margin to cover branding when toasts appear */}
       {isOpen && !isAnySpendType && (
         <style>{`

@@ -22,7 +22,7 @@ const DialogOverlay: React.ForwardRefExoticComponent<DialogOverlayProps & React.
     <DialogPrimitive.Overlay
       ref={ref}
       className={cn(
-        "fixed inset-0 z-50 bg-black/80 backdrop-blur-[20px]",
+        "fixed inset-0 z-50 bg-black/80 backdrop-blur-[20px] b3-dialog-overlay",
         "data-[state=open]:animate-in data-[state=closed]:animate-out",
         "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
         "data-[state=closed]:backdrop-blur-none data-[state=open]:backdrop-blur-[20px]",
