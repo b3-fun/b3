@@ -6,7 +6,6 @@ import { thirdwebB3Chain } from "@b3dotfun/sdk/shared/constants/chains/b3Chain";
 import { Loader2, ShieldCheck, AlertTriangle, Clock } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { flushSync } from "react-dom";
 import type { AnySpendCheckoutClasses } from "./AnySpendCheckout";
 import { useCreateKycInquiry, useKycStatus, useVerifyKyc } from "../../hooks/useKycStatus";
 
@@ -26,21 +25,12 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
   const { verifyKyc, isVerifying } = useVerifyKyc();
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
-  const setPersonaActive = useModalStore(state => state.setPersonaActive);
   const { partnerId } = useB3Config();
 
   const [personaOpen, setPersonaOpen] = useState(false);
   const [personaError, setPersonaError] = useState<string | null>(null);
   const [personaCancelled, setPersonaCancelled] = useState(false);
   const prevStatusRef = useRef<string | null>(null);
-  const autoResumedRef = useRef(false);
-
-  // Safety: always clear personaActive when this component unmounts so the
-  // modal doesn't stay in non-modal / non-dismissable mode unexpectedly.
-  useEffect(() => {
-    return () => setPersonaActive(false);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   // Notify parent when status resolves
   useEffect(() => {
@@ -67,18 +57,14 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
           // templateId is mutually exclusive with inquiryId — do not pass both
           environment: (config.environment as "sandbox" | "production") || "sandbox",
           onComplete: async ({ inquiryId }) => {
+            // Reopen the modal first so the user lands back in the checkout flow
+            setB3ModalOpen(true);
             setPersonaOpen(false);
-            setPersonaActive(false);
             if (inquiryId) {
               try {
                 const result = await verifyKyc(inquiryId);
                 if (result.status === "approved") {
                   onStatusResolved(true);
-                  // Safety net: if the modal somehow closed during the flow,
-                  // reopen it so the user can complete their purchase.
-                  if (!useModalStore.getState().isOpen) {
-                    setB3ModalOpen(true);
-                  }
                 }
               } catch {
                 // Will be picked up by polling via refetch
@@ -87,49 +73,31 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
             refetchKycStatus();
           },
           onCancel: () => {
+            // Reopen the modal so the user can retry or cancel the purchase
+            setB3ModalOpen(true);
             setPersonaOpen(false);
-            setPersonaActive(false);
             setPersonaCancelled(true);
           },
           onError: error => {
+            // Reopen the modal so the user sees the error and can retry
+            setB3ModalOpen(true);
             setPersonaOpen(false);
-            setPersonaActive(false);
             setPersonaError(error?.message || "Verification encountered an error");
           },
         });
-        // Flush the personaActive=true update synchronously so that
-        // modal={false} (disables FocusScope) and onPointerDownOutside
-        // preventDefault are committed to the DOM BEFORE client.open()
-        // renders Persona's overlay. Without flushSync, React may batch this
-        // update and commit it after the overlay appears, meaning the first
-        // click on the overlay still hits the stale Radix outside-click handler.
-        flushSync(() => setPersonaActive(true));
+        // Close the modal before opening Persona so its overlay is fully
+        // interactive — no Radix Dialog backdrop or z-index conflicts.
+        // The modal's contentType is preserved in Zustand and restored on reopen.
+        setB3ModalOpen(false);
         client.open();
       } catch (error) {
         setPersonaOpen(false);
-        setPersonaActive(false);
+        setB3ModalOpen(true);
         setPersonaError("Failed to load verification module");
       }
     },
-    [verifyKyc, onStatusResolved, refetchKycStatus, setB3ModalOpen, setPersonaActive],
+    [verifyKyc, onStatusResolved, refetchKycStatus, setB3ModalOpen],
   );
-
-  // Auto-resume Persona when the gate activates and there is an incomplete inquiry.
-  // This handles the case where the user accidentally closed the modal mid-KYC:
-  // they return to the FIAT_KYC panel and Persona re-opens automatically.
-  useEffect(() => {
-    if (!enabled || !kycStatus?.inquiry || personaOpen || personaCancelled || autoResumedRef.current) return;
-    if (kycStatus.status !== "pending") return;
-    autoResumedRef.current = true;
-    openPersonaFlow({
-      inquiryId: kycStatus.inquiry.inquiryId,
-      sessionToken: kycStatus.inquiry.sessionToken,
-      templateId: kycStatus.config?.templateId,
-      environment: kycStatus.config?.environment,
-    });
-    // openPersonaFlow is stable (useCallback); kycStatus changes when data loads
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled, kycStatus]);
 
   const handleStartVerification = useCallback(async () => {
     setPersonaError(null);

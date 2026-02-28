@@ -41,7 +41,6 @@ export function B3DynamicModal() {
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
   const contentType = useModalStore(state => state.contentType);
   const navigateBack = useModalStore(state => state.navigateBack);
-  const personaActive = useModalStore(state => state.personaActive);
   const { theme } = useB3Config();
   const isMobile = useIsMobile();
   const { toasts, removeToast } = useToastContext();
@@ -194,7 +193,7 @@ export function B3DynamicModal() {
   };
 
   return (
-    <ModalComponent open={isOpen} onOpenChange={handleOpenChange} modal={!personaActive}>
+    <ModalComponent open={isOpen} onOpenChange={handleOpenChange}>
       <ModalContent
         className={cn(
           contentClass,
@@ -210,9 +209,7 @@ export function B3DynamicModal() {
         )}
         hideCloseButton={hideCloseButton}
         hideGABranding={isAnySpendType}
-        onEscapeKeyDown={!isClosable || personaActive ? e => e.preventDefault() : undefined}
-        onPointerDownOutside={personaActive ? e => e.preventDefault() : undefined}
-        onInteractOutside={personaActive ? e => e.preventDefault() : undefined}
+        onEscapeKeyDown={!isClosable ? e => e.preventDefault() : undefined}
       >
         <ModalTitle className="sr-only hidden">{contentType?.type || "Modal"}</ModalTitle>
         <ModalDescription className="sr-only hidden">{contentType?.type || "Modal Body"}</ModalDescription>
@@ -272,16 +269,6 @@ export function B3DynamicModal() {
           </AnimatePresence>
         </div>
       </ModalContent>
-
-      {/* When Persona is active, make the entire modal portal non-interactive so
-          clicks pass through to Persona's overlay/iframe. Persona renders at
-          body level; the AnySpend modal (overlay + content card) renders inside
-          #b3-root — setting pointer-events:none on the root disables all of it. */}
-      {personaActive && (
-        <style>{`
-          #b3-root { pointer-events: none !important; }
-        `}</style>
-      )}
 
       {/* Animate inner container margin to cover branding when toasts appear */}
       {isOpen && !isAnySpendType && (
