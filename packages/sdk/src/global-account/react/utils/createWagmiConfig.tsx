@@ -38,3 +38,19 @@ export function createWagmiConfig(options: CreateWagmiConfigOptions) {
     connectors: finalConnectors,
   });
 }
+
+/** Module-level cache — wagmi configs must not be recreated on every render. */
+const wagmiConfigCache = new Map<string, ReturnType<typeof createWagmiConfig>>();
+
+/**
+ * Returns a cached wagmi config for the given partnerId.
+ * Use this instead of calling createWagmiConfig() directly inside React components or hooks
+ * to avoid registering duplicate EventEmitter listeners on every render.
+ */
+export function getCachedWagmiConfig(options: CreateWagmiConfigOptions) {
+  const key = options.partnerId;
+  if (!wagmiConfigCache.has(key)) {
+    wagmiConfigCache.set(key, createWagmiConfig(options));
+  }
+  return wagmiConfigCache.get(key)!;
+}

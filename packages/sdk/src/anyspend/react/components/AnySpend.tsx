@@ -19,7 +19,6 @@ import {
   useGasPrice,
   useGeoOnrampOptions,
 } from "@b3dotfun/sdk/anyspend/react";
-import { useKycStatus } from "../hooks/useKycStatus";
 import {
   Button,
   ShinyButton,
@@ -217,7 +216,11 @@ function AnySpendInner({
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
   const { isAuthenticated } = useAuth();
-  const { kycStatus } = useKycStatus();
+  // KYC approval is tracked per-session so we only prompt the wallet
+  // signature when the user actually clicks Buy, not on panel mount.
+  // useRef so handleFiatOrder can read the updated value synchronously
+  // in the same frame that onStatusResolved sets it (setState is async).
+  const kycApprovedRef = useRef(false);
 
   // Determine if we're in "buy mode" based on whether destination token props are provided
   const isBuyMode = !!(destinationTokenAddress && destinationTokenChainId);
@@ -1044,7 +1047,7 @@ function AnySpendInner({
           navigateToPanel(PanelView.FIAT_AUTH, "forward");
           return;
         }
-        if (kycStatus?.kycRequired && kycStatus.status !== "approved") {
+        if (!kycApprovedRef.current) {
           navigateToPanel(PanelView.FIAT_KYC, "forward");
           return;
         }
@@ -1624,8 +1627,10 @@ function AnySpendInner({
   const kycView = (
     <div className="mx-auto flex w-full max-w-[460px] flex-col gap-4 px-5 pt-5">
       <KycGate
+        enabled={activePanel === PanelView.FIAT_KYC}
         onStatusResolved={approved => {
           if (approved) {
+            kycApprovedRef.current = true;
             navigateBack();
             handleFiatOrder(selectedFiatPaymentMethod);
           }

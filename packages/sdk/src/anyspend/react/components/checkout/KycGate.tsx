@@ -12,13 +12,15 @@ import { useCreateKycInquiry, useKycStatus, useVerifyKyc } from "../../hooks/use
 interface KycGateProps {
   themeColor?: string;
   classes?: AnySpendCheckoutClasses;
+  /** Only fetch KYC status (and prompt wallet signature) when true. */
+  enabled?: boolean;
   /** Called when KYC status is resolved (approved or not required) */
   onStatusResolved: (approved: boolean) => void;
 }
 
-export function KycGate({ themeColor, classes, onStatusResolved }: KycGateProps) {
+export function KycGate({ themeColor, classes, enabled = false, onStatusResolved }: KycGateProps) {
   const { isAuthenticated, isAuthenticating } = useAuth();
-  const { kycStatus, isLoadingKycStatus, refetchKycStatus } = useKycStatus();
+  const { kycStatus, isLoadingKycStatus, refetchKycStatus } = useKycStatus(enabled);
   const { createInquiry, isCreatingInquiry } = useCreateKycInquiry();
   const { verifyKyc, isVerifying } = useVerifyKyc();
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
@@ -274,10 +276,7 @@ export function KycGate({ themeColor, classes, onStatusResolved }: KycGateProps)
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
-      className={cn(
-        "anyspend-kyc-prompt flex flex-col items-center gap-4 py-2",
-        classes?.fiatPanel,
-      )}
+      className={cn("anyspend-kyc-prompt flex flex-col items-center gap-4 py-2", classes?.fiatPanel)}
     >
       <ShieldCheck className="h-8 w-8 text-blue-500" />
       <div className="text-center">

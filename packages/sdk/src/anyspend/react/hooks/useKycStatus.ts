@@ -28,7 +28,7 @@ interface KycVerifyResponse {
 }
 
 function buildWalletAuthMessage(walletAddress: string, timestamp: number): string {
-  return `AnySpend KYC Authentication\nAddress: ${walletAddress.toLowerCase()}\nTimestamp: ${timestamp}`;
+  return `AnySpend wants to verify your identity for card payments.\n\nThis signature does not trigger a blockchain transaction or cost any gas.\n\nWallet: ${walletAddress.toLowerCase()}\nNonce: ${timestamp}`;
 }
 
 /** Module-level signature cache to avoid repeated wallet prompts within the 5-minute window. */
@@ -38,7 +38,7 @@ const headerCache = new Map<string, { headers: Record<string, string>; expiresAt
  * Returns a function that builds the wallet-signature auth headers.
  * Caches signatures for 4 minutes (server allows 5-minute window).
  */
-function useWalletAuthHeaders() {
+export function useWalletAuthHeaders() {
   const { address } = useAccount();
   const { signMessageAsync } = useSignMessage();
 
@@ -66,7 +66,7 @@ function useWalletAuthHeaders() {
   return { address, getHeaders };
 }
 
-export function useKycStatus() {
+export function useKycStatus(enabled = true) {
   const { address, getHeaders } = useWalletAuthHeaders();
 
   const { data, isLoading, error, refetch } = useQuery({
@@ -78,7 +78,7 @@ export function useKycStatus() {
       if (!response.ok) throw new Error(json.message || "Failed to fetch KYC status");
       return json.data as KycStatusResponse;
     },
-    enabled: !!address,
+    enabled: enabled && !!address,
     staleTime: 30_000,
   });
 
