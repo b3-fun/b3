@@ -16,7 +16,7 @@ export class NotificationsResource {
   }
 
   async update(params: UpdateNotificationSettingsParams): Promise<NotificationSettings> {
-    return this.client.patch<NotificationSettings>("/notifications", params as any);
+    return this.client.patch<NotificationSettings>("/notifications", params);
   }
 
   async linkTelegram(): Promise<TelegramLinkResult> {

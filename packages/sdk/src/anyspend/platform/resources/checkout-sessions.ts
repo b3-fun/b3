@@ -13,17 +13,17 @@ export class CheckoutSessionsResource {
   constructor(private client: HttpClient) {}
 
   async list(params?: ListCheckoutSessionsParams): Promise<ListResponse<CheckoutSession>> {
-    return this.client.get<ListResponse<CheckoutSession>>("/checkout-sessions", params as any);
+    return this.client.get<ListResponse<CheckoutSession>>("/checkout-sessions", params);
   }
 
-  async *listAutoPaginate(params?: Omit<ListCheckoutSessionsParams, "page">) {
+  async *listAutoPaginate(params?: Omit<ListCheckoutSessionsParams, "page">): AsyncGenerator<CheckoutSession> {
     yield* autoPaginate<CheckoutSession>((page, limit) => this.list({ ...params, page, limit }), {
       limit: params?.limit,
     });
   }
 
   async create(params: CreateCheckoutSessionParams): Promise<CheckoutSession> {
-    return this.client.post<CheckoutSession>("/checkout-sessions", params as any);
+    return this.client.post<CheckoutSession>("/checkout-sessions", params);
   }
 
   async get(id: string): Promise<CheckoutSession> {

@@ -27,7 +27,7 @@
  * ```
  */
 
-import { HttpClient, StaticHttpClient, type ClientConfig } from "./client";
+import { HttpClient, StaticHttpClient, DEFAULT_BASE_URL, type ClientConfig } from "./client";
 import { PaymentLinksResource } from "./resources/payment-links";
 import { ProductsResource } from "./resources/products";
 import { CustomersResource } from "./resources/customers";
@@ -41,8 +41,6 @@ import { OrganizationResource } from "./resources/organization";
 import { AnalyticsResource } from "./resources/analytics";
 import { EventsResource } from "./resources/events";
 import type { QuickPayParams, PaymentLink } from "./types";
-
-const DEFAULT_BASE_URL = "https://platform-api.anyspend.com/api/v1";
 
 export class AnySpendPlatformClient {
   private client: HttpClient;

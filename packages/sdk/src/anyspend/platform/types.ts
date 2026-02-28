@@ -268,6 +268,7 @@ export interface CheckoutSession {
   success_url: string | null;
   cancel_url: string | null;
   client_reference_id: string | null;
+  /** The API returns metadata as a serialized JSON string. Use JSON.parse() to recover the original object. */
   metadata: string | null;
   customer_email: string | null;
   customer_name: string | null;
@@ -316,6 +317,7 @@ export interface Webhook {
 export interface CreateWebhookParams {
   url: string;
   events: string[];
+  description?: string;
 }
 
 export interface UpdateWebhookParams {
@@ -466,4 +468,65 @@ export interface QuickPayParams {
   name?: string;
   description?: string;
   expires_in?: number;
+}
+
+// ============== API Keys ==============
+
+export interface ApiKey {
+  object: "api_key";
+  id: string;
+  name: string;
+  prefix: string;
+  permissions: string[];
+  last_used_at: number | null;
+  created_at: number;
+  updated_at: number;
+}
+
+// ============== Webhook Deliveries ==============
+
+export interface WebhookDelivery {
+  object: "webhook_delivery";
+  id: string;
+  webhook_id: string;
+  event_type: string;
+  url: string;
+  status: "pending" | "success" | "failed";
+  status_code: number | null;
+  response_body: string | null;
+  error_message: string | null;
+  attempted_at: number;
+  created_at: number;
+}
+
+// ============== Discount Code Validation ==============
+
+export interface ValidateDiscountResult {
+  object: "discount_validation";
+  valid: boolean;
+  discount_code?: DiscountCode;
+  discount_amount?: string;
+  final_amount?: string;
+  reason?: string;
+}
+
+export interface BatchCreateResult {
+  object: "batch_result";
+  created: DiscountCode[];
+  errors: { code: string; error: string }[];
+}
+
+// ============== Export Params ==============
+
+export interface ExportTransactionsParams {
+  format?: "csv" | "json";
+  status?: string;
+  from?: number;
+  to?: number;
+}
+
+export interface ExportCustomersParams {
+  format?: "csv" | "json";
+  from?: number;
+  to?: number;
 }

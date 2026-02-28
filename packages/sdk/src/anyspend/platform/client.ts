@@ -5,7 +5,6 @@
 
 import { parseApiError, type ApiErrorResponse } from "./errors";
 import { generateIdempotencyKey } from "./utils/idempotency";
-import type { ListResponse } from "./types";
 
 export interface ClientConfig {
   baseUrl?: string;
@@ -14,7 +13,7 @@ export interface ClientConfig {
   idempotencyKeyGenerator?: () => string;
 }
 
-const DEFAULT_BASE_URL = "https://platform-api.anyspend.com/api/v1";
+export const DEFAULT_BASE_URL = "https://platform-api.anyspend.com/api/v1";
 const DEFAULT_TIMEOUT = 30000;
 const DEFAULT_MAX_RETRIES = 3;
 
@@ -33,22 +32,22 @@ export class HttpClient {
     this.generateIdempotencyKey = config.idempotencyKeyGenerator || generateIdempotencyKey;
   }
 
-  async get<T>(path: string, params?: Record<string, string | number | undefined>): Promise<T> {
+  async get<T>(path: string, params?: object): Promise<T> {
     const url = this.buildUrl(path, params);
     return this.request<T>("GET", url);
   }
 
-  async post<T>(path: string, body?: Record<string, unknown>): Promise<T> {
+  async post<T>(path: string, body?: object): Promise<T> {
     const url = this.buildUrl(path);
     return this.request<T>("POST", url, body);
   }
 
-  async patch<T>(path: string, body: Record<string, unknown>): Promise<T> {
+  async patch<T>(path: string, body: object): Promise<T> {
     const url = this.buildUrl(path);
     return this.request<T>("PATCH", url, body);
   }
 
-  async delete<T>(path: string, body?: Record<string, unknown>): Promise<T> {
+  async delete<T>(path: string, body?: object): Promise<T> {
     const url = this.buildUrl(path);
     return this.request<T>("DELETE", url, body);
   }
@@ -58,17 +57,17 @@ export class HttpClient {
     return this.requestRaw<T>("POST", url, formData);
   }
 
-  private buildUrl(path: string, params?: Record<string, string | number | undefined>): string {
+  private buildUrl(path: string, params?: object): string {
     const url = new URL(`${this.baseUrl}${path}`);
     if (params) {
-      for (const [key, value] of Object.entries(params)) {
-        if (value !== undefined) url.searchParams.set(key, String(value));
+      for (const [key, value] of Object.entries(params as Record<string, unknown>)) {
+        if (value !== undefined && value !== null) url.searchParams.set(key, String(value));
       }
     }
     return url.toString();
   }
 
-  private async request<T>(method: string, url: string, body?: Record<string, unknown>): Promise<T> {
+  private async request<T>(method: string, url: string, body?: object): Promise<T> {
     const headers: Record<string, string> = {
       Authorization: `Bearer ${this.apiKey}`,
       "Content-Type": "application/json",
@@ -176,11 +175,15 @@ export class HttpClient {
 export class StaticHttpClient {
   static async post<T>(baseUrl: string, path: string, body: Record<string, unknown>): Promise<T> {
     const url = `${baseUrl.replace(/\/$/, "")}${path}`;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT);
     const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
 
     if (response.ok) {
       return (await response.json()) as T;

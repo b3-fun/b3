@@ -1,22 +1,21 @@
 import type { HttpClient } from "../client";
 import { autoPaginate } from "../utils/pagination";
-import type { Transaction, TransactionStats, ListResponse, ListTransactionsParams } from "../types";
-
-export interface ExportTransactionsParams {
-  format?: "csv" | "json";
-  status?: string;
-  from?: number;
-  to?: number;
-}
+import type {
+  Transaction,
+  TransactionStats,
+  ListResponse,
+  ListTransactionsParams,
+  ExportTransactionsParams,
+} from "../types";
 
 export class TransactionsResource {
   constructor(private client: HttpClient) {}
 
   async list(params?: ListTransactionsParams): Promise<ListResponse<Transaction>> {
-    return this.client.get<ListResponse<Transaction>>("/transactions", params as any);
+    return this.client.get<ListResponse<Transaction>>("/transactions", params);
   }
 
-  async *listAutoPaginate(params?: Omit<ListTransactionsParams, "page">) {
+  async *listAutoPaginate(params?: Omit<ListTransactionsParams, "page">): AsyncGenerator<Transaction> {
     yield* autoPaginate<Transaction>((page, limit) => this.list({ ...params, page, limit }), { limit: params?.limit });
   }
 
@@ -29,6 +28,6 @@ export class TransactionsResource {
   }
 
   async export(params?: ExportTransactionsParams): Promise<string> {
-    return this.client.get<string>("/transactions/export", params as any);
+    return this.client.get<string>("/transactions/export", params);
   }
 }

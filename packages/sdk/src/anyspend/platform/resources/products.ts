@@ -30,15 +30,15 @@ export class ProductsResource {
   constructor(private client: HttpClient) {}
 
   async list(params?: ListProductsParams): Promise<ListResponse<Product>> {
-    return this.client.get<ListResponse<Product>>("/products", params as any);
+    return this.client.get<ListResponse<Product>>("/products", params);
   }
 
-  async *listAutoPaginate(params?: Omit<ListProductsParams, "page">) {
+  async *listAutoPaginate(params?: Omit<ListProductsParams, "page">): AsyncGenerator<Product> {
     yield* autoPaginate<Product>((page, limit) => this.list({ ...params, page, limit }), { limit: params?.limit });
   }
 
   async create(params: CreateProductParams): Promise<Product> {
-    return this.client.post<Product>("/products", params as any);
+    return this.client.post<Product>("/products", params);
   }
 
   async get(id: string): Promise<Product> {
@@ -46,7 +46,7 @@ export class ProductsResource {
   }
 
   async update(id: string, params: UpdateProductParams): Promise<Product> {
-    return this.client.patch<Product>(`/products/${id}`, params as any);
+    return this.client.patch<Product>(`/products/${id}`, params);
   }
 
   async delete(id: string): Promise<DeletedResponse> {
@@ -54,6 +54,6 @@ export class ProductsResource {
   }
 
   async generateLink(id: string, params?: GenerateLinkParams): Promise<PaymentLink> {
-    return this.client.post<PaymentLink>(`/products/${id}/generate-link`, (params ?? {}) as any);
+    return this.client.post<PaymentLink>(`/products/${id}/generate-link`, params ?? {});
   }
 }

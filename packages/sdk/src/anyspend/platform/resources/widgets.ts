@@ -34,15 +34,15 @@ export class WidgetsResource {
   constructor(private client: HttpClient) {}
 
   async list(params?: ListWidgetsParams): Promise<ListResponse<WidgetConfig>> {
-    return this.client.get<ListResponse<WidgetConfig>>("/widgets", params as any);
+    return this.client.get<ListResponse<WidgetConfig>>("/widgets", params);
   }
 
-  async *listAutoPaginate(params?: Omit<ListWidgetsParams, "page">) {
+  async *listAutoPaginate(params?: Omit<ListWidgetsParams, "page">): AsyncGenerator<WidgetConfig> {
     yield* autoPaginate<WidgetConfig>((page, limit) => this.list({ ...params, page, limit }), { limit: params?.limit });
   }
 
   async create(params: CreateWidgetParams): Promise<WidgetConfig> {
-    return this.client.post<WidgetConfig>("/widgets", params as any);
+    return this.client.post<WidgetConfig>("/widgets", params);
   }
 
   async get(id: string): Promise<WidgetConfig> {
@@ -50,7 +50,7 @@ export class WidgetsResource {
   }
 
   async update(id: string, params: UpdateWidgetParams): Promise<WidgetConfig> {
-    return this.client.patch<WidgetConfig>(`/widgets/${id}`, params as any);
+    return this.client.patch<WidgetConfig>(`/widgets/${id}`, params);
   }
 
   async delete(id: string): Promise<DeletedResponse> {

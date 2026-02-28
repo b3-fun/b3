@@ -1,6 +1,7 @@
 import type { HttpClient } from "../client";
 import type {
   Webhook,
+  WebhookDelivery,
   ListResponse,
   DeletedResponse,
   ActionResponse,
@@ -8,20 +9,6 @@ import type {
   UpdateWebhookParams,
   PaginationParams,
 } from "../types";
-
-export interface WebhookDelivery {
-  object: "webhook_delivery";
-  id: string;
-  webhook_id: string;
-  event_type: string;
-  url: string;
-  status: "pending" | "success" | "failed";
-  status_code: number | null;
-  response_body: string | null;
-  error_message: string | null;
-  attempted_at: number;
-  created_at: number;
-}
 
 export class WebhooksResource {
   constructor(private client: HttpClient) {}
@@ -31,7 +18,7 @@ export class WebhooksResource {
   }
 
   async create(params: CreateWebhookParams): Promise<Webhook> {
-    return this.client.post<Webhook>("/webhooks", params as any);
+    return this.client.post<Webhook>("/webhooks", params);
   }
 
   async get(id: string): Promise<Webhook> {
@@ -39,7 +26,7 @@ export class WebhooksResource {
   }
 
   async update(id: string, params: UpdateWebhookParams): Promise<Webhook> {
-    return this.client.patch<Webhook>(`/webhooks/${id}`, params as any);
+    return this.client.patch<Webhook>(`/webhooks/${id}`, params);
   }
 
   async delete(id: string): Promise<DeletedResponse> {
@@ -51,7 +38,7 @@ export class WebhooksResource {
   }
 
   async deliveries(id: string, params?: PaginationParams): Promise<ListResponse<WebhookDelivery>> {
-    return this.client.get<ListResponse<WebhookDelivery>>(`/webhooks/${id}/deliveries`, params as any);
+    return this.client.get<ListResponse<WebhookDelivery>>(`/webhooks/${id}/deliveries`, params);
   }
 
   async retry(id: string, deliveryId: string): Promise<ActionResponse> {

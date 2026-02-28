@@ -19,6 +19,6 @@ export class OrganizationResource {
   }
 
   async update(params: UpdateOrganizationParams): Promise<Organization> {
-    return this.client.patch<Organization>("/organization", params as any);
+    return this.client.patch<Organization>("/organization", params);
   }
 }

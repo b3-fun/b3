@@ -6,6 +6,8 @@ import type {
   DeletedResponse,
   CreateDiscountCodeParams,
   BatchCreateDiscountCodesParams,
+  ValidateDiscountResult,
+  BatchCreateResult,
   PaginationParams,
 } from "../types";
 
@@ -28,38 +30,23 @@ export interface ValidateDiscountParams {
   amount?: string;
 }
 
-export interface ValidateDiscountResult {
-  object: "discount_validation";
-  valid: boolean;
-  discount_code?: DiscountCode;
-  discount_amount?: string;
-  final_amount?: string;
-  reason?: string;
-}
-
-export interface BatchCreateResult {
-  object: "batch_result";
-  created: DiscountCode[];
-  errors: { code: string; error: string }[];
-}
-
 export class DiscountCodesResource {
   constructor(private client: HttpClient) {}
 
   async list(params?: ListDiscountCodesParams): Promise<ListResponse<DiscountCode>> {
-    return this.client.get<ListResponse<DiscountCode>>("/discount-codes", params as any);
+    return this.client.get<ListResponse<DiscountCode>>("/discount-codes", params);
   }
 
-  async *listAutoPaginate(params?: Omit<ListDiscountCodesParams, "page">) {
+  async *listAutoPaginate(params?: Omit<ListDiscountCodesParams, "page">): AsyncGenerator<DiscountCode> {
     yield* autoPaginate<DiscountCode>((page, limit) => this.list({ ...params, page, limit }), { limit: params?.limit });
   }
 
   async create(params: CreateDiscountCodeParams): Promise<DiscountCode> {
-    return this.client.post<DiscountCode>("/discount-codes", params as any);
+    return this.client.post<DiscountCode>("/discount-codes", params);
   }
 
   async update(id: string, params: UpdateDiscountCodeParams): Promise<DiscountCode> {
-    return this.client.patch<DiscountCode>(`/discount-codes/${id}`, params as any);
+    return this.client.patch<DiscountCode>(`/discount-codes/${id}`, params);
   }
 
   async delete(id: string): Promise<DeletedResponse> {
@@ -67,10 +54,10 @@ export class DiscountCodesResource {
   }
 
   async validate(params: ValidateDiscountParams): Promise<ValidateDiscountResult> {
-    return this.client.post<ValidateDiscountResult>("/discount-codes/validate", params as any);
+    return this.client.post<ValidateDiscountResult>("/discount-codes/validate", params);
   }
 
   async batchCreate(params: BatchCreateDiscountCodesParams): Promise<BatchCreateResult> {
-    return this.client.post<BatchCreateResult>("/discount-codes/batch", params as any);
+    return this.client.post<BatchCreateResult>("/discount-codes/batch", params);
   }
 }

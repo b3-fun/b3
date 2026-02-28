@@ -7,6 +7,7 @@ import type {
   DeletedResponse,
   CreateCustomerParams,
   UpdateCustomerParams,
+  ExportCustomersParams,
   PaginationParams,
 } from "../types";
 
@@ -16,25 +17,19 @@ export interface ListCustomersParams extends PaginationParams {
   order?: "asc" | "desc";
 }
 
-export interface ExportCustomersParams {
-  format?: "csv" | "json";
-  from?: number;
-  to?: number;
-}
-
 export class CustomersResource {
   constructor(private client: HttpClient) {}
 
   async list(params?: ListCustomersParams): Promise<ListResponse<Customer>> {
-    return this.client.get<ListResponse<Customer>>("/customers", params as any);
+    return this.client.get<ListResponse<Customer>>("/customers", params);
   }
 
-  async *listAutoPaginate(params?: Omit<ListCustomersParams, "page">) {
+  async *listAutoPaginate(params?: Omit<ListCustomersParams, "page">): AsyncGenerator<Customer> {
     yield* autoPaginate<Customer>((page, limit) => this.list({ ...params, page, limit }), { limit: params?.limit });
   }
 
   async create(params: CreateCustomerParams): Promise<Customer> {
-    return this.client.post<Customer>("/customers", params as any);
+    return this.client.post<Customer>("/customers", params);
   }
 
   async get(id: string): Promise<Customer> {
@@ -42,7 +37,7 @@ export class CustomersResource {
   }
 
   async update(id: string, params: UpdateCustomerParams): Promise<Customer> {
-    return this.client.patch<Customer>(`/customers/${id}`, params as any);
+    return this.client.patch<Customer>(`/customers/${id}`, params);
   }
 
   async delete(id: string): Promise<DeletedResponse> {
@@ -50,10 +45,10 @@ export class CustomersResource {
   }
 
   async transactions(id: string, params?: PaginationParams): Promise<ListResponse<Transaction>> {
-    return this.client.get<ListResponse<Transaction>>(`/customers/${id}/transactions`, params as any);
+    return this.client.get<ListResponse<Transaction>>(`/customers/${id}/transactions`, params);
   }
 
   async export(params?: ExportCustomersParams): Promise<string> {
-    return this.client.get<string>("/customers/export", params as any);
+    return this.client.get<string>("/customers/export", params);
   }
 }
