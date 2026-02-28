@@ -27,6 +27,8 @@ import {
   toast,
   TransitionPanel,
   useAccountWallet,
+  useAuth,
+  useAuthStore,
   useB3Config,
   useModalStore,
   useProfile,
@@ -64,6 +66,9 @@ import { FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaym
 import { GasIndicator } from "./common/GasIndicator";
 import { OrderDetails, OrderDetailsLoadingView } from "./common/OrderDetails";
 import { OrderHistory } from "./common/OrderHistory";
+import { KycGate } from "./checkout/KycGate";
+import { useWalletAuthHeaders } from "../hooks/useKycStatus";
+import { LoginStep } from "@b3dotfun/sdk/global-account/react/components/SignInWithB3/steps/LoginStep";
 import { PanelOnramp } from "./common/PanelOnramp";
 import { PanelOnrampPayment } from "./common/PanelOnrampPayment";
 import { PointsDetailPanel } from "./common/PointsDetailPanel";
@@ -94,6 +99,8 @@ export enum PanelView {
   POINTS_DETAIL,
   FEE_DETAIL,
   DIRECT_TRANSFER_SUCCESS,
+  FIAT_KYC,
+  FIAT_AUTH,
 }
 
 const ANYSPEND_RECIPIENTS_KEY = "anyspend_recipients";
@@ -209,6 +216,16 @@ function AnySpendInner({
   const { partnerId } = useB3Config();
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
+  const { isAuthenticated } = useAuth();
+  // KYC approval is tracked per-session so we only prompt the wallet
+  // signature when the user actually clicks Buy, not on panel mount.
+  // useRef so handleFiatOrder can read the updated value synchronously
+  // in the same frame that onStatusResolved sets it (setState is async).
+  const kycApprovedRef = useRef(false);
+  // Pre-warm wallet auth headers inside user-gesture context (button click)
+  // so the signing prompt fires before we navigate away — browsers block
+  // wallet popups triggered from async/non-gesture contexts (React Query queryFn).
+  const { getHeaders: getKycHeaders } = useWalletAuthHeaders();
 
   // Determine if we're in "buy mode" based on whether destination token props are provided
   const isBuyMode = !!(destinationTokenAddress && destinationTokenChainId);
@@ -236,7 +253,17 @@ function AnySpendInner({
   // Track previous panel for proper back navigation
   const previousPanel = useRef<PanelView>(PanelView.MAIN);
 
-  const [activeTab, setActiveTab] = useState<"crypto" | "fiat">(defaultActiveTab);
+  const [activeTab, setActiveTab] = useState<"crypto" | "fiat">(() => {
+    if (typeof window !== "undefined") {
+      const stored = sessionStorage.getItem("anyspend_active_tab") as "crypto" | "fiat" | null;
+      if (stored === "crypto" || stored === "fiat") return stored;
+    }
+    return defaultActiveTab;
+  });
+
+  useEffect(() => {
+    sessionStorage.setItem("anyspend_active_tab", activeTab);
+  }, [activeTab]);
 
   const [orderId, setOrderId] = useState<string | undefined>(loadOrder);
   const [directTransferTxHash, setDirectTransferTxHash] = useState<string | undefined>();
@@ -273,9 +300,19 @@ function AnySpendInner({
     resetPaymentMethods,
   } = useCryptoPaymentMethodState();
 
-  const [selectedFiatPaymentMethod, setSelectedFiatPaymentMethod] = useState<FiatPaymentMethod>(FiatPaymentMethod.NONE);
+  const [selectedFiatPaymentMethod, setSelectedFiatPaymentMethod] = useState<FiatPaymentMethod>(() => {
+    if (typeof window !== "undefined") {
+      const stored = sessionStorage.getItem("anyspend_fiat_method") as FiatPaymentMethod | null;
+      if (stored && Object.values(FiatPaymentMethod).includes(stored)) return stored;
+    }
+    return FiatPaymentMethod.NONE;
+  });
   // const [newRecipientAddress, setNewRecipientAddress] = useState("");
   // const recipientInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    sessionStorage.setItem("anyspend_fiat_method", selectedFiatPaymentMethod);
+  }, [selectedFiatPaymentMethod]);
 
   // Get initial chain IDs from URL or defaults
   const initialSrcChainId = sourceChainId || parseInt(searchParams.get("fromChainId") || "0") || mainnet.id;
@@ -297,11 +334,27 @@ function AnySpendInner({
   const { data: srcTokenMetadata } = useTokenData(selectedSrcToken?.chainId, selectedSrcToken?.address);
   const [srcAmount, setSrcAmount] = useState<string>(searchParams.get("fromAmount") || "0");
 
-  // State for onramp amount
-  const [srcAmountOnRamp, setSrcAmountOnRamp] = useState<string>(searchParams.get("fromAmount") || "5");
+  // State for onramp amount — persisted in sessionStorage so it survives Persona KYC roundtrip
+  const [srcAmountOnRamp, setSrcAmountOnRamp] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      const stored = sessionStorage.getItem("anyspend_fiat_amount");
+      if (stored) return stored;
+    }
+    return searchParams.get("fromAmount") || "5";
+  });
 
-  // State for destination chain/token selection
-  const [selectedDstChainId, setSelectedDstChainId] = useState<number>(initialDstChainId);
+  useEffect(() => {
+    sessionStorage.setItem("anyspend_fiat_amount", srcAmountOnRamp);
+  }, [srcAmountOnRamp]);
+
+  // State for destination chain/token selection (sync effects come after state declarations below) — persisted in sessionStorage for Persona KYC roundtrip
+  const [selectedDstChainId, setSelectedDstChainId] = useState<number>(() => {
+    if (!isBuyMode && typeof window !== "undefined") {
+      const stored = sessionStorage.getItem("anyspend_dst_chain_id");
+      if (stored) return parseInt(stored, 10);
+    }
+    return initialDstChainId;
+  });
   // Helper to check if address is Hyperliquid USDC (supports both 34-char and 42-char formats)
   const isHyperliquidUSDCAddress = (address?: string) =>
     eqci(address, HYPERLIQUID_USDC_ADDRESS) || eqci(address, ZERO_ADDRESS);
@@ -323,11 +376,28 @@ function AnySpendInner({
     defaultToken: defaultDstToken,
     prefix: "to",
   });
-  const [selectedDstToken, setSelectedDstToken] = useState<components["schemas"]["Token"]>(
-    isBuyMode ? defaultDstToken : dstTokenFromUrl,
-  );
+  const [selectedDstToken, setSelectedDstToken] = useState<components["schemas"]["Token"]>(() => {
+    if (!isBuyMode && typeof window !== "undefined") {
+      const stored = sessionStorage.getItem("anyspend_dst_token");
+      if (stored) {
+        try {
+          return JSON.parse(stored) as components["schemas"]["Token"];
+        } catch {}
+      }
+    }
+    return isBuyMode ? defaultDstToken : dstTokenFromUrl;
+  });
   const { data: dstTokenMetadata } = useTokenData(selectedDstToken?.chainId, selectedDstToken?.address);
   const [dstAmount, setDstAmount] = useState<string>(searchParams.get("toAmount") || "");
+
+  // Sync dst chain/token to sessionStorage so they survive Persona KYC roundtrip
+  useEffect(() => {
+    if (!isBuyMode) sessionStorage.setItem("anyspend_dst_chain_id", selectedDstChainId.toString());
+  }, [selectedDstChainId, isBuyMode]);
+
+  useEffect(() => {
+    if (!isBuyMode) sessionStorage.setItem("anyspend_dst_token", JSON.stringify(selectedDstToken));
+  }, [selectedDstToken, isBuyMode]);
 
   const [isSrcInputDirty, setIsSrcInputDirty] = useState(true);
   // Add refs to track if we've applied metadata
@@ -728,6 +798,17 @@ function AnySpendInner({
   // Call onSuccess when order is executed
   useOnOrderSuccess({ orderData: oat, orderId, onSuccess });
 
+  // Clear all persisted selection state once an order is submitted — next open starts fresh
+  useEffect(() => {
+    if (orderId) {
+      sessionStorage.removeItem("anyspend_fiat_amount");
+      sessionStorage.removeItem("anyspend_active_tab");
+      sessionStorage.removeItem("anyspend_fiat_method");
+      sessionStorage.removeItem("anyspend_dst_chain_id");
+      sessionStorage.removeItem("anyspend_dst_token");
+    }
+  }, [orderId]);
+
   const { createOrder, isCreatingOrder } = useAnyspendCreateOrder({
     onSuccess: data => {
       const orderId = data.data.id;
@@ -817,8 +898,8 @@ function AnySpendInner({
       if (selectedFiatPaymentMethod === FiatPaymentMethod.NONE) {
         return { text: "Select payment method", disable: false, error: false, loading: false };
       }
-      // If payment method is selected, show "Buy"
-      return { text: "Buy", disable: false, error: false, loading: false };
+      // If payment method is selected, show "Continue"
+      return { text: "Continue", disable: false, error: false, loading: false };
     }
 
     if (activeTab === "crypto") {
@@ -845,7 +926,7 @@ function AnySpendInner({
       }
     }
 
-    return { text: "Buy", disable: false, error: false, loading: false };
+    return { text: "Continue", disable: false, error: false, loading: false };
   }, [
     activeInputAmountInWei,
     isSameChainSameToken,
@@ -1028,7 +1109,22 @@ function AnySpendInner({
         vendor = "stripe";
         paymentMethodString = "";
       } else if (paymentMethod === FiatPaymentMethod.STRIPE_WEB2) {
-        // Stripe embedded payment form
+        // Stripe embedded payment form requires authentication + KYC
+        // Read from store directly to avoid stale closure when called from onLoginSuccess callback
+        const currentlyAuthenticated = useAuthStore.getState().isAuthenticated;
+        if (!currentlyAuthenticated) {
+          navigateToPanel(PanelView.FIAT_AUTH, "forward");
+          return;
+        }
+        if (!kycApprovedRef.current) {
+          // Pre-sign the KYC auth message NOW (user-gesture context) so the
+          // result is cached before useKycStatus fires its queryFn inside the
+          // FIAT_KYC panel. Wallets/browsers block signing prompts from async
+          // (non-gesture) contexts, which is exactly what React Query uses.
+          await getKycHeaders().catch(() => {});
+          navigateToPanel(PanelView.FIAT_KYC, "forward");
+          return;
+        }
         if (!stripeWeb2Support.isSupport) {
           toast.error("Pay with Card not available");
           return;
@@ -1146,6 +1242,15 @@ function AnySpendInner({
       window.removeEventListener("popstate", handlePopState);
     };
   }, [activePanel, navigateBack]);
+
+  // When auth completes while on the FIAT_AUTH panel, navigate back and retry the order
+  useEffect(() => {
+    if (isAuthenticated && activePanel === PanelView.FIAT_AUTH) {
+      navigateBack();
+      handleFiatOrder(selectedFiatPaymentMethod);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
 
   const historyView = (
     <div className={"mx-auto flex w-[560px] max-w-full flex-col items-center"}>
@@ -1593,6 +1698,32 @@ function AnySpendInner({
     </div>
   );
 
+  const kycView = (
+    <div className="mx-auto flex w-full max-w-[460px] flex-col gap-4 px-5 pt-5">
+      <KycGate
+        enabled={activePanel === PanelView.FIAT_KYC}
+        onStatusResolved={approved => {
+          if (approved) {
+            kycApprovedRef.current = true;
+            navigateBack();
+            handleFiatOrder(selectedFiatPaymentMethod);
+          }
+        }}
+      />
+    </div>
+  );
+
+  const authView = (
+    <div className="mx-auto w-full max-w-[460px]">
+      <LoginStep
+        chain={baseChain}
+        onSuccess={async () => {
+          // isAuthenticated will be true at this point — the useEffect below handles navigation
+        }}
+      />
+    </div>
+  );
+
   // Add tabs to the main component when no order is loaded
   return (
     <StyleRoot>
@@ -1666,6 +1797,12 @@ function AnySpendInner({
             </div>,
             <div key="direct-transfer-success-view" className={cn(mode === "page" && "p-6")}>
               {directTransferSuccessView}
+            </div>,
+            <div key="fiat-kyc-view" className={cn(mode === "page" && "p-6")}>
+              {kycView}
+            </div>,
+            <div key="fiat-auth-view" className={cn(mode === "page" && "p-6")}>
+              {authView}
             </div>,
           ]}
         </TransitionPanel>

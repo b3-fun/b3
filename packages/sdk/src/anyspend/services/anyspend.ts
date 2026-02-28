@@ -73,6 +73,7 @@ export const anyspendService = {
     visitorData,
     callbackMetadata,
     feeOnTop,
+    kycWalletHeaders,
   }: {
     recipientAddress: string;
     type: string;
@@ -90,6 +91,8 @@ export const anyspendService = {
     visitorData?: VisitorData;
     callbackMetadata?: Record<string, unknown>;
     feeOnTop?: boolean;
+    /** Wallet signature auth headers for KYC lookup (stripe-web2 orders only). */
+    kycWalletHeaders?: Record<string, string>;
   }) => {
     const accessToken = await app.authentication.getAccessToken();
     const response = await fetch(`${ANYSPEND_MAINNET_BASE_URL}/orders`, {
@@ -99,6 +102,7 @@ export const anyspendService = {
         ...(visitorData?.requestId && { "X-Fingerprint-Request-Id": visitorData.requestId }),
         ...(visitorData?.visitorId && { "X-Fingerprint-Visitor-Id": visitorData.visitorId }),
         ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
+        ...kycWalletHeaders,
       },
       body: JSON.stringify({
         recipientAddress,

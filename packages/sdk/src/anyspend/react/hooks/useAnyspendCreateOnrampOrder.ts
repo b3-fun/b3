@@ -12,6 +12,7 @@ import { useMemo } from "react";
 import { parseUnits } from "viem";
 import { base } from "viem/chains";
 import { CreateOrderParams } from "./useAnyspendCreateOrder";
+import { useWalletAuthHeaders } from "./useKycStatus";
 import { useValidatedClientReferenceId } from "./useValidatedClientReferenceId";
 
 export type OnrampOptions = {
@@ -40,6 +41,7 @@ export type UseAnyspendCreateOnrampOrderProps = {
 export function useAnyspendCreateOnrampOrder({ onSuccess, onError }: UseAnyspendCreateOnrampOrderProps = {}) {
   // Get B3 context values
   const { partnerId } = useB3Config();
+  const { getHeaders: getWalletAuthHeaders } = useWalletAuthHeaders();
 
   // Get validated client reference ID from B3 context
   const createValidatedClientReferenceId = useValidatedClientReferenceId();
@@ -81,6 +83,13 @@ export function useAnyspendCreateOnrampOrder({ onSuccess, onError }: UseAnyspend
         // Create order with USDC on Base as source
         const srcAmountOnRampInWei = parseUnits(srcFiatAmount, USDC_BASE.decimals);
 
+        // For card payments, include wallet auth headers so the backend can verify
+        // KYC by the signing wallet address (may differ from the B3 JWT address).
+        let kycWalletHeaders: Record<string, string> | undefined;
+        if (onramp.vendor === "stripe-web2") {
+          kycWalletHeaders = await getWalletAuthHeaders().catch(() => undefined);
+        }
+
         return await anyspendService.createOrder({
           recipientAddress: normalizeAddress(recipientAddress),
           type: orderType,
@@ -118,6 +127,7 @@ export function useAnyspendCreateOnrampOrder({ onSuccess, onError }: UseAnyspend
           visitorData,
           callbackMetadata: params.callbackMetadata,
           feeOnTop: params.feeOnTop,
+          kycWalletHeaders,
         });
       } catch (error: any) {
         // If the error has a response with message and statusCode, throw that

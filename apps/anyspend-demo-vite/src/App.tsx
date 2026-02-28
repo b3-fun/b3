@@ -1,5 +1,8 @@
 import { AnyspendProvider } from "@b3dotfun/sdk/anyspend/react";
+import { ANYSPEND_MAINNET_BASE_URL } from "@b3dotfun/sdk/anyspend/constants";
 import React from "react";
+
+console.log("[anyspend-demo] API base URL:", ANYSPEND_MAINNET_BASE_URL);
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import CheckoutPage from "./pages/CheckoutPage";
 import GasFundingPage from "./pages/GasFundingPage";
