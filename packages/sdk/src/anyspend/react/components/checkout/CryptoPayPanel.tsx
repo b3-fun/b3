@@ -586,9 +586,7 @@ export function CryptoPayPanel({
                     </span>{" "}
                     on{" "}
                     <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-1.5 py-0.5 align-middle font-semibold text-gray-900 dark:bg-white/10 dark:text-gray-100">
-                      {chainLogoUrl && (
-                        <img src={chainLogoUrl} alt="" className="h-3.5 w-3.5 rounded-full" />
-                      )}
+                      {chainLogoUrl && <img src={chainLogoUrl} alt="" className="h-3.5 w-3.5 rounded-full" />}
                       {chainName}
                     </span>{" "}
                     to:
@@ -609,9 +607,8 @@ export function CryptoPayPanel({
 
                   {/* Warning */}
                   <p className="text-xs leading-snug text-orange-500/80 dark:text-orange-400/80">
-                    Only send {selectedSrcToken?.symbol} on{" "}
-                    <span className="font-semibold">{chainName}</span>. Sending other tokens or using a different
-                    network may result in loss of funds.
+                    Only send {selectedSrcToken?.symbol} on <span className="font-semibold">{chainName}</span>. Sending
+                    other tokens or using a different network may result in loss of funds.
                   </p>
                 </div>
               </div>

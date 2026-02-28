@@ -35,6 +35,16 @@ function buildWalletAuthMessage(walletAddress: string, timestamp: number): strin
 const headerCache = new Map<string, { headers: Record<string, string>; expiresAt: number }>();
 
 /**
+ * Returns cached wallet auth headers without triggering a wallet signature prompt.
+ * Returns undefined if no valid cache exists for the given address.
+ */
+export function getCachedWalletHeaders(address: string): Record<string, string> | undefined {
+  const cached = headerCache.get(address.toLowerCase());
+  if (cached && Date.now() < cached.expiresAt) return cached.headers;
+  return undefined;
+}
+
+/**
  * Returns a function that builds the wallet-signature auth headers.
  * Caches signatures for 4 minutes (server allows 5-minute window).
  */

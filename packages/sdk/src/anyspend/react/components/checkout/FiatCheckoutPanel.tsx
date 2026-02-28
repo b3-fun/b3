@@ -10,12 +10,14 @@ import { USDC_BASE } from "@b3dotfun/sdk/anyspend/constants";
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
 import { formatUnits } from "@b3dotfun/sdk/shared/utils/number";
 import { getStripePromise } from "@b3dotfun/sdk/shared/utils/payment.utils";
-import { ShinyButton, TextShimmer, useB3Config, useTokenData } from "@b3dotfun/sdk/global-account/react";
+import { ShinyButton, TextShimmer, useB3Config, useModalStore, useTokenData } from "@b3dotfun/sdk/global-account/react";
+import { thirdwebB3Chain } from "@b3dotfun/sdk/shared/constants/chains/b3Chain";
 import { AddressElement, Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import type { PaymentIntentResult, StripePaymentElementOptions } from "@stripe/stripe-js";
-import { Loader2, Lock } from "lucide-react";
+import { Loader2, Lock, Wallet } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useAccount } from "wagmi";
 import type { AnySpendCheckoutClasses } from "./AnySpendCheckout";
 import { KycGate } from "./KycGate";
 
@@ -56,8 +58,17 @@ export function FiatCheckoutPanel({
   const onErrorRef = useRef(onError);
   onErrorRef.current = onError;
 
+  const { address } = useAccount();
+  const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
+  const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
+
   const { data: tokenData } = useTokenData(destinationTokenChainId, destinationTokenAddress);
-  const { theme, stripePublishableKey } = useB3Config();
+  const { theme, stripePublishableKey, partnerId } = useB3Config();
+
+  const handleConnectWallet = useCallback(() => {
+    setB3ModalContentType({ type: "signInWithB3", showBackButton: false, chain: thirdwebB3Chain, partnerId });
+    setB3ModalOpen(true);
+  }, [setB3ModalContentType, setB3ModalOpen, partnerId]);
 
   // Clean decimal string for API calls (no commas, no subscripts)
   const formattedAmount = useMemo(() => {
@@ -125,14 +136,29 @@ export function FiatCheckoutPanel({
       }
     },
     onError: (error: Error) => {
-      setOrderError(error.message || "Failed to create payment order.");
+      // Backend requires KYC even when kycEnabled=false — reset to show KycGate
+      if (error.message?.includes("KYC verification required")) {
+        setKycApproved(false);
+        orderCreatedRef.current = false;
+      } else {
+        setOrderError(error.message || "Failed to create payment order.");
+      }
       onErrorRef.current?.(error);
     },
   });
 
+  // Reset order error when wallet connects so the user gets a clean state
+  useEffect(() => {
+    if (address && orderError) {
+      setOrderError(null);
+      orderCreatedRef.current = false;
+    }
+  }, [address]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Auto-create onramp order when Stripe Web2 is supported, KYC approved, and all data is ready
   useEffect(() => {
     if (
+      address &&
       !isLoadingGeo &&
       (!isStablecoin ? !isLoadingAnyspendQuote : true) &&
       usdAmount &&
@@ -177,6 +203,7 @@ export function FiatCheckoutPanel({
       });
     }
   }, [
+    address,
     isLoadingGeo,
     isStablecoin,
     isLoadingAnyspendQuote,
@@ -236,6 +263,37 @@ export function FiatCheckoutPanel({
   // KYC gate — shown before order creation when verification is needed
   if (!kycApproved) {
     return <KycGate themeColor={themeColor} classes={classes} enabled onStatusResolved={handleKycResolved} />;
+  }
+
+  // No wallet connected — prompt to connect before attempting card payment
+  if (!address) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25, ease: "easeOut" }}
+        className={cn("anyspend-fiat-connect flex flex-col items-center gap-4 py-2", classes?.fiatPanel)}
+      >
+        <Wallet className="h-8 w-8 text-gray-400" />
+        <div className="text-center">
+          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Connect wallet to pay with card</p>
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            A wallet connection is required to complete card payment.
+          </p>
+        </div>
+        <ShinyButton
+          accentColor={themeColor || "hsl(var(--as-brand))"}
+          className="w-full"
+          textClassName="text-white"
+          onClick={handleConnectWallet}
+        >
+          <span className="flex items-center justify-center gap-2">
+            <Wallet className="h-4 w-4" />
+            Connect Wallet
+          </span>
+        </ShinyButton>
+      </motion.div>
+    );
   }
 
   // Order creation error - show with retry

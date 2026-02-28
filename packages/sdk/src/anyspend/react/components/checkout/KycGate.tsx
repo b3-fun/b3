@@ -1,12 +1,11 @@
 "use client";
 
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
-import { ShinyButton, TextShimmer, useModalStore } from "@b3dotfun/sdk/global-account/react";
-import { client } from "@b3dotfun/sdk/shared/utils/thirdweb";
+import { ShinyButton, TextShimmer, useB3Config, useModalStore } from "@b3dotfun/sdk/global-account/react";
+import { thirdwebB3Chain } from "@b3dotfun/sdk/shared/constants/chains/b3Chain";
 import { Loader2, ShieldCheck, AlertTriangle, Clock, Wallet } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useConnectModal } from "thirdweb/react";
 import { useAccount } from "wagmi";
 import type { AnySpendCheckoutClasses } from "./AnySpendCheckout";
 import { useCreateKycInquiry, useKycStatus, useVerifyKyc, useWalletAuthHeaders } from "../../hooks/useKycStatus";
@@ -22,7 +21,7 @@ interface KycGateProps {
 
 export function KycGate({ themeColor, classes, enabled = false, onStatusResolved }: KycGateProps) {
   const { address } = useAccount();
-  const { connect: openConnectModal } = useConnectModal();
+  const { partnerId } = useB3Config();
   // Gate the status fetch behind explicit user consent so the wallet
   // signature prompt doesn't fire automatically on tab open.
   const [userInitiated, setUserInitiated] = useState(false);
@@ -31,7 +30,7 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
   const { createInquiry, isCreatingInquiry } = useCreateKycInquiry();
   const { verifyKyc, isVerifying } = useVerifyKyc();
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
-  const setClosable = useModalStore(state => state.setClosable);
+  const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
 
   const [personaOpen, setPersonaOpen] = useState(false);
   const [personaError, setPersonaError] = useState<string | null>(null);
@@ -120,15 +119,10 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
     }
   }, [createInquiry, kycStatus, openPersonaFlow]);
 
-  const handleConnectWallet = useCallback(async () => {
-    setClosable(false);
-    try {
-      await openConnectModal({ client, size: "compact", showThirdwebBranding: false });
-    } finally {
-      setClosable(true);
-      setB3ModalOpen(true);
-    }
-  }, [openConnectModal, setClosable, setB3ModalOpen]);
+  const handleConnectWallet = useCallback(() => {
+    setB3ModalContentType({ type: "signInWithB3", showBackButton: false, chain: thirdwebB3Chain, partnerId });
+    setB3ModalOpen(true);
+  }, [setB3ModalContentType, setB3ModalOpen, partnerId]);
 
   const handleResumeVerification = useCallback(() => {
     if (!kycStatus?.inquiry) return;
