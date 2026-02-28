@@ -610,13 +610,8 @@ export function CryptoPayPanel({
                   {/* Warning */}
                   <p className="text-xs leading-snug text-orange-500/80 dark:text-orange-400/80">
                     Only send {selectedSrcToken?.symbol} on{" "}
-                    <span className="inline-flex items-center gap-0.5 align-middle">
-                      {chainLogoUrl && (
-                        <img src={chainLogoUrl} alt="" className="h-3 w-3 rounded-full" />
-                      )}
-                      <span className="font-medium">{chainName}</span>
-                    </span>
-                    . Sending other tokens or using a different network may result in loss of funds.
+                    <span className="font-semibold">{chainName}</span>. Sending other tokens or using a different
+                    network may result in loss of funds.
                   </p>
                 </div>
               </div>
