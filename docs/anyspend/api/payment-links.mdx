@@ -233,7 +233,7 @@ curl -X GET "https://platform-api.anyspend.com/api/v1/payment-links?active=true&
 ```typescript SDK
 import { AnySpend } from "@b3dotfun/sdk";
 
-const anyspend = new AnySpend("asp_xxx");
+const anyspend = new AnySpend(process.env.ANYSPEND_API_KEY!);
 
 const { data, pagination } = await anyspend.paymentLinks.list({
   active: true,
@@ -432,7 +432,7 @@ curl -X POST "https://platform-api.anyspend.com/api/v1/payment-links" \
 ```typescript SDK
 import { AnySpend } from "@b3dotfun/sdk";
 
-const anyspend = new AnySpend("asp_xxx");
+const anyspend = new AnySpend(process.env.ANYSPEND_API_KEY!);
 
 const paymentLink = await anyspend.paymentLinks.create({
   name: "Premium Plan",

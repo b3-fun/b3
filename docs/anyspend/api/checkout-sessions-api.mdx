@@ -173,7 +173,7 @@ curl -X GET "https://platform-api.anyspend.com/api/v1/checkout-sessions?status=c
 ```typescript SDK
 import { AnySpend } from "@b3dotfun/sdk";
 
-const anyspend = new AnySpend("asp_xxx");
+const anyspend = new AnySpend(process.env.ANYSPEND_API_KEY!);
 
 const { data, pagination } = await anyspend.checkoutSessions.list({
   status: "completed",

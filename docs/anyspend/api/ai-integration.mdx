@@ -162,7 +162,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
 
 const anthropic = new Anthropic();
-const platform = new AnySpendPlatformClient("asp_your_api_key");
+const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!);
 
 // Define the tools the agent can use
 const tools: Anthropic.Tool[] = [

@@ -28,7 +28,7 @@ yarn add @b3dotfun/sdk
 ```typescript
 import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
 
-const platform = new AnySpendPlatformClient("asp_your_api_key");
+const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!);
 
 // Create a payment link
 const link = await platform.paymentLinks.create({
@@ -45,7 +45,7 @@ console.log(link.url);
 ```typescript
 import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
 
-const platform = new AnySpendPlatformClient("asp_your_api_key", {
+const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!, {
   // All options below are optional
   baseUrl: "https://platform-api.anyspend.com/api/v1", // default
   timeout: 30_000,           // request timeout in ms (default: 30s)

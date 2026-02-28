@@ -98,7 +98,7 @@ curl -X GET "https://platform-api.anyspend.com/api/v1/products?page=1&limit=20" 
 ```typescript SDK
 import { AnySpend } from "@b3dotfun/sdk";
 
-const anyspend = new AnySpend("asp_xxx");
+const anyspend = new AnySpend(process.env.ANYSPEND_API_KEY!);
 
 const { data, pagination } = await anyspend.products.list({
   page: 1,

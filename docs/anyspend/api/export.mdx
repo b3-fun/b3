@@ -81,7 +81,7 @@ curl -o transactions.json \
 import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
 import { writeFileSync } from "node:fs";
 
-const platform = new AnySpendPlatformClient("asp_your_api_key");
+const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!);
 
 const csv = await platform.transactions.export({
   format: "csv",
@@ -97,7 +97,7 @@ console.log("Exported transactions to transactions.csv");
 ```typescript SDK (JSON)
 import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
 
-const platform = new AnySpendPlatformClient("asp_your_api_key");
+const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!);
 
 const transactions = await platform.transactions.export({
   format: "json",
@@ -170,7 +170,7 @@ curl -o customers.json \
 import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
 import { writeFileSync } from "node:fs";
 
-const platform = new AnySpendPlatformClient("asp_your_api_key");
+const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!);
 
 const csv = await platform.customers.export({ format: "csv" });
 writeFileSync("customers.csv", csv);
@@ -180,7 +180,7 @@ console.log("Exported customers to customers.csv");
 ```typescript SDK (JSON)
 import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
 
-const platform = new AnySpendPlatformClient("asp_your_api_key");
+const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!);
 
 const customers = await platform.customers.export({ format: "json" });
 

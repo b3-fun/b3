@@ -82,7 +82,7 @@ curl -X GET "https://platform-api.anyspend.com/api/v1/customers?search=acme&page
 ```typescript SDK
 import { AnySpend } from "@b3dotfun/sdk";
 
-const anyspend = new AnySpend("asp_xxx");
+const anyspend = new AnySpend(process.env.ANYSPEND_API_KEY!);
 
 const { data, pagination } = await anyspend.customers.list({
   search: "acme",

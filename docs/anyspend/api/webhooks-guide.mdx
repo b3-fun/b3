@@ -58,7 +58,7 @@ Your server responds with 200 OK
     ```typescript
     import { AnySpendPlatformClient } from "@b3dotfun/sdk/anyspend/platform";
 
-    const platform = new AnySpendPlatformClient("asp_your_api_key");
+    const platform = new AnySpendPlatformClient(process.env.ANYSPEND_API_KEY!);
 
     const webhook = await platform.webhooks.create({
       url: "https://your-server.com/webhooks/anyspend",

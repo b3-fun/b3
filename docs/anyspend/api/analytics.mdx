@@ -40,7 +40,7 @@ Base URL: `https://platform-api.anyspend.com/api/v1`
     ```typescript
     import { AnySpendClient } from "@b3dotfun/sdk/anyspend";
 
-    const client = new AnySpendClient({ apiKey: "asp_xxx" });
+    const client = new AnySpendClient({ apiKey: process.env.ANYSPEND_API_KEY! });
     const analytics = await client.analytics.overview({ period: "30d" });
     ```
   </Tab>
