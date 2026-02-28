@@ -9,7 +9,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useConnectModal } from "thirdweb/react";
 import { useAccount } from "wagmi";
 import type { AnySpendCheckoutClasses } from "./AnySpendCheckout";
-import { useCreateKycInquiry, useKycStatus, useVerifyKyc } from "../../hooks/useKycStatus";
+import { useCreateKycInquiry, useKycStatus, useVerifyKyc, useWalletAuthHeaders } from "../../hooks/useKycStatus";
 
 interface KycGateProps {
   themeColor?: string;
@@ -26,6 +26,7 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
   // Gate the status fetch behind explicit user consent so the wallet
   // signature prompt doesn't fire automatically on tab open.
   const [userInitiated, setUserInitiated] = useState(false);
+  const { getHeaders: preCacheKycHeaders } = useWalletAuthHeaders();
   const { kycStatus, isLoadingKycStatus, refetchKycStatus } = useKycStatus(enabled && userInitiated);
   const { createInquiry, isCreatingInquiry } = useCreateKycInquiry();
   const { verifyKyc, isVerifying } = useVerifyKyc();
@@ -193,7 +194,12 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
           accentColor={themeColor || "hsl(var(--as-brand))"}
           className="w-full"
           textClassName="text-white"
-          onClick={() => setUserInitiated(true)}
+          onClick={async () => {
+            // Pre-sign in user-gesture context so React Query's queryFn
+            // can reuse the cached headers without a second popup.
+            await preCacheKycHeaders().catch(() => {});
+            setUserInitiated(true);
+          }}
         >
           <span className="flex items-center justify-center gap-2">
             <ShieldCheck className="h-4 w-4" />
