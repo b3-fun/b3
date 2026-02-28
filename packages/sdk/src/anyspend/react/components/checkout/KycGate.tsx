@@ -6,6 +6,7 @@ import { thirdwebB3Chain } from "@b3dotfun/sdk/shared/constants/chains/b3Chain";
 import { Loader2, ShieldCheck, AlertTriangle, Clock } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import type { AnySpendCheckoutClasses } from "./AnySpendCheckout";
 import { useCreateKycInquiry, useKycStatus, useVerifyKyc } from "../../hooks/useKycStatus";
 
@@ -57,17 +58,8 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
   const openPersonaFlow = useCallback(
     async (config: { inquiryId: string; sessionToken: string; templateId?: string; environment?: string }) => {
       setPersonaOpen(true);
-      // Disable Radix's FocusScope trap and outside-click dismissal while the
-      // Persona iframe is active. Without this, the first click on the iframe
-      // triggers Radix's outside-click handler (closing the modal) and the
-      // FocusScope steals focus back before Persona can register the click.
-      // modal={false} on Dialog removes FocusScope; onPointerDownOutside
-      // preventDefault in B3DynamicModal prevents the outside-click dismiss.
-      setPersonaActive(true);
       try {
-        // Dynamic import to keep bundle small — the await yields to the event
-        // loop so React can flush the personaActive=true state update before
-        // client.open() renders the iframe.
+        // Dynamic import to keep bundle small
         const { Client } = await import("persona");
         const client = new Client({
           inquiryId: config.inquiryId,
@@ -105,6 +97,13 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
             setPersonaError(error?.message || "Verification encountered an error");
           },
         });
+        // Flush the personaActive=true update synchronously so that
+        // modal={false} (disables FocusScope) and onPointerDownOutside
+        // preventDefault are committed to the DOM BEFORE client.open()
+        // renders Persona's overlay. Without flushSync, React may batch this
+        // update and commit it after the overlay appears, meaning the first
+        // click on the overlay still hits the stale Radix outside-click handler.
+        flushSync(() => setPersonaActive(true));
         client.open();
       } catch (error) {
         setPersonaOpen(false);
