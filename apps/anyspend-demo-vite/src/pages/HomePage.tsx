@@ -453,17 +453,19 @@ export default function HomePage() {
             </div>
           </div>
 
-          <SignInWithB3 withLogo={false} />
-          <button
-            onClick={toggle}
-            className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
-            style={{
-              background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)",
-              color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)",
-            }}
-          >
-            {isDark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
-          </button>
+          <div className="flex items-center gap-3">
+            <SignInWithB3 withLogo={false} />
+            <button
+              onClick={toggle}
+              className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
+              style={{
+                background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)",
+                color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)",
+              }}
+            >
+              {isDark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+            </button>
+          </div>
         </div>
       </header>
 
