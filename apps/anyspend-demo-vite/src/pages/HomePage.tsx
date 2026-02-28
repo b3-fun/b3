@@ -1,5 +1,5 @@
 import { B3_TOKEN, USDC_BASE } from "@b3dotfun/sdk/anyspend";
-import { useModalStore } from "@b3dotfun/sdk/global-account/react";
+import { SignInWithB3, useModalStore } from "@b3dotfun/sdk/global-account/react";
 import {
   ArrowLeftRight,
   Clock,
@@ -453,6 +453,7 @@ export default function HomePage() {
             </div>
           </div>
 
+          <SignInWithB3 withLogo={false} />
           <button
             onClick={toggle}
             className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors"

@@ -1,3 +1,4 @@
+import { SignInWithB3 } from "@b3dotfun/sdk/global-account/react";
 import { ArrowLeft, Moon, Sun } from "lucide-react";
 import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
@@ -47,6 +48,7 @@ export function DemoPageHeader({ title, subtitle, actions }: DemoPageHeaderProps
 
         <div className="flex items-center gap-3">
           {actions}
+          <SignInWithB3 withLogo={false} />
           <button
             onClick={toggle}
             className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
