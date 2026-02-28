@@ -21,6 +21,8 @@ export default defineConfig(({ mode }) => {
         NEXT_PUBLIC_THIRDWEB_ECOSYSTEM_ID: env.VITE_THIRDWEB_ECOSYSTEM_ID,
         PUBLIC_B3_API: env.VITE_B3_API,
         NEXT_PUBLIC_DEVMODE_SHARED_SECRET: env.VITE_DEVMODE_SHARED_SECRET,
+        // Override anyspend API base URL to point at local backend for testing
+        NEXT_PUBLIC_ANYSPEND_BASE_URL: env.VITE_ANYSPEND_BASE_URL,
       },
     },
     resolve: {

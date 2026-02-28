@@ -1,7 +1,8 @@
 "use client";
 
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
-import { ShinyButton, TextShimmer, useAccountWallet } from "@b3dotfun/sdk/global-account/react";
+import { ShinyButton, TextShimmer, useAuth, useB3Config, useModalStore } from "@b3dotfun/sdk/global-account/react";
+import { thirdwebB3Chain } from "@b3dotfun/sdk/shared/constants/chains/b3Chain";
 import { Loader2, ShieldCheck, AlertTriangle, Clock } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -16,10 +17,13 @@ interface KycGateProps {
 }
 
 export function KycGate({ themeColor, classes, onStatusResolved }: KycGateProps) {
-  const { address: walletAddress } = useAccountWallet();
-  const { kycStatus, isLoadingKycStatus, refetchKycStatus } = useKycStatus(walletAddress);
+  const { isAuthenticated, isAuthenticating } = useAuth();
+  const { kycStatus, isLoadingKycStatus, refetchKycStatus } = useKycStatus();
   const { createInquiry, isCreatingInquiry } = useCreateKycInquiry();
   const { verifyKyc, isVerifying } = useVerifyKyc();
+  const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
+  const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
+  const { partnerId } = useB3Config();
 
   const [personaOpen, setPersonaOpen] = useState(false);
   const [personaError, setPersonaError] = useState<string | null>(null);
@@ -52,19 +56,17 @@ export function KycGate({ themeColor, classes, onStatusResolved }: KycGateProps)
           environment: (config.environment as "sandbox" | "production") || "sandbox",
           onComplete: async ({ inquiryId }) => {
             setPersonaOpen(false);
-            if (walletAddress) {
-              if (inquiryId) {
-                try {
-                  const result = await verifyKyc({ walletAddress, inquiryId });
-                  if (result.status === "approved") {
-                    onStatusResolved(true);
-                  }
-                } catch {
-                  // Will be picked up by polling via refetch
+            if (inquiryId) {
+              try {
+                const result = await verifyKyc(inquiryId);
+                if (result.status === "approved") {
+                  onStatusResolved(true);
                 }
+              } catch {
+                // Will be picked up by polling via refetch
               }
-              refetchKycStatus();
             }
+            refetchKycStatus();
           },
           onCancel: () => {
             setPersonaOpen(false);
@@ -81,17 +83,15 @@ export function KycGate({ themeColor, classes, onStatusResolved }: KycGateProps)
         setPersonaError("Failed to load verification module");
       }
     },
-    [walletAddress, verifyKyc, onStatusResolved, refetchKycStatus],
+    [verifyKyc, onStatusResolved, refetchKycStatus],
   );
 
   const handleStartVerification = useCallback(async () => {
-    if (!walletAddress) return;
-
     setPersonaError(null);
     setPersonaCancelled(false);
 
     try {
-      const { inquiryId, sessionToken } = await createInquiry(walletAddress);
+      const { inquiryId, sessionToken } = await createInquiry();
       openPersonaFlow({
         inquiryId,
         sessionToken,
@@ -101,7 +101,12 @@ export function KycGate({ themeColor, classes, onStatusResolved }: KycGateProps)
     } catch (error) {
       setPersonaError(error instanceof Error ? error.message : "Failed to start verification");
     }
-  }, [walletAddress, createInquiry, kycStatus, openPersonaFlow]);
+  }, [createInquiry, kycStatus, openPersonaFlow]);
+
+  const handleSignIn = useCallback(() => {
+    setB3ModalContentType({ type: "signInWithB3", showBackButton: false, chain: thirdwebB3Chain, partnerId });
+    setB3ModalOpen(true);
+  }, [setB3ModalContentType, setB3ModalOpen, partnerId]);
 
   const handleResumeVerification = useCallback(() => {
     if (!kycStatus?.inquiry) return;
@@ -117,7 +122,58 @@ export function KycGate({ themeColor, classes, onStatusResolved }: KycGateProps)
     });
   }, [kycStatus, openPersonaFlow]);
 
-  // Loading state
+  // Auth loading state
+  if (isAuthenticating) {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+        className={cn("anyspend-kyc-loading flex flex-col items-center gap-3 py-6", classes?.fiatPanel)}
+      >
+        <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+        <TextShimmer duration={1.5} className="text-sm">
+          Checking authentication...
+        </TextShimmer>
+      </motion.div>
+    );
+  }
+
+  // Not authenticated — prompt to login
+  if (!isAuthenticated) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25, ease: "easeOut" }}
+        className={cn(
+          "anyspend-kyc-auth flex flex-col items-center gap-4 rounded-lg border border-gray-200 bg-white p-5 dark:border-neutral-700 dark:bg-neutral-900",
+          classes?.fiatPanel,
+        )}
+      >
+        <ShieldCheck className="h-8 w-8 text-gray-400" />
+        <div className="text-center">
+          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Login required to pay with card</p>
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            Sign in to your B3 account to complete identity verification.
+          </p>
+        </div>
+        <ShinyButton
+          accentColor={themeColor || "hsl(var(--as-brand))"}
+          className="w-full"
+          textClassName="text-white"
+          onClick={handleSignIn}
+        >
+          <span className="flex items-center justify-center gap-2">
+            <ShieldCheck className="h-4 w-4" />
+            Sign In
+          </span>
+        </ShinyButton>
+      </motion.div>
+    );
+  }
+
+  // Loading KYC status state
   if (isLoadingKycStatus) {
     return (
       <motion.div

@@ -27,6 +27,7 @@ import {
   toast,
   TransitionPanel,
   useAccountWallet,
+  useAuth,
   useB3Config,
   useModalStore,
   useProfile,
@@ -209,6 +210,7 @@ function AnySpendInner({
   const { partnerId } = useB3Config();
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
+  const { isAuthenticated } = useAuth();
 
   // Determine if we're in "buy mode" based on whether destination token props are provided
   const isBuyMode = !!(destinationTokenAddress && destinationTokenChainId);
@@ -1028,7 +1030,12 @@ function AnySpendInner({
         vendor = "stripe";
         paymentMethodString = "";
       } else if (paymentMethod === FiatPaymentMethod.STRIPE_WEB2) {
-        // Stripe embedded payment form
+        // Stripe embedded payment form requires authentication for KYC
+        if (!isAuthenticated) {
+          setB3ModalContentType({ type: "signInWithB3", showBackButton: false, chain: baseChain, partnerId });
+          setB3ModalOpen(true);
+          return;
+        }
         if (!stripeWeb2Support.isSupport) {
           toast.error("Pay with Card not available");
           return;

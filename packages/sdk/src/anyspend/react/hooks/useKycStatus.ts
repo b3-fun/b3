@@ -1,6 +1,8 @@
 "use client";
 
 import { ANYSPEND_MAINNET_BASE_URL } from "@b3dotfun/sdk/anyspend/constants";
+import app from "@b3dotfun/sdk/global-account/app";
+import { useAuthStore } from "@b3dotfun/sdk/global-account/react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
@@ -26,42 +28,67 @@ interface KycVerifyResponse {
   status: string;
 }
 
-async function fetchKycStatus(walletAddress: string): Promise<KycStatusResponse> {
-  const response = await fetch(
-    `${ANYSPEND_MAINNET_BASE_URL}/kyc/status?walletAddress=${encodeURIComponent(walletAddress)}`,
-  );
+async function getAuthHeader(): Promise<string | null> {
+  try {
+    const accessToken = await app.authentication.getAccessToken();
+    return accessToken ? `Bearer ${accessToken}` : null;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchKycStatus(): Promise<KycStatusResponse> {
+  const authHeader = await getAuthHeader();
+  if (!authHeader) throw new Error("Not authenticated");
+
+  const response = await fetch(`${ANYSPEND_MAINNET_BASE_URL}/kyc/status`, {
+    headers: { Authorization: authHeader },
+  });
   const data = await response.json();
   if (!response.ok) throw new Error(data.message || "Failed to fetch KYC status");
   return data.data;
 }
 
-async function createKycInquiry(walletAddress: string): Promise<KycInquiryResponse> {
+async function createKycInquiry(): Promise<KycInquiryResponse> {
+  const authHeader = await getAuthHeader();
+  if (!authHeader) throw new Error("Not authenticated");
+
   const response = await fetch(`${ANYSPEND_MAINNET_BASE_URL}/kyc/inquiry`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ walletAddress }),
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: authHeader,
+    },
   });
   const data = await response.json();
   if (!response.ok) throw new Error(data.message || "Failed to create KYC inquiry");
   return data.data;
 }
 
-async function verifyKyc(walletAddress: string, inquiryId: string): Promise<KycVerifyResponse> {
+async function verifyKyc(inquiryId: string): Promise<KycVerifyResponse> {
+  const authHeader = await getAuthHeader();
+  if (!authHeader) throw new Error("Not authenticated");
+
   const response = await fetch(`${ANYSPEND_MAINNET_BASE_URL}/kyc/verify`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ walletAddress, inquiryId }),
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: authHeader,
+    },
+    body: JSON.stringify({ inquiryId }),
   });
   const data = await response.json();
   if (!response.ok) throw new Error(data.message || "Failed to verify KYC");
   return data.data;
 }
 
-export function useKycStatus(walletAddress: string | undefined) {
+export function useKycStatus() {
+  const isAuthenticated = useAuthStore(state => state.isAuthenticated);
+
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["kyc-status", walletAddress],
-    queryFn: () => fetchKycStatus(walletAddress as string),
-    enabled: !!walletAddress,
+    queryKey: ["kyc-status"],
+    queryFn: () => fetchKycStatus(),
+    enabled: isAuthenticated,
     staleTime: 30_000,
   });
 
@@ -78,7 +105,7 @@ export function useKycStatus(walletAddress: string | undefined) {
 
 export function useCreateKycInquiry() {
   const { mutateAsync, isPending } = useMutation({
-    mutationFn: (walletAddress: string) => createKycInquiry(walletAddress),
+    mutationFn: () => createKycInquiry(),
   });
 
   return useMemo(
@@ -92,8 +119,7 @@ export function useCreateKycInquiry() {
 
 export function useVerifyKyc() {
   const { mutateAsync, isPending } = useMutation({
-    mutationFn: ({ walletAddress, inquiryId }: { walletAddress: string; inquiryId: string }) =>
-      verifyKyc(walletAddress, inquiryId),
+    mutationFn: (inquiryId: string) => verifyKyc(inquiryId),
   });
 
   return useMemo(
