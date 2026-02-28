@@ -235,7 +235,9 @@ export function FiatCheckoutPanel({
 
   // KYC gate — shown before order creation when verification is needed
   if (!kycApproved) {
-    return <KycGate themeColor={themeColor} classes={classes} enabled={kycEnabled} onStatusResolved={handleKycResolved} />;
+    return (
+      <KycGate themeColor={themeColor} classes={classes} enabled={kycEnabled} onStatusResolved={handleKycResolved} />
+    );
   }
 
   // Order creation error - show with retry
