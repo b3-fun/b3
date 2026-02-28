@@ -19,6 +19,7 @@ import {
   useGasPrice,
   useGeoOnrampOptions,
 } from "@b3dotfun/sdk/anyspend/react";
+import { useKycStatus } from "../hooks/useKycStatus";
 import {
   Button,
   ShinyButton,
@@ -28,6 +29,7 @@ import {
   TransitionPanel,
   useAccountWallet,
   useAuth,
+  useAuthStore,
   useB3Config,
   useModalStore,
   useProfile,
@@ -65,6 +67,8 @@ import { FiatPaymentMethod, FiatPaymentMethodComponent } from "./common/FiatPaym
 import { GasIndicator } from "./common/GasIndicator";
 import { OrderDetails, OrderDetailsLoadingView } from "./common/OrderDetails";
 import { OrderHistory } from "./common/OrderHistory";
+import { KycGate } from "./checkout/KycGate";
+import { LoginStep } from "@b3dotfun/sdk/global-account/react/components/SignInWithB3/steps/LoginStep";
 import { PanelOnramp } from "./common/PanelOnramp";
 import { PanelOnrampPayment } from "./common/PanelOnrampPayment";
 import { PointsDetailPanel } from "./common/PointsDetailPanel";
@@ -95,6 +99,8 @@ export enum PanelView {
   POINTS_DETAIL,
   FEE_DETAIL,
   DIRECT_TRANSFER_SUCCESS,
+  FIAT_KYC,
+  FIAT_AUTH,
 }
 
 const ANYSPEND_RECIPIENTS_KEY = "anyspend_recipients";
@@ -211,6 +217,7 @@ function AnySpendInner({
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
   const { isAuthenticated } = useAuth();
+  const { kycStatus } = useKycStatus();
 
   // Determine if we're in "buy mode" based on whether destination token props are provided
   const isBuyMode = !!(destinationTokenAddress && destinationTokenChainId);
@@ -1030,10 +1037,15 @@ function AnySpendInner({
         vendor = "stripe";
         paymentMethodString = "";
       } else if (paymentMethod === FiatPaymentMethod.STRIPE_WEB2) {
-        // Stripe embedded payment form requires authentication for KYC
-        if (!isAuthenticated) {
-          setB3ModalContentType({ type: "signInWithB3", showBackButton: false, chain: baseChain, partnerId });
-          setB3ModalOpen(true);
+        // Stripe embedded payment form requires authentication + KYC
+        // Read from store directly to avoid stale closure when called from onLoginSuccess callback
+        const currentlyAuthenticated = useAuthStore.getState().isAuthenticated;
+        if (!currentlyAuthenticated) {
+          navigateToPanel(PanelView.FIAT_AUTH, "forward");
+          return;
+        }
+        if (kycStatus?.kycRequired && kycStatus.status !== "approved") {
+          navigateToPanel(PanelView.FIAT_KYC, "forward");
           return;
         }
         if (!stripeWeb2Support.isSupport) {
@@ -1153,6 +1165,15 @@ function AnySpendInner({
       window.removeEventListener("popstate", handlePopState);
     };
   }, [activePanel, navigateBack]);
+
+  // When auth completes while on the FIAT_AUTH panel, navigate back and retry the order
+  useEffect(() => {
+    if (isAuthenticated && activePanel === PanelView.FIAT_AUTH) {
+      navigateBack();
+      handleFiatOrder(selectedFiatPaymentMethod);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
 
   const historyView = (
     <div className={"mx-auto flex w-[560px] max-w-full flex-col items-center"}>
@@ -1600,6 +1621,30 @@ function AnySpendInner({
     </div>
   );
 
+  const kycView = (
+    <div className="mx-auto flex w-full max-w-[460px] flex-col gap-4 px-5 pt-5">
+      <KycGate
+        onStatusResolved={approved => {
+          if (approved) {
+            navigateBack();
+            handleFiatOrder(selectedFiatPaymentMethod);
+          }
+        }}
+      />
+    </div>
+  );
+
+  const authView = (
+    <div className="mx-auto w-full max-w-[460px]">
+      <LoginStep
+        chain={baseChain}
+        onSuccess={async () => {
+          // isAuthenticated will be true at this point — the useEffect below handles navigation
+        }}
+      />
+    </div>
+  );
+
   // Add tabs to the main component when no order is loaded
   return (
     <StyleRoot>
@@ -1673,6 +1718,12 @@ function AnySpendInner({
             </div>,
             <div key="direct-transfer-success-view" className={cn(mode === "page" && "p-6")}>
               {directTransferSuccessView}
+            </div>,
+            <div key="fiat-kyc-view" className={cn(mode === "page" && "p-6")}>
+              {kycView}
+            </div>,
+            <div key="fiat-auth-view" className={cn(mode === "page" && "p-6")}>
+              {authView}
             </div>,
           ]}
         </TransitionPanel>

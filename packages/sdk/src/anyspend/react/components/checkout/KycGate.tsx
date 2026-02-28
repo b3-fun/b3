@@ -52,7 +52,7 @@ export function KycGate({ themeColor, classes, onStatusResolved }: KycGateProps)
         const client = new Client({
           inquiryId: config.inquiryId,
           sessionToken: config.sessionToken,
-          ...(config.templateId && { templateId: config.templateId }),
+          // templateId is mutually exclusive with inquiryId — do not pass both
           environment: (config.environment as "sandbox" | "production") || "sandbox",
           onComplete: async ({ inquiryId }) => {
             setPersonaOpen(false);
