@@ -1,13 +1,14 @@
 "use client";
 
 import { cn } from "@b3dotfun/sdk/shared/utils/cn";
-import { ShinyButton, TextShimmer, useAuth, useB3Config, useModalStore } from "@b3dotfun/sdk/global-account/react";
+import { ShinyButton, TextShimmer, useB3Config, useModalStore } from "@b3dotfun/sdk/global-account/react";
 import { thirdwebB3Chain } from "@b3dotfun/sdk/shared/constants/chains/b3Chain";
-import { Loader2, ShieldCheck, AlertTriangle, Clock } from "lucide-react";
+import { Loader2, ShieldCheck, AlertTriangle, Clock, Wallet } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useAccount } from "wagmi";
 import type { AnySpendCheckoutClasses } from "./AnySpendCheckout";
-import { useCreateKycInquiry, useKycStatus, useVerifyKyc } from "../../hooks/useKycStatus";
+import { useCreateKycInquiry, useKycStatus, useVerifyKyc, useWalletAuthHeaders } from "../../hooks/useKycStatus";
 
 interface KycGateProps {
   themeColor?: string;
@@ -19,18 +20,28 @@ interface KycGateProps {
 }
 
 export function KycGate({ themeColor, classes, enabled = false, onStatusResolved }: KycGateProps) {
-  const { isAuthenticated, isAuthenticating } = useAuth();
-  const { kycStatus, isLoadingKycStatus, refetchKycStatus } = useKycStatus(enabled);
+  const { address } = useAccount();
+  const { partnerId } = useB3Config();
+  // Gate the status fetch behind explicit user consent so the wallet
+  // signature prompt doesn't fire automatically on tab open.
+  const [userInitiated, setUserInitiated] = useState(false);
+  const { getHeaders: preCacheKycHeaders } = useWalletAuthHeaders();
+  const { kycStatus, isLoadingKycStatus, refetchKycStatus } = useKycStatus(enabled && userInitiated);
   const { createInquiry, isCreatingInquiry } = useCreateKycInquiry();
   const { verifyKyc, isVerifying } = useVerifyKyc();
   const setB3ModalOpen = useModalStore(state => state.setB3ModalOpen);
   const setB3ModalContentType = useModalStore(state => state.setB3ModalContentType);
-  const { partnerId } = useB3Config();
 
   const [personaOpen, setPersonaOpen] = useState(false);
   const [personaError, setPersonaError] = useState<string | null>(null);
   const [personaCancelled, setPersonaCancelled] = useState(false);
   const prevStatusRef = useRef<string | null>(null);
+
+  // Reset consent gate when wallet changes so the signature prompt isn't
+  // skipped for a different (or reconnected) wallet with no cached headers.
+  useEffect(() => {
+    setUserInitiated(false);
+  }, [address]);
 
   // Notify parent when status resolves
   useEffect(() => {
@@ -114,7 +125,7 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
     }
   }, [createInquiry, kycStatus, openPersonaFlow]);
 
-  const handleSignIn = useCallback(() => {
+  const handleConnectWallet = useCallback(() => {
     setB3ModalContentType({ type: "signInWithB3", showBackButton: false, chain: thirdwebB3Chain, partnerId });
     setB3ModalOpen(true);
   }, [setB3ModalContentType, setB3ModalOpen, partnerId]);
@@ -132,25 +143,8 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
     });
   }, [kycStatus, openPersonaFlow]);
 
-  // Auth loading state
-  if (isAuthenticating) {
-    return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.2, ease: "easeOut" }}
-        className={cn("anyspend-kyc-loading flex flex-col items-center gap-3 py-6", classes?.fiatPanel)}
-      >
-        <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
-        <TextShimmer duration={1.5} className="text-sm">
-          Checking authentication...
-        </TextShimmer>
-      </motion.div>
-    );
-  }
-
-  // Not authenticated — prompt to login
-  if (!isAuthenticated) {
+  // No wallet connected — prompt to connect wallet (same pattern as crypto tab)
+  if (!address) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 8 }}
@@ -160,20 +154,62 @@ export function KycGate({ themeColor, classes, enabled = false, onStatusResolved
       >
         <ShieldCheck className="h-8 w-8 text-gray-400" />
         <div className="text-center">
-          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Login required to pay with card</p>
+          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Connect wallet to pay with card</p>
           <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            Sign in to your B3 account to complete identity verification.
+            A wallet connection is required to complete identity verification.
           </p>
         </div>
         <ShinyButton
           accentColor={themeColor || "hsl(var(--as-brand))"}
           className="w-full"
           textClassName="text-white"
-          onClick={handleSignIn}
+          onClick={handleConnectWallet}
+        >
+          <span className="flex items-center justify-center gap-2">
+            <Wallet className="h-4 w-4" />
+            Connect Wallet
+          </span>
+        </ShinyButton>
+      </motion.div>
+    );
+  }
+
+  // Wallet connected but user hasn't kicked off the KYC check yet
+  if (!userInitiated) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25, ease: "easeOut" }}
+        className={cn("anyspend-kyc-prompt flex flex-col items-center gap-4 py-2", classes?.fiatPanel)}
+      >
+        <ShieldCheck className="h-8 w-8 text-blue-500" />
+        <div className="text-center">
+          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Identity verification required</p>
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            Card payments require a one-time identity check. This takes about 2 minutes.
+          </p>
+        </div>
+        <ShinyButton
+          accentColor={themeColor || "hsl(var(--as-brand))"}
+          className="w-full"
+          textClassName="text-white"
+          onClick={async () => {
+            // Pre-sign in user-gesture context so React Query's queryFn
+            // can reuse the cached headers without a second popup.
+            // Only enable the query on success — if the user rejects the
+            // signature, leave userInitiated=false and stay on this screen.
+            try {
+              await preCacheKycHeaders();
+              setUserInitiated(true);
+            } catch {
+              // User rejected signature — stay on consent screen
+            }
+          }}
         >
           <span className="flex items-center justify-center gap-2">
             <ShieldCheck className="h-4 w-4" />
-            Sign In
+            Continue to Verify
           </span>
         </ShinyButton>
       </motion.div>

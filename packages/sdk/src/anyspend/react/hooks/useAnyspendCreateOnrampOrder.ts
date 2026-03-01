@@ -11,8 +11,9 @@ import { useMemo } from "react";
 
 import { parseUnits } from "viem";
 import { base } from "viem/chains";
+import { useAccount } from "wagmi";
 import { CreateOrderParams } from "./useAnyspendCreateOrder";
-import { useWalletAuthHeaders } from "./useKycStatus";
+import { getCachedWalletHeaders } from "./useKycStatus";
 import { useValidatedClientReferenceId } from "./useValidatedClientReferenceId";
 
 export type OnrampOptions = {
@@ -41,7 +42,7 @@ export type UseAnyspendCreateOnrampOrderProps = {
 export function useAnyspendCreateOnrampOrder({ onSuccess, onError }: UseAnyspendCreateOnrampOrderProps = {}) {
   // Get B3 context values
   const { partnerId } = useB3Config();
-  const { getHeaders: getWalletAuthHeaders } = useWalletAuthHeaders();
+  const { address } = useAccount();
 
   // Get validated client reference ID from B3 context
   const createValidatedClientReferenceId = useValidatedClientReferenceId();
@@ -85,9 +86,12 @@ export function useAnyspendCreateOnrampOrder({ onSuccess, onError }: UseAnyspend
 
         // For card payments, include wallet auth headers so the backend can verify
         // KYC by the signing wallet address (may differ from the B3 JWT address).
+        // Only use already-cached headers — never trigger a fresh wallet signature
+        // here, as that would prompt the user without their explicit consent.
+        // KycGate pre-caches the headers in the "Continue to Verify" user-gesture.
         let kycWalletHeaders: Record<string, string> | undefined;
-        if (onramp.vendor === "stripe-web2") {
-          kycWalletHeaders = await getWalletAuthHeaders().catch(() => undefined);
+        if (onramp.vendor === "stripe-web2" && address) {
+          kycWalletHeaders = getCachedWalletHeaders(address);
         }
 
         return await anyspendService.createOrder({

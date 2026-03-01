@@ -1,3 +1,5 @@
+import { SignInWithB3, useB3Config } from "@b3dotfun/sdk/global-account/react";
+import { thirdwebB3Chain } from "@b3dotfun/sdk/shared/constants/chains/b3Chain";
 import { ArrowLeft, Moon, Sun } from "lucide-react";
 import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
@@ -13,6 +15,7 @@ interface DemoPageHeaderProps {
 export function DemoPageHeader({ title, subtitle, actions }: DemoPageHeaderProps) {
   const navigate = useNavigate();
   const { theme, toggle } = useTheme();
+  const { partnerId } = useB3Config();
   const isDark = theme === "dark";
 
   return (
@@ -47,6 +50,7 @@ export function DemoPageHeader({ title, subtitle, actions }: DemoPageHeaderProps
 
         <div className="flex items-center gap-3">
           {actions}
+          <SignInWithB3 withLogo={false} chain={thirdwebB3Chain} partnerId={partnerId} />
           <button
             onClick={toggle}
             className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors"

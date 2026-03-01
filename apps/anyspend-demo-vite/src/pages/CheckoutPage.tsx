@@ -1011,6 +1011,7 @@ export default function CheckoutPage() {
     >
       <AnySpendCheckout
         mode="page"
+        kycEnabled
         recipientAddress={DEMO_RECIPIENT}
         destinationTokenAddress={ETH_BASE.address}
         destinationTokenChainId={ETH_BASE.chainId}
